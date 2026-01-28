@@ -10,6 +10,10 @@ fi
 
 REGISTRY_URL=${LINGGEN_SKILLS_REGISTRY_URL:-"https://linggen-analytics.liangatbc.workers.dev"}
 REGISTRY_LIMIT=${LINGGEN_SKILLS_REGISTRY_LIMIT:-200}
+REGISTRY_API_KEY=${LINGGEN_SKILLS_REGISTRY_API_KEY:-}
+REGISTRY_INSTALLER=${LINGGEN_SKILLS_REGISTRY_INSTALLER:-"linggen-cli"}
+REGISTRY_INSTALLER_VERSION=${LINGGEN_SKILLS_REGISTRY_INSTALLER_VERSION:-"1.0.0"}
+SKILLS_SH_URL=${LINGGEN_SKILLS_SH_URL:-"https://skills.sh/api/search"}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../../../../" && pwd)"
@@ -30,8 +34,42 @@ if ! echo "$REG_RESPONSE" | jq -e . >/dev/null 2>&1; then
     exit 1
 fi
 
+REG_MATCH_COUNT=$(echo "$REG_RESPONSE" | jq -r --arg q "$QUERY" '
+    def q: ($q | ascii_downcase);
+    def match(s): (s | tostring | ascii_downcase | contains(q));
+    def skills:
+        if type=="array" then .
+        elif type=="object" and (.skills|type=="array") then .skills
+        elif type=="object" and (.results|type=="array") then .results
+        elif type=="object" and (.data|type=="array") then .data
+        else []
+        end;
+    skills
+    | map(select(
+        match(.skill // "") or match(.url // "") or match(.ref // "")
+    ))
+    | length
+')
+
+SKILLS_SH_RESPONSE=""
+if [ "$REG_MATCH_COUNT" -lt 10 ]; then
+    SKILLS_SH_RESPONSE=$(curl -s -X GET "$SKILLS_SH_URL?q=$ENC_QUERY&limit=10" | tr -d '\000')
+    if [ $? -ne 0 ]; then
+        echo "Warning: Could not connect to skills.sh at $SKILLS_SH_URL (skipping GitHub fallback)"
+        SKILLS_SH_RESPONSE=""
+    elif ! echo "$SKILLS_SH_RESPONSE" | jq -e . >/dev/null 2>&1; then
+        echo "Warning: skills.sh returned invalid JSON (skipping GitHub fallback)"
+        SKILLS_SH_RESPONSE=""
+    fi
+fi
+
 TMP_JSON=$(mktemp)
 echo "$REG_RESPONSE" > "$TMP_JSON"
+TMP_SKILLS_SH_JSON=""
+if [ -n "$SKILLS_SH_RESPONSE" ]; then
+    TMP_SKILLS_SH_JSON=$(mktemp)
+    echo "$SKILLS_SH_RESPONSE" > "$TMP_SKILLS_SH_JSON"
+fi
 
 PY_SCRIPT=$(mktemp)
 cat > "$PY_SCRIPT" <<'PY'
@@ -40,7 +78,8 @@ import sys
 
 query = sys.argv[1].lower()
 path = sys.argv[2]
-target = (sys.argv[3] or "").lower().strip()
+skills_sh_path = sys.argv[3] if len(sys.argv) > 3 else ""
+target = (sys.argv[4] if len(sys.argv) > 4 else "").lower().strip()
 
 with open(path, "r", encoding="utf-8", errors="ignore") as f:
     data = json.load(f)
@@ -55,31 +94,72 @@ matches = [
     if match(s.get("skill", "")) or match(s.get("url", "")) or match(s.get("ref", ""))
 ]
 
+skills_sh = []
+if skills_sh_path:
+    try:
+        with open(skills_sh_path, "r", encoding="utf-8", errors="ignore") as f:
+            skills_sh_data = json.load(f)
+            skills_sh = skills_sh_data.get("skills") or skills_sh_data.get("results") or skills_sh_data.get("data") or []
+    except Exception:
+        skills_sh = []
+
+def key(url: str, skill: str) -> str:
+    return f"{(url or '').lower()}::{(skill or '').lower()}"
+
+registry_keys = set(key(s.get("url", ""), s.get("skill", "")) for s in matches)
+
+skills_sh_matches = []
+for s in skills_sh:
+    repo_url = f"https://github.com/{s.get('topSource', '')}".strip()
+    if key(repo_url, s.get("id", "")) in registry_keys:
+        continue
+    if match(s.get("id", "")) or match(s.get("name", "")) or match(s.get("topSource", "")):
+        skills_sh_matches.append(s)
+
 selected = None
 if target:
     for s in matches:
         if (s.get("skill") or "").lower() == target:
             selected = s
             break
+    if not selected:
+        for s in skills_sh_matches:
+            if (s.get("id") or "").lower() == target or (s.get("name") or "").lower() == target:
+                selected = s
+                break
 else:
     if len(matches) >= 1:
         selected = matches[0]
+    elif len(skills_sh_matches) >= 1:
+        selected = skills_sh_matches[0]
 
 if not selected:
     print("", end="")
     sys.exit(0)
 
-print(json.dumps({
-    "skill": selected.get("skill"),
-    "url": selected.get("url"),
-    "ref": selected.get("ref") or "main"
-}))
+if "skill" in selected:
+    print(json.dumps({
+        "skill": selected.get("skill"),
+        "url": selected.get("url"),
+        "ref": selected.get("ref") or "main",
+        "source": "linggen",
+        "display_name": selected.get("skill")
+    }))
+else:
+    repo_url = f"https://github.com/{selected.get('topSource', '')}".strip()
+    print(json.dumps({
+        "skill": selected.get("id"),
+        "url": repo_url,
+        "ref": "main",
+        "source": "skillsSh",
+        "display_name": selected.get("name") or selected.get("id")
+    }))
 PY
 
 TARGET_NAME=${LINGGEN_SKILL_NAME:-}
-SELECTED_JSON=$(python3 "$PY_SCRIPT" "$QUERY" "$TMP_JSON" "$TARGET_NAME")
+SELECTED_JSON=$(python3 "$PY_SCRIPT" "$QUERY" "$TMP_JSON" "$TMP_SKILLS_SH_JSON" "$TARGET_NAME")
 
-rm -f "$TMP_JSON" "$PY_SCRIPT"
+rm -f "$TMP_JSON" "$TMP_SKILLS_SH_JSON" "$PY_SCRIPT"
 
 if [ -z "$SELECTED_JSON" ]; then
     echo "No selection made."
@@ -94,6 +174,8 @@ fi
 SKILL_NAME=$(echo "$SELECTED_JSON" | jq -r '.skill // empty')
 SKILL_URL=$(echo "$SELECTED_JSON" | jq -r '.url // empty')
 SKILL_REF=$(echo "$SELECTED_JSON" | jq -r '.ref // "main"')
+SKILL_SOURCE=$(echo "$SELECTED_JSON" | jq -r '.source // "linggen"')
+SKILL_DISPLAY=$(echo "$SELECTED_JSON" | jq -r '.display_name // empty')
 
 if [ -z "$SKILL_NAME" ] || [ -z "$SKILL_URL" ]; then
     echo "Error: Selected skill is missing required fields."
@@ -196,3 +278,39 @@ if [ $RESULT -ne 0 ]; then
 fi
 
 echo "✓ Skill installed to .claude/skills/$SKILL_NAME"
+
+if [ -n "$REGISTRY_API_KEY" ]; then
+    INSTALL_PAYLOAD=$(jq -n \
+        --arg url "$SKILL_URL" \
+        --arg skill "$SKILL_NAME" \
+        --arg ref "$SKILL_REF" \
+        --arg installer "$REGISTRY_INSTALLER" \
+        --arg installer_version "$REGISTRY_INSTALLER_VERSION" \
+        --arg timestamp "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+        '{url:$url, skill:$skill, ref:$ref, installer:$installer, installer_version:$installer_version, timestamp:$timestamp}')
+
+    TMP_INSTALL=$(mktemp)
+    HTTP_STATUS=$(curl -s -o "$TMP_INSTALL" -w "%{http_code}" -X POST "$REGISTRY_URL/skills/install" \
+        -H "Content-Type: application/json" \
+        -H "X-API-Key: $REGISTRY_API_KEY" \
+        -d "$INSTALL_PAYLOAD")
+
+    if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+        if jq -e . >/dev/null 2>&1 < "$TMP_INSTALL"; then
+            COUNTED=$(jq -r '.counted // empty' < "$TMP_INSTALL")
+            if [ "$COUNTED" = "true" ]; then
+                echo "✓ Installation recorded in Linggen registry ($SKILL_SOURCE)"
+            else
+                echo "ℹ Installation recorded (already counted recently)"
+            fi
+        else
+            echo "⚠ Installation recorded, but response was not JSON"
+        fi
+    else
+        echo "⚠ Failed to record installation (HTTP $HTTP_STATUS)"
+    fi
+
+    rm -f "$TMP_INSTALL"
+else
+    echo "ℹ Install count not recorded (set LINGGEN_SKILLS_REGISTRY_API_KEY to enable)"
+fi
