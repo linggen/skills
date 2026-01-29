@@ -45,9 +45,12 @@ To get a fully context-aware prompt that includes intent detection and applied u
 Linggen memories capture architectural decisions and constraints.
 
 - **Memory Anchors:** When you see a comment like `// linggen memory: <filename>.md` in the code, it is an **anchor** to a specific decision. You MUST:
-
   1. Locate the file in `.linggen/memory/<filename>.md`.
   2. Read it immediately to understand the context or constraints for that specific block of code.
+
+- **Repo File Anchors:** When you see a comment like `// linggen anchor: <repo/relative/path>` in the code, it is an **anchor** to an existing file in the repository. You MUST:
+  1. Resolve `<repo/relative/path>` from the workspace root (do not use absolute paths).
+  2. Read the file to gather context for the current task.
 
 - **Global Context:** You can always browse all memories in `.linggen/memory/` to understand the project's evolution.
 
