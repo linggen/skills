@@ -1,26 +1,38 @@
 # Linggen Skills
 
-Use Linggen skills to bootstrap and operate **Linggen** (a local “memory DB” + context server) from your coding assistant.
+Skills for **Linggen** — a local-first coding assistant with memory, context, and multi-agent capabilities.
 
 Learn more at [linggen.dev](https://linggen.dev).
 
-## Install (Claude / Codex)
+## Available Skills
+
+| Skill | Description |
+|-------|-------------|
+| **[linggen](./linggen/)** | Cross-project code search, indexed context, prompt enhancement, and server management. |
+| **[memory](./memory/)** | Semantic memory and RAG — index codebases, search semantically, store and retrieve memories. |
+| **[skiller](./skiller/)** | Search, install, and manage skills from the marketplace. |
+| **[discord](./discord/)** | Social messaging with Discord friends. Send and receive messages via `@@friend_name`. |
+
+## Install
+
+### Via Linggen Agent
+
+Skills are automatically installed when you run `ling init --global`.
+
+### Manual (Claude / Codex)
 
 1. Download this repo (or the specific skill folder you want).
 
-2. Copy the skill into your assistant’s skills directory:
+2. Copy the skill into your assistant's skills directory:
 
 - Claude: `~/.claude/skills/`
 - Codex: `~/.codex/skills/`
 
-> If you’ve been using `~/.cluade/skills/`, that’s likely a typo—Claude’s default folder is `~/.claude/skills/`.
+## Usage
 
-## Use it (prompts)
-
-In your assistant, use natural-language prompts like:
-
-- **Start Linggen (local server / memory DB):** “start linggen by skills”
-- **Install a skill:** “install pdf skill by linggen skills”
+- **Linggen**: Use natural-language prompts like "search across projects for auth middleware"
+- **Skill Manager**: `/skill find <query>`, `/skill add <name>`, `/skill list`
+- **Discord**: Type `@@tom hello!` to message your friend Tom on Discord
 
 ## Notes
 
