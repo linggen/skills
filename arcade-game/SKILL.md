@@ -3,7 +3,7 @@ name: arcade-game
 description: Retro arcade games — Snake, Pong, and Tetris in your browser
 app:
   launcher: web
-  entry: index.html
+  entry: scripts/index.html
   width: 800
   height: 700
 ---
