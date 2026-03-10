@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="snake.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="arcade-shell">
+        <section id="snakeGameContainer" class="game-container" style="display: flex;">
+            <div class="game-header">
+                <div>
+                    <p class="game-kicker">Solo Arcade</p>
+                    <h1>Snake Game</h1>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div id="score" class="status-pill">Score: 0</div>
+                <div class="status-hint">Use the arrow keys to move</div>
+            </div>
+
+            <div class="canvas-frame snake-frame">
+                <canvas id="snakeCanvas" width="600" height="600"></canvas>
+                <div id="game-over-screen">
+                    <div class="overlay-card">
+                        <p class="overlay-title">Game Over</p>
+                        <p class="overlay-copy">Final Score: <span id="final-score">0</span></p>
+                        <div class="overlay-actions">
+                            <button id="restart-button" class="utility-button">Play Again</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="snake.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initSnake();
+        });
+    </script>
+</body>
+</html>

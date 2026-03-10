@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="pong.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="arcade-shell">
+        <section id="pongGameContainer" class="game-container" style="display: flex;">
+            <div class="game-header">
+                <div>
+                    <p class="game-kicker">Versus Arcade</p>
+                    <h1>Pong Game</h1>
+                </div>
+            </div>
+
+            <div class="status-bar status-bar-wide">
+                <div class="pong-score status-pill">
+                    Player 1: <span id="player1Score">0</span>
+                    <span class="score-divider">-</span>
+                    Player 2: <span id="player2Score">0</span>
+                </div>
+                <div class="status-hint">W/S for Player 1 · ↑/↓ for Player 2</div>
+            </div>
+
+            <div class="canvas-frame pong-frame">
+                <canvas id="pongCanvas" width="600" height="400"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <script src="pong.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initPong();
+        });
+    </script>
+</body>
+</html>

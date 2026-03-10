@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Collection</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="snake.css">
+    <link rel="stylesheet" href="pong.css">
+    <link rel="stylesheet" href="tetris.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="arcade-shell">
+        <section class="hero-panel" id="menuPanel">
+            <p class="eyebrow">Retro browser arcade</p>
+            <h1>Classic Arcade Games</h1>
+            <p class="hero-copy">Pick a game, jump in instantly, and switch back to the menu whenever you want.</p>
+
+            <div class="game-selection-menu">
+                <button class="game-button" onclick="selectGame('snake')">
+                    <span class="button-title">Play Snake</span>
+                    <span class="button-subtitle">Chase food and grow longer</span>
+                </button>
+                <button class="game-button secondary" onclick="selectGame('pong')">
+                    <span class="button-title">Play Pong</span>
+                    <span class="button-subtitle">Local two-player paddle battle</span>
+                </button>
+                <button class="game-button tertiary" onclick="selectGame('tetris')">
+                    <span class="button-title">Play Tetris</span>
+                    <span class="button-subtitle">Stack pieces, clear lines, and chase high scores</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="snakeGameContainer" class="game-container">
+            <div class="game-header">
+                <div>
+                    <p class="game-kicker">Arcade Mode</p>
+                    <h2>Snake</h2>
+                </div>
+                <button class="utility-button" onclick="showMenu()">Back to Menu</button>
+            </div>
+
+            <div class="status-bar">
+                <div id="score" class="status-pill">Score: 0</div>
+                <div class="status-hint">Use the arrow keys to move</div>
+            </div>
+
+            <div class="canvas-frame snake-frame">
+                <canvas id="snakeCanvas" width="600" height="600"></canvas>
+                <div id="game-over-screen">
+                    <div class="overlay-card">
+                        <p class="overlay-title">Game Over</p>
+                        <p class="overlay-copy">Final Score: <span id="final-score">0</span></p>
+                        <div class="overlay-actions">
+                            <button id="restart-button" class="utility-button">Play Again</button>
+                            <button class="utility-button ghost" onclick="showMenu()">Back to Menu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pongGameContainer" class="game-container">
+            <div class="game-header">
+                <div>
+                    <p class="game-kicker">Arcade Mode</p>
+                    <h2>Pong</h2>
+                </div>
+                <button class="utility-button" onclick="showMenu()">Back to Menu</button>
+            </div>
+
+            <div class="status-bar status-bar-wide">
+                <div class="pong-score status-pill">
+                    Player 1: <span id="player1Score">0</span>
+                    <span class="score-divider">-</span>
+                    Player 2: <span id="player2Score">0</span>
+                </div>
+                <div class="status-hint">W/S for Player 1 · ↑/↓ for Player 2</div>
+            </div>
+
+            <div class="canvas-frame pong-frame">
+                <canvas id="pongCanvas" width="600" height="400"></canvas>
+            </div>
+        </section>
+
+        <section id="tetrisGameContainer" class="game-container">
+            <div class="game-header">
+                <div>
+                    <p class="game-kicker">Arcade Mode</p>
+                    <h2>Tetris</h2>
+                </div>
+                <button class="utility-button" onclick="showMenu()">Back to Menu</button>
+            </div>
+
+            <div class="status-bar status-bar-wide">
+                <div class="tetris-stats-grid">
+                    <div id="tetrisScore" class="status-pill">Score: 0</div>
+                    <div id="tetrisLines" class="status-pill">Lines: 0</div>
+                    <div id="tetrisLevel" class="status-pill">Level: 1</div>
+                </div>
+                <div class="status-hint">←/→ move · ↑ rotate · ↓ soft drop · Space hard drop · P pause</div>
+            </div>
+
+            <div class="tetris-layout">
+                <div class="canvas-frame tetris-frame">
+                    <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+                    <div id="tetris-overlay" class="tetris-overlay hidden">
+                        <div class="overlay-card tetris-overlay-card">
+                            <p id="tetrisOverlayTitle" class="overlay-title">Tetris</p>
+                            <p id="tetrisOverlayCopy" class="overlay-copy">Press Start to begin stacking blocks.</p>
+                            <div class="overlay-actions">
+                                <button id="tetrisPrimaryButton" class="utility-button">Start Game</button>
+                                <button class="utility-button ghost" onclick="showMenu()">Back to Menu</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="tetris-side-panel">
+                    <div class="side-card">
+                        <p class="side-card-label">Next Piece</p>
+                        <canvas id="nextPieceCanvas" width="160" height="160"></canvas>
+                    </div>
+                    <div class="side-card">
+                        <p class="side-card-label">How to Play</p>
+                        <ul class="controls-list">
+                            <li>Stack falling tetrominoes to fill complete rows.</li>
+                            <li>Each cleared line boosts your score.</li>
+                            <li>The speed increases every 10 cleared lines.</li>
+                            <li>Don’t let the stack reach the top.</li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script src="main.js"></script>
+    <script src="snake.js"></script>
+    <script src="pong.js"></script>
+    <script src="tetris.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="tetris.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <main class="arcade-shell">
+        <section id="tetrisGameContainer" class="game-container" style="display: flex;">
+            <div class="game-header">
+                <div>
+                    <p class="game-kicker">Solo Arcade</p>
+                    <h1>Tetris</h1>
+                </div>
+            </div>
+
+            <div class="status-bar status-bar-wide">
+                <div class="tetris-stats-grid">
+                    <div id="tetrisScore" class="status-pill">Score: 0</div>
+                    <div id="tetrisLines" class="status-pill">Lines: 0</div>
+                    <div id="tetrisLevel" class="status-pill">Level: 1</div>
+                </div>
+                <div class="status-hint">←/→ move · ↑ rotate · ↓ soft drop · Space hard drop · P pause</div>
+            </div>
+
+            <div class="tetris-layout">
+                <div class="canvas-frame tetris-frame">
+                    <canvas id="tetrisCanvas" width="300" height="600"></canvas>
+                    <div id="tetris-overlay" class="tetris-overlay hidden">
+                        <div class="overlay-card tetris-overlay-card">
+                            <p id="tetrisOverlayTitle" class="overlay-title">Tetris</p>
+                            <p id="tetrisOverlayCopy" class="overlay-copy">Press Start to begin stacking blocks.</p>
+                            <div class="overlay-actions">
+                                <button id="tetrisPrimaryButton" class="utility-button">Start Game</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="tetris-side-panel">
+                    <div class="side-card">
+                        <p class="side-card-label">Next Piece</p>
+                        <canvas id="nextPieceCanvas" width="160" height="160"></canvas>
+                    </div>
+                    <div class="side-card">
+                        <p class="side-card-label">How to Play</p>
+                        <ul class="controls-list">
+                            <li>Stack falling tetrominoes to fill complete rows.</li>
+                            <li>Each cleared line boosts your score.</li>
+                            <li>The speed increases every 10 cleared lines.</li>
+                            <li>Don’t let the stack reach the top.</li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script src="tetris.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initTetris();
+        });
+    </script>
+</body>
+</html>

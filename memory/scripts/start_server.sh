@@ -35,5 +35,5 @@ echo "Install ling-mem (standalone):"
 echo "  curl -fsSL https://linggen.dev/install-mem.sh | bash"
 echo ""
 echo "Or install ling (Linggen Agent, includes memory management):"
-echo "  curl -fsSL https://linggen.dev/install-cli.sh | bash"
+echo "  curl -fsSL https://linggen.dev/install.sh | bash"
 exit 1
