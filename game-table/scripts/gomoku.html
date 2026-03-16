@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gomoku</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="gomoku.css">
+</head>
+<body>
+  <div class="header">
+    <button class="btn-back" id="back-btn">← Menu</button>
+    <h1>Gomoku (五子棋)</h1>
+    <div class="header-actions">
+      <span class="score-display" id="score-display">0 : 0</span>
+      <button class="btn btn-secondary btn-sm" id="new-game-btn">New Game</button>
+      <select id="model-switcher"></select>
+    </div>
+  </div>
+  <div class="game-container">
+    <div class="board-panel">
+      <canvas id="board-canvas" width="660" height="660"></canvas>
+    </div>
+    <div class="chat-panel" id="chat-panel"></div>
+  </div>
+  <script src="/sdk/linggen-ui.umd.js"></script>
+  <script type="module" src="gomoku.js"></script>
+</body>
+</html>

@@ -8,7 +8,7 @@ argument-hint: "find <query> | add <name> | list | packs | pack <id>"
 
 # Skiller — Skill Marketplace Manager
 
-Search, install, and manage skills from the online registry and GitHub.
+Search, install, and manage skills from GitHub via skills.sh.
 
 ## When To Use This Skill
 
@@ -29,11 +29,9 @@ SKILLER_SCRIPTS_DIR="$PWD/.claude/skills/skiller/scripts"
 
 ### 1. Search For Skills
 
-Search for skills in the Linggen registry and GitHub (via skills.sh):
+Search for skills on GitHub (via skills.sh):
 
 - `bash "$SKILLER_SCRIPTS_DIR/lookup_skills.sh" "<query>"`
-
-Searches the Linggen registry first, falls back to skills.sh if fewer than 10 results. Merges and de-duplicates.
 
 ### 2. Install A Skill
 
@@ -41,7 +39,7 @@ Install a skill from the marketplace (with confirmation):
 
 - `bash "$SKILLER_SCRIPTS_DIR/install_skill.sh" "<skill name or keyword>"`
 
-Downloads the skill from GitHub, extracts it to `.claude/skills/<name>/`, and records the install in the registry.
+Downloads the skill from GitHub, extracts it to `.claude/skills/<name>/`.
 
 ### 3. Browse Library Packs
 
@@ -64,13 +62,11 @@ Requires Linggen Memory server:
 
 Does not require server:
 
-- `lookup_skills.sh` (uses online registries; optionally queries local server for library packs)
+- `lookup_skills.sh` (uses skills.sh)
 - `install_skill.sh` (uses GitHub directly)
 - `config.sh`
 
 ## Operational Notes
 
 - Skills are installed to `.claude/skills/<name>/` in the current project.
-- The Linggen registry at `linggen-analytics.liangatbc.workers.dev` is the primary source.
-- GitHub skills via `skills.sh` are used as a fallback.
-- Install recording requires `LINGGEN_SKILLS_REGISTRY_API_KEY` environment variable.
+- GitHub skills are discovered via `skills.sh`.

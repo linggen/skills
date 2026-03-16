@@ -1,0 +1,691 @@
+// Gomoku (五子棋) — board, validation, rendering, AI integration
+import { fetchModels, fetchDefaultModel } from './api.js';
+
+// ── Constants ──────────────────────────────────────────────────────
+
+const SIZE = 15;          // 15×15 board
+const CELL = 40;          // px per cell
+const MARGIN = 30;        // board margin
+const STONE_R = 17;       // stone radius
+const SKILL_NAME = 'game-table';
+
+const EMPTY = 0, BLACK = 1, WHITE = 2;
+
+// ── State ──────────────────────────────────────────────────────────
+
+let board = [];
+let modelId = '';
+let waitingForAI = false;
+let gameOver = false;
+let isBoardMove = false;
+let retryCount = 0;
+let retryTimer = null;
+const MAX_RETRIES = 3;
+let scorePlayer = 0;
+let scoreAI = 0;
+let lastMove = null;
+let moveHistory = [];
+
+/** @type {ReturnType<typeof LinggenUI.mount> | null} */
+let chat = null;
+
+// ── DOM refs ───────────────────────────────────────────────────────
+
+const canvas = document.getElementById('board-canvas');
+const ctx = canvas.getContext('2d');
+const chatPanel = document.getElementById('chat-panel');
+const modelSwitcher = document.getElementById('model-switcher');
+const backBtn = document.getElementById('back-btn');
+const newGameBtn = document.getElementById('new-game-btn');
+const scoreDisplay = document.getElementById('score-display');
+
+// ── Init ───────────────────────────────────────────────────────────
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  modelId = params.get('model') || '';
+
+  try {
+    const [models, defaultModel] = await Promise.all([fetchModels(), fetchDefaultModel()]);
+    const preferred = modelId || defaultModel;
+    modelSwitcher.innerHTML = '';
+    for (const m of models) {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.id;
+      if (m.id === preferred) opt.selected = true;
+      modelSwitcher.appendChild(opt);
+    }
+    if (!modelId && preferred) modelId = preferred;
+  } catch { /* ignore */ }
+
+  modelSwitcher.addEventListener('change', () => {
+    modelId = modelSwitcher.value;
+    if (chat) chat.setOptions({ modelId });
+  });
+  backBtn.addEventListener('click', () => { window.location.href = 'index.html'; });
+  newGameBtn.addEventListener('click', startNewGame);
+  canvas.addEventListener('click', onBoardClick);
+  updateScoreDisplay();
+
+  await startNewGame();
+}
+
+async function startNewGame() {
+  board = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
+  waitingForAI = false;
+  gameOver = false;
+  retryCount = 0;
+  lastMove = null;
+  moveHistory = [];
+  drawBoard();
+
+  // Destroy old chat and mount fresh SDK panel
+  if (chat) chat.destroy();
+  chat = LinggenUI.mount(chatPanel, {
+    skillName: SKILL_NAME,
+    agentId: 'ling',
+    modelId,
+    title: 'Chat',
+    placeholder: 'Type a message...',
+    onSessionCreated: (sid) => {
+      const url = new URL(window.location);
+      url.searchParams.set('session', sid);
+      history.replaceState(null, '', url);
+    },
+    onStreamEnd: handleStreamEnd,
+  });
+
+  setTimeout(() => {
+    chat.addMessage('ai', 'Welcome to Gomoku (五子棋)! Get 5 stones in a row to win. You play Black (first move). Click any intersection to place your stone.');
+  }, 100);
+}
+
+// ── Board Rendering ────────────────────────────────────────────────
+
+function drawBoard() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.fillStyle = '#dcb35c';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < SIZE; i++) {
+    const pos = MARGIN + i * CELL;
+    ctx.beginPath();
+    ctx.moveTo(MARGIN, pos);
+    ctx.lineTo(MARGIN + (SIZE - 1) * CELL, pos);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(pos, MARGIN);
+    ctx.lineTo(pos, MARGIN + (SIZE - 1) * CELL);
+    ctx.stroke();
+  }
+
+  const stars = [[3,3],[3,11],[7,7],[11,3],[11,11]];
+  for (const [r, c] of stars) {
+    ctx.beginPath();
+    ctx.arc(MARGIN + c * CELL, MARGIN + r * CELL, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#333';
+    ctx.fill();
+  }
+
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (board[r][c] !== EMPTY) {
+        drawStone(r, c, board[r][c]);
+      }
+    }
+  }
+
+  if (lastMove) {
+    const [lr, lc] = lastMove;
+    const x = MARGIN + lc * CELL;
+    const y = MARGIN + lr * CELL;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = board[lr][lc] === BLACK ? '#fff' : '#e94560';
+    ctx.fill();
+  }
+}
+
+function drawStone(row, col, color) {
+  const x = MARGIN + col * CELL;
+  const y = MARGIN + row * CELL;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+
+  const grad = ctx.createRadialGradient(x - 4, y - 4, 2, x, y, STONE_R);
+  if (color === BLACK) {
+    grad.addColorStop(0, '#555');
+    grad.addColorStop(1, '#111');
+  } else {
+    grad.addColorStop(0, '#fff');
+    grad.addColorStop(1, '#ccc');
+  }
+
+  ctx.beginPath();
+  ctx.arc(x, y, STONE_R, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawStoneAt(x, y, color) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.4)';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 3;
+
+  const grad = ctx.createRadialGradient(x - 4, y - 4, 2, x, y, STONE_R);
+  if (color === BLACK) {
+    grad.addColorStop(0, '#555');
+    grad.addColorStop(1, '#111');
+  } else {
+    grad.addColorStop(0, '#fff');
+    grad.addColorStop(1, '#ccc');
+  }
+
+  ctx.beginPath();
+  ctx.arc(x, y, STONE_R, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── Animation ──────────────────────────────────────────────────────
+
+function animateDrop(row, col, color, callback) {
+  const x = MARGIN + col * CELL;
+  const yTarget = MARGIN + row * CELL;
+  const yStart = yTarget - 30;
+  const duration = 150;
+  const start = performance.now();
+
+  function frame(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = t < 0.6 ? (t / 0.6) * (t / 0.6) : 1 - Math.sin((t - 0.6) / 0.4 * Math.PI) * 0.08 * (1 - t);
+    const cy = yStart + (yTarget - yStart) * Math.min(ease, 1);
+
+    drawBoard();
+    drawStoneAt(x, cy, color);
+
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      callback();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ── Click Handling ─────────────────────────────────────────────────
+
+function onBoardClick(e) {
+  if (gameOver || waitingForAI) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+
+  const col = Math.round((mx - MARGIN) / CELL);
+  const row = Math.round((my - MARGIN) / CELL);
+
+  if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return;
+  if (board[row][col] !== EMPTY) return;
+
+  makeUserMove(row, col);
+}
+
+async function makeUserMove(row, col) {
+  waitingForAI = true;
+
+  await new Promise(resolve => {
+    animateDrop(row, col, BLACK, resolve);
+  });
+
+  board[row][col] = BLACK;
+  lastMove = [row, col];
+  moveHistory.push({ row, col, who: 'black' });
+  drawBoard();
+
+  const colLabel = String.fromCharCode(65 + col);
+  chat.addMessage('user', `${colLabel}${row + 1}`);
+
+  if (checkWin(board, row, col, BLACK)) {
+    gameOver = true;
+    waitingForAI = false;
+    chat.addMessage('system', 'Five in a row! You win!');
+    showGameOverOverlay('player');
+    return;
+  }
+
+  if (isBoardFull()) {
+    gameOver = true;
+    waitingForAI = false;
+    chat.addMessage('system', 'Board is full — draw!');
+    showGameOverOverlay('draw');
+    return;
+  }
+
+  isBoardMove = true;
+  const message = buildBoardMessage(row, col);
+  chat.send(message);
+}
+
+// ── Board Message for AI ───────────────────────────────────────────
+
+function buildBoardMessage(lastRow, lastCol) {
+  const colLabel = String.fromCharCode(65 + lastCol);
+
+  let boardStr = '   ' + Array.from({length: SIZE}, (_, i) => String.fromCharCode(65 + i)).join(' ') + '\n';
+  for (let r = 0; r < SIZE; r++) {
+    const label = String(r + 1).padStart(2);
+    const row = board[r].map(c => c === EMPTY ? '.' : c === BLACK ? 'X' : 'O').join(' ');
+    boardStr += `${label} ${row}\n`;
+  }
+
+  const playerThreats = findThreats(board, BLACK);
+  const aiThreats = findThreats(board, WHITE);
+  const urgentMoves = findUrgentMoves(board, WHITE);
+  const emptyNeighbors = getEmptyNearStones(board);
+
+  let urgentSection = '';
+  if (urgentMoves.length > 0) {
+    const lines = urgentMoves.map(m => `→ ${m.pos} (row ${m.row}, col ${m.col}): ${m.reason}`);
+    urgentSection = `\n### ⚠ URGENT — You MUST play one of these:\n${lines.join('\n')}\nIf there is a WIN move, play it. Otherwise block the opponent!\n`;
+  }
+
+  return `[BOARD_MOVE]
+## Gomoku (五子棋)
+You play WHITE (O). I play BLACK (X). First to get 5 in a row wins.
+Board is ${SIZE}×${SIZE}. Coordinates: column A-O, row 1-15.
+
+### Board
+${boardStr}
+### My Move
+${colLabel}${lastRow + 1}
+${urgentSection}${playerThreats.length > 0 ? `\n### Black Threats\n${playerThreats.join('\n')}` : ''}
+${aiThreats.length > 0 ? `\n### Your Patterns (White)\n${aiThreats.join('\n')}` : ''}
+
+### How to Pick Your Move
+1. If there are URGENT moves above, you MUST pick one of them.
+2. Otherwise: extend your own lines, create forks, play near center.
+3. Always play near existing stones.
+
+Pick from these available positions: ${emptyNeighbors.join(' ')}
+
+Write 1 sentence, then:
+[MOVE]{"row":r,"col":c}[/MOVE]
+where r is 0-14 and c is 0-14.`;
+}
+
+// ── Pattern Detection ──────────────────────────────────────────────
+
+const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+
+function checkWin(b, row, col, color) {
+  for (const [dr, dc] of DIRS) {
+    let count = 1;
+    for (let d = 1; d < 5; d++) {
+      const r = row + dr * d, c = col + dc * d;
+      if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && b[r][c] === color) count++;
+      else break;
+    }
+    for (let d = 1; d < 5; d++) {
+      const r = row - dr * d, c = col - dc * d;
+      if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && b[r][c] === color) count++;
+      else break;
+    }
+    if (count >= 5) return true;
+  }
+  return false;
+}
+
+function coord(r, c) { return `${String.fromCharCode(65 + c)}${r + 1}`; }
+
+function findThreats(b, color) {
+  const seen = new Set();
+  const threats = [];
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (b[r][c] !== color) continue;
+      for (const [dr, dc] of DIRS) {
+        let count = 1;
+        for (let d = 1; d < 5; d++) {
+          const nr = r + dr * d, nc = c + dc * d;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && b[nr][nc] === color) count++;
+          else break;
+        }
+        if (count < 3) continue;
+        const key = `${r},${c},${dr},${dc}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const endR = r + dr * count, endC = c + dc * count;
+        const startR = r - dr, startC = c - dc;
+        const endOpen = endR >= 0 && endR < SIZE && endC >= 0 && endC < SIZE && b[endR][endC] === EMPTY;
+        const startOpen = startR >= 0 && startR < SIZE && startC >= 0 && startC < SIZE && b[startR][startC] === EMPTY;
+        const openEnds = (endOpen ? 1 : 0) + (startOpen ? 1 : 0);
+        if (openEnds === 0) continue;
+
+        const label = color === BLACK ? 'X' : 'O';
+        const blockPositions = [];
+        if (endOpen) blockPositions.push(coord(endR, endC));
+        if (startOpen) blockPositions.push(coord(startR, startC));
+
+        if (count >= 4) {
+          threats.push(`⚠ FOUR-in-a-row (${label}) — ${openEnds === 2 ? 'OPEN FOUR, wins next turn!' : 'block at ' + blockPositions.join(' or ')}`);
+        } else {
+          threats.push(`Three (${label}) at ${coord(r, c)} — open ends: ${blockPositions.join(', ')}`);
+        }
+      }
+    }
+  }
+  return threats;
+}
+
+function findUrgentMoves(b, aiColor) {
+  const opponentColor = aiColor === WHITE ? BLACK : WHITE;
+  const urgent = [];
+
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (b[r][c] !== EMPTY) continue;
+      b[r][c] = aiColor;
+      if (checkWin(b, r, c, aiColor)) {
+        urgent.push({ pos: coord(r, c), row: r, col: c, priority: 0, reason: 'WIN — play here to get 5 in a row!' });
+      }
+      b[r][c] = EMPTY;
+    }
+  }
+  if (urgent.length > 0) return urgent;
+
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (b[r][c] !== EMPTY) continue;
+      b[r][c] = opponentColor;
+      if (checkWin(b, r, c, opponentColor)) {
+        urgent.push({ pos: coord(r, c), row: r, col: c, priority: 1, reason: 'MUST BLOCK — opponent wins here next turn!' });
+      }
+      b[r][c] = EMPTY;
+    }
+  }
+  if (urgent.length > 0) return urgent;
+
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (b[r][c] !== EMPTY) continue;
+      b[r][c] = opponentColor;
+      for (const [dr, dc] of DIRS) {
+        let count = 1;
+        for (let d = 1; d < 5; d++) {
+          const nr = r + dr * d, nc = c + dc * d;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && b[nr][nc] === opponentColor) count++;
+          else break;
+        }
+        for (let d = 1; d < 5; d++) {
+          const nr = r - dr * d, nc = c - dc * d;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && b[nr][nc] === opponentColor) count++;
+          else break;
+        }
+        if (count >= 4) {
+          urgent.push({ pos: coord(r, c), row: r, col: c, priority: 2, reason: 'Block — opponent creates four here' });
+          break;
+        }
+      }
+      b[r][c] = EMPTY;
+    }
+  }
+
+  return urgent;
+}
+
+function getEmptyNearStones(b) {
+  const near = new Set();
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (b[r][c] === EMPTY) continue;
+      for (let dr = -2; dr <= 2; dr++) {
+        for (let dc = -2; dc <= 2; dc++) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && b[nr][nc] === EMPTY) {
+            near.add(`${String.fromCharCode(65 + nc)}${nr + 1}`);
+          }
+        }
+      }
+    }
+  }
+  return [...near].sort();
+}
+
+function isBoardFull() {
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (board[r][c] === EMPTY) return false;
+    }
+  }
+  return true;
+}
+
+// ── AI Response Handling ──────────────────────────────────────────
+
+function handleStreamEnd(text) {
+  if (!isBoardMove) return; // regular chat — SDK handles it
+  if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+  handleAIResponse(text);
+}
+
+function handleAIResponse(text) {
+  const moveMatch = text.match(/\[MOVE\]([\s\S]*?)\[\/MOVE\]/);
+  if (!moveMatch) {
+    retryIllegalMove('Response did not contain a [MOVE] tag.');
+    return;
+  }
+
+  let row, col;
+  let errorReason = '';
+  try {
+    const move = JSON.parse(moveMatch[1].trim());
+    row = move.row;
+    col = move.col;
+    if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) {
+      errorReason = `Position [${row},${col}] is out of bounds.`;
+    } else if (board[row][col] !== EMPTY) {
+      errorReason = `Position ${String.fromCharCode(65 + col)}${row + 1} is already occupied.`;
+    }
+  } catch {
+    errorReason = 'Failed to parse [MOVE] JSON.';
+  }
+
+  if (errorReason) {
+    retryIllegalMove(errorReason);
+    return;
+  }
+
+  retryCount = 0;
+  let commentary = text.replace(/\[MOVE\][\s\S]*?\[\/MOVE\]/, '').trim();
+  if (commentary) {
+    const firstSentence = commentary.match(/^[^.!?]*[.!?]/);
+    commentary = firstSentence ? firstSentence[0].trim() : commentary.slice(0, 80);
+  }
+
+  animateDrop(row, col, WHITE, () => {
+    board[row][col] = WHITE;
+    lastMove = [row, col];
+    moveHistory.push({ row, col, who: 'white' });
+    drawBoard();
+
+    const colLabel = String.fromCharCode(65 + col);
+    const moveDesc = `${colLabel}${row + 1}`;
+    const aiMsg = commentary ? `${moveDesc} — ${commentary}` : moveDesc;
+    chat.addMessage('ai', aiMsg);
+
+    if (checkWin(board, row, col, WHITE)) {
+      gameOver = true;
+      chat.addMessage('system', 'Five in a row! AI wins!');
+      showGameOverOverlay('ai');
+    }
+
+    waitingForAI = false;
+    isBoardMove = false;
+  });
+}
+
+async function retryIllegalMove(reason) {
+  retryCount++;
+  if (retryCount > MAX_RETRIES) {
+    retryCount = 0;
+    const fallback = pickFallbackMove();
+    if (fallback) {
+      const [row, col] = fallback;
+      animateDrop(row, col, WHITE, () => {
+        board[row][col] = WHITE;
+        lastMove = [row, col];
+        moveHistory.push({ row, col, who: 'white' });
+        drawBoard();
+        const colLabel = String.fromCharCode(65 + col);
+        chat.addMessage('ai', `${colLabel}${row + 1}`);
+        if (checkWin(board, row, col, WHITE)) {
+          gameOver = true;
+          chat.addMessage('system', 'Five in a row! AI wins!');
+          showGameOverOverlay('ai');
+        }
+        waitingForAI = false;
+        isBoardMove = false;
+      });
+    } else {
+      gameOver = true;
+      waitingForAI = false;
+      isBoardMove = false;
+      chat.addMessage('system', 'Board is full — draw!');
+      showGameOverOverlay('draw');
+    }
+    return;
+  }
+
+  chat.addMessage('system', `AI made an invalid move (attempt ${retryCount}/${MAX_RETRIES}). Retrying...`);
+
+  let boardStr = '   ' + Array.from({length: SIZE}, (_, i) => String.fromCharCode(65 + i)).join(' ') + '\n';
+  for (let r = 0; r < SIZE; r++) {
+    const label = String(r + 1).padStart(2);
+    const row = board[r].map(c => c === EMPTY ? '.' : c === BLACK ? 'X' : 'O').join(' ');
+    boardStr += `${label} ${row}\n`;
+  }
+
+  const retryMsg = `[BOARD_MOVE]
+Your previous move was INVALID: ${reason}
+You MUST pick an empty position (marked . on the board).
+
+### Board
+${boardStr}
+### Available Positions Near Existing Stones
+${getEmptyNearStones(board).join(' ')}
+
+Pick a valid empty position. Respond with:
+[MOVE]{"row":r,"col":c}[/MOVE]`;
+
+  if (retryTimer) clearTimeout(retryTimer);
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    if (retryCount > 0) {
+      retryIllegalMove(reason);
+    }
+  }, 30000);
+
+  chat.send(retryMsg);
+}
+
+function pickFallbackMove() {
+  let best = null;
+  let bestScore = -Infinity;
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (board[r][c] !== EMPTY) continue;
+      let score = 0;
+      const distCenter = Math.abs(r - 7) + Math.abs(c - 7);
+      score -= distCenter;
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && board[nr][nc] !== EMPTY) {
+            score += 5;
+          }
+        }
+      }
+      score += Math.random() * 0.5;
+      if (score > bestScore) { bestScore = score; best = [r, c]; }
+    }
+  }
+  return best;
+}
+
+// ── Score & Game Over ──────────────────────────────────────────────
+
+function updateScoreDisplay() {
+  scoreDisplay.textContent = `${scorePlayer} : ${scoreAI}`;
+}
+
+function showGameOverOverlay(winner) {
+  const isWin = winner === 'player';
+  const isDraw = winner === 'draw';
+  if (isWin) scorePlayer++;
+  else if (!isDraw) scoreAI++;
+  updateScoreDisplay();
+  if (isWin) spawnConfetti();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'game-over-overlay';
+  overlay.innerHTML = `
+    <div class="game-over-card">
+      <div class="result-icon">${isWin ? '🎉' : isDraw ? '🤝' : '😔'}</div>
+      <div class="result-text">${isWin ? 'You Win!' : isDraw ? 'Draw!' : 'You Lose!'}</div>
+      <div class="result-sub">Score: ${scorePlayer} – ${scoreAI}</div>
+      <button class="btn btn-primary" id="overlay-new-game">New Game</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#overlay-new-game').addEventListener('click', () => {
+    overlay.remove();
+    document.querySelector('.confetti-container')?.remove();
+    startNewGame();
+  });
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+      document.querySelector('.confetti-container')?.remove();
+    }
+  });
+}
+
+function spawnConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6b9d','#c084fc','#fb923c'];
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+    piece.style.animationDelay = Math.random() * 1.5 + 's';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 5000);
+}
+
+// ── Start ──────────────────────────────────────────────────────────
+
+init();
