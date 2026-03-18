@@ -104,8 +104,11 @@ async function startNewGame() {
   retryCount = 0;
   drawBoard();
 
-  // Destroy old chat and mount fresh SDK panel
-  if (chat) chat.destroy();
+  // Clean up old session and mount fresh chat panel
+  if (chat) {
+    await chat.deleteSession();
+    chat.destroy();
+  }
   chat = await LinggenUI.mount(chatPanel, {
     skillName: SKILL_NAME,
     agentId: 'ling',
@@ -140,6 +143,9 @@ function showGameOverOverlay(winner) {
     scoreAI++;
   }
   updateScoreDisplay();
+
+  // Auto-delete session after game ends (delay so final messages flush)
+  if (chat) setTimeout(() => chat.deleteSession(), 2000);
 
   if (isWin) spawnConfetti();
 

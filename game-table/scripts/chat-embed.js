@@ -1,7 +1,7 @@
 // Drop-in replacement for the old LinggenUI SDK.
 // Renders a simple chat panel and drives it via api.js + SSE.
 
-import { createSession, sendChat, connectSSE } from './api.js';
+import { createSession, sendChat, connectSSE, removeSkillSession } from './api.js';
 import { renderMarkdown } from './markdown.js';
 import { showThinking, removeThinking } from './thinking.js';
 
@@ -260,6 +260,13 @@ async function mount(el, options) {
       if (evtSource) evtSource.close();
       removeThinking();
       root.remove();
+    },
+    /** Delete the current session from disk. Call before destroy() to clean up. */
+    async deleteSession() {
+      if (sessionId) {
+        try { await removeSkillSession(skillName, sessionId); } catch { /* ignore */ }
+        sessionId = null;
+      }
     },
     getSessionId() { return sessionId; },
     setOptions(opts) {
