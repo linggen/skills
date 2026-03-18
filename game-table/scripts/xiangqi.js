@@ -144,9 +144,6 @@ function showGameOverOverlay(winner) {
   }
   updateScoreDisplay();
 
-  // Auto-delete session after game ends (delay so final messages flush)
-  if (chat) setTimeout(() => chat.deleteSession(), 2000);
-
   if (isWin) spawnConfetti();
 
   const overlay = document.createElement('div');
