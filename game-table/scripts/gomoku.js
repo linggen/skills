@@ -27,7 +27,7 @@ let lastMove = null;
 let moveHistory = [];
 let assistLevel = 2;
 
-/** @type {ReturnType<typeof LinggenUI.mount> | null} */
+/** @type {Awaited<ReturnType<typeof LinggenUI.mount>> | null} */
 let chat = null;
 
 // ── DOM refs ───────────────────────────────────────────────────────
@@ -768,7 +768,7 @@ function isBoardFull() {
 // ── AI Response Handling ──────────────────────────────────────────
 
 function handleStreamEnd(text) {
-  if (!isBoardMove) return; // regular chat — SDK handles it
+  if (!isBoardMove) return; // regular chat — iframe handles display
   if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
   handleAIResponse(text);
 }

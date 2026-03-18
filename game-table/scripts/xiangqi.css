@@ -33,7 +33,7 @@
   font-size: 13px;
 }
 
-/* Chat panel — SDK renders inside this container */
+/* Chat panel — iframe mounts here via chat-bridge.js */
 .chat-panel {
   width: 360px;
   flex-shrink: 0;

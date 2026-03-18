@@ -43,7 +43,7 @@ const MAX_RETRIES = 3;
 let scorePlayer = 0;
 let scoreAI = 0;
 
-/** @type {ReturnType<typeof LinggenUI.mount> | null} */
+/** @type {Awaited<ReturnType<typeof LinggenUI.mount>> | null} */
 let chat = null;
 
 // ── DOM refs ───────────────────────────────────────────────────────
@@ -1128,7 +1128,7 @@ function checkKingCaptured() {
 // ── AI Response Handling ──────────────────────────────────────────
 
 function handleStreamEnd(text) {
-  if (!isBoardMove) return; // regular chat — SDK handles it
+  if (!isBoardMove) return; // regular chat — iframe handles display
   if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
   handleAIResponse(text);
 }
