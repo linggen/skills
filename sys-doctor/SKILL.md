@@ -29,10 +29,14 @@ Respond with `[DASHBOARD_UPDATE]` and `[RECOMMENDATIONS]` JSON tags.
 
 When you receive a scan mode argument (full, disk, apps, quick) WITHOUT `[SYS_SCAN]`:
 
-1. Run the appropriate Bash commands below to collect data
-2. Present findings as a readable text report with sections
-3. List recommendations with estimated savings and risk levels
-4. Keep it concise — 10-20 lines
+1. Start with a brief intro: "Running a **quick scan** — checking system info, disk usage, apps, and garbage candidates."
+2. Run the appropriate Bash commands below to collect data
+3. After all commands finish, start your report with what you did:
+   "Scanned: system info, disk usage, installed apps, large files, and garbage candidates."
+   List what succeeded and what was blocked/skipped.
+4. Present findings as a readable text report with sections: Summary, Notable Findings, Gaps, Recommendations
+5. List recommendations with estimated savings and risk levels
+6. Keep it concise — 15-25 lines
 
 ## Dashboard mode
 
