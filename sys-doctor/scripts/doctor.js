@@ -94,8 +94,7 @@ function startScan() {
   completedSteps = new Set();
   setScanStatus('scanning', 'Scanning...');
   showScanProgress();
-  // Use [BOARD_MOVE] prefix so SDK hides this message from chat UI
-  chat.send(`[BOARD_MOVE] [SYS_SCAN] ${scanType}`);
+  chat.send(`[SYS_SCAN] ${scanType}`);
 }
 
 function setScanStatus(cls, text) {
