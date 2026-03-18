@@ -46,6 +46,25 @@ echo "$SKILLS_SH_RESPONSE" | jq -r '
       end
 '
 
+echo ""
+echo "## ClawHub Skills matching: $QUERY"
+echo ""
+
+CLAWHUB_RESPONSE=$(curl -s -X GET "$CLAWHUB_URL/search?q=$ENC_QUERY&limit=20&nonSuspiciousOnly=true" | tr -d '\000' 2>/dev/null || true)
+if [ -n "$CLAWHUB_RESPONSE" ] && echo "$CLAWHUB_RESPONSE" | jq -e . >/dev/null 2>&1; then
+    echo "$CLAWHUB_RESPONSE" | jq -r '
+        .results // []
+        | .[0:20]
+        | if length == 0 then
+            "No matching skills found on ClawHub."
+          else
+            .[] | "### \(.displayName // .slug)\n- Slug: \(.slug)\n- Summary: \(.summary // "No description")\n- URL: https://clawhub.ai/skills/\(.slug)\n"
+          end
+    '
+else
+    echo "Could not connect to ClawHub."
+fi
+
 # Also try local library packs if server is running
 LIB_RESPONSE=$(curl -s -X GET "$API_URL/api/library" 2>/dev/null | tr -d '\000' || true)
 if [ -n "$LIB_RESPONSE" ] && echo "$LIB_RESPONSE" | jq -e . >/dev/null 2>&1; then

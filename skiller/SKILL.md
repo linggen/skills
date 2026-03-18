@@ -1,6 +1,6 @@
 ---
 name: skiller
-description: Search, install, and manage skills from the marketplace. Browse library packs.
+description: Search, install, and manage skills from the marketplace (skills.sh + ClawHub). Browse library packs.
 user-invocable: true
 allowed-tools: [Bash, Read]
 argument-hint: "find <query> | add <name> | list | packs | pack <id>"
@@ -8,7 +8,7 @@ argument-hint: "find <query> | add <name> | list | packs | pack <id>"
 
 # Skiller — Skill Marketplace Manager
 
-Search, install, and manage skills from GitHub via skills.sh.
+Search, install, and manage skills from GitHub via skills.sh and ClawHub.
 
 ## When To Use This Skill
 
@@ -29,7 +29,7 @@ SKILLER_SCRIPTS_DIR="$PWD/.claude/skills/skiller/scripts"
 
 ### 1. Search For Skills
 
-Search for skills on GitHub (via skills.sh):
+Search for skills on GitHub (via skills.sh) and ClawHub:
 
 - `bash "$SKILLER_SCRIPTS_DIR/lookup_skills.sh" "<query>"`
 
@@ -70,3 +70,6 @@ Does not require server:
 
 - Skills are installed to `.claude/skills/<name>/` in the current project.
 - GitHub skills are discovered via `skills.sh`.
+- Community skills also search ClawHub (clawhub.ai).
+- ClawHub skills include security scan data (VirusTotal + LLM analysis).
+- Set `LINGGEN_SKILL_SOURCE=clawhub` to install directly from ClawHub.

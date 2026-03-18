@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sys Doctor</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="doctor.css">
+</head>
+<body>
+  <div class="header">
+    <button class="btn-back" id="back-btn">&larr; Menu</button>
+    <h1>Sys Doctor</h1>
+    <div class="header-actions">
+      <span class="scan-status" id="scan-status">Ready</span>
+      <button class="btn btn-primary btn-sm" id="scan-btn">Re-scan</button>
+      <select id="model-switcher"></select>
+    </div>
+  </div>
+
+  <div class="doctor-container">
+    <!-- Left: Dashboard -->
+    <div class="dashboard-panel" id="dashboard">
+      <!-- Summary cards -->
+      <div class="summary-cards" id="summary-cards">
+        <div class="card" id="card-disk">
+          <div class="card-label">Disk</div>
+          <div class="card-value" id="val-disk">--</div>
+          <div class="card-sub" id="sub-disk"></div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-disk"></div></div>
+        </div>
+        <div class="card" id="card-memory">
+          <div class="card-label">Memory</div>
+          <div class="card-value" id="val-memory">--</div>
+          <div class="card-sub" id="sub-memory"></div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-memory"></div></div>
+        </div>
+        <div class="card" id="card-cpu">
+          <div class="card-label">CPU</div>
+          <div class="card-value" id="val-cpu">--</div>
+          <div class="card-sub" id="sub-cpu"></div>
+        </div>
+        <div class="card" id="card-os">
+          <div class="card-label">System</div>
+          <div class="card-value" id="val-os">--</div>
+          <div class="card-sub" id="sub-os"></div>
+        </div>
+      </div>
+
+      <!-- Disk usage chart -->
+      <div class="panel" id="disk-panel">
+        <div class="panel-header">
+          <h3>Disk Usage</h3>
+          <span class="panel-badge" id="disk-badge"></span>
+        </div>
+        <canvas id="disk-chart" width="700" height="280"></canvas>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="panel" id="recs-panel" style="display:none">
+        <div class="panel-header">
+          <h3>Recommendations</h3>
+          <span class="panel-badge" id="recs-badge"></span>
+        </div>
+        <div id="recs-list"></div>
+      </div>
+
+      <!-- App inventory -->
+      <div class="panel" id="apps-panel" style="display:none">
+        <div class="panel-header">
+          <h3>Installed Software</h3>
+        </div>
+        <div class="apps-grid" id="apps-grid"></div>
+      </div>
+
+      <!-- Garbage breakdown -->
+      <div class="panel" id="garbage-panel" style="display:none">
+        <div class="panel-header">
+          <h3>Reclaimable Space</h3>
+          <span class="panel-badge" id="garbage-badge"></span>
+        </div>
+        <div id="garbage-list"></div>
+      </div>
+    </div>
+
+    <!-- Right: Chat -->
+    <div class="chat-panel" id="chat-panel"></div>
+  </div>
+
+  <script src="/sdk/linggen-ui.umd.js"></script>
+  <script type="module" src="doctor.js"></script>
+</body>
+</html>

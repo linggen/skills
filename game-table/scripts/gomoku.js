@@ -25,6 +25,7 @@ let scorePlayer = 0;
 let scoreAI = 0;
 let lastMove = null;
 let moveHistory = [];
+let assistLevel = 2;
 
 /** @type {ReturnType<typeof LinggenUI.mount> | null} */
 let chat = null;
@@ -38,6 +39,7 @@ const modelSwitcher = document.getElementById('model-switcher');
 const backBtn = document.getElementById('back-btn');
 const newGameBtn = document.getElementById('new-game-btn');
 const scoreDisplay = document.getElementById('score-display');
+const assistLevelSel = document.getElementById('assist-level');
 
 // ── Init ───────────────────────────────────────────────────────────
 
@@ -63,6 +65,9 @@ async function init() {
     modelId = modelSwitcher.value;
     if (chat) chat.setOptions({ modelId });
   });
+  assistLevelSel.addEventListener('change', () => {
+    assistLevel = parseInt(assistLevelSel.value, 10);
+  });
   backBtn.addEventListener('click', () => { window.location.href = 'index.html'; });
   newGameBtn.addEventListener('click', startNewGame);
   canvas.addEventListener('click', onBoardClick);
@@ -82,7 +87,7 @@ async function startNewGame() {
 
   // Destroy old chat and mount fresh SDK panel
   if (chat) chat.destroy();
-  chat = LinggenUI.mount(chatPanel, {
+  chat = await LinggenUI.mount(chatPanel, {
     skillName: SKILL_NAME,
     agentId: 'ling',
     modelId,
@@ -98,7 +103,7 @@ async function startNewGame() {
 
   setTimeout(() => {
     chat.addMessage('ai', 'Welcome to Gomoku (五子棋)! Get 5 stones in a row to win. You play Black (first move). Click any intersection to place your stone.');
-  }, 100);
+  }, 500);
 }
 
 // ── Board Rendering ────────────────────────────────────────────────
@@ -284,6 +289,36 @@ async function makeUserMove(row, col) {
 // ── Board Message for AI ───────────────────────────────────────────
 
 function buildBoardMessage(lastRow, lastCol) {
+  if (assistLevel === 1) return buildBoardMessageL1(lastRow, lastCol);
+  if (assistLevel === 3) return buildBoardMessageL3(lastRow, lastCol);
+  return buildBoardMessageL2(lastRow, lastCol);
+}
+
+function buildBoardMessageL1(lastRow, lastCol) {
+  const colLabel = String.fromCharCode(65 + lastCol);
+
+  let boardStr = '   ' + Array.from({length: SIZE}, (_, i) => String.fromCharCode(65 + i)).join(' ') + '\n';
+  for (let r = 0; r < SIZE; r++) {
+    const label = String(r + 1).padStart(2);
+    const row = board[r].map(c => c === EMPTY ? '.' : c === BLACK ? 'X' : 'O').join(' ');
+    boardStr += `${label} ${row}\n`;
+  }
+
+  return `[BOARD_MOVE]
+## Gomoku
+You play WHITE (O). I play BLACK (X). 15×15 board. 5 in a row wins.
+
+### Board
+${boardStr}
+### My Move
+${colLabel}${lastRow + 1}
+
+Write 1 sentence, then:
+[MOVE]{"row":r,"col":c}[/MOVE]
+(r and c are 0-14, position must be empty)`;
+}
+
+function buildBoardMessageL2(lastRow, lastCol) {
   const colLabel = String.fromCharCode(65 + lastCol);
 
   let boardStr = '   ' + Array.from({length: SIZE}, (_, i) => String.fromCharCode(65 + i)).join(' ') + '\n';
@@ -326,6 +361,255 @@ Pick from these available positions: ${emptyNeighbors.join(' ')}
 Write 1 sentence, then:
 [MOVE]{"row":r,"col":c}[/MOVE]
 where r is 0-14 and c is 0-14.`;
+}
+
+// ── L3 Strategist Helpers ─────────────────────────────────────────
+
+function classifyLine(count, openEnds) {
+  if (count >= 5) return { name: 'FIVE', score: 100000 };
+  if (count === 4 && openEnds === 2) return { name: 'OPEN_FOUR', score: 10000 };
+  if (count === 4 && openEnds === 1) return { name: 'CLOSED_FOUR', score: 5000 };
+  if (count === 3 && openEnds === 2) return { name: 'OPEN_THREE', score: 1000 };
+  if (count === 3 && openEnds === 1) return { name: 'CLOSED_THREE', score: 200 };
+  if (count === 2 && openEnds === 2) return { name: 'OPEN_TWO', score: 100 };
+  return null;
+}
+
+function scorePosition(b, r, c, color) {
+  let total = 0;
+  const patterns = [];
+  for (const [dr, dc] of DIRS) {
+    let count = 1;
+    let openEnds = 0;
+
+    // Count forward
+    let fr = r + dr, fc = c + dc;
+    while (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && b[fr][fc] === color) {
+      count++;
+      fr += dr;
+      fc += dc;
+    }
+    if (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && b[fr][fc] === EMPTY) openEnds++;
+
+    // Count backward
+    let br_ = r - dr, bc = c - dc;
+    while (br_ >= 0 && br_ < SIZE && bc >= 0 && bc < SIZE && b[br_][bc] === color) {
+      count++;
+      br_ -= dr;
+      bc -= dc;
+    }
+    if (br_ >= 0 && br_ < SIZE && bc >= 0 && bc < SIZE && b[br_][bc] === EMPTY) openEnds++;
+
+    const cl = classifyLine(count, openEnds);
+    if (cl) {
+      total += cl.score;
+      patterns.push(`${cl.name}(${cl.score})`);
+    }
+  }
+  return { total, patterns };
+}
+
+function getEmptyNearStonesPositions(b) {
+  const near = [];
+  const seen = new Set();
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      if (b[r][c] === EMPTY) continue;
+      for (let dr = -2; dr <= 2; dr++) {
+        for (let dc = -2; dc <= 2; dc++) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && b[nr][nc] === EMPTY) {
+            const key = nr * SIZE + nc;
+            if (!seen.has(key)) {
+              seen.add(key);
+              near.push([nr, nc]);
+            }
+          }
+        }
+      }
+    }
+  }
+  return near;
+}
+
+function getTopCandidates(b, n = 10) {
+  const positions = getEmptyNearStonesPositions(b);
+  const candidates = [];
+  for (const [r, c] of positions) {
+    b[r][c] = WHITE;
+    const wScore = scorePosition(b, r, c, WHITE);
+    b[r][c] = BLACK;
+    const bScore = scorePosition(b, r, c, BLACK);
+    b[r][c] = EMPTY;
+    const combined = wScore.total + bScore.total * 1.1;
+    candidates.push({
+      r, c,
+      label: coord(r, c),
+      whitePatterns: wScore.patterns,
+      blackPatterns: bScore.patterns,
+      whiteScore: wScore.total,
+      blackScore: bScore.total,
+      combined,
+    });
+  }
+  candidates.sort((a, b) => b.combined - a.combined);
+  return candidates.slice(0, n);
+}
+
+function detectForks(b, color) {
+  const positions = getEmptyNearStonesPositions(b);
+  const forks = [];
+  for (const [r, c] of positions) {
+    b[r][c] = color;
+    let threats = [];
+    for (const [dr, dc] of DIRS) {
+      let count = 1;
+      let openEnds = 0;
+
+      let fr = r + dr, fc = c + dc;
+      while (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && b[fr][fc] === color) {
+        count++;
+        fr += dr;
+        fc += dc;
+      }
+      if (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && b[fr][fc] === EMPTY) openEnds++;
+
+      let br_ = r - dr, bc = c - dc;
+      while (br_ >= 0 && br_ < SIZE && bc >= 0 && bc < SIZE && b[br_][bc] === color) {
+        count++;
+        br_ -= dr;
+        bc -= dc;
+      }
+      if (br_ >= 0 && br_ < SIZE && bc >= 0 && bc < SIZE && b[br_][bc] === EMPTY) openEnds++;
+
+      const cl = classifyLine(count, openEnds);
+      if (cl && (cl.name === 'OPEN_THREE' || cl.name === 'CLOSED_FOUR' || cl.name === 'OPEN_FOUR' || cl.name === 'FIVE')) {
+        threats.push(cl.name);
+      }
+    }
+    b[r][c] = EMPTY;
+
+    if (threats.length >= 2) {
+      let type;
+      const hasThree = threats.some(t => t.includes('THREE'));
+      const hasFour = threats.some(t => t.includes('FOUR'));
+      if (hasFour && hasThree) type = 'four-three';
+      else if (hasFour) type = 'double-four';
+      else type = 'double-three';
+      forks.push({ pos: coord(r, c), row: r, col: c, type, threats });
+    }
+  }
+  return forks;
+}
+
+function findMultiBlockMoves(b, aiColor) {
+  const opponentColor = aiColor === WHITE ? BLACK : WHITE;
+  const positions = getEmptyNearStonesPositions(b);
+  const results = [];
+  for (const [r, c] of positions) {
+    // Count how many opponent threat lines this position blocks
+    let blocked = 0;
+    const reasons = [];
+    b[r][c] = opponentColor;
+    for (const [dr, dc] of DIRS) {
+      let count = 1;
+      let openEnds = 0;
+
+      let fr = r + dr, fc = c + dc;
+      while (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && b[fr][fc] === opponentColor) {
+        count++;
+        fr += dr;
+        fc += dc;
+      }
+      if (fr >= 0 && fr < SIZE && fc >= 0 && fc < SIZE && b[fr][fc] === EMPTY) openEnds++;
+
+      let br_ = r - dr, bc = c - dc;
+      while (br_ >= 0 && br_ < SIZE && bc >= 0 && bc < SIZE && b[br_][bc] === opponentColor) {
+        count++;
+        br_ -= dr;
+        bc -= dc;
+      }
+      if (br_ >= 0 && br_ < SIZE && bc >= 0 && bc < SIZE && b[br_][bc] === EMPTY) openEnds++;
+
+      const cl = classifyLine(count, openEnds);
+      if (cl && (cl.name === 'OPEN_THREE' || cl.name === 'CLOSED_FOUR' || cl.name === 'OPEN_FOUR')) {
+        blocked++;
+        reasons.push(cl.name);
+      }
+    }
+    b[r][c] = EMPTY;
+
+    if (blocked >= 2) {
+      results.push({ pos: coord(r, c), row: r, col: c, blocked, reasons });
+    }
+  }
+  return results;
+}
+
+function buildBoardMessageL3(lastRow, lastCol) {
+  const colLabel = String.fromCharCode(65 + lastCol);
+
+  let boardStr = '   ' + Array.from({length: SIZE}, (_, i) => String.fromCharCode(65 + i)).join(' ') + '\n';
+  for (let r = 0; r < SIZE; r++) {
+    const label = String(r + 1).padStart(2);
+    const row = board[r].map(c => c === EMPTY ? '.' : c === BLACK ? 'X' : 'O').join(' ');
+    boardStr += `${label} ${row}\n`;
+  }
+
+  const urgentMoves = findUrgentMoves(board, WHITE);
+  const forks = detectForks(board, BLACK);
+  const multiBlock = findMultiBlockMoves(board, WHITE);
+  const topCandidates = getTopCandidates(board);
+  const playerThreats = findThreats(board, BLACK);
+  const aiThreats = findThreats(board, WHITE);
+  const emptyNeighbors = getEmptyNearStones(board);
+
+  let urgentSection = '';
+  if (urgentMoves.length > 0) {
+    const lines = urgentMoves.map(m => `→ ${m.pos} (row ${m.row}, col ${m.col}): ${m.reason}`);
+    urgentSection += lines.join('\n') + '\n';
+  }
+  if (forks.length > 0) {
+    urgentSection += forks.map(f => `⚠ Fork threat: ${f.pos} — ${f.type} (${f.threats.join(', ')})`).join('\n') + '\n';
+  }
+  if (multiBlock.length > 0) {
+    urgentSection += multiBlock.map(m => `🛡 Multi-block: ${m.pos} blocks ${m.blocked} threats (${m.reasons.join(', ')})`).join('\n') + '\n';
+  }
+
+  let candidatesSection = '';
+  if (topCandidates.length > 0) {
+    candidatesSection = topCandidates.map((c, i) => {
+      const wPat = c.whitePatterns.length > 0 ? c.whitePatterns.join(', ') : 'none';
+      const bPat = c.blackPatterns.length > 0 ? c.blackPatterns.join(', ') : 'none';
+      return `${i + 1}. ${c.label} — W: ${wPat} B: ${bPat} combined: ${Math.round(c.combined)}`;
+    }).join('\n');
+  }
+
+  let threatSection = '';
+  if (playerThreats.length > 0) threatSection += `\n### Black Threats\n${playerThreats.join('\n')}`;
+  if (aiThreats.length > 0) threatSection += `\n### Your Patterns (White)\n${aiThreats.join('\n')}`;
+
+  return `[BOARD_MOVE]
+## Gomoku
+You play WHITE (O). I play BLACK (X). 15×15 board. 5 in a row wins.
+
+### Board
+${boardStr}
+### My Move
+${colLabel}${lastRow + 1}
+
+### ⚠ URGENT
+${urgentSection || '(none)'}
+
+### Top Candidates (by position score)
+${candidatesSection || '(none)'}
+${threatSection}
+
+Pick from: ${emptyNeighbors.join(' ')}
+
+Write 1 sentence, then:
+[MOVE]{"row":r,"col":c}[/MOVE]
+(r and c are 0-14, position must be empty)`;
 }
 
 // ── Pattern Detection ──────────────────────────────────────────────

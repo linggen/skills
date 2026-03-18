@@ -10,6 +10,136 @@ if [ -z "$QUERY" ]; then
     exit 1
 fi
 
+# Check if source is ClawHub
+if [ "${LINGGEN_SKILL_SOURCE:-}" = "clawhub" ]; then
+    SLUG="$QUERY"
+
+    # Validate slug contains only safe characters
+    if ! echo "$SLUG" | grep -qE '^[a-zA-Z0-9_-]+$'; then
+        echo "Error: Invalid skill slug '$SLUG'. Only alphanumeric, hyphens, and underscores allowed."
+        exit 1
+    fi
+
+    # Cleanup trap for temp files
+    TMP_FILES_TO_CLEAN=()
+    cleanup_clawhub() { rm -f "${TMP_FILES_TO_CLEAN[@]}"; }
+    trap cleanup_clawhub EXIT
+
+    # Fetch security scan first
+    echo "## Security Scan"
+    echo ""
+    SCAN_RESPONSE=$(curl -s -X GET "$CLAWHUB_URL/skills/$SLUG/scan" 2>/dev/null || true)
+    if [ -n "$SCAN_RESPONSE" ] && echo "$SCAN_RESPONSE" | jq -e . >/dev/null 2>&1; then
+        VERDICT=$(echo "$SCAN_RESPONSE" | jq -r '.security.status // "unknown"')
+        IS_MALWARE=$(echo "$SCAN_RESPONSE" | jq -r '.moderation.isMalwareBlocked // false')
+        IS_SUSPICIOUS=$(echo "$SCAN_RESPONSE" | jq -r '.moderation.isSuspicious // false')
+        IS_PENDING=$(echo "$SCAN_RESPONSE" | jq -r '.moderation.isPendingScan // false')
+
+        if [ "$IS_MALWARE" = "true" ]; then
+            echo "BLOCKED: This skill has been flagged as malicious. Installation aborted."
+            exit 1
+        fi
+        if [ "$IS_PENDING" = "true" ]; then
+            echo "WARNING: Security scan is still pending. Install at your own risk."
+        fi
+        if [ "$IS_SUSPICIOUS" = "true" ]; then
+            echo "WARNING: This skill has been flagged as suspicious. Review carefully."
+        fi
+        echo "Security status: $VERDICT"
+    else
+        echo "WARNING: Could not fetch security scan. Install at your own risk."
+    fi
+    echo ""
+
+    # Download from ClawHub
+    ENC_SLUG=$(python3 -c "import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1],safe=''))" "$SLUG")
+    DOWNLOAD_URL="$CLAWHUB_URL/download?slug=$ENC_SLUG"
+    TMP_ZIP=$(mktemp)
+    TMP_FILES_TO_CLEAN+=("$TMP_ZIP")
+
+    spinner() {
+        local pid="$1"
+        local msg="$2"
+        local spin='|/-\\'
+        local i=0
+        printf "%s " "$msg"
+        while kill -0 "$pid" 2>/dev/null; do
+            i=$(( (i + 1) % 4 ))
+            printf "\b%s" "${spin:$i:1}"
+            sleep 0.1
+        done
+        printf "\b done\n"
+    }
+
+    curl -s -L -o "$TMP_ZIP" "$DOWNLOAD_URL" &
+    DL_PID=$!
+    spinner "$DL_PID" "Downloading from ClawHub"
+    set +e
+    wait "$DL_PID"
+    DL_RC=$?
+    set -e
+    if [ $DL_RC -ne 0 ] || [ ! -s "$TMP_ZIP" ]; then
+        echo "Error: Failed to download from ClawHub"
+        exit 1
+    fi
+
+    # Validate target dir path — slug was already validated above
+    TARGET_DIR="$WORKSPACE_ROOT/.claude/skills/$SLUG"
+    rm -rf "$TARGET_DIR"
+    mkdir -p "$TARGET_DIR"
+
+    # ClawHub ZIPs have flat structure — extract all files
+    PY_EXTRACT=$(mktemp)
+    TMP_FILES_TO_CLEAN+=("$PY_EXTRACT")
+    cat > "$PY_EXTRACT" <<'PY'
+import os
+import sys
+import zipfile
+
+zip_path = sys.argv[1]
+target_dir = sys.argv[2]
+
+with zipfile.ZipFile(zip_path, "r") as zf:
+    entries = zf.namelist()
+    # Find SKILL.md to determine root
+    skill_root = ""
+    for name in entries:
+        if name.endswith("/SKILL.md") or name.endswith("/skill.md") or name == "SKILL.md":
+            skill_root = os.path.dirname(name)
+            break
+
+    prefix = (skill_root + "/") if skill_root else ""
+    for name in entries:
+        if prefix and not name.startswith(prefix):
+            continue
+        if name.endswith("/"):
+            continue
+        rel = name[len(prefix):] if prefix else name
+        if not rel or ".." in rel or rel.startswith("/"):
+            continue
+        dest = os.path.join(target_dir, rel)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        with zf.open(name) as src, open(dest, "wb") as dst:
+            dst.write(src.read())
+PY
+
+    python3 "$PY_EXTRACT" "$TMP_ZIP" "$TARGET_DIR" &
+    EX_PID=$!
+    spinner "$EX_PID" "Extracting skill files"
+    set +e
+    wait "$EX_PID"
+    RESULT=$?
+    set -e
+
+    if [ $RESULT -ne 0 ]; then
+        echo "Error: Failed to extract skill from ClawHub ZIP."
+        exit 1
+    fi
+
+    echo "Skill installed to .claude/skills/$SLUG (from ClawHub)"
+    exit 0
+fi
+
 ENC_QUERY=$(python3 - "$QUERY" <<'PY'
 import sys, urllib.parse
 print(urllib.parse.quote(sys.argv[1], safe=""))
