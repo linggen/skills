@@ -39,6 +39,7 @@ const modelSwitcher = document.getElementById('model-switcher');
 const backBtn = document.getElementById('back-btn');
 const newGameBtn = document.getElementById('new-game-btn');
 const scoreDisplay = document.getElementById('score-display');
+const turnIndicator = document.getElementById('turn-indicator');
 const assistLevelSel = document.getElementById('assist-level');
 
 // ── Init ───────────────────────────────────────────────────────────
@@ -112,6 +113,7 @@ async function startNewGame() {
 // ── Board Rendering ────────────────────────────────────────────────
 
 function drawBoard() {
+  updateTurnIndicator();
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
@@ -919,6 +921,19 @@ function pickFallbackMove() {
 
 function updateScoreDisplay() {
   scoreDisplay.textContent = `${scorePlayer} : ${scoreAI}`;
+}
+
+function updateTurnIndicator() {
+  if (gameOver) {
+    turnIndicator.textContent = 'Game Over';
+    turnIndicator.className = 'turn-indicator game-over';
+  } else if (waitingForAI) {
+    turnIndicator.textContent = 'AI thinking...';
+    turnIndicator.className = 'turn-indicator ai-turn';
+  } else {
+    turnIndicator.textContent = 'Your turn';
+    turnIndicator.className = 'turn-indicator';
+  }
 }
 
 function showGameOverOverlay(winner) {

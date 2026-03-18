@@ -56,6 +56,7 @@ const assistLevelSel = document.getElementById('assist-level');
 const backBtn = document.getElementById('back-btn');
 const newGameBtn = document.getElementById('new-game-btn');
 const scoreDisplay = document.getElementById('score-display');
+const turnIndicator = document.getElementById('turn-indicator');
 
 // ── Init ───────────────────────────────────────────────────────────
 
@@ -131,6 +132,19 @@ async function startNewGame() {
 
 function updateScoreDisplay() {
   scoreDisplay.textContent = `${scorePlayer} : ${scoreAI}`;
+}
+
+function updateTurnIndicator() {
+  if (gameOver) {
+    turnIndicator.textContent = 'Game Over';
+    turnIndicator.className = 'turn-indicator game-over';
+  } else if (waitingForAI) {
+    turnIndicator.textContent = 'AI thinking...';
+    turnIndicator.className = 'turn-indicator ai-turn';
+  } else {
+    turnIndicator.textContent = 'Your turn';
+    turnIndicator.className = 'turn-indicator';
+  }
 }
 
 function showGameOverOverlay(winner) {
@@ -260,6 +274,7 @@ function drawPieceAt(x, y, piece) {
 // ── Board Rendering ────────────────────────────────────────────────
 
 function drawBoard() {
+  updateTurnIndicator();
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
@@ -540,6 +555,12 @@ function buildBoardMessageL3(userMoveDesc, boardStr) {
   const myThreats = threatenedPieces(board, false);
   const enemyThreats = threatenedPieces(board, true);
 
+  // Minimax engine — compute top 3 moves
+  const topMoves = engineTopMoves(board, 3, 3);
+  const engineSection = topMoves.length > 0
+    ? topMoves.map((m, i) => `${i + 1}. ${m.desc}  (score: ${m.score > 0 ? '+' : ''}${m.score})`).join('\n')
+    : '(no moves available)';
+
   // L3-specific analyses
   const blackMobility = computeMobilityTable(board, false);
   const redMobility = computeMobilityTable(board, true);
@@ -647,15 +668,11 @@ ${kingSafetyStr}
 ### Center Control
 ${centerStr}${pinsStr}${capturesStr}${tacticsStr}
 
-### Think Before You Move
-Analyze the position step by step:
-1. Check threats — are any of your pieces attacked? What did the opponent's last move threaten?
-2. Look at captures — can you win material? Will your piece be safe after capturing?
-3. Look for checks, forks (one piece attacking two), and pins.
-4. Consider your opponent's responses — don't hang pieces.
-5. If no tactics exist, improve your position (develop rooks, advance pawns across river, centralize horses).
+### ⭐ Engine Recommended Moves (depth-3 search)
+${engineSection}
 
-Write your analysis (2-3 sentences), then your move:
+You SHOULD pick one of the engine-recommended moves above.
+Write 1-2 sentences explaining your choice, then:
 [MOVE]{"from":[r,c],"to":[r,c]}[/MOVE]`;
 }
 
@@ -1439,6 +1456,232 @@ function pawnMoves(b, r, c, red) {
     }
   }
   return moves;
+}
+
+// ── Minimax Engine ────────────────────────────────────────────────
+// Alpha-beta search for Chinese Chess. Used in Strategist mode (L3)
+// to give the LLM pre-computed best moves.
+
+// Positional bonus tables (row-major, Black's perspective: row 0=top)
+// Encourages pieces toward strong squares.
+const POS_BONUS = {
+  // Rook: prefer open files, central, and deep penetration
+  R: [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [2,4,4,6,8,6,4,4,2],
+    [2,4,6,8,10,8,6,4,2],
+    [4,6,8,10,12,10,8,6,4],
+    [4,6,8,10,12,10,8,6,4],
+    [2,4,6,8,10,8,6,4,2],
+  ],
+  // Horse: central, across river is strong
+  H: [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,2,4,4,4,2,0,0],
+    [0,2,4,6,6,6,4,2,0],
+    [0,2,6,8,8,8,6,2,0],
+    [0,4,6,8,10,8,6,4,0],
+    [0,4,8,10,12,10,8,4,0],
+    [0,2,6,8,10,8,6,2,0],
+    [0,0,4,6,8,6,4,0,0],
+    [0,0,2,4,4,4,2,0,0],
+    [0,0,0,0,0,0,0,0,0],
+  ],
+  // Cannon: middle files, behind pieces for jumping
+  C: [
+    [0,0,2,4,4,4,2,0,0],
+    [0,0,2,4,6,4,2,0,0],
+    [0,2,4,6,6,6,4,2,0],
+    [0,2,4,6,6,6,4,2,0],
+    [0,2,4,6,6,6,4,2,0],
+    [2,4,6,8,10,8,6,4,2],
+    [2,4,4,6,8,6,4,4,2],
+    [0,2,2,4,6,4,2,2,0],
+    [0,0,0,2,4,2,0,0,0],
+    [0,0,0,0,2,0,0,0,0],
+  ],
+  // Pawn: strong after crossing river, central pawns are best
+  P: [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [2,0,4,0,6,0,4,0,2],
+    [4,0,6,0,8,0,6,0,4],
+    [6,8,10,12,14,12,10,8,6],
+    [10,12,14,16,18,16,14,12,10],
+    [14,16,18,20,22,20,18,16,14],
+    [18,18,20,22,24,22,20,18,18],
+    [0,0,0,0,0,0,0,0,0],
+  ],
+  // Advisor / Elephant / King: minimal — just keep them in place
+  A: [
+    [0,0,0,2,0,2,0,0,0],
+    [0,0,0,0,4,0,0,0,0],
+    [0,0,0,2,0,2,0,0,0],
+    [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],
+  ],
+  E: [
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0],
+    [2,0,0,0,4,0,0,0,2],
+    [0,0,0,0,0,0,0,0,0],
+    [0,0,2,0,0,0,2,0,0],
+    [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],
+  ],
+  K: [
+    [0,0,0,0,2,0,0,0,0],
+    [0,0,0,2,4,2,0,0,0],
+    [0,0,0,2,4,2,0,0,0],
+    [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],
+  ],
+};
+
+/** Static evaluation: positive = good for Black, negative = good for Red. */
+function evaluateBoard(b) {
+  let score = 0;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const p = b[r][c];
+      if (p === '.') continue;
+      const type = p.toUpperCase();
+      const baseVal = (PIECE_VALUES[type] || 0) * 100; // scale up for precision
+      const posTable = POS_BONUS[type];
+      if (isBlack(p)) {
+        // Black pieces: row 0 is home
+        score += baseVal + (posTable ? posTable[r][c] : 0);
+      } else {
+        // Red pieces: mirror row (9-r) for positional bonus
+        score -= baseVal + (posTable ? posTable[9 - r][c] : 0);
+      }
+    }
+  }
+  // Bonus for check — attacking is good
+  if (isKingInCheck(b, true)) score += 30;  // Red in check = good for Black
+  if (isKingInCheck(b, false)) score -= 30; // Black in check = bad for Black
+  return score;
+}
+
+/** Generate all legal moves for one side. Returns [[fromR,fromC,toR,toC], ...] */
+function allLegalMoves(b, red) {
+  const moves = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const p = b[r][c];
+      if (p === '.') continue;
+      if (red ? !isRed(p) : !isBlack(p)) continue;
+      for (const [tr, tc] of getLegalMoves(b, r, c)) {
+        moves.push([r, c, tr, tc]);
+      }
+    }
+  }
+  return moves;
+}
+
+/** Order moves for better alpha-beta pruning: captures first, sorted by MVV-LVA. */
+function orderMoves(b, moves) {
+  return moves.sort((a, b2) => {
+    const capA = b[a[2]][a[3]];
+    const capB = b[b2[2]][b2[3]];
+    const valA = capA !== '.' ? (PIECE_VALUES[capA.toUpperCase()] || 0) : 0;
+    const valB = capB !== '.' ? (PIECE_VALUES[capB.toUpperCase()] || 0) : 0;
+    return valB - valA; // higher capture value first
+  });
+}
+
+/**
+ * Alpha-beta minimax search.
+ * @param {string[][]} b - board
+ * @param {number} depth - remaining depth
+ * @param {number} alpha - best Black can guarantee
+ * @param {number} beta - best Red can guarantee
+ * @param {boolean} maximizing - true = Black's turn (maximize)
+ * @returns {number} evaluation score
+ */
+function alphabeta(b, depth, alpha, beta, maximizing) {
+  if (depth === 0) return evaluateBoard(b);
+
+  const red = !maximizing; // maximizing=Black, minimizing=Red
+  const moves = orderMoves(b, allLegalMoves(b, red));
+
+  if (moves.length === 0) {
+    // No legal moves — checkmate or stalemate
+    if (isKingInCheck(b, red)) {
+      return maximizing ? -99999 + (3 - depth) : 99999 - (3 - depth);
+    }
+    return 0; // stalemate
+  }
+
+  if (maximizing) {
+    let best = -Infinity;
+    for (const [fr, fc, tr, tc] of moves) {
+      const savedFrom = b[fr][fc];
+      const savedTo = b[tr][tc];
+      b[tr][tc] = savedFrom;
+      b[fr][fc] = '.';
+      const val = alphabeta(b, depth - 1, alpha, beta, false);
+      b[fr][fc] = savedFrom;
+      b[tr][tc] = savedTo;
+      best = Math.max(best, val);
+      alpha = Math.max(alpha, val);
+      if (beta <= alpha) break; // prune
+    }
+    return best;
+  } else {
+    let best = Infinity;
+    for (const [fr, fc, tr, tc] of moves) {
+      const savedFrom = b[fr][fc];
+      const savedTo = b[tr][tc];
+      b[tr][tc] = savedFrom;
+      b[fr][fc] = '.';
+      const val = alphabeta(b, depth - 1, alpha, beta, true);
+      b[fr][fc] = savedFrom;
+      b[tr][tc] = savedTo;
+      best = Math.min(best, val);
+      beta = Math.min(beta, val);
+      if (beta <= alpha) break; // prune
+    }
+    return best;
+  }
+}
+
+/**
+ * Find the top N moves for Black using alpha-beta search.
+ * @param {string[][]} b - board
+ * @param {number} depth - search depth (3 recommended)
+ * @param {number} topN - how many moves to return
+ * @returns {Array<{from:[number,number], to:[number,number], score:number, desc:string}>}
+ */
+function engineTopMoves(b, depth = 3, topN = 3) {
+  const moves = orderMoves(b, allLegalMoves(b, false)); // Black's moves
+  const scored = [];
+
+  for (const [fr, fc, tr, tc] of moves) {
+    const piece = b[fr][fc];
+    const captured = b[tr][tc];
+    const savedFrom = b[fr][fc];
+    const savedTo = b[tr][tc];
+    b[tr][tc] = savedFrom;
+    b[fr][fc] = '.';
+    // After Black moves, it's Red's turn (minimizing)
+    const score = alphabeta(b, depth - 1, -Infinity, Infinity, false);
+    b[fr][fc] = savedFrom;
+    b[tr][tc] = savedTo;
+
+    const pieceName = PIECE_NAMES[piece] || piece;
+    let desc = `${pieceName}(${piece})[${fr},${fc}] → [${tr},${tc}]`;
+    if (captured !== '.' && isRed(captured)) {
+      desc += ` captures ${PIECE_NAMES[captured] || captured}`;
+    }
+
+    scored.push({ from: [fr, fc], to: [tr, tc], score, desc });
+  }
+
+  scored.sort((a, b2) => b2.score - a.score);
+  return scored.slice(0, topN);
 }
 
 // ── Start ──────────────────────────────────────────────────────────

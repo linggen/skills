@@ -41,6 +41,25 @@
   overflow: hidden;
 }
 
+/* Turn indicator */
+.turn-indicator {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: var(--success, #4ade80);
+  color: #111;
+  transition: background 0.3s, color 0.3s;
+}
+.turn-indicator.ai-turn {
+  background: var(--accent, #e94560);
+  color: #fff;
+}
+.turn-indicator.game-over {
+  background: var(--border, #2a3a5c);
+  color: var(--text-muted, #8899aa);
+}
+
 /* Score display */
 .score-display {
   font-size: 15px;
