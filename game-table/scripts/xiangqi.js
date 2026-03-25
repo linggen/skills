@@ -1189,7 +1189,10 @@ function handleAIResponse(text) {
   animateMove(fromR, fromC, toR, toC, piece, () => {
     board[toR][toC] = piece;
     board[fromR][fromC] = '.';
-    drawBoard();
+
+    waitingForAI = false;
+    isBoardMove = false;
+    drawBoard(); // must be after waitingForAI = false so turn indicator updates correctly
     checkKingCaptured();
 
     const aiMsg = commentary ? `${moveDesc} — ${commentary}` : moveDesc;
@@ -1202,8 +1205,6 @@ function handleAIResponse(text) {
       chat.addMessage('system', msg);
       showGameOverOverlay(inCheck ? 'ai' : 'draw');
     }
-    waitingForAI = false;
-    isBoardMove = false;
   });
 }
 

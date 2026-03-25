@@ -812,7 +812,10 @@ function handleAIResponse(text) {
     board[row][col] = WHITE;
     lastMove = [row, col];
     moveHistory.push({ row, col, who: 'white' });
-    drawBoard();
+
+    waitingForAI = false;
+    isBoardMove = false;
+    drawBoard(); // must be after waitingForAI = false so turn indicator updates correctly
 
     const colLabel = String.fromCharCode(65 + col);
     const moveDesc = `${colLabel}${row + 1}`;
@@ -824,9 +827,6 @@ function handleAIResponse(text) {
       chat.addMessage('system', 'Five in a row! AI wins!');
       showGameOverOverlay('ai');
     }
-
-    waitingForAI = false;
-    isBoardMove = false;
   });
 }
 
