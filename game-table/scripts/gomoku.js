@@ -769,6 +769,7 @@ function isBoardFull() {
 
 function handleStreamEnd(text) {
   if (!isBoardMove) return; // regular chat — iframe handles display
+  if (!waitingForAI) return; // already processed — ignore duplicate callbacks
   if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
   handleAIResponse(text);
 }

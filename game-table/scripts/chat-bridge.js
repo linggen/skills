@@ -33,6 +33,10 @@ async function mount(el, options) {
   let sessionId = options.sessionId || null;
   let streamBuffer = '';
 
+  // Detect remote mode via meta tag (injected by ConnectPage)
+  const instanceMeta = document.querySelector('meta[name="linggen-instance"]');
+  const isRemote = !!instanceMeta;
+
   // Create a skill-bound session if none provided
   if (!sessionId) {
     const data = await createSession(`${skillName} session`, skillName);
@@ -49,8 +53,19 @@ async function mount(el, options) {
   });
   if (modelId) params.set('model', modelId);
 
+  let iframeSrc;
+  if (isRemote) {
+    // Remote: load compact chat via a connect page (establishes its own WebRTC)
+    const instanceId = instanceMeta.getAttribute('content') || '';
+    const relayOrigin = (document.querySelector('meta[name="linggen-relay-origin"]') || {}).content || window.location.origin;
+    iframeSrc = `${relayOrigin}/app/connect/${instanceId}?${params.toString()}`;
+  } else {
+    // Local: load compact chat directly from the local server
+    iframeSrc = `/?${params.toString()}`;
+  }
+
   const iframe = document.createElement('iframe');
-  iframe.src = `/?${params.toString()}`;
+  iframe.src = iframeSrc;
   iframe.style.cssText = 'width:100%;height:100%;border:none;';
   iframe.allow = 'clipboard-write';
   el.appendChild(iframe);
@@ -78,7 +93,6 @@ async function mount(el, options) {
   }
   window.addEventListener('message', handleMessage);
 
-  // Wait for iframe to load
   await new Promise((resolve) => {
     iframe.addEventListener('load', resolve, { once: true });
   });

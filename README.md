@@ -1,17 +1,18 @@
 # Linggen Skills
 
-Skills for **Linggen** — a local-first coding assistant with memory, context, and multi-agent capabilities.
-
-Learn more at [linggen.dev](https://linggen.dev).
+Skills for **[Linggen](https://linggen.dev)** — your personal AI assistant. Ready in seconds, runs locally, works with any model.
 
 ## Available Skills
 
 | Skill | Description |
 |-------|-------------|
-| **[linggen](./linggen/)** | Cross-project code search, indexed context, prompt enhancement, and server management. |
-| **[memory](./memory/)** | Semantic memory and RAG — index codebases, search semantically, store and retrieve memories. |
 | **[skiller](./skiller/)** | Search, install, and manage skills from the marketplace. |
+| **[sys-doctor](./sys-doctor/)** | System health analyst. Scans disk, apps, caches, and system info. |
+| **[mission](./mission/)** | Autonomous mission mode. Runs scheduled tasks without human interaction. |
 | **[discord](./discord/)** | Social messaging with Discord friends. Send and receive messages via `@@friend_name`. |
+| **[linggen-guide](./linggen-guide/)** | Built-in documentation and usage guide for Linggen itself. |
+| **[arcade-game](./arcade-game/)** | Retro arcade games — Snake, Pong, and Tetris in your browser. |
+| **[game-table](./game-table/)** | Play board games against AI — Chinese Chess, Gomoku, and more. |
 
 ## Install
 
@@ -19,22 +20,23 @@ Learn more at [linggen.dev](https://linggen.dev).
 
 Skills are automatically installed when you run `ling init --global`.
 
-### Manual (Claude / Codex)
+### Manual (Claude Code / Codex)
 
 1. Download this repo (or the specific skill folder you want).
 
 2. Copy the skill into your assistant's skills directory:
 
-- Claude: `~/.claude/skills/`
+- Claude Code: `~/.claude/skills/`
 - Codex: `~/.codex/skills/`
 
 ## Usage
 
-- **Linggen**: Use natural-language prompts like "search across projects for auth middleware"
 - **Skill Manager**: `/skill find <query>`, `/skill add <name>`, `/skill list`
+- **Sys Doctor**: `/sys-doctor` or `/sys-doctor --web` for interactive dashboard
 - **Discord**: Type `@@tom hello!` to message your friend Tom on Discord
+- **Linggen Guide**: `/linggen-guide` to ask questions about Linggen
 
 ## Notes
 
 - Linggen runs locally (default API URL: `http://localhost:8787`).
-- If you need to change the API URL, set `LINGGEN_API_URL` in your environment, or in a workspace `.linggen/config` file.
+- To change the API URL, set `LINGGEN_API_URL` in your environment or in a workspace `.linggen/config` file.
