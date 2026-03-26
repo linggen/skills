@@ -19,7 +19,9 @@ Search, install, and manage skills from GitHub via skills.sh and ClawHub.
 ## Script Location
 
 ```bash
-SKILLER_SCRIPTS_DIR="$PWD/.claude/skills/skiller/scripts"
+SKILLER_SCRIPTS_DIR="$PWD/.linggen/skills/skiller/scripts"
+[ -d "$SKILLER_SCRIPTS_DIR" ] || SKILLER_SCRIPTS_DIR="$HOME/.linggen/skills/skiller/scripts"
+[ -d "$SKILLER_SCRIPTS_DIR" ] || SKILLER_SCRIPTS_DIR="$PWD/.claude/skills/skiller/scripts"
 [ -d "$SKILLER_SCRIPTS_DIR" ] || SKILLER_SCRIPTS_DIR="$PWD/.codex/skills/skiller/scripts"
 [ -d "$SKILLER_SCRIPTS_DIR" ] || SKILLER_SCRIPTS_DIR="${CODEX_HOME:-$HOME/.codex}/skills/skiller/scripts"
 [ -d "$SKILLER_SCRIPTS_DIR" ] || SKILLER_SCRIPTS_DIR="$HOME/.claude/skills/skiller/scripts"
@@ -39,7 +41,7 @@ Install a skill from the marketplace (with confirmation):
 
 - `bash "$SKILLER_SCRIPTS_DIR/install_skill.sh" "<skill name or keyword>"`
 
-Downloads the skill from GitHub, extracts it to `.claude/skills/<name>/`.
+Downloads the skill from GitHub, extracts it to `.linggen/skills/<name>/` (project) or `~/.linggen/skills/<name>/` (global).
 
 ### 3. Browse Library Packs
 
@@ -68,7 +70,7 @@ Does not require server:
 
 ## Operational Notes
 
-- Skills are installed to `.claude/skills/<name>/` in the current project.
+- Skills are installed to `.linggen/skills/<name>/` (project) or `~/.linggen/skills/<name>/` (global).
 - GitHub skills are discovered via `skills.sh`.
 - Community skills also search ClawHub (clawhub.ai).
 - ClawHub skills include security scan data (VirusTotal + LLM analysis).
