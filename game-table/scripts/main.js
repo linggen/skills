@@ -1,34 +1,13 @@
 // Game lobby logic
-import { fetchModels, fetchDefaultModel, listSkillSessions, removeSkillSession } from './api.js';
+import { listSkillSessions, removeSkillSession } from './api.js';
 
 const SKILL_NAME = 'game-table';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const modelSelect = document.getElementById('model-select');
-
-  // Load available models
-  try {
-    const [models, defaultModel] = await Promise.all([fetchModels(), fetchDefaultModel()]);
-    modelSelect.innerHTML = '';
-    for (const m of models) {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = `${m.id} (${m.provider})`;
-      if (m.id === defaultModel) opt.selected = true;
-      modelSelect.appendChild(opt);
-    }
-  } catch (err) {
-    modelSelect.innerHTML = '<option>Failed to load models</option>';
-    console.error('Failed to load models:', err);
-  }
-
   // Game card clicks
   document.querySelectorAll('.game-card[data-game]').forEach(card => {
     card.addEventListener('click', () => {
-      const game = card.dataset.game;
-      const modelId = modelSelect.value;
-      if (!modelId) return;
-      window.location.href = `${game}.html?model=${encodeURIComponent(modelId)}`;
+      window.location.href = `${card.dataset.game}.html`;
     });
   });
 
@@ -64,8 +43,7 @@ async function loadSessions() {
         <span class="session-date">${date}</span>
       `;
       info.addEventListener('click', () => {
-        const modelId = document.getElementById('model-select').value;
-        window.location.href = `${gamePage}.html?model=${encodeURIComponent(modelId)}&session=${encodeURIComponent(s.id)}`;
+        window.location.href = `${gamePage}.html?session=${encodeURIComponent(s.id)}`;
       });
       item.appendChild(info);
       const delBtn = document.createElement('button');

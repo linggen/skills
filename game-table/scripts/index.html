@@ -26,14 +26,6 @@
       margin-top: -20px;
       text-align: center;
     }
-    .model-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-    .model-bar select { min-width: 200px; }
     .game-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, 280px);
@@ -132,12 +124,6 @@
   <div class="lobby">
     <h2 class="lobby-title">Choose a Game</h2>
     <p class="lobby-subtitle">Play against AI — powered by your favorite model</p>
-    <div class="model-bar">
-      <label>Model:</label>
-      <select id="model-select">
-        <option>Loading models...</option>
-      </select>
-    </div>
     <div class="game-grid">
       <div class="game-card" data-game="xiangqi">
         <div class="game-icon">♜</div>

@@ -1,5 +1,5 @@
 // Gomoku (五子棋) — board, validation, rendering, AI integration
-import { fetchModels, fetchDefaultModel } from './api.js';
+import { fetchDefaultModel } from './api.js';
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -35,7 +35,6 @@ let chat = null;
 const canvas = document.getElementById('board-canvas');
 const ctx = canvas.getContext('2d');
 const chatPanel = document.getElementById('chat-panel');
-const modelSwitcher = document.getElementById('model-switcher');
 const backBtn = document.getElementById('back-btn');
 const newGameBtn = document.getElementById('new-game-btn');
 const scoreDisplay = document.getElementById('score-display');
@@ -49,23 +48,8 @@ async function init() {
   modelId = params.get('model') || '';
 
   try {
-    const [models, defaultModel] = await Promise.all([fetchModels(), fetchDefaultModel()]);
-    const preferred = modelId || defaultModel;
-    modelSwitcher.innerHTML = '';
-    for (const m of models) {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = m.id;
-      if (m.id === preferred) opt.selected = true;
-      modelSwitcher.appendChild(opt);
-    }
-    if (!modelId && preferred) modelId = preferred;
+    if (!modelId) modelId = await fetchDefaultModel() || '';
   } catch { /* ignore */ }
-
-  modelSwitcher.addEventListener('change', () => {
-    modelId = modelSwitcher.value;
-    if (chat) chat.setOptions({ modelId });
-  });
   assistLevelSel.addEventListener('change', () => {
     assistLevel = parseInt(assistLevelSel.value, 10);
   });

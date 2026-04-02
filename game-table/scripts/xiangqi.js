@@ -1,5 +1,5 @@
 // Chinese Chess (Xiangqi) — board, validation, rendering, game flow
-import { fetchModels, fetchDefaultModel } from './api.js';
+import { fetchDefaultModel } from './api.js';
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -51,7 +51,6 @@ let chat = null;
 const canvas = document.getElementById('board-canvas');
 const ctx = canvas.getContext('2d');
 const chatPanel = document.getElementById('chat-panel');
-const modelSwitcher = document.getElementById('model-switcher');
 const assistLevelSel = document.getElementById('assist-level');
 const backBtn = document.getElementById('back-btn');
 const newGameBtn = document.getElementById('new-game-btn');
@@ -65,25 +64,9 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   modelId = params.get('model') || '';
 
-  // Load models for switcher, selecting URL param or user's default
   try {
-    const [models, defaultModel] = await Promise.all([fetchModels(), fetchDefaultModel()]);
-    const preferred = modelId || defaultModel;
-    modelSwitcher.innerHTML = '';
-    for (const m of models) {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = m.id;
-      if (m.id === preferred) opt.selected = true;
-      modelSwitcher.appendChild(opt);
-    }
-    if (!modelId && preferred) modelId = preferred;
+    if (!modelId) modelId = await fetchDefaultModel() || '';
   } catch { /* ignore */ }
-
-  modelSwitcher.addEventListener('change', () => {
-    modelId = modelSwitcher.value;
-    if (chat) chat.setOptions({ modelId });
-  });
   assistLevelSel.addEventListener('change', () => {
     assistLevel = parseInt(assistLevelSel.value, 10);
   });
