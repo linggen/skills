@@ -35,7 +35,6 @@ echo "Social Post — Platform Status"
 echo "=============================="
 echo ""
 check_platform "X (Twitter)" "x.env" X_API_KEY X_API_SECRET X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET
-check_platform "Facebook" "facebook.env" FB_PAGE_ID FB_PAGE_ACCESS_TOKEN
 check_platform "LinkedIn" "linkedin.env" LI_ACCESS_TOKEN LI_USER_URN
 echo ""
 echo "To configure a platform: /social-post config <platform>"
