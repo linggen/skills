@@ -1,18 +1,17 @@
 ---
 name: xbot
 description: >-
-  Post to X (Twitter) from chat.
-  Supports drafting summaries, hashtags, and threads.
-  User configures their own API keys.
+  X (Twitter) assistant — post, search, reply, monitor mentions,
+  and track engagement. Your AI social media manager.
 user-invocable: true
 allowed-tools: [Bash, Read, Write]
-argument-hint: "<text> | config | status"
+argument-hint: "post <text> | search <query> | reply <url> | mentions | my-tweets | config | status"
 ---
 
-# xbot — Post to X (Twitter)
+# xbot — X (Twitter) Assistant
 
-Post text to X (Twitter) directly from chat.
-Uses the user's own developer app credentials (pay-per-use, ~$0.01/post).
+Post, search, reply, and monitor your X presence from chat.
+Uses the user's own developer app credentials (pay-per-use).
 
 ## Script Location
 
@@ -20,10 +19,6 @@ Uses the user's own developer app credentials (pay-per-use, ~$0.01/post).
 SP_DIR="$HOME/.linggen/skills/xbot/scripts"
 [ -d "$SP_DIR" ] || SP_DIR="$PWD/.linggen/skills/xbot/scripts"
 ```
-
-## Credentials Location
-
-Credentials are stored in `~/.linggen/skills/xbot/credentials/x.env`.
 
 ## Core Workflows
 
@@ -59,15 +54,60 @@ X_ACCESS_TOKEN_SECRET="<Access Token Secret>"
 ```
 8. Tell me when done — I'll verify with `status.sh`
 
-Note: The Bearer Token is for read-only. Posting requires OAuth 1.0a (all 4 keys above).
-
-### 3. Post
+### 3. Post a Tweet
 
 ```bash
 bash "$SP_DIR/post-x.sh" "Your message here"
 ```
 
-### 4. Summarize and Post
+Or use Python for better Unicode/quoting support:
+```bash
+python3 "$SP_DIR/x_api.py" && python3 -c "
+import sys; sys.path.insert(0, '$SP_DIR')
+from x_api import api_post
+status, data = api_post('/tweets', {'text': '''MESSAGE_HERE'''})
+print(data)
+"
+```
+
+### 4. Search Tweets
+
+Find recent tweets about a topic:
+
+```bash
+python3 "$SP_DIR/search.py" "AI coding agent" 10
+```
+
+Use this to:
+- Find relevant conversations to join
+- Research what people say about competitors
+- Discover trending topics in your space
+
+### 5. Reply to a Tweet
+
+```bash
+python3 "$SP_DIR/reply.py" "https://x.com/user/status/123456" "Your reply text"
+```
+
+Accepts either a tweet URL or a tweet ID.
+
+### 6. Check Mentions
+
+See who's mentioning or replying to you:
+
+```bash
+python3 "$SP_DIR/mentions.py" 10
+```
+
+### 7. View My Tweets + Engagement
+
+See your recent tweets with likes, retweets, replies, and views:
+
+```bash
+python3 "$SP_DIR/my_tweets.py" 10
+```
+
+### 8. Summarize and Post
 
 When the user says something like "summarize today and post to X":
 
@@ -76,15 +116,46 @@ When the user says something like "summarize today and post to X":
 3. Show the draft to the user for approval
 4. Once approved, post
 
+### 9. Scout and Engage
+
+When the user says "find conversations about <topic>":
+
+1. Run `search.py` with the topic
+2. Show the most relevant/engaging tweets
+3. Suggest which ones to reply to
+4. Draft a helpful, non-spammy reply for each
+5. Post replies only after user approval
+
+### 10. Release Announcement
+
+When the user says "announce release" or "post about release":
+
+1. Check recent git log or changelog for what's new
+2. Draft a tweet with key highlights
+3. Include the project URL
+4. Suggest relevant hashtags
+5. Post after approval
+
+## Smart Behaviors
+
+- **Scout mode**: When searching, prioritize tweets from users with more followers
+  and tweets with high engagement — those are better conversations to join
+- **Reply tone**: Be helpful and genuine, never promotional. Add value to the
+  conversation. Mention the project only if directly relevant.
+- **Thread support**: For longer content, suggest splitting into a thread
+  (post first tweet, then reply to it with continuations)
+- **Hashtag suggestions**: For dev tools, suggest tags like #opensource #ai #rust
+  #coding #devtools when relevant
+
 ## Limits
 
-- 280 characters per tweet (free tier)
-- ~$0.01 per post (pay-per-use)
-- No media uploads via free API
+- 280 characters per tweet
+- ~$0.01 per post, search is cheaper (~$0.001/request)
+- No media uploads via API
 
 ## Important Rules
 
-- **Always show the draft to the user before posting** — never auto-post without confirmation
+- **Always show the draft to the user before posting or replying** — never auto-post
 - If text exceeds 280 chars, warn and suggest trimming
 - If credentials are missing, run `status.sh` and guide user through setup
-- Suggest relevant hashtags when appropriate
+- **Never spam** — replies should add genuine value to the conversation
