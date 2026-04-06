@@ -1,10 +1,10 @@
 #!/bin/bash
-# setup.sh — Interactive credential setup for social-post skill.
+# setup.sh — Interactive credential setup for xbot skill.
 # Usage: bash setup.sh <platform>
 # Where platform is: x | facebook | linkedin
 set -euo pipefail
 
-CRED_DIR="$HOME/.linggen/skills/social-post/credentials"
+CRED_DIR="$HOME/.linggen/skills/xbot/credentials"
 mkdir -p "$CRED_DIR"
 chmod 700 "$CRED_DIR"
 
@@ -21,7 +21,7 @@ case "$PLATFORM" in
         echo "  4. Access Token Secret"
         echo ""
         echo "Get these at: https://developer.x.com/en/portal/dashboard"
-        echo "See the full guide: cat ~/.linggen/skills/social-post/references/SETUP-GUIDE.md"
+        echo "See the full guide: cat ~/.linggen/skills/xbot/references/SETUP-GUIDE.md"
         echo ""
         read -p "API Key: " api_key
         read -p "API Secret: " api_secret
@@ -46,7 +46,7 @@ EOF
         echo "  2. Page Access Token (never-expiring)"
         echo ""
         echo "Get these at: https://developers.facebook.com/tools/explorer/"
-        echo "See the full guide: cat ~/.linggen/skills/social-post/references/SETUP-GUIDE.md"
+        echo "See the full guide: cat ~/.linggen/skills/xbot/references/SETUP-GUIDE.md"
         echo ""
         read -p "Page ID: " page_id
         read -p "Page Access Token: " page_token
@@ -67,7 +67,7 @@ EOF
         echo "  2. User URN ID (your LinkedIn member ID)"
         echo ""
         echo "Get these at: https://www.linkedin.com/developers/apps"
-        echo "See the full guide: cat ~/.linggen/skills/social-post/references/SETUP-GUIDE.md"
+        echo "See the full guide: cat ~/.linggen/skills/xbot/references/SETUP-GUIDE.md"
         echo ""
         read -p "Access Token: " access_token
         read -p "User URN ID (just the number, e.g. abc123XY): " user_urn

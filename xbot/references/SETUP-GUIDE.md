@@ -46,11 +46,11 @@ You now have 4 keys. The Bearer Token is for read-only — you don't need it for
 ### Step 5: Create the Credential File
 
 ```bash
-mkdir -p ~/.linggen/skills/social-post/credentials
-touch ~/.linggen/skills/social-post/credentials/x.env
+mkdir -p ~/.linggen/skills/xbot/credentials
+touch ~/.linggen/skills/xbot/credentials/x.env
 ```
 
-Open `~/.linggen/skills/social-post/credentials/x.env` in your editor and add:
+Open `~/.linggen/skills/xbot/credentials/x.env` in your editor and add:
 
 ```
 X_API_KEY="<Consumer Key>"
@@ -62,7 +62,7 @@ X_ACCESS_TOKEN_SECRET="<Access Token Secret>"
 ### Step 6: Verify
 
 ```
-/social-post status
+/xbot status
 ```
 
 Should show `X (Twitter): READY`.
@@ -125,11 +125,11 @@ Copy the `id` (Page ID) and `access_token` (Page Access Token) for your page.
 ### Step 3: Create the Credential File
 
 ```bash
-mkdir -p ~/.linggen/skills/social-post/credentials
-touch ~/.linggen/skills/social-post/credentials/facebook.env
+mkdir -p ~/.linggen/skills/xbot/credentials
+touch ~/.linggen/skills/xbot/credentials/facebook.env
 ```
 
-Open `~/.linggen/skills/social-post/credentials/facebook.env` and add:
+Open `~/.linggen/skills/xbot/credentials/facebook.env` and add:
 
 ```
 FB_PAGE_ID="<Page ID>"
@@ -139,7 +139,7 @@ FB_PAGE_ACCESS_TOKEN="<Page Access Token>"
 ### Step 4: Verify
 
 ```
-/social-post status
+/xbot status
 ```
 
 ### Limits
@@ -181,11 +181,11 @@ Copy the `sub` field — this is your User URN ID.
 ### Step 5: Create the Credential File
 
 ```bash
-mkdir -p ~/.linggen/skills/social-post/credentials
-touch ~/.linggen/skills/social-post/credentials/linkedin.env
+mkdir -p ~/.linggen/skills/xbot/credentials
+touch ~/.linggen/skills/xbot/credentials/linkedin.env
 ```
 
-Open `~/.linggen/skills/social-post/credentials/linkedin.env` and add:
+Open `~/.linggen/skills/xbot/credentials/linkedin.env` and add:
 
 ```
 LI_ACCESS_TOKEN="<Access Token>"
@@ -195,7 +195,7 @@ LI_USER_URN="<User URN ID>"
 ### Step 6: Verify
 
 ```
-/social-post status
+/xbot status
 ```
 
 ### Limits
@@ -210,7 +210,7 @@ LI_USER_URN="<User URN ID>"
 
 All credentials are stored locally at:
 ```
-~/.linggen/skills/social-post/credentials/
+~/.linggen/skills/xbot/credentials/
 ├── x.env           # X API keys (OAuth 1.0a)
 ├── facebook.env    # Facebook Page token
 └── linkedin.env    # LinkedIn Bearer token

@@ -2,7 +2,7 @@
 # status.sh — Show which social platforms are configured.
 set -euo pipefail
 
-CRED_DIR="$HOME/.linggen/skills/social-post/credentials"
+CRED_DIR="$HOME/.linggen/skills/xbot/credentials"
 
 check_platform() {
     local name="$1"
@@ -37,5 +37,5 @@ echo ""
 check_platform "X (Twitter)" "x.env" X_API_KEY X_API_SECRET X_ACCESS_TOKEN X_ACCESS_TOKEN_SECRET
 check_platform "LinkedIn" "linkedin.env" LI_ACCESS_TOKEN LI_USER_URN
 echo ""
-echo "To configure a platform: /social-post config <platform>"
+echo "To configure a platform: /xbot config <platform>"
 echo "Credentials stored in: $CRED_DIR/"
