@@ -17,6 +17,7 @@ import { createSession, removeSkillSession } from './api.js';
  *   onSessionCreated?: (sid: string) => void,
  *   onStreamToken?: (fullText: string) => void,
  *   onStreamEnd?: (text: string) => void,
+ *   onContentBlock?: (payload: { phase: string, tool?: string, args?: string, blockId?: string, output?: string }) => void,
  * }} options
  * @returns {Promise<ChatInstance>}
  */
@@ -67,6 +68,9 @@ async function mount(el, options) {
       case 'stream_end':
         if (onStreamEnd) onStreamEnd(payload?.text || streamBuffer);
         streamBuffer = '';
+        break;
+      case 'content_block':
+        if (options.onContentBlock) options.onContentBlock(payload);
         break;
       case 'session_created':
         if (payload?.sessionId) {

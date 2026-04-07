@@ -114,9 +114,6 @@
 
 /* Recommendation items */
 .rec-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -125,6 +122,12 @@
 }
 
 .rec-item:hover { background: var(--bg-hover); }
+
+.rec-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 .rec-risk {
   font-size: 10px;
@@ -136,9 +139,15 @@
   letter-spacing: 0.3px;
 }
 
-.rec-risk.safe { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
-.rec-risk.review { background: rgba(234, 179, 8, 0.15); color: #facc15; }
-.rec-risk.caution { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.rec-risk.safe { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.rec-risk.review { background: rgba(234, 179, 8, 0.15); color: #ca8a04; }
+.rec-risk.caution { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+@media (prefers-color-scheme: dark) {
+  .rec-risk.safe { color: #4ade80; }
+  .rec-risk.review { color: #facc15; }
+  .rec-risk.caution { color: #f87171; }
+}
 
 .rec-info { flex: 1; min-width: 0; }
 
@@ -163,16 +172,40 @@
   font-variant-numeric: tabular-nums;
 }
 
-.rec-copy {
+/* Command code block with copy button */
+.rec-cmd-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+.rec-cmd-code {
+  flex: 1;
+  min-width: 0;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
   font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 5px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rec-copy {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 4px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s;
+  font-weight: 600;
 }
 .rec-copy:hover { background: var(--bg-hover); color: var(--text); border-color: var(--accent); }
 .rec-copy.copied { color: var(--success); border-color: var(--success); }
@@ -346,6 +379,53 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Tool activity log */
+.tool-activity-log {
+  margin-top: 10px;
+  max-height: 140px;
+  overflow-y: auto;
+  font-family: var(--font-mono, 'SF Mono', 'Fira Code', monospace);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.tool-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 0;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.tool-entry.running { opacity: 1; color: var(--text); }
+.tool-entry.done { opacity: 0.5; }
+.tool-entry.failed { opacity: 0.7; color: var(--error, #ef4444); }
+.tool-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--text-muted);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+.tool-entry.done .tool-spinner,
+.tool-entry.failed .tool-spinner {
+  border: none;
+  animation: none;
+  width: auto;
+  height: auto;
+  font-size: 11px;
+}
+.tool-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Empty state */

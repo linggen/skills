@@ -40,3 +40,11 @@ export async function removeSkillSession(skill, sessionId) {
   });
   if (!res.ok) throw new Error('Failed to delete session');
 }
+
+export async function fetchSessionMessages(skill, sessionId) {
+  const params = new URLSearchParams({ skill, session_id: sessionId });
+  const res = await fetch(`${API_BASE}/api/skill-sessions/state?${params}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.messages || [];
+}

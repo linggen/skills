@@ -22,7 +22,7 @@
   <div class="doctor-container">
     <!-- Left: Dashboard -->
     <div class="dashboard-panel" id="dashboard">
-      <!-- Summary cards -->
+      <!-- Summary cards — row 1 -->
       <div class="summary-cards" id="summary-cards">
         <div class="card" id="card-disk">
           <div class="card-label">Disk</div>
@@ -40,11 +40,37 @@
           <div class="card-label">CPU</div>
           <div class="card-value" id="val-cpu">--</div>
           <div class="card-sub" id="sub-cpu"></div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-cpu"></div></div>
         </div>
         <div class="card" id="card-os">
           <div class="card-label">System</div>
           <div class="card-value" id="val-os">--</div>
           <div class="card-sub" id="sub-os"></div>
+        </div>
+      </div>
+
+      <!-- Hardware cards — row 2 -->
+      <div class="summary-cards" id="hardware-cards">
+        <div class="card" id="card-gpu">
+          <div class="card-label">GPU</div>
+          <div class="card-value" id="val-gpu">--</div>
+          <div class="card-sub" id="sub-gpu"></div>
+        </div>
+        <div class="card" id="card-battery">
+          <div class="card-label">Battery</div>
+          <div class="card-value" id="val-battery">--</div>
+          <div class="card-sub" id="sub-battery"></div>
+          <div class="card-bar"><div class="card-bar-fill" id="bar-battery"></div></div>
+        </div>
+        <div class="card" id="card-network">
+          <div class="card-label">Network</div>
+          <div class="card-value" id="val-network">--</div>
+          <div class="card-sub" id="sub-network"></div>
+        </div>
+        <div class="card" id="card-io">
+          <div class="card-label">Storage IO</div>
+          <div class="card-value" id="val-io">--</div>
+          <div class="card-sub" id="sub-io"></div>
         </div>
       </div>
 

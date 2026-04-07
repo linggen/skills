@@ -1,5 +1,9 @@
-// Sys Doctor dashboard logic
+// Sys Doctor dashboard — Robot Doctor pattern:
+// Phase 1: Client runs bash commands in parallel (fast, no model)
+// Phase 2: Send collected data to model for analysis
+// Phase 3: Model's recommendations displayed in chat
 import { fetchModels, fetchDefaultModel } from './api.js';
+import { runScan } from './scan.js';
 import { drawDiskBars } from './charts.js';
 
 const SKILL_NAME = 'sys-doctor';
@@ -12,25 +16,23 @@ const existingSession = params.get('session') || '';
 let chat = null;
 let scanning = false;
 
-// Scan progress tracking
+// Scan progress steps
 const SCAN_STEPS = [
-  { key: 'system', label: 'System info', icon: '💻' },
-  { key: 'disk', label: 'Disk usage', icon: '💾' },
-  { key: 'apps', label: 'App inventory', icon: '📦' },
-  { key: 'garbage', label: 'Garbage scan', icon: '🗑️' },
-  { key: 'analysis', label: 'AI analysis', icon: '🧠' },
+  { key: 'system', label: 'System info', icon: '\uD83D\uDCBB' },
+  { key: 'disk', label: 'Disk usage', icon: '\uD83D\uDCBE' },
+  { key: 'garbage', label: 'Garbage scan', icon: '\uD83D\uDDD1\uFE0F' },
+  { key: 'analysis', label: 'AI analysis', icon: '\uD83E\uDDE0' },
 ];
 let completedSteps = new Set();
 
 // ── Init ──
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Back button
   document.getElementById('back-btn').addEventListener('click', () => {
     window.location.href = 'index.html';
   });
 
-  // Load models into switcher
+  // Load models
   const modelSwitcher = document.getElementById('model-switcher');
   try {
     const [models, defaultModel] = await Promise.all([fetchModels(), fetchDefaultModel()]);
@@ -46,13 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch {
     modelSwitcher.innerHTML = '<option>No models</option>';
   }
-
   modelSwitcher.addEventListener('change', () => {
     modelId = modelSwitcher.value;
     if (chat) chat.setOptions({ modelId });
   });
 
-  // Mount chat
+  // Mount chat panel
   const chatPanel = document.getElementById('chat-panel');
   const mountOpts = {
     skillName: SKILL_NAME,
@@ -65,37 +66,265 @@ document.addEventListener('DOMContentLoaded', async () => {
       url.searchParams.set('session', sid);
       history.replaceState(null, '', url);
     },
-    onStreamToken: handleStreamToken,
-    onStreamEnd: handleStreamEnd,
+    onStreamEnd: (text) => {
+      handleModelResponse(text);
+    },
   };
-
-  if (existingSession) {
-    mountOpts.sessionId = existingSession;
-  }
-
+  if (existingSession) mountOpts.sessionId = existingSession;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
 
   // Scan button
   document.getElementById('scan-btn').addEventListener('click', () => startScan());
 
-  // Auto-start scan if no existing session
-  if (!existingSession) {
-    setTimeout(() => {
-      startScan();
-    }, 300);
+  // Restore from cache or auto-start
+  if (existingSession) {
+    restoreFromCache(existingSession);
+    // If no recommendations in cache, try to extract from chat history
+    tryRestoreRecsFromHistory(existingSession);
+  } else {
+    setTimeout(() => startScan(), 300);
   }
 });
 
 // ── Scan ──
 
-function startScan() {
+async function startScan() {
   if (scanning || !chat) return;
   scanning = true;
   completedSteps = new Set();
   setScanStatus('scanning', 'Scanning...');
   showScanProgress();
-  chat.send(`[SYS_SCAN] ${scanType}`);
+
+  try {
+    const sessionId = chat.getSessionId();
+
+    // Phase 1: Run all bash commands in parallel (no model)
+    const results = await runScan(scanType, sessionId, handleScanProgress);
+
+    // Update dashboard with final results
+    if (results.system) updateSystemCards(results.system);
+    if (results.gpu) updateGpuCard(results.gpu);
+    if (results.battery) updateBatteryCard(results.battery);
+    if (results.network) updateNetworkCard(results.network);
+    if (results.io) updateIoCard(results.io);
+    if (results.disk) updateDiskPanel(results.disk);
+    if (results.garbage) renderGarbage(results.garbage);
+
+    // Cache for restore on refresh
+    cacheDashboardData(results);
+
+    // Mark scan steps done
+    markStepDone('system');
+    markStepDone('disk');
+    if (scanType === 'full') markStepDone('garbage');
+
+    // Phase 2: Send data to model for AI analysis
+    markStepActive('analysis');
+    const prompt = buildAnalysisPrompt(results);
+    chat.send(prompt);
+
+    // Analysis step marked done when model response arrives (in handleModelResponse)
+    setScanStatus('done', 'Done');
+  } catch (err) {
+    console.error('Scan error:', err);
+    setScanStatus('error', 'Error');
+    // Fallback: let model do the scan the old way
+    chat.send(`[SYS_SCAN] ${scanType}`);
+  } finally {
+    scanning = false;
+  }
 }
+
+/** Build a prompt with all collected data for the model to analyze. */
+function buildAnalysisPrompt(results) {
+  const parts = ['Here is my system scan data. Please analyze it and provide recommendations.\n'];
+
+  if (results.system) {
+    const s = results.system;
+    parts.push(`## System\n- OS: ${s.os}\n- CPU: ${s.cpuBrand} (${s.cpuCores} cores, ${s.cpuUsage}% usage)\n- Load: ${(s.loadAvg || []).join(', ')}\n- Memory: ${s.memory.used_gb}/${s.memory.total_gb} GB (${s.memory.percent}%)\n- Uptime: ${s.uptime}\n- Host: ${s.hostname}\n- Arch: ${s.arch}\n`);
+  }
+
+  if (results.gpu) {
+    const g = results.gpu;
+    if (g.chipset) parts.push(`## GPU\n- ${g.chipset}: ${g.cores} cores, ${g.metal}\n`);
+  }
+
+  if (results.battery) {
+    const b = results.battery;
+    if (b.percent != null) {
+      parts.push(`## Battery\n- ${b.percent}% (${b.status || 'unknown'}), ${b.source || ''}${b.cycleCount ? `, ${b.cycleCount} cycles` : ''}\n`);
+    }
+  }
+
+  if (results.io) {
+    parts.push(`## Storage IO\n- ${results.io.mb_per_sec} MB/s, ${results.io.transfers_per_sec} ops/s\n`);
+  }
+
+  if (results.disk) {
+    const d = results.disk;
+    parts.push(`## Disk\n- Total: ${fmtGb(d.total_gb)}, Used: ${fmtGb(d.used_gb)}, Free: ${fmtGb(d.free_gb)} (${d.percent}% used)`);
+    if (d.top_dirs && d.top_dirs.length > 0) {
+      parts.push('- Top directories:');
+      for (const dir of d.top_dirs) {
+        parts.push(`  - ${dir.path}: ${fmtGb(dir.size_gb)}`);
+      }
+    }
+    parts.push('');
+  }
+
+  if (results.caches && results.caches.length > 0) {
+    parts.push('## Caches');
+    for (const c of results.caches) {
+      parts.push(`- ${c.path}: ${fmtGb(c.size_gb)}`);
+    }
+    parts.push('');
+  }
+
+  if (results.garbage && results.garbage.length > 0) {
+    parts.push('## Garbage Candidates');
+    for (const g of results.garbage) {
+      parts.push(`- ${g.path}: ${fmtGb(g.size_gb)} (${g.category})`);
+    }
+    parts.push('');
+  }
+
+  parts.push(`Please provide your analysis in natural language (markdown), then at the very end append a JSON block with structured recommendations for the dashboard. The JSON block MUST be wrapped in \`\`\`json fences. Format:
+
+\`\`\`json
+[
+  {"title": "Clear Xcode DerivedData", "savings_gb": 7.7, "risk": "safe", "command": "rm -rf ~/Library/Developer/Xcode/DerivedData", "description": "Build artifacts, Xcode regenerates on next build"},
+  {"title": "Remove old simulators", "savings_gb": 8.6, "risk": "review", "command": "xcrun simctl delete unavailable", "description": "Only removes unavailable devices"}
+]
+\`\`\`
+
+Risk values: "safe", "review", or "caution". Include 3-6 recommendations sorted by impact.`);
+
+  return parts.join('\n');
+}
+
+// ── Scan progress callbacks ──
+
+function handleScanProgress(step, data) {
+  if (data === 'start') {
+    markStepActive(step);
+    return;
+  }
+  markStepDone(step);
+
+  // Update dashboard incrementally as data arrives
+  if (step === 'system' && data) updateSystemCards(data);
+  if (step === 'disk' && data) updateDiskPanel(data);
+  if (step === 'garbage' && data) renderGarbage(data);
+}
+
+// ── Dashboard updates ──
+
+function updateSystemCards(sys) {
+  setText('val-os', sys.os || '--');
+  setText('sub-os', [sys.hostname, sys.uptime ? `Up ${sys.uptime}` : ''].filter(Boolean).join(' \u00B7 '));
+
+  // CPU card — show brand, cores, usage
+  const cpuLabel = sys.cpuBrand || `${sys.cpuCores} cores`;
+  setText('val-cpu', cpuLabel);
+  const cpuSub = [`${sys.cpuCores} cores`, sys.cpuUsage ? `${sys.cpuUsage}% usage` : ''].filter(Boolean).join(' \u00B7 ');
+  setText('sub-cpu', cpuSub);
+  if (sys.cpuUsage) {
+    setBar('bar-cpu', sys.cpuUsage, sys.cpuUsage > 90 ? 'var(--danger)' : sys.cpuUsage > 70 ? 'var(--warning)' : 'var(--accent)');
+  }
+
+  if (sys.memory) {
+    const mem = sys.memory;
+    setText('val-memory', `${mem.percent || 0}%`);
+    setText('sub-memory', `${fmtGb(mem.used_gb)} / ${fmtGb(mem.total_gb)}`);
+    setBar('bar-memory', mem.percent, mem.percent > 90 ? 'var(--danger)' : mem.percent > 75 ? 'var(--warning)' : 'var(--accent)');
+  }
+}
+
+function updateGpuCard(gpu) {
+  if (!gpu || !gpu.chipset) {
+    setText('val-gpu', '--');
+    return;
+  }
+  setText('val-gpu', `${gpu.cores} cores`);
+  setText('sub-gpu', [gpu.chipset, gpu.metal].filter(Boolean).join(' \u00B7 '));
+}
+
+function updateBatteryCard(bat) {
+  if (!bat || bat.percent == null) {
+    setText('val-battery', 'N/A');
+    setText('sub-battery', 'Desktop / no battery');
+    return;
+  }
+  setText('val-battery', `${bat.percent}%`);
+  const parts = [bat.status, bat.source].filter(Boolean);
+  if (bat.cycleCount) parts.push(`${bat.cycleCount} cycles`);
+  if (bat.remaining) parts.push(`${bat.remaining} left`);
+  setText('sub-battery', parts.join(' \u00B7 '));
+  setBar('bar-battery', bat.percent,
+    bat.percent < 20 ? 'var(--danger)' : bat.percent < 50 ? 'var(--warning)' : 'var(--success)');
+}
+
+function updateNetworkCard(net) {
+  if (!net || !net.ip) {
+    setText('val-network', 'Disconnected');
+    return;
+  }
+  setText('val-network', net.wifi || net.iface || 'Connected');
+  setText('sub-network', net.ip);
+}
+
+function updateIoCard(io) {
+  if (!io) {
+    setText('val-io', '--');
+    return;
+  }
+  setText('val-io', `${io.mb_per_sec} MB/s`);
+  setText('sub-io', `${io.transfers_per_sec} ops/s \u00B7 ${io.kb_per_transfer} KB/op`);
+}
+
+function updateDiskPanel(disk) {
+  setText('val-disk', `${disk.percent || 0}% used`);
+  setText('sub-disk', `${fmtGb(disk.used_gb)} / ${fmtGb(disk.total_gb)}`);
+  setBar('bar-disk', disk.percent, disk.percent > 90 ? 'var(--danger)' : disk.percent > 75 ? 'var(--warning)' : 'var(--accent)');
+  setText('disk-badge', `${fmtGb(disk.free_gb)} free`);
+
+  const diskPanel = document.getElementById('disk-panel');
+  if (disk.top_dirs && disk.top_dirs.length > 0) {
+    diskPanel.style.display = '';
+    const canvas = document.getElementById('disk-chart');
+    const neededH = disk.top_dirs.length * 32 + 24;
+    canvas.style.height = `${Math.max(neededH, 120)}px`;
+    drawDiskBars(canvas, disk.top_dirs, disk.total_gb);
+  } else {
+    // Hide the chart panel when no dir data — avoid empty space
+    diskPanel.style.display = 'none';
+  }
+}
+
+function renderGarbage(garbage) {
+  const panel = document.getElementById('garbage-panel');
+  const list = document.getElementById('garbage-list');
+  if (!garbage || garbage.length === 0) { panel.style.display = 'none'; return; }
+  panel.style.display = '';
+
+  const totalGb = garbage.reduce((s, g) => s + (g.size_gb || 0), 0);
+  setText('garbage-badge', `${fmtGb(totalGb)} total`);
+
+  list.innerHTML = '';
+  const sorted = [...garbage].sort((a, b) => (b.size_gb || 0) - (a.size_gb || 0));
+  for (const g of sorted) {
+    const el = document.createElement('div');
+    el.className = 'garbage-item';
+    el.innerHTML = `
+      <span class="garbage-risk ${g.risk || 'safe'}">${g.risk || 'safe'}</span>
+      <span class="garbage-path" title="${esc(g.path)}">${esc(g.path)}</span>
+      <span class="garbage-size">${fmtGb(g.size_gb)}</span>
+    `;
+    list.appendChild(el);
+  }
+}
+
+// ── Progress UI ──
 
 function setScanStatus(cls, text) {
   const el = document.getElementById('scan-status');
@@ -105,8 +334,6 @@ function setScanStatus(cls, text) {
 
 function showScanProgress() {
   const dashboard = document.getElementById('dashboard');
-
-  // Remove existing progress if any
   const existing = document.getElementById('scan-progress');
   if (existing) existing.remove();
 
@@ -133,8 +360,6 @@ function showScanProgress() {
       `).join('')}
     </div>
   `;
-
-  // Insert at top of dashboard
   dashboard.insertBefore(progressEl, dashboard.firstChild);
 }
 
@@ -142,18 +367,21 @@ function markStepDone(key) {
   if (completedSteps.has(key)) return;
   completedSteps.add(key);
   const statusEl = document.getElementById(`step-status-${key}`);
-  if (statusEl) {
-    statusEl.innerHTML = '<span class="step-check">✓</span>';
-  }
+  if (statusEl) statusEl.innerHTML = '<span class="step-check">\u2713</span>';
   const stepEl = document.getElementById(`step-${key}`);
   if (stepEl) stepEl.classList.add('done');
+  // Update title when all visible steps are done
+  const titleEl = document.querySelector('.scan-progress-title');
+  const allSteps = document.querySelectorAll('.scan-step');
+  const doneSteps = document.querySelectorAll('.scan-step.done');
+  if (titleEl && allSteps.length > 0 && allSteps.length === doneSteps.length) {
+    titleEl.textContent = 'Scan complete';
+  }
 }
 
 function markStepActive(key) {
   const stepEl = document.getElementById(`step-${key}`);
-  if (stepEl && !stepEl.classList.contains('done')) {
-    stepEl.classList.add('active');
-  }
+  if (stepEl && !stepEl.classList.contains('done')) stepEl.classList.add('active');
 }
 
 function removeScanProgress() {
@@ -164,197 +392,146 @@ function removeScanProgress() {
   }
 }
 
-// ── Stream Token Handler (live progress) ──
+// ── Cache ──
 
-let lastTokenText = '';
-
-function handleStreamToken(fullText) {
-  lastTokenText = fullText;
-
-  // Detect progress from streaming text content
-  // The agent mentions these keywords as it runs commands
-  const lower = fullText.toLowerCase();
-
-  if (lower.includes('sw_vers') || lower.includes('uname') || lower.includes('sysctl') || lower.includes('os-release') || lower.includes('hostname')) {
-    markStepActive('system');
-  }
-  if (lower.includes('df -h') || lower.includes('du -sh') || lower.includes('disk usage')) {
-    markStepActive('disk');
-  }
-  if (lower.includes('brew') || lower.includes('docker') || lower.includes('npm ls') || lower.includes('pip list')) {
-    markStepActive('apps');
-  }
-  if (lower.includes('.trash') || lower.includes('node_modules') || lower.includes('caches') || lower.includes('deriveddata')) {
-    markStepActive('garbage');
-  }
-
-  // Check if sections are completing (data appearing in structured tags)
-  if (fullText.includes('"system"') && fullText.includes('"os"')) {
-    markStepDone('system');
-  }
-  if (fullText.includes('"disk"') && fullText.includes('"top_dirs"')) {
-    markStepDone('disk');
-  }
-  if (fullText.includes('"apps"')) {
-    markStepDone('apps');
-  }
-  if (fullText.includes('"garbage"')) {
-    markStepDone('garbage');
-  }
-  if (fullText.includes('[RECOMMENDATIONS]')) {
-    markStepDone('analysis');
-  }
-
-  // Try to parse partial dashboard update for early rendering
-  tryPartialUpdate(fullText);
-}
-
-// ── Partial Dashboard Updates ──
-
-let lastPartialUpdate = '';
-
-function tryPartialUpdate(text) {
-  // Only try if we have a DASHBOARD_UPDATE opening tag
-  const startIdx = text.indexOf('[DASHBOARD_UPDATE]');
-  if (startIdx === -1) return;
-
-  const jsonStart = startIdx + '[DASHBOARD_UPDATE]'.length;
-  const endIdx = text.indexOf('[/DASHBOARD_UPDATE]');
-
-  // If complete, don't do partial — handleStreamEnd will handle it
-  if (endIdx !== -1) return;
-
-  // Try to extract partial JSON and parse what we can
-  const partial = text.slice(jsonStart).trim();
-  if (partial === lastPartialUpdate) return;
-  lastPartialUpdate = partial;
-
-  // Try parsing — may fail if JSON is incomplete, that's ok
+function restoreFromCache(sessionId) {
   try {
-    // Attempt to fix incomplete JSON by closing open braces
-    const fixed = fixPartialJson(partial);
-    if (fixed) {
-      const data = JSON.parse(fixed);
-      updateDashboard(data);
+    const cached = localStorage.getItem(`sys-doctor:${sessionId}`);
+    if (!cached) return;
+    const data = JSON.parse(cached);
+    if (data.system) updateSystemCards(data.system);
+    if (data.gpu) updateGpuCard(data.gpu);
+    if (data.battery) updateBatteryCard(data.battery);
+    if (data.network) updateNetworkCard(data.network);
+    if (data.io) updateIoCard(data.io);
+    if (data.disk) updateDiskPanel(data.disk);
+    if (data.garbage) renderGarbage(data.garbage);
+    if (data.recommendations) renderRecommendations(data.recommendations);
+    setScanStatus('done', 'Ready');
+  } catch { /* cache miss */ }
+}
+
+/** Try to extract recommendations from chat history (for old sessions without cached recs). */
+async function tryRestoreRecsFromHistory(sessionId) {
+  // Check if we already have cached recommendations
+  try {
+    const cached = JSON.parse(localStorage.getItem(`sys-doctor:${sessionId}`) || '{}');
+    if (cached.recommendations && cached.recommendations.length > 0) return; // already have them
+  } catch { /* ignore */ }
+
+  // Fetch chat messages and look for the last assistant message with a JSON block
+  try {
+    const { fetchSessionMessages } = await import('./api.js');
+    const messages = await fetchSessionMessages(SKILL_NAME, sessionId);
+    // Search from newest to oldest for a message with ```json
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg.content && msg.content.includes('```json')) {
+        const { recs } = parseRecommendations(msg.content);
+        if (recs.length > 0) {
+          renderRecommendations(recs);
+          // Cache for next time
+          try {
+            const existing = JSON.parse(localStorage.getItem(`sys-doctor:${sessionId}`) || '{}');
+            existing.recommendations = recs;
+            localStorage.setItem(`sys-doctor:${sessionId}`, JSON.stringify(existing));
+          } catch { /* ignore */ }
+          break;
+        }
+      }
     }
-  } catch {
-    // Expected — JSON is still streaming
+  } catch (e) {
+    console.warn('Failed to restore recs from history:', e);
   }
 }
 
-function fixPartialJson(s) {
-  // Count open/close braces and brackets
-  let braces = 0, brackets = 0;
-  let inString = false, escaped = false;
-  for (const ch of s) {
-    if (escaped) { escaped = false; continue; }
-    if (ch === '\\') { escaped = true; continue; }
-    if (ch === '"') { inString = !inString; continue; }
-    if (inString) continue;
-    if (ch === '{') braces++;
-    if (ch === '}') braces--;
-    if (ch === '[') brackets++;
-    if (ch === ']') brackets--;
-  }
-
-  // Only try to fix if we have at least one complete top-level key
-  if (braces <= 0 && brackets <= 0) return s;
-  if (!s.includes(':')) return null;
-
-  // Remove trailing comma or incomplete key
-  let fixed = s.replace(/,\s*$/, '').replace(/,\s*"[^"]*"?\s*$/, '');
-
-  // Close open brackets and braces
-  while (brackets > 0) { fixed += ']'; brackets--; }
-  while (braces > 0) { fixed += '}'; braces--; }
-
-  return fixed;
+function cacheDashboardData(results) {
+  const sid = new URLSearchParams(window.location.search).get('session') || '';
+  if (!sid) return;
+  try {
+    localStorage.setItem(`sys-doctor:${sid}`, JSON.stringify(results));
+  } catch { /* quota exceeded */ }
 }
 
-// ── Stream End Handler ──
+// ── Model response validation + retry ──
 
-function handleStreamEnd(text) {
-  scanning = false;
-  lastPartialUpdate = '';
-  setScanStatus('done', 'Done');
+let retryCount = 0;
+const MAX_RETRIES = 1;
 
-  // Mark all steps done
-  SCAN_STEPS.forEach(s => markStepDone(s.key));
+function handleModelResponse(text) {
+  markStepDone('analysis');
+  const { recs, error } = parseRecommendations(text);
 
-  // Remove progress after a brief delay
-  setTimeout(removeScanProgress, 800);
-
-  // Parse dashboard update (final, complete)
-  const dashMatch = text.match(/\[DASHBOARD_UPDATE\]([\s\S]*?)\[\/DASHBOARD_UPDATE\]/);
-  if (dashMatch) {
-    try {
-      const data = JSON.parse(dashMatch[1]);
-      updateDashboard(data);
-    } catch (e) {
-      console.error('Failed to parse DASHBOARD_UPDATE:', e);
+  if (recs.length > 0) {
+    retryCount = 0;
+    renderRecommendations(recs);
+    // Cache recommendations alongside scan data
+    const sid = new URLSearchParams(window.location.search).get('session') || '';
+    if (sid) {
+      try {
+        const existing = JSON.parse(localStorage.getItem(`sys-doctor:${sid}`) || '{}');
+        existing.recommendations = recs;
+        localStorage.setItem(`sys-doctor:${sid}`, JSON.stringify(existing));
+      } catch { /* ignore */ }
     }
+    return;
   }
 
-  // Parse recommendations
-  const recsMatch = text.match(/\[RECOMMENDATIONS\]([\s\S]*?)\[\/RECOMMENDATIONS\]/);
-  if (recsMatch) {
-    try {
-      const recs = JSON.parse(recsMatch[1]);
-      renderRecommendations(recs);
-    } catch (e) {
-      console.error('Failed to parse RECOMMENDATIONS:', e);
-    }
+  // JSON missing or invalid — ask model to fix it (once)
+  if (retryCount < MAX_RETRIES && chat) {
+    retryCount++;
+    const correction = error
+      ? `Your JSON block had an error: ${error}\n\nPlease reply with ONLY a valid \`\`\`json code block containing the recommendations array. Schema:\n[{"title": "string", "savings_gb": number, "risk": "safe|review|caution", "command": "string", "description": "string"}]`
+      : 'You forgot to include the ```json recommendation block at the end. Please reply with ONLY a valid ```json code block containing the recommendations array.';
+    chat.send(correction);
   }
 }
 
-// ── Dashboard Update ──
+// ── Recommendation parsing (from model's markdown response) ──
 
-function updateDashboard(data) {
-  // System cards
-  if (data.system) {
-    const sys = data.system;
-    setText('val-os', sys.os || '--');
-    setText('sub-os', [sys.hostname, sys.uptime ? `Up ${sys.uptime}` : ''].filter(Boolean).join(' · '));
-    setText('val-cpu', sys.cpu || '--');
-  }
+/**
+ * Extract structured recommendations from the model's response.
+ * The prompt asks the model to append a ```json block at the end.
+ * Returns { recs: [...], error?: string }.
+ */
+function parseRecommendations(text) {
+  // Find the last ```json ... ``` block in the response
+  const jsonBlocks = text.match(/```json\s*\n([\s\S]*?)\n```/g);
+  if (!jsonBlocks) return { recs: [], error: null }; // no JSON block — model forgot
 
-  if (data.system?.memory) {
-    const mem = data.system.memory;
-    setText('val-memory', `${mem.percent || 0}%`);
-    setText('sub-memory', `${fmtGb(mem.used_gb)} / ${fmtGb(mem.total_gb)}`);
-    setBar('bar-memory', mem.percent, mem.percent > 90 ? 'var(--danger)' : mem.percent > 75 ? 'var(--warning)' : 'var(--accent)');
-  }
+  const lastBlock = jsonBlocks[jsonBlocks.length - 1];
+  const jsonStr = lastBlock.replace(/```json\s*\n/, '').replace(/\n```$/, '').trim();
 
-  // Disk card
-  if (data.disk) {
-    const d = data.disk;
-    setText('val-disk', `${d.percent || 0}%`);
-    setText('sub-disk', `${fmtGb(d.used_gb)} / ${fmtGb(d.total_gb)}`);
-    setBar('bar-disk', d.percent, d.percent > 90 ? 'var(--danger)' : d.percent > 75 ? 'var(--warning)' : 'var(--accent)');
-    setText('disk-badge', `${fmtGb(d.free_gb)} free`);
+  try {
+    const parsed = JSON.parse(jsonStr);
+    if (!Array.isArray(parsed)) return { recs: [], error: 'Expected a JSON array, got ' + typeof parsed };
 
-    // Draw chart
-    if (d.top_dirs && d.top_dirs.length > 0) {
-      const canvas = document.getElementById('disk-chart');
-      const neededH = d.top_dirs.length * 32 + 24;
-      canvas.style.height = `${Math.max(neededH, 120)}px`;
-      drawDiskBars(canvas, d.top_dirs, d.total_gb);
+    // Validate each item has required fields
+    const recs = [];
+    for (const r of parsed) {
+      if (!r.title) continue;
+      if (typeof r.savings_gb !== 'number' && r.savings_gb !== undefined) {
+        return { recs: [], error: `"savings_gb" must be a number, got "${r.savings_gb}" for "${r.title}"` };
+      }
+      const risk = String(r.risk || 'review').toLowerCase();
+      if (!['safe', 'review', 'caution'].includes(risk)) {
+        return { recs: [], error: `"risk" must be "safe", "review", or "caution", got "${r.risk}" for "${r.title}"` };
+      }
+      recs.push({
+        title: String(r.title),
+        description: String(r.description || ''),
+        savings_gb: Number(r.savings_gb || 0),
+        risk,
+        command: String(r.command || ''),
+      });
     }
-  }
-
-  // Apps
-  if (data.apps) {
-    renderApps(data.apps);
-  }
-
-  // Garbage
-  if (data.garbage && data.garbage.length > 0) {
-    renderGarbage(data.garbage);
+    return { recs, error: null };
+  } catch (e) {
+    return { recs: [], error: `JSON parse error: ${e.message}` };
   }
 }
 
-// ── Render Recommendations ──
-
+/** Render recommendation cards on the dashboard. */
 function renderRecommendations(recs) {
   const panel = document.getElementById('recs-panel');
   const list = document.getElementById('recs-list');
@@ -362,20 +539,27 @@ function renderRecommendations(recs) {
   panel.style.display = '';
 
   const totalSavings = recs.reduce((sum, r) => sum + (r.savings_gb || 0), 0);
-  setText('recs-badge', `${fmtGb(totalSavings)} reclaimable`);
+  setText('recs-badge', `~${fmtGb(totalSavings)} reclaimable`);
 
   list.innerHTML = '';
   for (const rec of recs) {
     const item = document.createElement('div');
     item.className = 'rec-item';
     item.innerHTML = `
-      <span class="rec-risk ${rec.risk || 'safe'}">${rec.risk || 'safe'}</span>
-      <div class="rec-info">
-        <div class="rec-title">${esc(rec.title)}</div>
-        <div class="rec-desc">${esc(rec.description || '')}</div>
+      <div class="rec-header">
+        <span class="rec-risk ${rec.risk || 'review'}">${esc(rec.risk || 'review')}</span>
+        <div class="rec-info">
+          <div class="rec-title">${esc(rec.title)}</div>
+          <div class="rec-desc">${esc(rec.description)}</div>
+        </div>
+        ${rec.savings_gb ? `<span class="rec-savings">${fmtGb(rec.savings_gb)}</span>` : ''}
       </div>
-      <span class="rec-savings">${fmtGb(rec.savings_gb)}</span>
-      ${rec.command ? `<button class="rec-copy" data-cmd="${esc(rec.command)}" title="Copy command">Copy</button>` : ''}
+      ${rec.command ? `
+        <div class="rec-cmd-block">
+          <code class="rec-cmd-code">${esc(rec.command)}</code>
+          <button class="rec-copy" data-cmd="${esc(rec.command)}" title="Copy command">Copy</button>
+        </div>
+      ` : ''}
     `;
     list.appendChild(item);
   }
@@ -383,65 +567,13 @@ function renderRecommendations(recs) {
   // Copy button handlers
   list.querySelectorAll('.rec-copy').forEach(btn => {
     btn.addEventListener('click', () => {
-      const cmd = btn.dataset.cmd;
-      navigator.clipboard.writeText(cmd).then(() => {
+      navigator.clipboard.writeText(btn.dataset.cmd).then(() => {
         btn.textContent = 'Copied!';
         btn.classList.add('copied');
         setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
       });
     });
   });
-}
-
-// ── Render Apps ──
-
-function renderApps(apps) {
-  const panel = document.getElementById('apps-panel');
-  const grid = document.getElementById('apps-grid');
-  panel.style.display = '';
-  grid.innerHTML = '';
-
-  const items = [
-    { icon: '🍺', name: 'Homebrew', stat: apps.brew ? `${apps.brew.count} pkgs · ${fmtGb(apps.brew.size_gb)}` : null },
-    { icon: '🐳', name: 'Docker', stat: apps.docker ? `${apps.docker.images} images · ${fmtGb(apps.docker.size_gb)}` : null },
-    { icon: '📦', name: 'npm global', stat: apps.npm_global ? `${apps.npm_global.count} pkgs` : null },
-    { icon: '🐍', name: 'pip', stat: apps.pip ? `${apps.pip.count} pkgs` : null },
-  ].filter(i => i.stat);
-
-  for (const item of items) {
-    const el = document.createElement('div');
-    el.className = 'app-item';
-    el.innerHTML = `
-      <div class="app-icon">${item.icon}</div>
-      <div class="app-name">${item.name}</div>
-      <div class="app-stat">${item.stat}</div>
-    `;
-    grid.appendChild(el);
-  }
-}
-
-// ── Render Garbage ──
-
-function renderGarbage(garbage) {
-  const panel = document.getElementById('garbage-panel');
-  const list = document.getElementById('garbage-list');
-  panel.style.display = '';
-
-  const totalGb = garbage.reduce((s, g) => s + (g.size_gb || 0), 0);
-  setText('garbage-badge', `${fmtGb(totalGb)} total`);
-
-  list.innerHTML = '';
-  const sorted = [...garbage].sort((a, b) => (b.size_gb || 0) - (a.size_gb || 0));
-  for (const g of sorted) {
-    const el = document.createElement('div');
-    el.className = 'garbage-item';
-    el.innerHTML = `
-      <span class="garbage-risk ${g.risk || 'safe'}">${g.risk || 'safe'}</span>
-      <span class="garbage-path" title="${esc(g.path)}">${esc(g.path)}</span>
-      <span class="garbage-size">${fmtGb(g.size_gb)}</span>
-    `;
-    list.appendChild(el);
-  }
 }
 
 // ── Helpers ──

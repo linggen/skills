@@ -1,17 +1,29 @@
-/* Shared styles for sys-doctor */
+/* Shared styles for sys-doctor — follows system light/dark preference */
 :root {
-  --bg: #0f1117;
-  --bg-surface: #161822;
-  --bg-card: #1c1f2e;
-  --bg-hover: #242838;
-  --text: #e4e4e7;
-  --text-muted: #71717a;
+  --bg: #f8fafc;
+  --bg-surface: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-hover: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
   --accent: #6366f1;
   --accent-hover: #818cf8;
-  --border: #27272a;
+  --border: #e2e8f0;
   --success: #22c55e;
   --warning: #eab308;
   --danger: #ef4444;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1117;
+    --bg-surface: #161822;
+    --bg-card: #1c1f2e;
+    --bg-hover: #242838;
+    --text: #e4e4e7;
+    --text-muted: #71717a;
+    --border: #27272a;
+  }
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
