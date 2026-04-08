@@ -78,9 +78,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Restore from cache or auto-start
   if (existingSession) {
-    restoreFromCache(existingSession);
-    // If no recommendations in cache, try to extract from chat history
-    tryRestoreRecsFromHistory(existingSession);
+    const restored = restoreFromCache(existingSession);
+    if (restored) {
+      // If no recommendations in cache, try to extract from chat history
+      tryRestoreRecsFromHistory(existingSession);
+    } else {
+      // No cached dashboard data — re-scan to populate cards
+      setTimeout(() => startScan(), 300);
+    }
   } else {
     setTimeout(() => startScan(), 300);
   }
@@ -397,8 +402,9 @@ function removeScanProgress() {
 function restoreFromCache(sessionId) {
   try {
     const cached = localStorage.getItem(`sys-doctor:${sessionId}`);
-    if (!cached) return;
+    if (!cached) return false;
     const data = JSON.parse(cached);
+    if (!data.system && !data.disk) return false; // empty/corrupt cache
     if (data.system) updateSystemCards(data.system);
     if (data.gpu) updateGpuCard(data.gpu);
     if (data.battery) updateBatteryCard(data.battery);
@@ -408,7 +414,8 @@ function restoreFromCache(sessionId) {
     if (data.garbage) renderGarbage(data.garbage);
     if (data.recommendations) renderRecommendations(data.recommendations);
     setScanStatus('done', 'Ready');
-  } catch { /* cache miss */ }
+    return true;
+  } catch { return false; }
 }
 
 /** Try to extract recommendations from chat history (for old sessions without cached recs). */
