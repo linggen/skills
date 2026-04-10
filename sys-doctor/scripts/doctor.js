@@ -1,57 +1,31 @@
-// Sys Doctor dashboard — Robot Doctor pattern:
-// Phase 1: Client runs bash commands in parallel (fast, no model)
-// Phase 2: Send collected data to model for analysis
-// Phase 3: Model's recommendations displayed in chat
-import { fetchModels, fetchDefaultModel } from './api.js';
-import { runScan } from './scan.js';
-import { drawDiskBars } from './charts.js';
+// Sys Doctor v2 — orchestrator
+// Runs hardware probe on open, sends data to model, renders model's page JSON.
+
+import { fetchDefaultModel } from './api.js';
+import { runScan, runDeepFileScan } from './scan.js';
+import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
+import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
 
 const SKILL_NAME = 'sys-doctor';
 const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
-const scanType = params.get('scan') || 'full';
 const existingSession = params.get('session') || '';
 
 /** @type {ReturnType<typeof LinggenUI.mount> | null} */
 let chat = null;
 let scanning = false;
-
-// Scan progress steps
-const SCAN_STEPS = [
-  { key: 'system', label: 'System info', icon: '\uD83D\uDCBB' },
-  { key: 'disk', label: 'Disk usage', icon: '\uD83D\uDCBE' },
-  { key: 'garbage', label: 'Garbage scan', icon: '\uD83D\uDDD1\uFE0F' },
-  { key: 'analysis', label: 'AI analysis', icon: '\uD83E\uDDE0' },
-];
-let completedSteps = new Set();
+let expectPageBlock = false; // only true right after sending a prompt that should produce a page block
 
 // ── Init ──
 
 document.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('back-btn').addEventListener('click', () => {
-    window.location.href = 'index.html';
-  });
-
-  // Load models
-  const modelSwitcher = document.getElementById('model-switcher');
-  try {
-    const [models, defaultModel] = await Promise.all([fetchModels(), fetchDefaultModel()]);
-    modelSwitcher.innerHTML = '';
-    if (!modelId) modelId = defaultModel || (models[0] && models[0].id) || '';
-    for (const m of models) {
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = `${m.id} (${m.provider})`;
-      if (m.id === modelId) opt.selected = true;
-      modelSwitcher.appendChild(opt);
-    }
-  } catch {
-    modelSwitcher.innerHTML = '<option>No models</option>';
+  // Load default model (chat widget has its own model selector)
+  if (!modelId) {
+    try {
+      const defaultModel = await fetchDefaultModel();
+      modelId = localStorage.getItem('sys-doctor:model') || defaultModel || '';
+    } catch { /* ignore */ }
   }
-  modelSwitcher.addEventListener('change', () => {
-    modelId = modelSwitcher.value;
-    if (chat) chat.setOptions({ modelId });
-  });
 
   // Mount chat panel
   const chatPanel = document.getElementById('chat-panel');
@@ -59,8 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     skillName: SKILL_NAME,
     agentId: 'ling',
     modelId,
-    title: 'Diagnosis',
-    placeholder: 'Ask about your system...',
+    title: 'Sys Doctor',
+    placeholder: 'Ask me anything...',
     onSessionCreated: (sid) => {
       const url = new URL(window.location);
       url.searchParams.set('session', sid);
@@ -73,102 +47,150 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (existingSession) mountOpts.sessionId = existingSession;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
 
-  // Scan button
-  document.getElementById('scan-btn').addEventListener('click', () => startScan());
+  // Expose send for widget click handlers.
+  // Intercept deep scan triggers to run client-side before sending to model.
+  window._chatSend = async (text) => {
+    if (!chat) return;
+    const lower = text.toLowerCase();
+    if (lower.includes('large file') || lower.includes('deep scan') || lower.includes('scan files') || lower.includes('find duplicate')) {
+      await runClientDeepScan(text);
+    } else {
+      chat.send(text);
+    }
+  };
 
-  // Restore from cache or auto-start
+  // Restore or start fresh
   if (existingSession) {
     const restored = restoreFromCache(existingSession);
-    if (restored) {
-      // If no recommendations in cache, try to extract from chat history
-      tryRestoreRecsFromHistory(existingSession);
-    } else {
-      // No cached dashboard data — re-scan to populate cards
-      setTimeout(() => startScan(), 300);
+    if (!restored) {
+      showWelcome();
+      startHardwareProbe();
     }
   } else {
-    setTimeout(() => startScan(), 300);
+    showWelcome();
+    startHardwareProbe();
   }
 });
 
-// ── Scan ──
+// ── Welcome message ──
 
-async function startScan() {
-  if (scanning || !chat) return;
+function showWelcome() {
+  if (!chat) return;
+  chat.addMessage('assistant',
+    "Hi, I'm **Sys Doctor** — your AI system health analyst.\n\n" +
+    "I'm scanning your hardware right now — checking CPU, memory, disk, battery, security, and performance. " +
+    "This takes about 10 seconds.\n\n" +
+    "Once done, I'll show you a health report and suggest what you can do — clean up disk, organise files, check security, or just ask me anything about your system."
+  );
+}
+
+// ── Hardware probe ──
+
+async function startHardwareProbe() {
+  if (scanning) return;
   scanning = true;
-  completedSteps = new Set();
-  setScanStatus('scanning', 'Scanning...');
-  showScanProgress();
+
+  const steps = [
+    { label: 'System info', status: 'active', icon: '💻' },
+    { label: 'Disk usage', status: 'pending', icon: '💾' },
+    { label: 'Security', status: 'pending', icon: '🔒' },
+    { label: 'Performance', status: 'pending', icon: '⚡' },
+  ];
+
+  applyPageUpdate({
+    body: [{ type: 'progress', title: 'Checking your system...', steps: [...steps] }],
+  });
+
+  function updateSteps(doneIdx, activeIdx) {
+    const updated = steps.map((s, i) => ({
+      ...s,
+      status: i < doneIdx ? 'done' : i === activeIdx ? 'active' : 'pending',
+    }));
+    applyPageUpdate({ body: [{ type: 'progress', title: 'Checking your system...', steps: updated }] });
+  }
 
   try {
-    const sessionId = chat.getSessionId();
+    const sessionId = chat?.getSessionId();
 
-    // Phase 1: Run all bash commands in parallel (no model)
-    const results = await runScan(scanType, sessionId, handleScanProgress);
+    // Run full scan (system + disk + garbage + security + performance)
+    const results = await runScan('full', sessionId, (step, data) => {
+      if (data === 'start') return;
+      if (step === 'system') updateSteps(1, 1);
+      if (step === 'disk') updateSteps(2, 2);
+      if (step === 'security') updateSteps(3, 3);
+      if (step === 'performance') updateSteps(4, -1);
+    });
 
-    // Update dashboard with final results
-    if (results.system) updateSystemCards(results.system);
-    if (results.gpu) updateGpuCard(results.gpu);
-    if (results.battery) updateBatteryCard(results.battery);
-    if (results.network) updateNetworkCard(results.network);
-    if (results.io) updateIoCard(results.io);
-    if (results.disk) updateDiskPanel(results.disk);
-    if (results.garbage) renderGarbage(results.garbage);
+    // Calculate health score
+    const { score, breakdown } = calculateHealthScore(results);
+    results.healthScore = score;
+    results.scoreBreakdown = breakdown;
 
-    // Cache for restore on refresh
-    cacheDashboardData(results);
+    // Save score history
+    const diskFree = results.disk ? results.disk.free_gb : null;
+    saveScoreHistory(score, diskFree);
 
-    // Mark scan steps done
-    markStepDone('system');
-    markStepDone('disk');
-    if (scanType === 'full') markStepDone('garbage');
-
-    // Phase 2: Send data to model for AI analysis
-    markStepActive('analysis');
-    const prompt = buildAnalysisPrompt(results);
+    // Build and send the opening prompt
+    const prompt = buildOpeningPrompt(results);
+    expectPageBlock = true;
     chat.send(prompt);
-
-    // Analysis step marked done when model response arrives (in handleModelResponse)
-    setScanStatus('done', 'Done');
   } catch (err) {
-    console.error('Scan error:', err);
-    setScanStatus('error', 'Error');
-    // Fallback: let model do the scan the old way
-    chat.send(`[SYS_SCAN] ${scanType}`);
+    console.error('Hardware probe error:', err);
+    if (chat) chat.send('Please greet me and show the sys-doctor dashboard. I could not collect hardware data automatically.');
   } finally {
     scanning = false;
   }
 }
 
-/** Build a prompt with all collected data for the model to analyze. */
-function buildAnalysisPrompt(results) {
-  const parts = ['Here is my system scan data. Please analyze it and provide recommendations.\n'];
+// ── Opening prompt ──
+
+function buildOpeningPrompt(results) {
+  const parts = ['[SYS_SCAN_DATA]\n'];
 
   if (results.system) {
     const s = results.system;
-    parts.push(`## System\n- OS: ${s.os}\n- CPU: ${s.cpuBrand} (${s.cpuCores} cores, ${s.cpuUsage}% usage)\n- Load: ${(s.loadAvg || []).join(', ')}\n- Memory: ${s.memory.used_gb}/${s.memory.total_gb} GB (${s.memory.percent}%)\n- Uptime: ${s.uptime}\n- Host: ${s.hostname}\n- Arch: ${s.arch}\n`);
+    parts.push(`## System`);
+    parts.push(`- OS: ${s.os}`);
+    parts.push(`- CPU: ${s.cpuBrand} (${s.cpuCores} cores, ${s.cpuUsage}% usage)`);
+    if (s.loadAvg?.length) parts.push(`- Load: ${s.loadAvg.join(', ')}`);
+    parts.push(`- Memory: ${s.memory.used_gb}/${s.memory.total_gb} GB (${s.memory.percent}%)`);
+    parts.push(`- Uptime: ${s.uptime}`);
+    parts.push(`- Host: ${s.hostname}`);
+    parts.push(`- Arch: ${s.arch}`);
+    parts.push('');
   }
 
-  if (results.gpu) {
-    const g = results.gpu;
-    if (g.chipset) parts.push(`## GPU\n- ${g.chipset}: ${g.cores} cores, ${g.metal}\n`);
+  if (results.gpu?.chipset) {
+    parts.push(`## GPU`);
+    parts.push(`- ${results.gpu.chipset}: ${results.gpu.cores} cores, ${results.gpu.metal}`);
+    parts.push('');
   }
 
-  if (results.battery) {
+  if (results.battery?.percent != null) {
     const b = results.battery;
-    if (b.percent != null) {
-      parts.push(`## Battery\n- ${b.percent}% (${b.status || 'unknown'}), ${b.source || ''}${b.cycleCount ? `, ${b.cycleCount} cycles` : ''}\n`);
-    }
+    parts.push(`## Battery`);
+    parts.push(`- ${b.percent}% (${b.status || 'unknown'}), ${b.source || ''}${b.cycleCount ? `, ${b.cycleCount} cycles` : ''}`);
+    parts.push('');
+  }
+
+  if (results.network?.ip) {
+    parts.push(`## Network`);
+    parts.push(`- IP: ${results.network.ip}`);
+    if (results.network.wifi) parts.push(`- WiFi: ${results.network.wifi}`);
+    parts.push('');
   }
 
   if (results.io) {
-    parts.push(`## Storage IO\n- ${results.io.mb_per_sec} MB/s, ${results.io.transfers_per_sec} ops/s\n`);
+    parts.push(`## Storage IO`);
+    parts.push(`- ${results.io.mb_per_sec} MB/s, ${results.io.transfers_per_sec} ops/s`);
+    parts.push('');
   }
 
   if (results.disk) {
     const d = results.disk;
-    parts.push(`## Disk\n- Total: ${fmtGb(d.total_gb)}, Used: ${fmtGb(d.used_gb)}, Free: ${fmtGb(d.free_gb)} (${d.percent}% used)`);
-    if (d.top_dirs && d.top_dirs.length > 0) {
+    parts.push(`## Disk`);
+    parts.push(`- Total: ${fmtGb(d.total_gb)}, Used: ${fmtGb(d.used_gb)}, Free: ${fmtGb(d.free_gb)} (${d.percent}% used)`);
+    if (d.top_dirs?.length) {
       parts.push('- Top directories:');
       for (const dir of d.top_dirs) {
         parts.push(`  - ${dir.path}: ${fmtGb(dir.size_gb)}`);
@@ -177,426 +199,316 @@ function buildAnalysisPrompt(results) {
     parts.push('');
   }
 
-  if (results.caches && results.caches.length > 0) {
-    parts.push('## Caches');
+  if (results.caches?.length) {
+    parts.push(`## Caches`);
     for (const c of results.caches) {
       parts.push(`- ${c.path}: ${fmtGb(c.size_gb)}`);
     }
     parts.push('');
   }
 
-  if (results.garbage && results.garbage.length > 0) {
-    parts.push('## Garbage Candidates');
+  if (results.garbage?.length) {
+    parts.push(`## Garbage Candidates`);
     for (const g of results.garbage) {
       parts.push(`- ${g.path}: ${fmtGb(g.size_gb)} (${g.category})`);
     }
     parts.push('');
   }
 
-  parts.push(`Please provide your analysis in natural language (markdown), then at the very end append a JSON block with structured recommendations for the dashboard. The JSON block MUST be wrapped in \`\`\`json fences. Format:
+  if (results.security) {
+    const s = results.security;
+    parts.push(`## Security (${s.passing}/${s.total} passing)`);
+    for (const c of s.checks) {
+      parts.push(`- ${c.label}: ${c.detail} (${c.status})`);
+    }
+    if (s.ports?.length) {
+      parts.push(`- Open ports: ${s.ports.length} listening`);
+    }
+    parts.push('');
+  }
 
-\`\`\`json
-[
-  {"title": "Clear Xcode DerivedData", "savings_gb": 7.7, "risk": "safe", "command": "rm -rf ~/Library/Developer/Xcode/DerivedData", "description": "Build artifacts, Xcode regenerates on next build"},
-  {"title": "Remove old simulators", "savings_gb": 8.6, "risk": "review", "command": "xcrun simctl delete unavailable", "description": "Only removes unavailable devices"}
-]
-\`\`\`
+  if (results.performance) {
+    const p = results.performance;
+    parts.push(`## Performance`);
+    if (p.memProcs?.length) {
+      parts.push('- Top memory processes:');
+      for (const proc of p.memProcs.slice(0, 5)) {
+        parts.push(`  - ${proc.name}: ${proc.memory_mb} MB`);
+      }
+    }
+    if (p.launchAgents) parts.push(`- Launch agents: ${p.launchAgents}`);
+    if (p.swapUsedMb > 0) parts.push(`- Swap used: ${Math.round(p.swapUsedMb)} MB`);
+    parts.push('');
+  }
 
-Risk values: "safe", "review", or "caution". Include 3-6 recommendations sorted by impact.`);
+  // Hardware model + age
+  if (results.hardware) {
+    const hw = results.hardware;
+    parts.push(`## Hardware`);
+    if (hw.modelName) parts.push(`- Model: ${hw.modelName}`);
+    if (hw.chip) parts.push(`- Chip: ${hw.chip}`);
+    if (hw.modelId) parts.push(`- Model ID: ${hw.modelId}`);
+    parts.push(`- Architecture: ${hw.isAppleSilicon ? 'Apple Silicon' : 'Intel'}`);
+    if (hw.year) parts.push(`- Approximate year: ${hw.year}`);
+    if (hw.age != null) parts.push(`- Approximate age: ${hw.age} years`);
+    parts.push('');
+  }
+
+  // Usage pattern
+  if (results.usage) {
+    const u = results.usage;
+    parts.push(`## Usage Profile: ${u.profile}`);
+    if (u.summary) {
+      const s = u.summary;
+      const detected = [];
+      if (s.hasXcode) detected.push('Xcode');
+      if (s.hasDocker) detected.push('Docker');
+      if (s.hasVSCode) detected.push('VS Code');
+      if (s.hasBrew) detected.push('Homebrew');
+      if (s.hasNode) detected.push('Node.js');
+      if (s.hasOllama) detected.push('Ollama');
+      if (s.hasCreative) detected.push('Creative apps');
+      if (detected.length) parts.push(`- Detected tools: ${detected.join(', ')}`);
+    }
+    if (u.apps?.length) {
+      parts.push(`- Installed apps: ${u.apps.slice(0, 15).join(', ')}${u.apps.length > 15 ? ` (+${u.apps.length - 15} more)` : ''}`);
+    }
+    parts.push('');
+  }
+
+  // Health score
+  if (results.healthScore != null) {
+    parts.push(`## Health Score: ${results.healthScore}/100`);
+    if (results.scoreBreakdown) {
+      for (const [key, b] of Object.entries(results.scoreBreakdown)) {
+        parts.push(`- ${key}: ${b.score}/100 (weight: ${b.weight}%)`);
+      }
+    }
+    const history = getScoreHistory();
+    if (history.length > 1) {
+      const prev = history[history.length - 2];
+      parts.push(`- Previous score: ${prev.score} on ${prev.date}`);
+    }
+    parts.push('');
+  }
+
+  // Disk fill rate projection
+  const diskRate = estimateDiskFillRate();
+  if (diskRate) {
+    parts.push(`## Disk Trajectory`);
+    parts.push(`- Growing at ~${diskRate.gbPerDay} GB/day`);
+    parts.push(`- Currently ${fmtGb(diskRate.currentFreeGb)} free`);
+    parts.push(`- Estimated ${diskRate.daysUntilFull} days until full at current rate`);
+    parts.push('');
+  }
+
+  // Battery lifespan estimate
+  if (results.battery?.cycleCount) {
+    const battLife = estimateBatteryLife(results.battery.cycleCount, results.battery.percent);
+    if (battLife) {
+      parts.push(`## Battery Lifespan`);
+      parts.push(`- Cycles: ${battLife.cycleCount} / 1000 rated`);
+      parts.push(`- Remaining: ~${battLife.remainingCycles} cycles`);
+      parts.push(`- Trend: ${battLife.healthTrend}`);
+      parts.push(`- ${battLife.recommendation}`);
+      parts.push('');
+    }
+  }
+
+  // Smart advisor hints for the model
+  parts.push(`## Advisor Notes`);
+  parts.push(`Use the data above to give personalized advice. Key things to consider:`);
+  if (results.hardware?.age >= 5) {
+    parts.push(`- Machine is ${results.hardware.age} years old. Consider showing a hero widget with upgrade advice if performance is struggling.`);
+  }
+  if (results.hardware && !results.hardware.isAppleSilicon) {
+    parts.push(`- This is an Intel Mac. Apple Silicon offers 2-3x performance and battery life. Worth mentioning if machine is slow.`);
+  }
+  if (results.disk?.percent >= 85) {
+    parts.push(`- Disk is critically full (${results.disk.percent}%). Prioritize cleanup recommendations.`);
+  }
+  if (results.battery?.percent != null && results.battery.percent < 80) {
+    parts.push(`- Battery health below 80%. Warn the user about declining battery life.`);
+  }
+  if (results.usage?.profile === 'developer' || results.usage?.profile === 'ai-developer') {
+    parts.push(`- User is a ${results.usage.profile}. Tailor advice for development workflows (Docker, node_modules, build caches).`);
+  }
+  parts.push('');
 
   return parts.join('\n');
 }
 
-// ── Scan progress callbacks ──
+// ── Deep scan (client-side) ──
 
-function handleScanProgress(step, data) {
-  if (data === 'start') {
-    markStepActive(step);
+async function runClientDeepScan(userMessage) {
+  if (scanning) {
+    if (chat) chat.addMessage('assistant', 'Still scanning — please wait a moment.');
     return;
   }
-  markStepDone(step);
+  scanning = true;
 
-  // Update dashboard incrementally as data arrives
-  if (step === 'system' && data) updateSystemCards(data);
-  if (step === 'disk' && data) updateDiskPanel(data);
-  if (step === 'garbage' && data) renderGarbage(data);
+  // Show progress
+  applyPageUpdate({
+    body: [{
+      type: 'progress',
+      title: 'Deep scanning your files...',
+      steps: [
+        { label: 'Indexing files', status: 'active', icon: '📂' },
+        { label: 'Finding large files', status: 'pending', icon: '📦' },
+        { label: 'Checking duplicates', status: 'pending', icon: '🔍' },
+        { label: 'AI analysis', status: 'pending', icon: '🧠' },
+      ],
+    }],
+  });
+
+  // Show user message in chat
+  chat.addMessage('user', userMessage);
+
+  try {
+    const sessionId = chat?.getSessionId();
+    let fileCount = 0;
+
+    const deepResults = await runDeepFileScan(sessionId, (phase, data) => {
+      if (phase === 'indexing' && data !== 'start') {
+        fileCount = data.fileCount || 0;
+        applyPageUpdate({
+          body: [{
+            type: 'progress',
+            title: `Indexed ${fileCount.toLocaleString()} files...`,
+            steps: [
+              { label: `Indexing files (${fileCount.toLocaleString()})`, status: 'done', icon: '📂' },
+              { label: 'Finding large files', status: 'active', icon: '📦' },
+              { label: 'Checking duplicates', status: 'pending', icon: '🔍' },
+              { label: 'AI analysis', status: 'pending', icon: '🧠' },
+            ],
+          }],
+        });
+      }
+      if (phase === 'large_files' && data !== 'start') {
+        applyPageUpdate({
+          body: [{
+            type: 'progress',
+            title: `Found ${data.length} large files...`,
+            steps: [
+              { label: `Indexed ${fileCount.toLocaleString()} files`, status: 'done', icon: '📂' },
+              { label: `${data.length} large files found`, status: 'done', icon: '📦' },
+              { label: 'Checking duplicates', status: 'active', icon: '🔍' },
+              { label: 'AI analysis', status: 'pending', icon: '🧠' },
+            ],
+          }],
+        });
+      }
+      if (phase === 'duplicates' && data !== 'start') {
+        applyPageUpdate({
+          body: [{
+            type: 'progress',
+            title: 'Sending to AI for analysis...',
+            steps: [
+              { label: `Indexed ${fileCount.toLocaleString()} files`, status: 'done', icon: '📂' },
+              { label: `Large files found`, status: 'done', icon: '📦' },
+              { label: `${data.length} duplicate sets`, status: 'done', icon: '🔍' },
+              { label: 'AI analysis', status: 'active', icon: '🧠' },
+            ],
+          }],
+        });
+      }
+    });
+
+    // Build prompt with deep scan data and send to model
+    const prompt = buildDeepScanPrompt(deepResults, userMessage);
+    expectPageBlock = true;
+    chat.send(prompt);
+  } catch (err) {
+    console.error('Deep scan error:', err);
+    chat.send(userMessage + '\n\n(Client-side file scan failed. Please use Bash to scan manually.)');
+  } finally {
+    scanning = false;
+  }
 }
 
-// ── Dashboard updates ──
+function buildDeepScanPrompt(deepResults, userMessage) {
+  const parts = [`The user asked: "${userMessage}"\n\nHere is the deep file scan data. Analyze it and emit a page block with donut chart, large files table, and duplicates.\n`];
 
-function updateSystemCards(sys) {
-  setText('val-os', sys.os || '--');
-  setText('sub-os', [sys.hostname, sys.uptime ? `Up ${sys.uptime}` : ''].filter(Boolean).join(' \u00B7 '));
-
-  // CPU card — show brand, cores, usage
-  const cpuLabel = sys.cpuBrand || `${sys.cpuCores} cores`;
-  setText('val-cpu', cpuLabel);
-  const cpuSub = [`${sys.cpuCores} cores`, sys.cpuUsage ? `${sys.cpuUsage}% usage` : ''].filter(Boolean).join(' \u00B7 ');
-  setText('sub-cpu', cpuSub);
-  if (sys.cpuUsage) {
-    setBar('bar-cpu', sys.cpuUsage, sys.cpuUsage > 90 ? 'var(--danger)' : sys.cpuUsage > 70 ? 'var(--warning)' : 'var(--accent)');
+  if (deepResults.typeBreakdown?.length) {
+    parts.push(`## File Type Breakdown (${deepResults.totalFiles?.toLocaleString()} files, ${fmtGb(deepResults.totalSizeGb)})`);
+    for (const t of deepResults.typeBreakdown) {
+      parts.push(`- ${t.label}: ${fmtGb(t.value)}`);
+    }
+    parts.push('');
   }
 
-  if (sys.memory) {
-    const mem = sys.memory;
-    setText('val-memory', `${mem.percent || 0}%`);
-    setText('sub-memory', `${fmtGb(mem.used_gb)} / ${fmtGb(mem.total_gb)}`);
-    setBar('bar-memory', mem.percent, mem.percent > 90 ? 'var(--danger)' : mem.percent > 75 ? 'var(--warning)' : 'var(--accent)');
+  if (deepResults.largeFiles?.length) {
+    parts.push(`## Large Files (${deepResults.largeFiles.length} files over 50MB)`);
+    for (const f of deepResults.largeFiles.slice(0, 20)) {
+      parts.push(`- ${f.size} | ${f.path} | ${f.age} | ${f.category}`);
+    }
+    parts.push('');
   }
+
+  if (deepResults.duplicates?.length) {
+    parts.push(`## Duplicates (${deepResults.duplicates.length} sets, ${fmtGb(deepResults.totalWastedGb)} wasted)`);
+    for (const d of deepResults.duplicates.slice(0, 10)) {
+      parts.push(`- ${d.name}: ${d.copies} copies (${d.sizeEach} each, ${fmtGb(d.wastedGb)} wasted)`);
+      for (const f of d.files) {
+        parts.push(`  - ${f}`);
+      }
+    }
+    parts.push('');
+  }
+
+  parts.push('For each large file, label it: safe (delete without worry), backup (valuable but should backup first), review (might be important), or keep (active/recent).');
+  parts.push('Use context: .iso/.dmg installers after app is installed = safe. Old recordings = backup. Recent documents = keep.');
+
+  return parts.join('\n');
 }
 
-function updateGpuCard(gpu) {
-  if (!gpu || !gpu.chipset) {
-    setText('val-gpu', '--');
+// ── Model response handling ──
+
+function handleModelResponse(text) {
+  const pageBlock = parsePageBlock(text);
+
+  if (pageBlock) {
+    expectPageBlock = false;
+    applyPageUpdate(pageBlock);
+    cacheCurrentPage();
     return;
   }
-  setText('val-gpu', `${gpu.cores} cores`);
-  setText('sub-gpu', [gpu.chipset, gpu.metal].filter(Boolean).join(' \u00B7 '));
-}
 
-function updateBatteryCard(bat) {
-  if (!bat || bat.percent == null) {
-    setText('val-battery', 'N/A');
-    setText('sub-battery', 'Desktop / no battery');
-    return;
+  // Only retry if we were expecting a page block (after probe/scan prompt)
+  if (expectPageBlock && chat) {
+    expectPageBlock = false; // don't retry more than once
+    chat.send(
+      'Please include a ```page JSON block in your response to update the dashboard. ' +
+      'Refer to your skill instructions for the page layout format.'
+    );
   }
-  setText('val-battery', `${bat.percent}%`);
-  const parts = [bat.status, bat.source].filter(Boolean);
-  if (bat.cycleCount) parts.push(`${bat.cycleCount} cycles`);
-  if (bat.remaining) parts.push(`${bat.remaining} left`);
-  setText('sub-battery', parts.join(' \u00B7 '));
-  setBar('bar-battery', bat.percent,
-    bat.percent < 20 ? 'var(--danger)' : bat.percent < 50 ? 'var(--warning)' : 'var(--success)');
-}
-
-function updateNetworkCard(net) {
-  if (!net || !net.ip) {
-    setText('val-network', 'Disconnected');
-    return;
-  }
-  setText('val-network', net.wifi || net.iface || 'Connected');
-  setText('sub-network', net.ip);
-}
-
-function updateIoCard(io) {
-  if (!io) {
-    setText('val-io', '--');
-    return;
-  }
-  setText('val-io', `${io.mb_per_sec} MB/s`);
-  setText('sub-io', `${io.transfers_per_sec} ops/s \u00B7 ${io.kb_per_transfer} KB/op`);
-}
-
-function updateDiskPanel(disk) {
-  setText('val-disk', `${disk.percent || 0}% used`);
-  setText('sub-disk', `${fmtGb(disk.used_gb)} / ${fmtGb(disk.total_gb)}`);
-  setBar('bar-disk', disk.percent, disk.percent > 90 ? 'var(--danger)' : disk.percent > 75 ? 'var(--warning)' : 'var(--accent)');
-  setText('disk-badge', `${fmtGb(disk.free_gb)} free`);
-
-  const diskPanel = document.getElementById('disk-panel');
-  if (disk.top_dirs && disk.top_dirs.length > 0) {
-    diskPanel.style.display = '';
-    const canvas = document.getElementById('disk-chart');
-    const neededH = disk.top_dirs.length * 32 + 24;
-    canvas.style.height = `${Math.max(neededH, 120)}px`;
-    drawDiskBars(canvas, disk.top_dirs, disk.total_gb);
-  } else {
-    // Hide the chart panel when no dir data — avoid empty space
-    diskPanel.style.display = 'none';
-  }
-}
-
-function renderGarbage(garbage) {
-  const panel = document.getElementById('garbage-panel');
-  const list = document.getElementById('garbage-list');
-  if (!garbage || garbage.length === 0) { panel.style.display = 'none'; return; }
-  panel.style.display = '';
-
-  const totalGb = garbage.reduce((s, g) => s + (g.size_gb || 0), 0);
-  setText('garbage-badge', `${fmtGb(totalGb)} total`);
-
-  list.innerHTML = '';
-  const sorted = [...garbage].sort((a, b) => (b.size_gb || 0) - (a.size_gb || 0));
-  for (const g of sorted) {
-    const el = document.createElement('div');
-    el.className = 'garbage-item';
-    el.innerHTML = `
-      <span class="garbage-risk ${g.risk || 'safe'}">${g.risk || 'safe'}</span>
-      <span class="garbage-path" title="${esc(g.path)}">${esc(g.path)}</span>
-      <span class="garbage-size">${fmtGb(g.size_gb)}</span>
-    `;
-    list.appendChild(el);
-  }
-}
-
-// ── Progress UI ──
-
-function setScanStatus(cls, text) {
-  const el = document.getElementById('scan-status');
-  el.className = `scan-status ${cls}`;
-  el.textContent = text;
-}
-
-function showScanProgress() {
-  const dashboard = document.getElementById('dashboard');
-  const existing = document.getElementById('scan-progress');
-  if (existing) existing.remove();
-
-  const steps = scanType === 'quick'
-    ? SCAN_STEPS.filter(s => s.key === 'system' || s.key === 'disk' || s.key === 'analysis')
-    : scanType === 'disk'
-      ? SCAN_STEPS.filter(s => s.key === 'disk' || s.key === 'garbage' || s.key === 'analysis')
-      : SCAN_STEPS;
-
-  const progressEl = document.createElement('div');
-  progressEl.id = 'scan-progress';
-  progressEl.className = 'scan-progress';
-  progressEl.innerHTML = `
-    <div class="scan-progress-title">Scanning your system...</div>
-    <div class="scan-steps">
-      ${steps.map(s => `
-        <div class="scan-step" id="step-${s.key}">
-          <span class="step-icon">${s.icon}</span>
-          <span class="step-label">${s.label}</span>
-          <span class="step-status" id="step-status-${s.key}">
-            <span class="step-spinner"></span>
-          </span>
-        </div>
-      `).join('')}
-    </div>
-  `;
-  dashboard.insertBefore(progressEl, dashboard.firstChild);
-}
-
-function markStepDone(key) {
-  if (completedSteps.has(key)) return;
-  completedSteps.add(key);
-  const statusEl = document.getElementById(`step-status-${key}`);
-  if (statusEl) statusEl.innerHTML = '<span class="step-check">\u2713</span>';
-  const stepEl = document.getElementById(`step-${key}`);
-  if (stepEl) stepEl.classList.add('done');
-  // Update title when all visible steps are done
-  const titleEl = document.querySelector('.scan-progress-title');
-  const allSteps = document.querySelectorAll('.scan-step');
-  const doneSteps = document.querySelectorAll('.scan-step.done');
-  if (titleEl && allSteps.length > 0 && allSteps.length === doneSteps.length) {
-    titleEl.textContent = 'Scan complete';
-  }
-}
-
-function markStepActive(key) {
-  const stepEl = document.getElementById(`step-${key}`);
-  if (stepEl && !stepEl.classList.contains('done')) stepEl.classList.add('active');
-}
-
-function removeScanProgress() {
-  const el = document.getElementById('scan-progress');
-  if (el) {
-    el.classList.add('fade-out');
-    setTimeout(() => el.remove(), 400);
-  }
+  // Otherwise: model just answered a question without view change — that's fine.
 }
 
 // ── Cache ──
 
-function restoreFromCache(sessionId) {
-  try {
-    const cached = localStorage.getItem(`sys-doctor:${sessionId}`);
-    if (!cached) return false;
-    const data = JSON.parse(cached);
-    if (!data.system && !data.disk) return false; // empty/corrupt cache
-    if (data.system) updateSystemCards(data.system);
-    if (data.gpu) updateGpuCard(data.gpu);
-    if (data.battery) updateBatteryCard(data.battery);
-    if (data.network) updateNetworkCard(data.network);
-    if (data.io) updateIoCard(data.io);
-    if (data.disk) updateDiskPanel(data.disk);
-    if (data.garbage) renderGarbage(data.garbage);
-    if (data.recommendations) renderRecommendations(data.recommendations);
-    setScanStatus('done', 'Ready');
-    return true;
-  } catch { return false; }
-}
-
-/** Try to extract recommendations from chat history (for old sessions without cached recs). */
-async function tryRestoreRecsFromHistory(sessionId) {
-  // Check if we already have cached recommendations
-  try {
-    const cached = JSON.parse(localStorage.getItem(`sys-doctor:${sessionId}`) || '{}');
-    if (cached.recommendations && cached.recommendations.length > 0) return; // already have them
-  } catch { /* ignore */ }
-
-  // Fetch chat messages and look for the last assistant message with a JSON block
-  try {
-    const { fetchSessionMessages } = await import('./api.js');
-    const messages = await fetchSessionMessages(SKILL_NAME, sessionId);
-    // Search from newest to oldest for a message with ```json
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const msg = messages[i];
-      if (msg.content && msg.content.includes('```json')) {
-        const { recs } = parseRecommendations(msg.content);
-        if (recs.length > 0) {
-          renderRecommendations(recs);
-          // Cache for next time
-          try {
-            const existing = JSON.parse(localStorage.getItem(`sys-doctor:${sessionId}`) || '{}');
-            existing.recommendations = recs;
-            localStorage.setItem(`sys-doctor:${sessionId}`, JSON.stringify(existing));
-          } catch { /* ignore */ }
-          break;
-        }
-      }
-    }
-  } catch (e) {
-    console.warn('Failed to restore recs from history:', e);
-  }
-}
-
-function cacheDashboardData(results) {
+function cacheCurrentPage() {
   const sid = new URLSearchParams(window.location.search).get('session') || '';
   if (!sid) return;
   try {
-    localStorage.setItem(`sys-doctor:${sid}`, JSON.stringify(results));
-  } catch { /* quota exceeded */ }
+    localStorage.setItem(`sys-doctor-page:${sid}`, JSON.stringify(getCurrentPage()));
+  } catch { /* quota */ }
 }
 
-// ── Model response validation + retry ──
-
-let retryCount = 0;
-const MAX_RETRIES = 1;
-
-function handleModelResponse(text) {
-  markStepDone('analysis');
-  const { recs, error } = parseRecommendations(text);
-
-  if (recs.length > 0) {
-    retryCount = 0;
-    renderRecommendations(recs);
-    // Cache recommendations alongside scan data
-    const sid = new URLSearchParams(window.location.search).get('session') || '';
-    if (sid) {
-      try {
-        const existing = JSON.parse(localStorage.getItem(`sys-doctor:${sid}`) || '{}');
-        existing.recommendations = recs;
-        localStorage.setItem(`sys-doctor:${sid}`, JSON.stringify(existing));
-      } catch { /* ignore */ }
-    }
-    return;
-  }
-
-  // JSON missing or invalid — ask model to fix it (once)
-  if (retryCount < MAX_RETRIES && chat) {
-    retryCount++;
-    const correction = error
-      ? `Your JSON block had an error: ${error}\n\nPlease reply with ONLY a valid \`\`\`json code block containing the recommendations array. Schema:\n[{"title": "string", "savings_gb": number, "risk": "safe|review|caution", "command": "string", "description": "string"}]`
-      : 'You forgot to include the ```json recommendation block at the end. Please reply with ONLY a valid ```json code block containing the recommendations array.';
-    chat.send(correction);
-  }
-}
-
-// ── Recommendation parsing (from model's markdown response) ──
-
-/**
- * Extract structured recommendations from the model's response.
- * The prompt asks the model to append a ```json block at the end.
- * Returns { recs: [...], error?: string }.
- */
-function parseRecommendations(text) {
-  // Find the last ```json ... ``` block in the response
-  const jsonBlocks = text.match(/```json\s*\n([\s\S]*?)\n```/g);
-  if (!jsonBlocks) return { recs: [], error: null }; // no JSON block — model forgot
-
-  const lastBlock = jsonBlocks[jsonBlocks.length - 1];
-  const jsonStr = lastBlock.replace(/```json\s*\n/, '').replace(/\n```$/, '').trim();
-
+function restoreFromCache(sessionId) {
   try {
-    const parsed = JSON.parse(jsonStr);
-    if (!Array.isArray(parsed)) return { recs: [], error: 'Expected a JSON array, got ' + typeof parsed };
-
-    // Validate each item has required fields
-    const recs = [];
-    for (const r of parsed) {
-      if (!r.title) continue;
-      if (typeof r.savings_gb !== 'number' && r.savings_gb !== undefined) {
-        return { recs: [], error: `"savings_gb" must be a number, got "${r.savings_gb}" for "${r.title}"` };
-      }
-      const risk = String(r.risk || 'review').toLowerCase();
-      if (!['safe', 'review', 'caution'].includes(risk)) {
-        return { recs: [], error: `"risk" must be "safe", "review", or "caution", got "${r.risk}" for "${r.title}"` };
-      }
-      recs.push({
-        title: String(r.title),
-        description: String(r.description || ''),
-        savings_gb: Number(r.savings_gb || 0),
-        risk,
-        command: String(r.command || ''),
-      });
-    }
-    return { recs, error: null };
-  } catch (e) {
-    return { recs: [], error: `JSON parse error: ${e.message}` };
+    const cached = localStorage.getItem(`sys-doctor-page:${sessionId}`);
+    if (!cached) return false;
+    const page = JSON.parse(cached);
+    if (!page.top_bar?.length && !page.body?.length) return false;
+    restorePage(page);
+    return true;
+  } catch {
+    return false;
   }
-}
-
-/** Render recommendation cards on the dashboard. */
-function renderRecommendations(recs) {
-  const panel = document.getElementById('recs-panel');
-  const list = document.getElementById('recs-list');
-  if (!recs || recs.length === 0) { panel.style.display = 'none'; return; }
-  panel.style.display = '';
-
-  const totalSavings = recs.reduce((sum, r) => sum + (r.savings_gb || 0), 0);
-  setText('recs-badge', `~${fmtGb(totalSavings)} reclaimable`);
-
-  list.innerHTML = '';
-  for (const rec of recs) {
-    const item = document.createElement('div');
-    item.className = 'rec-item';
-    item.innerHTML = `
-      <div class="rec-header">
-        <span class="rec-risk ${rec.risk || 'review'}">${esc(rec.risk || 'review')}</span>
-        <div class="rec-info">
-          <div class="rec-title">${esc(rec.title)}</div>
-          <div class="rec-desc">${esc(rec.description)}</div>
-        </div>
-        ${rec.savings_gb ? `<span class="rec-savings">${fmtGb(rec.savings_gb)}</span>` : ''}
-      </div>
-      ${rec.command ? `
-        <div class="rec-cmd-block">
-          <code class="rec-cmd-code">${esc(rec.command)}</code>
-          <button class="rec-copy" data-cmd="${esc(rec.command)}" title="Copy command">Copy</button>
-        </div>
-      ` : ''}
-    `;
-    list.appendChild(item);
-  }
-
-  // Copy button handlers
-  list.querySelectorAll('.rec-copy').forEach(btn => {
-    btn.addEventListener('click', () => {
-      navigator.clipboard.writeText(btn.dataset.cmd).then(() => {
-        btn.textContent = 'Copied!';
-        btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
-      });
-    });
-  });
 }
 
 // ── Helpers ──
-
-function setText(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = text || '';
-}
-
-function setBar(id, percent, color) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.style.width = `${Math.min(100, percent || 0)}%`;
-    el.style.background = color || 'var(--accent)';
-  }
-}
 
 function fmtGb(gb) {
   if (gb == null || isNaN(gb)) return '--';
@@ -604,9 +516,4 @@ function fmtGb(gb) {
   if (gb >= 1) return `${gb.toFixed(1)} GB`;
   if (gb >= 0.001) return `${Math.round(gb * 1024)} MB`;
   return '0 MB';
-}
-
-function esc(s) {
-  if (!s) return '';
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

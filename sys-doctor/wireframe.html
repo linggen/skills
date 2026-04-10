@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sys Doctor v2 — Wireframes</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg-card: #181a20;
+      --border: #2a2d35;
+      --text: #e4e4e7;
+      --text-muted: #71717a;
+      --accent: #6366f1;
+      --accent-dim: rgba(99, 102, 241, 0.15);
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #08090c; color: var(--text); padding: 40px; }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    .page-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 48px; line-height: 1.6; }
+    .wireframe-section { margin-bottom: 64px; }
+    .wireframe-section h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--accent); }
+    .wireframe-section .desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; max-width: 700px; line-height: 1.5; }
+
+    .screen { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; max-width: 1100px; }
+    .screen.mobile { max-width: 390px; }
+    .screen-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg-card); }
+    .screen-header .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+    .screen-header .actions { display: flex; align-items: center; gap: 10px; }
+    .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 6px; }
+    .badge-yellow { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-green { background: rgba(34,197,94,0.15); color: var(--success); }
+    .btn { font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; }
+    .model-select { font-size: 12px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); }
+
+    /* Layout */
+    .layout { display: flex; min-height: 600px; }
+    .view-panel { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .chat-panel { width: 340px; border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+    .chat-messages { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+    .chat-msg { font-size: 14px; line-height: 1.6; padding: 12px 16px; border-radius: 12px; max-width: 95%; }
+    .chat-msg.agent { background: var(--bg-card); border: 1px solid var(--border); align-self: flex-start; }
+    .chat-msg.user { background: var(--accent-dim); border: 1px solid rgba(99,102,241,0.3); align-self: flex-end; }
+    .chat-input-bottom { padding: 12px 16px; border-top: 1px solid var(--border); }
+    .chat-input-bottom input { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 13px; }
+
+    /* Cards */
+    .cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+    .card-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+    .card-value { font-size: 22px; font-weight: 800; margin-top: 4px; }
+    .card-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .card-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .card-bar-fill { height: 100%; border-radius: 2px; }
+
+    /* Machine header */
+    .machine-header { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
+    .machine-icon { font-size: 48px; }
+    .machine-info { flex: 1; }
+    .machine-name { font-size: 18px; font-weight: 800; }
+    .machine-model { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .machine-uptime { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+    /* ── Action cards (the key new pattern) ── */
+    .action-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      transition: all 0.3s;
+      opacity: 0.3;
+    }
+    .action-card.active {
+      opacity: 1;
+      border-color: var(--accent);
+      box-shadow: 0 0 24px rgba(99, 102, 241, 0.1);
+    }
+    .action-card.active .action-start {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .action-preview {
+      flex: 1;
+      min-width: 0;
+    }
+    .action-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .action-icon { font-size: 28px; }
+    .action-title { font-size: 16px; font-weight: 700; }
+    .action-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+    .action-preview-visual {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+    }
+    .preview-bar {
+      width: 24px;
+      border-radius: 4px 4px 0 0;
+      background: var(--border);
+    }
+    .action-card.active .preview-bar { background: var(--accent); opacity: 0.6; }
+    .action-card.active .preview-bar:nth-child(1) { opacity: 1; }
+
+    .action-start {
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    /* Preview mini cards inside action cards */
+    .preview-files {
+      display: flex;
+      gap: 6px;
+    }
+    .preview-file {
+      width: 36px;
+      height: 44px;
+      border-radius: 4px;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .action-card.active .preview-file { background: var(--accent-dim); }
+
+    .preview-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .preview-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+    }
+    .action-card.active .preview-dot:nth-child(1) { background: var(--success); }
+    .action-card.active .preview-dot:nth-child(2) { background: var(--success); }
+    .action-card.active .preview-dot:nth-child(3) { background: var(--warning); }
+    .action-card.active .preview-dot:nth-child(4) { background: var(--success); }
+
+    /* Panels */
+    .panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .panel-header h3 { font-size: 13px; font-weight: 700; }
+    .panel-badge { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+    /* Disk bars */
+    .disk-bars { display: flex; flex-direction: column; gap: 8px; }
+    .disk-bar-row { display: flex; align-items: center; gap: 10px; }
+    .disk-bar-label { font-size: 12px; color: var(--text-muted); width: 110px; text-align: right; flex-shrink: 0; }
+    .disk-bar-track { flex: 1; height: 20px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .disk-bar-fill { height: 100%; border-radius: 4px; }
+    .disk-bar-size { font-size: 12px; color: var(--text-muted); width: 50px; flex-shrink: 0; }
+
+    /* Recommendations */
+    .rec-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; }
+    .rec-risk { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; flex-shrink: 0; }
+    .rec-risk.safe { background: rgba(34,197,94,0.15); color: var(--success); }
+    .rec-risk.review { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .rec-info { flex: 1; min-width: 0; }
+    .rec-title { font-size: 13px; font-weight: 600; }
+    .rec-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .rec-savings { font-size: 13px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+    .rec-cmd { display: block; margin-top: 6px; padding: 6px 10px; background: var(--bg); border-radius: 6px; font-family: 'SF Mono', monospace; font-size: 11px; color: var(--text-muted); }
+
+    /* File breakdown */
+    .file-breakdown { display: flex; gap: 24px; align-items: center; }
+    .donut-mock { width: 140px; height: 140px; border-radius: 50%; flex-shrink: 0; background: conic-gradient(#6366f1 0% 30%, #8b5cf6 30% 50%, #a78bfa 50% 65%, #c4b5fd 65% 77%, #ddd6fe 77% 86%, #3b82f6 86% 93%, #374151 93% 100%); position: relative; }
+    .donut-mock::after { content: ''; position: absolute; inset: 30px; background: var(--bg-card); border-radius: 50%; }
+    .file-legend { display: flex; flex-direction: column; gap: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .legend-size { color: var(--text-muted); margin-left: auto; font-weight: 600; }
+
+    .files-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .files-table th { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; }
+    .files-table td { padding: 10px; border-bottom: 1px solid rgba(42,45,53,0.5); }
+    .files-table .path { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'SF Mono', monospace; font-size: 11px; }
+    .files-table .size { font-weight: 700; }
+    .files-table .age { color: var(--text-muted); }
+    .label-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+    .label-badge.safe { background: rgba(34,197,94,0.15); color: var(--success); }
+    .label-badge.backup { background: rgba(99,102,241,0.15); color: var(--accent); }
+    .label-badge.review { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .label-badge.keep { background: rgba(113,113,122,0.2); color: var(--text-muted); }
+
+    /* Security */
+    .security-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .sec-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+    .sec-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sec-dot.green { background: var(--success); }
+    .sec-dot.yellow { background: var(--warning); }
+
+    .annotation { margin-top: 12px; padding: 10px 14px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 8px; font-size: 12px; color: var(--accent); line-height: 1.5; }
+    .annotation::before { content: 'UX Note'; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; opacity: 0.7; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+    /* Typing indicator */
+    .typing { display: flex; gap: 4px; padding: 12px 16px; align-self: flex-start; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); animation: typing 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
+
+    /* Highlight marker for synced text */
+    .highlight { color: var(--accent); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<h1>Sys Doctor v2 — Wireframes</h1>
+<p class="page-sub">
+  Chat is fixed on right. Left panel reacts to what the agent says.<br>
+  When agent mentions a feature, the relevant action card lights up on the left with a Start button.
+</p>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- SCREEN 1: Open — Hardware + Agent offering actions -->
+<!-- ════════════════════════════════════════════════════════ -->
+
+<div class="wireframe-section">
+  <h2>Screen 1 — Open (Agent Offers Actions)</h2>
+  <div class="desc">Hardware probe runs instantly (~2s). Left shows machine identity + vitals + action cards. As the agent mentions each capability in chat, the corresponding action card on the left lights up (goes from dim to active with glow). Each card has a Start button.</div>
+
+  <div class="screen">
+    <div class="screen-header">
+      <div class="logo"><span class="icon">🩺</span> Sys Doctor</div>
+      <div class="actions">
+        <select class="model-select"><option>claude-sonnet-4-6</option></select>
+      </div>
+    </div>
+    <div class="layout">
+      <!-- LEFT: Hardware + action cards -->
+      <div class="view-panel">
+        <!-- Machine identity -->
+        <div class="machine-header">
+          <div class="machine-icon">💻</div>
+          <div class="machine-info">
+            <div class="machine-name">Liang's MacBook Pro</div>
+            <div class="machine-model">Apple M4 Pro · macOS 15.3 Sequoia</div>
+            <div class="machine-uptime">Up 14 days</div>
+          </div>
+        </div>
+
+        <!-- Vital signs -->
+        <div class="cards-row">
+          <div class="card">
+            <div class="card-label">CPU</div>
+            <div class="card-value">12%</div>
+            <div class="card-sub">12 cores</div>
+            <div class="card-bar"><div class="card-bar-fill" style="width: 12%; background: var(--success);"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-label">Memory</div>
+            <div class="card-value">62%</div>
+            <div class="card-sub">22 / 36 GB</div>
+            <div class="card-bar"><div class="card-bar-fill" style="width: 62%; background: var(--accent);"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-label">Disk</div>
+            <div class="card-value" style="color: var(--warning);">78%</div>
+            <div class="card-sub">370 / 476 GB</div>
+            <div class="card-bar"><div class="card-bar-fill" style="width: 78%; background: var(--warning);"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-label">Battery</div>
+            <div class="card-value">81%</div>
+            <div class="card-sub">847 cycles</div>
+            <div class="card-bar"><div class="card-bar-fill" style="width: 81%; background: var(--success);"></div></div>
+          </div>
+        </div>
+
+        <!-- Action cards — light up as agent mentions them -->
+        <div class="action-card active">
+          <div class="action-preview">
+            <div class="action-header">
+              <span class="action-icon">🔍</span>
+              <span class="action-title">Scan Disk & Cleanup</span>
+            </div>
+            <div class="action-desc">Find garbage, caches, old files. Get cleanup recommendations with one-click commands.</div>
+            <div class="action-preview-visual">
+              <div class="preview-bar" style="height: 40px;"></div>
+              <div class="preview-bar" style="height: 32px;"></div>
+              <div class="preview-bar" style="height: 24px;"></div>
+              <div class="preview-bar" style="height: 18px;"></div>
+              <div class="preview-bar" style="height: 10px;"></div>
+            </div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+
+        <div class="action-card active">
+          <div class="action-preview">
+            <div class="action-header">
+              <span class="action-icon">📸</span>
+              <span class="action-title">Organise Photos</span>
+            </div>
+            <div class="action-desc">Find scattered photos, check backup status, detect duplicates.</div>
+            <div class="preview-files">
+              <div class="preview-file">🖼</div>
+              <div class="preview-file">🖼</div>
+              <div class="preview-file">🖼</div>
+              <div class="preview-file">📷</div>
+            </div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+
+        <div class="action-card">
+          <div class="action-preview">
+            <div class="action-header">
+              <span class="action-icon">📦</span>
+              <span class="action-title">Find Large Files</span>
+            </div>
+            <div class="action-desc">Deep scan for files over 100MB. AI labels each: safe, backup, review, keep.</div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+
+        <div class="action-card">
+          <div class="action-preview">
+            <div class="action-header">
+              <span class="action-icon">🔒</span>
+              <span class="action-title">Security Check</span>
+            </div>
+            <div class="action-desc">Firewall, encryption, open ports, outdated software.</div>
+            <div class="preview-dots">
+              <div class="preview-dot"></div>
+              <div class="preview-dot"></div>
+              <div class="preview-dot"></div>
+              <div class="preview-dot"></div>
+            </div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Chat — agent greeting -->
+      <div class="chat-panel">
+        <div class="chat-messages">
+          <div class="chat-msg agent">
+            Hi Liang. Here's your MacBook Pro:<br><br>
+            <strong>M4 Pro</strong> · 36 GB RAM · 476 GB disk<br>
+            CPU and memory are fine. <strong>Disk is at 78%</strong> — getting tight.<br><br>
+            I can <span class="highlight">scan your disk</span> and find things to clean up — caches, old downloads, abandoned projects.<br><br>
+            Or I can <span class="highlight">organise your photos</span> — I noticed files scattered across Desktop, Downloads, and Pictures.<br><br>
+            What would you like?
+          </div>
+        </div>
+        <div class="chat-input-bottom">
+          <input placeholder='Try "scan disk" or "organise photos"...' readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Key interaction:</strong> As the agent's message streams in and mentions "scan your disk," the disk action card on the left lights up (opacity 1, accent border, glow). When it mentions "organise your photos," the photo card lights up. Cards that haven't been mentioned yet stay dim (opacity 0.3). The Start button on active cards glows purple. User can click Start OR type in chat — both work.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- SCREEN 2: Agent still typing — cards lighting up sequentially -->
+<!-- ════════════════════════════════════════════════════════ -->
+
+<div class="wireframe-section">
+  <h2>Screen 2 — Cards Light Up as Agent Types</h2>
+  <div class="desc">Showing the progressive reveal. Agent is still streaming its message. As each feature gets mentioned, the corresponding card activates. This creates a synchronized presentation effect.</div>
+
+  <div class="screen">
+    <div class="screen-header">
+      <div class="logo"><span class="icon">🩺</span> Sys Doctor</div>
+      <div class="actions"><select class="model-select"><option>claude-sonnet-4-6</option></select></div>
+    </div>
+    <div class="layout">
+      <div class="view-panel">
+        <div class="machine-header">
+          <div class="machine-icon">💻</div>
+          <div class="machine-info">
+            <div class="machine-name">Liang's MacBook Pro</div>
+            <div class="machine-model">Apple M4 Pro · macOS 15.3</div>
+          </div>
+        </div>
+
+        <div class="cards-row">
+          <div class="card"><div class="card-label">CPU</div><div class="card-value">12%</div><div class="card-bar"><div class="card-bar-fill" style="width: 12%; background: var(--success);"></div></div></div>
+          <div class="card"><div class="card-label">Memory</div><div class="card-value">62%</div><div class="card-bar"><div class="card-bar-fill" style="width: 62%; background: var(--accent);"></div></div></div>
+          <div class="card"><div class="card-label">Disk</div><div class="card-value" style="color: var(--warning);">78%</div><div class="card-bar"><div class="card-bar-fill" style="width: 78%; background: var(--warning);"></div></div></div>
+          <div class="card"><div class="card-label">Battery</div><div class="card-value">81%</div><div class="card-bar"><div class="card-bar-fill" style="width: 81%; background: var(--success);"></div></div></div>
+        </div>
+
+        <!-- First card: LIT (agent already mentioned it) -->
+        <div class="action-card active">
+          <div class="action-preview">
+            <div class="action-header"><span class="action-icon">🔍</span><span class="action-title">Scan Disk & Cleanup</span></div>
+            <div class="action-desc">Find garbage, caches, old files.</div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+
+        <!-- Second card: LIT (agent just mentioned it) -->
+        <div class="action-card active">
+          <div class="action-preview">
+            <div class="action-header"><span class="action-icon">📸</span><span class="action-title">Organise Photos</span></div>
+            <div class="action-desc">Find scattered photos, check backup status.</div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+
+        <!-- Third card: DIM (agent hasn't mentioned it yet) -->
+        <div class="action-card">
+          <div class="action-preview">
+            <div class="action-header"><span class="action-icon">📦</span><span class="action-title">Find Large Files</span></div>
+            <div class="action-desc">Deep scan, AI labels each file.</div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+
+        <!-- Fourth card: DIM -->
+        <div class="action-card">
+          <div class="action-preview">
+            <div class="action-header"><span class="action-icon">🔒</span><span class="action-title">Security Check</span></div>
+            <div class="action-desc">Firewall, encryption, open ports.</div>
+          </div>
+          <button class="action-start">Start</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: Chat — agent mid-stream -->
+      <div class="chat-panel">
+        <div class="chat-messages">
+          <div class="chat-msg agent">
+            Hi Liang. Here's your MacBook Pro:<br><br>
+            M4 Pro · 36 GB · Disk <strong>78%</strong><br><br>
+            I can <span class="highlight">scan your disk</span> — you've got about 106GB free but I bet there's stuff to clean.<br><br>
+            I can also <span class="highlight">organise your photos</span> — looks like you have images scattered across multiple folders.<br><br>
+            <span style="color: var(--text-muted);">I can also find large files, check security...</span>
+          </div>
+          <div class="typing">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+        <div class="chat-input-bottom">
+          <input placeholder="Or just ask me anything..." readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    The synchronized effect: top two cards are active (bright, glowing Start button) because the agent already mentioned them. Bottom two are still dim — the agent is still typing and hasn't gotten to those yet. As the message continues and mentions "find large files," the third card would light up. It feels like the agent is presenting, and the left panel is its slideshow.
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- SCREEN 3: User clicked "Start" on disk scan -->
+<!-- ════════════════════════════════════════════════════════ -->
+
+<div class="wireframe-section">
+  <h2>Screen 3 — User Started Disk Scan</h2>
+  <div class="desc">User clicked Start on the disk card (or typed "scan disk"). Left panel transitions to the disk analysis view. Agent narrates progress in chat.</div>
+
+  <div class="screen">
+    <div class="screen-header">
+      <div class="logo"><span class="icon">🩺</span> Sys Doctor</div>
+      <div class="actions">
+        <span class="badge badge-yellow">Disk: 78%</span>
+        <button class="btn">← Overview</button>
+        <select class="model-select"><option>claude-sonnet-4-6</option></select>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="view-panel">
+        <div class="panel">
+          <div class="panel-header"><h3>Disk Usage — 370 / 476 GB</h3><span class="panel-badge">106 GB free</span></div>
+          <div class="disk-bars">
+            <div class="disk-bar-row"><span class="disk-bar-label">~/Library</span><div class="disk-bar-track"><div class="disk-bar-fill" style="width: 50%; background: #6366f1;"></div></div><span class="disk-bar-size">45 GB</span></div>
+            <div class="disk-bar-row"><span class="disk-bar-label">~/workspace</span><div class="disk-bar-track"><div class="disk-bar-fill" style="width: 38%; background: #8b5cf6;"></div></div><span class="disk-bar-size">34 GB</span></div>
+            <div class="disk-bar-row"><span class="disk-bar-label">~/Documents</span><div class="disk-bar-track"><div class="disk-bar-fill" style="width: 28%; background: #a78bfa;"></div></div><span class="disk-bar-size">25 GB</span></div>
+            <div class="disk-bar-row"><span class="disk-bar-label">~/Downloads</span><div class="disk-bar-track"><div class="disk-bar-fill" style="width: 20%; background: #c4b5fd;"></div></div><span class="disk-bar-size">18 GB</span></div>
+            <div class="disk-bar-row"><span class="disk-bar-label">~/Pictures</span><div class="disk-bar-track"><div class="disk-bar-fill" style="width: 12%; background: #ddd6fe;"></div></div><span class="disk-bar-size">11 GB</span></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h3>Cleanup Recommendations</h3><span class="panel-badge">~28 GB reclaimable</span></div>
+          <div class="rec-item">
+            <span class="rec-risk safe">safe</span>
+            <div class="rec-info"><div class="rec-title">Clear Xcode DerivedData</div><div class="rec-desc">Build artifacts, all regeneratable</div><code class="rec-cmd">rm -rf ~/Library/Developer/Xcode/DerivedData</code></div>
+            <span class="rec-savings">12 GB</span>
+          </div>
+          <div class="rec-item">
+            <span class="rec-risk safe">safe</span>
+            <div class="rec-info"><div class="rec-title">Docker dangling images</div><code class="rec-cmd">docker image prune -f</code></div>
+            <span class="rec-savings">4.2 GB</span>
+          </div>
+          <div class="rec-item">
+            <span class="rec-risk review">review</span>
+            <div class="rec-info"><div class="rec-title">Old Downloads (47 files &gt; 6 months)</div><div class="rec-desc">3 ISOs, 12 DMGs, misc archives</div></div>
+            <span class="rec-savings">8.1 GB</span>
+          </div>
+          <div class="rec-item">
+            <span class="rec-risk safe">safe</span>
+            <div class="rec-info"><div class="rec-title">Empty Trash</div><code class="rec-cmd">rm -rf ~/.Trash/*</code></div>
+            <span class="rec-savings">3.8 GB</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-panel">
+        <div class="chat-messages">
+          <div class="chat-msg agent" style="font-size: 13px; padding: 8px 12px; color: var(--text-muted);">M4 Pro · 36 GB · Disk 78%</div>
+          <div class="chat-msg user">Scan disk</div>
+          <div class="chat-msg agent">
+            Disk is 78% full — 106 GB free.<br><br>
+            <strong>~/Library</strong> is the biggest at 45GB, mostly Xcode cache.<br><br>
+            Found <strong>28GB you can reclaim:</strong><br>
+            • Xcode cache: 12GB (safe)<br>
+            • Docker dangling: 4.2GB (safe)<br>
+            • Old Downloads: 8.1GB (review)<br>
+            • Trash: 3.8GB (safe)<br><br>
+            Want me to look deeper — <span class="highlight">find large files</span> or <span class="highlight">check for duplicates</span>?
+          </div>
+        </div>
+        <div class="chat-input-bottom">
+          <input placeholder="Ask about your disk..." readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">Left panel switched from action cards to disk results. Notice the agent's follow-up mentions "find large files" and "check duplicates" — if clicked/typed, the left panel would switch to the file explorer view. The agent always offers the next step.</div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- SCREEN 4: File explorer view -->
+<!-- ════════════════════════════════════════════════════════ -->
+
+<div class="wireframe-section">
+  <h2>Screen 4 — Find Large Files (View Switch)</h2>
+  <div class="desc">User followed up with "find large files." Left switches to file explorer. Chat continues naturally.</div>
+
+  <div class="screen">
+    <div class="screen-header">
+      <div class="logo"><span class="icon">🩺</span> Sys Doctor</div>
+      <div class="actions">
+        <span class="badge" style="background: var(--accent-dim); color: var(--accent);">Deep scan</span>
+        <button class="btn">← Overview</button>
+        <select class="model-select"><option>claude-sonnet-4-6</option></select>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="view-panel">
+        <div class="panel">
+          <div class="panel-header"><h3>File Type Breakdown</h3><span class="panel-badge">147 GB · 48,291 files</span></div>
+          <div class="file-breakdown">
+            <div class="donut-mock"></div>
+            <div class="file-legend">
+              <div class="legend-item"><span class="legend-dot" style="background: #6366f1;"></span> Photos <span class="legend-size">45 GB</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: #8b5cf6;"></span> Video <span class="legend-size">30 GB</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: #a78bfa;"></span> Code <span class="legend-size">22 GB</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: #c4b5fd;"></span> Docs <span class="legend-size">18 GB</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: #ddd6fe;"></span> Archives <span class="legend-size">14 GB</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: #3b82f6;"></span> Apps <span class="legend-size">11 GB</span></div>
+              <div class="legend-item"><span class="legend-dot" style="background: #374151;"></span> Other <span class="legend-size">7 GB</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><h3>Large Files</h3><span class="panel-badge">12 files over 1 GB</span></div>
+          <table class="files-table">
+            <thead><tr><th>Size</th><th>File</th><th>Age</th><th>Label</th></tr></thead>
+            <tbody>
+              <tr><td class="size">4.2 GB</td><td class="path">~/Downloads/ubuntu-24.04.iso</td><td class="age">4mo</td><td><span class="label-badge safe">safe</span></td></tr>
+              <tr><td class="size">2.8 GB</td><td class="path">~/Movies/screen-recording.mov</td><td class="age">1yr</td><td><span class="label-badge backup">backup</span></td></tr>
+              <tr><td class="size">1.9 GB</td><td class="path">~/Documents/project-archive.zip</td><td class="age">8mo</td><td><span class="label-badge review">review</span></td></tr>
+              <tr><td class="size">1.5 GB</td><td class="path">~/Downloads/Xcode_15.2.xip</td><td class="age">6mo</td><td><span class="label-badge safe">safe</span></td></tr>
+              <tr><td class="size">1.1 GB</td><td class="path">~/Desktop/presentation-v3.key</td><td class="age">2wk</td><td><span class="label-badge keep">keep</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="chat-panel">
+        <div class="chat-messages">
+          <div class="chat-msg user">Find large files</div>
+          <div class="chat-msg agent">
+            Indexed 48,291 files.<br><br>
+            <strong>Photos dominate</strong> at 45GB. Then video at 30GB.<br><br>
+            <strong>12 files over 1GB.</strong> Ubuntu ISO and Xcode installer are safe to delete — 5.7GB back.<br><br>
+            The screen recording in Movies is 2.8GB and a year old — worth backing up to a drive.<br><br>
+            Want me to <span class="highlight">organise your photos</span> or <span class="highlight">check security</span>?
+          </div>
+        </div>
+        <div class="chat-input-bottom">
+          <input placeholder="Ask about any file..." readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- SCREEN 5: Mobile -->
+<!-- ════════════════════════════════════════════════════════ -->
+
+<div class="wireframe-section">
+  <h2>Screen 5 — Mobile (Remote via WebRTC)</h2>
+  <div class="desc">Phone access. Single column — chat with inline cards. Action cards appear as compact chips. Same agent, same flow.</div>
+
+  <div class="screen mobile">
+    <div class="screen-header">
+      <div class="logo"><span class="icon">🩺</span> Sys Doctor</div>
+      <div class="actions"><span class="badge badge-yellow">78%</span></div>
+    </div>
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px; min-height: 640px;">
+      <!-- Inline vitals -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <div class="card" style="padding: 10px;"><div class="card-label" style="font-size: 9px;">CPU</div><div class="card-value" style="font-size: 18px;">12%</div></div>
+        <div class="card" style="padding: 10px;"><div class="card-label" style="font-size: 9px;">Memory</div><div class="card-value" style="font-size: 18px;">62%</div></div>
+        <div class="card" style="padding: 10px;"><div class="card-label" style="font-size: 9px;">Disk</div><div class="card-value" style="font-size: 18px; color: var(--warning);">78%</div></div>
+        <div class="card" style="padding: 10px;"><div class="card-label" style="font-size: 9px;">Battery</div><div class="card-value" style="font-size: 18px;">81%</div></div>
+      </div>
+
+      <div class="chat-msg agent" style="max-width: 100%;">
+        Your MacBook Pro: <strong>M4 Pro</strong> · 36GB<br>
+        Disk at 78% — what would you like to do?
+      </div>
+
+      <!-- Action chips (compact mobile version of action cards) -->
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div class="chat-chip" style="padding: 10px 16px; font-size: 13px;">🔍 Scan disk</div>
+        <div class="chat-chip" style="padding: 10px 16px; font-size: 13px;">📸 Photos</div>
+        <div class="chat-chip" style="padding: 10px 16px; font-size: 13px;">📦 Large files</div>
+        <div class="chat-chip" style="padding: 10px 16px; font-size: 13px;">🔒 Security</div>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border);">
+        <input style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 14px;" placeholder="Ask me..." readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">Mobile: no split, no action cards. Just inline vitals + compact action chips. Same flow, adapted for the space. WebRTC P2P makes remote access possible.</div>
+</div>
+
+<hr class="divider">
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- Interaction model summary -->
+<!-- ════════════════════════════════════════════════════════ -->
+
+<div class="wireframe-section">
+  <h2>Interaction Model</h2>
+  <div class="desc">How the chat and left panel stay synchronized.</div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 900px;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;">Agent mentions → Card lights up</div>
+      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+        Agent says "scan your disk" →<br>
+        <span style="color: var(--text);">🔍 Scan Disk card glows active</span><br><br>
+        Agent says "organise photos" →<br>
+        <span style="color: var(--text);">📸 Photos card glows active</span><br><br>
+        Cards light up in sequence as agent streams.<br>
+        Creates a presentation-like reveal effect.
+      </div>
+    </div>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;">User acts → View switches</div>
+      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+        User clicks Start button →<br>
+        <span style="color: var(--text);">Left switches to that feature's full view</span><br><br>
+        User types "scan disk" in chat →<br>
+        <span style="color: var(--text);">Same result — left switches to disk view</span><br><br>
+        "← Overview" button returns to action cards.<br>
+        Agent can also switch view via follow-ups.
+      </div>
+    </div>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;">Chat controls everything</div>
+      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+        Chat is always visible, always fixed.<br>
+        Left panel is the agent's display.<br>
+        Agent narrates → left illustrates.<br>
+        User responds → left reacts.<br><br>
+        <span style="color: var(--text);">Chat is the brain. Left panel is the screen.</span>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 10px;">On open — instant value</div>
+      <div style="font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+        ~2s hardware probe runs automatically.<br>
+        Left: machine identity + vital cards.<br>
+        Right: agent greets with specs + offers.<br>
+        Action cards light up as agent mentions them.<br><br>
+        <span style="color: var(--text);">No empty states. No "click to start."</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

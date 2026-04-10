@@ -81,7 +81,8 @@ async function mount(el, options) {
         if (onStreamToken) onStreamToken(streamBuffer);
         break;
       case 'stream_end':
-        if (onStreamEnd) onStreamEnd(payload?.text || streamBuffer);
+        // Prefer streamBuffer (raw tokens) over payload.text (may be rendered/stripped)
+        if (onStreamEnd) onStreamEnd(streamBuffer || payload?.text || '');
         streamBuffer = '';
         break;
       case 'content_block':
