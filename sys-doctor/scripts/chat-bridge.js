@@ -109,6 +109,12 @@ async function mount(el, options) {
     iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send', payload: { text } }, '*');
   }
 
+  /** Send a message to the agent without showing it in the chat UI. */
+  function sendHidden(text) {
+    streamBuffer = '';
+    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send_hidden', payload: { text } }, '*');
+  }
+
   /** Add a local-only message to the chat display. */
   function addMessage(role, text) {
     const mappedRole = (role === 'ai' || role === 'assistant') ? 'assistant' : role;
@@ -117,6 +123,7 @@ async function mount(el, options) {
 
   return {
     send,
+    sendHidden,
     addMessage,
     destroy() {
       window.removeEventListener('message', handleMessage);

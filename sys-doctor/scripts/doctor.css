@@ -1,5 +1,104 @@
 /* Sys Doctor v2 — layout + widget styles */
 
+/* ── Welcome Dialog ── */
+
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.welcome-dialog {
+  background: #fff;
+  border-radius: 16px;
+  padding: 40px 36px 32px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.welcome-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.welcome-dialog h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0 0 4px;
+}
+
+.welcome-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0 0 28px;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.welcome-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.welcome-btn:hover {
+  border-color: #3b82f6;
+  background: #f8faff;
+}
+
+.welcome-btn.primary {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.welcome-btn.primary:hover {
+  background: #dbeafe;
+}
+
+.welcome-btn-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.welcome-btn strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.welcome-btn small {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
 /* ── Layout ── */
 
 .doctor-container {

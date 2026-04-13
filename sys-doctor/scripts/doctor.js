@@ -1,7 +1,7 @@
 // Sys Doctor v2 — orchestrator
 // Runs hardware probe on open, sends data to model, renders model's page JSON.
 
-import { fetchDefaultModel } from './api.js';
+import { fetchDefaultModel, listSkillSessions } from './api.js';
 import { runScan, runDeepFileScan } from './scan.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
@@ -27,7 +27,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { /* ignore */ }
   }
 
-  // Mount chat panel
+  // If no existing session, check for previous sessions before mounting chat.
+  // This avoids creating a junk empty session before the user decides.
+  if (!existingSession) {
+    let sessions = [];
+    try {
+      sessions = await listSkillSessions(SKILL_NAME);
+      sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+      sessions = sessions.slice(0, 5);
+    } catch { /* ignore */ }
+
+    if (sessions.length > 0) {
+      // Show welcome dialog — don't mount chat yet
+      showWelcomeDialog(sessions);
+      return;
+    }
+  }
+
+  // Mount chat and start (existing session or new)
+  await mountAndStart(existingSession);
+});
+
+// ── Mount chat panel and start ──
+
+async function mountAndStart(sessionId) {
   const chatPanel = document.getElementById('chat-panel');
   const mountOpts = {
     skillName: SKILL_NAME,
@@ -44,11 +67,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       handleModelResponse(text);
     },
   };
-  if (existingSession) mountOpts.sessionId = existingSession;
+  if (sessionId) mountOpts.sessionId = sessionId;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
 
-  // Expose send for widget click handlers.
-  // Intercept deep scan triggers to run client-side before sending to model.
+  // Expose send for widget click handlers
   window._chatSend = async (text) => {
     if (!chat) return;
     const lower = text.toLowerCase();
@@ -59,29 +81,103 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   };
 
-  // Restore or start fresh
-  if (existingSession) {
-    const restored = restoreFromCache(existingSession);
-    if (!restored) {
-      showWelcome();
-      startHardwareProbe();
-    }
+  if (sessionId) {
+    // Restore dashboard from cache — no re-scan
+    restoreFromCache(sessionId);
   } else {
-    showWelcome();
-    startHardwareProbe();
+    // Fresh session
+    startFresh();
   }
-});
+}
 
-// ── Welcome message ──
+// ── Welcome dialog — choose previous session or new scan ──
 
-function showWelcome() {
-  if (!chat) return;
-  chat.addMessage('assistant',
-    "Hi, I'm **Sys Doctor** — your AI system health analyst.\n\n" +
-    "I'm scanning your hardware right now — checking CPU, memory, disk, battery, security, and performance. " +
-    "This takes about 10 seconds.\n\n" +
-    "Once done, I'll show you a health report and suggest what you can do — clean up disk, organise files, check security, or just ask me anything about your system."
-  );
+function showWelcomeDialog(sessions) {
+  // Build dialog HTML
+  const overlay = document.createElement('div');
+  overlay.className = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div class="welcome-dialog">
+      <div class="welcome-icon">🩺</div>
+      <h2>Sys Doctor</h2>
+      <p class="welcome-subtitle">Your AI system health analyst</p>
+      <div class="welcome-actions">
+        <button class="welcome-btn primary" id="welcome-new">
+          <span class="welcome-btn-icon">🔍</span>
+          <span>
+            <strong>New Scan</strong>
+            <small>Run a fresh system health check</small>
+          </span>
+        </button>
+        ${sessions.length > 0 ? `
+          <button class="welcome-btn secondary" id="welcome-resume">
+            <span class="welcome-btn-icon">📋</span>
+            <span>
+              <strong>Continue Previous</strong>
+              <small>Resume your last session</small>
+            </span>
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // New scan — mount without session ID (creates new)
+  document.getElementById('welcome-new').addEventListener('click', async () => {
+    overlay.remove();
+    await mountAndStart(null);
+  });
+
+  // Resume previous — mount with the last session ID
+  document.getElementById('welcome-resume').addEventListener('click', async () => {
+    overlay.remove();
+    const lastSession = sessions[0];
+    // Update URL without reload
+    const url = new URL(window.location);
+    url.searchParams.set('session', lastSession.id);
+    history.replaceState(null, '', url);
+    await mountAndStart(lastSession.id);
+  });
+}
+
+// ── Fresh start — agent introduces itself while probe runs in parallel ──
+
+function startFresh() {
+  // Show scanning progress in the left panel immediately
+  applyPageUpdate({
+    body: [
+      {
+        type: 'info',
+        icon: '🩺',
+        title: 'Sys Doctor',
+        fields: [
+          { label: '', value: 'Starting up — scanning your system...' },
+        ],
+      },
+    ],
+  });
+
+  // Run hardware probe — when done, it sends [SYS_SCAN_DATA]
+  startHardwareProbe();
+
+  // Send hidden intro prompt after a short delay so the iframe chat is ready.
+  // The agent greets the user proactively — feels like it initiated the conversation.
+  // sendHidden doesn't show the prompt in chat — only the agent's response appears.
+  setTimeout(() => {
+    if (chat) {
+      chat.sendHidden(
+        'The user just opened the Sys Doctor dashboard app. ' +
+        'On the left panel, a progress indicator is showing 4 steps: System info, Disk usage, Security, and Performance — each completes with a checkmark. ' +
+        'The scan may take a minute or two depending on their hardware. When it finishes, the full scan data will be sent to you as a [SYS_SCAN_DATA] message, and you\'ll build the dashboard layout. ' +
+        '\n\nFor now: greet the user warmly, introduce yourself as Sys Doctor (their AI system health analyst), ' +
+        'and explain what\'s happening — you\'re scanning their system\'s CPU, memory, disk, battery, security, and performance. ' +
+        'Mention the scan may take a minute or two depending on their hardware, and you\'ll have a full health report ready shortly. ' +
+        'Keep it natural and conversational, 3-4 sentences. Do NOT emit a <!--page block yet.'
+      );
+    }
+  }, 2000);
 }
 
 // ── Hardware probe ──
@@ -130,10 +226,10 @@ async function startHardwareProbe() {
     const diskFree = results.disk ? results.disk.free_gb : null;
     saveScoreHistory(score, diskFree);
 
-    // Build and send the opening prompt
+    // Build and send the scan data (hidden — user doesn't need to see raw data)
     const prompt = buildOpeningPrompt(results);
     expectPageBlock = true;
-    chat.send(prompt);
+    chat.sendHidden(prompt);
   } catch (err) {
     console.error('Hardware probe error:', err);
     if (chat) chat.send('Please greet me and show the sys-doctor dashboard. I could not collect hardware data automatically.');
@@ -333,6 +429,12 @@ function buildOpeningPrompt(results) {
   if (results.usage?.profile === 'developer' || results.usage?.profile === 'ai-developer') {
     parts.push(`- User is a ${results.usage.profile}. Tailor advice for development workflows (Docker, node_modules, build caches).`);
   }
+  parts.push('');
+  parts.push(`## IMPORTANT: Response format`);
+  parts.push(`You MUST include a <!--page JSON block in your response to build the dashboard.`);
+  parts.push(`The left panel renders your page block as visual widgets (top_bar, info card, action-cards).`);
+  parts.push(`Keep your chat text to 2-3 sentences — the dashboard shows the details visually.`);
+  parts.push(`Do NOT echo or repeat the raw data above in your chat response.`);
   parts.push('');
 
   return parts.join('\n');
