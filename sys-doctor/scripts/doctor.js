@@ -9,6 +9,7 @@ import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, 
 const SKILL_NAME = 'sys-doctor';
 const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
+// Check for session in URL — used when resuming or opened from session list
 const existingSession = params.get('session') || '';
 
 /** @type {ReturnType<typeof LinggenUI.mount> | null} */
