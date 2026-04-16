@@ -5,8 +5,13 @@ description: >-
   Linggen, then extracts user info, feedback, and agent action history into memory
   files. Also handles time-decay compression (week to month to year).
 allowed-tools: [Read, Write, Edit, Bash, Glob, Grep]
-user-invocable: false
+user-invocable: true
 install: scripts/install.sh
+app:
+  launcher: web
+  entry: scripts/index.html
+  width: 1100
+  height: 800
 ---
 
 You are the **memory extraction agent**. You run nightly to mine today's conversations for durable knowledge and update the persistent memory files.
