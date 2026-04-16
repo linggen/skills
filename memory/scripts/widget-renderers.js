@@ -237,19 +237,26 @@ function renderBars(w) {
   const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
   panel.innerHTML = `<div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>`;
 
-  const canvas = document.createElement('canvas');
-  canvas.style.width = '100%';
-  canvas.style.display = 'block';
-  const items = (w.items || []).map(i => ({ path: i.label, size_gb: i.value }));
-  const neededH = items.length * 32 + 24;
-  canvas.style.height = `${Math.max(neededH, 80)}px`;
-  panel.appendChild(canvas);
+  const items = w.items || [];
+  const maxVal = items[0]?.max || Math.max(...items.map(i => i.value || 0), 1);
+  const container = document.createElement('div');
+  container.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
 
-  // Draw after DOM insertion (needs dimensions)
-  requestAnimationFrame(() => {
-    const maxVal = w.items?.[0]?.max || Math.max(...items.map(i => i.size_gb));
-    drawDiskBars(canvas, items, maxVal);
-  });
+  for (const item of items) {
+    const pct = Math.min(100, ((item.value || 0) / maxVal) * 100);
+    const color = item.color || 'var(--accent)';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;font-size:12px;';
+    row.innerHTML = `
+      <span style="min-width:140px;color:var(--text-muted);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(item.label)}</span>
+      <div style="flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width 0.6s;"></div>
+      </div>
+      <span style="min-width:50px;font-weight:600;font-variant-numeric:tabular-nums;">${item.value ?? '--'}${item.unit ? ' ' + esc(item.unit) : ''}</span>
+    `;
+    container.appendChild(row);
+  }
+  panel.appendChild(container);
   return panel;
 }
 
@@ -258,20 +265,51 @@ function renderBars(w) {
 function renderTable(w) {
   const panel = el('div', 'panel');
   const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
-  const cols = (w.columns || []).map(c => `<th>${esc(c)}</th>`).join('');
-  const rows = (w.rows || []).map(row => {
+
+  // If the title names a memory file, add per-row × delete buttons.
+  const fileMatch = (w.title || '').match(/(user_info|user_feedback|agent_done_week|agent_done_month|agent_done_year)\.md/);
+  const memFile = fileMatch ? fileMatch[0] : null;
+
+  const cols = (w.columns || []).map(c => `<th>${esc(c)}</th>`).join('') + (memFile ? '<th></th>' : '');
+  const rows = (w.rows || []).map((row, idx) => {
     const cells = row.map(cell => {
       if (cell && typeof cell === 'object' && cell.badge) {
         return `<td><span class="label-badge ${esc(cell.color || '')}">${esc(cell.badge)}</span></td>`;
       }
       return `<td>${esc(String(cell ?? ''))}</td>`;
     }).join('');
-    return `<tr>${cells}</tr>`;
+    const deleteCell = memFile
+      ? `<td class="fact-del-cell"><button class="fact-del-btn" data-idx="${idx}" title="Delete this fact">×</button></td>`
+      : '';
+    return `<tr>${cells}${deleteCell}</tr>`;
   }).join('');
+
   panel.innerHTML = `
     <div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>
     <table class="widget-table"><thead><tr>${cols}</tr></thead><tbody>${rows}</tbody></table>
   `;
+
+  if (memFile) {
+    panel.querySelectorAll('.fact-del-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        const row = (w.rows || [])[idx];
+        if (!row) return;
+        // Fact text = last string cell (skip badge objects).
+        const factText = [...row].reverse().find(c => typeof c === 'string');
+        if (!factText) return;
+        if (!confirm(`Delete from ${memFile}?\n\n"${factText}"`)) return;
+        const tr = btn.closest('tr');
+        tr.style.opacity = '0.4';
+        tr.style.textDecoration = 'line-through';
+        btn.disabled = true;
+        if (window._chatSend) {
+          window._chatSend(`__DELETE_FACT__|${memFile}|${factText}`);
+        }
+      });
+    });
+  }
+
   return panel;
 }
 

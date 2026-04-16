@@ -31,7 +31,8 @@ export function restorePage(page) {
 /** Parse page blocks from model text. Supports both <!--page ... --> and ```page ... ```. */
 export function parsePageBlock(text) {
   // Try HTML comment format first (hidden from chat rendering)
-  const commentMatches = [...text.matchAll(/<!--page\s*\n([\s\S]*?)\n-->/g)];
+  // Allow optional newline after <!--page and before -->
+  const commentMatches = [...text.matchAll(/<!--page\s*([\s\S]*?)\s*-->/g)];
   // Fallback: fenced code block format
   const fencedMatches = [...text.matchAll(/```page\s*\n([\s\S]*?)\n```/g)];
   const matches = commentMatches.length > 0 ? commentMatches : fencedMatches;

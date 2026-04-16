@@ -1,8 +1,8 @@
 // Memory App — orchestrator
-// Reads memory files, collects sessions, sends to model for extraction,
-// renders model's page JSON as dashboard widgets.
+// Always creates a new session, auto-scans last 24h, extracts facts,
+// shows report + memory summary. User can expand scan range.
 
-import { fetchDefaultModel, listSkillSessions } from './api.js';
+import { fetchDefaultModel } from './api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 
 const SKILL_NAME = 'memory';
@@ -11,7 +11,6 @@ const MEMORY_FILES = ['user_info.md', 'user_feedback.md', 'agent_done_week.md', 
 
 const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
-const existingSession = params.get('session') || '';
 
 let chat = null;
 let scanning = false;
@@ -27,21 +26,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { /* ignore */ }
   }
 
-  if (!existingSession) {
-    let sessions = [];
-    try {
-      sessions = await listSkillSessions(SKILL_NAME);
-      sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-      sessions = sessions.slice(0, 5);
-    } catch { /* ignore */ }
-
-    if (sessions.length > 0) {
-      showWelcomeDialog(sessions);
-      return;
-    }
-  }
-
-  await mountAndStart(existingSession);
+  const existingSession = params.get('session') || '';
+  await mountAndStart(existingSession || null);
 });
 
 // ── Mount chat panel and start ──
@@ -65,10 +51,25 @@ async function mountAndStart(sessionId) {
   if (sessionId) mountOpts.sessionId = sessionId;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
 
+  // Expose send for widget click handlers
   window._chatSend = async (text) => {
     if (!chat) return;
-    if (text.toLowerCase().includes('extract')) {
-      await startExtraction();
+
+    // Per-row delete: "__DELETE_FACT__|<file>|<fact text>"
+    if (text.startsWith('__DELETE_FACT__|')) {
+      const [, file, factText] = text.split('|');
+      if (file && factText) await startDeleteFact(file, factText);
+      return;
+    }
+
+    const lower = text.toLowerCase();
+    if (lower.includes('scan') || lower.includes('extract')) {
+      if (lower.includes('all')) await startExtraction('all');
+      else if (lower.includes('month')) await startExtraction('month');
+      else if (lower.includes('week')) await startExtraction('week');
+      else await startExtraction('today');
+    } else if (lower.includes('analyze') || lower.includes('clean')) {
+      await startAnalyze();
     } else {
       chat.send(text);
     }
@@ -77,294 +78,321 @@ async function mountAndStart(sessionId) {
   if (sessionId) {
     restoreFromCache(sessionId);
   } else {
-    startFresh();
+    startAutoScan();
   }
 }
 
-// ── Welcome dialog ──
+// ── Auto-scan on open ──
 
-function showWelcomeDialog(sessions) {
-  const overlay = document.createElement('div');
-  overlay.className = 'welcome-overlay';
-  overlay.innerHTML = `
-    <div class="welcome-dialog">
-      <div class="welcome-icon">🧠</div>
-      <h2>Memory</h2>
-      <p class="welcome-subtitle">Your agent's persistent memory</p>
-      <div class="welcome-actions">
-        <button class="welcome-btn primary" id="welcome-new">
-          <span class="welcome-btn-icon">🔍</span>
-          <span>
-            <strong>New Session</strong>
-            <small>View memory and extract new facts</small>
-          </span>
-        </button>
-        ${sessions.length > 0 ? `
-          <button class="welcome-btn secondary" id="welcome-resume">
-            <span class="welcome-btn-icon">📋</span>
-            <span>
-              <strong>Continue Previous</strong>
-              <small>Resume your last session</small>
-            </span>
-          </button>
-        ` : ''}
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  document.getElementById('welcome-new').addEventListener('click', async () => {
-    overlay.remove();
-    await mountAndStart(null);
-  });
-
-  if (document.getElementById('welcome-resume')) {
-    document.getElementById('welcome-resume').addEventListener('click', async () => {
-      overlay.remove();
-      const lastSession = sessions[0];
-      const url = new URL(window.location);
-      url.searchParams.set('session', lastSession.id);
-      history.replaceState(null, '', url);
-      await mountAndStart(lastSession.id);
-    });
-  }
-}
-
-// ── Fresh start — load memory overview ──
-
-function startFresh() {
+function startAutoScan() {
   applyPageUpdate({
-    body: [
-      {
-        type: 'info',
-        icon: '🧠',
-        title: 'Memory',
-        fields: [
-          { label: '', value: 'Loading your memory files...' },
-        ],
-      },
-    ],
+    body: [{
+      type: 'progress',
+      title: 'Scanning last 24 hours...',
+      steps: [
+        { label: 'Collecting sessions', status: 'active', icon: '📂' },
+        { label: 'Reading memory files', status: 'pending', icon: '📖' },
+        { label: 'Extracting facts', status: 'pending', icon: '🔍' },
+        { label: 'Building dashboard', status: 'pending', icon: '📊' },
+      ],
+    }],
   });
 
-  // Load memory files and build overview
   setTimeout(async () => {
-    await loadMemoryOverview();
-  }, 1500);
+    if (chat) {
+      chat.sendHidden(
+        '[HIDDEN] The user just opened the Memory dashboard. ' +
+        'The app is auto-scanning sessions from the last 24 hours. ' +
+        'Greet briefly as their Memory agent and say exactly that you are scanning sessions from the last 24 hours. ' +
+        '2 sentences. Do NOT emit a <!--page block. Do NOT use tools.'
+      );
+    }
+    await new Promise(r => setTimeout(r, 2000));
+    await runAutoScan();
+  }, 1000);
 }
 
-// ── Load and display current memory ──
+// ── Run the auto-scan ──
 
-async function loadMemoryOverview() {
+async function runAutoScan() {
   const sessionId = chat?.getSessionId();
-  const memoryData = {};
 
-  // Bootstrap: check if memory files exist, create from templates if not
+  // Bootstrap memory files if missing
   const checkResult = await bash(`ls ${MEMORY_DIR}/*.md 2>/dev/null | wc -l`, sessionId);
-  const fileCount = parseInt((checkResult.stdout || '0').trim());
-
-  if (fileCount === 0) {
-    // No memory files — try to run install script
-    applyPageUpdate({
-      body: [{
-        type: 'info',
-        icon: '🧠',
-        title: 'Memory',
-        fields: [{ label: '', value: 'No memory files found. Initializing...' }],
-      }],
-    });
-
-    // Find skill dir and run install
+  if (parseInt((checkResult.stdout || '0').trim()) === 0) {
     const skillCheck = await bash('ls ~/.linggen/skills/memory/scripts/install.sh 2>/dev/null', sessionId);
     if (skillCheck.stdout?.trim()) {
       await bash('SKILL_DIR=~/.linggen/skills/memory bash ~/.linggen/skills/memory/scripts/install.sh', sessionId);
     }
   }
 
-  // Read each memory file
+  // Collect today's sessions (NDJSON manifest on stdout)
+  updateProgress('Collecting sessions...', 0);
+  const collectResult = await bash(
+    'bash ~/.linggen/skills/memory/scripts/collect_sessions.sh 2>/dev/null',
+    sessionId
+  );
+  const sessionList = parseManifest(collectResult.stdout);
+
+  // Read current memory files
+  updateProgress(`Found ${sessionList.length} sessions — reading memory...`, 1);
+  const memoryData = await readMemoryFiles(sessionId);
+
+  const scanInfo = {
+    paths: ['~/.claude/projects/', '~/.linggen/sessions/'],
+    sessionCount: sessionList.length,
+    dateRange: new Date().toISOString().slice(0, 10),
+  };
+
+  if (sessionList.length > 0) {
+    updateProgress(`Extracting from ${sessionList.length} sessions...`, 2);
+    sendExtractionPrompt(sessionList, memoryData, scanInfo, 'today');
+  } else {
+    updateProgress('Building dashboard...', 3);
+    sendOverviewPrompt(memoryData, scanInfo);
+  }
+}
+
+// ── Parse NDJSON manifest from collect_sessions.sh ──
+
+function parseManifest(stdout) {
+  if (!stdout) return [];
+  return stdout.trim().split('\n').filter(l => l.trim()).map(line => {
+    try { return JSON.parse(line); } catch { return null; }
+  }).filter(Boolean);
+}
+
+// ── Read all memory files ──
+
+async function readMemoryFiles(sessionId) {
+  const memoryData = {};
   for (const file of MEMORY_FILES) {
     const result = await bash(`cat ${MEMORY_DIR}/${file} 2>/dev/null`, sessionId);
     if (result.stdout) {
-      const content = result.stdout;
-      // Parse body (skip frontmatter)
-      const parts = content.split('---');
-      const body = parts.length >= 3 ? parts.slice(2).join('---').trim() : content;
-      const lines = body.split('\n').filter(l => l.trim());
-      memoryData[file] = { content: body, lineCount: lines.length };
+      const parts = result.stdout.split('---');
+      const body = parts.length >= 3 ? parts.slice(2).join('---').trim() : result.stdout;
+      const factLines = body.split('\n').filter(l => l.trim().startsWith('- '));
+      memoryData[file] = { content: body, lineCount: factLines.length };
     } else {
       memoryData[file] = { content: '', lineCount: 0 };
     }
   }
-
-  // Count facts
-  const userFacts = memoryData['user_info.md']?.lineCount || 0;
-  const rules = memoryData['user_feedback.md']?.lineCount || 0;
-  const weekEntries = memoryData['agent_done_week.md']?.lineCount || 0;
-  const totalLines = Object.values(memoryData).reduce((sum, d) => sum + d.lineCount, 0);
-
-  // Send to model to build the overview page
-  const prompt = buildOverviewPrompt(memoryData, { userFacts, rules, weekEntries, totalLines });
-  expectPageBlock = true;
-  chat.sendHidden(prompt);
+  return memoryData;
 }
 
-function buildOverviewPrompt(memoryData, stats) {
-  const parts = ['[MEMORY_DATA]\n'];
-  parts.push('The user just opened the Memory dashboard. Below is the current state of all memory files.');
-  parts.push('Build the overview dashboard page.\n');
+// ── Progress helper ──
 
-  parts.push(`## Stats`);
-  parts.push(`- Total lines across all files: ${stats.totalLines}`);
-  parts.push(`- User facts (user_info): ${stats.userFacts} lines`);
-  parts.push(`- Behavior rules (user_feedback): ${stats.rules} lines`);
-  parts.push(`- This week's entries (agent_done_week): ${stats.weekEntries} lines`);
-  parts.push('');
+function updateProgress(title, doneCount) {
+  const steps = [
+    { label: 'Collecting sessions', icon: '📂' },
+    { label: 'Reading memory', icon: '📖' },
+    { label: 'Extracting facts', icon: '🔍' },
+    { label: 'Building dashboard', icon: '📊' },
+  ].map((s, i) => ({
+    ...s,
+    status: i < doneCount ? 'done' : i === doneCount ? 'active' : 'pending',
+  }));
+  applyPageUpdate({ body: [{ type: 'progress', title, steps }] });
+}
+
+// ── PAGE LAYOUT INSTRUCTIONS (shared across all prompts) ──
+
+const PAGE_LAYOUT_INSTRUCTIONS = `
+You MUST respond with a <!--page JSON block to build the dashboard.
+Use <!--page and --> delimiters (HTML comment format).
+
+The dashboard has these sections:
+
+## top_bar — one card per memory file showing fact count + change delta
+Each card: { "widget": "custom", "data": { "label": "<filename without .md>", "value": "<fact_count>", "sub": "<delta text>", "bar": <pct> } }
+- "sub" shows the change: "▲ +3 added" (green change) or "— no change" or "▼ -2 removed"
+- Include ALL 5 files: user_info, user_feedback, agent_done_week, agent_done_month, agent_done_year
+- "bar" = percentage of max (user_info max=200, user_feedback max=100, week max=150, month max=200, year max=100)
+
+## body — widgets in this order:
+
+### 1. File cards — one table per memory file that has facts
+For each memory file that has content, show a table widget:
+{ "type": "table", "title": "<filename> (<count> facts)", "badge": "<delta>", "columns": ["", "Fact"], "rows": [...] }
+- Each row: [status_badge, fact_text]
+- status_badge: { "badge": "+", "color": "green" } for newly added, { "badge": "~", "color": "yellow" } for updated/merged, { "badge": "−", "color": "red" } for removed, { "badge": "", "color": "gray" } for unchanged
+- If this is the initial scan (no extraction done), mark all existing facts as unchanged (gray)
+- Skip files with 0 facts entirely — don't show empty file cards
+
+### 2. Scan Report
+{ "type": "info", "icon": "📂", "title": "Scan Report", "fields": [
+  { "label": "Paths", "value": "<scanned paths>" },
+  { "label": "Sessions", "value": "<count> files scanned" },
+  { "label": "Date range", "value": "<date or range>" },
+  { "label": "Added", "value": "<n> facts" },
+  { "label": "Merged", "value": "<n> conflicts" },
+  { "label": "Skipped", "value": "<n> duplicates" }
+]}
+- Only include fields that are relevant. If no extraction was done, just show Paths/Sessions/Date.
+
+### 3. Actions
+{ "type": "action-cards", "items": [
+  { "id": "scan-today", "icon": "🔍", "title": "Scan Today", "description": "Extract from last 24 hours", "active": true, "message": "Scan today" },
+  { "id": "scan-week", "icon": "📅", "title": "Scan This Week", "description": "Extract from last 7 days", "active": true, "message": "Scan this week" },
+  { "id": "scan-month", "icon": "📆", "title": "Scan This Month", "description": "Extract from last 30 days", "active": true, "message": "Scan this month" },
+  { "id": "scan-all", "icon": "📚", "title": "Scan All Time", "description": "Extract from all sessions", "active": true, "message": "Scan all" },
+  { "id": "analyze", "icon": "🧹", "title": "Analyze & Clean", "description": "Dedup, fix conflicts, merge, compress. Make memory brief.", "active": true, "message": "Analyze and clean" }
+]}
+
+## footer
+{ "text": "<scan date or status>" }
+
+Keep chat text to 2-3 sentences. The dashboard shows details visually.
+`;
+
+// ── Send overview prompt (no extraction) ──
+
+function sendOverviewPrompt(memoryData, scanInfo) {
+  const parts = ['[MEMORY_DATA]\n'];
+  parts.push(`Scanned: ${scanInfo.paths.join(', ')}`);
+  parts.push(`Sessions found: ${scanInfo.sessionCount}`);
+  parts.push(`Date: ${scanInfo.dateRange}\n`);
 
   for (const file of MEMORY_FILES) {
     const data = memoryData[file];
-    parts.push(`## ${file} (${data.lineCount} lines)`);
+    parts.push(`## ${file} (${data.lineCount} facts)`);
     if (data.content) {
-      // Truncate to keep prompt reasonable
-      const truncated = data.content.length > 2000
-        ? data.content.slice(0, 2000) + '\n... (truncated)'
-        : data.content;
-      parts.push(truncated);
+      parts.push(data.content.length > 2000 ? data.content.slice(0, 2000) + '\n...' : data.content);
     } else {
       parts.push('(empty)');
     }
     parts.push('');
   }
 
-  parts.push('## Instructions');
-  parts.push('Build the overview dashboard with a <!--page JSON block. Include:');
-  parts.push('- top_bar: custom widgets for Facts count, Rules count, Week entries, Total lines');
-  parts.push('- body: info card (user profile summary), table (behavior rules as Do/Don\'t), bars (file sizes), action-cards (Extract Now, Compress, Health Check)');
-  parts.push('- footer: last updated date');
-  parts.push('Keep chat text to 2-3 sentences. The dashboard shows the details visually.');
-  parts.push('');
+  parts.push('No extraction was performed — just showing current memory state.');
+  parts.push('Mark all existing facts as unchanged (gray badge) in the file cards.');
+  parts.push(PAGE_LAYOUT_INSTRUCTIONS);
 
-  return parts.join('\n');
+  expectPageBlock = true;
+  chat.sendHidden(parts.join('\n'));
 }
 
-// ── Extraction ──
+// ── Send extraction prompt ──
 
-async function startExtraction() {
+function sendExtractionPrompt(sessionList, memoryData, scanInfo, rangeLabel) {
+  const sessionLines = sessionList.map((s, i) =>
+    `  ${i + 1}. filepath=${s.filepath} source=${s.source} date=${s.date} (${s.label})`
+  ).join('\n');
+
+  const memSummary = Object.entries(memoryData)
+    .map(([f, d]) => `${f}: ${d.lineCount} facts`)
+    .join(', ');
+
+  const prompt = `[MEMORY_EXTRACT]
+
+Current memory before extraction: ${memSummary}
+
+${sessionList.length} session(s) to extract:
+${sessionLines}
+
+For each session, spawn a Task subagent in parallel. Delegate to the 'ling' agent (the only registered agent — do NOT pass 'general' or 'general-purpose'):
+
+  Task({ target_agent_id: "ling", task: "Run 'bash ~/.linggen/skills/memory/scripts/extract_session.sh <filepath> <source> <date>' to see the flattened conversation (user + assistant text only — tool calls are stripped).
+
+  Extract facts and update memory files at ~/.linggen/memory/ via Edit (body only, never frontmatter).
+
+  ## user_info.md — cross-project user facts only
+  Identity, role, preferences, hobbies, habits, claims. Include date: '- Prefers dark mode (YYYY-MM-DD)'.
+  SKIP project-specific facts (paths, commands tied to one repo) — those belong in the project's CLAUDE.md, not global memory.
+
+  ## user_feedback.md — behavior rules the user gave
+  Under ## Do or ## Don't. Include *why* if the user explained it.
+
+  ## agent_done_week.md — what the agent accomplished
+  Under a '## YYYY-MM-DD (Day)' heading, with these subsections (omit any empty ones):
+    ### Built — features/components shipped (1 line each)
+    ### Fixed — bugs, each as:
+      '- <one-line summary>. Symptoms: <keywords>. Root cause: <cause>. Fix: <what>. Files: <paths>.'
+    ### Decided — architectural choices with reasoning ('chose X over Y because ...')
+    ### Tried (didn't work) — failed attempts with why (prevents re-trying)
+    ### Learned — cross-project env/tool gotchas (skip project-specific ones)
+
+  Rules:
+  - Outcomes only, not narration. Skip 'I'm reading...', 'Let me check...' filler.
+  - Check existing entries — skip duplicates, update contradictions.
+  - Never touch frontmatter.
+  - If you see a project-specific fact worth saving, note it in your final report as 'SUGGEST for CLAUDE.md' — do NOT write it to global memory.
+
+  Report briefly: files updated, items added, duplicates skipped, any CLAUDE.md suggestions." })
+
+After all subagents complete:
+1. Run compression — entries > 7 days in agent_done_week.md → compress into agent_done_month.md.
+2. Read the updated memory files.
+3. Build the dashboard. Scan info: paths=${scanInfo.paths.join(', ')}, sessions=${scanInfo.sessionCount}, range=${rangeLabel}.
+
+In the file cards: mark newly-added facts with green "+", updated with yellow "~", removed with red "−", unchanged with gray.
+${PAGE_LAYOUT_INSTRUCTIONS}`;
+
+  expectPageBlock = true;
+  chat.sendHidden(prompt);
+}
+
+// ── Manual extraction with date range ──
+
+async function startExtraction(range) {
   if (scanning) {
     if (chat) chat.addMessage('assistant', 'Extraction already in progress...');
     return;
   }
   scanning = true;
 
-  applyPageUpdate({
-    body: [{
-      type: 'progress',
-      title: 'Collecting sessions...',
-      steps: [
-        { label: 'Collecting sessions', status: 'active', icon: '📂' },
-        { label: 'Extracting facts', status: 'pending', icon: '🔍' },
-        { label: 'Updating memory', status: 'pending', icon: '📝' },
-        { label: 'Compressing', status: 'pending', icon: '🗜️' },
-      ],
-    }],
-  });
+  const rangeLabel = range === 'all' ? 'all time'
+    : range === 'month' ? 'this month'
+    : range === 'week' ? 'this week' : 'today';
+
+  updateProgress(`Scanning ${rangeLabel}...`, 0);
 
   try {
     const sessionId = chat?.getSessionId();
 
-    // Phase 1: Collect sessions
-    const collectResult = await bash(
-      'bash ~/.linggen/skills/memory/scripts/collect_sessions.sh 2>&1',
-      sessionId
-    );
-    const sessionOutput = collectResult.stdout || '';
+    // Build date list for the range
+    const dayCount = range === 'all' ? 365 : range === 'month' ? 30 : range === 'week' ? 7 : 1;
+    const dates = [];
+    for (let i = 0; i < dayCount; i++) {
+      const d = new Date(Date.now() - i * 86400000);
+      dates.push(d.toISOString().slice(0, 10));
+    }
+    const cmd = dates
+      .map(d => `bash ~/.linggen/skills/memory/scripts/collect_sessions.sh ${d} 2>/dev/null`)
+      .join(' ; ');
 
-    if (sessionOutput.includes('No sessions found')) {
+    const collectResult = await bash(cmd, sessionId);
+    const collected = parseManifest(collectResult.stdout);
+
+    // Dedup by filepath+date (same file scanned across dates would otherwise duplicate)
+    const seen = new Set();
+    const allSessions = [];
+    for (const s of collected) {
+      const key = `${s.filepath}|${s.date}`;
+      if (!seen.has(key)) { seen.add(key); allSessions.push(s); }
+    }
+
+    if (allSessions.length === 0) {
       applyPageUpdate({
         body: [{
-          type: 'info',
-          icon: '📭',
-          title: 'No sessions found',
-          fields: [{ label: '', value: 'No conversations from today to extract.' }],
+          type: 'info', icon: '📭', title: `No sessions found for ${rangeLabel}`,
+          fields: [{ label: '', value: 'No conversations to extract in this range.' }],
         }],
       });
-
-      // Still run compression
-      chat.sendHidden(
-        'No new sessions found for today. Check if compression is needed: ' +
-        'read agent_done_week.md and compress entries older than 7 days to agent_done_month.md. ' +
-        'Then report what you did with a <!--page block showing the report view.'
-      );
-      expectPageBlock = true;
       scanning = false;
       return;
     }
 
-    // Parse session blocks
-    const sessionBlocks = parseSessionBlocks(sessionOutput);
+    updateProgress(`Found ${allSessions.length} sessions — extracting...`, 2);
 
-    applyPageUpdate({
-      body: [{
-        type: 'progress',
-        title: `Found ${sessionBlocks.length} sessions`,
-        steps: [
-          { label: `${sessionBlocks.length} sessions collected`, status: 'done', icon: '📂' },
-          { label: 'Extracting facts', status: 'active', icon: '🔍' },
-          { label: 'Updating memory', status: 'pending', icon: '📝' },
-          { label: 'Compressing', status: 'pending', icon: '🗜️' },
-        ],
-      }],
-    });
+    const memoryData = await readMemoryFiles(sessionId);
+    const scanInfo = {
+      paths: ['~/.claude/projects/', '~/.linggen/sessions/'],
+      sessionCount: allSessions.length,
+      dateRange: rangeLabel,
+    };
 
-    // Phase 2: Send each session to model one at a time
-    for (let i = 0; i < sessionBlocks.length; i++) {
-      const block = sessionBlocks[i];
-
-      applyPageUpdate({
-        body: [{
-          type: 'progress',
-          title: `Processing ${i + 1}/${sessionBlocks.length}: ${block.label}`,
-          steps: [
-            { label: `${sessionBlocks.length} sessions collected`, status: 'done', icon: '📂' },
-            { label: `Extracting ${i + 1}/${sessionBlocks.length}`, status: 'active', icon: '🔍' },
-            { label: 'Updating memory', status: 'pending', icon: '📝' },
-            { label: 'Compressing', status: 'pending', icon: '🗜️' },
-          ],
-        }],
-      });
-
-      // Send session to model for extraction
-      const extractPrompt = buildExtractionPrompt(block, i + 1, sessionBlocks.length);
-      expectPageBlock = (i === sessionBlocks.length - 1); // only expect page on last
-      chat.sendHidden(extractPrompt);
-
-      // Wait for model to respond before sending next session
-      await waitForResponse();
-    }
-
-    // Phase 3: Compress
-    applyPageUpdate({
-      body: [{
-        type: 'progress',
-        title: 'Compressing old entries...',
-        steps: [
-          { label: `${sessionBlocks.length} sessions processed`, status: 'done', icon: '📂' },
-          { label: 'Facts extracted', status: 'done', icon: '🔍' },
-          { label: 'Memory updated', status: 'done', icon: '📝' },
-          { label: 'Compressing', status: 'active', icon: '🗜️' },
-        ],
-      }],
-    });
-
-    expectPageBlock = true;
-    chat.sendHidden(
-      'Extraction complete. Now:\n' +
-      '1. Run compression — check agent_done_week.md for entries older than 7 days, compress to month. Check month for entries older than 30 days, compress to year.\n' +
-      '2. Build the final report with a <!--page block showing:\n' +
-      '   - top_bar: custom widgets for sessions processed, facts added, conflicts resolved\n' +
-      '   - body: scorecard (changes per file), recommendations (conflicts resolved, stale entries removed), bars (file sizes after)\n' +
-      '   - footer: date\n' +
-      'Keep chat text to 2-3 sentences summarizing the extraction.'
-    );
+    sendExtractionPrompt(allSessions, memoryData, scanInfo, rangeLabel);
   } catch (err) {
     console.error('Extraction error:', err);
     if (chat) chat.send('Extraction failed: ' + err.message);
@@ -373,61 +401,99 @@ async function startExtraction() {
   }
 }
 
-function buildExtractionPrompt(block, index, total) {
-  return (
-    `[SESSION_DATA ${index}/${total}]\n` +
-    `Source: ${block.label}\n` +
-    `Messages: ${block.messageCount}\n\n` +
-    `${block.content}\n\n` +
-    `---\n` +
-    `Extract facts from this session and update the memory files at ${MEMORY_DIR}/.\n` +
-    `- User info (identity, preferences, hobbies, claims) → Edit user_info.md body\n` +
-    `- Behavior rules (corrections, confirmations) → Edit user_feedback.md body\n` +
-    `- Agent actions (features built, bugs fixed, deploys) → Edit agent_done_week.md body\n` +
-    `Check existing memory first — skip duplicates, update contradictions.\n` +
-    `Only edit the body below the --- frontmatter delimiter. Never edit frontmatter.\n` +
-    `Report what you found: added, skipped, merged. Be brief.`
-  );
+// ── Delete a single fact ──
+
+async function startDeleteFact(file, factText) {
+  if (!chat) return;
+  const prompt = `[DELETE_FACT]
+
+Remove this fact from ~/.linggen/memory/${file}:
+
+"${factText}"
+
+Steps:
+1. Read the file.
+2. Find the line whose body matches the fact text (usually a bullet like "- <fact text> (YYYY-MM-DD)" — the stored line may have a "- " prefix and/or trailing date that the dashboard didn't show).
+3. Edit the file to delete that one line. Delete the full line including its trailing newline. Do not modify any other facts. Never touch frontmatter.
+4. Re-read the file, then emit the dashboard page block reflecting the new state. Mark the removed fact with a red "−" badge if you include it for one render, or omit it.
+
+${PAGE_LAYOUT_INSTRUCTIONS}`;
+
+  expectPageBlock = true;
+  chat.sendHidden(prompt);
 }
 
-function parseSessionBlocks(output) {
-  const blocks = [];
-  const parts = output.split(/^==========/m);
-  for (const part of parts) {
-    if (!part.trim()) continue;
-    const firstNewline = part.indexOf('\n');
-    if (firstNewline === -1) continue;
-    const header = part.slice(0, firstNewline).trim().replace(/=+$/, '').trim();
-    const content = part.slice(firstNewline + 1).trim();
-    if (!content) continue;
-    const messageCount = (content.match(/^\[/gm) || []).length;
-    blocks.push({
-      label: header,
-      content: content.slice(0, 4000), // cap per session
-      messageCount,
-    });
+// ── Analyze & Clean ──
+
+async function startAnalyze() {
+  if (scanning) {
+    if (chat) chat.addMessage('assistant', 'Already working...');
+    return;
   }
-  return blocks;
+  scanning = true;
+
+  updateProgress('Analyzing memory files...', 2);
+
+  try {
+    const sessionId = chat?.getSessionId();
+    const memoryData = await readMemoryFiles(sessionId);
+
+    const memContents = MEMORY_FILES.map(file => {
+      const data = memoryData[file];
+      return `## ${file} (${data.lineCount} facts)\n${data.content || '(empty)'}\n`;
+    }).join('\n');
+
+    expectPageBlock = true;
+    chat.sendHidden(
+      '[MEMORY_ANALYZE]\n\n' +
+      'Analyze all memory files below. For each file:\n' +
+      '1. Remove duplicate facts (keep the most recent or most complete version)\n' +
+      '2. Resolve conflicts (e.g. "likes Rust" vs "Rust is hard" → merge into one nuanced fact)\n' +
+      '3. Merge similar entries into concise single lines\n' +
+      '4. Compress verbose facts into brief ones\n' +
+      '5. Remove outdated or stale entries\n\n' +
+      'Use Edit to update each file (body only, never frontmatter).\n' +
+      'Then read the cleaned files and build the dashboard showing what changed.\n\n' +
+      'Current memory files:\n' + memContents + '\n' +
+      'In the dashboard, mark cleaned/merged facts with yellow "~" badge, removed with red "−" badge.\n' +
+      PAGE_LAYOUT_INSTRUCTIONS
+    );
+  } catch (err) {
+    console.error('Analyze error:', err);
+    if (chat) chat.send('Analysis failed: ' + err.message);
+  } finally {
+    scanning = false;
+  }
 }
 
-// ── Wait for model response ──
+// ── Cache ──
 
-function waitForResponse() {
-  return new Promise((resolve) => {
-    const origHandler = handleModelResponse;
-    handleModelResponse = (text) => {
-      origHandler(text);
-      handleModelResponse = origHandler;
-      resolve();
-    };
-  });
+function cacheCurrentPage() {
+  const sid = params.get('session') || new URLSearchParams(window.location.search).get('session') || '';
+  if (!sid) return;
+  try {
+    localStorage.setItem(`memory-page:${sid}`, JSON.stringify(getCurrentPage()));
+  } catch { /* quota */ }
+}
+
+function restoreFromCache(sessionId) {
+  try {
+    const cached = localStorage.getItem(`memory-page:${sessionId}`);
+    if (cached) {
+      const page = JSON.parse(cached);
+      if (page.top_bar?.length || page.body?.length) {
+        restorePage(page);
+        return;
+      }
+    }
+  } catch { /* ignore */ }
+  startAutoScan();
 }
 
 // ── Model response handling ──
 
 function handleModelResponse(text) {
   const pageBlock = parsePageBlock(text);
-
   if (pageBlock) {
     expectPageBlock = false;
     applyPageUpdate(pageBlock);
@@ -444,33 +510,10 @@ function handleModelResponse(text) {
   }
 }
 
-// ── Cache ──
-
-function cacheCurrentPage() {
-  const sid = new URLSearchParams(window.location.search).get('session') || '';
-  if (!sid) return;
-  try {
-    localStorage.setItem(`memory-page:${sid}`, JSON.stringify(getCurrentPage()));
-  } catch { /* quota */ }
-}
-
-function restoreFromCache(sessionId) {
-  try {
-    const cached = localStorage.getItem(`memory-page:${sessionId}`);
-    if (!cached) return false;
-    const page = JSON.parse(cached);
-    if (!page.top_bar?.length && !page.body?.length) return false;
-    restorePage(page);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 // ── Bash helper ──
 
 async function bash(command, sessionId) {
-  const body = { project_root: '/tmp', command };
+  const body = { project_root: '~/.linggen/memory', command };
   if (sessionId) body.session_id = sessionId;
   const resp = await fetch('/api/bash', {
     method: 'POST',
