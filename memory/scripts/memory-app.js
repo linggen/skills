@@ -47,6 +47,22 @@ async function mountAndStart(sessionId) {
     onStreamEnd: (text) => {
       handleModelResponse(text);
     },
+    onContentBlock: (payload) => {
+      // Built-in PageUpdate data tool: payload.args is the JSON-stringified
+      // tool arguments. The `page` field carries the dashboard layout.
+      if (payload?.tool !== 'PageUpdate') return;
+      try {
+        const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
+        const page = args?.page;
+        if (page) {
+          expectPageBlock = false;
+          applyPageUpdate(page);
+          cacheCurrentPage();
+        }
+      } catch (e) {
+        console.warn('[memory] failed to parse PageUpdate args', e);
+      }
+    },
   };
   if (sessionId) mountOpts.sessionId = sessionId;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
@@ -493,20 +509,15 @@ function restoreFromCache(sessionId) {
 // ── Model response handling ──
 
 function handleModelResponse(text) {
+  // Backward compat: older skill responses may still include a <!--page-->
+  // text tag. The preferred path is the PageUpdate tool (see onContentBlock
+  // above). If the model forgets to call the tool, we do NOT nag — silent
+  // is better than a queued "Please include..." message per turn.
   const pageBlock = parsePageBlock(text);
   if (pageBlock) {
     expectPageBlock = false;
     applyPageUpdate(pageBlock);
     cacheCurrentPage();
-    return;
-  }
-
-  if (expectPageBlock && chat) {
-    expectPageBlock = false;
-    chat.send(
-      'Please include a <!--page JSON block in your response to update the dashboard. ' +
-      'Refer to your skill instructions for the page layout format.'
-    );
   }
 }
 

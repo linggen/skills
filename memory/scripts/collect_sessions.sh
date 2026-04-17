@@ -70,11 +70,13 @@ if [ -d "$LING_DIR" ]; then
 
     session_name=$(basename "$session_dir")
 
-    # Skip mission-created sessions to prevent self-ingestion
-    if [ -f "${session_dir}session.yaml" ]; then
-      creator=$(grep '^creator:' "${session_dir}session.yaml" 2>/dev/null | sed 's/^creator: *//' | head -1)
-      [ "$creator" = "mission" ] && continue
-    fi
+    # Only ingest user sessions — skip mission/skill/unknown creators.
+    # Mission sessions get promoted to "user" on takeover (see chat_api.rs),
+    # so this still captures conversations the user joined.
+    [ -f "${session_dir}session.yaml" ] || continue
+    creator=$(grep -m1 '^creator:' "${session_dir}session.yaml" 2>/dev/null \
+      | sed -E 's/^creator:[[:space:]]*//; s/[[:space:]]*#.*$//; s/^"(.*)"$/\1/; s/^'"'"'(.*)'"'"'$/\1/')
+    [ "$creator" = "user" ] || continue
 
     session_title=""
     if [ -f "${session_dir}session.yaml" ]; then

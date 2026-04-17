@@ -1,7 +1,7 @@
 // Chat bridge: mounts the full Linggen chat panel as an iframe.
 // Drop-in replacement for LinggenUI.mount() — same API surface.
-// The iframe loads /?mode=compact&skill=... which provides the complete
-// chat UI (markdown, tool activity, permissions, plans, subagents).
+// The iframe loads /embed?skill=... which provides the complete chat UI
+// (markdown, tool activity, permissions, plans, subagents).
 
 import { createSession, removeSkillSession } from './api.js';
 
@@ -46,7 +46,6 @@ async function mount(el, options) {
 
   // Build iframe URL
   const params = new URLSearchParams({
-    mode: 'compact',
     skill: skillName,
     session: sessionId,
     hide_toolbar: '1',
@@ -55,13 +54,13 @@ async function mount(el, options) {
 
   let iframeSrc;
   if (isRemote) {
-    // Remote: load compact chat via a connect page (establishes its own WebRTC)
+    // Remote: load embed chat via connect page (establishes its own WebRTC)
     const instanceId = instanceMeta.getAttribute('content') || '';
     const relayOrigin = (document.querySelector('meta[name="linggen-relay-origin"]') || {}).content || window.location.origin;
-    iframeSrc = `${relayOrigin}/app/connect/${instanceId}?${params.toString()}`;
+    iframeSrc = `${relayOrigin}/app/connect/${instanceId}?${params.toString()}&entry=embed`;
   } else {
-    // Local: load compact chat directly from the local server
-    iframeSrc = `/?${params.toString()}`;
+    // Local: load embed chat directly from the local server
+    iframeSrc = `/embed?${params.toString()}`;
   }
 
   const iframe = document.createElement('iframe');
