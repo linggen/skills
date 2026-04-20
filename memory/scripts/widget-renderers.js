@@ -267,8 +267,9 @@ function renderTable(w) {
   const panelBadge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
 
   // If the title names a memory file, add per-row edit/delete controls.
-  const fileMatch = (w.title || '').match(/(user_info|user_feedback|agent_done_week|agent_done_month|agent_done_year)\.md/);
-  const memFile = fileMatch ? fileMatch[0] : null;
+  // Match with or without the `.md` suffix — the model emits either shape.
+  const fileMatch = (w.title || '').match(/\b(user_info|user_feedback|agent_done_week|agent_done_month|agent_done_year)(?:\.md)?\b/);
+  const memFile = fileMatch ? `${fileMatch[1]}.md` : null;
 
   // Split rows into "changes this scan" (badge is +, ~, -) and "all facts"
   // (no change badge — gray or empty). Falls back to a single section when
@@ -332,9 +333,9 @@ function renderTable(w) {
   `;
 
   if (memFile) {
-    // Delete
+    // Delete — direct API call (no LLM round-trip).
     panel.querySelectorAll('.fact-del-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const idx = parseInt(btn.dataset.idx, 10);
         const row = (w.rows || [])[idx];
         if (!row) return;
@@ -343,10 +344,20 @@ function renderTable(w) {
         if (!confirm(`Delete from ${memFile}?\n\n"${factText}"`)) return;
         const tr = btn.closest('tr');
         tr.style.opacity = '0.4';
-        tr.style.textDecoration = 'line-through';
         btn.disabled = true;
-        if (window._chatSend) {
-          window._chatSend(`__DELETE_FACT__|${memFile}|${factText}`);
+        try {
+          const resp = await fetch('/api/memory/fact', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: memFile, text: factText }),
+          });
+          if (!resp.ok) throw new Error(await resp.text());
+          // Remove the row from the DOM — instant, no dashboard rebuild.
+          tr.remove();
+        } catch (e) {
+          tr.style.opacity = '1';
+          btn.disabled = false;
+          alert(`Delete failed: ${e.message || e}`);
         }
       });
     });
@@ -397,16 +408,25 @@ function renderTable(w) {
             if (origDel && origDel !== newDel) return; // already wired
           });
         };
-        const doSave = () => {
+        const doSave = async () => {
           const newText = ta.value.trim();
           if (!newText) { restore(); return; }
           if (newText === oldText.trim()) { restore(); return; }
-          factCell.innerHTML = esc(newText);
-          actionsCell.innerHTML = origActionsHtml;
-          tr.classList.remove('editing');
           tr.style.opacity = '0.6';
-          if (window._chatSend) {
-            window._chatSend(`__EDIT_FACT__|${memFile}|${oldText}|${newText}`);
+          try {
+            const resp = await fetch('/api/memory/fact', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ file: memFile, old_text: oldText, new_text: newText }),
+            });
+            if (!resp.ok) throw new Error(await resp.text());
+            factCell.innerHTML = esc(newText);
+            actionsCell.innerHTML = origActionsHtml;
+            tr.classList.remove('editing');
+            tr.style.opacity = '1';
+          } catch (e) {
+            tr.style.opacity = '1';
+            alert(`Edit failed: ${e.message || e}`);
           }
         };
         const doCancel = () => restore();

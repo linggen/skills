@@ -532,13 +532,7 @@
   border-radius: 4px;
   font-size: 13px;
   color: var(--text-muted);
-  opacity: 0;
-  transition: opacity 0.12s, background 0.12s, color 0.12s;
-}
-
-.widget-table tbody tr:hover .fact-actions-cell button,
-.widget-table tbody tr.editing .fact-actions-cell button {
-  opacity: 1;
+  transition: background 0.12s, color 0.12s;
 }
 
 .fact-edit-btn:hover { background: rgba(99, 102, 241, 0.12); color: var(--accent, #6366f1); }

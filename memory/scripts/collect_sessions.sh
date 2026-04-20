@@ -2,7 +2,11 @@
 # collect_sessions.sh — Scan Claude Code + Linggen session stores for a date.
 #
 # Emits NDJSON (one object per session) to stdout:
-#   {"filepath":"...","source":"CC"|"Linggen","label":"...","date":"YYYY-MM-DD"}
+#   {"filepath":"...","source":"CC"|"Linggen","label":"...","date":"...",
+#    "bytes":N,"user_turns":N}
+#
+# user_turns counts real user messages (skips tool_result-only "user" entries in
+# CC). Callers can skip empty/greeting-only sessions before spawning subagents.
 #
 # No file writes, no extraction. Callers pair each filepath with
 # extract_session.sh to pull the flattened conversation text.
@@ -23,13 +27,38 @@ if ! command -v jq &>/dev/null; then
   exit 1
 fi
 
+count_user_turns_cc() {
+  # CC: type=="user" with a text content block (tool_result entries don't count)
+  jq -s '[.[] | select(.type == "user") | .message.content
+         | if type == "array"
+           then map(select(.type == "text" and (.text // "" | length > 0))) | length
+           else (if . != null and . != "" then 1 else 0 end) end]
+         | add // 0' "$1" 2>/dev/null || echo 0
+}
+
+count_user_turns_linggen() {
+  # Linggen: lines where from_id == "user" (user-originated messages)
+  jq -s '[.[] | select(.from_id == "user")] | length' "$1" 2>/dev/null || echo 0
+}
+
+file_bytes() {
+  if [[ "$(uname)" == "Darwin" ]]; then
+    stat -f "%z" "$1" 2>/dev/null || echo 0
+  else
+    stat -c "%s" "$1" 2>/dev/null || echo 0
+  fi
+}
+
 emit_manifest() {
-  # emit_manifest <filepath> <source> <label>
+  # emit_manifest <filepath> <source> <label> <bytes> <user_turns>
   jq -cn --arg filepath "$1" \
          --arg source "$2" \
          --arg label "$3" \
          --arg date "$TARGET_DATE" \
-         '{filepath:$filepath, source:$source, label:$label, date:$date}'
+         --argjson bytes "$4" \
+         --argjson user_turns "$5" \
+         '{filepath:$filepath, source:$source, label:$label, date:$date,
+           bytes:$bytes, user_turns:$user_turns}'
 }
 
 # ── Claude Code sessions ──
@@ -49,7 +78,9 @@ if [ -d "$CC_DIR" ]; then
       project_name=$(basename "$project_dir")
       session_name=$(basename "$jsonl_file" .jsonl)
       label="${project_name}/${session_name}"
-      emit_manifest "$jsonl_file" "CC" "$label"
+      bytes=$(file_bytes "$jsonl_file")
+      user_turns=$(count_user_turns_cc "$jsonl_file")
+      emit_manifest "$jsonl_file" "CC" "$label" "${bytes:-0}" "${user_turns:-0}"
     done
   done
 fi
@@ -83,6 +114,8 @@ if [ -d "$LING_DIR" ]; then
       session_title=$(grep '^title:' "${session_dir}session.yaml" 2>/dev/null | sed 's/^title: *//' | head -1)
     fi
     label="${session_title:-$session_name}"
-    emit_manifest "$jsonl_file" "Linggen" "$label"
+    bytes=$(file_bytes "$jsonl_file")
+    user_turns=$(count_user_turns_linggen "$jsonl_file")
+    emit_manifest "$jsonl_file" "Linggen" "$label" "${bytes:-0}" "${user_turns:-0}"
   done
 fi

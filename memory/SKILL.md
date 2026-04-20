@@ -14,7 +14,7 @@ app:
   height: 800
 permission:
   mode: admin
-  paths: ["~/.linggen", "~/.claude"]
+  paths: ["~/.linggen", "~/.claude", "~/.claude/projects"]
   warning: "Memory reads session files and updates memory files at ~/.linggen/memory/"
 ---
 
@@ -48,6 +48,8 @@ Fail any of these → it belongs in `agent_done_week.md` (activity log, time-dec
 | `"Always run npm build after UI changes"` | Linggen-specific build rule | Linggen `CLAUDE.md` |
 | `"Boat docking still zigzags"` | Sanji bug claim, not a user trait | Sanji `CLAUDE.md` |
 | `"Interested in Nav2/Autoware"` under Hobbies | Work research, not hobby | `agent_done_week.md` or skip |
+| `"Memory should focus on durable facts"` | Feedback about this skill itself | Update `SKILL.md`, not memory |
+| `"Dashboard should show X"`, `"Extraction should dedupe better"` | Instructions to the skill | Update `SKILL.md`, not memory |
 | Two entries saying the same thing with different words | Dedup failure | Merge into one |
 
 ### What DOES belong
@@ -176,10 +178,24 @@ bash $SKILL_DIR/scripts/collect_sessions.sh [YYYY-MM-DD]    # default: today
 
 Each line:
 ```json
-{"filepath":"...","source":"CC"|"Linggen","label":"...","date":"YYYY-MM-DD"}
+{"filepath":"...","source":"CC"|"Linggen","label":"...","date":"YYYY-MM-DD",
+ "bytes":N,"user_turns":N}
 ```
 
 If stdout is empty, no sessions for that day — skip to Phase 3 (compression).
+
+**Filter empty sessions BEFORE spawning subagents.** Skip any manifest line where `user_turns < 2` AND `bytes < 2000`. These are greeting-only chats and model-error loops — the transcript contains nothing extractable, and spawning a subagent on them is pure overhead. Log the skipped labels in the final report so the user knows they were considered.
+
+### Phase 1.5: Pre-load existing memory (main agent only)
+
+Before spawning subagents, Read these files once so you can seed each subagent with the existing entries:
+
+- `~/.linggen/memory/user_info.md`
+- `~/.linggen/memory/user_feedback.md`
+
+Extract just the bullet lines (strip frontmatter and section headers). You will paste them verbatim into every subagent's prompt as the `EXISTING GLOBAL MEMORY` block so subagents self-reject duplicates at extraction time instead of flooding the merge step.
+
+Skip this if both files are empty or missing.
 
 ### Phase 2: Extract per session (via subagents, in parallel)
 
@@ -190,61 +206,85 @@ Each subagent's job is to **read and extract** — not to write memory files. Th
 ```
 Task({ task: "Run `bash ~/.linggen/skills/memory/scripts/extract_session.sh <filepath> <source> <date>`
        to see the flattened conversation. Extract durable cross-project facts per the rules
-       below. DO NOT edit any files. DO NOT write memory files. Return only a structured
-       report — the main agent will merge and write.
+       below. DO NOT edit any files. DO NOT write memory files. Return ONLY the strict
+       output format at the bottom — no preamble, no 'Done' summary, no framework recap,
+       no rejected candidates, no duplicate lists. The main agent merges and writes.
 
-       TOOL SCOPE (strict, READ-ONLY for this subagent):
-         - Read ~/.linggen/sessions/ and ~/.claude/projects/ (session data only)
-         - Read ~/.linggen/memory/ (to check what's already recorded — dedup hint)
-       Never grep or glob /Users, /Users/<name>, or any other path.
+       THE SCRIPT ALREADY RETURNED EVERY WORD OF THE CONVERSATION. Do not Grep or
+       Read the source .jsonl again to `look something up' — everything you need is
+       already in your context. Extract directly from the script output.
 
-       BEFORE you put any entry in user_info.md or user_feedback.md, apply the durability test:
+       TOOL SCOPE (positive rules — follow these exactly):
+         - Every Read/Grep/Glob call MUST include an explicit `path=` argument.
+         - The `path=` must start with one of:
+             ~/.linggen/sessions/
+             ~/.claude/projects/
+             ~/.linggen/memory/
+         - Do NOT call Grep or Glob without `path=` — the workspace default is HOME
+           and triggers a user permission prompt.
+         - You usually do NOT need any tool beyond the extract script. The existing
+           global memory is pasted below — use it for dedup without re-reading.
+
+       EXISTING GLOBAL MEMORY (dedup against these — if your candidate restates one
+       of these, do NOT emit it):
+       <<<
+       <main agent pastes bullet lines from user_info.md + user_feedback.md here>
+       >>>
+
+       DURABILITY TEST — apply BEFORE any user_info / user_feedback emit:
          1. Would this still be true 6 months from now, in a different project?
          2. Is it a trait of the PERSON, or a snapshot of current work?
          3. Would a fresh unrelated future session benefit from knowing this?
-       If ANY answer is NO → do NOT put it in user_info / user_feedback.
-         - Current activity ('is leading X', 'is designing Y') → agent_done_week.md
-         - Project-specific (ties to a repo, file path, tool config, UI decision) → SUGGEST for CLAUDE.md
+       If ANY answer is NO → route to agent_done_week (activity) or SUGGEST for
+       CLAUDE.md (project-specific). NEVER into user_info / user_feedback.
 
-       CATEGORIES (be strict — fewer high-quality entries beat many noisy ones):
+       SOURCE QUOTE REQUIREMENT (user_info + user_feedback only):
+         Every accepted user_info or user_feedback entry MUST include a short verbatim
+         quote from the transcript that supports it, in the format:
+           - <entry text> (YYYY-MM-DD) | quote: \"<≤12 words from user>\"
+         No quote → do not emit. Inferred facts ('User is focused on X', 'User seems
+         to prefer Y') are forbidden. If the user did not say it in plain words, it
+         is not durable user memory — route to agent_done_week instead.
 
-         ## New facts for user_info.md — durable identity only
-         Accept: name, role/title, company, stack/expertise, location, timezone,
-         language, real hobbies outside of work, family/pets, health (user-stated),
-         or stable personal claims.
-         Reject: 'is leading X', 'is driving Y discussion', 'is debugging Z'.
-         Reject: anything tied to a specific repo or tool config.
-         Format: - <section>: <fact> (YYYY-MM-DD)
-         Sections: Identity | Preferences | Hobbies & interests | Relationships | Health & physical | Claims
+       META-FEEDBACK FILTER (user_feedback only):
+         Feedback ABOUT the memory skill, dashboard, extraction, or memory files
+         themselves does NOT go into user_feedback.md. Examples to reject:
+           - 'Memory should focus on durable facts'
+           - 'Dashboard should show X'
+           - 'Extraction should dedupe better'
+           - 'Use canonical templates when resetting memory'
+         These are instructions to the skill, not cross-project working style.
+         Skip them entirely (do not route to agent_done_week either).
 
-         ## New rules for user_feedback.md — cross-project working style
-         Accept: agent behavior the user wants in ANY project — communication style,
-         workflow (wireframe-first, outcomes-only), tool habits (grep vs find),
-         code style, commit/PR patterns, debugging philosophy.
-         Reject: project-specific build/lint/test rules. Those go in that project's
-         CLAUDE.md (they only apply there).
-         Quality bar: 'imagine the user opens a Go repo they've never touched — does
-         this rule still help?' If no → SUGGEST for CLAUDE.md, not user_feedback.
-         Format: - Do/Don't: <rule> — <why, if user explained> (YYYY-MM-DD)
+       CONFIDENCE GATE (user_feedback only):
+         A single-session utterance becomes a durable rule only if the user used
+         explicit commitment language: 'always', 'never', 'from now on', 'don't
+         do X', 'stop doing Y', 'keep doing Z'. Otherwise route to agent_done_week
+         under ### Learned. If it reappears next week, promote then.
 
-         ## Agent actions for agent_done_week.md (YYYY-MM-DD)
-         ### Built / Fixed / Decided / Tried / Learned
-         Catchall for session activity. 1-3 bullets per session, outcomes only.
-         Anything that fails the durability test but is worth remembering lands here.
-         It will time-decay naturally (week → month → year).
+       STRICT OUTPUT FORMAT — emit ONLY the sections below that have real content.
+       Omit empty sections entirely. No headers-with-'none', no 'Rejected:' lists,
+       no closing summary.
 
-         ## SUGGEST for CLAUDE.md (project-specific — do NOT promote to global)
+         ACCEPT user_info:
+         - <section>: <fact> (YYYY-MM-DD) | quote: \"<verbatim>\"
+         (sections: Identity | Preferences | Hobbies & interests | Relationships | Health & physical | Claims)
+
+         ACCEPT user_feedback:
+         - Do: <rule> — <why, if user explained> (YYYY-MM-DD) | quote: \"<verbatim>\"
+         - Don't: <rule> — <why, if user explained> (YYYY-MM-DD) | quote: \"<verbatim>\"
+
+         ACCEPT agent_done_week:
+         ### Built | Fixed | Decided | Tried | Learned
+         - <1-3 bullets per section, outcomes only>
+         For Fixed: include Symptoms / Root cause / Fix / Files inline on one line.
+
+         SUGGEST claude_md:
          - <project path>: <fact>
-         Common project roots: ~/workspace/linggen, ~/workspace/rust-sanji,
-         ~/workspace/linggensite. Put the exact path so the main agent knows
-         which CLAUDE.md to point at.
+         (common roots: ~/workspace/linggen, ~/workspace/rust-sanji, ~/workspace/linggensite)
 
-         ## Duplicates skipped
-         - <what was already in memory> (so the main agent knows you saw it)
-
-       When in doubt, push the fact to agent_done_week.md rather than user_info.md.
-       The week file time-decays; user_info persists forever, so mistakes there
-       compound. Err toward the log, not the identity model." })
+       When in doubt, route to agent_done_week. The week file time-decays; user_info
+       persists forever, so mistakes there compound." })
 ```
 
 Why single-writer: parallel subagents editing the same memory file race on
@@ -257,9 +297,11 @@ happens in one place.
 After every subagent has reported:
 
 1. **Read** the target file **immediately before each Edit**. If you apply two Edits to the same file in a row, re-Read between them — the first Edit changes the file contents, so the second Edit's `old_string` will no longer match the in-memory copy you had. `Edit failed: old_string was not found` almost always means you skipped this step.
-2. **Merge** all subagent reports — dedup across reports AND against existing entries you just Read.
-3. **Edit** the file. Body only — never touch frontmatter. Keep `old_string` short but unique (include 1–2 surrounding lines if the fact line appears more than once).
-4. **Compress** if a file exceeds its size guideline (move older entries from week → month → year) — again, Read immediately before Edit.
+2. **Second-pass dedup against existing memory.** Subagents already saw the existing entries (Phase 1.5) and should have self-rejected duplicates, but re-check: for every candidate, scan the entries you just Read and drop any candidate that restates an existing line with different words. Examples that slipped through last time: "Fix the real control/planning problem instead of masking it" is a restatement of existing "Fix root causes, not symptoms" — drop it.
+3. **Strip the quote annotations** before writing. Subagent output includes `| quote: "..."` on each user_info / user_feedback line as an honesty check — those quotes are for your review, not for the file. Write only the entry text itself.
+4. **Merge** all subagent reports — dedup across reports AND against existing entries.
+5. **Edit** the file. Body only — never touch frontmatter. Keep `old_string` short but unique (include 1–2 surrounding lines if the fact line appears more than once).
+6. **Compress** if a file exceeds its size guideline (move older entries from week → month → year) — again, Read immediately before Edit.
 
 Only the main agent writes memory files. Do not use `Task` for writing.
 
