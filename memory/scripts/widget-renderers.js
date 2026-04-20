@@ -264,38 +264,80 @@ function renderBars(w) {
 
 function renderTable(w) {
   const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
+  const panelBadge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
 
-  // If the title names a memory file, add per-row × delete buttons.
+  // If the title names a memory file, add per-row edit/delete controls.
   const fileMatch = (w.title || '').match(/(user_info|user_feedback|agent_done_week|agent_done_month|agent_done_year)\.md/);
   const memFile = fileMatch ? fileMatch[0] : null;
 
-  const cols = (w.columns || []).map(c => `<th>${esc(c)}</th>`).join('') + (memFile ? '<th></th>' : '');
-  const rows = (w.rows || []).map((row, idx) => {
-    const cells = row.map(cell => {
-      if (cell && typeof cell === 'object' && cell.badge) {
-        return `<td><span class="label-badge ${esc(cell.color || '')}">${esc(cell.badge)}</span></td>`;
-      }
-      return `<td>${esc(String(cell ?? ''))}</td>`;
-    }).join('');
-    const deleteCell = memFile
-      ? `<td class="fact-del-cell"><button class="fact-del-btn" data-idx="${idx}" title="Delete this fact">×</button></td>`
-      : '';
-    return `<tr>${cells}${deleteCell}</tr>`;
+  // Split rows into "changes this scan" (badge is +, ~, -) and "all facts"
+  // (no change badge — gray or empty). Falls back to a single section when
+  // the table isn't a memory-file table.
+  const isChangeBadge = (b) => b === '+' || b === '~' || b === '−' || b === '-';
+  const changeRows = [];
+  const restRows = [];
+  (w.rows || []).forEach((row, origIdx) => {
+    const badgeCell = row.find(c => c && typeof c === 'object' && ('badge' in c || 'color' in c));
+    const badgeText = badgeCell ? (badgeCell.badge || '') : '';
+    if (memFile && isChangeBadge(badgeText)) changeRows.push({ row, origIdx });
+    else restRows.push({ row, origIdx });
+  });
+
+  const renderCells = (row) => row.map(cell => {
+    if (cell && typeof cell === 'object' && ('badge' in cell || 'color' in cell)) {
+      return `<td class="cell-badge"><span class="label-badge ${esc(cell.color || '')}">${esc(cell.badge || '')}</span></td>`;
+    }
+    return `<td class="cell-fact">${esc(String(cell ?? ''))}</td>`;
   }).join('');
 
+  const actionCell = memFile
+    ? (idx) => `<td class="fact-actions-cell">
+        <button class="fact-edit-btn" data-idx="${idx}" title="Edit this fact">✎</button>
+        <button class="fact-del-btn" data-idx="${idx}" title="Delete this fact">×</button>
+      </td>`
+    : () => '';
+
+  const renderRow = ({ row, origIdx }) => `<tr data-idx="${origIdx}">${renderCells(row)}${actionCell(origIdx)}</tr>`;
+
+  const cols = (w.columns || []).map(c => `<th>${esc(c)}</th>`).join('') + (memFile ? '<th></th>' : '');
+
+  let body = '';
+  if (memFile && changeRows.length > 0) {
+    const changesCount = changeRows.length;
+    body += `
+      <div class="widget-table-section changes-section">
+        <div class="widget-table-section-head">Changes this scan (${changesCount})</div>
+        <table class="widget-table"><thead><tr>${cols}</tr></thead>
+          <tbody>${changeRows.map(renderRow).join('')}</tbody>
+        </table>
+      </div>`;
+  }
+  if (restRows.length > 0) {
+    const restCount = restRows.length;
+    const headText = memFile && changeRows.length > 0 ? `All facts (${restCount})` : '';
+    body += `
+      <div class="widget-table-section rest-section">
+        ${headText ? `<div class="widget-table-section-head">${esc(headText)}</div>` : ''}
+        <div class="widget-table-scroll">
+          <table class="widget-table"><thead><tr>${cols}</tr></thead>
+            <tbody>${restRows.map(renderRow).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
   panel.innerHTML = `
-    <div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>
-    <table class="widget-table"><thead><tr>${cols}</tr></thead><tbody>${rows}</tbody></table>
+    <div class="panel-header"><h3>${esc(w.title || '')}</h3>${panelBadge}</div>
+    ${body}
   `;
 
   if (memFile) {
+    // Delete
     panel.querySelectorAll('.fact-del-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = parseInt(btn.dataset.idx, 10);
         const row = (w.rows || [])[idx];
         if (!row) return;
-        // Fact text = last string cell (skip badge objects).
         const factText = [...row].reverse().find(c => typeof c === 'string');
         if (!factText) return;
         if (!confirm(`Delete from ${memFile}?\n\n"${factText}"`)) return;
@@ -306,6 +348,74 @@ function renderTable(w) {
         if (window._chatSend) {
           window._chatSend(`__DELETE_FACT__|${memFile}|${factText}`);
         }
+      });
+    });
+    // Edit — swap the fact cell for an inline textarea with Save/Cancel.
+    panel.querySelectorAll('.fact-edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        const row = (w.rows || [])[idx];
+        if (!row) return;
+        const tr = btn.closest('tr');
+        if (!tr || tr.classList.contains('editing')) return;
+        const factCell = tr.querySelector('.cell-fact');
+        const actionsCell = tr.querySelector('.fact-actions-cell');
+        if (!factCell || !actionsCell) return;
+        const oldText = [...row].reverse().find(c => typeof c === 'string') || '';
+
+        tr.classList.add('editing');
+        const origFactHtml = factCell.innerHTML;
+        const origActionsHtml = actionsCell.innerHTML;
+        factCell.innerHTML = `<textarea class="fact-edit-ta" rows="2">${esc(oldText)}</textarea>`;
+        actionsCell.innerHTML = `
+          <button class="fact-save-btn" title="Save (⌘↵)">Save</button>
+          <button class="fact-cancel-btn" title="Cancel (Esc)">Cancel</button>
+        `;
+        const ta = factCell.querySelector('.fact-edit-ta');
+        const saveBtn = actionsCell.querySelector('.fact-save-btn');
+        const cancelBtn = actionsCell.querySelector('.fact-cancel-btn');
+        // Auto-grow
+        const grow = () => {
+          ta.style.height = 'auto';
+          ta.style.height = (ta.scrollHeight + 2) + 'px';
+        };
+        ta.addEventListener('input', grow);
+        grow();
+        ta.focus();
+        ta.setSelectionRange(ta.value.length, ta.value.length);
+
+        const restore = () => {
+          factCell.innerHTML = origFactHtml;
+          actionsCell.innerHTML = origActionsHtml;
+          tr.classList.remove('editing');
+          // Re-wire this row's buttons since we reset innerHTML.
+          const newEdit = actionsCell.querySelector('.fact-edit-btn');
+          const newDel = actionsCell.querySelector('.fact-del-btn');
+          if (newEdit) newEdit.addEventListener('click', () => btn.click());
+          if (newDel) newDel.addEventListener('click', () => {
+            const origDel = panel.querySelector(`.fact-del-btn[data-idx="${idx}"]`);
+            if (origDel && origDel !== newDel) return; // already wired
+          });
+        };
+        const doSave = () => {
+          const newText = ta.value.trim();
+          if (!newText) { restore(); return; }
+          if (newText === oldText.trim()) { restore(); return; }
+          factCell.innerHTML = esc(newText);
+          actionsCell.innerHTML = origActionsHtml;
+          tr.classList.remove('editing');
+          tr.style.opacity = '0.6';
+          if (window._chatSend) {
+            window._chatSend(`__EDIT_FACT__|${memFile}|${oldText}|${newText}`);
+          }
+        };
+        const doCancel = () => restore();
+        saveBtn.addEventListener('click', doSave);
+        cancelBtn.addEventListener('click', doCancel);
+        ta.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') { e.preventDefault(); doCancel(); }
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSave(); }
+        });
       });
     });
   }

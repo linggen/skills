@@ -49,16 +49,19 @@ async function mountAndStart(sessionId) {
     },
     onContentBlock: (payload) => {
       // Built-in PageUpdate data tool: payload.args is the JSON-stringified
-      // tool arguments. The `page` field carries the dashboard layout.
+      // tool arguments with flat `top_bar`, `body`, and `footer` fields.
       if (payload?.tool !== 'PageUpdate') return;
       try {
         const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
-        const page = args?.page;
-        if (page) {
-          expectPageBlock = false;
-          applyPageUpdate(page);
-          cacheCurrentPage();
-        }
+        if (!args || typeof args !== 'object') return;
+        const partial = {};
+        if (args.top_bar !== undefined) partial.top_bar = args.top_bar;
+        if (args.body !== undefined) partial.body = args.body;
+        if (args.footer !== undefined) partial.footer = args.footer;
+        if (Object.keys(partial).length === 0) return;
+        expectPageBlock = false;
+        applyPageUpdate(partial);
+        cacheCurrentPage();
       } catch (e) {
         console.warn('[memory] failed to parse PageUpdate args', e);
       }
@@ -75,6 +78,13 @@ async function mountAndStart(sessionId) {
     if (text.startsWith('__DELETE_FACT__|')) {
       const [, file, factText] = text.split('|');
       if (file && factText) await startDeleteFact(file, factText);
+      return;
+    }
+
+    // Per-row edit: "__EDIT_FACT__|<file>|<old text>|<new text>"
+    if (text.startsWith('__EDIT_FACT__|')) {
+      const [, file, oldText, newText] = text.split('|');
+      if (file && oldText && newText) await startEditFact(file, oldText, newText);
       return;
     }
 
@@ -120,7 +130,7 @@ function startAutoScan() {
         '[HIDDEN] The user just opened the Memory dashboard. ' +
         'The app is auto-scanning sessions from the last 24 hours. ' +
         'Greet briefly as their Memory agent and say exactly that you are scanning sessions from the last 24 hours. ' +
-        '2 sentences. Do NOT emit a <!--page block. Do NOT use tools.'
+        '2 sentences. Do NOT call PageUpdate yet — the app is still collecting data.'
       );
     }
     await new Promise(r => setTimeout(r, 2000));
@@ -214,8 +224,14 @@ function updateProgress(title, doneCount) {
 // ── PAGE LAYOUT INSTRUCTIONS (shared across all prompts) ──
 
 const PAGE_LAYOUT_INSTRUCTIONS = `
-You MUST respond with a <!--page JSON block to build the dashboard.
-Use <!--page and --> delimiters (HTML comment format).
+You MUST call the \`PageUpdate\` tool to refresh the dashboard. Do NOT emit the
+page JSON as text, a code block, or an HTML comment — always pass the sections
+as flat top-level arguments:
+
+  PageUpdate({ "top_bar": [...], "body": [...], "footer": { "text": "..." } })
+
+There is NO \`page\` wrapper. Pass \`top_bar\`, \`body\`, and \`footer\` directly.
+Omit any section you don't want to change — previous values persist.
 
 The dashboard has these sections:
 
@@ -306,40 +322,20 @@ Current memory before extraction: ${memSummary}
 ${sessionList.length} session(s) to extract:
 ${sessionLines}
 
-For each session, spawn a Task subagent in parallel. Delegate to the 'ling' agent (the only registered agent — do NOT pass 'general' or 'general-purpose'):
+Extraction: follow the rules in your active SKILL.md (memory). In particular, apply the durability test (WWWW filter) and the Accept/Reject lists when deciding what goes in user_info.md vs user_feedback.md vs agent_done_week.md vs a SUGGEST-for-CLAUDE.md note.
 
-  Task({ target_agent_id: "ling", task: "Run 'bash ~/.linggen/skills/memory/scripts/extract_session.sh <filepath> <source> <date>' to see the flattened conversation (user + assistant text only — tool calls are stripped).
+Delegate each session in parallel — spawn ALL Task() calls in a single response:
 
-  Extract facts and update memory files at ~/.linggen/memory/ via Edit (body only, never frontmatter).
+  Task({ target_agent_id: "ling", task: "Run 'bash ~/.linggen/skills/memory/scripts/extract_session.sh <filepath> <source> <date>' to see the flattened conversation. Extract per the active SKILL.md Phase 2 rules (durability test, Accept/Reject per category, SUGGEST for CLAUDE.md for project-specific facts). DO NOT edit files — return only a structured report." })
 
-  ## user_info.md — cross-project user facts only
-  Identity, role, preferences, hobbies, habits, claims. Include date: '- Prefers dark mode (YYYY-MM-DD)'.
-  SKIP project-specific facts (paths, commands tied to one repo) — those belong in the project's CLAUDE.md, not global memory.
-
-  ## user_feedback.md — behavior rules the user gave
-  Under ## Do or ## Don't. Include *why* if the user explained it.
-
-  ## agent_done_week.md — what the agent accomplished
-  Under a '## YYYY-MM-DD (Day)' heading, with these subsections (omit any empty ones):
-    ### Built — features/components shipped (1 line each)
-    ### Fixed — bugs, each as:
-      '- <one-line summary>. Symptoms: <keywords>. Root cause: <cause>. Fix: <what>. Files: <paths>.'
-    ### Decided — architectural choices with reasoning ('chose X over Y because ...')
-    ### Tried (didn't work) — failed attempts with why (prevents re-trying)
-    ### Learned — cross-project env/tool gotchas (skip project-specific ones)
-
-  Rules:
-  - Outcomes only, not narration. Skip 'I'm reading...', 'Let me check...' filler.
-  - Check existing entries — skip duplicates, update contradictions.
-  - Never touch frontmatter.
-  - If you see a project-specific fact worth saving, note it in your final report as 'SUGGEST for CLAUDE.md' — do NOT write it to global memory.
-
-  Report briefly: files updated, items added, duplicates skipped, any CLAUDE.md suggestions." })
+Target agent is "ling" (the only registered agent — do NOT pass "general" or "general-purpose").
 
 After all subagents complete:
-1. Run compression — entries > 7 days in agent_done_week.md → compress into agent_done_month.md.
-2. Read the updated memory files.
-3. Build the dashboard. Scan info: paths=${scanInfo.paths.join(', ')}, sessions=${scanInfo.sessionCount}, range=${rangeLabel}.
+1. Merge their reports and Edit memory files yourself (SKILL.md Phase 3, single-writer). For agent_done_week.md: one heading per day, one subsection per category per day — merge into existing subsections, never create duplicate \`### Built\` blocks under the same date.
+2. Consolidate (SKILL.md Phase 4): dedup user_info/user_feedback, scan agent_done_week.md for duplicate day/subsection headings and bullets, surface any project-specific drift as SUGGEST lines in your final report.
+3. Run time-decay compression if needed (SKILL.md Phase 5: week → month → year).
+4. Read the updated memory files.
+5. Build the dashboard. Scan info: paths=${scanInfo.paths.join(', ')}, sessions=${scanInfo.sessionCount}, range=${rangeLabel}.
 
 In the file cards: mark newly-added facts with green "+", updated with yellow "~", removed with red "−", unchanged with gray.
 ${PAGE_LAYOUT_INSTRUCTIONS}`;
@@ -431,7 +427,31 @@ Steps:
 1. Read the file.
 2. Find the line whose body matches the fact text (usually a bullet like "- <fact text> (YYYY-MM-DD)" — the stored line may have a "- " prefix and/or trailing date that the dashboard didn't show).
 3. Edit the file to delete that one line. Delete the full line including its trailing newline. Do not modify any other facts. Never touch frontmatter.
-4. Re-read the file, then emit the dashboard page block reflecting the new state. Mark the removed fact with a red "−" badge if you include it for one render, or omit it.
+4. Re-read the file, then call PageUpdate with the dashboard reflecting the new state. Mark the removed fact with a red "−" badge if you include it for one render, or omit it.
+
+${PAGE_LAYOUT_INSTRUCTIONS}`;
+
+  expectPageBlock = true;
+  chat.sendHidden(prompt);
+}
+
+async function startEditFact(file, oldText, newText) {
+  if (!chat) return;
+  const prompt = `[EDIT_FACT]
+
+Replace a fact in ~/.linggen/memory/${file}.
+
+OLD:
+"${oldText}"
+
+NEW:
+"${newText}"
+
+Steps:
+1. Read the file.
+2. Find the line whose body matches the OLD text (stored as a bullet like "- <fact> (YYYY-MM-DD)" — the dashboard may have stripped the "- " prefix, the section heading, and/or the trailing date).
+3. Edit the file to replace just that line's fact text with the NEW text. Preserve the "- " prefix, the section heading context, and the trailing date. Do not modify any other facts. Never touch frontmatter.
+4. Re-read the file, then call PageUpdate with the dashboard reflecting the new state. Mark the edited fact with a yellow "~" badge.
 
 ${PAGE_LAYOUT_INSTRUCTIONS}`;
 
