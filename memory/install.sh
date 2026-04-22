@@ -3,7 +3,7 @@ set -euo pipefail
 #
 # install.sh — download the ling-mem binary for this platform into
 # $SKILL_DIR/bin/ling-mem. Linggen calls this once when the memory skill
-# is installed, then the Memory.* tool family shells out to the binary.
+# is installed, then the Memory_* tool family shells out to the binary.
 #
 # Source + releases: https://github.com/linggen/linggen-memory
 
