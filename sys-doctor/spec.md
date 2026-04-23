@@ -455,7 +455,7 @@ When user clicks Start, it sends a chat message (e.g. "scan disk"). The model re
     {
       "type": "info",
       "icon": "💻",
-      "title": "Liang's MacBook Pro",
+      "title": "User_name's MacBook Pro",
       "fields": [
         { "label": "Chip", "value": "Apple M4 Pro" },
         { "label": "OS", "value": "macOS 15.3 Sequoia" },

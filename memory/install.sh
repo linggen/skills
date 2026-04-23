@@ -58,3 +58,39 @@ if [ "$BUILT_VER" != "$EXPECTED" ]; then
 fi
 
 echo "Installed: $BIN_DIR/ling-mem (${BUILT_VER:-unknown})"
+
+# Seed the core memory directory. The engine inlines identity.md / style.md
+# into every session's system prompt; touching empty files is enough for the
+# first run to succeed.
+MEMORY_DIR="$HOME/.linggen/memory"
+mkdir -p "$MEMORY_DIR"
+[ -f "$MEMORY_DIR/identity.md" ] || : > "$MEMORY_DIR/identity.md"
+[ -f "$MEMORY_DIR/style.md" ]    || : > "$MEMORY_DIR/style.md"
+
+# Install the nightly extraction mission ("dream"). Skips if the user has
+# already customized one — the cron scheduler picks up the file on next tick.
+MISSION_DIR="$HOME/.linggen/missions/dream"
+MISSION_SCRIPTS="$MISSION_DIR/scripts"
+mkdir -p "$MISSION_SCRIPTS"
+if [ ! -f "$MISSION_DIR/mission.md" ]; then
+  cp "$SKILL_DIR/assets/mission.md" "$MISSION_DIR/mission.md"
+  echo "Installed: $MISSION_DIR/mission.md (nightly at 23:00)"
+fi
+# Copy scripts the mission depends on into its own dir so the entry:
+# "scripts/collect.sh" path in mission.md resolves correctly. Copy
+# unconditionally so bug fixes in the skill propagate to existing installs.
+cp "$SKILL_DIR/scripts/collect.sh" "$MISSION_SCRIPTS/collect.sh"
+cp "$SKILL_DIR/scripts/collect_sessions.sh" "$MISSION_SCRIPTS/collect_sessions.sh"
+chmod +x "$MISSION_SCRIPTS/collect.sh" "$MISSION_SCRIPTS/collect_sessions.sh"
+
+# Clean up the legacy mission dir from the pre-redesign install (kept its
+# config under ~/.linggen/missions/memory/). If the user never edited it,
+# remove; otherwise leave alone.
+LEGACY_DIR="$HOME/.linggen/missions/memory"
+if [ -d "$LEGACY_DIR" ] && [ -f "$LEGACY_DIR/mission.md" ]; then
+  # Only remove if it looks like the shipped template (contains "/memory" body).
+  if grep -q "^/memory$" "$LEGACY_DIR/mission.md" 2>/dev/null; then
+    rm -rf "$LEGACY_DIR"
+    echo "Removed legacy mission dir: $LEGACY_DIR"
+  fi
+fi

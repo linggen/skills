@@ -4,16 +4,21 @@
 # Strips tool_use and tool_result blocks, keeps user + assistant text only.
 # Messages are capped at 2000 chars each. Output goes to stdout.
 #
-# Usage:  ./extract_session.sh <filepath> <source> [YYYY-MM-DD]
-#   source: "CC" (Claude Code) or "Linggen"
-#   date:   filter messages to this date (default: today)
+# Usage:  ./extract_session.sh <filepath> <source> [YYYY-MM-DD] [MAX_CHARS]
+#   source:    "CC" (Claude Code) or "Linggen"
+#   date:      filter messages to this date (default: today)
+#   max_chars: total-output cap in bytes. If the transcript would exceed
+#              this, the script truncates and appends a marker line so the
+#              subagent knows it got a partial. Default 200000 (~50k tokens)
+#              — enough room for the subagent's own system prompt + its JSON
+#              output inside a 128k-context model. Set to 0 for unlimited.
 #
 # Requires: jq
 
 set -uo pipefail
 
 if [ "$#" -lt 2 ]; then
-  echo "Usage: $0 <filepath> <source> [YYYY-MM-DD]" >&2
+  echo "Usage: $0 <filepath> <source> [YYYY-MM-DD] [MAX_CHARS]" >&2
   echo "  source: CC or Linggen" >&2
   exit 1
 fi
@@ -21,6 +26,7 @@ fi
 FILEPATH="$1"
 SOURCE="$2"
 TARGET_DATE="${3:-$(date +%Y-%m-%d)}"
+MAX_CHARS="${4:-200000}"
 
 if [ ! -f "$FILEPATH" ]; then
   echo "Error: file not found: $FILEPATH" >&2
@@ -53,6 +59,36 @@ strip_noise() {
   '
 }
 
+# Cap total output by byte count. The subagent gets the head of the
+# transcript plus a truncation marker so it knows there's more. Most
+# durable facts surface in the first N messages anyway — keep-first is
+# a safer heuristic than random sampling.
+apply_max() {
+  if [ "$MAX_CHARS" -le 0 ]; then
+    cat
+  else
+    awk -v max="$MAX_CHARS" '
+      BEGIN { total = 0 }
+      {
+        line_len = length($0) + 1   # +1 for the newline
+        if (total + line_len <= max) {
+          print
+          total += line_len
+        } else if (total == 0) {
+          # Single line larger than max — emit it truncated so we always
+          # produce something useful.
+          print substr($0, 1, max - 40)
+          print "[TRUNCATED: transcript exceeded MAX_CHARS=" max "]"
+          exit
+        } else {
+          print "[TRUNCATED: transcript exceeded MAX_CHARS=" max "]"
+          exit
+        }
+      }
+    '
+  fi
+}
+
 case "$SOURCE" in
   CC)
     jq -r --arg date "$TARGET_DATE" '
@@ -69,7 +105,7 @@ case "$SOURCE" in
       | if . == "" then empty
         else "[\($role)]: \(.[0:2000])"
         end
-    ' "$FILEPATH" 2>/dev/null | strip_noise
+    ' "$FILEPATH" 2>/dev/null | strip_noise | apply_max
     ;;
   Linggen)
     jq -r --argjson start "$DAY_START" --argjson end "$DAY_END" '
@@ -83,7 +119,7 @@ case "$SOURCE" in
       | if . == "" then empty
         else "[\($role)]: \(.[0:2000])"
         end
-    ' "$FILEPATH" 2>/dev/null | strip_noise
+    ' "$FILEPATH" 2>/dev/null | strip_noise | apply_max
     ;;
   *)
     echo "Error: unknown source '$SOURCE' (expected CC or Linggen)" >&2

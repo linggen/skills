@@ -129,6 +129,12 @@
   margin-bottom: 14px;
 }
 
+/* When the agent doesn't emit a top_bar (the new layout), collapse the
+   empty container so it doesn't add a phantom 14px gap at the top. */
+.top-bar-area:empty {
+  margin-bottom: 0;
+}
+
 .top-bar-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -365,6 +371,528 @@
 
 .action-card.active:hover .action-start {
   color: white;
+}
+
+/* ── greeting widget — agent speaking + inline actions ── */
+
+.widget-greeting {
+  margin-bottom: 14px;
+  padding: 20px 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.greeting-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.greeting-icon {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.greeting-content { flex: 1; min-width: 0; }
+
+.greeting-title {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  margin: 0 0 4px;
+}
+
+.greeting-stats {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.greeting-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.greeting-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.greeting-action:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.greeting-action.primary {
+  color: white;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.greeting-action.primary:hover {
+  color: white;
+  filter: brightness(1.08);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.32);
+}
+
+.greeting-action-icon { font-size: 14px; line-height: 1; }
+
+/* ── fact-list widget — rows with per-row ✎/× ── */
+
+.widget-fact-list { margin-bottom: 14px; }
+
+.fact-list-header {
+  padding: 0 4px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.fact-list-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.fact-list-count {
+  margin-left: 6px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.fact-list-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.fact-list-body {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.fact-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.fact-row:last-child { border-bottom: none; }
+
+.fact-row:hover { background: rgba(99, 102, 241, 0.04); }
+
+.fact-badge,
+.fact-badge-spacer {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.fact-badge-spacer { visibility: hidden; }
+
+.fact-badge.badge-plus  { background: rgba(34, 197, 94, 0.14); color: rgb(21, 128, 61); }
+.fact-badge.badge-tilde { background: rgba(234, 179, 8, 0.16); color: rgb(161, 98, 7); }
+.fact-badge.badge-minus { background: rgba(239, 68, 68, 0.14); color: rgb(185, 28, 28); }
+
+.fact-content-wrap { flex: 1; min-width: 0; }
+
+.fact-content {
+  font-size: 13px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  color: var(--text);
+}
+
+.fact-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.fact-context {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.fact-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.fact-row:hover .fact-actions,
+.fact-row.editing .fact-actions { opacity: 1; }
+
+.fact-btn {
+  padding: 4px 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.2;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.fact-btn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.fact-btn.fact-save {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.fact-btn.fact-save:hover { color: white; filter: brightness(1.1); }
+.fact-btn.fact-cancel { font-size: 12px; }
+
+.fact-edit-ta {
+  width: 100%;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  outline: none;
+  resize: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.fact-list-empty {
+  padding: 16px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ── checklist widget — plan with per-item progress ── */
+
+.widget-checklist {
+  margin-bottom: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.checklist-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.checklist-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.checklist-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.checklist-body {
+  padding: 4px 0;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 18px;
+  transition: background 0.2s ease;
+}
+
+.checklist-item.status-active {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.checklist-symbol {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--border);
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.status-done .checklist-symbol {
+  background: rgba(34, 197, 94, 0.15);
+  color: rgb(21, 128, 61);
+}
+
+.status-active .checklist-symbol {
+  background: rgba(99, 102, 241, 0.18);
+  color: var(--accent);
+  position: relative;
+  overflow: visible;
+}
+
+/* Expanding-ring pulse using a ::before pseudo (more visible than the
+   previous box-shadow variant, and immune to any overflow-hidden
+   clipping on ancestor containers). */
+.status-active .checklist-symbol::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  animation: checklist-pulse 1.6s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes checklist-pulse {
+  0%   { transform: scale(0.9);  opacity: 0.7; }
+  70%  { transform: scale(1.55); opacity: 0;   }
+  100% { transform: scale(1.55); opacity: 0;   }
+}
+
+.status-skipped .checklist-symbol {
+  background: rgba(148, 163, 184, 0.20);
+  color: var(--text-muted);
+}
+
+.status-failed .checklist-symbol {
+  background: rgba(239, 68, 68, 0.16);
+  color: rgb(185, 28, 28);
+}
+
+.checklist-text { flex: 1; min-width: 0; }
+
+.checklist-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.checklist-label {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.status-pending .checklist-label { color: var(--text-muted); }
+.status-done    .checklist-label { color: var(--text-muted); }
+.status-active  .checklist-label { font-weight: 600; }
+
+.checklist-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.checklist-sub {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.checklist-footer {
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+  background: rgba(148, 163, 184, 0.04);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── CTA widget — primary call-to-action ── */
+
+.widget-cta {
+  position: relative;
+  margin-bottom: 14px;
+  padding: 28px 28px 26px;
+  border-radius: 16px;
+  color: white;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #6366f1 100%);
+  background-size: 220% 220%;
+  animation: cta-gradient 9s ease-in-out infinite;
+  box-shadow: 0 14px 44px rgba(99, 102, 241, 0.28);
+  overflow: hidden;
+}
+
+.widget-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.18) 0%, transparent 45%);
+  pointer-events: none;
+}
+
+@keyframes cta-gradient {
+  0%, 100% { background-position: 0% 50%;   }
+  50%      { background-position: 100% 50%; }
+}
+
+.cta-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.cta-icon {
+  font-size: 32px;
+  line-height: 1;
+  animation: cta-bob 3.2s ease-in-out infinite;
+}
+
+@keyframes cta-bob {
+  0%, 100% { transform: translateY(0);    }
+  50%      { transform: translateY(-3px); }
+}
+
+.cta-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.cta-description {
+  position: relative;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 20px 0;
+  max-width: 560px;
+}
+
+.cta-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 22px;
+  background: white;
+  color: #6366f1;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.cta-button:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.cta-button:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.cta-button-icon { font-size: 15px; }
+
+.cta-button-arrow {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.cta-button:hover .cta-button-arrow {
+  transform: translateX(4px);
+}
+
+/* Primary-action attention pulse. The agent sets `pulse: true` on the
+   action-card item it wants to draw the eye to (typically Scan Today on
+   first open). A soft expanding ring + subtle border breathe. */
+.action-card.pulse {
+  animation: action-pulse-border 2.4s ease-in-out infinite;
+  position: relative;
+}
+
+.action-card.pulse::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  animation: action-pulse-ring 2.4s ease-out infinite;
+}
+
+@keyframes action-pulse-border {
+  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.08); }
+  50%      { box-shadow: 0 0 28px rgba(99, 102, 241, 0.35); }
+}
+
+@keyframes action-pulse-ring {
+  0%   { opacity: 0.55; transform: scale(1);    }
+  70%  { opacity: 0;    transform: scale(1.04); }
+  100% { opacity: 0;    transform: scale(1.04); }
 }
 
 /* ── Recommendations ── */

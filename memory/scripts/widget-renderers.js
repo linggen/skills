@@ -2,8 +2,6 @@
 // Each returns a DOM node. Top bar widgets are compact cards.
 // Body widgets are content panels.
 
-import { drawDiskBars, drawDonut } from './charts.js';
-
 // ── Helpers ──
 
 function esc(s) {
@@ -11,20 +9,6 @@ function esc(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
-}
-
-function fmtGb(gb) {
-  if (gb == null || isNaN(gb)) return '--';
-  if (gb >= 1000) return `${(gb / 1000).toFixed(1)} TB`;
-  if (gb >= 1) return `${gb.toFixed(1)} GB`;
-  if (gb >= 0.001) return `${Math.round(gb * 1024)} MB`;
-  return '0 MB';
-}
-
-function barColor(pct) {
-  if (pct > 90) return 'var(--danger)';
-  if (pct > 75) return 'var(--warning)';
-  return 'var(--accent)';
 }
 
 function el(tag, cls, html) {
@@ -37,84 +21,13 @@ function el(tag, cls, html) {
 // ════════════════════════════════════════
 // TOP BAR WIDGETS
 // ════════════════════════════════════════
+//
+// The memory dashboard only uses `widget: "custom"` cards (one per
+// bucket). Any other `widget:` value falls back to the same renderer —
+// unknown top-bar types are treated as custom data.
 
 export function renderTopBarWidget(w) {
-  const renderers = {
-    cpu: renderCpuWidget,
-    memory: renderMemoryWidget,
-    disk: renderDiskWidget,
-    battery: renderBatteryWidget,
-    network: renderNetworkWidget,
-    gpu: renderGpuWidget,
-    io: renderIoWidget,
-    score: renderScoreWidget,
-    custom: renderCustomWidget,
-  };
-  const fn = renderers[w.widget] || renderCustomWidget;
-  return fn(w.data || {});
-}
-
-function metricCard(label, value, sub, barPct, barClr) {
-  const card = el('div', 'card top-bar-card');
-  card.innerHTML = `
-    <div class="card-label">${esc(label)}</div>
-    <div class="card-value" ${barClr && barPct > 75 ? `style="color:${barClr}"` : ''}>${esc(String(value))}</div>
-    ${sub ? `<div class="card-sub">${esc(sub)}</div>` : ''}
-  `;
-  if (barPct != null) {
-    const bar = el('div', 'card-bar');
-    const fill = el('div', 'card-bar-fill');
-    fill.style.width = `${Math.min(100, barPct)}%`;
-    fill.style.background = barClr || 'var(--accent)';
-    bar.appendChild(fill);
-    card.appendChild(bar);
-  }
-  return card;
-}
-
-function renderCpuWidget(d) {
-  return metricCard('CPU', `${d.value || 0}%`, d.label || '', d.value, barColor(d.value || 0));
-}
-
-function renderMemoryWidget(d) {
-  const sub = (d.used != null && d.total != null) ? `${d.used} / ${d.total} GB` : '';
-  return metricCard('Memory', `${d.value || 0}%`, sub, d.value, barColor(d.value || 0));
-}
-
-function renderDiskWidget(d) {
-  const sub = (d.used != null && d.total != null) ? `${d.used} / ${d.total} GB` : '';
-  return metricCard('Disk', `${d.value || 0}%`, sub, d.value, barColor(d.value || 0));
-}
-
-function renderBatteryWidget(d) {
-  const parts = [];
-  if (d.cycles) parts.push(`${d.cycles} cycles`);
-  if (d.status) parts.push(d.status);
-  const clr = (d.value || 0) < 50 ? 'var(--danger)' : (d.value || 0) < 80 ? 'var(--warning)' : 'var(--success)';
-  return metricCard('Battery', `${d.value || 0}%`, parts.join(' · '), d.value, clr);
-}
-
-function renderNetworkWidget(d) {
-  return metricCard('Network', d.wifi || d.iface || 'Connected', d.ip || '');
-}
-
-function renderGpuWidget(d) {
-  return metricCard('GPU', d.cores ? `${d.cores} cores` : '--', d.metal || d.chipset || '');
-}
-
-function renderIoWidget(d) {
-  return metricCard('Storage IO', d.mb_per_sec ? `${d.mb_per_sec} MB/s` : '--', d.transfers_per_sec ? `${d.transfers_per_sec} ops/s` : '');
-}
-
-function renderScoreWidget(d) {
-  const card = el('div', 'card top-bar-card score-card');
-  const clr = (d.value || 0) >= 80 ? 'var(--success)' : (d.value || 0) >= 60 ? 'var(--warning)' : 'var(--danger)';
-  card.innerHTML = `
-    <div class="card-label">Health</div>
-    <div class="card-value" style="color:${clr}">${d.value || '--'}</div>
-    <div class="card-sub">${esc(d.label || '')}</div>
-  `;
-  return card;
+  return renderCustomWidget(w.data || {});
 }
 
 function renderCustomWidget(d) {
@@ -142,22 +55,306 @@ function renderCustomWidget(d) {
 
 export function renderBodyWidget(w) {
   const renderers = {
+    'greeting': renderGreeting,
+    'fact-list': renderFactList,
+    'checklist': renderChecklist,
+    'cta': renderCta,
     'action-cards': renderActionCards,
     'bars': renderBars,
     'table': renderTable,
     'scorecard': renderScorecard,
     'recommendations': renderRecommendations,
-    'donut': renderDonut,
     'info': renderInfo,
     'progress': renderProgress,
-    'hero': renderHero,
   };
   const fn = renderers[w.type];
   if (!fn) {
-    console.warn('[sys-doctor] Unknown widget type:', w.type);
+    console.warn('[memory] Unknown widget type:', w.type);
     return null;
   }
   return fn(w);
+}
+
+// ── greeting ──
+//
+// Hero for State 1/2/4 — agent speaking directly to the user plus inline
+// action buttons. Replaces the older "info card + action-cards + CTA"
+// triad with a single compact header.
+//
+// Shape:
+//   { "type": "greeting",
+//     "icon": "🧠",
+//     "title": "Here's what I know about you.",
+//     "stats": "42 RAG facts · 5 core bullets · last scan 3h ago, +8 facts",
+//     "actions": [
+//       { "label": "Scan last 24h", "icon": "✨", "message": "Scan today", "kind": "primary" },
+//       { "label": "Week",          "message": "Scan this week" },
+//       { "label": "Clean", "icon": "🧹", "message": "Analyze and clean" }
+//     ] }
+
+function renderGreeting(w) {
+  const panel = el('div', 'widget-greeting');
+  const iconHtml = w.icon ? `<span class="greeting-icon">${esc(w.icon)}</span>` : '';
+  const titleHtml = w.title ? `<h2 class="greeting-title">${esc(w.title)}</h2>` : '';
+  const statsHtml = w.stats ? `<div class="greeting-stats">${esc(w.stats)}</div>` : '';
+
+  const actions = Array.isArray(w.actions) ? w.actions : [];
+  const actionsHtml = actions.length ? `<div class="greeting-actions">${actions.map((a, i) => {
+    const classes = ['greeting-action'];
+    if (a.kind === 'primary') classes.push('primary');
+    const iconSpan = a.icon ? `<span class="greeting-action-icon">${esc(a.icon)}</span>` : '';
+    return `<button class="${classes.join(' ')}" data-idx="${i}">${iconSpan}${esc(a.label || '')}</button>`;
+  }).join('')
+    }</div>` : '';
+
+  panel.innerHTML = `
+    <div class="greeting-body">
+      ${iconHtml}
+      <div class="greeting-content">${titleHtml}${statsHtml}</div>
+    </div>
+    ${actionsHtml}
+  `;
+
+  panel.querySelectorAll('.greeting-action').forEach(btn => {
+    const idx = parseInt(btn.dataset.idx, 10);
+    const a = actions[idx];
+    btn.addEventListener('click', () => {
+      if (!a) return;
+      // href wins — open in a new tab, don't send a chat message. Used for
+      // the "Browse all" link to the daemon's data browser.
+      if (a.href) { window.open(a.href, '_blank', 'noopener'); return; }
+      if (!window._chatSend) return;
+      window._chatSend(a.message || a.label || '');
+    });
+  });
+
+  return panel;
+}
+
+// ── fact-list ──
+//
+// A list of memory rows with per-row ✎/× affordances. Works for both core
+// files (identity.md / style.md, edited via /api/memory/fact) and RAG
+// rows (edited agent-mediated via _chatSend).
+//
+// Shape:
+//   { "type": "fact-list",
+//     "title": "IDENTITY",       // shown UPPERCASE
+//     "meta": "core · identity.md",
+//     "count": 3,
+//     "source": "identity.md" | "style.md" | "rag:<type>" | "rag:mixed",
+//     "actions": ["edit", "delete"],       // ["edit"], ["delete"], or [] OK
+//     "items": [
+//       { "id": "<uuid, rag only>",
+//         "content": "<example fact content>",
+//         "context": "code/linggen",       // optional
+//         "added": "2d ago",                // optional
+//         "badge": "+" | "~" | "−" | null   // optional, for report state
+//       }
+//     ] }
+
+function renderFactList(w) {
+  const panel = el('div', 'widget-fact-list');
+  const source = w.source || 'unknown';
+  const isCore = source === 'identity.md' || source === 'style.md';
+  const isRag = source.startsWith('rag:');
+  const ragType = isRag ? source.slice(4) : null;
+  const actions = Array.isArray(w.actions) ? w.actions : ['edit', 'delete'];
+  const canEdit = actions.includes('edit');
+  const canDelete = actions.includes('delete');
+
+  const headerHtml = (w.title || w.meta) ? `
+    <div class="fact-list-header">
+      ${w.title ? `<div class="fact-list-title"><strong>${esc(w.title)}</strong>${w.count != null ? `<span class="fact-list-count">(${esc(String(w.count))})</span>` : ''
+      }</div>` : ''}
+      ${w.meta ? `<div class="fact-list-meta">${esc(w.meta)}</div>` : ''}
+    </div>
+  ` : '';
+
+  const items = Array.isArray(w.items) ? w.items : [];
+  const itemsHtml = items.map((item, idx) => {
+    const badgeChar = item.badge || '';
+    const badgeClass = badgeChar === '+' ? 'badge-plus'
+      : badgeChar === '~' ? 'badge-tilde'
+        : (badgeChar === '−' || badgeChar === '-') ? 'badge-minus'
+          : '';
+    const badgeHtml = badgeChar ? `<span class="fact-badge ${badgeClass}">${esc(badgeChar)}</span>` : '<span class="fact-badge-spacer"></span>';
+
+    const metaBits = [];
+    if (item.context) metaBits.push(`<span class="fact-context">${esc(item.context)}</span>`);
+    if (item.added) metaBits.push(`<span class="fact-added">${esc(item.added)}</span>`);
+    const metaHtml = metaBits.length ? `<div class="fact-meta">${metaBits.join('')}</div>` : '';
+
+    // Only show ✎/× on rows with a modifiable source (not on "... +N more" placeholders)
+    const rowHasId = (isRag && item.id) || isCore;
+    const actionsHtml = (rowHasId && (canEdit || canDelete)) ? `
+      <div class="fact-actions">
+        ${canEdit ? '<button class="fact-btn fact-edit"   title="Edit">✎</button>' : ''}
+        ${canDelete ? '<button class="fact-btn fact-delete" title="Delete">×</button>' : ''}
+      </div>
+    ` : '';
+
+    return `
+      <div class="fact-row" data-idx="${idx}">
+        ${badgeHtml}
+        <div class="fact-content-wrap">
+          <div class="fact-content">${esc(item.content || '')}</div>
+          ${metaHtml}
+        </div>
+        ${actionsHtml}
+      </div>
+    `;
+  }).join('');
+
+  panel.innerHTML = `${headerHtml}<div class="fact-list-body">${itemsHtml || '<div class="fact-list-empty">Empty</div>'}</div>`;
+
+  panel.querySelectorAll('.fact-delete').forEach(btn => {
+    const row = btn.closest('.fact-row');
+    const idx = parseInt(row.dataset.idx, 10);
+    btn.addEventListener('click', () => handleFactDelete(source, isCore, isRag, ragType, items[idx], row, btn));
+  });
+  panel.querySelectorAll('.fact-edit').forEach(btn => {
+    const row = btn.closest('.fact-row');
+    const idx = parseInt(row.dataset.idx, 10);
+    btn.addEventListener('click', () => handleFactEdit(source, isCore, isRag, ragType, items[idx], row));
+  });
+
+  return panel;
+}
+
+async function handleFactDelete(source, isCore, isRag, ragType, item, row, btn) {
+  if (!item) return;
+  const what = isCore ? source : `RAG ${ragType}`;
+  if (!confirm(`Delete from ${what}?\n\n"${item.content}"`)) return;
+  row.style.opacity = '0.4';
+  btn.disabled = true;
+
+  try {
+    if (isCore) {
+      // Direct HTTP via Linggen's /api/memory/fact endpoint (bypasses LLM).
+      const resp = await fetch('/api/memory/fact', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: source, text: item.content }),
+      });
+      if (!resp.ok) throw new Error(await resp.text());
+      row.remove();
+    } else if (isRag && item.id) {
+      // Agent-mediated: message the agent, it calls Memory_delete and re-renders.
+      if (window._chatSend) {
+        window._chatSend(`Delete the ${ragType || 'RAG'} fact with id="${item.id}" and re-render the dashboard. The fact says: "${item.content}"`);
+        row.style.opacity = '0.6';
+      }
+    } else {
+      throw new Error('Row has no identifier to delete by.');
+    }
+  } catch (e) {
+    row.style.opacity = '1';
+    btn.disabled = false;
+    alert(`Delete failed: ${e.message || e}`);
+  }
+}
+
+function handleFactEdit(source, isCore, isRag, ragType, item, row) {
+  if (!item || row.classList.contains('editing')) return;
+
+  const contentEl = row.querySelector('.fact-content');
+  const actionsEl = row.querySelector('.fact-actions');
+  if (!contentEl) return;
+
+  const origContentHtml = contentEl.innerHTML;
+  const origActionsHtml = actionsEl ? actionsEl.innerHTML : '';
+  const oldText = (item.content || '').trim();
+
+  row.classList.add('editing');
+  contentEl.innerHTML = `<textarea class="fact-edit-ta" rows="2">${esc(item.content || '')}</textarea>`;
+  if (actionsEl) {
+    actionsEl.innerHTML = `
+      <button class="fact-btn fact-save"   title="Save (⌘↵)">Save</button>
+      <button class="fact-btn fact-cancel" title="Cancel (Esc)">Cancel</button>
+    `;
+  }
+
+  const ta = contentEl.querySelector('.fact-edit-ta');
+  const grow = () => { ta.style.height = 'auto'; ta.style.height = (ta.scrollHeight + 2) + 'px'; };
+  ta.addEventListener('input', grow);
+  grow();
+  ta.focus();
+  ta.setSelectionRange(ta.value.length, ta.value.length);
+
+  const restore = () => {
+    contentEl.innerHTML = origContentHtml;
+    if (actionsEl) actionsEl.innerHTML = origActionsHtml;
+    row.classList.remove('editing');
+    if (actionsEl) {
+      const newEdit = actionsEl.querySelector('.fact-edit');
+      const newDel = actionsEl.querySelector('.fact-delete');
+      if (newEdit) newEdit.addEventListener('click', () => handleFactEdit(source, isCore, isRag, ragType, item, row));
+      if (newDel) newDel.addEventListener('click', () => handleFactDelete(source, isCore, isRag, ragType, item, row, newDel));
+    }
+  };
+
+  const doSave = async () => {
+    const newText = ta.value.trim();
+    if (!newText) { restore(); return; }
+    if (newText === oldText) { restore(); return; }
+    row.style.opacity = '0.6';
+
+    try {
+      if (isCore) {
+        const resp = await fetch('/api/memory/fact', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: source, old_text: item.content, new_text: newText }),
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        contentEl.innerHTML = esc(newText);
+        if (actionsEl) actionsEl.innerHTML = origActionsHtml;
+        row.classList.remove('editing');
+        row.style.opacity = '1';
+        // Rewire edit/delete on the restored row
+        if (actionsEl) {
+          const e2 = actionsEl.querySelector('.fact-edit');
+          const d2 = actionsEl.querySelector('.fact-delete');
+          item.content = newText;
+          if (e2) e2.addEventListener('click', () => handleFactEdit(source, isCore, isRag, ragType, item, row));
+          if (d2) d2.addEventListener('click', () => handleFactDelete(source, isCore, isRag, ragType, item, row, d2));
+        }
+      } else if (isRag && item.id) {
+        if (!window._chatSend) throw new Error('Chat bridge unavailable.');
+        window._chatSend(`Update the ${ragType || 'RAG'} fact id="${item.id}" to content: "${newText}". Re-render the dashboard.`);
+        // Optimistic update; agent will re-emit PageUpdate shortly. Until
+        // that re-render arrives, make sure the row's ✎/× still work on
+        // the optimistic DOM — otherwise a second edit in quick succession
+        // finds dead buttons.
+        contentEl.innerHTML = esc(newText);
+        if (actionsEl) actionsEl.innerHTML = origActionsHtml;
+        row.classList.remove('editing');
+        row.style.opacity = '1';
+        item.content = newText;
+        if (actionsEl) {
+          const e2 = actionsEl.querySelector('.fact-edit');
+          const d2 = actionsEl.querySelector('.fact-delete');
+          if (e2) e2.addEventListener('click', () => handleFactEdit(source, isCore, isRag, ragType, item, row));
+          if (d2) d2.addEventListener('click', () => handleFactDelete(source, isCore, isRag, ragType, item, row, d2));
+        }
+      } else {
+        throw new Error('Row has no identifier to edit by.');
+      }
+    } catch (e) {
+      row.style.opacity = '1';
+      alert(`Edit failed: ${e.message || e}`);
+    }
+  };
+
+  if (actionsEl) {
+    actionsEl.querySelector('.fact-save').addEventListener('click', doSave);
+    actionsEl.querySelector('.fact-cancel').addEventListener('click', restore);
+  }
+  ta.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); restore(); }
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSave(); }
+  });
 }
 
 // ── info ──
@@ -181,12 +378,47 @@ function renderInfo(w) {
   return panel;
 }
 
+// ── cta ──
+//
+// A prominent primary-action panel. The agent emits this to ask a single
+// high-value question like "Should we start scan now?" with one big button
+// as the answer. Shape:
+//   { "type": "cta", "icon": "🧠", "title": "...", "description": "...",
+//     "button": { "label": "Start scan", "icon": "✨", "message": "Scan today" } }
+
+function renderCta(w) {
+  const panel = el('div', 'widget-cta');
+  const btn = w.button || {};
+  panel.innerHTML = `
+    <div class="cta-header">
+      ${w.icon ? `<span class="cta-icon">${esc(w.icon)}</span>` : ''}
+      <h2 class="cta-title">${esc(w.title || '')}</h2>
+    </div>
+    ${w.description ? `<p class="cta-description">${esc(w.description)}</p>` : ''}
+    <button class="cta-button">
+      ${btn.icon ? `<span class="cta-button-icon">${esc(btn.icon)}</span>` : ''}
+      <span class="cta-button-label">${esc(btn.label || 'Start')}</span>
+      <span class="cta-button-arrow">→</span>
+    </button>
+  `;
+  const buttonEl = panel.querySelector('.cta-button');
+  buttonEl.addEventListener('click', () => {
+    if (!window._chatSend) return;
+    const msg = btn.message || btn.label || 'Start';
+    window._chatSend(msg);
+  });
+  return panel;
+}
+
 // ── action-cards ──
 
 function renderActionCards(w) {
   const grid = el('div', 'action-cards-grid');
   for (const item of (w.items || [])) {
-    const card = el('div', `action-card ${item.active ? 'active' : ''}`);
+    const classes = ['action-card'];
+    if (item.active) classes.push('active');
+    if (item.pulse) classes.push('pulse');
+    const card = el('div', classes.join(' '));
     card.innerHTML = `
       <div class="action-preview">
         <div class="action-header">
@@ -195,21 +427,94 @@ function renderActionCards(w) {
         </div>
         ${item.description ? `<div class="action-desc">${esc(item.description)}</div>` : ''}
       </div>
-      <button class="action-start">${item.active ? 'Start' : 'Start'}</button>
+      <button class="action-start">Start</button>
     `;
-    const btn = card.querySelector('.action-start');
     const msg = item.message || item.title || item.id;
-    btn.addEventListener('click', () => {
-      if (window._chatSend) window._chatSend(msg);
-    });
-    // Clicking the card also triggers
-    card.addEventListener('click', (e) => {
-      if (e.target === btn) return;
-      if (window._chatSend) window._chatSend(msg);
-    });
+    const fire = (e) => {
+      if (!window._chatSend) return;
+      window._chatSend(msg);
+      e.stopPropagation();
+    };
+    card.querySelector('.action-start').addEventListener('click', fire);
+    card.addEventListener('click', fire);
     grid.appendChild(card);
   }
   return grid;
+}
+
+// ── checklist ──
+//
+// Multi-step plan with per-item status — shows the WHOLE plan upfront, not
+// just a rolling window of recent steps. Use for long multi-phase workflows
+// like a memory scan: user sees what's coming, what's done, what's active.
+//
+// Shape:
+//   { "type": "checklist",
+//     "title": "SCAN PLAN",
+//     "items": [
+//       { "label": "Collect session files",       "status": "done",
+//         "detail": "7 found · 0.8s" },
+//       { "label": "Merge & write candidates",    "status": "active",
+//         "detail": "3 of 12",
+//         "sub": "Memory_search parallel · writing + / ~ / −" },
+//       { "label": "Write .scan-state.json",      "status": "pending" }
+//     ],
+//     "footer": "elapsed 47s · ≈ 1m 30s remaining" }
+//
+// Status values: "pending" | "active" | "done" | "skipped" | "failed".
+// Agent updates this by re-emitting the full checklist on each phase
+// transition (PageUpdate with just the body containing this widget).
+
+function renderChecklist(w) {
+  const panel = el('div', 'widget-checklist');
+  const items = Array.isArray(w.items) ? w.items : [];
+  const doneCount = items.filter(i =>
+    i.status === 'done' || i.status === 'skipped'
+  ).length;
+  const total = items.length;
+
+  const sym = (s) => {
+    if (s === 'done') return '✓';
+    if (s === 'active') return '→';
+    if (s === 'skipped') return '—';
+    if (s === 'failed') return '✗';
+    return '○';
+  };
+
+  const itemsHtml = items.map((item) => {
+    const status = item.status || 'pending';
+    const subHtml = item.sub
+      ? `<div class="checklist-sub">${esc(item.sub)}</div>`
+      : '';
+    const detailHtml = item.detail
+      ? `<span class="checklist-detail">${esc(item.detail)}</span>`
+      : '';
+    return `
+      <div class="checklist-item status-${esc(status)}">
+        <span class="checklist-symbol">${sym(status)}</span>
+        <div class="checklist-text">
+          <div class="checklist-row">
+            <span class="checklist-label">${esc(item.label || '')}</span>
+            ${detailHtml}
+          </div>
+          ${subHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const headerHtml = `
+    <div class="checklist-header">
+      <div class="checklist-title">${esc(w.title || 'CHECKLIST')}</div>
+      <span class="checklist-count">${doneCount} of ${total} done</span>
+    </div>
+  `;
+  const footerHtml = w.footer
+    ? `<div class="checklist-footer">${esc(w.footer)}</div>`
+    : '';
+
+  panel.innerHTML = `${headerHtml}<div class="checklist-body">${itemsHtml}</div>${footerHtml}`;
+  return panel;
 }
 
 // ── progress ──
@@ -266,9 +571,9 @@ function renderTable(w) {
   const panel = el('div', 'panel');
   const panelBadge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
 
-  // If the title names a memory file, add per-row edit/delete controls.
-  // Match with or without the `.md` suffix — the model emits either shape.
-  const fileMatch = (w.title || '').match(/\b(user_info|user_feedback|agent_done_week|agent_done_month|agent_done_year)(?:\.md)?\b/);
+  // If the title names a core memory file, add per-row edit/delete controls.
+  // Only identity.md and style.md exist under the current two-layer model.
+  const fileMatch = (w.title || '').match(/\b(identity|style)(?:\.md)?\b/);
   const memFile = fileMatch ? `${fileMatch[1]}.md` : null;
 
   // Split rows into "changes this scan" (badge is +, ~, -) and "all facts"
@@ -479,7 +784,6 @@ function renderRecommendations(w) {
           <div class="rec-title">${esc(r.title)}</div>
           ${r.description ? `<div class="rec-desc">${esc(r.description)}</div>` : ''}
         </div>
-        ${r.savings_gb ? `<span class="rec-savings">${fmtGb(r.savings_gb)}</span>` : ''}
       </div>
       ${r.command ? `
         <div class="rec-cmd-block">
@@ -505,54 +809,3 @@ function renderRecommendations(w) {
   return panel;
 }
 
-// ── donut ──
-
-function renderDonut(w) {
-  const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
-  panel.innerHTML = `<div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>`;
-
-  const wrap = el('div', 'donut-wrap');
-  const canvas = document.createElement('canvas');
-  canvas.width = 280;
-  canvas.height = 280;
-  canvas.className = 'donut-canvas';
-  wrap.appendChild(canvas);
-
-  const legend = el('div', 'donut-legend');
-  const legendHtml = (w.items || []).map(item => `
-    <div class="legend-item">
-      <span class="legend-dot" style="background:${esc(item.color || '#6366f1')}"></span>
-      <span>${esc(item.label)}</span>
-      <span class="legend-size">${fmtGb(item.value)}</span>
-    </div>
-  `).join('');
-  legend.innerHTML = legendHtml;
-  wrap.appendChild(legend);
-  panel.appendChild(wrap);
-
-  // Draw donut after DOM insertion
-  requestAnimationFrame(() => drawDonut(canvas, w.items || []));
-  return panel;
-}
-
-// ── hero ──
-
-function renderHero(w) {
-  const card = el('div', 'panel widget-hero');
-  card.innerHTML = `
-    <div class="hero-header">
-      ${w.icon ? `<span class="hero-icon">${esc(w.icon)}</span>` : ''}
-      <span class="hero-title">${esc(w.title)}</span>
-    </div>
-    <div class="hero-body">${esc(w.body || '')}</div>
-    ${w.cta ? `<button class="hero-cta">${esc(w.cta.label)}</button>` : ''}
-  `;
-  if (w.cta) {
-    const btn = card.querySelector('.hero-cta');
-    btn.addEventListener('click', () => {
-      if (window._chatSend) window._chatSend(w.cta.message || w.cta.label);
-    });
-  }
-  return card;
-}

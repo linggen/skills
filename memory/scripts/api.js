@@ -1,4 +1,4 @@
-// Linggen API client for sys-doctor
+// Linggen API client for the memory dashboard.
 const API_BASE = '';
 
 export async function fetchModels() {
