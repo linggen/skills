@@ -10,8 +10,10 @@ set -euo pipefail
 SKILL_DIR="${SKILL_DIR:-$(cd "$(dirname "$0")" && pwd)}"
 REPO="linggen/linggen-memory"
 
-# Version pin — bump in lockstep with a new linggen-memory release.
-VERSION="${LING_MEM_VERSION:-v0.1.0}"
+# Default: track the latest published release. Override with
+# `LING_MEM_VERSION=v0.1.0 bash install.sh` to pin a specific version
+# (e.g. when reproducing a bug or in a pinned environment).
+VERSION="${LING_MEM_VERSION:-latest}"
 
 # Detect platform → release asset slug.
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -23,14 +25,21 @@ case "$OS-$ARCH" in
   linux-aarch64|linux-arm64)   TARGET="linux-aarch64" ;;
   *)
     echo "Error: unsupported platform $OS-$ARCH" >&2
-    echo "  Manual install: https://github.com/${REPO}/releases/${VERSION}" >&2
-    echo "  (or build from source: cargo install --git https://github.com/${REPO} --tag ${VERSION})" >&2
+    echo "  Manual install: https://github.com/${REPO}/releases" >&2
+    echo "  (or build from source: cargo install --git https://github.com/${REPO})" >&2
     exit 1
     ;;
 esac
 
 ASSET="ling-mem-${TARGET}.tar.gz"
-URL="https://github.com/${REPO}/releases/download/${VERSION}/${ASSET}"
+# GitHub redirects /releases/latest/download/<asset> to the current latest
+# release's asset, so no API call or auth token is needed for "latest".
+# For an explicit pin, the URL uses the tag directly.
+if [ "$VERSION" = "latest" ]; then
+  URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
+else
+  URL="https://github.com/${REPO}/releases/download/${VERSION}/${ASSET}"
+fi
 BIN_DIR="$SKILL_DIR/bin"
 mkdir -p "$BIN_DIR"
 
@@ -50,11 +59,15 @@ echo "Extracting ling-mem → $BIN_DIR/"
 tar -xzf "$TMP_TAR" -C "$BIN_DIR" ling-mem
 chmod +x "$BIN_DIR/ling-mem"
 
-# Verify it runs and reports the version we asked for.
+# Report what we installed. When pinning to a specific version, warn on
+# drift between the tag the user asked for and what the binary reports.
+# With VERSION=latest there's no expected value to compare against.
 BUILT_VER="$("$BIN_DIR/ling-mem" --version 2>/dev/null | awk '{print $2}' || true)"
-EXPECTED="${VERSION#v}"
-if [ "$BUILT_VER" != "$EXPECTED" ]; then
-  echo "Warning: binary reports version '$BUILT_VER', expected '$EXPECTED'." >&2
+if [ "$VERSION" != "latest" ]; then
+  EXPECTED="${VERSION#v}"
+  if [ "$BUILT_VER" != "$EXPECTED" ]; then
+    echo "Warning: binary reports version '$BUILT_VER', expected '$EXPECTED'." >&2
+  fi
 fi
 
 echo "Installed: $BIN_DIR/ling-mem (${BUILT_VER:-unknown})"

@@ -550,8 +550,10 @@ For each candidate:
 
 - **Near-identical, equally phrased** → skip. Increment `outcomes.skipped`.
 - **Candidate is clearer / more specific** → `Memory_update({id: hit.id, content: candidate.content, contexts: <merged full array>, tags: <merged full array>})`. Increment `outcomes.updated`. **Arrays replace wholesale — pass the full merged list, not deltas.**
-- **Existing contradicts the candidate or is stale** → `Memory_delete({id: hit.id})` then `Memory_add(candidate)`. Increment `outcomes.replaced`. (Keep these two calls in the same turn — they're a logical pair.)
-- **No meaningful match** → `Memory_add({content, type, contexts, from, outcome?, tags?})`. Increment `outcomes.added`.
+- **Existing contradicts the candidate or is stale** → `Memory_delete({id: hit.id})` then `Memory_add({...candidate, skip_dedup: true})`. Increment `outcomes.replaced`. (Keep these two calls in the same turn — they're a logical pair.)
+- **No meaningful match** → `Memory_add({content, type, contexts, from, outcome?, tags?, skip_dedup: true})`. Increment `outcomes.added`.
+
+**Always pass `skip_dedup: true` from the scan pipeline** — you've already run dedup in Turn B1 and the server's built-in merge would override your more nuanced routing (e.g. the delete-and-replace case for contradicting facts).
 
 If you have > 10 writes, split across turns (≤ 10 writes/turn, then STOP). But searches can all go in one turn — search output is small.
 
@@ -621,9 +623,28 @@ Memory_add({
   "contexts": ["cross-project"],
   "from": "user"
 })
+// Scan Phase 3 only — caller already dedup'd:
+Memory_add({ "content": "...", "type": "fact", "from": "derived", "skip_dedup": true })
 Memory_update({ "id": "<uuid-from-search>", "content": "<new content>" })
 Memory_delete({ "id": "<uuid-from-search>" })
 ```
+
+### Memory_add response shape
+
+`Memory_add` now returns one of two shapes so the caller knows whether a new row was written or an existing row absorbed the candidate:
+
+```json
+// No near-duplicate — new row written.
+{ "action": "added",  "fact": { "id": "...", "content": "...", ... } }
+
+// Near-duplicate of same type — merged into existing row.
+// `fact.id` equals `previous_id`; contexts/tags unioned; longer content kept.
+{ "action": "merged", "similarity": 0.93,
+  "previous_id": "<existing uuid>",
+  "fact": { "id": "<existing uuid>", "content": "...", ... } }
+```
+
+Read `.data.fact.id` (not `.data.id`) if you need the written-row id afterwards.
 
 ### Wrong (all return 422)
 
