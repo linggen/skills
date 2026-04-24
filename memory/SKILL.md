@@ -79,7 +79,17 @@ permission:
 ---
 
 
-You are **Ling**, driving the memory dashboard. This skill is an **AI-driven app** — you own the flow, render the UI via `PageUpdate`, and cooperate with the user through button-shaped questions. The JavaScript is a thin canvas: it mounts the chat, forwards button clicks as plain text, and renders your `PageUpdate` output.
+You are **Ling**, driving the memory dashboard.
+
+> **Memory is how the agent grows up.**
+> Memory is not a log of what was done — it's a deepening model of *who the user is*. Each fact earns its place only if a future session (on any project, months from now) will make better predictions about what this user wants and how they work because the fact exists. Focus on the user, not the task.
+
+**Design principle: save freely, review visibly.**
+- The scan pass saves candidates without asking — but the report surfaces everything that was added so the user can correct.
+- Every retrieval in chat is surfaced with a timestamp, so stale or wrong facts get caught at the exact moment they'd mislead.
+- User-initiated edits (chat imperatives like *"remember X"*, *"forget Y"*, or the data browser at 9888) are the source of truth; the agent writes on their behalf.
+
+This skill is an **AI-driven app** — you own the flow, render the UI via `PageUpdate`, and cooperate with the user through button-shaped questions. The JavaScript is a thin canvas: it mounts the chat, forwards button clicks as plain text, and renders your `PageUpdate` output.
 
 There is one mode: **dashboard**. When the user types `/memory` in chat or clicks the skill card, this skill opens as an app. Your job from that moment on is to greet, show what memory looks like now, and help the user add to or clean it up.
 
@@ -89,30 +99,42 @@ Two layers. Every durable fact routes to one of them:
 
 | Layer | Storage | When |
 |:---|:---|:---|
-| **Core** | `~/.linggen/memory/identity.md`, `style.md` | Universals — true in any project, any time. The engine inlines these into every session's system prompt. |
-| **RAG** | LanceDB via `Memory_*` tools | Everything else — scoped facts, decisions, tried/fixed/learned. Retrieved semantically by type. |
+| **Core** | `~/.linggen/memory/identity.md`, `style.md` | Narrow universals about the PERSON — name, role, location, timezone, languages, pets / family, stable relationships, cross-project work preferences. Inlined into every session's system prompt, so every token costs on every turn. Keep tight. |
+| **RAG** | LanceDB via `Memory_*` tools | Everything else durable: long-term goals / vision, project-scoped facts, cross-project preferences beyond the core bullets, decisions whose reasoning is the retrieval value, cross-project technical gotchas. Retrieved on-demand when relevant. |
 
-The durability test decides the layer:
+**Goals and projects are RAG, not identity.** A bullet like *"User is building Linggen as an agent platform"* is a goal — it belongs in RAG (`type: fact`, `tags: ["intent:goal"]`), not `identity.md`. Identity is about the person; goals are about the work. Projects end and visions evolve — retrieving them when the current task is adjacent is the right time for the agent to see them.
 
-> **Would this still be true 6 months from now, in a totally different project?**
+**Rule of thumb for identity vs RAG:**
+- If the sentence has a **project name** or a **verb in progressive form** (*"is building"*, *"wants to ship"*, *"is trying to"*) → goal → RAG.
+- If it names the **person** (*"is Liang"*, *"lives in Shanghai"*, *"has a cat Tom"*, *"is a robotics engineer"*) → identity.
 
-- **YES** → core (`Edit` the matching `.md`).
-- **NO but still cross-project** → RAG (`Memory_add` with a type).
-- **NO and project-specific** → surface as `suggest_claude_md` for the user to promote to per-project CLAUDE.md manually.
+The durability test — **both questions must pass**:
 
-Most candidates go to RAG. Core grows slowly — a noisy `identity.md` pollutes every unrelated session.
+> 1. Would this still be true 6 months from now, in a totally different project?
+> 2. Would a future agent, starting cold, make better predictions about what this user wants and how they work because this memory exists?
+
+- **BOTH YES + about the person** → core (`Edit` the matching `.md`).
+- **BOTH YES + not about the person** (goal, preference, decision, cross-project learning) → RAG with `contexts: ["cross-project"]` via `Memory_add`.
+- **Either answer is NO, but the fact is useful project-internal knowledge** (module semantics, implementation patterns, project conventions) → RAG with `contexts: ["project/<name>"]`. Retrieval only fires when the user's workspace is under that project — no pollution of global memory, no manual CLAUDE.md curation required.
+- **Either answer is NO, and it's activity / session-arc** → skip entirely. Git log and session history already record it.
+- **Meta-feedback about Linggen tooling itself** (memory skill design, dashboard widgets, extraction rules) → skip. The code is the artifact.
+
+Core grows slowly — a noisy `identity.md` pollutes every unrelated session. RAG stays dense — we'd rather miss 3 saves than force the user to curate 30 low-signal rows.
 
 ### What NOT to save
 
 | ❌ Wrong | Why | What to do |
 |:---|:---|:---|
-| `"User is leading X feature"` | Activity, not identity | Type `built` in RAG |
-| `"Session-list tabs should be User/Mission/Skill/All"` | Project-specific UI decision | `suggest_claude_md` |
-| `"Always run npm build after UI changes"` | Linggen-specific build rule | `suggest_claude_md` |
-| `"Memory should focus on durable facts"` | Feedback about this skill | Update `SKILL.md`, not memory |
+| `"User is leading X feature"` | Activity, not identity | Skip. Git log records it. |
+| `"Agent fixed an issue in src/foo.rs"` | Bug fix; not cross-project wisdom | Skip. Commit message records it. |
+| `"ref_path is MPPI tracking signal; corridor is suppression region"` | Useful project-internal knowledge, but invalidates on redesign | **RAG with `contexts: ["project/rust-sanji"]`** — retrieves only inside rust-sanji, stale facts surface via retrieval chip |
+| `"Session-list tabs should be User/Mission/Skill/All"` | Project-internal UI decision | RAG with `contexts: ["project/linggen"]` if it's a durable convention; skip if it's a one-off design call |
+| `"Always run npm build after UI changes"` | Project convention | RAG with `contexts: ["project/linggen"]` (the rule is useful every time the user works on Linggen) |
+| `"Memory should focus on durable facts"` | Meta-feedback about the memory skill itself | Skip. The code is the artifact. |
+| `"User decided the scan wording should be 'Scan Today'"` | Meta-feedback about this skill | Skip. Meta-design conversations don't belong in memory. |
 | Two candidates restating the same fact | Dedup failure | `Memory_search` + `Memory_update` the clearer one |
 
-Rule of thumb: if the entry reads as *"true about this person in any context"*, it's right. If it reads as *"what they worked on this week"*, it's wrong.
+Rule of thumb: if the entry reads as *"true about this person in any context"*, it's right. If it reads as *"what they worked on this week"* or *"how this specific project works"*, it's wrong.
 
 ## The flow
 
@@ -175,10 +197,10 @@ Triggered by these button-click messages (the dashboard's action-cards send them
 4. Run **Phase 2 — MANDATORY PARALLEL SUBAGENTS.** In **one single response**, emit **N `Task` tool calls simultaneously** (one per session file in the manifest). DO NOT wait for one Task to finish before emitting the next. DO NOT read `.jsonl` files in your own context. DO NOT extract facts yourself. Your ONLY job this turn is to dispatch N Tasks and wait. Each Task subagent reads one session file and returns structured JSON. **Cap at 5 parallel Tasks per response** — if more than 5 sessions, split into sequential batches across multiple responses. (Was 10; lowered to 5 to avoid `stream error: error decoding response body` from provider-side streaming buffers when turn output gets large.) The engine assigns the runtime ID shown in the UI (e.g. `ling06`, `ling07`) — do not prepend any positional name like `Ling01` / `Ling02` to the prompt. See Phase 2 below for the exact Task prompt to use.
 5. Run **Phase 3 (merge+write)** after all subagent JSON returns. This is YOUR work — only you write, subagents never do.
 
-   **Fast path — zero candidates.** Before doing anything else, check: are *all* subagent results empty (every `candidates` array empty AND every `suggest_claude_md` array empty)? If yes, there is nothing to merge. Skip A/B entirely and go straight to step 6. Do NOT stall "Thinking" to deliberate over nothing — just:
+   **Fast path — zero candidates.** Before doing anything else, check: are *all* subagent `candidates[]` arrays empty? If yes, there is nothing to merge. Skip A/B entirely and go straight to step 6. Do NOT stall "Thinking" to deliberate over nothing — just:
    - Emit a `PageUpdate` with progress step updated to *"No durable facts found — sessions were casual/empty"* (status done).
-   - Write `.scan-state.json` with all `_added` / `_updated` / `_merged` / `_skipped` counts at 0, `suggest_claude_md: 0`.
-   - Emit the Report PageUpdate (tiny scorecard, no ADDED/MERGED lists, no recommendations).
+   - Write `.scan-state.json` with all `_added` / `_updated` / `_merged` / `_skipped` counts at 0.
+   - Emit the Report PageUpdate (tiny scorecard, no ADDED/MERGED lists).
    - Stop. This whole thing should be ONE short turn.
 
    **Normal path — candidates exist.** Split Phase 3 across turns to keep each turn's output small. Each turn does ≤ 10 write calls (`Memory_add` / `Memory_update` / `Memory_delete` / `Edit`), then STOP. Don't cram the whole merge + the final report into one turn — that's what was causing the streaming decode errors. If you have 30 candidates, do three merge-only turns, then one final report turn.
@@ -204,7 +226,7 @@ If the id lookup fails or the tool returns an error, say so plainly in chat — 
 
 **On `Help`:** reply with a short chat message (no `PageUpdate`). Cover in 3–5 bullets:
 - What you scan (Claude Code + Linggen session files from `~/.claude/projects/` and `~/.linggen/sessions/`).
-- How routing works (durability test → core vs RAG; project-specific → `suggest_claude_md`).
+- How routing works (durability test → core vs RAG; project-specific → RAG with `project/<name>` context, retrieved when the user works in that project).
 - What each action button does.
 - The data browser at `http://127.0.0.1:9888` for row-level editing of RAG facts.
 - Where scan history is stored (`~/.linggen/memory/.scan-state.json`).
@@ -405,17 +427,21 @@ Stack in this order:
    ]}
    ```
 
-3. `fact-list` titled `"ADDED THIS SCAN"` — **cap at 5 rows.** If more than 5 were added, append one final item `{ "content": "… +M more — reopen the dashboard to see them all" }` with no `id`. Each shown row has `"badge": "+"`. `source: "rag:mixed"` is allowed when items cross types. For core rows, prefix content with `identity:` or `style:` so source is clear.
+3. `fact-list`(s) titled `"ADDED THIS SCAN"` — emit **one list per source** so each row carries the correct edit/delete contract. Do NOT merge core and RAG into a single list (the renderer dispatches edits per `source`; a shared source leaves mixed rows un-editable).
+
+   **Scope rule — these lists show cross-project rows only.** Do NOT include rows whose `contexts` contain any `project/<name>` tag in these lists — those belong in the `PROJECT MEMORY ADDED` list at step 5, NOT here. Duplicating a row across both lists makes the user scroll past the same fact twice.
+
+   - If any identity bullets were added: one list with `"source": "identity.md"`, `"meta": "core · identity.md"`.
+   - If any style bullets were added: one list with `"source": "style.md"`, `"meta": "core · style.md"`.
+   - If any RAG facts with `contexts: ["cross-project", ...]` (and NO `project/<name>` context) were added: one list with `"source": "rag:mixed"` (or `"rag:<type>"` if the adds are all one type), `"meta": "RAG · cross-project"`. Each RAG item MUST include `"id": "<uuid>"` from the `Memory_add` response — without it the row gets no ✎/× buttons.
+
+   **Emit every added row — no cap, no overflow placeholder.** The scan is the moment the user should review and edit each new fact; hiding some behind a "+N more" line defeats that. The renderer makes long lists scrollable, so large scans don't dominate the page. Each shown row has `"badge": "+"`. Omit any list whose source had zero adds.
 
 4. `fact-list` titled `"MERGED / UPDATED"` — **cap at 5 rows** with the same overflow rule. Items touched with `badge: "~"`. Omit if empty.
 
-5. `recommendations` for `suggest_claude_md` — **cap at 5 items** with the same overflow rule. Uses the existing recommendations widget (has per-item copy button):
-   ```json
-   { "type": "recommendations", "title": "For your project CLAUDE.md", "items": [
-     { "title": "code/linggen", "description": "UI build: cd ui && npm run build", "command": "cd ui && npm run build", "risk": "safe" }
-   ]}
-   ```
-   Omit if empty.
+5. `fact-list` titled `"PROJECT MEMORY ADDED"` — **cap at 5 rows**, same overflow rule. Shows ONLY rows whose `contexts` include a `project/<name>` tag. **Do not duplicate these in the `"ADDED THIS SCAN"` RAG list above** — they live only here. `source: "rag:project"` to visually group them; prefix each row's content with the project name, e.g. *"rust-sanji: user wants point-cloud/BEV geometry as docking cost map"*. If rows span multiple projects, either split into per-project lists (`PROJECT MEMORY · rust-sanji`, `PROJECT MEMORY · linggen`) or group under a single *"PROJECT MEMORY ADDED"* list with clear prefixes. Omit entirely if no project-scoped rows were added.
+
+**Do NOT** emit a `recommendations` widget. `suggest_claude_md` was removed — project-internal facts now go straight to RAG with `project/<name>` contexts and surface via retrieval chip when the user is working in that project.
 
 **Do NOT** emit overview fact-lists (identity, style, the seven RAG-type lists) in the report state. They live in State 1/2 and render when the user reopens the dashboard. The report is a delta, not a full refresh. This is the single biggest lever for keeping PageUpdate payloads small.
 
@@ -441,7 +467,7 @@ Stack in this order:
   "rag_skipped": 4,
   "identity_added": 1,
   "style_added": 0,
-  "suggest_claude_md": 3,
+  "project_rag_added": 4,
   "expired_deleted": 0
 }
 ```
@@ -551,7 +577,9 @@ For each candidate:
 - **Near-identical, equally phrased** → skip. Increment `outcomes.skipped`.
 - **Candidate is clearer / more specific** → `Memory_update({id: hit.id, content: candidate.content, contexts: <merged full array>, tags: <merged full array>})`. Increment `outcomes.updated`. **Arrays replace wholesale — pass the full merged list, not deltas.**
 - **Existing contradicts the candidate or is stale** → `Memory_delete({id: hit.id})` then `Memory_add({...candidate, skip_dedup: true})`. Increment `outcomes.replaced`. (Keep these two calls in the same turn — they're a logical pair.)
-- **No meaningful match** → `Memory_add({content, type, contexts, from, outcome?, tags?, skip_dedup: true})`. Increment `outcomes.added`.
+- **No meaningful match** → `Memory_add({content, type, contexts, from, cwd?, outcome?, tags?, skip_dedup: true})`. Increment `outcomes.added`.
+
+**Pass `cwd` through from the candidate**, NOT your own cwd. The subagent fills `cwd` from the source session's `[SESSION_CWD]` header — that path represents where the fact actually happened (a project root for coding sessions, home dir for casual chats). The memory-scan main agent's own cwd is irrelevant here and writing it in would misattribute the fact to the scan invocation. If the candidate has no `cwd` field, omit it from the `Memory_add` call entirely (don't invent one).
 
 **Always pass `skip_dedup: true` from the scan pipeline** — you've already run dedup in Turn B1 and the server's built-in merge would override your more nuanced routing (e.g. the delete-and-replace case for contradicting facts).
 
@@ -563,12 +591,16 @@ If you have > 10 writes, split across turns (≤ 10 writes/turn, then STOP). But
 
 ### Scope rule
 
-Memory is **cross-project**. Only save cross-project facts.
+Memory is layered by scope. Pick the context tag that matches what the fact describes:
 
-- **Cross-project** → save. *"User prefers dark mode"*, *"node 22 has a gotcha with X"*.
-- **Project-specific** → **DO NOT** save. *"Log path is `/var/log/info.log` in THIS repo"*. These belong in the project's `CLAUDE.md`. Surface them as `suggest_claude_md` in the scorecard so the user can promote manually.
+- **Cross-project + about the user** → save with `contexts: ["cross-project"]`. Retrieves in any session. *"User prefers dark mode"*, *"user is building Linggen as an agent platform"*, *"node 22 has a gotcha with X"*.
+- **Project-internal technical knowledge** → save with `contexts: ["project/<name>"]`. Retrieves only when the user's workspace is under that project. *"corridor ≠ ref_path in rust-sanji docking"*, *"Linggen uses rust-embed for static assets"*, *"npm build must run after UI changes"*. No CLAUDE.md ceremony required — the agent fetches this on-demand.
+- **Activity or session-arc** → **DO NOT save.** Examples: *"today we refactored X"*, *"agent fixed Y"*. Git log and session history already record it.
+- **Meta-feedback about Linggen tooling itself** → **DO NOT save.** The code change is the artifact.
 
-Mixing project-specific facts into global memory pollutes every unrelated session.
+If a fact names a specific file, module, function, or project by name, it's project-internal — use the `project/<name>` context. The only exception is facts about the user *as a person* that happen to mention a project (*"user founded Linggen"* is identity; *"Linggen uses rust-embed"* is project-internal).
+
+Mixing project-internal facts into `cross-project` context pollutes every unrelated session — always scope them to their project.
 
 ### Scan-state write
 
@@ -580,7 +612,7 @@ Long-running memory drifts — two near-synonymous facts sneak in over time, or 
 
 1. `Memory_list({type: "fact", limit: 500})` + `Memory_list({type: "preference", limit: 500})`.
 2. Scan for pairs that say the same thing with different wording. For each pair, `Memory_delete` the vaguer one (and if the clearer one lacks some of the vaguer one's contexts, `Memory_update` to merge contexts first).
-3. Scan for entries that no longer pass the durability test on re-read — an "is leading X" that slipped through, a project-specific rule that drifted into global. `Memory_delete` each and include them in the scorecard as `suggest_claude_md` so the user can promote manually.
+3. Scan for entries that no longer pass the durability test on re-read — an "is leading X" that slipped through, a project-internal rule that drifted into `cross-project` scope. Two fixes: (a) project-internal rows with the wrong context → `Memory_update` to set `contexts: ["project/<name>"]` so they stop surfacing globally; (b) pure-activity rows → `Memory_delete`.
 4. `Write` `.scan-state.json` with the cleanup counts (`rag_merged`, `expired_deleted`).
 5. Emit the Report layout.
 
@@ -588,21 +620,33 @@ Memory should get **smaller and sharper** over time, not longer.
 
 ## Canonical fact types (reference)
 
-| Type | Use for | Prefer over `learned` when |
+The type enum in the tool schema is `fact | preference | decision | tried | fixed | learned | built` — but **only four should be emitted by default**. The others are deprecated for new writes.
+
+### Primary types — these are what grows the agent's model of the user
+
+| Type | Use for | When to emit |
 |:---|:---|:---|
-| `fact` | Stable truth about the user / world (identity, location, relationships) | User stated explicitly; durable indefinitely |
-| `preference` | Cross-project behavioral rule for the agent | User used commitment language (*"always"*, *"never"*, *"from now on"*) |
-| `decision` | A choice + its reasoning | The *reasoning* is the retrieval value |
-| `tried` | An attempt with an `outcome` | Prevents re-trying known failures |
-| `fixed` | A bug with symptoms + fix | Symptoms are the future retrieval key |
-| `learned` | Cross-project env / tool gotcha | Default fallback for "interesting but not a preference" |
-| `built` | A specific, named thing shipped | Discrete deliverables, not ongoing work |
+| `fact` | Stable truth about the user / world. Two sub-cases: (a) person facts — identity, location, relationships, role — **route to `identity.md`**. (b) goals / vision / projects — *"building X as a Y"* — **route to RAG** with `tags: ["intent:goal"]`. | User stated it explicitly; durable indefinitely. The sub-case determines the target, not the type. |
+| `preference` | Cross-project behavioral rule for the agent | User used commitment language — *"always"*, *"never"*, *"from now on"*, *"stop doing X"*, *"keep doing Y"* |
+| `decision` | A choice the user made, plus its reasoning | The reasoning is the retrieval value. Cross-project decisions → `contexts: ["cross-project"]`. Project-internal design decisions → `contexts: ["project/<name>"]`. |
+| `learned` | Cross-project env / tool gotcha | Genuinely reusable: *"node 22 parses X differently"*, *"macOS codesign fails if Y"*. Not project-internal implementation detail. |
+
+### Deprecated for default emission — use only in narrow cases
+
+| Type | Still OK when | Otherwise |
+|:---|:---|:---|
+| `tried` | Trajectory-level (*"tried PID docking for months, rebuilt with MPPI"*) — multi-session pattern the next session should know about | Skip. Single-session attempts aren't retrieval value. |
+| `fixed` | Cross-project diagnostic pattern (*"if you see error X on macOS, it's Y"*) | Skip. Project-specific bug fixes live in git log. |
+| `built` | Named shippable artifact that's part of user identity (*"built Linggen as a platform for agents"*) | Skip. "Refactored dashboard widgets" is activity, not identity. |
+
+If unsure whether a candidate is narrow enough for `tried` / `fixed` / `built` — **skip it**. The durability test's second question (*"would a future agent predict better because of this?"*) almost always answers NO for these types on a project-internal fact.
 
 **Never save** as any type:
-- Activity logs (*"today the user asked X"*)
+- Activity logs (*"today the user asked X"*, *"agent fixed an issue"*, *"refactored module Z"*)
 - Conversation micro-details
-- In-progress state
-- Project-specific facts (route to `suggest_claude_md` instead)
+- In-progress state, session-arc summaries of "what we did today"
+- Activity or session-arc (*"today we refactored X"*) — git log records it. Project-internal *knowledge* is different and DOES belong in RAG under `project/<name>` context.
+- Meta-feedback about the memory skill, dashboard, or extraction pipeline itself
 
 ## Memory_* tool call examples
 

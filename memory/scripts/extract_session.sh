@@ -89,8 +89,24 @@ apply_max() {
   fi
 }
 
+# Emit a one-line header so the subagent sees which project the session
+# happened in. For CC sessions, every message carries `cwd`; we pick the
+# most common one (users sometimes cd during a session). For Linggen
+# sessions, the cwd field is per-record too. If no cwd is found, the
+# header is omitted and the subagent treats the candidate's cwd as
+# unknown (leaves it out of the JSON).
+emit_cwd_header() {
+  local session_cwd
+  session_cwd=$(jq -r 'select(.cwd != null) | .cwd' "$FILEPATH" 2>/dev/null | sort | uniq -c | sort -rn | awk 'NR==1 { $1=""; sub(/^ +/,""); print }')
+  if [ -n "$session_cwd" ]; then
+    echo "[SESSION_CWD]: $session_cwd"
+    echo ""
+  fi
+}
+
 case "$SOURCE" in
   CC)
+    emit_cwd_header
     jq -r --arg date "$TARGET_DATE" '
       select((.type == "user" or .type == "assistant") and ((.timestamp // "") | startswith($date)))
       | (.message.role // .type) as $role
@@ -108,6 +124,7 @@ case "$SOURCE" in
     ' "$FILEPATH" 2>/dev/null | strip_noise | apply_max
     ;;
   Linggen)
+    emit_cwd_header
     jq -r --argjson start "$DAY_START" --argjson end "$DAY_END" '
       select(
         (.from_id == "user" or .from_id == "ling")

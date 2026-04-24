@@ -2,7 +2,23 @@
 // Each returns a DOM node. Top bar widgets are compact cards.
 // Body widgets are content panels.
 
+// Linggen route that dispatches a named capability tool against the
+// skill's declared HTTP endpoint. Same code path the agent uses, just
+// invoked by the webpage via a regular fetch. Works in local and
+// remote (WebRTC) mode because /apps/* is proxied by fetchProxy.
+const MEM_CAP_URL = (tool) => `/apps/memory/capability/${tool}`;
+
 // ── Helpers ──
+
+async function callMemoryTool(tool, args) {
+  const resp = await fetch(MEM_CAP_URL(tool), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(args || {}),
+  });
+  if (!resp.ok) throw new Error((await resp.text()) || `HTTP ${resp.status}`);
+  return resp.json();
+}
 
 function esc(s) {
   if (!s) return '';
@@ -63,7 +79,6 @@ export function renderBodyWidget(w) {
     'bars': renderBars,
     'table': renderTable,
     'scorecard': renderScorecard,
-    'recommendations': renderRecommendations,
     'info': renderInfo,
     'progress': renderProgress,
   };
@@ -231,20 +246,17 @@ async function handleFactDelete(source, isCore, isRag, ragType, item, row, btn) 
 
   try {
     if (isCore) {
-      // Direct HTTP via Linggen's /api/memory/fact endpoint (bypasses LLM).
-      const resp = await fetch('/api/memory/fact', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: source, text: item.content }),
-      });
-      if (!resp.ok) throw new Error(await resp.text());
-      row.remove();
+      // Agent-mediated: the agent owns writes to identity.md / style.md via
+      // Edit/Write. Sending a message keeps that contract — no direct file
+      // writes from the webpage, no markdown-parsing server endpoint to keep
+      // in sync with the engine.
+      if (!window._chatSend) throw new Error('Chat bridge unavailable.');
+      window._chatSend(`Delete this bullet from ${source} and re-render the dashboard:\n\n"${item.content}"`);
+      row.style.opacity = '0.6';
     } else if (isRag && item.id) {
-      // Agent-mediated: message the agent, it calls Memory_delete and re-renders.
-      if (window._chatSend) {
-        window._chatSend(`Delete the ${ragType || 'RAG'} fact with id="${item.id}" and re-render the dashboard. The fact says: "${item.content}"`);
-        row.style.opacity = '0.6';
-      }
+      // Direct capability dispatch — no LLM roundtrip.
+      await callMemoryTool('Memory_delete', { id: item.id });
+      row.remove();
     } else {
       throw new Error('Row has no identifier to delete by.');
     }
@@ -302,31 +314,25 @@ function handleFactEdit(source, isCore, isRag, ragType, item, row) {
 
     try {
       if (isCore) {
-        const resp = await fetch('/api/memory/fact', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ file: source, old_text: item.content, new_text: newText }),
-        });
-        if (!resp.ok) throw new Error(await resp.text());
+        // Agent-mediated (see handleFactDelete for the rationale).
+        if (!window._chatSend) throw new Error('Chat bridge unavailable.');
+        window._chatSend(`In ${source}, replace this bullet:\n\n"${item.content}"\n\nwith:\n\n"${newText}"\n\nThen re-render the dashboard.`);
+        // Optimistic update so the row stays interactive until the
+        // agent re-emits PageUpdate.
         contentEl.innerHTML = esc(newText);
         if (actionsEl) actionsEl.innerHTML = origActionsHtml;
         row.classList.remove('editing');
         row.style.opacity = '1';
-        // Rewire edit/delete on the restored row
+        item.content = newText;
         if (actionsEl) {
           const e2 = actionsEl.querySelector('.fact-edit');
           const d2 = actionsEl.querySelector('.fact-delete');
-          item.content = newText;
           if (e2) e2.addEventListener('click', () => handleFactEdit(source, isCore, isRag, ragType, item, row));
           if (d2) d2.addEventListener('click', () => handleFactDelete(source, isCore, isRag, ragType, item, row, d2));
         }
       } else if (isRag && item.id) {
-        if (!window._chatSend) throw new Error('Chat bridge unavailable.');
-        window._chatSend(`Update the ${ragType || 'RAG'} fact id="${item.id}" to content: "${newText}". Re-render the dashboard.`);
-        // Optimistic update; agent will re-emit PageUpdate shortly. Until
-        // that re-render arrives, make sure the row's ✎/× still work on
-        // the optimistic DOM — otherwise a second edit in quick succession
-        // finds dead buttons.
+        // Direct capability dispatch — no LLM roundtrip.
+        await callMemoryTool('Memory_update', { id: item.id, content: newText });
         contentEl.innerHTML = esc(newText);
         if (actionsEl) actionsEl.innerHTML = origActionsHtml;
         row.classList.remove('editing');
@@ -764,48 +770,6 @@ function renderScorecard(w) {
     <div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>
     <div class="scorecard-grid">${items}</div>
   `;
-  return panel;
-}
-
-// ── recommendations ──
-
-function renderRecommendations(w) {
-  const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
-  panel.innerHTML = `<div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>`;
-
-  const list = el('div', 'rec-list');
-  for (const r of (w.items || [])) {
-    const item = el('div', 'rec-item');
-    item.innerHTML = `
-      <div class="rec-header">
-        <span class="rec-risk ${esc(r.risk || 'review')}">${esc(r.risk || 'review')}</span>
-        <div class="rec-info">
-          <div class="rec-title">${esc(r.title)}</div>
-          ${r.description ? `<div class="rec-desc">${esc(r.description)}</div>` : ''}
-        </div>
-      </div>
-      ${r.command ? `
-        <div class="rec-cmd-block">
-          <code class="rec-cmd-code">${esc(r.command)}</code>
-          <button class="rec-copy" data-cmd="${esc(r.command)}">Copy</button>
-        </div>
-      ` : ''}
-    `;
-    // Copy handler
-    const copyBtn = item.querySelector('.rec-copy');
-    if (copyBtn) {
-      copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(copyBtn.dataset.cmd).then(() => {
-          copyBtn.textContent = 'Copied!';
-          copyBtn.classList.add('copied');
-          setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1500);
-        });
-      });
-    }
-    list.appendChild(item);
-  }
-  panel.appendChild(list);
   return panel;
 }
 
