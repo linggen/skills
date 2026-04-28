@@ -186,6 +186,42 @@ install_dream_mission() {
   chmod +x "$mission_scripts/collect.sh" "$mission_scripts/collect_sessions.sh"
 }
 
+# Symlink the installed binary onto PATH at ~/.local/bin/ling-mem so the
+# agent (and the user) can invoke it as a bare `ling-mem` command. We
+# prefer the Linggen install when both hosts are present — Linggen is the
+# heavier consumer (autostart, missions) and `self-update` will only
+# rewrite the inode the symlink points to.
+#
+# Args: <linggen_bin_or_empty> <claude_bin_or_empty>
+create_path_symlink() {
+  local linggen_bin="${1:-}"
+  local claude_bin="${2:-}"
+
+  local target=""
+  if [ -n "$linggen_bin" ] && [ -x "$linggen_bin" ]; then
+    target="$linggen_bin"
+  elif [ -n "$claude_bin" ] && [ -x "$claude_bin" ]; then
+    target="$claude_bin"
+  else
+    echo "  Warning: no installed binary found to symlink — skipping PATH setup" >&2
+    return
+  fi
+
+  local link_dir="$HOME/.local/bin"
+  local link="$link_dir/ling-mem"
+  mkdir -p "$link_dir"
+  ln -sf "$target" "$link"
+  echo "  Linked: $link → $target"
+
+  case ":$PATH:" in
+    *":$link_dir:"*) ;;
+    *)
+      echo "  Note: $link_dir is not on PATH. Add it to your shell rc, e.g.:" >&2
+      echo "    echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc" >&2
+      ;;
+  esac
+}
+
 # CC-only: append a guarded @-import block to ~/.claude/CLAUDE.md so the
 # core memory files land in every CC session's system prompt.
 configure_claude_md() {
@@ -204,7 +240,7 @@ configure_claude_md() {
 
 ## Memory
 
-Durable facts live in a RAG store. The \`ling-mem\` skill at \`~/.claude/skills/ling-mem/\` manages scans and dashboards; for ad-hoc retrieval, call \`ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'\` (binary at \`~/.claude/skills/ling-mem/bin/ling-mem\`) **before** answering when the user's question could connect to past preferences / decisions / gotchas. Mention relevant hits inline — *\"From memory: you prefer X …\"*. The \`del(.vector)\` filter is mandatory — raw output includes 384-dim embeddings that blow up context.
+Durable facts live in a RAG store. The \`ling-mem\` skill at \`~/.claude/skills/ling-mem/\` manages scans and dashboards; for ad-hoc retrieval, call \`ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'\` **before** answering when the user's question could connect to past preferences / decisions / gotchas. Mention relevant hits inline — *\"From memory: you prefer X …\"*. The \`del(.vector)\` filter is mandatory — raw output includes 384-dim embeddings that blow up context.
 $marker_end"
 
   mkdir -p "$(dirname "$claude_md")"
@@ -240,6 +276,9 @@ $marker_end"
 # Install
 # -------------------------------------------------------------------
 
+LINGGEN_BIN=""
+CLAUDE_BIN=""
+
 if [ "$INSTALL_LINGGEN" -eq 1 ]; then
   echo "Installing to ~/.linggen/skills/ling-mem/"
   LINGGEN_SKILL_DIR="$HOME/.linggen/skills/ling-mem"
@@ -247,6 +286,7 @@ if [ "$INSTALL_LINGGEN" -eq 1 ]; then
   download_binary "$LINGGEN_SKILL_DIR/bin"
   seed_core_memory
   install_dream_mission "$LINGGEN_SKILL_DIR"
+  LINGGEN_BIN="$LINGGEN_SKILL_DIR/bin/ling-mem"
 
   # Clean up the legacy `memory` skill dir if present and shipped (untouched user content stays).
   if [ -d "$HOME/.linggen/skills/memory" ]; then
@@ -262,6 +302,7 @@ if [ "$INSTALL_CLAUDE" -eq 1 ]; then
   download_binary "$CLAUDE_SKILL_DIR/bin"
   seed_core_memory
   configure_claude_md
+  CLAUDE_BIN="$CLAUDE_SKILL_DIR/bin/ling-mem"
 
   # Clean up the legacy `linggen-memory` skill dir if present.
   if [ -d "$HOME/.claude/skills/linggen-memory" ]; then
@@ -269,6 +310,8 @@ if [ "$INSTALL_CLAUDE" -eq 1 ]; then
     rm -rf "$HOME/.claude/skills/linggen-memory"
   fi
 fi
+
+create_path_symlink "$LINGGEN_BIN" "$CLAUDE_BIN"
 
 echo ""
 echo "Done. To browse / edit rows: run 'ling-mem start' then open http://127.0.0.1:9888"

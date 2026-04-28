@@ -287,3 +287,26 @@ Row-level CRUD (filter, edit-in-place, batch delete) lives at
 `http://127.0.0.1:9888` when the daemon is running. Direct the user
 there for hands-on cleanup. Run `ling-mem start` if not already
 running.
+
+## Updates
+
+`ling-mem start` (and `restart`) returns JSON that may include an
+`update` field — a cached probe of `linggen/linggen-memory` GitHub
+releases (24h TTL, no extra network calls beyond the first).
+
+When that JSON contains `"update": {"available": true, ...}`, surface
+it to the user once at the top of your reply, e.g.:
+
+> *"ling-mem update available: 0.2.1 → 0.3.0 — `<notes_summary>`. Update now?"*
+
+If the user agrees, run `ling-mem self-update --yes`. The CLI stops the
+daemon, verifies the SHA-256 of the downloaded tarball, swaps the
+binary atomically (keeping the prior version at `bin/ling-mem.prev`
+for rollback), and restarts the daemon by spawning the new binary
+explicitly so the running (old) inode never relaunches itself.
+
+Ad-hoc check (no swap): `ling-mem self-update --check`. Useful when
+the user asks "am I up to date?" without wanting to upgrade.
+
+Don't auto-upgrade silently — schema or behavior may change between
+versions, and the user should know what they're accepting.
