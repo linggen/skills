@@ -14,9 +14,9 @@
 import { fetchDefaultModel } from './api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 
-const SKILL_NAME = 'memory';
+const SKILL_NAME = 'ling-mem';
 
-const BOOT_PROMPT = `The user just opened the memory dashboard.
+const BOOT_PROMPT = `The user just opened the memory dashboard. You are now in DASHBOARD MODE — the State 1 flow described in references/dashboard.md.
 
 CRITICAL: A, B, C below all happen in ONE SINGLE ASSISTANT TURN. Do NOT end
 your turn between them. Do NOT wait for user input. After streaming A, you
@@ -28,13 +28,17 @@ substitute words (it says "memory skill", not "memory agent"):
     Hi! I'm Ling, in your memory skill. Let me check what's already in memory — one moment...
 
 (B) In the same turn, immediately after (A), issue these tool calls IN PARALLEL:
-    • Read ~/.linggen/memory/.scan-state.json  (missing file = never scanned)
-    • Memory_list for each type: fact, preference, decision, tried, fixed, learned, built (7 calls)
+    • Read ~/.linggen/skills/ling-mem/references/dashboard.md   (MANDATORY — has the exact widget JSON shapes you need for (C); without it the page renders broken)
+    • Read ~/.linggen/memory/.scan-state.json                    (missing file = never scanned)
+    • Memory_query({verb: "list", type: T}) for each type: fact, preference, decision, tried, fixed, learned, built (7 calls)
 
-(C) Still the same turn, once (B) returns: call PageUpdate ONCE with
-    body = [greeting, fact-list(identity) if non-empty, fact-list(style) if
-    non-empty, one fact-list per non-empty RAG type]. Then stream this short
-    closing line VERBATIM:
+(C) Still the same turn, once (B) returns: call PageUpdate ONCE with the
+    overview body shape from dashboard.md State 1 — greeting widget with
+    ALL action buttons (Scan Today, Week, Month, All, Clean, Browse all,
+    Help), then fact-list(identity) if non-empty, fact-list(style) if
+    non-empty, one fact-list per non-empty RAG type. Use the exact widget
+    JSON shapes from dashboard.md — do not improvise field names. Then
+    stream this short closing line VERBATIM:
 
     You can click Scan Today to extract new facts from recent sessions, or Browse all to view everything.
 

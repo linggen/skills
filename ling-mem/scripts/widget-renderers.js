@@ -255,7 +255,7 @@ async function handleFactDelete(source, isCore, isRag, ragType, item, row, btn) 
       row.style.opacity = '0.6';
     } else if (isRag && item.id) {
       // Direct capability dispatch — no LLM roundtrip.
-      await callMemoryTool('Memory_delete', { id: item.id });
+      await callMemoryTool('Memory_write', { verb: 'delete', id: item.id });
       row.remove();
     } else {
       throw new Error('Row has no identifier to delete by.');
@@ -332,7 +332,7 @@ function handleFactEdit(source, isCore, isRag, ragType, item, row) {
         }
       } else if (isRag && item.id) {
         // Direct capability dispatch — no LLM roundtrip.
-        await callMemoryTool('Memory_update', { id: item.id, content: newText });
+        await callMemoryTool('Memory_write', { verb: 'update', id: item.id, content: newText });
         contentEl.innerHTML = esc(newText);
         if (actionsEl) actionsEl.innerHTML = origActionsHtml;
         row.classList.remove('editing');
@@ -462,7 +462,7 @@ function renderActionCards(w) {
 //         "detail": "7 found · 0.8s" },
 //       { "label": "Merge & write candidates",    "status": "active",
 //         "detail": "3 of 12",
-//         "sub": "Memory_search parallel · writing + / ~ / −" },
+//         "sub": "Memory_query parallel · writing + / ~ / −" },
 //       { "label": "Write .scan-state.json",      "status": "pending" }
 //     ],
 //     "footer": "elapsed 47s · ≈ 1m 30s remaining" }

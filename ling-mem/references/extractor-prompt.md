@@ -36,13 +36,12 @@ The extract script returns every word of the transcript you need. DO NOT
 
 If either answer is **NO**:
 - **Project-specific implementation detail** (file paths, module semantics,
-  internal design decisions that may be redesigned) → emit as a normal
-  `candidates[]` row with `target: "lancedb"`, `contexts: ["project/<name>"]`
-  (use the project directory name, e.g., `project/rust-sanji`), and
-  `tags: ["scope:project-internal"]`. **Do NOT also tag `cross-project`** —
-  that would make the fact surface in unrelated sessions. Project-scoped
-  RAG means retrieval only fires when the user's workspace is under that
-  project.
+  internal design decisions that may be redesigned) → **skip entirely**.
+  Memory does not write to project files (`<project>/AGENTS.md`,
+  `CLAUDE.md`, source, docs). The agent will read the project's own
+  files when it needs the content; the user authors `AGENTS.md` /
+  `CLAUDE.md` by hand if they want a rule captured there. Do not emit
+  any candidate for project-internal detail.
 - **Activity / session arc** ("today we refactored X", "agent fixed Y",
   "user debugged Z") → skip entirely. Git log and session history already
   record it.
@@ -124,7 +123,7 @@ self-contained statement. Do NOT paste fragments. Example:
 
 Cross-session patterns often span multiple transcripts. If this session
 shows a continuation or refinement of a pattern from the `EXISTING FACTS`
-block, prefer `Memory_update` (via the main agent) over a new row — note
+block, prefer `Memory_write({verb: "update"})` (via the main agent) over a new row — note
 the refinement in the `notes` array.
 
 ## Typical yield
@@ -149,7 +148,7 @@ turn. Keep it narrow.
   project-scoped facts, ongoing aspirations** (*"building X as Y"*). These
   are retrieved on-demand when relevant, not inlined always. Use type
   `fact` with tags `["intent:goal"]` for goal-shaped candidates. Main
-  agent will `Memory_add` / `Memory_update`.
+  agent will `Memory_write` (verb=add or update).
 
 Rule of thumb: if the sentence has a **project name** or a **verb in
 progressive form** (*"is building"*, *"is working on"*, *"wants to
@@ -171,7 +170,7 @@ Emit ONLY a fenced JSON block, nothing else:
       "from": "user|agent|derived",
       "tags": ["intent:goal", "scope:project-internal", "topic:networking", "..."],
       "cwd": "<project path the fact happened in — see §Source cwd below>",
-      "retrieval_phrase": "<4–10 words capturing meaning; main agent uses for Memory_search dedup>",
+      "retrieval_phrase": "<4–10 words capturing meaning; main agent uses for Memory_query dedup>",
       "quote": "<≤12 verbatim words from transcript, required for type: fact|preference>"
     }
   ],
@@ -195,21 +194,29 @@ the home dir for a casual chat).
 - For project-scoped candidates, the `cwd` will typically sit inside the
   `project/<name>` directory — that's correct and expected.
 
-**No more `suggest_claude_md[]` array.** Project-internal facts now flow
-through `candidates[]` with `contexts: ["project/<name>"]` — they sit in
-RAG scoped to that project and retrieve only when the user is working
-there. Meta-feedback about Linggen tooling itself is dropped (see
-§"Meta-feedback filter").
+**Project-internal facts get dropped.** Memory does not write to
+project files (`<project>/AGENTS.md`, `CLAUDE.md`, source, docs); those
+are user-curated. Don't emit a candidate for project-internal
+implementation detail — the agent will read the source code or the
+user's own `AGENTS.md` next time it works in that project. Meta-
+feedback about Linggen tooling is also dropped (see §"Meta-feedback
+filter").
 
 Context conventions:
-- `cross-project` — applies to the person across any project. Default for
-  identity-style `fact` / `preference`.
-- `project/<name>` — applies only when the user's workspace is under that
-  project (derived from git repo basename, or last path component of the
-  workspace root). Use for implementation details, project-internal
-  decisions, module semantics.
-- Domain tags like `code/linggen`, `music/piano`, `trip-japan-2026` — still
-  fine as secondary context for narrowing semantic search.
+- `cross-project` — applies to the person across any project. Default
+  for identity-style `fact` / `preference`.
+- `project/<name>` — **legacy only**, do not emit new rows with this
+  context. Project-internal facts get dropped under the current rules
+  (see above). Older `project/<name>` rows still retrieve normally.
 
-Omit `outcome` unless it's a `tried` or `fixed` candidate (rare). Omit
-`tags` if empty.
+- Domain tags like `code/linggen`, `music/piano`, `trip-japan-2026` —
+  still fine as secondary context for narrowing semantic search on
+  cross-project candidates.
+
+`outcome` field — set ONLY when `type` is `tried`, `fixed`, or `decision`.
+Omit entirely (do NOT set to `neutral` as a placeholder) for `fact`,
+`preference`, `learned`, `built`. The dashboard renders an outcome glyph
+whenever the field is present, so filling it on a non-action type is
+visual noise.
+
+Omit `tags` if empty.

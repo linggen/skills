@@ -15,8 +15,8 @@ set -uo pipefail
 : "${MISSION_DIR:?MISSION_DIR not set}"
 
 # The collect_sessions.sh script lives next to this one in the installed
-# skill directory (~/.linggen/skills/memory/scripts/). Find it relative to
-# this script's own location so it works whether the dream mission was
+# skill directory (~/.linggen/skills/ling-mem/scripts/). Find it relative
+# to this script's own location so it works whether the dream mission was
 # copied standalone or lives inside the skill dir.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COLLECT="$SCRIPT_DIR/collect_sessions.sh"
@@ -26,7 +26,7 @@ if [[ ! -x "$COLLECT" && -f "$COLLECT" ]]; then
 fi
 if [[ ! -f "$COLLECT" ]]; then
   # Fall back to the installed skill location.
-  COLLECT="$HOME/.linggen/skills/memory/scripts/collect_sessions.sh"
+  COLLECT="$HOME/.linggen/skills/ling-mem/scripts/collect_sessions.sh"
 fi
 if [[ ! -f "$COLLECT" ]]; then
   echo "collect_sessions.sh not found" >&2
