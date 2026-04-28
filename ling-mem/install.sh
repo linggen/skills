@@ -5,11 +5,13 @@ set -euo pipefail
 # the user has on this machine.
 #
 # Detects:
-#   ~/.linggen/  → install to ~/.linggen/skills/ling-mem/
-#   ~/.claude/   → install to ~/.claude/skills/ling-mem/
+#   ~/.claude/   → install to ~/.claude/skills/ling-mem/   (preferred)
+#   ~/.linggen/  → install to ~/.linggen/skills/ling-mem/  (fallback)
 #
-# If both exist, install to both. If neither, default to ~/.linggen/.
-# Override with `--host=linggen|claude|both` if you want explicit control.
+# Auto-detect prefers ~/.claude when present — Linggen reads skills from
+# both ~/.claude/skills and ~/.linggen/skills, so a dual install would
+# surface two copies of the same skill in the Linggen UI. Override with
+# `--host=linggen|claude|both` if you want explicit control.
 #
 # Source + releases: https://github.com/linggen/linggen-memory
 
@@ -29,11 +31,12 @@ for arg in "$@"; do
       cat <<EOF
 Usage: install.sh [--host=linggen|claude|both]
 
-Without --host: installs to whichever of ~/.linggen and ~/.claude exist.
-If neither exists, defaults to ~/.linggen.
+Without --host: installs to ~/.claude when it exists (Linggen also reads
+that location, so a single install covers both runtimes). Falls back to
+~/.linggen otherwise.
 
-  LING_MEM_VERSION=v0.2.0  pin a specific binary version (default: latest)
-  LING_MEM_FORCE_DOWNLOAD=1  re-fetch the binary even if present
+  LING_MEM_VERSION=vX.Y.Z   pin a specific binary version (default: latest)
+  LING_MEM_FORCE_DOWNLOAD=1 re-fetch the binary even if present
 EOF
       exit 0
       ;;
@@ -53,9 +56,14 @@ case "$HOST_OVERRIDE" in
   claude)          INSTALL_CLAUDE=1 ;;
   both)            INSTALL_LINGGEN=1; INSTALL_CLAUDE=1 ;;
   "")
-    [ -d "$HOME/.linggen" ] && INSTALL_LINGGEN=1
-    [ -d "$HOME/.claude"  ] && INSTALL_CLAUDE=1
-    if [ "$INSTALL_LINGGEN" -eq 0 ] && [ "$INSTALL_CLAUDE" -eq 0 ]; then
+    # Linggen reads skills from both ~/.claude/skills and ~/.linggen/skills,
+    # so installing to both surfaces the skill twice in the Linggen UI.
+    # Prefer ~/.claude when present; fall back to ~/.linggen otherwise.
+    if [ -d "$HOME/.claude" ]; then
+      INSTALL_CLAUDE=1
+    elif [ -d "$HOME/.linggen" ]; then
+      INSTALL_LINGGEN=1
+    else
       echo "No host detected (~/.linggen or ~/.claude). Defaulting to ~/.linggen."
       INSTALL_LINGGEN=1
     fi
@@ -65,6 +73,18 @@ case "$HOST_OVERRIDE" in
     exit 1
     ;;
 esac
+
+# Warn if the non-target host already has a stale copy — Linggen will list
+# both as separate skills.
+warn_stale_copy() {
+  local other_dir="$1"
+  if [ -d "$other_dir" ]; then
+    echo ""
+    echo "  Warning: $other_dir already exists." >&2
+    echo "    Linggen reads skills from both ~/.claude and ~/.linggen, so this" >&2
+    echo "    will appear as a duplicate. Remove it with:  rm -rf $other_dir" >&2
+  fi
+}
 
 # -------------------------------------------------------------------
 # Detect platform → release asset slug
@@ -137,8 +157,20 @@ download_binary() {
 # Linggen install gets everything; CC install gets the same set (the
 # unified SKILL.md works in both — CC ignores Linggen-only frontmatter
 # fields).
+#
+# When the Linggen marketplace runs this script from inside the
+# already-extracted skill folder, SOURCE_DIR == skill_dir — the files are
+# already in place, so skip the copy step (and also skip macOS `install`'s
+# "same file" hard error).
 copy_skill_files() {
   local skill_dir="$1"
+
+  if [ "$SOURCE_DIR" = "$skill_dir" ]; then
+    mkdir -p "$skill_dir/bin"
+    echo "  Files already in place at $skill_dir — skipping copy"
+    return
+  fi
+
   mkdir -p "$skill_dir/scripts" "$skill_dir/references" "$skill_dir/assets" "$skill_dir/bin"
 
   install -m 0644 "$SOURCE_DIR/SKILL.md" "$skill_dir/SKILL.md"
@@ -188,9 +220,9 @@ install_dream_mission() {
 
 # Symlink the installed binary onto PATH at ~/.local/bin/ling-mem so the
 # agent (and the user) can invoke it as a bare `ling-mem` command. We
-# prefer the Linggen install when both hosts are present — Linggen is the
-# heavier consumer (autostart, missions) and `self-update` will only
-# rewrite the inode the symlink points to.
+# prefer the Claude install — that's the canonical location when present
+# (Linggen also reads from ~/.claude/skills/), and `self-update` will
+# only rewrite the inode the symlink points to.
 #
 # Args: <linggen_bin_or_empty> <claude_bin_or_empty>
 create_path_symlink() {
@@ -198,10 +230,10 @@ create_path_symlink() {
   local claude_bin="${2:-}"
 
   local target=""
-  if [ -n "$linggen_bin" ] && [ -x "$linggen_bin" ]; then
-    target="$linggen_bin"
-  elif [ -n "$claude_bin" ] && [ -x "$claude_bin" ]; then
+  if [ -n "$claude_bin" ] && [ -x "$claude_bin" ]; then
     target="$claude_bin"
+  elif [ -n "$linggen_bin" ] && [ -x "$linggen_bin" ]; then
+    target="$linggen_bin"
   else
     echo "  Warning: no installed binary found to symlink — skipping PATH setup" >&2
     return
@@ -312,6 +344,15 @@ if [ "$INSTALL_CLAUDE" -eq 1 ]; then
 fi
 
 create_path_symlink "$LINGGEN_BIN" "$CLAUDE_BIN"
+
+# Flag the other host's leftover skill dir so users can clean up after a
+# host switch (e.g. previously installed via --host=both, now claude-only).
+if [ "$INSTALL_CLAUDE" -eq 1 ] && [ "$INSTALL_LINGGEN" -eq 0 ]; then
+  warn_stale_copy "$HOME/.linggen/skills/ling-mem"
+fi
+if [ "$INSTALL_LINGGEN" -eq 1 ] && [ "$INSTALL_CLAUDE" -eq 0 ]; then
+  warn_stale_copy "$HOME/.claude/skills/ling-mem"
+fi
 
 echo ""
 echo "Done. To browse / edit rows: run 'ling-mem start' then open http://127.0.0.1:9888"
