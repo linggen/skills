@@ -170,6 +170,36 @@ Use **relative time**, dim or warn on facts older than 12 months
 two rows on the same subject surface, reconcile in prose ordered by
 timestamp — don't silently rewrite or delete.
 
+## Listing & searching memory — single-call recipes
+
+When the user asks to list, browse, or search memory — whether via a
+slash command, natural language, or any other phrasing — follow these
+recipes. **One call per request.** Do not iterate over types, do not
+add speculative filters.
+
+| User intent (any phrasing) | Make exactly this call |
+|:---|:---|
+| List everything (`/ling-mem list`, *"show all memory"*, *"list memory records"*, *"what's in memory"*) | `Memory_query({verb: "list", limit: 100})` — **no filters at all** |
+| List one type (`/ling-mem list facts`, *"show my preferences"*, *"list decisions"*) | `Memory_query({verb: "list", type: "<type>", limit: 100})` |
+| Search by content (`/ling-mem search <q>`, *"do you remember <q>"*, *"what do you know about <q>"*) | `Memory_query({verb: "search", query: "<q>", limit: 10})` |
+| Single noun like `/ling-mem cat` or *"my cat"* | `Memory_query({verb: "search", query: "<noun>", limit: 10})` — search, not list |
+| Get a specific row by id | `Memory_query({verb: "get", id: "<uuid>"})` |
+
+**FORBIDDEN unless the user explicitly asked for them:**
+- `from` — filters by origin (user / agent / derived). Almost no read query needs this.
+- `outcome` — filters by positive / negative / neutral. Most rows don't carry an outcome at all.
+- Empty strings (`id: ""`, `query: ""`, `since: ""`) — leave the field out entirely.
+- Empty arrays (`contexts: []`) — leave the field out entirely.
+- Iterating types — **do NOT** call list once per type. A single unfiltered `list` returns every row in one round-trip.
+
+If the user says *"show me only what I told you"* or *"what worked"*,
+THEN add `from: "user"` or `outcome: "positive"` — those are the rare
+audit cases the filters exist for. Otherwise omit them.
+
+After the call returns, render results as a table or bullet list
+showing `type`, `content` (truncate to 80 chars), and a relative
+timestamp. Skip the id unless the user is about to delete or update.
+
 ## When to search
 
 Call a memory search **before answering** when the user's question
@@ -207,25 +237,37 @@ neither stores nor authors that content.
 
 ## Modes — which references to load when
 
-This skill enters one of three modes per invocation. Each mode has its
-own reference files; only load what the mode needs.
+This skill enters one of three modes per invocation. **Detect the mode
+from the first user message you see in this turn**, then load only that
+mode's references.
 
-- **Chat mode** (default — model is in a regular session, may need to
-  save / search / consolidate). Body of this SKILL.md is the entry.
-  `Read references/routing-rules.md` when making save / dedup
-  decisions. Don't load the others unless explicitly requested.
+| Mode | Detection cue (look at the first user message) | What to load |
+|:---|:---|:---|
+| **Dashboard** | Message starts with `The user just opened the memory dashboard.` (sent by `memory-app.js` when the dashboard page mounts). | `Read references/dashboard.md` and follow State 1–4. Use `PageUpdate` to render widgets. |
+| **Scan** | Message says `Run a scan` / `/ling-mem scan today` / arrives via the dream cron mission body. | `Read references/scan-flow.md` and `references/routing-rules.md`. |
+| **Chat** | **Anything else** — bare `/ling-mem`, `/ling-mem list`, `/ling-mem search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read references/routing-rules.md` only when making save / dedup decisions. |
 
-- **Dashboard / app mode** (Linggen only — `/ling-mem` invocation
-  opens the in-app dashboard with `PageUpdate` widgets).
-  `Read references/dashboard.md` for the State 1–4 flow, page layout,
-  widget JSON specs. Claude Code never enters this mode (no
-  `PageUpdate` capability).
+**Chat mode is the default.** When in doubt, you are in chat mode.
 
-- **Scan mode** (running an extraction over recent sessions, either
-  via `/ling-mem scan today` or the dream cron mission).
-  `Read references/scan-flow.md` for the Phase 1–5 protocol and
-  `references/routing-rules.md` for the durability rules subagents
-  must enforce.
+### Chat-mode rules — do NOT leak dashboard language
+
+In chat mode the user is reading text in a conversation panel, not
+clicking widgets. So:
+
+- **Never** reference dashboard buttons by name (*"Scan Today"*,
+  *"Browse all"*, *"Clean"*, *"Help"*) — those buttons don't exist for
+  the user to click. They live in `references/dashboard.md` and only
+  apply when you've been told you're in dashboard mode.
+- **Never** call `PageUpdate` in chat mode. There's no canvas to render
+  into. PageUpdate calls in chat are no-ops that waste a turn.
+- Answer the user's actual question in plain prose or a small markdown
+  table. If the user asked to list memory, run the recipe in
+  *Listing & searching memory* above and render the result inline.
+- If the user wants the dashboard, suggest *"Open `Memory` from the
+  Linggen sidebar"* — don't try to simulate it in chat.
+
+Claude Code never enters dashboard mode (no `PageUpdate` capability).
+Linggen enters it only via the BOOT_PROMPT signal above.
 
 ## Consolidate (user-initiated only)
 
