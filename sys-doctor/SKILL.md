@@ -3,7 +3,7 @@ name: sys-doctor
 description: >-
   System health analyst. Scans disk, apps, caches, and system info.
   Use --web for interactive dashboard, or run directly in chat for text reports.
-allowed-tools: [Bash, Read, Glob, Grep, Task, Write]
+allowed-tools: [Bash, Task]
 user-invocable: true
 argument-hint: "[full | disk | apps | quick | --web]"
 app:
@@ -12,9 +12,9 @@ app:
   width: 1100
   height: 800
 permission:
-  mode: admin
+  mode: read
   paths: ["/"]
-  warning: "Sys Doctor runs diagnostic commands (df, du, sysctl, uname) and the AI may suggest cleanup commands."
+  warning: "Sys Doctor reads system info and disk usage (df, du, sysctl, sw_vers). It cannot modify files — it only suggests cleanup commands you run yourself."
 ---
 
 You are Sys Doctor, an AI system health analyst.

@@ -6,14 +6,13 @@ Skills for **[Linggen](https://linggen.dev)** — your personal AI assistant. Re
 
 | Skill | Description |
 |-------|-------------|
-| **[skiller](./skiller/)** | Search, install, and manage skills from the marketplace. |
-| **[sys-doctor](./sys-doctor/)** | System health analyst. Scans disk, apps, caches, and system info. |
-| **[mission](./mission/)** | Autonomous mission mode. Runs scheduled tasks without human interaction. |
-| **[discord](./discord/)** | Social messaging with Discord friends. Send and receive messages via `@@friend_name`. |
-| **[linggen-guide](./linggen-guide/)** | Built-in documentation and usage guide for Linggen itself. |
+| **[skiller](./skiller/)** | Search, install, and manage skills from the marketplace (skills.sh + ClawHub). Browse library packs. |
+| **[ling-mem](./ling-mem/)** | Durable semantic memory across sessions. Core markdown (identity, style) + LanceDB RAG store. Works in Linggen via typed `Memory_*` tools and in Claude Code via the `ling-mem` CLI. |
+| **[sys-doctor](./sys-doctor/)** | System health analyst. Scans disk, apps, caches, and system info. `--web` opens an interactive dashboard. |
+| **[linggen-guide](./linggen-guide/)** | Built-in documentation for Linggen — architecture, features, CLI, skills, tools, agents, and configuration. |
 | **[arcade-game](./arcade-game/)** | Retro arcade games — Snake, Pong, and Tetris in your browser. |
 | **[game-table](./game-table/)** | Play board games against AI — Chinese Chess, Gomoku, and more. |
-| **[xbot](./xbot/)** | X (Twitter) assistant — post, search, reply, monitor mentions, and track engagement. |
+| **[xbot](./xbot/)** | X (Twitter) assistant — post, search, reply, monitor mentions, and track engagement. Uses your own developer app credentials. |
 
 ## Install
 
@@ -32,13 +31,15 @@ Skills are automatically installed when you run `ling init --global`.
 
 ## Usage
 
-- **Skill Manager**: `/skill find <query>`, `/skill add <name>`, `/skill list`
-- **Sys Doctor**: `/sys-doctor` or `/sys-doctor --web` for interactive dashboard
-- **Discord**: Type `@@tom hello!` to message your friend Tom on Discord
+- **Skiller**: `/skill find <query>`, `/skill add <name>`, `/skill list`
+- **Memory**: `/ling-mem` — or call `Memory_query` / `Memory_write` directly in Linggen; `ling-mem add|search|list` from any shell
+- **Sys Doctor**: `/sys-doctor` or `/sys-doctor --web` for the interactive dashboard
 - **Linggen Guide**: `/linggen-guide` to ask questions about Linggen
+- **Arcade**: `/arcade-game` — pick Snake, Pong, or Tetris
+- **Game Table**: `/game-table` — Chinese Chess, Gomoku, and more vs. AI
 - **X Bot**: `/xbot status`, `/xbot search AI agents`, `/xbot post <text>`, `/xbot reply <url>`
 
 ## Notes
 
-- Linggen runs locally (default API URL: `http://localhost:8787`).
+- Linggen runs locally (default API URL: `http://localhost:9898`).
 - To change the API URL, set `LINGGEN_API_URL` in your environment or in a workspace `.linggen/config` file.

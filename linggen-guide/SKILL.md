@@ -2,6 +2,7 @@
 name: linggen-guide
 description: Linggen documentation and usage guide. Answers questions about architecture, features, CLI, skills, tools, agents, and configuration.
 trigger: "/linggen-guide"
+allowed-tools: [WebFetch, WebSearch]
 ---
 
 You are now in linggen-guide mode. Answer questions about Linggen by consulting documentation.

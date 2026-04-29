@@ -2,8 +2,12 @@
 name: skiller
 description: Search, install, and manage skills from the marketplace (skills.sh + ClawHub). Browse library packs.
 user-invocable: true
-allowed-tools: [Bash, Read]
+allowed-tools: [Bash, Read, Write, Glob]
 argument-hint: "find <query> | add <name> | list | packs | pack <id>"
+permission:
+  mode: edit
+  paths: ["~/.linggen/skills", "~/.claude/skills"]
+  warning: "Skiller installs and removes skills under ~/.linggen/skills (and ~/.claude/skills for cross-tool compat). It runs install scripts (curl, unzip, cp) and writes skill files."
 ---
 
 # Skiller — Skill Marketplace Manager

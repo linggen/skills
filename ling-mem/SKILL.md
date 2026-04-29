@@ -47,7 +47,6 @@ implements:
 permission:
   mode: admin
   paths: ["~/.linggen", "~/.claude/projects"]
-  policy: trusted
   warning: >-
     Reads session files from ~/.claude/projects and ~/.linggen/sessions,
     edits ~/.linggen/memory/{identity,style}.md for durable universals,

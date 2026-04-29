@@ -6,6 +6,10 @@ description: >-
 user-invocable: true
 allowed-tools: [Bash, Read, Write]
 argument-hint: "post <text> | search <query> | reply <url> | mentions | my-tweets | config | status"
+permission:
+  mode: edit
+  paths: ["~/.linggen/skills/xbot"]
+  warning: "xbot reads and writes credentials and post drafts under ~/.linggen/skills/xbot, and calls the X API via Bash."
 ---
 
 # xbot — X (Twitter) Assistant

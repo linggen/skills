@@ -67,6 +67,25 @@ async function mountAndStart(sessionId) {
     onStreamEnd: (text) => {
       handleModelResponse(text);
     },
+    onContentBlock: (payload) => {
+      // Modern path: agent calls the auto-injected `PageUpdate` data tool
+      // (recommended by skill-spec.md and prompted by the engine for app skills).
+      // The page fields (top_bar/body/footer) come through as the tool args.
+      // The legacy `<!--page-->` text-tag parser in handleModelResponse remains
+      // as a fallback for older agent behavior.
+      if (payload?.tool === 'PageUpdate' && payload?.args) {
+        try {
+          const args = typeof payload.args === 'string'
+            ? JSON.parse(payload.args)
+            : payload.args;
+          applyPageUpdate(args);
+          cacheCurrentPage();
+          expectPageBlock = false;
+        } catch (e) {
+          console.warn('[sys-doctor] failed to parse PageUpdate args', e, payload.args);
+        }
+      }
+    },
   };
   if (sessionId) mountOpts.sessionId = sessionId;
   chat = await LinggenUI.mount(chatPanel, mountOpts);

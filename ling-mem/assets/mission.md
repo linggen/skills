@@ -12,7 +12,6 @@ description: >-
 schedule: "0 23 * * *"
 enabled: true
 cwd: ~/.linggen
-policy: strict
 entry: scripts/collect.sh
 
 # Skill delegation — dream uses Memory_query / Memory_write directly; no

@@ -1,6 +1,7 @@
 ---
 name: arcade-game
 description: Retro arcade games — Snake, Pong, and Tetris in your browser
+allowed-tools: []
 app:
   launcher: web
   entry: scripts/index.html
