@@ -18,6 +18,7 @@ allowed-tools:
   - Grep
   - Task
 user-invocable: true
+cwd: ~/.linggen
 install: install.sh
 app:
   launcher: web

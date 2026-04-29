@@ -31,7 +31,7 @@ Skills are automatically installed when you run `ling init --global`.
 
 ## Usage
 
-- **Skiller**: `/skill find <query>`, `/skill add <name>`, `/skill list`
+- **Skiller**: `/skiller find <query>`, `/skiller add <name>`, `/skiller list`
 - **Memory**: `/ling-mem` — or call `Memory_query` / `Memory_write` directly in Linggen; `ling-mem add|search|list` from any shell
 - **Sys Doctor**: `/sys-doctor` or `/sys-doctor --web` for the interactive dashboard
 - **Linggen Guide**: `/linggen-guide` to ask questions about Linggen
