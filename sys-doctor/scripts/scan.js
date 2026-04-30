@@ -295,10 +295,47 @@ export async function runScan(mode, sessionId, onProgress) {
 }
 
 // ---------------------------------------------------------------------------
+// Disk + garbage scan (standalone — used by Rescan button)
+// ---------------------------------------------------------------------------
+
+export async function runDiskScan(sessionId) {
+  const [df, homeDirs, caches, nodeModules, targets, oldDownloads] = await Promise.all([
+    bash('df -h /System/Volumes/Data 2>/dev/null || df -h /', sessionId),
+    bash('du -sh ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
+    bash([
+      'du -sh ~/.Trash 2>/dev/null',
+      'du -sh ~/Library/Caches 2>/dev/null',
+      'du -sh ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
+      'du -sh ~/Library/Developer/CoreSimulator 2>/dev/null',
+    ].join('; '), sessionId),
+    bash('find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -10', sessionId),
+    bash('find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -5', sessionId),
+    bash('find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l', sessionId),
+  ]);
+
+  const disk = parseDiskUsage(df.stdout);
+  const dirs = parseDirSizes(homeDirs.stdout);
+  const cacheEntries = parseDirSizes(caches.stdout);
+  if (disk) disk.top_dirs = dirs;
+
+  const garbage = [
+    ...parseDirSizes(nodeModules.stdout).map(d => ({ ...d, category: 'node_modules', risk: 'review' })),
+    ...parseDirSizes(targets.stdout).map(d => ({ ...d, category: 'rust_target', risk: 'review' })),
+    ...cacheEntries.map(d => ({ ...d, category: 'cache', risk: 'safe' })),
+  ];
+  const oldCount = parseInt(oldDownloads.stdout.trim()) || 0;
+  if (oldCount > 0) {
+    garbage.push({ path: '~/Downloads (>6mo)', size_gb: 0, category: 'old_downloads', risk: 'review', count: oldCount });
+  }
+
+  return { disk, caches: cacheEntries, garbage };
+}
+
+// ---------------------------------------------------------------------------
 // Security scan
 // ---------------------------------------------------------------------------
 
-async function runSecurityScan(sessionId) {
+export async function runSecurityScan(sessionId) {
   const [gatekeeper, sip, firewall, filevault, ports, remoteLogin] = await Promise.all([
     bash('spctl --status 2>/dev/null', sessionId),
     bash('csrutil status 2>/dev/null', sessionId),
@@ -348,7 +385,7 @@ async function runSecurityScan(sessionId) {
 // Performance scan
 // ---------------------------------------------------------------------------
 
-async function runPerformanceScan(sessionId) {
+export async function runPerformanceScan(sessionId) {
   const [topMem, topCpu, launchAgentCount, swap] = await Promise.all([
     bash('ps axo rss,comm 2>/dev/null | sort -k1 -rn | head -10', sessionId),
     bash('ps axo %cpu,comm 2>/dev/null | sort -k1 -rn | head -10', sessionId),
@@ -417,34 +454,91 @@ function categorizeExt(ext) {
 export async function runDeepFileScan(sessionId, onProgress) {
   const results = {};
 
-  // Phase 1: File type breakdown (find + stat by extension)
+  // Phase 1: Tiered enumeration of the biggest files first.
+  //
+  // Strategy: query Spotlight (mdfind) at progressively smaller size
+  // thresholds — 10GB, 5GB, 1GB, 500MB, 200MB, 100MB, 50MB — stopping when
+  // we have ≥ TARGET results. Spotlight has the index already, so each
+  // tier query takes ~100ms instead of the ~100s a fresh find traversal
+  // costs. The tiered approach also guarantees the BIGGEST files surface
+  // first; a single-find with `head -n N` would cut in directory order
+  // and could miss huge files buried deep in the tree.
+  //
+  // Path exclusions are applied in-pipe with grep — Spotlight returns
+  // user-relevant paths, but we still drop caches/trash/node_modules/etc.
+  //
+  // Falls back to a single-pass find if mdfind is unavailable (Linux).
   onProgress('indexing', 'start');
 
-  // Get all files with size and extension in one pass
-  // Output: "size_bytes path" per line
-  const fileList = await bash(
-    'find ~ -maxdepth 5 -type f -not -path "*/.*" -not -path "*/node_modules/*" -not -path "*/target/*" -not -path "*/.Trash/*" 2>/dev/null | head -100000 | while read f; do stat -f "%z %N" "$f" 2>/dev/null || stat --format="%s %n" "$f" 2>/dev/null; done',
-    sessionId
-  );
+  const TARGET = 50;
+  const LARGE_THRESHOLD_BYTES = 50 * 1024 * 1024;
+  const TIERS_BYTES = [
+    10 * 1024 ** 3,
+    5 * 1024 ** 3,
+    1 * 1024 ** 3,
+    500 * 1024 ** 2,
+    200 * 1024 ** 2,
+    100 * 1024 ** 2,
+    LARGE_THRESHOLD_BYTES,
+  ];
 
+  const EXCLUDE_PATTERNS = [
+    '/Library/Caches/',
+    '/\\.Trash/',
+    '/node_modules/',
+    '/target/',
+    '/\\.git/',
+    '/Library/Containers/',
+  ];
+  const grepFilter = `grep -vE '${EXCLUDE_PATTERNS.join('|')}'`;
+
+  const seenPaths = new Set();
+  const statLines = [];
   const files = [];
   const categoryTotals = {};
   let totalSize = 0;
   let fileCount = 0;
 
-  for (const line of fileList.stdout.split('\n')) {
-    if (!line.trim()) continue;
-    const spaceIdx = line.indexOf(' ');
-    if (spaceIdx < 1) continue;
-    const sizeBytes = parseInt(line.substring(0, spaceIdx));
-    const path = line.substring(spaceIdx + 1);
-    if (isNaN(sizeBytes) || !path) continue;
+  // Stat format uses '|' so paths with spaces don't break parsing.
+  // First field 'R' (regular file) filters out bundles/directories that
+  // Spotlight matches by recursive size but stat reports as 384-byte dirs.
+  for (const minBytes of TIERS_BYTES) {
+    const cmd =
+      `if command -v mdfind >/dev/null 2>&1; then ` +
+      `  mdfind "kMDItemFSSize > ${minBytes}" -onlyin "$HOME" 2>/dev/null ` +
+      `    | ${grepFilter} | head -n 300 ` +
+      `    | while IFS= read -r f; do stat -f "%HT|%z|%a|%N" "$f" 2>/dev/null; done; ` +
+      `else ` +
+      `  find ~ -type f -size +${Math.round(minBytes / (1024 ** 2))}M ` +
+      `    -not -path "*/.*" -not -path "*/node_modules/*" -not -path "*/target/*" -not -path "*/.Trash/*" ` +
+      `    2>/dev/null | head -n 300 ` +
+      `    | while IFS= read -r f; do stat --format="Regular File|%s|%X|%n" "$f" 2>/dev/null; done; ` +
+      `fi`;
+    const tierResult = await bash(cmd, sessionId);
+    for (const line of tierResult.stdout.split('\n')) {
+      if (!line.trim()) continue;
+      const idx1 = line.indexOf('|');
+      const idx2 = line.indexOf('|', idx1 + 1);
+      const idx3 = line.indexOf('|', idx2 + 1);
+      if (idx1 < 0 || idx2 < 0 || idx3 < 0) continue;
+      const type = line.slice(0, idx1);
+      if (type !== 'Regular File') continue;
+      const sizeBytes = parseInt(line.slice(idx1 + 1, idx2));
+      const atime = parseInt(line.slice(idx2 + 1, idx3));
+      const path = line.slice(idx3 + 1);
+      if (isNaN(sizeBytes) || !path || seenPaths.has(path)) continue;
+      if (sizeBytes < LARGE_THRESHOLD_BYTES) continue;
+      seenPaths.add(path);
+      statLines.push({ path, sizeBytes, atime });
+    }
+    if (seenPaths.size >= TARGET) break;
+  }
 
-    const sizeGb = sizeBytes / (1024 ** 3);
-    const ext = (path.split('.').pop() || '').toLowerCase();
+  for (const f of statLines) {
+    const sizeGb = f.sizeBytes / (1024 ** 3);
+    const ext = (f.path.split('.').pop() || '').toLowerCase();
     const category = categorizeExt(ext);
-
-    files.push({ path, sizeBytes, sizeGb, ext, category });
+    files.push({ path: f.path, sizeBytes: f.sizeBytes, sizeGb, ext, category, atime: f.atime });
     categoryTotals[category] = (categoryTotals[category] || 0) + sizeGb;
     totalSize += sizeGb;
     fileCount++;
@@ -452,47 +546,29 @@ export async function runDeepFileScan(sessionId, onProgress) {
 
   onProgress('indexing', { fileCount, totalSize });
 
-  // Build file type breakdown for donut chart
+  // Build file-type breakdown — categories of large files only. Donut now
+  // answers "what kinds of files are eating my disk" rather than "what's
+  // the overall mix in my home dir."
   results.typeBreakdown = Object.entries(categoryTotals)
     .map(([cat, gb], i) => ({ label: cat.charAt(0).toUpperCase() + cat.slice(1), value: +gb.toFixed(2), color: DONUT_COLORS[i % DONUT_COLORS.length] }))
     .sort((a, b) => b.value - a.value);
   results.totalFiles = fileCount;
   results.totalSizeGb = +totalSize.toFixed(1);
 
-  // Phase 2: Large files (>50MB)
+  // Phase 2: Large files — already filtered, just sort + add age labels.
   onProgress('large_files', 'start');
 
   const largeFiles = files
-    .filter(f => f.sizeBytes > 50 * 1024 * 1024)
+    .filter(f => f.sizeBytes > LARGE_THRESHOLD_BYTES)
     .sort((a, b) => b.sizeBytes - a.sizeBytes)
     .slice(0, 30);
 
-  // Get last-accessed dates for large files
-  if (largeFiles.length > 0) {
-    const pathList = largeFiles.slice(0, 20).map(f => shellEsc(f.path)).join(' ');
-    const ageResult = await bash(
-      `for f in ${pathList}; do stat -f "%a %N" "$f" 2>/dev/null || stat --format="%X %n" "$f" 2>/dev/null; done`,
-      sessionId
-    );
-    const ageMap = {};
-    for (const line of ageResult.stdout.split('\n')) {
-      if (!line.trim()) continue;
-      const sp = line.indexOf(' ');
-      if (sp < 1) continue;
-      const ts = parseInt(line.substring(0, sp));
-      const p = line.substring(sp + 1);
-      if (!isNaN(ts)) ageMap[p] = ts;
-    }
-
-    const now = Date.now() / 1000;
-    for (const f of largeFiles) {
-      const ts = ageMap[f.path];
-      if (ts) {
-        const days = Math.round((now - ts) / 86400);
-        f.ageDays = days;
-        f.ageLabel = days > 365 ? `${Math.round(days / 365)}yr` : days > 30 ? `${Math.round(days / 30)}mo` : `${days}d`;
-      }
-    }
+  const now = Date.now() / 1000;
+  for (const f of largeFiles) {
+    if (!f.atime) continue;
+    const days = Math.round((now - f.atime) / 86400);
+    f.ageDays = days;
+    f.ageLabel = days > 365 ? `${Math.round(days / 365)}yr` : days > 30 ? `${Math.round(days / 30)}mo` : `${days}d`;
   }
 
   results.largeFiles = largeFiles.map(f => ({
@@ -506,13 +582,13 @@ export async function runDeepFileScan(sessionId, onProgress) {
   }));
   onProgress('large_files', results.largeFiles);
 
-  // Phase 3: Duplicate detection (same size, then first-4KB hash)
+  // Phase 3: Duplicate detection. Only checks among large files now —
+  // most disk-eating duplicates (videos, installers, dataset copies) will
+  // be in this set, and small-file dedup wasn't actionable anyway.
   onProgress('duplicates', 'start');
 
-  // Group files by size (only files > 1MB worth checking)
   const sizeGroups = {};
   for (const f of files) {
-    if (f.sizeBytes < 1024 * 1024) continue;
     const key = f.sizeBytes.toString();
     if (!sizeGroups[key]) sizeGroups[key] = [];
     sizeGroups[key].push(f);

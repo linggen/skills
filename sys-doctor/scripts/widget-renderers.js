@@ -34,6 +34,55 @@ function el(tag, cls, html) {
   return e;
 }
 
+// All rescan/scan affordances live in the static tools toolbar in doctor.html.
+// We keep `w.action` support so the model can still attach an explicit button
+// to a widget if it has a domain-specific reason to (e.g., "View details" on
+// a hero card), but we no longer auto-inject by title — that produced
+// redundant ↻ Rescan buttons next to the toolbar.
+function resolveAction(w) {
+  return w.action || null;
+}
+
+// Header with title, optional badge, and rescan button (from w.action or auto-resolved).
+// Returns the HTML string. Call wireHeaderAction(panel, w) after attaching to DOM.
+function panelHeaderHtml(w) {
+  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
+  const action = resolveAction(w);
+  const actionBtn = action
+    ? `<button class="panel-action-btn" type="button" title="${esc(action.label || 'Rescan')}">↻ ${esc(action.label || 'Rescan')}</button>`
+    : '';
+  return `<div class="panel-header">
+    <h3>${esc(w.title || '')}</h3>
+    <div class="panel-header-right">${badge}${actionBtn}</div>
+  </div>`;
+}
+
+function wireHeaderAction(panel, w) {
+  const action = resolveAction(w);
+  if (!action) return;
+  const btn = panel.querySelector('.panel-action-btn');
+  if (!btn) return;
+  const originalLabel = btn.textContent;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const msg = action.message || action.label || w.title;
+    if (!window._chatSend || !msg) return;
+    btn.disabled = true;
+    btn.classList.add('is-loading');
+    btn.textContent = '↻ Scanning…';
+    window._chatSend(msg);
+    // The button is normally replaced when the widget re-renders.
+    // Safety net: if no update arrives in 30s, restore so the button isn't stuck.
+    setTimeout(() => {
+      if (document.body.contains(btn)) {
+        btn.disabled = false;
+        btn.classList.remove('is-loading');
+        btn.textContent = originalLabel;
+      }
+    }, 30000);
+  });
+}
+
 // ════════════════════════════════════════
 // TOP BAR WIDGETS
 // ════════════════════════════════════════
@@ -181,35 +230,11 @@ function renderInfo(w) {
   return panel;
 }
 
-// ── action-cards ──
-
-function renderActionCards(w) {
-  const grid = el('div', 'action-cards-grid');
-  for (const item of (w.items || [])) {
-    const card = el('div', `action-card ${item.active ? 'active' : ''}`);
-    card.innerHTML = `
-      <div class="action-preview">
-        <div class="action-header">
-          ${item.icon ? `<span class="action-icon">${esc(item.icon)}</span>` : ''}
-          <span class="action-title">${esc(item.title)}</span>
-        </div>
-        ${item.description ? `<div class="action-desc">${esc(item.description)}</div>` : ''}
-      </div>
-      <button class="action-start">${item.active ? 'Start' : 'Start'}</button>
-    `;
-    const btn = card.querySelector('.action-start');
-    const msg = item.message || item.title || item.id;
-    btn.addEventListener('click', () => {
-      if (window._chatSend) window._chatSend(msg);
-    });
-    // Clicking the card also triggers
-    card.addEventListener('click', (e) => {
-      if (e.target === btn) return;
-      if (window._chatSend) window._chatSend(msg);
-    });
-    grid.appendChild(card);
-  }
-  return grid;
+// Static toolbar in doctor.html replaced the action-cards widget. Anything the
+// model still emits as `action-cards` is silently dropped — historical cached
+// pages keep loading without duplicating the toolbar.
+function renderActionCards() {
+  return null;
 }
 
 // ── progress ──
@@ -234,8 +259,8 @@ function renderProgress(w) {
 
 function renderBars(w) {
   const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
-  panel.innerHTML = `<div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>`;
+  panel.innerHTML = panelHeaderHtml(w);
+  wireHeaderAction(panel, w);
 
   const canvas = document.createElement('canvas');
   canvas.style.width = '100%';
@@ -245,7 +270,6 @@ function renderBars(w) {
   canvas.style.height = `${Math.max(neededH, 80)}px`;
   panel.appendChild(canvas);
 
-  // Draw after DOM insertion (needs dimensions)
   requestAnimationFrame(() => {
     const maxVal = w.items?.[0]?.max || Math.max(...items.map(i => i.size_gb));
     drawDiskBars(canvas, items, maxVal);
@@ -257,7 +281,6 @@ function renderBars(w) {
 
 function renderTable(w) {
   const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
   const cols = (w.columns || []).map(c => `<th>${esc(c)}</th>`).join('');
   const rows = (w.rows || []).map(row => {
     const cells = row.map(cell => {
@@ -269,9 +292,10 @@ function renderTable(w) {
     return `<tr>${cells}</tr>`;
   }).join('');
   panel.innerHTML = `
-    <div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>
+    ${panelHeaderHtml(w)}
     <table class="widget-table"><thead><tr>${cols}</tr></thead><tbody>${rows}</tbody></table>
   `;
+  wireHeaderAction(panel, w);
   return panel;
 }
 
@@ -279,7 +303,6 @@ function renderTable(w) {
 
 function renderScorecard(w) {
   const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
   const items = (w.items || []).map(i =>
     `<div class="sec-item">
       <span class="sec-dot ${esc(i.status || 'gray')}"></span>
@@ -288,9 +311,10 @@ function renderScorecard(w) {
     </div>`
   ).join('');
   panel.innerHTML = `
-    <div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>
+    ${panelHeaderHtml(w)}
     <div class="scorecard-grid">${items}</div>
   `;
+  wireHeaderAction(panel, w);
   return panel;
 }
 
@@ -298,8 +322,8 @@ function renderScorecard(w) {
 
 function renderRecommendations(w) {
   const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
-  panel.innerHTML = `<div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>`;
+  panel.innerHTML = panelHeaderHtml(w);
+  wireHeaderAction(panel, w);
 
   const list = el('div', 'rec-list');
   for (const r of (w.items || [])) {
@@ -341,8 +365,8 @@ function renderRecommendations(w) {
 
 function renderDonut(w) {
   const panel = el('div', 'panel');
-  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
-  panel.innerHTML = `<div class="panel-header"><h3>${esc(w.title || '')}</h3>${badge}</div>`;
+  panel.innerHTML = panelHeaderHtml(w);
+  wireHeaderAction(panel, w);
 
   const wrap = el('div', 'donut-wrap');
   const canvas = document.createElement('canvas');

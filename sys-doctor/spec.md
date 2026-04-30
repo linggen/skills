@@ -303,9 +303,9 @@ Shown on open. Each card lights up as the agent mentions it in chat.
   "type": "action-cards",
   "items": [
     {
-      "id": "disk-scan",
+      "id": "disk",
       "icon": "🔍",
-      "title": "Scan Disk & Cleanup",
+      "title": "Scan Disk",
       "description": "Find garbage, caches, old files.",
       "active": true
     },
@@ -465,7 +465,7 @@ When user clicks Start, it sends a chat message (e.g. "scan disk"). The model re
     {
       "type": "action-cards",
       "items": [
-        { "id": "disk", "icon": "🔍", "title": "Scan Disk & Cleanup", "description": "Find garbage, caches, old files.", "active": true },
+        { "id": "disk", "icon": "🔍", "title": "Scan Disk", "description": "Find garbage, caches, old files.", "active": true },
         { "id": "photos", "icon": "📸", "title": "Organise Photos", "description": "Find scattered photos, check backup.", "active": true },
         { "id": "large", "icon": "📦", "title": "Find Large Files", "description": "Deep scan, AI labels each file.", "active": false },
         { "id": "security", "icon": "🔒", "title": "Security Check", "description": "Firewall, encryption, open ports.", "active": false }

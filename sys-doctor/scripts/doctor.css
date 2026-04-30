@@ -237,6 +237,35 @@
   border-radius: 4px;
 }
 
+.panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-action-btn {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.panel-action-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.panel-action-btn:active {
+  transform: translateY(1px);
+}
+
 /* ── Info widget ── */
 
 .info-header {
@@ -281,6 +310,60 @@
 
 /* ── Action cards ── */
 
+/* ── Static tools toolbar ── */
+
+.tools-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 14px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  backdrop-filter: blur(6px);
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tool-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.tool-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.tool-btn:disabled,
+.tool-btn.is-busy {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tool-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.tool-label {
+  line-height: 1;
+}
+
 .action-cards-grid {
   display: flex;
   flex-direction: column;
@@ -297,18 +380,10 @@
   gap: 16px;
   cursor: pointer;
   transition: all 0.2s;
-  opacity: 0.4;
-}
-
-.action-card.active {
-  opacity: 1;
-  border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.08);
 }
 
 .action-card:hover {
   border-color: var(--accent);
-  opacity: 1;
 }
 
 .action-preview {
@@ -344,27 +419,16 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-muted);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: white;
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s;
 }
 
-.action-card.active .action-start {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
-}
-
 .action-card:hover .action-start {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.action-card.active:hover .action-start {
-  color: white;
+  filter: brightness(1.1);
 }
 
 /* ── Recommendations ── */

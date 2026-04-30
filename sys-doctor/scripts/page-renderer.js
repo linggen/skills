@@ -9,12 +9,33 @@ let currentPage = { top_bar: [], body: [], footer: null };
 /**
  * Apply a (possibly partial) page update and re-render.
  * If the update only has `body`, top_bar and footer persist.
+ *
+ * Supports `body_patch: [{ match: {type, title}, widget: {...} }]` — replaces
+ * matching widgets in place without disturbing the rest. Match by `type` and
+ * `title` (case-insensitive). If `match` is omitted, the patched widget's own
+ * type+title is used. If no existing widget matches, the patch is appended.
  */
 export function applyPageUpdate(partial) {
   if (partial.top_bar !== undefined) currentPage.top_bar = partial.top_bar;
   if (partial.body !== undefined) currentPage.body = partial.body;
   if (partial.footer !== undefined) currentPage.footer = partial.footer;
+  if (Array.isArray(partial.body_patch)) applyBodyPatch(partial.body_patch);
   renderPage(currentPage);
+}
+
+function applyBodyPatch(patches) {
+  for (const patch of patches) {
+    const replacement = patch.widget || patch;
+    if (!replacement || typeof replacement !== 'object') continue;
+    const wantType = ((patch.match?.type) ?? replacement.type ?? '').toLowerCase();
+    const wantTitle = ((patch.match?.title) ?? replacement.title ?? '').toLowerCase();
+    const idx = currentPage.body.findIndex(w =>
+      (w.type || '').toLowerCase() === wantType &&
+      (w.title || '').toLowerCase() === wantTitle
+    );
+    if (idx >= 0) currentPage.body[idx] = replacement;
+    else currentPage.body.push(replacement);
+  }
 }
 
 /** Get current page state (for caching). */

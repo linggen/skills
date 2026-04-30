@@ -17,6 +17,17 @@ let chat = null;
 let scanning = false;
 let expectPageBlock = false; // only true right after sending a prompt that should produce a page block
 
+// Disable toolbar buttons while a *local* scan (deep file scan) is running so
+// users don't trigger a parallel one. Agent-driven busy state is owned by the
+// chat widget (server pushes `busy_sessions`); we don't try to mirror it
+// because the skill iframe doesn't receive that signal.
+function syncToolbarBusy() {
+  for (const btn of document.querySelectorAll('#tools-toolbar .tool-btn')) {
+    btn.disabled = scanning;
+    btn.classList.toggle('is-busy', scanning);
+  }
+}
+
 // ── Init ──
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -90,15 +101,29 @@ async function mountAndStart(sessionId) {
   if (sessionId) mountOpts.sessionId = sessionId;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
 
-  // Expose send for widget click handlers
+  // Wire up the static tools toolbar. Buttons send pre-set chat messages
+  // — the agent picks up the intent (Scan tools / deep scan dispatch).
+  for (const btn of document.querySelectorAll('#tools-toolbar .tool-btn')) {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const msg = btn.dataset.msg;
+      if (msg && window._chatSend) window._chatSend(msg);
+    });
+  }
+
+  // Expose send for widget click handlers. The agent decides what to do with
+  // each message — it has Scan* tools (declared in SKILL.md) for rescan-style
+  // requests and runs the deep file scan in-iframe for "Find Large Files".
+  // Only the deep file scan stays client-side because it does work that has no
+  // tool equivalent (filesystem walk + AI labeling pipeline).
   window._chatSend = async (text) => {
     if (!chat) return;
     const lower = text.toLowerCase();
     if (lower.includes('large file') || lower.includes('deep scan') || lower.includes('scan files') || lower.includes('find duplicate')) {
       await runClientDeepScan(text);
-    } else {
-      chat.send(text);
+      return;
     }
+    chat.send(text);
   };
 
   if (sessionId) {
@@ -205,6 +230,7 @@ function startFresh() {
 async function startHardwareProbe() {
   if (scanning) return;
   scanning = true;
+  syncToolbarBusy();
 
   const steps = [
     { label: 'System info', status: 'active', icon: '💻' },
@@ -255,6 +281,7 @@ async function startHardwareProbe() {
     if (chat) chat.send('Please greet me and show the sys-doctor dashboard. I could not collect hardware data automatically.');
   } finally {
     scanning = false;
+    syncToolbarBusy();
   }
 }
 
@@ -468,6 +495,7 @@ async function runClientDeepScan(userMessage) {
     return;
   }
   scanning = true;
+  syncToolbarBusy();
 
   // Show progress
   applyPageUpdate({
@@ -545,11 +573,19 @@ async function runClientDeepScan(userMessage) {
     chat.send(userMessage + '\n\n(Client-side file scan failed. Please use Bash to scan manually.)');
   } finally {
     scanning = false;
+    syncToolbarBusy();
   }
 }
 
 function buildDeepScanPrompt(deepResults, userMessage) {
-  const parts = [`The user asked: "${userMessage}"\n\nHere is the deep file scan data. Analyze it and emit a page block with donut chart, large files table, and duplicates.\n`];
+  const parts = [
+    `The user asked: "${userMessage}"`,
+    ``,
+    `Here is the deep file scan data — this is the COMPLETE result of the client-side filesystem walk. Analyze ONLY this data and emit a PageUpdate with the body containing a donut chart, large files table, and duplicates.`,
+    ``,
+    `IMPORTANT — do NOT call Bash, find, du, or any other tool to gather more files. The scan below is authoritative; if it is empty or sparse, that's the answer. Say so in chat (one sentence) and emit a body with whatever data we do have. The user can re-run if they want a different scope.`,
+    ``,
+  ];
 
   if (deepResults.typeBreakdown?.length) {
     parts.push(`## File Type Breakdown (${deepResults.totalFiles?.toLocaleString()} files, ${fmtGb(deepResults.totalSizeGb)})`);
