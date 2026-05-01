@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sys Doctor · Settings</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --accent: #3b82f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111113;
+      --border: #1f2024;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 24px 24px 48px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 4px 0 4px;
+  }
+  .lead {
+    color: var(--muted);
+    margin: 0 0 28px;
+  }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  section h2 {
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  section .desc {
+    color: var(--muted);
+    margin: 0 0 14px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  iframe {
+    display: block;
+    width: 100%;
+    height: 520px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Sys Doctor Settings</h1>
+    <p class="lead">Bring your own model and search keys. Sys Doctor uses the model you pick to analyze your system, and Tavily for any web lookups.</p>
+
+    <section>
+      <h2>Model</h2>
+      <p class="desc">Pick which AI provider Sys Doctor uses, and paste your API key. Local models (Ollama) work without a key. Cloud providers need their respective keys.</p>
+      <iframe src="/settings/models" title="Models"></iframe>
+    </section>
+
+    <section>
+      <h2>Web Search</h2>
+      <p class="desc">Add a Tavily API key to enable web search during analysis. Free tier at <a href="https://tavily.com" target="_blank" rel="noopener">tavily.com</a> is enough for personal use. Optional — Sys Doctor still works without it.</p>
+      <iframe src="/settings/tools" title="Tools"></iframe>
+    </section>
+  </div>
+</body>
+</html>
