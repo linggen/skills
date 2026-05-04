@@ -198,13 +198,17 @@
   <script>
     // ── Tavily key — talks to /api/credentials directly. Avoids iframing the
     // full engine ToolsTab, which would expose Read/Write/Edit/Bash/etc.
-    const STORED_PLACEHOLDER = "(stored in ~/.linggen/credentials.json)";
+    //
+    // Engine returns `"***"` from GET /api/credentials when a key exists
+    // (see credentials.rs::redacted). We mirror the Models tab UX: pre-fill
+    // the input with `***` so it visually shows dots and reads as "filled".
+    // Save is enabled only when the user actually replaces the mask.
+    const REDACTED = "***";
     const tavilyInput = document.getElementById("tavily-input");
     const tavilyToggle = document.getElementById("tavily-toggle");
     const tavilySave = document.getElementById("tavily-save");
     const tavilyStatus = document.getElementById("tavily-status");
     const tavilyBadge = document.getElementById("tavily-set-badge");
-    let tavilyOriginalSet = false;
 
     async function loadTavily() {
       try {
@@ -212,15 +216,16 @@
         if (!r.ok) return;
         const data = await r.json();
         const set = !!data?.tavily?.api_key;
-        tavilyOriginalSet = set;
         tavilyBadge.hidden = !set;
-        tavilyInput.value = "";
-        tavilyInput.placeholder = set ? STORED_PLACEHOLDER : "tvly-...";
+        tavilyInput.value = set ? REDACTED : "";
+        tavilyInput.placeholder = "tvly-...";
+        tavilySave.disabled = true;
       } catch {}
     }
 
     tavilyInput.addEventListener("input", () => {
-      tavilySave.disabled = tavilyInput.value.length === 0;
+      const v = tavilyInput.value;
+      tavilySave.disabled = v.length === 0 || v === REDACTED;
     });
 
     tavilyToggle.addEventListener("click", () => {
