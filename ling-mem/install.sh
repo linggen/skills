@@ -304,6 +304,128 @@ $marker_end"
   echo "  Updated: $claude_md (core @-imports + memory hint)"
 }
 
+# CC-only: install a UserPromptSubmit hook that runs `ling-mem search` on
+# every user turn and injects relevance-ranked hits into Claude's context,
+# scoped to cross-project (global user memory) plus the session's project.
+#
+# CLAUDE.md tells Claude *to* search; the hook makes the search mechanical
+# so it doesn't depend on the model remembering to do it.
+#
+# Tuning via env vars (set in shell rc — read by the hook at turn time):
+#   LING_MEM_RECALL_TOPK     hits surfaced per turn       (default 3)
+#   LING_MEM_RECALL_LIMIT    rows fetched before head -K  (default 5)
+#   LING_MEM_RECALL_TIMEOUT  hard timeout in seconds      (default 3)
+#   LING_MEM_RECALL_DISABLE  set to 1 to silence the hook without uninstall
+configure_claude_hook() {
+  local skill_dir="$1"
+  local hook_dir="$skill_dir/hooks"
+  local hook="$hook_dir/recall.sh"
+  local settings="${CLAUDE_SETTINGS:-$HOME/.claude/settings.json}"
+
+  mkdir -p "$hook_dir"
+
+  cat > "$hook" <<'HOOK'
+#!/usr/bin/env bash
+# UserPromptSubmit hook installed by ling-mem. Surfaces relevant memories
+# for each turn. Bails silently on any failure — never blocks the user.
+#
+# Reads JSON on stdin (Claude Code hook input). Prints zero or more
+# "From memory (...): ..." lines to stdout, which Claude sees as added
+# context for this turn.
+
+set -u
+[ "${LING_MEM_RECALL_DISABLE:-0}" = "1" ] && exit 0
+
+command -v jq       >/dev/null 2>&1 || exit 0
+command -v ling-mem >/dev/null 2>&1 || exit 0
+
+input="$(cat)"
+prompt="$(printf '%s' "$input" | jq -r '.prompt // empty' 2>/dev/null || true)"
+cwd="$(printf '%s' "$input"   | jq -r '.cwd    // empty' 2>/dev/null || true)"
+
+# Skip empty / trivial prompts — too short to carry meaningful intent.
+[ "${#prompt}" -lt 8 ] && exit 0
+
+topk="${LING_MEM_RECALL_TOPK:-3}"
+limit="${LING_MEM_RECALL_LIMIT:-8}"
+to="${LING_MEM_RECALL_TIMEOUT:-3}"
+
+# Current project name = last segment of cwd, when cwd is set and not $HOME.
+# Used to keep project-scoped rows for *this* project and drop ones scoped
+# to other projects. Cross-project / no-context rows always pass.
+proj=""
+if [ -n "$cwd" ] && [ "$cwd" != "$HOME" ]; then
+  proj="$(basename "$cwd")"
+fi
+
+# Note: ling-mem's --context filter is AND across multiple values (a row
+# must match every context given), so passing both cross-project and a
+# project tag returns nothing. We instead search unfiltered, then post-
+# filter in jq to drop rows that are scoped to a *different* project.
+
+# Pick whichever timeout binary is available; fall through if neither exists.
+TIMEOUT_BIN=""
+if command -v timeout  >/dev/null 2>&1; then TIMEOUT_BIN="timeout"
+elif command -v gtimeout >/dev/null 2>&1; then TIMEOUT_BIN="gtimeout"
+fi
+
+if [ -n "$TIMEOUT_BIN" ]; then
+  out="$($TIMEOUT_BIN "$to" ling-mem search "$prompt" \
+      --limit "$limit" --format json --quiet 2>/dev/null || true)"
+else
+  out="$(ling-mem search "$prompt" \
+      --limit "$limit" --format json --quiet 2>/dev/null || true)"
+fi
+
+[ -z "$out" ] && exit 0
+
+# `ling-mem search` emits newline-delimited JSON (one row per line), not a
+# JSON array — slurp into an array with -s before filtering.
+printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
+  map(select(
+    ((.contexts // []) | map(select(startswith("project/"))))
+    | (length == 0 or any(. == ("project/" + $proj)))
+  ))
+  | .[:$k]
+  | .[]
+  | "From memory (\(.type), \((.created_at // "")[0:10])): \(.content)"
+' 2>/dev/null || true
+HOOK
+  chmod +x "$hook"
+
+  # Idempotent settings.json patch — drops any prior ling-mem hook entry,
+  # then appends the fresh one. Marker key `_lingMemRecall: true` lets us
+  # find and replace our own entry without disturbing user-added hooks.
+  command -v python3 >/dev/null 2>&1 || {
+    echo "  Warning: python3 not found — skipping settings.json patch" >&2
+    echo "    Manually add to $settings:" >&2
+    echo "      hooks.UserPromptSubmit += [{ type: \"command\", command: \"$hook\" }]" >&2
+    return 0
+  }
+
+  python3 - "$settings" "$hook" <<'PY'
+import json, os, sys
+path, hook_cmd = sys.argv[1], sys.argv[2]
+data = {}
+if os.path.exists(path):
+    try:
+        with open(path) as f:
+            data = json.load(f) or {}
+    except Exception:
+        data = {}
+hooks_root = data.setdefault("hooks", {})
+ups = hooks_root.setdefault("UserPromptSubmit", [])
+ups[:] = [h for h in ups if not (isinstance(h, dict) and h.get("_lingMemRecall"))]
+ups.append({"_lingMemRecall": True, "type": "command", "command": hook_cmd})
+os.makedirs(os.path.dirname(path), exist_ok=True)
+with open(path, "w") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+PY
+  echo "  Installed: $hook"
+  echo "  Registered in: $settings (hooks.UserPromptSubmit)"
+}
+
 # -------------------------------------------------------------------
 # Install
 # -------------------------------------------------------------------
@@ -334,6 +456,7 @@ if [ "$INSTALL_CLAUDE" -eq 1 ]; then
   download_binary "$CLAUDE_SKILL_DIR/bin"
   seed_core_memory
   configure_claude_md
+  configure_claude_hook "$CLAUDE_SKILL_DIR"
   CLAUDE_BIN="$CLAUDE_SKILL_DIR/bin/ling-mem"
 
   # Clean up the legacy `linggen-memory` skill dir if present.
