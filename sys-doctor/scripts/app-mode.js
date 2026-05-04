@@ -43,6 +43,10 @@
   }
 
   window.addEventListener("message", (e) => {
+    // Only accept protocol messages from the same origin (the local Linggen
+    // daemon). Without this, any embedded iframe or popup could trigger
+    // overlay state — low blast radius today, but lock it down by default.
+    if (e.origin !== window.location.origin) return;
     const msg = e.data;
     if (!msg || typeof msg !== "object") return;
     if (msg.type === "linggen:show-settings") show();

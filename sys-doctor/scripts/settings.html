@@ -234,9 +234,10 @@
 
     tavilySave.addEventListener("click", async () => {
       const value = tavilyInput.value.trim();
-      if (!value) return;
+      if (!value || value === REDACTED) return;
       tavilySave.disabled = true;
       tavilySave.textContent = "Saving…";
+      let ok = false;
       try {
         const r = await fetch("/api/credentials", {
           method: "PUT",
@@ -244,16 +245,21 @@
           body: JSON.stringify({ tavily: { api_key: value } }),
         });
         if (!r.ok) throw new Error("save failed");
+        ok = true;
         tavilyStatus.textContent = "Saved";
+        tavilyStatus.style.color = "";
         tavilyStatus.classList.add("visible");
         setTimeout(() => tavilyStatus.classList.remove("visible"), 1800);
         await loadTavily();
       } catch {
-        tavilyStatus.textContent = "Error";
+        tavilyStatus.textContent = "Error — check key and retry";
         tavilyStatus.style.color = "#ef4444";
         tavilyStatus.classList.add("visible");
       } finally {
         tavilySave.textContent = "Save";
+        // On error, re-enable so the user can fix and retry. On success,
+        // loadTavily() already reset the input to "***" + disabled.
+        if (!ok) tavilySave.disabled = false;
       }
     });
 
