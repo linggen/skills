@@ -312,10 +312,11 @@ $marker_end"
 # so it doesn't depend on the model remembering to do it.
 #
 # Tuning via env vars (set in shell rc — read by the hook at turn time):
-#   LING_MEM_RECALL_TOPK     hits surfaced per turn       (default 3)
-#   LING_MEM_RECALL_LIMIT    rows fetched before head -K  (default 5)
-#   LING_MEM_RECALL_TIMEOUT  hard timeout in seconds      (default 3)
-#   LING_MEM_RECALL_DISABLE  set to 1 to silence the hook without uninstall
+#   LING_MEM_RECALL_TOPK       hits surfaced per turn         (default 3)
+#   LING_MEM_RECALL_LIMIT      rows fetched before head -K    (default 8)
+#   LING_MEM_RECALL_TIMEOUT    hard timeout in seconds        (default 3)
+#   LING_MEM_RECALL_MIN_SCORE  cosine similarity floor [-1,1] (default 0.30)
+#   LING_MEM_RECALL_DISABLE    set to 1 to silence the hook without uninstall
 configure_claude_hook() {
   local skill_dir="$1"
   local hook_dir="$skill_dir/hooks"
@@ -349,6 +350,7 @@ cwd="$(printf '%s' "$input"   | jq -r '.cwd    // empty' 2>/dev/null || true)"
 topk="${LING_MEM_RECALL_TOPK:-3}"
 limit="${LING_MEM_RECALL_LIMIT:-8}"
 to="${LING_MEM_RECALL_TIMEOUT:-3}"
+min_score="${LING_MEM_RECALL_MIN_SCORE:-0.30}"
 
 # Current project name = last segment of cwd, when cwd is set and not $HOME.
 # Used to keep project-scoped rows for *this* project and drop ones scoped
@@ -371,7 +373,8 @@ fi
 
 if [ -n "$TIMEOUT_BIN" ]; then
   out="$($TIMEOUT_BIN "$to" ling-mem search "$prompt" \
-      --limit "$limit" --format json --quiet 2>/dev/null || true)"
+      --limit "$limit" --min-score "$min_score" \
+      --format json --quiet 2>/dev/null || true)"
 else
   out="$(ling-mem search "$prompt" \
       --limit "$limit" --format json --quiet 2>/dev/null || true)"
