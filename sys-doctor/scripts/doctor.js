@@ -39,14 +39,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { /* ignore */ }
   }
 
-  // If no existing session, check for previous sessions before mounting chat.
-  // This avoids creating a junk empty session before the user decides.
+  // If no existing session, check for resumable sessions before mounting chat.
+  // A session is resumable only if its dashboard page is cached locally —
+  // without the cache there's nothing to resume *to* (chat history alone has
+  // no usable widget tree). Sessions without a cache are skipped silently.
   if (!existingSession) {
     let sessions = [];
     try {
       sessions = await listSkillSessions(SKILL_NAME);
       sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-      sessions = sessions.slice(0, 5);
+      sessions = sessions.filter((s) => hasCachedPage(s.id)).slice(0, 5);
     } catch { /* ignore */ }
 
     if (sessions.length > 0) {
@@ -126,11 +128,11 @@ async function mountAndStart(sessionId) {
     chat.send(text);
   };
 
-  if (sessionId) {
+  if (sessionId && hasCachedPage(sessionId)) {
     // Restore dashboard from cache — no re-scan
     restoreFromCache(sessionId);
   } else {
-    // Fresh session
+    // Fresh session, or resumed session without a usable cache.
     startFresh();
   }
 }
@@ -661,6 +663,19 @@ function restoreFromCache(sessionId) {
     if (!page.top_bar?.length && !page.body?.length) return false;
     restorePage(page);
     return true;
+  } catch {
+    return false;
+  }
+}
+
+/** True if a non-empty cached page exists for this session in localStorage. */
+function hasCachedPage(sessionId) {
+  if (!sessionId) return false;
+  try {
+    const cached = localStorage.getItem(`sys-doctor-page:${sessionId}`);
+    if (!cached) return false;
+    const page = JSON.parse(cached);
+    return Boolean(page.top_bar?.length || page.body?.length);
   } catch {
     return false;
   }
