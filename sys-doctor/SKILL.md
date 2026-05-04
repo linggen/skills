@@ -3,7 +3,7 @@ name: sys-doctor
 description: >-
   System health analyst. Scans disk, apps, caches, and system info.
   Use --web for interactive dashboard, or run directly in chat for text reports.
-allowed-tools: [Bash, Task]
+allowed-tools: [Bash, Task, WebSearch, WebFetch]
 user-invocable: true
 argument-hint: "[full | disk | apps | quick | --web]"
 app:
@@ -19,13 +19,16 @@ tools:
   - name: ScanDisk
     description: >-
       Run a fresh disk scan. Returns text sections: DISK (df), HOME DIRS,
-      CACHES, NODE_MODULES, RUST_TARGET, OLD_DOWNLOADS_COUNT.
+      CACHES, NODE_MODULES, RUST_TARGET, OLD_DOWNLOADS_COUNT, APPLICATIONS.
       Call this when the user asks to rescan disk usage, find space consumers,
-      or check disk after a cleanup. Parse the output and emit a body_patch
-      updating the `bars` (Disk Usage) and `recommendations` (Cleanup) widgets.
+      or check disk after a cleanup. You MUST emit a body_patch updating
+      ALL THREE widgets: `bars` (Disk Usage), `recommendations` (Cleanup),
+      AND `recommendations` (Apps to Review). The `=== APPLICATIONS ===`
+      section is always present in the output — never skip the Apps to
+      Review widget on rescan, even if the dashboard already had one.
     cmd: "$SKILL_DIR/scripts/scan-disk.sh"
     tier: read
-    timeout_ms: 30000
+    timeout_ms: 60000
   - name: ScanSecurity
     description: >-
       Run a fresh security check. Returns text sections: GATEKEEPER, SIP,
@@ -160,6 +163,30 @@ The button label flips to "Scan" automatically when the widget has no items yet.
 { "type": "hero", "icon": "💡", "title": "Time to upgrade?", "body": "Your Mac is 7 years old...", "cta": { "label": "Buyer's guide", "message": "Give me a buyer's guide" } }
 ```
 
+**`report`** — Generic structured-info card. Sections of labeled key/value rows with optional source links. Use for research-driven content (Buyer's Guide today; Subscriptions Audit, Backup Status, Software Inventory in the future). Show info — never a verdict.
+
+```json
+{
+  "type": "report",
+  "icon": "🛒",
+  "title": "Buyer's Guide",
+  "badge": "Refreshed just now",
+  "action": { "label": "Refresh", "message": "Refresh buyer's guide" },
+  "sections": [
+    {
+      "title": "Latest comparable",
+      "subtitle": "tailored: AI developer",
+      "items": [
+        { "label": "MacBook Pro M4 Max", "value": "$3,999 · shipping now",
+          "link": "https://www.apple.com/shop/buy-mac/macbook-pro" }
+      ]
+    }
+  ]
+}
+```
+
+Each section: `title`, optional `subtitle`, `items[]`. Each item: optional `label`, `value`, optional `link`. The link renders as a small `↗` icon next to the value.
+
 ## Dashboard flow
 
 ### Bash discipline (dashboard mode)
@@ -183,6 +210,7 @@ The dashboard sends hardware data in a message containing `[SYS_SCAN_DATA]` (it 
      - `bars` widget showing disk usage breakdown (top directories, caches) — if disk data exists
      - `scorecard` widget showing security status — if security checks exist
      - `recommendations` widget with cleanup suggestions — if garbage candidates exist
+     - **`recommendations` widget titled "Apps to Review"** — **MANDATORY** if the input contains a section starting with `=== APPLICATIONS ===`. This section appears in BOTH the initial-scan payload AND `ScanDisk` rescan output. See "Apps to Review" below for the exact emit shape and worked example. Do NOT skip this widget on first load.
      - `table` widget showing top processes (memory + CPU) — if performance data exists
      - `action-cards` widget ONLY for tasks the initial scan did NOT run (Find Large Files, Organise Photos). Do NOT include disk/security/performance cards here — they already appear as result widgets above with built-in rescan buttons.
      - `hero` widget if the machine is old (5+ years) or struggling
@@ -207,6 +235,114 @@ PageUpdate({ "body_patch": [
 ```
 
 Do NOT emit a `progress` widget for rescans — the dashboard's rescan button already shows scanning state. Keep chat text to one sentence: a quick verdict on what changed.
+
+### Apps to Review (dormant-app cleanup)
+
+**Trigger**: any time you see a section starting with `=== APPLICATIONS ===` in your input. This appears in BOTH the initial-scan payload (sent to you on dashboard load) AND in `ScanDisk` rescan output. **You MUST emit an "Apps to Review" widget whenever this section is present and contains entries.** Do not condition on the user asking — render it as part of the standard initial layout, just like Disk/Security/Cleanup.
+
+**Format of the section**: each line is `<last-used>\t<size>\t<name>`, sorted oldest-first. `last-used = "never"` means there's no usage signal (Spotlight has no record AND there's no preferences plist for the bundle). For a real-life Mac most "never" entries are genuinely never-opened, with a small minority being just-installed.
+
+**Inclusion rule** — keep it simple:
+- Include any line where `last-used = "never"` AND `size >= 50 MB`.
+- Include any line where `last-used` is older than ~90 days (regardless of size).
+- Skip any name matching `*Uninstaller*`, `*Updater*`, `*Helper*`, `*Daemon*` — those are maintenance entries.
+
+**Risk labelling** (always `risk: "review"` — never `safe`, never `careful`):
+- Apple bundled (Pages/Numbers/Keynote/GarageBand/iMovie/Music): description note "Apple bundled — keep if you ever might use it."
+- Microsoft Office, Adobe: description note "Paid suite — verify license before removing."
+- Otherwise: description note "Not opened recently — likely safe to remove."
+
+**Worked example.** Suppose the input contains:
+
+```
+=== APPLICATIONS ===
+never	1.4G	GarageBand.app
+never	1.0G	Microsoft Teams.app
+never	120M	MKPlayer.app
+never	8M	Uninstall AWS VPN Client.app
+2023-07-25 09:11:28 +0000	417M	Firefox.app
+```
+
+Then you emit (inside the `body` of your `page` block):
+
+```json
+{
+  "type": "recommendations",
+  "title": "Apps to Review",
+  "badge": "4 apps · ~3 GB",
+  "items": [
+    {
+      "title": "GarageBand.app",
+      "description": "Last opened — never · 1.4 GB · Apple bundled — keep if you ever might use it.",
+      "savings_gb": 1.4,
+      "risk": "review",
+      "command": "mv -i \"/Applications/GarageBand.app\" ~/.Trash/"
+    },
+    {
+      "title": "Microsoft Teams.app",
+      "description": "Last opened — never · 1.0 GB · Paid suite — verify license before removing.",
+      "savings_gb": 1.0,
+      "risk": "review",
+      "command": "mv -i \"/Applications/Microsoft Teams.app\" ~/.Trash/"
+    },
+    {
+      "title": "Firefox.app",
+      "description": "Last opened 2023-07-25 (~2 years ago) · 417 MB · Not opened recently — likely safe to remove.",
+      "savings_gb": 0.417,
+      "risk": "review",
+      "command": "mv -i \"/Applications/Firefox.app\" ~/.Trash/"
+    },
+    {
+      "title": "MKPlayer.app",
+      "description": "Last opened — never · 120 MB · Not opened recently — likely safe to remove.",
+      "savings_gb": 0.12,
+      "risk": "review",
+      "command": "mv -i \"/Applications/MKPlayer.app\" ~/.Trash/"
+    }
+  ]
+}
+```
+
+(Note: `Uninstall AWS VPN Client.app` was skipped because the name matches `*Uninstall*`.)
+
+**Hard rules**:
+- Use `mv -i "..." ~/.Trash/` — quoted, recoverable. NEVER `rm -rf`.
+- `savings_gb` is the size in GB as a number (fractional fine — `120M` → `0.12`, `1.4G` → `1.4`).
+- Sort items by size descending so the biggest wins surface first.
+- Cap at ~12 items; if you filter to more, keep the top 12 by size and add a one-sentence note in chat about the rest.
+- The `badge` should be `"<N> apps · ~<total> GB"`.
+
+### When user clicks Buyer's Guide (or asks for upgrade advice)
+
+The toolbar's Buyer's Guide button sends the message **"Generate a Buyer's Guide for my Mac"**. The user wants information to decide for themselves — never a verdict.
+
+1. Use **WebSearch** (and `WebFetch` when you have a specific URL) to gather facts. **Never invent prices, release dates, or trade-in numbers.** If a number isn't sourced, omit the row or just provide the source link.
+
+2. Tailor the **Performance delta** section to the scan's `usage_profile`:
+   - `ai-developer` → ML inference benchmarks (MLX, Stable Diffusion), memory bandwidth, unified-memory cap
+   - `developer` → multi-core Geekbench, compile-time, memory bandwidth
+   - `creative` → sustained video encode, ProRes acceleration, ProMotion display
+   - `general` → battery life, weight, screen brightness
+
+3. Suggested sections (omit any you can't source):
+   - **Your machine** — one-line summary from the existing scan data (no web call needed)
+   - **Latest comparable** — current model in the same class with starting price + Apple link
+   - **Next expected** — MacRumors buyer's-guide status (Don't Buy / Neutral / Buy Now) with link
+   - **Performance delta** — 2–3 profile-tailored deltas, each with a benchmark source link
+   - **Trade-in references** — link to Apple Trade In, Swappa, eBay sold listings; show ranges only if scraped
+   - **Battery threshold** — current cycles vs Apple's 1000-cycle rating (from scan data)
+
+4. Emit a `body_patch` with the `report` widget. The renderer appends if no Buyer's Guide widget exists yet, or replaces in place on refresh:
+
+```
+PageUpdate({ "body_patch": [
+  { "match": { "type": "report", "title": "Buyer's Guide" }, "widget": { ...report... } }
+] })
+```
+
+5. Set `badge` to a freshness indicator like `"Refreshed just now"` or `"Refreshed 2h ago"`.
+6. Keep chat text to one sentence — the card carries the data.
+7. If web search comes back uncertain (sources disagree, MacRumors says Neutral), **show the spread anyway** with a brief note. Don't pick a midpoint or hide uncertainty.
 
 ### When user picks an Action card (uncovered work)
 

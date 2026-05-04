@@ -187,7 +187,8 @@ export async function runScan(mode, sessionId, onProgress) {
       bash('pmset -g batt 2>/dev/null', sessionId),
       bash('ioreg -r -c AppleSmartBattery 2>/dev/null | grep CycleCount', sessionId),
       bash('ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk "{print \\$1}"', sessionId),
-      bash('networksetup -getairportnetwork en0 2>/dev/null || iwgetid -r 2>/dev/null', sessionId),
+      // Fallback chain for Wi-Fi SSID — networksetup is broken on macOS 14+.
+      bash('~/.linggen/skills/sys-doctor/scripts/get-wifi.sh 2>/dev/null || iwgetid -r 2>/dev/null', sessionId),
       bash('iostat -c 1 2>/dev/null | tail -1', sessionId),
       // Hardware model + age
       bash('system_profiler SPHardwareDataType 2>/dev/null | grep -E "Model Name|Model Identifier|Serial|Memory|Chip"', sessionId),
@@ -220,7 +221,7 @@ export async function runScan(mode, sessionId, onProgress) {
 
   // ── Disk usage (all modes) ──
   onProgress('disk', 'start');
-  const [df, homeDirs, caches] = await Promise.all([
+  const [df, homeDirs, caches, apps] = await Promise.all([
     bash('df -h /System/Volumes/Data 2>/dev/null || df -h /', sessionId),
     bash('du -sh ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
     bash([
@@ -229,6 +230,11 @@ export async function runScan(mode, sessionId, onProgress) {
       'du -sh ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
       'du -sh ~/Library/Developer/CoreSimulator 2>/dev/null',
     ].join('; '), sessionId),
+    // Installed apps with last-used + size for the "Apps to Review"
+    // dormant-app cleanup card. Skill is expected at the standard install
+    // path; if absent, the agent simply gets no APPLICATIONS section and
+    // skips the widget.
+    bash('~/.linggen/skills/sys-doctor/scripts/scan-applications.sh 2>/dev/null', sessionId),
   ]);
 
   const disk = parseDiskUsage(df.stdout);
@@ -241,6 +247,13 @@ export async function runScan(mode, sessionId, onProgress) {
   }
   results.caches = cacheEntries;
   rawOutputs.push(`=== Disk ===\n${df.stdout}\n=== Home Dirs ===\n${homeDirs.stdout}\n=== Caches ===\n${caches.stdout}`);
+  if (apps?.stdout?.trim()) {
+    // The agent's opening prompt is built from results.* (see doctor.js
+    // buildOpeningPrompt), not rawOutputs — so the apps text needs its own
+    // results field to reach the [SYS_SCAN_DATA] message.
+    results.applicationsRaw = apps.stdout.trim();
+    rawOutputs.push(`=== APPLICATIONS ===\n${apps.stdout}`);
+  }
   onProgress('disk', results.disk);
 
   // ── Garbage scan (full + deep) ──

@@ -10,88 +10,264 @@
     --bg: #f6f7fb;
     --surface: #ffffff;
     --border: #e5e7eb;
+    --border-strong: #d1d5db;
     --text: #1f2937;
     --muted: #6b7280;
     --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #10b981;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0a0a0a;
       --surface: #111113;
       --border: #1f2024;
+      --border-strong: #2a2b30;
       --text: #e5e7eb;
       --muted: #9ca3af;
     }
   }
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; height: 100%; }
+  html, body { margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     background: var(--bg);
     color: var(--text);
     font-size: 14px;
+    -webkit-font-smoothing: antialiased;
   }
   .wrap {
     max-width: 880px;
     margin: 0 auto;
-    padding: 24px 24px 48px;
+    padding: 28px 32px 56px;
   }
+  header { margin-bottom: 28px; }
   h1 {
     font-size: 22px;
     font-weight: 700;
-    margin: 4px 0 4px;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
   }
   .lead {
     color: var(--muted);
-    margin: 0 0 28px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
   }
-  section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-    margin-bottom: 20px;
-  }
-  section h2 {
-    margin: 0 0 6px;
-    font-size: 15px;
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.2px;
     text-transform: uppercase;
+    letter-spacing: 0.6px;
     color: var(--muted);
+    margin: 0 0 6px;
   }
-  section .desc {
+  .section-desc {
     color: var(--muted);
     margin: 0 0 14px;
     font-size: 13px;
-    line-height: 1.5;
+    line-height: 1.55;
   }
+  .section-desc a { color: var(--accent); text-decoration: none; }
+  .section-desc a:hover { text-decoration: underline; }
+
   iframe {
     display: block;
     width: 100%;
-    height: 520px;
     border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .field-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 16px 18px;
+  }
+  .field-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .field-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .field-status-set {
+    color: var(--success);
+    font-size: 9px;
+    margin-left: 6px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+  input[type="password"], input[type="text"] {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-strong);
     border-radius: 8px;
     background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
   }
+  input[type="password"]:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+  .icon-btn {
+    width: 32px; height: 32px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--muted); }
+  .save-btn {
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .save-btn:hover:not(:disabled) { background: var(--accent-hover); }
+  .save-btn:disabled { opacity: 0.5; cursor: default; }
+  .save-status {
+    font-size: 12px;
+    color: var(--success);
+    margin-left: 10px;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .save-status.visible { opacity: 1; }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Sys Doctor Settings</h1>
-    <p class="lead">Bring your own model and search keys. Sys Doctor uses the model you pick to analyze your system, and Tavily for any web lookups.</p>
+    <header>
+      <h1>Sys Doctor Settings</h1>
+      <p class="lead">Bring your own model and search keys. Sys Doctor uses the model you pick to analyze your system, and Tavily for any web lookups.</p>
+    </header>
 
-    <section>
-      <h2>Model</h2>
-      <p class="desc">Pick which AI provider Sys Doctor uses, and paste your API key. Local models (Ollama) work without a key. Cloud providers need their respective keys.</p>
-      <iframe src="/settings/models" title="Models"></iframe>
-    </section>
+    <div class="section">
+      <h2 class="section-title">Model</h2>
+      <p class="section-desc">Pick the AI provider Sys Doctor uses. Local models (Ollama) work without a key. Cloud providers need their respective keys.</p>
+      <iframe id="models-frame" src="/settings/models" title="Models"></iframe>
+    </div>
 
-    <section>
-      <h2>Web Search</h2>
-      <p class="desc">Add a Tavily API key to enable web search during analysis. Free tier at <a href="https://tavily.com" target="_blank" rel="noopener">tavily.com</a> is enough for personal use. Optional — Sys Doctor still works without it.</p>
-      <iframe src="/settings/tools" title="Tools"></iframe>
-    </section>
+    <div class="section">
+      <h2 class="section-title">Web Search</h2>
+      <p class="section-desc">Add a Tavily API key to enable web search during analysis. Free tier at <a href="https://tavily.com" target="_blank" rel="noopener">tavily.com</a> is enough for personal use. Optional — Sys Doctor still works without it.</p>
+      <div class="field-card">
+        <div class="field-label">
+          Tavily API Key
+          <span id="tavily-set-badge" class="field-status-set" hidden>SET</span>
+        </div>
+        <div class="field-row">
+          <input id="tavily-input" type="password" placeholder="tvly-..." autocomplete="off" spellcheck="false">
+          <button id="tavily-toggle" class="icon-btn" type="button" aria-label="Toggle visibility" title="Show/hide">👁</button>
+          <button id="tavily-save" class="save-btn" type="button" disabled>Save</button>
+          <span id="tavily-status" class="save-status">Saved</span>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    // ── Auto-size the Models iframe to its content so the page has a single
+    // outer scrollbar instead of nested ones. Same-origin (both served by
+    // the ling daemon on 127.0.0.1:9898), so we can read scrollHeight.
+    function autosizeIframe(iframe) {
+      const resize = () => {
+        try {
+          const doc = iframe.contentDocument;
+          if (!doc || !doc.body) return;
+          const h = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+          iframe.style.height = (h + 4) + "px";
+        } catch (e) { /* cross-origin or not yet loaded */ }
+      };
+      iframe.addEventListener("load", () => {
+        resize();
+        try {
+          new ResizeObserver(resize).observe(iframe.contentDocument.body);
+        } catch {}
+      });
+      // Fallback: poll briefly in case ResizeObserver misses late layout shifts.
+      setTimeout(resize, 600);
+      setTimeout(resize, 1500);
+    }
+    autosizeIframe(document.getElementById("models-frame"));
+
+    // ── Tavily key — talks to /api/credentials directly. Avoids iframing the
+    // full engine ToolsTab, which would expose Read/Write/Edit/Bash/etc.
+    const STORED_PLACEHOLDER = "(stored in ~/.linggen/credentials.json)";
+    const tavilyInput = document.getElementById("tavily-input");
+    const tavilyToggle = document.getElementById("tavily-toggle");
+    const tavilySave = document.getElementById("tavily-save");
+    const tavilyStatus = document.getElementById("tavily-status");
+    const tavilyBadge = document.getElementById("tavily-set-badge");
+    let tavilyOriginalSet = false;
+
+    async function loadTavily() {
+      try {
+        const r = await fetch("/api/credentials");
+        if (!r.ok) return;
+        const data = await r.json();
+        const set = !!data?.tavily?.api_key;
+        tavilyOriginalSet = set;
+        tavilyBadge.hidden = !set;
+        tavilyInput.value = "";
+        tavilyInput.placeholder = set ? STORED_PLACEHOLDER : "tvly-...";
+      } catch {}
+    }
+
+    tavilyInput.addEventListener("input", () => {
+      tavilySave.disabled = tavilyInput.value.length === 0;
+    });
+
+    tavilyToggle.addEventListener("click", () => {
+      tavilyInput.type = tavilyInput.type === "password" ? "text" : "password";
+    });
+
+    tavilySave.addEventListener("click", async () => {
+      const value = tavilyInput.value.trim();
+      if (!value) return;
+      tavilySave.disabled = true;
+      tavilySave.textContent = "Saving…";
+      try {
+        const r = await fetch("/api/credentials", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tavily: { api_key: value } }),
+        });
+        if (!r.ok) throw new Error("save failed");
+        tavilyStatus.textContent = "Saved";
+        tavilyStatus.classList.add("visible");
+        setTimeout(() => tavilyStatus.classList.remove("visible"), 1800);
+        await loadTavily();
+      } catch {
+        tavilyStatus.textContent = "Error";
+        tavilyStatus.style.color = "#ef4444";
+        tavilyStatus.classList.add("visible");
+      } finally {
+        tavilySave.textContent = "Save";
+      }
+    });
+
+    loadTavily();
+  </script>
 </body>
 </html>

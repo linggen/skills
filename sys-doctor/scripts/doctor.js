@@ -360,6 +360,14 @@ function buildOpeningPrompt(results) {
     parts.push('');
   }
 
+  if (results.applicationsRaw) {
+    // Use the `=== APPLICATIONS ===` marker the SKILL.md "Apps to Review"
+    // trigger watches for. Markdown headers are not recognized.
+    parts.push(`=== APPLICATIONS ===`);
+    parts.push(results.applicationsRaw);
+    parts.push('');
+  }
+
   if (results.security) {
     const s = results.security;
     parts.push(`## Security (${s.passing}/${s.total} passing)`);

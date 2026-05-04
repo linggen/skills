@@ -1,5 +1,55 @@
 /* Sys Doctor v2 — layout + widget styles */
 
+/* ── App-mode Settings Overlay ──
+   Full-window slide-over shown only when the page is hosted by a Linggen
+   app shell (?app_mode=1). See app-mode.js for the postMessage protocol. */
+
+.app-mode-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background: #f6f7fb;
+  z-index: 2000;
+  animation: fadeIn 0.15s ease;
+}
+.app-mode-overlay.visible { display: flex; }
+.app-mode-overlay-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  flex-shrink: 0;
+}
+.app-mode-overlay-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1f2937;
+}
+.app-mode-overlay-close {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  color: #6b7280;
+}
+.app-mode-overlay-close:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+.app-mode-overlay-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #f6f7fb;
+}
+
 /* ── Welcome Dialog ── */
 
 .welcome-overlay {
@@ -670,6 +720,84 @@
   transition: background 0.15s;
 }
 .hero-cta:hover { background: var(--accent-hover); }
+
+/* ── Report widget (generic structured-info card) ── */
+
+.report-icon { font-size: 16px; margin-right: 4px; }
+
+.report-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 4px;
+}
+
+.report-section + .report-section {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.report-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.report-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.report-section-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.report-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.report-item-label {
+  color: var(--text-muted);
+  min-width: 160px;
+  flex-shrink: 0;
+}
+
+.report-item-value {
+  color: var(--text);
+  font-weight: 500;
+  flex: 1;
+}
+
+.report-item-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.report-item-link:hover {
+  color: var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
 
 /* ── Progress / scan steps ── */
 

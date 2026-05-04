@@ -200,6 +200,7 @@ export function renderBodyWidget(w) {
     'info': renderInfo,
     'progress': renderProgress,
     'hero': renderHero,
+    'report': renderReport,
   };
   const fn = renderers[w.type];
   if (!fn) {
@@ -340,15 +341,19 @@ function renderRecommendations(w) {
       ${r.command ? `
         <div class="rec-cmd-block">
           <code class="rec-cmd-code">${esc(r.command)}</code>
-          <button class="rec-copy" data-cmd="${esc(r.command)}">Copy</button>
+          <button class="rec-copy" type="button">Copy</button>
         </div>
       ` : ''}
     `;
-    // Copy handler
+    // Close over r.command directly — avoids HTML-attribute escaping
+    // pitfalls. esc() doesn't escape `"`, so commands containing quoted
+    // paths (e.g. `mv -i "/Applications/Foo.app" ~/.Trash/`) used to break
+    // a data-cmd attribute mid-value.
     const copyBtn = item.querySelector('.rec-copy');
-    if (copyBtn) {
+    if (copyBtn && r.command) {
+      const cmd = r.command;
       copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(copyBtn.dataset.cmd).then(() => {
+        navigator.clipboard.writeText(cmd).then(() => {
           copyBtn.textContent = 'Copied!';
           copyBtn.classList.add('copied');
           setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1500);
@@ -390,6 +395,79 @@ function renderDonut(w) {
   // Draw donut after DOM insertion
   requestAnimationFrame(() => drawDonut(canvas, w.items || []));
   return panel;
+}
+
+// ── report ──
+//
+// Generic structured-info card. Sections of labeled key/value rows with
+// optional source links. Used by Buyer's Guide; reusable for future features
+// (Subscriptions Audit, Backup Status, Software Inventory, etc.).
+//
+// Schema:
+//   { type: 'report', icon?, title, badge?, action?,
+//     sections: [
+//       { title, subtitle?, items: [{ label?, value?, link? }] }
+//     ] }
+
+function renderReport(w) {
+  const panel = el('div', 'panel widget-report');
+
+  // Custom header — like panelHeaderHtml but supports an icon prefix on the title.
+  const badge = w.badge ? `<span class="panel-badge">${esc(w.badge)}</span>` : '';
+  const action = resolveAction(w);
+  const actionLabel = action?.label || 'Refresh';
+  const actionBtn = action
+    ? `<button class="panel-action-btn" type="button" title="${esc(actionLabel)}">↻ ${esc(actionLabel)}</button>`
+    : '';
+  const iconHtml = w.icon ? `<span class="report-icon">${esc(w.icon)}</span> ` : '';
+  panel.innerHTML = `
+    <div class="panel-header">
+      <h3>${iconHtml}${esc(w.title || '')}</h3>
+      <div class="panel-header-right">${badge}${actionBtn}</div>
+    </div>
+  `;
+  wireHeaderAction(panel, w);
+
+  const wrap = el('div', 'report-sections');
+  for (const section of (w.sections || [])) {
+    wrap.appendChild(renderReportSection(section));
+  }
+  panel.appendChild(wrap);
+  return panel;
+}
+
+function renderReportSection(section) {
+  const sec = el('div', 'report-section');
+  const subtitle = section.subtitle
+    ? `<span class="report-section-subtitle">${esc(section.subtitle)}</span>`
+    : '';
+  sec.innerHTML = `
+    <div class="report-section-header">
+      <h4 class="report-section-title">${esc(section.title || '')}</h4>
+      ${subtitle}
+    </div>
+  `;
+  const list = el('div', 'report-items');
+  for (const item of (section.items || [])) {
+    list.appendChild(renderReportItem(item));
+  }
+  sec.appendChild(list);
+  return sec;
+}
+
+function renderReportItem(item) {
+  const row = el('div', 'report-item');
+  const label = item.label
+    ? `<span class="report-item-label">${esc(item.label)}</span>`
+    : '';
+  const value = item.value != null && item.value !== ''
+    ? `<span class="report-item-value">${esc(String(item.value))}</span>`
+    : '';
+  const link = item.link
+    ? `<a class="report-item-link" href="${esc(item.link)}" target="_blank" rel="noopener noreferrer">↗</a>`
+    : '';
+  row.innerHTML = `${label}${value}${link}`;
+  return row;
 }
 
 // ── hero ──

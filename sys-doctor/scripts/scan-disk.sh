@@ -29,3 +29,9 @@ find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null \
 echo ""
 echo "=== OLD_DOWNLOADS_COUNT ==="
 find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l | tr -d ' '
+
+echo ""
+echo "=== APPLICATIONS ==="
+echo "# REQUIRED: emit 'Apps to Review' recommendations widget from these rows."
+echo "# Format per line: <last-used>\\t<size>\\t<name>. last-used='never' = no usage signal."
+"$(dirname "$0")/scan-applications.sh"
