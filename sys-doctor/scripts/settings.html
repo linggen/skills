@@ -79,6 +79,15 @@
     border-radius: 12px;
     background: var(--surface);
   }
+  /* Fixed height for the Models iframe — its inner React route uses
+     h-screen + overflow-y-auto, so its body.scrollHeight always equals
+     the iframe height. Auto-sizing fights that and creates an infinite
+     resize loop. Just give it a sensible viewport-relative height and
+     let its own internal scrollbar handle long model lists. */
+  #models-frame {
+    height: min(75vh, 800px);
+    min-height: 480px;
+  }
 
   .field-card {
     border: 1px solid var(--border);
@@ -187,30 +196,6 @@
   </div>
 
   <script>
-    // ── Auto-size the Models iframe to its content so the page has a single
-    // outer scrollbar instead of nested ones. Same-origin (both served by
-    // the ling daemon on 127.0.0.1:9898), so we can read scrollHeight.
-    function autosizeIframe(iframe) {
-      const resize = () => {
-        try {
-          const doc = iframe.contentDocument;
-          if (!doc || !doc.body) return;
-          const h = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
-          iframe.style.height = (h + 4) + "px";
-        } catch (e) { /* cross-origin or not yet loaded */ }
-      };
-      iframe.addEventListener("load", () => {
-        resize();
-        try {
-          new ResizeObserver(resize).observe(iframe.contentDocument.body);
-        } catch {}
-      });
-      // Fallback: poll briefly in case ResizeObserver misses late layout shifts.
-      setTimeout(resize, 600);
-      setTimeout(resize, 1500);
-    }
-    autosizeIframe(document.getElementById("models-frame"));
-
     // ── Tavily key — talks to /api/credentials directly. Avoids iframing the
     // full engine ToolsTab, which would expose Read/Write/Edit/Bash/etc.
     const STORED_PLACEHOLDER = "(stored in ~/.linggen/credentials.json)";
