@@ -15,9 +15,36 @@ set -euo pipefail
 #
 # Source + releases: https://github.com/linggen/linggen-memory
 
-SOURCE_DIR="$(cd "$(dirname "$0")" && pwd)"
+SOURCE_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SOURCE_DIR=""
 REPO="linggen/linggen-memory"
 VERSION="${LING_MEM_VERSION:-latest}"
+
+# Self-bootstrap: when invoked via `curl ... | bash`, $0 is bash itself
+# and $SOURCE_DIR ends up pointing at the user's cwd — there is no local
+# clone with SKILL.md, scripts/, references/, etc. Detect this and fetch
+# the canonical skill tree from GitHub into a temp dir, then re-target
+# SOURCE_DIR.
+#
+# When run from a checked-out clone (`bash skills/ling-mem/install.sh`),
+# SKILL.md is adjacent and this block is a no-op.
+if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
+  BOOTSTRAP_REPO="${LING_MEM_SKILLS_REPO:-linggen/skills}"
+  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-main}"
+  BOOTSTRAP_URL="https://github.com/${BOOTSTRAP_REPO}/archive/${BOOTSTRAP_REF}.tar.gz"
+  BOOTSTRAP_TMP="$(mktemp -d -t ling-mem-bootstrap-XXXXXX)"
+  trap 'rm -rf "$BOOTSTRAP_TMP"' EXIT
+
+  echo "Fetching ling-mem skill from ${BOOTSTRAP_REPO}@${BOOTSTRAP_REF}..."
+  if ! curl -fsSL --retry 3 --retry-delay 2 "$BOOTSTRAP_URL" | tar -xz -C "$BOOTSTRAP_TMP"; then
+    echo "Error: failed to download $BOOTSTRAP_URL" >&2
+    exit 1
+  fi
+  SOURCE_DIR="$(find "$BOOTSTRAP_TMP" -maxdepth 3 -type d -name ling-mem | head -n1)"
+  if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
+    echo "Error: ling-mem/SKILL.md not found in tarball" >&2
+    exit 1
+  fi
+fi
 
 # -------------------------------------------------------------------
 # Parse --host flag (optional)
