@@ -397,12 +397,14 @@ HOOK
   chmod +x "$hook"
 
   # Idempotent settings.json patch — drops any prior ling-mem hook entry,
-  # then appends the fresh one. Marker key `_lingMemRecall: true` lets us
-  # find and replace our own entry without disturbing user-added hooks.
+  # then appends the fresh one in CC's current nested shape
+  # ({ matcher, hooks: [...] }). Dedup matches by `_lingMemRecall: true`,
+  # by inner command path, and by legacy flat `command` — so re-runs stay
+  # idempotent even after CC auto-migrates the entry and drops our marker.
   command -v python3 >/dev/null 2>&1 || {
     echo "  Warning: python3 not found — skipping settings.json patch" >&2
     echo "    Manually add to $settings:" >&2
-    echo "      hooks.UserPromptSubmit += [{ type: \"command\", command: \"$hook\" }]" >&2
+    echo "      hooks.UserPromptSubmit += [{ matcher: \"\", hooks: [{ type: \"command\", command: \"$hook\" }] }]" >&2
     return 0
   }
 
@@ -418,8 +420,25 @@ if os.path.exists(path):
         data = {}
 hooks_root = data.setdefault("hooks", {})
 ups = hooks_root.setdefault("UserPromptSubmit", [])
-ups[:] = [h for h in ups if not (isinstance(h, dict) and h.get("_lingMemRecall"))]
-ups.append({"_lingMemRecall": True, "type": "command", "command": hook_cmd})
+
+def is_ours(h):
+    if not isinstance(h, dict):
+        return False
+    if h.get("_lingMemRecall"):
+        return True
+    if h.get("command") == hook_cmd:  # legacy flat shape
+        return True
+    for inner in (h.get("hooks") or []):
+        if isinstance(inner, dict) and inner.get("command") == hook_cmd:
+            return True
+    return False
+
+ups[:] = [h for h in ups if not is_ours(h)]
+ups.append({
+    "_lingMemRecall": True,
+    "matcher": "",
+    "hooks": [{"type": "command", "command": hook_cmd}],
+})
 os.makedirs(os.path.dirname(path), exist_ok=True)
 with open(path, "w") as f:
     json.dump(data, f, indent=2)
