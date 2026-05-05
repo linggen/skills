@@ -30,17 +30,21 @@ allowed-tools:
   - Read
   - Notify
 
-# Read sessions / git logs as context the skill consumes; write only
-# to the mission's own dir.
+# The composer skill (dispatched by this mission) reads sessions
+# from CC + Linggen, git logs from ~/workspace repos, and ling-mem
+# rows. The mission's permission paths must cover all of those plus
+# the write target (skill data dir + mission output dir).
 permission:
   mode: admin
   paths:
-    - ~/.linggen/missions/influencer
-    - ~/.linggen/skills/composer
+    - ~/.linggen           # missions/influencer, skills/composer (data + refs), sessions, memory
+    - ~/.claude/projects   # CC session files (.jsonl) for 24h scan
+    - ~/workspace          # git logs from user's repos
   warning: >-
-    Triggers the composer skill which reads session files + git logs +
-    ling-mem rows, and writes draft posts to the composer skill's data
-    dir. Does NOT post to any external service.
+    Triggers the composer skill which reads session files from
+    ~/.claude/projects and ~/.linggen/sessions, git logs from
+    ~/workspace repos, and ling-mem rows. Writes draft posts to the
+    composer skill's data dir. Does NOT post to any external service.
 ---
 
 You are **Ling**, running the morning trigger for content drafting.
