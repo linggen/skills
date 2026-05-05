@@ -35,8 +35,14 @@ Without --host: installs to ~/.claude when it exists (Linggen also reads
 that location, so a single install covers both runtimes). Falls back to
 ~/.linggen otherwise.
 
+If ~/.codex/ exists, also symlinks the installed skill into
+~/.codex/skills/ling-mem/ so Codex picks it up. Codex doesn't have a
+user-global hook system like CC, so the per-turn recall hook is CC-only;
+the skill's CLI works in Codex either way. Restart Codex after install.
+
   LING_MEM_VERSION=vX.Y.Z   pin a specific binary version (default: latest)
   LING_MEM_FORCE_DOWNLOAD=1 re-fetch the binary even if present
+  LING_MEM_SKIP_CODEX=1     skip the Codex symlink even if ~/.codex/ exists
 EOF
       exit 0
       ;;
@@ -252,6 +258,32 @@ create_path_symlink() {
       echo "    echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc" >&2
       ;;
   esac
+}
+
+# Symlink the canonical skill dir into ~/.codex/skills/ling-mem so Codex
+# discovers it. Codex hooks are plugin-scoped (live in plugin.json), not
+# user-global, so the recall hook is CC-only — the skill's CLI still
+# works in Codex via SKILL.md instructions.
+symlink_to_codex() {
+  local source_dir="$1"
+  local codex_skills="$HOME/.codex/skills"
+  local link="$codex_skills/ling-mem"
+
+  mkdir -p "$codex_skills"
+
+  if [ -L "$link" ]; then
+    ln -sfn "$source_dir" "$link"
+  elif [ -e "$link" ]; then
+    echo "  Warning: $link exists and is not a symlink — leaving alone." >&2
+    echo "    To enable Codex use of this install:" >&2
+    echo "      rm -rf $link && ln -s $source_dir $link" >&2
+    return 0
+  else
+    ln -s "$source_dir" "$link"
+  fi
+  echo "  Linked: $link → $source_dir"
+  echo "  Note: restart Codex to pick up the skill. Recall hook is CC-only —"
+  echo "        Codex sessions need to call 'ling-mem search' explicitly."
 }
 
 # CC-only: append a guarded @-import block to ~/.claude/CLAUDE.md so the
@@ -489,6 +521,22 @@ if [ "$INSTALL_CLAUDE" -eq 1 ]; then
 fi
 
 create_path_symlink "$LINGGEN_BIN" "$CLAUDE_BIN"
+
+# Codex auto-detect: additive symlink, never a primary install target.
+# Prefer the ~/.claude install as the source (matches the binary symlink
+# preference in create_path_symlink), fall back to ~/.linggen.
+if [ -d "$HOME/.codex" ] && [ "${LING_MEM_SKIP_CODEX:-0}" != "1" ]; then
+  CODEX_SOURCE=""
+  if [ "$INSTALL_CLAUDE" -eq 1 ]; then
+    CODEX_SOURCE="$CLAUDE_SKILL_DIR"
+  elif [ "$INSTALL_LINGGEN" -eq 1 ]; then
+    CODEX_SOURCE="$LINGGEN_SKILL_DIR"
+  fi
+  if [ -n "$CODEX_SOURCE" ]; then
+    echo "Detected ~/.codex/ — symlinking into ~/.codex/skills/ling-mem/"
+    symlink_to_codex "$CODEX_SOURCE"
+  fi
+fi
 
 # Flag the other host's leftover skill dir so users can clean up after a
 # host switch (e.g. previously installed via --host=both, now claude-only).
