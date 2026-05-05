@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Composer</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Composer</h1>
+    <div class="header-controls">
+      <label for="date-input" class="date-label">Date</label>
+      <input type="date" id="date-input" class="date-input" />
+      <button id="refresh-btn" class="btn-secondary">Reload</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div id="loading" class="state-msg">Loading drafts…</div>
+    <div id="error" class="state-msg state-error" hidden></div>
+    <div id="empty" class="state-msg" hidden></div>
+
+    <article id="content" hidden>
+      <section class="card" id="summary-card">
+        <h2>Yesterday's work</h2>
+        <p class="card-sub">What the agent saw across sessions, commits, and memory rows.</p>
+        <ul id="summary-list"></ul>
+        <p class="card-meta">Weight: <span id="weight-tag" class="tag"></span></p>
+      </section>
+
+      <section class="card" id="sources-card">
+        <h2>External sources considered</h2>
+        <p class="card-sub">Articles, papers, and posts the agent scored for technical overlap with your work. Below 0.6 is dropped before drafting.</p>
+        <ul id="sources-list" class="sources-list"></ul>
+      </section>
+
+      <section id="drafts-section">
+        <h2 class="drafts-heading">Drafts</h2>
+        <div id="drafts-list"></div>
+      </section>
+    </article>
+  </main>
+
+  <script src="composer-app.js"></script>
+</body>
+</html>
