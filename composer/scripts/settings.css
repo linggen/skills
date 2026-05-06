@@ -1,0 +1,194 @@
+/* Composer settings page — reuses style.css base, adds layout for the
+   settings-specific cards, grid, and textarea. */
+
+.settings-main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.brief-textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border, #2a2f38);
+  border-radius: 8px;
+  background: var(--surface, #0e1116);
+  color: var(--text, #e6e7ea);
+  resize: vertical;
+  min-height: 280px;
+  box-sizing: border-box;
+}
+
+.brief-textarea:focus {
+  outline: none;
+  border-color: var(--accent, #5b9dff);
+  box-shadow: 0 0 0 2px rgba(91, 157, 255, 0.18);
+}
+
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .grid-2col { grid-template-columns: 1fr; }
+}
+
+.site-card {
+  border: 1px solid var(--border, #2a2f38);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  background: var(--surface, #14181f);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  transition: border-color 0.15s;
+}
+
+.site-card.disabled {
+  opacity: 0.55;
+}
+
+.site-card .site-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 600;
+}
+
+.site-card .site-head input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.site-card .site-name { flex: 1; }
+
+.site-card .site-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(91, 157, 255, 0.12);
+  color: var(--accent, #5b9dff);
+}
+
+.site-card .site-desc {
+  font-size: 12px;
+  color: var(--muted, #8a8f99);
+  line-height: 1.45;
+}
+
+.site-card label {
+  font-size: 12px;
+  color: var(--muted, #8a8f99);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.site-card input[type="text"],
+.site-card input[type="number"] {
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  border: 1px solid var(--border, #2a2f38);
+  border-radius: 6px;
+  background: var(--bg, #0a0d12);
+  color: var(--text, #e6e7ea);
+  box-sizing: border-box;
+}
+
+.site-card .chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.site-card .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 3px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+  background: rgba(91, 157, 255, 0.10);
+  color: var(--text, #e6e7ea);
+  border: 1px solid rgba(91, 157, 255, 0.22);
+}
+
+.site-card .chip button {
+  background: none;
+  border: 0;
+  color: var(--muted, #8a8f99);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+}
+
+.site-card .chip button:hover { color: #ff8585; }
+
+.site-card .add-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.site-card .add-row input { flex: 1; }
+.site-card .add-row button {
+  font-size: 12px;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border, #2a2f38);
+  background: var(--surface, #14181f);
+  color: var(--text, #e6e7ea);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.site-card .add-row button:hover { border-color: var(--accent, #5b9dff); }
+
+.range-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted, #8a8f99);
+}
+.range-row input[type="number"] { width: 5.5rem; }
+
+.settings-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 0.5rem 0 1.5rem;
+}
+
+.btn-primary {
+  background: var(--accent, #5b9dff);
+  color: #0a0d12;
+  border: 0;
+  padding: 0.55rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.state-msg {
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.state-msg.ok      { background: rgba(80, 200, 120, 0.12); color: #6ddd9a; }
+.state-msg.error   { background: rgba(255, 100, 100, 0.12); color: #ff8585; }
+.state-msg.loading { background: rgba(91, 157, 255, 0.12); color: var(--accent, #5b9dff); }

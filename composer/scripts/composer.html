@@ -14,6 +14,7 @@
       <label for="date-input" class="date-label">Date</label>
       <input type="date" id="date-input" class="date-input" />
       <button id="refresh-btn" class="btn-secondary">Reload</button>
+      <a href="settings.html" class="btn-secondary" title="Configure sources, targets, and brief">⚙ Settings</a>
     </div>
   </header>
 
@@ -21,6 +22,15 @@
     <div id="loading" class="state-msg">Loading drafts…</div>
     <div id="error" class="state-msg state-error" hidden></div>
     <div id="empty" class="state-msg" hidden></div>
+
+    <section id="drafting" class="drafting" hidden>
+      <!-- Left view panel — driven by the agent's PageUpdate calls
+           (and seeded with an initial progress widget by the page). -->
+      <div class="drafting-view" id="drafting-view"></div>
+
+      <!-- Right chat panel — embedded Linggen chat iframe. -->
+      <div class="drafting-chat-panel" id="drafting-chat"></div>
+    </section>
 
     <article id="content" hidden>
       <section class="card" id="summary-card">
@@ -43,6 +53,7 @@
     </article>
   </main>
 
-  <script src="composer-app.js"></script>
+  <script type="module" src="chat-bridge.js"></script>
+  <script type="module" src="composer-app.js"></script>
 </body>
 </html>

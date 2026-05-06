@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Composer · Settings</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Composer · Settings</h1>
+    <div class="header-controls">
+      <a href="composer.html" class="btn-secondary">← Back to drafts</a>
+    </div>
+  </header>
+
+  <main id="main" class="settings-main">
+    <div id="status-banner" class="state-msg" hidden></div>
+
+    <section class="card">
+      <h2>Your brief</h2>
+      <p class="card-sub">
+        The composer reads this on every run. Tell it what you're working
+        on, who reads your stuff, and your hard rules. Markdown is fine.
+        Vague briefs produce generic drafts.
+      </p>
+      <textarea id="brief-text" class="brief-textarea" rows="20" spellcheck="false"></textarea>
+      <p class="card-meta">
+        Saved to <code>references/brief.md</code>. Resetting reverts to
+        <code>brief.example.md</code> shipped with the skill.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Sources</h2>
+      <p class="card-sub">
+        Where to find external signal during Phase 3. Each enabled
+        site corresponds to a registered tool (FetchHackerNews,
+        FetchReddit, etc.) the agent calls.
+      </p>
+      <div class="grid-2col" id="sources-grid"></div>
+    </section>
+
+    <section class="card">
+      <h2>Targets</h2>
+      <p class="card-sub">
+        Where to draft for during Phase 4. Each enabled lane has its
+        format constraints in <code>references/lane-templates.md</code>.
+      </p>
+      <div class="grid-2col" id="targets-grid"></div>
+    </section>
+
+    <div class="settings-actions">
+      <button id="save-btn" class="btn-primary">Save</button>
+      <button id="reset-btn" class="btn-secondary">Reset to defaults</button>
+    </div>
+  </main>
+
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

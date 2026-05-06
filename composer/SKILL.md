@@ -13,10 +13,6 @@ allowed-tools:
   - Read
   - Write
   - Edit
-  - Bash
-  - Glob
-  - Grep
-  - Task
   - WebSearch
   - WebFetch
   - Memory_query
@@ -28,6 +24,64 @@ app:
   entry: scripts/composer.html
   width: 1200
   height: 900
+permission:
+  mode: admin
+  paths:
+    - ~/.linggen/skills/composer
+    - /tmp
+  warning: >-
+    Composer reads its references + the page-collected context manifest
+    from /tmp, drafts posts in memory, and writes the output JSON to its
+    own data dir. Bash collection (sessions, commits, memories) runs in
+    the skill webpage's iframe, not in the agent — so the agent itself
+    never needs filesystem access beyond its own skill dir and /tmp.
+tools:
+  - name: FetchHackerNews
+    description: >-
+      Fetch the 30 current top HN stories. Returns JSON array of
+      {id, title, url, score, by, descendants, hn_url, age_hours}.
+      Call during Phase 3 to scan HN for posts that overlap with
+      today's themes. Filter the result by theme keyword in your
+      reasoning and score 0-1 for technical specificity.
+    cmd: "$SKILL_DIR/scripts/sites/hackernews.sh"
+    tier: read
+    timeout_ms: 30000
+  - name: FetchReddit
+    description: >-
+      Fetch the 25 newest threads from each subreddit listed in
+      ~/.linggen/skills/composer/config.json (sites.reddit.subs).
+      Returns JSON array of {sub, title, url, comments, age_hours,
+      summary}. Call during Phase 3. Filter by theme keyword and
+      score for relevance.
+    cmd: "$SKILL_DIR/scripts/sites/reddit.sh"
+    tier: read
+    timeout_ms: 30000
+  - name: FetchLobsters
+    description: >-
+      Fetch the lobste.rs newest feed. Returns JSON array of
+      {title, url, comments_url, score, tags, submitter_user,
+      created_at, description}. Call during Phase 3.
+    cmd: "$SKILL_DIR/scripts/sites/lobsters.sh"
+    tier: read
+    timeout_ms: 30000
+  - name: FetchArxiv
+    description: >-
+      Fetch the 30 most recently submitted arxiv papers from CS.AI /
+      CS.LG / CS.CL. Returns JSON array of {title, summary, url,
+      authors, published}. Call during Phase 3 only when a theme is
+      research-adjacent.
+    cmd: "$SKILL_DIR/scripts/sites/arxiv.sh"
+    tier: read
+    timeout_ms: 30000
+  - name: FetchRSS
+    description: >-
+      Fetch each RSS/Atom feed listed in
+      ~/.linggen/skills/composer/config.json (sites.rss.feeds).
+      Returns JSON array of {feed, title, url, summary, date}.
+      Call during Phase 3 if RSS sources are configured.
+    cmd: "$SKILL_DIR/scripts/sites/rss.sh"
+    tier: read
+    timeout_ms: 30000
 ---
 
 # Composer
@@ -38,9 +92,13 @@ Two modes — same skill, two entry paths:
   by the user with *"Generate today's drafts"*). Runs the protocol
   below end-to-end and writes `~/.linggen/skills/composer/data/YYYY-MM-DD.json`.
 - **Review mode** — user opens the skill webpage. The page reads the
-  most recent `data/YYYY-MM-DD.json` and renders it. No agent runs in
-  this mode; the data is already on disk from the most recent draft
-  pass.
+  most recent `data/YYYY-MM-DD.json` and renders it. If the user opened
+  the page (no `source=mission` query param) and there is no data file
+  for today, the page auto-starts a drafting session in an embedded
+  Linggen chat panel — the agent runs the protocol below and the page
+  swaps to the rendered drafts when the JSON file lands. Mission
+  notifications always include `source=mission` so the deep-link only
+  shows existing data and never spawns a second run.
 
 If you (the agent) are reading this because you were invoked, you're
 in **draft mode**. Run the protocol below.
@@ -52,16 +110,21 @@ in **draft mode**. Run the protocol below.
 Before any drafting, **Read** these files. Match them; do not
 paraphrase.
 
-1. `~/.linggen/skills/composer/references/voice-samples.md` — user's
+1. `~/.linggen/skills/composer/references/brief.md` — user's
+   self-described purpose, audience, voice rules, and active context.
+   This is the most load-bearing file — it tells you what the user is
+   trying to accomplish, who reads their work, and what hard rules to
+   honor. Re-anchor to it after every phase.
+2. `~/.linggen/skills/composer/references/voice-samples.md` — user's
    actual past writing. Anchor cadence, word choice, rhythm. If empty
    or sparse, use plain technical English; do NOT default to
    "🚀 I'm thrilled to share..." LLM cadence.
-2. `~/.linggen/skills/composer/references/style-guide.md` — explicit
+3. `~/.linggen/skills/composer/references/style-guide.md` — explicit
    avoid-list and cadence rules layered on top of voice samples.
-3. `~/.linggen/skills/composer/references/lane-templates.md` — format
+4. `~/.linggen/skills/composer/references/lane-templates.md` — format
    constraints per lane (X 280 chars, medium 500-1000 words, blog
-   1500-3000 words).
-4. `~/.linggen/skills/composer/references/source-blogs.md` — curated
+   1500-3000 words, reddit-comment, linkedin, substack).
+5. `~/.linggen/skills/composer/references/source-blogs.md` — curated
    personal-blog feeds beyond HN/lobste.rs.
 
 ## Drafting protocol
@@ -74,13 +137,18 @@ paraphrase.
 
 ### Phase 1 — Gather context
 
-Run `scripts/collect.sh` via Bash. It writes
-`/tmp/composer-manifest-<date>.json` containing:
+The skill webpage runs `scripts/collect.sh` for you (client-side, via
+the iframe's `/api/bash` channel — not gated by agent permissions) and
+passes the manifest path in the kickoff prompt as `MANIFEST_PATH`. Open
+it with **Read**. The manifest contains:
 - `sessions[]` — last 24h sessions (path, user-turn count, byte size)
 - `commits[]` — last 24h git logs from `~/workspace/*` repos
 - `memories[]` — ling-mem rows added/updated in last 24h (use
-  `Memory_query` to fetch, with `since: <yesterday-iso>`)
+  `Memory_query` to fetch more if needed)
 - `voice_samples` — preloaded text of voice-samples.md
+
+You do NOT have Bash. If the kickoff prompt is missing `MANIFEST_PATH`,
+ask the user to refresh the page rather than trying to shell out.
 
 If the manifest shows fewer than 2 substantive sessions (`user_turns
 < 2 AND bytes < 2000`) AND zero meaningful commits AND zero new
@@ -133,17 +201,27 @@ need fresh signal.
 
 ### Phase 3 — Find external signal (cap: 8 sources scanned)
 
-For each theme, dispatch parallel `WebSearch` + `WebFetch` calls:
+Sources are configured by the user in `~/.linggen/skills/composer/config.json`
+under the `sites` block. Read that file first to discover which sites
+are enabled, then call the corresponding **registered tool** for each:
 
-1. **HN top** — `WebSearch "site:news.ycombinator.com <theme keyword>"`
-   filtered to last 7 days. Pick top 1-2 hits per theme.
-2. **lobste.rs newest** — `WebFetch https://lobste.rs/newest` and grep
-   the result for theme keywords in titles/tags.
-3. **arxiv recent** — `WebSearch "site:arxiv.org <theme keyword>"`
-   filtered to last 30 days, only if theme is research-adjacent.
-4. **Curated blogs** — `WebFetch` each URL listed in
-   `references/source-blogs.md` (cap 5 URLs total) and look for posts
-   mentioning theme keywords.
+| Site (config key)    | Tool to call       | Notes                              |
+|----------------------|--------------------|------------------------------------|
+| `hackernews`         | `FetchHackerNews`  | Returns top 30 HN stories          |
+| `reddit`             | `FetchReddit`      | Reads `subs[]` from config         |
+| `lobsters`           | `FetchLobsters`    | Lobsters newest feed               |
+| `arxiv`              | `FetchArxiv`       | Recent CS.AI / CS.LG / CS.CL       |
+| `rss`                | `FetchRSS`         | Reads `feeds[]` from config        |
+
+Dispatch the enabled tools in parallel. Each tool returns a JSON array;
+read its output, then filter by theme keyword in your own reasoning.
+Do **not** fall back to raw `WebSearch` / `WebFetch` for sites covered
+by a tool — the tools run pre-approved (no permission prompt) and are
+the configured source of truth. `WebSearch` is reserved for one-off
+research outside the configured site set.
+
+If a theme is research-adjacent and `arxiv` is enabled, prefer
+`FetchArxiv` over generic web search.
 
 For each external hit, score on a 0-1 scale:
 - 1.0 = the article makes a specific technical claim that user's work
@@ -163,10 +241,22 @@ Determine the day's *weight* from manifest signal:
 - `large` = multiple aligned themes + strong external sources + a
   user insight worth deep treatment
 
-Generate drafts per weight:
-- `small` → 1 X-post draft (or skip if even that's a stretch)
-- `medium` → 1 X-post + 1 medium-length article draft
-- `large` → all three (X + medium + blog)
+Read `~/.linggen/skills/composer/config.json`'s `targets` block to
+discover which lanes the user has enabled. Only draft for targets
+where `enabled: true`. Match each draft to the lane spec in
+`references/lane-templates.md`.
+
+Pick which enabled targets get drafts based on weight:
+- `small` → 1 short-form draft (pick the shortest enabled target —
+  typically `x-post`; skip if no enabled target fits the signal level)
+- `medium` → 1 short-form + 1 mid-length draft (e.g. `x-post` +
+  `medium` or `linkedin`)
+- `large` → draft for every enabled target
+
+If a weight calls for a lane that's not enabled, skip it (don't draft
+into a disabled target). Reddit-comment is a special case: only draft
+one if a Phase 3 source surfaced a high-relevance Reddit thread
+(score ≥ 0.8) that directly invites a comment from your expertise.
 
 Each draft MUST:
 - Open with the user's lived experience or technical observation, not

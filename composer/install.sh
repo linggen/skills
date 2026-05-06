@@ -49,20 +49,46 @@ MISSION_DIR="$LINGGEN_DIR/missions/influencer"
 DATA_DIR="$LINGGEN_DIR/skills/composer/data"
 
 echo "Installing composer skill to $SKILL_DIR/"
-mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/references" "$SKILL_DIR/assets" "$DATA_DIR"
+mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references" "$SKILL_DIR/assets" "$DATA_DIR"
 
 # Skill files.
 install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"
 install -m 0644 "$SOURCE_DIR/index.html"  "$SKILL_DIR/index.html"
-for f in composer.html composer-app.js style.css; do
+for f in composer.html composer-app.js chat-bridge.js api.js page-render.js style.css \
+         settings.html settings.js settings.css; do
   install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
 done
 for f in run.sh collect.sh; do
   install -m 0755 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
 done
-for f in voice-samples.md style-guide.md lane-templates.md source-blogs.md; do
+
+# Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
+for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh; do
+  install -m 0755 "$SOURCE_DIR/scripts/sites/$f" "$SKILL_DIR/scripts/sites/$f"
+done
+
+for f in voice-samples.md style-guide.md lane-templates.md source-blogs.md brief.example.md; do
   install -m 0644 "$SOURCE_DIR/references/$f" "$SKILL_DIR/references/$f"
 done
+
+# Seed config.json from the example on first install. Existing user
+# configs are preserved across upgrades.
+install -m 0644 "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.example.json"
+if [ ! -f "$SKILL_DIR/config.json" ]; then
+  cp "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json"
+  echo "  Seeded $SKILL_DIR/config.json from example. Edit in Settings to configure."
+else
+  echo "  Existing $SKILL_DIR/config.json left alone."
+fi
+
+# Seed brief.md from the example on first install. Brief is the user's
+# editable persona/style/purpose document — always preserved on upgrade.
+if [ ! -f "$SKILL_DIR/references/brief.md" ]; then
+  cp "$SOURCE_DIR/references/brief.example.md" "$SKILL_DIR/references/brief.md"
+  echo "  Seeded $SKILL_DIR/references/brief.md from example. Edit in Settings."
+else
+  echo "  Existing $SKILL_DIR/references/brief.md left alone."
+fi
 
 # Mission file (referenced by the install_mission step below).
 install -m 0644 "$SOURCE_DIR/assets/mission.md" "$SKILL_DIR/assets/mission.md"
