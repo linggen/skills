@@ -32,7 +32,7 @@ The user types a goal — *"Help me launch Sys Doctor on r/macapps"* / *"Daily X
 
 **Project.** A user has one or more projects. Each owns:
 - Identity — name, path, description, audience, stage
-- Live **Pulse** — market state, refreshed daily
+- Live **Signal feed** — market state, refreshed daily
 - Live **Discovery feed** — pain points + comment candidates
 - **Progress log** — auto-built from sessions / commits / memory
 - **Library** — every run output, every draft, every research artifact
@@ -41,12 +41,12 @@ The user types a goal — *"Help me launch Sys Doctor on r/macapps"* / *"Daily X
 
 | Surface | Purpose |
 |:--------|:--------|
-| **Inbox** | Today's actionable cards across Pulse, Discovery, Progress + Drafts. Lands here on open. |
+| **Pulse** (the page) | The main app surface. 3 columns — sessions sidebar / cards (Mentions, Replies due, Discovery, Signal, Progress + Drafts) / agent chat. Lands here on open. |
 | **Library** | Browse past runs by project + date. The history archive. |
-| **New run** | Free-text goal + scope hints (project path, artifact URL, window) + targets. Manual trigger. |
+| **New run** | Free-text goal + scope hints (project path, artifact URL, window) + targets. Manual trigger via chip or chat. |
 | **Settings** | Projects, brief, voice samples, sources, targets, schedules. |
 
-Inbox is the loop. Library is the archive. Settings is plumbing. Three surfaces, no more.
+The page is the loop. Library is the archive. Settings is plumbing. Three surfaces, no more.
 
 ## Data model
 
@@ -62,9 +62,9 @@ Inbox is the loop. Library is the archive. Settings is plumbing. Three surfaces,
   data/
     YYYY-MM-DD/<run-id>.json         # one file per run; populated sections only
   scripts/
-    pulse.html                       # Inbox + history review UI
+    pulse.html                       # main Pulse page + history review UI
     settings.html                    # Settings UI
-    pulse-app.js                     # Inbox app logic
+    pulse-app.js                     # Pulse page app logic
     settings.js                      # Settings app logic
     collect.sh                       # local-signal collector (sessions, commits, memory)
     sites/                           # site adapters — registered as skill tools
@@ -173,14 +173,14 @@ Same skill, same protocol, same data shape. Only the goal text changes.
 | 1. Site tools registered, settings page, brief | **done** | sources/targets/brief configured by user |
 | 2. Free-text goal field on the run | next | replaces hardcoded "scan 24h, draft" with `goal` parameter |
 | 3. Project entity + project-aware scopes | next | `project.sh` collector reads README/docs/structure |
-| 4. Inbox UI (cards across feeds) | next | replaces the current single-day review page |
+| 4. Pulse page UI (3 columns + cards) | next | replaces the current single-day review page |
 | 5. Saved runs + per-run scheduling | next | unifies missions and ad-hoc into one model |
 | 6. Multi-project model | future | per-project briefs, per-project sources |
 | 7. Linggen-app premium tier | future | managed sources, scheduled runs, history retention |
 
 ## Related docs
 
-- [`design.md`](design.md) — capability protocols, tool catalog, state layer, Inbox layout, dispatch rules, run JSON schema
+- [`design.md`](design.md) — capability protocols, tool catalog, state layer, Pulse page layout, dispatch rules, run JSON schema
 - `SKILL.md` — protocol and tool registration (Linggen skill format)
 - `references/brief.md` — user's standing context (editable)
 - `references/lane-templates.md` — per-target format constraints

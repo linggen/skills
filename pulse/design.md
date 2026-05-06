@@ -14,7 +14,7 @@ guide: |
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  User                                                           │
-│    types goal      reviews Inbox      polishes drafts           │
+│    types goal      reviews Pulse      polishes drafts           │
 └──────────┬──────────────┬──────────────────┬──────────────────┘
            ▼              ▼                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
@@ -118,7 +118,7 @@ prompts.
 Each new tool: ~30 lines of bash, one entry in SKILL.md frontmatter,
 no engine change.
 
-## Operator surface: the Inbox
+## Operator surface: the Pulse page
 
 Three vertical sections, top-to-bottom:
 
@@ -135,7 +135,7 @@ Three vertical sections, top-to-bottom:
 │ Discovery                                 [cold opportunities] │
 │ ─ "r/LocalLLaMA: 'how do I add tool calling to Ollama?' "       │
 ├─────────────────────────────────────────────────────────────────┤
-│ Pulse + Progress + Drafts                 [daily summary]      │
+│ Signal + Progress + Drafts                [daily summary]      │
 │ ─ market landscape cards                                        │
 │ ─ "yesterday you shipped X, drafted Y"                          │
 │ ─ drafts pending review                                         │
@@ -162,7 +162,7 @@ State is updated by capabilities (e.g., `monitor-mentions` updates
 updates `launches.json` when it sees a launch event in commits).
 
 State is read by:
-- Inbox renderer (status strip)
+- Pulse renderer (status strip)
 - `monitor-mentions` (which posts to triage replies on)
 - `track-progress` (where in launch sequence)
 - `draft-content` (audience-aware tone calibration over time)
@@ -208,8 +208,52 @@ One file per run, all sections optional:
 }
 ```
 
-Inbox renderer iterates through populated sections in priority order
-(mentions, replies, discovery, pulse, progress, drafts).
+Pulse renderer iterates through populated sections in priority order
+(mentions, replies, discovery, signal, progress, drafts).
+
+## Partial runs and PageUpdate body_patch
+
+A run does NOT always touch every section. A goal like *"find threads"*
+invokes only `discover-customers`; a *"check mentions"* run touches only
+`mentions[]` and `replies_due[]`. The Pulse page must handle this
+without losing prior content.
+
+The contract — same as Sys Doctor's dashboard:
+
+- **Each capability emits a PageUpdate `body_patch`** scoped to the
+  sections it produced. Missing sections in a patch mean *not touched —
+  leave existing render in place*.
+- **The session's data file accumulates patches** throughout the day.
+  Today's session starts empty; each goal run adds/updates its
+  affected sections; the file's final shape is the union.
+- **A new session starts empty.** Yesterday's mentions don't carry
+  into today; each day is its own page state. Cross-session
+  persistence lives in the state layer (account health, launches,
+  posted, watchlist-cache), not in per-session data.
+- **The renderer applies patches incrementally** — like sys-doctor
+  swapping the Security scorecard when `ScanSecurity` finishes,
+  Pulse swaps the Mentions section when `monitor-mentions` finishes,
+  even if Discovery wasn't re-run.
+
+Concrete: clicking the `🔍 Find threads` chip dispatches a goal that
+runs only `discover-customers`. The agent emits:
+
+```json
+{
+  "body_patch": [
+    { "match": { "section": "discovery" },
+      "items": [...] }
+  ]
+}
+```
+
+Discovery cards refresh; everything else (mentions from this morning's
+run, drafts pending review) stays in place.
+
+This eliminates the "empty section means not-scanned vs found-nothing"
+ambiguity. *"Found nothing"* gets its own empty-state card inside the
+section (*"No new threads matching your brief today"*). *"Not
+scanned"* leaves the section as-is.
 
 ## Goal → capability dispatch (examples)
 
@@ -232,12 +276,12 @@ SKILL.md "Goal dispatch" section (loose; the agent has discretion).
 - Vision (one paragraph)
 - The five capabilities table (high-level)
 - Core entity (Project)
-- Operator surfaces (high-level: Inbox, Library, New run, Settings)
+- Operator surfaces (high-level: the Pulse page, Library, New run, Settings)
 - Distribution
 - Sequencing
 
 ## What lives only in design.md
 
 - This document. Capability protocols, tool catalog, state layer,
-  Inbox layout, dispatch rules, JSON schema. Implementation-adjacent
+  Pulse page layout, dispatch rules, JSON schema. Implementation-adjacent
   but not code.
