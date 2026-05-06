@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pulse · Inbox (wireframe)</title>
+  <style>
+    :root {
+      --bg: #0a0d12;
+      --surface: #14181f;
+      --surface-2: #1b2028;
+      --border: #2a2f38;
+      --text: #e6e7ea;
+      --muted: #8a8f99;
+      --accent: #5b9dff;
+      --accent-soft: rgba(91, 157, 255, 0.12);
+      --green: #6ddd9a;
+      --amber: #f0b96b;
+      --red: #ff8585;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ============ APP SHELL ============ */
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr 380px;
+      grid-template-rows: 56px 1fr;
+      height: 100vh;
+    }
+
+    /* ============ LEFT SIDEBAR (sessions) ============ */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 0.85rem 0.5rem;
+    }
+    .side-section { padding: 0 0.4rem 0.85rem; }
+    .side-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      padding: 0.5rem 0.35rem 0.4rem;
+    }
+    .side-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.42rem 0.55rem;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .side-item:hover { background: var(--surface); }
+    .side-item.selected { background: var(--accent-soft); color: var(--accent); }
+    .side-item.selected .side-name { font-weight: 600; }
+    .side-item .side-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .side-item .side-name { flex: 1; }
+    .side-item .side-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+    .side-item.selected .side-sub { color: var(--accent); opacity: 0.85; }
+    .side-item .side-badge {
+      padding: 1px 6px; border-radius: 999px;
+      background: var(--accent); color: var(--bg);
+      font-size: 10px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .side-item .side-count { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+    .side-divider { height: 1px; background: var(--border); margin: 0.5rem 0.45rem; }
+
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0 1rem 0 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .header h1 {
+      flex: 1;
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .header h1::before { content: "⏺ "; color: var(--green); margin-right: 4px; }
+    .header a, .header button {
+      font: inherit;
+      font-size: 13px;
+      color: var(--muted);
+      background: none;
+      border: 0;
+      padding: 0.4rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .header a:hover, .header button:hover { background: var(--surface); color: var(--text); }
+    .header button.primary {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    /* ============ INBOX (left/main column) ============ */
+    .inbox {
+      overflow-y: auto;
+      padding: 0.85rem 1.25rem 4rem;
+      border-right: 1px solid var(--border);
+    }
+
+    /* Session selector at top of inbox */
+    .session-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.45rem 0.7rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 0.55rem;
+    }
+    .session-bar:hover { border-color: var(--accent); }
+    .session-bar .label {
+      flex: 1;
+      font-size: 13px;
+    }
+    .session-bar .label b { font-weight: 600; }
+    .session-bar .label .sub { color: var(--muted); margin-left: 0.5rem; font-size: 12px; }
+    .session-bar .arrow { color: var(--muted); font-size: 11px; }
+    .session-bar .badge {
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Status strip */
+    .status {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0.6rem 0.85rem;
+      margin: 0 0 1.2rem;
+      background: var(--surface);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .status .sep { color: var(--border); padding: 0 0.15rem; }
+    .status .ok { color: var(--green); }
+    .status .due { color: var(--accent); }
+    .status .refresh { margin-left: auto; cursor: pointer; color: var(--muted); }
+    .status .refresh:hover { color: var(--accent); }
+
+    /* Sections */
+    .section { margin-bottom: 1.5rem; }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      padding: 0.25rem 0.1rem 0.55rem;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .section-head .count {
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 10px;
+      letter-spacing: 0;
+    }
+    .section-head .right { margin-left: auto; font-weight: 500; letter-spacing: 0.02em; text-transform: none; }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.55rem;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: rgba(91, 157, 255, 0.4); }
+    .card .top { display: flex; align-items: flex-start; gap: 0.55rem; }
+    .card .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+    .card .dot.unread { background: var(--accent); }
+    .card .dot.cold { background: var(--muted); opacity: 0.4; }
+    .card .body { flex: 1; min-width: 0; }
+    .card .title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+    .card .meta { font-size: 12px; color: var(--muted); margin-bottom: 0.5rem; }
+    .card .meta b { color: var(--text); font-weight: 500; }
+    .card .quote {
+      color: var(--muted);
+      font-style: italic;
+      padding-left: 0.65rem;
+      border-left: 2px solid var(--border);
+      margin: 0.5rem 0 0.7rem;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .card .actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.55rem; }
+    .card .actions button {
+      font: inherit;
+      font-size: 12px;
+      padding: 0.35rem 0.7rem;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .card .actions button:hover { border-color: var(--accent); color: var(--accent); }
+    .card .actions button.primary {
+      background: var(--accent-soft);
+      border-color: rgba(91, 157, 255, 0.35);
+      color: var(--accent);
+    }
+    .card .actions button.dismiss {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 0.3rem 0.55rem;
+    }
+
+    /* Follow-up reply (the killer feature) */
+    .card .followup {
+      margin-top: 0.85rem;
+      padding: 0.75rem 0.85rem;
+      background: rgba(109, 221, 154, 0.06);
+      border-left: 3px solid var(--green);
+      border-radius: 0 6px 6px 0;
+    }
+    .card .followup .label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+    .card .followup .quote {
+      margin: 0.3rem 0 0.55rem;
+      border-left-color: rgba(109, 221, 154, 0.3);
+      font-style: normal;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .card .followup .actions { margin-top: 0.4rem; }
+
+    /* Pulse + Progress dense card */
+    .card.dense .body ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0.5rem 0;
+      font-size: 13px;
+    }
+    .card.dense .body ul li { padding: 0.18rem 0; color: var(--text); }
+    .card.dense .body ul li::before { content: "·  "; color: var(--muted); margin-right: 4px; }
+
+    .card .draft-preview {
+      padding: 0.7rem 0.85rem;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12.5px;
+      line-height: 1.55;
+      margin: 0.55rem 0;
+      white-space: pre-wrap;
+    }
+    .card .draft-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.3rem;
+    }
+
+    .show-more {
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      text-align: center;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .show-more:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* Action chip row (sys-doctor analog) */
+    .action-chips {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      padding: 0 0.1rem 1rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.85rem;
+      font-size: 12.5px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); }
+    .chip.primary {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: rgba(91, 157, 255, 0.35);
+      font-weight: 600;
+    }
+    .chip.primary:hover { background: rgba(91, 157, 255, 0.2); }
+    .chip .ic { font-size: 13px; opacity: 0.85; }
+
+    /* ============ CHAT (right column) ============ */
+    .chat {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .chat-head {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .chat-head .agent-name {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .chat-head .agent-name::before {
+      content: "● ";
+      color: var(--green);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    .chat-head .status-tag {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .chat-head .status-tag.thinking { color: var(--accent); border-color: rgba(91, 157, 255, 0.3); }
+    .chat-head .status-tag.streaming { color: var(--green); border-color: rgba(109, 221, 154, 0.3); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+
+    .chat-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .msg { font-size: 13.5px; line-height: 1.55; }
+    .msg.agent .who { color: var(--accent); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem; }
+    .msg.user .who { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem; }
+    .msg .body { color: var(--text); }
+    .msg.user .body {
+      background: var(--bg);
+      padding: 0.55rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    /* Tool call inline */
+    .tool-call {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.6rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0.2rem 0;
+    }
+    .tool-call.running { border-color: rgba(91, 157, 255, 0.4); color: var(--accent); }
+    .tool-call.done    { border-color: rgba(109, 221, 154, 0.3); color: var(--text); }
+    .tool-call.done::before { content: "✓ "; color: var(--green); }
+    .tool-call .spin {
+      width: 10px; height: 10px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Streaming caret */
+    .streaming-text::after {
+      content: "▍";
+      color: var(--accent);
+      animation: blink 0.8s steps(2) infinite;
+      margin-left: 1px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Thinking shimmer */
+    .thinking-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-style: italic;
+    }
+    .thinking-row .dots span {
+      display: inline-block;
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--muted);
+      margin-right: 3px;
+      animation: bounce 1.2s infinite;
+    }
+    .thinking-row .dots span:nth-child(2) { animation-delay: 0.15s; }
+    .thinking-row .dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40%           { transform: translateY(-3px); opacity: 1; }
+    }
+
+    /* Card-update notice */
+    .card-update {
+      padding: 0.55rem 0.7rem;
+      background: rgba(109, 221, 154, 0.07);
+      border: 1px solid rgba(109, 221, 154, 0.25);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--green);
+    }
+    .card-update::before { content: "← "; opacity: 0.7; }
+
+    .chat-input {
+      border-top: 1px solid var(--border);
+      padding: 0.7rem 0.85rem 0.85rem;
+      background: var(--surface);
+    }
+    .chat-input .row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+    .chat-input textarea {
+      flex: 1;
+      resize: none;
+      font: inherit;
+      font-size: 13px;
+      padding: 0.5rem 0.7rem;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      min-height: 44px;
+      max-height: 120px;
+    }
+    .chat-input textarea:focus { outline: none; border-color: var(--accent); }
+    .chat-input button {
+      font: inherit;
+      font-size: 13px;
+      padding: 0.5rem 0.95rem;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid rgba(91, 157, 255, 0.35);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .chat-input button:hover { background: rgba(91, 157, 255, 0.2); }
+    .chat-input .hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 0.4rem;
+      padding-left: 0.2rem;
+    }
+
+    .wireframe-banner {
+      position: fixed;
+      bottom: 12px;
+      right: 14px;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 5px 9px;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>Pulse</h1>
+      <a href="#">⚙ Settings</a>
+    </div>
+
+    <!-- LEFT SIDEBAR (sessions) -->
+    <aside class="sidebar">
+      <div class="side-section">
+        <div class="side-label">Sessions</div>
+
+        <div class="side-item selected">
+          <div class="side-text">
+            <span class="side-name">● Today</span>
+            <span class="side-sub">8:00 · daily run</span>
+          </div>
+          <span class="side-badge">12</span>
+        </div>
+
+        <div class="side-item">
+          <div class="side-text">
+            <span class="side-name">Yesterday</span>
+            <span class="side-sub">17:32 · manual</span>
+          </div>
+          <span class="side-count">2</span>
+        </div>
+
+        <div class="side-item">
+          <div class="side-text">
+            <span class="side-name">May 5</span>
+            <span class="side-sub">8:00 · daily run</span>
+          </div>
+          <span class="side-count">1</span>
+        </div>
+
+        <div class="side-item">
+          <div class="side-text">
+            <span class="side-name">May 4</span>
+            <span class="side-sub">8:00 · daily run</span>
+          </div>
+          <span class="side-count">0</span>
+        </div>
+
+        <div class="side-item">
+          <div class="side-text">
+            <span class="side-name">May 3</span>
+            <span class="side-sub">8:00 · daily run</span>
+          </div>
+          <span class="side-badge">1</span>
+        </div>
+      </div>
+
+      <div class="side-divider"></div>
+
+      <div class="side-section">
+        <div class="side-item"><span class="side-name">This week</span><span class="side-count">14</span></div>
+        <div class="side-item"><span class="side-name">This month</span><span class="side-count">52</span></div>
+      </div>
+
+      <div class="side-divider"></div>
+
+      <div class="side-section">
+        <div class="side-label">Archives</div>
+        <div class="side-item"><span class="side-name">📝 Drafts</span><span class="side-count">38</span></div>
+        <div class="side-item"><span class="side-name">@ Mentions</span><span class="side-count">12</span></div>
+      </div>
+    </aside>
+
+    <!-- INBOX (middle column) -->
+    <main class="inbox">
+
+      <!-- Session header (instead of dropdown — sessions are visible left) -->
+      <div style="padding: 0.4rem 0.1rem 0.85rem;">
+        <div style="font-size: 18px; font-weight: 600; letter-spacing: -0.01em;">Today · 8:00 daily run</div>
+        <div style="color: var(--muted); font-size: 13px; margin-top: 2px;">Goal: <i>"Daily X-post if I shipped or learned something yesterday"</i></div>
+      </div>
+
+      <!-- Action chips (sys-doctor analog: discoverable shortcuts) -->
+      <div class="action-chips">
+        <button class="chip primary"><span class="ic">+</span> New run</button>
+        <button class="chip"><span class="ic">↻</span> Refresh today</button>
+        <button class="chip"><span class="ic">🔍</span> Find threads</button>
+        <button class="chip"><span class="ic">@</span> Check mentions</button>
+        <button class="chip"><span class="ic">📊</span> Recap</button>
+        <button class="chip"><span class="ic">⋯</span></button>
+      </div>
+
+      <!-- Status strip -->
+      <div class="status">
+        <span><span class="ok">●</span> r/macapps 47/50</span>
+        <span class="sep">·</span>
+        <span><span class="ok">●</span> HN warm</span>
+        <span class="sep">·</span>
+        <span><span class="ok">●</span> X up</span>
+        <span class="sep">·</span>
+        <span>8d since Sys Doctor launch</span>
+        <span class="sep">·</span>
+        <span class="due">week-2 follow-up due</span>
+        <span class="refresh">⟳</span>
+      </div>
+
+      <!-- MENTIONS -->
+      <div class="section">
+        <div class="section-head">Mentions <span class="count">1 new</span></div>
+        <div class="card">
+          <div class="top">
+            <span class="dot unread"></span>
+            <div class="body">
+              <div class="title">@cedricchase mentioned <b>Sys Doctor</b></div>
+              <div class="meta">r/macapps · 2h ago · 0 replies</div>
+              <div class="quote">"Has anyone actually tried Sys Doctor? It's the read-only Mac AI thing — the no-Clean-button approach is interesting but I'm not sure how often I'd reach for that vs CleanMyMac…"</div>
+              <div class="actions">
+                <button class="primary">✎ Draft reply</button>
+                <button>↗ Open thread</button>
+                <button class="dismiss">×</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPLIES DUE — with follow-up demonstrating "comment got replied" -->
+      <div class="section">
+        <div class="section-head">Replies due <span class="count">3 new</span></div>
+        <div class="card">
+          <div class="top">
+            <span class="dot unread"></span>
+            <div class="body">
+              <div class="title">Your HN post: <b>"Rewriting CleanMyMac as an AI-native app"</b></div>
+              <div class="meta">posted 1d ago · 3 unanswered comments · 47 points · ratio 0.92</div>
+              <div class="actions">
+                <button class="primary">✎ Draft replies</button>
+                <button>↗ Open post</button>
+                <button class="dismiss">×</button>
+              </div>
+              <div class="followup">
+                <div class="label">↳ New reply on a thread you posted in · 1h ago</div>
+                <div class="quote">"Tried it — read-only is genuinely reassuring. CleanMyMac always made me nervous. Will recommend to a couple of folks."</div>
+                <div class="actions">
+                  <button class="primary">✎ Reply back</button>
+                  <button>↗ View on HN</button>
+                  <button class="dismiss">×</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCOVERY -->
+      <div class="section">
+        <div class="section-head">
+          Discovery <span class="count">5 new</span>
+          <span class="right">cold opportunities · matched against brief</span>
+        </div>
+        <div class="card">
+          <div class="top">
+            <span class="dot cold"></span>
+            <div class="body">
+              <div class="title">r/LocalLLaMA · <b>"best agent runtime for local Ollama setup?"</b></div>
+              <div class="meta">12 comments · 4h ago · matches: skills format, agent runtime</div>
+              <div class="actions">
+                <button class="primary">✎ Draft starter</button>
+                <button>↗ Open thread</button>
+                <button class="dismiss">×</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="top">
+            <span class="dot cold"></span>
+            <div class="body">
+              <div class="title">r/macapps · <b>"Is there a tool that catches dormant apps eating disk?"</b></div>
+              <div class="meta">3 comments · 6h ago · direct fit for Sys Doctor</div>
+              <div class="actions">
+                <button class="primary">✎ Draft starter</button>
+                <button>↗ Open thread</button>
+                <button class="dismiss">×</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="show-more">Show 3 more ▾</button>
+      </div>
+
+      <!-- PULSE -->
+      <div class="section">
+        <div class="section-head">Pulse <span class="right">refreshed 8:00 today</span></div>
+        <div class="card dense">
+          <div class="top">
+            <span class="dot cold"></span>
+            <div class="body">
+              <div class="title">Today's market signal</div>
+              <ul>
+                <li>Anthropic shipped Claude 4.7 — adjacent to local-AI agent loops</li>
+                <li>GitHub trending (Rust): 2 new agent-runtime repos today</li>
+                <li>Wikipedia pageviews: <b>"Mac diagnostic tool"</b> +30% this month</li>
+                <li>Product Hunt: 1 CleanMyMac competitor launched, $9/mo</li>
+              </ul>
+              <div class="actions">
+                <button>▾ Expand all</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRESS + DRAFTS -->
+      <div class="section">
+        <div class="section-head">Progress + Drafts <span class="count">1 new</span></div>
+        <div class="card dense">
+          <div class="top">
+            <span class="dot unread"></span>
+            <div class="body">
+              <div class="title">Yesterday — what shipped + draft</div>
+              <ul>
+                <li>Shipped: pulse settings page + 5 site adapter scripts</li>
+                <li>Memory row (<b>fixed</b>): config persistence via /api/bash</li>
+              </ul>
+              <div class="draft-label">X-post draft · 178 / 280 chars (just shortened by agent)</div>
+              <div class="draft-preview">If you split source/target into one toggle list, most sites become naturally dual-role. Reddit's both. HN is source. Your blog is target. One list, one mental model.</div>
+              <div class="actions">
+                <button class="primary">✎ Polish</button>
+                <button>📋 Copy</button>
+                <button class="dismiss">✗ Discard</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- CHAT (right) -->
+    <aside class="chat">
+      <div class="chat-head">
+        <span class="agent-name">Pulse</span>
+        <span class="status-tag streaming">streaming</span>
+      </div>
+
+      <div class="chat-body">
+
+        <!-- Initial greeting after run completed -->
+        <div class="msg agent">
+          <div class="who">Pulse</div>
+          <div class="body">Morning. Today's run scanned 5 sources, found 1 mention, 3 unanswered replies on your HN post, 5 discovery candidates, and 1 progress draft. The HN reply you posted yesterday got engagement — surfaced inline.</div>
+        </div>
+
+        <!-- User asks for a refinement -->
+        <div class="msg user">
+          <div class="who">You</div>
+          <div class="body">shorten the X-post draft, drop the second sentence</div>
+        </div>
+
+        <!-- Agent thinking + tool calls + streaming -->
+        <div class="msg agent">
+          <div class="who">Pulse</div>
+          <div class="body">
+            <div class="thinking-row">
+              <span class="dots"><span></span><span></span><span></span></span>
+              <span>thinking…</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg agent">
+          <div class="who">Pulse</div>
+          <div class="body">
+            <div class="tool-call done">Read references/voice-samples.md (3 examples)</div>
+            <div class="tool-call done">Read references/lane-templates.md → x-post</div>
+            <div class="tool-call running"><span class="spin"></span>Rewriting draft (pass 2/3 — voice + tic-check)</div>
+          </div>
+        </div>
+
+        <!-- Streaming response with caret -->
+        <div class="msg agent">
+          <div class="who">Pulse</div>
+          <div class="body streaming-text">Done. Cut from 234 to 178 chars by dropping the explanation paragraph and tightening the comparison. Kept the punchline ("One list, one mental model"). Same lane rules applied — no closing CTA, no emoji.</div>
+        </div>
+
+        <!-- Card update notice -->
+        <div class="card-update">Updated <b>Progress + Drafts</b> card · X-post draft · 178 chars</div>
+
+      </div>
+
+      <div class="chat-input">
+        <div class="row">
+          <textarea placeholder="Ask, refine, or run a new goal…"></textarea>
+          <button>Send ⏎</button>
+        </div>
+        <div class="hint">⌘+Enter sends · "/" prefix to run a new goal · Esc cancels in-flight tool</div>
+      </div>
+    </aside>
+
+  </div>
+
+  <div class="wireframe-banner">wireframe · static · no JS</div>
+</body>
+</html>
