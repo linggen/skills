@@ -52,7 +52,8 @@ mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references"
 install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"
 install -m 0644 "$SOURCE_DIR/index.html"  "$SKILL_DIR/index.html"
 install -m 0644 "$SOURCE_DIR/product-spec.md" "$SKILL_DIR/product-spec.md"
-for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js style.css \
+for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js \
+         pulse.css style.css \
          settings.html settings.js settings.css; do
   install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
 done

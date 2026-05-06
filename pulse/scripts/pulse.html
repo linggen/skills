@@ -5,54 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pulse</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pulse.css">
 </head>
 <body>
-  <header class="header">
-    <h1>Pulse</h1>
-    <div class="header-controls">
-      <label for="date-input" class="date-label">Date</label>
-      <input type="date" id="date-input" class="date-input" />
-      <button id="refresh-btn" class="btn-secondary" title="Re-read today's data file from disk">Reload</button>
-      <button id="redraft-btn" class="btn-secondary" title="Discard today's data and run the drafting agent again">↻ Re-draft</button>
-      <a href="settings.html" class="btn-secondary" title="Configure sources, targets, and brief">⚙ Settings</a>
-    </div>
-  </header>
+  <div class="app">
 
-  <main id="main">
-    <div id="loading" class="state-msg">Loading drafts…</div>
-    <div id="error" class="state-msg state-error" hidden></div>
-    <div id="empty" class="state-msg" hidden></div>
+    <!-- HEADER (full width) -->
+    <header class="header">
+      <h1>Pulse</h1>
+      <a href="settings.html" title="Configure sources, targets, and brief">⚙ Settings</a>
+    </header>
 
-    <section id="drafting" class="drafting" hidden>
-      <!-- Left view panel — driven by the agent's PageUpdate calls
-           (and seeded with an initial progress widget by the page). -->
-      <div class="drafting-view" id="drafting-view"></div>
+    <!-- LEFT SIDEBAR (sessions) — populated by pulse-app.js from data/ dir -->
+    <aside class="sidebar" id="sidebar">
+      <div class="state-msg" id="sidebar-loading">Loading sessions…</div>
+    </aside>
 
-      <!-- Right chat panel — embedded Linggen chat iframe. -->
-      <div class="drafting-chat-panel" id="drafting-chat"></div>
-    </section>
+    <!-- MIDDLE COLUMN (cards for the selected session) -->
+    <main class="inbox">
 
-    <article id="content" hidden>
-      <section class="card" id="summary-card">
-        <h2>Yesterday's work</h2>
-        <p class="card-sub">What the agent saw across sessions, commits, and memory rows.</p>
-        <ul id="summary-list"></ul>
-        <p class="card-meta">Weight: <span id="weight-tag" class="tag"></span></p>
-      </section>
+      <!-- Session header — populated when a session is selected -->
+      <div class="session-header" id="session-header">
+        <div class="title" id="session-title">Pulse</div>
+        <div class="sub" id="session-sub"></div>
+      </div>
 
-      <section class="card" id="sources-card">
-        <h2>External sources considered</h2>
-        <p class="card-sub">Articles, papers, and posts the agent scored for technical overlap with your work. Below 0.6 is dropped before drafting.</p>
-        <ul id="sources-list" class="sources-list"></ul>
-      </section>
+      <!-- Action chips -->
+      <div class="action-chips">
+        <button class="chip primary" data-chip="new-run"><span class="ic">+</span> New run</button>
+        <button class="chip" data-chip="refresh"><span class="ic">↻</span> Refresh today</button>
+        <button class="chip" data-chip="find-threads"><span class="ic">🔍</span> Find threads</button>
+        <button class="chip" data-chip="check-mentions"><span class="ic">@</span> Check mentions</button>
+        <button class="chip" data-chip="recap"><span class="ic">📊</span> Recap</button>
+        <button class="chip" data-chip="more" title="More actions"><span class="ic">⋯</span></button>
+      </div>
 
-      <section id="drafts-section">
-        <h2 class="drafts-heading">Drafts</h2>
-        <div id="drafts-list"></div>
-      </section>
-    </article>
-  </main>
+      <!-- Status strip — populated from state/ files -->
+      <div class="status" id="status-strip" hidden></div>
+
+      <!-- Sections — populated by pulse-render.js applying body_patches -->
+      <div id="sections-container">
+        <div class="state-msg" id="sections-loading">Loading…</div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT COLUMN (chat) — chat-bridge.mount appends an iframe here -->
+    <aside class="chat" id="chat-panel"></aside>
+
+  </div>
 
   <script type="module" src="chat-bridge.js"></script>
   <script type="module" src="pulse-app.js"></script>

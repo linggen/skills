@@ -1,649 +1,484 @@
-// pulse-app.js — review UI for the pulse skill.
+// pulse-app.js — Pulse main page app shell.
 //
-// Reads the daily draft JSON written by a saved Pulse run (or
-// any on-demand draft run) from ~/.linggen/skills/pulse/data/<date>.json
-// and renders summary, external sources, and drafts with copy buttons.
+// Responsibilities:
+//   1. Discover sessions in ~/.linggen/skills/pulse/data/, render the
+//      sessions sidebar.
+//   2. Load the selected session's session.json, hand it to the
+//      renderer (page-render.js).
+//   3. Mount the Linggen chat iframe in the right column. Forward
+//      PageUpdate tool calls from the agent to the renderer.
+//   4. Persist the in-memory session back to disk on every body_patch.
+//   5. Wire action chips and card actions to chat messages.
+//   6. Render the status strip from state/ files.
 //
-// When the user opens the page (no `source=mission` query param) and
-// today's data file is missing, this view auto-starts a drafting
-// session in an embedded Linggen chat panel and polls for the JSON to
-// land. Saved-run deep-link opens (`source=mission`) skip the auto-trigger
-// and just display whatever's already on disk.
-//
-// Sys-doctor pattern: the page itself runs context-collection bash
-// (`scripts/collect.sh`) via /api/bash from the iframe — that path is
-// ungated by Linggen's agent permission system, so the user never sees
-// an admin prompt. The agent only does themes/external-search/drafting
-// and writes the final JSON; SKILL.md's permission block pre-authorizes
-// its read+write footprint on ~/.linggen/skills/pulse + /tmp.
+// Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
+// agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, resetPage } from './page-render.js';
 
-const DATA_DIR = '~/.linggen/skills/pulse/data';
+const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
-// ---- DOM refs ---------------------------------------------------------
+// ---- App state -----------------------------------------------------------
 
-const els = {
-  dateInput: document.getElementById('date-input'),
-  refreshBtn: document.getElementById('refresh-btn'),
-  redraftBtn: document.getElementById('redraft-btn'),
-  loading: document.getElementById('loading'),
-  error: document.getElementById('error'),
-  empty: document.getElementById('empty'),
-  drafting: document.getElementById('drafting'),
-  draftingChat: document.getElementById('drafting-chat'),
-  content: document.getElementById('content'),
-  summaryList: document.getElementById('summary-list'),
-  weightTag: document.getElementById('weight-tag'),
-  sourcesCard: document.getElementById('sources-card'),
-  sourcesList: document.getElementById('sources-list'),
-  draftsSection: document.getElementById('drafts-section'),
-  draftsList: document.getElementById('drafts-list'),
+const state = {
+  selectedDate: null,
+  sessions: [],   // [{ date, started_at, last_run_at, run_count, sample_goal, unread_count }]
+  chat: null,     // chat-bridge controller
 };
 
-// Track an in-flight auto-trigger so we don't spawn duplicates on
-// rapid date changes / refresh clicks.
-let activeDraftRun = null;
+// ---- Bash bridge ---------------------------------------------------------
 
-// ---- Init -------------------------------------------------------------
+async function runBash(cmd) {
+  const res = await fetch('/api/bash', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ project_root: '/tmp', command: cmd }),
+  });
+  if (!res.ok) throw new Error(`bash ${res.status}`);
+  const body = await res.json();
+  if (body.exit_code && body.exit_code !== 0) {
+    throw new Error(body.stderr || `bash exit ${body.exit_code}`);
+  }
+  return body.stdout || '';
+}
 
-function todayLocal() {
+async function readJson(path, fallback = null) {
+  const cmd = `[ -f "${path}" ] && cat "${path}" || true`;
+  const out = (await runBash(cmd)).trim();
+  if (!out) return fallback;
+  try { return JSON.parse(out); } catch { return fallback; }
+}
+
+async function writeJson(path, value) {
+  const json = JSON.stringify(value, null, 2);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const cmd = `mkdir -p "$(dirname "${path}")" && echo "${b64}" | base64 --decode > "${path}"`;
+  await runBash(cmd);
+}
+
+// ---- Date helpers --------------------------------------------------------
+
+function todayDate() {
   const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  return d.toISOString().slice(0, 10);  // YYYY-MM-DD
 }
 
-function isMissionTriggered() {
-  // Saved-run notifications deep-link with `?source=mission` so the page
-  // shows whatever the agent already wrote and never auto-triggers a
-  // second run. User-opened paths (skill card click, direct URL) omit
-  // this param and may auto-trigger when today's data is missing.
-  return new URLSearchParams(location.search).get('source') === 'mission';
+function dateLabelRelative(dateStr) {
+  if (dateStr === todayDate()) return 'Today';
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  if (dateStr === yesterday.toISOString().slice(0, 10)) return 'Yesterday';
+  // Else "May 5" style
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[m - 1]} ${d}`;
 }
 
-function init() {
-  const params = new URLSearchParams(location.search);
-  const initialDate = params.get('date') || todayLocal();
-  els.dateInput.value = initialDate;
+// ---- Sidebar -------------------------------------------------------------
 
-  els.refreshBtn.addEventListener('click', () => loadDate(els.dateInput.value));
-  els.dateInput.addEventListener('change', () => {
-    syncRedraftButton();
-    loadDate(els.dateInput.value);
-  });
-  els.redraftBtn.addEventListener('click', () => redraftToday());
+async function loadSidebar() {
+  // List directories in data/.
+  const cmd = `ls -1 ${SKILL_DIR}/data 2>/dev/null | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort -r`;
+  const out = (await runBash(cmd)).trim();
+  const dirs = out ? out.split('\n').filter(Boolean) : [];
 
-  syncRedraftButton();
-  loadDate(initialDate);
-}
+  // Ensure today is always present, even with no data file yet.
+  const today = todayDate();
+  if (!dirs.includes(today)) dirs.unshift(today);
 
-// Re-draft only makes sense for today — collect.sh scans the last 24h
-// window relative to wall-clock now, so re-running for a past date
-// would produce data tagged with that date but reflecting today's
-// activity. Disable the button outside today.
-function syncRedraftButton() {
-  const isToday = els.dateInput.value === todayLocal();
-  els.redraftBtn.disabled = !isToday;
-  els.redraftBtn.title = isToday
-    ? "Discard today's data and run the drafting agent again"
-    : 'Re-draft is only available for today';
-}
-
-async function redraftToday() {
-  const date = todayLocal();
-  // If the existing file has actual drafts, confirm before nuking.
-  // Skip files (or no file) go straight through.
-  let existing = null;
-  try { existing = await fetchDraftJson(date); } catch (_) { /* treat as none */ }
-  if (existing && !existing.skipped && (existing.drafts || []).length > 0) {
-    const ok = confirm(`Today's data has ${existing.drafts.length} draft(s). Re-drafting will overwrite them. Continue?`);
-    if (!ok) return;
+  // Load metadata for each.
+  state.sessions = [];
+  for (const date of dirs.slice(0, 30)) {  // cap to most recent 30
+    const meta = await loadSessionMeta(date);
+    state.sessions.push(meta);
   }
 
-  // Delete both today's file and latest.json so the page falls back
-  // to the no-data branch and auto-triggers a fresh agent run.
-  const cmd = `rm -f "$HOME/.linggen/skills/pulse/data/${date}.json" "$HOME/.linggen/skills/pulse/data/latest.json"`;
+  renderSidebar();
+}
+
+async function loadSessionMeta(date) {
+  const sess = await readJson(`${SKILL_DIR}/data/${date}/session.json`);
+  if (!sess) {
+    return { date, run_count: 0, sample_goal: null, unread_count: 0, started_at: null, last_run_at: null };
+  }
+  const runs = Array.isArray(sess.runs) ? sess.runs : [];
+  const unread = Object.values(sess.sections || {}).reduce(
+    (acc, sec) => acc + ((sec?.cards || []).filter(c => c.type !== 'empty').length),
+    0
+  );
+  return {
+    date,
+    run_count: runs.length,
+    sample_goal: runs[0]?.goal || null,
+    unread_count: unread,
+    started_at: sess.started_at,
+    last_run_at: sess.last_run_at,
+  };
+}
+
+function renderSidebar() {
+  const el = document.getElementById('sidebar');
+  el.innerHTML = '';
+
+  // Section: Sessions
+  const sect = document.createElement('div');
+  sect.className = 'side-section';
+  const lbl = document.createElement('div');
+  lbl.className = 'side-label';
+  lbl.textContent = 'Sessions';
+  sect.appendChild(lbl);
+
+  for (const s of state.sessions) {
+    sect.appendChild(renderSidebarItem(s));
+  }
+  el.appendChild(sect);
+
+  el.appendChild(divider());
+
+  // Section: Aggregate ranges (placeholder counts for now)
+  const agg = document.createElement('div');
+  agg.className = 'side-section';
+  agg.appendChild(staticItem('This week', `${state.sessions.slice(0, 7).reduce((a, s) => a + s.unread_count, 0)}`));
+  agg.appendChild(staticItem('This month', `${state.sessions.slice(0, 30).reduce((a, s) => a + s.unread_count, 0)}`));
+  el.appendChild(agg);
+
+  el.appendChild(divider());
+
+  // Section: Archives
+  const arc = document.createElement('div');
+  arc.className = 'side-section';
+  const arcLbl = document.createElement('div');
+  arcLbl.className = 'side-label';
+  arcLbl.textContent = 'Archives';
+  arc.appendChild(arcLbl);
+  arc.appendChild(staticItem('📝 Drafts', countAcrossSessions(s => s.draftCount)));
+  arc.appendChild(staticItem('@ Mentions', countAcrossSessions(s => s.mentionCount)));
+  el.appendChild(arc);
+}
+
+function countAcrossSessions(_) { return '—'; }  // stub: cheap placeholder; fill in later
+
+function renderSidebarItem(s) {
+  const item = document.createElement('div');
+  item.className = 'side-item';
+  if (s.date === state.selectedDate) item.classList.add('selected');
+  item.dataset.date = s.date;
+  item.addEventListener('click', () => selectSession(s.date));
+
+  const text = document.createElement('div');
+  text.className = 'side-text';
+  const name = document.createElement('span');
+  name.className = 'side-name';
+  name.textContent = (s.date === state.selectedDate ? '● ' : '') + dateLabelRelative(s.date);
+  const sub = document.createElement('span');
+  sub.className = 'side-sub';
+  sub.textContent = s.last_run_at
+    ? new Date(s.last_run_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + (s.sample_goal ? truncate(s.sample_goal, 32) : 'no goal')
+    : 'no runs yet';
+  text.appendChild(name);
+  text.appendChild(sub);
+  item.appendChild(text);
+
+  if (s.unread_count > 0) {
+    const badge = document.createElement('span');
+    badge.className = 'side-badge';
+    badge.textContent = String(s.unread_count);
+    item.appendChild(badge);
+  }
+  return item;
+}
+
+function staticItem(label, count) {
+  const item = document.createElement('div');
+  item.className = 'side-item';
+  const text = document.createElement('span');
+  text.className = 'side-name';
+  text.textContent = label;
+  item.appendChild(text);
+  const cnt = document.createElement('span');
+  cnt.className = 'side-count';
+  cnt.textContent = String(count);
+  item.appendChild(cnt);
+  return item;
+}
+
+function divider() {
+  const d = document.createElement('div');
+  d.className = 'side-divider';
+  return d;
+}
+
+// ---- Session selection ---------------------------------------------------
+
+async function selectSession(date) {
+  state.selectedDate = date;
+  // Reload session content
+  const sess = await readJson(`${SKILL_DIR}/data/${date}/session.json`);
+  loadSession(sess);  // renderer applies it
+  // Update header
+  const meta = state.sessions.find(s => s.date === date);
+  document.getElementById('session-title').textContent =
+    `${dateLabelRelative(date)} · ${meta?.run_count || 0} runs`;
+  document.getElementById('session-sub').textContent = meta?.sample_goal
+    ? `Last goal: "${truncate(meta.sample_goal, 80)}"`
+    : 'Click + New run, or use a chip above, to start.';
+  // Update sidebar selection
+  renderSidebar();
+}
+
+// ---- Persistence ---------------------------------------------------------
+
+async function persistSession(session) {
+  if (!state.selectedDate) return;
+  const path = `${SKILL_DIR}/data/${state.selectedDate}/session.json`;
+  if (!session.session_id) session.session_id = `${state.selectedDate}-${Date.now()}`;
+  if (!session.started_at) session.started_at = new Date().toISOString();
   try {
-    const res = await fetch('/api/bash', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_root: '/tmp', command: cmd }),
+    await writeJson(path, session);
+    // Refresh sidebar metadata for this session.
+    const meta = await loadSessionMeta(state.selectedDate);
+    const idx = state.sessions.findIndex(s => s.date === state.selectedDate);
+    if (idx >= 0) state.sessions[idx] = meta;
+    renderSidebar();
+  } catch (err) {
+    console.warn('[pulse] persist failed', err);
+  }
+}
+
+// ---- Status strip --------------------------------------------------------
+
+async function loadStatusStrip() {
+  // For phase B we read state/account-health.json + state/launches.json
+  // and assemble a strip. If state/ doesn't exist yet, the strip stays
+  // hidden (renderer handles empty case).
+  const health = await readJson(`${SKILL_DIR}/state/account-health.json`, {});
+  const launches = await readJson(`${SKILL_DIR}/state/launches.json`, []);
+  const items = [];
+
+  for (const [platform, info] of Object.entries(health || {})) {
+    if (!info) continue;
+    if (info.karma != null && info.karma_threshold) {
+      items.push({ label: platform, value: `${info.karma}/${info.karma_threshold}`, tone: 'ok' });
+    } else if (info.status) {
+      items.push({ label: platform, value: '', tone: info.status === 'warm' ? 'ok' : 'warn' });
+    }
+  }
+
+  for (const l of (launches || [])) {
+    if (l.days_since != null) {
+      items.push({ label: `${l.days_since}d since ${l.name}`, tone: 'neutral' });
+    }
+    if (l.followup_due) {
+      items.push({ label: `${l.followup_due} due`, tone: 'due' });
+    }
+  }
+
+  if (items.length > 0) {
+    applyPageUpdate({ status_strip_patch: items });
+  }
+}
+
+// ---- Action chips --------------------------------------------------------
+
+const CHIP_GOALS = {
+  'new-run':        { goal: '', focus: true },
+  'refresh':        { goal: 'Re-run today\'s saved goal.' },
+  'find-threads':   { goal: 'Find threads worth commenting on across configured Reddit subs and HN.' },
+  'check-mentions': { goal: 'Check for mentions of my product or competitors, and triage replies on threads I\'ve posted to.' },
+  'recap':          { goal: 'Generate a recap of this week — what shipped, what learned, drafted as a blog or substack post.' },
+  'more':           { goal: '' },  // TODO: dropdown
+};
+
+function wireChips() {
+  document.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const type = btn.dataset.chip;
+      const conf = CHIP_GOALS[type];
+      if (!conf) return;
+      if (conf.goal) {
+        sendChatMessage(conf.goal);
+      } else if (conf.focus) {
+        // "+ New run" — surface the chat without a preset
+        focusChat();
+      }
     });
-    if (!res.ok) throw new Error(`bash ${res.status}`);
-  } catch (err) {
-    showError(`Failed to clear today's data: ${err.message || err}`);
-    return;
-  }
-
-  els.dateInput.value = date; // snap back to today in case the user navigated away
-  loadDate(date); // no-data → today → user-opened → startDraftRun
+  });
 }
 
-// ---- Data loading -----------------------------------------------------
+// ---- Card actions --------------------------------------------------------
 
-async function loadDate(date) {
-  // Switching dates while a draft run is in flight: tear it down.
-  // The agent session keeps running server-side but we stop watching it.
-  if (activeDraftRun) {
-    try { activeDraftRun.cancel(); } catch (_) { /* ignore */ }
-    activeDraftRun = null;
-  }
+function wireCardActions() {
+  document.getElementById('sections-container').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const cardId = btn.dataset.card;
+    handleCardAction(action, cardId, btn);
+  });
+}
 
-  showOnly('loading');
-  // Surface module-import / runtime issues that would otherwise leave
-  // the page blank. If page-render.js failed to load, applyPageUpdate
-  // is undefined; better to fail loudly in the error pane than show a
-  // mysterious empty viewport.
-  if (typeof applyPageUpdate !== 'function' || typeof resetPage !== 'function') {
-    showError('Pulse scripts failed to load. Open DevTools → Network and check page-render.js returns 200, then hard-refresh (Cmd+Shift+R).');
-    return;
+function handleCardAction(action, cardId, btn) {
+  const card = findCard(cardId);
+  if (!card && !['open-url'].includes(action)) return;
+
+  switch (action) {
+    case 'draft-reply':
+    case 'draft-replies':
+    case 'draft-starter':
+      sendChatMessage(`Refine the ${card.type} draft for "${truncate(card.thread_title || card.your_post_title || card.title || '?', 60)}". Show me the draft and let me iterate.`);
+      break;
+    case 'reply-back':
+      sendChatMessage(`Draft a reply to the new follow-up comment on my "${truncate(card.your_post_title || '?', 60)}" thread.`);
+      break;
+    case 'polish':
+      sendChatMessage(`Polish the ${card.lane || 'draft'} draft below. I'll tell you how I want it tightened in a follow-up.`);
+      break;
+    case 'open':
+    case 'open-url': {
+      const url = btn?.dataset?.url
+        || card?.thread_url || card?.your_post_url || card?.url
+        || (card?.follow_up?.comment_url);
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      break;
+    }
+    case 'expand':
+      sendChatMessage(`Expand on this signal item: ${card.title || card.source}`);
+      break;
+    case 'copy':
+      if (card?.content) {
+        navigator.clipboard.writeText(card.content);
+        flash(btn, 'copied');
+      }
+      break;
+    case 'mark-posted':
+      markCardPosted(cardId);
+      break;
+    case 'discard':
+    case 'dismiss':
+    case 'dismiss-followup':
+      removeCard(cardId);
+      break;
+    default:
+      console.warn('[pulse] unknown action', action);
   }
-  try {
-    const data = await fetchDraftJson(date);
-    if (data) {
-      if (data.skipped) showSkipped(data);
-      else render(data);
+}
+
+function findCard(cardId) {
+  if (!cardId) return null;
+  const sess = getSession();
+  for (const sec of Object.values(sess.sections || {})) {
+    for (const c of (sec.cards || [])) {
+      if (c.id === cardId) return c;
+    }
+  }
+  return null;
+}
+
+function removeCard(cardId) {
+  const sess = getSession();
+  for (const [secId, sec] of Object.entries(sess.sections || {})) {
+    const before = sec.cards?.length || 0;
+    sec.cards = (sec.cards || []).filter(c => c.id !== cardId);
+    if (sec.cards.length !== before) {
+      sec.last_updated = new Date().toISOString();
+      // Re-render and persist via the renderer's apply pipe.
+      loadSession(sess);
+      persistSession(sess);
       return;
     }
-
-    // No data on disk. Auto-trigger only when (a) the user opened the
-    // page (no `source=mission`), and (b) they're looking at today.
-    // Past dates with no data stay empty — re-running yesterday's
-    // collect.sh window now would scan the wrong 24h.
-    if (!isMissionTriggered() && date === todayLocal()) {
-      await startDraftRun(date);
-      return;
-    }
-
-    showEmpty(`No drafts found for ${date}. The pulse skill writes to ${DATA_DIR}/${date}.json — run a saved Pulse run or invoke pulse manually to generate.`);
-  } catch (err) {
-    showError(`Failed to load drafts: ${err.message || err}`);
   }
 }
 
-// Phase ordering for the drafting progress widget. The agent updates
-// the widget via PageUpdate(body_patch); these constants are also used
-// for the page's own initial seed and the all-done sweep at the end.
-const DRAFTING_PHASES = [
-  { id: 'gather',   icon: '📥', label: 'Gather context (sessions, commits, memory)' },
-  { id: 'themes',   icon: '🧭', label: 'Extract themes' },
-  { id: 'external', icon: '🌐', label: 'Find external signal' },
-  { id: 'draft',    icon: '✍️', label: 'Draft posts (X / medium / blog)' },
-  { id: 'write',    icon: '💾', label: 'Write output JSON' },
-];
-
-function buildProgressWidget(activeId, doneIds = new Set()) {
-  const idx = DRAFTING_PHASES.findIndex(p => p.id === activeId);
-  return {
-    type: 'progress',
-    title: 'Drafting today\'s posts',
-    steps: DRAFTING_PHASES.map((p, i) => ({
-      icon: p.icon,
-      label: p.label,
-      status: doneIds.has(p.id) || (idx >= 0 && i < idx) ? 'done'
-            : i === idx ? 'active'
-            : 'pending',
-    })),
-  };
+function markCardPosted(cardId) {
+  const sess = getSession();
+  const card = findCard(cardId);
+  if (!card) return;
+  card.posted = true;
+  card.posted_at = new Date().toISOString();
+  loadSession(sess);
+  persistSession(sess);
 }
 
-function buildAllDoneProgressWidget() {
-  return {
-    type: 'progress',
-    title: 'Drafting today\'s posts',
-    steps: DRAFTING_PHASES.map(p => ({ icon: p.icon, label: p.label, status: 'done' })),
-  };
+function flash(btn, label) {
+  const old = btn.textContent;
+  btn.textContent = label;
+  setTimeout(() => { btn.textContent = old; }, 900);
 }
 
-async function runCollectScript() {
-  // Sys-doctor pattern: the page itself runs collect.sh via /api/bash.
-  // That call path is ungated by Linggen's agent permission system, so
-  // the user never sees an admin prompt for the bash work. The agent
-  // gets the resulting manifest path in its kickoff prompt and only
-  // does Read+Write+web-search work — fully covered by SKILL.md's
-  // permission block.
-  const cmd = 'bash "$HOME/.linggen/skills/pulse/scripts/collect.sh"';
-  const res = await fetch('/api/bash', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ project_root: '/tmp', command: cmd }),
-  });
-  if (!res.ok) throw new Error(`bash ${res.status}`);
-  const body = await res.json();
-  const path = (body.stdout || '').trim().split('\n').pop();
-  if (!path || !path.includes('pulse-manifest')) {
-    throw new Error(`collect.sh produced unexpected output: ${path || '(empty)'}`);
+// ---- Chat panel ----------------------------------------------------------
+
+async function mountChat() {
+  // Wait for chat-bridge to register window.LinggenUI.
+  for (let i = 0; i < 30; i++) {
+    if (window.LinggenUI?.mount) break;
+    await new Promise(r => setTimeout(r, 100));
   }
-  return path;
-}
-
-// Cross-tab lock: when a draft run starts we drop a sentinel in
-// localStorage; on page load we check for a recent sentinel before
-// kicking off a fresh run. Stops a refresh-during-redraft from
-// spawning two agents that race to write the same file.
-const RUN_LOCK_KEY = 'pulse:draft-run';
-const RUN_LOCK_STALE_MS = 12 * 60_000; // longer than the agent timeout
-
-function readRunLock() {
-  try {
-    const raw = localStorage.getItem(RUN_LOCK_KEY);
-    if (!raw) return null;
-    const lock = JSON.parse(raw);
-    if (!lock || typeof lock !== 'object') return null;
-    if (Date.now() - (lock.startedAt || 0) > RUN_LOCK_STALE_MS) return null;
-    return lock;
-  } catch (_) { return null; }
-}
-
-function writeRunLock(date) {
-  try {
-    localStorage.setItem(RUN_LOCK_KEY, JSON.stringify({ date, startedAt: Date.now() }));
-  } catch (_) { /* ignore */ }
-}
-
-function clearRunLock() {
-  try { localStorage.removeItem(RUN_LOCK_KEY); } catch (_) { /* ignore */ }
-}
-
-async function startDraftRun(date) {
-  // If another tab / earlier session already has an active run for the
-  // same date, don't spawn a duplicate. Show the drafting view, seed
-  // the progress widget, and just poll for the file — the in-flight
-  // agent will produce it.
-  const existingLock = readRunLock();
-  const pickUpExisting = existingLock && existingLock.date === date;
-
-  showOnly('drafting');
-  els.draftingChat.innerHTML = '';
-  resetPage();
-
-  // Seed the left panel immediately so the user sees something while
-  // collect.sh runs and the chat iframe boots.
-  applyPageUpdate({
-    top_bar: [{
-      type: 'info',
-      icon: '🪄',
-      title: 'Pulse',
-      subtitle: pickUpExisting
-        ? 'Picking up an in-flight drafting run from another tab/session'
-        : 'Drafting your posts from the last 24 hours of work',
-    }],
-    body: [
-      buildProgressWidget('gather'),
-      {
-        type: 'info',
-        icon: '⏳',
-        title: 'Working',
-        body: pickUpExisting
-          ? 'A drafting run is already in flight (started in another tab or before this refresh). Waiting for the JSON file to land — this page will swap automatically when it does.'
-          : 'The page is collecting your sessions, commits, and memory rows. Then the agent (right panel) will scan external sources and draft posts. This usually takes 1–3 minutes.',
-      },
-    ],
-  });
-
-  let chat = null;
-  let cancelled = false;
-  let pollTimer = null;
-
-  // Two-stage teardown: stopWatching just halts the poll loop and
-  // marks the run inactive. destroyChat additionally rips the iframe
-  // out of the DOM. Success path stops watching but leaves the chat
-  // intact so the user can scroll back through the agent's messages;
-  // only cancel/timeout actually destroys the iframe.
-  const stopWatching = () => {
-    cancelled = true;
-    if (pollTimer) clearTimeout(pollTimer);
-    activeDraftRun = null;
-    clearRunLock();
-  };
-  const destroyChat = () => {
-    if (chat) {
-      try { chat.destroy(); } catch (_) { /* ignore */ }
-      chat = null;
-    }
-  };
-  const cleanup = () => { stopWatching(); destroyChat(); };
-  activeDraftRun = { cancel: cleanup };
-
-  // If we're picking up an existing run, skip the heavy work
-  // (collect.sh, chat mount, kickoff prompt) and jump straight to the
-  // file-poll loop. The in-flight agent will write the JSON when done.
-  if (pickUpExisting) {
-    const startedAt = Date.now();
-    const TIMEOUT_MS = 12 * 60_000;
-    const tick = async () => {
-      if (cancelled) return;
-      let data = null;
-      try { data = await fetchDraftJson(date); } catch (_) { /* keep polling */ }
-      if (cancelled) return;
-      if (data) {
-        applyPageUpdate({ body_patch: [{ widget: buildAllDoneProgressWidget() }] });
-        stopWatching();
-        if (data.skipped) showSkipped(data);
-        else render(data);
-        return;
-      }
-      if (Date.now() - startedAt > TIMEOUT_MS) {
-        cleanup();
-        showError('No JSON appeared from the in-flight run within 12 minutes. The earlier agent may have stalled — click Re-draft to start a fresh run.');
-        return;
-      }
-      pollTimer = setTimeout(tick, 5000);
-    };
-    pollTimer = setTimeout(tick, 2000);
+  if (!window.LinggenUI?.mount) {
+    console.warn('[pulse] LinggenUI.mount unavailable; chat disabled');
     return;
   }
-
-  // Fresh run — claim the lock so a parallel refresh picks up.
-  writeRunLock(date);
-
-  // Run collect.sh client-side first; we want the manifest path before
-  // we send the kickoff prompt so the agent has it from turn 1.
-  let manifestPath;
-  try {
-    manifestPath = await runCollectScript();
-  } catch (err) {
-    cleanup();
-    showError(`Context collection failed: ${err.message || err}`);
-    return;
-  }
-  if (cancelled) return;
-
-  // Track whether the agent has produced any output so we can detect
-  // a missed-handshake and retry the kickoff prompt.
-  let chatReceived = false;
-
-  try {
-    chat = await window.LinggenUI.mount(els.draftingChat, {
-      skillName: 'pulse',
-      onStreamToken: () => { chatReceived = true; },
-      onContentBlock: (payload) => {
-        chatReceived = true;
-        // The engine auto-injects a `PageUpdate` data tool for app-mode
-        // skills. When the agent calls it, the args carry the page
-        // partial — forward into the renderer.
-        if (payload?.tool === 'PageUpdate' && payload?.args) {
-          try {
-            const args = typeof payload.args === 'string'
-              ? JSON.parse(payload.args)
-              : payload.args;
-            applyPageUpdate(args);
-          } catch (e) {
-            console.warn('[pulse] failed to parse PageUpdate args', e);
-          }
+  state.chat = await window.LinggenUI.mount(document.getElementById('chat-panel'), {
+    skillName: 'pulse',
+    onContentBlock: (payload) => {
+      // Forward PageUpdate tool calls to the renderer.
+      if (payload?.tool === 'PageUpdate' && payload?.args) {
+        try {
+          const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
+          applyPageUpdate(args);
+        } catch (e) {
+          console.warn('[pulse] failed to parse PageUpdate args', e);
         }
-      },
-    });
-  } catch (err) {
-    cleanup();
-    showError(`Failed to start drafting session: ${err.message || err}`);
+      }
+    },
+  });
+}
+
+function sendChatMessage(text) {
+  if (!state.chat) {
+    console.warn('[pulse] chat not ready, queueing not yet implemented');
     return;
   }
-  if (cancelled) return;
-
-  // Default goal — used when no explicit goal was passed via the
-  // session opener. config.json's `default_goal` overrides; failing
-  // that, fall back to the daily-build-in-public default.
-  const goalText = (window.PULSE_GOAL || '').trim()
-                || (await fetchDefaultGoal())
-                || 'Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.';
-
-  const trigger = window.PULSE_TRIGGER || 'manual';
-  const window_ = window.PULSE_WINDOW || '24h';
-
-  const kickoffPrompt =
-    `The user just opened Pulse for ${date}.\n\n` +
-    `GOAL: ${goalText}\n` +
-    `TRIGGER: ${trigger}\n` +
-    `WINDOW: ${window_}\n` +
-    `MANIFEST_PATH=${manifestPath}\n` +
-    `SESSION_PATH=$HOME/.linggen/skills/pulse/data/${date}/session.json\n` +
-    `CONFIG_PATH=$HOME/.linggen/skills/pulse/config.json\n` +
-    `BRIEF_PATH=$HOME/.linggen/skills/pulse/references/brief.md\n\n` +
-    `Read SKILL.md for the full protocol. Summary:\n` +
-    `  1. Read brief.md (load-bearing) + voice-samples.md + lane-templates.md + config.json + the manifest.\n` +
-    `  2. Read the GOAL above. Decide which capabilities to invoke (research-market, discover-customers, monitor-mentions, track-progress, draft-content). Default to fewer; only invoke ones the goal needs.\n` +
-    `  3. Run capabilities (parallel where possible; draft-content runs last).\n` +
-    `  4. Emit one PageUpdate body_patch per section you touched. Sections you didn't touch are NOT in the patch — the page leaves them in place.\n` +
-    `  5. Emit a run_log block with run_id, capabilities_invoked, summary, skipped status.\n\n` +
-    `Source tools (registered, no permission prompt): FetchHackerNews, FetchReddit, FetchLobsters, FetchArxiv, FetchRSS. Use config.json sites.* to know which are enabled. Don't use WebSearch / WebFetch for sources covered by a registered tool.\n\n` +
-    `RIGHT PANEL — you also chat with the user. Before any tool calls, greet them warmly in voice (3–4 sentences, no "I'm thrilled" / rocket / "TL;DR"). Tell them which capabilities you're about to invoke and why, given their goal. Then proceed.\n\n` +
-    `When done, final agent message — exactly one line: "body_patches: N · drafts: M" or "skipped: <reason>".`;
-
-  // The embed iframe needs a beat to wire its postMessage listener.
-  // Sys-doctor uses 2s, but on slower machines that races — fire at
-  // 3.5s, then if no chat activity by 8s, re-send once. The agent
-  // dedup'ing within a session is not a concern: a duplicate hidden
-  // prompt is a no-op once the agent is already responding.
-  setTimeout(() => {
-    if (cancelled || !chat) return;
-    chat.sendHidden(kickoffPrompt);
-  }, 3500);
-
-  setTimeout(() => {
-    if (cancelled || !chat || chatReceived) return;
-    console.warn('[pulse] kickoff prompt seems lost; resending');
-    chat.sendHidden(kickoffPrompt);
-  }, 8000);
-
-  // Poll the data dir every 5s. The agent writes the file at the end
-  // of Phase 5; once it lands, swap to the rendered view.
-  const startedAt = Date.now();
-  const TIMEOUT_MS = 10 * 60_000;
-  const tick = async () => {
-    if (cancelled) return;
-    let data = null;
-    try { data = await fetchDraftJson(date); } catch (_) { /* keep polling */ }
-    if (cancelled) return;
-    if (data) {
-      applyPageUpdate({ body_patch: [{ widget: buildAllDoneProgressWidget() }] });
-      stopWatching();
-      if (data.skipped) showSkipped(data);
-      else render(data);
-      // Leave the chat iframe alive — switching panes via showOnly
-      // hides #drafting; the iframe just sits dormant until the user
-      // navigates away or starts a new run.
-      return;
-    }
-    if (Date.now() - startedAt > TIMEOUT_MS) {
-      cleanup(); // timeout: tear down chat too
-      showError('Drafting timed out after 10 minutes. Check the agent session for details, or rerun a saved Pulse run manually.');
-      return;
-    }
-    pollTimer = setTimeout(tick, 5000);
-  };
-  pollTimer = setTimeout(tick, 5000);
+  state.chat.send(text);
 }
 
-async function fetchDefaultGoal() {
-  // Read default_goal from config.json. Returns empty string if not set
-  // or config is missing — caller falls back to a hardcoded default.
-  try {
-    const cmd = 'jq -r ".default_goal // empty" "$HOME/.linggen/skills/pulse/config.json" 2>/dev/null || true';
-    const res = await fetch('/api/bash', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_root: '/tmp', command: cmd }),
-    });
-    if (!res.ok) return '';
-    const body = await res.json();
-    return (body.stdout || '').trim();
-  } catch {
-    return '';
+function focusChat() {
+  // No direct "focus iframe input" hook yet; just visually pulse.
+  const panel = document.getElementById('chat-panel');
+  if (panel) {
+    panel.style.transition = 'box-shadow 0.2s';
+    panel.style.boxShadow = '0 0 0 2px var(--accent)';
+    setTimeout(() => { panel.style.boxShadow = ''; }, 600);
   }
 }
 
-async function fetchDraftJson(date) {
-  // Read via /api/bash — the skill iframe pattern. The endpoint requires
-  // `project_root` alongside `command` (omitting it returns 422).
-  // Returns file contents on stdout; empty stdout means no file.
-  const cmd = `f="$HOME/.linggen/skills/pulse/data/${date}.json"; [ -f "$f" ] && cat "$f" || true`;
-  const res = await fetch('/api/bash', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ project_root: '/tmp', command: cmd }),
-  });
-  if (!res.ok) throw new Error(`bash ${res.status}`);
-  const body = await res.json();
-  const stdout = (body.stdout || '').trim();
-  if (!stdout) return null;
-  return JSON.parse(stdout);
+// ---- Helpers -------------------------------------------------------------
+
+function truncate(s, n) {
+  if (!s) return '';
+  return s.length <= n ? s : s.slice(0, n - 1) + '…';
 }
 
-// ---- Rendering --------------------------------------------------------
+// ---- Init ----------------------------------------------------------------
 
-function render(data) {
-  // Summary
-  els.summaryList.innerHTML = '';
-  (data.summary || []).forEach((line) => {
-    const li = document.createElement('li');
-    li.textContent = line;
-    els.summaryList.appendChild(li);
-  });
-  els.weightTag.textContent = data.weight || 'unknown';
-  els.weightTag.className = `tag tag-${data.weight || 'unknown'}`;
-
-  // External sources
-  if (data.external_sources && data.external_sources.length > 0) {
-    els.sourcesCard.hidden = false;
-    els.sourcesList.innerHTML = '';
-    data.external_sources.forEach((src) => {
-      els.sourcesList.appendChild(renderSource(src));
-    });
-  } else {
-    els.sourcesCard.hidden = true;
-  }
-
-  // Drafts
-  els.draftsList.innerHTML = '';
-  if (!data.drafts || data.drafts.length === 0) {
-    const p = document.createElement('p');
-    p.className = 'state-msg';
-    p.textContent = 'No drafts in this output.';
-    els.draftsList.appendChild(p);
-  } else {
-    data.drafts.forEach((draft, i) => {
-      els.draftsList.appendChild(renderDraft(draft, i));
-    });
-  }
-
-  showOnly('content');
+async function init() {
+  setOnChange(persistSession);
+  await loadSidebar();
+  // Auto-select today.
+  const today = todayDate();
+  await selectSession(today);
+  await loadStatusStrip();
+  wireChips();
+  wireCardActions();
+  await mountChat();
 }
 
-function renderSource(src) {
-  const li = document.createElement('li');
-  li.className = 'source-item';
-  const score = typeof src.score === 'number' ? src.score.toFixed(2) : '—';
-  li.innerHTML = `
-    <div class="source-header">
-      <a href="${escapeAttr(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.title || src.url)}</a>
-      <span class="source-meta">${escapeHtml(src.source || '')} · score ${score}</span>
-    </div>
-    <p class="source-why">${escapeHtml(src.why || '')}</p>
-  `;
-  return li;
-}
-
-function renderDraft(draft, idx) {
-  const article = document.createElement('article');
-  article.className = `draft draft-${draft.lane || 'unknown'}`;
-
-  const titleCandidates = draft.title_candidates && draft.title_candidates.length > 0
-    ? `<div class="draft-titles"><span class="draft-titles-label">title candidates:</span> ${draft.title_candidates.map(t => `<span class="draft-title-pick">${escapeHtml(t)}</span>`).join(' · ')}</div>`
-    : '';
-
-  const citations = draft.citations && draft.citations.length > 0
-    ? `<details class="draft-citations"><summary>${draft.citations.length} citation${draft.citations.length === 1 ? '' : 's'}</summary><ul>${draft.citations.map(u => `<li><a href="${escapeAttr(u)}" target="_blank" rel="noopener noreferrer">${escapeHtml(u)}</a></li>`).join('')}</ul></details>`
-    : '';
-
-  article.innerHTML = `
-    <header class="draft-header">
-      <span class="draft-lane tag tag-${draft.lane || 'unknown'}">${escapeHtml(draft.lane || 'unknown')}</span>
-      <button class="btn-copy" data-idx="${idx}">Copy</button>
-    </header>
-    ${titleCandidates}
-    <pre class="draft-content" data-idx="${idx}">${escapeHtml(draft.content || '')}</pre>
-    ${citations}
-  `;
-
-  article.querySelector('.btn-copy').addEventListener('click', async (e) => {
-    const text = draft.content || '';
-    try {
-      await navigator.clipboard.writeText(text);
-      e.target.textContent = 'Copied';
-      setTimeout(() => (e.target.textContent = 'Copy'), 1500);
-    } catch (_) {
-      e.target.textContent = 'Copy failed';
-    }
-  });
-
-  return article;
-}
-
-// ---- States -----------------------------------------------------------
-
-function showOnly(id) {
-  ['loading', 'error', 'empty', 'drafting', 'content'].forEach((k) => {
-    els[k].hidden = k !== id;
-  });
-}
-
-function showError(msg) {
-  els.error.textContent = msg;
-  showOnly('error');
-}
-
-function showEmpty(msg) {
-  els.empty.textContent = msg;
-  showOnly('empty');
-}
-
-function showSkipped(data) {
-  els.summaryList.innerHTML = '';
-  (data.summary || []).forEach((line) => {
-    const li = document.createElement('li');
-    li.textContent = line;
-    els.summaryList.appendChild(li);
-  });
-  els.weightTag.textContent = 'skip';
-  els.weightTag.className = 'tag tag-skip';
-  els.sourcesCard.hidden = true;
-  els.draftsList.innerHTML = `
-    <div class="state-msg">
-      <strong>Nothing post-worthy from this day.</strong>
-      <p>${escapeHtml(data.skip_reason || 'No fresh signal earning a post.')}</p>
-      <p class="card-sub">See you tomorrow.</p>
-    </div>
-  `;
-  showOnly('content');
-}
-
-// ---- Helpers ----------------------------------------------------------
+init().catch(err => {
+  console.error('[pulse] init failed', err);
+  const c = document.getElementById('sections-container');
+  if (c) c.innerHTML = `<div class="state-msg error">Pulse failed to initialize: ${escapeHtml(err.message || String(err))}</div>`;
+});
 
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   })[c]);
-}
-function escapeAttr(s) { return escapeHtml(s); }
-
-// Surface unhandled errors in the page itself so a stray exception
-// doesn't leave the user staring at a blank viewport.
-window.addEventListener('error', (e) => {
-  console.error('[pulse]', e.error || e.message);
-});
-window.addEventListener('unhandledrejection', (e) => {
-  console.error('[pulse] unhandled rejection:', e.reason);
-});
-
-try {
-  init();
-} catch (err) {
-  console.error('[pulse] init failed:', err);
-  if (els.error) {
-    els.error.textContent = `Pulse init failed: ${err.message || err}`;
-    showOnly('error');
-  }
 }
