@@ -16,14 +16,15 @@ Built as a Linggen skill — installs into Claude Code / OpenClaw / Linggen — 
 
 ## What it does
 
-Four agent-side capabilities, dispatched by a single free-text **goal**:
+Five agent-side capabilities, dispatched by a single free-text **goal**:
 
 | Capability | Purpose |
 |:-----------|:--------|
-| `research-market` | Scan industry signal + competitors → market landscape, feasibility report |
-| `discover-customers` | Scan target communities → ranked pain points + comment candidates |
-| `track-progress` | Scan sessions / commits / memory → what shipped, what was learned |
-| `draft-content` | Synthesize the above into platform-shaped drafts (X, Reddit, blog, …) |
+| `research-market` | Scan industry signal + trending data + competitors → market landscape, feasibility report |
+| `discover-customers` | Scan target communities → ranked pain points + comment candidates (cold) |
+| `monitor-mentions` | Watch product / competitor / self names across sources → mentions + reply triage on your own posts |
+| `track-progress` | Scan sessions / commits / memory → what shipped, what was learned, where in the launch sequence |
+| `draft-content` | Synthesize the above into platform-shaped drafts (X, Reddit, blog, DM, email, …) |
 
 The user types a goal — *"Help me launch Sys Doctor on r/macapps"* / *"Daily X-post if I shipped"* / *"What's happening in local AI agent space"* — and the agent picks which capabilities to invoke. No fixed recipes; no enum.
 
@@ -179,6 +180,7 @@ Same skill, same protocol, same data shape. Only the goal text changes.
 
 ## Related docs
 
+- [`design.md`](design.md) — capability protocols, tool catalog, state layer, Inbox layout, dispatch rules, run JSON schema
 - `SKILL.md` — protocol and tool registration (Linggen skill format)
 - `references/brief.md` — user's standing context (editable)
 - `references/lane-templates.md` — per-target format constraints
