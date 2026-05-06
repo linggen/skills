@@ -52,6 +52,24 @@
       <div class="grid-2col" id="targets-grid"></div>
     </section>
 
+    <section class="card">
+      <h2>Saved runs</h2>
+      <p class="card-sub">
+        Named goal templates. Each saved run carries a goal text, a
+        list of targets to draft for, and an optional cron schedule.
+        Enable a run with a cadence and Pulse generates a cron mission
+        on save — it'll fire automatically. Toggle off to remove the
+        cron.
+      </p>
+      <div id="saved-runs-list"></div>
+      <button id="add-saved-run-btn" class="btn-secondary" style="margin-top: 0.5rem">+ Add saved run</button>
+      <p class="card-meta">
+        Cron format: <code>min hour dom mon dow</code>. Common patterns:
+        <code>0 8 * * *</code> = daily 8am · <code>0 9 * * 1</code> = Mondays 9am · <code>0 12 * * 1-5</code> = weekdays noon.
+        Leave cadence blank to make a saved run on-demand only.
+      </p>
+    </section>
+
     <div class="settings-actions">
       <button id="save-btn" class="btn-primary">Save</button>
       <button id="reset-btn" class="btn-secondary">Reset to defaults</button>

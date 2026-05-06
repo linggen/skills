@@ -114,8 +114,18 @@ async function writeFile(path, content) {
 
 let state = {
   brief: '',
-  config: { sites: {}, targets: {} },
+  config: { sites: {}, targets: {}, saved_runs: [] },
 };
+
+// Default goal text for the "+ Add saved run" button.
+const NEW_SAVED_RUN_TEMPLATE = () => ({
+  id: `run-${Date.now().toString(36)}`,
+  name: 'New saved run',
+  goal: '',
+  targets: [],
+  cadence: '',
+  enabled: false,
+});
 
 // ---- Load ----------------------------------------------------------------
 
@@ -145,7 +155,123 @@ function render() {
   document.getElementById('brief-text').value = state.brief;
   renderGrid('sources-grid', SOURCES, state.config.sites);
   renderGrid('targets-grid', TARGETS, state.config.targets);
+  renderSavedRuns();
 }
+
+// ---- Saved runs ----------------------------------------------------------
+
+function renderSavedRuns() {
+  const list = document.getElementById('saved-runs-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!Array.isArray(state.config.saved_runs)) state.config.saved_runs = [];
+  if (state.config.saved_runs.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'card-meta';
+    empty.style.fontStyle = 'italic';
+    empty.textContent = 'No saved runs yet. Click + Add saved run to create one.';
+    list.appendChild(empty);
+    return;
+  }
+  state.config.saved_runs.forEach((run, idx) => {
+    list.appendChild(renderSavedRunCard(run, idx));
+  });
+}
+
+function renderSavedRunCard(run, idx) {
+  const card = document.createElement('div');
+  card.className = 'saved-run';
+  if (!run.enabled) card.classList.add('disabled');
+
+  const head = document.createElement('div');
+  head.className = 'saved-run-head';
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = !!run.enabled;
+  checkbox.addEventListener('change', () => {
+    run.enabled = checkbox.checked;
+    card.classList.toggle('disabled', !run.enabled);
+  });
+  head.appendChild(checkbox);
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'saved-run-name';
+  nameInput.value = run.name || '';
+  nameInput.placeholder = 'Saved run name';
+  nameInput.addEventListener('input', () => { run.name = nameInput.value; });
+  head.appendChild(nameInput);
+
+  const del = document.createElement('button');
+  del.className = 'saved-run-delete';
+  del.textContent = '×';
+  del.title = 'Delete this saved run';
+  del.addEventListener('click', () => {
+    if (!confirm(`Delete saved run "${run.name}"?`)) return;
+    state.config.saved_runs.splice(idx, 1);
+    renderSavedRuns();
+  });
+  head.appendChild(del);
+
+  card.appendChild(head);
+
+  // Goal textarea
+  const goalLabel = document.createElement('label');
+  goalLabel.textContent = 'Goal';
+  card.appendChild(goalLabel);
+  const goal = document.createElement('textarea');
+  goal.rows = 3;
+  goal.value = run.goal || '';
+  goal.placeholder = 'e.g. Daily X-post if I shipped or learned something yesterday.';
+  goal.addEventListener('input', () => { run.goal = goal.value; });
+  card.appendChild(goal);
+
+  // Targets multi-select (chips of available targets)
+  const targetsLabel = document.createElement('label');
+  targetsLabel.textContent = 'Targets';
+  card.appendChild(targetsLabel);
+  const tgtRow = document.createElement('div');
+  tgtRow.className = 'saved-run-targets';
+  TARGETS.forEach(t => {
+    const lbl = document.createElement('label');
+    lbl.className = 'saved-run-target';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = Array.isArray(run.targets) && run.targets.includes(t.id);
+    cb.addEventListener('change', () => {
+      if (!Array.isArray(run.targets)) run.targets = [];
+      if (cb.checked) {
+        if (!run.targets.includes(t.id)) run.targets.push(t.id);
+      } else {
+        run.targets = run.targets.filter(id => id !== t.id);
+      }
+    });
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(' ' + t.name));
+    tgtRow.appendChild(lbl);
+  });
+  card.appendChild(tgtRow);
+
+  // Cadence input
+  const cadLabel = document.createElement('label');
+  cadLabel.textContent = 'Cadence (cron, blank = on-demand only)';
+  card.appendChild(cadLabel);
+  const cad = document.createElement('input');
+  cad.type = 'text';
+  cad.className = 'saved-run-cadence';
+  cad.value = run.cadence || '';
+  cad.placeholder = '0 8 * * *';
+  cad.addEventListener('input', () => { run.cadence = cad.value.trim(); });
+  card.appendChild(cad);
+
+  return card;
+}
+
+document.getElementById('add-saved-run-btn')?.addEventListener('click', () => {
+  if (!Array.isArray(state.config.saved_runs)) state.config.saved_runs = [];
+  state.config.saved_runs.push(NEW_SAVED_RUN_TEMPLATE());
+  renderSavedRuns();
+});
 
 function renderGrid(elementId, catalog, configSection) {
   const grid = document.getElementById(elementId);
@@ -318,6 +444,11 @@ async function save() {
     state.brief = document.getElementById('brief-text').value;
     await writeFile(BRIEF_PATH, state.brief);
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
+    // Regenerate cron-scheduled missions for any saved_runs that
+    // changed (added / enabled / cadence-edited / disabled / removed).
+    // Idempotent — generate-missions.sh handles add+update+cleanup.
+    setStatus('Saved. Regenerating missions…', 'loading');
+    await runBash(`bash "${SKILL_DIR}/scripts/generate-missions.sh"`);
     setStatus('Saved.', 'ok');
     setTimeout(clearStatus, 2500);
   } catch (err) {

@@ -167,6 +167,25 @@ If `GOAL` is missing from the kickoff, use the brief's standing goal
 as default. If both are missing, ask the user one clarifying question
 and stop.
 
+### Saved-run dispatch
+
+When invoked from a scheduled mission (or any caller using saved
+runs), the kickoff message takes the form:
+
+    Run saved goal id=<saved_run_id>
+
+In that case, **read `config.json`'s `saved_runs[]`**, find the
+entry where `id` matches, and use its fields:
+
+- `goal` → the GOAL for this run
+- `targets` → restrict draft-content to the listed lanes (overrides
+  `targets[].enabled` in config for this run only)
+- The `name` field is informational only
+
+If the id is not found in `saved_runs[]`, fall back to the brief's
+standing goal and emit a `run_log` with `skip_reason` mentioning the
+missing id.
+
 ---
 
 ## Goal dispatch

@@ -59,6 +59,7 @@ for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js \
   install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
 done
 install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
+install -m 0755 "$SOURCE_DIR/scripts/generate-missions.sh" "$SKILL_DIR/scripts/generate-missions.sh"
 
 # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
 for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh \
@@ -70,14 +71,25 @@ for f in voice-samples.md style-guide.md lane-templates.md source-blogs.md brief
   install -m 0644 "$SOURCE_DIR/references/$f" "$SKILL_DIR/references/$f"
 done
 
-# Seed config.json from the example on first install. Existing user
-# configs are preserved across upgrades.
+# Seed config.json from the example on first install. On upgrades,
+# merge in any new top-level keys (e.g. new sites added, saved_runs
+# block introduced) without overwriting the user's existing values.
 install -m 0644 "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.example.json"
 if [ ! -f "$SKILL_DIR/config.json" ]; then
   cp "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json"
   echo "  Seeded $SKILL_DIR/config.json from example. Edit in Settings to configure."
 else
-  echo "  Existing $SKILL_DIR/config.json left alone."
+  # Forward-compat merge: example provides defaults for any top-level
+  # keys the user's config is missing. User's values win where both
+  # have a key. Top-level only — nested merging would surprise users
+  # whose intentional removals would be undone.
+  if command -v jq >/dev/null 2>&1; then
+    merged="$(jq -s '.[0] * .[1]' "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json")"
+    if [ -n "$merged" ]; then
+      printf '%s\n' "$merged" > "$SKILL_DIR/config.json"
+      echo "  Merged new top-level keys into $SKILL_DIR/config.json (existing values preserved)."
+    fi
+  fi
 fi
 
 # Seed brief.md from the example on first install. Brief is the user's
@@ -88,6 +100,13 @@ if [ ! -f "$SKILL_DIR/references/brief.md" ]; then
 else
   echo "  Existing $SKILL_DIR/references/brief.md left alone."
 fi
+
+
+# Generate cron-scheduled missions for any enabled saved_runs in
+# config.json. Idempotent — also called by Settings on save so changes
+# to saved_runs take effect immediately.
+echo "Generating missions from saved_runs[]..."
+bash "$SKILL_DIR/scripts/generate-missions.sh"
 
 echo ""
 echo "Done. Pulse skill ready at $SKILL_DIR"
