@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 #
-# install.sh — install the pulse skill into Linggen, plus install
-# the influencer mission so it runs daily at 08:00.
+# install.sh — install the pulse skill into Linggen.
 #
-# Pulse is Linggen-only — the influencer mission depends on
-# Linggen's mission scheduler. Claude Code / Codex can read the skill
-# but the daily auto-drafting requires Linggen as the runtime.
+# Pulse is Linggen-only — runtime, settings page, and saved-run
+# scheduling depend on Linggen. Claude Code / Codex can read the skill
+# but the on-demand UI requires Linggen.
 #
 # Usage:
 #   bash install.sh
@@ -38,29 +37,26 @@ fi
 # Pulse is Linggen-only.
 LINGGEN_DIR="$HOME/.linggen"
 if [ ! -d "$LINGGEN_DIR" ]; then
-  echo "Error: ~/.linggen not found. Pulse requires Linggen as the runtime" >&2
-  echo "  (the influencer mission depends on Linggen's mission scheduler)." >&2
+  echo "Error: ~/.linggen not found. Pulse requires Linggen as the runtime." >&2
   echo "  Install Linggen first, then re-run this script." >&2
   exit 1
 fi
 
 SKILL_DIR="$LINGGEN_DIR/skills/pulse"
-MISSION_DIR="$LINGGEN_DIR/missions/influencer"
-DATA_DIR="$LINGGEN_DIR/skills/pulse/data"
+DATA_DIR="$SKILL_DIR/data"
 
 echo "Installing pulse skill to $SKILL_DIR/"
-mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references" "$SKILL_DIR/assets" "$DATA_DIR"
+mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references" "$DATA_DIR"
 
 # Skill files.
 install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"
 install -m 0644 "$SOURCE_DIR/index.html"  "$SKILL_DIR/index.html"
+install -m 0644 "$SOURCE_DIR/product-spec.md" "$SKILL_DIR/product-spec.md"
 for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js style.css \
          settings.html settings.js settings.css; do
   install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
 done
-for f in run.sh collect.sh; do
-  install -m 0755 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
-done
+install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
 
 # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
 for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh; do
@@ -90,24 +86,10 @@ else
   echo "  Existing $SKILL_DIR/references/brief.md left alone."
 fi
 
-# Mission file (referenced by the install_mission step below).
-install -m 0644 "$SOURCE_DIR/assets/mission.md" "$SKILL_DIR/assets/mission.md"
-
-echo "Installing influencer mission to $MISSION_DIR/"
-mkdir -p "$MISSION_DIR/scripts"
-if [ ! -f "$MISSION_DIR/mission.md" ]; then
-  cp "$SOURCE_DIR/assets/mission.md" "$MISSION_DIR/mission.md"
-  echo "  Installed: $MISSION_DIR/mission.md (cron 0 8 * * *)"
-else
-  echo "  Existing mission.md left alone — edit by hand if you want to update."
-fi
-cp "$SOURCE_DIR/scripts/run.sh" "$MISSION_DIR/scripts/run.sh"
-chmod +x "$MISSION_DIR/scripts/run.sh"
-
 echo ""
 echo "Done. Pulse skill ready at $SKILL_DIR"
-echo "Influencer mission scheduled at $MISSION_DIR (next run 08:00 local)"
 echo ""
-echo "Next step: paste 10-20 of your past tweets/posts into"
+echo "Next step: open Pulse, click Settings, edit your brief and select sources/targets."
+echo "Optionally paste your past writing into:"
 echo "  $SKILL_DIR/references/voice-samples.md"
-echo "Without samples, drafts will read as generic LLM voice."
+echo "Without voice samples, drafts will read as generic LLM voice."

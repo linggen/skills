@@ -1,14 +1,13 @@
 ---
 name: pulse
 description: >-
-  Daily content drafting studio. When invoked (typically by the
-  `influencer` mission at 08:00, but also runnable on demand), this
-  skill scans the last 24h of work — sessions across Claude Code +
-  Linggen, git logs across the user's repos, ling-mem facts — finds
-  external context (HN top, lobste.rs newest, arxiv recent, curated
-  blogs) that genuinely overlaps with that work, and drafts posts in
-  one or more lanes (X post / medium article / long blog). Writes the
-  result as a JSON file the pulse webpage renders. Never auto-posts.
+  Daily intelligence layer for solo founders launching products.
+  Pulse reads the user's brief (identity, voice, hard rules) and a
+  free-text goal, then dispatches across four agent capabilities —
+  market research, customer discovery, progress tracking, content
+  drafting — using configured site tools (HN, Reddit, Lobsters, arxiv,
+  RSS). Writes the result as a JSON file the pulse webpage renders.
+  Never auto-posts.
 allowed-tools:
   - Read
   - Write
@@ -88,17 +87,16 @@ tools:
 
 Two modes — same skill, two entry paths:
 
-- **Draft mode** — invoked headless by the `influencer` mission (or
-  by the user with *"Generate today's drafts"*). Runs the protocol
-  below end-to-end and writes `~/.linggen/skills/pulse/data/YYYY-MM-DD.json`.
+- **Draft mode** — invoked headless when the user triggers a saved run
+  (or types *"Generate today's drafts"* / a free-text goal). Runs the
+  protocol below end-to-end and writes
+  `~/.linggen/skills/pulse/data/YYYY-MM-DD.json`.
 - **Review mode** — user opens the skill webpage. The page reads the
-  most recent `data/YYYY-MM-DD.json` and renders it. If the user opened
-  the page (no `source=mission` query param) and there is no data file
-  for today, the page auto-starts a drafting session in an embedded
-  Linggen chat panel — the agent runs the protocol below and the page
-  swaps to the rendered drafts when the JSON file lands. Mission
-  notifications always include `source=mission` so the deep-link only
-  shows existing data and never spawns a second run.
+  most recent `data/YYYY-MM-DD.json` and renders it. If there is no
+  data file for today and the open is user-initiated, the page
+  auto-starts a drafting session in an embedded Linggen chat panel —
+  the agent runs the protocol below and the page swaps to the rendered
+  drafts when the JSON file lands.
 
 If you (the agent) are reading this because you were invoked, you're
 in **draft mode**. Run the protocol below.
@@ -341,8 +339,9 @@ Final agent message — exactly one of:
 - `drafts written: N` (where N is the count of generated drafts)
 - `skipped: <one-phrase reason>`
 
-The mission wrapper reads this line to compose the notification body.
-Do NOT include any other commentary; the mission's logic is exact-string-matching this line.
+The Pulse review page reads this line to compose its post-run summary
+banner. Do NOT include any other commentary; the page's logic is
+exact-string-matching this line.
 
 ## Hard safety rails
 

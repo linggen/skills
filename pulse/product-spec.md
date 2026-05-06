@@ -72,7 +72,7 @@ Inbox is the loop. Library is the archive. Settings is plumbing. Three surfaces,
       lobsters.sh
       arxiv.sh
       rss.sh
-    run.sh                           # mission entry script (future: per-saved-run)
+    # (saved-run entry script — future, generated per saved run from settings)
 ```
 
 **Output JSON schema** (one file per run, all sections optional):

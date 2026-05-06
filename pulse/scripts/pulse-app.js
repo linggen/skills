@@ -1,13 +1,13 @@
 // pulse-app.js — review UI for the pulse skill.
 //
-// Reads the daily draft JSON written by the influencer mission (or
+// Reads the daily draft JSON written by a saved Pulse run (or
 // any on-demand draft run) from ~/.linggen/skills/pulse/data/<date>.json
 // and renders summary, external sources, and drafts with copy buttons.
 //
 // When the user opens the page (no `source=mission` query param) and
 // today's data file is missing, this view auto-starts a drafting
 // session in an embedded Linggen chat panel and polls for the JSON to
-// land. Mission-deep-link opens (`source=mission`) skip the auto-trigger
+// land. Saved-run deep-link opens (`source=mission`) skip the auto-trigger
 // and just display whatever's already on disk.
 //
 // Sys-doctor pattern: the page itself runs context-collection bash
@@ -56,7 +56,7 @@ function todayLocal() {
 }
 
 function isMissionTriggered() {
-  // Mission notifications deep-link with `?source=mission` so the page
+  // Saved-run notifications deep-link with `?source=mission` so the page
   // shows whatever the agent already wrote and never auto-triggers a
   // second run. User-opened paths (skill card click, direct URL) omit
   // this param and may auto-trigger when today's data is missing.
@@ -157,7 +157,7 @@ async function loadDate(date) {
       return;
     }
 
-    showEmpty(`No drafts found for ${date}. The pulse skill writes to ${DATA_DIR}/${date}.json — run the influencer mission or invoke pulse manually to generate.`);
+    showEmpty(`No drafts found for ${date}. The pulse skill writes to ${DATA_DIR}/${date}.json — run a saved Pulse run or invoke pulse manually to generate.`);
   } catch (err) {
     showError(`Failed to load drafts: ${err.message || err}`);
   }
@@ -442,7 +442,7 @@ async function startDraftRun(date) {
     }
     if (Date.now() - startedAt > TIMEOUT_MS) {
       cleanup(); // timeout: tear down chat too
-      showError('Drafting timed out after 10 minutes. Check the agent session for details, or rerun the influencer mission manually.');
+      showError('Drafting timed out after 10 minutes. Check the agent session for details, or rerun a saved Pulse run manually.');
       return;
     }
     pollTimer = setTimeout(tick, 5000);
