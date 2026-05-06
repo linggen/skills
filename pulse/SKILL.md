@@ -83,6 +83,46 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/rss.sh"
     tier: read
     timeout_ms: 30000
+  - name: FetchGoogleTrendsDaily
+    description: >-
+      Fetch today's trending searches from Google Trends' public
+      daily RSS for the configured region (default US, override via
+      sites["google-trends"].region in config.json). Returns JSON
+      array of {title, traffic, source, news_url, age_hours}. Used by
+      research-market for cultural / general-public signal.
+    cmd: "$SKILL_DIR/scripts/sites/google-trends.sh"
+    tier: read
+    timeout_ms: 20000
+  - name: FetchGitHubTrending
+    description: >-
+      Scrape today's trending GitHub repos. Optional language filter
+      via sites["github-trending"].language in config.json (e.g.
+      "rust", "python"). Returns JSON array of {full_name, owner,
+      repo, url, description, language, stars, forks, stars_today}.
+      Used by research-market for builder-side signal.
+    cmd: "$SKILL_DIR/scripts/sites/github-trending.sh"
+    tier: read
+    timeout_ms: 20000
+  - name: FetchProductHuntRSS
+    description: >-
+      Fetch today's launches from Product Hunt's public RSS feed.
+      Returns JSON array of {title, url, summary, date}. Used by
+      research-market and discover-customers — competing launches
+      surface here.
+    cmd: "$SKILL_DIR/scripts/sites/product-hunt.sh"
+    tier: read
+    timeout_ms: 20000
+  - name: FetchWikipediaPageviews
+    description: >-
+      Fetch the last 60 days of pageviews for each topic listed in
+      sites["wikipedia-pageviews"].topics in config.json. Topics are
+      Wikipedia article titles. Returns JSON array of {topic,
+      total_30d, prev_30d, percent_change_30d, sparkline}. Used by
+      research-market to gauge real topic-volume trends (sparkline
+      surfaces the 30-day shape; percent_change_30d surfaces direction).
+    cmd: "$SKILL_DIR/scripts/sites/wikipedia-pageviews.sh"
+    tier: read
+    timeout_ms: 30000
 ---
 
 # Pulse

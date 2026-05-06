@@ -61,7 +61,8 @@ done
 install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
 
 # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
-for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh; do
+for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh \
+         google-trends.sh github-trending.sh product-hunt.sh wikipedia-pageviews.sh; do
   install -m 0755 "$SOURCE_DIR/scripts/sites/$f" "$SKILL_DIR/scripts/sites/$f"
 done
 

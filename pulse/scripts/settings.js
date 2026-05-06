@@ -42,6 +42,30 @@ const SOURCES = [
     desc: 'Any feed URLs you paste in.',
     fields: [{ kind: 'chips', key: 'feeds', label: 'Feed URLs' }],
   },
+  {
+    id: 'google-trends',
+    name: 'Google Trends (daily)',
+    desc: "Today's trending searches in your region. Free public RSS.",
+    fields: [{ kind: 'text', key: 'region', label: 'Region (ISO code, e.g. US, GB, JP)', placeholder: 'US' }],
+  },
+  {
+    id: 'github-trending',
+    name: 'GitHub Trending',
+    desc: "Today's trending repos. Optional language filter.",
+    fields: [{ kind: 'text', key: 'language', label: 'Language (blank = all)', placeholder: 'rust' }],
+  },
+  {
+    id: 'product-hunt',
+    name: 'Product Hunt',
+    desc: "Today's launches. Useful for spotting competing products.",
+    fields: [],
+  },
+  {
+    id: 'wikipedia-pageviews',
+    name: 'Wikipedia pageviews',
+    desc: 'Real topic-volume trends over the last 60 days. Add the Wikipedia article titles you care about.',
+    fields: [{ kind: 'chips', key: 'topics', label: 'Article titles' }],
+  },
 ];
 
 const TARGETS = [
@@ -171,6 +195,8 @@ function renderCard(item, configSection) {
       card.appendChild(renderChipField(cfg, field));
     } else if (field.kind === 'range') {
       card.appendChild(renderRangeField(cfg, field));
+    } else if (field.kind === 'text') {
+      card.appendChild(renderTextField(cfg, field));
     }
   });
 
@@ -229,6 +255,21 @@ function renderChipField(cfg, field) {
   addRow.appendChild(addBtn);
   wrap.appendChild(addRow);
 
+  return wrap;
+}
+
+function renderTextField(cfg, field) {
+  if (cfg[field.key] == null) cfg[field.key] = '';
+  const wrap = document.createElement('div');
+  const label = document.createElement('label');
+  label.textContent = field.label;
+  wrap.appendChild(label);
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = cfg[field.key] || '';
+  input.placeholder = field.placeholder || '';
+  input.addEventListener('input', () => { cfg[field.key] = input.value.trim(); });
+  wrap.appendChild(input);
   return wrap;
 }
 

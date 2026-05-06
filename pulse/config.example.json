@@ -19,6 +19,21 @@
     "rss": {
       "enabled": false,
       "feeds": []
+    },
+    "google-trends": {
+      "enabled": false,
+      "region": "US"
+    },
+    "github-trending": {
+      "enabled": false,
+      "language": ""
+    },
+    "product-hunt": {
+      "enabled": false
+    },
+    "wikipedia-pageviews": {
+      "enabled": false,
+      "topics": []
     }
   },
   "targets": {
