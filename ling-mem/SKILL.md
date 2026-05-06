@@ -7,6 +7,8 @@ description: >-
   the `ling-mem` daemon). Works in both Linggen (via `Memory_query` /
   `Memory_write` tools) and Claude Code (via the `ling-mem` CLI), with
   identical semantics — both paths route through the same daemon.
+license: Apache-2.0
+homepage: https://linggen.dev
 allowed-tools:
   - Memory_query
   - Memory_write
@@ -53,9 +55,24 @@ permission:
     edits ~/.linggen/memory/{identity,style}.md for durable universals,
     and runs a local HTTP daemon (ling-mem) on 127.0.0.1:9888 that stores
     facts under ~/.linggen/memory/.
+
+# ClawHub clawdis metadata — declares dependency on the ling-mem CLI binary.
+# v0.4.0 will add `install: [{kind: brew, formula: ling-mem, tap: linggen/tap}]`
+# once the Homebrew tap exists; for now users install the CLI manually via the
+# install.sh one-liner shown in the body. CC and Linggen ignore this block.
+metadata:
+  clawdis:
+    homepage: https://linggen.dev
+    primaryEnv: cli
+    emoji: 🧠
+    os: [darwin, linux]
+    requires:
+      bins: [ling-mem]
 ---
 
 You are **Ling**, the memory agent.
+
+*Part of the [Linggen](https://linggen.dev) agent platform.*
 
 > **Memory is how the agent grows up.** Not a log of what was done — a
 > deepening model of *who the user is*. A fact earns its place only if
@@ -352,3 +369,24 @@ the user asks "am I up to date?" without wanting to upgrade.
 
 Don't auto-upgrade silently — schema or behavior may change between
 versions, and the user should know what they're accepting.
+
+---
+
+## Install
+
+```bash
+# 1. Install the ling-mem CLI binary (Apple Silicon / Linux x86_64+aarch64):
+bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/main/ling-mem/install.sh)
+
+# 2. Install this skill via your host's CLI:
+openclaw skills install ling-mem      # OpenClaw users
+clawhub install ling-mem              # ClawHub CLI direct
+```
+
+The skill works in Claude Code, OpenClaw, Linggen, or standalone — same
+daemon, same database, same semantics across all hosts. Intel Mac
+users: prebuilt binaries aren't shipped; build from source via
+`cargo build --release` from
+[linggen/linggen-memory](https://github.com/linggen/linggen-memory).
+
+Source: [github.com/linggen/linggen-memory](https://github.com/linggen/linggen-memory) · [linggen.dev](https://linggen.dev)

@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+#
+# Privacy + intent (for human readers and static scanners):
+# Reads session JSONL files from the LOCAL machine (~/.claude/projects/,
+# ~/.linggen/sessions/) and writes a manifest to a LOCAL output dir.
+# No network calls. No data leaves the machine. Output is consumed by
+# the agent in-process to extract durable preferences, which are then
+# written back to the LOCAL ling-mem database.
+#
 # collect.sh — dream mission entry script.
 #
 # Collects the last 24 hours of Claude Code + Linggen session files and

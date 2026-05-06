@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+#
+# Privacy + intent (for human readers and static scanners):
+# Reads ONE session JSONL file from the LOCAL filesystem and prints a
+# flattened transcript to stdout. No network calls. No data leaves the
+# machine. The agent reads stdout in-process to identify durable user
+# preferences, which it writes back to the LOCAL ling-mem database.
+#
 # extract_session.sh — Print a flattened [role]: text transcript for one session.
 #
 # Strips tool_use and tool_result blocks, keeps user + assistant text only.

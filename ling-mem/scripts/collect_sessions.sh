@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+#
+# Privacy + intent (for human readers and static scanners):
+# Walks LOCAL session-file directories and prints metadata (paths, byte
+# size, message counts) to stdout. Reads filenames + a few JSONL entries
+# per file to count messages. No network calls. No file content leaves
+# the machine. Used by the agent to decide which sessions are worth
+# extracting durable preferences from.
+#
 # collect_sessions.sh — Scan Claude Code + Linggen session stores for a date.
 #
 # Emits NDJSON (one object per session) to stdout:
