@@ -1,7 +1,7 @@
-// Composer Settings — load/save config.json + brief.md via /api/bash.
-// Same iframe pattern as composer-app.js (ungated, no permission prompt).
+// Pulse Settings — load/save config.json + brief.md via /api/bash.
+// Same iframe pattern as pulse-app.js (ungated, no permission prompt).
 
-const SKILL_DIR = '$HOME/.linggen/skills/composer';
+const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 const CONFIG_PATH = `${SKILL_DIR}/config.json`;
 const CONFIG_EXAMPLE = `${SKILL_DIR}/config.example.json`;
 const BRIEF_PATH = `${SKILL_DIR}/references/brief.md`;
@@ -54,7 +54,7 @@ const TARGETS = [
   { id: 'substack',       name: 'Substack',        desc: 'Newsletter post, 600–1500 words.' },
 ];
 
-// ---- Bash bridge (matches composer-app.js pattern) -----------------------
+// ---- Bash bridge (matches pulse-app.js pattern) -----------------------
 
 async function runBash(cmd) {
   const res = await fetch('/api/bash', {

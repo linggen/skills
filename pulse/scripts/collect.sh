@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# collect.sh — composer skill context-gathering script.
+# collect.sh — pulse skill context-gathering script.
 #
 # Invoked by the agent in Phase 1 of the drafting protocol. Writes a
-# unified manifest to /tmp/composer-manifest-<date>.json describing
+# unified manifest to /tmp/pulse-manifest-<date>.json describing
 # the last 24h of work — sessions, commits, ling-mem facts.
 #
 # The agent reads this manifest, then proceeds to theme extraction.
@@ -12,11 +12,11 @@ set -uo pipefail
 DATE="$(date +%Y-%m-%d)"
 SINCE_TS="$(date -u -v -24H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
             || date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)"
-MANIFEST="/tmp/composer-manifest-$DATE.json"
+MANIFEST="/tmp/pulse-manifest-$DATE.json"
 
 # Voice samples — preload so the agent can read them via this manifest
 # rather than a separate tool call.
-VOICE_FILE="$HOME/.linggen/skills/composer/references/voice-samples.md"
+VOICE_FILE="$HOME/.linggen/skills/pulse/references/voice-samples.md"
 VOICE_CONTENT=""
 if [[ -f "$VOICE_FILE" ]]; then
   VOICE_CONTENT="$(cat "$VOICE_FILE")"

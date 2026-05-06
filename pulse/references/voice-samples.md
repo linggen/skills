@@ -1,6 +1,6 @@
 # Voice Samples
 
-This file is **load-bearing for the composer skill**. The agent reads
+This file is **load-bearing for the pulse skill**. The agent reads
 samples from here before drafting any post and silently mimics
 cadence, word choice, and rhythm. Without samples, drafts will read
 as generic LLM output ("🚀 I'm thrilled to share..." cadence).

@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Composer</title>
+  <title>Pulse</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="header">
-    <h1>Composer</h1>
+    <h1>Pulse</h1>
     <div class="header-controls">
       <label for="date-input" class="date-label">Date</label>
       <input type="date" id="date-input" class="date-input" />
-      <button id="refresh-btn" class="btn-secondary">Reload</button>
+      <button id="refresh-btn" class="btn-secondary" title="Re-read today's data file from disk">Reload</button>
+      <button id="redraft-btn" class="btn-secondary" title="Discard today's data and run the drafting agent again">↻ Re-draft</button>
       <a href="settings.html" class="btn-secondary" title="Configure sources, targets, and brief">⚙ Settings</a>
     </div>
   </header>
@@ -54,6 +55,6 @@
   </main>
 
   <script type="module" src="chat-bridge.js"></script>
-  <script type="module" src="composer-app.js"></script>
+  <script type="module" src="pulse-app.js"></script>
 </body>
 </html>

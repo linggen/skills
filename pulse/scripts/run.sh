@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # run.sh — influencer mission entry script.
 #
-# The mission's job is small: ensure the composer skill's data dir
+# The mission's job is small: ensure the pulse skill's data dir
 # exists (so the skill can write to it), then return. The agent prompt
-# in mission.md handles dispatching to the composer skill via the
+# in mission.md handles dispatching to the pulse skill via the
 # Skill tool.
 #
 # Env vars from Linggen mission scheduler:
@@ -14,18 +14,18 @@ set -uo pipefail
 
 : "${MISSION_OUTPUT_DIR:?MISSION_OUTPUT_DIR not set}"
 
-# The composer skill writes draft JSON to its own data dir.
-COMPOSER_DATA="$HOME/.linggen/skills/composer/data"
-mkdir -p "$COMPOSER_DATA"
+# The pulse skill writes draft JSON to its own data dir.
+PULSE_DATA="$HOME/.linggen/skills/pulse/data"
+mkdir -p "$PULSE_DATA"
 
 # Pass the data dir path to the agent via the manifest.
-# The agent reads this and invokes the composer skill.
+# The agent reads this and invokes the pulse skill.
 cat > "$MISSION_OUTPUT_DIR/manifest.json" <<EOF
 {
   "run_id": "${MISSION_RUN_ID:-unknown}",
   "date": "$(date +%Y-%m-%d)",
-  "composer_data_dir": "$COMPOSER_DATA",
-  "today_output": "$COMPOSER_DATA/$(date +%Y-%m-%d).json"
+  "pulse_data_dir": "$PULSE_DATA",
+  "today_output": "$PULSE_DATA/$(date +%Y-%m-%d).json"
 }
 EOF
 

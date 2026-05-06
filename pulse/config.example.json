@@ -1,6 +1,6 @@
 {
   "$schema_version": 1,
-  "$comment": "Composer config. Toggle each website on/off and provide its per-site config. Source-only sites (HN, Lobsters, arxiv, RSS) are scanned in Phase 3. Target-only sites (X, blog, etc.) define output lanes in Phase 4. Reddit is dual-role.",
+  "$comment": "Pulse config. Toggle each website on/off and provide its per-site config. Source-only sites (HN, Lobsters, arxiv, RSS) are scanned in Phase 3. Target-only sites (X, blog, etc.) define output lanes in Phase 4. Reddit is dual-role.",
   "sites": {
     "hackernews": {
       "enabled": true

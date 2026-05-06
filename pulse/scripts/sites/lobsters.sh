@@ -9,7 +9,7 @@
 set -uo pipefail
 
 curl -fsS --max-time 10 \
-  -A "linggen-composer/0.1" \
+  -A "linggen-pulse/0.1" \
   "https://lobste.rs/newest.json" 2>/dev/null \
   | jq 'map({
       title,

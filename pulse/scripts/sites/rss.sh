@@ -2,13 +2,13 @@
 # rss.sh — registered as the FetchRSS tool.
 #
 # Fetches each RSS/Atom feed listed in
-# ~/.linggen/skills/composer/config.json under sites.rss.feeds.
+# ~/.linggen/skills/pulse/config.json under sites.rss.feeds.
 # Output: JSON array of {feed, title, url, summary, date}.
 # The agent filters by today's themes after this runs.
 
 set -uo pipefail
 
-CONFIG="$HOME/.linggen/skills/composer/config.json"
+CONFIG="$HOME/.linggen/skills/pulse/config.json"
 if [[ ! -f "$CONFIG" ]]; then
   echo "[]"
   exit 0
@@ -23,7 +23,7 @@ fi
 parse_one() {
   local feed_url="$1"
   local xml
-  xml=$(curl -fsS --max-time 10 -A "linggen-composer/0.1" "$feed_url" 2>/dev/null) || return 0
+  xml=$(curl -fsS --max-time 10 -A "linggen-pulse/0.1" "$feed_url" 2>/dev/null) || return 0
 
   python3 - "$xml" "$feed_url" <<'PY' 2>/dev/null
 import sys, json, xml.etree.ElementTree as ET

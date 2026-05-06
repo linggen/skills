@@ -10,7 +10,7 @@ set -uo pipefail
 
 URL="http://export.arxiv.org/api/query?search_query=cat:cs.AI+OR+cat:cs.LG+OR+cat:cs.CL&sortBy=submittedDate&sortOrder=descending&max_results=30"
 
-xml=$(curl -fsS --max-time 15 -A "linggen-composer/0.1" "$URL" 2>/dev/null) || {
+xml=$(curl -fsS --max-time 15 -A "linggen-pulse/0.1" "$URL" 2>/dev/null) || {
   echo "[]"
   exit 0
 }

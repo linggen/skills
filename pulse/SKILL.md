@@ -1,5 +1,5 @@
 ---
-name: composer
+name: pulse
 description: >-
   Daily content drafting studio. When invoked (typically by the
   `influencer` mission at 08:00, but also runnable on demand), this
@@ -8,7 +8,7 @@ description: >-
   external context (HN top, lobste.rs newest, arxiv recent, curated
   blogs) that genuinely overlaps with that work, and drafts posts in
   one or more lanes (X post / medium article / long blog). Writes the
-  result as a JSON file the composer webpage renders. Never auto-posts.
+  result as a JSON file the pulse webpage renders. Never auto-posts.
 allowed-tools:
   - Read
   - Write
@@ -21,16 +21,16 @@ cwd: ~/.linggen
 install: install.sh
 app:
   launcher: web
-  entry: scripts/composer.html
+  entry: scripts/pulse.html
   width: 1200
   height: 900
 permission:
   mode: admin
   paths:
-    - ~/.linggen/skills/composer
+    - ~/.linggen/skills/pulse
     - /tmp
   warning: >-
-    Composer reads its references + the page-collected context manifest
+    Pulse reads its references + the page-collected context manifest
     from /tmp, drafts posts in memory, and writes the output JSON to its
     own data dir. Bash collection (sessions, commits, memories) runs in
     the skill webpage's iframe, not in the agent — so the agent itself
@@ -49,7 +49,7 @@ tools:
   - name: FetchReddit
     description: >-
       Fetch the 25 newest threads from each subreddit listed in
-      ~/.linggen/skills/composer/config.json (sites.reddit.subs).
+      ~/.linggen/skills/pulse/config.json (sites.reddit.subs).
       Returns JSON array of {sub, title, url, comments, age_hours,
       summary}. Call during Phase 3. Filter by theme keyword and
       score for relevance.
@@ -76,7 +76,7 @@ tools:
   - name: FetchRSS
     description: >-
       Fetch each RSS/Atom feed listed in
-      ~/.linggen/skills/composer/config.json (sites.rss.feeds).
+      ~/.linggen/skills/pulse/config.json (sites.rss.feeds).
       Returns JSON array of {feed, title, url, summary, date}.
       Call during Phase 3 if RSS sources are configured.
     cmd: "$SKILL_DIR/scripts/sites/rss.sh"
@@ -84,13 +84,13 @@ tools:
     timeout_ms: 30000
 ---
 
-# Composer
+# Pulse
 
 Two modes — same skill, two entry paths:
 
 - **Draft mode** — invoked headless by the `influencer` mission (or
   by the user with *"Generate today's drafts"*). Runs the protocol
-  below end-to-end and writes `~/.linggen/skills/composer/data/YYYY-MM-DD.json`.
+  below end-to-end and writes `~/.linggen/skills/pulse/data/YYYY-MM-DD.json`.
 - **Review mode** — user opens the skill webpage. The page reads the
   most recent `data/YYYY-MM-DD.json` and renders it. If the user opened
   the page (no `source=mission` query param) and there is no data file
@@ -110,21 +110,21 @@ in **draft mode**. Run the protocol below.
 Before any drafting, **Read** these files. Match them; do not
 paraphrase.
 
-1. `~/.linggen/skills/composer/references/brief.md` — user's
+1. `~/.linggen/skills/pulse/references/brief.md` — user's
    self-described purpose, audience, voice rules, and active context.
    This is the most load-bearing file — it tells you what the user is
    trying to accomplish, who reads their work, and what hard rules to
    honor. Re-anchor to it after every phase.
-2. `~/.linggen/skills/composer/references/voice-samples.md` — user's
+2. `~/.linggen/skills/pulse/references/voice-samples.md` — user's
    actual past writing. Anchor cadence, word choice, rhythm. If empty
    or sparse, use plain technical English; do NOT default to
    "🚀 I'm thrilled to share..." LLM cadence.
-3. `~/.linggen/skills/composer/references/style-guide.md` — explicit
+3. `~/.linggen/skills/pulse/references/style-guide.md` — explicit
    avoid-list and cadence rules layered on top of voice samples.
-4. `~/.linggen/skills/composer/references/lane-templates.md` — format
+4. `~/.linggen/skills/pulse/references/lane-templates.md` — format
    constraints per lane (X 280 chars, medium 500-1000 words, blog
    1500-3000 words, reddit-comment, linkedin, substack).
-5. `~/.linggen/skills/composer/references/source-blogs.md` — curated
+5. `~/.linggen/skills/pulse/references/source-blogs.md` — curated
    personal-blog feeds beyond HN/lobste.rs.
 
 ## Drafting protocol
@@ -201,7 +201,7 @@ need fresh signal.
 
 ### Phase 3 — Find external signal (cap: 8 sources scanned)
 
-Sources are configured by the user in `~/.linggen/skills/composer/config.json`
+Sources are configured by the user in `~/.linggen/skills/pulse/config.json`
 under the `sites` block. Read that file first to discover which sites
 are enabled, then call the corresponding **registered tool** for each:
 
@@ -241,7 +241,7 @@ Determine the day's *weight* from manifest signal:
 - `large` = multiple aligned themes + strong external sources + a
   user insight worth deep treatment
 
-Read `~/.linggen/skills/composer/config.json`'s `targets` block to
+Read `~/.linggen/skills/pulse/config.json`'s `targets` block to
 discover which lanes the user has enabled. Only draft for targets
 where `enabled: true`. Match each draft to the lane spec in
 `references/lane-templates.md`.
@@ -287,7 +287,7 @@ not 100%. Realistic framing — don't try to ship zero-edit output.
 
 ### Phase 5 — Write output
 
-Write `~/.linggen/skills/composer/data/$(date +%Y-%m-%d).json`:
+Write `~/.linggen/skills/pulse/data/$(date +%Y-%m-%d).json`:
 
 ```json
 {
@@ -315,7 +315,7 @@ Write `~/.linggen/skills/composer/data/$(date +%Y-%m-%d).json`:
 }
 ```
 
-Also update `~/.linggen/skills/composer/data/latest.json` to be a
+Also update `~/.linggen/skills/pulse/data/latest.json` to be a
 copy or symlink of today's file, so the webpage can read "today" by
 default.
 

@@ -1,6 +1,6 @@
 # Curated Source Blogs
 
-Personal blogs and engineering writing the composer skill scans for
+Personal blogs and engineering writing the pulse skill scans for
 external context beyond HN / lobste.rs / arxiv. The list is
 opinionated: writers with consistent technical depth, not aggregator
 sites.

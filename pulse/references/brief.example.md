@@ -1,6 +1,6 @@
 # Brief
 
-The composer reads this file on every run alongside your voice samples.
+The pulse reads this file on every run alongside your voice samples.
 Tell it what you're working on, who reads your stuff, and your
 hard rules. Be specific — vague briefs produce generic drafts.
 
