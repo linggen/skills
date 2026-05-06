@@ -315,6 +315,65 @@ body {
   font-size: 12.5px;
 }
 
+/* Inline "Mark posted" URL prompt */
+.posted-prompt {
+  margin-top: 0.85rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.posted-prompt label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.posted-prompt-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.posted-prompt input {
+  flex: 1;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  padding: 0.42rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+}
+.posted-prompt input:focus { outline: none; border-color: var(--accent); }
+.posted-prompt button {
+  font: inherit;
+  font-size: 12px;
+  padding: 0.42rem 0.7rem;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.posted-prompt button.primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: rgba(91, 157, 255, 0.35);
+}
+.posted-prompt button.dismiss {
+  color: var(--muted);
+  font-size: 14px;
+  padding: 0.35rem 0.55rem;
+}
+.posted-prompt-hint {
+  margin-top: 0.45rem;
+  font-size: 11px;
+  color: var(--muted);
+}
+
 .show-more {
   display: block;
   width: 100%;

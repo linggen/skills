@@ -350,7 +350,7 @@ function handleCardAction(action, cardId, btn) {
       }
       break;
     case 'mark-posted':
-      markCardPosted(cardId);
+      markCardPosted(cardId, btn);
       break;
     case 'discard':
     case 'dismiss':
@@ -388,14 +388,82 @@ function removeCard(cardId) {
   }
 }
 
-function markCardPosted(cardId) {
-  const sess = getSession();
+async function markCardPosted(cardId, btn) {
   const card = findCard(cardId);
   if (!card) return;
-  card.posted = true;
-  card.posted_at = new Date().toISOString();
-  loadSession(sess);
-  persistSession(sess);
+  // Inline URL prompt rendered inside the card.
+  const cardEl = btn?.closest('.card');
+  if (!cardEl) return;
+  if (cardEl.querySelector('.posted-prompt')) return;  // already open
+
+  const prompt = document.createElement('div');
+  prompt.className = 'posted-prompt';
+  prompt.innerHTML = `
+    <label>Where did you post it?</label>
+    <div class="posted-prompt-row">
+      <input type="url" placeholder="https://news.ycombinator.com/item?id=..." />
+      <button class="primary" data-confirm>Save</button>
+      <button class="dismiss" data-cancel>×</button>
+    </div>
+    <div class="posted-prompt-hint">Pulse will poll this thread for new replies on its next run.</div>
+  `;
+  cardEl.querySelector('.body').appendChild(prompt);
+  const input = prompt.querySelector('input');
+  input.focus();
+
+  const confirm = async () => {
+    const url = input.value.trim();
+    if (!url) {
+      input.style.borderColor = 'var(--red)';
+      return;
+    }
+    const platform = inferPlatform(url);
+    await appendPosted({
+      id: `post-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      draft_id: card.id,
+      url,
+      platform,
+      title: card.thread_title || card.your_post_title || (card.content || '').slice(0, 60),
+      posted_at: new Date().toISOString(),
+      last_checked: new Date().toISOString(),
+      comment_ids_seen: [],
+      responses: [],
+    });
+    // Update the card in-memory + on disk.
+    card.posted = true;
+    card.posted_url = url;
+    card.posted_at = new Date().toISOString();
+    const sess = getSession();
+    loadSession(sess);
+    persistSession(sess);
+  };
+
+  prompt.querySelector('[data-confirm]').addEventListener('click', confirm);
+  prompt.querySelector('[data-cancel]').addEventListener('click', () => prompt.remove());
+  input.addEventListener('keypress', (e) => { if (e.key === 'Enter') confirm(); });
+}
+
+function inferPlatform(url) {
+  try {
+    const h = new URL(url).hostname.replace(/^www\./, '');
+    if (h.includes('news.ycombinator.com')) return 'hn';
+    if (h.includes('reddit.com')) return 'reddit';
+    if (h.includes('lobste.rs')) return 'lobsters';
+    if (h === 'x.com' || h === 'twitter.com') return 'x';
+    if (h.includes('linkedin.com')) return 'linkedin';
+    if (h.includes('substack.com')) return 'substack';
+    if (h.includes('medium.com')) return 'medium';
+    return 'web';
+  } catch { return 'web'; }
+}
+
+async function appendPosted(entry) {
+  // Read state/posted.json, append the entry, write back.
+  const path = `${SKILL_DIR}/state/posted.json`;
+  let posted = await readJson(path, { '$schema_version': 1, posts: [] });
+  if (!Array.isArray(posted.posts)) posted.posts = [];
+  posted.posts.push(entry);
+  await writeJson(path, posted);
 }
 
 function flash(btn, label) {

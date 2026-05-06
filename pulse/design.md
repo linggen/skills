@@ -155,15 +155,99 @@ State that persists *across* runs. Distinct from per-run output.
   launches.json           # active launches: artifact, launch-date, follow-up cadence
   audience.json           # derived: who responds to your posts, common topics
   watchlist-cache.json    # last-extracted watchlist (for diff against brief.md)
+  posted.json             # threads the user posted to (for follow-up reply tracking)
 ```
 
-State is updated by capabilities (e.g., `monitor-mentions` updates
-`account-health.json` after each Reddit fetch; `track-progress`
-updates `launches.json` when it sees a launch event in commits).
+State is updated by capabilities (e.g., `monitor-mentions` writes
+`watchlist-cache.json` and `posted.json`) AND by the page (the `Mark
+posted` card action writes a new entry to `posted.json` directly).
+
+### `watchlist-cache.json`
+
+```json
+{
+  "extracted_from": "brief.md",
+  "brief_mtime": "2026-05-06T10:24:00Z",
+  "extracted_at": "2026-05-06T08:00:00Z",
+  "products": ["Sys Doctor", "Linggen", "ling-mem"],
+  "competitors": ["CleanMyMac", "Hazel", "DevonThink", "DaisyDisk"],
+  "self": ["@Linggen77", "linggen on GitHub"]
+}
+```
+
+Re-extracted by `monitor-mentions` when `brief.md` mtime is newer than
+`brief_mtime`. If `brief.md` has an explicit `## Watchlist` section,
+that's parsed verbatim (override path); otherwise the agent extracts
+via LLM.
+
+### `posted.json`
+
+```json
+{
+  "$schema_version": 1,
+  "posts": [
+    {
+      "id": "post-abc123",
+      "draft_id": "draft-xyz789",
+      "url": "https://news.ycombinator.com/item?id=48025509",
+      "platform": "hn",
+      "title": "Rewriting CleanMyMac as an AI-native app",
+      "posted_at": "2026-05-05T14:22:00Z",
+      "last_checked": "2026-05-06T08:00:00Z",
+      "comment_ids_seen": ["c-id-1", "c-id-2"],
+      "responses": []
+    }
+  ]
+}
+```
+
+Written when:
+- The user clicks `✓ Posted` on a draft card (the page prompts for the
+  URL inline and writes the new entry).
+- `monitor-mentions` updates `last_checked` and `comment_ids_seen`
+  after re-polling each thread.
+
+Read by `monitor-mentions` to know which threads to poll for new
+replies; surfaced in the Pulse page as `reply` cards (with optional
+`follow_up` blocks for replies-to-your-reply).
+
+### `account-health.json`, `launches.json`, `audience.json`
+
+Defined here for completeness; writers land in later phases.
+
+```json
+// account-health.json
+{
+  "reddit": {
+    "subs": {
+      "macapps":     { "karma": 47, "karma_threshold": 50, "status": "warm" },
+      "LocalLLaMA":  { "karma":  4, "karma_threshold": 50, "status": "cold" }
+    },
+    "site_throttle": "ok"
+  },
+  "hn":  { "status": "warm", "last_submit_at": "..." },
+  "x":   { "status": "ok" }
+}
+
+// launches.json
+[
+  {
+    "name": "Sys Doctor",
+    "artifact_url": "https://linggen.dev/apps/sys-doctor",
+    "launch_date": "2026-04-28",
+    "days_since": 8,
+    "followup_due": "week-2",
+    "stage": "launching"
+  }
+]
+
+// audience.json (derived; later)
+{ "tags": ["mac power user", "rust dev"], "active_responders": [...] }
+```
 
 State is read by:
 - Pulse renderer (status strip)
-- `monitor-mentions` (which posts to triage replies on)
+- `monitor-mentions` (watchlist + posted-thread polling)
 - `track-progress` (where in launch sequence)
 - `draft-content` (audience-aware tone calibration over time)
 

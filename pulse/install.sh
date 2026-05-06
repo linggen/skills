@@ -44,9 +44,10 @@ fi
 
 SKILL_DIR="$LINGGEN_DIR/skills/pulse"
 DATA_DIR="$SKILL_DIR/data"
+STATE_DIR="$SKILL_DIR/state"
 
 echo "Installing pulse skill to $SKILL_DIR/"
-mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references" "$DATA_DIR"
+mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references" "$DATA_DIR" "$STATE_DIR"
 
 # Skill files.
 install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"

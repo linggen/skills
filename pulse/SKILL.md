@@ -229,31 +229,96 @@ message instead.
 ### monitor-mentions
 
 **When**: goal mentions watching, mentions, replies, or "anyone
-talking about." Also: this capability runs implicitly on every saved
-daily run if the section's `last_updated` is older than 6h.
+talking about my product." Also: runs implicitly on every saved daily
+run if either section's `last_updated` is older than 6h.
 
 **Inputs**:
-- Watchlist (auto-derived from brief.md): own product names,
-  competitors named, user identifiers explicitly stated. Cache
-  result; re-extract when brief.md changes.
-- `state/posted.json` (if exists): list of threads the user has
-  posted comments to.
-- Configured source tools.
+- `state/watchlist-cache.json` (if exists)
+- `state/posted.json` (if exists)
+- `references/brief.md`
+- Configured source tools (`FetchReddit`, `FetchHackerNews`,
+  `FetchLobsters`)
 
-**Process — mentions**:
-1. Call `FetchReddit`, `FetchHackerNews`, `FetchLobsters`.
-2. Filter for posts/comments that name any watchlist term.
-3. Order by recency.
+#### Step 1 — Resolve the watchlist
 
-**Process — replies due**:
-1. For each entry in `state/posted.json`, refetch the thread.
-2. Diff comments since `last_checked`.
-3. Surface new comments as `follow_up` blocks on a `reply` card OR
-   as new `reply` cards for unanswered top-level comments.
-4. Update `state/posted.json` with new `last_checked` and any new
-   responses recorded.
+Read `state/watchlist-cache.json`. If it exists AND its `brief_mtime`
+matches the current brief.md mtime, use the cached lists.
 
-**Output**: body_patches for `mentions` and `replies_due` sections.
+Otherwise extract fresh from `brief.md`:
+
+1. **Override path**: if brief.md contains a `## Watchlist` section,
+   parse its bullet list verbatim. Each bullet is one watch term;
+   classify by hint:
+   - bullets prefixed with `(competitor)` → competitors[]
+   - bullets prefixed with `(self)` → self[]
+   - everything else → products[]
+2. **Otherwise extract via LLM**: read brief.md and pull:
+   - **products[]** — products the user is building (mentioned in
+     "what I'm working on", any project name)
+   - **competitors[]** — products called out in comparison /
+     alternative-to language ("vs CleanMyMac", "Hazel and DevonThink",
+     "alternative to X")
+   - **self[]** — explicit handles / GitHub login / real name
+     (only if explicitly stated; never guess from filenames or
+     environment)
+
+Write the result to `state/watchlist-cache.json` with current
+brief.md mtime. Schema in design.md.
+
+#### Step 2 — Mentions
+
+For each watchlist term (products + competitors + self), search
+configured source tools:
+- `FetchReddit` (each configured sub)
+- `FetchHackerNews`
+- `FetchLobsters`
+
+Filter for hits where the term appears in title or summary. For each
+hit, build a `mention` card (see design.md card schema):
+
+```json
+{ "type": "mention", "id": "<generate>",
+  "watched_term": "<term>",
+  "actor": "<username if known>",
+  "source": "reddit|hn|lobsters", "sub": "<if reddit>",
+  "thread_url": "...", "thread_title": "...",
+  "quote": "<first 240 chars of relevant text>",
+  "age_hours": <int>,
+  "actions": ["draft-reply", "open", "dismiss"] }
+```
+
+Cap at 10 cards. If nothing scored, emit one `empty` card.
+
+Emit body_patch for `mentions` section.
+
+#### Step 3 — Replies due
+
+For each entry in `state/posted.json`:
+
+1. Re-fetch the thread (the entry's `platform` tells you which tool
+   to use — currently `hn` and `reddit` are supported).
+2. Compare comment IDs against `comment_ids_seen`.
+3. New comments fall into two buckets:
+   - **Unanswered top-level comments** on the user's post → render as
+     a `reply` card with `unanswered_count` set.
+   - **Direct replies to a comment the user posted** → render as a
+     `follow_up` block on the `reply` card (the green "↳ NEW REPLY"
+     UX). Only one follow_up per `reply` card; pick the newest.
+4. Update the entry: append new IDs to `comment_ids_seen`, set
+   `last_checked` to now, append any responses to `responses[]`.
+
+Write the updated `state/posted.json` back via `Write`.
+
+If `state/posted.json` is empty or missing, skip this step.
+
+Emit body_patch for `replies_due` section.
+
+#### Output
+
+Two `body_patch` blocks: one for `mentions`, one for `replies_due`.
+Sections you didn't touch (e.g., `discovery`, `signal`,
+`progress_drafts`) are NOT in the patch — the page leaves them in
+place per the partial-run contract.
 
 ### track-progress
 
