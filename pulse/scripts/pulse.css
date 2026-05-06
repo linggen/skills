@@ -97,6 +97,7 @@ body {
 .side-item .side-name { flex: 1; }
 .side-item .side-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
 .side-item.selected .side-sub { color: var(--accent); opacity: 0.85; }
+.side-item.clickable { cursor: pointer; }
 .side-item .side-badge {
   padding: 1px 6px; border-radius: 999px;
   background: var(--accent); color: var(--bg);
@@ -401,6 +402,90 @@ body {
   width: 100%;
   border: 0;
   background: transparent;
+}
+
+/* ============ LIBRARY VIEW ============ */
+.library-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0 0.1rem 0.85rem;
+}
+.library-filter {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.library-filter select,
+.library-filter input {
+  font: inherit;
+  font-size: 13px;
+  padding: 0.4rem 0.55rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.library-filter select:focus,
+.library-filter input:focus { outline: none; border-color: var(--accent); }
+.library-filter-search { flex: 1; min-width: 180px; }
+.library-filter-search input { width: 100%; }
+
+.library-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.lib-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.lib-row:hover { border-color: rgba(91, 157, 255, 0.4); }
+.lib-row-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 11px;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+.lib-tag {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+}
+.lib-row-date {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.lib-row-meta { color: var(--muted); }
+.lib-row-meta b { color: var(--text); font-weight: 500; }
+.lib-row-posted {
+  color: var(--green);
+  font-weight: 500;
+  font-size: 11px;
+}
+.lib-row-body {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 /* ============ EMPTY / LOADING / ERROR STATES ============ */

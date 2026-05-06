@@ -22,8 +22,11 @@ const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
 const state = {
   selectedDate: null,
-  sessions: [],   // [{ date, started_at, last_run_at, run_count, sample_goal, unread_count }]
-  chat: null,     // chat-bridge controller
+  view: 'session',   // 'session' | 'library-drafts' | 'library-mentions'
+  libraryFilters: { lane: '', source: '', search: '', postedStatus: 'all' },
+  sessions: [],      // [{ date, started_at, last_run_at, run_count, sample_goal, unread_count }]
+  archiveCounts: { drafts: 0, mentions: 0 },  // populated lazily after sidebar renders
+  chat: null,        // chat-bridge controller
 };
 
 // ---- Bash bridge ---------------------------------------------------------
@@ -150,12 +153,24 @@ function renderSidebar() {
   arcLbl.className = 'side-label';
   arcLbl.textContent = 'Archives';
   arc.appendChild(arcLbl);
-  arc.appendChild(staticItem('📝 Drafts', countAcrossSessions(s => s.draftCount)));
-  arc.appendChild(staticItem('@ Mentions', countAcrossSessions(s => s.mentionCount)));
+  const draftsItem  = staticItem('📝 Drafts',   fmtCount(state.archiveCounts.drafts));
+  const mentionsItem = staticItem('@ Mentions', fmtCount(state.archiveCounts.mentions));
+  draftsItem.classList.add('clickable');
+  mentionsItem.classList.add('clickable');
+  if (state.view === 'library-drafts')   draftsItem.classList.add('selected');
+  if (state.view === 'library-mentions') mentionsItem.classList.add('selected');
+  draftsItem.addEventListener('click', () => showLibrary('drafts'));
+  mentionsItem.addEventListener('click', () => showLibrary('mentions'));
+  arc.appendChild(draftsItem);
+  arc.appendChild(mentionsItem);
   el.appendChild(arc);
 }
 
-function countAcrossSessions(_) { return '—'; }  // stub: cheap placeholder; fill in later
+function fmtCount(n) {
+  if (n == null) return '—';
+  if (n === 0) return '0';
+  return String(n);
+}
 
 function renderSidebarItem(s) {
   const item = document.createElement('div');
@@ -211,6 +226,7 @@ function divider() {
 
 async function selectSession(date) {
   state.selectedDate = date;
+  state.view = 'session';
   // Reload session content
   const sess = await readJson(`${SKILL_DIR}/data/${date}/session.json`);
   loadSession(sess);  // renderer applies it
@@ -221,8 +237,231 @@ async function selectSession(date) {
   document.getElementById('session-sub').textContent = meta?.sample_goal
     ? `Last goal: "${truncate(meta.sample_goal, 80)}"`
     : 'Click + New run, or use a chip above, to start.';
+  // Show session-mode UI elements; hide library-mode
+  showSessionUI();
   // Update sidebar selection
   renderSidebar();
+}
+
+// ---- Library views -------------------------------------------------------
+
+async function showLibrary(kind) {
+  // kind: 'drafts' | 'mentions'
+  state.view = kind === 'drafts' ? 'library-drafts' : 'library-mentions';
+  state.libraryFilters = { lane: '', source: '', search: '', postedStatus: 'all' };
+  // Update header
+  document.getElementById('session-title').textContent =
+    kind === 'drafts' ? 'Drafts archive' : 'Mentions archive';
+  document.getElementById('session-sub').textContent =
+    kind === 'drafts'
+      ? 'Every draft generated across all sessions. Filter by lane, posted status, or search.'
+      : 'Every mention surfaced across all sessions. Filter by source or search the quote text.';
+  // Hide session-mode UI; show library-mode
+  showLibraryUI();
+  // Render initial library
+  await renderLibrary();
+  // Reflect selection in sidebar
+  renderSidebar();
+}
+
+function showSessionUI() {
+  document.querySelector('.action-chips').style.display = '';
+  document.getElementById('status-strip').hidden = false;  // renderer will hide if empty
+  // Reset library scaffold if present
+  const filters = document.getElementById('library-filters');
+  if (filters) filters.remove();
+}
+
+function showLibraryUI() {
+  document.querySelector('.action-chips').style.display = 'none';
+  document.getElementById('status-strip').hidden = true;
+}
+
+async function renderLibrary() {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = '<div class="state-msg">Loading library…</div>';
+
+  const items = state.view === 'library-drafts'
+    ? await collectAllDrafts()
+    : await collectAllMentions();
+
+  // Render filter bar
+  let filtersEl = document.getElementById('library-filters');
+  if (!filtersEl) {
+    filtersEl = document.createElement('div');
+    filtersEl.id = 'library-filters';
+    filtersEl.className = 'library-filters';
+    container.parentElement.insertBefore(filtersEl, container);
+  }
+  filtersEl.innerHTML = '';
+
+  if (state.view === 'library-drafts') {
+    filtersEl.appendChild(filterSelect('Lane', 'lane', [
+      ['', 'All lanes'],
+      ['x-post', 'X / Twitter'],
+      ['reddit-comment', 'Reddit'],
+      ['blog', 'Blog'],
+      ['medium', 'Medium'],
+      ['linkedin', 'LinkedIn'],
+      ['substack', 'Substack'],
+    ]));
+    filtersEl.appendChild(filterSelect('Status', 'postedStatus', [
+      ['all', 'All'],
+      ['posted', 'Posted'],
+      ['unposted', 'Unposted'],
+    ]));
+  } else {
+    const sources = new Set(items.map(i => i.source).filter(Boolean));
+    filtersEl.appendChild(filterSelect('Source', 'source',
+      [['', 'All sources'], ...Array.from(sources).sort().map(s => [s, s])]));
+  }
+  filtersEl.appendChild(filterSearch());
+
+  // Apply filters
+  const f = state.libraryFilters;
+  let filtered = items;
+  if (state.view === 'library-drafts') {
+    if (f.lane) filtered = filtered.filter(i => i.lane === f.lane);
+    if (f.postedStatus === 'posted')   filtered = filtered.filter(i => !!i.posted);
+    if (f.postedStatus === 'unposted') filtered = filtered.filter(i => !i.posted);
+    if (f.search) {
+      const q = f.search.toLowerCase();
+      filtered = filtered.filter(i => (i.content || '').toLowerCase().includes(q));
+    }
+  } else {
+    if (f.source) filtered = filtered.filter(i => i.source === f.source);
+    if (f.search) {
+      const q = f.search.toLowerCase();
+      filtered = filtered.filter(i =>
+        (i.quote || '').toLowerCase().includes(q) ||
+        (i.thread_title || '').toLowerCase().includes(q) ||
+        (i.watched_term || '').toLowerCase().includes(q)
+      );
+    }
+  }
+
+  // Render list
+  container.innerHTML = '';
+  if (filtered.length === 0) {
+    const msg = document.createElement('div');
+    msg.className = 'state-msg';
+    msg.textContent = items.length === 0
+      ? `No ${state.view === 'library-drafts' ? 'drafts' : 'mentions'} yet across any session.`
+      : 'No results match the current filters.';
+    container.appendChild(msg);
+    return;
+  }
+  const list = document.createElement('div');
+  list.className = 'library-list';
+  filtered.forEach(item => list.appendChild(state.view === 'library-drafts'
+    ? renderDraftRow(item) : renderMentionRow(item)));
+  container.appendChild(list);
+}
+
+function filterSelect(label, key, options) {
+  const wrap = document.createElement('label');
+  wrap.className = 'library-filter';
+  wrap.innerHTML = `<span>${escapeHtml(label)}</span>`;
+  const sel = document.createElement('select');
+  options.forEach(([val, lbl]) => {
+    const o = document.createElement('option');
+    o.value = val; o.textContent = lbl;
+    if (state.libraryFilters[key] === val) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', () => {
+    state.libraryFilters[key] = sel.value;
+    renderLibrary();
+  });
+  wrap.appendChild(sel);
+  return wrap;
+}
+
+function filterSearch() {
+  const wrap = document.createElement('label');
+  wrap.className = 'library-filter library-filter-search';
+  wrap.innerHTML = `<span>Search</span>`;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'filter…';
+  input.value = state.libraryFilters.search || '';
+  let timer = null;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      state.libraryFilters.search = input.value;
+      renderLibrary();
+    }, 200);
+  });
+  wrap.appendChild(input);
+  return wrap;
+}
+
+async function collectAllDrafts() {
+  const out = [];
+  for (const s of state.sessions) {
+    const sess = await readJson(`${SKILL_DIR}/data/${s.date}/session.json`);
+    const cards = sess?.sections?.progress_drafts?.cards || [];
+    for (const c of cards) {
+      if (c.type === 'draft') out.push({ ...c, source_date: s.date });
+    }
+  }
+  // Newest first by source_date.
+  out.sort((a, b) => (b.source_date || '').localeCompare(a.source_date || ''));
+  return out;
+}
+
+async function collectAllMentions() {
+  const out = [];
+  for (const s of state.sessions) {
+    const sess = await readJson(`${SKILL_DIR}/data/${s.date}/session.json`);
+    const cards = sess?.sections?.mentions?.cards || [];
+    for (const c of cards) {
+      if (c.type === 'mention') out.push({ ...c, source_date: s.date });
+    }
+  }
+  out.sort((a, b) => (b.source_date || '').localeCompare(a.source_date || ''));
+  return out;
+}
+
+async function refreshArchiveCounts() {
+  const drafts = await collectAllDrafts();
+  const mentions = await collectAllMentions();
+  state.archiveCounts.drafts = drafts.length;
+  state.archiveCounts.mentions = mentions.length;
+  renderSidebar();
+}
+
+function renderDraftRow(d) {
+  const row = document.createElement('div');
+  row.className = 'lib-row';
+  row.innerHTML = `
+    <div class="lib-row-head">
+      <span class="lib-tag">${escapeHtml(d.lane || 'draft')}</span>
+      <span class="lib-row-date">${escapeHtml(d.source_date || '')}</span>
+      ${d.posted ? '<span class="lib-row-posted">✓ posted</span>' : ''}
+      ${d.char_count != null ? `<span class="lib-row-meta">${d.char_count} chars</span>` : ''}
+    </div>
+    <div class="lib-row-body">${escapeHtml(truncate(d.content || '', 220))}</div>
+  `;
+  row.addEventListener('click', () => selectSession(d.source_date));
+  return row;
+}
+
+function renderMentionRow(m) {
+  const row = document.createElement('div');
+  row.className = 'lib-row';
+  row.innerHTML = `
+    <div class="lib-row-head">
+      <span class="lib-tag">${escapeHtml(m.source || '')}${m.sub ? ' · r/' + escapeHtml(m.sub) : ''}</span>
+      <span class="lib-row-date">${escapeHtml(m.source_date || '')}</span>
+      ${m.watched_term ? `<span class="lib-row-meta">on <b>${escapeHtml(m.watched_term)}</b></span>` : ''}
+      ${m.actor ? `<span class="lib-row-meta">${escapeHtml(m.actor)}</span>` : ''}
+    </div>
+    <div class="lib-row-body">${escapeHtml(truncate(m.quote || m.thread_title || '', 220))}</div>
+  `;
+  row.addEventListener('click', () => selectSession(m.source_date));
+  return row;
 }
 
 // ---- Persistence ---------------------------------------------------------
@@ -537,6 +776,8 @@ async function init() {
   wireChips();
   wireCardActions();
   await mountChat();
+  // Lazy: archive counts after first paint so the sidebar shows real numbers.
+  refreshArchiveCounts().catch(err => console.warn('[pulse] archive counts failed', err));
 }
 
 init().catch(err => {
