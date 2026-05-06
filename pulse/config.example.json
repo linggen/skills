@@ -1,6 +1,7 @@
 {
-  "$schema_version": 1,
-  "$comment": "Pulse config. Toggle each website on/off and provide its per-site config. Source-only sites (HN, Lobsters, arxiv, RSS) are scanned in Phase 3. Target-only sites (X, blog, etc.) define output lanes in Phase 4. Reddit is dual-role.",
+  "$schema_version": 2,
+  "$comment": "Pulse config. `default_goal` is used when a run is triggered without an explicit goal (e.g. opening Pulse with no data on disk). `sites` toggles source tools (HN, Reddit, Lobsters, arxiv, RSS) + per-site config. `targets` toggles output lanes (x-post, blog, etc.) + per-lane config. Goals dispatch capabilities; capabilities call enabled sites and draft for enabled targets. Reddit is dual-role.",
+  "default_goal": "Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.",
   "sites": {
     "hackernews": {
       "enabled": true

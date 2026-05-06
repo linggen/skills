@@ -183,33 +183,181 @@ brief.md mtime changes.
 Override path: user adds an explicit `## Watchlist` section to
 `brief.md`. Pulse merges (override > extracted).
 
-## Run output JSON schema
+## Page state and JSON schema
 
-One file per run, all sections optional:
+Two JSON shapes: the **session file** that lives on disk, and the
+**body_patch** the agent emits on each run. The page renders the
+session file; the agent updates it via patches.
+
+### Session file
+
+```
+data/YYYY-MM-DD/<session-id>.json
+```
+
+Today's session = today's file. New goal runs through the day
+**accumulate** patches into this file (sys-doctor body_patch model).
+Yesterday's session is its own file.
 
 ```json
 {
-  "run_id": "...",
-  "goal": "...",
-  "weight": "small|medium|large|skip",
-  "summary": [...],
+  "session_id": "2026-05-06-08-00",
+  "started_at": "2026-05-06T08:00:00Z",
+  "last_run_at": "2026-05-06T11:14:23Z",
 
-  "market_landscape": [...],          // research-market
-  "customer_pain_points": [...],      // discover-customers
-  "mentions": [...],                  // monitor-mentions
-  "replies_due": [...],               // monitor-mentions
-  "progress_digest": [...],           // track-progress
-  "external_sources": [...],          // any capability that scored hits
-  "comment_candidates": [...],        // discover-customers + monitor-mentions
-  "drafts": [...],                    // draft-content
+  "status_strip": [
+    { "label": "r/macapps", "value": "47/50", "tone": "ok" },
+    { "label": "HN", "value": "warm", "tone": "ok" },
+    { "label": "8d since Sys Doctor launch", "tone": "neutral" },
+    { "label": "week-2 follow-up due", "tone": "due" }
+  ],
 
-  "skipped": false,
-  "skip_reason": null
+  "sections": {
+    "mentions":       { "cards": [...], "last_updated": "..." },
+    "replies_due":    { "cards": [...], "last_updated": "..." },
+    "discovery":      { "cards": [...], "last_updated": "..." },
+    "signal":         { "cards": [...], "last_updated": "..." },
+    "progress_drafts":{ "cards": [...], "last_updated": "..." }
+  },
+
+  "runs": [
+    {
+      "run_id": "...",
+      "trigger": "saved-run|manual|chip|chat",
+      "goal": "Daily X-post if I shipped or learned",
+      "started_at": "...",
+      "completed_at": "...",
+      "capabilities_invoked": ["track-progress", "draft-content"],
+      "summary": ["Shipped pulse settings page", "Drafted X-post"],
+      "skipped": false,
+      "skip_reason": null
+    }
+  ]
 }
 ```
 
-Pulse renderer iterates through populated sections in priority order
-(mentions, replies, discovery, signal, progress, drafts).
+The renderer iterates `sections` in fixed priority order:
+mentions → replies_due → discovery → signal → progress_drafts.
+Empty section means *not touched yet*; renderer hides it. A "found
+nothing" outcome is represented by an empty-state card *inside* the
+section, not by an absent section.
+
+### body_patch (what the agent emits)
+
+After each capability runs, the agent emits one JSON block:
+
+```json
+{
+  "body_patch": {
+    "section": "discovery",
+    "last_updated": "2026-05-06T11:14:23Z",
+    "cards": [...]
+  }
+}
+```
+
+If a run touches multiple sections (e.g. `monitor-mentions` populates
+both `mentions` and `replies_due`), the agent emits multiple
+`body_patch` blocks. The session file applies them in order.
+
+The agent may also emit a `status_strip_patch` to update the strip,
+and a `run_log` block to append to the session's `runs[]` array.
+
+### Card type schemas
+
+All cards share the scaffold: `{ type, id, actions[] }`. Type-specific
+fields below.
+
+**`mention`** — somebody named your watchlist
+```json
+{ "type": "mention", "id": "...",
+  "watched_term": "Sys Doctor",
+  "actor": "@cedricchase",
+  "source": "reddit", "sub": "macapps",
+  "thread_url": "...", "thread_title": "...",
+  "quote": "...", "age_hours": 2,
+  "actions": ["draft-reply", "open", "dismiss"] }
+```
+
+**`reply`** — unanswered comments on your own posts (replies due);
+optional `follow_up` carries new reactions to a reply you already made
+```json
+{ "type": "reply", "id": "...",
+  "your_post_url": "...", "your_post_title": "...",
+  "platform": "hn|reddit|x|...",
+  "posted_at": "...", "unanswered_count": 3,
+  "score": 47, "ratio": 0.92,
+  "actions": ["draft-replies", "open", "dismiss"],
+  "follow_up": {
+    "comment_url": "...", "quote": "...", "age_hours": 1,
+    "actions": ["reply-back", "view", "dismiss"]
+  }
+}
+```
+
+**`discovery`** — cold thread worth commenting on
+```json
+{ "type": "discovery", "id": "...",
+  "source": "reddit|hn|lobsters",
+  "sub": "LocalLLaMA", "thread_url": "...", "thread_title": "...",
+  "comments": 12, "age_hours": 4,
+  "match_reason": "matches: skills format, agent runtime",
+  "score": 0.85,
+  "draft_starter": "...",
+  "actions": ["draft-starter", "open", "dismiss"] }
+```
+
+**`signal`** — market intelligence (was "pulse")
+```json
+{ "type": "signal", "id": "...",
+  "source": "github-trending|google-trends|hn|wikipedia|product-hunt",
+  "title": "GitHub trending (Rust)",
+  "items": ["2 new agent-runtime repos today", "..."],
+  "actions": ["expand"] }
+```
+
+**`progress`** — what shipped + what learned
+```json
+{ "type": "progress", "id": "...",
+  "window": "24h|7d|30d",
+  "items": [
+    { "kind": "shipped", "text": "pulse settings page + 5 site adapters" },
+    { "kind": "learned", "text": "config persistence via /api/bash" },
+    { "kind": "fixed",   "text": "..." }
+  ],
+  "actions": [] }
+```
+
+**`draft`** — generated content to review and post
+```json
+{ "type": "draft", "id": "...",
+  "lane": "x-post|reddit-comment|blog|medium|linkedin|substack",
+  "content": "...",
+  "char_count": 178, "char_limit": 280,
+  "title_candidates": ["..."],
+  "subtitle": "...",
+  "sub": "macapps",
+  "thread_url": "...",
+  "citations": [...],
+  "source_progress_id": "...",
+  "posted": false,
+  "posted_url": null,
+  "posted_at": null,
+  "actions": ["polish", "copy", "discard", "mark-posted"] }
+```
+
+### Empty-state cards
+
+Inside a section that ran-and-found-nothing, the agent emits a single
+empty-state card:
+
+```json
+{ "type": "empty", "section_hint": "discovery",
+  "message": "No new threads matching your brief today." }
+```
+
+The renderer treats `empty` as a regular card type, just visually
+muted. Distinguishes "ran, nothing to show" from "didn't run."
 
 ## Partial runs and PageUpdate body_patch
 

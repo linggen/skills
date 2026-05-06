@@ -383,27 +383,34 @@ async function startDraftRun(date) {
   }
   if (cancelled) return;
 
+  // Default goal — used when no explicit goal was passed via the
+  // session opener. config.json's `default_goal` overrides; failing
+  // that, fall back to the daily-build-in-public default.
+  const goalText = (window.PULSE_GOAL || '').trim()
+                || (await fetchDefaultGoal())
+                || 'Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.';
+
+  const trigger = window.PULSE_TRIGGER || 'manual';
+  const window_ = window.PULSE_WINDOW || '24h';
+
   const kickoffPrompt =
-    `The user just opened the pulse review page; today is ${date} and there's no draft JSON on disk yet, so you're running fresh.\n\n` +
+    `The user just opened Pulse for ${date}.\n\n` +
+    `GOAL: ${goalText}\n` +
+    `TRIGGER: ${trigger}\n` +
+    `WINDOW: ${window_}\n` +
     `MANIFEST_PATH=${manifestPath}\n` +
-    `OUTPUT_PATH=$HOME/.linggen/skills/pulse/data/${date}.json\n` +
+    `SESSION_PATH=$HOME/.linggen/skills/pulse/data/${date}/session.json\n` +
     `CONFIG_PATH=$HOME/.linggen/skills/pulse/config.json\n` +
     `BRIEF_PATH=$HOME/.linggen/skills/pulse/references/brief.md\n\n` +
-    `LEFT PANEL — driven by your PageUpdate calls. The page already seeded:\n` +
-    `  • A "progress" widget titled "Drafting today's posts" with 5 steps (gather/themes/external/draft/write).\n` +
-    `  • An "info" widget titled "Working" with a placeholder body.\n` +
-    `Update them via PageUpdate({ body_patch: [...] }) — DO NOT use \`body\` (that wipes everything); always use \`body_patch\`. To advance the progress widget, emit a patch with the SAME title "Drafting today's posts" so the existing widget swaps in place. As findings emerge, replace "Working" with new info/list/markdown widgets (themes after Phase 2, scored sources after Phase 3, draft summaries after Phase 4). Supported widget types: info, progress, list, markdown.\n\n` +
-    `RIGHT PANEL — chat with the user. BEFORE any tool calls, greet them warmly: introduce yourself as Pulse (their daily post-drafting agent) and explain you're about to run the Phase 1–5 protocol from SKILL.md. 3–4 sentences, plain technical prose, voice-sample-anchored cadence (no "I'm thrilled", no rocket emoji, no "let's go", no "TL;DR"). Do NOT emit any PageUpdate yet.\n\n` +
-    `THEN run the protocol from SKILL.md (Phase 1–5):\n` +
-    `  1. Read BRIEF_PATH first — it's the most load-bearing file (purpose, audience, hard rules). Then voice-samples.md, style-guide.md, lane-templates.md.\n` +
-    `  2. Read MANIFEST_PATH for sessions/commits/memories/voice_samples.\n` +
-    `  3. Extract 1–3 themes (or fall back to Phase 2b if none).\n` +
-    `  4. Read CONFIG_PATH to discover enabled \`sites\` and \`targets\`. For each enabled site, call its registered native tool: \`FetchHackerNews\`, \`FetchReddit\`, \`FetchLobsters\`, \`FetchArxiv\`, \`FetchRSS\`. Dispatch in parallel. Do NOT use WebSearch / WebFetch for sites covered by a tool — the tools are pre-approved (no permission prompt) and authoritative. WebSearch is only for one-off research outside the configured set.\n` +
-    `  5. Score sources 0–1, drop everything below 0.6.\n` +
-    `  6. Draft only for \`targets\` where \`enabled: true\`, matched to weight (small/medium/large). Multi-pass per draft (structural → voice rewrite → tic check).\n` +
-    `  7. Write the final JSON to OUTPUT_PATH and update latest.json.\n\n` +
-    `Bash is NOT in your toolset; the manifest and the Fetch* tools cover everything you need.\n\n` +
-    `When the JSON file is written, end with a single status line ("drafts written: N" or "skipped: <reason>") so the page can pick it up.`;
+    `Read SKILL.md for the full protocol. Summary:\n` +
+    `  1. Read brief.md (load-bearing) + voice-samples.md + lane-templates.md + config.json + the manifest.\n` +
+    `  2. Read the GOAL above. Decide which capabilities to invoke (research-market, discover-customers, monitor-mentions, track-progress, draft-content). Default to fewer; only invoke ones the goal needs.\n` +
+    `  3. Run capabilities (parallel where possible; draft-content runs last).\n` +
+    `  4. Emit one PageUpdate body_patch per section you touched. Sections you didn't touch are NOT in the patch — the page leaves them in place.\n` +
+    `  5. Emit a run_log block with run_id, capabilities_invoked, summary, skipped status.\n\n` +
+    `Source tools (registered, no permission prompt): FetchHackerNews, FetchReddit, FetchLobsters, FetchArxiv, FetchRSS. Use config.json sites.* to know which are enabled. Don't use WebSearch / WebFetch for sources covered by a registered tool.\n\n` +
+    `RIGHT PANEL — you also chat with the user. Before any tool calls, greet them warmly in voice (3–4 sentences, no "I'm thrilled" / rocket / "TL;DR"). Tell them which capabilities you're about to invoke and why, given their goal. Then proceed.\n\n` +
+    `When done, final agent message — exactly one line: "body_patches: N · drafts: M" or "skipped: <reason>".`;
 
   // The embed iframe needs a beat to wire its postMessage listener.
   // Sys-doctor uses 2s, but on slower machines that races — fire at
@@ -448,6 +455,24 @@ async function startDraftRun(date) {
     pollTimer = setTimeout(tick, 5000);
   };
   pollTimer = setTimeout(tick, 5000);
+}
+
+async function fetchDefaultGoal() {
+  // Read default_goal from config.json. Returns empty string if not set
+  // or config is missing — caller falls back to a hardcoded default.
+  try {
+    const cmd = 'jq -r ".default_goal // empty" "$HOME/.linggen/skills/pulse/config.json" 2>/dev/null || true';
+    const res = await fetch('/api/bash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_root: '/tmp', command: cmd }),
+    });
+    if (!res.ok) return '';
+    const body = await res.json();
+    return (body.stdout || '').trim();
+  } catch {
+    return '';
+  }
 }
 
 async function fetchDraftJson(date) {
