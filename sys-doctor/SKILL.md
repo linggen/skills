@@ -12,8 +12,8 @@ app:
   width: 1100
   height: 800
 permission:
-  mode: read
-  paths: ["/"]
+  paths:
+    - { path: /, mode: read }
   warning: "Sys Doctor reads system info and disk usage (df, du, sysctl, sw_vers). It cannot modify files — it only suggests cleanup commands you run yourself."
 tools:
   - name: ScanDisk
