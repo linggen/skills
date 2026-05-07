@@ -1,3 +1,4 @@
 .linggen/
 .claude/
 .cursor/
+.fastembed_cache/
