@@ -89,7 +89,7 @@ calling syntax for the same endpoints — identical semantics.
 | Get    | `Memory_query({verb: "get", id: "..."})` | `ling-mem get <id>` |
 | List   | `Memory_query({verb: "list", type: "...", limit: N, ...})` | `ling-mem list [--type ...] [--limit N] ...` |
 | Add    | `Memory_write({verb: "add", content: "...", type: "fact", from: "user", contexts: [...], tags: [...]})` | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--context ...] [--tag ...]` |
-| Update | `Memory_write({verb: "update", id: "...", content: "...", ...})` | `ling-mem update <id> [--content ...] [--context ...] [--tag ...]` |
+| Update | `Memory_write({verb: "update", id: "...", content: "...", ...})` | `ling-mem edit <id> [--content ...] [--context ...] [--tag ...]` (or the back-compat alias `ling-mem update <id> ...`) |
 | Delete | `Memory_write({verb: "delete", id: "..."})` | `ling-mem delete <id> --yes` |
 
 Use `Memory_query` / `Memory_write` if those tools are in your tool list
@@ -353,16 +353,19 @@ releases (24h TTL, no extra network calls beyond the first).
 When that JSON contains `"update": {"available": true, ...}`, surface
 it to the user once at the top of your reply, e.g.:
 
-> *"ling-mem update available: 0.2.1 → 0.3.0 — `<notes_summary>`. Update now?"*
+> *"ling-mem upgrade available: 0.2.1 → 0.3.0 — `<notes_summary>`. Upgrade now?"*
 
-If the user agrees, run `ling-mem self-update --yes`. The CLI stops the
-daemon, verifies the SHA-256 of the downloaded tarball, swaps the
-binary atomically (keeping the prior version at `bin/ling-mem.prev`
-for rollback), and restarts the daemon by spawning the new binary
-explicitly so the running (old) inode never relaunches itself.
+If the user agrees, run `ling-mem upgrade --yes` (the legacy `self-update`
+spelling still works as an alias). The CLI stops the daemon, verifies
+the SHA-256 of the downloaded tarball, swaps the binary atomically
+(keeping the prior version at `bin/ling-mem.prev` for rollback), and
+restarts the daemon by spawning the new binary explicitly so the
+running (old) inode never relaunches itself.
 
-Ad-hoc check (no swap): `ling-mem self-update --check`. Useful when
-the user asks "am I up to date?" without wanting to upgrade.
+Ad-hoc check (no swap): `ling-mem upgrade --check`. Useful when the
+user asks "am I up to date?" without wanting to upgrade. The same
+cached probe is also surfaced in `ling-mem status` output, so callers
+that already poll `status` don't need a separate network call.
 
 Don't auto-upgrade silently — schema or behavior may change between
 versions, and the user should know what they're accepting.
