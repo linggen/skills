@@ -71,8 +71,14 @@ async function mount(el, options) {
   iframe.allow = 'clipboard-write';
   el.appendChild(iframe);
 
+  // Resolve the iframe's origin so we can constrain postMessage targetOrigin
+  // to it (instead of '*') and reject inbound messages from any other origin.
+  // For relative iframe URLs (local mode), this resolves to the parent origin.
+  const iframeOrigin = new URL(iframe.src, window.location.href).origin;
+
   // Listen for events from the iframe
   function handleMessage(e) {
+    if (e.origin !== iframeOrigin) return;
     if (e.data?.type !== 'linggen-skill-event') return;
     const { event, payload } = e.data;
     switch (event) {
@@ -106,19 +112,19 @@ async function mount(el, options) {
   /** Send a message to the chat (posts to iframe which triggers chat submit). */
   function send(text) {
     streamBuffer = '';
-    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send', payload: { text } }, '*');
+    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send', payload: { text } }, iframeOrigin);
   }
 
   /** Send a message to the agent without showing it in the chat UI. */
   function sendHidden(text) {
     streamBuffer = '';
-    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send_hidden', payload: { text } }, '*');
+    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send_hidden', payload: { text } }, iframeOrigin);
   }
 
   /** Add a local-only message to the chat display. */
   function addMessage(role, text) {
     const mappedRole = (role === 'ai' || role === 'assistant') ? 'assistant' : role;
-    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'add_message', payload: { role: mappedRole, text } }, '*');
+    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'add_message', payload: { role: mappedRole, text } }, iframeOrigin);
   }
 
   return {

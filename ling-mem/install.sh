@@ -62,7 +62,7 @@ if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
   # at. `main` is flagged as a supply-chain weakness by skill scanners.
   # Tag the skills repo `ling-mem-vX.Y.Z` whenever a new ling-mem release
   # goes out; users can override with LING_MEM_REPO_REF=main for HEAD.
-  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-ling-mem-v0.4.1}"
+  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-ling-mem-v0.4.2}"
   BOOTSTRAP_URL="https://github.com/${BOOTSTRAP_REPO}/archive/${BOOTSTRAP_REF}.tar.gz"
   BOOTSTRAP_TMP="$(mktemp -d -t ling-mem-bootstrap-XXXXXX)"
   BOOTSTRAP_TAR="$BOOTSTRAP_TMP/skills.tar.gz"
@@ -116,7 +116,7 @@ the skill's CLI works in Codex either way. Restart Codex after install.
   LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.4.1)
                              use 'latest' for the most recent release
   LING_MEM_REPO_REF=<ref>    skills repo ref for curl|bash bootstrap
-                             (default: ling-mem-v0.4.1)
+                             (default: ling-mem-v0.4.2)
   LING_MEM_SKIP_CHECKSUM=1   skip SHA256 verification (not recommended)
   LING_MEM_FORCE_DOWNLOAD=1  re-fetch the binary even if present
   LING_MEM_SKIP_CODEX=1      skip the Codex symlink even if ~/.codex/ exists

@@ -46,35 +46,48 @@ SKILL_DIR="$LINGGEN_DIR/skills/pulse"
 DATA_DIR="$SKILL_DIR/data"
 STATE_DIR="$SKILL_DIR/state"
 
-echo "Installing pulse skill to $SKILL_DIR/"
 mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references" "$DATA_DIR" "$STATE_DIR"
 
-# Skill files.
-install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"
-install -m 0644 "$SOURCE_DIR/index.html"  "$SKILL_DIR/index.html"
-install -m 0644 "$SOURCE_DIR/product-spec.md" "$SKILL_DIR/product-spec.md"
-for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js \
-         pulse.css style.css \
-         settings.html settings.js settings.css; do
-  install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
-done
-install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
-install -m 0755 "$SOURCE_DIR/scripts/generate-missions.sh" "$SKILL_DIR/scripts/generate-missions.sh"
+# When invoked by `ling init`, Linggen has already copied the skill tree
+# into $SKILL_DIR before running this script — so $SOURCE_DIR and
+# $SKILL_DIR point at the same files and `install` would abort with
+# "same file" (BSD exit 64). Skip the copy block in that case and just
+# run the seeding/missions step below.
+SOURCE_REAL="$(cd "$SOURCE_DIR" 2>/dev/null && pwd -P)" || SOURCE_REAL="$SOURCE_DIR"
+SKILL_REAL="$(cd "$SKILL_DIR" 2>/dev/null && pwd -P)" || SKILL_REAL="$SKILL_DIR"
 
-# Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
-for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh \
-         google-trends.sh github-trending.sh product-hunt.sh wikipedia-pageviews.sh; do
-  install -m 0755 "$SOURCE_DIR/scripts/sites/$f" "$SKILL_DIR/scripts/sites/$f"
-done
+if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
+  echo "Installing pulse skill to $SKILL_DIR/"
+  install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"
+  install -m 0644 "$SOURCE_DIR/index.html"  "$SKILL_DIR/index.html"
+  install -m 0644 "$SOURCE_DIR/product-spec.md" "$SKILL_DIR/product-spec.md"
+  for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js \
+           pulse.css style.css \
+           settings.html settings.js settings.css; do
+    install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
+  done
+  install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
+  install -m 0755 "$SOURCE_DIR/scripts/generate-missions.sh" "$SKILL_DIR/scripts/generate-missions.sh"
 
-for f in voice-samples.md style-guide.md lane-templates.md source-blogs.md brief.example.md; do
-  install -m 0644 "$SOURCE_DIR/references/$f" "$SKILL_DIR/references/$f"
-done
+  # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
+  for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh \
+           google-trends.sh github-trending.sh product-hunt.sh wikipedia-pageviews.sh; do
+    install -m 0755 "$SOURCE_DIR/scripts/sites/$f" "$SKILL_DIR/scripts/sites/$f"
+  done
+
+  for f in voice-samples.md style-guide.md lane-templates.md source-blogs.md brief.example.md; do
+    install -m 0644 "$SOURCE_DIR/references/$f" "$SKILL_DIR/references/$f"
+  done
+else
+  echo "Skill files already in place at $SKILL_DIR/ (skipping copy)."
+fi
 
 # Seed config.json from the example on first install. On upgrades,
 # merge in any new top-level keys (e.g. new sites added, saved_runs
 # block introduced) without overwriting the user's existing values.
-install -m 0644 "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.example.json"
+if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
+  install -m 0644 "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.example.json"
+fi
 if [ ! -f "$SKILL_DIR/config.json" ]; then
   cp "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json"
   echo "  Seeded $SKILL_DIR/config.json from example. Edit in Settings to configure."
