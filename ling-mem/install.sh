@@ -45,7 +45,7 @@ REPO="linggen/linggen-memory"
 # unpinned defaults are flagged as a supply-chain weakness by skill
 # scanners and create silent drift between install.sh and the release
 # its checksum verifier expects.
-VERSION="${LING_MEM_VERSION:-v0.4.2}"
+VERSION="${LING_MEM_VERSION:-v0.4.3}"
 
 # Self-bootstrap: when invoked via `curl ... | bash`, $0 is bash itself
 # and $SOURCE_DIR ends up pointing at the user's cwd — there is no local
@@ -113,7 +113,7 @@ If ~/.codex/ exists, also symlinks the installed skill into
 user-global hook system like CC, so the per-turn recall hook is CC-only;
 the skill's CLI works in Codex either way. Restart Codex after install.
 
-  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.4.2)
+  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.4.3)
                              use 'latest' for the most recent release
   LING_MEM_REPO_REF=<ref>    skills repo ref for curl|bash bootstrap
                              (default: ling-mem-v0.4.3)
