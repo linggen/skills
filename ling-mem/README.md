@@ -20,7 +20,7 @@ A single-binary memory layer that remembers useful facts about you and your work
 clawhub install ling-mem
 
 # Or run install.sh directly
-bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/ling-mem-v0.4.3/ling-mem/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/ling-mem-v0.4.4/ling-mem/install.sh)
 
 # Add a fact
 ling-mem add "prefers concise replies, no hedging" --type preference --from user
@@ -66,7 +66,7 @@ Intel Mac: prebuilt binaries not provided. Build from source with `cargo build -
 
 - **Linggen platform: [linggen.dev](https://linggen.dev)** · [github.com/linggen/linggen](https://github.com/linggen/linggen)
 - Source + binary releases: [github.com/linggen/linggen-memory](https://github.com/linggen/linggen-memory)
-- Skill source: [github.com/linggen/skills/tree/ling-mem-v0.4.3/ling-mem](https://github.com/linggen/skills/tree/ling-mem-v0.4.3/ling-mem)
+- Skill source: [github.com/linggen/skills/tree/ling-mem-v0.4.4/ling-mem](https://github.com/linggen/skills/tree/ling-mem-v0.4.4/ling-mem)
 - Issues: [github.com/linggen/linggen-memory/issues](https://github.com/linggen/linggen-memory/issues)
 
 ## License

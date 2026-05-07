@@ -45,7 +45,7 @@ REPO="linggen/linggen-memory"
 # unpinned defaults are flagged as a supply-chain weakness by skill
 # scanners and create silent drift between install.sh and the release
 # its checksum verifier expects.
-VERSION="${LING_MEM_VERSION:-v0.4.3}"
+VERSION="${LING_MEM_VERSION:-v0.4.4}"
 
 # Self-bootstrap: when invoked via `curl ... | bash`, $0 is bash itself
 # and $SOURCE_DIR ends up pointing at the user's cwd — there is no local
@@ -62,7 +62,7 @@ if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
   # at. `main` is flagged as a supply-chain weakness by skill scanners.
   # Tag the skills repo `ling-mem-vX.Y.Z` whenever a new ling-mem release
   # goes out; users can override with LING_MEM_REPO_REF=main for HEAD.
-  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-ling-mem-v0.4.3}"
+  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-ling-mem-v0.4.4}"
   BOOTSTRAP_URL="https://github.com/${BOOTSTRAP_REPO}/archive/${BOOTSTRAP_REF}.tar.gz"
   BOOTSTRAP_TMP="$(mktemp -d -t ling-mem-bootstrap-XXXXXX)"
   BOOTSTRAP_TAR="$BOOTSTRAP_TMP/skills.tar.gz"
@@ -113,13 +113,15 @@ If ~/.codex/ exists, also symlinks the installed skill into
 user-global hook system like CC, so the per-turn recall hook is CC-only;
 the skill's CLI works in Codex either way. Restart Codex after install.
 
-  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.4.3)
+  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.4.4)
                              use 'latest' for the most recent release
   LING_MEM_REPO_REF=<ref>    skills repo ref for curl|bash bootstrap
-                             (default: ling-mem-v0.4.3)
+                             (default: ling-mem-v0.4.4)
   LING_MEM_SKIP_CHECKSUM=1   skip SHA256 verification (not recommended)
   LING_MEM_FORCE_DOWNLOAD=1  re-fetch the binary even if present
   LING_MEM_SKIP_CODEX=1      skip the Codex symlink even if ~/.codex/ exists
+  LING_MEM_SKIP_OPENCLAW=1   skip the OpenClaw USER.md directive
+                             even if ~/.openclaw/workspace/USER.md exists
 EOF
       exit 0
       ;;
@@ -404,6 +406,73 @@ symlink_to_codex() {
   echo "        Codex sessions need to call 'ling-mem search' explicitly."
 }
 
+# OpenClaw-only: append a guarded directive block to
+# ~/.openclaw/workspace/USER.md so the OpenClaw agent gets a session-start
+# instruction to use ling-mem as its second memory system. OpenClaw doesn't
+# expose skill-level hooks, so the agent only proactively reaches for
+# ling-mem when something in its startup context tells it to. USER.md is
+# auto-loaded at session start per OpenClaw's AGENTS.md startup contract,
+# making it the right surface for this directive.
+#
+# Note: this only runs when the user does the curl|bash install. ClawHub-
+# delivered ling-mem packages skip install.sh entirely, so OpenClaw users
+# who go that route still need a separate setup step (TODO).
+configure_openclaw_user_md() {
+  local user_md="$HOME/.openclaw/workspace/USER.md"
+  local marker_start="<!-- ling-mem:openclaw-start -->"
+  local marker_end="<!-- ling-mem:openclaw-end -->"
+
+  if [ ! -f "$user_md" ]; then
+    return 0
+  fi
+
+  local block="$marker_start
+## Memory — \`ling-mem\` is your second memory system
+
+Alongside \`MEMORY.md\` (workspace-scoped, narrative), you have access to
+\`ling-mem\` — a shared RAG store at \`~/.linggen/memory/\`, used across
+Claude Code, Linggen, and OpenClaw. Use it for **cross-runtime,
+fact-shaped context** that should survive workspace resets and reach
+other agents on this user's other tools.
+
+**Search before answering** when the question could connect to past
+preferences / decisions / gotchas:
+
+\`\`\`
+ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'
+\`\`\`
+
+Mention hits inline — *\"From memory: you prefer X …\"*. The
+\`del(.vector)\` filter is mandatory — raw output includes 384-dim
+embeddings that blow up context.
+
+**Save high-signal user statements** (name+relationship, location, role,
+\"always/never\" preferences) per the routing rules in the \`ling-mem\`
+\`SKILL.md\`. Same security boundary as \`MEMORY.md\` — don't search or
+share \`ling-mem\` content in group chats / shared contexts.
+$marker_end"
+
+  # Strip any existing ling-mem:openclaw block + trailing blanks, then
+  # append the fresh block. Mirrors configure_claude_md's pattern.
+  local tmp_md
+  tmp_md="$(mktemp -t "openclaw-user-md-XXXXXX")"
+  awk -v s="$marker_start" -v e="$marker_end" '
+    BEGIN            { skip = 0; blanks = 0 }
+    $0 == s          { skip = 1; next }
+    $0 == e          { skip = 0; next }
+    skip             { next }
+    /^[[:space:]]*$/ { blanks++; next }
+                     { while (blanks--) print ""; blanks = 0; print }
+  ' "$user_md" > "$tmp_md"
+  if [ -s "$tmp_md" ]; then
+    printf '\n%s\n' "$block" >> "$tmp_md"
+  else
+    printf '%s\n' "$block" > "$tmp_md"
+  fi
+  mv "$tmp_md" "$user_md"
+  echo "  Updated: $user_md (ling-mem usage directive)"
+}
+
 # CC-only: append a guarded @-import block to ~/.claude/CLAUDE.md so the
 # core memory files land in every CC session's system prompt.
 configure_claude_md() {
@@ -654,6 +723,16 @@ if [ -d "$HOME/.codex" ] && [ "${LING_MEM_SKIP_CODEX:-0}" != "1" ]; then
     echo "Detected ~/.codex/ — symlinking into ~/.codex/skills/ling-mem/"
     symlink_to_codex "$CODEX_SOURCE"
   fi
+fi
+
+# OpenClaw auto-detect: additive USER.md directive, never a primary install
+# target. The skill files themselves are delivered to OpenClaw via ClawHub
+# (which doesn't run install.sh); this hook only handles the
+# session-start directive that tells the OpenClaw agent to use ling-mem
+# as its second memory system. Skipped via LING_MEM_SKIP_OPENCLAW=1.
+if [ -f "$HOME/.openclaw/workspace/USER.md" ] && [ "${LING_MEM_SKIP_OPENCLAW:-0}" != "1" ]; then
+  echo "Detected ~/.openclaw/workspace/USER.md — appending ling-mem usage directive"
+  configure_openclaw_user_md
 fi
 
 # Flag the other host's leftover skill dir so users can clean up after a
