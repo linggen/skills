@@ -4,17 +4,23 @@ set -euo pipefail
 # What this script does (for human readers and static scanners):
 #
 # 1. Fetches the ling-mem skill tree from github.com/linggen/skills if
-#    not run from a local checkout. Two-step: download tarball to disk,
-#    extract from disk (no curl-into-tar pipe).
+#    not run from a local checkout, pinned to a specific tag (not main).
+#    Two-step: download tarball to disk, extract from disk (no curl-into-
+#    tar pipe).
 # 2. Detects which agent runtimes are installed (~/.claude, ~/.linggen,
 #    ~/.openclaw, ~/.codex) and copies the skill into each.
 # 3. Downloads the prebuilt `ling-mem` daemon binary for this platform
-#    from github.com/linggen/linggen-memory/releases. Two-step download.
+#    from github.com/linggen/linggen-memory/releases, pinned to a specific
+#    version (not 'latest'). Verifies the SHA-256 against the release's
+#    sibling .sha256 file before extracting.
 # 4. Wires the per-prompt recall hook into ~/.claude/settings.json
 #    if Claude Code is present.
 #
-# No data leaves the machine. No remote code execution beyond extracting
-# tarballs published by the linggen org. Source + releases:
+# Supply-chain posture: defaults are pinned versions; SHA-256 verification
+# is mandatory by default and can only be disabled by an explicit
+# LING_MEM_SKIP_CHECKSUM=1 (not recommended). No data leaves the machine.
+# No remote code execution beyond extracting tarballs published by the
+# linggen org. Source + releases:
 # https://github.com/linggen/linggen-memory
 #
 # install.sh — install the ling-mem skill into whichever host runtimes
@@ -33,7 +39,13 @@ set -euo pipefail
 
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SOURCE_DIR=""
 REPO="linggen/linggen-memory"
-VERSION="${LING_MEM_VERSION:-latest}"
+
+# Default version is pinned to a specific release. `latest` is allowed as
+# an explicit opt-in (LING_MEM_VERSION=latest) but is not the default —
+# unpinned defaults are flagged as a supply-chain weakness by skill
+# scanners and create silent drift between install.sh and the release
+# its checksum verifier expects.
+VERSION="${LING_MEM_VERSION:-v0.4.1}"
 
 # Self-bootstrap: when invoked via `curl ... | bash`, $0 is bash itself
 # and $SOURCE_DIR ends up pointing at the user's cwd — there is no local
@@ -45,7 +57,12 @@ VERSION="${LING_MEM_VERSION:-latest}"
 # SKILL.md is adjacent and this block is a no-op.
 if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
   BOOTSTRAP_REPO="${LING_MEM_SKILLS_REPO:-linggen/skills}"
-  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-main}"
+  # Pinned to a per-skill scoped tag (ling-mem-vX.Y.Z) so a `curl | bash`
+  # one-liner fetches a known revision, not whatever main currently points
+  # at. `main` is flagged as a supply-chain weakness by skill scanners.
+  # Tag the skills repo `ling-mem-vX.Y.Z` whenever a new ling-mem release
+  # goes out; users can override with LING_MEM_REPO_REF=main for HEAD.
+  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-ling-mem-v0.4.1}"
   BOOTSTRAP_URL="https://github.com/${BOOTSTRAP_REPO}/archive/${BOOTSTRAP_REF}.tar.gz"
   BOOTSTRAP_TMP="$(mktemp -d -t ling-mem-bootstrap-XXXXXX)"
   BOOTSTRAP_TAR="$BOOTSTRAP_TMP/skills.tar.gz"
@@ -96,9 +113,13 @@ If ~/.codex/ exists, also symlinks the installed skill into
 user-global hook system like CC, so the per-turn recall hook is CC-only;
 the skill's CLI works in Codex either way. Restart Codex after install.
 
-  LING_MEM_VERSION=vX.Y.Z   pin a specific binary version (default: latest)
-  LING_MEM_FORCE_DOWNLOAD=1 re-fetch the binary even if present
-  LING_MEM_SKIP_CODEX=1     skip the Codex symlink even if ~/.codex/ exists
+  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.4.1)
+                             use 'latest' for the most recent release
+  LING_MEM_REPO_REF=<ref>    skills repo ref for curl|bash bootstrap
+                             (default: ling-mem-v0.4.1)
+  LING_MEM_SKIP_CHECKSUM=1   skip SHA256 verification (not recommended)
+  LING_MEM_FORCE_DOWNLOAD=1  re-fetch the binary even if present
+  LING_MEM_SKIP_CODEX=1      skip the Codex symlink even if ~/.codex/ exists
 EOF
       exit 0
       ;;
@@ -170,9 +191,21 @@ esac
 # Helpers
 # -------------------------------------------------------------------
 
+# Pick whichever SHA-256 tool is on this machine. macOS ships `shasum`,
+# Linux ships `sha256sum` from coreutils; either is acceptable.
+sha256_check() {
+  local checksum_file="$1" cwd="$2"
+  if command -v shasum    >/dev/null 2>&1; then ( cd "$cwd" && shasum -a 256 -c "$checksum_file" >/dev/null 2>&1 )
+  elif command -v sha256sum >/dev/null 2>&1; then ( cd "$cwd" && sha256sum -c "$checksum_file" >/dev/null 2>&1 )
+  else return 127
+  fi
+}
+
 # Download the ling-mem binary to <bin_dir>/ling-mem (if not already
 # present, or if LING_MEM_FORCE_DOWNLOAD=1, or if a specific version is
-# pinned).
+# pinned). Each release publishes a sibling `<asset>.sha256` file; we
+# fetch it and verify before extraction. Opt out with
+# LING_MEM_SKIP_CHECKSUM=1 (not recommended).
 download_binary() {
   local bin_dir="$1"
   local bin="$bin_dir/ling-mem"
@@ -184,21 +217,50 @@ download_binary() {
   fi
 
   local asset="ling-mem-${TARGET}.tar.gz"
-  local url
+  local base
   if [ "$VERSION" = "latest" ]; then
-    url="https://github.com/${REPO}/releases/latest/download/${asset}"
+    base="https://github.com/${REPO}/releases/latest/download"
   else
-    url="https://github.com/${REPO}/releases/download/${VERSION}/${asset}"
+    base="https://github.com/${REPO}/releases/download/${VERSION}"
   fi
+  local url="${base}/${asset}"
+  local sum_url="${base}/${asset}.sha256"
 
-  local tmp_tar
-  tmp_tar="$(mktemp -t "ling-mem-XXXXXX.tar.gz")"
-  trap 'rm -f "$tmp_tar"' RETURN
+  local tmp_dir
+  tmp_dir="$(mktemp -d -t "ling-mem-dl-XXXXXX")"
+  trap 'rm -rf "$tmp_dir"' RETURN
+  local tmp_tar="$tmp_dir/$asset"
+  local tmp_sum="$tmp_dir/${asset}.sha256"
 
   echo "  Downloading ling-mem ${VERSION} (${TARGET})"
   if ! curl -fsSL --retry 3 --retry-delay 2 "$url" -o "$tmp_tar"; then
     echo "Error: download failed. See https://github.com/${REPO}/releases" >&2
     exit 1
+  fi
+
+  if [ "${LING_MEM_SKIP_CHECKSUM:-0}" = "1" ]; then
+    echo "  Warning: SHA256 verification disabled by LING_MEM_SKIP_CHECKSUM=1" >&2
+  else
+    if ! curl -fsSL --retry 3 --retry-delay 2 "$sum_url" -o "$tmp_sum"; then
+      echo "Error: failed to fetch checksum from $sum_url" >&2
+      echo "  This release may not publish a SHA256 sidecar yet." >&2
+      echo "  Override with LING_MEM_SKIP_CHECKSUM=1 (not recommended)." >&2
+      exit 1
+    fi
+    if ! sha256_check "${asset}.sha256" "$tmp_dir"; then
+      local rc=$?
+      if [ "$rc" -eq 127 ]; then
+        echo "Error: neither shasum nor sha256sum found on this system." >&2
+        echo "  Install one (e.g. coreutils on Linux, perl on macOS), or" >&2
+        echo "  override with LING_MEM_SKIP_CHECKSUM=1 (not recommended)." >&2
+      else
+        echo "Error: SHA256 verification failed for $asset" >&2
+        echo "  Expected (from $sum_url):" >&2
+        sed 's/^/    /' "$tmp_sum" >&2
+      fi
+      exit 1
+    fi
+    echo "  Verified: SHA256 matches $sum_url"
   fi
 
   tar -xzf "$tmp_tar" -C "$bin_dir" ling-mem

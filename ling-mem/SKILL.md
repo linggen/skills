@@ -1,12 +1,9 @@
 ---
 name: ling-mem
 description: >-
-  Durable memory across sessions — a deepening model of who the user is,
-  not a log of what was done. Two layers: core markdown (identity.md,
-  style.md — engine-inlined every session) and a RAG store (LanceDB via
-  the `ling-mem` daemon). Works in both Linggen (via `Memory_query` /
-  `Memory_write` tools) and Claude Code (via the `ling-mem` CLI), with
-  identical semantics — both paths route through the same daemon.
+  Durable memory across sessions — a model of who the user is, not a log
+  of what was done. Markdown core plus a RAG store via the `ling-mem`
+  daemon. Same semantics in Linggen and Claude Code.
 license: Apache-2.0
 homepage: https://linggen.dev
 allowed-tools:
