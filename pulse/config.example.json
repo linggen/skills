@@ -1,6 +1,7 @@
 {
-  "$schema_version": 2,
-  "$comment": "Pulse config. `default_goal` is used when a run is triggered without an explicit goal (e.g. opening Pulse with no data on disk). `sites` toggles source tools (HN, Reddit, Lobsters, arxiv, RSS) + per-site config. `targets` toggles output lanes (x-post, blog, etc.) + per-lane config. Goals dispatch capabilities; capabilities call enabled sites and draft for enabled targets. Reddit is dual-role.",
+  "$schema_version": 3,
+  "$comment": "Pulse config. `workspace_path` points at the user's product source dir; the agent reads README/doc/source there on every run for product knowledge (read-only, just-in-time via Read/Glob/Grep). `default_goal` is used when a run is triggered without an explicit goal. `sites` toggles source tools + per-site config. `targets` toggles output lanes + per-lane config. Goals dispatch capabilities; capabilities call enabled sites and draft for enabled targets. Reddit is dual-role.",
+  "workspace_path": "",
   "default_goal": "Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.",
   "sites": {
     "hackernews": {

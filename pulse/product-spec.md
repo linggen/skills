@@ -10,7 +10,7 @@ guide: |
 
 ## Vision
 
-**Pulse is the GTM brain for solo founders launching products.** It reads your workspace to know what you're building, watches the communities your customers live in, drafts the posts and replies you don't have time for, and tracks how those posts land — so you spend your time deciding and shipping, not browsing Reddit and writing from scratch.
+**Pulse is the go-to-market (GTM) brain for solo founders launching products.** It reads your workspace to know what you're building, watches the communities your customers live in, drafts the posts and replies you don't have time for, and tracks how those posts land — so you spend your time deciding and shipping, not browsing Reddit and writing from scratch.
 
 The workflow is **AI-led**: configure your case once (what you're building, where it lives on disk, which sites to watch, which accounts), and the agent runs on its own — gathering, scoring, drafting. You review, edit, send.
 

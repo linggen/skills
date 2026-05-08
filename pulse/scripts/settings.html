@@ -34,6 +34,30 @@
     </section>
 
     <section class="card">
+      <h2>Workspace</h2>
+      <p class="card-sub">
+        Where the product you're launching lives on disk. Pulse reads
+        the README, <code>doc/</code>, and source on every run so drafts
+        cite real features instead of guessing — the difference between
+        <em>"excited to ship a new feature!"</em> and writing that
+        sounds like you. Optional but high-leverage.
+      </p>
+      <div class="workspace-row">
+        <input
+          type="text"
+          id="workspace-path"
+          class="workspace-input"
+          placeholder="/path/to/your/project"
+          spellcheck="false"
+        />
+      </div>
+      <p class="card-meta">
+        Read-only access. Pulse never writes to the workspace.
+        Saved to <code>config.json</code> as <code>workspace_path</code>.
+      </p>
+    </section>
+
+    <section class="card">
       <h2>Websites</h2>
       <p class="card-sub">
         Where Pulse fetches signal from (<strong>Source</strong>) and where

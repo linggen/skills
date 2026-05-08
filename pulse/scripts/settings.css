@@ -32,6 +32,31 @@
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+/* ── Workspace path ─────────────────────────────────────────────── */
+
+.workspace-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.workspace-input {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.workspace-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
 /* ── Unified websites list ───────────────────────────────────────── */
 
 .websites-list {

@@ -129,7 +129,7 @@ async function writeFile(path, content) {
 
 let state = {
   brief: '',
-  config: { sites: {}, targets: {} },
+  config: { workspace_path: '', sites: {}, targets: {} },
 };
 
 // ---- Load ----------------------------------------------------------------
@@ -139,7 +139,8 @@ async function loadAll() {
   try {
     let cfgText = await readFile(CONFIG_PATH);
     if (!cfgText) cfgText = await readFile(CONFIG_EXAMPLE);
-    state.config = cfgText ? JSON.parse(cfgText) : { sites: {}, targets: {} };
+    state.config = cfgText ? JSON.parse(cfgText) : { workspace_path: '', sites: {}, targets: {} };
+    if (typeof state.config.workspace_path !== 'string') state.config.workspace_path = '';
     if (!state.config.sites) state.config.sites = {};
     if (!state.config.targets) state.config.targets = {};
 
@@ -158,6 +159,8 @@ async function loadAll() {
 
 function render() {
   document.getElementById('brief-text').value = state.brief;
+  const wsInput = document.getElementById('workspace-path');
+  if (wsInput) wsInput.value = state.config.workspace_path || '';
   renderWebsites();
 }
 
@@ -460,6 +463,8 @@ async function save() {
   setStatus('Saving…', 'loading');
   try {
     state.brief = document.getElementById('brief-text').value;
+    const wsInput = document.getElementById('workspace-path');
+    if (wsInput) state.config.workspace_path = wsInput.value.trim();
     await writeFile(BRIEF_PATH, state.brief);
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
     setStatus('Saved.', 'ok');
