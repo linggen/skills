@@ -7,8 +7,8 @@ user-invocable: true
 allowed-tools: [Bash, Read, Write]
 argument-hint: "post <text> | search <query> | reply <url> | mentions | my-tweets | config | status"
 permission:
-  mode: edit
-  paths: ["~/.linggen/skills/xbot"]
+  paths:
+    - { path: ~/.linggen/skills/xbot, mode: write }
   warning: "xbot reads and writes credentials and post drafts under ~/.linggen/skills/xbot, and calls the X API via Bash."
 ---
 

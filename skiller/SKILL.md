@@ -5,8 +5,9 @@ user-invocable: true
 allowed-tools: [Bash, Read, Write, Glob]
 argument-hint: "find <query> | add <name> | list | packs | pack <id>"
 permission:
-  mode: edit
-  paths: ["~/.linggen/skills", "~/.claude/skills"]
+  paths:
+    - { path: ~/.linggen/skills, mode: write }
+    - { path: ~/.claude/skills,  mode: write }
   warning: "Skiller installs and removes skills under ~/.linggen/skills (and ~/.claude/skills for cross-tool compat). It runs install scripts (curl, unzip, cp) and writes skill files."
 ---
 

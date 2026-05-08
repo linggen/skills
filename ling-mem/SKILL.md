@@ -45,13 +45,14 @@ implements:
 # Linggen-only: permission grants the skill needs at runtime. Claude
 # Code uses its own permission model and ignores this block.
 permission:
-  mode: admin
-  paths: ["~/.linggen", "~/.claude/projects"]
+  paths:
+    - { path: ~/.linggen, mode: write }
+    - { path: ~/.claude/projects, mode: read }
   warning: >-
-    Reads session files from ~/.claude/projects and ~/.linggen/sessions,
-    edits ~/.linggen/memory/{identity,style}.md for durable universals,
+    Writes ~/.linggen/memory/{identity,style}.md for durable universals
     and runs a local HTTP daemon (ling-mem) on 127.0.0.1:9888 that stores
-    facts under ~/.linggen/memory/.
+    facts under ~/.linggen/memory/. Only reads ~/.claude/projects (session
+    files scanned for fact extraction; never written to).
 
 # ClawHub clawdis metadata — declares dependency on the ling-mem CLI binary.
 # v0.4.0 will add `install: [{kind: brew, formula: ling-mem, tap: linggen/tap}]`
