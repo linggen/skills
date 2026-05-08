@@ -4,8 +4,11 @@
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 const CONFIG_PATH = `${SKILL_DIR}/config.json`;
 const CONFIG_EXAMPLE = `${SKILL_DIR}/config.example.json`;
-const BRIEF_PATH = `${SKILL_DIR}/references/brief.md`;
-const BRIEF_EXAMPLE = `${SKILL_DIR}/references/brief.example.md`;
+// Legacy brief.md path — read once on first load to migrate users from
+// the file-based brief to the structured config.brief field. Never
+// written to anymore; the textarea saves directly into config.brief.
+const LEGACY_BRIEF_PATH = `${SKILL_DIR}/references/brief.md`;
+const LEGACY_BRIEF_EXAMPLE = `${SKILL_DIR}/references/brief.example.md`;
 
 // Unified website catalog: each row in the settings UI is one site, with
 // independent Source / Target role checkboxes. `source_id` and `target_id`
@@ -128,8 +131,7 @@ async function writeFile(path, content) {
 // ---- State ---------------------------------------------------------------
 
 let state = {
-  brief: '',
-  config: { workspace_path: '', sites: {}, targets: {} },
+  config: { workspace_path: '', brief: '', sites: {}, targets: {} },
 };
 
 // ---- Load ----------------------------------------------------------------
@@ -139,14 +141,20 @@ async function loadAll() {
   try {
     let cfgText = await readFile(CONFIG_PATH);
     if (!cfgText) cfgText = await readFile(CONFIG_EXAMPLE);
-    state.config = cfgText ? JSON.parse(cfgText) : { workspace_path: '', sites: {}, targets: {} };
+    state.config = cfgText ? JSON.parse(cfgText) : { workspace_path: '', brief: '', sites: {}, targets: {} };
     if (typeof state.config.workspace_path !== 'string') state.config.workspace_path = '';
+    if (typeof state.config.brief !== 'string') state.config.brief = '';
     if (!state.config.sites) state.config.sites = {};
     if (!state.config.targets) state.config.targets = {};
 
-    let briefText = await readFile(BRIEF_PATH);
-    if (briefText === null) briefText = await readFile(BRIEF_EXAMPLE, '');
-    state.brief = briefText || '';
+    // One-time migration: if config.brief is empty but legacy brief.md
+    // has content, seed it. The legacy file is left untouched on disk
+    // for now (next save writes config.brief, not brief.md).
+    if (!state.config.brief.trim()) {
+      let legacy = await readFile(LEGACY_BRIEF_PATH);
+      if (legacy === null) legacy = await readFile(LEGACY_BRIEF_EXAMPLE, '');
+      if (legacy && legacy.trim()) state.config.brief = legacy;
+    }
 
     render();
     clearStatus();
@@ -158,7 +166,7 @@ async function loadAll() {
 // ---- Render --------------------------------------------------------------
 
 function render() {
-  document.getElementById('brief-text').value = state.brief;
+  document.getElementById('brief-text').value = state.config.brief || '';
   const wsInput = document.getElementById('workspace-path');
   if (wsInput) wsInput.value = state.config.workspace_path || '';
   renderWebsites();
@@ -462,10 +470,9 @@ async function save() {
   saveBtn.disabled = true;
   setStatus('Saving…', 'loading');
   try {
-    state.brief = document.getElementById('brief-text').value;
+    state.config.brief = document.getElementById('brief-text').value;
     const wsInput = document.getElementById('workspace-path');
     if (wsInput) state.config.workspace_path = wsInput.value.trim();
-    await writeFile(BRIEF_PATH, state.brief);
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
     setStatus('Saved.', 'ok');
     setTimeout(clearStatus, 2500);
@@ -481,9 +488,17 @@ async function resetDefaults() {
   setStatus('Resetting…', 'loading');
   try {
     const exampleCfg = await readFile(CONFIG_EXAMPLE);
-    const exampleBrief = await readFile(BRIEF_EXAMPLE);
-    state.config = exampleCfg ? JSON.parse(exampleCfg) : { sites: {}, targets: {} };
-    state.brief = exampleBrief || '';
+    state.config = exampleCfg
+      ? JSON.parse(exampleCfg)
+      : { workspace_path: '', brief: '', sites: {}, targets: {} };
+    if (typeof state.config.brief !== 'string') state.config.brief = '';
+    // If the example config doesn't carry a brief, fall back to the
+    // legacy brief.example.md content so users who reset still see
+    // something meaningful in the textarea.
+    if (!state.config.brief.trim()) {
+      const legacy = await readFile(LEGACY_BRIEF_EXAMPLE, '');
+      if (legacy && legacy.trim()) state.config.brief = legacy;
+    }
     render();
     setStatus('Reset to defaults (not yet saved).', 'ok');
   } catch (err) {

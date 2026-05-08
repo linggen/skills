@@ -15,6 +15,7 @@
 // agent permission system, so the page does its own filesystem work).
 
 import { applyPageUpdate, loadSession, getSession, setOnChange, resetPage } from './page-render.js';
+import { readPulseConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
@@ -737,6 +738,34 @@ async function mountChat() {
       }
     },
   });
+
+  // Inject the user's brief as a hidden init message — same pattern as
+  // sys-doctor's doctor.js. Replaces the older "agent reads brief.md
+  // every run" approach. Brief content lives in config.brief; workspace
+  // path is also surfaced so the agent knows where to read product
+  // context from. sendHidden delivers the prompt to the agent without
+  // rendering it in the chat UI.
+  setTimeout(() => sendInitPrompt().catch(e => {
+    console.warn('[pulse] init-prompt failed', e);
+  }), 1500);
+}
+
+async function sendInitPrompt() {
+  if (!state.chat) return;
+  const cfg = await readPulseConfig();
+  const brief = (cfg?.brief || '').trim();
+  const workspace = (cfg?.workspace_path || '').trim();
+  if (!brief && !workspace) return;
+  const lines = ['The user just opened Pulse. Treat the following as ground truth for every run in this session.'];
+  if (workspace) {
+    lines.push('', `Workspace: ${workspace}`,
+      'Read README, doc/, and source files there to ground drafts in real product knowledge.');
+  }
+  if (brief) {
+    lines.push('', 'Brief (case description, voice rules, hard rules):', brief);
+  }
+  lines.push('', 'Do not greet — wait for the user to ask for something.');
+  state.chat.sendHidden(lines.join('\n'));
 }
 
 function sendChatMessage(text) {

@@ -147,23 +147,27 @@ posts manually after reviewing.
 
 ## Inputs (load these every run, in order)
 
-Read these files with `Read` before doing any work:
+The user's **brief** (case description, voice rules, hard rules, current
+goal of their writing, active context) is delivered as a hidden
+chat-init message at the start of every session — it is already in
+your conversation history when you wake up. Treat it as ground truth
+and re-anchor to it after every capability. Do not look for a
+brief.md file; the older file-based pattern was retired.
 
-1. `~/.linggen/skills/pulse/references/brief.md` — **load-bearing**.
-   The user's standing identity, voice rules, hard rules, current
-   goal of their writing, active context. Re-anchor to it after every
-   capability.
-2. `~/.linggen/skills/pulse/references/voice-samples.md` — past
+Read these files with `Read` for additional context as needed:
+
+1. `~/.linggen/skills/pulse/references/voice-samples.md` — past
    writing for cadence anchoring. If empty, use plain technical
    English; do NOT default to LLM cadence ("🚀 I'm thrilled…").
-3. `~/.linggen/skills/pulse/references/lane-templates.md` — format
+2. `~/.linggen/skills/pulse/references/lane-templates.md` — format
    constraints per output lane (x-post, reddit-comment, blog,
    medium, linkedin, substack).
-4. `~/.linggen/skills/pulse/config.json` — `sites` (which source
-   tools are enabled) + `targets` (which output lanes are enabled) +
-   `workspace_path` (the user's product directory; read just-in-time
-   for product knowledge — see "Workspace context" below). Only call
-   enabled tools; only draft for enabled lanes.
+3. `~/.linggen/skills/pulse/config.json` — `sites` (which source
+   tools are enabled), `targets` (which output lanes are enabled),
+   `workspace_path` (the user's product directory; same value
+   surfaced in the init brief), and `brief` (the same text already
+   in your init message — re-readable here if you need it). Only
+   call enabled tools; only draft for enabled lanes.
 
 **Workspace context** — when a goal involves drafting content, scoring
 external signal for relevance, or naming what the user shipped, read
