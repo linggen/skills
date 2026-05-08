@@ -328,8 +328,36 @@ seed_core_memory() {
   [ -f "$memory_dir/style.md" ]    || : > "$memory_dir/style.md"
 }
 
+# Telemetry marker — read by `ling-mem` on first launch (or after an
+# upgrade) to record the install source in the anonymous install event sent
+# to linggen.dev/api/track. Per-product file in ~/.linggen/ so a single
+# marker can be picked up regardless of which host (Linggen / Claude /
+# Codex / OpenClaw) the skill landed in. Other installers (the linggen
+# engine when it bootstraps ling-mem, future ClawHub native installer)
+# should set LING_MEM_SOURCE before invoking this script so the `via`
+# field reflects the real provenance — defaults to "wrapper" when the
+# user runs install-ling-mem.sh directly.
+write_install_source_marker() {
+  local via="${LING_MEM_SOURCE:-wrapper}"
+  local marker="$HOME/.linggen/.ling-mem-install-source"
+  mkdir -p "$HOME/.linggen"
+  {
+    printf 'via=%s\n' "$via"
+    printf 'installer_version=%s\n' "$VERSION"
+    printf 'installed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  } > "$marker"
+}
+
 # Linggen-only: install the dream mission so the cron scheduler picks it
 # up. Keep user customizations untouched on existing installs.
+#
+# Note on the "skills don't generate missions" rule: that rule applies to
+# *generated* missions (e.g. pulse's old generate-missions.sh which built
+# cron entries from a user's saved_runs[]). The dream mission here is a
+# *static, skill-bundled* mission whose content lives in assets/mission.md
+# under version control with the skill itself. Shipping it as part of
+# install.sh is fine — the skill is delivering the canonical scheduled
+# consolidation, not synthesizing per-user cron from runtime state.
 install_dream_mission() {
   local skill_dir="$1"
   local mission_dir="$HOME/.linggen/missions/dream"
@@ -681,6 +709,7 @@ if [ "$INSTALL_LINGGEN" -eq 1 ]; then
   download_binary "$LINGGEN_SKILL_DIR/bin"
   seed_core_memory
   install_dream_mission "$LINGGEN_SKILL_DIR"
+  write_install_source_marker
   LINGGEN_BIN="$LINGGEN_SKILL_DIR/bin/ling-mem"
 
   # Clean up the legacy `memory` skill dir if present and shipped (untouched user content stays).
@@ -698,6 +727,7 @@ if [ "$INSTALL_CLAUDE" -eq 1 ]; then
   seed_core_memory
   configure_claude_md
   configure_claude_hook "$CLAUDE_SKILL_DIR"
+  write_install_source_marker
   CLAUDE_BIN="$CLAUDE_SKILL_DIR/bin/ling-mem"
 
   # Clean up the legacy `linggen-memory` skill dir if present.
@@ -746,3 +776,7 @@ fi
 
 echo ""
 echo "Done. To browse / edit rows: run 'ling-mem start' then open http://127.0.0.1:9888"
+echo ""
+echo "Note: ling-mem sends anonymous usage pings (install, daily-active, command"
+echo "      name) to help improve it. No content, no identity. Disable any time:"
+echo "        touch ~/.linggen/no-telemetry"
