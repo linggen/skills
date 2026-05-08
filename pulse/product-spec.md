@@ -10,7 +10,9 @@ guide: |
 
 ## Vision
 
-**Pulse is a daily intelligence layer for solo founders launching products.** It keeps you aware of your market, surfaces the people who'd care, tracks what you shipped, and produces the writing you don't have time for.
+**Pulse is the GTM brain for solo founders launching products.** It reads your workspace to know what you're building, watches the communities your customers live in, drafts the posts and replies you don't have time for, and tracks how those posts land — so you spend your time deciding and shipping, not browsing Reddit and writing from scratch.
+
+The workflow is **AI-led**: configure your case once (what you're building, where it lives on disk, which sites to watch, which accounts), and the agent runs on its own — gathering, scoring, drafting. You review, edit, send.
 
 Built as a Linggen skill — installs into Claude Code / OpenClaw / Linggen — but designed to feel like a daily-driver product, not a CLI tool.
 
@@ -41,12 +43,13 @@ The user types a goal — *"Help me launch Sys Doctor on r/macapps"* / *"Daily X
 
 | Surface | Purpose |
 |:--------|:--------|
-| **Pulse** (the page) | The main app surface. 3 columns — sessions sidebar / cards (Mentions, Replies due, Discovery, Signal, Progress + Drafts) / agent chat. Lands here on open. |
-| **Library** | Browse past runs by project + date. The history archive. |
-| **New run** | Free-text goal + scope hints (project path, artifact URL, window) + targets. Manual trigger via chip or chat. |
-| **Settings** | Projects, brief, voice samples, sources, targets, schedules. |
+| **Pulse** (the page) | The main app surface. Today's state — Mentions, Replies due, Discovery, Signal, Progress + Drafts — plus the agent chat for follow-ups. Lands here on open. |
+| **Library** | Sent drafts + tracked mentions, archived. The history of what shipped, not a log of dashboards. |
+| **Settings** | Case description, workspace path, brief, voice samples, target sites, accounts. Configure once. |
 
 The page is the loop. Library is the archive. Settings is plumbing. Three surfaces, no more.
+
+The page reflects **today's pulse** — one persistent state per day, updated by agent runs in place. Yesterday's view is archived; today's is current. No multiple-runs-per-day session model; no run-history tab.
 
 ## Data model
 
@@ -133,13 +136,29 @@ New lanes: append a section to `lane-templates.md` and add a `targets[]` entry t
 
 The brief is the difference between "generic LLM output" and "writing that sounds like the user." It's editable in Settings and never overwritten on upgrade.
 
+## Workspace (the differentiator)
+
+In addition to the brief, the user points pulse at a **workspace path** (e.g., `/path/to/linggen-monorepo`). The agent reads the workspace on every run — README, docs, recent commits, source — to know the product as well as the user does. Drafts grounded in workspace context read like the founder wrote them, not an AI guessing about a product:
+
+- *Generic AI:* "Excited to share that we just shipped a new feature!"
+- *Pulse w/ workspace:* "We just shipped multi-product telemetry — engine, ling-mem, and Sys Doctor share one analytics endpoint with IP-rate-limiting instead of API keys, because OSS clients can't keep secrets. If you've built dev tools you know how this goes."
+
+Reading is **just-in-time** via Linggen's standard `Read` / `Glob` / `Grep` tools, scoped to the configured workspace dir. No pre-ingestion, no vector cache, no file watcher. The agent pulls what it needs in-loop.
+
 ## Goals model (no recipes)
 
-A run carries a single free-text goal. The agent reads `brief.md` + the goal + the data on disk and decides:
+A run carries a single free-text goal. The agent reads `brief.md` + the workspace + the goal + the data on disk and decides:
+- which workspace files to read (README, docs, recent commits)
 - which collectors to invoke (sessions / commits / project / artifact)
 - which site tools to call
 - which configured lanes to draft for
 - whether to skip if the goal doesn't earn output
+
+**Trigger sources** (the agent doesn't care which — it just sees the goal text):
+- Chat — user types a goal in the agent panel
+- Mission — Linggen-engine cron fires with a stored goal (set up by the user in Linggen's mission UI; pulse never writes mission files itself)
+
+Pulse does not maintain a saved-runs library or chip-driven goal launcher. AI-led means the agent decides what to do from the brief and workspace; the user steers via natural-language follow-ups in chat.
 
 ## Goal examples
 
@@ -172,11 +191,13 @@ Same skill, same protocol, same data shape. Only the goal text changes.
 | Phase | Status | Scope |
 |:------|:-------|:------|
 | 1. Site tools registered, settings page, brief | **done** | sources/targets/brief configured by user |
-| 2. Free-text goal field on the run | next | replaces hardcoded "scan 24h, draft" with `goal` parameter |
-| 3. Project entity + project-aware scopes | next | `project.sh` collector reads README/docs/structure |
-| 4. Pulse page UI (3 columns + cards) | next | replaces the current single-day review page |
-| 5. Multi-project model | future | per-project briefs, per-project sources |
-| 6. Linggen-app premium tier | future | managed sources, scheduled runs, history retention |
+| 2. Free-text goal field on the run | **done** | replaces hardcoded "scan 24h, draft" with `goal` parameter |
+| 3. Workspace ingestion + case description in settings | **next** | drafts grounded in actual product knowledge — the differentiator |
+| 4. AI-led single-state Pulse page | next | one dashboard, no multi-session, no chip launcher; chat is the only manual trigger |
+| 5. Account auth (Reddit OAuth first) + reply tracking | next | track engagement on user's own posts; draft replies grounded in product knowledge |
+| 6. Multi-project model | future | per-project briefs, per-project workspaces, per-project sources |
+| 7. Platform-skill extraction (redditBot, xbot, hnBot) | future, not v1 | only when a second consumer earns the abstraction; pulse remains mono-skill until then |
+| 8. Linggen-app pulse-branded distribution | future | `pulse.app` bundles engine + skills for the focused founder-GTM audience |
 
 ## Related docs
 

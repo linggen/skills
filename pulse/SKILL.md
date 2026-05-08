@@ -1,13 +1,17 @@
 ---
 name: pulse
 description: >-
-  Daily intelligence layer for solo founders launching products. Pulse
-  reads the user's brief (identity, voice, hard rules) plus a
-  free-text goal, then dispatches across five agent capabilities —
-  research-market, discover-customers, monitor-mentions, track-progress,
-  draft-content — using configured site tools (HN, Reddit, Lobsters,
-  arxiv, RSS). Updates the Pulse page via PageUpdate body_patch blocks.
-  Never auto-posts.
+  GTM brain for solo founders launching products. Pulse reads the
+  user's brief (identity, voice, hard rules) AND the configured
+  workspace (README, /doc/, recent commits, source) to know the
+  product as well as the user does. Dispatches across five agent
+  capabilities — research-market, discover-customers, monitor-mentions,
+  track-progress, draft-content — using configured site tools (HN,
+  Reddit, Lobsters, arxiv, RSS, Google Trends, GitHub Trending,
+  Product Hunt, Wikipedia). Updates the Pulse page via PageUpdate
+  body_patch blocks. AI-led — runs on a free-text goal supplied via
+  chat or via a Linggen mission; pulse never schedules itself. Never
+  auto-posts.
 allowed-tools:
   - Read
   - Write
@@ -27,11 +31,18 @@ permission:
   paths:
     - { path: ~/.linggen/skills/pulse, mode: edit }
     - { path: /tmp, mode: read }
+    # Workspace path is read at runtime from config.workspace_path. The
+    # engine validates the configured path is reachable from one of the
+    # paths the user grants when installing pulse — typically the user
+    # adds e.g. `{ path: ~/workspace, mode: read }` at install time, or
+    # the page prompts on first workspace configure.
   warning: >-
     Pulse writes config.json edits and draft session JSON files inside
-    its own data dir. It only reads /tmp (the page-collected context
-    manifest written by collect.sh). Bash collection (sessions, commits,
-    memories) runs in the skill webpage's iframe, not the agent.
+    its own data dir. It reads /tmp (the page-collected context manifest
+    written by collect.sh) and the user-configured workspace path
+    (README, /doc/, source) for product knowledge. Bash collection
+    (sessions, commits, memories) runs in the skill webpage's iframe,
+    not the agent. Pulse does not invoke Bash.
 tools:
   - name: FetchHackerNews
     description: >-
@@ -149,8 +160,26 @@ Read these files with `Read` before doing any work:
    constraints per output lane (x-post, reddit-comment, blog,
    medium, linkedin, substack).
 4. `~/.linggen/skills/pulse/config.json` — `sites` (which source
-   tools are enabled) + `targets` (which output lanes are enabled).
-   Only call enabled tools; only draft for enabled lanes.
+   tools are enabled) + `targets` (which output lanes are enabled) +
+   `workspace_path` (the user's product directory; read just-in-time
+   for product knowledge — see "Workspace context" below). Only call
+   enabled tools; only draft for enabled lanes.
+
+**Workspace context** — when a goal involves drafting content, scoring
+external signal for relevance, or naming what the user shipped, read
+key files from `config.workspace_path` via `Read` / `Glob` / `Grep`:
+- `README.md` and `doc/` for product description and roadmap
+- `CHANGELOG.md` for recent shipping (when present)
+- `Cargo.toml` / `package.json` / `pyproject.toml` for stack/version
+- `Grep` for specific feature names from the brief
+
+Drafts grounded in actual product knowledge are the differentiator.
+Don't draft generically when the workspace is sitting right there.
+
+(Recent-commit context comes from the page-collected manifest at
+`MANIFEST_PATH` rather than direct `git log`, since pulse runs
+tier=read and does not invoke `Bash`. Workspace reading is purely
+file-based.)
 
 The kickoff prompt for this run carries:
 - `MANIFEST_PATH` — path to `/tmp/pulse-manifest-<date>.json` written
@@ -158,7 +187,8 @@ The kickoff prompt for this run carries:
   samples preloaded).
 - `GOAL` — the free-text goal for this run.
 - `WINDOW` (optional) — `24h | 7d | 30d` or `since=YYYY-MM-DD`. Default `24h`.
-- `SCOPE_HINTS` (optional) — `project_path`, `artifact_url`.
+- `SCOPE_HINTS` (optional) — `project_path`, `artifact_url`. (Workspace
+  is read from `config.workspace_path`, not here.)
 
 If `GOAL` is missing from the kickoff, use the brief's standing goal
 as default. If both are missing, ask the user one clarifying question
@@ -415,7 +445,7 @@ body_patch: { section: "discovery", ... }
 body_patch: { section: "progress_drafts", ... }
 run_log: {
   run_id: "<generated>",
-  trigger: "manual|chip|chat|mission",
+  trigger: "chat|mission",
   goal: "<the goal text>",
   capabilities_invoked: ["track-progress", "draft-content"],
   summary: ["bullet 1", "bullet 2"],

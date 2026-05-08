@@ -12,33 +12,52 @@ guide: |
 ## Architecture in one diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  User                                                           │
-│    types goal      reviews Pulse      polishes drafts           │
-└──────────┬──────────────┬──────────────────┬──────────────────┘
-           ▼              ▼                  ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Pulse skill (the agent)                                        │
-│    reads brief.md  +  goal text  +  state layer                 │
-│    dispatches capabilities  ──▶  emits one run JSON             │
-└──────────┬──────────────────────────────┬────────────────────┘
-           ▼                              ▼
-┌──────────────────────┐         ┌─────────────────────────┐
-│ Site tools           │         │ Local collectors        │
-│ (registered, read)   │         │ (iframe-side bash)      │
-│                      │         │                         │
-│ Reddit, HN, Lobsters │         │ sessions, commits,      │
-│ arxiv, RSS,          │         │ memory, project-path,   │
-│ Google Trends RSS,   │         │ artifact URL            │
-│ GitHub Trending,     │         │                         │
-│ Product Hunt RSS,    │         │                         │
-│ Wikipedia pageviews  │         │                         │
-└──────────────────────┘         └─────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  User                                                                │
+│    configures (case + workspace + sites + accounts)                  │
+│    reviews Pulse, polishes drafts, sends                             │
+└──────────┬─────────────────────────────────┬──────────────────────┘
+           ▼                                 ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  Pulse skill (the agent)                                             │
+│    reads brief.md  +  workspace  +  goal text  +  state layer        │
+│    dispatches capabilities  ──▶  emits body_patches                  │
+└──────────┬──────────────────────┬──────────────────┬────────────────┘
+           ▼                      ▼                  ▼
+┌──────────────────────┐  ┌──────────────────┐  ┌─────────────────────┐
+│ Site tools           │  │ Workspace        │  │ Local collectors    │
+│ (registered, read)   │  │ (Read/Glob/Grep) │  │ (iframe-side bash)  │
+│                      │  │                  │  │                     │
+│ Reddit, HN, Lobsters │  │ ~/path/to/repo:  │  │ sessions, commits,  │
+│ arxiv, RSS,          │  │ README, /doc/,   │  │ memory rows         │
+│ Google Trends,       │  │ recent commits,  │  │                     │
+│ GitHub Trending,     │  │ source           │  │                     │
+│ Product Hunt RSS,    │  │                  │  │                     │
+│ Wikipedia pageviews  │  │                  │  │                     │
+└──────────────────────┘  └──────────────────┘  └─────────────────────┘
 ```
 
 The skill is a small dispatcher. The intelligence lives in the brief
-+ goal + capability protocols. Tools are dumb data sources; collectors
-are dumb shell scripts.
++ workspace + goal + capability protocols. Tools are dumb data sources;
+collectors are dumb shell scripts; workspace ingestion is just-in-time
+filesystem reads against the user's product directory.
+
+## Architectural scope (v1): mono-skill
+
+Every platform integration (Reddit OAuth, HN cookies, X API, draft-reply,
+post tracking) lives **inside pulse** in v1. No platform-skill extraction
+yet — no `redditBot`, no `xbot`-as-capability-provider, no `hnBot`. The
+clean cut line is preserved (each `scripts/sites/*.sh` adapter is small
+and replaceable), so **extraction to platform skills is a v2 refactor
+when a second consumer earns the abstraction**. Today there's exactly
+one consumer (pulse itself), and skill-to-skill capability dispatch is
+overhead the user count doesn't justify.
+
+This applies even when auth comes in: Reddit OAuth tokens, X cookies,
+and the post-tracking state all live under `~/.linggen/skills/pulse/`,
+not in a separate skill's data dir. If/when "support-watcher" or
+"launch-monitor" or another vertical wants Reddit access, *that's* when
+we extract.
 
 ## Capabilities (engine-internal)
 
@@ -72,12 +91,34 @@ Capabilities do NOT appear in the UI; users never pick one.
 
 ### `track-progress`
 - Pull from: sessions (Claude Code + Linggen), git commits in
-  `~/workspace/*` repos, ling-mem rows, optional `project_path` (reads
-  README + recent docs).
+  `~/workspace/*` repos, ling-mem rows, the **workspace** configured in
+  settings (reads README, /doc/*, recent commits, package metadata).
 - Window: 24h by default; configurable via goal text or scope hint.
 - Cross-references the **launch timeline** in the state layer to know
   where the user is in the launch sequence (week-1 vs week-3 etc.).
 - Output → `progress_digest[]`.
+
+### Workspace ingestion (cross-cutting)
+
+Every capability that produces drafts (`draft-content`) or scores
+relevance (`research-market`, `discover-customers`) reads from the
+configured workspace **just-in-time** via Linggen's standard
+`Read` / `Glob` / `Grep` tools. Implementation:
+
+- Settings stores `workspace_path` (e.g., `/Users/foo/workspace/myproduct`).
+- The pulse agent has a permission grant on that path (mode: read).
+- The agent decides what to read based on the goal — typically:
+  - `README.md` and `doc/` for product description
+  - `git log --oneline -20` for recent shipping
+  - `Cargo.toml` / `package.json` / `pyproject.toml` for stack/version
+  - `Grep` for specific feature names from the brief
+- No pre-ingestion, no vector cache, no file watcher. Cost: a few
+  hundred tokens per run for the basics. Cheap and always fresh.
+
+Why this matters: **drafts grounded in the actual product knowledge**
+read like the founder wrote them. Generic LLMs guess; pulse cites.
+This is the core differentiator versus Buffer / Hootsuite / generic AI
+writers and it costs almost nothing to implement.
 
 ### `draft-content`
 - Synthesizes input from the other capabilities into platform-shaped
@@ -276,12 +317,17 @@ session file; the agent updates it via patches.
 ### Session file
 
 ```
-data/YYYY-MM-DD/<session-id>.json
+data/YYYY-MM-DD/session.json
 ```
 
-Today's session = today's file. New goal runs through the day
-**accumulate** patches into this file (sys-doctor body_patch model).
-Yesterday's session is its own file.
+**One session per day.** Today's session = today's file. New goal runs
+through the day **accumulate** patches into this single file
+(sys-doctor body_patch model — the dashboard updates in place; no
+multi-session-per-day fan-out). Yesterday's session is its own file in
+yesterday's date dir; it stays as an archive but is not the active view.
+
+The earlier multi-session-per-day model (multiple `<session-id>.json`
+files per date dir) is gone — one user, one daily pulse, one file.
 
 ```json
 {
@@ -307,7 +353,7 @@ Yesterday's session is its own file.
   "runs": [
     {
       "run_id": "...",
-      "trigger": "manual|chip|chat|mission",
+      "trigger": "chat|mission",
       "goal": "Daily X-post if I shipped or learned",
       "started_at": "...",
       "completed_at": "...",
@@ -319,6 +365,11 @@ Yesterday's session is its own file.
   ]
 }
 ```
+
+`runs[]` is an append-only event log inside the day's session file —
+each agent invocation appends one entry. Dashboard sections are still
+updated in place via body_patches (current-state model); `runs[]`
+captures provenance for "why is this card here?" auditing.
 
 The renderer iterates `sections` in fixed priority order:
 mentions → replies_due → discovery → signal → progress_drafts.
@@ -467,8 +518,8 @@ The contract — same as Sys Doctor's dashboard:
   Pulse swaps the Mentions section when `monitor-mentions` finishes,
   even if Discovery wasn't re-run.
 
-Concrete: clicking the `🔍 Find threads` chip dispatches a goal that
-runs only `discover-customers`. The agent emits:
+Concrete: a chat goal like *"find threads worth commenting on"* runs
+only `discover-customers`. The agent emits:
 
 ```json
 {
