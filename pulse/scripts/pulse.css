@@ -1,19 +1,37 @@
-/* Pulse — main page styles. Dark theme. 3-column layout.
-   Sessions sidebar / cards / chat. Card grammar: mention, reply,
-   discovery, signal, progress, draft, empty. */
+/* Pulse — main page styles. Follows system light/dark preference.
+   3-column layout: sessions sidebar / cards / chat. Card grammar:
+   mention, reply, discovery, signal, progress, draft, empty.
+   Theming pattern matches sys-doctor: light defaults at :root, dark
+   override in @media (prefers-color-scheme: dark). */
 
 :root {
-  --bg: #0a0d12;
-  --surface: #14181f;
-  --surface-2: #1b2028;
-  --border: #2a2f38;
-  --text: #e6e7ea;
-  --muted: #8a8f99;
+  --bg: #f8fafc;
+  --surface: #f1f5f9;
+  --surface-2: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --muted: #64748b;
   --accent: #5b9dff;
   --accent-soft: rgba(91, 157, 255, 0.12);
-  --green: #6ddd9a;
-  --amber: #f0b96b;
-  --red: #ff8585;
+  --green: #16a34a;
+  --amber: #d97706;
+  --red: #dc2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0d12;
+    --surface: #14181f;
+    --surface-2: #1b2028;
+    --border: #2a2f38;
+    --text: #e6e7ea;
+    --muted: #8a8f99;
+    --accent: #5b9dff;
+    --accent-soft: rgba(91, 157, 255, 0.12);
+    --green: #6ddd9a;
+    --amber: #f0b96b;
+    --red: #ff8585;
+  }
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -30,7 +48,11 @@ body {
 /* ============ APP SHELL ============ */
 .app {
   display: grid;
-  grid-template-columns: 240px 1fr 380px;
+  /* Right column width is user-resizable via the .chat-resizer drag handle.
+     Default is wider than the original 380px because at 380 the chat panel
+     was uncomfortably narrow with code blocks / tool calls. Persisted in
+     localStorage as `pulse.chatWidth` and restored on init. */
+  grid-template-columns: 240px 1fr var(--chat-width, 480px);
   grid-template-rows: 56px 1fr;
   height: 100vh;
 }
@@ -396,6 +418,36 @@ body {
   flex-direction: column;
   background: var(--surface);
   overflow: hidden;
+  position: relative;            /* anchor for .chat-resizer */
+}
+
+/* Drag handle on the LEFT edge of the chat panel. Sits above the iframe
+   (z-index) so mousedown lands here, not on the embed page below it. */
+.chat-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;                    /* straddle the column boundary so it's grabbable from either side */
+  width: 6px;
+  cursor: col-resize;
+  z-index: 2;
+  background: transparent;
+  transition: background 0.12s;
+}
+.chat-resizer:hover,
+.chat-resizer.dragging {
+  background: var(--accent);
+}
+
+/* During drag: kill text-selection and force col-resize cursor everywhere
+   so it doesn't snap back when the pointer enters the iframe. */
+body.chat-resizing,
+body.chat-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+body.chat-resizing iframe {
+  pointer-events: none;          /* iframe stops eating the drag stream */
 }
 .chat-frame {
   flex: 1;
@@ -496,3 +548,38 @@ body {
   font-size: 13px;
 }
 .state-msg.error { color: var(--red); }
+
+/* ============ + NEW RUN INLINE INPUT ============ */
+.new-run-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 16px 0;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  animation: new-run-slide-in 0.18s ease-out;
+}
+.new-run-input-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.new-run-input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.new-run-input::placeholder {
+  color: var(--muted);
+}
+@keyframes new-run-slide-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

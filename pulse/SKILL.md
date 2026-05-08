@@ -24,17 +24,14 @@ app:
   width: 1200
   height: 900
 permission:
-  mode: admin
   paths:
-    - ~/.linggen/skills/pulse
-    - /tmp
+    - { path: ~/.linggen/skills/pulse, mode: edit }
+    - { path: /tmp, mode: read }
   warning: >-
-    Pulse reads its references + the page-collected context manifest
-    from /tmp, drafts content in memory, and writes session JSON files
-    to its own data dir. Bash collection (sessions, commits, memories)
-    runs in the skill webpage's iframe, not in the agent — so the
-    agent itself never needs filesystem access beyond its own skill
-    dir and /tmp.
+    Pulse writes config.json edits and draft session JSON files inside
+    its own data dir. It only reads /tmp (the page-collected context
+    manifest written by collect.sh). Bash collection (sessions, commits,
+    memories) runs in the skill webpage's iframe, not the agent.
 tools:
   - name: FetchHackerNews
     description: >-
@@ -166,27 +163,6 @@ The kickoff prompt for this run carries:
 If `GOAL` is missing from the kickoff, use the brief's standing goal
 as default. If both are missing, ask the user one clarifying question
 and stop.
-
-### Saved-run dispatch
-
-When invoked from a scheduled mission (or any caller using saved
-runs), the kickoff message takes the form:
-
-    Run saved goal id=<saved_run_id>
-
-In that case, **read `config.json`'s `saved_runs[]`**, find the
-entry where `id` matches, and use its fields:
-
-- `goal` → the GOAL for this run
-- `targets` → restrict draft-content to the listed lanes (overrides
-  `targets[].enabled` in config for this run only)
-- The `name` field is informational only
-
-If the id is not found in `saved_runs[]`, fall back to the brief's
-standing goal and emit a `run_log` with `skip_reason` mentioning the
-missing id.
-
----
 
 ## Goal dispatch
 
@@ -439,7 +415,7 @@ body_patch: { section: "discovery", ... }
 body_patch: { section: "progress_drafts", ... }
 run_log: {
   run_id: "<generated>",
-  trigger: "saved-run|manual|chip|chat",
+  trigger: "manual|chip|chat|mission",
   goal: "<the goal text>",
   capabilities_invoked: ["track-progress", "draft-content"],
   summary: ["bullet 1", "bullet 2"],

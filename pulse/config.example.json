@@ -43,31 +43,5 @@
     "blog": { "enabled": true, "min_words": 800, "max_words": 2000 },
     "linkedin": { "enabled": false },
     "substack": { "enabled": false }
-  },
-  "saved_runs": [
-    {
-      "id": "daily-x",
-      "name": "Daily X-post",
-      "goal": "Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.",
-      "targets": ["x-post"],
-      "cadence": "0 8 * * *",
-      "enabled": false
-    },
-    {
-      "id": "weekly-recap",
-      "name": "Weekly recap",
-      "goal": "Generate a recap of this week — what shipped, what learned. Draft as a blog post.",
-      "targets": ["blog"],
-      "cadence": "0 9 * * 1",
-      "enabled": false
-    },
-    {
-      "id": "comment-finder",
-      "name": "Find threads to comment on",
-      "goal": "Find threads worth commenting on across configured Reddit subs and HN. Draft starters but no own posts.",
-      "targets": ["reddit-comment"],
-      "cadence": "0 12 * * *",
-      "enabled": false
-    }
-  ]
+  }
 }

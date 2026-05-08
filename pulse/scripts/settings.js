@@ -7,75 +7,90 @@ const CONFIG_EXAMPLE = `${SKILL_DIR}/config.example.json`;
 const BRIEF_PATH = `${SKILL_DIR}/references/brief.md`;
 const BRIEF_EXAMPLE = `${SKILL_DIR}/references/brief.example.md`;
 
-// Source/target catalog. Each entry describes how the card renders and
-// what config fields apply. Keep this list synchronized with the tools
-// registered in SKILL.md and the lanes in lane-templates.md.
-const SOURCES = [
+// Unified website catalog: each row in the settings UI is one site, with
+// independent Source / Target role checkboxes. `source_id` and `target_id`
+// are the slugs in `state.config.sites` and `state.config.targets`
+// respectively. Reddit is the only built-in site with both. Source-side
+// configuration fields live under `source_fields`; target-side under
+// `target_fields`.
+const WEBSITES = [
   {
-    id: 'hackernews',
     name: 'Hacker News',
-    desc: 'Top 30 current stories. No per-site config.',
-    fields: [],
+    desc: 'Top 30 current stories.',
+    source_id: 'hackernews',
   },
   {
-    id: 'reddit',
     name: 'Reddit',
-    desc: '25 newest threads from each subreddit you list.',
-    fields: [{ kind: 'chips', key: 'subs', label: 'Subreddits' }],
-    tag: 'source + target',
+    desc: '25 newest threads from each subreddit (Source). Per-thread comment drafts (Target).',
+    source_id: 'reddit',
+    target_id: 'reddit-comment',
+    source_fields: [{ kind: 'chips', key: 'subs', label: 'Subreddits' }],
   },
   {
-    id: 'lobsters',
     name: 'Lobsters',
     desc: 'Lobste.rs newest feed.',
-    fields: [],
+    source_id: 'lobsters',
   },
   {
-    id: 'arxiv',
     name: 'arxiv',
     desc: 'Recent CS.AI / CS.LG / CS.CL papers.',
-    fields: [],
+    source_id: 'arxiv',
   },
   {
-    id: 'rss',
     name: 'RSS / Atom',
-    desc: 'Any feed URLs you paste in.',
-    fields: [{ kind: 'chips', key: 'feeds', label: 'Feed URLs' }],
+    desc: 'Built-in RSS aggregator. Custom feeds added below also flow into this list.',
+    source_id: 'rss',
+    source_fields: [{ kind: 'chips', key: 'feeds', label: 'Feed URLs' }],
   },
   {
-    id: 'google-trends',
     name: 'Google Trends (daily)',
     desc: "Today's trending searches in your region. Free public RSS.",
-    fields: [{ kind: 'text', key: 'region', label: 'Region (ISO code, e.g. US, GB, JP)', placeholder: 'US' }],
+    source_id: 'google-trends',
+    source_fields: [{ kind: 'text', key: 'region', label: 'Region (ISO code, e.g. US, GB, JP)', placeholder: 'US' }],
   },
   {
-    id: 'github-trending',
     name: 'GitHub Trending',
     desc: "Today's trending repos. Optional language filter.",
-    fields: [{ kind: 'text', key: 'language', label: 'Language (blank = all)', placeholder: 'rust' }],
+    source_id: 'github-trending',
+    source_fields: [{ kind: 'text', key: 'language', label: 'Language (blank = all)', placeholder: 'rust' }],
   },
   {
-    id: 'product-hunt',
     name: 'Product Hunt',
     desc: "Today's launches. Useful for spotting competing products.",
-    fields: [],
+    source_id: 'product-hunt',
   },
   {
-    id: 'wikipedia-pageviews',
     name: 'Wikipedia pageviews',
     desc: 'Real topic-volume trends over the last 60 days. Add the Wikipedia article titles you care about.',
-    fields: [{ kind: 'chips', key: 'topics', label: 'Article titles' }],
+    source_id: 'wikipedia-pageviews',
+    source_fields: [{ kind: 'chips', key: 'topics', label: 'Article titles' }],
   },
-];
-
-const TARGETS = [
-  { id: 'x-post',         name: 'X / Twitter',     desc: 'Single-claim post, ≤ 280 chars.' },
-  { id: 'reddit-comment', name: 'Reddit comment',  desc: 'Per-thread, drafted only when a Reddit source surfaces a high-relevance thread.' },
-  { id: 'medium',         name: 'Medium',          desc: 'Mid-length article, 500–1000 words.' },
-  { id: 'blog',           name: 'Blog',            desc: 'Long-form post, configurable length.',
-                          fields: [{ kind: 'range', keys: ['min_words', 'max_words'], label: 'Words' }] },
-  { id: 'linkedin',       name: 'LinkedIn',        desc: 'Professional-tone post, ~150–350 words.' },
-  { id: 'substack',       name: 'Substack',        desc: 'Newsletter post, 600–1500 words.' },
+  {
+    name: 'X / Twitter',
+    desc: 'Single-claim post, ≤ 280 chars.',
+    target_id: 'x-post',
+  },
+  {
+    name: 'Medium',
+    desc: 'Mid-length article, 500–1000 words.',
+    target_id: 'medium',
+  },
+  {
+    name: 'Blog',
+    desc: 'Long-form post, configurable length.',
+    target_id: 'blog',
+    target_fields: [{ kind: 'range', keys: ['min_words', 'max_words'], label: 'Words' }],
+  },
+  {
+    name: 'LinkedIn',
+    desc: 'Professional-tone post, ~150–350 words.',
+    target_id: 'linkedin',
+  },
+  {
+    name: 'Substack',
+    desc: 'Newsletter post, 600–1500 words.',
+    target_id: 'substack',
+  },
 ];
 
 // ---- Bash bridge (matches pulse-app.js pattern) -----------------------
@@ -114,18 +129,8 @@ async function writeFile(path, content) {
 
 let state = {
   brief: '',
-  config: { sites: {}, targets: {}, saved_runs: [] },
+  config: { sites: {}, targets: {} },
 };
-
-// Default goal text for the "+ Add saved run" button.
-const NEW_SAVED_RUN_TEMPLATE = () => ({
-  id: `run-${Date.now().toString(36)}`,
-  name: 'New saved run',
-  goal: '',
-  targets: [],
-  cadence: '',
-  enabled: false,
-});
 
 // ---- Load ----------------------------------------------------------------
 
@@ -153,181 +158,194 @@ async function loadAll() {
 
 function render() {
   document.getElementById('brief-text').value = state.brief;
-  renderGrid('sources-grid', SOURCES, state.config.sites);
-  renderGrid('targets-grid', TARGETS, state.config.targets);
-  renderSavedRuns();
+  renderWebsites();
 }
 
-// ---- Saved runs ----------------------------------------------------------
+// ---- Unified websites list -----------------------------------------------
 
-function renderSavedRuns() {
-  const list = document.getElementById('saved-runs-list');
+function renderWebsites() {
+  const list = document.getElementById('websites-list');
   if (!list) return;
   list.innerHTML = '';
-  if (!Array.isArray(state.config.saved_runs)) state.config.saved_runs = [];
-  if (state.config.saved_runs.length === 0) {
-    const empty = document.createElement('p');
-    empty.className = 'card-meta';
-    empty.style.fontStyle = 'italic';
-    empty.textContent = 'No saved runs yet. Click + Add saved run to create one.';
-    list.appendChild(empty);
+  WEBSITES.forEach((site) => list.appendChild(renderWebsiteRow(site)));
+  // Custom feeds: each entry in sites.rss.feeds becomes a row at the end,
+  // marked source-only with a delete button.
+  const feeds = (state.config.sites?.rss?.feeds || []);
+  feeds.forEach((url, idx) => list.appendChild(renderCustomFeedRow(url, idx)));
+}
+
+function renderWebsiteRow(site) {
+  const row = document.createElement('div');
+  row.className = 'website-row';
+
+  // Info column: name + description
+  const info = document.createElement('div');
+  info.className = 'website-info';
+  const nameEl = document.createElement('strong');
+  nameEl.textContent = site.name;
+  info.appendChild(nameEl);
+  if (site.desc) {
+    const desc = document.createElement('span');
+    desc.className = 'website-desc';
+    desc.textContent = site.desc;
+    info.appendChild(desc);
+  }
+  row.appendChild(info);
+
+  // Roles column: Source + Target checkboxes (only the applicable ones)
+  const roles = document.createElement('div');
+  roles.className = 'website-roles';
+  if (site.source_id) {
+    roles.appendChild(roleToggle('Source', state.config.sites, site.source_id, () => {
+      row.classList.toggle('any-enabled', isAnyEnabled(site));
+      renderConfig();
+    }));
+  } else {
+    roles.appendChild(rolePlaceholder());
+  }
+  if (site.target_id) {
+    roles.appendChild(roleToggle('Target', state.config.targets, site.target_id, () => {
+      row.classList.toggle('any-enabled', isAnyEnabled(site));
+      renderConfig();
+    }));
+  } else {
+    roles.appendChild(rolePlaceholder());
+  }
+  row.appendChild(roles);
+
+  // Per-role config: shown when the matching role is enabled
+  const config = document.createElement('div');
+  config.className = 'website-config';
+  row.appendChild(config);
+
+  function renderConfig() {
+    config.innerHTML = '';
+    if (site.source_id && state.config.sites[site.source_id]?.enabled && site.source_fields) {
+      const cfg = state.config.sites[site.source_id];
+      site.source_fields.forEach((field) => config.appendChild(renderField(cfg, field)));
+    }
+    if (site.target_id && state.config.targets[site.target_id]?.enabled && site.target_fields) {
+      const cfg = state.config.targets[site.target_id];
+      site.target_fields.forEach((field) => config.appendChild(renderField(cfg, field)));
+    }
+  }
+
+  if (isAnyEnabled(site)) row.classList.add('any-enabled');
+  renderConfig();
+  return row;
+}
+
+function isAnyEnabled(site) {
+  return (site.source_id && state.config.sites?.[site.source_id]?.enabled) ||
+         (site.target_id && state.config.targets?.[site.target_id]?.enabled);
+}
+
+function roleToggle(label, configSection, slug, onChange) {
+  if (!configSection[slug]) configSection[slug] = { enabled: false };
+  const cfg = configSection[slug];
+  const wrap = document.createElement('label');
+  wrap.className = 'role-toggle';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = !!cfg.enabled;
+  cb.addEventListener('change', () => {
+    cfg.enabled = cb.checked;
+    onChange?.();
+  });
+  const txt = document.createElement('span');
+  txt.textContent = label;
+  wrap.append(cb, txt);
+  return wrap;
+}
+
+function rolePlaceholder() {
+  const span = document.createElement('span');
+  span.className = 'role-placeholder';
+  span.textContent = '—';
+  span.title = 'Not applicable for this site';
+  return span;
+}
+
+function renderField(cfg, field) {
+  if (field.kind === 'chips')  return renderChipField(cfg, field);
+  if (field.kind === 'range')  return renderRangeField(cfg, field);
+  if (field.kind === 'text')   return renderTextField(cfg, field);
+  return document.createDocumentFragment();
+}
+
+function renderCustomFeedRow(url, idx) {
+  const row = document.createElement('div');
+  row.className = 'website-row custom any-enabled';
+
+  const info = document.createElement('div');
+  info.className = 'website-info';
+  const nameEl = document.createElement('strong');
+  nameEl.textContent = displayHostFromUrl(url);
+  info.appendChild(nameEl);
+  const desc = document.createElement('span');
+  desc.className = 'website-desc';
+  desc.textContent = url;
+  info.appendChild(desc);
+  row.appendChild(info);
+
+  const roles = document.createElement('div');
+  roles.className = 'website-roles';
+  const tag = document.createElement('span');
+  tag.className = 'site-tag';
+  tag.textContent = 'Custom · Source';
+  roles.appendChild(tag);
+  row.appendChild(roles);
+
+  const actions = document.createElement('div');
+  actions.className = 'website-config';
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'custom-feed-delete';
+  del.textContent = 'Remove';
+  del.addEventListener('click', () => {
+    state.config.sites.rss.feeds.splice(idx, 1);
+    renderWebsites();
+  });
+  actions.appendChild(del);
+  row.appendChild(actions);
+  return row;
+}
+
+function displayHostFromUrl(url) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
+function addCustomFeed() {
+  const input = document.getElementById('add-website-url');
+  const url = (input?.value || '').trim();
+  if (!url) return;
+  try { new URL(url); } catch { setStatus('Invalid URL', 'error'); return; }
+  if (!state.config.sites) state.config.sites = {};
+  if (!state.config.sites.rss) state.config.sites.rss = { enabled: true, feeds: [] };
+  if (!Array.isArray(state.config.sites.rss.feeds)) state.config.sites.rss.feeds = [];
+  if (state.config.sites.rss.feeds.includes(url)) {
+    setStatus('Feed already added', 'error');
     return;
   }
-  state.config.saved_runs.forEach((run, idx) => {
-    list.appendChild(renderSavedRunCard(run, idx));
-  });
+  state.config.sites.rss.feeds.push(url);
+  // Auto-enable the RSS source so the new feed actually flows through.
+  state.config.sites.rss.enabled = true;
+  input.value = '';
+  renderWebsites();
+  clearStatus();
 }
 
-function renderSavedRunCard(run, idx) {
-  const card = document.createElement('div');
-  card.className = 'saved-run';
-  if (!run.enabled) card.classList.add('disabled');
-
-  const head = document.createElement('div');
-  head.className = 'saved-run-head';
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.checked = !!run.enabled;
-  checkbox.addEventListener('change', () => {
-    run.enabled = checkbox.checked;
-    card.classList.toggle('disabled', !run.enabled);
-  });
-  head.appendChild(checkbox);
-
-  const nameInput = document.createElement('input');
-  nameInput.type = 'text';
-  nameInput.className = 'saved-run-name';
-  nameInput.value = run.name || '';
-  nameInput.placeholder = 'Saved run name';
-  nameInput.addEventListener('input', () => { run.name = nameInput.value; });
-  head.appendChild(nameInput);
-
-  const del = document.createElement('button');
-  del.className = 'saved-run-delete';
-  del.textContent = '×';
-  del.title = 'Delete this saved run';
-  del.addEventListener('click', () => {
-    if (!confirm(`Delete saved run "${run.name}"?`)) return;
-    state.config.saved_runs.splice(idx, 1);
-    renderSavedRuns();
-  });
-  head.appendChild(del);
-
-  card.appendChild(head);
-
-  // Goal textarea
-  const goalLabel = document.createElement('label');
-  goalLabel.textContent = 'Goal';
-  card.appendChild(goalLabel);
-  const goal = document.createElement('textarea');
-  goal.rows = 3;
-  goal.value = run.goal || '';
-  goal.placeholder = 'e.g. Daily X-post if I shipped or learned something yesterday.';
-  goal.addEventListener('input', () => { run.goal = goal.value; });
-  card.appendChild(goal);
-
-  // Targets multi-select (chips of available targets)
-  const targetsLabel = document.createElement('label');
-  targetsLabel.textContent = 'Targets';
-  card.appendChild(targetsLabel);
-  const tgtRow = document.createElement('div');
-  tgtRow.className = 'saved-run-targets';
-  TARGETS.forEach(t => {
-    const lbl = document.createElement('label');
-    lbl.className = 'saved-run-target';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = Array.isArray(run.targets) && run.targets.includes(t.id);
-    cb.addEventListener('change', () => {
-      if (!Array.isArray(run.targets)) run.targets = [];
-      if (cb.checked) {
-        if (!run.targets.includes(t.id)) run.targets.push(t.id);
-      } else {
-        run.targets = run.targets.filter(id => id !== t.id);
-      }
-    });
-    lbl.appendChild(cb);
-    lbl.appendChild(document.createTextNode(' ' + t.name));
-    tgtRow.appendChild(lbl);
-  });
-  card.appendChild(tgtRow);
-
-  // Cadence input
-  const cadLabel = document.createElement('label');
-  cadLabel.textContent = 'Cadence (cron, blank = on-demand only)';
-  card.appendChild(cadLabel);
-  const cad = document.createElement('input');
-  cad.type = 'text';
-  cad.className = 'saved-run-cadence';
-  cad.value = run.cadence || '';
-  cad.placeholder = '0 8 * * *';
-  cad.addEventListener('input', () => { run.cadence = cad.value.trim(); });
-  card.appendChild(cad);
-
-  return card;
-}
-
-document.getElementById('add-saved-run-btn')?.addEventListener('click', () => {
-  if (!Array.isArray(state.config.saved_runs)) state.config.saved_runs = [];
-  state.config.saved_runs.push(NEW_SAVED_RUN_TEMPLATE());
-  renderSavedRuns();
-});
-
-function renderGrid(elementId, catalog, configSection) {
-  const grid = document.getElementById(elementId);
-  grid.innerHTML = '';
-  catalog.forEach((item) => {
-    grid.appendChild(renderCard(item, configSection));
-  });
-}
-
-function renderCard(item, configSection) {
-  if (!configSection[item.id]) configSection[item.id] = { enabled: false };
-  const cfg = configSection[item.id];
-
-  const card = document.createElement('div');
-  card.className = 'site-card';
-  if (!cfg.enabled) card.classList.add('disabled');
-
-  const head = document.createElement('div');
-  head.className = 'site-head';
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.checked = !!cfg.enabled;
-  checkbox.addEventListener('change', () => {
-    cfg.enabled = checkbox.checked;
-    card.classList.toggle('disabled', !cfg.enabled);
-  });
-  const name = document.createElement('span');
-  name.className = 'site-name';
-  name.textContent = item.name;
-  head.appendChild(checkbox);
-  head.appendChild(name);
-  if (item.tag) {
-    const tag = document.createElement('span');
-    tag.className = 'site-tag';
-    tag.textContent = item.tag;
-    head.appendChild(tag);
+document.getElementById('add-website-btn')?.addEventListener('click', addCustomFeed);
+document.getElementById('add-website-url')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addCustomFeed();
   }
-  card.appendChild(head);
-
-  const desc = document.createElement('div');
-  desc.className = 'site-desc';
-  desc.textContent = item.desc;
-  card.appendChild(desc);
-
-  (item.fields || []).forEach((field) => {
-    if (field.kind === 'chips') {
-      card.appendChild(renderChipField(cfg, field));
-    } else if (field.kind === 'range') {
-      card.appendChild(renderRangeField(cfg, field));
-    } else if (field.kind === 'text') {
-      card.appendChild(renderTextField(cfg, field));
-    }
-  });
-
-  return card;
-}
+});
 
 function renderChipField(cfg, field) {
   if (!Array.isArray(cfg[field.key])) cfg[field.key] = [];
@@ -444,11 +462,6 @@ async function save() {
     state.brief = document.getElementById('brief-text').value;
     await writeFile(BRIEF_PATH, state.brief);
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
-    // Regenerate cron-scheduled missions for any saved_runs that
-    // changed (added / enabled / cadence-edited / disabled / removed).
-    // Idempotent — generate-missions.sh handles add+update+cleanup.
-    setStatus('Saved. Regenerating missions…', 'loading');
-    await runBash(`bash "${SKILL_DIR}/scripts/generate-missions.sh"`);
     setStatus('Saved.', 'ok');
     setTimeout(clearStatus, 2500);
   } catch (err) {

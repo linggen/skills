@@ -104,15 +104,15 @@ prompts.
 | `FetchLobsters` | `/newest.json` | research-market, discover-customers |
 | `FetchArxiv` | OAI/Atom for CS.AI/LG/CL | research-market |
 | `FetchRSS` | configured RSS/Atom feeds | research-market, discover-customers |
-
-### Planned (v1.5)
-
-| Tool | Source | Capability uses |
-|:-----|:-------|:----------------|
 | `FetchGoogleTrendsDaily` | `trends.google.com/trending/rss?geo=<region>` | research-market |
 | `FetchGitHubTrending` | scrape `github.com/trending/<lang>?since=daily` | research-market |
 | `FetchProductHuntRSS` | `producthunt.com/feed` | research-market, discover-customers |
 | `FetchWikipediaPageviews` | `wikimedia.org/api/rest_v1/metrics/pageviews/...` for brief-derived topics | research-market |
+
+### Planned
+
+| Tool | Source | Capability uses |
+|:-----|:-------|:----------------|
 | `FetchRedditRising` | `/r/<sub>/rising.json` (extends FetchReddit) | discover-customers |
 
 Each new tool: ~30 lines of bash, one entry in SKILL.md frontmatter,
@@ -307,7 +307,7 @@ Yesterday's session is its own file.
   "runs": [
     {
       "run_id": "...",
-      "trigger": "saved-run|manual|chip|chat",
+      "trigger": "manual|chip|chat|mission",
       "goal": "Daily X-post if I shipped or learned",
       "started_at": "...",
       "completed_at": "...",

@@ -747,14 +747,117 @@ function sendChatMessage(text) {
   state.chat.send(text);
 }
 
-function focusChat() {
-  // No direct "focus iframe input" hook yet; just visually pulse.
+// ---- Chat panel drag-to-resize -------------------------------------------
+
+const CHAT_WIDTH_KEY = 'pulse.chatWidth';
+const CHAT_WIDTH_MIN = 320;
+const CHAT_WIDTH_MAX = 900;
+
+function wireChatResizer() {
+  const app = document.querySelector('.app');
   const panel = document.getElementById('chat-panel');
-  if (panel) {
-    panel.style.transition = 'box-shadow 0.2s';
-    panel.style.boxShadow = '0 0 0 2px var(--accent)';
-    setTimeout(() => { panel.style.boxShadow = ''; }, 600);
+  if (!app || !panel) return;
+
+  // Restore persisted width.
+  const saved = parseInt(localStorage.getItem(CHAT_WIDTH_KEY), 10);
+  if (Number.isFinite(saved) && saved >= CHAT_WIDTH_MIN && saved <= CHAT_WIDTH_MAX) {
+    app.style.setProperty('--chat-width', saved + 'px');
   }
+
+  // Inject the drag handle on the panel's left edge.
+  const handle = document.createElement('div');
+  handle.className = 'chat-resizer';
+  handle.title = 'Drag to resize chat panel';
+  panel.prepend(handle);
+
+  let dragging = false;
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    dragging = true;
+    handle.classList.add('dragging');
+    document.body.classList.add('chat-resizing');
+  });
+
+  // Listen on document so the drag survives the cursor leaving the handle.
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const w = Math.min(CHAT_WIDTH_MAX, Math.max(CHAT_WIDTH_MIN, window.innerWidth - e.clientX));
+    app.style.setProperty('--chat-width', w + 'px');
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('dragging');
+    document.body.classList.remove('chat-resizing');
+    // Persist the final width.
+    const cs = getComputedStyle(app).getPropertyValue('--chat-width').trim();
+    const px = parseInt(cs, 10);
+    if (Number.isFinite(px)) localStorage.setItem(CHAT_WIDTH_KEY, String(px));
+  });
+}
+
+function focusChat() {
+  // "+ New run" should give the user a clear, visible affordance to type a
+  // goal. Earlier attempts (border pulse, addMessage into the iframe) failed
+  // because the iframe's chat store filters by agent and our injected
+  // message gets dropped — and a 600ms border pulse alone reads as "no
+  // reaction." Instead, insert an inline goal input directly into pulse's
+  // own DOM, right below the action-chips row. User types → Enter sends.
+  const existing = document.getElementById('new-run-input-row');
+  if (existing) {
+    existing.querySelector('input')?.focus();
+    return;
+  }
+  const chipsRow = document.querySelector('.action-chips');
+  if (!chipsRow) return;
+
+  const row = document.createElement('div');
+  row.id = 'new-run-input-row';
+  row.className = 'new-run-input-row';
+
+  const label = document.createElement('span');
+  label.className = 'new-run-input-label';
+  label.textContent = '▶';
+  row.appendChild(label);
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'new-run-input';
+  input.placeholder = 'Type your run goal — Enter to send, Esc to cancel';
+  input.autocomplete = 'off';
+  row.appendChild(input);
+
+  const close = () => row.remove();
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const goal = input.value.trim();
+      if (goal) {
+        sendChatMessage(goal);
+        close();
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      close();
+    }
+  });
+
+  // Click-outside to close. Skip the same tick to avoid catching the
+  // +New run click that opened it.
+  setTimeout(() => {
+    document.addEventListener('click', function clickAway(e) {
+      if (!row.contains(e.target) && e.target.dataset?.chip !== 'new-run') {
+        document.removeEventListener('click', clickAway);
+        close();
+      }
+    });
+  }, 0);
+
+  chipsRow.after(row);
+  // Focus on next frame so the appended input is in the document.
+  requestAnimationFrame(() => input.focus());
 }
 
 // ---- Helpers -------------------------------------------------------------
@@ -775,6 +878,7 @@ async function init() {
   await loadStatusStrip();
   wireChips();
   wireCardActions();
+  wireChatResizer();
   await mountChat();
   // Lazy: archive counts after first paint so the sidebar shows real numbers.
   refreshArchiveCounts().catch(err => console.warn('[pulse] archive counts failed', err));

@@ -3,9 +3,9 @@ set -euo pipefail
 #
 # install.sh — install the pulse skill into Linggen.
 #
-# Pulse is Linggen-only — runtime, settings page, and saved-run
-# scheduling depend on Linggen. Claude Code / Codex can read the skill
-# but the on-demand UI requires Linggen.
+# Pulse is Linggen-only — runtime and settings page depend on Linggen.
+# Claude Code / Codex can read the skill but the on-demand UI requires
+# Linggen.
 #
 # Usage:
 #   bash install.sh
@@ -52,7 +52,7 @@ mkdir -p "$SKILL_DIR/scripts" "$SKILL_DIR/scripts/sites" "$SKILL_DIR/references"
 # into $SKILL_DIR before running this script — so $SOURCE_DIR and
 # $SKILL_DIR point at the same files and `install` would abort with
 # "same file" (BSD exit 64). Skip the copy block in that case and just
-# run the seeding/missions step below.
+# run the seeding step below.
 SOURCE_REAL="$(cd "$SOURCE_DIR" 2>/dev/null && pwd -P)" || SOURCE_REAL="$SOURCE_DIR"
 SKILL_REAL="$(cd "$SKILL_DIR" 2>/dev/null && pwd -P)" || SKILL_REAL="$SKILL_DIR"
 
@@ -67,7 +67,6 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
     install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
   done
   install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
-  install -m 0755 "$SOURCE_DIR/scripts/generate-missions.sh" "$SKILL_DIR/scripts/generate-missions.sh"
 
   # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
   for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh \
@@ -83,8 +82,8 @@ else
 fi
 
 # Seed config.json from the example on first install. On upgrades,
-# merge in any new top-level keys (e.g. new sites added, saved_runs
-# block introduced) without overwriting the user's existing values.
+# merge in any new top-level keys (e.g. new sites added) without
+# overwriting the user's existing values.
 if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
   install -m 0644 "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.example.json"
 fi
@@ -114,12 +113,6 @@ else
   echo "  Existing $SKILL_DIR/references/brief.md left alone."
 fi
 
-
-# Generate cron-scheduled missions for any enabled saved_runs in
-# config.json. Idempotent — also called by Settings on save so changes
-# to saved_runs take effect immediately.
-echo "Generating missions from saved_runs[]..."
-bash "$SKILL_DIR/scripts/generate-missions.sh"
 
 echo ""
 echo "Done. Pulse skill ready at $SKILL_DIR"

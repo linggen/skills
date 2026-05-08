@@ -19,7 +19,12 @@ CONFIG="$HOME/.linggen/skills/pulse/config.json"
 LANG_PATH=""
 if [[ -f "$CONFIG" ]]; then
   LANG_CFG="$(jq -r '.sites["github-trending"].language // empty' "$CONFIG" 2>/dev/null)"
-  [[ -n "$LANG_CFG" ]] && LANG_PATH="/${LANG_CFG}"
+  # Restrict to the lowercase-letter-digit-plus-hyphen shape GitHub itself
+  # uses (rust, c, c++, modern-fortran, …). Anything else falls back to the
+  # all-languages page rather than risking URL-fragment injection.
+  if [[ "$LANG_CFG" =~ ^[a-z0-9+-]+$ ]]; then
+    LANG_PATH="/${LANG_CFG}"
+  fi
 fi
 
 URL="https://github.com/trending${LANG_PATH}?since=daily"

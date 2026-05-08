@@ -34,41 +34,26 @@
     </section>
 
     <section class="card">
-      <h2>Sources</h2>
+      <h2>Websites</h2>
       <p class="card-sub">
-        Where to find external signal during Phase 3. Each enabled
-        site corresponds to a registered tool (FetchHackerNews,
-        FetchReddit, etc.) the agent calls.
+        Where Pulse fetches signal from (<strong>Source</strong>) and where
+        it can draft for (<strong>Target</strong>). Each role toggles
+        independently — Reddit is the only built-in site with both.
+        Source tools (<code>FetchHackerNews</code>, <code>FetchReddit</code>, …)
+        and target lanes (format constraints in
+        <code>references/lane-templates.md</code>) come from SKILL.md.
       </p>
-      <div class="grid-2col" id="sources-grid"></div>
-    </section>
-
-    <section class="card">
-      <h2>Targets</h2>
-      <p class="card-sub">
-        Where to draft for during Phase 4. Each enabled lane has its
-        format constraints in <code>references/lane-templates.md</code>.
-      </p>
-      <div class="grid-2col" id="targets-grid"></div>
-    </section>
-
-    <section class="card">
-      <h2>Saved runs</h2>
-      <p class="card-sub">
-        Named goal templates. Each saved run carries a goal text, a
-        list of targets to draft for, and an optional cron schedule.
-        Enable a run with a cadence and Pulse generates a cron mission
-        on save — it'll fire automatically. Toggle off to remove the
-        cron.
-      </p>
-      <div id="saved-runs-list"></div>
-      <button id="add-saved-run-btn" class="btn-secondary" style="margin-top: 0.5rem">+ Add saved run</button>
+      <div class="websites-list" id="websites-list"></div>
+      <div class="add-website-row">
+        <input type="url" id="add-website-url" placeholder="https://example.com/feed.xml" />
+        <button id="add-website-btn" class="btn-secondary">+ Add custom feed</button>
+      </div>
       <p class="card-meta">
-        Cron format: <code>min hour dom mon dow</code>. Common patterns:
-        <code>0 8 * * *</code> = daily 8am · <code>0 9 * * 1</code> = Mondays 9am · <code>0 12 * * 1-5</code> = weekdays noon.
-        Leave cadence blank to make a saved run on-demand only.
+        Custom URLs are added as RSS / Atom feeds (source-only). Pulse reads
+        them via the same fetcher used for the built-in RSS source.
       </p>
     </section>
+
 
     <div class="settings-actions">
       <button id="save-btn" class="btn-primary">Save</button>

@@ -42,7 +42,8 @@ ENDPOINT="${MODE}.json?limit=${LIMIT}"
 [[ "$MODE" == "top" ]] && ENDPOINT="top.json?limit=${LIMIT}&t=day"
 
 (
-  for sub in $subs; do
+  while IFS= read -r sub; do
+    [[ -z "$sub" ]] && continue
     curl -fsS --max-time 10 \
       -A "linggen-pulse/0.1" \
       "https://www.reddit.com/r/${sub}/${ENDPOINT}" 2>/dev/null \
@@ -56,5 +57,5 @@ ENDPOINT="${MODE}.json?limit=${LIMIT}"
           age_hours: (((now - .created_utc) / 3600) | floor),
           summary: ((.selftext // "") | .[:300])
         }' 2>/dev/null
-  done
+  done <<< "$subs"
 ) | jq -s '.' 2>/dev/null || echo "[]"

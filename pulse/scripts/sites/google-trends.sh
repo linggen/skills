@@ -13,7 +13,12 @@ CONFIG="$HOME/.linggen/skills/pulse/config.json"
 REGION="US"
 if [[ -f "$CONFIG" ]]; then
   REGION_CFG="$(jq -r '.sites["google-trends"].region // empty' "$CONFIG" 2>/dev/null)"
-  [[ -n "$REGION_CFG" ]] && REGION="$REGION_CFG"
+  # Restrict to ISO-3166-style two-letter region codes — anything else is
+  # silently dropped to the US default. Prevents a hand-edited or compromised
+  # config.json from injecting query-string fragments via this URL path.
+  if [[ "$REGION_CFG" =~ ^[A-Za-z]{2}$ ]]; then
+    REGION="${REGION_CFG^^}"
+  fi
 fi
 
 URL="https://trends.google.com/trending/rss?geo=${REGION}"

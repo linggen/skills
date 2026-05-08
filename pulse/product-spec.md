@@ -73,7 +73,6 @@ The page is the loop. Library is the archive. Settings is plumbing. Three surfac
       lobsters.sh
       arxiv.sh
       rss.sh
-    # (saved-run entry script — future, generated per saved run from settings)
 ```
 
 **Output JSON schema** (one file per run, all sections optional):
@@ -103,6 +102,10 @@ Each is a `tier: read` adapter script, called by the agent in `research-market` 
 - `FetchLobsters`
 - `FetchArxiv`
 - `FetchRSS` (reads `config.json` for feeds)
+- `FetchGoogleTrendsDaily` (reads `config.json` for region)
+- `FetchGitHubTrending` (reads `config.json` for language)
+- `FetchProductHuntRSS`
+- `FetchWikipediaPageviews` (brief-derived topics)
 
 New site adapters drop into `scripts/sites/<id>.sh` + add a tools entry in SKILL.md frontmatter. No engine change.
 
@@ -138,8 +141,6 @@ A run carries a single free-text goal. The agent reads `brief.md` + the goal + t
 - which configured lanes to draft for
 - whether to skip if the goal doesn't earn output
 
-Saved runs (settings page) are *named goal templates* with optional cadence — the daily trigger is just a saved run scheduled at 08:00. There is no separate "daily mission" concept; missions are generated from saved runs that have a cron set.
-
 ## Goal examples
 
 | Goal text the user might type | Capabilities the agent invokes |
@@ -174,9 +175,8 @@ Same skill, same protocol, same data shape. Only the goal text changes.
 | 2. Free-text goal field on the run | next | replaces hardcoded "scan 24h, draft" with `goal` parameter |
 | 3. Project entity + project-aware scopes | next | `project.sh` collector reads README/docs/structure |
 | 4. Pulse page UI (3 columns + cards) | next | replaces the current single-day review page |
-| 5. Saved runs + per-run scheduling | next | unifies missions and ad-hoc into one model |
-| 6. Multi-project model | future | per-project briefs, per-project sources |
-| 7. Linggen-app premium tier | future | managed sources, scheduled runs, history retention |
+| 5. Multi-project model | future | per-project briefs, per-project sources |
+| 6. Linggen-app premium tier | future | managed sources, scheduled runs, history retention |
 
 ## Related docs
 
