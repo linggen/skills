@@ -717,7 +717,7 @@ async function pushLocalContextToChat(data) {
       lines.push(`  - ${f.label}`);
     }
   }
-  state.chat.sendHidden(lines.join('\n'));
+  sendChatHidden(lines.join('\n'));
 }
 
 // Pre-fetch the user's recent own_comment URLs from reddit-mentions.sh
@@ -1166,7 +1166,7 @@ async function sendInitPrompt() {
   if (brief) {
     lines.push('', 'Brief (case description, voice rules, hard rules):', brief);
   }
-  state.chat.sendHidden(lines.join('\n'));
+  sendChatHidden(lines.join('\n'));
 }
 
 function sendChatMessage(text) {
@@ -1183,13 +1183,41 @@ function sendChatMessage(text) {
 // body_patch artifacts) — only the orchestration prompt is hidden.
 // Use this for every internal trigger; reserve sendChatMessage for
 // user-typed input that should be visible as theirs.
+//
+// Sanitizes home-dir paths: `/Users/<username>/foo` → `~/foo`. Small
+// local models (qwen3.6, etc.) latch onto the username segment and
+// hallucinate GitHub URLs like `github.com/<username>/...` in drafts.
+// The username is the OS user, not a handle — strip it before the
+// model ever sees it. Discovered after qwen3.6 fabricated
+// `github.com/lianghuang/linggen` in a comment draft.
 function sendChatHidden(text) {
   if (!state.chat) {
     console.warn('[pulse] chat not ready, queueing not yet implemented');
     return;
   }
-  state.chat.sendHidden(text);
+  state.chat.sendHidden(sanitizeHomePaths(text));
 }
+
+let cachedHomeDir = null;
+async function getHomeDir() {
+  if (cachedHomeDir != null) return cachedHomeDir;
+  try {
+    const out = await runBash('printf "%s" "$HOME"');
+    cachedHomeDir = (out || '').trim() || null;
+  } catch { cachedHomeDir = null; }
+  return cachedHomeDir;
+}
+// Synchronous variant of the substitution. Reads cachedHomeDir; safe
+// to call before getHomeDir() resolves (just no-ops on first send).
+function sanitizeHomePaths(text) {
+  if (!text || !cachedHomeDir) return text;
+  // Replace /Users/<name>/ → ~/ and bare /Users/<name> → ~
+  const home = cachedHomeDir;
+  return text.split(home + '/').join('~/').split(home).join('~');
+}
+// Kick off home-dir lookup so the cache is populated by the time the
+// first hidden push happens.
+getHomeDir().catch(() => {});
 
 // ---- Chat panel drag-to-resize -------------------------------------------
 
