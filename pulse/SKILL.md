@@ -59,6 +59,24 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/reddit.sh"
     tier: read
     timeout_ms: 30000
+  - name: FetchRedditInbox
+    description: >-
+      Fetch the connected Reddit account's inbox — DMs, comment
+      replies, post replies, username mentions. Requires the user to
+      have connected their account via Settings (OAuth refresh_token
+      stored in sites.reddit.refresh_token). Returns
+      {items: [{kind, id, subject, body, author, url, created_iso,
+      unread}], count, errors}. kind ∈ message | comment_reply |
+      post_reply | username_mention | other. When errors[] is
+      non-empty (e.g. "reddit not connected"), surface that to the
+      user and fall back to FetchReddit-based public mention scraping
+      instead of pretending the inbox is empty. PRIORITY: replies to
+      the user's own posts and DMs to the user are higher signal than
+      generic mentions — list them first in the mentions / replies_due
+      sections.
+    cmd: "$SKILL_DIR/scripts/sites/reddit-inbox.sh"
+    tier: read
+    timeout_ms: 30000
   - name: FetchLobsters
     description: >-
       Fetch the lobste.rs newest feed. Returns JSON array of

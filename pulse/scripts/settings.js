@@ -24,12 +24,13 @@ const WEBSITES = [
   },
   {
     name: 'Reddit',
-    desc: '25 newest threads from each subreddit (Source). Per-thread comment drafts (Target). Optional username lets monitor-mentions find replies on your own posts and mentions of your handle.',
+    desc: '25 newest threads from each subreddit (Source). Per-thread comment drafts (Target). Connect your account to also surface inbox replies and DMs in Gather web.',
     source_id: 'reddit',
     target_id: 'reddit-comment',
     source_fields: [
       { kind: 'chips', key: 'subs', label: 'Subreddits' },
       { kind: 'text', key: 'username', label: 'My Reddit username (optional)', placeholder: 'e.g. linggen — without the u/ prefix' },
+      { kind: 'oauth-reddit', key: 'oauth', label: 'Account (for inbox / DMs / mentions)' },
     ],
   },
   {
@@ -302,9 +303,10 @@ function rolePlaceholder() {
 }
 
 function renderField(cfg, field) {
-  if (field.kind === 'chips')  return renderChipField(cfg, field);
-  if (field.kind === 'range')  return renderRangeField(cfg, field);
-  if (field.kind === 'text')   return renderTextField(cfg, field);
+  if (field.kind === 'chips')         return renderChipField(cfg, field);
+  if (field.kind === 'range')         return renderRangeField(cfg, field);
+  if (field.kind === 'text')          return renderTextField(cfg, field);
+  if (field.kind === 'oauth-reddit')  return renderRedditOAuthField(cfg, field);
   return document.createDocumentFragment();
 }
 
@@ -450,6 +452,249 @@ function renderTextField(cfg, field) {
   input.addEventListener('input', () => { cfg[field.key] = input.value.trim(); });
   wrap.appendChild(input);
   return wrap;
+}
+
+// ---- Reddit OAuth field --------------------------------------------------
+//
+// Local-only (v1). Detects local-mode via hostname; remote sessions get a
+// disabled notice ("DMs need local mode — public mentions still work"). The
+// flow:
+//
+//   1. User registers a Reddit "installed app" at reddit.com/prefs/apps,
+//      using the redirect URI we display here (exact match required).
+//   2. User pastes the resulting client_id into the input field.
+//   3. User clicks Connect → opens reddit.com/api/v1/authorize in a new
+//      tab with a random `state` token we hold onto.
+//   4. Reddit redirects to /apps/pulse/oauth-reddit.html?code=…&state=…
+//      which posts to window.opener with the code; we validate state and
+//      do the code → refresh_token exchange via /api/bash + curl.
+//   5. refresh_token lands in config.json under sites.reddit.refresh_token.
+//      Disconnect clears it.
+
+const REDDIT_OAUTH_SCOPES = 'identity read privatemessages history';
+let pendingRedditOauth = null;   // { state, client_id, redirect_uri, resolve, reject, timer }
+
+function isLocalMode() {
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h === '[::1]';
+}
+
+function redditRedirectUri() {
+  // The path the engine serves the static OAuth-callback HTML from. Must
+  // match EXACTLY what the user registers with Reddit. We surface the live
+  // value so the user can copy/paste, but it stays constant across runs on
+  // the same machine + port. Skill assets are served from
+  // /apps/<skill>/scripts/<file> by the engine's static-app router.
+  return `${window.location.origin}/apps/pulse/scripts/oauth-reddit.html`;
+}
+
+function renderRedditOAuthField(cfg, field) {
+  const wrap = document.createElement('div');
+  wrap.className = 'oauth-row';
+  const label = document.createElement('label');
+  label.textContent = field.label;
+  wrap.appendChild(label);
+
+  if (!isLocalMode()) {
+    const notice = document.createElement('div');
+    notice.className = 'oauth-remote-notice';
+    notice.textContent = 'Reddit account connect is local-mode only — public mentions still work remotely, but DMs / inbox need a local session.';
+    wrap.appendChild(notice);
+    return wrap;
+  }
+
+  if (cfg.refresh_token) {
+    const status = document.createElement('div');
+    status.className = 'oauth-status connected';
+    status.innerHTML = `
+      <span class="oauth-dot ok"></span>
+      <span>Connected${cfg.username ? ` as <b>u/${escapeText(cfg.username)}</b>` : ''}</span>
+    `;
+    wrap.appendChild(status);
+
+    const disconnectBtn = document.createElement('button');
+    disconnectBtn.type = 'button';
+    disconnectBtn.className = 'btn-secondary oauth-disconnect';
+    disconnectBtn.textContent = 'Disconnect';
+    disconnectBtn.addEventListener('click', () => {
+      if (!confirm('Disconnect Reddit account? Your refresh token will be removed.')) return;
+      delete cfg.refresh_token;
+      delete cfg.client_id;
+      renderWebsites();
+      markDirty();
+    });
+    wrap.appendChild(disconnectBtn);
+    return wrap;
+  }
+
+  // Not connected — show client_id input + Connect button + instructions.
+  const instructions = document.createElement('div');
+  instructions.className = 'oauth-instructions';
+  instructions.innerHTML = `
+    <ol>
+      <li>Open <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener noreferrer">reddit.com/prefs/apps</a>, scroll to bottom, click <b>create another app</b>.</li>
+      <li>Choose <b>installed app</b>. Name = anything. <b>redirect uri</b>: copy the value below — exact match required.</li>
+      <li>Paste the resulting <b>client_id</b> (the short string under the app name) into the field below.</li>
+      <li>Click <b>Connect Reddit</b>. A new tab opens for you to approve.</li>
+    </ol>
+  `;
+  wrap.appendChild(instructions);
+
+  const redirectRow = document.createElement('div');
+  redirectRow.className = 'oauth-redirect-row';
+  const redirectLabel = document.createElement('span');
+  redirectLabel.className = 'oauth-redirect-label';
+  redirectLabel.textContent = 'Redirect URI:';
+  const redirectVal = document.createElement('code');
+  redirectVal.className = 'oauth-redirect-val';
+  redirectVal.textContent = redditRedirectUri();
+  const copyBtn = document.createElement('button');
+  copyBtn.type = 'button';
+  copyBtn.className = 'oauth-copy';
+  copyBtn.textContent = 'Copy';
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(redditRedirectUri());
+    copyBtn.textContent = 'Copied';
+    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1200);
+  });
+  redirectRow.append(redirectLabel, redirectVal, copyBtn);
+  wrap.appendChild(redirectRow);
+
+  const idRow = document.createElement('div');
+  idRow.className = 'oauth-id-row';
+  const idInput = document.createElement('input');
+  idInput.type = 'text';
+  idInput.placeholder = 'client_id (short string under app name)';
+  idInput.value = cfg.client_id || '';
+  idInput.addEventListener('input', () => { cfg.client_id = idInput.value.trim(); });
+  const connectBtn = document.createElement('button');
+  connectBtn.type = 'button';
+  connectBtn.className = 'btn-primary oauth-connect';
+  connectBtn.textContent = 'Connect Reddit';
+  connectBtn.addEventListener('click', () => startRedditOAuth(cfg));
+  idRow.append(idInput, connectBtn);
+  wrap.appendChild(idRow);
+
+  const statusLine = document.createElement('div');
+  statusLine.className = 'oauth-status-line';
+  wrap.appendChild(statusLine);
+
+  // Surface in-flight progress / errors here without taking over the global banner.
+  return wrap;
+}
+
+async function startRedditOAuth(cfg) {
+  const clientId = (cfg.client_id || '').trim();
+  if (!clientId) {
+    setStatus('Paste your Reddit client_id first.', 'error');
+    return;
+  }
+  // Random state token — used to defend against an unrelated tab firing a
+  // forged postMessage at us. Hex, no padding, plenty long.
+  const stateBytes = new Uint8Array(16);
+  crypto.getRandomValues(stateBytes);
+  const stateToken = Array.from(stateBytes, b => b.toString(16).padStart(2, '0')).join('');
+  const redirect = redditRedirectUri();
+  const authUrl = new URL('https://www.reddit.com/api/v1/authorize');
+  authUrl.searchParams.set('client_id', clientId);
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('state', stateToken);
+  authUrl.searchParams.set('redirect_uri', redirect);
+  authUrl.searchParams.set('duration', 'permanent');
+  authUrl.searchParams.set('scope', REDDIT_OAUTH_SCOPES);
+
+  pendingRedditOauth = { state: stateToken, client_id: clientId, redirect_uri: redirect };
+  setStatus('Opening Reddit authorization…', 'loading');
+  const popup = window.open(authUrl.toString(), '_blank', 'noopener,noreferrer');
+  if (!popup) {
+    setStatus('Popup blocked — allow popups for this site and try again.', 'error');
+    pendingRedditOauth = null;
+  }
+}
+
+window.addEventListener('message', async (e) => {
+  // Only accept messages from the same origin (the callback page is served
+  // by our own engine on the same host).
+  if (e.origin !== window.location.origin) return;
+  const msg = e.data;
+  if (!msg || msg.type !== 'pulse-reddit-oauth') return;
+  if (!pendingRedditOauth || msg.state !== pendingRedditOauth.state) {
+    console.warn('[pulse] reddit oauth: state mismatch or no pending request — ignoring');
+    return;
+  }
+  const { client_id, redirect_uri } = pendingRedditOauth;
+  pendingRedditOauth = null;
+
+  if (msg.error) {
+    setStatus(`Reddit authorization failed: ${msg.error}`, 'error');
+    return;
+  }
+  if (!msg.code) {
+    setStatus('Reddit authorization returned no code.', 'error');
+    return;
+  }
+  setStatus('Exchanging code for refresh token…', 'loading');
+  try {
+    const refresh = await exchangeRedditCode(client_id, redirect_uri, msg.code);
+    if (!refresh) throw new Error('no refresh_token in response');
+    // Persist into state.config.sites.reddit and re-render. The Save button
+    // will pick it up alongside other changes (dirty already marked by the
+    // delegated listener; refresh-token assignment doesn't fire input, but
+    // we mark explicitly here).
+    if (!state.config.sites) state.config.sites = {};
+    if (!state.config.sites.reddit) state.config.sites.reddit = { enabled: true };
+    state.config.sites.reddit.client_id = client_id;
+    state.config.sites.reddit.refresh_token = refresh.refresh_token;
+    state.config.sites.reddit.enabled = true;
+    // Best-effort: fetch the connected username so the UI shows "u/<name>".
+    try {
+      const me = await fetchRedditMe(refresh.access_token);
+      if (me?.name) state.config.sites.reddit.username = me.name;
+    } catch {}
+    renderWebsites();
+    markDirty();
+    setStatus('✓ Reddit connected. Click Save to persist.', 'ok');
+  } catch (err) {
+    console.warn('[pulse] reddit oauth exchange failed', err);
+    setStatus(`Token exchange failed: ${err.message || err}`, 'error');
+  }
+});
+
+// curl POST /api/v1/access_token with Basic auth (client_id : empty
+// password — installed-app spec). Returns the parsed JSON response.
+async function exchangeRedditCode(clientId, redirectUri, code) {
+  // Build a base64 of "<client_id>:" for the Basic header.
+  const basic = btoa(`${clientId}:`);
+  // Reddit requires a unique User-Agent.
+  const ua = `pulse/0.1 by /u/${(state.config.sites?.reddit?.username || 'anonymous')}`;
+  // Use /api/bash + curl rather than fetch() — Reddit's CORS policy refuses
+  // cross-origin token exchanges from browsers, but server-side curl works
+  // and keeps the secret-ish client_id on the user's machine anyway.
+  const body = `grant_type=authorization_code&code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+  const cmd = `curl -sS -X POST 'https://www.reddit.com/api/v1/access_token' \
+    -H 'Authorization: Basic ${basic}' \
+    -H 'User-Agent: ${ua.replace(/'/g, "'\\''")}' \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    --data '${body}'`;
+  const out = await runBash(cmd);
+  const parsed = JSON.parse(out);
+  if (parsed.error) throw new Error(parsed.error);
+  return parsed;
+}
+
+async function fetchRedditMe(accessToken) {
+  const ua = 'pulse/0.1 by /u/anonymous';
+  const cmd = `curl -sS 'https://oauth.reddit.com/api/v1/me' \
+    -H 'Authorization: Bearer ${accessToken}' \
+    -H 'User-Agent: ${ua}'`;
+  const out = await runBash(cmd);
+  return JSON.parse(out);
+}
+
+function escapeText(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[c]);
 }
 
 function renderRangeField(cfg, field) {

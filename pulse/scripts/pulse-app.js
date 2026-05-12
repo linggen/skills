@@ -747,7 +747,9 @@ async function runGatherWeb() {
     '',
     'Then for each topic, call the most relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS, FetchGoogleTrendsDaily, FetchGitHubTrending) in parallel. Filter results for direct topical fit (score ≥ 0.6).',
     '',
-    'Also run mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
+    'For mention-watching, FIRST call FetchRedditInbox — if the user has connected their Reddit account, this returns their actual replies, DMs, and username mentions. Treat these as the highest-priority items in the mentions / replies_due sections. If FetchRedditInbox\'s errors[] says "reddit not connected" or similar, just skip it and fall back to public-mention scraping via FetchReddit/etc.',
+    '',
+    'Also run public mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
     '',
     'Emit body_patch blocks for `signal`, `discovery`, `mentions`, and `replies_due` sections as appropriate. If nothing scored above the cutoff for a section, emit one `empty` card with a one-line reason. Do NOT draft anything — that\'s the next step.',
   ].join('\n');
