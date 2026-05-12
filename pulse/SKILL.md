@@ -59,19 +59,6 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/reddit.sh"
     tier: read
     timeout_ms: 30000
-  - name: FetchRedditInbox
-    description: >-
-      Fetch the connected Reddit account's inbox — DMs, comment
-      replies, post replies, username mentions. Requires OAuth
-      refresh_token in sites.reddit.refresh_token. Reddit currently
-      gates Data API access behind manual approval (Responsible
-      Builder Policy, Nov 2025), so most users won't have this set up
-      yet — expect errors[]=["reddit not connected"] and fall back to
-      FetchRedditMentions silently. When DOES return data, treat
-      DMs + replies-to-user as highest signal.
-    cmd: "$SKILL_DIR/scripts/sites/reddit-inbox.sh"
-    tier: read
-    timeout_ms: 30000
   - name: FetchRedditMentions
     description: >-
       Public-JSON Reddit monitoring — no auth required. Reads
@@ -81,10 +68,10 @@ tools:
       (c) the user's own recent comments (for tracking responses).
       Returns {items: [{kind, title, body, url, author, sub,
       created_iso, score, num_comments, watched_term}], count,
-      errors}. kind ∈ mention | own_post | own_comment. This is the
-      primary mention surface when FetchRedditInbox isn't available
-      (most users). Anonymous rate limit ~10 req/min — script
-      makes 3 calls per invocation.
+      errors}. kind ∈ mention | own_post | own_comment. Anonymous
+      rate limit ~10 req/min — script makes 3 calls per invocation.
+      The primary mention surface; DMs/inbox are unavailable because
+      Reddit gates Data API OAuth behind manual approval.
     cmd: "$SKILL_DIR/scripts/sites/reddit-mentions.sh"
     tier: read
     timeout_ms: 30000

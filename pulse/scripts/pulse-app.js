@@ -747,7 +747,7 @@ async function runGatherWeb() {
     '',
     'Then for each topic, call the most relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS, FetchGoogleTrendsDaily, FetchGitHubTrending) in parallel. Filter results for direct topical fit (score ≥ 0.6).',
     '',
-    'For mention-watching, call BOTH FetchRedditInbox AND FetchRedditMentions in parallel. FetchRedditInbox needs OAuth (most users will see errors[]=["reddit not connected"] because Reddit gates API access — that\'s fine, silently skip it). FetchRedditMentions uses public JSON and always works as long as sites.reddit.username is set; it returns kind ∈ {mention, own_post, own_comment} for threads where the handle appears, user\'s recent posts, and user\'s recent comments. Surface all of these in the mentions section; map own_post / own_comment kinds to replies_due hints (the user wants to know if anyone replied).',
+    'For mention-watching, call FetchRedditMentions — uses public Reddit JSON, no auth required. Works whenever sites.reddit.username is set. Returns kind ∈ {mention, own_post, own_comment} for (a) threads where the handle appears, (b) the user\'s recent posts, (c) the user\'s recent comments. Surface all of these in the mentions section; map own_post / own_comment kinds to replies_due hints (the user wants to know if anyone replied).',
     '',
     'Also run public mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
     '',
