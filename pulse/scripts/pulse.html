@@ -13,8 +13,18 @@
     <!-- HEADER (full width) -->
     <header class="header">
       <h1>Pulse</h1>
-      <a href="settings.html" title="Configure sources, targets, and brief">⚙ Settings</a>
+      <a href="settings.html" id="settings-link" title="Configure sources, targets, and brief">⚙ Settings</a>
     </header>
+
+    <!-- Settings overlay — loads settings.html in an in-page modal so
+         pulse.html (and the chat iframe) is never unmounted. -->
+    <div class="settings-modal" id="settings-modal" hidden>
+      <div class="settings-modal-backdrop" data-close="1"></div>
+      <div class="settings-modal-panel">
+        <button class="settings-modal-close" id="settings-close" title="Close settings">✕</button>
+        <iframe class="settings-modal-iframe" id="settings-iframe" title="Pulse settings"></iframe>
+      </div>
+    </div>
 
     <!-- LEFT SIDEBAR (sessions) — populated by pulse-app.js from data/ dir -->
     <aside class="sidebar" id="sidebar">
@@ -30,14 +40,20 @@
         <div class="sub" id="session-sub"></div>
       </div>
 
-      <!-- Action chips -->
+      <!-- Action chips. Each chip = a preset goal text the agent dispatches. -->
       <div class="action-chips">
-        <button class="chip primary" data-chip="new-run"><span class="ic">+</span> New run</button>
-        <button class="chip" data-chip="refresh"><span class="ic">↻</span> Refresh today</button>
-        <button class="chip" data-chip="find-threads"><span class="ic">🔍</span> Find threads</button>
-        <button class="chip" data-chip="check-mentions"><span class="ic">@</span> Check mentions</button>
-        <button class="chip" data-chip="recap"><span class="ic">📊</span> Recap</button>
-        <button class="chip" data-chip="more" title="More actions"><span class="ic">⋯</span></button>
+        <button class="chip" data-chip="daily-post" title="Daily short post if I shipped or learned something"><span class="ic">📝</span> Daily post</button>
+        <button class="chip" data-chip="find-threads" title="Find threads worth commenting on across configured subs"><span class="ic">🔍</span> Find threads</button>
+        <button class="chip" data-chip="check-mentions" title="Check for mentions and triage replies on posts"><span class="ic">@</span> Check mentions</button>
+        <button class="chip" data-chip="scan-signal" title="What's happening in my space — landscape and trends"><span class="ic">📡</span> Scan signal</button>
+        <button class="chip" data-chip="recap" title="Weekly recap — what shipped, what learned"><span class="ic">📊</span> Recap</button>
+        <div class="chip-menu-wrap">
+          <button class="chip" data-chip="more" title="More actions"><span class="ic">⋯</span></button>
+          <div class="chip-menu" id="chip-more-menu" hidden>
+            <button class="chip-menu-item" data-more="refresh">Refresh today</button>
+            <button class="chip-menu-item" data-more="draft-from-url">Draft from URL…</button>
+          </div>
+        </div>
       </div>
 
       <!-- Status strip — populated from state/ files -->

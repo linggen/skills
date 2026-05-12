@@ -2,8 +2,10 @@
 # collect.sh — pulse skill context-gathering script.
 #
 # Invoked by the page on session open / new-run. Writes a manifest to
-# /tmp/pulse-manifest-<date>.json describing the user's recent work
-# (sessions, commits, ling-mem facts) within a configurable window.
+# ~/.linggen/skills/pulse/data/manifest-<date>.json describing the
+# user's recent work (sessions, commits, ling-mem facts) within a
+# configurable window. The path lives inside pulse's own data dir so
+# it's covered by pulse's existing edit grant — no /tmp leak.
 #
 # Usage:
 #   bash collect.sh                       # default window: 24h
@@ -57,7 +59,9 @@ case "$WINDOW" in
     ;;
 esac
 
-MANIFEST="/tmp/pulse-manifest-$DATE.json"
+MANIFEST_DIR="$HOME/.linggen/skills/pulse/data"
+mkdir -p "$MANIFEST_DIR"
+MANIFEST="$MANIFEST_DIR/manifest-$DATE.json"
 
 # Voice samples — preload so the agent can read them via this manifest
 # rather than a separate tool call.

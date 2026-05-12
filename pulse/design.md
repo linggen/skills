@@ -20,8 +20,8 @@ guide: |
            ▼                                 ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │  Pulse skill (the agent)                                             │
-│    reads brief.md  +  workspace  +  goal text  +  state layer        │
-│    dispatches capabilities  ──▶  emits body_patches                  │
+│    receives brief via hidden init  +  reads workspace  +  goal text  │
+│    + state layer  · dispatches capabilities  ──▶  emits body_patches │
 └──────────┬──────────────────────┬──────────────────┬────────────────┘
            ▼                      ▼                  ▼
 ┌──────────────────────┐  ┌──────────────────┐  ┌─────────────────────┐
@@ -79,9 +79,10 @@ Capabilities do NOT appear in the UI; users never pick one.
   draft starter, target sub, thread URL).
 
 ### `monitor-mentions`
-- Watchlist auto-derived from `brief.md`: own product names, named
+- Watchlist auto-derived from the brief text (delivered via hidden
+  chat init from `config.brief`): own product names, named
   competitors, user's GitHub login / handles. User can override by
-  adding an explicit `## Watchlist` section to brief.md.
+  adding an explicit `## Watchlist` section to the brief.
 - Pull from: same sources as `discover-customers` plus any past Pulse
   threads the user has posted to (for reply triage).
 - Two outputs:
@@ -195,7 +196,7 @@ State that persists *across* runs. Distinct from per-run output.
   account-health.json     # per-platform karma, throttle status, last-post-at
   launches.json           # active launches: artifact, launch-date, follow-up cadence
   audience.json           # derived: who responds to your posts, common topics
-  watchlist-cache.json    # last-extracted watchlist (for diff against brief.md)
+  watchlist-cache.json    # last-extracted watchlist (for diff against the brief text)
   posted.json             # threads the user posted to (for follow-up reply tracking)
 ```
 
@@ -207,8 +208,8 @@ posted` card action writes a new entry to `posted.json` directly).
 
 ```json
 {
-  "extracted_from": "brief.md",
-  "brief_mtime": "2026-05-06T10:24:00Z",
+  "extracted_from": "config.brief",
+  "brief_hash": "sha1:9fa3e1c2…",
   "extracted_at": "2026-05-06T08:00:00Z",
   "products": ["Sys Doctor", "Linggen", "ling-mem"],
   "competitors": ["CleanMyMac", "Hazel", "DevonThink", "DaisyDisk"],
@@ -216,10 +217,10 @@ posted` card action writes a new entry to `posted.json` directly).
 }
 ```
 
-Re-extracted by `monitor-mentions` when `brief.md` mtime is newer than
-`brief_mtime`. If `brief.md` has an explicit `## Watchlist` section,
-that's parsed verbatim (override path); otherwise the agent extracts
-via LLM.
+Re-extracted by `monitor-mentions` when the SHA-1 of the brief text
+in the current init message differs from `brief_hash`. If the brief
+has an explicit `## Watchlist` section, that's parsed verbatim
+(override path); otherwise the agent extracts via LLM.
 
 ### `posted.json`
 
@@ -294,7 +295,9 @@ State is read by:
 
 ## Auto-derived mentions watchlist
 
-On each run, the agent extracts from `brief.md`:
+On each run, the agent extracts from the brief text already in its
+conversation history (delivered via hidden chat init from
+`config.brief`):
 - **Product names** — the user's own products (e.g., "Sys Doctor",
   "Linggen", "ling-mem")
 - **Competitors named** — anything called out in a comparison or rule
@@ -303,10 +306,10 @@ On each run, the agent extracts from `brief.md`:
   if explicitly stated*
 
 Result is cached in `state/watchlist-cache.json`; re-extracted when
-brief.md mtime changes.
+the brief hash changes.
 
-Override path: user adds an explicit `## Watchlist` section to
-`brief.md`. Pulse merges (override > extracted).
+Override path: user adds an explicit `## Watchlist` section to the
+brief text. Pulse merges (override > extracted).
 
 ## Page state and JSON schema
 

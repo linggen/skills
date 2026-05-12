@@ -24,10 +24,13 @@ const WEBSITES = [
   },
   {
     name: 'Reddit',
-    desc: '25 newest threads from each subreddit (Source). Per-thread comment drafts (Target).',
+    desc: '25 newest threads from each subreddit (Source). Per-thread comment drafts (Target). Optional username lets monitor-mentions find replies on your own posts and mentions of your handle.',
     source_id: 'reddit',
     target_id: 'reddit-comment',
-    source_fields: [{ kind: 'chips', key: 'subs', label: 'Subreddits' }],
+    source_fields: [
+      { kind: 'chips', key: 'subs', label: 'Subreddits' },
+      { kind: 'text', key: 'username', label: 'My Reddit username (optional)', placeholder: 'e.g. linggen — without the u/ prefix' },
+    ],
   },
   {
     name: 'Lobsters',
@@ -474,7 +477,7 @@ async function save() {
     const wsInput = document.getElementById('workspace-path');
     if (wsInput) state.config.workspace_path = wsInput.value.trim();
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
-    setStatus('Saved.', 'ok');
+    setStatus('✓ Settings saved', 'ok');
     setTimeout(clearStatus, 2500);
   } catch (err) {
     setStatus(`Save failed: ${err.message}`, 'error');
@@ -482,6 +485,11 @@ async function save() {
     saveBtn.disabled = false;
   }
 }
+
+// TODO: dirty tracking — wire input/change listener on #main to flip a
+// dirty flag, enable Save only when there are unsaved changes, mark
+// clean after successful save. Deferred — partial wiring removed to
+// keep Save reliably clickable.
 
 async function resetDefaults() {
   if (!confirm('Reset brief and site configuration to defaults? Your edits will be lost.')) return;

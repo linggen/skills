@@ -11,9 +11,9 @@
 <body>
   <header class="header">
     <h1>Pulse · Settings</h1>
-    <div class="header-controls">
-      <a href="pulse.html" class="btn-secondary">← Back to drafts</a>
-    </div>
+    <!-- "Back to drafts" removed — settings is now an in-page modal in
+         pulse.html; the modal's ✕ button (and Escape / backdrop click)
+         handles closing. -->
   </header>
 
   <main id="main" class="settings-main">
@@ -28,7 +28,8 @@
       </p>
       <textarea id="brief-text" class="brief-textarea" rows="20" spellcheck="false"></textarea>
       <p class="card-meta">
-        Saved to <code>references/brief.md</code>. Resetting reverts to
+        Saved to <code>config.json</code> (field: <code>brief</code>) and
+        delivered to the agent on every chat open. Resetting reverts to
         <code>brief.example.md</code> shipped with the skill.
       </p>
     </section>

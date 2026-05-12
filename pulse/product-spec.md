@@ -55,18 +55,21 @@ The page reflects **today's pulse** — one persistent state per day, updated by
 
 ```
 ~/.linggen/skills/pulse/
-  config.json                        # sites + targets enabled, per-project (future)
+  config.json                        # sites + targets + workspace_path + brief (string)
   references/
-    brief.md                         # standing identity, voice rules, hard constraints
     voice-samples.md                 # past writing for cadence anchoring
     lane-templates.md                # per-target format constraints
     source-blogs.md                  # legacy curated RSS list
-    brief.example.md                 # ships defaults; copied to brief.md on first install
+    brief.example.md                 # ships defaults; seeds config.brief on first install
   data/
     YYYY-MM-DD/<run-id>.json         # one file per run; populated sections only
+    manifest-YYYY-MM-DD.json         # collect.sh output (when track-progress is wired)
+  state/
+    posted.json                      # threads the user posted to (reply tracking)
+    watchlist-cache.json             # last-extracted watchlist; diff against brief hash
   scripts/
     pulse.html                       # main Pulse page + history review UI
-    settings.html                    # Settings UI
+    settings.html                    # Settings UI (loaded as in-page modal iframe)
     pulse-app.js                     # Pulse page app logic
     settings.js                      # Settings app logic
     collect.sh                       # local-signal collector (sessions, commits, memory)
@@ -127,14 +130,14 @@ New lanes: append a section to `lane-templates.md` and add a `targets[]` entry t
 
 ## Brief (load-bearing)
 
-`references/brief.md` is the user's standing context. The agent reads it on every run **before** the goal text. It declares:
+The **brief** is the user's standing context — what they're building, who they're talking to, and the per-user constraints the agent can't infer. It's stored as a string in `config.json` (field: `brief`) and delivered to the agent at turn 0 via a hidden chat-init message on every Pulse open, so it's already in the conversation history before the user types anything. It declares:
 - What the user is working on (product, audience, stage)
 - Goal of these posts (cold-start awareness / credibility / launch / etc.)
-- Voice rules (cadence, openings to avoid, closing pattern)
-- Hard rules (self-reference cap, prohibited domains, drop-vs-publish floor)
+- Per-user rules (self-reference cap, prohibited domains, etc. — generic "no marketing copy" / "no LLM tics" rules live in SKILL.md)
 - Active context (what shipped recently, what's hot, what to avoid)
+- Optional `## Watchlist` section that overrides auto-extraction for `monitor-mentions`
 
-The brief is the difference between "generic LLM output" and "writing that sounds like the user." It's editable in Settings and never overwritten on upgrade.
+The brief is the difference between "generic LLM output" and "writing that sounds like the user." It's editable in Settings and never overwritten on upgrade. `references/brief.example.md` ships defaults that seed `config.brief` on first install.
 
 ## Workspace (the differentiator)
 
@@ -147,7 +150,7 @@ Reading is **just-in-time** via Linggen's standard `Read` / `Glob` / `Grep` tool
 
 ## Goals model (no recipes)
 
-A run carries a single free-text goal. The agent reads `brief.md` + the workspace + the goal + the data on disk and decides:
+A run carries a single free-text goal. The agent uses the brief already in its conversation history + the workspace + the goal + the data on disk and decides:
 - which workspace files to read (README, docs, recent commits)
 - which collectors to invoke (sessions / commits / project / artifact)
 - which site tools to call
@@ -203,7 +206,7 @@ Same skill, same protocol, same data shape. Only the goal text changes.
 
 - [`design.md`](design.md) — capability protocols, tool catalog, state layer, Pulse page layout, dispatch rules, run JSON schema
 - `SKILL.md` — protocol and tool registration (Linggen skill format)
-- `references/brief.md` — user's standing context (editable)
+- `config.json` — user's standing context (editable in Settings; `brief` field)
 - `references/lane-templates.md` — per-target format constraints
 - `config.json` — per-user enabled sites and targets
 - `linggen/doc/skill-spec.md` — host runtime contract for skills

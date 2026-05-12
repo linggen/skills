@@ -15,7 +15,7 @@
 // agent permission system, so the page does its own filesystem work).
 
 import { applyPageUpdate, loadSession, getSession, setOnChange, resetPage } from './page-render.js';
-import { readPulseConfig } from './api.js';
+import { readPulseConfig, replayRuntimeGrants } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
@@ -237,7 +237,7 @@ async function selectSession(date) {
     `${dateLabelRelative(date)} · ${meta?.run_count || 0} runs`;
   document.getElementById('session-sub').textContent = meta?.sample_goal
     ? `Last goal: "${truncate(meta.sample_goal, 80)}"`
-    : 'Click + New run, or use a chip above, to start.';
+    : 'Pick a chip above, or type a goal in chat to start.';
   // Show session-mode UI elements; hide library-mode
   showSessionUI();
   // Update sidebar selection
@@ -519,29 +519,61 @@ async function loadStatusStrip() {
 
 // ---- Action chips --------------------------------------------------------
 
+// Each chip = a preset goal sentence the agent dispatches on. The five
+// chips map 1:1 to the five engine-internal capabilities (draft-content
+// pairs into Daily post + Recap because it never runs alone).
 const CHIP_GOALS = {
-  'new-run':        { goal: '', focus: true },
-  'refresh':        { goal: 'Re-run today\'s saved goal.' },
+  'daily-post':     { goal: 'Daily short post if I shipped or learned something yesterday.' },
   'find-threads':   { goal: 'Find threads worth commenting on across configured Reddit subs and HN.' },
   'check-mentions': { goal: 'Check for mentions of my product or competitors, and triage replies on threads I\'ve posted to.' },
+  'scan-signal':    { goal: 'What\'s happening in my space — competitive landscape and trending topics.' },
   'recap':          { goal: 'Generate a recap of this week — what shipped, what learned, drafted as a blog or substack post.' },
-  'more':           { goal: '' },  // TODO: dropdown
+};
+
+const MORE_ACTIONS = {
+  'refresh':        () => sendChatMessage('Re-run today\'s most recent goal.'),
+  'draft-from-url': () => {
+    const url = window.prompt('Draft from URL — paste a link to your blog post, GitHub release, or other artifact:');
+    if (!url) return;
+    sendChatMessage(`Broadcast my artifact at ${url.trim()} — draft posts for the configured target lanes and surface threads where it would land.`);
+  },
 };
 
 function wireChips() {
-  document.querySelectorAll('.chip').forEach(btn => {
-    btn.addEventListener('click', () => {
+  document.querySelectorAll('.chip[data-chip]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
       const type = btn.dataset.chip;
-      const conf = CHIP_GOALS[type];
-      if (!conf) return;
-      if (conf.goal) {
-        sendChatMessage(conf.goal);
-      } else if (conf.focus) {
-        // "+ New run" — surface the chat without a preset
-        focusChat();
+      if (type === 'more') {
+        e.stopPropagation();
+        toggleMoreMenu();
+        return;
       }
+      const conf = CHIP_GOALS[type];
+      if (conf?.goal) sendChatMessage(conf.goal);
     });
   });
+  document.querySelectorAll('.chip-menu-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      closeMoreMenu();
+      const action = MORE_ACTIONS[btn.dataset.more];
+      if (action) action();
+    });
+  });
+  // Close the menu when clicking elsewhere.
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('chip-more-menu');
+    if (menu && !menu.hidden && !e.target.closest('.chip-menu-wrap')) closeMoreMenu();
+  });
+}
+
+function toggleMoreMenu() {
+  const menu = document.getElementById('chip-more-menu');
+  if (menu) menu.hidden = !menu.hidden;
+}
+
+function closeMoreMenu() {
+  const menu = document.getElementById('chip-more-menu');
+  if (menu) menu.hidden = true;
 }
 
 // ---- Card actions --------------------------------------------------------
@@ -724,8 +756,27 @@ async function mountChat() {
     console.warn('[pulse] LinggenUI.mount unavailable; chat disabled');
     return;
   }
+  // PATCH the workspace grant onto whatever session this chat owns —
+  // engine starts each session with SKILL.md grants only. The chat
+  // session is separate from the draft session created in api.js, so we
+  // must replay the user's configured workspace_path here too. Fires for
+  // both fresh-created sessions and ones the iframe handshake assigns
+  // mid-mount. Track the in-flight promise so the init prompt and the
+  // first chip click can await it — guarantees the agent never sees a
+  // permission prompt on a path the user has already configured.
+  let pendingGrant = null;
+  const grantOnce = (sid) => {
+    console.log('[pulse] grantOnce called with', sid);
+    if (!sid) { console.warn('[pulse] grantOnce: no sid — bail'); return; }
+    pendingGrant = replayRuntimeGrants(sid).catch(e =>
+      console.warn('[pulse] replay grants failed (from grantOnce)', e)
+    );
+  };
+  state.grantsReady = () => pendingGrant || Promise.resolve();
+
   state.chat = await window.LinggenUI.mount(document.getElementById('chat-panel'), {
     skillName: 'pulse',
+    onSessionCreated: grantOnce,
     onContentBlock: (payload) => {
       // Forward PageUpdate tool calls to the renderer.
       if (payload?.tool === 'PageUpdate' && payload?.args) {
@@ -739,15 +790,24 @@ async function mountChat() {
     },
   });
 
-  // Inject the user's brief as a hidden init message — same pattern as
-  // sys-doctor's doctor.js. Replaces the older "agent reads brief.md
-  // every run" approach. Brief content lives in config.brief; workspace
-  // path is also surfaced so the agent knows where to read product
-  // context from. sendHidden delivers the prompt to the agent without
-  // rendering it in the chat UI.
-  setTimeout(() => sendInitPrompt().catch(e => {
-    console.warn('[pulse] init-prompt failed', e);
-  }), 1500);
+  // If the session existed before mount (resumed iframe), onSessionCreated
+  // won't fire — replay grants now using whatever id the bridge exposes.
+  const fallbackSid = state.chat?.getSessionId?.();
+  console.log('[pulse] mountChat post-mount fallback, getSessionId() =', fallbackSid);
+  grantOnce(fallbackSid);
+
+  // Inject the user's brief as a hidden init message after the grant
+  // PATCH has landed — ensures the agent's first read on workspace_path
+  // (which the init prompt invites) passes the permission gate without
+  // a consent prompt. Same hidden-chat pattern as sys-doctor doctor.js.
+  setTimeout(async () => {
+    try {
+      await state.grantsReady();
+      await sendInitPrompt();
+    } catch (e) {
+      console.warn('[pulse] init-prompt failed', e);
+    }
+  }, 1500);
 }
 
 async function sendInitPrompt() {
@@ -756,7 +816,9 @@ async function sendInitPrompt() {
   const brief = (cfg?.brief || '').trim();
   const workspace = (cfg?.workspace_path || '').trim();
   if (!brief && !workspace) return;
-  const lines = ['The user just opened Pulse. Treat the following as ground truth for every run in this session.'];
+  const lines = [
+    'The user just opened Pulse. You are Ling, operating inside Pulse — an agent-led GTM app for solo founders. You drive the dashboard (via `body_patch` blocks) and the logic (capability dispatch). The chat panel beside the dashboard is how the user talks to you. Treat the following as ground truth for every run in this session.',
+  ];
   if (workspace) {
     lines.push('', `Workspace: ${workspace}`,
       'Read README, doc/, and source files there to ground drafts in real product knowledge.');
@@ -764,7 +826,19 @@ async function sendInitPrompt() {
   if (brief) {
     lines.push('', 'Brief (case description, voice rules, hard rules):', brief);
   }
-  lines.push('', 'Do not greet — wait for the user to ask for something.');
+  lines.push('',
+    'Now greet the user — they just opened the app and want to feel a smart personal assistant on the other side of the chat. Follow this shape:',
+    '',
+    '  Line 1: Introduce yourself as Ling, their personal assistant inside Pulse.',
+    '  Line 2: Show you absorbed the brief — reference ONE concrete detail (the product, current launch state, or active context). Not a summary; a specific reference.',
+    '  Line 3: Surface 2-3 things you could help with TODAY, chosen from what is actually pertinent to the brief\'s active context — e.g. drafting a daily post if there\'s recent shipping, checking for mentions, triaging replies on threads they posted, surfacing fresh threads worth commenting on, scanning industry signal, or a weekly recap. Phrase as "I can…" options, not a menu.',
+    '',
+    'Hard constraints on the greeting:',
+    '- 3-4 short lines total. Warm but not gushy.',
+    '- No "I\'m thrilled", "happy to help", "let me know", "what do you think". No emojis. No closing CTA.',
+    '- Do NOT summarize the brief back to them. They wrote it.',
+    '- Do NOT list every capability you have. Pick what fits the brief\'s active context right now.',
+    '- After this greeting, stay silent until the user types a goal or clicks a chip.');
   state.chat.sendHidden(lines.join('\n'));
 }
 
@@ -826,67 +900,37 @@ function wireChatResizer() {
   });
 }
 
-function focusChat() {
-  // "+ New run" should give the user a clear, visible affordance to type a
-  // goal. Earlier attempts (border pulse, addMessage into the iframe) failed
-  // because the iframe's chat store filters by agent and our injected
-  // message gets dropped — and a 600ms border pulse alone reads as "no
-  // reaction." Instead, insert an inline goal input directly into pulse's
-  // own DOM, right below the action-chips row. User types → Enter sends.
-  const existing = document.getElementById('new-run-input-row');
-  if (existing) {
-    existing.querySelector('input')?.focus();
-    return;
-  }
-  const chipsRow = document.querySelector('.action-chips');
-  if (!chipsRow) return;
+// ---- Settings modal ------------------------------------------------------
+// Open settings.html as an in-page iframe overlay rather than navigating
+// the top window. Navigating away would unmount the chat iframe and lose
+// the conversation; the modal keeps pulse.html alive.
 
-  const row = document.createElement('div');
-  row.id = 'new-run-input-row';
-  row.className = 'new-run-input-row';
+function wireSettingsModal() {
+  const link = document.getElementById('settings-link');
+  const modal = document.getElementById('settings-modal');
+  const iframe = document.getElementById('settings-iframe');
+  const closeBtn = document.getElementById('settings-close');
+  if (!link || !modal || !iframe || !closeBtn) return;
 
-  const label = document.createElement('span');
-  label.className = 'new-run-input-label';
-  label.textContent = '▶';
-  row.appendChild(label);
+  const open = (e) => {
+    e?.preventDefault();
+    // Reload src each open so any concurrent edits show fresh state.
+    iframe.src = 'settings.html';
+    modal.hidden = false;
+  };
+  const close = () => {
+    modal.hidden = true;
+    iframe.src = 'about:blank';  // unload to release any pending fetches
+  };
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'new-run-input';
-  input.placeholder = 'Type your run goal — Enter to send, Esc to cancel';
-  input.autocomplete = 'off';
-  row.appendChild(input);
-
-  const close = () => row.remove();
-
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const goal = input.value.trim();
-      if (goal) {
-        sendChatMessage(goal);
-        close();
-      }
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      close();
-    }
+  link.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  modal.addEventListener('click', (e) => {
+    if (e.target.dataset.close) close();
   });
-
-  // Click-outside to close. Skip the same tick to avoid catching the
-  // +New run click that opened it.
-  setTimeout(() => {
-    document.addEventListener('click', function clickAway(e) {
-      if (!row.contains(e.target) && e.target.dataset?.chip !== 'new-run') {
-        document.removeEventListener('click', clickAway);
-        close();
-      }
-    });
-  }, 0);
-
-  chipsRow.after(row);
-  // Focus on next frame so the appended input is in the document.
-  requestAnimationFrame(() => input.focus());
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) close();
+  });
 }
 
 // ---- Helpers -------------------------------------------------------------
@@ -908,6 +952,7 @@ async function init() {
   wireChips();
   wireCardActions();
   wireChatResizer();
+  wireSettingsModal();
   await mountChat();
   // Lazy: archive counts after first paint so the sidebar shows real numbers.
   refreshArchiveCounts().catch(err => console.warn('[pulse] archive counts failed', err));

@@ -193,7 +193,7 @@ function renderSections() {
   if (!renderedAny) {
     const msg = document.createElement('div');
     msg.className = 'state-msg';
-    msg.textContent = "No data for this session yet. Click + New run, or one of the action chips above, to start.";
+    msg.textContent = "No data for this session yet. Pick a chip above, or type a goal in chat to start.";
     container.appendChild(msg);
   }
 }

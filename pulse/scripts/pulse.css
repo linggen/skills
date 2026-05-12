@@ -173,14 +173,36 @@ body {
   transition: border-color 0.15s, color 0.15s;
 }
 .chip:hover { border-color: var(--accent); color: var(--accent); }
-.chip.primary {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: rgba(91, 157, 255, 0.35);
-  font-weight: 600;
-}
-.chip.primary:hover { background: rgba(91, 157, 255, 0.2); }
 .chip .ic { font-size: 13px; opacity: 0.85; }
+
+/* "..." More dropdown menu */
+.chip-menu-wrap { position: relative; display: inline-flex; }
+.chip-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10;
+  min-width: 180px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+.chip-menu-item {
+  text-align: left;
+  padding: 0.45rem 0.65rem;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.chip-menu-item:hover { background: var(--accent-soft); color: var(--accent); }
 
 /* Status strip */
 .status {
@@ -549,37 +571,55 @@ body.chat-resizing iframe {
 }
 .state-msg.error { color: var(--red); }
 
-/* ============ + NEW RUN INLINE INPUT ============ */
-.new-run-input-row {
+/* Settings modal — in-page overlay so pulse.html and chat iframe persist. */
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 8px 16px 0;
-  padding: 10px 14px;
-  background: var(--accent-soft);
-  border: 1px solid var(--accent);
-  border-radius: 8px;
-  animation: new-run-slide-in 0.18s ease-out;
+  justify-content: center;
 }
-.new-run-input-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent);
-  flex-shrink: 0;
+.settings-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
 }
-.new-run-input {
+.settings-modal-panel {
+  position: relative;
+  width: min(960px, 92vw);
+  height: min(820px, 88vh);
+  background: var(--bg, #fff);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.settings-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text);
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.settings-modal-close:hover { background: rgba(0, 0, 0, 0.1); }
+.settings-modal-iframe {
   flex: 1;
   border: 0;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 14px;
-  outline: none;
+  width: 100%;
+  height: 100%;
 }
-.new-run-input::placeholder {
-  color: var(--muted);
-}
-@keyframes new-run-slide-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+
