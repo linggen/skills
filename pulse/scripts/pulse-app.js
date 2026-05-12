@@ -449,7 +449,11 @@ function failChip(chipId, err) {
 // learned bullets tied to actual discussion.
 async function runGatherLocal() {
   const expects = PIPELINE_CHIPS['gather-local'].expects;
-  startChip('gather-local', expects).catch(() => {});
+  // Hold the chip's "done" promise so the cascade can await it.
+  // Previous version fire-and-forgot via `.catch(() => {})`, which let
+  // the cascade move to gather-web before the agent had emitted the
+  // progress card, queuing prompts and starving the page.
+  const chipPromise = startChip('gather-local', expects);
   try {
     const out = await runBash(`bash "${SKILL_DIR}/scripts/gather-local.sh"`);
     let data;
@@ -468,7 +472,7 @@ async function runGatherLocal() {
         }] },
       });
       completeChipFromSectionUpdate('progress_drafts');
-      return;
+      return chipPromise;
     }
 
     // Push raw activity + transcripts to chat as hidden context, then ask
@@ -494,8 +498,9 @@ async function runGatherLocal() {
       '',
       'Emit just the body_patch. No prose response. Stay silent after.',
     ].join('\n'));
-    // Chip flips to done when the agent\'s body_patch arrives on
+    // Chip flips to done when the agent's body_patch arrives on
     // progress_drafts — handled by persistSession → notifyRunningChipsFromSession.
+    return chipPromise;
   } catch (err) {
     console.warn('[pulse] gather-local failed', err);
     failChip('gather-local', err);
