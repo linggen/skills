@@ -800,12 +800,17 @@ function hideCascadeToast() {
 }
 
 async function maybeAutoCascade() {
-  // Only cascade when viewing the live (active) session. Browsing a past
-  // session is read-only — never re-runs the pipeline.
+  // Only cascade for a freshly-created session — i.e. the user opened
+  // pulse without a ?session=<id> URL param. Clicking a past session in
+  // the sidebar resumes it via ?session=<id>; that path is purely
+  // static (cards + chat history from local storage; chips and chat
+  // input still work if the user clicks them, but nothing fires
+  // automatically). Without this gate, clicking an old session with no
+  // cards would re-trigger the whole pipeline.
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('session')) return;
   if (state.viewSessionId !== state.activeSessionId) return;
   const sess = getSession();
-  // If the active session already has cards (mid-page reload, or
-  // already cascaded earlier), skip.
   for (const sec of Object.values(sess?.sections || {})) {
     if (Array.isArray(sec.cards) && sec.cards.length > 0) return;
   }
