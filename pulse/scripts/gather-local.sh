@@ -175,28 +175,32 @@ else
 fi
 expanded="24h"
 
+today_date=""
+if [[ "$(uname)" == "Darwin" ]]; then
+  today_date=$(date +%Y-%m-%d)
+else
+  today_date=$(date +%Y-%m-%d)
+fi
+
+# Scan BOTH yesterday and today. ling-mem's collect_sessions filters by
+# mtime — a session worked on yesterday but reopened today shows up as
+# "today" only. Without scanning today, we miss every in-progress session
+# the user is still editing. Including today is harmless: today's sessions
+# are usually adjacent to yesterday's work anyway.
 gather_sessions "$yesterday_date"
+gather_sessions "$today_date"
 gather_commits "24 hours ago"
 gather_files 24
 
 # Expand if thin.
 if [ "$(count_items)" -lt "$MIN_ITEMS" ]; then
   expanded="7d"
-  # Sessions for each of the last 7 days (skip yesterday — already done).
-  for i in 2 3 4 5 6 7; do
-    if [[ "$(uname)" == "Darwin" ]]; then
-      d=$(date -v-"$i"d +%Y-%m-%d)
-    else
-      d=$(date -d "$i days ago" +%Y-%m-%d)
-    fi
-    gather_sessions "$d"
-  done
-  # Commits across last 7 days (overrides earlier 24h scan — git-log uniques by
-  # sha, but our emit doesn't dedup; trim duplicates below).
+  # Commits across last 7 days (overrides earlier 24h scan — git-log uniques
+  # by sha, but our emit doesn't dedup; trim duplicates below).
   > "$items_file"
   gather_commits "7 days ago"
-  # Re-do sessions across the 7-day window.
-  for i in 1 2 3 4 5 6 7; do
+  # Sessions across the 7-day window (includes today).
+  for i in 0 1 2 3 4 5 6 7; do
     if [[ "$(uname)" == "Darwin" ]]; then
       d=$(date -v-"$i"d +%Y-%m-%d)
     else
@@ -211,7 +215,7 @@ if [ "$(count_items)" -lt "$MIN_ITEMS" ]; then
   expanded="30d"
   > "$items_file"
   gather_commits "30 days ago"
-  for i in $(seq 1 30); do
+  for i in $(seq 0 30); do
     if [[ "$(uname)" == "Darwin" ]]; then
       d=$(date -v-"$i"d +%Y-%m-%d)
     else
