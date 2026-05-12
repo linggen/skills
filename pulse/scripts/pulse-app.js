@@ -22,10 +22,15 @@ const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 // ---- App state -----------------------------------------------------------
 
 const state = {
-  selectedDate: null,
-  sessions: [],      // [{ date, started_at, last_run_at, run_count, sample_goal, unread_count, section_counts }]
-  selectedDates: new Set(),  // batch-delete: dates the user has ticked
-  chat: null,        // chat-bridge controller
+  // Active chat session id (the one the chat panel is attached to).
+  // Set after chat-bridge mount; persisted-card storage is keyed by this.
+  activeSessionId: null,
+  // Currently-viewed session id (may differ from active if user clicked a
+  // past session in the sidebar). Cards on the page reflect this.
+  viewSessionId: null,
+  sessions: [],            // [{ sid, title, created_at, last_run_at, unread_count, section_counts }]
+  selectedSessions: new Set(),  // batch-delete: session ids the user has ticked
+  chat: null,              // chat-bridge controller
 };
 
 // ---- Bash bridge ---------------------------------------------------------
@@ -75,34 +80,86 @@ function dateLabelRelative(dateStr) {
   return `${months[m - 1]} ${d}`;
 }
 
+// Relative time for individual session entries — "5m" / "2h" / "Yesterday"
+// style. Used as the right-aligned timestamp on sidebar items.
+function relativeAge(isoOrEpoch) {
+  if (!isoOrEpoch) return '';
+  const t = typeof isoOrEpoch === 'number' ? isoOrEpoch * 1000 : Date.parse(isoOrEpoch);
+  if (isNaN(t)) return '';
+  const diffMs = Date.now() - t;
+  if (diffMs < 60_000) return 'now';
+  if (diffMs < 3600_000) return `${Math.floor(diffMs / 60_000)}m`;
+  if (diffMs < 86400_000) return `${Math.floor(diffMs / 3600_000)}h`;
+  const days = Math.floor(diffMs / 86400_000);
+  if (days < 30) return `${days}d`;
+  return new Date(t).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function sessionDateBucket(isoOrEpoch) {
+  const t = typeof isoOrEpoch === 'number' ? isoOrEpoch * 1000 : Date.parse(isoOrEpoch);
+  if (isNaN(t)) return 'unknown';
+  return new Date(t).toISOString().slice(0, 10);
+}
+
 // ---- Sidebar -------------------------------------------------------------
 
 async function loadSidebar() {
-  // List directories in data/.
-  const cmd = `ls -1 ${SKILL_DIR}/data 2>/dev/null | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' | sort -r`;
-  const out = (await runBash(cmd)).trim();
-  const dirs = out ? out.split('\n').filter(Boolean) : [];
-
-  // Ensure today is always present, even with no data file yet.
-  const today = todayDate();
-  if (!dirs.includes(today)) dirs.unshift(today);
-
-  // Load metadata for each.
+  // List all chat sessions created by pulse — scan ~/.linggen/sessions/
+  // for session.yaml files with `skill: pulse`. Newest first. The page
+  // also keeps its own per-session card store under
+  // ~/.linggen/skills/pulse/data/<sess-id>/session.json so we can read
+  // cards back for past sessions.
+  const cmd = `for d in "$HOME"/.linggen/sessions/*/; do
+    [ -f "$d/session.yaml" ] || continue
+    skill=$(grep -m1 '^skill:' "$d/session.yaml" 2>/dev/null | sed -E 's/^skill:[[:space:]]*//; s/[[:space:]]*#.*$//; s/^"(.*)"$/\\1/; s/^'"'"'(.*)'"'"'$/\\1/')
+    [ "$skill" = "pulse" ] || continue
+    sid=$(basename "$d")
+    title=$(grep -m1 '^title:' "$d/session.yaml" 2>/dev/null | sed 's/^title:[[:space:]]*//; s/^"\\(.*\\)"$/\\1/')
+    created_at=$(grep -m1 '^created_at:' "$d/session.yaml" 2>/dev/null | sed 's/^created_at:[[:space:]]*//')
+    # Fallback to dir mtime if created_at missing
+    if [ -z "$created_at" ]; then
+      if [[ "$(uname)" == "Darwin" ]]; then
+        created_at=$(stat -f "%Sm" -t "%Y-%m-%dT%H:%M:%SZ" "$d" 2>/dev/null)
+      else
+        created_at=$(date -r "$d" "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
+      fi
+    fi
+    printf '{"sid":"%s","title":%s,"created_at":"%s"}\\n' "$sid" "$(jq -Rsn --arg t "$title" '$t')" "$created_at"
+  done | jq -s 'sort_by(.created_at) | reverse | .[0:50]'`;
+  let raw = '';
+  try { raw = (await runBash(cmd)).trim(); } catch (e) { console.warn('[pulse] sidebar scan failed', e); }
+  const list = raw ? JSON.parse(raw) : [];
   state.sessions = [];
-  for (const date of dirs.slice(0, 30)) {  // cap to most recent 30
-    const meta = await loadSessionMeta(date);
-    state.sessions.push(meta);
+  for (const entry of list) {
+    state.sessions.push(await loadSessionMeta(entry));
   }
-
+  // Make sure the active session (just created this page-load) is in the
+  // list even if the YAML scan hasn't picked it up yet — it can take a
+  // moment for session.yaml to be written.
+  if (state.activeSessionId && !state.sessions.find(s => s.sid === state.activeSessionId)) {
+    state.sessions.unshift({
+      sid: state.activeSessionId,
+      title: 'pulse session',
+      created_at: new Date().toISOString(),
+      last_run_at: null,
+      section_counts: {},
+      unread_count: 0,
+    });
+  }
   renderSidebar();
 }
 
-async function loadSessionMeta(date) {
-  const sess = await readJson(`${SKILL_DIR}/data/${date}/session.json`);
-  if (!sess) {
-    return { date, run_count: 0, sample_goal: null, unread_count: 0, started_at: null, last_run_at: null, section_counts: {} };
-  }
-  const runs = Array.isArray(sess.runs) ? sess.runs : [];
+async function loadSessionMeta(entry) {
+  const sess = await readJson(`${SKILL_DIR}/data/${entry.sid}/session.json`);
+  const base = {
+    sid: entry.sid,
+    title: entry.title || 'pulse session',
+    created_at: entry.created_at,
+    last_run_at: null,
+    section_counts: {},
+    unread_count: 0,
+  };
+  if (!sess) return base;
   const sectionCounts = {};
   let unread = 0;
   for (const [secId, sec] of Object.entries(sess.sections || {})) {
@@ -111,13 +168,10 @@ async function loadSessionMeta(date) {
     unread += n;
   }
   return {
-    date,
-    run_count: runs.length,
-    sample_goal: runs[0]?.goal || null,
-    unread_count: unread,
-    section_counts: sectionCounts,
-    started_at: sess.started_at,
+    ...base,
     last_run_at: sess.last_run_at,
+    section_counts: sectionCounts,
+    unread_count: unread,
   };
 }
 
@@ -125,9 +179,6 @@ function renderSidebar() {
   const el = document.getElementById('sidebar');
   el.innerHTML = '';
 
-  // Just the session list. Aggregates ("This week / This month") and
-  // archive views ("Drafts / Mentions") were aspirational scaffolding —
-  // dropped until they have real value to surface.
   const sect = document.createElement('div');
   sect.className = 'side-section';
 
@@ -138,14 +189,12 @@ function renderSidebar() {
   lbl.textContent = 'Sessions';
   head.appendChild(lbl);
 
-  // Batch-delete bar — appears only when at least one session is ticked.
-  // Shows the count + Delete + Cancel.
-  if (state.selectedDates.size > 0) {
+  if (state.selectedSessions.size > 0) {
     const bar = document.createElement('div');
     bar.className = 'side-batch-bar';
     const count = document.createElement('span');
     count.className = 'side-batch-count';
-    count.textContent = `${state.selectedDates.size} selected`;
+    count.textContent = `${state.selectedSessions.size} selected`;
     const delBtn = document.createElement('button');
     delBtn.className = 'side-batch-delete';
     delBtn.textContent = 'Delete';
@@ -154,7 +203,7 @@ function renderSidebar() {
     cancelBtn.className = 'side-batch-cancel';
     cancelBtn.textContent = 'Cancel';
     cancelBtn.addEventListener('click', () => {
-      state.selectedDates.clear();
+      state.selectedSessions.clear();
       renderSidebar();
     });
     bar.append(count, delBtn, cancelBtn);
@@ -163,7 +212,18 @@ function renderSidebar() {
 
   sect.appendChild(head);
 
+  // Group by date bucket (TODAY / YESTERDAY / May 7 / …). Each session is
+  // rendered as one item with "pulse session" + relative time.
+  let lastBucket = null;
   for (const s of state.sessions) {
+    const bucket = sessionDateBucket(s.created_at);
+    if (bucket !== lastBucket) {
+      const hdr = document.createElement('div');
+      hdr.className = 'side-date-header';
+      hdr.textContent = dateLabelRelative(bucket).toUpperCase();
+      sect.appendChild(hdr);
+      lastBucket = bucket;
+    }
     sect.appendChild(renderSidebarItem(s));
   }
   el.appendChild(sect);
@@ -172,23 +232,25 @@ function renderSidebar() {
 function renderSidebarItem(s) {
   const item = document.createElement('div');
   item.className = 'side-item';
-  if (s.date === state.selectedDate) item.classList.add('selected');
-  if (state.selectedDates.has(s.date)) item.classList.add('checked');
-  item.dataset.date = s.date;
-  item.addEventListener('click', () => selectSession(s.date));
+  const isViewed = s.sid === state.viewSessionId;
+  const isActive = s.sid === state.activeSessionId;
+  if (isViewed) item.classList.add('selected');
+  if (state.selectedSessions.has(s.sid)) item.classList.add('checked');
+  item.dataset.sid = s.sid;
+  item.addEventListener('click', () => selectSession(s.sid));
 
-  // Checkbox for batch selection. Appears on hover (via CSS), always
-  // visible once any item is checked (so the user can untick easily).
-  const canDelete = s.unread_count > 0 || !!s.last_run_at;
-  if (canDelete) {
+  // Checkbox — sessions other than the currently-active one can be batch
+  // deleted. The active session is the one the chat panel is attached
+  // to; deleting it mid-use would orphan the chat.
+  if (!isActive) {
     const cb = document.createElement('input');
     cb.type = 'checkbox';
     cb.className = 'side-checkbox';
-    cb.checked = state.selectedDates.has(s.date);
+    cb.checked = state.selectedSessions.has(s.sid);
     cb.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (cb.checked) state.selectedDates.add(s.date);
-      else state.selectedDates.delete(s.date);
+      if (cb.checked) state.selectedSessions.add(s.sid);
+      else state.selectedSessions.delete(s.sid);
       renderSidebar();
     });
     item.appendChild(cb);
@@ -198,13 +260,18 @@ function renderSidebarItem(s) {
   text.className = 'side-text';
   const name = document.createElement('span');
   name.className = 'side-name';
-  name.textContent = (s.date === state.selectedDate ? '● ' : '') + dateLabelRelative(s.date);
+  name.textContent = (isViewed ? '● ' : '') + (s.title || 'pulse session');
   const sub = document.createElement('span');
   sub.className = 'side-sub';
   sub.textContent = sidebarSubText(s);
   text.appendChild(name);
   text.appendChild(sub);
   item.appendChild(text);
+
+  const ts = document.createElement('span');
+  ts.className = 'side-timestamp';
+  ts.textContent = relativeAge(s.created_at);
+  item.appendChild(ts);
 
   if (s.unread_count > 0) {
     const badge = document.createElement('span');
@@ -216,42 +283,37 @@ function renderSidebarItem(s) {
 }
 
 async function deleteSelectedSessions() {
-  const dates = Array.from(state.selectedDates);
-  if (dates.length === 0) return;
-  const label = dates.length === 1
-    ? `the ${dateLabelRelative(dates[0])} session`
-    : `${dates.length} sessions`;
+  const sids = Array.from(state.selectedSessions);
+  if (sids.length === 0) return;
+  const label = sids.length === 1 ? 'this session' : `${sids.length} sessions`;
   if (!confirm(`Delete ${label} and all their cards? This can't be undone.`)) return;
-  // Wipe per-day folders in parallel. rm -rf is idempotent so partial
-  // failures don't strand cards.
-  const cmd = dates.map(d => `rm -rf "${SKILL_DIR}/data/${d}"`).join(' && ');
+  // Wipe per-session card folders + the chat session dirs themselves.
+  // rm -rf is idempotent so partial failures don't strand anything.
+  const cardWipes = sids.map(sid => `rm -rf "${SKILL_DIR}/data/${sid}"`).join(' && ');
+  const chatWipes = sids.map(sid => `rm -rf "$HOME/.linggen/sessions/${sid}"`).join(' && ');
   try {
-    await runBash(cmd);
+    await runBash(`${cardWipes} && ${chatWipes}`);
   } catch (err) {
     console.warn('[pulse] batch delete failed', err);
     return;
   }
-  state.sessions = state.sessions.filter(s => !state.selectedDates.has(s.date));
-  const deletingCurrent = state.selectedDates.has(state.selectedDate);
-  state.selectedDates.clear();
-  if (deletingCurrent) {
-    const today = todayDate();
-    if (!state.sessions.find(s => s.date === today)) {
-      state.sessions.unshift(await loadSessionMeta(today));
-    }
-    await selectSession(today);
+  const deletingViewed = state.selectedSessions.has(state.viewSessionId);
+  state.sessions = state.sessions.filter(s => !state.selectedSessions.has(s.sid));
+  state.selectedSessions.clear();
+  if (deletingViewed) {
+    // Jump back to the active (current) session, or first remaining.
+    const next = state.activeSessionId || state.sessions[0]?.sid;
+    if (next) await selectSession(next);
+    else renderSidebar();
   } else {
     renderSidebar();
   }
 }
 
-// Build the subtitle line under each sidebar session entry. Priority:
-//   1. If there are cards on the page, summarize them by section so the
-//      user can see at a glance what's there (e.g. "5 signal · 3 mentions").
-//      The agent doesn't always emit run_log entries, so falling back to
-//      "no runs yet" hides real activity.
-//   2. Otherwise if last_run_at + sample_goal are set, show those.
-//   3. Otherwise "no runs yet".
+// Per-session subtitle line. Shows the card-section breakdown when the
+// session produced output ("5 signal · 3 mention · 2 discovery"); falls
+// back to "no cards" when the session is empty (e.g. just opened and
+// nothing has run yet).
 function sidebarSubText(s) {
   if (s.unread_count > 0 && s.section_counts) {
     const labels = { mentions: 'mention', replies_due: 'reply', discovery: 'discovery', signal: 'signal', progress_drafts: 'progress' };
@@ -263,25 +325,31 @@ function sidebarSubText(s) {
     }
     if (parts.length > 0) return parts.slice(0, 3).join(' · ');
   }
-  if (s.last_run_at) {
-    const t = new Date(s.last_run_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return t + ' · ' + (s.sample_goal ? truncate(s.sample_goal, 32) : 'no goal');
-  }
-  return 'no runs yet';
+  return 'no cards';
 }
 
 
 // ---- Session selection ---------------------------------------------------
 
-async function selectSession(date) {
-  state.selectedDate = date;
-  const sess = await readJson(`${SKILL_DIR}/data/${date}/session.json`);
+async function selectSession(sid) {
+  // If picking a past session, navigate so the chat attaches to it too.
+  // Active session = the one chat is currently attached to. Past =
+  // anything else; clicking switches via URL param + reload (chat-bridge
+  // can't re-mount on a different session mid-page).
+  if (state.activeSessionId && sid !== state.activeSessionId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('session', sid);
+    window.location.href = url.toString();
+    return;
+  }
+  state.viewSessionId = sid;
+  const sess = await readJson(`${SKILL_DIR}/data/${sid}/session.json`);
   loadSession(sess);
-  const meta = state.sessions.find(s => s.date === date);
-  document.getElementById('session-title').textContent =
-    `${dateLabelRelative(date)} · ${meta?.run_count || 0} runs`;
-  document.getElementById('session-sub').textContent = meta?.sample_goal
-    ? `Last goal: "${truncate(meta.sample_goal, 80)}"`
+  const meta = state.sessions.find(s => s.sid === sid);
+  const created = meta?.created_at ? new Date(meta.created_at).toLocaleString() : '';
+  document.getElementById('session-title').textContent = meta?.title || 'pulse session';
+  document.getElementById('session-sub').textContent = created
+    ? `Started ${created}. Pick a chip above, or type a goal in chat.`
     : 'Pick a chip above, or type a goal in chat to start.';
   renderSidebar();
 }
@@ -289,18 +357,26 @@ async function selectSession(date) {
 // ---- Persistence ---------------------------------------------------------
 
 async function persistSession(session) {
-  if (!state.selectedDate) return;
-  const path = `${SKILL_DIR}/data/${state.selectedDate}/session.json`;
-  if (!session.session_id) session.session_id = `${state.selectedDate}-${Date.now()}`;
+  // Cards are stored per chat-session-id. We only persist for the
+  // currently-viewed session — past sessions are read-only browsable.
+  if (!state.viewSessionId) return;
+  if (state.viewSessionId !== state.activeSessionId) return;
+  const sid = state.viewSessionId;
+  const path = `${SKILL_DIR}/data/${sid}/session.json`;
+  if (!session.session_id) session.session_id = sid;
   if (!session.started_at) session.started_at = new Date().toISOString();
   try {
     await writeJson(path, session);
-    // Refresh sidebar metadata for this session.
-    const meta = await loadSessionMeta(state.selectedDate);
-    const idx = state.sessions.findIndex(s => s.date === state.selectedDate);
-    if (idx >= 0) state.sessions[idx] = meta;
+    const meta = state.sessions.find(s => s.sid === sid);
+    const updated = await loadSessionMeta({
+      sid,
+      title: meta?.title || 'pulse session',
+      created_at: meta?.created_at || new Date().toISOString(),
+    });
+    const idx = state.sessions.findIndex(s => s.sid === sid);
+    if (idx >= 0) state.sessions[idx] = updated;
+    else state.sessions.unshift(updated);
     renderSidebar();
-    // Any section update may complete a running chip.
     notifyRunningChipsFromSession(session);
   } catch (err) {
     console.warn('[pulse] persist failed', err);
@@ -682,9 +758,12 @@ function hideCascadeToast() {
 }
 
 async function maybeAutoCascade() {
-  if (state.selectedDate !== todayDate()) return;     // viewing past session
+  // Only cascade when viewing the live (active) session. Browsing a past
+  // session is read-only — never re-runs the pipeline.
+  if (state.viewSessionId !== state.activeSessionId) return;
   const sess = getSession();
-  // If any section already has cards, today's pipeline already ran. Skip.
+  // If the active session already has cards (mid-page reload, or
+  // already cascaded earlier), skip.
   for (const sec of Object.values(sess?.sections || {})) {
     if (Array.isArray(sec.cards) && sec.cards.length > 0) return;
   }
@@ -919,19 +998,26 @@ async function mountChat() {
   // permission prompt on a path the user has already configured.
   let pendingGrant = null;
   const grantOnce = (sid) => {
-    console.log('[pulse] grantOnce called with', sid);
-    if (!sid) { console.warn('[pulse] grantOnce: no sid — bail'); return; }
+    if (!sid) return;
+    state.activeSessionId = sid;
+    if (!state.viewSessionId) state.viewSessionId = sid;
     pendingGrant = replayRuntimeGrants(sid).catch(e =>
-      console.warn('[pulse] replay grants failed (from grantOnce)', e)
+      console.warn('[pulse] replay grants failed', e)
     );
   };
   state.grantsReady = () => pendingGrant || Promise.resolve();
 
+  // If URL has ?session=<id>, attach the chat panel to that session
+  // instead of creating a new one. Lets the user click a past pulse
+  // session in the sidebar and have chat reattach to it on reload.
+  const urlParams = new URLSearchParams(window.location.search);
+  const resumeSid = urlParams.get('session');
+
   state.chat = await window.LinggenUI.mount(document.getElementById('chat-panel'), {
     skillName: 'pulse',
+    sessionId: resumeSid || undefined,
     onSessionCreated: grantOnce,
     onContentBlock: (payload) => {
-      // Forward PageUpdate tool calls to the renderer.
       if (payload?.tool === 'PageUpdate' && payload?.args) {
         try {
           const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
@@ -946,7 +1032,6 @@ async function mountChat() {
   // If the session existed before mount (resumed iframe), onSessionCreated
   // won't fire — replay grants now using whatever id the bridge exposes.
   const fallbackSid = state.chat?.getSessionId?.();
-  console.log('[pulse] mountChat post-mount fallback, getSessionId() =', fallbackSid);
   grantOnce(fallbackSid);
 
   // Inject the user's brief as a hidden init message after the grant
@@ -1111,11 +1196,6 @@ function truncate(s, n) {
 
 async function init() {
   setOnChange(persistSession);
-  // Hand the renderer the user's Reddit handle so it can filter out
-  // mention cards whose latest reply is by them (nothing to do).
-  // Also kick off a pre-fetch of own-commented thread URLs so discovery
-  // cards can skip threads the user has already weighed in on. Both
-  // are best-effort; failures don't block init.
   try {
     const cfg = await readPulseConfig();
     const handle = (cfg?.sites?.reddit?.username || '').trim();
@@ -1124,20 +1204,30 @@ async function init() {
       refreshCommentedThreadUrls().catch(err => console.warn('[pulse] own-comments prefetch', err));
     }
   } catch {}
-  await loadSidebar();
-  // Auto-select today.
-  const today = todayDate();
-  await selectSession(today);
-  await loadStatusStrip();
   wireChips();
   wireCardActions();
   wireChatResizer();
   wireSettingsModal();
-  // Stop button on the cascade toast.
   document.getElementById('cascade-toast-stop')?.addEventListener('click', cancelCascade);
+  // Mount chat first so we know the active session id. Sidebar load
+  // depends on it (the active session is pinned to the top of the list
+  // even before its session.yaml has been written).
   await mountChat();
-  // Auto-cascade on first open of today. Skipped if today's session already
-  // has cards (mid-day reopen) or if the user is viewing a past session.
+  await loadSidebar();
+  // Select the session indicated by ?session=<id>, else the active one.
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialSid = urlParams.get('session') || state.activeSessionId;
+  if (initialSid) {
+    state.viewSessionId = initialSid;
+    const sess = await readJson(`${SKILL_DIR}/data/${initialSid}/session.json`);
+    loadSession(sess);
+    const meta = state.sessions.find(s => s.sid === initialSid);
+    document.getElementById('session-title').textContent = meta?.title || 'pulse session';
+    document.getElementById('session-sub').textContent = 'Pick a chip above, or type a goal in chat to start.';
+    renderSidebar();
+  }
+  await loadStatusStrip();
+  // Auto-cascade only on the active session (not on a resumed past session).
   maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));
 }
 

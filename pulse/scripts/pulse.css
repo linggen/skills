@@ -127,6 +127,21 @@ body {
   flex-shrink: 0;
 }
 .side-item .side-count { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+.side-item .side-timestamp {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+  margin-left: 0.4rem;
+}
+.side-item.selected .side-timestamp { color: var(--accent); opacity: 0.8; }
+.side-date-header {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.7rem 0.6rem 0.25rem;
+}
 
 /* Batch-select checkbox — hidden by default, appears on hover (or when
    any item is already checked, so the user can untick without hunting). */
