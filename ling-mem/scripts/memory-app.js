@@ -23,9 +23,9 @@ your turn between them. Do NOT wait for user input. After streaming A, you
 MUST immediately continue to B's tool calls in the same response.
 
 (A) Stream this text VERBATIM as plain chat output — do not paraphrase, do not
-substitute words (it says "memory skill", not "memory agent"):
+substitute words (it says "your memory assistant inside the memory skill", not "memory agent"):
 
-    Hi! I'm Ling, in your memory skill. Let me check what's already in memory — one moment...
+    Hi! I'm Ling, your personal memory assistant inside the memory skill. Let me check what's already in memory — one moment...
 
 (B) In the same turn, immediately after (A), issue these tool calls IN PARALLEL:
     • Read ~/.linggen/skills/ling-mem/references/dashboard.md   (MANDATORY — has the exact widget JSON shapes you need for (C); without it the page renders broken)
