@@ -62,19 +62,30 @@ tools:
   - name: FetchRedditInbox
     description: >-
       Fetch the connected Reddit account's inbox — DMs, comment
-      replies, post replies, username mentions. Requires the user to
-      have connected their account via Settings (OAuth refresh_token
-      stored in sites.reddit.refresh_token). Returns
-      {items: [{kind, id, subject, body, author, url, created_iso,
-      unread}], count, errors}. kind ∈ message | comment_reply |
-      post_reply | username_mention | other. When errors[] is
-      non-empty (e.g. "reddit not connected"), surface that to the
-      user and fall back to FetchReddit-based public mention scraping
-      instead of pretending the inbox is empty. PRIORITY: replies to
-      the user's own posts and DMs to the user are higher signal than
-      generic mentions — list them first in the mentions / replies_due
-      sections.
+      replies, post replies, username mentions. Requires OAuth
+      refresh_token in sites.reddit.refresh_token. Reddit currently
+      gates Data API access behind manual approval (Responsible
+      Builder Policy, Nov 2025), so most users won't have this set up
+      yet — expect errors[]=["reddit not connected"] and fall back to
+      FetchRedditMentions silently. When DOES return data, treat
+      DMs + replies-to-user as highest signal.
     cmd: "$SKILL_DIR/scripts/sites/reddit-inbox.sh"
+    tier: read
+    timeout_ms: 30000
+  - name: FetchRedditMentions
+    description: >-
+      Public-JSON Reddit monitoring — no auth required. Reads
+      sites.reddit.username from config, then surfaces (a) recent
+      threads anywhere on Reddit that mention u/<username>, (b) the
+      user's own recent posts (for noticing new replies on those),
+      (c) the user's own recent comments (for tracking responses).
+      Returns {items: [{kind, title, body, url, author, sub,
+      created_iso, score, num_comments, watched_term}], count,
+      errors}. kind ∈ mention | own_post | own_comment. This is the
+      primary mention surface when FetchRedditInbox isn't available
+      (most users). Anonymous rate limit ~10 req/min — script
+      makes 3 calls per invocation.
+    cmd: "$SKILL_DIR/scripts/sites/reddit-mentions.sh"
     tier: read
     timeout_ms: 30000
   - name: FetchLobsters

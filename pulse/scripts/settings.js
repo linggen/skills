@@ -528,6 +528,13 @@ function renderRedditOAuthField(cfg, field) {
   }
 
   // Not connected — show client_id input + Connect button + instructions.
+  const gateNotice = document.createElement('div');
+  gateNotice.className = 'oauth-gate-notice';
+  gateNotice.innerHTML = `
+    <b>Heads up:</b> Reddit closed self-service Data API app creation in November 2025 (Responsible Builder Policy). The <code>create app</code> form at reddit.com/prefs/apps still appears but silently fails for most users until Reddit manually approves the request. <b>Public mention monitoring works without this</b> — Pulse already uses Reddit's public JSON via the Reddit username above. OAuth only adds DMs + the unread inbox feed. Skip this section unless you already have approved API access.
+  `;
+  wrap.appendChild(gateNotice);
+
   const instructions = document.createElement('div');
   instructions.className = 'oauth-instructions';
   instructions.innerHTML = `
