@@ -1108,22 +1108,24 @@ async function mountChat() {
   const fallbackSid = state.chat?.getSessionId?.();
   grantOnce(fallbackSid);
 
-  // Inject the user's brief as a hidden init message after the grant
-  // PATCH has landed — ensures the agent's first read on workspace_path
-  // (which the init prompt invites) passes the permission gate without
-  // a consent prompt. Same hidden-chat pattern as sys-doctor doctor.js.
-  //
-  // Exposed as state.initReady so the auto-cascade can await brief
-  // injection before firing the first agent step. Without this, the
-  // cascade's Gather web turn runs before the agent has the brief.
-  state.initReady = (async () => {
-    try {
-      await state.grantsReady();
-      await sendInitPrompt();
-    } catch (e) {
-      console.warn('[pulse] init-prompt failed', e);
-    }
-  })();
+  // Init prompt (greeting + brief seed) fires ONLY on freshly-created
+  // sessions. Resumed past sessions (URL has ?session=<id>) already have
+  // the brief in their chat history from the original session — no
+  // re-sending. Without this gate, clicking any past session in the
+  // sidebar would trigger a greeting LLM call, burning tokens (and
+  // potentially hitting rate limits) just to view static cards.
+  if (resumeSid) {
+    state.initReady = Promise.resolve();
+  } else {
+    state.initReady = (async () => {
+      try {
+        await state.grantsReady();
+        await sendInitPrompt();
+      } catch (e) {
+        console.warn('[pulse] init-prompt failed', e);
+      }
+    })();
+  }
 }
 
 async function sendInitPrompt() {
