@@ -711,19 +711,28 @@ async function extractSessionExcerpt(session) {
 }
 
 function buildProgressCardFromLocal(data) {
+  // Reserve fixed budgets per kind so a commit-heavy day doesn't crowd
+  // sessions out of the card (which is what user reported when 8 commits
+  // hid the CC/Linggen sessions entirely). Commits up to 8, sessions up
+  // to 4, files folded into a single summary line.
+  const COMMIT_BUDGET = 8;
+  const SESSION_BUDGET = 4;
   const items = [];
   const byKind = (data.items || []).reduce((acc, it) => {
     (acc[it.kind] ||= []).push(it);
     return acc;
   }, {});
-  for (const c of (byKind.commit || [])) {
+  for (const c of (byKind.commit || []).slice(0, COMMIT_BUDGET)) {
     items.push({ kind: 'shipped', text: c.label + (c.source ? ` _(${c.source})_` : '') });
   }
-  for (const s of (byKind['session-cc'] || []).concat(byKind['session-ling'] || [])) {
-    items.push({ kind: 'learned', text: s.label + (s.body ? ` — ${s.body}` : '') });
+  const sessions = (byKind['session-cc'] || []).concat(byKind['session-ling'] || []);
+  for (const s of sessions.slice(0, SESSION_BUDGET)) {
+    const tag = s.kind === 'session-ling' ? 'Linggen' : 'CC';
+    const meta = s.body ? ` _(${tag}, ${s.body})_` : ` _(${tag})_`;
+    items.push({ kind: 'learned', text: s.label + meta });
   }
   const fileCount = (byKind.file || []).length;
-  if (fileCount > 0 && items.length < 5) {
+  if (fileCount > 0) {
     items.push({ kind: 'fixed', text: `${fileCount} files changed in workspace` });
   }
   if (items.length === 0) {
@@ -733,7 +742,7 @@ function buildProgressCardFromLocal(data) {
     type: 'progress',
     id: `local-${Date.now()}`,
     window: data.window?.expanded_to || '24h',
-    items: items.slice(0, 8),
+    items,
   };
 }
 
@@ -755,7 +764,7 @@ async function runGatherWeb() {
     '',
     'For `discovery` cards specifically: include BOTH `excerpt` (plain-text body of the thread, ~250 chars; strip markdown/HTML) AND `draft_starter` (your 2-4 sentence draft comment in voice). The page renders both inline so the user can read what the thread says and what you\'d post — no extra click. Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft chip handles broadcast posts, not comment-on-thread starters.',
   ].join('\n');
-  sendChatMessage(goal);
+  sendChatHidden(goal);
   return promise;
 }
 
@@ -773,7 +782,7 @@ async function runDraft() {
     '',
     'If neither local nor web cards have enough signal to draft honestly (no shipped work, no real-world hook, no thread to comment on), emit one `empty` card with a one-line reason and skip drafting. Do not fabricate.',
   ].join('\n');
-  sendChatMessage(goal);
+  sendChatHidden(goal);
   return promise;
 }
 
@@ -880,13 +889,13 @@ function handleCardAction(action, cardId, btn) {
     case 'draft-reply':
     case 'draft-replies':
     case 'draft-starter':
-      sendChatMessage(`Refine the ${card.type} draft for "${truncate(card.thread_title || card.your_post_title || card.title || '?', 60)}". Show me the draft and let me iterate.`);
+      sendChatHidden(`Refine the ${card.type} draft for "${truncate(card.thread_title || card.your_post_title || card.title || '?', 60)}". Show the draft as an updated body_patch card so I can iterate.`);
       break;
     case 'reply-back':
-      sendChatMessage(`Draft a reply to the new follow-up comment on my "${truncate(card.your_post_title || '?', 60)}" thread.`);
+      sendChatHidden(`Draft a reply to the new follow-up comment on my "${truncate(card.your_post_title || '?', 60)}" thread. Land it as a body_patch.`);
       break;
     case 'polish':
-      sendChatMessage(`Polish the ${card.lane || 'draft'} draft below. I'll tell you how I want it tightened in a follow-up.`);
+      sendChatHidden(`Polish the ${card.lane || 'draft'} draft (card id ${card.id}). Re-emit the body_patch with the tightened version.`);
       break;
     case 'open':
     case 'open-url': {
@@ -897,7 +906,7 @@ function handleCardAction(action, cardId, btn) {
       break;
     }
     case 'expand':
-      sendChatMessage(`Expand on this signal item: ${card.title || card.source}`);
+      sendChatHidden(`Expand on this signal item: ${card.title || card.source}. Emit a body_patch updating the card with more detail.`);
       break;
     case 'copy': {
       // Drafts carry .content; discovery cards carry .draft_starter; mention
@@ -1136,6 +1145,20 @@ function sendChatMessage(text) {
     return;
   }
   state.chat.send(text);
+}
+
+// sendChatHidden — for chip-fired goals and card-action prompts that
+// orchestrate the agent but shouldn't appear as user messages in the
+// chat panel. The agent's RESPONSE stays visible (status lines + the
+// body_patch artifacts) — only the orchestration prompt is hidden.
+// Use this for every internal trigger; reserve sendChatMessage for
+// user-typed input that should be visible as theirs.
+function sendChatHidden(text) {
+  if (!state.chat) {
+    console.warn('[pulse] chat not ready, queueing not yet implemented');
+    return;
+  }
+  state.chat.sendHidden(text);
 }
 
 // ---- Chat panel drag-to-resize -------------------------------------------
