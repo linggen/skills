@@ -644,7 +644,13 @@ async function pushLocalContextToChat(data) {
   const items = data.items || [];
   if (items.length === 0) return;
   const byKind = items.reduce((acc, it) => { (acc[it.kind] ||= []).push(it); return acc; }, {});
-  const lines = ['[gather-local result — for your context, not user-visible]', ''];
+  const lines = [
+    '[CONTEXT BLOCK — gather-local result. NOT a task. Acknowledge silently.',
+    'Do not reply with prose, summaries, or "no action needed" notes. Just store',
+    'this for the next gather-web / draft step. Your next turn fires only when',
+    'a chip goal arrives.]',
+    '',
+  ];
   if (data.window) {
     lines.push(`Window: ${data.window.since} → ${data.window.until} (${data.window.expanded_to})`);
   }
@@ -664,6 +670,18 @@ async function pushLocalContextToChat(data) {
       lines.push(`  - [${s.source}] ${s.label} — ${s.body}`);
     }
     lines.push('');
+    // Extract transcript content for the top 3 sessions so the agent has
+    // real material (not just metadata) to pick topics from in gather-web.
+    // Cap each transcript at ~2k chars to keep the context block bounded.
+    const topSessions = sessions.slice(0, 3);
+    for (const s of topSessions) {
+      const excerpt = await extractSessionExcerpt(s);
+      if (excerpt) {
+        lines.push(`--- Session transcript: ${s.label} (${s.source}) ---`);
+        lines.push(excerpt);
+        lines.push('--- end transcript ---', '');
+      }
+    }
   }
   if (byKind.file?.length) {
     lines.push(`Recently changed files (${byKind.file.length}):`);
@@ -672,6 +690,24 @@ async function pushLocalContextToChat(data) {
     }
   }
   state.chat.sendHidden(lines.join('\n'));
+}
+
+// Use ling-mem's extract_session.sh to pull a flattened transcript for
+// one session, capped at 2000 chars. Best-effort: if extraction fails or
+// ling-mem isn't installed, we silently skip the transcript.
+async function extractSessionExcerpt(session) {
+  const extract = `$HOME/.linggen/skills/ling-mem/scripts/extract_session.sh`;
+  const filepath = session.ref;
+  const source = session.source;  // "CC" or "Linggen"
+  const date = session.ts;
+  if (!filepath || !source) return '';
+  try {
+    const cmd = `[ -x "${extract}" ] && bash "${extract}" "${filepath.replace(/"/g, '\\"')}" "${source}" "${date}" 2000 2>/dev/null | head -c 2000 || true`;
+    const out = await runBash(cmd);
+    return (out || '').trim();
+  } catch {
+    return '';
+  }
 }
 
 function buildProgressCardFromLocal(data) {
