@@ -433,30 +433,69 @@ function failChip(chipId, err) {
   setChipState(chipId, 'failed');
 }
 
-// ── Step 1: Gather local — script, no agent ──
+// ── Step 1: Gather local — script collects raw, agent narrates ──
+//
+// Two phases:
+//   1. Script collects raw items (commits, sessions, files) — fast, no LLM.
+//   2. Page pushes raw items + session transcripts to chat (hidden) and
+//      asks the agent for a NARRATIVE progress card. Agent emits a
+//      body_patch that lands as the user-visible card.
+//
+// Why agent-led: raw `git log` subjects dumped verbatim are noise (8 lines
+// of "pulse: simplify ... / filter ... / drop ...") for a single afternoon
+// of one repo's work. Sessions add the "why" — what problem the user
+// wrestled with — which the script can't extract. The agent has the brief
+// + transcripts and can produce one shipped summary line + 2-3 specific
+// learned bullets tied to actual discussion.
 async function runGatherLocal() {
   const expects = PIPELINE_CHIPS['gather-local'].expects;
-  startChip('gather-local', expects).catch(() => {});  // resolved manually below
+  startChip('gather-local', expects).catch(() => {});
   try {
     const out = await runBash(`bash "${SKILL_DIR}/scripts/gather-local.sh"`);
     let data;
     try { data = JSON.parse(out); }
     catch (e) { throw new Error(`gather-local returned non-JSON: ${out.slice(0, 200)}`); }
-    const card = buildProgressCardFromLocal(data);
-    // Render directly — script-only step, no agent.
-    applyPageUpdate({
-      body_patch: { section: 'progress_drafts', cards: [card], last_updated: new Date().toISOString() },
-    });
-    // Inject the local activity into chat history (hidden) so the next
-    // step (Gather web) and the Draft step have it in context. Without
-    // this, the agent has no visibility into what the script rendered
-    // on the page.
+
+    if (!data.items || data.items.length === 0) {
+      // Nothing to summarize — render an empty card directly, skip the
+      // agent call (no point paying tokens to summarize nothing).
+      applyPageUpdate({
+        body_patch: { section: 'progress_drafts', last_updated: new Date().toISOString(), cards: [{
+          type: 'progress',
+          id: `local-empty-${Date.now()}`,
+          window: data.window?.expanded_to || '24h',
+          items: [{ kind: 'decision', text: 'No local activity in window — try expanding or check workspace path.' }],
+        }] },
+      });
+      completeChipFromSectionUpdate('progress_drafts');
+      return;
+    }
+
+    // Push raw activity + transcripts to chat as hidden context, then ask
+    // the agent for the narrative card. Background-refresh own-commented
+    // URLs while the agent works.
     await pushLocalContextToChat(data);
-    // Refresh own-commented-URLs in the background so the next gather-web
-    // run's discovery cards skip threads the user has already replied
-    // to. Don't block the chip completion on this.
     refreshCommentedThreadUrls().catch(() => {});
-    completeChipFromSectionUpdate('progress_drafts');
+    sendChatHidden([
+      'Based on the CONTEXT BLOCK above (yesterday\'s commits + session transcripts + changed files), emit ONE `body_patch` on `progress_drafts` with a single `progress` card. Replace mode (default — not append).',
+      '',
+      'Card shape:',
+      '  { type: "progress", id: "local-<ts>", window: "<24h|7d|30d>", items: [',
+      '    { kind: "shipped", text: "<ONE-line summary of all commits — group by repo/theme, ~120 chars. e.g. \'Pulse: simplified sidebar, filtered noise cards, dropped OAuth path.\'>" },',
+      '    { kind: "learned", text: "<specific insight from a session transcript, ~120 chars. e.g. \'Reddit closed self-service API access in Nov 2025 — pivoted to public-JSON scraping only.\'>" },',
+      '    // Up to 3 learned items total, each pulled from a real session transcript above. Skip if no session is worth surfacing.',
+      '  ] }',
+      '',
+      'Hard rules:',
+      '- ONE `shipped` line collapsing ALL commits into one phrase. Don\'t list commit subjects individually.',
+      '- 1-3 `learned` lines tied to concrete moments in session transcripts (a pivot, a gotcha, a decision). Be specific — not "explored the codebase".',
+      '- No "N files changed" line — mechanical noise.',
+      '- Match the brief\'s voice. Strip "🚀", "I\'m thrilled", "TL;DR" if they sneak in.',
+      '',
+      'Emit just the body_patch. No prose response. Stay silent after.',
+    ].join('\n'));
+    // Chip flips to done when the agent\'s body_patch arrives on
+    // progress_drafts — handled by persistSession → notifyRunningChipsFromSession.
   } catch (err) {
     console.warn('[pulse] gather-local failed', err);
     failChip('gather-local', err);
@@ -495,10 +534,11 @@ async function pushLocalContextToChat(data) {
       lines.push(`  - [${s.source}] ${s.label} — ${s.body}`);
     }
     lines.push('');
-    // Extract transcript content for the top 3 sessions so the agent has
-    // real material (not just metadata) to pick topics from in gather-web.
-    // Cap each transcript at ~2k chars to keep the context block bounded.
-    const topSessions = sessions.slice(0, 3);
+    // Extract transcript content for the top 5 sessions so the agent has
+    // real material (not just metadata) for both the progress-card
+    // narrative AND topic-picking in gather-web. Cap each transcript at
+    // ~2k chars to keep the context block bounded (~10k total).
+    const topSessions = sessions.slice(0, 5);
     for (const s of topSessions) {
       const excerpt = await extractSessionExcerpt(s);
       if (excerpt) {
@@ -554,41 +594,6 @@ async function extractSessionExcerpt(session) {
   }
 }
 
-function buildProgressCardFromLocal(data) {
-  // Reserve fixed budgets per kind so a commit-heavy day doesn't crowd
-  // sessions out of the card (which is what user reported when 8 commits
-  // hid the CC/Linggen sessions entirely). Commits up to 8, sessions up
-  // to 4, files folded into a single summary line.
-  const COMMIT_BUDGET = 8;
-  const SESSION_BUDGET = 4;
-  const items = [];
-  const byKind = (data.items || []).reduce((acc, it) => {
-    (acc[it.kind] ||= []).push(it);
-    return acc;
-  }, {});
-  for (const c of (byKind.commit || []).slice(0, COMMIT_BUDGET)) {
-    items.push({ kind: 'shipped', text: c.label + (c.source ? ` _(${c.source})_` : '') });
-  }
-  const sessions = (byKind['session-cc'] || []).concat(byKind['session-ling'] || []);
-  for (const s of sessions.slice(0, SESSION_BUDGET)) {
-    const tag = s.kind === 'session-ling' ? 'Linggen' : 'CC';
-    const meta = s.body ? ` _(${tag}, ${s.body})_` : ` _(${tag})_`;
-    items.push({ kind: 'learned', text: s.label + meta });
-  }
-  const fileCount = (byKind.file || []).length;
-  if (fileCount > 0) {
-    items.push({ kind: 'fixed', text: `${fileCount} files changed in workspace` });
-  }
-  if (items.length === 0) {
-    items.push({ kind: 'decision', text: 'No local activity in window — try expanding or check workspace path.' });
-  }
-  return {
-    type: 'progress',
-    id: `local-${Date.now()}`,
-    window: data.window?.expanded_to || '24h',
-    items,
-  };
-}
 
 // ── Step 2: Gather web — agent reads local cards, picks queries ──
 async function runGatherWeb() {

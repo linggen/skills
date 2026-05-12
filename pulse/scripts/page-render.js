@@ -514,8 +514,12 @@ function cardEl(card, dotKind, innerHtml, extraClass) {
 
 function actionRow(card, actionList) {
   if (!actionList || actionList.length === 0) return '';
-  // Use the card's own actions[] if present; otherwise the default list.
-  const actions = (Array.isArray(card.actions) && card.actions.length > 0) ? card.actions : actionList;
+  // Renderer owns the action set per card type. We deliberately do NOT
+  // honor card.actions from the agent — it kept inventing action names
+  // like "open_thread" that don't map to any handler, and overrode the
+  // default Copy/Open/Dismiss set. The agent's job is to populate card
+  // fields; the page's job is to decide what UI actions are available.
+  const actions = actionList;
   const buttons = actions.map(a => {
     const meta = ACTION_LABELS[a] || { label: a, primary: false, dismiss: false };
     const cls = meta.primary ? 'primary' : meta.dismiss ? 'dismiss' : '';
