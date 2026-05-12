@@ -29,6 +29,11 @@ const SECTION_HINTS = {
 
 let session = emptySession();
 let onChangeCallback = null;
+// User's own Reddit handle (lowercased, no "u/" prefix) — used to filter
+// out mention cards whose latest reply is by the user themselves. Set
+// externally via setSelfHandle(); falls back to checking session.config
+// on every render if available.
+let selfRedditHandle = null;
 
 function emptySession() {
   return {
@@ -52,6 +57,23 @@ function emptySession() {
 export function setOnChange(cb) { onChangeCallback = cb; }
 
 export function getSession() { return session; }
+
+export function setSelfHandle(handle) {
+  if (!handle || typeof handle !== 'string') { selfRedditHandle = null; return; }
+  selfRedditHandle = handle.trim().toLowerCase().replace(/^u\//, '');
+}
+
+// Defensive filter: agent is instructed to drop mention cards whose
+// latest reply is by the user. If it slips, we drop them here too.
+function isSelfLatestReply(card) {
+  if (!selfRedditHandle) return false;
+  if (card.type !== 'mention') return false;
+  const conv = Array.isArray(card.conversation) ? card.conversation : [];
+  const last = conv[conv.length - 1];
+  if (!last || !last.author) return false;
+  const author = String(last.author).toLowerCase().replace(/^u\//, '');
+  return author === selfRedditHandle;
+}
 
 export function loadSession(sessionData) {
   if (!sessionData) {
@@ -200,7 +222,14 @@ function renderSections() {
   for (const sectionId of SECTION_ORDER) {
     const sec = session.sections[sectionId];
     if (!sec || !Array.isArray(sec.cards) || sec.cards.length === 0) continue;
-    container.appendChild(renderSectionEl(sectionId, sec));
+    // Defensive filter: drop mention cards whose latest reply is by the
+    // user themselves — they had the last word, nothing to do. Filter
+    // here (not in agent prompt) so SKILL.md stays lean and the agent
+    // doesn't need to know about this UX rule.
+    const filtered = sec.cards.filter(c => !isSelfLatestReply(c));
+    if (filtered.length === 0) continue;
+    const sectionView = { ...sec, cards: filtered };
+    container.appendChild(renderSectionEl(sectionId, sectionView));
     renderedAny = true;
   }
 
@@ -258,12 +287,60 @@ function renderCard(card) {
 // ---- Card renderers ------------------------------------------------------
 
 function renderMention(c) {
+  // Mention cards now carry the conversational context, not just the
+  // mention quote. Shape:
+  //   - original_post: { author, body, age_hours } — the OP of the thread
+  //   - conversation:  [{ author, body, age_hours }, ...] — chain leading
+  //                    to the mention. Agent emits first + last only when
+  //                    the thread is deep; middle nodes are summarized in
+  //                    `collapsed_count`.
+  //   - collapsed_count: integer — how many comments are between first
+  //                      and last that we're not showing.
+  //   - draft_reply: agent's suggested reply, shown inline so the user
+  //                  can copy + paste back into Reddit.
+  // Falls back gracefully to legacy `quote`-only cards.
+  const op = c.original_post;
+  const conv = Array.isArray(c.conversation) ? c.conversation : [];
+  const collapsed = c.collapsed_count || 0;
+  const draftHtml = c.draft_reply
+    ? `<div class="draft-inline"><div class="draft-inline-label">Draft reply</div><div class="draft-inline-body">${escapeHtml(c.draft_reply)}</div></div>`
+    : '';
+  const opHtml = op
+    ? `<div class="thread-original"><div class="thread-label">Original post${op.author ? ' · ' + escapeHtml(op.author) : ''}${op.age_hours != null ? ' · ' + formatAge(op.age_hours) : ''}</div><div class="thread-body">${escapeHtml(truncateText(op.body || '', 220))}</div></div>`
+    : '';
+  const convHtml = conv.length > 0
+    ? renderConversation(conv, collapsed)
+    : (c.quote ? `<div class="quote">${escapeHtml(c.quote)}</div>` : '');
   return cardEl(c, 'unread', `
     <div class="title">${escapeHtml(c.actor || 'Someone')} mentioned <b>${escapeHtml(c.watched_term || c.thread_title || 'your watch')}</b></div>
-    <div class="meta">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · ${formatAge(c.age_hours)}${c.replies_count != null ? ' · ' + c.replies_count + ' replies' : ''}</div>
-    ${c.quote ? `<div class="quote">"${escapeHtml(c.quote)}"</div>` : ''}
-    ${actionRow(c, ['draft-reply', 'open', 'dismiss'])}
+    <div class="meta">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · ${formatAge(c.age_hours)}${c.thread_title ? ' · "' + escapeHtml(truncateText(c.thread_title, 70)) + '"' : ''}</div>
+    ${opHtml}
+    ${convHtml}
+    ${draftHtml}
+    ${actionRow(c, ['copy', 'open', 'dismiss'])}
   `);
+}
+
+function renderConversation(conv, collapsedCount) {
+  if (conv.length === 0) return '';
+  const parts = [];
+  conv.forEach((node, idx) => {
+    const isLast = idx === conv.length - 1;
+    const labelTxt = idx === 0 && conv.length > 1 ? 'First reply' :
+                     isLast ? 'Latest reply' : 'Reply';
+    const meta = `${labelTxt}${node.author ? ' · ' + escapeHtml(node.author) : ''}${node.age_hours != null ? ' · ' + formatAge(node.age_hours) : ''}`;
+    parts.push(`<div class="thread-step${isLast ? ' latest' : ''}"><div class="thread-label">${meta}</div><div class="thread-body">${escapeHtml(truncateText(node.body || '', 220))}</div></div>`);
+    if (idx === 0 && collapsedCount > 0 && conv.length > 1) {
+      parts.push(`<div class="thread-collapsed">… ${collapsedCount} ${collapsedCount === 1 ? 'reply' : 'replies'} between …</div>`);
+    }
+  });
+  return parts.join('');
+}
+
+function truncateText(s, n) {
+  if (!s) return '';
+  const stripped = String(s).replace(/<[^>]+>/g, '').trim();
+  return stripped.length <= n ? stripped : stripped.slice(0, n - 1) + '…';
 }
 
 function renderReply(c) {

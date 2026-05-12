@@ -400,6 +400,45 @@ body {
   white-space: pre-wrap;
 }
 
+/* Mention: original post + conversation thread (first + last with
+   collapsed-middle indicator). Each step gets a small label + the
+   message body. Latest step gets a subtle accent so the user knows
+   that's what they'd reply to. */
+.card .thread-original,
+.card .thread-step {
+  margin: 0.5rem 0;
+  padding: 0.55rem 0.75rem;
+  background: var(--surface);
+  border-left: 3px solid var(--border);
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.card .thread-step.latest {
+  border-left-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface));
+}
+.card .thread-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.card .thread-step.latest .thread-label { color: var(--accent); }
+.card .thread-body {
+  color: var(--text);
+  white-space: pre-wrap;
+}
+.card .thread-collapsed {
+  margin: 0.3rem 0 0.3rem 0.4rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 11.5px;
+  color: var(--muted);
+  font-style: italic;
+}
+
 /* Discovery: inline draft comment, always visible so user can read without clicking. */
 .card .draft-inline {
   margin: 0.55rem 0;

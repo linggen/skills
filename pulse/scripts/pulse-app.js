@@ -14,7 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, resetPage } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -756,7 +756,9 @@ async function runGatherWeb() {
     '',
     'Then for each topic, call the most relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS, FetchGoogleTrendsDaily, FetchGitHubTrending) in parallel. Filter results for direct topical fit (score ≥ 0.6).',
     '',
-    'For mention-watching, call FetchRedditMentions — uses public Reddit JSON, no auth required. Works whenever sites.reddit.username is set. Returns kind ∈ {mention, own_post, own_comment} for (a) threads where the handle appears, (b) the user\'s recent posts, (c) the user\'s recent comments. Surface all of these in the mentions section; map own_post / own_comment kinds to replies_due hints (the user wants to know if anyone replied).',
+    'For mention-watching, call FetchRedditMentions — uses public Reddit JSON, no auth required. Works whenever sites.reddit.username is set. Returns kind ∈ {mention, own_post, own_comment} for (a) threads where the handle appears, (b) the user\'s recent posts, (c) the user\'s recent comments.',
+    '',
+    'For each "mention" kind result, walk the thread tree (WebFetch <thread_url>.json) and emit a RICH mention card per the schema in SKILL.md: include `original_post`, `conversation` (first reply + latest if deep, with `collapsed_count`), and `draft_reply`. Map own_post / own_comment kinds to replies_due hints.',
     '',
     'Also run public mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
     '',
@@ -1255,6 +1257,13 @@ function truncate(s, n) {
 
 async function init() {
   setOnChange(persistSession);
+  // Hand the renderer the user's Reddit handle so it can filter out
+  // mention cards whose latest reply is by them (nothing to do).
+  try {
+    const cfg = await readPulseConfig();
+    const handle = (cfg?.sites?.reddit?.username || '').trim();
+    if (handle) setSelfHandle(handle);
+  } catch {}
   await loadSidebar();
   // Auto-select today.
   const today = todayDate();

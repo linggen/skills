@@ -433,20 +433,53 @@ configured source tools:
 - `FetchReddit` (each configured sub)
 - `FetchHackerNews`
 - `FetchLobsters`
+- `FetchRedditMentions` for self-handle public mentions (no auth needed)
 
 Filter for hits where the term appears in title or summary. For each
-hit, build a `mention` card (see design.md card schema):
+Reddit hit, **walk the comment tree** to assemble conversational
+context — the user needs to remember what the thread is about, not
+just the mention quote. Fetch the thread JSON via WebFetch on
+`<thread_url>.json` (Reddit's public JSON), then extract the OP and
+the chain leading down to the comment that mentioned the term.
+
+Mention card shape:
 
 ```json
 { "type": "mention", "id": "<generate>",
   "watched_term": "<term>",
-  "actor": "<username if known>",
+  "actor": "<commenter username>",
   "source": "reddit|hn|lobsters", "sub": "<if reddit>",
   "thread_url": "...", "thread_title": "...",
-  "quote": "<first 240 chars of relevant text>",
   "age_hours": <int>,
-  "actions": ["draft-reply", "open", "dismiss"] }
+  "original_post": {
+    "author": "u/<op>",
+    "body": "<plain-text OP body, ~220 chars max>",
+    "age_hours": <int>
+  },
+  "conversation": [
+    { "author": "u/<a>", "body": "<step body, ~220 chars>", "age_hours": <int> },
+    // If the chain is deep (> 2 hops), include ONLY the first reply
+    // after the OP and the latest reply (the mention itself). Drop
+    // middle nodes and set collapsed_count.
+    { "author": "u/<actor>", "body": "<mention text, ~220 chars>", "age_hours": <int> }
+  ],
+  "collapsed_count": <int>,   // 0 if no middle nodes hidden
+  "draft_reply": "<your 2-4 sentence draft reply to the latest comment, in voice>"
+}
 ```
+
+Rules:
+- `original_post` is REQUIRED. Without it the user can't tell what
+  thread this is from.
+- `conversation` is REQUIRED. Single-hop threads have 1 element (the
+  mention itself); deeper threads have 2 (first reply + latest mention)
+  with `collapsed_count` = nodes hidden.
+- `draft_reply` is REQUIRED — the user wants to copy-paste a response.
+  Match voice samples; respect the brief's hard rules.
+
+For non-Reddit sources (HN, lobsters) where the comment tree isn't
+trivially walkable, fall back to a 1-element conversation with just
+the matching quote, OP optional. The card still renders.
 
 Cap at 10 cards. If nothing scored, emit one `empty` card.
 
