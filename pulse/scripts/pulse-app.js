@@ -23,10 +23,8 @@ const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
 const state = {
   selectedDate: null,
-  view: 'session',   // 'session' | 'library-drafts' | 'library-mentions'
-  libraryFilters: { lane: '', source: '', search: '', postedStatus: 'all' },
-  sessions: [],      // [{ date, started_at, last_run_at, run_count, sample_goal, unread_count }]
-  archiveCounts: { drafts: 0, mentions: 0 },  // populated lazily after sidebar renders
+  sessions: [],      // [{ date, started_at, last_run_at, run_count, sample_goal, unread_count, section_counts }]
+  selectedDates: new Set(),  // batch-delete: dates the user has ticked
   chat: null,        // chat-bridge controller
 };
 
@@ -127,62 +125,74 @@ function renderSidebar() {
   const el = document.getElementById('sidebar');
   el.innerHTML = '';
 
-  // Section: Sessions
+  // Just the session list. Aggregates ("This week / This month") and
+  // archive views ("Drafts / Mentions") were aspirational scaffolding —
+  // dropped until they have real value to surface.
   const sect = document.createElement('div');
   sect.className = 'side-section';
+
+  const head = document.createElement('div');
+  head.className = 'side-head';
   const lbl = document.createElement('div');
   lbl.className = 'side-label';
   lbl.textContent = 'Sessions';
-  sect.appendChild(lbl);
+  head.appendChild(lbl);
+
+  // Batch-delete bar — appears only when at least one session is ticked.
+  // Shows the count + Delete + Cancel.
+  if (state.selectedDates.size > 0) {
+    const bar = document.createElement('div');
+    bar.className = 'side-batch-bar';
+    const count = document.createElement('span');
+    count.className = 'side-batch-count';
+    count.textContent = `${state.selectedDates.size} selected`;
+    const delBtn = document.createElement('button');
+    delBtn.className = 'side-batch-delete';
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', deleteSelectedSessions);
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'side-batch-cancel';
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.addEventListener('click', () => {
+      state.selectedDates.clear();
+      renderSidebar();
+    });
+    bar.append(count, delBtn, cancelBtn);
+    head.appendChild(bar);
+  }
+
+  sect.appendChild(head);
 
   for (const s of state.sessions) {
     sect.appendChild(renderSidebarItem(s));
   }
   el.appendChild(sect);
-
-  el.appendChild(divider());
-
-  // Section: Aggregate ranges (placeholder counts for now)
-  const agg = document.createElement('div');
-  agg.className = 'side-section';
-  agg.appendChild(staticItem('This week', `${state.sessions.slice(0, 7).reduce((a, s) => a + s.unread_count, 0)}`));
-  agg.appendChild(staticItem('This month', `${state.sessions.slice(0, 30).reduce((a, s) => a + s.unread_count, 0)}`));
-  el.appendChild(agg);
-
-  el.appendChild(divider());
-
-  // Section: Archives
-  const arc = document.createElement('div');
-  arc.className = 'side-section';
-  const arcLbl = document.createElement('div');
-  arcLbl.className = 'side-label';
-  arcLbl.textContent = 'Archives';
-  arc.appendChild(arcLbl);
-  const draftsItem  = staticItem('📝 Drafts',   fmtCount(state.archiveCounts.drafts));
-  const mentionsItem = staticItem('@ Mentions', fmtCount(state.archiveCounts.mentions));
-  draftsItem.classList.add('clickable');
-  mentionsItem.classList.add('clickable');
-  if (state.view === 'library-drafts')   draftsItem.classList.add('selected');
-  if (state.view === 'library-mentions') mentionsItem.classList.add('selected');
-  draftsItem.addEventListener('click', () => showLibrary('drafts'));
-  mentionsItem.addEventListener('click', () => showLibrary('mentions'));
-  arc.appendChild(draftsItem);
-  arc.appendChild(mentionsItem);
-  el.appendChild(arc);
-}
-
-function fmtCount(n) {
-  if (n == null) return '—';
-  if (n === 0) return '0';
-  return String(n);
 }
 
 function renderSidebarItem(s) {
   const item = document.createElement('div');
   item.className = 'side-item';
   if (s.date === state.selectedDate) item.classList.add('selected');
+  if (state.selectedDates.has(s.date)) item.classList.add('checked');
   item.dataset.date = s.date;
   item.addEventListener('click', () => selectSession(s.date));
+
+  // Checkbox for batch selection. Appears on hover (via CSS), always
+  // visible once any item is checked (so the user can untick easily).
+  const canDelete = s.unread_count > 0 || !!s.last_run_at;
+  if (canDelete) {
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'side-checkbox';
+    cb.checked = state.selectedDates.has(s.date);
+    cb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (cb.checked) state.selectedDates.add(s.date);
+      else state.selectedDates.delete(s.date);
+      renderSidebar();
+    });
+    item.appendChild(cb);
+  }
 
   const text = document.createElement('div');
   text.className = 'side-text';
@@ -203,6 +213,36 @@ function renderSidebarItem(s) {
     item.appendChild(badge);
   }
   return item;
+}
+
+async function deleteSelectedSessions() {
+  const dates = Array.from(state.selectedDates);
+  if (dates.length === 0) return;
+  const label = dates.length === 1
+    ? `the ${dateLabelRelative(dates[0])} session`
+    : `${dates.length} sessions`;
+  if (!confirm(`Delete ${label} and all their cards? This can't be undone.`)) return;
+  // Wipe per-day folders in parallel. rm -rf is idempotent so partial
+  // failures don't strand cards.
+  const cmd = dates.map(d => `rm -rf "${SKILL_DIR}/data/${d}"`).join(' && ');
+  try {
+    await runBash(cmd);
+  } catch (err) {
+    console.warn('[pulse] batch delete failed', err);
+    return;
+  }
+  state.sessions = state.sessions.filter(s => !state.selectedDates.has(s.date));
+  const deletingCurrent = state.selectedDates.has(state.selectedDate);
+  state.selectedDates.clear();
+  if (deletingCurrent) {
+    const today = todayDate();
+    if (!state.sessions.find(s => s.date === today)) {
+      state.sessions.unshift(await loadSessionMeta(today));
+    }
+    await selectSession(today);
+  } else {
+    renderSidebar();
+  }
 }
 
 // Build the subtitle line under each sidebar session entry. Priority:
@@ -230,266 +270,20 @@ function sidebarSubText(s) {
   return 'no runs yet';
 }
 
-function staticItem(label, count) {
-  const item = document.createElement('div');
-  item.className = 'side-item';
-  const text = document.createElement('span');
-  text.className = 'side-name';
-  text.textContent = label;
-  item.appendChild(text);
-  const cnt = document.createElement('span');
-  cnt.className = 'side-count';
-  cnt.textContent = String(count);
-  item.appendChild(cnt);
-  return item;
-}
-
-function divider() {
-  const d = document.createElement('div');
-  d.className = 'side-divider';
-  return d;
-}
 
 // ---- Session selection ---------------------------------------------------
 
 async function selectSession(date) {
   state.selectedDate = date;
-  state.view = 'session';
-  // Reload session content
   const sess = await readJson(`${SKILL_DIR}/data/${date}/session.json`);
-  loadSession(sess);  // renderer applies it
-  // Update header
+  loadSession(sess);
   const meta = state.sessions.find(s => s.date === date);
   document.getElementById('session-title').textContent =
     `${dateLabelRelative(date)} · ${meta?.run_count || 0} runs`;
   document.getElementById('session-sub').textContent = meta?.sample_goal
     ? `Last goal: "${truncate(meta.sample_goal, 80)}"`
     : 'Pick a chip above, or type a goal in chat to start.';
-  // Show session-mode UI elements; hide library-mode
-  showSessionUI();
-  // Update sidebar selection
   renderSidebar();
-}
-
-// ---- Library views -------------------------------------------------------
-
-async function showLibrary(kind) {
-  // kind: 'drafts' | 'mentions'
-  state.view = kind === 'drafts' ? 'library-drafts' : 'library-mentions';
-  state.libraryFilters = { lane: '', source: '', search: '', postedStatus: 'all' };
-  // Update header
-  document.getElementById('session-title').textContent =
-    kind === 'drafts' ? 'Drafts archive' : 'Mentions archive';
-  document.getElementById('session-sub').textContent =
-    kind === 'drafts'
-      ? 'Every draft generated across all sessions. Filter by lane, posted status, or search.'
-      : 'Every mention surfaced across all sessions. Filter by source or search the quote text.';
-  // Hide session-mode UI; show library-mode
-  showLibraryUI();
-  // Render initial library
-  await renderLibrary();
-  // Reflect selection in sidebar
-  renderSidebar();
-}
-
-function showSessionUI() {
-  document.querySelector('.action-chips').style.display = '';
-  document.getElementById('status-strip').hidden = false;  // renderer will hide if empty
-  // Reset library scaffold if present
-  const filters = document.getElementById('library-filters');
-  if (filters) filters.remove();
-}
-
-function showLibraryUI() {
-  document.querySelector('.action-chips').style.display = 'none';
-  document.getElementById('status-strip').hidden = true;
-}
-
-async function renderLibrary() {
-  const container = document.getElementById('sections-container');
-  container.innerHTML = '<div class="state-msg">Loading library…</div>';
-
-  const items = state.view === 'library-drafts'
-    ? await collectAllDrafts()
-    : await collectAllMentions();
-
-  // Render filter bar
-  let filtersEl = document.getElementById('library-filters');
-  if (!filtersEl) {
-    filtersEl = document.createElement('div');
-    filtersEl.id = 'library-filters';
-    filtersEl.className = 'library-filters';
-    container.parentElement.insertBefore(filtersEl, container);
-  }
-  filtersEl.innerHTML = '';
-
-  if (state.view === 'library-drafts') {
-    filtersEl.appendChild(filterSelect('Lane', 'lane', [
-      ['', 'All lanes'],
-      ['x-post', 'X / Twitter'],
-      ['reddit-comment', 'Reddit'],
-      ['blog', 'Blog'],
-      ['medium', 'Medium'],
-      ['linkedin', 'LinkedIn'],
-      ['substack', 'Substack'],
-    ]));
-    filtersEl.appendChild(filterSelect('Status', 'postedStatus', [
-      ['all', 'All'],
-      ['posted', 'Posted'],
-      ['unposted', 'Unposted'],
-    ]));
-  } else {
-    const sources = new Set(items.map(i => i.source).filter(Boolean));
-    filtersEl.appendChild(filterSelect('Source', 'source',
-      [['', 'All sources'], ...Array.from(sources).sort().map(s => [s, s])]));
-  }
-  filtersEl.appendChild(filterSearch());
-
-  // Apply filters
-  const f = state.libraryFilters;
-  let filtered = items;
-  if (state.view === 'library-drafts') {
-    if (f.lane) filtered = filtered.filter(i => i.lane === f.lane);
-    if (f.postedStatus === 'posted')   filtered = filtered.filter(i => !!i.posted);
-    if (f.postedStatus === 'unposted') filtered = filtered.filter(i => !i.posted);
-    if (f.search) {
-      const q = f.search.toLowerCase();
-      filtered = filtered.filter(i => (i.content || '').toLowerCase().includes(q));
-    }
-  } else {
-    if (f.source) filtered = filtered.filter(i => i.source === f.source);
-    if (f.search) {
-      const q = f.search.toLowerCase();
-      filtered = filtered.filter(i =>
-        (i.quote || '').toLowerCase().includes(q) ||
-        (i.thread_title || '').toLowerCase().includes(q) ||
-        (i.watched_term || '').toLowerCase().includes(q)
-      );
-    }
-  }
-
-  // Render list
-  container.innerHTML = '';
-  if (filtered.length === 0) {
-    const msg = document.createElement('div');
-    msg.className = 'state-msg';
-    msg.textContent = items.length === 0
-      ? `No ${state.view === 'library-drafts' ? 'drafts' : 'mentions'} yet across any session.`
-      : 'No results match the current filters.';
-    container.appendChild(msg);
-    return;
-  }
-  const list = document.createElement('div');
-  list.className = 'library-list';
-  filtered.forEach(item => list.appendChild(state.view === 'library-drafts'
-    ? renderDraftRow(item) : renderMentionRow(item)));
-  container.appendChild(list);
-}
-
-function filterSelect(label, key, options) {
-  const wrap = document.createElement('label');
-  wrap.className = 'library-filter';
-  wrap.innerHTML = `<span>${escapeHtml(label)}</span>`;
-  const sel = document.createElement('select');
-  options.forEach(([val, lbl]) => {
-    const o = document.createElement('option');
-    o.value = val; o.textContent = lbl;
-    if (state.libraryFilters[key] === val) o.selected = true;
-    sel.appendChild(o);
-  });
-  sel.addEventListener('change', () => {
-    state.libraryFilters[key] = sel.value;
-    renderLibrary();
-  });
-  wrap.appendChild(sel);
-  return wrap;
-}
-
-function filterSearch() {
-  const wrap = document.createElement('label');
-  wrap.className = 'library-filter library-filter-search';
-  wrap.innerHTML = `<span>Search</span>`;
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'filter…';
-  input.value = state.libraryFilters.search || '';
-  let timer = null;
-  input.addEventListener('input', () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      state.libraryFilters.search = input.value;
-      renderLibrary();
-    }, 200);
-  });
-  wrap.appendChild(input);
-  return wrap;
-}
-
-async function collectAllDrafts() {
-  const out = [];
-  for (const s of state.sessions) {
-    const sess = await readJson(`${SKILL_DIR}/data/${s.date}/session.json`);
-    const cards = sess?.sections?.progress_drafts?.cards || [];
-    for (const c of cards) {
-      if (c.type === 'draft') out.push({ ...c, source_date: s.date });
-    }
-  }
-  // Newest first by source_date.
-  out.sort((a, b) => (b.source_date || '').localeCompare(a.source_date || ''));
-  return out;
-}
-
-async function collectAllMentions() {
-  const out = [];
-  for (const s of state.sessions) {
-    const sess = await readJson(`${SKILL_DIR}/data/${s.date}/session.json`);
-    const cards = sess?.sections?.mentions?.cards || [];
-    for (const c of cards) {
-      if (c.type === 'mention') out.push({ ...c, source_date: s.date });
-    }
-  }
-  out.sort((a, b) => (b.source_date || '').localeCompare(a.source_date || ''));
-  return out;
-}
-
-async function refreshArchiveCounts() {
-  const drafts = await collectAllDrafts();
-  const mentions = await collectAllMentions();
-  state.archiveCounts.drafts = drafts.length;
-  state.archiveCounts.mentions = mentions.length;
-  renderSidebar();
-}
-
-function renderDraftRow(d) {
-  const row = document.createElement('div');
-  row.className = 'lib-row';
-  row.innerHTML = `
-    <div class="lib-row-head">
-      <span class="lib-tag">${escapeHtml(d.lane || 'draft')}</span>
-      <span class="lib-row-date">${escapeHtml(d.source_date || '')}</span>
-      ${d.posted ? '<span class="lib-row-posted">✓ posted</span>' : ''}
-      ${d.char_count != null ? `<span class="lib-row-meta">${d.char_count} chars</span>` : ''}
-    </div>
-    <div class="lib-row-body">${escapeHtml(truncate(d.content || '', 220))}</div>
-  `;
-  row.addEventListener('click', () => selectSession(d.source_date));
-  return row;
-}
-
-function renderMentionRow(m) {
-  const row = document.createElement('div');
-  row.className = 'lib-row';
-  row.innerHTML = `
-    <div class="lib-row-head">
-      <span class="lib-tag">${escapeHtml(m.source || '')}${m.sub ? ' · r/' + escapeHtml(m.sub) : ''}</span>
-      <span class="lib-row-date">${escapeHtml(m.source_date || '')}</span>
-      ${m.watched_term ? `<span class="lib-row-meta">on <b>${escapeHtml(m.watched_term)}</b></span>` : ''}
-      ${m.actor ? `<span class="lib-row-meta">${escapeHtml(m.actor)}</span>` : ''}
-    </div>
-    <div class="lib-row-body">${escapeHtml(truncate(m.quote || m.thread_title || '', 220))}</div>
-  `;
-  row.addEventListener('click', () => selectSession(m.source_date));
-  return row;
 }
 
 // ---- Persistence ---------------------------------------------------------
@@ -1332,8 +1126,6 @@ async function init() {
   // Stop button on the cascade toast.
   document.getElementById('cascade-toast-stop')?.addEventListener('click', cancelCascade);
   await mountChat();
-  // Lazy: archive counts after first paint so the sidebar shows real numbers.
-  refreshArchiveCounts().catch(err => console.warn('[pulse] archive counts failed', err));
   // Auto-cascade on first open of today. Skipped if today's session already
   // has cards (mid-day reopen) or if the user is viewing a past session.
   maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));

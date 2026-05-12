@@ -127,7 +127,52 @@ body {
   flex-shrink: 0;
 }
 .side-item .side-count { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-.side-divider { height: 1px; background: var(--border); margin: 0.5rem 0.45rem; }
+
+/* Batch-select checkbox — hidden by default, appears on hover (or when
+   any item is already checked, so the user can untick without hunting). */
+.side-checkbox {
+  margin: 0 0.4rem 0 0;
+  flex-shrink: 0;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.side-item:hover .side-checkbox,
+.side-item.checked .side-checkbox { opacity: 1; }
+.side-item.checked { background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+
+/* Batch-delete bar, shown above the session list when any item is ticked. */
+.side-head { padding: 0 0.15rem; }
+.side-batch-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 0.15rem 0.4rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 12px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 6px;
+}
+.side-batch-count {
+  flex: 1;
+  color: var(--accent);
+  font-weight: 600;
+}
+.side-batch-delete,
+.side-batch-cancel {
+  font: inherit;
+  font-size: 11.5px;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid currentColor;
+  background: transparent;
+}
+.side-batch-delete { color: var(--red); }
+.side-batch-cancel { color: var(--muted); }
+.side-batch-delete:hover { background: color-mix(in srgb, var(--red) 12%, transparent); }
+.side-batch-cancel:hover { background: var(--surface); }
 
 /* ============ MIDDLE COLUMN (sessions cards) ============ */
 .inbox {
