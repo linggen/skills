@@ -833,10 +833,14 @@ async function maybeAutoCascade() {
     try { await state.initReady; } catch {}
   }
   cascadeStop = false;
+  // Auto-cascade runs ONLY the two gather steps. Draft is user-triggered
+  // because auto-drafting without lane / angle / polish input produces
+  // generic posts the user won't use — wastes tokens. Cards from the
+  // gather steps stay on the page; user clicks Draft when they have a
+  // target in mind.
   const steps = [
     { id: 'gather-local', label: 'Gathering local activity…' },
     { id: 'gather-web',   label: 'Gathering web signal…' },
-    { id: 'draft',        label: 'Drafting posts…' },
   ];
   for (const step of steps) {
     if (cascadeStop) break;

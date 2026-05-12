@@ -199,13 +199,17 @@ partner.
 │    → Emit body_patch for signal / discovery / mentions /         │
 │      replies_due sections (only the ones that have content)      │
 ├─────────────────────────────────────────────────────────────────┤
-│ 4. Draft (chip OR auto-cascade)                                  │
+│ 4. Draft (USER-TRIGGERED ONLY — never auto-cascades)             │
+│    → User clicks Draft chip after reviewing gathered cards       │
 │    → Page sends you a goal sentence                              │
 │    → You read every card on the page (local + web) from history  │
 │    → For each enabled target lane, draft per lane-templates.md   │
 │    → Apply 3-pass: structure → voice → tic-check                 │
 │    → Emit body_patch for progress_drafts with mode: "append"     │
 │      so drafts land alongside the progress card                  │
+│    Why manual: drafting needs lane + angle + tone direction the  │
+│    user supplies by clicking. Auto-drafting produces generic     │
+│    posts that get discarded — wastes tokens.                     │
 ├─────────────────────────────────────────────────────────────────┤
 │ 5. User interaction (anytime)                                    │
 │    → Free-text chat goal → read intent, run the right step       │
