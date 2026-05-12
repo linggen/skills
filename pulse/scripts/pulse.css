@@ -135,12 +135,37 @@ body {
 }
 .side-item.selected .side-timestamp { color: var(--accent); opacity: 0.8; }
 .side-date-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-size: 10.5px;
   font-weight: 600;
   color: var(--muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 0.7rem 0.6rem 0.25rem;
+  border-radius: 4px;
+  user-select: none;
+}
+.side-date-header.clickable { cursor: pointer; }
+.side-date-header.clickable:hover {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 50%, transparent);
+}
+.side-date-header.partial-selected,
+.side-date-header.all-selected {
+  color: var(--accent);
+}
+.side-date-header.all-selected .side-date-label::before {
+  content: "✓ ";
+  font-weight: 700;
+}
+.side-date-count {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--accent);
 }
 
 /* Batch-select checkbox — hidden by default, appears on hover (or when

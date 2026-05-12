@@ -213,20 +213,62 @@ function renderSidebar() {
   sect.appendChild(head);
 
   // Group by date bucket (TODAY / YESTERDAY / May 7 / …). Each session is
-  // rendered as one item with "pulse session" + relative time.
-  let lastBucket = null;
+  // rendered as one item. Date headers are clickable — toggling a header
+  // selects/deselects every (deletable) session in that group at once,
+  // matching the Linggen main page's "select group" pattern.
+  const buckets = new Map();
   for (const s of state.sessions) {
-    const bucket = sessionDateBucket(s.created_at);
-    if (bucket !== lastBucket) {
-      const hdr = document.createElement('div');
-      hdr.className = 'side-date-header';
-      hdr.textContent = dateLabelRelative(bucket).toUpperCase();
-      sect.appendChild(hdr);
-      lastBucket = bucket;
+    const b = sessionDateBucket(s.created_at);
+    if (!buckets.has(b)) buckets.set(b, []);
+    buckets.get(b).push(s);
+  }
+  for (const [bucket, items] of buckets.entries()) {
+    sect.appendChild(renderDateHeader(bucket, items));
+    for (const s of items) {
+      sect.appendChild(renderSidebarItem(s));
     }
-    sect.appendChild(renderSidebarItem(s));
   }
   el.appendChild(sect);
+}
+
+function renderDateHeader(bucket, items) {
+  const hdr = document.createElement('div');
+  hdr.className = 'side-date-header';
+  // Selectable group = all items except the active session (which can't
+  // be batch-deleted while in use).
+  const selectable = items.filter(s => s.sid !== state.activeSessionId);
+  const selectedInGroup = selectable.filter(s => state.selectedSessions.has(s.sid)).length;
+  const allSelected = selectable.length > 0 && selectedInGroup === selectable.length;
+
+  if (selectable.length > 0) hdr.classList.add('clickable');
+  if (allSelected) hdr.classList.add('all-selected');
+  else if (selectedInGroup > 0) hdr.classList.add('partial-selected');
+
+  const labelEl = document.createElement('span');
+  labelEl.className = 'side-date-label';
+  labelEl.textContent = dateLabelRelative(bucket).toUpperCase();
+  hdr.appendChild(labelEl);
+
+  if (selectedInGroup > 0) {
+    const tag = document.createElement('span');
+    tag.className = 'side-date-count';
+    tag.textContent = `${selectedInGroup}/${selectable.length} selected`;
+    hdr.appendChild(tag);
+  }
+
+  if (selectable.length > 0) {
+    hdr.addEventListener('click', () => {
+      // Toggle: if everything in this group is selected, clear them;
+      // otherwise select all selectable items in the group.
+      if (allSelected) {
+        for (const s of selectable) state.selectedSessions.delete(s.sid);
+      } else {
+        for (const s of selectable) state.selectedSessions.add(s.sid);
+      }
+      renderSidebar();
+    });
+  }
+  return hdr;
 }
 
 function renderSidebarItem(s) {
