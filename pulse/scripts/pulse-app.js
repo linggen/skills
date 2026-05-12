@@ -14,7 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, resetPage } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -631,6 +631,10 @@ async function runGatherLocal() {
     // this, the agent has no visibility into what the script rendered
     // on the page.
     await pushLocalContextToChat(data);
+    // Refresh own-commented-URLs in the background so the next gather-web
+    // run's discovery cards skip threads the user has already replied
+    // to. Don't block the chip completion on this.
+    refreshCommentedThreadUrls().catch(() => {});
     completeChipFromSectionUpdate('progress_drafts');
   } catch (err) {
     console.warn('[pulse] gather-local failed', err);
@@ -690,6 +694,25 @@ async function pushLocalContextToChat(data) {
     }
   }
   state.chat.sendHidden(lines.join('\n'));
+}
+
+// Pre-fetch the user's recent own_comment URLs from reddit-mentions.sh
+// so the renderer's discovery filter knows which threads the user has
+// already weighed in on. Runs once at init and after each gather-local
+// (which is when fresh comments are most likely to have landed). Public-
+// JSON only — no OAuth dependency. Failures are silent; the discovery
+// filter just becomes a no-op.
+async function refreshCommentedThreadUrls() {
+  try {
+    const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-mentions.sh"`);
+    const data = JSON.parse(out);
+    const urls = (data?.items || [])
+      .filter(it => it.kind === 'own_comment' && it.url)
+      .map(it => it.url);
+    setCommentedThreadUrls(urls);
+  } catch (e) {
+    console.warn('[pulse] refreshCommentedThreadUrls failed', e);
+  }
 }
 
 // Use ling-mem's extract_session.sh to pull a flattened transcript for
@@ -1259,10 +1282,16 @@ async function init() {
   setOnChange(persistSession);
   // Hand the renderer the user's Reddit handle so it can filter out
   // mention cards whose latest reply is by them (nothing to do).
+  // Also kick off a pre-fetch of own-commented thread URLs so discovery
+  // cards can skip threads the user has already weighed in on. Both
+  // are best-effort; failures don't block init.
   try {
     const cfg = await readPulseConfig();
     const handle = (cfg?.sites?.reddit?.username || '').trim();
-    if (handle) setSelfHandle(handle);
+    if (handle) {
+      setSelfHandle(handle);
+      refreshCommentedThreadUrls().catch(err => console.warn('[pulse] own-comments prefetch', err));
+    }
   } catch {}
   await loadSidebar();
   // Auto-select today.

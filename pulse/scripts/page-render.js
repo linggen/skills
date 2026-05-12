@@ -34,6 +34,10 @@ let onChangeCallback = null;
 // externally via setSelfHandle(); falls back to checking session.config
 // on every render if available.
 let selfRedditHandle = null;
+// Thread URLs the user has already commented on — discovery cards
+// suggesting a comment on these are filtered out. Populated by
+// pulse-app from FetchRedditMentions own_comment results.
+let commentedThreadUrls = new Set();
 
 function emptySession() {
   return {
@@ -63,6 +67,32 @@ export function setSelfHandle(handle) {
   selfRedditHandle = handle.trim().toLowerCase().replace(/^u\//, '');
 }
 
+export function setCommentedThreadUrls(urls) {
+  const set = new Set();
+  for (const u of (urls || [])) {
+    if (typeof u === 'string' && u) set.add(normalizeThreadUrl(u));
+  }
+  commentedThreadUrls = set;
+  renderAll();   // re-render to apply the new filter
+}
+
+// Normalize a Reddit thread URL to its `comments/<id>/` form so a
+// comment permalink like /r/sub/comments/abc/title/xyz matches a
+// thread URL /r/sub/comments/abc/title/. Strips trailing comment
+// fragment, trailing slash, and query string.
+function normalizeThreadUrl(u) {
+  try {
+    const url = new URL(u, 'https://www.reddit.com');
+    let path = url.pathname;
+    // Trim past the post slug — the part after .../comments/<id>/<slug>/
+    const m = path.match(/^(.*\/comments\/[^/]+\/[^/]+\/).*/);
+    if (m) path = m[1];
+    return (url.origin + path).replace(/\/+$/, '');
+  } catch {
+    return String(u).replace(/[?#].*$/, '').replace(/\/+$/, '');
+  }
+}
+
 // Defensive filter: agent is instructed to drop mention cards whose
 // latest reply is by the user. If it slips, we drop them here too.
 function isSelfLatestReply(card) {
@@ -73,6 +103,38 @@ function isSelfLatestReply(card) {
   if (!last || !last.author) return false;
   const author = String(last.author).toLowerCase().replace(/^u\//, '');
   return author === selfRedditHandle;
+}
+
+// Defensive filter: drop reply cards with nothing to act on. A reply
+// card is "actionable" only if there's an unanswered comment, a fresh
+// follow_up event, OR enough activity (score / ratio) the user cares
+// about. Cards from "you posted something" with no engagement
+// metadata are just noise — they say "Your post: post · posted · 0
+// unanswered comments" and the user has to dismiss them by hand.
+function isEmptyReplyCard(card) {
+  if (card.type !== 'reply') return false;
+  const hasFollowup = !!card.follow_up;
+  const unanswered = card.unanswered_count || 0;
+  const replies = card.replies_count || 0;
+  if (hasFollowup) return false;
+  if (unanswered > 0) return false;
+  if (replies > 0) return false;
+  return true;
+}
+
+// Defensive filter: discovery cards suggesting a thread the user has
+// already commented on — drop them; suggesting a comment on a thread
+// where they've already weighed in is noise. URLs come from
+// FetchRedditMentions own_comment results, pre-fetched by pulse-app.
+function isAlreadyCommented(card) {
+  if (card.type !== 'discovery') return false;
+  const url = card.thread_url || card.url;
+  if (!url) return false;
+  return commentedThreadUrls.has(normalizeThreadUrl(url));
+}
+
+function shouldFilterCard(card) {
+  return isSelfLatestReply(card) || isEmptyReplyCard(card) || isAlreadyCommented(card);
 }
 
 export function loadSession(sessionData) {
@@ -222,11 +284,14 @@ function renderSections() {
   for (const sectionId of SECTION_ORDER) {
     const sec = session.sections[sectionId];
     if (!sec || !Array.isArray(sec.cards) || sec.cards.length === 0) continue;
-    // Defensive filter: drop mention cards whose latest reply is by the
-    // user themselves — they had the last word, nothing to do. Filter
-    // here (not in agent prompt) so SKILL.md stays lean and the agent
-    // doesn't need to know about this UX rule.
-    const filtered = sec.cards.filter(c => !isSelfLatestReply(c));
+    // Defensive filters (UX rules enforced at render time, not in
+    // agent prompts so SKILL.md stays lean):
+    //   - mention cards whose latest reply is by the user themselves
+    //     (they had the last word, nothing to do)
+    //   - reply cards with no actionable content (0 unanswered + no
+    //     follow_up — just empty "Your post: …" stubs)
+    //   - discovery cards on threads the user has already commented on
+    const filtered = sec.cards.filter(c => !shouldFilterCard(c));
     if (filtered.length === 0) continue;
     const sectionView = { ...sec, cards: filtered };
     container.appendChild(renderSectionEl(sectionId, sectionView));
