@@ -1055,11 +1055,11 @@ async function mountChat() {
 }
 
 async function sendInitPrompt() {
-  // Seed the agent with brief + workspace as ground truth for the session,
-  // but do NOT greet — the pipeline chips drive the first user-visible
-  // interactions. The agent stays silent until a chip fires (or the user
-  // types). This keeps the page clean on open and avoids paying tokens for
-  // a greeting nobody reads.
+  // Seed the agent with brief + workspace + pipeline contract as ground
+  // truth, then ask for ONE visible greeting line. After the greeting,
+  // the agent stays silent until a chip fires (the page sends each chip
+  // goal as a hidden message — the agent's response is the on-page
+  // artifact, not chat prose).
   if (!state.chat) return;
   const cfg = await readPulseConfig();
   const brief = (cfg?.brief || '').trim();
@@ -1068,9 +1068,20 @@ async function sendInitPrompt() {
   const lines = [
     'You are Ling, operating inside Pulse — an agent-led GTM app for solo founders. You drive the dashboard (via `body_patch` blocks emitted in your PageUpdate tool calls) and the logic (which capabilities to invoke). The chat panel beside the dashboard is how the user talks to you.',
     '',
-    'The user just opened Pulse. The page shows three pipeline chips: Gather local, Gather web, Draft. When the user clicks one (or the page auto-cascades on first daily open), you receive a goal sentence. Read the conversation history for any cards already gathered, then run the requested step.',
+    'The page shows three pipeline chips: Gather local, Gather web, Draft. When the user clicks one (or the page auto-cascades on first daily open), you receive a HIDDEN goal sentence. Read the conversation history for any cards already gathered, then run the requested step. Every artifact lands on the page via PageUpdate body_patch — NEVER paste draft prose into chat.',
     '',
-    'Output rule: every artifact lands on the page via PageUpdate body_patch. NEVER reply with plain prose drafts in chat — drafts go to `progress_drafts` as `draft` cards. NEVER greet or summarize unless asked; stay silent on idle.',
+    'After this init, your FIRST visible message is a brief greeting:',
+    '  Line 1: Introduce yourself as Ling, the user\'s personal assistant inside Pulse.',
+    '  Line 2: Reference ONE concrete detail from the brief (product name, current launch state, active context) so the user feels you\'ve absorbed it. Not a summary — a specific reference.',
+    '  Line 3 (optional): One short line on what you can help with today, framed around what the brief actually says is active.',
+    '',
+    'Hard greeting constraints:',
+    '- 2-3 short lines. Warm but not gushy.',
+    '- No "I\'m thrilled", "happy to help", "let me know", "what do you think". No emojis. No closing CTA. No "Which step should I run" prompts — the chips drive that, not you.',
+    '- Do NOT summarize the brief back to the user. They wrote it.',
+    '- Do NOT list every capability. Pick ONE concrete thing tied to the brief\'s active context.',
+    '',
+    'After the greeting, stay silent until you receive a goal sentence. When goals arrive (gather-web, draft, or user free-text), run them with terse status lines in chat (e.g. "Calling FetchReddit for r/macapps + r/golang…") and land all output on the page via body_patch. Do not narrate "Done — no code changes made" after script-only steps; the page already shows the user what happened. Just stay silent and wait for the next goal.',
   ];
   if (workspace) {
     lines.push('', `Workspace: ${workspace}`,
