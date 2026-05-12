@@ -101,11 +101,14 @@ body {
   color: var(--muted);
   padding: 0.5rem 0.35rem 0.4rem;
 }
+/* Sidebar item — matches the Linggen main-page sessions panel:
+   purple-tinted skill icon on the left, two-row text (name + timestamp
+   on top row, "skill" badge + optional card-count subtitle below). */
 .side-item {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.42rem 0.55rem;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.55rem 0.6rem;
   border-radius: 6px;
   cursor: pointer;
   color: var(--text);
@@ -113,13 +116,76 @@ body {
   line-height: 1.3;
 }
 .side-item:hover { background: var(--surface); }
-.side-item.selected { background: var(--accent-soft); color: var(--accent); }
-.side-item.selected .side-name { font-weight: 600; }
-.side-item .side-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.side-item .side-name { flex: 1; }
-.side-item .side-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-.side-item.selected .side-sub { color: var(--accent); opacity: 0.85; }
+.side-item.selected { background: var(--accent-soft); }
+.side-item.selected .side-name { color: var(--accent); font-weight: 600; }
 .side-item.clickable { cursor: pointer; }
+.side-item.active .side-icon { color: var(--accent); }
+
+.side-item .side-icon {
+  flex-shrink: 0;
+  color: #a78bfa;
+  display: inline-flex;
+  align-items: center;
+  padding-top: 1px;
+}
+
+.side-item .side-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.side-item .side-name-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+.side-item .side-name {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.side-item .side-timestamp {
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.side-item.selected .side-timestamp { color: var(--accent); opacity: 0.85; }
+
+.side-item .side-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.side-item .side-skill-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, #a78bfa 18%, transparent);
+  color: #7c3aed;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+@media (prefers-color-scheme: dark) {
+  .side-item .side-skill-badge {
+    background: color-mix(in srgb, #a78bfa 22%, transparent);
+    color: #c4b5fd;
+  }
+}
+.side-item .side-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+.side-item.selected .side-sub { color: var(--accent); opacity: 0.85; }
+
 .side-item .side-badge {
   padding: 1px 6px; border-radius: 999px;
   background: var(--accent); color: var(--bg);
@@ -127,13 +193,6 @@ body {
   flex-shrink: 0;
 }
 .side-item .side-count { font-size: 11px; color: var(--muted); flex-shrink: 0; }
-.side-item .side-timestamp {
-  font-size: 11px;
-  color: var(--muted);
-  flex-shrink: 0;
-  margin-left: 0.4rem;
-}
-.side-item.selected .side-timestamp { color: var(--accent); opacity: 0.8; }
 .side-date-header {
   display: flex;
   align-items: center;

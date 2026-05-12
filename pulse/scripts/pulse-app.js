@@ -95,10 +95,22 @@ function relativeAge(isoOrEpoch) {
   return new Date(t).toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
+// Coarse time-period buckets matching the Linggen main-page sessions
+// panel: TODAY / YESTERDAY / THIS WEEK / EARLIER. Avoids the noisy
+// "one header per calendar date" layout of small daily clusters.
 function sessionDateBucket(isoOrEpoch) {
   const t = typeof isoOrEpoch === 'number' ? isoOrEpoch * 1000 : Date.parse(isoOrEpoch);
-  if (isNaN(t)) return 'unknown';
-  return new Date(t).toISOString().slice(0, 10);
+  if (isNaN(t)) return { key: 'unknown', label: 'EARLIER', order: 4 };
+  const now = new Date();
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const tsDate = new Date(t);
+  const ts0 = new Date(tsDate.getFullYear(), tsDate.getMonth(), tsDate.getDate()).getTime();
+  const dayDiff = Math.round((today0 - ts0) / 86400_000);
+  if (dayDiff <= 0)  return { key: 'today',     label: 'TODAY',     order: 0 };
+  if (dayDiff === 1) return { key: 'yesterday', label: 'YESTERDAY', order: 1 };
+  if (dayDiff < 7)   return { key: 'this-week', label: 'THIS WEEK', order: 2 };
+  if (dayDiff < 30)  return { key: 'this-month',label: 'THIS MONTH',order: 3 };
+  return { key: 'earlier', label: 'EARLIER', order: 4 };
 }
 
 // ---- Sidebar -------------------------------------------------------------
@@ -109,6 +121,10 @@ async function loadSidebar() {
   // also keeps its own per-session card store under
   // ~/.linggen/skills/pulse/data/<sess-id>/session.json so we can read
   // cards back for past sessions.
+  // session.yaml stores `created_at` as a UNIX epoch (seconds). Pass it
+  // through as a number so JS can do math on it directly — converting
+  // to ISO in bash and back drops timezone fidelity and causes parsing
+  // mismatches (the "UNDEFINED UNDEFINED" date header bug).
   const cmd = `for d in "$HOME"/.linggen/sessions/*/; do
     [ -f "$d/session.yaml" ] || continue
     skill=$(grep -m1 '^skill:' "$d/session.yaml" 2>/dev/null | sed -E 's/^skill:[[:space:]]*//; s/[[:space:]]*#.*$//; s/^"(.*)"$/\\1/; s/^'"'"'(.*)'"'"'$/\\1/')
@@ -116,15 +132,18 @@ async function loadSidebar() {
     sid=$(basename "$d")
     title=$(grep -m1 '^title:' "$d/session.yaml" 2>/dev/null | sed 's/^title:[[:space:]]*//; s/^"\\(.*\\)"$/\\1/')
     created_at=$(grep -m1 '^created_at:' "$d/session.yaml" 2>/dev/null | sed 's/^created_at:[[:space:]]*//')
-    # Fallback to dir mtime if created_at missing
+    # Fallback to dir mtime epoch if missing.
     if [ -z "$created_at" ]; then
       if [[ "$(uname)" == "Darwin" ]]; then
-        created_at=$(stat -f "%Sm" -t "%Y-%m-%dT%H:%M:%SZ" "$d" 2>/dev/null)
+        created_at=$(stat -f "%m" "$d" 2>/dev/null)
       else
-        created_at=$(date -r "$d" "+%Y-%m-%dT%H:%M:%SZ" 2>/dev/null)
+        created_at=$(stat -c "%Y" "$d" 2>/dev/null)
       fi
     fi
-    printf '{"sid":"%s","title":%s,"created_at":"%s"}\\n' "$sid" "$(jq -Rsn --arg t "$title" '$t')" "$created_at"
+    # Strip non-numeric. Skip if still not a number.
+    created_at=$(echo "$created_at" | tr -dc '0-9')
+    [ -z "$created_at" ] && continue
+    printf '{"sid":"%s","title":%s,"created_at":%s}\\n' "$sid" "$(jq -Rsn --arg t "$title" '$t')" "$created_at"
   done | jq -s 'sort_by(.created_at) | reverse | .[0:50]'`;
   let raw = '';
   try { raw = (await runBash(cmd)).trim(); } catch (e) { console.warn('[pulse] sidebar scan failed', e); }
@@ -212,17 +231,17 @@ function renderSidebar() {
 
   sect.appendChild(head);
 
-  // Group by date bucket (TODAY / YESTERDAY / May 7 / …). Each session is
-  // rendered as one item. Date headers are clickable — toggling a header
-  // selects/deselects every (deletable) session in that group at once,
-  // matching the Linggen main page's "select group" pattern.
-  const buckets = new Map();
+  // Group by time-period bucket. Bucket objects come with .label and
+  // .order so we can keep TODAY / YESTERDAY / THIS WEEK / … ordering
+  // consistent regardless of session insertion order.
+  const groups = new Map();   // key → { bucket, items: [...] }
   for (const s of state.sessions) {
-    const b = sessionDateBucket(s.created_at);
-    if (!buckets.has(b)) buckets.set(b, []);
-    buckets.get(b).push(s);
+    const bucket = sessionDateBucket(s.created_at);
+    if (!groups.has(bucket.key)) groups.set(bucket.key, { bucket, items: [] });
+    groups.get(bucket.key).items.push(s);
   }
-  for (const [bucket, items] of buckets.entries()) {
+  const ordered = Array.from(groups.values()).sort((a, b) => a.bucket.order - b.bucket.order);
+  for (const { bucket, items } of ordered) {
     sect.appendChild(renderDateHeader(bucket, items));
     for (const s of items) {
       sect.appendChild(renderSidebarItem(s));
@@ -234,8 +253,6 @@ function renderSidebar() {
 function renderDateHeader(bucket, items) {
   const hdr = document.createElement('div');
   hdr.className = 'side-date-header';
-  // Selectable group = all items except the active session (which can't
-  // be batch-deleted while in use).
   const selectable = items.filter(s => s.sid !== state.activeSessionId);
   const selectedInGroup = selectable.filter(s => state.selectedSessions.has(s.sid)).length;
   const allSelected = selectable.length > 0 && selectedInGroup === selectable.length;
@@ -246,7 +263,7 @@ function renderDateHeader(bucket, items) {
 
   const labelEl = document.createElement('span');
   labelEl.className = 'side-date-label';
-  labelEl.textContent = dateLabelRelative(bucket).toUpperCase();
+  labelEl.textContent = bucket.label;
   hdr.appendChild(labelEl);
 
   if (selectedInGroup > 0) {
@@ -258,8 +275,6 @@ function renderDateHeader(bucket, items) {
 
   if (selectable.length > 0) {
     hdr.addEventListener('click', () => {
-      // Toggle: if everything in this group is selected, clear them;
-      // otherwise select all selectable items in the group.
       if (allSelected) {
         for (const s of selectable) state.selectedSessions.delete(s.sid);
       } else {
@@ -278,12 +293,10 @@ function renderSidebarItem(s) {
   const isActive = s.sid === state.activeSessionId;
   if (isViewed) item.classList.add('selected');
   if (state.selectedSessions.has(s.sid)) item.classList.add('checked');
+  if (isActive) item.classList.add('active');
   item.dataset.sid = s.sid;
   item.addEventListener('click', () => selectSession(s.sid));
 
-  // Checkbox — sessions other than the currently-active one can be batch
-  // deleted. The active session is the one the chat panel is attached
-  // to; deleting it mid-use would orphan the chat.
   if (!isActive) {
     const cb = document.createElement('input');
     cb.type = 'checkbox';
@@ -298,29 +311,43 @@ function renderSidebarItem(s) {
     item.appendChild(cb);
   }
 
+  // Skill icon (purple sparkle) — matches the Linggen main-page style
+  // where every skill-created session gets the same iconography.
+  const icon = document.createElement('span');
+  icon.className = 'side-icon';
+  icon.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2l1.5 5 5 1.5-5 1.5L12 15l-1.5-5-5-1.5 5-1.5L12 2zm7 11l.8 2.7L22.5 16l-2.7.8L19 19.5l-.8-2.7-2.7-.8 2.7-.8L19 12.5z"/></svg>';
+  item.appendChild(icon);
+
   const text = document.createElement('div');
   text.className = 'side-text';
+
+  const nameRow = document.createElement('div');
+  nameRow.className = 'side-name-row';
   const name = document.createElement('span');
   name.className = 'side-name';
-  name.textContent = (isViewed ? '● ' : '') + (s.title || 'pulse session');
-  const sub = document.createElement('span');
-  sub.className = 'side-sub';
-  sub.textContent = sidebarSubText(s);
-  text.appendChild(name);
-  text.appendChild(sub);
-  item.appendChild(text);
-
+  name.textContent = s.title || 'pulse session';
+  nameRow.appendChild(name);
   const ts = document.createElement('span');
   ts.className = 'side-timestamp';
   ts.textContent = relativeAge(s.created_at);
-  item.appendChild(ts);
+  nameRow.appendChild(ts);
+  text.appendChild(nameRow);
 
+  const metaRow = document.createElement('div');
+  metaRow.className = 'side-meta-row';
+  const badge = document.createElement('span');
+  badge.className = 'side-skill-badge';
+  badge.textContent = 'skill';
+  metaRow.appendChild(badge);
   if (s.unread_count > 0) {
-    const badge = document.createElement('span');
-    badge.className = 'side-badge';
-    badge.textContent = String(s.unread_count);
-    item.appendChild(badge);
+    const sub = document.createElement('span');
+    sub.className = 'side-sub';
+    sub.textContent = sidebarSubText(s);
+    metaRow.appendChild(sub);
   }
+  text.appendChild(metaRow);
+
+  item.appendChild(text);
   return item;
 }
 
