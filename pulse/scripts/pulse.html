@@ -40,20 +40,35 @@
         <div class="sub" id="session-sub"></div>
       </div>
 
-      <!-- Action chips. Each chip = a preset goal text the agent dispatches. -->
-      <div class="action-chips">
-        <button class="chip" data-chip="daily-post" title="Daily short post if I shipped or learned something"><span class="ic">📝</span> Daily post</button>
-        <button class="chip" data-chip="find-threads" title="Find threads worth commenting on across configured subs"><span class="ic">🔍</span> Find threads</button>
-        <button class="chip" data-chip="check-mentions" title="Check for mentions and triage replies on posts"><span class="ic">@</span> Check mentions</button>
-        <button class="chip" data-chip="scan-signal" title="What's happening in my space — landscape and trends"><span class="ic">📡</span> Scan signal</button>
-        <button class="chip" data-chip="recap" title="Weekly recap — what shipped, what learned"><span class="ic">📊</span> Recap</button>
-        <div class="chip-menu-wrap">
-          <button class="chip" data-chip="more" title="More actions"><span class="ic">⋯</span></button>
-          <div class="chip-menu" id="chip-more-menu" hidden>
-            <button class="chip-menu-item" data-more="refresh">Refresh today</button>
-            <button class="chip-menu-item" data-more="draft-from-url">Draft from URL…</button>
-          </div>
-        </div>
+      <!-- Pipeline chips: gather local → gather web → draft. Each chip = one
+           step the agent (or a script) runs. Click a chip to (re-)run that
+           step independently; first open of the day auto-cascades all three. -->
+      <div class="action-chips pipeline">
+        <button class="chip step" data-chip="gather-local" data-state="idle"
+                title="Pull yesterday's commits, sessions, and changed files">
+          <span class="ic">📂</span>
+          <span class="label">Gather local</span>
+          <span class="state-ic" aria-hidden="true"></span>
+        </button>
+        <button class="chip step" data-chip="gather-web" data-state="idle"
+                title="Pull web signal from configured sources, topic-aware">
+          <span class="ic">🌐</span>
+          <span class="label">Gather web</span>
+          <span class="state-ic" aria-hidden="true"></span>
+        </button>
+        <button class="chip step" data-chip="draft" data-state="idle"
+                title="Draft posts for enabled target lanes from gathered context">
+          <span class="ic">✎</span>
+          <span class="label">Draft</span>
+          <span class="state-ic" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <!-- Cascade toast — shown when the auto-cascade fires on first open of
+           the day. Non-blocking; user can stop it. -->
+      <div class="cascade-toast" id="cascade-toast" hidden>
+        <span class="cascade-toast-label" id="cascade-toast-label">Running today's brief…</span>
+        <button class="cascade-toast-stop" id="cascade-toast-stop">Stop</button>
       </div>
 
       <!-- Status strip — populated from state/ files -->

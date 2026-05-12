@@ -112,10 +112,24 @@ function applyBodyPatch(patch) {
   if (!session.sections[sectionId]) {
     session.sections[sectionId] = { cards: [], last_updated: null };
   }
-  // Replace semantics: cards in patch fully replace existing cards.
-  // (Append semantics would require a different field; keep it simple.)
   if (Array.isArray(patch.cards)) {
-    session.sections[sectionId].cards = patch.cards;
+    // Two modes:
+    //   default (replace) — cards in patch fully replace existing cards.
+    //                       Used by Gather web's mentions/signal/discovery
+    //                       patches and by the page-side gather-local that
+    //                       seeds the progress card.
+    //   "append"          — concatenate to existing cards, deduping by id.
+    //                       Used by the Draft step so newly-generated draft
+    //                       cards land alongside the progress card without
+    //                       clobbering it.
+    if (patch.mode === 'append') {
+      const existing = session.sections[sectionId].cards || [];
+      const seen = new Set(existing.map(c => c.id).filter(Boolean));
+      const additions = patch.cards.filter(c => !c.id || !seen.has(c.id));
+      session.sections[sectionId].cards = existing.concat(additions);
+    } else {
+      session.sections[sectionId].cards = patch.cards;
+    }
   }
   session.sections[sectionId].last_updated =
     patch.last_updated || new Date().toISOString();

@@ -479,8 +479,22 @@ async function persistSession(session) {
     const idx = state.sessions.findIndex(s => s.date === state.selectedDate);
     if (idx >= 0) state.sessions[idx] = meta;
     renderSidebar();
+    // Any section update may complete a running chip.
+    notifyRunningChipsFromSession(session);
   } catch (err) {
     console.warn('[pulse] persist failed', err);
+  }
+}
+
+// Walk session.sections and complete any running chip whose expected
+// section has cards now. Conservative: only fires once cards arrive, not
+// just on last_updated bumps.
+function notifyRunningChipsFromSession(session) {
+  if (!session?.sections) return;
+  for (const [secId, sec] of Object.entries(session.sections)) {
+    if (Array.isArray(sec.cards) && sec.cards.length > 0) {
+      completeChipFromSectionUpdate(secId);
+    }
   }
 }
 
@@ -517,64 +531,290 @@ async function loadStatusStrip() {
   }
 }
 
-// ---- Action chips --------------------------------------------------------
+// ---- Pipeline chips -----------------------------------------------------
+//
+// Three chips, one per pipeline step:
+//   - gather-local : runs scripts/gather-local.sh via /api/bash (no agent
+//                    cost; result lands as a `progress` card in
+//                    `progress_drafts`).
+//   - gather-web   : sends a goal sentence to the chat; the agent reads
+//                    the local cards already in conversation history,
+//                    decides which Fetch* tools to call, and emits
+//                    body_patch blocks for mentions/replies_due/
+//                    discovery/signal sections.
+//   - draft        : sends a goal sentence to draft posts for enabled
+//                    target lanes from whatever cards exist; agent emits
+//                    body_patch on progress_drafts with `draft` cards.
+//
+// Chip state machine: idle → running → done | failed. The JS flips state
+// based on either the script's return (local) or the renderer's onChange
+// signal (web / draft) firing within a CHIP_TIMEOUT_MS window.
 
-// Each chip = a preset goal sentence the agent dispatches on. The five
-// chips map 1:1 to the five engine-internal capabilities (draft-content
-// pairs into Daily post + Recap because it never runs alone).
-const CHIP_GOALS = {
-  'daily-post':     { goal: 'Daily short post if I shipped or learned something yesterday.' },
-  'find-threads':   { goal: 'Find threads worth commenting on across configured Reddit subs and HN.' },
-  'check-mentions': { goal: 'Check for mentions of my product or competitors, and triage replies on threads I\'ve posted to.' },
-  'scan-signal':    { goal: 'What\'s happening in my space — competitive landscape and trending topics.' },
-  'recap':          { goal: 'Generate a recap of this week — what shipped, what learned, drafted as a blog or substack post.' },
-};
+const CHIP_TIMEOUT_MS = 120_000;  // 2 min — agent steps can be slow
 
-const MORE_ACTIONS = {
-  'refresh':        () => sendChatMessage('Re-run today\'s most recent goal.'),
-  'draft-from-url': () => {
-    const url = window.prompt('Draft from URL — paste a link to your blog post, GitHub release, or other artifact:');
-    if (!url) return;
-    sendChatMessage(`Broadcast my artifact at ${url.trim()} — draft posts for the configured target lanes and surface threads where it would land.`);
+const PIPELINE_CHIPS = {
+  'gather-local': {
+    handler: runGatherLocal,
+    expects: ['progress_drafts'],   // sections that should update
+  },
+  'gather-web': {
+    handler: runGatherWeb,
+    expects: ['mentions', 'replies_due', 'discovery', 'signal'],
+  },
+  'draft': {
+    handler: runDraft,
+    expects: ['progress_drafts'],
   },
 };
 
+// Tracks chips that are currently running, so onChange can complete them.
+const runningChips = new Map();   // chipId → { resolve, reject, timer, expects }
+
+function setChipState(chipId, state) {
+  const btn = document.querySelector(`.chip[data-chip="${chipId}"]`);
+  if (btn) btn.dataset.state = state;
+}
+
+function startChip(chipId, expects) {
+  setChipState(chipId, 'running');
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const rec = runningChips.get(chipId);
+      if (rec) {
+        runningChips.delete(chipId);
+        setChipState(chipId, 'failed');
+        rec.reject(new Error(`chip "${chipId}" timed out after ${CHIP_TIMEOUT_MS}ms`));
+      }
+    }, CHIP_TIMEOUT_MS);
+    runningChips.set(chipId, { resolve, reject, timer, expects });
+  });
+}
+
+function completeChipFromSectionUpdate(sectionId) {
+  // Walk running chips; if any was expecting this section, mark done.
+  for (const [chipId, rec] of runningChips.entries()) {
+    if (rec.expects && rec.expects.includes(sectionId)) {
+      clearTimeout(rec.timer);
+      runningChips.delete(chipId);
+      setChipState(chipId, 'done');
+      rec.resolve();
+    }
+  }
+}
+
+function failChip(chipId, err) {
+  const rec = runningChips.get(chipId);
+  if (rec) {
+    clearTimeout(rec.timer);
+    runningChips.delete(chipId);
+    rec.reject(err);
+  }
+  setChipState(chipId, 'failed');
+}
+
+// ── Step 1: Gather local — script, no agent ──
+async function runGatherLocal() {
+  const expects = PIPELINE_CHIPS['gather-local'].expects;
+  startChip('gather-local', expects).catch(() => {});  // resolved manually below
+  try {
+    const out = await runBash(`bash "${SKILL_DIR}/scripts/gather-local.sh"`);
+    let data;
+    try { data = JSON.parse(out); }
+    catch (e) { throw new Error(`gather-local returned non-JSON: ${out.slice(0, 200)}`); }
+    const card = buildProgressCardFromLocal(data);
+    // Render directly — script-only step, no agent.
+    applyPageUpdate({
+      body_patch: { section: 'progress_drafts', cards: [card], last_updated: new Date().toISOString() },
+    });
+    // Inject the local activity into chat history (hidden) so the next
+    // step (Gather web) and the Draft step have it in context. Without
+    // this, the agent has no visibility into what the script rendered
+    // on the page.
+    await pushLocalContextToChat(data);
+    completeChipFromSectionUpdate('progress_drafts');
+  } catch (err) {
+    console.warn('[pulse] gather-local failed', err);
+    failChip('gather-local', err);
+    throw err;
+  }
+}
+
+async function pushLocalContextToChat(data) {
+  if (!state.chat || !data) return;
+  const items = data.items || [];
+  if (items.length === 0) return;
+  const byKind = items.reduce((acc, it) => { (acc[it.kind] ||= []).push(it); return acc; }, {});
+  const lines = ['[gather-local result — for your context, not user-visible]', ''];
+  if (data.window) {
+    lines.push(`Window: ${data.window.since} → ${data.window.until} (${data.window.expanded_to})`);
+  }
+  if (data.workspace) lines.push(`Workspace: ${data.workspace}`);
+  lines.push('');
+  if (byKind.commit?.length) {
+    lines.push(`Commits (${byKind.commit.length}):`);
+    for (const c of byKind.commit.slice(0, 20)) {
+      lines.push(`  - [${c.source}] ${c.label}`);
+    }
+    lines.push('');
+  }
+  const sessions = (byKind['session-cc'] || []).concat(byKind['session-ling'] || []);
+  if (sessions.length) {
+    lines.push(`Sessions (${sessions.length}):`);
+    for (const s of sessions.slice(0, 10)) {
+      lines.push(`  - [${s.source}] ${s.label} — ${s.body}`);
+    }
+    lines.push('');
+  }
+  if (byKind.file?.length) {
+    lines.push(`Recently changed files (${byKind.file.length}):`);
+    for (const f of byKind.file.slice(0, 15)) {
+      lines.push(`  - ${f.label}`);
+    }
+  }
+  state.chat.sendHidden(lines.join('\n'));
+}
+
+function buildProgressCardFromLocal(data) {
+  const items = [];
+  const byKind = (data.items || []).reduce((acc, it) => {
+    (acc[it.kind] ||= []).push(it);
+    return acc;
+  }, {});
+  for (const c of (byKind.commit || [])) {
+    items.push({ kind: 'shipped', text: c.label + (c.source ? ` _(${c.source})_` : '') });
+  }
+  for (const s of (byKind['session-cc'] || []).concat(byKind['session-ling'] || [])) {
+    items.push({ kind: 'learned', text: s.label + (s.body ? ` — ${s.body}` : '') });
+  }
+  const fileCount = (byKind.file || []).length;
+  if (fileCount > 0 && items.length < 5) {
+    items.push({ kind: 'fixed', text: `${fileCount} files changed in workspace` });
+  }
+  if (items.length === 0) {
+    items.push({ kind: 'decision', text: 'No local activity in window — try expanding or check workspace path.' });
+  }
+  return {
+    type: 'progress',
+    id: `local-${Date.now()}`,
+    window: data.window?.expanded_to || '24h',
+    items: items.slice(0, 8),
+  };
+}
+
+// ── Step 2: Gather web — agent reads local cards, picks queries ──
+async function runGatherWeb() {
+  const promise = startChip('gather-web', PIPELINE_CHIPS['gather-web'].expects);
+  const goal = [
+    'Gather web signal for what I\'m working on right now.',
+    '',
+    'Read the local cards already in this session (the `progress` card in `progress_drafts` lists my recent commits, sessions, and changed files). Pick 2-3 concrete topics that capture what I\'m actually working on this week.',
+    '',
+    'Then for each topic, call the most relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS, FetchGoogleTrendsDaily, FetchGitHubTrending) in parallel. Filter results for direct topical fit (score ≥ 0.6).',
+    '',
+    'Also run mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
+    '',
+    'Emit body_patch blocks for `signal`, `discovery`, `mentions`, and `replies_due` sections as appropriate. If nothing scored above the cutoff for a section, emit one `empty` card with a one-line reason. Do NOT draft anything — that\'s the next step.',
+  ].join('\n');
+  sendChatMessage(goal);
+  return promise;
+}
+
+// ── Step 3: Draft — agent reads all cards, drafts for enabled lanes ──
+async function runDraft() {
+  const promise = startChip('draft', PIPELINE_CHIPS['draft'].expects);
+  const goal = [
+    'Draft posts for the enabled target lanes using the local + web cards already in this session.',
+    '',
+    'Read what\'s on the page: progress card (what I shipped/learned), signal cards (industry context), discovery cards (thread opportunities), mention cards (where I\'ve been mentioned).',
+    '',
+    'For each enabled lane in config.targets[*].enabled, generate one draft per lane following references/lane-templates.md constraints. Pass 1: claim + evidence + structure. Pass 2: voice rewrite against references/voice-samples.md. Pass 3: strip "🚀", "I\'m thrilled", "TL;DR", "Hot take", "game changer", "level up", "AI-powered", opening hashtag, closing "what do you think?".',
+    '',
+    'Emit body_patch for `progress_drafts` using `mode: "append"` so the new `draft` cards land alongside the existing progress card from gather-local (without `mode: "append"` the patch replaces the section, clobbering the progress card). Each draft card: { type:"draft", id, lane, content, char_count, char_limit?, title_candidates?, subtitle? }.',
+    '',
+    'If neither local nor web cards have enough signal to draft honestly (no shipped work, no real-world hook, no thread to comment on), emit one `empty` card with a one-line reason and skip drafting. Do not fabricate.',
+  ].join('\n');
+  sendChatMessage(goal);
+  return promise;
+}
+
 function wireChips() {
   document.querySelectorAll('.chip[data-chip]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const type = btn.dataset.chip;
-      if (type === 'more') {
-        e.stopPropagation();
-        toggleMoreMenu();
-        return;
-      }
-      const conf = CHIP_GOALS[type];
-      if (conf?.goal) sendChatMessage(conf.goal);
-    });
-  });
-  document.querySelectorAll('.chip-menu-item').forEach(btn => {
     btn.addEventListener('click', () => {
-      closeMoreMenu();
-      const action = MORE_ACTIONS[btn.dataset.more];
-      if (action) action();
+      const chipId = btn.dataset.chip;
+      const conf = PIPELINE_CHIPS[chipId];
+      if (!conf) return;
+      // Cancel any in-flight cascade — explicit click takes precedence.
+      cancelCascade();
+      conf.handler().catch(err => console.warn(`[pulse] ${chipId} failed`, err));
     });
   });
-  // Close the menu when clicking elsewhere.
-  document.addEventListener('click', (e) => {
-    const menu = document.getElementById('chip-more-menu');
-    if (menu && !menu.hidden && !e.target.closest('.chip-menu-wrap')) closeMoreMenu();
-  });
 }
 
-function toggleMoreMenu() {
-  const menu = document.getElementById('chip-more-menu');
-  if (menu) menu.hidden = !menu.hidden;
+// ---- Auto-cascade --------------------------------------------------------
+//
+// First open of the day: run all three steps in sequence with a tiny
+// non-blocking toast. Cancellable. Skipped if today's session already has
+// cards (so reopening the tab mid-day doesn't re-fire).
+
+let cascadeStop = false;
+
+function cancelCascade() {
+  cascadeStop = true;
+  const toast = document.getElementById('cascade-toast');
+  if (toast) toast.hidden = true;
 }
 
-function closeMoreMenu() {
-  const menu = document.getElementById('chip-more-menu');
-  if (menu) menu.hidden = true;
+function showCascadeToast(label) {
+  const toast = document.getElementById('cascade-toast');
+  if (!toast) return;
+  document.getElementById('cascade-toast-label').textContent = label;
+  toast.hidden = false;
 }
+
+function hideCascadeToast() {
+  const toast = document.getElementById('cascade-toast');
+  if (toast) toast.hidden = true;
+}
+
+async function maybeAutoCascade() {
+  if (state.selectedDate !== todayDate()) return;     // viewing past session
+  const sess = getSession();
+  // If any section already has cards, today's pipeline already ran. Skip.
+  for (const sec of Object.values(sess?.sections || {})) {
+    if (Array.isArray(sec.cards) && sec.cards.length > 0) return;
+  }
+  // Wait for chat to be ready, grants replayed, and init prompt sent
+  // before firing agent steps. The first step (Gather local) is
+  // script-only and doesn't need this, but steps 2/3 do.
+  if (state.grantsReady) {
+    try { await state.grantsReady(); } catch {}
+  }
+  if (state.initReady) {
+    try { await state.initReady; } catch {}
+  }
+  cascadeStop = false;
+  const steps = [
+    { id: 'gather-local', label: 'Gathering local activity…' },
+    { id: 'gather-web',   label: 'Gathering web signal…' },
+    { id: 'draft',        label: 'Drafting posts…' },
+  ];
+  for (const step of steps) {
+    if (cascadeStop) break;
+    showCascadeToast(step.label);
+    try {
+      await PIPELINE_CHIPS[step.id].handler();
+    } catch (err) {
+      console.warn(`[pulse] cascade step ${step.id} failed`, err);
+      break;
+    }
+  }
+  hideCascadeToast();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const stopBtn = document.getElementById('cascade-toast-stop');
+  if (stopBtn) stopBtn.addEventListener('click', cancelCascade);
+});
 
 // ---- Card actions --------------------------------------------------------
 
@@ -800,45 +1040,45 @@ async function mountChat() {
   // PATCH has landed — ensures the agent's first read on workspace_path
   // (which the init prompt invites) passes the permission gate without
   // a consent prompt. Same hidden-chat pattern as sys-doctor doctor.js.
-  setTimeout(async () => {
+  //
+  // Exposed as state.initReady so the auto-cascade can await brief
+  // injection before firing the first agent step. Without this, the
+  // cascade's Gather web turn runs before the agent has the brief.
+  state.initReady = (async () => {
     try {
       await state.grantsReady();
       await sendInitPrompt();
     } catch (e) {
       console.warn('[pulse] init-prompt failed', e);
     }
-  }, 1500);
+  })();
 }
 
 async function sendInitPrompt() {
+  // Seed the agent with brief + workspace as ground truth for the session,
+  // but do NOT greet — the pipeline chips drive the first user-visible
+  // interactions. The agent stays silent until a chip fires (or the user
+  // types). This keeps the page clean on open and avoids paying tokens for
+  // a greeting nobody reads.
   if (!state.chat) return;
   const cfg = await readPulseConfig();
   const brief = (cfg?.brief || '').trim();
   const workspace = (cfg?.workspace_path || '').trim();
   if (!brief && !workspace) return;
   const lines = [
-    'The user just opened Pulse. You are Ling, operating inside Pulse — an agent-led GTM app for solo founders. You drive the dashboard (via `body_patch` blocks) and the logic (capability dispatch). The chat panel beside the dashboard is how the user talks to you. Treat the following as ground truth for every run in this session.',
+    'You are Ling, operating inside Pulse — an agent-led GTM app for solo founders. You drive the dashboard (via `body_patch` blocks emitted in your PageUpdate tool calls) and the logic (which capabilities to invoke). The chat panel beside the dashboard is how the user talks to you.',
+    '',
+    'The user just opened Pulse. The page shows three pipeline chips: Gather local, Gather web, Draft. When the user clicks one (or the page auto-cascades on first daily open), you receive a goal sentence. Read the conversation history for any cards already gathered, then run the requested step.',
+    '',
+    'Output rule: every artifact lands on the page via PageUpdate body_patch. NEVER reply with plain prose drafts in chat — drafts go to `progress_drafts` as `draft` cards. NEVER greet or summarize unless asked; stay silent on idle.',
   ];
   if (workspace) {
     lines.push('', `Workspace: ${workspace}`,
-      'Read README, doc/, and source files there to ground drafts in real product knowledge.');
+      'Read README, doc/, source files there to ground drafts in real product knowledge.');
   }
   if (brief) {
     lines.push('', 'Brief (case description, voice rules, hard rules):', brief);
   }
-  lines.push('',
-    'Now greet the user — they just opened the app and want to feel a smart personal assistant on the other side of the chat. Follow this shape:',
-    '',
-    '  Line 1: Introduce yourself as Ling, their personal assistant inside Pulse.',
-    '  Line 2: Show you absorbed the brief — reference ONE concrete detail (the product, current launch state, or active context). Not a summary; a specific reference.',
-    '  Line 3: Surface 2-3 things you could help with TODAY, chosen from what is actually pertinent to the brief\'s active context — e.g. drafting a daily post if there\'s recent shipping, checking for mentions, triaging replies on threads they posted, surfacing fresh threads worth commenting on, scanning industry signal, or a weekly recap. Phrase as "I can…" options, not a menu.',
-    '',
-    'Hard constraints on the greeting:',
-    '- 3-4 short lines total. Warm but not gushy.',
-    '- No "I\'m thrilled", "happy to help", "let me know", "what do you think". No emojis. No closing CTA.',
-    '- Do NOT summarize the brief back to them. They wrote it.',
-    '- Do NOT list every capability you have. Pick what fits the brief\'s active context right now.',
-    '- After this greeting, stay silent until the user types a goal or clicks a chip.');
   state.chat.sendHidden(lines.join('\n'));
 }
 
@@ -953,9 +1193,14 @@ async function init() {
   wireCardActions();
   wireChatResizer();
   wireSettingsModal();
+  // Stop button on the cascade toast.
+  document.getElementById('cascade-toast-stop')?.addEventListener('click', cancelCascade);
   await mountChat();
   // Lazy: archive counts after first paint so the sidebar shows real numbers.
   refreshArchiveCounts().catch(err => console.warn('[pulse] archive counts failed', err));
+  // Auto-cascade on first open of today. Skipped if today's session already
+  // has cards (mid-day reopen) or if the user is viewing a past session.
+  maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));
 }
 
 init().catch(err => {

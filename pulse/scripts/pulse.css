@@ -175,34 +175,70 @@ body {
 .chip:hover { border-color: var(--accent); color: var(--accent); }
 .chip .ic { font-size: 13px; opacity: 0.85; }
 
-/* "..." More dropdown menu */
-.chip-menu-wrap { position: relative; display: inline-flex; }
-.chip-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 10;
-  min-width: 180px;
-  padding: 4px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
-  display: flex;
-  flex-direction: column;
+/* Pipeline chips — Gather local → Gather web → Draft. Each carries a
+   data-state attribute (idle | running | done | failed) the JS flips as
+   the step progresses. Visual state lives in the trailing .state-ic. */
+.action-chips.pipeline { gap: 0.6rem; padding-bottom: 0.6rem; }
+.chip.step {
+  position: relative;
+  padding-right: 0.65rem;
 }
-.chip-menu-item {
-  text-align: left;
-  padding: 0.45rem 0.65rem;
-  font: inherit;
+.chip.step .label { font-weight: 500; }
+.chip.step .state-ic {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 0.15rem;
+  font-size: 12px;
+  text-align: center;
+  line-height: 14px;
+  opacity: 0.85;
+}
+.chip.step[data-state="idle"]    .state-ic::before { content: ""; }
+.chip.step[data-state="running"] .state-ic::before { content: "◐"; animation: chipSpin 1.1s linear infinite; }
+.chip.step[data-state="done"]    .state-ic::before { content: "✓"; color: var(--green); }
+.chip.step[data-state="failed"]  .state-ic::before { content: "!"; color: var(--red); }
+
+.chip.step[data-state="running"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  cursor: progress;
+}
+.chip.step[data-state="done"] {
+  border-color: color-mix(in srgb, var(--green) 50%, var(--border));
+}
+.chip.step[data-state="failed"] {
+  border-color: color-mix(in srgb, var(--red) 50%, var(--border));
+}
+
+@keyframes chipSpin { to { transform: rotate(360deg); } }
+
+/* Cascade toast — non-blocking strip shown when first-open auto-cascade
+   is firing. Stop button cancels the next step in the chain. */
+.cascade-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: -0.4rem 0.1rem 0.8rem;
+  padding: 0.45rem 0.85rem;
   font-size: 12.5px;
-  color: var(--text);
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+  border-radius: 8px;
+  width: max-content;
+}
+.cascade-toast-stop {
   background: transparent;
-  border: none;
-  border-radius: 4px;
+  color: inherit;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font: inherit;
+  font-size: 11.5px;
   cursor: pointer;
 }
-.chip-menu-item:hover { background: var(--accent-soft); color: var(--accent); }
+.cascade-toast-stop:hover { background: rgba(255, 255, 255, 0.18); }
 
 /* Status strip */
 .status {
