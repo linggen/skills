@@ -137,6 +137,26 @@ let state = {
   config: { workspace_path: '', brief: '', sites: {}, targets: {} },
 };
 
+// Dirty tracking. Save is gated on this flag so a freshly-loaded form
+// can't re-save the same JSON, and the button visually reflects whether
+// there's anything to save. Flipped on by any input/change inside #main
+// (delegated listener below), reset by load/save/reset.
+let dirty = false;
+function markDirty() {
+  if (dirty) return;
+  dirty = true;
+  syncSaveBtn();
+}
+function markClean() {
+  dirty = false;
+  syncSaveBtn();
+}
+function syncSaveBtn() {
+  const btn = document.getElementById('save-btn');
+  if (!btn) return;
+  btn.disabled = !dirty;
+}
+
 // ---- Load ----------------------------------------------------------------
 
 async function loadAll() {
@@ -160,6 +180,7 @@ async function loadAll() {
     }
 
     render();
+    markClean();
     clearStatus();
   } catch (err) {
     setStatus(`Failed to load: ${err.message}`, 'error');
@@ -479,17 +500,12 @@ async function save() {
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
     setStatus('✓ Settings saved', 'ok');
     setTimeout(clearStatus, 2500);
+    markClean();
   } catch (err) {
     setStatus(`Save failed: ${err.message}`, 'error');
-  } finally {
     saveBtn.disabled = false;
   }
 }
-
-// TODO: dirty tracking — wire input/change listener on #main to flip a
-// dirty flag, enable Save only when there are unsaved changes, mark
-// clean after successful save. Deferred — partial wiring removed to
-// keep Save reliably clickable.
 
 async function resetDefaults() {
   if (!confirm('Reset brief and site configuration to defaults? Your edits will be lost.')) return;
@@ -508,6 +524,7 @@ async function resetDefaults() {
       if (legacy && legacy.trim()) state.config.brief = legacy;
     }
     render();
+    markDirty();
     setStatus('Reset to defaults (not yet saved).', 'ok');
   } catch (err) {
     setStatus(`Reset failed: ${err.message}`, 'error');
@@ -533,5 +550,21 @@ function clearStatus() {
 
 document.getElementById('save-btn').addEventListener('click', save);
 document.getElementById('reset-btn').addEventListener('click', resetDefaults);
+syncSaveBtn();
+
+// Delegated dirty tracking. Catches every input field, checkbox toggle,
+// chip add/remove (which rebuilds DOM under #main), and custom-feed
+// edits without each renderer having to remember to call markDirty.
+// Bubbling 'input' covers textareas + text/number inputs; 'change'
+// covers checkboxes. 'click' covers chip × buttons and custom-feed
+// Remove, which mutate state without firing input/change.
+const mainEl = document.getElementById('main');
+if (mainEl) {
+  mainEl.addEventListener('input', markDirty);
+  mainEl.addEventListener('change', markDirty);
+  mainEl.addEventListener('click', (e) => {
+    if (e.target.closest('button')) markDirty();
+  });
+}
 
 loadAll();
