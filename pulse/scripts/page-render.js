@@ -291,11 +291,16 @@ function renderReply(c) {
 }
 
 function renderDiscovery(c) {
+  // Strip HTML tags from the post body for safety; agent receives Reddit's
+  // JSON which sometimes includes formatted markdown — we show plain text.
+  const excerpt = (c.excerpt || c.body || '').replace(/<[^>]+>/g, '').trim();
+  const truncatedExcerpt = excerpt.length > 200 ? excerpt.slice(0, 197) + '…' : excerpt;
   return cardEl(c, 'cold', `
     <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · <b>"${escapeHtml(c.thread_title || '')}"</b></div>
     <div class="meta">${c.comments != null ? c.comments + ' comments · ' : ''}${formatAge(c.age_hours)}${c.match_reason ? ' · ' + escapeHtml(c.match_reason) : ''}</div>
-    ${c.draft_starter ? `<div class="quote">${escapeHtml(c.draft_starter)}</div>` : ''}
-    ${actionRow(c, ['draft-starter', 'open', 'dismiss'])}
+    ${truncatedExcerpt ? `<div class="excerpt">${escapeHtml(truncatedExcerpt)}</div>` : ''}
+    ${c.draft_starter ? `<div class="draft-inline"><div class="draft-inline-label">Draft comment</div><div class="draft-inline-body">${escapeHtml(c.draft_starter)}</div></div>` : ''}
+    ${actionRow(c, ['copy', 'open', 'dismiss'])}
   `);
 }
 

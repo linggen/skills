@@ -362,7 +362,20 @@ message instead.
    linggen.dev; if a self-mention is genuinely natural, max one.
 
 **Output**: body_patch for `discovery` section. Each card is a
-`discovery` type with `draft_starter` populated.
+`discovery` type with both `excerpt` AND `draft_starter` populated:
+
+- `excerpt` — plain-text body of the source thread, max ~250 chars
+  before truncation (the page truncates to 200 chars for display, but
+  give a bit of headroom in case the renderer cuts mid-word). Strip
+  markdown / HTML to plain text; include the actual claim or
+  question the OP made, not just the title.
+- `draft_starter` — your 2–4 sentence comment draft in voice. Shown
+  inline on the card so the user can copy or open the thread to post
+  without an extra click.
+
+Both fields are required. Without `excerpt`, the user can't tell at a
+glance whether the thread is worth opening. Without `draft_starter`,
+the card is half-finished.
 
 ### monitor-mentions
 

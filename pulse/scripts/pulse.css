@@ -388,6 +388,41 @@ body {
   margin-bottom: 0.3rem;
 }
 
+/* Discovery: plain-text post excerpt (truncated to 200 chars by renderer). */
+.card .excerpt {
+  margin: 0.45rem 0 0.55rem;
+  padding: 0.6rem 0.8rem;
+  background: var(--surface);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+/* Discovery: inline draft comment, always visible so user can read without clicking. */
+.card .draft-inline {
+  margin: 0.55rem 0;
+  padding: 0.65rem 0.85rem;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+}
+.card .draft-inline-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.card .draft-inline-body {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
 .card.empty {
   padding: 0.65rem 1rem;
   background: transparent;

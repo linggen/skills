@@ -751,7 +751,9 @@ async function runGatherWeb() {
     '',
     'Also run public mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
     '',
-    'Emit body_patch blocks for `signal`, `discovery`, `mentions`, and `replies_due` sections as appropriate. If nothing scored above the cutoff for a section, emit one `empty` card with a one-line reason. Do NOT draft anything — that\'s the next step.',
+    'Emit body_patch blocks for `signal`, `discovery`, `mentions`, and `replies_due` sections as appropriate. If nothing scored above the cutoff for a section, emit one `empty` card with a one-line reason.',
+    '',
+    'For `discovery` cards specifically: include BOTH `excerpt` (plain-text body of the thread, ~250 chars; strip markdown/HTML) AND `draft_starter` (your 2-4 sentence draft comment in voice). The page renders both inline so the user can read what the thread says and what you\'d post — no extra click. Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft chip handles broadcast posts, not comment-on-thread starters.',
   ].join('\n');
   sendChatMessage(goal);
   return promise;
@@ -893,12 +895,16 @@ function handleCardAction(action, cardId, btn) {
     case 'expand':
       sendChatMessage(`Expand on this signal item: ${card.title || card.source}`);
       break;
-    case 'copy':
-      if (card?.content) {
-        navigator.clipboard.writeText(card.content);
+    case 'copy': {
+      // Drafts carry .content; discovery cards carry .draft_starter; mention
+      // cards may carry .quote as a fallback.
+      const text = card?.content || card?.draft_starter || card?.quote || '';
+      if (text) {
+        navigator.clipboard.writeText(text);
         flash(btn, 'copied');
       }
       break;
+    }
     case 'mark-posted':
       markCardPosted(cardId, btn);
       break;
