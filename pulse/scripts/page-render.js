@@ -6,20 +6,24 @@
 // per day at ~/.linggen/skills/pulse/data/YYYY-MM-DD/session.json.
 // Sections accumulate body_patches across runs through the day.
 
+// Section render order. `progress_drafts` is pinned to the TOP so the
+// "Local progress" card (gather-local's narrative + Draft chip output)
+// stays visible when new mentions / signal / discovery cards arrive —
+// previously it was last in the list and got pushed off-screen.
 const SECTION_ORDER = [
+  'progress_drafts',
   'mentions',
   'replies_due',
   'discovery',
   'signal',
-  'progress_drafts',
 ];
 
 const SECTION_LABELS = {
+  progress_drafts: 'Local progress',
   mentions:        'Mentions',
   replies_due:     'Replies due',
   discovery:       'Discovery',
   signal:          'Signal',
-  progress_drafts: 'Progress + Drafts',
 };
 
 const SECTION_HINTS = {
