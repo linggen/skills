@@ -102,18 +102,22 @@ async function loadSidebar() {
 async function loadSessionMeta(date) {
   const sess = await readJson(`${SKILL_DIR}/data/${date}/session.json`);
   if (!sess) {
-    return { date, run_count: 0, sample_goal: null, unread_count: 0, started_at: null, last_run_at: null };
+    return { date, run_count: 0, sample_goal: null, unread_count: 0, started_at: null, last_run_at: null, section_counts: {} };
   }
   const runs = Array.isArray(sess.runs) ? sess.runs : [];
-  const unread = Object.values(sess.sections || {}).reduce(
-    (acc, sec) => acc + ((sec?.cards || []).filter(c => c.type !== 'empty').length),
-    0
-  );
+  const sectionCounts = {};
+  let unread = 0;
+  for (const [secId, sec] of Object.entries(sess.sections || {})) {
+    const n = (sec?.cards || []).filter(c => c.type !== 'empty').length;
+    sectionCounts[secId] = n;
+    unread += n;
+  }
   return {
     date,
     run_count: runs.length,
     sample_goal: runs[0]?.goal || null,
     unread_count: unread,
+    section_counts: sectionCounts,
     started_at: sess.started_at,
     last_run_at: sess.last_run_at,
   };
@@ -187,9 +191,7 @@ function renderSidebarItem(s) {
   name.textContent = (s.date === state.selectedDate ? '● ' : '') + dateLabelRelative(s.date);
   const sub = document.createElement('span');
   sub.className = 'side-sub';
-  sub.textContent = s.last_run_at
-    ? new Date(s.last_run_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' + (s.sample_goal ? truncate(s.sample_goal, 32) : 'no goal')
-    : 'no runs yet';
+  sub.textContent = sidebarSubText(s);
   text.appendChild(name);
   text.appendChild(sub);
   item.appendChild(text);
@@ -201,6 +203,31 @@ function renderSidebarItem(s) {
     item.appendChild(badge);
   }
   return item;
+}
+
+// Build the subtitle line under each sidebar session entry. Priority:
+//   1. If there are cards on the page, summarize them by section so the
+//      user can see at a glance what's there (e.g. "5 signal · 3 mentions").
+//      The agent doesn't always emit run_log entries, so falling back to
+//      "no runs yet" hides real activity.
+//   2. Otherwise if last_run_at + sample_goal are set, show those.
+//   3. Otherwise "no runs yet".
+function sidebarSubText(s) {
+  if (s.unread_count > 0 && s.section_counts) {
+    const labels = { mentions: 'mention', replies_due: 'reply', discovery: 'discovery', signal: 'signal', progress_drafts: 'progress' };
+    const parts = [];
+    for (const [secId, n] of Object.entries(s.section_counts)) {
+      if (n > 0 && labels[secId]) {
+        parts.push(`${n} ${labels[secId]}${n > 1 && secId !== 'progress_drafts' ? 's' : ''}`);
+      }
+    }
+    if (parts.length > 0) return parts.slice(0, 3).join(' · ');
+  }
+  if (s.last_run_at) {
+    const t = new Date(s.last_run_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return t + ' · ' + (s.sample_goal ? truncate(s.sample_goal, 32) : 'no goal');
+  }
+  return 'no runs yet';
 }
 
 function staticItem(label, count) {
