@@ -356,12 +356,26 @@ async function deleteSelectedSessions() {
   if (sids.length === 0) return;
   const label = sids.length === 1 ? 'this session' : `${sids.length} sessions`;
   if (!confirm(`Delete ${label} and all their cards? This can't be undone.`)) return;
-  // Wipe per-session card folders + the chat session dirs themselves.
-  // rm -rf is idempotent so partial failures don't strand anything.
-  const cardWipes = sids.map(sid => `rm -rf "${SKILL_DIR}/data/${sid}"`).join(' && ');
-  const chatWipes = sids.map(sid => `rm -rf "$HOME/.linggen/sessions/${sid}"`).join(' && ');
+  // Call the engine's DELETE /api/sessions for each session so the
+  // in-memory SessionManager + GlobalSessions cache (which the main
+  // Linggen app's session panel reads from) gets updated. Without this,
+  // rm -rf'ing the session dirs leaves stale entries showing on the
+  // main page until the engine restarts. The engine's delete handler
+  // also wipes the per-session disk dir under ~/.linggen/sessions/,
+  // so we only need to clean up our own per-session card store.
+  const deleteOne = async (sid) => {
+    const res = await fetch('/api/sessions', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_root: '/tmp', session_id: sid }),
+    });
+    if (!res.ok) throw new Error(`DELETE /api/sessions ${res.status} for ${sid}`);
+  };
   try {
-    await runBash(`${cardWipes} && ${chatWipes}`);
+    await Promise.all(sids.map(deleteOne));
+    // Wipe per-session card folders (the engine doesn't know about these).
+    const cardWipes = sids.map(sid => `rm -rf "${SKILL_DIR}/data/${sid}"`).join(' && ');
+    await runBash(cardWipes);
   } catch (err) {
     console.warn('[pulse] batch delete failed', err);
     return;
@@ -370,7 +384,6 @@ async function deleteSelectedSessions() {
   state.sessions = state.sessions.filter(s => !state.selectedSessions.has(s.sid));
   state.selectedSessions.clear();
   if (deletingViewed) {
-    // Jump back to the active (current) session, or first remaining.
     const next = state.activeSessionId || state.sessions[0]?.sid;
     if (next) await selectSession(next);
     else renderSidebar();
