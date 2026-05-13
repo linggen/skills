@@ -94,21 +94,27 @@ export function getCommentedThreadUrls() {
   return Array.from(commentedThreadUrls);
 }
 
-// Normalize a Reddit thread URL to its `comments/<id>/` form so a
-// comment permalink like /r/sub/comments/abc/title/xyz matches a
-// thread URL /r/sub/comments/abc/title/. Strips trailing comment
-// fragment, trailing slash, and query string.
+// Normalize a Reddit URL to a thread key (post id) so any of these
+// forms map to the same canonical value:
+//   /r/sub/comments/<id>/<slug>/<commentid>/   ← own_comment permalink
+//   /r/sub/comments/<id>/<slug>/               ← thread URL with slug
+//   /r/sub/comments/<id>/                      ← thread URL without slug
+//   /comments/<id>/                            ← bare thread URL
+//   https://redd.it/<id>                        ← short URL
+//
+// The previous version kept the subreddit + slug in the key, which
+// silently broke when the own_comment URL had a slug and the discovery
+// card's thread_url didn't (or vice versa). Reducing to just the post
+// id is what reddit-mentions.sh's dedup already uses — same key here
+// keeps the two callsites in sync.
 function normalizeThreadUrl(u) {
-  try {
-    const url = new URL(u, 'https://www.reddit.com');
-    let path = url.pathname;
-    // Trim past the post slug — the part after .../comments/<id>/<slug>/
-    const m = path.match(/^(.*\/comments\/[^/]+\/[^/]+\/).*/);
-    if (m) path = m[1];
-    return (url.origin + path).replace(/\/+$/, '');
-  } catch {
-    return String(u).replace(/[?#].*$/, '').replace(/\/+$/, '');
-  }
+  if (!u) return '';
+  const s = String(u);
+  let m = s.match(/\/comments\/([^/?#]+)/);
+  if (m) return `reddit:${m[1]}`;
+  m = s.match(/^https?:\/\/(?:www\.)?redd\.it\/([^/?#]+)/);
+  if (m) return `reddit:${m[1]}`;
+  return s.replace(/[?#].*$/, '').replace(/\/+$/, '');
 }
 
 // Defensive filter: agent is instructed to drop mention cards whose
@@ -151,8 +157,26 @@ function isAlreadyCommented(card) {
   return commentedThreadUrls.has(normalizeThreadUrl(url));
 }
 
-function shouldFilterCard(card) {
-  return isSelfLatestReply(card) || isEmptyReplyCard(card) || isAlreadyCommented(card);
+// Defensive filter: drop signal cards whose URL matches a discovery
+// card already on the page. SKILL.md research-market step 6 tells the
+// agent to dedupe, but research-market and discover-customers run in
+// parallel — the agent can't reliably know what the other capability
+// will emit. Discovery is the actionable bucket (draft + Copy + Open);
+// signal showing the same thread is a passive dup. Enforced at render
+// time so SKILL.md instructions don't have to fire perfectly.
+function isDuplicateInDiscovery(card, ctx) {
+  if (card.type !== 'signal') return false;
+  if (!ctx || !ctx.discoveryUrls || ctx.discoveryUrls.size === 0) return false;
+  const u = card.url || card.thread_url;
+  if (!u) return false;
+  return ctx.discoveryUrls.has(normalizeThreadUrl(u));
+}
+
+function shouldFilterCard(card, ctx) {
+  return isSelfLatestReply(card)
+      || isEmptyReplyCard(card)
+      || isAlreadyCommented(card)
+      || isDuplicateInDiscovery(card, ctx);
 }
 
 export function loadSession(sessionData) {
