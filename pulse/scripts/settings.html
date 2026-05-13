@@ -11,9 +11,10 @@
 <body>
   <header class="header">
     <h1>Pulse · Settings</h1>
-    <!-- "Back to drafts" removed — settings is now an in-page modal in
-         pulse.html; the modal's ✕ button (and Escape / backdrop click)
-         handles closing. -->
+    <div class="header-controls">
+      <button id="reset-btn" class="btn-secondary">Reset to defaults</button>
+      <button id="save-btn" class="btn-primary">Save</button>
+    </div>
   </header>
 
   <main id="main" class="settings-main">
@@ -25,6 +26,15 @@
         The pulse reads this on every run. Tell it what you're working
         on, who reads your stuff, and your hard rules. Markdown is fine.
         Vague briefs produce generic drafts.
+      </p>
+      <p class="card-sub card-hint">
+        <strong>Write this yourself — don't paste AI-polished prose.</strong>
+        Introduce who you are, what you're building, and what you're
+        trying to do. The brief itself is the voice anchor — Ling
+        mirrors how you write here when drafting replies, so your
+        cadence, casual phrasing, and even typos become the drafts'
+        cadence. If the brief reads like a press release, every draft
+        will too.
       </p>
       <textarea id="brief-text" class="brief-textarea" rows="20" spellcheck="false"></textarea>
       <p class="card-meta">
@@ -80,10 +90,6 @@
     </section>
 
 
-    <div class="settings-actions">
-      <button id="save-btn" class="btn-primary">Save</button>
-      <button id="reset-btn" class="btn-secondary">Reset to defaults</button>
-    </div>
   </main>
 
   <script type="module" src="settings.js"></script>

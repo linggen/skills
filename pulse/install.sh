@@ -74,7 +74,7 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
     install -m 0755 "$SOURCE_DIR/scripts/sites/$f" "$SKILL_DIR/scripts/sites/$f"
   done
 
-  for f in voice-samples.md style-guide.md lane-templates.md source-blogs.md brief.example.md; do
+  for f in style-guide.md lane-templates.md source-blogs.md brief.example.md; do
     install -m 0644 "$SOURCE_DIR/references/$f" "$SKILL_DIR/references/$f"
   done
 else
@@ -118,6 +118,4 @@ echo ""
 echo "Done. Pulse skill ready at $SKILL_DIR"
 echo ""
 echo "Next step: open Pulse, click Settings, edit your brief and select sources/targets."
-echo "Optionally paste your past writing into:"
-echo "  $SKILL_DIR/references/voice-samples.md"
-echo "Without voice samples, drafts will read as generic LLM voice."
+echo "The brief itself is the voice anchor — write it in your own cadence so drafts mirror your style."

@@ -1,6 +1,14 @@
 /* Pulse settings page — layout-specific rules. Theme variables, buttons,
    cards, and state banners come from style.css (shared base). */
 
+/* Reserve right-side clearance for the modal's ✕ close button when the
+   settings page is embedded as an iframe inside pulse.html's modal.
+   The close button is positioned absolute over the iframe at right:12px
+   width:28px — without this, the Save button collides with it. */
+.header {
+  padding-right: 60px;
+}
+
 .settings-main {
   max-width: 920px;
   margin: 0 auto;
@@ -297,14 +305,5 @@
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-soft);
-}
-
-/* ── Page-level actions row at bottom ────────────────────────────── */
-
-.settings-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  padding: 8px 0 0;
 }
 

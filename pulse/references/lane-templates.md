@@ -59,28 +59,55 @@ constraints.
 
 ## reddit-comment
 
-- **Length**: 50-200 words. Reddit comments that earn upvotes are
-  short and substantive. Long comments are skipped or treated as
-  monologue.
-- **Structure**: answer the OP's question first (one-two sentences),
-  then add the texture or trade-off, then optionally a reference. No
-  preamble. No "great question".
-- **No domain links to user's own marketing pages**. GitHub repo URLs
-  for OSS code are acceptable when directly relevant. Bare landing
-  pages are not.
-- **Self-reference cap**: max ONE mention of user's own project. If
-  the comment doesn't naturally need it, drop it.
-- **"Author here" framing** if mentioning own project: signals
-  honesty, not stealth marketing.
-- **Tone**: helpful, specific, opinionated. Reddit penalizes
-  "actually I'm building something similar" comments — say *what*
-  you've learned, not *that* you're building.
+- **Length**: 1-4 sentences typically, 50-120 words max. Reddit
+  comments that earn upvotes are short. Anything longer reads as
+  monologue and gets skipped.
+- **Voice — first person, from the user.** Write *as* the user, not
+  as a neutral advisor. The brief tells you who they are and what
+  they're building — let that perspective leak through in which
+  questions you ask and which trade-offs you notice. The reader
+  should feel that *someone with skin in the game* is talking, not a
+  generic expert offering best practices.
+- **Three registers — pick one, default to (1):**
+  1. **Implicit** (default). Write from the perspective of someone
+     who's been thinking about this stuff. No mention of the user's
+     project. Most comments land here.
+  2. **Contextual.** "Hit the same wall building X" / "we ran into
+     this on a similar thing." Used only when the thread topic
+     directly overlaps with what the brief describes, so it'd feel
+     evasive *not* to ground the opinion in actual experience.
+  3. **Explicit.** "We do X in <project> because Y." Only when the
+     OP asks "what tools handle this?" or otherwise invites it.
+     Basically never in cold discovery.
+- **Anonymization test** (use this to decide promo vs. authentic):
+  would the comment work just as well if you stripped the project
+  name? If yes — fine. If the comment exists to *plant* the name —
+  drop the draft. No URLs to landing pages, no CTAs, no "you should
+  try X."
+- **Anti-AI tics — strip in pass 3:**
+  - Diagnostic openers: "X has two problems" / "X comes down to" /
+    "the issue is" — humans don't open with whole-problem framings,
+    they react.
+  - Symmetric clauses: "the model sees too much … and still misses
+    …" — parallel construction reads as AI. Make one clause longer.
+  - Triple-slash lists: "A / B / C" — a human names one thing they
+    actually tried, not a menu.
+  - Closing trade-off summary: "It's less X but Y." Delete the
+    moral. Stop one sentence earlier.
+  - Generic-advisor stance: "I'd try …" with no grounding. Either
+    ground it in experience or drop to a question.
+- **Open with a reaction or question, not a thesis.** "wait, are you
+  running it without the accessibility tree?" beats "Screenshot-only
+  desktop agents hit two problems at once."
+- **Optionally end with a question back to OP** if the thread invites
+  dialogue. Not mandatory.
 - **JSON output**: include the target sub in the lane payload so the
   user knows where to post:
   ```json
   { "lane": "reddit-comment",
     "sub": "LocalLLaMA",
     "thread_url": "https://reddit.com/r/...",
+    "register": "implicit",
     "content": "..." }
   ```
 

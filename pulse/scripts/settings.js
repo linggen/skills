@@ -492,17 +492,25 @@ function renderRangeField(cfg, field) {
 async function save() {
   const saveBtn = document.getElementById('save-btn');
   saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving…';
   setStatus('Saving…', 'loading');
   try {
     state.config.brief = document.getElementById('brief-text').value;
     const wsInput = document.getElementById('workspace-path');
     if (wsInput) state.config.workspace_path = wsInput.value.trim();
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
+    saveBtn.textContent = 'Saved ✓';
+    saveBtn.classList.add('saved');
     setStatus('✓ Settings saved', 'ok');
-    setTimeout(clearStatus, 2500);
+    setTimeout(() => {
+      clearStatus();
+      saveBtn.textContent = 'Save';
+      saveBtn.classList.remove('saved');
+    }, 1800);
     markClean();
   } catch (err) {
     setStatus(`Save failed: ${err.message}`, 'error');
+    saveBtn.textContent = 'Save';
     saveBtn.disabled = false;
   }
 }

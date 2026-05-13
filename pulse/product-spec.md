@@ -45,7 +45,7 @@ The user types a goal — *"Help me launch Sys Doctor on r/macapps"* / *"Daily X
 |:--------|:--------|
 | **Pulse** (the page) | The main app surface. Today's state — Mentions, Replies due, Discovery, Signal, Progress + Drafts — plus the agent chat for follow-ups. Lands here on open. |
 | **Library** | Sent drafts + tracked mentions, archived. The history of what shipped, not a log of dashboards. |
-| **Settings** | Case description, workspace path, brief, voice samples, target sites, accounts. Configure once. |
+| **Settings** | Case description, workspace path, brief, target sites, accounts. Configure once. |
 
 The page is the loop. Library is the archive. Settings is plumbing. Three surfaces, no more.
 
@@ -57,10 +57,9 @@ The page reflects **today's pulse** — one persistent state per day, updated by
 ~/.linggen/skills/pulse/
   config.json                        # sites + targets + workspace_path + brief (string)
   references/
-    voice-samples.md                 # past writing for cadence anchoring
     lane-templates.md                # per-target format constraints
     source-blogs.md                  # legacy curated RSS list
-    brief.example.md                 # ships defaults; seeds config.brief on first install
+    brief.example.md                 # ships defaults; seeds config.brief on first install (brief itself is the voice anchor)
   data/
     YYYY-MM-DD/<run-id>.json         # one file per run; populated sections only
     manifest-YYYY-MM-DD.json         # collect.sh output (when track-progress is wired)

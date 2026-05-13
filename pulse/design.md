@@ -126,8 +126,8 @@ writers and it costs almost nothing to implement.
   drafts. Lane catalog in `references/lane-templates.md` (x-post,
   reddit-comment, blog, medium, linkedin, substack, plus future:
   dm, email).
-- Multi-pass drafting: structural → voice rewrite (matching
-  voice-samples.md) → tic-check (deletes "thrilled", "game-changer",
+- Multi-pass drafting: structural → voice rewrite (matching the
+  brief's cadence) → tic-check (deletes "thrilled", "game-changer",
   closing CTA, etc.).
 - Output → `drafts[]`.
 

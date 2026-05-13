@@ -63,14 +63,6 @@ MANIFEST_DIR="$HOME/.linggen/skills/pulse/data"
 mkdir -p "$MANIFEST_DIR"
 MANIFEST="$MANIFEST_DIR/manifest-$DATE.json"
 
-# Voice samples — preload so the agent can read them via this manifest
-# rather than a separate tool call.
-VOICE_FILE="$HOME/.linggen/skills/pulse/references/voice-samples.md"
-VOICE_CONTENT=""
-if [[ -f "$VOICE_FILE" ]]; then
-  VOICE_CONTENT="$(cat "$VOICE_FILE")"
-fi
-
 # Sessions in the window: enumerate Claude Code + Linggen session
 # dirs, find files modified within the window, capture (path, bytes,
 # user-turn count if computable).
@@ -122,7 +114,6 @@ jq -n \
   --arg date "$DATE" \
   --arg window "$WINDOW" \
   --arg since "$SINCE_TS" \
-  --arg voice "$VOICE_CONTENT" \
   --argjson sessions "$SESSIONS_JSON" \
   --argjson commits "$COMMITS_JSON" \
   --argjson memories "$MEMORIES_JSON" \
@@ -132,8 +123,7 @@ jq -n \
     since: $since,
     sessions: $sessions,
     commits: $commits,
-    memories: $memories,
-    voice_samples: $voice
+    memories: $memories
   }' > "$MANIFEST"
 
 echo "$MANIFEST"

@@ -322,6 +322,19 @@ function renderSections() {
   if (!container) return;
   container.innerHTML = '';
 
+  // Pre-compute the discovery URL set so isDuplicateInDiscovery can
+  // drop signal cards pointing at the same thread. Built once per
+  // render, passed via ctx so the per-card filter stays cheap.
+  const discoveryUrls = new Set();
+  const disc = session.sections.discovery;
+  if (disc && Array.isArray(disc.cards)) {
+    for (const c of disc.cards) {
+      const u = c.thread_url || c.url;
+      if (u) discoveryUrls.add(normalizeThreadUrl(u));
+    }
+  }
+  const filterCtx = { discoveryUrls };
+
   let renderedAny = false;
   for (const sectionId of SECTION_ORDER) {
     const sec = session.sections[sectionId];
@@ -333,7 +346,9 @@ function renderSections() {
     //   - reply cards with no actionable content (0 unanswered + no
     //     follow_up — just empty "Your post: …" stubs)
     //   - discovery cards on threads the user has already commented on
-    const filtered = sec.cards.filter(c => !shouldFilterCard(c));
+    //   - signal cards whose URL matches a discovery card (parallel
+    //     dedup; discovery wins because it's actionable)
+    const filtered = sec.cards.filter(c => !shouldFilterCard(c, filterCtx));
     if (filtered.length === 0) continue;
     const sectionView = { ...sec, cards: filtered };
     container.appendChild(renderSectionEl(sectionId, sectionView));
