@@ -22,6 +22,70 @@ agent should *avoid* writing. Both apply to every draft.
 - The word "synergy" or "stack" used as a verb
 - "AI-powered" as the descriptor — say what the AI actually does
 
+## Lead artifact + mode (the most important section)
+
+Drafts come in three shapes. The Draft step picks one per lane based on
+what's on the page. The shape decides where the post *opens* — which is
+what determines whether anyone reads past the first line.
+
+### local-led (use when the local artifact is publicly legible)
+
+Opens with the artifact. Signal / discovery cards are supporting
+evidence at most. Works when the local thing speaks for itself — a
+vivid bug, a measurable change, a benchmark a stranger can grok.
+
+> *"`/api/bash` glued `__LINGGEN_CWD__` onto JSON whenever `cat` ended
+> with `}` and no newline. `JSON.parse` choked; past sessions looked
+> empty. Fix: substring-strip, not line-strip."*
+
+Why it works: triggering condition first, named identifiers (`/api/bash`,
+`__LINGGEN_CWD__`, `JSON.parse`), concrete symptom, the fix is the
+punchline. An engineer who's written shell wrappers feels the bug in
+their bones — they don't need to know what Pulse is.
+
+### web-led + local proof (best — use whenever both exist)
+
+Opens with the web hook (the question the public is already asking),
+then pivots to the local artifact as the proof point. The hook earns
+attention from people who've never heard of the project; the local
+artifact gives the post a stake nobody else has.
+
+> *"Every plugin system hits the same question: how much UI does a
+> plugin bring with it? Yesterday I deleted 350 lines from a Pulse
+> skill — replaced a custom session sidebar with `<iframe
+> src=/sessions?skill=pulse>`. Net −562 / +74. The host's running-agent
+> spinner came for free."*
+
+Why it works: the opening line is a question someone on Claude
+skills / ChatGPT plugins / Cursor extensions is *already asking*. The
+local detail (numbers, specific iframe URL, "spinner came for free")
+proves the writer actually did the work, not just had an opinion.
+
+### web-only (use sparingly — no personal stake)
+
+Opens with an observation about something the audience is talking
+about. No "I shipped this" anchor. Works only when the observation
+itself is specific and contested.
+
+> *"Three new desktop-agent demos this week on r/LocalLLaMA, all
+> tripped on the same wall: small VLMs choke on dense UIs. Visual
+> token count per screenshot is way higher than people expect — that's
+> the real ceiling on screenshot-only agents, not the model size."*
+
+Why it works (barely): named source (r/LocalLLaMA), a count (three),
+a specific metric (visual token count), and a contested claim
+("that's the real ceiling … not the model size"). Use this mode
+twice in a row and the feed starts feeling like industry commentary.
+Pivot back to local-led or web-led + local proof.
+
+### Lead test
+
+Before shipping any draft: read the first sentence in isolation. Could
+a stranger in the lane's audience (r/<sub> for reddit-comment, the X
+feed of the user's peers for x-post) tell what this post is about in 3
+seconds, AND would they care? If "no" on either — drop down a mode.
+Empty is fine. Fabricating a hook is not.
+
 ## Anti-AI tics (apply to every lane, not just reddit-comment)
 
 These are the moves an LLM defaults to and a human almost never makes.
