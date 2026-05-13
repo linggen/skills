@@ -4,7 +4,60 @@ Format constraints per lane. The agent picks lanes based on the day's
 *weight* (see Phase 4 in SKILL.md). Each draft must fit its lane's
 constraints.
 
+## Lane scope filter (apply FIRST — before format)
+
+Lanes have different *substance requirements*, not just different
+lengths. A 280-char observation does not become a blog by adding
+paragraphs. Before drafting any lane, check whether the lead artifact
+has enough substance to fill the lane *honestly*. If not, emit
+`empty` for that lane and move on. Padding to hit a length is the
+failure mode that produced today's "missing-newline blog" — a tweet
+stretched to 4000 chars with byte-level minutiae.
+
+- **x-post / reddit-comment**: any concrete observation worth 1-4
+  sentences. Bug stories, one metric, one before/after — most pulse
+  output lives here.
+- **linkedin**: needs *cross-domain appeal* — the observation should
+  matter to professionals outside your sub-niche. A shell-wrapper
+  bug doesn't qualify; "what shipping daily for a year taught me
+  about feedback loops" does.
+- **medium / substack**: needs an *argument* with 2-3 supporting
+  pieces of evidence. If the draft is one fact + filler around it,
+  it's an x-post.
+- **blog**: tech article about a CONCEPT from the user's product
+  (Linggen, ling-mem, sys-doctor — whichever the brief names),
+  anchored against a current trend or signal from the web cards.
+  See the `blog` section below for the required shape. **A single
+  debugging anecdote is NEVER a blog.** Default to `empty` unless
+  you can pre-write the opening hook + closing observation AND fill
+  2-3 substantive sections between them without padding.
+
 ## x-post
+
+X is a broadcast lane to *strangers*. Nobody on X cares that the user
+fixed a bug in their own codebase. Two gates apply, in this priority:
+
+1. **Public-understandable test (FIRST).** Would a stranger who has
+   never heard of the user's product, codebase, or niche understand
+   the post in 5 seconds? If they need *any* of these to follow it,
+   the post is wrong for X — emit `empty` for x-post and let the
+   same fact live as a reddit-comment in a niche sub instead.
+   - PASSES: *"Tested Qwen 27B on Apple Silicon — TTFT killed it
+     for agent loops."* (Anyone in AI/local-LLM space gets it.)
+   - FAILS: *"`/api/bash` glued `__LINGGEN_CWD__` onto JSON
+     whenever `cat` ended with `}` — past sessions looked empty."*
+     (Requires knowing /api/bash, what __LINGGEN_CWD__ is, what
+     "Pulse sessions" are. r/LocalLLaMA audience, not X.)
+2. **Interesting-content test (SECOND).** Even if understandable,
+   is there a hook — a surprise, a counterintuitive observation, a
+   vivid number, a question someone is asking? "I shipped feature X
+   today" passes (1) and fails (2). Emit `empty`.
+
+This makes **web-led + local proof** the default mode for x-post.
+Local-led is allowed only when the local artifact itself is publicly
+legible (a benchmark anyone cares about, a launch, a vivid universal
+debugging story like *"Spent four hours debugging a missing comma"*).
+Niche local-led posts go to reddit-comment instead.
 
 - **Length**: 200-280 chars (X's free-tier limit). Don't pad to fill;
   if the idea is 180 chars, ship 180.
@@ -14,10 +67,9 @@ constraints.
 - **No URLs in main tweet body** (X downranks links). Citation goes
   in a follow-up reply tweet, surfaced as `citations[]` in JSON for
   the user to post manually after the main one.
-- **Opening pattern**: lead with the concrete observation, not a
-  setup phrase. *"Tested Qwen 27B on Apple Silicon — TTFT killed it
-  for agent loops"* beats *"Today I want to share something about
-  Qwen 27B."*
+- **Opening pattern**: lead with the trend hook or the concrete
+  observation, not a setup phrase. The first 5 words decide whether
+  anyone keeps reading.
 - **No emojis except** when the post is genuinely funny or the emoji
   IS the point (e.g., a literal stethoscope 🩺 for Sys Doctor). Skip
   decorative emojis.
@@ -38,24 +90,76 @@ constraints.
 
 ## blog
 
+This lane is a tech ARTICLE, not a debugging journal. A blog draft
+must teach the reader something durable about the user's product
+(Linggen, ling-mem, sys-doctor — whichever the brief centers), tied
+to a current industry trend the audience already cares about. If you
+can't deliver both halves, emit `empty`. Garbage is worse than
+nothing — every padded blog the user has to read and discard erodes
+their trust in Pulse's drafts entirely.
+
+### Required shape (mode is FORCED to web-led + local proof)
+
+A blog draft is always **web-led + local proof**, never local-led
+alone:
+
+1. **Lead with a trend or industry observation** drawn from signal
+   or discovery cards: a debate the audience is having right now, a
+   pattern multiple sources are hitting, a question that's getting
+   asked repeatedly. The reader should recognize the hook in the
+   first paragraph.
+2. **Pivot to a concept from the user's product** that bears on
+   that trend — how Linggen handles X, why ling-mem's design solves
+   Y, what sys-doctor does about Z. The product is the article's
+   technical centerpiece, not a one-line plug at the end. Read the
+   workspace files (README, /doc/*.md, source) and the brief to
+   ground the concept; don't fabricate behavior.
+3. **Use local progress as proof points** — concrete numbers,
+   commits, before/after diffs from the progress card. These
+   demonstrate the concept is real, not aspirational.
+4. **Close on a real observation** about the trend or the trade-off,
+   not a CTA. The user is not selling; they're explaining.
+
+### Substance test (run BEFORE writing)
+
+Write these three things first. If you can't, emit `empty`:
+
+- The opening trend sentence (1-2 sentences, names a current debate
+  the audience cares about, anchored by a signal/discovery card)
+- The product concept being explained (one sentence: "this article
+  is about how <product> does <thing>")
+- The closing observation (1-2 sentences, not a CTA)
+
+Then check: can you fill 3-5 H2 sections between opener and closer
+with substance — code excerpts, diagrams, real trade-offs, prior-art
+links — *without padding*? If you're already imagining filler
+sentences, emit `empty`.
+
+### Format constraints
+
 - **Length**: 1500-3000 words. Below 1500 = collapse to medium.
   Earn the length with depth — this lane is for posts where the
   argument genuinely needs space.
-- **Structure**: opening (anecdote or question) → context (why this
-  problem) → exploration (multiple approaches considered) → your
-  approach + trade-offs → results / what you'd change → conclusion.
-- **External citations**: 3-7 inline links to prior art, related
-  papers, alternative approaches.
-- **Code excerpts**: include real snippets where they clarify the
-  argument. Don't paste 200-line files; pick the 5-15 lines that
-  matter.
-- **Diagrams**: if the post would benefit from one, include an ASCII
-  diagram or a textual description ("imagine three boxes connected
-  by arrows..."). The agent doesn't render images — leave a
-  placeholder for the user to add a graphic if needed.
-- **Audience**: same as medium, but with more depth tolerance.
-- **Title**: write 3 candidate titles in the JSON output's
-  `title_candidates[]` field for blog drafts; the user picks.
+- **Structure**: opening (trend hook from web cards) → context (why
+  this matters now) → product concept introduction → 2-3 sections
+  exploring how the product addresses the trend, with code excerpts
+  and trade-offs → closing observation. NOT a bug recap.
+- **External citations**: 3-7 inline links — prior art, related
+  papers, alternative approaches, the signal/discovery cards that
+  inspired the hook.
+- **Code excerpts**: real snippets from the user's workspace where
+  they clarify the concept. 5-15 lines per excerpt, never paste
+  200-line files.
+- **Diagrams**: ASCII or textual placeholder for posts that need one.
+  The agent doesn't render images.
+- **Audience**: technically literate adjacent practitioners — not
+  hardcore experts in your specific stack, but people who'd
+  recognize the trend you're hooking on.
+- **Title**: 3 candidates in `title_candidates[]`. Each must invite
+  a click — not "What this bug taught me" but something specific to
+  the concept ("How we made <product> survive <trend's hardest
+  case>"). If your three candidates all describe the article
+  generically, you don't have an article yet — emit `empty`.
 
 ## reddit-comment
 

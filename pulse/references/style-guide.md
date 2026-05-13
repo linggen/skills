@@ -107,6 +107,15 @@ Strip them in Pass 3 of the draft loop.
 - **Closing moral / trade-off summary.** "It's less X but Y." "Simpler
   is better." Delete the moral. Stop one sentence earlier and let the
   evidence land.
+- **Hallucinated contrast.** "Fix was not more UI code. It was
+  substring-strip the sentinel." The bug had nothing to do with UI —
+  the writer reached for a foil because *not X but Y* feels punchy.
+  If you'd have to invent the negative half (X wasn't actually part
+  of the problem), drop the contrast entirely. The line *"the fix
+  was substring-strip, not line-strip"* works because both halves
+  are real moves the writer considered; *"not UI code, it was
+  substring-strip"* is filler. Test: could you remove the negative
+  clause and lose nothing? Remove it.
 - **Abstract-noun framings.** "boundary", "intent", "ownership",
   "alignment", "principle", "approach", "primitive". If a sentence
   could describe any refactor in any codebase, it has no signal.
