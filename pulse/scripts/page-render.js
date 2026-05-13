@@ -80,6 +80,20 @@ export function setCommentedThreadUrls(urls) {
   renderAll();   // re-render to apply the new filter
 }
 
+// Additive variant — the optimistic "user just clicked Copy/Open on a
+// discovery card" path: we mark the thread locally before Reddit's
+// /user/<u>/comments.json sees the user's new comment (typical 30s+
+// lag). Persisted to disk by the caller so refreshes don't lose it.
+export function addCommentedThreadUrl(url) {
+  if (!url || typeof url !== 'string') return;
+  commentedThreadUrls.add(normalizeThreadUrl(url));
+  renderAll();
+}
+
+export function getCommentedThreadUrls() {
+  return Array.from(commentedThreadUrls);
+}
+
 // Normalize a Reddit thread URL to its `comments/<id>/` form so a
 // comment permalink like /r/sub/comments/abc/title/xyz matches a
 // thread URL /r/sub/comments/abc/title/. Strips trailing comment
@@ -342,14 +356,15 @@ function renderSectionEl(sectionId, sec) {
 
 function renderCard(card) {
   switch ((card.type || '').toLowerCase()) {
-    case 'mention':   return renderMention(card);
-    case 'reply':     return renderReply(card);
-    case 'discovery': return renderDiscovery(card);
-    case 'signal':    return renderSignal(card);
-    case 'progress':  return renderProgress(card);
-    case 'draft':     return renderDraft(card);
-    case 'empty':     return renderEmpty(card);
-    default:          return renderUnknown(card);
+    case 'mention':      return renderMention(card);
+    case 'reply_to_me':  return renderReplyToMe(card);
+    case 'reply':        return renderReply(card);
+    case 'discovery':    return renderDiscovery(card);
+    case 'signal':       return renderSignal(card);
+    case 'progress':     return renderProgress(card);
+    case 'draft':        return renderDraft(card);
+    case 'empty':        return renderEmpty(card);
+    default:             return renderUnknown(card);
   }
 }
 
@@ -385,6 +400,48 @@ function renderMention(c) {
     <div class="meta">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · ${formatAge(c.age_hours)}${c.thread_title ? ' · "' + escapeHtml(truncateText(c.thread_title, 70)) + '"' : ''}</div>
     ${opHtml}
     ${convHtml}
+    ${draftHtml}
+    ${actionRow(c, ['copy', 'open', 'dismiss'])}
+  `);
+}
+
+// Reply-to-my-comment card. Shape:
+//   - actor / author: replier's u/handle
+//   - thread_title:   parent Reddit post title
+//   - sub:            subreddit (with or without "r/" prefix)
+//   - your_comment:   { body, url? } — the user's comment that got replied to
+//   - reply:          { body, age_hours?, score? } — the FULL replier text
+//   - draft_reply:    agent's drafted response in voice
+//   - url:            link to the reply on Reddit
+// Distinct from `mention` because there's no thread chain to summarize —
+// just the user's comment and one direct reply. Putting these through the
+// `mention` shape forced the agent to fake an `original_post` + `conversation`
+// split that fragmented the reply across two cards.
+function renderReplyToMe(c) {
+  const replyBody = c.reply?.body || c.body || '';
+  const replyAge = c.reply?.age_hours;
+  const replyScore = c.reply?.score;
+  const yourBody = c.your_comment?.body || c.parent_comment_body || '';
+  const yourCommentHtml = yourBody
+    ? `<div class="thread-original"><div class="thread-label">Your comment${c.your_comment?.age_hours != null ? ' · ' + formatAge(c.your_comment.age_hours) : ''}</div><div class="thread-body">${escapeHtml(truncateText(yourBody, 280))}</div></div>`
+    : '';
+  const replyMeta = [
+    `${escapeHtml(c.actor || c.author || 'Someone')} replied`,
+    replyAge != null ? formatAge(replyAge) : null,
+    replyScore != null ? `${replyScore} pts` : null,
+  ].filter(Boolean).join(' · ');
+  const replyHtml = replyBody
+    ? `<div class="thread-step latest"><div class="thread-label">${replyMeta}</div><div class="thread-body">${escapeHtml(truncateText(replyBody, 1200))}</div></div>`
+    : '';
+  const draftHtml = c.draft_reply
+    ? `<div class="draft-inline"><div class="draft-inline-label">Draft reply</div><div class="draft-inline-body">${escapeHtml(c.draft_reply)}</div></div>`
+    : '';
+  const subDisplay = c.sub ? (c.sub.startsWith('r/') ? c.sub : 'r/' + c.sub) : '';
+  return cardEl(c, 'unread', `
+    <div class="title">${escapeHtml(c.actor || c.author || 'Someone')} replied to your comment</div>
+    <div class="meta">${escapeHtml(c.source || 'reddit')}${subDisplay ? ' · ' + escapeHtml(subDisplay) : ''}${c.thread_title ? ' · "' + escapeHtml(truncateText(c.thread_title, 70)) + '"' : ''}</div>
+    ${yourCommentHtml}
+    ${replyHtml}
     ${draftHtml}
     ${actionRow(c, ['copy', 'open', 'dismiss'])}
   `);
@@ -440,7 +497,7 @@ function renderDiscovery(c) {
   // Strip HTML tags from the post body for safety; agent receives Reddit's
   // JSON which sometimes includes formatted markdown — we show plain text.
   const excerpt = (c.excerpt || c.body || '').replace(/<[^>]+>/g, '').trim();
-  const truncatedExcerpt = excerpt.length > 200 ? excerpt.slice(0, 197) + '…' : excerpt;
+  const truncatedExcerpt = excerpt.length > 400 ? excerpt.slice(0, 397) + '…' : excerpt;
   return cardEl(c, 'cold', `
     <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · <b>"${escapeHtml(c.thread_title || '')}"</b></div>
     <div class="meta">${c.comments != null ? c.comments + ' comments · ' : ''}${formatAge(c.age_hours)}${c.match_reason ? ' · ' + escapeHtml(c.match_reason) : ''}</div>
@@ -452,10 +509,15 @@ function renderDiscovery(c) {
 
 function renderSignal(c) {
   const items = (c.items || []).map(i => `<li>${renderInline(i)}</li>`).join('');
+  const metaBits = [];
+  if (c.source) metaBits.push(escapeHtml(c.source));
+  if (c.age_hours != null) metaBits.push(formatAge(c.age_hours));
+  const meta = metaBits.length ? `<div class="meta">${metaBits.join(' · ')}</div>` : '';
   return cardEl(c, 'cold', `
     <div class="title">${escapeHtml(c.title || c.source || 'Signal')}</div>
+    ${meta}
     ${items ? `<ul>${items}</ul>` : ''}
-    ${actionRow(c, ['expand'])}
+    ${c.url ? actionRow(c, ['open-url']) : ''}
   `, 'dense');
 }
 
@@ -540,7 +602,6 @@ const ACTION_LABELS = {
   'polish':         { label: '✎ Polish',         primary: true },
   'open':           { label: '↗ Open',           primary: false },
   'open-url':       { label: '↗ Open',           primary: false },
-  'expand':         { label: '▾ Expand',         primary: false },
   'copy':           { label: '📋 Copy',           primary: false },
   'mark-posted':    { label: '✓ Posted',         primary: false },
   'discard':        { label: '✗ Discard',        dismiss: true },

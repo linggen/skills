@@ -16,7 +16,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, addCommentedThreadUrl, resetPage } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -391,21 +391,56 @@ async function pushLocalContextToChat(data) {
 
 // Pre-fetch the user's recent own_comment URLs from reddit-mentions.sh
 // so the renderer's discovery filter knows which threads the user has
-// already weighed in on. Runs once at init and after each gather-local
-// (which is when fresh comments are most likely to have landed). Public-
-// JSON only — no OAuth dependency. Failures are silent; the discovery
-// filter just becomes a no-op.
+// already weighed in on. Runs once at init, after each gather-local, and
+// before each gather-web (so the discovery cards the agent is about to
+// emit get filtered against fresh data). Public-JSON only — no OAuth.
+//
+// Reddit's /user/<u>/comments.json typically lags 30s+ behind a freshly
+// posted comment, so we also persist an optimistic locally-marked set
+// (every Copy / Open on a discovery card) under state/own-commented.json
+// and merge it in here. That way the filter survives both Reddit's lag
+// and the script returning empty (rate limit). Failures are silent; the
+// filter falls back to whatever the local set has.
+const OWN_COMMENTED_PATH = `${SKILL_DIR}/state/own-commented.json`;
+
+async function loadLocalCommentedSet() {
+  const data = await readJson(OWN_COMMENTED_PATH, { urls: [] });
+  return Array.isArray(data?.urls) ? data.urls : [];
+}
+
+async function appendLocalCommented(url) {
+  if (!url) return;
+  const data = await readJson(OWN_COMMENTED_PATH, { urls: [] });
+  const set = new Set(Array.isArray(data?.urls) ? data.urls : []);
+  set.add(url);
+  await writeJson(OWN_COMMENTED_PATH, { urls: Array.from(set), updated_at: new Date().toISOString() });
+}
+
 async function refreshCommentedThreadUrls() {
+  const local = await loadLocalCommentedSet();
+  let remote = [];
   try {
     const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-mentions.sh"`);
     const data = JSON.parse(out);
-    const urls = (data?.items || [])
+    remote = (data?.items || [])
       .filter(it => it.kind === 'own_comment' && it.url)
       .map(it => it.url);
-    setCommentedThreadUrls(urls);
   } catch (e) {
-    console.warn('[pulse] refreshCommentedThreadUrls failed', e);
+    console.warn('[pulse] reddit-mentions own_comment fetch failed', e);
   }
+  setCommentedThreadUrls([...local, ...remote]);
+}
+
+// Optimistic "user is about to comment on this thread" — fires from the
+// Copy / Open handler on a discovery card. Adds the URL to the in-memory
+// filter (card vanishes from the current view) and persists so it
+// survives reloads. Reddit's API will catch up on the next refresh; this
+// just bridges the gap.
+async function markDiscoveryCommitted(card) {
+  const url = card?.thread_url || card?.url;
+  if (!url) return;
+  addCommentedThreadUrl(url);
+  try { await appendLocalCommented(url); } catch (e) { console.warn('[pulse] persist own-commented failed', e); }
 }
 
 // Use ling-mem's extract_session.sh to pull a flattened transcript for
@@ -430,6 +465,10 @@ async function extractSessionExcerpt(session) {
 // ── Step 2: Gather web — agent reads local cards, picks queries ──
 async function runGatherWeb() {
   const promise = startChip('gather-web', PIPELINE_CHIPS['gather-web'].expects);
+  // Refresh the own-commented set BEFORE the agent emits discovery cards
+  // so the renderer's filter has fresh data. The init() refresh is too
+  // stale for this — user may have commented mid-session.
+  await refreshCommentedThreadUrls();
   const goal = [
     'Gather web signal for what I\'m working on right now.',
     '',
@@ -596,6 +635,7 @@ function handleCardAction(action, cardId, btn) {
         || card?.thread_url || card?.your_post_url || card?.url
         || (card?.follow_up?.comment_url);
       if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      if (card?.type === 'discovery') markDiscoveryCommitted(card).catch(() => {});
       break;
     }
     case 'copy': {
@@ -606,6 +646,11 @@ function handleCardAction(action, cardId, btn) {
         navigator.clipboard.writeText(text);
         flash(btn, 'Copied ✓');
       }
+      // Copying a discovery draft = user is about to post on that thread.
+      // Mark it locally so Reddit's API lag + multi-session view don't
+      // resurface the same thread before the user remembers they already
+      // commented.
+      if (card?.type === 'discovery') markDiscoveryCommitted(card).catch(() => {});
       break;
     }
     case 'mark-posted':
