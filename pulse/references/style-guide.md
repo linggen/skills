@@ -1,8 +1,8 @@
 # Style Guide
 
-Layered on top of `voice-samples.md`. Voice samples teach the agent
-how the user *does* write; this file lists what the agent should
-*avoid* writing. Both apply to every draft.
+Layered on top of the user's brief. The brief teaches the agent how
+the user *does* write (cadence anchor); this file lists what the
+agent should *avoid* writing. Both apply to every draft.
 
 ## Avoid (hard list — never appears in output)
 
@@ -21,6 +21,40 @@ how the user *does* write; this file lists what the agent should
   doesn't). Skip unless there's a niche tag the audience uses.
 - The word "synergy" or "stack" used as a verb
 - "AI-powered" as the descriptor — say what the AI actually does
+
+## Anti-AI tics (apply to every lane, not just reddit-comment)
+
+These are the moves an LLM defaults to and a human almost never makes.
+Strip them in Pass 3 of the draft loop.
+
+- **Aphorism openers.** "A skill should not rebuild the host around
+  itself" / "Good architecture is about boundaries" / "The best code
+  is the code you don't write." Humans don't open with axioms; they
+  open with a thing that happened. Replace with the thing.
+- **Diagnostic openers.** "X has two problems" / "X comes down to" /
+  "the issue is..." Same family as aphorisms — whole-problem framings
+  the writer didn't actually need to state.
+- **Symmetric / parallel clauses.** "Less product code, fewer cache
+  bugs, and one clearer boundary." "The model sees too much and
+  still misses the point." Parallel triplets read as AI. Pick one,
+  make it concrete, drop the rhythm.
+- **Triple-slash menus.** "A / B / C." A human names *one* thing they
+  actually tried, not a menu of three abstractions.
+- **Closing moral / trade-off summary.** "It's less X but Y." "Simpler
+  is better." Delete the moral. Stop one sentence earlier and let the
+  evidence land.
+- **Abstract-noun framings.** "boundary", "intent", "ownership",
+  "alignment", "principle", "approach", "primitive". If a sentence
+  could describe any refactor in any codebase, it has no signal.
+  Replace the abstract noun with the specific artifact (file path,
+  function name, number).
+- **Generic-advisor stance.** "I'd try X." "You should consider Y."
+  Either ground it in something you actually did, or drop to a
+  question.
+
+**Opener test.** Read the first sentence in isolation. Could it open
+a post about a completely different project? If yes — rewrite. Real
+openers name a specific thing: a number, a file, a metric, a moment.
 
 ## Cadence rules
 
