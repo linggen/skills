@@ -1,8 +1,10 @@
 // pulse-app.js — Pulse main page app shell.
 //
 // Responsibilities:
-//   1. Discover sessions in ~/.linggen/skills/pulse/data/, render the
-//      sessions sidebar.
+//   1. Embed Linggen's BareSessions iframe (/sessions?skill=pulse) as the
+//      left sidebar. Listen for session_select / session_create postMessage
+//      events from it; route by navigating the top window so the chat
+//      iframe re-mounts on the chosen session.
 //   2. Load the selected session's session.json, hand it to the
 //      renderer (page-render.js).
 //   3. Mount the Linggen chat iframe in the right column. Forward
@@ -28,8 +30,6 @@ const state = {
   // Currently-viewed session id (may differ from active if user clicked a
   // past session in the sidebar). Cards on the page reflect this.
   viewSessionId: null,
-  sessions: [],            // [{ sid, title, created_at, last_run_at, unread_count, section_counts }]
-  selectedSessions: new Set(),  // batch-delete: session ids the user has ticked
   chat: null,              // chat-bridge controller
 };
 
@@ -63,353 +63,36 @@ async function writeJson(path, value) {
   await runBash(cmd);
 }
 
-// ---- Date helpers --------------------------------------------------------
-
-function todayDate() {
-  const d = new Date();
-  return d.toISOString().slice(0, 10);  // YYYY-MM-DD
+// ---- Sessions iframe bridge ---------------------------------------------
+//
+// The sidebar is now Linggen's BareSessions React component loaded via
+// `<iframe src="/sessions?skill=pulse&active=<sid>">`. It owns rendering,
+// time grouping, running spinner, delete, and batch-select. We only:
+//   - point the iframe at /sessions with the right URL params
+//   - listen for postMessage events so user clicks navigate the host page
+function setupSessionsIframe(activeSid) {
+  const ifr = document.getElementById('sessions-iframe');
+  if (!ifr) return;
+  const params = new URLSearchParams({ skill: 'pulse' });
+  if (activeSid) params.set('active', activeSid);
+  ifr.src = `/sessions?${params.toString()}`;
 }
 
-function dateLabelRelative(dateStr) {
-  if (dateStr === todayDate()) return 'Today';
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-  if (dateStr === yesterday.toISOString().slice(0, 10)) return 'Yesterday';
-  // Else "May 5" style
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${months[m - 1]} ${d}`;
-}
-
-// Relative time for individual session entries — "5m" / "2h" / "Yesterday"
-// style. Used as the right-aligned timestamp on sidebar items.
-function relativeAge(isoOrEpoch) {
-  if (!isoOrEpoch) return '';
-  const t = typeof isoOrEpoch === 'number' ? isoOrEpoch * 1000 : Date.parse(isoOrEpoch);
-  if (isNaN(t)) return '';
-  const diffMs = Date.now() - t;
-  if (diffMs < 60_000) return 'now';
-  if (diffMs < 3600_000) return `${Math.floor(diffMs / 60_000)}m`;
-  if (diffMs < 86400_000) return `${Math.floor(diffMs / 3600_000)}h`;
-  const days = Math.floor(diffMs / 86400_000);
-  if (days < 30) return `${days}d`;
-  return new Date(t).toLocaleDateString([], { month: 'short', day: 'numeric' });
-}
-
-// Coarse time-period buckets matching the Linggen main-page sessions
-// panel: TODAY / YESTERDAY / THIS WEEK / EARLIER. Avoids the noisy
-// "one header per calendar date" layout of small daily clusters.
-function sessionDateBucket(isoOrEpoch) {
-  const t = typeof isoOrEpoch === 'number' ? isoOrEpoch * 1000 : Date.parse(isoOrEpoch);
-  if (isNaN(t)) return { key: 'unknown', label: 'EARLIER', order: 4 };
-  const now = new Date();
-  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const tsDate = new Date(t);
-  const ts0 = new Date(tsDate.getFullYear(), tsDate.getMonth(), tsDate.getDate()).getTime();
-  const dayDiff = Math.round((today0 - ts0) / 86400_000);
-  if (dayDiff <= 0)  return { key: 'today',     label: 'TODAY',     order: 0 };
-  if (dayDiff === 1) return { key: 'yesterday', label: 'YESTERDAY', order: 1 };
-  if (dayDiff < 7)   return { key: 'this-week', label: 'THIS WEEK', order: 2 };
-  if (dayDiff < 30)  return { key: 'this-month',label: 'THIS MONTH',order: 3 };
-  return { key: 'earlier', label: 'EARLIER', order: 4 };
-}
-
-// ---- Sidebar -------------------------------------------------------------
-
-async function loadSidebar() {
-  // List all chat sessions created by pulse — scan ~/.linggen/sessions/
-  // for session.yaml files with `skill: pulse`. Newest first. The page
-  // also keeps its own per-session card store under
-  // ~/.linggen/skills/pulse/data/<sess-id>/session.json so we can read
-  // cards back for past sessions.
-  // session.yaml stores `created_at` as a UNIX epoch (seconds). Pass it
-  // through as a number so JS can do math on it directly — converting
-  // to ISO in bash and back drops timezone fidelity and causes parsing
-  // mismatches (the "UNDEFINED UNDEFINED" date header bug).
-  const cmd = `for d in "$HOME"/.linggen/sessions/*/; do
-    [ -f "$d/session.yaml" ] || continue
-    skill=$(grep -m1 '^skill:' "$d/session.yaml" 2>/dev/null | sed -E 's/^skill:[[:space:]]*//; s/[[:space:]]*#.*$//; s/^"(.*)"$/\\1/; s/^'"'"'(.*)'"'"'$/\\1/')
-    [ "$skill" = "pulse" ] || continue
-    sid=$(basename "$d")
-    title=$(grep -m1 '^title:' "$d/session.yaml" 2>/dev/null | sed 's/^title:[[:space:]]*//; s/^"\\(.*\\)"$/\\1/')
-    created_at=$(grep -m1 '^created_at:' "$d/session.yaml" 2>/dev/null | sed 's/^created_at:[[:space:]]*//')
-    # Fallback to dir mtime epoch if missing.
-    if [ -z "$created_at" ]; then
-      if [[ "$(uname)" == "Darwin" ]]; then
-        created_at=$(stat -f "%m" "$d" 2>/dev/null)
-      else
-        created_at=$(stat -c "%Y" "$d" 2>/dev/null)
-      fi
-    fi
-    # Strip non-numeric. Skip if still not a number.
-    created_at=$(echo "$created_at" | tr -dc '0-9')
-    [ -z "$created_at" ] && continue
-    printf '{"sid":"%s","title":%s,"created_at":%s}\\n' "$sid" "$(jq -Rsn --arg t "$title" '$t')" "$created_at"
-  done | jq -s 'sort_by(.created_at) | reverse | .[0:50]'`;
-  let raw = '';
-  try { raw = (await runBash(cmd)).trim(); } catch (e) { console.warn('[pulse] sidebar scan failed', e); }
-  const list = raw ? JSON.parse(raw) : [];
-  state.sessions = [];
-  for (const entry of list) {
-    state.sessions.push(await loadSessionMeta(entry));
-  }
-  // Make sure the active session (just created this page-load) is in the
-  // list even if the YAML scan hasn't picked it up yet — it can take a
-  // moment for session.yaml to be written.
-  if (state.activeSessionId && !state.sessions.find(s => s.sid === state.activeSessionId)) {
-    state.sessions.unshift({
-      sid: state.activeSessionId,
-      title: 'pulse session',
-      created_at: new Date().toISOString(),
-      last_run_at: null,
-      section_counts: {},
-      unread_count: 0,
-    });
-  }
-  renderSidebar();
-}
-
-async function loadSessionMeta(entry) {
-  const sess = await readJson(`${SKILL_DIR}/data/${entry.sid}/session.json`);
-  const base = {
-    sid: entry.sid,
-    title: entry.title || 'pulse session',
-    created_at: entry.created_at,
-    last_run_at: null,
-    section_counts: {},
-    unread_count: 0,
-  };
-  if (!sess) return base;
-  const sectionCounts = {};
-  let unread = 0;
-  for (const [secId, sec] of Object.entries(sess.sections || {})) {
-    const n = (sec?.cards || []).filter(c => c.type !== 'empty').length;
-    sectionCounts[secId] = n;
-    unread += n;
-  }
-  return {
-    ...base,
-    last_run_at: sess.last_run_at,
-    section_counts: sectionCounts,
-    unread_count: unread,
-  };
-}
-
-function renderSidebar() {
-  const el = document.getElementById('sidebar');
-  el.innerHTML = '';
-
-  const sect = document.createElement('div');
-  sect.className = 'side-section';
-
-  const head = document.createElement('div');
-  head.className = 'side-head';
-  const lbl = document.createElement('div');
-  lbl.className = 'side-label';
-  lbl.textContent = 'Sessions';
-  head.appendChild(lbl);
-
-  if (state.selectedSessions.size > 0) {
-    const bar = document.createElement('div');
-    bar.className = 'side-batch-bar';
-    const count = document.createElement('span');
-    count.className = 'side-batch-count';
-    count.textContent = `${state.selectedSessions.size} selected`;
-    const delBtn = document.createElement('button');
-    delBtn.className = 'side-batch-delete';
-    delBtn.textContent = 'Delete';
-    delBtn.addEventListener('click', deleteSelectedSessions);
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'side-batch-cancel';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.addEventListener('click', () => {
-      state.selectedSessions.clear();
-      renderSidebar();
-    });
-    bar.append(count, delBtn, cancelBtn);
-    head.appendChild(bar);
-  }
-
-  sect.appendChild(head);
-
-  // Group by time-period bucket. Bucket objects come with .label and
-  // .order so we can keep TODAY / YESTERDAY / THIS WEEK / … ordering
-  // consistent regardless of session insertion order.
-  const groups = new Map();   // key → { bucket, items: [...] }
-  for (const s of state.sessions) {
-    const bucket = sessionDateBucket(s.created_at);
-    if (!groups.has(bucket.key)) groups.set(bucket.key, { bucket, items: [] });
-    groups.get(bucket.key).items.push(s);
-  }
-  const ordered = Array.from(groups.values()).sort((a, b) => a.bucket.order - b.bucket.order);
-  for (const { bucket, items } of ordered) {
-    sect.appendChild(renderDateHeader(bucket, items));
-    for (const s of items) {
-      sect.appendChild(renderSidebarItem(s));
-    }
-  }
-  el.appendChild(sect);
-}
-
-function renderDateHeader(bucket, items) {
-  const hdr = document.createElement('div');
-  hdr.className = 'side-date-header';
-  const selectable = items.filter(s => s.sid !== state.activeSessionId);
-  const selectedInGroup = selectable.filter(s => state.selectedSessions.has(s.sid)).length;
-  const allSelected = selectable.length > 0 && selectedInGroup === selectable.length;
-
-  if (selectable.length > 0) hdr.classList.add('clickable');
-  if (allSelected) hdr.classList.add('all-selected');
-  else if (selectedInGroup > 0) hdr.classList.add('partial-selected');
-
-  const labelEl = document.createElement('span');
-  labelEl.className = 'side-date-label';
-  labelEl.textContent = bucket.label;
-  hdr.appendChild(labelEl);
-
-  if (selectedInGroup > 0) {
-    const tag = document.createElement('span');
-    tag.className = 'side-date-count';
-    tag.textContent = `${selectedInGroup}/${selectable.length} selected`;
-    hdr.appendChild(tag);
-  }
-
-  if (selectable.length > 0) {
-    hdr.addEventListener('click', () => {
-      if (allSelected) {
-        for (const s of selectable) state.selectedSessions.delete(s.sid);
-      } else {
-        for (const s of selectable) state.selectedSessions.add(s.sid);
-      }
-      renderSidebar();
-    });
-  }
-  return hdr;
-}
-
-function renderSidebarItem(s) {
-  const item = document.createElement('div');
-  item.className = 'side-item';
-  const isViewed = s.sid === state.viewSessionId;
-  const isActive = s.sid === state.activeSessionId;
-  if (isViewed) item.classList.add('selected');
-  if (state.selectedSessions.has(s.sid)) item.classList.add('checked');
-  if (isActive) item.classList.add('active');
-  item.dataset.sid = s.sid;
-  item.addEventListener('click', () => selectSession(s.sid));
-
-  if (!isActive) {
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.className = 'side-checkbox';
-    cb.checked = state.selectedSessions.has(s.sid);
-    cb.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (cb.checked) state.selectedSessions.add(s.sid);
-      else state.selectedSessions.delete(s.sid);
-      renderSidebar();
-    });
-    item.appendChild(cb);
-  }
-
-  // Skill icon (purple sparkle) — matches the Linggen main-page style
-  // where every skill-created session gets the same iconography.
-  const icon = document.createElement('span');
-  icon.className = 'side-icon';
-  icon.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2l1.5 5 5 1.5-5 1.5L12 15l-1.5-5-5-1.5 5-1.5L12 2zm7 11l.8 2.7L22.5 16l-2.7.8L19 19.5l-.8-2.7-2.7-.8 2.7-.8L19 12.5z"/></svg>';
-  item.appendChild(icon);
-
-  const text = document.createElement('div');
-  text.className = 'side-text';
-
-  const nameRow = document.createElement('div');
-  nameRow.className = 'side-name-row';
-  const name = document.createElement('span');
-  name.className = 'side-name';
-  name.textContent = s.title || 'pulse session';
-  nameRow.appendChild(name);
-  const ts = document.createElement('span');
-  ts.className = 'side-timestamp';
-  ts.textContent = relativeAge(s.created_at);
-  nameRow.appendChild(ts);
-  text.appendChild(nameRow);
-
-  const metaRow = document.createElement('div');
-  metaRow.className = 'side-meta-row';
-  const badge = document.createElement('span');
-  badge.className = 'side-skill-badge';
-  badge.textContent = 'skill';
-  metaRow.appendChild(badge);
-  if (s.unread_count > 0) {
-    const sub = document.createElement('span');
-    sub.className = 'side-sub';
-    sub.textContent = sidebarSubText(s);
-    metaRow.appendChild(sub);
-  }
-  text.appendChild(metaRow);
-
-  item.appendChild(text);
-  return item;
-}
-
-async function deleteSelectedSessions() {
-  const sids = Array.from(state.selectedSessions);
-  if (sids.length === 0) return;
-  const label = sids.length === 1 ? 'this session' : `${sids.length} sessions`;
-  if (!confirm(`Delete ${label} and all their cards? This can't be undone.`)) return;
-  // Call the engine's DELETE /api/sessions for each session so the
-  // in-memory SessionManager + GlobalSessions cache (which the main
-  // Linggen app's session panel reads from) gets updated. Without this,
-  // rm -rf'ing the session dirs leaves stale entries showing on the
-  // main page until the engine restarts. The engine's delete handler
-  // also wipes the per-session disk dir under ~/.linggen/sessions/,
-  // so we only need to clean up our own per-session card store.
-  const deleteOne = async (sid) => {
-    const res = await fetch('/api/sessions', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_root: '/tmp', session_id: sid }),
-    });
-    if (!res.ok) throw new Error(`DELETE /api/sessions ${res.status} for ${sid}`);
-  };
-  try {
-    await Promise.all(sids.map(deleteOne));
-    // Wipe per-session card folders (the engine doesn't know about these).
-    const cardWipes = sids.map(sid => `rm -rf "${SKILL_DIR}/data/${sid}"`).join(' && ');
-    await runBash(cardWipes);
-  } catch (err) {
-    console.warn('[pulse] batch delete failed', err);
-    return;
-  }
-  const deletingViewed = state.selectedSessions.has(state.viewSessionId);
-  state.sessions = state.sessions.filter(s => !state.selectedSessions.has(s.sid));
-  state.selectedSessions.clear();
-  if (deletingViewed) {
-    const next = state.activeSessionId || state.sessions[0]?.sid;
-    if (next) await selectSession(next);
-    else renderSidebar();
-  } else {
-    renderSidebar();
+function handleSessionsMessage(e) {
+  if (e.data?.type !== 'linggen-skill-event') return;
+  const sid = e.data.payload?.sessionId;
+  if (!sid) return;
+  if (e.data.event === 'session_select') {
+    selectSession(sid);
+  } else if (e.data.event === 'session_create') {
+    // Iframe just created a new pulse session on the engine. Navigate to
+    // it so chat-bridge mounts on the new session and the init prompt
+    // fires.
+    const url = new URL(window.location.href);
+    url.searchParams.set('session', sid);
+    window.location.href = url.toString();
   }
 }
-
-// Per-session subtitle line. Shows the card-section breakdown when the
-// session produced output ("5 signal · 3 mention · 2 discovery"); falls
-// back to "no cards" when the session is empty (e.g. just opened and
-// nothing has run yet).
-function sidebarSubText(s) {
-  if (s.unread_count > 0 && s.section_counts) {
-    const labels = { mentions: 'mention', replies_due: 'reply', discovery: 'discovery', signal: 'signal', progress_drafts: 'progress' };
-    const parts = [];
-    for (const [secId, n] of Object.entries(s.section_counts)) {
-      if (n > 0 && labels[secId]) {
-        parts.push(`${n} ${labels[secId]}${n > 1 && secId !== 'progress_drafts' ? 's' : ''}`);
-      }
-    }
-    if (parts.length > 0) return parts.slice(0, 3).join(' · ');
-  }
-  return 'no cards';
-}
-
 
 // ---- Session selection ---------------------------------------------------
 
@@ -427,13 +110,9 @@ async function selectSession(sid) {
   state.viewSessionId = sid;
   const sess = await readJson(`${SKILL_DIR}/data/${sid}/session.json`);
   loadSession(sess);
-  const meta = state.sessions.find(s => s.sid === sid);
-  const created = meta?.created_at ? new Date(meta.created_at).toLocaleString() : '';
-  document.getElementById('session-title').textContent = meta?.title || 'pulse session';
-  document.getElementById('session-sub').textContent = created
-    ? `Started ${created}. Pick a chip above, or type a goal in chat.`
-    : 'Pick a chip above, or type a goal in chat to start.';
-  renderSidebar();
+  document.getElementById('session-title').textContent = 'pulse session';
+  document.getElementById('session-sub').textContent =
+    'Pick a chip above, or type a goal in chat to start.';
 }
 
 // ---- Persistence ---------------------------------------------------------
@@ -449,16 +128,6 @@ async function persistSession(session) {
   if (!session.started_at) session.started_at = new Date().toISOString();
   try {
     await writeJson(path, session);
-    const meta = state.sessions.find(s => s.sid === sid);
-    const updated = await loadSessionMeta({
-      sid,
-      title: meta?.title || 'pulse session',
-      created_at: meta?.created_at || new Date().toISOString(),
-    });
-    const idx = state.sessions.findIndex(s => s.sid === sid);
-    if (idx >= 0) state.sessions[idx] = updated;
-    else state.sessions.unshift(updated);
-    renderSidebar();
     notifyRunningChipsFromSession(session);
   } catch (err) {
     console.warn('[pulse] persist failed', err);
@@ -768,9 +437,11 @@ async function runGatherWeb() {
     '',
     'Then for each topic, call the most relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS, FetchGoogleTrendsDaily, FetchGitHubTrending) in parallel. Filter results for direct topical fit (score ≥ 0.6).',
     '',
-    'For mention-watching, call FetchRedditMentions — uses public Reddit JSON, no auth required. Works whenever sites.reddit.username is set. Returns kind ∈ {mention, own_post, own_comment} for (a) threads where the handle appears, (b) the user\'s recent posts, (c) the user\'s recent comments.',
+    'For mention-watching, call FetchRedditMentions — uses public Reddit JSON, no auth required. Works whenever sites.reddit.username is set. Returns kind ∈ {mention, reply_to_me, own_post, own_comment} for (a) threads where the handle appears in post text, (b) direct replies to the user\'s recent comments (pre-walked thread trees — the real "someone replied to me" signal), (c) the user\'s recent posts, (d) the user\'s recent comments. NOTE: own_post and own_comment are context-only — they tell you what the user has been doing publicly. They are NOT cards. Do NOT emit them into any section; in particular, do NOT map them to replies_due (the replies_due section is reserved for posts the user broadcast through Pulse\'s Draft chip, tracked via state/posted.json — replies to comments on someone else\'s thread belong in mentions as reply_to_me, not here).',
     '',
-    'For each "mention" kind result, walk the thread tree (WebFetch <thread_url>.json) and emit a RICH mention card per the schema in SKILL.md: include `original_post`, `conversation` (first reply + latest if deep, with `collapsed_count`), and `draft_reply`. Map own_post / own_comment kinds to replies_due hints.',
+    'For each "mention" kind result, walk the thread tree (WebFetch <thread_url>.json) and emit a RICH mention card per the schema in SKILL.md: include `original_post`, `conversation` (first reply + latest if deep, with `collapsed_count`), and `draft_reply`.',
+    '',
+    'For each "reply_to_me" kind result, emit a card in the `mentions` section with `type: "reply_to_me"` — NOT `type: "mention"`. There is no thread chain to summarize: the script already pre-walked the tree and gave you BOTH sides on the item. Fields to emit: `actor` (from item.author, e.g. "u/Chance_Tree9196"), `thread_title` (from item.title), `sub` (item.sub), `url` (item.url), `your_comment: { body: <item.parent_comment_body, verbatim>, url: item.parent_comment_url }`, `reply: { body: <item.body, VERBATIM and COMPLETE — do not split, paraphrase, summarize, or truncate; the renderer shows up to 1200 chars itself>, score: item.score, age_hours: <hours since item.created_iso> }`, and `draft_reply` (your 2-3 sentence response in voice). Do NOT populate `original_post` or `conversation` — those belong to the `mention` shape; using them on a reply_to_me card splits the single reply into fake halves.',
     '',
     'Also run public mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
     '',
@@ -790,7 +461,7 @@ async function runDraft() {
     '',
     'Read what\'s on the page: progress card (what I shipped/learned), signal cards (industry context), discovery cards (thread opportunities), mention cards (where I\'ve been mentioned).',
     '',
-    'For each enabled lane in config.targets[*].enabled, generate one draft per lane following references/lane-templates.md constraints. Pass 1: claim + evidence + structure. Pass 2: voice rewrite against references/voice-samples.md. Pass 3: strip "🚀", "I\'m thrilled", "TL;DR", "Hot take", "game changer", "level up", "AI-powered", opening hashtag, closing "what do you think?".',
+    'For each enabled lane in config.targets[*].enabled, generate one draft per lane following references/lane-templates.md constraints. Pass 1: claim + evidence + structure. Pass 2: voice rewrite — mirror the brief\'s cadence (sentence length, article use, comma habits, vocabulary) since the brief itself is the voice anchor. Pass 3: strip "🚀", "I\'m thrilled", "TL;DR", "Hot take", "game changer", "level up", "AI-powered", opening hashtag, closing "what do you think?".',
     '',
     'Emit body_patch for `progress_drafts` using `mode: "append"` so the new `draft` cards land alongside the existing progress card from gather-local (without `mode: "append"` the patch replaces the section, clobbering the progress card). Each draft card: { type:"draft", id, lane, content, char_count, char_limit?, title_candidates?, subtitle? }.',
     '',
@@ -927,16 +598,13 @@ function handleCardAction(action, cardId, btn) {
       if (url) window.open(url, '_blank', 'noopener,noreferrer');
       break;
     }
-    case 'expand':
-      sendChatHidden(`Expand on this signal item: ${card.title || card.source}. Emit a body_patch updating the card with more detail.`);
-      break;
     case 'copy': {
       // Drafts carry .content; discovery cards carry .draft_starter; mention
       // cards may carry .quote as a fallback.
       const text = card?.content || card?.draft_starter || card?.quote || '';
       if (text) {
         navigator.clipboard.writeText(text);
-        flash(btn, 'copied');
+        flash(btn, 'Copied ✓');
       }
       break;
     }
@@ -1060,7 +728,11 @@ async function appendPosted(entry) {
 function flash(btn, label) {
   const old = btn.textContent;
   btn.textContent = label;
-  setTimeout(() => { btn.textContent = old; }, 900);
+  btn.classList.add('copied');
+  setTimeout(() => {
+    btn.textContent = old;
+    btn.classList.remove('copied');
+  }, 1500);
 }
 
 // ---- Chat panel ----------------------------------------------------------
@@ -1326,11 +998,14 @@ async function init() {
   wireChatResizer();
   wireSettingsModal();
   document.getElementById('cascade-toast-stop')?.addEventListener('click', cancelCascade);
-  // Mount chat first so we know the active session id. Sidebar load
-  // depends on it (the active session is pinned to the top of the list
-  // even before its session.yaml has been written).
+  // Listen for iframe selections before we point the iframe at /sessions —
+  // session_create on a fresh mount races our setup otherwise.
+  window.addEventListener('message', handleSessionsMessage);
+  // Mount chat first so we know the active session id. The sessions iframe
+  // wants `active=<sid>` in its URL so the right row is highlighted on
+  // first paint.
   await mountChat();
-  await loadSidebar();
+  setupSessionsIframe(state.viewSessionId || state.activeSessionId);
   // Select the session indicated by ?session=<id>, else the active one.
   const urlParams = new URLSearchParams(window.location.search);
   const initialSid = urlParams.get('session') || state.activeSessionId;
@@ -1338,10 +1013,8 @@ async function init() {
     state.viewSessionId = initialSid;
     const sess = await readJson(`${SKILL_DIR}/data/${initialSid}/session.json`);
     loadSession(sess);
-    const meta = state.sessions.find(s => s.sid === initialSid);
-    document.getElementById('session-title').textContent = meta?.title || 'pulse session';
+    document.getElementById('session-title').textContent = 'pulse session';
     document.getElementById('session-sub').textContent = 'Pick a chip above, or type a goal in chat to start.';
-    renderSidebar();
   }
   await loadStatusStrip();
   // Auto-cascade only on the active session (not on a resumed past session).

@@ -26,9 +26,12 @@
       </div>
     </div>
 
-    <!-- LEFT SIDEBAR (sessions) — populated by pulse-app.js from data/ dir -->
+    <!-- LEFT SIDEBAR (sessions) — Linggen's BareSessions iframe, filtered
+         to creator=skill skill=pulse. Selection/create flow back to us via
+         postMessage; we navigate the top window so the chat iframe re-mounts
+         on the chosen session. -->
     <aside class="sidebar" id="sidebar">
-      <div class="state-msg" id="sidebar-loading">Loading sessions…</div>
+      <iframe class="sessions-frame" id="sessions-iframe" title="Pulse sessions"></iframe>
     </aside>
 
     <!-- MIDDLE COLUMN (cards for the selected session) -->
