@@ -10,7 +10,10 @@
     },
     "reddit": {
       "enabled": true,
-      "subs": ["LocalLLaMA", "macapps"]
+      "subs": [
+        "LocalLLaMA",
+        "macapps"
+      ]
     },
     "lobsters": {
       "enabled": false
@@ -36,14 +39,33 @@
     "wikipedia-pageviews": {
       "enabled": false,
       "topics": []
+    },
+    "bluesky": {
+      "enabled": false,
+      "handle": "",
+      "keywords": []
     }
   },
   "targets": {
-    "x-post": { "enabled": true },
-    "reddit-comment": { "enabled": false },
-    "medium": { "enabled": false },
-    "blog": { "enabled": true, "min_words": 800, "max_words": 2000 },
-    "linkedin": { "enabled": false },
-    "substack": { "enabled": false }
+    "x-post": {
+      "enabled": true
+    },
+    "reddit-comment": {
+      "enabled": false
+    },
+    "medium": {
+      "enabled": false
+    },
+    "blog": {
+      "enabled": true,
+      "min_words": 800,
+      "max_words": 2000
+    },
+    "linkedin": {
+      "enabled": false
+    },
+    "substack": {
+      "enabled": false
+    }
   }
 }

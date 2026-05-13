@@ -114,6 +114,13 @@ function normalizeThreadUrl(u) {
   if (m) return `reddit:${m[1]}`;
   m = s.match(/^https?:\/\/(?:www\.)?redd\.it\/([^/?#]+)/);
   if (m) return `reddit:${m[1]}`;
+  // Bluesky: https://bsky.app/profile/<handle-or-did>/post/<rkey>
+  // and at://did:plc:.../app.bsky.feed.post/<rkey> share the same rkey,
+  // which is unique per post — that's the canonical dedup key.
+  m = s.match(/bsky\.app\/profile\/[^/]+\/post\/([^/?#]+)/);
+  if (m) return `bsky:${m[1]}`;
+  m = s.match(/^at:\/\/[^/]+\/app\.bsky\.feed\.post\/([^/?#]+)/);
+  if (m) return `bsky:${m[1]}`;
   return s.replace(/[?#].*$/, '').replace(/\/+$/, '');
 }
 
@@ -349,7 +356,18 @@ function renderSections() {
     //   - signal cards whose URL matches a discovery card (parallel
     //     dedup; discovery wins because it's actionable)
     const filtered = sec.cards.filter(c => !shouldFilterCard(c, filterCtx));
-    if (filtered.length === 0) continue;
+    if (filtered.length === 0) {
+      // Section had cards, but all were filtered. Don't disappear silently —
+      // render a one-line placeholder so the user can see Pulse did the
+      // work and understand *why* the section is quiet. Otherwise it looks
+      // like a Gather web run failed when actually the agent found things
+      // the renderer correctly hid.
+      const placeholder = { type: 'empty', id: `empty-${sectionId}`, message: emptyFilteredMessage(sectionId, sec.cards.length) };
+      const sectionView = { ...sec, cards: [placeholder] };
+      container.appendChild(renderSectionEl(sectionId, sectionView));
+      renderedAny = true;
+      continue;
+    }
     const sectionView = { ...sec, cards: filtered };
     container.appendChild(renderSectionEl(sectionId, sectionView));
     renderedAny = true;
@@ -595,6 +613,27 @@ function renderEmpty(c) {
   return el;
 }
 
+// One-line explanation when a section's cards were all filtered by
+// shouldFilterCard. Section-specific because the reason differs:
+// discovery → already-commented; signal → duplicate of discovery;
+// mentions → self-latest-reply; replies_due → empty reply stubs.
+function emptyFilteredMessage(sectionId, originalCount) {
+  const n = originalCount;
+  const s = n === 1 ? '' : 's';
+  switch (sectionId) {
+    case 'discovery':
+      return `Found ${n} opportunit${n === 1 ? 'y' : 'ies'} — all on threads you've already commented on. No fresh leads this run.`;
+    case 'mentions':
+      return `Found ${n} mention${s} — all by you or already answered.`;
+    case 'signal':
+      return `Found ${n} item${s} — all duplicates of Discovery cards above.`;
+    case 'replies_due':
+      return `Found ${n} reply card${s} — none with actionable activity.`;
+    default:
+      return `Found ${n} item${s} — all filtered.`;
+  }
+}
+
 function renderUnknown(c) {
   return cardEl(c, 'cold', `
     <div class="title">[unknown card type: ${escapeHtml(c.type || '?')}]</div>
@@ -690,6 +729,6 @@ function hoursSince(iso) {
 
 function windowToHumanLabel(w) {
   if (!w) return null;
-  const map = { '24h': 'Yesterday', '7d': 'This week', '30d': 'This month' };
+  const map = { '24h': 'Last 24 hours', '7d': 'This week', '30d': 'This month' };
   return map[w] || w;
 }

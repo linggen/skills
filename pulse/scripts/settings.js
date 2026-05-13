@@ -38,6 +38,15 @@ const WEBSITES = [
     source_id: 'lobsters',
   },
   {
+    name: 'Bluesky',
+    desc: 'Public AT Proto monitoring — no auth required. Set your handle to surface mentions and replies. Add category keywords (extracted from your brief, NOT brand names) for discovery — Bluesky has no subreddits, so keyword search is how you find threads in your space.',
+    source_id: 'bluesky',
+    source_fields: [
+      { kind: 'text', key: 'handle', label: 'My Bluesky handle (for mention monitoring)', placeholder: 'e.g. yourname.bsky.social — without the @ prefix' },
+      { kind: 'chips', key: 'keywords', label: 'Search keywords (categories, not brand names)' },
+    ],
+  },
+  {
     name: 'arxiv',
     desc: 'Recent CS.AI / CS.LG / CS.CL papers.',
     source_id: 'arxiv',
@@ -418,7 +427,12 @@ function renderChipField(cfg, field) {
   addRow.className = 'add-row';
   const input = document.createElement('input');
   input.type = 'text';
-  input.placeholder = field.key === 'feeds' ? 'https://example.com/rss.xml' : 'subreddit-name';
+  input.placeholder = field.placeholder
+    || (field.key === 'feeds' ? 'https://example.com/rss.xml'
+        : field.key === 'subs' ? 'subreddit-name'
+        : field.key === 'keywords' ? 'e.g. local LLM'
+        : field.key === 'topics' ? 'Wikipedia article title'
+        : '');
   const addBtn = document.createElement('button');
   addBtn.textContent = '+ Add';
   const doAdd = () => {

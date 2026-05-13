@@ -80,6 +80,38 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/reddit-mentions.sh"
     tier: read
     timeout_ms: 30000
+  - name: FetchBlueskyMentions
+    description: >-
+      Public AT Proto monitoring for Bluesky — no auth required.
+      Reads sites.bluesky.handle from config, then surfaces (a)
+      recent posts that mention @<handle>, (b) the user's own recent
+      top-level posts, (c) the user's own recent replies on others'
+      threads, (d) direct replies to the user's recent posts (walked
+      from getPostThread depth=1, since Bluesky's public API has no
+      inbox / unified notifications without auth). Returns same
+      shape as FetchRedditMentions: {items: [{kind, title, body,
+      url, author, sub, created_iso, score, num_comments,
+      watched_term}], count, errors}. kind ∈ mention | reply_to_me
+      | own_post | own_reply. Generous rate limit (~3000/5min) but
+      script caps at ~8 calls per invocation. sub is always "bsky".
+    cmd: "$SKILL_DIR/scripts/sites/bluesky-mentions.sh"
+    tier: read
+    timeout_ms: 30000
+  - name: FetchBlueskyKeywords
+    description: >-
+      Search Bluesky public posts for the category keywords listed in
+      sites.bluesky.keywords (e.g. ["local LLM", "Apple Silicon AI",
+      "agent runtime"] — extracted from the brief per research-market
+      step 1, NOT brand names). Returns a JSON array of {source,
+      watched_term, title, url, author, body, summary, created_iso,
+      age_hours, reply_count, repost_count, like_count}. Used by
+      research-market (for industry signal in the user's category) and
+      discover-customers (Bluesky has no stable communities like
+      subreddits, so keyword search is the discovery primary). Dedupes
+      across keywords by post URL.
+    cmd: "$SKILL_DIR/scripts/sites/bluesky-search.sh"
+    tier: read
+    timeout_ms: 30000
   - name: FetchLobsters
     description: >-
       Fetch the lobste.rs newest feed. Returns JSON array of
@@ -320,20 +352,51 @@ user's own work.
 **Inputs**: brief topics, GOAL.
 
 **Process**:
-1. Identify the topics to scan (from brief + goal).
+1. **Extract category keywords from the brief, not brand names.**
+   Read the brief and pull out the *categories / problem space*
+   the user is building in — the words a stranger would use to
+   describe the user's work without knowing the product names.
+   Brand names (product names, company names, handles) almost never
+   show up in third-party posts yet; filtering on them returns
+   nothing useful. Categories are what HN / Lobsters / Arxiv /
+   Reddit posts actually talk about.
+
+   How to extract categories from a brief:
+   - Strip every proper noun specific to the user.
+   - Keep the noun phrases describing what kind of thing they're
+     building, who the audience is, and what problem space they
+     work in.
+   - Generalize one level above the brief's wording when needed —
+     if the brief says "X for Y users", scan for both "X" and "Y".
+
+   Brand-name hits when they do appear are bonus signal — score
+   them high — but never use them as the *primary* filter, or the
+   signal section will always be empty.
 2. Call enabled source tools in parallel: `FetchHackerNews`,
-   `FetchLobsters`, `FetchArxiv`, `FetchRSS`. (`FetchReddit` is
-   primarily for discover-customers, but can supplement here.)
-3. Filter each tool's output by the topic keywords. Score 0–1 for
-   technical specificity to the brief's topics:
-   - 1.0 = makes a specific claim that addresses, contradicts, or
-     extends what the brief describes
-   - 0.5 = topically related, no specific overlap
-   - 0.0 = same broad domain, no real connection
-4. **Hard cutoff: drop below 0.6.** Topical-but-thin links poison
+   `FetchLobsters`, `FetchArxiv`, `FetchRSS`, `FetchBlueskyKeywords`
+   (if enabled — pulls posts matching the category keywords).
+   (`FetchReddit` is primarily for discover-customers, but can
+   supplement here.)
+3. **Drop SKIP_URLS first.** Before scoring, drop any result whose
+   normalized post id matches a `SKIP_URLS` entry from the hidden
+   Gather web context. Same format as discover-customers: match by
+   post id (`<platform>:<post-id>`), not by slug. Signal cards on
+   threads the user already commented on are pure noise — they'd be
+   filtered at render anyway, and scoring them burns tokens.
+4. Filter each tool's output by the **category** keywords from step 1.
+   Score 0–1 for how directly the hit speaks to the user's category:
+   - 1.0 = a specific claim, tool, paper, or thread squarely inside
+     the user's category — close enough that the user could plausibly
+     comment from real experience.
+   - 0.6 = clearly in-category, less specific overlap.
+   - 0.3 = adjacent category — shares a buzzword with the brief but
+     a different problem space underneath.
+   - 0.0 = same broad domain (any catch-all umbrella term that fits
+     thousands of unrelated things), no real connection.
+5. **Hard cutoff: drop below 0.6.** Topical-but-thin links poison
    the section.
-5. Group surviving hits by source.
-6. **Dedupe against discovery.** If a hit's URL also appears (or
+6. Group surviving hits by source.
+7. **Dedupe against discovery.** If a hit's URL also appears (or
    will appear) in the `discovery` section emitted this run, drop
    it from `signal`. Discovery is the actionable bucket
    (comment opportunity); signal is passive awareness. Don't show
@@ -365,18 +428,29 @@ message instead.
 **When**: goal asks to find new comment opportunities, leads, or
 "where can I add value."
 
-**Inputs**: brief expertise areas, configured Reddit subs.
+**Inputs**: brief expertise areas, configured Reddit subs, configured
+Bluesky keywords.
 
 **Process**:
 1. Call `FetchReddit` (configured subs), `FetchHackerNews`,
-   `FetchLobsters`.
-2. Filter for posts that are *questions* or *describe a pain point*
+   `FetchLobsters`, `FetchBlueskyKeywords` (if enabled — Bluesky has
+   no subreddit-style communities, so keyword search is the primary
+   discovery path there).
+2. **Drop SKIP_URLS first.** Before scoring or drafting, drop any
+   thread whose normalized post id matches a `SKIP_URLS` entry from
+   the hidden Gather web context (set by pulse-app.js from the
+   user's local + remote commented-thread state). Match by post id
+   (the segment after `/comments/<id>` for Reddit; the post rkey for
+   Bluesky), NOT by slug. Format: `<platform>:<post-id>` (e.g.
+   `reddit:1tc7op7`, `bsky:3kabc...`). Surfacing a thread the user
+   already commented on wastes drafts that get filtered at render.
+3. Filter for posts that are *questions* or *describe a pain point*
    the brief's expertise can answer. Look for question marks, "how
    do I", "is there a tool", "anyone tried", "best way to".
-3. Score 0–1 for direct fit (the brief's product / expertise must
+4. Score 0–1 for direct fit (the brief's product / expertise must
    genuinely apply).
-4. Drop below 0.6.
-5. For each surviving thread, draft a 2–4 sentence comment starter
+5. Drop below 0.6.
+6. For each surviving thread, draft a 2–4 sentence comment starter
    in voice (see lane-templates.md `reddit-comment`). Don't link to
    the user's marketing domain; if a self-mention is genuinely
    natural, max one.
@@ -409,7 +483,7 @@ run if either section's `last_updated` is older than 6h.
 - The brief — already in your conversation history from the
   hidden init message (see Inputs section above)
 - Configured source tools (`FetchReddit`, `FetchHackerNews`,
-  `FetchLobsters`)
+  `FetchLobsters`, `FetchBlueskyMentions`)
 
 #### Step 1 — Resolve the watchlist
 
@@ -450,6 +524,9 @@ configured source tools:
 - `FetchHackerNews`
 - `FetchLobsters`
 - `FetchRedditMentions` for self-handle public mentions (no auth needed)
+- `FetchBlueskyMentions` for the Bluesky handle if configured —
+  returns mention / own_post / own_reply / reply_to_me items in
+  the same shape as FetchRedditMentions
 
 Filter for hits where the term appears in title or summary. For each
 Reddit hit, **walk the comment tree** to assemble conversational

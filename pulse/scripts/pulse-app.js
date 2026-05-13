@@ -16,7 +16,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, addCommentedThreadUrl, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, addCommentedThreadUrl, getCommentedThreadUrls, resetPage } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -308,7 +308,7 @@ async function runGatherLocal() {
     await pushLocalContextToChat(data);
     refreshCommentedThreadUrls().catch(() => {});
     sendChatHidden([
-      'Based on the CONTEXT BLOCK above (yesterday\'s commits + session transcripts + changed files), emit ONE `body_patch` on `progress_drafts` with a single `progress` card. Replace mode (default — not append).',
+      'Based on the CONTEXT BLOCK above (commits + session transcripts + changed files from the last 24 hours), emit ONE `body_patch` on `progress_drafts` with a single `progress` card. Replace mode (default — not append).',
       '',
       'Card shape:',
       '  { type: "progress", id: "local-<ts>", window: "<24h|7d|30d>", items: [',
@@ -432,10 +432,11 @@ async function refreshCommentedThreadUrls() {
 }
 
 // Optimistic "user is about to comment on this thread" — fires from the
-// Copy / Open handler on a discovery card. Adds the URL to the in-memory
-// filter (card vanishes from the current view) and persists so it
-// survives reloads. Reddit's API will catch up on the next refresh; this
-// just bridges the gap.
+// Copy handler on a discovery card. Adds the URL to the in-memory filter
+// (card vanishes from the current view) and persists so it survives
+// reloads. Reddit's API will catch up on the next refresh; this just
+// bridges the gap. NOT fired by Open — that's a "let me read it" action,
+// not a commit signal, so the card stays.
 async function markDiscoveryCommitted(card) {
   const url = card?.thread_url || card?.url;
   if (!url) return;
@@ -469,7 +470,26 @@ async function runGatherWeb() {
   // so the renderer's filter has fresh data. The init() refresh is too
   // stale for this — user may have commented mid-session.
   await refreshCommentedThreadUrls();
+  // Pre-filter at the agent level: pass the normalized skip set so the
+  // agent drops already-commented threads during scoring instead of
+  // drafting discovery comments that the renderer then silently hides.
+  // Saves ~10-20k tokens per Gather web run when the skip set is full.
+  // The renderer's isAlreadyCommented filter stays as defense-in-depth
+  // (handles races where the user comments mid-Gather, or the agent
+  // forgets the rule).
+  const skipKeys = getCommentedThreadUrls();
+  const skipBlock = skipKeys.length === 0 ? '' : [
+    'SKIP_URLS — threads I have already commented on or marked as committed.',
+    'Drop any source-tool result whose normalized post id appears in this',
+    'list, BEFORE scoring or drafting. Match by post id, not by slug — for',
+    'Reddit use the segment after /comments/<id>; for Bluesky use the post',
+    'rkey (last URL segment). Skip applies to `discovery` and `signal`',
+    'sections. Format: <platform>:<post-id>.',
+    ...skipKeys.map(k => `  - ${k}`),
+    '',
+  ].join('\n');
   const goal = [
+    skipBlock,
     'Gather web signal for what I\'m working on right now.',
     '',
     'Read the local cards already in this session (the `progress` card in `progress_drafts` lists my recent commits, sessions, and changed files). Pick 2-3 concrete topics that capture what I\'m actually working on this week.',
@@ -654,7 +674,9 @@ function handleCardAction(action, cardId, btn) {
         || card?.thread_url || card?.your_post_url || card?.url
         || (card?.follow_up?.comment_url);
       if (url) window.open(url, '_blank', 'noopener,noreferrer');
-      if (card?.type === 'discovery') markDiscoveryCommitted(card).catch(() => {});
+      // Open = "let me read the thread", not "I'm about to comment". Leave
+      // the card visible so the user can come back to it. Copy is the
+      // explicit commit signal (handled below).
       break;
     }
     case 'copy': {
