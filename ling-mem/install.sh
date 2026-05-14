@@ -14,7 +14,8 @@ set -euo pipefail
 #    version (not 'latest'). Verifies the SHA-256 against the release's
 #    sibling .sha256 file before extracting.
 # 4. Wires the per-prompt recall hook into ~/.claude/settings.json
-#    if Claude Code is present.
+#    if Claude Code is present, and into ~/.codex/hooks.json if Codex
+#    is present.
 #
 # Supply-chain posture: defaults are pinned versions; SHA-256 verification
 # is mandatory by default and can only be disabled by an explicit
@@ -109,9 +110,10 @@ that location, so a single install covers both runtimes). Falls back to
 ~/.linggen otherwise.
 
 If ~/.codex/ exists, also symlinks the installed skill into
-~/.codex/skills/ling-mem/ so Codex picks it up. Codex doesn't have a
-user-global hook system like CC, so the per-turn recall hook is CC-only;
-the skill's CLI works in Codex either way. Restart Codex after install.
+~/.codex/skills/ling-mem/, adds ~/.local/bin to Codex's sandbox PATH
+in ~/.codex/config.toml (so the agent can find the ling-mem binary),
+and registers the per-prompt recall hook in ~/.codex/hooks.json
+(same recall.sh as the Claude install). Restart Codex after install.
 
   LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.5.1)
                              use 'latest' for the most recent release
@@ -409,9 +411,8 @@ create_path_symlink() {
 }
 
 # Symlink the canonical skill dir into ~/.codex/skills/ling-mem so Codex
-# discovers it. Codex hooks are plugin-scoped (live in plugin.json), not
-# user-global, so the recall hook is CC-only — the skill's CLI still
-# works in Codex via SKILL.md instructions.
+# discovers it. The per-prompt recall hook is registered separately in
+# ~/.codex/hooks.json — see configure_codex_hook().
 symlink_to_codex() {
   local source_dir="$1"
   local codex_skills="$HOME/.codex/skills"
@@ -430,8 +431,7 @@ symlink_to_codex() {
     ln -s "$source_dir" "$link"
   fi
   echo "  Linked: $link → $source_dir"
-  echo "  Note: restart Codex to pick up the skill. Recall hook is CC-only —"
-  echo "        Codex sessions need to call 'ling-mem search' explicitly."
+  echo "  Note: restart Codex to pick up the skill."
 }
 
 # OpenClaw-only: append a guarded directive block to
@@ -551,12 +551,11 @@ $marker_end"
   echo "  Updated: $claude_md (core @-imports + memory hint)"
 }
 
-# CC-only: install a UserPromptSubmit hook that runs `ling-mem search` on
-# every user turn and injects relevance-ranked hits into Claude's context,
-# scoped to cross-project (global user memory) plus the session's project.
-#
-# CLAUDE.md tells Claude *to* search; the hook makes the search mechanical
-# so it doesn't depend on the model remembering to do it.
+# Write the per-prompt recall.sh script into <skill_dir>/hooks/recall.sh.
+# Both Claude Code and Codex register the same script — Claude reads the
+# command from settings.json (configure_claude_hook), Codex from hooks.json
+# (configure_codex_hook). The script itself is host-agnostic: it reads the
+# hook JSON payload on stdin and writes "From memory (...)" lines on stdout.
 #
 # Tuning via env vars (set in shell rc — read by the hook at turn time):
 #   LING_MEM_RECALL_TOPK       hits surfaced per turn         (default 3)
@@ -564,11 +563,10 @@ $marker_end"
 #   LING_MEM_RECALL_TIMEOUT    hard timeout in seconds        (default 3)
 #   LING_MEM_RECALL_MIN_SCORE  cosine similarity floor [-1,1] (default 0.30)
 #   LING_MEM_RECALL_DISABLE    set to 1 to silence the hook without uninstall
-configure_claude_hook() {
+write_recall_script() {
   local skill_dir="$1"
   local hook_dir="$skill_dir/hooks"
   local hook="$hook_dir/recall.sh"
-  local settings="${CLAUDE_SETTINGS:-$HOME/.claude/settings.json}"
 
   mkdir -p "$hook_dir"
 
@@ -642,6 +640,16 @@ printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
 ' 2>/dev/null || true
 HOOK
   chmod +x "$hook"
+}
+
+# CC: register the recall script in ~/.claude/settings.json under
+# hooks.UserPromptSubmit. Idempotent — re-runs replace any prior entry.
+configure_claude_hook() {
+  local skill_dir="$1"
+  local hook="$skill_dir/hooks/recall.sh"
+  local settings="${CLAUDE_SETTINGS:-$HOME/.claude/settings.json}"
+
+  write_recall_script "$skill_dir"
 
   # Idempotent settings.json patch — drops any prior ling-mem hook entry,
   # then appends the fresh one in CC's current nested shape
@@ -693,6 +701,197 @@ with open(path, "w") as f:
 PY
   echo "  Installed: $hook"
   echo "  Registered in: $settings (hooks.UserPromptSubmit)"
+}
+
+# Codex: enable the `codex_hooks` feature flag. Per
+# developers.openai.com/codex/hooks, the entire [hooks] section is
+# ignored unless [features] codex_hooks = true is set. Merge into the
+# existing [features] block if present; otherwise create one (in its
+# own marker block).
+configure_codex_features() {
+  local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
+
+  mkdir -p "$(dirname "$codex_toml")"
+  touch "$codex_toml"
+
+  if grep -qE '^\s*codex_hooks\s*=' "$codex_toml"; then
+    return 0
+  fi
+
+  if grep -qE '^\[features\]' "$codex_toml"; then
+    local tmp; tmp="$(mktemp)"
+    awk '
+      BEGIN { inserted=0 }
+      /^\[features\]/ && !inserted {
+        print
+        print "codex_hooks = true   # added by ling-mem install.sh"
+        inserted=1
+        next
+      }
+      { print }
+    ' "$codex_toml" > "$tmp"
+    mv "$tmp" "$codex_toml"
+    echo "  Registered in: $codex_toml ([features] codex_hooks = true)"
+    return 0
+  fi
+
+  local tmp; tmp="$(mktemp)"
+  awk '
+    /^# BEGIN ling-mem features$/ { skip=1; next }
+    /^# END ling-mem features$/   { skip=0; next }
+    !skip { print }
+  ' "$codex_toml" > "$tmp"
+
+  cat >> "$tmp" <<TOML
+
+# BEGIN ling-mem features
+[features]
+codex_hooks = true
+# END ling-mem features
+TOML
+
+  mv "$tmp" "$codex_toml"
+  echo "  Registered in: $codex_toml ([features] codex_hooks = true)"
+}
+
+# Codex: grant the workspace-write sandbox write access to ~/.linggen.
+# ling-mem's SQLite store lives at ~/.linggen/memory/ and needs WAL +
+# journal writes even for read-only queries. Without this, `ling-mem
+# search` crashes inside Codex's sandbox while opening the store, and
+# the agent falls back to grepping the markdown core (which doesn't
+# contain RAG rows like "Xiao man is male").
+#
+# Idempotent via BEGIN/END marker block. Skips with a manual-add hint
+# if the user already has their own [sandbox_workspace_write] block.
+configure_codex_sandbox() {
+  local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
+  local linggen_root="$HOME/.linggen"
+
+  mkdir -p "$(dirname "$codex_toml")"
+  touch "$codex_toml"
+
+  local tmp; tmp="$(mktemp)"
+  awk '
+    /^# BEGIN ling-mem sandbox$/ { skip=1; next }
+    /^# END ling-mem sandbox$/   { skip=0; next }
+    !skip { print }
+  ' "$codex_toml" > "$tmp"
+
+  if grep -qE '^\[sandbox_workspace_write' "$tmp"; then
+    rm -f "$tmp"
+    echo "  Warning: $codex_toml already has a [sandbox_workspace_write] block." >&2
+    echo "    Add this entry to its writable_roots manually:" >&2
+    echo "      writable_roots = [\"$linggen_root\"]   # (merge with any existing entries)" >&2
+    return 0
+  fi
+
+  cat >> "$tmp" <<TOML
+
+# BEGIN ling-mem sandbox
+[sandbox_workspace_write]
+writable_roots = ["$linggen_root"]
+# END ling-mem sandbox
+TOML
+
+  mv "$tmp" "$codex_toml"
+  echo "  Registered in: $codex_toml (sandbox_workspace_write.writable_roots += $linggen_root)"
+}
+
+# Codex: ensure ~/.local/bin (where install.sh symlinks the ling-mem
+# binary) is on the agent's sandbox PATH. Codex's launcher inherits its
+# parent process PATH (which depends on whether it was started from a
+# shell or from a GUI launcher), and GUI launches on macOS get only
+# /usr/bin:/bin:/usr/sbin:/sbin — so `ling-mem` is not found and the
+# agent silently falls back to `rg` over the markdown files.
+#
+# Fix: write [shell_environment_policy.set] PATH to ~/.codex/config.toml,
+# prepending ~/.local/bin to the user's *current* PATH (captured at
+# install time). If the user already has their own [shell_environment_policy]
+# block we cannot append without producing a duplicate-table TOML error
+# — skip and print manual instructions in that case.
+#
+# Idempotent via BEGIN/END marker block.
+configure_codex_env() {
+  local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
+  local local_bin="$HOME/.local/bin"
+
+  mkdir -p "$(dirname "$codex_toml")"
+  touch "$codex_toml"
+
+  local tmp; tmp="$(mktemp)"
+  awk '
+    /^# BEGIN ling-mem env$/ { skip=1; next }
+    /^# END ling-mem env$/   { skip=0; next }
+    !skip { print }
+  ' "$codex_toml" > "$tmp"
+
+  if grep -qE '^\[shell_environment_policy' "$tmp"; then
+    rm -f "$tmp"
+    echo "  Warning: $codex_toml already has a [shell_environment_policy] block." >&2
+    echo "    Add this entry to its [shell_environment_policy.set] table manually:" >&2
+    echo "      PATH = \"$local_bin:<your existing PATH>\"" >&2
+    return 0
+  fi
+
+  local new_path="$PATH"
+  case ":$new_path:" in
+    *":$local_bin:"*) ;;
+    *) new_path="$local_bin:$new_path" ;;
+  esac
+
+  cat >> "$tmp" <<TOML
+
+# BEGIN ling-mem env
+[shell_environment_policy.set]
+PATH = "$new_path"
+# END ling-mem env
+TOML
+
+  mv "$tmp" "$codex_toml"
+  echo "  Registered in: $codex_toml (shell_environment_policy.set.PATH includes $local_bin)"
+}
+
+# Codex: register the recall script in ~/.codex/hooks.json. Both
+# hooks.json and inline [hooks] in config.toml are valid (per
+# developers.openai.com/codex/hooks), but we use hooks.json so hook
+# command paths stay separate from config knobs. We overwrite this
+# file wholesale — if the user has their own hooks in it, we refuse
+# and print manual instructions instead.
+configure_codex_hook() {
+  local skill_dir="$1"
+  local hook="$skill_dir/hooks/recall.sh"
+  local hooks_json="${CODEX_HOOKS:-$HOME/.codex/hooks.json}"
+
+  write_recall_script "$skill_dir"
+
+  mkdir -p "$(dirname "$hooks_json")"
+
+  if [ -f "$hooks_json" ] && ! grep -q "ling-mem" "$hooks_json" 2>/dev/null; then
+    echo "  Warning: $hooks_json exists and is not ling-mem-managed." >&2
+    echo "    Add this UserPromptSubmit entry manually:" >&2
+    echo "      { \"type\": \"command\", \"command\": \"$hook\" }" >&2
+    return 0
+  fi
+
+  cat > "$hooks_json" <<JSON
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$hook"
+          }
+        ]
+      }
+    ]
+  }
+}
+JSON
+
+  echo "  Installed: $hook"
+  echo "  Registered in: $hooks_json (hooks.UserPromptSubmit)"
 }
 
 # -------------------------------------------------------------------
@@ -752,6 +951,10 @@ if [ -d "$HOME/.codex" ] && [ "${LING_MEM_SKIP_CODEX:-0}" != "1" ]; then
   if [ -n "$CODEX_SOURCE" ]; then
     echo "Detected ~/.codex/ — symlinking into ~/.codex/skills/ling-mem/"
     symlink_to_codex "$CODEX_SOURCE"
+    configure_codex_features
+    configure_codex_sandbox
+    configure_codex_env
+    configure_codex_hook "$CODEX_SOURCE"
   fi
 fi
 
