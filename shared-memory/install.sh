@@ -162,59 +162,6 @@ ensure_dir_writable() {
 }
 
 # -------------------------------------------------------------------
-# Legacy sweep — remove pre-rename / pre-canonical-layout artifacts
-# before installing. Safe even on fresh systems; the rm -rf targets
-# only ling-mem-named locations (the user's content under
-# ~/.linggen/memory/ is untouched).
-# -------------------------------------------------------------------
-
-cleanup_legacy() {
-  echo "Sweeping legacy paths from older installs..."
-  local removed=0
-
-  # Old per-host skill bundles under the pre-rename `ling-mem` slug.
-  # Each used to carry its own copy of references/ scripts/ bin/ —
-  # those are exactly what the canonical layout replaces.
-  local old_bundles=(
-    "$HOME/.claude/skills/ling-mem"
-    "$HOME/.codex/skills/ling-mem"
-    "$HOME/.openclaw/skills/ling-mem"
-    "$HOME/.linggen/skills/ling-mem"
-    "$HOME/.linggen/skills/memory"        # pre-rename Linggen-builtin name
-    "$HOME/.claude/skills/linggen-memory" # even older CC slug
-  )
-  for d in "${old_bundles[@]}"; do
-    if [ -e "$d" ] || [ -L "$d" ]; then
-      echo "  removing $d"
-      rm -rf "$d"
-      removed=$((removed + 1))
-    fi
-  done
-
-  # The pre-canonical PATH symlink only made sense when the binary
-  # lived inside a skill bundle. With ling-mem now installed system-
-  # side (/usr/local/bin or ~/.local/bin as a real binary), the
-  # symlink either points into a now-deleted bundle (broken) or into
-  # a still-present non-canonical location (stale). Remove only when
-  # it resolves into a skill bundle path; never touch a real binary.
-  local link="$HOME/.local/bin/ling-mem"
-  if [ -L "$link" ]; then
-    local tgt; tgt="$(readlink "$link" || true)"
-    case "$tgt" in
-      */skills/ling-mem/bin/*|*/skills/shared-memory/bin/*)
-        echo "  removing legacy symlink $link → $tgt"
-        rm -f "$link"
-        removed=$((removed + 1))
-        ;;
-    esac
-  fi
-
-  if [ "$removed" -eq 0 ]; then
-    echo "  (nothing to remove)"
-  fi
-}
-
-# -------------------------------------------------------------------
 # Canonical bundle — every file lives once at ~/.linggen/skills/shared-memory/
 # -------------------------------------------------------------------
 
@@ -820,7 +767,6 @@ $marker_end"
 # Main
 # -------------------------------------------------------------------
 
-cleanup_legacy
 install_canonical_bundle
 write_recall_script
 choose_bin_dir
