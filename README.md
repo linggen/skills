@@ -7,7 +7,7 @@ Skills for **[Linggen](https://linggen.dev)** — your personal AI assistant. Re
 | Skill | Description |
 |-------|-------------|
 | **[skiller](./skiller/)** | Search, install, and manage skills from the marketplace (skills.sh + ClawHub). Browse library packs. |
-| **[ling-mem](./ling-mem/)** | Durable semantic memory across sessions. Core markdown (identity, style) + LanceDB RAG store. Works in Linggen via typed `Memory_*` tools and in Claude Code via the `ling-mem` CLI. |
+| **[shared-memory](./shared-memory/)** | One memory shared across your AI tools. LanceDB RAG store via the `ling-mem` binary. Works in Linggen via typed `Memory_*` tools and in Claude Code / Codex / OpenClaw via the `ling-mem` CLI. |
 | **[sys-doctor](./sys-doctor/)** | System health analyst. Scans disk, apps, caches, and system info. `--web` opens an interactive dashboard. |
 | **[linggen-guide](./linggen-guide/)** | Built-in documentation for Linggen — architecture, features, CLI, skills, tools, agents, and configuration. |
 | **[arcade-game](./arcade-game/)** | Retro arcade games — Snake, Pong, and Tetris in your browser. |
@@ -32,7 +32,7 @@ Skills are automatically installed when you run `ling init --global`.
 ## Usage
 
 - **Skiller**: `/skiller find <query>`, `/skiller add <name>`, `/skiller list`
-- **Memory**: `/ling-mem` — or call `Memory_query` / `Memory_write` directly in Linggen; `ling-mem add|search|list` from any shell
+- **Shared Memory**: `/shared-memory` — or call `Memory_query` / `Memory_write` directly in Linggen; `ling-mem add|search|list` from any shell
 - **Sys Doctor**: `/sys-doctor` or `/sys-doctor --web` for the interactive dashboard
 - **Linggen Guide**: `/linggen-guide` to ask questions about Linggen
 - **Arcade**: `/arcade-game` — pick Snake, Pong, or Tetris
