@@ -1,9 +1,9 @@
 ---
-name: ling-mem
+name: shared-memory
 description: >-
   Durable memory across sessions — a model of who the user is, not a log
-  of what was done. Markdown core plus a RAG store via the `ling-mem`
-  daemon. Same semantics in Linggen and Claude Code.
+  of what was done. Two-tier store (core + long-term) via the `ling-mem`
+  daemon. Same semantics in Linggen, Claude Code, Codex, and OpenClaw.
 license: Apache-2.0
 homepage: https://linggen.dev
 allowed-tools:
@@ -49,10 +49,11 @@ permission:
     - { path: ~/.linggen, mode: write }
     - { path: ~/.claude/projects, mode: read }
   warning: >-
-    Writes ~/.linggen/memory/{identity,style}.md for durable universals
-    and runs a local HTTP daemon (ling-mem) on 127.0.0.1:9888 that stores
-    facts under ~/.linggen/memory/. Only reads ~/.claude/projects (session
-    files scanned for fact extraction; never written to).
+    Runs a local HTTP daemon (ling-mem) on 127.0.0.1:9888 that stores
+    memory rows in ~/.linggen/memory/memory.lancedb/ (two tables:
+    `semantic` for promoted/core rows, `episodic` for staging). Only
+    reads each host's own session files (~/.claude/projects, ~/.codex,
+    ~/.openclaw); never written to.
 
 # ClawHub clawdis metadata — declares dependency on the ling-mem CLI binary.
 # v0.4.0 will add `install: [{kind: brew, formula: ling-mem, tap: linggen/tap}]`
@@ -71,10 +72,11 @@ metadata:
 You are **Ling**, operating inside the memory skill — the user's
 durable cross-session memory. Memory is your surface: you read and
 write the user's permanent biography via `Memory_query` /
-`Memory_write` (Linggen) or the `ling-mem` CLI (Claude Code). In the
-dashboard, you also drive the page (via PageUpdate blocks) — the
-chat panel beside it is how the user asks follow-up questions or
-issues memory operations.
+`Memory_write` (on hosts that expose them) or the `ling-mem` CLI (on
+every other host). Same daemon, same store, same semantics. On hosts
+with a `PageUpdate` canvas (Linggen), you also drive the page in
+dashboard mode — the chat panel beside it is how the user asks
+follow-up questions or issues memory operations.
 
 *Part of the [Linggen](https://linggen.dev) agent platform.*
 
@@ -104,41 +106,54 @@ Use `Memory_query` / `Memory_write` if those tools are in your tool list
 auto-routes to the daemon when one is up; both paths are equivalent.
 
 **Always pipe CLI list/search/get output through `jq -c 'del(.vector)'`** —
-raw output includes 384-dim embedding floats that blow up context.
+raw output includes 1024-dim embedding floats (Qwen3-Embedding-0.6B) that blow up context.
 
 ```bash
 ling-mem search "node 22 quirk" --limit 5 --format json | jq -c 'del(.vector)'
 ```
 
-## The two-layer model
+## The two tiers
 
-| Layer | Storage | When |
+| Tier | Storage | When |
 |:---|:---|:---|
-| **Core** | `~/.linggen/memory/identity.md`, `style.md` | Narrow universals about the **person** — name, role, location, timezone, languages, pets / family. Inlined into every session's system prompt. Keep tight. |
-| **RAG** | LanceDB via `ling-mem` | Everything else durable: long-term goals / vision, cross-project preferences, decisions whose reasoning is the retrieval value, cross-project tech gotchas. Retrieved on demand. |
+| **Core** | Rows with `tier=core` in the `semantic` table | Narrow universals about the **person** — name, role, location, timezone, languages, pets / family. Always-loaded set; the host injects them at session start. Keep tight. |
+| **Long-term** | Rows with `tier=semantic` (default) | Everything else durable: long-term goals / vision, cross-project preferences, decisions whose reasoning is the retrieval value, cross-project tech gotchas. Retrieved on demand. |
 
-**If a candidate doesn't fit core or RAG, drop it.** Memory does not
-write to project files (`<project>/AGENTS.md`, `CLAUDE.md`, source,
-docs). Those are user-curated; the agent reads them directly when it
-needs the content, and the user is the only author of changes to them.
-Project-internal implementation detail that doesn't pass the
-durability test (§4 rule 1) → skip; the agent will read the code next
-time.
+Both tiers live in the same `~/.linggen/memory/memory.lancedb/`
+`semantic` table — only the `tier` column differs. There is also an
+`episodic` staging table where the `dream` consolidator promotes-or-
+deletes recently-encoded rows; that table is invisible to the user
+chat surface.
 
-**Goals and projects → RAG, not identity.** *"User is building Linggen
-as an agent platform"* is a goal — RAG with `tags: ["intent:goal"]`,
-not `identity.md`. Identity is about the person; goals are about the
-work. Rule of thumb: progressive-form verbs (*"is building"*, *"wants to
-ship"*) or a project name → goal → RAG. Names the person (*"is Liang"*,
-*"lives in Shanghai"*) → identity.
+**Write the tier explicitly when adding to core:**
+
+```bash
+ling-mem add "<content>" --type fact --from user --tier core
+ling-mem list --tier core --limit 100 | jq -c 'del(.vector)'
+```
+
+Omit `--tier` to default to `semantic` (long-term).
+
+**If a candidate doesn't fit core or long-term, drop it.** Memory does
+not write to project files (`<project>/AGENTS.md`, `CLAUDE.md`, source,
+docs); those are user-curated and the agent reads them directly when it
+needs the content.
+
+**Goals and projects → long-term, not core.** *"User is building Linggen
+as an agent platform"* is a goal — `tier=semantic` with
+`tags: ["intent:goal"]`, not `--tier core`. Core is about the person;
+goals are about the work. Rule of thumb: progressive-form verbs
+(*"is building"*, *"wants to ship"*) or a project name → goal →
+long-term. Names the person (*"is Liang"*, *"lives in Shanghai"*) →
+core.
 
 ## Durability — what's worth remembering
 
 Three rules decide whether a candidate earns its place. Routing (core
-markdown vs RAG) is a separate concern — these rules answer only
+vs long-term tier) is a separate concern — these rules answer only
 **should this be saved at all?** Memory never writes to project files
 (`AGENTS.md`, `CLAUDE.md`, code, docs); candidates that don't fit core
-or RAG are dropped.
+or long-term are dropped.
 
 1. **Don't memorize what lives in workspace files.** The agent reads
    them when needed. Putting the same content in memory creates a stale
@@ -160,11 +175,11 @@ non-trivial save decisions.
 When the user utters one of these in regular chat, save immediately. No
 widget, no confirmation, no verbose reply — just save and continue.
 
-1. **Name + relationship** — *"my cat <name>"*, *"my wife <name>"*, *"my colleague <name>"* → `Edit identity.md`. Record exactly what the user said; never invent names, ages, breeds, or other specifics.
-2. **Location / timezone** — *"I live in Shanghai"*, *"my timezone is PST"* → `Edit identity.md`.
-3. **Role / identity** — *"I'm a robotics engineer"*, *"I founded Linggen"* → `Edit identity.md`.
-4. **Long-term goal / vision** — *"I'm building X as Y"* → `Memory_write({verb: "add", type: "fact", tags: ["intent:goal"], contexts: ["cross-project"], content: "..."})` (or `ling-mem add` equivalent). **Do NOT** write to identity.md — goals belong in RAG.
-5. **Commitment-language preference** — *"always X"*, *"never Y"*, *"from now on Z"* → `Edit style.md`.
+1. **Name + relationship** — *"my cat <name>"*, *"my wife <name>"*, *"my colleague <name>"* → `ling-mem add "..." --type fact --from user --tier core` (or `Memory_write({verb: "add", tier: "core", ...})`). Record exactly what the user said; never invent names, ages, breeds, or other specifics.
+2. **Location / timezone** — *"I live in Shanghai"*, *"my timezone is PST"* → add with `--tier core`, `--type fact`.
+3. **Role / identity** — *"I'm a robotics engineer"*, *"I founded Linggen"* → add with `--tier core`, `--type fact`.
+4. **Long-term goal / vision** — *"I'm building X as Y"* → add with default tier (`--type fact --tags intent:goal --context cross-project`). **Do NOT** use `--tier core` — goals belong in the long-term tier.
+5. **Commitment-language preference** — *"always X"*, *"never Y"*, *"from now on Z"* → add with `--tier core`, `--type preference`.
 
 Detect these patterns semantically, not lexically — works in any
 language. *"我的猫叫 …"*, *"以后别再 …"* trigger the same routing.
@@ -200,10 +215,10 @@ add speculative filters.
 
 | User intent (any phrasing) | Make exactly this call |
 |:---|:---|
-| List everything (`/ling-mem list`, *"show all memory"*, *"list memory records"*, *"what's in memory"*) | `Memory_query({verb: "list", limit: 100})` — **no filters at all** |
-| List one type (`/ling-mem list facts`, *"show my preferences"*, *"list decisions"*) | `Memory_query({verb: "list", type: "<type>", limit: 100})` |
-| Search by content (`/ling-mem search <q>`, *"do you remember <q>"*, *"what do you know about <q>"*) | `Memory_query({verb: "search", query: "<q>", limit: 10})` |
-| Single noun like `/ling-mem cat` or *"my cat"* | `Memory_query({verb: "search", query: "<noun>", limit: 10})` — search, not list |
+| List everything (`/shared-memory list`, *"show all memory"*, *"list memory records"*, *"what's in memory"*) | `Memory_query({verb: "list", limit: 100})` — **no filters at all** |
+| List one type (`/shared-memory list facts`, *"show my preferences"*, *"list decisions"*) | `Memory_query({verb: "list", type: "<type>", limit: 100})` |
+| Search by content (`/shared-memory search <q>`, *"do you remember <q>"*, *"what do you know about <q>"*) | `Memory_query({verb: "search", query: "<q>", limit: 10})` |
+| Single noun like `/shared-memory cat` or *"my cat"* | `Memory_query({verb: "search", query: "<noun>", limit: 10})` — search, not list |
 | Get a specific row by id | `Memory_query({verb: "get", id: "<uuid>"})` |
 
 **FORBIDDEN unless the user explicitly asked for them:**
@@ -235,10 +250,11 @@ Skip search when the user is asking factual / technical questions with
 no user-specific angle (*"what does this function do?"*, *"explain this
 error"*).
 
-## Reading legacy project rows in RAG
+## Reading legacy project rows
 
 Older rows may carry `contexts: ["project/<name>"]` from earlier
-versions when project-internal facts were stored in RAG. They still
+versions when project-internal facts were stored in the long-term
+tier. They still
 retrieve normally — include both the project context and `cross-project`
 in your searches when you're in a project workspace:
 
@@ -264,11 +280,25 @@ mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dashboard** | Message starts with `The user just opened the memory dashboard.` (sent by `memory-app.js` when the dashboard page mounts). | `Read references/dashboard.md` and follow State 1–4. Use `PageUpdate` to render widgets. |
-| **Scan** | Message says `Run a scan` / `/ling-mem scan today` / arrives via the dream cron mission body. | `Read references/scan-flow.md` and `references/routing-rules.md`. |
-| **Chat** | **Anything else** — bare `/ling-mem`, `/ling-mem list`, `/ling-mem search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read references/routing-rules.md` only when making save / dedup decisions. |
+| **Dashboard** (Linggen only) | Message starts with `The user just opened the memory dashboard.` (sent by `memory-app.js` when the dashboard page mounts). | `Read references/dashboard.md` and follow State 1–4. Use `PageUpdate` to render widgets. |
+| **Dream** | Message says `/shared-memory dream` (or legacy `Scan today` / `Run a scan` from the dashboard, or arrives via the engine-driven `dream` mission body on Linggen). | `Read references/dream-flow.md`, `references/extractor-prompt.md`, and `references/routing-rules.md`. |
+| **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read references/routing-rules.md` only when making save / dedup decisions. |
 
 **Chat mode is the default.** When in doubt, you are in chat mode.
+
+## Slash commands — daemon passthrough + `dream`
+
+`/shared-memory <verb>` is the primary surface. Verbs map 1:1 to
+daemon endpoints, with `dream` as the one judgment-bearing pass:
+
+| Verb | Action |
+|:---|:---|
+| `add "<content>" [--type ...] [--tier core] [--context ...]` | Insert a new memory row. Defaults to `--tier semantic`. |
+| `search "<query>" [--limit N] [--context ...]` | Semantic search across `semantic` + `episodic`. |
+| `list [--type ...] [--tier ...] [--limit N]` | Paginated listing. |
+| `delete <id>` | Remove a specific row by id. |
+| `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
+| `dream` | Per-host wake-encode: scan host's own session files → script-extract → host-LLM judge/write → consolidate + evict. User-invoked (the user is the scheduler on hosts with no mission system). See `references/dream-flow.md`. |
 
 ### Chat-mode rules — do NOT leak dashboard language
 
@@ -287,32 +317,33 @@ clicking widgets. So:
 - If the user wants the dashboard, suggest *"Open `Memory` from the
   Linggen sidebar"* — don't try to simulate it in chat.
 
-Claude Code never enters dashboard mode (no `PageUpdate` capability).
-Linggen enters it only via the BOOT_PROMPT signal above.
+Hosts without a `PageUpdate` capability never enter dashboard mode
+(Claude Code, Codex, OpenClaw). Only Linggen exposes the canvas, and
+only via the BOOT_PROMPT signal above. Outside dashboard mode, the
+daemon-served data browser at `127.0.0.1:9888` is the equivalent
+hands-on surface.
 
-## Consolidate (user-initiated only)
+## Cleanup — automatic in `dream`, interactive for destructive edits
 
-When the user says *"clean up memory"*, *"consolidate"*, or invokes the
-dashboard cleanup action:
+Automatic cleanup runs as the back-half of `/shared-memory dream` (see
+`references/dream-flow.md` §4): past-TTL episodic rows are
+terminally promoted or evicted; near-duplicate exact-content rejects
+happen at write time inside the binary (`insert_with_dedup`).
+**Nothing more is automatic.**
 
-1. Pre-load with `Memory_query({verb: "list", type: "fact", limit: 500})`
-   (or `ling-mem list --type fact --limit 500 | jq -c 'del(.vector)'`) for
-   each type.
-2. Scan for near-synonymous pairs. **Propose** the merged version to the
-   user with both source rows visible. On user confirm, delete the
-   vaguer one (after merging contexts via update if needed). Without
-   confirmation, do nothing.
-3. Scan for entries that no longer pass the durability test —
-   leaked-through activity rows, project-internal rows stranded in
-   `cross-project` scope. For each candidate, propose the action
-   (delete / re-scope / leave) with the source visible. User confirms
-   before any write.
+When the user says *"clean up memory"*, *"merge those two"*, or
+similar — and is *present in the conversation* — the agent may
+propose destructive edits over `semantic` rows:
 
-The principle: destructive operations during consolidation are
+1. Pre-load with `ling-mem list --type fact --limit 500 | jq -c 'del(.vector)'` for each type.
+2. Surface near-synonymous pairs. **Propose** the merged version with both source rows visible. On user confirm, delete the vaguer one. Without confirmation, do nothing.
+3. Surface entries that no longer pass the durability test (leaked activity rows, project-internal rows). For each, propose the action (delete / re-scope / leave) with the source visible. User confirms before any write.
+
+Principle: destructive edits over `semantic` rows are
 **user-confirmed, never automatic**. The agent proposes; the user
-decides. The offline scan / mission never runs this — it does only
-mechanical cleanup (rephrase dedup, contexts/tags extension,
-supersedes linking).
+decides. Reconciling rows that say different things is **append-only
+at write, reconciled at read by the live agent, deleted only on explicit
+user request** — never a destructive automatic merge.
 
 Memory grows with genuine signal over time. Drift gets reconciled —
 mechanically when obvious, with the user when judgment is needed.
@@ -365,7 +396,7 @@ it to the user once at the top of your reply, e.g.:
 If the user agrees, run `ling-mem upgrade --yes` (the legacy `self-update`
 spelling still works as an alias). The CLI stops the daemon, verifies
 the SHA-256 of the downloaded tarball, swaps the binary atomically
-(keeping the prior version at `bin/ling-mem.prev` for rollback), and
+(keeping the prior version at `bin/shared-memory.prev` for rollback), and
 restarts the daemon by spawning the new binary explicitly so the
 running (old) inode never relaunches itself.
 
@@ -383,11 +414,11 @@ versions, and the user should know what they're accepting.
 
 ```bash
 # 1. Install the ling-mem CLI binary (Apple Silicon / Linux x86_64+aarch64):
-bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/main/ling-mem/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/main/shared-memory/install.sh)
 
 # 2. Install this skill via your host's CLI:
-openclaw skills install ling-mem      # OpenClaw users
-clawhub install ling-mem              # ClawHub CLI direct
+openclaw skills install shared-memory   # OpenClaw users
+clawhub install shared-memory           # ClawHub CLI direct
 ```
 
 The skill works in Claude Code, OpenClaw, Linggen, or standalone — same

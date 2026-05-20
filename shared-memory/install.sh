@@ -305,7 +305,7 @@ copy_skill_files() {
   install -m 0644 "$SOURCE_DIR/index.html" "$skill_dir/index.html"
 
   # Reference files.
-  for ref in routing-rules.md scan-flow.md dashboard.md extractor-prompt.md; do
+  for ref in routing-rules.md dream-flow.md dashboard.md extractor-prompt.md; do
     install -m 0644 "$SOURCE_DIR/references/$ref" "$skill_dir/references/$ref"
   done
 
@@ -321,13 +321,11 @@ copy_skill_files() {
   done
 }
 
-# Seed the core memory directory. Engine inlines identity.md / style.md
-# into every session's system prompt; touching empty files is enough.
+# Seed the core memory directory. Core memory is now stored in the
+# `semantic` LanceDB table with `tier=core` (see SKILL.md "Two tiers");
+# the engine reads it from the daemon, no markdown files needed.
 seed_core_memory() {
-  local memory_dir="$HOME/.linggen/memory"
-  mkdir -p "$memory_dir"
-  [ -f "$memory_dir/identity.md" ] || : > "$memory_dir/identity.md"
-  [ -f "$memory_dir/style.md" ]    || : > "$memory_dir/style.md"
+  mkdir -p "$HOME/.linggen/memory"
 }
 
 # Telemetry marker — read by `ling-mem` on first launch (or after an
@@ -471,8 +469,8 @@ ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'
 \`\`\`
 
 Mention hits inline — *\"From memory: you prefer X …\"*. The
-\`del(.vector)\` filter is mandatory — raw output includes 384-dim
-embeddings that blow up context.
+\`del(.vector)\` filter is mandatory — raw output includes 1024-dim
+embeddings (Qwen3-Embedding-0.6B) that blow up context.
 
 **Save high-signal user statements** (name+relationship, location, role,
 \"always/never\" preferences) per the routing rules in the \`ling-mem\`
@@ -509,17 +507,27 @@ configure_claude_md() {
   local marker_end="<!-- ling-mem:core-end -->"
 
   local block="$marker_start
-## Who I am
+## Who I am · How I work
 
-@~/.linggen/memory/identity.md
+Core memory lives in the \`ling-mem\` daemon's \`semantic\` table with
+\`tier=core\` — narrow universals about the person + standing-instruction
+preferences. **At the start of every session**, load it:
 
-## How I work
-
-@~/.linggen/memory/style.md
+\`\`\`
+ling-mem list --tier core --limit 100 --format json | jq -c 'del(.vector)'
+\`\`\`
 
 ## Memory
 
-Durable facts live in a RAG store. The \`ling-mem\` skill at \`~/.claude/skills/ling-mem/\` manages scans and dashboards; for ad-hoc retrieval, call \`ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'\` **before** answering when the user's question could connect to past preferences / decisions / gotchas. Mention relevant hits inline — *\"From memory: you prefer X …\"*. The \`del(.vector)\` filter is mandatory — raw output includes 384-dim embeddings that blow up context.
+Durable signal lives in the \`ling-mem\` daemon (semantic + episodic
+tables). The \`shared-memory\` skill at \`~/.claude/skills/shared-memory/\`
+manages dreams and the dashboard. For ad-hoc retrieval, call
+\`ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'\`
+**before** answering when the user's question could connect to past
+preferences / decisions / gotchas. Mention relevant hits inline —
+*\"From memory: you prefer X …\"*. The \`del(.vector)\` filter is
+mandatory — raw output includes 1024-dim embeddings (Qwen3-Embedding-0.6B)
+that blow up context.
 $marker_end"
 
   mkdir -p "$(dirname "$claude_md")"

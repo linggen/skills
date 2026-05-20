@@ -13,10 +13,11 @@ the measure.
 > 1. Would this still be true 6 months from now, in a totally different project?
 > 2. Would a future agent, starting cold, make better predictions about what this user wants and how they work because this memory exists?
 
-If both pass and the fact is about the **person** → core (`Edit
-identity.md` or `style.md`).
+If both pass and the fact is about the **person** → core
+(`ling-mem add ... --tier core`).
 If both pass and it's not about the person (goal, preference, decision,
-cross-project learning) → RAG with `contexts: ["cross-project"]`.
+cross-project learning) → long-term (`tier=semantic`, the default) with
+`contexts: ["cross-project"]`.
 If either answer is NO → **skip**. The candidate is not memory.
 **Memory does not write to project files** (`<project>/AGENTS.md`,
 `CLAUDE.md`, source, docs); those are user-curated. If the user wants
@@ -88,9 +89,10 @@ dates, equipment, the people and animals around them.
   > agent renders *"From memory: you had a cat that you left with a
   > friend during your 2026 relocation."*
 
-  Optional hint: when highly confident the new row supersedes an
-  earlier one, tag with `supersedes: <id>` — metadata for retrieval
-  ranking, not a destructive edit.
+  Stale rows are removed only by an explicit user instruction
+  (*"forget that I have a cat"*). The extractor never picks a winner
+  and never marks one row as superseding another — that's destructive
+  judgment reserved for the live agent + user.
 
 ## What NOT to save
 
@@ -123,10 +125,13 @@ The decisions are mechanical: a rule fires, the action follows.
 | Operation | Where | Why |
 |:---|:---|:---|
 | Append a new row | Either | Pure additive |
-| Exact-rephrase dedup (clearer wording on a near-duplicate) | Either | Pick the better string |
+| Exact-content dedup at write (binary `insert_with_dedup` rejects identical content) | Binary | Pure equality check |
 | Extend `contexts[]` / `tags[]` from new evidence | Either | Array union |
-| Add a `supersedes` link between two rows | Either | Metadata only |
-| Retire by fixed obsolescence rule (session-arc leak, hard TTL, completed supersedes chain) | Either | The criterion is a fixed rule |
+| Retire past-TTL episodic via the `dream` worklist (promote-or-delete, no third option) | `dream` | Engine-selected worklist, terminal decision per row |
+
+Fuzzy "same fact in different wording?" is **never mechanical** — that
+needs an LLM, so it runs in `dream` (no user) or in the live agent (user
+present), never in the binary.
 
 ### Semantic maintenance — live only
 
@@ -146,30 +151,34 @@ when explicitly asked. Bulk operations belong on the dashboard or the
 
 ### Hard rules — what extraction must NOT do
 
-- Never delete a row to resolve an apparent contradiction. Append the
-  new row with optional `supersedes:` hint and let live retrieval
-  reconcile when the user is present.
+- Never delete a semantic row to resolve an apparent contradiction.
+  Append the new row; let live retrieval reconcile when the user is
+  present. (Episodic rows are different — the `dream` worklist
+  terminally promotes-or-deletes them.)
+- Never mark one row as superseding another. Reconciliation is
+  append + read-time + explicit user delete — no metadata
+  ranking.
 - Never update a row to merge two distinct facts into one synthesized
   story. Append both; let live retrieval reconcile in prose.
 - Never mint a "user always X" generalization across rows. Append the
   individual utterances; live retrieval surfaces the pattern.
 
-## Routing summary by `target`
+## Routing summary by tier
 
-When a candidate emerges, route to one of two destinations or drop it.
+When a candidate emerges, route to one of two tiers or drop it.
 **Memory does not write to project files** (`<project>/AGENTS.md`,
 `CLAUDE.md`, source, docs); those are user-curated.
 
-| target | When | Action |
+| tier | When | Action |
 |:---|:---|:---|
-| `identity` | Universal-about-person, true in any context | `Edit ~/.linggen/memory/identity.md` |
-| `style` | Cross-project behavioral rule for the agent | `Edit ~/.linggen/memory/style.md` |
-| `lancedb` | Cross-project intent / decision / preference / learning | `Memory_write({verb: "add", ...})` or `ling-mem add ...` |
+| `core` | Universal-about-person OR cross-project behavioral rule for the agent | `ling-mem add "..." --tier core --type <fact\|preference> ...` |
+| `semantic` (default) | Cross-project intent / decision / preference / learning | `Memory_write({verb: "add", ...})` or `ling-mem add ...` (omit `--tier`) |
 | (skip) | Project-internal implementation detail / activity / session-arc / meta-feedback | Drop. The agent reads code or user-authored project files when needed. |
 
-Most candidates skip. The core files grow slowly by design — a noisy
-`identity.md` pollutes every unrelated session. RAG stays dense; we'd
-rather miss 3 saves than force the user to curate 30 low-signal rows.
+Most candidates skip. The core tier grows slowly by design — a noisy
+`core` set pollutes every session's prompt. Long-term stays dense;
+we'd rather miss 3 saves than force the user to curate 30 low-signal
+rows.
 
 ## Contexts and tags
 

@@ -1,4 +1,4 @@
-# ling-mem
+# shared-memory
 
 **Persistent memory for AI assistants. Local, semantic, typed.**
 
@@ -7,7 +7,7 @@ A single-binary memory layer that remembers useful facts about you and your work
 ## What it does
 
 - **Auto-recall on every prompt.** A `UserPromptSubmit` hook runs a semantic search over your stored facts and injects the top matches as context — no manual tool call required. Relevant preferences and past decisions land in the agent's view automatically.
-- **Semantic retrieval.** 384-dim embeddings via `all-MiniLM-L6-v2`. Find "berth calibration" by asking about "dock alignment."
+- **Semantic retrieval.** 1024-dim embeddings via `Qwen3-Embedding-0.6B` (multilingual). Find "berth calibration" by asking about "dock alignment."
 - **Typed facts.** `fact`, `preference`, `decision`, `learned`, plus trajectory-level `tried`, `fixed`, `built`. Searches and filters operate on these tags.
 - **Forgetting is first-class.** Delete by id, forget by filter — refuses empty filters as a guardrail.
 - **Local-first storage.** The memory store is on disk in `~/.linggen/memory/` (LanceDB) — no cloud sync, no telemetry. Retrieved facts do enter your agent's prompt context on each turn, so they reach whichever LLM you've configured.
@@ -17,10 +17,10 @@ A single-binary memory layer that remembers useful facts about you and your work
 
 ```bash
 # Install via ClawHub
-clawhub install ling-mem
+clawhub install shared-memory
 
 # Or run install.sh directly
-bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/ling-mem-v0.4.4/ling-mem/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/ling-mem-v0.4.4/shared-memory/install.sh)
 
 # Add a fact
 ling-mem add "prefers concise replies, no hedging" --type preference --from user
@@ -40,7 +40,7 @@ ling-mem delete <id>
 | Host | Integration |
 |:-----|:------------|
 | Claude Code | SKILL.md + a `UserPromptSubmit` hook (`hooks/recall.sh`). Hook auto-injects relevant memories every prompt; agent calls the CLI for ad-hoc lookups. |
-| OpenClaw | Standard SKILL.md skill. Installs to `~/.openclaw/skills/ling-mem/`. Agent shells out via the CLI. |
+| OpenClaw | Standard SKILL.md skill. Installs to `~/.openclaw/skills/shared-memory/`. Agent shells out via the CLI. |
 | Linggen | Native `Memory_query` / `Memory_write` tools dispatch to a local daemon (HTTP, `127.0.0.1:9888`). Same store, same semantics. |
 | Standalone | Any script shells out: `ling-mem search "query" --format json` |
 
@@ -59,14 +59,14 @@ Intel Mac: prebuilt binaries not provided. Build from source with `cargo build -
 
 ## What's stored
 
-- Stored: facts you (or the agent on your behalf) explicitly add via `ling-mem add` or `Memory_write`. Indexed in `~/.linggen/memory/lancedb/`.
+- Stored: durable signal you (or the agent on your behalf) add via `ling-mem add` or `Memory_write`. Indexed in `~/.linggen/memory/memory.lancedb/` (two tables: `semantic` for promoted core/long-term rows, `episodic` for recently-encoded staging).
 - Not stored: session transcripts, code you don't explicitly save, anything not added through the CLI or `Memory_write` tool.
 
 ## Links
 
 - **Linggen platform: [linggen.dev](https://linggen.dev)** · [github.com/linggen/linggen](https://github.com/linggen/linggen)
 - Source + binary releases: [github.com/linggen/linggen-memory](https://github.com/linggen/linggen-memory)
-- Skill source: [github.com/linggen/skills/tree/ling-mem-v0.4.4/ling-mem](https://github.com/linggen/skills/tree/ling-mem-v0.4.4/ling-mem)
+- Skill source: [github.com/linggen/skills/tree/ling-mem-v0.4.4/shared-memory](https://github.com/linggen/skills/tree/ling-mem-v0.4.4/shared-memory)
 - Issues: [github.com/linggen/linggen-memory/issues](https://github.com/linggen/linggen-memory/issues)
 
 ## License

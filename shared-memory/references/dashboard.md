@@ -6,7 +6,7 @@ has no `PageUpdate` capability and never enters this flow.
 
 The dashboard is **agent-narrated**: top-to-bottom it reads like a
 letter from you — a one-paragraph greeting with inline actions, then
-*"Who you are"* (core), then *"What I know"* (RAG), with change feedback
+*"Who you are"* (core), then *"What I know"* (long-term), with change feedback
 during scans. No top-bar count rail; counts live inline in the greeting.
 **Do not emit anything to `top_bar`.**
 
@@ -35,9 +35,9 @@ agent"):
 
 ### (B) Parallel state-gather (same turn, immediately after A)
 
-1. `Read` `~/.linggen/memory/.scan-state.json` — missing file = never scanned; treat gracefully.
-2. `Memory_query({verb: "list", type: "<t>", limit: 50})` for each of `fact`, `preference`, `decision`, `tried`, `fixed`, `learned`, `built` (7 parallel calls).
-3. `identity.md` / `style.md` are already in your system prompt — count bullet lines there, no `Read` needed.
+1. `Read` `~/.linggen/memory/.dream-state.json` — missing file = never scanned; treat gracefully.
+2. `Memory_query({verb: "list", tier: "core", limit: 100})` — the always-loaded set, rendered as the CORE widget.
+3. `Memory_query({verb: "list", type: "<t>", limit: 50})` for each of `fact`, `preference`, `decision`, `tried`, `fixed`, `learned`, `built` (7 parallel calls), each implicitly filtered to `tier=semantic` (default) — rendered as the long-term per-type widgets.
 
 ### (C) Render + close (same turn, after B returns)
 
@@ -83,18 +83,19 @@ CRUD without the skill owning the UI.
 "Scan today → SCAN PLAN · TODAY". Never say "last 24 hours" — the
 filter is calendar-day, not sliding-window.
 
-### On any scan message
+### On any scan / dream message
 
-1. Emit a `PageUpdate` replacing `body` with the **`checklist` widget** — user sees the scan plan immediately.
-2. Run **Phase 1 (collect)** — see `references/scan-flow.md`.
-3. Run **Phase 1.5 (pre-load)** — see `references/scan-flow.md`.
-4. Run **Phase 2 (MANDATORY PARALLEL SUBAGENTS)** — see `references/scan-flow.md` for the Task shape and concurrency rules.
-5. Run **Phase 3 (merge + write)** — see `references/scan-flow.md` and `references/routing-rules.md` for the routing decisions.
-6. Update `~/.linggen/memory/.scan-state.json` (see *Scan-state file* below).
+The dashboard's "Scan today / week / month / all" and "Analyze and
+clean" buttons all map to the same single pass — `/shared-memory
+dream`. Run the full §4 dream contract:
+
+1. Emit a `PageUpdate` replacing `body` with the **`checklist` widget** — user sees the dream plan immediately.
+2. Run **Phase 1 (scan)** — `dream-flow.md` §1: `collect_sessions.sh --watermark ~/.linggen/memory/.dream-state.json [date]`.
+3. Run **Phase 2 (script-extract)** — `dream-flow.md` §2: extract_session.sh (strip noise + secret-filter).
+4. Run **Phase 3 (host-LLM judge + write)** — `dream-flow.md` §3: salience routing (explicit → semantic, incidental → episodic). Read `extractor-prompt.md` and `routing-rules.md`.
+5. Run **Phase 4 (consolidate + evict)** — `dream-flow.md` §4: promote-or-delete past-TTL episodic rows.
+6. Update `~/.linggen/memory/.dream-state.json` — advance the `watermark[host]` to this run's start time for every host seen in the manifest (see *Dream-state file* below).
 7. Emit the **Report** layout (small — scorecard + deltas only; overview lists render on the NEXT user interaction).
-
-**On `Analyze and clean`:** follow the *Consolidate (user-initiated only)*
-section in `SKILL.md`, then emit the Report layout.
 
 ### On row-level UI actions
 
@@ -108,8 +109,9 @@ second-guess**; just apply and re-render.
 | `Update the <type> fact id="<id>" to content: "<new>". Re-render the dashboard.` | Call `Memory_write({verb: "update", id: "<id>", content: "<new>"})` (keep existing `contexts` / `tags` unchanged), then re-emit the overview PageUpdate. |
 
 For these UI-triggered actions you do NOT need extraction, dedup
-search, or any of Phase 1/1.5/2/3 — just the single tool call plus the
-re-render. Keep chat text to one sentence: *"Deleted."* or *"Updated."*
+search, or any of the dream phases — just the single tool call plus
+the re-render. Keep chat text to one sentence: *"Deleted."* or
+*"Updated."*
 
 If the id lookup fails or the tool returns an error, say so plainly in
 chat — don't hide it.
@@ -119,10 +121,10 @@ chat — don't hide it.
 Reply with a short chat message (no `PageUpdate`). Cover in 3–5 bullets:
 
 - What you scan (Claude Code + Linggen session files from `~/.claude/projects/` and `~/.linggen/sessions/`).
-- How routing works (durability test → core vs RAG; project-internal candidates drop, since memory does not write to project files).
+- How routing works (durability test → core vs long-term tier; project-internal candidates drop, since memory does not write to project files).
 - What each action button does.
 - The data browser at `http://127.0.0.1:9888` for row-level editing.
-- Where scan history is stored (`~/.linggen/memory/.scan-state.json`).
+- Where scan history is stored (`~/.linggen/memory/.dream-state.json`).
 
 ## State 4 — Report
 
@@ -153,7 +155,7 @@ PageUpdate({ "top_bar": [...], "body": [...], "footer": { "text": "..." } })
   "type": "greeting",
   "icon": "🧠",
   "title": "Here's what I know about you.",
-  "stats": "42 RAG facts · 5 core bullets · last scan 3h ago, +8 facts",
+  "stats": "42 long-term · 5 core · last scan 3h ago, +8 facts",
   "actions": [
     { "label": "Scan Today",  "icon": "✨", "message": "Scan today",         "kind": "primary" },
     { "label": "Week",                       "message": "Scan this week" },
@@ -169,12 +171,11 @@ PageUpdate({ "top_bar": [...], "body": [...], "footer": { "text": "..." } })
 **User-name rule (important):** NEVER invent or guess a name. The
 example greeting above says *"Here's what I know about you."* with no
 name — use this shape as the default. A name may be prepended (*"Hi
-&lt;name&gt;. Here's…"*) ONLY when that name appears VERBATIM as an
-explicit name bullet in `identity.md` (which the engine inlined into
-your system prompt). If `identity.md` has no explicit name line, emit
-the greeting with NO name. Do NOT infer a name from file paths under
-`/Users/<something>/`, the OS username, environment variables, or any
-example in this document.
+&lt;name&gt;. Here's…"*) ONLY when a `tier=core` row exists whose
+content explicitly states the user's name (e.g. *"User is Liang"*).
+If no such core row exists, emit the greeting with NO name. Do NOT
+infer a name from file paths under `/Users/<something>/`, the OS
+username, environment variables, or any example in this document.
 
 - An action with `href` opens the URL in a new tab. An action with `message` sends the message as if the user typed it.
 - **Button label MUST match its `message` verb.** Calendar-day filtering, not sliding-window:
@@ -184,34 +185,32 @@ example in this document.
 - First action MUST be the primary scan (`kind: "primary"`).
 - Remaining actions: Week / Month / All / Clean / Help / Browse. Drop any that don't apply.
 
-**2. `fact-list` for identity** (only if `identity.md` has any bullets):
+**2. `fact-list` for core** (only if any `tier=core` rows exist):
 
 ```json
 {
   "type": "fact-list",
-  "title": "IDENTITY",
-  "meta": "core · identity.md",
+  "title": "CORE",
+  "meta": "core · always loaded",
   "count": 3,
-  "source": "identity.md",
+  "source": "rag:core",
   "actions": ["edit", "delete"],
   "items": [
-    { "content": "<user's bullet 1>" },
-    { "content": "<user's bullet 2>" }
+    { "id": "<uuid>", "content": "<core row content>", "added": "2d ago" }
   ]
 }
 ```
 
-(Use the actual bullets from `identity.md` — don't make up examples.)
+(Use the actual rows from `Memory_query({verb: "list", tier: "core"})` —
+don't make up examples. Each row MUST include `"id"` so ✎/× wire up.)
 
-**3. `fact-list` for style** (only if `style.md` has any bullets): same shape, `"source": "style.md"`, `"title": "STYLE"`.
-
-**4. One `fact-list` per non-empty RAG type**, in this order: `fact`, `preference`, `decision`, `tried`, `fixed`, `learned`, `built`:
+**3. One `fact-list` per non-empty long-term type**, in this order: `fact`, `preference`, `decision`, `tried`, `fixed`, `learned`, `built`:
 
 ```json
 {
   "type": "fact-list",
   "title": "FACT",
-  "meta": "RAG · fact",
+  "meta": "long-term · fact",
   "count": 12,
   "source": "rag:fact",
   "actions": ["edit", "delete"],
@@ -241,14 +240,14 @@ at each phase transition.
 ```json
 {
   "type": "checklist",
-  "title": "SCAN PLAN · TODAY",
+  "title": "DREAM · TODAY",
   "items": [
-    { "label": "Collect session files",            "status": "active" },
-    { "label": "Pre-load existing facts for dedup","status": "pending" },
-    { "label": "Dispatch extractors in parallel",  "status": "pending" },
-    { "label": "Merge & write candidates",         "status": "pending" },
-    { "label": "Write .scan-state.json",           "status": "pending" },
-    { "label": "Render report",                    "status": "pending" }
+    { "label": "Scan sessions (watermark + manifest)", "status": "active" },
+    { "label": "Script-extract (strip noise + secret-filter)", "status": "pending" },
+    { "label": "Host-LLM judge + write (salience routing)", "status": "pending" },
+    { "label": "Consolidate + evict (past-TTL episodic)", "status": "pending" },
+    { "label": "Write .dream-state.json", "status": "pending" },
+    { "label": "Render report", "status": "pending" }
   ],
   "footer": "starting..."
 }
@@ -260,7 +259,7 @@ rest `pending`. Re-emit the whole checklist in one `PageUpdate`.
 
 **Status values:** `"pending"` (○) · `"active"` (→) · `"done"` (✓) · `"skipped"` (—) · `"failed"` (✗).
 
-**Title must match the button label:** `Scan today` → `"SCAN PLAN · TODAY"`, `Scan this week` → `"SCAN PLAN · THIS WEEK"`. Never say "last 24 hours" — the filter is calendar-day.
+**Title must match the button label:** `Scan today` → `"DREAM · TODAY"`, `Scan this week` → `"DREAM · THIS WEEK"`. Never say "last 24 hours" — the filter is calendar-day.
 
 **Per-item `detail`** (right-aligned): concrete counts + durations (`"7 found · 0.8s"`, `"3 of 12"`). Skip for `pending`. Keep short.
 
@@ -272,22 +271,21 @@ rest `pending`. Re-emit the whole checklist in one `PageUpdate`.
 
 | Milestone | Flip |
 |:---|:---|
-| collection done | `Collect…` → done; `Pre-load…` → active |
-| Memory_query done | `Pre-load…` → done; `Dispatch…` → active |
-| every batch returns | `Dispatch…` stays `active`, just update `detail` (e.g. `"5 of 7 (batch 1 done)"`). Only flip to `done` once **all** batches have returned. |
-| subagents all done | `Dispatch…` → done; `Merge…` → active |
-| merge+write finished | `Merge…` → done; `Write .scan-state.json` → active |
-| scan-state written | `Write .scan-state.json` → done; `Render report` → active |
+| manifest done | `Scan…` → done; `Script-extract…` → active |
+| extracts done | `Script-extract…` → done; `Host-LLM judge…` → active |
+| writes done | `Host-LLM judge…` → done; `Consolidate…` → active |
+| consolidate done | `Consolidate…` → done; `Write .dream-state.json` → active |
+| state written | `Write .dream-state.json` → done; `Render report` → active |
 | PageUpdate sent | `Render report` → done |
 
-**Multi-batch dispatch rule** (>5 sessions): the `Dispatch…` row stays
-`active` across ALL batches — do NOT flip it to `done` after batch 1
-only. Use `detail` to narrate progress. Final flip to `done` only when
-every Task has returned.
+**Multi-batch host-LLM rule** (>5 sessions): the `Host-LLM judge…`
+row stays `active` across ALL batches — do NOT flip it to `done`
+after batch 1 only. Use `detail` to narrate progress. Final flip to
+`done` only when every batch's writes have completed.
 
-**Zero-candidate path:** if every subagent returned empty candidates,
-the merge phase DID run (it decided nothing needed writing) — mark
-`Merge & write candidates` as `done` with detail
+**Zero-candidate path:** if every host-LLM judge returned empty
+candidates, the host-LLM phase DID run (it decided nothing needed
+writing) — mark `Host-LLM judge + write` as `done` with detail
 `"0 candidates — nothing to write"`, then proceed normally. Don't use
 `skipped` here: `skipped` means "didn't run"; this ran and produced
 zero.
@@ -311,20 +309,20 @@ Stack in this order:
 { "type": "scorecard", "title": "This scan", "items": [
   { "label": "Sessions",   "status": "gray",   "detail": "5 scanned · 2 skipped" },
   { "label": "Duration",   "status": "gray",   "detail": "47s" },
-  { "label": "Identity",   "status": "green",  "detail": "+1" },
-  { "label": "Style",      "status": "green",  "detail": "+0" },
-  { "label": "RAG",        "status": "green",  "detail": "+8" },
+  { "label": "Core",       "status": "green",  "detail": "+1" },
+  { "label": "Long-term",  "status": "green",  "detail": "+8" },
   { "label": "Merged",     "status": "yellow", "detail": "~3" },
   { "label": "Dedup skip", "status": "gray",   "detail": "4" },
   { "label": "Dropped",    "status": "gray",   "detail": "12 (not memory)" }
 ]}
 ```
 
-4. `fact-list`(s) titled `"ADDED THIS SCAN"` — emit **one list per source** so each row carries the correct edit/delete contract. Do NOT merge core and RAG into a single list.
+4. `fact-list`(s) titled `"ADDED THIS SCAN"` — emit **one list per tier** so each row carries the correct edit/delete contract. Do NOT merge core and long-term into a single list.
 
-   - identity bullets added → list with `"source": "identity.md"`, `"meta": "core · identity.md"`.
-   - style bullets added → list with `"source": "style.md"`, `"meta": "core · style.md"`.
-   - RAG facts added → list with `"source": "rag:mixed"` (or `"rag:<type>"`), `"meta": "RAG · cross-project"`. Each RAG item MUST include `"id": "<uuid>"` from the add response — without it the row gets no ✎/× buttons.
+   - core rows added → list with `"source": "rag:core"`, `"meta": "core · always loaded"`.
+   - long-term rows added → list with `"source": "rag:mixed"` (or `"rag:<type>"`), `"meta": "long-term · cross-project"`.
+
+   Every item MUST include `"id": "<uuid>"` from the add response — without it the row gets no ✎/× buttons.
 
    **Emit every added row — no cap, no overflow placeholder.** The renderer makes long lists scrollable. Each shown row has `"badge": "+"`. Omit any list whose source had zero adds.
 
@@ -340,22 +338,27 @@ Stack in this order:
 
 `{ "text": "<relative timestamp or status>" }` — e.g. `"Last updated just now"` or `"Scanning..."`.
 
-## Scan-state file
+## Dream-state file
 
-`~/.linggen/memory/.scan-state.json` is the scan record. Read on State 1, write at the end of every scan. Overwrite wholesale — don't try to patch. Missing file means the user has never scanned.
+`~/.linggen/memory/.dream-state.json` is the dream record. Read on State 1, write at the end of every dream pass. Overwrite wholesale — don't try to patch. Missing file means the user has never run a dream.
 
 ```json
 {
-  "last_scan_at": "2026-04-23T09:00:00Z",
+  "last_run_at": "2026-04-23T09:00:00Z",
   "duration_ms": 45000,
   "sessions_scanned": 5,
   "sessions_skipped": 2,
-  "rag_added": 8,
-  "rag_updated": 3,
-  "rag_extended": 1,
-  "rag_skipped": 4,
-  "identity_added": 1,
-  "style_added": 0,
-  "dropped": 12
+  "encoded_semantic": 5,
+  "encoded_episodic": 9,
+  "promoted": 3,
+  "evicted": 4,
+  "core_added": 1,
+  "dropped": 12,
+  "watermark": {
+    "CC": "2026-04-23T09:00:00Z",
+    "Codex": "2026-04-23T09:00:00Z",
+    "OpenClaw": "2026-04-23T09:00:00Z",
+    "Linggen": "2026-04-23T09:00:00Z"
+  }
 }
 ```
