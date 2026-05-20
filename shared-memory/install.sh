@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 #
-# What this script does (for human readers and static scanners):
+# install.sh — install the shared-memory skill.
 #
-# 1. Fetches the ling-mem skill tree from github.com/linggen/skills if
-#    not run from a local checkout, pinned to a specific tag (not main).
-#    Two-step: download tarball to disk, extract from disk (no curl-into-
-#    tar pipe).
-# 2. Detects which agent runtimes are installed (~/.claude, ~/.linggen,
-#    ~/.openclaw, ~/.codex) and copies the skill into each.
-# 3. Downloads the prebuilt `ling-mem` daemon binary for this platform
-#    from github.com/linggen/linggen-memory/releases, pinned to a specific
-#    version (not 'latest'). Verifies the SHA-256 against the release's
-#    sibling .sha256 file before extracting.
-# 4. Wires the per-prompt recall hook into ~/.claude/settings.json
-#    if Claude Code is present, and into ~/.codex/hooks.json if Codex
-#    is present.
+# Layout (one canonical bundle, thin per-host SKILL.md stubs):
+#
+#   ~/.linggen/skills/shared-memory/   ← CANONICAL. All references/,
+#                                        scripts/, assets/, hooks/, plus
+#                                        the SKILL.md every host reads.
+#   ~/.claude/skills/shared-memory/SKILL.md      ← copy of canonical
+#   ~/.codex/skills/shared-memory/SKILL.md       ← copy of canonical
+#   ~/.openclaw/skills/shared-memory/SKILL.md    ← copy of canonical
+#
+#   /usr/local/bin/ling-mem  (preferred)   ← the daemon binary, on PATH
+#   ~/.local/bin/ling-mem    (fallback)      sits next to `ling`
+#
+# Why this shape:
+# - Single source of truth — edit content once at ~/.linggen/skills/
+#   shared-memory/ (e.g. by re-running install.sh, or by an update tool)
+#   and every host sees the change. No per-host references/ to keep in
+#   sync.
+# - SKILL.md uses absolute paths (~/.linggen/skills/shared-memory/...)
+#   for cross-tree reads, so the host's agent never needs the per-host
+#   bundle to contain references/ or scripts/.
+# - Binary on PATH at /usr/local/bin or ~/.local/bin — no per-host
+#   `bin/ling-mem` copies, no PATH symlink dance.
 #
 # Supply-chain posture: defaults are pinned versions; SHA-256 verification
 # is mandatory by default and can only be disabled by an explicit
@@ -23,20 +32,7 @@ set -euo pipefail
 # No remote code execution beyond extracting tarballs published by the
 # linggen org. Source + releases:
 # https://github.com/linggen/linggen-memory
-#
-# install.sh — install the ling-mem skill into whichever host runtimes
-# the user has on this machine.
-#
-# Detects:
-#   ~/.claude/   → install to ~/.claude/skills/ling-mem/   (preferred)
-#   ~/.linggen/  → install to ~/.linggen/skills/ling-mem/  (fallback)
-#
-# Auto-detect prefers ~/.claude when present — Linggen reads skills from
-# both ~/.claude/skills and ~/.linggen/skills, so a dual install would
-# surface two copies of the same skill in the Linggen UI. Override with
-# `--host=linggen|claude|both` if you want explicit control.
-#
-# Source + releases: https://github.com/linggen/linggen-memory
+# https://github.com/linggen/skills
 
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SOURCE_DIR=""
 REPO="linggen/linggen-memory"
@@ -48,32 +44,35 @@ REPO="linggen/linggen-memory"
 # its checksum verifier expects.
 VERSION="${LING_MEM_VERSION:-v0.5.1}"
 
+# Canonical layout — one bundle, on disk under ~/.linggen.
+CANONICAL_DIR="$HOME/.linggen/skills/shared-memory"
+
+# Per-host stub destinations. The agent inside each host reads the
+# host's <skills>/shared-memory/SKILL.md (a copy of canonical), which
+# uses absolute paths back into CANONICAL_DIR for references / scripts.
+HOST_DIRS=(
+  "$HOME/.claude/skills/shared-memory"
+  "$HOME/.codex/skills/shared-memory"
+  "$HOME/.openclaw/skills/shared-memory"
+)
+
 # Self-bootstrap: when invoked via `curl ... | bash`, $0 is bash itself
 # and $SOURCE_DIR ends up pointing at the user's cwd — there is no local
 # clone with SKILL.md, scripts/, references/, etc. Detect this and fetch
 # the canonical skill tree from GitHub into a temp dir, then re-target
 # SOURCE_DIR.
-#
-# When run from a checked-out clone (`bash skills/ling-mem/install.sh`),
-# SKILL.md is adjacent and this block is a no-op.
 if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
   BOOTSTRAP_REPO="${LING_MEM_SKILLS_REPO:-linggen/skills}"
-  # Pinned to a per-skill scoped tag (ling-mem-vX.Y.Z) so a `curl | bash`
-  # one-liner fetches a known revision, not whatever main currently points
-  # at. `main` is flagged as a supply-chain weakness by skill scanners.
-  # Tag the skills repo `ling-mem-vX.Y.Z` whenever a new ling-mem release
-  # goes out; users can override with LING_MEM_REPO_REF=main for HEAD.
-  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-ling-mem-v0.5.1}"
+  # Pinned to a per-skill scoped tag so a `curl | bash` one-liner
+  # fetches a known revision, not whatever main currently points at.
+  # Users can override with LING_MEM_REPO_REF=main for HEAD.
+  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-shared-memory-v0.5.1}"
   BOOTSTRAP_URL="https://github.com/${BOOTSTRAP_REPO}/archive/${BOOTSTRAP_REF}.tar.gz"
-  BOOTSTRAP_TMP="$(mktemp -d -t ling-mem-bootstrap-XXXXXX)"
+  BOOTSTRAP_TMP="$(mktemp -d -t shared-memory-bootstrap-XXXXXX)"
   BOOTSTRAP_TAR="$BOOTSTRAP_TMP/skills.tar.gz"
   trap 'rm -rf "$BOOTSTRAP_TMP"' EXIT
 
-  # Two-step download: write to disk first, then extract from disk.
-  # Piping `curl | tar -xz` trips supply-chain heuristics in static
-  # scanners (no on-disk artifact between fetch and extract). The
-  # intermediate file makes the bytes inspectable and the pattern explicit.
-  echo "Fetching ling-mem skill from ${BOOTSTRAP_REPO}@${BOOTSTRAP_REF}..."
+  echo "Fetching shared-memory skill from ${BOOTSTRAP_REPO}@${BOOTSTRAP_REF}..."
   if ! curl -fsSL --retry 3 --retry-delay 2 "$BOOTSTRAP_URL" -o "$BOOTSTRAP_TAR"; then
     echo "Error: failed to download $BOOTSTRAP_URL" >&2
     exit 1
@@ -86,44 +85,39 @@ if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
   fi
   rm -f "$BOOTSTRAP_TAR"
 
-  SOURCE_DIR="$(find "$BOOTSTRAP_TMP" -maxdepth 3 -type d -name ling-mem | head -n1)"
+  SOURCE_DIR="$(find "$BOOTSTRAP_TMP" -maxdepth 3 -type d -name shared-memory | head -n1)"
   if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
-    echo "Error: ling-mem/SKILL.md not found in tarball" >&2
+    echo "Error: shared-memory/SKILL.md not found in tarball" >&2
     exit 1
   fi
 fi
 
 # -------------------------------------------------------------------
-# Parse --host flag (optional)
+# Args
 # -------------------------------------------------------------------
 
-HOST_OVERRIDE=""
 for arg in "$@"; do
   case "$arg" in
-    --host=*) HOST_OVERRIDE="${arg#--host=}" ;;
     -h|--help)
       cat <<EOF
-Usage: install.sh [--host=linggen|claude|both]
+Usage: install.sh
 
-Without --host: installs to ~/.claude when it exists (Linggen also reads
-that location, so a single install covers both runtimes). Falls back to
-~/.linggen otherwise.
+Installs the shared-memory skill, one canonical copy at
+~/.linggen/skills/shared-memory/. Each detected host (~/.claude/,
+~/.codex/, ~/.openclaw/) gets a thin SKILL.md stub that points back
+to the canonical bundle.
 
-If ~/.codex/ exists, also symlinks the installed skill into
-~/.codex/skills/ling-mem/, adds ~/.local/bin to Codex's sandbox PATH
-in ~/.codex/config.toml (so the agent can find the ling-mem binary),
-and registers the per-prompt recall hook in ~/.codex/hooks.json
-(same recall.sh as the Claude install). Restart Codex after install.
+Binary: /usr/local/bin/ling-mem if writable, otherwise
+~/.local/bin/ling-mem (matches the \`ling\` install).
 
-  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: v0.5.1)
+  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: ${VERSION})
                              use 'latest' for the most recent release
   LING_MEM_REPO_REF=<ref>    skills repo ref for curl|bash bootstrap
-                             (default: ling-mem-v0.5.1)
+                             (default: shared-memory-v0.5.1)
   LING_MEM_SKIP_CHECKSUM=1   skip SHA256 verification (not recommended)
   LING_MEM_FORCE_DOWNLOAD=1  re-fetch the binary even if present
-  LING_MEM_SKIP_CODEX=1      skip the Codex symlink even if ~/.codex/ exists
+  LING_MEM_SKIP_CODEX=1      skip the Codex stub + sandbox wiring
   LING_MEM_SKIP_OPENCLAW=1   skip the OpenClaw USER.md directive
-                             even if ~/.openclaw/workspace/USER.md exists
 EOF
       exit 0
       ;;
@@ -132,49 +126,7 @@ EOF
 done
 
 # -------------------------------------------------------------------
-# Decide which host(s) to install to
-# -------------------------------------------------------------------
-
-INSTALL_LINGGEN=0
-INSTALL_CLAUDE=0
-
-case "$HOST_OVERRIDE" in
-  linggen)         INSTALL_LINGGEN=1 ;;
-  claude)          INSTALL_CLAUDE=1 ;;
-  both)            INSTALL_LINGGEN=1; INSTALL_CLAUDE=1 ;;
-  "")
-    # Linggen reads skills from both ~/.claude/skills and ~/.linggen/skills,
-    # so installing to both surfaces the skill twice in the Linggen UI.
-    # Prefer ~/.claude when present; fall back to ~/.linggen otherwise.
-    if [ -d "$HOME/.claude" ]; then
-      INSTALL_CLAUDE=1
-    elif [ -d "$HOME/.linggen" ]; then
-      INSTALL_LINGGEN=1
-    else
-      echo "No host detected (~/.linggen or ~/.claude). Defaulting to ~/.linggen."
-      INSTALL_LINGGEN=1
-    fi
-    ;;
-  *)
-    echo "--host must be one of: linggen, claude, both (got: $HOST_OVERRIDE)" >&2
-    exit 1
-    ;;
-esac
-
-# Warn if the non-target host already has a stale copy — Linggen will list
-# both as separate skills.
-warn_stale_copy() {
-  local other_dir="$1"
-  if [ -d "$other_dir" ]; then
-    echo ""
-    echo "  Warning: $other_dir already exists." >&2
-    echo "    Linggen reads skills from both ~/.claude and ~/.linggen, so this" >&2
-    echo "    will appear as a duplicate. Remove it with:  rm -rf $other_dir" >&2
-  fi
-}
-
-# -------------------------------------------------------------------
-# Detect platform → release asset slug
+# Platform → release asset slug
 # -------------------------------------------------------------------
 
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -192,30 +144,181 @@ case "$OS-$ARCH" in
 esac
 
 # -------------------------------------------------------------------
-# Helpers
+# Helpers — checksum, writability
 # -------------------------------------------------------------------
 
-# Pick whichever SHA-256 tool is on this machine. macOS ships `shasum`,
-# Linux ships `sha256sum` from coreutils; either is acceptable.
 sha256_check() {
   local checksum_file="$1" cwd="$2"
-  if command -v shasum    >/dev/null 2>&1; then ( cd "$cwd" && shasum -a 256 -c "$checksum_file" >/dev/null 2>&1 )
+  if   command -v shasum    >/dev/null 2>&1; then ( cd "$cwd" && shasum -a 256 -c "$checksum_file" >/dev/null 2>&1 )
   elif command -v sha256sum >/dev/null 2>&1; then ( cd "$cwd" && sha256sum -c "$checksum_file" >/dev/null 2>&1 )
   else return 127
   fi
 }
 
-# Download the ling-mem binary to <bin_dir>/ling-mem (if not already
-# present, or if LING_MEM_FORCE_DOWNLOAD=1, or if a specific version is
-# pinned). Each release publishes a sibling `<asset>.sha256` file; we
-# fetch it and verify before extraction. Opt out with
-# LING_MEM_SKIP_CHECKSUM=1 (not recommended).
-download_binary() {
-  local bin_dir="$1"
-  local bin="$bin_dir/ling-mem"
-  mkdir -p "$bin_dir"
+ensure_dir_writable() {
+  local dir="$1"
+  if [ ! -d "$dir" ]; then mkdir -p "$dir" 2>/dev/null || return 1; fi
+  [ -w "$dir" ]
+}
 
-  if [ -x "$bin" ] && [ "${LING_MEM_FORCE_DOWNLOAD:-}" != "1" ] && [ "$VERSION" = "latest" ]; then
+# -------------------------------------------------------------------
+# Legacy sweep — remove pre-rename / pre-canonical-layout artifacts
+# before installing. Safe even on fresh systems; the rm -rf targets
+# only ling-mem-named locations (the user's content under
+# ~/.linggen/memory/ is untouched).
+# -------------------------------------------------------------------
+
+cleanup_legacy() {
+  echo "Sweeping legacy paths from older installs..."
+  local removed=0
+
+  # Old per-host skill bundles under the pre-rename `ling-mem` slug.
+  # Each used to carry its own copy of references/ scripts/ bin/ —
+  # those are exactly what the canonical layout replaces.
+  local old_bundles=(
+    "$HOME/.claude/skills/ling-mem"
+    "$HOME/.codex/skills/ling-mem"
+    "$HOME/.openclaw/skills/ling-mem"
+    "$HOME/.linggen/skills/ling-mem"
+    "$HOME/.linggen/skills/memory"        # pre-rename Linggen-builtin name
+    "$HOME/.claude/skills/linggen-memory" # even older CC slug
+  )
+  for d in "${old_bundles[@]}"; do
+    if [ -e "$d" ] || [ -L "$d" ]; then
+      echo "  removing $d"
+      rm -rf "$d"
+      removed=$((removed + 1))
+    fi
+  done
+
+  # The pre-canonical PATH symlink only made sense when the binary
+  # lived inside a skill bundle. With ling-mem now installed system-
+  # side (/usr/local/bin or ~/.local/bin as a real binary), the
+  # symlink either points into a now-deleted bundle (broken) or into
+  # a still-present non-canonical location (stale). Remove only when
+  # it resolves into a skill bundle path; never touch a real binary.
+  local link="$HOME/.local/bin/ling-mem"
+  if [ -L "$link" ]; then
+    local tgt; tgt="$(readlink "$link" || true)"
+    case "$tgt" in
+      */skills/ling-mem/bin/*|*/skills/shared-memory/bin/*)
+        echo "  removing legacy symlink $link → $tgt"
+        rm -f "$link"
+        removed=$((removed + 1))
+        ;;
+    esac
+  fi
+
+  if [ "$removed" -eq 0 ]; then
+    echo "  (nothing to remove)"
+  fi
+}
+
+# -------------------------------------------------------------------
+# Canonical bundle — every file lives once at ~/.linggen/skills/shared-memory/
+# -------------------------------------------------------------------
+
+install_canonical_bundle() {
+  echo "Installing canonical bundle at $CANONICAL_DIR/"
+
+  if [ "$SOURCE_DIR" = "$CANONICAL_DIR" ]; then
+    echo "  Files already in place — skipping copy"
+    return
+  fi
+
+  mkdir -p "$CANONICAL_DIR/scripts" \
+           "$CANONICAL_DIR/references" \
+           "$CANONICAL_DIR/assets" \
+           "$CANONICAL_DIR/hooks"
+
+  install -m 0644 "$SOURCE_DIR/SKILL.md"  "$CANONICAL_DIR/SKILL.md"
+  install -m 0644 "$SOURCE_DIR/index.html" "$CANONICAL_DIR/index.html"
+  install -m 0644 "$SOURCE_DIR/LICENSE"    "$CANONICAL_DIR/LICENSE"
+
+  for ref in routing-rules.md dream-flow.md dashboard.md extractor-prompt.md; do
+    install -m 0644 "$SOURCE_DIR/references/$ref" "$CANONICAL_DIR/references/$ref"
+  done
+
+  # Static, skill-bundled Linggen mission (allowed per the
+  # `skills don't generate missions` rule — this is shipped content,
+  # not synthesized from runtime state).
+  install -m 0644 "$SOURCE_DIR/assets/mission.md" "$CANONICAL_DIR/assets/mission.md"
+
+  for f in collect.sh collect_sessions.sh extract_session.sh; do
+    install -m 0755 "$SOURCE_DIR/scripts/$f" "$CANONICAL_DIR/scripts/$f"
+  done
+  for f in api.js chat-bridge.js memory-app.js memory.css memory.html \
+           page-renderer.js style.css widget-renderers.js; do
+    install -m 0644 "$SOURCE_DIR/scripts/$f" "$CANONICAL_DIR/scripts/$f"
+  done
+}
+
+# -------------------------------------------------------------------
+# Per-host SKILL.md stub — copies of the canonical SKILL.md into each
+# detected host's skills dir. The SKILL.md body uses absolute paths
+# into ~/.linggen/skills/shared-memory/ so the agent finds references
+# and scripts regardless of which host's discovery surfaced the file.
+# -------------------------------------------------------------------
+
+install_host_stub() {
+  local host_dir="$1"
+  local parent; parent="$(dirname "$host_dir")"   # ~/.<host>/skills
+
+  # Only install when the host's home is present — never auto-create
+  # ~/.claude/ etc. on a machine that doesn't have that host.
+  local host_home; host_home="$(dirname "$parent")"   # ~/.<host>
+  [ -d "$host_home" ] || return 0
+
+  mkdir -p "$host_dir"
+  install -m 0644 "$CANONICAL_DIR/SKILL.md" "$host_dir/SKILL.md"
+  echo "  Stub: $host_dir/SKILL.md"
+}
+
+install_host_stubs() {
+  echo "Installing per-host SKILL.md stubs..."
+  local installed=0
+  for d in "${HOST_DIRS[@]}"; do
+    # Honor opt-outs.
+    case "$d" in
+      */.codex/*)    [ "${LING_MEM_SKIP_CODEX:-0}"    = "1" ] && continue ;;
+      */.openclaw/*) [ "${LING_MEM_SKIP_OPENCLAW:-0}" = "1" ] && continue ;;
+    esac
+    if install_host_stub "$d"; then
+      [ -f "$d/SKILL.md" ] && installed=$((installed + 1))
+    fi
+  done
+  if [ "$installed" -eq 0 ]; then
+    echo "  (no host runtimes detected — canonical bundle still installed)"
+  fi
+}
+
+# -------------------------------------------------------------------
+# Binary install — /usr/local/bin/ling-mem if writable, else
+# ~/.local/bin/ling-mem. Same logic the `ling` installer uses, so the
+# two binaries land in the same directory by default. SHA-256
+# verified against the release's sibling .sha256 file.
+# -------------------------------------------------------------------
+
+BIN_DIR=""
+
+choose_bin_dir() {
+  if ensure_dir_writable "/usr/local/bin"; then
+    BIN_DIR="/usr/local/bin"
+  elif ensure_dir_writable "$HOME/.local/bin"; then
+    BIN_DIR="$HOME/.local/bin"
+  else
+    echo "Error: neither /usr/local/bin nor ~/.local/bin is writable" >&2
+    exit 1
+  fi
+  echo "Binary install dir: $BIN_DIR"
+}
+
+download_binary() {
+  local bin="$BIN_DIR/ling-mem"
+
+  if [ -x "$bin" ] \
+     && [ "${LING_MEM_FORCE_DOWNLOAD:-}" != "1" ] \
+     && [ "$VERSION" = "latest" ]; then
     echo "  ling-mem already at $bin — skipping download"
     return
   fi
@@ -230,8 +333,7 @@ download_binary() {
   local url="${base}/${asset}"
   local sum_url="${base}/${asset}.sha256"
 
-  local tmp_dir
-  tmp_dir="$(mktemp -d -t "ling-mem-dl-XXXXXX")"
+  local tmp_dir; tmp_dir="$(mktemp -d -t "ling-mem-dl-XXXXXX")"
   trap 'rm -rf "$tmp_dir"' RETURN
   local tmp_tar="$tmp_dir/$asset"
   local tmp_sum="$tmp_dir/${asset}.sha256"
@@ -247,7 +349,6 @@ download_binary() {
   else
     if ! curl -fsSL --retry 3 --retry-delay 2 "$sum_url" -o "$tmp_sum"; then
       echo "Error: failed to fetch checksum from $sum_url" >&2
-      echo "  This release may not publish a SHA256 sidecar yet." >&2
       echo "  Override with LING_MEM_SKIP_CHECKSUM=1 (not recommended)." >&2
       exit 1
     fi
@@ -255,11 +356,8 @@ download_binary() {
       local rc=$?
       if [ "$rc" -eq 127 ]; then
         echo "Error: neither shasum nor sha256sum found on this system." >&2
-        echo "  Install one (e.g. coreutils on Linux, perl on macOS), or" >&2
-        echo "  override with LING_MEM_SKIP_CHECKSUM=1 (not recommended)." >&2
       else
         echo "Error: SHA256 verification failed for $asset" >&2
-        echo "  Expected (from $sum_url):" >&2
         sed 's/^/    /' "$tmp_sum" >&2
       fi
       exit 1
@@ -267,7 +365,7 @@ download_binary() {
     echo "  Verified: SHA256 matches $sum_url"
   fi
 
-  tar -xzf "$tmp_tar" -C "$bin_dir" ling-mem
+  tar -xzf "$tmp_tar" -C "$BIN_DIR" ling-mem
   chmod +x "$bin"
 
   local built_ver
@@ -279,64 +377,37 @@ download_binary() {
     fi
   fi
   echo "  Installed: $bin (${built_ver:-unknown})"
+
+  case ":$PATH:" in
+    *":$BIN_DIR:"*) ;;
+    *)
+      echo "  Note: $BIN_DIR is not on PATH. Add it to your shell rc, e.g.:"
+      echo "    echo 'export PATH=\"$BIN_DIR:\$PATH\"' >> ~/.zshrc"
+      ;;
+  esac
 }
 
-# Copy SKILL.md + references + scripts (full set) into <skill_dir>.
-# Linggen install gets everything; CC install gets the same set (the
-# unified SKILL.md works in both — CC ignores Linggen-only frontmatter
-# fields).
-#
-# When the Linggen marketplace runs this script from inside the
-# already-extracted skill folder, SOURCE_DIR == skill_dir — the files are
-# already in place, so skip the copy step (and also skip macOS `install`'s
-# "same file" hard error).
-copy_skill_files() {
-  local skill_dir="$1"
+# -------------------------------------------------------------------
+# Memory dir + dream mission + telemetry marker
+# -------------------------------------------------------------------
 
-  if [ "$SOURCE_DIR" = "$skill_dir" ]; then
-    mkdir -p "$skill_dir/bin"
-    echo "  Files already in place at $skill_dir — skipping copy"
-    return
-  fi
-
-  mkdir -p "$skill_dir/scripts" "$skill_dir/references" "$skill_dir/assets" "$skill_dir/bin"
-
-  install -m 0644 "$SOURCE_DIR/SKILL.md" "$skill_dir/SKILL.md"
-  install -m 0644 "$SOURCE_DIR/index.html" "$skill_dir/index.html"
-
-  # Reference files.
-  for ref in routing-rules.md dream-flow.md dashboard.md extractor-prompt.md; do
-    install -m 0644 "$SOURCE_DIR/references/$ref" "$skill_dir/references/$ref"
-  done
-
-  # Mission file (used by Linggen's mission scheduler; harmless in CC).
-  install -m 0644 "$SOURCE_DIR/assets/mission.md" "$skill_dir/assets/mission.md"
-
-  # Scripts: shells the agent shells out to + dashboard JS/CSS for Linggen.
-  for f in collect.sh collect_sessions.sh extract_session.sh; do
-    install -m 0755 "$SOURCE_DIR/scripts/$f" "$skill_dir/scripts/$f"
-  done
-  for f in api.js chat-bridge.js memory-app.js memory.css memory.html page-renderer.js style.css widget-renderers.js; do
-    install -m 0644 "$SOURCE_DIR/scripts/$f" "$skill_dir/scripts/$f"
-  done
-}
-
-# Seed the core memory directory. Core memory is now stored in the
-# `semantic` LanceDB table with `tier=core` (see SKILL.md "Two tiers");
-# the engine reads it from the daemon, no markdown files needed.
-seed_core_memory() {
+seed_memory_dir() {
   mkdir -p "$HOME/.linggen/memory"
 }
 
-# Telemetry marker — read by `ling-mem` on first launch (or after an
-# upgrade) to record the install source in the anonymous install event sent
-# to linggen.dev/api/track. Per-product file in ~/.linggen/ so a single
-# marker can be picked up regardless of which host (Linggen / Claude /
-# Codex / OpenClaw) the skill landed in. Other installers (the linggen
-# engine when it bootstraps ling-mem, future ClawHub native installer)
-# should set LING_MEM_SOURCE before invoking this script so the `via`
-# field reflects the real provenance — defaults to "wrapper" when the
-# user runs install-ling-mem.sh directly.
+install_dream_mission() {
+  local mission_dir="$HOME/.linggen/missions/dream"
+  local mission_scripts="$mission_dir/scripts"
+  mkdir -p "$mission_scripts"
+  if [ ! -f "$mission_dir/mission.md" ]; then
+    cp "$CANONICAL_DIR/assets/mission.md" "$mission_dir/mission.md"
+    echo "  Installed: $mission_dir/mission.md (nightly at 23:00)"
+  fi
+  cp "$CANONICAL_DIR/scripts/collect.sh"          "$mission_scripts/collect.sh"
+  cp "$CANONICAL_DIR/scripts/collect_sessions.sh" "$mission_scripts/collect_sessions.sh"
+  chmod +x "$mission_scripts/collect.sh" "$mission_scripts/collect_sessions.sh"
+}
+
 write_install_source_marker() {
   local via="${LING_MEM_SOURCE:-wrapper}"
   local marker="$HOME/.linggen/.ling-mem-install-source"
@@ -348,160 +419,78 @@ write_install_source_marker() {
   } > "$marker"
 }
 
-# Linggen-only: install the dream mission so the cron scheduler picks it
-# up. Keep user customizations untouched on existing installs.
-#
-# Note on the "skills don't generate missions" rule: that rule applies to
-# *generated* missions (e.g. pulse's old generate-missions.sh which built
-# cron entries from a user's saved_runs[]). The dream mission here is a
-# *static, skill-bundled* mission whose content lives in assets/mission.md
-# under version control with the skill itself. Shipping it as part of
-# install.sh is fine — the skill is delivering the canonical scheduled
-# consolidation, not synthesizing per-user cron from runtime state.
-install_dream_mission() {
-  local skill_dir="$1"
-  local mission_dir="$HOME/.linggen/missions/dream"
-  local mission_scripts="$mission_dir/scripts"
-  mkdir -p "$mission_scripts"
-  if [ ! -f "$mission_dir/mission.md" ]; then
-    cp "$skill_dir/assets/mission.md" "$mission_dir/mission.md"
-    echo "  Installed: $mission_dir/mission.md (nightly at 23:00)"
-  fi
-  cp "$skill_dir/scripts/collect.sh" "$mission_scripts/collect.sh"
-  cp "$skill_dir/scripts/collect_sessions.sh" "$mission_scripts/collect_sessions.sh"
-  chmod +x "$mission_scripts/collect.sh" "$mission_scripts/collect_sessions.sh"
+# -------------------------------------------------------------------
+# Recall hook — installed once into the canonical bundle. Both CC and
+# Codex's per-host configs reference this single path.
+# -------------------------------------------------------------------
+
+write_recall_script() {
+  local hook="$CANONICAL_DIR/hooks/recall.sh"
+  mkdir -p "$CANONICAL_DIR/hooks"
+
+  cat > "$hook" <<'HOOK'
+#!/usr/bin/env bash
+# UserPromptSubmit hook installed by shared-memory. Surfaces relevant
+# memories for each turn. Bails silently on any failure — never blocks
+# the user.
+
+set -u
+[ "${LING_MEM_RECALL_DISABLE:-0}" = "1" ] && exit 0
+
+command -v jq       >/dev/null 2>&1 || exit 0
+command -v ling-mem >/dev/null 2>&1 || exit 0
+
+input="$(cat)"
+prompt="$(printf '%s' "$input" | jq -r '.prompt // empty' 2>/dev/null || true)"
+cwd="$(printf '%s' "$input"   | jq -r '.cwd    // empty' 2>/dev/null || true)"
+
+[ "${#prompt}" -lt 8 ] && exit 0
+
+topk="${LING_MEM_RECALL_TOPK:-3}"
+limit="${LING_MEM_RECALL_LIMIT:-8}"
+to="${LING_MEM_RECALL_TIMEOUT:-3}"
+min_score="${LING_MEM_RECALL_MIN_SCORE:-0.30}"
+
+proj=""
+if [ -n "$cwd" ] && [ "$cwd" != "$HOME" ]; then
+  proj="$(basename "$cwd")"
+fi
+
+TIMEOUT_BIN=""
+if   command -v timeout  >/dev/null 2>&1; then TIMEOUT_BIN="timeout"
+elif command -v gtimeout >/dev/null 2>&1; then TIMEOUT_BIN="gtimeout"
+fi
+
+if [ -n "$TIMEOUT_BIN" ]; then
+  out="$($TIMEOUT_BIN "$to" ling-mem search "$prompt" \
+      --limit "$limit" --min-score "$min_score" \
+      --format json --quiet 2>/dev/null || true)"
+else
+  out="$(ling-mem search "$prompt" \
+      --limit "$limit" --format json --quiet 2>/dev/null || true)"
+fi
+
+[ -z "$out" ] && exit 0
+
+printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
+  map(select(
+    ((.contexts // []) | map(select(startswith("project/"))))
+    | (length == 0 or any(. == ("project/" + $proj)))
+  ))
+  | .[:$k]
+  | .[]
+  | "From memory (\(.type), \((.created_at // "")[0:10])): \(.content)"
+' 2>/dev/null || true
+HOOK
+  chmod +x "$hook"
 }
 
-# Symlink the installed binary onto PATH at ~/.local/bin/ling-mem so the
-# agent (and the user) can invoke it as a bare `ling-mem` command. We
-# prefer the Claude install — that's the canonical location when present
-# (Linggen also reads from ~/.claude/skills/), and `self-update` will
-# only rewrite the inode the symlink points to.
-#
-# Args: <linggen_bin_or_empty> <claude_bin_or_empty>
-create_path_symlink() {
-  local linggen_bin="${1:-}"
-  local claude_bin="${2:-}"
+# -------------------------------------------------------------------
+# Claude Code wiring — CLAUDE.md @-imports + settings.json hook entry
+# -------------------------------------------------------------------
 
-  local target=""
-  if [ -n "$claude_bin" ] && [ -x "$claude_bin" ]; then
-    target="$claude_bin"
-  elif [ -n "$linggen_bin" ] && [ -x "$linggen_bin" ]; then
-    target="$linggen_bin"
-  else
-    echo "  Warning: no installed binary found to symlink — skipping PATH setup" >&2
-    return
-  fi
-
-  local link_dir="$HOME/.local/bin"
-  local link="$link_dir/ling-mem"
-  mkdir -p "$link_dir"
-  ln -sf "$target" "$link"
-  echo "  Linked: $link → $target"
-
-  case ":$PATH:" in
-    *":$link_dir:"*) ;;
-    *)
-      echo "  Note: $link_dir is not on PATH. Add it to your shell rc, e.g.:" >&2
-      echo "    echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc" >&2
-      ;;
-  esac
-}
-
-# Symlink the canonical skill dir into ~/.codex/skills/ling-mem so Codex
-# discovers it. The per-prompt recall hook is registered separately in
-# ~/.codex/hooks.json — see configure_codex_hook().
-symlink_to_codex() {
-  local source_dir="$1"
-  local codex_skills="$HOME/.codex/skills"
-  local link="$codex_skills/ling-mem"
-
-  mkdir -p "$codex_skills"
-
-  if [ -L "$link" ]; then
-    ln -sfn "$source_dir" "$link"
-  elif [ -e "$link" ]; then
-    echo "  Warning: $link exists and is not a symlink — leaving alone." >&2
-    echo "    To enable Codex use of this install:" >&2
-    echo "      rm -rf $link && ln -s $source_dir $link" >&2
-    return 0
-  else
-    ln -s "$source_dir" "$link"
-  fi
-  echo "  Linked: $link → $source_dir"
-  echo "  Note: restart Codex to pick up the skill."
-}
-
-# OpenClaw-only: append a guarded directive block to
-# ~/.openclaw/workspace/USER.md so the OpenClaw agent gets a session-start
-# instruction to use ling-mem as its second memory system. OpenClaw doesn't
-# expose skill-level hooks, so the agent only proactively reaches for
-# ling-mem when something in its startup context tells it to. USER.md is
-# auto-loaded at session start per OpenClaw's AGENTS.md startup contract,
-# making it the right surface for this directive.
-#
-# Note: this only runs when the user does the curl|bash install. ClawHub-
-# delivered ling-mem packages skip install.sh entirely, so OpenClaw users
-# who go that route still need a separate setup step (TODO).
-configure_openclaw_user_md() {
-  local user_md="$HOME/.openclaw/workspace/USER.md"
-  local marker_start="<!-- ling-mem:openclaw-start -->"
-  local marker_end="<!-- ling-mem:openclaw-end -->"
-
-  if [ ! -f "$user_md" ]; then
-    return 0
-  fi
-
-  local block="$marker_start
-## Memory — \`ling-mem\` is your second memory system
-
-Alongside \`MEMORY.md\` (workspace-scoped, narrative), you have access to
-\`ling-mem\` — a shared RAG store at \`~/.linggen/memory/\`, used across
-Claude Code, Linggen, and OpenClaw. Use it for **cross-runtime,
-fact-shaped context** that should survive workspace resets and reach
-other agents on this user's other tools.
-
-**Search before answering** when the question could connect to past
-preferences / decisions / gotchas:
-
-\`\`\`
-ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'
-\`\`\`
-
-Mention hits inline — *\"From memory: you prefer X …\"*. The
-\`del(.vector)\` filter is mandatory — raw output includes 1024-dim
-embeddings (Qwen3-Embedding-0.6B) that blow up context.
-
-**Save high-signal user statements** (name+relationship, location, role,
-\"always/never\" preferences) per the routing rules in the \`ling-mem\`
-\`SKILL.md\`. Same security boundary as \`MEMORY.md\` — don't search or
-share \`ling-mem\` content in group chats / shared contexts.
-$marker_end"
-
-  # Strip any existing ling-mem:openclaw block + trailing blanks, then
-  # append the fresh block. Mirrors configure_claude_md's pattern.
-  local tmp_md
-  tmp_md="$(mktemp -t "openclaw-user-md-XXXXXX")"
-  awk -v s="$marker_start" -v e="$marker_end" '
-    BEGIN            { skip = 0; blanks = 0 }
-    $0 == s          { skip = 1; next }
-    $0 == e          { skip = 0; next }
-    skip             { next }
-    /^[[:space:]]*$/ { blanks++; next }
-                     { while (blanks--) print ""; blanks = 0; print }
-  ' "$user_md" > "$tmp_md"
-  if [ -s "$tmp_md" ]; then
-    printf '\n%s\n' "$block" >> "$tmp_md"
-  else
-    printf '%s\n' "$block" > "$tmp_md"
-  fi
-  mv "$tmp_md" "$user_md"
-  echo "  Updated: $user_md (ling-mem usage directive)"
-}
-
-# CC-only: append a guarded @-import block to ~/.claude/CLAUDE.md so the
-# core memory files land in every CC session's system prompt.
 configure_claude_md() {
+  [ -d "$HOME/.claude" ] || return 0
   local claude_md="${CLAUDE_MD:-$HOME/.claude/CLAUDE.md}"
   local marker_start="<!-- ling-mem:core-start -->"
   local marker_end="<!-- ling-mem:core-end -->"
@@ -520,8 +509,10 @@ ling-mem list --tier core --limit 100 --format json | jq -c 'del(.vector)'
 ## Memory
 
 Durable signal lives in the \`ling-mem\` daemon (semantic + episodic
-tables). The \`shared-memory\` skill at \`~/.claude/skills/shared-memory/\`
-manages dreams and the dashboard. For ad-hoc retrieval, call
+tables). The \`shared-memory\` skill at \`~/.linggen/skills/shared-memory/\`
+holds the canonical SKILL.md, references/, scripts/; each host's
+\`skills/shared-memory/SKILL.md\` is a stub copy pointing back here.
+For ad-hoc retrieval, call
 \`ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'\`
 **before** answering when the user's question could connect to past
 preferences / decisions / gotchas. Mention relevant hits inline —
@@ -533,11 +524,7 @@ $marker_end"
   mkdir -p "$(dirname "$claude_md")"
   touch "$claude_md"
 
-  # Strip any existing block (under the new ling-mem markers OR the old
-  # linggen-memory:core markers from previous installs) + trailing blanks,
-  # then append the fresh block.
-  local tmp_md
-  tmp_md="$(mktemp -t "claude-md-XXXXXX")"
+  local tmp_md; tmp_md="$(mktemp -t "claude-md-XXXXXX")"
   awk -v s_new="$marker_start" -v e_new="$marker_end" \
       -v s_old="<!-- linggen-memory:core-start -->" \
       -v e_old="<!-- linggen-memory:core-end -->" '
@@ -556,114 +543,14 @@ $marker_end"
     printf '%s\n' "$block" > "$tmp_md"
   fi
   mv "$tmp_md" "$claude_md"
-  echo "  Updated: $claude_md (core @-imports + memory hint)"
+  echo "  Updated: $claude_md (core directive)"
 }
 
-# Write the per-prompt recall.sh script into <skill_dir>/hooks/recall.sh.
-# Both Claude Code and Codex register the same script — Claude reads the
-# command from settings.json (configure_claude_hook), Codex from hooks.json
-# (configure_codex_hook). The script itself is host-agnostic: it reads the
-# hook JSON payload on stdin and writes "From memory (...)" lines on stdout.
-#
-# Tuning via env vars (set in shell rc — read by the hook at turn time):
-#   LING_MEM_RECALL_TOPK       hits surfaced per turn         (default 3)
-#   LING_MEM_RECALL_LIMIT      rows fetched before head -K    (default 8)
-#   LING_MEM_RECALL_TIMEOUT    hard timeout in seconds        (default 3)
-#   LING_MEM_RECALL_MIN_SCORE  cosine similarity floor [-1,1] (default 0.30)
-#   LING_MEM_RECALL_DISABLE    set to 1 to silence the hook without uninstall
-write_recall_script() {
-  local skill_dir="$1"
-  local hook_dir="$skill_dir/hooks"
-  local hook="$hook_dir/recall.sh"
-
-  mkdir -p "$hook_dir"
-
-  cat > "$hook" <<'HOOK'
-#!/usr/bin/env bash
-# UserPromptSubmit hook installed by ling-mem. Surfaces relevant memories
-# for each turn. Bails silently on any failure — never blocks the user.
-#
-# Reads JSON on stdin (Claude Code hook input). Prints zero or more
-# "From memory (...): ..." lines to stdout, which Claude sees as added
-# context for this turn.
-
-set -u
-[ "${LING_MEM_RECALL_DISABLE:-0}" = "1" ] && exit 0
-
-command -v jq       >/dev/null 2>&1 || exit 0
-command -v ling-mem >/dev/null 2>&1 || exit 0
-
-input="$(cat)"
-prompt="$(printf '%s' "$input" | jq -r '.prompt // empty' 2>/dev/null || true)"
-cwd="$(printf '%s' "$input"   | jq -r '.cwd    // empty' 2>/dev/null || true)"
-
-# Skip empty / trivial prompts — too short to carry meaningful intent.
-[ "${#prompt}" -lt 8 ] && exit 0
-
-topk="${LING_MEM_RECALL_TOPK:-3}"
-limit="${LING_MEM_RECALL_LIMIT:-8}"
-to="${LING_MEM_RECALL_TIMEOUT:-3}"
-min_score="${LING_MEM_RECALL_MIN_SCORE:-0.30}"
-
-# Current project name = last segment of cwd, when cwd is set and not $HOME.
-# Used to keep project-scoped rows for *this* project and drop ones scoped
-# to other projects. Cross-project / no-context rows always pass.
-proj=""
-if [ -n "$cwd" ] && [ "$cwd" != "$HOME" ]; then
-  proj="$(basename "$cwd")"
-fi
-
-# Note: ling-mem's --context filter is AND across multiple values (a row
-# must match every context given), so passing both cross-project and a
-# project tag returns nothing. We instead search unfiltered, then post-
-# filter in jq to drop rows that are scoped to a *different* project.
-
-# Pick whichever timeout binary is available; fall through if neither exists.
-TIMEOUT_BIN=""
-if command -v timeout  >/dev/null 2>&1; then TIMEOUT_BIN="timeout"
-elif command -v gtimeout >/dev/null 2>&1; then TIMEOUT_BIN="gtimeout"
-fi
-
-if [ -n "$TIMEOUT_BIN" ]; then
-  out="$($TIMEOUT_BIN "$to" ling-mem search "$prompt" \
-      --limit "$limit" --min-score "$min_score" \
-      --format json --quiet 2>/dev/null || true)"
-else
-  out="$(ling-mem search "$prompt" \
-      --limit "$limit" --format json --quiet 2>/dev/null || true)"
-fi
-
-[ -z "$out" ] && exit 0
-
-# `ling-mem search` emits newline-delimited JSON (one row per line), not a
-# JSON array — slurp into an array with -s before filtering.
-printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
-  map(select(
-    ((.contexts // []) | map(select(startswith("project/"))))
-    | (length == 0 or any(. == ("project/" + $proj)))
-  ))
-  | .[:$k]
-  | .[]
-  | "From memory (\(.type), \((.created_at // "")[0:10])): \(.content)"
-' 2>/dev/null || true
-HOOK
-  chmod +x "$hook"
-}
-
-# CC: register the recall script in ~/.claude/settings.json under
-# hooks.UserPromptSubmit. Idempotent — re-runs replace any prior entry.
 configure_claude_hook() {
-  local skill_dir="$1"
-  local hook="$skill_dir/hooks/recall.sh"
+  [ -d "$HOME/.claude" ] || return 0
+  local hook="$CANONICAL_DIR/hooks/recall.sh"
   local settings="${CLAUDE_SETTINGS:-$HOME/.claude/settings.json}"
 
-  write_recall_script "$skill_dir"
-
-  # Idempotent settings.json patch — drops any prior ling-mem hook entry,
-  # then appends the fresh one in CC's current nested shape
-  # ({ matcher, hooks: [...] }). Dedup matches by `_lingMemRecall: true`,
-  # by inner command path, and by legacy flat `command` — so re-runs stay
-  # idempotent even after CC auto-migrates the entry and drops our marker.
   command -v python3 >/dev/null 2>&1 || {
     echo "  Warning: python3 not found — skipping settings.json patch" >&2
     echo "    Manually add to $settings:" >&2
@@ -689,11 +576,16 @@ def is_ours(h):
         return False
     if h.get("_lingMemRecall"):
         return True
-    if h.get("command") == hook_cmd:  # legacy flat shape
+    if h.get("command") == hook_cmd:
         return True
     for inner in (h.get("hooks") or []):
         if isinstance(inner, dict) and inner.get("command") == hook_cmd:
             return True
+        # Catch stale entries that pointed at the old per-host bundle path.
+        if isinstance(inner, dict):
+            cmd = inner.get("command") or ""
+            if cmd.endswith("/hooks/recall.sh"):
+                return True
     return False
 
 ups[:] = [h for h in ups if not is_ours(h)]
@@ -707,18 +599,16 @@ with open(path, "w") as f:
     json.dump(data, f, indent=2)
     f.write("\n")
 PY
-  echo "  Installed: $hook"
-  echo "  Registered in: $settings (hooks.UserPromptSubmit)"
+  echo "  Hook registered: $settings (UserPromptSubmit → $hook)"
 }
 
-# Codex: enable the `codex_hooks` feature flag. Per
-# developers.openai.com/codex/hooks, the entire [hooks] section is
-# ignored unless [features] codex_hooks = true is set. Merge into the
-# existing [features] block if present; otherwise create one (in its
-# own marker block).
+# -------------------------------------------------------------------
+# Codex wiring — features flag, sandbox writable_roots, PATH (if
+# binary went to ~/.local/bin), hooks.json
+# -------------------------------------------------------------------
+
 configure_codex_features() {
   local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
-
   mkdir -p "$(dirname "$codex_toml")"
   touch "$codex_toml"
 
@@ -732,14 +622,14 @@ configure_codex_features() {
       BEGIN { inserted=0 }
       /^\[features\]/ && !inserted {
         print
-        print "codex_hooks = true   # added by ling-mem install.sh"
+        print "codex_hooks = true   # added by shared-memory install.sh"
         inserted=1
         next
       }
       { print }
     ' "$codex_toml" > "$tmp"
     mv "$tmp" "$codex_toml"
-    echo "  Registered in: $codex_toml ([features] codex_hooks = true)"
+    echo "  Codex features: codex_hooks = true"
     return 0
   fi
 
@@ -759,18 +649,9 @@ codex_hooks = true
 TOML
 
   mv "$tmp" "$codex_toml"
-  echo "  Registered in: $codex_toml ([features] codex_hooks = true)"
+  echo "  Codex features: codex_hooks = true"
 }
 
-# Codex: grant the workspace-write sandbox write access to ~/.linggen.
-# ling-mem's SQLite store lives at ~/.linggen/memory/ and needs WAL +
-# journal writes even for read-only queries. Without this, `ling-mem
-# search` crashes inside Codex's sandbox while opening the store, and
-# the agent falls back to grepping the markdown core (which doesn't
-# contain RAG rows like "Xiao man is male").
-#
-# Idempotent via BEGIN/END marker block. Skips with a manual-add hint
-# if the user already has their own [sandbox_workspace_write] block.
 configure_codex_sandbox() {
   local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
   local linggen_root="$HOME/.linggen"
@@ -789,7 +670,7 @@ configure_codex_sandbox() {
     rm -f "$tmp"
     echo "  Warning: $codex_toml already has a [sandbox_workspace_write] block." >&2
     echo "    Add this entry to its writable_roots manually:" >&2
-    echo "      writable_roots = [\"$linggen_root\"]   # (merge with any existing entries)" >&2
+    echo "      writable_roots = [\"$linggen_root\"]" >&2
     return 0
   fi
 
@@ -802,27 +683,16 @@ writable_roots = ["$linggen_root"]
 TOML
 
   mv "$tmp" "$codex_toml"
-  echo "  Registered in: $codex_toml (sandbox_workspace_write.writable_roots += $linggen_root)"
+  echo "  Codex sandbox: writable_roots += $linggen_root"
 }
 
-# Codex: ensure ~/.local/bin (where install.sh symlinks the ling-mem
-# binary) is on the agent's sandbox PATH. Codex's launcher inherits its
-# parent process PATH (which depends on whether it was started from a
-# shell or from a GUI launcher), and GUI launches on macOS get only
-# /usr/bin:/bin:/usr/sbin:/sbin — so `ling-mem` is not found and the
-# agent silently falls back to `rg` over the markdown files.
-#
-# Fix: write [shell_environment_policy.set] PATH to ~/.codex/config.toml,
-# prepending ~/.local/bin to the user's *current* PATH (captured at
-# install time). If the user already has their own [shell_environment_policy]
-# block we cannot append without producing a duplicate-table TOML error
-# — skip and print manual instructions in that case.
-#
-# Idempotent via BEGIN/END marker block.
+# Only wire PATH if the binary went somewhere Codex's default sandbox
+# PATH doesn't already cover. /usr/local/bin is on every sane PATH;
+# ~/.local/bin sometimes isn't (especially on macOS GUI launches).
 configure_codex_env() {
-  local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
-  local local_bin="$HOME/.local/bin"
+  [ "$BIN_DIR" = "/usr/local/bin" ] && return 0
 
+  local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
   mkdir -p "$(dirname "$codex_toml")"
   touch "$codex_toml"
 
@@ -836,15 +706,15 @@ configure_codex_env() {
   if grep -qE '^\[shell_environment_policy' "$tmp"; then
     rm -f "$tmp"
     echo "  Warning: $codex_toml already has a [shell_environment_policy] block." >&2
-    echo "    Add this entry to its [shell_environment_policy.set] table manually:" >&2
-    echo "      PATH = \"$local_bin:<your existing PATH>\"" >&2
+    echo "    Add this entry to [shell_environment_policy.set] manually:" >&2
+    echo "      PATH = \"$BIN_DIR:<your existing PATH>\"" >&2
     return 0
   fi
 
   local new_path="$PATH"
   case ":$new_path:" in
-    *":$local_bin:"*) ;;
-    *) new_path="$local_bin:$new_path" ;;
+    *":$BIN_DIR:"*) ;;
+    *) new_path="$BIN_DIR:$new_path" ;;
   esac
 
   cat >> "$tmp" <<TOML
@@ -856,25 +726,16 @@ PATH = "$new_path"
 TOML
 
   mv "$tmp" "$codex_toml"
-  echo "  Registered in: $codex_toml (shell_environment_policy.set.PATH includes $local_bin)"
+  echo "  Codex env: PATH includes $BIN_DIR"
 }
 
-# Codex: register the recall script in ~/.codex/hooks.json. Both
-# hooks.json and inline [hooks] in config.toml are valid (per
-# developers.openai.com/codex/hooks), but we use hooks.json so hook
-# command paths stay separate from config knobs. We overwrite this
-# file wholesale — if the user has their own hooks in it, we refuse
-# and print manual instructions instead.
 configure_codex_hook() {
-  local skill_dir="$1"
-  local hook="$skill_dir/hooks/recall.sh"
+  local hook="$CANONICAL_DIR/hooks/recall.sh"
   local hooks_json="${CODEX_HOOKS:-$HOME/.codex/hooks.json}"
-
-  write_recall_script "$skill_dir"
 
   mkdir -p "$(dirname "$hooks_json")"
 
-  if [ -f "$hooks_json" ] && ! grep -q "ling-mem" "$hooks_json" 2>/dev/null; then
+  if [ -f "$hooks_json" ] && ! grep -q "ling-mem\|shared-memory" "$hooks_json" 2>/dev/null; then
     echo "  Warning: $hooks_json exists and is not ling-mem-managed." >&2
     echo "    Add this UserPromptSubmit entry manually:" >&2
     echo "      { \"type\": \"command\", \"command\": \"$hook\" }" >&2
@@ -898,95 +759,101 @@ configure_codex_hook() {
 }
 JSON
 
-  echo "  Installed: $hook"
-  echo "  Registered in: $hooks_json (hooks.UserPromptSubmit)"
+  echo "  Codex hook registered: $hooks_json (UserPromptSubmit → $hook)"
 }
 
 # -------------------------------------------------------------------
-# Install
+# OpenClaw wiring — USER.md directive append (no hook surface in OC)
 # -------------------------------------------------------------------
 
-LINGGEN_BIN=""
-CLAUDE_BIN=""
+configure_openclaw_user_md() {
+  local user_md="$HOME/.openclaw/workspace/USER.md"
+  [ -f "$user_md" ] || return 0
 
-if [ "$INSTALL_LINGGEN" -eq 1 ]; then
-  echo "Installing to ~/.linggen/skills/ling-mem/"
-  LINGGEN_SKILL_DIR="$HOME/.linggen/skills/ling-mem"
-  copy_skill_files "$LINGGEN_SKILL_DIR"
-  download_binary "$LINGGEN_SKILL_DIR/bin"
-  seed_core_memory
-  install_dream_mission "$LINGGEN_SKILL_DIR"
-  write_install_source_marker
-  LINGGEN_BIN="$LINGGEN_SKILL_DIR/bin/ling-mem"
+  local marker_start="<!-- ling-mem:openclaw-start -->"
+  local marker_end="<!-- ling-mem:openclaw-end -->"
 
-  # Clean up the legacy `memory` skill dir if present and shipped (untouched user content stays).
-  if [ -d "$HOME/.linggen/skills/memory" ]; then
-    echo "  Removing legacy ~/.linggen/skills/memory/"
-    rm -rf "$HOME/.linggen/skills/memory"
+  local block="$marker_start
+## Memory — \`ling-mem\` is your second memory system
+
+Alongside \`MEMORY.md\` (workspace-scoped, narrative), you have access to
+\`ling-mem\` — a shared RAG store at \`~/.linggen/memory/\`, used across
+Claude Code, Linggen, Codex, and OpenClaw. The \`shared-memory\` skill
+ships its canonical bundle at \`~/.linggen/skills/shared-memory/\`; the
+SKILL.md you see in this host is a thin stub pointing back there.
+
+**Search before answering** when the question could connect to past
+preferences / decisions / gotchas:
+
+\`\`\`
+ling-mem search \"<query>\" --format json | jq -c 'del(.vector)'
+\`\`\`
+
+Mention hits inline — *\"From memory: you prefer X …\"*. The
+\`del(.vector)\` filter is mandatory — raw output includes 1024-dim
+embeddings (Qwen3-Embedding-0.6B) that blow up context.
+
+**Save high-signal user statements** per the routing rules in the
+canonical SKILL.md. Same security boundary as \`MEMORY.md\` — don't
+search or share \`ling-mem\` content in group chats / shared contexts.
+$marker_end"
+
+  local tmp_md; tmp_md="$(mktemp -t "openclaw-user-md-XXXXXX")"
+  awk -v s="$marker_start" -v e="$marker_end" '
+    BEGIN            { skip = 0; blanks = 0 }
+    $0 == s          { skip = 1; next }
+    $0 == e          { skip = 0; next }
+    skip             { next }
+    /^[[:space:]]*$/ { blanks++; next }
+                     { while (blanks--) print ""; blanks = 0; print }
+  ' "$user_md" > "$tmp_md"
+  if [ -s "$tmp_md" ]; then
+    printf '\n%s\n' "$block" >> "$tmp_md"
+  else
+    printf '%s\n' "$block" > "$tmp_md"
   fi
-fi
+  mv "$tmp_md" "$user_md"
+  echo "  Updated: $user_md (shared-memory usage directive)"
+}
 
-if [ "$INSTALL_CLAUDE" -eq 1 ]; then
-  echo "Installing to ~/.claude/skills/ling-mem/"
-  CLAUDE_SKILL_DIR="$HOME/.claude/skills/ling-mem"
-  copy_skill_files "$CLAUDE_SKILL_DIR"
-  download_binary "$CLAUDE_SKILL_DIR/bin"
-  seed_core_memory
+# -------------------------------------------------------------------
+# Main
+# -------------------------------------------------------------------
+
+cleanup_legacy
+install_canonical_bundle
+write_recall_script
+choose_bin_dir
+download_binary
+seed_memory_dir
+install_dream_mission
+write_install_source_marker
+install_host_stubs
+
+# Host-specific wiring — runs only when the host's home exists.
+if [ -d "$HOME/.claude" ]; then
+  echo "Wiring Claude Code..."
   configure_claude_md
-  configure_claude_hook "$CLAUDE_SKILL_DIR"
-  write_install_source_marker
-  CLAUDE_BIN="$CLAUDE_SKILL_DIR/bin/ling-mem"
-
-  # Clean up the legacy `linggen-memory` skill dir if present.
-  if [ -d "$HOME/.claude/skills/linggen-memory" ]; then
-    echo "  Removing legacy ~/.claude/skills/linggen-memory/"
-    rm -rf "$HOME/.claude/skills/linggen-memory"
-  fi
+  configure_claude_hook
 fi
 
-create_path_symlink "$LINGGEN_BIN" "$CLAUDE_BIN"
-
-# Codex auto-detect: additive symlink, never a primary install target.
-# Prefer the ~/.claude install as the source (matches the binary symlink
-# preference in create_path_symlink), fall back to ~/.linggen.
 if [ -d "$HOME/.codex" ] && [ "${LING_MEM_SKIP_CODEX:-0}" != "1" ]; then
-  CODEX_SOURCE=""
-  if [ "$INSTALL_CLAUDE" -eq 1 ]; then
-    CODEX_SOURCE="$CLAUDE_SKILL_DIR"
-  elif [ "$INSTALL_LINGGEN" -eq 1 ]; then
-    CODEX_SOURCE="$LINGGEN_SKILL_DIR"
-  fi
-  if [ -n "$CODEX_SOURCE" ]; then
-    echo "Detected ~/.codex/ — symlinking into ~/.codex/skills/ling-mem/"
-    symlink_to_codex "$CODEX_SOURCE"
-    configure_codex_features
-    configure_codex_sandbox
-    configure_codex_env
-    configure_codex_hook "$CODEX_SOURCE"
-  fi
+  echo "Wiring Codex..."
+  configure_codex_features
+  configure_codex_sandbox
+  configure_codex_env
+  configure_codex_hook
 fi
 
-# OpenClaw auto-detect: additive USER.md directive, never a primary install
-# target. The skill files themselves are delivered to OpenClaw via ClawHub
-# (which doesn't run install.sh); this hook only handles the
-# session-start directive that tells the OpenClaw agent to use ling-mem
-# as its second memory system. Skipped via LING_MEM_SKIP_OPENCLAW=1.
-if [ -f "$HOME/.openclaw/workspace/USER.md" ] && [ "${LING_MEM_SKIP_OPENCLAW:-0}" != "1" ]; then
-  echo "Detected ~/.openclaw/workspace/USER.md — appending ling-mem usage directive"
+if [ "${LING_MEM_SKIP_OPENCLAW:-0}" != "1" ]; then
   configure_openclaw_user_md
 fi
 
-# Flag the other host's leftover skill dir so users can clean up after a
-# host switch (e.g. previously installed via --host=both, now claude-only).
-if [ "$INSTALL_CLAUDE" -eq 1 ] && [ "$INSTALL_LINGGEN" -eq 0 ]; then
-  warn_stale_copy "$HOME/.linggen/skills/ling-mem"
-fi
-if [ "$INSTALL_LINGGEN" -eq 1 ] && [ "$INSTALL_CLAUDE" -eq 0 ]; then
-  warn_stale_copy "$HOME/.claude/skills/ling-mem"
-fi
-
 echo ""
-echo "Done. To browse / edit rows: run 'ling-mem start' then open http://127.0.0.1:9888"
+echo "Done. Canonical bundle: $CANONICAL_DIR"
+echo "      Binary:           $BIN_DIR/ling-mem"
+echo ""
+echo "Browse / edit rows: run 'ling-mem start' then open http://127.0.0.1:9888"
 echo ""
 echo "Note: ling-mem sends anonymous usage pings (install, daily-active, command"
 echo "      name) to help improve it. No content, no identity. Disable any time:"

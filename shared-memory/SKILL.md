@@ -167,7 +167,7 @@ or long-term are dropped.
    write; reconcile at read.
 
 For the full rules, examples, and the mechanical-vs-semantic
-maintenance split, **Read `references/routing-rules.md`** before making
+maintenance split, **Read `~/.linggen/skills/shared-memory/references/routing-rules.md`** before making
 non-trivial save decisions.
 
 ## Mid-chat save rules — silent HIGH-SIGNAL auto-save
@@ -280,9 +280,9 @@ mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dashboard** (Linggen only) | Message starts with `The user just opened the memory dashboard.` (sent by `memory-app.js` when the dashboard page mounts). | `Read references/dashboard.md` and follow State 1–4. Use `PageUpdate` to render widgets. |
-| **Dream** | Message says `/shared-memory dream` (or legacy `Scan today` / `Run a scan` from the dashboard, or arrives via the engine-driven `dream` mission body on Linggen). | `Read references/dream-flow.md`, `references/extractor-prompt.md`, and `references/routing-rules.md`. |
-| **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read references/routing-rules.md` only when making save / dedup decisions. |
+| **Dashboard** (Linggen only) | Message starts with `The user just opened the memory dashboard.` (sent by `memory-app.js` when the dashboard page mounts). | `Read ~/.linggen/skills/shared-memory/references/dashboard.md` and follow State 1–4. Use `PageUpdate` to render widgets. |
+| **Dream** | Message says `/shared-memory dream` (or legacy `Scan today` / `Run a scan` from the dashboard, or arrives via the engine-driven `dream` mission body on Linggen). | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
+| **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
 **Chat mode is the default.** When in doubt, you are in chat mode.
 
@@ -298,7 +298,7 @@ daemon endpoints, with `dream` as the one judgment-bearing pass:
 | `list [--type ...] [--tier ...] [--limit N]` | Paginated listing. |
 | `delete <id>` | Remove a specific row by id. |
 | `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
-| `dream` | Per-host wake-encode: scan host's own session files → script-extract → host-LLM judge/write → consolidate + evict. User-invoked (the user is the scheduler on hosts with no mission system). See `references/dream-flow.md`. |
+| `dream` | Per-host wake-encode: scan host's own session files → script-extract → host-LLM judge/write → consolidate + evict. User-invoked (the user is the scheduler on hosts with no mission system). See `~/.linggen/skills/shared-memory/references/dream-flow.md`. |
 
 ### Chat-mode rules — do NOT leak dashboard language
 
@@ -307,7 +307,7 @@ clicking widgets. So:
 
 - **Never** reference dashboard buttons by name (*"Scan Today"*,
   *"Browse all"*, *"Clean"*, *"Help"*) — those buttons don't exist for
-  the user to click. They live in `references/dashboard.md` and only
+  the user to click. They live in `~/.linggen/skills/shared-memory/references/dashboard.md` and only
   apply when you've been told you're in dashboard mode.
 - **Never** call `PageUpdate` in chat mode. There's no canvas to render
   into. PageUpdate calls in chat are no-ops that waste a turn.
@@ -326,7 +326,7 @@ hands-on surface.
 ## Cleanup — automatic in `dream`, interactive for destructive edits
 
 Automatic cleanup runs as the back-half of `/shared-memory dream` (see
-`references/dream-flow.md` §4): past-TTL episodic rows are
+`~/.linggen/skills/shared-memory/references/dream-flow.md` §4): past-TTL episodic rows are
 terminally promoted or evicted; near-duplicate exact-content rejects
 happen at write time inside the binary (`insert_with_dedup`).
 **Nothing more is automatic.**

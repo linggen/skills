@@ -22,18 +22,16 @@ re-processes a handled transcript. NDJSON to stdout, one session per
 line, only *new* material since the per-source watermark:
 
 ```bash
-bash <SKILL_DIR>/scripts/collect_sessions.sh \
+bash ~/.linggen/skills/shared-memory/scripts/collect_sessions.sh \
      --watermark ~/.linggen/memory/.dream-state.json \
      [YYYY-MM-DD]
 ```
 
 If the watermark file doesn't exist yet (first run), pass nothing —
-the script silently emits everything for the target date.
-
-Where `<SKILL_DIR>` is `~/.linggen/skills/shared-memory` (Linggen) or
-`~/.claude/skills/shared-memory` (Claude Code) or
-`~/.codex/skills/shared-memory` (Codex) or
-`~/.openclaw/skills/shared-memory` (OpenClaw).
+the script silently emits everything for the target date. (The
+canonical scripts live under `~/.linggen/skills/shared-memory/` on
+every host — the per-host CC / Codex / OpenClaw skill dirs only
+carry a thin `SKILL.md` that points back here.)
 
 Each manifest line:
 
@@ -66,7 +64,7 @@ write Phase 4 counters all-zero, emit a one-line report.
 For each manifest line, run:
 
 ```bash
-bash <SKILL_DIR>/scripts/extract_session.sh <filepath> <source> <date>
+bash ~/.linggen/skills/shared-memory/scripts/extract_session.sh <filepath> <source> <date>
 ```
 
 The script:
