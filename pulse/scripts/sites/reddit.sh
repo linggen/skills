@@ -55,7 +55,7 @@ ENDPOINT="${MODE}.json?limit=${LIMIT}"
           comments: .num_comments,
           score: .score,
           age_hours: (((now - .created_utc) / 3600) | floor),
-          summary: ((.selftext // "") | .[:300])
+          summary: (.selftext // "")
         }' 2>/dev/null
   done <<< "$subs"
 ) | jq -s '.' 2>/dev/null || echo "[]"

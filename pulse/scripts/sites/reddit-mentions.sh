@@ -73,7 +73,7 @@ if [ -n "$mentions_json" ]; then
     | map({
         kind: "mention",
         title: (.title // ""),
-        body: ((.selftext // "") | .[0:400]),
+        body: (.selftext // ""),
         url: ("https://www.reddit.com" + (.permalink // "")),
         author: ("u/" + (.author // "")),
         sub: ("r/" + (.subreddit // "")),
@@ -164,7 +164,7 @@ if [ -n "$comments_json" ]; then
           | {
               kind: "reply_to_me",
               title: $ltitle,
-              body: ((.body // "") | .[0:1500]),
+              body: (.body // ""),
               url: ("https://www.reddit.com" + (.permalink // "")),
               author: ("u/" + (.author // "")),
               sub: ("r/" + (.subreddit // "")),

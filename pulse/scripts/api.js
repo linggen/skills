@@ -98,3 +98,46 @@ export async function replayRuntimeGrants(sessionId) {
   }
   console.log('[pulse] replayRuntimeGrants ✓ granted', workspacePath, 'on', sessionId);
 }
+
+// Pulse trades off context retention against cost more aggressively than the
+// default 95% trigger: Gather Web pulls full Reddit threads (untruncated OP +
+// every comment + every nested reply), which spikes context fast but most of
+// it is no longer needed after the agent emits its body_patch cards. Setting
+// threshold=0.5 + a focus that names what to preserve makes the engine's
+// existing auto-compaction shed the heavy tool-result turns while keeping
+// the card ids and draft strategy intact.
+//
+// Runtime-only on the engine side per the runtime-grants pattern — Pulse
+// calls this on every iframe load so a fresh engine session inherits the
+// same config.
+export async function applyCompactConfig(sessionId, opts = {}) {
+  if (!sessionId) return;
+  const cfg = await readPulseConfig();
+  const projectRoot = (cfg?.workspace_path || '').trim();
+  if (!projectRoot) return;
+  // User-tunable threshold from settings.html (compact_threshold field in
+  // config.json). Falls back to 0.5 — Pulse's default, lower than the
+  // engine's global 0.95 because Gather Web spikes context fast.
+  const cfgThreshold = typeof cfg?.compact_threshold === 'number'
+    ? cfg.compact_threshold
+    : null;
+  const body = {
+    project_root: projectRoot,
+    session_id: sessionId,
+    threshold: opts.threshold ?? cfgThreshold ?? 0.5,
+    focus: opts.focus ?? [
+      'preserve card ids emitted to body_patch (mentions, signal, discovery, replies_due, progress)',
+      'preserve the user reddit handle and any skip URLs / dismissed URLs in effect',
+      'preserve per-card draft strategy (reply_target choice, voice notes)',
+      'drop raw tool-result JSON bodies (Reddit thread trees, HN/Lobsters payloads, mention search results) — the cards already carry the salient excerpts',
+    ].join('; '),
+  };
+  const res = await fetch(`${API_BASE}/api/chat/compact_config`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    console.warn('[pulse] applyCompactConfig failed', res.status);
+  }
+}

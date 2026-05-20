@@ -202,6 +202,14 @@ function render() {
   document.getElementById('brief-text').value = state.config.brief || '';
   const wsInput = document.getElementById('workspace-path');
   if (wsInput) wsInput.value = state.config.workspace_path || '';
+  const ctInput = document.getElementById('compact-threshold');
+  if (ctInput) {
+    // Stored as fraction 0.10–0.99; UI shows as integer percent.
+    const t = typeof state.config.compact_threshold === 'number'
+      ? Math.round(state.config.compact_threshold * 100)
+      : 50;
+    ctInput.value = String(t);
+  }
   renderWebsites();
 }
 
@@ -512,6 +520,13 @@ async function save() {
     state.config.brief = document.getElementById('brief-text').value;
     const wsInput = document.getElementById('workspace-path');
     if (wsInput) state.config.workspace_path = wsInput.value.trim();
+    const ctInput = document.getElementById('compact-threshold');
+    if (ctInput && ctInput.value.trim()) {
+      const pct = parseInt(ctInput.value, 10);
+      if (Number.isFinite(pct) && pct >= 10 && pct <= 99) {
+        state.config.compact_threshold = pct / 100;
+      }
+    }
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
     saveBtn.textContent = 'Saved ✓';
     saveBtn.classList.add('saved');

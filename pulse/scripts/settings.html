@@ -69,6 +69,33 @@
     </section>
 
     <section class="card">
+      <h2>Auto-compact threshold</h2>
+      <p class="card-sub">
+        Pulse pulls full Reddit threads (OP + every comment) during Gather Web,
+        which fills the agent's context fast. Lower thresholds compact earlier
+        — at the cost of more summarization passes; higher thresholds keep
+        verbatim history longer at the cost of bigger turns.
+        The engine default is 95%; Pulse defaults to 50%.
+      </p>
+      <div class="workspace-row">
+        <input
+          type="number"
+          id="compact-threshold"
+          class="workspace-input"
+          min="10"
+          max="99"
+          step="1"
+          placeholder="50"
+        />
+        <span class="card-meta" style="margin-left: 8px;">% of context window</span>
+      </div>
+      <p class="card-meta">
+        Saved to <code>config.json</code> as <code>compact_threshold</code>
+        (0.10 – 0.99). Applied on every iframe load.
+      </p>
+    </section>
+
+    <section class="card">
       <h2>Websites</h2>
       <p class="card-sub">
         Where Pulse fetches signal from (<strong>Source</strong>) and where

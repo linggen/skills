@@ -80,18 +80,35 @@ export function setCommentedThreadUrls(urls) {
   renderAll();   // re-render to apply the new filter
 }
 
-// Additive variant — the optimistic "user just clicked Copy/Open on a
-// discovery card" path: we mark the thread locally before Reddit's
-// /user/<u>/comments.json sees the user's new comment (typical 30s+
-// lag). Persisted to disk by the caller so refreshes don't lose it.
-export function addCommentedThreadUrl(url) {
-  if (!url || typeof url !== 'string') return;
-  commentedThreadUrls.add(normalizeThreadUrl(url));
+export function getCommentedThreadUrls() {
+  return Array.from(commentedThreadUrls);
+}
+
+// URLs the user has explicitly dismissed (× button) — persisted to
+// state/dismissed.json across sessions so a dismissed mention doesn't
+// keep coming back every time reddit-mentions.sh returns the same item.
+// Keyed by normalizeThreadUrl: thread-id for Reddit, rkey for Bluesky.
+// For reply_to_me cards this collapses to the thread, so dismissing one
+// reply suppresses future replies on the same thread — accept that
+// trade-off until it bites.
+let dismissedUrls = new Set();
+
+export function setDismissedUrls(urls) {
+  const set = new Set();
+  for (const u of (urls || [])) {
+    if (typeof u === 'string' && u) set.add(normalizeThreadUrl(u));
+  }
+  dismissedUrls = set;
   renderAll();
 }
 
-export function getCommentedThreadUrls() {
-  return Array.from(commentedThreadUrls);
+export function addDismissedUrl(url) {
+  if (!url || typeof url !== 'string') return;
+  dismissedUrls.add(normalizeThreadUrl(url));
+}
+
+export function getDismissedUrls() {
+  return Array.from(dismissedUrls);
 }
 
 // Normalize a Reddit URL to a thread key (post id) so any of these
@@ -155,8 +172,9 @@ function isEmptyReplyCard(card) {
 
 // Defensive filter: discovery cards suggesting a thread the user has
 // already commented on — drop them; suggesting a comment on a thread
-// where they've already weighed in is noise. URLs come from
-// FetchRedditMentions own_comment results, pre-fetched by pulse-app.
+// where they've already weighed in is noise. URLs come from Reddit's
+// own_comment endpoint (via FetchRedditMentions), pre-fetched by
+// pulse-app. Copy clicks do NOT contribute — see refreshCommentedThreadUrls.
 function isAlreadyCommented(card) {
   if (card.type !== 'discovery') return false;
   const url = card.thread_url || card.url;
@@ -179,10 +197,20 @@ function isDuplicateInDiscovery(card, ctx) {
   return ctx.discoveryUrls.has(normalizeThreadUrl(u));
 }
 
+// Defensive filter: card whose URL the user dismissed in any prior session.
+// Reads from the dismissedUrls set, seeded at init from state/dismissed.json.
+function isDismissed(card) {
+  if (dismissedUrls.size === 0) return false;
+  const url = card.url || card.thread_url;
+  if (!url) return false;
+  return dismissedUrls.has(normalizeThreadUrl(url));
+}
+
 function shouldFilterCard(card, ctx) {
   return isSelfLatestReply(card)
       || isEmptyReplyCard(card)
       || isAlreadyCommented(card)
+      || isDismissed(card)
       || isDuplicateInDiscovery(card, ctx);
 }
 
@@ -554,12 +582,31 @@ function renderDiscovery(c) {
   // Strip HTML tags from the post body for safety; agent receives Reddit's
   // JSON which sometimes includes formatted markdown — we show plain text.
   const excerpt = (c.excerpt || c.body || '').replace(/<[^>]+>/g, '').trim();
-  const truncatedExcerpt = excerpt.length > 400 ? excerpt.slice(0, 397) + '…' : excerpt;
+  const truncatedExcerpt = excerpt.length > 800 ? excerpt.slice(0, 797) + '…' : excerpt;
+  // Optional reply target: when the agent picks a specific comment in the
+  // thread to engage with (rather than replying to the OP), it emits
+  // reply_target with the comment's author + body + meta. We render that
+  // block between the OP excerpt and the draft so the user sees what the
+  // draft is actually responding to.
+  const t = c.reply_target;
+  const targetBody = (t?.body || '').replace(/<[^>]+>/g, '').trim();
+  const targetTruncated = targetBody.length > 1200 ? targetBody.slice(0, 1197) + '…' : targetBody;
+  const targetMeta = t ? [
+    t.author ? escapeHtml(t.author) + ' replied' : 'Replied',
+    t.age_hours != null ? formatAge(t.age_hours) : null,
+    t.score != null ? `${t.score} pts` : null,
+    t.depth != null && t.depth > 1 ? `depth ${t.depth}` : null,
+  ].filter(Boolean).join(' · ') : '';
+  const targetHtml = t && targetTruncated
+    ? `<div class="thread-step latest"><div class="thread-label">↳ ${targetMeta}</div><div class="thread-body">${escapeHtml(targetTruncated)}</div></div>`
+    : '';
+  const draftLabel = t ? 'Draft reply' : 'Draft comment';
   return cardEl(c, 'cold', `
     <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · <b>"${escapeHtml(c.thread_title || '')}"</b></div>
     <div class="meta">${c.comments != null ? c.comments + ' comments · ' : ''}${formatAge(c.age_hours)}${c.match_reason ? ' · ' + escapeHtml(c.match_reason) : ''}</div>
     ${truncatedExcerpt ? `<div class="excerpt">${escapeHtml(truncatedExcerpt)}</div>` : ''}
-    ${c.draft_starter ? `<div class="draft-inline"><div class="draft-inline-label">Draft comment</div><div class="draft-inline-body">${escapeHtml(c.draft_starter)}</div></div>` : ''}
+    ${targetHtml}
+    ${c.draft_starter ? `<div class="draft-inline"><div class="draft-inline-label">${draftLabel}</div><div class="draft-inline-body">${escapeHtml(c.draft_starter)}</div></div>` : ''}
     ${actionRow(c, ['copy', 'open', 'dismiss'])}
   `);
 }

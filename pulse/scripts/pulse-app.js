@@ -16,8 +16,8 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, addCommentedThreadUrl, getCommentedThreadUrls, resetPage } from './page-render.js';
-import { readPulseConfig, replayRuntimeGrants } from './api.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage } from './page-render.js';
+import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
@@ -395,29 +395,11 @@ async function pushLocalContextToChat(data) {
 // before each gather-web (so the discovery cards the agent is about to
 // emit get filtered against fresh data). Public-JSON only — no OAuth.
 //
-// Reddit's /user/<u>/comments.json typically lags 30s+ behind a freshly
-// posted comment, so we also persist an optimistic locally-marked set
-// (every Copy / Open on a discovery card) under state/own-commented.json
-// and merge it in here. That way the filter survives both Reddit's lag
-// and the script returning empty (rate limit). Failures are silent; the
-// filter falls back to whatever the local set has.
-const OWN_COMMENTED_PATH = `${SKILL_DIR}/state/own-commented.json`;
-
-async function loadLocalCommentedSet() {
-  const data = await readJson(OWN_COMMENTED_PATH, { urls: [] });
-  return Array.isArray(data?.urls) ? data.urls : [];
-}
-
-async function appendLocalCommented(url) {
-  if (!url) return;
-  const data = await readJson(OWN_COMMENTED_PATH, { urls: [] });
-  const set = new Set(Array.isArray(data?.urls) ? data.urls : []);
-  set.add(url);
-  await writeJson(OWN_COMMENTED_PATH, { urls: Array.from(set), updated_at: new Date().toISOString() });
-}
-
+// Reddit's /user/<u>/comments.json is the sole authority — Copy clicks
+// do NOT mark threads as committed (Copy ≠ Posted; the user may copy a
+// draft and never paste it, and false-positive suppression is worse than
+// the 30s lag before Reddit indexes a fresh comment).
 async function refreshCommentedThreadUrls() {
-  const local = await loadLocalCommentedSet();
   let remote = [];
   try {
     const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-mentions.sh"`);
@@ -428,20 +410,7 @@ async function refreshCommentedThreadUrls() {
   } catch (e) {
     console.warn('[pulse] reddit-mentions own_comment fetch failed', e);
   }
-  setCommentedThreadUrls([...local, ...remote]);
-}
-
-// Optimistic "user is about to comment on this thread" — fires from the
-// Copy handler on a discovery card. Adds the URL to the in-memory filter
-// (card vanishes from the current view) and persists so it survives
-// reloads. Reddit's API will catch up on the next refresh; this just
-// bridges the gap. NOT fired by Open — that's a "let me read it" action,
-// not a commit signal, so the card stays.
-async function markDiscoveryCommitted(card) {
-  const url = card?.thread_url || card?.url;
-  if (!url) return;
-  addCommentedThreadUrl(url);
-  try { await appendLocalCommented(url); } catch (e) { console.warn('[pulse] persist own-commented failed', e); }
+  setCommentedThreadUrls(remote);
 }
 
 // Use ling-mem's extract_session.sh to pull a flattened transcript for
@@ -470,6 +439,14 @@ async function runGatherWeb() {
   // so the renderer's filter has fresh data. The init() refresh is too
   // stale for this — user may have commented mid-session.
   await refreshCommentedThreadUrls();
+  // Load the reddit handle so the agent can scan a thread's comment
+  // authors and detect old comments (past Reddit's last-15 window that
+  // FetchRedditMentions surfaces).
+  let redditHandle = '';
+  try {
+    const cfg = await readPulseConfig();
+    redditHandle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
+  } catch {}
   // Pre-filter at the agent level: pass the normalized skip set so the
   // agent drops already-commented threads during scoring instead of
   // drafting discovery comments that the renderer then silently hides.
@@ -477,14 +454,14 @@ async function runGatherWeb() {
   // The renderer's isAlreadyCommented filter stays as defense-in-depth
   // (handles races where the user comments mid-Gather, or the agent
   // forgets the rule).
-  const skipKeys = getCommentedThreadUrls();
+  const skipKeys = Array.from(new Set([...getCommentedThreadUrls(), ...getDismissedUrls()]));
   const skipBlock = skipKeys.length === 0 ? '' : [
-    'SKIP_URLS — threads I have already commented on or marked as committed.',
+    'SKIP_URLS — threads I have already commented on, marked as committed, or dismissed.',
     'Drop any source-tool result whose normalized post id appears in this',
     'list, BEFORE scoring or drafting. Match by post id, not by slug — for',
     'Reddit use the segment after /comments/<id>; for Bluesky use the post',
-    'rkey (last URL segment). Skip applies to `discovery` and `signal`',
-    'sections. Format: <platform>:<post-id>.',
+    'rkey (last URL segment). Skip applies to `discovery`, `signal`, and',
+    '`mentions` sections (including reply_to_me cards). Format: <platform>:<post-id>.',
     ...skipKeys.map(k => `  - ${k}`),
     '',
   ].join('\n');
@@ -506,7 +483,12 @@ async function runGatherWeb() {
     '',
     'Emit body_patch blocks for `signal`, `discovery`, `mentions`, and `replies_due` sections as appropriate. If nothing scored above the cutoff for a section, emit one `empty` card with a one-line reason.',
     '',
-    'For `discovery` cards specifically: include BOTH `excerpt` (plain-text body of the thread, ~250 chars; strip markdown/HTML) AND `draft_starter` (your 2-4 sentence draft comment in voice). The page renders both inline so the user can read what the thread says and what you\'d post — no extra click. Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft chip handles broadcast posts, not comment-on-thread starters.',
+    'For `discovery` cards specifically (Reddit threads you suggest the user comment on): AFTER scoring, BEFORE drafting, WebFetch the FULL thread JSON for each surviving candidate. URL shape: `<thread_url>.json?limit=500&sort=top&raw_json=1` — no `depth` param, so Reddit returns the entire tree (every comment + every nested reply). One round-trip per thread.',
+    'Three things to do with that full tree:',
+    '  1. ALREADY-COMMENTED CHECK. SKIP_URLS only covers the user\'s last ~15 Reddit comments (Reddit\'s public API window). If the user commented on this thread months ago, it won\'t be in SKIP_URLS. Walk every comment author at every depth; if any equals "' + (redditHandle || '<sites.reddit.username>') + '" (case-insensitive, strip leading "u/"), SKIP this thread — DO NOT emit a discovery card for it. Non-negotiable.',
+    '  2. PICK A REPLY TARGET. Scan the tree for the single best comment to engage with: high-signal, raises a specific question or makes a claim the user\'s distinct angle would complement, and is NOT already well-addressed by another commenter. Depth doesn\'t matter — a strong deep-thread comment beats a weak top-level reply. If you find one, emit it as `reply_target: { author: "u/<handle>", body: "<verbatim comment text>", score: <int>, age_hours: <int>, depth: <int>, url: "<full reddit permalink to this comment>" }`. If NO comment clears the bar, OR the OP itself is the strongest hook, leave `reply_target` absent and draft to the OP. Test: "does engaging this comment beat engaging the OP for this user?"',
+    '  3. GROUND THE DRAFT. Use the FULL OP body + the entire tree (or at minimum the chain leading to your reply_target) as context. Don\'t parrot existing commenters; offer a distinct angle. If `reply_target` is set, `draft_starter` is the reply TO that comment, not to the OP — address what that specific commenter said.',
+    'Then emit the card with `excerpt` (plain-text OP body, ~500 chars; strip markdown/HTML, for UI display), optional `reply_target` (per above), and `draft_starter` (your 2-4 sentence draft in voice). Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft chip handles broadcast posts, not comment-on-thread starters.',
   ].join('\n');
   sendChatHidden(goal);
   return promise;
@@ -643,12 +625,21 @@ document.addEventListener('DOMContentLoaded', () => {
 // ---- Card actions --------------------------------------------------------
 
 function wireCardActions() {
-  document.getElementById('sections-container').addEventListener('click', (e) => {
+  const container = document.getElementById('sections-container');
+  container.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
-    if (!btn) return;
-    const action = btn.dataset.action;
-    const cardId = btn.dataset.card;
-    handleCardAction(action, cardId, btn);
+    if (btn) {
+      handleCardAction(btn.dataset.action, btn.dataset.card, btn);
+      return;
+    }
+    // Click outside any action button: toggle card selection.
+    // Single-select — clicking a card deselects siblings. Click again to
+    // deselect. Selection is visual only (border highlight via .selected).
+    const card = e.target.closest('.card');
+    if (!card) return;
+    const wasSelected = card.classList.contains('selected');
+    container.querySelectorAll('.card.selected').forEach(el => el.classList.remove('selected'));
+    if (!wasSelected) card.classList.add('selected');
   });
 }
 
@@ -670,7 +661,11 @@ function handleCardAction(action, cardId, btn) {
       break;
     case 'open':
     case 'open-url': {
+      // If the agent picked a specific reply target in a discovery card,
+      // jump to that comment permalink — that's where the user is about
+      // to paste, not the thread root.
       const url = btn?.dataset?.url
+        || card?.reply_target?.url
         || card?.thread_url || card?.your_post_url || card?.url
         || (card?.follow_up?.comment_url);
       if (url) window.open(url, '_blank', 'noopener,noreferrer');
@@ -687,11 +682,6 @@ function handleCardAction(action, cardId, btn) {
         navigator.clipboard.writeText(text);
         flash(btn, 'Copied ✓');
       }
-      // Copying a discovery draft = user is about to post on that thread.
-      // Mark it locally so Reddit's API lag + multi-session view don't
-      // resurface the same thread before the user remembers they already
-      // commented.
-      if (card?.type === 'discovery') markDiscoveryCommitted(card).catch(() => {});
       break;
     }
     case 'mark-posted':
@@ -719,6 +709,12 @@ function findCard(cardId) {
 }
 
 function removeCard(cardId) {
+  const card = findCard(cardId);
+  const url = card?.url || card?.thread_url;
+  if (url) {
+    addDismissedUrl(url);
+    appendDismissed(url).catch(e => console.warn('[pulse] persist dismissed failed', e));
+  }
   const sess = getSession();
   for (const [secId, sec] of Object.entries(sess.sections || {})) {
     const before = sec.cards?.length || 0;
@@ -731,6 +727,27 @@ function removeCard(cardId) {
       return;
     }
   }
+}
+
+// Cross-session dismissed-URL log. Why a separate file (not session.json):
+// new sessions get a fresh session.json, so dismissals must live outside
+// the per-session scope. Why not piggy-back on own-commented.json:
+// semantically distinct — "I commented here" ≠ "I don't want to see this
+// again", and conflating them means a Reddit own_comment fetch could
+// silently un-dismiss something the user explicitly killed.
+const DISMISSED_PATH = `${SKILL_DIR}/state/dismissed.json`;
+
+async function loadDismissedSet() {
+  const data = await readJson(DISMISSED_PATH, { urls: [] });
+  return Array.isArray(data?.urls) ? data.urls : [];
+}
+
+async function appendDismissed(url) {
+  if (!url) return;
+  const data = await readJson(DISMISSED_PATH, { urls: [] });
+  const set = new Set(Array.isArray(data?.urls) ? data.urls : []);
+  set.add(url);
+  await writeJson(DISMISSED_PATH, { urls: Array.from(set), updated_at: new Date().toISOString() });
 }
 
 async function markCardPosted(cardId, btn) {
@@ -849,6 +866,10 @@ async function mountChat() {
     pendingGrant = replayRuntimeGrants(sid).catch(e =>
       console.warn('[pulse] replay grants failed', e)
     );
+    // Lower the auto-compact trigger from 95% → 50% for Pulse sessions,
+    // and tell the summarizer what to preserve. Runtime-only on the engine
+    // side, so we re-apply on every iframe mount.
+    applyCompactConfig(sid).catch(e => console.warn('[pulse] applyCompactConfig failed', e));
   };
   state.grantsReady = () => pendingGrant || Promise.resolve();
 
@@ -1079,6 +1100,7 @@ async function init() {
       refreshCommentedThreadUrls().catch(err => console.warn('[pulse] own-comments prefetch', err));
     }
   } catch {}
+  loadDismissedSet().then(setDismissedUrls).catch(err => console.warn('[pulse] dismissed prefetch', err));
   wireChips();
   wireCardActions();
   wireChatResizer();
