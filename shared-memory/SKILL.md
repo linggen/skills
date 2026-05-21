@@ -348,26 +348,12 @@ user request** — never a destructive automatic merge.
 Memory grows with genuine signal over time. Drift gets reconciled —
 mechanically when obvious, with the user when judgment is needed.
 
-### Inline reconciliation — when the recall hook surfaces drift
+### Inline reconciliation
 
-Triggers **only when the hits are incidental** to the turn topic — the
-user is asking about something else and the hook surfaced dup/conflict
-rows as ambient context. **Do not** reconcile when the user is
-explicitly steering memory ("clean up memory", "remember X", "what's
-in memory"); follow their instruction, don't ambush them with a
-side-quest.
-
-When incidental hits include near-duplicates or conflicts, reconcile
-before answering:
-
-1. **Near-duplicates** (same/very-similar `content`) — keep the
-   higher-quality phrasing, `ling-mem delete <id>` the rest. Show the
-   rows and the kept id in one line; no prompt needed.
-2. **Conflicts** (rows asserting different things) — ask the user which
-   is current, then `ling-mem edit <id>` to update or `delete <id>` to
-   drop. Never auto-merge.
-3. Get ids from the hook's JSON when needed:
-   `ling-mem search "<phrase>" --format json | jq -r '.[] | "\(.id)\t\(.content)"'`.
+When recall hits include duplicates or conflicts, fix them:
+`ling-mem delete <id>` near-dups (keep the best phrasing);
+`ling-mem edit <id>` or `delete` on conflicts after asking the user.
+Get ids via `ling-mem search "<phrase>" --format json | jq -r '.[] | "\(.id)\t\(.content)"'`.
 
 ## Type taxonomy (reference)
 
