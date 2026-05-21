@@ -348,6 +348,20 @@ user request** — never a destructive automatic merge.
 Memory grows with genuine signal over time. Drift gets reconciled —
 mechanically when obvious, with the user when judgment is needed.
 
+### Inline reconciliation — when the recall hook surfaces drift
+
+When the per-turn `UserPromptSubmit` hits include near-duplicates or
+conflicting rows, reconcile before answering:
+
+1. **Near-duplicates** (same/very-similar `content`) — keep the
+   higher-quality phrasing, `ling-mem delete <id>` the rest. Show the
+   rows and the kept id in one line; no prompt needed.
+2. **Conflicts** (rows asserting different things) — ask the user which
+   is current, then `ling-mem edit <id>` to update or `delete <id>` to
+   drop. Never auto-merge.
+3. Get ids from the hook's JSON when needed:
+   `ling-mem search "<phrase>" --format json | jq -r '.[] | "\(.id)\t\(.content)"'`.
+
 ## Type taxonomy (reference)
 
 The `type` enum is `fact | preference | decision | tried | fixed |
