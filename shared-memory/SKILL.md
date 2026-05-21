@@ -350,8 +350,15 @@ mechanically when obvious, with the user when judgment is needed.
 
 ### Inline reconciliation — when the recall hook surfaces drift
 
-When the per-turn `UserPromptSubmit` hits include near-duplicates or
-conflicting rows, reconcile before answering:
+Triggers **only when the hits are incidental** to the turn topic — the
+user is asking about something else and the hook surfaced dup/conflict
+rows as ambient context. **Do not** reconcile when the user is
+explicitly steering memory ("clean up memory", "remember X", "what's
+in memory"); follow their instruction, don't ambush them with a
+side-quest.
+
+When incidental hits include near-duplicates or conflicts, reconcile
+before answering:
 
 1. **Near-duplicates** (same/very-similar `content`) — keep the
    higher-quality phrasing, `ling-mem delete <id>` the rest. Show the
