@@ -419,7 +419,7 @@ fi
 
 [ -z "$out" ] && exit 0
 
-printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
+hits="$(printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
   map(select(
     ((.contexts // []) | map(select(startswith("project/"))))
     | (length == 0 or any(. == ("project/" + $proj)))
@@ -427,7 +427,12 @@ printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
   | .[:$k]
   | .[]
   | "From memory (\(.type), \((.created_at // "")[0:10])): \(.content)"
-' 2>/dev/null || true
+' 2>/dev/null || true)"
+
+[ -z "$hits" ] && exit 0
+
+printf '%s\n' "$hits"
+echo "Note: if hits include duplicates or conflicts, reconcile via 'ling-mem delete <id>' or 'ling-mem edit <id>'."
 HOOK
   chmod +x "$hook"
 }
