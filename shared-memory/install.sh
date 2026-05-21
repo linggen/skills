@@ -433,7 +433,7 @@ hits="$(printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
 
 printf '%s\n' "$hits"
 hit_count="$(printf '%s\n' "$hits" | grep -c .)"
-if [ "$hit_count" -gt 2 ]; then
+if [ "$hit_count" -gt 1 ]; then
   echo "Note: $hit_count hits returned — if any look duplicated or in conflict, reconcile via 'ling-mem delete <id>' or 'ling-mem edit <id>'."
 fi
 HOOK
