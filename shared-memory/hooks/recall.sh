@@ -48,7 +48,7 @@ hits="$(printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
   ))
   | .[:$k]
   | .[]
-  | "From memory (\(.type), \((.created_at // "")[0:10])): \(.content)"
+  | "From memory (\(.type), \((.created_at // "")[0:10]), id=\(.id)): \(.content)"
 ' 2>/dev/null || true)"
 
 [ -z "$hits" ] && exit 0
@@ -56,5 +56,5 @@ hits="$(printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
 printf '%s\n' "$hits"
 hit_count="$(printf '%s\n' "$hits" | grep -c .)"
 if [ "$hit_count" -gt 1 ]; then
-  echo "Note: $hit_count hits returned — 'ling-mem delete <id>' near-duplicates; on conflicts ask the user which is true, then 'ling-mem edit <id>'."
+  echo "Note: When you see duplicates, dedup via 'ling-mem delete <id>'. When you see conflicts, ask the user which is correct, then 'ling-mem edit <id>'. Please keep memory in good shape."
 fi
