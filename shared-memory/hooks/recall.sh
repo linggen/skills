@@ -48,7 +48,7 @@ hits="$(printf '%s' "$out" | jq -sr --arg proj "$proj" --argjson k "$topk" '
   ))
   | .[:$k]
   | .[]
-  | "From memory (\(.type), \((.created_at // "")[0:10]), id=\(.id)): \(.content)"
+  | "From memory (\(.type), \(.host // "unknown"), \((.created_at // "")[0:10]), id=\(.id)): \(.content)"
 ' 2>/dev/null || true)"
 
 [ -z "$hits" ] && exit 0
