@@ -217,16 +217,22 @@ function pickGreeting({ coreC, semC, epC, dream, scanHdr }) {
   const lastScan = scanHdr?.finished_at;
   const lastHippo = dream?.last_run_at;
   const epCount = epC?.count || 0;
-  const candidatesPending = scanHdr && (!lastHippo || new Date(scanHdr.finished_at) > new Date(lastHippo))
-    ? scanHdr.sessions_scanned || 0
+  // "Pending" = the scan happened AFTER the most recent hippocampus
+  // (or hippocampus has never run). We only know the scanned-session
+  // count; the LLM-judged candidate count isn't materialized anywhere
+  // until dream runs. Show sessions-to-review honestly.
+  const scanIsNewerThanDream = scanHdr && (!lastHippo
+    || new Date(scanHdr.finished_at) > new Date(lastHippo));
+  const sessionsToReview = scanIsNewerThanDream
+    ? (scanHdr.sessions_scanned || 0)
     : 0;
 
   let title, primary;
   if (totalRows === 0 && !lastScan) {
     title = "Welcome — your memory's empty. Run Scan to read recent sessions.";
     primary = { label: 'Scan today', icon: '🔍', message: 'Scan today', kind: 'primary' };
-  } else if (candidatesPending > 0) {
-    title = `${candidatesPending} sessions waiting to be reviewed. Run hippocampus to consolidate.`;
+  } else if (sessionsToReview > 0) {
+    title = `${sessionsToReview} session${sessionsToReview === 1 ? '' : 's'} scanned since last hippocampus. Run hippocampus to judge & consolidate.`;
     primary = { label: 'Run hippocampus', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
   } else if (lastScan && daysSince(lastScan) >= 1) {
     title = `Last scan ${ageOf(lastScan)}. Pull in newer sessions?`;

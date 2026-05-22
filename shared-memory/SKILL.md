@@ -280,9 +280,14 @@ mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dashboard** (Linggen only) | Message starts with `The user just opened the memory dashboard.` (sent by `memory-app.js` when the dashboard page mounts). | `Read ~/.linggen/skills/shared-memory/references/dashboard.md` and follow State 1–4. Use `PageUpdate` to render widgets. |
-| **Dream** | Message says `/shared-memory dream` (or legacy `Scan today` / `Run a scan` from the dashboard, or arrives via the engine-driven `dream` mission body on Linggen). | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
+| **Dream** | Message says `/shared-memory dream`, `Run hippocampus`, or arrives via the engine-driven `dream` mission body on Linggen. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
+| **Scan** | Message starts with `Scan today` / `Scan this week` / `Scan this month`. | Run `Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>`. Summarize the one-line stdout (sessions found / scanned / transcript_bytes) back to chat. No memory writes. |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
+
+The old **Dashboard mode** (the agent rendering the on-open page) is
+retired — `memory-app.js` paints `top_bar` + `body` from JS directly
+before any chat turn fires. See `dashboard.md` if you're curious
+about the new JS-driven flow + the report shape dream emits.
 
 **Chat mode is the default.** When in doubt, you are in chat mode.
 

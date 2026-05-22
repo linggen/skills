@@ -102,7 +102,11 @@ mv "$TMP_MANIFEST_DEDUP" "$TMP_MANIFEST"
 SESSIONS_FOUND="$(wc -l < "$TMP_MANIFEST" | tr -d ' ')"
 SESSIONS_SCANNED=0
 SKIPPED_EMPTY=0
-BYTES_TOTAL=0
+# Total bytes of EXTRACTED transcripts (i.e. what the hippocampus
+# LLM will read), not raw session-file bytes. The raw bytes are
+# typically 50-200x larger because they include tool calls / system
+# reminders / JSON envelopes that extract_session.sh strips.
+TRANSCRIPT_BYTES=0
 
 # Build the body (lines 2..N) into a temp file, then write the header
 # + body atomically. Lets us compute counters before writing the header.
@@ -133,18 +137,20 @@ while IFS= read -r row; do
     continue
   fi
 
+  transcript_bytes="${#transcript}"
   jq -n -c \
     --arg filepath "$filepath" \
     --arg source "$source" \
     --arg date "$date" \
     --argjson user_turns "$user_turns" \
     --argjson bytes "$bytes" \
+    --argjson transcript_bytes "$transcript_bytes" \
     --arg transcript "$transcript" \
-    '{filepath: $filepath, source: $source, date: $date, user_turns: $user_turns, bytes: $bytes, transcript: $transcript}' \
+    '{filepath: $filepath, source: $source, date: $date, user_turns: $user_turns, bytes: $bytes, transcript_bytes: $transcript_bytes, transcript: $transcript}' \
     >> "$TMP_BODY"
 
   SESSIONS_SCANNED=$((SESSIONS_SCANNED + 1))
-  BYTES_TOTAL=$((BYTES_TOTAL + bytes))
+  TRANSCRIPT_BYTES=$((TRANSCRIPT_BYTES + transcript_bytes))
 done < "$TMP_MANIFEST"
 
 FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -159,15 +165,15 @@ jq -n -c \
   --argjson found "$SESSIONS_FOUND" \
   --argjson scanned "$SESSIONS_SCANNED" \
   --argjson skipped "$SKIPPED_EMPTY" \
-  --argjson bytes "$BYTES_TOTAL" \
+  --argjson transcript_bytes "$TRANSCRIPT_BYTES" \
   --argjson duration_ms "$DURATION_MS" \
   '{_meta: true, started_at: $started, finished_at: $finished, window: $window,
     sessions_found: $found, sessions_scanned: $scanned, skipped_empty: $skipped,
-    bytes_total: $bytes, duration_ms: $duration_ms}' \
+    transcript_bytes: $transcript_bytes, duration_ms: $duration_ms}' \
   > "$OUT"
 cat "$TMP_BODY" >> "$OUT"
 
 # One-line summary on stdout — the skill's web app reads this directly
 # and pipes it to the agent so the hippocampus prompt can quote real
 # numbers without re-parsing the JSONL header.
-echo "scan: window=$WINDOW found=$SESSIONS_FOUND scanned=$SESSIONS_SCANNED skipped=$SKIPPED_EMPTY bytes=$BYTES_TOTAL ms=$DURATION_MS out=$OUT"
+echo "scan: window=$WINDOW found=$SESSIONS_FOUND scanned=$SESSIONS_SCANNED skipped=$SKIPPED_EMPTY transcript_bytes=$TRANSCRIPT_BYTES ms=$DURATION_MS out=$OUT"
