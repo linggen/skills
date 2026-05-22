@@ -286,10 +286,11 @@ mode's references.
 
 **Chat mode is the default.** When in doubt, you are in chat mode.
 
-## Slash commands — daemon passthrough + `dream`
+## Slash commands — daemon passthrough + `scan` + `dream`
 
-`/shared-memory <verb>` is the primary surface. Verbs map 1:1 to
-daemon endpoints, with `dream` as the one judgment-bearing pass:
+`/shared-memory <verb>` is the primary surface. Most verbs map 1:1 to
+daemon endpoints; `scan` and `dream` are the two memory-consolidation
+passes (split since v0.7 — see the design split).
 
 | Verb | Action |
 |:---|:---|
@@ -298,7 +299,8 @@ daemon endpoints, with `dream` as the one judgment-bearing pass:
 | `list [--type ...] [--tier ...] [--limit N]` | Paginated listing. |
 | `delete <id>` | Remove a specific row by id. |
 | `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
-| `dream` | Per-host wake-encode: scan host's own session files → script-extract → host-LLM judge/write → consolidate + evict. User-invoked (the user is the scheduler on hosts with no mission system). See `~/.linggen/skills/shared-memory/references/dream-flow.md`. |
+| `scan [today\|7d\|30d]` | **Script-only.** Runs `scripts/scan.sh`: collects host session files for the window, denoises + secret-filters each transcript, writes `~/.linggen/memory/.scan-output.jsonl`. **Zero LLM cost.** Output is the candidate set for the next `dream` pass. |
+| `dream` | **LLM judge.** Reads `.scan-output.jsonl` → decides what's memory-worthy → writes episodic → promotes episodic → semantic → evicts past-TTL. Also called *hippocampus* in the dashboard. See `references/dream-flow.md`. |
 
 ### Chat-mode rules — do NOT leak dashboard language
 
