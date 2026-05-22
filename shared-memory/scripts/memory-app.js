@@ -28,7 +28,7 @@ substitute words (it says "your memory assistant inside the memory skill", not "
     Hi! I'm Ling, your personal memory assistant inside the memory skill. Let me check what's already in memory — one moment...
 
 (B) In the same turn, immediately after (A), issue these tool calls IN PARALLEL:
-    • Read ~/.linggen/skills/ling-mem/references/dashboard.md   (MANDATORY — has the exact widget JSON shapes you need for (C); without it the page renders broken)
+    • Read ~/.linggen/skills/shared-memory/references/dashboard.md   (MANDATORY — has the exact widget JSON shapes you need for (C); without it the page renders broken)
     • Read ~/.linggen/memory/.dream-state.json                   (missing file = never scanned)
     • Memory_query({verb: "list", type: T}) for each type: fact, preference, decision, tried, fixed, learned, built (7 calls)
 
@@ -49,6 +49,33 @@ const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
 let chat = null;
 
+// Sessions iframe bridge (mirrors pulse-app.js setupSessionsIframe).
+// Sidebar is Linggen's BareSessions React component loaded via
+// `<iframe src="/sessions?skill=ling-mem&active=<sid>">`. We only point
+// the iframe and listen for select / create postMessages.
+function setupSessionsIframe(activeSid) {
+  const ifr = document.getElementById('sessions-iframe');
+  if (!ifr) return;
+  const sp = new URLSearchParams({ skill: SKILL_NAME });
+  if (activeSid) sp.set('active', activeSid);
+  ifr.src = `/sessions?${sp.toString()}`;
+}
+
+function handleSessionsMessage(e) {
+  if (e.data?.type !== 'linggen-skill-event') return;
+  const sid = e.data.payload?.sessionId;
+  if (!sid) return;
+  if (e.data.event === 'session_select' || e.data.event === 'session_create') {
+    // Memory's dashboard greeting runs per session; switch by URL so
+    // chat-bridge re-mounts on the new session.
+    const url = new URL(window.location.href);
+    url.searchParams.set('session', sid);
+    if (url.toString() !== window.location.href) {
+      window.location.href = url.toString();
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   if (!modelId) {
     try {
@@ -57,6 +84,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { /* ignore */ }
   }
   const existingSession = params.get('session') || '';
+  setupSessionsIframe(existingSession || null);
+  window.addEventListener('message', handleSessionsMessage);
   await mountAndStart(existingSession || null);
 });
 
@@ -64,7 +93,7 @@ async function mountAndStart(sessionId) {
   const chatPanel = document.getElementById('chat-panel');
   const mountOpts = {
     skillName: SKILL_NAME,
-    agentId: 'ling',
+    agentId: 'ling-mem',
     modelId,
     title: 'Memory',
     onSessionCreated: (sid) => {

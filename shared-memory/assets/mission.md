@@ -36,8 +36,9 @@ allowed-tools:
   - Memory_query
   - Memory_write
 
-# Admin on ~/.linggen (covers memory/, skills/ling-mem/scripts/, sessions/,
-# missions/dream/) plus ~/.claude/projects for read-only session scans.
+# Admin on ~/.linggen (covers memory/, skills/shared-memory/scripts/,
+# sessions/, missions/dream/) plus ~/.claude/projects for read-only
+# session scans.
 permission:
   mode: admin
   paths:
@@ -65,17 +66,17 @@ Before any extraction work, **Read these two reference files** — they
 are the canonical rules for save decisions and the scan protocol. Do
 not duplicate or paraphrase their content; just follow them.
 
-1. `~/.linggen/skills/ling-mem/references/routing-rules.md` — durability
-   test, what's worth saving, what NOT to save, mechanical-vs-semantic
-   maintenance split, target routing (`identity` / `style` / `lancedb`,
-   or drop). Memory does not write to project files.
-2. `~/.linggen/skills/ling-mem/references/scan-flow.md` — the five-phase
-   protocol (Phase 1 collect → Phase 5 report), Task call shape,
-   per-target write rules.
+1. `~/.linggen/skills/shared-memory/references/routing-rules.md` —
+   durability test, what's worth saving, what NOT to save, mechanical-
+   vs-semantic maintenance split, target routing (`identity` / `style` /
+   `lancedb`, or drop). Memory does not write to project files.
+2. `~/.linggen/skills/shared-memory/references/dream-flow.md` — the
+   five-phase protocol (Phase 1 collect → Phase 5 report), Task call
+   shape, per-target write rules.
 
 ## Your job tonight
 
-Apply the protocol in `scan-flow.md` end-to-end:
+Apply the protocol in `dream-flow.md` end-to-end:
 
 1. **Phase 1** — read `$MISSION_OUTPUT_DIR/manifest.ndjson` (already
    produced by `scripts/collect.sh`). Filter empty sessions
@@ -100,8 +101,8 @@ Apply the protocol in `scan-flow.md` end-to-end:
    counters defined in `dream-flow.md` Phase 4.
 
 6. **Phase 5** — emit a terse markdown report as your final agent
-   message. Use the headless format described in `scan-flow.md` Phase 5
-   (no `PageUpdate`).
+   message. Use the headless format described in `dream-flow.md` Phase
+   5 (no `PageUpdate`).
 
 If the manifest is empty or every line is filtered, stop after Phase 4
 with all counters at 0 and emit a one-line report.
