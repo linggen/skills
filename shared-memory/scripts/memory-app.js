@@ -104,6 +104,7 @@ async function mountAndStart(sessionId) {
   // decides what to do based on SKILL.md. JS knows nothing about ranges,
   // scans, or extraction.
   window._chatSend = (text) => { if (chat) chat.send(text); };
+  setupActionBar();
 
   if (sessionId && tryRestoreCached(sessionId)) {
     // Resumed session with a cached page — don't re-boot the agent.
@@ -272,6 +273,32 @@ function daysSince(iso) {
   return (Date.now() - new Date(iso).getTime()) / 86400000;
 }
 
+// ── Top action bar wiring ──
+//
+// The buttons in memory.html's header send plain chat messages — the
+// agent parses them per BOOT_PROMPT and runs the corresponding action.
+// Period is on a sibling <select>. After scan / hippocampus, the agent
+// emits a PageUpdate with the run report; tier-counts in top_bar
+// refresh automatically because the daemon's count endpoint runs after
+// every PageUpdate (see handleContentBlock).
+
+function setupActionBar() {
+  const scanBtn = document.getElementById('scan-btn');
+  const dreamBtn = document.getElementById('dream-btn');
+  const periodSel = document.getElementById('scan-period');
+  if (!scanBtn || !dreamBtn) return;
+
+  scanBtn.addEventListener('click', () => {
+    const p = periodSel?.value || 'today';
+    const label = p === 'today' ? 'today' : (p === '7d' ? 'this week' : 'this month');
+    window._chatSend(`Scan ${label}`);
+  });
+
+  dreamBtn.addEventListener('click', () => {
+    window._chatSend('/shared-memory dream');
+  });
+}
+
 // ── PageUpdate ingestion ──
 
 function handleContentBlock(payload) {
@@ -286,6 +313,11 @@ function handleContentBlock(payload) {
     if (Object.keys(partial).length === 0) return;
     applyPageUpdate(partial);
     cacheCurrentPage();
+    // After any agent-emitted PageUpdate the row totals may have moved
+    // (hippocampus writes + promotes + evicts). Re-fetch the counts so
+    // the top_bar reflects post-action state. Best-effort; failures stay
+    // silent.
+    refreshTierCounts().catch(() => {});
   } catch (e) {
     console.warn('[memory] failed to parse PageUpdate args', e);
   }
@@ -298,6 +330,7 @@ function handleLegacyPageBlock(text) {
   if (!page) return;
   applyPageUpdate(page);
   cacheCurrentPage();
+  refreshTierCounts().catch(() => {});
 }
 
 // ── Cache ──

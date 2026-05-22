@@ -99,15 +99,96 @@
   margin-top: 2px;
 }
 
-/* ── Layout ── */
+/* ── Top action bar — Scan / Hippocampus / Browse ── */
+
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-group {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.action-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 22px 6px 10px;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23888' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.action-group select:focus {
+  outline: none;
+  background-color: var(--bg-hover);
+}
+
+.action-group .action-btn {
+  border: 0;
+  border-radius: 0;
+}
+
+.action-btn {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.action-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+/* ── Layout — 3-col grid, mirrors Pulse (sessions / view / chat) ── */
 
 .doctor-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 240px 1fr 480px;
   height: calc(100vh - 48px);
 }
 
+.sidebar {
+  border-right: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.sessions-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
 .view-panel {
-  flex: 1;
   overflow-y: auto;
   padding: 16px;
   display: flex;
@@ -116,8 +197,6 @@
 }
 
 .chat-panel {
-  width: 480px;
-  flex-shrink: 0;
   height: 100%;
   overflow: hidden;
   border-left: 1px solid var(--border);
