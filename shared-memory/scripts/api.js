@@ -102,6 +102,24 @@ export async function readJsonFile(path, fallback = null) {
   try { return JSON.parse(txt); } catch { return fallback; }
 }
 
+// Write a JSON file via /api/bash. Creates parent dirs. Best-effort —
+// quota-equivalent (e.g. disk-full) failures surface as a rejected
+// promise so callers can `.catch(() => {})` and move on.
+export async function writeJsonFile(path, value) {
+  const p = `$(eval echo ${JSON.stringify(path)})`;
+  const json = JSON.stringify(value);
+  // Base64 the payload to keep arbitrary content (quotes, backticks,
+  // newlines) out of the shell command surface.
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const cmd = `f=${p}; mkdir -p "$(dirname "$f")" && printf '%s' ${JSON.stringify(b64)} | base64 --decode > "$f"`;
+  const res = await fetch(`${API_BASE}/api/bash`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ command: cmd }),
+  });
+  if (!res.ok) throw new Error(`writeJsonFile ${path}: ${res.status}`);
+}
+
 // Read the first line (the header object) of an NDJSON file.
 export async function readJsonlHeader(path, fallback = null) {
   const p = expandPath(path);

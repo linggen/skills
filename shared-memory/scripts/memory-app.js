@@ -22,6 +22,7 @@ import {
   fetchMemoryCount,
   readJsonFile,
   readJsonlHeader,
+  writeJsonFile,
 } from './api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 
@@ -106,7 +107,7 @@ async function mountAndStart(sessionId) {
   window._chatSend = (text) => { if (chat) chat.send(text); };
   setupActionBar();
 
-  if (sessionId && tryRestoreCached(sessionId)) {
+  if (sessionId && await tryRestoreCached(sessionId)) {
     // Resumed session with a cached page — don't re-boot the agent.
     // The cached page comes back via tryRestoreCached; tier counts
     // refresh below so the user sees current numbers even on resume.
@@ -334,28 +335,37 @@ function handleLegacyPageBlock(text) {
 }
 
 // ── Cache ──
+//
+// Per-session page state lives on disk at
+// `~/.linggen/skills/shared-memory/data/<sid>/page.json`. Mirrors
+// Pulse's pattern so a session opened from a different browser /
+// remote-access client sees the same cached widgets. Switched from
+// browser localStorage in Phase 6 of the rebuild.
 
 function currentSessionId() {
   return new URLSearchParams(window.location.search).get('session') || '';
 }
 
+function pageCachePath(sid) {
+  return `~/.linggen/skills/shared-memory/data/${sid}/page.json`;
+}
+
+// Fire-and-forget — callers don't await. Failures swallowed so a
+// slow disk write never blocks a render.
 function cacheCurrentPage() {
   const sid = currentSessionId();
   if (!sid) return;
-  try {
-    localStorage.setItem(`memory-page:${sid}`, JSON.stringify(getCurrentPage()));
-  } catch { /* quota */ }
+  writeJsonFile(pageCachePath(sid), getCurrentPage()).catch(() => {});
 }
 
-function tryRestoreCached(sessionId) {
-  try {
-    const cached = localStorage.getItem(`memory-page:${sessionId}`);
-    if (!cached) return false;
-    const page = JSON.parse(cached);
-    if (!(page.top_bar?.length || page.body?.length)) return false;
-    restorePage(page);
-    return true;
-  } catch {
-    return false;
-  }
+// Async — callers must `await tryRestoreCached(sid)`. Returns true if
+// a non-empty cached page was restored, false otherwise (so the
+// caller knows whether to paint the on-open dashboard from scratch).
+async function tryRestoreCached(sessionId) {
+  if (!sessionId) return false;
+  const page = await readJsonFile(pageCachePath(sessionId)).catch(() => null);
+  if (!page) return false;
+  if (!(page.top_bar?.length || page.body?.length)) return false;
+  restorePage(page);
+  return true;
 }
