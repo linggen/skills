@@ -96,8 +96,8 @@ Apply the protocol in `scan-flow.md` end-to-end:
    no contradiction resolution, no generalizations across rows. Cap at
    ~10 write calls per turn; split bigger merges across turns.
 
-5. **Phase 4** — write `~/.linggen/memory/.scan-state.json` with the
-   counters defined in `scan-flow.md` Phase 4.
+5. **Phase 4** — write `~/.linggen/memory/.dream-state.json` with the
+   counters defined in `dream-flow.md` Phase 4.
 
 6. **Phase 5** — emit a terse markdown report as your final agent
    message. Use the headless format described in `scan-flow.md` Phase 5

@@ -29,7 +29,7 @@ substitute words (it says "your memory assistant inside the memory skill", not "
 
 (B) In the same turn, immediately after (A), issue these tool calls IN PARALLEL:
     • Read ~/.linggen/skills/ling-mem/references/dashboard.md   (MANDATORY — has the exact widget JSON shapes you need for (C); without it the page renders broken)
-    • Read ~/.linggen/memory/.scan-state.json                    (missing file = never scanned)
+    • Read ~/.linggen/memory/.dream-state.json                   (missing file = never scanned)
     • Memory_query({verb: "list", type: T}) for each type: fact, preference, decision, tried, fixed, learned, built (7 calls)
 
 (C) Still the same turn, once (B) returns: call PageUpdate ONCE with the

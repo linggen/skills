@@ -463,7 +463,7 @@ function renderActionCards(w) {
 //       { "label": "Merge & write candidates",    "status": "active",
 //         "detail": "3 of 12",
 //         "sub": "Memory_query parallel · writing + / ~ / −" },
-//       { "label": "Write .scan-state.json",      "status": "pending" }
+//       { "label": "Write .dream-state.json",     "status": "pending" }
 //     ],
 //     "footer": "elapsed 47s · ≈ 1m 30s remaining" }
 //
