@@ -2,8 +2,9 @@
 name: shared-memory
 description: >-
   Durable memory across sessions — a model of who the user is, not a log
-  of what was done. Two-tier store (core + long-term) via the `ling-mem`
-  daemon. Same semantics in Linggen, Claude Code, Codex, and OpenClaw.
+  of what was done. Three-tier store (core + long-term + episodic
+  staging) via the `ling-mem` daemon. Same semantics in Linggen, Claude
+  Code, Codex, and OpenClaw.
 license: Apache-2.0
 homepage: https://linggen.dev
 allowed-tools:
@@ -112,18 +113,17 @@ raw output includes 1024-dim embedding floats (Qwen3-Embedding-0.6B) that blow u
 ling-mem search "node 22 quirk" --limit 5 --format json | jq -c 'del(.vector)'
 ```
 
-## The two tiers
+## The three tiers
 
 | Tier | Storage | When |
 |:---|:---|:---|
 | **Core** | Rows with `tier=core` in the `semantic` table | Narrow universals about the **person** — name, role, location, timezone, languages, pets / family. Always-loaded set; the host injects them at session start. Keep tight. |
 | **Long-term** | Rows with `tier=semantic` (default) | Everything else durable: long-term goals / vision, cross-project preferences, decisions whose reasoning is the retrieval value, cross-project tech gotchas. Retrieved on demand. |
+| **Episodic** | The `episodic` staging table | Per-session encoder writes here pre-promotion. The `dream` mission promotes-or-deletes past-TTL rows. Invisible to the live chat surface; reachable via `--tier episodic` for audit / debugging. |
 
-Both tiers live in the same `~/.linggen/memory/memory.lancedb/`
-`semantic` table — only the `tier` column differs. There is also an
-`episodic` staging table where the `dream` consolidator promotes-or-
-deletes recently-encoded rows; that table is invisible to the user
-chat surface.
+Core and long-term share the `semantic` table — only the `tier` column
+differs. Episodic lives in its own table at
+`~/.linggen/memory/memory.lancedb/episodic.lance`.
 
 **Write the tier explicitly when adding to core:**
 
