@@ -1,49 +1,42 @@
 // Memory App — thin client.
 //
-// JS responsibilities end here:
-//   1. Mount the chat panel.
-//   2. On first open of a new session, send a [BOOT] hidden prompt.
-//      On session resume, restore cached page state and skip the prompt.
-//   3. Render PageUpdate events from the agent.
-//   4. Forward widget button clicks as plain user messages.
+// JS responsibilities:
+//   1. Mount the sessions iframe (sidebar) and chat panel.
+//   2. On open, paint the dashboard deterministically from disk + the
+//      ling-mem daemon's count endpoint. No LLM round-trip required.
+//      The agent stays passive until the user clicks Scan / Hippocampus
+//      or types a chat question.
+//   3. Tier-count cards live in top_bar so they persist across any
+//      PageUpdate the agent emits later (action reports replace body
+//      only).
+//   4. Render PageUpdate events from the agent (action reports).
+//   5. Forward widget button clicks as plain user messages.
 //
-// Everything else — greeting, memory fetch, scan orchestration, layout,
-// extraction, reports — lives in the agent (SKILL.md). The agent is the
-// app; JS is the canvas.
+// The agent's BOOT_PROMPT is intentionally tiny: JS owns the on-open
+// render, so the agent's only job at boot is to be ready in the chat
+// panel. Everything heavy moves to the click-driven scan / hippocampus
+// flows (SKILL.md slash commands).
 
-import { fetchDefaultModel } from './api.js';
+import {
+  fetchDefaultModel,
+  fetchMemoryCount,
+  readJsonFile,
+  readJsonlHeader,
+} from './api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 
 const SKILL_NAME = 'ling-mem';
 
-const BOOT_PROMPT = `The user just opened the memory dashboard. You are now in DASHBOARD MODE — the State 1 flow described in references/dashboard.md.
+// Tiny boot prompt — the agent waits for user input. JS already drew
+// the dashboard before this lands.
+const BOOT_PROMPT = `You are Ling inside the memory skill. The dashboard is already painted on the user's screen — the tier counts, greeting, and CTA buttons came from JS reading the ling-mem daemon directly. Don't re-fetch them.
 
-CRITICAL: A, B, C below all happen in ONE SINGLE ASSISTANT TURN. Do NOT end
-your turn between them. Do NOT wait for user input. After streaming A, you
-MUST immediately continue to B's tool calls in the same response.
+Stay silent until the user clicks an action button or types a message. When they do:
+- "Scan ..." (today / week / month) → run \`Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>\`, then summarize the one-line stdout (sessions found / scanned / candidates) back in chat. Don't write to memory yet — scan is read-only.
+- "/shared-memory dream" or "Run hippocampus" → follow references/dream-flow.md (read .scan-output.jsonl, judge, write, consolidate, evict). Emit a final PageUpdate with the report.
+- Anything else → answer normally, use Memory_query when relevant.
 
-(A) Stream this text VERBATIM as plain chat output — do not paraphrase, do not
-substitute words (it says "your memory assistant inside the memory skill", not "memory agent"):
-
-    Hi! I'm Ling, your personal memory assistant inside the memory skill. Let me check what's already in memory — one moment...
-
-(B) In the same turn, immediately after (A), issue these tool calls IN PARALLEL:
-    • Read ~/.linggen/skills/shared-memory/references/dashboard.md   (MANDATORY — has the exact widget JSON shapes you need for (C); without it the page renders broken)
-    • Read ~/.linggen/memory/.dream-state.json                   (missing file = never scanned)
-    • Memory_query({verb: "list", type: T}) for each type: fact, preference, decision, tried, fixed, learned, built (7 calls)
-
-(C) Still the same turn, once (B) returns: call PageUpdate ONCE with the
-    overview body shape from dashboard.md State 1 — greeting widget with
-    ALL action buttons (Scan Today, Week, Month, All, Clean, Browse all,
-    Help), then fact-list(identity) if non-empty, fact-list(style) if
-    non-empty, one fact-list per non-empty RAG type. Use the exact widget
-    JSON shapes from dashboard.md — do not improvise field names. Then
-    stream this short closing line VERBATIM:
-
-    You can click Scan Today to extract new facts from recent sessions, or Browse all to view everything.
-
-Do NOT emit anything to top_bar. Do not repeat the opening greeting line after
-the PageUpdate — the greeting widget already shows stats + actions visually.`;
+Do not emit a PageUpdate on this boot — JS already rendered. Don't repeat the greeting visible on screen.`;
 
 const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
@@ -114,30 +107,169 @@ async function mountAndStart(sessionId) {
 
   if (sessionId && tryRestoreCached(sessionId)) {
     // Resumed session with a cached page — don't re-boot the agent.
+    // The cached page comes back via tryRestoreCached; tier counts
+    // refresh below so the user sees current numbers even on resume.
+    refreshTierCounts().catch(() => {});
     return;
   }
 
-  // Paint a placeholder in the left panel while we wait for the agent's
-  // first PageUpdate. Without this the page stays blank for the full LLM
-  // round-trip (seconds to tens of seconds).
-  applyPageUpdate({
-    body: [{
-      type: 'progress',
-      title: 'Starting...',
-      steps: [{ label: 'Connecting to memory', status: 'active' }],
-    }],
-  });
+  // JS-driven first paint. No LLM round-trip. The agent's boot prompt
+  // runs in the background and never touches top_bar / body — JS owns
+  // both until the user clicks an action.
+  await paintDashboard();
 
-  // WebRTC data-channel setup runs AFTER the iframe's `load` event — the
-  // console shows `[WebRTC] connected` only seconds after mount resolves.
-  // Sending a hidden message before the channel is up gets silently
-  // dropped ("No messages for ling" with nothing on the wire). 1.5s is
-  // the pragmatic wait that matches the old working flow; a proper fix
-  // would be a `ready` handshake from the embed iframe, but that's a
-  // cross-skill change to chat-bridge.
+  // WebRTC data-channel setup runs AFTER the iframe's `load` event;
+  // sending the boot prompt before the channel is up gets silently
+  // dropped. 1.5s matches the working flow used historically.
   setTimeout(() => {
     if (chat) chat.sendHidden(BOOT_PROMPT);
   }, 1500);
+}
+
+// ── On-open dashboard ──
+//
+// Reads three count endpoints + .dream-state.json in parallel, then
+// paints a deterministic dashboard. The greeting line + primary CTA
+// are rule-picked from state — no LLM required for the first render.
+// Tier counts go to top_bar so the agent's later action-result
+// PageUpdates (body-only) don't blow them away.
+
+async function paintDashboard() {
+  let coreC, semC, epC, dream;
+  try {
+    [coreC, semC, epC, dream] = await Promise.all([
+      fetchMemoryCount({ tier: 'core' }),
+      fetchMemoryCount({ tier: 'semantic' }),
+      fetchMemoryCount({ episodic: true }),
+      readJsonFile(`${homeDir()}/.linggen/memory/.dream-state.json`),
+    ]);
+  } catch (e) {
+    console.warn('[memory] paintDashboard fetch failed', e);
+    coreC = { count: 0 };
+    semC = { count: 0 };
+    epC = { count: 0 };
+    dream = null;
+  }
+  const scanHdr = await readJsonlHeader(`${homeDir()}/.linggen/memory/.scan-output.jsonl`).catch(() => null);
+  const summary = { coreC, semC, epC, dream, scanHdr };
+  const greeting = pickGreeting(summary);
+
+  applyPageUpdate({
+    top_bar: buildTierCards(summary),
+    body: [greeting],
+    footer: buildFooter(summary),
+  });
+  cacheCurrentPage();
+}
+
+async function refreshTierCounts() {
+  const [coreC, semC, epC] = await Promise.all([
+    fetchMemoryCount({ tier: 'core' }),
+    fetchMemoryCount({ tier: 'semantic' }),
+    fetchMemoryCount({ episodic: true }),
+  ]);
+  // Top-bar only — body stays as whatever the agent (or cache) put there.
+  applyPageUpdate({
+    top_bar: buildTierCards({ coreC, semC, epC }),
+  });
+}
+
+function homeDir() {
+  // The skill's cwd is `~/.linggen` per SKILL.md, and the /api/bash
+  // proxy expands `~` to $HOME. Just hard-code the literal here so
+  // command strings stay readable.
+  return '~';
+}
+
+function buildTierCards({ coreC, semC, epC }) {
+  return [
+    cardWidget('CORE', coreC, null),
+    cardWidget('SEMANTIC', semC, null),
+    cardWidget('EPISODIC', epC, epC?.count > 50 ? 'amber' : null),
+  ];
+}
+
+function cardWidget(label, c, alertColor) {
+  const value = (c && typeof c.count === 'number') ? c.count : '—';
+  const sub = c?.latest_created_at ? `latest ${ageOf(c.latest_created_at)}` : '';
+  return { data: { label, value, sub, color: alertColor } };
+}
+
+function buildFooter({ dream, scanHdr }) {
+  const parts = [];
+  if (scanHdr?.finished_at) {
+    parts.push(`scan ${ageOf(scanHdr.finished_at)} · ${scanHdr.sessions_scanned ?? 0} sessions`);
+  } else {
+    parts.push('scan: never');
+  }
+  if (dream?.last_run_at) {
+    parts.push(`hippocampus ${ageOf(dream.last_run_at)}`);
+  } else {
+    parts.push('hippocampus: never');
+  }
+  return { text: parts.join('   ·   ') };
+}
+
+function pickGreeting({ coreC, semC, epC, dream, scanHdr }) {
+  const totalRows = (coreC?.count || 0) + (semC?.count || 0) + (epC?.count || 0);
+  const lastScan = scanHdr?.finished_at;
+  const lastHippo = dream?.last_run_at;
+  const epCount = epC?.count || 0;
+  const candidatesPending = scanHdr && (!lastHippo || new Date(scanHdr.finished_at) > new Date(lastHippo))
+    ? scanHdr.sessions_scanned || 0
+    : 0;
+
+  let title, primary;
+  if (totalRows === 0 && !lastScan) {
+    title = "Welcome — your memory's empty. Run Scan to read recent sessions.";
+    primary = { label: 'Scan today', icon: '🔍', message: 'Scan today', kind: 'primary' };
+  } else if (candidatesPending > 0) {
+    title = `${candidatesPending} sessions waiting to be reviewed. Run hippocampus to consolidate.`;
+    primary = { label: 'Run hippocampus', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
+  } else if (lastScan && daysSince(lastScan) >= 1) {
+    title = `Last scan ${ageOf(lastScan)}. Pull in newer sessions?`;
+    primary = { label: 'Scan today', icon: '🔍', message: 'Scan today', kind: 'primary' };
+  } else if (epCount > 50) {
+    title = `Staging is filling up — ${epCount} episodic rows. Time for a hippocampus pass.`;
+    primary = { label: 'Run hippocampus', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
+  } else {
+    title = `Memory's up to date — ${totalRows} rows across all tiers.`;
+    primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };
+  }
+
+  return {
+    type: 'greeting',
+    icon: '🧠',
+    title,
+    stats: 'Scan extracts denoised transcripts (script, free). Hippocampus judges them → memory.',
+    actions: [
+      primary,
+      { label: 'Scan today', icon: '🔍', message: 'Scan today' },
+      { label: 'Scan week', message: 'Scan this week' },
+      { label: 'Hippocampus', icon: '🧠', message: '/shared-memory dream' },
+      { label: 'Browse ↗', href: 'http://127.0.0.1:9888' },
+    ],
+  };
+}
+
+function ageOf(iso) {
+  if (!iso) return '';
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!isFinite(ms) || ms < 0) return '';
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}d ago`;
+  return `${Math.floor(d / 30)}mo ago`;
+}
+
+function daysSince(iso) {
+  if (!iso) return Infinity;
+  return (Date.now() - new Date(iso).getTime()) / 86400000;
 }
 
 // ── PageUpdate ingestion ──
