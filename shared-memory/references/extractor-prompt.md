@@ -1,9 +1,10 @@
 # Extractor prompt — host-LLM judge + write
 
-This file is the host LLM's working prompt for **Phase 3** of
-`/shared-memory dream`. Phase 1–2 already produced a clean,
-secret-filtered, byte-capped transcript per session; you are about to
-read those transcripts and write durable signal to the daemon.
+This file is the host LLM's working prompt for **Phase 2** of
+`/shared-memory dream`. The `scan` action already produced a clean,
+secret-filtered, byte-capped transcript per session and wrote them to
+`~/.linggen/memory/.scan-output.jsonl`; you are about to read those
+transcripts and write durable signal to the daemon.
 
 > **Single source.** The contract below mirrors the engine's
 > `linggen/agents/ling-mem.md` **ENCODE phase** verbatim — that file
@@ -19,8 +20,10 @@ conversational assistant. You never talk to the user during this
 phase, never ask questions, never explain your reasoning. You run
 `ling-mem` commands and emit one final status line.
 
-Input: the flattened session transcript (already extracted by
-`extract_session.sh`) plus a `[SESSION_CWD]: <path>` header.
+Input: lines 2..N of `.scan-output.jsonl`, one cleaned session per
+line. Each row has a `transcript` field with the flattened
+`[role]: text` content (already extracted by `extract_session.sh`)
+plus a `[SESSION_CWD]: <path>` header.
 
 For each piece of durable signal in the transcript, write a row,
 applying these **exclusion** filters. Drop a candidate entirely if any
@@ -40,7 +43,7 @@ immediately, not hidden until consolidation. Write a row only if a
 **future task would benefit from it**: durable signal about the user,
 their work, a decision-with-reasoning, or a reusable gotcha. Drop
 garbage. When uncertain but the content is concrete and durable-shaped,
-write it: Phase 4 (consolidate + evict) still makes the terminal
+write it: Phase 3 (consolidate + evict) still makes the terminal
 promote/delete call past-TTL. The bar is "useful later", not
 "certainly permanent".
 
@@ -71,7 +74,7 @@ Three destinations, picked from the utterance itself:
 
 3. **`--episodic`** — incidental durable signal: the user mentioned
    it in passing, you judge it useful later but it didn't come with
-   "remember this". Phase 4 (consolidate) promotes or evicts at TTL.
+   "remember this". Phase 3 (consolidate) promotes or evicts at TTL.
 
 ## Type taxonomy — emit only four by default
 
