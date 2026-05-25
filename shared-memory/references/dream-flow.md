@@ -82,11 +82,24 @@ here, not the binary's.
 ## Phase 3 — Consolidate + evict (same back-half as the Linggen dream mission)
 
 For each past-TTL episodic row, make **one terminal decision** — there
-is no "leave it" in episodic:
+is no "leave it" in episodic.
+
+**TTL is user-configurable** via the daemon's `/api/config` endpoint
+(defaults to 7 days; dashboard gear icon at `http://127.0.0.1:9888/`
+edits it). Read it at the start of Phase 3 so every host honors the
+same value:
 
 ```bash
-ling-mem list --episodic --older-than <TTL> --format json | jq -c 'del(.vector)'
+TTL_DAYS=$(curl -s http://127.0.0.1:9888/api/config 2>/dev/null \
+           | jq -r '.data.episodic_ttl_days // 7')
+CUTOFF=$(date -u -v-${TTL_DAYS}d +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null \
+        || date -u -d "${TTL_DAYS} days ago" +"%Y-%m-%dT%H:%M:%SZ")
+ling-mem list --episodic --until "$CUTOFF" --format json | jq -c 'del(.vector)'
 ```
+
+Headless override (no daemon reachable): `LING_MEM_EPISODIC_TTL_DAYS=30`
+in the environment before calling `/shared-memory dream` short-circuits
+the HTTP read. Falls back to 7 if neither source is available.
 
 - **Promote** (durable user biography, cross-project preference,
   decision-with-reasoning, re-hit gotcha):
