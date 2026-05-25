@@ -52,7 +52,7 @@ HOME_DIR="${HOME:-$(eval echo ~)}"
 CC_DIR="${HOME_DIR}/.claude/projects"
 CODEX_DIR="${HOME_DIR}/.codex/sessions"
 CODEX_ARCHIVE="${HOME_DIR}/.codex/archived_sessions"
-OPENCLAW_DIR="${HOME_DIR}/.openclaw/logs"
+OPENCLAW_DIR="${HOME_DIR}/.openclaw/agents"
 LING_DIR="${HOME_DIR}/.linggen/sessions"
 
 if ! command -v jq &>/dev/null; then
@@ -110,9 +110,9 @@ count_user_turns_cc() {
 }
 
 count_user_turns_codex() {
-  # Codex rollout: `record_type == "ResponseItem"` with role=="user" and a text
-  # content block; tool-result entries don't count.
-  jq -s '[.[] | select(.record_type == "ResponseItem"
+  # Codex rollout: `type == "response_item"` with payload.role=="user" and a
+  # text content block; tool-result entries don't count.
+  jq -s '[.[] | select(.type == "response_item"
                        and (.payload.role // "") == "user")
               | .payload.content
               | if type == "array"
@@ -123,8 +123,11 @@ count_user_turns_codex() {
 }
 
 count_user_turns_openclaw() {
-  # OpenClaw: lines where role == "user".
-  jq -s '[.[] | select((.role // "") == "user")] | length' "$1" 2>/dev/null || echo 0
+  # OpenClaw: lines with `type=="message"` where `.message.role == "user"`.
+  # (Older script looked for top-level `.role`, which never matched the
+  # `agents/<name>/sessions/<uuid>.jsonl` schema — every session returned 0.)
+  jq -s '[.[] | select(.type == "message"
+                       and (.message.role // "") == "user")] | length' "$1" 2>/dev/null || echo 0
 }
 
 count_user_turns_linggen() {
@@ -202,6 +205,9 @@ collect_codex_dir "$CODEX_DIR"
 collect_codex_dir "$CODEX_ARCHIVE"
 
 # ── OpenClaw ─────────────────────────────────────────────────────────
+# Session JSONLs live at ~/.openclaw/agents/<agent>/sessions/<uuid>.jsonl.
+# Skip the companion `<uuid>.trajectory.jsonl` files — those are structured
+# trace events, not chat turns, and have a different schema.
 if [ -d "$OPENCLAW_DIR" ]; then
   while IFS= read -r jsonl_file; do
     [ -f "$jsonl_file" ] || continue
@@ -213,7 +219,7 @@ if [ -d "$OPENCLAW_DIR" ]; then
     bytes=$(file_bytes "$jsonl_file")
     user_turns=$(count_user_turns_openclaw "$jsonl_file")
     emit_manifest "$jsonl_file" "OpenClaw" "$label" "${bytes:-0}" "${user_turns:-0}"
-  done < <(find "$OPENCLAW_DIR" -type f -name '*.jsonl' 2>/dev/null)
+  done < <(find "$OPENCLAW_DIR" -type f -name '*.jsonl' ! -name '*.trajectory.jsonl' 2>/dev/null)
 fi
 
 # ── Linggen (legacy host install) ────────────────────────────────────

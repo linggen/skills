@@ -291,21 +291,23 @@ about the new JS-driven flow + the report shape dream emits.
 
 **Chat mode is the default.** When in doubt, you are in chat mode.
 
-## Slash commands — daemon passthrough + `scan` + `dream`
+## Slash commands — `dream` + `scan` + daemon passthrough
 
-`/shared-memory <verb>` is the primary surface. Most verbs map 1:1 to
-daemon endpoints; `scan` and `dream` are the two memory-consolidation
-passes (split since v0.7 — see the design split).
+`/shared-memory <verb>` is the primary surface. `dream` and `scan` are
+the two memory-consolidation passes (split since v0.7 — see the design
+split); the rest map 1:1 to daemon CRUD endpoints. **`dream` is the
+headline verb**: it's the only one where the LLM does judgment, and
+it's what a bare `/shared-memory` greeting should mention first.
 
 | Verb | Action |
 |:---|:---|
+| `dream` | **LLM judge.** Reads `.scan-output.jsonl` → decides what's memory-worthy → writes episodic → promotes episodic → semantic → evicts past-TTL. Also called *hippocampus* in the dashboard. See `references/dream-flow.md`. |
+| `scan [today\|7d\|30d]` | **Script-only.** Runs `scripts/scan.sh`: collects host session files for the window, denoises + secret-filters each transcript, writes `~/.linggen/memory/.scan-output.jsonl`. **Zero LLM cost.** Output is the candidate set for the next `dream` pass. |
 | `add "<content>" [--type ...] [--tier core] [--context ...]` | Insert a new memory row. Defaults to `--tier semantic`. |
 | `search "<query>" [--limit N] [--context ...]` | Semantic search across `semantic` + `episodic`. |
 | `list [--type ...] [--tier ...] [--limit N]` | Paginated listing. |
 | `delete <id>` | Remove a specific row by id. |
 | `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
-| `scan [today\|7d\|30d]` | **Script-only.** Runs `scripts/scan.sh`: collects host session files for the window, denoises + secret-filters each transcript, writes `~/.linggen/memory/.scan-output.jsonl`. **Zero LLM cost.** Output is the candidate set for the next `dream` pass. |
-| `dream` | **LLM judge.** Reads `.scan-output.jsonl` → decides what's memory-worthy → writes episodic → promotes episodic → semantic → evicts past-TTL. Also called *hippocampus* in the dashboard. See `references/dream-flow.md`. |
 
 ### Chat-mode rules — do NOT leak dashboard language
 

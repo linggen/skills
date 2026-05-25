@@ -133,9 +133,10 @@ emit_cwd_header_cc() {
 }
 
 emit_cwd_header_codex() {
-  # Codex rollout: `cwd` lives on `record_type == "SessionMeta"` rows.
+  # Codex rollout: `cwd` lives on `type == "session_meta"` rows
+  # (under .payload.cwd).
   local session_cwd
-  session_cwd=$(jq -r 'select(.record_type == "SessionMeta") | .payload.cwd // empty' "$FILEPATH" 2>/dev/null \
+  session_cwd=$(jq -r 'select(.type == "session_meta") | .payload.cwd // empty' "$FILEPATH" 2>/dev/null \
     | head -1)
   if [ -n "$session_cwd" ]; then
     echo "[SESSION_CWD]: $session_cwd"
@@ -144,9 +145,9 @@ emit_cwd_header_codex() {
 }
 
 emit_cwd_header_openclaw() {
-  # OpenClaw: probe — try a top-level `cwd`, else any `meta.cwd`.
+  # OpenClaw: `cwd` lives on the opening `type=="session"` line.
   local session_cwd
-  session_cwd=$(jq -r '.cwd // .meta.cwd // empty' "$FILEPATH" 2>/dev/null | head -1)
+  session_cwd=$(jq -r 'select(.type == "session") | .cwd // empty' "$FILEPATH" 2>/dev/null | head -1)
   if [ -n "$session_cwd" ]; then
     echo "[SESSION_CWD]: $session_cwd"
     echo ""
@@ -174,10 +175,11 @@ case "$SOURCE" in
     ;;
   Codex)
     emit_cwd_header_codex
-    # Codex stores user/assistant turns as ResponseItem payloads.
-    # `input_text` is the user's prose; `output_text` is the model's.
+    # Codex stores user/assistant turns as `type == "response_item"` rows;
+    # `payload.role` carries the speaker, `payload.content` is an array of
+    # parts where `input_text` is user prose and `output_text` is the model's.
     jq -r --arg date "$TARGET_DATE" '
-      select(.record_type == "ResponseItem" and ((.timestamp // "") | startswith($date)))
+      select(.type == "response_item" and ((.timestamp // "") | startswith($date)))
       | .payload as $p
       | ($p.role // "") as $role
       | ($p.content // []) as $content
@@ -193,17 +195,18 @@ case "$SOURCE" in
     ;;
   OpenClaw)
     emit_cwd_header_openclaw
-    # OpenClaw probe shape: lines with {role, content, timestamp}.
-    # If `content` is an array, join its `text` fields.
+    # OpenClaw chat lives on `type=="message"` rows with .message.role
+    # and .message.content (the latter is an array of {type, text} parts).
     jq -r --arg date "$TARGET_DATE" '
-      select(((.role // "") | test("^(user|assistant)$"))
+      select(.type == "message"
+             and ((.message.role // "") | test("^(user|assistant)$"))
              and (((.timestamp // "") | tostring) | startswith($date)))
-      | (.role) as $role
-      | (.content // "") as $content
+      | (.message.role) as $role
+      | (.message.content // "") as $content
       | if ($content | type) == "string" then
           $content
         elif ($content | type) == "array" then
-          [.content[] | (.text // "")] | join("\n")
+          [$content[] | (.text // "")] | join("\n")
         else
           ""
         end
