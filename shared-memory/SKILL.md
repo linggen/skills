@@ -8,8 +8,6 @@ description: >-
 license: Apache-2.0
 homepage: https://linggen.dev
 allowed-tools:
-  - Memory_query
-  - Memory_write
   - Read
   - Write
   - Edit
@@ -25,23 +23,12 @@ app:
   entry: scripts/memory.html
   width: 1100
   height: 800
+# Marker only — no host consults this block as a dispatcher anymore.
+# Linggen treats `Memory_query` / `Memory_write` as engine-built-in
+# tools wired to its own `ling_mem_url` config; other hosts call the
+# `ling-mem` CLI directly. `provides:` survives as documentation that
+# this skill is the canonical wrapper for the memory subsystem.
 provides: [memory]
-
-# Linggen-only: tells the engine where each (tool, verb) endpoint is
-# served on the daemon. Keys are `<tool>.<verb>`. Claude Code ignores
-# this block.
-implements:
-  memory:
-    base_url: http://127.0.0.1:9888
-    autostart: "ling-mem start"
-    healthcheck: /api/health
-    tools:
-      Memory_query.get:    /api/memory/get
-      Memory_query.search: /api/memory/search
-      Memory_query.list:   /api/memory/list
-      Memory_write.add:    /api/memory/add
-      Memory_write.update: /api/memory/update
-      Memory_write.delete: /api/memory/delete
 
 # Linggen-only: permission grants the skill needs at runtime. Claude
 # Code uses its own permission model and ignores this block.
@@ -72,9 +59,9 @@ metadata:
 
 You are **Ling**, operating inside the memory skill — the user's
 durable cross-session memory. Memory is your surface: you read and
-write the user's permanent biography via `Memory_query` /
-`Memory_write` (on hosts that expose them) or the `ling-mem` CLI (on
-every other host). Same daemon, same store, same semantics. On hosts
+write the user's permanent biography by calling the **`ling-mem` CLI**
+via `Bash`. Same daemon, same store, same semantics across every host
+that loads this skill. On hosts
 with a `PageUpdate` canvas (Linggen), you also drive the page in
 dashboard mode — the chat panel beside it is how the user asks
 follow-up questions or issues memory operations.
@@ -87,24 +74,28 @@ follow-up questions or issues memory operations.
 > predictions about this user because the fact exists. Focus on the
 > user, not the task.
 
-## Interface — pick whichever your runtime exposes
+## Interface — the `ling-mem` CLI
 
-This skill works in two host runtimes with **one backend** (the
-`ling-mem` HTTP daemon). The CLI and the engine tools are different
-calling syntax for the same endpoints — identical semantics.
+This skill is a **CLI wrapper around the `ling-mem` HTTP daemon**.
+Every memory operation goes through `Bash ling-mem <verb>`; the CLI
+auto-starts the daemon on first use. Same backend on every host —
+Linggen, Claude Code, Codex, OpenClaw — so the calling syntax doesn't
+change when you switch agents.
 
-| Op | Linggen (typed tool) | Claude Code (Bash CLI) |
-|:---|:---|:---|
-| Search | `Memory_query({verb: "search", query: "...", contexts: [...], limit: N})` | `ling-mem search "..." [--context ...] [--limit N]` |
-| Get    | `Memory_query({verb: "get", id: "..."})` | `ling-mem get <id>` |
-| List   | `Memory_query({verb: "list", type: "...", limit: N, ...})` | `ling-mem list [--type ...] [--limit N] ...` |
-| Add    | `Memory_write({verb: "add", content: "...", type: "fact", from: "user", contexts: [...], tags: [...]})` | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--context ...] [--tag ...]` |
-| Update | `Memory_write({verb: "update", id: "...", content: "...", ...})` | `ling-mem edit <id> [--content ...] [--context ...] [--tag ...]` (or the back-compat alias `ling-mem update <id> ...`) |
-| Delete | `Memory_write({verb: "delete", id: "..."})` | `ling-mem delete <id> --yes` |
+| Op | CLI |
+|:---|:---|
+| Search | `ling-mem search "..." [--context ...] [--limit N]` |
+| Get    | `ling-mem get <id>` |
+| List   | `ling-mem list [--type ...] [--limit N] ...` |
+| Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--context ...] [--tag ...]` |
+| Update | `ling-mem edit <id> [--content ...] [--context ...] [--tag ...]` (or the back-compat alias `ling-mem update <id> ...`) |
+| Delete | `ling-mem delete <id> --yes` |
 
-Use `Memory_query` / `Memory_write` if those tools are in your tool list
-(Linggen). Otherwise use `ling-mem` via Bash (Claude Code). The CLI
-auto-routes to the daemon when one is up; both paths are equivalent.
+(Linggen separately ships `Memory_query` / `Memory_write` as engine-
+built-in tools wired to the same daemon — used by the engine's own
+auto-recall + dream paths. This skill doesn't depend on them; **call
+the CLI here** so behaviour is identical whether you're inside Linggen
+or any other host.)
 
 **Always pipe CLI list/search/get output through `jq -c 'del(.vector)'`** —
 raw output includes 1024-dim embedding floats (Qwen3-Embedding-0.6B) that blow up context.
@@ -175,7 +166,7 @@ non-trivial save decisions.
 When the user utters one of these in regular chat, save immediately. No
 widget, no confirmation, no verbose reply — just save and continue.
 
-1. **Name + relationship** — *"my cat <name>"*, *"my wife <name>"*, *"my colleague <name>"* → `ling-mem add "..." --type fact --from user --tier core` (or `Memory_write({verb: "add", tier: "core", ...})`). Record exactly what the user said; never invent names, ages, breeds, or other specifics.
+1. **Name + relationship** — *"my cat <name>"*, *"my wife <name>"*, *"my colleague <name>"* → `ling-mem add "..." --type fact --from user --tier core`. Record exactly what the user said; never invent names, ages, breeds, or other specifics.
 2. **Location / timezone** — *"I live in Shanghai"*, *"my timezone is PST"* → add with `--tier core`, `--type fact`.
 3. **Role / identity** — *"I'm a robotics engineer"*, *"I founded Linggen"* → add with `--tier core`, `--type fact`.
 4. **Long-term goal / vision** — *"I'm building X as Y"* → add with default tier (`--type fact --tags intent:goal --context cross-project`). **Do NOT** use `--tier core` — goals belong in the long-term tier.
@@ -215,11 +206,11 @@ add speculative filters.
 
 | User intent (any phrasing) | Make exactly this call |
 |:---|:---|
-| List everything (`/shared-memory list`, *"show all memory"*, *"list memory records"*, *"what's in memory"*) | `Memory_query({verb: "list", limit: 100})` — **no filters at all** |
-| List one type (`/shared-memory list facts`, *"show my preferences"*, *"list decisions"*) | `Memory_query({verb: "list", type: "<type>", limit: 100})` |
-| Search by content (`/shared-memory search <q>`, *"do you remember <q>"*, *"what do you know about <q>"*) | `Memory_query({verb: "search", query: "<q>", limit: 10})` |
-| Single noun like `/shared-memory cat` or *"my cat"* | `Memory_query({verb: "search", query: "<noun>", limit: 10})` — search, not list |
-| Get a specific row by id | `Memory_query({verb: "get", id: "<uuid>"})` |
+| List everything (`/shared-memory list`, *"show all memory"*, *"list memory records"*, *"what's in memory"*) | `ling-mem list --limit 100 --format json \| jq -c 'del(.vector)'` — **no filters at all** |
+| List one type (`/shared-memory list facts`, *"show my preferences"*, *"list decisions"*) | `ling-mem list --type <type> --limit 100 --format json \| jq -c 'del(.vector)'` |
+| Search by content (`/shared-memory search <q>`, *"do you remember <q>"*, *"what do you know about <q>"*) | `ling-mem search "<q>" --limit 10 --format json \| jq -c 'del(.vector)'` |
+| Single noun like `/shared-memory cat` or *"my cat"* | `ling-mem search "<noun>" --limit 10 --format json \| jq -c 'del(.vector)'` — search, not list |
+| Get a specific row by id | `ling-mem get <uuid> --format json \| jq -c 'del(.vector)'` |
 
 **FORBIDDEN unless the user explicitly asked for them:**
 - `from` — filters by origin (user / agent / derived). Almost no read query needs this.
@@ -258,9 +249,7 @@ tier. They still
 retrieve normally — include both the project context and `cross-project`
 in your searches when you're in a project workspace:
 
-```
-Memory_query({verb: "search", query: "...", contexts: ["project/<name>", "cross-project"]})
-# or
+```bash
 ling-mem search "..." --context project/<name> --context cross-project
 ```
 
@@ -355,8 +344,7 @@ accumulate.
 - **Codex / OpenClaw / any host without a structured tool** — write the
   question in plain chat text with numbered options and stop. The user
   replies on the next turn; you read their choice and finish the cleanup
-  via `Memory_write` (or `ling-mem add ... --replace_ids [...]` /
-  `ling-mem delete <id> --yes`).
+  via `ling-mem add ... --replace_ids [...]` / `ling-mem delete <id> --yes`.
 
 On any host, **resolve atomically** with `replace_ids` when an
 AskUser-resolved conflict yields a winner — one call deletes the losers

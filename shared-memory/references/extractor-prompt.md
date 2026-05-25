@@ -103,8 +103,8 @@ adding each candidate:
    an `ask_user_bridge` wired (engine `tools/mod.rs:348-354`,
    `consolidation.rs:333-337`), so call `AskUser` with the existing
    row, the candidate row, and the resolve options. On the user's pick,
-   apply `Memory_write({verb:"add", content:"<winner>", replace_ids:
-   ["<loser_id>"]})` — one atomic call. **Never silently write both
+   apply `ling-mem add "<winner>" --replace_ids <loser_id>
+   [--replace_ids ...]` — one atomic call. **Never silently write both
    and hope live recall sorts it out later** — that's how drift
    accumulates.
 4. **New / unrelated** → write normally.

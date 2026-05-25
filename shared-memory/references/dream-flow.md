@@ -69,10 +69,9 @@ pointer to engine `agents/ling-mem.md` ENCODE phase). Rules:
   - **`episodic`** — incidental durable signal, single-mention
     candidates, anything you're not yet sure earns long-term shelf
     space. Consolidator (Phase 3) promotes or evicts past-TTL.
-- **Read before write — every row**: `Memory_query({verb: "search",
-  query: "<gist>"})` (or `ling-mem search "<gist>" --format json |
-  jq -c 'del(.vector)'`). If an equivalent value exists, skip. If a
-  contradicting value exists, write anyway — never drop what the
+- **Read before write — every row**: `ling-mem search "<gist>" --format
+  json | jq -c 'del(.vector)'`. If an equivalent value exists, skip.
+  If a contradicting value exists, write anyway — never drop what the
   source said. Don't merge / rewrite / mark-stale.
 
 The binary's `insert_with_dedup` rejects *exact-content* duplicates
@@ -114,11 +113,10 @@ source is available.
 
 - **Promote** (durable user biography, cross-project preference,
   decision-with-reasoning, re-hit gotcha):
-  `Memory_write({verb: "add", content: "<text>", type: "<t>",
-  tier: "semantic"|"core", from: "<from>", contexts: [...]})`,
-  then `Memory_write({verb: "delete", id: "<episodic-id>"})`.
+  `ling-mem add "<text>" --type <t> --from <from> [--tier core] --context <c> [...]`,
+  then `ling-mem delete <episodic-id> --yes`.
 - **Delete** (not worth keeping):
-  `Memory_write({verb: "delete", id: "<episodic-id>"})`.
+  `ling-mem delete <episodic-id> --yes`.
 
 **Search before promote.** For each candidate, search the gist in
 semantic *and* in any other episodic rows you haven't processed yet:
@@ -136,7 +134,7 @@ universal rule; the dream-specific application:
 |:---|:---|:---|
 | Candidate matches an existing semantic row (same meaning) | Skip the promote, **delete the episodic source.** | AskUser ("are these the same?") → act on answer. |
 | Two episodic candidates this pass are dups of each other | Pick the better-phrased one, promote it, delete the other. | AskUser before merging. |
-| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → resolve atomically with `Memory_write({verb:"add", content:"<winner>", replace_ids:["<loser_id>", ...]})`. | Same — always ask. |
+| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → resolve atomically with `ling-mem add "<winner>" --replace_ids <loser_id> [--replace_ids ...]`. | Same — always ask. |
 | Three+ rows on one subject (cluster) | AskUser once with the cluster, pass all loser ids in `replace_ids`. | Same. |
 
 **Asking when the host has no structured AskUser tool:** dream is
@@ -227,7 +225,7 @@ post-PageUpdate via `refreshTierCounts`).
 
 - `<this-engine-session-id>` = the session this dream runs in. Pull
   from your engine context; it's the `source_session` you stamp on
-  each `Memory_write({verb:"add"})` call.
+  each `ling-mem add ... --source-session <id>` call.
 - `<run-started-at>` = the ISO timestamp at the top of Phase 1, in
   full RFC-3339 form. The dashboard accepts both ISO and bare
   `YYYY-MM-DD`.

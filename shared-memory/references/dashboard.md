@@ -66,8 +66,8 @@ search:
 
 | Incoming message pattern | Action |
 |:---|:---|
-| `Delete the <type> fact with id="<id>" and re-render the dashboard. The fact says: "<content>"` | `Memory_write({verb: "delete", id: "<id>"})`. Then re-emit the report (or omit if the dashboard's JS already removed the row visually). |
-| `Update the <type> fact id="<id>" to content: "<new>". Re-render the dashboard.` | `Memory_write({verb: "update", id: "<id>", content: "<new>"})`. |
+| `Delete the <type> fact with id="<id>" and re-render the dashboard. The fact says: "<content>"` | `ling-mem delete <id> --yes`. Then re-emit the report (or omit if the dashboard's JS already removed the row visually). |
+| `Update the <type> fact id="<id>" to content: "<new>". Re-render the dashboard.` | `ling-mem edit <id> --content "<new>"`. |
 
 Don't second-guess: apply the single write and move on.
 

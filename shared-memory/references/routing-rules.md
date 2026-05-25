@@ -176,7 +176,7 @@ When a candidate emerges, route to one of two tiers or drop it.
 | tier | When | Action |
 |:---|:---|:---|
 | `core` | Universal-about-person OR cross-project behavioral rule for the agent | `ling-mem add "..." --tier core --type <fact\|preference> ...` |
-| `semantic` (default) | Cross-project intent / decision / preference / learning | `Memory_write({verb: "add", ...})` or `ling-mem add ...` (omit `--tier`) |
+| `semantic` (default) | Cross-project intent / decision / preference / learning | `ling-mem add "..." --type <type> ...` (omit `--tier`) |
 | (skip) | Project-internal implementation detail / activity / session-arc / meta-feedback | Drop. The agent reads code or user-authored project files when needed. |
 
 Most candidates skip. The core tier grows slowly by design — a noisy
