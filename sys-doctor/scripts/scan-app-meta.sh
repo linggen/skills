@@ -67,9 +67,30 @@ else
   key="${last:0:10}"
 fi
 
-# Size from Spotlight (instant — no bundle walk like du -sh).
+# Size from Spotlight (instant — no bundle walk like du -sh). When the
+# app lives outside the Spotlight index (Chrome web apps under
+# `~/Applications/Chrome Apps.localized/`, anything in a path the user
+# has excluded), `mdls` writes its `"<path>: could not find <path>."`
+# message to STDOUT — not stderr — and exits 0. That means a blunt
+# `-n "$size_bytes"` check passes garbage straight into awk, which
+# coerces it to 0 and renders every such app as `0B`. Require pure
+# digits, and fall back to `du -sk` so non-indexed apps still report a
+# real size (slower per app — typically <50ms — but only for the
+# Spotlight misses, not the common case).
 size_bytes=$(mdls -name kMDItemFSSize -raw "$app" 2>/dev/null)
-if [ -n "$size_bytes" ] && [ "$size_bytes" != "(null)" ]; then
+if ! [[ "$size_bytes" =~ ^[0-9]+$ ]]; then
+  # `-L` follows symlinks so apps installed via brew / conda
+  # (e.g. /Applications/Anaconda-Navigator.app → /usr/local/anaconda3/…)
+  # report their real size instead of the 0-byte symlink itself.
+  kb=$(du -sLk "$app" 2>/dev/null | awk '{print $1}')
+  if [[ "$kb" =~ ^[0-9]+$ ]]; then
+    size_bytes=$((kb * 1024))
+  else
+    size_bytes=""
+  fi
+fi
+
+if [ -n "$size_bytes" ]; then
   size=$(awk -v n="$size_bytes" 'BEGIN{
     if (n >= 1073741824) printf "%.1fG", n/1073741824
     else if (n >= 1048576)   printf "%.0fM", n/1048576
