@@ -156,8 +156,10 @@ plain chat text + numbered options when neither exists.
 ### Hard rules — what extraction must NEVER do
 
 - Never delete a `semantic` row **silently** to resolve a contradiction.
-  Ask first via AskUser; on the user's pick, apply atomically with
-  `replace_ids`. Silent deletion is the floor violation.
+  Ask first via AskUser; on the user's pick, write the winner
+  (`ling-mem add "<winner>" --type ... --from ...`) then delete each
+  loser (`ling-mem delete <id> --yes`). Silent deletion is the floor
+  violation.
 - Never write a contradicting pair as separate atoms hoping live recall
   resolves it later. That's drift accumulation — the cost we're trying
   to stop paying. Ask now.

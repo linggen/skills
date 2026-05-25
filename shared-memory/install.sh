@@ -6,8 +6,8 @@ set -euo pipefail
 # Layout (one canonical bundle, thin per-host SKILL.md stubs):
 #
 #   ~/.linggen/skills/shared-memory/   ← CANONICAL. All references/,
-#                                        scripts/, assets/, hooks/, plus
-#                                        the SKILL.md every host reads.
+#                                        scripts/, hooks/, plus the
+#                                        SKILL.md every host reads.
 #   ~/.claude/skills/shared-memory/SKILL.md      ← copy of canonical
 #   ~/.codex/skills/shared-memory/SKILL.md       ← copy of canonical
 #   ~/.openclaw/skills/shared-memory/SKILL.md    ← copy of canonical
@@ -175,7 +175,6 @@ install_canonical_bundle() {
 
   mkdir -p "$CANONICAL_DIR/scripts" \
            "$CANONICAL_DIR/references" \
-           "$CANONICAL_DIR/assets" \
            "$CANONICAL_DIR/hooks"
 
   install -m 0644 "$SOURCE_DIR/SKILL.md"  "$CANONICAL_DIR/SKILL.md"

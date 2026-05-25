@@ -134,8 +134,8 @@ universal rule; the dream-specific application:
 |:---|:---|:---|
 | Candidate matches an existing semantic row (same meaning) | Skip the promote, **delete the episodic source.** | AskUser ("are these the same?") → act on answer. |
 | Two episodic candidates this pass are dups of each other | Pick the better-phrased one, promote it, delete the other. | AskUser before merging. |
-| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → resolve atomically with `ling-mem add "<winner>" --replace_ids <loser_id> [--replace_ids ...]`. | Same — always ask. |
-| Three+ rows on one subject (cluster) | AskUser once with the cluster, pass all loser ids in `replace_ids`. | Same. |
+| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → on the user's pick, `ling-mem add "<winner>" --type <t> --from <f>` then `ling-mem delete <loser-id> --yes` (write first, then delete — the CLI has no atomic replace verb). | Same — always ask. |
+| Three+ rows on one subject (cluster) | AskUser once with the cluster, then write the winner once and `ling-mem delete <id> --yes` each loser. | Same. |
 
 **Asking when the host has no structured AskUser tool:** dream is
 user-invoked, so the user is reachable. Write the question in plain

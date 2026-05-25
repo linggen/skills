@@ -103,10 +103,13 @@ adding each candidate:
    an `ask_user_bridge` wired (engine `tools/mod.rs:348-354`,
    `consolidation.rs:333-337`), so call `AskUser` with the existing
    row, the candidate row, and the resolve options. On the user's pick,
-   apply `ling-mem add "<winner>" --replace_ids <loser_id>
-   [--replace_ids ...]` — one atomic call. **Never silently write both
-   and hope live recall sorts it out later** — that's how drift
-   accumulates.
+   write the winner then delete each loser:
+   `ling-mem add "<winner>" --type <t> --from <f> [...]` followed by
+   `ling-mem delete <loser-id> --yes` for each loser. (The CLI has no
+   atomic replace verb; write-before-delete is the safe ordering — a
+   concurrent recall either sees the old rows or both, never an empty
+   hole.) **Never silently write both and hope live recall sorts it
+   out later** — that's how drift accumulates.
 4. **New / unrelated** → write normally.
 
 ## Commands
@@ -132,8 +135,9 @@ ling-mem add "<content>" --episodic --type <type> --from <from> [--context <scop
 ## Forbidden — what extraction must NOT do
 
 - Never delete a `semantic` row **without first asking the user**
-  (`AskUser` → `replace_ids` on confirm). Silent deletion is the
-  forbidden action; resolution via AskUser is encouraged.
+  (`AskUser` → on confirm, write the winner then delete the loser).
+  Silent deletion is the forbidden action; resolution via AskUser is
+  encouraged.
 - Never merge two distinct rows into a synthesized story. If two rows
   carry distinct facts (not different phrasings of one fact), append
   both — they're not duplicates.

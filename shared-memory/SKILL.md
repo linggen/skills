@@ -23,25 +23,26 @@ app:
   entry: scripts/memory.html
   width: 1100
   height: 800
-# Marker only — no host consults this block as a dispatcher anymore.
-# Linggen treats `Memory_query` / `Memory_write` as engine-built-in
-# tools wired to its own `ling_mem_url` config; other hosts call the
-# `ling-mem` CLI directly. `provides:` survives as documentation that
-# this skill is the canonical wrapper for the memory subsystem.
-provides: [memory]
-
 # Linggen-only: permission grants the skill needs at runtime. Claude
-# Code uses its own permission model and ignores this block.
+# Code uses its own permission model and ignores this block. The
+# `~/.linggen` write covers the daemon's data dir + this skill's own
+# config; the four read paths are the session stores `scan.sh` walks
+# (one per host — see scripts/collect_sessions.sh).
 permission:
   paths:
     - { path: ~/.linggen, mode: write }
     - { path: ~/.claude/projects, mode: read }
+    - { path: ~/.codex/sessions, mode: read }
+    - { path: ~/.codex/archived_sessions, mode: read }
+    - { path: ~/.openclaw/agents, mode: read }
+    - { path: ~/.linggen/sessions, mode: read }
   warning: >-
     Runs a local HTTP daemon (ling-mem) on 127.0.0.1:9888 that stores
     memory rows in ~/.linggen/memory/memory.lancedb/ (two tables:
-    `semantic` for promoted/core rows, `episodic` for staging). Only
-    reads each host's own session files (~/.claude/projects, ~/.codex,
-    ~/.openclaw); never written to.
+    `semantic` for promoted/core rows, `episodic` for staging). Reads
+    each host's own session files for the `scan` step
+    (~/.claude/projects, ~/.codex/sessions[+archived_sessions],
+    ~/.openclaw/agents, ~/.linggen/sessions); never written to.
 
 # ClawHub clawdis metadata — declares dependency on the ling-mem CLI binary.
 # v0.4.0 will add `install: [{kind: brew, formula: ling-mem, tap: linggen/tap}]`
@@ -344,12 +345,15 @@ accumulate.
 - **Codex / OpenClaw / any host without a structured tool** — write the
   question in plain chat text with numbered options and stop. The user
   replies on the next turn; you read their choice and finish the cleanup
-  via `ling-mem add ... --replace_ids [...]` / `ling-mem delete <id> --yes`.
+  via `ling-mem add "..." --type ...` followed by `ling-mem delete
+  <loser-id> --yes` for each loser.
 
-On any host, **resolve atomically** with `replace_ids` when an
-AskUser-resolved conflict yields a winner — one call deletes the losers
-and adds the winner in the same operation. Never run separate add + delete
-for a resolution (a concurrent recall would see both for a beat).
+When an AskUser-resolved conflict yields a winner: write the winner
+first (`ling-mem add "<winner>" --type <t> --from <f>`), then delete the
+losers (`ling-mem delete <loser-id> --yes`). The CLI doesn't expose an
+atomic replace verb; the two-step ordering (write before delete) keeps
+the worst-case window safe — a concurrent recall either sees the old
+rows or both, never an empty hole on the subject.
 
 ### What "not confident" looks like
 

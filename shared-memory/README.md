@@ -40,8 +40,8 @@ ling-mem delete <id>
 | Host | Integration |
 |:-----|:------------|
 | Claude Code | SKILL.md + a `UserPromptSubmit` hook (`hooks/recall.sh`). Hook auto-injects relevant memories every prompt; agent calls the CLI for ad-hoc lookups. |
-| OpenClaw | Standard SKILL.md skill. Installs to `~/.openclaw/skills/shared-memory/`. Agent shells out via the CLI. |
-| Linggen | Native `Memory_query` / `Memory_write` tools dispatch to a local daemon (HTTP, `127.0.0.1:9888`). Same store, same semantics. |
+| Codex / OpenClaw | Standard SKILL.md skill. Agent shells out via the CLI for every memory operation. |
+| Linggen | This skill is loaded the same way (CLI via `Bash`). Separately, the Linggen engine ships built-in `Memory_query` / `Memory_write` tools wired to the same daemon for its own auto-recall + dream paths — same store, same semantics, no skill round-trip needed inside the engine. |
 | Standalone | Any script shells out: `ling-mem search "query" --format json` |
 
 The auto-detect installer (`install.sh`) places the skill into whichever host runtimes are present (`~/.claude/skills/`, `~/.openclaw/skills/`, `~/.linggen/skills/`).
@@ -59,8 +59,8 @@ Intel Mac: prebuilt binaries not provided. Build from source with `cargo build -
 
 ## What's stored
 
-- Stored: durable signal you (or the agent on your behalf) add via `ling-mem add` or `Memory_write`. Indexed in `~/.linggen/memory/memory.lancedb/` (two tables: `semantic` for promoted core/long-term rows, `episodic` for recently-encoded staging).
-- Not stored: session transcripts, code you don't explicitly save, anything not added through the CLI or `Memory_write` tool.
+- Stored: durable signal you (or the agent on your behalf) add via `ling-mem add` (or, inside the Linggen engine, the equivalent built-in `Memory_write` tool). Indexed in `~/.linggen/memory/memory.lancedb/` (two tables: `semantic` for promoted core/long-term rows, `episodic` for recently-encoded staging).
+- Not stored: session transcripts, code you don't explicitly save, anything not added through the CLI.
 
 ## Links
 
