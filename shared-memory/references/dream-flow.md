@@ -87,13 +87,20 @@ is no "leave it" in episodic.
 **TTL is user-configurable** via the daemon's `/api/config` endpoint
 (defaults to 7 days; dashboard gear icon at `http://127.0.0.1:9888/`
 edits it). Read it once at the start of Phase 3 so every host honors
-the same value, then pass to the CLI's `--older-than` sugar:
+the same value:
 
 ```bash
 TTL_DAYS=$(curl -s http://127.0.0.1:9888/api/config 2>/dev/null \
            | jq -r '.data.episodic_ttl_days // 7')
+
+# Worklist: what's past-TTL, for the LLM to inspect / promote.
 ling-mem list --episodic --older-than "${TTL_DAYS}d" --format json \
   | jq -c 'del(.vector)'
+
+# Bulk-evict past-TTL rows the LLM doesn't promote (this replaces
+# the old `ling-mem evict --before <ts>` verb — same semantics, now
+# the bulk-forget path with a duration filter):
+ling-mem --episodic forget --older-than "${TTL_DAYS}d" --yes
 ```
 
 `--older-than` accepts `<n><unit>` for `s|m|h|d|w`; the CLI computes

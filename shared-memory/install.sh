@@ -42,7 +42,7 @@ REPO="linggen/linggen-memory"
 # unpinned defaults are flagged as a supply-chain weakness by skill
 # scanners and create silent drift between install.sh and the release
 # its checksum verifier expects.
-VERSION="${LING_MEM_VERSION:-v0.7.0}"
+VERSION="${LING_MEM_VERSION:-v0.7.1}"
 
 # Canonical layout — one bundle, on disk under ~/.linggen.
 CANONICAL_DIR="$HOME/.linggen/skills/shared-memory"
