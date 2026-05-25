@@ -280,7 +280,7 @@ mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dream** | Message says `/shared-memory dream`, `Run hippocampus`, or arrives via the engine-driven `dream` mission body on Linggen. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
+| **Dream** | Message says `/shared-memory dream` or `Run hippocampus`. Always user-triggered — there is no cron path; missions are owned by the engine and shipped separately. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
 | **Scan** | Message starts with `Scan today` / `Scan this week` / `Scan this month`. | Run `Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>`. Summarize the one-line stdout (sessions found / scanned / transcript_bytes) back to chat. No memory writes. |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 

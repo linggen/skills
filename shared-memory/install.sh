@@ -186,11 +186,6 @@ install_canonical_bundle() {
     install -m 0644 "$SOURCE_DIR/references/$ref" "$CANONICAL_DIR/references/$ref"
   done
 
-  # Static, skill-bundled Linggen mission (allowed per the
-  # `skills don't generate missions` rule — this is shipped content,
-  # not synthesized from runtime state).
-  install -m 0644 "$SOURCE_DIR/assets/mission.md" "$CANONICAL_DIR/assets/mission.md"
-
   for f in collect.sh collect_sessions.sh extract_session.sh; do
     install -m 0755 "$SOURCE_DIR/scripts/$f" "$CANONICAL_DIR/scripts/$f"
   done
@@ -337,24 +332,16 @@ download_binary() {
 }
 
 # -------------------------------------------------------------------
-# Memory dir + dream mission + telemetry marker
+# Memory dir + telemetry marker
 # -------------------------------------------------------------------
+#
+# Note: `dream` ships as a `/shared-memory dream` slash command, not a
+# cron mission. Missions are owned by the engine (Linggen seeds its own
+# built-in `~/.linggen/missions/dream/`); skills should not install
+# missions. See the design doc for the rationale.
 
 seed_memory_dir() {
   mkdir -p "$HOME/.linggen/memory"
-}
-
-install_dream_mission() {
-  local mission_dir="$HOME/.linggen/missions/dream"
-  local mission_scripts="$mission_dir/scripts"
-  mkdir -p "$mission_scripts"
-  if [ ! -f "$mission_dir/mission.md" ]; then
-    cp "$CANONICAL_DIR/assets/mission.md" "$mission_dir/mission.md"
-    echo "  Installed: $mission_dir/mission.md (nightly at 23:00)"
-  fi
-  cp "$CANONICAL_DIR/scripts/collect.sh"          "$mission_scripts/collect.sh"
-  cp "$CANONICAL_DIR/scripts/collect_sessions.sh" "$mission_scripts/collect_sessions.sh"
-  chmod +x "$mission_scripts/collect.sh" "$mission_scripts/collect_sessions.sh"
 }
 
 write_install_source_marker() {
@@ -707,7 +694,6 @@ install_canonical_bundle
 choose_bin_dir
 download_binary
 seed_memory_dir
-install_dream_mission
 write_install_source_marker
 install_host_stubs
 
