@@ -96,13 +96,17 @@ adding each candidate:
 1. `ling-mem search "<candidate gist>" --format json | jq -c 'del(.vector)'`
    (and also `--episodic`) to find rows on the same subject.
 2. **Already there** (exact, or a reworded restatement of the same
-   value) → **skip it.** Do not write a duplicate. Decide sameness by
-   *reading the content*, not the similarity score.
+   value) → **skip the write.** Don't add a duplicate. Decide sameness
+   by *reading the content*, not the similarity score.
 3. **An existing row contradicts the candidate** (same subject,
-   *incompatible* value) → just **write the new row** (never drop
-   what the user just said) and do **not** merge, rewrite, tag, or
-   delete the old row. Both now coexist. Reconciliation is for a
-   later user-present recall, never for you.
+   *incompatible* value) → **ask the user.** The encoder subagent has
+   an `ask_user_bridge` wired (engine `tools/mod.rs:348-354`,
+   `consolidation.rs:333-337`), so call `AskUser` with the existing
+   row, the candidate row, and the resolve options. On the user's pick,
+   apply `Memory_write({verb:"add", content:"<winner>", replace_ids:
+   ["<loser_id>"]})` — one atomic call. **Never silently write both
+   and hope live recall sorts it out later** — that's how drift
+   accumulates.
 4. **New / unrelated** → write normally.
 
 ## Commands
@@ -127,10 +131,12 @@ ling-mem add "<content>" --episodic --type <type> --from <from> [--context <scop
 
 ## Forbidden — what extraction must NOT do
 
-- Never delete a `semantic` row (only the user can do that).
-- Never mark one row as superseding another. Reconciliation =
-  append + read-time + explicit user delete.
-- Never merge two distinct rows into a synthesized story. Append both.
+- Never delete a `semantic` row **without first asking the user**
+  (`AskUser` → `replace_ids` on confirm). Silent deletion is the
+  forbidden action; resolution via AskUser is encouraged.
+- Never merge two distinct rows into a synthesized story. If two rows
+  carry distinct facts (not different phrasings of one fact), append
+  both — they're not duplicates.
 - Never mint a "user always X" generalization across rows. Append the
   individual utterances; live retrieval surfaces the pattern.
 

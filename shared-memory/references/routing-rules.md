@@ -113,53 +113,57 @@ context"*, it's right. If it reads as *"what they worked on this week"*
 or *"how this specific project works"*, **drop it**. Memory does not
 write to project files; the user authors those by hand.
 
-## Live for synthesis, offline for mechanics
+## Maintenance — fix when you see it; ask when unsure
 
-Maintenance happens in two places, split by the kind of judgment it
-needs.
+The agent — whether in live chat, dream, or the per-turn encoder
+subagent — is **always near a user**. Memory hygiene is a hard floor:
+when you see drift, fix it in the same pass. Don't accumulate it. The
+only split is whether you ask first or act silently.
 
-### Mechanical maintenance — offline OR live
+### Mechanical maintenance — fire-and-forget
 
-The decisions are mechanical: a rule fires, the action follows.
+Pure rule application. No LLM judgment, no asking.
 
 | Operation | Where | Why |
 |:---|:---|:---|
-| Append a new row | Either | Pure additive |
+| Append a new row | Anywhere | Pure additive |
 | Exact-content dedup at write (binary `insert_with_dedup` rejects identical content) | Binary | Pure equality check |
-| Extend `contexts[]` / `tags[]` from new evidence | Either | Array union |
-| Retire past-TTL episodic via the `dream` worklist (promote-or-delete, no third option) | `dream` | Engine-selected worklist, terminal decision per row |
+| Cross-tier exact-content dedup on `add` (HTTP path) | Daemon | Equality check + tier-rank merge |
+| Extend `contexts[]` / `tags[]` from new evidence | Anywhere | Array union |
+| Retire past-TTL episodic via the `dream` worklist (promote / delete) | `dream` | Engine-selected worklist, terminal decision per row |
 
-Fuzzy "same fact in different wording?" is **never mechanical** — that
-needs an LLM, so it runs in `dream` (no user) or in the live agent (user
-present), never in the binary.
+### Semantic maintenance — silent when confident, AskUser when not
 
-### Semantic maintenance — live only
+These need LLM judgment. The agent CAN do them — including from a
+subagent (`ask_user_bridge` is wired on the encoder subagent per
+engine `consolidation.rs:333-337`). The line between silent and
+ask-first is **confidence**, not "live vs offline":
 
-The user is there to see the synthesis and correct it before anything
-commits.
+| Operation | Silent if… | Ask if… |
+|:---|:---|:---|
+| Dedup two rows that mean the same thing | Same value, near-identical phrasing, no scope difference (same `contexts` / `cwd`) | Different scopes, different timestamps, or any value drift between them |
+| Resolve a contradiction (same subject, incompatible values) | **Never silent.** Always ask. | Always |
+| Generalize utterances into a "user always X" rule | **Never.** Append individual utterances; live retrieval surfaces patterns. | — |
+| Merge distinct facts into one synthesized story | **Never.** They're distinct; append both. | — |
 
-| Operation | Why live-only |
-|:---|:---|
-| Merge distinct facts into a synthesized story | Content rewrite — hallucination risk |
-| Generalize utterances into a "user always X" rule | Over-fit risk |
-| Resolve a contradiction between rows | Needs context the offline run may lack |
+**How to ask** depends on the host (`SKILL.md` → *Memory hygiene*):
+Linggen's `AskUser` engine tool, Claude Code's `AskUserQuestion`, or
+plain chat text + numbered options when neither exists.
 
-**Bulk forget by filter** is user-initiated only, regardless of where
-it would run. The model can iterate `search` → `delete` for small sets
-when explicitly asked. Bulk operations belong on the dashboard or the
-`ling-mem forget` CLI under explicit user invocation.
+**Bulk forget by filter** is user-initiated only. The model can iterate
+`search` → `delete` for small sets when explicitly asked.
 
-### Hard rules — what extraction must NOT do
+### Hard rules — what extraction must NEVER do
 
-- Never delete a semantic row to resolve an apparent contradiction.
-  Append the new row; let live retrieval reconcile when the user is
-  present. (Episodic rows are different — the `dream` worklist
-  terminally promotes-or-deletes them.)
-- Never mark one row as superseding another. Reconciliation is
-  append + read-time + explicit user delete — no metadata
-  ranking.
-- Never update a row to merge two distinct facts into one synthesized
-  story. Append both; let live retrieval reconcile in prose.
+- Never delete a `semantic` row **silently** to resolve a contradiction.
+  Ask first via AskUser; on the user's pick, apply atomically with
+  `replace_ids`. Silent deletion is the floor violation.
+- Never write a contradicting pair as separate atoms hoping live recall
+  resolves it later. That's drift accumulation — the cost we're trying
+  to stop paying. Ask now.
+- Never merge two distinct rows into one synthesized story. If they're
+  distinct facts (not phrasings of one fact), append both — they're
+  not duplicates.
 - Never mint a "user always X" generalization across rows. Append the
   individual utterances; live retrieval surfaces the pattern.
 

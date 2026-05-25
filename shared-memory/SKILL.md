@@ -332,30 +332,60 @@ only via the BOOT_PROMPT signal above. Outside dashboard mode, the
 daemon-served data browser at `127.0.0.1:9888` is the equivalent
 hands-on surface.
 
-## Cleanup — automatic in `dream`, interactive for destructive edits
+## Memory hygiene — fix dups and conflicts when you see them
 
-Automatic cleanup runs as the back-half of `/shared-memory dream` (see
-`~/.linggen/skills/shared-memory/references/dream-flow.md` §4): past-TTL episodic rows are
-terminally promoted or evicted; near-duplicate exact-content rejects
-happen at write time inside the binary (`insert_with_dedup`).
-**Nothing more is automatic.**
+**Hard rule, applies everywhere (live chat, dream, encoder subagent):**
+when you encounter duplicates or conflicts during any memory operation,
+**resolve them in the same pass — don't defer**. Garbage in memory poisons
+every future retrieval; "leave it for later" is how 7 word-count rows
+accumulate.
 
-When the user says *"clean up memory"*, *"merge those two"*, or
-similar — and is *present in the conversation* — the agent may
-propose destructive edits over `semantic` rows:
+| You see | If you're confident | If you're not |
+|:---|:---|:---|
+| Two rows that say the same thing (dup) | Delete the loser, keep the better-phrased one. No prompt. | Ask the user. |
+| Two rows that contradict (same subject, incompatible value) | Don't pick silently. **Always ask.** | Ask the user. |
+| Past-TTL episodic that already exists in semantic | Delete the episodic source. No prompt. | Ask the user. |
 
-1. Pre-load with `ling-mem list --type fact --limit 500 | jq -c 'del(.vector)'` for each type.
-2. Surface near-synonymous pairs. **Propose** the merged version with both source rows visible. On user confirm, delete the vaguer one. Without confirmation, do nothing.
-3. Surface entries that no longer pass the durability test (leaked activity rows, project-internal rows). For each, propose the action (delete / re-scope / leave) with the source visible. User confirms before any write.
+**How to ask:** use whichever ask-user primitive your host gives you.
 
-Principle: destructive edits over `semantic` rows are
-**user-confirmed, never automatic**. The agent proposes; the user
-decides. Reconciling rows that say different things is **append-only
-at write, reconciled at read by the live agent, deleted only on explicit
-user request** — never a destructive automatic merge.
+- **Linggen** — call the `AskUser` tool. UI routes a choice widget to the
+  caller's pane.
+- **Claude Code** — call the `AskUserQuestion` tool. UI renders a
+  structured choice card.
+- **Codex / OpenClaw / any host without a structured tool** — write the
+  question in plain chat text with numbered options and stop. The user
+  replies on the next turn; you read their choice and finish the cleanup
+  via `Memory_write` (or `ling-mem add ... --replace_ids [...]` /
+  `ling-mem delete <id> --yes`).
 
-Memory grows with genuine signal over time. Drift gets reconciled —
-mechanically when obvious, with the user when judgment is needed.
+On any host, **resolve atomically** with `replace_ids` when an
+AskUser-resolved conflict yields a winner — one call deletes the losers
+and adds the winner in the same operation. Never run separate add + delete
+for a resolution (a concurrent recall would see both for a beat).
+
+### What "not confident" looks like
+
+- Two rows on the same subject with timestamps far apart → user's view may
+  have changed. Ask.
+- Two rows that are mostly the same but differ on a specific detail (e.g.
+  one says "8 years old in 2026-05-21", another says "9 years old in
+  2026-05-25") → time-stamped, may both be valid. Ask before merging.
+- Rows that look like dups but have different `cwd` / `contexts` /
+  `outcome` — they may apply to different scopes. Ask.
+
+When in doubt, **ask**. Cheap. The cost of asking is one turn; the cost of
+silently losing or mangling a fact is much higher.
+
+### What automatic catches mechanically
+
+- `insert_with_dedup` inside the binary rejects byte-identical
+  `(content, type)` rows at write time. You don't need to handle that case.
+- Cross-tier dedup (`add` handler): if you add to one table and an exact
+  match exists in the other, the higher-tier row wins; metadata
+  (contexts / tags) is merged into it. Also automatic.
+
+Fuzzy "same fact, different wording" is **never mechanical** — it always
+needs an LLM judgment + the rule above.
 
 ### Inline reconciliation
 

@@ -96,18 +96,39 @@ ling-mem list --episodic --older-than <TTL> --format json | jq -c 'del(.vector)'
 - **Delete** (not worth keeping):
   `Memory_write({verb: "delete", id: "<episodic-id>"})`.
 
-**Read before promote.** Search the gist first; if the value is already
-in `semantic`, just delete the episodic source. Promotion is plain
-append — never destructively edit an existing semantic row.
+**Search before promote.** For each candidate, search the gist in
+semantic *and* in any other episodic rows you haven't processed yet:
 
-**Reconcile floor** (`agents/ling-mem.md` CONSOLIDATE — no-user branch
-of memory-spec §2):
+```bash
+ling-mem search "<gist>" --limit 8 --format json | jq -c 'del(.vector)'
+ling-mem search "<gist>" --limit 8 --tier episodic --format json | jq -c 'del(.vector)'
+```
 
+Then act on what you find — **dream is the cleanup pass, not the
+"never resolve" pass.** See `SKILL.md` → *Memory hygiene* for the
+universal rule; the dream-specific application:
+
+| You see | If confident | If not |
+|:---|:---|:---|
+| Candidate matches an existing semantic row (same meaning) | Skip the promote, **delete the episodic source.** | AskUser ("are these the same?") → act on answer. |
+| Two episodic candidates this pass are dups of each other | Pick the better-phrased one, promote it, delete the other. | AskUser before merging. |
+| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → resolve atomically with `Memory_write({verb:"add", content:"<winner>", replace_ids:["<loser_id>", ...]})`. | Same — always ask. |
+| Three+ rows on one subject (cluster) | AskUser once with the cluster, pass all loser ids in `replace_ids`. | Same. |
+
+**Asking when the host has no structured AskUser tool:** dream is
+user-invoked, so the user is reachable. Write the question in plain
+chat text with numbered options, stop the pass, and pick up on the
+next turn — read the answer, apply the resolve, finish remaining rows.
+A small state file (`~/.linggen/memory/.dream-cursor.json`) recording
+the unprocessed worklist makes resume safe.
+
+**Still forbidden:**
 - Never generalize scattered utterances into a "user always X" rule.
-- Never merge distinct facts into a synthesized story.
-- Never resolve contradictions between semantic rows. A contradicting
-  pair → promote each on its own merits as separate atoms. The
-  conflict is left for a later user-present recall to resolve.
+  Append the individual rows; live retrieval surfaces the pattern.
+- Never merge two distinct facts into one synthesized story.
+- Never promote a contradicting pair as separate atoms hoping live
+  recall fixes it later. That's the old rule — it accumulates drift.
+  Ask now.
 
 ## Phase 4 — Persist state, report
 
