@@ -82,6 +82,7 @@ export function renderBodyWidget(w) {
     'info': renderInfo,
     'progress': renderProgress,
     'dream-calendar': renderDreamCalendar,
+    'dream-report': renderDreamReport,
   };
   const fn = renderers[w.type];
   if (!fn) {
@@ -197,6 +198,10 @@ function renderDreamCalendar(w) {
 
       if (rec) {
         const chips = el('div', 'dcal-chips');
+        if (rec.sessions) {
+          chips.appendChild(el('div', 'dcal-chip dcal-chip-sessions',
+            `${rec.sessions} session${rec.sessions === 1 ? '' : 's'}`));
+        }
         chips.appendChild(dcalTierChips(rec));
         cell.appendChild(chips);
       }
@@ -206,7 +211,7 @@ function renderDreamCalendar(w) {
       } else {
         cell.classList.add('dcal-clickable');
         cell.title = rec
-          ? `${iso} · dreamed · +${rec.encoded || 0} memories (core ${rec.core || 0} · semantic ${rec.semantic || 0} · episodic ${rec.episodic || 0})${rec.runs > 1 ? ` · ${rec.runs} runs` : ''} — click to re-dream`
+          ? `${iso} · dreamed · ${rec.sessions || 0} session${rec.sessions === 1 ? '' : 's'} · +${rec.encoded || 0} memories (core ${rec.core || 0} · semantic ${rec.semantic || 0} · episodic ${rec.episodic || 0})${rec.runs > 1 ? ` · ${rec.runs} runs` : ''} — click to re-dream`
           : `${iso} · not dreamed — click to dream this day`;
         cell.addEventListener('click', () => {
           if (window._chatSend) window._chatSend(`/shared-memory dream ${iso}`);
@@ -215,9 +220,66 @@ function renderDreamCalendar(w) {
       grid.appendChild(cell);
     }
     panel.appendChild(grid);
+
+    // Discoverability hint — the cells are clickable but that isn't
+    // obvious from an Apple-style month grid.
+    const hint = el('div', 'dcal-hint');
+    hint.innerHTML = `<span class="dcal-swatch"></span>dreamed · <strong>click any day to dream it</strong>`;
+    panel.appendChild(hint);
   }
 
   build();
+  return panel;
+}
+
+// ── dream-report ──
+//
+// Report card emitted by the dream's Phase 4 PageUpdate. Summarizes the
+// scan + consolidation run above the per-record fact-lists. The webview
+// auto-appends a refreshed dream-calendar after this widget (see
+// memory-app.js `refreshCalendarAfterReport`), so the report does NOT
+// include the calendar itself.
+//
+// Shape:
+//   { "type": "dream-report",
+//     "title": "Dream complete — 8 new memories",
+//     "window": "2026-05-27", "elapsed_s": 152,
+//     "scan": { "sessions": 5, "from": "2026-05-27", "to": "2026-05-27" },
+//     "encoded": { "core": 0, "semantic": 8, "episodic": 0 },
+//     "promoted": 1, "evicted": 1, "dropped": 3 }
+
+function renderDreamReport(w) {
+  const panel = el('div', 'widget-dream-report');
+  const scan = w.scan || {};
+  const enc = w.encoded || {};
+
+  const scanBits = [];
+  if (scan.sessions != null) scanBits.push(`${scan.sessions} session${scan.sessions === 1 ? '' : 's'}`);
+  if (w.window) scanBits.push(`window ${w.window}`);
+  if (scan.from && scan.to) scanBits.push(scan.from === scan.to ? scan.from : `${scan.from} → ${scan.to}`);
+  if (w.elapsed_s != null) scanBits.push(`${w.elapsed_s}s`);
+
+  const encBits = [`core ${enc.core || 0}`, `semantic ${enc.semantic || 0}`, `episodic ${enc.episodic || 0}`];
+
+  const consBits = [];
+  if (w.promoted != null) consBits.push(`↑ ${w.promoted} promoted`);
+  if (w.evicted != null) consBits.push(`− ${w.evicted} evicted`);
+  if (w.dropped != null) consBits.push(`${w.dropped} dropped`);
+
+  const statRow = (label, bits) => bits.length
+    ? `<div class="drep-stat"><span class="drep-label">${esc(label)}</span><span class="drep-val">${bits.map(esc).join(' · ')}</span></div>`
+    : '';
+
+  panel.innerHTML = `
+    <div class="drep-head">
+      <span class="drep-icon">🧠</span>
+      <div class="drep-title">${esc(w.title || 'Dream complete')}</div>
+    </div>
+    <div class="drep-stats">
+      ${statRow('Scanned', scanBits)}
+      ${statRow('Encoded', encBits)}
+      ${statRow('Consolidated', consBits)}
+    </div>`;
   return panel;
 }
 

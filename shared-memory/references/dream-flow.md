@@ -215,7 +215,7 @@ this is the only durable per-run log; the dashboard's year heatmap
 reads it):
 
 ```bash
-printf '%s\n' '{"date":"<YYYY-MM-DD>","run_at":"<ISO-8601>","window":"<window>","scanned_from":"<YYYY-MM-DD>","scanned_to":"<YYYY-MM-DD>","encoded_total":<int>,"encoded_core":<int>,"encoded_semantic":<int>,"encoded_episodic":<int>,"promoted":<int>,"evicted":<int>,"dropped":<int>,"duration_ms":<int>}' \
+printf '%s\n' '{"date":"<YYYY-MM-DD>","run_at":"<ISO-8601>","window":"<window>","scanned_from":"<YYYY-MM-DD>","scanned_to":"<YYYY-MM-DD>","sessions":<int>,"encoded_total":<int>,"encoded_core":<int>,"encoded_semantic":<int>,"encoded_episodic":<int>,"promoted":<int>,"evicted":<int>,"dropped":<int>,"duration_ms":<int>}' \
   >> ~/.linggen/memory/.dream-history.jsonl
 ```
 
@@ -233,36 +233,34 @@ it.)
 
 ### Report — dashboard mode (Linggen)
 
-The skill's web app expects ONE `PageUpdate` with this body shape.
-Do **not** touch `top_bar` — JS owns it (tier counts auto-refresh
-post-PageUpdate via `refreshTierCounts`).
+Emit ONE `PageUpdate` whose `body` is a **report card** (`dream-report`)
+followed by one `fact-list` per operation. Do **not** touch `top_bar`
+(tier counts auto-refresh via `refreshTierCounts`) and do **not** include
+a `dream-calendar` — the web app re-reads `.dream-history.jsonl` and
+re-appends the refreshed calendar automatically after this report (see
+`memory-app.js` → `refreshCalendarAfterReport`), so the just-dreamed
+day turns green with no manual reload.
 
 ```json
 {
   "body": [
     {
-      "type": "greeting",
-      "icon": "🧠",
-      "title": "Hippocampus done — N new memories",
-      "stats": "Judged N sessions · +N core · +N semantic · +N episodic · ↑N promoted · −N evicted · elapsed Ns",
-      "actions": [
-        { "label": "Open in ling-mem console ↗",
-          "href": "http://127.0.0.1:9888/?session=<this-engine-session-id>&since=<run-started-at>",
-          "kind": "primary" },
-        { "label": "Dream again", "icon": "🧠", "message": "/shared-memory dream" }
-      ]
+      "type": "dream-report",
+      "title": "Dream complete — N new memories",
+      "window": "<window>",
+      "elapsed_s": N,
+      "scan": { "sessions": N, "from": "<YYYY-MM-DD>", "to": "<YYYY-MM-DD>" },
+      "encoded": { "core": N, "semantic": N, "episodic": N },
+      "promoted": N, "evicted": N, "dropped": N
     },
     {
       "type": "fact-list",
-      "title": "JUST WRITTEN",
+      "title": "ENCODED",
       "count": N,
       "source": "rag:mixed",
+      "actions": ["edit", "delete"],
       "items": [
-        { "id": "<id>", "content": "<text>", "context": "core",
-          "added": "now", "badge": "+" },
-        { "id": "<id>", "content": "<text>", "context": "semantic",
-          "added": "now", "badge": "+" },
-        { "id": "<id>", "content": "<text>", "context": "episodic",
+        { "id": "<row-id>", "content": "<text>", "context": "semantic",
           "added": "now", "badge": "+" }
       ]
     },
@@ -271,27 +269,39 @@ post-PageUpdate via `refreshTierCounts`).
       "title": "PROMOTED",
       "count": N,
       "source": "rag:mixed",
+      "actions": ["edit", "delete"],
       "items": [
         { "id": "<new-semantic-id>", "content": "<text>",
           "context": "ep→sem", "added": "now", "badge": "~" }
+      ]
+    },
+    {
+      "type": "fact-list",
+      "title": "EVICTED",
+      "count": N,
+      "source": "rag:mixed",
+      "actions": [],
+      "items": [
+        { "content": "<text>", "context": "episodic", "badge": "−" }
       ]
     }
   ]
 }
 ```
 
-- `<this-engine-session-id>` = the session this dream runs in. Pull
-  from your engine context; it's the `source_session` you stamp on
-  each `ling-mem add ... --source-session <id>` call.
-- `<run-started-at>` = the ISO timestamp at the top of Phase 1, in
-  full RFC-3339 form. The dashboard accepts both ISO and bare
-  `YYYY-MM-DD`.
-- `context` on each fact-list item carries the tier label (`"core"` /
-  `"semantic"` / `"episodic"`) so the user can tell at a glance where
-  a row landed.
-- Cap rows per section at ~10 with a trailing "+N more" item if
-  there are more — the user goes to the daemon's console for the
-  full list.
+- `dream-report` carries the **scan result** (sessions + date range +
+  window + elapsed) and the **operation counts**. `scan.from/to` come
+  from `_meta.scanned_from/to`; `window` from `_meta.window`.
+- Each `fact-list` row is a memory record with its operation badge:
+  `+` encoded, `~` promoted, `−` evicted. Rows with a real `id` get
+  per-row **edit / delete** affordances (delete dispatches
+  `Memory_write{verb:"delete"}` directly — no LLM roundtrip). Omit `id`
+  and use `actions: []` for EVICTED rows (already gone — nothing to act
+  on).
+- `context` carries the tier label (`core` / `semantic` / `episodic`,
+  or `ep→sem` for a promotion) so the user sees where each row landed.
+- Cap each list at ~10 rows with a trailing `{ "content": "+N more" }`
+  placeholder; the full set lives in the ling-mem console.
 
 ### Report — headless mode (Claude Code / Codex / OpenClaw)
 

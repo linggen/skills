@@ -183,15 +183,16 @@ function buildDreamCalendar(history) {
     const to = r.scanned_to || r.date;
     const range = isoRange(from, to);
     range.forEach((iso, i) => {
-      const d = days[iso] || (days[iso] = { encoded: 0, runs: 0, core: 0, semantic: 0, episodic: 0 });
+      const d = days[iso] || (days[iso] = { encoded: 0, runs: 0, core: 0, semantic: 0, episodic: 0, sessions: 0 });
       d.runs += 1;
-      // Attribute the run's encoded counts to its last (most recent) day
-      // so a multi-day window doesn't multiply totals across cells.
+      // Attribute the run's encoded counts + session count to its last
+      // (most recent) day so a multi-day window doesn't multiply totals.
       if (i === range.length - 1) {
         d.encoded += encoded;
         d.core += r.encoded_core || 0;
         d.semantic += r.encoded_semantic || 0;
         d.episodic += r.encoded_episodic || 0;
+        d.sessions += r.sessions || 0;
       }
     });
   }
@@ -356,9 +357,30 @@ function handleContentBlock(payload) {
     // the top_bar reflects post-action state. Best-effort; failures stay
     // silent.
     refreshTierCounts().catch(() => {});
+    // A dream just reported — re-read history and re-append a fresh
+    // calendar so the dreamed day(s) turn green immediately, without a
+    // manual reload. (The report PageUpdate replaces `body` wholesale,
+    // which would otherwise drop the calendar JS painted on open.)
+    refreshCalendarAfterReport().catch(() => {});
   } catch (e) {
     console.warn('[memory] failed to parse PageUpdate args', e);
   }
+}
+
+// When the current body contains a dream-report, rebuild the calendar
+// from the freshly-written .dream-history.jsonl and append it below the
+// report (dropping any stale calendar first). No-op for non-dream
+// PageUpdates, so ordinary chat answers don't grow a calendar.
+async function refreshCalendarAfterReport() {
+  const page = getCurrentPage();
+  const body = Array.isArray(page.body) ? page.body : [];
+  if (!body.some((w) => w && w.type === 'dream-report')) return;
+  const history = await readJsonl(`${homeDir()}/.linggen/memory/.dream-history.jsonl`).catch(() => []);
+  const calendar = buildDreamCalendar(history);
+  if (!calendar) return;
+  const rest = body.filter((w) => !(w && w.type === 'dream-calendar'));
+  applyPageUpdate({ body: [...rest, calendar] });
+  cacheCurrentPage();
 }
 
 // Fallback: some models emit a <!--page ... --> or ```page block in text
