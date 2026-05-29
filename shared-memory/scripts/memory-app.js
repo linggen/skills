@@ -29,15 +29,15 @@ import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './
 
 const SKILL_NAME = 'ling-mem';
 
-// Tiny boot prompt — the agent waits for user input. JS already drew
-// the dashboard before this lands.
-const BOOT_PROMPT = `You are Ling inside the memory skill. The dashboard is already painted on the user's screen — the tier counts, greeting, and CTA buttons came from JS reading the ling-mem daemon directly. Don't re-fetch them.
+// Tiny boot prompt — the agent greets, then waits for input. JS already
+// drew the dashboard (tier cards + calendar) before this lands.
+const BOOT_PROMPT = `You are Ling inside the Memory skill. The dashboard (tier counts + dream calendar) is already painted on screen by JS — don't re-fetch or restate it, and don't emit a PageUpdate on boot.
 
-Stay silent until the user clicks an action button or types a message. When they do:
-- "/shared-memory dream [window]" or "Run hippocampus" → follow references/dream-flow.md end-to-end: Phase 0 runs \`Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>\` (window defaults to 24h; accepts week / month / 14d / 2m), then read .scan-output.jsonl, judge, write, consolidate, evict. Emit a final PageUpdate with the report.
-- Anything else → answer normally, use Memory_query when relevant.
+On boot, send ONE warm, short greeting (≤25 words) introducing yourself and what this skill does: durable memory across all your AI sessions — it reads recent cross-host chats and distills who you are. Mention they can hit "Dream" (or click a day) to consolidate, or just ask what you remember. No preamble, no bullet lists, no "Done"/"awaiting action" phrasing.
 
-Do not emit a PageUpdate on this boot — JS already rendered. Don't repeat the greeting visible on screen.`;
+Then wait. When the user acts:
+- "/shared-memory dream [window]" or "Run hippocampus" → follow references/dream-flow.md end-to-end: Phase 0 runs \`Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>\` (window defaults to 24h; accepts week / month / 14d / 2m / YYYY-MM-DD), then read .scan-output.jsonl, judge, write, consolidate, evict. Emit a final PageUpdate with the report.
+- Anything else → answer normally, use Memory_query when relevant.`;
 
 const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
