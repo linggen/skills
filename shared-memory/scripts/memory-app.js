@@ -4,7 +4,7 @@
 //   1. Mount the sessions iframe (sidebar) and chat panel.
 //   2. On open, paint the dashboard deterministically from disk + the
 //      ling-mem daemon's count endpoint. No LLM round-trip required.
-//      The agent stays passive until the user clicks Scan / Hippocampus
+//      The agent stays passive until the user clicks Hippocampus
 //      or types a chat question.
 //   3. Tier-count cards live in top_bar so they persist across any
 //      PageUpdate the agent emits later (action reports replace body
@@ -14,13 +14,14 @@
 //
 // The agent's BOOT_PROMPT is intentionally tiny: JS owns the on-open
 // render, so the agent's only job at boot is to be ready in the chat
-// panel. Everything heavy moves to the click-driven scan / hippocampus
-// flows (SKILL.md slash commands).
+// panel. Everything heavy moves to the click-driven hippocampus flow
+// (SKILL.md slash commands).
 
 import {
   fetchDefaultModel,
   fetchMemoryCount,
   readJsonFile,
+  readJsonl,
   readJsonlHeader,
   writeJsonFile,
 } from './api.js';
@@ -33,8 +34,7 @@ const SKILL_NAME = 'ling-mem';
 const BOOT_PROMPT = `You are Ling inside the memory skill. The dashboard is already painted on the user's screen — the tier counts, greeting, and CTA buttons came from JS reading the ling-mem daemon directly. Don't re-fetch them.
 
 Stay silent until the user clicks an action button or types a message. When they do:
-- "Scan ..." (today / week / month) → run \`Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>\`, then summarize the one-line stdout (sessions found / scanned / candidates) back in chat. Don't write to memory yet — scan is read-only.
-- "/shared-memory dream" or "Run hippocampus" → follow references/dream-flow.md (read .scan-output.jsonl, judge, write, consolidate, evict). Emit a final PageUpdate with the report.
+- "/shared-memory dream [window]" or "Run hippocampus" → follow references/dream-flow.md end-to-end: Phase 0 runs \`Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>\` (window defaults to 24h; accepts week / month / 14d / 2m), then read .scan-output.jsonl, judge, write, consolidate, evict. Emit a final PageUpdate with the report.
 - Anything else → answer normally, use Memory_query when relevant.
 
 Do not emit a PageUpdate on this boot — JS already rendered. Don't repeat the greeting visible on screen.`;
@@ -153,15 +153,66 @@ async function paintDashboard() {
     dream = null;
   }
   const scanHdr = await readJsonlHeader(`${homeDir()}/.linggen/memory/.scan-output.jsonl`).catch(() => null);
+  const history = await readJsonl(`${homeDir()}/.linggen/memory/.dream-history.jsonl`).catch(() => []);
   const summary = { coreC, semC, epC, dream, scanHdr };
   const greeting = pickGreeting(summary);
+  const calendar = buildDreamCalendar(history);
 
   applyPageUpdate({
     top_bar: buildTierCards(summary),
-    body: [greeting],
+    body: [greeting, calendar],
     footer: buildFooter(summary),
   });
   cacheCurrentPage();
+}
+
+// Aggregate the append-only dream history (one row per run) into a
+// per-day map the calendar marks green. Each run covers the calendar
+// range it scanned ([scanned_from .. scanned_to], inclusive) — so a
+// `dream week` greens 7 days, a `dream 2026-05-20` greens one. Always
+// returns a widget: on a fresh box the grid renders all-grey with
+// today ringed, every cell clickable to dream that day.
+function buildDreamCalendar(history) {
+  const days = {};
+  for (const r of Array.isArray(history) ? history : []) {
+    if (!r) continue;
+    const encoded = (typeof r.encoded_total === 'number')
+      ? r.encoded_total
+      : (r.encoded_core || 0) + (r.encoded_semantic || 0) + (r.encoded_episodic || 0);
+    const from = r.scanned_from || r.date;
+    const to = r.scanned_to || r.date;
+    const range = isoRange(from, to);
+    range.forEach((iso, i) => {
+      const d = days[iso] || (days[iso] = { encoded: 0, runs: 0, core: 0, semantic: 0, episodic: 0 });
+      d.runs += 1;
+      // Attribute the run's encoded counts to its last (most recent) day
+      // so a multi-day window doesn't multiply totals across cells.
+      if (i === range.length - 1) {
+        d.encoded += encoded;
+        d.core += r.encoded_core || 0;
+        d.semantic += r.encoded_semantic || 0;
+        d.episodic += r.encoded_episodic || 0;
+      }
+    });
+  }
+  return { type: 'dream-calendar', title: 'Dream activity', days };
+}
+
+// Inclusive list of YYYY-MM-DD strings from `from` to `to` (local
+// dates). Capped at 400 days so a malformed row can't run away.
+function isoRange(from, to) {
+  if (!from || !to) return from ? [from] : [];
+  const d = new Date(`${from}T00:00:00`);
+  const end = new Date(`${to}T00:00:00`);
+  if (isNaN(d) || isNaN(end) || end < d) return from === to ? [from] : [];
+  const out = [];
+  for (let g = 0; d <= end && g < 400; g++) {
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    out.push(`${d.getFullYear()}-${m}-${day}`);
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
 }
 
 async function refreshTierCounts() {
@@ -197,49 +248,37 @@ function cardWidget(label, c, alertColor) {
   return { data: { label, value, sub, color: alertColor } };
 }
 
+function humanWindow(w) {
+  return { '24h': '1-day', '7d': '1-week', '30d': '1-month' }[w] || w;
+}
+
 function buildFooter({ dream, scanHdr }) {
-  const parts = [];
-  if (scanHdr?.finished_at) {
-    parts.push(`scan ${ageOf(scanHdr.finished_at)} · ${scanHdr.sessions_scanned ?? 0} sessions`);
-  } else {
-    parts.push('scan: never');
-  }
-  if (dream?.last_run_at) {
-    parts.push(`hippocampus ${ageOf(dream.last_run_at)}`);
-  } else {
-    parts.push('hippocampus: never');
-  }
+  if (!dream?.last_run_at) return { text: 'last dream: never' };
+  const parts = [`last dream ${ageOf(dream.last_run_at)}`];
+  if (dream.window) parts.push(`${humanWindow(dream.window)} window`);
+  const sessions = scanHdr?.sessions_scanned;
+  if (typeof sessions === 'number') parts.push(`${sessions} sessions read`);
   return { text: parts.join('   ·   ') };
 }
 
-function pickGreeting({ coreC, semC, epC, dream, scanHdr }) {
+function pickGreeting({ coreC, semC, epC, dream }) {
   const totalRows = (coreC?.count || 0) + (semC?.count || 0) + (epC?.count || 0);
-  const lastScan = scanHdr?.finished_at;
   const lastHippo = dream?.last_run_at;
   const epCount = epC?.count || 0;
-  // "Pending" = the scan happened AFTER the most recent hippocampus
-  // (or hippocampus has never run). We only know the scanned-session
-  // count; the LLM-judged candidate count isn't materialized anywhere
-  // until dream runs. Show sessions-to-review honestly.
-  const scanIsNewerThanDream = scanHdr && (!lastHippo
-    || new Date(scanHdr.finished_at) > new Date(lastHippo));
-  const sessionsToReview = scanIsNewerThanDream
-    ? (scanHdr.sessions_scanned || 0)
-    : 0;
+  const runDream = { label: 'Run dream', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
 
   let title, primary;
-  if (totalRows === 0 && !lastScan) {
-    title = "Welcome — your memory's empty. Run Scan to read recent sessions.";
-    primary = { label: 'Scan today', icon: '🔍', message: 'Scan today', kind: 'primary' };
-  } else if (sessionsToReview > 0) {
-    title = `${sessionsToReview} session${sessionsToReview === 1 ? '' : 's'} scanned since last hippocampus. Run hippocampus to judge & consolidate.`;
-    primary = { label: 'Run hippocampus', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
-  } else if (lastScan && daysSince(lastScan) >= 1) {
-    title = `Last scan ${ageOf(lastScan)}. Pull in newer sessions?`;
-    primary = { label: 'Scan today', icon: '🔍', message: 'Scan today', kind: 'primary' };
+  if (totalRows === 0 && !lastHippo) {
+    title = "Welcome — your memory's empty. Run dream to read recent sessions.";
+    primary = runDream;
   } else if (epCount > 50) {
-    title = `Staging is filling up — ${epCount} episodic rows. Time for a hippocampus pass.`;
-    primary = { label: 'Run hippocampus', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
+    title = `Staging is filling up — ${epCount} episodic rows. Time for a dream pass.`;
+    primary = runDream;
+  } else if (!lastHippo || daysSince(lastHippo) >= 1) {
+    title = lastHippo
+      ? `Last dream ${ageOf(lastHippo)}. Pull in newer sessions?`
+      : 'Run dream to read recent sessions into memory.';
+    primary = runDream;
   } else {
     title = `Memory's up to date — ${totalRows} rows across all tiers.`;
     primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };
@@ -249,14 +288,10 @@ function pickGreeting({ coreC, semC, epC, dream, scanHdr }) {
     type: 'greeting',
     icon: '🧠',
     title,
-    stats: 'Scan extracts denoised transcripts (script, free). Hippocampus judges them → memory.',
-    actions: [
-      primary,
-      { label: 'Scan today', icon: '🔍', message: 'Scan today' },
-      { label: 'Scan week', message: 'Scan this week' },
-      { label: 'Hippocampus', icon: '🧠', message: '/shared-memory dream' },
-      { label: 'Browse ↗', href: 'http://127.0.0.1:9888' },
-    ],
+    stats: 'Dream reads recent cross-host sessions, judges them, and writes memory — script walk + LLM judgment in one pass.',
+    // Single contextual CTA — the header bar already carries the
+    // persistent Dream + Browse actions, so don't duplicate them here.
+    actions: [primary],
   };
 }
 
@@ -284,25 +319,21 @@ function daysSince(iso) {
 //
 // The buttons in memory.html's header send plain chat messages — the
 // agent parses them per BOOT_PROMPT and runs the corresponding action.
-// Period is on a sibling <select>. After scan / hippocampus, the agent
+// Period is on a sibling <select>. After hippocampus, the agent
 // emits a PageUpdate with the run report; tier-counts in top_bar
 // refresh automatically because the daemon's count endpoint runs after
 // every PageUpdate (see handleContentBlock).
 
 function setupActionBar() {
-  const scanBtn = document.getElementById('scan-btn');
   const dreamBtn = document.getElementById('dream-btn');
-  const periodSel = document.getElementById('scan-period');
-  if (!scanBtn || !dreamBtn) return;
+  const periodSel = document.getElementById('dream-period');
+  if (!dreamBtn) return;
 
-  scanBtn.addEventListener('click', () => {
-    const p = periodSel?.value || 'today';
-    const label = p === 'today' ? 'today' : (p === '7d' ? 'this week' : 'this month');
-    window._chatSend(`Scan ${label}`);
-  });
-
+  // Hippocampus runs the whole pass (scan walk → judge → consolidate).
+  // The period <select> feeds the dream window: ''=24h, week, month.
   dreamBtn.addEventListener('click', () => {
-    window._chatSend('/shared-memory dream');
+    const w = periodSel?.value || '';
+    window._chatSend(w ? `/shared-memory dream ${w}` : '/shared-memory dream');
   });
 }
 

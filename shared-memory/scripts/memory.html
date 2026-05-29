@@ -12,18 +12,14 @@
   <div class="header">
     <h1>Memory</h1>
     <nav class="action-bar" id="action-bar">
-      <div class="action-group" title="Pull denoised transcripts from cross-host sessions. Script-only — no LLM cost.">
-        <select id="scan-period" aria-label="Scan period">
-          <option value="today">today</option>
-          <option value="7d">this week</option>
-          <option value="30d">this month</option>
+      <div class="action-group" title="Read cross-host sessions over this window, judge candidates, write episodic / semantic / core, promote past-TTL.">
+        <select id="dream-period" aria-label="Dream window">
+          <option value="">1 day</option>
+          <option value="week">1 week</option>
+          <option value="month">1 month</option>
         </select>
-        <button type="button" id="scan-btn" class="action-btn">🔍 Scan</button>
+        <button type="button" id="dream-btn" class="action-btn">🧠 Dream</button>
       </div>
-      <button type="button" id="dream-btn" class="action-btn"
-              title="Read .scan-output.jsonl, judge candidates, write episodic / semantic / core, promote past-TTL.">
-        🧠 Hippocampus
-      </button>
       <a href="http://127.0.0.1:9888" target="_blank" rel="noopener"
          class="action-btn action-link"
          title="Open the ling-mem daemon's full data browser (filter / edit / delete row-level).">

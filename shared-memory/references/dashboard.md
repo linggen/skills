@@ -19,22 +19,21 @@ It then paints the page deterministically:
   amber when `count > 50` (staging filling up).
 - **`body`** — one `greeting` widget. Title + primary CTA are
   rule-picked by `pickGreeting()` from current state — *"Welcome —
-  memory's empty"* on a fresh install, *"N sessions scanned since
-  last hippocampus"* when scan is newer than dream, etc. No LLM.
-- **`footer`** — *"scan Xh ago · N sessions   ·   hippocampus Yh
-  ago"*.
+  memory's empty"* on a fresh install, *"Staging is filling up — N
+  episodic rows"* when episodic > 50, *"Last hippocampus Xh ago"* when
+  stale, etc. No LLM.
+- **`footer`** — *"hippocampus Yh ago · N sessions read"*.
 
 The skill **does not** ask the agent to render the dashboard. The
 agent runs in chat-mode for the whole session.
 
 ## When the agent IS involved
 
-The header has three action controls, all wired to `_chatSend`:
+The header has two action controls, both wired to `_chatSend`:
 
 | Control | Chat message sent | Agent action |
 |:---|:---|:---|
-| `🔍 Scan` (with period selector: today / 7d / 30d) | `"Scan today"` / `"Scan this week"` / `"Scan this month"` | Run `Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>`. Summarize the one-line stdout. **No memory writes.** |
-| `🧠 Hippocampus` | `"/shared-memory dream"` | Read `~/.linggen/memory/.scan-output.jsonl`, judge, write, promote, evict. Follow `dream-flow.md` end-to-end. Emit a single `PageUpdate` with the report. |
+| `🧠 Hippocampus` (with window selector: last 24h / week / month) | `"/shared-memory dream"` / `"/shared-memory dream week"` / `"/shared-memory dream month"` | Run the full pass: `scan.sh <window>` (Phase 0) → read `~/.linggen/memory/.scan-output.jsonl`, judge, write, promote, evict. Follow `dream-flow.md` end-to-end. Emit a single `PageUpdate` with the report. |
 | `Browse ↗` | (link, not a message) | Opens `http://127.0.0.1:9888` in a new tab. |
 
 `/shared-memory dream` is the slash-command form of the hippocampus

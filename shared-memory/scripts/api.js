@@ -1,6 +1,21 @@
 // Linggen API client for the memory dashboard.
 const API_BASE = '';
 
+// Run a shell command through Linggen's /api/bash proxy. The engine's
+// BashRequest requires a `project_root` field — commands here use
+// absolute paths / curl, so the value is irrelevant but must be
+// present (mirrors the pulse skill's `/tmp` convention). Returns the
+// raw response (use `.stdout`), or null if the request failed.
+async function bashExec(command) {
+  const res = await fetch(`${API_BASE}/api/bash`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ project_root: '/tmp', command }),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function fetchModels() {
   const res = await fetch(`${API_BASE}/api/models`);
   if (!res.ok) throw new Error('Failed to fetch models');
@@ -57,13 +72,8 @@ export async function fetchSessionMessages(skill, sessionId) {
 export async function fetchMemoryCount(filter = {}) {
   const body = JSON.stringify(filter);
   const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/count -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
-  const res = await fetch(`${API_BASE}/api/bash`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command: cmd }),
-  });
-  if (!res.ok) return { count: 0, latest_created_at: null };
-  const out = await res.json();
+  const out = await bashExec(cmd);
+  if (!out) return { count: 0, latest_created_at: null };
   try {
     const parsed = JSON.parse(out.stdout || '{}');
     if (parsed.ok && parsed.data) return parsed.data;
@@ -90,13 +100,8 @@ function expandPath(path) {
 export async function readJsonFile(path, fallback = null) {
   const p = expandPath(path);
   const cmd = `f=${p}; [ -f "$f" ] && cat "$f" || true`;
-  const res = await fetch(`${API_BASE}/api/bash`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command: cmd }),
-  });
-  if (!res.ok) return fallback;
-  const out = await res.json();
+  const out = await bashExec(cmd);
+  if (!out) return fallback;
   const txt = (out.stdout || '').trim();
   if (!txt) return fallback;
   try { return JSON.parse(txt); } catch { return fallback; }
@@ -112,25 +117,34 @@ export async function writeJsonFile(path, value) {
   // newlines) out of the shell command surface.
   const b64 = btoa(unescape(encodeURIComponent(json)));
   const cmd = `f=${p}; mkdir -p "$(dirname "$f")" && printf '%s' ${JSON.stringify(b64)} | base64 --decode > "$f"`;
-  const res = await fetch(`${API_BASE}/api/bash`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command: cmd }),
-  });
-  if (!res.ok) throw new Error(`writeJsonFile ${path}: ${res.status}`);
+  const out = await bashExec(cmd);
+  if (!out) throw new Error(`writeJsonFile ${path}: /api/bash request failed`);
+}
+
+// Read every line of an NDJSON file, parsing each into an object.
+// Malformed lines are skipped. Returns [] when the file is absent.
+export async function readJsonl(path) {
+  const p = expandPath(path);
+  const cmd = `f=${p}; [ -f "$f" ] && cat "$f" || true`;
+  const out = await bashExec(cmd);
+  if (!out) return [];
+  const txt = (out.stdout || '').trim();
+  if (!txt) return [];
+  const rows = [];
+  for (const line of txt.split('\n')) {
+    const t = line.trim();
+    if (!t) continue;
+    try { rows.push(JSON.parse(t)); } catch { /* skip malformed */ }
+  }
+  return rows;
 }
 
 // Read the first line (the header object) of an NDJSON file.
 export async function readJsonlHeader(path, fallback = null) {
   const p = expandPath(path);
   const cmd = `f=${p}; [ -f "$f" ] && head -n 1 "$f" || true`;
-  const res = await fetch(`${API_BASE}/api/bash`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ command: cmd }),
-  });
-  if (!res.ok) return fallback;
-  const out = await res.json();
+  const out = await bashExec(cmd);
+  if (!out) return fallback;
   const txt = (out.stdout || '').trim();
   if (!txt) return fallback;
   try { return JSON.parse(txt); } catch { return fallback; }

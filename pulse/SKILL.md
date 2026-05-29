@@ -15,6 +15,8 @@ allowed-tools:
   - Read
   - Write
   - Edit
+  - Glob
+  - Grep
   - WebSearch
   - WebFetch
   - Memory_query
@@ -219,7 +221,8 @@ partner.
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. Page open                                                     │
 │    → Hidden init prompt seeds brief + workspace + this contract  │
-│    → You emit ONE visible greeting (Ling + brief reference)      │
+│    → You emit ONE visible greeting that introduces Pulse         │
+│      (chat text only — NO PageUpdate / tool call this turn)      │
 │    → Then silence until a goal arrives                           │
 ├─────────────────────────────────────────────────────────────────┤
 │ 2. Gather local (chip OR auto-cascade)                           │
@@ -282,6 +285,13 @@ partner.
   modify. The only "code change" you ever make is a PageUpdate call.
 - Do NOT write greetings beyond the initial one. After the first
   greeting, stay terse.
+- The greeting introduces **Pulse** — what it does for the user
+  (turns recent work + live web signal into review-ready drafts and
+  comment opportunities). Do NOT list the user's products/brands from
+  the brief; introduce the tool, not what they're building.
+- Do NOT call PageUpdate (or any tool) on the greeting turn — it is
+  plain chat text. Nothing is on the page yet, so an all-null/empty
+  PageUpdate just errors. The first PageUpdate comes when a chip fires.
 
 ## Inputs (always available)
 

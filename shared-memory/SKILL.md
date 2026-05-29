@@ -7,6 +7,11 @@ description: >-
   Code, Codex, and OpenClaw.
 license: Apache-2.0
 homepage: https://linggen.dev
+# Linggen enforces this list as the session's tool surface (ling supplies
+# the personality, the skill supplies the tools). Keep it COMPLETE for
+# everything the dream + chat mode use: Bash (scan.sh + ling-mem CLI),
+# Read (references), AskUser (Phase 3 conflict resolution), and the
+# Memory_* capability tools. Claude Code / Codex ignore this block.
 allowed-tools:
   - Read
   - Write
@@ -15,6 +20,9 @@ allowed-tools:
   - Glob
   - Grep
   - Task
+  - AskUser
+  - Memory_query
+  - Memory_write
 user-invocable: true
 cwd: ~/.linggen
 install: install.sh
@@ -24,13 +32,19 @@ app:
   width: 1100
   height: 800
 # Linggen-only: permission grants the skill needs at runtime. Claude
-# Code uses its own permission model and ignores this block. The
-# `~/.linggen` write covers the daemon's data dir + this skill's own
-# config; the four read paths are the session stores `scan.sh` walks
-# (one per host — see scripts/collect_sessions.sh).
+# Code uses its own permission model and ignores this block.
+#   `~/.linggen` is `admin` (not just write) because dream runs bash —
+#   `scripts/scan.sh` (+ its collect/extract helpers) and the follow-up
+#   `ling-mem add/delete` writes all execute from cwd `~/.linggen`, and
+#   Bash exec requires the admin tier. Admin on the skill's own home is
+#   the same grant the runtime's "Switch this folder to admin" prompt
+#   offers; presetting it here means clicking a calendar day (or `dream
+#   <date>`) runs without a permission prompt.
+#   The five read paths are the per-host session stores `scan.sh` walks
+#   (see scripts/collect_sessions.sh) — never written to.
 permission:
   paths:
-    - { path: ~/.linggen, mode: write }
+    - { path: ~/.linggen, mode: admin }
     - { path: ~/.claude/projects, mode: read }
     - { path: ~/.codex/sessions, mode: read }
     - { path: ~/.codex/archived_sessions, mode: read }
@@ -264,14 +278,13 @@ neither stores nor authors that content.
 
 ## Modes — which references to load when
 
-This skill enters one of three modes per invocation. **Detect the mode
+This skill enters one of two modes per invocation. **Detect the mode
 from the first user message you see in this turn**, then load only that
 mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dream** | Message says `/shared-memory dream` or `Run hippocampus`. Always user-triggered — there is no cron path; missions are owned by the engine and shipped separately. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
-| **Scan** | Message starts with `Scan today` / `Scan this week` / `Scan this month`. | Run `Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>`. Summarize the one-line stdout (sessions found / scanned / transcript_bytes) back to chat. No memory writes. |
+| **Dream** | Message says `/shared-memory dream [window]` or `Run hippocampus`. Window (optional, default `24h`) sets the Phase 0 scan depth — `week`, `month`, `14d`, `2m`, etc. Always user-triggered — there is no cron path; missions are owned by the engine and shipped separately. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
 The old **Dashboard mode** (the agent rendering the on-open page) is
@@ -281,18 +294,18 @@ about the new JS-driven flow + the report shape dream emits.
 
 **Chat mode is the default.** When in doubt, you are in chat mode.
 
-## Slash commands — `dream` + `scan` + daemon passthrough
+## Slash commands — `dream` + daemon passthrough
 
-`/shared-memory <verb>` is the primary surface. `dream` and `scan` are
-the two memory-consolidation passes (split since v0.7 — see the design
-split); the rest map 1:1 to daemon CRUD endpoints. **`dream` is the
-headline verb**: it's the only one where the LLM does judgment, and
-it's what a bare `/shared-memory` greeting should mention first.
+`/shared-memory <verb>` is the primary surface. `dream` is the
+memory-consolidation pass (it runs the zero-LLM scan walk itself as
+Phase 0, then judges); the rest map 1:1 to daemon CRUD endpoints.
+**`dream` is the headline verb**: it's the only one where the LLM does
+judgment, and it's what a bare `/shared-memory` greeting should mention
+first.
 
 | Verb | Action |
 |:---|:---|
-| `dream` | **LLM judge.** Reads `.scan-output.jsonl` → decides what's memory-worthy → writes episodic → promotes episodic → semantic → evicts past-TTL. Also called *hippocampus* in the dashboard. See `references/dream-flow.md`. |
-| `scan [today\|7d\|30d]` | **Script-only.** Runs `scripts/scan.sh`: collects host session files for the window, denoises + secret-filters each transcript, writes `~/.linggen/memory/.scan-output.jsonl`. **Zero LLM cost.** Output is the candidate set for the next `dream` pass. |
+| `dream [window]` | **Full pass.** Runs the zero-LLM scan walk (`scripts/scan.sh <window>`, Phase 0) → reads `.scan-output.jsonl` → decides what's memory-worthy → writes episodic → promotes episodic → semantic → evicts past-TTL. `window` defaults to `24h`; accepts `today`/`24h`, `week`, `month`, `<n>d`/`<n>w`/`<n>m`/`<n>y` (e.g. `14d`, `2m`). Also called *hippocampus* in the dashboard. See `references/dream-flow.md`. |
 | `add "<content>" [--type ...] [--tier core] [--context ...]` | Insert a new memory row. Defaults to `--tier semantic`. |
 | `search "<query>" [--limit N] [--context ...]` | Semantic search across `semantic` + `episodic`. |
 | `list [--type ...] [--tier ...] [--limit N]` | Paginated listing. |
@@ -304,7 +317,7 @@ it's what a bare `/shared-memory` greeting should mention first.
 In chat mode the user is reading text in a conversation panel, not
 clicking widgets. So:
 
-- **Never** reference dashboard buttons by name (*"Scan Today"*,
+- **Never** reference dashboard buttons by name (*"Hippocampus"*,
   *"Browse all"*, *"Clean"*, *"Help"*) — those buttons don't exist for
   the user to click. They live in `~/.linggen/skills/shared-memory/references/dashboard.md` and only
   apply when you've been told you're in dashboard mode.

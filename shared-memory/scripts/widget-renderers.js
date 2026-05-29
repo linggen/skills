@@ -51,7 +51,7 @@ function renderCustomWidget(d) {
   const card = el('div', 'card top-bar-card');
   card.innerHTML = `
     <div class="card-label">${esc(d.label || '')}</div>
-    <div class="card-value" ${clr ? `style="${clr}"` : ''}>${esc(String(d.value || '--'))}</div>
+    <div class="card-value" ${clr ? `style="${clr}"` : ''}>${esc(d.value == null ? '--' : String(d.value))}</div>
     ${d.sub ? `<div class="card-sub">${esc(d.sub)}</div>` : ''}
   `;
   if (d.bar != null) {
@@ -81,6 +81,7 @@ export function renderBodyWidget(w) {
     'scorecard': renderScorecard,
     'info': renderInfo,
     'progress': renderProgress,
+    'dream-calendar': renderDreamCalendar,
   };
   const fn = renderers[w.type];
   if (!fn) {
@@ -88,6 +89,136 @@ export function renderBodyWidget(w) {
     return null;
   }
   return fn(w);
+}
+
+// ── dream-calendar ──
+//
+// Apple-Calendar-style month grid of dream activity. Sun→Sat columns,
+// big day cells, today as a red circle, prev/Today/next month nav.
+// A dreamed day shows tier chips (core / semantic / episodic counts);
+// clicking any past/today cell dreams exactly that date. Built by
+// memory-app.js `buildDreamCalendar()` from `.dream-history.jsonl`.
+//
+// Shape:
+//   { "type": "dream-calendar", "title": "Dream activity",
+//     "days": { "2026-05-28": { encoded, runs, core, semantic, episodic }, ... } }
+
+const DCAL_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DCAL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+function dcalStartOfDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function dcalAddDays(d, n) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+}
+function dcalIso(d) {
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+// Tier chips shown inside a dreamed day cell. Only non-zero tiers
+// render. core → indigo, semantic → green, episodic → amber.
+function dcalTierChips(rec) {
+  const tiers = [
+    ['core', rec.core, 'core'],
+    ['sem', rec.semantic, 'semantic'],
+    ['ep', rec.episodic, 'episodic'],
+  ];
+  const frag = document.createDocumentFragment();
+  for (const [label, n, cls] of tiers) {
+    if (!n) continue;
+    const chip = el('div', `dcal-chip dcal-chip-${cls}`, `${label} ${n}`);
+    frag.appendChild(chip);
+  }
+  // Fallback when a run encoded nothing into a tier breakdown.
+  if (!rec.core && !rec.semantic && !rec.episodic) {
+    frag.appendChild(el('div', 'dcal-chip dcal-chip-core', 'dreamed'));
+  }
+  return frag;
+}
+
+function renderDreamCalendar(w) {
+  const days = w.days || {};
+  const today = dcalStartOfDay(new Date());
+  const todayIso = dcalIso(today);
+  // View state — first of the month currently shown (starts on today's).
+  let view = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const panel = el('div', 'widget-dream-cal');
+
+  function build() {
+    panel.innerHTML = '';
+
+    // Header: "May 2026" + prev / Today / next.
+    const head = el('div', 'dcal-head');
+    head.appendChild(el('div', 'dcal-title',
+      `<strong>${DCAL_MONTHS[view.getMonth()]}</strong> ${view.getFullYear()}`));
+    const nav = el('div', 'dcal-nav');
+    const prev = el('button', 'dcal-navbtn', '‹');
+    const todayBtn = el('button', 'dcal-todaybtn', 'Today');
+    const next = el('button', 'dcal-navbtn', '›');
+    prev.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); build(); });
+    next.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); build(); });
+    todayBtn.addEventListener('click', () => { view = new Date(today.getFullYear(), today.getMonth(), 1); build(); });
+    nav.append(prev, todayBtn, next);
+    head.appendChild(nav);
+    panel.appendChild(head);
+
+    // Weekday header (Sun → Sat).
+    const wd = el('div', 'dcal-weekdays');
+    DCAL_DOW.forEach((name) => wd.appendChild(el('div', 'dcal-wd', name)));
+    panel.appendChild(wd);
+
+    // Grid: from the Sunday on/before the 1st, covering whole weeks.
+    const first = new Date(view.getFullYear(), view.getMonth(), 1);
+    const startOffset = first.getDay();               // Sun = 0
+    const gridStart = dcalAddDays(first, -startOffset);
+    const lastDate = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    const weeks = Math.ceil((startOffset + lastDate) / 7);
+
+    const grid = el('div', 'dcal-grid');
+    grid.style.gridTemplateRows = `repeat(${weeks}, 1fr)`;
+    for (let i = 0; i < weeks * 7; i++) {
+      const date = dcalAddDays(gridStart, i);
+      const iso = dcalIso(date);
+      const inMonth = date.getMonth() === view.getMonth();
+      const isFuture = date > today;
+      const rec = days[iso];
+
+      const cell = el('div', 'dcal-cell');
+      if (!inMonth) cell.classList.add('dcal-out');
+
+      const num = el('div', 'dcal-num', String(date.getDate()));
+      if (iso === todayIso) num.classList.add('dcal-today-num');
+      cell.appendChild(num);
+
+      if (rec) {
+        const chips = el('div', 'dcal-chips');
+        chips.appendChild(dcalTierChips(rec));
+        cell.appendChild(chips);
+      }
+
+      if (isFuture) {
+        cell.classList.add('dcal-future');
+      } else {
+        cell.classList.add('dcal-clickable');
+        cell.title = rec
+          ? `${iso} · dreamed · +${rec.encoded || 0} memories (core ${rec.core || 0} · semantic ${rec.semantic || 0} · episodic ${rec.episodic || 0})${rec.runs > 1 ? ` · ${rec.runs} runs` : ''} — click to re-dream`
+          : `${iso} · not dreamed — click to dream this day`;
+        cell.addEventListener('click', () => {
+          if (window._chatSend) window._chatSend(`/shared-memory dream ${iso}`);
+        });
+      }
+      grid.appendChild(cell);
+    }
+    panel.appendChild(grid);
+  }
+
+  build();
+  return panel;
 }
 
 // ── greeting ──
@@ -100,10 +231,10 @@ export function renderBodyWidget(w) {
 //   { "type": "greeting",
 //     "icon": "🧠",
 //     "title": "Here's what I know about you.",
-//     "stats": "42 RAG facts · 5 core bullets · last scan 3h ago, +8 facts",
+//     "stats": "42 RAG facts · 5 core bullets · last hippocampus 3h ago, +8 facts",
 //     "actions": [
-//       { "label": "Scan last 24h", "icon": "✨", "message": "Scan today", "kind": "primary" },
-//       { "label": "Week",          "message": "Scan this week" },
+//       { "label": "Run hippocampus", "icon": "🧠", "message": "/shared-memory dream", "kind": "primary" },
+//       { "label": "Week",            "message": "/shared-memory dream week" },
 //       { "label": "Clean", "icon": "🧹", "message": "Analyze and clean" }
 //     ] }
 
@@ -387,10 +518,10 @@ function renderInfo(w) {
 // ── cta ──
 //
 // A prominent primary-action panel. The agent emits this to ask a single
-// high-value question like "Should we start scan now?" with one big button
+// high-value question like "Run hippocampus now?" with one big button
 // as the answer. Shape:
 //   { "type": "cta", "icon": "🧠", "title": "...", "description": "...",
-//     "button": { "label": "Start scan", "icon": "✨", "message": "Scan today" } }
+//     "button": { "label": "Run hippocampus", "icon": "🧠", "message": "/shared-memory dream" } }
 
 function renderCta(w) {
   const panel = el('div', 'widget-cta');

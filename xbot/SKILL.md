@@ -4,7 +4,7 @@ description: >-
   X (Twitter) assistant — post, search, reply, monitor mentions,
   and track engagement. Your AI social media manager.
 user-invocable: true
-allowed-tools: [Bash, Read, Write]
+allowed-tools: [Bash, Read, Write, AskUser]
 argument-hint: "post <text> | search <query> | reply <url> | mentions | my-tweets | config | status"
 permission:
   paths:
