@@ -307,3 +307,21 @@
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
+
+/* Help text under a settings field (e.g. how to get the Reddit RSS token). */
+.field-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.field-hint ol { margin: 4px 0 4px 18px; padding: 0; }
+.field-hint li { margin: 2px 0; }
+.field-hint a { color: var(--accent); text-decoration: none; }
+.field-hint a:hover { text-decoration: underline; }
+.field-hint code {
+  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--accent-soft, rgba(127,127,127,0.15));
+}

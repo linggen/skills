@@ -1,6 +1,6 @@
 {
   "$schema_version": 4,
-  "$comment": "Pulse config. `brief` is the user's standing identity / voice rules / hard rules / current writing goal — delivered to the agent as a hidden chat-init message at session start (see pulse-app.js sendInitPrompt). `workspace_path` points at the user's product source dir; the agent reads README/doc/source there on every run for product knowledge (read-only, just-in-time via Read/Glob/Grep). `default_goal` is used when a run is triggered without an explicit goal. `sites` toggles source tools + per-site config. `targets` toggles output lanes + per-lane config. Goals dispatch capabilities; capabilities call enabled sites and draft for enabled targets. Reddit is dual-role.",
+  "$comment": "Pulse config. `brief` is the user's standing identity / voice rules / hard rules / current writing goal \u2014 delivered to the agent as a hidden chat-init message at session start (see pulse-app.js sendInitPrompt). `workspace_path` points at the user's product source dir; the agent reads README/doc/source there on every run for product knowledge (read-only, just-in-time via Read/Glob/Grep). `default_goal` is used when a run is triggered without an explicit goal. `sites` toggles source tools + per-site config. `targets` toggles output lanes + per-lane config. Goals dispatch capabilities; capabilities call enabled sites and draft for enabled targets. Reddit is dual-role.",
   "brief": "",
   "workspace_path": "",
   "default_goal": "Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.",
@@ -13,7 +13,9 @@
       "subs": [
         "LocalLLaMA",
         "macapps"
-      ]
+      ],
+      "username": "",
+      "private_rss_feed_token": ""
     },
     "lobsters": {
       "enabled": false

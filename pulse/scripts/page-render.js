@@ -274,6 +274,13 @@ function applyBodyPatch(patch) {
     session.sections[sectionId] = { cards: [], last_updated: null };
   }
   if (Array.isArray(patch.cards)) {
+    // Drop cards the user already dismissed at INGEST, not just at render.
+    // The agent re-fetches the same threads on every gather; without this
+    // they'd be persisted back into session.json and flash on the next load
+    // before the render-time filter hides them. (Seed loads before any
+    // gather — see init() — so dismissedUrls is populated by the time a
+    // body_patch arrives.)
+    const incoming = patch.cards.filter(c => !isDismissed(c));
     // Two modes:
     //   default (replace) — cards in patch fully replace existing cards.
     //                       Used by Gather web's mentions/signal/discovery
@@ -286,10 +293,10 @@ function applyBodyPatch(patch) {
     if (patch.mode === 'append') {
       const existing = session.sections[sectionId].cards || [];
       const seen = new Set(existing.map(c => c.id).filter(Boolean));
-      const additions = patch.cards.filter(c => !c.id || !seen.has(c.id));
+      const additions = incoming.filter(c => !c.id || !seen.has(c.id));
       session.sections[sectionId].cards = existing.concat(additions);
     } else {
-      session.sections[sectionId].cards = patch.cards;
+      session.sections[sectionId].cards = incoming;
     }
   }
   session.sections[sectionId].last_updated =

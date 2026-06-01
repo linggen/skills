@@ -24,12 +24,26 @@ const WEBSITES = [
   },
   {
     name: 'Reddit',
-    desc: '25 newest threads from each subreddit (Source). Per-thread comment drafts (Target). Set your username to also surface public mentions of u/<handle> in Gather web — uses Reddit\'s public JSON, no auth required.',
+    desc: 'Newest threads from each subreddit (Source) + per-thread comment drafts (Target), via Reddit\'s public RSS feeds. Reddit closed its anonymous JSON API (Nov 2025), so replies/mentions need a private RSS token (free, no app — see below).',
     source_id: 'reddit',
     target_id: 'reddit-comment',
     source_fields: [
       { kind: 'chips', key: 'subs', label: 'Subreddits' },
       { kind: 'text', key: 'username', label: 'My Reddit username (for mention monitoring)', placeholder: 'e.g. linggen — without the u/ prefix' },
+      {
+        kind: 'text',
+        key: 'private_rss_feed_token',
+        label: 'Private RSS feed token (unlocks comment replies & mentions)',
+        placeholder: 'paste the whole feed URL, or just the feed=… token',
+        hint:
+          'Reddit\'s API is closed, but your private RSS feeds still work — no app, no OAuth, free. To get your token:' +
+          '<ol>' +
+          '<li>Open <a href="https://old.reddit.com/prefs/" target="_blank" rel="noopener">old.reddit.com/prefs</a> → <b>options</b> tab → check <b>“enable private RSS feeds”</b>.</li>' +
+          '<li>Go to the <a href="https://old.reddit.com/prefs/feeds/" target="_blank" rel="noopener"><b>RSS feeds</b></a> tab → under <b>“your inbox”</b>, right-click the orange <b>RSS</b> next to <b>“comment replies only”</b> → <b>Copy Link Address</b>.</li>' +
+          '<li>Paste that whole URL here (it contains <code>?feed=…&user=…</code>). Pulse extracts the token automatically.</li>' +
+          '</ol>' +
+          'Keep it private — the token is read-access to your inbox; it\'s invalidated only if you change your Reddit password. Without it, only public username mentions show (not replies).',
+      },
     ],
   },
   {
@@ -471,6 +485,12 @@ function renderTextField(cfg, field) {
   input.placeholder = field.placeholder || '';
   input.addEventListener('input', () => { cfg[field.key] = input.value.trim(); });
   wrap.appendChild(input);
+  if (field.hint) {
+    const hint = document.createElement('div');
+    hint.className = 'field-hint';
+    hint.innerHTML = field.hint; // trusted: static, author-authored guidance
+    wrap.appendChild(hint);
+  }
   return wrap;
 }
 

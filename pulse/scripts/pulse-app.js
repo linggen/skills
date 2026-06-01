@@ -226,16 +226,29 @@ function setChipState(chipId, state) {
 function startChip(chipId, expects) {
   setChipState(chipId, 'running');
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
+    const armTimer = () => setTimeout(() => {
       const rec = runningChips.get(chipId);
       if (rec) {
         runningChips.delete(chipId);
         setChipState(chipId, 'failed');
-        rec.reject(new Error(`chip "${chipId}" timed out after ${CHIP_TIMEOUT_MS}ms`));
+        rec.reject(new Error(`chip "${chipId}" idle for ${CHIP_TIMEOUT_MS}ms`));
       }
     }, CHIP_TIMEOUT_MS);
-    runningChips.set(chipId, { resolve, reject, timer, expects });
+    runningChips.set(chipId, { resolve, reject, timer: armTimer(), expects, armTimer });
   });
+}
+
+// Extend the timeout window on every signal of agent activity (e.g. an
+// incoming PageUpdate). Without this, long-but-active Gather-web runs
+// trip the wall-clock timeout while the agent is still working through
+// 10+ Fetch tools — the chip flips to 'failed' (red !) even though the
+// section content arrived a moment later. Adaptive timeout: fail only
+// when the agent has been genuinely silent for CHIP_TIMEOUT_MS.
+function pingRunningChips() {
+  for (const rec of runningChips.values()) {
+    clearTimeout(rec.timer);
+    rec.timer = rec.armTimer();
+  }
 }
 
 function completeChipFromSectionUpdate(sectionId) {
@@ -473,7 +486,7 @@ async function runGatherWeb() {
     '',
     'Then for each topic, call the most relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS, FetchGoogleTrendsDaily, FetchGitHubTrending) in parallel. Filter results for direct topical fit (score ≥ 0.6).',
     '',
-    'For mention-watching, call FetchRedditMentions — uses public Reddit JSON, no auth required. Works whenever sites.reddit.username is set. Returns kind ∈ {mention, reply_to_me, own_post, own_comment} for (a) threads where the handle appears in post text, (b) direct replies to the user\'s recent comments (pre-walked thread trees — the real "someone replied to me" signal), (c) the user\'s recent posts, (d) the user\'s recent comments. NOTE: own_post and own_comment are context-only — they tell you what the user has been doing publicly. They are NOT cards. Do NOT emit them into any section; in particular, do NOT map them to replies_due (the replies_due section is reserved for posts the user broadcast through Pulse\'s Draft chip, tracked via state/posted.json — replies to comments on someone else\'s thread belong in mentions as reply_to_me, not here).',
+    'For mention-watching, call FetchRedditMentions — uses Reddit RSS feeds (the private inbox feed token for replies; public search RSS for username mentions). Works whenever sites.reddit.username is set. Returns kind ∈ {mention, reply_to_me} for (a) threads where the handle appears in post/comment text, and (b) direct replies to the user\'s recent comments (the real "someone replied to me" signal — the item is pre-walked and carries BOTH your comment via parent_comment_body and the reply via body). NOTE: a reply to a comment on someone else\'s thread belongs in mentions as reply_to_me — do NOT map it to replies_due (that section is reserved for posts the user broadcast through Pulse\'s Draft chip, tracked via state/posted.json).',
     '',
     'For each "mention" kind result, walk the thread tree (WebFetch <thread_url>.json) and emit a RICH mention card per the schema in SKILL.md: include `original_post`, `conversation` (first reply + latest if deep, with `collapsed_count`), and `draft_reply`.',
     '',
@@ -884,6 +897,14 @@ async function mountChat() {
     sessionId: resumeSid || undefined,
     onSessionCreated: grantOnce,
     onContentBlock: (payload) => {
+      // Any content block (tool call, text streaming, PageUpdate, …) is
+      // fresh evidence the agent is still working — bump the running
+      // chips' idle timers before processing. Gather-web typically
+      // spends the first 60-120s calling Fetch tools BEFORE its first
+      // PageUpdate, so gating the ping on PageUpdate alone let the chip
+      // time out during the fetch phase. Pinging on every block keeps
+      // the chip alive as long as the agent is doing anything.
+      pingRunningChips();
       if (payload?.tool === 'PageUpdate' && payload?.args) {
         try {
           const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
@@ -935,7 +956,8 @@ async function sendInitPrompt() {
     'You are Ling, operating inside Pulse. Your full role + workflow is in SKILL.md — read it as your operational contract. Quick recap:',
     '- Pulse is NOT a coding task. There is no codebase to modify here.',
     '- You orchestrate a three-step pipeline (Gather local → Gather web → Draft) by emitting PageUpdate body_patch blocks. Cards on the page are the artifact; chat is only your control bus.',
-    '- After this init, send ONE visible greeting (2-3 lines: introduce as Ling, reference ONE concrete brief detail, optional "I can help…" tied to active context). Then go silent until a chip goal arrives.',
+    '- After this init, send ONE visible greeting as plain chat text (2-3 lines): introduce PULSE itself — it turns the user\'s recent work + live web signal into review-ready draft posts and comment opportunities (you review, never auto-posted), driven by the chips. Sign off as Ling. Do NOT name or list the user\'s products/brands from the brief — introduce what Pulse does, not what they\'re building.',
+    '- The greeting turn is chat-only: do NOT call PageUpdate (or any other tool) on it. Nothing is on the page yet, so an empty/all-null PageUpdate just errors. After the greeting, go silent until a chip goal arrives.',
     '- When a goal arrives, run the step per SKILL.md. Status narration in chat is short factual lines only. NEVER narrate "Done", "No code changes were needed", or acknowledgments of context blocks — silence is correct when there\'s nothing to surface on the page.',
   ];
   if (workspace) {
@@ -1100,7 +1122,15 @@ async function init() {
       refreshCommentedThreadUrls().catch(err => console.warn('[pulse] own-comments prefetch', err));
     }
   } catch {}
-  loadDismissedSet().then(setDismissedUrls).catch(err => console.warn('[pulse] dismissed prefetch', err));
+  // Seed the dismissed-URL set BEFORE the first render or auto-cascade.
+  // It's a fast local file read; awaiting it (rather than fire-and-forget)
+  // guarantees the dismiss filter is populated before a gather's body_patch
+  // arrives — otherwise dismissed cards slip through during a long gather.
+  try {
+    setDismissedUrls(await loadDismissedSet());
+  } catch (err) {
+    console.warn('[pulse] dismissed prefetch', err);
+  }
   wireChips();
   wireCardActions();
   wireChatResizer();

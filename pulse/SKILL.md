@@ -58,13 +58,44 @@ tools:
       ~/.linggen/skills/pulse/config.json (sites.reddit.subs).
       Returns JSON array of {sub, title, url, comments, age_hours,
       summary}. Used by discover-customers and monitor-mentions.
+      Reads Reddit's PUBLIC `.rss` feeds (Reddit closed the anonymous
+      `.json` API in Nov 2025, but `/r/<sub>/new.rss` still works with
+      no auth). `comments`/`score` are 0 (RSS omits them) — score by
+      title/summary relevance.
     cmd: "$SKILL_DIR/scripts/sites/reddit.sh"
     tier: read
     timeout_ms: 30000
+  - name: FetchRedditThread
+    description: >-
+      Pull ONE Reddit thread's OP + comments via the public `.rss` feed
+      (no auth; Reddit closed .json Nov 2025). Pass the thread URL or
+      bare post id. Returns {thread_url, thread_title,
+      op:{author, body, url, age_hours},
+      comments:[{author, body, url, age_hours}] (cap 25), errors}.
+      Used by discover-customers to read the real discussion before
+      drafting a comment-starter — far better than guessing from the
+      thread title alone.
+    cmd: "$SKILL_DIR/scripts/sites/reddit-thread.sh {{thread}}"
+    tier: read
+    timeout_ms: 20000
+    args:
+      thread:
+        type: string
+        required: true
+        description: Reddit thread URL (.../comments/<id>/...) or bare post id.
   - name: FetchRedditMentions
     description: >-
-      Public-JSON Reddit monitoring — no auth required. Reads
-      sites.reddit.username from config, then surfaces (a) recent
+      Reddit mention/reply monitoring via RSS (Reddit closed the .json
+      API Nov 2025; .rss still works). With a `private_rss_feed_token`
+      in config (Settings → Reddit), reads the user's PRIVATE inbox
+      feeds — `reply_to_me` (comment + post replies) and `mention`
+      items — the real "someone replied to me" signal, no OAuth/app.
+      Without a token, falls back to PUBLIC search RSS for u/<username>
+      mentions only (no replies). Returns {items:[{kind, title, body,
+      url, author, sub, created_iso, score, num_comments, watched_term}],
+      count, errors}; kind ∈ reply_to_me | mention. The old fields below
+      describe richer JSON shapes that are no longer reachable — RSS
+      gives title/body/url/author/sub/created_iso, score/num_comments=0.
       threads where u/<username> appears in post text, (b) direct
       replies to the user's recent comments (pre-walked thread trees
       — the real "someone replied to me" signal, since Reddit's
@@ -274,6 +305,13 @@ partner.
   on the page.
 - When a step has no real signal, emit ONE `empty` card with a
   one-line reason and stop. Don't fabricate.
+- **Reddit needs a token for replies:** Reddit's mention/reply data
+  comes from RSS. If `FetchRedditMentions` returns an `errors` entry
+  mentioning `no private_rss_feed_token`, only public username mentions
+  were available (not comment replies). Surface what you got, and if
+  the `mentions` section is thin, add a one-line note: "For Reddit
+  comment replies, add a private RSS token in Settings → Reddit." Don't
+  treat a token-less run as "no activity."
 
 ## What NOT to do
 
@@ -460,7 +498,15 @@ Bluesky keywords.
 4. Score 0–1 for direct fit (the brief's product / expertise must
    genuinely apply).
 5. Drop below 0.6.
-6. For each surviving thread, draft a 2–4 sentence comment starter
+6. **Read the discussion (Reddit).** `FetchReddit` only gives the
+   thread title + a short summary. For each surviving **Reddit** thread
+   worth a comment, call `FetchRedditThread` with its URL/id to pull
+   the OP body + top comments. Ground the `excerpt` and the
+   `draft_starter` in what was actually said — answer the real
+   question / add to the real discussion, and avoid repeating a point
+   an existing comment already made. (Cap the thread fetches to the
+   top ~5 candidates to stay quick.)
+7. For each surviving thread, draft a 2–4 sentence comment starter
    in voice (see lane-templates.md `reddit-comment`). Don't link to
    the user's marketing domain; if a self-mention is genuinely
    natural, max one.
