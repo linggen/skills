@@ -16,7 +16,7 @@ RESPONSE=$(curl -s -X GET "$API_URL/api/library/packs/$ENC_PACK_ID")
 
 if [ $? -ne 0 ]; then
     echo "Error: Could not connect to memory server at $API_URL"
-    echo "Start the server with: ling-mem serve"
+    echo "Start the daemon with: ling-mem start"
     exit 1
 fi
 
