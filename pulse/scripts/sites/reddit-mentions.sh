@@ -105,37 +105,44 @@ TITLE_RE = re.compile(r"from\s+(?P<actor>[^\s]+)\s+via\s+(?P<sub>[^\s]+)\s+sent"
 # Comment (not submission) entries in a thread feed: "/u/<author> on <title>".
 COMMENT_TITLE_RE = re.compile(r"^/u/\S+\s+on\s+", re.I)
 
-def fetch_parent(reply_url):
-    """Recover the parent comment (YOUR comment) for a reply permalink.
+def walk_reply(reply_url, me):
+    """Pre-walk a reply permalink's thread context.
 
     The reply's `.rss?context=1` returns OP + ancestor chain + the reply's
-    subtree as a flat list. The entry immediately before the reply (matched
-    by comment id) is its parent. Returns (body, url) or ("", "")."""
+    subtree as a flat list (ancestors before the reply, descendants after).
+    Returns (parent_body, parent_url, already_replied):
+      - parent_*  : the comment immediately above the reply — i.e. YOUR
+        comment that got replied to.
+      - already_replied: True if `me` authored anything below the reply, i.e.
+        you've already answered it. Each further back-and-forth arrives as its
+        own inbox notification, so a handled reply shouldn't keep nagging."""
     base = to_www(reply_url).split("?")[0].rstrip("/")
     reply_id = base.split("/")[-1]
     try:
         root = ET.fromstring(fetch(base + "/.rss?context=1&limit=50"))
     except Exception:
-        return "", ""
+        return "", "", False
     ents = []
     for e in root.findall("a:entry", NS):
         t = (e.findtext("a:title", "", NS) or "").strip()
         l = e.find("a:link", NS)
         h = l.get("href") if l is not None else ""
+        author = (e.findtext("a:author/a:name", "", NS) or "").strip()
+        author = author.split("/")[-1].lower()  # "/u/Name" -> "name"
         c = strip_html(e.findtext("a:content", "", NS) or "")
-        ents.append((t, h, c))
-    ids = [comment_id(h) for _, h, _ in ents]
+        ents.append((t, h, author, c))
+    ids = [comment_id(h) for _, h, _, _ in ents]
     if reply_id not in ids:
-        return "", ""
+        return "", "", False
     pos = ids.index(reply_id)
-    if pos <= 0:
-        return "", ""
-    pt, ph, pc = ents[pos - 1]
-    # If the entry above the reply is the submission (OP), not a comment,
-    # there's no parent comment to show.
-    if not COMMENT_TITLE_RE.match(pt):
-        return "", ""
-    return pc[:1500], to_www(ph)
+    # Parent = entry just above the reply, if it's a comment (not the OP).
+    parent_body, parent_url = "", ""
+    if pos > 0 and COMMENT_TITLE_RE.match(ents[pos - 1][0]):
+        parent_body, parent_url = ents[pos - 1][3][:1500], to_www(ents[pos - 1][1])
+    # Already replied = you authored any comment in the reply's subtree.
+    me = me.lower()
+    already_replied = any(a == me for _, _, a, _ in ents[pos + 1:])
+    return parent_body, parent_url, already_replied
 
 def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
     root = ET.fromstring(xml_bytes)
@@ -155,11 +162,17 @@ def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
         if sub and not sub.startswith("r/"):
             sub = "r/" + sub
         www_url = to_www(url)
-        # For replies, pre-walk to recover YOUR comment (the parent). Mentions
-        # have no parent comment (someone wrote u/<you> in their own comment).
+        # For replies, pre-walk to recover YOUR comment (the parent) and to
+        # tell whether you've already answered. Mentions have no parent
+        # comment (someone wrote u/<you> in their own comment).
         parent_body, parent_url = ("", "")
         if kind == "reply_to_me" and www_url:
-            parent_body, parent_url = fetch_parent(www_url)
+            parent_body, parent_url, already_replied = walk_reply(www_url, username)
+            # You already replied below this comment — not actionable. Skip it
+            # so it stops showing as an unanswered mention. (Any newer reply
+            # arrives as its own inbox notification.)
+            if already_replied:
+                continue
         items.append({
             "kind": kind,
             "title": title[:300],
