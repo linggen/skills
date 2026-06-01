@@ -470,8 +470,8 @@ versions, and the user should know what they're accepting.
 bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/main/shared-memory/install.sh)
 
 # 2. Install this skill via your host's CLI:
-openclaw skills install shared-memory   # OpenClaw users
-clawhub install shared-memory           # ClawHub CLI direct
+openclaw skills install ling-mem        # OpenClaw users
+clawhub install ling-mem                # ClawHub CLI direct (clawhub.ai/linggen/ling-mem)
 ```
 
 The skill works in Claude Code, OpenClaw, Linggen, or standalone — same
