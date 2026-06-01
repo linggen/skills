@@ -20,6 +20,7 @@
 import {
   fetchDefaultModel,
   fetchMemoryCount,
+  listSkillSessions,
   readJsonFile,
   readJsonl,
   readJsonlHeader,
@@ -77,11 +78,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       modelId = localStorage.getItem('memory:model') || defaultModel || '';
     } catch { /* ignore */ }
   }
+  // Opening from the skill card has no `?session=`. Resume the most recent
+  // ling-mem session by default instead of spawning a fresh one each time;
+  // the "+" button is the explicit "new session" path.
   const existingSession = params.get('session') || '';
-  setupSessionsIframe(existingSession || null);
+  const initialSession = existingSession || (await latestSkillSession());
+  // Reflect a resumed session in the URL so reload/refresh stays put and the
+  // sidebar can highlight it (active=<sid>).
+  if (!existingSession && initialSession) {
+    const url = new URL(window.location);
+    url.searchParams.set('session', initialSession);
+    history.replaceState(null, '', url);
+  }
+  setupSessionsIframe(initialSession || null);
   window.addEventListener('message', handleSessionsMessage);
-  await mountAndStart(existingSession || null);
+  await mountAndStart(initialSession || null);
 });
+
+// Most recent ling-mem skill session id, or '' if none exists yet.
+async function latestSkillSession() {
+  try {
+    const sessions = await listSkillSessions(SKILL_NAME);
+    if (!sessions.length) return '';
+    // list order isn't guaranteed — pick the newest by created_at.
+    const latest = sessions.reduce((a, b) =>
+      (b.created_at || 0) > (a.created_at || 0) ? b : a);
+    return latest.id || '';
+  } catch {
+    return '';
+  }
+}
 
 async function mountAndStart(sessionId) {
   const chatPanel = document.getElementById('chat-panel');
