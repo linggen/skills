@@ -26,24 +26,22 @@ async function mount(el, options) {
     if (onSessionCreated) onSessionCreated(sessionId);
   }
 
-  const params = new URLSearchParams({
-    skill: skillName,
-    session: sessionId,
-    hide_toolbar: '1',
-  });
-  if (modelId) params.set('model', modelId);
-
-  let iframeSrc;
-  if (isRemote) {
-    const instanceId = instanceMeta.getAttribute('content') || '';
-    const relayOrigin = (document.querySelector('meta[name="linggen-relay-origin"]') || {}).content || window.location.origin;
-    iframeSrc = `${relayOrigin}/app/connect/${instanceId}?${params.toString()}&entry=embed`;
-  } else {
-    iframeSrc = `/embed?${params.toString()}`;
+  // Build the embed iframe URL for a session. Used at mount and by
+  // setSession() so switching sessions only reloads this chat iframe — not
+  // the host page (which would also tear down the session sidebar).
+  function buildSrc(sid) {
+    const p = new URLSearchParams({ skill: skillName, session: sid, hide_toolbar: '1' });
+    if (modelId) p.set('model', modelId);
+    if (isRemote) {
+      const instanceId = instanceMeta.getAttribute('content') || '';
+      const relayOrigin = (document.querySelector('meta[name="linggen-relay-origin"]') || {}).content || window.location.origin;
+      return `${relayOrigin}/app/connect/${instanceId}?${p.toString()}&entry=embed`;
+    }
+    return `/embed?${p.toString()}`;
   }
 
   const iframe = document.createElement('iframe');
-  iframe.src = iframeSrc;
+  iframe.src = buildSrc(sessionId);
   iframe.style.cssText = 'width:100%;height:100%;border:none;';
   iframe.allow = 'clipboard-write';
   el.appendChild(iframe);
@@ -109,6 +107,19 @@ async function mount(el, options) {
     getSessionId() { return sessionId; },
     setOptions(opts) {
       if (opts.modelId) modelId = opts.modelId;
+    },
+    /** Re-point the chat iframe at a different session in place. Only this
+     *  iframe reloads; the host page (and its session sidebar) stay mounted.
+     *  Resolves once the new session's chat has loaded. */
+    async setSession(sid) {
+      if (!sid || sid === sessionId) return;
+      sessionId = sid;
+      streamBuffer = '';
+      const loaded = new Promise((resolve) => {
+        iframe.addEventListener('load', resolve, { once: true });
+      });
+      iframe.src = buildSrc(sid);
+      await loaded;
     },
   };
 }

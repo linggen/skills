@@ -61,14 +61,35 @@ function handleSessionsMessage(e) {
   const sid = e.data.payload?.sessionId;
   if (!sid) return;
   if (e.data.event === 'session_select' || e.data.event === 'session_create') {
-    // Memory's dashboard greeting runs per session; switch by URL so
-    // chat-bridge re-mounts on the new session.
-    const url = new URL(window.location.href);
-    url.searchParams.set('session', sid);
-    if (url.toString() !== window.location.href) {
-      window.location.href = url.toString();
-    }
+    switchSession(sid).catch(err => console.warn('[memory] switch session failed', err));
   }
+}
+
+// Switch to a different session WITHOUT a full page reload: re-point the chat
+// iframe, repaint the per-session dashboard, sync the URL, and tell the
+// sidebar to move its highlight. Avoids the empty-flash a reload caused.
+async function switchSession(sid) {
+  if (!chat || sid === chat.getSessionId()) return;
+  const url = new URL(window.location);
+  url.searchParams.set('session', sid);
+  history.replaceState(null, '', url);
+  setSidebarActive(sid);
+  await chat.setSession(sid);
+  if (await tryRestoreCached(sid)) {
+    refreshTierCounts().catch(() => {});
+    return;
+  }
+  await paintDashboard();
+  setTimeout(() => { if (chat) chat.sendHidden(BOOT_PROMPT); }, 1500);
+  refreshTierCounts().catch(() => {});
+}
+
+// Move the sidebar iframe's highlight to `sid` without reloading it
+// (BareSessions listens for this `set_active` message).
+function setSidebarActive(sid) {
+  const ifr = document.getElementById('sessions-iframe');
+  ifr?.contentWindow?.postMessage(
+    { type: 'linggen-skill', action: 'set_active', payload: { sessionId: sid } }, '*');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

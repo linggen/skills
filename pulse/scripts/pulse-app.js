@@ -82,37 +82,38 @@ function handleSessionsMessage(e) {
   if (e.data?.type !== 'linggen-skill-event') return;
   const sid = e.data.payload?.sessionId;
   if (!sid) return;
-  if (e.data.event === 'session_select') {
-    selectSession(sid);
-  } else if (e.data.event === 'session_create') {
-    // Iframe just created a new pulse session on the engine. Navigate to
-    // it so chat-bridge mounts on the new session and the init prompt
-    // fires.
-    const url = new URL(window.location.href);
-    url.searchParams.set('session', sid);
-    window.location.href = url.toString();
+  if (e.data.event === 'session_select' || e.data.event === 'session_create') {
+    selectSession(sid).catch(err => console.warn('[pulse] switch session failed', err));
   }
 }
 
 // ---- Session selection ---------------------------------------------------
 
 async function selectSession(sid) {
-  // If picking a past session, navigate so the chat attaches to it too.
-  // Active session = the one chat is currently attached to. Past =
-  // anything else; clicking switches via URL param + reload (chat-bridge
-  // can't re-mount on a different session mid-page).
-  if (state.activeSessionId && sid !== state.activeSessionId) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('session', sid);
-    window.location.href = url.toString();
-    return;
-  }
+  // Switch in place: re-point the chat iframe at the session and re-render
+  // the section cards for it. No full page reload, so the session sidebar
+  // doesn't flash empty. chat-bridge.setSession reloads only the chat iframe.
+  if (!sid || sid === state.viewSessionId) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('session', sid);
+  history.replaceState(null, '', url);
   state.viewSessionId = sid;
+  state.activeSessionId = sid;
+  setSidebarActive(sid);
+  if (state.chat) await state.chat.setSession(sid);
   const sess = await readJson(`${SKILL_DIR}/data/${sid}/session.json`);
   loadSession(sess);
   document.getElementById('session-title').textContent = 'pulse session';
   document.getElementById('session-sub').textContent =
     'Pick a chip above, or type a goal in chat to start.';
+}
+
+// Move the sidebar iframe's highlight without reloading it (BareSessions
+// listens for this `set_active` message).
+function setSidebarActive(sid) {
+  const ifr = document.getElementById('sessions-iframe');
+  ifr?.contentWindow?.postMessage(
+    { type: 'linggen-skill', action: 'set_active', payload: { sessionId: sid } }, '*');
 }
 
 // ---- Persistence ---------------------------------------------------------

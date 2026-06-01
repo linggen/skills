@@ -45,28 +45,24 @@ async function mount(el, options) {
     if (onSessionCreated) onSessionCreated(sessionId);
   }
 
-  // Build iframe URL
-  const params = new URLSearchParams({
-    skill: skillName,
-    session: sessionId,
-    hide_toolbar: '1',
-  });
-  if (modelId) params.set('model', modelId);
-
-  let iframeSrc;
-  if (isRemote) {
-    // Remote: load embed chat via connect page (establishes its own WebRTC).
-    // The connect page forwards the query string to /embed on the local peer.
-    const instanceId = instanceMeta.getAttribute('content') || '';
-    const relayOrigin = (document.querySelector('meta[name="linggen-relay-origin"]') || {}).content || window.location.origin;
-    iframeSrc = `${relayOrigin}/app/connect/${instanceId}?${params.toString()}&entry=embed`;
-  } else {
-    // Local: load embed chat directly from the local server
-    iframeSrc = `/embed?${params.toString()}`;
+  // Build the embed iframe URL for a given session. Used at mount and by
+  // setSession() so switching sessions only reloads this chat iframe — never
+  // the host page (which would also tear down the session sidebar).
+  function buildSrc(sid) {
+    const p = new URLSearchParams({ skill: skillName, session: sid, hide_toolbar: '1' });
+    if (modelId) p.set('model', modelId);
+    if (isRemote) {
+      // Remote: load embed chat via connect page (establishes its own WebRTC).
+      const instanceId = instanceMeta.getAttribute('content') || '';
+      const relayOrigin = (document.querySelector('meta[name="linggen-relay-origin"]') || {}).content || window.location.origin;
+      return `${relayOrigin}/app/connect/${instanceId}?${p.toString()}&entry=embed`;
+    }
+    // Local: load embed chat directly from the local server.
+    return `/embed?${p.toString()}`;
   }
 
   const iframe = document.createElement('iframe');
-  iframe.src = iframeSrc;
+  iframe.src = buildSrc(sessionId);
   iframe.style.cssText = 'width:100%;height:100%;border:none;';
   iframe.allow = 'clipboard-write';
   el.appendChild(iframe);
@@ -144,6 +140,19 @@ async function mount(el, options) {
     getSessionId() { return sessionId; },
     setOptions(opts) {
       if (opts.modelId) modelId = opts.modelId;
+    },
+    /** Re-point the chat iframe at a different session in place. Only this
+     *  iframe reloads; the host page (and its session sidebar) stay mounted.
+     *  Resolves once the new session's chat has loaded. */
+    async setSession(sid) {
+      if (!sid || sid === sessionId) return;
+      sessionId = sid;
+      streamBuffer = '';
+      const loaded = new Promise((resolve) => {
+        iframe.addEventListener('load', resolve, { once: true });
+      });
+      iframe.src = buildSrc(sid);
+      await loaded;
     },
   };
 }
