@@ -173,6 +173,10 @@ def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
             # arrives as its own inbox notification.)
             if already_replied:
                 continue
+            # Your comment was deleted/removed — the reply chain is dead, there's
+            # nothing to reply to. Drop it.
+            if parent_body.strip().lower() in ("[deleted]", "[removed]"):
+                continue
         items.append({
             "kind": kind,
             "title": title[:300],
