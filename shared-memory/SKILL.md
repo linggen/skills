@@ -107,10 +107,12 @@ change when you switch agents.
 | Delete | `ling-mem delete <id> --yes` |
 
 (Linggen separately ships `Memory_query` / `Memory_write` as engine-
-built-in tools wired to the same daemon — used by the engine's own
-auto-recall + dream paths. This skill doesn't depend on them; **call
-the CLI here** so behaviour is identical whether you're inside Linggen
-or any other host.)
+built-in tools wired to the same daemon. In **chat mode**, call the CLI
+here so behaviour is identical across hosts. The **dream** is the one
+exception: on Linggen it prefers those built-in tools because they're
+Chat-tier and ungated — zero permission prompts across a pass full of
+writes — and falls back to the CLI on headless hosts. See
+`references/dream-flow.md` → *Interface*.)
 
 **Always pipe CLI list/search/get output through `jq -c 'del(.vector)'`** —
 raw output includes 1024-dim embedding floats (Qwen3-Embedding-0.6B) that blow up context.

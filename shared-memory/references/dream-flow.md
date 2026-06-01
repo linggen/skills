@@ -14,6 +14,48 @@ step lives in `scripts/scan.sh` (no standalone verb — `dream` is the
 only caller) and refreshes the candidate set itself, so a normal
 `dream` no longer depends on a prior manual scan.
 
+## Interface — `Memory_*` tools on Linggen, `ling-mem` CLI elsewhere
+
+Every memory op below has two forms. Pick by **which tools you have in
+this session**:
+
+- **Linggen** — you have the built-in **`Memory_query`** /
+  **`Memory_write`** tools. **Use them.** They're **Chat-tier
+  (ungated)**, so the whole dream runs with **zero memory-op permission
+  prompts** — that is the entire point of this split. The recurring
+  Bash-permission prompts came from routing every `ling-mem` call
+  through `Bash`; the built-in tools skip that path.
+- **Claude Code / Codex / OpenClaw** — no such tools. Use the
+  **`ling-mem` CLI via `Bash`** (the forms shown in each phase).
+
+`scan.sh` (Phase 0) always runs via `Bash` — there's no tool
+equivalent, so it's identical on every host.
+
+| Op | Linggen tool | Headless CLI |
+|:---|:---|:---|
+| Search | `Memory_query{verb:"search", query, limit}` | `ling-mem search "<q>" --limit N` |
+| Worklist (past-TTL episodic) | `Memory_query{verb:"list", tier:"episodic", past_ttl:true, limit:200}` | `ling-mem list --episodic --older-than "${TTL_DAYS}d"` |
+| Add | `Memory_write{verb:"add", content, type, from[, tier][, contexts]}` | `ling-mem add "<text>" --type t --from f [--tier core] [--context c]` |
+| Delete one | `Memory_write{verb:"delete", id}` | `ling-mem delete <id> --yes` |
+| Resolve conflict (atomic) | `Memory_write{verb:"add", content, type, from, replace_ids:[<loser>…]}` | `ling-mem add "<winner>" …` then `ling-mem delete <loser> --yes` |
+
+Two Linggen-only simplifications fall out of the tool path:
+
+- **`past_ttl:true`** resolves the TTL cutoff server-side, so on Linggen
+  you **skip the `curl …/api/config` + `TTL_DAYS`** dance in Phase 3.
+- **`replace_ids`** makes contradiction resolution **atomic** — one call
+  adds the winner and deletes every loser across both tables, with no
+  write-then-delete ordering to reason about.
+
+There's **no bulk-forget tool.** On Linggen, evict by deleting each
+past-TTL row you don't promote with `Memory_write{verb:"delete", id}`
+(you're already iterating the worklist row by row). The headless
+`ling-mem … forget --older-than` bulk sweep stays CLI-only.
+
+`Memory_query` returns JSON directly — **no `jq` / `del(.vector)` strip
+needed**, the tool already omits embeddings. The CLI forms still pipe
+through `| jq -c 'del(.vector)'`.
+
 **Window argument** — `/shared-memory dream [window]` selects how far
 back the Phase 0 scan walks. Defaults to **24h**. Accepts the same
 grammar as `scan.sh`:
@@ -102,10 +144,13 @@ pointer to engine `agents/ling-mem.md` ENCODE phase). Rules:
   - **`episodic`** — incidental durable signal, single-mention
     candidates, anything you're not yet sure earns long-term shelf
     space. Consolidator (Phase 3) promotes or evicts past-TTL.
-- **Read before write — every row**: `ling-mem search "<gist>" --format
-  json | jq -c 'del(.vector)'`. If an equivalent value exists, skip.
-  If a contradicting value exists, write anyway — never drop what the
-  source said. Don't merge / rewrite / mark-stale.
+- **Read before write — every row**, then add at the routed tier (see
+  the **Interface** table above): search the gist first —
+  `Memory_query{verb:"search", query:"<gist>"}` on Linggen,
+  `ling-mem search "<gist>" --format json | jq -c 'del(.vector)'`
+  headless. If an equivalent value exists, skip. If a contradicting
+  value exists, write anyway — never drop what the source said. Don't
+  merge / rewrite / mark-stale.
 
 The binary's `insert_with_dedup` rejects *exact-content* duplicates
 mechanically. Fuzzy "same fact, different wording" is the LLM's job
@@ -116,10 +161,15 @@ here, not the binary's.
 For each past-TTL episodic row, make **one terminal decision** — there
 is no "leave it" in episodic.
 
-**TTL is user-configurable** via the daemon's `/api/config` endpoint
-(defaults to 7 days; dashboard gear icon at `http://127.0.0.1:9888/`
-edits it). Read it once at the start of Phase 3 so every host honors
-the same value:
+**TTL is user-configurable** (defaults to 7 days; dashboard gear icon at
+`http://127.0.0.1:9888/` edits it). Get the worklist — every past-TTL
+episodic row in one call:
+
+- **Linggen:** `Memory_query{verb:"list", tier:"episodic", past_ttl:true,
+  limit:200}`. `past_ttl` resolves the cutoff server-side from the
+  daemon's configured `episodic_ttl_days` — **no TTL math, no `curl`.**
+- **Headless:** read the TTL first, then list; after promoting the
+  keepers, bulk-evict the rest:
 
 ```bash
 TTL_DAYS=$(curl -s http://127.0.0.1:9888/api/config 2>/dev/null \
@@ -129,30 +179,40 @@ TTL_DAYS=$(curl -s http://127.0.0.1:9888/api/config 2>/dev/null \
 ling-mem list --episodic --older-than "${TTL_DAYS}d" --format json \
   | jq -c 'del(.vector)'
 
-# Bulk-evict past-TTL rows the LLM doesn't promote (this replaces
-# the old `ling-mem evict --before <ts>` verb — same semantics, now
-# the bulk-forget path with a duration filter):
+# Bulk-evict past-TTL rows the LLM doesn't promote (replaces the old
+# `ling-mem evict --before <ts>` verb — same semantics, duration filter):
 ling-mem --episodic forget --older-than "${TTL_DAYS}d" --yes
 ```
 
 `--older-than` accepts `<n><unit>` for `s|m|h|d|w`; the CLI computes
-the cutoff date and applies it as `--until <now-duration>` to the
-request, so the skill never has to know about RFC-3339 timestamps.
+the cutoff date and applies it as `--until <now-duration>`, so the
+skill never has to know about RFC-3339 timestamps. Headless override
+(no daemon reachable): set `LING_MEM_EPISODIC_TTL_DAYS=30` before
+invoking the dream — read it into `$TTL_DAYS` before the `curl` line.
+Falls back to 7 if neither source is available.
 
-Headless override (no daemon reachable): set
-`LING_MEM_EPISODIC_TTL_DAYS=30` before invoking the dream — read it
-into `$TTL_DAYS` before the `curl` line. Falls back to 7 if neither
-source is available.
+**Evicting on Linggen:** there's no bulk-forget tool, so delete each
+worklist row you decide *not* to promote with
+`Memory_write{verb:"delete", id:<episodic-id>}`. You inspect every row
+anyway — promote the keepers, delete the rest.
 
 - **Promote** (durable user biography, cross-project preference,
-  decision-with-reasoning, re-hit gotcha):
-  `ling-mem add "<text>" --type <t> --from <from> [--tier core] --context <c> [...]`,
-  then `ling-mem delete <episodic-id> --yes`.
-- **Delete** (not worth keeping):
-  `ling-mem delete <episodic-id> --yes`.
+  decision-with-reasoning, re-hit gotcha) — add to semantic/core, then
+  delete the episodic source:
+  - **Linggen:** `Memory_write{verb:"add", content, type, from[,
+    tier:"core"][, contexts]}` → `Memory_write{verb:"delete",
+    id:<episodic-id>}`.
+  - **Headless:** `ling-mem add "<text>" --type <t> --from <from>
+    [--tier core] --context <c>` → `ling-mem delete <episodic-id> --yes`.
+- **Delete** (not worth keeping): `Memory_write{verb:"delete", id}`
+  (Linggen) / `ling-mem delete <episodic-id> --yes` (headless).
 
 **Search before promote.** For each candidate, search the gist in
 semantic *and* in any other episodic rows you haven't processed yet:
+
+- **Linggen:** `Memory_query{verb:"search", query:"<gist>", limit:8}`,
+  then again with `tier:"episodic"`.
+- **Headless:**
 
 ```bash
 ling-mem search "<gist>" --limit 8 --format json | jq -c 'del(.vector)'
@@ -167,8 +227,8 @@ universal rule; the dream-specific application:
 |:---|:---|:---|
 | Candidate matches an existing semantic row (same meaning) | Skip the promote, **delete the episodic source.** | AskUser ("are these the same?") → act on answer. |
 | Two episodic candidates this pass are dups of each other | Pick the better-phrased one, promote it, delete the other. | AskUser before merging. |
-| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → on the user's pick, `ling-mem add "<winner>" --type <t> --from <f>` then `ling-mem delete <loser-id> --yes` (write first, then delete — the CLI has no atomic replace verb). | Same — always ask. |
-| Three+ rows on one subject (cluster) | AskUser once with the cluster, then write the winner once and `ling-mem delete <id> --yes` each loser. | Same. |
+| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → on the user's pick: **Linggen** `Memory_write{verb:"add", content:"<winner>", type, from, replace_ids:[<loser-id>…]}` (atomic add+delete across both tables). **Headless** `ling-mem add "<winner>" --type <t> --from <f>` then `ling-mem delete <loser-id> --yes` (write first, then delete — CLI has no atomic replace verb). | Same — always ask. |
+| Three+ rows on one subject (cluster) | AskUser once with the cluster, then write the winner once — **Linggen** one `Memory_write` add with every loser id in `replace_ids`; **Headless** `ling-mem add "<winner>" …` then `ling-mem delete <id> --yes` per loser. | Same. |
 
 **Asking when the host has no structured AskUser tool:** dream is
 user-invoked, so the user is reachable. Write the question in plain
@@ -327,6 +387,9 @@ Row-level edit: http://127.0.0.1:9888/?since=<run-started-at>
 
 ## Tool-call hygiene
 
-`ling-mem` argument parser is strict: **omit optional fields** rather
-than passing empty strings. `since: ""`, `from: ""`, `outcome: ""`
-all cause 422. Enums are lowercase. `limit` is an integer.
+On **Linggen** the `Memory_*` tools strip soft-empty fields for you —
+the engine drops `""` / `[]` / `null` before dispatch, and on a
+`past_ttl` sweep it also drops over-constraining `type` / `from` /
+`outcome`. The **`ling-mem` CLI** parser is strict: **omit optional
+fields** rather than passing empty strings. `since: ""`, `from: ""`,
+`outcome: ""` all cause 422. Enums are lowercase. `limit` is an integer.
