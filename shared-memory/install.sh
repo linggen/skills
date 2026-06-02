@@ -66,7 +66,7 @@ if [ -z "$SOURCE_DIR" ] || [ ! -f "$SOURCE_DIR/SKILL.md" ]; then
   # Pinned to a per-skill scoped tag so a `curl | bash` one-liner
   # fetches a known revision, not whatever main currently points at.
   # Users can override with LING_MEM_REPO_REF=main for HEAD.
-  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-shared-memory-v0.6.2}"
+  BOOTSTRAP_REF="${LING_MEM_REPO_REF:-shared-memory-v0.7.2}"
   BOOTSTRAP_URL="https://github.com/${BOOTSTRAP_REPO}/archive/${BOOTSTRAP_REF}.tar.gz"
   BOOTSTRAP_TMP="$(mktemp -d -t shared-memory-bootstrap-XXXXXX)"
   BOOTSTRAP_TAR="$BOOTSTRAP_TMP/skills.tar.gz"
@@ -113,7 +113,7 @@ Binary: /usr/local/bin/ling-mem if writable, otherwise
   LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: ${VERSION})
                              use 'latest' for the most recent release
   LING_MEM_REPO_REF=<ref>    skills repo ref for curl|bash bootstrap
-                             (default: shared-memory-v0.6.2)
+                             (default: shared-memory-v0.7.2)
   LING_MEM_SKIP_CHECKSUM=1   skip SHA256 verification (not recommended)
   LING_MEM_FORCE_DOWNLOAD=1  re-fetch the binary even if present
   LING_MEM_SKIP_CODEX=1      skip the Codex stub + sandbox wiring
