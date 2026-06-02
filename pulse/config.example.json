@@ -17,6 +17,11 @@
       "username": "",
       "private_rss_feed_token": ""
     },
+    "x": {
+      "enabled": false,
+      "username": "",
+      "keywords": []
+    },
     "lobsters": {
       "enabled": false
     },

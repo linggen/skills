@@ -47,6 +47,28 @@ const WEBSITES = [
     ],
   },
   {
+    name: 'X (Twitter)',
+    desc: 'Mentions/replies + topic discovery via the official X API v2, using your own developer credentials (pay-per-use). Pulse drafts replies & posts; you copy them to X manually — no auto-posting.',
+    source_id: 'x',
+    source_fields: [
+      { kind: 'chips', key: 'keywords', label: 'Discovery keywords (topics to search, not brand names)' },
+      {
+        kind: 'text',
+        key: 'username',
+        label: 'My X handle (optional, for display)',
+        placeholder: 'e.g. linggen — without the @ prefix',
+        hint:
+          'X has no free API. Pulse uses <b>your own</b> developer-app credentials (pay-per-use, ~$0.001–0.01 per search), stored at <code>~/.linggen/skills/pulse/credentials/x.env</code>. Set them up once:' +
+          '<ol>' +
+          '<li>Already use the <b>xbot</b> skill? Copy its creds:<br><code>cp ~/.linggen/skills/xbot/credentials/x.env ~/.linggen/skills/pulse/credentials/x.env</code></li>' +
+          '<li>Otherwise, at <a href="https://developer.x.com" target="_blank" rel="noopener">developer.x.com</a> create an App, buy credits (Billing → Credits, $5 min), set auth to <b>Read and Write</b>, copy your Consumer Key/Secret, and generate an Access Token/Secret.</li>' +
+          '<li>Create the file and paste the four keys:<br><code>mkdir -p ~/.linggen/skills/pulse/credentials</code><br>then in <code>x.env</code>:<br><code>X_API_KEY="…"</code><br><code>X_API_SECRET="…"</code><br><code>X_ACCESS_TOKEN="…"</code><br><code>X_ACCESS_TOKEN_SECRET="…"</code></li>' +
+          '</ol>' +
+          'Keep this file private. Without it, the X source + mentions stay empty.',
+      },
+    ],
+  },
+  {
     name: 'Lobsters',
     desc: 'Lobste.rs newest feed.',
     source_id: 'lobsters',

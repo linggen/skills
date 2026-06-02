@@ -113,6 +113,41 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/reddit-mentions.sh"
     tier: read
     timeout_ms: 30000
+  - name: FetchX
+    description: >-
+      Search recent X (Twitter) posts for a topic — discovery + signal.
+      Uses the official X API v2 recent-search with the user's OWN dev
+      credentials (~/.linggen/skills/pulse/credentials/x.env, set up via
+      Settings → X; Pulse is independent of the xbot skill). Pass a topic
+      query; excludes retweets/replies, English only. Recent search covers
+      ~the last 7 days. Returns a JSON array of
+      {source:"x", author, handle, followers, title, text, url, score,
+      likes, reposts, replies, created_iso, age_hours} (title == text, so
+      score it like a Reddit thread). [] when creds are absent. Each call
+      costs X API credits (~$0.001–0.01) — cap to the top few topics.
+    cmd: "$SKILL_DIR/scripts/sites/x-search.sh {{query}}"
+    tier: read
+    timeout_ms: 25000
+    args:
+      query:
+        type: string
+        required: true
+        description: Topic/keyword to search recent X posts for.
+  - name: FetchXMentions
+    description: >-
+      X (Twitter) mention/reply monitoring via the official API v2 with the
+      user's OWN credentials (Settings → X). Surfaces recent mentions and
+      replies to the user's tweets; for replies it resolves the tweet you
+      replied-to and, when that parent is YOUR tweet, attaches it as
+      parent_comment_body (so the card shows your tweet + their reply + a
+      draft, same shape as FetchRedditMentions). Returns {items:[{kind,
+      title, body, url, author, created_iso, score, watched_term,
+      parent_comment_body?, parent_comment_url?}], count, errors}; kind ∈
+      reply_to_me | mention. Empty + error when creds are absent. ~2 API
+      calls per run (your X credits); recent mentions only.
+    cmd: "$SKILL_DIR/scripts/sites/x-mentions.sh"
+    tier: read
+    timeout_ms: 30000
   - name: FetchBlueskyMentions
     description: >-
       Public AT Proto monitoring for Bluesky — no auth required.

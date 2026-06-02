@@ -2,3 +2,7 @@
 .claude/
 .cursor/
 .fastembed_cache/
+
+# Python bytecode
+__pycache__/
+*.pyc
