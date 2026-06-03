@@ -342,6 +342,14 @@ partner.
   on the page.
 - When a step has no real signal, emit ONE `empty` card with a
   one-line reason and stop. Don't fabricate.
+- **A tool error or empty result is NEVER a card.** Every mention /
+  reply / discovery / trend card must come from a real item a Fetch
+  tool actually returned, about a real person/repo/thread. Do NOT
+  invent a "system" mention, status card, error card, or
+  setup-instructions card (e.g. "X mentions unavailable — add
+  credentials in Settings") when a tool returns empty or an `errors`
+  entry. Skip that source silently; surface "nothing found" only via
+  the section's single `empty` card. Tool plumbing never becomes content.
 - **Reddit needs a token for replies:** Reddit's mention/reply data
   comes from RSS. If `FetchRedditMentions` returns an `errors` entry
   mentioning `no private_rss_feed_token`, only public username mentions
