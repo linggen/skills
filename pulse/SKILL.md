@@ -658,11 +658,14 @@ configured source tools:
   the same shape as FetchRedditMentions
 
 Filter for hits where the term appears in title or summary. For each
-Reddit hit, **walk the comment tree** to assemble conversational
-context — the user needs to remember what the thread is about, not
-just the mention quote. Fetch the thread JSON via WebFetch on
-`<thread_url>.json` (Reddit's public JSON), then extract the OP and
-the chain leading down to the comment that mentioned the term.
+Reddit hit, **read the thread with `FetchRedditThread`** to assemble
+conversational context — the user needs to remember what the thread is
+about, not just the mention quote. Do NOT WebFetch `<thread_url>.json`:
+Reddit closed its public JSON in Nov 2025 and that fetch is bot-walled
+(403). `FetchRedditThread` (RSS-based) is the working reader; extract the
+OP and the chain leading to the comment that mentioned the term. If the
+thread read fails, still emit the mention card from the hit's own fields
+rather than dropping it.
 
 Mention card shape:
 
