@@ -72,10 +72,17 @@
       <h2>Auto-compact threshold</h2>
       <p class="card-sub">
         Pulse pulls full Reddit threads (OP + every comment) during Gather Web,
-        which fills the agent's context fast. Lower thresholds compact earlier
-        — at the cost of more summarization passes; higher thresholds keep
-        verbatim history longer at the cost of bigger turns.
-        The engine default is 95%; Pulse defaults to 50%.
+        which fills the agent's context fast. Higher thresholds keep verbatim
+        history longer at the cost of bigger turns; lower thresholds compact
+        earlier to save context. The engine default is 95%; Pulse defaults to
+        70%.
+      </p>
+      <p class="card-sub card-hint">
+        <strong>Don't go below ~60%.</strong> Gather Web reads several full
+        threads in one pass; if compaction fires <em>during</em> a gather it
+        summarizes those reads away before the agent can draft from them, so
+        Discovery and Mentions come back empty (the agent can't ground a draft
+        on data that's gone). 60–80% leaves room for a gather to finish first.
       </p>
       <div class="workspace-row">
         <input
@@ -85,7 +92,7 @@
           min="10"
           max="99"
           step="1"
-          placeholder="50"
+          placeholder="70"
         />
         <span class="card-meta" style="margin-left: 8px;">% of context window</span>
       </div>

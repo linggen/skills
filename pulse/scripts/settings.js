@@ -244,7 +244,7 @@ function render() {
     // Stored as fraction 0.10–0.99; UI shows as integer percent.
     const t = typeof state.config.compact_threshold === 'number'
       ? Math.round(state.config.compact_threshold * 100)
-      : 50;
+      : 70;
     ctInput.value = String(t);
   }
   renderWebsites();
