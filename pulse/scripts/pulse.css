@@ -1,6 +1,6 @@
 /* Pulse — main page styles. Follows system light/dark preference.
    3-column layout: sessions sidebar / cards / chat. Card grammar:
-   mention, reply, discovery, signal, progress, draft, empty.
+   mention, reply, discovery, trend, progress, draft, empty.
    Theming pattern matches sys-doctor: light defaults at :root, dark
    override in @media (prefers-color-scheme: dark). */
 
@@ -110,7 +110,26 @@ body {
 
 .session-header {
   padding: 0.4rem 0.1rem 0.85rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
+.session-header-text { min-width: 0; }
+.new-session-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s;
+}
+.new-session-btn:hover { background: var(--accent); color: #fff; }
 .session-header .title {
   font-size: 18px;
   font-weight: 600;

@@ -8,14 +8,14 @@
 
 // Section render order. `progress_drafts` is pinned to the TOP so the
 // "Local progress" card (gather-local's narrative + Draft chip output)
-// stays visible when new mentions / signal / discovery cards arrive —
+// stays visible when new mentions / trend / discovery cards arrive —
 // previously it was last in the list and got pushed off-screen.
 const SECTION_ORDER = [
   'progress_drafts',
   'mentions',
   'replies_due',
   'discovery',
-  'signal',
+  'trend',
 ];
 
 const SECTION_LABELS = {
@@ -23,12 +23,12 @@ const SECTION_LABELS = {
   mentions:        'Mentions',
   replies_due:     'Replies due',
   discovery:       'Discovery',
-  signal:          'Signal',
+  trend:           'Trending',
 };
 
 const SECTION_HINTS = {
   discovery: 'cold opportunities · matched against brief',
-  signal:    'refreshed by research-market',
+  trend:     "what's trending in your space",
 };
 
 let session = emptySession();
@@ -53,7 +53,7 @@ function emptySession() {
       mentions:        { cards: [], last_updated: null },
       replies_due:     { cards: [], last_updated: null },
       discovery:       { cards: [], last_updated: null },
-      signal:          { cards: [], last_updated: null },
+      trend:           { cards: [], last_updated: null },
       progress_drafts: { cards: [], last_updated: null },
     },
     runs: [],
@@ -182,15 +182,15 @@ function isAlreadyCommented(card) {
   return commentedThreadUrls.has(normalizeThreadUrl(url));
 }
 
-// Defensive filter: drop signal cards whose URL matches a discovery
-// card already on the page. SKILL.md research-market step 6 tells the
+// Defensive filter: drop trend cards whose URL matches a discovery
+// card already on the page. SKILL.md research-market tells the
 // agent to dedupe, but research-market and discover-customers run in
 // parallel — the agent can't reliably know what the other capability
 // will emit. Discovery is the actionable bucket (draft + Copy + Open);
-// signal showing the same thread is a passive dup. Enforced at render
+// trend showing the same thread is a passive dup. Enforced at render
 // time so SKILL.md instructions don't have to fire perfectly.
 function isDuplicateInDiscovery(card, ctx) {
-  if (card.type !== 'signal') return false;
+  if (card.type !== 'trend') return false;
   if (!ctx || !ctx.discoveryUrls || ctx.discoveryUrls.size === 0) return false;
   const u = card.url || card.thread_url;
   if (!u) return false;
@@ -283,7 +283,7 @@ function applyBodyPatch(patch) {
     const incoming = patch.cards.filter(c => !isDismissed(c));
     // Two modes:
     //   default (replace) — cards in patch fully replace existing cards.
-    //                       Used by Gather web's mentions/signal/discovery
+    //                       Used by Gather web's mentions/trend/discovery
     //                       patches and by the page-side gather-local that
     //                       seeds the progress card.
     //   "append"          — concatenate to existing cards, deduping by id.
@@ -365,7 +365,7 @@ function renderSections() {
   container.innerHTML = '';
 
   // Pre-compute the discovery URL set so isDuplicateInDiscovery can
-  // drop signal cards pointing at the same thread. Built once per
+  // drop trend cards pointing at the same thread. Built once per
   // render, passed via ctx so the per-card filter stays cheap.
   const discoveryUrls = new Set();
   const disc = session.sections.discovery;
@@ -388,7 +388,7 @@ function renderSections() {
     //   - reply cards with no actionable content (0 unanswered + no
     //     follow_up — just empty "Your post: …" stubs)
     //   - discovery cards on threads the user has already commented on
-    //   - signal cards whose URL matches a discovery card (parallel
+    //   - trend cards whose URL matches a discovery card (parallel
     //     dedup; discovery wins because it's actionable)
     const filtered = sec.cards.filter(c => !shouldFilterCard(c, filterCtx));
     if (filtered.length === 0) {
@@ -452,7 +452,7 @@ function renderCard(card) {
     case 'reply_to_me':  return renderReplyToMe(card);
     case 'reply':        return renderReply(card);
     case 'discovery':    return renderDiscovery(card);
-    case 'signal':       return renderSignal(card);
+    case 'trend':        return renderTrend(card);
     case 'progress':     return renderProgress(card);
     case 'draft':        return renderDraft(card);
     case 'empty':        return renderEmpty(card);
@@ -618,14 +618,14 @@ function renderDiscovery(c) {
   `);
 }
 
-function renderSignal(c) {
+function renderTrend(c) {
   const items = (c.items || []).map(i => `<li>${renderInline(i)}</li>`).join('');
   const metaBits = [];
   if (c.source) metaBits.push(escapeHtml(c.source));
   if (c.age_hours != null) metaBits.push(formatAge(c.age_hours));
   const meta = metaBits.length ? `<div class="meta">${metaBits.join(' · ')}</div>` : '';
   return cardEl(c, 'cold', `
-    <div class="title">${escapeHtml(c.title || c.source || 'Signal')}</div>
+    <div class="title">${escapeHtml(c.title || c.source || 'Trending')}</div>
     ${meta}
     ${items ? `<ul>${items}</ul>` : ''}
     ${c.url ? actionRow(c, ['open-url']) : ''}
@@ -669,7 +669,7 @@ function renderEmpty(c) {
 
 // One-line explanation when a section's cards were all filtered by
 // shouldFilterCard. Section-specific because the reason differs:
-// discovery → already-commented; signal → duplicate of discovery;
+// discovery → already-commented; trend → duplicate of discovery;
 // mentions → self-latest-reply; replies_due → empty reply stubs.
 function emptyFilteredMessage(sectionId, originalCount) {
   const n = originalCount;
@@ -679,7 +679,7 @@ function emptyFilteredMessage(sectionId, originalCount) {
       return `Found ${n} opportunit${n === 1 ? 'y' : 'ies'} — all on threads you've already commented on. No fresh leads this run.`;
     case 'mentions':
       return `Found ${n} mention${s} — all by you or already answered.`;
-    case 'signal':
+    case 'trend':
       return `Found ${n} item${s} — all duplicates of Discovery cards above.`;
     case 'replies_due':
       return `Found ${n} reply card${s} — none with actionable activity.`;

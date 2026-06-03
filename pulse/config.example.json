@@ -32,20 +32,12 @@
       "enabled": false,
       "feeds": []
     },
-    "google-trends": {
-      "enabled": false,
-      "region": "US"
-    },
     "github-trending": {
-      "enabled": false,
+      "enabled": true,
       "language": ""
     },
     "product-hunt": {
       "enabled": false
-    },
-    "wikipedia-pageviews": {
-      "enabled": false,
-      "topics": []
     },
     "bluesky": {
       "enabled": false,

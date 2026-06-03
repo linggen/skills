@@ -39,13 +39,21 @@
 
       <!-- Session header — populated when a session is selected -->
       <div class="session-header" id="session-header">
-        <div class="title" id="session-title">Pulse</div>
-        <div class="sub" id="session-sub"></div>
+        <div class="session-header-text">
+          <div class="title" id="session-title">Pulse</div>
+          <div class="sub" id="session-sub"></div>
+        </div>
+        <button class="new-session-btn" id="new-session-btn"
+                title="Start a fresh Pulse session and run today's brief">
+          ✦ New session
+        </button>
       </div>
 
       <!-- Pipeline chips: gather local → gather web → draft. Each chip = one
            step the agent (or a script) runs. Click a chip to (re-)run that
-           step independently; first open of the day auto-cascades all three. -->
+           step independently. A NEW session (New-session button → ?new=1, or
+           first-ever open) auto-cascades the two gather steps; a plain open
+           resumes the most-recent session statically. -->
       <div class="action-chips pipeline">
         <button class="chip step" data-chip="gather-local" data-state="idle"
                 title="Pull yesterday's commits, sessions, and changed files">

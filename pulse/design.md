@@ -30,10 +30,8 @@ guide: |
 │                      │  │                  │  │                     │
 │ Reddit, HN, Lobsters │  │ ~/path/to/repo:  │  │ sessions, commits,  │
 │ arxiv, RSS,          │  │ README, /doc/,   │  │ memory rows         │
-│ Google Trends,       │  │ recent commits,  │  │                     │
-│ GitHub Trending,     │  │ source           │  │                     │
-│ Product Hunt RSS,    │  │                  │  │                     │
-│ Wikipedia pageviews  │  │                  │  │                     │
+│ GitHub Trending,     │  │ recent commits,  │  │                     │
+│ Product Hunt RSS     │  │ source           │  │                     │
 └──────────────────────┘  └──────────────────┘  └─────────────────────┘
 ```
 
@@ -65,11 +63,11 @@ Five capabilities. Dispatched by the agent based on the goal text.
 Capabilities do NOT appear in the UI; users never pick one.
 
 ### `research-market`
-- Pull from: HN top, Lobsters newest, arxiv recent, configured RSS,
-  Google Trends Daily RSS, GitHub Trending, Product Hunt RSS,
-  Wikipedia pageviews for brief-extracted topics.
+- Anchor on GitHub Trending (always called), supplemented by HN top
+  and X (when enabled). Lobsters / arxiv / RSS / Product Hunt remain
+  available supplements.
 - Score each hit 0–1 for technical relevance to the brief's topics.
-- Output → `market_landscape[]` + entries in `external_sources[]`.
+- Output → `trend` section cards + entries in `external_sources[]`.
 
 ### `discover-customers`
 - Pull from: configured Reddit subs (`/new` and `/rising`), HN, Lobsters.
@@ -146,10 +144,8 @@ prompts.
 | `FetchLobsters` | `/newest.json` | research-market, discover-customers |
 | `FetchArxiv` | OAI/Atom for CS.AI/LG/CL | research-market |
 | `FetchRSS` | configured RSS/Atom feeds | research-market, discover-customers |
-| `FetchGoogleTrendsDaily` | `trends.google.com/trending/rss?geo=<region>` | research-market |
-| `FetchGitHubTrending` | scrape `github.com/trending/<lang>?since=daily` | research-market |
+| `FetchGitHubTrending` | scrape `github.com/trending/<lang>?since=daily` | research-market (always-on Trend anchor) |
 | `FetchProductHuntRSS` | `producthunt.com/feed` | research-market, discover-customers |
-| `FetchWikipediaPageviews` | `wikimedia.org/api/rest_v1/metrics/pageviews/...` for brief-derived topics | research-market |
 
 ### Planned
 
@@ -349,7 +345,7 @@ files per date dir) is gone — one user, one daily pulse, one file.
     "mentions":       { "cards": [...], "last_updated": "..." },
     "replies_due":    { "cards": [...], "last_updated": "..." },
     "discovery":      { "cards": [...], "last_updated": "..." },
-    "signal":         { "cards": [...], "last_updated": "..." },
+    "trend":          { "cards": [...], "last_updated": "..." },
     "progress_drafts":{ "cards": [...], "last_updated": "..." }
   },
 
@@ -375,7 +371,7 @@ updated in place via body_patches (current-state model); `runs[]`
 captures provenance for "why is this card here?" auditing.
 
 The renderer iterates `sections` in fixed priority order:
-mentions → replies_due → discovery → signal → progress_drafts.
+mentions → replies_due → discovery → trend → progress_drafts.
 Empty section means *not touched yet*; renderer hides it. A "found
 nothing" outcome is represented by an empty-state card *inside* the
 section, not by an absent section.
@@ -445,13 +441,14 @@ optional `follow_up` carries new reactions to a reply you already made
   "actions": ["draft-starter", "open", "dismiss"] }
 ```
 
-**`signal`** — market intelligence (was "pulse")
+**`trend`** — what's trending in the user's space (was "signal")
 ```json
-{ "type": "signal", "id": "...",
-  "source": "github-trending|google-trends|hn|wikipedia|product-hunt",
+{ "type": "trend", "id": "...",
+  "source": "github-trending|hn|x|product-hunt",
   "title": "GitHub trending (Rust)",
+  "url": "https://github.com/trending/rust?since=daily",
   "items": ["2 new agent-runtime repos today", "..."],
-  "actions": ["expand"] }
+  "actions": ["open"] }
 ```
 
 **`progress`** — what shipped + what learned

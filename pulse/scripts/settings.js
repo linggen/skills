@@ -4,18 +4,29 @@
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 const CONFIG_PATH = `${SKILL_DIR}/config.json`;
 const CONFIG_EXAMPLE = `${SKILL_DIR}/config.example.json`;
+// X API credentials live in their own file (NOT config.json) so secrets
+// never sit in the synced/backed-up config. Same format + keys as xbot.
+const X_CRED_PATH = `${SKILL_DIR}/credentials/x.env`;
+const X_CRED_KEYS = ['X_API_KEY', 'X_API_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_TOKEN_SECRET'];
+const X_CRED_LABELS = {
+  X_API_KEY: 'API Key (Consumer Key)',
+  X_API_SECRET: 'API Secret (Consumer Secret)',
+  X_ACCESS_TOKEN: 'Access Token',
+  X_ACCESS_TOKEN_SECRET: 'Access Token Secret',
+};
 // Legacy brief.md path — read once on first load to migrate users from
 // the file-based brief to the structured config.brief field. Never
 // written to anymore; the textarea saves directly into config.brief.
 const LEGACY_BRIEF_PATH = `${SKILL_DIR}/references/brief.md`;
 const LEGACY_BRIEF_EXAMPLE = `${SKILL_DIR}/references/brief.example.md`;
 
-// Unified website catalog: each row in the settings UI is one site, with
-// independent Source / Target role checkboxes. `source_id` and `target_id`
-// are the slugs in `state.config.sites` and `state.config.targets`
-// respectively. Reddit is the only built-in site with both. Source-side
-// configuration fields live under `source_fields`; target-side under
-// `target_fields`.
+// Unified website catalog: each row is one site with a SINGLE enable
+// checkbox. Enabling a row turns on every role it supports — `source_id`
+// (fetch + reply drafting, in `state.config.sites`) and/or `target_id`
+// (a draft lane, in `state.config.targets`). Sites that both gather and
+// publish (Reddit, X) carry both ids; pure publishing lanes (Blog, Medium,
+// …) carry only `target_id`. Per-role config fields live under
+// `source_fields` / `target_fields`.
 const WEBSITES = [
   {
     name: 'Hacker News',
@@ -48,23 +59,25 @@ const WEBSITES = [
   },
   {
     name: 'X (Twitter)',
-    desc: 'Mentions/replies + topic discovery via the official X API v2, using your own developer credentials (pay-per-use). Pulse drafts replies & posts; you copy them to X manually — no auto-posting.',
+    desc: 'Mentions, replies, and topic discovery via the official X API v2, using your own developer credentials (pay-per-use). Pulse drafts replies and ≤280-char posts; you copy them to X manually — never auto-posted.',
     source_id: 'x',
+    target_id: 'x-post',
     source_fields: [
       { kind: 'chips', key: 'keywords', label: 'Discovery keywords (topics to search, not brand names)' },
+      { kind: 'text', key: 'username', label: 'My X handle (optional, for display)', placeholder: 'e.g. linggen — without the @ prefix' },
       {
-        kind: 'text',
-        key: 'username',
-        label: 'My X handle (optional, for display)',
-        placeholder: 'e.g. linggen — without the @ prefix',
+        kind: 'credfile',
+        label: 'X API credentials',
         hint:
-          'X has no free API. Pulse uses <b>your own</b> developer-app credentials (pay-per-use, ~$0.001–0.01 per search), stored at <code>~/.linggen/skills/pulse/credentials/x.env</code>. Set them up once:' +
+          'X has no free API — Pulse uses <b>your own</b> X developer app (pay-per-use, ~$0.001–0.01 per search). The four keys are written to <code>~/.linggen/skills/pulse/credentials/x.env</code> on this machine only — never sent anywhere. Get them from X:' +
           '<ol>' +
-          '<li>Already use the <b>xbot</b> skill? Copy its creds:<br><code>cp ~/.linggen/skills/xbot/credentials/x.env ~/.linggen/skills/pulse/credentials/x.env</code></li>' +
-          '<li>Otherwise, at <a href="https://developer.x.com" target="_blank" rel="noopener">developer.x.com</a> create an App, buy credits (Billing → Credits, $5 min), set auth to <b>Read and Write</b>, copy your Consumer Key/Secret, and generate an Access Token/Secret.</li>' +
-          '<li>Create the file and paste the four keys:<br><code>mkdir -p ~/.linggen/skills/pulse/credentials</code><br>then in <code>x.env</code>:<br><code>X_API_KEY="…"</code><br><code>X_API_SECRET="…"</code><br><code>X_ACCESS_TOKEN="…"</code><br><code>X_ACCESS_TOKEN_SECRET="…"</code></li>' +
+          '<li>At <a href="https://developer.x.com" target="_blank" rel="noopener">developer.x.com</a>, sign in and create a <b>Project + App</b>.</li>' +
+          '<li><b>Billing</b> → add credits ($5 minimum — the API is pay-per-use).</li>' +
+          '<li>Your App → <b>User authentication settings</b> → set permissions to <b>Read and Write</b>.</li>' +
+          '<li><b>Keys and tokens</b> tab → copy <b>API Key</b> (Consumer Key) and <b>API Secret</b> (Consumer Secret).</li>' +
+          '<li>Same tab → <b>Access Token and Secret</b> → <b>Generate</b> → copy both.</li>' +
           '</ol>' +
-          'Keep this file private. Without it, the X source + mentions stay empty.',
+          'Paste the four values below and hit Save. Already set up the <b>xbot</b> skill? Reuse its file instead:<br><code>cp ~/.linggen/skills/xbot/credentials/x.env ~/.linggen/skills/pulse/credentials/x.env</code>',
       },
     ],
   },
@@ -94,32 +107,9 @@ const WEBSITES = [
     source_fields: [{ kind: 'chips', key: 'feeds', label: 'Feed URLs' }],
   },
   {
-    name: 'Google Trends (daily)',
-    desc: "Today's trending searches in your region. Free public RSS.",
-    source_id: 'google-trends',
-    source_fields: [{ kind: 'text', key: 'region', label: 'Region (ISO code, e.g. US, GB, JP)', placeholder: 'US' }],
-  },
-  {
-    name: 'GitHub Trending',
-    desc: "Today's trending repos. Optional language filter.",
-    source_id: 'github-trending',
-    source_fields: [{ kind: 'text', key: 'language', label: 'Language (blank = all)', placeholder: 'rust' }],
-  },
-  {
     name: 'Product Hunt',
     desc: "Today's launches. Useful for spotting competing products.",
     source_id: 'product-hunt',
-  },
-  {
-    name: 'Wikipedia pageviews',
-    desc: 'Real topic-volume trends over the last 60 days. Add the Wikipedia article titles you care about.',
-    source_id: 'wikipedia-pageviews',
-    source_fields: [{ kind: 'chips', key: 'topics', label: 'Article titles' }],
-  },
-  {
-    name: 'X / Twitter',
-    desc: 'Single-claim post, ≤ 280 chars.',
-    target_id: 'x-post',
   },
   {
     name: 'Medium',
@@ -165,6 +155,13 @@ async function readFile(path, fallback = null) {
   const out = await runBash(cmd);
   if (!out.trim()) return fallback;
   return out;
+}
+
+// Existence check without reading contents — used for the X credential file
+// so we never pull secrets into the page.
+async function fileExists(path) {
+  const out = await runBash(`[ -f "${path}" ] && echo yes || echo no`);
+  return out.trim() === 'yes';
 }
 
 async function writeFile(path, content) {
@@ -214,6 +211,10 @@ async function loadAll() {
     if (typeof state.config.brief !== 'string') state.config.brief = '';
     if (!state.config.sites) state.config.sites = {};
     if (!state.config.targets) state.config.targets = {};
+
+    // Whether X credentials already exist on disk (drives the credfile
+    // field's status line + placeholders). Checked, never read.
+    state.xCredsPresent = await fileExists(X_CRED_PATH);
 
     // One-time migration: if config.brief is empty but legacy brief.md
     // has content, seed it. The legacy file is left untouched on disk
@@ -280,25 +281,13 @@ function renderWebsiteRow(site) {
   }
   row.appendChild(info);
 
-  // Roles column: Source + Target checkboxes (only the applicable ones)
+  // Single enable checkbox — flips every role the site supports at once.
   const roles = document.createElement('div');
   roles.className = 'website-roles';
-  if (site.source_id) {
-    roles.appendChild(roleToggle('Source', state.config.sites, site.source_id, () => {
-      row.classList.toggle('any-enabled', isAnyEnabled(site));
-      renderConfig();
-    }));
-  } else {
-    roles.appendChild(rolePlaceholder());
-  }
-  if (site.target_id) {
-    roles.appendChild(roleToggle('Target', state.config.targets, site.target_id, () => {
-      row.classList.toggle('any-enabled', isAnyEnabled(site));
-      renderConfig();
-    }));
-  } else {
-    roles.appendChild(rolePlaceholder());
-  }
+  roles.appendChild(siteToggle(site, () => {
+    row.classList.toggle('any-enabled', isAnyEnabled(site));
+    renderConfig();
+  }));
   row.appendChild(roles);
 
   // Per-role config: shown when the matching role is enabled
@@ -328,37 +317,85 @@ function isAnyEnabled(site) {
          (site.target_id && state.config.targets?.[site.target_id]?.enabled);
 }
 
-function roleToggle(label, configSection, slug, onChange) {
-  if (!configSection[slug]) configSection[slug] = { enabled: false };
-  const cfg = configSection[slug];
+// One checkbox per site. Checking it enables every role the site supports
+// at once — fetch (source) and draft lane (target) — so the user picks
+// "use this site", not separate Source/Target roles.
+function siteToggle(site, onChange) {
   const wrap = document.createElement('label');
   wrap.className = 'role-toggle';
   const cb = document.createElement('input');
   cb.type = 'checkbox';
-  cb.checked = !!cfg.enabled;
+  cb.checked = isAnyEnabled(site);
   cb.addEventListener('change', () => {
-    cfg.enabled = cb.checked;
+    setSiteEnabled(site, cb.checked);
     onChange?.();
   });
   const txt = document.createElement('span');
-  txt.textContent = label;
+  txt.textContent = 'Enabled';
   wrap.append(cb, txt);
   return wrap;
 }
 
-function rolePlaceholder() {
-  const span = document.createElement('span');
-  span.className = 'role-placeholder';
-  span.textContent = '—';
-  span.title = 'Not applicable for this site';
-  return span;
+function setSiteEnabled(site, on) {
+  if (site.source_id) {
+    if (!state.config.sites[site.source_id]) state.config.sites[site.source_id] = {};
+    state.config.sites[site.source_id].enabled = on;
+  }
+  if (site.target_id) {
+    if (!state.config.targets[site.target_id]) state.config.targets[site.target_id] = {};
+    state.config.targets[site.target_id].enabled = on;
+  }
 }
 
 function renderField(cfg, field) {
-  if (field.kind === 'chips')  return renderChipField(cfg, field);
-  if (field.kind === 'range')  return renderRangeField(cfg, field);
-  if (field.kind === 'text')   return renderTextField(cfg, field);
+  if (field.kind === 'chips')    return renderChipField(cfg, field);
+  if (field.kind === 'range')    return renderRangeField(cfg, field);
+  if (field.kind === 'text')     return renderTextField(cfg, field);
+  if (field.kind === 'credfile') return renderCredFileField(field);
   return document.createDocumentFragment();
+}
+
+// Secret-file field: writes API keys to a local .env (NOT config.json) on
+// save. We never read the secret values back into the DOM — load only checks
+// whether the file exists, and inputs stay blank ("leave blank to keep").
+// Currently used for the four X OAuth 1.0a keys → credentials/x.env.
+function renderCredFileField(field) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cred-block';
+
+  const label = document.createElement('label');
+  label.textContent = field.label || 'API credentials';
+  wrap.appendChild(label);
+
+  const status = document.createElement('div');
+  status.className = 'cred-status';
+  status.textContent = state.xCredsPresent
+    ? '✓ Saved on this machine — leave blank to keep, or paste new values to replace.'
+    : 'Not configured — paste all four keys below, then Save.';
+  wrap.appendChild(status);
+
+  X_CRED_KEYS.forEach((k) => {
+    const sub = document.createElement('div');
+    sub.className = 'cred-field';
+    const l = document.createElement('label');
+    l.className = 'cred-sublabel';
+    l.textContent = X_CRED_LABELS[k];
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.id = 'x-cred-' + k;
+    input.autocomplete = 'off';
+    input.placeholder = state.xCredsPresent ? '•••••••• (keep existing)' : 'paste value';
+    sub.append(l, input);
+    wrap.appendChild(sub);
+  });
+
+  if (field.hint) {
+    const hint = document.createElement('div');
+    hint.className = 'field-hint';
+    hint.innerHTML = field.hint; // trusted: static, author-authored guidance
+    wrap.appendChild(hint);
+  }
+  return wrap;
 }
 
 function renderCustomFeedRow(url, idx) {
@@ -475,7 +512,6 @@ function renderChipField(cfg, field) {
     || (field.key === 'feeds' ? 'https://example.com/rss.xml'
         : field.key === 'subs' ? 'subreddit-name'
         : field.key === 'keywords' ? 'e.g. local LLM'
-        : field.key === 'topics' ? 'Wikipedia article title'
         : '');
   const addBtn = document.createElement('button');
   addBtn.textContent = '+ Add';
@@ -570,9 +606,14 @@ async function save() {
       }
     }
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
+    const credResult = await writeXCredsIfProvided();
     saveBtn.textContent = 'Saved ✓';
     saveBtn.classList.add('saved');
-    setStatus('✓ Settings saved', 'ok');
+    if (credResult === 'partial') {
+      setStatus('✓ Settings saved — but X keys skipped: enter all four, or leave all blank.', 'error');
+    } else {
+      setStatus(credResult === 'written' ? '✓ Settings + X credentials saved' : '✓ Settings saved', 'ok');
+    }
     setTimeout(() => {
       clearStatus();
       saveBtn.textContent = 'Save';
@@ -584,6 +625,33 @@ async function save() {
     saveBtn.textContent = 'Save';
     saveBtn.disabled = false;
   }
+}
+
+// Collect the four X key inputs and write credentials/x.env. Returns:
+//   null      — nothing entered, existing file left untouched
+//   'partial' — some but not all four filled (skipped, caller warns)
+//   'written' — all four written to the .env (chmod 600), inputs cleared
+async function writeXCredsIfProvided() {
+  const vals = {};
+  let filled = 0;
+  for (const k of X_CRED_KEYS) {
+    const el = document.getElementById('x-cred-' + k);
+    const v = el ? el.value.trim() : '';
+    vals[k] = v;
+    if (v) filled++;
+  }
+  if (filled === 0) return null;
+  if (filled < X_CRED_KEYS.length) return 'partial';
+  const body = X_CRED_KEYS.map((k) => `${k}="${vals[k]}"`).join('\n') + '\n';
+  await writeFile(X_CRED_PATH, body);
+  await runBash(`chmod 600 "${X_CRED_PATH}" 2>/dev/null || true`);
+  state.xCredsPresent = true;
+  // Don't leave secrets sitting in the DOM after a successful write.
+  for (const k of X_CRED_KEYS) {
+    const el = document.getElementById('x-cred-' + k);
+    if (el) { el.value = ''; el.placeholder = '•••••••• (keep existing)'; }
+  }
+  return 'written';
 }
 
 async function resetDefaults() {

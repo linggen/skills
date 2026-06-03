@@ -115,7 +115,7 @@ tools:
     timeout_ms: 30000
   - name: FetchX
     description: >-
-      Search recent X (Twitter) posts for a topic — discovery + signal.
+      Search recent X (Twitter) posts for a topic — discovery + a trend supplement.
       Uses the official X API v2 recent-search with the user's OWN dev
       credentials (~/.linggen/skills/pulse/credentials/x.env, set up via
       Settings → X; Pulse is independent of the xbot skill). Pass a topic
@@ -148,6 +148,27 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/x-mentions.sh"
     tier: read
     timeout_ms: 30000
+  - name: FetchXOwnPosts
+    description: >-
+      The user's OWN recent X (Twitter) posts with engagement metrics
+      (likes, reposts, replies, impressions), via the official X API v2
+      with the user's OWN credentials (Settings -> X). Pass an optional max
+      count (default 10). Returns {username, items:[{text, url, likes,
+      reposts, replies, views, score, created_iso, age_hours}], count,
+      errors}; score = likes + reposts. Used by draft-content for the
+      x-post lane so a new post builds on what the user already shipped
+      instead of repeating it, and so high-engagement past posts inform
+      what themes to write more of (the performance feedback loop).
+      Empty + error when creds are absent. ~2 API calls per run (your X
+      credits); excludes replies/retweets, recent posts only.
+    cmd: "$SKILL_DIR/scripts/sites/x-own.sh {{max}}"
+    tier: read
+    timeout_ms: 30000
+    args:
+      max:
+        type: string
+        required: false
+        description: Max number of own posts to fetch (default 10, 5–100).
   - name: FetchBlueskyMentions
     description: >-
       Public AT Proto monitoring for Bluesky — no auth required.
@@ -208,23 +229,15 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/rss.sh"
     tier: read
     timeout_ms: 30000
-  - name: FetchGoogleTrendsDaily
-    description: >-
-      Fetch today's trending searches from Google Trends' public
-      daily RSS for the configured region (default US, override via
-      sites["google-trends"].region in config.json). Returns JSON
-      array of {title, traffic, source, news_url, age_hours}. Used by
-      research-market for cultural / general-public signal.
-    cmd: "$SKILL_DIR/scripts/sites/google-trends.sh"
-    tier: read
-    timeout_ms: 20000
   - name: FetchGitHubTrending
     description: >-
-      Scrape today's trending GitHub repos. Optional language filter
-      via sites["github-trending"].language in config.json (e.g.
-      "rust", "python"). Returns JSON array of {full_name, owner,
-      repo, url, description, language, stars, forks, stars_today}.
-      Used by research-market for builder-side signal.
+      Scrape today's trending GitHub repos — the always-on anchor of
+      the Trend section. Optional language filter via
+      sites["github-trending"].language in config.json (e.g. "rust",
+      "python"). Returns JSON array of {full_name, owner, repo, url,
+      description, language, stars, forks, stars_today}. research-market
+      ALWAYS calls this regardless of config toggles; it is the
+      builder-side trend feed.
     cmd: "$SKILL_DIR/scripts/sites/github-trending.sh"
     tier: read
     timeout_ms: 20000
@@ -237,17 +250,6 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/product-hunt.sh"
     tier: read
     timeout_ms: 20000
-  - name: FetchWikipediaPageviews
-    description: >-
-      Fetch the last 60 days of pageviews for each topic listed in
-      sites["wikipedia-pageviews"].topics in config.json. Topics are
-      Wikipedia article titles. Returns JSON array of {topic,
-      total_30d, prev_30d, percent_change_30d, sparkline}. Used by
-      research-market to gauge real topic-volume trends (sparkline
-      surfaces the 30-day shape; percent_change_30d surfaces direction).
-    cmd: "$SKILL_DIR/scripts/sites/wikipedia-pageviews.sh"
-    tier: read
-    timeout_ms: 30000
 ---
 
 # Pulse
@@ -267,7 +269,7 @@ posts manually after reviewing.
 You are the **orchestrator and UI driver**, not a chat conversation
 partner.
 
-- **The page is the product.** Cards, drafts, mentions, signal — all
+- **The page is the product.** Cards, drafts, mentions, trend — all
   artifacts the user reads. You produce them by emitting
   `PageUpdate { body_patch: { section, cards, mode? } }` tool calls.
 - **The chat panel is your control bus.** The page sends you goal
@@ -302,7 +304,7 @@ partner.
 │    → Pick 2-3 concrete topics from the user's actual work        │
 │    → Call Fetch* tools in parallel, filter by topical fit (≥ 0.6)│
 │    → Run mention-watching on watchlist terms from brief          │
-│    → Emit body_patch for signal / discovery / mentions /         │
+│    → Emit body_patch for trend / discovery / mentions /          │
 │      replies_due sections (only the ones that have content)      │
 ├─────────────────────────────────────────────────────────────────┤
 │ 4. Draft (USER-TRIGGERED ONLY — never auto-cascades)             │
@@ -330,7 +332,7 @@ partner.
 
 - Drafts → `progress_drafts` section as `draft` cards with
   `mode: "append"`. Never paste draft text into chat.
-- Mentions / signal / discovery → their own sections.
+- Mentions / trend / discovery → their own sections.
 - Status narration → chat, but only short factual lines while
   actively working ("Calling FetchReddit for r/macapps…"). Not
   prose. Not summaries. Not "Here's what I did."
@@ -381,6 +383,11 @@ Read these files with `Read` for additional context as needed:
 2. `~/.linggen/skills/pulse/config.json` — `sites` (enabled source
    tools), `targets` (enabled output lanes), `workspace_path`, and
    `brief`. Only call enabled tools; only draft for enabled lanes.
+3. `~/.linggen/skills/pulse/references/x-setup-guide.md` — how to get
+   the four X OAuth 1.0a keys and connect X. Read it when the user asks
+   to set up X or when an X tool reports missing credentials, then walk
+   them through it. Never ask for keys in chat — point them at
+   Settings → X (which writes `credentials/x.env`).
 
 **Voice anchor**: the user's brief (already in your conversation
 history from the hidden init message) IS the cadence sample. Mirror
@@ -428,11 +435,24 @@ page leaves their existing content in place.
 
 ### research-market
 
-**When**: goal asks about industry signal, competitive landscape, or
-"what's happening in <space>." Skip if the goal is purely about the
-user's own work.
+**When**: every Gather web run — research-market fills the `trend`
+section, which is always-on. It surfaces what's trending in the
+user's space so the Draft step has a public hook to pivot off.
 
 **Inputs**: brief topics, GOAL.
+
+**Trend sources** — GitHub Trending is the always-on anchor; HN and X
+supplement it:
+- **`FetchGitHubTrending` — ALWAYS call it**, every run, regardless of
+  any config toggle. It is the anchor of the `trend` section: today's
+  trending repos are the most legible "what builders are shipping"
+  signal. There is no Settings switch for it.
+- **`FetchHackerNews`** — top stories as a trend supplement.
+- **`FetchX`** (only if `sites.x.enabled`) — searches recent X posts
+  for the category keywords; one paid call per query, so cap to the
+  top 2-3 category terms.
+- Optional, when enabled: `FetchLobsters`, `FetchArxiv`, `FetchRSS`,
+  `FetchProductHuntRSS` may further supplement the trend feed.
 
 **Process**:
 1. **Extract category keywords from the brief, not brand names.**
@@ -441,8 +461,8 @@ user's own work.
    describe the user's work without knowing the product names.
    Brand names (product names, company names, handles) almost never
    show up in third-party posts yet; filtering on them returns
-   nothing useful. Categories are what HN / Lobsters / Arxiv /
-   Reddit posts actually talk about.
+   nothing useful. Categories are what GitHub repos / HN / X posts
+   actually talk about.
 
    How to extract categories from a brief:
    - Strip every proper noun specific to the user.
@@ -454,23 +474,21 @@ user's own work.
 
    Brand-name hits when they do appear are bonus signal — score
    them high — but never use them as the *primary* filter, or the
-   signal section will always be empty.
-2. Call enabled source tools in parallel: `FetchHackerNews`,
-   `FetchLobsters`, `FetchArxiv`, `FetchRSS`, `FetchBlueskyKeywords`
-   (if enabled — pulls posts matching the category keywords).
-   (`FetchReddit` is primarily for discover-customers, but can
-   supplement here.)
+   trend section will always be empty.
+2. Call the trend sources above in parallel — `FetchGitHubTrending`
+   unconditionally, `FetchHackerNews`, and `FetchX` (if enabled) plus
+   any enabled optional supplements.
 3. **Drop SKIP_URLS first.** Before scoring, drop any result whose
    normalized post id matches a `SKIP_URLS` entry from the hidden
    Gather web context. Same format as discover-customers: match by
-   post id (`<platform>:<post-id>`), not by slug. Signal cards on
+   post id (`<platform>:<post-id>`), not by slug. Trend cards on
    threads the user already commented on are pure noise — they'd be
    filtered at render anyway, and scoring them burns tokens.
 4. Filter each tool's output by the **category** keywords from step 1.
    Score 0–1 for how directly the hit speaks to the user's category:
-   - 1.0 = a specific claim, tool, paper, or thread squarely inside
-     the user's category — close enough that the user could plausibly
-     comment from real experience.
+   - 1.0 = a specific repo, claim, tool, paper, or thread squarely
+     inside the user's category — close enough that the user could
+     plausibly comment from real experience.
    - 0.6 = clearly in-category, less specific overlap.
    - 0.3 = adjacent category — shares a buzzword with the brief but
      a different problem space underneath.
@@ -481,22 +499,22 @@ user's own work.
 6. Group surviving hits by source.
 7. **Dedupe against discovery.** If a hit's URL also appears (or
    will appear) in the `discovery` section emitted this run, drop
-   it from `signal`. Discovery is the actionable bucket
-   (comment opportunity); signal is passive awareness. Don't show
+   it from `trend`. Discovery is the actionable bucket
+   (comment opportunity); trend is passive awareness. Don't show
    the same thread twice.
 
-**Output**: emit a body_patch for `signal` section. Each card is a
-`signal` type (see card schema in design.md). **`url` is REQUIRED**
+**Output**: emit a body_patch for `trend` section. Each card is a
+`trend` type (see card schema in design.md). **`url` is REQUIRED**
 so the page can render an Open button:
 
 ```json
 { "body_patch": {
-  "section": "signal",
+  "section": "trend",
   "last_updated": "<now>",
   "cards": [
-    { "type": "signal", "id": "...", "source": "hn",
-      "title": "Anthropic shipped Claude 4.7",
-      "url": "https://news.ycombinator.com/item?id=...",
+    { "type": "trend", "id": "...", "source": "github-trending",
+      "title": "Trending: agent-runtime repos",
+      "url": "https://github.com/trending/rust?since=daily",
       "items": ["..."] },
     ...
   ]
@@ -518,7 +536,13 @@ Bluesky keywords.
 1. Call `FetchReddit` (configured subs), `FetchHackerNews`,
    `FetchLobsters`, `FetchBlueskyKeywords` (if enabled — Bluesky has
    no subreddit-style communities, so keyword search is the primary
-   discovery path there).
+   discovery path there), `FetchX` (if X enabled — searches
+   `sites.x.keywords`; one paid call per query, cap to the top 2-3
+   terms). On X, **rank candidates higher when the author has more
+   followers** (the `followers` field) — replying to bigger accounts
+   in your space is the single strongest X growth lever, so a thread
+   you can genuinely add to under a high-follower post beats the same
+   point under an account with none.
 2. **Drop SKIP_URLS first.** Before scoring or drafting, drop any
    thread whose normalized post id matches a `SKIP_URLS` entry from
    the hidden Gather web context (set by pulse-app.js from the
@@ -540,11 +564,13 @@ Bluesky keywords.
    `draft_starter` in what was actually said — answer the real
    question / add to the real discussion, and avoid repeating a point
    an existing comment already made. (Cap the thread fetches to the
-   top ~5 candidates to stay quick.)
+   top ~5 candidates to stay quick.) **X** results already carry the
+   full tweet text in `text` — no extra fetch; use it as the `excerpt`.
 7. For each surviving thread, draft a 2–4 sentence comment starter
-   in voice (see lane-templates.md `reddit-comment`). Don't link to
-   the user's marketing domain; if a self-mention is genuinely
-   natural, max one.
+   in voice. **Pick the lane by source**: Reddit threads use
+   lane-templates.md `reddit-comment`; X posts use `x-reply` (≤280,
+   X reply conventions). Don't link to the user's marketing domain;
+   if a self-mention is genuinely natural, max one.
 
 **Output**: body_patch for `discovery` section. Each card is a
 `discovery` type with both `excerpt` AND `draft_starter` populated:
@@ -615,6 +641,10 @@ configured source tools:
 - `FetchHackerNews`
 - `FetchLobsters`
 - `FetchRedditMentions` for self-handle public mentions (no auth needed)
+- `FetchXMentions` (if X enabled) for X mentions + replies to your
+  tweets — `reply_to_me` items attach your tweet as
+  `parent_comment_body`, so the card renders your tweet + their reply
+  + a draft, the same shape as FetchRedditMentions
 - `FetchBlueskyMentions` for the Bluesky handle if configured —
   returns mention / own_post / own_reply / reply_to_me items in
   the same shape as FetchRedditMentions
@@ -659,8 +689,11 @@ Rules:
   mention itself); deeper threads have 2 (first reply + latest mention)
   with `collapsed_count` = nodes hidden.
 - `draft_reply` is REQUIRED — the user wants to copy-paste a response.
-  Follow `lane-templates.md` `reddit-comment` rules (3 registers,
-  anti-AI tic list, anonymization test, open-with-reaction rule).
+  **Pick the lane by source**: Reddit/HN/Lobsters mentions follow
+  `lane-templates.md` `reddit-comment` rules (3 registers, anti-AI tic
+  list, anonymization test, open-with-reaction rule); X mentions
+  (source `x`) follow `x-reply` (≤280, X reply conventions, same
+  anti-tic + anonymization discipline).
   Mirror the brief's cadence; respect the brief's hard rules.
   Register tilts toward **contextual** more often than discovery does
   (since someone explicitly mentioned the user's project, a brief
@@ -700,7 +733,7 @@ Emit body_patch for `replies_due` section.
 #### Output
 
 Two `body_patch` blocks: one for `mentions`, one for `replies_due`.
-Sections you didn't touch (e.g., `discovery`, `signal`,
+Sections you didn't touch (e.g., `discovery`, `trend`,
 `progress_drafts`) are NOT in the patch — the page leaves them in
 place per the partial-run contract.
 
@@ -760,6 +793,16 @@ samples, lane-templates, configured `targets[]` from config.json.
 Lane selection: only draft for `targets[*].enabled = true` in
 config.json. If goal specifies a lane, prefer that one.
 
+**x-post lane — ground in the user's own X history.** When drafting
+the `x-post` lane and X is enabled, first call `FetchXOwnPosts`. Use
+it two ways: (1) **don't repeat** — if a recent own post already made
+today's point, draft a different angle or emit `empty`; (2) **follow
+what worked** — posts with high `score` (likes + reposts) show which
+themes/voice land with this audience, so lean toward those. The post
+itself still comes from today's progress (gather-local) or the user's
+intent (`default_goal` / brief); own-posts is the de-dup + signal
+layer, not the source material.
+
 **Output**: emit `body_patch` for `progress_drafts` with
 `mode: "append"` so the new `draft` cards land alongside the existing
 `progress` card from gather-local. Without `mode: "append"` the patch
@@ -776,7 +819,7 @@ After running a step, emit one `body_patch` block per section touched,
 then one `run_log` block:
 
 ```
-body_patch: { section: "signal", ... }
+body_patch: { section: "trend", ... }
 body_patch: { section: "discovery", ... }
 body_patch: { section: "progress_drafts", ... }
 run_log: {

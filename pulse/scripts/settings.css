@@ -111,7 +111,7 @@
   word-break: break-word;
 }
 
-/* Roles column: 2 toggles side-by-side */
+/* Enable column: single toggle per site */
 .website-roles {
   display: flex;
   gap: 8px;
@@ -148,16 +148,6 @@
   accent-color: var(--accent);
 }
 
-.role-placeholder {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 76px;
-  font-size: 12px;
-  color: var(--muted);
-  opacity: 0.45;
-}
-
 .site-tag {
   font-size: 11px;
   font-weight: 500;
@@ -189,7 +179,8 @@
 }
 
 .website-config input[type="text"],
-.website-config input[type="number"] {
+.website-config input[type="number"],
+.website-config input[type="password"] {
   width: 100%;
   max-width: 360px;
   padding: 7px 10px;
@@ -201,8 +192,28 @@
   color: var(--text);
 }
 
+/* X (and future) API-key block */
+.cred-block { display: flex; flex-direction: column; gap: 8px; }
+.cred-status {
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.cred-field { display: flex; flex-direction: column; gap: 3px; }
+.website-config label.cred-sublabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
 .website-config input[type="text"]:focus,
-.website-config input[type="number"]:focus {
+.website-config input[type="number"]:focus,
+.website-config input[type="password"]:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-soft);

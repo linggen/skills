@@ -31,6 +31,11 @@ const state = {
   // past session in the sidebar). Cards on the page reflect this.
   viewSessionId: null,
   chat: null,              // chat-bridge controller
+  // Boot resolution (set once by resolveBootSession before mountChat):
+  //   resumeSid    — session id to attach to, or null to mint a fresh one
+  //   isNewSession — true when this open should greet + auto-cascade
+  resumeSid: null,
+  isNewSession: false,
 };
 
 // ---- Bash bridge ---------------------------------------------------------
@@ -54,6 +59,44 @@ async function readJson(path, fallback = null) {
   const out = (await runBash(cmd)).trim();
   if (!out) return fallback;
   try { return JSON.parse(out); } catch { return fallback; }
+}
+
+// Newest engine session id for this skill, by session.json mtime. Only
+// `sess-*` dirs (engine-resumable); legacy date-named dirs are skipped.
+// Returns null when no prior session exists.
+async function findLatestSessionId() {
+  const cmd = `ls -1t "${SKILL_DIR}/data/"sess-*/session.json 2>/dev/null | head -1 || true`;
+  const out = (await runBash(cmd)).trim();
+  if (!out) return null;
+  // .../data/<sid>/session.json → <sid>
+  const parts = out.split('/');
+  return parts[parts.length - 2] || null;
+}
+
+// Decide what this page open should do, before chat mounts:
+//   ?session=<id> → resume that session statically
+//   ?new=1        → mint a fresh session (greet + cascade), then strip the
+//                   marker so a later refresh resumes it instead of re-minting
+//   (no params)   → resume the most-recent session; if none exist yet, mint one
+async function resolveBootSession() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('session')) {
+    state.resumeSid = params.get('session');
+    state.isNewSession = false;
+    return;
+  }
+  if (params.get('new')) {
+    state.resumeSid = null;
+    state.isNewSession = true;
+    // Drop ?new=1 so refreshing the freshly-minted session resumes it.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('new');
+    history.replaceState(null, '', url);
+    return;
+  }
+  const latest = await findLatestSessionId();
+  state.resumeSid = latest;            // null on first-ever open
+  state.isNewSession = !latest;        // nothing to resume → behave like New
 }
 
 async function writeJson(path, value) {
@@ -190,7 +233,7 @@ async function loadStatusStrip() {
 //                    the local cards already in conversation history,
 //                    decides which Fetch* tools to call, and emits
 //                    body_patch blocks for mentions/replies_due/
-//                    discovery/signal sections.
+//                    discovery/trend sections.
 //   - draft        : sends a goal sentence to draft posts for enabled
 //                    target lanes from whatever cards exist; agent emits
 //                    body_patch on progress_drafts with `draft` cards.
@@ -208,7 +251,7 @@ const PIPELINE_CHIPS = {
   },
   'gather-web': {
     handler: runGatherWeb,
-    expects: ['mentions', 'replies_due', 'discovery', 'signal'],
+    expects: ['mentions', 'replies_due', 'discovery', 'trend'],
   },
   'draft': {
     handler: runDraft,
@@ -474,7 +517,7 @@ async function runGatherWeb() {
     'Drop any source-tool result whose normalized post id appears in this',
     'list, BEFORE scoring or drafting. Match by post id, not by slug — for',
     'Reddit use the segment after /comments/<id>; for Bluesky use the post',
-    'rkey (last URL segment). Skip applies to `discovery`, `signal`, and',
+    'rkey (last URL segment). Skip applies to `discovery`, `trend`, and',
     '`mentions` sections (including reply_to_me cards). Format: <platform>:<post-id>.',
     ...skipKeys.map(k => `  - ${k}`),
     '',
@@ -483,9 +526,11 @@ async function runGatherWeb() {
     skipBlock,
     'Gather web signal for what I\'m working on right now.',
     '',
-    'Read the local cards already in this session (the `progress` card in `progress_drafts` lists my recent commits, sessions, and changed files). Pick 2-3 concrete topics that capture what I\'m actually working on this week.',
+    'OUTPUT CONTRACT (read first): this step writes ONLY these four sections — `trend`, `discovery`, `mentions`, `replies_due` — and you MUST emit a body_patch for each one you gathered for. Do NOT emit or re-emit `progress_drafts`: that is Gather local\'s section, it is already on the page, and here it is INPUT you read, never output you write. A run that ends having only touched `progress_drafts` is a FAILED run.',
     '',
-    'Then for each topic, call the most relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS, FetchGoogleTrendsDaily, FetchGitHubTrending) in parallel. Filter results for direct topical fit (score ≥ 0.6). If sites.x.enabled, also call FetchX with a focused query per topic (it takes a {query}; recent X posts, last ~7 days, costs API credits so keep to your top 1-2 topics) and treat its results like discovery/signal candidates.',
+    'Read the local cards already in this session (the `progress` card in `progress_drafts` lists my recent commits, sessions, and changed files) — read-only INPUT. Pick 2-3 concrete topics that capture what I\'m actually working on this week.',
+    '',
+    'Then for each topic, call the relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS) in parallel. ALWAYS call FetchGitHubTrending as well — it is the always-on anchor of the `trend` section, so call it every run regardless of any config toggle; emit its repos as `trend` cards. Filter results for direct topical fit (score ≥ 0.6). If sites.x.enabled, also call FetchX with a focused query per topic (it takes a {query}; recent X posts, last ~7 days, costs API credits so keep to your top 1-2 topics) and treat its results like discovery/trend candidates — HN and X are trend supplements alongside GitHub Trending.',
     '',
     'For mention-watching, also call FetchXMentions if sites.x.enabled — X (Twitter) mentions + replies via the official API; returns the SAME {kind: reply_to_me|mention, ...} shape with parent_comment_body for replies, so emit its items into the `mentions` section exactly like the reply_to_me / mention handling below (author is an @handle, url is an x.com link). Empty + error when X creds are absent — just skip it.',
     '',
@@ -497,7 +542,7 @@ async function runGatherWeb() {
     '',
     'Also run public mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
     '',
-    'Emit body_patch blocks for `signal`, `discovery`, `mentions`, and `replies_due` sections as appropriate. If nothing scored above the cutoff for a section, emit one `empty` card with a one-line reason.',
+    'Now emit the body_patch blocks — one per section: `trend`, `discovery`, `mentions`, `replies_due` (NEVER `progress_drafts`). Every section you ran a gatherer for MUST get a body_patch: if it found nothing above the cutoff, emit that section with a single `empty` card and a one-line reason, so the page shows the run completed instead of staying blank. `trend` always gets a card (you always call FetchGitHubTrending).',
     '',
     'For `discovery` cards specifically (Reddit threads you suggest the user comment on): AFTER scoring, BEFORE drafting, WebFetch the FULL thread JSON for each surviving candidate. URL shape: `<thread_url>.json?limit=500&sort=top&raw_json=1` — no `depth` param, so Reddit returns the entire tree (every comment + every nested reply). One round-trip per thread.',
     'Three things to do with that full tree:',
@@ -520,14 +565,16 @@ async function runDraft() {
     '  - references/style-guide.md (Avoid list, Anti-AI tics, Cadence rules, good/bad examples)',
     '  - references/lane-templates.md (per-lane length, structure, opener pattern)',
     '',
-    'Read what\'s on the page: progress card (what I shipped/learned), signal cards (industry context), discovery cards (thread opportunities), mention cards (where I\'ve been mentioned).',
+    'Read what\'s on the page: progress card (what I shipped/learned), trend cards (what\'s trending in my space), discovery cards (thread opportunities), mention cards (where I\'ve been mentioned).',
+    '',
+    'If the x-post lane is enabled AND sites.x.enabled, FIRST call FetchXOwnPosts (my recent X posts + their likes/reposts/replies/views). Use it two ways: (1) do NOT repeat a point a recent post already made — pick a different angle or emit `empty`; (2) lean toward the themes/voice of my highest-`score` posts, since those are what this audience actually engages with. The post content still comes from the progress card or my intent; own-posts is the de-dup + what-works signal, not the source material. Empty + error when X creds are absent — just skip it.',
     '',
     'For each enabled lane in config.targets[*].enabled, generate one draft following references/lane-templates.md constraints. Five passes — do NOT skip:',
     '',
     'Pass 0 — Mode selection. Drafts have three shapes; pick one per lane based on what\'s on the page (see "Lead artifact + mode" in style-guide.md for worked examples).',
-    '  - local-led: the progress card has an artifact that\'s publicly legible on its own (a benchmark, a measurable behaviour change, a novel approach, a vivid bug). Open with that artifact. Signal / discovery cards are supporting evidence at most.',
-    '  - web-led + local proof (BEST when both available): the local artifact is too insider to open with, but a signal or discovery card sits on an adjacent topic. Open with the web hook (the question the public is already asking), pivot to the local artifact as the proof point ("yesterday I shipped X" / "hit the same wall"). Personal stake + public reach.',
-    '  - web-only: no local artifact this lane could honestly carry; only a signal commentary. Use sparingly — posts with no personal stake feel like industry commentary, which dilutes voice. If you\'d reach for this mode twice in a row for the same lane, emit `empty` instead.',
+    '  - local-led: the progress card has an artifact that\'s publicly legible on its own (a benchmark, a measurable behaviour change, a novel approach, a vivid bug). Open with that artifact. Trend / discovery cards are supporting evidence at most.',
+    '  - web-led + local proof (BEST when both available): the local artifact is too insider to open with, but a trend or discovery card sits on an adjacent topic. Open with the web hook (the question the public is already asking), pivot to the local artifact as the proof point ("yesterday I shipped X" / "hit the same wall"). Personal stake + public reach.',
+    '  - web-only: no local artifact this lane could honestly carry; only a trend commentary. Use sparingly — posts with no personal stake feel like industry commentary, which dilutes voice. If you\'d reach for this mode twice in a row for the same lane, emit `empty` instead.',
     '',
     'Lead test (apply after picking the mode). Could a stranger in the lane\'s audience (r/<sub> for reddit-comment, the X feed of the user\'s peers for x-post) tell what this post is about in 3 seconds, AND would they care? If "no" on either, drop down one mode (local-led → web-led; web-led → empty). Empty is fine. Fabricating a hook is not.',
     '',
@@ -587,16 +634,12 @@ function hideCascadeToast() {
 }
 
 async function maybeAutoCascade() {
-  // Only cascade for a freshly-created session — i.e. the user opened
-  // pulse without a ?session=<id> URL param. Clicking a past session in
-  // the sidebar resumes it via ?session=<id>; that path is purely
-  // static (cards + chat history from local storage; chips and chat
-  // input still work if the user clicks them, but nothing fires
-  // automatically). Without this gate, clicking an old session with no
-  // cards would re-trigger the whole pipeline.
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('session')) return;
-  if (state.viewSessionId !== state.activeSessionId) return;
+  // Cascade ONLY when this open minted a fresh session (New button →
+  // ?new=1, or first-ever open). Plain opens now resume the most-recent
+  // session and resumed sessions are static — chips and chat still work
+  // if the user clicks them, but nothing fires automatically. This is what
+  // stops a refresh from spawning a competing pulse run.
+  if (!state.isNewSession) return;
   const sess = getSession();
   for (const sec of Object.values(sess?.sections || {})) {
     if (Array.isArray(sec.cards) && sec.cards.length > 0) return;
@@ -691,13 +734,14 @@ function handleCardAction(action, cardId, btn) {
       break;
     }
     case 'copy': {
-      // Drafts carry .content; discovery cards carry .draft_starter; mention
-      // cards may carry .quote as a fallback.
-      const text = card?.content || card?.draft_starter || card?.quote || '';
-      if (text) {
-        navigator.clipboard.writeText(text);
-        flash(btn, 'Copied ✓');
-      }
+      // Pull the draft text per card type: draft cards → .content; discovery
+      // → .draft_starter; mention / reply_to_me → .draft_reply; .quote is a
+      // last-ditch fallback.
+      const text = card?.content || card?.draft_starter || card?.draft_reply || card?.quote || '';
+      if (!text) { flash(btn, 'Nothing to copy'); break; }
+      // Fire-and-forget: copyToClipboard resolves true/false so we only
+      // claim success when the text actually landed on the clipboard.
+      copyToClipboard(text).then((ok) => flash(btn, ok ? 'Copied ✓' : 'Press ⌘C to copy'));
       break;
     }
     case 'mark-posted':
@@ -844,6 +888,38 @@ async function appendPosted(entry) {
   await writeJson(path, posted);
 }
 
+// Copy text to the clipboard from inside the skill iframe. The async
+// Clipboard API needs a secure context + clipboard-write permission +
+// a focused document, none of which are guaranteed here — so on any
+// failure we fall back to the legacy textarea + execCommand('copy')
+// trick, which works in more sandboxed-iframe contexts. Returns whether
+// the copy succeeded so the caller can give honest feedback.
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch { /* fall through to legacy path */ }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 function flash(btn, label) {
   const old = btn.textContent;
   btn.textContent = label;
@@ -889,11 +965,11 @@ async function mountChat() {
   };
   state.grantsReady = () => pendingGrant || Promise.resolve();
 
-  // If URL has ?session=<id>, attach the chat panel to that session
-  // instead of creating a new one. Lets the user click a past pulse
-  // session in the sidebar and have chat reattach to it on reload.
-  const urlParams = new URLSearchParams(window.location.search);
-  const resumeSid = urlParams.get('session');
+  // Attach to the resolved session (most-recent on plain open, the URL's
+  // ?session=<id> when set) instead of always minting a new one. Only a
+  // forced-new / first-ever open (isNewSession) passes undefined so the
+  // engine creates a fresh session.
+  const resumeSid = state.resumeSid;
 
   state.chat = await window.LinggenUI.mount(document.getElementById('chat-panel'), {
     skillName: 'pulse',
@@ -924,13 +1000,12 @@ async function mountChat() {
   const fallbackSid = state.chat?.getSessionId?.();
   grantOnce(fallbackSid);
 
-  // Init prompt (greeting + brief seed) fires ONLY on freshly-created
-  // sessions. Resumed past sessions (URL has ?session=<id>) already have
-  // the brief in their chat history from the original session — no
-  // re-sending. Without this gate, clicking any past session in the
-  // sidebar would trigger a greeting LLM call, burning tokens (and
-  // potentially hitting rate limits) just to view static cards.
-  if (resumeSid) {
+  // Init prompt (greeting + brief seed) fires ONLY when this open is
+  // minting a fresh session. Resumed sessions (most-recent on plain open,
+  // or a sidebar pick) already carry the brief in their chat history — no
+  // re-sending. Without this gate, every refresh would trigger a greeting
+  // LLM call just to view static cards.
+  if (!state.isNewSession) {
     state.initReady = Promise.resolve();
   } else {
     state.initReady = (async () => {
@@ -1134,10 +1209,14 @@ async function init() {
   } catch (err) {
     console.warn('[pulse] dismissed prefetch', err);
   }
+  // Resolve which session this open should attach to BEFORE mounting chat,
+  // so we resume the most-recent session instead of minting a new one.
+  await resolveBootSession();
   wireChips();
   wireCardActions();
   wireChatResizer();
   wireSettingsModal();
+  wireNewSessionButton();
   document.getElementById('cascade-toast-stop')?.addEventListener('click', cancelCascade);
   // Listen for iframe selections before we point the iframe at /sessions —
   // session_create on a fresh mount races our setup otherwise.
@@ -1147,9 +1226,9 @@ async function init() {
   // first paint.
   await mountChat();
   setupSessionsIframe(state.viewSessionId || state.activeSessionId);
-  // Select the session indicated by ?session=<id>, else the active one.
-  const urlParams = new URLSearchParams(window.location.search);
-  const initialSid = urlParams.get('session') || state.activeSessionId;
+  // Load cards for the resolved session (resume target, or the freshly
+  // minted session id that mountChat just set as active).
+  const initialSid = state.resumeSid || state.activeSessionId;
   if (initialSid) {
     state.viewSessionId = initialSid;
     const sess = await readJson(`${SKILL_DIR}/data/${initialSid}/session.json`);
@@ -1158,8 +1237,20 @@ async function init() {
     document.getElementById('session-sub').textContent = 'Pick a chip above, or type a goal in chat to start.';
   }
   await loadStatusStrip();
-  // Auto-cascade only on the active session (not on a resumed past session).
+  // Auto-cascade only when this open minted a fresh session.
   maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));
+}
+
+// "New session" button → reload at ?new=1, which makes resolveBootSession
+// mint a fresh session and run the greeting + auto-cascade. A full reload
+// (vs in-place) reuses the entire boot path, so New behaves exactly like a
+// clean first-open-of-the-day.
+function wireNewSessionButton() {
+  const btn = document.getElementById('new-session-btn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    window.location.href = `${window.location.pathname}?new=1`;
+  });
 }
 
 init().catch(err => {

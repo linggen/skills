@@ -70,11 +70,11 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
 
   # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
   for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh \
-           google-trends.sh github-trending.sh product-hunt.sh wikipedia-pageviews.sh; do
+           github-trending.sh product-hunt.sh; do
     install -m 0755 "$SOURCE_DIR/scripts/sites/$f" "$SKILL_DIR/scripts/sites/$f"
   done
 
-  for f in style-guide.md lane-templates.md source-blogs.md brief.example.md; do
+  for f in style-guide.md lane-templates.md source-blogs.md brief.example.md x-setup-guide.md; do
     install -m 0644 "$SOURCE_DIR/references/$f" "$SKILL_DIR/references/$f"
   done
 else

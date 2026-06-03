@@ -107,10 +107,8 @@ Each is a `tier: read` adapter script, called by the agent in `research-market` 
 - `FetchLobsters`
 - `FetchArxiv`
 - `FetchRSS` (reads `config.json` for feeds)
-- `FetchGoogleTrendsDaily` (reads `config.json` for region)
-- `FetchGitHubTrending` (reads `config.json` for language)
+- `FetchGitHubTrending` (always-on Trend anchor; reads `config.json` for optional language)
 - `FetchProductHuntRSS`
-- `FetchWikipediaPageviews` (brief-derived topics)
 
 New site adapters drop into `scripts/sites/<id>.sh` + add a tools entry in SKILL.md frontmatter. No engine change.
 

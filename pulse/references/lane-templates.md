@@ -14,9 +14,10 @@ has enough substance to fill the lane *honestly*. If not, emit
 failure mode that produced today's "missing-newline blog" — a tweet
 stretched to 4000 chars with byte-level minutiae.
 
-- **x-post / reddit-comment**: any concrete observation worth 1-4
-  sentences. Bug stories, one metric, one before/after — most pulse
-  output lives here.
+- **x-post / reddit-comment / x-reply**: any concrete observation
+  worth 1-4 sentences. Bug stories, one metric, one before/after —
+  most pulse output lives here. (`x-reply` is conversational, not a
+  standalone artifact — it always answers a specific tweet.)
 - **linkedin**: needs *cross-domain appeal* — the observation should
   matter to professionals outside your sub-niche. A shell-wrapper
   bug doesn't qualify; "what shipping daily for a year taught me
@@ -73,6 +74,55 @@ Niche local-led posts go to reddit-comment instead.
 - **No emojis except** when the post is genuinely funny or the emoji
   IS the point (e.g., a literal stethoscope 🩺 for Sys Doctor). Skip
   decorative emojis.
+
+## x-reply
+
+A **reply** to someone else's tweet — either a reply on one of the
+user's own tweets (`reply_to_me` from FetchXMentions) or a cold reply
+under a stranger's post in the user's space (X discovery). This is the
+single strongest growth lever on X: useful replies under bigger
+accounts put the user in front of an audience that isn't theirs yet.
+It is NOT the `x-post` broadcast lane — it's 1:1 conversation that
+happens to be public.
+
+- **Length**: ≤280 chars, usually far shorter — 1-3 sentences. A reply
+  that fills the limit reads as a monologue; the best replies are one
+  sharp sentence.
+- **Open with a reaction or a direct answer**, never a thesis or a
+  whole-problem framing. You're responding to a specific thing they
+  said — engage with *that*, not the topic in the abstract.
+  - Cold discovery: answer the actual question / add the one detail
+    they're missing. Earn the space; a stranger's thread is not yours.
+  - Reply on your own tweet: warmer and more familiar is fine — these
+    are people already engaging with you.
+- **Voice — first person, from the user.** Same as `reddit-comment`:
+  someone with skin in the game talking, not a neutral advisor.
+- **Three registers — pick one, default to (1)** (same as
+  `reddit-comment`): (1) implicit — no project mention, the default;
+  (2) contextual — "hit the same thing building X" only when the
+  thread directly overlaps; (3) explicit — "we do X in <project>"
+  only when they ask "what handles this?". Cold discovery is basically
+  always (1).
+- **Anonymization test**: would the reply work just as well with the
+  project name stripped? If yes — fine. If it exists to *plant* the
+  name — drop the draft. Replies that smell like promo are what get
+  accounts shadow-limited; this lane exists to avoid that, not feed it.
+- **No links, no CTAs.** X downranks and spam-flags reply tweets that
+  are just a link or a "check out …". If a link is genuinely the best
+  answer, note it for the user to add at their discretion — don't bake
+  it into the draft.
+- **Anti-AI tics — strip in pass 3** (same list as `reddit-comment`):
+  diagnostic openers, symmetric parallel clauses, triple-slash lists,
+  closing trade-off morals, ungrounded "I'd try …". A human reacts to
+  one thing and stops.
+- **JSON output**: include the tweet you're replying to so the user
+  knows where it goes:
+  ```json
+  { "lane": "x-reply",
+    "reply_to_url": "https://x.com/user/status/123",
+    "register": "implicit",
+    "content": "..." }
+  ```
 
 ## medium
 
