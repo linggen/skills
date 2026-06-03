@@ -61,6 +61,12 @@ q = f"{query} -is:retweet -is:reply lang:en"
 params = {
     "query": q,
     "max_results": max_results,
+    # Relevancy (not the default recency) ranking. X recent-search by recency
+    # returns the just-posted firehose — overwhelmingly promo/spam/bots that
+    # never clear the agent's topical-fit cutoff, so the X section came back
+    # empty. Relevancy surfaces the most relevant + engaged posts for the
+    # query, which is what we actually want to draft replies to.
+    "sort_order": "relevancy",
     "tweet.fields": "created_at,author_id,public_metrics,text",
     "user.fields": "username,name,public_metrics",
     "expansions": "author_id",
