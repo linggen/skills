@@ -18,7 +18,7 @@
 #
 # Cost: one paid API call per invocation (your X credits, ~$0.001-0.01).
 #
-# Deps: python3 + requests_oauthlib (same as xbot). No jq/curl needed.
+# Deps: python3 stdlib only (urllib + json) — App-only Bearer auth, no requests_oauthlib.
 
 set -uo pipefail
 

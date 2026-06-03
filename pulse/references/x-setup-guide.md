@@ -3,7 +3,15 @@
 Pulse reads X for mentions, replies, and topic discovery, and drafts
 ≤280-char posts and replies for you. It **never posts** — you copy drafts
 to X yourself. X has no free API, so Pulse uses **your own** X developer
-app (pay-per-use, ~$0.001–0.01 per search). You need four OAuth 1.0a keys.
+app (pay-per-use, ~$0.001–0.01 per search).
+
+Pulse only READS from X, so it uses **App-only (Bearer) auth** — minted at
+runtime from your **Consumer Key + Consumer Secret**. Those two keys are all
+that's required; the Access Token + Secret (OAuth 1.0a) are optional/unused.
+No Python packages to install — the connector is stdlib-only. Also set your
+**X handle** in Settings → X (App-only auth has no "me", so Pulse looks you
+up by handle for mentions/own-posts — it must be your exact handle, e.g.
+`Linggen77`, not a guess).
 
 Read this guide to the user when they ask how to connect X or when the X
 source returns "no X credentials". Don't ask the user to paste keys into

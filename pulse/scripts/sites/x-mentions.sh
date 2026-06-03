@@ -18,7 +18,7 @@
 #
 # Cost: ~2 paid API calls per run (your X credits). Recent mentions only.
 #
-# Deps: python3 + requests_oauthlib (same as xbot).
+# Deps: python3 stdlib only (urllib + json) — App-only Bearer auth, no requests_oauthlib.
 
 set -uo pipefail
 
@@ -33,7 +33,7 @@ MAX="$MAX" SITES_DIR="$SITES_DIR" python3 <<'PY'
 import json, os, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])  # heredoc has no __file__
-from x_api import api_get  # noqa: E402
+from x_api import api_get, resolve_self_id  # noqa: E402
 
 try:
     max_results = max(5, min(int(os.environ.get("MAX", "15")), 100))
@@ -48,16 +48,10 @@ def out(extra_err=None):
     print(json.dumps({"items": items, "count": len(items), "errors": errors}))
     sys.exit(0)
 
-# 1. Who am I?
-status, me = api_get("/users/me")
-if status is None:
-    out("no X credentials — set them up in Settings -> X")
-if status != 200:
-    out(f"X /users/me failed ({status})")
-my_id = me.get("data", {}).get("id")
-username = me.get("data", {}).get("username", "")
-if not my_id:
-    out("could not resolve your X user id")
+# 1. Who am I? App-only Bearer has no "/users/me" — resolve by configured handle.
+my_id, username, err = resolve_self_id()
+if err:
+    out(err)
 
 # 2. Recent mentions (includes replies to you). Pull referenced tweets +
 #    authors so we can recover the parent ("your tweet") for replies.
