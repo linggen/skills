@@ -143,6 +143,10 @@ function normalizeThreadUrl(u) {
   // legacy /statuses/<id>). The handle is irrelevant for dedup, so key on id.
   m = s.match(/(?:x|twitter)\.com\/.*?status(?:es)?\/(\d+)/);
   if (m) return `x:${m[1]}`;
+  // Hacker News: the item id is the thread key. A story link and its
+  // news.ycombinator.com/item?id=<id> discussion share the same id.
+  m = s.match(/news\.ycombinator\.com\/item\?id=(\d+)/);
+  if (m) return `hn:${m[1]}`;
   return s.replace(/[?#].*$/, '').replace(/\/+$/, '');
 }
 
@@ -604,18 +608,25 @@ function renderDiscovery(c) {
   const t = c.reply_target;
   const targetBody = (t?.body || '').replace(/<[^>]+>/g, '').trim();
   const targetTruncated = targetBody.length > 1200 ? targetBody.slice(0, 1197) + '…' : targetBody;
+  // Safety net: if the picked comment just restates the OP (common on Show HN,
+  // where the submitter's first comment IS the product blurb), don't render a
+  // redundant block — the prompt is told not to pick these, this catches slips.
+  const norm = (s) => (s || '').slice(0, 120).toLowerCase().replace(/\s+/g, ' ').trim();
+  const targetDupesExcerpt = !!targetBody && norm(targetBody) === norm(excerpt);
   const targetMeta = t ? [
     t.author ? escapeHtml(t.author) + ' replied' : 'Replied',
     t.age_hours != null ? formatAge(t.age_hours) : null,
     t.score != null ? `${t.score} pts` : null,
     t.depth != null && t.depth > 1 ? `depth ${t.depth}` : null,
   ].filter(Boolean).join(' · ') : '';
-  const targetHtml = t && targetTruncated
+  const targetHtml = t && targetTruncated && !targetDupesExcerpt
     ? `<div class="thread-step latest"><div class="thread-label">↳ ${targetMeta}</div><div class="thread-body">${escapeHtml(targetTruncated)}</div></div>`
     : '';
-  const draftLabel = t ? 'Draft reply' : 'Draft comment';
+  // Renderer reads thread_title; accept title too (HN/X cards emit title).
+  const threadTitle = c.thread_title || c.title || '';
+  const draftLabel = (t && !targetDupesExcerpt) ? 'Draft reply' : 'Draft comment';
   return cardEl(c, 'cold', `
-    <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · <b>"${escapeHtml(c.thread_title || '')}"</b></div>
+    <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''}${threadTitle ? ' · <b>"' + escapeHtml(threadTitle) + '"</b>' : ''}</div>
     <div class="meta">${c.comments != null ? c.comments + ' comments · ' : ''}${formatAge(c.age_hours)}${c.match_reason ? ' · ' + escapeHtml(c.match_reason) : ''}</div>
     ${truncatedExcerpt ? `<div class="excerpt">${escapeHtml(truncatedExcerpt)}</div>` : ''}
     ${targetHtml}

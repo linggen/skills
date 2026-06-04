@@ -6,7 +6,9 @@
   "default_goal": "Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.",
   "sites": {
     "hackernews": {
-      "enabled": true
+      "enabled": true,
+      "keywords": [],
+      "username": ""
     },
     "reddit": {
       "enabled": true,
@@ -20,7 +22,8 @@
     "x": {
       "enabled": false,
       "username": "",
-      "keywords": []
+      "keywords": [],
+      "target_accounts": []
     },
     "lobsters": {
       "enabled": false

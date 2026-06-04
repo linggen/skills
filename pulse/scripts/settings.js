@@ -30,8 +30,13 @@ const LEGACY_BRIEF_EXAMPLE = `${SKILL_DIR}/references/brief.example.md`;
 const WEBSITES = [
   {
     name: 'Hacker News',
-    desc: 'Top 30 current stories.',
+    desc: 'Top 30 stories feed the Trend section (always). Add discovery keywords to also find recent HN threads on your topics and draft a comment for each (Target) — the way to build karma on a new account before posting. Set your username so threads you\'ve already commented on drop out. Via the public Algolia HN API — no auth. Pulse drafts; you paste manually, never auto-posted.',
     source_id: 'hackernews',
+    target_id: 'hn-comment',
+    source_fields: [
+      { kind: 'chips', key: 'keywords', label: 'Discovery keywords (topics to search, not brand names)' },
+      { kind: 'text', key: 'username', label: 'My HN username (drops threads I\'ve already commented on)', placeholder: 'e.g. linggen — case-sensitive, no prefix' },
+    ],
   },
   {
     name: 'Reddit',
@@ -63,6 +68,8 @@ const WEBSITES = [
     source_id: 'x',
     target_id: 'x-post',
     source_fields: [
+      { kind: 'chips', key: 'target_accounts', label: 'Target accounts — reply early to THEIR fresh posts (the growth engine). Curate mid-tier niche accounts (~2k–200k followers in your space), NOT mega-accounts like Elon/Sam Altman — their replies are saturated and their audience is too general.', placeholder: 'e.g. swyx — handle without @' },
+      { kind: 'account_finder', targetKey: 'target_accounts', script: 'x-suggest-accounts.sh', label: 'Find candidates from your following + topic searches' },
       { kind: 'chips', key: 'keywords', label: 'Discovery keywords (topics to search, not brand names)' },
       { kind: 'text', key: 'username', label: 'My X handle (optional, for display)', placeholder: 'e.g. linggen — without the @ prefix' },
       {
@@ -299,11 +306,11 @@ function renderWebsiteRow(site) {
     config.innerHTML = '';
     if (site.source_id && state.config.sites[site.source_id]?.enabled && site.source_fields) {
       const cfg = state.config.sites[site.source_id];
-      site.source_fields.forEach((field) => config.appendChild(renderField(cfg, field)));
+      site.source_fields.forEach((field) => config.appendChild(renderField(cfg, field, renderConfig)));
     }
     if (site.target_id && state.config.targets[site.target_id]?.enabled && site.target_fields) {
       const cfg = state.config.targets[site.target_id];
-      site.target_fields.forEach((field) => config.appendChild(renderField(cfg, field)));
+      site.target_fields.forEach((field) => config.appendChild(renderField(cfg, field, renderConfig)));
     }
   }
 
@@ -347,11 +354,12 @@ function setSiteEnabled(site, on) {
   }
 }
 
-function renderField(cfg, field) {
-  if (field.kind === 'chips')    return renderChipField(cfg, field);
-  if (field.kind === 'range')    return renderRangeField(cfg, field);
-  if (field.kind === 'text')     return renderTextField(cfg, field);
-  if (field.kind === 'credfile') return renderCredFileField(field);
+function renderField(cfg, field, rerender) {
+  if (field.kind === 'chips')          return renderChipField(cfg, field);
+  if (field.kind === 'range')          return renderRangeField(cfg, field);
+  if (field.kind === 'text')           return renderTextField(cfg, field);
+  if (field.kind === 'credfile')       return renderCredFileField(field);
+  if (field.kind === 'account_finder') return renderAccountFinderField(cfg, field, rerender);
   return document.createDocumentFragment();
 }
 
@@ -527,6 +535,127 @@ function renderChipField(cfg, field) {
   addRow.appendChild(input);
   addRow.appendChild(addBtn);
   wrap.appendChild(addRow);
+
+  return wrap;
+}
+
+// On-demand account finder (X target accounts). Runs a deterministic script
+// — following + keyword harvest, ranked heuristically — and lets the user
+// tick candidates into cfg[field.targetKey] (the target_accounts chips).
+// No agent: the user is the judge; we just gather + sort. `rerender` rebuilds
+// the site's config block so the chips above reflect newly-added handles.
+function fmtFollowers(n) {
+  n = n || 0;
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1_000) return Math.round(n / 1_000) + 'k';
+  return String(n);
+}
+
+function renderAccountFinderField(cfg, field, rerender) {
+  const targetKey = field.targetKey || 'target_accounts';
+  if (!Array.isArray(cfg[targetKey])) cfg[targetKey] = [];
+
+  const wrap = document.createElement('div');
+  wrap.className = 'account-finder';
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'finder-btn';
+  btn.textContent = '🔍 Suggest accounts';
+  wrap.appendChild(btn);
+
+  const results = document.createElement('div');
+  results.className = 'finder-results';
+  wrap.appendChild(results);
+
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    btn.textContent = 'Searching your following + topics…';
+    results.innerHTML = '';
+    let cands = [];
+    try {
+      const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/${field.script}"`);
+      cands = JSON.parse(out || '[]');
+    } catch (e) {
+      results.innerHTML = `<div class="finder-empty">Couldn't fetch candidates: ${e.message}. Check that X is set up (credentials + keywords).</div>`;
+      btn.disabled = false; btn.textContent = '🔍 Suggest accounts';
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = '🔍 Suggest accounts';
+
+    const existing = new Set(cfg[targetKey].map((h) => String(h).toLowerCase()));
+    cands = cands.filter((c) => c.handle && !existing.has(c.handle.toLowerCase()));
+    if (cands.length === 0) {
+      results.innerHTML = '<div class="finder-empty">No new candidates found. Add discovery keywords above, or curate handles manually.</div>';
+      return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'finder-list';
+    const checks = [];
+    cands.forEach((c) => {
+      const row = document.createElement('label');
+      row.className = 'finder-row' + (c.mega ? ' mega' : '');
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = c.handle;
+      checks.push(cb);
+      const meta = document.createElement('div');
+      meta.className = 'finder-meta';
+      const top = document.createElement('div');
+      top.className = 'finder-top';
+      // Display name first (human-readable), then the @handle, then followers.
+      // Built with textContent so a name containing < or & can't break markup.
+      if (c.name && c.name !== c.handle) {
+        const nameEl = document.createElement('span');
+        nameEl.className = 'finder-name';
+        nameEl.textContent = c.name;
+        top.appendChild(nameEl);
+      }
+      const handleEl = document.createElement('span');
+      handleEl.className = 'finder-handle';
+      handleEl.textContent = '@' + c.handle;
+      top.appendChild(handleEl);
+      const folEl = document.createElement('span');
+      folEl.className = 'finder-followers';
+      folEl.textContent = fmtFollowers(c.followers) + (c.mega ? ' ⚠' : '');
+      top.appendChild(folEl);
+      const why = document.createElement('div');
+      why.className = 'finder-why';
+      why.textContent = c.why || '';
+      if (c.bio) { why.textContent += c.bio ? ` · ${c.bio}` : ''; }
+      const link = document.createElement('a');
+      link.href = `https://x.com/${c.handle}`;
+      link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.className = 'finder-open'; link.textContent = '↗';
+      meta.appendChild(top); meta.appendChild(why);
+      row.appendChild(cb); row.appendChild(meta); row.appendChild(link);
+      list.appendChild(row);
+    });
+    results.appendChild(list);
+
+    const addSel = document.createElement('button');
+    addSel.type = 'button';
+    addSel.className = 'finder-add';
+    const refresh = () => {
+      const n = checks.filter((c) => c.checked).length;
+      addSel.textContent = n ? `+ Add selected (${n})` : '+ Add selected';
+      addSel.disabled = n === 0;
+    };
+    checks.forEach((c) => c.addEventListener('change', refresh));
+    refresh();
+    addSel.addEventListener('click', () => {
+      const have = new Set(cfg[targetKey].map((h) => String(h).toLowerCase()));
+      checks.filter((c) => c.checked).forEach((c) => {
+        const h = c.value.trim().replace(/^@/, '');
+        if (h && !have.has(h.toLowerCase())) { cfg[targetKey].push(h); have.add(h.toLowerCase()); }
+      });
+      markDirty();
+      if (typeof rerender === 'function') rerender();  // chips above now show them
+    });
+    results.appendChild(addSel);
+  });
 
   return wrap;
 }

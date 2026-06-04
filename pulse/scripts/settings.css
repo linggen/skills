@@ -336,3 +336,65 @@
   border-radius: 3px;
   background: var(--accent-soft, rgba(127,127,127,0.15));
 }
+
+/* ── X account finder (Suggest accounts) ─────────────────────────────── */
+.account-finder { margin-top: 8px; }
+.finder-btn {
+  font-size: 12px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.finder-btn:hover:not(:disabled) { border-color: var(--accent); }
+.finder-btn:disabled { opacity: 0.6; cursor: default; }
+.finder-results { margin-top: 8px; }
+.finder-empty { font-size: 12px; color: var(--muted); padding: 4px 2px; }
+.finder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+}
+.finder-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.finder-row:hover { background: var(--surface-2); }
+.finder-row.mega { opacity: 0.6; }
+.finder-row input[type="checkbox"] { margin-top: 2px; flex: none; }
+.finder-meta { flex: 1; min-width: 0; }
+.finder-top { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.finder-name { font-weight: 600; font-size: 12px; color: var(--text); }
+.finder-handle { font-size: 11px; color: var(--muted); }
+.finder-followers { font-size: 11px; color: var(--muted); margin-left: auto; }
+.finder-why {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.finder-open { flex: none; color: var(--muted); text-decoration: none; font-size: 13px; }
+.finder-open:hover { color: var(--accent); }
+.finder-add {
+  margin-top: 8px;
+  font-size: 12px;
+  padding: 5px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent-soft, rgba(127,127,127,0.15));
+  color: var(--text);
+  cursor: pointer;
+}
+.finder-add:disabled { opacity: 0.5; cursor: default; border-color: var(--border); background: var(--surface); }

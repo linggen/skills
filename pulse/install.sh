@@ -68,10 +68,13 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
   done
   install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
 
-  # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit, ...)
-  for f in hackernews.sh reddit.sh lobsters.sh arxiv.sh rss.sh \
-           github-trending.sh product-hunt.sh; do
-    install -m 0755 "$SOURCE_DIR/scripts/sites/$f" "$SKILL_DIR/scripts/sites/$f"
+  # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit,
+  # FetchX, FetchHNSearch, ...). Copy the whole sites/ dir so newly-added
+  # adapters ship automatically instead of being forgotten in an enumerated
+  # list (which had silently dropped the X / Bluesky / thread scripts).
+  for f in "$SOURCE_DIR"/scripts/sites/*.sh "$SOURCE_DIR"/scripts/sites/*.py; do
+    [ -e "$f" ] || continue
+    install -m 0755 "$f" "$SKILL_DIR/scripts/sites/$(basename "$f")"
   done
 
   for f in style-guide.md lane-templates.md source-blogs.md brief.example.md x-setup-guide.md; do

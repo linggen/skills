@@ -193,6 +193,44 @@ def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
         })
         n += 1
 
+def fetch_own_comments(cap=100):
+    # Public feed of MY recent comments — the authoritative "threads I've
+    # already commented in" source for the discovery already-commented
+    # filter (refreshCommentedThreadUrls reads kind=="own_comment"). Works
+    # WITHOUT a token. Each entry links to my comment permalink, which
+    # carries the thread id (/comments/<id>/), so it dedups against the
+    # discovery card's thread_url. This was lost in the .json→RSS migration
+    # (old.reddit /user/<u>/comments.json is now bot-walled); restored here.
+    url = (f"https://www.reddit.com/user/{urllib.parse.quote(username)}"
+           f"/comments.rss?limit={cap}")
+    try:
+        root = ET.fromstring(fetch(url))
+    except Exception as ex:
+        errors.append(f"own-comments feed failed: {str(ex)[:80]}")
+        return
+    seen = set()
+    for e in root.findall("a:entry", NS):
+        link_el = e.find("a:link", NS)
+        href = link_el.get("href") if link_el is not None else ""
+        if not href:
+            continue
+        www = to_www(href)
+        m = re.search(r"/comments/([^/?#]+)", www)
+        key = m.group(1) if m else www
+        if key in seen:               # collapse multiple comments in one thread
+            continue
+        seen.add(key)
+        items.append({
+            "kind": "own_comment",
+            "title": (e.findtext("a:title", "", NS) or "").strip()[:300],
+            "url": www,
+            "created_iso": (e.findtext("a:updated", "", NS) or "").strip() or None,
+        })
+
+# Always pull my own comments — drives the discovery already-commented
+# filter — independent of whether the private inbox token is set.
+fetch_own_comments()
+
 if token:
     # Authenticated private feeds — the real inbox signal.
     feeds = [

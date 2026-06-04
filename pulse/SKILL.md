@@ -52,6 +52,32 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/hackernews.sh"
     tier: read
     timeout_ms: 30000
+  - name: FetchHNSearch
+    description: >-
+      Keyword-search Hacker News for RECENT story threads on a topic, via
+      the public Algolia HN API (no auth). The discovery counterpart to
+      FetchHackerNews — finds threads worth COMMENTING on so a young HN
+      account builds karma before posting. Args: "<query>" [days=7]; with
+      no query, OR-joins sites.hackernews.keywords. Returns JSON array of
+      {id, title, url, hn_url, points, num_comments, author, text,
+      created_iso, age_hours}. Prefer hits with num_comments > 0 and low
+      age_hours (active threads). Gated on sites.hackernews.enabled.
+    cmd: "$SKILL_DIR/scripts/sites/hn-search.sh {{query}} {{days}}"
+    tier: read
+    timeout_ms: 30000
+  - name: FetchHNThread
+    description: >-
+      Pull one HN thread's OP + comment tree via the public Algolia API
+      (no auth). Used by discover-customers to read the OP + real
+      discussion for GROUNDING a top-level reply to the post (so the draft
+      answers the actual question and doesn't repeat existing comments).
+      Arg: an HN item id or news.ycombinator.com/item?id=…
+      url. Returns { thread_url, thread_title, op:{author,body,url,
+      age_hours}, comments:[{author,body,url,age_hours}] (cap 25), errors }
+      — same shape as FetchRedditThread.
+    cmd: "$SKILL_DIR/scripts/sites/hn-thread.sh {{thread}}"
+    tier: read
+    timeout_ms: 30000
   - name: FetchReddit
     description: >-
       Fetch the 25 newest threads from each subreddit listed in
@@ -133,6 +159,21 @@ tools:
         type: string
         required: true
         description: Topic/keyword to search recent X posts for.
+  - name: FetchXTargets
+    description: >-
+      The X GROWTH engine — the PRIMARY X discovery source. Pulls the
+      FRESHEST original posts from the user's curated list of mid-tier
+      niche accounts (sites.x.target_accounts) via a from:<handles>
+      recency search, so the user can reply EARLY while the post is gaining
+      traction and the reply slot is still visible. Replying under accounts
+      whose audience IS the target user is the real follower-growth lever —
+      far better than keyword search (FetchX), which trawls a firehose of
+      tiny accounts. Same output shape as FetchX, newest-first. [] when
+      creds or target_accounts are absent. Prefer hits with low age_hours
+      (reply early). One paid API call.
+    cmd: "$SKILL_DIR/scripts/sites/x-targets.sh"
+    tier: read
+    timeout_ms: 25000
   - name: FetchXMentions
     description: >-
       X (Twitter) mention/reply monitoring via the official API v2 with the
@@ -555,41 +596,80 @@ Bluesky keywords.
 1. Call `FetchReddit` (configured subs), `FetchHackerNews`,
    `FetchLobsters`, `FetchBlueskyKeywords` (if enabled — Bluesky has
    no subreddit-style communities, so keyword search is the primary
-   discovery path there), `FetchX` (if X enabled — searches
-   `sites.x.keywords`; one paid call per query, cap to the top 2-3
-   terms). On X, **rank candidates higher when the author has more
-   followers** (the `followers` field) — replying to bigger accounts
-   in your space is the single strongest X growth lever, so a thread
-   you can genuinely add to under a high-follower post beats the same
-   point under an account with none.
+   discovery path there). **For X (if enabled), call `FetchXTargets`
+   FIRST** — the freshest posts from the user's curated mid-tier niche
+   accounts (`sites.x.target_accounts`), which are the prime reply
+   targets for growth; prefer the freshest (reply early). Also call
+   `FetchX` (searches `sites.x.keywords`; one paid call per query, cap
+   to top 2-3 terms) as a GATED firehose supplement. The X growth rule:
+   reach × niche-relevance, NOT raw fame — reply where the author's
+   audience is the target user AND the reply section is small enough to
+   be seen. Drop tiny-follower / zero-engagement posts; also skip
+   mega-accounts (Elon/Sam Altman tier) — their replies are saturated
+   and their audience too general to convert. Also call `FetchHNSearch` (if
+   `sites.hackernews.enabled`) with a focused query per topic — recent
+   HN threads to comment on, the way to build karma on a young HN
+   account before posting. Prefer hits with `num_comments > 0` and low
+   `age_hours` (live discussion); a comment on a dead thread earns
+   nothing.
 2. **Drop SKIP_URLS first.** Before scoring or drafting, drop any
    thread whose normalized post id matches a `SKIP_URLS` entry from
    the hidden Gather web context (set by pulse-app.js from the
    user's local + remote commented-thread state). Match by post id
    (the segment after `/comments/<id>` for Reddit; the post rkey for
-   Bluesky), NOT by slug. Format: `<platform>:<post-id>` (e.g.
-   `reddit:1tc7op7`, `bsky:3kabc...`). Surfacing a thread the user
-   already commented on wastes drafts that get filtered at render.
+   Bluesky; the digits after `/status/` for X; the `item?id=` digits
+   for HN), NOT by slug. Format: `<platform>:<post-id>` (e.g.
+   `reddit:1tc7op7`, `bsky:3kabc...`, `x:2060…`, `hn:39000000`).
+   Surfacing a thread the user already commented on wastes drafts that
+   get filtered at render.
 3. Filter for posts that are *questions* or *describe a pain point*
    the brief's expertise can answer. Look for question marks, "how
    do I", "is there a tool", "anyone tried", "best way to".
 4. Score 0–1 for direct fit (the brief's product / expertise must
    genuinely apply).
 5. Drop below 0.6.
-6. **Read the discussion (Reddit).** `FetchReddit` only gives the
-   thread title + a short summary. For each surviving **Reddit** thread
-   worth a comment, call `FetchRedditThread` with its URL/id to pull
-   the OP body + top comments. Ground the `excerpt` and the
-   `draft_starter` in what was actually said — answer the real
-   question / add to the real discussion, and avoid repeating a point
-   an existing comment already made. (Cap the thread fetches to the
-   top ~5 candidates to stay quick.) **X** results already carry the
-   full tweet text in `text` — no extra fetch; use it as the `excerpt`.
-7. For each surviving thread, draft a 2–4 sentence comment starter
+5a. **Rank by heat, and drop cold posts** — a comment on a dead thread
+   or under a tiny account is invisible, so it earns nothing. Use the
+   popularity signal each source actually provides:
+   - **HN** — `points` + `num_comments` + `age_hours`. Prefer hot,
+     recent threads; drop ones that are old AND have ~no traction
+     (≈ age > 24h, points < 10, comments < 3). A very fresh thread
+     (< 3h) still rising is fine at low points.
+   - **X** — `followers` (author reach) + `score` (likes+reposts) +
+     `replies` + freshness. Sweet spot is mid-tier niche accounts with
+     real engagement where a reply is seen; drop tiny-follower /
+     zero-engagement posts AND skip saturated mega-accounts. Prefer the
+     freshest posts (reply early, before the slot is buried).
+   - **Bluesky** — `like_count` + `repost_count` + `reply_count`
+     (no author follower count). Prefer posts with engagement.
+   - **Reddit** — NO heat signal: the public `.rss` feeds return
+     `score: 0` and `comments: 0`, so popularity is genuinely
+     unavailable. Rank Reddit by topical fit only; do not fabricate a
+     hotness number. (Comment count can be roughly inferred by reading
+     the thread, but upvote score never comes over RSS.)
+6. **Read the discussion for grounding (Reddit + HN).** `FetchReddit`
+   only gives the thread title + a short summary. For each surviving
+   **Reddit** thread, call `FetchRedditThread` (and for **HN**,
+   `FetchHNThread`) with its URL/id to pull the OP body + top comments.
+   Ground the `excerpt` and `draft_starter` in what was actually said —
+   answer the OP's real question, and avoid repeating a point an
+   existing comment already made. (Cap thread fetches to the top ~5 to
+   stay quick.) **X** results already carry the full tweet text in
+   `text` — no extra fetch; use it as the `excerpt`.
+   **Reply to the OP, not a nested comment.** Discovery drafts are
+   always TOP-LEVEL replies to the post — easiest to post (reply box at
+   the top, no hunting) and highest-visibility, which is the goal. Do
+   NOT emit `reply_target` for discovery cards; that field is only for
+   `mentions`/reply_to_me, where the comment is in the user's own inbox.
+7. For each surviving thread, draft a 2–4 sentence top-level reply
    in voice. **Pick the lane by source**: Reddit threads use
    lane-templates.md `reddit-comment`; X posts use `x-reply` (≤280,
-   X reply conventions). Don't link to the user's marketing domain;
-   if a self-mention is genuinely natural, max one.
+   X reply conventions); HN threads use `hn-comment` (substance-first,
+   register (1) implicit / no product mention by default — HN flags
+   self-promo hardest, and the goal is karma; mention ling-mem only
+   when the thread is directly about agent memory AND with disclosure).
+   Don't link to the user's marketing domain; if a self-mention is
+   genuinely natural, max one.
 
 **Output**: body_patch for `discovery` section. Each card is a
 `discovery` type with both `excerpt` AND `draft_starter` populated:

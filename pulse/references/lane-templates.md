@@ -265,6 +265,66 @@ sentences, emit `empty`.
     "content": "..." }
   ```
 
+## hn-comment
+
+The goal on Hacker News is to **build karma with genuinely useful
+comments** — especially for a new account that can't post much yet. HN
+readers and mods flag anything that smells like marketing *harder* than
+any other platform, and a flagged self-promo on a young account is the
+fastest way to tank it. So the bar here is: would this comment be worth
+posting even if the user had no product at all? If not, drop it.
+
+- **Length**: 2-6 sentences, up to ~150 words. HN tolerates — rewards —
+  more substance than Reddit/X, but only if every sentence carries
+  information. No padding.
+- **Lead with specifics or direct experience.** A number, a failure
+  mode, a concrete trade-off you actually hit, a correction to a claim
+  in the thread. HN's best comments add a fact or a counterpoint the OP
+  didn't have. "We tried embeddings for this and the recall got worse
+  past ~10k rows because …" beats "interesting, memory is hard."
+- **Three registers — pick one, default to (1):**
+  1. **Implicit** (default, the overwhelming majority). Useful technical
+     commentary from someone who's worked on the problem. NO product
+     mention at all.
+  2. **Contextual.** "Hit this building a memory layer for coding
+     agents — the thing that bit us was …" Used ONLY when the thread is
+     *directly* about agent memory / cross-session state and your
+     experience is genuinely the relevant evidence. Still no link.
+  3. **Disclosed.** Name ling-mem ONLY when the thread is specifically
+     about this exact problem AND a reader would want the pointer — and
+     then *always disclose authorship* ("I build one of these, so grain
+     of salt — …"). HN forgives self-promo only when it's honest and
+     on-topic. Never in a thread that's merely adjacent.
+- **The mention test**: if you removed the ling-mem reference, would the
+  comment still stand as a useful contribution? If no, you're planting a
+  name — rewrite to register (1) or emit `empty`. Most HN drafts should
+  be register (1) with zero mention.
+- **No links to landing pages, no CTAs, no "check out".** A bare
+  `news.ycombinator.com`-native mention with disclosure is the ceiling.
+- **Anti-AI / anti-fluff tics — strip in pass 3:**
+  - "Great point / interesting / thanks for sharing" openers — say
+    something or say nothing.
+  - Diagnostic openers ("X has two problems"), symmetric clauses,
+    triple-slash menus, closing moral — same as reddit-comment.
+  - Hedged advisor voice ("you might want to consider") — HN reads it as
+    contentless. Make a claim or ask a sharp question.
+  - Em-dash-heavy balanced sentences and "it's not X, it's Y" framings.
+- **Reply to the OP, top-level.** The draft is a top-level reply to the
+  post — easiest to post (reply box at the top, no hunting for a buried
+  comment) and highest-visibility, which is the karma goal. Use the
+  thread's existing comments only to avoid repeating a point already
+  made; don't reply to a nested comment. Prefer threads with active
+  discussion (num_comments > 0, recent) — a comment on a dead thread
+  earns no karma.
+- **JSON output**: include the thread url so the user knows where to
+  paste:
+  ```json
+  { "lane": "hn-comment",
+    "thread_url": "https://news.ycombinator.com/item?id=...",
+    "register": "implicit",
+    "content": "..." }
+  ```
+
 ## linkedin
 
 - **Length**: 800-2000 chars (~150-350 words). LinkedIn truncates
