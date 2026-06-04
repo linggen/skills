@@ -28,7 +28,10 @@
 set -uo pipefail
 
 SKILL_DIR="${HOME}/.linggen/skills/pulse"
-LING_MEM_SKILL_DIR="${HOME}/.linggen/skills/ling-mem"
+# Memory skill dir — the skill was renamed ling-mem → shared-memory. Prefer
+# the new name; fall back to the old one for installs that haven't migrated.
+MEM_SKILL_DIR="${HOME}/.linggen/skills/shared-memory"
+[ -d "$MEM_SKILL_DIR" ] || MEM_SKILL_DIR="${HOME}/.linggen/skills/ling-mem"
 CONFIG_PATH="${SKILL_DIR}/config.json"
 MIN_ITEMS=5      # expand window if fewer than this
 HARD_CAP=40      # don't return more than this even at widest window
@@ -73,7 +76,7 @@ emit_error() {
 # ── Sessions (reuse ling-mem's collect_sessions.sh) ──
 gather_sessions() {
   local target_date="$1"
-  local collect="${LING_MEM_SKILL_DIR}/scripts/collect_sessions.sh"
+  local collect="${MEM_SKILL_DIR}/scripts/collect_sessions.sh"
   if [ ! -x "$collect" ]; then
     return
   fi

@@ -154,13 +154,17 @@ tools:
       (likes, reposts, replies, impressions), via the official X API v2
       with the user's OWN credentials (Settings -> X). Pass an optional max
       count (default 10). Returns {username, items:[{text, url, likes,
-      reposts, replies, views, score, created_iso, age_hours}], count,
-      errors}; score = likes + reposts. Used by draft-content for the
-      x-post lane so a new post builds on what the user already shipped
-      instead of repeating it, and so high-engagement past posts inform
-      what themes to write more of (the performance feedback loop).
-      Empty + error when creds are absent. ~2 API calls per run (your X
-      credits); excludes replies/retweets, recent posts only.
+      reposts, replies, views, score, created_iso, age_hours}],
+      replied_to:["<x.com status url>", …], count, errors}; score =
+      likes + reposts. `items` is original posts only (replies/retweets
+      excluded) — used by draft-content for the x-post lane so a new post
+      builds on what the user already shipped instead of repeating it, and
+      so high-engagement past posts inform what themes to write more of
+      (the performance feedback loop). `replied_to` is the parent tweets
+      the user has already replied to — Pulse uses it to suppress
+      already-engaged posts from discovery (same rule as Reddit's
+      already-commented filter). Empty + error when creds are absent.
+      ~2 API calls per run (your X credits); recent tweets only.
     cmd: "$SKILL_DIR/scripts/sites/x-own.sh {{max}}"
     tier: read
     timeout_ms: 30000
@@ -531,6 +535,13 @@ so the page can render an Open button:
 
 If nothing scored ≥ 0.6, emit one `empty` card with a one-line
 message instead.
+
+Each trend card carries a **"✎ Draft post"** action. When the user
+clicks it the page sends a self-contained prompt asking you to turn
+that one trend into a single `x-post` draft (web-led + local proof,
+same voice contract as the Draft step) and append it to
+`progress_drafts`. This is what gives the trend section a
+job-to-be-done — a rising trend becomes a draft in one click.
 
 ### discover-customers
 

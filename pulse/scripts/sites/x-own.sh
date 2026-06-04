@@ -17,9 +17,13 @@
 #
 # Output (always JSON, exit 0):
 #   { username, items:[{text, url, likes, reposts, replies, views,
-#                        score, created_iso, age_hours}], count, errors }
+#                        score, created_iso, age_hours}],
+#     replied_to:[ "<x.com status url>", … ], count, errors }
 #   score = likes + reposts (same convention as FetchX), so the agent can
 #   rank the user's own posts the same way it ranks discovered ones.
+#   replied_to = parent tweets the user has already replied to — Pulse uses
+#   this to suppress already-engaged posts from discovery (mirrors Reddit's
+#   own_comment behavior). items stays original-posts-only for draft de-dup.
 #
 # Cost: ~2 paid API calls per run (your X credits). Recent posts only.
 #
@@ -46,13 +50,14 @@ try:
 except ValueError:
     max_results = 10
 
-items, errors = [], []
+items, replied_to, errors = [], [], []
 username = ""
 
 def out(extra_err=None):
     if extra_err:
         errors.append(extra_err)
     print(json.dumps({"username": username, "items": items,
+                      "replied_to": replied_to,
                       "count": len(items), "errors": errors}))
     sys.exit(0)
 
@@ -70,18 +75,34 @@ my_id, username, err = resolve_self_id()
 if err:
     out(err)
 
-# 2. My recent posts + engagement. Exclude replies/retweets — we want the
-#    user's own original posts, the thing draft-content should not repeat.
+# 2. My recent tweets + engagement. Keep replies in the response (exclude
+#    only retweets) so we can report which parents I already replied to —
+#    but classify each tweet: a reply (referenced_tweets type "replied_to")
+#    feeds `replied_to`, everything else (original posts + quotes) feeds
+#    `items` so the draft de-dup contract is unchanged.
 params = {
     "max_results": max_results,
-    "tweet.fields": "created_at,public_metrics,text",
-    "exclude": "replies,retweets",
+    "tweet.fields": "created_at,public_metrics,text,referenced_tweets",
+    "exclude": "retweets",
 }
 status, data = api_get(f"/users/{my_id}/tweets", params)
 if status != 200:
     out(f"X user-tweets failed ({status})")
 
+seen_parents = set()
 for t in data.get("data", []) or []:
+    parent_id = next(
+        (r.get("id") for r in (t.get("referenced_tweets") or [])
+         if r.get("type") == "replied_to"),
+        None,
+    )
+    if parent_id:
+        # A reply by me — record the PARENT tweet so discovery won't
+        # resurface a post I already engaged with.
+        if parent_id not in seen_parents:
+            seen_parents.add(parent_id)
+            replied_to.append(f"https://x.com/i/status/{parent_id}")
+        continue
     m = t.get("public_metrics", {}) or {}
     likes = m.get("like_count", 0)
     reposts = m.get("retweet_count", 0)

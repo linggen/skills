@@ -457,15 +457,30 @@ async function pushLocalContextToChat(data) {
 // draft and never paste it, and false-positive suppression is worse than
 // the 30s lag before Reddit indexes a fresh comment).
 async function refreshCommentedThreadUrls() {
-  let remote = [];
+  const remote = [];
+  // Reddit — own_comment thread URLs (free RSS, always fetched).
   try {
     const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-mentions.sh"`);
     const data = JSON.parse(out);
-    remote = (data?.items || [])
+    remote.push(...(data?.items || [])
       .filter(it => it.kind === 'own_comment' && it.url)
-      .map(it => it.url);
+      .map(it => it.url));
   } catch (e) {
     console.warn('[pulse] reddit-mentions own_comment fetch failed', e);
+  }
+  // X — parent tweets I've already replied to. Same "don't resurface what
+  // I've engaged" rule as Reddit. Gated on sites.x.enabled because x-own.sh
+  // spends paid API credits; pull a wide window (100) so older replies still
+  // suppress. No creds → x-own.sh returns empty gracefully.
+  try {
+    const cfg = await readPulseConfig();
+    if (cfg?.sites?.x?.enabled) {
+      const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/x-own.sh" 100`);
+      const data = JSON.parse(out);
+      remote.push(...(data?.replied_to || []));
+    }
+  } catch (e) {
+    console.warn('[pulse] x-own replied_to fetch failed', e);
   }
   setCommentedThreadUrls(remote);
 }
@@ -517,8 +532,9 @@ async function runGatherWeb() {
     'Drop any source-tool result whose normalized post id appears in this',
     'list, BEFORE scoring or drafting. Match by post id, not by slug — for',
     'Reddit use the segment after /comments/<id>; for Bluesky use the post',
-    'rkey (last URL segment). Skip applies to `discovery`, `trend`, and',
-    '`mentions` sections (including reply_to_me cards). Format: <platform>:<post-id>.',
+    'rkey (last URL segment); for X use the status id (the digits after',
+    '/status/). Skip applies to `discovery`, `trend`, and `mentions`',
+    'sections (including reply_to_me cards). Format: <platform>:<post-id>.',
     ...skipKeys.map(k => `  - ${k}`),
     '',
   ].join('\n');
@@ -532,7 +548,7 @@ async function runGatherWeb() {
     '',
     'Then for each topic, call the relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS) in parallel. ALWAYS call FetchGitHubTrending as well — it is the always-on anchor of the `trend` section, so call it every run regardless of any config toggle; emit its repos as `trend` cards. Filter results for direct topical fit (score ≥ 0.6). If sites.x.enabled, also call FetchX with a focused query per topic (it takes a {query}; recent X posts, last ~7 days, costs API credits so keep to your top 1-2 topics) and treat its results like discovery/trend candidates — HN and X are trend supplements alongside GitHub Trending.',
     '',
-    'HANDLING X (FetchX) RESULTS — X is NOT Reddit. An X hit has NO comment tree to WebFetch, NO already-commented check, NO reply_target. Do NOT run any of the Reddit-only discovery steps below on it. Instead emit each X hit that clears 0.6 DIRECTLY as a card: as a `discovery` card { source:"x", title:<tweet text>, excerpt:<tweet text>, url:<the x.com status url, REQUIRED>, draft_starter:<your reply in voice> } when it is a post I could reply to; or as a `trend` card { source:"x", title, url } when it is broad "what people are talking about" signal. If FetchX returned hits this run, your `discovery` and/or `trend` body_patch MUST contain X cards — do not silently drop every X result. (X recent-search is noisy/promotional, so it is fine to keep only the few that genuinely fit my category.)',
+    'HANDLING X (FetchX) RESULTS — X is NOT Reddit. An X hit has NO comment tree to WebFetch and NO reply_target. Do NOT run any of the Reddit-only discovery steps below on it. BUT the already-commented rule DOES apply: drop any X hit whose status id (digits after /status/) appears in SKIP_URLS as `x:<id>` — that is a post I have already replied to, exactly like a Reddit thread I already commented on; do not resurface it. For the survivors, emit each X hit that clears 0.6 DIRECTLY as a card: as a `discovery` card { source:"x", title:<tweet text>, excerpt:<tweet text>, url:<the x.com status url, REQUIRED>, draft_starter:<your reply in voice> } when it is a post I could reply to; or as a `trend` card { source:"x", title, url } when it is broad "what people are talking about" signal. If FetchX returned hits this run, your `discovery` and/or `trend` body_patch MUST contain X cards — do not silently drop every X result. (X recent-search is noisy/promotional, so it is fine to keep only the few that genuinely fit my category.)',
     '',
     'For mention-watching, also call FetchXMentions if sites.x.enabled — X (Twitter) mentions + replies via the official API; returns the SAME {kind: reply_to_me|mention, ...} shape with parent_comment_body for replies, so emit its items into the `mentions` section exactly like the reply_to_me / mention handling below (author is an @handle, url is an x.com link). It returns {items, count, errors}. If `items` is empty OR `errors` is non-empty (including a missing-credentials note), SKIP X mentions silently — do NOT create any card about it. A tool error/empty is NOT a mention.',
     'NEVER FABRICATE CARDS. Every mention / reply_to_me card MUST come from a real item a Fetch tool actually returned, about a real person. Do NOT invent a "system" mention, a status card, an error card, or a setup-instructions card (e.g. "X mentions unavailable — add credentials in Settings"). If a mention source returns no items or an error, it simply contributes no card. Only if NOTHING across ALL sources produced a real item do you emit ONE `empty` card for `mentions` with a one-line reason. Tool status/errors never become content cards.',
@@ -718,6 +734,21 @@ function handleCardAction(action, cardId, btn) {
     case 'reply-back':
       sendChatHidden(`Draft a reply to the new follow-up comment on my "${truncate(card.your_post_title || '?', 60)}" thread. Land it as a body_patch.`);
       break;
+    case 'draft-post': {
+      // Per-card action on a trend card: turn THIS one trend into an x-post
+      // draft. Lighter than the full Draft chip (one lane, one hook) but
+      // anchored to the same voice contract so the output matches.
+      const hook = truncate(card.title || card.source || 'this trend', 80);
+      sendChatHidden([
+        `Turn the trend "${hook}" (source: ${card.source || 'web'}${card.url ? ', ' + card.url : ''}) into ONE x-post draft.`,
+        'Mode: web-led + local proof (see references/style-guide.md "Lead artifact + mode"). Open with the public hook this trend surfaces, then pivot to a concrete local artifact from the progress card as the proof point. If no local artifact honestly fits, web-only is allowed — keep it tight and skip if you\'d be reaching.',
+        'BEFORE drafting, Read references/style-guide.md (Anti-AI tics, Avoid list, Cadence) and the x-post lane in references/lane-templates.md in full — they are the voice contract, not optional.',
+        'If sites.x.enabled, FIRST call FetchXOwnPosts: do NOT repeat a point a recent post already made (pick a different angle or emit `empty`), and lean toward the themes/voice of my highest-`score` posts.',
+        'Mirror the brief\'s cadence (Pass 2), run the Anti-AI tics checklist (Pass 3) and the opener test (Pass 4) from the Draft step before emitting.',
+        'Emit body_patch for `progress_drafts` with `mode:"append"` adding ONE { type:"draft", id, lane:"x-post", content, char_count, char_limit:280 } card alongside the existing cards. If you cannot draft honestly from this trend, emit one `empty` card with a one-line reason instead of fabricating.',
+      ].join('\n'));
+      break;
+    }
     case 'polish':
       sendChatHidden(`Polish the ${card.lane || 'draft'} draft (card id ${card.id}). Re-emit the body_patch with the tightened version.`);
       break;
@@ -734,6 +765,18 @@ function handleCardAction(action, cardId, btn) {
       // Open = "let me read the thread", not "I'm about to comment". Leave
       // the card visible so the user can come back to it. Copy is the
       // explicit commit signal (handled below).
+      break;
+    }
+    case 'copy-url': {
+      // Copy the card's source URL — same resolution order as `open` so the
+      // copied link matches where Open would take you (reply-target permalink
+      // when the agent picked one, else thread/post/card url).
+      const url = btn?.dataset?.url
+        || card?.reply_target?.url
+        || card?.thread_url || card?.your_post_url || card?.url
+        || card?.follow_up?.comment_url;
+      if (!url) { flash(btn, 'No URL'); break; }
+      copyToClipboard(url).then((ok) => flash(btn, ok ? 'Copied ✓' : 'Press ⌘C to copy'));
       break;
     }
     case 'copy': {

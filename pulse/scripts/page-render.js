@@ -138,6 +138,11 @@ function normalizeThreadUrl(u) {
   if (m) return `bsky:${m[1]}`;
   m = s.match(/^at:\/\/[^/]+\/app\.bsky\.feed\.post\/([^/?#]+)/);
   if (m) return `bsky:${m[1]}`;
+  // X / Twitter: the status id is the post's unique key across any handle
+  // form (x.com/<user>/status/<id>, x.com/i/status/<id>, twitter.com/...,
+  // legacy /statuses/<id>). The handle is irrelevant for dedup, so key on id.
+  m = s.match(/(?:x|twitter)\.com\/.*?status(?:es)?\/(\d+)/);
+  if (m) return `x:${m[1]}`;
   return s.replace(/[?#].*$/, '').replace(/\/+$/, '');
 }
 
@@ -493,7 +498,7 @@ function renderMention(c) {
     ${opHtml}
     ${convHtml}
     ${draftHtml}
-    ${actionRow(c, ['copy', 'open', 'dismiss'])}
+    ${actionRow(c, ['copy', 'open', 'copy-url', 'dismiss'])}
   `);
 }
 
@@ -535,7 +540,7 @@ function renderReplyToMe(c) {
     ${yourCommentHtml}
     ${replyHtml}
     ${draftHtml}
-    ${actionRow(c, ['copy', 'open', 'dismiss'])}
+    ${actionRow(c, ['copy', 'open', 'copy-url', 'dismiss'])}
   `);
 }
 
@@ -572,6 +577,7 @@ function renderReply(c) {
         <div class="actions">
           <button class="primary" data-action="reply-back" data-card="${c.id}">✎ Reply back</button>
           ${fu.comment_url ? `<button data-action="open-url" data-url="${escapeAttr(fu.comment_url)}">↗ View</button>` : ''}
+          ${fu.comment_url ? `<button data-action="copy-url" data-card="${c.id}" data-url="${escapeAttr(fu.comment_url)}">🔗 Copy URL</button>` : ''}
           <button class="dismiss" data-action="dismiss-followup" data-card="${c.id}">×</button>
         </div>
       </div>
@@ -580,7 +586,7 @@ function renderReply(c) {
   return cardEl(c, 'unread', `
     <div class="title">Your ${escapeHtml(c.platform || 'post')}: <b>"${escapeHtml(c.your_post_title || 'post')}"</b></div>
     <div class="meta">posted ${c.posted_at ? formatAge(hoursSince(c.posted_at)) : ''} · ${c.unanswered_count || 0} unanswered comments${c.score != null ? ' · ' + c.score + ' points' : ''}${c.ratio != null ? ' · ratio ' + c.ratio : ''}</div>
-    ${actionRow(c, ['draft-replies', 'open', 'dismiss'])}
+    ${actionRow(c, ['draft-replies', 'open', 'copy-url', 'dismiss'])}
     ${followupHtml}
   `);
 }
@@ -614,7 +620,7 @@ function renderDiscovery(c) {
     ${truncatedExcerpt ? `<div class="excerpt">${escapeHtml(truncatedExcerpt)}</div>` : ''}
     ${targetHtml}
     ${c.draft_starter ? `<div class="draft-inline"><div class="draft-inline-label">${draftLabel}</div><div class="draft-inline-body">${escapeHtml(c.draft_starter)}</div></div>` : ''}
-    ${actionRow(c, ['copy', 'open', 'dismiss'])}
+    ${actionRow(c, ['copy', 'open', 'copy-url', 'dismiss'])}
   `);
 }
 
@@ -624,11 +630,14 @@ function renderTrend(c) {
   if (c.source) metaBits.push(escapeHtml(c.source));
   if (c.age_hours != null) metaBits.push(formatAge(c.age_hours));
   const meta = metaBits.length ? `<div class="meta">${metaBits.join(' · ')}</div>` : '';
+  // Draft-post is the trend section's job-to-be-done: turn a rising trend
+  // into an x-post draft (web-led + local proof) in one click. Always
+  // offered; Open only when the card carries a source url.
   return cardEl(c, 'cold', `
     <div class="title">${escapeHtml(c.title || c.source || 'Trending')}</div>
     ${meta}
     ${items ? `<ul>${items}</ul>` : ''}
-    ${c.url ? actionRow(c, ['open-url']) : ''}
+    ${actionRow(c, c.url ? ['draft-post', 'open-url', 'copy-url'] : ['draft-post'])}
   `, 'dense');
 }
 
@@ -730,11 +739,13 @@ const ACTION_LABELS = {
   'draft-reply':    { label: '✎ Draft reply',    primary: true },
   'draft-replies':  { label: '✎ Draft replies',  primary: true },
   'draft-starter':  { label: '✎ Draft starter',  primary: true },
+  'draft-post':     { label: '✎ Draft post',     primary: true },
   'reply-back':     { label: '✎ Reply back',     primary: true },
   'polish':         { label: '✎ Polish',         primary: true },
   'open':           { label: '↗ Open',           primary: false },
   'open-url':       { label: '↗ Open',           primary: false },
   'copy':           { label: '📋 Copy',           primary: false },
+  'copy-url':       { label: '🔗 Copy URL',       primary: false },
   'mark-posted':    { label: '✓ Posted',         primary: false },
   'discard':        { label: '✗ Discard',        dismiss: true },
   'dismiss':        { label: '×',                 dismiss: true },
