@@ -36,7 +36,7 @@ fi
 SITES_DIR="$(cd "$(dirname "$0")" && pwd)"
 MAX="${1:-25}" SITES_DIR="$SITES_DIR" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import json, os, sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.environ["SITES_DIR"])
 from x_api import api_get  # noqa: E402
@@ -69,11 +69,14 @@ def age_hours(iso):
     except Exception:
         return None
 
-# Their original posts only (-is:reply -is:retweet). Recency-sorted: we want
-# the newest posts so the user can reply while the thread is fresh.
+# Their original posts only (-is:reply -is:retweet), from the last 48h
+# (start_time) so the user replies while the thread is fresh. Fetch a wide
+# pool (100) then cap per-account below so one prolific account can't eat it.
+start_time = (datetime.now(timezone.utc) - timedelta(hours=48)).strftime("%Y-%m-%dT%H:%M:%SZ")
 params = {
     "query": f"({from_group}) -is:retweet -is:reply lang:en",
-    "max_results": max_results,
+    "max_results": 100,
+    "start_time": start_time,
     "sort_order": "recency",
     "tweet.fields": "created_at,author_id,public_metrics,text",
     "user.fields": "username,name,public_metrics",
@@ -88,9 +91,14 @@ for u in (data.get("includes", {}) or {}).get("users", []):
     users[u["id"]] = u
 
 out = []
+per_author = {}
+PER_AUTHOR_CAP = 3   # diversity: no one account dominates the pool
 for t in data.get("data", []) or []:
     u = users.get(t.get("author_id"), {})
     handle = u.get("username", "")
+    if per_author.get(handle, 0) >= PER_AUTHOR_CAP:
+        continue   # data is recency-sorted, so we keep each account's newest N
+    per_author[handle] = per_author.get(handle, 0) + 1
     m = t.get("public_metrics", {}) or {}
     likes = m.get("like_count", 0)
     reposts = m.get("retweet_count", 0)
@@ -111,6 +119,8 @@ for t in data.get("data", []) or []:
         "created_iso": t.get("created_at"),
         "age_hours": age_hours(t.get("created_at")),
     })
+    if len(out) >= max_results:
+        break
 
 print(json.dumps(out))
 PY

@@ -40,24 +40,57 @@ username = (hn.get("username") or "").strip().lstrip("@")
 if not username:
     out()
 
-params = urllib.parse.urlencode({
-    "tags": f"comment,author_{username}",
-    "hitsPerPage": 100,
-})
-url = f"https://hn.algolia.com/api/v1/search_by_date?{params}"
+seen, urls, errs = set(), [], []
+
+# 1. Algolia author search — one call, gets all INDEXED comments. But Algolia
+#    DROPS flagged/dead comments from its index, so a flagged reply is invisible
+#    here (the Firebase pass below recovers it). Non-fatal on error.
 try:
-    req = urllib.request.Request(url, headers={"User-Agent": "pulse/1.0"})
+    params = urllib.parse.urlencode({"tags": f"comment,author_{username}", "hitsPerPage": 100})
+    req = urllib.request.Request(
+        f"https://hn.algolia.com/api/v1/search_by_date?{params}",
+        headers={"User-Agent": "pulse/1.0"})
     with urllib.request.urlopen(req, timeout=10) as r:
         data = json.load(r)
+    for h in data.get("hits", []) or []:
+        sid = h.get("story_id")
+        if sid and sid not in seen:
+            seen.add(sid)
+            urls.append(f"https://news.ycombinator.com/item?id={sid}")
 except Exception as e:
-    out(username, err=f"HN own-comments fetch failed: {e}")
+    errs.append(f"algolia: {e}")
 
-seen, urls = set(), []
-for h in data.get("hits", []) or []:
-    sid = h.get("story_id")
-    if sid and sid not in seen:
-        seen.add(sid)
-        urls.append(f"https://news.ycombinator.com/item?id={sid}")
+# 2. Firebase pass — the official API lists ALL my submitted items, INCLUDING
+#    flagged/dead comments Algolia hides. Walk each recent comment up to its
+#    root story so a flagged reply still suppresses the discovery card.
+#    Bounded by a fetch budget (Firebase is free, no auth, CDN-fast).
+def fb(path):
+    try:
+        with urllib.request.urlopen(
+                f"https://hacker-news.firebaseio.com/v0/{path}.json", timeout=8) as r:
+            return json.load(r)
+    except Exception:
+        return None
 
-out(username, urls)
+prof = fb(f"user/{username}")
+budget = 60
+for item_id in ((prof or {}).get("submitted") or [])[:25]:
+    cur, hops = item_id, 0
+    while cur is not None and hops < 6 and budget > 0:
+        it = fb(f"item/{cur}")
+        budget -= 1
+        if not it:
+            break
+        if it.get("type") == "story":
+            sid = it.get("id")
+            if sid and sid not in seen:
+                seen.add(sid)
+                urls.append(f"https://news.ycombinator.com/item?id={sid}")
+            break
+        cur = it.get("parent")
+        hops += 1
+    if budget <= 0:
+        break
+
+out(username, urls, errs[0] if errs else None)
 PY

@@ -61,24 +61,44 @@ NICHE |= {"agent", "agents", "agentic", "llm", "llms", "ai", "ml", "model",
           "local", "eval", "evals", "observability", "prompt"}
 
 def bio_hits(bio):
+    # Word-boundary match so short tokens don't false-fire (e.g. "ai" must
+    # NOT match inside "faith"/"email"). Phrases match as substrings.
     b = (bio or "").lower()
-    return sum(1 for w in NICHE if w in b)
+    n = 0
+    for w in NICHE:
+        if " " in w:
+            if w in b:
+                n += 1
+        elif re.search(r"\b" + re.escape(w) + r"\b", b):
+            n += 1
+    return n
 
-# Negative filter: drop accounts whose bio screams off-niche promo (SEO,
-# crypto, dropship, etc.). These match the keyword search because they stuff
-# "AI" into posts to farm attention, but their audience is marketers/traders,
-# not devs — replying to them does nothing. Single tokens use word boundaries
-# so "seo"/"nft" don't false-match inside other words.
-SPAM_TOKENS = ["seo", "crypto", "web3", "nft", "memecoin", "airdrop",
-               "presale", "forex", "dropship", "dropshipping", "onlyfans",
-               "casino", "betting", "trader", "trading", "ico", "defi"]
+# Negative filter: drop accounts that are off-niche promo (SEO, stocks,
+# crypto, dropship, …). They match the keyword search by stuffing "AI" into
+# posts to farm attention, but their audience is marketers/traders, not devs.
+# We check the HANDLE (loudest signal — "allday_stocks", "Defi_lord") AND the
+# bio (tokens word-boundary, phrases substring, plus $TICKER cashtags).
+SPAM_HANDLE = ["stock", "defi", "crypto", "forex", "nft", "web3", "memecoin",
+               "airdrop", "presale", "dao", "bullish", "bearish", "onlyfans",
+               "casino", "hodl", "altcoin"]
+SPAM_TOKENS = ["seo", "crypto", "web3", "nft", "memecoin", "airdrop", "presale",
+               "forex", "dropship", "dropshipping", "onlyfans", "casino",
+               "betting", "trader", "trading", "ico", "defi", "stocks", "stock",
+               "equities", "kol", "clipper", "hodl", "altcoin", "shitcoin"]
 SPAM_PHRASES = ["make money", "making money", "get rich", "financial freedom",
                 "trading signals", "pump and dump", "passive income",
-                "grow your following", "buy followers"]
+                "grow your following", "buy followers", "market news",
+                "market update", "stock market", "alpha hunter", "gem calls"]
+CASHTAG = re.compile(r"\$[A-Za-z]{2,6}\b")   # $ETH, $TON — crypto/stock tickers
 
-def is_spam(bio):
+def is_spam(handle, bio):
+    h = (handle or "").lower()
+    if any(t in h for t in SPAM_HANDLE):
+        return True
     b = (bio or "").lower()
     if any(p in b for p in SPAM_PHRASES):
+        return True
+    if CASHTAG.search(bio or ""):
         return True
     return any(re.search(r"\b" + t + r"\b", b) for t in SPAM_TOKENS)
 
@@ -92,7 +112,10 @@ def add(u, source):
     hl = h.lower()
     if not hl or hl == my_handle_l or hl in already:
         return None
-    if is_spam(u.get("description")):   # drop SEO/crypto/dropship promo bios
+    desc = u.get("description")
+    if bio_hits(desc) == 0:             # require ≥1 niche term in the bio
+        return None
+    if is_spam(h, desc):                # drop off-niche promo (handle + bio)
         return None
     pm = u.get("public_metrics") or {}
     c = cand.get(hl)
@@ -116,8 +139,7 @@ if my_id:
     })
     if status == 200:
         for u in data.get("data", []) or []:
-            if bio_hits(u.get("description")) > 0:   # niche bio required for follows
-                add(u, "following")
+            add(u, "following")   # add() now gates on niche-bio + spam
 
 # ── Source B: keyword harvest ────────────────────────────────────────
 for kw in keywords:
