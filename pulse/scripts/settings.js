@@ -771,7 +771,12 @@ async function writeXCredsIfProvided() {
   }
   if (filled === 0) return null;
   if (filled < X_CRED_KEYS.length) return 'partial';
-  const body = X_CRED_KEYS.map((k) => `${k}="${vals[k]}"`).join('\n') + '\n';
+  // x_api.py parses KEY="value" naively (split on first '=', strip quotes)
+  // and does NOT unescape, so strip chars that can't round-trip rather than
+  // escaping them. Real X OAuth keys are URL-safe tokens — none of these
+  // ever appear in a valid value, so this only guards against corruption.
+  const clean = (v) => String(v).replace(/["\\\r\n]/g, '').trim();
+  const body = X_CRED_KEYS.map((k) => `${k}="${clean(vals[k])}"`).join('\n') + '\n';
   await writeFile(X_CRED_PATH, body);
   await runBash(`chmod 600 "${X_CRED_PATH}" 2>/dev/null || true`);
   state.xCredsPresent = true;

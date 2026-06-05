@@ -34,7 +34,7 @@ The user types a goal — *"Help me launch Sys Doctor on r/macapps"* / *"Daily X
 
 **Project.** A user has one or more projects. Each owns:
 - Identity — name, path, description, audience, stage
-- Live **Signal feed** — market state, refreshed daily
+- Live **Trend feed** — what's trending in the user's space, refreshed per run
 - Live **Discovery feed** — pain points + comment candidates
 - **Progress log** — auto-built from sessions / commits / memory
 - **Library** — every run output, every draft, every research artifact
@@ -43,7 +43,7 @@ The user types a goal — *"Help me launch Sys Doctor on r/macapps"* / *"Daily X
 
 | Surface | Purpose |
 |:--------|:--------|
-| **Pulse** (the page) | The main app surface. Today's state — Mentions, Replies due, Discovery, Signal, Progress + Drafts — plus the agent chat for follow-ups. Lands here on open. |
+| **Pulse** (the page) | The main app surface. Today's state — Mentions, Replies due, Discovery, Trend, Progress + Drafts — plus the agent chat for follow-ups. Lands here on open. |
 | **Library** | Sent drafts + tracked mentions, archived. The history of what shipped, not a log of dashboards. |
 | **Settings** | Case description, workspace path, brief, target sites, accounts. Configure once. |
 
@@ -100,15 +100,13 @@ The page renders whichever sections are populated. Same renderer for any goal.
 
 ## Registered tools (current)
 
-Each is a `tier: read` adapter script, called by the agent in `research-market` / `discover-customers`:
+Each is a `tier: read` adapter script, called by the agent in `research-market` / `discover-customers` / `monitor-mentions`:
 
-- `FetchHackerNews`
-- `FetchReddit` (reads `config.json` for subs)
-- `FetchLobsters`
-- `FetchArxiv`
-- `FetchRSS` (reads `config.json` for feeds)
-- `FetchGitHubTrending` (always-on Trend anchor; reads `config.json` for optional language)
-- `FetchProductHuntRSS`
+- **Hacker News** — `FetchHackerNews`, `FetchHNSearch`, `FetchHNThread`
+- **Reddit** (RSS-based; `.json` API closed Nov 2025) — `FetchReddit`, `FetchRedditThread`, `FetchRedditMentions`
+- **X / Twitter** (own dev creds; gated on `sites.x.enabled`) — `FetchX`, `FetchXTargets`, `FetchXMentions`, `FetchXOwnPosts`
+- **Bluesky** (public AT Proto) — `FetchBlueskyMentions`, `FetchBlueskyKeywords`
+- **Trend / industry** — `FetchGitHubTrending` (always-on anchor), `FetchLobsters`, `FetchArxiv`, `FetchRSS`, `FetchProductHuntRSS`
 
 New site adapters drop into `scripts/sites/<id>.sh` + add a tools entry in SKILL.md frontmatter. No engine change.
 
@@ -145,20 +143,22 @@ In addition to the brief, the user points pulse at a **workspace path** (e.g., `
 
 Reading is **just-in-time** via Linggen's standard `Read` / `Glob` / `Grep` tools, scoped to the configured workspace dir. No pre-ingestion, no vector cache, no file watcher. The agent pulls what it needs in-loop.
 
-## Goals model (no recipes)
+## Goals model (chips + free-text)
 
-A run carries a single free-text goal. The agent uses the brief already in its conversation history + the workspace + the goal + the data on disk and decides:
+The Pulse page drives the agent through a three-step pipeline, one step per chip: **Gather local** (a script collects sessions / commits / memory), **Gather web** (the agent calls the Fetch* tools and fills trend / discovery / mentions / replies_due), and **Draft** (user-triggered; drafts for the enabled lanes). Each chip sends the agent one hidden goal sentence; the agent decides the specifics. Free-text goals typed in chat override chip routing — the agent reads intent and runs the matching step(s).
+
+Whatever the trigger, the agent works from the brief (in its conversation history) + the workspace + the data on disk and decides:
 - which workspace files to read (README, docs, recent commits)
-- which collectors to invoke (sessions / commits / project / artifact)
 - which site tools to call
 - which configured lanes to draft for
-- whether to skip if the goal doesn't earn output
+- whether to skip if the step doesn't earn output
 
-**Trigger sources** (the agent doesn't care which — it just sees the goal text):
-- Chat — user types a goal in the agent panel
+**Trigger sources** (the agent just sees the goal text):
+- Chip — the page fires a hidden goal sentence when the user clicks a pipeline chip
+- Chat — user types a free-text goal in the agent panel (overrides chip routing)
 - Mission — Linggen-engine cron fires with a stored goal (set up by the user in Linggen's mission UI; pulse never writes mission files itself)
 
-Pulse does not maintain a saved-runs library or chip-driven goal launcher. AI-led means the agent decides what to do from the brief and workspace; the user steers via natural-language follow-ups in chat.
+AI-led means the agent decides *how* to satisfy a step from the brief and workspace — not that the user has no controls. The chips are the controls; chat is the override.
 
 ## Goal examples
 
@@ -192,9 +192,9 @@ Same skill, same protocol, same data shape. Only the goal text changes.
 |:------|:-------|:------|
 | 1. Site tools registered, settings page, brief | **done** | sources/targets/brief configured by user |
 | 2. Free-text goal field on the run | **done** | replaces hardcoded "scan 24h, draft" with `goal` parameter |
-| 3. Workspace ingestion + case description in settings | **next** | drafts grounded in actual product knowledge — the differentiator |
-| 4. AI-led single-state Pulse page | next | one dashboard, no multi-session, no chip launcher; chat is the only manual trigger |
-| 5. Account auth (Reddit OAuth first) + reply tracking | next | track engagement on user's own posts; draft replies grounded in product knowledge |
+| 3. Workspace ingestion + case description in settings | **done** | drafts grounded in actual product knowledge — the differentiator |
+| 4. AI-led single-state Pulse page | **done** | one dashboard, one session/day; chips drive the three-step pipeline, chat overrides |
+| 5. Account creds (Reddit RSS token, X dev keys) + reply tracking | **in progress** | RSS mentions + X creds shipped; `posted.json` → `replies_due` poll wired |
 | 6. Multi-project model | future | per-project briefs, per-project workspaces, per-project sources |
 | 7. Platform-skill extraction (redditBot, xbot, hnBot) | future, not v1 | only when a second consumer earns the abstraction; pulse remains mono-skill until then |
 | 8. Linggen-app pulse-branded distribution | future | `pulse.app` bundles engine + skills for the focused founder-GTM audience |

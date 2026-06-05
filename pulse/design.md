@@ -70,7 +70,7 @@ Capabilities do NOT appear in the UI; users never pick one.
 - Output → `trend` section cards + entries in `external_sources[]`.
 
 ### `discover-customers`
-- Pull from: configured Reddit subs (`/new` and `/rising`), HN, Lobsters.
+- Pull from: configured Reddit subs (`/new` RSS), HN, Lobsters, Bluesky keywords, and X target accounts (when enabled).
 - Filter for posts asking questions / describing pain that brief-extracted
   expertise can answer.
 - Output → `customer_pain_points[]` + `comment_candidates[]` (with
@@ -140,7 +140,7 @@ prompts.
 | Tool | Source | Capability uses |
 |:-----|:-------|:----------------|
 | `FetchHackerNews` | `topstories.json` (Firebase) | research-market, discover-customers, monitor-mentions |
-| `FetchReddit` | `/r/<sub>/new.json` per configured sub | discover-customers, monitor-mentions, track-progress (replies) |
+| `FetchReddit` | `/r/<sub>/new.rss` per configured sub (`.json` API closed Nov 2025) | discover-customers, monitor-mentions |
 | `FetchLobsters` | `/newest.json` | research-market, discover-customers |
 | `FetchArxiv` | OAI/Atom for CS.AI/LG/CL | research-market |
 | `FetchRSS` | configured RSS/Atom feeds | research-market, discover-customers |
@@ -173,8 +173,8 @@ Three vertical sections, top-to-bottom:
 │ Discovery                                 [cold opportunities] │
 │ ─ "r/LocalLLaMA: 'how do I add tool calling to Ollama?' "       │
 ├─────────────────────────────────────────────────────────────────┤
-│ Signal + Progress + Drafts                [daily summary]      │
-│ ─ market landscape cards                                        │
+│ Trend + Progress + Drafts                 [daily summary]      │
+│ ─ trending repos / threads cards                                │
 │ ─ "yesterday you shipped X, drafted Y"                          │
 │ ─ drafts pending review                                         │
 └─────────────────────────────────────────────────────────────────┘

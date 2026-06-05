@@ -114,28 +114,23 @@ tools:
       Reddit mention/reply monitoring via RSS (Reddit closed the .json
       API Nov 2025; .rss still works). With a `private_rss_feed_token`
       in config (Settings → Reddit), reads the user's PRIVATE inbox
-      feeds — `reply_to_me` (comment + post replies) and `mention`
-      items — the real "someone replied to me" signal, no OAuth/app.
-      Without a token, falls back to PUBLIC search RSS for u/<username>
-      mentions only (no replies). Returns {items:[{kind, title, body,
-      url, author, sub, created_iso, score, num_comments, watched_term}],
-      count, errors}; kind ∈ reply_to_me | mention. The old fields below
-      describe richer JSON shapes that are no longer reachable — RSS
-      gives title/body/url/author/sub/created_iso, score/num_comments=0.
-      threads where u/<username> appears in post text, (b) direct
-      replies to the user's recent comments (pre-walked thread trees
-      — the real "someone replied to me" signal, since Reddit's
-      public search doesn't index comments and there's no inbox
-      without OAuth), (c) the user's own recent posts, (d) the
-      user's own recent comments (num_comments carries the parent
-      thread's reply count for activity sorting). Returns {items:
-      [{kind, title, body, url, author, sub, created_iso, score,
-      num_comments, watched_term}], count, errors}. kind ∈ mention
-      | reply_to_me | own_post | own_comment. Anonymous rate limit
-      ~10 req/min — script makes up to 8 calls per invocation (3
-      list endpoints + up to 5 focused-tree walks). DMs/inbox are
-      unavailable because Reddit gates Data API OAuth behind manual
-      approval.
+      feeds — `reply_to_me` (direct replies to the user's comments/posts)
+      and `mention` items — the real "someone replied to me" signal, no
+      OAuth/app. Without a token, falls back to PUBLIC search RSS for
+      u/<username> mentions only (no replies). Returns {items:[{kind,
+      title, body, url, author, sub, created_iso, score, num_comments,
+      watched_term, parent_comment_body?, parent_comment_url?}], count,
+      errors}. Because the data is RSS, score/num_comments are 0 (rank by
+      relevance, not heat). For `reply_to_me` items the script pre-walks
+      the thread and attaches the user's own comment as
+      `parent_comment_body` (+ `parent_comment_url`), so a card can show
+      both sides. **kind ∈ reply_to_me | mention | own_comment.** The
+      `own_comment` rows are PAGE-SIDE FILTER PLUMBING only — they carry
+      just {kind, title, url, created_iso} and feed pulse-app.js's
+      already-commented dedup. NEVER turn an `own_comment` row into a
+      card; the agent ignores them entirely. Rate limit ~10 req/min;
+      script makes up to ~8 calls per invocation. DMs/inbox are
+      unavailable (Reddit gates Data API OAuth behind manual approval).
     cmd: "$SKILL_DIR/scripts/sites/reddit-mentions.sh"
     tier: read
     timeout_ms: 30000
@@ -237,8 +232,8 @@ tools:
       sites.bluesky.keywords (e.g. ["local LLM", "Apple Silicon AI",
       "agent runtime"] — extracted from the brief per research-market
       step 1, NOT brand names). Returns a JSON array of {source,
-      watched_term, title, url, author, body, summary, created_iso,
-      age_hours, reply_count, repost_count, like_count}. Used by
+      watched_term, title, url, author, author_display, body, summary,
+      created_iso, age_hours, reply_count, repost_count, like_count}. Used by
       research-market (for industry signal in the user's category) and
       discover-customers (Bluesky has no stable communities like
       subreddits, so keyword search is the discovery primary). Dedupes
@@ -289,8 +284,8 @@ tools:
   - name: FetchProductHuntRSS
     description: >-
       Fetch today's launches from Product Hunt's public RSS feed.
-      Returns JSON array of {title, url, summary, date}. Used by
-      research-market and discover-customers — competing launches
+      Returns JSON array of {title, url, summary, date, author, source}.
+      Used by research-market and discover-customers — competing launches
       surface here.
     cmd: "$SKILL_DIR/scripts/sites/product-hunt.sh"
     tier: read

@@ -158,7 +158,7 @@ gather_files() {
         else
           ts=$(date -r "$path" "+%Y-%m-%dT%H:%M:%S" 2>/dev/null)
         fi
-        local rel="${path#$workspace/}"
+        local rel="${path#"$workspace"/}"
         emit_item "file" "fs" "$rel" "" "$ts" "$path"
       done
 }

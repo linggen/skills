@@ -364,7 +364,6 @@ function renderStatusStrip() {
     parts.push(valueHtml);
     if (idx < items.length - 1) parts.push('<span class="sep">·</span>');
   });
-  parts.push('<span class="refresh" title="Refresh">⟳</span>');
   el.innerHTML = parts.join('');
 }
 
