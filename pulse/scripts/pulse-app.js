@@ -242,7 +242,7 @@ async function loadStatusStrip() {
 // based on either the script's return (local) or the renderer's onChange
 // signal (web / draft) firing within a CHIP_TIMEOUT_MS window.
 
-const CHIP_TIMEOUT_MS = 120_000;  // 2 min — agent steps can be slow
+const CHIP_TIMEOUT_MS = 180_000;  // 3 min — agent steps (10+ fetches, many drafts) can be slow
 
 const PIPELINE_CHIPS = {
   'gather-local': {
@@ -584,6 +584,8 @@ async function runGatherWeb() {
     'Also run public mention-watching: for each watchlist term (products + competitors + self extracted from brief, plus sites.reddit.username if set), search the same sources and surface threads where the term appears.',
     '',
     'REPLIES DUE (state/posted.json) — run this ONLY if state/posted.json exists AND its `posts` array is non-empty. These are threads I broadcast through Pulse and marked Posted; I want NEW activity on them. For each entry: re-fetch the thread with the tool matching entry.platform (FetchRedditThread for "reddit", FetchHNThread for "hn"), diff the thread\'s comment ids against entry.comment_ids_seen, and per SKILL.md monitor-mentions Step 3 emit a `reply` card for any new top-level comments on my post (set unanswered_count) or new direct replies to a comment I made (one `follow_up` block, newest). Then Write state/posted.json back with comment_ids_seen and last_checked updated. If posted.json is empty or missing, do NOT emit a replies_due body_patch at all — skip the section silently (an empty "replies due" every run is noise).',
+    '',
+    'EMIT INCREMENTALLY — do NOT pack everything into one giant final body_patch. A single huge tool call (e.g. 20-30 discovery cards with drafts) takes minutes to generate, shows nothing until it completes, and stalls the run. Instead: emit the `trend` body_patch FIRST, right after FetchGitHubTrending returns and before the heavy discovery grounding/drafting — this lands progress on the page immediately. Then emit `mentions`. Then emit `discovery`, and if it has more than ~8 cards, SPLIT it: one `discovery` body_patch with the first ~8 cards (replace), then the remaining cards in further `discovery` body_patch blocks with `mode:"append"` (deduped by id) — so the page fills progressively and no single tool call is enormous.',
     '',
     'Now emit the body_patch blocks — one per section you touched: `trend`, `discovery`, `mentions`, and (only if posted.json had entries) `replies_due` (NEVER `progress_drafts`). Every section you ran a gatherer for MUST get a body_patch: if it found nothing above the cutoff, emit that section with a single `empty` card and a one-line reason, so the page shows the run completed instead of staying blank. EXCEPTION: `replies_due` is omitted entirely (no empty card) when posted.json had nothing to poll. `trend` always gets a card (you always call FetchGitHubTrending).',
     '',
