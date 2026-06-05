@@ -33,6 +33,50 @@ stretched to 4000 chars with byte-level minutiae.
   you can pre-write the opening hook + closing observation AND fill
   2-3 substantive sections between them without padding.
 
+## Sound human (applies to x-post, x-reply, reddit-comment, hn-comment)
+
+These lanes are 1-4 sentences of conversation, and the biggest "this
+was written by AI" tell is *register*, not content. Apply these on top
+of each lane's tic list, in pass 3:
+
+- **Always use contractions.** "it's", "doesn't", "I'm", "that's",
+  "they're", "didn't". Full forms ("it is", "does not", "I am") instantly
+  read as a press release. This single fix removes most of the AI smell.
+- **One concrete specific beats any generalization.** Name the actual
+  thing — a tool, a number, a moment you saw — not a category.
+  "builders", "the market", "in practice", "users", "teams", "people"
+  are abstraction tells. If a sentence would be equally true for any
+  product in any industry, it's too generic: cut it, or replace it with
+  something only someone who actually did this would say.
+- **React to ONE thing, then stop.** A human answers the specific point
+  that caught them and quits. They don't restate the whole topic or land
+  a tidy two-part conclusion.
+- **No aphorisms or morals.** "The product keeps moving because the
+  market doesn't pause" is a fortune cookie, not a reply. Say the small
+  real thing instead, and stop one sentence earlier than feels complete.
+- **A fragment or a rough edge is GOOD.** Opening with "yeah,",
+  "honestly,", "wait —", lowercase, or trailing off reads more human
+  than a balanced, fully-resolved sentence.
+
+Worked example — an actual X reply this skill produced, and the fix:
+
+  ❌ "Funny because it is exactly the opposite of how builders behave in
+     practice. The product keeps moving because the market does not
+     pause with the filing window."
+     — no contractions; "builders" / "in practice" / "the market" are
+     all abstractions; symmetric aphorism; reacts to the topic, not to
+     anything specific they said.
+
+  ✅ "doesn't really match what I've seen — most teams keep shipping
+     right through the quiet period. it limits what you can say, not
+     how fast you build."
+     — contractions; reacts to their one claim; no fortune-cookie moral;
+     slightly rough opener. (Even better: drop in a real detail from
+     your own experience where the abstraction is.)
+
+The **brief is the voice anchor** — mirror how IT is written for cadence,
+then apply these rules on top.
+
 ## x-post
 
 X is a broadcast lane to *strangers*. Nobody on X cares that the user
@@ -71,6 +115,9 @@ Niche local-led posts go to reddit-comment instead.
 - **Opening pattern**: lead with the trend hook or the concrete
   observation, not a setup phrase. The first 5 words decide whether
   anyone keeps reading.
+- **Sound human** (see the section above): contractions, one concrete
+  specific over abstraction, no aphorism endings — even a broadcast
+  post reads as AI without them.
 - **No emojis except** when the post is genuinely funny or the emoji
   IS the point (e.g., a literal stethoscope 🩺 for Sys Doctor). Skip
   decorative emojis.
@@ -114,7 +161,9 @@ happens to be public.
 - **Anti-AI tics — strip in pass 3** (same list as `reddit-comment`):
   diagnostic openers, symmetric parallel clauses, triple-slash lists,
   closing trade-off morals, ungrounded "I'd try …". A human reacts to
-  one thing and stops.
+  one thing and stops. **Also apply the "Sound human" rules above** —
+  contractions, one concrete specific, no aphorisms; this is the lane
+  where AI register shows most.
 - **JSON output**: include the tweet you're replying to so the user
   knows where it goes:
   ```json
@@ -250,6 +299,8 @@ sentences, emit `empty`.
     moral. Stop one sentence earlier.
   - Generic-advisor stance: "I'd try …" with no grounding. Either
     ground it in experience or drop to a question.
+  - **And the "Sound human" rules above**: contractions always, one
+    concrete specific over any generalization, no aphorism endings.
 - **Open with a reaction or question, not a thesis.** "wait, are you
   running it without the accessibility tree?" beats "Screenshot-only
   desktop agents hit two problems at once."
@@ -309,6 +360,8 @@ posting even if the user had no product at all? If not, drop it.
   - Hedged advisor voice ("you might want to consider") — HN reads it as
     contentless. Make a claim or ask a sharp question.
   - Em-dash-heavy balanced sentences and "it's not X, it's Y" framings.
+  - **Plus the "Sound human" rules above**: contractions, one concrete
+    specific (a number / failure mode you hit), no fortune-cookie moral.
 - **Reply to the OP, top-level.** The draft is a top-level reply to the
   post — easiest to post (reply box at the top, no hunting for a buried
   comment) and highest-visibility, which is the karma goal. Use the

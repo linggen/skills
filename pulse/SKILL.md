@@ -895,8 +895,13 @@ samples, lane-templates, configured `targets[]` from config.json.
    parallel clauses ("the model sees too much … and still misses …"),
    triple-slash lists ("A / B / C"), closing trade-off morals ("less
    flashy than X but Y"), ungrounded advisor stance ("I'd try …" with
-   no skin in the game). Replace with concrete prose, a reaction, or a
-   question. When in doubt, cut the closing sentence.
+   no skin in the game). **Convert formal full forms to contractions
+   (it's / doesn't / I'm / that's) — the #1 AI tell — and replace any
+   abstraction ("builders", "the market", "in practice") with one
+   concrete specific.** Replace with concrete prose, a reaction, or a
+   question. When in doubt, cut the closing sentence. See
+   `references/lane-templates.md` → "Sound human" for the full rules
+   and a worked before/after.
 
 Lane selection: only draft for `targets[*].enabled = true` in
 config.json. If goal specifies a lane, prefer that one.
