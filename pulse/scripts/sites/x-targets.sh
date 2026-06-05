@@ -69,12 +69,13 @@ def age_hours(iso):
     except Exception:
         return None
 
-# Their original posts only (-is:reply -is:retweet), from the last 48h
+# Their posts excluding replies (-is:reply); retweets ARE included so the
+# full recent activity of curated accounts surfaces. From the last 48h
 # (start_time) so the user replies while the thread is fresh. Fetch a wide
 # pool (100) then cap per-account below so one prolific account can't eat it.
 start_time = (datetime.now(timezone.utc) - timedelta(hours=48)).strftime("%Y-%m-%dT%H:%M:%SZ")
 params = {
-    "query": f"({from_group}) -is:retweet -is:reply lang:en",
+    "query": f"({from_group}) -is:reply lang:en",
     "max_results": 100,
     "start_time": start_time,
     "sort_order": "recency",

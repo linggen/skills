@@ -595,7 +595,11 @@ Bluesky keywords.
    discovery path there). **For X (if enabled), call `FetchXTargets`
    FIRST** — the freshest posts from the user's curated mid-tier niche
    accounts (`sites.x.target_accounts`), which are the prime reply
-   targets for growth; prefer the freshest (reply early). Also call
+   targets for growth; prefer the freshest (reply early). **`FetchXTargets`
+   hits BYPASS the 0.6 topical-fit cutoff** — the accounts are
+   pre-vetted, so surface every hit (the script already caps per account
+   and excludes replies), dropping only already-replied ones via
+   SKIP_URLS; do NOT score them for topical fit. Also call
    `FetchX` (searches `sites.x.keywords`; one paid call per query, cap
    to top 2-3 terms) as a GATED firehose supplement. The X growth rule:
    reach × niche-relevance, NOT raw fame — reply where the author's
@@ -622,8 +626,9 @@ Bluesky keywords.
    the brief's expertise can answer. Look for question marks, "how
    do I", "is there a tool", "anyone tried", "best way to".
 4. Score 0–1 for direct fit (the brief's product / expertise must
-   genuinely apply).
-5. Drop below 0.6.
+   genuinely apply). **Exception: `FetchXTargets` hits are not scored —
+   they bypass this gate (see step 1).**
+5. Drop below 0.6 (does not apply to `FetchXTargets` hits).
 5a. **Rank by heat, and drop cold posts** — a comment on a dead thread
    or under a tiny account is invisible, so it earns nothing. Use the
    popularity signal each source actually provides:
