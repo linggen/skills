@@ -100,7 +100,7 @@ hook installs it):
 
 ```bash
 command -v ling-mem >/dev/null 2>&1 || \
-  bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/main/shared-memory/install.sh)
+  bash <(curl -fsSL https://raw.githubusercontent.com/linggen/linggen-memory/main/plugins/shared-memory/scripts/install-bin.sh) --version '^1'
 ```
 
 Just run it yourself if the binary is missing — don't ask the user. The
@@ -146,7 +146,7 @@ ling-mem search "node 22 quirk" --limit 5 --format json | jq -c 'del(.vector)'
 |:---|:---|:---|
 | **Core** | Rows with `tier=core` in the `semantic` table | Narrow universals about the **person** — name, role, location, timezone, languages, pets / family. Always-loaded set; the host injects them at session start. Keep tight. |
 | **Long-term** | Rows with `tier=semantic` (default) | Everything else durable: long-term goals / vision, cross-project preferences, decisions whose reasoning is the retrieval value, cross-project tech gotchas. Retrieved on demand. |
-| **Episodic** | The `episodic` staging table | **Per-turn working capture** — append uncertain-durability signal here each turn (fast, append-only, no search-first): `ling-mem add "<content>" --tier episodic`. The `dream` mission dedupes, promotes worthy rows to core/semantic, and evicts the rest past-TTL. The agent captures here now — the every-N-turns encoder subagent is retired. |
+| **Episodic** | The `episodic` staging table | **Per-turn working capture** — append uncertain-durability signal here each turn (fast, append-only, no search-first): `ling-mem add "<content>" --episodic`. The `dream` mission dedupes, promotes worthy rows to core/semantic, and evicts the rest past-TTL. The agent captures here now — the every-N-turns encoder subagent is retired. |
 
 Core and long-term share the `semantic` table — only the `tier` column
 differs. Episodic lives in its own table at
@@ -162,7 +162,7 @@ ling-mem list --tier core --limit 100 | jq -c 'del(.vector)'
 Omit `--tier` to default to `semantic` (long-term).
 
 **If a candidate doesn't clearly fit core or long-term but might matter
-later → episodic** (`--tier episodic`; staging, the dream pass sorts it
+later → episodic** (`--episodic`; staging, the dream pass sorts it
 out). Only drop true non-signal: project-internal facts (the agent
 re-reads project files next session — Memory never writes to
 `<project>/AGENTS.md`, `CLAUDE.md`, source, docs), activity logs, and
@@ -488,7 +488,7 @@ versions, and the user should know what they're accepting.
 
 ```bash
 # 1. Install the ling-mem CLI binary (Apple Silicon / Linux x86_64+aarch64):
-bash <(curl -fsSL https://raw.githubusercontent.com/linggen/skills/main/shared-memory/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/linggen/linggen-memory/main/plugins/shared-memory/scripts/install-bin.sh) --version '^1'
 
 # 2. Install this skill via your host's CLI:
 openclaw skills install ling-mem        # OpenClaw users
