@@ -48,7 +48,8 @@ if [ ! -f "$CONFIG" ]; then
 fi
 
 CONFIG="$CONFIG" python3 <<'PY'
-import json, os, re, sys
+import json, os, re, sys, time
+from datetime import datetime
 import urllib.request, urllib.parse
 import xml.etree.ElementTree as ET
 
@@ -69,6 +70,10 @@ if "feed=" in token:
 UA = "pulse/0.1 (private-rss; reddit-mentions)"
 NS = {"a": "http://www.w3.org/2005/Atom"}
 items, errors = [], []
+# thread_id -> latest ISO timestamp of MY comments in that thread. Built from
+# the own-comments feed; used as an order-independent "already answered"
+# fallback when the per-reply context walk fails (rate limit / timeout).
+my_thread_ts = {}
 
 def out(extra_err=None):
     if extra_err:
@@ -83,6 +88,32 @@ def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=20) as r:
         return r.read()
+
+def fetch_retry(url, tries=2, pause=1.5):
+    """fetch() with one retry — the per-reply walk competes with the inbox
+    feeds for Reddit's ~10/min anon budget, and a transient 429/timeout must
+    NOT silently default a reply to 'unanswered'."""
+    last = None
+    for i in range(tries):
+        try:
+            return fetch(url)
+        except Exception as ex:
+            last = ex
+            if i + 1 < tries:
+                time.sleep(pause)
+    raise last
+
+def thread_id(u):
+    m = re.search(r"/comments/([^/?#]+)", u or "")
+    return m.group(1) if m else ""
+
+def parse_ts(s):
+    if not s:
+        return None
+    try:
+        return datetime.fromisoformat(s.strip().replace("Z", "+00:00"))
+    except Exception:
+        return None
 
 def strip_html(s):
     s = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "", s or "")
@@ -119,7 +150,7 @@ def walk_reply(reply_url, me):
     base = to_www(reply_url).split("?")[0].rstrip("/")
     reply_id = base.split("/")[-1]
     try:
-        root = ET.fromstring(fetch(base + "/.rss?context=1&limit=50"))
+        root = ET.fromstring(fetch_retry(base + "/.rss?context=1&limit=50"))
     except Exception:
         return "", "", False
     ents = []
@@ -168,6 +199,16 @@ def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
         parent_body, parent_url = ("", "")
         if kind == "reply_to_me" and www_url:
             parent_body, parent_url, already_replied = walk_reply(www_url, username)
+            # Fallback (order-independent, no extra fetch): if I have a comment
+            # in the SAME thread that is NEWER than this reply, I've already
+            # engaged after it — suppress even if the per-reply walk failed and
+            # defaulted to not-replied. This is what stops an answered reply
+            # from resurfacing when the walk hits a rate limit.
+            if not already_replied:
+                mine_ts = parse_ts(my_thread_ts.get(thread_id(www_url)))
+                reply_ts = parse_ts(updated)
+                if mine_ts and reply_ts and mine_ts > reply_ts:
+                    already_replied = True
             # You already replied below this comment — not actionable. Skip it
             # so it stops showing as an unanswered mention. (Any newer reply
             # arrives as its own inbox notification.)
@@ -215,8 +256,15 @@ def fetch_own_comments(cap=100):
         if not href:
             continue
         www = to_www(href)
+        ts = (e.findtext("a:updated", "", NS) or "").strip()
         m = re.search(r"/comments/([^/?#]+)", www)
         key = m.group(1) if m else www
+        # Record my latest comment time per thread (feed is newest-first, so
+        # the first hit per thread is the latest) for the answered-fallback.
+        if key and ts:
+            cur = my_thread_ts.get(key)
+            if not cur or ts > cur:
+                my_thread_ts[key] = ts
         if key in seen:               # collapse multiple comments in one thread
             continue
         seen.add(key)
