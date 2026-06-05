@@ -13,8 +13,9 @@
 #   bash reddit.sh --rising    # /rising.rss
 #   bash reddit.sh --top       # /top.rss?t=day
 #
-# Output: JSON array of {sub, title, url, comments, age_hours, summary,
-#                        mode, score}. RSS doesn't expose comment count /
+# Output: JSON array of {sub, title, url, author, comments, age_hours,
+#                        summary, mode, score}. `author` is the OP's handle
+#                        (u/<name>). RSS doesn't expose comment count /
 #                        score, so those are 0; the agent scores by
 #                        title/summary relevance anyway.
 #
@@ -83,11 +84,14 @@ for sub in subs:
         link_el = e.find("a:link", NS)
         href = link_el.get("href") if link_el is not None else ""
         updated = (e.findtext("a:updated", "", NS) or "").strip()
+        author = (e.findtext("a:author/a:name", "", NS) or "").strip()
+        author = author.split("/")[-1]  # "/u/Name" -> "Name"
         out.append({
             "sub": sub,
             "mode": mode,
             "title": (e.findtext("a:title", "", NS) or "").strip(),
             "url": href,
+            "author": ("u/" + author) if author else "",
             "comments": 0,
             "score": 0,
             "age_hours": age_hours(updated),

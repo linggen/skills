@@ -434,7 +434,7 @@ optional `follow_up` carries new reactions to a reply you already made
 { "type": "discovery", "id": "...",
   "source": "reddit|hn|lobsters",
   "sub": "LocalLLaMA", "thread_url": "...", "thread_title": "...",
-  "comments": 12, "age_hours": 4,
+  "author": "u/foo", "comments": 12, "age_hours": 4,
   "match_reason": "matches: skills format, agent runtime",
   "score": 0.85,
   "draft_starter": "...",

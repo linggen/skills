@@ -82,8 +82,9 @@ tools:
     description: >-
       Fetch the 25 newest threads from each subreddit listed in
       ~/.linggen/skills/pulse/config.json (sites.reddit.subs).
-      Returns JSON array of {sub, title, url, comments, age_hours,
-      summary}. Used by discover-customers and monitor-mentions.
+      Returns JSON array of {sub, title, url, author, comments,
+      age_hours, summary} (author is the OP handle, u/<name>). Used by
+      discover-customers and monitor-mentions.
       Reads Reddit's PUBLIC `.rss` feeds (Reddit closed the anonymous
       `.json` API in Nov 2025, but `/r/<sub>/new.rss` still works with
       no auth). `comments`/`score` are 0 (RSS omits them) — score by
@@ -667,8 +668,13 @@ Bluesky keywords.
    genuinely natural, max one.
 
 **Output**: body_patch for `discovery` section. Each card is a
-`discovery` type with both `excerpt` AND `draft_starter` populated:
+`discovery` type with `author`, `excerpt`, AND `draft_starter` populated:
 
+- `author` — who posted the thread, so the user knows who they'd be
+  replying to. Reddit: the OP handle (`u/<name>` — from `FetchReddit`'s
+  `author`, or `op.author` from `FetchRedditThread`). HN: the submitter
+  (`author`/`by`). X: the poster's `@handle`. Set it whenever the source
+  provides it.
 - `excerpt` — plain-text body of the source thread, max ~500 chars
   before truncation (the page truncates to 400 chars for display, but
   give a bit of headroom in case the renderer cuts mid-word). Strip
