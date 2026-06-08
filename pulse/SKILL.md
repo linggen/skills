@@ -740,29 +740,48 @@ brief hash. Schema in design.md.
 
 #### Step 2 — Mentions
 
-For each watchlist term (products + competitors + self), search
-configured source tools:
+Two kinds of source feed this section, and they are filtered
+**differently**. Do not apply one blanket filter to both.
+
+**A. Inbox tools — already qualified, NEVER term-filtered.** Every item
+these return is addressed to the user (a reply to your comment/post, or
+someone writing your handle), so the platform has already established
+relevance. **Surface every item they return** — the scripts already
+suppress replies you've answered and dead/deleted parents, so a returned
+item is by definition actionable. Do NOT drop a `reply_to_me` item
+because the watched term is absent from its title/body: a reply to your
+comment will never contain your own handle. This is the common failure —
+term-filtering inbox replies empties the section while real unanswered
+replies sit in your inbox.
+- `FetchRedditMentions` — returns `reply_to_me` (someone replied to your
+  comment/post) + `mention` (someone wrote u/<you>). With the private
+  RSS token set (Settings → Reddit) `reply_to_me` is the real
+  inbox-reply signal; without a token, public username mentions only.
+  `reply_to_me` items attach YOUR comment as `parent_comment_body`.
+  (Ignore `own_comment` rows here — those drive the discovery
+  already-commented dedup, not this section.)
+- `FetchXMentions` (if X enabled) — X mentions + `reply_to_me` replies
+  to your tweets; attaches your tweet as `parent_comment_body`.
+- `FetchBlueskyMentions` (if configured) — mention / own_post /
+  own_reply / reply_to_me, same shape as FetchRedditMentions.
+
+**B. Keyword-search tools — term-filtered.** For each watchlist term
+(products + competitors + self), search and keep only hits where the
+term appears in the title or summary:
 - `FetchReddit` (each configured sub)
 - `FetchHackerNews`
 - `FetchLobsters`
-- `FetchRedditMentions` for self-handle public mentions (no auth needed)
-- `FetchXMentions` (if X enabled) for X mentions + replies to your
-  tweets — `reply_to_me` items attach your tweet as
-  `parent_comment_body`, so the card renders your tweet + their reply
-  + a draft, the same shape as FetchRedditMentions
-- `FetchBlueskyMentions` for the Bluesky handle if configured —
-  returns mention / own_post / own_reply / reply_to_me items in
-  the same shape as FetchRedditMentions
 
-Filter for hits where the term appears in title or summary. For each
-Reddit hit, **read the thread with `FetchRedditThread`** to assemble
-conversational context — the user needs to remember what the thread is
-about, not just the mention quote. Do NOT WebFetch `<thread_url>.json`:
-Reddit closed its public JSON in Nov 2025 and that fetch is bot-walled
-(403). `FetchRedditThread` (RSS-based) is the working reader; extract the
-OP and the chain leading to the comment that mentioned the term. If the
-thread read fails, still emit the mention card from the hit's own fields
-rather than dropping it.
+For each Reddit item (keyword hit or `reply_to_me`), **read the thread
+with `FetchRedditThread`** to assemble conversational context — the user
+needs to remember what the thread is about, not just the mention quote.
+Do NOT WebFetch `<thread_url>.json`: Reddit closed its public JSON in
+Nov 2025 and that fetch is bot-walled (403). `FetchRedditThread`
+(RSS-based) is the working reader; extract the OP and the chain leading
+to the comment (for `reply_to_me`, `parent_comment_body` already holds
+your comment — the chain is parent → their reply). If the thread read
+fails, still emit the mention card from the item's own fields rather
+than dropping it.
 
 Mention card shape:
 
