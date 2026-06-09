@@ -728,11 +728,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ---- Card actions --------------------------------------------------------
 
+// Actions that act ON a card (open/copy its link or text) also select it, so
+// acting on a card highlights it just like clicking the card body does.
+// Dismiss/draft actions are excluded — they remove or transform the card.
+const SELECTING_ACTIONS = ['open', 'open-url', 'copy', 'copy-url'];
+
 function wireCardActions() {
   const container = document.getElementById('sections-container');
   container.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
     if (btn) {
+      if (SELECTING_ACTIONS.includes(btn.dataset.action)) {
+        const card = btn.closest('.card');
+        if (card) selectCard(container, card);
+      }
       handleCardAction(btn.dataset.action, btn.dataset.card, btn);
       return;
     }
@@ -745,6 +754,12 @@ function wireCardActions() {
     container.querySelectorAll('.card.selected').forEach(el => el.classList.remove('selected'));
     if (!wasSelected) card.classList.add('selected');
   });
+}
+
+// Single-select a card (non-toggle): clear siblings, highlight this one.
+function selectCard(container, card) {
+  container.querySelectorAll('.card.selected').forEach(el => el.classList.remove('selected'));
+  card.classList.add('selected');
 }
 
 function handleCardAction(action, cardId, btn) {
