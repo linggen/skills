@@ -192,21 +192,109 @@ function notifyRunningChipsFromSession(session) {
 
 // ---- Status strip --------------------------------------------------------
 
+// Compact follower counts: 1240 → "1.2k", 18 → "18", -30 → "-30".
+function fmtCount(n) {
+  const a = Math.abs(n);
+  if (a >= 1000) {
+    const k = n / 1000;
+    return (a >= 10000 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, '')) + 'k';
+  }
+  return String(n);
+}
+
+// Growth vs the snapshot closest to `targetDays` ago. Returns {delta, spanDays}
+// using the newest point at least `targetDays` old (falling back to the oldest
+// point), so a young store reports its real span rather than a fake "7d".
+// null when there aren't two dated points to compare.
+function followerDelta(history, targetDays) {
+  if (!Array.isArray(history) || history.length < 2) return null;
+  const today = history[history.length - 1];
+  const cutoff = Date.now() - targetDays * 86400000;
+  let base = null;
+  for (const p of history) {
+    if (new Date(p.date + 'T00:00:00Z').getTime() <= cutoff) base = p;
+  }
+  if (!base) base = history[0];
+  const spanDays = Math.round(
+    (new Date(today.date + 'T00:00:00Z') - new Date(base.date + 'T00:00:00Z')) / 86400000,
+  );
+  if (spanDays < 1) return null;
+  return { delta: today.count - base.count, spanDays };
+}
+
+// Audience-growth metrics shown in the status strip. Each snapshots ONE number
+// per day into account-health.json[key].history and renders a chip with its
+// week-over-week delta — the "is the account actually growing?" loop Pulse
+// otherwise leaves open. count()/id() pull the number + display handle out of
+// the script's JSON. HN karma + Bluesky followers use free public lookups; X
+// spends one cheap credit — all are throttled to one snapshot/day.
+const AUDIENCE_METRICS = [
+  { key: 'x',    label: 'X followers',       script: 'x-followers.sh',
+    enabled: c => c?.sites?.x?.enabled,          count: d => d?.followers, id: d => d?.username },
+  { key: 'hn',   label: 'HN karma',          script: 'hn-karma.sh',
+    enabled: c => c?.sites?.hackernews?.enabled, count: d => d?.karma,     id: d => d?.username },
+  { key: 'bsky', label: 'Bluesky followers', script: 'bluesky-followers.sh',
+    enabled: c => c?.sites?.bluesky?.enabled,    count: d => d?.followers, id: d => d?.handle },
+];
+
+// Run one metric's snapshot script and return {id, count} | null (no creds/handle).
+async function fetchAudienceMetric(m) {
+  const data = JSON.parse(await runBash(`bash "${SKILL_DIR}/scripts/sites/${m.script}"`));
+  const count = m.count(data);
+  return typeof count === 'number' ? { id: m.id(data) || '', count } : null;
+}
+
+// Append today's audience numbers to account-health.json — one point/day per
+// enabled metric, 90-day history. Gated per-metric on its site being enabled;
+// skips the lookup entirely once today's point exists.
+async function snapshotAudienceMetrics() {
+  let cfg;
+  try { cfg = await readPulseConfig(); } catch { return; }
+  const path = `${SKILL_DIR}/state/account-health.json`;
+  const health = (await readJson(path, {})) || {};
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+  let changed = false;
+
+  for (const m of AUDIENCE_METRICS) {
+    if (!m.enabled(cfg)) continue;
+    const entry = health[m.key] || {};
+    const history = Array.isArray(entry.history) ? entry.history : [];
+    if (history.length && history[history.length - 1].date === today) continue; // 1/day
+    let res;
+    try {
+      res = await fetchAudienceMetric(m);
+    } catch (e) {
+      console.warn(`[pulse] ${m.key} snapshot failed`, e);
+      continue;
+    }
+    if (!res) continue; // no creds/handle — leave prior state intact
+    history.push({ date: today, count: res.count });
+    while (history.length > 90) history.shift(); // keep ~3 months
+    health[m.key] = { id: res.id || entry.id || '', count: res.count, history };
+    changed = true;
+  }
+  if (changed) await writeJson(path, health);
+}
+
 async function loadStatusStrip() {
-  // For phase B we read state/account-health.json + state/launches.json
-  // and assemble a strip. If state/ doesn't exist yet, the strip stays
-  // hidden (renderer handles empty case).
+  // Read the audience-growth metrics (account-health.json) + launches and
+  // assemble the strip. Empty state/ → empty strip (renderer hides it).
   const health = await readJson(`${SKILL_DIR}/state/account-health.json`, {});
   const launches = await readJson(`${SKILL_DIR}/state/launches.json`, []);
   const items = [];
 
-  for (const [platform, info] of Object.entries(health || {})) {
-    if (!info) continue;
-    if (info.karma != null && info.karma_threshold) {
-      items.push({ label: platform, value: `${info.karma}/${info.karma_threshold}`, tone: 'ok' });
-    } else if (info.status) {
-      items.push({ label: platform, value: '', tone: info.status === 'warm' ? 'ok' : 'warn' });
+  // Audience-growth chips: current value + week-over-week delta.
+  for (const m of AUDIENCE_METRICS) {
+    const e = health?.[m.key];
+    if (!e || typeof e.count !== 'number') continue;
+    const d = followerDelta(e.history, 7);
+    let value = fmtCount(e.count), tone = 'neutral';
+    if (d) {
+      const sign = d.delta >= 0 ? '+' : '';
+      value = `${fmtCount(e.count)} (${sign}${fmtCount(d.delta)}/${d.spanDays}d)`;
+      tone = d.delta > 0 ? 'ok' : d.delta < 0 ? 'warn' : 'neutral';
     }
+    items.push({ label: m.label, value, tone });
   }
 
   for (const l of (launches || [])) {
@@ -1323,6 +1411,7 @@ async function init() {
     document.getElementById('session-title').textContent = 'pulse session';
     document.getElementById('session-sub').textContent = 'Pick a chip above, or type a goal in chat to start.';
   }
+  await snapshotAudienceMetrics().catch(err => console.warn('[pulse] audience snapshot', err));
   await loadStatusStrip();
   // Auto-cascade only when this open minted a fresh session.
   maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));

@@ -194,7 +194,7 @@ Same skill, same protocol, same data shape. Only the goal text changes.
 | 2. Free-text goal field on the run | **done** | replaces hardcoded "scan 24h, draft" with `goal` parameter |
 | 3. Workspace ingestion + case description in settings | **done** | drafts grounded in actual product knowledge — the differentiator |
 | 4. AI-led single-state Pulse page | **done** | one dashboard, one session/day; chips drive the three-step pipeline, chat overrides |
-| 5. Account creds (Reddit RSS token, X dev keys) + reply tracking | **in progress** | RSS mentions + X creds shipped; `posted.json` → `replies_due` poll wired |
+| 5. Account creds (Reddit RSS token, X dev keys) + reply tracking + audience-growth strip | **in progress** | RSS mentions + X creds shipped; `posted.json` → `replies_due` poll wired; status strip tracks X followers / HN karma / Bluesky followers per day (`account-health.json`). Reddit per-sub karma not available over RSS; launch-cadence + `audience.json` still future |
 | 6. Multi-project model | future | per-project briefs, per-project workspaces, per-project sources |
 | 7. Platform-skill extraction (redditBot, xbot, hnBot) | future, not v1 | only when a second consumer earns the abstraction; pulse remains mono-skill until then |
 | 8. Linggen-app pulse-branded distribution | future | `pulse.app` bundles engine + skills for the focused founder-GTM audience |

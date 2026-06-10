@@ -163,8 +163,8 @@ Three vertical sections, top-to-bottom:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ Status strip                                                    │
-│ "r/macapps 47/50 · HN warm · X up · 8d since launch ·           │
-│  week-2 follow-up due"                                          │
+│ X 1.2k (+18/7d) · HN 340 karma ·                                │
+│ Bluesky 210 followers (+6/7d)                                   │
 ├─────────────────────────────────────────────────────────────────┤
 │ Mentions  +  Replies due                  [highest priority]   │
 │ ─ "@user named Sys Doctor in r/macapps thread"                  │
@@ -189,7 +189,7 @@ State that persists *across* runs. Distinct from per-run output.
 
 ```
 ~/.linggen/skills/pulse/state/
-  account-health.json     # per-platform karma, throttle status, last-post-at
+  account-health.json     # audience-growth snapshots: X followers, HN karma, Bluesky followers (1 pt/day)
   launches.json           # active launches: artifact, launch-date, follow-up cadence
   audience.json           # derived: who responds to your posts, common topics
   watchlist-cache.json    # last-extracted watchlist (for diff against the brief text)
@@ -198,7 +198,8 @@ State that persists *across* runs. Distinct from per-run output.
 
 State is updated by capabilities (e.g., `monitor-mentions` writes
 `watchlist-cache.json` and `posted.json`) AND by the page (the `Mark
-posted` card action writes a new entry to `posted.json` directly).
+posted` card action writes `posted.json`; `snapshotAudienceMetrics()`
+writes the daily `account-health.json` follower/karma points).
 
 ### `watchlist-cache.json`
 
@@ -249,42 +250,50 @@ Read by `monitor-mentions` to know which threads to poll for new
 replies; surfaced in the Pulse page as `reply` cards (with optional
 `follow_up` blocks for replies-to-your-reply).
 
-### `account-health.json`, `launches.json`, `audience.json`
+### `account-health.json` (shipped), `launches.json` / `audience.json` (future)
 
-Defined here for completeness; writers land in later phases.
+**`account-health.json` — audience-growth snapshots (live).** Written page-side
+by `snapshotAudienceMetrics()` (pulse-app.js): once per day per enabled site it
+takes one cheap public lookup and appends a `{date, count}` point. The status
+strip renders each metric's current value plus its week-over-week delta. This is
+the first and only writer of the file.
 
 ```json
-// account-health.json
+// account-health.json — one entry per audience metric
 {
-  "reddit": {
-    "subs": {
-      "macapps":     { "karma": 47, "karma_threshold": 50, "status": "warm" },
-      "LocalLLaMA":  { "karma":  4, "karma_threshold": 50, "status": "cold" }
-    },
-    "site_throttle": "ok"
-  },
-  "hn":  { "status": "warm", "last_submit_at": "..." },
-  "x":   { "status": "ok" }
+  "x":    { "id": "Linggen77",             "count": 1240, "history": [ { "date": "2026-06-03", "count": 1222 }, { "date": "2026-06-10", "count": 1240 } ] },
+  "hn":   { "id": "linggen",               "count": 340,  "history": [ { "date": "2026-06-10", "count": 340 } ] },
+  "bsky": { "id": "linggen77.bsky.social", "count": 210,  "history": [ { "date": "2026-06-10", "count": 210 } ] }
 }
+```
 
-// launches.json
-[
-  {
-    "name": "Sys Doctor",
-    "artifact_url": "https://linggen.dev/apps/sys-doctor",
-    "launch_date": "2026-04-28",
-    "days_since": 8,
-    "followup_due": "week-2",
-    "stage": "launching"
-  }
-]
+Sources, all one lookup each: X = `x-followers.sh` (the `/users/by/username`
+call already made for FetchXOwnPosts, `user.fields=public_metrics`, one credit);
+HN = `hn-karma.sh` (Firebase `/v0/user/<name>.json`, free); Bluesky =
+`bluesky-followers.sh` (`app.bsky.actor.getProfile`, free). History caps at ~90 days.
 
-// audience.json (derived; later)
-{ "tags": ["mac power user", "rust dev"], "active_responders": [...] }
+> **Reddit per-sub karma is deliberately absent.** Reddit closed its anonymous
+> API in Nov 2025; the RSS feeds Pulse relies on expose no karma or post score
+> (`reddit.sh` hardcodes `score: 0`). There is no way to read `r/<sub>` karma on
+> the current RSS-only path, so the old `{ karma, karma_threshold, status }`
+> shape is dropped. Revisit only if Reddit OAuth is added.
+
+**`launches.json`, `audience.json` — not built.** No writers yet. `launches.json`
+would hold user-declared launches (artifact, launch date, follow-up cadence) to
+drive "Nd since launch / week-N follow-up due" strip chips — it needs a Settings
+field and date math, not an API. `audience.json` (who engages, common topics) is
+derived analytics, the lowest-priority future item.
+
+```json
+// launches.json (future — user-declared, no writer yet)
+[ { "name": "Sys Doctor", "launch_date": "2026-04-28", "days_since": 8, "followup_due": "week-2" } ]
+
+// audience.json (future — derived)
+{ "tags": ["mac power user", "rust dev"], "active_responders": [] }
 ```
 
 State is read by:
-- Pulse renderer (status strip)
+- Pulse renderer (status strip — audience-growth chips from `account-health.json`)
 - `monitor-mentions` (watchlist + posted-thread polling)
 - `track-progress` (where in launch sequence)
 - `draft-content` (audience-aware tone calibration over time)

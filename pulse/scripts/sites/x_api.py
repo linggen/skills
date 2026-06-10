@@ -29,6 +29,7 @@ CRED_FILE = os.path.expanduser("~/.linggen/skills/pulse/credentials/x.env")
 REQUIRED = ["X_API_KEY", "X_API_SECRET"]
 
 _bearer_cache = None
+_self_followers = None  # follower count captured by the last resolve_self_id()
 
 
 def load_credentials():
@@ -119,12 +120,26 @@ def resolve_self_id():
         pass
     if not username:
         return None, "", "no X handle configured — set your X handle in Settings -> X"
-    status, body = api_get("/users/by/username/" + urllib.parse.quote(username))
+    # Ask for public_metrics on the same lookup so the follower count rides
+    # along at zero extra API cost (callers that don't need it just ignore it).
+    status, body = api_get(
+        "/users/by/username/" + urllib.parse.quote(username),
+        {"user.fields": "public_metrics"},
+    )
     if status is None:
         return None, username, (body or {}).get("error", "X credentials error")
     if status != 200:
         return None, username, f"X user lookup failed ({status}) for @{username}"
-    uid = ((body or {}).get("data") or {}).get("id")
+    data = (body or {}).get("data") or {}
+    uid = data.get("id")
     if not uid:
         return None, username, f"could not resolve X user id for @{username}"
+    global _self_followers
+    _self_followers = (data.get("public_metrics") or {}).get("followers_count")
     return uid, username, None
+
+
+def self_followers():
+    """Follower count from the most recent successful resolve_self_id() call.
+    None until resolve_self_id() has run and returned public_metrics."""
+    return _self_followers
