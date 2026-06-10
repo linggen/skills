@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CFO — Personal Finance Analyst</title>
+  <link rel="stylesheet" href="cfo.css">
+</head>
+<body>
+  <div id="app">
+    <main id="report-pane">
+      <header id="report-header">
+        <h1>Personal CFO</h1>
+        <label id="import-btn" class="btn">
+          Import statement (CSV or PDF)
+          <input id="file-input" type="file" accept=".csv,text/csv,.pdf,application/pdf" hidden>
+        </label>
+        <span id="status" class="status" hidden></span>
+      </header>
+
+      <section id="empty-state">
+        <p class="lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
+        <p class="hint">Your transactions stay on this Mac — account numbers are stripped before anything is analyzed. CSV is most accurate; PDF works too (best-effort).</p>
+      </section>
+
+      <section id="report" hidden></section>
+    </main>
+
+    <aside id="chat-pane">
+      <div id="chat-panel"></div>
+    </aside>
+  </div>
+
+  <script type="module" src="cfo.js"></script>
+</body>
+</html>

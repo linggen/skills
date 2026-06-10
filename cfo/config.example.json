@@ -1,0 +1,6 @@
+{
+  "$comment": "CFO config. Copied to config.json on first install. `currency` labels the report; `category_overrides` lets the user remap a merchant to a category (merchant keyword -> category); `goals` are set by the agent via chat and persisted here + in memory.",
+  "currency": "CAD",
+  "category_overrides": {},
+  "goals": []
+}
