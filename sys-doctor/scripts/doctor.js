@@ -31,13 +31,13 @@ function syncToolbarBusy() {
 // ── Init ──
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Default to DeepSeek V4 Flash — cheap and provisioned, so a new user gets a
-  // working scan with no API key. BYOK is optional: a per-skill override in
-  // localStorage('sys-doctor:model') (or Settings → Models) wins. If
-  // deepseek-chat isn't configured, the engine falls back to the default model.
+  // Default to the built-in Linggen Cloud model (deepseek-v4-flash) — present
+  // on every install, so a new user gets a working scan with no API key. A
+  // per-skill override in localStorage('sys-doctor:model') wins. The legacy
+  // 'deepseek-chat' id is deprecated upstream on 2026-07-24.
   if (!modelId) {
-    try { modelId = localStorage.getItem('sys-doctor:model') || 'deepseek-chat'; }
-    catch { modelId = 'deepseek-chat'; }
+    try { modelId = localStorage.getItem('sys-doctor:model') || 'deepseek-v4-flash'; }
+    catch { modelId = 'deepseek-v4-flash'; }
   }
 
   // Resume the most recent session whose dashboard page is cached locally —
