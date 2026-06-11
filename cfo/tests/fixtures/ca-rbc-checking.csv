@@ -1,0 +1,5 @@
+"Account Type","Account Number","Transaction Date","Cheque Number","Description 1","Description 2","CAD$","USD$"
+Chequing,00002-1234567,6/1/2026,,"PAYROLL DEPOSIT","ACME CORP",3400.00,
+Chequing,00002-1234567,6/3/2026,,"e-Transfer sent","RENT JUNE",-1650.00,
+Chequing,00002-1234567,6/8/2026,,"LOBLAWS #221","TORONTO ON",-126.40,
+Chequing,00002-1234567,6/9/2026,,"PETRO-CANADA","",-55.25,
