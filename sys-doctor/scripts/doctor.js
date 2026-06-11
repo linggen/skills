@@ -55,9 +55,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (resumable) {
       seedLastScanAt(resumable.created_at);
       const url = new URL(window.location);
-      url.searchParams.set('session', resumable.id);
+      if (sessionAgeMs(resumable) < RESUME_WINDOW_MS) {
+        // Recent: resume with full chat continuity.
+        url.searchParams.set('session', resumable.id);
+        history.replaceState(null, '', url);
+        await mountAndStart(resumable.id);
+        return;
+      }
+      // Older than the resume window: rotate. Carry the dashboard forward
+      // (page restore is local and free) but bind chat to a fresh session so
+      // context stays bounded — cross-scan memory lives in data/latest.json,
+      // not in the conversation.
+      url.searchParams.delete('session');
       history.replaceState(null, '', url);
-      await mountAndStart(resumable.id);
+      await mountAndStart(null, readCachedPage(resumable.id));
       return;
     }
   }
@@ -68,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── Mount chat panel and start ──
 
-async function mountAndStart(sessionId) {
+async function mountAndStart(sessionId, carryPage = null) {
   const chatPanel = document.getElementById('chat-panel');
   const mountOpts = {
     skillName: SKILL_NAME,
@@ -80,6 +91,9 @@ async function mountAndStart(sessionId) {
       const url = new URL(window.location);
       url.searchParams.set('session', sid);
       history.replaceState(null, '', url);
+      // Re-cache the visible page under the new session id (covers rotation,
+      // where the dashboard was carried over from an older session).
+      cacheCurrentPage();
     },
     onStreamEnd: (text) => {
       handleModelResponse(text);
@@ -139,6 +153,10 @@ async function mountAndStart(sessionId) {
   if (sessionId && hasCachedPage(sessionId)) {
     // Restore dashboard from cache — no re-scan, no tokens, no greeting.
     restoreFromCache(sessionId);
+    maybeShowStaleBanner();
+  } else if (carryPage) {
+    // Rotated session: same dashboard, fresh context, still silent.
+    restorePage(carryPage);
     maybeShowStaleBanner();
   } else {
     // Fresh session, or resumed session without a usable cache.
@@ -251,6 +269,27 @@ async function startHardwareProbe(rescan = false) {
 }
 
 // ── Rescan + scan metadata ──
+
+// Resume window: within it, reopening reattaches to the same chat; past it
+// the dashboard carries forward into a fresh session (bounded context).
+const RESUME_WINDOW_MS = 24 * 3600 * 1000;
+
+function sessionAgeMs(session) {
+  try {
+    const ts = parseInt(localStorage.getItem(`sys-doctor-page-ts:${session.id}`) || '0', 10);
+    if (ts) return Date.now() - ts;
+  } catch { /* ignore */ }
+  return Date.now() - (session.created_at || 0) * 1000;
+}
+
+function readCachedPage(sessionId) {
+  try {
+    const page = JSON.parse(localStorage.getItem(`sys-doctor-page:${sessionId}`) || 'null');
+    return page && (page.top_bar?.length || page.body?.length) ? page : null;
+  } catch {
+    return null;
+  }
+}
 
 const LAST_SCAN_KEY = 'sys-doctor:last-scan-at';
 const LAST_SUMMARY_KEY = 'sys-doctor:last-summary';
@@ -740,6 +779,7 @@ function cacheCurrentPage() {
   if (!sid) return;
   try {
     localStorage.setItem(`sys-doctor-page:${sid}`, JSON.stringify(getCurrentPage()));
+    localStorage.setItem(`sys-doctor-page-ts:${sid}`, String(Date.now()));
   } catch { /* quota */ }
 }
 
