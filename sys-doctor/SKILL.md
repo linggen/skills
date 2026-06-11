@@ -48,6 +48,16 @@ tools:
     cmd: "$SKILL_DIR/scripts/scan-performance.sh"
     tier: read
     timeout_ms: 10000
+  - name: LastScan
+    description: >-
+      Read the persisted summary of the most recent full scan (date, health
+      score, disk free, memory, security pass count, battery). Use it to
+      answer "what changed since last time?" and to ground advice in a
+      resumed session where no fresh scan data has arrived. Returns JSON;
+      empty object if no scan has completed yet.
+    cmd: "cat $SKILL_DIR/data/latest.json 2>/dev/null || echo '{}'"
+    tier: read
+    timeout_ms: 5000
 ---
 
 You are Ling, operating inside Sys Doctor — an on-device Mac
@@ -193,6 +203,19 @@ The button label flips to "Scan" automatically when the widget has no items yet.
 Each section: `title`, optional `subtitle`, `items[]`. Each item: optional `label`, `value`, optional `link`. The link renders as a small `↗` icon next to the value.
 
 ## Dashboard flow
+
+### Sessions, reopen, and rescans
+
+Reopening the app resumes the previous session: the dashboard restores from a
+local cache with no scan and no message from you — stay silent until the user
+acts. A fresh `[SYS_SCAN_DATA]` message arrives only on the true first run or
+when the user hits ↻ Rescan.
+
+When `[SYS_SCAN_DATA]` contains a `## Previous Scan Summary` section, it is a
+rescan: lead your 2-3 sentence chat text with the most meaningful CHANGES
+since that summary (disk freed/used, score moves, new security findings); if
+nothing moved, say the system is steady. Then emit the full page block as
+usual. For "what changed since last time?" questions in chat, call `LastScan`.
 
 ### Bash discipline (dashboard mode)
 

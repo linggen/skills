@@ -3,6 +3,7 @@
 // Body widgets are content panels.
 
 import { drawDiskBars, drawDonut } from './charts.js';
+import { getScoreHistory } from './health-score.js';
 
 // ── Helpers ──
 
@@ -162,8 +163,24 @@ function renderScoreWidget(d) {
     <div class="card-label">Health</div>
     <div class="card-value" style="color:${clr}">${d.value || '--'}</div>
     <div class="card-sub">${esc(d.label || '')}</div>
+    ${scoreSparkline(clr)}
   `;
   return card;
+}
+
+/** Tiny trend line from the locally persisted score history (free, no LLM). */
+function scoreSparkline(color) {
+  let history = [];
+  try { history = getScoreHistory().slice(-12); } catch { return ''; }
+  if (history.length < 2) return '';
+  const w = 64, h = 14;
+  const scores = history.map((p) => p.score);
+  const min = Math.min(...scores), max = Math.max(...scores);
+  const span = Math.max(1, max - min);
+  const pts = history
+    .map((p, i) => `${((i / (history.length - 1)) * w).toFixed(1)},${(h - 2 - ((p.score - min) / span) * (h - 4)).toFixed(1)}`)
+    .join(' ');
+  return `<svg class="score-spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="color:${color}"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.55"/></svg>`;
 }
 
 function renderCustomWidget(d) {

@@ -11,6 +11,10 @@
 <body>
   <div class="header">
     <h1>Sys Doctor</h1>
+    <div class="header-meta">
+      <span id="last-scan-label" class="last-scan"></span>
+      <button id="rescan-btn" class="rescan-btn" title="Run a fresh full scan">↻ Rescan</button>
+    </div>
   </div>
 
   <div class="doctor-container">
@@ -42,6 +46,7 @@
           <span class="tool-label">Buyer's Guide</span>
         </button>
       </div>
+      <div class="stale-banner" id="stale-banner" hidden></div>
       <div class="body-area" id="body-area"></div>
       <div class="footer-area" id="footer-area"></div>
     </div>

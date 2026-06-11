@@ -1,8 +1,8 @@
 // Sys Doctor v2 — orchestrator
 // Runs hardware probe on open, sends data to model, renders model's page JSON.
 
-import { fetchDefaultModel, listSkillSessions } from './api.js';
-import { runScan, runDeepFileScan } from './scan.js';
+import { listSkillSessions } from './api.js';
+import { runScan, runDeepFileScan, persistScanSnapshot } from './scan.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
 
@@ -31,34 +31,37 @@ function syncToolbarBusy() {
 // ── Init ──
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load default model (chat widget has its own model selector)
+  // Default to DeepSeek V4 Flash — cheap and provisioned, so a new user gets a
+  // working scan with no API key. BYOK is optional: a per-skill override in
+  // localStorage('sys-doctor:model') (or Settings → Models) wins. If
+  // deepseek-chat isn't configured, the engine falls back to the default model.
   if (!modelId) {
-    try {
-      const defaultModel = await fetchDefaultModel();
-      modelId = localStorage.getItem('sys-doctor:model') || defaultModel || '';
-    } catch { /* ignore */ }
+    try { modelId = localStorage.getItem('sys-doctor:model') || 'deepseek-chat'; }
+    catch { modelId = 'deepseek-chat'; }
   }
 
-  // If no existing session, check for resumable sessions before mounting chat.
-  // A session is resumable only if its dashboard page is cached locally —
-  // without the cache there's nothing to resume *to* (chat history alone has
-  // no usable widget tree). Sessions without a cache are skipped silently.
+  // Resume the most recent session whose dashboard page is cached locally —
+  // reopening costs zero tokens and zero scan time (CFO/Pulse pattern). A
+  // session without a cached page has nothing to resume *to* (chat history
+  // alone has no widget tree) and is skipped. A true first run (nothing
+  // resumable) auto-scans — that's the activation moment.
   if (!existingSession) {
     let sessions = [];
     try {
       sessions = await listSkillSessions(SKILL_NAME);
       sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-      sessions = sessions.filter((s) => hasCachedPage(s.id)).slice(0, 5);
     } catch { /* ignore */ }
-
-    if (sessions.length > 0) {
-      // Show welcome dialog — don't mount chat yet
-      showWelcomeDialog(sessions);
+    const resumable = sessions.find((s) => hasCachedPage(s.id));
+    if (resumable) {
+      const url = new URL(window.location);
+      url.searchParams.set('session', resumable.id);
+      history.replaceState(null, '', url);
+      await mountAndStart(resumable.id);
       return;
     }
   }
 
-  // Mount chat and start (existing session or new)
+  // Mount chat and start (existing session or true first run)
   await mountAndStart(existingSession);
 });
 
@@ -128,65 +131,18 @@ async function mountAndStart(sessionId) {
     chat.send(text);
   };
 
+  document.getElementById('rescan-btn')?.addEventListener('click', () => startRescan());
+  updateScanMeta();
+  setInterval(updateScanMeta, 60_000);
+
   if (sessionId && hasCachedPage(sessionId)) {
-    // Restore dashboard from cache — no re-scan
+    // Restore dashboard from cache — no re-scan, no tokens, no greeting.
     restoreFromCache(sessionId);
+    maybeShowStaleBanner();
   } else {
     // Fresh session, or resumed session without a usable cache.
     startFresh();
   }
-}
-
-// ── Welcome dialog — choose previous session or new scan ──
-
-function showWelcomeDialog(sessions) {
-  // Build dialog HTML
-  const overlay = document.createElement('div');
-  overlay.className = 'welcome-overlay';
-  overlay.innerHTML = `
-    <div class="welcome-dialog">
-      <div class="welcome-icon">🩺</div>
-      <h2>Sys Doctor</h2>
-      <p class="welcome-subtitle">Your AI system health analyst</p>
-      <div class="welcome-actions">
-        <button class="welcome-btn primary" id="welcome-new">
-          <span class="welcome-btn-icon">🔍</span>
-          <span>
-            <strong>New Scan</strong>
-            <small>Run a fresh system health check</small>
-          </span>
-        </button>
-        ${sessions.length > 0 ? `
-          <button class="welcome-btn secondary" id="welcome-resume">
-            <span class="welcome-btn-icon">📋</span>
-            <span>
-              <strong>Continue Previous</strong>
-              <small>Resume your last session</small>
-            </span>
-          </button>
-        ` : ''}
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  // New scan — mount without session ID (creates new)
-  document.getElementById('welcome-new').addEventListener('click', async () => {
-    overlay.remove();
-    await mountAndStart(null);
-  });
-
-  // Resume previous — mount with the last session ID
-  document.getElementById('welcome-resume').addEventListener('click', async () => {
-    overlay.remove();
-    const lastSession = sessions[0];
-    // Update URL without reload
-    const url = new URL(window.location);
-    url.searchParams.set('session', lastSession.id);
-    history.replaceState(null, '', url);
-    await mountAndStart(lastSession.id);
-  });
 }
 
 // ── Fresh start — agent introduces itself while probe runs in parallel ──
@@ -227,10 +183,12 @@ function startFresh() {
 
 // ── Hardware probe ──
 
-async function startHardwareProbe() {
+async function startHardwareProbe(rescan = false) {
   if (scanning) return;
   scanning = true;
   syncToolbarBusy();
+  // Capture the pre-rescan summary so the agent can lead with deltas.
+  const prevSummary = rescan ? getLastSummary() : null;
 
   const steps = [
     { label: 'System info', status: 'active', icon: '💻' },
@@ -272,8 +230,14 @@ async function startHardwareProbe() {
     const diskFree = results.disk ? results.disk.free_gb : null;
     saveScoreHistory(score, diskFree);
 
+    // Persist the compact summary: header timestamp, future deltas, and the
+    // agent's LastScan tool all read from it.
+    const summary = buildScanSummary(results);
+    markScanComplete(summary);
+    persistScanSnapshot(summary, sessionId).catch(() => {});
+
     // Build and send the scan data (hidden — user doesn't need to see raw data)
-    const prompt = buildOpeningPrompt(results);
+    const prompt = buildOpeningPrompt(results, prevSummary);
     expectPageBlock = true;
     chat.sendHidden(prompt);
   } catch (err) {
@@ -285,10 +249,109 @@ async function startHardwareProbe() {
   }
 }
 
+// ── Rescan + scan metadata ──
+
+const LAST_SCAN_KEY = 'sys-doctor:last-scan-at';
+const LAST_SUMMARY_KEY = 'sys-doctor:last-summary';
+const STALE_MS = 7 * 24 * 3600 * 1000;
+
+async function startRescan() {
+  if (scanning) return;
+  hideStaleBanner();
+  await startHardwareProbe(true);
+}
+
+function buildScanSummary(results) {
+  return {
+    date: new Date().toISOString().slice(0, 10),
+    score: results.healthScore ?? null,
+    disk_free_gb: results.disk?.free_gb ?? null,
+    disk_percent: results.disk?.percent ?? null,
+    mem_percent: results.system?.memory?.percent ?? null,
+    security_passing: results.security?.passing ?? null,
+    security_total: results.security?.total ?? null,
+    battery_percent: results.battery?.percent ?? null,
+    cycle_count: results.battery?.cycleCount ?? null,
+  };
+}
+
+function getLastScanAt() {
+  try { return parseInt(localStorage.getItem(LAST_SCAN_KEY) || '0', 10) || 0; }
+  catch { return 0; }
+}
+
+function getLastSummary() {
+  try { return JSON.parse(localStorage.getItem(LAST_SUMMARY_KEY) || 'null'); }
+  catch { return null; }
+}
+
+function markScanComplete(summary) {
+  try {
+    localStorage.setItem(LAST_SCAN_KEY, String(Date.now()));
+    localStorage.setItem(LAST_SUMMARY_KEY, JSON.stringify(summary));
+  } catch { /* quota */ }
+  updateScanMeta();
+}
+
+function relTime(ms) {
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+function updateScanMeta() {
+  const label = document.getElementById('last-scan-label');
+  if (!label) return;
+  const at = getLastScanAt();
+  if (!at) { label.textContent = ''; return; }
+  label.textContent = `Last scan ${relTime(Date.now() - at)}`;
+  label.classList.toggle('stale', Date.now() - at > STALE_MS);
+}
+
+// Stale policy: suggest, don't run. The dashboard restores instantly either
+// way; this banner is the only nudge.
+function maybeShowStaleBanner() {
+  const at = getLastScanAt();
+  if (!at || Date.now() - at <= STALE_MS) return;
+  const banner = document.getElementById('stale-banner');
+  if (!banner) return;
+  const days = Math.round((Date.now() - at) / 86400000);
+  banner.hidden = false;
+  banner.innerHTML = `
+    <span>This scan is ${days} days old — your system may have changed.</span>
+    <span class="stale-actions">
+      <button id="stale-rescan">↻ Rescan now</button>
+      <button id="stale-dismiss">Dismiss</button>
+    </span>`;
+  document.getElementById('stale-rescan').onclick = () => startRescan();
+  document.getElementById('stale-dismiss').onclick = hideStaleBanner;
+}
+
+function hideStaleBanner() {
+  const banner = document.getElementById('stale-banner');
+  if (banner) { banner.hidden = true; banner.innerHTML = ''; }
+}
+
 // ── Opening prompt ──
 
-function buildOpeningPrompt(results) {
+function buildOpeningPrompt(results, prevSummary = null) {
   const parts = ['[SYS_SCAN_DATA]\n'];
+
+  if (prevSummary) {
+    parts.push(`## Previous Scan Summary (${prevSummary.date || 'earlier'})`);
+    if (prevSummary.score != null) parts.push(`- Health score: ${prevSummary.score}/100`);
+    if (prevSummary.disk_free_gb != null) parts.push(`- Disk free: ${fmtGb(prevSummary.disk_free_gb)} (${prevSummary.disk_percent}% used)`);
+    if (prevSummary.mem_percent != null) parts.push(`- Memory: ${prevSummary.mem_percent}%`);
+    if (prevSummary.security_passing != null) parts.push(`- Security: ${prevSummary.security_passing}/${prevSummary.security_total} passing`);
+    if (prevSummary.battery_percent != null) parts.push(`- Battery: ${prevSummary.battery_percent}%${prevSummary.cycle_count ? ` (${prevSummary.cycle_count} cycles)` : ''}`);
+    parts.push('');
+    parts.push('## RESCAN — lead with what changed');
+    parts.push('The user hit Rescan on an existing dashboard. In your 2-3 sentence chat text, lead with the most meaningful CHANGES vs the previous summary above (disk freed/used, score moves, new security findings, memory pressure). If nothing moved meaningfully, say the system is steady since the last scan. Then emit the full page block as usual.');
+    parts.push('');
+  }
 
   if (results.system) {
     const s = results.system;

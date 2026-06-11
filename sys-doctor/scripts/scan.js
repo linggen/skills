@@ -17,6 +17,17 @@ async function bash(command, sessionId) {
   return resp.json();
 }
 
+// Persist a compact scan summary for the agent's LastScan tool and delta-led
+// rescans. Written under the skill's data dir; files end with \n (the
+// /api/bash sentinel-strip relies on a trailing newline).
+export async function persistScanSnapshot(summary, sessionId) {
+  const dir = '$HOME/.linggen/skills/sys-doctor/data';
+  const json = JSON.stringify(summary, null, 1);
+  const stamp = `${summary.date || 'scan'}-${Date.now()}`;
+  const cmd = `mkdir -p "${dir}/scans" && printf '%s\\n' ${shellEsc(json)} > "${dir}/scans/${stamp}.json" && printf '%s\\n' ${shellEsc(json)} > "${dir}/latest.json"`;
+  await bash(cmd, sessionId);
+}
+
 // ---------------------------------------------------------------------------
 // Parsers
 // ---------------------------------------------------------------------------
