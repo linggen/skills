@@ -17,6 +17,8 @@ const CREDIT_KEYS = ['credit', 'deposit', 'money in', 'paid in'];
 const REDACT_KEYS = ['account', 'card', 'number', 'balance', 'iban', 'routing', 'sort code', 'ref'];
 
 const CATEGORY_RULES = [
+  // Fees first — they're the leak-detection ground truth and the keywords are specific.
+  ['fees', ['nsf fee', 'overdraft', 'interest charge', 'finance charge', 'service charge', 'monthly fee', 'annual fee', 'late fee', 'atm fee', 'foreign transaction', 'wire fee', 'e-transfer fee']],
   ['dining', ['restaurant', 'cafe', 'coffee', 'starbucks', 'mcdonald', 'uber eats', 'doordash', 'grubhub', 'tim hortons', 'pizza', 'grill']],
   ['groceries', ['grocery', 'supermarket', 'loblaws', 'metro', 'costco', 'walmart', 'safeway', 'whole foods', 'trader joe', 'no frills', 'sobeys']],
   ['transport', ['uber', 'lyft', 'transit', 'gas', 'petro', 'shell', 'esso', 'chevron', 'parking', 'presto']],
@@ -118,7 +120,7 @@ function merchantKey(m) {
   return toks.slice(0, 3).join(' ') || 'UNKNOWN';
 }
 
-function categorize(m, overrides) {
+export function categorize(m, overrides) {
   const ml = (m || '').toLowerCase();
   if (overrides) {
     for (const [kw, cat] of Object.entries(overrides)) {
@@ -319,7 +321,11 @@ export function orientTransactions(txns, accountType) {
 }
 
 // ── Recurring-charge (subscription) detection ──
-function detectSubscriptions(txns, lastDate) {
+// Categories whose recurring charges are commitments, not cancellable subs —
+// rent recurs monthly with a fixed amount but "cancel your rent" is not advice.
+const ESSENTIAL_CATEGORIES = new Set(['housing', 'groceries', 'transport']);
+
+function detectSubscriptions(txns, lastDate, catOf) {
   const groups = {};
   for (const t of txns) {
     if (t.amount < 0 && t.date) (groups[merchantKey(t.merchant)] ||= []).push(t);
@@ -334,6 +340,12 @@ function detectSubscriptions(txns, lastDate) {
     const amts = items.map((i) => Math.abs(i.amount));
     const avg = amts.reduce((a, b) => a + b, 0) / amts.length;
     if (avg === 0 || Math.max(...amts) > avg * 1.5) continue; // variable spend, not a sub
+    // True subscriptions bill IDENTICAL amounts (a price hike just adds a
+    // second exact level). Monthly-cadence variable spend (gas fill-ups,
+    // grocery runs) never repeats to the cent — drop it.
+    const level = {};
+    for (const a of amts) { const k = a.toFixed(2); level[k] = (level[k] || 0) + 1; }
+    if (!Object.values(level).some((c) => c >= 2)) continue;
     const first = amts[0], last = Math.abs(items[items.length - 1].amount);
     const prior = items.length >= 2 ? Math.abs(items[items.length - 2].amount) : null;
     const lastChargeDate = items[items.length - 1].date;
@@ -341,9 +353,13 @@ function detectSubscriptions(txns, lastDate) {
     // you can recover (it stopped) — only a "did you cancel this?" signal. Active
     // subs are the ones still charging — those are what you actually pay for.
     const stopped = !!(lastDate && daysBetween(lastChargeDate, lastDate) > 45);
+    const merchant = items[items.length - 1].merchant || merchantKey(items[0].merchant);
+    const category = catOf ? catOf(merchant) : 'other';
     subs.push({
-      merchant: items[items.length - 1].merchant || merchantKey(items[0].merchant),
-      monthly: round2(avg),
+      merchant,
+      category,
+      essential: ESSENTIAL_CATEGORIES.has(category), // recurring bill, never "cancel this"
+      monthly: round2(last), // current billing level, not the historical average
       cadence_days: Math.round(monthlyish.reduce((a, b) => a + b, 0) / monthlyish.length),
       first_amount: round2(first), last_amount: round2(last),
       prior_amount: prior != null ? round2(prior) : null,
@@ -382,7 +398,8 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
   const catSpend = {}, merch = {};
   for (const t of txns) {
     if (t.amount >= 0) continue;
-    const cat = categorize(t.merchant, overrides);
+    // A category stored on the row (user correction) beats the keyword guess.
+    const cat = t.category || categorize(t.merchant, overrides);
     catSpend[cat] = (catSpend[cat] || 0) - t.amount;
     const mk = merchantKey(t.merchant);
     (merch[mk] ||= { spend: 0, count: 0 });
@@ -395,11 +412,13 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     .map(([merchant, v]) => ({ merchant, spend: round2(v.spend), count: v.count }))
     .sort((a, b) => b.spend - a.spend).slice(0, 10);
 
-  const subs = detectSubscriptions(txns, lastDate);
+  const subs = detectSubscriptions(txns, lastDate, (m) => categorize(m, overrides));
   const active = subs.filter((s) => s.active);
-  // The headline is what you're STILL paying — active subs only. Stopped subs
-  // aren't costing you, so they don't belong in the "you pay $X/mo" number.
-  const activeMonthly = round2(active.reduce((a, s) => a + s.monthly, 0));
+  // The headline is what you're STILL paying for cancellable subscriptions —
+  // active, non-essential. Recurring commitments (rent etc.) are reported
+  // separately so "you pay $X/mo in subs" stays actionable.
+  const activeMonthly = round2(active.filter((s) => !s.essential).reduce((a, s) => a + s.monthly, 0));
+  const essentialMonthly = round2(active.filter((s) => s.essential).reduce((a, s) => a + s.monthly, 0));
 
   return {
     source: meta.source || null, currency: meta.currency || null,
@@ -412,8 +431,9 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     top_merchants: topMerchants,
     subscriptions: subs,
     subscription_monthly_total: activeMonthly,
-    active_subscription_count: active.length,
-    stopped_subscription_count: subs.length - active.length,
+    recurring_bills_monthly_total: essentialMonthly,
+    active_subscription_count: active.filter((s) => !s.essential).length,
+    stopped_subscription_count: subs.filter((s) => !s.active && !s.essential).length,
     transactions: txns,
     errors: [],
   };

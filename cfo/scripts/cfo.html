@@ -9,22 +9,72 @@
 <body>
   <div id="app">
     <main id="report-pane">
+      <!-- FIXED section: page-owned, deterministic. The agent never updates this. -->
       <header id="report-header">
         <h1>Personal CFO</h1>
+        <nav id="tabs">
+          <button class="tab on" data-view="report">Report</button>
+          <button class="tab" data-view="txn">Transactions</button>
+        </nav>
+        <button id="help-btn" class="chip" title="How to use Personal CFO">Help</button>
+        <span class="spacer"></span>
+        <button id="run-review" class="btn ghost" title="Ask the AI for a full financial review">✦ Run review</button>
         <label id="import-btn" class="btn">
-          Import statement (CSV or PDF)
+          Import statement
           <input id="file-input" type="file" accept=".csv,text/csv,.pdf,application/pdf" multiple hidden>
         </label>
         <button id="new-chat" class="btn ghost" title="Start a fresh chat — your report stays">New chat</button>
-        <span id="status" class="status" hidden></span>
       </header>
+      <div id="status" class="status" hidden></div>
 
       <section id="empty-state">
         <p class="lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
-        <p class="hint">Your transactions stay on this Mac — account numbers are stripped before anything is analyzed. CSV is most accurate; PDF works too (best-effort).</p>
+        <p class="hint">Your statements never leave this Mac — parsing and redaction happen locally, and the AI only ever sees redacted totals. CSV is most accurate; PDF works too (best-effort).</p>
       </section>
 
-      <section id="report" hidden></section>
+      <section id="report" hidden>
+        <p class="hint" id="drop-hint">📥 Drag &amp; drop statement files (CSV or PDF) anywhere on this page to import — several at once is fine.</p>
+        <div id="range-bar">
+          <div id="range-chips"></div>
+          <button id="range-custom" class="chip">… ▾</button>
+          <span id="range-label"></span>
+          <div id="range-pop" hidden></div>
+        </div>
+        <div id="cards" class="cards"></div>
+        <h2>Monthly trend <span class="legend"><i class="sw spend"></i>spend <i class="sw income"></i>income <i class="sw net"></i>net</span></h2>
+        <div id="trend"></div>
+        <div class="two-col">
+          <div>
+            <h2>Where it goes</h2>
+            <div id="cats" class="bars"></div>
+          </div>
+          <div>
+            <h2>Subscriptions</h2>
+            <div id="subs" class="subs"></div>
+            <div id="bills"></div>
+          </div>
+        </div>
+        <div id="payments-wrap"></div>
+        <div id="recs-wrap"></div>
+        <p class="hint" id="privacy-foot">🔒 All data stays on this Mac. Statements are parsed and redacted locally — the AI model only ever sees redacted totals (no account numbers, no balances, no raw files).</p>
+      </section>
+
+      <!-- Transactions: full ledger browser + import-review staging. Static page JS. -->
+      <section id="txn" hidden>
+        <div id="txn-staging" hidden></div>
+        <div id="txn-browse">
+          <div id="txn-filters"></div>
+          <div id="txn-table"></div>
+        </div>
+      </section>
+      <div id="scope-pop" hidden></div>
+
+      <!-- DYNAMIC section: the only region the agent updates (PageUpdate). -->
+      <section id="insights-wrap" hidden>
+        <h2>✦ Insights <button id="insights-clear" class="chip" title="Remove all insight cards">clear</button>
+          <label class="auto-chip" title="Run the financial review automatically whenever an import adds new transactions"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
+        <div id="insights"></div>
+      </section>
     </main>
 
     <aside id="chat-pane">

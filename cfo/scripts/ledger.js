@@ -90,16 +90,67 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5) {
   return rows;
 }
 
-// Compute the report from ledger rows — transfers excluded so spend/income are
+// Payment cadence per credit account — the deterministic half of "don't miss a
+// card payment". Statements carry no due dates, so this is the user's own
+// pattern: payments to a card recur ~monthly, so last_paid + cadence predicts
+// the next one. `missed_in_data` only fires when the ledger has data PAST the
+// expected date + grace and still no payment — stale data must not alarm.
+const addDays = (iso, days) => new Date(new Date(iso).getTime() + days * 86400000).toISOString().slice(0, 10);
+
+export function detectPaymentSchedule(rows, accountsById = {}) {
+  const dataThrough = rows.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
+  const out = [];
+  for (const [id, acc] of Object.entries(accountsById)) {
+    if ((acc.type || '').toLowerCase() !== 'credit') continue;
+    const pays = rows
+      .filter((r) => r.account === id && r.amount > 0 && r.date && (r.transfer || PAYMENT_RE.test(r.merchant)))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    if (!pays.length) continue;
+    const last = pays[pays.length - 1];
+    const gaps = pays.slice(1).map((p, i) => daysBetween(p.date, pays[i].date));
+    const monthlyish = gaps.filter((g) => g >= 24 && g <= 35);
+    const cadence = monthlyish.length
+      ? Math.round(monthlyish.reduce((a, b) => a + b, 0) / monthlyish.length)
+      : (pays.length >= 2 ? null : 30); // single payment: assume monthly until we know
+    const next_expected = cadence ? addDays(last.date, cadence) : null;
+    out.push({
+      account: id,
+      label: acc.label || id,
+      last_paid: { date: last.date, amount: last.amount },
+      cadence_days: cadence,
+      next_expected,
+      data_through: dataThrough || null,
+      missed_in_data: !!(next_expected && dataThrough && addDays(next_expected, 5) < dataThrough),
+    });
+  }
+  return out;
+}
+
+// Compute a report from ledger rows — transfers excluded so spend/income are
 // real and not double-counted. Reuses analyzeTransactions (categories, monthly
-// trend, subscriptions). `opts.categoryOverrides` is threaded through.
-export function reportFromLedger(rows, accountsById = {}, opts = {}) {
+// trend, subscriptions). `range` ({from, to} as 'YYYY-MM', or null for all
+// history) filters the VIEW; transfer detection and the payment schedule always
+// run on the full ledger so pairs straddling the range boundary still match.
+export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null) {
   detectTransfers(rows, accountsById, opts.transferWindowDays || 5);
-  const spendable = rows
-    .filter((r) => !r.transfer)
-    .map((r) => ({ date: r.date, merchant: r.merchant, amount: r.amount }));
-  const report = analyzeTransactions(spendable, { source: 'ledger' }, opts);
+  let spendable = rows.filter((r) => !r.transfer);
+  const months_available = [...new Set(spendable.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
+  if (range && range.from && range.to) {
+    spendable = spendable.filter((r) => r.date && r.date.slice(0, 7) >= range.from && r.date.slice(0, 7) <= range.to);
+  }
+  const report = analyzeTransactions(
+    spendable.map((r) => ({ date: r.date, merchant: r.merchant, amount: r.amount, category: r.category || null })),
+    { source: 'ledger' }, opts,
+  );
+  report.months_available = months_available;
+  report.range = range || null;
   report.transfer_count = rows.filter((r) => r.transfer).length;
   report.account_count = new Set(rows.map((r) => r.account)).size;
+  report.payment_schedule = detectPaymentSchedule(rows, accountsById);
   return report;
+}
+
+// The agent's report: always full history.
+export function reportFromLedger(rows, accountsById = {}, opts = {}) {
+  return viewFromLedger(rows, accountsById, opts, null);
 }

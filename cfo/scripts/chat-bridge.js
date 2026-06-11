@@ -70,9 +70,25 @@ async function mount(el, options) {
   iframe.allow = 'clipboard-write';
   el.appendChild(iframe);
 
+  // Outbound messages posted before the embed's listener + transport are up
+  // are silently lost — queue them until the iframe shows life (any event) or
+  // a grace period passes, then flush once.
+  let outboundReady = false;
+  const outbox = [];
+  function post(msg) {
+    if (outboundReady) iframe.contentWindow?.postMessage(msg, '*');
+    else outbox.push(msg);
+  }
+  function flushOutbox() {
+    if (outboundReady) return;
+    outboundReady = true;
+    for (const m of outbox.splice(0)) iframe.contentWindow?.postMessage(m, '*');
+  }
+
   // Listen for events from the iframe
   function handleMessage(e) {
     if (e.data?.type !== 'linggen-skill-event') return;
+    flushOutbox(); // the embed is alive and talking — safe to send
     const { event, payload } = e.data;
     switch (event) {
       case 'stream_token':
@@ -97,27 +113,29 @@ async function mount(el, options) {
   }
   window.addEventListener('message', handleMessage);
 
-  // Wait for iframe to load
+  // Wait for iframe to load, then give the inner app a grace period before
+  // assuming direct posts are safe (see outbox above).
   await new Promise((resolve) => {
     iframe.addEventListener('load', resolve, { once: true });
   });
+  setTimeout(flushOutbox, 4000);
 
   /** Send a message to the chat (posts to iframe which triggers chat submit). */
   function send(text) {
     streamBuffer = '';
-    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send', payload: { text } }, '*');
+    post({ type: 'linggen-skill', action: 'send', payload: { text } });
   }
 
   /** Send a message to the agent without showing it in the chat UI. */
   function sendHidden(text) {
     streamBuffer = '';
-    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'send_hidden', payload: { text } }, '*');
+    post({ type: 'linggen-skill', action: 'send_hidden', payload: { text } });
   }
 
   /** Add a local-only message to the chat display. */
   function addMessage(role, text) {
     const mappedRole = (role === 'ai' || role === 'assistant') ? 'assistant' : role;
-    iframe.contentWindow?.postMessage({ type: 'linggen-skill', action: 'add_message', payload: { role: mappedRole, text } }, '*');
+    post({ type: 'linggen-skill', action: 'add_message', payload: { role: mappedRole, text } });
   }
 
   return {

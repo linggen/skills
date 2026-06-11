@@ -1,0 +1,137 @@
+#!/usr/bin/env node
+// run-ledger.mjs — correctness + dedup verification suite.
+//
+//   node tests/run-ledger.mjs
+//
+// Part A: synthetic cases — dedup semantics and transfer detection from first
+//         principles (no environment needed).
+// Part B: LIVE audit of ~/.linggen/skills/cfo/data — internal invariants of the
+//         real ledger (unique ids, transfer pairing, totals/by_month/by_category
+//         agreement) plus a source-fidelity check: every transaction in the
+//         original ~/Downloads/cfo-bank-tests CSVs must appear in the ledger
+//         EXACTLY once, no matter how many overlapping files were imported.
+
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { analyzeCsv, orientTransactions } from '../scripts/analyze.js';
+import { toLedgerRows, mergeLedger, detectTransfers, reportFromLedger } from '../scripts/ledger.js';
+
+let pass = 0, fail = 0;
+const t = (name, ok, detail = '') => {
+  ok ? pass++ : fail++;
+  console.log(`${ok ? '✅' : '❌'} ${name}${detail ? ` — ${detail}` : ''}`);
+};
+const r2 = (n) => Math.round(n * 100) / 100;
+const near = (a, b) => Math.abs(a - b) < 0.02; // per-bucket rounding tolerance
+
+// ── Part A: synthetic ──
+console.log('— Part A: synthetic dedup + transfer semantics —');
+
+const dup = [
+  { date: '2026-05-03', merchant: 'STARBUCKS', amount: -6.45 },
+  { date: '2026-05-03', merchant: 'STARBUCKS', amount: -6.45 },
+];
+t('A1 genuine same-day duplicates BOTH kept', mergeLedger([], toLedgerRows(dup, 'a')).added.length === 2);
+
+const first = toLedgerRows(dup, 'a');
+t('A2 re-importing the same statement adds 0', mergeLedger(first, toLedgerRows(dup, 'a')).added.length === 0);
+
+const fileA = [
+  { date: '2026-01-05', merchant: 'RENT', amount: -1000 },
+  { date: '2026-01-12', merchant: 'GROCER', amount: -80 },
+  { date: '2026-01-19', merchant: 'GAS', amount: -50 },
+];
+const fileB = [...fileA.slice(1), { date: '2026-01-26', merchant: 'CAFE', amount: -10 }, { date: '2026-02-02', merchant: 'GROCER', amount: -90 }];
+const afterA = mergeLedger([], toLedgerRows(fileA, 'a')).merged;
+const { added: overlapAdded } = mergeLedger(afterA, toLedgerRows(fileB, 'a'));
+t('A3 overlapping statement adds ONLY new rows', overlapAdded.length === 2, `${overlapAdded.length} of ${fileB.length}`);
+
+t('A4 control: same file on a DIFFERENT account does not dedup',
+  mergeLedger(afterA, toLedgerRows(fileA, 'b')).added.length === 3);
+
+const pair = [
+  { id: 'p1', account: 'chk', date: '2026-05-15', merchant: 'PAYMENT TO VISA', amount: -487.5, transfer: false, transfer_pair: null },
+  { id: 'p2', account: 'visa', date: '2026-05-16', merchant: 'PAYMENT - THANK YOU', amount: 487.5, transfer: false, transfer_pair: null },
+  { id: 'p3', account: 'chk', date: '2026-05-10', merchant: 'AMAZON PURCHASE', amount: -49.99, transfer: false, transfer_pair: null },
+  { id: 'p4', account: 'visa', date: '2026-05-12', merchant: 'AMAZON REFUND', amount: 49.99, transfer: false, transfer_pair: null },
+];
+detectTransfers(pair, { visa: { type: 'credit' }, chk: { type: 'checking' } });
+t('A5 card payment pair excluded, refund pair NOT', pair[0].transfer && pair[1].transfer && !pair[2].transfer && !pair[3].transfer);
+
+const synth = mergeLedger(
+  mergeLedger([], toLedgerRows([
+    { date: '2026-03-01', merchant: 'PAYROLL', amount: 3000 },
+    { date: '2026-03-03', merchant: 'RENT', amount: -1200 },
+    { date: '2026-03-15', merchant: 'PAYMENT TO VISA', amount: -250 },
+    { date: '2026-04-01', merchant: 'PAYROLL', amount: 3000 },
+  ], 'chk')).merged,
+  toLedgerRows([
+    { date: '2026-03-05', merchant: 'NETFLIX', amount: -20 },
+    { date: '2026-03-16', merchant: 'PAYMENT THANK YOU', amount: 250 },
+  ], 'visa'),
+).merged;
+const sRep = reportFromLedger(synth, { chk: { type: 'checking' }, visa: { type: 'credit' } });
+t('A6 totals exclude the transfer on BOTH sides', sRep.totals.spend === 1220 && sRep.totals.income === 6000,
+  `spend ${sRep.totals.spend} income ${sRep.totals.income}`);
+
+// ── Part B: live ledger audit ──
+const DATA = join(process.env.HOME, '.linggen/skills/cfo/data');
+if (!existsSync(join(DATA, 'ledger'))) {
+  console.log('\n(no live ledger found — Part B skipped)');
+} else {
+  console.log('\n— Part B: LIVE ledger audit —');
+  const rows = [];
+  for (const f of readdirSync(join(DATA, 'ledger'))) {
+    for (const l of readFileSync(join(DATA, 'ledger', f), 'utf8').split('\n')) if (l.trim()) rows.push(JSON.parse(l));
+  }
+  const accounts = JSON.parse(readFileSync(join(DATA, 'accounts.json'), 'utf8'));
+
+  const ids = rows.map((r) => r.id);
+  t('B1 all ledger row ids unique (THE dedup invariant)', new Set(ids).size === ids.length, `${ids.length} rows`);
+
+  const rep = reportFromLedger(rows, accounts); // recomputes transfer flags in place
+  const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
+  const transfers = rows.filter((r) => r.transfer);
+  const badPair = transfers.find((r) => {
+    const p = byId[r.transfer_pair];
+    return !p || !p.transfer || p.transfer_pair !== r.id || p.account === r.account || Math.abs(p.amount + r.amount) > 0.005;
+  });
+  t('B2 every transfer row has a valid opposite-sign cross-account pair', transfers.length % 2 === 0 && !badPair,
+    `${transfers.length} rows in ${transfers.length / 2} pairs`);
+
+  const spendable = rows.filter((r) => !r.transfer);
+  const spend = r2(spendable.filter((r) => r.amount < 0).reduce((a, r) => a - r.amount, 0));
+  const income = r2(spendable.filter((r) => r.amount > 0).reduce((a, r) => a + r.amount, 0));
+  t('B3 report totals == independent row sum', near(spend, rep.totals.spend) && near(income, rep.totals.income),
+    `spend ${rep.totals.spend} income ${rep.totals.income}`);
+
+  const mSpend = r2(Object.values(rep.by_month).reduce((a, m) => a + m.spend, 0));
+  const mIncome = r2(Object.values(rep.by_month).reduce((a, m) => a + m.income, 0));
+  t('B4 by_month sums == totals (dated rows)', near(mSpend, rep.totals.spend) && near(mIncome, rep.totals.income));
+
+  const cSpend = r2(rep.by_category.reduce((a, c) => a + c.spend, 0));
+  t('B5 by_category sums == total spend', near(cSpend, rep.totals.spend));
+
+  // Source fidelity: re-parse each demo CSV and require every transaction id
+  // to exist in the ledger (and B1 already proves nothing exists twice).
+  const demo = join(process.env.HOME, 'Downloads/cfo-bank-tests');
+  if (existsSync(demo) && existsSync(join(DATA, 'imports.json'))) {
+    const log = JSON.parse(readFileSync(join(DATA, 'imports.json'), 'utf8'));
+    const fileAcct = {};
+    for (const e of log) fileAcct[e.file] = e.account;
+    const idSet = new Set(ids);
+    for (const f of readdirSync(demo).filter((x) => x.endsWith('.csv'))) {
+      const acct = fileAcct[f];
+      if (!acct) { console.log(`   (skip ${f} — never imported)`); continue; }
+      const parsed = analyzeCsv(readFileSync(join(demo, f), 'utf8'));
+      const oriented = orientTransactions(parsed.transactions, (accounts[acct] || {}).type);
+      const want = toLedgerRows(oriented.transactions, acct);
+      const missing = want.filter((w) => !idSet.has(w.id));
+      t(`B6 ${f}: all ${want.length} source rows in ledger exactly once`, missing.length === 0,
+        missing.length ? `${missing.length} MISSING` : `account "${accounts[acct]?.label}"`);
+    }
+  }
+}
+
+console.log(`\n${pass} passed, ${fail} failed.`);
+process.exit(fail ? 1 : 0);
