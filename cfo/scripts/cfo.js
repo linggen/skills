@@ -547,7 +547,6 @@ function refreshView() {
   renderCategories(view);
   renderSubs(view);
   renderPayments(view);
-  renderRecs(view);
 }
 
 function renderCards(v) {
@@ -669,25 +668,6 @@ function renderPayments(v) {
   wrap.innerHTML = `<h2>Card payments <span class="hint inline">pattern-based — statements carry no due dates</span></h2><div class="pays">${rows}</div>`;
 }
 
-function renderRecs(v) {
-  const wrap = document.getElementById('recs-wrap');
-  const subs = (v.subscriptions || []).filter((s) => !s.essential);
-  const recs = [];
-  for (const s of subs.filter((x) => x.active !== false)) {
-    if (s.increased) recs.push(`↑ <b>${esc(s.merchant)}</b> rose ${moneyExact(s.first_amount)} → ${moneyExact(s.last_amount)} (+${moneyExact(s.increase_amount)}/mo).`);
-  }
-  for (const s of subs.filter((x) => x.stopped)) {
-    recs.push(`⏸ <b>${esc(s.merchant)}</b> — no charge since ${s.last_date}. Did you cancel it, or is it billed yearly?`);
-  }
-  const fees = (v.by_category || []).find((c) => c.category === 'fees');
-  if (fees && fees.spend > 0) recs.push(`💸 <b>${money(fees.spend)}</b> went to bank/card fees in this range — worth asking the assistant where.`);
-  for (const p of (v.payment_schedule || []).filter((x) => x.missed_in_data)) {
-    recs.push(`⚠ <b>${esc(p.label)}</b> — expected a payment around ${p.next_expected} but none appears in your data.`);
-  }
-  wrap.innerHTML = recs.length
-    ? `<h2>Worth a look</h2><ul class="recs">${recs.map((x) => `<li>${x}</li>`).join('')}</ul>
-       <p class="hint">Ask the assistant: <i>"run my financial review"</i> or <i>"why did my spend change?"</i></p>` : '';
-}
 
 // ── Dynamic section: agent-owned insights via PageUpdate ──
 // Schema (SKILL.md): PageUpdate { insights: [{title, body, tone?}], replace? }
@@ -838,6 +818,41 @@ function announceImport(results) {
 
 const autoReviewOn = () => { try { return localStorage.getItem('cfo:auto-review') !== '0'; } catch { return true; } };
 
+// ── On-open reminders (deterministic, no LLM, no mission needed) ──
+// Checks run against the freshly computed view when the page opens; each
+// distinct reminder fires ONCE per expected date / stale state (localStorage).
+function openReminders() {
+  if (!LAST_VIEW || !LEDGER.length) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const daysUntil = (iso) => Math.round((new Date(iso) - new Date(today)) / 86400000);
+  const once = (key) => {
+    try {
+      if (localStorage.getItem(key)) return false;
+      localStorage.setItem(key, '1');
+      return true;
+    } catch { return true; }
+  };
+  const lines = [];
+  for (const p of LAST_VIEW.payment_schedule || []) {
+    if (!p.next_expected) continue;
+    if (p.missed_in_data) {
+      if (once(`cfo:rem:miss:${p.account}:${p.next_expected}`)) lines.push(`⚠ ${p.label} — I'd expect a payment around ${p.next_expected}, but none shows in your data. Worth checking you didn't miss it.`);
+    } else {
+      const d = daysUntil(p.next_expected);
+      if (d >= 0 && d <= 3 && once(`cfo:rem:due:${p.account}:${p.next_expected}`)) {
+        lines.push(`⏳ ${p.label} — you usually pay around ${p.next_expected} (${d === 0 ? 'today' : `in ${d} day${d === 1 ? '' : 's'}`}). Pattern-based, not an official due date.`);
+      }
+    }
+  }
+  const newest = LEDGER.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
+  if (newest && daysUntil(newest) <= -35 && once(`cfo:rem:stale:${newest}`)) {
+    lines.push(`📥 Your newest data is from ${newest} — drag in fresh statements and I'll re-check everything.`);
+  }
+  if (lines.length) {
+    try { chat?.addMessage?.('assistant', `Quick check while you were away:\n\n${lines.join('\n\n')}`); } catch { /* ignore */ }
+  }
+}
+
 // Resume a recent chat: if the latest cfo session had activity within 24h,
 // reattach to it; otherwise mint a fresh one. The report is independent of this.
 async function recentSessionId() {
@@ -919,6 +934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sid = await recentSessionId();
   await mountChat(sid);                 // resume <24h chat, else fresh
   if (!sid) triggerGreeting();
+  openReminders();                      // payment/staleness checks, once per state
 
   document.getElementById('new-chat')?.addEventListener('click', newChat);
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
