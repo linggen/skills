@@ -273,6 +273,7 @@ function renderTxnView() {
   document.getElementById('txn-staging').hidden = !STAGING;
   document.getElementById('txn-browse').hidden = !!STAGING;
   if (STAGING) { renderStaging(); return; }
+  renderImportHistory();
   detectTransfers(LEDGER, ACCOUNTS);
   const cats = knownCategories();
   const f = TXN_FILTERS;
@@ -320,6 +321,36 @@ function renderTxnView() {
       askScope(sel, row, cat);
     });
   });
+}
+
+// Import history with per-import revert. Imports made before undo existed have
+// no recorded ids — shown but marked not-revertible (honest about the limit).
+async function renderImportHistory() {
+  const el = document.getElementById('import-history');
+  const log = (await readJson(`${DATA}/imports.json`, [])).slice().reverse();
+  if (!log.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <h2>Import history</h2>
+    <div class="imports">
+      ${log.map((e) => {
+    const when = (e.at || '').slice(0, 10);
+    const acct = ACCOUNTS[e.account]?.label || e.account || '—';
+    const revertible = !e.reverted && Array.isArray(e.added_ids) && e.added_ids.length;
+    const tail = e.reverted ? '<span class="tag">reverted</span>'
+      : revertible ? `<button class="chip undo" data-id="${esc(e.id)}">Undo</button>`
+        : '<span class="hint">—</span>';
+    return `<div class="import-row${e.reverted ? ' reverted' : ''}">
+        <span class="imp-file">${esc(e.file || 'import')}</span>
+        <span class="imp-meta">${esc(acct)} · ${e.added ?? '?'} added · ${esc(when)}</span>
+        ${tail}
+      </div>`;
+  }).join('')}
+    </div>`;
+  el.querySelectorAll('.undo').forEach((b) => b.addEventListener('click', async () => {
+    if (!window.confirm('Undo this import? The transactions it added will be removed from your report.')) return;
+    b.disabled = true;
+    await undoImport(b.dataset.id);
+  }));
 }
 
 // "Always for this merchant" writes a config override rule (fixes past AND
@@ -405,7 +436,10 @@ async function importFile(file, fileIdx = 0, fileCount = 1) {
   const existing = await loadLedger();
   const { merged, added } = mergeLedger(existing, incoming);
   if (added.length) await appendLedgerRows(added);
-  await appendImport({ file: file.name, account: accountId, added: added.length, rows: incoming.length, at: new Date().toISOString() });
+  // Record the exact ids this import added so it can be reverted later. id is a
+  // local timestamp-ish token (Date.now is fine in the browser; this is UI state).
+  const importId = `imp_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
+  await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), at: new Date().toISOString() });
 
   LEDGER = merged;
   await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent's full-history copy
@@ -413,7 +447,32 @@ async function importFile(file, fileIdx = 0, fileCount = 1) {
   const dup = incoming.length - added.length;
   const head = dup ? `Imported — ${added.length} new, ${dup} already on file.` : `Imported — ${added.length} transactions.`;
   setStatus([head, ...notes].join(' '));
-  return { file: file.name, label: ACCOUNTS[accountId]?.label || accountId, added: added.length, dup };
+  return { file: file.name, label: ACCOUNTS[accountId]?.label || accountId, added: added.length, dup, importId };
+}
+
+// ── Undo import: remove exactly the rows an import added, rewrite affected year
+// files, prune a now-empty account, mark the log entry reverted. Deterministic.
+async function undoImport(importId) {
+  const log = await readJson(`${DATA}/imports.json`, []);
+  const entry = log.find((e) => e.id === importId);
+  if (!entry || entry.reverted || !Array.isArray(entry.added_ids) || !entry.added_ids.length) return false;
+  const remove = new Set(entry.added_ids);
+  const years = new Set(LEDGER.filter((r) => remove.has(r.id)).map((r) => ((r.date || '').slice(0, 4)) || 'undated'));
+  LEDGER = LEDGER.filter((r) => !remove.has(r.id));
+  for (const y of years) await rewriteYearFile(y);
+  // Drop the account if this import created it and nothing else uses it.
+  if (entry.account && !LEDGER.some((r) => r.account === entry.account)) {
+    delete ACCOUNTS[entry.account];
+    await saveAccounts(ACCOUNTS);
+  }
+  entry.reverted = true;
+  entry.reverted_at = new Date().toISOString();
+  await writeB64(`${DATA}/imports.json`, JSON.stringify(log, null, 2));
+  await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts()));
+  refreshView();
+  if (VIEW_MODE === 'txn') renderTxnView();
+  try { chat?.addMessage?.('assistant', `Reverted the import of ${entry.file} — removed ${entry.added_ids.length} transaction${entry.added_ids.length === 1 ? '' : 's'}. Your report is back to where it was.`); } catch { /* ignore */ }
+  return true;
 }
 
 // Re-render the saved ledger on open, so the user lands on their picture and
@@ -814,6 +873,23 @@ function announceImport(results) {
   }
   msg += `\n\nCharts are updated — take a look. Want a financial review? Hit ✦ Run review or just ask.`;
   try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
+  offerUndo(ok);
+}
+
+// Inline undo affordance in the status line for the just-completed import(s) —
+// the immediate-regret path. The full history lives on the Transactions tab.
+function offerUndo(ok) {
+  const ids = ok.map((r) => r.importId).filter(Boolean);
+  if (!ids.length) return;
+  const el = document.getElementById('status');
+  const a = document.createElement('a');
+  a.href = '#'; a.className = 'undo-link'; a.textContent = ids.length > 1 ? '  Undo all' : '  Undo';
+  a.onclick = async (e) => {
+    e.preventDefault();
+    a.remove();
+    for (const id of ids) await undoImport(id);
+  };
+  el.appendChild(a);
 }
 
 const autoReviewOn = () => { try { return localStorage.getItem('cfo:auto-review') !== '0'; } catch { return true; } };

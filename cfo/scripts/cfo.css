@@ -208,6 +208,18 @@ td.num.pos { color: var(--pos); }
 #scope-pop[hidden] { display: none; }
 #scope-pop label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
 
+.undo-link { color: var(--accent); font-weight: 600; text-decoration: none; }
+.undo-link:hover { text-decoration: underline; }
+#import-history { margin-top: 26px; }
+.imports { display: flex; flex-direction: column; gap: 6px; }
+.import-row { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;
+  box-shadow: var(--shadow); font-size: 13px; }
+.import-row.reverted { opacity: .55; }
+.imp-file { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.imp-meta { color: var(--muted); font-size: 12px; }
+.chip.undo { border-color: var(--accent); color: var(--accent); }
+
 /* ── Dynamic section (agent-owned via PageUpdate) ── */
 #insights-wrap { margin-top: 10px; padding-top: 4px; border-top: 1px dashed var(--line); }
 #insights-wrap h2 .chip { margin-left: 10px; font-weight: 400; }
