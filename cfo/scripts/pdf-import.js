@@ -13,9 +13,10 @@ import { parseDate, parseAmount, cleanMerchant } from './analyze.js';
 
 const MONTH_RE = '(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)';
 const DATE_RE = new RegExp(
-  `\\b\\d{1,2}[/-]\\d{1,2}(?:[/-]\\d{2,4})?\\b`
-  + `|\\b${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}\\b`
-  + `|\\b\\d{1,2}\\s+${MONTH_RE}[a-z]*\\b`, 'i');
+  `\\b\\d{4}[/-]\\d{1,2}[/-]\\d{1,2}\\b` // ISO 2026-07-15
+  + `|\\b\\d{1,2}[/-]\\d{1,2}(?:[/-]\\d{2,4})?\\b`
+  + `|\\b${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s*\\d{2,4})?\\b` // "Jul 02" or "Jul 02, 2026"
+  + `|\\b\\d{1,2}\\s+${MONTH_RE}[a-z]*(?:,?\\s*\\d{2,4})?\\b`, 'i');
 // A money token: 1,234.56 / $12.00 / -8.99 / 12.00- / 12.00 CR
 const MONEY_RE = /-?\$?\d{1,3}(?:,\d{3})*\.\d{2}-?(?:\s?(?:cr|dr))?/ig;
 const CREDIT_HINT = /\b(payment|deposit|refund|credit|reversal|transfer in|e-?transfer)\b/i;
@@ -47,6 +48,7 @@ async function extractPdfText(data) {
 
 function normalizeDate(token, year) {
   const t = token.trim();
+  if (/\b\d{4}\b/.test(t)) { const d = parseDate(t); if (d) return d; } // token already carries a 4-digit year
   if (/\d{2,4}$/.test(t) && /[/-]\d{1,2}[/-]\d{2,4}$/.test(t)) return parseDate(t); // already has a year
   // append the statement year and retry the common shapes
   if (/^\d{1,2}[/-]\d{1,2}$/.test(t)) return parseDate(`${t.replace('-', '/')}/${year}`);
