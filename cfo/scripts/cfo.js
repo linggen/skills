@@ -836,20 +836,21 @@ function openReminders() {
   for (const p of LAST_VIEW.payment_schedule || []) {
     if (!p.next_expected) continue;
     if (p.missed_in_data) {
-      if (once(`cfo:rem:miss:${p.account}:${p.next_expected}`)) lines.push(`⚠ ${p.label} — I'd expect a payment around ${p.next_expected}, but none shows in your data. Worth checking you didn't miss it.`);
+      if (once(`cfo:rem3:miss:${p.account}:${p.next_expected}`)) lines.push(`⚠ ${p.label} — I'd expect a payment around ${p.next_expected}, but none shows in your data. Worth checking you didn't miss it.`);
     } else {
       const d = daysUntil(p.next_expected);
-      if (d >= 0 && d <= 3 && once(`cfo:rem:due:${p.account}:${p.next_expected}`)) {
+      if (d >= 0 && d <= 3 && once(`cfo:rem3:due:${p.account}:${p.next_expected}`)) {
         lines.push(`⏳ ${p.label} — you usually pay around ${p.next_expected} (${d === 0 ? 'today' : `in ${d} day${d === 1 ? '' : 's'}`}). Pattern-based, not an official due date.`);
       }
     }
   }
   const newest = LEDGER.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
-  if (newest && daysUntil(newest) <= -35 && once(`cfo:rem:stale:${newest}`)) {
+  if (newest && daysUntil(newest) <= -35 && once(`cfo:rem3:stale:${newest}`)) {
     lines.push(`📥 Your newest data is from ${newest} — drag in fresh statements and I'll re-check everything.`);
   }
   if (lines.length) {
-    try { chat?.addMessage?.('assistant', `Quick check while you were away:\n\n${lines.join('\n\n')}`); } catch { /* ignore */ }
+    const text = `Quick check while you were away:\n\n${lines.join('\n\n')}`;
+    setTimeout(() => { try { chat?.addMessage?.('assistant', text); } catch { /* ignore */ } }, 1200);
   }
 }
 
