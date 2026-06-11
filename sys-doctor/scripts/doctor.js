@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { /* ignore */ }
     const resumable = sessions.find((s) => hasCachedPage(s.id));
     if (resumable) {
+      seedLastScanAt(resumable.created_at);
       const url = new URL(window.location);
       url.searchParams.set('session', resumable.id);
       history.replaceState(null, '', url);
@@ -276,8 +277,25 @@ function buildScanSummary(results) {
 }
 
 function getLastScanAt() {
-  try { return parseInt(localStorage.getItem(LAST_SCAN_KEY) || '0', 10) || 0; }
-  catch { return 0; }
+  try {
+    const stored = parseInt(localStorage.getItem(LAST_SCAN_KEY) || '0', 10) || 0;
+    if (stored) return stored;
+    // Fallback for scans that predate the timestamp: the score history's
+    // last entry carries the scan date (day precision).
+    const hist = getScoreHistory();
+    if (hist.length) {
+      const t = Date.parse(hist[hist.length - 1].date);
+      if (!isNaN(t)) return t;
+    }
+    return 0;
+  } catch { return 0; }
+}
+
+/** Backfill the scan timestamp from a resumed session's creation time —
+ *  that's when its dashboard data was actually gathered. */
+function seedLastScanAt(createdAtSec) {
+  if (!createdAtSec || getLastScanAt()) return;
+  try { localStorage.setItem(LAST_SCAN_KEY, String(createdAtSec * 1000)); } catch { /* quota */ }
 }
 
 function getLastSummary() {
@@ -306,8 +324,9 @@ function updateScanMeta() {
   const label = document.getElementById('last-scan-label');
   if (!label) return;
   const at = getLastScanAt();
-  if (!at) { label.textContent = ''; return; }
+  if (!at) { label.textContent = ''; label.title = ''; return; }
   label.textContent = `Last scan ${relTime(Date.now() - at)}`;
+  label.title = `Data gathered ${new Date(at).toLocaleString()}`;
   label.classList.toggle('stale', Date.now() - at > STALE_MS);
 }
 
