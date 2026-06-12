@@ -18,7 +18,14 @@ body {
   margin: 0; background: var(--bg); color: var(--ink); color-scheme: light dark;
   font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-#app { display: grid; grid-template-columns: 1fr 380px; height: 100vh; }
+#app { display: grid; grid-template-columns: 1fr 6px 380px; height: 100vh; }
+
+/* Drag handle between report and chat (JS rewrites the last column width). */
+#pane-resizer { cursor: col-resize; position: relative; }
+#pane-resizer::after { content: ''; position: absolute; inset: 0 2px; background: var(--line); border-radius: 2px; }
+#pane-resizer:hover::after, body.resizing #pane-resizer::after { background: var(--accent); }
+body.resizing { cursor: col-resize; user-select: none; }
+body.resizing iframe { pointer-events: none; } /* iframe would swallow the drag */
 
 #report-pane { overflow-y: auto; padding: 24px 28px; }
 #report-pane.drag { outline: 2px dashed var(--accent); outline-offset: -10px; }

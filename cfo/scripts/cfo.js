@@ -1418,6 +1418,34 @@ document.addEventListener('DOMContentLoaded', async () => {
   const input = document.getElementById('file-input');
   input.addEventListener('change', () => { handleImport(input.files); input.value = ''; });
 
+  // ── Chat panel resizer: drag the divider; width persists; dbl-click resets.
+  const app = document.getElementById('app');
+  const rz = document.getElementById('pane-resizer');
+  const clampW = (w) => Math.min(Math.max(w, 280), Math.round(window.innerWidth * 0.6));
+  const applyChatW = (w) => { app.style.gridTemplateColumns = `1fr 6px ${w}px`; };
+  let chatW = 380;
+  try { chatW = clampW(+localStorage.getItem('cfo:chat-width') || 380); } catch { /* ignore */ }
+  applyChatW(chatW);
+  rz?.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    rz.setPointerCapture(e.pointerId);
+    document.body.classList.add('resizing');
+    const move = (ev) => { chatW = clampW(window.innerWidth - ev.clientX - 3); applyChatW(chatW); };
+    const up = () => {
+      document.body.classList.remove('resizing');
+      rz.removeEventListener('pointermove', move);
+      rz.removeEventListener('pointerup', up);
+      try { localStorage.setItem('cfo:chat-width', String(Math.round(chatW))); } catch { /* ignore */ }
+    };
+    rz.addEventListener('pointermove', move);
+    rz.addEventListener('pointerup', up);
+  });
+  rz?.addEventListener('dblclick', () => {
+    chatW = 380;
+    applyChatW(chatW);
+    try { localStorage.setItem('cfo:chat-width', '380'); } catch { /* ignore */ }
+  });
+
   const pane = document.getElementById('report-pane');
   pane.addEventListener('dragover', (e) => { e.preventDefault(); pane.classList.add('drag'); });
   pane.addEventListener('dragleave', () => pane.classList.remove('drag'));
