@@ -85,6 +85,16 @@ body.resizing iframe { pointer-events: none; } /* iframe would swallow the drag 
 
 h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 22px 0 10px; }
 
+/* ── Anomaly watch ── */
+.anoms { display: flex; flex-direction: column; gap: 6px; margin-bottom: 22px; }
+.anom-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center;
+  background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--warn);
+  border-radius: 8px; padding: 9px 12px; box-shadow: var(--shadow); font-size: 13px; }
+.anom-row.double_charge { border-left-color: var(--neg); }
+.anom-text b { color: var(--ink); }
+.anom-x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; line-height: 1; }
+.anom-x:hover { color: var(--ink); }
+
 /* ── Safe-to-spend forecast ── */
 .fc-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent);
   border-radius: var(--radius); padding: 14px 16px; margin-bottom: 26px; box-shadow: var(--shadow); }

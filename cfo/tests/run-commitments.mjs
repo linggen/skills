@@ -156,5 +156,37 @@ t('F5 variable pace: $100 over 10 days, $10/day, $200 to month end',
   && near(fr.on_track_net, fr.safe_to_spend - 200));
 t('F6 one-off income never projects', !fr.expected_income.some((i) => i.merchant.includes('AMAZON')));
 
+// ── Anomaly watch ──
+console.log('— anomalies —');
+const atx = [
+  // double charge: $89.99 twice, one day apart
+  { date: '2026-06-01', merchant: 'GYM EQUIPMENT CO', amount: -89.99 },
+  { date: '2026-06-02', merchant: 'GYM EQUIPMENT CO', amount: -89.99 },
+  // NOT a double: two same-day coffees under the $20 floor
+  { date: '2026-06-03', merchant: 'STARBUCKS', amount: -6.45 },
+  { date: '2026-06-03', merchant: 'STARBUCKS', amount: -6.45 },
+  // new recurring: first charge 35 days back, 2 identical at monthly cadence
+  { date: '2026-05-06', merchant: 'DISNEY PLUS', amount: -11.99 },
+  { date: '2026-06-05', merchant: 'DISNEY PLUS', amount: -11.99 },
+  // trial convert: single-ever, recent, subscription-looking
+  { date: '2026-06-04', merchant: 'OPENAI *CHATGPT SUBSCR', amount: -24.00 },
+  // bill spike: usually $95, hits $310
+  ...['2026-03-15', '2026-04-15', '2026-05-15'].map((date) => ({ date, merchant: 'BELL CANADA', amount: -95 })),
+  { date: '2026-06-15', merchant: 'BELL CANADA', amount: -310 },
+];
+const an = analyzeTransactions(atx, {}, {}).anomalies;
+const byType = (ty) => an.filter((a) => a.type === ty);
+t('A1 double charge flagged once, coffees ignored',
+  byType('double_charge').length === 1 && byType('double_charge')[0].merchant === 'GYM EQUIPMENT CO');
+t('A2 new recurring flagged', byType('new_recurring').some((a) => a.merchant === 'DISNEY PLUS'));
+t('A3 trial convert flagged', byType('trial_charge').some((a) => a.merchant.includes('OPENAI')));
+t('A4 bill spike flagged with usual amount',
+  byType('bill_spike').length === 1 && byType('bill_spike')[0].amount === 310 && byType('bill_spike')[0].usual === 95);
+t('A5 ids are stable for dismissal', an.every((a) => typeof a.id === 'string' && a.id.includes('|')));
+// steady bills never spike-flag
+const calm = analyzeTransactions(
+  ['2026-03-15', '2026-04-15', '2026-05-15', '2026-06-15'].map((date) => ({ date, merchant: 'BELL CANADA', amount: -95 })), {}, {});
+t('A6 steady bill stays quiet', calm.anomalies.filter((a) => a.type === 'bill_spike').length === 0);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

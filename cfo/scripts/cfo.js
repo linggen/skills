@@ -23,6 +23,7 @@ let INSIGHTS = [];
 let LAST_VIEW = null; // most recent computed view — read by announceImport
 let FULL_VIEW = null; // full-history view — commitments ignore the range slicer
 let COMMITMENTS = {}; // user-entered terms per merchant key (data/commitments.json)
+let ANOM_DISMISSED = new Set(); // dismissed anomaly ids (data/anomalies-dismissed.json)
 
 async function runBash(command) {
   const res = await fetch('/api/bash', {
@@ -179,7 +180,10 @@ function trimForAgent(r) {
     transactions_window: { from: cutoff, to: end, included: recent.length, total: txns.length },
   };
 }
-const saveReport = (r) => writeB64(`${DATA}/report.json`, JSON.stringify(trimForAgent(r)));
+// Dismissed anomalies disappear for the agent too — "I said that's fine"
+// must stick on both surfaces.
+const filterAnomalies = (r) => ({ ...r, anomalies: (r.anomalies || []).filter((a) => !ANOM_DISMISSED.has(a.id)) });
+const saveReport = (r) => writeB64(`${DATA}/report.json`, JSON.stringify(trimForAgent(filterAnomalies(r))));
 
 // ── Account resolution: known fingerprint → silent fast path; anything else
 // goes through the import-review staging page (Transactions tab).
@@ -540,6 +544,7 @@ async function resumeState() {
     ACCOUNTS = await loadAccounts();
     INSIGHTS = await loadInsights();
     COMMITMENTS = await loadCommitments();
+    ANOM_DISMISSED = new Set(await readJson(`${DATA}/anomalies-dismissed.json`, []));
     // Clean up any historical duplicates (pre-dedup saves) + legacy tones.
     const seen = new Set();
     INSIGHTS = INSIGHTS.filter((c) => {
@@ -668,6 +673,7 @@ function refreshView() {
   renderRangeBar(view);
   renderCards(view);
   renderForecast(FULL_VIEW.forecast); // always full-history: cadences need it
+  renderAnomalies(FULL_VIEW.anomalies);
   renderTrend(view);
   renderCategories(view);
   renderSubs(view);
@@ -991,6 +997,45 @@ function renderCommitView() {
       try { chat?.send?.(msg); } catch { /* chat not mounted */ }
     });
   }
+}
+
+// ── Anomaly watch: deterministic "worth checking" list — double charges,
+// fresh recurring charges, trial converts, bill spikes. Dismiss = persisted +
+// removed from the agent's report.
+function anomalyText(a) {
+  switch (a.type) {
+    case 'double_charge':
+      return `<b>${esc(a.merchant)}</b> charged ${moneyExact(a.amount)} twice within days (${esc(a.prior_date)} and ${esc(a.date)}) — banks do make this error; worth a glance.`;
+    case 'new_recurring':
+      return `New recurring charge: <b>${esc(a.merchant)}</b> ${moneyExact(a.amount)}/mo since ${esc(a.date)} — intentional?`;
+    case 'trial_charge':
+      return `First charge from <b>${esc(a.merchant)}</b> (${moneyExact(a.amount)} on ${esc(a.date)}) — a free trial converting?`;
+    case 'bill_spike':
+      return `<b>${esc(a.merchant)}</b> hit ${moneyExact(a.amount)} on ${esc(a.date)} — usually ~${moneyExact(a.usual)}.`;
+    default:
+      return esc(a.merchant || '');
+  }
+}
+const ANOM_ICON = { double_charge: '⚠', new_recurring: '🆕', trial_charge: '👀', bill_spike: '📈' };
+
+function renderAnomalies(list) {
+  const el = document.getElementById('anomalies');
+  const items = (list || []).filter((a) => !ANOM_DISMISSED.has(a.id));
+  if (!items.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <h2>⚠ Worth checking <span class="hint inline">found by local checks — dismiss what's fine, or ask the assistant to draft a dispute</span></h2>
+    <div class="anoms">${items.map((a) => `
+      <div class="anom-row ${esc(a.type)}">
+        <span class="anom-ic">${ANOM_ICON[a.type] || '•'}</span>
+        <span class="anom-text">${anomalyText(a)}</span>
+        <button class="anom-x" data-id="${esc(a.id)}" title="Dismiss — this one's fine">×</button>
+      </div>`).join('')}</div>`;
+  el.querySelectorAll('.anom-x').forEach((b) => b.addEventListener('click', async () => {
+    ANOM_DISMISSED.add(b.dataset.id);
+    await writeB64(`${DATA}/anomalies-dismissed.json`, JSON.stringify([...ANOM_DISMISSED]));
+    renderAnomalies(FULL_VIEW && FULL_VIEW.anomalies);
+    if (FULL_VIEW) await saveReport(FULL_VIEW); // agent stops seeing it too
+  }));
 }
 
 // ── Debt strategy panel: all loans together, freed payments roll over, the

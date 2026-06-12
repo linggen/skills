@@ -388,6 +388,7 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
     if (!Object.values(level).some((c) => c >= 2)) continue;
     const first = amts[0], last = Math.abs(items[items.length - 1].amount);
     const prior = items.length >= 2 ? Math.abs(items[items.length - 2].amount) : null;
+    const firstChargeDate = items[0].date;
     const lastChargeDate = items[items.length - 1].date;
     // "stopped" = hasn't billed in 45+ days while newer activity exists. NOT money
     // you can recover (it stopped) — only a "did you cancel this?" signal. Active
@@ -407,6 +408,7 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
       first_amount: round2(first), last_amount: round2(last),
       prior_amount: prior != null ? round2(prior) : null,
       increased: last > first + 0.01, increase_amount: round2(last - first),
+      first_date: firstChargeDate,
       last_date: lastChargeDate,
       charges: items.length,
       active: !stopped, stopped,
@@ -414,6 +416,83 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
   }
   // Active first, then by monthly cost — the ones you're paying lead the list.
   return subs.sort((a, b) => (Number(b.active) - Number(a.active)) || (b.monthly - a.monthly));
+}
+
+// ── Anomaly watch — deterministic detectors for money leaks. Every item is a
+// QUESTION for the user, not an accusation: legit same-amount pairs exist.
+// id is stable so dismissals persist across recomputes.
+function detectAnomalies(txns, subs, lastDate, catOf) {
+  if (!lastDate) return [];
+  const out = [];
+  const charges = txns.filter((t) => t.amount < 0 && t.date);
+  const groups = {};
+  for (const t of charges) (groups[merchantKey(t.merchant)] ||= []).push(t);
+  for (const items of Object.values(groups)) items.sort((a, b) => a.date.localeCompare(b.date));
+
+  // Double charges: same merchant, same amount (≥$20), ≤3 days apart.
+  const byKeyAmt = {};
+  for (const t of charges) {
+    if (-t.amount < 20) continue; // two same-day coffees are life, not fraud
+    (byKeyAmt[`${merchantKey(t.merchant)}|${(-t.amount).toFixed(2)}`] ||= []).push(t);
+  }
+  for (const [k, items] of Object.entries(byKeyAmt)) {
+    items.sort((a, b) => a.date.localeCompare(b.date));
+    for (let i = 1; i < items.length; i++) {
+      if (daysBetween(items[i].date, items[i - 1].date) <= 3) {
+        out.push({
+          type: 'double_charge', merchant: items[i].merchant, amount: round2(-items[i].amount),
+          date: items[i].date, prior_date: items[i - 1].date,
+          id: `double|${k}|${items[i].date}`,
+        });
+      }
+    }
+  }
+
+  // New recurring: a confirmed subscription whose first charge is recent.
+  for (const s of subs) {
+    if (!s.active || !s.first_date || s.essential) continue;
+    if (daysBetween(s.first_date, lastDate) <= 75 && s.charges >= 2) {
+      out.push({
+        type: 'new_recurring', merchant: s.merchant, amount: s.monthly,
+        date: s.first_date, id: `newrec|${merchantKey(s.merchant)}|${s.first_date}`,
+      });
+    }
+  }
+
+  // Trial converts: a single-ever, recent, subscription-looking charge.
+  for (const [key, items] of Object.entries(groups)) {
+    if (items.length !== 1) continue;
+    const t = items[0];
+    if (daysBetween(t.date, lastDate) > 40 || -t.amount > 60) continue;
+    if ((catOf ? catOf(t.merchant) : categorize(t.merchant, null)) !== 'subscriptions') continue;
+    out.push({
+      type: 'trial_charge', merchant: t.merchant, amount: round2(-t.amount),
+      date: t.date, id: `trial|${key}|${t.date}`,
+    });
+  }
+
+  // Bill spikes: a monthly-cadence merchant charging ≥3× its usual (and ≥$30
+  // over). Computed independently of the sub detector — a spike is exactly
+  // what disqualifies a merchant from "stable subscription".
+  for (const [key, items] of Object.entries(groups)) {
+    if (items.length < 4) continue;
+    const gaps = items.slice(1).map((it, i) => daysBetween(it.date, items[i].date)).sort((a, b) => a - b);
+    const medGap = gaps[Math.floor(gaps.length / 2)];
+    if (medGap < 20 || medGap > 40) continue;
+    for (const t of items) {
+      if (daysBetween(t.date, lastDate) > 60) continue;
+      const others = items.filter((o) => o !== t).map((o) => -o.amount).sort((a, b) => a - b);
+      const med = others[Math.floor(others.length / 2)];
+      if (med > 0 && -t.amount >= 3 * med && -t.amount - med >= 30) {
+        out.push({
+          type: 'bill_spike', merchant: t.merchant, amount: round2(-t.amount),
+          usual: round2(med), date: t.date, id: `spike|${key}|${t.date}`,
+        });
+      }
+    }
+  }
+
+  return out.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 12);
 }
 
 // ── Safe-to-spend forecast — flow-based (we never see balances): month-to-date
@@ -654,6 +733,7 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
       Object.keys(byMonth).length ? income / Object.keys(byMonth).length : 0,
       opts.marketBenchmark || null),
     forecast: buildForecast(txns, subs, lastDate),
+    anomalies: detectAnomalies(txns, subs, lastDate, (m) => categorize(m, overrides)),
     active_subscription_count: active.filter((s) => !s.essential).length,
     stopped_subscription_count: subs.filter((s) => !s.active && !s.essential).length,
     transactions: txns,

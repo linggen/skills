@@ -42,7 +42,10 @@ tools:
       debt_strategy = avalanche order + as_is vs rollover payoff totals),
       forecast (flow-based safe-to-spend for the data's current month:
       so-far in/out, cadence-predicted expected_income and upcoming_fixed,
-      safe_to_spend, on_track_net, variable pace — all as of `as_of`), and the
+      safe_to_spend, on_track_net, variable pace — all as of `as_of`),
+      anomalies (deterministic worth-checking list: double_charge,
+      new_recurring, trial_charge, bill_spike — already user-filtered;
+      dismissed ones never appear), and the
       redacted transactions from the recent ~90-day window
       (transactions_window gives the bounds; the aggregates cover the full
       imported history). Call this FIRST whenever the user asks anything
@@ -189,7 +192,13 @@ nothing invented:
 5. **Commitments** — from `commitments`: fixed monthly total + `pct_of_income`
    (flag when it crowds out saving); insurance premium creep; a home-loan
    renewal inside ~6 months; any `payment_below_interest` is an alert card.
-6. **Plan** — 2–3 concrete moves with monthly dollar impact from *their*
+6. **Worth checking** — from `anomalies`: a `double_charge` or `bill_spike`
+   is an alert card naming dates and amounts; `new_recurring` / `trial_charge`
+   get a *question* ("intentional?"), never an accusation — legit pairs and
+   wanted trials exist. When the user confirms a charge is wrong, **draft the
+   dispute email** to the merchant (amount, dates, request to reverse) —
+   draft only, the user sends.
+7. **Plan** — 2–3 concrete moves with monthly dollar impact from *their*
    numbers. Check `Memory_query` for existing goals and report progress;
    `Memory_write` any new goal the user agrees to.
 
