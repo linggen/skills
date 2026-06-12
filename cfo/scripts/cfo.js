@@ -679,6 +679,11 @@ function refreshView() {
   renderSubs(view);
   renderPayments(view);
   renderBillCal();
+  const cats = view.by_category || [];
+  setSecSum('breakdown', [
+    cats.length ? `${cats[0].category} leads ${money(cats[0].spend)}` : '',
+    `subs ${moneyExact(view.subscription_monthly_total)}/mo`,
+  ].filter(Boolean).join(' · '));
   if (VIEW_MODE === 'commit') renderCommitView();
 }
 
@@ -686,8 +691,10 @@ function refreshView() {
 // bills out, income in, card payments — this data-month and the next.
 let CAL_MONTH = null;
 function renderBillCal() {
+  const sec = document.querySelector('[data-sec="billcal"]');
   const el = document.getElementById('bill-cal');
   const events = (FULL_VIEW && FULL_VIEW.bill_calendar) || [];
+  sec.hidden = !events.length;
   if (!events.length) { el.innerHTML = ''; return; }
   const months = [...new Set(events.map((e) => e.date.slice(0, 7)))].sort();
   if (!CAL_MONTH || !months.includes(CAL_MONTH)) CAL_MONTH = months[0];
@@ -698,7 +705,8 @@ function renderBillCal() {
   const byDay = {};
   for (const e of events) if (e.date.startsWith(CAL_MONTH)) (byDay[+e.date.slice(8)] ||= []).push(e);
 
-  const chip = (e) => `<span class="bc-chip ${esc(e.kind)} ${esc(e.status)}" title="${esc(`${e.label} ${moneyExact(Math.abs(e.amount))} — ${e.status === 'paid' ? 'paid' : 'expected ~'}${e.date}`)}">${e.status === 'paid' ? '✓' : ''}${e.amount > 0 ? '+' : ''}${money(Math.abs(e.amount))}</span>`;
+  const tipFor = (e) => `${e.label}\n${moneyExact(Math.abs(e.amount))} — ${e.status === 'paid' ? 'paid' : 'expected ~'}${e.date}`;
+  const chip = (e) => `<span class="bc-chip ${esc(e.kind)} ${esc(e.status)}" data-tip="${esc(tipFor(e))}">${e.status === 'paid' ? '✓' : ''}${e.amount > 0 ? '+' : ''}${money(Math.abs(e.amount))}</span>`;
   const cells = [];
   for (let i = 0; i < firstDow; i++) cells.push('<div class="bc-cell empty"></div>');
   for (let d = 1; d <= dim; d++) {
@@ -706,12 +714,11 @@ function renderBillCal() {
     const iso = `${CAL_MONTH}-${String(d).padStart(2, '0')}`;
     cells.push(`<div class="bc-cell${iso === today ? ' today' : ''}">
       <span class="bc-day">${d}</span>
-      ${evs.slice(0, 2).map(chip).join('')}${evs.length > 2 ? `<span class="bc-more" title="${esc(evs.slice(2).map((e) => `${e.label} ${moneyExact(Math.abs(e.amount))}`).join('\n'))}">+${evs.length - 2}</span>` : ''}
+      ${evs.slice(0, 2).map(chip).join('')}${evs.length > 2 ? `<span class="bc-more" data-tip="${esc(evs.slice(2).map(tipFor).join('\n'))}">+${evs.length - 2}</span>` : ''}
     </div>`);
   }
   const mi = months.indexOf(CAL_MONTH);
   el.innerHTML = `
-    <h2>Bill calendar <span class="hint inline">✓ paid · hollow = expected (pattern-based, not official due dates)</span></h2>
     <div class="bc-head">
       <button class="chip step" id="bc-prev" ${mi <= 0 ? 'disabled' : ''}>‹</button>
       <b>${monthName(CAL_MONTH)} ${CAL_MONTH.slice(0, 4)}</b>
@@ -724,6 +731,9 @@ function renderBillCal() {
     </div>`;
   document.getElementById('bc-prev')?.addEventListener('click', () => { CAL_MONTH = months[mi - 1]; renderBillCal(); });
   document.getElementById('bc-next')?.addEventListener('click', () => { CAL_MONTH = months[mi + 1]; renderBillCal(); });
+  const asOf = (FULL_VIEW.forecast && FULL_VIEW.forecast.as_of) || '';
+  const nextEv = events.find((e) => e.status === 'expected' && e.date > asOf);
+  setSecSum('billcal', nextEv ? `next: ${nextEv.label.slice(0, 24)} ~${nextEv.date.slice(5)}` : '');
 }
 
 // ── Safe-to-spend: flow-based month forecast, anchored on the data's last day.
@@ -850,9 +860,46 @@ function renderSubs(v) {
   document.getElementById('bills').insertAdjacentHTML('beforeend', nudge);
 }
 
+// ── Collapsible report sections: persisted open/closed, one-line summaries ──
+function wireSections() {
+  document.querySelectorAll('.rpt-sec').forEach((sec) => {
+    const id = sec.dataset.sec;
+    let open = sec.dataset.open === '1';
+    try { const s = localStorage.getItem(`cfo:sec:${id}`); if (s != null) open = s === '1'; } catch { /* ignore */ }
+    sec.classList.toggle('closed', !open);
+    sec.querySelector('.sec-h')?.addEventListener('click', () => {
+      const closed = sec.classList.toggle('closed');
+      try { localStorage.setItem(`cfo:sec:${id}`, closed ? '0' : '1'); } catch { /* ignore */ }
+    });
+  });
+}
+function setSecSum(id, text, alert) {
+  const el = document.querySelector(`[data-sec="${id}"] .sec-sum`);
+  if (el) { el.textContent = text || ''; el.classList.toggle('alert', !!alert); }
+}
+
+// ── Shared hover tooltip for [data-tip] elements (native title is too slow) ──
+function wireTooltip() {
+  const tip = document.createElement('div');
+  tip.id = 'tip';
+  tip.hidden = true;
+  document.body.appendChild(tip);
+  document.addEventListener('mouseover', (e) => {
+    const t = e.target.closest ? e.target.closest('[data-tip]') : null;
+    if (!t) { tip.hidden = true; return; }
+    tip.innerHTML = esc(t.dataset.tip).replace(/\n/g, '<br>');
+    tip.hidden = false;
+    const r = t.getBoundingClientRect();
+    tip.style.left = `${Math.min(Math.max(8, r.left + window.scrollX), window.scrollX + window.innerWidth - 280)}px`;
+    tip.style.top = `${r.bottom + window.scrollY + 6}px`;
+  });
+}
+
 function renderPayments(v) {
+  const sec = document.querySelector('[data-sec="payments"]');
   const wrap = document.getElementById('payments-wrap');
   const sched = v.payment_schedule || [];
+  sec.hidden = !sched.length;
   if (!sched.length) { wrap.innerHTML = ''; return; }
   const today = new Date().toISOString().slice(0, 10);
   const rows = sched.map((p) => {
@@ -872,7 +919,9 @@ function renderPayments(v) {
       <span class="pay-badge">${esc(badge)}</span>
     </div>`;
   }).join('');
-  wrap.innerHTML = `<h2>Card payments <span class="hint inline">pattern-based — statements carry no due dates</span></h2><div class="pays">${rows}</div>`;
+  wrap.innerHTML = `<div class="pays">${rows}</div>`;
+  const missed = sched.find((p) => p.missed_in_data);
+  setSecSum('payments', missed ? `⚠ ${missed.label}: payment not seen` : `${sched.length} card${sched.length === 1 ? '' : 's'} on pattern`, !!missed);
 }
 
 // ── Commitments view: detected obligations + user-entered terms + loan math ──
@@ -1477,6 +1526,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!sid) triggerGreeting();
   openReminders();                      // payment/staleness checks, once per state
 
+  wireSections();
+  wireTooltip();
   document.getElementById('new-chat')?.addEventListener('click', newChat);
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
   document.getElementById('help-btn')?.addEventListener('click', showHelp);
