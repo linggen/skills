@@ -147,6 +147,29 @@ export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null)
   report.transfer_count = rows.filter((r) => r.transfer).length;
   report.account_count = new Set(rows.map((r) => r.account)).size;
   report.payment_schedule = detectPaymentSchedule(rows, accountsById);
+
+  // Card-payment events for the bill calendar — transfers are excluded from
+  // the analyze layer by design, so they join here: paid ones this month from
+  // the transfer credits on credit accounts, expected ones from the schedule.
+  const dataThrough = rows.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
+  if (dataThrough && Array.isArray(report.bill_calendar)) {
+    const month = dataThrough.slice(0, 7);
+    const y = +month.slice(0, 4), mo = +month.slice(5, 7);
+    const nextMonth = mo === 12 ? `${y + 1}-01` : `${y}-${String(mo + 1).padStart(2, '0')}`;
+    const winEnd = `${nextMonth}-${String(new Date(Date.UTC(+nextMonth.slice(0, 4), +nextMonth.slice(5, 7), 0)).getUTCDate()).padStart(2, '0')}`;
+    for (const r of rows) {
+      if (r.transfer && r.amount > 0 && r.date && r.date.startsWith(month)
+        && (accountsById[r.account]?.type || '').toLowerCase() === 'credit') {
+        report.bill_calendar.push({ date: r.date, label: `${accountsById[r.account]?.label || r.account} payment`, amount: -Math.abs(r.amount), kind: 'card', status: 'paid' });
+      }
+    }
+    for (const p of report.payment_schedule) {
+      if (p.next_expected && p.next_expected > dataThrough && p.next_expected <= winEnd) {
+        report.bill_calendar.push({ date: p.next_expected, label: `${p.label} payment`, amount: -Math.abs(p.last_paid.amount), kind: 'card', status: 'expected' });
+      }
+    }
+    report.bill_calendar.sort((a, b) => a.date.localeCompare(b.date));
+  }
   return report;
 }
 

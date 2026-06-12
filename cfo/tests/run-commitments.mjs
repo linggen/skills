@@ -8,6 +8,7 @@
 // hand-checked figures. No environment needed.
 
 import { analyzeTransactions, amortize, classifyKind, merchantKey, categorize, debtPlan } from '../scripts/analyze.js';
+import { toLedgerRows, reportFromLedger } from '../scripts/ledger.js';
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = '') => {
@@ -155,6 +156,35 @@ t('F5 variable pace: $100 over 10 days, $10/day, $200 to month end',
   near(fr.variable.daily_avg, 10) && near(fr.variable.projected_remaining, 200)
   && near(fr.on_track_net, fr.safe_to_spend - 200));
 t('F6 one-off income never projects', !fr.expected_income.some((i) => i.merchant.includes('AMAZON')));
+
+// ── Bill calendar (same fixture: as_of 2026-06-10) ──
+console.log('— bill calendar —');
+const bc = analyzeTransactions(ftx, {}, {}).bill_calendar;
+t('B1 paid mortgage event on Jun 1', bc.some((e) => e.kind === 'bill' && e.status === 'paid' && e.date === '2026-06-01' && e.label.includes('MORTGAGE')));
+t('B2 expected netflix in June', bc.some((e) => e.status === 'expected' && e.label === 'NETFLIX.COM' && e.date.startsWith('2026-06')));
+t('B3 expected mortgage in July (next-month window)', bc.some((e) => e.status === 'expected' && e.label.includes('MORTGAGE') && e.date.startsWith('2026-07')));
+t('B4 biweekly income: paid Jun 2 + expected through July',
+  bc.some((e) => e.kind === 'income' && e.status === 'paid' && e.date === '2026-06-02')
+  && bc.filter((e) => e.kind === 'income' && e.status === 'expected').length >= 3);
+t('B5 nothing beyond the two-month window', bc.every((e) => e.date <= '2026-07-31'));
+
+// Card-payment events join at the ledger layer (transfers + schedule).
+const calRows = [
+  ...toLedgerRows([
+    { date: '2026-05-15', merchant: 'PAYMENT TO VISA', amount: -500 },
+    { date: '2026-06-15', merchant: 'PAYMENT TO VISA', amount: -500 },
+  ], 'chk'),
+  ...toLedgerRows([
+    { date: '2026-05-16', merchant: 'PAYMENT - THANK YOU', amount: 500 },
+    { date: '2026-06-16', merchant: 'PAYMENT - THANK YOU', amount: 500 },
+    { date: '2026-06-20', merchant: 'SOME STORE', amount: -50 },
+  ], 'visa'),
+];
+const calRep = reportFromLedger(calRows, { chk: { label: 'chequing', type: 'checking' }, visa: { label: 'rbc visa', type: 'credit' } });
+t('B6 card payment: paid Jun 16 + expected next cycle',
+  calRep.bill_calendar.some((e) => e.kind === 'card' && e.status === 'paid' && e.date === '2026-06-16')
+  && calRep.bill_calendar.some((e) => e.kind === 'card' && e.status === 'expected' && e.date > '2026-06-20'),
+calRep.bill_calendar.filter((e) => e.kind === 'card').map((e) => `${e.status}@${e.date}`).join(','));
 
 // ── Anomaly watch ──
 console.log('— anomalies —');

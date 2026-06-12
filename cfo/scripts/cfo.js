@@ -678,7 +678,52 @@ function refreshView() {
   renderCategories(view);
   renderSubs(view);
   renderPayments(view);
+  renderBillCal();
   if (VIEW_MODE === 'commit') renderCommitView();
+}
+
+// ── Bill calendar: month grid of paid (✓) and expected fixed payments —
+// bills out, income in, card payments — this data-month and the next.
+let CAL_MONTH = null;
+function renderBillCal() {
+  const el = document.getElementById('bill-cal');
+  const events = (FULL_VIEW && FULL_VIEW.bill_calendar) || [];
+  if (!events.length) { el.innerHTML = ''; return; }
+  const months = [...new Set(events.map((e) => e.date.slice(0, 7)))].sort();
+  if (!CAL_MONTH || !months.includes(CAL_MONTH)) CAL_MONTH = months[0];
+  const y = +CAL_MONTH.slice(0, 4), m = +CAL_MONTH.slice(5, 7);
+  const firstDow = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+  const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const today = new Date().toISOString().slice(0, 10);
+  const byDay = {};
+  for (const e of events) if (e.date.startsWith(CAL_MONTH)) (byDay[+e.date.slice(8)] ||= []).push(e);
+
+  const chip = (e) => `<span class="bc-chip ${esc(e.kind)} ${esc(e.status)}" title="${esc(`${e.label} ${moneyExact(Math.abs(e.amount))} — ${e.status === 'paid' ? 'paid' : 'expected ~'}${e.date}`)}">${e.status === 'paid' ? '✓' : ''}${e.amount > 0 ? '+' : ''}${money(Math.abs(e.amount))}</span>`;
+  const cells = [];
+  for (let i = 0; i < firstDow; i++) cells.push('<div class="bc-cell empty"></div>');
+  for (let d = 1; d <= dim; d++) {
+    const evs = byDay[d] || [];
+    const iso = `${CAL_MONTH}-${String(d).padStart(2, '0')}`;
+    cells.push(`<div class="bc-cell${iso === today ? ' today' : ''}">
+      <span class="bc-day">${d}</span>
+      ${evs.slice(0, 2).map(chip).join('')}${evs.length > 2 ? `<span class="bc-more" title="${esc(evs.slice(2).map((e) => `${e.label} ${moneyExact(Math.abs(e.amount))}`).join('\n'))}">+${evs.length - 2}</span>` : ''}
+    </div>`);
+  }
+  const mi = months.indexOf(CAL_MONTH);
+  el.innerHTML = `
+    <h2>Bill calendar <span class="hint inline">✓ paid · hollow = expected (pattern-based, not official due dates)</span></h2>
+    <div class="bc-head">
+      <button class="chip step" id="bc-prev" ${mi <= 0 ? 'disabled' : ''}>‹</button>
+      <b>${monthName(CAL_MONTH)} ${CAL_MONTH.slice(0, 4)}</b>
+      <button class="chip step" id="bc-next" ${mi >= months.length - 1 ? 'disabled' : ''}>›</button>
+      <span class="bc-legend"><i class="sw income"></i>income <i class="sw bill"></i>bills <i class="sw card"></i>card payments</span>
+    </div>
+    <div class="bc-grid">
+      ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => `<div class="bc-dow">${d}</div>`).join('')}
+      ${cells.join('')}
+    </div>`;
+  document.getElementById('bc-prev')?.addEventListener('click', () => { CAL_MONTH = months[mi - 1]; renderBillCal(); });
+  document.getElementById('bc-next')?.addEventListener('click', () => { CAL_MONTH = months[mi + 1]; renderBillCal(); });
 }
 
 // ── Safe-to-spend: flow-based month forecast, anchored on the data's last day.

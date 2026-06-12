@@ -45,7 +45,10 @@ tools:
       safe_to_spend, on_track_net, variable pace — all as of `as_of`),
       anomalies (deterministic worth-checking list: double_charge,
       new_recurring, trial_charge, bill_spike — already user-filtered;
-      dismissed ones never appear), and the
+      dismissed ones never appear), bill_calendar (paid + expected
+      fixed-payment events for this data-month and the next:
+      {date, label, amount, kind income|bill|card, status paid|expected} —
+      expected dates are pattern-based), and the
       redacted transactions from the recent ~90-day window
       (transactions_window gives the bounds; the aggregates cover the full
       imported history). Call this FIRST whenever the user asks anything
@@ -217,6 +220,9 @@ say — skip empty sections, don't pad.
   items. It is **flow-based, not a balance** — statements carry no
   balances — and anchored at `as_of`; say both. If `as_of` is stale,
   ask for a fresh import instead of projecting confidently.
+- *"What's due next week?" / "when is rent?"* → read `bill_calendar`
+  (paid + expected events); always say expected dates are pattern-based,
+  not official due dates.
 - When the user sets a goal ("save $5k by December"), build a month-by-
   month plan from their actual income/spend, and **save it to memory**
   (`Memory_write`) so next import you can check progress against it.

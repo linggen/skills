@@ -501,6 +501,65 @@ function detectAnomalies(txns, subs, lastDate, catOf) {
 // math is deterministic regardless of wall clock or stale imports.
 const addDaysIso = (iso, days) => new Date(new Date(iso).getTime() + days * 86400000).toISOString().slice(0, 10);
 
+// ≥2 deposits from one source at a biweekly (12–16d) or monthly (24–35d)
+// cadence. Shared by the forecast and the bill calendar.
+function detectRecurringIncome(txns) {
+  const groups = {};
+  for (const t of txns) if (t.amount > 0 && t.date) (groups[merchantKey(t.merchant)] ||= []).push(t);
+  const out = [];
+  for (const [key, items] of Object.entries(groups)) {
+    if (items.length < 2) continue;
+    items.sort((a, b) => a.date.localeCompare(b.date));
+    const gaps = items.slice(1).map((it, i) => daysBetween(it.date, items[i].date)).sort((a, b) => a - b);
+    const med = gaps[Math.floor(gaps.length / 2)];
+    if (!((med >= 12 && med <= 16) || (med >= 24 && med <= 35))) continue;
+    const last = items[items.length - 1];
+    out.push({ key, merchant: last.merchant, amount: round2(last.amount), cadence_days: Math.round(med), last_date: last.date });
+  }
+  return out;
+}
+
+// ── Bill calendar — paid + expected fixed-payment events for the as_of month
+// and the month after: commitments (out), recurring income (in). Card-payment
+// events join at the ledger layer, where accounts and transfers are known.
+function buildBillCalendar(txns, subs, lastDate) {
+  if (!lastDate) return [];
+  const month = lastDate.slice(0, 7);
+  const y = +month.slice(0, 4), m = +month.slice(5, 7);
+  const nextMonth = m === 12 ? `${y + 1}-01` : `${y}-${pad2(m + 1)}`;
+  const windowEnd = `${nextMonth}-${pad2(new Date(Date.UTC(+nextMonth.slice(0, 4), +nextMonth.slice(5, 7), 0)).getUTCDate())}`;
+  const events = [];
+
+  const recs = detectRecurringIncome(txns);
+  const incomeKeys = new Set(recs.map((r) => r.key));
+  const commitKeys = new Set(subs.filter((s) => s.active).map((s) => merchantKey(s.merchant)));
+
+  // Actuals within the current month.
+  for (const t of txns) {
+    if (!t.date || !t.date.startsWith(month) || t.date > lastDate) continue;
+    const key = merchantKey(t.merchant);
+    if (t.amount < 0 && commitKeys.has(key)) events.push({ date: t.date, label: t.merchant, amount: round2(t.amount), kind: 'bill', status: 'paid' });
+    else if (t.amount > 0 && incomeKeys.has(key)) events.push({ date: t.date, label: t.merchant, amount: round2(t.amount), kind: 'income', status: 'paid' });
+  }
+  // Expected, stepped per cadence through the end of next month.
+  for (const s of subs) {
+    if (!s.active || !s.last_date || !s.cadence_days) continue;
+    let next = addDaysIso(s.last_date, s.cadence_days);
+    for (let i = 0; i < 5 && next <= windowEnd; i++) {
+      if (next > lastDate) events.push({ date: next, label: s.merchant, amount: -s.monthly, kind: 'bill', status: 'expected' });
+      next = addDaysIso(next, s.cadence_days);
+    }
+  }
+  for (const rec of recs) {
+    let next = addDaysIso(rec.last_date, rec.cadence_days);
+    for (let i = 0; i < 5 && next <= windowEnd; i++) {
+      if (next > lastDate) events.push({ date: next, label: rec.merchant, amount: rec.amount, kind: 'income', status: 'expected' });
+      next = addDaysIso(next, rec.cadence_days);
+    }
+  }
+  return events.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 function buildForecast(txns, subs, lastDate) {
   if (!lastDate) return null;
   const month = lastDate.slice(0, 7);
@@ -522,22 +581,13 @@ function buildForecast(txns, subs, lastDate) {
     }
   }
 
-  // Recurring income: ≥2 deposits from one source at a biweekly (12–16d) or
-  // monthly (24–35d) cadence; one-off bonuses and refunds never project.
-  const incomeGroups = {};
-  for (const t of txns) if (t.amount > 0 && t.date) (incomeGroups[merchantKey(t.merchant)] ||= []).push(t);
+  // Recurring income: one-off bonuses and refunds never project.
   const expected_income = [];
-  for (const items of Object.values(incomeGroups)) {
-    if (items.length < 2) continue;
-    items.sort((a, b) => a.date.localeCompare(b.date));
-    const gaps = items.slice(1).map((it, i) => daysBetween(it.date, items[i].date)).sort((a, b) => a - b);
-    const med = gaps[Math.floor(gaps.length / 2)];
-    if (!((med >= 12 && med <= 16) || (med >= 24 && med <= 35))) continue;
-    const last = items[items.length - 1];
-    let next = addDaysIso(last.date, Math.round(med));
+  for (const rec of detectRecurringIncome(txns)) {
+    let next = addDaysIso(rec.last_date, rec.cadence_days);
     for (let i = 0; i < 3 && next <= monthEndIso; i++) {
-      if (next > lastDate) expected_income.push({ merchant: last.merchant, amount: round2(last.amount), expected: next });
-      next = addDaysIso(next, Math.round(med));
+      if (next > lastDate) expected_income.push({ merchant: rec.merchant, amount: rec.amount, expected: next });
+      next = addDaysIso(next, rec.cadence_days);
     }
   }
 
@@ -734,6 +784,7 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
       opts.marketBenchmark || null),
     forecast: buildForecast(txns, subs, lastDate),
     anomalies: detectAnomalies(txns, subs, lastDate, (m) => categorize(m, overrides)),
+    bill_calendar: buildBillCalendar(txns, subs, lastDate),
     active_subscription_count: active.filter((s) => !s.essential).length,
     stopped_subscription_count: subs.filter((s) => !s.active && !s.essential).length,
     transactions: txns,
