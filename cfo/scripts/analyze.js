@@ -114,7 +114,7 @@ export function cleanMerchant(raw) {
   return s.slice(0, 80);
 }
 
-function merchantKey(m) {
+export function merchantKey(m) {
   const up = (m || '').toUpperCase().replace(/\d+/g, '').replace(/[^A-Z& ]/g, ' ');
   const toks = up.split(/\s+/).filter((t) => t.length > 1);
   return toks.slice(0, 3).join(' ') || 'UNKNOWN';
@@ -325,7 +325,47 @@ export function orientTransactions(txns, accountType) {
 // rent recurs monthly with a fixed amount but "cancel your rent" is not advice.
 const ESSENTIAL_CATEGORIES = new Set(['housing', 'groceries', 'transport']);
 
-function detectSubscriptions(txns, lastDate, catOf) {
+// Commitment kinds — loans and insurance are subscriptions with a term
+// attached. Keyword rules give the default; the user can override per
+// merchant on the Commitments tab (opts.commitments[key].kind wins).
+const KIND_RULES = [
+  ['loan:home', ['mortgage', 'home loan', 'homeloan']],
+  ['loan:auto', ['auto loan', 'car loan', 'auto finance', 'car finance', 'toyota financial', 'honda financial', 'gm financial', 'ford credit', 'nissan finance', 'vw credit', 'tesla finance']],
+  ['loan:student', ['student loan', 'osap', 'navient', 'nelnet', 'mohela', 'sallie mae']],
+  ['loan', ['loan payment', 'loan pmt', 'personal loan', 'line of credit', 'lendingclub', 'lending club']],
+  ['insurance:auto', ['auto insurance', 'car insurance']],
+  ['insurance:home', ['home insurance', 'house insurance', 'tenant insurance', 'renters insurance', 'condo insurance']],
+  ['insurance:life', ['life insurance']],
+  ['insurance', ['insurance', 'assurance', 'geico', 'allstate', 'state farm', 'progressive ins', 'intact', 'aviva', 'wawanesa', 'belairdirect', 'sonnet ins', 'desjardins ins', 'lemonade ins']],
+];
+
+export function classifyKind(merchant, category) {
+  const ml = (merchant || '').toLowerCase();
+  for (const [kind, kws] of KIND_RULES) if (kws.some((k) => ml.includes(k))) return kind;
+  if (category === 'housing' || category === 'utilities') return 'bill';
+  if (ESSENTIAL_CATEGORIES.has(category)) return 'bill';
+  return 'sub';
+}
+
+// Standard amortization by simulation — exact, no closed-form rounding drift.
+// Returns {months, total_interest} or {underwater:true} when the payment
+// doesn't even cover the interest. null on unusable inputs.
+export function amortize(balance, annualRatePct, payment) {
+  let b = Number(balance);
+  const p = Number(payment), i = (Number(annualRatePct) || 0) / 100 / 12;
+  if (!(b > 0) || !(p > 0)) return null;
+  if (i > 0 && p <= b * i + 0.01) return { underwater: true, months: null, total_interest: null };
+  let months = 0, interest = 0;
+  while (b > 0 && months < 1200) {
+    const int = b * i;
+    interest += int;
+    b = b + int - p;
+    months++;
+  }
+  return { underwater: false, months, total_interest: round2(interest) };
+}
+
+function detectSubscriptions(txns, lastDate, catOf, kindOf) {
   const groups = {};
   for (const t of txns) {
     if (t.amount < 0 && t.date) (groups[merchantKey(t.merchant)] ||= []).push(t);
@@ -355,10 +395,13 @@ function detectSubscriptions(txns, lastDate, catOf) {
     const stopped = !!(lastDate && daysBetween(lastChargeDate, lastDate) > 45);
     const merchant = items[items.length - 1].merchant || merchantKey(items[0].merchant);
     const category = catOf ? catOf(merchant) : 'other';
+    const kind = (kindOf && kindOf(merchant)) || classifyKind(merchant, category);
     subs.push({
       merchant,
       category,
-      essential: ESSENTIAL_CATEGORIES.has(category), // recurring bill, never "cancel this"
+      kind, // loan:* / insurance* / bill / sub — drives the Commitments view
+      // Loans, insurance, and bills are obligations, never "cancel this" picks.
+      essential: ESSENTIAL_CATEGORIES.has(category) || kind !== 'sub',
       monthly: round2(last), // current billing level, not the historical average
       cadence_days: Math.round(monthlyish.reduce((a, b) => a + b, 0) / monthlyish.length),
       first_amount: round2(first), last_amount: round2(last),
@@ -371,6 +414,44 @@ function detectSubscriptions(txns, lastDate, catOf) {
   }
   // Active first, then by monthly cost — the ones you're paying lead the list.
   return subs.sort((a, b) => (Number(b.active) - Number(a.active)) || (b.monthly - a.monthly));
+}
+
+// ── Commitments: every recurring obligation, enriched with the user-entered
+// terms (balance / rate / renewal date from data/commitments.json) and the
+// derived loan math. All deterministic — the agent only narrates these numbers.
+const kindGroup = (k) => (k.startsWith('loan') ? 'debt' : k.startsWith('insurance') ? 'insurance' : k === 'bill' ? 'bills' : 'subs');
+
+function buildCommitments(subs, userMap, monthlyIncome) {
+  const items = subs.map((s) => {
+    const key = merchantKey(s.merchant);
+    const u = (userMap && userMap[key]) || {};
+    const kind = u.kind || s.kind || 'sub';
+    const item = {
+      merchant: s.merchant, key, kind, group: kindGroup(kind),
+      monthly: s.monthly, cadence_days: s.cadence_days, last_date: s.last_date,
+      active: s.active, increased: s.increased,
+      first_amount: s.first_amount, last_amount: s.last_amount, increase_amount: s.increase_amount,
+    };
+    if (u.balance != null && u.balance !== '') item.balance = Number(u.balance);
+    if (u.rate_pct != null && u.rate_pct !== '') item.rate_pct = Number(u.rate_pct);
+    if (u.renewal_date) item.renewal_date = u.renewal_date;
+    if (kind.startsWith('loan') && item.balance > 0) {
+      const am = amortize(item.balance, item.rate_pct || 0, s.monthly);
+      if (am && am.underwater) item.payment_below_interest = true;
+      else if (am) { item.months_left = am.months; item.interest_remaining = am.total_interest; }
+    }
+    return item;
+  });
+  const active = items.filter((x) => x.active);
+  const split = { debt: 0, insurance: 0, bills: 0, subs: 0 };
+  for (const x of active) split[x.group] = round2(split[x.group] + x.monthly);
+  const monthly_total = round2(active.reduce((a, x) => a + x.monthly, 0));
+  return {
+    monthly_total,
+    split,
+    pct_of_income: monthlyIncome > 0 ? round2((100 * monthly_total) / monthlyIncome) : null,
+    items,
+  };
 }
 
 // ── Public: roll up an already-parsed, redacted transactions array.
@@ -412,7 +493,9 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     .map(([merchant, v]) => ({ merchant, spend: round2(v.spend), count: v.count }))
     .sort((a, b) => b.spend - a.spend).slice(0, 10);
 
-  const subs = detectSubscriptions(txns, lastDate, (m) => categorize(m, overrides));
+  const userCommitments = opts.commitments || null; // user-entered terms + kind overrides
+  const kindOf = userCommitments ? (m) => (userCommitments[merchantKey(m)] || {}).kind || null : null;
+  const subs = detectSubscriptions(txns, lastDate, (m) => categorize(m, overrides), kindOf);
   const active = subs.filter((s) => s.active);
   // The headline is what you're STILL paying for cancellable subscriptions —
   // active, non-essential. Recurring commitments (rent etc.) are reported
@@ -432,6 +515,8 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     subscriptions: subs,
     subscription_monthly_total: activeMonthly,
     recurring_bills_monthly_total: essentialMonthly,
+    commitments: buildCommitments(subs, userCommitments,
+      Object.keys(byMonth).length ? income / Object.keys(byMonth).length : 0),
     active_subscription_count: active.filter((s) => !s.essential).length,
     stopped_subscription_count: subs.filter((s) => !s.active && !s.essential).length,
     transactions: txns,

@@ -64,7 +64,10 @@ body {
 .lead { font-size: 18px; color: var(--ink); }
 .hint { color: var(--muted); font-size: 13px; }
 
-.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+.cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 26px; }
+@media (max-width: 1200px) { .cards { grid-template-columns: repeat(3, 1fr); } }
+.card.link { cursor: pointer; }
+.card.link:hover { border-color: var(--accent); }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
 .card .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
 .card .v { font-size: 24px; font-weight: 700; margin-top: 4px; }
@@ -219,6 +222,33 @@ td.num.pos { color: var(--pos); }
 .imp-file { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .imp-meta { color: var(--muted); font-size: 12px; }
 .chip.undo { border-color: var(--accent); color: var(--accent); }
+
+/* ── Commitments view ── */
+.cm-summary { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 4px 0 8px; }
+.cm-total b { font-size: 22px; }
+.cm-pct { color: var(--muted); font-size: 13px; }
+.cm-chip { cursor: default; }
+.cm-chip:hover { color: var(--muted); }
+.cm-row { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 12px; margin-bottom: 6px; box-shadow: var(--shadow); }
+.cm-row.stopped { opacity: .6; }
+.cm-main { display: flex; align-items: center; gap: 10px; }
+.cm-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cm-amt { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cm-toggle { flex: 0 0 auto; }
+.cm-terms { border-top: 1px dashed var(--line); margin-top: 9px; padding-top: 9px;
+  display: flex; flex-direction: column; gap: 8px; }
+.cm-fields { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; }
+.cm-fields label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.cm-fields input { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--bg); color: var(--ink); font-size: 13px; width: 120px; }
+.cm-derived { font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+.cm-derived b { color: var(--ink); }
+.cm-warn { color: var(--warn); }
+.cm-bad { color: var(--neg); font-weight: 600; }
+.cm-slider { display: flex; align-items: center; gap: 10px; font-size: 13px; flex-wrap: wrap; }
+.cm-slider input[type=range] { width: 200px; accent-color: var(--accent); }
+.cm-slider-out b { color: var(--pos); }
 
 /* ── Dynamic section (agent-owned via PageUpdate) ── */
 #insights-wrap { margin-top: 10px; padding-top: 4px; border-top: 1px dashed var(--line); }

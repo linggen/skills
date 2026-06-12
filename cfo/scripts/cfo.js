@@ -6,7 +6,7 @@
 // Statements are parsed + redacted in-browser; raw files never reach the model.
 import './chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from './api.js';
-import { analyzeCsv, orientTransactions, categorize } from './analyze.js';
+import { analyzeCsv, orientTransactions, categorize, amortize } from './analyze.js';
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
 
@@ -21,6 +21,8 @@ let ACCOUNTS = {};
 let RANGE = { preset: '12M', from: null, to: null };
 let INSIGHTS = [];
 let LAST_VIEW = null; // most recent computed view — read by announceImport
+let FULL_VIEW = null; // full-history view — commitments ignore the range slicer
+let COMMITMENTS = {}; // user-entered terms per merchant key (data/commitments.json)
 
 async function runBash(command) {
   const res = await fetch('/api/bash', {
@@ -44,7 +46,10 @@ const money = (n) => `${CURRENCY}${Math.round(Number(n) || 0).toLocaleString()}`
 // Subscription amounts are small and cents-meaningful ($16.49 → $18.99 is the
 // whole story of a price hike) — exact for those, whole dollars elsewhere.
 const moneyExact = (n) => `${CURRENCY}${(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const analyzeOpts = () => ({ categoryOverrides: CATEGORY_OVERRIDES });
+const analyzeOpts = () => ({
+  categoryOverrides: CATEGORY_OVERRIDES,
+  commitments: Object.keys(COMMITMENTS).length ? COMMITMENTS : null,
+});
 
 async function loadConfig() {
   try {
@@ -80,6 +85,8 @@ async function readJson(path, fallback) {
 
 const loadAccounts = () => readJson(`${DATA}/accounts.json`, {});
 const saveAccounts = (a) => writeB64(`${DATA}/accounts.json`, JSON.stringify(a, null, 2));
+const loadCommitments = () => readJson(`${DATA}/commitments.json`, {});
+const saveCommitmentsFile = () => writeB64(`${DATA}/commitments.json`, JSON.stringify(COMMITMENTS, null, 2));
 const loadInsights = () => readJson(`${DATA}/insights.json`, []);
 const saveInsights = () => writeB64(`${DATA}/insights.json`, JSON.stringify(INSIGHTS));
 
@@ -482,6 +489,7 @@ async function resumeState() {
     LEDGER = await loadLedger();
     ACCOUNTS = await loadAccounts();
     INSIGHTS = await loadInsights();
+    COMMITMENTS = await loadCommitments();
     // Clean up any historical duplicates (pre-dedup saves) + legacy tones.
     const seen = new Set();
     INSIGHTS = INSIGHTS.filter((c) => {
@@ -579,10 +587,13 @@ function renderRangeBar(view) {
 let VIEW_MODE = 'report';
 function applyVisibility() {
   const txn = VIEW_MODE === 'txn';
+  const commit = VIEW_MODE === 'commit';
+  const away = txn || commit;
   document.getElementById('txn').hidden = !txn;
-  document.getElementById('report').hidden = txn || !LEDGER.length;
-  document.getElementById('empty-state').hidden = txn || LEDGER.length > 0;
-  document.getElementById('insights-wrap').hidden = txn || (!LEDGER.length && !INSIGHTS.length);
+  document.getElementById('commit').hidden = !commit;
+  document.getElementById('report').hidden = away || !LEDGER.length;
+  document.getElementById('empty-state').hidden = away || LEDGER.length > 0;
+  document.getElementById('insights-wrap').hidden = away || (!LEDGER.length && !INSIGHTS.length);
 }
 
 function switchView(mode) {
@@ -591,6 +602,7 @@ function switchView(mode) {
   document.querySelectorAll('#tabs .tab').forEach((t) => t.classList.toggle('on', t.dataset.view === mode));
   applyVisibility();
   if (mode === 'txn') renderTxnView();
+  if (mode === 'commit') renderCommitView();
 }
 
 function refreshView() {
@@ -600,21 +612,30 @@ function refreshView() {
   const months = [...new Set(LEDGER.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
   const view = viewFromLedger(LEDGER, ACCOUNTS, analyzeOpts(), currentRange(months));
   LAST_VIEW = view;
+  // Commitments always read the full history — a 1-month range can't see a
+  // monthly cadence, so the headline card and tab would go blank on short views.
+  FULL_VIEW = reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts());
   renderRangeBar(view);
   renderCards(view);
   renderTrend(view);
   renderCategories(view);
   renderSubs(view);
   renderPayments(view);
+  if (VIEW_MODE === 'commit') renderCommitView();
 }
 
 function renderCards(v) {
   const t = v.totals || {};
+  // The commitments figure comes from FULL_VIEW — cadence detection needs the
+  // whole history, not the sliced range.
+  const c = (FULL_VIEW && FULL_VIEW.commitments) || { monthly_total: 0, pct_of_income: null };
   document.getElementById('cards').innerHTML = `
     <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${t.months || 0} mo</div></div>
     <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div></div>
     <div class="card ${(t.net || 0) >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(t.net)}</div></div>
-    <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(v.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${v.active_subscription_count || 0} active${v.stopped_subscription_count ? ` · ${v.stopped_subscription_count} stopped` : ''}</div></div>`;
+    <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(v.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${v.active_subscription_count || 0} active${v.stopped_subscription_count ? ` · ${v.stopped_subscription_count} stopped` : ''}</div></div>
+    <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${money(c.monthly_total)}<span class="per">/mo</span></div><div class="sub">${c.pct_of_income != null ? `${Math.round(c.pct_of_income)}% of income` : 'fixed monthly'}</div></div>`;
+  document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
 }
 
 // Hand-rolled SVG: paired spend/income bars per month + net line. No chart lib.
@@ -725,6 +746,152 @@ function renderPayments(v) {
     </div>`;
   }).join('');
   wrap.innerHTML = `<h2>Card payments <span class="hint inline">pattern-based — statements carry no due dates</span></h2><div class="pays">${rows}</div>`;
+}
+
+// ── Commitments view: detected obligations + user-entered terms + loan math ──
+// Inputs persist to data/commitments.json (same path as category corrections);
+// saveReport folds them into the agent's report. All math is page-side.
+const KIND_OPTIONS = [
+  ['loan:home', 'Home loan'], ['loan:auto', 'Car loan'], ['loan:student', 'Student loan'], ['loan', 'Other loan'],
+  ['insurance:auto', 'Auto insurance'], ['insurance:home', 'Home insurance'], ['insurance:life', 'Life insurance'], ['insurance', 'Other insurance'],
+  ['bill', 'Recurring bill'], ['sub', 'Subscription'],
+];
+const GROUP_META = [['debt', 'Debt'], ['insurance', 'Insurance'], ['bills', 'Recurring bills'], ['subs', 'Subscriptions']];
+const hasTerms = (kind) => kind.startsWith('loan') || kind.startsWith('insurance');
+const COMMIT_OPEN = new Map(); // key -> bool; rows with saved terms default open
+const isOpen = (it) => (COMMIT_OPEN.has(it.key) ? COMMIT_OPEN.get(it.key) : !!COMMITMENTS[it.key]);
+const addMonthsIso = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 7); };
+
+function commitDerived(it) {
+  const lines = [];
+  if (it.payment_below_interest) {
+    lines.push(`<span class="cm-bad">⚠ ${moneyExact(it.monthly)}/mo doesn't cover the interest on ${money(it.balance)} at ${it.rate_pct}% — the balance grows.</span>`);
+  } else if (it.months_left != null) {
+    lines.push(`Paid off ~<b>${addMonthsIso(it.last_date, it.months_left)}</b> (${it.months_left} payments, ${(it.months_left / 12).toFixed(1)} yr) · remaining interest <b>${money(it.interest_remaining)}</b>`);
+  } else if (it.kind.startsWith('loan')) {
+    lines.push('<span class="hint">Add the balance (and rate) to see payoff date, remaining interest, and prepayment savings.</span>');
+  }
+  if (it.renewal_date) {
+    const days = Math.round((new Date(it.renewal_date) - new Date()) / 86400000);
+    lines.push(days >= 0
+      ? `Renews <b>${esc(it.renewal_date)}</b> — in ${days} day${days === 1 ? '' : 's'}${days <= 90 ? ' · <span class="cm-warn">time to shop around — ask the assistant for a draft</span>' : ''}`
+      : `Renewal date <b>${esc(it.renewal_date)}</b> has passed — update it`);
+  } else if (it.kind.startsWith('insurance')) {
+    lines.push('<span class="hint">Add the renewal date to get a shop-around reminder before it auto-renews.</span>');
+  }
+  if (it.kind === 'loan:home' && it.months_left != null && it.rate_pct != null && it.balance > 0) {
+    const i = (it.rate_pct + 1) / 100 / 12;
+    const p1 = (it.balance * i) / (1 - Math.pow(1 + i, -it.months_left));
+    lines.push(`If your rate renews +1%: ~<b>${moneyExact(p1)}</b>/mo (+${moneyExact(p1 - it.monthly)})`);
+  }
+  if (it.increased) lines.push(`<span class="cm-warn">↑ Price creep: ${moneyExact(it.first_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo since first seen)</span>`);
+  return lines;
+}
+
+function termFields(it) {
+  const u = COMMITMENTS[it.key] || {};
+  const f = [];
+  if (it.kind.startsWith('loan')) {
+    f.push(`<label>Balance <input type="number" class="cm-in" data-key="${esc(it.key)}" data-f="balance" step="100" min="0" value="${u.balance ?? ''}" placeholder="e.g. 320000"></label>`);
+    f.push(`<label>Rate % <input type="number" class="cm-in" data-key="${esc(it.key)}" data-f="rate_pct" step="0.01" min="0" max="30" value="${u.rate_pct ?? ''}" placeholder="e.g. 4.79"></label>`);
+  }
+  if (it.kind.startsWith('insurance') || it.kind === 'loan:home') {
+    f.push(`<label>${it.kind === 'loan:home' ? 'Term renewal' : 'Renewal'} <input type="date" class="cm-in" data-key="${esc(it.key)}" data-f="renewal_date" value="${esc(u.renewal_date || '')}"></label>`);
+  }
+  return f.length ? `<div class="cm-fields">${f.join('')}</div>` : '';
+}
+
+function sliderHtml(it) {
+  if (it.months_left == null) return '';
+  return `<div class="cm-slider">
+    <label>Extra <b class="cm-extra">${CURRENCY}0</b>/mo</label>
+    <input type="range" min="0" max="500" step="25" value="0" data-key="${esc(it.key)}">
+    <span class="cm-slider-out hint">drag to see prepayment savings</span>
+  </div>`;
+}
+
+function commitRow(it) {
+  const open = isOpen(it) && hasTerms(it.kind);
+  const flags = `${it.increased ? '<span class="flag up">↑ price up</span>' : ''}${!it.active ? '<span class="flag stopped">⏸ stopped</span>' : ''}`;
+  const kindSel = `<select class="cat-sel cm-kind" data-key="${esc(it.key)}" title="Reclassify — your choice is remembered">${KIND_OPTIONS.map(([v, l]) => `<option value="${v}" ${v === it.kind ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  const toggle = hasTerms(it.kind) ? `<button class="chip cm-toggle" data-key="${esc(it.key)}">${open ? 'Hide ▴' : 'Terms ▾'}</button>` : '';
+  const derived = open ? commitDerived(it) : [];
+  return `
+  <div class="cm-row${it.active ? '' : ' stopped'}">
+    <div class="cm-main">
+      <span class="cm-name">${esc(it.merchant)}</span>
+      <span class="cm-amt">${moneyExact(it.monthly)}/mo</span>
+      <span class="cm-flags">${flags}</span>
+      <span class="spacer"></span>
+      ${kindSel}${toggle}
+    </div>
+    ${open ? `<div class="cm-terms">
+      ${termFields(it)}
+      ${derived.length ? `<div class="cm-derived">${derived.map((l) => `<div>${l}</div>`).join('')}</div>` : ''}
+      ${sliderHtml(it)}
+    </div>` : ''}
+  </div>`;
+}
+
+function renderCommitView() {
+  const head = document.getElementById('commit-head');
+  const groupsEl = document.getElementById('commit-groups');
+  if (!LEDGER.length) {
+    head.innerHTML = '<p class="hint">Import a statement first — commitments are detected from your recurring charges.</p>';
+    groupsEl.innerHTML = '';
+    return;
+  }
+  const c = (FULL_VIEW && FULL_VIEW.commitments) || { items: [], monthly_total: 0, split: {}, pct_of_income: null };
+  const items = c.items || [];
+  head.innerHTML = `
+    <div class="cm-summary">
+      <span class="cm-total"><b>${moneyExact(c.monthly_total)}</b>/mo fixed</span>
+      ${c.pct_of_income != null ? `<span class="cm-pct">${Math.round(c.pct_of_income)}% of income</span>` : ''}
+      ${GROUP_META.filter(([g]) => c.split && c.split[g] > 0).map(([g, label]) => `<span class="chip cm-chip">${label} ${money(c.split[g])}/mo</span>`).join('')}
+    </div>
+    <p class="hint">Every fixed monthly obligation, detected from your statements. Add a balance, rate, or renewal date to unlock the payoff math — computed on this Mac, never by the AI. Want a rate-match or shop-around letter? Ask the assistant.</p>`;
+  groupsEl.innerHTML = items.length
+    ? GROUP_META.map(([g, label]) => {
+      const rows = items.filter((it) => it.group === g);
+      return rows.length ? `<h2>${label}</h2>` + rows.map(commitRow).join('') : '';
+    }).join('')
+    : '<p class="hint">No recurring obligations detected yet — import a few months of statements so the monthly cadence shows.</p>';
+  wireCommitEvents(Object.fromEntries(items.map((it) => [it.key, it])));
+}
+
+function wireCommitEvents(byKey) {
+  document.querySelectorAll('.cm-toggle').forEach((b) => b.addEventListener('click', () => {
+    COMMIT_OPEN.set(b.dataset.key, !isOpen(byKey[b.dataset.key]));
+    renderCommitView();
+  }));
+  document.querySelectorAll('.cm-kind').forEach((sel) => sel.addEventListener('change', () => saveCommitment(sel.dataset.key, { kind: sel.value })));
+  document.querySelectorAll('.cm-in').forEach((inp) => inp.addEventListener('change', () => saveCommitment(inp.dataset.key, { [inp.dataset.f]: inp.value })));
+  document.querySelectorAll('.cm-slider input[type=range]').forEach((r) => r.addEventListener('input', () => {
+    const it = byKey[r.dataset.key];
+    const wrap = r.closest('.cm-slider');
+    const extra = +r.value;
+    wrap.querySelector('.cm-extra').textContent = `${CURRENCY}${extra}`;
+    const out = wrap.querySelector('.cm-slider-out');
+    if (!extra) { out.textContent = 'drag to see prepayment savings'; return; }
+    const am = amortize(it.balance, it.rate_pct || 0, it.monthly + extra);
+    if (!am || am.months == null) { out.textContent = '—'; return; }
+    const saved = (it.interest_remaining || 0) - (am.total_interest || 0);
+    const sooner = (it.months_left || 0) - am.months;
+    out.innerHTML = `save <b>${money(saved)}</b> interest · paid off <b>${sooner}</b> mo sooner`;
+  }));
+}
+
+async function saveCommitment(key, patch) {
+  const next = { ...(COMMITMENTS[key] || {}), ...patch };
+  for (const k of Object.keys(next)) {
+    if (next[k] === '' || next[k] == null) delete next[k];
+    else if (k === 'balance' || k === 'rate_pct') next[k] = Number(next[k]);
+  }
+  if (Object.keys(next).length) { COMMITMENTS[key] = next; COMMIT_OPEN.set(key, true); }
+  else delete COMMITMENTS[key];
+  await saveCommitmentsFile();
+  await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent sees terms + kind overrides
+  refreshView(); // FULL_VIEW + headline card + (when active) this view
 }
 
 

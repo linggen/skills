@@ -16,6 +16,7 @@
         <nav id="tabs">
           <button class="tab on" data-view="report">Report</button>
           <button class="tab" data-view="txn">Transactions</button>
+          <button class="tab" data-view="commit">Commitments</button>
         </nav>
         <button id="help-btn" class="chip" title="How to use Personal CFO">Help</button>
         <span class="spacer"></span>
@@ -67,6 +68,12 @@
           <div id="txn-table"></div>
           <div id="import-history"></div>
         </div>
+      </section>
+      <!-- Commitments: loans, insurance, bills, subs — detected recurring
+           obligations + user-entered terms. Deterministic page math, no LLM. -->
+      <section id="commit" hidden>
+        <div id="commit-head"></div>
+        <div id="commit-groups"></div>
       </section>
       <div id="scope-pop" hidden></div>
 
