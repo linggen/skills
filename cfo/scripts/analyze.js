@@ -416,6 +416,78 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
   return subs.sort((a, b) => (Number(b.active) - Number(a.active)) || (b.monthly - a.monthly));
 }
 
+// ── Safe-to-spend forecast — flow-based (we never see balances): month-to-date
+// in/out plus cadence-predicted remaining income (payroll, monthly or biweekly)
+// and remaining fixed charges, anchored on the ledger's last day (as_of), so the
+// math is deterministic regardless of wall clock or stale imports.
+const addDaysIso = (iso, days) => new Date(new Date(iso).getTime() + days * 86400000).toISOString().slice(0, 10);
+
+function buildForecast(txns, subs, lastDate) {
+  if (!lastDate) return null;
+  const month = lastDate.slice(0, 7);
+  const lastDom = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5, 7), 0)).getUTCDate();
+  const monthEndIso = `${month}-${pad2(lastDom)}`;
+  const asOfDay = +lastDate.slice(8, 10);
+  const inMonth = txns.filter((t) => t.date && t.date.startsWith(month));
+  const income_so_far = round2(inMonth.filter((t) => t.amount > 0).reduce((a, t) => a + t.amount, 0));
+  const spend_so_far = round2(inMonth.filter((t) => t.amount < 0).reduce((a, t) => a - t.amount, 0));
+
+  // Fixed charges still expected before month end, predicted per active commitment.
+  const upcoming_fixed = [];
+  for (const s of subs) {
+    if (!s.active || !s.last_date || !s.cadence_days) continue;
+    let next = addDaysIso(s.last_date, s.cadence_days);
+    for (let i = 0; i < 3 && next <= monthEndIso; i++) {
+      if (next > lastDate) upcoming_fixed.push({ merchant: s.merchant, amount: s.monthly, expected: next });
+      next = addDaysIso(next, s.cadence_days);
+    }
+  }
+
+  // Recurring income: ≥2 deposits from one source at a biweekly (12–16d) or
+  // monthly (24–35d) cadence; one-off bonuses and refunds never project.
+  const incomeGroups = {};
+  for (const t of txns) if (t.amount > 0 && t.date) (incomeGroups[merchantKey(t.merchant)] ||= []).push(t);
+  const expected_income = [];
+  for (const items of Object.values(incomeGroups)) {
+    if (items.length < 2) continue;
+    items.sort((a, b) => a.date.localeCompare(b.date));
+    const gaps = items.slice(1).map((it, i) => daysBetween(it.date, items[i].date)).sort((a, b) => a - b);
+    const med = gaps[Math.floor(gaps.length / 2)];
+    if (!((med >= 12 && med <= 16) || (med >= 24 && med <= 35))) continue;
+    const last = items[items.length - 1];
+    let next = addDaysIso(last.date, Math.round(med));
+    for (let i = 0; i < 3 && next <= monthEndIso; i++) {
+      if (next > lastDate) expected_income.push({ merchant: last.merchant, amount: round2(last.amount), expected: next });
+      next = addDaysIso(next, Math.round(med));
+    }
+  }
+
+  const upcoming_fixed_total = round2(upcoming_fixed.reduce((a, u) => a + u.amount, 0));
+  const expected_income_total = round2(expected_income.reduce((a, u) => a + u.amount, 0));
+  // Spend nothing more on day-to-day and the month closes at safe_to_spend.
+  const safe_to_spend = round2(income_so_far + expected_income_total - spend_so_far - upcoming_fixed_total);
+
+  // Day-to-day pace: month-to-date spend at non-commitment merchants.
+  const commitKeys = new Set(subs.filter((s) => s.active).map((s) => merchantKey(s.merchant)));
+  const fixedSoFar = inMonth.filter((t) => t.amount < 0 && commitKeys.has(merchantKey(t.merchant)))
+    .reduce((a, t) => a - t.amount, 0);
+  const mtd = round2(spend_so_far - fixedSoFar);
+  const daily_avg = asOfDay > 0 ? round2(mtd / asOfDay) : 0;
+  const projected_remaining = round2(daily_avg * (lastDom - asOfDay));
+
+  upcoming_fixed.sort((a, b) => a.expected.localeCompare(b.expected));
+  expected_income.sort((a, b) => a.expected.localeCompare(b.expected));
+  return {
+    month, as_of: lastDate,
+    income_so_far, spend_so_far,
+    expected_income, expected_income_total,
+    upcoming_fixed, upcoming_fixed_total,
+    safe_to_spend,
+    on_track_net: round2(safe_to_spend - projected_remaining),
+    variable: { mtd, daily_avg, projected_remaining },
+  };
+}
+
 // ── Debt strategy: simulate paying ALL loans together with a shared extra
 // budget. Freed payments roll over when a loan closes (the part people skip),
 // and the extra targets one loan: 'avalanche' = highest rate (optimal),
@@ -581,6 +653,7 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     commitments: buildCommitments(subs, userCommitments,
       Object.keys(byMonth).length ? income / Object.keys(byMonth).length : 0,
       opts.marketBenchmark || null),
+    forecast: buildForecast(txns, subs, lastDate),
     active_subscription_count: active.filter((s) => !s.essential).length,
     stopped_subscription_count: subs.filter((s) => !s.active && !s.essential).length,
     transactions: txns,

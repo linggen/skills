@@ -128,5 +128,33 @@ const ds = r3.commitments.debt_strategy;
 t('D6 debt_strategy block: rate-desc order + rollover beats as-is',
   !!ds && ds.order[0].merchant.includes('TD AUTO') && ds.rollover.total_interest < ds.as_is.total_interest);
 
+// ── Safe-to-spend forecast (anchored at as_of = last txn date, 2026-06-10) ──
+console.log('— forecast —');
+const ftx = [
+  // biweekly payroll: May 5/19, Jun 2 → next Jun 16 + Jun 30 expected (2× $1,900)
+  { date: '2026-05-05', merchant: 'ACME PAYROLL', amount: 1900 },
+  { date: '2026-05-19', merchant: 'ACME PAYROLL', amount: 1900 },
+  { date: '2026-06-02', merchant: 'ACME PAYROLL', amount: 1900 },
+  // mortgage paid Jun 1 → next ~Jul, NOT in June
+  ...['2026-03-01', '2026-04-01', '2026-05-01', '2026-06-01'].map((date) => ({ date, merchant: 'BMO MORTGAGE PAYMENT', amount: -2150 })),
+  // netflix bills ~12th, last May 12 → expected ~Jun 11, after as_of → upcoming
+  ...['2026-03-12', '2026-04-12', '2026-05-12'].map((date) => ({ date, merchant: 'NETFLIX.COM', amount: -18.99 })),
+  { date: '2026-06-10', merchant: 'AMAZON.CA', amount: -100 }, // variable; also sets as_of
+];
+const fr = analyzeTransactions(ftx, {}, {}).forecast;
+t('F1 anchored at last txn date', fr.as_of === '2026-06-10' && fr.month === '2026-06');
+t('F2 upcoming fixed = netflix only (mortgage already paid)',
+  fr.upcoming_fixed.length === 1 && fr.upcoming_fixed[0].merchant === 'NETFLIX.COM'
+  && fr.upcoming_fixed[0].expected > '2026-06-10' && fr.upcoming_fixed[0].expected <= '2026-06-30',
+fr.upcoming_fixed.map((u) => `${u.merchant}@${u.expected}`).join(','));
+t('F3 biweekly payroll projects twice (Jun 16 + Jun 30)',
+  fr.expected_income.length === 2 && near(fr.expected_income_total, 3800), `${fr.expected_income_total}`);
+// so far: in 1900, out 2150+100=2250 → safe = 1900+3800-2250-18.99
+t('F4 safe_to_spend math', near(fr.safe_to_spend, 1900 + 3800 - 2250 - 18.99), `${fr.safe_to_spend}`);
+t('F5 variable pace: $100 over 10 days, $10/day, $200 to month end',
+  near(fr.variable.daily_avg, 10) && near(fr.variable.projected_remaining, 200)
+  && near(fr.on_track_net, fr.safe_to_spend - 200));
+t('F6 one-off income never projects', !fr.expected_income.some((i) => i.merchant.includes('AMAZON')));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -667,11 +667,37 @@ function refreshView() {
   FULL_VIEW = reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts());
   renderRangeBar(view);
   renderCards(view);
+  renderForecast(FULL_VIEW.forecast); // always full-history: cadences need it
   renderTrend(view);
   renderCategories(view);
   renderSubs(view);
   renderPayments(view);
   if (VIEW_MODE === 'commit') renderCommitView();
+}
+
+// ── Safe-to-spend: flow-based month forecast, anchored on the data's last day.
+function renderForecast(f) {
+  const el = document.getElementById('forecast');
+  if (!f) { el.innerHTML = ''; return; }
+  const mn = `${monthName(f.month)} ${f.month.slice(0, 4)}`;
+  const dom = (iso) => `~${monthName(iso.slice(0, 7))} ${+iso.slice(8)}`;
+  const fixedBits = f.upcoming_fixed.slice(0, 3).map((u) => `${esc(u.merchant.slice(0, 22))} ${dom(u.expected)}`).join(' · ');
+  const more = f.upcoming_fixed.length > 3 ? ` +${f.upcoming_fixed.length - 3} more` : '';
+  const staleDays = Math.round((new Date() - new Date(f.as_of)) / 86400000);
+  const pos = f.safe_to_spend >= 0;
+  el.innerHTML = `
+  <div class="fc-card">
+    <div class="fc-head">
+      <span class="fc-title">Safe to spend — rest of ${mn}</span>
+      <span class="hint">as of ${esc(f.as_of)}</span>
+    </div>
+    <div class="fc-hero ${pos ? 'pos' : 'neg'}">${pos ? '' : '−'}${money(Math.abs(f.safe_to_spend))}</div>
+    <div class="fc-lines">
+      <div>So far: <b>+${money(f.income_so_far)}</b> in · <b>−${money(f.spend_so_far)}</b> out${f.expected_income_total ? ` · still expecting <b class="pos-t">+${money(f.expected_income_total)}</b> income` : ''}${f.upcoming_fixed_total ? ` · <b>−${money(f.upcoming_fixed_total)}</b> fixed still due${fixedBits ? ` (${fixedBits}${more})` : ''}` : ''}</div>
+      ${f.variable.daily_avg > 0 ? `<div>Day-to-day pace <b>${money(f.variable.daily_avg)}/day</b> → on track to land at <b class="${f.on_track_net >= 0 ? 'pos-t' : 'neg-t'}">${f.on_track_net >= 0 ? '+' : '−'}${money(Math.abs(f.on_track_net))}</b> by month end</div>` : ''}
+      ${staleDays > 7 ? `<div class="hint">📥 Data ends ${esc(f.as_of)} — import fresher statements for a live number.</div>` : ''}
+    </div>
+  </div>`;
 }
 
 function renderCards(v) {

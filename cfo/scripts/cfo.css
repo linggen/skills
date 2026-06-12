@@ -85,6 +85,19 @@ body.resizing iframe { pointer-events: none; } /* iframe would swallow the drag 
 
 h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 22px 0 10px; }
 
+/* ── Safe-to-spend forecast ── */
+.fc-card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 26px; box-shadow: var(--shadow); }
+.fc-head { display: flex; align-items: baseline; gap: 10px; }
+.fc-title { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.fc-hero { font-size: 28px; font-weight: 700; margin: 4px 0 6px; }
+.fc-hero.pos { color: var(--pos); }
+.fc-hero.neg { color: var(--neg); }
+.fc-lines { font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+.fc-lines b { color: var(--ink); }
+.pos-t { color: var(--pos); }
+.neg-t { color: var(--neg); }
+
 .bars { display: flex; flex-direction: column; gap: 8px; }
 .bar-row { display: grid; grid-template-columns: 110px 1fr 120px; align-items: center; gap: 12px; }
 .bar-label { text-transform: capitalize; }

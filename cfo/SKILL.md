@@ -39,7 +39,10 @@ tools:
       insurance*, bill, or sub — monthly_total, pct_of_income, split, and
       per-item user-entered balance/rate_pct/renewal_date plus derived
       months_left/interest_remaining/payment_below_interest for loans, and
-      debt_strategy = avalanche order + as_is vs rollover payoff totals), and the
+      debt_strategy = avalanche order + as_is vs rollover payoff totals),
+      forecast (flow-based safe-to-spend for the data's current month:
+      so-far in/out, cadence-predicted expected_income and upcoming_fixed,
+      safe_to_spend, on_track_net, variable pace — all as of `as_of`), and the
       redacted transactions from the recent ~90-day window
       (transactions_window gives the bounds; the aggregates cover the full
       imported history). Call this FIRST whenever the user asks anything
@@ -199,6 +202,12 @@ say — skip empty sections, don't pad.
 - Give grounded, specific suggestions tied to *their* numbers, not
   generic tips. *"Dining is 24% of spend; cutting it 20% frees ~$70/mo
   toward your goal."*
+- *"How much can I spend?" / "am I OK this month?"* → use `forecast`:
+  `safe_to_spend` is the spend-nothing-more month close; `on_track_net` is
+  the close at current day-to-day pace; name the biggest `upcoming_fixed`
+  items. It is **flow-based, not a balance** — statements carry no
+  balances — and anchored at `as_of`; say both. If `as_of` is stale,
+  ask for a fresh import instead of projecting confidently.
 - When the user sets a goal ("save $5k by December"), build a month-by-
   month plan from their actual income/spend, and **save it to memory**
   (`Memory_write`) so next import you can check progress against it.
