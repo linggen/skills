@@ -7,7 +7,7 @@
 // user-term merge + kind override), and the amortization math against
 // hand-checked figures. No environment needed.
 
-import { analyzeTransactions, amortize, classifyKind, merchantKey, categorize } from '../scripts/analyze.js';
+import { analyzeTransactions, amortize, classifyKind, merchantKey, categorize, debtPlan } from '../scripts/analyze.js';
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = '') => {
@@ -96,6 +96,37 @@ const rc = analyzeTransactions(creep, {}, {});
 const ins = rc.commitments.items[0];
 t('C11 premium creep flagged on insurance', ins.kind === 'insurance' && ins.increased === true
   && near(ins.increase_amount, 23), `+$${ins.increase_amount}`);
+
+// ── Debt strategy (multi-loan rollover sim) ──
+console.log('— debt strategy —');
+const loans = [
+  { key: 'M', merchant: 'MORTGAGE', balance: 400000, rate_pct: 3.8, payment: 2150 },
+  { key: 'C', merchant: 'CAR LOAN', balance: 50000, rate_pct: 5, payment: 486.33 },
+];
+const indep = [amortize(400000, 3.8, 2150), amortize(50000, 5, 486.33)];
+const indepInterest = indep[0].total_interest + indep[1].total_interest;
+const base = debtPlan(loans, 0);
+t('D1 rollover alone beats independent payoff', base.total_interest < indepInterest
+  && base.months <= Math.max(indep[0].months, indep[1].months),
+`$${Math.round(indepInterest - base.total_interest)} / ${Math.max(indep[0].months, indep[1].months) - base.months} mo saved`);
+const av = debtPlan(loans, 300, 'avalanche');
+const low = debtPlan(loans, 300, 'lowest');
+t('D2 extra payment saves vs no extra', av.total_interest < base.total_interest && av.months < base.months);
+t('D3 avalanche beats lowest-rate targeting', av.total_interest < low.total_interest,
+  `$${Math.round(low.total_interest - av.total_interest)} difference`);
+t('D4 avalanche closes the 5% loan first', av.payoff_months.C < av.payoff_months.M);
+t('D5 payment below interest diverges', debtPlan([{ key: 'x', balance: 100000, rate_pct: 12, payment: 500 }], 0).diverges === true);
+
+const txns2 = [...txns, ...monthly('TD AUTO FINANCE', -486.33, '06')];
+const r3 = analyzeTransactions(txns2, {}, {
+  commitments: {
+    [merchantKey('BMO MORTGAGE PAYMENT')]: { balance: 400000, rate_pct: 3.8 },
+    [merchantKey('TD AUTO FINANCE')]: { balance: 50000, rate_pct: 5 },
+  },
+});
+const ds = r3.commitments.debt_strategy;
+t('D6 debt_strategy block: rate-desc order + rollover beats as-is',
+  !!ds && ds.order[0].merchant.includes('TD AUTO') && ds.rollover.total_interest < ds.as_is.total_interest);
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

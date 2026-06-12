@@ -416,12 +416,51 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
   return subs.sort((a, b) => (Number(b.active) - Number(a.active)) || (b.monthly - a.monthly));
 }
 
+// ── Debt strategy: simulate paying ALL loans together with a shared extra
+// budget. Freed payments roll over when a loan closes (the part people skip),
+// and the extra targets one loan: 'avalanche' = highest rate (optimal),
+// 'lowest' = lowest rate (what most people do — kept for the comparison).
+// Returns {months, total_interest, payoff_months} or {diverges:true}.
+export function debtPlan(loans, extra = 0, strategy = 'avalanche') {
+  const ls = (loans || [])
+    .map((l) => ({ key: l.key, b: Number(l.balance), i: (Number(l.rate_pct) || 0) / 100 / 12, p: Number(l.payment) }))
+    .filter((l) => l.b > 0 && l.p > 0);
+  if (!ls.length) return null;
+  let months = 0, interest = 0;
+  const payoff_months = {};
+  while (ls.some((l) => l.b > 0) && months < 1200) {
+    months++;
+    for (const l of ls) if (l.b > 0) { const int = l.b * l.i; l.b += int; interest += int; }
+    let pool = Number(extra) || 0;
+    for (const l of ls) {
+      if (l.b <= 0) { pool += l.p; continue; }   // freed payment rolls over
+      const pay = Math.min(l.p, l.b);
+      l.b -= pay;
+      if (pay < l.p) pool += l.p - pay;          // final-month surplus rolls too
+      if (l.b <= 0) payoff_months[l.key] = months;
+    }
+    while (pool > 0.005) {
+      const open = ls.filter((l) => l.b > 0);
+      if (!open.length) break;
+      const target = strategy === 'lowest'
+        ? open.reduce((a, c) => (c.i < a.i ? c : a))
+        : open.reduce((a, c) => (c.i > a.i ? c : a));
+      const pay = Math.min(pool, target.b);
+      target.b -= pay;
+      pool -= pay;
+      if (target.b <= 0) payoff_months[target.key] = months;
+    }
+  }
+  if (ls.some((l) => l.b > 0)) return { diverges: true };
+  return { months, total_interest: round2(interest), payoff_months };
+}
+
 // ── Commitments: every recurring obligation, enriched with the user-entered
 // terms (balance / rate / renewal date from data/commitments.json) and the
 // derived loan math. All deterministic — the agent only narrates these numbers.
 const kindGroup = (k) => (k.startsWith('loan') ? 'debt' : k.startsWith('insurance') ? 'insurance' : k === 'bill' ? 'bills' : 'subs');
 
-function buildCommitments(subs, userMap, monthlyIncome) {
+function buildCommitments(subs, userMap, monthlyIncome, marketBenchmark) {
   const items = subs.map((s) => {
     const key = merchantKey(s.merchant);
     const u = (userMap && userMap[key]) || {};
@@ -446,10 +485,34 @@ function buildCommitments(subs, userMap, monthlyIncome) {
   const split = { debt: 0, insurance: 0, bills: 0, subs: 0 };
   for (const x of active) split[x.group] = round2(split[x.group] + x.monthly);
   const monthly_total = round2(active.reduce((a, x) => a + x.monthly, 0));
+
+  // Strategy snapshot for loans with full terms: as-is (each loan on its own)
+  // vs rollover (freed payments cascade) — the agent narrates these; the live
+  // extra-payment what-ifs stay on the page's Debt strategy slider.
+  let debt_strategy = null;
+  const eligible = active.filter((x) => x.group === 'debt' && x.balance > 0 && x.monthly > 0 && !x.payment_below_interest);
+  if (eligible.length) {
+    const loans = eligible.map((x) => ({ key: x.key, balance: x.balance, rate_pct: x.rate_pct || 0, payment: x.monthly }));
+    const rollover = debtPlan(loans, 0);
+    if (rollover && !rollover.diverges) {
+      const independent = eligible.map((x) => amortize(x.balance, x.rate_pct || 0, x.monthly)).filter((a) => a && !a.underwater);
+      debt_strategy = {
+        order: [...eligible].sort((a, b) => (b.rate_pct || 0) - (a.rate_pct || 0)).map((x) => ({ merchant: x.merchant, rate_pct: x.rate_pct || 0 })),
+        as_is: {
+          months: Math.max(...independent.map((a) => a.months)),
+          total_interest: round2(independent.reduce((s, a) => s + a.total_interest, 0)),
+        },
+        rollover: { months: rollover.months, total_interest: rollover.total_interest },
+      };
+    }
+  }
+
   return {
     monthly_total,
     split,
     pct_of_income: monthlyIncome > 0 ? round2((100 * monthly_total) / monthlyIncome) : null,
+    debt_strategy,
+    market_benchmark: marketBenchmark || null, // anonymous posted-rate avg, page-fetched
     items,
   };
 }
@@ -516,7 +579,8 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
     subscription_monthly_total: activeMonthly,
     recurring_bills_monthly_total: essentialMonthly,
     commitments: buildCommitments(subs, userCommitments,
-      Object.keys(byMonth).length ? income / Object.keys(byMonth).length : 0),
+      Object.keys(byMonth).length ? income / Object.keys(byMonth).length : 0,
+      opts.marketBenchmark || null),
     active_subscription_count: active.filter((s) => !s.essential).length,
     stopped_subscription_count: subs.filter((s) => !s.active && !s.essential).length,
     transactions: txns,

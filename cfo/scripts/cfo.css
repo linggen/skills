@@ -248,6 +248,8 @@ td.num.pos { color: var(--pos); }
 .cm-derived b { color: var(--ink); }
 .cm-warn { color: var(--warn); }
 .cm-bad { color: var(--neg); font-weight: 600; }
+.cm-good { color: var(--pos); }
+.cm-strategy { border-left: 3px solid var(--accent); margin-top: 10px; }
 .cm-slider { display: flex; align-items: center; gap: 10px; font-size: 13px; flex-wrap: wrap; }
 .cm-slider input[type=range] { width: 200px; accent-color: var(--accent); }
 .cm-slider-out b { color: var(--pos); }

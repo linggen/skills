@@ -6,7 +6,7 @@
 // Statements are parsed + redacted in-browser; raw files never reach the model.
 import './chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from './api.js';
-import { analyzeCsv, orientTransactions, categorize, amortize } from './analyze.js';
+import { analyzeCsv, orientTransactions, categorize, amortize, debtPlan } from './analyze.js';
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
 
@@ -54,7 +54,51 @@ const moneyExact = (n) => `${CURRENCY}${(Number(n) || 0).toLocaleString(undefine
 const analyzeOpts = () => ({
   categoryOverrides: CATEGORY_OVERRIDES,
   commitments: Object.keys(COMMITMENTS).length ? COMMITMENTS : null,
+  marketBenchmark: MARKET,
 });
+
+// ── Market benchmark — anonymous public posted-rate averages; no user data
+// in the request. CAD: Bank of Canada 5-yr conventional; USD: Freddie Mac
+// PMMS 30-yr. Cached a week (both publish weekly). Other currencies: none.
+let MARKET = null;
+const MARKET_SOURCES = {
+  CAD: {
+    cmd: 'curl -s --max-time 8 "https://www.bankofcanada.ca/valet/observations/V80691335/json?recent=1"',
+    parse: (out) => {
+      const o = (JSON.parse(out).observations || [])[0];
+      const rate = o && Number(o.V80691335 && o.V80691335.v);
+      return rate > 0 ? { rate, date: o.d, label: '5-yr posted avg', source: 'Bank of Canada' } : null;
+    },
+  },
+  USD: {
+    cmd: 'curl -s --max-time 8 "https://www.freddiemac.com/pmms/docs/PMMS_history.csv" | tail -1',
+    parse: (out) => {
+      const f = out.trim().split(',').map((s) => s.replace(/"/g, ''));
+      const rate = Number(f[1]);
+      return rate > 0 ? { rate, date: f[0], label: '30-yr fixed avg', source: 'Freddie Mac' } : null;
+    },
+  },
+};
+
+async function loadMarketRate() {
+  const src = MARKET_SOURCES[CURRENCY_CODE];
+  MARKET = null;
+  if (!src) return;
+  try {
+    const cache = await readJson(`${DATA}/market-rates.json`, null);
+    if (cache && cache.currency === CURRENCY_CODE && cache.fetched_at
+      && Date.now() - new Date(cache.fetched_at).getTime() < 7 * 86400000) {
+      MARKET = cache;
+      return;
+    }
+    const m = src.parse(await runBash(src.cmd));
+    if (!m) return;
+    MARKET = { ...m, currency: CURRENCY_CODE, fetched_at: new Date().toISOString() };
+    await writeB64(`${DATA}/market-rates.json`, JSON.stringify(MARKET, null, 2));
+    if (LEDGER.length) await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent sees it
+    if (VIEW_MODE === 'commit') renderCommitView();
+  } catch (e) { console.warn('[cfo] market rate', e); }
+}
 
 async function loadConfig() {
   try {
@@ -803,6 +847,10 @@ function commitDerived(it) {
       const p1 = (it.balance * i) / (1 - Math.pow(1 + i, -n));
       if (p1 > it.monthly) lines.push(`If your rate renews +1%: ~<b>${moneyExact(p1)}</b>/mo (+${moneyExact(p1 - it.monthly)})`);
     }
+    if (MARKET) {
+      const above = it.rate_pct > MARKET.rate;
+      lines.push(`Market: <b>${MARKET.rate}%</b> ${esc(MARKET.label)} (${esc(MARKET.source)}, ${esc(MARKET.date)}) — your ${it.rate_pct}% is ${above ? '<span class="cm-warn">above the posted average — strong case to rate-shop</span>' : 'below the posted average (posted runs higher than negotiated)'}`);
+    }
   }
   if (it.increased) lines.push(`<span class="cm-warn">↑ Price creep: ${moneyExact(it.first_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo since first seen)</span>`);
   return lines;
@@ -882,13 +930,77 @@ function renderCommitView() {
       ${GROUP_META.filter(([g]) => c.split && c.split[g] > 0).map(([g, label]) => `<span class="chip cm-chip">${label} ${money(c.split[g])}/mo</span>`).join('')}
     </div>
     <p class="hint">Every fixed monthly obligation, detected from your statements. Add a balance, rate, or renewal date to unlock the payoff math — computed on this Mac, never by the AI. Want a rate-match or shop-around letter? Ask the assistant.</p>`;
+  // Loans with full terms power the cross-loan strategy panel (≥2 — a single
+  // loan already has its own prepayment slider on the row).
+  const loans = items.filter((it) => it.group === 'debt' && it.active && it.balance > 0 && it.monthly > 0 && !it.payment_below_interest)
+    .map((it) => ({ key: it.key, merchant: it.merchant, balance: it.balance, rate_pct: it.rate_pct || 0, payment: it.monthly }));
   groupsEl.innerHTML = items.length
     ? GROUP_META.map(([g, label]) => {
       const rows = items.filter((it) => it.group === g);
-      return rows.length ? `<h2>${label}</h2>` + rows.map(commitRow).join('') : '';
+      if (!rows.length) return '';
+      const strategy = g === 'debt' && loans.length >= 2 ? debtStrategyHtml() : '';
+      return `<h2>${label}</h2>` + rows.map(commitRow).join('') + strategy;
     }).join('')
     : '<p class="hint">No recurring obligations detected yet — import a few months of statements so the monthly cadence shows.</p>';
   wireCommitEvents(Object.fromEntries(items.map((it) => [it.key, it])));
+  if (loans.length >= 2) {
+    const range = document.getElementById('ds-range');
+    range?.addEventListener('input', () => {
+      document.getElementById('ds-extra').textContent = `${CURRENCY}${range.value}`;
+      renderDebtStrategy(loans, +range.value);
+    });
+    renderDebtStrategy(loans, 0);
+  }
+}
+
+// ── Debt strategy panel: all loans together, freed payments roll over, the
+// extra budget targets the highest rate (avalanche). Pure what-if — nothing
+// is stored; the agent gets the extra=0 snapshot via commitments.debt_strategy.
+function debtStrategyHtml() {
+  return `
+  <div class="cm-row cm-strategy">
+    <div class="cm-main">
+      <span class="cm-name">⚖ Debt strategy</span>
+      <span class="hint inline">all loans together — freed payments roll into the next loan</span>
+    </div>
+    <div class="cm-terms">
+      <div class="cm-slider">
+        <label>Extra <b id="ds-extra">${CURRENCY}0</b>/mo across all debt</label>
+        <input type="range" id="ds-range" min="0" max="1000" step="25" value="0">
+      </div>
+      <div class="cm-derived" id="ds-out"></div>
+    </div>
+  </div>`;
+}
+
+function renderDebtStrategy(loans, extra) {
+  const out = document.getElementById('ds-out');
+  if (!out) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const ind = loans.map((l) => amortize(l.balance, l.rate_pct, l.payment)).filter((a) => a && !a.underwater);
+  const asIsInterest = ind.reduce((s, a) => s + a.total_interest, 0);
+  const asIsMonths = Math.max(...ind.map((a) => a.months));
+  const plan = debtPlan(loans, extra, 'avalanche');
+  if (!plan || plan.diverges) {
+    out.innerHTML = '<span class="cm-bad">⚠ Payments don\'t cover the interest — this plan never closes.</span>';
+    return;
+  }
+  const lines = [];
+  lines.push(`Debt-free ~<b>${addMonthsIso(today, plan.months)}</b> (${(plan.months / 12).toFixed(1)} yr) · total interest <b>${money(plan.total_interest)}</b>`);
+  const saved = asIsInterest - plan.total_interest;
+  const sooner = asIsMonths - plan.months;
+  if (saved > 0.5 || sooner > 0) {
+    lines.push(`vs each loan on its own: save <b class="cm-good">${money(saved)}</b> interest, debt-free <b>${sooner}</b> mo sooner${extra > 0 ? '' : ' — just from rolling freed payments forward'}`);
+  }
+  lines.push(`Order: ${[...loans].sort((a, b) => b.rate_pct - a.rate_pct).map((l) => `<b>${esc(l.merchant)}</b> (${l.rate_pct}%)`).join(' → ')} — highest rate first`);
+  if (extra > 0 && new Set(loans.map((l) => l.rate_pct)).size > 1) {
+    const wrong = debtPlan(loans, extra, 'lowest');
+    if (wrong && !wrong.diverges) {
+      const d = wrong.total_interest - plan.total_interest;
+      if (d > 0.5) lines.push(`<span class="cm-warn">Putting the extra on the lowest rate instead would cost ${money(d)} more</span>`);
+    }
+  }
+  out.innerHTML = lines.map((l) => `<div>${l}</div>`).join('');
 }
 
 function wireCommitEvents(byKey) {
@@ -1218,6 +1330,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try { MODEL_ID = localStorage.getItem('cfo:model') || 'deepseek-chat'; } catch { /* ignore */ }
 
   await resumeState();                  // land on the existing financial picture
+  loadMarketRate();                     // background; re-renders/saves when it lands
   const sid = await recentSessionId();
   await mountChat(sid);                 // resume <24h chat, else fresh
   if (!sid) triggerGreeting();
@@ -1239,6 +1352,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const cfg = await readJson(CONF, {});
       cfg.currency = CURRENCY_CODE;
       await writeB64(CONF, JSON.stringify(cfg, null, 2));
+      loadMarketRate(); // benchmark is per-currency; nulls now, refills async
       refreshView();
       if (VIEW_MODE === 'txn') renderTxnView();
     });
