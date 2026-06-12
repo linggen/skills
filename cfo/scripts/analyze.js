@@ -24,7 +24,7 @@ const CATEGORY_RULES = [
   ['transport', ['uber', 'lyft', 'transit', 'gas', 'petro', 'shell', 'esso', 'chevron', 'parking', 'presto']],
   ['subscriptions', ['netflix', 'spotify', 'disney', 'youtube', 'icloud', 'apple.com/bill', 'prime', 'hbo', 'patreon', 'substack', 'openai', 'github', 'adobe', 'notion', 'dropbox', 'google storage']],
   ['utilities', ['hydro', 'electric', 'rogers', 'bell', 'telus', 'fido', 'internet', 'water', 'enbridge', 'phone']],
-  ['housing', ['rent ', 'mortgage', 'lease', 'landlord', 'property mgmt', 'property management', 'strata', 'hoa ']],
+  ['housing', ['rent ', 'mortgage', 'lease', 'landlord', 'property mgmt', 'property management', 'property tax', 'strata', 'hoa ']],
   ['shopping', ['amazon', 'ebay', 'aliexpress', 'best buy', 'ikea', 'shoppers', 'store', 'shop']],
   ['health', ['pharmacy', 'clinic', 'dental', 'gym', 'fitness', 'doctor']],
   ['travel', ['airline', 'air canada', 'hotel', 'airbnb', 'expedia', 'booking.com', 'flight', 'westjet']],

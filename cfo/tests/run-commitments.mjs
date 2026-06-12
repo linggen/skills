@@ -7,7 +7,7 @@
 // user-term merge + kind override), and the amortization math against
 // hand-checked figures. No environment needed.
 
-import { analyzeTransactions, amortize, classifyKind, merchantKey } from '../scripts/analyze.js';
+import { analyzeTransactions, amortize, classifyKind, merchantKey, categorize } from '../scripts/analyze.js';
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = '') => {
@@ -25,6 +25,8 @@ t('K4 auto insurance → insurance:auto', classifyKind('TD AUTO INSURANCE', 'oth
 t('K5 rent → bill', classifyKind('RENT PAYMENT PROPERTY MGMT', 'housing') === 'bill');
 t('K6 telecom → bill', classifyKind('ROGERS COMMUNICATIONS', 'utilities') === 'bill');
 t('K7 netflix → sub', classifyKind('NETFLIX.COM', 'subscriptions') === 'sub');
+const ptax = 'CITY OF TORONTO PROPERTY TAX';
+t('K8 property tax → housing → bill (full chain)', classifyKind(ptax, categorize(ptax)) === 'bill');
 
 // ── Amortization — closed-form check: n = -ln(1-iB/P)/ln(1+i).
 // 320k @ 4.79% with $2,150/mo → 226.3 → 227 months, ~$166.5k interest.
