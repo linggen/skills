@@ -40,8 +40,13 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 // Config-driven: currency symbol + user category overrides (seeded by install.sh).
 let CURRENCY = '$';
+let CURRENCY_CODE = 'USD';
 let CATEGORY_OVERRIDES = null;
-const currencySymbol = (code) => ({ USD: '$', CAD: '$', AUD: '$', GBP: '£', EUR: '€', JPY: '¥' }[(code || '').toUpperCase()] || '$');
+const CURRENCY_CODES = ['USD', 'CAD', 'CNY', 'EUR', 'GBP', 'JPY', 'AUD', 'HKD', 'INR', 'KRW'];
+const currencySymbol = (code) => ({
+  USD: '$', CAD: '$', AUD: '$', GBP: '£', EUR: '€', JPY: '¥',
+  CNY: '¥', RMB: '¥', HKD: 'HK$', INR: '₹', KRW: '₩',
+}[(code || '').toUpperCase()] || '$');
 const money = (n) => `${CURRENCY}${Math.round(Number(n) || 0).toLocaleString()}`;
 // Subscription amounts are small and cents-meaningful ($16.49 → $18.99 is the
 // whole story of a price hike) — exact for those, whole dollars elsewhere.
@@ -55,7 +60,8 @@ async function loadConfig() {
   try {
     const out = await runBash(`cat "$HOME/.linggen/skills/${SKILL}/config.json" 2>/dev/null || true`);
     const cfg = out.trim() ? JSON.parse(out) : {};
-    CURRENCY = currencySymbol(cfg.currency);
+    CURRENCY_CODE = (cfg.currency || 'USD').toUpperCase();
+    CURRENCY = currencySymbol(CURRENCY_CODE);
     const ov = cfg.category_overrides;
     CATEGORY_OVERRIDES = ov && Object.keys(ov).length ? ov : null;
   } catch (e) { console.warn('[cfo] config load', e); }
@@ -762,6 +768,17 @@ const COMMIT_OPEN = new Map(); // key -> bool; rows with saved terms default ope
 const isOpen = (it) => (COMMIT_OPEN.has(it.key) ? COMMIT_OPEN.get(it.key) : !!COMMITMENTS[it.key]);
 const addMonthsIso = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 7); };
 
+// Exact (fractional) remaining months from the closed form — the stress line
+// must NOT use the ceiled months_left, or short horizons show a payment BELOW
+// the current one (+$-44 style nonsense).
+function exactMonthsLeft(balance, ratePct, payment) {
+  const i = (Number(ratePct) || 0) / 100 / 12;
+  if (!(balance > 0) || !(payment > 0)) return null;
+  if (i <= 0) return balance / payment;
+  if (payment <= balance * i) return null;
+  return -Math.log(1 - (i * balance) / payment) / Math.log(1 + i);
+}
+
 function commitDerived(it) {
   const lines = [];
   if (it.payment_below_interest) {
@@ -779,24 +796,39 @@ function commitDerived(it) {
   } else if (it.kind.startsWith('insurance')) {
     lines.push('<span class="hint">Add the renewal date to get a shop-around reminder before it auto-renews.</span>');
   }
-  if (it.kind === 'loan:home' && it.months_left != null && it.rate_pct != null && it.balance > 0) {
-    const i = (it.rate_pct + 1) / 100 / 12;
-    const p1 = (it.balance * i) / (1 - Math.pow(1 + i, -it.months_left));
-    lines.push(`If your rate renews +1%: ~<b>${moneyExact(p1)}</b>/mo (+${moneyExact(p1 - it.monthly)})`);
+  if (it.kind === 'loan:home' && it.rate_pct != null && it.balance > 0) {
+    const n = exactMonthsLeft(it.balance, it.rate_pct, it.monthly);
+    if (n != null) {
+      const i = (it.rate_pct + 1) / 100 / 12;
+      const p1 = (it.balance * i) / (1 - Math.pow(1 + i, -n));
+      if (p1 > it.monthly) lines.push(`If your rate renews +1%: ~<b>${moneyExact(p1)}</b>/mo (+${moneyExact(p1 - it.monthly)})`);
+    }
   }
   if (it.increased) lines.push(`<span class="cm-warn">↑ Price creep: ${moneyExact(it.first_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo since first seen)</span>`);
   return lines;
 }
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 function termFields(it) {
   const u = COMMITMENTS[it.key] || {};
   const f = [];
   if (it.kind.startsWith('loan')) {
-    f.push(`<label>Balance <input type="number" class="cm-in" data-key="${esc(it.key)}" data-f="balance" step="100" min="0" value="${u.balance ?? ''}" placeholder="e.g. 320000"></label>`);
+    f.push(`<label>Balance <input type="text" inputmode="numeric" class="cm-in" data-key="${esc(it.key)}" data-f="balance" value="${u.balance != null ? esc(money(u.balance)) : ''}" placeholder="e.g. ${esc(CURRENCY)}320,000"></label>`);
     f.push(`<label>Rate % <input type="number" class="cm-in" data-key="${esc(it.key)}" data-f="rate_pct" step="0.01" min="0" max="30" value="${u.rate_pct ?? ''}" placeholder="e.g. 4.79"></label>`);
   }
   if (it.kind.startsWith('insurance') || it.kind === 'loan:home') {
-    f.push(`<label>${it.kind === 'loan:home' ? 'Term renewal' : 'Renewal'} <input type="date" class="cm-in" data-key="${esc(it.key)}" data-f="renewal_date" value="${esc(u.renewal_date || '')}"></label>`);
+    // Month + year dropdowns — renewal day doesn't matter, and a native date
+    // picker makes far-future years a chore to reach. Stored as YYYY-MM.
+    const cur = (u.renewal_date || '').slice(0, 7);
+    const [cy, cm] = cur ? [cur.slice(0, 4), cur.slice(5, 7)] : ['', ''];
+    const y0 = new Date().getFullYear();
+    const years = Array.from({ length: 9 }, (_, k) => String(y0 - 1 + k));
+    if (cy && !years.includes(cy)) years.push(cy), years.sort();
+    f.push(`<label>${it.kind === 'loan:home' ? 'Term renewal' : 'Renewal'}
+      <select class="cm-ren" data-key="${esc(it.key)}" data-f="renewal_month"><option value="">month</option>${MONTH_NAMES.map((nm, i) => { const v = String(i + 1).padStart(2, '0'); return `<option value="${v}" ${v === cm ? 'selected' : ''}>${nm}</option>`; }).join('')}</select>
+      <select class="cm-ren" data-key="${esc(it.key)}" data-f="renewal_year"><option value="">year</option>${years.map((y) => `<option ${y === cy ? 'selected' : ''}>${y}</option>`).join('')}</select>
+    </label>`);
   }
   return f.length ? `<div class="cm-fields">${f.join('')}</div>` : '';
 }
@@ -866,6 +898,13 @@ function wireCommitEvents(byKey) {
   }));
   document.querySelectorAll('.cm-kind').forEach((sel) => sel.addEventListener('change', () => saveCommitment(sel.dataset.key, { kind: sel.value })));
   document.querySelectorAll('.cm-in').forEach((inp) => inp.addEventListener('change', () => saveCommitment(inp.dataset.key, { [inp.dataset.f]: inp.value })));
+  // Renewal month + year compose one stored YYYY-MM value; either empty clears it.
+  document.querySelectorAll('.cm-ren').forEach((sel) => sel.addEventListener('change', () => {
+    const lab = sel.closest('label');
+    const m = lab.querySelector('[data-f=renewal_month]').value;
+    const y = lab.querySelector('[data-f=renewal_year]').value;
+    saveCommitment(sel.dataset.key, { renewal_date: m && y ? `${y}-${m}` : '' });
+  }));
   document.querySelectorAll('.cm-slider input[type=range]').forEach((r) => r.addEventListener('input', () => {
     const it = byKey[r.dataset.key];
     const wrap = r.closest('.cm-slider');
@@ -884,8 +923,12 @@ function wireCommitEvents(byKey) {
 async function saveCommitment(key, patch) {
   const next = { ...(COMMITMENTS[key] || {}), ...patch };
   for (const k of Object.keys(next)) {
-    if (next[k] === '' || next[k] == null) delete next[k];
-    else if (k === 'balance' || k === 'rate_pct') next[k] = Number(next[k]);
+    if (next[k] === '' || next[k] == null) { delete next[k]; continue; }
+    if (k === 'balance' || k === 'rate_pct') {
+      // Balance arrives money-formatted ("$320,000") — strip to the number.
+      const n = Number(String(next[k]).replace(/[^0-9.-]/g, ''));
+      if (Number.isFinite(n) && n > 0) next[k] = n; else delete next[k];
+    }
   }
   if (Object.keys(next).length) { COMMITMENTS[key] = next; COMMIT_OPEN.set(key, true); }
   else delete COMMITMENTS[key];
@@ -1183,6 +1226,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('new-chat')?.addEventListener('click', newChat);
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
   document.getElementById('help-btn')?.addEventListener('click', showHelp);
+
+  // Currency: code shown + switchable (CAD vs USD vs CNY…); persists to config.
+  const curSel = document.getElementById('currency-sel');
+  if (curSel) {
+    const codes = CURRENCY_CODES.includes(CURRENCY_CODE) ? CURRENCY_CODES : [CURRENCY_CODE, ...CURRENCY_CODES];
+    curSel.innerHTML = codes.map((c) => `<option ${c === CURRENCY_CODE ? 'selected' : ''}>${c}</option>`).join('');
+    curSel.addEventListener('change', async () => {
+      CURRENCY_CODE = curSel.value;
+      CURRENCY = currencySymbol(CURRENCY_CODE);
+      const CONF = `$HOME/.linggen/skills/${SKILL}/config.json`;
+      const cfg = await readJson(CONF, {});
+      cfg.currency = CURRENCY_CODE;
+      await writeB64(CONF, JSON.stringify(cfg, null, 2));
+      refreshView();
+      if (VIEW_MODE === 'txn') renderTxnView();
+    });
+  }
 
   // First visit: show the help once, then stay out of the way.
   try {

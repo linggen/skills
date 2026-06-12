@@ -240,8 +240,10 @@ td.num.pos { color: var(--pos); }
   display: flex; flex-direction: column; gap: 8px; }
 .cm-fields { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; }
 .cm-fields label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
-.cm-fields input { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--bg); color: var(--ink); font-size: 13px; width: 120px; }
+.cm-fields input, .cm-fields select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--bg); color: var(--ink); font-size: 13px; }
+.cm-fields input { width: 120px; }
+#currency-sel { appearance: none; -webkit-appearance: none; text-align: center; }
 .cm-derived { font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
 .cm-derived b { color: var(--ink); }
 .cm-warn { color: var(--warn); }
