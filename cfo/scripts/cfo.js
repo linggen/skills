@@ -950,6 +950,20 @@ function renderCommitView() {
       renderDebtStrategy(loans, +range.value);
     });
     renderDebtStrategy(loans, 0);
+    // The message carries the panel's CURRENT numbers — the agent can't see
+    // the slider, so the ask itself grounds it with the exact figures.
+    document.getElementById('ds-explain')?.addEventListener('click', () => {
+      const d = DS_LAST;
+      const msg = !d
+        ? 'Explain my debt strategy.'
+        : (() => {
+          const ord = d.order.map((l) => `${l.merchant} (${l.rate_pct}%)`).join(', then ');
+          return d.extra > 0
+            ? `Explain my debt strategy with an extra ${CURRENCY}${d.extra}/mo: the page computed debt-free in ${(d.plan.months / 12).toFixed(1)} years with total interest ${money(d.plan.total_interest)} — saving ${money(d.saved)} vs each loan on its own — paying ${ord}. Why does this order win?`
+            : `Explain my debt strategy: the page computed I'd save ${money(d.saved)} and be debt-free ${d.sooner} months sooner just by rolling freed payments forward, paying ${ord}. Walk me through why.`;
+        })();
+      try { chat?.send?.(msg); } catch { /* chat not mounted */ }
+    });
   }
 }
 
@@ -962,6 +976,8 @@ function debtStrategyHtml() {
     <div class="cm-main">
       <span class="cm-name">⚖ Debt strategy</span>
       <span class="hint inline">all loans together — freed payments roll into the next loan</span>
+      <span class="spacer"></span>
+      <button class="chip" id="ds-explain" title="Ask the assistant to walk through this plan">✦ Explain</button>
     </div>
     <div class="cm-terms">
       <div class="cm-slider">
@@ -973,6 +989,8 @@ function debtStrategyHtml() {
   </div>`;
 }
 
+let DS_LAST = null; // latest panel computation — the ✦ Explain button quotes it
+
 function renderDebtStrategy(loans, extra) {
   const out = document.getElementById('ds-out');
   if (!out) return;
@@ -982,9 +1000,16 @@ function renderDebtStrategy(loans, extra) {
   const asIsMonths = Math.max(...ind.map((a) => a.months));
   const plan = debtPlan(loans, extra, 'avalanche');
   if (!plan || plan.diverges) {
+    DS_LAST = null;
     out.innerHTML = '<span class="cm-bad">⚠ Payments don\'t cover the interest — this plan never closes.</span>';
     return;
   }
+  DS_LAST = {
+    extra, plan,
+    saved: asIsInterest - plan.total_interest,
+    sooner: asIsMonths - plan.months,
+    order: [...loans].sort((a, b) => b.rate_pct - a.rate_pct),
+  };
   const lines = [];
   lines.push(`Debt-free ~<b>${addMonthsIso(today, plan.months)}</b> (${(plan.months / 12).toFixed(1)} yr) · total interest <b>${money(plan.total_interest)}</b>`);
   const saved = asIsInterest - plan.total_interest;
