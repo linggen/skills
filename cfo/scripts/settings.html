@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CFO · Settings</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --border-strong: #d1d5db;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #10b981;
+    --danger: #ef4444;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111113;
+      --border: #1f2024;
+      --border-strong: #2a2b30;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 28px 32px 56px; }
+  header { margin-bottom: 28px; }
+  h1 { font-size: 22px; font-weight: 700; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lead { color: var(--muted); margin: 0; font-size: 13px; line-height: 1.55; }
+  .section { margin-bottom: 36px; }
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: var(--muted); margin: 0 0 6px;
+  }
+  .section-desc {
+    color: var(--muted); margin: 0 0 14px; font-size: 13px; line-height: 1.55;
+  }
+  .section-desc a { color: var(--accent); text-decoration: none; }
+  .section-desc a:hover { text-decoration: underline; }
+
+  .field-card {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); padding: 16px 18px;
+  }
+  .field-row { display: flex; align-items: center; gap: 10px; }
+  .grow { flex: 1; min-width: 0; }
+
+  .acct-name { font-size: 14px; font-weight: 600; }
+  .acct-meta { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .pill {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+    text-transform: uppercase; padding: 2px 8px; border-radius: 999px; margin-left: 2px;
+  }
+  .pill-active { background: rgba(16,185,129,.14); color: var(--success); }
+  .pill-trial { background: rgba(59,130,246,.14); color: var(--accent); }
+  .pill-off { background: rgba(107,114,128,.16); color: var(--muted); }
+
+  .btn {
+    padding: 8px 16px; border: 0; border-radius: 8px; background: var(--accent);
+    color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .15s; white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { background: var(--accent-hover); }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border-strong);
+  }
+  .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: var(--muted); background: transparent; }
+
+  select {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--border-strong);
+    border-radius: 8px; background: var(--bg); color: var(--text);
+    font-size: 13px; font-family: inherit; outline: none;
+  }
+  select:focus { border-color: var(--accent); }
+  .field-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; color: var(--muted); margin-bottom: 8px;
+  }
+  .save-status {
+    font-size: 12px; color: var(--success); margin-left: 4px;
+    opacity: 0; transition: opacity .15s;
+  }
+  .save-status.visible { opacity: 1; }
+
+  iframe#models-frame {
+    display: block; width: 100%; border: 1px solid var(--border);
+    border-radius: 12px; background: var(--surface);
+    height: min(70vh, 760px); min-height: 460px;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>CFO Settings</h1>
+      <p class="lead">Your account, the model CFO runs on, and report preferences. Statements stay on this Mac — only redacted aggregates ever reach the model.</p>
+    </header>
+
+    <!-- Account -->
+    <div class="section">
+      <h2 class="section-title">Account</h2>
+      <p class="section-desc">CFO's AI features run through your linggen.dev account (free trial included). Deterministic reports work without it.</p>
+      <div class="field-card">
+        <div class="field-row">
+          <div class="grow" id="acct-body">
+            <div class="acct-name">Checking sign-in…</div>
+          </div>
+          <button id="acct-btn" class="btn" type="button" hidden></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model -->
+    <div class="section">
+      <h2 class="section-title">Model</h2>
+      <p class="section-desc">CFO defaults to the built-in Linggen Cloud model — no key needed. To use a different provider, pick one here (local Ollama needs no key; cloud providers need their own).</p>
+      <iframe id="models-frame" src="/settings/models" title="Models"></iframe>
+    </div>
+
+    <!-- Preferences -->
+    <div class="section">
+      <h2 class="section-title">Preferences</h2>
+      <p class="section-desc">How the report is labelled. Applies the next time you open CFO.</p>
+      <div class="field-card">
+        <div class="field-label">Currency</div>
+        <div class="field-row">
+          <select id="currency-select"></select>
+          <button id="currency-save" class="btn" type="button" disabled>Save</button>
+          <span id="currency-status" class="save-status">Saved</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SKILL = "cfo";
+    const CONFIG = `$HOME/.linggen/skills/${SKILL}/config.json`;
+    const CURRENCY_CODES = ["USD", "CAD", "CNY", "EUR", "GBP", "JPY", "AUD", "HKD", "INR", "KRW"];
+
+    async function runBash(command) {
+      const res = await fetch("/api/bash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_root: "/tmp", command }),
+      });
+      if (!res.ok) throw new Error(`bash ${res.status}`);
+      const body = await res.json();
+      if (body.exit_code && body.exit_code !== 0) throw new Error(body.stderr || `bash exit ${body.exit_code}`);
+      return body.stdout || "";
+    }
+
+    // ── Account ───────────────────────────────────────────────────────────
+    const acctBody = document.getElementById("acct-body");
+    const acctBtn = document.getElementById("acct-btn");
+    let polling = false;
+
+    const num = (n) => Number(n || 0).toLocaleString();
+
+    function entitlementLine(data) {
+      const sub = data?.entitlement?.apps?.cfo;
+      if (sub && sub.status === "active") {
+        return `<span class="pill pill-active">Subscribed</span>`;
+      }
+      const trial = data?.entitlement?.trial?.cfo;
+      if (trial && trial.active) {
+        return `<span class="pill pill-trial">Free trial</span>` +
+          `<div class="acct-meta">${num(trial.tokens)} / ${num(trial.budget)} trial tokens used</div>`;
+      }
+      return `<span class="pill pill-off">No active plan</span>` +
+        `<div class="acct-meta">Subscribe to keep AI features after the trial.</div>`;
+    }
+
+    function renderSignedOut() {
+      acctBody.innerHTML = `<div class="acct-name">Not signed in</div>
+        <div class="acct-meta">Sign in to start your free trial and use CFO's AI features.</div>`;
+      acctBtn.hidden = false;
+      acctBtn.className = "btn";
+      acctBtn.textContent = "Sign in";
+      acctBtn.onclick = signIn;
+    }
+
+    function renderSignedIn(data) {
+      const offline = data.offline ? ` · <span title="Could not reach linggen.dev; showing cached entitlement">offline</span>` : "";
+      const remote = data.source === "remote" ? ` · linked via remote access` : "";
+      acctBody.innerHTML = `<div class="acct-name">Signed in as ${data.user_name || "your account"}</div>
+        <div class="acct-meta">${entitlementLine(data)}</div>
+        <div class="acct-meta">${data.source === "remote" ? "Signed in" : "Local account"}${remote}${offline}</div>`;
+      acctBtn.hidden = false;
+      acctBtn.className = "btn btn-ghost";
+      acctBtn.textContent = "Sign out";
+      acctBtn.onclick = signOut;
+    }
+
+    async function loadAccount() {
+      try {
+        const r = await fetch(`/api/account?app=${SKILL}`);
+        const data = await r.json();
+        if (data.signed_in) renderSignedIn(data);
+        else renderSignedOut();
+        return data.signed_in;
+      } catch {
+        acctBody.innerHTML = `<div class="acct-name">Account unavailable</div>
+          <div class="acct-meta">Could not reach the local daemon.</div>`;
+        acctBtn.hidden = true;
+        return false;
+      }
+    }
+
+    async function signIn() {
+      acctBtn.disabled = true;
+      acctBtn.textContent = "Opening browser…";
+      try {
+        const r = await fetch("/api/account/login", { method: "POST" });
+        const out = await r.json();
+        if (!out.opened && out.url) window.open(out.url, "_blank", "noopener");
+      } catch {}
+      acctBtn.textContent = "Waiting for sign-in…";
+      pollUntilSignedIn();
+    }
+
+    function pollUntilSignedIn() {
+      if (polling) return;
+      polling = true;
+      let tries = 0;
+      const timer = setInterval(async () => {
+        tries += 1;
+        const ok = await loadAccount();
+        if (ok || tries >= 40) {            // ~60s at 1.5s
+          clearInterval(timer);
+          polling = false;
+          acctBtn.disabled = false;
+          if (!ok) renderSignedOut();
+        }
+      }, 1500);
+    }
+
+    async function signOut() {
+      acctBtn.disabled = true;
+      acctBtn.textContent = "Signing out…";
+      try {
+        const r = await fetch("/api/account/logout", { method: "POST" });
+        const out = await r.json();
+        await loadAccount();
+        if (out.remote_link_active) {
+          // logout only clears account.toml; a remote-access link still signs us in.
+          const note = document.createElement("div");
+          note.className = "acct-meta";
+          note.textContent = "Still signed in via your remote-access link. Disconnect it in the main Linggen app to fully sign out.";
+          acctBody.appendChild(note);
+        }
+      } catch {}
+      acctBtn.disabled = false;
+    }
+
+    // ── Currency ──────────────────────────────────────────────────────────
+    const currencySelect = document.getElementById("currency-select");
+    const currencySave = document.getElementById("currency-save");
+    const currencyStatus = document.getElementById("currency-status");
+    let savedCurrency = "USD";
+
+    for (const code of CURRENCY_CODES) {
+      const o = document.createElement("option");
+      o.value = code; o.textContent = code;
+      currencySelect.appendChild(o);
+    }
+
+    async function loadCurrency() {
+      try {
+        const out = await runBash(`cat "${CONFIG}" 2>/dev/null || true`);
+        const cfg = out.trim() ? JSON.parse(out) : {};
+        savedCurrency = (cfg.currency || "USD").toUpperCase();
+      } catch { savedCurrency = "USD"; }
+      currencySelect.value = CURRENCY_CODES.includes(savedCurrency) ? savedCurrency : "USD";
+      currencySave.disabled = true;
+    }
+
+    currencySelect.addEventListener("change", () => {
+      currencySave.disabled = currencySelect.value === savedCurrency;
+    });
+
+    currencySave.addEventListener("click", async () => {
+      const next = currencySelect.value;
+      currencySave.disabled = true;
+      currencySave.textContent = "Saving…";
+      try {
+        const out = await runBash(`cat "${CONFIG}" 2>/dev/null || true`);
+        const cfg = out.trim() ? JSON.parse(out) : {};
+        cfg.currency = next;
+        const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(cfg, null, 2))));
+        await runBash(`mkdir -p "$(dirname "${CONFIG}")" && printf '%s' "${b64}" | base64 --decode > "${CONFIG}"`);
+        savedCurrency = next;
+        currencyStatus.textContent = "Saved — reopen CFO to apply";
+        currencyStatus.style.color = "";
+        currencyStatus.classList.add("visible");
+        setTimeout(() => currencyStatus.classList.remove("visible"), 2400);
+      } catch {
+        currencyStatus.textContent = "Error saving";
+        currencyStatus.style.color = "var(--danger)";
+        currencyStatus.classList.add("visible");
+        currencySave.disabled = false;
+      } finally {
+        currencySave.textContent = "Save";
+      }
+    });
+
+    loadAccount();
+    loadCurrency();
+  </script>
+</body>
+</html>

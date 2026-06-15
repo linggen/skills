@@ -348,3 +348,24 @@ td.num.pos { color: var(--pos); }
 .insight-x { margin-left: auto; background: none; border: none; color: var(--muted);
   cursor: pointer; font-size: 15px; line-height: 1; padding: 0 2px; }
 .insight-x:hover { color: var(--ink); }
+
+/* App-mode settings overlay — slides over the report+chat without unmounting
+   them (state survives). Driven by app-mode.js on the shell's Settings menu. */
+@keyframes appModeFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.app-mode-overlay {
+  position: fixed; inset: 0; display: none; flex-direction: column;
+  background: var(--bg); z-index: 2000; animation: appModeFadeIn 0.15s ease;
+}
+.app-mode-overlay.visible { display: flex; }
+.app-mode-overlay-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-bottom: 1px solid var(--line);
+  background: var(--panel); flex-shrink: 0;
+}
+.app-mode-overlay-title { font-weight: 600; font-size: 14px; color: var(--ink); }
+.app-mode-overlay-close {
+  width: 28px; height: 28px; border: 0; background: transparent; font-size: 22px;
+  line-height: 1; cursor: pointer; border-radius: 6px; color: var(--muted);
+}
+.app-mode-overlay-close:hover { background: var(--bg); color: var(--ink); }
+.app-mode-overlay-frame { flex: 1; width: 100%; border: 0; background: var(--bg); }
