@@ -13,7 +13,7 @@ import { hashId } from './hash.js';
 const SKILL = 'cfo';
 const DATA = `$HOME/.linggen/skills/${SKILL}/data`; // $HOME stays literal for bash
 let chat = null;
-let MODEL_ID = 'deepseek-chat';
+let MODEL_ID = 'deepseek-v4-flash';
 
 // Page state: full ledger + accounts in memory; RANGE drives the fixed view.
 let LEDGER = [];
@@ -1517,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Default to DeepSeek (cheap, provisioned). Per-skill override in
   // localStorage('cfo:model'); engine falls back if it isn't configured.
-  try { MODEL_ID = localStorage.getItem('cfo:model') || 'deepseek-chat'; } catch { /* ignore */ }
+  try { MODEL_ID = localStorage.getItem('cfo:model') || 'deepseek-v4-flash'; } catch { /* ignore */ }
 
   await resumeState();                  // land on the existing financial picture
   loadMarketRate();                     // background; re-renders/saves when it lands
