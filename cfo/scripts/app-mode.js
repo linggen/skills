@@ -28,7 +28,7 @@
         <span class="app-mode-overlay-title">Settings</span>
         <button class="app-mode-overlay-close" aria-label="Close settings">×</button>
       </div>
-      <iframe class="app-mode-overlay-frame" src="settings.html" title="Settings"></iframe>
+      <iframe class="app-mode-overlay-frame" src="about:blank" title="Settings"></iframe>
     `;
     overlay.querySelector(".app-mode-overlay-close").addEventListener("click", hide);
     document.body.appendChild(overlay);
@@ -36,7 +36,13 @@
   }
 
   function show() {
-    ensureOverlay().classList.add("visible");
+    const o = ensureOverlay();
+    // Reload the settings page on each open so dynamic data (account usage /
+    // trial tokens, model state) is always current — the overlay and its
+    // iframe persist between opens, so without this it shows the first read.
+    const frame = o.querySelector(".app-mode-overlay-frame");
+    if (frame) frame.src = "settings.html";
+    o.classList.add("visible");
   }
 
   function hide() {
