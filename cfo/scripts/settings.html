@@ -98,11 +98,6 @@
   }
   .save-status.visible { opacity: 1; }
 
-  iframe#models-frame {
-    display: block; width: 100%; border: 1px solid var(--border);
-    border-radius: 12px; background: var(--surface);
-    height: min(70vh, 760px); min-height: 460px;
-  }
 </style>
 </head>
 <body>
@@ -129,8 +124,14 @@
     <!-- Model -->
     <div class="section">
       <h2 class="section-title">Model</h2>
-      <p class="section-desc">CFO defaults to the built-in Linggen Cloud model — no key needed. To use a different provider, pick one here (local Ollama needs no key; cloud providers need their own).</p>
-      <iframe id="models-frame" src="/settings/models" title="Models"></iframe>
+      <p class="section-desc">The model CFO runs on. Defaults to the built-in Linggen Cloud model (<code>deepseek-v4-flash</code>) — no key needed. This sets <strong>CFO's model only</strong> — it never changes other apps or the engine-wide default. Manage providers and keys in the main Linggen app.</p>
+      <div class="field-card">
+        <div class="field-label">CFO runs on</div>
+        <div class="field-row">
+          <select id="model-select"></select>
+          <span id="model-status" class="save-status">Saved</span>
+        </div>
+      </div>
     </div>
 
     <!-- Preferences -->
@@ -319,7 +320,56 @@
       }
     });
 
+    // ── Model (per-app default) ───────────────────────────────────────────
+    // Writes localStorage('cfo:model'), which cfo.js reads at session creation.
+    // Changes ONLY CFO's model — never the engine-wide default or other apps.
+    const modelSelect = document.getElementById("model-select");
+    const modelStatus = document.getElementById("model-status");
+    const APP_DEFAULT_MODEL = "deepseek-v4-flash";
+
+    function readModelPref() { try { return localStorage.getItem("cfo:model") || ""; } catch { return ""; } }
+
+    async function loadModel() {
+      let models = [];
+      try {
+        const r = await fetch("/api/models");
+        const data = await r.json();
+        models = Array.isArray(data) ? data : (data.models || []);
+      } catch { /* offline — still offer the default */ }
+      const current = readModelPref();
+      modelSelect.innerHTML = "";
+      const def = document.createElement("option");
+      def.value = ""; def.textContent = `App default (${APP_DEFAULT_MODEL})`;
+      modelSelect.appendChild(def);
+      for (const m of models) {
+        const id = m.id || m.model || m;
+        if (!id) continue;
+        const o = document.createElement("option");
+        o.value = id;
+        o.textContent = m.provided_by ? `${id} — ${m.provided_by}` : id;
+        modelSelect.appendChild(o);
+      }
+      // Keep a saved override visible even if /api/models didn't list it (offline).
+      if (current && !Array.from(modelSelect.options).some((o) => o.value === current)) {
+        const o = document.createElement("option");
+        o.value = current; o.textContent = current;
+        modelSelect.appendChild(o);
+      }
+      modelSelect.value = current;
+    }
+
+    modelSelect.addEventListener("change", () => {
+      try {
+        if (modelSelect.value) localStorage.setItem("cfo:model", modelSelect.value);
+        else localStorage.removeItem("cfo:model");
+      } catch { /* ignore */ }
+      modelStatus.textContent = "Saved — applies to your next New chat";
+      modelStatus.classList.add("visible");
+      setTimeout(() => modelStatus.classList.remove("visible"), 2600);
+    });
+
     loadAccount();
+    loadModel();
     loadCurrency();
   </script>
 </body>

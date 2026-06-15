@@ -1,5 +1,6 @@
 ---
 name: sys-doctor
+model: deepseek-v4-flash
 description: >-
   System health analyst. Scans disk, apps, caches, and system info.
   Use --web for interactive dashboard, or run directly in chat for text reports.

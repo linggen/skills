@@ -79,15 +79,12 @@
     border-radius: 12px;
     background: var(--surface);
   }
-  /* Fixed height for the Models iframe — its inner React route uses
-     h-screen + overflow-y-auto, so its body.scrollHeight always equals
-     the iframe height. Auto-sizing fights that and creates an infinite
-     resize loop. Just give it a sensible viewport-relative height and
-     let its own internal scrollbar handle long model lists. */
-  #models-frame {
-    height: min(75vh, 800px);
-    min-height: 480px;
+  select {
+    flex: 1; padding: 8px 12px; border: 1px solid var(--border-strong);
+    border-radius: 8px; background: var(--bg); color: var(--text);
+    font-size: 13px; font-family: inherit; outline: none;
   }
+  select:focus { border-color: var(--accent); }
 
   .field-card {
     border: 1px solid var(--border);
@@ -173,8 +170,14 @@
 
     <div class="section">
       <h2 class="section-title">Model</h2>
-      <p class="section-desc">DeepSeek is the default. To use a different provider, pick one here — local models (Ollama) need no key; cloud providers need their own.</p>
-      <iframe id="models-frame" src="/settings/models" title="Models"></iframe>
+      <p class="section-desc">The model Sys Doctor runs on. Defaults to the built-in Linggen Cloud model (<code>deepseek-v4-flash</code>) — no key needed. This sets <strong>Sys Doctor's model only</strong> — never other apps or the engine-wide default. Manage providers and keys in the main Linggen app.</p>
+      <div class="field-card">
+        <div class="field-label">Sys Doctor runs on</div>
+        <div class="field-row">
+          <select id="model-select"></select>
+          <span id="model-status" class="save-status">Saved</span>
+        </div>
+      </div>
     </div>
 
     <div class="section">
@@ -263,6 +266,48 @@
       }
     });
 
+    // ── Model (per-app default) — writes localStorage('sys-doctor:model'),
+    // read by doctor.js at session creation. Changes ONLY Sys Doctor, never
+    // the engine-wide default or other apps.
+    const modelSelect = document.getElementById("model-select");
+    const modelStatus = document.getElementById("model-status");
+    const APP_DEFAULT_MODEL = "deepseek-v4-flash";
+    async function loadModel() {
+      let models = [];
+      try {
+        const r = await fetch("/api/models");
+        const data = await r.json();
+        models = Array.isArray(data) ? data : (data.models || []);
+      } catch { /* offline — still offer the default */ }
+      let current = ""; try { current = localStorage.getItem("sys-doctor:model") || ""; } catch {}
+      modelSelect.innerHTML = "";
+      const def = document.createElement("option");
+      def.value = ""; def.textContent = `App default (${APP_DEFAULT_MODEL})`;
+      modelSelect.appendChild(def);
+      for (const m of models) {
+        const id = m.id || m.model || m;
+        if (!id) continue;
+        const o = document.createElement("option");
+        o.value = id; o.textContent = m.provided_by ? `${id} — ${m.provided_by}` : id;
+        modelSelect.appendChild(o);
+      }
+      if (current && !Array.from(modelSelect.options).some((o) => o.value === current)) {
+        const o = document.createElement("option"); o.value = current; o.textContent = current;
+        modelSelect.appendChild(o);
+      }
+      modelSelect.value = current;
+    }
+    modelSelect.addEventListener("change", () => {
+      try {
+        if (modelSelect.value) localStorage.setItem("sys-doctor:model", modelSelect.value);
+        else localStorage.removeItem("sys-doctor:model");
+      } catch { /* ignore */ }
+      modelStatus.textContent = "Saved — applies to your next scan";
+      modelStatus.classList.add("visible");
+      setTimeout(() => modelStatus.classList.remove("visible"), 2600);
+    });
+
+    loadModel();
     loadTavily();
   </script>
 </body>

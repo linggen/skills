@@ -1,5 +1,6 @@
 ---
 name: pulse
+model: deepseek-v4-flash
 description: >-
   GTM brain for solo founders launching products. Pulse reads the
   user's brief (identity, voice, hard rules) AND the configured

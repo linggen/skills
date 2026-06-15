@@ -1,5 +1,6 @@
 ---
 name: cfo
+model: deepseek-v4-flash
 description: >-
   Personal CFO — a private, on-device finance analyst. Import bank/credit
   CSV (or PDF) exports and it builds a spend report, finds subscriptions and
