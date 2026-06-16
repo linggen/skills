@@ -1146,9 +1146,18 @@ async function mountChat() {
   // engine creates a fresh session.
   const resumeSid = state.resumeSid;
 
+  // Pin Pulse's model the same way CFO/sys-doctor do: the built-in Linggen
+  // Cloud model (deepseek-v4-flash) by default, a per-skill localStorage
+  // override or ?model= URL param if set. Without this, the embed sends no
+  // model_id and the chat silently rides the engine-wide default.
+  let modelId = '';
+  try { modelId = new URLSearchParams(location.search).get('model') || localStorage.getItem('pulse:model') || 'deepseek-v4-flash'; }
+  catch { modelId = 'deepseek-v4-flash'; }
+
   state.chat = await window.LinggenUI.mount(document.getElementById('chat-panel'), {
     skillName: 'pulse',
     sessionId: resumeSid || undefined,
+    modelId,
     onSessionCreated: grantOnce,
     onContentBlock: (payload) => {
       // Any content block (tool call, text streaming, PageUpdate, …) is

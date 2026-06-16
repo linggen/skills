@@ -220,7 +220,11 @@ function stageImport(ctx) {
     const match = bestAccountMatch(ctx.filename, ACCOUNTS);
     STAGING = {
       ...ctx,
-      accountId: match || (Object.keys(ACCOUNTS).length ? null : '__new__'),
+      // Default to the pre-filled New account (label + type guessed from the
+      // filename) so the transaction count + preview show immediately. Leaving
+      // it unselected showed "0 / Pick an account to preview", which read as
+      // "empty file". The account picker is still right there to switch/merge.
+      accountId: match || '__new__',
       newLabel: (ctx.filename || '').replace(/\.(csv|pdf)$/i, '').replace(/[_-]+/g, ' ').trim().slice(0, 30) || 'Account',
       newType: guessType(ctx.filename),
       catEdits: {},
