@@ -8,6 +8,10 @@ import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, 
 
 const SKILL_NAME = 'sys-doctor';
 const params = new URLSearchParams(window.location.search);
+// Branded Sys Doctor.app launches with ?app_mode=1 → built-in cloud model.
+// In the core Linggen app (no app_mode) the skill rides the user's global
+// default instead of the metered cloud model.
+const APP_MODE = params.get('app_mode') === '1';
 let modelId = params.get('model') || '';
 // Check for session in URL — used when resuming or opened from session list
 const existingSession = params.get('session') || '';
@@ -35,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // on every install, so a new user gets a working scan with no API key. A
   // per-skill override in localStorage('sys-doctor:model') wins. The legacy
   // 'deepseek-chat' id is deprecated upstream on 2026-07-24.
-  if (!modelId) {
+  if (!modelId && APP_MODE) {
     try { modelId = localStorage.getItem('sys-doctor:model') || 'deepseek-v4-flash'; }
     catch { modelId = 'deepseek-v4-flash'; }
   }
