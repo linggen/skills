@@ -133,6 +133,14 @@
         </div>
       </div>
     </div>
+
+    <div class="section">
+      <h2 class="section-title">Memory</h2>
+      <p class="section-desc">What CFO remembers — goals and notes, scoped to CFO alone (never your other apps). CFO recalls these automatically as you chat. Forget any item anytime.</p>
+      <div class="field-card">
+        <div id="mem-list" class="acct-meta">Loading…</div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -293,8 +301,47 @@
       setTimeout(() => modelStatus.classList.remove("visible"), 2600);
     });
 
+    // ── Memory (CFO-scoped) ───────────────────────────────────────────────
+    // Lists/forgets only CFO's own namespace via the ling-mem CLI (--context
+    // cfo). PATH prefix covers the canonical ~/.local/bin install location.
+    const memList = document.getElementById("mem-list");
+    const memEsc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const LM = `PATH="$HOME/.local/bin:$PATH" ling-mem`;
+
+    function parseRows(out) {
+      const t = (out || "").trim();
+      if (!t) return [];
+      try { const v = JSON.parse(t); return Array.isArray(v) ? v : (v.results || []); }
+      catch { return t.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean); }
+    }
+
+    async function loadMemory() {
+      let rows = [];
+      try { rows = parseRows(await runBash(`${LM} list --context ${SKILL} --format json --limit 30 2>/dev/null || true`)); }
+      catch { rows = []; }
+      if (!rows.length) {
+        memList.innerHTML = "No CFO memories yet — goals and notes you set in chat will show here.";
+        return;
+      }
+      memList.innerHTML = rows.map((r) => `
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-top:1px solid rgba(128,128,128,0.18)">
+          <div style="flex:1;min-width:0">
+            <div style="color:var(--ink,inherit)">${memEsc(r.content)}</div>
+            <div style="font-size:11px;opacity:0.6;margin-top:2px">${memEsc((r.created_at || "").slice(0, 10))}${r.type ? " · " + memEsc(r.type) : ""}</div>
+          </div>
+          <button class="btn btn-ghost mem-forget" data-id="${memEsc(r.id)}" type="button">Forget</button>
+        </div>`).join("");
+      memList.querySelectorAll(".mem-forget").forEach((b) => b.addEventListener("click", async () => {
+        if (!b.dataset.id) return;
+        b.disabled = true; b.textContent = "…";
+        try { await runBash(`${LM} delete ${b.dataset.id} 2>/dev/null || true`); } catch {}
+        loadMemory();
+      }));
+    }
+
     loadAccount();
     loadModel();
+    loadMemory();
   </script>
 </body>
 </html>

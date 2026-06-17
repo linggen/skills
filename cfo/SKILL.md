@@ -10,6 +10,8 @@ description: >-
   it advises and drafts, it never moves money.
 allowed-tools: [Memory_query, Memory_write]
 memory-context: cfo
+memory-recall-min-score: 0.7
+memory-recall-count: 3
 user-invocable: true
 cwd: ~/.linggen/skills/cfo
 install: install.sh
@@ -236,10 +238,12 @@ say — skip empty sections, don't pad.
 
 ### 6. Month-over-month continuity
 
-The page saves each import's redacted rollup under `data/` for history. Recall
-the user's goals/preferences with `Memory_query` (automatically scoped to CFO —
-isolated from their other apps) so coaching is continuous. The `by_month` block
-in your context already spans the imported range, so compare months directly:
+The page saves each import's redacted rollup under `data/` for history. Your
+most relevant CFO memories are **auto-recalled into context each turn** (scoped
+to CFO, isolated from the user's other apps) — so goals/preferences are usually
+already in front of you; use `Memory_query` only to look up something specific,
+and `Memory_write` to record a new durable goal. The `by_month` block in your
+context spans the imported range, so compare months directly:
 *"You said you'd cut takeout — it's up 12% vs May."*
 
 ### 7. Teach with their numbers
