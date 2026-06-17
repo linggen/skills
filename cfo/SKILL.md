@@ -8,7 +8,7 @@ description: >-
   emails, and tracks goals month over month. Transactions never leave the
   machine except as redacted, aggregated figures. Read-only on your data;
   it advises and drafts, it never moves money.
-allowed-tools: [Memory_query, Memory_write]
+allowed-tools: []
 user-invocable: true
 cwd: ~/.linggen/skills/cfo
 install: install.sh
@@ -24,7 +24,8 @@ permission:
     CFO analyzes bank/credit statements you import. Parsing and redaction happen
     in the browser — account numbers are stripped before anything is shown or
     sent to the model. The grant lets it save its (redacted) analysis to its own
-    data dir and record your goals in memory.
+    data dir and record your goals there. CFO is self-contained — it never
+    reads or writes the shared cross-app memory; your finances stay local.
 tools:
   - name: LatestAnalysis
     description: >-
@@ -203,8 +204,10 @@ nothing invented:
    dispute email** to the merchant (amount, dates, request to reverse) —
    draft only, the user sends.
 7. **Plan** — 2–3 concrete moves with monthly dollar impact from *their*
-   numbers. Check `Memory_query` for existing goals and report progress;
-   `Memory_write` any new goal the user agrees to.
+   numbers. Existing goals are in your report context (the config `goals`);
+   report progress against them. When the user agrees to a new goal, present
+   the month-by-month plan in chat — the page records goals to the local
+   config; you do not write to the shared memory store.
 
 Deliver the review as **insight cards via `PageUpdate`** (schema below) plus a
 2–3 sentence chat summary. One card per rubric section that has something to
@@ -225,18 +228,19 @@ say — skip empty sections, don't pad.
   (paid + expected events); always say expected dates are pattern-based,
   not official due dates.
 - When the user sets a goal ("save $5k by December"), build a month-by-
-  month plan from their actual income/spend, and **save it to memory**
-  (`Memory_write`) so next import you can check progress against it.
+  month plan from their actual income/spend and present it; the goal is
+  saved to CFO's **local config** (`config.json` `goals`), so next import
+  you can check progress against it from your report context.
 - Stay **informational** — never give investment/securities advice or
   tell the user what to buy/sell.
 
-### 6. Month-over-month memory
+### 6. Month-over-month continuity
 
-The page saves each import's redacted rollup under `data/` for history.
-Recall the user's goals/preferences from memory (`Memory_query`) so
-coaching is continuous: *"You said you'd cut takeout — it's up 12% vs
-May."* The `by_month` block in your context already spans the imported
-range, so compare months directly from it.
+The page saves each import's redacted rollup under `data/` for history, and
+your goals live in the local `config.json` (surfaced in your report context)
+— **never in the shared cross-app memory**. The `by_month` block in your
+context already spans the imported range, so compare months directly from it:
+*"You said you'd cut takeout — it's up 12% vs May."*
 
 ### 7. Teach with their numbers
 
