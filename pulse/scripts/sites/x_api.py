@@ -19,8 +19,11 @@ load_credentials() returns None (never raises) when key/secret are absent, so
 callers degrade gracefully to empty JSON + a clear error.
 """
 import base64
+import hashlib
 import json
 import os
+import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -65,6 +68,42 @@ def _http(req):
         return None, {"error": str(e)}
 
 
+# ── Response cache ────────────────────────────────────────────────────────
+# /tweets/search/recent is the metered, credit-consuming endpoint. Pulse
+# gathers run often and X content barely moves minute-to-minute, so callers
+# cache their results to disk and reuse within a TTL — repeat gathers then
+# cost ZERO X reads. Cache ONLY successful, non-empty results so a transient
+# 402/429 doesn't pin an empty list for the whole window.
+_CACHE_DIR = os.path.expanduser("~/.linggen/skills/pulse/state/x-cache")
+
+
+def _cache_path(key):
+    return os.path.join(_CACHE_DIR, hashlib.sha1(key.encode()).hexdigest()[:16] + ".json")
+
+
+def cache_get(key, ttl_seconds):
+    """Return the cached value if present and younger than ttl_seconds, else None."""
+    if not ttl_seconds or ttl_seconds <= 0:
+        return None
+    p = _cache_path(key)
+    try:
+        if time.time() - os.path.getmtime(p) <= ttl_seconds:
+            with open(p) as f:
+                return json.load(f)
+    except Exception:
+        return None
+    return None
+
+
+def cache_put(key, value):
+    try:
+        os.makedirs(_CACHE_DIR, exist_ok=True)
+        with open(_cache_path(key), "w") as f:
+            json.dump(value, f)
+    except Exception:
+        pass
+
+
 def get_bearer(creds):
     """Mint (and cache) an App-only Bearer token from the consumer key/secret."""
     global _bearer_cache
@@ -103,7 +142,15 @@ def api_get(endpoint, params=None):
     if params:
         url += "?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {bearer}"})
-    return _http(req)
+    status, body = _http(req)
+    # Surface real failures to stderr (the daemon log) so an exhausted/blocked
+    # X plan is debuggable, instead of silently surfacing as "[]" / no signal.
+    if status is None:
+        sys.stderr.write(f"[x_api] {endpoint}: transport error: {(body or {}).get('error', '?')}\n")
+    elif status >= 400:
+        detail = (body or {}).get("detail") or (body or {}).get("title") or ""
+        sys.stderr.write(f"[x_api] {endpoint} -> HTTP {status}: {str(detail)[:200]}\n")
+    return status, body
 
 
 def resolve_self_id():

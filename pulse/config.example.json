@@ -9,7 +9,11 @@
     "hackernews": {
       "enabled": true,
       "keywords": [],
-      "username": ""
+      "username": "",
+      "submit_sources": {
+        "lobsters": true,
+        "subreddits": ["programming", "rust", "MachineLearning", "compsci", "selfhosted"]
+      }
     },
     "reddit": {
       "enabled": true,
@@ -24,7 +28,8 @@
       "enabled": false,
       "username": "",
       "keywords": [],
-      "target_accounts": []
+      "target_accounts": [],
+      "cache_ttl_hours": 6
     },
     "lobsters": {
       "enabled": false

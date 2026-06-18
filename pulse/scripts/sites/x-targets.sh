@@ -39,17 +39,19 @@ import json, os, sys
 from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.environ["SITES_DIR"])
-from x_api import api_get  # noqa: E402
+from x_api import api_get, cache_get, cache_put  # noqa: E402
 
 try:
     max_results = max(10, min(int(os.environ.get("MAX", "25")), 100))
 except ValueError:
     max_results = 25
 
+ttl_h = 6
 try:
     with open(os.environ["CONFIG"]) as f:
         x = (json.load(f).get("sites", {}).get("x", {}) or {})
     handles = [h.strip().lstrip("@") for h in (x.get("target_accounts") or []) if h and h.strip()]
+    ttl_h = x.get("cache_ttl_hours", 6) or 6
 except Exception:
     handles = []
 
@@ -58,6 +60,13 @@ if not handles:
 
 # Recent search caps query length (~512); cap handles so the OR-group fits.
 handles = handles[:25]
+
+# Cache the recent-search result by roster: X reads are metered/credit-billed,
+# so a repeat gather within the TTL reuses the last pull and costs ZERO reads.
+_ckey = "xtargets:" + ",".join(sorted(handles))
+_cached = cache_get(_ckey, int(ttl_h) * 3600)
+if _cached is not None:
+    print(json.dumps(_cached)); sys.exit(0)
 from_group = " OR ".join(f"from:{h}" for h in handles)
 
 def age_hours(iso):
@@ -76,7 +85,9 @@ def age_hours(iso):
 start_time = (datetime.now(timezone.utc) - timedelta(hours=48)).strftime("%Y-%m-%dT%H:%M:%SZ")
 params = {
     "query": f"({from_group}) -is:reply lang:en",
-    "max_results": 100,
+    # 50, not 100: the per-author cap (3) × ≤14 accounts ≈ ≤42 ever used, so
+    # 100 doubled the metered reads for no extra output. Halves X consumption.
+    "max_results": 50,
     "start_time": start_time,
     "sort_order": "recency",
     "tweet.fields": "created_at,author_id,public_metrics,text",
@@ -123,5 +134,6 @@ for t in data.get("data", []) or []:
     if len(out) >= max_results:
         break
 
+cache_put(_ckey, out)
 print(json.dumps(out))
 PY

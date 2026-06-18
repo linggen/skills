@@ -15,6 +15,7 @@ const SECTION_ORDER = [
   'mentions',
   'replies_due',
   'discovery',
+  'hn_submit',
   'trend',
 ];
 
@@ -23,11 +24,13 @@ const SECTION_LABELS = {
   mentions:        'Mentions',
   replies_due:     'Replies due',
   discovery:       'Discovery',
+  hn_submit:       'HN submit',
   trend:           'Trending',
 };
 
 const SECTION_HINTS = {
   discovery: 'cold opportunities · matched against brief',
+  hn_submit: 'links to submit · lowers your own-post ratio',
   trend:     "what's trending in your space",
 };
 
@@ -53,6 +56,7 @@ function emptySession() {
       mentions:        { cards: [], last_updated: null },
       replies_due:     { cards: [], last_updated: null },
       discovery:       { cards: [], last_updated: null },
+      hn_submit:       { cards: [], last_updated: null },
       trend:           { cards: [], last_updated: null },
       progress_drafts: { cards: [], last_updated: null },
     },
@@ -460,6 +464,7 @@ function renderCard(card) {
     case 'reply_to_me':  return renderReplyToMe(card);
     case 'reply':        return renderReply(card);
     case 'discovery':    return renderDiscovery(card);
+    case 'submit':       return renderSubmit(card);
     case 'trend':        return renderTrend(card);
     case 'progress':     return renderProgress(card);
     case 'draft':        return renderDraft(card);
@@ -634,6 +639,30 @@ function renderDiscovery(c) {
   `);
 }
 
+// HN submit candidate — a third-party article to SUBMIT to HN (lowers the
+// own-post ratio). NO draft: it's a title + url to post. The primary action
+// opens HN's prefilled submitlink form; the url shown is the external article
+// (never a news.ycombinator.com link). hn_status "fresh" = verified not on HN;
+// "unchecked" = Algolia was unreachable, so flag it for a manual check.
+function renderSubmit(c) {
+  const title = c.title || c.thread_title || '(untitled)';
+  const statusBit = c.hn_status === 'unchecked'
+    ? '⚠ verify on hn.algolia.com first'
+    : '✓ not on HN';
+  const metaBits = [
+    c.source ? escapeHtml(c.source) : null,
+    c.score ? `${c.score} pts` : null,
+    c.age_hours != null ? formatAge(c.age_hours) : null,
+    statusBit,
+  ].filter(Boolean).join(' · ');
+  return cardEl(c, 'cold', `
+    <div class="title"><b>${escapeHtml(title)}</b></div>
+    <div class="meta">${metaBits}</div>
+    ${c.url ? `<div class="excerpt">${escapeHtml(c.url)}</div>` : ''}
+    ${actionRow(c, ['submit-hn', 'open-url', 'copy-url', 'dismiss'])}
+  `, 'dense');
+}
+
 function renderTrend(c) {
   const items = (c.items || []).map(i => `<li>${renderInline(i)}</li>`).join('');
   const metaBits = [];
@@ -750,6 +779,7 @@ const ACTION_LABELS = {
   'draft-replies':  { label: '✎ Draft replies',  primary: true },
   'draft-starter':  { label: '✎ Draft starter',  primary: true },
   'draft-post':     { label: '✎ Draft post',     primary: true },
+  'submit-hn':      { label: '↗ Submit on HN',   primary: true },
   'reply-back':     { label: '✎ Reply back',     primary: true },
   'polish':         { label: '✎ Polish',         primary: true },
   'open':           { label: '↗ Open',           primary: false },

@@ -79,6 +79,29 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/hn-thread.sh {{thread}}"
     tier: read
     timeout_ms: 30000
+  - name: FetchHNSubmitCandidates
+    description: >-
+      Find GOOD third-party ARTICLES to SUBMIT to HN — the way to lower a
+      young account's "own-post ratio" so its own Show HN stops getting
+      auto-killed. (HN's software filters accounts that submit mostly their
+      own links; an HN mod's fix: intersperse interesting posts from OTHER
+      sources. Comments build karma but do NOT move the submission ratio —
+      only third-party submissions do.) Reads curated HN-taste sources —
+      lobste.rs front page + quality tech subreddits
+      (sites.hackernews.submit_sources) — then DEDUPS each URL against HN
+      via the public Algolia API and DROPS anything already submitted
+      (reposts get killed). Arg: [max=3] (default 3 — HN tolerates only a
+      couple of your own submissions per day, so a short list is plenty).
+      Returns JSON array of
+      {title, url, source, score, age_hours, comments_url, hn_status},
+      best/freshest first; hn_status "fresh" = not on HN, "unchecked" =
+      Algolia unreachable (verify before posting). These are SUBMIT-this-
+      link items (a title+url to paste into HN's submit form) — NOT threads
+      to comment on, and NEVER the user's own work. Gated on
+      sites.hackernews.enabled.
+    cmd: "$SKILL_DIR/scripts/sites/hn-submit-finder.sh {{max}}"
+    tier: read
+    timeout_ms: 45000
   - name: FetchReddit
     description: >-
       Fetch the 25 newest threads from each subreddit listed in
@@ -613,6 +636,21 @@ Bluesky keywords.
    account before posting. Prefer hits with `num_comments > 0` and low
    `age_hours` (live discussion); a comment on a dead thread earns
    nothing.
+
+   **HN submit candidates (lower the own-post ratio).** A young account
+   whose submissions are mostly its own links gets auto-filtered ("using
+   HN primarily for promotion"). Commenting builds karma but does NOT move
+   that ratio — only third-party submissions do. So when the user is
+   building the HN account (or asks for "HN submit ideas"), call
+   `FetchHNSubmitCandidates [max]` (if `sites.hackernews.enabled`): it
+   returns fresh, HN-taste articles from OTHER sources (lobste.rs +
+   quality subreddits), already deduped against HN. Present each survivor
+   as a `title` + `url` the user pastes into HN's submit form — these are
+   submit-this-link items, NOT comment threads, and never the user's own
+   work. Surface only `hn_status:"fresh"`; for `"unchecked"`, tell the
+   user Algolia was unreachable so verify on hn.algolia.com first. Always
+   remind: skim it before posting — genuine curiosity is the rule, and a
+   topic you can't speak to is a weak fit.
 2. **Drop SKIP_URLS first.** Before scoring or drafting, drop any
    thread whose normalized post id matches a `SKIP_URLS` entry from
    the hidden Gather web context (set by pulse-app.js from the

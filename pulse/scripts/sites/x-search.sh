@@ -39,13 +39,25 @@ import json, os, sys
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.environ["SITES_DIR"])  # heredoc has no __file__
-from x_api import api_get  # noqa: E402
+from x_api import api_get, cache_get, cache_put  # noqa: E402
 
 query = os.environ["QUERY"].strip()
 try:
     max_results = max(10, min(int(os.environ.get("MAX", "15")), 100))
 except ValueError:
     max_results = 15
+
+# Cache by query: X recent-search reads are metered/credit-billed, so a repeat
+# gather (same keyword) within the TTL reuses the last pull and costs 0 reads.
+try:
+    with open(os.path.expanduser("~/.linggen/skills/pulse/config.json")) as _cf:
+        _ttl_h = (((json.load(_cf).get("sites", {}) or {}).get("x", {}) or {}).get("cache_ttl_hours", 6)) or 6
+except Exception:
+    _ttl_h = 6
+_ckey = f"xsearch:{query}:{max_results}"
+_cached = cache_get(_ckey, int(_ttl_h) * 3600)
+if _cached is not None:
+    print(json.dumps(_cached)); sys.exit(0)
 
 def age_hours(iso):
     if not iso:
@@ -106,5 +118,6 @@ for t in data.get("data", []) or []:
         "age_hours": age_hours(t.get("created_at")),
     })
 
+cache_put(_ckey, out)
 print(json.dumps(out))
 PY

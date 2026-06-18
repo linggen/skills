@@ -86,10 +86,10 @@ if not username:
 
 def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=20) as r:
+    with urllib.request.urlopen(req, timeout=8) as r:
         return r.read()
 
-def fetch_retry(url, tries=2, pause=1.5):
+def fetch_retry(url, tries=2, pause=0.7):
     """fetch() with one retry — the per-reply walk competes with the inbox
     feeds for Reddit's ~10/min anon budget, and a transient 429/timeout must
     NOT silently default a reply to 'unanswered'."""
@@ -175,6 +175,16 @@ def walk_reply(reply_url, me):
     already_replied = any(a == me for _, _, a, _ in ents[pos + 1:])
     return parent_body, parent_url, already_replied
 
+# Cap the per-reply context-walk fetches across ALL feeds. Each walk is a
+# rate-limited Reddit RSS call (~10/min anon budget) and is the gather's
+# latency bottleneck (~2 min for ~16 replies). Walk only the most recent few;
+# the my_thread_ts fallback below still suppresses already-answered replies
+# WITHOUT a walk, so over-budget replies are emitted without the parent-comment
+# preview rather than dropped. Feeds are processed newest-first, so the budget
+# lands on the freshest replies.
+WALK_BUDGET = 5
+_walks_left = [WALK_BUDGET]
+
 def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
     root = ET.fromstring(xml_bytes)
     n = 0
@@ -198,7 +208,14 @@ def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
         # comment (someone wrote u/<you> in their own comment).
         parent_body, parent_url = ("", "")
         if kind == "reply_to_me" and www_url:
-            parent_body, parent_url, already_replied = walk_reply(www_url, username)
+            if _walks_left[0] > 0:
+                parent_body, parent_url, already_replied = walk_reply(www_url, username)
+                _walks_left[0] -= 1
+            else:
+                # Over the walk budget — skip the rate-limited context fetch
+                # (the gather bottleneck). Emit without the parent preview; the
+                # my_thread_ts fallback below still suppresses answered ones.
+                parent_body, parent_url, already_replied = "", "", False
             # Fallback (order-independent, no extra fetch): if I have a comment
             # in the SAME thread that is NEWER than this reply, I've already
             # engaged after it — suppress even if the per-reply walk failed and
