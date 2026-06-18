@@ -47,13 +47,20 @@ try:
 except ValueError:
     max_results = 15
 
-# Cache by query: X recent-search reads are metered/credit-billed, so a repeat
-# gather (same keyword) within the TTL reuses the last pull and costs 0 reads.
 try:
     with open(os.path.expanduser("~/.linggen/skills/pulse/config.json")) as _cf:
-        _ttl_h = (((json.load(_cf).get("sites", {}) or {}).get("x", {}) or {}).get("cache_ttl_hours", 6)) or 6
+        _x = ((json.load(_cf).get("sites", {}) or {}).get("x", {}) or {})
 except Exception:
-    _ttl_h = 6
+    _x = {}
+# The keyword firehose is OFF by default. It's the lowest value-per-read X
+# source — recent-search is mostly tiny/promo accounts that get filtered out —
+# and every call still spends metered reads. Curated FetchXTargets is the
+# growth engine; opt back in with sites.x.keyword_search=true.
+if not _x.get("keyword_search", False):
+    print("[]"); sys.exit(0)
+# Cache by query: X recent-search reads are metered/credit-billed, so a repeat
+# gather (same keyword) within the TTL reuses the last pull and costs 0 reads.
+_ttl_h = _x.get("cache_ttl_hours", 6) or 6
 _ckey = f"xsearch:{query}:{max_results}"
 _cached = cache_get(_ckey, int(_ttl_h) * 3600)
 if _cached is not None:

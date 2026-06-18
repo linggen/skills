@@ -29,6 +29,7 @@
       "username": "",
       "keywords": [],
       "target_accounts": [],
+      "keyword_search": false,
       "cache_ttl_hours": 6
     },
     "lobsters": {
