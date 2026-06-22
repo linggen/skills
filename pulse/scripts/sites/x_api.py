@@ -104,6 +104,43 @@ def cache_put(key, value):
         pass
 
 
+# ── Browser bridge ─────────────────────────────────────────────────────────
+# The linggen-browser extension reads the user's logged-in x.com session for $0
+# (no metered API). Skills don't speak its WebSocket — they POST one read to the
+# local daemon, which brokers it to the extension. We try the bridge first and
+# fall back to the paid API when it isn't there. See doc/browser-bridge-spec.md.
+BRIDGE_URL = "http://127.0.0.1:9898/api/bridge/call"
+
+
+def bridge_call(op, params, timeout_ms=20000):
+    """Try the browser bridge for an X read. Returns the result list on success
+    (possibly empty — an authoritative empty), or None to mean "degrade to the
+    paid API". Never raises: a missing daemon/extension just returns None."""
+    body = json.dumps(
+        {"module": "x", "op": op, "params": params or {}, "timeout_ms": timeout_ms}
+    ).encode()
+    req = urllib.request.Request(
+        BRIDGE_URL,
+        data=body,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout_ms / 1000 + 5) as r:
+            out = json.loads(r.read().decode("utf-8"))
+    except Exception:
+        return None  # daemon down / route absent → paid API
+    if not isinstance(out, dict) or not out.get("ok"):
+        # Bridge present but degraded (no extension, not logged in, error).
+        # Log the code to the daemon log so it's debuggable, then fall back.
+        code = out.get("code") if isinstance(out, dict) else None
+        if code:
+            sys.stderr.write(f"[x_bridge] {op}: degrade ({code}) -> paid API\n")
+        return None
+    data = out.get("data")
+    return data if isinstance(data, list) else []
+
+
 def get_bearer(creds):
     """Mint (and cache) an App-only Bearer token from the consumer key/secret."""
     global _bearer_cache

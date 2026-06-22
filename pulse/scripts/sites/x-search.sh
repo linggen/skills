@@ -39,7 +39,7 @@ import json, os, sys
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.environ["SITES_DIR"])  # heredoc has no __file__
-from x_api import api_get, cache_get, cache_put  # noqa: E402
+from x_api import api_get, cache_get, cache_put, bridge_call  # noqa: E402
 
 query = os.environ["QUERY"].strip()
 try:
@@ -65,6 +65,12 @@ _ckey = f"xsearch:{query}:{max_results}"
 _cached = cache_get(_ckey, int(_ttl_h) * 3600)
 if _cached is not None:
     print(json.dumps(_cached)); sys.exit(0)
+
+# Bridge-first: read the logged-in x.com session for $0. None = degrade to API.
+_items = bridge_call("search", {"query": query, "max": max_results})
+if _items is not None:
+    cache_put(_ckey, _items)
+    print(json.dumps(_items)); sys.exit(0)
 
 def age_hours(iso):
     if not iso:
