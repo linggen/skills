@@ -786,7 +786,7 @@ const ACTION_LABELS = {
   'open-url':       { label: '↗ Open',           primary: false },
   'copy':           { label: '📋 Copy',           primary: false },
   'copy-url':       { label: '🔗 Copy URL',       primary: false },
-  'mark-posted':    { label: '✓ Posted',         primary: false },
+  'mark-posted':    { label: '☐ Mark posted',    primary: false },
   'discard':        { label: '✗ Discard',        dismiss: true },
   'dismiss':        { label: '×',                 dismiss: true },
 };
