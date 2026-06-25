@@ -4,7 +4,7 @@ model: deepseek-v4-flash
 description: >-
   System health analyst. Scans disk, apps, caches, and system info.
   Use --web for interactive dashboard, or run directly in chat for text reports.
-allowed-tools: [Bash, Task, WebSearch, WebFetch]
+allowed-tools: [Bash, Task, WebSearch, WebFetch, agent_chat]
 user-invocable: true
 argument-hint: "[full | disk | apps | quick | --web]"
 app:
@@ -67,6 +67,12 @@ PageUpdate blocks) and the analysis behind it (interpreting the
 hardware scan into a health report with concrete recommendations).
 The chat panel beside the dashboard is how the user asks follow-up
 questions about their machine.
+
+**Yinyue** is the user's desktop companion (a separate agent). If the user
+asks you to tell or ask Yinyue something — "tell Yinyue to dance", "say hi to
+Yinyue" — relay it with the `agent_chat` tool (target `yinyue`), then confirm
+in a line. Don't refuse these as off-topic; just pass them along. System health
+is still your job — you don't impersonate her or do her tricks yourself.
 
 ## Two modes
 

@@ -159,6 +159,19 @@
     transition: opacity .15s;
   }
   .save-status.visible { opacity: 1; }
+
+  /* Desktop pet toggle rows */
+  .grow { flex: 1; min-width: 0; }
+  .pet-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 2px; cursor: pointer; }
+  .pet-row + .pet-row { border-top: 1px solid var(--border); }
+  .pet-row.disabled { opacity: .4; cursor: not-allowed; }
+  .pet-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border);
+    background: var(--surface); flex: none; margin-top: 2px; position: relative; transition: background .12s, border-color .12s; }
+  .pet-row.on .pet-check { background: var(--accent); border-color: var(--accent); }
+  .pet-row.on .pet-check::after { content: ""; position: absolute; left: 5px; top: 1px; width: 4px; height: 9px;
+    border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .acct-name { font-size: 14px; font-weight: 600; }
+  .acct-meta { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -193,6 +206,27 @@
           <button id="tavily-toggle" class="icon-btn" type="button" aria-label="Toggle visibility" title="Show/hide">👁</button>
           <button id="tavily-save" class="save-btn" type="button" disabled>Save</button>
           <span id="tavily-status" class="save-status">Saved</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Desktop pet</h2>
+      <p class="section-desc">Yinyue, your companion on screen. Drag her body to move her anywhere.</p>
+      <div class="field-card">
+        <div class="pet-row" id="pet-enabled-row" onclick="petToggleEnabled()">
+          <span class="pet-check"></span>
+          <div class="grow">
+            <div class="acct-name">Show Yinyue</div>
+            <div class="acct-meta">Your desktop companion. Turn off to hide her entirely.</div>
+          </div>
+        </div>
+        <div class="pet-row" id="pet-alwayson-row" onclick="petToggleAlways()">
+          <span class="pet-check"></span>
+          <div class="grow">
+            <div class="acct-name">Always on top</div>
+            <div class="acct-meta">Stay visible even when you switch to another app.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -309,6 +343,55 @@
 
     loadModel();
     loadTavily();
+
+    // ── Desktop pet ───────────────────────────────────────────────────────
+    // Two flag files the Tauri shell watches (applies changes within ~2s); the
+    // tray menu reads/writes the same files, so all surfaces stay in sync:
+    //   ~/.linggen/pet-disabled   present = Yinyue hidden entirely
+    //   ~/.linggen/pet-always-on  present = floats above other apps
+    // Inline onclick + global function declarations so handlers fire regardless
+    // of attach timing.
+    async function runBash(command) {
+      const res = await fetch("/api/bash", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ project_root: "/tmp", command }),
+      });
+      if (!res.ok) throw new Error(`bash ${res.status}`);
+      const body = await res.json();
+      if (body.exit_code && body.exit_code !== 0) throw new Error(body.stderr || `bash exit ${body.exit_code}`);
+      return body.stdout || "";
+    }
+    function petPaintRows() {
+      var e = document.getElementById("pet-enabled-row");
+      var a = document.getElementById("pet-alwayson-row");
+      if (!e || !a) return;
+      a.classList.toggle("disabled", !e.classList.contains("on"));
+    }
+    function petToggleEnabled() {
+      var r = document.getElementById("pet-enabled-row");
+      var on = !r.classList.contains("on");
+      r.classList.toggle("on", on);
+      petPaintRows();
+      // enabled = pet-disabled file ABSENT
+      runBash(on ? "rm -f $HOME/.linggen/pet-disabled" : "touch $HOME/.linggen/pet-disabled").catch(function () {});
+    }
+    function petToggleAlways() {
+      var r = document.getElementById("pet-alwayson-row");
+      if (r.classList.contains("disabled")) return;
+      var on = !r.classList.contains("on");
+      r.classList.toggle("on", on);
+      runBash(on ? "touch $HOME/.linggen/pet-always-on" : "rm -f $HOME/.linggen/pet-always-on").catch(function () {});
+    }
+    (async function petLoad() {
+      try {
+        var d = (await runBash("test -f $HOME/.linggen/pet-disabled && echo 1 || echo 0")).trim() === "1";
+        var a = (await runBash("test -f $HOME/.linggen/pet-always-on && echo 1 || echo 0")).trim() === "1";
+        document.getElementById("pet-enabled-row").classList.toggle("on", !d);
+        document.getElementById("pet-alwayson-row").classList.toggle("on", a);
+        petPaintRows();
+      } catch (_) {}
+    })();
   </script>
 </body>
 </html>
