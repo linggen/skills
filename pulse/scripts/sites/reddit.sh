@@ -39,7 +39,7 @@ if ! command -v python3 &>/dev/null || [ ! -f "$CONFIG" ]; then
 fi
 
 CONFIG="$CONFIG" MODE="$MODE" python3 <<'PY'
-import json, os, re, sys
+import json, os, re, sys, time
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -54,6 +54,26 @@ if not subs:
 UA = "pulse/0.1 (public-rss; reddit-discovery)"
 NS = {"a": "http://www.w3.org/2005/Atom"}
 endpoint = f"{mode}.rss?limit=25" + ("&t=day" if mode == "top" else "")
+
+# Reddit rate-limits anon .rss hard (~10/min; bursts trip 429). Looping subs
+# back-to-back let the 1st sub succeed while every later sub got 429 — which
+# the old bare `except: continue` swallowed, so discovery came from ONLY the
+# first sub. Space requests out + retry 429/transient with backoff so each sub
+# gets a fair pull, and surface failures on stderr (never silently empty).
+REQUEST_GAP = 4.0  # seconds between subs — anon .rss tolerates ~1 req/few sec
+
+def fetch_feed(url, tries=3):
+    last = None
+    for i in range(tries):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                return ET.fromstring(r.read())
+        except Exception as ex:
+            last = ex
+            if i + 1 < tries:
+                time.sleep(4 * (i + 1))  # 4s, 8s backoff on 429/transient
+    raise last
 
 def strip_html(s):
     s = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "", s or "")
@@ -71,14 +91,15 @@ def age_hours(iso):
     except Exception:
         return None
 
-out = []
-for sub in subs:
+out, errors = [], []
+for i, sub in enumerate(subs):
+    if i:
+        time.sleep(REQUEST_GAP)  # spacing so sub 2+ isn't rate-limited
     url = f"https://www.reddit.com/r/{sub}/{endpoint}"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=15) as r:
-            root = ET.fromstring(r.read())
-    except Exception:
+        root = fetch_feed(url)
+    except Exception as ex:
+        errors.append(f"r/{sub}: {type(ex).__name__} {ex}")
         continue
     for e in root.findall("a:entry", NS):
         link_el = e.find("a:link", NS)
@@ -99,4 +120,6 @@ for sub in subs:
         })
 
 print(json.dumps(out))
+if errors:
+    sys.stderr.write("[reddit.sh] " + "; ".join(errors) + "\n")
 PY
