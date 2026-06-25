@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # x-followers.sh — page-side follower-count snapshot (NOT a registered agent tool).
 #
-# One cheap X API v2 user lookup (/users/by/username?user.fields=public_metrics)
-# resolved from the configured handle (sites.x.username). Returns the account's
-# current follower count so pulse-app.js can chart audience growth in the status
-# strip — the "is the account actually growing?" loop.
+# Reads the account's current follower count from the logged-in x.com session
+# via the linggen-browser extension (bridge op "followers"), resolved from the
+# configured handle (sites.x.username). Lets pulse-app.js chart audience growth
+# in the status strip — the "is the account actually growing?" loop.
 #
 # Invoked page-side via /api/bash (like x-suggest-accounts.sh), gated on
 # sites.x.enabled and throttled to one snapshot/day by the caller. No SKILL.md
@@ -12,9 +12,9 @@
 #
 # Output (always JSON, exit 0):
 #   { "username": "<handle>", "followers": <int|null>, "errors": [ ... ] }
-# followers is null + a clear error when creds or handle are absent.
+# followers is null + a clear error when the bridge/extension is unavailable.
 #
-# Deps: python3 stdlib only (urllib + json) — App-only Bearer, no requests_oauthlib.
+# Deps: python3 stdlib only (urllib + json).
 
 set -uo pipefail
 
@@ -28,13 +28,30 @@ SITES_DIR="$SITES_DIR" python3 <<'PY'
 import json, os, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])  # heredoc has no __file__
-from x_api import resolve_self_id, self_followers  # noqa: E402
+from x_api import bridge_call  # noqa: E402
 
-_id, username, err = resolve_self_id()
-errors = [err] if err else []
+# Handle from config (no API self-lookup anymore).
+username = ""
+try:
+    with open(os.path.expanduser("~/.linggen/skills/pulse/config.json")) as f:
+        username = (((json.load(f).get("sites") or {}).get("x") or {})
+                    .get("username") or "").strip().lstrip("@")
+except Exception:
+    pass
+
+# Bridge-only: the extension returns a one-element list carrying the count,
+# e.g. [{"followers": 1234}]. None = bridge/extension unavailable.
+res = bridge_call("followers", {"username": username})
+followers, errors = None, []
+if res is None:
+    errors = ["x followers: bridge/extension unavailable (no reader op yet)"]
+elif res:
+    first = res[0]
+    followers = first.get("followers") if isinstance(first, dict) else first
+
 print(json.dumps({
     "username": username,
-    "followers": self_followers(),
+    "followers": followers,
     "errors": errors,
 }))
 PY

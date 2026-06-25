@@ -192,25 +192,6 @@
   color: var(--text);
 }
 
-/* X (and future) API-key block */
-.cred-block { display: flex; flex-direction: column; gap: 8px; }
-.cred-status {
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: 0;
-  color: var(--muted);
-}
-.cred-field { display: flex; flex-direction: column; gap: 3px; }
-.website-config label.cred-sublabel {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  margin-bottom: 0;
-}
-
 .website-config input[type="text"]:focus,
 .website-config input[type="number"]:focus,
 .website-config input[type="password"]:focus {

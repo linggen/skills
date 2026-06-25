@@ -3,26 +3,24 @@
 #
 # An on-demand SETUP helper (triggered by the "Suggest accounts" button in
 # Settings, NOT part of the daily pipeline). Pure script, no agent: gathers
-# candidate accounts from two sources and ranks them heuristically — the
-# USER picks the good ones, so no LLM judgment is needed.
+# candidate accounts via the linggen-browser bridge and ranks them
+# heuristically — the USER picks the good ones, so no LLM judgment is needed.
 #
-# Sources:
-#   A. Following — GET /users/<me>/following. Kept only if the bio matches
-#      the niche vocabulary (your keywords + AI/dev terms), so mega-generic
-#      follows (NASA, Tesla) are dropped.
-#   B. Keyword harvest — recent-search each of sites.x.keywords and collect
-#      the AUTHORS of the hits (these are on-topic by construction); track
-#      how many searches each recurs in.
+# Candidates come from the extension (bridge op "suggest"), which reads the
+# logged-in x.com session — your following + the authors of recent posts on
+# sites.x.keywords. Each candidate is a user object {username, name,
+# public_metrics.followers_count, description, source?, seen_count?}. This
+# script applies the niche/spam/score ranking locally.
 #
 # Ranking favors mid-tier niche accounts with engagement; mega-accounts
 # (> ~600k followers) are flagged + de-ranked, NOT removed (the user may
 # still pick one deliberately). Already-listed handles + self are dropped.
 #
-# Output (JSON array, exit 0; [] on no creds):
+# Output (JSON array, exit 0; [] when the bridge/extension is unavailable):
 #   [{ handle, name, followers, bio, source, seen_count, mega, score, why }]
 #   sorted by score desc.
 #
-# Cost: 1 following call + up to 3 keyword searches (your X credits).
+# Cost: $0 — reads via the linggen-browser bridge, no paid X API.
 # Deps: python3 stdlib only.
 
 set -uo pipefail
@@ -35,7 +33,7 @@ SITES_DIR="$(cd "$(dirname "$0")" && pwd)"
 SITES_DIR="$SITES_DIR" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import json, os, re, sys
 sys.path.insert(0, os.environ["SITES_DIR"])
-from x_api import api_get, resolve_self_id  # noqa: E402
+from x_api import bridge_call  # noqa: E402
 
 MEGA = 600_000           # above this = de-ranked, flagged (saturated replies)
 TINY = 1_000             # below this = no audience to reach
@@ -102,8 +100,8 @@ def is_spam(handle, bio):
         return True
     return any(re.search(r"\b" + t + r"\b", b) for t in SPAM_TOKENS)
 
-my_id, my_handle, err = resolve_self_id()
-my_handle_l = (my_handle or "").lower()
+my_handle = (x.get("username") or "").strip().lstrip("@")
+my_handle_l = my_handle.lower()
 
 # handle -> candidate dict
 cand = {}
@@ -131,36 +129,18 @@ def add(u, source):
         c["source"] = "following+search"
     return c
 
-# ── Source A: following ──────────────────────────────────────────────
-if my_id:
-    status, data = api_get(f"/users/{my_id}/following", {
-        "max_results": 100,
-        "user.fields": "username,name,public_metrics,description",
-    })
-    if status == 200:
-        for u in data.get("data", []) or []:
-            add(u, "following")   # add() now gates on niche-bio + spam
-
-# ── Source B: keyword harvest ────────────────────────────────────────
-for kw in keywords:
-    status, data = api_get("/tweets/search/recent", {
-        "query": f"{kw} -is:retweet -is:reply lang:en",
-        "max_results": 50,
-        "sort_order": "relevancy",
-        "tweet.fields": "public_metrics,author_id",
-        "user.fields": "username,name,public_metrics,description",
-        "expansions": "author_id",
-    })
-    if status != 200:
-        continue
-    users = {u["id"]: u for u in (data.get("includes", {}) or {}).get("users", [])}
-    for t in data.get("data", []) or []:
-        u = users.get(t.get("author_id"))
-        if not u:
-            continue
-        c = add(u, "search")
-        if c:
-            c["seen_count"] += 1
+# ── Candidates via the linggen-browser bridge ────────────────────────
+# The extension reads the logged-in session and returns user objects from your
+# following + the authors of recent posts on `keywords`. Each may carry a
+# `source` ("following"/"search") and a `seen_count` (recurrence across the
+# keyword searches). None = bridge/extension unavailable → emit [].
+raw = bridge_call("suggest", {"keywords": keywords, "max": 200})
+if raw is None:
+    print("[]"); sys.exit(0)
+for u in raw:
+    c = add(u, (u.get("source") or "search"))   # add() gates on niche-bio + spam
+    if c is not None and u.get("seen_count") is not None:
+        c["seen_count"] = max(c["seen_count"], int(u.get("seen_count") or 0))
 
 # ── Rank ─────────────────────────────────────────────────────────────
 def score(c):

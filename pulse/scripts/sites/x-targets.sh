@@ -24,7 +24,10 @@
 #   so discover-customers ranks + drafts identically. Recency-sorted so the
 #   newest (earliest-to-reply) posts come first.
 #
-# Cost: one paid API call per invocation (your X credits).
+# Reads the user's logged-in x.com session through the linggen-browser
+# extension (bridge op "targets") — no metered API, $0/read. Returns [] when
+# the bridge/extension isn't available.
+#
 # Deps: python3 stdlib only.
 
 set -uo pipefail
@@ -36,10 +39,9 @@ fi
 SITES_DIR="$(cd "$(dirname "$0")" && pwd)"
 MAX="${1:-25}" SITES_DIR="$SITES_DIR" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import json, os, sys
-from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.environ["SITES_DIR"])
-from x_api import api_get, cache_get, cache_put, bridge_call  # noqa: E402
+from x_api import cache_get, cache_put, bridge_call  # noqa: E402
 
 try:
     max_results = max(10, min(int(os.environ.get("MAX", "25")), 100))
@@ -61,86 +63,18 @@ if not handles:
 # Recent search caps query length (~512); cap handles so the OR-group fits.
 handles = handles[:25]
 
-# Cache the recent-search result by roster: X reads are metered/credit-billed,
-# so a repeat gather within the TTL reuses the last pull and costs ZERO reads.
+# Cache the result by roster: a repeat gather within the TTL reuses the last
+# pull instead of re-opening an x.com tab through the bridge.
 _ckey = "xtargets:" + ",".join(sorted(handles))
 _cached = cache_get(_ckey, int(ttl_h) * 3600)
 if _cached is not None:
     print(json.dumps(_cached)); sys.exit(0)
 
-# Bridge-first: read the logged-in x.com session for $0. None = degrade to API.
+# Bridge-only: read the logged-in x.com session for $0 via linggen-browser.
+# None = bridge/extension unavailable → emit [] so callers continue.
 _items = bridge_call("targets", {"handles": handles, "per_author": 3, "max": max_results})
-if _items is not None:
-    cache_put(_ckey, _items)
-    print(json.dumps(_items)); sys.exit(0)
-
-from_group = " OR ".join(f"from:{h}" for h in handles)
-
-def age_hours(iso):
-    if not iso:
-        return None
-    try:
-        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
-        return int((datetime.now(timezone.utc) - dt).total_seconds() // 3600)
-    except Exception:
-        return None
-
-# Their posts excluding replies (-is:reply); retweets ARE included so the
-# full recent activity of curated accounts surfaces. From the last 48h
-# (start_time) so the user replies while the thread is fresh. Fetch a wide
-# pool (100) then cap per-account below so one prolific account can't eat it.
-start_time = (datetime.now(timezone.utc) - timedelta(hours=48)).strftime("%Y-%m-%dT%H:%M:%SZ")
-params = {
-    "query": f"({from_group}) -is:reply lang:en",
-    # 50, not 100: the per-author cap (3) × ≤14 accounts ≈ ≤42 ever used, so
-    # 100 doubled the metered reads for no extra output. Halves X consumption.
-    "max_results": 50,
-    "start_time": start_time,
-    "sort_order": "recency",
-    "tweet.fields": "created_at,author_id,public_metrics,text",
-    "user.fields": "username,name,public_metrics",
-    "expansions": "author_id",
-}
-status, data = api_get("/tweets/search/recent", params)
-if status != 200:
+if _items is None:
     print("[]"); sys.exit(0)
-
-users = {}
-for u in (data.get("includes", {}) or {}).get("users", []):
-    users[u["id"]] = u
-
-out = []
-per_author = {}
-PER_AUTHOR_CAP = 3   # diversity: no one account dominates the pool
-for t in data.get("data", []) or []:
-    u = users.get(t.get("author_id"), {})
-    handle = u.get("username", "")
-    if per_author.get(handle, 0) >= PER_AUTHOR_CAP:
-        continue   # data is recency-sorted, so we keep each account's newest N
-    per_author[handle] = per_author.get(handle, 0) + 1
-    m = t.get("public_metrics", {}) or {}
-    likes = m.get("like_count", 0)
-    reposts = m.get("retweet_count", 0)
-    replies = m.get("reply_count", 0)
-    text = t.get("text", "")
-    out.append({
-        "source": "x",
-        "author": u.get("name", handle),
-        "handle": handle,
-        "followers": (u.get("public_metrics", {}) or {}).get("followers_count", 0),
-        "title": text,
-        "text": text,
-        "url": f"https://x.com/{handle}/status/{t['id']}" if handle else "",
-        "score": likes + reposts,
-        "likes": likes,
-        "reposts": reposts,
-        "replies": replies,
-        "created_iso": t.get("created_at"),
-        "age_hours": age_hours(t.get("created_at")),
-    })
-    if len(out) >= max_results:
-        break
-
-cache_put(_ckey, out)
-print(json.dumps(out))
+cache_put(_ckey, _items)
+print(json.dumps(_items))
 PY

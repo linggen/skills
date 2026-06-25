@@ -2,80 +2,70 @@
 
 Pulse reads X for mentions, replies, and topic discovery, and drafts
 ≤280-char posts and replies for you. It **never posts** — you copy drafts
-to X yourself. X has no free API, so Pulse uses **your own** X developer
-app (pay-per-use, ~$0.001–0.01 per search).
+to X yourself.
 
-Pulse only READS from X, so it uses **App-only (Bearer) auth** — minted at
-runtime from your **Consumer Key + Consumer Secret**. Those two keys are all
-that's required; the Access Token + Secret (OAuth 1.0a) are optional/unused.
-No Python packages to install — the connector is stdlib-only. Also set your
-**X handle** in Settings → X (App-only auth has no "me", so Pulse looks you
-up by handle for mentions/own-posts — it must be your exact handle, e.g.
-`Linggen77`, not a guess).
+There is **no paid API and no developer keys**. Pulse reads X through the
+**linggen-browser extension**, which reads your **logged-in x.com session**
+in your own browser. Reads cost **$0**. Your cookies never leave the
+browser — only the parsed results (public post text + metrics) are handed
+to the local daemon.
 
-Read this guide to the user when they ask how to connect X or when the X
-source returns "no X credentials". Don't ask the user to paste keys into
-chat and don't read their credential file — point them at **Settings → X**,
-which writes the keys to `~/.linggen/skills/pulse/credentials/x.env` locally.
+Read this guide to the user when they ask how to connect X, or when an X
+tool returns empty because the bridge/extension isn't available.
 
 ---
 
-## Step 1 — Developer account + credits
+## Step 1 — Install the linggen-browser extension
 
-1. Go to [developer.x.com](https://developer.x.com/) and sign in with your X account.
-2. Accept the developer agreement.
-3. Buy credits under **Billing → Credits** ($5 minimum — the API is pay-per-use).
+Install the **linggen-browser** Chrome extension and keep it enabled. It
+holds a local connection to the Linggen daemon and answers X read requests
+on demand (it opens a background x.com tab, reads, and closes it).
 
-## Step 2 — Create an App
+## Step 2 — Stay signed in to X
 
-1. **Apps** in the left sidebar → **Create App**.
-2. Name it (e.g. `linggen-poster`).
-3. Save the **Consumer Key** and **Consumer Secret** shown on creation — they aren't shown again.
+In the same browser, sign in to [x.com](https://x.com/) as your normal
+account. That's the session Pulse reads — no tokens, no app, no billing.
+Keep the tab/session logged in; if you're logged out, X reads return empty.
 
-## Step 3 — Set permissions (before generating tokens)
+## Step 3 — Configure X in Pulse
 
-Tokens inherit whatever permissions are set at generation time, so do this first.
+Open **Settings → X (Twitter)**, enable the toggle, and set:
 
-1. Your app → **User authentication settings** → **Set up**.
-2. **App permissions**: **Read and Write**.
-3. **Type of App**: **Web App, Automated App or Bot**.
-4. **Callback URI**: `http://localhost`.
-5. **Website URL**: any URL (e.g. `https://linggen.dev`).
-6. Save.
+- **My X handle** — your exact handle (e.g. `Linggen77`), used for display
+  and to scope own-posts/mentions.
+- **Target accounts** — the curated mid-tier niche accounts whose fresh
+  posts you want to reply to early (the growth engine). Use **Find
+  candidates** to seed the list.
+- **Discovery keywords** — topics for the keyword search (optional).
 
-## Step 4 — Grab the four keys (Keys and Tokens tab)
+Keyword search (`FetchX`) is **OFF by default**. It's the lowest
+value-per-read source (firehose of tiny/promo accounts), so opt in only if
+you want it: set `sites.x.keyword_search=true` in `config.json`.
 
-Pulse uses **OAuth 1.0a** — the **OAuth 1.0 Keys** section only. Ignore the
-Bearer Token (App-Only) and the OAuth 2.0 Client ID / Client Secret.
+## How it works
 
-| X console label | Pulse key |
-|---|---|
-| Consumer Key | `X_API_KEY` |
-| Consumer Secret | `X_API_SECRET` |
-| Access Token | `X_ACCESS_TOKEN` |
-| Access Token Secret | `X_ACCESS_TOKEN_SECRET` |
+- `FetchXTargets` (bridge op `targets`) and `FetchX` (bridge op `search`)
+  read live from your session — these power discovery and are **$0**.
+- `FetchXOwnPosts`, `FetchXMentions`, and the follower snapshot read via the
+  bridge too, but their reader ops ship with the extension over time; until
+  then they return an empty (but valid) payload, so the rest of Pulse keeps
+  working.
 
-- Click **Show** to reveal the Consumer Key. If a secret won't reveal (X shows
-  secrets only once), hit **Regenerate** on that pair and copy it immediately.
-- Generate the Access Token + Secret **for your own account** with Read and Write.
+## Verify the connection
 
-## Step 5 — Enter them in Pulse
-
-Open **Settings → X (Twitter)**, enable the toggle, paste the four values into
-the credential fields, and **Save**. Pulse writes them to
-`~/.linggen/skills/pulse/credentials/x.env` (chmod 600, this machine only,
-never sent anywhere) and the X source goes live on the next Gather web run.
-
-Already set up the **xbot** skill? Reuse its file instead of re-entering keys:
+Check the bridge from a terminal:
 
 ```bash
-cp ~/.linggen/skills/xbot/credentials/x.env ~/.linggen/skills/pulse/credentials/x.env
+curl -s http://127.0.0.1:9898/api/bridge/status
 ```
+
+`{"connected":true,...,"modules":[{"id":"x",...,"ready":true}]}` means the
+extension is connected and X reads will work.
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---|---|
-| `401 Unauthorized` | Regenerate **both** Consumer Key and Access Token; make sure Read+Write was set **before** generating the token. |
-| `403 Forbidden` | Out of credits — top up at Billing → Credits. |
-| Still 401 after regenerating | You may have two apps (Pay Per Use vs Standalone). Use the **Pay Per Use** app's keys; delete the Standalone one. |
+| X section empty, `connected:false` | The extension isn't connected — make sure it's installed, enabled, and the daemon is running. |
+| X reads return empty but bridge is connected | Sign in to x.com in the extension's browser. |
+| Only `FetchX`/`FetchXTargets` return data | Expected — own-posts/mentions/followers reader ops ship with the extension over time. |

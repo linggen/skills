@@ -557,9 +557,9 @@ async function refreshCommentedThreadUrls() {
     console.warn('[pulse] reddit-mentions own_comment fetch failed', e);
   }
   // X — parent tweets I've already replied to. Same "don't resurface what
-  // I've engaged" rule as Reddit. Gated on sites.x.enabled because x-own.sh
-  // spends paid API credits; pull a wide window (100) so older replies still
-  // suppress. No creds → x-own.sh returns empty gracefully.
+  // I've engaged" rule as Reddit. Gated on sites.x.enabled; x-own.sh reads via
+  // the linggen-browser bridge ($0). Pull a wide window (100) so older replies
+  // still suppress. Bridge/extension unavailable → x-own.sh returns empty.
   try {
     const cfg = await readPulseConfig();
     if (cfg?.sites?.x?.enabled) {

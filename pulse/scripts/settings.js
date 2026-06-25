@@ -4,16 +4,6 @@
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 const CONFIG_PATH = `${SKILL_DIR}/config.json`;
 const CONFIG_EXAMPLE = `${SKILL_DIR}/config.example.json`;
-// X API credentials live in their own file (NOT config.json) so secrets
-// never sit in the synced/backed-up config. Same format + keys as xbot.
-const X_CRED_PATH = `${SKILL_DIR}/credentials/x.env`;
-const X_CRED_KEYS = ['X_API_KEY', 'X_API_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_TOKEN_SECRET'];
-const X_CRED_LABELS = {
-  X_API_KEY: 'API Key (Consumer Key)',
-  X_API_SECRET: 'API Secret (Consumer Secret)',
-  X_ACCESS_TOKEN: 'Access Token',
-  X_ACCESS_TOKEN_SECRET: 'Access Token Secret',
-};
 // Legacy brief.md path — read once on first load to migrate users from
 // the file-based brief to the structured config.brief field. Never
 // written to anymore; the textarea saves directly into config.brief.
@@ -64,7 +54,7 @@ const WEBSITES = [
   },
   {
     name: 'X (Twitter)',
-    desc: 'Mentions, replies, and topic discovery via the official X API v2, using your own developer credentials (pay-per-use). Pulse drafts replies and ≤280-char posts; you copy them to X manually — never auto-posted.',
+    desc: 'Mentions, replies, and topic discovery read from your logged-in x.com session via the free linggen-browser extension — no paid API. Install the extension and stay signed in to X; without it the X section stays empty. Pulse drafts replies and ≤280-char posts; you copy them to X manually — never auto-posted.',
     source_id: 'x',
     target_id: 'x-post',
     source_fields: [
@@ -72,20 +62,6 @@ const WEBSITES = [
       { kind: 'account_finder', targetKey: 'target_accounts', script: 'x-suggest-accounts.sh', label: 'Find candidates from your following + topic searches' },
       { kind: 'chips', key: 'keywords', label: 'Discovery keywords (topics to search, not brand names)' },
       { kind: 'text', key: 'username', label: 'My X handle (optional, for display)', placeholder: 'e.g. linggen — without the @ prefix' },
-      {
-        kind: 'credfile',
-        label: 'X API credentials',
-        hint:
-          'X has no free API — Pulse uses <b>your own</b> X developer app (pay-per-use, ~$0.001–0.01 per search). The four keys are written to <code>~/.linggen/skills/pulse/credentials/x.env</code> on this machine only — never sent anywhere. Get them from X:' +
-          '<ol>' +
-          '<li>At <a href="https://developer.x.com" target="_blank" rel="noopener">developer.x.com</a>, sign in and create a <b>Project + App</b>.</li>' +
-          '<li><b>Billing</b> → add credits ($5 minimum — the API is pay-per-use).</li>' +
-          '<li>Your App → <b>User authentication settings</b> → set permissions to <b>Read and Write</b>.</li>' +
-          '<li><b>Keys and tokens</b> tab → copy <b>API Key</b> (Consumer Key) and <b>API Secret</b> (Consumer Secret).</li>' +
-          '<li>Same tab → <b>Access Token and Secret</b> → <b>Generate</b> → copy both.</li>' +
-          '</ol>' +
-          'Paste the four values below and hit Save. Already set up the <b>xbot</b> skill? Reuse its file instead:<br><code>cp ~/.linggen/skills/xbot/credentials/x.env ~/.linggen/skills/pulse/credentials/x.env</code>',
-      },
     ],
   },
   {
@@ -164,13 +140,6 @@ async function readFile(path, fallback = null) {
   return out;
 }
 
-// Existence check without reading contents — used for the X credential file
-// so we never pull secrets into the page.
-async function fileExists(path) {
-  const out = await runBash(`[ -f "${path}" ] && echo yes || echo no`);
-  return out.trim() === 'yes';
-}
-
 async function writeFile(path, content) {
   // Use a base64-encoded heredoc-free path so backticks/quotes in the
   // content don't break the shell command. We pipe stdin via a here-doc
@@ -218,10 +187,6 @@ async function loadAll() {
     if (typeof state.config.brief !== 'string') state.config.brief = '';
     if (!state.config.sites) state.config.sites = {};
     if (!state.config.targets) state.config.targets = {};
-
-    // Whether X credentials already exist on disk (drives the credfile
-    // field's status line + placeholders). Checked, never read.
-    state.xCredsPresent = await fileExists(X_CRED_PATH);
 
     // One-time migration: if config.brief is empty but legacy brief.md
     // has content, seed it. The legacy file is left untouched on disk
@@ -358,52 +323,8 @@ function renderField(cfg, field, rerender) {
   if (field.kind === 'chips')          return renderChipField(cfg, field);
   if (field.kind === 'range')          return renderRangeField(cfg, field);
   if (field.kind === 'text')           return renderTextField(cfg, field);
-  if (field.kind === 'credfile')       return renderCredFileField(field);
   if (field.kind === 'account_finder') return renderAccountFinderField(cfg, field, rerender);
   return document.createDocumentFragment();
-}
-
-// Secret-file field: writes API keys to a local .env (NOT config.json) on
-// save. We never read the secret values back into the DOM — load only checks
-// whether the file exists, and inputs stay blank ("leave blank to keep").
-// Currently used for the four X OAuth 1.0a keys → credentials/x.env.
-function renderCredFileField(field) {
-  const wrap = document.createElement('div');
-  wrap.className = 'cred-block';
-
-  const label = document.createElement('label');
-  label.textContent = field.label || 'API credentials';
-  wrap.appendChild(label);
-
-  const status = document.createElement('div');
-  status.className = 'cred-status';
-  status.textContent = state.xCredsPresent
-    ? '✓ Saved on this machine — leave blank to keep, or paste new values to replace.'
-    : 'Not configured — paste all four keys below, then Save.';
-  wrap.appendChild(status);
-
-  X_CRED_KEYS.forEach((k) => {
-    const sub = document.createElement('div');
-    sub.className = 'cred-field';
-    const l = document.createElement('label');
-    l.className = 'cred-sublabel';
-    l.textContent = X_CRED_LABELS[k];
-    const input = document.createElement('input');
-    input.type = 'password';
-    input.id = 'x-cred-' + k;
-    input.autocomplete = 'off';
-    input.placeholder = state.xCredsPresent ? '•••••••• (keep existing)' : 'paste value';
-    sub.append(l, input);
-    wrap.appendChild(sub);
-  });
-
-  if (field.hint) {
-    const hint = document.createElement('div');
-    hint.className = 'field-hint';
-    hint.innerHTML = field.hint; // trusted: static, author-authored guidance
-    wrap.appendChild(hint);
-  }
-  return wrap;
 }
 
 function renderCustomFeedRow(url, idx) {
@@ -735,14 +656,9 @@ async function save() {
       }
     }
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
-    const credResult = await writeXCredsIfProvided();
     saveBtn.textContent = 'Saved ✓';
     saveBtn.classList.add('saved');
-    if (credResult === 'partial') {
-      setStatus('✓ Settings saved — but X keys skipped: enter all four, or leave all blank.', 'error');
-    } else {
-      setStatus(credResult === 'written' ? '✓ Settings + X credentials saved' : '✓ Settings saved', 'ok');
-    }
+    setStatus('✓ Settings saved', 'ok');
     setTimeout(() => {
       clearStatus();
       saveBtn.textContent = 'Save';
@@ -754,38 +670,6 @@ async function save() {
     saveBtn.textContent = 'Save';
     saveBtn.disabled = false;
   }
-}
-
-// Collect the four X key inputs and write credentials/x.env. Returns:
-//   null      — nothing entered, existing file left untouched
-//   'partial' — some but not all four filled (skipped, caller warns)
-//   'written' — all four written to the .env (chmod 600), inputs cleared
-async function writeXCredsIfProvided() {
-  const vals = {};
-  let filled = 0;
-  for (const k of X_CRED_KEYS) {
-    const el = document.getElementById('x-cred-' + k);
-    const v = el ? el.value.trim() : '';
-    vals[k] = v;
-    if (v) filled++;
-  }
-  if (filled === 0) return null;
-  if (filled < X_CRED_KEYS.length) return 'partial';
-  // x_api.py parses KEY="value" naively (split on first '=', strip quotes)
-  // and does NOT unescape, so strip chars that can't round-trip rather than
-  // escaping them. Real X OAuth keys are URL-safe tokens — none of these
-  // ever appear in a valid value, so this only guards against corruption.
-  const clean = (v) => String(v).replace(/["\\\r\n]/g, '').trim();
-  const body = X_CRED_KEYS.map((k) => `${k}="${clean(vals[k])}"`).join('\n') + '\n';
-  await writeFile(X_CRED_PATH, body);
-  await runBash(`chmod 600 "${X_CRED_PATH}" 2>/dev/null || true`);
-  state.xCredsPresent = true;
-  // Don't leave secrets sitting in the DOM after a successful write.
-  for (const k of X_CRED_KEYS) {
-    const el = document.getElementById('x-cred-' + k);
-    if (el) { el.value = ''; el.placeholder = '•••••••• (keep existing)'; }
-  }
-  return 'written';
 }
 
 async function resetDefaults() {

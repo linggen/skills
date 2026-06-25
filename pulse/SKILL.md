@@ -162,15 +162,14 @@ tools:
   - name: FetchX
     description: >-
       Search recent X (Twitter) posts for a topic — discovery + a trend supplement.
-      Uses the official X API v2 recent-search with the user's OWN dev
-      credentials (~/.linggen/skills/pulse/credentials/x.env, set up via
-      Settings → X; Pulse is independent of the xbot skill). Pass a topic
-      query; excludes retweets/replies, English only. Recent search covers
-      ~the last 7 days. Returns a JSON array of
+      Reads the user's logged-in x.com session through the linggen-browser
+      extension (bridge op "search") — no paid API, $0/read. Gated OFF by
+      default; set sites.x.keyword_search=true to enable. Pass a topic query;
+      excludes retweets/replies, English only. Returns a JSON array of
       {source:"x", author, handle, followers, title, text, url, score,
       likes, reposts, replies, created_iso, age_hours} (title == text, so
-      score it like a Reddit thread). [] when creds are absent. Each call
-      costs X API credits (~$0.001–0.01) — cap to the top few topics.
+      score it like a Reddit thread). [] when the bridge/extension is
+      unavailable — cap to the top few topics regardless.
     cmd: "$SKILL_DIR/scripts/sites/x-search.sh {{query}}"
     tier: read
     timeout_ms: 25000
@@ -183,49 +182,51 @@ tools:
     description: >-
       The X GROWTH engine — the PRIMARY X discovery source. Pulls the
       FRESHEST original posts from the user's curated list of mid-tier
-      niche accounts (sites.x.target_accounts) via a from:<handles>
-      recency search, so the user can reply EARLY while the post is gaining
+      niche accounts (sites.x.target_accounts), read from the logged-in
+      x.com session via the linggen-browser extension (bridge op "targets",
+      $0/read), so the user can reply EARLY while the post is gaining
       traction and the reply slot is still visible. Replying under accounts
       whose audience IS the target user is the real follower-growth lever —
       far better than keyword search (FetchX), which trawls a firehose of
       tiny accounts. Same output shape as FetchX, newest-first. [] when
-      creds or target_accounts are absent. Prefer hits with low age_hours
-      (reply early). One paid API call.
+      target_accounts are absent or the bridge/extension is unavailable.
+      Prefer hits with low age_hours (reply early).
     cmd: "$SKILL_DIR/scripts/sites/x-targets.sh"
     tier: read
     timeout_ms: 25000
   - name: FetchXMentions
     description: >-
-      X (Twitter) mention/reply monitoring via the official API v2 with the
-      user's OWN credentials (Settings → X). Surfaces recent mentions and
-      replies to the user's tweets; for replies it resolves the tweet you
-      replied-to and, when that parent is YOUR tweet, attaches it as
-      parent_comment_body (so the card shows your tweet + their reply + a
-      draft, same shape as FetchRedditMentions). Returns {items:[{kind,
-      title, body, url, author, created_iso, score, watched_term,
-      parent_comment_body?, parent_comment_url?}], count, errors}; kind ∈
-      reply_to_me | mention. Empty + error when creds are absent. ~2 API
-      calls per run (your X credits); recent mentions only.
+      X (Twitter) mention/reply monitoring, read from the user's logged-in
+      x.com session via the linggen-browser extension (bridge op "mentions",
+      $0/read). Surfaces recent mentions and replies to the user's tweets;
+      for replies it resolves the tweet you replied-to and, when that parent
+      is YOUR tweet, attaches it as parent_comment_body (so the card shows
+      your tweet + their reply + a draft, same shape as FetchRedditMentions).
+      Returns {items:[{kind, title, body, url, author, created_iso, score,
+      watched_term, parent_comment_body?, parent_comment_url?}], count,
+      errors}; kind ∈ reply_to_me | mention. Empty + error until the
+      extension ships the "mentions" reader op (returns module_unavailable
+      today).
     cmd: "$SKILL_DIR/scripts/sites/x-mentions.sh"
     tier: read
     timeout_ms: 30000
   - name: FetchXOwnPosts
     description: >-
       The user's OWN recent X (Twitter) posts with engagement metrics
-      (likes, reposts, replies, impressions), via the official X API v2
-      with the user's OWN credentials (Settings -> X). Pass an optional max
-      count (default 10). Returns {username, items:[{text, url, likes,
-      reposts, replies, views, score, created_iso, age_hours}],
-      replied_to:["<x.com status url>", …], count, errors}; score =
-      likes + reposts. `items` is original posts only (replies/retweets
-      excluded) — used by draft-content for the x-post lane so a new post
-      builds on what the user already shipped instead of repeating it, and
-      so high-engagement past posts inform what themes to write more of
-      (the performance feedback loop). `replied_to` is the parent tweets
-      the user has already replied to — Pulse uses it to suppress
-      already-engaged posts from discovery (same rule as Reddit's
-      already-commented filter). Empty + error when creds are absent.
-      ~2 API calls per run (your X credits); recent tweets only.
+      (likes, reposts, replies, impressions), read from the logged-in x.com
+      session via the linggen-browser extension (bridge op "own", $0/read).
+      Pass an optional max count (default 10). Returns {username,
+      items:[{text, url, likes, reposts, replies, views, score, created_iso,
+      age_hours}], replied_to:["<x.com status url>", …], count, errors};
+      score = likes + reposts. `items` is original posts only
+      (replies/retweets excluded) — used by draft-content for the x-post
+      lane so a new post builds on what the user already shipped instead of
+      repeating it, and so high-engagement past posts inform what themes to
+      write more of (the performance feedback loop). `replied_to` is the
+      parent tweets the user has already replied to — Pulse uses it to
+      suppress already-engaged posts from discovery (same rule as Reddit's
+      already-commented filter). Empty + error until the extension ships the
+      "own" reader op (returns module_unavailable today).
     cmd: "$SKILL_DIR/scripts/sites/x-own.sh {{max}}"
     tier: read
     timeout_ms: 30000
@@ -411,8 +412,8 @@ partner.
   reply / discovery / trend card must come from a real item a Fetch
   tool actually returned, about a real person/repo/thread. Do NOT
   invent a "system" mention, status card, error card, or
-  setup-instructions card (e.g. "X mentions unavailable — add
-  credentials in Settings") when a tool returns empty or an `errors`
+  setup-instructions card (e.g. "X mentions unavailable — connect the
+  linggen-browser extension") when a tool returns empty or an `errors`
   entry. Skip that source silently; surface "nothing found" only via
   the section's single `empty` card. Tool plumbing never becomes content.
 - **Reddit needs a token for replies:** Reddit's mention/reply data
@@ -456,11 +457,11 @@ Read these files with `Read` for additional context as needed:
 2. `~/.linggen/skills/pulse/config.json` — `sites` (enabled source
    tools), `targets` (enabled output lanes), `workspace_path`, and
    `brief`. Only call enabled tools; only draft for enabled lanes.
-3. `~/.linggen/skills/pulse/references/x-setup-guide.md` — how to get
-   the four X OAuth 1.0a keys and connect X. Read it when the user asks
-   to set up X or when an X tool reports missing credentials, then walk
-   them through it. Never ask for keys in chat — point them at
-   Settings → X (which writes `credentials/x.env`).
+3. `~/.linggen/skills/pulse/references/x-setup-guide.md` — how to connect
+   X via the linggen-browser extension ($0, reads your logged-in x.com
+   session; no API keys). Read it when the user asks to set up X or when an
+   X tool returns empty because the bridge/extension is unavailable, then
+   walk them through it. Point them at Settings → X for handle + targets.
 
 **Voice anchor**: the user's brief (already in your conversation
 history from the hidden init message) IS the cadence sample. Mirror
@@ -521,9 +522,9 @@ supplement it:
   trending repos are the most legible "what builders are shipping"
   signal. There is no Settings switch for it.
 - **`FetchHackerNews`** — top stories as a trend supplement.
-- **`FetchX`** (only if `sites.x.enabled`) — searches recent X posts
-  for the category keywords; one paid call per query, so cap to the
-  top 2-3 category terms.
+- **`FetchX`** (only if `sites.x.enabled` and `sites.x.keyword_search`)
+  — searches recent X posts for the category keywords via the bridge
+  ($0); still cap to the top 2-3 category terms.
 - Optional, when enabled: `FetchLobsters`, `FetchArxiv`, `FetchRSS`,
   `FetchProductHuntRSS` may further supplement the trend feed.
 
@@ -624,8 +625,8 @@ Bluesky keywords.
    pre-vetted, so surface every hit (the script already caps per account
    and excludes replies), dropping only already-replied ones via
    SKIP_URLS; do NOT score them for topical fit. Also call
-   `FetchX` (searches `sites.x.keywords`; one paid call per query, cap
-   to top 2-3 terms) as a GATED firehose supplement. The X growth rule:
+   `FetchX` (searches `sites.x.keywords` via the bridge, $0; cap to top
+   2-3 terms) as a GATED firehose supplement. The X growth rule:
    reach × niche-relevance, NOT raw fame — reply where the author's
    audience is the target user AND the reply section is small enough to
    be seen. Drop tiny-follower / zero-engagement posts; also skip
