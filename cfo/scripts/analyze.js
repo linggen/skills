@@ -111,7 +111,8 @@ export function parseAmount(raw) {
 const CA_PROVINCES = 'AB|BC|MB|NB|NL|NS|NT|NU|ON|PE|QC|SK|YT';
 
 export function cleanMerchant(raw) {
-  let s = (raw || '').trim();
+  const orig = (raw || '').trim();
+  let s = orig;
   // Leading bank type-code — BMO "[CW]"/"[DN]"/"[SC]"/"[IN]"/"[DS]" and similar
   // bracketed 2-4 letter codes. The amount sign already encodes in/out, so the
   // code is pure noise: strip it, never interpret it.
@@ -130,7 +131,7 @@ export function cleanMerchant(raw) {
   const stripped = s.replace(new RegExp(`\\s+[A-Za-z][A-Za-z.'-]+\\s+(?:${CA_PROVINCES})\\s*$`), '').trim();
   if (stripped.split(/\s+/).filter(Boolean).length >= 2) s = stripped;
   s = s.replace(/\s+/g, ' ').replace(/^[\s-]+|[\s-]+$/g, '');
-  return s.slice(0, 80);
+  return (s || orig).slice(0, 80); // never blank — a code-only merchant ("[IN]") keeps its original
 }
 
 export function merchantKey(m) {
