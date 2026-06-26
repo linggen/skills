@@ -1,6 +1,9 @@
 {
-  "$comment": "CFO config. Copied to config.json on first install. `currency` labels the report; `category_overrides` maps a merchant keyword -> a category, OR the reserved value 'transfer' (exclude from spend/income) or 'income' (force-keep as income, overriding transfer auto-detection); `goals` are set by the agent via chat and persisted here + in memory.",
+  "$comment": "CFO config. Copied to config.json on first install. `currency` labels the report; `category_overrides` maps a merchant keyword -> a category, OR the reserved value 'transfer' (exclude from spend/income) or 'income' (force-keep as income, overriding transfer auto-detection); `goals` are set by the agent via chat and persisted here + in memory; `watch_enabled`/`watch_folder`/`watch_globs` drive folder-watch auto-import (off by default — when on, the open CFO page polls the folder and auto-imports statements from already-known accounts).",
   "currency": "CAD",
   "category_overrides": {},
-  "goals": []
+  "goals": [],
+  "watch_enabled": false,
+  "watch_folder": "~/Downloads",
+  "watch_globs": "*.csv,*.pdf"
 }

@@ -31,6 +31,9 @@ let LAST_VIEW = null; // most recent computed view — read by announceImport
 let FULL_VIEW = null; // full-history view — commitments ignore the range slicer
 let COMMITMENTS = {}; // user-entered terms per merchant key (data/commitments.json)
 let ANOM_DISMISSED = new Set(); // dismissed anomaly ids (data/anomalies-dismissed.json)
+let WATCH = { enabled: false, folder: '~/Downloads', globs: '*.csv,*.pdf' }; // folder-watch auto-import (config.json)
+let WATCH_SEEN = {}; // path -> "mtime:size" already processed (data/watch-state.json)
+let WATCH_TIMER = null, WATCH_BUSY = false;
 
 // The page sends this after an import that left uncategorized rows. The agent
 // reads the redacted work list (LatestAnalysis.unclassified) + the user's vocab
@@ -122,6 +125,7 @@ async function loadConfig() {
     CURRENCY = currencySymbol(CURRENCY_CODE);
     const ov = cfg.category_overrides;
     CATEGORY_OVERRIDES = ov && Object.keys(ov).length ? ov : null;
+    WATCH = { enabled: !!cfg.watch_enabled, folder: cfg.watch_folder || '~/Downloads', globs: cfg.watch_globs || '*.csv,*.pdf' };
   } catch (e) { console.warn('[cfo] config load', e); }
 }
 
@@ -584,7 +588,7 @@ async function afterCategoriesChanged() {
 }
 
 // ── Import: parse → resolve account → orient signs → reconcile → render.
-async function importFile(file, fileIdx = 0, fileCount = 1) {
+async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   const isPdf = /\.pdf$/i.test(file.name) || file.type === 'application/pdf';
   let transactions, fingerprint = null, notes = [];
   if (isPdf) {
@@ -603,6 +607,9 @@ async function importFile(file, fileIdx = 0, fileCount = 1) {
   ACCOUNTS = await loadAccounts();
   let accountId = fingerprint && ACCOUNTS[fingerprint] ? fingerprint : null; // known → fast path
   if (!accountId) {
+    // Folder-watch only auto-imports files for accounts it already knows — it
+    // never pops the account modal unprompted (a stray CSV stays untouched).
+    if (opts.autoOnly) return { file: file.name, skipped: 'unknown-account' };
     accountId = await stageImport({ transactions, fingerprint, filename: file.name, fileIdx, fileCount });
     if (!accountId) { setStatus(`Skipped ${file.name} — no account chosen.`); return { file: file.name, skipped: true }; }
   }
@@ -1783,6 +1790,78 @@ function showHelp() {
   root.querySelector('#intro-ok').onclick = () => { root.hidden = true; root.innerHTML = ''; };
 }
 
+// ── Folder-watch: auto-import statements dropped into a watched folder ──
+// Pure JS: a poll loop lists the folder via /api/bash and feeds new files through
+// the SAME importFile pipeline (parse → redact → dedup) — nothing leaves the
+// machine. Only files matching an ALREADY-KNOWN account fingerprint import
+// silently (autoOnly); an unknown account is left for a one-time manual drag, so
+// a stray CSV in the folder is never ingested or modal-popped unprompted. This
+// is polling (no fs-events); a true always-on watch would need a daemon watcher.
+const loadWatchSeen = async () => { WATCH_SEEN = await readJson(`${DATA}/watch-state.json`, {}); };
+const saveWatchSeen = () => writeB64(`${DATA}/watch-state.json`, JSON.stringify(WATCH_SEEN));
+
+function startWatch() {
+  if (WATCH_TIMER) { clearInterval(WATCH_TIMER); WATCH_TIMER = null; }
+  if (!WATCH.enabled) return;
+  pollWatchFolder();
+  WATCH_TIMER = setInterval(pollWatchFolder, 12000);
+}
+
+// Read one file from disk via /api/bash and run it through the normal import.
+async function importViaBash(path) {
+  const q = path.replace(/(["\\$`])/g, '\\$1');
+  const b64 = (await runBash(`base64 < "${q}" 2>/dev/null | tr -d '\\n'`)).trim();
+  if (!b64) throw new Error('unreadable');
+  const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  const name = path.split('/').pop() || 'statement';
+  const file = new File([bytes], name, { type: /\.pdf$/i.test(name) ? 'application/pdf' : 'text/csv' });
+  return importFile(file, 0, 1, { autoOnly: true });
+}
+
+async function pollWatchFolder() {
+  if (!WATCH.enabled || WATCH_BUSY || STAGING || document.hidden) return;
+  WATCH_BUSY = true;
+  try {
+    const dir = (WATCH.folder || '~/Downloads').replace(/^~(?=\/|$)/, '$HOME');
+    const nameExpr = WATCH.globs.split(',').map((g) => g.trim()).filter(Boolean)
+      .map((g) => `-iname '${g.replace(/'/g, '')}'`).join(' -o ');
+    if (!nameExpr) return;
+    // List "mtime\tsize\tpath" for recent matching files (macOS + Linux stat).
+    const cmd = `[ -d "${dir}" ] || exit 0; `
+      + `find "${dir}" -maxdepth 1 -type f \\( ${nameExpr} \\) -mtime -45 2>/dev/null | while IFS= read -r f; do `
+      + `mt=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null); `
+      + `sz=$(wc -c < "$f" 2>/dev/null | tr -d ' '); printf '%s\\t%s\\t%s\\n' "$mt" "$sz" "$f"; done`;
+    const out = await runBash(cmd);
+    const fresh = [];
+    for (const line of out.split('\n')) {
+      if (!line.trim()) continue;
+      const parts = line.split('\t');
+      if (parts.length < 3) continue;
+      const path = parts.slice(2).join('\t'), key = `${parts[0]}:${parts[1]}`;
+      if (WATCH_SEEN[path] === key) continue;       // already processed at this mtime/size
+      fresh.push({ path, key });
+      if (fresh.length >= 8) break;                 // cap per tick
+    }
+    if (!fresh.length) return;
+
+    const results = []; let unknown = 0, changed = false;
+    for (const { path, key } of fresh) {
+      try {
+        const res = await importViaBash(path);
+        if (res && res.added != null) results.push(res);
+        else if (res && res.skipped === 'unknown-account') unknown++;
+      } catch { /* not a statement / unreadable — skip silently */ }
+      WATCH_SEEN[path] = key; changed = true;        // processed (success, skip, or unparseable)
+    }
+    if (changed) await saveWatchSeen().catch(() => {});
+    if (results.length) announceImport(results);      // ack + auto-review/classify, same as a drag
+    else if (unknown) {
+      try { chat?.addMessage?.('assistant', `Found ${unknown} statement${unknown === 1 ? '' : 's'} in your watch folder from an account I don't recognize yet — drag one in once to set it up, then I'll auto-import it from here on.`); } catch { /* ignore */ }
+    }
+  } catch (e) { console.warn('[cfo] watch poll', e); }
+  finally { WATCH_BUSY = false; }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadConfig(); // currency + category overrides, before the first import
 
@@ -1796,6 +1875,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await mountChat(sid);                 // resume <24h chat, else fresh
   if (!sid) triggerGreeting();
   openReminders();                      // payment/staleness checks, once per state
+  await loadWatchSeen();                // folder-watch: auto-import dropped statements
+  startWatch();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) pollWatchFolder(); });
 
   wireSections();
   wireTooltip();

@@ -176,6 +176,25 @@
       </div>
     </div>
 
+    <!-- Auto-import folder (folder-watch) -->
+    <div class="section">
+      <h2 class="section-title">Auto-import folder</h2>
+      <p class="section-desc">Watch a folder and import bank statements the moment they land — no drag, no file picker. Files are parsed and redacted on this Mac exactly like a manual import; nothing leaves your machine. Only statements from accounts CFO already knows import automatically — a new account, you drag in once. Takes effect when you reopen the report.</p>
+      <div class="field-card">
+        <div class="pet-row" id="watch-enabled-row" onclick="watchToggle()">
+          <span class="pet-check"></span>
+          <div class="grow">
+            <div class="acct-name">Watch a folder for new statements</div>
+            <div class="acct-meta" id="watch-status">Off</div>
+          </div>
+        </div>
+        <div class="rule-add" style="margin-top:12px">
+          <input id="watch-folder" type="text" placeholder="~/Downloads">
+          <button id="watch-save" class="btn" type="button">Save folder</button>
+        </div>
+      </div>
+    </div>
+
     <div class="section">
       <h2 class="section-title">Desktop pet</h2>
       <p class="section-desc">Yinyue, your companion on screen. Drag her body to move her anywhere.</p>
@@ -464,10 +483,37 @@
     });
     ruleKw.addEventListener("keydown", (e) => { if (e.key === "Enter") ruleAddBtn.click(); });
 
+    // ── Auto-import folder (folder-watch) ─────────────────────────────────
+    // Writes config.watch_enabled / watch_folder; cfo.js reads them on load and
+    // polls the folder via /api/bash. Inline onclick → global fn (like the pet).
+    const watchFolder = document.getElementById('watch-folder');
+    const watchStatus = document.getElementById('watch-status');
+    async function loadWatch() {
+      const cfg = await readConfig();
+      const on = !!cfg.watch_enabled;
+      document.getElementById('watch-enabled-row').classList.toggle('on', on);
+      watchFolder.value = cfg.watch_folder || '~/Downloads';
+      watchStatus.textContent = on ? `Watching ${watchFolder.value} — reopen the report to apply` : 'Off';
+    }
+    async function watchToggle() {
+      const cfg = await readConfig();
+      cfg.watch_enabled = !cfg.watch_enabled;
+      cfg.watch_folder = (watchFolder.value || '~/Downloads').trim();
+      await writeConfig(cfg);
+      loadWatch();
+    }
+    document.getElementById('watch-save').addEventListener('click', async () => {
+      const cfg = await readConfig();
+      cfg.watch_folder = (watchFolder.value || '~/Downloads').trim();
+      await writeConfig(cfg);
+      loadWatch();
+    });
+
     loadAccount();
     loadModel();
     loadMemory();
     loadRules();
+    loadWatch();
 
     // ── Desktop pet ───────────────────────────────────────────────────────
     // Two flag files the Tauri shell watches (it applies changes within ~2s);
