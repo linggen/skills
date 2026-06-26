@@ -25,10 +25,17 @@ let LEDGER = [];
 let ACCOUNTS = {};
 let RANGE = { preset: '12M', from: null, to: null };
 let INSIGHTS = [];
+let SUGGESTIONS = []; // agent-teacher rule proposals awaiting user review (data/suggestions.json)
 let LAST_VIEW = null; // most recent computed view — read by announceImport
 let FULL_VIEW = null; // full-history view — commitments ignore the range slicer
 let COMMITMENTS = {}; // user-entered terms per merchant key (data/commitments.json)
 let ANOM_DISMISSED = new Set(); // dismissed anomaly ids (data/anomalies-dismissed.json)
+
+// The page sends this after an import that left uncategorized rows. The agent
+// reads the redacted work list (LatestAnalysis.unclassified) + the user's vocab
+// (LatestAnalysis.vocab) and replies ONLY via PageUpdate body.suggestions — the
+// page validates each against the real ledger before showing the Review card.
+const CLASSIFY_PROMPT = 'Categorize my uncategorized transactions. Call LatestAnalysis, then for EACH merchant in `unclassified`: pick the best fit from `vocab.categories`, or "transfer" for a credit-card payment / account transfer, or "income" for money received. If nothing fits, propose a short lowercase new category and set isNew:true. Use ONLY merchant strings exactly as they appear in `unclassified`. Reply by calling PageUpdate with body.suggestions = [{merchant, type, isNew?, reason}] and nothing else — no insight cards, no prose.';
 
 async function runBash(command) {
   const res = await fetch('/api/bash', {
@@ -188,7 +195,34 @@ function trimForAgent(r) {
 // Dismissed anomalies disappear for the agent too — "I said that's fine"
 // must stick on both surfaces.
 const filterAnomalies = (r) => ({ ...r, anomalies: (r.anomalies || []).filter((a) => !ANOM_DISMISSED.has(a.id)) });
-const saveReport = (r) => writeB64(`${DATA}/report.json`, JSON.stringify(trimForAgent(filterAnomalies(r))));
+
+// Distinct spend merchants the deterministic layer left as "other" — the work
+// list for the agent-teacher. Computed over the FULL ledger (not the range
+// view) so a quiet month doesn't hide them. detectTransfers is idempotent.
+function computeResidual() {
+  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES);
+  const agg = new Map();
+  for (const r of LEDGER) {
+    if (r.transfer || r.amount >= 0) continue;
+    const cat = r.category || categorize(r.merchant, CATEGORY_OVERRIDES);
+    if (cat !== 'other') continue;
+    const e = agg.get(r.merchant) || { merchant: r.merchant, count: 0, total: 0 };
+    e.count++; e.total = Math.round((e.total - r.amount) * 100) / 100; agg.set(r.merchant, e);
+  }
+  return [...agg.values()].sort((a, b) => b.total - a.total);
+}
+// The user's classification vocabulary handed to the agent so it MAPS to what
+// exists instead of inventing near-duplicate categories.
+const vocabForAgent = () => ({
+  categories: knownCategories().filter((c) => c !== 'transfer' && c !== 'income'),
+  transfer_keywords: Object.entries(CATEGORY_OVERRIDES || {}).filter(([, v]) => v === 'transfer').map(([k]) => k),
+});
+const saveReport = (r) => {
+  const out = trimForAgent(filterAnomalies(r));
+  out.unclassified = computeResidual(); // agent-teacher work list (redacted merchants only)
+  out.vocab = vocabForAgent();
+  return writeB64(`${DATA}/report.json`, JSON.stringify(out));
+};
 
 // ── Account resolution: known fingerprint → silent fast path; anything else
 // goes through the import-review staging page (Transactions tab).
@@ -454,10 +488,14 @@ function openCatPicker(anchor, row) {
 
 // Transfer / income picks are always a remembered rule (a per-row transfer can't
 // persist — flags are recomputed from the full ledger each load).
-async function applyRule(row, val) {
-  CATEGORY_OVERRIDES = { ...(CATEGORY_OVERRIDES || {}), [row.merchant.toLowerCase()]: val };
+async function applyRule(row, val) { return applyRuleByMerchant(row.merchant, val); }
+
+// Write a merchant -> classification rule (a category, or 'transfer'/'income')
+// and recompute. `recompute=false` lets a batch apply many then recompute once.
+async function applyRuleByMerchant(merchant, val, recompute = true) {
+  CATEGORY_OVERRIDES = { ...(CATEGORY_OVERRIDES || {}), [String(merchant).toLowerCase()]: val };
   await saveConfigOverrides();
-  await afterCategoriesChanged();
+  if (recompute) await afterCategoriesChanged();
 }
 
 // Import history with per-import revert. Imports made before undo existed have
@@ -619,6 +657,7 @@ async function resumeState() {
     LEDGER = await loadLedger();
     ACCOUNTS = await loadAccounts();
     INSIGHTS = await loadInsights();
+    SUGGESTIONS = await loadSuggestions();
     COMMITMENTS = await loadCommitments();
     ANOM_DISMISSED = new Set(await readJson(`${DATA}/anomalies-dismissed.json`, []));
     // Clean up any historical duplicates (pre-dedup saves) + legacy tones.
@@ -725,6 +764,7 @@ function applyVisibility() {
   document.getElementById('report').hidden = away || !LEDGER.length;
   document.getElementById('empty-state').hidden = away || LEDGER.length > 0;
   document.getElementById('insights-wrap').hidden = away || (!LEDGER.length && !INSIGHTS.length);
+  renderSuggestions(); // Review card (Report tab only) — self-hides when empty
 }
 
 function switchView(mode) {
@@ -1380,6 +1420,11 @@ let lastPageUpdateRaw = null; // streaming phases can deliver the same args twic
 function applyPageUpdate(args) {
   const raw = JSON.stringify(args || null);
   if (!args || raw === lastPageUpdateRaw) return;
+  // The agent-teacher replies through the same PageUpdate channel but with a
+  // `suggestions` body — route it to the Review card, not the insights region.
+  // Models wrap args unpredictably, so search recursively (like extractInsights).
+  const sugg = extractSuggestions(args);
+  if (sugg) { lastPageUpdateRaw = raw; applySuggestions(sugg); return; }
   const cards = extractInsights(args);
   if (!cards) { console.warn('[cfo] PageUpdate args not recognized', args); return; }
   lastPageUpdateRaw = raw;
@@ -1396,6 +1441,114 @@ function applyPageUpdate(args) {
   }
   renderInsights();
   saveInsights().catch((e) => console.warn('[cfo] insights save', e));
+}
+
+// ── Agent-teacher: the "Review N suggestions" card ──
+// The agent proposes merchant -> classification rules for the uncategorized
+// residual. We VALIDATE every proposal against the real ledger before showing
+// it — the model can only confirm rows that exist, never invent merchants or
+// move money on its own. Approving writes a deterministic rule (applyRule), so
+// the agent's judgement is captured once and never re-run.
+const loadSuggestions = () => readJson(`${DATA}/suggestions.json`, []);
+const saveSuggestions = () => writeB64(`${DATA}/suggestions.json`, JSON.stringify(SUGGESTIONS));
+
+// Find the suggestions array wherever the model nested it (body, body_patch, …).
+function extractSuggestions(node, depth = 0) {
+  if (!node || depth > 5 || typeof node !== 'object') return null;
+  if (Array.isArray(node)) {
+    if (node.length && node.every((s) => s && typeof s === 'object' && typeof s.merchant === 'string')) return node;
+    for (const v of node) { const r = extractSuggestions(v, depth + 1); if (r) return r; }
+    return null;
+  }
+  if (Array.isArray(node.suggestions)) return node.suggestions;
+  for (const k of ['body', 'body_patch', 'content', 'cards', 'data']) {
+    if (node[k] != null && typeof node[k] === 'object') { const r = extractSuggestions(node[k], depth + 1); if (r) return r; }
+  }
+  return null;
+}
+
+function applySuggestions(list) {
+  // Resolve each proposed merchant to the EXACT ledger string. Models paraphrase
+  // (en-dash vs hyphen, spacing, truncation), so normalize, then accept an
+  // unambiguous substring match. A proposal that maps to no real row is dropped
+  // (anti-hallucination) and the rule is keyed on the canonical ledger string.
+  const norm = (s) => String(s || '').toLowerCase().replace(/[‐-―]/g, '-').replace(/\s+/g, ' ').trim();
+  const byNorm = new Map();
+  for (const r of LEDGER) if (!byNorm.has(norm(r.merchant))) byNorm.set(norm(r.merchant), r.merchant);
+  const ledgerNorms = [...byNorm.keys()];
+  const resolve = (m) => {
+    const n = norm(m);
+    if (byNorm.has(n)) return byNorm.get(n);
+    const hits = ledgerNorms.filter((ln) => n.length >= 6 && (ln.includes(n) || n.includes(ln)));
+    return hits.length === 1 ? byNorm.get(hits[0]) : null;
+  };
+  const cats = new Set(knownCategories());
+  const ovKeys = Object.keys(CATEGORY_OVERRIDES || {});
+  const okType = (t, isNew) => t === 'transfer' || t === 'income' || cats.has(t)
+    || (isNew && /^[a-z][a-z0-9 &-]{1,23}$/.test(t));
+  const out = [], seen = new Set();
+  for (const s of list || []) {
+    if (!s || typeof s.merchant !== 'string') continue;
+    const merchant = resolve(s.merchant);                     // canonical ledger string, or null
+    const type = String(s.type || '').trim().toLowerCase();
+    if (!merchant) continue;                                  // must map to a real row
+    const key = merchant.toLowerCase();
+    if (seen.has(key)) continue;
+    if (!okType(type, s.isNew)) continue;                     // known category / transfer / income / new slug
+    if (ovKeys.some((k) => key.includes(k))) continue;        // already has a rule
+    seen.add(key);
+    out.push({ merchant, type, isNew: !!s.isNew, reason: String(s.reason || '').slice(0, 120) });
+  }
+  if (!out.length) { console.warn('[cfo] suggestions: none of', (list || []).length, 'validated'); return; }
+  SUGGESTIONS = out;
+  renderSuggestions();
+  saveSuggestions().catch((e) => console.warn('[cfo] suggestions save', e));
+}
+
+function renderSuggestions() {
+  const el = document.getElementById('suggestions-wrap');
+  if (!el) return;
+  el.hidden = VIEW_MODE !== 'report' || !SUGGESTIONS.length;
+  if (el.hidden) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="sugg-card">
+      <div class="sugg-head">
+        <span class="sugg-title">✦ ${SUGGESTIONS.length} suggestion${SUGGESTIONS.length === 1 ? '' : 's'} to review</span>
+        <span class="hint">CFO sorted these from your data — apply to remember them for next time.</span>
+        <span class="sugg-bulk"><button class="chip" id="sugg-apply-all">Apply all</button><button class="chip ghost" id="sugg-dismiss-all">Dismiss all</button></span>
+      </div>
+      <ul class="sugg-list">${SUGGESTIONS.map((s, i) => `
+        <li>
+          <span class="sugg-merch" title="${esc(s.merchant)}">${esc(s.merchant)}</span>
+          <span class="sugg-arrow">→</span>
+          <span class="tag sugg-type${(s.type === 'transfer' || s.type === 'income') ? ' special' : ''}">${esc(s.type)}${s.isNew ? ' ✚' : ''}</span>
+          ${s.reason ? `<span class="sugg-reason" title="${esc(s.reason)}">${esc(s.reason)}</span>` : ''}
+          <span class="sugg-row-actions"><button class="chip apply" data-i="${i}">Apply</button><button class="chip ghost dismiss" data-i="${i}" title="Dismiss">✕</button></span>
+        </li>`).join('')}</ul>
+    </div>`;
+  el.querySelector('#sugg-apply-all').onclick = () => applyAllSuggestions();
+  el.querySelector('#sugg-dismiss-all').onclick = () => { SUGGESTIONS = []; saveSuggestions().catch(() => {}); renderSuggestions(); };
+  el.querySelectorAll('.sugg-list .apply').forEach((b) => b.addEventListener('click', () => applyOneSuggestion(+b.dataset.i)));
+  el.querySelectorAll('.sugg-list .dismiss').forEach((b) => b.addEventListener('click', () => {
+    SUGGESTIONS.splice(+b.dataset.i, 1); saveSuggestions().catch(() => {}); renderSuggestions();
+  }));
+}
+
+async function applyOneSuggestion(i) {
+  const s = SUGGESTIONS[i]; if (!s) return;
+  SUGGESTIONS.splice(i, 1);
+  await saveSuggestions().catch(() => {});
+  await applyRuleByMerchant(s.merchant, s.type); // recomputes + re-renders the report
+  renderSuggestions();
+}
+
+async function applyAllSuggestions() {
+  const list = SUGGESTIONS.slice();
+  SUGGESTIONS = [];
+  await saveSuggestions().catch(() => {});
+  for (const s of list) await applyRuleByMerchant(s.merchant, s.type, false);
+  await afterCategoriesChanged(); // single recompute for the whole batch
+  renderSuggestions();
 }
 
 // ── Chat session ──
@@ -1451,9 +1604,18 @@ function announceImport(results) {
     if (hike) msg += `\n\nHeads-up: ${hike.merchant} went up ${moneyExact(hike.first_amount)} → ${moneyExact(hike.last_amount)} (+${moneyExact(hike.increase_amount)}/mo).`;
     else if (missed) msg += `\n\n⚠ ${missed.label}: I'd expect a payment around ${missed.next_expected}, but it isn't in your data yet.`;
   }
-  // Proactive tier 2: new data is the one moment insights actually change —
-  // run the full review unprompted (toggle in the Insights header).
+  // Proactive tier 2: new data is the one moment insights actually change.
+  // If the import left transactions CFO couldn't categorize, the agent-teacher
+  // goes first — it proposes rules for the residual, which the user approves in
+  // the Review card. A clean import skips straight to the full review.
   if (autoReviewOn()) {
+    const residual = computeResidual();
+    if (residual.length) {
+      msg += `\n\nCharts are updated. I spotted ${plural(residual.length, 'merchant')} I couldn't categorize — sorting them now for your review…`;
+      try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
+      setTimeout(() => { try { chat?.send?.(CLASSIFY_PROMPT); } catch { /* ignore */ } }, 600);
+      return;
+    }
     msg += `\n\nCharts are updated — running your full review now…`;
     try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
     setTimeout(() => { try { chat?.send?.('Run my financial review.'); } catch { /* ignore */ } }, 600);

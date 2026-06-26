@@ -265,6 +265,37 @@ principal and ~$1,470 interest; that ratio flips as the balance falls."*
 - End with the one action the concept makes available to them, if any
   ("this is why the extra $100 goes to the car loan").
 
+### 8. Categorize on import (the Review card)
+
+After an import that leaves uncategorized transactions, the page asks you to
+sort them ("Categorize my uncategorized transactions…"). This is the one time
+you classify in bulk. The page validates everything you return against the real
+ledger and shows it as a **Review card** the user approves — so you *propose*,
+they confirm; you never move money.
+
+- Call `LatestAnalysis`. Read **`unclassified`** (the work list: each
+  `{merchant, count, total}`) and **`vocab`** (`categories` = the user's
+  existing categories; `transfer_keywords` = what they've marked as transfers).
+- For EACH merchant in `unclassified`, choose a `type`:
+  - the best fit from **`vocab.categories`** (prefer an existing category —
+    don't invent "restaurants" when "dining" exists);
+  - **`transfer`** — a credit-card payment or a move between the user's own
+    accounts (e.g. a payee that names a card issuer or bank);
+  - **`income`** — money received that isn't spending;
+  - a short lowercase **new category** with `isNew: true` only when nothing fits.
+- Use merchant strings **exactly** as they appear in `unclassified` — the page
+  drops anything it can't match to a real row.
+- Reply **only** by calling `PageUpdate` with a `body.suggestions` array (schema
+  below) — no insight cards, no prose, in this turn.
+
+```json
+{ "body": { "suggestions": [
+  { "merchant": "E-JOY FOOD MART HALIFAX NS", "type": "groceries", "reason": "Asian grocery store" },
+  { "merchant": "[CW]AMEX CARDS", "type": "transfer", "reason": "credit-card bill payment" },
+  { "merchant": "095 HRM REC ONLINE XP DARTMOUTH NS", "type": "recreation", "isNew": true, "reason": "municipal rec program" }
+] } }
+```
+
 ## Output — two surfaces
 
 The page is split into a FIXED section (cards, charts, lists — the page
@@ -285,9 +316,11 @@ the cards inside it exactly like this:
   each card. `body` text supports `**bold**` and newlines.
 - For a full review pass `replace: true` (swaps out stale cards); omit it
   only when adding a single new card to what's already there.
-- Call PageUpdate only when the user asked for something (review, why,
-  goal check) — never on import, never on a greeting turn, and a tool
-  error or empty result is NEVER a card.
+- Call PageUpdate with **insight cards** only when the user asked for
+  something (review, why, goal check) — never unprompted, never on a
+  greeting turn, and a tool error or empty result is NEVER a card. (The
+  exception is the categorize-on-import request in §8, which replies with
+  `body.suggestions`, not insight cards.)
 - Chat replies stay the **conversation**: the why, the draft, the advice.
   Render drafts as fenced text the user can copy. Keep prose tight. Don't
   re-emit the fixed report as text.

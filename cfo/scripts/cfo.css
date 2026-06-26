@@ -288,6 +288,24 @@ td.num.pos { color: var(--pos); }
 #cat-pop .cat-list li.special.active, #cat-pop .cat-list li.newcat.active { color: #fff; }
 #cat-pop .cat-list li.newcat { color: var(--accent); text-transform: none; }
 
+/* Agent-teacher "Review N suggestions" card. */
+#suggestions-wrap[hidden] { display: none; }
+.sugg-card { border: 1px solid var(--accent); border-radius: var(--radius); background: var(--panel);
+  box-shadow: var(--shadow); padding: 12px 14px; margin: 4px 0 16px; }
+.sugg-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.sugg-title { font-weight: 600; color: var(--accent); }
+.sugg-bulk { margin-left: auto; display: flex; gap: 6px; }
+.sugg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.sugg-list li { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid var(--line); }
+.sugg-merch { font-size: 13px; color: var(--ink); max-width: 320px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; }
+.sugg-arrow { color: var(--muted); }
+.tag.sugg-type { text-transform: capitalize; }
+.tag.sugg-type.special { border-color: var(--accent); color: var(--accent); text-transform: none; }
+.sugg-reason { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sugg-row-actions { margin-left: auto; display: flex; gap: 6px; flex: 0 0 auto; }
+.chip.ghost { color: var(--muted); }
+
 #stage-table tr.dup { opacity: .45; }
 
 #txn-staging h2 { margin-top: 4px; }
