@@ -120,11 +120,26 @@ export function merchantKey(m) {
   return toks.slice(0, 3).join(' ') || 'UNKNOWN';
 }
 
+// Word-boundary keyword matcher. Critical for short tokens used as transfer
+// signals: a substring "tf" would match inside "neTFlix" and silently erase
+// real spend. A "boundary" here is any non-alphanumeric char (or string edge),
+// so "amex" matches "[CW]AMEX CARDS" but "tf" never matches "netflix".
+export function keywordRe(kw) {
+  const e = String(kw).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^a-z0-9])${e}([^a-z0-9]|$)`, 'i');
+}
+
+// Reserved override values that are NOT spend categories — they live in the same
+// user map (config.category_overrides) but mean "exclude from money math"
+// (transfer) or "force-treat-as-income" (income). Handled in ledger.js, skipped
+// here so they never leak into the category breakdown.
+const RESERVED_CLASS = new Set(['transfer', 'income']);
+
 export function categorize(m, overrides) {
   const ml = (m || '').toLowerCase();
   if (overrides) {
     for (const [kw, cat] of Object.entries(overrides)) {
-      if (kw && ml.includes(kw.toLowerCase())) return cat; // user-configured wins
+      if (kw && !RESERVED_CLASS.has(cat) && ml.includes(kw.toLowerCase())) return cat; // user-configured wins
     }
   }
   for (const [cat, kws] of CATEGORY_RULES) if (kws.some((k) => ml.includes(k))) return cat;

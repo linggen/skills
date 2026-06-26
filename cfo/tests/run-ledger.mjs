@@ -74,6 +74,23 @@ const sRep = reportFromLedger(synth, { chk: { type: 'checking' }, visa: { type: 
 t('A6 totals exclude the transfer on BOTH sides', sRep.totals.spend === 1220 && sRep.totals.income === 6000,
   `spend ${sRep.totals.spend} income ${sRep.totals.income}`);
 
+// ── Part A2: single-row transfer signals + learning rules (issue #1) ──
+// These fire when the counterparty account was never imported, so pairing can't.
+console.log('\n— Part A2: transfer signals + learning rules —');
+const acc2 = { chk: { type: 'checking' }, card: { type: 'credit' } };
+const sig = (merchant, amount, account, overrides) => {
+  const rows = toLedgerRows([{ date: '2026-06-15', merchant, amount }], account);
+  detectTransfers(rows, acc2, 5, overrides);
+  return rows[0].transfer;
+};
+t('A7 card payment to an un-imported card → transfer', sig('[CW]AMEX CARDS', -900, 'chk'));
+t('A8 "TF" account-transfer token → transfer', sig('[CW] TF 0133-482', -20000, 'chk'));
+t('A9 word-boundary: "tf" vocab does NOT eat NETFLIX', !sig('NETFLIX.COM', -18.99, 'card'));
+t('A10 ambiguous INTERAC e-transfer kept (not auto-excluded)', !sig('[CW]INTERAC ETRNSFR SENT BETTY RO', -240, 'chk'));
+t('A11 user "transfer" rule excludes a kept row', sig('[CW]INTERAC ETRNSFR CANADIAN TIRE BANK', -2822, 'chk', { 'canadian tire bank': 'transfer' }));
+t('A12 user category rule un-flags a heuristic transfer (kept as real spend)', !sig('[CW]AMEX CARDS', -900, 'chk', { 'amex cards': 'shopping' }));
+t('A13 real card charge stays spend (credit-account debit, not a payment)', !sig('SHANGHAI 360 HALIFAX NS', -18.78, 'card'));
+
 // ── Part B: live ledger audit ──
 const DATA = join(process.env.HOME, '.linggen/skills/cfo/data');
 if (!existsSync(join(DATA, 'ledger'))) {
@@ -92,12 +109,16 @@ if (!existsSync(join(DATA, 'ledger'))) {
   const rep = reportFromLedger(rows, accounts); // recomputes transfer flags in place
   const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
   const transfers = rows.filter((r) => r.transfer);
-  const badPair = transfers.find((r) => {
+  // Single-row signals (card payment to an un-imported card, "TF" tokens) now
+  // produce valid UNPAIRED transfers (transfer_pair === null). Only rows that
+  // claim a pair must have a valid opposite-sign cross-account partner.
+  const paired = transfers.filter((r) => r.transfer_pair);
+  const badPair = paired.find((r) => {
     const p = byId[r.transfer_pair];
     return !p || !p.transfer || p.transfer_pair !== r.id || p.account === r.account || Math.abs(p.amount + r.amount) > 0.005;
   });
-  t('B2 every transfer row has a valid opposite-sign cross-account pair', transfers.length % 2 === 0 && !badPair,
-    `${transfers.length} rows in ${transfers.length / 2} pairs`);
+  t('B2 every PAIRED transfer has a valid opposite-sign cross-account pair', paired.length % 2 === 0 && !badPair,
+    `${transfers.length} transfers (${paired.length} paired, ${transfers.length - paired.length} single-row)`);
 
   const spendable = rows.filter((r) => !r.transfer);
   const spend = r2(spendable.filter((r) => r.amount < 0).reduce((a, r) => a - r.amount, 0));

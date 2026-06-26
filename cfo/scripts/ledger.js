@@ -11,11 +11,66 @@
 //      transfer pair and exclude both from spend/income.
 
 import { txnId } from './hash.js';
-import { analyzeTransactions } from './analyze.js';
+import { analyzeTransactions, keywordRe } from './analyze.js';
 
 const daysBetween = (a, b) => Math.abs((new Date(a) - new Date(b)) / 86400000);
 const PAYMENT_RE = /\b(payment|autopay|auto pay|bill ?pay|e-?transfer|transfer|thank you|pymt)\b/i;
 const REFUND_RE = /\b(refund|reversal|rebate|cash ?back|chargeback)\b/i;
+
+// ── Single-row transfer signals ─────────────────────────────────────────────
+// Cross-account pairing (in detectTransfers) only fires when BOTH accounts are
+// imported. But money also leaves to accounts you DON'T track — paying an Amex
+// you never imported, moving cash to savings at another bank. Those rows have no
+// pair to match, so the only evidence is the description text. These are the
+// universal (not bank-specific) signals; users extend them via the dropdown /
+// Settings, which write config.category_overrides values of 'transfer'.
+//
+// Matched on WORD BOUNDARIES (keywordRe) so a short token like "tf" can never
+// match inside a real merchant ("neTFlix") and erase real spend. Deliberately
+// conservative: bare "e-transfer"/"interac" is NOT here — an e-transfer can be
+// real spend (rent) or income, so we leave it for the user/agent to classify
+// rather than guess and silently delete money.
+const TRANSFER_VOCAB = [
+  'tf', 'tfr', 'xfer', 'wire transfer', 'wire payment', 'funds transfer',
+  'online transfer', 'account transfer', 'acct transfer', 'internal transfer',
+  'bank transfer', 'transfer to', 'transfer from',
+];
+// Card networks / issuers. A debit FROM a deposit account to one of these is a
+// credit-card bill payment (a transfer, not spend). Bank names count too:
+// moving money to your own account at another bank is still a transfer.
+const CARD_ISSUER_VOCAB = [
+  'amex', 'american express', 'visa', 'mastercard', 'master card', 'discover',
+  'rogers bk', 'rogers bank', 'pc mc', 'pc mastercard', 'capital one',
+  'cibc', 'tangerine', 'neo financial', 'card payment',
+];
+const TRANSFER_RES = TRANSFER_VOCAB.map(keywordRe);
+const CARD_ISSUER_RES = CARD_ISSUER_VOCAB.map(keywordRe);
+
+// Does this single row read as a self-transfer / credit-card payment?
+function transferSignal(row, account) {
+  const m = row.merchant || '';
+  if (TRANSFER_RES.some((re) => re.test(m))) return true;
+  const type = (account?.type || '').toLowerCase();
+  // Paying a credit-card bill from chequing/savings → debit to a card issuer.
+  if ((type === 'checking' || type === 'savings') && row.amount < 0 && CARD_ISSUER_RES.some((re) => re.test(m))) return true;
+  // The card side of that payment landing as a credit on a credit account.
+  if (type === 'credit' && row.amount > 0 && PAYMENT_RE.test(m) && !REFUND_RE.test(m)) return true;
+  return false;
+}
+
+// The user's own ruling on a row (from config.category_overrides), longest
+// keyword wins. 'transfer' → force EXCLUDE; any category / 'income' → the user
+// says it's real money, so force KEEP (overrides the heuristics above).
+function userTransferRule(merchant, overrides) {
+  if (!overrides) return null;
+  const ml = (merchant || '').toLowerCase();
+  let val = null, len = -1;
+  for (const [kw, v] of Object.entries(overrides)) {
+    if (kw && kw.length > len && keywordRe(kw).test(ml)) { val = v; len = kw.length; }
+  }
+  if (val == null) return null;
+  return val === 'transfer' ? 'exclude' : 'keep';
+}
 
 // Parsed {date, merchant, amount} list (one statement) → ledger rows for an account.
 // Identical rows within the statement (same date/merchant/amount — e.g. two of
@@ -53,19 +108,36 @@ export function mergeLedger(existing, incoming) {
   return { merged: (existing || []).concat(added), added };
 }
 
-// Detect internal transfers (problem 2). A debit on one account matched by a
-// credit of the EXACT same amount on a DIFFERENT account within ±windowDays,
-// where at least one side's DESCRIPTION looks like a payment/transfer. Account
-// type alone is not evidence — a refund landing on a card is indistinguishable
-// from a payment by type, and pairing it with an unrelated equal debit would
-// erase real spend. Conservative on purpose — better to miss a transfer than
-// to wrongly erase real spend. Mutates rows in place; idempotent.
-export function detectTransfers(rows, accountsById = {}, windowDays = 5) {
+// Detect transfers (problem 2), in three passes of decreasing certainty:
+//   1. USER RULES win, both ways. 'transfer' excludes; a category/'income'
+//      LOCKS the row as real money so the heuristics can't re-flag it.
+//   2. CROSS-ACCOUNT PAIRING — a debit matched by an EXACT-amount credit on a
+//      DIFFERENT account within ±windowDays, payment-ish wording, credit not a
+//      refund. The original, most conservative signal (both sides imported).
+//      Runs BEFORE single-row signals so it can claim BOTH sides of a pair —
+//      otherwise a card-side "payment received" would get flagged alone here
+//      and orphan its chequing-side debit.
+//   3. SINGLE-ROW SIGNALS — description reads as a transfer / card payment even
+//      when the counterparty account was never imported (the common case: an
+//      Amex you don't track). Only the rows pairing couldn't resolve.
+// Mutates rows in place; idempotent. `overrides` = config.category_overrides.
+export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrides = null) {
   for (const r of rows) { r.transfer = false; r.transfer_pair = null; }
-  const credits = rows.filter((r) => r.amount > 0 && r.date);
-  const debits = rows.filter((r) => r.amount < 0 && r.date);
-  const usedCredit = new Set();
 
+  // 1. User rules.
+  const locked = new Set();
+  for (const r of rows) {
+    const rule = userTransferRule(r.merchant, overrides);
+    if (!rule) continue;
+    if (rule === 'exclude') r.transfer = true;
+    locked.add(r.id); // 'keep' too: the user said it's real, shield it below.
+  }
+
+  // 2. Cross-account exact-amount pairing.
+  const avail = (r) => r.date && !r.transfer && !locked.has(r.id);
+  const credits = rows.filter((r) => r.amount > 0 && avail(r));
+  const debits = rows.filter((r) => r.amount < 0 && avail(r));
+  const usedCredit = new Set();
   for (const d of debits) {
     let best = null, bestGap = Infinity;
     for (const c of credits) {
@@ -73,8 +145,6 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5) {
       if (Math.abs(Math.abs(c.amount) - Math.abs(d.amount)) > 0.005) continue; // exact amount
       const gap = daysBetween(d.date, c.date);
       if (gap > windowDays) continue;
-      // A money-move between the user's own accounts: payment-ish wording on
-      // either side, and the credit isn't a refund/reversal (never a transfer).
       const looksTransfer = (PAYMENT_RE.test(d.merchant) || PAYMENT_RE.test(c.merchant))
         && !REFUND_RE.test(c.merchant);
       if (!looksTransfer) continue;
@@ -86,6 +156,12 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5) {
       best.transfer_pair = d.id;
       usedCredit.add(best.id);
     }
+  }
+
+  // 3. Single-row signals on whatever pairing left unresolved.
+  for (const r of rows) {
+    if (locked.has(r.id) || r.transfer) continue;
+    if (transferSignal(r, accountsById[r.account])) r.transfer = true;
   }
   return rows;
 }
@@ -132,7 +208,7 @@ export function detectPaymentSchedule(rows, accountsById = {}) {
 // history) filters the VIEW; transfer detection and the payment schedule always
 // run on the full ledger so pairs straddling the range boundary still match.
 export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null) {
-  detectTransfers(rows, accountsById, opts.transferWindowDays || 5);
+  detectTransfers(rows, accountsById, opts.transferWindowDays || 5, opts.categoryOverrides || null);
   let spendable = rows.filter((r) => !r.transfer);
   const months_available = [...new Set(spendable.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
   if (range && range.from && range.to) {

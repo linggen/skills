@@ -344,7 +344,7 @@ function renderTxnView() {
   document.getElementById('txn-browse').hidden = !!STAGING;
   if (STAGING) { renderStaging(); return; }
   renderImportHistory();
-  detectTransfers(LEDGER, ACCOUNTS);
+  detectTransfers(LEDGER, ACCOUNTS, 5, CATEGORY_OVERRIDES);
   const cats = knownCategories();
   const f = TXN_FILTERS;
   const months = [...new Set(LEDGER.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort().reverse();
@@ -371,26 +371,93 @@ function renderTxnView() {
   document.getElementById('txn-table').innerHTML = rows.length ? `
     <table><thead><tr><th>Date</th><th>Merchant</th><th>Account</th><th class="num">Amount</th><th>Category</th></tr></thead><tbody>
     ${shown.map((r) => {
-    const cat = effCategory(r);
-    const catCell = r.transfer ? '<span class="tag">⇄ transfer</span>'
-      : r.amount >= 0 ? '<span class="tag">income</span>'
-        : `<select class="cat-sel" data-id="${esc(r.id)}">${cats.map((c) => `<option ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}<option value="__new__">✚ New category…</option></select>`;
+    const lbl = r.transfer ? '⇄ transfer' : effCategory(r);
+    // Every row is editable: a transfer can be reclassified back to real spend,
+    // any row can be marked a transfer/payment. Click opens the picker combobox.
+    const catCell = `<button class="cat-pick${r.transfer ? ' is-transfer' : ''}" data-id="${esc(r.id)}">${esc(lbl)}<span class="caret">▾</span></button>`;
     return `<tr><td>${esc(r.date || '—')}</td><td class="m">${esc(r.merchant)}</td><td>${esc(ACCOUNTS[r.account]?.label || r.account)}</td><td class="num ${r.amount < 0 ? 'neg' : 'pos'}">${r.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(r.amount))}</td><td>${catCell}</td></tr>`;
   }).join('')}</tbody></table>` : '<p class="hint">No matching transactions.</p>';
 
-  document.querySelectorAll('#txn-table .cat-sel').forEach((sel) => {
-    sel.dataset.prev = sel.value;
-    sel.addEventListener('change', () => {
-      const row = LEDGER.find((r) => r.id === sel.dataset.id);
-      if (!row) return;
-      let cat = sel.value;
-      if (cat === '__new__') {
-        cat = (window.prompt('New category name:') || '').trim().toLowerCase();
-        if (!cat) { sel.value = sel.dataset.prev; return; }
-      }
-      askScope(sel, row, cat);
+  document.querySelectorAll('#txn-table .cat-pick').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const row = LEDGER.find((r) => r.id === btn.dataset.id);
+      if (row) openCatPicker(btn, row);
     });
   });
+}
+
+// ── Category / transfer picker — a searchable combobox shared across rows ──
+// One popover, anchored under the clicked cell. Type to filter the vocab; pick a
+// category, mark the row a Transfer/Payment (excluded from spend/income), or add
+// a brand-new category. Every pick writes a rule that applies to past + future
+// matching rows — this is how CFO learns the user's vocabulary over time.
+const TRANSFER_OPT = { value: 'transfer', label: '⇄ Transfer / Payment', special: true };
+const INCOME_OPT = { value: 'income', label: 'income', special: true };
+
+function catOptions(row) {
+  if (row.amount >= 0) return [INCOME_OPT, TRANSFER_OPT];
+  const cats = knownCategories().filter((c) => c !== 'transfer' && c !== 'income');
+  return [...cats.map((c) => ({ value: c, label: c })), TRANSFER_OPT];
+}
+
+let CAT_POP = null;
+function openCatPicker(anchor, row) {
+  if (!CAT_POP) { CAT_POP = document.createElement('div'); CAT_POP.id = 'cat-pop'; CAT_POP.hidden = true; document.body.appendChild(CAT_POP); }
+  const pop = CAT_POP;
+  const opts = catOptions(row);
+  const cur = row.transfer ? 'transfer' : effCategory(row);
+  let active = 0, items = opts;
+  const rect = anchor.getBoundingClientRect();
+  pop.style.left = `${Math.max(8, rect.left + window.scrollX)}px`;
+  pop.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  pop.hidden = false;
+  pop.innerHTML = '<input class="cat-q" type="text" placeholder="Search or add…" autocomplete="off"><ul class="cat-list"></ul>';
+  const q = pop.querySelector('.cat-q');
+  const list = pop.querySelector('.cat-list');
+
+  const render = () => {
+    const term = q.value.trim().toLowerCase();
+    items = opts.filter((o) => o.label.toLowerCase().includes(term));
+    const exact = opts.some((o) => o.value.toLowerCase() === term);
+    if (term && !exact && row.amount < 0) items = [...items, { value: term, label: `✚ Add “${term}”`, isNew: true }];
+    active = Math.max(0, Math.min(active, items.length - 1));
+    list.innerHTML = items.map((o, i) =>
+      `<li class="${o.special ? 'special' : ''}${o.isNew ? ' newcat' : ''}${i === active ? ' active' : ''}${o.value === cur ? ' current' : ''}" data-i="${i}">${esc(o.label)}</li>`).join('');
+  };
+  render();
+
+  const close = () => { pop.hidden = true; pop.innerHTML = ''; document.removeEventListener('mousedown', onDoc, true); };
+  const onDoc = (e) => { if (!pop.contains(e.target) && e.target !== anchor) close(); };
+  const choose = (o) => {
+    close();
+    if (!o) return;
+    const val = o.isNew ? o.value.toLowerCase() : o.value;
+    // transfer/income, and un-transferring a heuristic transfer, all need a RULE
+    // (a per-row category would just get re-flagged on the next reload).
+    if (val === 'transfer' || val === 'income' || row.transfer) applyRule(row, val);
+    else askScope(anchor, row, val); // plain category — offer rule vs this-row
+  };
+  document.addEventListener('mousedown', onDoc, true);
+  q.addEventListener('input', () => { active = 0; render(); });
+  q.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { active = Math.min(active + 1, items.length - 1); render(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { active = Math.max(active - 1, 0); render(); e.preventDefault(); }
+    else if (e.key === 'Enter') { choose(items[active]); e.preventDefault(); }
+    else if (e.key === 'Escape') { close(); }
+  });
+  list.addEventListener('mousedown', (e) => {
+    const li = e.target.closest('li'); if (!li) return;
+    e.preventDefault(); choose(items[+li.dataset.i]);
+  });
+  q.focus();
+}
+
+// Transfer / income picks are always a remembered rule (a per-row transfer can't
+// persist — flags are recomputed from the full ledger each load).
+async function applyRule(row, val) {
+  CATEGORY_OVERRIDES = { ...(CATEGORY_OVERRIDES || {}), [row.merchant.toLowerCase()]: val };
+  await saveConfigOverrides();
+  await afterCategoriesChanged();
 }
 
 // Import history with per-import revert. Imports made before undo existed have
