@@ -107,6 +107,17 @@
   }
   .save-status.visible { opacity: 1; }
 
+  .rule-add { display: flex; gap: 8px; align-items: center; }
+  .rule-add input { flex: 1; min-width: 0; padding: 8px 12px; border: 1px solid var(--border-strong);
+    border-radius: 8px; background: var(--bg); color: var(--text); font-size: 13px; outline: none; }
+  .rule-add input:focus { border-color: var(--accent); }
+  .rule-add select { flex: 0 0 150px; }
+  .rule-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); }
+  .rule-kw { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+  .rule-type { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    background: rgba(107,114,128,.16); color: var(--muted); text-transform: capitalize; white-space: nowrap; }
+  .rule-type.special { background: rgba(59,130,246,.14); color: var(--accent); text-transform: none; }
+
 </style>
 </head>
 <body>
@@ -148,6 +159,20 @@
       <p class="section-desc">What CFO remembers — goals and notes, scoped to CFO alone (never your other apps). CFO recalls these automatically as you chat. Forget any item anytime.</p>
       <div class="field-card">
         <div id="mem-list" class="acct-meta">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Rules CFO learned -->
+    <div class="section">
+      <h2 class="section-title">Rules CFO learned</h2>
+      <p class="section-desc">How CFO classifies your transactions. Each rule maps a merchant keyword to a category, or marks it a <strong>Transfer</strong> (excluded from spend &amp; income) or <strong>Income</strong>. CFO writes these as you correct rows and approve suggestions — add, edit, or remove any here. Keywords are whole-word matched, so a short token like <code>tf</code> only matches the word "tf", never inside "netflix". Changes apply next time the report recomputes.</p>
+      <div class="field-card">
+        <div class="rule-add">
+          <input id="rule-kw" type="text" placeholder="merchant keyword (e.g. amex cards, or a word like virement)" />
+          <select id="rule-type"></select>
+          <button id="rule-add-btn" class="btn" type="button">Add</button>
+        </div>
+        <div id="rule-list" class="acct-meta" style="margin-top:14px">Loading…</div>
       </div>
     </div>
 
@@ -369,9 +394,80 @@
       }));
     }
 
+    // ── Rules CFO learned (config.category_overrides) ─────────────────────
+    // The merchant-keyword -> classification map the engine applies. A value is
+    // a category, or the reserved 'transfer' (exclude from spend/income) /
+    // 'income' (force-keep). Same store cfo.js writes from the row dropdown and
+    // the Review card — editing here just exposes it directly.
+    const BUILTIN_CATS = ["dining", "fees", "groceries", "health", "housing", "other", "shopping", "subscriptions", "transport", "travel", "utilities"];
+    const ruleList = document.getElementById("rule-list");
+    const ruleKw = document.getElementById("rule-kw");
+    const ruleType = document.getElementById("rule-type");
+    const ruleAddBtn = document.getElementById("rule-add-btn");
+
+    async function readConfig() {
+      try { return JSON.parse((await runBash(`cat "${CONFIG}" 2>/dev/null || echo '{}'`)) || "{}"); }
+      catch { return {}; }
+    }
+    async function writeConfig(cfg) {
+      const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(cfg, null, 2) + "\n")));
+      await runBash(`printf '%s' "${b64}" | base64 --decode > "${CONFIG}"`);
+    }
+
+    function fillRuleTypes(extra) {
+      const cats = [...BUILTIN_CATS];
+      (extra || []).forEach((t) => { if (t && t !== "transfer" && t !== "income" && !cats.includes(t)) cats.push(t); });
+      cats.sort();
+      ruleType.innerHTML =
+        '<optgroup label="Category">' + cats.map((t) => `<option value="${memEsc(t)}">${memEsc(t)}</option>`).join("") + "</optgroup>" +
+        '<optgroup label="Special"><option value="transfer">⇄ Transfer / Payment</option><option value="income">Income</option></optgroup>';
+    }
+
+    async function loadRules() {
+      const cfg = await readConfig();
+      const ov = cfg.category_overrides || {};
+      const keys = Object.keys(ov).sort();
+      fillRuleTypes(Object.values(ov));
+      if (!keys.length) {
+        ruleList.innerHTML = "No rules yet — CFO writes them as you classify rows and approve suggestions.";
+        return;
+      }
+      ruleList.innerHTML = keys.map((k) => {
+        const v = String(ov[k]);
+        const special = v === "transfer" || v === "income";
+        return `<div class="rule-row">
+          <span class="rule-kw" title="${memEsc(k)}">${memEsc(k)}</span>
+          <span class="rule-type${special ? " special" : ""}">${v === "transfer" ? "⇄ transfer" : memEsc(v)}</span>
+          <button class="btn btn-ghost rule-del" data-kw="${memEsc(k)}" type="button">Remove</button>
+        </div>`;
+      }).join("");
+      ruleList.querySelectorAll(".rule-del").forEach((b) => b.addEventListener("click", async () => {
+        b.disabled = true;
+        const cfg2 = await readConfig();
+        if (cfg2.category_overrides) delete cfg2.category_overrides[b.dataset.kw];
+        await writeConfig(cfg2);
+        loadRules();
+      }));
+    }
+
+    ruleAddBtn.addEventListener("click", async () => {
+      const kw = (ruleKw.value || "").trim().toLowerCase();
+      if (!kw) { ruleKw.focus(); return; }
+      ruleAddBtn.disabled = true;
+      const cfg = await readConfig();
+      cfg.category_overrides = cfg.category_overrides || {};
+      cfg.category_overrides[kw] = ruleType.value;
+      await writeConfig(cfg);
+      ruleKw.value = "";
+      ruleAddBtn.disabled = false;
+      loadRules();
+    });
+    ruleKw.addEventListener("keydown", (e) => { if (e.key === "Enter") ruleAddBtn.click(); });
+
     loadAccount();
     loadModel();
     loadMemory();
+    loadRules();
 
     // ── Desktop pet ───────────────────────────────────────────────────────
     // Two flag files the Tauri shell watches (it applies changes within ~2s);
