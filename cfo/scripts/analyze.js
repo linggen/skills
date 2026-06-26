@@ -363,7 +363,7 @@ const ESSENTIAL_CATEGORIES = new Set(['housing', 'groceries', 'transport']);
 // attached. Keyword rules give the default; the user can override per
 // merchant on the Commitments tab (opts.commitments[key].kind wins).
 const KIND_RULES = [
-  ['loan:home', ['mortgage', 'home loan', 'homeloan']],
+  ['loan:home', ['mortgage', 'home loan', 'homeloan', 'mtg', 'hypotheque', 'hypothèque']],
   ['loan:auto', ['auto loan', 'car loan', 'auto finance', 'car finance', 'toyota financial', 'honda financial', 'gm financial', 'ford credit', 'nissan finance', 'vw credit', 'tesla finance']],
   ['loan:student', ['student loan', 'osap', 'navient', 'nelnet', 'mohela', 'sallie mae']],
   ['loan', ['loan payment', 'loan pmt', 'personal loan', 'line of credit', 'lendingclub', 'lending club']],

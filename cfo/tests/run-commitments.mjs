@@ -218,5 +218,25 @@ const calm = analyzeTransactions(
   ['2026-03-15', '2026-04-15', '2026-05-15', '2026-06-15'].map((date) => ({ date, merchant: 'BELL CANADA', amount: -95 })), {}, {});
 t('A6 steady bill stays quiet', calm.anomalies.filter((a) => a.type === 'bill_spike').length === 0);
 
+console.log('— kind: mortgage abbreviations (issue: mortgage counted as a sub) —');
+// BMO writes mortgages as "MTG/HYP", not the word "mortgage" — must still be a
+// loan (essential), never a cancellable subscription.
+t('KM1 "MTG" abbreviation → loan:home', classifyKind('B/M PAYT/PAY MTG/HYP', 'other') === 'loan:home');
+t('KM2 French "hypotheque" → loan:home', classifyKind('PAIEMENT HYPOTHEQUE', 'other') === 'loan:home');
+t('KM3 a real recurring service stays a sub', classifyKind('NETFLIX', 'subscriptions') === 'sub');
+// End-to-end: a monthly fixed-amount mortgage is excluded from the subs total.
+const mtg = reportFromLedger(
+  toLedgerRows([
+    { date: '2026-04-05', merchant: 'B/M PAYT/PAY MTG/HYP', amount: -3118.20 },
+    { date: '2026-05-05', merchant: 'B/M PAYT/PAY MTG/HYP', amount: -3118.20 },
+    { date: '2026-06-05', merchant: 'B/M PAYT/PAY MTG/HYP', amount: -3118.20 },
+    { date: '2026-06-06', merchant: 'NETFLIX', amount: -18.99 },
+    { date: '2026-05-06', merchant: 'NETFLIX', amount: -18.99 },
+  ], 'chk'),
+  { chk: { type: 'checking' } },
+);
+t('KM4 mortgage excluded from subs total, Netflix kept', mtg.subscription_monthly_total === 18.99,
+  `subs total ${mtg.subscription_monthly_total}`);
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
