@@ -407,7 +407,12 @@ function renderTxnView() {
   document.getElementById('tf-month').addEventListener('change', (e) => { f.month = e.target.value; re(); });
   document.getElementById('tf-acct').addEventListener('change', (e) => { f.account = e.target.value; re(); });
   document.getElementById('tf-cat').addEventListener('change', (e) => { f.category = e.target.value; re(); });
-  document.getElementById('tf-q').addEventListener('change', (e) => { f.q = e.target.value; re(); });
+  const tfq = document.getElementById('tf-q');
+  tfq.addEventListener('change', (e) => { f.q = e.target.value; re(); });   // commit on Enter/blur
+  tfq.addEventListener('search', (e) => { f.q = e.target.value; re(); });   // native ✕ clear / Enter
+  // Re-render on clear-to-empty even if `search` doesn't fire — but NOT on every
+  // keystroke (a full re-render rebuilds this input and would steal focus).
+  tfq.addEventListener('input', (e) => { if (e.target.value === '' && f.q !== '') { f.q = ''; re(); } });
 
   document.getElementById('txn-table').innerHTML = rows.length ? `
     <table><thead><tr><th>Date</th><th>Merchant</th><th>Account</th><th class="num">Amount</th><th>Category</th></tr></thead><tbody>
