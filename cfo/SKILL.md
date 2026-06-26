@@ -218,9 +218,13 @@ nothing invented:
    automatically scoped to CFO — you only ever see CFO's own goals, never
    anything from the user's other apps.
 
-Deliver the review as **insight cards via `PageUpdate`** (schema below) plus a
-2–3 sentence chat summary. One card per rubric section that has something to
-say — skip empty sections, don't pad.
+Deliver the review as **insight cards via `PageUpdate` with `replace: true`**
+(schema below) — one card per rubric section that has something to say (skip
+empty sections, don't pad). The cards render in the **Insights panel on the
+Report tab, NOT in the chat**, so your chat reply is ONE short line that POINTS
+there — e.g. *"I've put your review in the Insights panel — N cards."* Do **not**
+restate the findings in chat (the user reads them in the panel), and never say
+"here's your review" with nothing after it.
 
 ### 5. Advice + goals
 

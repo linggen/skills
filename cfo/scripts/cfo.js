@@ -25,6 +25,7 @@ let LEDGER = [];
 let ACCOUNTS = {};
 let RANGE = { preset: '12M', from: null, to: null };
 let INSIGHTS = [];
+let REVIEW_PENDING = false; // a review was just triggered — Insights cleared, awaiting the agent's cards
 let SUGGESTIONS = []; // agent-teacher proposals awaiting a tap (transfers/income — they move totals)
 let LAST_AUTO_APPLIED = 0; // category proposals auto-applied in the last batch (don't move totals)
 let LAST_VIEW = null; // most recent computed view — read by announceImport
@@ -1383,6 +1384,21 @@ function normalizeTone(t) {
   return 'info';
 }
 
+// A review writes to the Insights panel, not the chat. Clear the old cards, show
+// a "running" placeholder, scroll the panel into view, then ask the agent — so
+// it's unmistakable which cards are the NEW review (they don't pile onto stale ones).
+function startReview() {
+  if (!LEDGER.length) { setStatus('Import a statement first — the review needs data.'); return; }
+  INSIGHTS = [];
+  REVIEW_PENDING = true;
+  renderInsights();
+  scrollToInsights();
+  try { chat?.send?.('Run my financial review.'); } catch { /* ignore */ }
+}
+function scrollToInsights() {
+  try { document.getElementById('insights-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch { /* ignore */ }
+}
+
 function renderInsights() {
   applyVisibility();
   const el = document.getElementById('insights');
@@ -1397,7 +1413,9 @@ function renderInsights() {
       </div>
       <div class="insight-body">${mdLite(c.body || '')}</div>
     </div>`).join('')
-    : '<p class="hint">Nothing yet — hit <b>✦ Run review</b> or ask the assistant a question, and its findings land here.</p>';
+    : (REVIEW_PENDING
+      ? '<p class="hint">✦ Running your review… your cards land here in a few seconds.</p>'
+      : '<p class="hint">Nothing yet — hit <b>✦ Run review</b> or ask the assistant a question, and its findings land here.</p>');
   el.querySelectorAll('.insight-x').forEach((b) => b.addEventListener('click', () => {
     INSIGHTS.splice(+b.dataset.i, 1);
     renderInsights();
@@ -1451,7 +1469,9 @@ function applyPageUpdate(args) {
     seen.add(key);
     INSIGHTS.push({ title: String(c.title || ''), body: String(c.body || ''), tone: normalizeTone(c.tone), at: new Date().toISOString() });
   }
+  REVIEW_PENDING = false;       // the review (or any insight push) has landed
   renderInsights();
+  scrollToInsights();           // bring the result into view — it's not in the chat
   saveInsights().catch((e) => console.warn('[cfo] insights save', e));
 }
 
@@ -1658,7 +1678,7 @@ function announceImport(results) {
     }
     msg += `\n\nCharts are updated — running your full review now…`;
     try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
-    setTimeout(() => { try { chat?.send?.('Run my financial review.'); } catch { /* ignore */ } }, 600);
+    setTimeout(() => startReview(), 600);
     return;
   }
   msg += `\n\nCharts are updated — take a look. Want a financial review? Hit ✦ Run review or just ask.`;
@@ -1922,7 +1942,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('run-review')?.addEventListener('click', () => {
     if (!LEDGER.length) { setStatus('Import a statement first — the review needs data.'); return; }
-    chat?.send?.('Run my financial review.');
+    startReview();
   });
 
   // The custom-range popover dismisses on click-outside or Escape.
