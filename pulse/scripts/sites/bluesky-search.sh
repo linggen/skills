@@ -4,7 +4,7 @@
 # Searches Bluesky public posts for the keywords configured under
 # sites.bluesky.keywords in ~/.linggen/skills/pulse/config.json. Keywords
 # should be category phrases extracted from the brief — see SKILL.md
-# research-market step 1 — NOT brand names (which rarely match).
+# discover-customers — NOT brand names (which rarely match).
 #
 # Public AT Proto endpoint, no auth, generous rate limit (~3000/5min).
 #

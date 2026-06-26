@@ -9,8 +9,8 @@ description: >-
   pipeline — Gather local (script), Gather web (agent + Fetch tools),
   Draft (agent) — sending one goal at a time. Every artifact lands on
   the page via PageUpdate body_patch; the agent never replies with
-  plain prose drafts. Built on five internal capabilities —
-  research-market, discover-customers, monitor-mentions, track-progress,
+  plain prose drafts. Built on four internal capabilities —
+  discover-customers, monitor-mentions, track-progress,
   draft-content. AI-led, never auto-posts.
 allowed-tools:
   - Read
@@ -47,7 +47,7 @@ tools:
     description: >-
       Fetch the 30 current top HN stories. Returns JSON array of
       {id, title, url, score, by, descendants, hn_url, age_hours}.
-      Used by research-market, discover-customers, monitor-mentions.
+      Used by discover-customers, monitor-mentions.
       Filter results by goal-relevant keywords and brief topics in
       your reasoning; score 0-1 for technical specificity.
     cmd: "$SKILL_DIR/scripts/sites/hackernews.sh"
@@ -161,7 +161,7 @@ tools:
     timeout_ms: 30000
   - name: FetchX
     description: >-
-      Search recent X (Twitter) posts for a topic — discovery + a trend supplement.
+      Search recent X (Twitter) posts for a topic — a discovery supplement.
       Reads the user's logged-in x.com session through the linggen-browser
       extension (bridge op "search") — no paid API, $0/read. Gated OFF by
       default; set sites.x.keyword_search=true to enable. Pass a topic query;
@@ -307,11 +307,10 @@ tools:
     description: >-
       Search Bluesky public posts for the category keywords listed in
       sites.bluesky.keywords (e.g. ["local LLM", "Apple Silicon AI",
-      "agent runtime"] — extracted from the brief per research-market
-      step 1, NOT brand names). Returns a JSON array of {source,
+      "agent runtime"] — category phrases extracted from the brief,
+      NOT brand names). Returns a JSON array of {source,
       watched_term, title, url, author, author_display, body, summary,
       created_iso, age_hours, reply_count, repost_count, like_count}. Used by
-      research-market (for industry signal in the user's category) and
       discover-customers (Bluesky has no stable communities like
       subreddits, so keyword search is the discovery primary). Dedupes
       across keywords by post URL.
@@ -322,8 +321,7 @@ tools:
     description: >-
       Fetch the lobste.rs newest feed. Returns JSON array of
       {title, url, comments_url, score, tags, submitter_user,
-      created_at, description}. Used by research-market and
-      discover-customers.
+      created_at, description}. Used by discover-customers.
     cmd: "$SKILL_DIR/scripts/sites/lobsters.sh"
     tier: read
     timeout_ms: 30000
@@ -331,7 +329,7 @@ tools:
     description: >-
       Fetch the 30 most recently submitted arxiv papers from CS.AI /
       CS.LG / CS.CL. Returns JSON array of {title, summary, url,
-      authors, published}. Used by research-market when goals are
+      authors, published}. Used by discover-customers when goals are
       research-adjacent.
     cmd: "$SKILL_DIR/scripts/sites/arxiv.sh"
     tier: read
@@ -341,28 +339,15 @@ tools:
       Fetch each RSS/Atom feed listed in
       ~/.linggen/skills/pulse/config.json (sites.rss.feeds).
       Returns JSON array of {feed, title, url, summary, date}. Used
-      by research-market and discover-customers when RSS feeds are
-      configured.
+      by discover-customers when RSS feeds are configured.
     cmd: "$SKILL_DIR/scripts/sites/rss.sh"
     tier: read
     timeout_ms: 30000
-  - name: FetchGitHubTrending
-    description: >-
-      Scrape today's trending GitHub repos — the always-on anchor of
-      the Trend section. Optional language filter via
-      sites["github-trending"].language in config.json (e.g. "rust",
-      "python"). Returns JSON array of {full_name, owner, repo, url,
-      description, language, stars, forks, stars_today}. research-market
-      ALWAYS calls this regardless of config toggles; it is the
-      builder-side trend feed.
-    cmd: "$SKILL_DIR/scripts/sites/github-trending.sh"
-    tier: read
-    timeout_ms: 20000
   - name: FetchProductHuntRSS
     description: >-
       Fetch today's launches from Product Hunt's public RSS feed.
       Returns JSON array of {title, url, summary, date, author, source}.
-      Used by research-market and discover-customers — competing launches
+      Used by discover-customers — competing launches
       surface here.
     cmd: "$SKILL_DIR/scripts/sites/product-hunt.sh"
     tier: read
@@ -386,7 +371,7 @@ posts manually after reviewing.
 You are the **orchestrator and UI driver**, not a chat conversation
 partner.
 
-- **The page is the product.** Cards, drafts, mentions, trend — all
+- **The page is the product.** Cards, drafts, mentions — all
   artifacts the user reads. You produce them by emitting
   `PageUpdate { body_patch: { section, cards, mode? } }` tool calls.
 - **The chat panel is your control bus.** The page sends you goal
@@ -421,7 +406,7 @@ partner.
 │    → Pick 2-3 concrete topics from the user's actual work        │
 │    → Call Fetch* tools in parallel, filter by topical fit (≥ 0.6)│
 │    → Run mention-watching on watchlist terms from brief          │
-│    → Emit body_patch for trend / discovery / mentions /          │
+│    → Emit body_patch for discovery / mentions /                  │
 │      replies_due sections (only the ones that have content)      │
 ├─────────────────────────────────────────────────────────────────┤
 │ 4. Draft (USER-TRIGGERED ONLY — never auto-cascades)             │
@@ -449,7 +434,7 @@ partner.
 
 - Drafts → `progress_drafts` section as `draft` cards with
   `mode: "append"`. Never paste draft text into chat.
-- Mentions / trend / discovery → their own sections.
+- Mentions / discovery → their own sections.
 - Status narration → chat, but only short factual lines while
   actively working ("Calling FetchReddit for r/macapps…"). Not
   prose. Not summaries. Not "Here's what I did."
@@ -460,7 +445,7 @@ partner.
 - When a step has no real signal, emit ONE `empty` card with a
   one-line reason and stop. Don't fabricate.
 - **A tool error or empty result is NEVER a card.** Every mention /
-  reply / discovery / trend card must come from a real item a Fetch
+  reply / discovery card must come from a real item a Fetch
   tool actually returned, about a real person/repo/thread. Do NOT
   invent a "system" mention, status card, error card, or
   setup-instructions card (e.g. "X mentions unavailable — connect the
@@ -541,7 +526,7 @@ Read the chip's goal sentence (or the user's free-text equivalent).
 
 | Step (chip / goal pattern) | Capabilities you run |
 |---|---|
-| **Gather web** ("gather web signal", "find threads", "check mentions", "scan signal") | research-market + discover-customers + monitor-mentions (in parallel where independent) |
+| **Gather web** ("gather web signal", "find threads", "check mentions", "scan signal") | discover-customers + monitor-mentions (in parallel where independent) |
 | **Draft** ("draft posts", "draft for X / Substack / Blog", "polish") | draft-content (reads existing cards; produces one draft per enabled lane unless goal narrows) |
 | User asks for one specific capability ("just check mentions", "weekly recap") | only that capability |
 | Ambiguous / unclear | Ask one clarifying question, do not run |
@@ -557,104 +542,6 @@ page leaves their existing content in place.
 ---
 
 ## Capabilities
-
-### research-market
-
-**When**: every Gather web run — research-market fills the `trend`
-section, which is always-on. It surfaces what's trending in the
-user's space so the Draft step has a public hook to pivot off.
-
-**Inputs**: brief topics, GOAL.
-
-**Trend sources** — GitHub Trending is the always-on anchor; HN and X
-supplement it:
-- **`FetchGitHubTrending` — ALWAYS call it**, every run, regardless of
-  any config toggle. It is the anchor of the `trend` section: today's
-  trending repos are the most legible "what builders are shipping"
-  signal. There is no Settings switch for it.
-- **`FetchHackerNews`** — top stories as a trend supplement.
-- **`FetchX`** (only if `sites.x.enabled` and `sites.x.keyword_search`)
-  — searches recent X posts for the category keywords via the bridge
-  ($0); still cap to the top 2-3 category terms.
-- Optional, when enabled: `FetchLobsters`, `FetchArxiv`, `FetchRSS`,
-  `FetchProductHuntRSS` may further supplement the trend feed.
-
-**Process**:
-1. **Extract category keywords from the brief, not brand names.**
-   Read the brief and pull out the *categories / problem space*
-   the user is building in — the words a stranger would use to
-   describe the user's work without knowing the product names.
-   Brand names (product names, company names, handles) almost never
-   show up in third-party posts yet; filtering on them returns
-   nothing useful. Categories are what GitHub repos / HN / X posts
-   actually talk about.
-
-   How to extract categories from a brief:
-   - Strip every proper noun specific to the user.
-   - Keep the noun phrases describing what kind of thing they're
-     building, who the audience is, and what problem space they
-     work in.
-   - Generalize one level above the brief's wording when needed —
-     if the brief says "X for Y users", scan for both "X" and "Y".
-
-   Brand-name hits when they do appear are bonus signal — score
-   them high — but never use them as the *primary* filter, or the
-   trend section will always be empty.
-2. Call the trend sources above in parallel — `FetchGitHubTrending`
-   unconditionally, `FetchHackerNews`, and `FetchX` (if enabled) plus
-   any enabled optional supplements.
-3. **Drop SKIP_URLS first.** Before scoring, drop any result whose
-   normalized post id matches a `SKIP_URLS` entry from the hidden
-   Gather web context. Same format as discover-customers: match by
-   post id (`<platform>:<post-id>`), not by slug. Trend cards on
-   threads the user already commented on are pure noise — they'd be
-   filtered at render anyway, and scoring them burns tokens.
-4. Filter each tool's output by the **category** keywords from step 1.
-   Score 0–1 for how directly the hit speaks to the user's category:
-   - 1.0 = a specific repo, claim, tool, paper, or thread squarely
-     inside the user's category — close enough that the user could
-     plausibly comment from real experience.
-   - 0.6 = clearly in-category, less specific overlap.
-   - 0.3 = adjacent category — shares a buzzword with the brief but
-     a different problem space underneath.
-   - 0.0 = same broad domain (any catch-all umbrella term that fits
-     thousands of unrelated things), no real connection.
-5. **Hard cutoff: drop below 0.6.** Topical-but-thin links poison
-   the section.
-6. Group surviving hits by source.
-7. **Dedupe against discovery.** If a hit's URL also appears (or
-   will appear) in the `discovery` section emitted this run, drop
-   it from `trend`. Discovery is the actionable bucket
-   (comment opportunity); trend is passive awareness. Don't show
-   the same thread twice.
-
-**Output**: emit a body_patch for `trend` section. Each card is a
-`trend` type (see card schema in design.md). **`url` is REQUIRED**
-so the page can render an Open button:
-
-```json
-{ "body_patch": {
-  "section": "trend",
-  "last_updated": "<now>",
-  "cards": [
-    { "type": "trend", "id": "...", "source": "github-trending",
-      "title": "Trending: agent-runtime repos",
-      "url": "https://github.com/trending/rust?since=daily",
-      "items": ["..."] },
-    ...
-  ]
-}}
-```
-
-If nothing scored ≥ 0.6, emit one `empty` card with a one-line
-message instead.
-
-Each trend card carries a **"✎ Draft post"** action. When the user
-clicks it the page sends a self-contained prompt asking you to turn
-that one trend into a single `x-post` draft (web-led + local proof,
-same voice contract as the Draft step) and append it to
-`progress_drafts`. This is what gives the trend section a
-job-to-be-done — a rising trend becomes a draft in one click.
 
 ### discover-customers
 
@@ -987,7 +874,7 @@ Emit body_patch for `replies_due` section.
 #### Output
 
 Two `body_patch` blocks: one for `mentions`, one for `replies_due`.
-Sections you didn't touch (e.g., `discovery`, `trend`,
+Sections you didn't touch (e.g., `discovery`,
 `progress_drafts`) are NOT in the patch — the page leaves them in
 place per the partial-run contract.
 
@@ -1078,7 +965,6 @@ After running a step, emit one `body_patch` block per section touched,
 then one `run_log` block:
 
 ```
-body_patch: { section: "trend", ... }
 body_patch: { section: "discovery", ... }
 body_patch: { section: "progress_drafts", ... }
 run_log: {
@@ -1086,7 +972,7 @@ run_log: {
   trigger: "chip|chat",
   goal: "<the goal text>",
   step: "gather-web|draft|other",
-  capabilities_invoked: ["research-market", "discover-customers"],
+  capabilities_invoked: ["discover-customers"],
   summary: ["bullet 1", "bullet 2"],
   skipped: false,
   skip_reason: null

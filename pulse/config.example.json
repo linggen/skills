@@ -53,10 +53,6 @@
       "enabled": false,
       "feeds": []
     },
-    "github-trending": {
-      "enabled": false,
-      "language": ""
-    },
     "product-hunt": {
       "enabled": false
     },

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # x-search.sh — registered as the FetchX tool.
 #
-# Searches recent X (Twitter) posts for a topic, for discover-customers and
-# research-market. Reads the user's logged-in x.com session through the
+# Searches recent X (Twitter) posts for a topic, for discover-customers.
+# Reads the user's logged-in x.com session through the
 # linggen-browser extension (bridge op "search") — no metered API, $0/read.
 # Returns [] when the bridge/extension isn't available.
 #
