@@ -16,7 +16,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -339,7 +339,7 @@ const PIPELINE_CHIPS = {
   },
   'gather-web': {
     handler: runGatherWeb,
-    expects: ['mentions', 'replies_due', 'discovery', 'trend'],
+    expects: ['mentions', 'replies_due', 'discovery'],
   },
   'draft': {
     handler: runDraft,
@@ -637,7 +637,7 @@ async function runGatherWeb() {
     'list, BEFORE scoring or drafting. Match by post id, not by slug — for',
     'Reddit use the segment after /comments/<id>; for Bluesky use the post',
     'rkey (last URL segment); for X use the status id (the digits after',
-    '/status/). Skip applies to `discovery`, `trend`, and `mention`-kind',
+    '/status/). Skip applies to `discovery` and `mention`-kind',
     'cards. It does NOT apply to `reply_to_me` cards: a reply_to_me is a',
     'reply to MY OWN comment, so its thread id is necessarily in this list —',
     'matching it here would suppress the "someone replied to me" signal,',
@@ -650,17 +650,17 @@ async function runGatherWeb() {
     skipBlock,
     'Gather web signal for what I\'m working on right now.',
     '',
-    'OUTPUT CONTRACT (read first): this step writes the sections `trend`, `discovery`, `mentions`, `hn_submit` (when sites.hackernews.enabled), and `replies_due`, and you MUST emit a body_patch for each one you gathered for. `trend`, `discovery`, and `mentions` always run. `replies_due` runs ONLY when state/posted.json has tracked posts (see REPLIES DUE below); when posted.json is empty or missing, omit the section entirely — do not emit an empty replies_due card. Do NOT emit or re-emit `progress_drafts`: that is Gather local\'s section, it is already on the page, and here it is INPUT you read, never output you write. A run that ends having only touched `progress_drafts` is a FAILED run.',
+    'OUTPUT CONTRACT (read first): this step writes the sections `discovery`, `mentions`, `hn_submit` (when sites.hackernews.enabled), `x_roster` (when sites.x.enabled and the roster is empty/stale), and `replies_due`, and you MUST emit a body_patch for each one you gathered for. `discovery` and `mentions` always run. `replies_due` runs ONLY when state/posted.json has tracked posts (see REPLIES DUE below); when posted.json is empty or missing, omit the section entirely — do not emit an empty replies_due card. Do NOT emit or re-emit `progress_drafts`: that is Gather local\'s section, it is already on the page, and here it is INPUT you read, never output you write. A run that ends having only touched `progress_drafts` is a FAILED run.',
     '',
     'Read the local cards already in this session (the `progress` card in `progress_drafts` lists my recent commits, sessions, and changed files) — read-only INPUT. Pick 2-3 concrete topics that capture what I\'m actually working on this week.',
     '',
-    'Then for each topic, call the relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS) in parallel. ALWAYS call FetchGitHubTrending as well — it is the always-on anchor of the `trend` section, so call it every run regardless of any config toggle; emit its repos as `trend` cards. Filter results for direct topical fit (score ≥ 0.6). If sites.x.enabled, X discovery is REACH-FIRST (the goal is follower growth, and a reply only grows the account if it lands early under a post whose audience is my niche): call FetchXTargets FIRST — it pulls the freshest posts from my curated mid-tier niche accounts (sites.x.target_accounts), the prime reply targets. ONLY if sites.x.keyword_search is true (it is OFF by default — the script returns [] otherwise, since the keyword firehose is mostly tiny/promo accounts and still spends metered reads), ALSO call FetchX with a focused query per topic as a GATED supplement; keep to the top 1-2 topics. The curated FetchXTargets is the real growth engine. If sites.hackernews.enabled, ALSO call FetchHNSearch with a focused query per topic (it takes "<query>" [days]; recent HN threads on that topic) — these are comment opportunities for building HN karma, handled like Reddit discovery (see HN handling below), not just trend.',
+    'Then for each topic, call the relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS) in parallel. Filter results for direct topical fit (score ≥ 0.6). If sites.x.enabled, X discovery is REACH-FIRST and roster-driven (the goal is follower growth, and a reply only grows the account if it lands early under a post whose audience is my niche). FIRST ensure the target ROSTER is built: if sites.x.roster is empty (or I asked to refresh accounts), build it per the SKILL.md discover-customers "X target roster" procedure — gather candidates from FetchXWhoToFollow (source 1, highest), the authors of on-topic FetchX hits (source 2), and FetchXFollowing <handle> on my strongest existing targets (source 3); tag each `followed` by intersecting FetchXFollowing (no arg = my own following); exclude self + sites.x.ignored_accounts + sites.x.dismissed_suggestions; curate to ~20 with a one-line `why`; and emit a `x_roster` body_patch (cards: { handle, name, followers, bio, followed, source:"1"|"2"|"3"|"following", why }, source-1 first). If the roster already has accounts and I did not ask to refresh, SKIP rebuilding. THEN call FetchXTargets (no arg = whole roster) — it pulls the freshest posts from the roster, the prime reply targets. ONLY if sites.x.keyword_search is true (it is OFF by default — the script returns [] otherwise, since the keyword firehose is mostly tiny/promo accounts), ALSO call FetchX with a focused query per topic as a GATED supplement; keep to the top 1-2 topics. If sites.hackernews.enabled, ALSO call FetchHNSearch with a focused query per topic (it takes "<query>" [days]; recent HN threads on that topic) — these are comment opportunities for building HN karma, handled like Reddit discovery (see HN handling below).',
     '',
     'HANDLING HN (FetchHNSearch) RESULTS — these are HN threads I could COMMENT on to build karma on a young account. Apply the already-commented rule: drop any hit whose id appears in SKIP_URLS as `hn:<id>` (a thread I have already commented in). RANK BY HEAT, then fit: strongly prefer threads with more `points` AND more `num_comments` AND recency (low age_hours) — a hot thread means more readers, which is the whole point of commenting to build karma. DROP cold threads: skip any thread that is not fresh AND has little traction (rule of thumb: age_hours > 24 with points < 10 and num_comments < 3) — a comment there is invisible and earns nothing. Exception: a very fresh thread (age_hours < 3) still on the way up is fine even at low points. For each survivor that clears 0.6 topical fit: call FetchHNThread(id) to read the OP + discussion for GROUNDING only, then draft a TOP-LEVEL reply to the OP/post — do NOT pick a nested comment and do NOT emit reply_target. (Replying to the OP is easiest to post — the reply box is at the top of the thread — and a top-level comment on an active thread gets the most visibility, which is the karma goal. reply_target is only for mentions in my own inbox.) Use the existing comments only to avoid repeating a point someone already made; the draft still answers the OP. Write `draft_starter` as an HN comment following references/lane-templates.md `hn-comment`: substance-first, register (1) IMPLICIT by default (NO product mention — most HN drafts are register 1); mention ling-mem ONLY when the thread is directly about agent memory AND always with disclosure; never a link/CTA/hype. Emit each as a `discovery` card { source:"hn", thread_title:<the HN thread title, REQUIRED — not empty>, author:<the HN submitter handle, from the hit\'s author/by field>, excerpt:<OP body / thread context, ~500 chars>, url:<the news.ycombinator.com/item?id=… url, REQUIRED>, comments?:<num_comments>, age_hours?, draft_starter }. If the only comment you could write is generic ("great point", "interesting"), emit NOTHING for that thread — HN flags low-effort/promo and it tanks a new account, the opposite of the goal.',
     '',
     'HANDLING HN SUBMIT CANDIDATES — separate from HN comments; this BUILDS the account by lowering my own-post ratio (HN auto-filters accounts that submit mostly their own links; the fix is interspersing OTHER people\'s interesting links — comments build karma but do NOT move that ratio). If sites.hackernews.enabled, call FetchHNSubmitCandidates (no args — it returns 3, which is plenty; HN tolerates only a couple of my own submissions a day). It returns fresh third-party ARTICLES to submit to HN (sourced from lobste.rs + quality subreddits) and has ALREADY deduped them against HN. These are submit-this-link items: there is NO comment to draft, and they are NEVER my own work. For each returned item, emit a card into the `hn_submit` section (NOT `discovery`, NOT `trend`): { type:"submit", source:<e.g. "lobste.rs" or "r/rust">, title:<the article title, REQUIRED>, url:<the EXTERNAL article url, REQUIRED — never a news.ycombinator.com link>, score?:<source score>, age_hours?, hn_status:<"fresh" or "unchecked"> }. Emit both "fresh" and "unchecked" items (the card flags "unchecked" ones for me to verify); the tool already removed anything already on HN. If it returns zero items, emit ONE `empty` card in `hn_submit`.',
     '',
-    'HANDLING X RESULTS (FetchXTargets + FetchX) — X is NOT Reddit. An X hit has NO comment tree to WebFetch and NO reply_target. Do NOT run any of the Reddit-only discovery steps below on it. Apply the already-commented rule: drop any X hit whose status id (digits after /status/) appears in SKIP_URLS as `x:<id>` — a post I have already replied to. REACH IS THE WHOLE POINT (the goal is follower growth): FetchXTargets hits are my CURATED niche accounts — already vetted, so they BYPASS the 0.6 topical-fit cutoff entirely. Surface EVERY FetchXTargets hit as a `discovery` card (dropping ONLY ones whose status id is in SKIP_URLS as `x:<id>`, i.e. already replied); do NOT score them for topical fit or prune off-topic ones — the whole point is to see everything my curated accounts just posted. Order them FRESHEST first (low age_hours) so I reply early while the slot is visible. For FetchX (keyword firehose) hits, GATE HARD: keep only authors with genuine reach AND live engagement; DROP tiny-follower / ~zero-engagement posts (a reply there reaches nobody). Do NOT chase mega-accounts (hundreds of thousands+ followers) either — their reply sections are saturated and my comment is invisible; the sweet spot is mid-tier niche accounts whose audience is my target user and where a sharp reply is actually seen. For the survivors, emit each X hit DIRECTLY as a card: as a `discovery` card { source:"x", title:<tweet text>, author:<the poster\'s @handle>, excerpt:<tweet text>, url:<the x.com status url, REQUIRED>, draft_starter:<your reply in voice> } when it is a post I could reply to; or as a `trend` card { source:"x", title, url } when it is broad "what people are talking about" signal. If FetchX returned hits this run, your `discovery` and/or `trend` body_patch MUST contain X cards — do not silently drop every X result. (X recent-search is noisy/promotional, so it is fine to keep only the few that genuinely fit my category.)',
+    'HANDLING X RESULTS (FetchXTargets + FetchX) — X is NOT Reddit. An X hit has NO comment tree to WebFetch and NO reply_target. Do NOT run any of the Reddit-only discovery steps below on it. Apply the already-commented rule: drop any X hit whose status id (digits after /status/) appears in SKIP_URLS as `x:<id>` — a post I have already replied to. REACH IS THE WHOLE POINT (the goal is follower growth): FetchXTargets hits are my CURATED niche accounts — already vetted, so they BYPASS the 0.6 topical-fit cutoff entirely. Surface EVERY FetchXTargets hit as a `discovery` card (dropping ONLY ones whose status id is in SKIP_URLS as `x:<id>`, i.e. already replied); do NOT score them for topical fit or prune off-topic ones — the whole point is to see everything my curated accounts just posted. Order them FRESHEST first (low age_hours) so I reply early while the slot is visible. For FetchX (keyword firehose) hits, GATE HARD: keep only authors with genuine reach AND live engagement; DROP tiny-follower / ~zero-engagement posts (a reply there reaches nobody). Do NOT chase mega-accounts (hundreds of thousands+ followers) either — their reply sections are saturated and my comment is invisible; the sweet spot is mid-tier niche accounts whose audience is my target user and where a sharp reply is actually seen. For the survivors, emit each X hit DIRECTLY as a `discovery` card { source:"x", title:<tweet text>, author:<the poster\'s @handle>, excerpt:<tweet text>, url:<the x.com status url, REQUIRED>, draft_starter:<your reply in voice> }. If FetchX returned hits this run, your `discovery` body_patch MUST contain X cards — do not silently drop every X result. (X recent-search is noisy/promotional, so it is fine to keep only the few that genuinely fit my category.)',
     '',
     'For mention-watching, also call FetchXMentions if sites.x.enabled — X (Twitter) mentions + replies via the official API; returns the SAME {kind: reply_to_me|mention, ...} shape with parent_comment_body for replies, so emit its items into the `mentions` section exactly like the reply_to_me / mention handling below (author is an @handle, url is an x.com link). It returns {items, count, errors}. If `items` is empty OR `errors` is non-empty (including a missing-credentials note), SKIP X mentions silently — do NOT create any card about it. A tool error/empty is NOT a mention.',
     'NEVER FABRICATE CARDS. Every mention / reply_to_me card MUST come from a real item a Fetch tool actually returned, about a real person. Do NOT invent a "system" mention, a status card, an error card, or a setup-instructions card (e.g. "X mentions unavailable — add credentials in Settings"). If a mention source returns no items or an error, it simply contributes no card. Only if NOTHING across ALL sources produced a real item do you emit ONE `empty` card for `mentions` with a one-line reason. Tool status/errors never become content cards.',
@@ -675,9 +675,9 @@ async function runGatherWeb() {
     '',
     'REPLIES DUE (state/posted.json) — run this ONLY if state/posted.json exists AND its `posts` array is non-empty. These are threads I broadcast through Pulse and marked Posted; I want NEW activity on them. For each entry: re-fetch the thread with the tool matching entry.platform (FetchRedditThread for "reddit", FetchHNThread for "hn"), diff the thread\'s comment ids against entry.comment_ids_seen, and per SKILL.md monitor-mentions Step 3 emit a `reply` card for any new top-level comments on my post (set unanswered_count) or new direct replies to a comment I made (one `follow_up` block, newest). Then Write state/posted.json back with comment_ids_seen and last_checked updated. If posted.json is empty or missing, do NOT emit a replies_due body_patch at all — skip the section silently (an empty "replies due" every run is noise).',
     '',
-    'EMIT INCREMENTALLY — do NOT pack everything into one giant final body_patch. A single huge tool call (e.g. 20-30 discovery cards with drafts) takes minutes to generate, shows nothing until it completes, and stalls the run. Instead: emit the `trend` body_patch FIRST, right after FetchGitHubTrending returns and before the heavy discovery grounding/drafting — this lands progress on the page immediately. Then emit `mentions`. Then emit `discovery`, and if it has more than ~8 cards, SPLIT it: one `discovery` body_patch with the first ~8 cards (replace), then the remaining cards in further `discovery` body_patch blocks with `mode:"append"` (deduped by id) — so the page fills progressively and no single tool call is enormous.',
+    'EMIT INCREMENTALLY — do NOT pack everything into one giant final body_patch. A single huge tool call (e.g. 20-30 discovery cards with drafts) takes minutes to generate, shows nothing until it completes, and stalls the run. Instead: emit `mentions` FIRST (it is quick and lands progress on the page immediately). Then emit `discovery`, and if it has more than ~8 cards, SPLIT it: one `discovery` body_patch with the first ~8 cards (replace), then the remaining cards in further `discovery` body_patch blocks with `mode:"append"` (deduped by id) — so the page fills progressively and no single tool call is enormous.',
     '',
-    'Now emit the body_patch blocks — one per section you touched: `trend`, `discovery`, `mentions`, and (only if posted.json had entries) `replies_due` (NEVER `progress_drafts`). Every section you ran a gatherer for MUST get a body_patch: if it found nothing above the cutoff, emit that section with a single `empty` card and a one-line reason, so the page shows the run completed instead of staying blank. EXCEPTION: `replies_due` is omitted entirely (no empty card) when posted.json had nothing to poll. `trend` always gets a card (you always call FetchGitHubTrending).',
+    'Now emit the body_patch blocks — one per section you touched: `x_roster` (only when you (re)built the roster this run), `discovery`, `mentions`, and (only if posted.json had entries) `replies_due` (NEVER `progress_drafts`). Every section you ran a gatherer for MUST get a body_patch: if it found nothing above the cutoff, emit that section with a single `empty` card and a one-line reason, so the page shows the run completed instead of staying blank. EXCEPTION: `replies_due` is omitted entirely (no empty card) when posted.json had nothing to poll.',
     '',
     'For `discovery` cards specifically (Reddit threads you suggest the user comment on): AFTER scoring, BEFORE drafting, read each surviving candidate with `FetchRedditThread`. CRITICAL: do NOT WebFetch `<thread_url>.json?limit=500...` — Reddit\'s JSON endpoint is bot-walled (403) and that WebFetch WILL fail; `FetchRedditThread` (RSS-based) is the ONLY working full-thread reader. If FetchRedditThread errors for a thread, do NOT abandon discovery — emit the card grounded on the OP title + your scoring excerpt. A thin grounded card beats an empty section.',
     'Then, with whatever the thread read returned:',
@@ -700,16 +700,16 @@ async function runDraft() {
     '  - references/style-guide.md (Avoid list, Anti-AI tics, Cadence rules, good/bad examples)',
     '  - references/lane-templates.md (per-lane length, structure, opener pattern)',
     '',
-    'Read what\'s on the page: progress card (what I shipped/learned), trend cards (what\'s trending in my space), discovery cards (thread opportunities), mention cards (where I\'ve been mentioned).',
+    'Read what\'s on the page: progress card (what I shipped/learned), discovery cards (thread opportunities + what people in my space are posting), mention cards (where I\'ve been mentioned).',
     '',
     'If the x-post lane is enabled AND sites.x.enabled, FIRST call FetchXOwnPosts (my recent X posts + their likes/reposts/replies/views). Use it two ways: (1) do NOT repeat a point a recent post already made — pick a different angle or emit `empty`; (2) lean toward the themes/voice of my highest-`score` posts, since those are what this audience actually engages with. The post content still comes from the progress card or my intent; own-posts is the de-dup + what-works signal, not the source material. Empty + error when X creds are absent — just skip it.',
     '',
     'For each enabled lane in config.targets[*].enabled, generate one draft following references/lane-templates.md constraints. Five passes — do NOT skip:',
     '',
     'Pass 0 — Mode selection. Drafts have three shapes; pick one per lane based on what\'s on the page (see "Lead artifact + mode" in style-guide.md for worked examples).',
-    '  - local-led: the progress card has an artifact that\'s publicly legible on its own (a benchmark, a measurable behaviour change, a novel approach, a vivid bug). Open with that artifact. Trend / discovery cards are supporting evidence at most.',
-    '  - web-led + local proof (BEST when both available): the local artifact is too insider to open with, but a trend or discovery card sits on an adjacent topic. Open with the web hook (the question the public is already asking), pivot to the local artifact as the proof point ("yesterday I shipped X" / "hit the same wall"). Personal stake + public reach.',
-    '  - web-only: no local artifact this lane could honestly carry; only a trend commentary. Use sparingly — posts with no personal stake feel like industry commentary, which dilutes voice. If you\'d reach for this mode twice in a row for the same lane, emit `empty` instead.',
+    '  - local-led: the progress card has an artifact that\'s publicly legible on its own (a benchmark, a measurable behaviour change, a novel approach, a vivid bug). Open with that artifact. Discovery cards are supporting evidence at most.',
+    '  - web-led + local proof (BEST when both available): the local artifact is too insider to open with, but a discovery card sits on an adjacent topic. Open with the web hook (the question the public is already asking), pivot to the local artifact as the proof point ("yesterday I shipped X" / "hit the same wall"). Personal stake + public reach.',
+    '  - web-only: no local artifact this lane could honestly carry; only outside commentary. Use sparingly — posts with no personal stake feel like industry commentary, which dilutes voice. If you\'d reach for this mode twice in a row for the same lane, emit `empty` instead.',
     '',
     'Lead test (apply after picking the mode). Could a stranger in the lane\'s audience (r/<sub> for reddit-comment, the X feed of the user\'s peers for x-post) tell what this post is about in 3 seconds, AND would they care? If "no" on either, drop down one mode (local-led → web-led; web-led → empty). Empty is fine. Fabricating a hook is not.',
     '',
@@ -865,21 +865,6 @@ function handleCardAction(action, cardId, btn) {
     case 'reply-back':
       sendChatHidden(`Draft a reply to the new follow-up comment on my "${truncate(card.your_post_title || '?', 60)}" thread. Land it as a body_patch.`);
       break;
-    case 'draft-post': {
-      // Per-card action on a trend card: turn THIS one trend into an x-post
-      // draft. Lighter than the full Draft chip (one lane, one hook) but
-      // anchored to the same voice contract so the output matches.
-      const hook = truncate(card.title || card.source || 'this trend', 80);
-      sendChatHidden([
-        `Turn the trend "${hook}" (source: ${card.source || 'web'}${card.url ? ', ' + card.url : ''}) into ONE x-post draft.`,
-        'Mode: web-led + local proof (see references/style-guide.md "Lead artifact + mode"). Open with the public hook this trend surfaces, then pivot to a concrete local artifact from the progress card as the proof point. If no local artifact honestly fits, web-only is allowed — keep it tight and skip if you\'d be reaching.',
-        'BEFORE drafting, Read references/style-guide.md (Anti-AI tics, Avoid list, Cadence) and the x-post lane in references/lane-templates.md in full — they are the voice contract, not optional.',
-        'If sites.x.enabled, FIRST call FetchXOwnPosts: do NOT repeat a point a recent post already made (pick a different angle or emit `empty`), and lean toward the themes/voice of my highest-`score` posts.',
-        'Mirror the brief\'s cadence (Pass 2), run the Anti-AI tics checklist (Pass 3) and the opener test (Pass 4) from the Draft step before emitting.',
-        'Emit body_patch for `progress_drafts` with `mode:"append"` adding ONE { type:"draft", id, lane:"x-post", content, char_count, char_limit:280 } card alongside the existing cards. If you cannot draft honestly from this trend, emit one `empty` card with a one-line reason instead of fabricating.',
-      ].join('\n'));
-      break;
-    }
     case 'polish':
       sendChatHidden(`Polish the ${card.lane || 'draft'} draft (card id ${card.id}). Re-emit the body_patch with the tightened version.`);
       break;
@@ -934,6 +919,9 @@ function handleCardAction(action, cardId, btn) {
     }
     case 'mark-posted':
       markCardPosted(cardId, btn);
+      break;
+    case 'x-posted':
+      markXReplyPosted(cardId, btn);
       break;
     case 'discard':
     case 'dismiss':
@@ -1189,6 +1177,7 @@ async function mountChat() {
         try {
           const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
           applyPageUpdate(args);
+          observeXBodyPatch(args);
         } catch (e) {
           console.warn('[pulse] failed to parse PageUpdate args', e);
         }
@@ -1395,6 +1384,13 @@ async function init() {
   setOnChange(persistSession);
   try {
     const cfg = await readPulseConfig();
+    // Hand the config to the renderer so it knows which source tabs to show
+    // even before any cards arrive (the X dashboard lives on an empty tab).
+    setConfig(cfg);
+    // The X tab mounts its dashboard + roster card through this hook.
+    setOnTabRender(renderXTab);
+    // Per-tab Rescan buttons run a source-scoped gather in the CURRENT session.
+    setOnRescan(handleTabRescan);
     const handle = (cfg?.sites?.reddit?.username || '').trim();
     if (handle) {
       setSelfHandle(handle);
@@ -1439,6 +1435,9 @@ async function init() {
   }
   await snapshotAudienceMetrics().catch(err => console.warn('[pulse] audience snapshot', err));
   await loadStatusStrip();
+  // Prime the X dashboard cache (followers history + activity + roster), then
+  // it re-renders the X tab. Fire-and-forget so it never blocks first paint.
+  refreshXDashData().catch(err => console.warn('[pulse] x-dash refresh', err));
   // Auto-cascade only when this open minted a fresh session.
   maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));
 }
@@ -1465,4 +1464,360 @@ function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   })[c]);
+}
+
+// ============================ X dashboard + roster =========================
+// Rendered into the X tab's #x-tab-extras mount (page-render calls
+// onTabRender('x', el) on every render). Everything reads from `xDash`, a
+// cache refreshed by refreshXDashData() — the render path stays synchronous.
+//   followers : account-health.json health.x.history  (real, accruing)
+//   activity  : state/x-activity.json  { "YYYY-MM-DD": {drafted, posted} }
+//   roster    : config.x.roster (agent-curated, fed by the x_roster body_patch)
+
+const X_ACTIVITY_PATH = `${SKILL_DIR}/state/x-activity.json`;
+const CONFIG_PATH = `${SKILL_DIR}/config.json`;
+let xDash = { followers: [], activity: {}, roster: [] };
+let xDashRange = 30; // hero window in days; chips switch 7/30/90
+
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+
+function lastNDays(n) {
+  const out = [];
+  const base = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(base);
+    d.setUTCDate(base.getUTCDate() - i);
+    out.push(d.toISOString().slice(0, 10));
+  }
+  return out;
+}
+
+function activitySum(field, days) {
+  const set = new Set(lastNDays(days));
+  let s = 0;
+  for (const [d, rec] of Object.entries(xDash.activity || {})) {
+    if (set.has(d)) s += (rec[field] || 0);
+  }
+  return s;
+}
+
+// Followers points within `days`, falling back to the last few points so a
+// young store still draws a line instead of vanishing (honest clamp-to-span).
+function clampFollowers(days) {
+  const h = Array.isArray(xDash.followers) ? xDash.followers : [];
+  const cutoff = Date.now() - days * 86400000;
+  const within = h.filter(p => new Date(p.date + 'T00:00:00Z').getTime() >= cutoff);
+  if (within.length >= 2) return within;
+  return h.slice(-Math.max(2, Math.min(h.length, 8)));
+}
+
+function xPendingDraftCount() {
+  const disc = getSession()?.sections?.discovery?.cards || [];
+  return disc.filter(c => (c.source || '').toLowerCase() === 'x' && c.draft_starter && !c.posted).length;
+}
+
+async function refreshXDashData() {
+  try {
+    const health = await readJson(`${SKILL_DIR}/state/account-health.json`, {});
+    xDash.followers = Array.isArray(health?.x?.history) ? health.x.history.slice() : [];
+  } catch { xDash.followers = []; }
+  try { xDash.activity = (await readJson(X_ACTIVITY_PATH, {})) || {}; } catch { xDash.activity = {}; }
+  try {
+    const cfg = await readPulseConfig();
+    xDash.roster = Array.isArray(cfg?.sites?.x?.roster) ? cfg.sites.x.roster.slice() : [];
+  } catch { xDash.roster = []; }
+  try { renderAll(); } catch (e) { /* ignore */ }
+}
+
+async function bumpXActivity(field, n) {
+  if (!n) return;
+  let data = {};
+  try { data = (await readJson(X_ACTIVITY_PATH, {})) || {}; } catch { /* fresh */ }
+  const day = todayISO();
+  const rec = data[day] || { drafted: 0, posted: 0 };
+  rec[field] = (rec[field] || 0) + n;
+  data[day] = rec;
+  const keys = Object.keys(data).sort();
+  while (keys.length > 120) delete data[keys.shift()];
+  await writeJson(X_ACTIVITY_PATH, data);
+  xDash.activity = data;
+  try { renderAll(); } catch (e) { /* ignore */ }
+}
+
+// Mirror the agent's x_roster body_patch into config.x.roster (authoritative,
+// so FetchXTargets + the who-to-follow exclusion can read it next run).
+// Honors the user's ignore/dismiss decisions so pruned accounts never return.
+async function persistRosterFromPatch(cards) {
+  const list = (Array.isArray(cards) ? cards : [])
+    .filter(c => c && c.handle && c.type !== 'empty')
+    .map(c => ({
+      handle: String(c.handle).replace(/^@/, ''),
+      name: c.name || '',
+      followers: c.followers || 0,
+      bio: c.bio || '',
+      followed: !!c.followed,
+      source: String(c.source || ''),
+      why: c.why || '',
+    }));
+  if (!list.length) return;
+  try {
+    const cfg = await readPulseConfig();
+    const sites = (cfg.sites = cfg.sites || {});
+    const x = (sites.x = sites.x || {});
+    const blocked = new Set([
+      ...(x.ignored_accounts || []),
+      ...(x.dismissed_suggestions || []),
+    ].map(h => String(h).toLowerCase().replace(/^@/, '')));
+    x.roster = list.filter(r => !blocked.has(r.handle.toLowerCase()));
+    await writeJson(CONFIG_PATH, cfg);
+    xDash.roster = x.roster;
+    try { renderAll(); } catch (e) { /* ignore */ }
+  } catch (e) { console.warn('[pulse] roster persist failed', e); }
+}
+
+// Prune a roster account: ignore (a followed reply-target) or dismiss (a
+// not-followed suggestion). Removes it from the roster + records it so it
+// never resurfaces.
+async function rosterPrune(kind, handle) {
+  const h = String(handle).replace(/^@/, '');
+  try {
+    const cfg = await readPulseConfig();
+    const sites = (cfg.sites = cfg.sites || {});
+    const x = (sites.x = sites.x || {});
+    x.roster = (x.roster || []).filter(r => String(r.handle).toLowerCase() !== h.toLowerCase());
+    const key = kind === 'ignore' ? 'ignored_accounts' : 'dismissed_suggestions';
+    const set = new Set((x[key] || []).map(s => String(s).replace(/^@/, '')));
+    set.add(h);
+    x[key] = Array.from(set);
+    await writeJson(CONFIG_PATH, cfg);
+    xDash.roster = x.roster;
+    try { renderAll(); } catch (e) { /* ignore */ }
+  } catch (e) { console.warn('[pulse] roster prune failed', e); }
+}
+
+function getRoster() {
+  if (Array.isArray(xDash.roster) && xDash.roster.length) return xDash.roster;
+  const sec = getSession()?.sections?.x_roster;
+  if (sec && Array.isArray(sec.cards)) return sec.cards.filter(c => c && c.handle && c.type !== 'empty');
+  return [];
+}
+
+// ---- SVG charts (hand-rolled, no library — matches CFO's idiom) ----------
+
+// ① Growth vs Activity — followers area+line with posted-reply bars on the
+// same timeline. Answers "is engaging growing me?".
+function svgGrowthHero() {
+  const fol = clampFollowers(xDashRange);
+  if (fol.length < 2) {
+    const since = (xDash.followers[0] && xDash.followers[0].date) || 'today';
+    return `<div class="chart-empty">Followers tracking started ${escapeHtml(since)} — your growth curve fills in over the next few days.</div>`;
+  }
+  const W = 600, H = 150, PADT = 12, PADB = 16, PADX = 2;
+  const xAt = i => PADX + (i / (fol.length - 1)) * (W - 2 * PADX);
+  const counts = fol.map(p => p.count);
+  let lo = Math.min(...counts), hi = Math.max(...counts);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const yAt = v => PADT + (1 - (v - lo) / (hi - lo)) * (H - PADT - PADB);
+  const pts = fol.map((p, i) => [xAt(i), yAt(p.count)]);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  const area = `M${pts[0][0].toFixed(1)} ${(H - PADB).toFixed(1)} ` +
+    pts.map(p => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ') +
+    ` L${pts[pts.length - 1][0].toFixed(1)} ${(H - PADB).toFixed(1)} Z`;
+  const posted = {};
+  for (const [d, rec] of Object.entries(xDash.activity || {})) posted[d] = rec.posted || 0;
+  const pmax = Math.max(1, ...fol.map(p => posted[p.date] || 0));
+  const bars = fol.map((p, i) => {
+    const v = posted[p.date] || 0;
+    if (!v) return '';
+    const bh = (v / pmax) * (H - PADT - PADB) * 0.55;
+    return `<rect x="${(xAt(i) - 2).toFixed(1)}" y="${(H - PADB - bh).toFixed(1)}" width="4" height="${bh.toFixed(1)}" class="bar-posted"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="none">
+    <path d="${area}" class="area-foll"/>
+    <path d="${line}" class="line-foll" vector-effect="non-scaling-stroke"/>
+    ${bars}
+  </svg>`;
+}
+
+// ② Cadence — drafted vs posted X replies per day, last 14 days.
+function svgCadence() {
+  const days = lastNDays(14);
+  const data = days.map(d => ({
+    drafted: xDash.activity[d]?.drafted || 0,
+    posted: xDash.activity[d]?.posted || 0,
+  }));
+  if (data.every(x => !x.drafted && !x.posted)) {
+    return `<div class="chart-empty">No drafted or posted replies yet — run a gather, then mark the ones you post.</div>`;
+  }
+  const max = Math.max(1, ...data.map(x => Math.max(x.drafted, x.posted)));
+  const W = 600, H = 96, PADT = 6, PADB = 4;
+  const slot = W / days.length;
+  const bw = Math.max(2, (slot - 4) / 2);
+  const yAt = v => PADT + (1 - v / max) * (H - PADT - PADB);
+  let bars = '';
+  data.forEach((x, i) => {
+    const x0 = i * slot + 2;
+    const dh = (H - PADT - PADB) * (x.drafted / max);
+    const ph = (H - PADT - PADB) * (x.posted / max);
+    bars += `<rect x="${x0.toFixed(1)}" y="${yAt(x.drafted).toFixed(1)}" width="${bw.toFixed(1)}" height="${dh.toFixed(1)}" class="bar-drafted"/>`;
+    bars += `<rect x="${(x0 + bw).toFixed(1)}" y="${yAt(x.posted).toFixed(1)}" width="${bw.toFixed(1)}" height="${ph.toFixed(1)}" class="bar-posted2"/>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="none">${bars}</svg>`;
+}
+
+// ---- Dashboard + roster DOM ----------------------------------------------
+
+function xDashboardHtml(roster) {
+  const fol = xDash.followers;
+  const cur = fol.length ? fol[fol.length - 1].count : null;
+  const d7 = followerDelta(fol, 7);
+  const followed = roster.filter(r => r.followed).length;
+  const suggested = roster.length - followed;
+  const dStr = d7 ? `<span class="${d7.delta >= 0 ? 'up' : 'down'}">${d7.delta >= 0 ? '+' : ''}${d7.delta}/${d7.spanDays}d</span>` : '';
+  const kpi = (label, value, sub) =>
+    `<div class="xkpi"><div class="xkpi-v">${value}</div><div class="xkpi-l">${label}</div><div class="xkpi-s">${sub || ''}</div></div>`;
+  const chip = n => `<button class="xr-chip${xDashRange === n ? ' active' : ''}" data-range="${n}">${n}d</button>`;
+  // ③ roster mix
+  const total = roster.length || 1;
+  const fp = (followed / total * 100).toFixed(1);
+  const sp = (suggested / total * 100).toFixed(1);
+  const bySrc = {};
+  roster.forEach(r => { if (!r.followed) { const s = r.source || '?'; bySrc[s] = (bySrc[s] || 0) + 1; } });
+  const srcLabel = Object.entries(bySrc).sort().map(([s, n]) => `src ${escapeHtml(s)}: ${n}`).join(' · ');
+  return `
+    <div class="xkpi-strip">
+      ${kpi('Followers', cur != null ? fmtCount(cur) : '—', dStr)}
+      ${kpi('Posted · 7d', activitySum('posted', 7), '')}
+      ${kpi('Pending drafts', xPendingDraftCount(), '')}
+      ${kpi('Roster', `${followed}<span class="dot-foll">✓</span> ${suggested}<span class="dot-sugg">+</span>`, '')}
+    </div>
+    <div class="xchart">
+      <div class="xchart-head"><span>Growth vs activity</span><span class="xr-chips">${chip(7)}${chip(30)}${chip(90)}</span></div>
+      ${svgGrowthHero()}
+      <div class="xchart-legend"><span class="lg-foll">— followers</span> <span class="lg-posted">▮ replies posted</span></div>
+    </div>
+    <div class="xchart">
+      <div class="xchart-head"><span>Reply cadence · 14d</span><span class="xchart-legend"><span class="lg-drafted">▮ drafted</span> <span class="lg-posted">▮ posted</span></span></div>
+      ${svgCadence()}
+    </div>
+    <div class="xchart">
+      <div class="xchart-head"><span>Roster mix</span></div>
+      <div class="rmix-bar"><div class="rmix-foll" style="width:${fp}%"></div><div class="rmix-sugg" style="width:${sp}%"></div></div>
+      <div class="rmix-legend"><span class="dot-foll">●</span> ${followed} following · <span class="dot-sugg">●</span> ${suggested} suggested${srcLabel ? ' · ' + srcLabel : ''}</div>
+    </div>
+  `;
+}
+
+function rosterCardHtml(roster) {
+  if (!roster.length) {
+    return `<div class="roster-head"><span>X Targets</span></div>
+      <div class="roster-empty">No roster yet — run Gather web (or Rescan X) and Pulse will curate ~20 niche accounts from your who-to-follow recs, on-topic posters, and second-degree follows.</div>`;
+  }
+  // Followed first (reply targets), then suggestions; stable by score order.
+  const rows = roster.slice().sort((a, b) => (b.followed === a.followed ? 0 : b.followed ? 1 : -1));
+  const rowHtml = r => {
+    const h = escapeHtml(r.handle);
+    const tag = r.followed
+      ? '<span class="r-tag foll">✓ Following</span>'
+      : '<span class="r-tag sugg">+ Follow</span>';
+    const why = r.why ? `<div class="r-why">${escapeHtml(r.why)}</div>` : '';
+    const bio = r.bio ? `<div class="r-bio">${escapeHtml(r.bio)}</div>` : '';
+    const followers = r.followers ? `<span class="r-fol">${fmtCount(r.followers)}</span>` : '';
+    const actions = r.followed
+      ? `<button class="r-act" data-act="open" data-h="${h}">↗ Profile</button><button class="r-act ignore" data-act="ignore" data-h="${h}">Ignore</button>`
+      : `<button class="r-act follow" data-act="follow" data-h="${h}">+ Follow ↗</button><button class="r-act" data-act="open" data-h="${h}">↗ Profile</button><button class="r-act ignore" data-act="dismiss" data-h="${h}">Dismiss</button>`;
+    return `<div class="r-row ${r.followed ? 'is-foll' : 'is-sugg'}">
+      <div class="r-main">
+        <div class="r-top">${tag} <span class="r-handle">@${h}</span> ${followers}</div>
+        ${why}${bio}
+      </div>
+      <div class="r-actions">${actions}</div>
+    </div>`;
+  };
+  return `<div class="roster-head"><span>X Targets</span><span class="roster-count">${roster.length}</span></div>
+    <div class="roster-rows">${rows.map(rowHtml).join('')}</div>`;
+}
+
+function renderXTab(tabId, mount) {
+  if (tabId !== 'x' || !mount) return;
+  const roster = getRoster();
+
+  const dash = document.createElement('div');
+  dash.className = 'x-dash';
+  dash.innerHTML = xDashboardHtml(roster);
+  dash.querySelectorAll('.xr-chip').forEach(b => {
+    b.addEventListener('click', () => { xDashRange = +b.dataset.range || 30; renderAll(); });
+  });
+  mount.appendChild(dash);
+
+  const card = document.createElement('div');
+  card.className = 'roster-card';
+  card.innerHTML = rosterCardHtml(roster);
+  card.querySelectorAll('.r-act').forEach(b => {
+    b.addEventListener('click', () => {
+      const act = b.dataset.act, h = b.dataset.h;
+      if (act === 'open' || act === 'follow') {
+        window.open(`https://x.com/${encodeURIComponent(h)}`, '_blank', 'noopener');
+        if (act === 'follow') flash(b, 'opened ↗');
+      } else if (act === 'ignore') {
+        rosterPrune('ignore', h);
+      } else if (act === 'dismiss') {
+        rosterPrune('dismiss', h);
+      }
+    });
+  });
+  mount.appendChild(card);
+}
+
+// Per-tab Rescan — a source-scoped gather sent into the CURRENT chat session
+// (the CFO model: a button → chat.send, no new session). The agent already
+// carries SKILL.md + the Fetch tools, so each prompt stays focused.
+const RESCAN_PROMPTS = {
+  x: [
+    'Refresh my X targets in THIS session.',
+    'First ensure the target roster: if sites.x.roster is empty (or I am asking to refresh accounts), rebuild it per the discover-customers "X target roster" procedure — FetchXWhoToFollow (source 1), authors of on-topic FetchX hits (source 2), FetchXFollowing <handle> on my strongest targets (source 3); tag each `followed` via FetchXFollowing (no arg = my own following); exclude self + sites.x.ignored_accounts + sites.x.dismissed_suggestions; curate ~20 with a one-line `why`; emit a `x_roster` body_patch (source-1 first). If the roster already has accounts and I did not ask to refresh, skip rebuilding.',
+    'Then call FetchXTargets and emit the freshest posts as `discovery` cards (source:"x") — bypass the 0.6 fit gate (the roster is pre-vetted), drop any whose status id is in SKIP_URLS, freshest first. No prose response.',
+  ].join('\n'),
+  hn: 'Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply; emit `discovery` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit `hn_submit` cards. Drop SKIP_URLS. No prose response.',
+  reddit: 'Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit; drop SKIP_URLS; for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and draft a top-level reddit-comment reply; emit `discovery` cards (source:"reddit"). No prose response.',
+  bluesky: 'Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit `discovery` cards (sub:"bsky"). Drop SKIP_URLS. No prose response.',
+  mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md. NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card. No prose response.',
+};
+
+function handleTabRescan(tabId) {
+  if (tabId === 'progress') { runGatherLocal(); return; }
+  const prompt = RESCAN_PROMPTS[tabId];
+  if (prompt) sendChatHidden(prompt);
+}
+
+// User marks an X reply card as posted → feed the cadence/posted series.
+async function markXReplyPosted(cardId, btn) {
+  const card = findCard(cardId);
+  if (card) { card.posted = true; const sess = getSession(); loadSession(sess); persistSession(sess); }
+  if (btn) flash(btn, '✓ posted');
+  await bumpXActivity('posted', 1);
+}
+
+// Watch each agent body_patch: mirror the roster, and count newly-drafted X
+// replies into the cadence series (deduped by card id so a replace re-emit
+// doesn't double-count).
+const xDraftedCounted = new Set();
+function observeXBodyPatch(args) {
+  const bp = args && args.body_patch;
+  if (!bp || !bp.section) return;
+  if (bp.section === 'x_roster') {
+    persistRosterFromPatch(bp.cards || []);
+    return;
+  }
+  if (bp.section === 'discovery') {
+    let fresh = 0;
+    for (const c of (bp.cards || [])) {
+      if (!c || (c.source || '').toLowerCase() !== 'x' || !c.draft_starter) continue;
+      const key = c.id || c.url || '';
+      if (key && xDraftedCounted.has(key)) continue;
+      if (key) xDraftedCounted.add(key);
+      fresh++;
+    }
+    if (fresh) bumpXActivity('drafted', fresh);
+  }
 }

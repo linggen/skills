@@ -15,8 +15,11 @@
 # invisible) and their audience is too general to convert.
 #
 # Usage:
-#   x-targets.sh [max_results]   (default 25, capped 10..100)
-#   Reads handles from sites.x.target_accounts in config.json.
+#   x-targets.sh [handle ...]    (space/comma-separated; omit for whole roster)
+#   With no args, reads handles from sites.x.roster (the agent-curated target
+#   accounts) unioned with sites.x.target_accounts (manual pins). With args,
+#   pulls posts for exactly that subset — used by the progressive per-source
+#   refresh so each Rescan can pull the next batch.
 #
 # Output (JSON array; [] on no creds / no targets / no hits): SAME shape as
 #   FetchX — [{ source:"x", author, handle, followers, title, text, url,
@@ -37,8 +40,8 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 SITES_DIR="$(cd "$(dirname "$0")" && pwd)"
-MAX="${1:-25}" SITES_DIR="$SITES_DIR" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
-import json, os, sys
+HANDLES_ARG="$*" MAX="${MAX:-25}" SITES_DIR="$SITES_DIR" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
+import json, os, re, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])
 from x_api import cache_get, cache_put, bridge_call  # noqa: E402
@@ -48,14 +51,33 @@ try:
 except ValueError:
     max_results = 25
 
+def _clean(seq):
+    out, seen = [], set()
+    for h in seq:
+        h = str(h or "").strip().lstrip("@")
+        if h and h.lower() not in seen:
+            seen.add(h.lower()); out.append(h)
+    return out
+
 ttl_h = 6
-try:
-    with open(os.environ["CONFIG"]) as f:
-        x = (json.load(f).get("sites", {}).get("x", {}) or {})
-    handles = [h.strip().lstrip("@") for h in (x.get("target_accounts") or []) if h and h.strip()]
-    ttl_h = x.get("cache_ttl_hours", 6) or 6
-except Exception:
-    handles = []
+# Explicit subset (progressive refresh) wins; else union roster + manual pins.
+arg = (os.environ.get("HANDLES_ARG") or "").strip()
+if arg:
+    handles = _clean(re.split(r"[,\s]+", arg))
+    try:
+        with open(os.environ["CONFIG"]) as f:
+            ttl_h = (json.load(f).get("sites", {}).get("x", {}) or {}).get("cache_ttl_hours", 6) or 6
+    except Exception:
+        pass
+else:
+    try:
+        with open(os.environ["CONFIG"]) as f:
+            x = (json.load(f).get("sites", {}).get("x", {}) or {})
+        roster = [r.get("handle") for r in (x.get("roster") or []) if isinstance(r, dict)]
+        handles = _clean(list(roster) + list(x.get("target_accounts") or []))
+        ttl_h = x.get("cache_ttl_hours", 6) or 6
+    except Exception:
+        handles = []
 
 if not handles:
     print("[]"); sys.exit(0)

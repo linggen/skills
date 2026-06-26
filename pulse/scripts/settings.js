@@ -20,7 +20,7 @@ const LEGACY_BRIEF_EXAMPLE = `${SKILL_DIR}/references/brief.example.md`;
 const WEBSITES = [
   {
     name: 'Hacker News',
-    desc: 'Top 30 stories feed the Trend section (always). Add discovery keywords to also find recent HN threads on your topics and draft a comment for each (Target) — the way to build karma on a new account before posting. Set your username so threads you\'ve already commented on drop out. Via the public Algolia HN API — no auth. Pulse drafts; you paste manually, never auto-posted.',
+    desc: 'Add discovery keywords to find recent HN threads on your topics and draft a comment for each (Target) — the way to build karma on a new account before posting. Set your username so threads you\'ve already commented on drop out. Via the public Algolia HN API — no auth. Pulse drafts; you paste manually, never auto-posted.',
     source_id: 'hackernews',
     target_id: 'hn-comment',
     source_fields: [

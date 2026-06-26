@@ -12,7 +12,13 @@
       "username": "",
       "submit_sources": {
         "lobsters": true,
-        "subreddits": ["programming", "rust", "MachineLearning", "compsci", "selfhosted"]
+        "subreddits": [
+          "programming",
+          "rust",
+          "MachineLearning",
+          "compsci",
+          "selfhosted"
+        ]
       }
     },
     "reddit": {
@@ -28,9 +34,14 @@
       "enabled": false,
       "username": "",
       "keywords": [],
-      "target_accounts": [],
       "keyword_search": false,
-      "cache_ttl_hours": 6
+      "cache_ttl_hours": 6,
+      "following_ttl_hours": 24,
+      "whotofollow_ttl_hours": 12,
+      "target_accounts": [],
+      "roster": [],
+      "ignored_accounts": [],
+      "dismissed_suggestions": []
     },
     "lobsters": {
       "enabled": false
@@ -43,7 +54,7 @@
       "feeds": []
     },
     "github-trending": {
-      "enabled": true,
+      "enabled": false,
       "language": ""
     },
     "product-hunt": {

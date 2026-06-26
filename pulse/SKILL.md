@@ -181,19 +181,70 @@ tools:
   - name: FetchXTargets
     description: >-
       The X GROWTH engine — the PRIMARY X discovery source. Pulls the
-      FRESHEST original posts from the user's curated list of mid-tier
-      niche accounts (sites.x.target_accounts), read from the logged-in
-      x.com session via the linggen-browser extension (bridge op "targets",
-      $0/read), so the user can reply EARLY while the post is gaining
-      traction and the reply slot is still visible. Replying under accounts
-      whose audience IS the target user is the real follower-growth lever —
-      far better than keyword search (FetchX), which trawls a firehose of
-      tiny accounts. Same output shape as FetchX, newest-first. [] when
-      target_accounts are absent or the bridge/extension is unavailable.
-      Prefer hits with low age_hours (reply early).
-    cmd: "$SKILL_DIR/scripts/sites/x-targets.sh"
+      FRESHEST original posts from the target ROSTER (the curated accounts in
+      sites.x.roster, plus any sites.x.target_accounts pins), read from the
+      logged-in x.com session via the linggen-browser extension (bridge op
+      "targets", $0/read), so the user can reply EARLY while the post is
+      gaining traction and the reply slot is still visible. Replying under
+      accounts whose audience IS the target user is the real follower-growth
+      lever — far better than keyword search (FetchX). Same output shape as
+      FetchX, newest-first. Pass an optional space/comma-separated handle list
+      to fetch a SPECIFIC subset (used for progressive per-source refresh);
+      with no arg it pulls the whole roster. [] when the roster is empty or the
+      bridge/extension is unavailable. Prefer hits with low age_hours.
+    cmd: "$SKILL_DIR/scripts/sites/x-targets.sh {{handles}}"
     tier: read
     timeout_ms: 25000
+    args:
+      handles:
+        type: string
+        required: false
+        description: >-
+          Optional subset of handles to pull (space/comma-separated); omit
+          for the whole roster.
+  - name: FetchXWhoToFollow
+    description: >-
+      X's own "Who to follow" recommendations, read from the logged-in x.com
+      session via the linggen-browser extension (bridge op "whotofollow",
+      $0/read). SOURCE 1 (highest priority) for building the target roster:
+      X personalizes these from the user's graph and already excludes people
+      the user follows, so every result is a genuine not-yet-followed
+      candidate. Already excludes the current roster, ignored accounts, and
+      dismissed suggestions. Returns a JSON array of {handle, name, followers,
+      following_count, bio, verified}. [] when the bridge/extension is
+      unavailable. Pass an optional max (default 60, cap 100).
+    cmd: "$SKILL_DIR/scripts/sites/x-whotofollow.sh {{max}}"
+    tier: read
+    timeout_ms: 30000
+    args:
+      max:
+        type: string
+        required: false
+        description: Max candidates to return (default 60, 1–100).
+  - name: FetchXFollowing
+    description: >-
+      Lists the accounts a handle follows, read from the logged-in x.com
+      session via the linggen-browser extension (bridge op "following",
+      $0/read), cached 24h. TWO uses in roster building: (no arg) → the
+      USER's OWN following — the pool to tag which roster accounts are
+      already-followed, and a candidate source of niche accounts the user
+      already vetted; (handle arg) → that handle's following, the SOURCE 3
+      "second-degree" signal (accounts your target accounts follow → central
+      niche accounts worth surfacing). Returns a JSON array of {handle, name,
+      followers, following_count, bio, verified}. [] when the bridge/extension
+      is unavailable. Pass an optional handle, then an optional max.
+    cmd: "$SKILL_DIR/scripts/sites/x-following.sh {{handle}} {{max}}"
+    tier: read
+    timeout_ms: 30000
+    args:
+      handle:
+        type: string
+        required: false
+        description: Whose following to read; omit for the user's own.
+      max:
+        type: string
+        required: false
+        description: Max accounts to return (default 400, cap 1000).
   - name: FetchXMentions
     description: >-
       X (Twitter) mention/reply monitoring, read from the user's logged-in
@@ -613,25 +664,61 @@ job-to-be-done — a rising trend becomes a draft in one click.
 **Inputs**: brief expertise areas, configured Reddit subs, configured
 Bluesky keywords.
 
+**X target roster** (build/refresh first when `sites.x.enabled`). The
+roster is ~20 curated niche accounts whose fresh posts the user replies
+to — some already followed (prime reply targets), some not (also
+follow-suggestions). It is agent-curated, not user-typed; the user only
+prunes it (Ignore / Dismiss). Build it like this:
+
+1. **Gather candidates from three sources** (priority **1 > 2 > 3**):
+   - **Source 1 (highest):** `FetchXWhoToFollow` — X's own
+     recommendations. Personalized, already not-followed. These are the
+     strongest follow-suggestions.
+   - **Source 2:** authors of on-topic posts — call `FetchX` on the top
+     1–2 `sites.x.keywords` and collect the `handle`s of hits with real
+     engagement (on-topic by construction).
+   - **Source 3:** second-degree — call `FetchXFollowing <handle>` for
+     the 2–3 strongest current roster/`target_accounts` handles; accounts
+     that **recur** across their following are central niche accounts.
+2. **Tag follow-status.** Call `FetchXFollowing` (no arg = the user's own
+   following) once; mark each candidate `followed: true` if its handle is
+   in that set, else `false`. (Source-1 results are `false` by
+   definition.)
+3. **Exclude** self (`sites.x.username`), every handle in
+   `sites.x.ignored_accounts`, and every handle in
+   `sites.x.dismissed_suggestions`. Dedup by handle.
+4. **Curate to ~20** by niche-relevance to the brief — the rubric depends
+   on follow-status:
+   - **`followed` (reply targets):** prefer mid-tier reach (~2k–300k) where
+     a reply is seen; a saturated mega-account's reply section is
+     invisible, so de-prioritize it as a reply target.
+   - **not `followed` (follow-suggestions):** drop the reach cap — a
+     500k niche authority is a great *follow*. Judge purely on
+     niche-relevance + signal.
+   Keep a healthy mix of both. Write a one-line `why` per account.
+5. **Emit** a `body_patch` on the `x_roster` section (cards in source-1
+   priority order) — the page persists it to `sites.x.roster` and renders
+   the X Targets card. Card shape per account:
+   `{ handle, name, followers, bio, followed, source: "1"|"2"|"3"|"following", why }`.
+6. **Then pull posts:** call `FetchXTargets` (whole roster, or a handle
+   subset for a progressive refresh) and proceed to drafting (step 1
+   onward). Roster posts bypass the 0.6 fit gate.
+
+When the roster already exists and is fresh (the user just wants new
+posts), SKIP rebuilding — go straight to `FetchXTargets`. Only rebuild on
+an explicit "refresh accounts" / first run / empty roster.
+
 **Process**:
 1. Call `FetchReddit` (configured subs), `FetchHackerNews`,
    `FetchLobsters`, `FetchBlueskyKeywords` (if enabled — Bluesky has
    no subreddit-style communities, so keyword search is the primary
-   discovery path there). **For X (if enabled), call `FetchXTargets`
-   FIRST** — the freshest posts from the user's curated mid-tier niche
-   accounts (`sites.x.target_accounts`), which are the prime reply
-   targets for growth; prefer the freshest (reply early). **`FetchXTargets`
-   hits BYPASS the 0.6 topical-fit cutoff** — the accounts are
-   pre-vetted, so surface every hit (the script already caps per account
-   and excludes replies), dropping only already-replied ones via
-   SKIP_URLS; do NOT score them for topical fit. Also call
-   `FetchX` (searches `sites.x.keywords` via the bridge, $0; cap to top
-   2-3 terms) as a GATED firehose supplement. The X growth rule:
-   reach × niche-relevance, NOT raw fame — reply where the author's
-   audience is the target user AND the reply section is small enough to
-   be seen. Drop tiny-follower / zero-engagement posts; also skip
-   mega-accounts (Elon/Sam Altman tier) — their replies are saturated
-   and their audience too general to convert. Also call `FetchHNSearch` (if
+   discovery path there). **For X (if enabled), first build/refresh the
+   target roster, then pull its posts — see "X target roster" below.**
+   `FetchXTargets` hits (roster posts) **BYPASS the 0.6 topical-fit
+   cutoff** — the accounts are pre-vetted, so surface every hit (the
+   script caps per account and excludes replies), dropping only
+   already-replied ones via SKIP_URLS; do NOT score them for topical
+   fit. Also call `FetchHNSearch` (if
    `sites.hackernews.enabled`) with a focused query per topic — recent
    HN threads to comment on, the way to build karma on a young HN
    account before posting. Prefer hits with `num_comments > 0` and low

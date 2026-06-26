@@ -16,7 +16,6 @@ const SECTION_ORDER = [
   'replies_due',
   'discovery',
   'hn_submit',
-  'trend',
 ];
 
 const SECTION_LABELS = {
@@ -25,13 +24,11 @@ const SECTION_LABELS = {
   replies_due:     'Replies due',
   discovery:       'Discovery',
   hn_submit:       'HN submit',
-  trend:           'Trending',
 };
 
 const SECTION_HINTS = {
   discovery: 'cold opportunities · matched against brief',
   hn_submit: 'links to submit · lowers your own-post ratio',
-  trend:     "what's trending in your space",
 };
 
 let session = emptySession();
@@ -45,6 +42,15 @@ let selfRedditHandle = null;
 // suggesting a comment on these are filtered out. Populated by
 // pulse-app from FetchRedditMentions own_comment results.
 let commentedThreadUrls = new Set();
+// Per-source tab state. `pageConfig` tells the renderer which source tabs to
+// show even when empty (so the X dashboard still appears on a fresh session);
+// `activeTab` persists the user's pick across re-renders + reloads;
+// `onTabRenderCallback` lets pulse-app mount the X dashboard + roster card
+// into the X tab's #x-tab-extras once it's in the DOM.
+let pageConfig = null;
+let activeTab = (() => { try { return localStorage.getItem('pulse:tab') || null; } catch (e) { return null; } })();
+let onTabRenderCallback = null;
+let onRescanCallback = null;
 
 function emptySession() {
   return {
@@ -57,7 +63,6 @@ function emptySession() {
       replies_due:     { cards: [], last_updated: null },
       discovery:       { cards: [], last_updated: null },
       hn_submit:       { cards: [], last_updated: null },
-      trend:           { cards: [], last_updated: null },
       progress_drafts: { cards: [], last_updated: null },
     },
     runs: [],
@@ -67,6 +72,15 @@ function emptySession() {
 // ---- Public API -----------------------------------------------------------
 
 export function setOnChange(cb) { onChangeCallback = cb; }
+
+// Tell the renderer which sources are enabled (so their tabs always show) and
+// let pulse-app hook the X tab's extras mount. Both trigger no render on their
+// own — the next renderAll() picks them up.
+export function setConfig(c) { pageConfig = c || null; }
+export function setOnTabRender(cb) { onTabRenderCallback = cb; }
+// Per-tab Rescan: the button calls back with the tab id; pulse-app sends a
+// source-scoped gather into the CURRENT session (CFO-style, no new session).
+export function setOnRescan(cb) { onRescanCallback = cb; }
 
 export function getSession() { return session; }
 
@@ -195,21 +209,6 @@ function isAlreadyCommented(card) {
   return commentedThreadUrls.has(normalizeThreadUrl(url));
 }
 
-// Defensive filter: drop trend cards whose URL matches a discovery
-// card already on the page. SKILL.md research-market tells the
-// agent to dedupe, but research-market and discover-customers run in
-// parallel — the agent can't reliably know what the other capability
-// will emit. Discovery is the actionable bucket (draft + Copy + Open);
-// trend showing the same thread is a passive dup. Enforced at render
-// time so SKILL.md instructions don't have to fire perfectly.
-function isDuplicateInDiscovery(card, ctx) {
-  if (card.type !== 'trend') return false;
-  if (!ctx || !ctx.discoveryUrls || ctx.discoveryUrls.size === 0) return false;
-  const u = card.url || card.thread_url;
-  if (!u) return false;
-  return ctx.discoveryUrls.has(normalizeThreadUrl(u));
-}
-
 // Defensive filter: card whose URL the user dismissed in any prior session.
 // Reads from the dismissedUrls set, seeded at init from state/dismissed.json.
 function isDismissed(card) {
@@ -219,12 +218,11 @@ function isDismissed(card) {
   return dismissedUrls.has(normalizeThreadUrl(url));
 }
 
-function shouldFilterCard(card, ctx) {
+function shouldFilterCard(card) {
   return isSelfLatestReply(card)
       || isEmptyReplyCard(card)
       || isAlreadyCommented(card)
-      || isDismissed(card)
-      || isDuplicateInDiscovery(card, ctx);
+      || isDismissed(card);
 }
 
 export function loadSession(sessionData) {
@@ -371,60 +369,178 @@ function renderStatusStrip() {
   el.innerHTML = parts.join('');
 }
 
+// ---- Tabs ----------------------------------------------------------------
+// The card area is split into per-source tabs (X · HN · Reddit · Bluesky ·
+// Mentions · Progress) so each source gets room to breathe. Sections are
+// keyed by content-type (discovery/mentions/…); a tab pulls the relevant
+// sections and, for `discovery`, filters cards to its own source. The X tab
+// additionally hosts the roster card + dashboard (mounted by pulse-app into
+// #x-tab-extras).
+const TABS = [
+  { id: 'x',        label: 'X',        siteKey: 'x',          source: 'x',       sections: ['discovery'] },
+  { id: 'hn',       label: 'HN',       siteKey: 'hackernews', source: 'hn',      sections: ['discovery', 'hn_submit'] },
+  { id: 'reddit',   label: 'Reddit',   siteKey: 'reddit',     source: 'reddit',  sections: ['discovery'] },
+  { id: 'bluesky',  label: 'Bluesky',  siteKey: 'bluesky',    source: 'bluesky', sections: ['discovery'] },
+  { id: 'mentions', label: 'Mentions', siteKey: null,         source: null,      sections: ['mentions', 'replies_due'] },
+  { id: 'progress', label: 'Progress', siteKey: null,         source: null,      sections: ['progress_drafts'] },
+];
+
+// Which source a card belongs to. Reddit/Bluesky discovery cards are tagged
+// by `sub` (Bluesky's is always "bsky"); X/HN carry an explicit `source`.
+function cardSource(c) {
+  const s = (c.source || '').toLowerCase();
+  const sub = (c.sub || '').toLowerCase();
+  if (sub === 'bsky') return 'bluesky';
+  if (sub) return 'reddit';
+  if (s === 'x' || s === 'twitter') return 'x';
+  if (s === 'hn' || s.includes('hacker')) return 'hn';
+  if (s === 'reddit' || s.startsWith('r/')) return 'reddit';
+  if (s === 'bsky' || s.includes('bluesky')) return 'bluesky';
+  return s || 'other';
+}
+
+function siteEnabled(siteKey) {
+  if (!siteKey) return false;
+  return !!(pageConfig && pageConfig.sites && pageConfig.sites[siteKey] && pageConfig.sites[siteKey].enabled);
+}
+
+// The visible (post-filter) cards a tab owns, grouped by section.
+function collectTabSections(tab) {
+  const out = [];
+  for (const sectionId of tab.sections) {
+    const sec = session.sections[sectionId];
+    if (!sec || !Array.isArray(sec.cards)) continue;
+    let cards = sec.cards.filter(c => !shouldFilterCard(c));
+    if (tab.source && sectionId === 'discovery') {
+      cards = cards.filter(c => cardSource(c) === tab.source);
+    }
+    out.push({ sectionId, original: sec, cards });
+  }
+  return out;
+}
+
+function tabCardCount(tab) {
+  return collectTabSections(tab).reduce((n, s) => n + s.cards.length, 0);
+}
+
+// A tab shows when its source is configured-on (so the X dashboard / "no posts
+// yet" still appears), or when it has cards. Mentions/Progress (no site) show
+// only once they have content, to keep the bar quiet on a fresh session.
+function tabVisible(tab, count) {
+  if (tab.siteKey) return siteEnabled(tab.siteKey) || count > 0;
+  return count > 0;
+}
+
+function setActiveTab(id) {
+  activeTab = id;
+  try { localStorage.setItem('pulse:tab', id); } catch (e) { /* ignore */ }
+  renderSections();
+}
+
 function renderSections() {
   const container = document.getElementById('sections-container');
   if (!container) return;
   container.innerHTML = '';
 
-  // Pre-compute the discovery URL set so isDuplicateInDiscovery can
-  // drop trend cards pointing at the same thread. Built once per
-  // render, passed via ctx so the per-card filter stays cheap.
-  const discoveryUrls = new Set();
-  const disc = session.sections.discovery;
-  if (disc && Array.isArray(disc.cards)) {
-    for (const c of disc.cards) {
-      const u = c.thread_url || c.url;
-      if (u) discoveryUrls.add(normalizeThreadUrl(u));
-    }
-  }
-  const filterCtx = { discoveryUrls };
+  const counts = {};
+  for (const tab of TABS) counts[tab.id] = tabCardCount(tab);
+  const visible = TABS.filter(t => tabVisible(t, counts[t.id]));
 
-  let renderedAny = false;
-  for (const sectionId of SECTION_ORDER) {
-    const sec = session.sections[sectionId];
-    if (!sec || !Array.isArray(sec.cards) || sec.cards.length === 0) continue;
-    // Defensive filters (UX rules enforced at render time, not in
-    // agent prompts so SKILL.md stays lean):
-    //   - mention cards whose latest reply is by the user themselves
-    //     (they had the last word, nothing to do)
-    //   - reply cards with no actionable content (0 unanswered + no
-    //     follow_up — just empty "Your post: …" stubs)
-    //   - discovery cards on threads the user has already commented on
-    //   - trend cards whose URL matches a discovery card (parallel
-    //     dedup; discovery wins because it's actionable)
-    const filtered = sec.cards.filter(c => !shouldFilterCard(c, filterCtx));
-    if (filtered.length === 0) {
-      // Section had cards, but all were filtered. Don't disappear silently —
-      // render a one-line placeholder so the user can see Pulse did the
-      // work and understand *why* the section is quiet. Otherwise it looks
-      // like a Gather web run failed when actually the agent found things
-      // the renderer correctly hid.
-      const placeholder = { type: 'empty', id: `empty-${sectionId}`, message: emptyFilteredMessage(sectionId, sec.cards.length) };
-      const sectionView = { ...sec, cards: [placeholder] };
-      container.appendChild(renderSectionEl(sectionId, sectionView));
-      renderedAny = true;
-      continue;
-    }
-    const sectionView = { ...sec, cards: filtered };
-    container.appendChild(renderSectionEl(sectionId, sectionView));
-    renderedAny = true;
-  }
-
-  if (!renderedAny) {
+  if (visible.length === 0) {
     const msg = document.createElement('div');
     msg.className = 'state-msg';
     msg.textContent = "No data for this session yet. Pick a chip above, or type a goal in chat to start.";
     container.appendChild(msg);
+    return;
+  }
+
+  // Resolve the active tab: honor the user's last pick if still visible,
+  // else prefer X, else the first visible tab.
+  if (!activeTab || !visible.some(t => t.id === activeTab)) {
+    activeTab = (visible.find(t => t.id === 'x') || visible[0]).id;
+  }
+
+  container.appendChild(renderTabBar(visible, counts));
+  const body = document.createElement('div');
+  body.className = 'tab-body';
+  container.appendChild(body);
+  renderTabContent(visible.find(t => t.id === activeTab), body);
+}
+
+function renderTabBar(visible, counts) {
+  const bar = document.createElement('div');
+  bar.className = 'tabs';
+  for (const tab of visible) {
+    const b = document.createElement('button');
+    b.className = 'tab' + (tab.id === activeTab ? ' active' : '');
+    b.dataset.tab = tab.id;
+    b.appendChild(textNode(tab.label));
+    if (counts[tab.id] > 0) {
+      const c = document.createElement('span');
+      c.className = 'tab-count';
+      c.textContent = counts[tab.id];
+      b.appendChild(c);
+    }
+    b.addEventListener('click', () => setActiveTab(tab.id));
+    bar.appendChild(b);
+  }
+  return bar;
+}
+
+const RESCAN_LABELS = {
+  x: '↻ Rescan X', hn: '↻ Rescan HN', reddit: '↻ Rescan Reddit',
+  bluesky: '↻ Rescan Bluesky', mentions: '↻ Check mentions', progress: '↻ Refresh progress',
+};
+
+function renderTabContent(tab, body) {
+  // Per-tab Rescan — runs a source-scoped gather in the current session.
+  const actions = document.createElement('div');
+  actions.className = 'tab-actions';
+  const rescan = document.createElement('button');
+  rescan.className = 'rescan-btn';
+  rescan.textContent = RESCAN_LABELS[tab.id] || '↻ Rescan';
+  rescan.addEventListener('click', () => {
+    if (typeof onRescanCallback !== 'function') return;
+    onRescanCallback(tab.id);
+    rescan.disabled = true;
+    rescan.textContent = 'Rescanning…';
+    setTimeout(() => { rescan.disabled = false; rescan.textContent = RESCAN_LABELS[tab.id] || '↻ Rescan'; }, 4000);
+  });
+  actions.appendChild(rescan);
+  body.appendChild(actions);
+
+  // The X tab hosts the roster card + dashboard; pulse-app renders into this
+  // mount after each gather (kept across re-renders by id).
+  if (tab.id === 'x') {
+    const extras = document.createElement('div');
+    extras.id = 'x-tab-extras';
+    extras.className = 'x-tab-extras';
+    body.appendChild(extras);
+    if (typeof onTabRenderCallback === 'function') {
+      try { onTabRenderCallback('x', extras); } catch (e) { /* ignore */ }
+    }
+  }
+
+  let renderedAny = false;
+  for (const { sectionId, original, cards } of collectTabSections(tab)) {
+    if (cards.length === 0) {
+      // Section had cards but all were filtered → show why (not silent).
+      const hadVisible = original.cards.some(c => c.type !== 'empty');
+      if (!hadVisible) continue;
+      const placeholder = { type: 'empty', id: `empty-${sectionId}`, message: emptyFilteredMessage(sectionId, original.cards.length) };
+      body.appendChild(renderSectionEl(sectionId, { ...original, cards: [placeholder] }));
+      renderedAny = true;
+      continue;
+    }
+    body.appendChild(renderSectionEl(sectionId, { ...original, cards }));
+    renderedAny = true;
+  }
+
+  if (!renderedAny && tab.id !== 'x') {
+    const msg = document.createElement('div');
+    msg.className = 'state-msg';
+    msg.textContent = `Nothing in ${tab.label} yet — run a gather, or type a goal in chat.`;
+    body.appendChild(msg);
   }
 }
 
@@ -465,7 +581,6 @@ function renderCard(card) {
     case 'reply':        return renderReply(card);
     case 'discovery':    return renderDiscovery(card);
     case 'submit':       return renderSubmit(card);
-    case 'trend':        return renderTrend(card);
     case 'progress':     return renderProgress(card);
     case 'draft':        return renderDraft(card);
     case 'empty':        return renderEmpty(card);
@@ -629,13 +744,20 @@ function renderDiscovery(c) {
   // Renderer reads thread_title; accept title too (HN/X cards emit title).
   const threadTitle = c.thread_title || c.title || '';
   const draftLabel = (t && !targetDupesExcerpt) ? 'Draft reply' : 'Draft comment';
+  // X reply cards get a "Mark posted" action so the user can log which replies
+  // they actually posted — that feeds the X dashboard's posted-per-day series.
+  const isX = (c.source || '').toLowerCase() === 'x';
+  const discActions = (isX && c.draft_starter && !c.posted)
+    ? ['copy', 'open', 'copy-url', 'x-posted', 'dismiss']
+    : ['copy', 'open', 'copy-url', 'dismiss'];
+  const postedBadge = c.posted ? ' · <span class="posted-badge">✓ posted</span>' : '';
   return cardEl(c, 'cold', `
     <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''}${threadTitle ? ' · <b>"' + escapeHtml(threadTitle) + '"</b>' : ''}</div>
-    <div class="meta">${c.author ? 'by ' + escapeHtml(c.author) + ' · ' : ''}${c.comments != null ? c.comments + ' comments · ' : ''}${formatAge(c.age_hours)}${c.match_reason ? ' · ' + escapeHtml(c.match_reason) : ''}</div>
+    <div class="meta">${c.author ? 'by ' + escapeHtml(c.author) + ' · ' : ''}${c.comments != null ? c.comments + ' comments · ' : ''}${formatAge(c.age_hours)}${c.match_reason ? ' · ' + escapeHtml(c.match_reason) : ''}${postedBadge}</div>
     ${truncatedExcerpt ? `<div class="excerpt">${escapeHtml(truncatedExcerpt)}</div>` : ''}
     ${targetHtml}
     ${c.draft_starter ? `<div class="draft-inline"><div class="draft-inline-label">${draftLabel}</div><div class="draft-inline-body">${escapeHtml(c.draft_starter)}</div></div>` : ''}
-    ${actionRow(c, ['copy', 'open', 'copy-url', 'dismiss'])}
+    ${actionRow(c, discActions)}
   `);
 }
 
@@ -660,23 +782,6 @@ function renderSubmit(c) {
     <div class="meta">${metaBits}</div>
     ${c.url ? `<div class="excerpt">${escapeHtml(c.url)}</div>` : ''}
     ${actionRow(c, ['submit-hn', 'open-url', 'copy-url', 'dismiss'])}
-  `, 'dense');
-}
-
-function renderTrend(c) {
-  const items = (c.items || []).map(i => `<li>${renderInline(i)}</li>`).join('');
-  const metaBits = [];
-  if (c.source) metaBits.push(escapeHtml(c.source));
-  if (c.age_hours != null) metaBits.push(formatAge(c.age_hours));
-  const meta = metaBits.length ? `<div class="meta">${metaBits.join(' · ')}</div>` : '';
-  // Draft-post is the trend section's job-to-be-done: turn a rising trend
-  // into an x-post draft (web-led + local proof) in one click. Always
-  // offered; Open only when the card carries a source url.
-  return cardEl(c, 'cold', `
-    <div class="title">${escapeHtml(c.title || c.source || 'Trending')}</div>
-    ${meta}
-    ${items ? `<ul>${items}</ul>` : ''}
-    ${actionRow(c, c.url ? ['draft-post', 'open-url', 'copy-url'] : ['draft-post'])}
   `, 'dense');
 }
 
@@ -717,8 +822,8 @@ function renderEmpty(c) {
 
 // One-line explanation when a section's cards were all filtered by
 // shouldFilterCard. Section-specific because the reason differs:
-// discovery → already-commented; trend → duplicate of discovery;
-// mentions → self-latest-reply; replies_due → empty reply stubs.
+// discovery → already-commented; mentions → self-latest-reply;
+// replies_due → empty reply stubs.
 function emptyFilteredMessage(sectionId, originalCount) {
   const n = originalCount;
   const s = n === 1 ? '' : 's';
@@ -727,8 +832,6 @@ function emptyFilteredMessage(sectionId, originalCount) {
       return `Found ${n} opportunit${n === 1 ? 'y' : 'ies'} — all on threads you've already commented on. No fresh leads this run.`;
     case 'mentions':
       return `Found ${n} mention${s} — all by you or already answered.`;
-    case 'trend':
-      return `Found ${n} item${s} — all duplicates of Discovery cards above.`;
     case 'replies_due':
       return `Found ${n} reply card${s} — none with actionable activity.`;
     default:
@@ -787,6 +890,7 @@ const ACTION_LABELS = {
   'copy':           { label: '📋 Copy',           primary: false },
   'copy-url':       { label: '🔗 Copy URL',       primary: false },
   'mark-posted':    { label: '☐ Mark posted',    primary: false },
+  'x-posted':       { label: '☐ Mark posted',    primary: false },
   'discard':        { label: '✗ Discard',        dismiss: true },
   'dismiss':        { label: '×',                 dismiss: true },
 };
