@@ -13,7 +13,7 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { analyzeCsv, orientTransactions } from '../scripts/analyze.js';
+import { analyzeCsv, orientTransactions, cleanMerchant } from '../scripts/analyze.js';
 import { toLedgerRows, mergeLedger, detectTransfers, reportFromLedger } from '../scripts/ledger.js';
 
 let pass = 0, fail = 0;
@@ -90,6 +90,18 @@ t('A10 ambiguous INTERAC e-transfer kept (not auto-excluded)', !sig('[CW]INTERAC
 t('A11 user "transfer" rule excludes a kept row', sig('[CW]INTERAC ETRNSFR CANADIAN TIRE BANK', -2822, 'chk', { 'canadian tire bank': 'transfer' }));
 t('A12 user category rule un-flags a heuristic transfer (kept as real spend)', !sig('[CW]AMEX CARDS', -900, 'chk', { 'amex cards': 'shopping' }));
 t('A13 real card charge stays spend (credit-account debit, not a payment)', !sig('SHANGHAI 360 HALIFAX NS', -18.78, 'card'));
+
+// ── Part A3: merchant cleanup (issue #3) ──
+console.log('\n— Part A3: merchant cleanup —');
+const cm = (raw) => cleanMerchant(raw);
+t('A14 strips leading bank code [CW]', cm('[CW]AMEX CARDS') === 'AMEX CARDS', cm('[CW]AMEX CARDS'));
+t('A15 strips leading store number + trailing city/prov', cm('095 HRM REC ONLINE XP DARTMOUTH NS') === 'HRM REC ONLINE XP', cm('095 HRM REC ONLINE XP DARTMOUTH NS'));
+t('A16 strips trailing "CITY PROV"', cm('ALLSTATE INS OF CANADA MARKHAM ON') === 'ALLSTATE INS OF CANADA', cm('ALLSTATE INS OF CANADA MARKHAM ON'));
+t('A17 strips e-transfer ref id', cm('[CW]INTERAC ETRNSFR SENT BETTY RO 20260941456V5FRHY') === 'INTERAC ETRNSFR SENT BETTY RO', cm('[CW]INTERAC ETRNSFR SENT BETTY RO 20260941456V5FRHY'));
+t('A18 leaves a clean name untouched', cm('NETFLIX.COM') === 'NETFLIX.COM');
+t('A19 no over-strip: 2-token name ending province-like word', cm('GAME ON') === 'GAME ON', cm('GAME ON'));
+t('A20 keeps digit-led brand (not a ref)', cm('1PASSWORD') === '1PASSWORD', cm('1PASSWORD'));
+t('A21 idempotent', cm(cm('[CW]095 ROGERS BK MC TORONTO ON')) === cm('[CW]095 ROGERS BK MC TORONTO ON'));
 
 // ── Part B: live ledger audit ──
 const DATA = join(process.env.HOME, '.linggen/skills/cfo/data');

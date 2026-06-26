@@ -106,10 +106,29 @@ export function parseAmount(raw) {
   return neg ? -v : v;
 }
 
+// Canadian province codes banks append as a location suffix. US states are
+// deliberately omitted — too many collide with real words (IN, OR, OK, ME, …).
+const CA_PROVINCES = 'AB|BC|MB|NB|NL|NS|NT|NU|ON|PE|QC|SK|YT';
+
 export function cleanMerchant(raw) {
   let s = (raw || '').trim();
-  s = s.replace(/\b\d{6,}\b/g, '');     // long digit runs (card/acct fragments)
+  // Leading bank type-code — BMO "[CW]"/"[DN]"/"[SC]"/"[IN]"/"[DS]" and similar
+  // bracketed 2-4 letter codes. The amount sign already encodes in/out, so the
+  // code is pure noise: strip it, never interpret it.
+  s = s.replace(/^[[(][A-Za-z]{2,4}[\])]\s*/, '');
+  s = s.replace(/^(?:0\d{1,5}|\d{4,6})\s+(?=\D)/, '');   // leading store number ("095 HRM REC")
+  // Long digit-heavy tokens = transaction references (BMO e-transfer ids), not names.
+  s = s.replace(/\b[\dA-Za-z]{8,}\b/g, (t) => {
+    const digits = (t.match(/\d/g) || []).length;
+    return digits >= 6 && digits / t.length >= 0.5 ? '' : t;
+  });
+  s = s.replace(/\b\d{6,}\b/g, '');     // long pure-digit runs (card/acct fragments)
   s = s.replace(/[*#]+\d+/g, '');       // *1234 / #0099 store/card tails
+  // Trailing "CITY <PROV>" location suffix: drop the province + the city word
+  // before it, but only when ≥2 tokens remain (never reduce a name to nothing,
+  // which also guards against "ON"/"PE" matching a real trailing word).
+  const stripped = s.replace(new RegExp(`\\s+[A-Za-z][A-Za-z.'-]+\\s+(?:${CA_PROVINCES})\\s*$`), '').trim();
+  if (stripped.split(/\s+/).filter(Boolean).length >= 2) s = stripped;
   s = s.replace(/\s+/g, ' ').replace(/^[\s-]+|[\s-]+$/g, '');
   return s.slice(0, 80);
 }
@@ -738,6 +757,11 @@ function buildCommitments(subs, userMap, monthlyIncome, marketBenchmark) {
 export function analyzeTransactions(txns, meta = {}, opts = {}) {
   if (!txns.length) return { ...meta, transactions: [], errors: ['no transactions found'] };
   const overrides = opts.categoryOverrides || null;
+  // Normalize merchant names once, here — so top-merchants, subscription keys,
+  // categories, and the transactions the agent sees are all clean. The ledger
+  // keeps its raw strings (txn ids stay stable); this only shapes the computed
+  // view, and so it cleans already-imported rows too, not just new ones.
+  txns = txns.map((t) => ({ ...t, merchant: cleanMerchant(t.merchant) }));
 
   const dates = txns.filter((t) => t.date).map((t) => t.date).sort();
   const lastDate = dates[dates.length - 1] || null;

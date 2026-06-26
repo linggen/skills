@@ -6,7 +6,7 @@
 // Statements are parsed + redacted in-browser; raw files never reach the model.
 import './chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from './api.js';
-import { analyzeCsv, orientTransactions, categorize, amortize, debtPlan } from './analyze.js';
+import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
 
@@ -205,10 +205,11 @@ function computeResidual() {
   const agg = new Map();
   for (const r of LEDGER) {
     if (r.transfer || r.amount >= 0) continue;
-    const cat = r.category || categorize(r.merchant, CATEGORY_OVERRIDES);
+    const merchant = cleanMerchant(r.merchant); // group raw variants under one clean name
+    const cat = r.category || categorize(merchant, CATEGORY_OVERRIDES);
     if (cat !== 'other') continue;
-    const e = agg.get(r.merchant) || { merchant: r.merchant, count: 0, total: 0 };
-    e.count++; e.total = Math.round((e.total - r.amount) * 100) / 100; agg.set(r.merchant, e);
+    const e = agg.get(merchant) || { merchant, count: 0, total: 0 };
+    e.count++; e.total = Math.round((e.total - r.amount) * 100) / 100; agg.set(merchant, e);
   }
   return [...agg.values()].sort((a, b) => b.total - a.total);
 }
@@ -314,7 +315,7 @@ function renderStaging() {
         const catCell = isDup ? '<span class="tag">duplicate</span>'
           : (t.amount >= 0 ? '<span class="tag">income</span>'
             : `<select class="cat-sel st" data-i="${i}">${cats.map((c) => `<option ${c === cat ? 'selected' : ''}>${esc(c)}</option>`).join('')}<option value="__new__">✚ New category…</option></select>`);
-        return `<tr class="${isDup ? 'dup' : ''}"><td>${esc(t.date || '—')}</td><td class="m">${esc(t.merchant)}</td><td class="num ${t.amount < 0 ? 'neg' : 'pos'}">${t.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(t.amount))}</td><td>${catCell}</td></tr>`;
+        return `<tr class="${isDup ? 'dup' : ''}"><td>${esc(t.date || '—')}</td><td class="m" title="${esc(t.merchant)}">${esc(cleanMerchant(t.merchant))}</td><td class="num ${t.amount < 0 ? 'neg' : 'pos'}">${t.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(t.amount))}</td><td>${catCell}</td></tr>`;
       }).join('')}</tbody></table>` : ''}</div>
     <div class="stage-actions">
       <button class="btn ghost" id="st-cancel">Cancel</button>
@@ -372,7 +373,7 @@ function knownCategories() {
   return [...set].sort();
 }
 
-const effCategory = (r) => (r.transfer ? 'transfer' : r.amount >= 0 ? 'income' : (r.category || categorize(r.merchant, CATEGORY_OVERRIDES)));
+const effCategory = (r) => (r.transfer ? 'transfer' : r.amount >= 0 ? 'income' : (r.category || categorize(cleanMerchant(r.merchant), CATEGORY_OVERRIDES)));
 
 function renderTxnView() {
   document.getElementById('txn-staging').hidden = !STAGING;
@@ -387,7 +388,7 @@ function renderTxnView() {
   if (f.month) rows = rows.filter((r) => r.date && r.date.startsWith(f.month));
   if (f.account) rows = rows.filter((r) => r.account === f.account);
   if (f.category) rows = rows.filter((r) => effCategory(r) === f.category);
-  if (f.q) { const q = f.q.toLowerCase(); rows = rows.filter((r) => r.merchant.toLowerCase().includes(q)); }
+  if (f.q) { const q = f.q.toLowerCase(); rows = rows.filter((r) => cleanMerchant(r.merchant).toLowerCase().includes(q) || r.merchant.toLowerCase().includes(q)); }
   const MAX = 500;
   const shown = rows.slice(0, MAX);
 
@@ -410,7 +411,7 @@ function renderTxnView() {
     // Every row is editable: a transfer can be reclassified back to real spend,
     // any row can be marked a transfer/payment. Click opens the picker combobox.
     const catCell = `<button class="cat-pick${r.transfer ? ' is-transfer' : ''}" data-id="${esc(r.id)}">${esc(lbl)}<span class="caret">▾</span></button>`;
-    return `<tr><td>${esc(r.date || '—')}</td><td class="m">${esc(r.merchant)}</td><td>${esc(ACCOUNTS[r.account]?.label || r.account)}</td><td class="num ${r.amount < 0 ? 'neg' : 'pos'}">${r.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(r.amount))}</td><td>${catCell}</td></tr>`;
+    return `<tr><td>${esc(r.date || '—')}</td><td class="m" title="${esc(r.merchant)}">${esc(cleanMerchant(r.merchant))}</td><td>${esc(ACCOUNTS[r.account]?.label || r.account)}</td><td class="num ${r.amount < 0 ? 'neg' : 'pos'}">${r.amount < 0 ? '−' : '+'}${moneyExact(Math.abs(r.amount))}</td><td>${catCell}</td></tr>`;
   }).join('')}</tbody></table>` : '<p class="hint">No matching transactions.</p>';
 
   document.querySelectorAll('#txn-table .cat-pick').forEach((btn) => {
@@ -494,7 +495,10 @@ async function applyRule(row, val) { return applyRuleByMerchant(row.merchant, va
 // Write a merchant -> classification rule (a category, or 'transfer'/'income')
 // and recompute. `recompute=false` lets a batch apply many then recompute once.
 async function applyRuleByMerchant(merchant, val, recompute = true) {
-  CATEGORY_OVERRIDES = { ...(CATEGORY_OVERRIDES || {}), [String(merchant).toLowerCase()]: val };
+  // Key on the cleaned name so one rule covers all raw variants (store numbers,
+  // city suffixes) — and it still word-matches the raw ledger strings.
+  const key = (cleanMerchant(merchant) || String(merchant)).toLowerCase();
+  CATEGORY_OVERRIDES = { ...(CATEGORY_OVERRIDES || {}), [key]: val };
   await saveConfigOverrides();
   if (recompute) await afterCategoriesChanged();
 }
