@@ -25,7 +25,8 @@ let LEDGER = [];
 let ACCOUNTS = {};
 let RANGE = { preset: '12M', from: null, to: null };
 let INSIGHTS = [];
-let SUGGESTIONS = []; // agent-teacher rule proposals awaiting user review (data/suggestions.json)
+let SUGGESTIONS = []; // agent-teacher proposals awaiting a tap (transfers/income — they move totals)
+let LAST_AUTO_APPLIED = 0; // category proposals auto-applied in the last batch (don't move totals)
 let LAST_VIEW = null; // most recent computed view — read by announceImport
 let FULL_VIEW = null; // full-history view — commitments ignore the range slicer
 let COMMITMENTS = {}; // user-entered terms per merchant key (data/commitments.json)
@@ -1467,7 +1468,7 @@ function extractSuggestions(node, depth = 0) {
   return null;
 }
 
-function applySuggestions(list) {
+async function applySuggestions(list) {
   // Resolve each proposed merchant to the EXACT ledger string. Models paraphrase
   // (en-dash vs hyphen, spacing, truncation), so normalize, then accept an
   // unambiguous substring match. A proposal that maps to no real row is dropped
@@ -1500,43 +1501,70 @@ function applySuggestions(list) {
     out.push({ merchant, type, isNew: !!s.isNew, reason: String(s.reason || '').slice(0, 120) });
   }
   if (!out.length) { console.warn('[cfo] suggestions: none of', (list || []).length, 'validated'); return; }
-  SUGGESTIONS = out;
-  renderSuggestions();
+  // Stakes-split: a category re-buckets spend but leaves the TOTAL unchanged, so
+  // auto-apply it (still reversible in the row combobox). 'transfer'/'income'
+  // change spend & income, so they stay in the card for an explicit tap.
+  const autoCats = out.filter((s) => s.type !== 'transfer' && s.type !== 'income');
+  SUGGESTIONS = out.filter((s) => s.type === 'transfer' || s.type === 'income');
+  LAST_AUTO_APPLIED = autoCats.length;
   saveSuggestions().catch((e) => console.warn('[cfo] suggestions save', e));
+  if (autoCats.length) {
+    for (const s of autoCats) await applyRuleByMerchant(s.merchant, s.type, false);
+    await afterCategoriesChanged(); // single recompute; also re-renders the card
+  } else {
+    renderSuggestions();
+  }
 }
 
 function renderSuggestions() {
   const el = document.getElementById('suggestions-wrap');
   if (!el) return;
-  el.hidden = VIEW_MODE !== 'report' || !SUGGESTIONS.length;
+  const n = SUGGESTIONS.length;
+  el.hidden = VIEW_MODE !== 'report' || (!n && !LAST_AUTO_APPLIED);
   if (el.hidden) { el.innerHTML = ''; return; }
+  // Two states: things that need a tap (transfers/income that move totals) and a
+  // note for the categories CFO already auto-applied (they didn't move totals).
+  const autoNote = LAST_AUTO_APPLIED
+    ? `<span class="hint">✓ auto-sorted ${LAST_AUTO_APPLIED} into categories — change any in Transactions</span>` : '';
+  const title = n
+    ? `✦ ${n} to confirm <span class="sugg-sub">— affects spend/income</span>`
+    : `✓ Auto-sorted ${LAST_AUTO_APPLIED} transaction${LAST_AUTO_APPLIED === 1 ? '' : 's'}`;
+  const bulk = n
+    ? `<button class="chip" id="sugg-apply-all">Apply all</button><button class="chip ghost" id="sugg-dismiss-all">Dismiss all</button>`
+    : `<button class="chip ghost" id="sugg-dismiss-all">Dismiss</button>`;
   el.innerHTML = `
     <div class="sugg-card">
       <div class="sugg-head">
-        <span class="sugg-title">✦ ${SUGGESTIONS.length} suggestion${SUGGESTIONS.length === 1 ? '' : 's'} to review</span>
-        <span class="hint">CFO sorted these from your data — apply to remember them for next time.</span>
-        <span class="sugg-bulk"><button class="chip" id="sugg-apply-all">Apply all</button><button class="chip ghost" id="sugg-dismiss-all">Dismiss all</button></span>
+        <span class="sugg-title">${title}</span>
+        ${autoNote}
+        <span class="sugg-bulk">${bulk}</span>
       </div>
-      <ul class="sugg-list">${SUGGESTIONS.map((s, i) => `
+      ${n ? `<ul class="sugg-list">${SUGGESTIONS.map((s, i) => `
         <li>
           <span class="sugg-merch" title="${esc(s.merchant)}">${esc(s.merchant)}</span>
           <span class="sugg-arrow">→</span>
-          <span class="tag sugg-type${(s.type === 'transfer' || s.type === 'income') ? ' special' : ''}">${esc(s.type)}${s.isNew ? ' ✚' : ''}</span>
+          <span class="tag sugg-type special">${esc(s.type)}</span>
           ${s.reason ? `<span class="sugg-reason" title="${esc(s.reason)}">${esc(s.reason)}</span>` : ''}
           <span class="sugg-row-actions"><button class="chip apply" data-i="${i}">Apply</button><button class="chip ghost dismiss" data-i="${i}" title="Dismiss">✕</button></span>
-        </li>`).join('')}</ul>
+        </li>`).join('')}</ul>` : ''}
     </div>`;
-  el.querySelector('#sugg-apply-all').onclick = () => applyAllSuggestions();
-  el.querySelector('#sugg-dismiss-all').onclick = () => { SUGGESTIONS = []; saveSuggestions().catch(() => {}); renderSuggestions(); };
-  el.querySelectorAll('.sugg-list .apply').forEach((b) => b.addEventListener('click', () => applyOneSuggestion(+b.dataset.i)));
-  el.querySelectorAll('.sugg-list .dismiss').forEach((b) => b.addEventListener('click', () => {
-    SUGGESTIONS.splice(+b.dataset.i, 1); saveSuggestions().catch(() => {}); renderSuggestions();
-  }));
+  const dismissNote = () => { SUGGESTIONS = []; LAST_AUTO_APPLIED = 0; saveSuggestions().catch(() => {}); renderSuggestions(); };
+  if (n) {
+    el.querySelector('#sugg-apply-all').onclick = () => applyAllSuggestions();
+    el.querySelector('#sugg-dismiss-all').onclick = dismissNote;
+    el.querySelectorAll('.sugg-list .apply').forEach((b) => b.addEventListener('click', () => applyOneSuggestion(+b.dataset.i)));
+    el.querySelectorAll('.sugg-list .dismiss').forEach((b) => b.addEventListener('click', () => {
+      SUGGESTIONS.splice(+b.dataset.i, 1); if (!SUGGESTIONS.length) LAST_AUTO_APPLIED = 0; saveSuggestions().catch(() => {}); renderSuggestions();
+    }));
+  } else {
+    el.querySelector('#sugg-dismiss-all').onclick = dismissNote;
+  }
 }
 
 async function applyOneSuggestion(i) {
   const s = SUGGESTIONS[i]; if (!s) return;
   SUGGESTIONS.splice(i, 1);
+  if (!SUGGESTIONS.length) LAST_AUTO_APPLIED = 0; // batch fully handled
   await saveSuggestions().catch(() => {});
   await applyRuleByMerchant(s.merchant, s.type); // recomputes + re-renders the report
   renderSuggestions();
@@ -1545,6 +1573,7 @@ async function applyOneSuggestion(i) {
 async function applyAllSuggestions() {
   const list = SUGGESTIONS.slice();
   SUGGESTIONS = [];
+  LAST_AUTO_APPLIED = 0;
   await saveSuggestions().catch(() => {});
   for (const s of list) await applyRuleByMerchant(s.merchant, s.type, false);
   await afterCategoriesChanged(); // single recompute for the whole batch

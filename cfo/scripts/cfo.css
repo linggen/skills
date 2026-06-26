@@ -294,6 +294,7 @@ td.num.pos { color: var(--pos); }
   box-shadow: var(--shadow); padding: 12px 14px; margin: 4px 0 16px; }
 .sugg-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
 .sugg-title { font-weight: 600; color: var(--accent); }
+.sugg-sub { font-weight: 400; color: var(--muted); font-size: 12px; }
 .sugg-bulk { margin-left: auto; display: flex; gap: 6px; }
 .sugg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .sugg-list li { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid var(--line); }
