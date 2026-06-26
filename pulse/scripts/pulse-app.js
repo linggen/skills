@@ -907,14 +907,17 @@ function handleCardAction(action, cardId, btn) {
       break;
     }
     case 'submit-hn': {
-      // Open HN's prefilled submit form (url + title) — one click from card
-      // to the submission box. The user reviews/edits the title and hits
-      // submit; HN has no write API so this is as automated as it gets.
+      // Open HN's prefilled submit form (url + title). HN expires the form's
+      // server-side token quickly ("Unknown or expired link") if you dawdle or
+      // the prefill GET goes stale — so copy the URL first as a guaranteed
+      // fallback: if HN errors, just open /submit and paste. Submit promptly.
       const u = card?.url;
       const t = card?.title || card?.thread_title || '';
       if (!u) { flash(btn, 'No URL'); break; }
+      copyToClipboard(u);
       const submit = `https://news.ycombinator.com/submitlink?u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}`;
       window.open(submit, '_blank', 'noopener,noreferrer');
+      flash(btn, 'URL copied — submit promptly');
       break;
     }
     case 'mark-posted':

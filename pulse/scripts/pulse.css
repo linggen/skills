@@ -300,7 +300,8 @@ body {
 .tab.active .tab-count { background: var(--accent-soft); color: var(--accent); }
 .tab-body { min-height: 2rem; }
 .x-tab-extras:empty { display: none; }
-.tab-actions { display: flex; justify-content: flex-end; margin-bottom: 0.75rem; }
+.tab-actions { display: flex; align-items: center; gap: 0.6rem; justify-content: flex-end; margin-bottom: 0.75rem; }
+.tab-scan { margin-right: auto; font-size: 11px; color: var(--muted); }
 .rescan-btn {
   appearance: none;
   background: var(--surface-2);

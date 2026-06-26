@@ -276,8 +276,8 @@ tools:
       write more of (the performance feedback loop). `replied_to` is the
       parent tweets the user has already replied to — Pulse uses it to
       suppress already-engaged posts from discovery (same rule as Reddit's
-      already-commented filter). Empty + error until the extension ships the
-      "own" reader op (returns module_unavailable today).
+      already-commented filter). Reads x.com/<handle>/with_replies via the
+      extension; empty + error only when the bridge/extension is unavailable.
     cmd: "$SKILL_DIR/scripts/sites/x-own.sh {{max}}"
     tier: read
     timeout_ms: 30000

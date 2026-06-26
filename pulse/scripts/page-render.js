@@ -65,6 +65,7 @@ function emptySession() {
       hn_submit:       { cards: [], last_updated: null },
       progress_drafts: { cards: [], last_updated: null },
     },
+    last_scan: {},   // tabId -> ISO timestamp of the last content for that tab
     runs: [],
   };
 }
@@ -310,8 +311,42 @@ function applyBodyPatch(patch) {
       session.sections[sectionId].cards = incoming;
     }
   }
-  session.sections[sectionId].last_updated =
-    patch.last_updated || new Date().toISOString();
+  const ts = patch.last_updated || new Date().toISOString();
+  session.sections[sectionId].last_updated = ts;
+  stampTabScan(sectionId, session.sections[sectionId].cards, ts);
+}
+
+// Record per-tab "last scanned" so each tab can show when it last got data.
+// discovery is cross-source, so stamp by each card's source; the rest map
+// section→tab directly.
+function stampTabScan(sectionId, cards, ts) {
+  if (!session.last_scan) session.last_scan = {};
+  const stamp = (id) => { session.last_scan[id] = ts; };
+  if (sectionId === 'discovery') {
+    for (const c of (cards || [])) {
+      if (!c || c.type === 'empty') continue;
+      const s = cardSource(c);
+      if (s === 'x' || s === 'hn' || s === 'reddit' || s === 'bluesky') stamp(s);
+    }
+  } else if (sectionId === 'hn_submit') stamp('hn');
+  else if (sectionId === 'x_roster') stamp('x');
+  else if (sectionId === 'mentions' || sectionId === 'replies_due') stamp('mentions');
+  else if (sectionId === 'progress_drafts') stamp('progress');
+}
+
+// "3m ago" / "2h ago" / "5d ago" from an ISO timestamp.
+function relTime(iso) {
+  if (!iso) return '';
+  const t = Date.parse(iso);
+  if (isNaN(t)) return '';
+  const mins = Math.floor((Date.now() - t) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
 }
 
 function applyStatusStripPatch(patch) {
@@ -496,6 +531,13 @@ function renderTabContent(tab, body) {
   // Per-tab Rescan — runs a source-scoped gather in the current session.
   const actions = document.createElement('div');
   actions.className = 'tab-actions';
+  const scanned = (session.last_scan || {})[tab.id];
+  if (scanned) {
+    const meta = document.createElement('span');
+    meta.className = 'tab-scan';
+    meta.textContent = `last scan ${relTime(scanned)}`;
+    actions.appendChild(meta);
+  }
   const rescan = document.createElement('button');
   rescan.className = 'rescan-btn';
   rescan.textContent = RESCAN_LABELS[tab.id] || '↻ Rescan';

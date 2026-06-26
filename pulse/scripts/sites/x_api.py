@@ -90,4 +90,6 @@ def bridge_call(op, params, timeout_ms=20000):
             sys.stderr.write(f"[x_bridge] {op}: degrade ({code})\n")
         return None
     data = out.get("data")
-    return data if isinstance(data, list) else []
+    # Most ops return a list; `own` returns a dict {items, replied_to}. Pass
+    # both through; coerce anything else to an empty list.
+    return data if isinstance(data, (list, dict)) else []

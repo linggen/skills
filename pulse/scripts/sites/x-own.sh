@@ -59,17 +59,26 @@ try:
 except Exception:
     pass
 
-# Bridge-only: the linggen-browser extension reads the user's own timeline.
-# The reader returns the `items` list (engagement-annotated original posts);
-# `replied_to` will ride along once the op carries it. Until the op ships,
-# bridge_call returns None and we emit a valid empty payload.
-items = bridge_call("own", {"username": username, "max": max_results})
-errors = [] if items is not None else ["x own-posts: bridge/extension unavailable (no reader op yet)"]
-items = items or []
+# Bridge-only: the linggen-browser extension reads the user's own timeline
+# (x.com/<handle>/with_replies). The `own` reader returns a dict
+# {items: [...original posts...], replied_to: [...parent status urls...]}.
+# bridge_call returns None when the bridge/extension is unavailable.
+result = bridge_call("own", {"username": username, "max": max_results})
+if result is None:
+    items, replied_to = [], []
+    errors = ["x own-posts: bridge/extension unavailable"]
+elif isinstance(result, dict):
+    items = result.get("items") or []
+    replied_to = result.get("replied_to") or []
+    errors = []
+else:  # legacy/list shape — items only
+    items = result or []
+    replied_to = []
+    errors = []
 print(json.dumps({
     "username": username,
     "items": items,
-    "replied_to": [],
+    "replied_to": replied_to,
     "count": len(items),
     "errors": errors,
 }))
