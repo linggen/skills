@@ -1718,19 +1718,18 @@ function rosterCardHtml(roster) {
   const rowHtml = r => {
     const h = escapeHtml(r.handle);
     const tag = r.followed
-      ? '<span class="r-tag foll">✓ Following</span>'
-      : '<span class="r-tag sugg">+ Follow</span>';
+      ? '<span class="r-tag foll" title="You follow this account">✓</span>'
+      : '<span class="r-tag sugg" title="Suggested — not followed yet">+</span>';
     const why = r.why ? `<div class="r-why">${escapeHtml(r.why)}</div>` : '';
-    const bio = r.bio ? `<div class="r-bio">${escapeHtml(r.bio)}</div>` : '';
     const followers = r.followers ? `<span class="r-fol">${fmtCount(r.followers)}</span>` : '';
+    // Bio → hover tooltip on the whole cell, to keep cells short.
+    const titleAttr = r.bio ? ` title="${escapeHtml(r.bio)}"` : '';
     const actions = r.followed
       ? `<button class="r-act" data-act="open" data-h="${h}">↗ Profile</button><button class="r-act ignore" data-act="ignore" data-h="${h}">Ignore</button>`
-      : `<button class="r-act follow" data-act="follow" data-h="${h}">+ Follow ↗</button><button class="r-act" data-act="open" data-h="${h}">↗ Profile</button><button class="r-act ignore" data-act="dismiss" data-h="${h}">Dismiss</button>`;
-    return `<div class="r-row ${r.followed ? 'is-foll' : 'is-sugg'}">
-      <div class="r-main">
-        <div class="r-top">${tag} <span class="r-handle">@${h}</span> ${followers}</div>
-        ${why}${bio}
-      </div>
+      : `<button class="r-act follow" data-act="follow" data-h="${h}">+ Follow ↗</button><button class="r-act ignore" data-act="dismiss" data-h="${h}">Dismiss</button>`;
+    return `<div class="r-cell ${r.followed ? 'is-foll' : 'is-sugg'}"${titleAttr}>
+      <div class="r-top">${tag} <span class="r-handle">@${h}</span> ${followers}</div>
+      ${why}
       <div class="r-actions">${actions}</div>
     </div>`;
   };
@@ -1803,21 +1802,25 @@ async function markXReplyPosted(cardId, btn) {
 // doesn't double-count).
 const xDraftedCounted = new Set();
 function observeXBodyPatch(args) {
-  const bp = args && args.body_patch;
-  if (!bp || !bp.section) return;
-  if (bp.section === 'x_roster') {
-    persistRosterFromPatch(bp.cards || []);
-    return;
-  }
-  if (bp.section === 'discovery') {
-    let fresh = 0;
-    for (const c of (bp.cards || [])) {
-      if (!c || (c.source || '').toLowerCase() !== 'x' || !c.draft_starter) continue;
-      const key = c.id || c.url || '';
-      if (key && xDraftedCounted.has(key)) continue;
-      if (key) xDraftedCounted.add(key);
-      fresh++;
+  if (!args || args.body_patch === undefined) return;
+  // body_patch may be a single {section,cards} OR an array of them — mirror
+  // applyPageUpdate, which iterates both. (Missing the array form is what left
+  // config.x.roster unpersisted when the agent batched sections.)
+  const patches = Array.isArray(args.body_patch) ? args.body_patch : [args.body_patch];
+  for (const bp of patches) {
+    if (!bp || !bp.section) continue;
+    if (bp.section === 'x_roster') {
+      persistRosterFromPatch(bp.cards || []);
+    } else if (bp.section === 'discovery') {
+      let fresh = 0;
+      for (const c of (bp.cards || [])) {
+        if (!c || (c.source || '').toLowerCase() !== 'x' || !c.draft_starter) continue;
+        const key = c.id || c.url || '';
+        if (key && xDraftedCounted.has(key)) continue;
+        if (key) xDraftedCounted.add(key);
+        fresh++;
+      }
+      if (fresh) bumpXActivity('drafted', fresh);
     }
-    if (fresh) bumpXActivity('drafted', fresh);
   }
 }

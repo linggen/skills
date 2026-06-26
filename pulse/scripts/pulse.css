@@ -406,27 +406,47 @@ body {
   color: var(--accent); font-size: 10px; letter-spacing: 0;
 }
 .roster-empty { font-size: 12px; color: var(--muted); padding: 0.4rem 0.7rem 0.8rem; line-height: 1.5; }
-.roster-rows { display: flex; flex-direction: column; }
-.r-row {
-  display: flex; align-items: flex-start; gap: 0.6rem;
-  padding: 0.55rem 0.6rem; border-top: 1px solid var(--border);
+/* Compact 2-column grid, capped height + scroll so 20 accounts stay tidy. */
+.roster-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 0 0.5rem 0.45rem;
 }
-.r-row:first-child { border-top: none; }
-.r-row.is-foll { border-left: 2px solid var(--green); }
-.r-row.is-sugg { border-left: 2px solid var(--amber); }
-.r-main { flex: 1; min-width: 0; }
-.r-top { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 13px; }
-.r-handle { font-weight: 600; color: var(--text); }
-.r-fol { font-size: 11px; color: var(--muted); }
-.r-tag { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 999px; }
-.r-tag.foll { background: rgba(22, 163, 74, 0.14); color: var(--green); }
-.r-tag.sugg { background: rgba(217, 119, 6, 0.14); color: var(--amber); }
-.r-why { font-size: 12px; color: var(--text); margin-top: 2px; }
-.r-bio { font-size: 11px; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.r-actions { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+.roster-rows::-webkit-scrollbar { width: 8px; }
+.roster-rows::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.r-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border);
+  border-left-width: 2px;
+  border-radius: 8px;
+}
+.r-cell.is-foll { border-left-color: var(--green); }
+.r-cell.is-sugg { border-left-color: var(--amber); }
+.r-top { display: flex; align-items: center; gap: 0.35rem; font-size: 12px; min-width: 0; }
+.r-handle { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r-fol { font-size: 10px; color: var(--muted); margin-left: auto; flex: none; }
+.r-tag {
+  flex: none; width: 15px; height: 15px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; line-height: 1;
+}
+.r-tag.foll { background: rgba(22, 163, 74, 0.16); color: var(--green); }
+.r-tag.sugg { background: rgba(217, 119, 6, 0.16); color: var(--amber); }
+.r-why {
+  font-size: 11px; color: var(--text); line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.r-actions { display: flex; gap: 4px; margin-top: 0.1rem; }
 .r-act {
   appearance: none; background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: 6px; padding: 2px 8px; font: inherit; font-size: 11px;
+  border-radius: 6px; padding: 2px 7px; font: inherit; font-size: 10px;
   color: var(--muted); cursor: pointer; white-space: nowrap;
 }
 .r-act:hover { border-color: var(--accent); color: var(--accent); }

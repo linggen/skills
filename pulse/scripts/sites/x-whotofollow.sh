@@ -66,6 +66,8 @@ _items = bridge_call(
 )
 if _items is None:
     print("[]"); sys.exit(0)
-cache_put(_ckey, _items)
+# Don't cache a transient empty (would suppress suggestions for the TTL).
+if _items:
+    cache_put(_ckey, _items)
 print(json.dumps(_items))
 PY
