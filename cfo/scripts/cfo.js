@@ -26,6 +26,8 @@ let ACCOUNTS = {};
 let RANGE = { preset: '12M', from: null, to: null };
 let INSIGHTS = [];
 let REVIEW_PENDING = false; // a review was just triggered — Insights cleared, awaiting the agent's cards
+let REVIEW_TIMER = null;    // safety net: if the agent answers without pushing cards, stop hanging
+let REVIEW_NOCARDS = false; // last review came back without cards (it's in the chat)
 let SUGGESTIONS = []; // agent-teacher proposals awaiting a tap (transfers/income — they move totals)
 let LAST_AUTO_APPLIED = 0; // category proposals auto-applied in the last batch (don't move totals)
 let LAST_VIEW = null; // most recent computed view — read by announceImport
@@ -1396,8 +1398,14 @@ function startReview() {
   if (!LEDGER.length) { setStatus('Import a statement first — the review needs data.'); return; }
   INSIGHTS = [];
   REVIEW_PENDING = true;
+  REVIEW_NOCARDS = false;
   renderInsights();
   scrollToInsights();
+  // Safety net: if the turn finishes without a PageUpdate (the model answered in
+  // chat instead of pushing cards), stop showing "running…" forever. If cards DO
+  // arrive later, applyPageUpdate clears this state and renders them.
+  clearTimeout(REVIEW_TIMER);
+  REVIEW_TIMER = setTimeout(() => { if (REVIEW_PENDING) { REVIEW_PENDING = false; REVIEW_NOCARDS = true; renderInsights(); } }, 90000);
   try { chat?.send?.('Run my financial review.'); } catch { /* ignore */ }
 }
 function scrollToInsights() {
@@ -1420,7 +1428,9 @@ function renderInsights() {
     </div>`).join('')
     : (REVIEW_PENDING
       ? '<p class="hint">✦ Running your review… your cards land here in a few seconds.</p>'
-      : '<p class="hint">Nothing yet — hit <b>✦ Run review</b> or ask the assistant a question, and its findings land here.</p>');
+      : REVIEW_NOCARDS
+        ? '<p class="hint">Your review came back in the chat this time — no cards were posted. Hit <b>✦ Run review</b> to try again.</p>'
+        : '<p class="hint">Nothing yet — hit <b>✦ Run review</b> or ask the assistant a question, and its findings land here.</p>');
   el.querySelectorAll('.insight-x').forEach((b) => b.addEventListener('click', () => {
     INSIGHTS.splice(+b.dataset.i, 1);
     renderInsights();
@@ -1475,6 +1485,8 @@ function applyPageUpdate(args) {
     INSIGHTS.push({ title: String(c.title || ''), body: String(c.body || ''), tone: normalizeTone(c.tone), at: new Date().toISOString() });
   }
   REVIEW_PENDING = false;       // the review (or any insight push) has landed
+  REVIEW_NOCARDS = false;
+  clearTimeout(REVIEW_TIMER);
   renderInsights();
   scrollToInsights();           // bring the result into view — it's not in the chat
   saveInsights().catch((e) => console.warn('[cfo] insights save', e));
