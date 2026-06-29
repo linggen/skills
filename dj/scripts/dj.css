@@ -198,16 +198,20 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
   box-shadow: 0 8px 30px rgba(0, 0, 0, .18);
 }
 
-/* ── In-app Now-Playing / lyrics player ── */
+/* ── Now-Playing: a small floating lyrics dialog (not full-screen) ── */
 .player-overlay {
-  position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column;
-  background: var(--bg); color: var(--ink);
+  position: fixed; right: 20px; bottom: 20px; z-index: 60;
+  width: 380px; max-width: 92vw; height: 72vh; max-height: 640px;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, .3);
 }
 .pl-bar {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel);
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
 }
-.pl-title { font-size: 15px; }
+.pl-title { font-size: 14px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .pl-title span { color: var(--muted); margin-left: 6px; }
 .pl-bar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .pl-trans {
@@ -219,38 +223,38 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .pl-trans:disabled { opacity: .5; cursor: default; }
 .pl-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; line-height: 1; }
 
-.pl-lyrics { flex: 1; overflow-y: auto; padding: 16vh 24px; text-align: center; }
-.pl-empty { color: var(--muted); margin-top: 12vh; line-height: 2.4; }
+.pl-lyrics { flex: 1; overflow-y: auto; padding: 28px 18px; text-align: center; }
+.pl-empty { color: var(--muted); margin-top: 40px; line-height: 2.4; }
 .pl-fetch {
   background: var(--accent); color: #fff; border: none; border-radius: 9px;
   padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
 }
 .pl-fetch:hover { filter: brightness(1.06); }
 .pl-fetch:disabled { opacity: .6; cursor: default; }
-.pl-line { padding: 10px 0; cursor: pointer; transition: opacity .2s; }
-.pl-o { font-size: 19px; font-weight: 600; color: var(--muted); opacity: .65; transition: color .2s, opacity .2s; }
+.pl-line { padding: 8px 0; cursor: pointer; transition: opacity .2s; }
+.pl-o { font-size: 16px; font-weight: 600; color: var(--muted); opacity: .65; transition: color .2s, opacity .2s; }
 .pl-line:hover .pl-o { opacity: .9; }
 .pl-line.on .pl-o { color: var(--accent); opacity: 1; }
-.pl-py { font-size: 13px; color: var(--warn); margin-top: 3px; }
-.pl-en { font-size: 14px; color: var(--muted); margin-top: 2px; }
+.pl-py { font-size: 12px; color: var(--warn); margin-top: 3px; }
+.pl-en { font-size: 13px; color: var(--muted); margin-top: 2px; }
 .pl-line.on .pl-en { color: var(--ink); }
 
 .pl-foot {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 20px; border-top: 1px solid var(--line); background: var(--panel);
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 12px; border-top: 1px solid var(--line);
 }
 .pl-play {
-  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
-  background: var(--accent); color: #fff; border: none; font-size: 15px;
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
+  background: var(--accent); color: #fff; border: none; font-size: 13px;
 }
 .pl-ctl {
   background: none; border: none; cursor: pointer; color: var(--muted);
-  font-size: 16px; padding: 4px 7px; border-radius: 7px; flex-shrink: 0;
+  font-size: 14px; padding: 3px 5px; border-radius: 7px; flex-shrink: 0;
 }
 .pl-ctl:hover { color: var(--ink); }
 .pl-ctl.on { color: var(--accent); }
 .pl-ctl[hidden] { display: none; }
-.pl-time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 36px; text-align: center; }
+.pl-time { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 30px; text-align: center; }
 .pl-seek { flex: 1; accent-color: var(--accent); cursor: pointer; }
 
 /* ── Mini player (shown when the full player is closed but still playing) ── */
@@ -265,6 +269,7 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .dj-mini .mini-btn { background: none; border: none; cursor: pointer; color: var(--ink); font-size: 15px; padding: 4px 6px; border-radius: 7px; }
 .dj-mini .mini-btn:hover { background: var(--panel-2); }
 .dj-mini .mini-play { color: var(--accent); }
+.dj-mini .mini-btn.on { color: var(--accent); }
 .dj-mini .mini-close { color: var(--muted); }
 .dj-mini .mini-btn[hidden] { display: none; }
 

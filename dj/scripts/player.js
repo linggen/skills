@@ -170,14 +170,19 @@ export async function openPlayer(startTrack, opts = {}) {
   }
   function updateMini() {
     if (!mini) return;
+    const multi = queue.length > 1;
     mini.innerHTML = `
       <button class="mini-btn mini-play">${audio.paused ? '▶' : '⏸'}</button>
       <div class="mini-meta"><b>${esc(track.title)}</b> <span>${esc(track.artist)}</span></div>
-      <button class="mini-btn mini-next"${queue.length > 1 ? '' : ' hidden'}>⏭</button>
-      <button class="mini-btn mini-expand" title="Open player">▴</button>
+      ${multi ? `<button class="mini-btn mini-shuffle${shuffle ? ' on' : ''}" title="Shuffle">🔀</button>` : ''}
+      <button class="mini-btn mini-repeat${repeat !== 'off' ? ' on' : ''}" title="Repeat">${repeat === 'one' ? '🔂' : '🔁'}</button>
+      ${multi ? '<button class="mini-btn mini-next" title="Next">⏭</button>' : ''}
+      <button class="mini-btn mini-expand" title="Lyrics">▴</button>
       <button class="mini-btn mini-close" title="Stop">×</button>`;
     mini.querySelector('.mini-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
-    mini.querySelector('.mini-next').onclick = () => go(pickNext());
+    mini.querySelector('.mini-next')?.addEventListener('click', () => go(pickNext()));
+    mini.querySelector('.mini-shuffle')?.addEventListener('click', toggleShuffle);
+    mini.querySelector('.mini-repeat').onclick = cycleRepeat;
     mini.querySelector('.mini-meta').onclick = expand;
     mini.querySelector('.mini-expand').onclick = expand;
     mini.querySelector('.mini-close').onclick = stopAll;
@@ -279,12 +284,15 @@ export async function openPlayer(startTrack, opts = {}) {
   $('.pl-next').onclick = () => go(pickNext());
   $('.pl-prev').onclick = () => { if (audio.currentTime > 3) audio.currentTime = 0; else go(index - 1); };
   const REPEATS = ['off', 'all', 'one'];
-  $('.pl-repeat').onclick = (e) => {
-    repeat = REPEATS[(REPEATS.indexOf(repeat) + 1) % REPEATS.length];
-    e.currentTarget.textContent = repeat === 'one' ? '🔂' : '🔁';
-    e.currentTarget.classList.toggle('on', repeat !== 'off');
-  };
-  $('.pl-shuffle').onclick = (e) => { shuffle = !shuffle; e.currentTarget.classList.toggle('on', shuffle); };
+  function syncModes() {
+    const sb = $('.pl-shuffle'); if (sb) sb.classList.toggle('on', shuffle);
+    const rb = $('.pl-repeat'); if (rb) { rb.textContent = repeat === 'one' ? '🔂' : '🔁'; rb.classList.toggle('on', repeat !== 'off'); }
+    updateMini();
+  }
+  function toggleShuffle() { shuffle = !shuffle; syncModes(); }
+  function cycleRepeat() { repeat = REPEATS[(REPEATS.indexOf(repeat) + 1) % REPEATS.length]; syncModes(); }
+  $('.pl-shuffle').onclick = toggleShuffle;
+  $('.pl-repeat').onclick = cycleRepeat;
 
   // Load + play a track: header, lyrics, audio.
   async function load(t) {
@@ -303,9 +311,12 @@ export async function openPlayer(startTrack, opts = {}) {
     updateMini();
   }
 
+  // Don't pop the lyrics dialog on play — just play in the mini-bar. The dialog
+  // (built hidden) opens only when the user expands (▴).
   ov.tabIndex = -1;
-  ov.focus();
+  ov.style.display = 'none';
   await load(track);
+  showMini();
 }
 
 // Make sure the track has a .lrc before opening (best-effort fetch).
