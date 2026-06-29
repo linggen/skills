@@ -24,7 +24,7 @@ const state = {
   busy: false,
   collection: { kind: 'all' }, // all | recent | playlist (+ name) — the sidebar selection
   query: '', // library search text
-  shuffle: false, // playback order for the toolbar Play button
+  shuffle: (() => { try { return localStorage.getItem('dj:shuffle') === '1'; } catch { return false; } })(), // persisted
   selected: new Set(), // selected track ids (multi-select)
   pendingRemove: null, // track id awaiting a second click to confirm removal
 };
@@ -245,7 +245,11 @@ function playAll() {
 function wireLibrary() {
   $('lib-search').addEventListener('input', (e) => { state.query = e.target.value; renderLibrary(); });
   $('play-all').onclick = playAll;
-  $('mode-btn').onclick = () => { state.shuffle = !state.shuffle; updateModeBtn(); };
+  $('mode-btn').onclick = () => {
+    state.shuffle = !state.shuffle;
+    try { localStorage.setItem('dj:shuffle', state.shuffle ? '1' : '0'); } catch { /* ignore */ }
+    updateModeBtn();
+  };
   updateModeBtn();
   $('library').addEventListener('click', onRowAction);
   $('library').addEventListener('change', (e) => {
