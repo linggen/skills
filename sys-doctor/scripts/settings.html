@@ -393,5 +393,17 @@
       } catch (_) {}
     })();
   </script>
+  <script>
+    // Embedded in the merged Linggen settings (?embed=1): hide the shared
+    // sections (Account, Model, Yinyue/Desktop pet) — they appear once at the
+    // top of the Linggen settings. Standalone (no embed) shows everything.
+    if (new URLSearchParams(location.search).get('embed') === '1') {
+      var SHARED = ['account', 'model', 'desktop pet', 'yinyue'];
+      document.querySelectorAll('.section').forEach(function (sec) {
+        var t = (sec.querySelector('.section-title, h2') || {}).textContent || '';
+        if (SHARED.indexOf(t.trim().toLowerCase()) !== -1) sec.style.display = 'none';
+      });
+    }
+  </script>
 </body>
 </html>
