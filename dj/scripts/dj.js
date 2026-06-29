@@ -121,22 +121,71 @@ function renderSidebar() {
     kind === 'all' ? all.length
     : kind === 'recent' ? Math.min(60, all.length)
     : all.filter((t) => (t.playlists || []).includes(name)).length;
-  const item = (kind, name, label) =>
-    `<button class="side-item ${c.kind === kind && (kind !== 'playlist' || c.name === name) ? 'on' : ''}" data-kind="${kind}"${name ? ` data-name="${esc(name)}"` : ''}>` +
-    `<span class="side-label">${esc(label)}</span><span class="side-count">${countOf(kind, name)}</span></button>`;
+  const item = (kind, name, label) => {
+    const on = c.kind === kind && (kind !== 'playlist' || c.name === name);
+    const acts = kind === 'playlist'
+      ? '<span class="side-acts"><button data-plact="rename" title="Rename / merge">✎</button><button data-plact="del" title="Delete playlist">✕</button></span>'
+      : '';
+    return `<div class="side-item ${on ? 'on' : ''}" data-kind="${kind}"${name ? ` data-name="${esc(name)}"` : ''}>` +
+      `<span class="side-label">${esc(label)}</span><span class="side-count">${countOf(kind, name)}</span>${acts}</div>`;
+  };
   const pls = playlistsOf();
   let html = item('all', '', 'All songs') + item('recent', '', 'Recently added');
   html += `<div class="side-head">Playlists</div>`;
   html += pls.length ? pls.map((p) => item('playlist', p, p)).join('') : `<div class="side-empty">none yet</div>`;
   const el = $('lib-sidebar');
   el.innerHTML = html;
-  el.querySelectorAll('.side-item').forEach((b) =>
-    (b.onclick = () => {
-      state.collection = b.dataset.kind === 'playlist' ? { kind: 'playlist', name: b.dataset.name } : { kind: b.dataset.kind };
+  el.querySelectorAll('.side-item').forEach((d) =>
+    (d.onclick = (e) => {
+      if (e.target.closest('[data-plact]')) return; // an action button — handled below
+      state.collection = d.dataset.kind === 'playlist' ? { kind: 'playlist', name: d.dataset.name } : { kind: d.dataset.kind };
       state.selected.clear();
       renderLibrary();
     }),
   );
+  el.querySelectorAll('[data-plact]').forEach((b) =>
+    (b.onclick = (e) => {
+      e.stopPropagation();
+      const node = b.closest('.side-item');
+      const name = node.dataset.name;
+      if (b.dataset.plact === 'del') deletePlaylist(name);
+      else startRenamePlaylist(node, name);
+    }),
+  );
+}
+
+function startRenamePlaylist(node, name) {
+  node.innerHTML = `<input class="side-rename" value="${esc(name)}" />`;
+  const inp = node.querySelector('.side-rename');
+  inp.focus(); inp.select();
+  let done = false;
+  const commit = () => { if (done) return; done = true; renamePlaylist(name, inp.value.trim()); };
+  inp.onkeydown = (e) => { if (e.key === 'Enter') commit(); else if (e.key === 'Escape') { done = true; renderLibrary(); } };
+  inp.onblur = commit;
+}
+
+// Rename a playlist; renaming to an existing name MERGES them.
+async function renamePlaylist(oldName, newName) {
+  if (!newName || newName === oldName) { renderLibrary(); return; }
+  for (const t of state.library.tracks) {
+    const pls = t.playlists || [];
+    if (pls.includes(oldName)) t.playlists = [...new Set(pls.map((p) => (p === oldName ? newName : p)))];
+  }
+  if (state.collection.kind === 'playlist' && state.collection.name === oldName) state.collection = { kind: 'playlist', name: newName };
+  await saveLibrary(state.library);
+  renderLibrary();
+  toast(`Renamed to “${newName}”.`);
+}
+
+// Remove a playlist (songs stay in the library).
+async function deletePlaylist(name) {
+  for (const t of state.library.tracks) {
+    if ((t.playlists || []).includes(name)) t.playlists = t.playlists.filter((p) => p !== name);
+  }
+  if (state.collection.kind === 'playlist' && state.collection.name === name) state.collection = { kind: 'all' };
+  await saveLibrary(state.library);
+  renderLibrary();
+  toast(`Removed playlist “${name}” (songs kept).`);
 }
 
 function rowHtml(t) {
@@ -144,7 +193,7 @@ function rowHtml(t) {
   const sel = state.selected.has(id);
   const pending = state.pendingRemove === id;
   const badges =
-    ((t.synced_to || []).length ? '<span class="badge" title="On phone">✓</span>' : '') +
+    ((t.synced_to || []).length ? '<span class="badge" title="On your phone">📱</span>' : '') +
     (t.lrc ? '<span class="badge lyr" title="Has lyrics">♪</span>' : '');
   return `<div class="lib-row${sel ? ' sel' : ''}" data-id="${esc(id)}">
     <input type="checkbox" class="lib-chk" data-id="${esc(id)}"${sel ? ' checked' : ''} />
@@ -544,6 +593,13 @@ async function backfillLyrics(ids) {
   }
 }
 
+// Drop a trailing count suffix so "Disney Essentials — 10 Songs" and
+// "Disney Essentials" don't become two playlists.
+const cleanPlaylistName = (s) => {
+  const t = String(s || '').trim();
+  return t.replace(/\s*[—\-–]\s*\d+\s*(songs?|tracks?|首)\s*$/i, '').trim() || t;
+};
+
 function addToLibrary(t, file, lrc) {
   const id = trackId(t);
   if (state.library.tracks.some((x) => x.id === id)) return;
@@ -555,7 +611,7 @@ function addToLibrary(t, file, lrc) {
     file,
     lrc: lrc || undefined,
     added_at: new Date().toISOString(),
-    playlists: state.set ? [state.set.name] : [],
+    playlists: state.set ? [cleanPlaylistName(state.set.name)] : [],
     synced_to: [],
   });
 }

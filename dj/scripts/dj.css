@@ -157,6 +157,13 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .side-item:hover { background: var(--panel-2); }
 .side-item.on { background: var(--accent); color: #fff; }
 .side-item.on .side-count { color: rgba(255, 255, 255, .8); }
+.side-acts { display: none; gap: 1px; }
+.side-item:hover .side-acts { display: inline-flex; }
+.side-item:hover .side-count { display: none; }
+.side-acts button { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 11px; padding: 1px 4px; border-radius: 5px; }
+.side-acts button:hover { color: var(--ink); }
+.side-item.on .side-acts button { color: rgba(255, 255, 255, .85); }
+.side-rename { width: 100%; padding: 3px 7px; border: 1px solid var(--accent); border-radius: 6px; background: var(--panel); color: var(--ink); font-size: 13px; }
 .side-head { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 14px 10px 4px; }
 .side-empty { color: var(--muted); font-size: 12px; padding: 4px 10px; }
 
@@ -208,7 +215,8 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .progress { height: 4px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 10px; }
 .progress > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
 .toast {
-  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%);
+  z-index: 65; /* above the mini-player bar */
   background: var(--panel); border: 1px solid var(--line); color: var(--ink);
   padding: 10px 16px; border-radius: 10px; max-width: 70%;
   box-shadow: 0 8px 30px rgba(0, 0, 0, .18);

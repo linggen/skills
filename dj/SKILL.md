@@ -14,6 +14,11 @@ memory-recall-count: 3
 user-invocable: true
 cwd: ~/.linggen/skills/dj
 install: install.sh
+permission:
+  paths:
+    # ListLibrary reads the library index here — pre-grant it so the agent
+    # (incl. when reached via another agent, e.g. Yinyue) never prompts.
+    - { path: ~/.linggen/skills/dj, mode: read }
 app:
   launcher: web
   entry: scripts/index.html

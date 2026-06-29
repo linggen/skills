@@ -21,14 +21,16 @@ export function vlcTarget(cfg) {
     name: cfg.name || 'VLC',
 
     async test() {
-      try {
-        const code = (
-          await runBash(`curl -fsS -m 5 -o /dev/null -w '%{http_code}' ${sq(base + '/')}`)
-        ).trim();
-        return /^[23]/.test(code);
-      } catch {
-        return false;
+      // .local (mDNS) lookups can be slow/cold — give it room and retry once.
+      for (let i = 0; i < 2; i++) {
+        try {
+          const code = (
+            await runBash(`curl -fsS -m 9 -o /dev/null -w '%{http_code}' ${sq(base + '/')}`)
+          ).trim();
+          if (/^[23]/.test(code)) return true;
+        } catch { /* retry */ }
       }
+      return false;
     },
 
     async push(file) {
