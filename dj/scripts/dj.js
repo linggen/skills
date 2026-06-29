@@ -51,6 +51,15 @@ function cratesOf(tracks) {
   return [...set];
 }
 
+// The filtered + ordered library list — what the grid shows AND the play queue.
+function libraryView() {
+  let tracks = state.library.tracks || [];
+  if (state.crate) tracks = tracks.filter((t) => (t.playlists || []).includes(state.crate));
+  const q = state.query.trim().toLowerCase();
+  if (q) tracks = tracks.filter((t) => `${t.artist} ${t.title}`.toLowerCase().includes(q));
+  return tracks.slice().reverse();
+}
+
 function renderLibrary() {
   const all = state.library.tracks || [];
   $('lib-count').textContent = all.length ? `${all.length} track${all.length === 1 ? '' : 's'}` : '';
@@ -71,14 +80,9 @@ function renderLibrary() {
   if (state.crate) cratesHtml += `<button class="crate sync-crate" data-synccrate="1">⤴ Sync “${esc(state.crate)}” to phone</button>`;
   cratesEl.innerHTML = cratesHtml;
 
-  // Filter by selected crate + search query.
-  const q = state.query.trim().toLowerCase();
-  let tracks = all;
-  if (state.crate) tracks = tracks.filter((t) => (t.playlists || []).includes(state.crate));
-  if (q) tracks = tracks.filter((t) => `${t.artist} ${t.title}`.toLowerCase().includes(q));
-
+  const tracks = libraryView();
   if (!tracks.length) { grid.innerHTML = `<div class="empty">Nothing matches.</div>`; return; }
-  grid.innerHTML = tracks.slice().reverse().map(cardHtml).join('');
+  grid.innerHTML = tracks.map(cardHtml).join('');
 }
 
 function cardHtml(t) {
@@ -121,7 +125,7 @@ async function onCardAction(e) {
   if (!t) return;
   const act = btn.dataset.act;
 
-  if (act === 'play') { openPlayer(t, { toast }); return; }
+  if (act === 'play') { openPlayer(t, { toast, fetchLyrics: () => fetchTrackLyrics(t), queue: libraryView() }); return; }
   if (act === 'reveal') {
     try { await runBash(`open -R ${sq(t.file)}`); } catch (err) { toast(String(err.message || err)); }
     return;
@@ -145,9 +149,11 @@ async function fetchTrackLyrics(t) {
     await saveLibrary(state.library);
     renderLibrary();
     toast(`Got lyrics for “${t.title}”.`);
+    return lrc;
   } catch (e) {
     toast(String(e.message || e));
   }
+  return null;
 }
 
 async function removeTrack(t) {
@@ -205,6 +211,7 @@ function applyPageUpdate(args) {
       title: t.title || '',
       year: t.year || '',
       note: t.note || '',
+      selected: true,
       status: isOwned(state.library, t) ? 'owned' : 'pending',
     })),
   };
@@ -215,7 +222,9 @@ function renderSet() {
   const el = $('set');
   if (!state.set) { el.classList.add('hidden'); return; }
   const s = state.set;
-  const gettable = s.tracks.filter((t) => t.status === 'pending').length;
+  const pending = s.tracks.filter((t) => t.status === 'pending');
+  const gettable = pending.filter((t) => t.selected !== false).length;
+  const allSel = s.tracks.every((t) => t.selected !== false);
   el.classList.remove('hidden');
   el.innerHTML = `
     <div class="set-head">
@@ -224,8 +233,9 @@ function renderSet() {
         ${s.brief ? `<div class="set-brief">${esc(s.brief)}</div>` : ''}
       </div>
       <div class="set-actions">
+        <button class="btn ghost small" id="select-all">${allSel ? 'Select none' : 'Select all'}</button>
         <button class="btn small" id="get-all" ${gettable && !state.busy ? '' : 'disabled'}>
-          ${gettable ? `Get all (${gettable})` : 'All owned'}
+          ${gettable ? `Get ${gettable}` : pending.length ? 'None selected' : 'All owned'}
         </button>
       </div>
     </div>
@@ -235,25 +245,41 @@ function renderSet() {
     <div class="progress"><span id="set-progress"></span></div>`;
 
   $('get-all').onclick = getAll;
-  el.querySelectorAll('.rm').forEach((b) =>
+  $('select-all').onclick = () => { const v = !allSel; s.tracks.forEach((t) => { t.selected = v; }); renderSet(); };
+  el.querySelectorAll('.set-chk').forEach((c) =>
+    (c.onchange = () => { s.tracks[+c.dataset.i].selected = c.checked; renderSet(); }),
+  );
+  el.querySelectorAll('.set-play').forEach((b) =>
     (b.onclick = () => {
-      state.set.tracks.splice(Number(b.dataset.i), 1);
-      renderSet();
+      const st = state.set.tracks[+b.dataset.play];
+      const lib = state.library.tracks.find((x) => trackKey(x) === trackId(st));
+      if (!lib) { toast('Still preparing this track…'); return; }
+      // Queue = the set's already-downloaded tracks, in set order.
+      const queue = state.set.tracks
+        .filter((x) => x.status === 'done' || x.status === 'owned')
+        .map((x) => state.library.tracks.find((l) => trackKey(l) === trackId(x)))
+        .filter(Boolean);
+      openPlayer(lib, { toast, fetchLyrics: () => fetchTrackLyrics(lib), queue });
     }),
   );
 }
 
 function trackRow(t, i) {
-  const stateText = { pending: '', owned: 'owned', downloading: 'getting…', done: '✓', error: t.error || 'not found' }[t.status] || '';
+  const playable = t.status === 'done' || t.status === 'owned';
+  const stateText = { pending: '', owned: '', downloading: 'getting…', error: t.error || 'not found' }[t.status] || '';
   const cls = t.status === 'done' ? 'done' : t.status === 'error' ? 'err' : t.status === 'owned' ? 'owned' : '';
+  // A done/owned track is playable right now — no waiting for the rest of the set.
+  const stateCell = playable
+    ? `<button class="set-play" data-play="${i}" title="Play">▶</button>`
+    : `<div class="state">${esc(stateText)}</div>`;
   return `<div class="trackrow ${cls}">
+    <input type="checkbox" class="set-chk" data-i="${i}" ${t.selected !== false ? 'checked' : ''} title="Include this track" />
     <div class="idx">${i + 1}</div>
     <div class="meta">
       <div class="t">${esc(t.title)}</div>
       <div class="a">${esc(t.artist)}${t.year ? ` · ${esc(t.year)}` : ''}${t.note ? ` — <span class="note">${esc(t.note)}</span>` : ''}</div>
     </div>
-    <div class="state">${esc(stateText)}</div>
-    <button class="rm" data-i="${i}" title="Remove">✕</button>
+    ${stateCell}
   </div>`;
 }
 
@@ -271,7 +297,7 @@ async function getAll() {
     return;
   }
 
-  const todo = state.set.tracks.filter((t) => t.status === 'pending');
+  const todo = state.set.tracks.filter((t) => t.status === 'pending' && t.selected !== false);
   const downloadedIds = [];
   let done = 0;
   for (const t of todo) {
@@ -282,6 +308,10 @@ async function getAll() {
       t.status = 'done';
       addToLibrary(t, r.file);
       downloadedIds.push(trackId(t));
+      // Persist + show it now — playable immediately, no waiting for the rest,
+      // and progress survives if the page closes mid-batch.
+      await saveLibrary(state.library);
+      renderLibrary();
     } else {
       t.status = 'error';
       t.error = r.error;

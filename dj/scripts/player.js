@@ -61,32 +61,39 @@ async function translateLines(texts) {
     'is not Chinese>","en":"<natural English translation>"}]. Lines:\n' + numbered;
   const h = await home();
   const sid = `dj-trans-${Date.now()}`;
-  await fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ project_root: `${h}/.linggen`, agent_id: 'ling', skill_name: 'dj', session_id: sid, message: prompt }),
-  });
-  // Poll the session's messages.jsonl directly (the HTTP skill-state endpoint
-  // doesn't surface these ad-hoc sessions reliably). The agent's final reply is
-  // the row whose content is the JSON array — skip the prompt echo + observations.
-  const files =
-    `${sq(`${h}/.linggen/sessions/${sid}/messages.jsonl`)} ` +
-    `${sq(`${h}/.linggen/skills/dj/sessions/${sid}/messages.jsonl`)}`;
-  for (let i = 0; i < 30; i++) {
-    await sleep(2000);
-    let raw = '';
-    try { raw = await runBash(`cat ${files} 2>/dev/null || true`); } catch { continue; }
-    for (const line of raw.split('\n')) {
-      if (!line.trim()) continue;
-      let row;
-      try { row = JSON.parse(line); } catch { continue; }
-      const c = row.content || '';
-      if (!c || row.is_observation || c.includes('You are translating')) continue;
-      const arr = extractJson(c);
-      if (Array.isArray(arr) && arr.length) return arr;
+  const dirs =
+    `${sq(`${h}/.linggen/sessions/${sid}`)} ` +
+    `${sq(`${h}/.linggen/skills/dj/sessions/${sid}`)}`;
+  try {
+    await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_root: `${h}/.linggen`, agent_id: 'ling', skill_name: 'dj', session_id: sid, message: prompt }),
+    });
+    // Poll the session's messages.jsonl directly (the HTTP skill-state endpoint
+    // doesn't surface these ad-hoc sessions reliably). The agent's final reply is
+    // the row whose content is the JSON array — skip the prompt echo + observations.
+    const files = `${sq(`${h}/.linggen/sessions/${sid}/messages.jsonl`)} ${sq(`${h}/.linggen/skills/dj/sessions/${sid}/messages.jsonl`)}`;
+    for (let i = 0; i < 30; i++) {
+      await sleep(2000);
+      let raw = '';
+      try { raw = await runBash(`cat ${files} 2>/dev/null || true`); } catch { continue; }
+      for (const line of raw.split('\n')) {
+        if (!line.trim()) continue;
+        let row;
+        try { row = JSON.parse(line); } catch { continue; }
+        const c = row.content || '';
+        if (!c || row.is_observation || c.includes('You are translating')) continue;
+        const arr = extractJson(c);
+        if (Array.isArray(arr) && arr.length) return arr;
+      }
     }
+    return null;
+  } finally {
+    // This is a throwaway translation session — never the user's chat. Remove it
+    // so it doesn't pile up in ~/.linggen/sessions (one per translated song).
+    try { await runBash(`rm -rf ${dirs}`); } catch { /* best-effort */ }
   }
-  return null;
 }
 
 // Build/load the translation map for a track. Returns { text: {py, en} } or null.
@@ -106,12 +113,22 @@ async function loadOrMakeTranslation(track, texts, onState) {
 }
 
 // ── the player overlay ───────────────────────────────────────────────────────
-export async function openPlayer(track, opts = {}) {
+export async function openPlayer(startTrack, opts = {}) {
+  // The play queue: the set/library context the user launched from, so the
+  // player can sequence / shuffle / loop through it. Single track if none given.
+  const queue = opts.queue && opts.queue.length ? opts.queue.slice() : [startTrack];
+  let index = queue.findIndex((t) => t === startTrack || t.file === startTrack.file);
+  if (index < 0) { queue.unshift(startTrack); index = 0; }
+  let track = queue[index];
+  let repeat = 'off'; // off | all | one
+  let shuffle = false;
+  const multi = queue.length > 1;
+
   const ov = document.createElement('div');
   ov.className = 'player-overlay';
   ov.innerHTML = `
     <div class="pl-bar">
-      <div class="pl-title"><b>${esc(track.title)}</b> <span>${esc(track.artist)}</span></div>
+      <div class="pl-title"></div>
       <div class="pl-bar-actions">
         <button class="pl-trans" title="Pinyin + translation">文 A</button>
         <button class="pl-close" aria-label="Close">×</button>
@@ -119,7 +136,11 @@ export async function openPlayer(track, opts = {}) {
     </div>
     <div class="pl-lyrics" id="pl-lyrics"></div>
     <div class="pl-foot">
+      <button class="pl-ctl pl-shuffle" title="Shuffle"${multi ? '' : ' hidden'}>🔀</button>
+      <button class="pl-ctl pl-prev" title="Previous"${multi ? '' : ' hidden'}>⏮</button>
       <button class="pl-play" id="pl-play">▶</button>
+      <button class="pl-ctl pl-next" title="Next"${multi ? '' : ' hidden'}>⏭</button>
+      <button class="pl-ctl pl-repeat" title="Repeat (off / all / one)">🔁</button>
       <span class="pl-time" id="pl-cur">0:00</span>
       <input class="pl-seek" id="pl-seek" type="range" min="0" max="1000" value="0" />
       <span class="pl-time" id="pl-dur">0:00</span>
@@ -127,7 +148,7 @@ export async function openPlayer(track, opts = {}) {
     <audio id="pl-audio"></audio>`;
   document.body.appendChild(ov);
 
-  const $ = (id) => ov.querySelector(id);
+  const $ = (sel) => ov.querySelector(sel);
   const audio = $('#pl-audio');
   const lyricsEl = $('#pl-lyrics');
   let showTrans = false;
@@ -140,18 +161,26 @@ export async function openPlayer(track, opts = {}) {
   ov.querySelector('.pl-close').onclick = close;
   ov.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
-  // Lyrics
+  // Lyrics — (re)loaded per track by load()
   let lines = [];
-  const lrc = lrcPath(track);
-  if (lrc) {
-    const text = await runBash(`cat ${sq(lrc)} 2>/dev/null || true`).catch(() => '');
-    lines = parseLrc(text);
+
+  async function findLyrics(btn) {
+    if (!opts.fetchLyrics) return;
+    if (btn) { btn.disabled = true; btn.textContent = 'Finding lyrics…'; }
+    await opts.fetchLyrics(); // fetches + writes the .lrc sidecar + sets track.lrc
+    if (track.lrc) {
+      const text = await runBash(`cat ${sq(track.lrc)} 2>/dev/null || true`).catch(() => '');
+      lines = parseLrc(text);
+    }
+    renderLyrics();
+    if (!lines.length) opts.toast?.('No lyrics found for this track.');
   }
-  renderLyrics();
 
   function renderLyrics() {
     if (!lines.length) {
-      lyricsEl.innerHTML = `<div class="pl-empty">No synced lyrics for this track yet — tap ♪ on its card to fetch them.</div>`;
+      lyricsEl.innerHTML = `<div class="pl-empty">No lyrics loaded for this track.${opts.fetchLyrics ? '<br><button class="pl-fetch">Find lyrics</button>' : ''}</div>`;
+      const fb = lyricsEl.querySelector('.pl-fetch');
+      if (fb) fb.onclick = () => findLyrics(fb);
       return;
     }
     lyricsEl.innerHTML = lines
@@ -188,15 +217,14 @@ export async function openPlayer(track, opts = {}) {
   audio.addEventListener('loadedmetadata', () => { $('#pl-dur').textContent = fmt(audio.duration); });
   audio.addEventListener('play', () => { $('#pl-play').textContent = '⏸'; });
   audio.addEventListener('pause', () => { $('#pl-play').textContent = '▶'; });
-  audio.addEventListener('ended', () => { $('#pl-play').textContent = '▶'; });
   $('#pl-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
   $('#pl-seek').oninput = (e) => { if (audio.duration) audio.currentTime = (e.target.value / 1000) * audio.duration; };
 
   // Translation toggle
-  ov.querySelector('.pl-trans').onclick = async () => {
-    const btn = ov.querySelector('.pl-trans');
+  $('.pl-trans').onclick = async () => {
+    const btn = $('.pl-trans');
     if (transMap) { showTrans = !showTrans; btn.classList.toggle('on', showTrans); renderLyrics(); return; }
-    if (!lines.length) { opts.toast?.('Fetch lyrics first (♪ on the card).'); return; }
+    if (!lines.length) { opts.toast?.('No lyrics to translate yet.'); return; }
     btn.disabled = true; btn.textContent = '…';
     const texts = [...new Set(lines.map((l) => l.text).filter(Boolean))];
     transMap = await loadOrMakeTranslation(track, texts).catch(() => null);
@@ -205,17 +233,51 @@ export async function openPlayer(track, opts = {}) {
     showTrans = true; btn.classList.add('on'); renderLyrics();
   };
 
-  // Audio: cp to the served slot, then load + play
-  try {
-    await runBash(`cp ${sq(track.file)} "${NOWPLAYING}"`);
-    audio.src = `/apps/dj/scripts/.nowplaying.mp3?t=${Date.now()}`;
-    audio.play().catch(() => {});
-  } catch (e) {
-    opts.toast?.(String(e.message || e));
+  // Queue: sequence (auto-advance) / shuffle / loop.
+  function pickNext() {
+    if (shuffle && queue.length > 1) {
+      let n;
+      do { n = Math.floor(Math.random() * queue.length); } while (n === index);
+      return n;
+    }
+    return index + 1;
+  }
+  function go(n) { index = (n + queue.length) % queue.length; load(queue[index]); }
+  audio.addEventListener('ended', () => {
+    if (repeat === 'one') { audio.currentTime = 0; audio.play(); return; }
+    const n = pickNext();
+    if (n >= queue.length && repeat !== 'all') { $('#pl-play').textContent = '▶'; return; } // end of queue
+    go(n);
+  });
+  $('.pl-next').onclick = () => go(pickNext());
+  $('.pl-prev').onclick = () => { if (audio.currentTime > 3) audio.currentTime = 0; else go(index - 1); };
+  const REPEATS = ['off', 'all', 'one'];
+  $('.pl-repeat').onclick = (e) => {
+    repeat = REPEATS[(REPEATS.indexOf(repeat) + 1) % REPEATS.length];
+    e.currentTarget.textContent = repeat === 'one' ? '🔂' : '🔁';
+    e.currentTarget.classList.toggle('on', repeat !== 'off');
+  };
+  $('.pl-shuffle').onclick = (e) => { shuffle = !shuffle; e.currentTarget.classList.toggle('on', shuffle); };
+
+  // Load + play a track: header, lyrics, audio.
+  async function load(t) {
+    track = t;
+    transMap = null; showTrans = false; $('.pl-trans').classList.remove('on');
+    $('.pl-title').innerHTML = `<b>${esc(t.title)}</b> <span>${esc(t.artist)}</span>`;
+    lines = [];
+    if (t.lrc) { const text = await runBash(`cat ${sq(t.lrc)} 2>/dev/null || true`).catch(() => ''); lines = parseLrc(text); }
+    activeIdx = -1;
+    renderLyrics();
+    try {
+      await runBash(`cp ${sq(t.file)} "${NOWPLAYING}"`);
+      audio.src = `/apps/dj/scripts/.nowplaying.mp3?t=${Date.now()}`;
+      audio.play().catch(() => {});
+    } catch (e) { opts.toast?.(String(e.message || e)); }
   }
 
   ov.tabIndex = -1;
   ov.focus();
+  await load(track);
 }
 
 // Make sure the track has a .lrc before opening (best-effort fetch).
