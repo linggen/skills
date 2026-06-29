@@ -138,11 +138,15 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .lib-sidebar { display: flex; flex-direction: column; gap: 1px; }
 .side-item {
   appearance: none; text-align: left; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; gap: 8px;
   background: none; border: none; color: var(--ink);
-  padding: 6px 10px; border-radius: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding: 6px 10px; border-radius: 8px;
 }
+.side-label { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.side-count { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .side-item:hover { background: var(--panel-2); }
 .side-item.on { background: var(--accent); color: #fff; }
+.side-item.on .side-count { color: rgba(255, 255, 255, .8); }
 .side-head { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 14px 10px 4px; }
 .side-empty { color: var(--muted); font-size: 12px; padding: 4px 10px; }
 
@@ -200,7 +204,7 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 
 /* ── Now-Playing: a small floating lyrics dialog (not full-screen) ── */
 .player-overlay {
-  position: fixed; right: 20px; bottom: 20px; z-index: 60;
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; z-index: 60;
   width: 380px; max-width: 92vw; height: 72vh; max-height: 640px;
   display: flex; flex-direction: column; overflow: hidden;
   background: var(--panel); color: var(--ink);

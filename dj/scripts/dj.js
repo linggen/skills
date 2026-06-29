@@ -87,9 +87,15 @@ function renderLibrary() {
 }
 
 function renderSidebar() {
+  const all = state.library.tracks || [];
   const c = state.collection;
+  const countOf = (kind, name) =>
+    kind === 'all' ? all.length
+    : kind === 'recent' ? Math.min(60, all.length)
+    : all.filter((t) => (t.playlists || []).includes(name)).length;
   const item = (kind, name, label) =>
-    `<button class="side-item ${c.kind === kind && (kind !== 'playlist' || c.name === name) ? 'on' : ''}" data-kind="${kind}"${name ? ` data-name="${esc(name)}"` : ''}>${esc(label)}</button>`;
+    `<button class="side-item ${c.kind === kind && (kind !== 'playlist' || c.name === name) ? 'on' : ''}" data-kind="${kind}"${name ? ` data-name="${esc(name)}"` : ''}>` +
+    `<span class="side-label">${esc(label)}</span><span class="side-count">${countOf(kind, name)}</span></button>`;
   const pls = playlistsOf();
   let html = item('all', '', 'All songs') + item('recent', '', 'Recently added');
   html += `<div class="side-head">Playlists</div>`;
@@ -121,8 +127,6 @@ function rowHtml(t) {
     </div>
     <span class="row-badges">${badges}</span>
     <div class="row-acts">
-      <button data-act="lyrics" title="${t.lrc ? 'Re-fetch lyrics' : 'Find lyrics'}">♪</button>
-      <button data-act="more" title="More like this">🔁</button>
       <button data-act="reveal" title="Show in Finder">⤓</button>
       <button data-act="remove" class="${pending ? 'danger' : ''}" title="Remove">${pending ? 'Remove?' : '✕'}</button>
     </div>
