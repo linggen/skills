@@ -1,20 +1,17 @@
 // player.js — DJ's in-app Now-Playing view: plays the local MP3 with synced
-// (karaoke) lyrics, plus on-demand pinyin + English translation. The thing
-// streaming apps and VLC/CarPlay don't do — and DJ's language-learning edge.
+// (karaoke) lyrics.
 //
 //   audio  — cp the track to a served .nowplaying.mp3, point <audio> at it
 //            (the daemon serves the skill dir; localhost load is instant)
 //   lyrics — parse the .lrc sidecar, highlight + auto-scroll the active line
-//   trans  — one LLM call returns {o, py, en} per line, cached as a sidecar
 
-import { runBash, sq, writeFile, home } from './bash.js';
+import { runBash, sq } from './bash.js';
 import { fetchLyrics } from './lyrics.js';
 
 const NOWPLAYING = '$HOME/.linggen/skills/dj/scripts/.nowplaying.mp3';
 // The one live player. Closing it hides to a mini-bar (keeps playing); opening
 // a new one stops the previous. Single shared <audio>, so never two at once.
 let active = null;
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
 
@@ -34,86 +31,14 @@ export function parseLrc(text) {
   return out.sort((a, b) => a.t - b.t);
 }
 
-async function readSidecar(path) {
-  try {
-    const out = await runBash(`cat ${sq(path)} 2>/dev/null || true`);
-    return out.trim() ? JSON.parse(out) : null;
-  } catch {
-    return null;
-  }
-}
-
-const lrcPath = (t) => t.lrc || null;
-const transPath = (t) => (t.file ? t.file.replace(/\.[^./]+$/, '') + '.trans.json' : null);
-
-// ── translation: one LLM call → { originalText: {py, en} }, cached ───────────
-function extractJson(text) {
-  const s = String(text);
-  const a = s.indexOf('[');
-  const b = s.lastIndexOf(']');
-  if (a < 0 || b <= a) return null;
-  try { return JSON.parse(s.slice(a, b + 1)); } catch { return null; }
-}
-
-async function translateLines(texts) {
-  const numbered = texts.map((t, i) => `${i + 1}. ${t}`).join('\n');
-  const prompt =
-    'You are translating song lyrics. Do NOT call any tools. Reply with ONLY a ' +
-    'JSON array (no prose, no code fence), one object per numbered line in order: ' +
-    '[{"o":"<original>","py":"<Mandarin pinyin with tone marks, empty if the line ' +
-    'is not Chinese>","en":"<natural English translation>"}]. Lines:\n' + numbered;
-  const h = await home();
-  const sid = `dj-trans-${Date.now()}`;
-  const dirs =
-    `${sq(`${h}/.linggen/sessions/${sid}`)} ` +
-    `${sq(`${h}/.linggen/skills/dj/sessions/${sid}`)}`;
-  try {
-    await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_root: `${h}/.linggen`, agent_id: 'ling', skill_name: 'dj', session_id: sid, message: prompt }),
-    });
-    // Poll the session's messages.jsonl directly (the HTTP skill-state endpoint
-    // doesn't surface these ad-hoc sessions reliably). The agent's final reply is
-    // the row whose content is the JSON array — skip the prompt echo + observations.
-    const files = `${sq(`${h}/.linggen/sessions/${sid}/messages.jsonl`)} ${sq(`${h}/.linggen/skills/dj/sessions/${sid}/messages.jsonl`)}`;
-    for (let i = 0; i < 30; i++) {
-      await sleep(2000);
-      let raw = '';
-      try { raw = await runBash(`cat ${files} 2>/dev/null || true`); } catch { continue; }
-      for (const line of raw.split('\n')) {
-        if (!line.trim()) continue;
-        let row;
-        try { row = JSON.parse(line); } catch { continue; }
-        const c = row.content || '';
-        if (!c || row.is_observation || c.includes('You are translating')) continue;
-        const arr = extractJson(c);
-        if (Array.isArray(arr) && arr.length) return arr;
-      }
-    }
-    return null;
-  } finally {
-    // This is a throwaway translation session — never the user's chat. Remove it
-    // so it doesn't pile up in ~/.linggen/sessions (one per translated song).
-    try { await runBash(`rm -rf ${dirs}`); } catch { /* best-effort */ }
-  }
-}
-
-// Build/load the translation map for a track. Returns { text: {py, en} } or null.
-async function loadOrMakeTranslation(track, texts, onState) {
-  const cached = await readSidecar(transPath(track));
-  if (cached) return cached;
-  onState?.('translating');
-  const arr = await translateLines(texts);
-  if (!arr) return null;
-  const map = {};
-  arr.forEach((item, i) => {
-    const key = item.o && texts.includes(item.o) ? item.o : texts[i];
-    if (key) map[key] = { py: item.py || '', en: item.en || '' };
-  });
-  await writeFile(transPath(track), JSON.stringify(map));
-  return map;
-}
+// Stop any player in OTHER tabs when this one starts — only one plays at a time.
+const PAGE = `${Date.now()}-${Math.round(performance.now())}`;
+let bc = null;
+try {
+  bc = new BroadcastChannel('dj-player');
+  bc.addEventListener('message', (e) => { if (e.data?.claim && e.data.claim !== PAGE && active) active.stop(); });
+} catch { /* BroadcastChannel unsupported — single-tab still fine */ }
+const claimPlayback = () => { try { bc?.postMessage({ claim: PAGE }); } catch { /* ignore */ } };
 
 // ── the player overlay ───────────────────────────────────────────────────────
 export async function openPlayer(startTrack, opts = {}) {
@@ -134,7 +59,6 @@ export async function openPlayer(startTrack, opts = {}) {
     <div class="pl-bar">
       <div class="pl-title"></div>
       <div class="pl-bar-actions">
-        <button class="pl-trans" title="Pinyin + translation">文 A</button>
         <button class="pl-close" aria-label="Minimize" title="Minimize">▾</button>
       </div>
     </div>
@@ -155,8 +79,6 @@ export async function openPlayer(startTrack, opts = {}) {
   const $ = (sel) => ov.querySelector(sel);
   const audio = $('#pl-audio');
   const lyricsEl = $('#pl-lyrics');
-  let showTrans = false;
-  let transMap = null;
 
   // Close = hide to a mini-bar, keep playing. The mini-bar's × actually stops.
   let mini = null;
@@ -216,13 +138,7 @@ export async function openPlayer(startTrack, opts = {}) {
       return;
     }
     lyricsEl.innerHTML = lines
-      .map((l, i) => {
-        const tr = showTrans && transMap && transMap[l.text];
-        return `<div class="pl-line" data-i="${i}" data-t="${l.t}">
-          <div class="pl-o">${esc(l.text) || '&nbsp;'}</div>
-          ${tr ? `<div class="pl-py">${esc(tr.py)}</div><div class="pl-en">${esc(tr.en)}</div>` : ''}
-        </div>`;
-      })
+      .map((l, i) => `<div class="pl-line" data-i="${i}" data-t="${l.t}"><div class="pl-o">${esc(l.text) || '&nbsp;'}</div></div>`)
       .join('');
     lyricsEl.querySelectorAll('.pl-line').forEach((el) => {
       el.onclick = () => { audio.currentTime = +el.dataset.t; audio.play(); };
@@ -247,24 +163,10 @@ export async function openPlayer(startTrack, opts = {}) {
 
   // Transport
   audio.addEventListener('loadedmetadata', () => { $('#pl-dur').textContent = fmt(audio.duration); });
-  audio.addEventListener('play', () => { $('#pl-play').textContent = '⏸'; updateMini(); });
+  audio.addEventListener('play', () => { $('#pl-play').textContent = '⏸'; updateMini(); claimPlayback(); });
   audio.addEventListener('pause', () => { $('#pl-play').textContent = '▶'; updateMini(); });
   $('#pl-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
   $('#pl-seek').oninput = (e) => { if (audio.duration) audio.currentTime = (e.target.value / 1000) * audio.duration; };
-
-  // Translation toggle
-  $('.pl-trans').onclick = async () => {
-    const btn = $('.pl-trans');
-    if (transMap) { showTrans = !showTrans; btn.classList.toggle('on', showTrans); renderLyrics(); return; }
-    if (!lines.length) { opts.toast?.('No lyrics to translate yet.'); return; }
-    btn.disabled = true; btn.classList.add('loading'); btn.title = 'Translating…';
-    opts.toast?.('Translating lyrics… (~15s)');
-    const texts = [...new Set(lines.map((l) => l.text).filter(Boolean))];
-    transMap = await loadOrMakeTranslation(track, texts).catch(() => null);
-    btn.disabled = false; btn.classList.remove('loading'); btn.title = 'Pinyin + translation';
-    if (!transMap) { opts.toast?.('Translation unavailable.'); return; }
-    showTrans = true; btn.classList.add('on'); renderLyrics();
-  };
 
   // Queue: sequence (auto-advance) / shuffle / loop.
   function pickNext() {
@@ -298,7 +200,6 @@ export async function openPlayer(startTrack, opts = {}) {
   // Load + play a track: header, lyrics, audio.
   async function load(t) {
     track = t;
-    transMap = null; showTrans = false; $('.pl-trans').classList.remove('on');
     $('.pl-title').innerHTML = `<b>${esc(t.title)}</b> <span>${esc(t.artist)}</span>`;
     lines = [];
     if (t.lrc) { const text = await runBash(`cat ${sq(t.lrc)} 2>/dev/null || true`).catch(() => ''); lines = parseLrc(text); }

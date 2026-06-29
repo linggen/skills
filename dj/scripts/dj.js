@@ -136,20 +136,32 @@ function rowHtml(t) {
 // The selection toolbar — actions on the checked songs (select before sync, etc.)
 function renderSelbar() {
   const bar = $('lib-selbar');
+  const view = libraryView();
+  if (!view.length) { bar.hidden = true; bar.innerHTML = ''; return; }
   const n = state.selected.size;
-  if (!n) { bar.hidden = true; bar.innerHTML = ''; return; }
+  const allSel = view.every((t) => state.selected.has(trackKey(t)));
   bar.hidden = false;
   bar.innerHTML = `
-    <span class="sel-n">${n} selected</span>
-    <button class="btn ghost small" data-sel="add">Add to playlist…</button>
-    <button class="btn ghost small" data-sel="sync">Sync to phone</button>
-    <button class="btn ghost small" data-sel="remove">Remove</button>
-    <button class="btn ghost small" data-sel="clear">Clear</button>
+    <label class="sel-all"><input type="checkbox" id="sel-all-chk" ${allSel ? 'checked' : ''} /> Select all</label>
+    ${n
+      ? `<span class="sel-n">${n} selected</span>
+         <button class="btn ghost small" data-sel="add">Add to playlist…</button>
+         <button class="btn ghost small" data-sel="sync">Sync to phone</button>
+         <button class="btn ghost small" data-sel="remove">Remove</button>
+         <button class="btn ghost small" data-sel="clear">Clear</button>`
+      : ''}
     <span class="sel-menu" id="sel-menu"></span>`;
-  bar.querySelector('[data-sel="clear"]').onclick = () => { state.selected.clear(); renderLibrary(); };
-  bar.querySelector('[data-sel="sync"]').onclick = () => syncSelected();
-  bar.querySelector('[data-sel="remove"]').onclick = () => removeSelected();
-  bar.querySelector('[data-sel="add"]').onclick = () => showAddMenu();
+  $('sel-all-chk').onchange = (e) => {
+    if (e.target.checked) view.forEach((t) => state.selected.add(trackKey(t)));
+    else state.selected.clear();
+    renderLibrary();
+  };
+  if (n) {
+    bar.querySelector('[data-sel="clear"]').onclick = () => { state.selected.clear(); renderLibrary(); };
+    bar.querySelector('[data-sel="sync"]').onclick = () => syncSelected();
+    bar.querySelector('[data-sel="remove"]').onclick = () => removeSelected();
+    bar.querySelector('[data-sel="add"]').onclick = () => showAddMenu();
+  }
 }
 
 function showAddMenu() {
@@ -534,7 +546,6 @@ async function onSync() {
 
 // ── chrome ───────────────────────────────────────────────────────────────────
 function wireButtons() {
-  $('sync-btn').onclick = onSync;
   $('settings-btn').onclick = openSettings;
 }
 
