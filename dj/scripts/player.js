@@ -11,6 +11,9 @@ import { runBash, sq, writeFile, home } from './bash.js';
 import { fetchLyrics } from './lyrics.js';
 
 const NOWPLAYING = '$HOME/.linggen/skills/dj/scripts/.nowplaying.mp3';
+// The one live player. Closing it hides to a mini-bar (keeps playing); opening
+// a new one stops the previous. Single shared <audio>, so never two at once.
+let active = null;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
@@ -114,6 +117,7 @@ async function loadOrMakeTranslation(track, texts, onState) {
 
 // ── the player overlay ───────────────────────────────────────────────────────
 export async function openPlayer(startTrack, opts = {}) {
+  if (active) active.stop(); // stop+remove any previous player (shared <audio>)
   // The play queue: the set/library context the user launched from, so the
   // player can sequence / shuffle / loop through it. Single track if none given.
   const queue = opts.queue && opts.queue.length ? opts.queue.slice() : [startTrack];
@@ -154,10 +158,33 @@ export async function openPlayer(startTrack, opts = {}) {
   let showTrans = false;
   let transMap = null;
 
-  function close() {
-    audio.pause();
-    ov.remove();
+  // Close = hide to a mini-bar, keep playing. The mini-bar's × actually stops.
+  let mini = null;
+  function close() { ov.style.display = 'none'; showMini(); }
+  function expand() { ov.style.display = ''; if (mini) mini.style.display = 'none'; ov.focus(); }
+  function stopAll() { audio.pause(); ov.remove(); if (mini) mini.remove(); if (active === api) active = null; }
+  function showMini() {
+    if (!mini) { mini = document.createElement('div'); mini.className = 'dj-mini'; document.body.appendChild(mini); }
+    updateMini();
+    mini.style.display = 'flex';
   }
+  function updateMini() {
+    if (!mini) return;
+    mini.innerHTML = `
+      <button class="mini-btn mini-play">${audio.paused ? '▶' : '⏸'}</button>
+      <div class="mini-meta"><b>${esc(track.title)}</b> <span>${esc(track.artist)}</span></div>
+      <button class="mini-btn mini-next"${queue.length > 1 ? '' : ' hidden'}>⏭</button>
+      <button class="mini-btn mini-expand" title="Open player">▴</button>
+      <button class="mini-btn mini-close" title="Stop">×</button>`;
+    mini.querySelector('.mini-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
+    mini.querySelector('.mini-next').onclick = () => go(pickNext());
+    mini.querySelector('.mini-meta').onclick = expand;
+    mini.querySelector('.mini-expand').onclick = expand;
+    mini.querySelector('.mini-close').onclick = stopAll;
+  }
+  const api = { stop: stopAll };
+  active = api;
+
   ov.querySelector('.pl-close').onclick = close;
   ov.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
@@ -215,8 +242,8 @@ export async function openPlayer(startTrack, opts = {}) {
 
   // Transport
   audio.addEventListener('loadedmetadata', () => { $('#pl-dur').textContent = fmt(audio.duration); });
-  audio.addEventListener('play', () => { $('#pl-play').textContent = '⏸'; });
-  audio.addEventListener('pause', () => { $('#pl-play').textContent = '▶'; });
+  audio.addEventListener('play', () => { $('#pl-play').textContent = '⏸'; updateMini(); });
+  audio.addEventListener('pause', () => { $('#pl-play').textContent = '▶'; updateMini(); });
   $('#pl-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
   $('#pl-seek').oninput = (e) => { if (audio.duration) audio.currentTime = (e.target.value / 1000) * audio.duration; };
 
@@ -273,6 +300,7 @@ export async function openPlayer(startTrack, opts = {}) {
       audio.src = `/apps/dj/scripts/.nowplaying.mp3?t=${Date.now()}`;
       audio.play().catch(() => {});
     } catch (e) { opts.toast?.(String(e.message || e)); }
+    updateMini();
   }
 
   ov.tabIndex = -1;

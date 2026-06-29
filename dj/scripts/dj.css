@@ -253,6 +253,21 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .pl-time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; min-width: 36px; text-align: center; }
 .pl-seek { flex: 1; accent-color: var(--accent); cursor: pointer; }
 
+/* ── Mini player (shown when the full player is closed but still playing) ── */
+.dj-mini {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  z-index: 55; display: flex; align-items: center; gap: 10px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 8px 12px; box-shadow: 0 8px 30px rgba(0, 0, 0, .22); max-width: 90vw;
+}
+.dj-mini .mini-meta { cursor: pointer; font-size: 13px; max-width: 320px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.dj-mini .mini-meta span { color: var(--muted); margin-left: 6px; }
+.dj-mini .mini-btn { background: none; border: none; cursor: pointer; color: var(--ink); font-size: 15px; padding: 4px 6px; border-radius: 7px; }
+.dj-mini .mini-btn:hover { background: var(--panel-2); }
+.dj-mini .mini-play { color: var(--accent); }
+.dj-mini .mini-close { color: var(--muted); }
+.dj-mini .mini-btn[hidden] { display: none; }
+
 /* ── Settings overlay (app-mode.js) ── */
 .app-mode-overlay { position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; z-index: 50; }
 .app-mode-overlay.visible { display: flex; }
