@@ -52,8 +52,13 @@
             <h2 class="section-title">Your library</h2>
             <input id="lib-search" class="lib-search" type="search" placeholder="Search your library…" autocomplete="off" />
           </div>
-          <div id="lib-crates" class="crates"></div>
-          <div id="library" class="library"></div>
+          <div class="lib-body">
+            <aside id="lib-sidebar" class="lib-sidebar"></aside>
+            <div class="lib-main">
+              <div id="lib-selbar" class="lib-selbar" hidden></div>
+              <div id="library" class="lib-list"></div>
+            </div>
+          </div>
         </div>
       </section>
 

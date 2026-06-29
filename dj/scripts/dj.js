@@ -22,8 +22,9 @@ const state = {
   library: { tracks: [], playlists: [] },
   set: null, // the currently proposed tracklist
   busy: false,
-  crate: null, // selected playlist filter (null = All)
+  collection: { kind: 'all' }, // all | recent | playlist (+ name) — the sidebar selection
   query: '', // library search text
+  selected: new Set(), // selected track ids (multi-select)
   pendingRemove: null, // track id awaiting a second click to confirm removal
 };
 
@@ -42,85 +43,191 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
   await mountChat();
 })();
 
-// ── library manager: search + crate filter + per-track actions ───────────────
+// ── library: sidebar collections + dense list + multi-select → playlists ─────
 const trackKey = (t) => t.id || trackId(t);
 
-function cratesOf(tracks) {
+function playlistsOf() {
   const set = new Set();
-  for (const t of tracks) for (const p of t.playlists || []) set.add(p);
-  return [...set];
+  for (const t of state.library.tracks || []) for (const p of t.playlists || []) set.add(p);
+  return [...set].sort((a, b) => a.localeCompare(b));
 }
 
-// The filtered + ordered library list — what the grid shows AND the play queue.
+// Tracks in the selected sidebar collection (before search).
+function collectionTracks() {
+  const all = (state.library.tracks || []).slice();
+  const c = state.collection;
+  if (c.kind === 'playlist') return all.filter((t) => (t.playlists || []).includes(c.name)).reverse();
+  if (c.kind === 'recent') {
+    return all.sort((a, b) => String(b.added_at || '').localeCompare(String(a.added_at || ''))).slice(0, 60);
+  }
+  return all.reverse(); // all songs, newest first
+}
+
+// What the list shows AND the play queue: collection + search.
 function libraryView() {
-  let tracks = state.library.tracks || [];
-  if (state.crate) tracks = tracks.filter((t) => (t.playlists || []).includes(state.crate));
+  let tracks = collectionTracks();
   const q = state.query.trim().toLowerCase();
   if (q) tracks = tracks.filter((t) => `${t.artist} ${t.title}`.toLowerCase().includes(q));
-  return tracks.slice().reverse();
+  return tracks;
 }
 
 function renderLibrary() {
   const all = state.library.tracks || [];
-  $('lib-count').textContent = all.length ? `${all.length} track${all.length === 1 ? '' : 's'}` : '';
-  const cratesEl = $('lib-crates');
+  $('lib-count').textContent = all.length ? `${all.length} song${all.length === 1 ? '' : 's'}` : '';
+  renderSidebar();
+  renderSelbar();
   const grid = $('library');
-
   if (!all.length) {
-    cratesEl.innerHTML = '';
     grid.innerHTML = `<div class="empty">Your downloaded tracks show up here. Build a set above to start.</div>`;
     return;
   }
-
-  // Crate chips: All + each playlist; a per-crate sync button when one is active.
-  const crates = cratesOf(all);
-  const chip = (label, val) =>
-    `<button class="crate ${state.crate === val ? 'on' : ''}" data-crate="${esc(val ?? '')}">${esc(label)}</button>`;
-  let cratesHtml = chip('All', null) + crates.map((c) => chip(c, c)).join('');
-  if (state.crate) cratesHtml += `<button class="crate sync-crate" data-synccrate="1">⤴ Sync “${esc(state.crate)}” to phone</button>`;
-  cratesEl.innerHTML = cratesHtml;
-
   const tracks = libraryView();
-  if (!tracks.length) { grid.innerHTML = `<div class="empty">Nothing matches.</div>`; return; }
-  grid.innerHTML = tracks.map(cardHtml).join('');
+  if (!tracks.length) { grid.innerHTML = `<div class="empty">Nothing here.</div>`; return; }
+  grid.innerHTML = tracks.map(rowHtml).join('');
 }
 
-function cardHtml(t) {
+function renderSidebar() {
+  const c = state.collection;
+  const item = (kind, name, label) =>
+    `<button class="side-item ${c.kind === kind && (kind !== 'playlist' || c.name === name) ? 'on' : ''}" data-kind="${kind}"${name ? ` data-name="${esc(name)}"` : ''}>${esc(label)}</button>`;
+  const pls = playlistsOf();
+  let html = item('all', '', 'All songs') + item('recent', '', 'Recently added');
+  html += `<div class="side-head">Playlists</div>`;
+  html += pls.length ? pls.map((p) => item('playlist', p, p)).join('') : `<div class="side-empty">none yet</div>`;
+  const el = $('lib-sidebar');
+  el.innerHTML = html;
+  el.querySelectorAll('.side-item').forEach((b) =>
+    (b.onclick = () => {
+      state.collection = b.dataset.kind === 'playlist' ? { kind: 'playlist', name: b.dataset.name } : { kind: b.dataset.kind };
+      state.selected.clear();
+      renderLibrary();
+    }),
+  );
+}
+
+function rowHtml(t) {
   const id = trackKey(t);
-  const badges =
-    ((t.synced_to || []).length ? `<span class="badge">✓ on phone</span>` : '') +
-    (t.lrc ? `<span class="badge">♪ lyrics</span>` : '');
+  const sel = state.selected.has(id);
   const pending = state.pendingRemove === id;
-  return `<div class="card" data-id="${esc(id)}">
-    <div class="card-main">
-      <div class="t">${esc(t.title)}</div>
-      <div class="a">${esc(t.artist)}${t.year ? ` · ${esc(t.year)}` : ''}</div>
-      <div class="badges">${badges}</div>
+  const badges =
+    ((t.synced_to || []).length ? '<span class="badge" title="On phone">✓</span>' : '') +
+    (t.lrc ? '<span class="badge lyr" title="Has lyrics">♪</span>' : '');
+  return `<div class="lib-row${sel ? ' sel' : ''}" data-id="${esc(id)}">
+    <input type="checkbox" class="lib-chk" data-id="${esc(id)}"${sel ? ' checked' : ''} />
+    <button class="row-play" data-act="play" title="Play">▶</button>
+    <div class="row-meta">
+      <span class="row-t">${esc(t.title)}</span>
+      <span class="row-a">${esc(t.artist)}${t.year ? ` · ${esc(t.year)}` : ''}</span>
     </div>
-    <div class="card-acts">
-      <button data-act="play" title="Play with lyrics">▶</button>
-      <button data-act="reveal" title="Show in Finder">⤓</button>
+    <span class="row-badges">${badges}</span>
+    <div class="row-acts">
       <button data-act="lyrics" title="${t.lrc ? 'Re-fetch lyrics' : 'Find lyrics'}">♪</button>
       <button data-act="more" title="More like this">🔁</button>
-      <button data-act="remove" class="${pending ? 'danger' : ''}" title="Remove from library">${pending ? 'Remove?' : '✕'}</button>
+      <button data-act="reveal" title="Show in Finder">⤓</button>
+      <button data-act="remove" class="${pending ? 'danger' : ''}" title="Remove">${pending ? 'Remove?' : '✕'}</button>
     </div>
   </div>`;
 }
 
-function wireLibrary() {
-  $('lib-search').addEventListener('input', (e) => { state.query = e.target.value; renderLibrary(); });
-  $('lib-crates').addEventListener('click', (e) => {
-    const c = e.target.closest('[data-crate]');
-    if (c) { state.crate = c.dataset.crate || null; state.pendingRemove = null; renderLibrary(); return; }
-    if (e.target.closest('[data-synccrate]')) syncCrate(state.crate);
-  });
-  $('library').addEventListener('click', onCardAction);
+// The selection toolbar — actions on the checked songs (select before sync, etc.)
+function renderSelbar() {
+  const bar = $('lib-selbar');
+  const n = state.selected.size;
+  if (!n) { bar.hidden = true; bar.innerHTML = ''; return; }
+  bar.hidden = false;
+  bar.innerHTML = `
+    <span class="sel-n">${n} selected</span>
+    <button class="btn ghost small" data-sel="add">Add to playlist…</button>
+    <button class="btn ghost small" data-sel="sync">Sync to phone</button>
+    <button class="btn ghost small" data-sel="remove">Remove</button>
+    <button class="btn ghost small" data-sel="clear">Clear</button>
+    <span class="sel-menu" id="sel-menu"></span>`;
+  bar.querySelector('[data-sel="clear"]').onclick = () => { state.selected.clear(); renderLibrary(); };
+  bar.querySelector('[data-sel="sync"]').onclick = () => syncSelected();
+  bar.querySelector('[data-sel="remove"]').onclick = () => removeSelected();
+  bar.querySelector('[data-sel="add"]').onclick = () => showAddMenu();
 }
 
-async function onCardAction(e) {
+function showAddMenu() {
+  const menu = $('sel-menu');
+  const pls = playlistsOf();
+  menu.innerHTML =
+    pls.map((p) => `<button class="pl-opt" data-pl="${esc(p)}">${esc(p)}</button>`).join('') +
+    `<button class="pl-opt new" data-new="1">＋ New playlist…</button>`;
+  menu.querySelectorAll('[data-pl]').forEach((b) => (b.onclick = () => addToPlaylist(b.dataset.pl)));
+  menu.querySelector('[data-new]').onclick = () => {
+    menu.innerHTML = `<input class="pl-name" placeholder="Playlist name" /><button class="btn small" id="pl-save">Save</button>`;
+    const inp = menu.querySelector('.pl-name');
+    inp.focus();
+    const save = () => { const name = inp.value.trim(); if (name) addToPlaylist(name); };
+    menu.querySelector('#pl-save').onclick = save;
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') save(); });
+  };
+}
+
+async function addToPlaylist(name) {
+  let n = 0;
+  for (const t of state.library.tracks) {
+    if (state.selected.has(trackKey(t))) { t.playlists = [...new Set([...(t.playlists || []), name])]; n += 1; }
+  }
+  await saveLibrary(state.library);
+  state.selected.clear();
+  state.collection = { kind: 'playlist', name };
+  renderLibrary();
+  toast(`Added ${n} to “${name}”.`);
+}
+
+async function syncSelected() {
+  const target = (state.config.sync_targets || [])[0];
+  if (!target) { toast('No phone set up — open ⚙ Settings.'); return; }
+  if (state.busy) return;
+  const ids = new Set(state.selected);
+  state.busy = true;
+  toast(`Open VLC (Sharing on)… syncing ${ids.size}.`);
+  try {
+    const r = await syncToPhone(
+      target,
+      (p) => { if (p.track && !p.finished) toast(`Syncing ${p.done + 1}/${p.total}: ${esc(p.track.title)}`); },
+      { filter: (t) => ids.has(trackKey(t)) },
+    );
+    state.library = await loadLibrary();
+    state.selected.clear();
+    renderLibrary();
+    toast(`Synced ${r.pushed}/${r.total} to ${esc(target.name)}.`);
+  } catch (e) {
+    toast(String(e.message || e));
+  } finally {
+    state.busy = false;
+  }
+}
+
+async function removeSelected() {
+  const ids = new Set(state.selected);
+  const victims = state.library.tracks.filter((t) => ids.has(trackKey(t)));
+  for (const t of victims) { try { if (t.file) await runBash(`rm -f ${sq(t.file)}`); } catch { /* ignore */ } }
+  state.library.tracks = state.library.tracks.filter((t) => !ids.has(trackKey(t)));
+  await saveLibrary(state.library);
+  state.selected.clear();
+  renderLibrary();
+  toast(`Removed ${victims.length} song${victims.length === 1 ? '' : 's'}.`);
+}
+
+function wireLibrary() {
+  $('lib-search').addEventListener('input', (e) => { state.query = e.target.value; renderLibrary(); });
+  $('library').addEventListener('click', onRowAction);
+  $('library').addEventListener('change', (e) => {
+    const chk = e.target.closest('.lib-chk');
+    if (!chk) return;
+    if (chk.checked) state.selected.add(chk.dataset.id);
+    else state.selected.delete(chk.dataset.id);
+    renderLibrary();
+  });
+}
+
+async function onRowAction(e) {
   const btn = e.target.closest('[data-act]');
   if (!btn) return;
-  const id = e.target.closest('.card')?.dataset.id;
+  const id = e.target.closest('.lib-row')?.dataset.id;
   const t = state.library.tracks.find((x) => trackKey(x) === id);
   if (!t) return;
   const act = btn.dataset.act;
@@ -186,22 +293,50 @@ async function syncCrate(crate) {
   }
 }
 
-// ── proposed set (DYNAMIC, from PageUpdate) ──────────────────────────────────
-// The model isn't perfectly consistent with the schema: `body` arrives as
-// either { tracklist } or [{ tracklist }] (and rarely the bare tracklist).
-// Be liberal — pull the tracklist out of whatever shape shows up.
-function extractTracklist(args) {
+// ── PageUpdate from the agent (DYNAMIC) ──────────────────────────────────────
+// The model isn't perfectly consistent: `body` arrives as { key } or [{ key }]
+// (and rarely the bare key). Be liberal — pull the payload out of any shape.
+function extractKey(args, key) {
   if (!args) return null;
   const fromBody = (b) => {
     if (!b) return null;
-    if (Array.isArray(b)) return b.map((x) => x?.tracklist).find(Boolean) || null;
-    return b.tracklist || null;
+    if (Array.isArray(b)) return b.map((x) => x?.[key]).find(Boolean) || null;
+    return b[key] || null;
   };
-  return fromBody(args.body) || args.tracklist || fromBody(args);
+  return fromBody(args.body) || args[key] || fromBody(args);
+}
+
+const keyOf = (t) => `${(t.artist || '').toLowerCase().trim()}|${(t.title || '').toLowerCase().trim()}`;
+
+// Agent organizes the library into a playlist: { name, tracks:[{artist,title}] }.
+async function applyAgentPlaylist(pl) {
+  if (!pl.name || !Array.isArray(pl.tracks)) return;
+  const want = new Set(pl.tracks.map(keyOf));
+  let n = 0;
+  for (const t of state.library.tracks) {
+    if (want.has(trackKey(t))) { t.playlists = [...new Set([...(t.playlists || []), pl.name])]; n += 1; }
+  }
+  await saveLibrary(state.library);
+  state.collection = { kind: 'playlist', name: pl.name };
+  renderLibrary();
+  toast(`DJ made “${pl.name}” — ${n} song${n === 1 ? '' : 's'}.`);
+}
+
+// Agent plays owned tracks: { tracks:[{artist,title}] }. Only plays what's
+// downloaded; the agent proposes a set (tracklist) for anything missing.
+function applyAgentPlay(pp) {
+  const want = (pp.tracks || []).map(keyOf);
+  const queue = want.map((k) => state.library.tracks.find((t) => trackKey(t) === k)).filter((t) => t && t.file);
+  if (!queue.length) { toast('None of those are downloaded yet.'); return; }
+  openPlayer(queue[0], { toast, fetchLyrics: () => fetchTrackLyrics(queue[0]), queue });
 }
 
 function applyPageUpdate(args) {
-  const tl = extractTracklist(args);
+  const pl = extractKey(args, 'playlist');
+  if (pl) { applyAgentPlaylist(pl); return; }
+  const pp = extractKey(args, 'play');
+  if (pp) { applyAgentPlay(pp); return; }
+  const tl = extractKey(args, 'tracklist');
   if (!tl || !Array.isArray(tl.tracks)) return;
   state.set = {
     name: tl.name || 'New set',
