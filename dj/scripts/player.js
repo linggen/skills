@@ -135,7 +135,7 @@ export async function openPlayer(startTrack, opts = {}) {
       <div class="pl-title"></div>
       <div class="pl-bar-actions">
         <button class="pl-trans" title="Pinyin + translation">文 A</button>
-        <button class="pl-close" aria-label="Close">×</button>
+        <button class="pl-close" aria-label="Minimize" title="Minimize">▾</button>
       </div>
     </div>
     <div class="pl-lyrics" id="pl-lyrics"></div>
@@ -257,10 +257,11 @@ export async function openPlayer(startTrack, opts = {}) {
     const btn = $('.pl-trans');
     if (transMap) { showTrans = !showTrans; btn.classList.toggle('on', showTrans); renderLyrics(); return; }
     if (!lines.length) { opts.toast?.('No lyrics to translate yet.'); return; }
-    btn.disabled = true; btn.textContent = '…';
+    btn.disabled = true; btn.classList.add('loading'); btn.title = 'Translating…';
+    opts.toast?.('Translating lyrics… (~15s)');
     const texts = [...new Set(lines.map((l) => l.text).filter(Boolean))];
     transMap = await loadOrMakeTranslation(track, texts).catch(() => null);
-    btn.disabled = false; btn.textContent = '文 A';
+    btn.disabled = false; btn.classList.remove('loading'); btn.title = 'Pinyin + translation';
     if (!transMap) { opts.toast?.('Translation unavailable.'); return; }
     showTrans = true; btn.classList.add('on'); renderLyrics();
   };
