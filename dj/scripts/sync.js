@@ -36,8 +36,22 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
   }
 
   const lib = await loadLibrary();
+  const basename = (p) => String(p).split('/').pop().toLowerCase();
+
+  // Auto-ignore songs the phone ALREADY has: read its file list and skip those
+  // (more robust than synced_to bookkeeping). Also reconcile — mark anything
+  // already on the device as synced so counts stay honest.
+  let onPhone = new Set();
+  try { onPhone = new Set((await (target.list?.() || [])).map((n) => n.toLowerCase())); } catch { /* best-effort */ }
+  const present = (t) => t.file && onPhone.has(basename(t.file));
+  for (const t of lib.tracks) {
+    if (present(t) && !(t.synced_to || []).includes(cfg.id)) {
+      t.synced_to = [...new Set([...(t.synced_to || []), cfg.id])];
+    }
+  }
+
   let pending = lib.tracks.filter(
-    (t) => t.file && !(t.synced_to || []).includes(cfg.id),
+    (t) => t.file && !(t.synced_to || []).includes(cfg.id) && !present(t),
   );
   if (opts.filter) pending = pending.filter(opts.filter);
 

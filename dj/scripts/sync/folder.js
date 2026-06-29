@@ -25,5 +25,15 @@ export function folderTarget(cfg) {
       await runBash(`mkdir -p ${sq(dir)} && cp ${sq(file)} ${sq(dir)}/`);
       return true;
     },
+
+    async list() {
+      try {
+        const dir = await resolvePath(cfg.path || '');
+        const out = await runBash(`ls -1 ${sq(dir)} 2>/dev/null || true`);
+        return out.split('\n').map((s) => s.trim()).filter(Boolean);
+      } catch {
+        return [];
+      }
+    },
   };
 }

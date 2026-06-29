@@ -37,5 +37,8 @@ export function webdavTarget(cfg) {
       if (!/^2/.test(code)) throw new Error(`WebDAV PUT HTTP ${code || '???'}`);
       return true;
     },
+
+    // PROPFIND listing varies by server; fall back to synced_to bookkeeping.
+    async list() { return []; },
   };
 }

@@ -41,5 +41,20 @@ export function vlcTarget(cfg) {
       if (!/^2/.test(code)) throw new Error(`VLC upload HTTP ${code || '???'}`);
       return true;
     },
+
+    // Filenames already in VLC's library — its page lists them as
+    // href="download/…/Documents/<url-encoded name>". Used to skip dupes.
+    async list() {
+      try {
+        const html = await runBash(`curl -fsS -m 8 ${sq(base + '/')}`);
+        const out = [];
+        for (const m of html.matchAll(/href="download\/[^"]*\/([^"/]+\.[a-z0-9]+)"/gi)) {
+          try { out.push(decodeURIComponent(m[1])); } catch { out.push(m[1]); }
+        }
+        return [...new Set(out)];
+      } catch {
+        return [];
+      }
+    },
   };
 }
