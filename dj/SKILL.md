@@ -104,6 +104,12 @@ Rhapsody*", "best of Faye Wong", "focus instrumentals"):
   a Western song stays English. Matching script reads better in the library AND
   helps lyrics lookup (LRCLIB indexes Chinese songs under the Chinese name). Add
   `year` when you know it, and a short `note` only when it earns one.
+- **Name it for the shelf.** The set `name` becomes the playlist title once the
+  user saves it. Give it a clean, stable title (*"Disney Essentials"*, *"Hong
+  Kong 90s"*) — **never** bake in a song count or a *"— 10 More"* / *"Vol 2"* /
+  *"加码版"* qualifier; those fork what should be one playlist into many. If
+  `ListLibrary` already shows a playlist for this vibe, reuse its **exact** name
+  so a second pull *merges in* instead of duplicating.
 - Push via `PageUpdate`. Point at it in one line.
 
 ### 2. Refine
@@ -140,7 +146,7 @@ it exactly like this:
 
 ```json
 { "body": { "tracklist": {
-  "name": "Hong Kong 90s — Top 50",
+  "name": "Hong Kong 90s — Cantopop Essentials",
   "brief": "Cantopop-led, sequenced fast to slow",
   "tracks": [
     { "artist": "Beyond", "title": "海闊天空", "year": 1993 },
