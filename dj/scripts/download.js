@@ -51,22 +51,30 @@ export async function downloadTrack(bins, cfg, track) {
     `ffmpeg:-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)}"` +
     (track.year ? ` -metadata date="${meta(track.year)}"` : '');
 
+  // Search several results and grab the FIRST that actually downloads — the top
+  // hit is often region/label-blocked ("video not available", common for
+  // Disney/Vevo). --ignore-errors skips the dead ones; --max-downloads 1 stops
+  // at the first success. `|| true` because both of those exit non-zero; we
+  // judge success by whether a filepath was printed.
   const cmd = [
     `mkdir -p ${sq(libDir)} &&`,
     sq(bins.yt_dlp),
-    `--no-playlist --no-warnings -x --audio-format mp3 --audio-quality ${sq(quality)}`,
+    `--no-warnings --ignore-errors --max-downloads 1`,
+    `-x --audio-format mp3 --audio-quality ${sq(quality)}`,
     `--embed-thumbnail`,
     `--postprocessor-args ${sq(ppa)}`,
     `--ffmpeg-location ${sq(bins.ffmpeg)}`,
     `--print after_move:filepath`,
     `-o ${sq(outTmpl)}`,
-    sq(`ytsearch1:${query}`),
+    sq(`ytsearch5:${query}`),
+    `|| true`,
   ].join(' ');
 
   try {
     const out = await runBash(cmd);
-    const file = out.trim().split('\n').filter(Boolean).pop() || '';
-    return file ? { ok: true, file } : { ok: false, error: 'no match found' };
+    const lines = out.trim().split('\n').filter(Boolean);
+    const file = [...lines].reverse().find((l) => l.endsWith('.mp3')) || '';
+    return file ? { ok: true, file } : { ok: false, error: 'no playable source found' };
   } catch (e) {
     return { ok: false, error: String(e.message || e) };
   }
