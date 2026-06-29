@@ -1353,6 +1353,14 @@ function wireSettingsModal() {
   const closeBtn = document.getElementById('settings-close');
   if (!link || !modal || !iframe || !closeBtn) return;
 
+  // Inside the unified Linggen launcher, settings live in the launcher's shared
+  // settings — hide Pulse's own link so there aren't two settings entry points.
+  // Standalone Pulse.app (app_mode but not in_launcher) keeps its own link.
+  if (new URLSearchParams(location.search).get('in_launcher') === '1') {
+    link.style.display = 'none';
+    return;
+  }
+
   const open = (e) => {
     e?.preventDefault();
     // Reload src each open so any concurrent edits show fresh state.
