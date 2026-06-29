@@ -24,6 +24,7 @@ const state = {
   busy: false,
   collection: { kind: 'all' }, // all | recent | playlist (+ name) — the sidebar selection
   query: '', // library search text
+  filter: { phone: null, lyrics: false }, // facet filters: phone = null|'on'|'off'
   shuffle: (() => { try { return localStorage.getItem('dj:shuffle') === '1'; } catch { return false; } })(), // persisted
   selected: new Set(), // selected track ids (multi-select)
   pendingRemove: null, // track id awaiting a second click to confirm removal
@@ -69,13 +70,39 @@ function libraryView() {
   let tracks = collectionTracks();
   const q = state.query.trim().toLowerCase();
   if (q) tracks = tracks.filter((t) => `${t.artist} ${t.title}`.toLowerCase().includes(q));
+  const f = state.filter;
+  if (f.phone === 'on') tracks = tracks.filter((t) => (t.synced_to || []).length);
+  if (f.phone === 'off') tracks = tracks.filter((t) => !(t.synced_to || []).length);
+  if (f.lyrics) tracks = tracks.filter((t) => t.lrc);
   return tracks;
+}
+
+function renderFilters() {
+  const el = $('lib-filters');
+  if (!el) return;
+  const f = state.filter;
+  const chip = (key, label, on) => `<button class="filt ${on ? 'on' : ''}" data-filt="${key}">${esc(label)}</button>`;
+  el.innerHTML =
+    chip('phone-on', '✓ On phone', f.phone === 'on') +
+    chip('phone-off', 'Not on phone', f.phone === 'off') +
+    chip('lyrics', '♪ Has lyrics', f.lyrics);
+  el.querySelectorAll('.filt').forEach((b) =>
+    (b.onclick = () => {
+      const k = b.dataset.filt;
+      if (k === 'phone-on') f.phone = f.phone === 'on' ? null : 'on';
+      else if (k === 'phone-off') f.phone = f.phone === 'off' ? null : 'off';
+      else f.lyrics = !f.lyrics;
+      state.selected.clear();
+      renderLibrary();
+    }),
+  );
 }
 
 function renderLibrary() {
   const all = state.library.tracks || [];
   $('lib-count').textContent = all.length ? `${all.length} song${all.length === 1 ? '' : 's'}` : '';
   renderSidebar();
+  renderFilters();
   renderSelbar();
   const grid = $('library');
   if (!all.length) {
