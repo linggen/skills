@@ -24,6 +24,7 @@ const state = {
   busy: false,
   collection: { kind: 'all' }, // all | recent | playlist (+ name) — the sidebar selection
   query: '', // library search text
+  shuffle: false, // playback order for the toolbar Play button
   selected: new Set(), // selected track ids (multi-select)
   pendingRemove: null, // track id awaiting a second click to confirm removal
 };
@@ -228,8 +229,24 @@ async function removeSelected() {
   toast(`Removed ${victims.length} song${victims.length === 1 ? '' : 's'}.`);
 }
 
+function updateModeBtn() {
+  const b = $('mode-btn');
+  if (b) b.textContent = state.shuffle ? '🔀 Shuffle' : '→ In order';
+}
+
+// Play the whole current view (sidebar collection + search), honoring the mode.
+function playAll() {
+  const view = libraryView();
+  if (!view.length) { toast('Nothing to play here.'); return; }
+  const start = state.shuffle ? view[Math.floor(Math.random() * view.length)] : view[0];
+  openPlayer(start, { toast, fetchLyrics: () => fetchTrackLyrics(start), queue: view, shuffle: state.shuffle });
+}
+
 function wireLibrary() {
   $('lib-search').addEventListener('input', (e) => { state.query = e.target.value; renderLibrary(); });
+  $('play-all').onclick = playAll;
+  $('mode-btn').onclick = () => { state.shuffle = !state.shuffle; updateModeBtn(); };
+  updateModeBtn();
   $('library').addEventListener('click', onRowAction);
   $('library').addEventListener('change', (e) => {
     const chk = e.target.closest('.lib-chk');

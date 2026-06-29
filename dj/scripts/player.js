@@ -8,9 +8,8 @@
 import { runBash, sq } from './bash.js';
 import { fetchLyrics } from './lyrics.js';
 
-const NOWPLAYING = '$HOME/.linggen/skills/dj/scripts/.nowplaying.mp3';
-// The one live player. Closing it hides to a mini-bar (keeps playing); opening
-// a new one stops the previous. Single shared <audio>, so never two at once.
+// The one live player in THIS page. Closing it hides to a mini-bar (keeps
+// playing); opening a new one stops the previous.
 let active = null;
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
@@ -33,6 +32,9 @@ export function parseLrc(text) {
 
 // Stop any player in OTHER tabs when this one starts — only one plays at a time.
 const PAGE = `${Date.now()}-${Math.round(performance.now())}`;
+// Per-page served audio file, so two tabs never clobber each other's playback.
+const NP_NAME = `.nowplaying-${PAGE}.mp3`;
+const NP_PATH = `$HOME/.linggen/skills/dj/scripts/${NP_NAME}`;
 let bc = null;
 try {
   bc = new BroadcastChannel('dj-player');
@@ -50,7 +52,7 @@ export async function openPlayer(startTrack, opts = {}) {
   if (index < 0) { queue.unshift(startTrack); index = 0; }
   let track = queue[index];
   let repeat = 'off'; // off | all | one
-  let shuffle = false;
+  let shuffle = !!opts.shuffle;
   const multi = queue.length > 1;
 
   const ov = document.createElement('div');
@@ -64,7 +66,7 @@ export async function openPlayer(startTrack, opts = {}) {
     </div>
     <div class="pl-lyrics" id="pl-lyrics"></div>
     <div class="pl-foot">
-      <button class="pl-ctl pl-shuffle" title="Shuffle"${multi ? '' : ' hidden'}>🔀</button>
+      <button class="pl-ctl pl-shuffle${shuffle ? ' on' : ''}" title="Shuffle"${multi ? '' : ' hidden'}>🔀</button>
       <button class="pl-ctl pl-prev" title="Previous"${multi ? '' : ' hidden'}>⏮</button>
       <button class="pl-play" id="pl-play">▶</button>
       <button class="pl-ctl pl-next" title="Next"${multi ? '' : ' hidden'}>⏭</button>
@@ -84,7 +86,10 @@ export async function openPlayer(startTrack, opts = {}) {
   let mini = null;
   function close() { ov.style.display = 'none'; showMini(); }
   function expand() { ov.style.display = ''; if (mini) mini.style.display = 'none'; ov.focus(); }
-  function stopAll() { audio.pause(); ov.remove(); if (mini) mini.remove(); if (active === api) active = null; }
+  function stopAll() {
+    audio.pause(); ov.remove(); if (mini) mini.remove(); if (active === api) active = null;
+    runBash(`rm -f "${NP_PATH}"`).catch(() => {});
+  }
   function showMini() {
     if (!mini) { mini = document.createElement('div'); mini.className = 'dj-mini'; document.body.appendChild(mini); }
     updateMini();
@@ -206,8 +211,8 @@ export async function openPlayer(startTrack, opts = {}) {
     activeIdx = -1;
     renderLyrics();
     try {
-      await runBash(`cp ${sq(t.file)} "${NOWPLAYING}"`);
-      audio.src = `/apps/dj/scripts/.nowplaying.mp3?t=${Date.now()}`;
+      await runBash(`cp ${sq(t.file)} "${NP_PATH}"`);
+      audio.src = `/apps/dj/scripts/${NP_NAME}?t=${Date.now()}`;
       audio.play().catch(() => {});
     } catch (e) { opts.toast?.(String(e.message || e)); }
     updateMini();

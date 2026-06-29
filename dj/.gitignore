@@ -3,4 +3,4 @@
 config.json
 library.json
 data/
-scripts/.nowplaying.mp3
+scripts/.nowplaying*.mp3
