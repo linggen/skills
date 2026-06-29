@@ -215,8 +215,9 @@ Each section: `title`, optional `subtitle`, `items[]`. Each item: optional `labe
 
 Reopening the app resumes the previous session: the dashboard restores from a
 local cache with no scan and no message from you — stay silent until the user
-acts. A fresh `[SYS_SCAN_DATA]` message arrives only on the true first run or
-when the user hits ↻ Rescan.
+acts. On a first open with nothing cached, you greet the user and invite them
+to run a scan — you do NOT scan automatically (parity with the other apps). A
+fresh `[SYS_SCAN_DATA]` message arrives only when the user hits ↻ Rescan.
 
 When `[SYS_SCAN_DATA]` contains a `## Previous Scan Summary` section, it is a
 rescan: lead your 2-3 sentence chat text with the most meaningful CHANGES

@@ -171,7 +171,8 @@ async function mountAndStart(sessionId, carryPage = null) {
 // ── Fresh start — agent introduces itself while probe runs in parallel ──
 
 function startFresh() {
-  // Show scanning progress in the left panel immediately
+  // Parity with the other apps (CFO/Pulse): don't auto-scan on open. Show a
+  // ready state and let the user start the scan with the ↻ Rescan button.
   applyPageUpdate({
     body: [
       {
@@ -179,26 +180,22 @@ function startFresh() {
         icon: '🩺',
         title: 'Sys Doctor',
         fields: [
-          { label: '', value: 'Starting up — scanning your system...' },
+          { label: '', value: 'Click ↻ Rescan (top right) to run a full system check — CPU, memory, disk, battery, security, and performance.' },
         ],
       },
     ],
   });
 
-  // Run hardware probe — when done, it sends [SYS_SCAN_DATA]
-  startHardwareProbe();
-
-  // Send hidden intro prompt after a short delay so the iframe chat is ready.
-  // The agent greets the user proactively — feels like it initiated the conversation.
-  // sendHidden doesn't show the prompt in chat — only the agent's response appears.
+  // Greet the user (no scan). sendHidden shows only the agent's reply. The
+  // actual scan runs only when the user clicks ↻ Rescan (startHardwareProbe).
   setTimeout(() => {
     if (chat) {
       chat.sendHidden(
-        'The user just opened the Sys Doctor dashboard app. You are Ling, operating inside Sys Doctor. ' +
-        'On the left panel, a progress indicator is showing 4 steps: System info, Disk usage, Security, and Performance — each completes with a checkmark. ' +
-        'The scan may take a minute or two depending on their hardware. When it finishes, the full scan data will be sent to you as a [SYS_SCAN_DATA] message, and you\'ll build the dashboard layout. ' +
-        '\n\nFor now: greet the user warmly. Open with "I\'m Ling, your personal system health assistant inside Sys Doctor." Then explain what\'s happening — you\'re scanning their CPU, memory, disk, battery, security, and performance — and that the scan may take a minute or two, with a full health report ready shortly. ' +
-        'Keep it natural and conversational, 3-4 sentences. No "I\'m thrilled" / "happy to help" / closing CTA. No emojis. Do NOT emit a <!--page block yet.'
+        'The user just opened the Sys Doctor app. You are Ling, operating inside Sys Doctor. ' +
+        'Do NOT start a scan and do NOT claim a scan is running. ' +
+        'Greet warmly: open with "I\'m Ling, your personal system health assistant inside Sys Doctor." ' +
+        'Then invite them to click the ↻ Rescan button (top right) whenever they want a full health check of their CPU, memory, disk, battery, security, and performance. ' +
+        'Keep it natural, 2-3 sentences. No "I\'m thrilled" / "happy to help" / closing CTA. No emojis. Do NOT emit a <!--page block.'
       );
     }
   }, 2000);
