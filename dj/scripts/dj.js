@@ -10,6 +10,7 @@ import { listSkillSessions } from './api.js';
 import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned } from './library.js';
 import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
+import { openPlayer } from './player.js';
 import { syncToPhone } from './sync.js';
 
 const SKILL = 'dj';
@@ -93,7 +94,7 @@ function cardHtml(t) {
       <div class="badges">${badges}</div>
     </div>
     <div class="card-acts">
-      <button data-act="play" title="Play in your music app">▶</button>
+      <button data-act="play" title="Play with lyrics">▶</button>
       <button data-act="reveal" title="Show in Finder">⤓</button>
       <button data-act="lyrics" title="${t.lrc ? 'Re-fetch lyrics' : 'Find lyrics'}">♪</button>
       <button data-act="more" title="More like this">🔁</button>
@@ -120,9 +121,9 @@ async function onCardAction(e) {
   if (!t) return;
   const act = btn.dataset.act;
 
-  if (act === 'play' || act === 'reveal') {
-    const cmd = act === 'play' ? `open ${sq(t.file)}` : `open -R ${sq(t.file)}`;
-    try { await runBash(cmd); } catch (err) { toast(String(err.message || err)); }
+  if (act === 'play') { openPlayer(t, { toast }); return; }
+  if (act === 'reveal') {
+    try { await runBash(`open -R ${sq(t.file)}`); } catch (err) { toast(String(err.message || err)); }
     return;
   }
   if (act === 'more') { sendToAgent(`More like ${t.artist} – ${t.title}: build a set in that vein.`); return; }
