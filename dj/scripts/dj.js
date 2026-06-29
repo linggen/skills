@@ -650,7 +650,13 @@ async function onSync() {
 
 // ── chrome ───────────────────────────────────────────────────────────────────
 function wireButtons() {
-  $('settings-btn').onclick = openSettings;
+  // Inside the unified Linggen launcher, settings live in the launcher's shared
+  // settings — hide DJ's own gear so there aren't two. Standalone DJ keeps it.
+  if (params.get('in_launcher') === '1') {
+    const sb = $('settings-btn'); if (sb) sb.style.display = 'none';
+  } else {
+    $('settings-btn').onclick = openSettings;
+  }
 }
 
 // ── Build bar: the primary "describe a vibe → Build" entry point ─────────────
