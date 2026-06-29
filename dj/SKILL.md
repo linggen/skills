@@ -93,9 +93,12 @@ Rhapsody*", "best of Faye Wong", "focus instrumentals"):
 - Pick a sensible length (a "top 50" = 50; a mood mix = 15–25 unless asked).
 - **Sequence** it — don't return search-rank order. Open strong, flow by
   energy/tempo, close intentionally.
-- For each track give `artist` + `title` exactly as they're known (original
-  language is fine — *海闊天空*, *Beyond*), `year` when you know it, and a short
-  `note` only when it earns one (*"the live version is the famous one"*).
+- For each track give `artist` + `title`, **both in the same language/script**:
+  a Chinese-titled song gets the Chinese artist name (黎明 for *今夜你會不會來*,
+  NOT "Leon Lai"; Beyond stays *Beyond* since the band is known by that name) —
+  a Western song stays English. Matching script reads better in the library AND
+  helps lyrics lookup (LRCLIB indexes Chinese songs under the Chinese name). Add
+  `year` when you know it, and a short `note` only when it earns one.
 - Push via `PageUpdate`. Point at it in one line.
 
 ### 2. Refine
