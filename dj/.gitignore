@@ -1,0 +1,5 @@
+# Runtime state — created at ~/.linggen/skills/dj by install.sh / the app.
+# Source ships config.example.json; the live config + library never get committed.
+config.json
+library.json
+data/

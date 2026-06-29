@@ -1,0 +1,6 @@
+{
+  "library_dir": "~/Music/DJ",
+  "bitrate": "320",
+  "naming_template": "%(artist)s - %(title)s",
+  "sync_targets": []
+}

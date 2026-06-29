@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DJ</title>
+  <link rel="stylesheet" href="dj.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">DJ</span>
+        <span class="tagline">your disc jockey</span>
+      </div>
+      <div class="lib-count" id="lib-count"></div>
+      <div class="actions">
+        <button id="sync-btn" class="btn" title="Copy new tracks to your phone">Sync to phone</button>
+        <button id="settings-btn" class="btn ghost" title="Settings" aria-label="Settings">⚙</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="left">
+        <!-- Primary call-to-action: describe a vibe → Build. -->
+        <div class="build">
+          <div class="build-hint">Tell DJ a vibe — it builds the set, grabs clean MP3s, and copies them to your phone for offline play.</div>
+          <div class="build-row">
+            <input id="build-input" type="text" placeholder="Make a list of 90s English songs" autocomplete="off" />
+            <button id="build-btn" class="btn">Build</button>
+          </div>
+          <div class="quick-row">
+            <span class="quick-label">or let DJ pick:</span>
+            <button id="lucky-btn" class="btn ghost small" title="A set built from what DJ knows about you">✦ Lucky find</button>
+            <button id="trending-btn" class="btn ghost small" title="A set from what's popular right now">⌁ Trending find</button>
+          </div>
+          <div class="chips" id="build-chips">
+            <button class="chip" type="button">Hong Kong 90s top 50</button>
+            <button class="chip" type="button">Best of Beyond</button>
+            <button class="chip" type="button">Rainy-Sunday jazz</button>
+            <button class="chip" type="button">Upbeat workout mix</button>
+          </div>
+        </div>
+
+        <!-- DYNAMIC: the set the agent proposes via PageUpdate. Hidden until then. -->
+        <div id="set" class="set hidden" aria-live="polite"></div>
+
+        <!-- FIXED: the library the page owns. The agent never touches this. -->
+        <div class="library-wrap">
+          <div class="lib-toolbar">
+            <h2 class="section-title">Your library</h2>
+            <input id="lib-search" class="lib-search" type="search" placeholder="Search your library…" autocomplete="off" />
+          </div>
+          <div id="lib-crates" class="crates"></div>
+          <div id="library" class="library"></div>
+        </div>
+      </section>
+
+      <div id="pane-resizer" title="Drag to resize the chat — double-click to reset"></div>
+
+      <section class="right">
+        <div id="chat-panel" class="chat-panel"></div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script type="module" src="dj.js"></script>
+  <script type="module" src="app-mode.js"></script>
+</body>
+</html>

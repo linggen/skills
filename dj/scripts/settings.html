@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DJ — Settings</title>
+  <link rel="stylesheet" href="dj.css" />
+  <style>
+    body { padding: 24px; max-width: 560px; margin: 0 auto; }
+    h1 { font-size: 18px; margin: 0 0 18px; }
+    .field { margin-bottom: 18px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .06em; }
+    .field input, .field select {
+      width: 100%; padding: 9px 11px; background: var(--panel-2);
+      border: 1px solid var(--line); border-radius: 9px; color: var(--ink); font-size: 14px;
+    }
+    .hint { color: var(--muted); font-size: 11px; margin-top: 5px; }
+    fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin: 0 0 18px; }
+    legend { color: var(--accent); font-size: 12px; padding: 0 6px; text-transform: uppercase; letter-spacing: .06em; }
+    .row { display: flex; gap: 10px; align-items: flex-end; }
+    .row .field { flex: 1; margin-bottom: 0; }
+    .bar { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+    .status { font-size: 12px; }
+    .status.ok { color: var(--pos); }
+    .status.bad { color: var(--warn); }
+  </style>
+</head>
+<body>
+  <h1>DJ settings</h1>
+
+  <div class="field">
+    <label for="library_dir">Library folder</label>
+    <input id="library_dir" type="text" placeholder="~/Music/DJ" />
+    <div class="hint">Where downloaded MP3s are saved on this Mac.</div>
+  </div>
+
+  <div class="field">
+    <label for="bitrate">Quality</label>
+    <select id="bitrate">
+      <option value="320">320 kbps (best MP3)</option>
+      <option value="256">256 kbps</option>
+      <option value="192">192 kbps</option>
+      <option value="best">Best available</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="naming_template">File naming</label>
+    <input id="naming_template" type="text" placeholder="%(artist)s - %(title)s" />
+    <div class="hint">yt-dlp template. Default: <code>%(artist)s - %(title)s</code></div>
+  </div>
+
+  <fieldset>
+    <legend>Phone sync</legend>
+    <div class="field">
+      <label for="sync_type">Method</label>
+      <select id="sync_type">
+        <option value="vlc">VLC — Sharing via WiFi</option>
+        <option value="webdav">WebDAV server</option>
+        <option value="folder">Cloud folder (Evermusic / Dropbox / iCloud)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sync_name">Name</label>
+      <input id="sync_name" type="text" placeholder="My iPhone" />
+    </div>
+
+    <div data-for="vlc">
+      <div class="hint" style="margin-bottom:10px">
+        In VLC on your iPhone: <b>Network → Sharing via WiFi → on</b>; paste the address it shows
+        (e.g. <code>liangs-iphone.local</code>). Both devices on the same WiFi; keep VLC open while syncing.
+      </div>
+      <div class="field"><label for="vlc_host">Address</label><input id="vlc_host" type="text" placeholder="liangs-iphone.local" /></div>
+    </div>
+
+    <div data-for="webdav" hidden>
+      <div class="hint" style="margin-bottom:10px">
+        A WebDAV URL your player (Evermusic, etc.) also connects to. DJ uploads songs here; lyrics
+        (<code>.lrc</code>) ride along, and the player downloads them for offline play.
+      </div>
+      <div class="field"><label for="dav_url">WebDAV URL</label><input id="dav_url" type="text" placeholder="https://dav.example.com/music" /></div>
+      <div class="row">
+        <div class="field"><label for="dav_user">Username</label><input id="dav_user" type="text" autocomplete="off" /></div>
+        <div class="field"><label for="dav_pass">Password</label><input id="dav_pass" type="password" autocomplete="off" /></div>
+      </div>
+      <div class="hint">Stored locally in DJ's config on this Mac only.</div>
+    </div>
+
+    <div data-for="folder" hidden>
+      <div class="hint" style="margin-bottom:10px">
+        A local folder that syncs to the cloud (iCloud Drive, Dropbox…). DJ copies songs + lyrics here;
+        your phone player (Evermusic) pulls them down.
+      </div>
+      <div class="field"><label for="folder_path">Folder</label><input id="folder_path" type="text" placeholder="~/Dropbox/DJ" /></div>
+    </div>
+
+    <div class="bar">
+      <button class="btn ghost small" id="test-btn">Test connection</button>
+      <span class="status" id="test-status"></span>
+    </div>
+  </fieldset>
+
+  <div class="bar">
+    <button class="btn" id="save-btn">Save</button>
+    <span class="status" id="save-status"></span>
+  </div>
+
+  <script type="module">
+    import { loadConfig, saveConfig } from './library.js';
+    import { testTarget } from './sync.js';
+
+    const $ = (id) => document.getElementById(id);
+    let cfg = { sync_targets: [] };
+
+    function showType(type) {
+      document.querySelectorAll('[data-for]').forEach((el) => { el.hidden = el.dataset.for !== type; });
+    }
+
+    function targetFromForm() {
+      const type = $('sync_type').value;
+      const name = $('sync_name').value.trim();
+      if (type === 'vlc') {
+        const host = $('vlc_host').value.trim();
+        return host ? { id: 'iphone', type: 'vlc', name: name || 'My iPhone', host } : null;
+      }
+      if (type === 'webdav') {
+        const url = $('dav_url').value.trim();
+        return url
+          ? { id: 'iphone', type: 'webdav', name: name || 'WebDAV', url, username: $('dav_user').value.trim(), password: $('dav_pass').value }
+          : null;
+      }
+      if (type === 'folder') {
+        const path = $('folder_path').value.trim();
+        return path ? { id: 'iphone', type: 'folder', name: name || 'Cloud folder', path } : null;
+      }
+      return null;
+    }
+
+    (async function load() {
+      cfg = await loadConfig();
+      $('library_dir').value = cfg.library_dir || '~/Music/DJ';
+      $('bitrate').value = cfg.bitrate || '320';
+      $('naming_template').value = cfg.naming_template || '%(artist)s - %(title)s';
+      const t = (cfg.sync_targets || [])[0];
+      if (t) {
+        $('sync_type').value = t.type || 'vlc';
+        $('sync_name').value = t.name || '';
+        if (t.type === 'vlc') $('vlc_host').value = t.host || '';
+        if (t.type === 'webdav') { $('dav_url').value = t.url || ''; $('dav_user').value = t.username || ''; $('dav_pass').value = t.password || ''; }
+        if (t.type === 'folder') $('folder_path').value = t.path || '';
+      }
+      showType($('sync_type').value);
+    })();
+
+    $('sync_type').onchange = () => showType($('sync_type').value);
+
+    $('test-btn').onclick = async () => {
+      const t = targetFromForm();
+      const s = $('test-status');
+      if (!t) { s.textContent = 'Fill in the details first.'; s.className = 'status bad'; return; }
+      s.textContent = 'Testing…'; s.className = 'status';
+      try {
+        const ok = await testTarget(t);
+        s.textContent = ok ? 'Connected ✓' : 'No response — check the details and that the target is reachable.';
+        s.className = `status ${ok ? 'ok' : 'bad'}`;
+      } catch (e) {
+        s.textContent = String(e.message || e); s.className = 'status bad';
+      }
+    };
+
+    $('save-btn').onclick = async () => {
+      cfg.library_dir = $('library_dir').value.trim() || '~/Music/DJ';
+      cfg.bitrate = $('bitrate').value;
+      cfg.naming_template = $('naming_template').value.trim() || '%(artist)s - %(title)s';
+      const t = targetFromForm();
+      cfg.sync_targets = t ? [t] : [];
+      const s = $('save-status');
+      try {
+        await saveConfig(cfg);
+        s.textContent = 'Saved ✓'; s.className = 'status ok';
+      } catch (e) {
+        s.textContent = String(e.message || e); s.className = 'status bad';
+      }
+    };
+  </script>
+</body>
+</html>
