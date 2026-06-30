@@ -7,6 +7,7 @@ import { runBash, sq } from './bash.js';
 import { parseLrc } from './player.js';
 import { loadLibrary, saveLibrary, loadConfig, trackId } from './library.js';
 import { ensureBins, downloadKaraokeVideo } from './download.js';
+import { attachLyrics } from './lyrics.js';
 import { KaraokeAudio } from './karaoke-audio.js';
 
 const kaudio = new KaraokeAudio();
@@ -134,7 +135,10 @@ function renderLyrics() {
   const el = $('#lyrics');
   if (state.mode === 'video') { el.innerHTML = ''; return; }
   if (!state.lines.length) {
-    el.innerHTML = `<div class="kempty">No lyrics for this track yet — sing along, or grab a karaoke video below.</div>`;
+    el.innerHTML = `<div class="kempty">No lyrics for this track yet.<br>
+      <button class="kbtn" id="find-lyrics">🔎 Find lyrics</button>
+      <span class="kempty-or">or grab a karaoke video below.</span></div>`;
+    $('#find-lyrics').onclick = findLyrics;
     return;
   }
   el.innerHTML = state.lines
@@ -143,6 +147,35 @@ function renderLyrics() {
   el.querySelectorAll('.kline').forEach((d) => {
     d.onclick = () => { media().currentTime = +d.dataset.t; media().play(); };
   });
+}
+
+// Fetch a synced .lrc from LRCLIB for the current track, then render it.
+async function findLyrics() {
+  const t = track();
+  if (!t || !t.file) { toast('No audio file for this track.'); return; }
+  const btn = $('#find-lyrics');
+  if (btn) { btn.disabled = true; btn.textContent = '🔎 Finding…'; }
+  toast(`Looking for lyrics — ${t.title}…`);
+  try {
+    const lrc = await attachLyrics(t, t.file);
+    if (!lrc) {
+      toast(`No lyrics found for “${t.title}”.`);
+      if (btn) { btn.disabled = false; btn.textContent = '🔎 Find lyrics'; }
+      return;
+    }
+    t.lrc = lrc;
+    const lib = state.library.tracks.find((x) => (x.id || trackId(x)) === (t.id || trackId(t)));
+    if (lib) lib.lrc = lrc;
+    await saveLibrary(state.library);
+    const txt = await runBash(`cat ${sq(lrc)} 2>/dev/null || true`).catch(() => '');
+    state.lines = parseLrc(txt);
+    state.activeIdx = -1;
+    renderLyrics();
+    toast(`Got lyrics for “${t.title}”.`);
+  } catch (e) {
+    toast(String(e.message || e));
+    if (btn) { btn.disabled = false; btn.textContent = '🔎 Find lyrics'; }
+  }
 }
 
 function highlight(cur) {
@@ -195,7 +228,11 @@ function wireControls() {
   $('#back').onclick = back;
   $('#fs').onclick = toggleFullscreen;
   $('#getvid').onclick = getKaraokeVideo;
-  $('#queue').onclick = () => { if (!queueBuilt) buildQueueDrawer(); $('#qdrawer').classList.toggle('hidden'); };
+  $('#queue').onclick = () => {
+    if (!queueBuilt) buildQueueDrawer();
+    const hidden = $('#qdrawer').classList.toggle('hidden');
+    stage.classList.toggle('queue-open', !hidden); // shift controls clear of the drawer
+  };
   wireMix();
   wireSetup();
   document.addEventListener('keydown', (e) => {

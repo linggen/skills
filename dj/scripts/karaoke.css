@@ -51,8 +51,16 @@ body {
   color: #6b7384; padding: 6px 0; transition: color .2s, transform .2s; cursor: pointer;
 }
 .kline.on { color: var(--hot); transform: scale(1.06); text-shadow: 0 2px 30px rgba(255, 212, 77, .25); }
-.kempty { color: #8a93a6; font-size: clamp(18px, 2vw, 26px); text-align: center; }
-.kempty .kbtn { margin-top: 14px; }
+.kempty { color: #8a93a6; font-size: clamp(18px, 2vw, 26px); text-align: center; line-height: 1.8; }
+.kempty .kbtn { margin: 14px 8px 0; font-size: 14px; }
+.kempty-or { display: block; margin-top: 12px; font-size: 14px; }
+
+/* When the up-next drawer is open, keep the stage chrome clear of it (drawer = 320px). */
+.stage.queue-open .ktop { right: 320px; }
+.stage.queue-open .kctrl,
+.stage.queue-open .kmix { left: calc(50% - 160px); }
+.stage.queue-open .klyrics { transform: translateX(-160px); }
+.stage.queue-open .kv { width: calc(100% - 320px); }
 
 /* ── top line: back · title · fullscreen ── */
 .ktop {
