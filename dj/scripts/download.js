@@ -46,9 +46,18 @@ export async function downloadTrack(bins, cfg, track) {
       .trim() || `${safe(track.artist)} - ${safe(track.title)}`;
   const outTmpl = `${libDir}/${name}.%(ext)s`;
 
+  // Loudness-normalize so quiet tracks are pulled up to a consistent level —
+  // fixes "too quiet in CarPlay", where the cause is source tracks sitting well
+  // below the ~-14 LUFS streaming standard. Single-pass EBU R128 loudnorm, on
+  // by default; TP=-1.5 keeps a true-peak ceiling so the boost never clips.
+  // Disable with cfg.loudnorm:false; retarget with cfg.loudnorm_lufs.
+  const lufs = Number(cfg.loudnorm_lufs);
+  const target = Number.isFinite(lufs) ? lufs : -14;
+  const loudnorm = cfg.loudnorm === false ? '' : `-af loudnorm=I=${target}:TP=-1.5:LRA=11 `;
+
   // Force ID3 tags to the curated values via the ffmpeg postprocessor.
   const ppa =
-    `ffmpeg:-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)}"` +
+    `ffmpeg:${loudnorm}-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)}"` +
     (track.year ? ` -metadata date="${meta(track.year)}"` : '');
 
   // Search several results and grab the FIRST that actually downloads — the top
