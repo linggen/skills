@@ -6,7 +6,7 @@
 import { runBash, sq } from './bash.js';
 import { parseLrc } from './player.js';
 import { loadLibrary, saveLibrary, loadConfig, trackId } from './library.js';
-import { ensureBins, downloadKaraokeVideo } from './download.js';
+import { ensureBins, downloadTrack, downloadKaraokeVideo } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { KaraokeAudio } from './karaoke-audio.js';
 
@@ -78,6 +78,10 @@ async function load(t) {
   $('#nowtitle').innerHTML = `<b>${esc(t.title)}</b> <span>${esc(t.artist)}</span>`;
   state.activeIdx = -1;
 
+  // Audio mode: make sure the track is on disk — download it on the fly if not
+  // (file deleted, or a queued track that was never downloaded).
+  if (!isVideo && !(await ensureAudioFile(t))) return;
+
   // Lyrics only in audio mode — a karaoke video has them burned into the picture.
   state.lines = [];
   if (!isVideo && t.lrc) {
@@ -96,6 +100,38 @@ async function load(t) {
     m.play().catch(() => {});
   } catch (e) {
     toast(String(e.message || e));
+  }
+}
+
+const fileOnDisk = async (path) => {
+  try { return (await runBash(`[ -f ${sq(path)} ] && echo y || true`)).trim() === 'y'; }
+  catch { return false; }
+};
+
+// Ensure the track's mp3 exists locally; download it on the fly if missing.
+// Returns true once a playable file is present. Shows a "Getting…" stage state.
+async function ensureAudioFile(t) {
+  if (t.file && (await fileOnDisk(t.file))) return true;
+  $('#lyrics').innerHTML = `<div class="kempty">⬇ Getting “${esc(t.title)}”…</div>`;
+  toast(`Downloading “${t.title}”…`);
+  try {
+    const bins = await ensureBins();
+    if (!bins.ok) { toast(bins.note || 'Couldn’t set up the downloader.'); return false; }
+    const r = await downloadTrack(bins, state.config, t);
+    if (!r.ok) {
+      toast(`Couldn’t download “${t.title}” — ${r.error}`);
+      $('#lyrics').innerHTML = `<div class="kempty">Couldn’t get this track.</div>`;
+      return false;
+    }
+    t.file = r.file;
+    const lib = state.library.tracks.find((x) => (x.id || trackId(x)) === (t.id || trackId(t)));
+    if (lib) lib.file = r.file;
+    else state.library.tracks.push({ id: t.id || trackId(t), artist: t.artist, title: t.title, year: t.year, file: r.file, added_at: new Date().toISOString(), playlists: [], synced_to: [] });
+    await saveLibrary(state.library);
+    return true;
+  } catch (e) {
+    toast(String(e.message || e));
+    return false;
   }
 }
 
