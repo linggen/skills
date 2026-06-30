@@ -46,3 +46,19 @@ export async function writeFile(path, content) {
   const b64 = btoa(unescape(encodeURIComponent(content)));
   await runBash(`printf %s ${sq(b64)} | openssl base64 -A -d > "${path}"`);
 }
+
+// Move a file to the macOS Trash (recoverable, supports Finder "Put Back") —
+// never a permanent rm, so a deleted song can be restored. Uses Finder via
+// osascript; if that's unavailable (automation denied), falls back to moving
+// into ~/.Trash. Safe no-op if the file is already gone.
+export async function trashFile(file) {
+  const osa =
+    `osascript -e 'on run {p}' ` +
+    `-e 'tell application "Finder" to delete (POSIX file p as alias)' ` +
+    `-e 'end run' ${sq(file)}`;
+  try {
+    await runBash(osa);
+  } catch {
+    await runBash(`mkdir -p "$HOME/.Trash" && mv -f ${sq(file)} "$HOME/.Trash/" 2>/dev/null || true`);
+  }
+}

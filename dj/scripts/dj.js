@@ -5,7 +5,7 @@
 //   DYNAMIC — the #set panel: filled ONLY by the agent via PageUpdate.
 
 import './chat-bridge.js'; // sets window.LinggenUI
-import { runBash, sq } from './bash.js';
+import { runBash, sq, trashFile } from './bash.js';
 import { listSkillSessions } from './api.js';
 import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned } from './library.js';
 import { ensureBins, downloadTrack } from './download.js';
@@ -47,6 +47,11 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 
 // ── library: sidebar collections + dense list + multi-select → playlists ─────
 const trackKey = (t) => t.id || trackId(t);
+
+// Playlists are tags into the one library: a song can sit in many. So "Remove"
+// means different things by context — inside a playlist it untags (file kept);
+// in All songs / Recently added it deletes the song from the library (→ Trash).
+const inPlaylistView = () => state.collection.kind === 'playlist';
 
 function playlistsOf() {
   const set = new Set();
@@ -206,7 +211,7 @@ function rowHtml(t) {
     <div class="row-acts">
       <button data-act="karaoke" title="Karaoke">🎤</button>
       <button data-act="reveal" title="Show in Finder">⤓</button>
-      <button data-act="remove" class="${pending ? 'danger' : ''}" title="Remove">${pending ? 'Remove?' : '✕'}</button>
+      <button data-act="remove" class="${pending ? 'danger' : ''}" title="${inPlaylistView() ? 'Remove from this playlist' : 'Delete from library (to Trash)'}">${pending ? 'Remove?' : '✕'}</button>
     </div>
   </div>`;
 }
@@ -225,7 +230,7 @@ function renderSelbar() {
       ? `<span class="sel-n">${n} selected</span>
          <button class="btn ghost small" data-sel="add">Add to playlist…</button>
          <button class="btn ghost small" data-sel="sync">Sync to phone</button>
-         <button class="btn ghost small" data-sel="remove">Remove</button>
+         <button class="btn ghost small" data-sel="remove">${inPlaylistView() ? 'Remove from playlist' : 'Delete from library'}</button>
          <button class="btn ghost small" data-sel="clear">Clear</button>`
       : ''}
     <span class="sel-menu" id="sel-menu"></span>`;
@@ -296,14 +301,37 @@ async function syncSelected() {
 }
 
 async function removeSelected() {
+  // In a playlist → untag the selection from it (keep the files). In the library
+  // views → delete the songs (files to Trash).
+  if (inPlaylistView()) { await untagSelected(state.collection.name); return; }
   const ids = new Set(state.selected);
   const victims = state.library.tracks.filter((t) => ids.has(trackKey(t)));
-  for (const t of victims) { try { if (t.file) await runBash(`rm -f ${sq(t.file)}`); } catch { /* ignore */ } }
+  for (const t of victims) {
+    for (const f of [t.file, t.lrc, t.karaoke_video]) {
+      if (f) { try { await trashFile(f); } catch { /* ignore */ } }
+    }
+  }
   state.library.tracks = state.library.tracks.filter((t) => !ids.has(trackKey(t)));
   await saveLibrary(state.library);
   state.selected.clear();
   renderLibrary();
-  toast(`Removed ${victims.length} song${victims.length === 1 ? '' : 's'}.`);
+  toast(`Deleted ${victims.length} song${victims.length === 1 ? '' : 's'} — moved to Trash.`);
+}
+
+// Untag the selected songs from the current playlist (files & library untouched).
+async function untagSelected(name) {
+  const ids = new Set(state.selected);
+  let n = 0;
+  for (const t of state.library.tracks) {
+    if (ids.has(trackKey(t)) && (t.playlists || []).includes(name)) {
+      t.playlists = t.playlists.filter((p) => p !== name);
+      n += 1;
+    }
+  }
+  await saveLibrary(state.library);
+  state.selected.clear();
+  renderLibrary();
+  toast(`Removed ${n} song${n === 1 ? '' : 's'} from “${name}”.`);
 }
 
 function updateModeBtn() {
@@ -367,10 +395,23 @@ async function onRowAction(e) {
   if (act === 'more') { sendToAgent(`More like ${t.artist} – ${t.title}: build a set in that vein.`); return; }
   if (act === 'lyrics') { await fetchTrackLyrics(t); return; }
   if (act === 'remove') {
+    // Inside a playlist → just untag (file & other playlists untouched), no
+    // confirm needed since nothing is destroyed. In All songs / Recently added,
+    // ✕ deletes from the library — keep the two-click confirm, then Trash.
+    if (inPlaylistView()) { await removeFromPlaylist(t, state.collection.name); return; }
     if (state.pendingRemove !== id) { state.pendingRemove = id; renderLibrary(); return; }
     state.pendingRemove = null;
     await removeTrack(t);
   }
+}
+
+// Untag one song from the current playlist. The song stays in the library (and
+// in any other playlists); nothing on disk changes.
+async function removeFromPlaylist(t, name) {
+  t.playlists = (t.playlists || []).filter((p) => p !== name);
+  await saveLibrary(state.library);
+  renderLibrary();
+  toast(`Removed “${t.title}” from “${name}”.`);
 }
 
 async function fetchTrackLyrics(t) {
@@ -390,12 +431,17 @@ async function fetchTrackLyrics(t) {
   return null;
 }
 
+// Delete a song from the library: move its files (mp3 + .lrc + karaoke video) to
+// the Trash and drop it from every playlist. Only reachable from the All songs /
+// Recently added views — playlist views untag instead.
 async function removeTrack(t) {
-  try { if (t.file) await runBash(`rm -f ${sq(t.file)}`); } catch { /* file may already be gone */ }
+  for (const f of [t.file, t.lrc, t.karaoke_video]) {
+    if (f) { try { await trashFile(f); } catch { /* may already be gone */ } }
+  }
   state.library.tracks = state.library.tracks.filter((x) => x !== t);
   await saveLibrary(state.library);
   renderLibrary();
-  toast(`Removed “${t.title}”.`);
+  toast(`Deleted “${t.title}” — moved to Trash.`);
 }
 
 async function syncCrate(crate) {
