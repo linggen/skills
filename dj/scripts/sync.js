@@ -40,33 +40,34 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
   const lib = await loadLibrary();
   const basename = (p) => String(p).split('/').pop().toLowerCase();
 
-  // Auto-ignore songs the phone ALREADY has: read its file list and skip those
-  // (more robust than synced_to bookkeeping). Also reconcile — mark anything
-  // already on the device as synced so counts stay honest.
+  // What's already on the phone (basenames). Drives BOTH "skip the mp3" and
+  // "skip the .lrc" — so a song already on the device that's only missing its
+  // lyrics still gets the .lrc pushed. Reconcile synced_to from the live list.
   let onPhone = new Set();
   try { onPhone = new Set((await (target.list?.() || [])).map((n) => n.toLowerCase())); } catch { /* best-effort */ }
-  const present = (t) => t.file && onPhone.has(basename(t.file));
+  const has = (p) => !!p && onPhone.has(basename(p));
   for (const t of lib.tracks) {
-    if (present(t) && !(t.synced_to || []).includes(cfg.id)) {
+    if (has(t.file) && !(t.synced_to || []).includes(cfg.id)) {
       t.synced_to = [...new Set([...(t.synced_to || []), cfg.id])];
     }
   }
 
-  let pending = lib.tracks.filter(
-    (t) => t.file && !(t.synced_to || []).includes(cfg.id) && !present(t),
-  );
-  if (opts.filter) pending = pending.filter(opts.filter);
+  // A track needs work if its mp3 OR its (existing) .lrc is missing on the phone.
+  let work = lib.tracks.filter((t) => t.file && (!has(t.file) || (t.lrc && !has(t.lrc))));
+  if (opts.filter) work = work.filter(opts.filter);
 
   let done = 0;
-  for (const t of pending) {
-    onProgress?.({ done, total: pending.length, track: t });
+  let lyricsOnly = 0;
+  for (const t of work) {
+    onProgress?.({ done, total: work.length, track: t });
     try {
-      await target.push(t.file);
-      // Lyrics ride along (best-effort) so players that read .lrc show them.
-      if (t.lrc) { try { await target.push(t.lrc); } catch { /* lyrics optional */ } }
+      if (!has(t.file)) await target.push(t.file);
+      // Push the .lrc if the phone is missing it (covers tracks already on the
+      // device whose lyrics were fetched later).
+      if (t.lrc && !has(t.lrc)) { await target.push(t.lrc); if (has(t.file)) lyricsOnly += 1; }
       t.synced_to = [...new Set([...(t.synced_to || []), cfg.id])];
     } catch (e) {
-      onProgress?.({ done, total: pending.length, track: t, error: String(e.message || e) });
+      onProgress?.({ done, total: work.length, track: t, error: String(e.message || e) });
     }
     done += 1;
   }
@@ -81,10 +82,10 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
     const inCrate = lib.tracks.filter((t) => t.file && (!opts.filter || opts.filter(t)));
     if (inCrate.length) {
       try { await target.pushPlaylist(opts.playlist, inCrate); playlist = true; }
-      catch (e) { onProgress?.({ done, total: pending.length, error: `playlist: ${e.message || e}` }); }
+      catch (e) { onProgress?.({ done, total: work.length, error: `playlist: ${e.message || e}` }); }
     }
   }
 
-  onProgress?.({ done, total: pending.length, finished: true });
-  return { pushed: done, total: pending.length, playlist };
+  onProgress?.({ done, total: work.length, finished: true });
+  return { pushed: done, total: work.length, lyricsOnly, playlist };
 }
