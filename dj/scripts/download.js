@@ -54,12 +54,25 @@ export async function downloadTrack(bins, cfg, track) {
   // Disable with cfg.loudnorm:false; retarget with cfg.loudnorm_lufs.
   const lufs = Number(cfg.loudnorm_lufs);
   const target = Number.isFinite(lufs) ? lufs : -14;
-  const loudnorm = cfg.loudnorm === false ? '' : `-af loudnorm=I=${target}:TP=-1.5:LRA=11 `;
+  const loudnorm = cfg.loudnorm === false ? '' : `-af loudnorm=I=${target}:TP=-1.5:LRA=11`;
 
   // Force ID3 tags to the curated values via the ffmpeg postprocessor.
-  const ppa =
-    `ffmpeg:${loudnorm}-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)}"` +
+  const metaArgs =
+    `-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)}"` +
     (track.year ? ` -metadata date="${meta(track.year)}"` : '');
+
+  // Scope loudnorm to the AUDIO EXTRACTION step only (`ExtractAudio+ffmpeg`), not
+  // the bare `ffmpeg` key — that key applies to every ffmpeg invocation yt-dlp
+  // makes, including --embed-thumbnail's image conversion, which has no audio
+  // stream to filter. A bare `-af loudnorm=...` there silently broke thumbnail
+  // embedding (caught 2026-06-30: every track downloaded after loudnorm shipped
+  // came out with no cover art and an orphaned .webp/.png left in the library
+  // dir, vs. every track before it). Metadata tags stay on the generic key —
+  // that was never the problem.
+  const ppas = [
+    loudnorm && `--postprocessor-args ${sq(`ExtractAudio+ffmpeg:${loudnorm}`)}`,
+    `--postprocessor-args ${sq(`ffmpeg:${metaArgs}`)}`,
+  ].filter(Boolean);
 
   // Search several results and grab the FIRST that actually downloads — the top
   // hit is often region/label-blocked ("video not available", common for
@@ -72,7 +85,7 @@ export async function downloadTrack(bins, cfg, track) {
     `--no-warnings --ignore-errors --max-downloads 1`,
     `-x --audio-format mp3 --audio-quality ${sq(quality)}`,
     `--embed-thumbnail`,
-    `--postprocessor-args ${sq(ppa)}`,
+    ...ppas,
     `--ffmpeg-location ${sq(bins.ffmpeg)}`,
     `--print after_move:filepath`,
     `-o ${sq(outTmpl)}`,
