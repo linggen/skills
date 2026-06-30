@@ -292,7 +292,7 @@ async function syncSelected() {
     state.library = await loadLibrary();
     state.selected.clear();
     renderLibrary();
-    toast(`Synced ${r.pushed}/${r.total} to ${esc(target.name)}.`);
+    toast(`Synced ${r.pushed}/${r.total} to ${esc(target.name)}.${r.playlists ? ` ${r.playlists} playlist${r.playlists === 1 ? '' : 's'} too.` : ''}`);
   } catch (e) {
     toast(String(e.message || e));
   } finally {
@@ -456,7 +456,7 @@ async function syncCrate(crate) {
     );
     state.library = await loadLibrary();
     renderLibrary();
-    toast(`Synced ${r.pushed}/${r.total} from “${crate}”.${r.playlist ? ' Playlist sent too.' : ''}`);
+    toast(`Synced ${r.pushed}/${r.total} from “${crate}”.${r.playlists ? ' Playlist sent too.' : ''}`);
   } catch (e) {
     toast(String(e.message || e));
   } finally {

@@ -26,8 +26,9 @@ export async function testTarget(cfg) {
 
 // onProgress({ done, total, track?, error?, finished? })
 // opts.filter — optional (track) => boolean to sync a subset (e.g. one crate).
-// opts.playlist — optional crate name; when set (and the target supports it), an
-//   .m3u of that crate is uploaded after the tracks so it lands as a playlist.
+// opts.playlist — optional single crate name to push as the only .m3u. When
+//   omitted, every playlist the synced tracks belong to is pushed as its own
+//   .m3u (so a full / multi-crate sync carries all the user's playlists across).
 export async function syncToPhone(cfg, onProgress, opts = {}) {
   const target = makeTarget(cfg);
 
@@ -76,18 +77,26 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
 
   await saveLibrary(lib);
 
-  // After the tracks, send the crate as a playlist (.m3u) if asked + supported.
-  // Lists ALL of the crate's tracks-with-files (not just the ones pushed this
-  // run), so the playlist on the device is complete. Best-effort.
-  let playlist = false;
-  if (opts.playlist && target.pushPlaylist) {
-    const inCrate = lib.tracks.filter((t) => t.file && (!opts.filter || opts.filter(t)));
-    if (inCrate.length) {
-      try { await target.pushPlaylist(opts.playlist, inCrate); playlist = true; }
-      catch (e) { onProgress?.({ done, total: work.length, error: `playlist: ${e.message || e}` }); }
+  // Send playlists as .m3u files so crates land as real playlists on the device,
+  // not just loose tracks. Which playlists: a single named crate (opts.playlist),
+  // otherwise EVERY playlist the synced tracks belong to — so a "sync all" carries
+  // all the crates across, not nothing. Each .m3u lists its playlist's full
+  // tracks-with-files (complete on the device even if some weren't pushed this
+  // run). Best-effort, and only for targets that support it (VLC today).
+  let playlists = 0;
+  if (target.pushPlaylist) {
+    const scope = opts.filter ? lib.tracks.filter(opts.filter) : lib.tracks;
+    const names = opts.playlist
+      ? [opts.playlist]
+      : [...new Set(scope.flatMap((t) => t.playlists || []))].sort();
+    for (const name of names) {
+      const inCrate = lib.tracks.filter((t) => t.file && (t.playlists || []).includes(name));
+      if (!inCrate.length) continue;
+      try { await target.pushPlaylist(name, inCrate); playlists += 1; }
+      catch (e) { onProgress?.({ done, total: work.length, error: `playlist “${name}”: ${e.message || e}` }); }
     }
   }
 
   onProgress?.({ done, total: work.length, finished: true });
-  return { pushed, total: work.length, lyricsOnly, playlist };
+  return { pushed, total: work.length, lyricsOnly, playlists };
 }
