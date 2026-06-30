@@ -634,6 +634,11 @@ async function getAll() {
       // and progress survives if the page closes mid-batch.
       await saveLibrary(state.library);
       renderLibrary();
+      // Thumbnail per-track, not batched at the end of the whole set — a
+      // track that's already playable shouldn't sit cover-less for the
+      // minutes the rest of a big batch takes to finish downloading.
+      const added = state.library.tracks.find((x) => trackKey(x) === trackId(t));
+      if (added) ensureThumbs([added]).then(renderLibrary).catch(() => {});
     } else {
       t.status = 'error';
       t.error = r.error;
@@ -650,12 +655,9 @@ async function getAll() {
   const ok = todo.filter((t) => t.status === 'done').length;
   toast(`Added ${ok}/${todo.length} to your library.${ok ? ' Hit Sync to phone to copy them across.' : ''}`);
 
-  // Lyrics + thumbnails fill in afterward in the background so downloads
-  // aren't blocked (download.js already embeds cover art at download time —
-  // this just extracts it into a servable cached thumb for the list view).
+  // Lyrics fill in afterward in the background so downloads aren't blocked
+  // (thumbnails already fired per-track above, as each download landed).
   backfillLyrics(downloadedIds);
-  const newLibTracks = downloadedIds.map((id) => state.library.tracks.find((x) => trackKey(x) === id)).filter(Boolean);
-  ensureThumbs(newLibTracks).then(renderLibrary).catch(() => {});
 }
 
 // Fetch + attach lyrics for the given tracks, one at a time, in the background.
