@@ -120,6 +120,28 @@ body {
 .kmeter > i { display: block; height: 100%; width: 0%; border-radius: 6px;
   background: linear-gradient(90deg, #2fa56f, #ffd44d 70%, #ff6b4d); transition: width .06s linear; }
 
+/* ── audio setup overlay ── */
+.ksetup {
+  position: absolute; inset: 0; z-index: 9; display: flex; align-items: center; justify-content: center;
+  background: #0007; backdrop-filter: blur(3px);
+}
+.ksetup-card {
+  width: min(440px, 90vw); display: flex; flex-direction: column; gap: 14px;
+  padding: 22px; border-radius: 16px;
+  background: #14161dF2; border: 1px solid #ffffff1f; box-shadow: 0 20px 60px #000a;
+}
+.ksetup-head { display: flex; align-items: center; justify-content: space-between; font-size: 16px; color: #fff; font-weight: 600; }
+.ksetup-row { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #9aa3b2; }
+.ksetup-row select {
+  appearance: none; padding: 9px 11px; border-radius: 9px; font-size: 13px;
+  background: #ffffff0f; border: 1px solid #ffffff1f; color: #e7e9ee;
+}
+.ksetup-check { display: flex; align-items: center; gap: 9px; font-size: 13px; color: #c8cdd8; }
+.ksetup-check input { accent-color: var(--accent); width: 16px; height: 16px; }
+.ksetup-warn { font-size: 12px; color: #ffce6b; background: #3a2c0e; border: 1px solid #6a4f12; border-radius: 9px; padding: 8px 11px; }
+.ksetup-tip { font-size: 12px; color: #8a93a6; line-height: 1.5; }
+.ksetup-hint { font-size: 12px; color: #ffce6b; }
+
 /* ── countdown to the first line ── */
 .kcount {
   position: absolute; z-index: 6; inset: 0; display: flex; align-items: center; justify-content: center;

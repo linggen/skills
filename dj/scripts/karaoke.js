@@ -197,6 +197,7 @@ function wireControls() {
   $('#getvid').onclick = getKaraokeVideo;
   $('#queue').onclick = () => $('#qdrawer').classList.toggle('hidden');
   wireMix();
+  wireSetup();
   document.addEventListener('keydown', (e) => {
     if (e.key === ' ') { e.preventDefault(); toggle(); }
     else if (e.key === 'ArrowRight') next();
@@ -250,6 +251,75 @@ function wireMix() {
   };
   $('#key-dn').onclick = () => applyKey(-1);
   $('#key-up').onclick = () => applyKey(1);
+}
+
+// ── audio setup: device pickers + Bluetooth warning + external-mixer mode ─────
+const AUDIO_PREFS = 'dj:karaoke-audio';
+const loadAudioPrefs = () => { try { return JSON.parse(localStorage.getItem(AUDIO_PREFS) || '{}'); } catch { return {}; } };
+const saveAudioPrefs = (p) => { try { localStorage.setItem(AUDIO_PREFS, JSON.stringify(p)); } catch { /* ignore */ } };
+
+// Labels that mean "wireless / laggy" → bad for live monitoring (echo).
+const isLaggy = (label) => /bluetooth|airpod|\bbt\b|wireless|hands-?free|headset|iphone|continuity/i.test(label || '');
+
+async function wireSetup() {
+  const prefs = loadAudioPrefs();
+  // Seed the engine + UI with saved choices.
+  if (prefs.micId) kaudio.setMicDevice(prefs.micId);
+  if (prefs.outId) kaudio.outputDeviceId = prefs.outId;
+  if (prefs.external) applyExternal(true);
+
+  const open = () => { $('#setup').classList.remove('hidden'); refreshDevices(prefs); };
+  $('#setupbtn').onclick = open;
+  $('#setup-close').onclick = () => $('#setup').classList.add('hidden');
+  $('#setup').onclick = (e) => { if (e.target === $('#setup')) $('#setup').classList.add('hidden'); };
+
+  $('#dev-mic').onchange = (e) => { prefs.micId = e.target.value; saveAudioPrefs(prefs); kaudio.setMicDevice(prefs.micId); updateWarn(); };
+  $('#dev-out').onchange = async (e) => {
+    prefs.outId = e.target.value; saveAudioPrefs(prefs);
+    const ok = await kaudio.setOutputDevice(prefs.outId);
+    if (!ok && prefs.outId) toast('This browser can’t redirect output — pick the speaker in macOS Sound instead.');
+    updateWarn();
+  };
+  $('#dev-external').checked = !!prefs.external;
+  $('#dev-external').onchange = (e) => { prefs.external = e.target.checked; saveAudioPrefs(prefs); applyExternal(prefs.external); };
+
+  navigator.mediaDevices?.addEventListener?.('devicechange', () => refreshDevices(prefs));
+}
+
+async function refreshDevices(prefs) {
+  let devs = [];
+  try { devs = await navigator.mediaDevices.enumerateDevices(); } catch { /* ignore */ }
+  const fill = (sel, kind, cur) => {
+    const list = devs.filter((d) => d.kind === kind);
+    sel.innerHTML = '<option value="">Default</option>' +
+      list.map((d) => `<option value="${esc(d.deviceId)}">${esc(d.label || (kind === 'audioinput' ? 'Microphone' : 'Speaker'))}</option>`).join('');
+    if (cur) sel.value = cur;
+  };
+  fill($('#dev-mic'), 'audioinput', prefs.micId);
+  fill($('#dev-out'), 'audiooutput', prefs.outId);
+  // Device names are blank until mic permission is granted once.
+  const named = devs.some((d) => d.label);
+  $('#dev-hint').classList.toggle('hidden', named);
+  updateWarn();
+}
+
+function updateWarn() {
+  const micLabel = $('#dev-mic').selectedOptions[0]?.textContent || '';
+  const outLabel = $('#dev-out').selectedOptions[0]?.textContent || '';
+  const warn = $('#dev-warn');
+  if (isLaggy(micLabel) || isLaggy(outLabel)) {
+    warn.textContent = '⚠ A wireless/Bluetooth device is selected — it adds delay, so your voice can echo. Wired is best for live karaoke.';
+    warn.classList.remove('hidden');
+  } else {
+    warn.classList.add('hidden');
+  }
+}
+
+// Hardware mixer does the voice → hide the software mic/FX, release the mic.
+function applyExternal(on) {
+  ['#mic', '.kmeter'].forEach((s) => { const el = document.querySelector(s); if (el) el.classList.toggle('hidden', on); });
+  ['#voice', '#reverb', '#echo'].forEach((s) => { const sl = document.querySelector(s)?.closest('.kslider'); if (sl) sl.hidden = on; });
+  if (on && kaudio.micOn) kaudio.toggleMic();
 }
 
 function setMicBtn(on) {

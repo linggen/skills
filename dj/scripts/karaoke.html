@@ -46,8 +46,29 @@
       <input id="seek" class="kseek" type="range" min="0" max="1000" value="0" />
       <span id="dur" class="ktime">0:00</span>
       <button id="mixbtn" class="kbtn" title="Mic & mix">🎚 Mix</button>
+      <button id="setupbtn" class="kbtn" title="Audio setup — mic & speaker">⚙ Audio</button>
       <button id="getvid" class="kbtn" title="Find a karaoke video — lyrics on screen, vocals removed">🎬 Karaoke video</button>
       <button id="queue" class="kbtn" title="Up next">📋</button>
+    </div>
+
+    <!-- Audio setup: device pickers + warnings. Opens from ⚙ Audio. -->
+    <div id="setup" class="ksetup hidden">
+      <div class="ksetup-card">
+        <div class="ksetup-head">Audio setup <button id="setup-close" class="kbtn" title="Close">×</button></div>
+        <label class="ksetup-row">🎙 Microphone
+          <select id="dev-mic"><option value="">Default</option></select>
+        </label>
+        <label class="ksetup-row">🔊 Sound output
+          <select id="dev-out"><option value="">Default</option></select>
+        </label>
+        <div id="dev-warn" class="ksetup-warn hidden"></div>
+        <label class="ksetup-check">
+          <input id="dev-external" type="checkbox" /> I’m using a hardware karaoke mixer
+        </label>
+        <div class="ksetup-tip">Tip: send video to the TV (HDMI/AirPlay) and keep the
+          sound on a speaker — not the TV. Wired beats Bluetooth for live singing.</div>
+        <div id="dev-hint" class="ksetup-hint hidden">Turn the mic on once to see device names.</div>
+      </div>
     </div>
 
     <div id="qdrawer" class="kqueue hidden"></div>

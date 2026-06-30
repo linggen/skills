@@ -44,6 +44,8 @@ export class KaraokeAudio {
     this.analyser = null;
     this.micStream = null;
     this.micNode = null;
+    this.micDeviceId = null;
+    this.outputDeviceId = null;
     this.sources = new WeakMap(); // media element → its one MediaElementSourceNode
     this.micOn = false;
     this.voice = 1; // remembered voice level, so mute/unmute restores it
@@ -95,6 +97,7 @@ export class KaraokeAudio {
       this.echoWet.connect(this.micGain);
     }
     await this.ctx.resume();
+    if (this.outputDeviceId) this.setOutputDevice(this.outputDeviceId);
     if (activeEl) this.attachMusic(activeEl);
   }
 
@@ -108,9 +111,9 @@ export class KaraokeAudio {
 
   // Acquire the mic and wire it into the mix + meter.
   async _micStart() {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-    });
+    const audio = { echoCancellation: false, noiseSuppression: false, autoGainControl: false };
+    if (this.micDeviceId) audio.deviceId = { exact: this.micDeviceId };
+    const stream = await navigator.mediaDevices.getUserMedia({ audio });
     this.micStream = stream;
     this.micNode = this.ctx.createMediaStreamSource(stream);
     this.micNode.connect(this.dry);        // dry voice
@@ -157,6 +160,22 @@ export class KaraokeAudio {
 
   setMusic(v) { if (this.musicGain) this.musicGain.gain.value = v; }
   setVoice(v) { this.voice = v; if (this.micGain && this.micOn) this.micGain.gain.value = v; }
+
+  // Choose the mic input device; re-acquire if the mic is already live.
+  async setMicDevice(id) {
+    this.micDeviceId = id || null;
+    if (this.micOn) { this._micStop(); await this._micStart(); }
+  }
+
+  // Route the mix to a specific output device (Chrome ≥110 AudioContext.setSinkId).
+  // Returns false if the browser can't redirect the context output.
+  async setOutputDevice(id) {
+    this.outputDeviceId = id || null;
+    if (this.ctx && typeof this.ctx.setSinkId === 'function') {
+      try { await this.ctx.setSinkId(id || ''); return true; } catch { return false; }
+    }
+    return false;
+  }
   setReverb(v) { if (this.reverbWet) this.reverbWet.gain.value = v; }
   setEcho(v) { if (this.echoWet) this.echoWet.gain.value = v; }
 
