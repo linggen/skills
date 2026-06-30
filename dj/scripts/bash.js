@@ -3,11 +3,16 @@
 // are USER actions (the user clicked Get / Sync), so they're ungated — the
 // agent has no shell or file tools of its own.
 
-export async function runBash(command, { cwd = '/tmp' } = {}) {
+// timeoutMs overrides /api/bash's 30s default — pass a generous value for slow
+// jobs (yt-dlp downloads, binary fetches, large VLC uploads) or they get killed
+// mid-run with "Command timed out".
+export async function runBash(command, { cwd = '/tmp', timeoutMs } = {}) {
+  const body = { project_root: cwd, command };
+  if (timeoutMs) body.timeout_ms = timeoutMs;
   const res = await fetch('/api/bash', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ project_root: cwd, command }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`bash ${res.status}`);
   const body = await res.json();

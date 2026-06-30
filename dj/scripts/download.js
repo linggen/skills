@@ -11,6 +11,7 @@ const DJ_DIR = '$HOME/.linggen/skills/dj';
 export async function ensureBins(update = false) {
   const out = await runBash(
     `bash "${DJ_DIR}/scripts/bin-setup.sh" ${update ? 'update' : 'ensure'}`,
+    { timeoutMs: 300_000 }, // first run fetches yt-dlp (+ maybe ffmpeg ~60MB)
   );
   const line = out.trim().split('\n').filter(Boolean).pop() || '{}';
   try {
@@ -80,7 +81,7 @@ export async function downloadTrack(bins, cfg, track) {
   ].join(' ');
 
   try {
-    const out = await runBash(cmd);
+    const out = await runBash(cmd, { timeoutMs: 300_000 }); // ytsearch5 + extract can be slow
     const lines = out.trim().split('\n').filter(Boolean);
     const file = [...lines].reverse().find((l) => l.endsWith('.mp3')) || '';
     return file ? { ok: true, file } : { ok: false, error: 'no playable source found' };
@@ -115,7 +116,7 @@ export async function downloadKaraokeVideo(bins, cfg, track) {
   ].join(' ');
 
   try {
-    const out = await runBash(cmd);
+    const out = await runBash(cmd, { timeoutMs: 600_000 }); // video is bigger + a merge step
     const lines = out.trim().split('\n').filter(Boolean);
     const file = [...lines].reverse().find((l) => /\.(mp4|mkv|webm)$/.test(l)) || '';
     return file ? { ok: true, file } : { ok: false, error: 'no karaoke video found' };

@@ -41,6 +41,7 @@ export function vlcTarget(cfg) {
         await runBash(
           `curl -fsS -m 180 -o /dev/null -w '%{http_code}' ` +
             `-F ${sq(`${field}=@${file};type=audio/mpeg`)} ${sq(uploadUrl)}`,
+          { timeoutMs: 200_000 }, // a big upload can outlast /api/bash's 30s default
         )
       ).trim();
       if (!/^2/.test(code)) throw new Error(`VLC upload HTTP ${code || '???'}`);
@@ -66,6 +67,7 @@ export function vlcTarget(cfg) {
           await runBash(
             `curl -fsS -m 60 -o /dev/null -w '%{http_code}' ` +
               `-F ${sq(`${field}=@${tmp};type=audio/mpegurl;filename=${safe}.m3u`)} ${sq(uploadUrl)}`,
+            { timeoutMs: 90_000 },
           )
         ).trim();
         if (!/^2/.test(code)) throw new Error(`VLC playlist upload HTTP ${code || '???'}`);
