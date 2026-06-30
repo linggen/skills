@@ -26,6 +26,8 @@ export async function testTarget(cfg) {
 
 // onProgress({ done, total, track?, error?, finished? })
 // opts.filter — optional (track) => boolean to sync a subset (e.g. one crate).
+// opts.playlist — optional crate name; when set (and the target supports it), an
+//   .m3u of that crate is uploaded after the tracks so it lands as a playlist.
 export async function syncToPhone(cfg, onProgress, opts = {}) {
   const target = makeTarget(cfg);
 
@@ -70,6 +72,19 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
   }
 
   await saveLibrary(lib);
+
+  // After the tracks, send the crate as a playlist (.m3u) if asked + supported.
+  // Lists ALL of the crate's tracks-with-files (not just the ones pushed this
+  // run), so the playlist on the device is complete. Best-effort.
+  let playlist = false;
+  if (opts.playlist && target.pushPlaylist) {
+    const inCrate = lib.tracks.filter((t) => t.file && (!opts.filter || opts.filter(t)));
+    if (inCrate.length) {
+      try { await target.pushPlaylist(opts.playlist, inCrate); playlist = true; }
+      catch (e) { onProgress?.({ done, total: pending.length, error: `playlist: ${e.message || e}` }); }
+    }
+  }
+
   onProgress?.({ done, total: pending.length, finished: true });
-  return { pushed: done, total: pending.length };
+  return { pushed: done, total: pending.length, playlist };
 }

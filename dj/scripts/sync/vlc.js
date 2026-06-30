@@ -4,7 +4,10 @@
 // through /api/bash, NOT a browser fetch: VLC sends no CORS headers, so a
 // cross-origin fetch from the :9898 page would be blocked.
 
-import { runBash, sq } from '../bash.js';
+import { runBash, sq, writeFile } from '../bash.js';
+
+const basename = (p) => String(p).split('/').pop();
+const safeName = (s) => String(s || 'Playlist').replace(/[/\\:*?"<>|]/g, '-').trim() || 'Playlist';
 
 const baseUrl = (host) =>
   (/^https?:\/\//.test(host) ? host : `http://${host}`).replace(/\/+$/, '');
@@ -42,6 +45,34 @@ export function vlcTarget(cfg) {
       ).trim();
       if (!/^2/.test(code)) throw new Error(`VLC upload HTTP ${code || '???'}`);
       return true;
+    },
+
+    // Upload an .m3u so the crate lands as a PLAYLIST in VLC (not just loose
+    // tracks). Entries are bare filenames — VLC stores WiFi uploads flat in its
+    // Documents, so basenames resolve against the tracks we just pushed.
+    // `tracks` = [{ file, artist, title }]. Best-effort; verify on a live phone.
+    async pushPlaylist(name, tracks) {
+      const safe = safeName(name);
+      const lines = ['#EXTM3U'];
+      for (const t of tracks) {
+        if (!t.file) continue;
+        lines.push(`#EXTINF:-1,${t.artist || ''} - ${t.title || ''}`);
+        lines.push(basename(t.file));
+      }
+      const tmp = `/tmp/.dj-${safe}.m3u`;
+      await writeFile(tmp, `${lines.join('\n')}\n`);
+      try {
+        const code = (
+          await runBash(
+            `curl -fsS -m 60 -o /dev/null -w '%{http_code}' ` +
+              `-F ${sq(`${field}=@${tmp};type=audio/mpegurl;filename=${safe}.m3u`)} ${sq(uploadUrl)}`,
+          )
+        ).trim();
+        if (!/^2/.test(code)) throw new Error(`VLC playlist upload HTTP ${code || '???'}`);
+        return true;
+      } finally {
+        await runBash(`rm -f ${sq(tmp)}`).catch(() => {});
+      }
     },
 
     // Filenames already in VLC's library — its page lists them as

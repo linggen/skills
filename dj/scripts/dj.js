@@ -408,11 +408,11 @@ async function syncCrate(crate) {
     const r = await syncToPhone(
       target,
       (p) => { if (p.track && !p.finished) toast(`Syncing ${p.done + 1}/${p.total}: ${esc(p.track.title)}`); },
-      { filter: (t) => (t.playlists || []).includes(crate) },
+      { filter: (t) => (t.playlists || []).includes(crate), playlist: crate },
     );
     state.library = await loadLibrary();
     renderLibrary();
-    toast(`Synced ${r.pushed}/${r.total} from “${crate}”.`);
+    toast(`Synced ${r.pushed}/${r.total} from “${crate}”.${r.playlist ? ' Playlist sent too.' : ''}`);
   } catch (e) {
     toast(String(e.message || e));
   } finally {
