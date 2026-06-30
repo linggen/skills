@@ -238,6 +238,18 @@ function wireMix() {
   $('#music').oninput = (e) => kaudio.setMusic(+e.target.value / 100);
   $('#reverb').oninput = (e) => kaudio.setReverb(+e.target.value / 100);
   $('#echo').oninput = (e) => kaudio.setEcho(+e.target.value / 100);
+
+  // Key shift acts on the backing track, so it works without the mic — the press
+  // is the gesture that builds the engine the first time.
+  let key = 0;
+  const applyKey = async (delta) => {
+    key = Math.max(-7, Math.min(7, key + delta));
+    $('#key-val').textContent = key > 0 ? `+${key}` : `${key}`;
+    try { await kaudio.ensureEngine(media()); kaudio.setKey(key); }
+    catch (e) { toast('Couldn’t start the audio engine.'); }
+  };
+  $('#key-dn').onclick = () => applyKey(-1);
+  $('#key-up').onclick = () => applyKey(1);
 }
 
 function setMicBtn(on) {

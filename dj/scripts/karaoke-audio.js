@@ -22,6 +22,8 @@
 //          └─▶ delay⟲feedback ─▶ echoWet ──┘
 //          └─▶ analyser (meter)
 
+import { createPitchShifter } from './pitch-shift.js';
+
 // A synthetic reverb impulse: decaying stereo noise. Avoids shipping an IR file.
 function makeImpulse(ctx, seconds = 2.2, decay = 2.6) {
   const rate = ctx.sampleRate;
@@ -51,10 +53,10 @@ export class KaraokeAudio {
   // The engine is "active" once the context is built (mic may be on or off).
   get active() { return !!this.ctx; }
 
-  // First enable: build the context (needs a user gesture — the mic tap), route
-  // the active media element through the graph, then start the mic. Resolves
-  // true; rejects if the mic is blocked/absent so the caller can explain.
-  async enable(activeEl) {
+  // Build the audio graph (context, music chain, voice FX) — but NOT the mic.
+  // Needs a user gesture (the mic tap or a Key press). Routes the active media
+  // element through the graph. Idempotent; safe to call from either control.
+  async ensureEngine(activeEl) {
     if (!this.ctx) {
       const AC = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AC();
@@ -65,6 +67,12 @@ export class KaraokeAudio {
       this._buf = new Uint8Array(this.analyser.fftSize);
       this.musicGain.connect(this.ctx.destination);
       this.micGain.connect(this.ctx.destination);
+
+      // Music chain: media element → musicIn → (bypass | pitch shifter) → musicGain.
+      this.musicIn = this.ctx.createGain();
+      this.pitch = createPitchShifter(this.ctx);
+      this.key = 0;
+      this.musicIn.connect(this.musicGain); // key 0 = bypass the shifter
 
       // Voice FX chain — dry + reverb + echo all sum into micGain (= Voice level).
       this.dry = this.ctx.createGain();
@@ -88,6 +96,12 @@ export class KaraokeAudio {
     }
     await this.ctx.resume();
     if (activeEl) this.attachMusic(activeEl);
+  }
+
+  // Full mic enable: build the engine (gesture) + start the mic. Resolves true;
+  // rejects if the mic is blocked/absent so the caller can explain.
+  async enable(activeEl) {
+    await this.ensureEngine(activeEl);
     await this._micStart();
     return true;
   }
@@ -121,8 +135,24 @@ export class KaraokeAudio {
   attachMusic(el) {
     if (!this.ctx || !el || this.sources.has(el)) return;
     const src = this.ctx.createMediaElementSource(el);
-    src.connect(this.musicGain);
+    src.connect(this.musicIn);
     this.sources.set(el, src);
+  }
+
+  // Shift the BACKING TRACK's key by `semitones` (tempo preserved) so the singer
+  // can match their range. 0 = bypass the shifter entirely (cleanest).
+  setKey(semitones) {
+    if (!this.ctx) return;
+    this.key = semitones;
+    try { this.musicIn.disconnect(); } catch { /* not connected */ }
+    try { this.pitch.output.disconnect(); } catch { /* not connected */ }
+    if (!semitones) {
+      this.musicIn.connect(this.musicGain);
+    } else {
+      this.musicIn.connect(this.pitch.input);
+      this.pitch.output.connect(this.musicGain);
+      this.pitch.setSemitones(semitones);
+    }
   }
 
   setMusic(v) { if (this.musicGain) this.musicGain.gain.value = v; }
