@@ -1,4 +1,4 @@
-// Linggen API client for sys-doctor
+// Linggen API client — session + model endpoints shared across skill UIs.
 const API_BASE = '';
 
 export async function fetchModels() {

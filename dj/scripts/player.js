@@ -6,7 +6,6 @@
 //   lyrics — parse the .lrc sidecar, highlight + auto-scroll the active line
 
 import { runBash, sq } from './bash.js';
-import { fetchLyrics } from './lyrics.js';
 
 // The one live player in THIS page. Closing it hides to a mini-bar (keeps
 // playing); opening a new one stops the previous.
@@ -240,15 +239,4 @@ export async function openPlayer(startTrack, opts = {}) {
   ov.style.display = 'none';
   await load(track);
   showMini();
-}
-
-// Make sure the track has a .lrc before opening (best-effort fetch).
-export async function ensureLyricsThenPlay(track, opts = {}) {
-  if (!track.lrc && track.file) {
-    const lyrics = await fetchLyrics(track).catch(() => null);
-    // openPlayer reads track.lrc; the on-card ♪ action is the durable fetch path,
-    // so here we just proceed — the player shows "fetch lyrics" if absent.
-    void lyrics;
-  }
-  return openPlayer(track, opts);
 }

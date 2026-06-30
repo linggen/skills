@@ -392,8 +392,6 @@ async function onRowAction(e) {
     try { await runBash(`open -R ${sq(t.file)}`); } catch (err) { toast(String(err.message || err)); }
     return;
   }
-  if (act === 'more') { sendToAgent(`More like ${t.artist} – ${t.title}: build a set in that vein.`); return; }
-  if (act === 'lyrics') { await fetchTrackLyrics(t); return; }
   if (act === 'remove') {
     // Inside a playlist → just untag (file & other playlists untouched), no
     // confirm needed since nothing is destroyed. In All songs / Recently added,

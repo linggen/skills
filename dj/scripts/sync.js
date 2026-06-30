@@ -56,7 +56,8 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
   let work = lib.tracks.filter((t) => t.file && (!has(t.file) || (t.lrc && !has(t.lrc))));
   if (opts.filter) work = work.filter(opts.filter);
 
-  let done = 0;
+  let done = 0; // tracks processed (advances the progress bar even on failure)
+  let pushed = 0; // tracks that actually completed without error
   let lyricsOnly = 0;
   for (const t of work) {
     onProgress?.({ done, total: work.length, track: t });
@@ -66,6 +67,7 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
       // device whose lyrics were fetched later).
       if (t.lrc && !has(t.lrc)) { await target.push(t.lrc); if (has(t.file)) lyricsOnly += 1; }
       t.synced_to = [...new Set([...(t.synced_to || []), cfg.id])];
+      pushed += 1;
     } catch (e) {
       onProgress?.({ done, total: work.length, track: t, error: String(e.message || e) });
     }
@@ -87,5 +89,5 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
   }
 
   onProgress?.({ done, total: work.length, finished: true });
-  return { pushed: done, total: work.length, lyricsOnly, playlist };
+  return { pushed, total: work.length, lyricsOnly, playlist };
 }
