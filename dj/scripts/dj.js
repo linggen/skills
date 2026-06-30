@@ -12,6 +12,7 @@ import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { openPlayer } from './player.js';
 import { syncToPhone } from './sync.js';
+import { ensureThumbs, thumbUrl } from './thumbs.js';
 
 const SKILL = 'dj';
 const params = new URLSearchParams(location.search);
@@ -43,6 +44,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
   wireBuild();
   wireLibrary();
   await mountChat();
+  // Background, non-blocking: extract any missing cover thumbnails, then
+  // re-render so they pop in once ready (first run can take a few seconds
+  // for a big library; cached on every run after).
+  ensureThumbs(state.library.tracks).then(renderLibrary).catch(() => {});
 })();
 
 // ── library: sidebar collections + dense list + multi-select → playlists ─────
@@ -202,6 +207,7 @@ function rowHtml(t) {
     (t.lrc ? '<span class="badge lyr" title="Has lyrics">♪</span>' : '');
   return `<div class="lib-row${sel ? ' sel' : ''}" data-id="${esc(id)}">
     <input type="checkbox" class="lib-chk" data-id="${esc(id)}"${sel ? ' checked' : ''} />
+    <img class="row-thumb" src="${thumbUrl(t)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'" />
     <button class="row-play" data-act="play" title="Play">▶</button>
     <div class="row-meta">
       <span class="row-t">${esc(t.title)}</span>
@@ -644,8 +650,12 @@ async function getAll() {
   const ok = todo.filter((t) => t.status === 'done').length;
   toast(`Added ${ok}/${todo.length} to your library.${ok ? ' Hit Sync to phone to copy them across.' : ''}`);
 
-  // Lyrics fill in afterward in the background so downloads aren't blocked.
+  // Lyrics + thumbnails fill in afterward in the background so downloads
+  // aren't blocked (download.js already embeds cover art at download time —
+  // this just extracts it into a servable cached thumb for the list view).
   backfillLyrics(downloadedIds);
+  const newLibTracks = downloadedIds.map((id) => state.library.tracks.find((x) => trackKey(x) === id)).filter(Boolean);
+  ensureThumbs(newLibTracks).then(renderLibrary).catch(() => {});
 }
 
 // Fetch + attach lyrics for the given tracks, one at a time, in the background.

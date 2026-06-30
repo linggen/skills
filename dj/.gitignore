@@ -4,3 +4,4 @@ config.json
 library.json
 data/
 scripts/.nowplaying*
+scripts/.thumbs/
