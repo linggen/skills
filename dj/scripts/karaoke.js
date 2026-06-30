@@ -7,6 +7,9 @@ import { runBash, sq } from './bash.js';
 import { parseLrc } from './player.js';
 import { loadLibrary, saveLibrary, loadConfig, trackId } from './library.js';
 import { ensureBins, downloadKaraokeVideo } from './download.js';
+import { KaraokeAudio } from './karaoke-audio.js';
+
+const kaudio = new KaraokeAudio();
 
 const DJ_SCRIPTS = '$HOME/.linggen/skills/dj/scripts';
 const $ = (sel) => document.querySelector(sel);
@@ -87,6 +90,7 @@ async function load(t) {
   try {
     const url = await serveMedia(isVideo ? t.karaoke_video : t.file, isVideo ? 'mp4' : 'mp3');
     const m = media();
+    if (kaudio.active) kaudio.attachMusic(m); // route this element through the mix
     m.src = url;
     m.play().catch(() => {});
   } catch (e) {
@@ -192,6 +196,7 @@ function wireControls() {
   $('#fs').onclick = toggleFullscreen;
   $('#getvid').onclick = getKaraokeVideo;
   $('#queue').onclick = () => $('#qdrawer').classList.toggle('hidden');
+  wireMix();
   document.addEventListener('keydown', (e) => {
     if (e.key === ' ') { e.preventDefault(); toggle(); }
     else if (e.key === 'ArrowRight') next();
@@ -200,8 +205,59 @@ function wireControls() {
   });
 }
 
+// ── mic + voice/music mix (the live audio engine) ────────────────────────────
+function wireMix() {
+  const panel = $('#mixpanel');
+  const micBtn = $('#mic');
+  $('#mixbtn').onclick = () => panel.classList.toggle('hidden');
+
+  micBtn.onclick = async () => {
+    micBtn.disabled = true;
+    const first = !kaudio.active;
+    micBtn.textContent = '🎤 …';
+    try {
+      if (first) {
+        await kaudio.enable(media());
+        meterLoop();
+        setMicBtn(true);
+        toast('Mic on — sing! Use earbuds or a separate speaker so it doesn’t echo.');
+      } else {
+        const on = await kaudio.toggleMic();
+        setMicBtn(on);
+        toast(on ? 'Mic on.' : 'Mic off — released.');
+      }
+    } catch (e) {
+      setMicBtn(kaudio.micOn);
+      toast('Mic blocked — allow microphone access for this page.');
+    } finally {
+      micBtn.disabled = false;
+    }
+  };
+
+  $('#voice').oninput = (e) => kaudio.setVoice(+e.target.value / 100);
+  $('#music').oninput = (e) => kaudio.setMusic(+e.target.value / 100);
+}
+
+function setMicBtn(on) {
+  const b = $('#mic');
+  b.classList.toggle('on', on);
+  b.textContent = on ? '🎤 Mic on' : '🎤 Mic off';
+}
+
+// Animate the level meter while the mic is live.
+function meterLoop() {
+  const fill = $('#meterfill');
+  const tick = () => {
+    if (!kaudio.active) { fill.style.width = '0%'; return; }
+    fill.style.width = `${Math.round(kaudio.level() * 100)}%`;
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+
 function back() {
   media().pause();
+  kaudio.dispose();
   location.href = `dj.html${location.search}`;
 }
 

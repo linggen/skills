@@ -92,6 +92,25 @@ body {
 .ktime { font-variant-numeric: tabular-nums; color: #9aa3b2; font-size: 12px; min-width: 38px; text-align: center; }
 .kseek { width: min(46vw, 520px); accent-color: var(--accent); }
 
+/* ── mix panel (mic + voice/music balance) ── */
+.kmix {
+  position: absolute; left: 50%; bottom: 92px; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center;
+  max-width: min(90vw, 720px);
+  padding: 12px 18px; border-radius: 16px;
+  background: #11131bcc; backdrop-filter: blur(12px); border: 1px solid #ffffff14;
+  transition: opacity .3s;
+}
+.stage.idle .kmix { opacity: 0; pointer-events: none; }
+.kbtn.mic.on { background: #1e7d4f; color: #fff; border-color: #2fa56f; }
+.kslider { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9aa3b2; }
+.kslider input { accent-color: var(--accent); width: 120px; }
+
+/* mic level meter */
+.kmeter { width: 90px; height: 10px; border-radius: 6px; background: #ffffff14; overflow: hidden; }
+.kmeter > i { display: block; height: 100%; width: 0%; border-radius: 6px;
+  background: linear-gradient(90deg, #2fa56f, #ffd44d 70%, #ff6b4d); transition: width .06s linear; }
+
 /* ── countdown to the first line ── */
 .kcount {
   position: absolute; z-index: 6; inset: 0; display: flex; align-items: center; justify-content: center;

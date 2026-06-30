@@ -22,6 +22,14 @@
       <button id="fs" class="kbtn" title="Fullscreen">⛶</button>
     </div>
 
+    <!-- Mix panel (mic + voice/music balance). Opens from the 🎚 button. -->
+    <div id="mixpanel" class="kmix hidden">
+      <button id="mic" class="kbtn mic" title="Turn the microphone on">🎤 Mic off</button>
+      <div class="kmeter" title="Mic level"><i id="meterfill"></i></div>
+      <label class="kslider">🎙 Voice <input id="voice" type="range" min="0" max="200" value="100" /></label>
+      <label class="kslider">🎵 Music <input id="music" type="range" min="0" max="150" value="100" /></label>
+    </div>
+
     <div id="controls" class="kctrl">
       <button id="prev" class="kc" title="Previous">⏮</button>
       <button id="play" class="kc kplay" title="Play / pause">▶</button>
@@ -29,6 +37,7 @@
       <span id="cur" class="ktime">0:00</span>
       <input id="seek" class="kseek" type="range" min="0" max="1000" value="0" />
       <span id="dur" class="ktime">0:00</span>
+      <button id="mixbtn" class="kbtn" title="Mic & mix">🎚 Mix</button>
       <button id="getvid" class="kbtn" title="Find a karaoke video — lyrics on screen, vocals removed">🎬 Karaoke video</button>
       <button id="queue" class="kbtn" title="Up next">📋</button>
     </div>
