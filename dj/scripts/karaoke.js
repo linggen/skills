@@ -84,7 +84,7 @@ async function load(t) {
     state.lines = parseLrc(txt);
   }
   renderLyrics();
-  renderQueue();
+  renderQueueList();
   updateGetVid();
 
   try {
@@ -195,7 +195,7 @@ function wireControls() {
   $('#back').onclick = back;
   $('#fs').onclick = toggleFullscreen;
   $('#getvid').onclick = getKaraokeVideo;
-  $('#queue').onclick = () => $('#qdrawer').classList.toggle('hidden');
+  $('#queue').onclick = () => { if (!queueBuilt) buildQueueDrawer(); $('#qdrawer').classList.toggle('hidden'); };
   wireMix();
   wireSetup();
   document.addEventListener('keydown', (e) => {
@@ -350,16 +350,80 @@ function toggleFullscreen() {
   else document.documentElement.requestFullscreen?.().catch(() => {});
 }
 
-// ── up-next drawer ───────────────────────────────────────────────────────────
-function renderQueue() {
+// ── up-next drawer: now-playing, reorder, remove, add-from-library ───────────
+let queueBuilt = false;
+
+function buildQueueDrawer() {
   const el = $('#qdrawer');
-  el.innerHTML = state.queue
-    .map((t, i) => `<div class="kq-row ${i === state.index ? 'on' : ''}" data-i="${i}">
+  el.innerHTML = `
+    <div class="kq-head"><b>Up next</b> <span id="q-count"></span></div>
+    <div id="q-list"></div>
+    <div class="kq-add">
+      <input id="q-search" type="search" placeholder="Add a song to the queue…" autocomplete="off" />
+      <div id="q-results"></div>
+    </div>`;
+  $('#q-search').addEventListener('input', renderAddResults);
+  queueBuilt = true;
+  renderQueueList();
+}
+
+function renderQueueList() {
+  if (!queueBuilt) return;
+  $('#q-count').textContent = `${state.queue.length} song${state.queue.length === 1 ? '' : 's'}`;
+  $('#q-list').innerHTML = state.queue.map((t, i) => {
+    const on = i === state.index;
+    const ctrls = on
+      ? '<span class="kq-now">♪ now</span>'
+      : `<button class="kq-mini" data-act="up" data-i="${i}" title="Move up">↑</button>
+         <button class="kq-mini" data-act="dn" data-i="${i}" title="Move down">↓</button>
+         <button class="kq-mini" data-act="rm" data-i="${i}" title="Remove from queue">✕</button>`;
+    return `<div class="kq-row ${on ? 'on' : ''}">
       <span class="qi">${i + 1}</span>
+      <div class="kq-meta" data-jump="${i}"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div>
+      <span class="kq-ctrls">${ctrls}</span>
+    </div>`;
+  }).join('');
+  $('#q-list').querySelectorAll('[data-jump]').forEach((e) => { e.onclick = () => go(+e.dataset.jump); });
+  $('#q-list').querySelectorAll('[data-act]').forEach((b) => {
+    b.onclick = (ev) => { ev.stopPropagation(); queueAction(b.dataset.act, +b.dataset.i); };
+  });
+}
+
+// Reorder/remove keep state.index pointing at the still-playing track.
+function queueAction(act, i) {
+  const cur = state.queue[state.index];
+  const q = state.queue;
+  if (act === 'up' && i > 0) { [q[i - 1], q[i]] = [q[i], q[i - 1]]; }
+  else if (act === 'dn' && i < q.length - 1) { [q[i + 1], q[i]] = [q[i], q[i + 1]]; }
+  else if (act === 'rm') { if (i === state.index) return; q.splice(i, 1); }
+  state.index = q.indexOf(cur);
+  renderQueueList();
+}
+
+function renderAddResults() {
+  const query = $('#q-search').value.trim().toLowerCase();
+  const res = $('#q-results');
+  if (!query) { res.innerHTML = ''; return; }
+  const inQueue = new Set(state.queue.map((t) => t.id || trackId(t)));
+  const matches = (state.library.tracks || [])
+    .filter((t) => t.file && `${t.artist} ${t.title}`.toLowerCase().includes(query))
+    .slice(0, 8);
+  res.innerHTML = matches.map((t) => {
+    const id = t.id || trackId(t);
+    const has = inQueue.has(id);
+    return `<div class="kq-res" data-id="${esc(id)}">
       <div><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div>
-    </div>`)
-    .join('');
-  el.querySelectorAll('.kq-row').forEach((r) => { r.onclick = () => { go(+r.dataset.i); el.classList.add('hidden'); }; });
+      <button class="kq-add-btn" ${has ? 'disabled' : ''}>${has ? '✓' : '＋'}</button>
+    </div>`;
+  }).join('') || '<div class="kq-none">No matches in your library.</div>';
+  res.querySelectorAll('.kq-res').forEach((r) => {
+    const btn = r.querySelector('.kq-add-btn');
+    if (btn.disabled) return;
+    btn.onclick = () => {
+      const t = (state.library.tracks || []).find((x) => (x.id || trackId(x)) === r.dataset.id);
+      if (t) { state.queue.push(t); renderQueueList(); renderAddResults(); }
+    };
+  });
 }
 
 // ── get a karaoke video for the current track (lyrics + vocals removed) ───────
