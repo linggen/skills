@@ -276,6 +276,16 @@ async function addToPlaylist(name) {
   toast(`Added ${n} to “${name}”.`);
 }
 
+// Shared onProgress for all three sync entry points. Track-level events carry
+// `track`; the playlist-push step (sync.js) reports failures WITHOUT one — a
+// handler that only checked `p.track` silently dropped those, so a failed
+// .m3u upload never reached the user. Surface both.
+function syncProgress(p) {
+  if (p.finished) return;
+  if (p.error) { toast(p.track ? `${esc(p.track.title)} failed: ${esc(p.error)}` : `Playlist sync failed: ${esc(p.error)}`); return; }
+  if (p.track) toast(`Syncing ${p.done + 1}/${p.total}: ${esc(p.track.title)}`);
+}
+
 async function syncSelected() {
   const target = (state.config.sync_targets || [])[0];
   if (!target) { toast('No phone set up — open ⚙ Settings.'); return; }
@@ -286,7 +296,7 @@ async function syncSelected() {
   try {
     const r = await syncToPhone(
       target,
-      (p) => { if (p.track && !p.finished) toast(`Syncing ${p.done + 1}/${p.total}: ${esc(p.track.title)}`); },
+      syncProgress,
       { filter: (t) => ids.has(trackKey(t)) },
     );
     state.library = await loadLibrary();
@@ -451,7 +461,7 @@ async function syncCrate(crate) {
   try {
     const r = await syncToPhone(
       target,
-      (p) => { if (p.track && !p.finished) toast(`Syncing ${p.done + 1}/${p.total}: ${esc(p.track.title)}`); },
+      syncProgress,
       { filter: (t) => (t.playlists || []).includes(crate), playlist: crate },
     );
     state.library = await loadLibrary();
@@ -693,9 +703,7 @@ async function onSync() {
   state.busy = true;
   toast(`Open VLC (Sharing via WiFi on)… syncing ${unsynced} to ${esc(target.name)}.`);
   try {
-    const r = await syncToPhone(target, (p) => {
-      if (p.track && !p.finished) toast(`Syncing ${p.done + 1}/${p.total}: ${esc(p.track.title)}`);
-    });
+    const r = await syncToPhone(target, syncProgress);
     state.library = await loadLibrary();
     renderLibrary();
     toast(`Synced ${r.pushed}/${r.total} to ${esc(target.name)}. Play them in VLC → Audio, offline.`);
