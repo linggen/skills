@@ -126,7 +126,7 @@ export async function openPlayer(startTrack, opts = {}) {
   async function findLyrics(btn) {
     if (!opts.fetchLyrics) return;
     if (btn) { btn.disabled = true; btn.textContent = 'Finding lyrics…'; }
-    await opts.fetchLyrics(); // fetches + writes the .lrc sidecar + sets track.lrc
+    await opts.fetchLyrics(track); // fetch for the CURRENT track (queue may have advanced)
     if (track.lrc) {
       const text = await runBash(`cat ${sq(track.lrc)} 2>/dev/null || true`).catch(() => '');
       lines = parseLrc(text);
@@ -216,6 +216,22 @@ export async function openPlayer(startTrack, opts = {}) {
       audio.play().catch(() => {});
     } catch (e) { opts.toast?.(String(e.message || e)); }
     updateMini();
+    if (!t.lrc && opts.fetchLyrics) autoFetchLyrics(t); // background — don't block playback
+  }
+
+  // Auto-pull lyrics for a just-loaded track that has none. Non-blocking; bails
+  // if the queue advances mid-fetch so it never renders onto the wrong song.
+  async function autoFetchLyrics(t) {
+    if (track === t) lyricsEl.innerHTML = `<div class="pl-empty">Finding lyrics…</div>`;
+    try { await opts.fetchLyrics(t); } catch { /* lyrics are optional */ }
+    if (track !== t) return; // moved on — leave the current track's view alone
+    if (t.lrc) {
+      const text = await runBash(`cat ${sq(t.lrc)} 2>/dev/null || true`).catch(() => '');
+      if (track !== t) return;
+      lines = parseLrc(text);
+      activeIdx = -1;
+    }
+    renderLyrics();
   }
 
   // Don't pop the lyrics dialog on play — just play in the mini-bar. The dialog

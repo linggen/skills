@@ -328,7 +328,7 @@ function playAll() {
   const view = libraryView();
   if (!view.length) { toast('Nothing to play here.'); return; }
   const start = state.shuffle ? view[Math.floor(Math.random() * view.length)] : view[0];
-  openPlayer(start, { toast, fetchLyrics: () => fetchTrackLyrics(start), queue: view, shuffle: state.shuffle });
+  openPlayer(start, { toast, fetchLyrics: (cur) => fetchTrackLyrics(cur || start), queue: view, shuffle: state.shuffle });
 }
 
 function wireLibrary() {
@@ -358,7 +358,7 @@ async function onRowAction(e) {
   if (!t) return;
   const act = btn.dataset.act;
 
-  if (act === 'play') { openPlayer(t, { toast, fetchLyrics: () => fetchTrackLyrics(t), queue: libraryView() }); return; }
+  if (act === 'play') { openPlayer(t, { toast, fetchLyrics: (cur) => fetchTrackLyrics(cur || t), queue: libraryView() }); return; }
   if (act === 'karaoke') { startKaraoke(t, libraryView()); return; }
   if (act === 'reveal') {
     try { await runBash(`open -R ${sq(t.file)}`); } catch (err) { toast(String(err.message || err)); }
@@ -455,7 +455,7 @@ function applyAgentPlay(pp) {
   const want = (pp.tracks || []).map(keyOf);
   const queue = want.map((k) => state.library.tracks.find((t) => trackKey(t) === k)).filter((t) => t && t.file);
   if (!queue.length) { toast('None of those are downloaded yet.'); return; }
-  openPlayer(queue[0], { toast, fetchLyrics: () => fetchTrackLyrics(queue[0]), queue });
+  openPlayer(queue[0], { toast, fetchLyrics: (cur) => fetchTrackLyrics(cur || queue[0]), queue });
 }
 
 function applyPageUpdate(args) {
@@ -521,7 +521,7 @@ function renderSet() {
         .filter((x) => x.status === 'done' || x.status === 'owned')
         .map((x) => state.library.tracks.find((l) => trackKey(l) === trackId(x)))
         .filter(Boolean);
-      openPlayer(lib, { toast, fetchLyrics: () => fetchTrackLyrics(lib), queue });
+      openPlayer(lib, { toast, fetchLyrics: (cur) => fetchTrackLyrics(cur || lib), queue });
     }),
   );
 }
