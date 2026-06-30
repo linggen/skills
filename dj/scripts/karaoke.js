@@ -236,6 +236,8 @@ function wireMix() {
 
   $('#voice').oninput = (e) => kaudio.setVoice(+e.target.value / 100);
   $('#music').oninput = (e) => kaudio.setMusic(+e.target.value / 100);
+  $('#reverb').oninput = (e) => kaudio.setReverb(+e.target.value / 100);
+  $('#echo').oninput = (e) => kaudio.setEcho(+e.target.value / 100);
 }
 
 function setMicBtn(on) {

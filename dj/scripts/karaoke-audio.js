@@ -11,9 +11,28 @@
 //     mic ──▶ micGain ───────────────┘
 //        └──▶ analyser  (level meter only — not routed to the speaker)
 //
-// Reverb / echo / key shift come later (step 3); this is capture + mix + meter.
 // Mic settings are tuned for SINGING, not calls: echo-cancellation /
 // noise-suppression / auto-gain are off so the voice isn't pumped or gated.
+//
+// The voice runs through an FX chain — dry + reverb + echo all summed into the
+// Voice gain — so it sounds like karaoke, not a dry talk mic:
+//
+//     mic ─┬─▶ dry ───────────────────────┐
+//          ├─▶ convolver ─▶ reverbWet ─────┼─▶ micGain ─▶ destination
+//          └─▶ delay⟲feedback ─▶ echoWet ──┘
+//          └─▶ analyser (meter)
+
+// A synthetic reverb impulse: decaying stereo noise. Avoids shipping an IR file.
+function makeImpulse(ctx, seconds = 2.2, decay = 2.6) {
+  const rate = ctx.sampleRate;
+  const len = Math.max(1, Math.floor(rate * seconds));
+  const buf = ctx.createBuffer(2, len, rate);
+  for (let c = 0; c < 2; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+  }
+  return buf;
+}
 
 export class KaraokeAudio {
   constructor() {
@@ -46,6 +65,26 @@ export class KaraokeAudio {
       this._buf = new Uint8Array(this.analyser.fftSize);
       this.musicGain.connect(this.ctx.destination);
       this.micGain.connect(this.ctx.destination);
+
+      // Voice FX chain — dry + reverb + echo all sum into micGain (= Voice level).
+      this.dry = this.ctx.createGain();
+      this.dry.connect(this.micGain);
+      this.convolver = this.ctx.createConvolver();
+      this.convolver.buffer = makeImpulse(this.ctx);
+      this.reverbWet = this.ctx.createGain();
+      this.reverbWet.gain.value = 0.3; // a little reverb by default = karaoke sound
+      this.convolver.connect(this.reverbWet);
+      this.reverbWet.connect(this.micGain);
+      this.delay = this.ctx.createDelay(1.0);
+      this.delay.delayTime.value = 0.26;
+      this.feedback = this.ctx.createGain();
+      this.feedback.gain.value = 0.32; // ~3-4 audible repeats
+      this.echoWet = this.ctx.createGain();
+      this.echoWet.gain.value = 0;
+      this.delay.connect(this.feedback);
+      this.feedback.connect(this.delay);
+      this.delay.connect(this.echoWet);
+      this.echoWet.connect(this.micGain);
     }
     await this.ctx.resume();
     if (activeEl) this.attachMusic(activeEl);
@@ -60,8 +99,10 @@ export class KaraokeAudio {
     });
     this.micStream = stream;
     this.micNode = this.ctx.createMediaStreamSource(stream);
-    this.micNode.connect(this.micGain);
-    this.micNode.connect(this.analyser);
+    this.micNode.connect(this.dry);        // dry voice
+    this.micNode.connect(this.convolver);  // → reverb send
+    this.micNode.connect(this.delay);      // → echo send
+    this.micNode.connect(this.analyser);   // → level meter
     this.micGain.gain.value = this.voice;
     this.micOn = true;
   }
@@ -86,6 +127,8 @@ export class KaraokeAudio {
 
   setMusic(v) { if (this.musicGain) this.musicGain.gain.value = v; }
   setVoice(v) { this.voice = v; if (this.micGain && this.micOn) this.micGain.gain.value = v; }
+  setReverb(v) { if (this.reverbWet) this.reverbWet.gain.value = v; }
+  setEcho(v) { if (this.echoWet) this.echoWet.gain.value = v; }
 
   // Toggle the mic. OFF fully releases the device (indicator off); ON re-acquires
   // it. Async because acquiring is async. Returns the new on/off state.
