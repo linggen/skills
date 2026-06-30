@@ -47,6 +47,46 @@ Per-voice, real-time, software:
 - Reverb amount, echo/delay, mic gain, key/pitch shift (later).
 - `loudnorm` on backing tracks (already shipped in `download.js`).
 
+## Pages
+
+Karaoke is its **own full-screen page**, not an overlay. `dj.html` stays the
+library + curation hub.
+
+- `dj.html` — unchanged. Casual play stays the `player.js` mini-bar.
+- `karaoke.html` — NEW. The full-screen stage; this is what mirrors to the TV.
+- **Nav:** top-bar `🎤 Party` + per-card `🎤` → `karaoke.html?queue=<playlist|ids>`
+  → `← Library` returns. Both pages read `library.json`.
+- **Reuse:** `parseLrc` + queue sequencing from `player.js` are shared (imported
+  by both); karaoke is a new stage skin over existing logic, not a rewrite.
+
+## Files
+
+- `karaoke.html` / `karaoke.css` / `karaoke.js` — NEW: stage, lyrics, transport,
+  queue, controls.
+- `karaoke-audio.js` — NEW: mic → reverb (`ConvolverNode`) + echo (`DelayNode`)
+  → mix (`GainNode`) → output; level meter; device handling.
+- `download.js` — add karaoke-video fetch (`ytsearch:<song> karaoke`, no `-x`).
+
+## Surfaces
+
+- **Stage** — karaoke video full-bleed, OR art/gradient + big synced lyrics
+  (current line hot, next dim); 3-2-1 countdown on the lead-in.
+- **Controls** (auto-hide, for the operator) — mic toggle + level meter, reverb,
+  echo, voice/music balance, key shift, transport, `＋Add`, `📋Queue`, `⚙Audio`.
+- **Audio setup** — mic device, output device, lyrics/video target; Bluetooth-on-
+  live-path warning; external-mix-mode collapse when hardware is detected.
+- **Party queue** — drawer; add/reorder; auto-advance.
+
+## Build order
+
+Each step independently testable.
+
+1. Page shell + nav + stage (video + art/lyrics) + karaoke-video download. No mic.
+2. Mic capture + voice/music mix + level meter.
+3. Reverb / echo / key FX + auto-hide controls.
+4. Audio-setup panel + device pickers + Bluetooth / external-mix detection.
+5. Party queue drawer.
+
 ## Practice mode (later)
 
 Solo, Mac-only. Mic → local **DSP in JS** (pitch + timing, no Python) → score.
