@@ -46,10 +46,38 @@ elif [ -x /usr/local/bin/ffmpeg ]; then
 fi
 
 if [ -z "$FFMPEG" ]; then
-  # No system ffmpeg. We DON'T silently grab an unverified static build here —
-  # surface a clear, honest instruction instead. (A pinned, checksummed arm64
-  # static-build URL is the fast-follow; until then `brew install ffmpeg`.)
-  emit "$YTDLP" "" false "ffmpeg not found — run: brew install ffmpeg"; exit 1
+  # No system ffmpeg → fetch a PINNED, checksum-verified static build into
+  # ~/.linggen/bin so a fresh user needs nothing pre-installed (no Homebrew).
+  # Native per-arch builds from ffmpeg.martin-riedl.de, version-pinned; the
+  # SHA-256 is verified before use, so we never run an unexpected binary.
+  case "$(uname -m)" in
+    arm64)
+      FF_URL="https://ffmpeg.martin-riedl.de/download/macos/arm64/1778761665_8.1.1/ffmpeg.zip"
+      FF_SHA="a05b1a47bb3ac89a95a55eec713f8bbb347051bb07015f3b7d08fb62ed81a21e" ;;
+    x86_64)
+      FF_URL="https://ffmpeg.martin-riedl.de/download/macos/amd64/1778768838_8.1.1/ffmpeg.zip"
+      FF_SHA="8cb711bfa6f66033112d708dc275220419d0fdb49c5b752f8db25f11a92d321f" ;;
+    *)
+      emit "$YTDLP" "" false "unsupported arch $(uname -m) — run: brew install ffmpeg"; exit 1 ;;
+  esac
+
+  ZIP="$BIN/ffmpeg.zip"
+  if ! curl -fsSL "$FF_URL" -o "$ZIP"; then
+    rm -f "$ZIP"; emit "$YTDLP" "" false "ffmpeg download failed — or run: brew install ffmpeg"; exit 1
+  fi
+  GOT="$(shasum -a 256 "$ZIP" | cut -d' ' -f1)"
+  if [ "$GOT" != "$FF_SHA" ]; then
+    rm -f "$ZIP"; emit "$YTDLP" "" false "ffmpeg checksum mismatch — refusing (got ${GOT:-none})"; exit 1
+  fi
+  if ! unzip -oq "$ZIP" ffmpeg -d "$BIN"; then
+    rm -f "$ZIP"; emit "$YTDLP" "" false "ffmpeg unzip failed"; exit 1
+  fi
+  rm -f "$ZIP"
+  chmod +x "$BIN/ffmpeg"
+  # Let Gatekeeper run a binary we downloaded + verified ourselves.
+  xattr -d com.apple.quarantine "$BIN/ffmpeg" 2>/dev/null || true
+  codesign --force -s - "$BIN/ffmpeg" 2>/dev/null || true
+  FFMPEG="$BIN/ffmpeg"
 fi
 
 emit "$YTDLP" "$FFMPEG" true ""
