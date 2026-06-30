@@ -7,12 +7,12 @@
 // jobs (yt-dlp downloads, binary fetches, large VLC uploads) or they get killed
 // mid-run with "Command timed out".
 export async function runBash(command, { cwd = '/tmp', timeoutMs } = {}) {
-  const body = { project_root: cwd, command };
-  if (timeoutMs) body.timeout_ms = timeoutMs;
+  const reqBody = { project_root: cwd, command };
+  if (timeoutMs) reqBody.timeout_ms = timeoutMs;
   const res = await fetch('/api/bash', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    body: JSON.stringify(reqBody),
   });
   if (!res.ok) throw new Error(`bash ${res.status}`);
   const body = await res.json();
