@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DJ · Karaoke</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="karaoke.css" />
+</head>
+<body>
+  <!-- The stage: full-screen, always dark — this is what mirrors to the TV. -->
+  <div id="stage" class="stage">
+    <video id="kv" class="kv" playsinline></video>
+    <audio id="ka"></audio>
+    <div id="bg" class="kbg"></div>
+    <div id="lyrics" class="klyrics" aria-live="polite"></div>
+    <div id="countdown" class="kcount hidden"></div>
+
+    <div class="ktop">
+      <button id="back" class="kbtn" title="Back to library">← Library</button>
+      <div id="nowtitle" class="ktitle"></div>
+      <button id="fs" class="kbtn" title="Fullscreen">⛶</button>
+    </div>
+
+    <div id="controls" class="kctrl">
+      <button id="prev" class="kc" title="Previous">⏮</button>
+      <button id="play" class="kc kplay" title="Play / pause">▶</button>
+      <button id="next" class="kc" title="Next">⏭</button>
+      <span id="cur" class="ktime">0:00</span>
+      <input id="seek" class="kseek" type="range" min="0" max="1000" value="0" />
+      <span id="dur" class="ktime">0:00</span>
+      <button id="getvid" class="kbtn" title="Find a karaoke video — lyrics on screen, vocals removed">🎬 Karaoke video</button>
+      <button id="queue" class="kbtn" title="Up next">📋</button>
+    </div>
+
+    <div id="qdrawer" class="kqueue hidden"></div>
+  </div>
+  <div id="ktoast" class="ktoast hidden"></div>
+
+  <script type="module" src="karaoke.js"></script>
+</body>
+</html>

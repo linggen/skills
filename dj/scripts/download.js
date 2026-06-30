@@ -88,3 +88,38 @@ export async function downloadTrack(bins, cfg, track) {
     return { ok: false, error: String(e.message || e) };
   }
 }
+
+// Download a KARAOKE VIDEO for a track — lyrics burned into the picture and the
+// lead vocal already removed (the "<song> karaoke" uploads on YouTube). This is
+// the preferred karaoke source: it sidesteps both lyric-fetch and vocal removal.
+// Returns { ok, file } (an .mp4) or { ok:false, error }.
+export async function downloadKaraokeVideo(bins, cfg, track) {
+  const libDir = await resolvePath(cfg.library_dir || '~/Music/DJ');
+  const name = `${safe(track.artist)} - ${safe(track.title)} (Karaoke)`;
+  const outTmpl = `${libDir}/${name}.%(ext)s`;
+  const query = `${track.artist} ${track.title} karaoke`.trim();
+
+  // Cap at 720p so files stay reasonable; merge to a single .mp4. Same
+  // search-several-grab-first-playable approach as the audio path.
+  const cmd = [
+    `mkdir -p ${sq(libDir)} &&`,
+    sq(bins.yt_dlp),
+    `--no-warnings --ignore-errors --max-downloads 1`,
+    `-f ${sq('bv*[height<=720]+ba/b[height<=720]/b')}`,
+    `--merge-output-format mp4`,
+    `--ffmpeg-location ${sq(bins.ffmpeg)}`,
+    `--print after_move:filepath`,
+    `-o ${sq(outTmpl)}`,
+    sq(`ytsearch5:${query}`),
+    `|| true`,
+  ].join(' ');
+
+  try {
+    const out = await runBash(cmd);
+    const lines = out.trim().split('\n').filter(Boolean);
+    const file = [...lines].reverse().find((l) => /\.(mp4|mkv|webm)$/.test(l)) || '';
+    return file ? { ok: true, file } : { ok: false, error: 'no karaoke video found' };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+}

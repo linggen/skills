@@ -1,0 +1,124 @@
+/* karaoke.css — the full-screen karaoke stage. Always dark (a stage is dark),
+   regardless of the OS theme; the rest of DJ follows the system. */
+
+:root {
+  --accent: #ff6b4d;          /* DJ cue-light orange */
+  --hot: #ffd44d;             /* the active lyric line */
+  --stage: #07080c;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--stage); color: #e7e9ee; color-scheme: dark;
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+
+.stage {
+  position: fixed; inset: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  cursor: default;
+}
+.stage.idle { cursor: none; }
+
+/* ── media ── */
+.kv {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: contain; background: #000; display: none;
+}
+.stage.video .kv { display: block; }
+.ka { display: none; }
+
+/* Audio-mode backdrop: a slow living gradient so the stage isn't dead black. */
+.kbg {
+  position: absolute; inset: 0; display: none;
+  background:
+    radial-gradient(60% 80% at 20% 10%, #2a1230 0%, transparent 60%),
+    radial-gradient(70% 90% at 90% 90%, #102a3a 0%, transparent 55%),
+    linear-gradient(160deg, #0b0c12, #07080c);
+}
+.stage.audio .kbg { display: block; }
+
+/* ── big synced lyrics (audio mode) ── */
+.klyrics {
+  position: relative; z-index: 1; display: none;
+  max-width: 1100px; width: 88%; max-height: 70vh; overflow: hidden;
+  text-align: center; padding: 6vh 0; mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+}
+.stage.audio .klyrics { display: block; }
+.kline {
+  font-size: clamp(22px, 3.4vw, 44px); font-weight: 700; line-height: 1.5;
+  color: #6b7384; padding: 6px 0; transition: color .2s, transform .2s; cursor: pointer;
+}
+.kline.on { color: var(--hot); transform: scale(1.06); text-shadow: 0 2px 30px rgba(255, 212, 77, .25); }
+.kempty { color: #8a93a6; font-size: clamp(18px, 2vw, 26px); text-align: center; }
+.kempty .kbtn { margin-top: 14px; }
+
+/* ── top line: back · title · fullscreen ── */
+.ktop {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+  background: linear-gradient(#000a, transparent);
+  transition: opacity .3s; pointer-events: none;
+}
+.ktop > * { pointer-events: auto; }
+.ktitle { flex: 1; text-align: center; font-size: 15px; color: #c8cdd8; }
+.ktitle b { color: #fff; }
+.ktitle span { color: #8a93a6; margin-left: 8px; }
+
+/* ── transport controls ── */
+.kctrl {
+  position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; border-radius: 16px;
+  background: #11131bcc; backdrop-filter: blur(12px); border: 1px solid #ffffff14;
+  transition: opacity .3s;
+}
+.stage.idle .kctrl, .stage.idle .ktop { opacity: 0; }
+
+.kbtn {
+  appearance: none; cursor: pointer; color: #c8cdd8;
+  background: #ffffff14; border: 1px solid #ffffff1f; border-radius: 9px;
+  font-size: 13px; padding: 7px 12px;
+}
+.kbtn:hover { color: #fff; background: #ffffff26; }
+.kc {
+  appearance: none; cursor: pointer; color: #e7e9ee; background: transparent; border: 0;
+  font-size: 20px; width: 40px; height: 40px; border-radius: 50%;
+}
+.kc:hover { background: #ffffff1f; }
+.kplay { background: var(--accent); color: #fff; font-size: 18px; }
+.kplay:hover { filter: brightness(1.08); background: var(--accent); }
+.ktime { font-variant-numeric: tabular-nums; color: #9aa3b2; font-size: 12px; min-width: 38px; text-align: center; }
+.kseek { width: min(46vw, 520px); accent-color: var(--accent); }
+
+/* ── countdown to the first line ── */
+.kcount {
+  position: absolute; z-index: 6; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: clamp(80px, 16vw, 220px); font-weight: 800; color: var(--hot);
+  text-shadow: 0 6px 60px rgba(255, 212, 77, .35); pointer-events: none;
+}
+.kcount.hidden { display: none; }
+
+/* ── up-next drawer ── */
+.kqueue {
+  position: absolute; right: 0; top: 0; bottom: 0; z-index: 7; width: min(320px, 80vw);
+  background: #0d0f15ee; border-left: 1px solid #ffffff14; padding: 56px 14px 14px;
+  overflow-y: auto; transform: translateX(100%); transition: transform .25s;
+}
+.kqueue:not(.hidden) { transform: translateX(0); }
+.kq-row { display: flex; gap: 10px; padding: 9px 10px; border-radius: 8px; cursor: pointer; color: #c8cdd8; }
+.kq-row:hover { background: #ffffff12; }
+.kq-row.on { color: var(--hot); }
+.kq-row .qi { color: #6b7384; width: 22px; text-align: right; font-variant-numeric: tabular-nums; }
+.kq-row b { font-weight: 600; }
+.kq-row small { color: #8a93a6; display: block; }
+
+/* ── toast ── */
+.ktoast {
+  position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%); z-index: 8;
+  background: #11131bee; border: 1px solid #ffffff1f; color: #e7e9ee;
+  padding: 10px 16px; border-radius: 10px; font-size: 13px; max-width: 80vw;
+}
+.ktoast.hidden { display: none; }
+.hidden { display: none; }

@@ -204,6 +204,7 @@ function rowHtml(t) {
     </div>
     <span class="row-badges">${badges}</span>
     <div class="row-acts">
+      <button data-act="karaoke" title="Karaoke">🎤</button>
       <button data-act="reveal" title="Show in Finder">⤓</button>
       <button data-act="remove" class="${pending ? 'danger' : ''}" title="Remove">${pending ? 'Remove?' : '✕'}</button>
     </div>
@@ -310,6 +311,18 @@ function updateModeBtn() {
   if (b) b.textContent = state.shuffle ? '🔀 Shuffle' : '→ In order';
 }
 
+// Karaoke: hand the current view to the full-screen stage page. The queue
+// travels via localStorage (handles the filtered/searched view + start track);
+// both pages read library.json for the rest. The agent never touches this.
+function startKaraoke(start, queue) {
+  const view = (queue || libraryView()).filter((t) => t.file);
+  if (!view.length) { toast('Nothing to sing here.'); return; }
+  const ids = view.map(trackKey);
+  const startId = trackKey(start || view[0]);
+  try { localStorage.setItem('dj:karaoke', JSON.stringify({ ids, start: startId })); } catch { /* ignore */ }
+  location.href = `karaoke.html${location.search}`;
+}
+
 // Play the whole current view (sidebar collection + search), honoring the mode.
 function playAll() {
   const view = libraryView();
@@ -346,6 +359,7 @@ async function onRowAction(e) {
   const act = btn.dataset.act;
 
   if (act === 'play') { openPlayer(t, { toast, fetchLyrics: () => fetchTrackLyrics(t), queue: libraryView() }); return; }
+  if (act === 'karaoke') { startKaraoke(t, libraryView()); return; }
   if (act === 'reveal') {
     try { await runBash(`open -R ${sq(t.file)}`); } catch (err) { toast(String(err.message || err)); }
     return;
@@ -657,6 +671,7 @@ function wireButtons() {
   } else {
     $('settings-btn').onclick = openSettings;
   }
+  $('party-btn').onclick = () => startKaraoke(null, libraryView());
 }
 
 // ── Build bar: the primary "describe a vibe → Build" entry point ─────────────
