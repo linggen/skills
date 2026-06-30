@@ -82,7 +82,9 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
   // otherwise EVERY playlist the synced tracks belong to — so a "sync all" carries
   // all the crates across, not nothing. Each .m3u lists its playlist's full
   // tracks-with-files (complete on the device even if some weren't pushed this
-  // run). Best-effort, and only for targets that support it (VLC today).
+  // run). Best-effort, and only for targets that support it — VLC doesn't (no
+  // API to import an uploaded .m3u as a Playlist); a future WebDAV/folder
+  // target writing the .m3u straight into a synced dir could.
   let playlists = 0;
   if (target.pushPlaylist) {
     const scope = opts.filter ? lib.tracks.filter(opts.filter) : lib.tracks;
