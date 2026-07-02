@@ -1,10 +1,8 @@
 // pulse-app.js — Pulse main page app shell.
 //
 // Responsibilities:
-//   1. Embed Linggen's BareSessions iframe (/sessions?skill=pulse) as the
-//      left sidebar. Listen for session_select / session_create postMessage
-//      events from it; route by navigating the top window so the chat
-//      iframe re-mounts on the chosen session.
+//   1. Resolve the boot session (resume most-recent, or mint fresh on
+//      ?new=1) — sessions are app-managed, CFO-style; no session list UI.
 //   2. Load the selected session's session.json, hand it to the
 //      renderer (page-render.js).
 //   3. Mount the Linggen chat iframe in the right column. Forward
@@ -27,8 +25,7 @@ const state = {
   // Active chat session id (the one the chat panel is attached to).
   // Set after chat-bridge mount; persisted-card storage is keyed by this.
   activeSessionId: null,
-  // Currently-viewed session id (may differ from active if user clicked a
-  // past session in the sidebar). Cards on the page reflect this.
+  // Currently-viewed session id. Cards on the page reflect this.
   viewSessionId: null,
   chat: null,              // chat-bridge controller
   // Boot resolution (set once by resolveBootSession before mountChat):
@@ -104,59 +101,6 @@ async function writeJson(path, value) {
   const b64 = btoa(unescape(encodeURIComponent(json)));
   const cmd = `mkdir -p "$(dirname "${path}")" && echo "${b64}" | base64 --decode > "${path}"`;
   await runBash(cmd);
-}
-
-// ---- Sessions iframe bridge ---------------------------------------------
-//
-// The sidebar is now Linggen's BareSessions React component loaded via
-// `<iframe src="/sessions?skill=pulse&active=<sid>">`. It owns rendering,
-// time grouping, running spinner, delete, and batch-select. We only:
-//   - point the iframe at /sessions with the right URL params
-//   - listen for postMessage events so user clicks navigate the host page
-function setupSessionsIframe(activeSid) {
-  const ifr = document.getElementById('sessions-iframe');
-  if (!ifr) return;
-  const params = new URLSearchParams({ skill: 'pulse' });
-  if (activeSid) params.set('active', activeSid);
-  ifr.src = `/sessions?${params.toString()}`;
-}
-
-function handleSessionsMessage(e) {
-  if (e.data?.type !== 'linggen-skill-event') return;
-  const sid = e.data.payload?.sessionId;
-  if (!sid) return;
-  if (e.data.event === 'session_select' || e.data.event === 'session_create') {
-    selectSession(sid).catch(err => console.warn('[pulse] switch session failed', err));
-  }
-}
-
-// ---- Session selection ---------------------------------------------------
-
-async function selectSession(sid) {
-  // Switch in place: re-point the chat iframe at the session and re-render
-  // the section cards for it. No full page reload, so the session sidebar
-  // doesn't flash empty. chat-bridge.setSession reloads only the chat iframe.
-  if (!sid || sid === state.viewSessionId) return;
-  const url = new URL(window.location.href);
-  url.searchParams.set('session', sid);
-  history.replaceState(null, '', url);
-  state.viewSessionId = sid;
-  state.activeSessionId = sid;
-  setSidebarActive(sid);
-  if (state.chat) await state.chat.setSession(sid);
-  const sess = await readJson(`${SKILL_DIR}/data/${sid}/session.json`);
-  loadSession(sess);
-  document.getElementById('session-title').textContent = 'pulse session';
-  document.getElementById('session-sub').textContent =
-    'Pick a chip above, or type a goal in chat to start.';
-}
-
-// Move the sidebar iframe's highlight without reloading it (BareSessions
-// listens for this `set_active` message).
-function setSidebarActive(sid) {
-  const ifr = document.getElementById('sessions-iframe');
-  ifr?.contentWindow?.postMessage(
-    { type: 'linggen-skill', action: 'set_active', payload: { sessionId: sid } }, '*');
 }
 
 // ---- Persistence ---------------------------------------------------------
@@ -1424,16 +1368,8 @@ async function init() {
   wireCardActions();
   wireChatResizer();
   wireSettingsModal();
-  wireNewSessionButton();
   document.getElementById('cascade-toast-stop')?.addEventListener('click', cancelCascade);
-  // Listen for iframe selections before we point the iframe at /sessions —
-  // session_create on a fresh mount races our setup otherwise.
-  window.addEventListener('message', handleSessionsMessage);
-  // Mount chat first so we know the active session id. The sessions iframe
-  // wants `active=<sid>` in its URL so the right row is highlighted on
-  // first paint.
   await mountChat();
-  setupSessionsIframe(state.viewSessionId || state.activeSessionId);
   // Load cards for the resolved session (resume target, or the freshly
   // minted session id that mountChat just set as active).
   const initialSid = state.resumeSid || state.activeSessionId;
@@ -1451,18 +1387,6 @@ async function init() {
   refreshXDashData().catch(err => console.warn('[pulse] x-dash refresh', err));
   // Auto-cascade only when this open minted a fresh session.
   maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));
-}
-
-// "New session" button → reload at ?new=1, which makes resolveBootSession
-// mint a fresh session and run the greeting + auto-cascade. A full reload
-// (vs in-place) reuses the entire boot path, so New behaves exactly like a
-// clean first-open-of-the-day.
-function wireNewSessionButton() {
-  const btn = document.getElementById('new-session-btn');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    window.location.href = `${window.location.pathname}?new=1`;
-  });
 }
 
 init().catch(err => {

@@ -1,5 +1,5 @@
 /* Pulse — main page styles. Follows system light/dark preference.
-   3-column layout: sessions sidebar / cards / chat. Card grammar:
+   2-column layout: cards / chat. Card grammar:
    mention, reply, discovery, trend, progress, draft, empty.
    Theming pattern matches sys-doctor: light defaults at :root, dark
    override in @media (prefers-color-scheme: dark). */
@@ -52,7 +52,7 @@ body {
      Default is wider than the original 380px because at 380 the chat panel
      was uncomfortably narrow with code blocks / tool calls. Persisted in
      localStorage as `pulse.chatWidth` and restored on init. */
-  grid-template-columns: 240px 1fr var(--chat-width, 480px);
+  grid-template-columns: 1fr var(--chat-width, 480px);
   grid-template-rows: 56px 1fr;
   height: 100vh;
 }
@@ -86,21 +86,6 @@ body {
 }
 .header a:hover, .header button:hover { background: var(--surface); color: var(--text); }
 
-/* ============ LEFT SIDEBAR (sessions) ============
-   Hosts Linggen's BareSessions iframe (/sessions?skill=pulse). The host
-   page reaches in only via postMessage — all rendering / selection / batch
-   delete lives in the React component. */
-.sidebar {
-  border-right: 1px solid var(--border);
-  overflow: hidden;
-}
-.sessions-frame {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
-}
-
 /* ============ MIDDLE COLUMN (sessions cards) ============ */
 .inbox {
   overflow-y: auto;
@@ -116,20 +101,6 @@ body {
   gap: 12px;
 }
 .session-header-text { min-width: 0; }
-.new-session-btn {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-soft);
-  border: 1px solid var(--accent);
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.12s;
-}
-.new-session-btn:hover { background: var(--accent); color: #fff; }
 .session-header .title {
   font-size: 18px;
   font-weight: 600;

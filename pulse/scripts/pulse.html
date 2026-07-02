@@ -26,15 +26,9 @@
       </div>
     </div>
 
-    <!-- LEFT SIDEBAR (sessions) — Linggen's BareSessions iframe, filtered
-         to creator=skill skill=pulse. Selection/create flow back to us via
-         postMessage; we navigate the top window so the chat iframe re-mounts
-         on the chosen session. -->
-    <aside class="sidebar" id="sidebar">
-      <iframe class="sessions-frame" id="sessions-iframe" title="Pulse sessions"></iframe>
-    </aside>
-
-    <!-- MIDDLE COLUMN (cards for the selected session) -->
+    <!-- MIDDLE COLUMN (cards for the selected session). Sessions are managed
+         by the app itself (CFO-style): a plain open resumes the most-recent
+         session; ?new=1 mints a fresh one. No session list is shown. -->
     <main class="inbox">
 
       <!-- Session header — populated when a session is selected -->
@@ -43,17 +37,13 @@
           <div class="title" id="session-title">Pulse</div>
           <div class="sub" id="session-sub"></div>
         </div>
-        <button class="new-session-btn" id="new-session-btn"
-                title="Start a fresh Pulse session and run today's brief">
-          ✦ New session
-        </button>
       </div>
 
       <!-- Pipeline chips: gather local → gather web → draft. Each chip = one
            step the agent (or a script) runs. Click a chip to (re-)run that
-           step independently. A NEW session (New-session button → ?new=1, or
-           first-ever open) auto-cascades the two gather steps; a plain open
-           resumes the most-recent session statically. -->
+           step independently. A NEW session (?new=1, or first-ever open)
+           auto-cascades the two gather steps; a plain open resumes the
+           most-recent session statically. -->
       <div class="action-chips pipeline">
         <button class="chip step" data-chip="gather-local" data-state="idle"
                 title="Pull yesterday's commits, sessions, and changed files">
