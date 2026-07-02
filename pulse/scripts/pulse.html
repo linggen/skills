@@ -32,37 +32,19 @@
          No session list is shown. -->
     <main class="inbox">
 
-      <!-- Session header — populated when a session is selected -->
+      <!-- Session header. One ↻ Rescan re-runs the daily brief (gather local
+           → gather web, same cascade a new session auto-runs); per-tab
+           toolbars carry scoped Rescan + Draft buttons. A NEW session
+           (?new=1, first-ever open, or a >24h-stale latest session)
+           auto-cascades; a plain open within 24h resumes statically. -->
       <div class="session-header" id="session-header">
         <div class="session-header-text">
           <div class="title" id="session-title">Pulse</div>
           <div class="sub" id="session-sub"></div>
         </div>
-      </div>
-
-      <!-- Pipeline chips: gather local → gather web → draft. Each chip = one
-           step the agent (or a script) runs. Click a chip to (re-)run that
-           step independently. A NEW session (?new=1, first-ever open, or a
-           >24h-stale latest session) auto-cascades the two gather steps; a
-           plain open within 24h resumes the session statically. -->
-      <div class="action-chips pipeline">
-        <button class="chip step" data-chip="gather-local" data-state="idle"
-                title="Pull yesterday's commits, sessions, and changed files">
-          <span class="ic">📂</span>
-          <span class="label">Gather local</span>
-          <span class="state-ic" aria-hidden="true"></span>
-        </button>
-        <button class="chip step" data-chip="gather-web" data-state="idle"
-                title="Pull web signal from configured sources, topic-aware">
-          <span class="ic">🌐</span>
-          <span class="label">Gather web</span>
-          <span class="state-ic" aria-hidden="true"></span>
-        </button>
-        <button class="chip step" data-chip="draft" data-state="idle"
-                title="Draft posts for enabled target lanes from gathered context">
-          <span class="ic">✎</span>
-          <span class="label">Draft</span>
-          <span class="state-ic" aria-hidden="true"></span>
+        <button class="rescan-all-btn" id="rescan-all-btn"
+                title="Re-run the daily brief — gather local activity, then web signal">
+          ↻ Rescan
         </button>
       </div>
 

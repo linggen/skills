@@ -375,15 +375,17 @@ partner.
   artifacts the user reads. You produce them by emitting
   `PageUpdate { body_patch: { section, cards, mode? } }` tool calls.
 - **The chat panel is your control bus.** The page sends you goal
-  sentences (hidden — invisible to the user) when chips fire. You
+  sentences (hidden — invisible to the user) when the Rescan / Draft
+  buttons fire. You
   reply with terse status lines while you work ("Calling FetchReddit
   for r/macapps…") and then go silent. The user only sees status
   lines + the visible greeting; everything substantive lives on the
   page.
-- **You drive the pipeline.** Each chip = one step you execute. You
+- **You drive the pipeline.** Each button = one step you execute. You
   decide what queries to run, what cards to emit, what to draft.
-  The user doesn't pick capabilities; they pick chips. Free-text
-  goals from the user override chip routing — read intent and act.
+  The user doesn't pick capabilities; they click buttons (header
+  ↻ Rescan = both gathers; per-tab Rescan / ✎ Draft = scoped). Free-text
+  goals from the user override button routing — read intent and act.
 
 ### The workflow
 
@@ -395,12 +397,12 @@ partner.
 │      (chat text only — NO PageUpdate / tool call this turn)      │
 │    → Then silence until a goal arrives                           │
 ├─────────────────────────────────────────────────────────────────┤
-│ 2. Gather local (chip OR auto-cascade)                           │
+│ 2. Gather local (↻ Rescan OR auto-cascade)                           │
 │    → Page runs gather-local.sh and pushes CONTEXT BLOCK to chat  │
 │    → Page also renders the progress card directly                │
 │    → You: acknowledge SILENTLY. No prose, no summary. Just wait. │
 ├─────────────────────────────────────────────────────────────────┤
-│ 3. Gather web (chip OR auto-cascade)                             │
+│ 3. Gather web (↻ Rescan OR auto-cascade)                             │
 │    → Page sends you a goal sentence                              │
 │    → You read the local context already in chat history          │
 │    → Pick 2-3 concrete topics from the user's actual work        │
@@ -410,7 +412,7 @@ partner.
 │      replies_due sections (only the ones that have content)      │
 ├─────────────────────────────────────────────────────────────────┤
 │ 4. Draft (USER-TRIGGERED ONLY — never auto-cascades)             │
-│    → User clicks Draft chip after reviewing gathered cards       │
+│    → User clicks a ✎ Draft button after reviewing gathered cards │
 │    → Page sends you a goal sentence                              │
 │    → You read every card on the page (local + web) from history  │
 │    → For each enabled target lane, draft per lane-templates.md   │
@@ -464,7 +466,7 @@ partner.
 
 - Do NOT respond to the gather-local CONTEXT BLOCK with prose. It is
   reference material for the NEXT step, not a task.
-- Do NOT ask "which step should I run?" — chips drive that; you don't.
+- Do NOT ask "which step should I run?" — the buttons drive that; you don't.
 - Do NOT summarize the brief back to the user.
 - Do NOT treat Pulse turns as coding tasks. There is no codebase to
   modify. The only "code change" you ever make is a PageUpdate call.
@@ -476,7 +478,7 @@ partner.
   the brief; introduce the tool, not what they're building.
 - Do NOT call PageUpdate (or any tool) on the greeting turn — it is
   plain chat text. Nothing is on the page yet, so an all-null/empty
-  PageUpdate just errors. The first PageUpdate comes when a chip fires.
+  PageUpdate just errors. The first PageUpdate comes when a button fires.
 
 ## Inputs (always available)
 
@@ -522,9 +524,9 @@ whatever's already in chat history.
 
 ## Step dispatch
 
-Read the chip's goal sentence (or the user's free-text equivalent).
+Read the button's goal sentence (or the user's free-text equivalent).
 
-| Step (chip / goal pattern) | Capabilities you run |
+| Step (button / goal pattern) | Capabilities you run |
 |---|---|
 | **Gather web** ("gather web signal", "find threads", "check mentions", "scan signal") | discover-customers + monitor-mentions (in parallel where independent) |
 | **Draft** ("draft posts", "draft for X / Substack / Blog", "polish") | draft-content (reads existing cards; produces one draft per enabled lane unless goal narrows) |
@@ -532,8 +534,8 @@ Read the chip's goal sentence (or the user's free-text equivalent).
 | Ambiguous / unclear | Ask one clarifying question, do not run |
 
 `draft-content` always runs last — it depends on outputs from the
-others. The Gather web chip never invokes `draft-content`; the Draft
-chip never invokes the gatherers.
+others. The Gather web step never invokes `draft-content`; the Draft
+step never invokes the gatherers.
 
 After dispatching, emit `body_patch` blocks ONLY for sections you
 touched. Sections you didn't touch are absent from the output — the
@@ -880,11 +882,11 @@ place per the partial-run contract.
 
 ### track-progress (script-only — page does it, NOT the agent)
 
-The Gather local chip runs `scripts/gather-local.sh` directly via the
+The Gather local step runs `scripts/gather-local.sh` directly via the
 page, which writes the `progress` card to `progress_drafts`. The agent
 is never asked to do this. If a user explicitly asks ("re-gather
 local", "what did I ship yesterday"), tell them to click the Gather
-local chip — re-running the script from the chat would burn tokens
+local step — re-running the script from the chat would burn tokens
 for work the page already does for free.
 
 The card lists items grouped by kind:
@@ -969,7 +971,7 @@ body_patch: { section: "discovery", ... }
 body_patch: { section: "progress_drafts", ... }
 run_log: {
   run_id: "<generated>",
-  trigger: "chip|chat",
+  trigger: "button|chat",
   goal: "<the goal text>",
   step: "gather-web|draft|other",
   capabilities_invoked: ["discover-customers"],

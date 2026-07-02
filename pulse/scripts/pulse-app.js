@@ -14,7 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -612,7 +612,7 @@ async function runGatherWeb() {
     'For mention-watching, also call FetchXMentions if sites.x.enabled — X (Twitter) mentions + replies via the official API; returns the SAME {kind: reply_to_me|mention, ...} shape with parent_comment_body for replies, so emit its items into the `mentions` section exactly like the reply_to_me / mention handling below (author is an @handle, url is an x.com link). It returns {items, count, errors}. If `items` is empty OR `errors` is non-empty (including a missing-credentials note), SKIP X mentions silently — do NOT create any card about it. A tool error/empty is NOT a mention.',
     'NEVER FABRICATE CARDS. Every mention / reply_to_me card MUST come from a real item a Fetch tool actually returned, about a real person. Do NOT invent a "system" mention, a status card, an error card, or a setup-instructions card (e.g. "X mentions unavailable — add credentials in Settings"). If a mention source returns no items or an error, it simply contributes no card. Only if NOTHING across ALL sources produced a real item do you emit ONE `empty` card for `mentions` with a one-line reason. Tool status/errors never become content cards.',
     '',
-    'For mention-watching, call FetchRedditMentions — uses Reddit RSS feeds (the private inbox feed token for replies; public search RSS for username mentions). Works whenever sites.reddit.username is set. Returns kind ∈ {mention, reply_to_me, own_comment}. IGNORE every `own_comment` row — those are page-side dedup plumbing (just kind/title/url/created_iso), NEVER a card. The mention/reply_to_me rows cover (a) threads where the handle appears in post/comment text, and (b) direct replies to the user\'s recent comments (the real "someone replied to me" signal — the item is pre-walked and carries BOTH your comment via parent_comment_body and the reply via body). NOTE: a reply to a comment on someone else\'s thread belongs in mentions as reply_to_me — do NOT map it to replies_due (that section is reserved for posts the user broadcast through Pulse\'s Draft chip, tracked via state/posted.json).',
+    'For mention-watching, call FetchRedditMentions — uses Reddit RSS feeds (the private inbox feed token for replies; public search RSS for username mentions). Works whenever sites.reddit.username is set. Returns kind ∈ {mention, reply_to_me, own_comment}. IGNORE every `own_comment` row — those are page-side dedup plumbing (just kind/title/url/created_iso), NEVER a card. The mention/reply_to_me rows cover (a) threads where the handle appears in post/comment text, and (b) direct replies to the user\'s recent comments (the real "someone replied to me" signal — the item is pre-walked and carries BOTH your comment via parent_comment_body and the reply via body). NOTE: a reply to a comment on someone else\'s thread belongs in mentions as reply_to_me — do NOT map it to replies_due (that section is reserved for posts the user broadcast through Pulse\'s Draft button, tracked via state/posted.json).',
     '',
     'For each "mention" kind result, read the thread with `FetchRedditThread` (do NOT WebFetch `<thread_url>.json` — Reddit\'s JSON is bot-walled and fails; FetchRedditThread is the working RSS reader) and emit a RICH mention card per the schema in SKILL.md: include `original_post`, `conversation` (first reply + latest if deep, with `collapsed_count`), and `draft_reply`. If the thread read fails, still emit the card from the item fields you already have rather than dropping it.',
     '',
@@ -631,17 +631,24 @@ async function runGatherWeb() {
     '  1. ALREADY-COMMENTED CHECK. Drop any thread whose post id is in SKIP_URLS — that is the authoritative list of threads I have already commented on or dismissed. Additionally, if FetchRedditThread surfaced a comment authored by "' + (redditHandle || '<sites.reddit.username>') + '" (case-insensitive, strip leading "u/"), skip that thread too. But do NOT skip a thread merely because you could not read its full comment tree: SKIP_URLS plus the page\'s render-time already-commented filter already catch those, so a missing/partial thread read is NEVER a reason to emit zero discovery cards.',
     '  2. REPLY TO THE OP — not to a nested comment. The draft is a top-level reply to the post itself: it is the easiest for me to post (the reply box sits at the top of the thread, no hunting for a buried comment) and a top-level comment on an active thread gets far more visibility, which is the point. Do NOT emit `reply_target` for discovery cards. (reply_target is only for `mentions`/reply_to_me, where the comment is in my own inbox.)',
     '  3. GROUND THE DRAFT. Use the OP body + whatever comments FetchRedditThread returned to understand the discussion (at minimum the OP). Don\'t parrot points existing commenters already made — offer a distinct angle — but the draft replies to the OP, not to any one commenter.',
-    'Then emit the card with `author` (the OP handle — `u/<name>` from FetchReddit\'s author field, or op.author from FetchRedditThread — so I see who I\'d be replying to), `excerpt` (plain-text OP body, ~500 chars; strip markdown/HTML, for UI display) and `draft_starter` (your 2-4 sentence top-level reply in voice). Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft chip handles broadcast posts, not comment-on-thread starters.',
+    'Then emit the card with `author` (the OP handle — `u/<name>` from FetchReddit\'s author field, or op.author from FetchRedditThread — so I see who I\'d be replying to), `excerpt` (plain-text OP body, ~500 chars; strip markdown/HTML, for UI display) and `draft_starter` (your 2-4 sentence top-level reply in voice). Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft button handles broadcast posts, not comment-on-thread starters.',
   ].join('\n');
   sendChatHidden(goal);
   return promise;
 }
 
 // ── Step 3: Draft — agent reads all cards, drafts for enabled lanes ──
-async function runDraft() {
+// `lane` (optional) scopes the run to one target lane — set when the user
+// clicks ✎ Draft on a source tab (x → x-post, hn → hn-comment,
+// reddit → reddit-comment). Unset = all enabled lanes (Progress tab).
+async function runDraft(lane) {
   const promise = startChip('draft', PIPELINE_CHIPS['draft'].expects);
+  const scopeLine = lane
+    ? `LANE SCOPE: the user clicked ✎ Draft on a source tab — draft ONLY for the "${lane}" lane this run, even if config.targets marks it disabled (an explicit click overrides the lane toggle). Where the instructions below say "each enabled lane", read "the ${lane} lane".`
+    : '';
   const goal = [
     'Draft posts for the enabled target lanes using the local + web cards already in this session.',
+    scopeLine,
     '',
     'BEFORE drafting, Read these two reference files in full — they are the voice contract for this step, not optional:',
     '  - references/style-guide.md (Avoid list, Anti-AI tics, Cadence rules, good/bad examples)',
@@ -676,16 +683,12 @@ async function runDraft() {
   return promise;
 }
 
-function wireChips() {
-  document.querySelectorAll('.chip[data-chip]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const chipId = btn.dataset.chip;
-      const conf = PIPELINE_CHIPS[chipId];
-      if (!conf) return;
-      // Cancel any in-flight cascade — explicit click takes precedence.
-      cancelCascade();
-      conf.handler().catch(err => console.warn(`[pulse] ${chipId} failed`, err));
-    });
+// Header ↻ Rescan — re-runs the daily brief (the same two-step gather
+// cascade a new session auto-runs) in the CURRENT session.
+function wireRescanAll() {
+  document.getElementById('rescan-all-btn')?.addEventListener('click', () => {
+    cancelCascade(); // explicit click takes precedence over an in-flight run
+    runGatherCascade().catch(err => console.warn('[pulse] rescan failed', err));
   });
 }
 
@@ -735,12 +738,15 @@ async function maybeAutoCascade() {
   if (state.initReady) {
     try { await state.initReady; } catch {}
   }
+  await runGatherCascade();
+}
+
+// The gather cascade: local activity, then web signal, with the toast for
+// progress. Draft is user-triggered (header/tab buttons) because
+// auto-drafting without lane / angle / polish input produces generic posts
+// the user won't use — wastes tokens.
+async function runGatherCascade() {
   cascadeStop = false;
-  // Auto-cascade runs ONLY the two gather steps. Draft is user-triggered
-  // because auto-drafting without lane / angle / polish input produces
-  // generic posts the user won't use — wastes tokens. Cards from the
-  // gather steps stay on the page; user clicks Draft when they have a
-  // target in mind.
   const steps = [
     { id: 'gather-local', label: 'Gathering local activity…' },
     { id: 'gather-web',   label: 'Gathering web signal…' },
@@ -1349,6 +1355,8 @@ async function init() {
     setOnTabRender(renderXTab);
     // Per-tab Rescan buttons run a source-scoped gather in the CURRENT session.
     setOnRescan(handleTabRescan);
+    // Per-tab Draft buttons draft for that tab's lane in the current session.
+    setOnDraft(handleTabDraft);
     const handle = (cfg?.sites?.reddit?.username || '').trim();
     if (handle) {
       setSelfHandle(handle);
@@ -1367,7 +1375,7 @@ async function init() {
   // Resolve which session this open should attach to BEFORE mounting chat,
   // so we resume the most-recent session instead of minting a new one.
   await resolveBootSession();
-  wireChips();
+  wireRescanAll();
   wireCardActions();
   wireChatResizer();
   wireSettingsModal();
@@ -1381,7 +1389,7 @@ async function init() {
     const sess = await readJson(`${SKILL_DIR}/data/${initialSid}/session.json`);
     loadSession(sess);
     document.getElementById('session-title').textContent = 'pulse session';
-    document.getElementById('session-sub').textContent = 'Pick a chip above, or type a goal in chat to start.';
+    document.getElementById('session-sub').textContent = 'Hit ↻ Rescan for a fresh brief, or type a goal in chat.';
   }
   await snapshotAudienceMetrics().catch(err => console.warn('[pulse] audience snapshot', err));
   await loadStatusStrip();
@@ -1725,6 +1733,15 @@ function handleTabRescan(tabId) {
   if (tabId === 'progress') { runGatherLocal(); return; }
   const prompt = RESCAN_PROMPTS[tabId];
   if (prompt) sendChatHidden(prompt);
+}
+
+// Per-tab ✎ Draft — source tabs draft for their own lane; the Progress tab
+// runs the full multi-lane draft (the old Draft chip).
+const TAB_LANES = { x: 'x-post', hn: 'hn-comment', reddit: 'reddit-comment' };
+
+function handleTabDraft(tabId) {
+  const lane = TAB_LANES[tabId];
+  runDraft(lane).catch(err => console.warn('[pulse] draft failed', err));
 }
 
 // User marks an X reply card as posted → feed the cadence/posted series.

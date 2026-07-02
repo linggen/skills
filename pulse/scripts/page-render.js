@@ -51,6 +51,7 @@ let pageConfig = null;
 let activeTab = (() => { try { return localStorage.getItem('pulse:tab') || null; } catch (e) { return null; } })();
 let onTabRenderCallback = null;
 let onRescanCallback = null;
+let onDraftCallback = null;
 
 function emptySession() {
   return {
@@ -82,6 +83,9 @@ export function setOnTabRender(cb) { onTabRenderCallback = cb; }
 // Per-tab Rescan: the button calls back with the tab id; pulse-app sends a
 // source-scoped gather into the CURRENT session (CFO-style, no new session).
 export function setOnRescan(cb) { onRescanCallback = cb; }
+// Per-tab Draft: source tabs draft for their own lane; Progress drafts all
+// enabled lanes. pulse-app maps tab id -> lane and sends the draft goal.
+export function setOnDraft(cb) { onDraftCallback = cb; }
 
 export function getSession() { return session; }
 
@@ -522,6 +526,10 @@ function renderTabBar(visible, counts) {
   return bar;
 }
 
+const DRAFT_LABELS = {
+  x: '✎ Draft', hn: '✎ Draft', reddit: '✎ Draft', progress: '✎ Draft posts',
+};
+
 const RESCAN_LABELS = {
   x: '↻ Rescan X', hn: '↻ Rescan HN', reddit: '↻ Rescan Reddit',
   bluesky: '↻ Rescan Bluesky', mentions: '↻ Check mentions', progress: '↻ Refresh progress',
@@ -549,6 +557,23 @@ function renderTabContent(tab, body) {
     setTimeout(() => { rescan.disabled = false; rescan.textContent = RESCAN_LABELS[tab.id] || '↻ Rescan'; }, 4000);
   });
   actions.appendChild(rescan);
+  // Draft — only on tabs with something to draft: source tabs with a target
+  // lane (x/hn/reddit), and Progress (full multi-lane draft). Bluesky has no
+  // lane; Mentions cards carry inline draft replies already.
+  const draftLabel = DRAFT_LABELS[tab.id];
+  if (draftLabel) {
+    const draft = document.createElement('button');
+    draft.className = 'rescan-btn';
+    draft.textContent = draftLabel;
+    draft.addEventListener('click', () => {
+      if (typeof onDraftCallback !== 'function') return;
+      onDraftCallback(tab.id);
+      draft.disabled = true;
+      draft.textContent = 'Drafting…';
+      setTimeout(() => { draft.disabled = false; draft.textContent = draftLabel; }, 4000);
+    });
+    actions.appendChild(draft);
+  }
   body.appendChild(actions);
 
   // The X tab hosts the roster card + dashboard; pulse-app renders into this

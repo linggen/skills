@@ -112,68 +112,22 @@ body {
   margin-top: 2px;
 }
 
-/* Action chips */
-.action-chips {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  padding: 0 0.1rem 1rem;
-}
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.85rem;
-  font-size: 12.5px;
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  cursor: pointer;
-  font: inherit;
-  font-size: 12.5px;
-  transition: border-color 0.15s, color 0.15s;
-}
-.chip:hover { border-color: var(--accent); color: var(--accent); }
-.chip .ic { font-size: 13px; opacity: 0.85; }
-
-/* Pipeline chips — Gather local → Gather web → Draft. Each carries a
-   data-state attribute (idle | running | done | failed) the JS flips as
-   the step progresses. Visual state lives in the trailing .state-ic. */
-.action-chips.pipeline { gap: 0.6rem; padding-bottom: 0.6rem; }
-.chip.step {
-  position: relative;
-  padding-right: 0.65rem;
-}
-.chip.step .label { font-weight: 500; }
-.chip.step .state-ic {
-  display: inline-block;
-  width: 14px;
-  height: 14px;
-  margin-left: 0.15rem;
+/* Header Rescan — re-runs the daily brief (gather local + gather web) in
+   the current session. Progress shows via the cascade toast below. */
+.rescan-all-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
   font-size: 12px;
-  text-align: center;
-  line-height: 14px;
-  opacity: 0.85;
-}
-.chip.step[data-state="idle"]    .state-ic::before { content: ""; }
-.chip.step[data-state="running"] .state-ic::before { content: "◐"; animation: chipSpin 1.1s linear infinite; }
-.chip.step[data-state="done"]    .state-ic::before { content: "✓"; color: var(--green); }
-.chip.step[data-state="failed"]  .state-ic::before { content: "!"; color: var(--red); }
-
-.chip.step[data-state="running"] {
-  border-color: var(--accent);
+  font-weight: 600;
   color: var(--accent);
-  cursor: progress;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s;
 }
-.chip.step[data-state="done"] {
-  border-color: color-mix(in srgb, var(--green) 50%, var(--border));
-}
-.chip.step[data-state="failed"] {
-  border-color: color-mix(in srgb, var(--red) 50%, var(--border));
-}
-
-@keyframes chipSpin { to { transform: rotate(360deg); } }
+.rescan-all-btn:hover { background: var(--accent); color: #fff; }
 
 /* Cascade toast — non-blocking strip shown when first-open auto-cascade
    is firing. Stop button cancels the next step in the chain. */
