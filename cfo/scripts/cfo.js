@@ -10,6 +10,39 @@ import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, de
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
 
+// In-page confirm — window.confirm is a silent no-op inside the app shell
+// (its WKWebView implements no confirm panel: returns false, no dialog),
+// so render a tiny modal instead. Works identically in the browser.
+function confirmDialog(message) {
+  return new Promise((resolve) => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;';
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#fff;color:#1e293b;border-radius:12px;padding:16px;width:320px;max-width:90vw;font:13px/1.5 -apple-system,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.2);';
+    if (matchMedia('(prefers-color-scheme: dark)').matches) { card.style.background = '#1c1c1c'; card.style.color = '#e2e8f0'; }
+    const msg = document.createElement('div');
+    msg.style.cssText = 'white-space:pre-wrap;word-break:break-word;';
+    msg.textContent = message;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;margin-top:14px;';
+    const done = (ok) => { ov.remove(); resolve(ok); };
+    const mk = (label, ok, style) => {
+      const b = document.createElement('button');
+      b.textContent = label; b.style.cssText = style; b.onclick = () => done(ok);
+      return b;
+    };
+    row.append(
+      mk('Cancel', false, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
+      mk('OK', true, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;'),
+    );
+    card.append(msg, row);
+    ov.append(card);
+    ov.onclick = (e) => { if (e.target === ov) done(false); };
+    document.body.append(ov);
+  });
+}
+
+
 const SKILL = 'cfo';
 const DATA = `$HOME/.linggen/skills/${SKILL}/data`; // $HOME stays literal for bash
 let chat = null;
@@ -539,7 +572,7 @@ async function renderImportHistory() {
   }).join('')}
     </div>`;
   el.querySelectorAll('.undo').forEach((b) => b.addEventListener('click', async () => {
-    if (!window.confirm('Undo this import? The transactions it added will be removed from your report.')) return;
+    if (!(await confirmDialog('Undo this import? The transactions it added will be removed from your report.'))) return;
     b.disabled = true;
     await undoImport(b.dataset.id);
   }));
