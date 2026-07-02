@@ -2006,8 +2006,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const rz = document.getElementById('pane-resizer');
   const clampW = (w) => Math.min(Math.max(w, 280), Math.round(window.innerWidth * 0.6));
   const applyChatW = (w) => { app.style.gridTemplateColumns = `1fr 6px ${w}px`; };
-  let chatW = 380;
-  try { chatW = clampW(+localStorage.getItem('cfo:chat-width') || 380); } catch { /* ignore */ }
+  let chatW = 480;
+  try { chatW = clampW(+localStorage.getItem('cfo:chat-width') || 480); } catch { /* ignore */ }
   applyChatW(chatW);
   rz?.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -2024,9 +2024,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     rz.addEventListener('pointerup', up);
   });
   rz?.addEventListener('dblclick', () => {
-    chatW = 380;
+    chatW = 480;
     applyChatW(chatW);
-    try { localStorage.setItem('cfo:chat-width', '380'); } catch { /* ignore */ }
+    try { localStorage.setItem('cfo:chat-width', '480'); } catch { /* ignore */ }
   });
 
   const pane = document.getElementById('report-pane');

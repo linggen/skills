@@ -18,7 +18,7 @@ body {
   margin: 0; background: var(--bg); color: var(--ink); color-scheme: light dark;
   font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-#app { display: grid; grid-template-columns: 1fr 6px 380px; height: 100vh; }
+#app { display: grid; grid-template-columns: 1fr 6px 480px; height: 100vh; }
 
 /* Drag handle between report and chat (JS rewrites the last column width). */
 #pane-resizer { cursor: col-resize; position: relative; }

@@ -782,8 +782,8 @@ function wireResizer() {
   if (!layout || !rz) return;
   const clampW = (w) => Math.min(Math.max(w, 300), Math.round(window.innerWidth * 0.6));
   const applyW = (w) => { layout.style.gridTemplateColumns = `1fr 6px ${w}px`; };
-  let w = 380;
-  try { w = clampW(+localStorage.getItem('dj:chat-width') || 380); } catch { /* ignore */ }
+  let w = 480;
+  try { w = clampW(+localStorage.getItem('dj:chat-width') || 480); } catch { /* ignore */ }
   applyW(w);
   rz.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -799,7 +799,7 @@ function wireResizer() {
     rz.addEventListener('pointermove', move);
     rz.addEventListener('pointerup', up);
   });
-  rz.addEventListener('dblclick', () => { w = 380; applyW(w); try { localStorage.setItem('dj:chat-width', '380'); } catch { /* ignore */ } });
+  rz.addEventListener('dblclick', () => { w = 480; applyW(w); try { localStorage.setItem('dj:chat-width', '480'); } catch { /* ignore */ } });
 }
 
 function openSettings() {
