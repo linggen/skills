@@ -370,7 +370,7 @@
         if (modelSelect.value) localStorage.setItem("cfo:model", modelSelect.value);
         else localStorage.removeItem("cfo:model");
       } catch { /* ignore */ }
-      modelStatus.textContent = "Saved — applies to your next New chat";
+      modelStatus.textContent = "Saved — applies to your next session";
       modelStatus.classList.add("visible");
       setTimeout(() => modelStatus.classList.remove("visible"), 2600);
     });

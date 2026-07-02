@@ -704,7 +704,7 @@ async function undoImport(importId) {
 }
 
 // Re-render the saved ledger on open, so the user lands on their picture and
-// the report survives New-chat / refresh / 24h session rollover.
+// the report survives /clear, refresh, and the 24h session rollover.
 async function resumeState() {
   try {
     LEDGER = await loadLedger();
@@ -1837,12 +1837,6 @@ function triggerGreeting() {
   setTimeout(() => { if (!chatActivity) send(); }, 8000);
 }
 
-async function newChat() {
-  try { chat?.destroy?.(); } catch { /* ignore */ }
-  await mountChat(null); // fresh session — report (left pane) is untouched
-  triggerGreeting();
-}
-
 function showHelp() {
   const root = document.getElementById('modal');
   root.hidden = false;
@@ -1951,7 +1945,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   wireSections();
   wireTooltip();
-  document.getElementById('new-chat')?.addEventListener('click', newChat);
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
   document.getElementById('help-btn')?.addEventListener('click', showHelp);
 
