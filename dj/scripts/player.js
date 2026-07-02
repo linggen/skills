@@ -41,6 +41,14 @@ try {
 } catch { /* BroadcastChannel unsupported — single-tab still fine */ }
 const claimPlayback = () => { try { bc?.postMessage({ claim: PAGE }); } catch { /* ignore */ } };
 
+// Sweep stale .nowplaying copies from pages that never got to clean up (tab
+// closed mid-play, refresh) — stop() only removes THIS page's file. Anything
+// older than an hour can't belong to a live player; each copy is a full track
+// (~10MB), so leaks add up fast. Best-effort, once per page load.
+runBash(
+  `find "$HOME/.linggen/skills/dj/scripts" -maxdepth 1 -name '.nowplaying-*.mp3' -mmin +60 -delete`,
+).catch(() => {});
+
 // ── the player overlay ───────────────────────────────────────────────────────
 export async function openPlayer(startTrack, opts = {}) {
   if (active) active.stop(); // stop+remove any previous player (shared <audio>)

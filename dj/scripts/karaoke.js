@@ -149,6 +149,9 @@ async function serveMedia(file, ext) {
   const resp = await fetch(`/apps/dj/scripts/${name}?t=${Date.now()}`);
   if (!resp.ok) throw new Error(`load ${resp.status}`);
   const blob = await resp.blob();
+  // The served copy was only needed for that one fetch — the blob is fully
+  // in-memory now, so remove it rather than leave a track-sized file behind.
+  runBash(`rm -f "${DJ_SCRIPTS}/${name}"`).catch(() => {});
   if (blobUrl) URL.revokeObjectURL(blobUrl);
   blobUrl = URL.createObjectURL(blob);
   return blobUrl;
