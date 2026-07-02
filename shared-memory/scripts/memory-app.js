@@ -65,7 +65,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await mountAndStart(initialSession || null);
 });
 
-// Most recent ling-mem skill session id, or '' if none exists yet.
+// Most recent ling-mem skill session id, or '' if none exists yet or the
+// latest is older than 24h (all apps share this rule: latest if < 24h,
+// else auto-fresh — CFO/DJ/Sys Doctor/Pulse do the same).
 async function latestSkillSession() {
   try {
     const sessions = await listSkillSessions(SKILL_NAME);
@@ -73,7 +75,8 @@ async function latestSkillSession() {
     // list order isn't guaranteed — pick the newest by created_at.
     const latest = sessions.reduce((a, b) =>
       (b.created_at || 0) > (a.created_at || 0) ? b : a);
-    return latest.id || '';
+    const ageHours = (Date.now() / 1000 - (latest.created_at || 0)) / 3600;
+    return ageHours < 24 ? (latest.id || '') : '';
   } catch {
     return '';
   }

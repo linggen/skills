@@ -60,9 +60,11 @@ async function readJson(path, fallback = null) {
 
 // Newest engine session id for this skill, by session.json mtime. Only
 // `sess-*` dirs (engine-resumable); legacy date-named dirs are skipped.
-// Returns null when no prior session exists.
+// Sessions older than 24h are not resumed (all apps share this rule:
+// latest if < 24h, else auto-fresh). Returns null when nothing qualifies.
 async function findLatestSessionId() {
-  const cmd = `ls -1t "${SKILL_DIR}/data/"sess-*/session.json 2>/dev/null | head -1 || true`;
+  const cmd = `f=$(ls -1t "${SKILL_DIR}/data/"sess-*/session.json 2>/dev/null | head -1); ` +
+    `if [ -n "$f" ] && [ -n "$(find "$f" -mmin -1440 2>/dev/null)" ]; then echo "$f"; fi`;
   const out = (await runBash(cmd)).trim();
   if (!out) return null;
   // .../data/<sid>/session.json → <sid>
@@ -74,7 +76,8 @@ async function findLatestSessionId() {
 //   ?session=<id> → resume that session statically
 //   ?new=1        → mint a fresh session (greet + cascade), then strip the
 //                   marker so a later refresh resumes it instead of re-minting
-//   (no params)   → resume the most-recent session; if none exist yet, mint one
+//   (no params)   → resume the most-recent session if it's < 24h old;
+//                   older (or none) → mint fresh (greet + cascade)
 async function resolveBootSession() {
   const params = new URLSearchParams(window.location.search);
   if (params.get('session')) {
@@ -92,7 +95,7 @@ async function resolveBootSession() {
     return;
   }
   const latest = await findLatestSessionId();
-  state.resumeSid = latest;            // null on first-ever open
+  state.resumeSid = latest;            // null on first-ever or >24h-stale open
   state.isNewSession = !latest;        // nothing to resume → behave like New
 }
 
