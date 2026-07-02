@@ -1,7 +1,7 @@
 // Memory App — thin client.
 //
 // JS responsibilities:
-//   1. Mount the sessions iframe (sidebar) and chat panel.
+//   1. Mount the chat panel (sessions are app-managed, CFO-style).
 //   2. On open, paint the dashboard deterministically from disk + the
 //      ling-mem daemon's count endpoint. No LLM round-trip required.
 //      The agent stays passive until the user clicks Hippocampus
@@ -44,54 +44,6 @@ const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
 let chat = null;
 
-// Sessions iframe bridge (mirrors pulse-app.js setupSessionsIframe).
-// Sidebar is Linggen's BareSessions React component loaded via
-// `<iframe src="/sessions?skill=ling-mem&active=<sid>">`. We only point
-// the iframe and listen for select / create postMessages.
-function setupSessionsIframe(activeSid) {
-  const ifr = document.getElementById('sessions-iframe');
-  if (!ifr) return;
-  const sp = new URLSearchParams({ skill: SKILL_NAME });
-  if (activeSid) sp.set('active', activeSid);
-  ifr.src = `/sessions?${sp.toString()}`;
-}
-
-function handleSessionsMessage(e) {
-  if (e.data?.type !== 'linggen-skill-event') return;
-  const sid = e.data.payload?.sessionId;
-  if (!sid) return;
-  if (e.data.event === 'session_select' || e.data.event === 'session_create') {
-    switchSession(sid).catch(err => console.warn('[memory] switch session failed', err));
-  }
-}
-
-// Switch to a different session WITHOUT a full page reload: re-point the chat
-// iframe, repaint the per-session dashboard, sync the URL, and tell the
-// sidebar to move its highlight. Avoids the empty-flash a reload caused.
-async function switchSession(sid) {
-  if (!chat || sid === chat.getSessionId()) return;
-  const url = new URL(window.location);
-  url.searchParams.set('session', sid);
-  history.replaceState(null, '', url);
-  setSidebarActive(sid);
-  await chat.setSession(sid);
-  if (await tryRestoreCached(sid)) {
-    refreshTierCounts().catch(() => {});
-    return;
-  }
-  await paintDashboard();
-  setTimeout(() => { if (chat) chat.sendHidden(BOOT_PROMPT); }, 1500);
-  refreshTierCounts().catch(() => {});
-}
-
-// Move the sidebar iframe's highlight to `sid` without reloading it
-// (BareSessions listens for this `set_active` message).
-function setSidebarActive(sid) {
-  const ifr = document.getElementById('sessions-iframe');
-  ifr?.contentWindow?.postMessage(
-    { type: 'linggen-skill', action: 'set_active', payload: { sessionId: sid } }, '*');
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
   if (!modelId) {
     try {
@@ -100,19 +52,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { /* ignore */ }
   }
   // Opening from the skill card has no `?session=`. Resume the most recent
-  // ling-mem session by default instead of spawning a fresh one each time;
-  // the "+" button is the explicit "new session" path.
+  // ling-mem session by default instead of spawning a fresh one each time.
+  // Sessions are app-managed (CFO-style) — no session list UI.
   const existingSession = params.get('session') || '';
   const initialSession = existingSession || (await latestSkillSession());
-  // Reflect a resumed session in the URL so reload/refresh stays put and the
-  // sidebar can highlight it (active=<sid>).
+  // Reflect a resumed session in the URL so reload/refresh stays put.
   if (!existingSession && initialSession) {
     const url = new URL(window.location);
     url.searchParams.set('session', initialSession);
     history.replaceState(null, '', url);
   }
-  setupSessionsIframe(initialSession || null);
-  window.addEventListener('message', handleSessionsMessage);
   await mountAndStart(initialSession || null);
 });
 

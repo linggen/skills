@@ -29,12 +29,8 @@
   </div>
 
   <div class="doctor-container">
-    <!-- Left: sessions list (Linggen's BareSessions iframe).
-         Selection / create flow back via postMessage; pulse.html
-         is the canonical pattern. -->
-    <aside class="sidebar" id="sidebar">
-      <iframe class="sessions-frame" id="sessions-iframe" title="Memory sessions"></iframe>
-    </aside>
+    <!-- Sessions are app-managed (CFO-style): plain open resumes the most
+         recent ling-mem session; no session list is shown. -->
 
     <!-- Middle: model-driven view panel -->
     <div class="view-panel" id="view-panel">
