@@ -6,12 +6,14 @@ Skills for **[Linggen](https://linggen.dev)** — your personal AI assistant. Re
 
 | Skill | Description |
 |-------|-------------|
+| **[cfo](./cfo/)** | Personal CFO — a private, on-device finance analyst. Import bank/credit CSV or PDF exports for spend reports and insights. |
+| **[dj](./dj/)** | Disc Jockey — describe a vibe and DJ curates the tracklist, downloads it into a tagged library, and pushes it to your phone. |
+| **[pulse](./pulse/)** | GTM brain for solo founders — gathers signal from X/HN/Reddit/Bluesky, monitors mentions, drafts posts. |
 | **[skiller](./skiller/)** | Search, install, and manage skills from the marketplace (skills.sh + ClawHub). Browse library packs. |
 | **[shared-memory](./shared-memory/)** | One memory shared across your AI tools. LanceDB RAG store via the `ling-mem` binary. Works in Linggen via typed `Memory_*` tools and in Claude Code / Codex / OpenClaw via the `ling-mem` CLI. |
 | **[sys-doctor](./sys-doctor/)** | System health analyst. Scans disk, apps, caches, and system info. `--web` opens an interactive dashboard. |
 | **[linggen-guide](./linggen-guide/)** | Built-in documentation for Linggen — architecture, features, CLI, skills, tools, agents, and configuration. |
-| **[arcade-game](./arcade-game/)** | Retro arcade games — Snake, Pong, and Tetris in your browser. |
-| **[game-table](./game-table/)** | Play board games against AI — Chinese Chess, Gomoku, and more. |
+| **[game-table](./game-table/)** | Play board games against AI — Chinese Chess and Gomoku — plus Snake, Pong, and Tetris. |
 | **[xbot](./xbot/)** | X (Twitter) assistant — post, search, reply, monitor mentions, and track engagement. Uses your own developer app credentials. |
 
 ## Install
@@ -35,8 +37,7 @@ Skills are automatically installed when you run `ling init --global`.
 - **Shared Memory**: `/shared-memory` — or call `Memory_query` / `Memory_write` directly in Linggen; `ling-mem add|search|list` from any shell
 - **Sys Doctor**: `/sys-doctor` or `/sys-doctor --web` for the interactive dashboard
 - **Linggen Guide**: `/linggen-guide` to ask questions about Linggen
-- **Arcade**: `/arcade-game` — pick Snake, Pong, or Tetris
-- **Game Table**: `/game-table` — Chinese Chess, Gomoku, and more vs. AI
+- **Game Table**: `/game-table` — Chinese Chess and Gomoku vs. AI, plus Snake, Pong, and Tetris
 - **X Bot**: `/xbot status`, `/xbot search AI agents`, `/xbot post <text>`, `/xbot reply <url>`
 
 ## Notes
