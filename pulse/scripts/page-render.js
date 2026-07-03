@@ -244,6 +244,11 @@ export function loadSession(sessionData) {
         ...(sessionData.sections || {}),
       },
     };
+    // Heal persisted sessions whose cards were ingested before ensureCardId
+    // existed (or were saved id-less) — otherwise their buttons stay dead.
+    for (const sec of Object.values(session.sections)) {
+      (sec.cards || []).forEach(ensureCardId);
+    }
   }
   renderAll();
 }
@@ -283,6 +288,22 @@ export function resetPage() {
 
 // ---- Patch application ---------------------------------------------------
 
+// Every card action (copy/open/dismiss…) resolves its card via
+// data-card="<id>" → findCard(id), but models don't reliably emit the
+// schema's "<generate>" id — an id-less card renders buttons that silently
+// do nothing. Derive a stable id from the card's identity so actions never
+// dead-end; content-derived (not a counter) so append-mode dedup still
+// recognizes the same thread across gathers.
+function ensureCardId(c) {
+  if (!c || typeof c !== 'object' || c.id) return c;
+  const key = c.url || c.thread_url || c.your_post_url
+    || `${c.type || 'card'}|${c.title || c.thread_title || c.content || ''}`;
+  let h = 5381;
+  for (let i = 0; i < key.length; i++) h = ((h * 33) ^ key.charCodeAt(i)) >>> 0;
+  c.id = `auto-${h.toString(36)}`;
+  return c;
+}
+
 function applyBodyPatch(patch) {
   if (!patch || typeof patch !== 'object' || !patch.section) return;
   const sectionId = patch.section;
@@ -296,7 +317,7 @@ function applyBodyPatch(patch) {
     // before the render-time filter hides them. (Seed loads before any
     // gather — see init() — so dismissedUrls is populated by the time a
     // body_patch arrives.)
-    const incoming = patch.cards.filter(c => !isDismissed(c));
+    const incoming = patch.cards.filter(c => !isDismissed(c)).map(ensureCardId);
     // Two modes:
     //   default (replace) — cards in patch fully replace existing cards.
     //                       Used by Gather web's mentions/trend/discovery
