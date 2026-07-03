@@ -1723,15 +1723,22 @@ function renderXTab(tabId, mount) {
 // Per-tab Rescan — a source-scoped gather sent into the CURRENT chat session
 // (the CFO model: a button → chat.send, no new session). The agent already
 // carries SKILL.md + the Fetch tools, so each prompt stays focused.
+// Each source rescan also re-checks that source's mentions (cards still land
+// in the `mentions` section) so a tab rescan never leaves stale inbox items.
+const MENTIONS_RECHECK = (tool) =>
+  `Also re-check my mentions for this source: call ${tool} and emit \`mention\` / \`reply_to_me\` cards into the \`mentions\` section per SKILL.md — a tool error or empty result contributes no card.`;
+
 const RESCAN_PROMPTS = {
   x: [
     'Refresh my X targets in THIS session.',
     'First ensure the target roster: if sites.x.roster is empty (or I am asking to refresh accounts), rebuild it per the discover-customers "X target roster" procedure — FetchXWhoToFollow (source 1), authors of on-topic FetchX hits (source 2), FetchXFollowing <handle> on my strongest targets (source 3); tag each `followed` via FetchXFollowing (no arg = my own following); exclude self + sites.x.ignored_accounts + sites.x.dismissed_suggestions; curate ~20 with a one-line `why`; emit a `x_roster` body_patch (source-1 first). If the roster already has accounts and I did not ask to refresh, skip rebuilding.',
-    'Then call FetchXTargets and emit the freshest posts as `discovery` cards (source:"x") — bypass the 0.6 fit gate (the roster is pre-vetted), drop any whose status id is in SKIP_URLS, freshest first. No prose response.',
+    'Then call FetchXTargets and emit the freshest posts as `discovery` cards (source:"x") — bypass the 0.6 fit gate (the roster is pre-vetted), drop any whose status id is in SKIP_URLS, freshest first.',
+    MENTIONS_RECHECK('FetchXMentions'),
+    'No prose response.',
   ].join('\n'),
-  hn: 'Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply; emit `discovery` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit `hn_submit` cards. Drop SKIP_URLS. No prose response.',
-  reddit: 'Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit; drop SKIP_URLS; for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and draft a top-level reddit-comment reply; emit `discovery` cards (source:"reddit"). No prose response.',
-  bluesky: 'Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit `discovery` cards (sub:"bsky"). Drop SKIP_URLS. No prose response.',
+  hn: `Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply; emit \`discovery\` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit \`hn_submit\` cards. Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchHNMentions')} No prose response.`,
+  reddit: `Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit; drop SKIP_URLS; for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and draft a top-level reddit-comment reply; emit \`discovery\` cards (source:"reddit"). ${MENTIONS_RECHECK('FetchRedditMentions')} No prose response.`,
+  bluesky: `Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit \`discovery\` cards (sub:"bsky"). Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchBlueskyMentions')} No prose response.`,
   mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchHNMentions / FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md. NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card. No prose response.',
 };
 
