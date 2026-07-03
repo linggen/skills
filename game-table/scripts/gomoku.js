@@ -59,10 +59,51 @@ async function init() {
   canvas.addEventListener('click', onBoardClick);
   updateScoreDisplay();
 
-  await startNewGame();
+  const saved = loadMatch();
+  if (saved) await resumeMatch(saved);
+  else await startNewGame();
+}
+
+// ── Match persistence — survive a game-rail switch mid-match ──────
+// Every AI prompt carries the full board, so only the board needs to
+// persist; the chat session stays a fresh throwaway. Saved at user-turn
+// checkpoints (after the AI's stone lands), cleared on game end / New Game.
+
+const MATCH_KEY = `game-table:${GAME_KEY}:match`;
+
+function saveMatch() {
+  try {
+    localStorage.setItem(MATCH_KEY, JSON.stringify({ v: 1, board, moveHistory, lastMove }));
+  } catch { /* ignore */ }
+}
+
+function clearMatch() {
+  try { localStorage.removeItem(MATCH_KEY); } catch { /* ignore */ }
+}
+
+function loadMatch() {
+  try {
+    const m = JSON.parse(localStorage.getItem(MATCH_KEY));
+    if (m?.v !== 1 || !Array.isArray(m.board) || m.board.length !== SIZE) return null;
+    if (m.board.some(r => !Array.isArray(r) || r.length !== SIZE)) return null;
+    if (!Array.isArray(m.moveHistory) || m.moveHistory.length === 0) return null;
+    return m;
+  } catch { return null; }
+}
+
+async function resumeMatch(saved) {
+  board = saved.board;
+  moveHistory = saved.moveHistory;
+  lastMove = saved.lastMove || null;
+  waitingForAI = false;
+  gameOver = false;
+  retryCount = 0;
+  drawBoard();
+  await mountFreshChat(`Match resumed after ${moveHistory.length} moves — your turn.`);
 }
 
 async function startNewGame() {
+  clearMatch();
   board = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
   waitingForAI = false;
   gameOver = false;
@@ -70,8 +111,11 @@ async function startNewGame() {
   lastMove = null;
   moveHistory = [];
   drawBoard();
+  await mountFreshChat('Welcome to Gomoku (五子棋)! Get 5 stones in a row to win. You play Black (first move). Click any intersection to place your stone.');
+}
 
-  // Clean up old session and mount fresh chat panel
+// Clean up any old session and mount a fresh chat panel.
+async function mountFreshChat(welcome) {
   if (chat) {
     await chat.deleteSession();
     chat.destroy();
@@ -88,7 +132,7 @@ async function startNewGame() {
   });
 
   setTimeout(() => {
-    chat.addMessage('ai', 'Welcome to Gomoku (五子棋)! Get 5 stones in a row to win. You play Black (first move). Click any intersection to place your stone.');
+    chat.addMessage('ai', welcome);
   }, 500);
 }
 
@@ -808,6 +852,8 @@ function handleAIResponse(text) {
       gameOver = true;
       chat.addMessage('system', 'Five in a row! AI wins!');
       showGameOverOverlay('ai');
+    } else {
+      saveMatch();
     }
   });
 }
@@ -830,6 +876,8 @@ async function retryIllegalMove(reason) {
           gameOver = true;
           chat.addMessage('system', 'Five in a row! AI wins!');
           showGameOverOverlay('ai');
+        } else {
+          saveMatch();
         }
         waitingForAI = false;
         isBoardMove = false;
@@ -923,6 +971,7 @@ function updateTurnIndicator() {
 }
 
 function showGameOverOverlay(winner) {
+  clearMatch();
   const isWin = winner === 'player';
   const isDraw = winner === 'draw';
   if (isWin) scorePlayer++;

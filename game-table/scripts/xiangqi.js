@@ -76,10 +76,50 @@ async function init() {
   updateScoreDisplay();
   canvas.addEventListener('click', onBoardClick);
 
-  await startNewGame();
+  const saved = loadMatch();
+  if (saved) await resumeMatch(saved);
+  else await startNewGame();
+}
+
+// ── Match persistence — survive a game-rail switch mid-match ──────
+// Every AI prompt carries the full board string, so only the board needs
+// to persist; the chat session stays a fresh throwaway. Saved at user-turn
+// checkpoints (after the AI's move lands), cleared on game end / New Game.
+
+const MATCH_KEY = `game-table:${GAME_KEY}:match`;
+
+function saveMatch() {
+  try {
+    localStorage.setItem(MATCH_KEY, JSON.stringify({ v: 1, board }));
+  } catch { /* ignore */ }
+}
+
+function clearMatch() {
+  try { localStorage.removeItem(MATCH_KEY); } catch { /* ignore */ }
+}
+
+function loadMatch() {
+  try {
+    const m = JSON.parse(localStorage.getItem(MATCH_KEY));
+    if (m?.v !== 1 || !Array.isArray(m.board) || m.board.length !== ROWS) return null;
+    if (m.board.some(r => !Array.isArray(r) || r.length !== COLS)) return null;
+    return m;
+  } catch { return null; }
+}
+
+async function resumeMatch(saved) {
+  board = saved.board;
+  selectedCell = null;
+  legalMoves = [];
+  waitingForAI = false;
+  gameOver = false;
+  retryCount = 0;
+  drawBoard();
+  await mountFreshChat('Match resumed — your turn. Click a piece to move.');
 }
 
 async function startNewGame() {
+  clearMatch();
   // Reset board
   board = INITIAL_BOARD.map(row => [...row]);
   selectedCell = null;
@@ -88,8 +128,11 @@ async function startNewGame() {
   gameOver = false;
   retryCount = 0;
   drawBoard();
+  await mountFreshChat('Welcome! This is Chinese Chess (象棋). You play Red (bottom), I play Black. Click a piece to select it — green dots show where it can go. Your move first!');
+}
 
-  // Clean up old session and mount fresh chat panel
+// Clean up any old session and mount a fresh chat panel.
+async function mountFreshChat(welcome) {
   if (chat) {
     await chat.deleteSession();
     chat.destroy();
@@ -107,7 +150,7 @@ async function startNewGame() {
 
   // Wait for iframe to load, then show welcome
   setTimeout(() => {
-    chat.addMessage('ai', 'Welcome! This is Chinese Chess (象棋). You play Red (bottom), I play Black. Click a piece to select it — green dots show where it can go. Your move first!');
+    chat.addMessage('ai', welcome);
   }, 500);
 }
 
@@ -132,6 +175,7 @@ function updateTurnIndicator() {
 }
 
 function showGameOverOverlay(winner) {
+  clearMatch();
   const isWin = winner === 'player';
   const isDraw = winner === 'draw';
 
@@ -1189,6 +1233,7 @@ function handleAIResponse(text) {
       chat.addMessage('system', msg);
       showGameOverOverlay(inCheck ? 'ai' : 'draw');
     }
+    if (!gameOver) saveMatch();
   });
 }
 
@@ -1207,6 +1252,7 @@ async function retryIllegalMove(reason) {
         drawBoard();
         chat.addMessage('ai', `${name} [${fr},${fc}] → [${tr},${tc}]`);
         checkKingCaptured();
+        if (!gameOver) saveMatch();
         waitingForAI = false;
         isBoardMove = false;
       });
