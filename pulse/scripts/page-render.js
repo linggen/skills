@@ -360,6 +360,14 @@ function stampTabScan(sectionId, cards, ts) {
 }
 
 // "3m ago" / "2h ago" / "5d ago" from an ISO timestamp.
+// Age for card metas: prefer the tool's verbatim timestamp over the
+// model-authored age_hours (models botch date math — a 7d comment once
+// rendered as "17h ago").
+function cardAge(obj) {
+  if (obj?.created_iso) { const t = relTime(obj.created_iso); if (t) return t; }
+  return obj?.age_hours != null ? formatAge(obj.age_hours) : '';
+}
+
 function relTime(iso) {
   if (!iso) return '';
   const t = Date.parse(iso);
@@ -403,6 +411,48 @@ function appendRunLog(entry) {
 export function renderAll() {
   renderStatusStrip();
   renderSections();
+  enrichHNAges();
+}
+
+// ── HN age enrichment — ages come from HN, not the model ────────────────────
+// The agent kept inventing age_hours on mention cards (a 7-day-old comment
+// rendered "17h", then "27d" across two runs, despite an explicit contract).
+// Mechanical invariants are derived page-side: for any HN card missing
+// created_iso, fetch the linked item's real timestamp from Algolia once and
+// stamp it — cardAge() prefers created_iso, so the meta self-corrects.
+const hnAgeFetched = new Set();
+async function enrichHNAges() {
+  const jobs = [];
+  for (const sec of Object.values(session.sections || {})) {
+    for (const c of sec.cards || []) {
+      const m = String(c.url || c.thread_url || '').match(/news\.ycombinator\.com\/item\?id=(\d+)/);
+      if (!m || c.created_iso || hnAgeFetched.has(m[1])) continue;
+      hnAgeFetched.add(m[1]);
+      jobs.push((async () => {
+        try {
+          const r = await fetch(`https://hn.algolia.com/api/v1/items/${m[1]}`);
+          const item = r.ok ? await r.json() : null;
+          if (!item?.created_at) return false;
+          c.created_iso = item.created_at;
+          // Single-comment threads show that same comment as OP/conversation —
+          // stamp those nodes too so their labels stop echoing model junk.
+          const conv = Array.isArray(c.conversation) ? c.conversation : [];
+          if (conv.length === 1 && !conv[0].created_iso) conv[0].created_iso = item.created_at;
+          if (c.original_post && !c.original_post.created_iso && conv.length <= 1) {
+            c.original_post.created_iso = item.created_at;
+          }
+          return true;
+        } catch { return false; }
+      })());
+    }
+  }
+  if (!jobs.length) return;
+  const changed = (await Promise.all(jobs)).some(Boolean);
+  if (changed) {
+    renderStatusStrip();
+    renderSections();
+    if (onChangeCallback) onChangeCallback(session);
+  }
 }
 
 function renderStatusStrip() {
@@ -699,14 +749,14 @@ function renderMention(c) {
     ? `<div class="draft-inline"><div class="draft-inline-label">Draft reply</div><div class="draft-inline-body">${escapeHtml(c.draft_reply)}</div></div>`
     : '';
   const opHtml = op
-    ? `<div class="thread-original"><div class="thread-label">Original post${op.author ? ' · ' + escapeHtml(op.author) : ''}${op.age_hours != null ? ' · ' + formatAge(op.age_hours) : ''}</div><div class="thread-body">${escapeHtml(truncateText(op.body || '', 220))}</div></div>`
+    ? `<div class="thread-original"><div class="thread-label">Original post${op.author ? ' · ' + escapeHtml(op.author) : ''}${cardAge(op) ? ' · ' + cardAge(op) : ''}</div><div class="thread-body">${escapeHtml(truncateText(op.body || '', 220))}</div></div>`
     : '';
   const convHtml = conv.length > 0
     ? renderConversation(conv, collapsed)
     : (c.quote ? `<div class="quote">${escapeHtml(c.quote)}</div>` : '');
   return cardEl(c, 'unread', `
     <div class="title">${escapeHtml(c.actor || 'Someone')} mentioned <b>${escapeHtml(c.watched_term || c.thread_title || 'your watch')}</b></div>
-    <div class="meta">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · ${formatAge(c.age_hours)}${c.thread_title ? ' · "' + escapeHtml(truncateText(c.thread_title, 70)) + '"' : ''}</div>
+    <div class="meta">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''} · ${cardAge(c)}${c.thread_title ? ' · "' + escapeHtml(truncateText(c.thread_title, 70)) + '"' : ''}</div>
     ${opHtml}
     ${convHtml}
     ${draftHtml}
@@ -728,7 +778,7 @@ function renderMention(c) {
 // split that fragmented the reply across two cards.
 function renderReplyToMe(c) {
   const replyBody = c.reply?.body || c.body || '';
-  const replyAge = c.reply?.age_hours;
+  const replyAge = cardAge(c.reply) || cardAge(c);
   const replyScore = c.reply?.score;
   const yourBody = c.your_comment?.body || c.parent_comment_body || '';
   const yourCommentHtml = yourBody
@@ -736,7 +786,7 @@ function renderReplyToMe(c) {
     : '';
   const replyMeta = [
     `${escapeHtml(c.actor || c.author || 'Someone')} replied`,
-    replyAge != null ? formatAge(replyAge) : null,
+    replyAge || null,
     replyScore != null ? `${replyScore} pts` : null,
   ].filter(Boolean).join(' · ');
   const replyHtml = replyBody
@@ -763,7 +813,7 @@ function renderConversation(conv, collapsedCount) {
     const isLast = idx === conv.length - 1;
     const labelTxt = idx === 0 && conv.length > 1 ? 'First reply' :
                      isLast ? 'Latest reply' : 'Reply';
-    const meta = `${labelTxt}${node.author ? ' · ' + escapeHtml(node.author) : ''}${node.age_hours != null ? ' · ' + formatAge(node.age_hours) : ''}`;
+    const meta = `${labelTxt}${node.author ? ' · ' + escapeHtml(node.author) : ''}${cardAge(node) ? ' · ' + cardAge(node) : ''}`;
     parts.push(`<div class="thread-step${isLast ? ' latest' : ''}"><div class="thread-label">${meta}</div><div class="thread-body">${escapeHtml(truncateText(node.body || '', 220))}</div></div>`);
     if (idx === 0 && collapsedCount > 0 && conv.length > 1) {
       parts.push(`<div class="thread-collapsed">… ${collapsedCount} ${collapsedCount === 1 ? 'reply' : 'replies'} between …</div>`);
