@@ -34,18 +34,21 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
 
   if (!(await target.test())) {
     throw new Error(
-      'Can’t reach the phone — open VLC, turn on Sharing via WiFi, and check you’re on the same network.',
+      `Can’t reach ${target.name} — open your player’s sharing screen (VLC: Sharing via WiFi, Evermusic: Wi-Fi Drive) and check you’re on the same network.`,
     );
   }
 
   const lib = await loadLibrary();
-  const basename = (p) => String(p).split('/').pop().toLowerCase();
+  // NFC-normalize both sides: macOS paths and WebDAV/VLC listings can disagree
+  // on Unicode composition (decomposed hangul/accents), which would silently
+  // defeat the already-on-phone match and re-upload everything.
+  const basename = (p) => String(p).split('/').pop().toLowerCase().normalize('NFC');
 
   // What's already on the phone (basenames). Drives BOTH "skip the mp3" and
   // "skip the .lrc" — so a song already on the device that's only missing its
   // lyrics still gets the .lrc pushed. Reconcile synced_to from the live list.
   let onPhone = new Set();
-  try { onPhone = new Set((await (target.list?.() || [])).map((n) => n.toLowerCase())); } catch { /* best-effort */ }
+  try { onPhone = new Set((await (target.list?.() || [])).map((n) => basename(n))); } catch { /* best-effort */ }
   const has = (p) => !!p && onPhone.has(basename(p));
   for (const t of lib.tracks) {
     if (has(t.file) && !(t.synced_to || []).includes(cfg.id)) {
