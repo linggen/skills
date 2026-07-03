@@ -2,147 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game Table</title>
+  <title>Games</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
-  <link rel="stylesheet" href="style.css">
-  <style>
-    .lobby {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: calc(100vh - 60px);
-      padding: 48px 20px;
-      gap: 32px;
-    }
-    .lobby-title {
-      font-size: 28px;
-      font-weight: 700;
-      text-align: center;
-    }
-    .lobby-subtitle {
-      color: var(--text-muted);
-      font-size: 15px;
-      margin-top: -20px;
-      text-align: center;
-    }
-    .game-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, 280px);
-      gap: 20px;
-      justify-content: center;
-      max-width: 640px;
-      width: 100%;
-    }
-    .game-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 28px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
-      text-align: center;
-    }
-    .game-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--accent);
-      box-shadow: 0 8px 24px rgba(233, 69, 96, 0.15);
-    }
-    .game-card .game-icon {
-      font-size: 48px;
-      line-height: 1;
-    }
-    .game-card .game-name {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .game-card .game-name-en {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: -6px;
-    }
-    .game-card .game-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.4;
-    }
-    .sessions-section {
-      width: 100%;
-      max-width: 580px;
-    }
-    .sessions-section h3 {
-      font-size: 16px;
-      margin-bottom: 8px;
-      color: var(--text-muted);
-    }
-    .session-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .session-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
-      font-size: 13px;
-    }
-    .session-item .session-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      cursor: pointer;
-    }
-    .session-item .session-title { font-weight: 500; }
-    .session-item .session-date { color: var(--text-muted); font-size: 12px; }
-    .session-item .btn-delete {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      border-radius: 4px;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .session-item .btn-delete:hover {
-      border-color: #e94560;
-      color: #e94560;
-    }
-  </style>
+  <!-- No lobby — reopen the last game played (the rail on every game page
+       is the menu). Falls back to xiangqi for a first visit or a stale key. -->
+  <script>
+    const KNOWN = ['xiangqi.html', 'gomoku.html', 'snake.html', 'pong.html', 'tetris.html'];
+    let game = KNOWN[0];
+    try {
+      const ui = JSON.parse(localStorage.getItem('game-table:ui')) || {};
+      if (KNOWN.includes(ui.game)) game = ui.game;
+    } catch { /* first visit */ }
+    location.replace(game);
+  </script>
 </head>
-<body>
-  <div class="header">
-    <h1>Game Table</h1>
-  </div>
-  <div class="lobby">
-    <h2 class="lobby-title">Choose a Game</h2>
-    <p class="lobby-subtitle">Play against AI — powered by your favorite model</p>
-    <div class="game-grid">
-      <div class="game-card" data-game="xiangqi">
-        <div class="game-icon">♜</div>
-        <div class="game-name">中国象棋</div>
-        <div class="game-name-en">Chinese Chess</div>
-        <div class="game-desc">Classic strategy game. You play Red, AI plays Black.</div>
-      </div>
-      <div class="game-card" data-game="gomoku">
-        <div class="game-icon">⚫</div>
-        <div class="game-name">五子棋</div>
-        <div class="game-name-en">Gomoku</div>
-        <div class="game-desc">Get five in a row to win. You play Black, AI plays White.</div>
-      </div>
-    </div>
-    <div class="sessions-section" id="sessions-section" style="display:none">
-      <h3>Past Games</h3>
-      <div class="session-list" id="session-list"></div>
-    </div>
-  </div>
-  <script type="module" src="main.js"></script>
-</body>
+<body style="background:#1a1a2e"></body>
 </html>

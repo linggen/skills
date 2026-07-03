@@ -52,7 +52,6 @@ const canvas = document.getElementById('board-canvas');
 const ctx = canvas.getContext('2d');
 const chatPanel = document.getElementById('chat-panel');
 const assistLevelSel = document.getElementById('assist-level');
-const backBtn = document.getElementById('back-btn');
 const newGameBtn = document.getElementById('new-game-btn');
 const scoreDisplay = document.getElementById('score-display');
 const turnIndicator = document.getElementById('turn-indicator');
@@ -70,7 +69,6 @@ async function init() {
   assistLevelSel.addEventListener('change', () => {
     assistLevel = parseInt(assistLevelSel.value, 10);
   });
-  backBtn.addEventListener('click', () => { window.location.href = 'index.html'; });
   newGameBtn.addEventListener('click', startNewGame);
   updateScoreDisplay();
   canvas.addEventListener('click', onBoardClick);

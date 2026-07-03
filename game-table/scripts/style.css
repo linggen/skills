@@ -59,16 +59,6 @@ body {
 }
 .btn-secondary:hover { background: var(--border); }
 
-.btn-back {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 4px 8px;
-}
-.btn-back:hover { color: var(--text); }
-
 select {
   padding: 8px 12px;
   border-radius: 6px;

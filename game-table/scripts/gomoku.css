@@ -1,7 +1,7 @@
 /* Gomoku game layout — mirrors xiangqi.css structure */
 .game-container {
   display: flex;
-  height: calc(100vh - 52px);
+  height: calc(100vh - 52px - 44px); /* header + game rail */
   gap: 0;
 }
 

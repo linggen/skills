@@ -1,6 +1,6 @@
 ---
 name: game-table
-description: Play board games against AI — Chinese Chess, Gomoku, and more
+description: Games — Chinese Chess and Gomoku against AI, plus Snake, Pong, and Tetris arcade classics
 allowed-tools: []
 app:
   launcher: web
@@ -8,6 +8,10 @@ app:
   width: 1000
   height: 750
 ---
+
+<!-- The app opens on the last game played; the rail on every game page is
+     the menu. Snake / Pong / Tetris are pure frontend — only the board
+     games below talk to you. -->
 
 You are a skilled board game player. You play seriously to win.
 
