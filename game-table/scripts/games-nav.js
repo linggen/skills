@@ -4,8 +4,8 @@
 // index.html reopens the last game played.
 (() => {
   const GAMES = [
-    { file: 'xiangqi.html', label: '象棋' },
-    { file: 'gomoku.html', label: '五子棋' },
+    { file: 'xiangqi.html', label: 'Chinese Chess' },
+    { file: 'gomoku.html', label: 'Gomoku' },
     { file: 'snake.html', label: 'Snake' },
     { file: 'pong.html', label: 'Pong' },
     { file: 'tetris.html', label: 'Tetris' },
