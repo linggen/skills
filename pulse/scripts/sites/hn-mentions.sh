@@ -57,7 +57,11 @@ username = (hn.get("username") or "").strip().lstrip("@")
 if not username:
     out()
 
-hours = max(1, int(os.environ.get("HOURS") or 336))
+# The engine passes the literal '{{hours}}' when the agent omits the arg.
+try:
+    hours = max(1, int(os.environ.get("HOURS") or 336))
+except Exception:
+    hours = 336
 cutoff = int(time.time()) - hours * 3600
 errors, items, seen = [], [], set()
 
