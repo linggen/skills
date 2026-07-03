@@ -748,7 +748,13 @@ function renderMention(c) {
   const draftHtml = c.draft_reply
     ? `<div class="draft-inline"><div class="draft-inline-label">Draft reply</div><div class="draft-inline-body">${escapeHtml(c.draft_reply)}</div></div>`
     : '';
-  const opHtml = op
+  // Link-only thread roots (typical HN story) have no text of their own, so
+  // the agent echoes the mention comment into original_post despite the
+  // SKILL.md rule. An OP block that repeats a conversation node is noise.
+  const opBody = String(op?.body || '').trim();
+  const opIsEcho = !opBody
+    || conv.some(step => String(step?.body || '').trim() === opBody);
+  const opHtml = op && !opIsEcho
     ? `<div class="thread-original"><div class="thread-label">Original post${op.author ? ' · ' + escapeHtml(op.author) : ''}${cardAge(op) ? ' · ' + cardAge(op) : ''}</div><div class="thread-body">${escapeHtml(truncateText(op.body || '', 220))}</div></div>`
     : '';
   const convHtml = conv.length > 0

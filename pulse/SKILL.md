@@ -846,8 +846,11 @@ Mention card shape:
 ```
 
 Rules:
-- `original_post` is REQUIRED. Without it the user can't tell what
-  thread this is from.
+- `original_post` is REQUIRED — EXCEPT when the thread root is a
+  link-only submission with no text body (typical HN story): then OMIT
+  `original_post` entirely. NEVER copy the mention comment into
+  `original_post` to fill the slot — an OP block that repeats the
+  latest reply is noise (the page drops such echoes anyway).
 - `conversation` is REQUIRED. Single-hop threads have 1 element (the
   mention itself); deeper threads have 2 (first reply + latest mention)
   with `collapsed_count` = nodes hidden.
