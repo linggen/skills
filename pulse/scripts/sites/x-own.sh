@@ -32,7 +32,8 @@
 
 set -uo pipefail
 
-MAX="${1:-10}"
+# The engine passes the literal '{{arg}}' when the agent omits an arg.
+MAX="${1:-10}"; case "$MAX" in "{{"*"}}") MAX=10;; esac
 if ! command -v python3 &>/dev/null; then
   printf '%s\n' '{"username":"","items":[],"count":0,"errors":["python3 missing"]}'
   exit 0

@@ -22,7 +22,8 @@
 
 set -uo pipefail
 
-ARG="${1:-}"
+# The engine passes the literal '{{arg}}' when the agent omits an arg.
+ARG="${1:-}"; case "$ARG" in "{{"*"}}") ARG="";; esac
 if [ -z "$ARG" ]; then
   printf '%s\n' '{"thread_url":"","thread_title":"","op":null,"comments":[],"errors":["no thread url/id given"]}'
   exit 0

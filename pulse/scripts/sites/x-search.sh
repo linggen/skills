@@ -22,8 +22,9 @@
 
 set -uo pipefail
 
-QUERY="${1:-}"
-MAX="${2:-15}"
+# The engine passes the literal '{{arg}}' when the agent omits an arg.
+QUERY="${1:-}"; case "$QUERY" in "{{"*"}}") QUERY="";; esac
+MAX="${2:-15}"; case "$MAX" in "{{"*"}}") MAX=15;; esac
 if [ -z "$QUERY" ]; then
   printf '%s\n' '[]'
   exit 0

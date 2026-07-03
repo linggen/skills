@@ -26,7 +26,10 @@ if ! command -v python3 &>/dev/null; then
   echo "[]"; exit 0
 fi
 
-QUERY="${1:-}" DAYS="${2:-7}" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
+# The engine passes the literal '{{arg}}' when the agent omits an arg.
+QUERY="${1:-}"; case "$QUERY" in "{{"*"}}") QUERY="";; esac
+DAYS="${2:-7}"; case "$DAYS" in "{{"*"}}") DAYS=7;; esac
+QUERY="$QUERY" DAYS="$DAYS" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import json, os, sys, urllib.parse, urllib.request
 from datetime import datetime, timezone
 

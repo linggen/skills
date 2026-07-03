@@ -40,7 +40,9 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 SITES_DIR="$(cd "$(dirname "$0")" && pwd)"
-HANDLES_ARG="$*" MAX="${MAX:-25}" SITES_DIR="$SITES_DIR" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
+# The engine passes the literal '{{arg}}' when the agent omits an arg.
+HANDLES_ARG="$*"; case "$HANDLES_ARG" in "{{"*"}}") HANDLES_ARG="";; esac
+HANDLES_ARG="$HANDLES_ARG" MAX="${MAX:-25}" SITES_DIR="$SITES_DIR" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import json, os, re, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])
