@@ -53,10 +53,17 @@ let chat = null;
 const APP_MODE = new URLSearchParams(location.search).get('app_mode') === '1';
 let MODEL_ID = APP_MODE ? 'deepseek-v4-flash' : '';
 
+// ── persisted UI prefs — one versioned blob, restored across restarts ────────
+const UI_KEY = 'cfo:ui';
+const loadUi = () => { try { return JSON.parse(localStorage.getItem(UI_KEY)) || {}; } catch { return {}; } };
+const saveUi = (patch) => { try { localStorage.setItem(UI_KEY, JSON.stringify({ ...loadUi(), ...patch, v: 1 })); } catch { /* ignore */ } };
+
 // Page state: full ledger + accounts in memory; RANGE drives the fixed view.
 let LEDGER = [];
 let ACCOUNTS = {};
-let RANGE = { preset: '12M', from: null, to: null };
+// Time-range selection restored from cfo:ui; a stale custom range is
+// re-validated against the ledger's months in resumeState().
+let RANGE = loadUi().range?.preset ? loadUi().range : { preset: '12M', from: null, to: null };
 let INSIGHTS = [];
 let REVIEW_PENDING = false; // a review was just triggered — Insights cleared, awaiting the agent's cards
 let REVIEW_TIMER = null;    // safety net: if the agent answers without pushing cards, stop hanging
@@ -722,6 +729,15 @@ async function resumeState() {
       c.tone = normalizeTone(c.tone);
       return true;
     });
+    // A restored custom range may not overlap the ledger anymore (data
+    // deleted / re-imported since) — fall back to the default preset.
+    if (RANGE.preset === 'custom') {
+      const months = [...new Set(LEDGER.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
+      if (!months.length || RANGE.to < months[0] || RANGE.from > months[months.length - 1]) {
+        RANGE = { preset: '12M', from: null, to: null };
+        saveUi({ range: RANGE });
+      }
+    }
     if (LEDGER.length) await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts()));
     refreshView();
     renderInsights();
@@ -755,6 +771,7 @@ function currentRange(months) {
 
 function setRange(next) {
   RANGE = next;
+  saveUi({ range: next });
   refreshView();
 }
 

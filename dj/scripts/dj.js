@@ -18,18 +18,29 @@ const SKILL = 'dj';
 const params = new URLSearchParams(location.search);
 const MODEL_ID = params.get('model') || '';
 
+// ── persisted UI prefs — one versioned blob, restored across restarts ────────
+const UI_KEY = 'dj:ui';
+const loadUi = () => { try { return JSON.parse(localStorage.getItem(UI_KEY)) || {}; } catch { return {}; } };
+const saveUi = (patch) => { try { localStorage.setItem(UI_KEY, JSON.stringify({ ...loadUi(), ...patch, v: 1 })); } catch { /* ignore */ } };
+const savedUi = loadUi();
+
 const state = {
   config: { sync_targets: [] },
   library: { tracks: [], playlists: [] },
   set: null, // the currently proposed tracklist
   busy: false,
-  collection: { kind: 'all' }, // all | recent | playlist (+ name) — the sidebar selection
+  // all | recent | playlist (+ name) — the sidebar selection; restored from
+  // dj:ui and validated against the library at boot (playlist may be gone).
+  collection: savedUi.collection?.kind ? savedUi.collection : { kind: 'all' },
   query: '', // library search text
   filter: { phone: null, lyrics: false }, // facet filters: phone = null|'on'|'off'
-  shuffle: (() => { try { return localStorage.getItem('dj:shuffle') === '1'; } catch { return false; } })(), // persisted
+  // persisted; the bare dj:shuffle key is the pre-blob fallback
+  shuffle: savedUi.shuffle ?? (() => { try { return localStorage.getItem('dj:shuffle') === '1'; } catch { return false; } })(),
   selected: new Set(), // selected track ids (multi-select)
   pendingRemove: null, // track id awaiting a second click to confirm removal
 };
+
+const setCollection = (c) => { state.collection = c; saveUi({ collection: c }); };
 
 let chat = null;
 const $ = (id) => document.getElementById(id);
@@ -38,6 +49,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
   [state.config, state.library] = await Promise.all([loadConfig(), loadLibrary()]);
+  // A restored playlist selection may point at a playlist that no longer exists.
+  if (state.collection.kind === 'playlist' && !playlistsOf().includes(state.collection.name)) {
+    setCollection({ kind: 'all' });
+  }
   renderLibrary();
   wireButtons();
   wireResizer();
@@ -148,7 +163,7 @@ function renderSidebar() {
   el.querySelectorAll('.side-item').forEach((d) =>
     (d.onclick = (e) => {
       if (e.target.closest('[data-plact]')) return; // an action button — handled below
-      state.collection = d.dataset.kind === 'playlist' ? { kind: 'playlist', name: d.dataset.name } : { kind: d.dataset.kind };
+      setCollection(d.dataset.kind === 'playlist' ? { kind: 'playlist', name: d.dataset.name } : { kind: d.dataset.kind });
       state.selected.clear();
       renderLibrary();
     }),
@@ -181,7 +196,7 @@ async function renamePlaylist(oldName, newName) {
     const pls = t.playlists || [];
     if (pls.includes(oldName)) t.playlists = [...new Set(pls.map((p) => (p === oldName ? newName : p)))];
   }
-  if (state.collection.kind === 'playlist' && state.collection.name === oldName) state.collection = { kind: 'playlist', name: newName };
+  if (state.collection.kind === 'playlist' && state.collection.name === oldName) setCollection({ kind: 'playlist', name: newName });
   await saveLibrary(state.library);
   renderLibrary();
   toast(`Renamed to “${newName}”.`);
@@ -192,7 +207,7 @@ async function deletePlaylist(name) {
   for (const t of state.library.tracks) {
     if ((t.playlists || []).includes(name)) t.playlists = t.playlists.filter((p) => p !== name);
   }
-  if (state.collection.kind === 'playlist' && state.collection.name === name) state.collection = { kind: 'all' };
+  if (state.collection.kind === 'playlist' && state.collection.name === name) setCollection({ kind: 'all' });
   await saveLibrary(state.library);
   renderLibrary();
   toast(`Removed playlist “${name}” (songs kept).`);
@@ -277,7 +292,7 @@ async function addToPlaylist(name) {
   }
   await saveLibrary(state.library);
   state.selected.clear();
-  state.collection = { kind: 'playlist', name };
+  setCollection({ kind: 'playlist', name });
   renderLibrary();
   toast(`Added ${n} to “${name}”.`);
 }
@@ -380,7 +395,7 @@ function wireLibrary() {
   $('play-all').onclick = playAll;
   $('mode-btn').onclick = () => {
     state.shuffle = !state.shuffle;
-    try { localStorage.setItem('dj:shuffle', state.shuffle ? '1' : '0'); } catch { /* ignore */ }
+    saveUi({ shuffle: state.shuffle });
     updateModeBtn();
   };
   updateModeBtn();
@@ -504,7 +519,7 @@ async function applyAgentPlaylist(pl) {
     if (want.has(trackKey(t))) { t.playlists = [...new Set([...(t.playlists || []), pl.name])]; n += 1; }
   }
   await saveLibrary(state.library);
-  state.collection = { kind: 'playlist', name: pl.name };
+  setCollection({ kind: 'playlist', name: pl.name });
   renderLibrary();
   toast(`DJ made “${pl.name}” — ${n} song${n === 1 ? '' : 's'}.`);
 }
