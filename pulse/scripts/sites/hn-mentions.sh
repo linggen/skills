@@ -13,7 +13,7 @@
 # Username comes from sites.hackernews.username in config.json (Settings).
 # No username → empty result (tool simply off).
 #
-# Arg: [hours=168] — look-back window for the comments themselves.
+# Arg: [hours=336] — look-back window for the comments themselves.
 #
 # Output (always JSON, exit 0), same shape as FetchRedditMentions:
 #   { username, items:[{kind, title, body, url, author, created_iso,
@@ -28,7 +28,7 @@ if ! command -v python3 &>/dev/null; then
   exit 0
 fi
 
-HOURS="${1:-168}" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
+HOURS="${1:-336}" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import html, json, os, re, sys, time, urllib.parse, urllib.request
 
 API = "https://hn.algolia.com/api/v1"
@@ -57,7 +57,7 @@ username = (hn.get("username") or "").strip().lstrip("@")
 if not username:
     out()
 
-hours = max(1, int(os.environ.get("HOURS") or 168))
+hours = max(1, int(os.environ.get("HOURS") or 336))
 cutoff = int(time.time()) - hours * 3600
 errors, items, seen = [], [], set()
 

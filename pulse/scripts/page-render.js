@@ -668,7 +668,8 @@ function renderCard(card) {
     case 'reply_to_me':  return renderReplyToMe(card);
     case 'reply':        return renderReply(card);
     case 'discovery':    return renderDiscovery(card);
-    case 'submit':       return renderSubmit(card);
+    case 'submit':
+    case 'hn_submit':    return renderSubmit(card); // models emit the section name
     case 'progress':     return renderProgress(card);
     case 'draft':        return renderDraft(card);
     case 'empty':        return renderEmpty(card);

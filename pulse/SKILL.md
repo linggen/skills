@@ -112,7 +112,7 @@ tools:
       parent_comment_body) and mention (your username written in a
       comment) — same shape as FetchRedditMentions: {username, items:
       [{kind, title, body, url, author, created_iso, story_url,
-      parent_comment_body?}], count, errors}. Arg: [hours=168] look-back.
+      parent_comment_body?}], count, errors}. Arg: [hours=336] look-back.
       Needs sites.hackernews.username (Settings); gated on
       sites.hackernews.enabled.
     cmd: "$SKILL_DIR/scripts/sites/hn-mentions.sh {{hours}}"
