@@ -13,6 +13,7 @@ let ballX, ballY, ballDX, ballDY;
 let player1Score, player2Score;
 let upPressed, downPressed, wPressed, sPressed;
 let animationFrameId;
+let pongRunning = false; // the field draws frozen until Start Game
 
 function initPong() {
     pongCanvas = document.getElementById('pongCanvas');
@@ -35,6 +36,10 @@ function initPong() {
     document.removeEventListener('keyup', pongKeyUp);
     document.addEventListener('keydown', pongKeyDown);
     document.addEventListener('keyup', pongKeyUp);
+
+    pongRunning = false;
+    document.getElementById('pong-overlay').style.display = 'flex';
+    document.getElementById('pongStartButton').onclick = startPongMatch;
 
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
@@ -171,8 +176,14 @@ function drawPong() {
     pongCtx.fill();
 }
 
+function startPongMatch() {
+    document.getElementById('pong-overlay').style.display = 'none';
+    resetBall();
+    pongRunning = true;
+}
+
 function pongGameLoop() {
-    updatePong();
+    if (pongRunning) updatePong();
     drawPong();
     animationFrameId = requestAnimationFrame(pongGameLoop);
 }
