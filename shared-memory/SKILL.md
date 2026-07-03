@@ -120,10 +120,13 @@ change when you switch agents.
 |:---|:---|
 | Search | `ling-mem search "..." [--context ...] [--limit N]` |
 | Get    | `ling-mem get <id>` |
-| List   | `ling-mem list [--type ...] [--limit N] ...` |
+| List   | `ling-mem list [--type ...] [--day YYYY-MM-DD] [--limit N] ...` |
 | Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--context ...] [--tag ...]` |
 | Update | `ling-mem edit <id> [--content ...] [--context ...] [--tag ...]` (or the back-compat alias `ling-mem update <id> ...`) |
 | Delete | `ling-mem delete <id> --yes` |
+| Days   | `ling-mem days [--pending]` — per-day dream state (pending / remembered / forgotten); `--pending` = the dream worklist, oldest first |
+| Stamp  | `ling-mem remember-day <date> --judged N --promoted K` — mark a day judged after a remember pass |
+| Sweep  | `ling-mem sweep [--dry-run]` — the forget stage: evict judged episodic rows past TTL; never touches un-judged rows |
 
 (Linggen separately ships `Memory_query` / `Memory_write` as engine-
 built-in tools wired to the same daemon. In **chat mode**, call the CLI
@@ -146,7 +149,7 @@ ling-mem search "node 22 quirk" --limit 5 --format json | jq -c 'del(.vector)'
 |:---|:---|:---|
 | **Core** | Rows with `tier=core` in the `semantic` table | Narrow universals about the **person** — name, role, location, timezone, languages, pets / family. Always-loaded set; the host injects them at session start. Keep tight. |
 | **Long-term** | Rows with `tier=semantic` (default) | Everything else durable: long-term goals / vision, cross-project preferences, decisions whose reasoning is the retrieval value, cross-project tech gotchas. Retrieved on demand. |
-| **Episodic** | The `episodic` staging table | **Per-turn working capture** — append uncertain-durability signal here each turn (fast, append-only, no search-first): `ling-mem add "<content>" --episodic`. The `dream` mission dedupes, promotes worthy rows to core/semantic, and evicts the rest past-TTL. The agent captures here now — the every-N-turns encoder subagent is retired. |
+| **Episodic** | The `episodic` staging table | **Per-turn working capture** — append uncertain-durability signal here each turn (fast, append-only, no search-first): `ling-mem add "<content>" --episodic`. Episodic is the user's **short-term memory**: the nightly dream pass *remembers* each day (promotes durable rows to core/semantic, deletes nothing), and the *forget sweep* ages out judged rows after the TTL. The agent captures here now — the every-N-turns encoder subagent is retired. |
 
 Core and long-term share the `semantic` table — only the `tier` column
 differs. Episodic lives in its own table at
@@ -307,7 +310,7 @@ mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dream** | Message says `/shared-memory dream [window]` or `Run hippocampus`. Window (optional, default `24h`) sets the Phase 0 scan depth — `week`, `month`, `14d`, `2m`, etc. Always user-triggered — there is no cron path; missions are owned by the engine and shipped separately. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md`, `~/.linggen/skills/shared-memory/references/extractor-prompt.md`, and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
+| **Dream** | Message says `/shared-memory dream` (all pending days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. Load `extractor-prompt.md` only for a harvest (gap-day session backfill). |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
 The old **Dashboard mode** (the agent rendering the on-open page) is
@@ -319,21 +322,23 @@ about the new JS-driven flow + the report shape dream emits.
 
 ## Slash commands — `dream` + daemon passthrough
 
-`/shared-memory <verb>` is the primary surface. `dream` is the
-memory-consolidation pass (it runs the zero-LLM scan walk itself as
-Phase 0, then judges); the rest map 1:1 to daemon CRUD endpoints.
-**`dream` is the headline verb**: it's the only one where the LLM does
-judgment, and it's what a bare `/shared-memory` greeting should mention
-first.
+`/shared-memory <verb>` is the primary surface. `dream` runs the
+remember/forget pipeline (`references/dream-flow.md` is the canonical
+runbook); the rest map 1:1 to daemon CRUD endpoints. **`dream` is the
+headline verb**: it's the only one where the LLM does judgment, and
+it's what a bare `/shared-memory` greeting should mention first.
 
 | Verb | Action |
 |:---|:---|
-| `dream [window]` | **Full pass.** Runs the zero-LLM scan walk (`scripts/scan.sh <window>`, Phase 0) → reads `.scan-output.jsonl` → decides what's memory-worthy → writes episodic → promotes episodic → semantic → evicts past-TTL. `window` defaults to `24h`; accepts `today`/`24h`, `week`, `month`, `<n>d`/`<n>w`/`<n>m`/`<n>y` (e.g. `14d`, `2m`). Also called *hippocampus* in the dashboard. See `references/dream-flow.md`. |
+| `dream` | **Remember all pending days, oldest first, then sweep.** Worklist via `days --pending`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL. See `references/dream-flow.md`. |
+| `dream <YYYY-MM-DD>` | **Remember one day.** Same procedure, one day. If the day has no rows at all (a gap day), harvest first: scan that day's sessions (`scripts/scan.sh <date>`), encode candidates into episodic, then remember them. |
 | `add "<content>" [--type ...] [--tier core] [--context ...]` | Insert a new memory row. Defaults to `--tier semantic`. |
 | `search "<query>" [--limit N] [--context ...]` | Semantic search across `semantic` + `episodic`. |
-| `list [--type ...] [--tier ...] [--limit N]` | Paginated listing. |
+| `list [--type ...] [--tier ...] [--day ...] [--limit N]` | Paginated listing. |
 | `delete <id>` | Remove a specific row by id. |
 | `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
+| `days` | Show the per-day dream state (the calendar, as text). |
+| `sweep` | Run the forget stage on its own. |
 
 ### Chat-mode rules — do NOT leak dashboard language
 
@@ -370,7 +375,7 @@ accumulate.
 |:---|:---|:---|
 | Two rows that say the same thing (dup) | Delete the loser, keep the better-phrased one. No prompt. | Ask the user. |
 | Two rows that contradict (same subject, incompatible value) | Don't pick silently. **Always ask.** | Ask the user. |
-| Past-TTL episodic that already exists in semantic | Delete the episodic source. No prompt. | Ask the user. |
+| Judged episodic rows lingering past TTL | Run `ling-mem sweep` — it evicts exactly those, never un-judged rows. No prompt. | — |
 
 **How to ask:** use whichever ask-user primitive your host gives you.
 

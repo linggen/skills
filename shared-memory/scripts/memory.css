@@ -1526,3 +1526,60 @@
   background: var(--bg-hover);
   color: var(--text-muted);
 }
+
+/* ── dream pipeline day states (v2 — one badge per cell) ── */
+.dcal-chip-pending { background: color-mix(in srgb, var(--warning) 24%, transparent); color: var(--warning); }
+.dcal-chip-remembered { background: color-mix(in srgb, var(--success) 24%, transparent); color: var(--success); }
+.dcal-chip-forgotten {
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  color: color-mix(in srgb, var(--success) 55%, var(--text-muted));
+}
+.dcal-chip-staging { background: var(--bg-hover); color: var(--text-muted); }
+.dcal-state-remembered { background: color-mix(in srgb, var(--success) 5%, transparent); }
+.dcal-state-forgotten { background: color-mix(in srgb, var(--success) 2%, transparent); }
+.dcal-state-pending { background: color-mix(in srgb, var(--warning) 5%, transparent); }
+
+.dcal-swatch-pending { background: var(--warning); }
+.dcal-swatch-remembered { background: var(--success); }
+.dcal-swatch-forgotten { background: color-mix(in srgb, var(--success) 40%, transparent); }
+
+/* ── day-detail popover (click a day → confirm before dreaming) ── */
+.dcal-pop {
+  position: absolute;
+  top: 26px;
+  left: 4px;
+  right: 4px;
+  z-index: 30;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+  animation: widgetIn 0.15s ease;
+}
+.dcal-pop-date { font-size: 12px; font-weight: 700; color: var(--text); }
+.dcal-pop-line { font-size: 12px; color: var(--text-muted); line-height: 1.4; white-space: normal; }
+.dcal-pop-actions { display: flex; gap: 6px; margin-top: 4px; }
+.dcal-pop-btn {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.dcal-pop-btn:hover { background: var(--bg-hover); }
+.dcal-pop-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.dcal-pop-primary:hover { filter: brightness(1.08); background: var(--accent); }
+/* Popovers overflow the tight cells — let the cell that owns one win. */
+.dcal-cell:has(.dcal-pop) { overflow: visible; z-index: 20; }

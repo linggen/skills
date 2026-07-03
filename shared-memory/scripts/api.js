@@ -83,6 +83,24 @@ export async function fetchMemoryCount(filter = {}) {
   }
 }
 
+// Per-day dream-state rollup from the daemon — the single source of
+// truth behind the calendar. Returns the endpoint's data payload:
+// { today, ttl_days, days: [{date, state, rows, unjudged, past_ttl,
+//   harvested_at, remembered_at, judged, promoted, forgotten}] }
+// state ∈ today | staging | pending | remembered | forgotten | harvested.
+export async function fetchMemoryDays(filter = {}) {
+  const body = JSON.stringify(filter);
+  const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/days -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
+  const out = await bashExec(cmd);
+  if (!out) return null;
+  try {
+    const parsed = JSON.parse(out.stdout || '{}');
+    return parsed.ok && parsed.data ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
 // Expand `~` to $HOME on the shell side, since /api/bash receives a
 // command string (not pre-expanded). All readers below feed the path
 // through `eval echo` so `~` and `$HOME` both work transparently.

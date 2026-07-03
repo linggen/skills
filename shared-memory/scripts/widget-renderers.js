@@ -127,15 +127,25 @@ export function renderBodyWidget(w) {
 
 // ── dream-calendar ──
 //
-// Apple-Calendar-style month grid of dream activity. Sun→Sat columns,
-// big day cells, today as a red circle, prev/Today/next month nav.
-// A dreamed day shows tier chips (core / semantic / episodic counts);
-// clicking any past/today cell dreams exactly that date. Built by
-// memory-app.js `buildDreamCalendar()` from `.dream-history.jsonl`.
+// Apple-Calendar-style month grid of dream-pipeline state. Sun→Sat
+// columns, big day cells, today as a red circle, prev/Today/next month
+// nav. Each day shows ONE badge — the furthest pipeline stage reached
+// (the stages are sequential, so the latest one *is* the state):
+//
+//   pending    amber, "<n> pending"  — rows await a remember pass
+//   remembered green,  "✓ <k>"       — judged; short-term rows remain
+//   forgotten  faded,  "✓"           — judged; short-term aged out
+//   today      ring + "<n> staged"   — accumulating, not dreamable yet
+//
+// Clicking a past day opens a small popover with the day's detail and
+// a "Dream this day" action (the confirm step — a misclick never burns
+// tokens). Built by memory-app.js `buildDreamCalendar()` from the
+// daemon's `days` rollup — the single source of truth; no local files.
 //
 // Shape:
 //   { "type": "dream-calendar", "title": "Dream activity",
-//     "days": { "2026-05-28": { encoded, runs, core, semantic, episodic }, ... } }
+//     "days": { "2026-07-01": { date, state, rows, unjudged, past_ttl,
+//                remembered_at, judged, promoted, forgotten }, ... } }
 
 const DCAL_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DCAL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -153,25 +163,96 @@ function dcalIso(d) {
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
-// Tier chips shown inside a dreamed day cell. Only non-zero tiers
-// render. core → indigo, semantic → green, episodic → amber.
-function dcalTierChips(rec) {
-  const tiers = [
-    ['core', rec.core, 'core'],
-    ['sem', rec.semantic, 'semantic'],
-    ['ep', rec.episodic, 'episodic'],
-  ];
-  const frag = document.createDocumentFragment();
-  for (const [label, n, cls] of tiers) {
-    if (!n) continue;
-    const chip = el('div', `dcal-chip dcal-chip-${cls}`, `${label} ${n}`);
-    frag.appendChild(chip);
+// The single state badge for a day cell. Returns null for days with no
+// dream-pipeline presence (empty grey cell).
+function dcalStateBadge(rec) {
+  if (!rec) return null;
+  switch (rec.state) {
+    case 'pending':
+      return el('div', 'dcal-chip dcal-chip-pending',
+        `${rec.unjudged || rec.rows || 0} pending`);
+    case 'remembered':
+      return el('div', 'dcal-chip dcal-chip-remembered',
+        rec.promoted > 0 ? `✓ ${rec.promoted}` : '✓');
+    case 'forgotten':
+      return el('div', 'dcal-chip dcal-chip-forgotten', '✓');
+    case 'harvested':
+      return el('div', 'dcal-chip dcal-chip-forgotten', 'walked');
+    case 'today':
+      return rec.rows > 0
+        ? el('div', 'dcal-chip dcal-chip-staging', `${rec.rows} staged`)
+        : null;
+    default:
+      return null;
   }
-  // Fallback when a run encoded nothing into a tier breakdown.
-  if (!rec.core && !rec.semantic && !rec.episodic) {
-    frag.appendChild(el('div', 'dcal-chip dcal-chip-core', 'dreamed'));
+}
+
+function dcalTooltip(iso, rec) {
+  if (!rec) return `${iso} · no memory activity`;
+  switch (rec.state) {
+    case 'pending':
+      return `${iso} · pending · ${rec.unjudged}/${rec.rows} rows to judge — click for details`;
+    case 'remembered':
+      return `${iso} · remembered · ${rec.promoted} promoted · ${rec.rows} short-term rows kept`;
+    case 'forgotten':
+      return `${iso} · remembered ${rec.promoted ? `(${rec.promoted} promoted)` : ''} · short-term aged out`;
+    case 'today':
+      return `${iso} · today · ${rec.rows} rows staging — dreamable after midnight`;
+    default:
+      return `${iso} · ${rec.state}`;
   }
-  return frag;
+}
+
+// Day-detail popover — the confirm step between click and LLM run.
+// One popover at a time, dismissed on outside click / Esc / ✕.
+function dcalOpenPopover(anchorCell, iso, rec, todayIso) {
+  document.querySelectorAll('.dcal-pop').forEach((p) => p.remove());
+
+  const pop = el('div', 'dcal-pop');
+  pop.appendChild(el('div', 'dcal-pop-date', iso));
+
+  const state = rec?.state || 'empty';
+  const lines = [];
+  if (!rec || (!rec.rows && !rec.remembered_at)) {
+    lines.push('No memory activity on this day.');
+  } else if (state === 'pending') {
+    lines.push(`${rec.unjudged} of ${rec.rows} rows await judgment.`);
+    if (rec.remembered_at) lines.push('New rows arrived after the last remember.');
+  } else if (state === 'remembered') {
+    lines.push(`Remembered — ${rec.promoted} promoted, ${rec.rows} short-term rows kept.`);
+  } else if (state === 'forgotten') {
+    lines.push(`Remembered — ${rec.promoted} promoted, ${rec.forgotten} aged out.`);
+  } else if (state === 'today') {
+    lines.push(`${rec.rows} rows staging today. Dreamable after midnight.`);
+  }
+  for (const t of lines) pop.appendChild(el('div', 'dcal-pop-line', t));
+
+  const actions = el('div', 'dcal-pop-actions');
+  const dreamable = iso < todayIso && (state === 'pending' || state === 'empty' || !rec?.remembered_at);
+  if (dreamable) {
+    const go = el('button', 'dcal-pop-btn dcal-pop-primary', '🧠 Dream this day');
+    go.addEventListener('click', () => {
+      if (window._chatSend) window._chatSend(`/shared-memory dream ${iso}`);
+      pop.remove();
+    });
+    actions.appendChild(go);
+  }
+  const close = el('button', 'dcal-pop-btn', 'Close');
+  close.addEventListener('click', () => pop.remove());
+  actions.appendChild(close);
+  pop.appendChild(actions);
+
+  anchorCell.appendChild(pop);
+  // Dismiss on outside click (deferred so this click doesn't self-dismiss).
+  setTimeout(() => {
+    const onDoc = (e) => {
+      if (!pop.contains(e.target)) {
+        pop.remove();
+        document.removeEventListener('click', onDoc, true);
+      }
+    };
+    document.addEventListener('click', onDoc, true);
+  }, 0);
 }
 
 function renderDreamCalendar(w) {
@@ -224,18 +305,16 @@ function renderDreamCalendar(w) {
 
       const cell = el('div', 'dcal-cell');
       if (!inMonth) cell.classList.add('dcal-out');
+      if (rec?.state) cell.classList.add(`dcal-state-${rec.state}`);
 
       const num = el('div', 'dcal-num', String(date.getDate()));
       if (iso === todayIso) num.classList.add('dcal-today-num');
       cell.appendChild(num);
 
-      if (rec) {
+      const badge = dcalStateBadge(rec);
+      if (badge) {
         const chips = el('div', 'dcal-chips');
-        if (rec.sessions) {
-          chips.appendChild(el('div', 'dcal-chip dcal-chip-sessions',
-            `${rec.sessions} session${rec.sessions === 1 ? '' : 's'}`));
-        }
-        chips.appendChild(dcalTierChips(rec));
+        chips.appendChild(badge);
         cell.appendChild(chips);
       }
 
@@ -243,21 +322,22 @@ function renderDreamCalendar(w) {
         cell.classList.add('dcal-future');
       } else {
         cell.classList.add('dcal-clickable');
-        cell.title = rec
-          ? `${iso} · dreamed · ${rec.sessions || 0} session${rec.sessions === 1 ? '' : 's'} · +${rec.encoded || 0} memories (core ${rec.core || 0} · semantic ${rec.semantic || 0} · episodic ${rec.episodic || 0})${rec.runs > 1 ? ` · ${rec.runs} runs` : ''} — click to re-dream`
-          : `${iso} · not dreamed — click to dream this day`;
-        cell.addEventListener('click', () => {
-          if (window._chatSend) window._chatSend(`/shared-memory dream ${iso}`);
+        cell.title = dcalTooltip(iso, rec);
+        cell.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dcalOpenPopover(cell, iso, rec, todayIso);
         });
       }
       grid.appendChild(cell);
     }
     panel.appendChild(grid);
 
-    // Discoverability hint — the cells are clickable but that isn't
-    // obvious from an Apple-style month grid.
+    // Legend — the pipeline states at a glance.
     const hint = el('div', 'dcal-hint');
-    hint.innerHTML = `<span class="dcal-swatch"></span>dreamed · <strong>click any day to dream it</strong>`;
+    hint.innerHTML = `<span class="dcal-swatch dcal-swatch-pending"></span>pending · `
+      + `<span class="dcal-swatch dcal-swatch-remembered"></span>remembered · `
+      + `<span class="dcal-swatch dcal-swatch-forgotten"></span>forgotten · `
+      + `<strong>click a day for details</strong>`;
     panel.appendChild(hint);
   }
 

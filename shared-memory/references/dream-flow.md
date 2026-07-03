@@ -1,413 +1,120 @@
-# Dream flow — `/shared-memory dream [window]`
-
-Read this when the user invokes `/shared-memory dream` (or the
-dashboard's **Hippocampus** action on Linggen).
-
-```
-scan(window) → read .scan-output.jsonl → judge & write → consolidate + evict → state + report
-```
-
-**The episodic pool is mostly fed by per-turn capture now.** In normal
-use the agent appends uncertain-durability signal to `tier=episodic`
-every turn — fast, broad, low-bar, **not deduped**. So episodic is
-high-volume and full of **near-duplicates of each other** (the same fact
-restated across turns), partial captures, and noise. Phase 3 below is
-where that gets sorted; the every-N-turns encoder subagent that used to
-pre-filter is retired.
-
-The `scan` (Phase 0, zero LLM, `scripts/scan.sh`) is now **backfill** —
-it walks historic host transcripts and stages anything not already
-captured. It's not the steady-state feeder; it's for catching up on
-sessions that predate capture or ran on a host without it. A normal
-`dream` runs it but most episodic rows will already be there from
-per-turn capture.
-
-## Interface — `Memory_*` tools on Linggen, `ling-mem` CLI elsewhere
-
-Every memory op below has two forms. Pick by **which tools you have in
-this session**:
-
-- **Linggen** — you have the built-in **`Memory_query`** /
-  **`Memory_write`** tools. **Use them.** They're **Chat-tier
-  (ungated)**, so the whole dream runs with **zero memory-op permission
-  prompts** — that is the entire point of this split. The recurring
-  Bash-permission prompts came from routing every `ling-mem` call
-  through `Bash`; the built-in tools skip that path.
-- **Claude Code / Codex / OpenClaw** — no such tools. Use the
-  **`ling-mem` CLI via `Bash`** (the forms shown in each phase).
-
-`scan.sh` (Phase 0) always runs via `Bash` — there's no tool
-equivalent, so it's identical on every host.
-
-| Op | Linggen tool | Headless CLI |
-|:---|:---|:---|
-| Search | `Memory_query{verb:"search", query, limit}` | `ling-mem search "<q>" --limit N` |
-| Worklist (past-TTL episodic) | `Memory_query{verb:"list", tier:"episodic", past_ttl:true, limit:200}` | `ling-mem list --episodic --older-than "${TTL_DAYS}d"` |
-| Add | `Memory_write{verb:"add", content, type, from[, tier][, contexts]}` | `ling-mem add "<text>" --type t --from f [--tier core] [--context c]` |
-| Delete one | `Memory_write{verb:"delete", id}` | `ling-mem delete <id> --yes` |
-| Resolve conflict (atomic) | `Memory_write{verb:"add", content, type, from, replace_ids:[<loser>…]}` | `ling-mem add "<winner>" …` then `ling-mem delete <loser> --yes` |
-
-Two Linggen-only simplifications fall out of the tool path:
-
-- **`past_ttl:true`** resolves the TTL cutoff server-side, so on Linggen
-  you **skip the `curl …/api/config` + `TTL_DAYS`** dance in Phase 3.
-- **`replace_ids`** makes contradiction resolution **atomic** — one call
-  adds the winner and deletes every loser across both tables, with no
-  write-then-delete ordering to reason about.
-
-There's **no bulk-forget tool.** On Linggen, evict by deleting each
-past-TTL row you don't promote with `Memory_write{verb:"delete", id}`
-(you're already iterating the worklist row by row). The headless
-`ling-mem … forget --older-than` bulk sweep stays CLI-only.
-
-`Memory_query` returns JSON directly — **no `jq` / `del(.vector)` strip
-needed**, the tool already omits embeddings. The CLI forms still pipe
-through `| jq -c 'del(.vector)'`.
-
-**Window argument** — `/shared-memory dream [window]` selects how far
-back the Phase 0 scan walks. Defaults to **24h**. Accepts the same
-grammar as `scan.sh`:
-
-| Invocation | Window |
-|:---|:---|
-| `/shared-memory dream` | 24h (last 1 day) |
-| `/shared-memory dream week` | 7 days |
-| `/shared-memory dream month` | 30 days |
-| `/shared-memory dream 14d` | 14 days |
-| `/shared-memory dream 2m` | 60 days (2×30) |
-| `/shared-memory dream 2026-05-20` | **only that one day** |
-
-Grammar: `today`/`24h`, `week`, `month`, `<n><unit>` (unit
-`d`/`w`/`m`(=30d)/`y`(=365d)), or a literal `YYYY-MM-DD` to scan
-exactly that calendar day. The dashboard heatmap sends the date form
-when the user clicks a specific day.
-
-## Phase 0 — Scan (refresh candidates)
-
-Run the mechanical walk for the requested window. This is zero-LLM —
-it just collects, denoises, and secret-filters host sessions into
-`.scan-output.jsonl`:
-
-```bash
-bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>
-```
-
-`<window>` is whatever the user passed after `dream` (default `24h`).
-The one-line stdout (`window=… found=… scanned=…`) tells you how many
-sessions landed. If the scan finds nothing, `.scan-output.jsonl` will
-contain only the `_meta` header — the dream still proceeds to Phase 3
-(consolidate past-TTL episodic rows).
-
-If `scan.sh` fails (missing `jq`, no session dirs, etc.), don't abort —
-fall through to Phase 1 reading whatever `.scan-output.jsonl` already
-exists, and note the scan failure in the final report.
-
-## Phase 1 — Read candidates
-
-```bash
-cat ~/.linggen/memory/.scan-output.jsonl
-```
-
-Line 1 is the meta header (already produced by `scan.sh`):
-
-```json
-{"_meta": true, "started_at": "...", "finished_at": "...",
- "window": "today|7d|30d",
- "scanned_from": "YYYY-MM-DD", "scanned_to": "YYYY-MM-DD",
- "sessions_found": N, "sessions_scanned": N, "skipped_empty": N,
- "transcript_bytes": N, "duration_ms": N}
-```
-
-`transcript_bytes` is the post-denoise extracted transcript size (sum
-of the per-session `transcript_bytes` below), not the raw session-file
-`bytes`. Lines 2..N are one cleaned session per line:
-
-```json
-{"filepath": "...", "source": "CC|Codex|OpenClaw|Linggen",
- "date": "YYYY-MM-DD", "user_turns": N, "bytes": N, "transcript_bytes": N,
- "transcript": "[SESSION_CWD]: ...\n[user]: ...\n[assistant]: ..."}
-```
-
-Already filtered: empty / greeting-only sessions are dropped, tool
-calls + system reminders stripped, secrets filtered. You receive a
-clean `[role]: text` transcript and can move straight to judging.
-
-If `.scan-output.jsonl` doesn't exist, skip to Phase 3.
-
-## Phase 2 — Judge + write (salience routing)
-
-Apply the engine contract verbatim — see `extractor-prompt.md` (thin
-pointer to engine `agents/ling-mem.md` ENCODE phase). Rules:
-
-- **Exclusions** (memory-spec §4): drop re-derivable-from-workspace,
-  secrets (already stripped — defence in depth), pure activity.
-- **Write-time usefulness bar**: write only if a future task would
-  benefit. When uncertain but content is concrete and durable-shaped,
-  write — the consolidator (Phase 3) still makes the terminal call
-  past TTL.
-- **Salience routing — pick a tier per row, by confidence:**
-  - **`core`** (`tier=core`) — narrow universals about the *person*:
-    name, role, location, timezone, languages, pets / family,
-    commitment-language standing preferences. Keep tight.
-  - **`semantic`** (default) — long-term goals / vision, cross-project
-    preferences, decisions whose reasoning is the retrieval value,
-    cross-project tech gotchas, explicit "remember X" requests.
-  - **`episodic`** — per-turn working captures: high-volume, low-bar,
-    near-duplicate-heavy, anything not yet sure to earn long-term shelf
-    space. Consolidator (Phase 3) clusters, promotes the durable, and
-    evicts the rest past-TTL — **most rows evict.**
-- **Read before write — every row**, then add at the routed tier (see
-  the **Interface** table above): search the gist first —
-  `Memory_query{verb:"search", query:"<gist>"}` on Linggen,
-  `ling-mem search "<gist>" --format json | jq -c 'del(.vector)'`
-  headless. If an equivalent value exists, skip. If a contradicting
-  value exists, write anyway — never drop what the source said. Don't
-  merge / rewrite / mark-stale.
-
-The binary's `insert_with_dedup` rejects *exact-content* duplicates
-mechanically. Fuzzy "same fact, different wording" is the LLM's job
-here, not the binary's.
-
-## Phase 3 — Consolidate + evict (same back-half as the Linggen dream mission)
-
-**Cluster first, then decide.** Per-turn capture means the worklist is
-full of near-duplicates of each other — group rows by subject before
-deciding, promote the single best-phrased representative once, and
-delete the rest of each cluster (never promote two restatements as two
-semantic rows). Then for each remaining row make **one terminal
-decision** — there is no "leave it" in episodic. The default outcome is
-**evict**: per-turn capture is intentionally low-bar, so only genuinely
-durable signal promotes.
-
-**TTL is user-configurable** (defaults to 7 days; dashboard gear icon at
-`http://127.0.0.1:9888/` edits it). Get the worklist — every past-TTL
-episodic row in one call:
-
-- **Linggen:** `Memory_query{verb:"list", tier:"episodic", past_ttl:true,
-  limit:200}`. `past_ttl` resolves the cutoff server-side from the
-  daemon's configured `episodic_ttl_days` — **no TTL math, no `curl`.**
-- **Headless:** read the TTL first, then list; after promoting the
-  keepers, bulk-evict the rest:
-
-```bash
-TTL_DAYS=$(curl -s http://127.0.0.1:9888/api/config 2>/dev/null \
-           | jq -r '.data.episodic_ttl_days // 7')
-
-# Worklist: what's past-TTL, for the LLM to inspect / promote.
-ling-mem list --episodic --older-than "${TTL_DAYS}d" --format json \
-  | jq -c 'del(.vector)'
-
-# Bulk-evict past-TTL rows the LLM doesn't promote (replaces the old
-# `ling-mem evict --before <ts>` verb — same semantics, duration filter):
-ling-mem --episodic forget --older-than "${TTL_DAYS}d" --yes
-```
-
-`--older-than` accepts `<n><unit>` for `s|m|h|d|w`; the CLI computes
-the cutoff date and applies it as `--until <now-duration>`, so the
-skill never has to know about RFC-3339 timestamps. Headless override
-(no daemon reachable): set `LING_MEM_EPISODIC_TTL_DAYS=30` before
-invoking the dream — read it into `$TTL_DAYS` before the `curl` line.
-Falls back to 7 if neither source is available.
-
-**Evicting on Linggen:** there's no bulk-forget tool, so delete each
-worklist row you decide *not* to promote with
-`Memory_write{verb:"delete", id:<episodic-id>}`. You inspect every row
-anyway — promote the keepers, delete the rest.
-
-- **Promote** (durable user biography, cross-project preference,
-  decision-with-reasoning, re-hit gotcha) — add to semantic/core, then
-  delete the episodic source:
-  - **Linggen:** `Memory_write{verb:"add", content, type, from[,
-    tier:"core"][, contexts]}` → `Memory_write{verb:"delete",
-    id:<episodic-id>}`.
-  - **Headless:** `ling-mem add "<text>" --type <t> --from <from>
-    [--tier core] --context <c>` → `ling-mem delete <episodic-id> --yes`.
-- **Delete** (not worth keeping): `Memory_write{verb:"delete", id}`
-  (Linggen) / `ling-mem delete <episodic-id> --yes` (headless).
-
-**Search before promote.** For each candidate, search the gist in
-semantic *and* in any other episodic rows you haven't processed yet:
-
-- **Linggen:** `Memory_query{verb:"search", query:"<gist>", limit:8}`,
-  then again with `tier:"episodic"`.
-- **Headless:**
-
-```bash
-ling-mem search "<gist>" --limit 8 --format json | jq -c 'del(.vector)'
-ling-mem search "<gist>" --limit 8 --tier episodic --format json | jq -c 'del(.vector)'
-```
-
-Then act on what you find — **dream is the cleanup pass, not the
-"never resolve" pass.** See `SKILL.md` → *Memory hygiene* for the
-universal rule; the dream-specific application:
-
-| You see | If confident | If not |
-|:---|:---|:---|
-| Candidate matches an existing semantic row (same meaning) | Skip the promote, **delete the episodic source.** | AskUser ("are these the same?") → act on answer. |
-| Two episodic candidates this pass are dups of each other | Pick the better-phrased one, promote it, delete the other. | AskUser before merging. |
-| Candidate contradicts an existing semantic row (same subject, incompatible value) | **Don't pick silently.** Always AskUser → on the user's pick: **Linggen** `Memory_write{verb:"add", content:"<winner>", type, from, replace_ids:[<loser-id>…]}` (atomic add+delete across both tables). **Headless** `ling-mem add "<winner>" --type <t> --from <f>` then `ling-mem delete <loser-id> --yes` (write first, then delete — CLI has no atomic replace verb). | Same — always ask. |
-| Three+ rows on one subject (cluster) | AskUser once with the cluster, then write the winner once — **Linggen** one `Memory_write` add with every loser id in `replace_ids`; **Headless** `ling-mem add "<winner>" …` then `ling-mem delete <id> --yes` per loser. | Same. |
-
-**Asking when the host has no structured AskUser tool:** dream is
-user-invoked, so the user is reachable. Write the question in plain
-chat text with numbered options, stop the pass, and pick up on the
-next turn — read the answer, apply the resolve, finish remaining rows.
-A small state file (`~/.linggen/memory/.dream-cursor.json`) recording
-the unprocessed worklist makes resume safe.
-
-**Still forbidden:**
-- Never generalize scattered utterances into a "user always X" rule.
-  Append the individual rows; live retrieval surfaces the pattern.
-- Never merge two distinct facts into one synthesized story.
-- Never promote a contradicting pair as separate atoms hoping live
-  recall fixes it later. That's the old rule — it accumulates drift.
-  Ask now.
-
-## Phase 4 — Persist state, report
-
-Write `~/.linggen/memory/.dream-state.json` (overwrite wholesale):
-
-```json
-{
-  "last_run_at": "<ISO-8601>",
-  "window": "<window>",
-  "duration_ms": <int>,
-  "sessions_judged": <int>,
-  "encoded_core": <int>,
-  "encoded_semantic": <int>,
-  "encoded_episodic": <int>,
-  "promoted": <int>,
-  "evicted": <int>,
-  "dropped": <int>
-}
-```
-
-`window` is the normalized scan window this pass used (read it from
-the `_meta.window` field of `.scan-output.jsonl`, e.g. `24h`, `7d`,
-`30d`, `14d`) so the dashboard can show *"last dream: 2h ago · 1-day
-window"*.
-
-**Also append one history row** to
-`~/.linggen/memory/.dream-history.jsonl` (append, never overwrite —
-this is the only durable per-run log; the dashboard's year heatmap
-reads it):
-
-```bash
-printf '%s\n' '{"date":"<YYYY-MM-DD>","run_at":"<ISO-8601>","window":"<window>","scanned_from":"<YYYY-MM-DD>","scanned_to":"<YYYY-MM-DD>","sessions":<int>,"encoded_total":<int>,"encoded_core":<int>,"encoded_semantic":<int>,"encoded_episodic":<int>,"promoted":<int>,"evicted":<int>,"dropped":<int>,"duration_ms":<int>}' \
-  >> ~/.linggen/memory/.dream-history.jsonl
-```
-
-`date` is the run's local calendar day. `scanned_from`/`scanned_to`
-are the calendar-day range the scan actually walked — **copy them
-verbatim from the `_meta.scanned_from` / `_meta.scanned_to` fields of
-`.scan-output.jsonl`**. The heatmap greens every day in that inclusive
-range, so a `dream week` lights 7 cells and a `dream 2026-05-20`
-lights one. `encoded_total` = core + semantic + episodic. One line per
-run; multiple runs are separate lines (the dashboard merges them).
-
-(The per-host watermark from `scan.sh` is a different file
-concern — scan handles its own dedup; dream doesn't have to advance
-it.)
-
-### Report — dashboard mode (Linggen)
-
-Emit ONE `PageUpdate` whose `body` is a **report card** (`dream-report`)
-followed by one `fact-list` per operation. Do **not** touch `top_bar`
-(tier counts auto-refresh via `refreshTierCounts`) and do **not** include
-a `dream-calendar` — the web app re-reads `.dream-history.jsonl` and
-re-appends the refreshed calendar automatically after this report (see
-`memory-app.js` → `refreshCalendarAfterReport`), so the just-dreamed
-day turns green with no manual reload.
-
-```json
-{
-  "body": [
-    {
-      "type": "dream-report",
-      "title": "Dream complete — N new memories",
-      "window": "<window>",
-      "elapsed_s": N,
-      "scan": { "sessions": N, "from": "<YYYY-MM-DD>", "to": "<YYYY-MM-DD>" },
-      "encoded": { "core": N, "semantic": N, "episodic": N },
-      "promoted": N, "evicted": N, "dropped": N
-    },
-    {
-      "type": "fact-list",
-      "title": "ENCODED",
-      "count": N,
-      "source": "rag:mixed",
-      "actions": ["edit", "delete"],
-      "items": [
-        { "id": "<row-id>", "content": "<text>", "context": "semantic",
-          "added": "now", "badge": "+" }
-      ]
-    },
-    {
-      "type": "fact-list",
-      "title": "PROMOTED",
-      "count": N,
-      "source": "rag:mixed",
-      "actions": ["edit", "delete"],
-      "items": [
-        { "id": "<new-semantic-id>", "content": "<text>",
-          "context": "ep→sem", "added": "now", "badge": "~" }
-      ]
-    },
-    {
-      "type": "fact-list",
-      "title": "EVICTED",
-      "count": N,
-      "source": "rag:mixed",
-      "actions": [],
-      "items": [
-        { "content": "<text>", "context": "episodic", "badge": "−" }
-      ]
-    }
-  ]
-}
-```
-
-- `dream-report` carries the **scan result** (sessions + date range +
-  window + elapsed) and the **operation counts**. `scan.from/to` come
-  from `_meta.scanned_from/to`; `window` from `_meta.window`.
-- Each `fact-list` row is a memory record with its operation badge:
-  `+` encoded, `~` promoted, `−` evicted. Rows with a real `id` get
-  per-row **edit / delete** affordances (delete dispatches
-  `Memory_write{verb:"delete"}` directly — no LLM roundtrip). Omit `id`
-  and use `actions: []` for EVICTED rows (already gone — nothing to act
-  on).
-- `context` carries the tier label (`core` / `semantic` / `episodic`,
-  or `ep→sem` for a promotion) so the user sees where each row landed.
-- Cap each list at ~10 rows with a trailing `{ "content": "+N more" }`
-  placeholder; the full set lives in the ling-mem console.
-
-### Report — headless mode (Claude Code / Codex / OpenClaw)
-
-These hosts have no `PageUpdate` canvas; emit a terse markdown report
-as your final agent message instead:
-
-```
-## Hippocampus complete — N new memories
-
-Judged N sessions · elapsed Ns
-
-**Encoded**
-- core: +N · semantic: +N · episodic: +N
-
-**Consolidated**
-- promoted: +N · evicted: N
-
-**Dropped (not memory):** N
-
-Row-level edit: http://127.0.0.1:9888/?since=<run-started-at>
-(run `ling-mem start` if not running)
-```
-
-## Tool-call hygiene
-
-On **Linggen** the `Memory_*` tools strip soft-empty fields for you —
-the engine drops `""` / `[]` / `null` before dispatch, and on a
-`past_ttl` sweep it also drops over-constraining `type` / `from` /
-`outcome`. The **`ling-mem` CLI** parser is strict: **omit optional
-fields** rather than passing empty strings. `since: ""`, `from: ""`,
-`outcome: ""` all cause 422. Enums are lowercase. `limit` is an integer.
+# Dream flow — remember + forget (canonical runbook)
+
+The dream pipeline has three stages — **harvest → remember → forget**.
+This file is the canonical procedure every trigger runs:
+
+- **Linggen nightly mission** — the built-in `dream` mission under the
+  `memory` agent (synced from this runbook at release).
+- **This skill session** — `/shared-memory dream [...]` in chat, the
+  dashboard's Dream button, or a calendar day-click.
+- **Claude Code / Codex / OpenClaw** — the host agent runs the same
+  steps via the `ling-mem` CLI (or the `memory_*` MCP tools).
+
+Day-granular: the unit of work is one **local calendar day** of
+episodic staging. Pending days drain **oldest first**.
+
+## Interface
+
+On **Linggen**, use the built-in `Memory_query` / `Memory_write` tools
+(Chat-tier, ungated — zero permission prompts across a pass full of
+writes): verbs `days`, `list` (+`day`), `add`, `remember_day`, `sweep`.
+On **other hosts**, the CLI is 1:1: `ling-mem days [--pending]`,
+`ling-mem list --tier episodic --day <date>`, `ling-mem add`,
+`ling-mem remember-day <date>`, `ling-mem sweep`. Always pipe CLI
+list/search output through `jq -c 'del(.vector)'`.
+
+State lives in the daemon (`.days.json` sidecar + the two tables) —
+the old `.dream-state.json` / `.dream-history.jsonl` files are retired;
+never write them.
+
+## Ground rules
+
+- **Unattended-safe.** Never call AskUser in a dream pass. When in
+  doubt about durability, **promote** — a redundant semantic row is
+  recoverable; lost signal isn't.
+- **Remembering never deletes.** Episodic is short-term memory; judged
+  rows stay until the sweep ages them out. One exception: a credential
+  / API key / password found in staging is deleted on sight.
+- **Only a tool_error is a failure.** `"action":"merged"` on add, a
+  promoted row vanishing from episodic (the daemon's cross-tier dedup
+  removed the twin during the add), `removed:false`, an empty list —
+  all normal. Never retry, never re-verify.
+- **Status lines, not prose:** `DAY <date> rows=<n>` → `PROMOTE <id>
+  "<gist>"` per promotion → `DAY <date> done judged=<n> promoted=<k>`
+  → `SWEEP removed=<n>` → one final totals sentence. Never print a
+  status line for a call you didn't make.
+
+## `dream` (no argument) — remember all pending days
+
+1. Fetch the worklist: `days` with `pending_only` (CLI:
+   `ling-mem days --pending`). Empty → run **Forget** below, reply
+   that memory is up to date, done.
+2. Take the **oldest** pending day → run **Remember one day** below.
+3. Repeat from 1. If the same day comes back with an undropped
+   `unjudged` count, **stop and report** ("stalled") instead of
+   looping.
+4. When no days remain: run **Forget**, then report totals.
+
+## `dream <YYYY-MM-DD>` — remember one day
+
+- Day has episodic rows → **Remember one day** below, then one sweep.
+- Day has **no rows at all** (gap day) → **Harvest** first: run
+  `Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <date>`
+  (zero-LLM session walk → `.scan-output.jsonl`), judge candidates per
+  `extractor-prompt.md` + `routing-rules.md`, write keepers to
+  episodic with `occurred_at` set to the session time — then remember
+  them, stamping with the harvested flag
+  (`ling-mem remember-day <date> --harvested ...`).
+- Today / future dates are not dreamable — say so and stop.
+
+## Remember one day
+
+1. **Re-pend check.** From the `days` rollup, note the day's
+   `remembered_at`. If set, judge **only** rows created after it —
+   earlier rows were already judged.
+2. **Worklist.** List the day's episodic rows:
+   `{"verb":"list","tier":"episodic","day":"<date>","limit":25,"sort":"oldest"}`
+   (CLI: `ling-mem list --tier episodic --day <date> --sort oldest`).
+   Page with `offset` until every row is seen. Never pass
+   `type`/`from`/`outcome` — they narrow the list to zero.
+3. **Cluster.** Group near-duplicate rows on the same subject (per-turn
+   capture restates facts across turns). Judge clusters, not
+   restatements — one promotion per cluster, best-phrased
+   representative; the rest simply age out later.
+4. **Judge each cluster** — promote or skip:
+   - **Promote** durable signal (user biography, cross-project
+     preference, decision-with-reasoning, re-hit gotcha, shipped
+     milestone, run learning): `add` with the row's content
+     **verbatim**, its `type`/`from`/`contexts`, `occurred_at` carried
+     forward (else `created_at`), `source_session` if present. Never
+     pass `id`/`replace_ids`. Omit tier (defaults semantic);
+     `tier=core` only for a narrow universal about the person.
+     Search-first: a quick semantic `search` on the gist — but a hit
+     with `tier=episodic` never counts as "already in semantic".
+   - **Skip** noise (activity logs, file-derivable facts,
+     single-mention chatter) and already-in-semantic facts: do
+     nothing — the row ages out on its own.
+   - **Never** merge distinct facts, generalize into "user always X"
+     rules, or resolve contradictions — promote the contradicting row
+     alongside the old one; recall-time reconciliation (user present)
+     picks winners.
+5. **Stamp.** `{"verb":"remember_day","date":"<date>","judged":<seen>,"promoted":<adds>}`
+   (CLI: `ling-mem remember-day <date> --judged N --promoted K`).
+   Never skip the stamp, even with zero promotions — it's what moves
+   the day out of pending.
+
+## Forget (the sweep)
+
+`{"verb":"sweep"}` (CLI: `ling-mem sweep`). Mechanical, zero-LLM,
+self-guarding: evicts only rows that are past the episodic TTL **and**
+on a remembered day **and** created before that day's stamp. Un-judged
+rows are untouchable — an undreamed day keeps its rows forever until
+someone remembers it. Safe to call anytime; `--dry-run` previews.
+
+## Reporting (Linggen dashboard)
+
+No PageUpdate is needed: the memory page watches the tool stream and
+repaints tier counts + the calendar from the daemon's `days` rollup
+after your `Memory_write` calls land. End with the status lines and a
+one-line totals sentence — e.g. *"Remembered 2 days: 5 promoted, 31
+judged; sweep evicted 12."*

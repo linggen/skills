@@ -20,10 +20,9 @@
 import {
   fetchDefaultModel,
   fetchMemoryCount,
+  fetchMemoryDays,
   listSkillSessions,
   readJsonFile,
-  readJsonl,
-  readJsonlHeader,
   writeJsonFile,
 } from './api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
@@ -34,10 +33,10 @@ const SKILL_NAME = 'ling-mem';
 // drew the dashboard (tier cards + calendar) before this lands.
 const BOOT_PROMPT = `You are Ling inside the Memory skill. The dashboard (tier counts + dream calendar) is already painted on screen by JS — don't re-fetch or restate it, and don't emit a PageUpdate on boot.
 
-On boot, send ONE warm, short greeting (≤25 words) introducing yourself and what this skill does: durable memory across all your AI sessions — it reads recent cross-host chats and distills who you are. Mention they can hit "Dream" (or click a day) to consolidate, or just ask what you remember. No preamble, no bullet lists, no "Done"/"awaiting action" phrasing.
+On boot, send ONE warm, short greeting (≤25 words) introducing yourself and what this skill does: durable memory across all your AI sessions. Mention they can hit "Dream" (or click a pending day) to remember it into long-term memory, or just ask what you remember. No preamble, no bullet lists, no "Done"/"awaiting action" phrasing.
 
 Then wait. When the user acts:
-- "/shared-memory dream [window]" or "Run hippocampus" → follow references/dream-flow.md end-to-end: Phase 0 runs \`Bash bash ~/.linggen/skills/shared-memory/scripts/scan.sh <window>\` (window defaults to 24h; accepts week / month / 14d / 2m / YYYY-MM-DD), then read .scan-output.jsonl, judge, write, consolidate, evict. Emit a final PageUpdate with the report.
+- "/shared-memory dream" or "/shared-memory dream <YYYY-MM-DD>" → follow references/dream-flow.md: remember the pending day(s) via Memory_query/Memory_write (days worklist → day list → cluster → promote → remember_day stamp → sweep). No PageUpdate needed — the page watches the tool stream and repaints the calendar itself; just end with your one-line totals.
 - Anything else → answer normally, use Memory_query when relevant.`;
 
 const params = new URLSearchParams(window.location.search);
@@ -108,9 +107,11 @@ async function mountAndStart(sessionId) {
 
   if (sessionId && await tryRestoreCached(sessionId)) {
     // Resumed session with a cached page — don't re-boot the agent.
-    // The cached page comes back via tryRestoreCached; tier counts
-    // refresh below so the user sees current numbers even on resume.
+    // The cached page comes back via tryRestoreCached; tier counts +
+    // day states refresh below so the user sees current data even on
+    // resume (the cached calendar may predate a dream run).
     refreshTierCounts().catch(() => {});
+    refreshDaysCalendar().catch(() => {});
     return;
   }
 
@@ -129,33 +130,37 @@ async function mountAndStart(sessionId) {
 
 // ── On-open dashboard ──
 //
-// Reads three count endpoints + .dream-state.json in parallel, then
-// paints a deterministic dashboard. The greeting line + primary CTA
-// are rule-picked from state — no LLM required for the first render.
-// Tier counts go to top_bar so the agent's later action-result
-// PageUpdates (body-only) don't blow them away.
+// Reads three count endpoints + the daemon's per-day dream-state
+// rollup in parallel, then paints a deterministic dashboard. The
+// greeting line + primary CTA are rule-picked from state — no LLM
+// required for the first render. Tier counts go to top_bar so the
+// agent's later action-result PageUpdates (body-only) don't blow
+// them away.
+//
+// The calendar is a rendering of the daemon's `days` rollup — the
+// single source of truth for the dream pipeline (pending / remembered
+// / forgotten per day). The old `.dream-history.jsonl` /
+// `.dream-state.json` sidecars are retired.
 
 async function paintDashboard() {
-  let coreC, semC, epC, dream;
+  let coreC, semC, epC, daysData;
   try {
-    [coreC, semC, epC, dream] = await Promise.all([
+    [coreC, semC, epC, daysData] = await Promise.all([
       fetchMemoryCount({ tier: 'core' }),
       fetchMemoryCount({ tier: 'semantic' }),
       fetchMemoryCount({ episodic: true }),
-      readJsonFile(`${homeDir()}/.linggen/memory/.dream-state.json`),
+      fetchMemoryDays(),
     ]);
   } catch (e) {
     console.warn('[memory] paintDashboard fetch failed', e);
     coreC = { count: 0 };
     semC = { count: 0 };
     epC = { count: 0 };
-    dream = null;
+    daysData = null;
   }
-  const scanHdr = await readJsonlHeader(`${homeDir()}/.linggen/memory/.scan-output.jsonl`).catch(() => null);
-  const history = await readJsonl(`${homeDir()}/.linggen/memory/.dream-history.jsonl`).catch(() => []);
-  const summary = { coreC, semC, epC, dream, scanHdr };
+  const summary = { coreC, semC, epC, daysData };
   const greeting = pickGreeting(summary);
-  const calendar = buildDreamCalendar(history);
+  const calendar = buildDreamCalendar(daysData);
 
   applyPageUpdate({
     top_bar: buildTierCards(summary),
@@ -165,54 +170,28 @@ async function paintDashboard() {
   cacheCurrentPage();
 }
 
-// Aggregate the append-only dream history (one row per run) into a
-// per-day map the calendar marks green. Each run covers the calendar
-// range it scanned ([scanned_from .. scanned_to], inclusive) — so a
-// `dream week` greens 7 days, a `dream 2026-05-20` greens one. Always
-// returns a widget: on a fresh box the grid renders all-grey with
-// today ringed, every cell clickable to dream that day.
-function buildDreamCalendar(history) {
+// Shape the daemon's rollup into the dream-calendar widget: a per-day
+// map keyed by ISO date. Always returns a widget — on a fresh box the
+// grid renders all-grey with today ringed.
+function buildDreamCalendar(daysData) {
   const days = {};
-  for (const r of Array.isArray(history) ? history : []) {
-    if (!r) continue;
-    const encoded = (typeof r.encoded_total === 'number')
-      ? r.encoded_total
-      : (r.encoded_core || 0) + (r.encoded_semantic || 0) + (r.encoded_episodic || 0);
-    const from = r.scanned_from || r.date;
-    const to = r.scanned_to || r.date;
-    const range = isoRange(from, to);
-    range.forEach((iso, i) => {
-      const d = days[iso] || (days[iso] = { encoded: 0, runs: 0, core: 0, semantic: 0, episodic: 0, sessions: 0 });
-      d.runs += 1;
-      // Attribute the run's encoded counts + session count to its last
-      // (most recent) day so a multi-day window doesn't multiply totals.
-      if (i === range.length - 1) {
-        d.encoded += encoded;
-        d.core += r.encoded_core || 0;
-        d.semantic += r.encoded_semantic || 0;
-        d.episodic += r.encoded_episodic || 0;
-        d.sessions += r.sessions || 0;
-      }
-    });
+  for (const d of daysData?.days || []) {
+    if (d?.date) days[d.date] = d;
   }
   return { type: 'dream-calendar', title: 'Dream activity', days };
 }
 
-// Inclusive list of YYYY-MM-DD strings from `from` to `to` (local
-// dates). Capped at 400 days so a malformed row can't run away.
-function isoRange(from, to) {
-  if (!from || !to) return from ? [from] : [];
-  const d = new Date(`${from}T00:00:00`);
-  const end = new Date(`${to}T00:00:00`);
-  if (isNaN(d) || isNaN(end) || end < d) return from === to ? [from] : [];
-  const out = [];
-  for (let g = 0; d <= end && g < 400; g++) {
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    out.push(`${d.getFullYear()}-${m}-${day}`);
-    d.setDate(d.getDate() + 1);
-  }
-  return out;
+// Re-fetch the days rollup and swap the calendar widget in place,
+// leaving the rest of the body (greeting / report widgets) untouched.
+async function refreshDaysCalendar() {
+  const daysData = await fetchMemoryDays();
+  if (!daysData) return;
+  const page = getCurrentPage();
+  const body = Array.isArray(page.body) ? page.body : [];
+  const calendar = buildDreamCalendar(daysData);
+  const rest = body.filter((w) => !(w && w.type === 'dream-calendar'));
+  applyPageUpdate({ body: [...rest, calendar], footer: buildFooter({ daysData }) });
+  cacheCurrentPage();
 }
 
 async function refreshTierCounts() {
@@ -225,13 +204,6 @@ async function refreshTierCounts() {
   applyPageUpdate({
     top_bar: buildTierCards({ coreC, semC, epC }),
   });
-}
-
-function homeDir() {
-  // The skill's cwd is `~/.linggen` per SKILL.md, and the /api/bash
-  // proxy expands `~` to $HOME. Just hard-code the literal here so
-  // command strings stay readable.
-  return '~';
 }
 
 function buildTierCards({ coreC, semC, epC }) {
@@ -248,39 +220,50 @@ function cardWidget(label, c, alertColor) {
   return { data: { label, value, sub, color: alertColor } };
 }
 
-function humanWindow(w) {
-  return { '24h': '1-day', '7d': '1-week', '30d': '1-month' }[w] || w;
+// Latest remember stamp across all days — the "last dream" the footer
+// and greeting reason about.
+function lastRememberedAt(daysData) {
+  let latest = null;
+  for (const d of daysData?.days || []) {
+    if (d?.remembered_at && (!latest || d.remembered_at > latest)) {
+      latest = d.remembered_at;
+    }
+  }
+  return latest;
 }
 
-function buildFooter({ dream, scanHdr }) {
-  if (!dream?.last_run_at) return { text: 'last dream: never' };
-  const parts = [`last dream ${ageOf(dream.last_run_at)}`];
-  if (dream.window) parts.push(`${humanWindow(dream.window)} window`);
-  const sessions = scanHdr?.sessions_scanned;
-  if (typeof sessions === 'number') parts.push(`${sessions} sessions read`);
+function pendingDays(daysData) {
+  return (daysData?.days || []).filter((d) => d?.state === 'pending');
+}
+
+function buildFooter({ daysData }) {
+  const last = lastRememberedAt(daysData);
+  const parts = [last ? `last dream ${ageOf(last)}` : 'last dream: never'];
+  const pending = pendingDays(daysData).length;
+  if (pending > 0) parts.push(`${pending} day${pending === 1 ? '' : 's'} pending`);
+  if (daysData?.ttl_days) parts.push(`short-term keeps ${daysData.ttl_days}d`);
   return { text: parts.join('   ·   ') };
 }
 
-function pickGreeting({ coreC, semC, epC, dream }) {
+function pickGreeting({ coreC, semC, epC, daysData }) {
   const totalRows = (coreC?.count || 0) + (semC?.count || 0) + (epC?.count || 0);
-  const lastHippo = dream?.last_run_at;
-  const epCount = epC?.count || 0;
+  const pending = pendingDays(daysData);
+  const last = lastRememberedAt(daysData);
   const runDream = { label: 'Run dream', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
 
   let title, primary;
-  if (totalRows === 0 && !lastHippo) {
-    title = "Welcome — your memory's empty. Run dream to read recent sessions.";
+  if (pending.length > 0) {
+    title = pending.length === 1
+      ? `1 day is waiting to be remembered (${pending[0].date}).`
+      : `${pending.length} days are waiting to be remembered — oldest ${pending[0].date}.`;
     primary = runDream;
-  } else if (epCount > 50) {
-    title = `Staging is filling up — ${epCount} episodic rows. Time for a dream pass.`;
-    primary = runDream;
-  } else if (!lastHippo || daysSince(lastHippo) >= 1) {
-    title = lastHippo
-      ? `Last dream ${ageOf(lastHippo)}. Pull in newer sessions?`
-      : 'Run dream to read recent sessions into memory.';
-    primary = runDream;
+  } else if (totalRows === 0) {
+    title = "Welcome — your memory's empty. It fills as you work; dream remembers each day.";
+    primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };
   } else {
-    title = `Memory's up to date — ${totalRows} rows across all tiers.`;
+    title = last
+      ? `All caught up — last dream ${ageOf(last)}, ${totalRows} rows across all tiers.`
+      : `Memory holds ${totalRows} rows — nothing pending tonight.`;
     primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };
   }
 
@@ -288,7 +271,7 @@ function pickGreeting({ coreC, semC, epC, dream }) {
     type: 'greeting',
     icon: '🧠',
     title,
-    stats: 'Dream reads recent cross-host sessions, judges them, and writes memory — script walk + LLM judgment in one pass.',
+    stats: 'Dream = remember + forget: each day\'s staging is judged once (durable signal promoted to long-term), then judged rows age out after the short-term window.',
     // Single contextual CTA — the header bar already carries the
     // persistent Dream + Browse actions, so don't duplicate them here.
     actions: [primary],
@@ -310,36 +293,48 @@ function ageOf(iso) {
   return `${Math.floor(d / 30)}mo ago`;
 }
 
-function daysSince(iso) {
-  if (!iso) return Infinity;
-  return (Date.now() - new Date(iso).getTime()) / 86400000;
-}
-
 // ── Top action bar wiring ──
 //
 // The buttons in memory.html's header send plain chat messages — the
 // agent parses them per BOOT_PROMPT and runs the corresponding action.
-// Period is on a sibling <select>. After hippocampus, the agent
-// emits a PageUpdate with the run report; tier-counts in top_bar
-// refresh automatically because the daemon's count endpoint runs after
-// every PageUpdate (see handleContentBlock).
+// Progress streams in the chat panel; the calendar repaints from the
+// daemon rollup as the agent's Memory_write calls land (see
+// handleContentBlock).
 
 function setupActionBar() {
   const dreamBtn = document.getElementById('dream-btn');
-  const periodSel = document.getElementById('dream-period');
   if (!dreamBtn) return;
 
-  // Hippocampus runs the whole pass (scan walk → judge → consolidate).
-  // The period <select> feeds the dream window: ''=24h, week, month.
+  // Dream = remember every pending day (oldest first) + forget sweep.
   dreamBtn.addEventListener('click', () => {
-    const w = periodSel?.value || '';
-    window._chatSend(w ? `/shared-memory dream ${w}` : '/shared-memory dream');
+    window._chatSend('/shared-memory dream');
   });
 }
 
-// ── PageUpdate ingestion ──
+// ── Tool-stream ingestion ──
+//
+// The chat bridge surfaces every tool call the agent makes. Two kinds
+// matter here: PageUpdate (agent-drawn widgets) and Memory_write (a
+// remember/sweep just changed store state → repaint counts + calendar
+// from the daemon, debounced so a burst of promotes repaints once).
+
+let refreshTimer = null;
+function scheduleStateRefresh() {
+  if (refreshTimer) clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => {
+    refreshTimer = null;
+    refreshTierCounts().catch(() => {});
+    refreshDaysCalendar().catch(() => {});
+  }, 1200);
+}
 
 function handleContentBlock(payload) {
+  // Memory_write on Linggen; Bash on hosts where the agent drives the
+  // `ling-mem` CLI instead. Either way the store may have moved.
+  if (payload?.tool === 'Memory_write' || payload?.tool === 'Bash') {
+    scheduleStateRefresh();
+    return;
+  }
   if (payload?.tool !== 'PageUpdate') return;
   try {
     const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
@@ -351,35 +346,12 @@ function handleContentBlock(payload) {
     if (Object.keys(partial).length === 0) return;
     applyPageUpdate(partial);
     cacheCurrentPage();
-    // After any agent-emitted PageUpdate the row totals may have moved
-    // (hippocampus writes + promotes + evicts). Re-fetch the counts so
-    // the top_bar reflects post-action state. Best-effort; failures stay
-    // silent.
-    refreshTierCounts().catch(() => {});
-    // A dream just reported — re-read history and re-append a fresh
-    // calendar so the dreamed day(s) turn green immediately, without a
-    // manual reload. (The report PageUpdate replaces `body` wholesale,
-    // which would otherwise drop the calendar JS painted on open.)
-    refreshCalendarAfterReport().catch(() => {});
+    // Row totals / day states may have moved behind any agent-drawn
+    // update — re-sync both from the daemon. Best-effort.
+    scheduleStateRefresh();
   } catch (e) {
     console.warn('[memory] failed to parse PageUpdate args', e);
   }
-}
-
-// When the current body contains a dream-report, rebuild the calendar
-// from the freshly-written .dream-history.jsonl and append it below the
-// report (dropping any stale calendar first). No-op for non-dream
-// PageUpdates, so ordinary chat answers don't grow a calendar.
-async function refreshCalendarAfterReport() {
-  const page = getCurrentPage();
-  const body = Array.isArray(page.body) ? page.body : [];
-  if (!body.some((w) => w && w.type === 'dream-report')) return;
-  const history = await readJsonl(`${homeDir()}/.linggen/memory/.dream-history.jsonl`).catch(() => []);
-  const calendar = buildDreamCalendar(history);
-  if (!calendar) return;
-  const rest = body.filter((w) => !(w && w.type === 'dream-calendar'));
-  applyPageUpdate({ body: [...rest, calendar] });
-  cacheCurrentPage();
 }
 
 // Fallback: some models emit a <!--page ... --> or ```page block in text
