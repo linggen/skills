@@ -870,6 +870,12 @@ function handleCardAction(action, cardId, btn) {
       copyToClipboard(u);
       const submit = `https://news.ycombinator.com/submitlink?u=${encodeURIComponent(u)}&t=${encodeURIComponent(t)}`;
       window.open(submit, '_blank', 'noopener,noreferrer');
+      // A used card must never resurface: it survives in page state across
+      // sessions, and a second click days later is a self-dupe HN kills.
+      // Persist the dismissal (render drops it from every future gather);
+      // keep the card visible now as reference while the form is open.
+      appendDismissed(u);
+      if (btn) { btn.textContent = 'Submitted ↗'; btn.disabled = true; }
       flash(btn, 'URL copied — submit promptly');
       break;
     }

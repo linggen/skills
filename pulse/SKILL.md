@@ -102,6 +102,22 @@ tools:
     cmd: "$SKILL_DIR/scripts/sites/hn-submit-finder.sh {{max}}"
     tier: read
     timeout_ms: 45000
+  - name: FetchHNMentions
+    description: >-
+      The HN inbox signal HN never sends: comments on YOUR submissions
+      (HN's "threads" page only shows replies to your comments — a comment
+      on your story is invisible unless you revisit the item page). Via
+      public Algolia, no auth. Returns reply_to_me (new comments on your
+      recent stories + replies to your recent comments, with your text as
+      parent_comment_body) and mention (your username written in a
+      comment) — same shape as FetchRedditMentions: {username, items:
+      [{kind, title, body, url, author, created_iso, story_url,
+      parent_comment_body?}], count, errors}. Arg: [hours=168] look-back.
+      Needs sites.hackernews.username (Settings); gated on
+      sites.hackernews.enabled.
+    cmd: "$SKILL_DIR/scripts/sites/hn-mentions.sh {{hours}}"
+    tier: read
+    timeout_ms: 45000
   - name: FetchReddit
     description: >-
       Fetch the 25 newest threads from each subreddit listed in
@@ -780,6 +796,10 @@ replies sit in your inbox.
   to your tweets; attaches your tweet as `parent_comment_body`.
 - `FetchBlueskyMentions` (if configured) — mention / own_post /
   own_reply / reply_to_me, same shape as FetchRedditMentions.
+- `FetchHNMentions` (if `sites.hackernews.enabled` + username set) —
+  comments on your recent HN stories + replies to your comments +
+  username mentions. HN itself never notifies you of story comments,
+  so these items are the ones the user has no other way to see.
 
 **B. Keyword-search tools — term-filtered.** For each watchlist term
 (products + competitors + self), search and keep only hits where the
