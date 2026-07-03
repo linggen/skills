@@ -484,23 +484,6 @@ function tetrisLoop(timestamp) {
     tetrisAnimationFrameId = requestAnimationFrame(tetrisLoop);
 }
 
-function stopTetris() {
-    tetrisRunning = false;
-    tetrisPaused = false;
-    tetrisGameOver = false;
-    hideTetrisOverlay();
-    document.removeEventListener('keydown', handleTetrisKeydown);
-
-    if (tetrisAnimationFrameId) {
-        cancelAnimationFrame(tetrisAnimationFrameId);
-        tetrisAnimationFrameId = null;
-    }
-
-    const container = document.getElementById('tetrisGameContainer');
-    if (container) {
-        container.style.display = 'none';
-    }
-}
 
 function initTetris() {
     tetrisCanvas = document.getElementById('tetrisCanvas');

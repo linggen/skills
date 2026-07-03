@@ -1,3 +1,12 @@
+/* Vendored — no CDN call; falls back to monospace if the file is missing. */
+@font-face {
+    font-family: 'Press Start 2P';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/press-start-2p-latin.woff2') format('woff2');
+}
+
 * {
     box-sizing: border-box;
 }
@@ -26,7 +35,6 @@ button {
     justify-content: center;
 }
 
-.hero-panel,
 .game-container {
     width: min(100%, 940px);
     border: 1px solid rgba(255, 255, 255, 0.18);
@@ -36,16 +44,6 @@ button {
     border-radius: 24px;
 }
 
-.hero-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 20px;
-    padding: 48px 40px;
-}
-
-.eyebrow,
 .game-kicker {
     margin: 0;
     color: #7dd3fc;
@@ -70,23 +68,6 @@ h2 {
     font-size: clamp(1.4rem, 3vw, 2rem);
 }
 
-.hero-copy {
-    max-width: 680px;
-    margin: 0;
-    color: #cbd5e1;
-    font-size: 0.8rem;
-    line-height: 1.8;
-}
-
-.game-selection-menu {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-    margin-top: 16px;
-}
-
-.game-button,
 .utility-button {
     border: none;
     border-radius: 18px;
@@ -94,41 +75,8 @@ h2 {
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.game-button {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 24px;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: #f8fafc;
-    text-align: left;
-    box-shadow: 0 16px 30px rgba(34, 197, 94, 0.25);
-}
-
-.game-button.secondary {
-    background: linear-gradient(135deg, #60a5fa, #2563eb);
-    box-shadow: 0 16px 30px rgba(37, 99, 235, 0.25);
-}
-
-.game-button.tertiary {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
-    box-shadow: 0 16px 30px rgba(124, 58, 237, 0.25);
-}
-
-.game-button:hover,
 .utility-button:hover {
     transform: translateY(-3px);
-}
-
-.button-title {
-    font-size: 0.95rem;
-}
-
-.button-subtitle {
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 0.65rem;
-    line-height: 1.7;
 }
 
 .game-container {
@@ -334,8 +282,7 @@ h2 {
         padding: 16px;
     }
 
-    .hero-panel,
-    .game-container {
+.game-container {
         padding: 22px;
         border-radius: 18px;
     }
@@ -355,9 +302,8 @@ h2 {
         grid-template-columns: 1fr;
     }
 
-    .game-button,
-    .utility-button,
-    #nextPieceCanvas {
+.utility-button,
+#nextPieceCanvas {
         width: 100%;
     }
 
@@ -368,23 +314,19 @@ h2 {
 }
 
 @media (max-width: 480px) {
-    .hero-panel,
-    .game-container {
+
+.game-container {
         padding: 18px;
     }
 
-    .button-title,
-    .overlay-title {
+.overlay-title {
         font-size: 0.8rem;
     }
 
-    .button-subtitle,
-    .overlay-copy,
-    .status-pill,
-    .status-hint,
-    .eyebrow,
-    .game-kicker,
-    .hero-copy {
+.overlay-copy,
+.status-pill,
+.status-hint,
+.game-kicker {
         font-size: 0.58rem;
     }
 }

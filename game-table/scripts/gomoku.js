@@ -1,5 +1,4 @@
 // Gomoku (五子棋) — board, validation, rendering, AI integration
-import { fetchDefaultModel } from './api.js';
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -8,6 +7,7 @@ const CELL = 40;          // px per cell
 const MARGIN = 30;        // board margin
 const STONE_R = 17;       // stone radius
 const SKILL_NAME = 'game-table';
+const GAME_KEY = 'gomoku';
 
 const EMPTY = 0, BLACK = 1, WHITE = 2;
 
@@ -44,15 +44,18 @@ const assistLevelSel = document.getElementById('assist-level');
 
 async function init() {
   const params = new URLSearchParams(window.location.search);
-  modelId = params.get('model') || '';
+  modelId = params.get('model') || localStorage.getItem('game-table:model') || 'deepseek-v4-flash';
 
-  try {
-    if (!modelId) modelId = await fetchDefaultModel() || '';
-  } catch { /* ignore */ }
+  // Restore the running match score for this game (game-table:ui).
+  const savedScores = (window.GameTableUI?.loadUi().scores || {})[GAME_KEY];
+  if (Array.isArray(savedScores)) [scorePlayer, scoreAI] = savedScores;
   assistLevelSel.addEventListener('change', () => {
     assistLevel = parseInt(assistLevelSel.value, 10);
   });
   newGameBtn.addEventListener('click', startNewGame);
+  scoreDisplay.title = 'Match score — click to reset';
+  scoreDisplay.style.cursor = 'pointer';
+  scoreDisplay.addEventListener('click', () => { scorePlayer = 0; scoreAI = 0; updateScoreDisplay(); });
   canvas.addEventListener('click', onBoardClick);
   updateScoreDisplay();
 
@@ -79,11 +82,8 @@ async function startNewGame() {
     modelId,
     title: 'Chat',
     placeholder: 'Type a message...',
-    onSessionCreated: (sid) => {
-      const url = new URL(window.location);
-      url.searchParams.set('session', sid);
-      history.replaceState(null, '', url);
-    },
+    lazy: true,
+    deleteOnLeave: true,
     onStreamEnd: handleStreamEnd,
   });
 
@@ -904,6 +904,9 @@ function pickFallbackMove() {
 
 function updateScoreDisplay() {
   scoreDisplay.textContent = `${scorePlayer} : ${scoreAI}`;
+  const scores = window.GameTableUI?.loadUi().scores || {};
+  scores[GAME_KEY] = [scorePlayer, scoreAI];
+  window.GameTableUI?.saveUi({ scores });
 }
 
 function updateTurnIndicator() {

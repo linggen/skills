@@ -1,5 +1,4 @@
 // Chinese Chess (Xiangqi) — board, validation, rendering, game flow
-import { fetchDefaultModel } from './api.js';
 
 // ── Constants ──────────────────────────────────────────────────────
 
@@ -8,6 +7,7 @@ const CELL = 76;          // px per cell
 const MARGIN = 40;        // board margin
 const PIECE_R = 33;       // piece radius
 const SKILL_NAME = 'game-table';
+const GAME_KEY = 'xiangqi';
 
 const INITIAL_BOARD = [
   ['r','h','e','a','k','a','e','h','r'],
@@ -61,15 +61,18 @@ const turnIndicator = document.getElementById('turn-indicator');
 async function init() {
   // Parse model and optional session from URL
   const params = new URLSearchParams(window.location.search);
-  modelId = params.get('model') || '';
+  modelId = params.get('model') || localStorage.getItem('game-table:model') || 'deepseek-v4-flash';
 
-  try {
-    if (!modelId) modelId = await fetchDefaultModel() || '';
-  } catch { /* ignore */ }
+  // Restore the running match score for this game (game-table:ui).
+  const savedScores = (window.GameTableUI?.loadUi().scores || {})[GAME_KEY];
+  if (Array.isArray(savedScores)) [scorePlayer, scoreAI] = savedScores;
   assistLevelSel.addEventListener('change', () => {
     assistLevel = parseInt(assistLevelSel.value, 10);
   });
   newGameBtn.addEventListener('click', startNewGame);
+  scoreDisplay.title = 'Match score — click to reset';
+  scoreDisplay.style.cursor = 'pointer';
+  scoreDisplay.addEventListener('click', () => { scorePlayer = 0; scoreAI = 0; updateScoreDisplay(); });
   updateScoreDisplay();
   canvas.addEventListener('click', onBoardClick);
 
@@ -97,11 +100,8 @@ async function startNewGame() {
     modelId,
     title: 'Chat',
     placeholder: 'Type a message...',
-    onSessionCreated: (sid) => {
-      const url = new URL(window.location);
-      url.searchParams.set('session', sid);
-      history.replaceState(null, '', url);
-    },
+    lazy: true,
+    deleteOnLeave: true,
     onStreamEnd: handleStreamEnd,
   });
 
@@ -113,6 +113,9 @@ async function startNewGame() {
 
 function updateScoreDisplay() {
   scoreDisplay.textContent = `${scorePlayer} : ${scoreAI}`;
+  const scores = window.GameTableUI?.loadUi().scores || {};
+  scores[GAME_KEY] = [scorePlayer, scoreAI];
+  window.GameTableUI?.saveUi({ scores });
 }
 
 function updateTurnIndicator() {

@@ -7,7 +7,6 @@
     <link rel="icon" type="image/svg+xml" href="/logo.svg">
     <link rel="stylesheet" href="arcade.css">
     <link rel="stylesheet" href="pong.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
     <script src="games-nav.js"></script>
@@ -33,8 +32,8 @@
                 <canvas id="pongCanvas" width="600" height="400"></canvas>
                 <div id="pong-overlay" class="tetris-overlay" style="display: flex;">
                     <div class="overlay-card">
-                        <p class="overlay-title">Pong</p>
-                        <p class="overlay-copy">Two players — W/S moves the left paddle, ↑/↓ the right.</p>
+                        <p id="pongOverlayTitle" class="overlay-title">Pong</p>
+                        <p id="pongOverlayCopy" class="overlay-copy">First to 11 wins — W/S moves the left paddle, ↑/↓ the right.</p>
                         <div class="overlay-actions">
                             <button id="pongStartButton" class="utility-button">Start Game</button>
                         </div>

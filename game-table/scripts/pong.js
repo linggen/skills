@@ -6,6 +6,7 @@ const BALL_SIZE = 10;
 const BALL_RADIUS = BALL_SIZE / 2;
 const PADDLE_SPEED = 6;
 const BALL_SPEED = 5;
+const PONG_WIN_SCORE = 11;
 
 let pongCanvas, pongCtx;
 let player1Y, player2Y;
@@ -142,12 +143,22 @@ function updatePong() {
     if (ballX + BALL_RADIUS < 0) {
         player2Score += 1;
         updatePongScore();
+        if (player2Score >= PONG_WIN_SCORE) { endPongMatch(2); return; }
         resetBall(-1);
     } else if (ballX - BALL_RADIUS > PONG_CANVAS_WIDTH) {
         player1Score += 1;
         updatePongScore();
+        if (player1Score >= PONG_WIN_SCORE) { endPongMatch(1); return; }
         resetBall(1);
     }
+}
+
+function endPongMatch(winner) {
+    pongRunning = false;
+    document.getElementById('pongOverlayTitle').innerText = `Player ${winner} wins!`;
+    document.getElementById('pongOverlayCopy').innerText = `${player1Score} – ${player2Score}. First to ${PONG_WIN_SCORE}.`;
+    document.getElementById('pongStartButton').innerText = 'Play Again';
+    document.getElementById('pong-overlay').style.display = 'flex';
 }
 
 function drawPong() {
@@ -178,6 +189,9 @@ function drawPong() {
 
 function startPongMatch() {
     document.getElementById('pong-overlay').style.display = 'none';
+    player1Score = 0;
+    player2Score = 0;
+    updatePongScore();
     resetBall();
     pongRunning = true;
 }
@@ -186,14 +200,4 @@ function pongGameLoop() {
     if (pongRunning) updatePong();
     drawPong();
     animationFrameId = requestAnimationFrame(pongGameLoop);
-}
-
-function stopPong() {
-    if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-    }
-    document.removeEventListener('keydown', pongKeyDown);
-    document.removeEventListener('keyup', pongKeyUp);
-    document.getElementById('pongGameContainer').style.display = 'none';
 }

@@ -16,6 +16,8 @@
   const loadUi = () => { try { return JSON.parse(localStorage.getItem(UI_KEY)) || {}; } catch { return {}; } };
   const saveUi = (patch) => { try { localStorage.setItem(UI_KEY, JSON.stringify({ ...loadUi(), ...patch, v: 1 })); } catch { /* ignore */ } };
   if (GAMES.some((g) => g.file === current)) saveUi({ game: current });
+  // Shared with the game pages (match scores etc.) — games-nav loads first.
+  window.GameTableUI = { loadUi, saveUi };
 
   const style = document.createElement('style');
   style.textContent = `

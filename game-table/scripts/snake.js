@@ -189,12 +189,6 @@ function restartGame() {
     main();
 }
 
-function stopSnake() {
-    clearTimeout(snakeGameIntervalId);
-    document.removeEventListener('keydown', changeDirection);
-    document.getElementById('game-over-screen').style.display = 'none';
-    document.getElementById('snakeGameContainer').style.display = 'none';
-}
 
 function initSnake() {
     snakeCanvas = document.getElementById('snakeCanvas');
