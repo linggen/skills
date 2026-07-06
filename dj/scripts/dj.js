@@ -251,8 +251,7 @@ function renderSelbar() {
       ? `<span class="sel-n">${n} selected</span>
          <button class="btn ghost small" data-sel="add">Add to playlist…</button>
          <button class="btn ghost small" data-sel="sync">Sync to phone</button>
-         <button class="btn ghost small" data-sel="remove">${inPlaylistView() ? 'Remove from playlist' : 'Delete from library'}</button>
-         <button class="btn ghost small" data-sel="clear">Clear</button>`
+         <button class="btn ghost small" data-sel="remove">${inPlaylistView() ? 'Remove from playlist' : 'Delete from library'}</button>`
       : ''}
     <span class="sel-menu" id="sel-menu"></span>`;
   $('sel-all-chk').onchange = (e) => {
@@ -261,7 +260,6 @@ function renderSelbar() {
     renderLibrary();
   };
   if (n) {
-    bar.querySelector('[data-sel="clear"]').onclick = () => { state.selected.clear(); renderLibrary(); };
     bar.querySelector('[data-sel="sync"]').onclick = () => syncSelected();
     bar.querySelector('[data-sel="remove"]').onclick = () => removeSelected();
     bar.querySelector('[data-sel="add"]').onclick = () => showAddMenu();
