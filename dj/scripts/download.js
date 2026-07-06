@@ -115,11 +115,14 @@ export async function downloadKaraokeVideo(bins, cfg, track) {
 
   // Cap at 720p so files stay reasonable; merge to a single .mp4. Same
   // search-several-grab-first-playable approach as the audio path.
+  // Pin H.264 (avc1) video + AAC (m4a) audio: yt-dlp's "best" otherwise picks
+  // AV1/Opus, which the app's WKWebView can't decode (black screen / no sound)
+  // on Macs without AV1 hardware (pre-M3).
   const cmd = [
     `mkdir -p ${sq(libDir)} &&`,
     sq(bins.yt_dlp),
     `--no-warnings --ignore-errors --max-downloads 1`,
-    `-f ${sq('bv*[height<=720]+ba/b[height<=720]/b')}`,
+    `-f ${sq('bv*[vcodec^=avc1][height<=720]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=720]+ba/bv*[height<=720]+ba/b[height<=720]/b')}`,
     `--merge-output-format mp4`,
     `--ffmpeg-location ${sq(bins.ffmpeg)}`,
     `--print after_move:filepath`,
