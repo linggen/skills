@@ -101,6 +101,21 @@ export async function fetchMemoryDays(filter = {}) {
   }
 }
 
+// Store-state summary from the daemon — row counts per tier, disk
+// footprint, last dream. Same `stats` payload the ling-mem console
+// header and the engine's mission report render.
+export async function fetchMemoryStats() {
+  const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/stats -H 'Content-Type: application/json' -d '{}'`;
+  const out = await bashExec(cmd);
+  if (!out) return null;
+  try {
+    const parsed = JSON.parse(out.stdout || '{}');
+    return parsed.ok && parsed.data ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
 // Expand `~` to $HOME on the shell side, since /api/bash receives a
 // command string (not pre-expanded). All readers below feed the path
 // through `eval echo` so `~` and `$HOME` both work transparently.

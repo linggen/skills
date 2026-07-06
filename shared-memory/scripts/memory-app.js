@@ -21,6 +21,7 @@ import {
   fetchDefaultModel,
   fetchMemoryCount,
   fetchMemoryDays,
+  fetchMemoryStats,
   listSkillSessions,
   readJsonFile,
   writeJsonFile,
@@ -145,11 +146,12 @@ async function mountAndStart(sessionId) {
 async function paintDashboard() {
   let coreC, semC, epC, daysData;
   try {
-    [coreC, semC, epC, daysData] = await Promise.all([
+    [coreC, semC, epC, daysData, lastStats] = await Promise.all([
       fetchMemoryCount({ tier: 'core' }),
       fetchMemoryCount({ tier: 'semantic' }),
       fetchMemoryCount({ episodic: true }),
       fetchMemoryDays(),
+      fetchMemoryStats(),
     ]);
   } catch (e) {
     console.warn('[memory] paintDashboard fetch failed', e);
@@ -157,6 +159,7 @@ async function paintDashboard() {
     semC = { count: 0 };
     epC = { count: 0 };
     daysData = null;
+    lastStats = null;
   }
   const summary = { coreC, semC, epC, daysData };
   const greeting = pickGreeting(summary);
@@ -236,12 +239,26 @@ function pendingDays(daysData) {
   return (daysData?.days || []).filter((d) => d?.state === 'pending');
 }
 
+// Latest daemon stats snapshot (rows / disk) — refreshed by
+// paintDashboard; buildFooter reads it so calendar-only refreshes keep
+// the store line without an extra round-trip.
+let lastStats = null;
+
+function fmtBytes(b) {
+  if (!b) return null;
+  return b >= 1e9 ? `${(b / 1e9).toFixed(1)} GB` : `${(b / 1e6).toFixed(1)} MB`;
+}
+
 function buildFooter({ daysData }) {
   const last = lastRememberedAt(daysData);
   const parts = [last ? `last dream ${ageOf(last)}` : 'last dream: never'];
   const pending = pendingDays(daysData).length;
   if (pending > 0) parts.push(`${pending} day${pending === 1 ? '' : 's'} pending`);
   if (daysData?.ttl_days) parts.push(`short-term keeps ${daysData.ttl_days}d`);
+  if (lastStats?.total != null) {
+    const disk = fmtBytes(lastStats.disk_bytes?.total);
+    parts.push(`${lastStats.total} rows${disk ? ` · ${disk} on disk` : ''}`);
+  }
   return { text: parts.join('   ·   ') };
 }
 
