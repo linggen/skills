@@ -7,55 +7,51 @@ dashboard from JS **without an agent round-trip**. On open,
 1. `POST /api/memory/count` three times (`tier=core`, `tier=semantic`,
    `episodic=true`) against the local `ling-mem` daemon (proxied
    through `/api/bash` curl).
-2. `cat ~/.linggen/memory/.dream-state.json` for the last-hippocampus
-   stamp.
-3. `head -n 1 ~/.linggen/memory/.scan-output.jsonl` for the last-scan
-   header (if any).
+2. `POST /api/memory/days` for the per-day dream-state rollup — the
+   daemon's `.days.json` sidecar is the single source of truth (the
+   old `.dream-state.json` / `.dream-history.jsonl` files are
+   retired; never read or write them).
 
 It then paints the page deterministically:
 
 - **`top_bar`** — three tier cards (`CORE` / `SEMANTIC` / `EPISODIC`)
   with row counts and `latest Xh ago` subtitles. Episodic card flips
   amber when `count > 50` (staging filling up).
-- **`body`** — one `greeting` widget. Title + primary CTA are
-  rule-picked by `pickGreeting()` from current state — *"Welcome —
-  memory's empty"* on a fresh install, *"Staging is filling up — N
-  episodic rows"* when episodic > 50, *"Last hippocampus Xh ago"* when
-  stale, etc. No LLM.
-- **`footer`** — *"hippocampus Yh ago · N sessions read"*.
+- **`body`** — one `greeting` widget (title + primary CTA rule-picked
+  by `pickGreeting()` from current state — *"Welcome — your memory's
+  empty"*, pending-days nudge, *"All caught up — last dream Xh ago"*;
+  no LLM) plus the **`dream-calendar`** widget, a per-day rendering
+  of the `days` rollup (pending / staging / remembered / forgotten).
+- **`footer`** — *"last dream Xh ago · N rows"*.
 
 The skill **does not** ask the agent to render the dashboard. The
 agent runs in chat-mode for the whole session.
 
 ## When the agent IS involved
 
-The header has two action controls, both wired to `_chatSend`:
+Dream has two entry points, both landing as plain chat messages via
+`_chatSend`:
 
 | Control | Chat message sent | Agent action |
 |:---|:---|:---|
-| `🧠 Hippocampus` (with window selector: last 24h / week / month) | `"/shared-memory dream"` / `"/shared-memory dream week"` / `"/shared-memory dream month"` | Run the full pass: `scan.sh <window>` (Phase 0) → read `~/.linggen/memory/.scan-output.jsonl`, judge, write, promote, evict. Follow `dream-flow.md` end-to-end. Emit a single `PageUpdate` with the report. |
+| `🧠 Run dream` header button | `/shared-memory dream` | Follow `dream-flow.md`: `days` worklist → remember the oldest pending day(s) → `remember_day` stamp → one `sweep` at the end. |
+| Calendar day-click (popover confirm) | `/shared-memory dream <YYYY-MM-DD>` | Same flow scoped to that day; a gap day (no episodic rows) is a harvest — scan + encode first. |
 | `Browse ↗` | (link, not a message) | Opens `http://127.0.0.1:9888` in a new tab. |
 
-`/shared-memory dream` is the slash-command form of the hippocampus
-button — both route to the same flow.
+`/shared-memory dream` typed in chat is the slash-command form of the
+button — all routes converge on `dream-flow.md`.
 
-## Report PageUpdate from hippocampus
+## After a dream run — no report PageUpdate
 
-See `dream-flow.md` *Report — dashboard mode* for the canonical body
-shape. Key constraints:
+The page watches the tool stream (`Memory_write` / `Bash` blocks) and
+re-fetches the `days` rollup itself, repainting the calendar and
+footer in place. The agent must **not** emit a `PageUpdate`:
 
-- **Do NOT emit `top_bar`.** JS owns it and re-fetches counts after
-  every PageUpdate (`refreshTierCounts`). Emitting `top_bar` from
-  the agent will overwrite the live numbers with a snapshot from
-  the agent's mid-run view of the world.
-- The greeting widget at the top of the body should carry the
-  *"Open in ling-mem console ↗"* deep-link as a primary action with
-  `href: http://127.0.0.1:9888/?session=<sid>&since=<run_started>`.
-  The dashboard accepts those query params and renders a filtered
-  view of just the rows this run wrote.
-- Cap `fact-list` items at ~10 per section with a trailing
-  *"+N more"* placeholder; the user goes to the console for the
-  long tail.
+- **Do NOT emit `top_bar`.** JS owns it and re-fetches counts itself
+  (`refreshTierCounts`); an agent-emitted snapshot would overwrite
+  the live numbers with a mid-run view of the world.
+- End the run with the one-line totals from `dream-flow.md` as a
+  plain chat reply — that's the whole report.
 
 ## Row-level UI actions
 
