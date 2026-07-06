@@ -314,7 +314,8 @@ mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dream** | Message says `/shared-memory dream` (all pending days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. Load `extractor-prompt.md` only for a harvest (gap-day session backfill). |
+| **Dream** | Message says `/shared-memory dream` (all pending days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook, and on Linggen the memory app's buttons trigger that mission directly. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
+| **Scan** | Message says `/shared-memory scan <YYYY-MM-DD>` — stage that day's session logs (backfill), see the verb table. The calendar's scan button sends this. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (its Scan section) and `references/extractor-prompt.md` (what to stage). |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
 The old **Dashboard mode** (the agent rendering the on-open page) is
@@ -334,8 +335,9 @@ it's what a bare `/shared-memory` greeting should mention first.
 
 | Verb | Action |
 |:---|:---|
-| `dream` | **Remember all pending days, oldest first, then sweep.** Worklist via `days --pending`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL. See `references/dream-flow.md`. |
-| `dream <YYYY-MM-DD>` | **Remember one day.** Same procedure, one day. If the day has no rows at all (a gap day), harvest first: scan that day's sessions (`scripts/scan.sh <date>`), encode candidates into episodic, then remember them. |
+| `dream` | **Remember all pending days, oldest first, then sweep.** Worklist via `days --pending`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL. See `references/dream-flow.md`. (On Linggen, the memory app's buttons route this to the `dream` **mission** — same procedure, plus the in-flight guard and run report. The chat verb is for hosts without a mission runtime, or explicit chat requests.) |
+| `dream <YYYY-MM-DD>` | **Remember one day.** Same procedure, one day. |
+| `scan <YYYY-MM-DD>` | **Stage one day's session logs (backfill).** Run `scripts/scan.sh <date>`; before encoding, `list --day <date>` the day's existing rows and collect their `source_session` ids — **skip any scanned session already in that set** (live capture or a prior scan covered it; this is what makes scan idempotent). Encode the remaining worthwhile candidates into episodic with `--episodic` + the day's `occurred_at`, then stamp: `ling-mem harvest-day <date>` (stamps scanned only — the day goes *pending* and dream judges it later). A day with nothing new: still stamp, report `CLEAN`. |
 | `add "<content>" [--type ...] [--tier core] [--context ...]` | Insert a new memory row. Defaults to `--tier semantic`. |
 | `search "<query>" [--limit N] [--context ...]` | Semantic search across `semantic` + `episodic`. |
 | `list [--type ...] [--tier ...] [--day ...] [--limit N]` | Paginated listing. |

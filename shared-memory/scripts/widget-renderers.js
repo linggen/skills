@@ -163,28 +163,118 @@ function dcalIso(d) {
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
-// The single state badge for a day cell. Returns null for days with no
-// dream-pipeline presence (empty grey cell).
+// The single state badge for a day cell — used only for TODAY (past
+// days render the scan/dream controls instead).
 function dcalStateBadge(rec) {
   if (!rec) return null;
-  switch (rec.state) {
-    case 'pending':
-      return el('div', 'dcal-chip dcal-chip-pending',
-        `${rec.unjudged || rec.rows || 0} pending`);
-    case 'remembered':
-      return el('div', 'dcal-chip dcal-chip-remembered',
-        rec.promoted > 0 ? `✓ ${rec.promoted}` : '✓');
-    case 'forgotten':
-      return el('div', 'dcal-chip dcal-chip-forgotten', '✓');
-    case 'harvested':
-      return el('div', 'dcal-chip dcal-chip-forgotten', 'walked');
-    case 'today':
-      return rec.rows > 0
-        ? el('div', 'dcal-chip dcal-chip-staging', `${rec.rows} staged`)
-        : null;
-    default:
-      return null;
+  if (rec.state === 'today' && rec.rows > 0) {
+    return el('div', 'dcal-chip dcal-chip-staging', `${rec.rows} staged`);
   }
+  return null;
+}
+
+function dcalAgo(iso) {
+  const h = (Date.now() - Date.parse(iso)) / 3.6e6;
+  if (h < 1) return `${Math.max(1, Math.round(h * 60))}m ago`;
+  if (h < 48) return `${Math.round(h)}h ago`;
+  return `${Math.round(h / 24)}d ago`;
+}
+
+// Arm-to-confirm button: first click arms ("scan" → "scan?"), second
+// click fires. A stray click never burns tokens; auto-disarms in 3s.
+function dcalArmButton(label, title, onFire) {
+  const btn = el('button', 'dcal-act', label);
+  btn.title = title;
+  let armed = null;
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (armed) {
+      clearTimeout(armed);
+      armed = null;
+      btn.classList.remove('dcal-armed');
+      btn.textContent = label;
+      onFire(btn);
+      return;
+    }
+    btn.classList.add('dcal-armed');
+    btn.textContent = `${label}?`;
+    armed = setTimeout(() => {
+      armed = null;
+      btn.classList.remove('dcal-armed');
+      btn.textContent = label;
+    }, 3000);
+  });
+  return btn;
+}
+
+// Kick a day-scoped dream mission run and poll the rollup while it
+// works (the mission runs in its own session, so this page gets no
+// tool stream from it).
+async function dcalTriggerDream(day, btn) {
+  btn.disabled = true;
+  btn.textContent = 'dreaming…';
+  try {
+    const res = await fetch('/api/missions/dream/trigger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ day }),
+    });
+    if (res.status === 409) {
+      btn.textContent = 'dream running…';
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'dream'; }, 5000);
+      return;
+    }
+  } catch {
+    btn.disabled = false;
+    btn.textContent = 'dream';
+    return;
+  }
+  if (window._refreshDreamCalendar) {
+    let ticks = 0;
+    const timer = setInterval(async () => {
+      ticks += 1;
+      await window._refreshDreamCalendar();
+      if (ticks >= 36) clearInterval(timer); // ~3 min of 5s polls
+    }, 5000);
+  }
+}
+
+// The two per-day controls — `scan | scanned` and `dream | dreamed`.
+// Buttons act on THIS day; states come straight from the rollup.
+function dcalDayControls(iso, rec) {
+  const wrap = el('div', 'dcal-acts');
+
+  if (rec?.harvested_at) {
+    const chip = el('div', 'dcal-chip dcal-chip-scanned', 'scanned ✓');
+    chip.title = `${iso} · scanned ${dcalAgo(rec.harvested_at)} — this day's session logs were walked and staged.`;
+    wrap.appendChild(chip);
+  } else {
+    wrap.appendChild(dcalArmButton(
+      'scan',
+      `Walk ${iso}'s session logs (Claude Code, Codex, Linggen) and stage facts not yet in memory. Sessions that already contributed rows are skipped, so this is safe even when live capture was on.`,
+      () => { if (window._chatSend) window._chatSend(`/shared-memory scan ${iso}`); },
+    ));
+  }
+
+  const unjudged = rec?.unjudged || 0;
+  if (unjudged > 0) {
+    wrap.appendChild(dcalArmButton(
+      `dream (${unjudged})`,
+      `Run the dream mission scoped to ${iso}: judge its ${unjudged} staged rows — promote durable facts to long-term memory, stamp the day, then evict expired short-term rows.`,
+      (btn) => dcalTriggerDream(iso, btn),
+    ));
+  } else if (rec?.remembered_at) {
+    const chip = el('div', 'dcal-chip dcal-chip-remembered',
+      `dreamed ✓ ${rec.judged || 0}·${rec.promoted || 0}`);
+    chip.title = `${iso} · dreamed ${dcalAgo(rec.remembered_at)} — ${rec.judged || 0} judged, ${rec.promoted || 0} promoted to long-term${rec.forgotten ? `, ${rec.forgotten} aged out` : ''}.`;
+    wrap.appendChild(chip);
+  } else {
+    const dim = el('div', 'dcal-chip dcal-chip-dim', 'dream');
+    dim.title = `${iso} · nothing staged to dream — scan first if you worked this day.`;
+    wrap.appendChild(dim);
+  }
+
+  return wrap;
 }
 
 function dcalTooltip(iso, rec) {
@@ -227,16 +317,8 @@ function dcalOpenPopover(anchorCell, iso, rec, todayIso) {
   }
   for (const t of lines) pop.appendChild(el('div', 'dcal-pop-line', t));
 
+  // Detail-only: the scan/dream buttons on the cell own the actions.
   const actions = el('div', 'dcal-pop-actions');
-  const dreamable = iso < todayIso && (state === 'pending' || state === 'empty' || !rec?.remembered_at);
-  if (dreamable) {
-    const go = el('button', 'dcal-pop-btn dcal-pop-primary', '🧠 Dream this day');
-    go.addEventListener('click', () => {
-      if (window._chatSend) window._chatSend(`/shared-memory dream ${iso}`);
-      pop.remove();
-    });
-    actions.appendChild(go);
-  }
   const close = el('button', 'dcal-pop-btn', 'Close');
   close.addEventListener('click', () => pop.remove());
   actions.appendChild(close);
@@ -311,18 +393,21 @@ function renderDreamCalendar(w) {
       if (iso === todayIso) num.classList.add('dcal-today-num');
       cell.appendChild(num);
 
-      const badge = dcalStateBadge(rec);
-      if (badge) {
-        const chips = el('div', 'dcal-chips');
-        chips.appendChild(badge);
-        cell.appendChild(chips);
-      }
-
-      if (isFuture) {
+      if (iso === todayIso) {
+        // Today only stages; it becomes scannable/dreamable after
+        // midnight. Show the staging count, no controls.
+        const badge = dcalStateBadge(rec);
+        if (badge) {
+          const chips = el('div', 'dcal-chips');
+          chips.appendChild(badge);
+          cell.appendChild(chips);
+        }
+        cell.title = dcalTooltip(iso, rec);
+      } else if (isFuture) {
         cell.classList.add('dcal-future');
       } else {
+        cell.appendChild(dcalDayControls(iso, rec));
         cell.classList.add('dcal-clickable');
-        cell.title = dcalTooltip(iso, rec);
         cell.addEventListener('click', (e) => {
           e.stopPropagation();
           dcalOpenPopover(cell, iso, rec, todayIso);
@@ -332,12 +417,11 @@ function renderDreamCalendar(w) {
     }
     panel.appendChild(grid);
 
-    // Legend — the pipeline states at a glance.
+    // Legend — the two functions at a glance.
     const hint = el('div', 'dcal-hint');
-    hint.innerHTML = `<span class="dcal-swatch dcal-swatch-pending"></span>pending · `
-      + `<span class="dcal-swatch dcal-swatch-remembered"></span>remembered · `
-      + `<span class="dcal-swatch dcal-swatch-forgotten"></span>forgotten · `
-      + `<strong>click a day for details</strong>`;
+    hint.innerHTML = `<strong>scan</strong> stages a day's session logs · `
+      + `<strong>dream</strong> judges staged rows &amp; sweeps expired · `
+      + `hover a button for details, click twice to run`;
     panel.appendChild(hint);
   }
 

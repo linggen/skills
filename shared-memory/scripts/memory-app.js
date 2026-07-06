@@ -101,9 +101,21 @@ async function mountAndStart(sessionId) {
   chat = await LinggenUI.mount(chatPanel, mountOpts);
 
   // Widget buttons send plain text — the agent reads the message and
-  // decides what to do based on SKILL.md. JS knows nothing about ranges,
-  // scans, or extraction.
-  window._chatSend = (text) => { if (chat) chat.send(text); };
+  // decides what to do based on SKILL.md. One exception: a bare
+  // `/shared-memory dream` (header button, greeting CTA) routes to the
+  // real dream mission instead of the chat session, so every dream
+  // trigger shares the mission's agent, in-flight guard, run record
+  // and report (memory-spec: one dream executor). Day-scoped dreams go
+  // through the calendar buttons, which call the mission directly.
+  window._chatSend = (text) => {
+    if (typeof text === 'string' && text.trim() === '/shared-memory dream') {
+      triggerDreamMission();
+      return;
+    }
+    if (chat) chat.send(text);
+  };
+  // The calendar widget polls this while a mission run is in flight.
+  window._refreshDreamCalendar = () => refreshDaysCalendar().catch(() => {});
   setupActionBar();
 
   if (sessionId && await tryRestoreCached(sessionId)) {
@@ -182,6 +194,32 @@ function buildDreamCalendar(daysData) {
     if (d?.date) days[d.date] = d;
   }
   return { type: 'dream-calendar', title: 'Dream activity', days };
+}
+
+// Kick the dream mission (nightly protocol: all pending days, then the
+// sweep) and poll the rollup while it runs. 409 = already in flight.
+async function triggerDreamMission() {
+  try {
+    const res = await fetch('/api/missions/dream/trigger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+    if (res.status === 409) {
+      if (chat) chat.addMessage('A dream run is already in flight — the calendar updates as it works.');
+      return;
+    }
+    if (chat) chat.addMessage('Dream mission started — remembering pending days, then the forget sweep. The calendar updates as it works.');
+  } catch {
+    if (chat) chat.addMessage('Could not reach the mission API — is the daemon running?');
+    return;
+  }
+  let ticks = 0;
+  const timer = setInterval(async () => {
+    ticks += 1;
+    await refreshDaysCalendar().catch(() => {});
+    if (ticks >= 36) clearInterval(timer); // ~3 min of 5s polls
+  }, 5000);
 }
 
 // Re-fetch the days rollup and swap the calendar widget in place,
