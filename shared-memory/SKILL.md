@@ -136,6 +136,8 @@ Chat-tier and ungated — zero permission prompts across a pass full of
 writes — and falls back to the CLI on headless hosts. See
 `references/dream-flow.md` → *Interface*.)
 
+**Anchor relative time in every saved row** — substitute today's date in before writing (e.g. if today is 2026-07-07: "turned 3 last month" → "turned 3 in 2026-06, as of 2026-07-07"); relative words rot silently.
+
 **Always pipe CLI list/search/get output through `jq -c 'del(.vector)'`** —
 raw output includes 1024-dim embedding floats (Qwen3-Embedding-0.6B) that blow up context.
 
