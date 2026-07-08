@@ -84,6 +84,14 @@ def add(kind, c, story_title, story_id, parent_body=None):
         **({"parent_comment_body": parent_body} if parent_body else {}),
     })
 
+# True if `node`'s subtree already contains a username-authored comment newer
+# than `ts` — i.e. I've already been back to this branch since. Used to drop
+# mentions I've already answered instead of re-surfacing them every rescan.
+def own_reply_after(node, ts=0):
+    if (node.get("author") or "") == username and (node.get("created_at_i") or 0) > ts:
+        return True
+    return any(own_reply_after(k, ts) for k in (node.get("children") or []))
+
 # ── 1. comments on own recent stories (the invisible lane) ──────────────────
 try:
     q = urllib.parse.urlencode({"tags": f"story,author_{username}", "hitsPerPage": 20})
@@ -91,11 +99,17 @@ try:
     month_old = int(time.time()) - 45 * 86400
     for s in [s for s in stories if (s.get("created_at_i") or 0) > month_old][:10]:
         sid, stitle = s.get("objectID"), s.get("title") or ""
+        try:
+            tree = get(f"{API}/items/{sid}")
+        except Exception:
+            tree = None
         cq = urllib.parse.urlencode({
             "tags": f"comment,story_{sid}", "hitsPerPage": 50,
             "numericFilters": f"created_at_i>{cutoff}",
         })
         for c in get(f"{API}/search_by_date?{cq}").get("hits", []) or []:
+            if tree and own_reply_after(tree, c.get("created_at_i") or 0):
+                continue  # already replied to this thread since this comment
             add("reply_to_me", c, stitle, sid)
 except Exception as e:
     errors.append(f"story-comments: {e}")
@@ -108,6 +122,8 @@ try:
     for oc in [c for c in own if (c.get("created_at_i") or 0) > month_old][:10]:
         node = get(f"{API}/items/{oc.get('objectID')}")
         for child in node.get("children", []) or []:
+            if own_reply_after(child):
+                continue  # I already replied to this specific reply
             add("reply_to_me", child, oc.get("story_title") or "",
                 oc.get("story_id"), parent_body=strip_html(oc.get("comment_text") or "")[:400])
 except Exception as e:
