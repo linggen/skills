@@ -26,8 +26,8 @@ Codex, OpenClaw). One user memory, shared across every AI tool.
 Three distinct names — keep them straight everywhere:
 
 - **`ling-mem`** — the binary. LLM-free mechanical store (semantic +
-  episodic tables, `search_scored` / `insert_with_dedup` / `--supersedes`
-  / `evict`). Name unchanged by this rename.
+  episodic tables, `search_scored` / `insert_with_dedup` / `replace_ids`
+  / `sweep`). Name unchanged by this rename.
 - **built-in memory** — the Linggen engine's encoder + `dream` mission.
   Linggen-only.
 - **`shared-memory`** — this skill. A host adapter, **not** a memory
@@ -78,16 +78,18 @@ artifact). Surfaces touched: skills repo dir, `vendor/skills` submodule,
   `~/.linggen/skills/ling-mem` → `shared-memory`. Memory data is under
   `~/.linggen/memory` (separate) — never touched.
 
-## 4. `/shared-memory dream` — scan + process
+## 4. `/shared-memory scan` + `/shared-memory dream` — backfill and nightly passes
 
 The skill is the **per-host in-host encoder** for non-Linggen hosts. It
 isn't handed a live exchange (it doesn't own the host's agent loop), so
-it encodes by reading *that host's own* session files. This is the
+it backfills by reading *that host's own* session files. This is the
 coexistence model's per-host wake-encode — not Linggen reaching into
 other tools, and not in tension with `f915e6b` (engine-scoped).
 
-`/shared-memory dream` = scan → extract → judge/write → consolidate +
-evict.
+The two are separate modes: `/shared-memory scan <date>` = walk →
+extract → stage to episodic (user-triggered backfill, harvest-stamps
+the day); `/shared-memory dream` = remember (judge one day, promote
+durable rows) + forget (mechanical sweep).
 
 **Scan + extract (script, token-cheap).** A script parses the host's
 on-disk transcripts, strips tool noise, hash-dedups, secret-filters —
@@ -102,13 +104,14 @@ no LLM, so no token cost on raw logs. Verified sources:
 Per-source watermark (mtime/offset) → a re-run never re-processes a
 handled transcript.
 
-**Judge + write (host LLM) → then consolidate + evict.** The host LLM
-applies the engine contract verbatim: memory-spec §2/§4 exclusions +
-write-time usefulness bar + salience routing (explicit → semantic,
-incidental → episodic). Writes go through the daemon; dedup is
-exact-content only (binary `88da2ae`); no `supersedes` (CRUD-only,
-`bfa1bd5`). Then the same consolidate + evict the Linggen `dream` runs
-(§7b — one shared contract).
+**Judge + write (host LLM) → then the dream's remember + forget.**
+The host LLM applies the engine contract verbatim: memory-spec
+exclusions + write-time usefulness bar + salience routing (explicit →
+semantic, incidental → episodic). Writes go through the daemon; dedup
+is exact-content only (binary `88da2ae`); no `supersedes` — atomic
+`replace_ids` is the resolution primitive. The nightly dream then
+remembers each staged day and the sweep forgets judged rows past TTL
+(one shared contract).
 
 **Floors**: secrets stripped in the script before the LLM sees them
 (memory-spec §3 r6); never store file-derivable content (§4 r1).

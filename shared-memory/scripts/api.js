@@ -128,8 +128,7 @@ function expandPath(path) {
 }
 
 // Read a small JSON file via /api/bash. Missing file → fallback.
-// Used for ~/.linggen/memory/.dream-state.json and the .scan-output.jsonl
-// header line.
+// Used for the dashboard page cache.
 export async function readJsonFile(path, fallback = null) {
   const p = expandPath(path);
   const cmd = `f=${p}; [ -f "$f" ] && cat "$f" || true`;

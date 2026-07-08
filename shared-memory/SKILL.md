@@ -10,7 +10,7 @@ homepage: https://linggen.dev
 # Linggen enforces this list as the session's tool surface (ling supplies
 # the personality, the skill supplies the tools). Keep it COMPLETE for
 # everything the dream + chat mode use: Bash (scan.sh + ling-mem CLI),
-# Read (references), AskUser (Phase 3 conflict resolution), and the
+# Read (references), AskUser (user-voice conflict resolution), and the
 # Memory_* capability tools. Claude Code / Codex ignore this block.
 allowed-tools:
   - Read
@@ -121,7 +121,7 @@ change when you switch agents.
 | Search | `ling-mem search "..." [--context ...] [--limit N]` |
 | Get    | `ling-mem get <id>` |
 | List   | `ling-mem list [--type ...] [--day YYYY-MM-DD] [--limit N] ...` |
-| Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--context ...] [--tag ...]` |
+| Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--context ...] [--tag ...] [--source-session <id>]` — pass the host session id on live captures so a later `scan` of the day skips sessions that already contributed |
 | Update | `ling-mem edit <id> [--content ...] [--context ...] [--tag ...]` (or the back-compat alias `ling-mem update <id> ...`) |
 | Delete | `ling-mem delete <id> --yes` |
 | Days   | `ling-mem days [--pending]` — per-day dream state (pending / remembered / forgotten); `--pending` = the dream worklist, oldest first |
@@ -385,6 +385,13 @@ word-count rows accumulate.
 `built`/`fixed`/`tried`/`learned`) are your notebook: merge, rewrite,
 retire freely, no prompt. Rows in the user's voice (`from=user` —
 preference/decision/identity) change only with the user: ask first.
+The daemon enforces this floor mechanically — a replace or content
+rewrite of a `from=user` row is BLOCKED unless the write carries
+`user_directed: true`, which you assert only when the user directed
+the change: their current message states it as settled (a command
+"update X to Y", a declaration "my X is now Y", a commitment "from
+now on, X") or they just answered your ask. A hedged reflection ("X
+feels about right to me") never qualifies — ask first.
 
 | You see | Action |
 |:---|:---|
