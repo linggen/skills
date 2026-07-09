@@ -152,7 +152,7 @@ h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: v
 .neg-t { color: var(--neg); }
 
 .bars { display: flex; flex-direction: column; gap: 8px; }
-.bar-row { display: grid; grid-template-columns: 110px 1fr 120px; align-items: center; gap: 12px; }
+.bar-row { display: grid; grid-template-columns: 110px 1fr 120px; align-items: center; gap: 12px; cursor: pointer; }
 .bar-label { text-transform: capitalize; }
 .bar-track { background: var(--line); border-radius: 6px; height: 10px; overflow: hidden; }
 .bar-fill { display: block; height: 100%; background: var(--accent); }
