@@ -533,12 +533,14 @@ function tabCardCount(tab) {
   return collectTabSections(tab).reduce((n, s) => n + s.cards.length, 0);
 }
 
-// A tab shows when its source is configured-on (so the X dashboard / "no posts
-// yet" still appears), or when it has cards. Mentions/Progress (no site) show
-// only once they have content, to keep the bar quiet on a fresh session.
+// A site tab (X/HN/Reddit/Bluesky) shows when its source is configured-on
+// (so the X dashboard / "no posts yet" still appears) or when it has cards.
+// Mentions/Progress aren't gated by any site config — they're always visible,
+// same as an enabled site tab, with their own "nothing yet" state until the
+// first gather lands a card.
 function tabVisible(tab, count) {
   if (tab.siteKey) return siteEnabled(tab.siteKey) || count > 0;
-  return count > 0;
+  return true;
 }
 
 function setActiveTab(id) {
