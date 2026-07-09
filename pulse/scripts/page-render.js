@@ -649,15 +649,16 @@ function renderTabContent(tab, body) {
   }
   body.appendChild(actions);
 
-  // The X tab hosts the roster card + dashboard; pulse-app renders into this
-  // mount after each gather (kept across re-renders by id).
-  if (tab.id === 'x') {
+  // The X + HN tabs host a dashboard (X: roster + growth; HN: karma + live
+  // submissions). pulse-app renders into this mount after each gather (kept
+  // across re-renders by id). Other tabs have no extras.
+  if (tab.id === 'x' || tab.id === 'hn') {
     const extras = document.createElement('div');
-    extras.id = 'x-tab-extras';
-    extras.className = 'x-tab-extras';
+    extras.id = `${tab.id}-tab-extras`;
+    extras.className = `${tab.id}-tab-extras tab-extras`;
     body.appendChild(extras);
     if (typeof onTabRenderCallback === 'function') {
-      try { onTabRenderCallback('x', extras); } catch (e) { /* ignore */ }
+      try { onTabRenderCallback(tab.id, extras); } catch (e) { /* ignore */ }
     }
   }
 

@@ -1333,8 +1333,8 @@ async function init() {
     // Hand the config to the renderer so it knows which source tabs to show
     // even before any cards arrive (the X dashboard lives on an empty tab).
     setConfig(cfg);
-    // The X tab mounts its dashboard + roster card through this hook.
-    setOnTabRender(renderXTab);
+    // The X + HN tabs mount their dashboards through this hook.
+    setOnTabRender(renderTabExtras);
     // Per-tab Rescan buttons run a source-scoped gather in the CURRENT session.
     setOnRescan(handleTabRescan);
     // Per-tab Draft buttons draft for that tab's lane in the current session.
@@ -1378,6 +1378,8 @@ async function init() {
   // Prime the X dashboard cache (followers history + activity + roster), then
   // it re-renders the X tab. Fire-and-forget so it never blocks first paint.
   refreshXDashData().catch(err => console.warn('[pulse] x-dash refresh', err));
+  // Same for the HN dashboard (karma history + live submissions).
+  refreshHnDashData().catch(err => console.warn('[pulse] hn-dash refresh', err));
 }
 
 init().catch(err => {
@@ -1692,6 +1694,186 @@ function renderXTab(tabId, mount) {
     });
   });
   mount.appendChild(card);
+}
+
+// Route the per-tab extras hook (page-render calls it for 'x' and 'hn') to the
+// matching dashboard renderer.
+function renderTabExtras(tabId, mount) {
+  if (tabId === 'x') return renderXTab(tabId, mount);
+  if (tabId === 'hn') return renderHnTab(tabId, mount);
+}
+
+// ============================ HN dashboard ================================
+// Rendered into the HN tab's #hn-tab-extras mount, mirroring the X dashboard.
+// Unlike X (which needs the browser extension + a paid credit), HN data is all
+// free public API, so the whole dashboard — karma history plus live
+// per-submission points/comments — comes from hn-account.sh with no auth.
+//   karma       : account-health.json health.hn.history  { date, count }
+//   submissions : sites/hn-account.sh live fetch (points + comments per post)
+//   prev        : state/hn-submissions.json  (last snapshot → per-post deltas)
+
+const HN_SNAPSHOT_PATH = `${SKILL_DIR}/state/hn-submissions.json`;
+let hnDash = { karma: [], submissions: [], counts: { stories: 0, comments: 0 }, total: 0, capped: false, prev: {} };
+let hnDashRange = 30; // karma-chart window in days; chips switch 7/30/90
+
+async function refreshHnDashData() {
+  // Karma-over-time reuses the audience-health series the status strip already
+  // accrues (one point/day).
+  try {
+    const health = await readJson(`${SKILL_DIR}/state/account-health.json`, {});
+    hnDash.karma = Array.isArray(health?.hn?.history) ? health.hn.history.slice() : [];
+  } catch { hnDash.karma = []; }
+  // Live submissions with points + comments. Best-effort — a failed/absent
+  // lookup leaves the last render intact rather than blanking the tab.
+  let acct = null;
+  try {
+    acct = JSON.parse(await runBash(`bash "${SKILL_DIR}/scripts/sites/hn-account.sh" 100`));
+  } catch (e) { console.warn('[pulse] hn-account fetch', e); }
+  if (acct && Array.isArray(acct.submissions)) {
+    // Load the previous snapshot to compute per-post deltas ("+42 since last
+    // check"), then persist the fresh numbers as the new baseline.
+    let prev = {};
+    try { prev = (await readJson(HN_SNAPSHOT_PATH, {})) || {}; } catch { prev = {}; }
+    hnDash.prev = prev;
+    hnDash.submissions = acct.submissions;
+    hnDash.counts = acct.counts || { stories: 0, comments: 0 };
+    hnDash.total = acct.total_submitted || 0;
+    hnDash.capped = !!acct.capped;
+    const snap = {};
+    for (const s of acct.submissions) snap[s.id] = { points: s.points || 0, comments: s.comments || 0 };
+    try { await writeJson(HN_SNAPSHOT_PATH, snap); } catch (e) { /* ignore */ }
+  }
+  try { renderAll(); } catch (e) { /* ignore */ }
+}
+
+function hnBestPoints() {
+  return hnDash.submissions.reduce((m, s) => Math.max(m, s.points || 0), 0);
+}
+
+function hnPendingDraftCount() {
+  const disc = getSession()?.sections?.discovery?.cards || [];
+  return disc.filter(c => (c.source || '').toLowerCase() === 'hn' && c.draft_starter && !c.posted).length;
+}
+
+// Karma points within `days`, clamped so a young store still draws a line.
+function clampKarma(days) {
+  const h = Array.isArray(hnDash.karma) ? hnDash.karma : [];
+  const cutoff = Date.now() - days * 86400000;
+  const within = h.filter(p => new Date(p.date + 'T00:00:00Z').getTime() >= cutoff);
+  if (within.length >= 2) return within;
+  return h.slice(-Math.max(2, Math.min(h.length, 8)));
+}
+
+// Karma line + submissions-per-day bars on one timeline (mirrors X's growth
+// hero). Submission days come from the live submissions' created dates.
+function svgKarmaHero() {
+  const kar = clampKarma(hnDashRange);
+  if (kar.length < 2) {
+    const since = (hnDash.karma[0] && hnDash.karma[0].date) || 'today';
+    return `<div class="chart-empty">Karma tracking started ${escapeHtml(since)} — your growth curve fills in over the next few days.</div>`;
+  }
+  const W = 600, H = 150, PADT = 12, PADB = 16, PADX = 2;
+  const xAt = i => PADX + (i / (kar.length - 1)) * (W - 2 * PADX);
+  const counts = kar.map(p => p.count);
+  let lo = Math.min(...counts), hi = Math.max(...counts);
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const yAt = v => PADT + (1 - (v - lo) / (hi - lo)) * (H - PADT - PADB);
+  const pts = kar.map((p, i) => [xAt(i), yAt(p.count)]);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+  const area = `M${pts[0][0].toFixed(1)} ${(H - PADB).toFixed(1)} ` +
+    pts.map(p => `L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ') +
+    ` L${pts[pts.length - 1][0].toFixed(1)} ${(H - PADB).toFixed(1)} Z`;
+  const perDay = {};
+  for (const s of hnDash.submissions) {
+    const d = (s.created_iso || '').slice(0, 10);
+    if (d) perDay[d] = (perDay[d] || 0) + 1;
+  }
+  const pmax = Math.max(1, ...kar.map(p => perDay[p.date] || 0));
+  const bars = kar.map((p, i) => {
+    const v = perDay[p.date] || 0;
+    if (!v) return '';
+    const bh = (v / pmax) * (H - PADT - PADB) * 0.55;
+    return `<rect x="${(xAt(i) - 2).toFixed(1)}" y="${(H - PADB - bh).toFixed(1)}" width="4" height="${bh.toFixed(1)}" class="bar-posted"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="none">
+    <path d="${area}" class="area-foll"/>
+    <path d="${line}" class="line-foll" vector-effect="non-scaling-stroke"/>
+    ${bars}
+  </svg>`;
+}
+
+function hnDashboardHtml() {
+  const kar = hnDash.karma;
+  const cur = kar.length ? kar[kar.length - 1].count : null;
+  const d7 = followerDelta(kar, 7);
+  const dStr = d7 ? `<span class="${d7.delta >= 0 ? 'up' : 'down'}">${d7.delta >= 0 ? '+' : ''}${fmtCount(d7.delta)}/${d7.spanDays}d</span>` : '';
+  const kpi = (label, value, sub) =>
+    `<div class="xkpi"><div class="xkpi-v">${value}</div><div class="xkpi-l">${label}</div><div class="xkpi-s">${sub || ''}</div></div>`;
+  const chip = n => `<button class="xr-chip${hnDashRange === n ? ' active' : ''}" data-hnrange="${n}">${n}d</button>`;
+  const subCount = hnDash.capped ? `${hnDash.counts.stories}+` : hnDash.counts.stories;
+  return `
+    <div class="xkpi-strip">
+      ${kpi('Karma', cur != null ? fmtCount(cur) : '—', dStr)}
+      ${kpi('Submissions', subCount, '')}
+      ${kpi('Best post', `${fmtCount(hnBestPoints())}<span class="hn-pts">▲</span>`, '')}
+      ${kpi('Pending drafts', hnPendingDraftCount(), '')}
+    </div>
+    <div class="xchart">
+      <div class="xchart-head"><span>Karma vs activity</span><span class="xr-chips">${chip(7)}${chip(30)}${chip(90)}</span></div>
+      ${svgKarmaHero()}
+      <div class="xchart-legend"><span class="lg-foll">— karma</span> <span class="lg-posted">▮ submissions</span></div>
+    </div>
+    ${hnSubmissionsHtml()}
+  `;
+}
+
+// Live submissions list — each post with current points + comments and the
+// delta since the last snapshot. Doubles as the outcome-tracking surface for
+// "did my Pulse-drafted title go hot?".
+function hnSubmissionsHtml() {
+  const subs = hnDash.submissions;
+  if (!subs.length) {
+    return `<div class="xchart"><div class="xchart-head"><span>Recent submissions</span></div>
+      <div class="chart-empty">No HN submissions found yet — submit a link, then track how it climbs here.</div></div>`;
+  }
+  const rows = subs.map(s => {
+    const prev = hnDash.prev[s.id];
+    const dp = prev ? (s.points || 0) - (prev.points || 0) : 0;
+    const dc = prev ? (s.comments || 0) - (prev.comments || 0) : 0;
+    const delta = dp > 0 ? `<span class="hn-delta up">+${dp}▲</span>` : '';
+    const cDelta = dc > 0 ? `<span class="hn-delta up">+${dc}</span>` : '';
+    const age = s.age_hours != null ? fmtAge(s.age_hours) : '';
+    const item = `https://news.ycombinator.com/item?id=${s.id}`;
+    return `<div class="hn-sub">
+      <a class="hn-sub-title" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title)}</a>
+      <div class="hn-sub-meta">
+        <span class="hn-sub-stat">${fmtCount(s.points || 0)}▲ ${delta}</span>
+        <a class="hn-sub-stat hn-sub-link" href="${item}" target="_blank" rel="noopener">${fmtCount(s.comments || 0)} comments ${cDelta}</a>
+        ${age ? `<span class="hn-sub-age">${age}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="xchart hn-subs">
+    <div class="xchart-head"><span>Recent submissions</span><span class="xchart-legend">points ▲ · comments · Δ since last check</span></div>
+    ${rows}
+  </div>`;
+}
+
+function fmtAge(h) {
+  if (h < 1) return `${Math.round(h * 60)}m`;
+  if (h < 48) return `${Math.round(h)}h`;
+  return `${Math.round(h / 24)}d`;
+}
+
+function renderHnTab(tabId, mount) {
+  if (tabId !== 'hn' || !mount) return;
+  const dash = document.createElement('div');
+  dash.className = 'x-dash';
+  dash.innerHTML = hnDashboardHtml();
+  dash.querySelectorAll('.xr-chip').forEach(b => {
+    b.addEventListener('click', () => { hnDashRange = +b.dataset.hnrange || 30; renderAll(); });
+  });
+  mount.appendChild(dash);
 }
 
 // Per-tab Rescan — a source-scoped gather sent into the CURRENT chat session
