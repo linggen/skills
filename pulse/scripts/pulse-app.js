@@ -692,11 +692,11 @@ function wireRescanAll() {
   });
 }
 
-// ---- Auto-cascade --------------------------------------------------------
+// ---- Gather cascade -------------------------------------------------------
 //
-// First open of the day: run all three steps in sequence with a tiny
-// non-blocking toast. Cancellable. Skipped if today's session already has
-// cards (so reopening the tab mid-day doesn't re-fire).
+// Runs both gather steps in sequence with a tiny non-blocking toast.
+// Cancellable. Button-triggered only (header "↻ Rescan") — nothing fires
+// automatically on open.
 
 let cascadeStop = false;
 
@@ -716,29 +716,6 @@ function showCascadeToast(label) {
 function hideCascadeToast() {
   const toast = document.getElementById('cascade-toast');
   if (toast) toast.hidden = true;
-}
-
-async function maybeAutoCascade() {
-  // Cascade ONLY when this open minted a fresh session (New button →
-  // ?new=1, or first-ever open). Plain opens now resume the most-recent
-  // session and resumed sessions are static — chips and chat still work
-  // if the user clicks them, but nothing fires automatically. This is what
-  // stops a refresh from spawning a competing pulse run.
-  if (!state.isNewSession) return;
-  const sess = getSession();
-  for (const sec of Object.values(sess?.sections || {})) {
-    if (Array.isArray(sec.cards) && sec.cards.length > 0) return;
-  }
-  // Wait for chat to be ready, grants replayed, and init prompt sent
-  // before firing agent steps. The first step (Gather local) is
-  // script-only and doesn't need this, but steps 2/3 do.
-  if (state.grantsReady) {
-    try { await state.grantsReady(); } catch {}
-  }
-  if (state.initReady) {
-    try { await state.initReady; } catch {}
-  }
-  await runGatherCascade();
 }
 
 // The gather cascade: local activity, then web signal, with the toast for
@@ -1402,8 +1379,6 @@ async function init() {
   // Prime the X dashboard cache (followers history + activity + roster), then
   // it re-renders the X tab. Fire-and-forget so it never blocks first paint.
   refreshXDashData().catch(err => console.warn('[pulse] x-dash refresh', err));
-  // Auto-cascade only when this open minted a fresh session.
-  maybeAutoCascade().catch(err => console.warn('[pulse] cascade failed', err));
 }
 
 init().catch(err => {
