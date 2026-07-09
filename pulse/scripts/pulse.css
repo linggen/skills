@@ -313,6 +313,29 @@ body {
 .rmix-legend .dot-foll { color: var(--green); }
 .rmix-legend .dot-sugg { color: var(--amber); }
 
+/* Mention grouping — same-post mentions collapse into a dismissable tree */
+.mgroup { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.6rem; overflow: hidden; background: var(--surface); }
+.mgroup-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.65rem; }
+.mgroup-toggle {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.45rem;
+  background: none; border: none; cursor: pointer; color: inherit; font: inherit;
+  text-align: left; padding: 0;
+}
+.mgroup-chev { flex-shrink: 0; color: var(--muted); font-size: 11px; transform: rotate(90deg); transition: transform 0.12s; }
+.mgroup.collapsed .mgroup-chev { transform: rotate(0deg); }
+.mgroup-title { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mgroup-count { flex-shrink: 0; font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 1px 7px; }
+.mgroup-meta { flex-shrink: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.mgroup-dismiss {
+  flex-shrink: 0; font-size: 11px; padding: 3px 9px; border-radius: 7px;
+  border: 1px solid var(--border); background: none; color: var(--muted);
+  cursor: pointer; white-space: nowrap; transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.mgroup-dismiss:hover { background: var(--red-soft, rgba(220,60,60,0.1)); color: var(--red, #dc3c3c); border-color: var(--red, #dc3c3c); }
+.mgroup-body { padding: 0.15rem 0.4rem 0.35rem 1.15rem; border-top: 1px solid var(--border); }
+.mgroup.collapsed .mgroup-body { display: none; }
+.mgroup-body .card { border-left: 2px solid var(--border); border-radius: 0 8px 8px 0; }
+
 /* HN dashboard — submissions list + KPI accents */
 .xkpi-v .hn-pts { color: var(--accent); font-size: 13px; margin-left: 2px; }
 .hn-subs { padding-bottom: 0.35rem; }

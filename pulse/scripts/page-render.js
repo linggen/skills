@@ -685,6 +685,28 @@ function renderTabContent(tab, body) {
   }
 }
 
+// Group key for mention cards — collapses every mention from the SAME post
+// into one tree. `thread_title` is the reliable shared signal (all comments on
+// a story carry the same story title); per the "don't trust the model for
+// mechanical ids" rule we do NOT depend on the agent mapping story-vs-comment
+// urls correctly. Falls back to the normalized thread url, then the card id.
+export function mentionGroupKey(card) {
+  const title = String(card.thread_title || card.title || '').trim();
+  if (title) return 'ttl:' + title.slice(0, 100).toLowerCase();
+  const u = card.thread_url || card.story_url || card.url || '';
+  return normalizeThreadUrl(u) || ('id:' + (card.id || ''));
+}
+
+// Which mention groups the user has expanded. Multi-card groups start
+// COLLAPSED — the whole point: a front-page post shouldn't flood the inbox.
+// The header shows the post + comment count; one click reveals the tree.
+const expandedMentionGroups = new Set();
+export function toggleMentionGroup(key) {
+  if (expandedMentionGroups.has(key)) { expandedMentionGroups.delete(key); return false; }
+  expandedMentionGroups.add(key);
+  return true;
+}
+
 function renderSectionEl(sectionId, sec) {
   const wrap = document.createElement('div');
   wrap.className = 'section';
@@ -708,11 +730,61 @@ function renderSectionEl(sectionId, sec) {
   }
   wrap.appendChild(head);
 
-  for (const card of sec.cards) {
-    wrap.appendChild(renderCard(card));
+  // The mentions inbox groups cards from the same post into a collapsible
+  // tree (dismiss the whole post, or a single comment). Other sections stay
+  // flat.
+  if (sectionId === 'mentions') {
+    renderMentionsGrouped(wrap, sec.cards);
+  } else {
+    for (const card of sec.cards) wrap.appendChild(renderCard(card));
   }
 
   return wrap;
+}
+
+// Group the mentions section by post. Singletons render flat (no tree chrome);
+// posts with 2+ mentions get one collapsible group. First-seen order is
+// preserved so the inbox order doesn't jump around.
+function renderMentionsGrouped(wrap, cards) {
+  const groups = new Map();
+  const order = [];
+  for (const c of cards) {
+    if (c.type === 'empty') { wrap.appendChild(renderCard(c)); continue; }
+    const k = mentionGroupKey(c);
+    if (!groups.has(k)) { groups.set(k, []); order.push(k); }
+    groups.get(k).push(c);
+  }
+  for (const k of order) {
+    const gc = groups.get(k);
+    if (gc.length === 1) wrap.appendChild(renderCard(gc[0]));
+    else wrap.appendChild(renderMentionGroup(k, gc));
+  }
+}
+
+function renderMentionGroup(key, cards) {
+  const first = cards[0];
+  const title = first.thread_title || first.title || 'thread';
+  const source = first.source || 'mentions';
+  const n = cards.length;
+  const expanded = expandedMentionGroups.has(key);
+  const g = document.createElement('div');
+  g.className = 'mgroup' + (expanded ? '' : ' collapsed');
+  g.dataset.group = key;
+  g.innerHTML = `
+    <div class="mgroup-head">
+      <button class="mgroup-toggle" data-action="toggle-group" data-group="${escapeAttr(key)}">
+        <span class="mgroup-chev">▸</span>
+        <span class="mgroup-title">${escapeHtml(truncateText(title, 80))}</span>
+        <span class="mgroup-count">${n}</span>
+      </button>
+      <span class="mgroup-meta">${escapeHtml(source)}</span>
+      <button class="mgroup-dismiss" data-action="dismiss-group" data-group="${escapeAttr(key)}" title="Dismiss all ${n}">Dismiss all ×</button>
+    </div>
+    <div class="mgroup-body"></div>
+  `;
+  const bodyEl = g.querySelector('.mgroup-body');
+  for (const c of cards) bodyEl.appendChild(renderCard(c));
+  return g;
 }
 
 function renderCard(card) {

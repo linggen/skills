@@ -14,7 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage, mentionGroupKey, toggleMentionGroup } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -784,9 +784,22 @@ function selectCard(container, card) {
 
 function handleCardAction(action, cardId, btn) {
   const card = findCard(cardId);
-  if (!card && !['open-url'].includes(action)) return;
+  // Group actions carry a data-group, not a data-card, so they legitimately
+  // resolve no card — let them through.
+  if (!card && !['open-url', 'toggle-group', 'dismiss-group'].includes(action)) return;
 
   switch (action) {
+    case 'toggle-group': {
+      const key = btn?.dataset?.group;
+      if (!key) break;
+      const expanded = toggleMentionGroup(key);
+      const g = btn.closest('.mgroup');
+      if (g) g.classList.toggle('collapsed', !expanded);
+      break;
+    }
+    case 'dismiss-group':
+      removeMentionGroup(btn?.dataset?.group);
+      break;
     case 'draft-reply':
     case 'draft-replies':
     case 'draft-starter':
@@ -881,6 +894,30 @@ function findCard(cardId) {
     }
   }
   return null;
+}
+
+// Dismiss a whole post: remove every mention card in the group + persist each
+// URL so those comments don't resurface. Genuinely NEW comments on the same
+// post later form a fresh (small) group — inbox semantics, not "mute forever".
+function removeMentionGroup(key) {
+  if (!key) return;
+  const sess = getSession();
+  const sec = sess.sections?.mentions;
+  if (!sec || !Array.isArray(sec.cards)) return;
+  const doomed = sec.cards.filter(c => c.type !== 'empty' && mentionGroupKey(c) === key);
+  if (!doomed.length) return;
+  const ids = new Set(doomed.map(c => c.id));
+  for (const c of doomed) {
+    const url = c.url || c.thread_url;
+    if (url) {
+      addDismissedUrl(url);
+      appendDismissed(url).catch(e => console.warn('[pulse] persist dismissed failed', e));
+    }
+  }
+  sec.cards = sec.cards.filter(c => !ids.has(c.id));
+  sec.last_updated = new Date().toISOString();
+  loadSession(sess);
+  persistSession(sess);
 }
 
 function removeCard(cardId) {
