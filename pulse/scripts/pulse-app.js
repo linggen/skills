@@ -1895,7 +1895,7 @@ function hnSubmissionsHtml() {
   }).join('');
   return `<div class="xchart hn-subs">
     <div class="xchart-head"><span>Recent submissions</span><span class="xchart-legend">points ▲ · comments · Δ since last check</span></div>
-    ${rows}
+    <div class="hn-subs-scroll">${rows}</div>
   </div>`;
 }
 

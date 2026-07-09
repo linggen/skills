@@ -339,6 +339,9 @@ body {
 /* HN dashboard — submissions list + KPI accents */
 .xkpi-v .hn-pts { color: var(--accent); font-size: 13px; margin-left: 2px; }
 .hn-subs { padding-bottom: 0.35rem; }
+/* Fixed-height list: header stays put, rows scroll (~7 rows visible) */
+.hn-subs-scroll { max-height: 320px; overflow-y: auto; }
+.hn-subs-scroll .hn-sub:first-of-type { border-top: none; }
 .hn-sub {
   padding: 0.55rem 0.1rem;
   border-top: 1px solid var(--border);
