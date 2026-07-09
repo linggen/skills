@@ -1086,17 +1086,16 @@ async function mountChat() {
   // engine creates a fresh session.
   const resumeSid = state.resumeSid;
 
-  // Pin Pulse's model the same way CFO/sys-doctor do — but ONLY in app mode.
-  // Branded Pulse.app launches with ?app_mode=1 → built-in Linggen Cloud model
-  // (deepseek-v4-flash) or the per-skill localStorage override. In the core
-  // Linggen app (no app_mode) leave it empty → the engine uses the user's own
-  // global default model, so running Pulse in core doesn't burn the cloud trial.
+  // Explicit overrides only: a ?model= query param, or (in app mode) a
+  // per-skill localStorage choice the user made in Pulse's own picker.
+  // Anything else stays empty so the engine falls through to the user's
+  // global default model (Settings → Models) — same as core-mode sessions.
   const search = new URLSearchParams(location.search);
   const appMode = search.get('app_mode') === '1';
   let modelId = '';
   try {
-    modelId = search.get('model') || (appMode ? (localStorage.getItem('pulse:model') || 'deepseek-v4-flash') : '');
-  } catch { modelId = appMode ? 'deepseek-v4-flash' : ''; }
+    modelId = search.get('model') || (appMode ? (localStorage.getItem('pulse:model') || '') : '');
+  } catch { modelId = ''; }
 
   state.chat = await window.LinggenUI.mount(document.getElementById('chat-panel'), {
     skillName: 'pulse',

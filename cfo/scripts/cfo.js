@@ -46,12 +46,12 @@ function confirmDialog(message) {
 const SKILL = 'cfo';
 const DATA = `$HOME/.linggen/skills/${SKILL}/data`; // $HOME stays literal for bash
 let chat = null;
-// Branded CFO.app launches the page with ?app_mode=1 → it gets the built-in
-// Linggen Cloud model (deepseek-v4-flash). The SAME skill opened in the core
-// Linggen app has no app_mode → empty pin → the engine uses the user's own
-// global default model (their configured/BYOK model), not the metered cloud.
+// Explicit override only: in app mode, a per-skill localStorage choice the
+// user made in CFO's own picker. Otherwise stays empty so the engine falls
+// through to the user's global default model (Settings → Models) — same as
+// core-mode sessions.
 const APP_MODE = new URLSearchParams(location.search).get('app_mode') === '1';
-let MODEL_ID = APP_MODE ? 'deepseek-v4-flash' : '';
+let MODEL_ID = '';
 
 // ── persisted UI prefs — one versioned blob, restored across restarts ────────
 const UI_KEY = 'cfo:ui';
@@ -1946,9 +1946,9 @@ async function pollWatchFolder() {
 document.addEventListener('DOMContentLoaded', async () => {
   await loadConfig(); // currency + category overrides, before the first import
 
-  // App mode: per-skill override (localStorage 'cfo:model') or the built-in
-  // cloud default. Core mode: empty → the engine uses the user's global default.
-  try { MODEL_ID = APP_MODE ? (localStorage.getItem('cfo:model') || 'deepseek-v4-flash') : ''; } catch { /* ignore */ }
+  // App mode: per-skill override (localStorage 'cfo:model') if set. Otherwise
+  // empty → the engine uses the user's global default model.
+  try { MODEL_ID = APP_MODE ? (localStorage.getItem('cfo:model') || '') : ''; } catch { /* ignore */ }
 
   await resumeState();                  // land on the existing financial picture
   loadMarketRate();                     // background; re-renders/saves when it lands

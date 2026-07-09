@@ -8,9 +8,9 @@ import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, 
 
 const SKILL_NAME = 'sys-doctor';
 const params = new URLSearchParams(window.location.search);
-// Branded Sys Doctor.app launches with ?app_mode=1 → built-in cloud model.
-// In the core Linggen app (no app_mode) the skill rides the user's global
-// default instead of the metered cloud model.
+// Branded Sys Doctor.app launches with ?app_mode=1, same as core: both ride
+// the user's global default model (Settings → Models) unless a per-skill
+// localStorage override is set.
 const APP_MODE = params.get('app_mode') === '1';
 let modelId = params.get('model') || '';
 // Check for session in URL — used when resuming or opened from session list
@@ -35,13 +35,13 @@ function syncToolbarBusy() {
 // ── Init ──
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Default to the built-in Linggen Cloud model (deepseek-v4-flash) — present
-  // on every install, so a new user gets a working scan with no API key. A
-  // per-skill override in localStorage('sys-doctor:model') wins. The legacy
-  // 'deepseek-chat' id is deprecated upstream on 2026-07-24.
+  // App mode: per-skill override in localStorage('sys-doctor:model') if set.
+  // Otherwise leave modelId empty so the engine uses the user's global
+  // default model — the fresh-install default is the built-in Linggen Cloud
+  // model, so a new user still gets a working scan with no API key.
   if (!modelId && APP_MODE) {
-    try { modelId = localStorage.getItem('sys-doctor:model') || 'deepseek-v4-flash'; }
-    catch { modelId = 'deepseek-v4-flash'; }
+    try { modelId = localStorage.getItem('sys-doctor:model') || ''; }
+    catch { /* ignore */ }
   }
 
   // Resume the most recent session whose dashboard page is cached locally —
