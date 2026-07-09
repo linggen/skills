@@ -98,7 +98,11 @@ now = time.time()
 stories = comments = 0
 subs = []
 for it in items:
-    if not isinstance(it, dict) or it.get("dead") or it.get("deleted"):
+    # Deleted items carry no title/fields at all — nothing to render. Dead
+    # (killed/flagged) stories keep their fields, so keep them WITH a flag:
+    # a killed submission is outcome signal the dashboard should show, not
+    # silently hide.
+    if not isinstance(it, dict) or it.get("deleted"):
         continue
     t = it.get("type")
     if t == "comment":
@@ -114,6 +118,7 @@ for it in items:
         "url": it.get("url") or f"https://news.ycombinator.com/item?id={it.get('id')}",
         "points": it.get("score") if isinstance(it.get("score"), int) else 0,
         "comments": it.get("descendants") if isinstance(it.get("descendants"), int) else 0,
+        "dead": bool(it.get("dead")),
         "age_hours": round((now - ts) / 3600, 1) if ts else None,
         "created_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(ts)) if ts else None,
     })

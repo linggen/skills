@@ -1881,9 +1881,12 @@ function hnSubmissionsHtml() {
     const cDelta = dc > 0 ? `<span class="hn-delta up">+${dc}</span>` : '';
     const age = s.age_hours != null ? fmtAge(s.age_hours) : '';
     const item = `https://news.ycombinator.com/item?id=${s.id}`;
-    return `<div class="hn-sub">
+    // Killed/flagged submissions render greyed out with a "dead" chip —
+    // that outcome is exactly what this list is for (HN never notifies).
+    return `<div class="hn-sub${s.dead ? ' dead' : ''}">
       <a class="hn-sub-title" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title)}</a>
       <div class="hn-sub-meta">
+        ${s.dead ? '<span class="hn-dead-chip">dead</span>' : ''}
         <span class="hn-sub-stat">${fmtCount(s.points || 0)}▲ ${delta}</span>
         <a class="hn-sub-stat hn-sub-link" href="${item}" target="_blank" rel="noopener">${fmtCount(s.comments || 0)} comments ${cDelta}</a>
         ${age ? `<span class="hn-sub-age">${age}</span>` : ''}

@@ -358,6 +358,15 @@ body {
 .hn-sub-age { margin-left: auto; }
 .hn-delta { font-weight: 600; }
 .hn-delta.up { color: var(--green); }
+/* Killed/flagged submission: greyed out + "dead" chip */
+.hn-sub.dead .hn-sub-title { color: var(--muted); text-decoration: line-through; }
+.hn-sub.dead .hn-sub-title:hover { color: var(--muted); }
+.hn-sub.dead .hn-sub-stat, .hn-sub.dead .hn-sub-age { opacity: 0.6; }
+.hn-dead-chip {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--red, #d33); border: 1px solid currentColor; border-radius: 4px;
+  padding: 0 4px; line-height: 1.5; opacity: 0.8;
+}
 
 /* Roster card */
 .roster-card {

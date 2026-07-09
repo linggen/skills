@@ -184,10 +184,19 @@ uniq = inter
 
 # ---- DEDUP AGAINST HN (the deciding step) -----------------------------------
 def on_hn(u):
-    """Return (already_on_hn, points|None). Fail-open -> (None,None)."""
+    """Return (already_on_hn, points|None). Fail-open -> (None,None).
+
+    The URL is passed QUOTED: unquoted, Algolia tokenizes it and ranks by
+    popularity, so a generic prefix (youtube.com/watch) returns 10 mega-hit
+    videos and never the actual 1-point match — and a token with a leading
+    hyphen (video id "-0HRzXk8vlk") is treated as an EXCLUDE operator,
+    guaranteeing a miss. Quoting forces phrase matching on the url attribute,
+    which returns only true submissions of this exact URL. (Bit us 2026-07-09:
+    a video already submitted twice kept coming back as "not on HN".)
+    """
     try:
         q = urllib.parse.urlencode({
-            "query": u, "restrictSearchableAttributes": "url",
+            "query": f'"{u}"', "restrictSearchableAttributes": "url",
             "tags": "story", "hitsPerPage": 10,
         })
         data = json.loads(get(f"https://hn.algolia.com/api/v1/search?{q}", timeout=10))
