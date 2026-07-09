@@ -191,6 +191,7 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .lib-row {
   display: grid; grid-template-columns: 18px 28px 26px 1fr auto auto; align-items: center; gap: 10px;
   padding: 6px 8px; border-radius: 8px; border-bottom: 1px solid var(--line);
+  cursor: pointer;
 }
 .lib-row:hover { background: var(--panel-2); }
 .lib-row.sel { background: color-mix(in srgb, var(--accent) 12%, transparent); }
