@@ -419,12 +419,18 @@ function renderDreamCalendar(w) {
     }
     panel.appendChild(grid);
 
-    // Legend — the two functions at a glance.
+    // Legend — the two functions at a glance, plus when scan is
+    // unnecessary (live capture via the linggen plugin already wrote
+    // the day's memory as it happened).
     const hint = el('div', 'dcal-hint');
-    hint.innerHTML = `<strong>scan</strong> stages a day's session logs · `
-      + `<strong>dream</strong> judges staged rows &amp; sweeps expired · `
+    hint.innerHTML = `<strong>scan</strong> backfills a past day from your agents' session logs · `
+      + `<strong>dream</strong> judges the staged rows — durable signal moves to long-term, the rest fades after the short-term window · `
       + `hover a button for details, click twice to run`;
     panel.appendChild(hint);
+    const hint2 = el('div', 'dcal-hint');
+    hint2.innerHTML = `agents running the <strong>linggen</strong> plugin (Claude Code, Codex) save memory live as they work — `
+      + `scan is only for days from before the plugin, or sessions without it`;
+    panel.appendChild(hint2);
   }
 
   build();
