@@ -40,8 +40,11 @@ app:
 #   the same grant the runtime's "Switch this folder to admin" prompt
 #   offers; presetting it here means clicking a calendar day (or `dream
 #   <date>`) runs without a permission prompt.
-#   The five read paths are the per-host session stores `scan.sh` walks
-#   (see scripts/collect_sessions.sh) — never written to.
+#   The four read paths are the OTHER hosts' session stores `scan.sh`
+#   walks (see scripts/collect_sessions.sh) — never written to. Linggen's
+#   own ~/.linggen/sessions is already covered by the admin grant above;
+#   do NOT list it separately — a narrower entry wins longest-path-match
+#   and would downgrade Bash reads under it back to prompting.
 permission:
   paths:
     - { path: ~/.linggen, mode: admin }
@@ -49,7 +52,6 @@ permission:
     - { path: ~/.codex/sessions, mode: read }
     - { path: ~/.codex/archived_sessions, mode: read }
     - { path: ~/.openclaw/agents, mode: read }
-    - { path: ~/.linggen/sessions, mode: read }
   warning: >-
     Runs a local HTTP daemon (ling-mem) on 127.0.0.1:9888 that stores
     memory rows in ~/.linggen/memory/memory.lancedb/ (two tables:

@@ -28,7 +28,11 @@ import {
 } from './api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 
-const SKILL_NAME = 'ling-mem';
+// The REGISTERED skill name — session create resolves the skill's
+// declared cwd and binds its permission grants by this exact name.
+// ('ling-mem' here silently broke both: no cwd on the session, no
+// grants applied, so every scan Bash hit a permission prompt.)
+const SKILL_NAME = 'shared-memory';
 
 // Tiny boot prompt — the agent greets, then waits for input. JS already
 // drew the dashboard (tier cards + calendar) before this lands.
@@ -86,7 +90,7 @@ async function mountAndStart(sessionId) {
   const chatPanel = document.getElementById('chat-panel');
   const mountOpts = {
     skillName: SKILL_NAME,
-    agentId: 'ling-mem',
+    agentId: 'ling',
     modelId,
     title: 'Memory',
     onSessionCreated: (sid) => {

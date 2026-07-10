@@ -339,12 +339,20 @@ function dcalOpenPopover(anchorCell, iso, rec, todayIso) {
   }, 0);
 }
 
+// Month the user navigated to, kept across re-renders — the rollup
+// poll rebuilds the whole widget while a mission runs, and without
+// this the calendar snapped back to the current month mid-browse.
+let dcalViewMonth = null;
+
 function renderDreamCalendar(w) {
   const days = w.days || {};
   const today = dcalStartOfDay(new Date());
   const todayIso = dcalIso(today);
-  // View state — first of the month currently shown (starts on today's).
-  let view = new Date(today.getFullYear(), today.getMonth(), 1);
+  // View state — first of the month currently shown (starts on today's
+  // month, or wherever the user last navigated).
+  let view = dcalViewMonth
+    ? new Date(dcalViewMonth)
+    : new Date(today.getFullYear(), today.getMonth(), 1);
 
   const panel = el('div', 'widget-dream-cal');
 
@@ -359,9 +367,10 @@ function renderDreamCalendar(w) {
     const prev = el('button', 'dcal-navbtn', '‹');
     const todayBtn = el('button', 'dcal-todaybtn', 'Today');
     const next = el('button', 'dcal-navbtn', '›');
-    prev.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); build(); });
-    next.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); build(); });
-    todayBtn.addEventListener('click', () => { view = new Date(today.getFullYear(), today.getMonth(), 1); build(); });
+    const go = (d) => { view = d; dcalViewMonth = d.getTime(); build(); };
+    prev.addEventListener('click', () => go(new Date(view.getFullYear(), view.getMonth() - 1, 1)));
+    next.addEventListener('click', () => go(new Date(view.getFullYear(), view.getMonth() + 1, 1)));
+    todayBtn.addEventListener('click', () => go(new Date(today.getFullYear(), today.getMonth(), 1)));
     nav.append(prev, todayBtn, next);
     head.appendChild(nav);
     panel.appendChild(head);
