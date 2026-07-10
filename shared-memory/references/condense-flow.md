@@ -5,12 +5,16 @@ only pass whose input is old long-term rows. Every other merge point
 gates entry (write-time dedup, the dream's promotion judgment) or works
 a recall window; condense cures what no recall ever touches.
 
-- **Linggen** — the built-in `condense` mission under the `memory`
-  agent (ships cron-disabled, monthly once enabled). Trigger from the
-  memory app / mission API.
+- **Linggen** — the last stage of the nightly `dream` mission (the
+  `memory` agent): once the remember worklist is clear, one capped
+  fetch of **cited** chains (`derived_only`, limit 10) merges
+  unattended — the engine snapshots the store first. `marker` /
+  `subject` clusters never run unattended; they wait for an attended
+  pass where the user can be asked.
 - **Claude Code / Codex / OpenClaw** — no mission runtime; the host
   agent runs the steps below via the `ling-mem` CLI (or the
-  `memory_chains` / `memory_add` MCP tools), on demand.
+  `memory_chains` / `memory_add` MCP tools), on demand — this is also
+  the attended deep pass for marker/subject clusters.
 
 ## Before the first run — back up
 

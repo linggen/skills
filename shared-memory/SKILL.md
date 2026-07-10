@@ -318,7 +318,7 @@ mode's references.
 |:---|:---|:---|
 | **Dream** | Message says `/shared-memory dream` (all pending days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook, and on Linggen the memory app's buttons trigger that mission directly. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
 | **Scan** | Message says `/shared-memory scan <YYYY-MM-DD>` — stage that day's session logs (backfill), see the verb table. The calendar's scan button sends this. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (its Scan section) and `references/extractor-prompt.md` (what to stage). |
-| **Condense** | Message says `/shared-memory condense` — collapse stale chains in long-term memory. On Linggen prefer the `condense` mission (same brain, run record); the chat verb is for hosts without a mission runtime or explicit requests. | `Read ~/.linggen/skills/shared-memory/references/condense-flow.md` (the canonical condense runbook). |
+| **Condense** | Message says `/shared-memory condense` — collapse stale chains in long-term memory. On Linggen the nightly `dream` mission already runs the high-confidence (cited) slice as its last stage; the chat verb is the attended deep pass (marker/subject clusters, where the user can be asked) and the path for hosts without a mission runtime. | `Read ~/.linggen/skills/shared-memory/references/condense-flow.md` (the canonical condense runbook). |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
 The old **Dashboard mode** (the agent rendering the on-open page) is
@@ -348,7 +348,7 @@ it's what a bare `/shared-memory` greeting should mention first.
 | `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
 | `days` | Show the per-day dream state (the calendar, as text). |
 | `sweep` | Run the forget stage on its own. |
-| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm); collapse each into one current-truth row. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen this is the monthly `condense` **mission**, shipped cron-disabled.) |
+| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm); collapse each into one current-truth row. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice automatically as its last stage; this verb is the attended deep pass.) |
 
 ### Chat-mode rules — do NOT leak dashboard language
 
