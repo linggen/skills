@@ -1513,6 +1513,22 @@
   color: var(--text-muted);
 }
 .dcal-hint strong { color: var(--text); font-weight: 600; }
+.dcal-legend {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 10px;
+  row-gap: 4px;
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.dcal-legend-term {
+  justify-self: end;
+  font-weight: 600;
+  color: var(--text);
+}
+.dcal-legend-text strong { color: var(--text); font-weight: 600; }
 .dcal-swatch {
   display: inline-block;
   width: 11px;
