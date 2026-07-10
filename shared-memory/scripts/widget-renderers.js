@@ -207,11 +207,27 @@ function dcalArmButton(label, title, onFire) {
   return btn;
 }
 
+// Day whose dream run is in flight — module state so the feedback
+// survives the rollup repaint (the run executes in its own session;
+// this page gets no tool stream from it). Cleared when the rollup
+// shows the day stamped after the trigger, or after a 5-min window.
+let dcalDreaming = null; // { day, since }
+
+function dcalDreamingActive(iso, rec) {
+  if (!dcalDreaming || dcalDreaming.day !== iso) return false;
+  const stampedSince = rec?.remembered_at
+    && new Date(rec.remembered_at).getTime() > dcalDreaming.since;
+  if (stampedSince || Date.now() - dcalDreaming.since > 5 * 60 * 1000) {
+    dcalDreaming = null;
+    return false;
+  }
+  return true;
+}
+
 // Kick a day-scoped dream mission run and poll the rollup while it
-// works (the mission runs in its own session, so this page gets no
-// tool stream from it). attended: the user just clicked and the shell
-// routes into the run's session — the run may end with a low-confidence
-// merge review asked right there via the AskUser widget.
+// works. attended: the user just clicked and is watching — the run may
+// end with a low-confidence merge review asked via the AskUser widget
+// in the run's own session (main session list).
 async function dcalTriggerDream(day, btn) {
   btn.disabled = true;
   btn.textContent = 'dreaming…';
@@ -231,7 +247,13 @@ async function dcalTriggerDream(day, btn) {
     btn.textContent = 'dream';
     return;
   }
+  dcalDreaming = { day, since: Date.now() };
+  if (window._chatNotify) {
+    window._chatNotify(`Dream mission started for ${day} — it runs in its own session (see the session list). `
+      + `The calendar updates as it works; if a low-confidence merge needs your call, the question appears in that session.`);
+  }
   if (window._refreshDreamCalendar) {
+    window._refreshDreamCalendar();
     let ticks = 0;
     const timer = setInterval(async () => {
       ticks += 1;
@@ -259,7 +281,11 @@ function dcalDayControls(iso, rec) {
   }
 
   const unjudged = rec?.unjudged || 0;
-  if (unjudged > 0) {
+  if (dcalDreamingActive(iso, rec)) {
+    const chip = el('div', 'dcal-chip dcal-chip-running', 'dreaming…');
+    chip.title = `${iso} · dream mission in flight — it runs in its own session (see the session list); chips here update when it finishes.`;
+    wrap.appendChild(chip);
+  } else if (unjudged > 0) {
     wrap.appendChild(dcalArmButton(
       `dream (${unjudged})`,
       `Run the dream mission scoped to ${iso}: judge its ${unjudged} staged rows — promote durable facts to long-term memory, stamp the day, then evict expired short-term rows.`,

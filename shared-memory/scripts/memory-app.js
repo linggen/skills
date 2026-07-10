@@ -120,6 +120,9 @@ async function mountAndStart(sessionId) {
   };
   // The calendar widget polls this while a mission run is in flight.
   window._refreshDreamCalendar = () => refreshDaysCalendar().catch(() => {});
+  // Local-only chat notice (no LLM turn) — the calendar uses it to tell
+  // the user a mission run started in its own session.
+  window._chatNotify = (text) => { if (chat) chat.addMessage(text); };
   setupActionBar();
 
   if (sessionId && await tryRestoreCached(sessionId)) {

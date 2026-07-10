@@ -1534,6 +1534,15 @@
   font-style: italic;
   opacity: 0.85;
 }
+.dcal-chip-running {
+  background: var(--accent-soft, rgba(124, 58, 237, 0.12));
+  color: var(--accent, #7c3aed);
+  animation: dcal-pulse 1.6s ease-in-out infinite;
+}
+@keyframes dcal-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
 .dcal-swatch {
   display: inline-block;
   width: 11px;
