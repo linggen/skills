@@ -209,7 +209,9 @@ function dcalArmButton(label, title, onFire) {
 
 // Kick a day-scoped dream mission run and poll the rollup while it
 // works (the mission runs in its own session, so this page gets no
-// tool stream from it).
+// tool stream from it). attended: the user just clicked and the shell
+// routes into the run's session — the run may end with a low-confidence
+// merge review asked right there via the AskUser widget.
 async function dcalTriggerDream(day, btn) {
   btn.disabled = true;
   btn.textContent = 'dreaming…';
@@ -217,7 +219,7 @@ async function dcalTriggerDream(day, btn) {
     const res = await fetch('/api/missions/dream/trigger', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ day }),
+      body: JSON.stringify({ day, attended: true }),
     });
     if (res.status === 409) {
       btn.textContent = 'dream running…';
