@@ -14,7 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, resetPage, mentionGroupKey, toggleMentionGroup } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -896,9 +896,11 @@ function findCard(cardId) {
   return null;
 }
 
-// Dismiss a whole post: remove every mention card in the group + persist each
-// URL so those comments don't resurface. Genuinely NEW comments on the same
-// post later form a fresh (small) group — inbox semantics, not "mute forever".
+// Dismiss a whole post: MUTE it. The group key (title-based) is persisted
+// so future scans can never re-form a group for this post from a fresh
+// comment subset — a busy thread has far more comments than we ever
+// carded, so per-comment dismissal alone can't keep it down. Each card's
+// url is persisted too (covers single-card renders of the same comments).
 function removeMentionGroup(key) {
   if (!key) return;
   const sess = getSession();
@@ -906,12 +908,16 @@ function removeMentionGroup(key) {
   if (!sec || !Array.isArray(sec.cards)) return;
   const doomed = sec.cards.filter(c => c.type !== 'empty' && mentionGroupKey(c) === key);
   if (!doomed.length) return;
+  addDismissedGroup(key);
+  appendDismissedGroup(key).catch(e => console.warn('[pulse] persist dismissed group failed', e));
   const ids = new Set(doomed.map(c => c.id));
   for (const c of doomed) {
-    const url = c.url || c.thread_url;
+    const url = dismissableUrl(c);
     if (url) {
       addDismissedUrl(url);
       appendDismissed(url).catch(e => console.warn('[pulse] persist dismissed failed', e));
+    } else {
+      console.warn('[pulse] dismissed card has no persistable url', c.id);
     }
   }
   sec.cards = sec.cards.filter(c => !ids.has(c.id));
@@ -922,10 +928,12 @@ function removeMentionGroup(key) {
 
 function removeCard(cardId) {
   const card = findCard(cardId);
-  const url = card?.url || card?.thread_url;
+  const url = card ? dismissableUrl(card) : '';
   if (url) {
     addDismissedUrl(url);
     appendDismissed(url).catch(e => console.warn('[pulse] persist dismissed failed', e));
+  } else if (card) {
+    console.warn('[pulse] dismissed card has no persistable url', card.id);
   }
   const sess = getSession();
   for (const [secId, sec] of Object.entries(sess.sections || {})) {
@@ -950,16 +958,47 @@ function removeCard(cardId) {
 const DISMISSED_PATH = `${SKILL_DIR}/state/dismissed.json`;
 
 async function loadDismissedSet() {
-  const data = await readJson(DISMISSED_PATH, { urls: [] });
-  return Array.isArray(data?.urls) ? data.urls : [];
+  const data = await readJson(DISMISSED_PATH, { urls: [], groups: [] });
+  return {
+    urls: Array.isArray(data?.urls) ? data.urls : [],
+    groups: Array.isArray(data?.groups) ? data.groups : [],
+  };
 }
 
 async function appendDismissed(url) {
   if (!url) return;
-  const data = await readJson(DISMISSED_PATH, { urls: [] });
+  const data = await readJson(DISMISSED_PATH, { urls: [], groups: [] });
   const set = new Set(Array.isArray(data?.urls) ? data.urls : []);
   set.add(url);
-  await writeJson(DISMISSED_PATH, { urls: Array.from(set), updated_at: new Date().toISOString() });
+  await writeJson(DISMISSED_PATH, {
+    urls: Array.from(set),
+    groups: Array.isArray(data?.groups) ? data.groups : [],
+    updated_at: new Date().toISOString(),
+  });
+}
+
+// Post-level mute: persist a mention-group key so the post can never
+// re-form a group from a fresh comment subset (see page-render's
+// dismissedGroups for the full rationale).
+async function appendDismissedGroup(key) {
+  if (!key) return;
+  const data = await readJson(DISMISSED_PATH, { urls: [], groups: [] });
+  const set = new Set(Array.isArray(data?.groups) ? data.groups : []);
+  set.add(key);
+  await writeJson(DISMISSED_PATH, {
+    urls: Array.isArray(data?.urls) ? data.urls : [],
+    groups: Array.from(set),
+    updated_at: new Date().toISOString(),
+  });
+}
+
+// Every url-ish field a card can carry, in the same order the Open /
+// Copy-URL actions resolve — a card that can be opened must also be
+// dismissable. Silent skips here caused "dismissed" cards to resurface
+// (2026-07-10: mention cards with no `url` persisted nothing).
+function dismissableUrl(c) {
+  return c?.url || c?.thread_url || c?.reply_target?.url
+    || c?.your_post_url || c?.follow_up?.comment_url || '';
 }
 
 async function markCardPosted(cardId, btn) {
@@ -1387,7 +1426,9 @@ async function init() {
   // guarantees the dismiss filter is populated before a gather's body_patch
   // arrives — otherwise dismissed cards slip through during a long gather.
   try {
-    setDismissedUrls(await loadDismissedSet());
+    const dismissed = await loadDismissedSet();
+    setDismissedUrls(dismissed.urls);
+    setDismissedGroups(dismissed.groups);
   } catch (err) {
     console.warn('[pulse] dismissed prefetch', err);
   }

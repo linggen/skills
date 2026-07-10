@@ -134,6 +134,25 @@ export function getDismissedUrls() {
   return Array.from(dismissedUrls);
 }
 
+// Post-level mutes — group keys (see mentionGroupKey) the user killed via
+// "Dismiss all ×" on a mention-group header. Groups form by TITLE, and a
+// busy thread has far more comments than the page ever carded — so
+// per-comment url dismissal can never keep the post down; the next scan
+// re-forms the group from a fresh comment subset (bit us 2026-07-10 on a
+// 159-comment HN thread). Group dismiss therefore means "mute this post":
+// the key is persisted and any future mention card mapping to it is
+// dropped at render. The per-card × stays inbox-style (that comment only).
+let dismissedGroups = new Set();
+
+export function setDismissedGroups(keys) {
+  dismissedGroups = new Set((keys || []).filter((k) => typeof k === 'string' && k));
+  renderAll();
+}
+
+export function addDismissedGroup(key) {
+  if (key && typeof key === 'string') dismissedGroups.add(key);
+}
+
 // Normalize a Reddit URL to a thread key (post id) so any of these
 // forms map to the same canonical value:
 //   /r/sub/comments/<id>/<slug>/<commentid>/   ← own_comment permalink
@@ -216,7 +235,13 @@ function isAlreadyCommented(card) {
 
 // Defensive filter: card whose URL the user dismissed in any prior session.
 // Reads from the dismissedUrls set, seeded at init from state/dismissed.json.
+// Mention cards are additionally checked against the post-level group mutes
+// — same key the group renderer uses, so a muted post can never re-form.
 function isDismissed(card) {
+  if (card.type === 'mention' && dismissedGroups.size > 0
+      && dismissedGroups.has(mentionGroupKey(card))) {
+    return true;
+  }
   if (dismissedUrls.size === 0) return false;
   const url = card.url || card.thread_url;
   if (!url) return false;
