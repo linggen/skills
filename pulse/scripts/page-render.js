@@ -235,10 +235,14 @@ function isAlreadyCommented(card) {
 
 // Defensive filter: card whose URL the user dismissed in any prior session.
 // Reads from the dismissedUrls set, seeded at init from state/dismissed.json.
-// Mention cards are additionally checked against the post-level group mutes
-// — same key the group renderer uses, so a muted post can never re-form.
+// Inbox cards (mention AND reply_to_me — a group renders both) are also
+// checked against the post-level group mutes — the same key the group
+// renderer uses, so a muted post can never re-form under either type
+// (2026-07-10: the mute only gated `mention` and the post came straight
+// back as two `reply_to_me` cards).
 function isDismissed(card) {
-  if (card.type === 'mention' && dismissedGroups.size > 0
+  const inboxTypes = card.type === 'mention' || card.type === 'reply_to_me';
+  if (inboxTypes && dismissedGroups.size > 0
       && dismissedGroups.has(mentionGroupKey(card))) {
     return true;
   }
