@@ -434,7 +434,9 @@ function renderDreamCalendar(w) {
       + `<strong>linggen</strong> plugin (Claude Code, Codex) already captured live as you worked`);
     addRow('dream', `judges the day's staged rows — durable signal moves to long-term, `
       + `the rest fades after the short-term window`);
-    addRow('run', `hover a button for details, click twice to run`);
+    const note = el('span', 'dcal-legend-note');
+    note.textContent = 'hover a day button for details · first click arms it, second click runs';
+    legend.appendChild(note);
     panel.appendChild(legend);
   }
 

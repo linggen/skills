@@ -1529,6 +1529,11 @@
   color: var(--text);
 }
 .dcal-legend-text strong { color: var(--text); font-weight: 600; }
+.dcal-legend-note {
+  grid-column: 1 / -1;
+  font-style: italic;
+  opacity: 0.85;
+}
 .dcal-swatch {
   display: inline-block;
   width: 11px;
