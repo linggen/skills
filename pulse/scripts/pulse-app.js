@@ -965,30 +965,45 @@ async function loadDismissedSet() {
   };
 }
 
-async function appendDismissed(url) {
-  if (!url) return;
-  const data = await readJson(DISMISSED_PATH, { urls: [], groups: [] });
-  const set = new Set(Array.isArray(data?.urls) ? data.urls : []);
-  set.add(url);
-  await writeJson(DISMISSED_PATH, {
-    urls: Array.from(set),
-    groups: Array.isArray(data?.groups) ? data.groups : [],
-    updated_at: new Date().toISOString(),
+// ALL dismissed.json mutations go through one promise chain. "Dismiss
+// all" fires one write per card at once, and unserialized
+// read-modify-write cycles all read the same base — last writer wins
+// and the rest are silently lost (observed live 2026-07-10: 5
+// dismissals, 1 survived; the group mute clobbered to []).
+let dismissedWriteChain = Promise.resolve();
+function queueDismissedWrite(mutate) {
+  dismissedWriteChain = dismissedWriteChain
+    .then(async () => {
+      const data = await readJson(DISMISSED_PATH, { urls: [], groups: [] });
+      const state = {
+        urls: Array.isArray(data?.urls) ? data.urls : [],
+        groups: Array.isArray(data?.groups) ? data.groups : [],
+      };
+      mutate(state);
+      await writeJson(DISMISSED_PATH, {
+        urls: state.urls,
+        groups: state.groups,
+        updated_at: new Date().toISOString(),
+      });
+    })
+    .catch(e => console.warn('[pulse] dismissed write failed', e));
+  return dismissedWriteChain;
+}
+
+function appendDismissed(url) {
+  if (!url) return Promise.resolve();
+  return queueDismissedWrite(s => {
+    if (!s.urls.includes(url)) s.urls.push(url);
   });
 }
 
 // Post-level mute: persist a mention-group key so the post can never
 // re-form a group from a fresh comment subset (see page-render's
 // dismissedGroups for the full rationale).
-async function appendDismissedGroup(key) {
-  if (!key) return;
-  const data = await readJson(DISMISSED_PATH, { urls: [], groups: [] });
-  const set = new Set(Array.isArray(data?.groups) ? data.groups : []);
-  set.add(key);
-  await writeJson(DISMISSED_PATH, {
-    urls: Array.isArray(data?.urls) ? data.urls : [],
-    groups: Array.from(set),
-    updated_at: new Date().toISOString(),
+function appendDismissedGroup(key) {
+  if (!key) return Promise.resolve();
+  return queueDismissedWrite(s => {
+    if (!s.groups.includes(key)) s.groups.push(key);
   });
 }
 
