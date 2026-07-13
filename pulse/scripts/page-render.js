@@ -341,6 +341,11 @@ function ensureCardId(c) {
 // external links — lobste.rs etc. — so cardSource never matches 'hn').
 const TYPE_HOME_SECTION = { hn_submit: 'hn_submit' };
 
+// Sections that pool cards from every lane; replace-mode patches on these
+// are lane-scoped (see applyBodyPatch) so one lane's rescan can't erase
+// another lane's cards.
+const MULTI_SOURCE_SECTIONS = ['discovery', 'mentions'];
+
 // Move misfiled cards to their home section (id-deduped append). Runs
 // after every body patch and on persisted-session load, so cards saved
 // under the wrong section heal too. Idempotent.
@@ -387,6 +392,24 @@ function applyBodyPatch(patch) {
       const seen = new Set(existing.map(c => c.id).filter(Boolean));
       const additions = incoming.filter(c => !c.id || !seen.has(c.id));
       session.sections[sectionId].cards = existing.concat(additions);
+    } else if (MULTI_SOURCE_SECTIONS.includes(sectionId)) {
+      // These sections pool cards from every lane (X/HN/Reddit/Bluesky)
+      // while per-lane rescans emit replace-mode patches. A raw replace
+      // lets a Reddit-only scan wipe the HN cards (observed: an EMPTY
+      // Reddit result erased the HN discovery card and ten HN mentions).
+      // Replace only the lanes actually present in the patch; a patch
+      // with no attributable lane can never wipe other lanes' cards.
+      const lanes = new Set(incoming.map(cardSource).filter(Boolean));
+      const existing = session.sections[sectionId].cards || [];
+      const ids = new Set(incoming.map(c => c.id).filter(Boolean));
+      const kept = existing.filter(c => {
+        if (c.id && ids.has(c.id)) return false;
+        const lane = cardSource(c);
+        if (lane) return !lanes.has(lane);
+        // Laneless cards (global empty notes) are superseded by any patch.
+        return false;
+      });
+      session.sections[sectionId].cards = kept.concat(incoming);
     } else {
       session.sections[sectionId].cards = incoming;
     }
@@ -405,7 +428,9 @@ function stampTabScan(sectionId, cards, ts) {
   const stamp = (id) => { session.last_scan[id] = ts; };
   if (sectionId === 'discovery') {
     for (const c of (cards || [])) {
-      if (!c || c.type === 'empty') continue;
+      // Sourced empty cards count: a lane that scanned and found nothing
+      // still scanned — its "last scan" stamp must move.
+      if (!c) continue;
       const s = cardSource(c);
       if (s === 'x' || s === 'hn' || s === 'reddit' || s === 'bluesky') stamp(s);
     }
@@ -1092,7 +1117,9 @@ function renderDraft(c) {
 function renderEmpty(c) {
   const el = document.createElement('div');
   el.className = 'card empty';
-  el.textContent = c.message || 'Nothing to show in this section.';
+  // Gather emits `reason`; older cards used `message`. Accept both so the
+  // agent's one-line explanation actually reaches the tab.
+  el.textContent = c.reason || c.message || 'Nothing to show in this section.';
   return el;
 }
 
