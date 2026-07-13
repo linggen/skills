@@ -22,6 +22,7 @@ import {
   fetchMemoryCount,
   fetchMemoryDays,
   fetchMemoryStats,
+  fetchSessionMessages,
   listSkillSessions,
   readJsonFile,
   writeJsonFile,
@@ -47,6 +48,18 @@ Then wait. When the user acts:
 const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
 let chat = null;
+
+// Boot-prompt delivery isn't guaranteed — the send is lost when the page
+// load races a daemon restart (the embed posts send_failed back). Retry
+// on that signal, guarded three ways so the greeting can never double:
+// stop once any assistant reply streams in, stop once the user talks,
+// and re-check the server's message list before each resend (a flushed
+// RPC may still have started the turn server-side).
+const BOOT_MAX_SENDS = 3;
+const BOOT_RETRY_DELAY_MS = 5000;
+let bootSends = 0;
+let sawAssistantReply = false;
+let sawUserSend = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   if (!modelId) {
@@ -98,8 +111,9 @@ async function mountAndStart(sessionId) {
       url.searchParams.set('session', sid);
       history.replaceState(null, '', url);
     },
-    onStreamEnd: handleLegacyPageBlock,
+    onStreamEnd: (text) => { sawAssistantReply = true; handleLegacyPageBlock(text); },
     onContentBlock: handleContentBlock,
+    onSendFailed: retryBootPrompt,
   };
   if (sessionId) mountOpts.sessionId = sessionId;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
@@ -112,6 +126,7 @@ async function mountAndStart(sessionId) {
   // and report (memory-spec: one dream executor). Day-scoped dreams go
   // through the calendar buttons, which call the mission directly.
   window._chatSend = (text) => {
+    sawUserSend = true;
     if (typeof text === 'string' && text.trim() === '/shared-memory dream') {
       triggerDreamMission();
       return;
@@ -144,8 +159,39 @@ async function mountAndStart(sessionId) {
   // sending the boot prompt before the channel is up gets silently
   // dropped. 1.5s matches the working flow used historically.
   setTimeout(() => {
-    if (chat) chat.sendHidden(BOOT_PROMPT);
+    if (chat) { bootSends = 1; chat.sendHidden(BOOT_PROMPT); }
   }, 1500);
+}
+
+// Re-send the boot prompt after the embed reports the send never reached
+// the server. The transport queues the resend until it reconnects, so no
+// connection polling is needed here.
+function retryBootPrompt(payload) {
+  if (payload?.text !== `[HIDDEN] ${BOOT_PROMPT}`) return;
+  if (sawAssistantReply || sawUserSend || bootSends >= BOOT_MAX_SENDS) return;
+  // Delay so a turn the lost RPC did manage to start has time to land
+  // its reply row before the server-side check below.
+  setTimeout(async () => {
+    if (sawAssistantReply || sawUserSend || !chat) return;
+    if (await sessionHasAgentReply()) return;
+    bootSends += 1;
+    chat.sendHidden(BOOT_PROMPT);
+  }, BOOT_RETRY_DELAY_MS);
+}
+
+// True if the server already holds an agent reply for this session — the
+// authoritative double-greet guard. Unreachable server counts as no reply;
+// the resend just queues until the transport is back.
+async function sessionHasAgentReply() {
+  try {
+    const msgs = await fetchSessionMessages(SKILL_NAME, currentSessionId());
+    return msgs.some((m) => {
+      const from = Array.isArray(m) ? m[0]?.from : m?.from;
+      return from && from !== 'user' && from !== 'system';
+    });
+  } catch {
+    return false;
+  }
 }
 
 // ── On-open dashboard ──

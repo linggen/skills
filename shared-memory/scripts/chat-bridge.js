@@ -18,6 +18,7 @@ import { createSession, removeSkillSession } from './api.js';
  *   onStreamToken?: (fullText: string) => void,
  *   onStreamEnd?: (text: string) => void,
  *   onContentBlock?: (payload: { phase: string, tool?: string, args?: string, blockId?: string, output?: string }) => void,
+ *   onSendFailed?: (payload: { text: string }) => void,
  * }} options
  * @returns {Promise<ChatInstance>}
  */
@@ -89,6 +90,9 @@ async function mount(el, options) {
         break;
       case 'content_block':
         if (options.onContentBlock) options.onContentBlock(payload);
+        break;
+      case 'send_failed':
+        if (options.onSendFailed) options.onSendFailed(payload);
         break;
       case 'session_created':
         if (payload?.sessionId) {
