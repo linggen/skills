@@ -1939,8 +1939,12 @@ function hnSubmissionsHtml() {
     const item = `https://news.ycombinator.com/item?id=${s.id}`;
     // Killed/flagged submissions render greyed out with a "dead" chip —
     // that outcome is exactly what this list is for (HN never notifies).
+    // Hard-killed stories get their title/url STRIPPED by the HN API
+    // (Algolia drops them entirely), so fall back to an id label linking
+    // to the item page rather than rendering an empty row.
+    const title = s.title || `Submission ${s.id}`;
     return `<div class="hn-sub${s.dead ? ' dead' : ''}">
-      <a class="hn-sub-title" href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.title)}</a>
+      <a class="hn-sub-title" href="${escapeHtml(s.url || item)}" target="_blank" rel="noopener">${escapeHtml(title)}</a>
       <div class="hn-sub-meta">
         ${s.dead ? '<span class="hn-dead-chip">dead</span>' : ''}
         <span class="hn-sub-stat">${fmtCount(s.points || 0)}▲ ${delta}</span>
