@@ -23,9 +23,10 @@
 # Falls back to those defaults when absent. linggen.dev (own domain) is always
 # dropped — you submit OTHERS' work here, not your own (that's a Show HN).
 #
-# Usage:  hn-submit-finder.sh [max]      # max cards to return, default 3
-#   (3 is intentional: HN tolerates only a couple of your own submissions a
-#   day before the own-post-ratio filter bites, so a short list is plenty.)
+# Usage:  hn-submit-finder.sh [max]      # max cards to return, default 5
+#   (kept short on purpose: HN tolerates only a couple of your own
+#   submissions a day before the own-post-ratio filter bites — the list is
+#   ideas to pick from, not a queue to drain.)
 #
 # Output (JSON array, exit 0), newest/best first:
 #   [ { title, url, source, score, age_hours, comments_url,
@@ -41,7 +42,7 @@ if ! command -v python3 &>/dev/null; then
   echo "[]"; exit 0
 fi
 
-MAX="${1:-3}" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
+MAX="${1:-5}" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import json, os, re, sys, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -53,9 +54,9 @@ CANDIDATE_CAP = 30         # how many to spend an Algolia dedup check on
 SELF_DOMAINS = {"linggen.dev"}  # never submit your own work via this lane
 
 try:
-    max_cards = max(1, int(os.environ.get("MAX", "3") or 3))
+    max_cards = max(1, int(os.environ.get("MAX", "5") or 5))
 except ValueError:
-    max_cards = 3
+    max_cards = 5
 
 # ---- config / sources -------------------------------------------------------
 DEFAULT_SUBS = ["programming", "rust", "MachineLearning", "compsci", "selfhosted"]
