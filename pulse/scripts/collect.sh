@@ -81,15 +81,23 @@ collect_sessions() {
 }
 
 # Commits within the window across all known repos under ~/workspace.
+# One JSON object per line, built with jq so subjects/authors containing
+# quotes or backslashes can't corrupt the manifest. Fields ride a unit
+# separator (%x1f) out of git — a byte that can't appear in commit text.
 collect_commits() {
   local workspace="$HOME/workspace"
   [[ -d "$workspace" ]] || return 0
   for repo in "$workspace"/*/.git; do
-    local repo_dir
+    local repo_dir repo_name
     repo_dir="$(dirname "$repo")"
-    git -C "$repo_dir" log --since="$SINCE_TS" --pretty='format:{"repo":"%h-prefix","hash":"%h","subject":"%s","author":"%an","date":"%aI"}' 2>/dev/null \
-      | sed "s|h-prefix|$(basename "$repo_dir")|g"
-  done | sed 's/$/,/' | sed '$s/,$//'
+    repo_name="$(basename "$repo_dir")"
+    git -C "$repo_dir" log --since="$SINCE_TS" --pretty='format:%h%x1f%s%x1f%an%x1f%aI' 2>/dev/null \
+      | while IFS=$'\x1f' read -r hash subject author date || [[ -n "$hash" ]]; do
+          jq -cn --arg repo "$repo_name" --arg hash "$hash" \
+                 --arg subject "$subject" --arg author "$author" --arg date "$date" \
+            '{repo:$repo,hash:$hash,subject:$subject,author:$author,date:$date}'
+        done
+  done
 }
 
 # ling-mem facts added/updated within the window. Best-effort: if
@@ -105,9 +113,7 @@ collect_memories() {
 
 # Build the manifest. Use jq to assemble JSON safely.
 SESSIONS_JSON="$(collect_sessions | jq -s '.' 2>/dev/null || echo '[]')"
-COMMITS_RAW="$(collect_commits)"
-COMMITS_JSON="[$(echo "$COMMITS_RAW" | tr '\n' ' ')]"
-COMMITS_JSON="$(echo "$COMMITS_JSON" | jq '.' 2>/dev/null || echo '[]')"
+COMMITS_JSON="$(collect_commits | jq -s '.' 2>/dev/null || echo '[]')"
 MEMORIES_JSON="$(collect_memories | jq -s '.' 2>/dev/null || echo '[]')"
 
 jq -n \

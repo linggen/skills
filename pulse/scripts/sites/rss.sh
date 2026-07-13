@@ -63,7 +63,8 @@ PY
 }
 
 (
-  for feed in $feeds; do
+  while IFS= read -r feed; do
+    [[ -n "$feed" ]] || continue
     parse_one "$feed"
-  done
+  done <<< "$feeds"
 ) | jq -s 'add // []' 2>/dev/null || echo "[]"

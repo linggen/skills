@@ -115,10 +115,13 @@ const WEBSITES = [
     source_id: 'arxiv',
   },
   {
+    // No source_fields chips here: feeds are managed by the per-feed
+    // "Custom · Source" rows + the "+ Add custom feed" box. A second
+    // editor over the same sites.rss.feeds array double-rendered every
+    // feed and left the rows' Remove indices stale after a chip delete.
     name: 'RSS / Atom',
-    desc: 'Built-in RSS aggregator. Custom feeds added below also flow into this list.',
+    desc: 'Built-in RSS aggregator. Add feeds with "+ Add custom feed" below — each shows as its own row.',
     source_id: 'rss',
-    source_fields: [{ kind: 'chips', key: 'feeds', label: 'Feed URLs' }],
   },
   {
     name: 'Product Hunt',
@@ -209,6 +212,11 @@ function syncSaveBtn() {
 // ---- Load ----------------------------------------------------------------
 
 async function loadAll() {
+  // Block edits while the config round-trips: render() overwrites every
+  // input wholesale and markClean() follows, so a keystroke landing
+  // mid-load would be silently discarded.
+  const mainEl = document.getElementById('main');
+  if (mainEl) mainEl.inert = true;
   setStatus('Loading…', 'loading');
   try {
     let cfgText = await readFile(CONFIG_PATH);
@@ -233,6 +241,8 @@ async function loadAll() {
     clearStatus();
   } catch (err) {
     setStatus(`Failed to load: ${err.message}`, 'error');
+  } finally {
+    if (mainEl) mainEl.inert = false;
   }
 }
 

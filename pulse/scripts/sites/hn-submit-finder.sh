@@ -219,7 +219,6 @@ for c in uniq:
     if dup is True:
         continue                      # already on HN -> repost would be killed
     c["hn_status"] = "unchecked" if dup is None else "fresh"
-    c.pop("score", None) if c["source"].startswith("r/") else None
     out.append(c)
 
 print(json.dumps(out))

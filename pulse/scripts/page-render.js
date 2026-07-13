@@ -621,7 +621,11 @@ function collectTabSections(tab) {
 }
 
 function tabCardCount(tab) {
-  return collectTabSections(tab).reduce((n, s) => n + s.cards.length, 0);
+  // Placeholder `empty` cards render as a state message, not an item —
+  // exclude them from the badge (same rule as the section "N new" count),
+  // or a lane whose gather found nothing would still show "1 new".
+  return collectTabSections(tab).reduce(
+    (n, s) => n + s.cards.filter(c => c.type !== 'empty').length, 0);
 }
 
 // A site tab (X/HN/Reddit/Bluesky) shows when its source is configured-on
@@ -1116,13 +1120,27 @@ function renderDraft(c) {
   const titleCands = Array.isArray(c.title_candidates) && c.title_candidates.length > 0
     ? `<div class="draft-label">title candidates</div><ul>${c.title_candidates.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>`
     : '';
+  // Comment-lane drafts (reddit-comment / hn-comment) carry the thread
+  // they answer — show where this comment goes, and offer ↗ Open (the
+  // shared handler already resolves card.thread_url).
+  const target = c.thread_url
+    ? `<div class="draft-label">→ ${escapeHtml([c.sub, urlHost(c.thread_url)].filter(Boolean).join(' · '))}</div>`
+    : '';
+  const actions = c.posted
+    ? ['copy', 'discard']
+    : ['polish', 'copy', ...(c.thread_url ? ['open'] : []), 'mark-posted', 'discard'];
   return cardEl(c, 'unread', `
     <div class="title">${escapeHtml(c.lane || 'Draft')}${c.posted ? ' <span style="color:var(--green);font-weight:400;font-size:11px;">✓ posted</span>' : ''}</div>
+    ${target}
     ${titleCands}
     ${charLine}
     ${c.content ? `<div class="draft-preview">${escapeHtml(c.content)}</div>` : ''}
-    ${actionRow(c, c.posted ? ['copy', 'discard'] : ['polish', 'copy', 'mark-posted', 'discard'])}
+    ${actionRow(c, actions)}
   `, 'dense');
+}
+
+function urlHost(url) {
+  try { return new URL(url).host; } catch { return url; }
 }
 
 function renderEmpty(c) {

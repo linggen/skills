@@ -66,6 +66,7 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
            settings.html settings.js settings.css; do
     install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
   done
+  install -m 0755 "$SOURCE_DIR/scripts/gather-local.sh" "$SKILL_DIR/scripts/gather-local.sh"
   install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
 
   # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit,

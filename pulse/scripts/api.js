@@ -119,17 +119,19 @@ export async function replayRuntimeGrants(sessionId) {
 export async function applyCompactConfig(sessionId, opts = {}) {
   if (!sessionId) return;
   const cfg = await readPulseConfig();
-  const projectRoot = (cfg?.workspace_path || '').trim();
-  if (!projectRoot) return;
   // User-tunable threshold from settings.html (compact_threshold field in
   // config.json). Falls back to 0.7 — Pulse's default, lower than the
   // engine's global 0.95 but high enough that a Gather Web pass finishes
-  // before compaction fires.
+  // before compaction fires. Applied whether or not workspace_path is set —
+  // the setting is per-session, not per-workspace.
   const cfgThreshold = typeof cfg?.compact_threshold === 'number'
     ? cfg.compact_threshold
     : null;
   const body = {
-    project_root: projectRoot,
+    // Current engines key compact config by session only; project_root is
+    // kept for engines predating that, which 400 without it ('/tmp' is the
+    // same root every /api/bash call in this skill already uses).
+    project_root: (cfg?.workspace_path || '').trim() || '/tmp',
     session_id: sessionId,
     threshold: opts.threshold ?? cfgThreshold ?? 0.7,
     focus: opts.focus ?? [

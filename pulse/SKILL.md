@@ -90,7 +90,7 @@ tools:
       lobste.rs front page + quality tech subreddits
       (sites.hackernews.submit_sources) — then DEDUPS each URL against HN
       via the public Algolia API and DROPS anything already submitted
-      (reposts get killed). Arg: [max=3] (default 3 — HN tolerates only a
+      (reposts get killed). Arg: [max=5] (default 5 — HN tolerates only a
       couple of your own submissions per day, so a short list is plenty).
       Returns JSON array of
       {title, url, source, score, age_hours, comments_url, hn_status},
@@ -980,7 +980,11 @@ layer, not the source material.
 replaces the whole section and clobbers the progress card the user
 expects to see. Each draft card carries `lane`, `content`,
 `char_count`, optional `title_candidates[]` / `subtitle` for
-blog/medium/substack.
+blog/medium/substack. Comment lanes are per-thread replies: a
+`reddit-comment` or `hn-comment` draft card MUST also carry
+`thread_url` (plus `sub` for reddit) copied from the discovery card it
+answers — the user needs to know where to paste. No real target thread
+on the page → emit `empty` for that lane instead.
 
 ---
 

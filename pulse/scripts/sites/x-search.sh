@@ -71,6 +71,9 @@ if _cached is not None:
 _items = bridge_call("search", {"query": query, "max": max_results})
 if _items is None:
     print("[]"); sys.exit(0)
-cache_put(_ckey, _items)
+# NEVER cache an empty result: a transient capture miss must not poison this
+# query for the whole TTL. Only a real list is worth caching.
+if _items:
+    cache_put(_ckey, _items)
 print(json.dumps(_items))
 PY

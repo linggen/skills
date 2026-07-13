@@ -35,7 +35,11 @@ for entry in root.findall("a:entry", ns):
     pub   = (entry.findtext("a:published", default="", namespaces=ns) or "").strip()
     content = entry.findtext("a:content", default="", namespaces=ns) or ""
     summary = strip_html(content)[:300]
-    link_el = entry.find("a:link[@rel='alternate']", ns) or entry.find("a:link", ns)
+    # Explicit None check — Element truthiness is child count, so a matched
+    # self-closing <link> is falsy and `or` would always take the fallback.
+    link_el = entry.find("a:link[@rel='alternate']", ns)
+    if link_el is None:
+        link_el = entry.find("a:link", ns)
     url = link_el.get("href").strip() if link_el is not None else ""
     author = ""
     auth_el = entry.find("a:author/a:name", ns)

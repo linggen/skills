@@ -297,19 +297,23 @@ const PIPELINE_CHIPS = {
 // Tracks chips that are currently running, so onChange can complete them.
 const runningChips = new Map();   // chipId → { resolve, reject, timer, expects }
 
-function setChipState(chipId, state) {
-  const btn = document.querySelector(`.chip[data-chip="${chipId}"]`);
-  if (btn) btn.dataset.state = state;
-}
-
 function startChip(chipId, expects) {
-  setChipState(chipId, 'running');
+  // A second start on the same chip id supersedes the first. Without this,
+  // Map.set would orphan the first record's armed timer — it can't be
+  // pinged or cleared anymore, so it eventually fires, finds the NEW
+  // record under the same id, and kills a healthy run — while the first
+  // caller's promise never settles at all.
+  const prev = runningChips.get(chipId);
+  if (prev) {
+    clearTimeout(prev.timer);
+    runningChips.delete(chipId);
+    prev.reject(new Error(`chip "${chipId}" superseded by a new run`));
+  }
   return new Promise((resolve, reject) => {
     const armTimer = () => setTimeout(() => {
       const rec = runningChips.get(chipId);
       if (rec) {
         runningChips.delete(chipId);
-        setChipState(chipId, 'failed');
         rec.reject(new Error(`chip "${chipId}" idle for ${CHIP_TIMEOUT_MS}ms`));
       }
     }, CHIP_TIMEOUT_MS);
@@ -336,7 +340,6 @@ function completeChipFromSectionUpdate(sectionId) {
     if (rec.expects && rec.expects.includes(sectionId)) {
       clearTimeout(rec.timer);
       runningChips.delete(chipId);
-      setChipState(chipId, 'done');
       rec.resolve();
     }
   }
@@ -349,7 +352,6 @@ function failChip(chipId, err) {
     runningChips.delete(chipId);
     rec.reject(err);
   }
-  setChipState(chipId, 'failed');
 }
 
 // ── Step 1: Gather local — script collects raw, agent narrates ──
@@ -556,29 +558,18 @@ async function extractSessionExcerpt(session) {
 
 
 // ── Step 2: Gather web — agent reads local cards, picks queries ──
-async function runGatherWeb() {
-  const promise = startChip('gather-web', PIPELINE_CHIPS['gather-web'].expects);
-  // Refresh the own-commented set BEFORE the agent emits discovery cards
-  // so the renderer's filter has fresh data. The init() refresh is too
-  // stale for this — user may have commented mid-session.
-  await refreshCommentedThreadUrls();
-  // Load the reddit handle so the agent can scan a thread's comment
-  // authors and detect old comments (past Reddit's last-15 window that
-  // FetchRedditMentions surfaces).
-  let redditHandle = '';
-  try {
-    const cfg = await readPulseConfig();
-    redditHandle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
-  } catch {}
-  // Pre-filter at the agent level: pass the normalized skip set so the
-  // agent drops already-commented threads during scoring instead of
-  // drafting discovery comments that the renderer then silently hides.
-  // Saves ~10-20k tokens per Gather web run when the skip set is full.
-  // The renderer's isAlreadyCommented filter stays as defense-in-depth
-  // (handles races where the user comments mid-Gather, or the agent
-  // forgets the rule).
+// SKIP_URLS block shared by Gather web and the per-tab rescans (both
+// prompts tell the agent to "drop SKIP_URLS", so both must carry the list).
+// Pre-filtering at the agent level: the agent drops already-commented
+// threads during scoring instead of drafting discovery comments the
+// renderer then silently hides. Saves ~10-20k tokens per run when the
+// skip set is full. The renderer's isAlreadyCommented filter stays as
+// defense-in-depth (handles races where the user comments mid-Gather, or
+// the agent forgets the rule).
+function buildSkipBlock() {
   const skipKeys = Array.from(new Set([...getCommentedThreadUrls(), ...getDismissedUrls()]));
-  const skipBlock = skipKeys.length === 0 ? '' : [
+  if (skipKeys.length === 0) return '';
+  return [
     'SKIP_URLS — threads I have already commented on, marked as committed, or dismissed.',
     'Drop any source-tool result whose normalized post id appears in this',
     'list, BEFORE scoring or drafting. Match by post id, not by slug — for',
@@ -593,6 +584,23 @@ async function runGatherWeb() {
     ...skipKeys.map(k => `  - ${k}`),
     '',
   ].join('\n');
+}
+
+async function runGatherWeb() {
+  const promise = startChip('gather-web', PIPELINE_CHIPS['gather-web'].expects);
+  // Refresh the own-commented set BEFORE the agent emits discovery cards
+  // so the renderer's filter has fresh data. The init() refresh is too
+  // stale for this — user may have commented mid-session.
+  await refreshCommentedThreadUrls();
+  // Load the reddit handle so the agent can scan a thread's comment
+  // authors and detect old comments (past Reddit's last-15 window that
+  // FetchRedditMentions surfaces).
+  let redditHandle = '';
+  try {
+    const cfg = await readPulseConfig();
+    redditHandle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
+  } catch {}
+  const skipBlock = buildSkipBlock();
   const goal = [
     skipBlock,
     'Gather web signal for what I\'m working on right now.',
@@ -677,6 +685,8 @@ async function runDraft(lane) {
     '',
     'Emit body_patch for `progress_drafts` using `mode: "append"` so the new `draft` cards land alongside the existing progress card from gather-local (without `mode: "append"` the patch replaces the section, clobbering the progress card). Each draft card: { type:"draft", id, lane, content, char_count, char_limit?, title_candidates?, subtitle? }.',
     '',
+    'Comment lanes need a target thread. A reddit-comment or hn-comment is a per-thread reply, so its card MUST also carry `thread_url` (and `sub` for reddit-comment) copied from the discovery card it answers — per references/lane-templates.md, the user needs to know where to paste. If no discovery card on the page offers a real target thread for that lane, emit an `empty` card for it instead of a comment with nowhere to go.',
+    '',
     'If neither local nor web cards have enough signal to draft honestly (no shipped work, no real-world hook, no thread to comment on), emit one `empty` card with a one-line reason and skip drafting. Do not fabricate.',
   ].join('\n');
   sendChatHidden(goal);
@@ -722,14 +732,20 @@ function hideCascadeToast() {
 // progress. Draft is user-triggered (header/tab buttons) because
 // auto-drafting without lane / angle / polish input produces generic posts
 // the user won't use — wastes tokens.
+// Generation counter: a superseded cascade (Rescan clicked while one is in
+// flight) unwinds via a rejected chip promise — without the gen check its
+// tail would hide the toast and step the loop of the NEW run.
+let cascadeGen = 0;
+
 async function runGatherCascade() {
+  const gen = ++cascadeGen;
   cascadeStop = false;
   const steps = [
     { id: 'gather-local', label: 'Gathering local activity…' },
     { id: 'gather-web',   label: 'Gathering web signal…' },
   ];
   for (const step of steps) {
-    if (cascadeStop) break;
+    if (cascadeStop || gen !== cascadeGen) break;
     showCascadeToast(step.label);
     try {
       await PIPELINE_CHIPS[step.id].handler();
@@ -738,7 +754,7 @@ async function runGatherCascade() {
       break;
     }
   }
-  hideCascadeToast();
+  if (gen === cascadeGen) hideCascadeToast();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2127,7 +2143,10 @@ const RESCAN_PROMPTS = {
 function handleTabRescan(tabId) {
   if (tabId === 'progress') { runGatherLocal(); return; }
   const prompt = RESCAN_PROMPTS[tabId];
-  if (prompt) sendChatHidden(prompt);
+  if (!prompt) return;
+  // The prompts tell the agent to "drop SKIP_URLS" — prepend the actual
+  // list (the same block Gather web sends) so there's data behind it.
+  sendChatHidden(buildSkipBlock() + prompt);
 }
 
 // Per-tab ✎ Draft — source tabs draft for their own lane; the Progress tab
