@@ -436,7 +436,17 @@ function stampTabScan(sectionId, cards, ts) {
     }
   } else if (sectionId === 'hn_submit') stamp('hn');
   else if (sectionId === 'x_roster') stamp('x');
-  else if (sectionId === 'mentions' || sectionId === 'replies_due') stamp('mentions');
+  else if (sectionId === 'mentions' || sectionId === 'replies_due') {
+    stamp('mentions');
+    // A lane's mention cards in a fresh patch prove that lane was scanned —
+    // move its source tab's "last scan" too (mention-only runs previously
+    // left the source tab reading "never scanned").
+    for (const c of (cards || [])) {
+      if (!c) continue;
+      const s = cardSource(c);
+      if (s === 'x' || s === 'hn' || s === 'reddit' || s === 'bluesky') stamp(s);
+    }
+  }
   else if (sectionId === 'progress_drafts') stamp('progress');
 }
 
@@ -730,10 +740,11 @@ function renderTabContent(tab, body) {
   }
   body.appendChild(actions);
 
-  // The X + HN tabs host a dashboard (X: roster + growth; HN: karma + live
-  // submissions). pulse-app renders into this mount after each gather (kept
-  // across re-renders by id). Other tabs have no extras.
-  if (tab.id === 'x' || tab.id === 'hn') {
+  // The X, HN and Reddit tabs host a dashboard (X: roster + growth; HN:
+  // karma + live submissions; Reddit: own-activity RSS). pulse-app renders
+  // into this mount after each gather (kept across re-renders by id).
+  // Other tabs have no extras.
+  if (tab.id === 'x' || tab.id === 'hn' || tab.id === 'reddit') {
     const extras = document.createElement('div');
     extras.id = `${tab.id}-tab-extras`;
     extras.className = `${tab.id}-tab-extras tab-extras`;

@@ -1473,6 +1473,8 @@ async function init() {
   refreshXDashData().catch(err => console.warn('[pulse] x-dash refresh', err));
   // Same for the HN dashboard (karma history + live submissions).
   refreshHnDashData().catch(err => console.warn('[pulse] hn-dash refresh', err));
+  // And the Reddit dashboard (own-activity RSS — the only anonymous signal).
+  refreshRedditDashData().catch(err => console.warn('[pulse] reddit-dash refresh', err));
 }
 
 init().catch(err => {
@@ -1789,11 +1791,12 @@ function renderXTab(tabId, mount) {
   mount.appendChild(card);
 }
 
-// Route the per-tab extras hook (page-render calls it for 'x' and 'hn') to the
-// matching dashboard renderer.
+// Route the per-tab extras hook (page-render calls it for 'x', 'hn' and
+// 'reddit') to the matching dashboard renderer.
 function renderTabExtras(tabId, mount) {
   if (tabId === 'x') return renderXTab(tabId, mount);
   if (tabId === 'hn') return renderHnTab(tabId, mount);
+  if (tabId === 'reddit') return renderRedditTab(tabId, mount);
 }
 
 // ============================ HN dashboard ================================
@@ -1973,6 +1976,129 @@ function renderHnTab(tabId, mount) {
   dash.querySelectorAll('.xr-chip').forEach(b => {
     b.addEventListener('click', () => { hnDashRange = +b.dataset.hnrange || 30; renderAll(); });
   });
+  mount.appendChild(dash);
+}
+
+// ========================== Reddit dashboard ==============================
+// Rendered into the Reddit tab's #reddit-tab-extras mount. Post-lockdown
+// Reddit exposes NO karma/scores/comment counts anonymously — the only
+// honest account signal is the user's own public RSS feeds (the newest ~25
+// comments/posts), so the KPIs are activity-based, not karma-based. Data
+// comes from reddit-account.sh (page-side, agent never calls it).
+let redditDash = { comments: [], posts: [], errors: [] };
+
+async function refreshRedditDashData() {
+  try {
+    const acct = JSON.parse(await runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-account.sh"`));
+    redditDash.comments = Array.isArray(acct.comments) ? acct.comments : [];
+    redditDash.posts = Array.isArray(acct.posts) ? acct.posts : [];
+    redditDash.errors = Array.isArray(acct.errors) ? acct.errors : [];
+  } catch (e) {
+    console.warn('[pulse] reddit-account fetch failed', e);
+    return;
+  }
+  try { renderAll(); } catch (e) { /* ignore */ }
+}
+
+function redditAgeHours(iso) {
+  const t = Date.parse(iso || '');
+  return Number.isFinite(t) ? (Date.now() - t) / 3600000 : null;
+}
+
+function redditWithinDays(items, days) {
+  return items.filter(i => {
+    const h = redditAgeHours(i.created_iso);
+    return h != null && h <= days * 24;
+  });
+}
+
+// Comments+posts per day over the last 30 days. Bars only — there is no
+// karma series to draw a line from (see the header note).
+function svgRedditBars() {
+  const days = 30;
+  const per = {};
+  for (const c of redditDash.comments.concat(redditDash.posts)) {
+    const d = (c.created_iso || '').slice(0, 10);
+    if (d) per[d] = (per[d] || 0) + 1;
+  }
+  const seq = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    seq.push({ d, v: per[d] || 0 });
+  }
+  if (!seq.some(p => p.v)) {
+    return `<div class="chart-empty">No Reddit activity in the last ${days} days — the feeds cover your newest ~25 comments.</div>`;
+  }
+  const W = 600, H = 150, PADT = 12, PADB = 16;
+  const bw = W / days;
+  const vmax = Math.max(...seq.map(p => p.v), 1);
+  const bars = seq.map((p, i) => {
+    if (!p.v) return '';
+    const bh = (p.v / vmax) * (H - PADT - PADB);
+    return `<rect x="${(i * bw + 1).toFixed(1)}" y="${(H - PADB - bh).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${bh.toFixed(1)}" class="bar-posted"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="none">${bars}</svg>`;
+}
+
+function redditRecentHtml() {
+  const items = redditDash.comments.slice(0, 10);
+  if (!items.length) {
+    return `<div class="xchart"><div class="xchart-head"><span>Recent comments</span></div>
+      <div class="chart-empty">No own comments found — Reddit's feeds may be rate-limited; try again in a minute.</div></div>`;
+  }
+  const rows = items.map(c => {
+    const h = redditAgeHours(c.created_iso);
+    const age = h != null ? fmtAge(h) : '';
+    return `<div class="hn-sub">
+      <a class="hn-sub-title" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">${escapeHtml(c.title || c.url)}</a>
+      <div class="hn-sub-meta">
+        <span class="hn-sub-stat">${escapeHtml(c.sub || '')}</span>
+        ${age ? `<span class="hn-sub-age">${age}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="xchart hn-subs">
+    <div class="xchart-head"><span>Recent comments</span><span class="xchart-legend">your newest public comments</span></div>
+    <div class="hn-subs-scroll">${rows}</div>
+  </div>`;
+}
+
+function redditDashboardHtml() {
+  const c7 = redditWithinDays(redditDash.comments, 7).length;
+  const p7 = redditWithinDays(redditDash.posts, 7).length;
+  const subs7 = new Set(redditWithinDays(redditDash.comments, 7).map(c => c.sub).filter(Boolean)).size;
+  const disc = getSession()?.sections?.discovery?.cards || [];
+  const drafts = disc.filter(c => {
+    const src = (c.source || '').toLowerCase();
+    const isReddit = src === 'reddit' || src.startsWith('r/') || !!c.sub;
+    return isReddit && c.draft_starter && !c.posted;
+  }).length;
+  const kpi = (label, value, sub) =>
+    `<div class="xkpi"><div class="xkpi-v">${value}</div><div class="xkpi-l">${label}</div><div class="xkpi-s">${sub || ''}</div></div>`;
+  const errNote = redditDash.errors.length
+    ? `<div class="xchart-legend">⚠ ${escapeHtml(redditDash.errors[0])}</div>` : '';
+  return `
+    <div class="xkpi-strip">
+      ${kpi('Comments', c7, 'last 7d')}
+      ${kpi('Posts', p7, 'last 7d')}
+      ${kpi('Active subs', subs7, 'last 7d')}
+      ${kpi('Pending drafts', drafts, '')}
+    </div>
+    <div class="xchart">
+      <div class="xchart-head"><span>Comment activity</span><span class="xchart-legend">RSS only — Reddit exposes no karma/scores anonymously</span></div>
+      ${svgRedditBars()}
+      <div class="xchart-legend"><span class="lg-posted">▮ comments + posts per day</span></div>
+    </div>
+    ${errNote}
+    ${redditRecentHtml()}
+  `;
+}
+
+function renderRedditTab(tabId, mount) {
+  if (tabId !== 'reddit' || !mount) return;
+  const dash = document.createElement('div');
+  dash.className = 'x-dash';
+  dash.innerHTML = redditDashboardHtml();
   mount.appendChild(dash);
 }
 
