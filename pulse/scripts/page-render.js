@@ -278,6 +278,7 @@ export function loadSession(sessionData) {
     for (const sec of Object.values(session.sections)) {
       (sec.cards || []).forEach(ensureCardId);
     }
+    rerouteMisfiledCards(session.sections);
   }
   renderAll();
 }
@@ -333,6 +334,31 @@ function ensureCardId(c) {
   return c;
 }
 
+// Cards carry their own type, and a typed card's home section is a
+// mechanical invariant — never the model's call. Observed misfile:
+// hn_submit cards emitted inside a discovery patch, where the HN tab's
+// per-source discovery filter silently hides them (submit candidates are
+// external links — lobste.rs etc. — so cardSource never matches 'hn').
+const TYPE_HOME_SECTION = { hn_submit: 'hn_submit' };
+
+// Move misfiled cards to their home section (id-deduped append). Runs
+// after every body patch and on persisted-session load, so cards saved
+// under the wrong section heal too. Idempotent.
+function rerouteMisfiledCards(sections) {
+  for (const [sectionId, sec] of Object.entries(sections)) {
+    const cards = sec.cards || [];
+    const stay = [];
+    for (const c of cards) {
+      const home = c && TYPE_HOME_SECTION[c.type];
+      if (!home || home === sectionId) { stay.push(c); continue; }
+      if (!sections[home]) sections[home] = { cards: [], last_updated: null };
+      const homeCards = sections[home].cards || (sections[home].cards = []);
+      if (!homeCards.some(h => h.id && h.id === c.id)) homeCards.push(c);
+    }
+    sec.cards = stay;
+  }
+}
+
 function applyBodyPatch(patch) {
   if (!patch || typeof patch !== 'object' || !patch.section) return;
   const sectionId = patch.section;
@@ -367,6 +393,7 @@ function applyBodyPatch(patch) {
   }
   const ts = patch.last_updated || new Date().toISOString();
   session.sections[sectionId].last_updated = ts;
+  rerouteMisfiledCards(session.sections);
   stampTabScan(sectionId, session.sections[sectionId].cards, ts);
 }
 
