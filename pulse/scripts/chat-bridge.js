@@ -46,7 +46,13 @@ async function mount(el, options) {
   iframe.allow = 'clipboard-write';
   el.appendChild(iframe);
 
+  // Resolve the iframe's origin so we can constrain postMessage targetOrigin
+  // to it (instead of '*') and reject inbound messages from any other origin.
+  // For relative iframe URLs (local mode), this resolves to the parent origin.
+  const iframeOrigin = new URL(iframe.src, window.location.href).origin;
+
   function handleMessage(e) {
+    if (e.origin !== iframeOrigin) return;
     if (e.data?.type !== 'linggen-skill-event') return;
     const { event, payload } = e.data;
     switch (event) {
