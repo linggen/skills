@@ -17,7 +17,9 @@
 #                        summary, mode, score}. `author` is the OP's handle
 #                        (u/<name>). RSS doesn't expose comment count /
 #                        score, so those are 0; the agent scores by
-#                        title/summary relevance anyway.
+#                        title/summary relevance anyway. Items served from
+#                        the last-good cache (sub was rate-limited this run)
+#                        carry `stale: true` with age_hours recomputed.
 #
 # Deps: python3 (stdlib only).
 
@@ -40,6 +42,7 @@ fi
 
 CONFIG="$CONFIG" MODE="$MODE" python3 <<'PY'
 import json, os, re, sys, time
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -58,22 +61,29 @@ endpoint = f"{mode}.rss?limit=25" + ("&t=day" if mode == "top" else "")
 # Reddit rate-limits anon .rss hard (~10/min; bursts trip 429). Looping subs
 # back-to-back let the 1st sub succeed while every later sub got 429 — which
 # the old bare `except: continue` swallowed, so discovery came from ONLY the
-# first sub. Space requests out + retry 429/transient with backoff so each sub
-# gets a fair pull, and surface failures on stderr (never silently empty).
-REQUEST_GAP = 4.0  # seconds between subs — anon .rss tolerates ~1 req/few sec
+# first sub. Pacing alone isn't enough with many subs, and retrying a 429
+# burns the same shared budget the NEXT sub needs (observed: one sub's
+# retries starved the three after it). So: no in-run 429 retry — a
+# rate-limited sub serves its last-good cached feed instead (stale-but-real
+# beats missing; same pattern as reddit-account.sh), and failures still go
+# to stderr (never silently empty).
+REQUEST_GAP = 6.0  # seconds between subs — paced to the ~10/min anon budget
+CACHE = os.path.expanduser("~/.linggen/skills/pulse/state/reddit-feed-cache.json")
 
-def fetch_feed(url, tries=3):
-    last = None
-    for i in range(tries):
+def fetch_feed(url):
+    for attempt in (0, 1):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=15) as r:
                 return ET.fromstring(r.read())
-        except Exception as ex:
-            last = ex
-            if i + 1 < tries:
-                time.sleep(4 * (i + 1))  # 4s, 8s backoff on 429/transient
-    raise last
+        except urllib.error.HTTPError as ex:
+            if ex.code == 429 or attempt:  # 429: straight to cache fallback
+                raise
+            time.sleep(4)  # one quick retry for non-429 transient errors
+        except Exception:
+            if attempt:
+                raise
+            time.sleep(4)
 
 def strip_html(s):
     s = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "", s or "")
@@ -91,23 +101,45 @@ def age_hours(iso):
     except Exception:
         return None
 
+try:
+    cache = json.load(open(CACHE))
+except Exception:
+    cache = {}
+
+# The anon budget favors the first requests of a run, so a fixed sub order
+# starves the tail systematically (observed: sub 1 fresh every run, later
+# subs 429 → stale). Refresh the stalest subs first — never-fetched (""),
+# then oldest cache — so fresh pulls rotate across the whole roster.
+subs.sort(key=lambda s: (cache.get(f"{s}/{mode}") or {}).get("fetched_iso", ""))
+
 out, errors = [], []
 for i, sub in enumerate(subs):
     if i:
         time.sleep(REQUEST_GAP)  # spacing so sub 2+ isn't rate-limited
     url = f"https://www.reddit.com/r/{sub}/{endpoint}"
+    key = f"{sub}/{mode}"
     try:
         root = fetch_feed(url)
     except Exception as ex:
-        errors.append(f"r/{sub}: {type(ex).__name__} {ex}")
+        cached = cache.get(key) or {}
+        if cached.get("items"):
+            for it in cached["items"]:
+                it = dict(it, stale=True)
+                it["age_hours"] = age_hours(it.get("updated_iso", ""))
+                out.append(it)
+            errors.append(f"r/{sub}: {type(ex).__name__} {ex} — served "
+                          f"last-good cache from {cached.get('fetched_iso', '?')}")
+        else:
+            errors.append(f"r/{sub}: {type(ex).__name__} {ex}")
         continue
+    items = []
     for e in root.findall("a:entry", NS):
         link_el = e.find("a:link", NS)
         href = link_el.get("href") if link_el is not None else ""
         updated = (e.findtext("a:updated", "", NS) or "").strip()
         author = (e.findtext("a:author/a:name", "", NS) or "").strip()
         author = author.split("/")[-1]  # "/u/Name" -> "Name"
-        out.append({
+        items.append({
             "sub": sub,
             "mode": mode,
             "title": (e.findtext("a:title", "", NS) or "").strip(),
@@ -116,8 +148,23 @@ for i, sub in enumerate(subs):
             "comments": 0,
             "score": 0,
             "age_hours": age_hours(updated),
+            "updated_iso": updated,
             "summary": strip_html(e.findtext("a:content", "", NS) or "")[:600],
         })
+    out.extend(items)
+    cache[key] = {
+        "fetched_iso": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "items": items,
+    }
+
+try:
+    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
+    tmp = CACHE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(cache, f)
+    os.replace(tmp, CACHE)
+except Exception as ex:
+    errors.append(f"cache write: {type(ex).__name__} {ex}")
 
 print(json.dumps(out))
 if errors:

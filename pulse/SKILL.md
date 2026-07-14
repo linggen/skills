@@ -128,10 +128,13 @@ tools:
       Reads Reddit's PUBLIC `.rss` feeds (Reddit closed the anonymous
       `.json` API in Nov 2025, but `/r/<sub>/new.rss` still works with
       no auth). `comments`/`score` are 0 (RSS omits them) — score by
-      title/summary relevance.
+      title/summary relevance. A sub that hits the anon rate limit
+      serves its last-good cached feed instead (items get `stale:
+      true`, age_hours recomputed) — treat stale items normally, just
+      expect some may already be a scan old.
     cmd: "$SKILL_DIR/scripts/sites/reddit.sh"
     tier: read
-    timeout_ms: 30000
+    timeout_ms: 90000
   - name: FetchRedditThread
     description: >-
       Pull ONE Reddit thread's OP + comments via the public `.rss` feed
