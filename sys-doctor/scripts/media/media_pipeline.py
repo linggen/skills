@@ -1,0 +1,630 @@
+#!/usr/bin/env python3
+"""Media pipeline for Sys Doctor's Media tab.
+
+Subcommands (all write machine-readable JSON; long ops stream progress to
+data/media/progress.json and are launched in the background by media.sh):
+
+  info     device + Mac disk snapshot (fast, safe to poll)
+  index    build/refresh the Mac photo index (SHA-256 + dHash, incremental)
+  pull     incremental camera-roll pull over USB (manifest-driven)
+  scan     analyze staged files -> flags.json (hash/pHash/blur/luma/ffprobe)
+  backup   copy selected files to ~/Pictures/iPhone Backup/<date>/, re-hash verify
+  remove   delete the verified set from the iPhone over AFC (requires --confirm)
+
+Detection is pure scripts — no LLM anywhere in this pipeline.
+"""
+
+import argparse
+import asyncio
+import hashlib
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+HOME = Path.home()
+DATA_DIR = HOME / '.linggen' / 'skills' / 'sys-doctor' / 'data' / 'media'
+STAGING_DIR = DATA_DIR / 'staging'
+THUMBS_DIR = DATA_DIR / 'thumbs'
+MANIFEST = DATA_DIR / 'manifest.jsonl'
+MAC_INDEX = DATA_DIR / 'mac-index.jsonl'
+FLAGS = DATA_DIR / 'flags.json'
+PROGRESS = DATA_DIR / 'progress.json'
+STATE = DATA_DIR / 'state.json'
+BACKUP_ROOT = HOME / 'Pictures' / 'iPhone Backup'
+
+IMAGE_EXTS = {'.heic', '.heif', '.jpg', '.jpeg', '.png', '.gif', '.tiff', '.webp', '.dng'}
+VIDEO_EXTS = {'.mov', '.mp4', '.m4v', '.avi', '.3gp'}
+LARGE_VIDEO_BYTES = 100 * 1024 * 1024
+DARK_LUMA = 16          # mean 0-255 below this = black/dark shot
+BLUR_DEFAULT = 25       # variance-of-Laplacian below this = blurry (UI slider re-flags)
+NEAR_DUPE_DISTANCE = 4  # dHash hamming distance for near-dupes / "probably on Mac"
+ANALYZE_EDGE = 256      # downscale long edge before blur/luma analysis
+THUMB_EDGE = 256
+
+
+# ── progress / state ──────────────────────────────────────────────────────
+
+def write_json(path, obj):
+    tmp = Path(str(path) + '.tmp')
+    tmp.write_text(json.dumps(obj, indent=1) + '\n')
+    os.replace(tmp, path)
+
+
+def progress(op, phase, done=None, total=None, note='', status='running', error='', extra=None):
+    obj = {'op': op, 'phase': phase, 'done': done, 'total': total, 'note': note,
+           'status': status, 'error': error, 'ts': int(time.time())}
+    if extra:
+        obj.update(extra)
+    write_json(PROGRESS, obj)
+
+
+def update_state(**kv):
+    state = {}
+    if STATE.exists():
+        try:
+            state = json.loads(STATE.read_text())
+        except Exception:
+            state = {}
+    state.update(kv)
+    state['updated'] = datetime.now().isoformat(timespec='seconds')
+    write_json(STATE, state)
+
+
+def fail(op, phase, err):
+    progress(op, phase, status='error', error=str(err))
+    print(json.dumps({'error': str(err)}))
+    sys.exit(1)
+
+
+# ── hashing / imaging primitives ──────────────────────────────────────────
+
+def sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def load_imaging():
+    """Import Pillow/numpy lazily so `info` works before setup completes."""
+    from PIL import Image
+    import numpy as np
+    try:
+        from pillow_heif import register_heif_opener
+        register_heif_opener()
+    except ImportError:
+        pass
+    return Image, np
+
+
+def analyze_image(path, Image, np):
+    """Return (dhash_int, blur_score, luma, megapixels) or None if undecodable."""
+    try:
+        with Image.open(path) as im:
+            mp = round(im.width * im.height / 1e6, 1)
+            im = im.convert('L')
+            im.thumbnail((ANALYZE_EDGE, ANALYZE_EDGE))
+            a = np.asarray(im, dtype=np.float32)
+            small = im.resize((9, 8), Image.LANCZOS)
+    except Exception:
+        return None
+    # variance of Laplacian (4-neighbour kernel) = sharpness
+    if a.shape[0] > 2 and a.shape[1] > 2:
+        lap = (a[:-2, 1:-1] + a[2:, 1:-1] + a[1:-1, :-2] + a[1:-1, 2:]
+               - 4 * a[1:-1, 1:-1])
+        blur = float(lap.var())
+    else:
+        blur = 0.0
+    luma = float(a.mean())
+    s = np.asarray(small, dtype=np.int16)
+    bits = (s[:, 1:] > s[:, :-1]).flatten()
+    dhash = 0
+    for b in bits:
+        dhash = (dhash << 1) | int(b)
+    return dhash, round(blur, 1), round(luma, 1), mp
+
+
+def make_thumb(src, dest, Image):
+    try:
+        with Image.open(src) as im:
+            im = im.convert('RGB')
+            im.thumbnail((THUMB_EDGE, THUMB_EDGE))
+            im.save(dest, 'JPEG', quality=70)
+        return True
+    except Exception:
+        return False
+
+
+def hamming(a, b):
+    return bin(a ^ b).count('1')
+
+
+def ffprobe(path):
+    """Return (duration_sec, ok) using ffprobe if available."""
+    exe = shutil.which('ffprobe')
+    if not exe:
+        return None, False
+    try:
+        out = subprocess.run(
+            [exe, '-v', 'quiet', '-show_entries', 'format=duration',
+             '-of', 'csv=p=0', str(path)],
+            capture_output=True, text=True, timeout=20)
+        return round(float(out.stdout.strip())), True
+    except Exception:
+        return None, True
+
+
+def mac_free_gb():
+    st = os.statvfs(HOME)
+    return round(st.f_bavail * st.f_frsize / 1e9, 1)
+
+
+# ── device access (pymobiledevice3 9.x — lockdown entry points are async) ─
+
+async def connect_lockdown():
+    from pymobiledevice3.lockdown import create_using_usbmux
+    return await create_using_usbmux()
+
+
+def afc_service(ld):
+    from pymobiledevice3.services.afc import AfcService
+    return AfcService(ld)
+
+
+def stat_mtime_epoch(st):
+    m = st.get('st_mtime')
+    if isinstance(m, datetime):
+        return int(m.replace(tzinfo=m.tzinfo or timezone.utc).timestamp())
+    return int(m or 0)
+
+
+def afc_walk_files(afc, root='/DCIM'):
+    """Yield (path, size, mtime_epoch) for every regular file under root."""
+    stack = [root]
+    while stack:
+        d = stack.pop()
+        try:
+            names = afc.listdir(d)
+        except Exception:
+            continue
+        for name in names:
+            p = f'{d}/{name}'
+            try:
+                st = afc.stat(p)
+            except Exception:
+                continue
+            if 'S_IFDIR' in str(st.get('st_ifmt')):
+                stack.append(p)
+            else:
+                yield p, int(st.get('st_size') or 0), stat_mtime_epoch(st)
+
+
+# ── info ──────────────────────────────────────────────────────────────────
+
+def cmd_info(_args):
+    asyncio.run(_info_async())
+
+
+async def _info_async():
+    out = {'mac_free_gb': mac_free_gb(), 'connected': False}
+    try:
+        ld = await connect_lockdown()
+    except Exception as e:
+        out['reason'] = type(e).__name__
+        print(json.dumps(out))
+        return
+    try:
+        info = await ld.get_value() or {}
+        disk = await ld.get_value(domain='com.apple.disk_usage') or {}
+        gb = lambda v: round(v / 1e9, 1) if isinstance(v, (int, float)) else None
+        out.update({
+            'connected': True,
+            'name': info.get('DeviceName', 'iPhone'),
+            'model': info.get('ProductType', ''),
+            'ios': info.get('ProductVersion', ''),
+            'total_gb': gb(disk.get('TotalDiskCapacity')),
+            'free_gb': gb(disk.get('TotalDataAvailable')),
+            'photos_gb': gb(disk.get('PhotoUsage') or disk.get('CameraUsage')),
+        })
+        update_state(device={'name': out['name'], 'ios': out['ios'],
+                             'free_gb': out['free_gb'], 'total_gb': out['total_gb']})
+    except Exception as e:
+        out['reason'] = f'{type(e).__name__}: {e}'
+    print(json.dumps(out))
+
+
+# ── index (Mac photo index) ───────────────────────────────────────────────
+
+def index_roots():
+    roots = [HOME / 'Pictures']
+    return [r for r in roots if r.exists()]
+
+
+def load_jsonl(path):
+    rows = []
+    if path.exists():
+        for line in path.read_text().splitlines():
+            if line.strip():
+                try:
+                    rows.append(json.loads(line))
+                except Exception:
+                    pass
+    return rows
+
+
+def cmd_index(_args):
+    op = 'index'
+    Image, np = load_imaging()
+    old = {r['path']: r for r in load_jsonl(MAC_INDEX)}
+    files = []
+    skip_parts = {'.photoslibrary'}  # Photos library needs Full Disk Access — v1 skips it
+    for root in index_roots():
+        for dirpath, dirnames, filenames in os.walk(root):
+            dirnames[:] = [d for d in dirnames
+                           if not any(d.endswith(s) for s in skip_parts)]
+            for name in filenames:
+                p = Path(dirpath) / name
+                if p.suffix.lower() in IMAGE_EXTS | VIDEO_EXTS:
+                    files.append(p)
+    total = len(files)
+    progress(op, 'hashing', 0, total)
+    rows, reused = [], 0
+    for i, p in enumerate(files):
+        try:
+            st = p.stat()
+        except OSError:
+            continue
+        key = str(p)
+        prev = old.get(key)
+        if prev and prev.get('size') == st.st_size and prev.get('mtime') == int(st.st_mtime):
+            rows.append(prev)
+            reused += 1
+        else:
+            row = {'path': key, 'size': st.st_size, 'mtime': int(st.st_mtime),
+                   'sha256': sha256_file(p)}
+            if p.suffix.lower() in IMAGE_EXTS:
+                res = analyze_image(p, Image, np)
+                if res:
+                    row['dhash'] = res[0]
+            rows.append(row)
+        if i % 50 == 0:
+            progress(op, 'hashing', i, total, note=f'{reused} unchanged reused')
+    MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
+    progress(op, 'done', total, total, status='done',
+             extra={'indexed': len(rows), 'reused': reused})
+    update_state(mac_index={'files': len(rows), 'at': datetime.now().isoformat(timespec='seconds')})
+
+
+# ── pull (incremental camera roll) ────────────────────────────────────────
+
+def cmd_pull(_args):
+    asyncio.run(_pull_async())
+
+
+async def _pull_async():
+    op = 'pull'
+    try:
+        ld = await connect_lockdown()
+        afc = afc_service(ld)
+    except Exception as e:
+        fail(op, 'connect', f'No device: {e}')
+    manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
+    progress(op, 'listing')
+    phone_files = list(afc_walk_files(afc))
+    new = [(p, size, mt) for p, size, mt in phone_files
+           if p not in manifest or manifest[p].get('size') != size]
+    total_bytes = sum(size for _, size, _ in new)
+    if total_bytes / 1e9 > mac_free_gb() - 5:
+        fail(op, 'preflight',
+             f'Need {total_bytes / 1e9:.1f} GB staged but only {mac_free_gb()} GB free on Mac')
+    STAGING_DIR.mkdir(parents=True, exist_ok=True)
+    progress(op, 'pulling', 0, len(new),
+             extra={'unchanged': len(phone_files) - len(new), 'bytes': total_bytes})
+    pulled = 0
+    with open(MANIFEST, 'a') as mf:
+        for i, (p, size, mt) in enumerate(new):
+            rel = p.lstrip('/')
+            dest = STAGING_DIR / rel
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                await afc.pull(p, str(dest), progress_bar=False)
+                os.utime(dest, (mt, mt))
+            except Exception as e:
+                progress(op, 'pulling', i, len(new), note=f'skip {p}: {e}')
+                continue
+            row = {'path': p, 'size': size, 'mtime': mt,
+                   'sha256': sha256_file(dest), 'staged': rel}
+            manifest[p] = row
+            mf.write(json.dumps(row) + '\n')
+            pulled += 1
+            if i % 10 == 0:
+                progress(op, 'pulling', i, len(new))
+    # compact the manifest (drop superseded lines from re-pulls)
+    MANIFEST.write_text(''.join(json.dumps(r) + '\n' for r in manifest.values()))
+    progress(op, 'done', len(new), len(new), status='done',
+             extra={'pulled': pulled, 'unchanged': len(phone_files) - len(new)})
+    update_state(pull={'pulled': pulled, 'phone_files': len(phone_files),
+                       'at': datetime.now().isoformat(timespec='seconds')})
+
+
+# ── scan (analyze staged files) ───────────────────────────────────────────
+
+def is_screenshot(path, has_dhash):
+    return path.suffix.lower() == '.png' and has_dhash
+
+
+def live_photo_pairs(rows):
+    """Map MOV path -> HEIC/JPG row when both share a stem (Live Photos = one item)."""
+    stems = {}
+    for r in rows:
+        p = Path(r['staged'])
+        stems.setdefault((str(p.parent), p.stem.lower()), []).append(r)
+    mov_to_still = {}
+    for group in stems.values():
+        stills = [r for r in group if Path(r['staged']).suffix.lower() in IMAGE_EXTS]
+        movs = [r for r in group if Path(r['staged']).suffix.lower() == '.mov']
+        if stills and movs:
+            for m in movs:
+                mov_to_still[m['staged']] = stills[0]['staged']
+    return mov_to_still
+
+
+def cmd_scan(_args):
+    op = 'scan'
+    Image, np = load_imaging()
+    rows = [r for r in load_jsonl(MANIFEST) if (STAGING_DIR / r.get('staged', '')).exists()]
+    if not rows:
+        fail(op, 'load', 'Nothing staged — run pull first')
+    mac_by_sha = {}
+    mac_dhashes = []
+    for r in load_jsonl(MAC_INDEX):
+        mac_by_sha[r['sha256']] = r['path']
+        if 'dhash' in r:
+            mac_dhashes.append((r['dhash'], r['path']))
+    THUMBS_DIR.mkdir(parents=True, exist_ok=True)
+    mov_pairs = live_photo_pairs(rows)
+
+    items, by_sha, dhash_list = {}, {}, []
+    total = len(rows)
+    progress(op, 'analyzing', 0, total)
+    for i, r in enumerate(rows):
+        staged = STAGING_DIR / r['staged']
+        ext = staged.suffix.lower()
+        if r['staged'] in mov_pairs:  # MOV half of a Live Photo — fold into the still
+            items[mov_pairs[r['staged']]]['live_mov'] = r['path']
+            items[mov_pairs[r['staged']]]['size'] += r['size']
+            continue
+        # id is per-FILE (path-derived): byte-identical copies must stay
+        # distinct so dupe groups can keep one and remove the others
+        iid = hashlib.sha256(r['path'].encode()).hexdigest()[:12]
+        thumb_key = r['sha256'][:12]  # thumbs dedupe by content
+        item = {'id': iid, 'phone_path': r['path'], 'staged': r['staged'],
+                'size': r['size'], 'mtime': r['mtime'], 'sha256': r['sha256'],
+                'kind': 'video' if ext in VIDEO_EXTS else 'image', 'flags': []}
+        if ext in IMAGE_EXTS:
+            res = analyze_image(staged, Image, np)
+            if res:
+                item['dhash'], item['blur'], item['luma'], item['mp'] = res
+                dhash_list.append((res[0], iid))
+                if item['luma'] < DARK_LUMA:
+                    item['flags'].append('dark')
+                if is_screenshot(staged, True):
+                    item['flags'].append('screenshot')
+            thumb_path = THUMBS_DIR / f'{thumb_key}.jpg'
+            if thumb_path.exists() or make_thumb(staged, thumb_path, Image):
+                item['thumb'] = f'{thumb_key}.jpg'
+        elif ext in VIDEO_EXTS:
+            dur, _ = ffprobe(staged)
+            if dur is not None:
+                item['duration'] = dur
+            if r['size'] >= LARGE_VIDEO_BYTES:
+                item['flags'].append('large_video')
+        by_sha.setdefault(r['sha256'], []).append(iid)
+        if r['sha256'] in mac_by_sha:
+            item['flags'].append('on_mac')
+            item['mac_path'] = mac_by_sha[r['sha256']]
+        items[item['staged']] = item
+        if i % 25 == 0:
+            progress(op, 'analyzing', i, total)
+
+    progress(op, 'grouping', total, total)
+    id_map = {it['id']: it for it in items.values()}
+    # exact-dupe groups
+    groups = []
+    for sha, ids in by_sha.items():
+        if len(ids) > 1:
+            groups.append({'kind': 'exact', 'ids': ids})
+    # near-dupe groups (dHash union-find), skipping exact-dupe members
+    exact_members = {i for g in groups for i in g['ids']}
+    parent = {}
+
+    def find(x):
+        while parent.get(x, x) != x:
+            parent[x] = parent.get(parent[x], parent[x])
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        parent[find(a)] = find(b)
+
+    candidates = [(h, i) for h, i in dhash_list if i not in exact_members]
+    for a in range(len(candidates)):
+        for b in range(a + 1, len(candidates)):
+            if hamming(candidates[a][0], candidates[b][0]) <= NEAR_DUPE_DISTANCE:
+                union(candidates[a][1], candidates[b][1])
+    near = {}
+    for _, iid in candidates:
+        near.setdefault(find(iid), []).append(iid)
+    groups += [{'kind': 'near', 'ids': ids} for ids in near.values() if len(ids) > 1]
+    # pick keep-best per group: resolution, then sharpness
+    for g in groups:
+        best = max(g['ids'], key=lambda i: (id_map[i].get('mp', 0), id_map[i].get('blur', 0)))
+        g['keep'] = best
+        for iid in g['ids']:
+            if iid != best and 'dupe' not in id_map[iid]['flags']:
+                id_map[iid]['flags'].append('dupe')
+    # "probably on Mac" — visual match only, never pre-checked
+    for h, iid in dhash_list:
+        it = id_map[iid]
+        if 'on_mac' in it['flags']:
+            continue
+        for mh, mpath in mac_dhashes:
+            if hamming(h, mh) <= NEAR_DUPE_DISTANCE:
+                it['flags'].append('probably_on_mac')
+                it['mac_path'] = mpath
+                break
+    # blur flag last; dark shots are excluded (zero-variance black frames are
+    # "dark", not "blurry") and screenshots are judged by their own category
+    for it in id_map.values():
+        if (it.get('blur') is not None and it['blur'] < BLUR_DEFAULT
+                and 'screenshot' not in it['flags'] and 'dark' not in it['flags']):
+            it['flags'].append('blurry')
+
+    # group keepers are usually unflagged but the review UI must render them
+    group_members = {i for g in groups for i in g['ids']}
+    flagged = [it for it in id_map.values() if it['flags'] or it['id'] in group_members]
+    out = {'generated': datetime.now().isoformat(timespec='seconds'),
+           'scanned': len(rows), 'flagged': len(flagged),
+           'blur_default': BLUR_DEFAULT, 'items': flagged, 'groups': groups}
+    write_json(FLAGS, out)
+    progress(op, 'done', total, total, status='done',
+             extra={'flagged': len(flagged), 'groups': len(groups)})
+    update_state(scan={'scanned': len(rows), 'flagged': len(flagged),
+                       'at': datetime.now().isoformat(timespec='seconds')})
+
+
+# ── backup (copy + verify) ────────────────────────────────────────────────
+
+def load_selection(path):
+    sel = json.loads(Path(path).read_text())
+    ids = set(sel['ids'])
+    flags = json.loads(FLAGS.read_text())
+    id_map = {it['id']: it for it in flags['items']}
+    missing = ids - set(id_map)
+    if missing:
+        raise ValueError(f'{len(missing)} selected ids not in flags.json')
+    return [id_map[i] for i in ids]
+
+
+def cmd_backup(args):
+    op = 'backup'
+    try:
+        items = load_selection(args.selection)
+    except Exception as e:
+        fail(op, 'load', e)
+    to_copy = [it for it in items if 'on_mac' not in it['flags']]
+    need_gb = sum(it['size'] for it in to_copy) / 1e9
+    if need_gb > mac_free_gb() - 5:
+        fail(op, 'preflight', f'Backup needs {need_gb:.1f} GB but only {mac_free_gb()} GB free')
+    dest_root = BACKUP_ROOT / datetime.now().strftime('%Y-%m-%d')
+    progress(op, 'copying', 0, len(to_copy), extra={'skipped_on_mac': len(items) - len(to_copy)})
+    verified, failed = [], []
+    for i, it in enumerate(items):
+        if 'on_mac' in it['flags']:
+            # already byte-identical on the Mac — verify against the index, no copy
+            mac = Path(it['mac_path'])
+            ok = mac.exists() and sha256_file(mac) == it['sha256']
+            (verified if ok else failed).append(it['id'])
+            continue
+        src = STAGING_DIR / it['staged']
+        d = datetime.fromtimestamp(it['mtime'] or 0)
+        dest = dest_root / f'{d.year:04d}' / f'{d.month:02d}' / Path(it['staged']).name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copy2(src, dest)
+            ok = sha256_file(dest) == it['sha256']
+        except Exception:
+            ok = False
+        (verified if ok else failed).append(it['id'])
+        if 'live_mov' in it and ok:  # copy the MOV half of a Live Photo alongside
+            mov_rel = it['live_mov'].lstrip('/')
+            mov_src = STAGING_DIR / mov_rel
+            if mov_src.exists():
+                shutil.copy2(mov_src, dest.parent / mov_src.name)
+        if i % 10 == 0:
+            progress(op, 'copying', i, len(to_copy))
+    write_json(DATA_DIR / 'verified.json',
+               {'ids': verified, 'failed': failed, 'dest': str(dest_root),
+                'at': datetime.now().isoformat(timespec='seconds')})
+    progress(op, 'done', len(to_copy), len(to_copy), status='done',
+             extra={'verified': len(verified), 'failed': len(failed), 'dest': str(dest_root)})
+    update_state(backup={'verified': len(verified), 'failed': len(failed),
+                         'dest': str(dest_root), 'at': datetime.now().isoformat(timespec='seconds')})
+
+
+# ── remove (verified set only) ────────────────────────────────────────────
+
+def cmd_remove(args):
+    asyncio.run(_remove_async(args))
+
+
+async def _remove_async(args):
+    op = 'remove'
+    if not args.confirm:
+        fail(op, 'confirm', 'remove requires --confirm')
+    verified = json.loads((DATA_DIR / 'verified.json').read_text())
+    flags = json.loads(FLAGS.read_text())
+    id_map = {it['id']: it for it in flags['items']}
+    items = [id_map[i] for i in verified['ids'] if i in id_map]
+    try:
+        ld = await connect_lockdown()
+        afc = afc_service(ld)
+    except Exception as e:
+        fail(op, 'connect', f'No device: {e}')
+    progress(op, 'removing', 0, len(items))
+    removed, errors = [], []
+    for i, it in enumerate(items):
+        paths = [it['phone_path']] + ([it['live_mov']] if 'live_mov' in it else [])
+        try:
+            for p in paths:
+                afc.rm(p)
+            removed.append(it['id'])
+        except Exception as e:
+            errors.append({'id': it['id'], 'error': str(e)})
+        if i % 10 == 0:
+            progress(op, 'removing', i, len(items))
+    freed_gb = round(sum(id_map[i]['size'] for i in removed) / 1e9, 1)
+    icloud_suspected = len(errors) > 0 and len(removed) == 0
+    result = {'removed': len(removed), 'errors': len(errors), 'freed_gb': freed_gb,
+              'icloud_suspected': icloud_suspected,
+              'error_samples': [e['error'] for e in errors[:3]]}
+    # drop removed files from staging + manifest so re-runs stay truthful
+    manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
+    for iid in removed:
+        it = id_map[iid]
+        manifest.pop(it['phone_path'], None)
+        (STAGING_DIR / it['staged']).unlink(missing_ok=True)
+    MANIFEST.write_text(''.join(json.dumps(r) + '\n' for r in manifest.values()))
+    write_json(DATA_DIR / 'remove-result.json', result)
+    progress(op, 'done', len(items), len(items), status='done', extra=result)
+    update_state(remove={**result, 'at': datetime.now().isoformat(timespec='seconds')})
+
+
+# ── main ──────────────────────────────────────────────────────────────────
+
+def main():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    ap = argparse.ArgumentParser(description=__doc__)
+    sub = ap.add_subparsers(dest='cmd', required=True)
+    sub.add_parser('info')
+    sub.add_parser('index')
+    sub.add_parser('pull')
+    sub.add_parser('scan')
+    b = sub.add_parser('backup')
+    b.add_argument('--selection', required=True)
+    r = sub.add_parser('remove')
+    r.add_argument('--confirm', action='store_true')
+    args = ap.parse_args()
+    {'info': cmd_info, 'index': cmd_index, 'pull': cmd_pull,
+     'scan': cmd_scan, 'backup': cmd_backup, 'remove': cmd_remove}[args.cmd](args)
+
+
+if __name__ == '__main__':
+    main()

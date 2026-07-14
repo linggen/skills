@@ -150,6 +150,10 @@ async function mountAndStart(sessionId, carryPage = null) {
     chat.send(text);
   };
 
+  // Media tab milestones — hidden prompts so Ling narrates scan/backup/remove
+  // events without the raw event text appearing in chat.
+  window._chatNotify = (text) => chat?.sendHidden(text);
+
   document.getElementById('rescan-btn')?.addEventListener('click', () => startRescan());
   updateScanMeta();
   setInterval(updateScanMeta, 60_000);
