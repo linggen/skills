@@ -70,6 +70,10 @@ function esc(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
+function abbrevPath(p) {
+  return String(p).replace(/^\/Users\/[^/]+/, '~');
+}
+
 // ── tab bar ──
 
 export function initMediaTab() {
@@ -1062,10 +1066,13 @@ async function confirmBackupDialog(ids) {
   const hasSel = ids.size > 0;
   let volumes = await media('volumes');
   if (!Array.isArray(volumes)) volumes = [];
-  const opts = [`<option value="">This Mac — ~/Pictures/iPhone Backup</option>`]
-    .concat(volumes.map((v) =>
-      `<option value="/Volumes/${esc(v)}/iPhone Backup">${esc(v)} (external) — iPhone Backup</option>`))
-    .join('');
+  const saved = (await media('get-dest')).dest || '';
+  const destOpts = [{ v: '', label: 'This Mac — ~/Pictures/iPhone Backup' }]
+    .concat(volumes.map((v) => ({ v: `/Volumes/${v}/iPhone Backup`, label: `${v} (external) — iPhone Backup` })));
+  if (saved && !destOpts.some((o) => o.v === saved)) destOpts.push({ v: saved, label: abbrevPath(saved) });
+  destOpts.push({ v: '__choose__', label: '📁 Choose folder…' });
+  const opts = destOpts.map((o) =>
+    `<option value="${esc(o.v)}"${o.v === saved ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
   return new Promise((resolve) => {
     const box = document.createElement('div');
     box.className = 'media-lightbox';
@@ -1094,6 +1101,8 @@ async function confirmBackupDialog(ids) {
     const yes = box.querySelector('#cf-yes');
     const del = box.querySelector('#cf-del');
     const delRow = box.querySelector('#cf-del-row');
+    const destSel = box.querySelector('#cf-dest');
+    destSel.dataset.prev = saved;
     const scope = () => box.querySelector('input[name=cf-scope]:checked').value;
     const refresh = () => {
       const whole = scope() === 'roll';
@@ -1102,17 +1111,33 @@ async function confirmBackupDialog(ids) {
       yes.textContent = whole ? 'Back up whole roll'
         : del.checked ? 'Back up & free up' : 'Back up only';
     };
+    // "Choose folder…" opens the native macOS picker and pins the result
+    destSel.onchange = async () => {
+      if (destSel.value !== '__choose__') { destSel.dataset.prev = destSel.value; return; }
+      const r = await media('choose-dest');
+      if (r && r.path) {
+        let opt = [...destSel.options].find((o) => o.value === r.path);
+        if (!opt) {
+          opt = new Option(abbrevPath(r.path), r.path);
+          destSel.add(opt, destSel.querySelector('option[value="__choose__"]'));
+        }
+        destSel.value = r.path;
+        destSel.dataset.prev = r.path;
+      } else {
+        destSel.value = destSel.dataset.prev || '';  // cancel → revert
+      }
+    };
     for (const r of box.querySelectorAll('input[name=cf-scope]')) r.onchange = refresh;
     del.onchange = refresh;
     refresh();
     const done = (v) => { box.remove(); resolve(v); };
     box.onclick = (e) => { if (e.target === box) done(null); };
     box.querySelector('#cf-no').onclick = () => done(null);
-    yes.onclick = () => done({
-      scope: scope(),
-      dest: box.querySelector('#cf-dest').value,
-      remove: scope() === 'selected' && del.checked,
-    });
+    yes.onclick = () => {
+      const dest = destSel.value === '__choose__' ? (destSel.dataset.prev || '') : destSel.value;
+      media(`set-dest ${dest ? shellEsc(dest) : "''"}`);  // remember as the default
+      done({ scope: scope(), dest, remove: scope() === 'selected' && del.checked });
+    };
     document.body.appendChild(box);
   });
 }

@@ -57,6 +57,27 @@ case "$cmd" in
     require_venv
     "$PY" "$PIPELINE" restore --sha "${1:?sha required}" 2>/dev/null || echo '{"error":"restore_failed"}'
     ;;
+  get-dest)
+    # remembered backup destination ('' = This Mac default)
+    require_venv
+    d=$(cat "$DATA/backup-dest" 2>/dev/null || true)
+    "$PY" -c "import json,sys; print(json.dumps({'dest': sys.argv[1]}))" "$d" 2>/dev/null || echo '{"dest":""}'
+    ;;
+  set-dest)
+    printf '%s' "${1:-}" > "$DATA/backup-dest"
+    echo '{"ok":true}'
+    ;;
+  choose-dest)
+    # native macOS folder picker → POSIX path (blocks until the user picks)
+    require_venv
+    p=$(osascript -e 'POSIX path of (choose folder with prompt "Choose a backup destination for your iPhone photos")' 2>/dev/null)
+    if [ -n "$p" ]; then
+      p="${p%/}"
+      "$PY" -c "import json,sys; print(json.dumps({'path': sys.argv[1]}))" "$p"
+    else
+      echo '{"canceled":true}'
+    fi
+    ;;
   remove-one)
     # synchronous single-item trash-delete for the lightbox (blocks ~1-2s)
     require_venv
