@@ -445,3 +445,20 @@
 
 .media-lightbox .lb-nav:hover:not(:disabled) { background: rgba(255, 255, 255, 0.32); }
 .media-lightbox .lb-nav:disabled { opacity: 0.25; cursor: not-allowed; }
+
+.media-confirm {
+  max-width: 440px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.media-confirm .row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}

@@ -381,7 +381,9 @@ function renderReview() {
     tile.onclick = () => { activeCat = tile.dataset.cat; renderReview(); };
   }
   document.getElementById('back-btn').onclick = () => showConnect();
-  document.getElementById('apply-btn').onclick = () => showApply(true);
+  document.getElementById('apply-btn').onclick = async () => {
+    if (selected.size && await confirmRemove(selected)) showApply(true);
+  };
   renderCategoryPane();
   updateSelbar();
 }
@@ -475,7 +477,10 @@ function renderCategoryPane() {
     });
   }
   const catRemove = document.getElementById('cat-remove-btn');
-  if (catRemove) catRemove.onclick = () => { const s = catSelection(); if (s.size) showApply(true, s); };
+  if (catRemove) catRemove.onclick = async () => {
+    const s = catSelection();
+    if (s.size && await confirmRemove(s)) showApply(true, s);
+  };
   document.getElementById('cat-all-box').onchange = (e) => {
     for (const it of itemsFor(activeCat)) {
       if (e.target.checked) {
@@ -528,6 +533,36 @@ function updateCatbar() {
     box.indeterminate = scoped.size > 0 && scoped.size < selectable;
     box.parentElement.querySelector('span').textContent = `Select all (${selectable.toLocaleString()})`;
   }
+}
+
+/** In-page confirm (native confirm() is a no-op in the app shell). */
+function confirmDialog(messageHtml, actionLabel) {
+  return new Promise((resolve) => {
+    const box = document.createElement('div');
+    box.className = 'media-lightbox';
+    box.innerHTML = `
+      <div class="media-confirm">
+        <div>${messageHtml}</div>
+        <div class="row">
+          <button class="media-cta ghost sm" id="cf-no">Cancel</button>
+          <button class="media-cta sm" id="cf-yes">${actionLabel}</button>
+        </div>
+      </div>`;
+    const done = (v) => { box.remove(); resolve(v); };
+    box.onclick = (e) => { if (e.target === box) done(false); };
+    box.querySelector('#cf-no').onclick = () => done(false);
+    box.querySelector('#cf-yes').onclick = () => done(true);
+    document.body.appendChild(box);
+  });
+}
+
+async function confirmRemove(ids) {
+  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const bytes = [...ids].reduce((sum, id) => sum + (byId.get(id)?.size || 0), 0);
+  return confirmDialog(
+    `<b>${ids.size.toLocaleString()} selected items (${fmtGb(bytes)})</b> will be backed up to your Mac
+     and verified, then removed from the iPhone. Continue?`,
+    'Back up & remove');
 }
 
 // ── full-size preview (lightbox) ──
