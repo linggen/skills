@@ -333,3 +333,76 @@
 
 .media-status b { color: var(--text); font-weight: 600; }
 .media-status .media-chip { margin-left: 2px; }
+
+/* ── Per-category action bar ── */
+
+.catbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.media-cta.sm { margin: 0; padding: 6px 12px; font-size: 12px; }
+
+/* ── Thumb zoom affordance ── */
+
+.media-thumb .zoom {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  border: 0;
+  padding: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 13px;
+  cursor: zoom-in;
+}
+
+.media-thumb:hover .zoom { background: rgba(0, 0, 0, 0.7); }
+
+/* ── Lightbox ── */
+
+.media-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.media-lightbox .lb-body {
+  max-width: min(92vw, 1200px);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.media-lightbox .lb-media { display: flex; align-items: center; justify-content: center; }
+
+.media-lightbox img,
+.media-lightbox video {
+  max-width: min(92vw, 1200px);
+  max-height: 82vh;
+  border-radius: 8px;
+  background: #000;
+}
+
+.media-lightbox .lb-cap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #eee;
+  font-size: 12.5px;
+}
+
+.media-lightbox .lb-cap span { flex: 1; }

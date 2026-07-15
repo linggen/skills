@@ -403,13 +403,22 @@ function thumbHtml(it, checked) {
   return `<div class="media-thumb ${vid ? 'vid' : ''}" data-id="${it.id}">
     ${img}${vid ? '<span class="play">▶</span>' : ''}
     ${keep ? '' : `<input type="checkbox" ${checked ? 'checked' : ''} aria-label="remove">`}
+    <button class="zoom" title="View full size" aria-label="View full size">⤢</button>
     ${tag}${score ? `<span class="score">${score}</span>` : ''}</div>`;
+}
+
+function catSelection() {
+  const ids = new Set(itemsFor(activeCat).filter((it) => selected.has(it.id)).map((it) => it.id));
+  return ids;
 }
 
 function renderCategoryPane() {
   const pane = document.getElementById('cat-pane');
   const items = itemsFor(activeCat);
   let html = '';
+
+  html += `<div class="catbar"><button class="media-cta sm" id="cat-remove-btn"></button>
+    <span class="media-dim">only this category's checked items; same verify + confirm flow</span></div>`;
 
   if (activeCat === 'blurry') {
     html += `<div class="sliderrow">Blur sensitivity
@@ -447,16 +456,25 @@ function renderCategoryPane() {
       const id = e.target.closest('.media-thumb').dataset.id;
       if (e.target.checked) selected.add(id); else selected.delete(id);
       updateSelbar();
+      updateCatbar();
     };
   }
-  if (activeCat === 'dupe') {
-    for (const thumb of pane.querySelectorAll('.media-thumb')) {
-      thumb.addEventListener('click', (e) => {
-        if (e.target.tagName === 'INPUT') return;
-        moveStar(thumb.dataset.id);
-      });
-    }
+  for (const zoom of pane.querySelectorAll('.media-thumb .zoom')) {
+    zoom.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openLightbox(e.target.closest('.media-thumb').dataset.id);
+    });
   }
+  for (const thumb of pane.querySelectorAll('.media-thumb')) {
+    thumb.addEventListener('click', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.classList.contains('zoom')) return;
+      if (activeCat === 'dupe') moveStar(thumb.dataset.id); // click = move ★; use ⤢ to preview
+      else openLightbox(thumb.dataset.id);
+    });
+  }
+  const catRemove = document.getElementById('cat-remove-btn');
+  if (catRemove) catRemove.onclick = () => { const s = catSelection(); if (s.size) showApply(true, s); };
+  updateCatbar();
   const blurRange = document.getElementById('blur-range');
   if (blurRange) {
     blurRange.oninput = () => {
@@ -474,6 +492,80 @@ function renderCategoryPane() {
       for (const it of itemsFor('screenshot')) if (it.mtime < cutoff) selected.add(it.id);
       renderReview();
     };
+  }
+}
+
+function updateCatbar() {
+  const btn = document.getElementById('cat-remove-btn');
+  if (!btn) return;
+  const scoped = catSelection();
+  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const bytes = [...scoped].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
+  const verb = activeCat === 'on_mac'
+    ? `Remove ${scoped.size.toLocaleString()} checked — already backed up`
+    : `Back up & remove ${scoped.size.toLocaleString()} checked`;
+  btn.textContent = `🗑 ${verb} (${fmtGb(bytes)})`;
+  btn.disabled = !scoped.size;
+}
+
+// ── full-size preview (lightbox) ──
+
+const STAGING_URL = '../data/media/staging/';
+const PREVIEW_URL = '../data/media/previews/';
+
+function closeLightbox() {
+  document.getElementById('media-lightbox')?.remove();
+  document.removeEventListener('keydown', lightboxKey);
+}
+
+function lightboxKey(e) {
+  if (e.key === 'Escape') closeLightbox();
+}
+
+/** HEIC can't render in the browser — convert once with macOS sips, cached by content hash. */
+async function ensurePreview(it) {
+  const key = `${it.sha256.slice(0, 12)}.jpg`;
+  const src = `${DATA_DIR}/staging/${it.staged}`;
+  const dst = `${DATA_DIR}/previews/${key}`;
+  await bash(`mkdir -p "${DATA_DIR}/previews"; [ -f "${dst}" ] || sips -s format jpeg "${src}" --out "${dst}" --resampleHeightWidthMax 2048 >/dev/null`);
+  return PREVIEW_URL + key;
+}
+
+async function openLightbox(id) {
+  const it = flags.items.find((x) => x.id === id);
+  if (!it) return;
+  closeLightbox();
+  const stagedUrl = STAGING_URL + it.staged.split('/').map(encodeURIComponent).join('/');
+  const box = document.createElement('div');
+  box.id = 'media-lightbox';
+  box.className = 'media-lightbox';
+  box.innerHTML = `
+    <div class="lb-body"><div class="lb-media media-dim">Loading…</div>
+      <div class="lb-cap"><span>${esc(it.staged.split('/').pop())} · ${fmtGb(it.size)}</span>
+        <button class="media-cta ghost sm" id="lb-open">Open on Mac</button>
+        <button class="media-cta ghost sm" id="lb-close">✕ Close</button></div></div>`;
+  box.onclick = (e) => { if (e.target === box) closeLightbox(); };
+  document.body.appendChild(box);
+  document.addEventListener('keydown', lightboxKey);
+  document.getElementById('lb-close').onclick = closeLightbox;
+  document.getElementById('lb-open').onclick = () =>
+    bash(`open "${DATA_DIR}/staging/${it.staged}"`);
+  const slot = box.querySelector('.lb-media');
+  const ext = it.staged.split('.').pop().toLowerCase();
+  if (it.kind === 'video') {
+    slot.innerHTML = `<video controls autoplay src="${stagedUrl}"></video>`;
+    slot.querySelector('video').onerror = () => {
+      slot.innerHTML = `<div class="media-dim">This codec won't play in the browser — use "Open on Mac".</div>`;
+    };
+  } else if (ext === 'heic' || ext === 'heif') {
+    try {
+      const url = await ensurePreview(it);
+      slot.innerHTML = `<img src="${url}" alt="">`;
+    } catch {
+      slot.innerHTML = `<div class="media-dim">Preview failed — use "Open on Mac".</div>`;
+    }
+  } else {
+    slot.innerHTML = `<img src="${stagedUrl}" alt="">`;
   }
 }
 
@@ -504,8 +596,8 @@ function updateSelbar() {
 
 // ── screen 4 · back up & remove ──
 
-async function writeSelection() {
-  const json = JSON.stringify({ ids: [...selected] });
+async function writeSelection(ids) {
+  const json = JSON.stringify({ ids: [...ids] });
   const chunks = [];
   for (let i = 0; i < json.length; i += 40000) chunks.push(json.slice(i, i + 40000));
   await bash(`mkdir -p "${DATA_DIR}" && : > "${DATA_DIR}/selection.json"`);
@@ -515,10 +607,11 @@ async function writeSelection() {
   await bash(`printf '\\n' >> "${DATA_DIR}/selection.json"`);
 }
 
-async function showApply(fresh = false) {
+async function showApply(fresh = false, scopeIds = null) {
+  const ids = scopeIds || selected;
   const byId = fresh ? new Map(flags.items.map((it) => [it.id, it])) : null;
-  const count = fresh ? selected.size : null;
-  const bytes = fresh ? [...selected].reduce((s, id) => s + (byId.get(id)?.size || 0), 0) : null;
+  const count = fresh ? ids.size : null;
+  const bytes = fresh ? [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0) : null;
 
   setScreen('apply', () => {
     panel.innerHTML = `
@@ -549,7 +642,7 @@ async function showApply(fresh = false) {
   });
 
   if (fresh) {
-    await writeSelection();
+    await writeSelection(ids);
     await media('start backup');
   }
   pollApply();
