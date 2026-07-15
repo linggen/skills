@@ -275,6 +275,7 @@
 .selbar {
   position: sticky;
   bottom: 0;
+  z-index: 5; /* above thumb checkboxes/zoom buttons scrolling beneath */
   display: flex;
   align-items: center;
   gap: 14px;
@@ -406,3 +407,22 @@
 }
 
 .media-lightbox .lb-cap span { flex: 1; }
+
+.catbar .catall {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.catbar .catall input {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+}
+
+/* Dupe groups: unchecked = kept; the badge tracks the checkbox live */
+.media-thumb .keep-tag { display: none; }
+.media-thumb.kept .keep-tag { display: inline-block; }

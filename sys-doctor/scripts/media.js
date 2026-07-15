@@ -395,14 +395,14 @@ function thumbHtml(it, checked) {
     : it.blur != null && activeCat === 'blurry' ? `blur ${Math.round(it.blur)}`
     : it.luma != null && activeCat === 'dark' ? `luma ${Math.round(it.luma)}`
     : '';
-  const keep = isKeep(it.id) && activeCat === 'dupe';
+  const kept = activeCat === 'dupe' && !checked;
   const probably = activeCat === 'on_mac' && !it.flags.includes('on_mac');
-  const tag = keep ? '<span class="tag">★ KEEP</span>'
+  const tag = activeCat === 'dupe' ? '<span class="tag keep-tag">★ KEEP</span>'
     : probably ? '<span class="tag cut">probably</span>'
     : activeCat === 'on_mac' ? '<span class="tag">on Mac ✓</span>' : '';
-  return `<div class="media-thumb ${vid ? 'vid' : ''}" data-id="${it.id}">
+  return `<div class="media-thumb ${vid ? 'vid' : ''} ${kept ? 'kept' : ''}" data-id="${it.id}">
     ${img}${vid ? '<span class="play">▶</span>' : ''}
-    ${keep ? '' : `<input type="checkbox" ${checked ? 'checked' : ''} aria-label="remove">`}
+    <input type="checkbox" ${checked ? 'checked' : ''} aria-label="remove">
     <button class="zoom" title="View full size" aria-label="View full size">⤢</button>
     ${tag}${score ? `<span class="score">${score}</span>` : ''}</div>`;
 }
@@ -417,7 +417,9 @@ function renderCategoryPane() {
   const items = itemsFor(activeCat);
   let html = '';
 
-  html += `<div class="catbar"><button class="media-cta sm" id="cat-remove-btn"></button>
+  html += `<div class="catbar">
+    <label class="catall"><input type="checkbox" id="cat-all-box"><span></span></label>
+    <button class="media-cta sm" id="cat-remove-btn"></button>
     <span class="media-dim">only this category's checked items; same verify + confirm flow</span></div>`;
 
   if (activeCat === 'blurry') {
@@ -439,7 +441,7 @@ function renderCategoryPane() {
       const members = g.ids.map((id) => flags.items.find((it) => it.id === id)).filter(Boolean);
       if (!members.length) return '';
       const label = g.kind === 'exact' ? 'exact byte dupes' : 'near-dupes (pHash)';
-      return `<div class="media-group"><div class="glabel">Group of ${members.length} · ${label} · click a photo to move ★</div>
+      return `<div class="media-group"><div class="glabel">Group of ${members.length} · ${label} · unchecked = kept on phone</div>
         <div class="thumbrow">${members.map((it) => thumbHtml(it, selected.has(it.id))).join('')}</div></div>`;
     }).join('');
   } else {
@@ -453,8 +455,9 @@ function renderCategoryPane() {
 
   for (const box of pane.querySelectorAll('.media-thumb input')) {
     box.onchange = (e) => {
-      const id = e.target.closest('.media-thumb').dataset.id;
-      if (e.target.checked) selected.add(id); else selected.delete(id);
+      const thumbEl = e.target.closest('.media-thumb');
+      if (e.target.checked) selected.add(thumbEl.dataset.id); else selected.delete(thumbEl.dataset.id);
+      if (activeCat === 'dupe') thumbEl.classList.toggle('kept', !e.target.checked);
       updateSelbar();
       updateCatbar();
     };
@@ -468,19 +471,30 @@ function renderCategoryPane() {
   for (const thumb of pane.querySelectorAll('.media-thumb')) {
     thumb.addEventListener('click', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.classList.contains('zoom')) return;
-      if (activeCat === 'dupe') moveStar(thumb.dataset.id); // click = move ★; use ⤢ to preview
-      else openLightbox(thumb.dataset.id);
+      openLightbox(thumb.dataset.id);
     });
   }
   const catRemove = document.getElementById('cat-remove-btn');
   if (catRemove) catRemove.onclick = () => { const s = catSelection(); if (s.size) showApply(true, s); };
+  document.getElementById('cat-all-box').onchange = (e) => {
+    for (const it of itemsFor(activeCat)) {
+      if (e.target.checked) {
+        if (activeCat === 'dupe' && isKeep(it.id)) continue;
+        selected.add(it.id);
+      } else if (!heldByOtherCat(it, activeCat)) {
+        selected.delete(it.id);
+      }
+    }
+    renderCategoryPane();
+    updateSelbar();
+  };
   updateCatbar();
   const blurRange = document.getElementById('blur-range');
   if (blurRange) {
     blurRange.oninput = () => {
       blurThreshold = parseInt(blurRange.value, 10);
       for (const it of flags.items.filter(blurEligible)) {
-        if (it.blur < blurThreshold) selected.add(it.id); else if (!otherFlagsSelected(it)) selected.delete(it.id);
+        if (it.blur < blurThreshold) selected.add(it.id); else if (!heldByOtherCat(it, 'blurry')) selected.delete(it.id);
       }
       renderReview();
     };
@@ -506,6 +520,14 @@ function updateCatbar() {
     : `Back up & remove ${scoped.size.toLocaleString()} checked`;
   btn.textContent = `🗑 ${verb} (${fmtGb(bytes)})`;
   btn.disabled = !scoped.size;
+  const box = document.getElementById('cat-all-box');
+  if (box) {
+    const selectable = itemsFor(activeCat)
+      .filter((it) => !(activeCat === 'dupe' && isKeep(it.id))).length;
+    box.checked = selectable > 0 && scoped.size >= selectable;
+    box.indeterminate = scoped.size > 0 && scoped.size < selectable;
+    box.parentElement.querySelector('span').textContent = `Select all (${selectable.toLocaleString()})`;
+  }
 }
 
 // ── full-size preview (lightbox) ──
@@ -569,18 +591,9 @@ async function openLightbox(id) {
   }
 }
 
-/** True if the item stays selected through another pre-checked category. */
-function otherFlagsSelected(it) {
-  return it.flags.includes('dupe') || it.flags.includes('dark') || it.flags.includes('on_mac');
-}
-
-function moveStar(id) {
-  const g = flags.groups.find((x) => x.ids.includes(id));
-  if (!g || g.keep === id) return;
-  selected.add(g.keep);
-  g.keep = id;
-  selected.delete(id);
-  renderReview();
+/** True if another pre-checked category (not `cat`) still claims this item. */
+function heldByOtherCat(it, cat) {
+  return CATEGORIES.some((c) => c.precheck && c.key !== cat && it.flags.includes(c.key));
 }
 
 function updateSelbar() {
@@ -591,7 +604,10 @@ function updateSelbar() {
   for (const id of selected) bytes += byId.get(id)?.size || 0;
   el.innerHTML = `<b>${selected.size.toLocaleString()} selected</b> · <b>${fmtGb(bytes)}</b>`;
   const btn = document.getElementById('apply-btn');
-  if (btn) btn.disabled = selected.size === 0;
+  if (btn) {
+    btn.disabled = selected.size === 0;
+    btn.textContent = `Back Up & Remove ${selected.size.toLocaleString()} (${fmtGb(bytes)})`;
+  }
 }
 
 // ── screen 4 · back up & remove ──
