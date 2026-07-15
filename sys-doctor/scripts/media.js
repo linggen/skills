@@ -155,6 +155,7 @@ function setScreen(name, renderFn) {
 
 /** On tab open, land on the screen that matches on-disk state. */
 async function resumeMedia() {
+  media('purge'); // fire-and-forget: expire >30-day restore-area files
   const prog = await media('progress');
   if (prog.status === 'running') {
     if (prog.op === 'backup' || prog.op === 'remove') return showApply();
@@ -410,7 +411,7 @@ function renderReview() {
     <div id="cat-pane"></div>
     <div class="selbar">
       <span id="sel-count"></span>
-      <span class="media-dim">Removal always asks first — backup to Mac is on by default</span>
+      <span class="media-dim">Deleted items stay recoverable on this Mac for 30 days</span>
       <button class="media-cta ghost" id="back-btn" style="margin-left:auto">↻ Rescan</button>
       <button class="media-cta ghost" id="backup-btn" style="margin-left:0">💾 Back up</button>
       <button class="media-cta" id="apply-btn" style="margin-left:0">Remove…</button>
@@ -422,13 +423,12 @@ function renderReview() {
   document.getElementById('back-btn').onclick = () => showConnect();
   document.getElementById('apply-btn').onclick = async () => {
     if (!selected.size) return;
-    const r = await confirmRemoveDialog(selected);
-    if (r) showApply(true, null, r.backup ? 'full' : 'removeOnly');
+    if (await confirmRemoveDialog(selected)) showApply(true, null, 'trash');
   };
   document.getElementById('backup-btn').onclick = async () => {
     if (!selected.size) return;
     const r = await confirmBackupDialog(selected);
-    if (r) showApply(true, null, r.remove ? 'full' : 'backupOnly');
+    if (r) showApply(true, null, r.remove ? 'offload' : 'backupOnly', r.dest);
   };
   renderCategoryPane();
   updateSelbar();
@@ -752,32 +752,76 @@ function catSelection() {
   return new Set(catItems(activeCat).filter((it) => selected.has(it.id)).map((it) => it.id));
 }
 
+function daysLeft(expires) {
+  return Math.max(0, Math.ceil((new Date(expires) - Date.now()) / 86400000));
+}
+
 function removedThumbHtml(r) {
   const img = r.thumb ? `<img src="../data/media/thumbs/${r.thumb}" loading="lazy" alt=""
     onerror="this.remove()">` : '';
-  return `<div class="media-thumb" data-backup="${esc(r.backup || '')}"
-    title="${esc(r.name)} — reveal the backup in Finder">
-    ${img}<span class="score">${fmtGb(r.size || 0)}</span></div>`;
+  // recovery target: trash (expiring) > restored > archive backup > gone
+  const reveal = r.trash || r.restored || r.backup || '';
+  const badge = r.trash ? `<span class="score">⏳ ${daysLeft(r.expires)}d</span>`
+    : r.restored ? `<span class="score">↩︎ restored</span>`
+    : r.backup ? `<span class="score">💾</span>`
+    : `<span class="score">gone</span>`;
+  const restoreBtn = r.trash
+    ? `<button class="zoom" data-sha="${esc(r.sha256 || '')}" title="Restore to ~/Pictures/iPhone Restored">↩︎</button>` : '';
+  const title = reveal ? `${esc(r.name)} — reveal in Finder` : `${esc(r.name)} — no copy left (expired)`;
+  return `<div class="media-thumb ${reveal ? '' : 'dim'}" data-reveal="${esc(reveal)}" title="${title}">
+    ${img}${restoreBtn}${badge}</div>`;
 }
 
 function renderRemovedPane(pane) {
   if (!removals.length) {
-    pane.innerHTML = `<div class="media-dim">Nothing removed yet. Items you remove land here,
-      with their verified Mac backups — kept permanently, no 30-day limit.</div>`;
+    pane.innerHTML = `<div class="media-dim">Nothing removed yet. Deleted items land here and stay
+      recoverable on this Mac for 30 days; backed-up items are linked to their archive copies.</div>`;
     return;
   }
+  const trashRows = removals.filter((r) => r.trash);
+  const trashBytes = trashRows.reduce((s, r) => s + (r.size || 0), 0);
+  const purgeBar = trashRows.length ? `
+    <div class="catbar"><span class="media-dim">${trashRows.length} recoverable items ·
+      ${fmtGb(trashBytes)} reclaimable on this Mac (auto-purged after 30 days)</span>
+      <button class="media-cta ghost sm" id="purge-all-btn">Purge all now</button></div>` : '';
   const days = {};
   for (const r of removals) (days[(r.at || '').slice(0, 10)] ||= []).push(r);
-  pane.innerHTML = `<div class="media-dim" style="margin-bottom:8px">Every item here was backed up
-      and verified before removal — the copies live on your Mac permanently (no 30-day purge).
-      Click one to reveal its backup in Finder. Restore-to-iPhone arrives with the Linggen mobile app.</div>`
+  pane.innerHTML = `<div class="media-dim" style="margin-bottom:8px">⏳ deleted — restorable for 30 days ·
+      💾 backed up — archive copy never expires. Click to reveal in Finder, ↩︎ to restore.
+      Restore-to-iPhone arrives with the Linggen mobile app (AirDrop the file back meanwhile).</div>`
+    + purgeBar
     + Object.entries(days).sort((a, b) => b[0].localeCompare(a[0])).map(([day, rows]) => `
       <div class="media-group"><div class="glabel">${day} · ${rows.length} removed ·
         ${fmtGb(rows.reduce((s, r) => s + (r.size || 0), 0))}</div>
       <div class="thumbrow">${rows.map(removedThumbHtml).join('')}</div></div>`).join('');
   for (const t of pane.querySelectorAll('.media-thumb')) {
-    t.onclick = () => { if (t.dataset.backup) bash(`open -R "${t.dataset.backup}"`); };
+    t.onclick = (e) => {
+      if (e.target.classList.contains('zoom')) return;
+      if (t.dataset.reveal) bash(`open -R "${t.dataset.reveal}"`);
+    };
   }
+  for (const b of pane.querySelectorAll('.media-thumb .zoom[data-sha]')) {
+    b.onclick = async () => {
+      const r = await media(`restore ${b.dataset.sha}`);
+      notify(r.restored ? `Restored ${r.restored} from the removal trash. One short sentence.`
+        : `Restore failed: ${r.error}. One short sentence.`);
+      await loadRemovals();
+      renderCategoryPane();
+    };
+  }
+  const purgeBtn = document.getElementById('purge-all-btn');
+  if (purgeBtn) purgeBtn.onclick = async () => {
+    const ok = await confirmDialog(
+      `<b>Purge ${trashRows.length} recoverable items (${fmtGb(trashBytes)})?</b>
+       <div class="media-dim" style="margin-top:6px">They can no longer be restored afterwards.</div>`,
+      'Purge now');
+    if (!ok) return;
+    const r = await media('purge all');
+    notify(`Purged the media restore area: ${r.purged ?? 0} items, ${r.freed_gb ?? 0} GB freed. One short sentence.`);
+    await loadRemovals();
+    renderCategoryPane();
+    refreshStatus();
+  };
 }
 
 function renderCategoryPane() {
@@ -789,7 +833,7 @@ function renderCategoryPane() {
   html += `<div class="catbar">
     <label class="catall"><input type="checkbox" id="cat-all-box"><span></span></label>
     <button class="media-cta sm" id="cat-remove-btn"></button>
-    <span class="media-dim">only this category's checked items; same verify + confirm flow</span></div>`;
+    <span class="media-dim">only this category's checked items — recoverable for 30 days</span></div>`;
 
   if (activeCat === 'blurry') {
     html += `<div class="sliderrow">Blur sensitivity
@@ -847,8 +891,7 @@ function renderCategoryPane() {
   if (catRemove) catRemove.onclick = async () => {
     const s = catSelection();
     if (!s.size) return;
-    const r = await confirmRemoveDialog(s);
-    if (r) showApply(true, s, r.backup ? 'full' : 'removeOnly');
+    if (await confirmRemoveDialog(s)) showApply(true, s, 'trash');
   };
   document.getElementById('cat-all-box').onchange = (e) => {
     for (const it of catItems(activeCat)) {
@@ -924,79 +967,59 @@ function confirmDialog(messageHtml, actionLabel) {
   });
 }
 
-/** How many selected items would survive removal elsewhere (exact copy on Mac,
-    or an exact byte-dupe staying on the phone) vs. unique content. */
-function removalSafety(ids) {
-  const byId = new Map(flags.items.map((it) => [it.id, it]));
-  const set = new Set(ids);
-  const safe = new Set();
-  for (const id of set) if (byId.get(id)?.flags.includes('on_mac')) safe.add(id);
-  for (const g of flags.groups) {
-    if (g.kind !== 'exact') continue;
-    if (g.ids.some((id) => !set.has(id))) {
-      for (const id of g.ids) if (set.has(id)) safe.add(id);
-    }
-  }
-  return { safe: safe.size, unique: set.size - safe.size };
-}
-
-/** The one removal decision point: shows the safety breakdown and lets the
-    user keep or skip the backup. Resolves {backup} or null on cancel. */
+/** Cleanup delete: every removal is recoverable — the staged copy moves to
+    the 30-day restore area. Resolves true or null on cancel. */
 function confirmRemoveDialog(ids) {
   const byId = new Map(flags.items.map((it) => [it.id, it]));
   const bytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
-  const { safe, unique } = removalSafety([...ids]);
+  const n = ids.size.toLocaleString();
   return new Promise((resolve) => {
     const box = document.createElement('div');
     box.className = 'media-lightbox';
     box.innerHTML = `
       <div class="media-confirm">
-        <div><b>Remove ${ids.size.toLocaleString()} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) from the iPhone?</b></div>
+        <div><b>Remove ${n} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) from the iPhone?</b></div>
         <div class="media-dim" style="margin-top:6px">
-          ${safe ? `✓ ${safe.toLocaleString()} already safe — an exact copy stays on your Mac or on the phone.<br>` : ''}
-          ${unique ? `⚠️ <b>${unique.toLocaleString()} unique</b> — no other copy exists anywhere.<br>` : ''}
-          USB removal skips the iPhone's Recently Deleted — without a backup it cannot be undone.
+          Recoverable on this Mac for 30 days — restore anytime from the Removed tab.
         </div>
-        <label class="catall" style="margin-top:12px">
-          <input type="checkbox" id="cf-backup" checked>
-          <span>Back up to Mac first &amp; verify every copy (recommended)</span></label>
         <div class="row">
           <button class="media-cta ghost sm" id="cf-no">Cancel</button>
-          <button class="media-cta sm" id="cf-yes"></button>
+          <button class="media-cta sm danger" id="cf-yes">Remove ${n}</button>
         </div>
       </div>`;
-    const yes = box.querySelector('#cf-yes');
-    const backupBox = box.querySelector('#cf-backup');
-    const refresh = () => {
-      yes.textContent = backupBox.checked ? 'Back up & remove' : 'Remove without backup';
-      yes.classList.toggle('danger', !backupBox.checked);
-    };
-    backupBox.onchange = refresh;
-    refresh();
     const done = (v) => { box.remove(); resolve(v); };
     box.onclick = (e) => { if (e.target === box) done(null); };
     box.querySelector('#cf-no').onclick = () => done(null);
-    yes.onclick = () => done({ backup: backupBox.checked });
+    box.querySelector('#cf-yes').onclick = () => done(true);
     document.body.appendChild(box);
   });
 }
 
-/** Backup entry point: confirm sheet with "remove after backup" (default ON). */
-function confirmBackupDialog(ids) {
+/** Offload to long-term storage: destination (Mac or external volume) +
+    "delete after backup" (default ON). Resolves {dest, remove} or null. */
+async function confirmBackupDialog(ids) {
   const byId = new Map(flags.items.map((it) => [it.id, it]));
   const bytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
+  let volumes = await media('volumes');
+  if (!Array.isArray(volumes)) volumes = [];
+  const opts = [`<option value="">This Mac — ~/Pictures/iPhone Backup</option>`]
+    .concat(volumes.map((v) =>
+      `<option value="/Volumes/${esc(v)}/iPhone Backup">${esc(v)} (external) — iPhone Backup</option>`))
+    .join('');
   return new Promise((resolve) => {
     const box = document.createElement('div');
     box.className = 'media-lightbox';
     box.innerHTML = `
       <div class="media-confirm">
-        <div><b>Back up ${ids.size.toLocaleString()} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) to your Mac?</b></div>
+        <div><b>Back up ${ids.size.toLocaleString()} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) for long-term storage?</b></div>
         <div class="media-dim" style="margin-top:6px">
-          Copies land in ~/Pictures/iPhone Backup (sorted by year/month) and every copy is re-hash verified.
+          Copies are sorted by year/month and every copy is re-hash verified. Backups never expire.
         </div>
+        <label class="media-dim" style="display:block;margin-top:12px">Destination
+          <select id="cf-dest" style="display:block;width:100%;margin-top:4px">${opts}</select></label>
         <label class="catall" style="margin-top:12px">
           <input type="checkbox" id="cf-del" checked>
-          <span>Remove them from the iPhone once the backup is verified</span></label>
+          <span>Delete from iPhone after backup — frees ${fmtGb(bytes)}</span></label>
         <div class="row">
           <button class="media-cta ghost sm" id="cf-no">Cancel</button>
           <button class="media-cta sm" id="cf-yes"></button>
@@ -1004,13 +1027,13 @@ function confirmBackupDialog(ids) {
       </div>`;
     const yes = box.querySelector('#cf-yes');
     const del = box.querySelector('#cf-del');
-    const refresh = () => { yes.textContent = del.checked ? 'Back up & remove' : 'Back up only'; };
+    const refresh = () => { yes.textContent = del.checked ? 'Back up & free up' : 'Back up only'; };
     del.onchange = refresh;
     refresh();
     const done = (v) => { box.remove(); resolve(v); };
     box.onclick = (e) => { if (e.target === box) done(null); };
     box.querySelector('#cf-no').onclick = () => done(null);
-    yes.onclick = () => done({ remove: del.checked });
+    yes.onclick = () => done({ dest: box.querySelector('#cf-dest').value, remove: del.checked });
     document.body.appendChild(box);
   });
 }
@@ -1085,10 +1108,9 @@ async function openLightbox(id) {
   delBtn.title = 'Remove this item from the iPhone';
   delBtn.onclick = async () => {
     const one = new Set([it.id]);
-    const r = await confirmRemoveDialog(one);
-    if (r) {
+    if (await confirmRemoveDialog(one)) {
       closeLightbox();
-      showApply(true, one, r.backup ? 'full' : 'removeOnly');
+      showApply(true, one, 'trash');
     }
   };
   const slot = box.querySelector('.lb-media');
@@ -1151,17 +1173,40 @@ function writeSelection(ids) {
   return writeJsonFile('selection.json', { ids: [...ids] });
 }
 
-let applyMode = 'full'; // 'full' (backup→verify→remove) | 'removeOnly' | 'backupOnly'
+let applyMode = 'offload'; // 'trash' (delete → restore area) | 'offload' (backup→verify→delete) | 'backupOnly'
 
-async function showApply(fresh = false, scopeIds = null, mode = 'full') {
+function applyStepsHtml(mode, dest) {
+  const destLabel = dest ? dest.replace(/^\/Volumes\//, '') : '~/Pictures/iPhone Backup/';
+  const backup = `
+    <div class="fstep" id="step-backup"><span class="fnum">1</span>
+      <div><b>Back up</b> <span class="media-chip" hidden></span><br>
+      <span class="media-dim">→ ${esc(destLabel)} · sorted by year/month · long-term storage, never expires</span>
+      <div class="media-pbar" style="max-width:300px"><div style="width:0%"></div></div></div></div>
+    <div class="fstep" id="step-verify"><span class="fnum">2</span>
+      <div><b>Verify</b> <span class="media-chip" hidden></span><br>
+      <span class="media-dim">every copy re-hashed against the phone original — failed copies are never removed</span></div></div>`;
+  const remove = (n, note) => `
+    <div class="fstep" id="step-remove"><span class="fnum">${n}</span>
+      <div><b>Remove from iPhone</b> <span class="media-chip" hidden></span><br>
+      <span class="media-dim" id="remove-note">${note}</span>
+      <div class="media-pbar" style="max-width:300px" hidden><div style="width:0%"></div></div></div></div>`;
+  if (mode === 'trash') {
+    return remove(1, 'staged copies move to the restore area — recoverable for 30 days from the Removed tab');
+  }
+  if (mode === 'backupOnly') return backup;
+  return backup + remove(3, 'runs automatically once every copy verifies');
+}
+
+async function showApply(fresh = false, scopeIds = null, mode = 'offload', dest = '') {
   if (fresh) applyMode = mode;
   const ids = scopeIds || selected;
   const byId = fresh ? new Map(flags.items.map((it) => [it.id, it])) : null;
   const count = fresh ? ids.size : null;
   const bytes = fresh ? [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0) : null;
-  const title = !fresh ? 'Back up &amp; remove'
-    : mode === 'backupOnly' ? `Back up ${count.toLocaleString()} items (${fmtGb(bytes)}) to Mac — nothing is removed`
-    : `Remove ${count.toLocaleString()} items (${fmtGb(bytes)})${mode === 'removeOnly' ? ' — no backup (your choice)' : ''}`;
+  const title = !fresh ? 'Media operation in progress'
+    : mode === 'backupOnly' ? `Back up ${count.toLocaleString()} items (${fmtGb(bytes)}) — nothing is removed`
+    : mode === 'offload' ? `Back up ${count.toLocaleString()} items (${fmtGb(bytes)}), then remove from iPhone`
+    : `Remove ${count.toLocaleString()} items (${fmtGb(bytes)}) — recoverable for 30 days`;
 
   setScreen('apply', () => {
     panel.innerHTML = `
@@ -1169,19 +1214,7 @@ async function showApply(fresh = false, scopeIds = null, mode = 'full') {
       <div class="media-card">
         <h4 id="apply-title">${title}</h4>
         <div class="media-dim" id="preflight-note"></div>
-        <div class="media-flow">
-          <div class="fstep" id="step-backup"><span class="fnum">1</span>
-            <div><b>Back up to Mac</b> <span class="media-chip" hidden></span><br>
-            <span class="media-dim">→ ~/Pictures/iPhone Backup/ · sorted by year/month · originals untouched</span>
-            <div class="media-pbar" style="max-width:300px"><div style="width:0%"></div></div></div></div>
-          <div class="fstep" id="step-verify"><span class="fnum">2</span>
-            <div><b>Verify</b> <span class="media-chip" hidden></span><br>
-            <span class="media-dim">every copy re-hashed against the phone original; skipped ones re-checked against the Mac index</span></div></div>
-          <div class="fstep" id="step-remove"><span class="fnum">3</span>
-            <div><b>Remove from iPhone</b> <span class="media-chip" hidden></span><br>
-            <span class="media-dim" id="remove-note">runs only after you confirm below</span>
-            <div class="media-pbar" style="max-width:300px" hidden><div style="width:0%"></div></div></div></div>
-        </div>
+        <div class="media-flow">${applyStepsHtml(fresh ? mode : applyMode, dest)}</div>
         <div id="apply-actions"></div>
       </div>
       <div class="media-card icloud-note" hidden id="icloud-card">
@@ -1191,28 +1224,10 @@ async function showApply(fresh = false, scopeIds = null, mode = 'full') {
       <div class="media-card dashed" hidden id="report-card"></div>`;
   });
 
-  if (fresh && mode === 'removeOnly') {
-    for (const step of ['step-backup', 'step-verify']) {
-      const { step: el, chip } = stepEls(step);
-      el.classList.add('done');
-      chip.hidden = false;
-      chip.textContent = 'skipped — no backup';
-      chip.classList.add('warn');
-    }
-    const note = document.getElementById('remove-note');
-    if (note) note.textContent = 'removing without backup…';
-  }
-  if (fresh && mode === 'backupOnly') {
-    const note = document.getElementById('remove-note');
-    if (note) note.textContent = 'not part of this run — backup only';
-  }
-  if (fresh && mode === 'full') {
-    const note = document.getElementById('remove-note');
-    if (note) note.textContent = 'runs automatically once every copy verifies — stops if any fails';
-  }
   if (fresh) {
     await writeSelection(ids);
-    await media(mode === 'removeOnly' ? 'start remove-only' : 'start backup');
+    if (mode === 'trash') await media('start remove-trash');
+    else await media(`start offload - ${dest ? shellEsc(dest) : '-'} ${mode === 'offload' ? 1 : 0}`);
   }
   pollApply();
 }
@@ -1244,17 +1259,13 @@ function pollApply() {
 function renderBackupProgress(p) {
   const backup = stepEls('step-backup');
   const verify = stepEls('step-verify');
+  if (!backup.step) return; // resumed into a trash-mode layout
   if (p.status === 'running') {
     const pct = p.total ? Math.round(((p.done || 0) / p.total) * 100) : 5;
     backup.bar.firstElementChild.style.width = `${pct}%`;
-    if (p.skipped_on_mac) {
-      document.getElementById('preflight-note').textContent =
-        `${p.skipped_on_mac} items already on Mac — verified against the index, no copy needed.`;
-    }
     return;
   }
   if (p.status !== 'done') return;
-  stopPolling();
   backup.step.classList.add('done');
   backup.bar.firstElementChild.style.width = '100%';
   backup.chip.hidden = false;
@@ -1262,30 +1273,17 @@ function renderBackupProgress(p) {
   verify.step.classList.add('done');
   verify.chip.hidden = false;
   verify.chip.textContent = p.failed
-    ? `${p.verified} ok · ${p.failed} failed — failed items will NOT be removed`
+    ? `${p.verified} ok · ${p.failed} failed — failed items stay on the phone`
     : `${p.verified} / ${p.verified} hashes match`;
   if (p.failed) verify.chip.classList.add('warn');
-  notify(`Backup done: ${p.verified} items verified to ${p.dest}${p.failed ? `, ${p.failed} failed verification (kept on phone)` : ''}. One short sentence.`);
-  const actions = document.getElementById('apply-actions');
   if (applyMode === 'backupOnly') {
+    stopPolling();
+    notify(`Backup done: ${p.verified} items verified to ${p.dest}${p.failed ? `, ${p.failed} failed verification` : ''}. One short sentence.`);
+    const actions = document.getElementById('apply-actions');
     actions.innerHTML = `<button class="media-cta" id="backup-done-btn">✓ Backed up — back to review</button>`;
     document.getElementById('backup-done-btn').onclick = () => showReview();
-    return;
   }
-  if (applyMode === 'full' && !p.failed) {
-    // the user already confirmed removal in the sheet; 100% verified → continue
-    media('start remove').then(() => pollApply());
-    return;
-  }
-  actions.innerHTML = `
-    <button class="media-cta danger" id="remove-btn">Remove ${p.verified} verified items from iPhone</button>
-    <button class="media-cta ghost" id="skip-remove">Keep them — back up only</button>`;
-  document.getElementById('remove-btn').onclick = async () => {
-    actions.innerHTML = '';
-    await media('start remove');
-    pollApply();
-  };
-  document.getElementById('skip-remove').onclick = () => showReview();
+  // offload mode: the remove leg is chained by media.sh — keep polling
 }
 
 async function renderRemoveProgress(p) {
@@ -1308,11 +1306,14 @@ async function renderRemoveProgress(p) {
   const info = await media('info');
   const report = document.getElementById('report-card');
   report.hidden = false;
+  const recovery = applyMode === 'trash'
+    ? 'Recoverable for 30 days from the Removed tab.'
+    : 'Archive copies live in your backup destination — they never expire.';
   report.innerHTML = `
     <h4>Report card</h4>
     <div class="media-dim">Freed <b>${p.freed_gb} GB</b> on iPhone${before && info.free_gb ? ` — free space ${before} → <b>${info.free_gb} GB</b>` : ''}
-      · ${p.errors ? `${p.errors} items could not be deleted (see note above)` : 'every verified item removed'}
-      · backup + hash log in ~/.linggen/skills/sys-doctor/data/media/. Undo = copy back from the backup folder.</div>
+      · ${p.errors ? `${p.errors} items could not be deleted (see note above)` : 'every item removed'}
+      · ${recovery}</div>
     <button class="media-cta" id="done-btn">Done</button>`;
   notify(`Removal done: freed ${p.freed_gb} GB on the iPhone (${p.removed} items)${p.icloud_suspected ? '; deletions were blocked — iCloud Photos looks ON, guided on-device cleanup shown' : ''}. Celebrate in one short sentence with the before/after free space.`);
   document.getElementById('done-btn').onclick = () => { flags = null; showConnect(); };

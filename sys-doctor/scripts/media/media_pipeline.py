@@ -8,8 +8,13 @@ data/media/progress.json and are launched in the background by media.sh):
   index    build/refresh the Mac photo index (SHA-256 + dHash, incremental)
   pull     incremental camera-roll pull over USB (manifest-driven)
   scan     analyze staged files -> flags.json (hash/pHash/blur/luma/ffprobe)
-  backup   copy selected files to ~/Pictures/iPhone Backup/<date>/, re-hash verify
-  remove   delete the verified set from the iPhone over AFC (requires --confirm)
+  backup   offload: copy selected files to an archive root (--dest, default
+           ~/Pictures/iPhone Backup) with per-copy re-hash verify
+  remove   delete from the iPhone over AFC (requires --confirm). Default reads
+           the backup-verified set; --trash reads the raw selection and moves
+           each staged copy into the 30-day restore area instead
+  purge    drop expired restore-area files (--all empties it now)
+  restore  move one restore-area file back out to ~/Pictures/iPhone Restored
   trash    move selected Mac files to the macOS Trash (recoverable) + prune index
 
 Detection is pure scripts — no LLM anywhere in this pipeline.
@@ -25,7 +30,7 @@ import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HOME = Path.home()
@@ -38,6 +43,9 @@ FLAGS = DATA_DIR / 'flags.json'
 PROGRESS = DATA_DIR / 'progress.json'
 STATE = DATA_DIR / 'state.json'
 BACKUP_ROOT = HOME / 'Pictures' / 'iPhone Backup'
+TRASH_DIR = DATA_DIR / 'trash'          # restore area: staged copies of removed items
+RESTORE_ROOT = HOME / 'Pictures' / 'iPhone Restored'
+TRASH_TTL_DAYS = 30
 
 IMAGE_EXTS = {'.heic', '.heif', '.jpg', '.jpeg', '.png', '.gif', '.tiff', '.webp', '.dng'}
 VIDEO_EXTS = {'.mov', '.mp4', '.m4v', '.avi', '.3gp'}
@@ -542,25 +550,25 @@ def load_selection(path):
 
 
 def cmd_backup(args):
+    """Offload leg: copy every selected item to the chosen archive root
+    (Mac folder or external volume) and hash-verify each copy."""
     op = 'backup'
     try:
         items = load_selection(args.selection)
     except Exception as e:
         fail(op, 'load', e)
-    to_copy = [it for it in items if 'on_mac' not in it['flags']]
-    need_gb = sum(it['size'] for it in to_copy) / 1e9
-    if need_gb > mac_free_gb() - 5:
-        fail(op, 'preflight', f'Backup needs {need_gb:.1f} GB but only {mac_free_gb()} GB free')
-    dest_root = BACKUP_ROOT / datetime.now().strftime('%Y-%m-%d')
-    progress(op, 'copying', 0, len(to_copy), extra={'skipped_on_mac': len(items) - len(to_copy)})
+    root = Path(args.dest) if getattr(args, 'dest', None) else BACKUP_ROOT
+    need_gb = sum(it['size'] for it in items) / 1e9
+    try:
+        free_gb = shutil.disk_usage(root.parent if not root.exists() else root).free / 1e9
+    except Exception as e:
+        fail(op, 'preflight', f'Cannot reach {root}: {e}')
+    if need_gb > free_gb - 5:
+        fail(op, 'preflight', f'Backup needs {need_gb:.1f} GB but only {free_gb:.1f} GB free at {root}')
+    dest_root = root / datetime.now().strftime('%Y-%m-%d')
+    progress(op, 'copying', 0, len(items))
     verified, failed = [], []
     for i, it in enumerate(items):
-        if 'on_mac' in it['flags']:
-            # already byte-identical on the Mac — verify against the index, no copy
-            mac = Path(it['mac_path'])
-            ok = mac.exists() and sha256_file(mac) == it['sha256']
-            (verified if ok else failed).append(it['id'])
-            continue
         src = STAGING_DIR / it['staged']
         d = datetime.fromtimestamp(it['mtime'] or 0)
         dest = dest_root / f'{d.year:04d}' / f'{d.month:02d}' / Path(it['staged']).name
@@ -577,11 +585,11 @@ def cmd_backup(args):
             if mov_src.exists():
                 shutil.copy2(mov_src, dest.parent / mov_src.name)
         if i % 10 == 0:
-            progress(op, 'copying', i, len(to_copy))
+            progress(op, 'copying', i, len(items))
     write_json(DATA_DIR / 'verified.json',
                {'ids': verified, 'failed': failed, 'dest': str(dest_root),
                 'at': datetime.now().isoformat(timespec='seconds')})
-    progress(op, 'done', len(to_copy), len(to_copy), status='done',
+    progress(op, 'done', len(items), len(items), status='done',
              extra={'verified': len(verified), 'failed': len(failed), 'dest': str(dest_root)})
     update_state(backup={'verified': len(verified), 'failed': len(failed),
                          'dest': str(dest_root), 'at': datetime.now().isoformat(timespec='seconds')})
@@ -597,11 +605,13 @@ async def _remove_async(args):
     op = 'remove'
     if not args.confirm:
         fail(op, 'confirm', 'remove requires --confirm')
-    if getattr(args, 'unverified', False):
-        # remove-only mode: user explicitly chose no backup (dupes/blurry) —
-        # ids come straight from the selection, nothing was copied or verified
+    trash_mode = getattr(args, 'trash', False)
+    if trash_mode:
+        # cleanup mode: ids come straight from the selection; the staged copy
+        # moves into the restore area (recoverable for TRASH_TTL_DAYS)
         ids = json.loads((DATA_DIR / 'selection.json').read_text())['ids']
     else:
+        # offload mode: only backup-verified ids; the archive copy is the record
         ids = json.loads((DATA_DIR / 'verified.json').read_text())['ids']
     flags = json.loads(FLAGS.read_text())
     id_map = {it['id']: it for it in flags['items']}
@@ -623,27 +633,28 @@ async def _remove_async(args):
             errors.append({'id': it['id'], 'error': str(e)})
         if i % 10 == 0:
             progress(op, 'removing', i, len(items))
-    # permanent removal history — powers the "Removed" tab (backups are the
-    # recovery net; unlike iOS Recently Deleted there is no 30-day purge)
+    # permanent removal history — powers the "Removed" tab. Recovery target:
+    # trash rows expire after TRASH_TTL_DAYS; archive (backup) rows never do.
     try:
         dest_root = Path(json.loads((DATA_DIR / 'verified.json').read_text()).get('dest', ''))
     except Exception:
         dest_root = Path('')
     with open(DATA_DIR / 'removals.jsonl', 'a') as rf:
-        now = datetime.now().isoformat(timespec='seconds')
+        now = datetime.now()
+        expires = (now + timedelta(days=TRASH_TTL_DAYS)).isoformat(timespec='seconds')
         for iid in removed:
             it = id_map[iid]
-            if 'on_mac' in it['flags']:
-                backup = it.get('mac_path', '')
-            elif getattr(args, 'unverified', False):
-                backup = ''  # removed without backup, by explicit user choice
+            row = {'at': now.isoformat(timespec='seconds'), 'name': Path(it['staged']).name,
+                   'phone_path': it['phone_path'], 'size': it['size'],
+                   'sha256': it['sha256'], 'thumb': it.get('thumb', '')}
+            if trash_mode:
+                row['trash'] = str(_move_to_trash(it))
+                row['expires'] = expires
             else:
                 d = datetime.fromtimestamp(it['mtime'] or 0)
-                backup = str(dest_root / f'{d.year:04d}' / f'{d.month:02d}' / Path(it['staged']).name)
-            rf.write(json.dumps({'at': now, 'name': Path(it['staged']).name,
-                                 'phone_path': it['phone_path'], 'size': it['size'],
-                                 'sha256': it['sha256'], 'thumb': it.get('thumb', ''),
-                                 'backup': backup}) + '\n')
+                row['backup'] = str(dest_root / f'{d.year:04d}' / f'{d.month:02d}'
+                                    / Path(it['staged']).name)
+            rf.write(json.dumps(row) + '\n')
     freed_gb = round(sum(id_map[i]['size'] for i in removed) / 1e9, 1)
     icloud_suspected = len(errors) > 0 and len(removed) == 0
     result = {'removed': len(removed), 'errors': len(errors), 'freed_gb': freed_gb,
@@ -662,6 +673,84 @@ async def _remove_async(args):
     write_json(DATA_DIR / 'remove-result.json', result)
     progress(op, 'done', len(items), len(items), status='done', extra=result)
     update_state(remove={**result, 'at': datetime.now().isoformat(timespec='seconds')})
+
+
+def _move_to_trash(it):
+    """Move an item's staged copy (and Live-Photo MOV half) into the restore
+    area, mirroring the staging layout. Returns the main file's trash path."""
+    dest = TRASH_DIR / it['staged']
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    src = STAGING_DIR / it['staged']
+    if src.exists():
+        shutil.move(str(src), str(dest))
+    if 'live_mov' in it:
+        mov_rel = it['live_mov'].lstrip('/')
+        mov_src = STAGING_DIR / mov_rel
+        if mov_src.exists():
+            mov_dest = TRASH_DIR / mov_rel
+            mov_dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(mov_src), str(mov_dest))
+    return dest
+
+
+# ── purge / restore (the restore-area lifecycle) ──────────────────────────
+
+def _rewrite_removals(rows):
+    tmp = DATA_DIR / 'removals.jsonl.tmp'
+    tmp.write_text(''.join(json.dumps(r) + '\n' for r in rows))
+    os.replace(tmp, DATA_DIR / 'removals.jsonl')
+
+
+def cmd_purge(args):
+    """Delete restore-area files past their expiry (or all with --all).
+    Rows stay in removals.jsonl as history with trash cleared."""
+    rows = load_jsonl(DATA_DIR / 'removals.jsonl')
+    now = datetime.now().isoformat(timespec='seconds')
+    purged, freed = 0, 0
+    for r in rows:
+        if not r.get('trash'):
+            continue
+        if not args.all and r.get('expires', '') > now:
+            continue
+        p = Path(r['trash'])
+        mov = p.with_suffix('.MOV')
+        for f in (p, mov if mov != p else None):
+            if f and f.exists():
+                freed += f.stat().st_size
+                f.unlink()
+        r['trash'] = ''
+        purged += 1
+    _rewrite_removals(rows)
+    print(json.dumps({'purged': purged, 'freed_gb': round(freed / 1e9, 2)}))
+
+
+def cmd_restore(args):
+    """Move one file out of the restore area to ~/Pictures/iPhone Restored."""
+    rows = load_jsonl(DATA_DIR / 'removals.jsonl')
+    row = next((r for r in rows if r.get('sha256') == args.sha and r.get('trash')), None)
+    if not row:
+        print(json.dumps({'error': 'not in the restore area (expired or already restored)'}))
+        return
+    src = Path(row['trash'])
+    if not src.exists():
+        row['trash'] = ''
+        _rewrite_removals(rows)
+        print(json.dumps({'error': 'restore copy is missing — it may have been purged'}))
+        return
+    RESTORE_ROOT.mkdir(parents=True, exist_ok=True)
+    dest = RESTORE_ROOT / src.name
+    n = 1
+    while dest.exists():
+        dest = RESTORE_ROOT / f'{src.stem} {n}{src.suffix}'
+        n += 1
+    shutil.move(str(src), str(dest))
+    mov = src.with_suffix('.MOV')
+    if mov != src and mov.exists():  # Live-Photo half travels along
+        shutil.move(str(mov), str(dest.parent / f'{dest.stem}{mov.suffix}'))
+    row['trash'] = ''
+    row['restored'] = str(dest)
+    _rewrite_removals(rows)
+    print(json.dumps({'restored': str(dest)}))
 
 
 # ── trash (Mac-side cleanup — recoverable, files go to the macOS Trash) ───
@@ -712,15 +801,21 @@ def main():
     sub.add_parser('scan')
     b = sub.add_parser('backup')
     b.add_argument('--selection', required=True)
+    b.add_argument('--dest')
     r = sub.add_parser('remove')
     r.add_argument('--confirm', action='store_true')
-    r.add_argument('--unverified', action='store_true')
+    r.add_argument('--trash', action='store_true')
+    p = sub.add_parser('purge')
+    p.add_argument('--all', action='store_true')
+    s = sub.add_parser('restore')
+    s.add_argument('--sha', required=True)
     t = sub.add_parser('trash')
     t.add_argument('--selection', required=True)
     args = ap.parse_args()
     try:
         {'info': cmd_info, 'index': cmd_index, 'pull': cmd_pull,
          'scan': cmd_scan, 'backup': cmd_backup, 'remove': cmd_remove,
+         'purge': cmd_purge, 'restore': cmd_restore,
          'trash': cmd_trash}[args.cmd](args)
     except SystemExit:
         raise

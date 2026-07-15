@@ -36,12 +36,33 @@ case "$cmd" in
     "$PY" "$PIPELINE" trash --selection "$sel" 2>/dev/null || echo '{"error":"trash_failed"}'
     ;;
   remove-result) cat "$DATA/remove-result.json" 2>/dev/null || echo '{}' ;;
+  volumes)
+    # writable external volumes usable as a backup destination (JSON array)
+    list=$(for d in /Volumes/*/; do
+      name="$(basename "$d")"
+      [ "$name" = "Macintosh HD" ] && continue
+      [ -w "$d" ] && printf '%s\n' "$name"
+    done 2>/dev/null | sed 's/\\/\\\\/g; s/"/\\"/g; s/^/"/; s/$/"/' | paste -sd, -)
+    printf '[%s]\n' "$list"
+    ;;
+  purge)
+    require_venv
+    if [ "${1:-}" = "all" ]; then
+      "$PY" "$PIPELINE" purge --all 2>/dev/null || echo '{"error":"purge_failed"}'
+    else
+      "$PY" "$PIPELINE" purge 2>/dev/null || echo '{"error":"purge_failed"}'
+    fi
+    ;;
+  restore)
+    require_venv
+    "$PY" "$PIPELINE" restore --sha "${1:?sha required}" 2>/dev/null || echo '{"error":"restore_failed"}'
+    ;;
   setup)
     nohup "$HERE/setup.sh" >"$DATA/setup.log" 2>&1 &
     echo "{\"started\":\"setup\",\"pid\":$!}"
     ;;
   start)
-    # start scan-all | backup <selection.json> | remove
+    # start scan-all | index | offload <selection.json> <dest|-> <del 0|1> | remove-trash
     require_venv
     op="${1:-scan-all}"; shift || true
     case "$op" in
@@ -52,15 +73,24 @@ case "$cmd" in
       index)
         nohup "$PY" "$PIPELINE" index >"$DATA/op.log" 2>&1 &
         ;;
-      backup)
-        sel="${1:-$DATA/selection.json}"
-        nohup "$PY" "$PIPELINE" backup --selection "$sel" >"$DATA/op.log" 2>&1 &
+      offload)
+        # backup (+ verify) to dest, then delete the verified set from the phone
+        sel="${1:--}"; dest="${2:--}"; del="${3:-1}"
+        [ "$sel" = "-" ] && sel="$DATA/selection.json"
+        backup_cmd="'$PY' '$PIPELINE' backup --selection '$sel'"
+        if [ "$dest" != "-" ]; then
+          dest_esc=$(printf %s "$dest" | sed "s/'/'\\\\''/g")  # volume names can hold apostrophes
+          backup_cmd="$backup_cmd --dest '$dest_esc'"
+        fi
+        if [ "$del" = "1" ]; then
+          nohup bash -c "$backup_cmd && '$PY' '$PIPELINE' remove --confirm" >"$DATA/op.log" 2>&1 &
+        else
+          nohup bash -c "$backup_cmd" >"$DATA/op.log" 2>&1 &
+        fi
         ;;
-      remove)
-        nohup "$PY" "$PIPELINE" remove --confirm >"$DATA/op.log" 2>&1 &
-        ;;
-      remove-only)
-        nohup "$PY" "$PIPELINE" remove --confirm --unverified >"$DATA/op.log" 2>&1 &
+      remove-trash)
+        # cleanup delete: staged copies move to the 30-day restore area
+        nohup "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1 &
         ;;
       *) echo '{"error":"unknown op"}'; exit 0 ;;
     esac
