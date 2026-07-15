@@ -130,9 +130,20 @@
 
 /* ── Layout ── */
 
+/* Page is a fixed-height flex column (header, tab bar, then the container);
+   panels scroll internally — the document itself never scrolls, so the chat
+   input stays on screen no matter how tall the tab bar or lists get. */
+body {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .doctor-container {
   display: flex;
-  height: calc(100vh - 48px);
+  flex: 1;
+  min-height: 0;
 }
 
 .view-panel {

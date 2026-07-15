@@ -88,6 +88,37 @@ function activateTab(name) {
   if (isMedia) resumeMedia(); else stopPolling();
 }
 
+// ── device/Mac status strip (visible on every screen after connect) ──
+
+let statusCache = { info: null, st: null };
+
+function statusStripHtml() {
+  const { info, st } = statusCache;
+  if (!info && !st) return '<span class="media-dim">Loading device status…</span>';
+  const dev = (info?.connected ? info : null) || st?.device;
+  const photos = info?.photos_gb ?? st?.pull?.dcim_gb;
+  const idx = st?.mac_index;
+  const conn = info?.connected
+    ? '<span class="media-chip">USB connected</span>'
+    : '<span class="media-chip warn">not connected</span>';
+  const phone = dev
+    ? `📱 <b>${esc(dev.name || 'iPhone')}</b> · ${dev.free_gb ?? '?'} GB free of ${dev.total_gb ?? '?'} GB${photos != null ? ` · camera roll ${photos} GB` : ''} ${conn}`
+    : '📱 <span class="media-dim">no iPhone seen yet</span>';
+  const mac = `💻 <b>This Mac</b> · ${info?.mac_free_gb ?? '?'} GB free${idx ? ` · photo index ${(idx.files ?? 0).toLocaleString()} files · ${idx.gb ?? '?'} GB` : ''}`;
+  return `<span>${phone}</span><span>${mac}</span>`;
+}
+
+function statusStripDiv() {
+  return `<div class="media-status" id="media-status">${statusStripHtml()}</div>`;
+}
+
+async function refreshStatus() {
+  const [info, st] = await Promise.all([media('info'), media('state')]);
+  statusCache = { info, st };
+  const el = document.getElementById('media-status');
+  if (el) el.innerHTML = statusStripHtml();
+}
+
 // ── screen router ──
 
 function stopPolling() {
@@ -225,8 +256,10 @@ const SCAN_PHASES = [
 ];
 
 function showScanning() {
+  let scanPolls = 0;
   setScreen('scanning', () => {
     panel.innerHTML = `
+      ${statusStripDiv()}
       ${SCAN_PHASES.map((p, i) => `
         <div class="media-card" id="phase-${p.op}">
           <h4>${i + 1} · ${p.label} <span class="media-chip" hidden></span></h4>
@@ -242,6 +275,7 @@ function showScanning() {
   const poll = async () => {
     const p = await media('progress');
     if (screen !== 'scanning') return;
+    if (scanPolls++ % 5 === 0) refreshStatus(); // every ~10s; pull moves Mac free space
     renderScanProgress(p);
     if (p.op === 'scan' && p.status === 'done') {
       flags = await media('flags');
@@ -322,6 +356,8 @@ function showReview() {
   blurThreshold = flags.blur_default || 25;
   applyPrechecks();
   setScreen('review', renderReview);
+  refreshStatus();
+  pollTimer = setInterval(refreshStatus, 15000);
 }
 
 function renderReview() {
@@ -332,6 +368,7 @@ function renderReview() {
       <b>${items.length.toLocaleString()}</b>${c.label} <span class="sz">${fmtGb(size)}</span></button>`;
   }).join('');
   panel.innerHTML = `
+    ${statusStripDiv()}
     <div class="media-tiles">${tiles}</div>
     <div id="cat-pane"></div>
     <div class="selbar">
@@ -485,6 +522,7 @@ async function showApply(fresh = false) {
 
   setScreen('apply', () => {
     panel.innerHTML = `
+      ${statusStripDiv()}
       <div class="media-card">
         <h4 id="apply-title">${fresh ? `Back up &amp; remove ${count.toLocaleString()} items (${fmtGb(bytes)})` : 'Back up &amp; remove'}</h4>
         <div class="media-dim" id="preflight-note"></div>
@@ -523,9 +561,11 @@ function stepEls(id) {
 }
 
 function pollApply() {
+  let applyPolls = 0;
   const poll = async () => {
     const p = await media('progress');
     if (screen !== 'apply') return;
+    if (applyPolls++ % 5 === 0) refreshStatus(); // backup/remove move both free-space numbers
     if (p.op === 'backup') renderBackupProgress(p);
     if (p.op === 'remove') renderRemoveProgress(p);
     if (p.status === 'error') {
