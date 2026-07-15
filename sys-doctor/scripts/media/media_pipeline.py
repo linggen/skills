@@ -655,6 +655,9 @@ async def _remove_async(args):
         it = id_map[iid]
         manifest.pop(it['phone_path'], None)
         (STAGING_DIR / it['staged']).unlink(missing_ok=True)
+        if 'live_mov' in it:  # the MOV half was rm'd from the phone too
+            manifest.pop(it['live_mov'], None)
+            (STAGING_DIR / it['live_mov'].lstrip('/')).unlink(missing_ok=True)
     MANIFEST.write_text(''.join(json.dumps(r) + '\n' for r in manifest.values()))
     write_json(DATA_DIR / 'remove-result.json', result)
     progress(op, 'done', len(items), len(items), status='done', extra=result)
