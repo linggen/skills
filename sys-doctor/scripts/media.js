@@ -1130,6 +1130,7 @@ async function openLightbox(id) {
     <div class="lb-body"><div class="lb-media media-dim">Loading…</div>
       <div class="lb-cap"><span>${esc(it.staged.split('/').pop())} · ${fmtGb(it.size)}
           · ${lbIdx + 1} / ${lbOrder.length}</span>
+        ${isKeep(it.id) ? '<span class="lb-keep">★ KEEP — recommended</span>' : ''}
         <button class="media-cta sm" id="lb-mark"></button>
         <button class="media-cta ghost sm" id="lb-open">Open on Mac</button>
         <button class="media-cta ghost sm" id="lb-close">✕ Close</button></div></div>
@@ -1182,14 +1183,16 @@ async function deleteInLightbox(id) {
     cap.insertAdjacentHTML('afterbegin', `<span class="media-chip bad">${esc(msg)}</span> `);
     return;
   }
-  // drop it from the working set, then step to the next surviving photo
+  // step to the next surviving photo; reload flags from disk (the remove leg
+  // already pruned items+groups there) so the grid behind the lightbox updates
   const nextId = lbOrder[lbIdx + 1] ?? lbOrder[lbIdx - 1] ?? null;
-  flags.items = flags.items.filter((x) => x.id !== id);
+  flags = await media('flags');
   selected.delete(id);
   await loadRemovals();
+  renderReview();
   refreshStatus();
-  if (nextId && flags.items.some((x) => x.id === nextId)) openLightbox(nextId);
-  else { closeLightbox(); renderReview(); }
+  if (nextId && flags.items?.some((x) => x.id === nextId)) openLightbox(nextId);
+  else closeLightbox();
   notify(`Removed 1 item from the iPhone (recoverable 30 days). One short sentence.`);
 }
 

@@ -444,6 +444,15 @@
 
 .media-lightbox .lb-cap span { flex: 1; }
 
+.media-lightbox .lb-cap .lb-keep {
+  flex: 0 0 auto;
+  font: 600 11px/1 ui-monospace, Menlo, monospace;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--success);
+  color: #fff;
+}
+
 .catbar .catall {
   display: flex;
   align-items: center;
