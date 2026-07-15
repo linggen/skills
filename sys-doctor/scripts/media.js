@@ -8,6 +8,7 @@ const MEDIA_SH = '$HOME/.linggen/skills/sys-doctor/scripts/media/media.sh';
 const DATA_DIR = '$HOME/.linggen/skills/sys-doctor/data/media';
 const TAB_KEY = 'sys-doctor:tab';
 const RENDER_CAP = 200; // thumbs per category; selection still covers all items
+const FOLDER_PREVIEW = 30; // Mac "All by folder" tiles before a "+N more" expander
 
 const CATEGORIES = [
   { key: 'on_mac', label: 'Already on Mac', precheck: true },
@@ -24,6 +25,7 @@ let macIndex = [];      // Mac photo index rows (mac-index.jsonl)
 let macSelected = new Set();   // Mac file paths picked for Trash
 let source = 'phone';   // review source: 'phone' | 'mac'
 let activeMacCat = 'dupe';
+let macFolderExpanded = new Set();  // folder indices shown in full (All-by-folder)
 let screen = 'connect';
 let pollTimer = null;
 let device = null;
@@ -156,6 +158,7 @@ function setScreen(name, renderFn) {
 /** On tab open, land on the screen that matches on-disk state. */
 async function resumeMedia() {
   media('purge'); // fire-and-forget: expire >30-day restore-area files
+  bash(`rm -f ${DATA_DIR}/previews/vid_* 2>/dev/null`); // drop stale video play-links
   const prog = await media('progress');
   if (prog.status === 'running') {
     if (prog.op === 'backup' || prog.op === 'remove') return showApply();
@@ -554,15 +557,21 @@ function renderMacPane() {
       const dir = r.path.split('/').slice(0, -1).join('/');
       (folders[dir] ||= []).push(r);
     }
-    html += Object.entries(folders)
-      .sort((a, b) => b[1].reduce((s, r) => s + r.size, 0) - a[1].reduce((s, r) => s + r.size, 0))
-      .map(([dir, rows]) => `
-        <div class="media-group"><div class="glabel">${esc(dir.replace(/^\/Users\/[^/]+/, '~'))} ·
+    const ordered = Object.entries(folders)
+      .sort((a, b) => b[1].reduce((s, r) => s + r.size, 0) - a[1].reduce((s, r) => s + r.size, 0));
+    html += ordered.map(([dir, rows], fi) => {
+      const cap = macFolderExpanded.has(fi) ? rows.length : FOLDER_PREVIEW;
+      const more = rows.length - cap;
+      return `<div class="media-group"><div class="glabel">${esc(dir.replace(/^\/Users\/[^/]+/, '~'))} ·
           ${rows.length} files · ${fmtGb(rows.reduce((s, r) => s + r.size, 0))}</div>
-        <div class="thumbrow">${rows.slice(0, 30).map((r) => macThumbHtml(r, bySelected(r))).join('')}
-        ${rows.length > 30 ? `<span class="media-dim">+${rows.length - 30} more…</span>` : ''}</div></div>`).join('');
+        <div class="thumbrow">${rows.slice(0, cap).map((r) => macThumbHtml(r, bySelected(r))).join('')}
+        ${more > 0 ? `<button class="media-cta ghost sm show-more" data-fi="${fi}">+${more} more…</button>` : ''}</div></div>`;
+    }).join('');
   }
   pane.innerHTML = html;
+  for (const b of pane.querySelectorAll('.show-more')) {
+    b.onclick = () => { macFolderExpanded.add(+b.dataset.fi); renderMacPane(); };
+  }
 
   for (const box of pane.querySelectorAll('.media-thumb input')) {
     box.onchange = (e) => {
@@ -655,6 +664,7 @@ function reindexMac() {
     if (p.op === 'index' && (p.status === 'done' || p.status === 'error')) {
       clearInterval(t);
       macGroupsCache = null;
+      macFolderExpanded.clear();
       await loadMacIndex();
       refreshStatus();
       renderMacReview();
@@ -667,6 +677,27 @@ async function ensureMacPreview(r) {
   const dst = `${DATA_DIR}/previews/${key}`;
   await bash(`mkdir -p "${DATA_DIR}/previews"; [ -f "${dst}" ] || sips -s format jpeg "${r.path}" --out "${dst}" --resampleHeightWidthMax 2048 >/dev/null`);
   return PREVIEW_URL + key;
+}
+
+/** Make a ~/Pictures video reachable under the served data dir so <video> can
+    play it in-page — a hard link (same inode, 0 extra bytes) rather than a copy
+    or a symlink (403'd). Same-volume only; returns null so the caller falls
+    back to the poster when the link can't be made (e.g. external drive). */
+async function ensureMacVideo(r, path) {
+  const ext = path.split('.').pop().toLowerCase();
+  const key = `vid_${r.sha256.slice(0, 12)}.${ext}`;
+  const res = await bash(
+    `mkdir -p "${DATA_DIR}/previews"; rm -f ${DATA_DIR}/previews/vid_* 2>/dev/null; `
+    + `ln ${shellEsc(path)} "${DATA_DIR}/previews/${key}" 2>&1 && echo LINKED`);
+  return (res.stdout || res.output || '').includes('LINKED') ? PREVIEW_URL + key : null;
+}
+
+function showMacPoster(slot, r, path) {
+  const poster = `../data/media/thumbs/${r.sha256.slice(0, 12)}.jpg`;
+  slot.innerHTML = `<div class="lb-poster"><img src="${poster}" alt=""
+      onerror="this.closest('.lb-poster').innerHTML='&lt;div class=media-dim&gt;No preview — use Reveal in Finder.&lt;/div&gt;'">
+    <span class="lb-play">▶ open in Finder to play</span></div>`;
+  slot.querySelector('.lb-poster')?.addEventListener('click', () => bash(`open -R ${shellEsc(path)}`));
 }
 
 async function openMacLightbox(path) {
@@ -703,7 +734,15 @@ async function openMacLightbox(path) {
   };
   const slot = box.querySelector('.lb-media');
   if (VIDEO_RE.test(path)) {
-    slot.innerHTML = `<div class="media-dim">Videos preview from Finder — use "Reveal in Finder".</div>`;
+    // hard-link ~/Pictures video into the served dir so it plays in-page;
+    // fall back to the poster frame if the link can't be made or won't decode
+    const url = await ensureMacVideo(r, path);
+    if (url) {
+      slot.innerHTML = `<video controls autoplay src="${url}"></video>`;
+      slot.querySelector('video').onerror = () => showMacPoster(slot, r, path);
+    } else {
+      showMacPoster(slot, r, path);
+    }
   } else {
     try {
       const url = await ensureMacPreview(r);
@@ -1105,14 +1144,8 @@ async function openLightbox(id) {
     bash(`open "${DATA_DIR}/staging/${it.staged}"`);
   const delBtn = document.getElementById('lb-mark');
   delBtn.textContent = '🗑 Delete';
-  delBtn.title = 'Remove this item from the iPhone';
-  delBtn.onclick = async () => {
-    const one = new Set([it.id]);
-    if (await confirmRemoveDialog(one)) {
-      closeLightbox();
-      showApply(true, one, 'trash');
-    }
-  };
+  delBtn.title = 'Remove this item from the iPhone (recoverable for 30 days)';
+  delBtn.onclick = () => deleteInLightbox(it.id);
   const slot = box.querySelector('.lb-media');
   const ext = it.staged.split('.').pop().toLowerCase();
   if (it.kind === 'video') {
@@ -1130,6 +1163,34 @@ async function openLightbox(id) {
   } else {
     slot.innerHTML = `<img src="${stagedUrl}" alt="">`;
   }
+}
+
+/** Inline single-item delete (iOS-Photos style): remove now, advance to the
+    next photo. No confirm — recoverable for 30 days from the Removed tab. */
+async function deleteInLightbox(id) {
+  const cap = document.querySelector('#media-lightbox .lb-cap');
+  const delBtn = document.getElementById('lb-mark');
+  if (!cap || !delBtn) return;
+  delBtn.disabled = true;
+  delBtn.textContent = 'Removing…';
+  const res = await media(`remove-one ${id}`);
+  if (!res || !res.removed) {
+    delBtn.disabled = false;
+    delBtn.textContent = '🗑 Delete';
+    const msg = res?.icloud_suspected ? 'iCloud Photos blocks USB deletion'
+      : (res?.error_samples?.[0] || res?.error || 'iPhone not connected');
+    cap.insertAdjacentHTML('afterbegin', `<span class="media-chip bad">${esc(msg)}</span> `);
+    return;
+  }
+  // drop it from the working set, then step to the next surviving photo
+  const nextId = lbOrder[lbIdx + 1] ?? lbOrder[lbIdx - 1] ?? null;
+  flags.items = flags.items.filter((x) => x.id !== id);
+  selected.delete(id);
+  await loadRemovals();
+  refreshStatus();
+  if (nextId && flags.items.some((x) => x.id === nextId)) openLightbox(nextId);
+  else { closeLightbox(); renderReview(); }
+  notify(`Removed 1 item from the iPhone (recoverable 30 days). One short sentence.`);
 }
 
 /** True if another pre-checked category (not `cat`) still claims this item. */

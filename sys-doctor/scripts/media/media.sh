@@ -57,6 +57,18 @@ case "$cmd" in
     require_venv
     "$PY" "$PIPELINE" restore --sha "${1:?sha required}" 2>/dev/null || echo '{"error":"restore_failed"}'
     ;;
+  remove-one)
+    # synchronous single-item trash-delete for the lightbox (blocks ~1-2s)
+    require_venv
+    id="${1:?id required}"
+    printf '{"ids":["%s"]}' "$id" > "$DATA/selection.json"
+    if "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1; then
+      cat "$DATA/remove-result.json" 2>/dev/null || echo '{"error":"no result"}'
+    else
+      # connect/AFC failure — surface the reason the pipeline wrote to progress
+      "$PY" -c "import json,sys; p=json.load(open('$DATA/progress.json')); print(json.dumps({'error': p.get('error','remove failed')}))" 2>/dev/null || echo '{"error":"remove failed"}'
+    fi
+    ;;
   setup)
     nohup "$HERE/setup.sh" >"$DATA/setup.log" 2>&1 &
     echo "{\"started\":\"setup\",\"pid\":$!}"

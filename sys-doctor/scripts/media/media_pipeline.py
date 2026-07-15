@@ -151,6 +151,31 @@ def make_thumb(src, dest, Image):
         return False
 
 
+def make_video_poster(src, dest):
+    """Grab a representative frame (~1s in) as the video's thumbnail/preview.
+    ~/Pictures isn't HTTP-served and clips are large with unknown codecs, so a
+    poster still is the preview; playback stays 'Reveal in Finder' / 'Open'."""
+    exe = shutil.which('ffmpeg')
+    if not exe:
+        return False
+    try:
+        subprocess.run(
+            [exe, '-y', '-ss', '1', '-i', str(src), '-frames:v', '1',
+             '-vf', f'scale={THUMB_EDGE}:{THUMB_EDGE}:force_original_aspect_ratio=decrease',
+             str(dest)],
+            capture_output=True, timeout=30)
+        return dest.exists()
+    except Exception:
+        return False
+
+
+def make_media_thumb(src, dest, Image):
+    """Thumbnail for an image or a video (poster frame), by extension."""
+    if src.suffix.lower() in VIDEO_EXTS:
+        return make_video_poster(src, dest)
+    return make_thumb(src, dest, Image)
+
+
 def hamming(a, b):
     return bin(a ^ b).count('1')
 
@@ -317,10 +342,10 @@ def cmd_index(_args):
                 if res:
                     row['dhash'] = res[0]
         rows.append(row)
-        if p.suffix.lower() in IMAGE_EXTS:  # thumbs share the content-hash cache with phone items
+        if p.suffix.lower() in IMAGE_EXTS | VIDEO_EXTS:  # thumbs share the content-hash cache with phone items
             tp = THUMBS_DIR / f"{row['sha256'][:12]}.jpg"
             if not tp.exists():
-                make_thumb(p, tp, Image)
+                make_media_thumb(p, tp, Image)
         if i % 50 == 0:
             progress(op, 'hashing', i, total, note=f'{reused} unchanged reused')
     MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
@@ -455,6 +480,9 @@ def cmd_scan(_args):
                 item['duration'] = dur
             if r['size'] >= LARGE_VIDEO_BYTES:
                 item['flags'].append('large_video')
+            thumb_path = THUMBS_DIR / f'{thumb_key}.jpg'
+            if thumb_path.exists() or make_video_poster(staged, thumb_path):
+                item['thumb'] = f'{thumb_key}.jpg'
         by_sha.setdefault(r['sha256'], []).append(iid)
         if r['sha256'] in mac_by_sha:
             item['flags'].append('on_mac')
@@ -670,9 +698,34 @@ async def _remove_async(args):
             manifest.pop(it['live_mov'], None)
             (STAGING_DIR / it['live_mov'].lstrip('/')).unlink(missing_ok=True)
     MANIFEST.write_text(''.join(json.dumps(r) + '\n' for r in manifest.values()))
+    _prune_flags(set(removed))
     write_json(DATA_DIR / 'remove-result.json', result)
     progress(op, 'done', len(items), len(items), status='done', extra=result)
     update_state(remove={**result, 'at': datetime.now().isoformat(timespec='seconds')})
+
+
+def _prune_flags(removed_ids):
+    """Drop removed ids from flags.json so the review grid stays truthful even
+    before the next rescan. Mirrors the scan's inclusion rule: an item stays
+    only if it still has flags OR belongs to a surviving group (>=2 members);
+    groups that fall below 2 members dissolve and their keeps drop out."""
+    if not removed_ids or not FLAGS.exists():
+        return
+    flags = json.loads(FLAGS.read_text())
+    groups = []
+    for g in flags.get('groups', []):
+        g['ids'] = [i for i in g['ids'] if i not in removed_ids]
+        if len(g['ids']) > 1:
+            if g.get('keep') in removed_ids:
+                g['keep'] = g['ids'][0]
+            groups.append(g)
+    group_members = {i for g in groups for i in g['ids']}
+    items = [it for it in flags['items']
+             if it['id'] not in removed_ids and (it['flags'] or it['id'] in group_members)]
+    flags['items'] = items
+    flags['groups'] = groups
+    flags['flagged'] = len(items)
+    write_json(FLAGS, flags)
 
 
 def _move_to_trash(it):
