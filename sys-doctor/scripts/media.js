@@ -429,9 +429,10 @@ function renderReview() {
     if (await confirmRemoveDialog(selected)) removeInline(new Set(selected));
   };
   document.getElementById('backup-btn').onclick = async () => {
-    if (!selected.size) return;
     const r = await confirmBackupDialog(selected);
-    if (r) showApply(true, null, r.remove ? 'offload' : 'backupOnly', r.dest);
+    if (!r) return;
+    if (r.scope === 'roll') backupRollInline(r.dest);
+    else showApply(true, null, r.remove ? 'offload' : 'backupOnly', r.dest);
   };
   renderCategoryPane();
   updateSelbar();
@@ -1055,7 +1056,10 @@ function confirmRemoveDialog(ids) {
     "delete after backup" (default ON). Resolves {dest, remove} or null. */
 async function confirmBackupDialog(ids) {
   const byId = new Map(flags.items.map((it) => [it.id, it]));
-  const bytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
+  const selBytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
+  const roll = await loadJsonl('manifest.jsonl');   // whole camera roll (all pulled files)
+  const rollBytes = roll.reduce((s, r) => s + (r.size || 0), 0);
+  const hasSel = ids.size > 0;
   let volumes = await media('volumes');
   if (!Array.isArray(volumes)) volumes = [];
   const opts = [`<option value="">This Mac — ~/Pictures/iPhone Backup</option>`]
@@ -1067,15 +1071,21 @@ async function confirmBackupDialog(ids) {
     box.className = 'media-lightbox';
     box.innerHTML = `
       <div class="media-confirm">
-        <div><b>Back up ${ids.size.toLocaleString()} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) for long-term storage?</b></div>
+        <div><b>Back up to your Mac for long-term storage</b></div>
         <div class="media-dim" style="margin-top:6px">
           Copies are sorted by year/month and every copy is re-hash verified. Backups never expire.
         </div>
+        <div style="margin-top:12px">
+          ${hasSel ? `<label class="catall"><input type="radio" name="cf-scope" value="selected" checked>
+            <span>Flagged selection — ${ids.size.toLocaleString()} · ${fmtGb(selBytes)}</span></label>` : ''}
+          <label class="catall" style="margin-top:6px"><input type="radio" name="cf-scope" value="roll" ${hasSel ? '' : 'checked'}>
+            <span>Entire camera roll — ${roll.length.toLocaleString()} · ${fmtGb(rollBytes)}</span></label>
+        </div>
         <label class="media-dim" style="display:block;margin-top:12px">Destination
           <select id="cf-dest" style="display:block;width:100%;margin-top:4px">${opts}</select></label>
-        <label class="catall" style="margin-top:12px">
+        <label class="catall" id="cf-del-row" style="margin-top:12px">
           <input type="checkbox" id="cf-del" checked>
-          <span>Delete from iPhone after backup — frees ${fmtGb(bytes)}</span></label>
+          <span>Delete from iPhone after backup — frees ${fmtGb(selBytes)}</span></label>
         <div class="row">
           <button class="media-cta ghost sm" id="cf-no">Cancel</button>
           <button class="media-cta sm" id="cf-yes"></button>
@@ -1083,13 +1093,26 @@ async function confirmBackupDialog(ids) {
       </div>`;
     const yes = box.querySelector('#cf-yes');
     const del = box.querySelector('#cf-del');
-    const refresh = () => { yes.textContent = del.checked ? 'Back up & free up' : 'Back up only'; };
+    const delRow = box.querySelector('#cf-del-row');
+    const scope = () => box.querySelector('input[name=cf-scope]:checked').value;
+    const refresh = () => {
+      const whole = scope() === 'roll';
+      // whole-roll is an archive — copy-only, it never deletes the camera roll
+      delRow.style.display = whole ? 'none' : 'flex';
+      yes.textContent = whole ? 'Back up whole roll'
+        : del.checked ? 'Back up & free up' : 'Back up only';
+    };
+    for (const r of box.querySelectorAll('input[name=cf-scope]')) r.onchange = refresh;
     del.onchange = refresh;
     refresh();
     const done = (v) => { box.remove(); resolve(v); };
     box.onclick = (e) => { if (e.target === box) done(null); };
     box.querySelector('#cf-no').onclick = () => done(null);
-    yes.onclick = () => done({ dest: box.querySelector('#cf-dest').value, remove: del.checked });
+    yes.onclick = () => done({
+      scope: scope(),
+      dest: box.querySelector('#cf-dest').value,
+      remove: scope() === 'selected' && del.checked,
+    });
     document.body.appendChild(box);
   });
 }
@@ -1252,6 +1275,32 @@ async function removeInline(ids) {
   notify(`Removed ${removed} items from the iPhone (recoverable 30 days)${r?.errors ? `, ${r.errors} failed` : ''}${r?.icloud_suspected ? '; iCloud Photos ON blocks USB deletion' : ''}. One short sentence with the before/after free space.`);
 }
 
+/** Archive the whole camera roll to Mac/external — inline progress toast,
+    copy-only (never touches the phone). Long-running but non-blocking. */
+async function backupRollInline(dest) {
+  await media(`start backup-all ${dest ? shellEsc(dest) : '-'}`);
+  const toast = showToast('Backing up camera roll…', true);
+  stopPolling();
+  await new Promise((resolve) => {
+    const poll = async () => {
+      const p = await media('progress');
+      if (p.op === 'backup' && p.total) toast.update(`Backing up ${(p.done || 0).toLocaleString()}/${p.total.toLocaleString()}…`);
+      if (p.status === 'done' || p.status === 'error') { stopPolling(); resolve(); }
+    };
+    poll();
+    pollTimer = setInterval(poll, 1000);
+  });
+  const p = await media('progress');
+  refreshStatus();
+  if (p.status === 'error') {
+    toast.done(`✕ Backup failed — ${p.error || 'see logs'}`);
+    return;
+  }
+  const failed = p.failed ? ` · ${p.failed} failed` : '';
+  toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`);
+  notify(`Backed up the whole camera roll to ${p.dest || 'the Mac'}: ${p.verified ?? 0} verified${p.failed ? `, ${p.failed} failed` : ''}. One short sentence.`);
+}
+
 /** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
     final message and auto-dismisses. */
 function showToast(msg, spinner = false) {
@@ -1290,8 +1339,11 @@ function updateSelbar() {
   }
   const bk = document.getElementById('backup-btn');
   if (bk) {
-    bk.disabled = selected.size === 0;
-    bk.textContent = `💾 Back up ${selected.size.toLocaleString()} (${fmtGb(bytes)})`;
+    // always enabled — with nothing checked the sheet offers the whole-roll archive
+    bk.disabled = false;
+    bk.textContent = selected.size
+      ? `💾 Back up ${selected.size.toLocaleString()} (${fmtGb(bytes)})`
+      : '💾 Back up…';
   }
 }
 

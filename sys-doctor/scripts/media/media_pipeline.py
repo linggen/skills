@@ -579,12 +579,20 @@ def load_selection(path):
 
 def cmd_backup(args):
     """Offload leg: copy every selected item to the chosen archive root
-    (Mac folder or external volume) and hash-verify each copy."""
+    (Mac folder or external volume) and hash-verify each copy. With --all,
+    archives the whole camera roll from the manifest (copy-only, never deletes)."""
     op = 'backup'
-    try:
-        items = load_selection(args.selection)
-    except Exception as e:
-        fail(op, 'load', e)
+    if getattr(args, 'all', False):
+        items = load_jsonl(MANIFEST)  # whole camera roll — every pulled file
+        if not items:
+            fail(op, 'load', 'nothing staged — pull the camera roll first')
+    elif args.selection:
+        try:
+            items = load_selection(args.selection)
+        except Exception as e:
+            fail(op, 'load', e)
+    else:
+        fail(op, 'args', 'backup needs --selection or --all')
     root = Path(args.dest) if getattr(args, 'dest', None) else BACKUP_ROOT
     need_gb = sum(it['size'] for it in items) / 1e9
     try:
@@ -606,7 +614,7 @@ def cmd_backup(args):
             ok = sha256_file(dest) == it['sha256']
         except Exception:
             ok = False
-        (verified if ok else failed).append(it['id'])
+        (verified if ok else failed).append(it.get('id', it['sha256']))  # manifest rows have no id
         if 'live_mov' in it and ok:  # copy the MOV half of a Live Photo alongside
             mov_rel = it['live_mov'].lstrip('/')
             mov_src = STAGING_DIR / mov_rel
@@ -853,7 +861,8 @@ def main():
     sub.add_parser('pull')
     sub.add_parser('scan')
     b = sub.add_parser('backup')
-    b.add_argument('--selection', required=True)
+    b.add_argument('--selection')
+    b.add_argument('--all', action='store_true')
     b.add_argument('--dest')
     r = sub.add_parser('remove')
     r.add_argument('--confirm', action='store_true')

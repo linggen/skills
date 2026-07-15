@@ -106,6 +106,17 @@ case "$cmd" in
         printf '%s\n' '{"op":"remove","status":"running","phase":"starting"}' >"$DATA/progress.json"
         nohup "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1 &
         ;;
+      backup-all)
+        # archive the WHOLE camera roll (manifest) to dest — copy-only, no delete
+        dest="${1:--}"
+        printf '%s\n' '{"op":"backup","status":"running","phase":"starting"}' >"$DATA/progress.json"
+        cmd="'$PY' '$PIPELINE' backup --all"
+        if [ "$dest" != "-" ]; then
+          dest_esc=$(printf %s "$dest" | sed "s/'/'\\\\''/g")
+          cmd="$cmd --dest '$dest_esc'"
+        fi
+        nohup bash -c "$cmd" >"$DATA/op.log" 2>&1 &
+        ;;
       *) echo '{"error":"unknown op"}'; exit 0 ;;
     esac
     echo $! > "$DATA/op.pid"
