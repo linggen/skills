@@ -426,7 +426,7 @@ function renderReview() {
   document.getElementById('back-btn').onclick = () => showConnect();
   document.getElementById('apply-btn').onclick = async () => {
     if (!selected.size) return;
-    if (await confirmRemoveDialog(selected)) showApply(true, null, 'trash');
+    if (await confirmRemoveDialog(selected)) removeInline(new Set(selected));
   };
   document.getElementById('backup-btn').onclick = async () => {
     if (!selected.size) return;
@@ -870,7 +870,7 @@ function renderCategoryPane() {
   let html = '';
 
   html += `<div class="catbar">
-    <label class="catall"><input type="checkbox" id="cat-all-box"><span></span></label>
+    <button class="media-cta ghost sm" id="cat-all-btn"></button>
     <button class="media-cta sm" id="cat-remove-btn"></button>
     <span class="media-dim">only this category's checked items — recoverable for 30 days</span></div>`;
 
@@ -930,17 +930,18 @@ function renderCategoryPane() {
   if (catRemove) catRemove.onclick = async () => {
     const s = catSelection();
     if (!s.size) return;
-    if (await confirmRemoveDialog(s)) showApply(true, s, 'trash');
+    if (await confirmRemoveDialog(s)) removeInline(s);
   };
-  document.getElementById('cat-all-box').onchange = (e) => {
-    for (const it of catItems(activeCat)) {
-      if (e.target.checked) {
-        if (activeCat === 'dupe' && isKeep(it.id)) continue;
-        selected.add(it.id);
-      } else {
-        // explicit user clear wins everywhere — even items other pre-checked
-        // categories claim (unlike the blur slider's automatic re-flagging)
-        selected.delete(it.id);
+  document.getElementById('cat-all-btn').onclick = () => {
+    const next = catSelectNextAction();  // 'recommended' | 'all' | 'clear'
+    const items = catItems(activeCat);
+    if (next === 'clear') {
+      for (const it of items) selected.delete(it.id);
+    } else {
+      for (const it of items) {
+        // 'recommended' skips the dupe keep (dedup); 'all' includes it
+        if (next === 'recommended' && activeCat === 'dupe' && isKeep(it.id)) selected.delete(it.id);
+        else selected.add(it.id);
       }
     }
     renderCategoryPane();
@@ -967,6 +968,21 @@ function renderCategoryPane() {
   }
 }
 
+/** Duplicates cycles Select recommended → Select all → Clear; other
+    categories (no keep) just toggle Select all ↔ Clear. Returns the action the
+    Select button would perform NEXT given the current selection. */
+function catSelectNextAction() {
+  const items = catItems(activeCat);
+  if (!items.length) return 'recommended';
+  const inCat = catSelection().size;
+  if (inCat >= items.length) return 'clear';         // everything checked → clear
+  if (activeCat !== 'dupe') return 'all';            // no keep distinction
+  const recommended = items.filter((it) => !isKeep(it.id)).length;
+  const keepsChecked = items.some((it) => isKeep(it.id) && selected.has(it.id));
+  // exactly the recommended set (all non-keeps, no keep) → next adds the keeps
+  return (inCat === recommended && !keepsChecked) ? 'all' : 'recommended';
+}
+
 function updateCatbar() {
   const btn = document.getElementById('cat-remove-btn');
   if (!btn) return;
@@ -975,13 +991,14 @@ function updateCatbar() {
   const bytes = [...scoped].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
   btn.textContent = `🗑 Remove ${scoped.size.toLocaleString()} checked (${fmtGb(bytes)})…`;
   btn.disabled = !scoped.size;
-  const box = document.getElementById('cat-all-box');
-  if (box) {
-    const selectable = catItems(activeCat)
-      .filter((it) => !(activeCat === 'dupe' && isKeep(it.id))).length;
-    box.checked = selectable > 0 && scoped.size >= selectable;
-    box.indeterminate = scoped.size > 0 && scoped.size < selectable;
-    box.parentElement.querySelector('span').textContent = `Select all (${selectable.toLocaleString()})`;
+  const sel = document.getElementById('cat-all-btn');
+  if (sel) {
+    const items = catItems(activeCat);
+    const next = catSelectNextAction();
+    const recommended = items.filter((it) => !(activeCat === 'dupe' && isKeep(it.id))).length;
+    sel.textContent = next === 'clear' ? 'Clear'
+      : next === 'all' ? `Select all (${items.length.toLocaleString()})`
+      : `Select recommended (${recommended.toLocaleString()})`;
   }
 }
 
@@ -1188,12 +1205,70 @@ async function deleteInLightbox(id) {
   const nextId = lbOrder[lbIdx + 1] ?? lbOrder[lbIdx - 1] ?? null;
   flags = await media('flags');
   selected.delete(id);
+  pruneSelected();
   await loadRemovals();
   renderReview();
   refreshStatus();
   if (nextId && flags.items?.some((x) => x.id === nextId)) openLightbox(nextId);
   else closeLightbox();
   notify(`Removed 1 item from the iPhone (recoverable 30 days). One short sentence.`);
+}
+
+/** Keep the working selection honest: drop ids no longer in flags (removed or
+    pruned) so bulk-remove counts and the selbar total never inflate. */
+function pruneSelected() {
+  const live = new Set(flags.items.map((i) => i.id));
+  selected = new Set([...selected].filter((id) => live.has(id)));
+}
+
+/** Bulk trash-remove, inline — no apply screen, no report card. Shows a
+    progress toast, refreshes the grid in place, then a result toast. */
+async function removeInline(ids) {
+  const n = ids.size;
+  await writeSelection(ids);
+  await media('start remove-trash');
+  const toast = showToast(`Removing ${n.toLocaleString()}…`, true);
+  stopPolling();
+  await new Promise((resolve) => {
+    const poll = async () => {
+      const p = await media('progress');
+      if (p.op === 'remove' && p.total) toast.update(`Removing ${(p.done || 0)}/${p.total}…`);
+      if (p.status === 'done' || p.status === 'error') { stopPolling(); resolve(); }
+    };
+    poll();
+    pollTimer = setInterval(poll, 1000);
+  });
+  const r = await media('remove-result');
+  flags = await media('flags');
+  pruneSelected();
+  await loadRemovals();
+  if (screen === 'review' && source === 'phone') renderReview();
+  refreshStatus();
+  const removed = r?.removed ?? 0;
+  const freed = r?.freed_gb ? ` · freed ${r.freed_gb} GB` : '';
+  const errs = r?.errors ? ` · ${r.errors} couldn't be deleted` : '';
+  const icloud = r?.icloud_suspected ? ' · iCloud Photos blocks USB deletion' : '';
+  toast.done(`✓ Removed ${removed.toLocaleString()}${freed} · recoverable 30 days${errs}${icloud}`);
+  notify(`Removed ${removed} items from the iPhone (recoverable 30 days)${r?.errors ? `, ${r.errors} failed` : ''}${r?.icloud_suspected ? '; iCloud Photos ON blocks USB deletion' : ''}. One short sentence with the before/after free space.`);
+}
+
+/** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
+    final message and auto-dismisses. */
+function showToast(msg, spinner = false) {
+  let el = document.getElementById('media-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'media-toast';
+    el.className = 'media-toast';
+    document.body.appendChild(el);
+  }
+  const render = (m, sp) => { el.innerHTML = `${sp ? '<span class="media-spin"></span>' : ''}<span>${esc(m)}</span>`; };
+  render(msg, spinner);
+  return {
+    update: (m) => render(m, true),
+    done: (m) => { render(m, false); setTimeout(() => el.remove(), 4500); },
+    close: () => el.remove(),
+  };
 }
 
 /** True if another pre-checked category (not `cat`) still claims this item. */

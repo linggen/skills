@@ -101,7 +101,9 @@ case "$cmd" in
         fi
         ;;
       remove-trash)
-        # cleanup delete: staged copies move to the 30-day restore area
+        # cleanup delete: staged copies move to the 30-day restore area.
+        # reset progress first so a poller can't latch onto a prior op's 'done'
+        printf '%s\n' '{"op":"remove","status":"running","phase":"starting"}' >"$DATA/progress.json"
         nohup "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1 &
         ;;
       *) echo '{"error":"unknown op"}'; exit 0 ;;
