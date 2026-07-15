@@ -412,7 +412,8 @@ function renderReview() {
       <span id="sel-count"></span>
       <span class="media-dim">Removal always asks first — backup to Mac is on by default</span>
       <button class="media-cta ghost" id="back-btn" style="margin-left:auto">↻ Rescan</button>
-      <button class="media-cta" id="apply-btn" style="margin-left:0">Back Up &amp; Remove…</button>
+      <button class="media-cta ghost" id="backup-btn" style="margin-left:0">💾 Back up</button>
+      <button class="media-cta" id="apply-btn" style="margin-left:0">Remove…</button>
     </div>`;
   for (const tile of panel.querySelectorAll('.media-tile')) {
     tile.onclick = () => { activeCat = tile.dataset.cat; renderReview(); };
@@ -422,7 +423,12 @@ function renderReview() {
   document.getElementById('apply-btn').onclick = async () => {
     if (!selected.size) return;
     const r = await confirmRemoveDialog(selected);
-    if (r) showApply(true, null, !r.backup);
+    if (r) showApply(true, null, r.backup ? 'full' : 'removeOnly');
+  };
+  document.getElementById('backup-btn').onclick = async () => {
+    if (!selected.size) return;
+    const r = await confirmBackupDialog(selected);
+    if (r) showApply(true, null, r.remove ? 'full' : 'backupOnly');
   };
   renderCategoryPane();
   updateSelbar();
@@ -842,7 +848,7 @@ function renderCategoryPane() {
     const s = catSelection();
     if (!s.size) return;
     const r = await confirmRemoveDialog(s);
-    if (r) showApply(true, s, !r.backup);
+    if (r) showApply(true, s, r.backup ? 'full' : 'removeOnly');
   };
   document.getElementById('cat-all-box').onchange = (e) => {
     for (const it of catItems(activeCat)) {
@@ -975,6 +981,40 @@ function confirmRemoveDialog(ids) {
   });
 }
 
+/** Backup entry point: confirm sheet with "remove after backup" (default ON). */
+function confirmBackupDialog(ids) {
+  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const bytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
+  return new Promise((resolve) => {
+    const box = document.createElement('div');
+    box.className = 'media-lightbox';
+    box.innerHTML = `
+      <div class="media-confirm">
+        <div><b>Back up ${ids.size.toLocaleString()} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) to your Mac?</b></div>
+        <div class="media-dim" style="margin-top:6px">
+          Copies land in ~/Pictures/iPhone Backup (sorted by year/month) and every copy is re-hash verified.
+        </div>
+        <label class="catall" style="margin-top:12px">
+          <input type="checkbox" id="cf-del" checked>
+          <span>Remove them from the iPhone once the backup is verified</span></label>
+        <div class="row">
+          <button class="media-cta ghost sm" id="cf-no">Cancel</button>
+          <button class="media-cta sm" id="cf-yes"></button>
+        </div>
+      </div>`;
+    const yes = box.querySelector('#cf-yes');
+    const del = box.querySelector('#cf-del');
+    const refresh = () => { yes.textContent = del.checked ? 'Back up & remove' : 'Back up only'; };
+    del.onchange = refresh;
+    refresh();
+    const done = (v) => { box.remove(); resolve(v); };
+    box.onclick = (e) => { if (e.target === box) done(null); };
+    box.querySelector('#cf-no').onclick = () => done(null);
+    yes.onclick = () => done({ remove: del.checked });
+    document.body.appendChild(box);
+  });
+}
+
 // ── full-size preview (lightbox) ──
 
 const STAGING_URL = '../data/media/staging/';
@@ -1048,7 +1088,7 @@ async function openLightbox(id) {
     const r = await confirmRemoveDialog(one);
     if (r) {
       closeLightbox();
-      showApply(true, one, !r.backup);
+      showApply(true, one, r.backup ? 'full' : 'removeOnly');
     }
   };
   const slot = box.querySelector('.lb-media');
@@ -1087,6 +1127,11 @@ function updateSelbar() {
     btn.disabled = selected.size === 0;
     btn.textContent = `Remove ${selected.size.toLocaleString()} from iPhone (${fmtGb(bytes)})…`;
   }
+  const bk = document.getElementById('backup-btn');
+  if (bk) {
+    bk.disabled = selected.size === 0;
+    bk.textContent = `💾 Back up ${selected.size.toLocaleString()} (${fmtGb(bytes)})`;
+  }
 }
 
 // ── screen 4 · back up & remove ──
@@ -1106,17 +1151,23 @@ function writeSelection(ids) {
   return writeJsonFile('selection.json', { ids: [...ids] });
 }
 
-async function showApply(fresh = false, scopeIds = null, skipBackup = false) {
+let applyMode = 'full'; // 'full' (backup→verify→remove) | 'removeOnly' | 'backupOnly'
+
+async function showApply(fresh = false, scopeIds = null, mode = 'full') {
+  if (fresh) applyMode = mode;
   const ids = scopeIds || selected;
   const byId = fresh ? new Map(flags.items.map((it) => [it.id, it])) : null;
   const count = fresh ? ids.size : null;
   const bytes = fresh ? [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0) : null;
+  const title = !fresh ? 'Back up &amp; remove'
+    : mode === 'backupOnly' ? `Back up ${count.toLocaleString()} items (${fmtGb(bytes)}) to Mac — nothing is removed`
+    : `Remove ${count.toLocaleString()} items (${fmtGb(bytes)})${mode === 'removeOnly' ? ' — no backup (your choice)' : ''}`;
 
   setScreen('apply', () => {
     panel.innerHTML = `
       ${statusStripDiv()}
       <div class="media-card">
-        <h4 id="apply-title">${fresh ? `Remove ${count.toLocaleString()} items (${fmtGb(bytes)})${skipBackup ? ' — no backup (your choice)' : ''}` : 'Back up &amp; remove'}</h4>
+        <h4 id="apply-title">${title}</h4>
         <div class="media-dim" id="preflight-note"></div>
         <div class="media-flow">
           <div class="fstep" id="step-backup"><span class="fnum">1</span>
@@ -1140,7 +1191,7 @@ async function showApply(fresh = false, scopeIds = null, skipBackup = false) {
       <div class="media-card dashed" hidden id="report-card"></div>`;
   });
 
-  if (skipBackup) {
+  if (fresh && mode === 'removeOnly') {
     for (const step of ['step-backup', 'step-verify']) {
       const { step: el, chip } = stepEls(step);
       el.classList.add('done');
@@ -1151,9 +1202,17 @@ async function showApply(fresh = false, scopeIds = null, skipBackup = false) {
     const note = document.getElementById('remove-note');
     if (note) note.textContent = 'removing without backup…';
   }
+  if (fresh && mode === 'backupOnly') {
+    const note = document.getElementById('remove-note');
+    if (note) note.textContent = 'not part of this run — backup only';
+  }
+  if (fresh && mode === 'full') {
+    const note = document.getElementById('remove-note');
+    if (note) note.textContent = 'runs automatically once every copy verifies — stops if any fails';
+  }
   if (fresh) {
     await writeSelection(ids);
-    await media(skipBackup ? 'start remove-only' : 'start backup');
+    await media(mode === 'removeOnly' ? 'start remove-only' : 'start backup');
   }
   pollApply();
 }
@@ -1208,6 +1267,16 @@ function renderBackupProgress(p) {
   if (p.failed) verify.chip.classList.add('warn');
   notify(`Backup done: ${p.verified} items verified to ${p.dest}${p.failed ? `, ${p.failed} failed verification (kept on phone)` : ''}. One short sentence.`);
   const actions = document.getElementById('apply-actions');
+  if (applyMode === 'backupOnly') {
+    actions.innerHTML = `<button class="media-cta" id="backup-done-btn">✓ Backed up — back to review</button>`;
+    document.getElementById('backup-done-btn').onclick = () => showReview();
+    return;
+  }
+  if (applyMode === 'full' && !p.failed) {
+    // the user already confirmed removal in the sheet; 100% verified → continue
+    media('start remove').then(() => pollApply());
+    return;
+  }
   actions.innerHTML = `
     <button class="media-cta danger" id="remove-btn">Remove ${p.verified} verified items from iPhone</button>
     <button class="media-cta ghost" id="skip-remove">Keep them — back up only</button>`;
