@@ -29,6 +29,12 @@ case "$cmd" in
   state)         cat "$DATA/state.json" 2>/dev/null || echo '{}' ;;
   verified)      cat "$DATA/verified.json" 2>/dev/null || echo '{}' ;;
   removals)      cat "$DATA/removals.jsonl" 2>/dev/null || true ;;
+  mac-index)     cat "$DATA/mac-index.jsonl" 2>/dev/null || true ;;
+  trash)
+    require_venv
+    sel="${1:-$DATA/trash-selection.json}"
+    "$PY" "$PIPELINE" trash --selection "$sel" 2>/dev/null || echo '{"error":"trash_failed"}'
+    ;;
   remove-result) cat "$DATA/remove-result.json" 2>/dev/null || echo '{}' ;;
   setup)
     nohup "$HERE/setup.sh" >"$DATA/setup.log" 2>&1 &
@@ -42,6 +48,9 @@ case "$cmd" in
       scan-all)
         nohup bash -c "'$PY' '$PIPELINE' index && '$PY' '$PIPELINE' pull && '$PY' '$PIPELINE' scan" \
           >"$DATA/op.log" 2>&1 &
+        ;;
+      index)
+        nohup "$PY" "$PIPELINE" index >"$DATA/op.log" 2>&1 &
         ;;
       backup)
         sel="${1:-$DATA/selection.json}"

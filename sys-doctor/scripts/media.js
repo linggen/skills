@@ -20,6 +20,10 @@ const CATEGORIES = [
 
 let panel = null;
 let removals = [];      // permanent removal history (removals.jsonl)
+let macIndex = [];      // Mac photo index rows (mac-index.jsonl)
+let macSelected = new Set();   // Mac file paths picked for Trash
+let source = 'phone';   // review source: 'phone' | 'mac'
+let activeMacCat = 'dupe';
 let screen = 'connect';
 let pollTimer = null;
 let device = null;
@@ -353,23 +357,40 @@ function isKeep(id) {
   return flags.groups.some((g) => g.keep === id);
 }
 
-async function loadRemovals() {
-  const res = await bash(`cat "${DATA_DIR}/removals.jsonl" 2>/dev/null || true`);
-  removals = (res.stdout || '').trim().split('\n').filter(Boolean)
+async function loadJsonl(name) {
+  const res = await bash(`cat "${DATA_DIR}/${name}" 2>/dev/null || true`);
+  return (res.stdout || '').trim().split('\n').filter(Boolean)
     .map((l) => { try { return JSON.parse(l); } catch { return null; } })
     .filter(Boolean);
 }
+
+async function loadRemovals() { removals = await loadJsonl('removals.jsonl'); }
+async function loadMacIndex() { macIndex = await loadJsonl('mac-index.jsonl'); }
 
 function showReview() {
   blurThreshold = flags.blur_default || 25;
   applyPrechecks();
   setScreen('review', renderReview);
   refreshStatus();
-  loadRemovals().then(() => { if (screen === 'review') renderReview(); });
+  Promise.all([loadRemovals(), loadMacIndex()])
+    .then(() => { if (screen === 'review') renderReview(); });
   pollTimer = setInterval(refreshStatus, 15000);
 }
 
+function sourceSwitchHtml() {
+  return `<div class="srcswitch">
+    <button class="src ${source === 'phone' ? 'active' : ''}" data-src="phone">📱 iPhone</button>
+    <button class="src ${source === 'mac' ? 'active' : ''}" data-src="mac">💻 Mac</button></div>`;
+}
+
+function wireSourceSwitch() {
+  for (const b of panel.querySelectorAll('.srcswitch .src')) {
+    b.onclick = () => { source = b.dataset.src; renderReview(); };
+  }
+}
+
 function renderReview() {
+  if (source === 'mac') return renderMacReview();
   let tiles = CATEGORIES.map((c) => {
     const items = itemsFor(c.key);
     const size = items.reduce((s, it) => s + it.size, 0);
@@ -380,6 +401,7 @@ function renderReview() {
     <b>${removals.length.toLocaleString()}</b>Removed <span class="sz">${fmtGb(removals.reduce((s, r) => s + (r.size || 0), 0))}</span></button>`;
   panel.innerHTML = `
     ${statusStripDiv()}
+    ${sourceSwitchHtml()}
     <div class="media-tiles">${tiles}</div>
     <div id="cat-pane"></div>
     <div class="selbar">
@@ -391,12 +413,301 @@ function renderReview() {
   for (const tile of panel.querySelectorAll('.media-tile')) {
     tile.onclick = () => { activeCat = tile.dataset.cat; renderReview(); };
   }
+  wireSourceSwitch();
   document.getElementById('back-btn').onclick = () => showConnect();
   document.getElementById('apply-btn').onclick = async () => {
     if (selected.size && await confirmRemove(selected)) showApply(true);
   };
   renderCategoryPane();
   updateSelbar();
+}
+
+// ── Mac source (browse ~/Pictures index · dupes · Trash cleanup) ──
+
+const MAC_CATS = [
+  { key: 'dupe', label: 'Duplicates' },
+  { key: 'large', label: 'Large files' },
+  { key: 'all', label: 'All by folder' },
+];
+
+function jsHamming(a, b) {
+  let d = 0;
+  const n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i += 1) {
+    let x = parseInt(a[i], 16) ^ parseInt(b[i], 16);
+    while (x) { d += x & 1; x >>= 1; }
+  }
+  return d + Math.abs(a.length - b.length) * 4;
+}
+
+let macGroupsCache = null; // recomputed when macIndex reloads
+
+function macDupeGroups() {
+  if (macGroupsCache && macGroupsCache.n === macIndex.length) return macGroupsCache.groups;
+  const groups = [];
+  const bySha = {};
+  for (const r of macIndex) (bySha[r.sha256] ||= []).push(r);
+  const exactMembers = new Set();
+  for (const rows of Object.values(bySha)) {
+    if (rows.length > 1) {
+      groups.push({ kind: 'exact', rows });
+      rows.forEach((r) => exactMembers.add(r.path));
+    }
+  }
+  const cand = macIndex.filter((r) => r.dhash && !exactMembers.has(r.path));
+  const parent = [...cand.keys()];
+  const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  for (let a = 0; a < cand.length; a += 1) {
+    for (let b = a + 1; b < cand.length; b += 1) {
+      if (jsHamming(cand[a].dhash, cand[b].dhash) <= 4) parent[find(a)] = find(b);
+    }
+  }
+  const near = {};
+  cand.forEach((r, i) => (near[find(i)] ||= []).push(r));
+  for (const rows of Object.values(near)) if (rows.length > 1) groups.push({ kind: 'near', rows });
+  for (const g of groups) g.rows.sort((x, y) => (x.mtime || 0) - (y.mtime || 0)); // oldest first = likely original
+  macGroupsCache = { n: macIndex.length, groups };
+  return groups;
+}
+
+function macItemsFor(key) {
+  if (key === 'dupe') return macDupeGroups().flatMap((g) => g.rows);
+  if (key === 'large') return [...macIndex].sort((a, b) => b.size - a.size).slice(0, 50);
+  return macIndex;
+}
+
+function macThumbHtml(r, checked) {
+  const vid = VIDEO_RE.test(r.path);
+  return `<div class="media-thumb ${vid ? 'vid' : ''}" data-path="${esc(r.path)}" title="${esc(r.path)}">
+    <img src="../data/media/thumbs/${r.sha256.slice(0, 12)}.jpg" loading="lazy" alt="" onerror="this.remove()">
+    ${vid ? '<span class="play">▶</span>' : ''}
+    <input type="checkbox" ${checked ? 'checked' : ''} aria-label="trash">
+    <button class="zoom" title="View full size" aria-label="View full size">⤢</button>
+    <span class="score">${fmtGb(r.size)}</span></div>`;
+}
+
+const VIDEO_RE = /\.(mov|mp4|m4v|avi|3gp)$/i;
+
+function renderMacReview() {
+  const tiles = MAC_CATS.map((c) => {
+    const items = macItemsFor(c.key);
+    const size = items.reduce((s, r) => s + (r.size || 0), 0);
+    return `<button class="media-tile ${c.key === activeMacCat ? 'active' : ''}" data-cat="${c.key}">
+      <b>${items.length.toLocaleString()}</b>${c.label} <span class="sz">${fmtGb(size)}</span></button>`;
+  }).join('');
+  panel.innerHTML = `
+    ${statusStripDiv()}
+    ${sourceSwitchHtml()}
+    <div class="media-tiles">${tiles}</div>
+    <div id="cat-pane"></div>
+    <div class="selbar">
+      <span id="mac-sel-count"></span>
+      <span class="media-dim">Mac cleanup goes to the Trash — restore anytime from there</span>
+      <button class="media-cta ghost" id="mac-reindex-btn" style="margin-left:auto">↻ Re-index Mac</button>
+      <button class="media-cta" id="mac-trash-btn" style="margin-left:0">Move to Trash…</button>
+    </div>`;
+  for (const tile of panel.querySelectorAll('.media-tile')) {
+    tile.onclick = () => { activeMacCat = tile.dataset.cat; renderMacReview(); };
+  }
+  wireSourceSwitch();
+  document.getElementById('mac-reindex-btn').onclick = reindexMac;
+  document.getElementById('mac-trash-btn').onclick = trashSelected;
+  renderMacPane();
+  updateMacSelbar();
+}
+
+function renderMacPane() {
+  const pane = document.getElementById('cat-pane');
+  const bySelected = (r) => macSelected.has(r.path);
+  let html = `<div class="catbar">
+    <label class="catall"><input type="checkbox" id="mac-all-box"><span></span></label>
+    <span class="media-dim">checked files go to the macOS Trash (recoverable) — originals in ~/Pictures</span></div>`;
+
+  if (!macIndex.length) {
+    pane.innerHTML = `<div class="media-dim">No Mac photo index yet — it is built during a scan
+      (or hit ↻ Re-index Mac below).</div>`;
+    return;
+  }
+  if (activeMacCat === 'dupe') {
+    const groups = macDupeGroups();
+    html += groups.length ? groups.map((g) => `
+      <div class="media-group"><div class="glabel">Group of ${g.rows.length} ·
+        ${g.kind === 'exact' ? 'exact byte dupes' : 'near-dupes (pHash)'} · oldest first</div>
+      <div class="thumbrow">${g.rows.map((r) => macThumbHtml(r, bySelected(r))).join('')}</div></div>`).join('')
+      : '<div class="media-dim">No duplicates found in the Mac index.</div>';
+  } else if (activeMacCat === 'large') {
+    html += `<div class="thumbrow">${macItemsFor('large').map((r) => macThumbHtml(r, bySelected(r))).join('')}</div>`;
+  } else {
+    const folders = {};
+    for (const r of macIndex) {
+      const dir = r.path.split('/').slice(0, -1).join('/');
+      (folders[dir] ||= []).push(r);
+    }
+    html += Object.entries(folders)
+      .sort((a, b) => b[1].reduce((s, r) => s + r.size, 0) - a[1].reduce((s, r) => s + r.size, 0))
+      .map(([dir, rows]) => `
+        <div class="media-group"><div class="glabel">${esc(dir.replace(/^\/Users\/[^/]+/, '~'))} ·
+          ${rows.length} files · ${fmtGb(rows.reduce((s, r) => s + r.size, 0))}</div>
+        <div class="thumbrow">${rows.slice(0, 30).map((r) => macThumbHtml(r, bySelected(r))).join('')}
+        ${rows.length > 30 ? `<span class="media-dim">+${rows.length - 30} more…</span>` : ''}</div></div>`).join('');
+  }
+  pane.innerHTML = html;
+
+  for (const box of pane.querySelectorAll('.media-thumb input')) {
+    box.onchange = (e) => {
+      const path = e.target.closest('.media-thumb').dataset.path;
+      if (e.target.checked) macSelected.add(path); else macSelected.delete(path);
+      updateMacSelbar();
+      updateMacCatbar();
+    };
+  }
+  for (const zoom of pane.querySelectorAll('.media-thumb .zoom')) {
+    zoom.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openMacLightbox(e.target.closest('.media-thumb').dataset.path);
+    });
+  }
+  for (const thumb of pane.querySelectorAll('.media-thumb')) {
+    thumb.addEventListener('click', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.classList.contains('zoom')) return;
+      openMacLightbox(thumb.dataset.path);
+    });
+  }
+  const allBox = document.getElementById('mac-all-box');
+  allBox.onchange = (e) => {
+    for (const r of macItemsFor(activeMacCat)) {
+      if (e.target.checked) macSelected.add(r.path); else macSelected.delete(r.path);
+    }
+    renderMacPane();
+    updateMacSelbar();
+  };
+  updateMacCatbar();
+}
+
+function updateMacCatbar() {
+  const box = document.getElementById('mac-all-box');
+  if (!box) return;
+  const items = macItemsFor(activeMacCat);
+  const checked = items.filter((r) => macSelected.has(r.path)).length;
+  box.checked = items.length > 0 && checked >= items.length;
+  box.indeterminate = checked > 0 && checked < items.length;
+  box.parentElement.querySelector('span').textContent = `Select all (${items.length.toLocaleString()})`;
+}
+
+function updateMacSelbar() {
+  const el = document.getElementById('mac-sel-count');
+  if (!el) return;
+  const byPath = new Map(macIndex.map((r) => [r.path, r]));
+  let bytes = 0;
+  for (const p of macSelected) bytes += byPath.get(p)?.size || 0;
+  el.innerHTML = `<b>${macSelected.size.toLocaleString()} selected</b> · <b>${fmtGb(bytes)}</b>`;
+  const btn = document.getElementById('mac-trash-btn');
+  if (btn) {
+    btn.disabled = macSelected.size === 0;
+    btn.textContent = `Move ${macSelected.size.toLocaleString()} to Trash (${fmtGb(bytes)})`;
+  }
+}
+
+async function trashSelected() {
+  const byPath = new Map(macIndex.map((r) => [r.path, r]));
+  const paths = [...macSelected].filter((p) => byPath.has(p));
+  if (!paths.length) return;
+  const bytes = paths.reduce((s, p) => s + (byPath.get(p)?.size || 0), 0);
+  const ok = await confirmDialog(
+    `<b>${paths.length.toLocaleString()} files (${fmtGb(bytes)})</b> will be moved to the macOS Trash.
+     You can restore them from the Trash anytime.`, 'Move to Trash');
+  if (!ok) return;
+  const btn = document.getElementById('mac-trash-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Moving to Trash…'; }
+  const sizes = Object.fromEntries(paths.map((p) => [p, byPath.get(p)?.size || 0]));
+  await writeJsonFile('trash-selection.json', { paths, sizes });
+  const res = await media('trash');
+  macSelected.clear();
+  macGroupsCache = null;
+  await loadMacIndex();
+  refreshStatus();
+  notify(`Mac cleanup: moved ${res.trashed ?? '?'} files (${res.freed_gb ?? '?'} GB) to the Trash${res.errors?.length ? `, ${res.errors.length} errors` : ''}. One short sentence.`);
+  renderMacReview();
+}
+
+function reindexMac() {
+  media('start index');
+  const btn = document.getElementById('mac-reindex-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Indexing…'; }
+  const t = setInterval(async () => {
+    if (screen !== 'review' || source !== 'mac') { clearInterval(t); return; }
+    const p = await media('progress');
+    if (p.op === 'index' && (p.status === 'done' || p.status === 'error')) {
+      clearInterval(t);
+      macGroupsCache = null;
+      await loadMacIndex();
+      refreshStatus();
+      renderMacReview();
+    }
+  }, 2000);
+}
+
+async function ensureMacPreview(r) {
+  const key = `${r.sha256.slice(0, 12)}.jpg`;
+  const dst = `${DATA_DIR}/previews/${key}`;
+  await bash(`mkdir -p "${DATA_DIR}/previews"; [ -f "${dst}" ] || sips -s format jpeg "${r.path}" --out "${dst}" --resampleHeightWidthMax 2048 >/dev/null`);
+  return PREVIEW_URL + key;
+}
+
+async function openMacLightbox(path) {
+  const r = macIndex.find((x) => x.path === path);
+  if (!r) return;
+  closeLightbox();
+  lbOrder = macItemsFor(activeMacCat).map((x) => x.path);
+  lbIdx = lbOrder.indexOf(path);
+  const box = document.createElement('div');
+  box.id = 'media-lightbox';
+  box.className = 'media-lightbox';
+  box.innerHTML = `
+    <button class="lb-nav" id="lb-prev" aria-label="Previous" ${lbIdx > 0 ? '' : 'disabled'}>‹</button>
+    <div class="lb-body"><div class="lb-media media-dim">Loading…</div>
+      <div class="lb-cap"><span>${esc(path.split('/').pop())} · ${fmtGb(r.size)} · ${lbIdx + 1} / ${lbOrder.length}</span>
+        <button class="media-cta sm" id="lb-mark"></button>
+        <button class="media-cta ghost sm" id="lb-open">Reveal in Finder</button>
+        <button class="media-cta ghost sm" id="lb-close">✕ Close</button></div></div>
+    <button class="lb-nav" id="lb-next" aria-label="Next" ${lbIdx < lbOrder.length - 1 ? '' : 'disabled'}>›</button>`;
+  box.onclick = (e) => { if (e.target === box) closeLightbox(); };
+  document.body.appendChild(box);
+  document.addEventListener('keydown', macLightboxKey);
+  document.getElementById('lb-close').onclick = closeLightbox;
+  document.getElementById('lb-prev').onclick = () => openMacLightbox(lbOrder[lbIdx - 1]);
+  document.getElementById('lb-next').onclick = () => openMacLightbox(lbOrder[lbIdx + 1]);
+  document.getElementById('lb-open').onclick = () => bash(`open -R ${shellEsc(path)}`);
+  const markBtn = document.getElementById('lb-mark');
+  const refreshMark = () => {
+    markBtn.textContent = macSelected.has(path) ? '✓ Marked for Trash' : '🗑 Trash';
+  };
+  markBtn.onclick = () => {
+    if (macSelected.has(path)) macSelected.delete(path); else macSelected.add(path);
+    const thumb = document.querySelector(`.media-thumb[data-path="${CSS.escape(path)}"] input`);
+    if (thumb) thumb.checked = macSelected.has(path);
+    updateMacSelbar();
+    updateMacCatbar();
+    refreshMark();
+  };
+  refreshMark();
+  const slot = box.querySelector('.lb-media');
+  if (VIDEO_RE.test(path)) {
+    slot.innerHTML = `<div class="media-dim">Videos preview from Finder — use "Reveal in Finder".</div>`;
+  } else {
+    try {
+      const url = await ensureMacPreview(r);
+      slot.innerHTML = `<img src="${url}" alt="">`;
+    } catch {
+      slot.innerHTML = `<div class="media-dim">Preview failed — use "Reveal in Finder".</div>`;
+    }
+  }
+}
+
+function macLightboxKey(e) {
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft' && lbIdx > 0) openMacLightbox(lbOrder[lbIdx - 1]);
+  else if (e.key === 'ArrowRight' && lbIdx >= 0 && lbIdx < lbOrder.length - 1) openMacLightbox(lbOrder[lbIdx + 1]);
 }
 
 function thumbHtml(it, checked) {
@@ -624,6 +935,7 @@ let lbIdx = -1;
 function closeLightbox() {
   document.getElementById('media-lightbox')?.remove();
   document.removeEventListener('keydown', lightboxKey);
+  document.removeEventListener('keydown', macLightboxKey);
 }
 
 function lightboxKey(e) {
@@ -736,15 +1048,19 @@ function updateSelbar() {
 
 // ── screen 4 · back up & remove ──
 
-async function writeSelection(ids) {
-  const json = JSON.stringify({ ids: [...ids] });
+async function writeJsonFile(name, obj) {
+  const json = JSON.stringify(obj);
   const chunks = [];
   for (let i = 0; i < json.length; i += 40000) chunks.push(json.slice(i, i + 40000));
-  await bash(`mkdir -p "${DATA_DIR}" && : > "${DATA_DIR}/selection.json"`);
+  await bash(`mkdir -p "${DATA_DIR}" && : > "${DATA_DIR}/${name}"`);
   for (const c of chunks) {
-    await bash(`printf '%s' ${shellEsc(c)} >> "${DATA_DIR}/selection.json"`);
+    await bash(`printf '%s' ${shellEsc(c)} >> "${DATA_DIR}/${name}"`);
   }
-  await bash(`printf '\\n' >> "${DATA_DIR}/selection.json"`);
+  await bash(`printf '\\n' >> "${DATA_DIR}/${name}"`);
+}
+
+function writeSelection(ids) {
+  return writeJsonFile('selection.json', { ids: [...ids] });
 }
 
 async function showApply(fresh = false, scopeIds = null) {

@@ -10,6 +10,7 @@ data/media/progress.json and are launched in the background by media.sh):
   scan     analyze staged files -> flags.json (hash/pHash/blur/luma/ffprobe)
   backup   copy selected files to ~/Pictures/iPhone Backup/<date>/, re-hash verify
   remove   delete the verified set from the iPhone over AFC (requires --confirm)
+  trash    move selected Mac files to the macOS Trash (recoverable) + prune index
 
 Detection is pure scripts — no LLM anywhere in this pipeline.
 """
@@ -288,6 +289,7 @@ def cmd_index(_args):
                     files.append(p)
     total = len(files)
     progress(op, 'hashing', 0, total)
+    THUMBS_DIR.mkdir(parents=True, exist_ok=True)
     rows, reused = [], 0
     for i, p in enumerate(files):
         try:
@@ -297,7 +299,7 @@ def cmd_index(_args):
         key = str(p)
         prev = old.get(key)
         if prev and prev.get('size') == st.st_size and prev.get('mtime') == int(st.st_mtime):
-            rows.append(prev)
+            row = prev
             reused += 1
         else:
             row = {'path': key, 'size': st.st_size, 'mtime': int(st.st_mtime),
@@ -306,7 +308,11 @@ def cmd_index(_args):
                 res = analyze_image(p, Image, np)
                 if res:
                     row['dhash'] = res[0]
-            rows.append(row)
+        rows.append(row)
+        if p.suffix.lower() in IMAGE_EXTS:  # thumbs share the content-hash cache with phone items
+            tp = THUMBS_DIR / f"{row['sha256'][:12]}.jpg"
+            if not tp.exists():
+                make_thumb(p, tp, Image)
         if i % 50 == 0:
             progress(op, 'hashing', i, total, note=f'{reused} unchanged reused')
     MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
@@ -648,6 +654,42 @@ async def _remove_async(args):
     update_state(remove={**result, 'at': datetime.now().isoformat(timespec='seconds')})
 
 
+# ── trash (Mac-side cleanup — recoverable, files go to the macOS Trash) ───
+
+def cmd_trash(args):
+    op = 'trash'
+    sel = json.loads(Path(args.selection).read_text())
+    paths = [p for p in sel.get('paths', []) if Path(p).exists()]
+    trashed, errors = [], []
+    for chunk_start in range(0, len(paths), 50):
+        chunk = paths[chunk_start:chunk_start + 50]
+        listing = ', '.join('POSIX file ' + json.dumps(p) for p in chunk)
+        try:
+            subprocess.run(['osascript', '-e', f'tell application "Finder" to delete {{{listing}}}'],
+                           check=True, capture_output=True, timeout=120)
+            trashed += chunk
+        except Exception:
+            for p in chunk:  # per-file fallback: move into ~/.Trash, uniquified
+                try:
+                    dest = HOME / '.Trash' / Path(p).name
+                    n = 1
+                    while dest.exists():
+                        dest = HOME / '.Trash' / f'{Path(p).stem} {n}{Path(p).suffix}'
+                        n += 1
+                    shutil.move(p, dest)
+                    trashed.append(p)
+                except Exception as e:
+                    errors.append({'path': p, 'error': str(e)})
+    gone = set(trashed)
+    rows = [r for r in load_jsonl(MAC_INDEX) if r['path'] not in gone]
+    MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
+    update_state(mac_index={'files': len(rows),
+                            'gb': round(sum(r['size'] for r in rows) / 1e9, 1),
+                            'at': datetime.now().isoformat(timespec='seconds')})
+    print(json.dumps({'trashed': len(trashed), 'errors': errors[:5],
+                      'freed_gb': round(sum(sel.get('sizes', {}).get(p, 0) for p in trashed) / 1e9, 2)}))
+
+
 # ── main ──────────────────────────────────────────────────────────────────
 
 def main():
@@ -662,10 +704,13 @@ def main():
     b.add_argument('--selection', required=True)
     r = sub.add_parser('remove')
     r.add_argument('--confirm', action='store_true')
+    t = sub.add_parser('trash')
+    t.add_argument('--selection', required=True)
     args = ap.parse_args()
     try:
         {'info': cmd_info, 'index': cmd_index, 'pull': cmd_pull,
-         'scan': cmd_scan, 'backup': cmd_backup, 'remove': cmd_remove}[args.cmd](args)
+         'scan': cmd_scan, 'backup': cmd_backup, 'remove': cmd_remove,
+         'trash': cmd_trash}[args.cmd](args)
     except SystemExit:
         raise
     except Exception as e:  # crash must land in progress.json or the UI spins forever

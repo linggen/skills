@@ -410,6 +410,12 @@ to run them; the user drives the pipeline with buttons.
 **On questions** ("how did the cleanup go", "what did you remove"): call
 `MediaState` and answer from it.
 
+**Link from System scans**: the Media tab's review has a 💻 Mac source —
+browse the Mac photo index, find Mac-side duplicates, and move files to the
+Trash (recoverable). When a System disk scan surfaces large media folders
+(`~/Pictures`, photo/video hoards), suggest: "open the 📷 Media tab → 💻 Mac
+to review and Trash duplicates there."
+
 **Never** call raw Bash against `scripts/media/` or the phone — the pane owns
 the pipeline, and every mutation (backup, remove) already requires the user's
 click. Hard rules you can state confidently: nothing is auto-deleted; every
