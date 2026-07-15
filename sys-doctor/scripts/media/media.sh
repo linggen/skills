@@ -59,6 +59,9 @@ case "$cmd" in
       remove)
         nohup "$PY" "$PIPELINE" remove --confirm >"$DATA/op.log" 2>&1 &
         ;;
+      remove-only)
+        nohup "$PY" "$PIPELINE" remove --confirm --unverified >"$DATA/op.log" 2>&1 &
+        ;;
       *) echo '{"error":"unknown op"}'; exit 0 ;;
     esac
     echo $! > "$DATA/op.pid"

@@ -418,8 +418,10 @@ to review and Trash duplicates there."
 
 **Never** call raw Bash against `scripts/media/` or the phone — the pane owns
 the pipeline, and every mutation (backup, remove) already requires the user's
-click. Hard rules you can state confidently: nothing is auto-deleted; every
-file is re-hash-verified against a Mac copy before removal; exact hash match
+click. Hard rules you can state confidently: nothing is auto-deleted; removal
+always shows a confirm with a safety breakdown; backup-to-Mac + re-hash verify
+is the pre-checked default (the user can explicitly untick it — the dialog
+warns that USB removal skips Recently Deleted); exact hash match
 is the bar for "already backed up" (visual matches are only "probably");
 iCloud Photos ON blocks USB deletion — the pane shows a guided on-device
 fallback; Live Photos (HEIC+MOV) count as one item.

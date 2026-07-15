@@ -110,11 +110,28 @@ function statusStripHtml() {
     ? `📱 <b>${esc(dev.name || 'iPhone')}</b> · ${dev.free_gb ?? '?'} GB free of ${dev.total_gb ?? '?'} GB${photos != null ? ` · camera roll ${photos} GB` : ''} ${conn}`
     : '📱 <span class="media-dim">no iPhone seen yet</span>';
   const mac = `💻 <b>This Mac</b> · ${info?.mac_free_gb ?? '?'} GB free${idx ? ` · photo index ${(idx.files ?? 0).toLocaleString()} files · ${idx.gb ?? '?'} GB` : ''}`;
-  return `<span>${phone}</span><span>${mac}</span>`;
+  // On the review screen the two halves ARE the source tabs
+  if (screen === 'review') {
+    return `<button class="stat ${source === 'phone' ? 'active' : ''}" data-src="phone">${phone}</button>
+      <button class="stat ${source === 'mac' ? 'active' : ''}" data-src="mac">${mac}</button>`;
+  }
+  return `<span class="stat">${phone}</span><span class="stat">${mac}</span>`;
 }
 
 function statusStripDiv() {
   return `<div class="media-status" id="media-status">${statusStripHtml()}</div>`;
+}
+
+function wireStatusStrip() {
+  const el = document.getElementById('media-status');
+  if (!el) return;
+  el.onclick = (e) => {
+    const b = e.target.closest('.stat');
+    if (b && b.dataset.src && screen === 'review' && b.dataset.src !== source) {
+      source = b.dataset.src;
+      renderReview();
+    }
+  };
 }
 
 async function refreshStatus() {
@@ -377,18 +394,6 @@ function showReview() {
   pollTimer = setInterval(refreshStatus, 15000);
 }
 
-function sourceSwitchHtml() {
-  return `<div class="srcswitch">
-    <button class="src ${source === 'phone' ? 'active' : ''}" data-src="phone">📱 iPhone</button>
-    <button class="src ${source === 'mac' ? 'active' : ''}" data-src="mac">💻 Mac</button></div>`;
-}
-
-function wireSourceSwitch() {
-  for (const b of panel.querySelectorAll('.srcswitch .src')) {
-    b.onclick = () => { source = b.dataset.src; renderReview(); };
-  }
-}
-
 function renderReview() {
   if (source === 'mac') return renderMacReview();
   let tiles = CATEGORIES.map((c) => {
@@ -401,22 +406,23 @@ function renderReview() {
     <b>${removals.length.toLocaleString()}</b>Removed <span class="sz">${fmtGb(removals.reduce((s, r) => s + (r.size || 0), 0))}</span></button>`;
   panel.innerHTML = `
     ${statusStripDiv()}
-    ${sourceSwitchHtml()}
     <div class="media-tiles">${tiles}</div>
     <div id="cat-pane"></div>
     <div class="selbar">
       <span id="sel-count"></span>
-      <span class="media-dim">Nothing is deleted without a verified backup + your confirm</span>
+      <span class="media-dim">Removal always asks first — backup to Mac is on by default</span>
       <button class="media-cta ghost" id="back-btn" style="margin-left:auto">↻ Rescan</button>
       <button class="media-cta" id="apply-btn" style="margin-left:0">Back Up &amp; Remove…</button>
     </div>`;
   for (const tile of panel.querySelectorAll('.media-tile')) {
     tile.onclick = () => { activeCat = tile.dataset.cat; renderReview(); };
   }
-  wireSourceSwitch();
+  wireStatusStrip();
   document.getElementById('back-btn').onclick = () => showConnect();
   document.getElementById('apply-btn').onclick = async () => {
-    if (selected.size && await confirmRemove(selected)) showApply(true);
+    if (!selected.size) return;
+    const r = await confirmRemoveDialog(selected);
+    if (r) showApply(true, null, !r.backup);
   };
   renderCategoryPane();
   updateSelbar();
@@ -497,7 +503,6 @@ function renderMacReview() {
   }).join('');
   panel.innerHTML = `
     ${statusStripDiv()}
-    ${sourceSwitchHtml()}
     <div class="media-tiles">${tiles}</div>
     <div id="cat-pane"></div>
     <div class="selbar">
@@ -509,7 +514,7 @@ function renderMacReview() {
   for (const tile of panel.querySelectorAll('.media-tile')) {
     tile.onclick = () => { activeMacCat = tile.dataset.cat; renderMacReview(); };
   }
-  wireSourceSwitch();
+  wireStatusStrip();
   document.getElementById('mac-reindex-btn').onclick = reindexMac;
   document.getElementById('mac-trash-btn').onclick = trashSelected;
   renderMacPane();
@@ -608,26 +613,30 @@ function updateMacSelbar() {
   }
 }
 
-async function trashSelected() {
+async function trashPaths(rawPaths) {
   const byPath = new Map(macIndex.map((r) => [r.path, r]));
-  const paths = [...macSelected].filter((p) => byPath.has(p));
-  if (!paths.length) return;
+  const paths = rawPaths.filter((p) => byPath.has(p));
+  if (!paths.length) return false;
   const bytes = paths.reduce((s, p) => s + (byPath.get(p)?.size || 0), 0);
   const ok = await confirmDialog(
-    `<b>${paths.length.toLocaleString()} files (${fmtGb(bytes)})</b> will be moved to the macOS Trash.
-     You can restore them from the Trash anytime.`, 'Move to Trash');
-  if (!ok) return;
+    `<b>${paths.length.toLocaleString()} file${paths.length === 1 ? '' : 's'} (${fmtGb(bytes)})</b>
+     will be moved to the macOS Trash. You can restore them from the Trash anytime.`, 'Move to Trash');
+  if (!ok) return false;
   const btn = document.getElementById('mac-trash-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Moving to Trash…'; }
   const sizes = Object.fromEntries(paths.map((p) => [p, byPath.get(p)?.size || 0]));
   await writeJsonFile('trash-selection.json', { paths, sizes });
   const res = await media('trash');
-  macSelected.clear();
+  for (const p of paths) macSelected.delete(p);
   macGroupsCache = null;
   await loadMacIndex();
   refreshStatus();
   notify(`Mac cleanup: moved ${res.trashed ?? '?'} files (${res.freed_gb ?? '?'} GB) to the Trash${res.errors?.length ? `, ${res.errors.length} errors` : ''}. One short sentence.`);
-  renderMacReview();
+  return true;
+}
+
+async function trashSelected() {
+  if (await trashPaths([...macSelected])) renderMacReview();
 }
 
 function reindexMac() {
@@ -678,19 +687,14 @@ async function openMacLightbox(path) {
   document.getElementById('lb-prev').onclick = () => openMacLightbox(lbOrder[lbIdx - 1]);
   document.getElementById('lb-next').onclick = () => openMacLightbox(lbOrder[lbIdx + 1]);
   document.getElementById('lb-open').onclick = () => bash(`open -R ${shellEsc(path)}`);
-  const markBtn = document.getElementById('lb-mark');
-  const refreshMark = () => {
-    markBtn.textContent = macSelected.has(path) ? '✓ Marked for Trash' : '🗑 Trash';
+  const delBtn = document.getElementById('lb-mark');
+  delBtn.textContent = '🗑 Move to Trash';
+  delBtn.onclick = async () => {
+    if (await trashPaths([path])) {
+      closeLightbox();
+      if (screen === 'review' && source === 'mac') renderMacReview();
+    }
   };
-  markBtn.onclick = () => {
-    if (macSelected.has(path)) macSelected.delete(path); else macSelected.add(path);
-    const thumb = document.querySelector(`.media-thumb[data-path="${CSS.escape(path)}"] input`);
-    if (thumb) thumb.checked = macSelected.has(path);
-    updateMacSelbar();
-    updateMacCatbar();
-    refreshMark();
-  };
-  refreshMark();
   const slot = box.querySelector('.lb-media');
   if (VIDEO_RE.test(path)) {
     slot.innerHTML = `<div class="media-dim">Videos preview from Finder — use "Reveal in Finder".</div>`;
@@ -836,7 +840,9 @@ function renderCategoryPane() {
   const catRemove = document.getElementById('cat-remove-btn');
   if (catRemove) catRemove.onclick = async () => {
     const s = catSelection();
-    if (s.size && await confirmRemove(s)) showApply(true, s);
+    if (!s.size) return;
+    const r = await confirmRemoveDialog(s);
+    if (r) showApply(true, s, !r.backup);
   };
   document.getElementById('cat-all-box').onchange = (e) => {
     for (const it of catItems(activeCat)) {
@@ -879,10 +885,7 @@ function updateCatbar() {
   const scoped = catSelection();
   const byId = new Map(flags.items.map((it) => [it.id, it]));
   const bytes = [...scoped].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
-  const verb = activeCat === 'on_mac'
-    ? `Remove ${scoped.size.toLocaleString()} checked — already backed up`
-    : `Back up & remove ${scoped.size.toLocaleString()} checked`;
-  btn.textContent = `🗑 ${verb} (${fmtGb(bytes)})`;
+  btn.textContent = `🗑 Remove ${scoped.size.toLocaleString()} checked (${fmtGb(bytes)})…`;
   btn.disabled = !scoped.size;
   const box = document.getElementById('cat-all-box');
   if (box) {
@@ -915,13 +918,61 @@ function confirmDialog(messageHtml, actionLabel) {
   });
 }
 
-async function confirmRemove(ids) {
+/** How many selected items would survive removal elsewhere (exact copy on Mac,
+    or an exact byte-dupe staying on the phone) vs. unique content. */
+function removalSafety(ids) {
   const byId = new Map(flags.items.map((it) => [it.id, it]));
-  const bytes = [...ids].reduce((sum, id) => sum + (byId.get(id)?.size || 0), 0);
-  return confirmDialog(
-    `<b>${ids.size.toLocaleString()} selected items (${fmtGb(bytes)})</b> will be backed up to your Mac
-     and verified, then removed from the iPhone. Continue?`,
-    'Back up & remove');
+  const set = new Set(ids);
+  const safe = new Set();
+  for (const id of set) if (byId.get(id)?.flags.includes('on_mac')) safe.add(id);
+  for (const g of flags.groups) {
+    if (g.kind !== 'exact') continue;
+    if (g.ids.some((id) => !set.has(id))) {
+      for (const id of g.ids) if (set.has(id)) safe.add(id);
+    }
+  }
+  return { safe: safe.size, unique: set.size - safe.size };
+}
+
+/** The one removal decision point: shows the safety breakdown and lets the
+    user keep or skip the backup. Resolves {backup} or null on cancel. */
+function confirmRemoveDialog(ids) {
+  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const bytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
+  const { safe, unique } = removalSafety([...ids]);
+  return new Promise((resolve) => {
+    const box = document.createElement('div');
+    box.className = 'media-lightbox';
+    box.innerHTML = `
+      <div class="media-confirm">
+        <div><b>Remove ${ids.size.toLocaleString()} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) from the iPhone?</b></div>
+        <div class="media-dim" style="margin-top:6px">
+          ${safe ? `✓ ${safe.toLocaleString()} already safe — an exact copy stays on your Mac or on the phone.<br>` : ''}
+          ${unique ? `⚠️ <b>${unique.toLocaleString()} unique</b> — no other copy exists anywhere.<br>` : ''}
+          USB removal skips the iPhone's Recently Deleted — without a backup it cannot be undone.
+        </div>
+        <label class="catall" style="margin-top:12px">
+          <input type="checkbox" id="cf-backup" checked>
+          <span>Back up to Mac first &amp; verify every copy (recommended)</span></label>
+        <div class="row">
+          <button class="media-cta ghost sm" id="cf-no">Cancel</button>
+          <button class="media-cta sm" id="cf-yes"></button>
+        </div>
+      </div>`;
+    const yes = box.querySelector('#cf-yes');
+    const backupBox = box.querySelector('#cf-backup');
+    const refresh = () => {
+      yes.textContent = backupBox.checked ? 'Back up & remove' : 'Remove without backup';
+      yes.classList.toggle('danger', !backupBox.checked);
+    };
+    backupBox.onchange = refresh;
+    refresh();
+    const done = (v) => { box.remove(); resolve(v); };
+    box.onclick = (e) => { if (e.target === box) done(null); };
+    box.querySelector('#cf-no').onclick = () => done(null);
+    yes.onclick = () => done({ backup: backupBox.checked });
+    document.body.appendChild(box);
+  });
 }
 
 // ── full-size preview (lightbox) ──
@@ -989,25 +1040,17 @@ async function openLightbox(id) {
   document.getElementById('lb-next').onclick = () => openLightbox(lbOrder[lbIdx + 1]);
   document.getElementById('lb-open').onclick = () =>
     bash(`open "${DATA_DIR}/staging/${it.staged}"`);
-  const markBtn = document.getElementById('lb-mark');
-  const refreshMark = () => {
-    const on = selected.has(it.id);
-    markBtn.textContent = on ? '✓ Marked for removal' : '🗑 Remove';
-    markBtn.title = on ? 'Click to keep this one' : 'Check it for the backup & remove set';
-  };
-  markBtn.onclick = () => {
-    if (selected.has(it.id)) selected.delete(it.id); else selected.add(it.id);
-    const thumb = document.querySelector(`.media-thumb[data-id="${it.id}"]`);
-    if (thumb) {
-      const box2 = thumb.querySelector('input');
-      if (box2) box2.checked = selected.has(it.id);
-      if (activeCat === 'dupe') thumb.classList.toggle('kept', !selected.has(it.id));
+  const delBtn = document.getElementById('lb-mark');
+  delBtn.textContent = '🗑 Delete';
+  delBtn.title = 'Remove this item from the iPhone';
+  delBtn.onclick = async () => {
+    const one = new Set([it.id]);
+    const r = await confirmRemoveDialog(one);
+    if (r) {
+      closeLightbox();
+      showApply(true, one, !r.backup);
     }
-    updateSelbar();
-    updateCatbar();
-    refreshMark();
   };
-  refreshMark();
   const slot = box.querySelector('.lb-media');
   const ext = it.staged.split('.').pop().toLowerCase();
   if (it.kind === 'video') {
@@ -1042,7 +1085,7 @@ function updateSelbar() {
   const btn = document.getElementById('apply-btn');
   if (btn) {
     btn.disabled = selected.size === 0;
-    btn.textContent = `Back Up & Remove ${selected.size.toLocaleString()} (${fmtGb(bytes)})`;
+    btn.textContent = `Remove ${selected.size.toLocaleString()} from iPhone (${fmtGb(bytes)})…`;
   }
 }
 
@@ -1063,7 +1106,7 @@ function writeSelection(ids) {
   return writeJsonFile('selection.json', { ids: [...ids] });
 }
 
-async function showApply(fresh = false, scopeIds = null) {
+async function showApply(fresh = false, scopeIds = null, skipBackup = false) {
   const ids = scopeIds || selected;
   const byId = fresh ? new Map(flags.items.map((it) => [it.id, it])) : null;
   const count = fresh ? ids.size : null;
@@ -1073,7 +1116,7 @@ async function showApply(fresh = false, scopeIds = null) {
     panel.innerHTML = `
       ${statusStripDiv()}
       <div class="media-card">
-        <h4 id="apply-title">${fresh ? `Back up &amp; remove ${count.toLocaleString()} items (${fmtGb(bytes)})` : 'Back up &amp; remove'}</h4>
+        <h4 id="apply-title">${fresh ? `Remove ${count.toLocaleString()} items (${fmtGb(bytes)})${skipBackup ? ' — no backup (your choice)' : ''}` : 'Back up &amp; remove'}</h4>
         <div class="media-dim" id="preflight-note"></div>
         <div class="media-flow">
           <div class="fstep" id="step-backup"><span class="fnum">1</span>
@@ -1097,9 +1140,20 @@ async function showApply(fresh = false, scopeIds = null) {
       <div class="media-card dashed" hidden id="report-card"></div>`;
   });
 
+  if (skipBackup) {
+    for (const step of ['step-backup', 'step-verify']) {
+      const { step: el, chip } = stepEls(step);
+      el.classList.add('done');
+      chip.hidden = false;
+      chip.textContent = 'skipped — no backup';
+      chip.classList.add('warn');
+    }
+    const note = document.getElementById('remove-note');
+    if (note) note.textContent = 'removing without backup…';
+  }
   if (fresh) {
     await writeSelection(ids);
-    await media('start backup');
+    await media(skipBackup ? 'start remove-only' : 'start backup');
   }
   pollApply();
 }

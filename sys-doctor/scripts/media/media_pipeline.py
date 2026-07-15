@@ -597,10 +597,15 @@ async def _remove_async(args):
     op = 'remove'
     if not args.confirm:
         fail(op, 'confirm', 'remove requires --confirm')
-    verified = json.loads((DATA_DIR / 'verified.json').read_text())
+    if getattr(args, 'unverified', False):
+        # remove-only mode: user explicitly chose no backup (dupes/blurry) —
+        # ids come straight from the selection, nothing was copied or verified
+        ids = json.loads((DATA_DIR / 'selection.json').read_text())['ids']
+    else:
+        ids = json.loads((DATA_DIR / 'verified.json').read_text())['ids']
     flags = json.loads(FLAGS.read_text())
     id_map = {it['id']: it for it in flags['items']}
-    items = [id_map[i] for i in verified['ids'] if i in id_map]
+    items = [id_map[i] for i in ids if i in id_map]
     try:
         ld = await connect_lockdown()
         afc = afc_service(ld)
@@ -630,6 +635,8 @@ async def _remove_async(args):
             it = id_map[iid]
             if 'on_mac' in it['flags']:
                 backup = it.get('mac_path', '')
+            elif getattr(args, 'unverified', False):
+                backup = ''  # removed without backup, by explicit user choice
             else:
                 d = datetime.fromtimestamp(it['mtime'] or 0)
                 backup = str(dest_root / f'{d.year:04d}' / f'{d.month:02d}' / Path(it['staged']).name)
@@ -704,6 +711,7 @@ def main():
     b.add_argument('--selection', required=True)
     r = sub.add_parser('remove')
     r.add_argument('--confirm', action='store_true')
+    r.add_argument('--unverified', action='store_true')
     t = sub.add_parser('trash')
     t.add_argument('--selection', required=True)
     args = ap.parse_args()
