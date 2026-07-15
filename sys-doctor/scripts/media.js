@@ -526,7 +526,9 @@ function renderCategoryPane() {
       if (e.target.checked) {
         if (activeCat === 'dupe' && isKeep(it.id)) continue;
         selected.add(it.id);
-      } else if (!heldByOtherCat(it, activeCat)) {
+      } else {
+        // explicit user clear wins everywhere — even items other pre-checked
+        // categories claim (unlike the blur slider's automatic re-flagging)
         selected.delete(it.id);
       }
     }
