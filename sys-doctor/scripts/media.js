@@ -131,7 +131,7 @@ async function showConnect() {
 }
 
 async function refreshDevice() {
-  const info = await media('info');
+  const [info, st] = await Promise.all([media('info'), media('state')]);
   if (screen !== 'connect') return;
   device = info;
   const card = document.getElementById('device-card');
@@ -164,10 +164,15 @@ async function refreshDevice() {
   setupCard.hidden = true;
 
   if (macCard) {
+    const idx = st?.mac_index;
+    const idxLine = idx
+      ? `Photo index: <b>${(idx.files ?? 0).toLocaleString()}</b> files · <b>${idx.gb ?? '?'} GB</b> · updated ${esc(String(idx.at ?? '').replace('T', ' '))}`
+      : 'No photo index yet — it is built during the first scan.';
     macCard.hidden = false;
     macCard.innerHTML = `
       <h4>This Mac · ${info.mac_free_gb ?? '?'} GB free
         <span class="media-chip">room for staging + backup</span></h4>
+      <div class="media-dim">${idxLine}</div>
       <div class="media-dim">Free space is checked here and re-checked right before anything copies.</div>`;
   }
 
@@ -179,6 +184,7 @@ async function refreshDevice() {
     return;
   }
 
+  const knowsPhotos = info.photos_gb != null;
   const usedPhotos = info.photos_gb ?? 0;
   const free = info.free_gb ?? 0;
   const total = info.total_gb ?? 0;
@@ -196,8 +202,8 @@ async function refreshDevice() {
       <div style="flex:${free};background:var(--bg-surface)"></div>
     </div>
     <div class="media-legend">
-      <span><span class="sw" style="background:var(--accent)"></span>Photos &amp; video <b>${usedPhotos} GB</b></span>
-      <span><span class="sw" style="background:color-mix(in srgb, var(--accent) 40%, var(--bg-surface))"></span>Apps &amp; system <b>${other.toFixed(1)} GB</b></span>
+      <span><span class="sw" style="background:var(--accent)"></span>Photos &amp; video <b>${knowsPhotos ? `${usedPhotos} GB` : '— measured on first scan'}</b></span>
+      <span><span class="sw" style="background:color-mix(in srgb, var(--accent) 40%, var(--bg-surface))"></span>${knowsPhotos ? 'Apps &amp; system' : 'Used'} <b>${other.toFixed(1)} GB</b></span>
       <span><span class="sw" style="background:var(--bg-surface);border:1px solid var(--border)"></span>Free <b>${free} GB</b></span>
     </div>
     <button class="media-cta" id="scan-btn">Scan Photos &amp; Videos</button>`;

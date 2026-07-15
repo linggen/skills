@@ -185,25 +185,27 @@ def stat_mtime_epoch(st):
     return int(m or 0)
 
 
-def afc_walk_files(afc, root='/DCIM'):
-    """Yield (path, size, mtime_epoch) for every regular file under root."""
+async def afc_walk_files(afc, root='/DCIM'):
+    """Return (path, size, mtime_epoch) for every regular file under root."""
+    files = []
     stack = [root]
     while stack:
         d = stack.pop()
         try:
-            names = afc.listdir(d)
+            names = await afc.listdir(d)
         except Exception:
             continue
         for name in names:
             p = f'{d}/{name}'
             try:
-                st = afc.stat(p)
+                st = await afc.stat(p)
             except Exception:
                 continue
             if 'S_IFDIR' in str(st.get('st_ifmt')):
                 stack.append(p)
             else:
-                yield p, int(st.get('st_size') or 0), stat_mtime_epoch(st)
+                files.append((p, int(st.get('st_size') or 0), stat_mtime_epoch(st)))
+    return files
 
 
 # ── info ──────────────────────────────────────────────────────────────────
@@ -224,14 +226,25 @@ async def _info_async():
         info = await ld.get_value() or {}
         disk = await ld.get_value(domain='com.apple.disk_usage') or {}
         gb = lambda v: round(v / 1e9, 1) if isinstance(v, (int, float)) else None
+        # AmountDataAvailable = truly free (Finder's number); TotalDataAvailable
+        # inflates it with purgeable space iOS could reclaim
+        avail = disk.get('AmountDataAvailable')
+        if avail is None:
+            avail = disk.get('TotalDataAvailable')
+        photos = gb(disk.get('PhotoUsage') or disk.get('CameraUsage'))
+        if photos is None:  # iOS 26 dropped PhotoUsage — use the last DCIM walk instead
+            try:
+                photos = json.loads(STATE.read_text()).get('pull', {}).get('dcim_gb')
+            except Exception:
+                photos = None
         out.update({
             'connected': True,
             'name': info.get('DeviceName', 'iPhone'),
             'model': info.get('ProductType', ''),
             'ios': info.get('ProductVersion', ''),
             'total_gb': gb(disk.get('TotalDiskCapacity')),
-            'free_gb': gb(disk.get('TotalDataAvailable')),
-            'photos_gb': gb(disk.get('PhotoUsage') or disk.get('CameraUsage')),
+            'free_gb': gb(avail),
+            'photos_gb': photos,
         })
         update_state(device={'name': out['name'], 'ios': out['ios'],
                              'free_gb': out['free_gb'], 'total_gb': out['total_gb']})
@@ -299,7 +312,9 @@ def cmd_index(_args):
     MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
     progress(op, 'done', total, total, status='done',
              extra={'indexed': len(rows), 'reused': reused})
-    update_state(mac_index={'files': len(rows), 'at': datetime.now().isoformat(timespec='seconds')})
+    update_state(mac_index={'files': len(rows),
+                            'gb': round(sum(r['size'] for r in rows) / 1e9, 1),
+                            'at': datetime.now().isoformat(timespec='seconds')})
 
 
 # ── pull (incremental camera roll) ────────────────────────────────────────
@@ -317,7 +332,7 @@ async def _pull_async():
         fail(op, 'connect', f'No device: {e}')
     manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
     progress(op, 'listing')
-    phone_files = list(afc_walk_files(afc))
+    phone_files = await afc_walk_files(afc)
     new = [(p, size, mt) for p, size, mt in phone_files
            if p not in manifest or manifest[p].get('size') != size]
     total_bytes = sum(size for _, size, _ in new)
@@ -351,6 +366,7 @@ async def _pull_async():
     progress(op, 'done', len(new), len(new), status='done',
              extra={'pulled': pulled, 'unchanged': len(phone_files) - len(new)})
     update_state(pull={'pulled': pulled, 'phone_files': len(phone_files),
+                       'dcim_gb': round(sum(s for _, s, _ in phone_files) / 1e9, 1),
                        'at': datetime.now().isoformat(timespec='seconds')})
 
 
@@ -391,15 +407,14 @@ def cmd_scan(_args):
     THUMBS_DIR.mkdir(parents=True, exist_ok=True)
     mov_pairs = live_photo_pairs(rows)
 
-    items, by_sha, dhash_list = {}, {}, []
+    items, by_sha, dhash_list, deferred_movs = {}, {}, [], []
     total = len(rows)
     progress(op, 'analyzing', 0, total)
     for i, r in enumerate(rows):
         staged = STAGING_DIR / r['staged']
         ext = staged.suffix.lower()
-        if r['staged'] in mov_pairs:  # MOV half of a Live Photo — fold into the still
-            items[mov_pairs[r['staged']]]['live_mov'] = r['path']
-            items[mov_pairs[r['staged']]]['size'] += r['size']
+        if r['staged'] in mov_pairs:  # MOV half of a Live Photo — folded below
+            deferred_movs.append(r)
             continue
         # id is per-FILE (path-derived): byte-identical copies must stay
         # distinct so dupe groups can keep one and remove the others
@@ -433,6 +448,13 @@ def cmd_scan(_args):
         items[item['staged']] = item
         if i % 25 == 0:
             progress(op, 'analyzing', i, total)
+
+    # fold Live-Photo MOVs into their stills (second pass — manifest order can
+    # put the MOV before its still, so this can't happen inline above)
+    for r in deferred_movs:
+        still = items[mov_pairs[r['staged']]]
+        still['live_mov'] = r['path']
+        still['size'] += r['size']
 
     progress(op, 'grouping', total, total)
     id_map = {it['id']: it for it in items.values()}
@@ -584,7 +606,7 @@ async def _remove_async(args):
         paths = [it['phone_path']] + ([it['live_mov']] if 'live_mov' in it else [])
         try:
             for p in paths:
-                afc.rm(p)
+                await afc.rm(p)
             removed.append(it['id'])
         except Exception as e:
             errors.append({'id': it['id'], 'error': str(e)})
@@ -622,8 +644,14 @@ def main():
     r = sub.add_parser('remove')
     r.add_argument('--confirm', action='store_true')
     args = ap.parse_args()
-    {'info': cmd_info, 'index': cmd_index, 'pull': cmd_pull,
-     'scan': cmd_scan, 'backup': cmd_backup, 'remove': cmd_remove}[args.cmd](args)
+    try:
+        {'info': cmd_info, 'index': cmd_index, 'pull': cmd_pull,
+         'scan': cmd_scan, 'backup': cmd_backup, 'remove': cmd_remove}[args.cmd](args)
+    except SystemExit:
+        raise
+    except Exception as e:  # crash must land in progress.json or the UI spins forever
+        progress(args.cmd, 'crashed', status='error', error=f'{type(e).__name__}: {e}')
+        raise
 
 
 if __name__ == '__main__':
