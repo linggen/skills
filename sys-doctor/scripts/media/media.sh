@@ -28,6 +28,7 @@ case "$cmd" in
   flags)         cat "$DATA/flags.json" 2>/dev/null || echo '{}' ;;
   state)         cat "$DATA/state.json" 2>/dev/null || echo '{}' ;;
   verified)      cat "$DATA/verified.json" 2>/dev/null || echo '{}' ;;
+  removals)      cat "$DATA/removals.jsonl" 2>/dev/null || true ;;
   remove-result) cat "$DATA/remove-result.json" 2>/dev/null || echo '{}' ;;
   setup)
     nohup "$HERE/setup.sh" >"$DATA/setup.log" 2>&1 &

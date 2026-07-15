@@ -612,6 +612,25 @@ async def _remove_async(args):
             errors.append({'id': it['id'], 'error': str(e)})
         if i % 10 == 0:
             progress(op, 'removing', i, len(items))
+    # permanent removal history — powers the "Removed" tab (backups are the
+    # recovery net; unlike iOS Recently Deleted there is no 30-day purge)
+    try:
+        dest_root = Path(json.loads((DATA_DIR / 'verified.json').read_text()).get('dest', ''))
+    except Exception:
+        dest_root = Path('')
+    with open(DATA_DIR / 'removals.jsonl', 'a') as rf:
+        now = datetime.now().isoformat(timespec='seconds')
+        for iid in removed:
+            it = id_map[iid]
+            if 'on_mac' in it['flags']:
+                backup = it.get('mac_path', '')
+            else:
+                d = datetime.fromtimestamp(it['mtime'] or 0)
+                backup = str(dest_root / f'{d.year:04d}' / f'{d.month:02d}' / Path(it['staged']).name)
+            rf.write(json.dumps({'at': now, 'name': Path(it['staged']).name,
+                                 'phone_path': it['phone_path'], 'size': it['size'],
+                                 'sha256': it['sha256'], 'thumb': it.get('thumb', ''),
+                                 'backup': backup}) + '\n')
     freed_gb = round(sum(id_map[i]['size'] for i in removed) / 1e9, 1)
     icloud_suspected = len(errors) > 0 and len(removed) == 0
     result = {'removed': len(removed), 'errors': len(errors), 'freed_gb': freed_gb,

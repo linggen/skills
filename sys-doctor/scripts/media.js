@@ -19,6 +19,7 @@ const CATEGORIES = [
 ];
 
 let panel = null;
+let removals = [];      // permanent removal history (removals.jsonl)
 let screen = 'connect';
 let pollTimer = null;
 let device = null;
@@ -352,21 +353,31 @@ function isKeep(id) {
   return flags.groups.some((g) => g.keep === id);
 }
 
+async function loadRemovals() {
+  const res = await bash(`cat "${DATA_DIR}/removals.jsonl" 2>/dev/null || true`);
+  removals = (res.stdout || '').trim().split('\n').filter(Boolean)
+    .map((l) => { try { return JSON.parse(l); } catch { return null; } })
+    .filter(Boolean);
+}
+
 function showReview() {
   blurThreshold = flags.blur_default || 25;
   applyPrechecks();
   setScreen('review', renderReview);
   refreshStatus();
+  loadRemovals().then(() => { if (screen === 'review') renderReview(); });
   pollTimer = setInterval(refreshStatus, 15000);
 }
 
 function renderReview() {
-  const tiles = CATEGORIES.map((c) => {
+  let tiles = CATEGORIES.map((c) => {
     const items = itemsFor(c.key);
     const size = items.reduce((s, it) => s + it.size, 0);
     return `<button class="media-tile ${c.key === activeCat ? 'active' : ''}" data-cat="${c.key}">
       <b>${items.length.toLocaleString()}</b>${c.label} <span class="sz">${fmtGb(size)}</span></button>`;
   }).join('');
+  tiles += `<button class="media-tile ${activeCat === 'removed' ? 'active' : ''}" data-cat="removed">
+    <b>${removals.length.toLocaleString()}</b>Removed <span class="sz">${fmtGb(removals.reduce((s, r) => s + (r.size || 0), 0))}</span></button>`;
   panel.innerHTML = `
     ${statusStripDiv()}
     <div class="media-tiles">${tiles}</div>
@@ -414,8 +425,37 @@ function catSelection() {
   return ids;
 }
 
+function removedThumbHtml(r) {
+  const img = r.thumb ? `<img src="../data/media/thumbs/${r.thumb}" loading="lazy" alt=""
+    onerror="this.remove()">` : '';
+  return `<div class="media-thumb" data-backup="${esc(r.backup || '')}"
+    title="${esc(r.name)} — reveal the backup in Finder">
+    ${img}<span class="score">${fmtGb(r.size || 0)}</span></div>`;
+}
+
+function renderRemovedPane(pane) {
+  if (!removals.length) {
+    pane.innerHTML = `<div class="media-dim">Nothing removed yet. Items you remove land here,
+      with their verified Mac backups — kept permanently, no 30-day limit.</div>`;
+    return;
+  }
+  const days = {};
+  for (const r of removals) (days[(r.at || '').slice(0, 10)] ||= []).push(r);
+  pane.innerHTML = `<div class="media-dim" style="margin-bottom:8px">Every item here was backed up
+      and verified before removal — the copies live on your Mac permanently (no 30-day purge).
+      Click one to reveal its backup in Finder. Restore-to-iPhone arrives with the Linggen mobile app.</div>`
+    + Object.entries(days).sort((a, b) => b[0].localeCompare(a[0])).map(([day, rows]) => `
+      <div class="media-group"><div class="glabel">${day} · ${rows.length} removed ·
+        ${fmtGb(rows.reduce((s, r) => s + (r.size || 0), 0))}</div>
+      <div class="thumbrow">${rows.map(removedThumbHtml).join('')}</div></div>`).join('');
+  for (const t of pane.querySelectorAll('.media-thumb')) {
+    t.onclick = () => { if (t.dataset.backup) bash(`open -R "${t.dataset.backup}"`); };
+  }
+}
+
 function renderCategoryPane() {
   const pane = document.getElementById('cat-pane');
+  if (activeCat === 'removed') return renderRemovedPane(pane);
   const items = itemsFor(activeCat);
   let html = '';
 
