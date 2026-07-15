@@ -420,9 +420,15 @@ function thumbHtml(it, checked) {
     ${tag}${score ? `<span class="score">${score}</span>` : ''}</div>`;
 }
 
+/** Items the active category pane DISPLAYS (dupe = all group members, keeps included). */
+function catItems(cat) {
+  if (cat !== 'dupe') return itemsFor(cat);
+  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  return flags.groups.slice(0, 100).flatMap((g) => g.ids).map((id) => byId.get(id)).filter(Boolean);
+}
+
 function catSelection() {
-  const ids = new Set(itemsFor(activeCat).filter((it) => selected.has(it.id)).map((it) => it.id));
-  return ids;
+  return new Set(catItems(activeCat).filter((it) => selected.has(it.id)).map((it) => it.id));
 }
 
 function removedThumbHtml(r) {
@@ -522,7 +528,7 @@ function renderCategoryPane() {
     if (s.size && await confirmRemove(s)) showApply(true, s);
   };
   document.getElementById('cat-all-box').onchange = (e) => {
-    for (const it of itemsFor(activeCat)) {
+    for (const it of catItems(activeCat)) {
       if (e.target.checked) {
         if (activeCat === 'dupe' && isKeep(it.id)) continue;
         selected.add(it.id);
@@ -569,7 +575,7 @@ function updateCatbar() {
   btn.disabled = !scoped.size;
   const box = document.getElementById('cat-all-box');
   if (box) {
-    const selectable = itemsFor(activeCat)
+    const selectable = catItems(activeCat)
       .filter((it) => !(activeCat === 'dupe' && isKeep(it.id))).length;
     box.checked = selectable > 0 && scoped.size >= selectable;
     box.indeterminate = scoped.size > 0 && scoped.size < selectable;
