@@ -28,6 +28,21 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Clickables always get the hand cursor — the reset drops the UA default,
+   so per-component rules miss things. One base rule, no whack-a-mole. */
+button:not(:disabled),
+[role='button'],
+label,
+select,
+summary,
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'] {
+  cursor: pointer;
+}
+
+button:disabled { cursor: not-allowed; }
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   background: var(--bg);

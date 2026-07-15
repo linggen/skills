@@ -535,6 +535,9 @@ function updateCatbar() {
 const STAGING_URL = '../data/media/staging/';
 const PREVIEW_URL = '../data/media/previews/';
 
+let lbOrder = [];
+let lbIdx = -1;
+
 function closeLightbox() {
   document.getElementById('media-lightbox')?.remove();
   document.removeEventListener('keydown', lightboxKey);
@@ -542,6 +545,17 @@ function closeLightbox() {
 
 function lightboxKey(e) {
   if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft' && lbIdx > 0) openLightbox(lbOrder[lbIdx - 1]);
+  else if (e.key === 'ArrowRight' && lbIdx >= 0 && lbIdx < lbOrder.length - 1) openLightbox(lbOrder[lbIdx + 1]);
+}
+
+/** Ids in the order the active category displays them. */
+function lightboxOrder() {
+  if (activeCat === 'dupe') {
+    const byId = new Set(flags.items.map((it) => it.id));
+    return flags.groups.slice(0, 100).flatMap((g) => g.ids).filter((id) => byId.has(id));
+  }
+  return itemsFor(activeCat).map((it) => it.id);
 }
 
 /** HEIC can't render in the browser — convert once with macOS sips, cached by content hash. */
@@ -557,21 +571,48 @@ async function openLightbox(id) {
   const it = flags.items.find((x) => x.id === id);
   if (!it) return;
   closeLightbox();
+  lbOrder = lightboxOrder();
+  lbIdx = lbOrder.indexOf(id);
   const stagedUrl = STAGING_URL + it.staged.split('/').map(encodeURIComponent).join('/');
   const box = document.createElement('div');
   box.id = 'media-lightbox';
   box.className = 'media-lightbox';
   box.innerHTML = `
+    <button class="lb-nav" id="lb-prev" aria-label="Previous" ${lbIdx > 0 ? '' : 'disabled'}>‹</button>
     <div class="lb-body"><div class="lb-media media-dim">Loading…</div>
-      <div class="lb-cap"><span>${esc(it.staged.split('/').pop())} · ${fmtGb(it.size)}</span>
+      <div class="lb-cap"><span>${esc(it.staged.split('/').pop())} · ${fmtGb(it.size)}
+          · ${lbIdx + 1} / ${lbOrder.length}</span>
+        <button class="media-cta sm" id="lb-mark"></button>
         <button class="media-cta ghost sm" id="lb-open">Open on Mac</button>
-        <button class="media-cta ghost sm" id="lb-close">✕ Close</button></div></div>`;
+        <button class="media-cta ghost sm" id="lb-close">✕ Close</button></div></div>
+    <button class="lb-nav" id="lb-next" aria-label="Next" ${lbIdx < lbOrder.length - 1 ? '' : 'disabled'}>›</button>`;
   box.onclick = (e) => { if (e.target === box) closeLightbox(); };
   document.body.appendChild(box);
   document.addEventListener('keydown', lightboxKey);
   document.getElementById('lb-close').onclick = closeLightbox;
+  document.getElementById('lb-prev').onclick = () => openLightbox(lbOrder[lbIdx - 1]);
+  document.getElementById('lb-next').onclick = () => openLightbox(lbOrder[lbIdx + 1]);
   document.getElementById('lb-open').onclick = () =>
     bash(`open "${DATA_DIR}/staging/${it.staged}"`);
+  const markBtn = document.getElementById('lb-mark');
+  const refreshMark = () => {
+    const on = selected.has(it.id);
+    markBtn.textContent = on ? '✓ Marked for removal' : '🗑 Remove';
+    markBtn.title = on ? 'Click to keep this one' : 'Check it for the backup & remove set';
+  };
+  markBtn.onclick = () => {
+    if (selected.has(it.id)) selected.delete(it.id); else selected.add(it.id);
+    const thumb = document.querySelector(`.media-thumb[data-id="${it.id}"]`);
+    if (thumb) {
+      const box2 = thumb.querySelector('input');
+      if (box2) box2.checked = selected.has(it.id);
+      if (activeCat === 'dupe') thumb.classList.toggle('kept', !selected.has(it.id));
+    }
+    updateSelbar();
+    updateCatbar();
+    refreshMark();
+  };
+  refreshMark();
   const slot = box.querySelector('.lb-media');
   const ext = it.staged.split('.').pop().toLowerCase();
   if (it.kind === 'video') {
