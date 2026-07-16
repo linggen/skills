@@ -25,14 +25,15 @@ let removals = [];      // permanent removal history (removals.jsonl)
 let macIndex = [];      // Mac photo index rows (mac-index.jsonl)
 let macSelected = new Set();   // Mac file paths picked for Trash
 let source = 'phone';   // review source: 'phone' | 'mac'
-let activeMacCat = 'dupe';
+let activeMacCat = 'all';
 let macFolderExpanded = new Set();  // folder indices shown in full (All-by-folder)
 let screen = 'connect';
 let pollTimer = null;
 let device = null;
 let flags = null;          // parsed flags.json
 let roll = [];             // EVERY camera-roll item (manifest, Live-MOVs folded)
-let archiveShas = new Set();  // content hashes with a verified archive copy (archive.jsonl)
+let archiveRows = [];         // archive.jsonl rows — every hash-verified backup copy
+let archiveShas = new Set();  // content hashes with a verified archive copy
 let allExpanded = new Set();  // month keys shown in full in the All view
 let selected = new Set();  // item ids checked for removal
 let activeCat = 'all';
@@ -454,7 +455,8 @@ async function loadJsonl(name) {
 async function loadRemovals() { removals = await loadJsonl('removals.jsonl'); }
 async function loadMacIndex() { macIndex = await loadJsonl('mac-index.jsonl'); }
 async function loadArchive() {
-  archiveShas = new Set((await loadJsonl('archive.jsonl')).map((r) => r.sha256));
+  archiveRows = await loadJsonl('archive.jsonl');
+  archiveShas = new Set(archiveRows.map((r) => r.sha256));
 }
 
 const IMAGE_RE = /\.(heic|heif|jpg|jpeg|png|gif|tiff|webp|dng)$/i;
@@ -557,9 +559,9 @@ function renderReview() {
 // ── Mac source (browse ~/Pictures index · dupes · Trash cleanup) ──
 
 const MAC_CATS = [
+  { key: 'all', label: 'All by folder' },
   { key: 'dupe', label: 'Duplicates' },
   { key: 'large', label: 'Large files' },
-  { key: 'all', label: 'All by folder' },
 ];
 
 function jsHamming(a, b) {
@@ -618,14 +620,30 @@ function macThumbHtml(r, checked) {
     <span class="score">${fmtGb(r.size)}</span></div>`;
 }
 
+/** Archive-copy tile: browse-only (the archive is the recovery guarantee —
+    cleanup never touches it here). Click reveals the copy in Finder. */
+function archThumbHtml(r) {
+  const vid = VIDEO_RE.test(r.dest);
+  return `<div class="media-thumb ${vid ? 'vid' : ''}" data-reveal="${esc(r.dest)}"
+      title="${esc(r.dest)} — click to reveal in Finder">
+    <img src="../data/media/thumbs/${r.sha256.slice(0, 12)}.jpg" loading="lazy" alt="" onerror="this.remove()">
+    ${vid ? '<span class="play">▶</span>' : ''}
+    <span class="score">${fmtGb(r.size || 0)}</span></div>`;
+}
+
 const VIDEO_RE = /\.(mov|mp4|m4v|avi|3gp)$/i;
 
 function renderMacReview() {
   const chips = MAC_CATS.map((c) => {
     const items = macItemsFor(c.key);
-    const size = items.reduce((s, r) => s + (r.size || 0), 0);
+    let count = items.length;
+    let size = items.reduce((s, r) => s + (r.size || 0), 0);
+    if (c.key === 'all') {  // the archive lives on this Mac too
+      count += archiveRows.length;
+      size += archiveRows.reduce((s, r) => s + (r.size || 0), 0);
+    }
     return `<button class="media-chip-f ${c.key === activeMacCat ? 'on' : ''}" data-cat="${c.key}">
-      <b>${items.length.toLocaleString()}</b>${c.label}${size ? ` · ${fmtGb(size)}` : ''}</button>`;
+      <b>${count.toLocaleString()}</b>${c.label}${size ? ` · ${fmtGb(size)}` : ''}</button>`;
   }).join('');
   panel.innerHTML = `
     ${statusStripDiv()}
@@ -673,6 +691,23 @@ function renderMacPane() {
   } else if (activeMacCat === 'large') {
     html += `<div class="thumbrow">${macItemsFor('large').map((r) => macThumbHtml(r, bySelected(r))).join('')}</div>`;
   } else {
+    // backup archive first (latest snapshot/month on top), grouped by its
+    // date folders — rendered from the ledger, never from the Mac index
+    const archFolders = new Map();
+    for (const r of archiveRows) {
+      const dir = r.dest.split('/').slice(0, -1).join('/');
+      if (!archFolders.has(dir)) archFolders.set(dir, []);
+      archFolders.get(dir).push(r);
+    }
+    html += [...archFolders.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([dir, rows], i) => {
+      const key = `arch${i}`;
+      const cap = macFolderExpanded.has(key) ? rows.length : FOLDER_PREVIEW;
+      const more = rows.length - cap;
+      return `<div class="media-group"><div class="glabel">💾 ${esc(abbrevPath(dir))} ·
+          ${rows.length} files · ${fmtGb(rows.reduce((s, r) => s + (r.size || 0), 0))} · backup archive</div>
+        <div class="thumbrow">${rows.slice(0, cap).map(archThumbHtml).join('')}
+        ${more > 0 ? `<button class="media-cta ghost sm show-more" data-fi="${key}">+${more} more…</button>` : ''}</div></div>`;
+    }).join('');
     const folders = {};
     for (const r of macIndex) {
       const dir = r.path.split('/').slice(0, -1).join('/');
@@ -681,7 +716,7 @@ function renderMacPane() {
     const ordered = Object.entries(folders)
       .sort((a, b) => b[1].reduce((s, r) => s + r.size, 0) - a[1].reduce((s, r) => s + r.size, 0));
     html += ordered.map(([dir, rows], fi) => {
-      const cap = macFolderExpanded.has(fi) ? rows.length : FOLDER_PREVIEW;
+      const cap = macFolderExpanded.has(String(fi)) ? rows.length : FOLDER_PREVIEW;
       const more = rows.length - cap;
       return `<div class="media-group"><div class="glabel">${esc(dir.replace(/^\/Users\/[^/]+/, '~'))} ·
           ${rows.length} files · ${fmtGb(rows.reduce((s, r) => s + r.size, 0))}</div>
@@ -691,7 +726,7 @@ function renderMacPane() {
   }
   pane.innerHTML = html;
   for (const b of pane.querySelectorAll('.show-more')) {
-    b.onclick = () => { macFolderExpanded.add(+b.dataset.fi); renderMacPane(); };
+    b.onclick = () => { macFolderExpanded.add(b.dataset.fi); renderMacPane(); };
   }
 
   for (const box of pane.querySelectorAll('.media-thumb input')) {
@@ -711,6 +746,7 @@ function renderMacPane() {
   for (const thumb of pane.querySelectorAll('.media-thumb')) {
     thumb.addEventListener('click', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.classList.contains('zoom')) return;
+      if (thumb.dataset.reveal) return void bash(`open -R "${thumb.dataset.reveal}"`);
       openMacLightbox(thumb.dataset.path);
     });
   }

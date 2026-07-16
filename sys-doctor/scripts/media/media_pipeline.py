@@ -655,7 +655,7 @@ def cmd_backup(args):
                 # archive ledger: powers the "Backed up" review filter — every
                 # row is a hash-verified copy, so its content is safe to remove
                 ledger.write(json.dumps({'sha256': it['sha256'], 'dest': str(dest),
-                                         'at': now}) + '\n')
+                                         'size': it['size'], 'at': now}) + '\n')
             if 'live_mov' in it and ok:  # copy the MOV half of a Live Photo alongside
                 mov_rel = it['live_mov'].lstrip('/')
                 mov_src = STAGING_DIR / mov_rel
