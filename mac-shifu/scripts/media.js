@@ -1296,7 +1296,7 @@ function confirmRemoveDialog(ids) {
     : arch
       ? `${arch.toLocaleString()} have backup copies (recoverable anytime) · ${rest.toLocaleString()} go to the 30-day restore area.`
       : 'Recoverable on this Mac for 30 days — restore anytime from the Removed tab.';
-  const ghostNote = 'The Photos app may keep showing cached entries afterwards — clear them by deleting in Photos, then emptying Recently Deleted.';
+  const ghostNote = 'Note: USB removal deletes the files only — the Photos app keeps cached entries until you clear them on the iPhone (delete in Photos, then empty Recently Deleted). Deleting directly in the Photos app is the cleaner way when practical.';
   return new Promise((resolve) => {
     const box = document.createElement('div');
     box.className = 'media-lightbox';
