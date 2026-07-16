@@ -563,7 +563,7 @@ function renderReview() {
 const MAC_CATS = [
   { key: 'all', label: 'All by folder' },
   { key: 'dupe', label: 'Duplicates' },
-  { key: 'large', label: 'Large files' },
+  { key: 'video', label: 'Videos' },
 ];
 
 function jsHamming(a, b) {
@@ -608,7 +608,7 @@ function macDupeGroups() {
 
 function macItemsFor(key) {
   if (key === 'dupe') return macDupeGroups().flatMap((g) => g.rows);
-  if (key === 'large') return [...macIndex].sort((a, b) => b.size - a.size).slice(0, 50);
+  if (key === 'video') return macIndex.filter((r) => VIDEO_RE.test(r.path)).sort((a, b) => b.size - a.size);
   return macIndex;
 }
 
@@ -723,8 +723,8 @@ function renderMacPane() {
         ${g.kind === 'exact' ? 'exact byte dupes' : 'near-dupes (pHash)'} · oldest first</div>
       <div class="thumbrow">${g.rows.map((r) => macThumbHtml(r, bySelected(r))).join('')}</div></div>`).join('')
       : '<div class="media-dim">No duplicates found in the Mac index.</div>';
-  } else if (activeMacCat === 'large') {
-    html += `<div class="thumbrow">${macItemsFor('large').map((r) => macThumbHtml(r, bySelected(r))).join('')}</div>`;
+  } else if (activeMacCat === 'video') {
+    html += `<div class="thumbrow">${macItemsFor('video').map((r) => macThumbHtml(r, bySelected(r))).join('')}</div>`;
   } else {
     // backup archive first (latest snapshot/month on top), grouped by its
     // date folders — rendered from the ledger, never from the Mac index
