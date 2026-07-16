@@ -1,4 +1,4 @@
-// Linggen API client for sys-doctor
+// Linggen API client for mac-shifu
 const API_BASE = '';
 
 export async function fetchModels() {

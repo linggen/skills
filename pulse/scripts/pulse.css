@@ -1,7 +1,7 @@
 /* Pulse — main page styles. Follows system light/dark preference.
    2-column layout: cards / chat. Card grammar:
    mention, reply, discovery, trend, progress, draft, empty.
-   Theming pattern matches sys-doctor: light defaults at :root, dark
+   Theming pattern matches mac-shifu: light defaults at :root, dark
    override in @media (prefers-color-scheme: dark). */
 
 :root {

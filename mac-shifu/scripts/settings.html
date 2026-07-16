@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sys Doctor · Settings</title>
+<title>Mac Shifu · Settings</title>
 <style>
   :root {
     color-scheme: light dark;
@@ -177,15 +177,15 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>Sys Doctor Settings</h1>
-      <p class="lead">Sys Doctor runs on DeepSeek by default — no key needed to start. Optionally bring your own model below, plus a Tavily key for web lookups.</p>
+      <h1>Mac Shifu Settings</h1>
+      <p class="lead">Mac Shifu runs on DeepSeek by default — no key needed to start. Optionally bring your own model below, plus a Tavily key for web lookups.</p>
     </header>
 
     <div class="section">
       <h2 class="section-title">Model</h2>
-      <p class="section-desc">The model Sys Doctor runs on. Defaults to the built-in Linggen Cloud model (<code>deepseek-v4-flash</code>) — no key needed. This sets <strong>Sys Doctor's model only</strong> — never other apps or the engine-wide default. Manage providers and keys in the main Linggen app.</p>
+      <p class="section-desc">The model Mac Shifu runs on. Defaults to the built-in Linggen Cloud model (<code>deepseek-v4-flash</code>) — no key needed. This sets <strong>Mac Shifu's model only</strong> — never other apps or the engine-wide default. Manage providers and keys in the main Linggen app.</p>
       <div class="field-card">
-        <div class="field-label">Sys Doctor runs on</div>
+        <div class="field-label">Mac Shifu runs on</div>
         <div class="field-row">
           <select id="model-select"></select>
           <span id="model-status" class="save-status">Saved</span>
@@ -195,7 +195,7 @@
 
     <div class="section">
       <h2 class="section-title">Web Search</h2>
-      <p class="section-desc">Add a Tavily API key to enable web search during analysis. Free tier at <a href="https://tavily.com" target="_blank" rel="noopener">tavily.com</a> is enough for personal use. Optional — Sys Doctor still works without it.</p>
+      <p class="section-desc">Add a Tavily API key to enable web search during analysis. Free tier at <a href="https://tavily.com" target="_blank" rel="noopener">tavily.com</a> is enough for personal use. Optional — Mac Shifu still works without it.</p>
       <div class="field-card">
         <div class="field-label">
           Tavily API Key
@@ -300,8 +300,8 @@
       }
     });
 
-    // ── Model (per-app default) — writes localStorage('sys-doctor:model'),
-    // read by doctor.js at session creation. Changes ONLY Sys Doctor, never
+    // ── Model (per-app default) — writes localStorage('mac-shifu:model'),
+    // read by doctor.js at session creation. Changes ONLY Mac Shifu, never
     // the engine-wide default or other apps.
     const modelSelect = document.getElementById("model-select");
     const modelStatus = document.getElementById("model-status");
@@ -313,7 +313,7 @@
         const data = await r.json();
         models = Array.isArray(data) ? data : (data.models || []);
       } catch { /* offline — still offer the default */ }
-      let current = ""; try { current = localStorage.getItem("sys-doctor:model") || ""; } catch {}
+      let current = ""; try { current = localStorage.getItem("mac-shifu:model") || ""; } catch {}
       modelSelect.innerHTML = "";
       const def = document.createElement("option");
       def.value = ""; def.textContent = `App default (${APP_DEFAULT_MODEL})`;
@@ -333,8 +333,8 @@
     }
     modelSelect.addEventListener("change", () => {
       try {
-        if (modelSelect.value) localStorage.setItem("sys-doctor:model", modelSelect.value);
-        else localStorage.removeItem("sys-doctor:model");
+        if (modelSelect.value) localStorage.setItem("mac-shifu:model", modelSelect.value);
+        else localStorage.removeItem("mac-shifu:model");
       } catch { /* ignore */ }
       modelStatus.textContent = "Saved — applies to your next scan";
       modelStatus.classList.add("visible");

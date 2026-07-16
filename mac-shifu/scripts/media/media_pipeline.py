@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Media pipeline for Sys Doctor's Media tab.
+"""Media pipeline for Mac Shifu's Media tab.
 
 Subcommands (all write machine-readable JSON; long ops stream progress to
 data/media/progress.json and are launched in the background by media.sh):
@@ -34,7 +34,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 HOME = Path.home()
-DATA_DIR = HOME / '.linggen' / 'skills' / 'sys-doctor' / 'data' / 'media'
+DATA_DIR = HOME / '.linggen' / 'skills' / 'mac-shifu' / 'data' / 'media'
 STAGING_DIR = DATA_DIR / 'staging'
 THUMBS_DIR = DATA_DIR / 'thumbs'
 MANIFEST = DATA_DIR / 'manifest.jsonl'

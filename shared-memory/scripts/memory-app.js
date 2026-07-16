@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Most recent ling-mem skill session id, or '' if none exists yet or the
 // latest is older than 24h (all apps share this rule: latest if < 24h,
-// else auto-fresh — CFO/DJ/Sys Doctor/Pulse do the same).
+// else auto-fresh — CFO/DJ/Mac Shifu/Pulse do the same).
 async function latestSkillSession() {
   try {
     const sessions = await listSkillSessions(SKILL_NAME);

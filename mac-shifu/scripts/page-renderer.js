@@ -63,7 +63,7 @@ export function parsePageBlock(text) {
       const cleaned = matches[i][1].replace(/,\s*([\]}])/g, '$1');
       return JSON.parse(cleaned);
     } catch (e) {
-      console.warn(`[sys-doctor] Page block ${i + 1}/${matches.length} invalid:`, e.message);
+      console.warn(`[mac-shifu] Page block ${i + 1}/${matches.length} invalid:`, e.message);
     }
   }
   return null;

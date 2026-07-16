@@ -11,7 +11,7 @@ This is the Linggen skills repository — the standalone source of truth for the
 - **`pulse/`** — GTM brain for solo founders: gathers signal (X/HN/Reddit/Bluesky), monitors mentions, drafts posts.
 - **`shared-memory/`** — Cross-host durable memory on the `ling-mem` daemon. Canonical SKILL.md lives here; host installs are stubs.
 - **`skiller/`** — Skill marketplace: search, install, browse library packs (skills.sh + ClawHub).
-- **`sys-doctor/`** — System health analyst: disk, apps, caches, system info, interactive dashboard.
+- **`mac-shifu/`** — Your Mac's shifu: system health (disk, apps, caches, dashboard) + iPhone/Mac photo-video cleanup.
 - **`xbot/`** — X (Twitter) assistant: post, search, reply, mentions, engagement. User-provided API credentials.
 
 ## Edit workflow — three synced surfaces

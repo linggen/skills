@@ -1,4 +1,4 @@
-// Sys Doctor v2 — orchestrator
+// Mac Shifu v2 — orchestrator
 // Runs hardware probe on open, sends data to model, renders model's page JSON.
 
 import { listSkillSessions } from './api.js';
@@ -6,9 +6,9 @@ import { runScan, runDeepFileScan, persistScanSnapshot } from './scan.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
 
-const SKILL_NAME = 'sys-doctor';
+const SKILL_NAME = 'mac-shifu';
 const params = new URLSearchParams(window.location.search);
-// Branded Sys Doctor.app launches with ?app_mode=1, same as core: both ride
+// Branded Mac Shifu.app launches with ?app_mode=1, same as core: both ride
 // the user's global default model (Settings → Models) unless a per-skill
 // localStorage override is set.
 const APP_MODE = params.get('app_mode') === '1';
@@ -35,12 +35,12 @@ function syncToolbarBusy() {
 // ── Init ──
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // App mode: per-skill override in localStorage('sys-doctor:model') if set.
+  // App mode: per-skill override in localStorage('mac-shifu:model') if set.
   // Otherwise leave modelId empty so the engine uses the user's global
   // default model — the fresh-install default is the built-in Linggen Cloud
   // model, so a new user still gets a working scan with no API key.
   if (!modelId && APP_MODE) {
-    try { modelId = localStorage.getItem('sys-doctor:model') || ''; }
+    try { modelId = localStorage.getItem('mac-shifu:model') || ''; }
     catch { /* ignore */ }
   }
 
@@ -89,7 +89,7 @@ async function mountAndStart(sessionId, carryPage = null) {
     skillName: SKILL_NAME,
     agentId: 'ling',
     modelId,
-    title: 'Sys Doctor',
+    title: 'Mac Shifu',
     placeholder: 'Ask me anything...',
     onSessionCreated: (sid) => {
       const url = new URL(window.location);
@@ -117,7 +117,7 @@ async function mountAndStart(sessionId, carryPage = null) {
           cacheCurrentPage();
           expectPageBlock = false;
         } catch (e) {
-          console.warn('[sys-doctor] failed to parse PageUpdate args', e, payload.args);
+          console.warn('[mac-shifu] failed to parse PageUpdate args', e, payload.args);
         }
       }
     },
@@ -182,7 +182,7 @@ function startFresh() {
       {
         type: 'info',
         icon: '🩺',
-        title: 'Sys Doctor',
+        title: 'Mac Shifu',
         fields: [
           { label: '', value: 'Click ↻ Full Rescan in the toolbar above to run a full system check — CPU, memory, disk, battery, security, and performance.' },
         ],
@@ -195,13 +195,13 @@ function startFresh() {
   // when the session had no cached dashboard). The actual scan runs only when
   // the user clicks ↻ Full Rescan (startHardwareProbe).
   const sess = new URLSearchParams(location.search).get('session');
-  const greetKey = sess ? `sys-doctor:greeted:${sess}` : null;
+  const greetKey = sess ? `mac-shifu:greeted:${sess}` : null;
   if (greetKey && localStorage.getItem(greetKey)) return;
   setTimeout(() => {
     if (!chat) return;
     if (greetKey) localStorage.setItem(greetKey, '1');
     chat.addMessage('assistant',
-      "I'm Ling, your personal system health assistant inside Sys Doctor. " +
+      "I'm Ling, your personal system health assistant inside Mac Shifu. " +
       'Click ↻ Full Rescan in the System toolbar whenever you want a full health check — ' +
       'CPU, memory, disk, battery, security, and performance.');
   }, 2000);
@@ -268,7 +268,7 @@ async function startHardwareProbe(rescan = false) {
     chat.sendHidden(prompt);
   } catch (err) {
     console.error('Hardware probe error:', err);
-    if (chat) chat.send('Please greet me and show the sys-doctor dashboard. I could not collect hardware data automatically.');
+    if (chat) chat.send('Please greet me and show the mac-shifu dashboard. I could not collect hardware data automatically.');
   } finally {
     scanning = false;
     syncToolbarBusy();
@@ -283,7 +283,7 @@ const RESUME_WINDOW_MS = 24 * 3600 * 1000;
 
 function sessionAgeMs(session) {
   try {
-    const ts = parseInt(localStorage.getItem(`sys-doctor-page-ts:${session.id}`) || '0', 10);
+    const ts = parseInt(localStorage.getItem(`mac-shifu-page-ts:${session.id}`) || '0', 10);
     if (ts) return Date.now() - ts;
   } catch { /* ignore */ }
   return Date.now() - (session.created_at || 0) * 1000;
@@ -291,15 +291,15 @@ function sessionAgeMs(session) {
 
 function readCachedPage(sessionId) {
   try {
-    const page = JSON.parse(localStorage.getItem(`sys-doctor-page:${sessionId}`) || 'null');
+    const page = JSON.parse(localStorage.getItem(`mac-shifu-page:${sessionId}`) || 'null');
     return page && (page.top_bar?.length || page.body?.length) ? page : null;
   } catch {
     return null;
   }
 }
 
-const LAST_SCAN_KEY = 'sys-doctor:last-scan-at';
-const LAST_SUMMARY_KEY = 'sys-doctor:last-summary';
+const LAST_SCAN_KEY = 'mac-shifu:last-scan-at';
+const LAST_SUMMARY_KEY = 'mac-shifu:last-summary';
 const STALE_MS = 7 * 24 * 3600 * 1000;
 
 async function startRescan() {
@@ -785,14 +785,14 @@ function cacheCurrentPage() {
   const sid = new URLSearchParams(window.location.search).get('session') || '';
   if (!sid) return;
   try {
-    localStorage.setItem(`sys-doctor-page:${sid}`, JSON.stringify(getCurrentPage()));
-    localStorage.setItem(`sys-doctor-page-ts:${sid}`, String(Date.now()));
+    localStorage.setItem(`mac-shifu-page:${sid}`, JSON.stringify(getCurrentPage()));
+    localStorage.setItem(`mac-shifu-page-ts:${sid}`, String(Date.now()));
   } catch { /* quota */ }
 }
 
 function restoreFromCache(sessionId) {
   try {
-    const cached = localStorage.getItem(`sys-doctor-page:${sessionId}`);
+    const cached = localStorage.getItem(`mac-shifu-page:${sessionId}`);
     if (!cached) return false;
     const page = JSON.parse(cached);
     if (!page.top_bar?.length && !page.body?.length) return false;
@@ -807,7 +807,7 @@ function restoreFromCache(sessionId) {
 function hasCachedPage(sessionId) {
   if (!sessionId) return false;
   try {
-    const cached = localStorage.getItem(`sys-doctor-page:${sessionId}`);
+    const cached = localStorage.getItem(`mac-shifu-page:${sessionId}`);
     if (!cached) return false;
     const page = JSON.parse(cached);
     return Boolean(page.top_bar?.length || page.body?.length);

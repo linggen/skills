@@ -3,7 +3,7 @@
 # Usage: media.sh <info|progress|flags|state|verified|remove-result|setup|start <op...>|cancel>
 set -u
 
-DATA="$HOME/.linggen/skills/sys-doctor/data/media"
+DATA="$HOME/.linggen/skills/mac-shifu/data/media"
 VENV="$DATA/venv"
 PY="$VENV/bin/python"
 HERE="$(cd "$(dirname "$0")" && pwd)"

@@ -1,7 +1,7 @@
 // Health score — weighted composite 0-100.
 // Stored as history in localStorage for trend tracking.
 
-const HISTORY_KEY = 'sys-doctor:score-history';
+const HISTORY_KEY = 'mac-shifu:score-history';
 const MAX_HISTORY = 30;
 
 /**

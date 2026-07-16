@@ -4,9 +4,9 @@
 // remove) via /api/bash -> scripts/media/media.sh; detection is pure scripts.
 // The agent narrates milestones (window._chatNotify) but never gates progress.
 
-const MEDIA_SH = '$HOME/.linggen/skills/sys-doctor/scripts/media/media.sh';
-const DATA_DIR = '$HOME/.linggen/skills/sys-doctor/data/media';
-const TAB_KEY = 'sys-doctor:tab';
+const MEDIA_SH = '$HOME/.linggen/skills/mac-shifu/scripts/media/media.sh';
+const DATA_DIR = '$HOME/.linggen/skills/mac-shifu/data/media';
+const TAB_KEY = 'mac-shifu:tab';
 const RENDER_CAP = 200; // thumbs per category; selection still covers all items
 const FOLDER_PREVIEW = 30; // Mac "All by folder" tiles before a "+N more" expander
 

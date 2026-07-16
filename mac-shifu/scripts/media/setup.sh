@@ -4,7 +4,7 @@
 # no system Python, CLT, or brew needed. Idempotent — safe to re-run.
 set -eu
 
-DATA="$HOME/.linggen/skills/sys-doctor/data/media"
+DATA="$HOME/.linggen/skills/mac-shifu/data/media"
 VENV="$DATA/venv"
 BIN="$HOME/.linggen/bin"
 UV="$BIN/uv"

@@ -84,7 +84,7 @@ Capabilities do NOT appear in the UI; users never pick one.
 - Pull from: same sources as `discover-customers` plus any past Pulse
   threads the user has posted to (for reply triage).
 - Two outputs:
-  - `mentions[]` — *"@user mentioned Sys Doctor in r/macapps thread X"*
+  - `mentions[]` — *"@user mentioned Mac Shifu in r/macapps thread X"*
   - `replies_due[]` — unanswered comments on the user's recent posts,
     each with a draft reply.
 
@@ -167,7 +167,7 @@ Three vertical sections, top-to-bottom:
 │ Bluesky 210 followers (+6/7d)                                   │
 ├─────────────────────────────────────────────────────────────────┤
 │ Mentions  +  Replies due                  [highest priority]   │
-│ ─ "@user named Sys Doctor in r/macapps thread"                  │
+│ ─ "@user named Mac Shifu in r/macapps thread"                  │
 │ ─ "3 unanswered replies on your HN post"                        │
 ├─────────────────────────────────────────────────────────────────┤
 │ Discovery                                 [cold opportunities] │
@@ -208,7 +208,7 @@ writes the daily `account-health.json` follower/karma points).
   "extracted_from": "config.brief",
   "brief_hash": "sha1:9fa3e1c2…",
   "extracted_at": "2026-05-06T08:00:00Z",
-  "products": ["Sys Doctor", "Linggen", "ling-mem"],
+  "products": ["Mac Shifu", "Linggen", "ling-mem"],
   "competitors": ["CleanMyMac", "Hazel", "DevonThink", "DaisyDisk"],
   "self": ["@Linggen77", "linggen on GitHub"]
 }
@@ -286,7 +286,7 @@ derived analytics, the lowest-priority future item.
 
 ```json
 // launches.json (future — user-declared, no writer yet)
-[ { "name": "Sys Doctor", "launch_date": "2026-04-28", "days_since": 8, "followup_due": "week-2" } ]
+[ { "name": "Mac Shifu", "launch_date": "2026-04-28", "days_since": 8, "followup_due": "week-2" } ]
 
 // audience.json (future — derived)
 { "tags": ["mac power user", "rust dev"], "active_responders": [] }
@@ -303,7 +303,7 @@ State is read by:
 On each run, the agent extracts from the brief text already in its
 conversation history (delivered via hidden chat init from
 `config.brief`):
-- **Product names** — the user's own products (e.g., "Sys Doctor",
+- **Product names** — the user's own products (e.g., "Mac Shifu",
   "Linggen", "ling-mem")
 - **Competitors named** — anything called out in a comparison or rule
   ("Hazel", "DevonThink", "CleanMyMac")
@@ -330,7 +330,7 @@ data/YYYY-MM-DD/session.json
 
 **One session per day.** Today's session = today's file. New goal runs
 through the day **accumulate** patches into this single file
-(sys-doctor body_patch model — the dashboard updates in place; no
+(mac-shifu body_patch model — the dashboard updates in place; no
 multi-session-per-day fan-out). Yesterday's session is its own file in
 yesterday's date dir; it stays as an archive but is not the active view.
 
@@ -346,7 +346,7 @@ files per date dir) is gone — one user, one daily pulse, one file.
   "status_strip": [
     { "label": "r/macapps", "value": "47/50", "tone": "ok" },
     { "label": "HN", "value": "warm", "tone": "ok" },
-    { "label": "8d since Sys Doctor launch", "tone": "neutral" },
+    { "label": "8d since Mac Shifu launch", "tone": "neutral" },
     { "label": "week-2 follow-up due", "tone": "due" }
   ],
 
@@ -414,7 +414,7 @@ fields below.
 **`mention`** — somebody named your watchlist
 ```json
 { "type": "mention", "id": "...",
-  "watched_term": "Sys Doctor",
+  "watched_term": "Mac Shifu",
   "actor": "@cedricchase",
   "source": "reddit", "sub": "macapps",
   "thread_url": "...", "thread_title": "...",
@@ -510,7 +510,7 @@ invokes only `discover-customers`; a *"check mentions"* run touches only
 `mentions[]` and `replies_due[]`. The Pulse page must handle this
 without losing prior content.
 
-The contract — same as Sys Doctor's dashboard:
+The contract — same as Mac Shifu's dashboard:
 
 - **Each capability emits a PageUpdate `body_patch`** scoped to the
   sections it produced. Missing sections in a patch mean *not touched —
@@ -522,7 +522,7 @@ The contract — same as Sys Doctor's dashboard:
   into today; each day is its own page state. Cross-session
   persistence lives in the state layer (account health, launches,
   posted, watchlist-cache), not in per-session data.
-- **The renderer applies patches incrementally** — like sys-doctor
+- **The renderer applies patches incrementally** — like mac-shifu
   swapping the Security scorecard when `ScanSecurity` finishes,
   Pulse swaps the Mentions section when `monitor-mentions` finishes,
   even if Discovery wasn't re-run.
@@ -552,7 +552,7 @@ scanned"* leaves the section as-is.
 | Goal text | Capabilities invoked |
 |:----------|:---------------------|
 | *"Daily X-post if I shipped or learned"* | track-progress + draft-content (lane: x-post) |
-| *"Launch Sys Doctor on r/macapps and HN"* | research-market + discover-customers + draft-content |
+| *"Launch Mac Shifu on r/macapps and HN"* | research-market + discover-customers + draft-content |
 | *"Find threads worth commenting on"* | discover-customers (no draft) |
 | *"Anyone talking about me/my product"* | monitor-mentions |
 | *"Reply to comments on my posts"* | monitor-mentions (replies_due only) |

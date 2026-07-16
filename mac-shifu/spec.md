@@ -1,11 +1,11 @@
 ---
 type: spec
 guide: |
-  Product specification for sys-doctor v2.
+  Product specification for mac-shifu v2.
   Describes what to build and why. Avoid implementation details.
 ---
 
-# Sys Doctor v2 — Your AI System Manager
+# Mac Shifu v2 — Your AI System Manager
 
 ## Vision
 
@@ -124,7 +124,7 @@ Help users understand what's slowing their machine.
 
 ### 5. Smart Advisor (new — the AI differentiator)
 
-This is what makes sys-doctor an agent, not a scanner. After collecting all data, AI synthesizes a personalized report.
+This is what makes mac-shifu an agent, not a scanner. After collecting all data, AI synthesizes a personalized report.
 
 #### What it covers
 
@@ -182,7 +182,7 @@ Always two-column. Chat panel fixed on right. Left panel is entirely model-drive
 
 ```
 ┌───────────────────────────────────────────────────────────┐
-│ Header: 🩺 Sys Doctor                           [Model ▾] │
+│ Header: 🩺 Mac Shifu                           [Model ▾] │
 ├─────────────────────────────────┬─────────────────────────┤
 │                                 │                         │
 │  TOP BAR (model-defined)        │  CHAT PANEL (fixed)     │
@@ -265,7 +265,7 @@ Each top bar widget is a known component with optimized rendering. The model pro
 Different skills use different top bars:
 
 ```json
-// sys-doctor
+// mac-shifu
 "top_bar": [
   { "widget": "cpu", "data": {...} },
   { "widget": "memory", "data": {...} },

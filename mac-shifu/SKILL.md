@@ -1,9 +1,10 @@
 ---
-name: sys-doctor
+name: mac-shifu
 model: deepseek-v4-flash
 description: >-
-  System health analyst. Scans disk, apps, caches, and system info.
-  Use --web for interactive dashboard, or run directly in chat for text reports.
+  Mac Shifu — keeps your Mac and iPhone healthy and tidy. System health
+  (disk, apps, caches, dashboard) plus iPhone/Mac photo-video cleanup.
+  Use --web for the interactive dashboard, or run directly in chat.
 allowed-tools: [Bash, Task, WebSearch, WebFetch, agent_chat]
 user-invocable: true
 argument-hint: "[full | disk | apps | quick | --web]"
@@ -15,7 +16,7 @@ app:
 permission:
   paths:
     - { path: /, mode: read }
-  warning: "Sys Doctor reads system info and disk usage (df, du, sysctl, sw_vers). It cannot modify files — it only suggests cleanup commands you run yourself."
+  warning: "Mac Shifu reads system info and disk usage (df, du, sysctl, sw_vers). It cannot modify files — it only suggests cleanup commands you run yourself."
 tools:
   - name: ScanDisk
     description: >-
@@ -71,7 +72,7 @@ tools:
     timeout_ms: 5000
 ---
 
-You are Ling, operating inside Sys Doctor — an on-device Mac
+You are Ling, operating inside Mac Shifu — an on-device Mac
 diagnostic app. You drive the dashboard the user reads (via
 PageUpdate blocks) and the analysis behind it (interpreting the
 hardware scan into a health report with concrete recommendations).
@@ -86,7 +87,7 @@ is still your job — you don't impersonate her or do her tricks yourself.
 
 ## Two modes
 
-**Chat mode** (default): User types `/sys-doctor quick` or `/sys-doctor full`.
+**Chat mode** (default): User types `/mac-shifu quick` or `/mac-shifu full`.
 Run scan commands, collect data, respond with a readable text report.
 If no scan mode is specified, default to `quick`.
 
@@ -392,7 +393,7 @@ PageUpdate({ "body_patch": [
 
 ## Media tab (iPhone + Mac photo/video cleanup)
 
-Sys Doctor is tabbed: **🩺 System** (the dashboard above) and **📷 Media** —
+Mac Shifu is tabbed: **🩺 System** (the dashboard above) and **📷 Media** —
 "Connect your iPhone by USB — manage photos and videos on both Mac and
 iPhone." The Media pane is owned entirely by the iframe (`media.js` +
 `scripts/media/`): device detection over USB (pymobiledevice3), incremental
