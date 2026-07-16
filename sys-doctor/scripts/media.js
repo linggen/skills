@@ -177,7 +177,9 @@ async function resumeMedia() {
     return showScanning();
   }
   const f = await media('flags');
-  if (f.items?.length) { flags = f; return showReview(); }
+  // any completed scan opens the review workspace — even a clean phone still
+  // has the All/On-Mac/Removed views and the Mac archive browser to offer
+  if (f.generated || f.items?.length) { flags = f; return showReview(); }
   showConnect();
 }
 
