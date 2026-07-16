@@ -622,6 +622,37 @@ function macThumbHtml(r, checked) {
     <span class="score">${fmtGb(r.size)}</span></div>`;
 }
 
+/** Archive folders with Live-Photo MOV halves folded into their stills —
+    same rule as the phone views: one tile per photo, sidecar size included. */
+function archiveFolders() {
+  const stemOf = (p) => { const n = p.split('/').pop(); return n.slice(0, n.lastIndexOf('.')).toLowerCase(); };
+  const dirs = new Map();
+  for (const r of archiveRows) {
+    const dir = r.dest.split('/').slice(0, -1).join('/');
+    if (!dirs.has(dir)) dirs.set(dir, []);
+    dirs.get(dir).push(r);
+  }
+  const folded = new Map();
+  for (const [dir, rows] of dirs) {
+    const stillByStem = new Map();
+    const out = [];
+    for (const r of rows) {
+      if (!IMAGE_RE.test(r.dest)) continue;
+      const c = { ...r };
+      if (!stillByStem.has(stemOf(r.dest))) stillByStem.set(stemOf(r.dest), c);
+      out.push(c);
+    }
+    for (const r of rows) {
+      if (IMAGE_RE.test(r.dest)) continue;
+      const still = /\.mov$/i.test(r.dest) ? stillByStem.get(stemOf(r.dest)) : null;
+      if (still) still.size = (still.size || 0) + (r.size || 0);  // Live-Photo sidecar
+      else out.push({ ...r });
+    }
+    folded.set(dir, out);
+  }
+  return folded;
+}
+
 /** Archive-copy tile: browse-only (the archive is the recovery guarantee —
     cleanup never touches it here). Click reveals the copy in Finder. */
 function archThumbHtml(r) {
@@ -640,9 +671,11 @@ function renderMacReview() {
     const items = macItemsFor(c.key);
     let count = items.length;
     let size = items.reduce((s, r) => s + (r.size || 0), 0);
-    if (c.key === 'all') {  // the archive lives on this Mac too
-      count += archiveRows.length;
-      size += archiveRows.reduce((s, r) => s + (r.size || 0), 0);
+    if (c.key === 'all') {  // the archive lives on this Mac too (Live-MOVs folded)
+      for (const rows of archiveFolders().values()) {
+        count += rows.length;
+        size += rows.reduce((s, r) => s + (r.size || 0), 0);
+      }
     }
     return `<button class="media-chip-f ${c.key === activeMacCat ? 'on' : ''}" data-cat="${c.key}">
       <b>${count.toLocaleString()}</b>${c.label}${size ? ` · ${fmtGb(size)}` : ''}</button>`;
@@ -695,13 +728,7 @@ function renderMacPane() {
   } else {
     // backup archive first (latest snapshot/month on top), grouped by its
     // date folders — rendered from the ledger, never from the Mac index
-    const archFolders = new Map();
-    for (const r of archiveRows) {
-      const dir = r.dest.split('/').slice(0, -1).join('/');
-      if (!archFolders.has(dir)) archFolders.set(dir, []);
-      archFolders.get(dir).push(r);
-    }
-    html += [...archFolders.entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([dir, rows], i) => {
+    html += [...archiveFolders().entries()].sort((a, b) => b[0].localeCompare(a[0])).map(([dir, rows], i) => {
       const key = `arch${i}`;
       const cap = macFolderExpanded.has(key) ? rows.length : FOLDER_PREVIEW;
       const more = rows.length - cap;
