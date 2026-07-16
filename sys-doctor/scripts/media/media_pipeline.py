@@ -683,15 +683,39 @@ async def _remove_async(args):
     else:
         # offload mode: only backup-verified ids; the archive copy is the record
         ids = json.loads((DATA_DIR / 'verified.json').read_text())['ids']
-    flags = json.loads(FLAGS.read_text())
+    flags = json.loads(FLAGS.read_text()) if FLAGS.exists() else {'items': []}
     id_map = {it['id']: it for it in flags['items']}
+    manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
+    # the All view sends ids for unflagged files too — synthesize items for
+    # manifest rows the flags don't carry (same path-derived id as cmd_scan,
+    # same Live-Photo MOV fold)
+    man_rows = [r for r in manifest.values()
+                if r.get('staged') and Path(r['staged']).suffix.lower() in IMAGE_EXTS | VIDEO_EXTS]
+    mov_pairs = live_photo_pairs(man_rows)
+    by_staged = {r['staged']: r for r in man_rows}
+    mov_of_still = {}
+    for mov_s, still_s in mov_pairs.items():
+        mov_of_still.setdefault(still_s, by_staged[mov_s])
+    for r in man_rows:
+        if r['staged'] in mov_pairs:
+            continue  # MOV half of a Live Photo — folded into its still
+        iid = hashlib.sha256(r['path'].encode()).hexdigest()[:12]
+        if iid in id_map:
+            continue
+        it = {'id': iid, 'phone_path': r['path'], 'staged': r['staged'],
+              'size': r['size'], 'mtime': r.get('mtime') or 0, 'sha256': r['sha256'],
+              'thumb': f"{r['sha256'][:12]}.jpg"}
+        mov = mov_of_still.get(r['staged'])
+        if mov:
+            it['live_mov'] = mov['path']
+            it['size'] += mov['size']
+        id_map[iid] = it
     items = [id_map[i] for i in ids if i in id_map]
     try:
         ld = await connect_lockdown()
         afc = afc_service(ld)
     except Exception as e:
         fail(op, 'connect', f'No device: {e}')
-    manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
     # .AAE edit-recipe sidecars share the asset's dir+stem; iOS leaves them
     # orphaned on the phone when the asset is deleted — remove them with it
     aae_by_stem = {}

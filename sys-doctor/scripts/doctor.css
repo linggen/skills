@@ -50,40 +50,18 @@
   background: #f6f7fb;
 }
 
-/* ── Header meta: last-scan time + rescan ── */
-
-.header-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
+/* ── Last-scan time (lives in the System tools toolbar) ── */
 
 .last-scan {
   font-size: 12px;
   color: #9ca3af;
   font-variant-numeric: tabular-nums;
+  margin-left: auto;
+  align-self: center;
 }
 
 .last-scan.stale {
   color: #d97706;
-}
-
-.rescan-btn {
-  padding: 5px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.rescan-btn:hover {
-  border-color: #6366f1;
-  color: #6366f1;
 }
 
 /* ── Stale-scan banner (suggest, don't run) ── */

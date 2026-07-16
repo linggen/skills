@@ -184,7 +184,7 @@ function startFresh() {
         icon: '🩺',
         title: 'Sys Doctor',
         fields: [
-          { label: '', value: 'Click ↻ Rescan (top right) to run a full system check — CPU, memory, disk, battery, security, and performance.' },
+          { label: '', value: 'Click ↻ Full Rescan in the toolbar above to run a full system check — CPU, memory, disk, battery, security, and performance.' },
         ],
       },
     ],
@@ -198,7 +198,7 @@ function startFresh() {
         'The user just opened the Sys Doctor app. You are Ling, operating inside Sys Doctor. ' +
         'Do NOT start a scan and do NOT claim a scan is running. ' +
         'Greet warmly: open with "I\'m Ling, your personal system health assistant inside Sys Doctor." ' +
-        'Then invite them to click the ↻ Rescan button (top right) whenever they want a full health check of their CPU, memory, disk, battery, security, and performance. ' +
+        'Then invite them to click the ↻ Full Rescan button in the System toolbar whenever they want a full health check of their CPU, memory, disk, battery, security, and performance. ' +
         'Keep it natural, 2-3 sentences. No "I\'m thrilled" / "happy to help" / closing CTA. No emojis. Do NOT emit a <!--page block.'
       );
     }

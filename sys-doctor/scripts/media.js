@@ -11,6 +11,7 @@ const RENDER_CAP = 200; // thumbs per category; selection still covers all items
 const FOLDER_PREVIEW = 30; // Mac "All by folder" tiles before a "+N more" expander
 
 const CATEGORIES = [
+  { key: 'all', label: 'All media', precheck: false },
   { key: 'on_mac', label: 'Already on Mac', precheck: true },
   { key: 'dupe', label: 'Duplicates', precheck: true },
   { key: 'blurry', label: 'Blurry', precheck: true },
@@ -30,6 +31,8 @@ let screen = 'connect';
 let pollTimer = null;
 let device = null;
 let flags = null;          // parsed flags.json
+let roll = [];             // EVERY camera-roll item (manifest, Live-MOVs folded)
+let allExpanded = new Set();  // month keys shown in full in the All view
 let selected = new Set();  // item ids checked for removal
 let activeCat = 'dupe';
 let blurThreshold = 25;
@@ -91,11 +94,9 @@ function activateTab(name) {
     tab.classList.toggle('active', tab.dataset.tab === name);
   }
   const system = document.getElementById('view-panel');
-  const meta = document.querySelector('.header-meta');
   const isMedia = name === 'media';
   system.hidden = isMedia;
   panel.hidden = !isMedia;
-  if (meta) meta.style.visibility = isMedia ? 'hidden' : 'visible';
   if (isMedia) resumeMedia(); else stopPolling();
 }
 
@@ -165,13 +166,41 @@ async function resumeMedia() {
   bash(`rm -f ${DATA_DIR}/previews/vid_* 2>/dev/null`); // drop stale video play-links
   const prog = await media('progress');
   if (prog.status === 'running') {
-    if (prog.op === 'backup' || prog.op === 'remove') return showApply();
+    // backup/remove run inline over the review grid — reattach the toast
+    if (prog.op === 'backup' || prog.op === 'remove') {
+      const f = await media('flags');
+      if (f.items?.length) { flags = f; showReview(); watchInlineOp(prog.op); return; }
+    }
     if (prog.op === 'setup') return showConnect();
     return showScanning();
   }
   const f = await media('flags');
   if (f.items?.length) { flags = f; return showReview(); }
   showConnect();
+}
+
+/** Re-attach a progress toast to a backup/remove op that is already running
+    (tab was closed and reopened mid-op), then refresh the grid on completion. */
+async function watchInlineOp(op) {
+  const label = op === 'backup' ? 'Backing up' : 'Removing';
+  const toast = showToast(`${label}…`, true);
+  stopPolling();
+  await new Promise((resolve) => {
+    const poll = async () => {
+      const p = await media('progress');
+      if (p.op === op && p.total) toast.update(`${label} ${(p.done || 0).toLocaleString()}/${p.total.toLocaleString()}…`);
+      if (p.status === 'done' || p.status === 'error') { stopPolling(); resolve(); }
+    };
+    poll();
+    pollTimer = setInterval(poll, 1000);
+  });
+  const p = await media('progress');
+  flags = await media('flags');
+  await Promise.all([loadRoll(), loadRemovals()]);
+  pruneSelected();
+  if (screen === 'review' && source === 'phone') renderReview();
+  refreshStatus();
+  toast.done(p.status === 'error' ? `✕ ${p.error || `${label} failed`}` : `✓ ${label} finished`);
 }
 
 // ── screen 1 · connect ──
@@ -360,6 +389,7 @@ function blurEligible(it) {
 }
 
 function itemsFor(key) {
+  if (key === 'all') return roll;
   return flags.items.filter((it) =>
     key === 'blurry'
       ? blurEligible(it) && it.blur < blurThreshold
@@ -392,12 +422,56 @@ async function loadJsonl(name) {
 async function loadRemovals() { removals = await loadJsonl('removals.jsonl'); }
 async function loadMacIndex() { macIndex = await loadJsonl('mac-index.jsonl'); }
 
+const IMAGE_RE = /\.(heic|heif|jpg|jpeg|png|gif|tiff|webp|dng)$/i;
+
+/** Item id = sha256(phone path)[:12] — must match cmd_scan's derivation. */
+async function pathId(p) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
+  return [...new Uint8Array(d).slice(0, 6)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Build the All view from manifest.jsonl: every media file, Live-Photo MOVs
+    folded into their stills (same rule as the scan). Flagged items keep their
+    richer flags.json record; the rest get a synthesized flag-shaped item. */
+async function loadRoll() {
+  if (!crypto.subtle) { roll = []; return; }  // non-secure context — All view unavailable
+  const rows = (await loadJsonl('manifest.jsonl'))
+    .filter((r) => r.staged && (IMAGE_RE.test(r.staged) || VIDEO_RE.test(r.staged)));
+  const stem = (p) => p.slice(0, p.lastIndexOf('.')).toLowerCase();
+  const stills = new Set(rows.filter((r) => IMAGE_RE.test(r.staged)).map((r) => stem(r.staged)));
+  const movHalf = (r) => /\.mov$/i.test(r.staged) && stills.has(stem(r.staged));
+  const movByStem = new Map();
+  for (const r of rows) if (movHalf(r)) movByStem.set(stem(r.staged), r);
+  const flagsById = new Map((flags?.items || []).map((it) => [it.id, it]));
+  const items = await Promise.all(rows.filter((r) => !movHalf(r)).map(async (r) => {
+    const id = await pathId(r.path);
+    const known = flagsById.get(id);
+    if (known) return known;
+    const mov = IMAGE_RE.test(r.staged) ? movByStem.get(stem(r.staged)) : null;
+    return {
+      id, phone_path: r.path, staged: r.staged, sha256: r.sha256,
+      size: r.size + (mov ? mov.size : 0), mtime: r.mtime,
+      kind: VIDEO_RE.test(r.staged) ? 'video' : 'image', flags: [],
+      thumb: `${r.sha256.slice(0, 12)}.jpg`, ...(mov ? { live_mov: mov.path } : {}),
+    };
+  }));
+  items.sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
+  roll = items;
+}
+
+/** id → item across BOTH the flag list and the whole roll. */
+function allById() {
+  const m = new Map(roll.map((it) => [it.id, it]));
+  for (const it of flags?.items || []) if (!m.has(it.id)) m.set(it.id, it);
+  return m;
+}
+
 function showReview() {
   blurThreshold = flags.blur_default || 25;
   applyPrechecks();
   setScreen('review', renderReview);
   refreshStatus();
-  Promise.all([loadRemovals(), loadMacIndex()])
+  Promise.all([loadRemovals(), loadMacIndex(), loadRoll()])
     .then(() => { if (screen === 'review') renderReview(); });
   pollTimer = setInterval(refreshStatus, 15000);
 }
@@ -433,10 +507,8 @@ function renderReview() {
     if (await confirmRemoveDialog(selected)) removeInline(new Set(selected));
   };
   document.getElementById('backup-btn').onclick = async () => {
-    const r = await confirmBackupDialog(selected);
-    if (!r) return;
-    if (r.scope === 'roll') backupRollInline(r.dest);
-    else showApply(true, null, r.remove ? 'offload' : 'backupOnly', r.dest);
+    const r = await confirmBackupDialog();
+    if (r) backupRollInline(r.dest);
   };
   renderCategoryPane();
   updateSelbar();
@@ -892,7 +964,27 @@ function renderCategoryPane() {
       <button class="media-cta ghost" style="margin:0;padding:3px 10px;font-size:11.5px" id="old-shots-btn">select older than 6 months</button></div>`;
   }
 
-  if (activeCat === 'dupe') {
+  if (activeCat === 'all') {
+    if (!roll.length) {
+      html += `<div class="media-dim">Loading the camera roll…</div>`;
+    } else {
+      const months = new Map();
+      for (const it of roll) {
+        const key = it.mtime ? new Date(it.mtime * 1000).toISOString().slice(0, 7) : 'undated';
+        if (!months.has(key)) months.set(key, []);
+        months.get(key).push(it);
+      }
+      html += [...months.entries()].map(([month, mItems]) => {
+        const open = allExpanded.has(month);
+        const shown = open ? mItems : mItems.slice(0, FOLDER_PREVIEW);
+        const more = mItems.length - shown.length;
+        return `<div class="media-group"><div class="glabel">${month} · ${mItems.length.toLocaleString()} ·
+            ${fmtGb(mItems.reduce((s, it) => s + it.size, 0))}</div>
+          <div class="thumbrow">${shown.map((it) => thumbHtml(it, selected.has(it.id))).join('')}
+          ${more > 0 ? `<button class="media-cta ghost sm show-more" data-month="${month}">+${more.toLocaleString()} more…</button>` : ''}</div></div>`;
+      }).join('');
+    }
+  } else if (activeCat === 'dupe') {
     const groups = flags.groups.slice(0, 100);
     html += groups.map((g) => {
       const members = g.ids.map((id) => flags.items.find((it) => it.id === id)).filter(Boolean);
@@ -930,6 +1022,9 @@ function renderCategoryPane() {
       if (e.target.tagName === 'INPUT' || e.target.classList.contains('zoom')) return;
       openLightbox(thumb.dataset.id);
     });
+  }
+  for (const btn of pane.querySelectorAll('.show-more[data-month]')) {
+    btn.onclick = () => { allExpanded.add(btn.dataset.month); renderCategoryPane(); };
   }
   const catRemove = document.getElementById('cat-remove-btn');
   if (catRemove) catRemove.onclick = async () => {
@@ -992,7 +1087,7 @@ function updateCatbar() {
   const btn = document.getElementById('cat-remove-btn');
   if (!btn) return;
   const scoped = catSelection();
-  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const byId = allById();
   const bytes = [...scoped].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
   btn.textContent = `🗑 Remove ${scoped.size.toLocaleString()} checked (${fmtGb(bytes)})…`;
   btn.disabled = !scoped.size;
@@ -1031,7 +1126,7 @@ function confirmDialog(messageHtml, actionLabel) {
 /** Cleanup delete: every removal is recoverable — the staged copy moves to
     the 30-day restore area. Resolves true or null on cancel. */
 function confirmRemoveDialog(ids) {
-  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const byId = allById();
   const bytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
   const n = ids.size.toLocaleString();
   return new Promise((resolve) => {
@@ -1056,14 +1151,10 @@ function confirmRemoveDialog(ids) {
   });
 }
 
-/** Offload to long-term storage: destination (Mac or external volume) +
-    "delete after backup" (default ON). Resolves {dest, remove} or null. */
-async function confirmBackupDialog(ids) {
-  const byId = new Map(flags.items.map((it) => [it.id, it]));
-  const selBytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
-  const roll = await loadJsonl('manifest.jsonl');   // whole camera roll (all pulled files)
-  const rollBytes = roll.reduce((s, r) => s + (r.size || 0), 0);
-  const hasSel = ids.size > 0;
+/** Whole-roll archive to long-term storage — copy-only, never touches the
+    phone (removal is its own verb). Resolves {dest} or null. */
+async function confirmBackupDialog() {
+  const rollBytes = roll.reduce((s, it) => s + it.size, 0);
   let volumes = await media('volumes');
   if (!Array.isArray(volumes)) volumes = [];
   const saved = (await media('get-dest')).dest || '';
@@ -1078,39 +1169,20 @@ async function confirmBackupDialog(ids) {
     box.className = 'media-lightbox';
     box.innerHTML = `
       <div class="media-confirm">
-        <div><b>Back up to your Mac for long-term storage</b></div>
+        <div><b>Back up the whole camera roll — ${roll.length.toLocaleString()} items · ${fmtGb(rollBytes)}</b></div>
         <div class="media-dim" style="margin-top:6px">
-          Copies are sorted by year/month and every copy is re-hash verified. Backups never expire.
-        </div>
-        <div style="margin-top:12px">
-          ${hasSel ? `<label class="catall"><input type="radio" name="cf-scope" value="selected" checked>
-            <span>Flagged selection — ${ids.size.toLocaleString()} · ${fmtGb(selBytes)}</span></label>` : ''}
-          <label class="catall" style="margin-top:6px"><input type="radio" name="cf-scope" value="roll" ${hasSel ? '' : 'checked'}>
-            <span>Entire camera roll — ${roll.length.toLocaleString()} · ${fmtGb(rollBytes)}</span></label>
+          Copies are sorted by year/month and every copy is re-hash verified. Backups never expire
+          and nothing is deleted from the iPhone — remove is its own step.
         </div>
         <label class="media-dim" style="display:block;margin-top:12px">Destination
           <select id="cf-dest" style="display:block;width:100%;margin-top:4px">${opts}</select></label>
-        <label class="catall" id="cf-del-row" style="margin-top:12px">
-          <input type="checkbox" id="cf-del" checked>
-          <span>Delete from iPhone after backup — frees ${fmtGb(selBytes)}</span></label>
         <div class="row">
           <button class="media-cta ghost sm" id="cf-no">Cancel</button>
-          <button class="media-cta sm" id="cf-yes"></button>
+          <button class="media-cta sm" id="cf-yes">Back up all</button>
         </div>
       </div>`;
-    const yes = box.querySelector('#cf-yes');
-    const del = box.querySelector('#cf-del');
-    const delRow = box.querySelector('#cf-del-row');
     const destSel = box.querySelector('#cf-dest');
     destSel.dataset.prev = saved;
-    const scope = () => box.querySelector('input[name=cf-scope]:checked').value;
-    const refresh = () => {
-      const whole = scope() === 'roll';
-      // whole-roll is an archive — copy-only, it never deletes the camera roll
-      delRow.style.display = whole ? 'none' : 'flex';
-      yes.textContent = whole ? 'Back up whole roll'
-        : del.checked ? 'Back up & free up' : 'Back up only';
-    };
     // "Choose folder…" opens the native macOS picker and pins the result
     destSel.onchange = async () => {
       if (destSel.value !== '__choose__') { destSel.dataset.prev = destSel.value; return; }
@@ -1127,16 +1199,13 @@ async function confirmBackupDialog(ids) {
         destSel.value = destSel.dataset.prev || '';  // cancel → revert
       }
     };
-    for (const r of box.querySelectorAll('input[name=cf-scope]')) r.onchange = refresh;
-    del.onchange = refresh;
-    refresh();
     const done = (v) => { box.remove(); resolve(v); };
     box.onclick = (e) => { if (e.target === box) done(null); };
     box.querySelector('#cf-no').onclick = () => done(null);
-    yes.onclick = () => {
+    box.querySelector('#cf-yes').onclick = () => {
       const dest = destSel.value === '__choose__' ? (destSel.dataset.prev || '') : destSel.value;
       media(`set-dest ${dest ? shellEsc(dest) : "''"}`);  // remember as the default
-      done({ scope: scope(), dest, remove: scope() === 'selected' && del.checked });
+      done({ dest });
     };
     document.body.appendChild(box);
   });
@@ -1181,7 +1250,7 @@ async function ensurePreview(it) {
 }
 
 async function openLightbox(id) {
-  const it = flags.items.find((x) => x.id === id);
+  const it = flags.items.find((x) => x.id === id) || roll.find((x) => x.id === id);
   if (!it) return;
   closeLightbox();
   lbOrder = lightboxOrder();
@@ -1252,12 +1321,13 @@ async function deleteInLightbox(id) {
   // already pruned items+groups there) so the grid behind the lightbox updates
   const nextId = lbOrder[lbIdx + 1] ?? lbOrder[lbIdx - 1] ?? null;
   flags = await media('flags');
+  await loadRoll();
   selected.delete(id);
   pruneSelected();
   await loadRemovals();
   renderReview();
   refreshStatus();
-  if (nextId && flags.items?.some((x) => x.id === nextId)) openLightbox(nextId);
+  if (nextId && allById().has(nextId)) openLightbox(nextId);
   else closeLightbox();
   notify(`Removed 1 item from the iPhone (recoverable 30 days). One short sentence.`);
 }
@@ -1265,7 +1335,7 @@ async function deleteInLightbox(id) {
 /** Keep the working selection honest: drop ids no longer in flags (removed or
     pruned) so bulk-remove counts and the selbar total never inflate. */
 function pruneSelected() {
-  const live = new Set(flags.items.map((i) => i.id));
+  const live = new Set([...flags.items, ...roll].map((i) => i.id));
   selected = new Set([...selected].filter((id) => live.has(id)));
 }
 
@@ -1288,6 +1358,7 @@ async function removeInline(ids) {
   });
   const r = await media('remove-result');
   flags = await media('flags');
+  await loadRoll();
   pruneSelected();
   await loadRemovals();
   if (screen === 'review' && source === 'phone') renderReview();
@@ -1353,7 +1424,7 @@ function heldByOtherCat(it, cat) {
 function updateSelbar() {
   const el = document.getElementById('sel-count');
   if (!el) return;
-  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const byId = allById();
   let bytes = 0;
   for (const id of selected) bytes += byId.get(id)?.size || 0;
   el.innerHTML = `<b>${selected.size.toLocaleString()} selected</b> · <b>${fmtGb(bytes)}</b>`;
@@ -1364,11 +1435,11 @@ function updateSelbar() {
   }
   const bk = document.getElementById('backup-btn');
   if (bk) {
-    // always enabled — with nothing checked the sheet offers the whole-roll archive
-    bk.disabled = false;
-    bk.textContent = selected.size
-      ? `💾 Back up ${selected.size.toLocaleString()} (${fmtGb(bytes)})`
-      : '💾 Back up…';
+    // backup is the whole-roll archive — independent of the removal selection
+    const rollBytes = roll.reduce((s, it) => s + it.size, 0);
+    bk.textContent = roll.length
+      ? `💾 Back up all ${roll.length.toLocaleString()} (${fmtGb(rollBytes)})`
+      : '💾 Back up all…';
   }
 }
 
@@ -1387,152 +1458,6 @@ async function writeJsonFile(name, obj) {
 
 function writeSelection(ids) {
   return writeJsonFile('selection.json', { ids: [...ids] });
-}
-
-let applyMode = 'offload'; // 'trash' (delete → restore area) | 'offload' (backup→verify→delete) | 'backupOnly'
-
-function applyStepsHtml(mode, dest) {
-  const destLabel = dest ? dest.replace(/^\/Volumes\//, '') : '~/Pictures/iPhone Backup/';
-  const backup = `
-    <div class="fstep" id="step-backup"><span class="fnum">1</span>
-      <div><b>Back up</b> <span class="media-chip" hidden></span><br>
-      <span class="media-dim">→ ${esc(destLabel)} · sorted by year/month · long-term storage, never expires</span>
-      <div class="media-pbar" style="max-width:300px"><div style="width:0%"></div></div></div></div>
-    <div class="fstep" id="step-verify"><span class="fnum">2</span>
-      <div><b>Verify</b> <span class="media-chip" hidden></span><br>
-      <span class="media-dim">every copy re-hashed against the phone original — failed copies are never removed</span></div></div>`;
-  const remove = (n, note) => `
-    <div class="fstep" id="step-remove"><span class="fnum">${n}</span>
-      <div><b>Remove from iPhone</b> <span class="media-chip" hidden></span><br>
-      <span class="media-dim" id="remove-note">${note}</span>
-      <div class="media-pbar" style="max-width:300px" hidden><div style="width:0%"></div></div></div></div>`;
-  if (mode === 'trash') {
-    return remove(1, 'staged copies move to the restore area — recoverable for 30 days from the Removed tab');
-  }
-  if (mode === 'backupOnly') return backup;
-  return backup + remove(3, 'runs automatically once every copy verifies');
-}
-
-async function showApply(fresh = false, scopeIds = null, mode = 'offload', dest = '') {
-  if (fresh) applyMode = mode;
-  const ids = scopeIds || selected;
-  const byId = fresh ? new Map(flags.items.map((it) => [it.id, it])) : null;
-  const count = fresh ? ids.size : null;
-  const bytes = fresh ? [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0) : null;
-  const title = !fresh ? 'Media operation in progress'
-    : mode === 'backupOnly' ? `Back up ${count.toLocaleString()} items (${fmtGb(bytes)}) — nothing is removed`
-    : mode === 'offload' ? `Back up ${count.toLocaleString()} items (${fmtGb(bytes)}), then remove from iPhone`
-    : `Remove ${count.toLocaleString()} items (${fmtGb(bytes)}) — recoverable for 30 days`;
-
-  setScreen('apply', () => {
-    panel.innerHTML = `
-      ${statusStripDiv()}
-      <div class="media-card">
-        <h4 id="apply-title">${title}</h4>
-        <div class="media-dim" id="preflight-note"></div>
-        <div class="media-flow">${applyStepsHtml(fresh ? mode : applyMode, dest)}</div>
-        <div id="apply-actions"></div>
-      </div>
-      <div class="media-card icloud-note" hidden id="icloud-card">
-        <h4>iCloud Photos is on</h4>
-        <div class="media-dim">iOS blocks USB-side deletion when iCloud Photos is enabled. Your backup is safe and verified. To free the space: open Photos on the phone → select the flagged items (the report card lists them by date) → delete, then empty Recently Deleted. Duplicates merge fastest via Photos' built-in Duplicates album.</div>
-      </div>
-      <div class="media-card dashed" hidden id="report-card"></div>`;
-  });
-
-  if (fresh) {
-    await writeSelection(ids);
-    if (mode === 'trash') await media('start remove-trash');
-    else await media(`start offload - ${dest ? shellEsc(dest) : '-'} ${mode === 'offload' ? 1 : 0}`);
-  }
-  pollApply();
-}
-
-function stepEls(id) {
-  const step = document.getElementById(id);
-  return { step, chip: step.querySelector('.media-chip'), bar: step.querySelector('.media-pbar') };
-}
-
-function pollApply() {
-  let applyPolls = 0;
-  const poll = async () => {
-    const p = await media('progress');
-    if (screen !== 'apply') return;
-    if (applyPolls++ % 5 === 0) refreshStatus(); // backup/remove move both free-space numbers
-    if (p.op === 'backup') renderBackupProgress(p);
-    if (p.op === 'remove') renderRemoveProgress(p);
-    if (p.status === 'error') {
-      stopPolling();
-      document.getElementById('preflight-note').innerHTML =
-        `<span class="media-chip bad">error</span> ${esc(p.error)} <button class="media-cta ghost" id="apply-back">Back to review</button>`;
-      document.getElementById('apply-back').onclick = () => showReview();
-    }
-  };
-  poll();
-  pollTimer = setInterval(poll, 2000);
-}
-
-function renderBackupProgress(p) {
-  const backup = stepEls('step-backup');
-  const verify = stepEls('step-verify');
-  if (!backup.step) return; // resumed into a trash-mode layout
-  if (p.status === 'running') {
-    const pct = p.total ? Math.round(((p.done || 0) / p.total) * 100) : 5;
-    backup.bar.firstElementChild.style.width = `${pct}%`;
-    return;
-  }
-  if (p.status !== 'done') return;
-  backup.step.classList.add('done');
-  backup.bar.firstElementChild.style.width = '100%';
-  backup.chip.hidden = false;
-  backup.chip.textContent = `${p.verified ?? 0} verified`;
-  verify.step.classList.add('done');
-  verify.chip.hidden = false;
-  verify.chip.textContent = p.failed
-    ? `${p.verified} ok · ${p.failed} failed — failed items stay on the phone`
-    : `${p.verified} / ${p.verified} hashes match`;
-  if (p.failed) verify.chip.classList.add('warn');
-  if (applyMode === 'backupOnly') {
-    stopPolling();
-    notify(`Backup done: ${p.verified} items verified to ${p.dest}${p.failed ? `, ${p.failed} failed verification` : ''}. One short sentence.`);
-    const actions = document.getElementById('apply-actions');
-    actions.innerHTML = `<button class="media-cta" id="backup-done-btn">✓ Backed up — back to review</button>`;
-    document.getElementById('backup-done-btn').onclick = () => showReview();
-  }
-  // offload mode: the remove leg is chained by media.sh — keep polling
-}
-
-async function renderRemoveProgress(p) {
-  const remove = stepEls('step-remove');
-  remove.bar.hidden = false;
-  document.getElementById('remove-note').textContent = 'deleting over USB…';
-  if (p.status === 'running') {
-    const pct = p.total ? Math.round(((p.done || 0) / p.total) * 100) : 5;
-    remove.bar.firstElementChild.style.width = `${pct}%`;
-    return;
-  }
-  if (p.status !== 'done') return;
-  stopPolling();
-  remove.step.classList.add('done');
-  remove.bar.firstElementChild.style.width = '100%';
-  remove.chip.hidden = false;
-  remove.chip.textContent = `${p.removed} removed`;
-  if (p.icloud_suspected) document.getElementById('icloud-card').hidden = false;
-  const before = device?.free_gb;
-  const info = await media('info');
-  const report = document.getElementById('report-card');
-  report.hidden = false;
-  const recovery = applyMode === 'trash'
-    ? 'Recoverable for 30 days from the Removed tab.'
-    : 'Archive copies live in your backup destination — they never expire.';
-  report.innerHTML = `
-    <h4>Report card</h4>
-    <div class="media-dim">Freed <b>${p.freed_gb} GB</b> on iPhone${before && info.free_gb ? ` — free space ${before} → <b>${info.free_gb} GB</b>` : ''}
-      · ${p.errors ? `${p.errors} items could not be deleted (see note above)` : 'every item removed'}
-      · ${recovery}</div>
-    <button class="media-cta" id="done-btn">Done</button>`;
-  notify(`Removal done: freed ${p.freed_gb} GB on the iPhone (${p.removed} items)${p.icloud_suspected ? '; deletions were blocked — iCloud Photos looks ON, guided on-device cleanup shown' : ''}. Celebrate in one short sentence with the before/after free space.`);
-  document.getElementById('done-btn').onclick = () => { flags = null; showConnect(); };
 }
 
 document.addEventListener('DOMContentLoaded', initMediaTab);

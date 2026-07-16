@@ -12,10 +12,6 @@
 <body>
   <div class="header">
     <h1>Sys Doctor</h1>
-    <div class="header-meta">
-      <span id="last-scan-label" class="last-scan"></span>
-      <button id="rescan-btn" class="rescan-btn" title="Run a fresh full scan">↻ Rescan</button>
-    </div>
   </div>
 
   <div class="apptabs">
@@ -31,6 +27,10 @@
            truth for every dashboard action. Rescan buttons map to the agent's
            Scan* tools; deep / photo buttons route to iframe-side handlers. -->
       <div class="tools-toolbar" id="tools-toolbar">
+        <button class="tool-btn" id="rescan-btn" title="Run a fresh full scan — CPU, memory, disk, battery, security, performance">
+          <span class="tool-icon">↻</span>
+          <span class="tool-label">Full Rescan</span>
+        </button>
         <button class="tool-btn" data-msg="Scan disk and show top space consumers">
           <span class="tool-icon">💾</span>
           <span class="tool-label">Rescan Disk</span>
@@ -51,6 +51,7 @@
           <span class="tool-icon">🛒</span>
           <span class="tool-label">Buyer's Guide</span>
         </button>
+        <span id="last-scan-label" class="last-scan"></span>
       </div>
       <div class="stale-banner" id="stale-banner" hidden></div>
       <div class="body-area" id="body-area"></div>
