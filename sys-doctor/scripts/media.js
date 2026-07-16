@@ -337,7 +337,7 @@ function showScanning() {
     renderScanProgress(p);
     if (p.op === 'scan' && p.status === 'done') {
       flags = await media('flags');
-      notify(`Media scan finished: ${flags.flagged} of ${flags.scanned} items flagged across duplicates/blurry/dark/screenshots/videos. Summarize the findings in 1-2 sentences; removals are user-driven and recoverable for 30 days.`);
+      notify(await scanReport());
       showReview();
     } else if (p.status === 'error') {
       renderScanError(p);
@@ -345,6 +345,23 @@ function showScanning() {
   };
   poll();
   pollTimer = setInterval(poll, 2000);
+}
+
+/** Scan-finished agent event — the one moment the agent reports: full
+    breakdown so the report needs no tool round-trip. */
+async function scanReport() {
+  blurThreshold = flags.blur_default || 25;
+  const byId = new Map(flags.items.map((it) => [it.id, it]));
+  const cats = CATEGORIES.filter((c) => c.key !== 'all').map((c) => {
+    const items = itemsFor(c.key);
+    if (!items.length) return null;
+    return `${c.label} ${items.length} (${fmtGb(items.reduce((s, it) => s + it.size, 0))})`;
+  }).filter(Boolean).join(', ');
+  const sugg = suggestedIds();
+  const suggBytes = [...sugg].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
+  const st = await media('state');
+  const fresh = st?.pull?.pulled ? `${st.pull.pulled} new since last scan, ` : '';
+  return `Media scan finished: ${flags.scanned.toLocaleString()} camera-roll files scanned (${fresh}phone ${st?.device?.free_gb ?? '?'} GB free). Flagged ${flags.flagged}: ${cats || 'nothing'}. The suggested cleanup set is ${sugg.size} items (${fmtGb(suggBytes)}) — removing it is user-driven and recoverable for 30 days. Report these findings to the user in 2-4 sentences, leading with the biggest win.`;
 }
 
 function renderScanProgress(p) {
@@ -1394,6 +1411,7 @@ async function removeInline(ids) {
 /** Archive the whole camera roll to Mac/external — inline progress toast,
     copy-only (never touches the phone). Long-running but non-blocking. */
 async function backupRollInline(dest) {
+  const freeBefore = statusCache.info?.mac_free_gb;
   await media(`start backup-all ${dest ? shellEsc(dest) : '-'}`);
   const toast = showToast('Backing up camera roll…', true);
   stopPolling();
@@ -1410,10 +1428,15 @@ async function backupRollInline(dest) {
   refreshStatus();
   if (p.status === 'error') {
     toast.done(`✕ Backup failed — ${p.error || 'see logs'}`);
+    notify(`Whole-roll backup FAILED: ${p.error || 'unknown error'}. Tell the user in one sentence.`);
     return;
   }
   const failed = p.failed ? ` · ${p.failed} failed` : '';
   toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`);
+  const info = await media('info');
+  const freeLine = freeBefore != null && info?.mac_free_gb != null
+    ? ` Mac free space ${freeBefore} → ${info.mac_free_gb} GB.` : '';
+  notify(`Whole-roll backup finished: ${(p.verified ?? 0).toLocaleString()} files copied to ${p.dest || '~/Pictures/iPhone Backup'} and re-hash verified${p.failed ? `, ${p.failed} FAILED verification (their originals stay on the phone)` : ''}.${freeLine} Backups never expire. Report this to the user in 1-2 sentences.`);
 }
 
 /** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
