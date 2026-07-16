@@ -638,24 +638,31 @@ def cmd_backup(args):
     dest_root = root / datetime.now().strftime('%Y-%m-%d')
     progress(op, 'copying', 0, len(items))
     verified, failed = [], []
-    for i, it in enumerate(items):
-        src = STAGING_DIR / it['staged']
-        d = datetime.fromtimestamp(it['mtime'] or 0)
-        dest = dest_root / f'{d.year:04d}' / f'{d.month:02d}' / Path(it['staged']).name
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            shutil.copy2(src, dest)
-            ok = sha256_file(dest) == it['sha256']
-        except Exception:
-            ok = False
-        (verified if ok else failed).append(it.get('id', it['sha256']))  # manifest rows have no id
-        if 'live_mov' in it and ok:  # copy the MOV half of a Live Photo alongside
-            mov_rel = it['live_mov'].lstrip('/')
-            mov_src = STAGING_DIR / mov_rel
-            if mov_src.exists():
-                shutil.copy2(mov_src, dest.parent / mov_src.name)
-        if i % 10 == 0:
-            progress(op, 'copying', i, len(items))
+    now = datetime.now().isoformat(timespec='seconds')
+    with open(DATA_DIR / 'archive.jsonl', 'a') as ledger:
+        for i, it in enumerate(items):
+            src = STAGING_DIR / it['staged']
+            d = datetime.fromtimestamp(it['mtime'] or 0)
+            dest = dest_root / f'{d.year:04d}' / f'{d.month:02d}' / Path(it['staged']).name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.copy2(src, dest)
+                ok = sha256_file(dest) == it['sha256']
+            except Exception:
+                ok = False
+            (verified if ok else failed).append(it.get('id', it['sha256']))  # manifest rows have no id
+            if ok:
+                # archive ledger: powers the "Backed up" review filter — every
+                # row is a hash-verified copy, so its content is safe to remove
+                ledger.write(json.dumps({'sha256': it['sha256'], 'dest': str(dest),
+                                         'at': now}) + '\n')
+            if 'live_mov' in it and ok:  # copy the MOV half of a Live Photo alongside
+                mov_rel = it['live_mov'].lstrip('/')
+                mov_src = STAGING_DIR / mov_rel
+                if mov_src.exists():
+                    shutil.copy2(mov_src, dest.parent / mov_src.name)
+            if i % 10 == 0:
+                progress(op, 'copying', i, len(items))
     write_json(DATA_DIR / 'verified.json',
                {'ids': verified, 'failed': failed, 'dest': str(dest_root),
                 'at': datetime.now().isoformat(timespec='seconds')})

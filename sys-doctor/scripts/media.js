@@ -12,6 +12,7 @@ const FOLDER_PREVIEW = 30; // Mac "All by folder" tiles before a "+N more" expan
 
 const CATEGORIES = [
   { key: 'all', label: 'All media', precheck: false },
+  { key: 'archived', label: '💾 Backed up', precheck: false },
   { key: 'on_mac', label: 'Already on Mac', precheck: true },
   { key: 'dupe', label: 'Duplicates', precheck: true },
   { key: 'blurry', label: 'Blurry', precheck: true },
@@ -32,6 +33,7 @@ let pollTimer = null;
 let device = null;
 let flags = null;          // parsed flags.json
 let roll = [];             // EVERY camera-roll item (manifest, Live-MOVs folded)
+let archiveShas = new Set();  // content hashes with a verified archive copy (archive.jsonl)
 let allExpanded = new Set();  // month keys shown in full in the All view
 let selected = new Set();  // item ids checked for removal
 let activeCat = 'all';
@@ -196,7 +198,7 @@ async function watchInlineOp(op) {
   });
   const p = await media('progress');
   flags = await media('flags');
-  await Promise.all([loadRoll(), loadRemovals()]);
+  await Promise.all([loadRoll(), loadRemovals(), loadArchive()]);
   pruneSelected();
   if (screen === 'review' && source === 'phone') renderReview();
   refreshStatus();
@@ -406,6 +408,7 @@ function blurEligible(it) {
 
 function itemsFor(key) {
   if (key === 'all') return roll;
+  if (key === 'archived') return roll.filter((it) => archiveShas.has(it.sha256));
   return flags.items.filter((it) =>
     key === 'blurry'
       ? blurEligible(it) && it.blur < blurThreshold
@@ -444,6 +447,9 @@ async function loadJsonl(name) {
 
 async function loadRemovals() { removals = await loadJsonl('removals.jsonl'); }
 async function loadMacIndex() { macIndex = await loadJsonl('mac-index.jsonl'); }
+async function loadArchive() {
+  archiveShas = new Set((await loadJsonl('archive.jsonl')).map((r) => r.sha256));
+}
 
 const IMAGE_RE = /\.(heic|heif|jpg|jpeg|png|gif|tiff|webp|dng)$/i;
 
@@ -498,7 +504,7 @@ function showReview() {
   applyPrechecks();
   setScreen('review', renderReview);
   refreshStatus();
-  Promise.all([loadRemovals(), loadMacIndex(), loadRoll()])
+  Promise.all([loadRemovals(), loadMacIndex(), loadRoll(), loadArchive()])
     .then(() => { if (screen === 'review') renderReview(); });
   pollTimer = setInterval(refreshStatus, 15000);
 }
@@ -973,6 +979,7 @@ function renderCategoryPane() {
   const hint = activeCat === 'all'
     ? 'suggested = duplicates (best kept), blurry, dark, exact copies on Mac · check months below for a time range'
     : activeCat === 'dupe' ? 'unchecked = kept on phone'
+    : activeCat === 'archived' ? 'every item here has a hash-verified backup copy — safe to remove from the phone'
     : 'checks follow you across filters — Remove (top) takes everything checked';
   html += `<div class="catbar">
     <button class="media-cta ghost sm" id="cat-select-btn"></button>
@@ -1432,7 +1439,16 @@ async function backupRollInline(dest) {
     return;
   }
   const failed = p.failed ? ` · ${p.failed} failed` : '';
-  toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`);
+  await loadArchive();
+  if (screen === 'review' && source === 'phone') renderReview();
+  toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`, {
+    label: 'Free up phone →',
+    fn: () => {
+      activeCat = 'archived';
+      for (const it of itemsFor('archived')) selected.add(it.id);
+      if (screen === 'review') { renderReview(); window.scrollTo(0, 0); }
+    },
+  });
   const info = await media('info');
   const freeLine = freeBefore != null && info?.mac_free_gb != null
     ? ` Mac free space ${freeBefore} → ${info.mac_free_gb} GB.` : '';
@@ -1440,7 +1456,8 @@ async function backupRollInline(dest) {
 }
 
 /** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
-    final message and auto-dismisses. */
+    final message and auto-dismisses; pass an {label, fn} action to keep the
+    toast up with a button (e.g. "Free up phone" after a backup). */
 function showToast(msg, spinner = false) {
   let el = document.getElementById('media-toast');
   if (!el) {
@@ -1453,7 +1470,20 @@ function showToast(msg, spinner = false) {
   render(msg, spinner);
   return {
     update: (m) => render(m, true),
-    done: (m) => { render(m, false); setTimeout(() => el.remove(), 4500); },
+    done: (m, action = null) => {
+      render(m, false);
+      if (action) {
+        const btn = document.createElement('button');
+        btn.className = 'media-cta sm';
+        btn.style.margin = '0 0 0 10px';
+        btn.textContent = action.label;
+        btn.onclick = () => { el.remove(); action.fn(); };
+        el.appendChild(btn);
+        setTimeout(() => el.remove(), 30000);
+      } else {
+        setTimeout(() => el.remove(), 4500);
+      }
+    },
     close: () => el.remove(),
   };
 }
