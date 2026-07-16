@@ -1,6 +1,6 @@
 // Linggen app-mode integration.
 //
-// When a skill page is hosted by a Linggen app shell (e.g. SysDoctor.app,
+// When a skill page is hosted by a Linggen app shell (e.g. a branded shell,
 // LingMem.app), the shell appends `?app_mode=1` to the page URL and
 // communicates with the skill via window.postMessage. Public web users do
 // not get app_mode=1, so this entire module is a no-op for them.

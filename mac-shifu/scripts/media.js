@@ -657,8 +657,7 @@ function archiveFolders() {
     cleanup never touches it here). Click reveals the copy in Finder. */
 function archThumbHtml(r) {
   const vid = VIDEO_RE.test(r.dest);
-  return `<div class="media-thumb ${vid ? 'vid' : ''}" data-reveal="${esc(r.dest)}"
-      title="${esc(r.dest)} — click to reveal in Finder">
+  return `<div class="media-thumb ${vid ? 'vid' : ''}" data-path="${esc(r.dest)}" title="${esc(r.dest)}">
     <img src="../data/media/thumbs/${r.sha256.slice(0, 12)}.jpg" loading="lazy" alt="" onerror="this.remove()">
     ${vid ? '<span class="play">▶</span>' : ''}
     <span class="score">${fmtGb(r.size || 0)}</span></div>`;
@@ -775,7 +774,6 @@ function renderMacPane() {
   for (const thumb of pane.querySelectorAll('.media-thumb')) {
     thumb.addEventListener('click', (e) => {
       if (e.target.tagName === 'INPUT' || e.target.classList.contains('zoom')) return;
-      if (thumb.dataset.reveal) return void bash(`open -R "${thumb.dataset.reveal}"`);
       openMacLightbox(thumb.dataset.path);
     });
   }
@@ -910,11 +908,22 @@ function showMacPoster(slot, r, path) {
   slot.querySelector('.lb-poster')?.addEventListener('click', () => bash(`open -R ${shellEsc(path)}`));
 }
 
+/** Rows the Mac lightbox can navigate: archive copies first (as the pane
+    renders them), then the organic index rows of the active filter. */
+function macLightboxRows() {
+  const organic = macItemsFor(activeMacCat);
+  if (activeMacCat !== 'all') return organic;
+  const arch = [...archiveFolders().entries()].sort((a, b) => b[0].localeCompare(a[0]))
+    .flatMap(([, rows]) => rows.map((r) => ({ path: r.dest, sha256: r.sha256, size: r.size || 0, archive: true })));
+  return arch.concat(organic);
+}
+
 async function openMacLightbox(path) {
-  const r = macIndex.find((x) => x.path === path);
+  const rows = macLightboxRows();
+  const r = rows.find((x) => x.path === path);
   if (!r) return;
   closeLightbox();
-  lbOrder = macItemsFor(activeMacCat).map((x) => x.path);
+  lbOrder = rows.map((x) => x.path);
   lbIdx = lbOrder.indexOf(path);
   const box = document.createElement('div');
   box.id = 'media-lightbox';
@@ -935,13 +944,17 @@ async function openMacLightbox(path) {
   document.getElementById('lb-next').onclick = () => openMacLightbox(lbOrder[lbIdx + 1]);
   document.getElementById('lb-open').onclick = () => bash(`open -R ${shellEsc(path)}`);
   const delBtn = document.getElementById('lb-mark');
-  delBtn.textContent = '🗑 Move to Trash';
-  delBtn.onclick = async () => {
-    if (await trashPaths([path])) {
-      closeLightbox();
-      if (screen === 'review' && source === 'mac') renderMacReview();
-    }
-  };
+  if (r.archive) {
+    delBtn.remove();  // the archive is the recovery guarantee — never trashed here
+  } else {
+    delBtn.textContent = '🗑 Move to Trash';
+    delBtn.onclick = async () => {
+      if (await trashPaths([path])) {
+        closeLightbox();
+        if (screen === 'review' && source === 'mac') renderMacReview();
+      }
+    };
+  }
   const slot = box.querySelector('.lb-media');
   if (VIDEO_RE.test(path)) {
     // hard-link ~/Pictures video into the served dir so it plays in-page;
