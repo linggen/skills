@@ -1296,7 +1296,7 @@ function confirmRemoveDialog(ids) {
     : arch
       ? `${arch.toLocaleString()} have backup copies (recoverable anytime) · ${rest.toLocaleString()} go to the 30-day restore area.`
       : 'Recoverable on this Mac for 30 days — restore anytime from the Removed tab.';
-  const ghostNote = 'Note: USB removal deletes the files only — the Photos app keeps cached entries until you clear them on the iPhone (delete in Photos, then empty Recently Deleted). Deleting directly in the Photos app is the cleaner way when practical.';
+  const ghostNote = 'Note: USB removal deletes the files only — the Photos app keeps cached entries until you clear them on the iPhone (delete in Photos, then empty Recently Deleted). Deleting directly in the Photos app is the cleaner way when practical — and once the Linggen mobile app ships, removal here becomes fully clean in one step.';
   return new Promise((resolve) => {
     const box = document.createElement('div');
     box.className = 'media-lightbox';
