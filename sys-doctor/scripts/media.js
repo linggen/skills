@@ -34,7 +34,7 @@ let flags = null;          // parsed flags.json
 let roll = [];             // EVERY camera-roll item (manifest, Live-MOVs folded)
 let allExpanded = new Set();  // month keys shown in full in the All view
 let selected = new Set();  // item ids checked for removal
-let activeCat = 'dupe';
+let activeCat = 'all';
 let blurThreshold = 25;
 
 // ── plumbing ──
@@ -396,16 +396,23 @@ function itemsFor(key) {
       : it.flags.includes(key) || (key === 'on_mac' && it.flags.includes('probably_on_mac')));
 }
 
-function applyPrechecks() {
-  selected = new Set();
+/** The scan's cleanup recommendations: dupes (keeps excluded), blurry, dark,
+    exact copies already on Mac. Screenshots and large videos are opt-in. */
+function suggestedIds() {
+  const ids = new Set();
   for (const cat of CATEGORIES) {
     if (!cat.precheck) continue;
     for (const it of itemsFor(cat.key)) {
-      if (cat.key === 'on_mac' && !it.flags.includes('on_mac')) continue; // "probably" never pre-checked
+      if (cat.key === 'on_mac' && !it.flags.includes('on_mac')) continue; // "probably" never suggested
       if (cat.key === 'dupe' && isKeep(it.id)) continue;
-      selected.add(it.id);
+      ids.add(it.id);
     }
   }
+  return ids;
+}
+
+function applyPrechecks() {
+  selected = suggestedIds();
 }
 
 function isKeep(id) {
@@ -459,6 +466,10 @@ async function loadRoll() {
   roll = items;
 }
 
+function monthKey(it) {
+  return it.mtime ? new Date(it.mtime * 1000).toISOString().slice(0, 7) : 'undated';
+}
+
 /** id → item across BOTH the flag list and the whole roll. */
 function allById() {
   const m = new Map(roll.map((it) => [it.id, it]));
@@ -478,27 +489,28 @@ function showReview() {
 
 function renderReview() {
   if (source === 'mac') return renderMacReview();
-  let tiles = CATEGORIES.map((c) => {
+  let chips = CATEGORIES.map((c) => {
     const items = itemsFor(c.key);
     const size = items.reduce((s, it) => s + it.size, 0);
-    return `<button class="media-tile ${c.key === activeCat ? 'active' : ''}" data-cat="${c.key}">
-      <b>${items.length.toLocaleString()}</b>${c.label} <span class="sz">${fmtGb(size)}</span></button>`;
+    return `<button class="media-chip-f ${c.key === activeCat ? 'on' : ''}" data-cat="${c.key}">
+      <b>${items.length.toLocaleString()}</b>${c.label}${size ? ` · ${fmtGb(size)}` : ''}</button>`;
   }).join('');
-  tiles += `<button class="media-tile ${activeCat === 'removed' ? 'active' : ''}" data-cat="removed">
-    <b>${removals.length.toLocaleString()}</b>Removed <span class="sz">${fmtGb(removals.reduce((s, r) => s + (r.size || 0), 0))}</span></button>`;
+  chips += `<span class="chip-divider"></span>
+    <button class="media-chip-f ${activeCat === 'removed' ? 'on' : ''}" data-cat="removed">
+    <b>${removals.length.toLocaleString()}</b>🕘 Removed · ${fmtGb(removals.reduce((s, r) => s + (r.size || 0), 0))}</button>`;
   panel.innerHTML = `
     ${statusStripDiv()}
-    <div class="media-tiles">${tiles}</div>
-    <div id="cat-pane"></div>
-    <div class="selbar">
-      <span id="sel-count"></span>
-      <span class="media-dim">Deleted items stay recoverable on this Mac for 30 days</span>
-      <button class="media-cta ghost" id="back-btn" style="margin-left:auto">↻ Rescan</button>
-      <button class="media-cta ghost" id="backup-btn" style="margin-left:0">💾 Back up</button>
-      <button class="media-cta" id="apply-btn" style="margin-left:0">Remove…</button>
-    </div>`;
-  for (const tile of panel.querySelectorAll('.media-tile')) {
-    tile.onclick = () => { activeCat = tile.dataset.cat; renderReview(); };
+    <div class="media-actionbar">
+      <button class="media-cta ghost" id="backup-btn">💾 Back up all…</button>
+      <button class="media-cta" id="apply-btn">Remove…</button>
+      <button class="media-cta ghost" id="back-btn">↻ Rescan</button>
+      <span class="abar-meta"><span id="sel-count"></span>
+        <span class="media-dim">removals recoverable on this Mac for 30 days</span></span>
+    </div>
+    <div class="media-chips">${chips}</div>
+    <div id="cat-pane"></div>`;
+  for (const chip of panel.querySelectorAll('.media-chip-f')) {
+    chip.onclick = () => { activeCat = chip.dataset.cat; renderReview(); };
   }
   wireStatusStrip();
   document.getElementById('back-btn').onclick = () => showConnect();
@@ -946,10 +958,14 @@ function renderCategoryPane() {
   const items = itemsFor(activeCat);
   let html = '';
 
+  const hint = activeCat === 'all'
+    ? 'suggested = duplicates (best kept), blurry, dark, exact copies on Mac · check months below for a time range'
+    : activeCat === 'dupe' ? 'unchecked = kept on phone'
+    : 'checks follow you across filters — Remove (top) takes everything checked';
   html += `<div class="catbar">
-    <button class="media-cta ghost sm" id="cat-all-btn"></button>
-    <button class="media-cta sm" id="cat-remove-btn"></button>
-    <span class="media-dim">only this category's checked items — recoverable for 30 days</span></div>`;
+    <button class="media-cta ghost sm" id="cat-select-btn"></button>
+    <button class="media-cta ghost sm" id="cat-clear-btn">Clear</button>
+    <span class="media-dim">${hint}</span></div>`;
 
   if (activeCat === 'blurry') {
     html += `<div class="sliderrow">Blur sensitivity
@@ -970,7 +986,7 @@ function renderCategoryPane() {
     } else {
       const months = new Map();
       for (const it of roll) {
-        const key = it.mtime ? new Date(it.mtime * 1000).toISOString().slice(0, 7) : 'undated';
+        const key = monthKey(it);
         if (!months.has(key)) months.set(key, []);
         months.get(key).push(it);
       }
@@ -978,8 +994,11 @@ function renderCategoryPane() {
         const open = allExpanded.has(month);
         const shown = open ? mItems : mItems.slice(0, FOLDER_PREVIEW);
         const more = mItems.length - shown.length;
-        return `<div class="media-group"><div class="glabel">${month} · ${mItems.length.toLocaleString()} ·
-            ${fmtGb(mItems.reduce((s, it) => s + it.size, 0))}</div>
+        const allSel = mItems.every((it) => selected.has(it.id));
+        return `<div class="media-group"><label class="glabel">
+            <input type="checkbox" class="month-sel" data-month="${month}" ${allSel ? 'checked' : ''}>
+            ${month} · ${mItems.length.toLocaleString()} ·
+            ${fmtGb(mItems.reduce((s, it) => s + it.size, 0))}</label>
           <div class="thumbrow">${shown.map((it) => thumbHtml(it, selected.has(it.id))).join('')}
           ${more > 0 ? `<button class="media-cta ghost sm show-more" data-month="${month}">+${more.toLocaleString()} more…</button>` : ''}</div></div>`;
       }).join('');
@@ -1007,6 +1026,11 @@ function renderCategoryPane() {
       const thumbEl = e.target.closest('.media-thumb');
       if (e.target.checked) selected.add(thumbEl.dataset.id); else selected.delete(thumbEl.dataset.id);
       if (activeCat === 'dupe') thumbEl.classList.toggle('kept', !e.target.checked);
+      const mBox = thumbEl.closest('.media-group')?.querySelector('.month-sel');
+      if (mBox) {
+        mBox.checked = roll.filter((x) => monthKey(x) === mBox.dataset.month)
+          .every((x) => selected.has(x.id));
+      }
       updateSelbar();
       updateCatbar();
     };
@@ -1026,24 +1050,31 @@ function renderCategoryPane() {
   for (const btn of pane.querySelectorAll('.show-more[data-month]')) {
     btn.onclick = () => { allExpanded.add(btn.dataset.month); renderCategoryPane(); };
   }
-  const catRemove = document.getElementById('cat-remove-btn');
-  if (catRemove) catRemove.onclick = async () => {
-    const s = catSelection();
-    if (!s.size) return;
-    if (await confirmRemoveDialog(s)) removeInline(s);
-  };
-  document.getElementById('cat-all-btn').onclick = () => {
-    const next = catSelectNextAction();  // 'recommended' | 'all' | 'clear'
-    const items = catItems(activeCat);
-    if (next === 'clear') {
-      for (const it of items) selected.delete(it.id);
+  for (const box of pane.querySelectorAll('.month-sel')) {
+    box.onchange = () => {
+      for (const it of roll.filter((x) => monthKey(x) === box.dataset.month)) {
+        if (box.checked) selected.add(it.id); else selected.delete(it.id);
+      }
+      renderCategoryPane();
+      updateSelbar();
+    };
+  }
+  document.getElementById('cat-select-btn').onclick = () => {
+    const next = catSelectNextAction();  // 'suggested' | 'recommended' | 'all'
+    if (next === 'suggested') {
+      for (const id of suggestedIds()) selected.add(id);
     } else {
-      for (const it of items) {
+      for (const it of catItems(activeCat)) {
         // 'recommended' skips the dupe keep (dedup); 'all' includes it
-        if (next === 'recommended' && activeCat === 'dupe' && isKeep(it.id)) selected.delete(it.id);
+        if (next === 'recommended' && isKeep(it.id)) selected.delete(it.id);
         else selected.add(it.id);
       }
     }
+    renderCategoryPane();
+    updateSelbar();
+  };
+  document.getElementById('cat-clear-btn').onclick = () => {
+    for (const it of catItems(activeCat)) selected.delete(it.id);
     renderCategoryPane();
     updateSelbar();
   };
@@ -1068,38 +1099,34 @@ function renderCategoryPane() {
   }
 }
 
-/** Duplicates cycles Select recommended → Select all → Clear; other
-    categories (no keep) just toggle Select all ↔ Clear. Returns the action the
-    Select button would perform NEXT given the current selection. */
+/** What the primary select button does NEXT. All = Select suggested (there is
+    deliberately NO whole-roll select-all); Duplicates toggles recommended
+    (keeps excluded) ↔ all; other filters = scoped Select all. Clear is its
+    own button. */
 function catSelectNextAction() {
-  const items = catItems(activeCat);
-  if (!items.length) return 'recommended';
-  const inCat = catSelection().size;
-  if (inCat >= items.length) return 'clear';         // everything checked → clear
-  if (activeCat !== 'dupe') return 'all';            // no keep distinction
-  const recommended = items.filter((it) => !isKeep(it.id)).length;
-  const keepsChecked = items.some((it) => isKeep(it.id) && selected.has(it.id));
-  // exactly the recommended set (all non-keeps, no keep) → next adds the keeps
-  return (inCat === recommended && !keepsChecked) ? 'all' : 'recommended';
+  if (activeCat === 'all') return 'suggested';
+  if (activeCat !== 'dupe') return 'all';
+  const items = catItems('dupe');
+  const rec = items.filter((it) => !isKeep(it.id));
+  const exactlyRec = rec.length > 0 && rec.every((it) => selected.has(it.id))
+    && !items.some((it) => isKeep(it.id) && selected.has(it.id));
+  return exactlyRec ? 'all' : 'recommended';
 }
 
 function updateCatbar() {
-  const btn = document.getElementById('cat-remove-btn');
-  if (!btn) return;
-  const scoped = catSelection();
-  const byId = allById();
-  const bytes = [...scoped].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
-  btn.textContent = `🗑 Remove ${scoped.size.toLocaleString()} checked (${fmtGb(bytes)})…`;
-  btn.disabled = !scoped.size;
-  const sel = document.getElementById('cat-all-btn');
-  if (sel) {
+  const sel = document.getElementById('cat-select-btn');
+  if (!sel) return;
+  const next = catSelectNextAction();
+  if (next === 'suggested') {
+    sel.textContent = `Select suggested (${suggestedIds().size.toLocaleString()})`;
+  } else {
     const items = catItems(activeCat);
-    const next = catSelectNextAction();
     const recommended = items.filter((it) => !(activeCat === 'dupe' && isKeep(it.id))).length;
-    sel.textContent = next === 'clear' ? 'Clear'
-      : next === 'all' ? `Select all (${items.length.toLocaleString()})`
+    sel.textContent = next === 'all' ? `Select all (${items.length.toLocaleString()})`
       : `Select recommended (${recommended.toLocaleString()})`;
   }
+  const clr = document.getElementById('cat-clear-btn');
+  if (clr) clr.disabled = !catSelection().size;
 }
 
 /** In-page confirm (native confirm() is a no-op in the app shell). */
@@ -1427,11 +1454,11 @@ function updateSelbar() {
   const byId = allById();
   let bytes = 0;
   for (const id of selected) bytes += byId.get(id)?.size || 0;
-  el.innerHTML = `<b>${selected.size.toLocaleString()} selected</b> · <b>${fmtGb(bytes)}</b>`;
+  el.innerHTML = `<b>${selected.size.toLocaleString()} selected · ${fmtGb(bytes)}</b>`;
   const btn = document.getElementById('apply-btn');
   if (btn) {
     btn.disabled = selected.size === 0;
-    btn.textContent = `Remove ${selected.size.toLocaleString()} from iPhone (${fmtGb(bytes)})…`;
+    btn.textContent = `🗑 Remove ${selected.size.toLocaleString()} selected (${fmtGb(bytes)})…`;
   }
   const bk = document.getElementById('backup-btn');
   if (bk) {
