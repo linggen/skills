@@ -1211,15 +1211,20 @@ function confirmRemoveDialog(ids) {
   const byId = allById();
   const bytes = [...ids].reduce((s, id) => s + (byId.get(id)?.size || 0), 0);
   const n = ids.size.toLocaleString();
+  const arch = [...ids].filter((id) => archiveShas.has(byId.get(id)?.sha256)).length;
+  const rest = ids.size - arch;
+  const recovery = arch && !rest
+    ? 'All of these have verified backup copies on this Mac — recoverable from the archive anytime.'
+    : arch
+      ? `${arch.toLocaleString()} have backup copies (recoverable anytime) · ${rest.toLocaleString()} go to the 30-day restore area.`
+      : 'Recoverable on this Mac for 30 days — restore anytime from the Removed tab.';
   return new Promise((resolve) => {
     const box = document.createElement('div');
     box.className = 'media-lightbox';
     box.innerHTML = `
       <div class="media-confirm">
         <div><b>Remove ${n} item${ids.size === 1 ? '' : 's'} (${fmtGb(bytes)}) from the iPhone?</b></div>
-        <div class="media-dim" style="margin-top:6px">
-          Recoverable on this Mac for 30 days — restore anytime from the Removed tab.
-        </div>
+        <div class="media-dim" style="margin-top:6px">${recovery}</div>
         <div class="row">
           <button class="media-cta ghost sm" id="cf-no">Cancel</button>
           <button class="media-cta sm danger" id="cf-yes">Remove ${n}</button>

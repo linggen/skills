@@ -758,6 +758,10 @@ async def _remove_async(args):
         dest_root = Path(json.loads((DATA_DIR / 'verified.json').read_text()).get('dest', ''))
     except Exception:
         dest_root = Path('')
+    # items with a hash-verified archive copy skip the trash: keeping a second
+    # 30-day copy of already-backed-up content would double the disk cost —
+    # their Removed row links straight to the archive copy instead
+    archived = {r['sha256']: r['dest'] for r in load_jsonl(DATA_DIR / 'archive.jsonl')}
     with open(DATA_DIR / 'removals.jsonl', 'a') as rf:
         now = datetime.now()
         expires = (now + timedelta(days=TRASH_TTL_DAYS)).isoformat(timespec='seconds')
@@ -766,7 +770,9 @@ async def _remove_async(args):
             row = {'at': now.isoformat(timespec='seconds'), 'name': Path(it['staged']).name,
                    'phone_path': it['phone_path'], 'size': it['size'],
                    'sha256': it['sha256'], 'thumb': it.get('thumb', '')}
-            if trash_mode:
+            if trash_mode and it['sha256'] in archived:
+                row['backup'] = archived[it['sha256']]
+            elif trash_mode:
                 row['trash'] = str(_move_to_trash(it))
                 row['expires'] = expires
             else:
