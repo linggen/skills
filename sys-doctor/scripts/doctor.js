@@ -190,18 +190,20 @@ function startFresh() {
     ],
   });
 
-  // Greet the user (no scan). sendHidden shows only the agent's reply. The
-  // actual scan runs only when the user clicks ↻ Rescan (startHardwareProbe).
+  // Greet ONCE per session with a fixed local message — zero LLM tokens, and
+  // reloads can't re-post it (this used to fire an agent turn every reload
+  // when the session had no cached dashboard). The actual scan runs only when
+  // the user clicks ↻ Full Rescan (startHardwareProbe).
+  const sess = new URLSearchParams(location.search).get('session');
+  const greetKey = sess ? `sys-doctor:greeted:${sess}` : null;
+  if (greetKey && localStorage.getItem(greetKey)) return;
   setTimeout(() => {
-    if (chat) {
-      chat.sendHidden(
-        'The user just opened the Sys Doctor app. You are Ling, operating inside Sys Doctor. ' +
-        'Do NOT start a scan and do NOT claim a scan is running. ' +
-        'Greet warmly: open with "I\'m Ling, your personal system health assistant inside Sys Doctor." ' +
-        'Then invite them to click the ↻ Full Rescan button in the System toolbar whenever they want a full health check of their CPU, memory, disk, battery, security, and performance. ' +
-        'Keep it natural, 2-3 sentences. No "I\'m thrilled" / "happy to help" / closing CTA. No emojis. Do NOT emit a <!--page block.'
-      );
-    }
+    if (!chat) return;
+    if (greetKey) localStorage.setItem(greetKey, '1');
+    chat.addMessage('assistant',
+      "I'm Ling, your personal system health assistant inside Sys Doctor. " +
+      'Click ↻ Full Rescan in the System toolbar whenever you want a full health check — ' +
+      'CPU, memory, disk, battery, security, and performance.');
   }, 2000);
 }
 
