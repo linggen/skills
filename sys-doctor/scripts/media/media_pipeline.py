@@ -220,26 +220,31 @@ def stat_mtime_epoch(st):
 
 
 async def afc_walk_files(afc, root='/DCIM'):
-    """Return (path, size, mtime_epoch) for every regular file under root."""
+    """Return ((path, size, mtime_epoch) list, error count) for every regular
+    file under root. errors > 0 means the walk may be PARTIAL (USB hiccup) —
+    callers must not treat a partial walk as the full truth of the phone."""
     files = []
+    errors = 0
     stack = [root]
     while stack:
         d = stack.pop()
         try:
             names = await afc.listdir(d)
         except Exception:
+            errors += 1
             continue
         for name in names:
             p = f'{d}/{name}'
             try:
                 st = await afc.stat(p)
             except Exception:
+                errors += 1
                 continue
             if 'S_IFDIR' in str(st.get('st_ifmt')):
                 stack.append(p)
             else:
                 files.append((p, int(st.get('st_size') or 0), stat_mtime_epoch(st)))
-    return files
+    return files, errors
 
 
 # ── info ──────────────────────────────────────────────────────────────────
@@ -312,10 +317,21 @@ def cmd_index(_args):
     old = {r['path']: r for r in load_jsonl(MAC_INDEX)}
     files = []
     skip_parts = {'.photoslibrary'}  # Photos library needs Full Disk Access — v1 skips it
+    # pipeline-managed mirrors must NOT feed the index: indexing our own backup
+    # output would flag every phone photo on_mac (pre-checked for removal) on
+    # the next scan — the whole-roll backup is deliberately copy-only
+    skip_dirs = {BACKUP_ROOT, RESTORE_ROOT}
+    try:
+        custom_dest = (DATA_DIR / 'backup-dest').read_text().strip()
+        if custom_dest:
+            skip_dirs.add(Path(custom_dest))
+    except OSError:
+        pass
     for root in index_roots():
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames[:] = [d for d in dirnames
-                           if not any(d.endswith(s) for s in skip_parts)]
+                           if not any(d.endswith(s) for s in skip_parts)
+                           and Path(dirpath) / d not in skip_dirs]
             for name in filenames:
                 p = Path(dirpath) / name
                 if p.suffix.lower() in IMAGE_EXTS | VIDEO_EXTS:
@@ -371,13 +387,27 @@ async def _pull_async():
         fail(op, 'connect', f'No device: {e}')
     manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
     progress(op, 'listing')
-    phone_files = await afc_walk_files(afc)
+    phone_files, walk_errors = await afc_walk_files(afc)
     new = [(p, size, mt) for p, size, mt in phone_files
            if p not in manifest or manifest[p].get('size') != size]
     total_bytes = sum(size for _, size, _ in new)
     if total_bytes / 1e9 > mac_free_gb() - 5:
         fail(op, 'preflight',
              f'Need {total_bytes / 1e9:.1f} GB staged but only {mac_free_gb()} GB free on Mac')
+    # reconcile: manifest rows for files no longer on the phone (deleted via
+    # Photos, outside this pipeline) would ghost into every rescan with a dead
+    # phone path. Only a clean walk is the full truth — never prune from a
+    # partial one.
+    ghosts = []
+    if not walk_errors:
+        phone_paths = {p for p, _, _ in phone_files}
+        ghosts = [p for p in manifest if p not in phone_paths]
+        for p in ghosts:
+            r = manifest.pop(p)
+            if r.get('staged'):
+                (STAGING_DIR / r['staged']).unlink(missing_ok=True)
+        # flag ids are path-derived (see cmd_scan) so ghosts map straight to them
+        _prune_flags({hashlib.sha256(p.encode()).hexdigest()[:12] for p in ghosts})
     STAGING_DIR.mkdir(parents=True, exist_ok=True)
     progress(op, 'pulling', 0, len(new),
              extra={'unchanged': len(phone_files) - len(new), 'bytes': total_bytes})
@@ -403,8 +433,10 @@ async def _pull_async():
     # compact the manifest (drop superseded lines from re-pulls)
     MANIFEST.write_text(''.join(json.dumps(r) + '\n' for r in manifest.values()))
     progress(op, 'done', len(new), len(new), status='done',
-             extra={'pulled': pulled, 'unchanged': len(phone_files) - len(new)})
+             extra={'pulled': pulled, 'unchanged': len(phone_files) - len(new),
+                    'ghosts': len(ghosts)})
     update_state(pull={'pulled': pulled, 'phone_files': len(phone_files),
+                       'ghosts': len(ghosts),
                        'dcim_gb': round(sum(s for _, s, _ in phone_files) / 1e9, 1),
                        'at': datetime.now().isoformat(timespec='seconds')})
 
@@ -452,6 +484,8 @@ def cmd_scan(_args):
     for i, r in enumerate(rows):
         staged = STAGING_DIR / r['staged']
         ext = staged.suffix.lower()
+        if ext not in IMAGE_EXTS | VIDEO_EXTS:  # .AAE recipes etc. — staged, never reviewed
+            continue
         if r['staged'] in mov_pairs:  # MOV half of a Live Photo — folded below
             deferred_movs.append(r)
             continue
@@ -657,8 +691,17 @@ async def _remove_async(args):
         afc = afc_service(ld)
     except Exception as e:
         fail(op, 'connect', f'No device: {e}')
+    manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
+    # .AAE edit-recipe sidecars share the asset's dir+stem; iOS leaves them
+    # orphaned on the phone when the asset is deleted — remove them with it
+    aae_by_stem = {}
+    for p in manifest:
+        parent, _, name = p.rpartition('/')
+        stem, dot, ext = name.rpartition('.')
+        if dot and ext.lower() == 'aae':
+            aae_by_stem[(parent, stem.lower())] = p
     progress(op, 'removing', 0, len(items))
-    removed, errors = [], []
+    removed, errors, removed_sidecars = [], [], []
     for i, it in enumerate(items):
         paths = [it['phone_path']] + ([it['live_mov']] if 'live_mov' in it else [])
         try:
@@ -667,6 +710,15 @@ async def _remove_async(args):
             removed.append(it['id'])
         except Exception as e:
             errors.append({'id': it['id'], 'error': str(e)})
+            continue
+        parent, _, name = it['phone_path'].rpartition('/')
+        sidecar = aae_by_stem.pop((parent, name.rpartition('.')[0].lower()), None)
+        if sidecar:  # best-effort: an orphan recipe must never fail the item
+            try:
+                await afc.rm(sidecar)
+            except Exception:
+                pass
+            removed_sidecars.append(sidecar)
         if i % 10 == 0:
             progress(op, 'removing', i, len(items))
     # permanent removal history — powers the "Removed" tab. Recovery target:
@@ -695,9 +747,9 @@ async def _remove_async(args):
     icloud_suspected = len(errors) > 0 and len(removed) == 0
     result = {'removed': len(removed), 'errors': len(errors), 'freed_gb': freed_gb,
               'icloud_suspected': icloud_suspected,
+              'sidecars': len(removed_sidecars),
               'error_samples': [e['error'] for e in errors[:3]]}
     # drop removed files from staging + manifest so re-runs stay truthful
-    manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
     for iid in removed:
         it = id_map[iid]
         manifest.pop(it['phone_path'], None)
@@ -705,6 +757,10 @@ async def _remove_async(args):
         if 'live_mov' in it:  # the MOV half was rm'd from the phone too
             manifest.pop(it['live_mov'], None)
             (STAGING_DIR / it['live_mov'].lstrip('/')).unlink(missing_ok=True)
+    for p in removed_sidecars:
+        r = manifest.pop(p, None)
+        if r and r.get('staged'):
+            (STAGING_DIR / r['staged']).unlink(missing_ok=True)
     MANIFEST.write_text(''.join(json.dumps(r) + '\n' for r in manifest.values()))
     _prune_flags(set(removed))
     write_json(DATA_DIR / 'remove-result.json', result)
