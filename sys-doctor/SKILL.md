@@ -398,9 +398,10 @@ iPhone." The Media pane is owned entirely by the iframe (`media.js` +
 `scripts/media/`): device detection over USB (pymobiledevice3), incremental
 camera-roll pull, script-only analysis (SHA-256 dupes, pHash near-dupes,
 blur, luminance, ffprobe), review grid (flag categories, an **All media**
-month-by-month view of the whole roll, and a **💾 Backed up** filter of items
-whose content hash has a verified archive copy — the safe-to-remove set after
-a whole-roll backup), then two distinct actions: **Remove**
+month-by-month view of the whole roll, and a **💾 On Mac** filter — items with
+a verified copy on this Mac, from a backup run or byte-identical in
+~/Pictures; the safe-to-remove set after a whole-roll backup), then two
+distinct actions: **Remove**
 (cleanup delete of the checked selection — the staged copy moves to a 30-day
 restore area on the Mac, restorable from the Removed tab) and **Back up all**
 (whole-camera-roll archive to the Mac or an external volume, re-hash

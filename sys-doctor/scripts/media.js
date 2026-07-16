@@ -12,8 +12,7 @@ const FOLDER_PREVIEW = 30; // Mac "All by folder" tiles before a "+N more" expan
 
 const CATEGORIES = [
   { key: 'all', label: 'All media', precheck: false },
-  { key: 'archived', label: '💾 Backed up', precheck: false },
-  { key: 'on_mac', label: 'Already on Mac', precheck: true },
+  { key: 'on_mac', label: '💾 On Mac', precheck: true },
   { key: 'dupe', label: 'Duplicates', precheck: true },
   { key: 'blurry', label: 'Blurry', precheck: true },
   { key: 'dark', label: 'Black & dark', precheck: true },
@@ -408,11 +407,18 @@ function blurEligible(it) {
 
 function itemsFor(key) {
   if (key === 'all') return roll;
-  if (key === 'archived') return roll.filter((it) => archiveShas.has(it.sha256));
+  if (key === 'on_mac') {
+    // one bucket for "a copy exists on this Mac": organic ~/Pictures matches
+    // (exact + probable, from the scan) ∪ hash-verified archive copies
+    const flagged = flags.items.filter((it) =>
+      it.flags.includes('on_mac') || it.flags.includes('probably_on_mac'));
+    const seen = new Set(flagged.map((it) => it.id));
+    return flagged.concat(roll.filter((it) => archiveShas.has(it.sha256) && !seen.has(it.id)));
+  }
   return flags.items.filter((it) =>
     key === 'blurry'
       ? blurEligible(it) && it.blur < blurThreshold
-      : it.flags.includes(key) || (key === 'on_mac' && it.flags.includes('probably_on_mac')));
+      : it.flags.includes(key));
 }
 
 /** The scan's cleanup recommendations: dupes (keeps excluded), blurry, dark,
@@ -615,24 +621,24 @@ function macThumbHtml(r, checked) {
 const VIDEO_RE = /\.(mov|mp4|m4v|avi|3gp)$/i;
 
 function renderMacReview() {
-  const tiles = MAC_CATS.map((c) => {
+  const chips = MAC_CATS.map((c) => {
     const items = macItemsFor(c.key);
     const size = items.reduce((s, r) => s + (r.size || 0), 0);
-    return `<button class="media-tile ${c.key === activeMacCat ? 'active' : ''}" data-cat="${c.key}">
-      <b>${items.length.toLocaleString()}</b>${c.label} <span class="sz">${fmtGb(size)}</span></button>`;
+    return `<button class="media-chip-f ${c.key === activeMacCat ? 'on' : ''}" data-cat="${c.key}">
+      <b>${items.length.toLocaleString()}</b>${c.label}${size ? ` · ${fmtGb(size)}` : ''}</button>`;
   }).join('');
   panel.innerHTML = `
     ${statusStripDiv()}
-    <div class="media-tiles">${tiles}</div>
-    <div id="cat-pane"></div>
-    <div class="selbar">
-      <span id="mac-sel-count"></span>
-      <span class="media-dim">Mac cleanup goes to the Trash — restore anytime from there</span>
-      <button class="media-cta ghost" id="mac-reindex-btn" style="margin-left:auto">↻ Re-index Mac</button>
-      <button class="media-cta" id="mac-trash-btn" style="margin-left:0">Move to Trash…</button>
-    </div>`;
-  for (const tile of panel.querySelectorAll('.media-tile')) {
-    tile.onclick = () => { activeMacCat = tile.dataset.cat; renderMacReview(); };
+    <div class="media-actionbar">
+      <button class="media-cta" id="mac-trash-btn">Move to Trash…</button>
+      <button class="media-cta ghost" id="mac-reindex-btn">↻ Re-index Mac</button>
+      <span class="abar-meta"><span id="mac-sel-count"></span>
+        <span class="media-dim">Mac cleanup goes to the macOS Trash — restore anytime from there</span></span>
+    </div>
+    <div class="media-chips">${chips}</div>
+    <div id="cat-pane"></div>`;
+  for (const chip of panel.querySelectorAll('.media-chip-f')) {
+    chip.onclick = () => { activeMacCat = chip.dataset.cat; renderMacReview(); };
   }
   wireStatusStrip();
   document.getElementById('mac-reindex-btn').onclick = reindexMac;
@@ -644,9 +650,13 @@ function renderMacReview() {
 function renderMacPane() {
   const pane = document.getElementById('cat-pane');
   const bySelected = (r) => macSelected.has(r.path);
+  const hint = activeMacCat === 'dupe'
+    ? 'oldest of each group is likely the original — checked files go to the macOS Trash'
+    : 'checked files go to the macOS Trash (recoverable) — originals in ~/Pictures';
   let html = `<div class="catbar">
-    <label class="catall"><input type="checkbox" id="mac-all-box"><span></span></label>
-    <span class="media-dim">checked files go to the macOS Trash (recoverable) — originals in ~/Pictures</span></div>`;
+    <button class="media-cta ghost sm" id="mac-select-btn"></button>
+    <button class="media-cta ghost sm" id="mac-clear-btn">Clear</button>
+    <span class="media-dim">${hint}</span></div>`;
 
   if (!macIndex.length) {
     pane.innerHTML = `<div class="media-dim">No Mac photo index yet — it is built during a scan
@@ -704,25 +714,50 @@ function renderMacPane() {
       openMacLightbox(thumb.dataset.path);
     });
   }
-  const allBox = document.getElementById('mac-all-box');
-  allBox.onchange = (e) => {
-    for (const r of macItemsFor(activeMacCat)) {
-      if (e.target.checked) macSelected.add(r.path); else macSelected.delete(r.path);
+  const selBtn = document.getElementById('mac-select-btn');
+  if (selBtn) selBtn.onclick = () => {
+    const next = macSelectNextAction();  // 'recommended' (dupes, keep oldest) | 'all'
+    for (const g of activeMacCat === 'dupe' ? macDupeGroups() : [{ rows: macItemsFor(activeMacCat) }]) {
+      g.rows.forEach((r, i) => {
+        if (next === 'recommended' && i === 0) macSelected.delete(r.path);
+        else macSelected.add(r.path);
+      });
     }
+    renderMacPane();
+    updateMacSelbar();
+  };
+  const clrBtn = document.getElementById('mac-clear-btn');
+  if (clrBtn) clrBtn.onclick = () => {
+    for (const r of macItemsFor(activeMacCat)) macSelected.delete(r.path);
     renderMacPane();
     updateMacSelbar();
   };
   updateMacCatbar();
 }
 
+/** Mirrors the phone's dupe cycle: Select dupes (oldest kept) ↔ Select all. */
+function macSelectNextAction() {
+  if (activeMacCat !== 'dupe') return 'all';
+  const groups = macDupeGroups();
+  const rec = groups.flatMap((g) => g.rows.slice(1));
+  const keeps = groups.map((g) => g.rows[0]);
+  const exactlyRec = rec.length > 0 && rec.every((r) => macSelected.has(r.path))
+    && !keeps.some((r) => macSelected.has(r.path));
+  return exactlyRec ? 'all' : 'recommended';
+}
+
 function updateMacCatbar() {
-  const box = document.getElementById('mac-all-box');
-  if (!box) return;
+  const sel = document.getElementById('mac-select-btn');
+  if (!sel) return;
   const items = macItemsFor(activeMacCat);
-  const checked = items.filter((r) => macSelected.has(r.path)).length;
-  box.checked = items.length > 0 && checked >= items.length;
-  box.indeterminate = checked > 0 && checked < items.length;
-  box.parentElement.querySelector('span').textContent = `Select all (${items.length.toLocaleString()})`;
+  const next = macSelectNextAction();
+  const rec = activeMacCat === 'dupe'
+    ? macDupeGroups().reduce((s, g) => s + g.rows.length - 1, 0) : items.length;
+  sel.textContent = next === 'recommended'
+    ? `Select dupes — keep oldest (${rec.toLocaleString()})`
+    : `Select all (${items.length.toLocaleString()})`;
+  const clr = document.getElementById('mac-clear-btn');
+  if (clr) clr.disabled = !items.some((r) => macSelected.has(r.path));
 }
 
 function updateMacSelbar() {
@@ -731,11 +766,11 @@ function updateMacSelbar() {
   const byPath = new Map(macIndex.map((r) => [r.path, r]));
   let bytes = 0;
   for (const p of macSelected) bytes += byPath.get(p)?.size || 0;
-  el.innerHTML = `<b>${macSelected.size.toLocaleString()} selected</b> · <b>${fmtGb(bytes)}</b>`;
+  el.innerHTML = `<b>${macSelected.size.toLocaleString()} selected · ${fmtGb(bytes)}</b>`;
   const btn = document.getElementById('mac-trash-btn');
   if (btn) {
     btn.disabled = macSelected.size === 0;
-    btn.textContent = `Move ${macSelected.size.toLocaleString()} to Trash (${fmtGb(bytes)})`;
+    btn.textContent = `🗑 Move ${macSelected.size.toLocaleString()} to Trash (${fmtGb(bytes)})…`;
   }
 }
 
@@ -879,10 +914,11 @@ function thumbHtml(it, checked) {
     : it.luma != null && activeCat === 'dark' ? `luma ${Math.round(it.luma)}`
     : '';
   const kept = activeCat === 'dupe' && !checked;
-  const probably = activeCat === 'on_mac' && !it.flags.includes('on_mac');
+  const archived = archiveShas.has(it.sha256);
+  const probably = activeCat === 'on_mac' && !it.flags.includes('on_mac') && !archived;
   const tag = activeCat === 'dupe' ? '<span class="tag keep-tag">★ KEEP</span>'
     : probably ? '<span class="tag cut">probably</span>'
-    : activeCat === 'on_mac' ? '<span class="tag">on Mac ✓</span>' : '';
+    : activeCat === 'on_mac' ? `<span class="tag">${archived ? '💾 backed up' : 'on Mac ✓'}</span>` : '';
   return `<div class="media-thumb ${vid ? 'vid' : ''} ${kept ? 'kept' : ''}" data-id="${it.id}">
     ${img}${vid ? '<span class="play">▶</span>' : ''}
     <input type="checkbox" ${checked ? 'checked' : ''} aria-label="remove">
@@ -979,7 +1015,7 @@ function renderCategoryPane() {
   const hint = activeCat === 'all'
     ? 'suggested = duplicates (best kept), blurry, dark, exact copies on Mac · check months below for a time range'
     : activeCat === 'dupe' ? 'unchecked = kept on phone'
-    : activeCat === 'archived' ? 'every item here has a hash-verified backup copy — safe to remove from the phone'
+    : activeCat === 'on_mac' ? 'verified Mac copies (backup or ~/Pictures) are safe to remove from the phone'
     : 'checks follow you across filters — Remove (top) takes everything checked';
   html += `<div class="catbar">
     <button class="media-cta ghost sm" id="cat-select-btn"></button>
@@ -992,7 +1028,7 @@ function renderCategoryPane() {
       <output>${items.length} flagged</output></div>`;
   }
   if (activeCat === 'on_mac') {
-    html += `<div class="media-dim" style="margin-bottom:8px"><b>Byte-identical copies already on your Mac</b> are pre-checked — backed up by definition, nothing to copy. Visual-only matches show as “probably” and are never pre-checked.</div>`;
+    html += `<div class="media-dim" style="margin-bottom:8px"><b>A verified copy of these exists on this Mac</b> — 💾 from a backup run, ✓ found in ~/Pictures (byte-identical, pre-checked). Visual-only matches show as “probably” and are never pre-checked.</div>`;
   }
   if (activeCat === 'screenshot') {
     html += `<div class="media-dim" style="margin-bottom:8px">Screenshots default to unchecked — opt in per item, or
@@ -1444,8 +1480,11 @@ async function backupRollInline(dest) {
   toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`, {
     label: 'Free up phone →',
     fn: () => {
-      activeCat = 'archived';
-      for (const it of itemsFor('archived')) selected.add(it.id);
+      activeCat = 'on_mac';
+      // select only verified copies (archive or byte-identical) — never "probably"
+      for (const it of itemsFor('on_mac')) {
+        if (archiveShas.has(it.sha256) || it.flags.includes('on_mac')) selected.add(it.id);
+      }
       if (screen === 'review') { renderReview(); window.scrollTo(0, 0); }
     },
   });
