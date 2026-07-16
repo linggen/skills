@@ -304,7 +304,6 @@ async function refreshDevice() {
 
 async function startScan() {
   await media('start scan-all');
-  notify(`Media scan started on ${device?.name || 'the iPhone'} (${device?.free_gb ?? '?'} GB free). Index Mac photos, pull new camera-roll files, then analyze. Acknowledge in one short sentence.`);
   showScanning();
 }
 
@@ -338,7 +337,7 @@ function showScanning() {
     renderScanProgress(p);
     if (p.op === 'scan' && p.status === 'done') {
       flags = await media('flags');
-      notify(`Media scan finished: ${flags.flagged} of ${flags.scanned} items flagged across duplicates/blurry/dark/screenshots/videos. Summarize in 1-2 sentences; remind the user nothing is removed without a verified backup and their confirm.`);
+      notify(`Media scan finished: ${flags.flagged} of ${flags.scanned} items flagged across duplicates/blurry/dark/screenshots/videos. Summarize the findings in 1-2 sentences; removals are user-driven and recoverable for 30 days.`);
       showReview();
     } else if (p.status === 'error') {
       renderScanError(p);
@@ -735,7 +734,6 @@ async function trashPaths(rawPaths) {
   macGroupsCache = null;
   await loadMacIndex();
   refreshStatus();
-  notify(`Mac cleanup: moved ${res.trashed ?? '?'} files (${res.freed_gb ?? '?'} GB) to the Trash${res.errors?.length ? `, ${res.errors.length} errors` : ''}. One short sentence.`);
   return true;
 }
 
@@ -931,8 +929,6 @@ function renderRemovedPane(pane) {
   for (const b of pane.querySelectorAll('.media-thumb .zoom[data-sha]')) {
     b.onclick = async () => {
       const r = await media(`restore ${b.dataset.sha}`);
-      notify(r.restored ? `Restored ${r.restored} from the removal trash. One short sentence.`
-        : `Restore failed: ${r.error}. One short sentence.`);
       await loadRemovals();
       renderCategoryPane();
     };
@@ -945,7 +941,6 @@ function renderRemovedPane(pane) {
       'Purge now');
     if (!ok) return;
     const r = await media('purge all');
-    notify(`Purged the media restore area: ${r.purged ?? 0} items, ${r.freed_gb ?? 0} GB freed. One short sentence.`);
     await loadRemovals();
     renderCategoryPane();
     refreshStatus();
@@ -1356,7 +1351,6 @@ async function deleteInLightbox(id) {
   refreshStatus();
   if (nextId && allById().has(nextId)) openLightbox(nextId);
   else closeLightbox();
-  notify(`Removed 1 item from the iPhone (recoverable 30 days). One short sentence.`);
 }
 
 /** Keep the working selection honest: drop ids no longer in flags (removed or
@@ -1395,7 +1389,6 @@ async function removeInline(ids) {
   const errs = r?.errors ? ` · ${r.errors} couldn't be deleted` : '';
   const icloud = r?.icloud_suspected ? ' · iCloud Photos blocks USB deletion' : '';
   toast.done(`✓ Removed ${removed.toLocaleString()}${freed} · recoverable 30 days${errs}${icloud}`);
-  notify(`Removed ${removed} items from the iPhone (recoverable 30 days)${r?.errors ? `, ${r.errors} failed` : ''}${r?.icloud_suspected ? '; iCloud Photos ON blocks USB deletion' : ''}. One short sentence with the before/after free space.`);
 }
 
 /** Archive the whole camera roll to Mac/external — inline progress toast,
@@ -1421,7 +1414,6 @@ async function backupRollInline(dest) {
   }
   const failed = p.failed ? ` · ${p.failed} failed` : '';
   toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`);
-  notify(`Backed up the whole camera roll to ${p.dest || 'the Mac'}: ${p.verified ?? 0} verified${p.failed ? `, ${p.failed} failed` : ''}. One short sentence.`);
 }
 
 /** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
