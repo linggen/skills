@@ -39,10 +39,10 @@ const SKILL_NAME = 'shared-memory';
 // drew the dashboard (tier cards + calendar) before this lands.
 const BOOT_PROMPT = `You are Ling inside the Memory skill. The dashboard (tier counts + dream calendar) is already painted on screen by JS — don't re-fetch or restate it, and don't emit a PageUpdate on boot.
 
-On boot, send ONE warm, short greeting (≤25 words) introducing yourself and what this skill does: durable memory across all your AI sessions. Mention they can hit "Dream" (or click a pending day) to remember it into long-term memory, or just ask what you remember. No preamble, no bullet lists, no "Done"/"awaiting action" phrasing.
+On boot, send ONE warm, short greeting (≤25 words) introducing yourself and what this skill does: durable memory across all your AI sessions. Mention they can hit "Dream" (or click an undreamed day) to remember it into long-term memory, or just ask what you remember. No preamble, no bullet lists, no "Done"/"awaiting action" phrasing.
 
 Then wait. When the user acts:
-- "/shared-memory dream" or "/shared-memory dream <YYYY-MM-DD>" → follow references/dream-flow.md: remember the pending day(s) via Memory_query/Memory_write (days worklist → day list → cluster → promote → remember_day stamp → sweep). No PageUpdate needed — the page watches the tool stream and repaints the calendar itself; just end with your one-line totals.
+- "/shared-memory dream" or "/shared-memory dream <YYYY-MM-DD>" → follow references/dream-flow.md: remember the undreamed day(s) via Memory_query/Memory_write (days worklist → day list → cluster → promote → remember_day stamp → sweep). No PageUpdate needed — the page watches the tool stream and repaints the calendar itself; just end with your one-line totals.
 - "/shared-memory solve" → follow the SKILL.md Solve runbook: Memory_query {"verb":"issues"} for the queue, per item gather the rows and evidence, solve confident derived-row items directly (add + replace_ids), AskUser ONE item at a time when the user's call is needed, close each via Memory_write {"verb":"issue_resolve","id":...,"outcome":...}.
 - Anything else → answer normally, use Memory_query when relevant.`;
 
@@ -205,7 +205,7 @@ async function sessionHasAgentReply() {
 // them away.
 //
 // The calendar is a rendering of the daemon's `days` rollup — the
-// single source of truth for the dream pipeline (pending / remembered
+// single source of truth for the dream pipeline (scanned / dreamed flags
 // / forgotten per day). The old `.dream-history.jsonl` /
 // `.dream-state.json` sidecars are retired.
 
@@ -250,7 +250,7 @@ function buildDreamCalendar(daysData) {
   return { type: 'dream-calendar', title: 'Dream activity', days };
 }
 
-// Kick the dream mission (nightly protocol: all pending days, then the
+// Kick the dream mission (nightly protocol: all undreamed days, then the
 // sweep) and poll the rollup while it runs. 409 = already in flight.
 async function triggerDreamMission() {
   try {
@@ -263,7 +263,7 @@ async function triggerDreamMission() {
       if (chat) chat.addMessage('A dream run is already in flight — the calendar updates as it works.');
       return;
     }
-    if (chat) chat.addMessage('Dream mission started — remembering pending days, then the forget sweep. The calendar updates as it works.');
+    if (chat) chat.addMessage('Dream mission started — remembering undreamed days, then the forget sweep. The calendar updates as it works.');
   } catch {
     if (chat) chat.addMessage('Could not reach the mission API — is the daemon running?');
     return;
@@ -327,8 +327,10 @@ function lastRememberedAt(daysData) {
   return latest;
 }
 
-function pendingDays(daysData) {
-  return (daysData?.days || []).filter((d) => d?.state === 'pending');
+function undreamedDays(daysData) {
+  const today = daysData?.today;
+  return (daysData?.days || []).filter((d) =>
+    d && d.unjudged > 0 && (!today || d.date < today));
 }
 
 // Latest daemon stats snapshot (rows / disk) — refreshed by
@@ -344,8 +346,8 @@ function fmtBytes(b) {
 function buildFooter({ daysData }) {
   const last = lastRememberedAt(daysData);
   const parts = [last ? `last dream ${ageOf(last)}` : 'last dream: never'];
-  const pending = pendingDays(daysData).length;
-  if (pending > 0) parts.push(`${pending} day${pending === 1 ? '' : 's'} pending`);
+  const undreamed = undreamedDays(daysData).length;
+  if (undreamed > 0) parts.push(`${undreamed} day${undreamed === 1 ? '' : 's'} undreamed`);
   const openIssues = daysData?.open_issues || 0;
   if (openIssues > 0) parts.push(`${openIssues} to review`);
   if (daysData?.ttl_days) parts.push(`short-term keeps ${daysData.ttl_days}d`);
@@ -358,7 +360,7 @@ function buildFooter({ daysData }) {
 
 function pickGreeting({ coreC, semC, epC, daysData }) {
   const totalRows = (coreC?.count || 0) + (semC?.count || 0) + (epC?.count || 0);
-  const pending = pendingDays(daysData);
+  const undreamed = undreamedDays(daysData);
   const last = lastRememberedAt(daysData);
   const runDream = { label: 'Run dream', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
 
@@ -366,10 +368,10 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
   const runSolve = { label: 'Review queue', icon: '🧩', message: '/shared-memory solve', kind: 'primary' };
 
   let title, primary;
-  if (pending.length > 0) {
-    title = pending.length === 1
-      ? `1 day is waiting to be remembered (${pending[0].date}).`
-      : `${pending.length} days are waiting to be remembered — oldest ${pending[0].date}.`;
+  if (undreamed.length > 0) {
+    title = undreamed.length === 1
+      ? `1 day is waiting to be dreamed (${undreamed[0].date}).`
+      : `${undreamed.length} days are waiting to be dreamed — oldest ${undreamed[0].date}.`;
     primary = runDream;
   } else if (openIssues > 0) {
     title = openIssues === 1
@@ -382,7 +384,7 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
   } else {
     title = last
       ? `All caught up — last dream ${ageOf(last)}, ${totalRows} rows across all tiers.`
-      : `Memory holds ${totalRows} rows — nothing pending tonight.`;
+      : `Memory holds ${totalRows} rows — nothing to dream tonight.`;
     primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };
   }
 
@@ -424,7 +426,7 @@ function setupActionBar() {
   const dreamBtn = document.getElementById('dream-btn');
   if (!dreamBtn) return;
 
-  // Dream = remember every pending day (oldest first) + forget sweep.
+  // Dream = remember every undreamed day (oldest first) + forget sweep.
   dreamBtn.addEventListener('click', () => {
     window._chatSend('/shared-memory dream');
   });

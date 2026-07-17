@@ -1565,9 +1565,9 @@
   color: color-mix(in srgb, var(--success) 55%, var(--text-muted));
 }
 .dcal-chip-staging { background: var(--bg-hover); color: var(--text-muted); }
-.dcal-state-remembered { background: color-mix(in srgb, var(--success) 5%, transparent); }
-.dcal-state-forgotten { background: color-mix(in srgb, var(--success) 2%, transparent); }
-.dcal-state-pending { background: color-mix(in srgb, var(--warning) 5%, transparent); }
+.dcal-state-dreamed { background: color-mix(in srgb, var(--success) 5%, transparent); }
+.dcal-state-scanned { background: color-mix(in srgb, var(--success) 2%, transparent); }
+.dcal-state-undreamed { background: color-mix(in srgb, var(--warning) 5%, transparent); }
 
 .dcal-swatch-pending { background: var(--warning); }
 .dcal-swatch-remembered { background: var(--success); }

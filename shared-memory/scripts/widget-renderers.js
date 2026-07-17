@@ -129,13 +129,11 @@ export function renderBodyWidget(w) {
 //
 // Apple-Calendar-style month grid of dream-pipeline state. Sun→Sat
 // columns, big day cells, today as a red circle, prev/Today/next month
-// nav. Each day shows ONE badge — the furthest pipeline stage reached
-// (the stages are sequential, so the latest one *is* the state):
-//
-//   pending    amber, "<n> pending"  — rows await a remember pass
-//   remembered green,  "✓ <k>"       — judged; short-term rows remain
-//   forgotten  faded,  "✓"           — judged; short-term aged out
-//   today      ring + "<n> staged"   — accumulating, not dreamable yet
+// nav. Each past day carries the two verb-aligned flags from the
+// daemon's rollup — `scanned` and `dreamed` — rendered as the
+// scan|scanned ✓ and dream|dreamed ✓ controls. A day with unjudged
+// rows is "undreamed" (amber tint); late rows clear the dreamed flag
+// and the day rejoins the worklist. Today only stages ("<n> staged").
 //
 // Clicking a past day opens a small popover with the day's detail and
 // a "Dream this day" action (the confirm step — a misclick never burns
@@ -144,8 +142,17 @@ export function renderBodyWidget(w) {
 //
 // Shape:
 //   { "type": "dream-calendar", "title": "Dream activity",
-//     "days": { "2026-07-01": { date, state, rows, unjudged, past_ttl,
-//                remembered_at, judged, promoted, forgotten }, ... } }
+//     "days": { "2026-07-01": { date, scanned, dreamed, rows, unjudged,
+//                past_ttl, remembered_at, judged, promoted, forgotten }, ... } }
+
+// One display bucket per past day, derived from the flags.
+function dcalBucket(rec) {
+  if (!rec) return 'none';
+  if (rec.unjudged > 0) return 'undreamed';
+  if (rec.dreamed) return 'dreamed';
+  if (rec.scanned) return 'scanned';
+  return 'none';
+}
 
 const DCAL_DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const DCAL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -166,11 +173,8 @@ function dcalIso(d) {
 // The single state badge for a day cell — used only for TODAY (past
 // days render the scan/dream controls instead).
 function dcalStateBadge(rec) {
-  if (!rec) return null;
-  if (rec.state === 'today' && rec.rows > 0) {
-    return el('div', 'dcal-chip dcal-chip-staging', `${rec.rows} staged`);
-  }
-  return null;
+  if (!rec || !rec.rows) return null;
+  return el('div', 'dcal-chip dcal-chip-staging', `${rec.rows} staged`);
 }
 
 function dcalAgo(iso) {
@@ -305,19 +309,20 @@ function dcalDayControls(iso, rec) {
   return wrap;
 }
 
-function dcalTooltip(iso, rec) {
+function dcalTooltip(iso, rec, isToday) {
   if (!rec) return `${iso} · no memory activity`;
-  switch (rec.state) {
-    case 'pending':
-      return `${iso} · pending · ${rec.unjudged}/${rec.rows} rows to judge — click for details`;
-    case 'remembered':
-      return `${iso} · remembered · ${rec.promoted} promoted · ${rec.rows} short-term rows kept`;
-    case 'forgotten':
-      return `${iso} · remembered ${rec.promoted ? `(${rec.promoted} promoted)` : ''} · short-term aged out`;
-    case 'today':
-      return `${iso} · today · ${rec.rows} rows staging — dreamable after midnight`;
+  if (isToday) return `${iso} · today · ${rec.rows} rows staging — dreamable after midnight`;
+  switch (dcalBucket(rec)) {
+    case 'undreamed':
+      return `${iso} · undreamed · ${rec.unjudged}/${rec.rows} rows to judge — click for details`;
+    case 'dreamed':
+      return rec.rows
+        ? `${iso} · dreamed · ${rec.promoted} promoted · ${rec.rows} short-term rows kept`
+        : `${iso} · dreamed ${rec.promoted ? `(${rec.promoted} promoted)` : ''} · short-term aged out`;
+    case 'scanned':
+      return `${iso} · scanned — logs walked, nothing awaiting judgment`;
     default:
-      return `${iso} · ${rec.state}`;
+      return `${iso} · no memory activity`;
   }
 }
 
@@ -329,19 +334,19 @@ function dcalOpenPopover(anchorCell, iso, rec, todayIso) {
   const pop = el('div', 'dcal-pop');
   pop.appendChild(el('div', 'dcal-pop-date', iso));
 
-  const state = rec?.state || 'empty';
+  const bucket = dcalBucket(rec);
   const lines = [];
   if (!rec || (!rec.rows && !rec.remembered_at)) {
     lines.push('No memory activity on this day.');
-  } else if (state === 'pending') {
-    lines.push(`${rec.unjudged} of ${rec.rows} rows await judgment.`);
-    if (rec.remembered_at) lines.push('New rows arrived after the last remember.');
-  } else if (state === 'remembered') {
-    lines.push(`Remembered — ${rec.promoted} promoted, ${rec.rows} short-term rows kept.`);
-  } else if (state === 'forgotten') {
-    lines.push(`Remembered — ${rec.promoted} promoted, ${rec.forgotten} aged out.`);
-  } else if (state === 'today') {
+  } else if (iso === todayIso) {
     lines.push(`${rec.rows} rows staging today. Dreamable after midnight.`);
+  } else if (bucket === 'undreamed') {
+    lines.push(`${rec.unjudged} of ${rec.rows} rows await judgment.`);
+    if (rec.remembered_at) lines.push('New rows arrived after the last dream.');
+  } else if (bucket === 'dreamed') {
+    lines.push(rec.rows
+      ? `Dreamed — ${rec.promoted} promoted, ${rec.rows} short-term rows kept.`
+      : `Dreamed — ${rec.promoted} promoted, ${rec.forgotten} aged out.`);
   }
   for (const t of lines) pop.appendChild(el('div', 'dcal-pop-line', t));
 
@@ -424,7 +429,10 @@ function renderDreamCalendar(w) {
 
       const cell = el('div', 'dcal-cell');
       if (!inMonth) cell.classList.add('dcal-out');
-      if (rec?.state) cell.classList.add(`dcal-state-${rec.state}`);
+      if (iso !== todayIso) {
+        const bucket = dcalBucket(rec);
+        if (bucket !== 'none') cell.classList.add(`dcal-state-${bucket}`);
+      }
 
       const num = el('div', 'dcal-num', String(date.getDate()));
       if (iso === todayIso) num.classList.add('dcal-today-num');
@@ -439,7 +447,7 @@ function renderDreamCalendar(w) {
           chips.appendChild(badge);
           cell.appendChild(chips);
         }
-        cell.title = dcalTooltip(iso, rec);
+        cell.title = dcalTooltip(iso, rec, true);
       } else if (isFuture) {
         cell.classList.add('dcal-future');
       } else {

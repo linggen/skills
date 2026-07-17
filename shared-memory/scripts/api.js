@@ -87,7 +87,7 @@ export async function fetchMemoryCount(filter = {}) {
 // truth behind the calendar. Returns the endpoint's data payload:
 // { today, ttl_days, days: [{date, state, rows, unjudged, past_ttl,
 //   harvested_at, remembered_at, judged, promoted, forgotten}] }
-// state ∈ today | staging | pending | remembered | forgotten | harvested.
+// Per-day verb flags: scanned (logs walked) | dreamed (judged, no late rows).
 export async function fetchMemoryDays(filter = {}) {
   const body = JSON.stringify(filter);
   const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/days -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;

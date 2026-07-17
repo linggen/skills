@@ -126,7 +126,7 @@ change when you switch agents.
 | Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--context ...] [--tag ...] [--source-session <id>]` — pass the host session id on live captures so a later `scan` of the day skips sessions that already contributed |
 | Update | `ling-mem edit <id> [--content ...] [--context ...] [--tag ...]` (or the back-compat alias `ling-mem update <id> ...`) |
 | Delete | `ling-mem delete <id> --yes` |
-| Days   | `ling-mem days [--pending]` — per-day dream state (pending / remembered / forgotten); `--pending` = the dream worklist, oldest first |
+| Days   | `ling-mem days [--undreamed]` — per-day verb flags (scanned / dreamed) + first_unscanned / first_undreamed; `--undreamed` = the dream worklist, oldest first |
 | Stamp  | `ling-mem remember-day <date> --judged N --promoted K` — mark a day judged after a remember pass |
 | Sweep  | `ling-mem sweep [--dry-run]` — the forget stage: evict judged episodic rows past TTL; never touches un-judged rows |
 
@@ -318,7 +318,7 @@ mode's references.
 
 | Mode | Detection cue (look at the first user message) | What to load |
 |:---|:---|:---|
-| **Dream** | Message says `/shared-memory dream` (all pending days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook, and on Linggen the memory app's buttons trigger that mission directly. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
+| **Dream** | Message says `/shared-memory dream` (all undreamed days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook, and on Linggen the memory app's buttons trigger that mission directly. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
 | **Scan** | Message says `/shared-memory scan <YYYY-MM-DD>` — stage that day's session logs (backfill), see the verb table. The calendar's scan button sends this. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (its Scan section) and `references/extractor-prompt.md` (what to stage). |
 | **Condense** | Message says `/shared-memory condense` — collapse stale chains in long-term memory. On Linggen the nightly `dream` mission already runs the high-confidence (cited) slice as its last stage; the chat verb is the attended deep pass (marker/subject clusters, where the user can be asked) and the path for hosts without a mission runtime. | `Read ~/.linggen/skills/shared-memory/references/condense-flow.md` (the canonical condense runbook). |
 | **Solve** | Message says `/shared-memory solve` — drain the review queue: items the nightly dream's audit could not solve with confidence and queued for the user. | The Solve runbook below; `references/routing-rules.md` for write decisions. |
@@ -341,9 +341,9 @@ it's what a bare `/shared-memory` greeting should mention first.
 
 | Verb | Action |
 |:---|:---|
-| `dream` | **Remember all pending days, oldest first, then sweep.** Worklist via `days --pending`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL. See `references/dream-flow.md`. (On Linggen, the memory app's buttons route this to the `dream` **mission** — same procedure, plus the in-flight guard and run report. The chat verb is for hosts without a mission runtime, or explicit chat requests.) |
+| `dream` | **Remember all undreamed days, oldest first, then sweep.** Worklist via `days --undreamed`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL. See `references/dream-flow.md`. (On Linggen, the memory app's buttons route this to the `dream` **mission** — same procedure, plus the in-flight guard and run report. The chat verb is for hosts without a mission runtime, or explicit chat requests.) |
 | `dream <YYYY-MM-DD>` | **Remember one day.** Same procedure, one day. |
-| `scan <YYYY-MM-DD>` | **Stage one day's session logs (backfill).** Run `scripts/scan.sh <date>`; before encoding, `list --day <date>` the day's existing rows and collect their `source_session` ids — **skip any scanned session already in that set** (live capture or a prior scan covered it; this is what makes scan idempotent). Encode the remaining worthwhile candidates into episodic with `--episodic` + the day's `occurred_at`, then stamp: `ling-mem harvest-day <date>` (stamps scanned only — the day goes *pending* and dream judges it later). A day with nothing new: still stamp, report `CLEAN`. |
+| `scan <YYYY-MM-DD>` | **Stage one day's session logs (backfill).** Run `scripts/scan.sh <date>`; before encoding, `list --day <date>` the day's existing rows and collect their `source_session` ids — **skip any scanned session already in that set** (live capture or a prior scan covered it; this is what makes scan idempotent). Encode the remaining worthwhile candidates into episodic with `--episodic` + the day's `occurred_at`, then stamp: `ling-mem harvest-day <date>` (stamps scanned only — the day stays *undreamed* and dream judges it later). A day with nothing new: still stamp, report `CLEAN`. |
 | `add "<content>" [--type ...] [--tier core] [--context ...]` | Insert a new memory row. Defaults to `--tier semantic`. |
 | `search "<query>" [--limit N] [--context ...]` | Semantic search across `semantic` + `episodic`. |
 | `list [--type ...] [--tier ...] [--day ...] [--limit N]` | Paginated listing. |
