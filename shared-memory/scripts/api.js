@@ -65,13 +65,43 @@ export async function fetchSessionMessages(skill, sessionId) {
 }
 
 // ── ling-mem daemon proxy ──
-// Cross-origin to 127.0.0.1:9888 isn't allowed from this iframe; route
-// through Linggen's /api/bash so the JS can call the daemon without
-// CORS headache. Returns {count, latest_created_at} per the daemon's
-// count endpoint contract.
+// Cross-origin to the daemon isn't allowed from this iframe; route through
+// Linggen's /api/bash so the JS can call it without a CORS headache.
+//
+// The daemon's port is discovered from its own discovery file
+// (`<data-dir>/memory/linggen-memory/daemon.json` → { port }), so the
+// dashboard follows the daemon wherever it binds — no hardcoded port to
+// drift when the default changes. Resolved once and cached for the page,
+// falling back to the compiled-in default if the file is absent.
+const DEFAULT_LING_MEM_PORT = 9528;
+let _lingMemPortPromise = null;
+
+function lingMemPort() {
+  if (!_lingMemPortPromise) {
+    _lingMemPortPromise = (async () => {
+      const cmd =
+        'd="${LINGGEN_DATA_DIR:-$HOME/.linggen}"; f="$d/memory/linggen-memory/daemon.json"; [ -f "$f" ] && cat "$f" || true';
+      const out = await bashExec(cmd);
+      try {
+        const info = JSON.parse(((out && out.stdout) || '').trim() || '{}');
+        if (Number.isInteger(info.port)) return info.port;
+      } catch { /* fall through to default */ }
+      return DEFAULT_LING_MEM_PORT;
+    })();
+  }
+  return _lingMemPortPromise;
+}
+
+// Base URL of the running ling-mem daemon, port resolved dynamically.
+export async function lingMemBase() {
+  return `http://127.0.0.1:${await lingMemPort()}`;
+}
+
+// Returns {count, latest_created_at} per the daemon's count endpoint.
 export async function fetchMemoryCount(filter = {}) {
+  const base = await lingMemBase();
   const body = JSON.stringify(filter);
-  const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/count -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
+  const cmd = `curl -s -X POST ${base}/api/memory/count -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
   const out = await bashExec(cmd);
   if (!out) return { count: 0, latest_created_at: null };
   try {
@@ -89,8 +119,9 @@ export async function fetchMemoryCount(filter = {}) {
 //   harvested_at, remembered_at, judged, promoted, forgotten}] }
 // Per-day verb flags: scanned (logs walked) | dreamed (judged, no late rows).
 export async function fetchMemoryDays(filter = {}) {
+  const base = await lingMemBase();
   const body = JSON.stringify(filter);
-  const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/days -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
+  const cmd = `curl -s -X POST ${base}/api/memory/days -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
   const out = await bashExec(cmd);
   if (!out) return null;
   try {
@@ -105,8 +136,9 @@ export async function fetchMemoryDays(filter = {}) {
 // not solve with confidence. Returns the endpoint's data payload:
 // { open_count, issues: [{id, kind, note, row_ids, created_at, status}] }
 export async function fetchMemoryIssues(status = 'open') {
+  const base = await lingMemBase();
   const body = JSON.stringify({ status });
-  const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/issues -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
+  const cmd = `curl -s -X POST ${base}/api/memory/issues -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
   const out = await bashExec(cmd);
   if (!out) return null;
   try {
@@ -121,7 +153,8 @@ export async function fetchMemoryIssues(status = 'open') {
 // footprint, last dream. Same `stats` payload the ling-mem console
 // header and the engine's mission report render.
 export async function fetchMemoryStats() {
-  const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/stats -H 'Content-Type: application/json' -d '{}'`;
+  const base = await lingMemBase();
+  const cmd = `curl -s -X POST ${base}/api/memory/stats -H 'Content-Type: application/json' -d '{}'`;
   const out = await bashExec(cmd);
   if (!out) return null;
   try {

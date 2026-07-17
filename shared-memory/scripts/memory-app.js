@@ -24,6 +24,7 @@ import {
   fetchMemoryIssues,
   fetchMemoryStats,
   fetchSessionMessages,
+  lingMemBase,
   listSkillSessions,
   readJsonFile,
   writeJsonFile,
@@ -35,6 +36,16 @@ import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './
 // ('ling-mem' here silently broke both: no cwd on the session, no
 // grants applied, so every scan Bash hit a permission prompt.)
 const SKILL_NAME = 'shared-memory';
+
+// ling-mem daemon browser URL, resolved from the live port on boot (the
+// dashboard follows the daemon wherever it binds). Falls back to the
+// default until the resolve lands; also patches the static Browse link.
+let memBrowseUrl = 'http://127.0.0.1:9528';
+lingMemBase().then((base) => {
+  memBrowseUrl = base;
+  const link = document.getElementById('browse-link');
+  if (link) link.href = base;
+});
 
 // Tiny boot prompt — the agent greets, then waits for input. JS already
 // drew the dashboard (tier cards + calendar) before this lands.
@@ -402,12 +413,12 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
     primary = runSolve;
   } else if (totalRows === 0) {
     title = "Welcome — your memory's empty. It fills as you work; dream remembers each day.";
-    primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };
+    primary = { label: 'Browse all ↗', href: memBrowseUrl, kind: 'primary' };
   } else {
     title = last
       ? `All caught up — last dream ${ageOf(last)}, ${totalRows} rows across all tiers.`
       : `Memory holds ${totalRows} rows — nothing to dream tonight.`;
-    primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };
+    primary = { label: 'Browse all ↗', href: memBrowseUrl, kind: 'primary' };
   }
 
   return {
