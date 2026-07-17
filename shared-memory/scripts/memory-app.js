@@ -43,6 +43,7 @@ On boot, send ONE warm, short greeting (≤25 words) introducing yourself and wh
 
 Then wait. When the user acts:
 - "/shared-memory dream" or "/shared-memory dream <YYYY-MM-DD>" → follow references/dream-flow.md: remember the pending day(s) via Memory_query/Memory_write (days worklist → day list → cluster → promote → remember_day stamp → sweep). No PageUpdate needed — the page watches the tool stream and repaints the calendar itself; just end with your one-line totals.
+- "/shared-memory solve" → follow the SKILL.md Solve runbook: Memory_query {"verb":"issues"} for the queue, per item gather the rows and evidence, solve confident derived-row items directly (add + replace_ids), AskUser ONE item at a time when the user's call is needed, close each via Memory_write {"verb":"issue_resolve","id":...,"outcome":...}.
 - Anything else → answer normally, use Memory_query when relevant.`;
 
 const params = new URLSearchParams(window.location.search);
@@ -345,6 +346,8 @@ function buildFooter({ daysData }) {
   const parts = [last ? `last dream ${ageOf(last)}` : 'last dream: never'];
   const pending = pendingDays(daysData).length;
   if (pending > 0) parts.push(`${pending} day${pending === 1 ? '' : 's'} pending`);
+  const openIssues = daysData?.open_issues || 0;
+  if (openIssues > 0) parts.push(`${openIssues} to review`);
   if (daysData?.ttl_days) parts.push(`short-term keeps ${daysData.ttl_days}d`);
   if (lastStats?.total != null) {
     const disk = fmtBytes(lastStats.disk_bytes?.total);
@@ -359,12 +362,20 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
   const last = lastRememberedAt(daysData);
   const runDream = { label: 'Run dream', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
 
+  const openIssues = daysData?.open_issues || 0;
+  const runSolve = { label: 'Review queue', icon: '🧩', message: '/shared-memory solve', kind: 'primary' };
+
   let title, primary;
   if (pending.length > 0) {
     title = pending.length === 1
       ? `1 day is waiting to be remembered (${pending[0].date}).`
       : `${pending.length} days are waiting to be remembered — oldest ${pending[0].date}.`;
     primary = runDream;
+  } else if (openIssues > 0) {
+    title = openIssues === 1
+      ? '1 review item is waiting — the dream queued it for your judgment.'
+      : `${openIssues} review items are waiting — the dream queued them for your judgment.`;
+    primary = runSolve;
   } else if (totalRows === 0) {
     title = "Welcome — your memory's empty. It fills as you work; dream remembers each day.";
     primary = { label: 'Browse all ↗', href: 'http://127.0.0.1:9888', kind: 'primary' };

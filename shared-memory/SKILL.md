@@ -321,6 +321,7 @@ mode's references.
 | **Dream** | Message says `/shared-memory dream` (all pending days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook, and on Linggen the memory app's buttons trigger that mission directly. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
 | **Scan** | Message says `/shared-memory scan <YYYY-MM-DD>` — stage that day's session logs (backfill), see the verb table. The calendar's scan button sends this. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (its Scan section) and `references/extractor-prompt.md` (what to stage). |
 | **Condense** | Message says `/shared-memory condense` — collapse stale chains in long-term memory. On Linggen the nightly `dream` mission already runs the high-confidence (cited) slice as its last stage; the chat verb is the attended deep pass (marker/subject clusters, where the user can be asked) and the path for hosts without a mission runtime. | `Read ~/.linggen/skills/shared-memory/references/condense-flow.md` (the canonical condense runbook). |
+| **Solve** | Message says `/shared-memory solve` — drain the review queue: items the nightly dream's audit could not solve with confidence and queued for the user. | The Solve runbook below; `references/routing-rules.md` for write decisions. |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
 The old **Dashboard mode** (the agent rendering the on-open page) is
@@ -351,6 +352,34 @@ it's what a bare `/shared-memory` greeting should mention first.
 | `days` | Show the per-day dream state (the calendar, as text). |
 | `sweep` | Run the forget stage on its own. |
 | `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm); collapse each into one current-truth row. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice automatically as its last stage; this verb is the attended deep pass.) |
+| `solve` | **Drain the review queue** — see the Solve runbook below. |
+
+### Solve runbook — `/shared-memory solve`
+
+The review queue holds what the nightly dream's audit could NOT solve
+with confidence: uncertain merges (`chain`), status claims likely
+overtaken by the world (`stale-status`), and conflicts needing the
+user's pick (`contradiction`). The daemon only bookkeeps — **you are
+the solver**, and this is an attended surface: the user is right here.
+
+1. **List.** `Memory_query {"verb":"issues"}`. Empty → say so, done.
+2. **Per item, gather evidence.** `Memory_query {"verb":"get","id":<row_id>}`
+   for each referenced row. For `stale-status`: check the WORLD — git
+   history since the row's date, files, whatever the note says to
+   verify (hand technical checks to a Task subagent if this session
+   lacks the tools).
+3. **Confidence rule.** Conclusive evidence AND all affected rows are
+   your own notes (`from=derived`) → solve directly: one
+   `Memory_write {"verb":"add", ..., "replace_ids":[...]}` writing
+   current truth. Ambiguous, or any user-voice row → **AskUser, ONE
+   item per call** — never batch the queue into one wall of
+   questions. User-voice fixes carry `user_directed:true` after the
+   answer.
+4. **Close as you go.** `Memory_write {"verb":"issue_resolve","id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
+   (or `"dismissed"` when not worth fixing).
+5. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
+   plus a closing count. The page footer's "N to review" refreshes on
+   the next dashboard paint.
 
 ### Chat-mode rules — do NOT leak dashboard language
 
@@ -374,6 +403,18 @@ Hosts without a `PageUpdate` capability never enter dashboard mode
 only via the BOOT_PROMPT signal above. Outside dashboard mode, the
 daemon-served data browser at `127.0.0.1:9888` is the equivalent
 hands-on surface.
+
+## Status rows are perishable — supersede at write time
+
+A status-bearing row ("in progress", "OPEN:", "not committed",
+"shipped", "dormant") is a claim about the world, and the world moves.
+When you capture a status change (shipped / fixed / dormant /
+abandoned), search the subject first and write the new status with
+`replace_ids` listing the prior status row(s) on that subject — never
+leave "in progress" beside its own outcome. Own-notes only; a
+user-voice predecessor follows the merge law below. The dream audit's
+review queue (`/shared-memory solve`) is the backstop for what slips
+through — write-time supersede is the real fix.
 
 ## Memory hygiene — see it, solve it
 
