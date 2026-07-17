@@ -36,7 +36,7 @@ Dream has two entry points, both landing as plain chat messages via
 |:---|:---|:---|
 | `🧠 Run dream` header button | `/shared-memory dream` | Follow `dream-flow.md`: `days` worklist → remember the oldest pending day(s) → `remember_day` stamp → one `sweep` at the end. |
 | Calendar day-click (popover confirm) | `/shared-memory dream <YYYY-MM-DD>` | Same flow scoped to that day; a gap day (no episodic rows) is a harvest — scan + encode first. |
-| `Browse ↗` | (link, not a message) | Opens `http://127.0.0.1:9888` in a new tab. |
+| `Browse ↗` | (link, not a message) | Opens `http://127.0.0.1:9528` in a new tab. |
 
 `/shared-memory dream` typed in chat is the slash-command form of the
 button — all routes converge on `dream-flow.md`.

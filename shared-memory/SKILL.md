@@ -53,7 +53,7 @@ permission:
     - { path: ~/.codex/archived_sessions, mode: read }
     - { path: ~/.openclaw/agents, mode: read }
   warning: >-
-    Runs a local HTTP daemon (ling-mem) on 127.0.0.1:9888 that stores
+    Runs a local HTTP daemon (ling-mem) on 127.0.0.1:9528 that stores
     memory rows in ~/.linggen/memory/memory.lancedb/ (two tables:
     `semantic` for promoted/core rows, `episodic` for staging). Reads
     each host's own session files for the `scan` step
@@ -401,7 +401,7 @@ clicking widgets. So:
 Hosts without a `PageUpdate` capability never enter dashboard mode
 (Claude Code, Codex, OpenClaw). Only Linggen exposes the canvas, and
 only via the BOOT_PROMPT signal above. Outside dashboard mode, the
-daemon-served data browser at `127.0.0.1:9888` is the equivalent
+daemon-served data browser at `127.0.0.1:9528` is the equivalent
 hands-on surface.
 
 ## Status rows are perishable — supersede at write time
@@ -528,7 +528,7 @@ identity.
 ## Data browser
 
 Row-level CRUD (filter, edit-in-place, batch delete) lives at
-`http://127.0.0.1:9888` when the daemon is running. Direct the user
+`http://127.0.0.1:9528` when the daemon is running. Direct the user
 there for hands-on cleanup. Run `ling-mem start` if not already
 running.
 
