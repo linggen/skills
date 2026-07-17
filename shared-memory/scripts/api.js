@@ -101,6 +101,22 @@ export async function fetchMemoryDays(filter = {}) {
   }
 }
 
+// Open review-queue items from the daemon — what a dream audit could
+// not solve with confidence. Returns the endpoint's data payload:
+// { open_count, issues: [{id, kind, note, row_ids, created_at, status}] }
+export async function fetchMemoryIssues(status = 'open') {
+  const body = JSON.stringify({ status });
+  const cmd = `curl -s -X POST http://127.0.0.1:9888/api/memory/issues -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
+  const out = await bashExec(cmd);
+  if (!out) return null;
+  try {
+    const parsed = JSON.parse(out.stdout || '{}');
+    return parsed.ok && parsed.data ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
 // Store-state summary from the daemon — row counts per tier, disk
 // footprint, last dream. Same `stats` payload the ling-mem console
 // header and the engine's mission report render.

@@ -116,6 +116,7 @@ export function renderBodyWidget(w) {
     'progress': renderProgress,
     'dream-calendar': renderDreamCalendar,
     'dream-report': renderDreamReport,
+    'review-queue': renderReviewQueue,
   };
   const fn = renderers[w.type];
   if (!fn) {
@@ -484,6 +485,57 @@ function renderDreamCalendar(w) {
   }
 
   build();
+  return panel;
+}
+
+// ── review-queue ──
+//
+// The solve queue: items a dream audit could not resolve with
+// confidence, awaiting the user. Rendered from the daemon's
+// `POST /api/memory/issues` payload (built by memory-app.js
+// `buildReviewQueue()`). The Solve action drops the solve prompt into
+// the chat panel — the agent then drains the queue per the SKILL.md
+// Solve runbook, asking one item at a time when the user's call is
+// needed.
+//
+// SYNC PAIR: the ling-mem console renders the same queue read-only
+// (linggen-memory/static/app.js `renderCalendarIssues` — no Solve
+// button, shows the `/linggen:solve` command instead). Keep the item
+// markup/classes aligned when editing either side.
+//
+// Shape:
+//   { "type": "review-queue", "title": "Review queue",
+//     "issues": [{id, kind, note, row_ids, created_at}] }
+
+function renderReviewQueue(w) {
+  const issues = w.issues || [];
+  const panel = el('div', 'widget-review-queue');
+
+  const head = el('div', 'rq-head');
+  head.appendChild(el('div', 'rq-title',
+    `<strong>${esc(w.title || 'Review queue')}</strong> · ${issues.length} open`));
+  const solve = el('button', 'rq-solve-btn', '🧩 Solve');
+  solve.title = 'Work the queue with the agent — evidence is gathered per item; you are asked one item at a time when your call is needed.';
+  solve.addEventListener('click', () => {
+    if (window._chatSend) window._chatSend('/shared-memory solve');
+  });
+  head.appendChild(solve);
+  panel.appendChild(head);
+
+  if (!issues.length) {
+    panel.appendChild(el('div', 'rq-empty', 'Review queue empty — nothing needs your judgment.'));
+    return panel;
+  }
+
+  for (const it of issues) {
+    const row = el('div', 'rq-item');
+    row.appendChild(el('span', `rq-kind rq-kind-${esc(it.kind || 'chain')}`, esc(it.kind || '')));
+    row.appendChild(el('span', 'rq-note', esc(it.note || '')));
+    const bits = [dcalAgo(it.created_at)];
+    if (it.row_ids?.length) bits.push(`${it.row_ids.length} row${it.row_ids.length === 1 ? '' : 's'}`);
+    row.appendChild(el('span', 'rq-meta', esc(bits.filter(Boolean).join(' · '))));
+    panel.appendChild(row);
+  }
   return panel;
 }
 

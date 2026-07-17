@@ -21,6 +21,7 @@ import {
   fetchDefaultModel,
   fetchMemoryCount,
   fetchMemoryDays,
+  fetchMemoryIssues,
   fetchMemoryStats,
   fetchSessionMessages,
   listSkillSessions,
@@ -210,13 +211,14 @@ async function sessionHasAgentReply() {
 // `.dream-state.json` sidecars are retired.
 
 async function paintDashboard() {
-  let coreC, semC, epC, daysData;
+  let coreC, semC, epC, daysData, issuesData;
   try {
-    [coreC, semC, epC, daysData, lastStats] = await Promise.all([
+    [coreC, semC, epC, daysData, issuesData, lastStats] = await Promise.all([
       fetchMemoryCount({ tier: 'core' }),
       fetchMemoryCount({ tier: 'semantic' }),
       fetchMemoryCount({ episodic: true }),
       fetchMemoryDays(),
+      fetchMemoryIssues('open'),
       fetchMemoryStats(),
     ]);
   } catch (e) {
@@ -225,18 +227,31 @@ async function paintDashboard() {
     semC = { count: 0 };
     epC = { count: 0 };
     daysData = null;
+    issuesData = null;
     lastStats = null;
   }
   const summary = { coreC, semC, epC, daysData };
   const greeting = pickGreeting(summary);
   const calendar = buildDreamCalendar(daysData);
 
+  const body = [greeting, calendar];
+  const queue = buildReviewQueue(issuesData);
+  if (queue) body.push(queue);
+
   applyPageUpdate({
     top_bar: buildTierCards(summary),
-    body: [greeting, calendar],
+    body,
     footer: buildFooter(summary),
   });
   cacheCurrentPage();
+}
+
+// The solve-queue widget — only rendered when items are open (an empty
+// queue stays out of the dashboard; the footer count covers "0").
+function buildReviewQueue(issuesData) {
+  const issues = issuesData?.issues || [];
+  if (!issues.length) return null;
+  return { type: 'review-queue', title: 'Review queue', issues };
 }
 
 // Shape the daemon's rollup into the dream-calendar widget: a per-day
@@ -276,16 +291,23 @@ async function triggerDreamMission() {
   }, 5000);
 }
 
-// Re-fetch the days rollup and swap the calendar widget in place,
-// leaving the rest of the body (greeting / report widgets) untouched.
+// Re-fetch the days rollup + review queue and swap both widgets in
+// place, leaving the rest of the body (greeting / report widgets)
+// untouched.
 async function refreshDaysCalendar() {
-  const daysData = await fetchMemoryDays();
+  const [daysData, issuesData] = await Promise.all([
+    fetchMemoryDays(),
+    fetchMemoryIssues('open').catch(() => null),
+  ]);
   if (!daysData) return;
   const page = getCurrentPage();
   const body = Array.isArray(page.body) ? page.body : [];
   const calendar = buildDreamCalendar(daysData);
-  const rest = body.filter((w) => !(w && w.type === 'dream-calendar'));
-  applyPageUpdate({ body: [...rest, calendar], footer: buildFooter({ daysData }) });
+  const queue = buildReviewQueue(issuesData);
+  const rest = body.filter((w) =>
+    !(w && (w.type === 'dream-calendar' || w.type === 'review-queue')));
+  const next = queue ? [...rest, calendar, queue] : [...rest, calendar];
+  applyPageUpdate({ body: next, footer: buildFooter({ daysData }) });
   cacheCurrentPage();
 }
 
