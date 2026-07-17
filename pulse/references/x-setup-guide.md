@@ -56,7 +56,7 @@ you want it: set `sites.x.keyword_search=true` in `config.json`.
 Check the bridge from a terminal:
 
 ```bash
-curl -s http://127.0.0.1:9898/api/bridge/status
+curl -s http://127.0.0.1:9527/api/bridge/status
 ```
 
 `{"connected":true,...,"modules":[{"id":"x",...,"ready":true}]}` means the

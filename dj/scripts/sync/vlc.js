@@ -2,7 +2,7 @@
 // Uploading COPIES the file into VLC's on-device library, so it plays offline
 // afterwards (WiFi is needed only during the transfer). We POST via curl
 // through /api/bash, NOT a browser fetch: VLC sends no CORS headers, so a
-// cross-origin fetch from the :9898 page would be blocked.
+// cross-origin fetch from the :9527 page would be blocked.
 
 import { runBash, sq } from '../bash.js';
 

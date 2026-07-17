@@ -42,5 +42,5 @@ Skills are automatically installed when you run `ling init --global`.
 
 ## Notes
 
-- Linggen runs locally (default API URL: `http://localhost:9898`).
+- Linggen runs locally (default API URL: `http://localhost:9527`).
 - To change the API URL, set `LINGGEN_API_URL` in your environment or in a workspace `.linggen/config` file.
