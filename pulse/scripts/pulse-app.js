@@ -2004,7 +2004,7 @@ function renderHnTab(tabId, mount) {
 // honest account signal is the user's own public RSS feeds (the newest ~25
 // comments/posts), so the KPIs are activity-based, not karma-based. Data
 // comes from reddit-account.sh (page-side, agent never calls it).
-let redditDash = { comments: [], posts: [], errors: [] };
+let redditDash = { comments: [], posts: [], errors: [], karma: [] };
 
 async function refreshRedditDashData() {
   try {
@@ -2016,6 +2016,12 @@ async function refreshRedditDashData() {
     console.warn('[pulse] reddit-account fetch failed', e);
     return;
   }
+  // Karma history accrues via snapshotAudienceMetrics (1 point/day) — same
+  // series the header strip charts; reused here for the hero line + KPI.
+  try {
+    const health = await readJson(`${SKILL_DIR}/state/account-health.json`, {});
+    redditDash.karma = Array.isArray(health?.reddit?.history) ? health.reddit.history : [];
+  } catch { /* keep prior karma series */ }
   try { renderAll(); } catch (e) { /* ignore */ }
 }
 
@@ -2031,32 +2037,75 @@ function redditWithinDays(items, days) {
   });
 }
 
-// Comments+posts per day over the last 30 days. Bars only — there is no
-// karma series to draw a line from (see the header note).
-function svgRedditBars() {
+// Comments vs posts per day (stacked, count-labeled, dated axis) + karma
+// line overlay once the daily snapshots accrue >= 2 points. Fixed aspect —
+// preserveAspectRatio="none" would distort the tick text.
+function svgRedditHero() {
   const days = 30;
   const per = {};
-  for (const c of redditDash.comments.concat(redditDash.posts)) {
+  for (const c of redditDash.comments) {
     const d = (c.created_iso || '').slice(0, 10);
-    if (d) per[d] = (per[d] || 0) + 1;
+    if (d) (per[d] = per[d] || { c: 0, p: 0 }).c++;
+  }
+  for (const p of redditDash.posts) {
+    const d = (p.created_iso || '').slice(0, 10);
+    if (d) (per[d] = per[d] || { c: 0, p: 0 }).p++;
   }
   const seq = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
-    seq.push({ d, v: per[d] || 0 });
+    const e = per[d] || { c: 0, p: 0 };
+    seq.push({ d, c: e.c, p: e.p });
   }
-  if (!seq.some(p => p.v)) {
+  const karma = (redditDash.karma || []).filter(k => seq.some(s => s.d === k.date));
+  if (!seq.some(s => s.c + s.p) && karma.length < 2) {
     return `<div class="chart-empty">No Reddit activity in the last ${days} days — the feeds cover your newest ~25 comments.</div>`;
   }
-  const W = 600, H = 150, PADT = 12, PADB = 16;
-  const bw = W / days;
-  const vmax = Math.max(...seq.map(p => p.v), 1);
-  const bars = seq.map((p, i) => {
-    if (!p.v) return '';
-    const bh = (p.v / vmax) * (H - PADT - PADB);
-    return `<rect x="${(i * bw + 1).toFixed(1)}" y="${(H - PADB - bh).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${bh.toFixed(1)}" class="bar-posted"/>`;
-  }).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="none">${bars}</svg>`;
+  const W = 640, H = 190, PADT = 14, PADB = 26, PADL = 24, PADR = 34;
+  const plotW = W - PADL - PADR, plotH = H - PADT - PADB;
+  const bw = plotW / days;
+  const vmax = Math.max(...seq.map(s => s.c + s.p), 1);
+  const step = Math.max(1, Math.ceil(vmax / 4));
+  const yAt = v => PADT + (1 - v / vmax) * plotH;
+  let grid = '';
+  for (let v = step; v <= vmax; v += step) {
+    grid += `<line x1="${PADL}" y1="${yAt(v).toFixed(1)}" x2="${W - PADR}" y2="${yAt(v).toFixed(1)}" class="grid-line"/>` +
+            `<text x="${PADL - 4}" y="${(yAt(v) + 3).toFixed(1)}" class="chart-tick" text-anchor="end">${v}</text>`;
+  }
+  grid += `<line x1="${PADL}" y1="${(H - PADB).toFixed(1)}" x2="${W - PADR}" y2="${(H - PADB).toFixed(1)}" class="grid-line base"/>`;
+  let ticks = '';
+  for (const i of [0, 7, 14, 21, days - 1]) {
+    const x = PADL + i * bw + bw / 2;
+    ticks += `<text x="${x.toFixed(1)}" y="${(H - PADB + 14).toFixed(1)}" class="chart-tick" text-anchor="middle">${seq[i].d.slice(5).replace('-', '/')}</text>`;
+  }
+  let bars = '';
+  seq.forEach((s, i) => {
+    const total = s.c + s.p;
+    if (!total) return;
+    const x = PADL + i * bw + 1;
+    const w = Math.max(bw - 2, 2);
+    const hC = (s.c / vmax) * plotH;
+    const hP = (s.p / vmax) * plotH;
+    const tip = `<title>${s.d} — ${s.c} comment${s.c === 1 ? '' : 's'}, ${s.p} post${s.p === 1 ? '' : 's'}</title>`;
+    bars += `<g>${tip}` +
+      (s.c ? `<rect x="${x.toFixed(1)}" y="${(H - PADB - hC).toFixed(1)}" width="${w.toFixed(1)}" height="${hC.toFixed(1)}" class="bar-posted"/>` : '') +
+      (s.p ? `<rect x="${x.toFixed(1)}" y="${(H - PADB - hC - hP).toFixed(1)}" width="${w.toFixed(1)}" height="${hP.toFixed(1)}" class="bar-drafted"/>` : '') +
+      `<text x="${(x + w / 2).toFixed(1)}" y="${(H - PADB - hC - hP - 3).toFixed(1)}" class="chart-tick bar-count" text-anchor="middle">${total}</text></g>`;
+  });
+  // Karma line rides its own scale (counts and karma differ by orders of
+  // magnitude); current value labeled at the right edge.
+  let karmaLine = '';
+  if (karma.length >= 2) {
+    const kc = karma.map(k => k.count);
+    let lo = Math.min(...kc), hi = Math.max(...kc);
+    if (lo === hi) { lo -= 1; hi += 1; }
+    const kx = d => PADL + seq.findIndex(s => s.d === d) * bw + bw / 2;
+    const ky = v => PADT + (1 - (v - lo) / (hi - lo)) * plotH;
+    const pts = karma.map(k => `${kx(k.date).toFixed(1)} ${ky(k.count).toFixed(1)}`);
+    karmaLine = `<path d="M${pts.join(' L')}" class="line-foll" vector-effect="non-scaling-stroke"/>` +
+      `<text x="${W - PADR + 4}" y="${(ky(kc[kc.length - 1]) + 3).toFixed(1)}" class="chart-tick">${kc[kc.length - 1]}</text>`;
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg">${grid}${ticks}${bars}${karmaLine}</svg>`;
 }
 
 function redditRecentHtml() {
@@ -2096,17 +2145,24 @@ function redditDashboardHtml() {
     `<div class="xkpi"><div class="xkpi-v">${value}</div><div class="xkpi-l">${label}</div><div class="xkpi-s">${sub || ''}</div></div>`;
   const errNote = redditDash.errors.length
     ? `<div class="xchart-legend">⚠ ${escapeHtml(redditDash.errors[0])}</div>` : '';
+  const kar = redditDash.karma || [];
+  const kCur = kar.length ? kar[kar.length - 1].count : null;
+  const kD7 = followerDelta(kar, 7);
+  const kStr = kD7 ? `<span class="${kD7.delta >= 0 ? 'up' : 'down'}">${kD7.delta >= 0 ? '+' : ''}${fmtCount(kD7.delta)}/${kD7.spanDays}d</span>` : '';
+  const karmaNote = kar.length < 2
+    ? '<span class="xchart-legend">karma line appears after 2+ daily snapshots</span>' : '';
   return `
     <div class="xkpi-strip">
+      ${kpi('Karma', kCur != null ? fmtCount(kCur) : '—', kStr)}
       ${kpi('Comments', c7, 'last 7d')}
       ${kpi('Posts', p7, 'last 7d')}
       ${kpi('Active subs', subs7, 'last 7d')}
       ${kpi('Pending drafts', drafts, '')}
     </div>
     <div class="xchart">
-      <div class="xchart-head"><span>Comment activity</span><span class="xchart-legend">own activity via RSS — per-post scores unavailable; karma lives in the header strip</span></div>
-      ${svgRedditBars()}
-      <div class="xchart-legend"><span class="lg-posted">▮ comments + posts per day</span></div>
+      <div class="xchart-head"><span>Karma vs activity · 30d</span><span class="xchart-legend">per-post scores unavailable via RSS</span></div>
+      ${svgRedditHero()}
+      <div class="xchart-legend"><span class="lg-posted">▮ comments</span> <span class="lg-drafted">▮ posts</span> <span class="lg-foll">— karma</span> ${karmaNote}</div>
     </div>
     ${errNote}
     ${redditRecentHtml()}

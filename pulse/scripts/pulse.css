@@ -302,6 +302,10 @@ body {
 .bar-drafted { fill: var(--accent); opacity: 0.55; }
 .bar-posted2 { fill: var(--green); opacity: 0.85; }
 .chart-empty { font-size: 12px; color: var(--muted); padding: 1.2rem 0.3rem; text-align: center; }
+.grid-line { stroke: var(--line); stroke-width: 0.5; }
+.grid-line.base { stroke-width: 1; }
+.chart-tick { fill: var(--muted); font-size: 10px; font-family: inherit; }
+.chart-tick.bar-count { fill: var(--ink); font-weight: 600; }
 
 .rmix-bar {
   display: flex; height: 12px; border-radius: 6px; overflow: hidden;

@@ -52,8 +52,23 @@ if not username:
 
 errors = []
 
+# Ride the account's private-feed budget when configured (see reddit.sh) —
+# anonymous user-feed requests share the tight IP pool and 429 readily.
+AUTH = ""
+try:
+    from urllib.parse import quote as _q
+    _tok = (((cfg.get("sites") or {}).get("reddit") or {})
+            .get("private_rss_feed_token") or "").strip()
+    if "feed=" in _tok:
+        from urllib.parse import urlparse, parse_qs
+        _tok = (parse_qs(urlparse(_tok).query).get("feed") or [_tok])[0]
+    if _tok:
+        AUTH = f"&feed={_q(_tok)}&user={_q(username)}"
+except Exception:
+    pass
+
 def feed(kind):
-    url = f"https://www.reddit.com/user/{username}/{kind}.rss?limit=25"
+    url = f"https://www.reddit.com/user/{username}/{kind}.rss?limit=25{AUTH}"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": UA})
         with urllib.request.urlopen(req, timeout=12) as r:
