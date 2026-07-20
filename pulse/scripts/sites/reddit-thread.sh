@@ -54,7 +54,18 @@ if not post_id:
 
 UA = "pulse/0.1 (public-rss; reddit-thread)"
 NS = {"a": "http://www.w3.org/2005/Atom"}
-url = f"https://www.reddit.com/comments/{post_id}/.rss?limit=50"
+# Ride the account's private-feed budget when configured (see reddit.sh) —
+# thread grounding burns the same anonymous pool as the sub feeds otherwise.
+AUTH = ""
+try:
+    from urllib.parse import quote
+    _r = (json.load(open(os.path.expanduser(
+        "~/.linggen/skills/pulse/config.json"))).get("sites") or {}).get("reddit") or {}
+    if (_r.get("username") or "").strip() and (_r.get("private_rss_feed_token") or "").strip():
+        AUTH = f"&feed={quote(_r['private_rss_feed_token'].strip())}&user={quote(_r['username'].strip())}"
+except Exception:
+    pass
+url = f"https://www.reddit.com/comments/{post_id}/.rss?limit=50{AUTH}"
 
 def strip_html(s):
     s = re.sub(r"(?is)<(script|style).*?>.*?</\1>", "", s or "")

@@ -56,7 +56,14 @@ if not subs:
 
 UA = "pulse/0.1 (public-rss; reddit-discovery)"
 NS = {"a": "http://www.w3.org/2005/Atom"}
-endpoint = f"{mode}.rss?limit=25" + ("&t=day" if mode == "top" else "")
+# The account's private RSS feed token (old.reddit.com/prefs/feeds) rides the
+# per-account budget instead of the shared anonymous IP pool that 429s after
+# ~2-3 subs per run. Any .rss URL accepts ?feed=<token>&user=<name>.
+from urllib.parse import quote
+_user = (reddit.get("username") or "").strip()
+_token = (reddit.get("private_rss_feed_token") or "").strip()
+AUTH = f"&feed={quote(_token)}&user={quote(_user)}" if _user and _token else ""
+endpoint = f"{mode}.rss?limit=25" + ("&t=day" if mode == "top" else "") + AUTH
 
 # Reddit rate-limits anon .rss hard (~10/min; bursts trip 429). Looping subs
 # back-to-back let the 1st sub succeed while every later sub got 429 — which
