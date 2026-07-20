@@ -438,6 +438,18 @@ body {
 .r-act.follow:hover { background: rgba(217, 119, 6, 0.1); }
 .r-act.ignore:hover { border-color: var(--red); color: var(--red); }
 .posted-badge { color: var(--green); }
+/* Discovery card: OP is explicitly asking for tool recommendations */
+.rec-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--green);
+  vertical-align: 1px;
+}
 
 /* Sections */
 .section { margin-bottom: 1.5rem; }

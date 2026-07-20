@@ -1067,8 +1067,11 @@ function renderDiscovery(c) {
     ? ['copy', 'open', 'copy-url', 'x-posted', 'dismiss']
     : ['copy', 'open', 'copy-url', 'dismiss'];
   const postedBadge = c.posted ? ' · <span class="posted-badge">✓ posted</span>' : '';
+  // OP explicitly solicits tool recommendations — the one thread type where
+  // a disclosed product mention is culture-legal; the draft reflects it.
+  const recBadge = c.rec_request ? ' <span class="rec-badge">asks for recs</span>' : '';
   return cardEl(c, 'cold', `
-    <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''}${threadTitle ? ' · <b>"' + escapeHtml(threadTitle) + '"</b>' : ''}</div>
+    <div class="title">${escapeHtml(c.source || '')}${c.sub ? ' · r/' + escapeHtml(c.sub) : ''}${threadTitle ? ' · <b>"' + escapeHtml(threadTitle) + '"</b>' : ''}${recBadge}</div>
     <div class="meta">${c.author ? 'by ' + escapeHtml(c.author) + ' · ' : ''}${c.comments != null ? c.comments + ' comments · ' : ''}${formatAge(c.age_hours)}${c.match_reason ? ' · ' + escapeHtml(c.match_reason) : ''}${postedBadge}</div>
     ${truncatedExcerpt ? `<div class="excerpt">${escapeHtml(truncatedExcerpt)}</div>` : ''}
     ${targetHtml}

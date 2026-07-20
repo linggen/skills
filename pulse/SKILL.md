@@ -706,6 +706,13 @@ an explicit "refresh accounts" / first run / empty roster.
    when the thread is directly about agent memory AND with disclosure).
    Don't link to the user's marketing domain; if a self-mention is
    genuinely natural, max one.
+   **Exception — `rec_request` threads**: when the OP is explicitly
+   asking for tool/product recommendations (see the `rec_request`
+   field below), a single disclosed product mention is the culturally
+   correct answer, not promo: name the user's product in one natural
+   sentence, disclose authorship ("I built X for exactly this"), and
+   still answer the actual question on its merits. Never a link, never
+   a feature list.
 
 **Output**: body_patch for `discovery` section. Each card is a
 `discovery` type with `author`, `excerpt`, AND `draft_starter` populated:
@@ -723,6 +730,12 @@ an explicit "refresh accounts" / first run / empty roster.
 - `draft_starter` — your 2–4 sentence comment draft in voice. Shown
   inline on the card so the user can copy or open the thread to post
   without an extra click.
+- `rec_request` — `true` ONLY when the OP is explicitly asking for
+  tool/product recommendations ("is there a tool", "what do you use
+  for", "any alternatives to", "recommend something for"). A question
+  or pain point alone does NOT qualify — the OP must be soliciting
+  suggestions. These cards get a visible badge and their draft follows
+  the rec-request exception in step 7. Omit the field otherwise.
 
 Both fields are required. Without `excerpt`, the user can't tell at a
 glance whether the thread is worth opening. Without `draft_starter`,
