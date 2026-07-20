@@ -57,6 +57,20 @@ of each lane's tic list, in pass 3:
 - **A fragment or a rough edge is GOOD.** Opening with "yeah,",
   "honestly,", "wait —", lowercase, or trailing off reads more human
   than a balanced, fully-resolved sentence.
+- **Add one thing the thread doesn't already have.** Before drafting,
+  check: does this say anything the OP, the parent comment, or the
+  user's own earlier comment in the thread hasn't said? Agreement +
+  restatement is not a reply — it's an upvote wearing words. The
+  addition must be earned: a number from experience ("3-5 runs"), a
+  named tool/flag, a failure actually hit, a cost/tradeoff. If there's
+  nothing to add, emit no draft for that thread — a thread can be
+  complete.
+- **Never reuse a sentence shape visible in the thread.** If the
+  parent comment (or the user's previous comment there) ends on a
+  punchy contrast ("otherwise it's just X"), do NOT end on one too —
+  two comments in a row with the same closing shape is the loudest
+  bot tell there is. Vary where the weight lands: mid-sentence detail,
+  question, plain stop.
 
 Worked example — an actual X reply this skill produced, and the fix:
 
@@ -73,6 +87,26 @@ Worked example — an actual X reply this skill produced, and the fix:
      — contractions; reacts to their one claim; no fortune-cookie moral;
      slightly rough opener. (Even better: drop in a real detail from
      your own experience where the abstraction is.)
+
+Second worked example — a reddit reply this skill drafted in a thread
+where the user and the OP had already agreed failing cases should be
+kept replayable and re-run:
+
+  ❌ "exactly. one green is just an anecdote when the model's sampling.
+     i like keeping the original failure plus a few nearby cases
+     together, otherwise the fix gets tuned to the screenshot instead
+     of the failure mode."
+     — middle sentence restates what BOTH sides already said (zero new
+     information); the user's previous comment in the thread ended
+     "otherwise it's just dashboard theatre" and this ends "otherwise
+     the fix gets tuned to…" — same closing shape twice in a row.
+
+  ✅ "exactly. one green is just an anecdote when the model's sampling.
+     the annoying part is deciding how many reruns is enough — i
+     usually do 3-5 at the model's real temperature, not temp 0, since
+     temp 0 hides exactly the variance users actually hit."
+     — adds two things the thread didn't have (a rerun count, the
+     temp-0 trap); ends on the detail, not a moral.
 
 The **brief is the voice anchor** — mirror how IT is written for cadence,
 then apply these rules on top.
