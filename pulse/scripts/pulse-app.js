@@ -2061,7 +2061,7 @@ function svgRedditHero() {
   if (!seq.some(s => s.c + s.p) && karma.length < 2) {
     return `<div class="chart-empty">No Reddit activity in the last ${days} days — the feeds cover your newest ~25 comments.</div>`;
   }
-  const W = 640, H = 190, PADT = 14, PADB = 26, PADL = 24, PADR = 34;
+  const W = 1200, H = 210, PADT = 18, PADB = 30, PADL = 40, PADR = 52;
   const plotW = W - PADL - PADR, plotH = H - PADT - PADB;
   const bw = plotW / days;
   const vmax = Math.max(...seq.map(s => s.c + s.p), 1);
@@ -2070,13 +2070,13 @@ function svgRedditHero() {
   let grid = '';
   for (let v = step; v <= vmax; v += step) {
     grid += `<line x1="${PADL}" y1="${yAt(v).toFixed(1)}" x2="${W - PADR}" y2="${yAt(v).toFixed(1)}" class="grid-line"/>` +
-            `<text x="${PADL - 4}" y="${(yAt(v) + 3).toFixed(1)}" class="chart-tick" text-anchor="end">${v}</text>`;
+            `<text x="${PADL - 6}" y="${(yAt(v) + 4).toFixed(1)}" class="chart-tick" text-anchor="end">${v}</text>`;
   }
   grid += `<line x1="${PADL}" y1="${(H - PADB).toFixed(1)}" x2="${W - PADR}" y2="${(H - PADB).toFixed(1)}" class="grid-line base"/>`;
   let ticks = '';
   for (const i of [0, 7, 14, 21, days - 1]) {
     const x = PADL + i * bw + bw / 2;
-    ticks += `<text x="${x.toFixed(1)}" y="${(H - PADB + 14).toFixed(1)}" class="chart-tick" text-anchor="middle">${seq[i].d.slice(5).replace('-', '/')}</text>`;
+    ticks += `<text x="${x.toFixed(1)}" y="${(H - PADB + 18).toFixed(1)}" class="chart-tick" text-anchor="middle">${seq[i].d.slice(5).replace('-', '/')}</text>`;
   }
   let bars = '';
   seq.forEach((s, i) => {
@@ -2150,7 +2150,7 @@ function redditDashboardHtml() {
   const kD7 = followerDelta(kar, 7);
   const kStr = kD7 ? `<span class="${kD7.delta >= 0 ? 'up' : 'down'}">${kD7.delta >= 0 ? '+' : ''}${fmtCount(kD7.delta)}/${kD7.spanDays}d</span>` : '';
   const karmaNote = kar.length < 2
-    ? '<span class="xchart-legend">karma line appears after 2+ daily snapshots</span>' : '';
+    ? '<span class="xchart-legend"> · karma line appears after 2+ daily snapshots</span>' : '';
   return `
     <div class="xkpi-strip">
       ${kpi('Karma', kCur != null ? fmtCount(kCur) : '—', kStr)}
