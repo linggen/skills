@@ -401,7 +401,9 @@ async def _pull_async():
     ghosts = []
     if not walk_errors:
         phone_paths = {p for p, _, _ in phone_files}
-        ghosts = [p for p in manifest if p not in phone_paths]
+        # wireless/… rows come from the daemon's /api/media ingest (Linggen
+        # Mobile), not this USB walk — only AFC paths (/DCIM/…) can ghost
+        ghosts = [p for p in manifest if p not in phone_paths and p.startswith('/')]
         for p in ghosts:
             r = manifest.pop(p)
             if r.get('staged'):
