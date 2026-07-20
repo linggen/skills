@@ -689,7 +689,7 @@ an explicit "refresh accounts" / first run / empty roster.
    `FetchHNThread`) with its URL/id to pull the OP body + top comments.
    Ground the `excerpt` and `draft_starter` in what was actually said —
    answer the OP's real question, and avoid repeating a point an
-   existing comment already made. (Cap thread fetches to the top ~5 to
+   existing comment already made. (Cap thread fetches to the top ~10 to
    stay quick.) **X** results already carry the full tweet text in
    `text` — no extra fetch; use it as the `excerpt`.
    **Reply to the OP, not a nested comment.** Discovery drafts are
