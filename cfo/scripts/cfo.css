@@ -85,14 +85,8 @@ body.resizing iframe { pointer-events: none; } /* iframe would swallow the drag 
 
 h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 22px 0 10px; }
 
-/* ── Collapsible report sections ── */
-.rpt-sec > .sec-h { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; }
-/* A clear, accent-colored disclosure chevron so the header reads as expandable. */
-.rpt-sec > .sec-h::before { content: '▾'; font-size: 13px; line-height: 1; color: var(--accent);
-  flex: 0 0 auto; width: 14px; text-align: center; transition: transform .12s; }
-.rpt-sec.closed > .sec-h::before { content: '▸'; }
-.rpt-sec > .sec-h:hover::before { opacity: .7; }
-.rpt-sec.closed > .sec-body { display: none; }
+/* ── Trends section headers — static, always expanded ── */
+.sec-h { display: flex; align-items: center; gap: 8px; }
 .sec-h .legend { margin-left: auto; float: none; }
 .sec-sum { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 500;
   text-transform: none; letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -371,8 +365,8 @@ td.num.pos { color: var(--pos); }
 .cm-slider-out b { color: var(--pos); }
 
 /* ── Dynamic section (agent-owned via PageUpdate) ── */
-/* Insights lead the dashboard now — separation goes below, not above. */
-#insights-wrap { margin: 0 0 20px; padding-bottom: 14px; border-bottom: 1px dashed var(--line); }
+/* Insights sit under the deterministic state summary — separated above. */
+#insights-wrap { margin-top: 10px; padding-top: 4px; border-top: 1px dashed var(--line); }
 #insights-wrap h2 .chip { margin-left: 10px; font-weight: 400; }
 .auto-chip { font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none;
   color: var(--muted); margin-left: 12px; cursor: pointer; user-select: none; }

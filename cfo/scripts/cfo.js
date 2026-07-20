@@ -1232,18 +1232,6 @@ function renderSubs(v) {
 }
 
 // ── Collapsible report sections: persisted open/closed, one-line summaries ──
-function wireSections() {
-  document.querySelectorAll('.rpt-sec').forEach((sec) => {
-    const id = sec.dataset.sec;
-    let open = sec.dataset.open === '1';
-    try { const s = localStorage.getItem(`cfo:sec:${id}`); if (s != null) open = s === '1'; } catch { /* ignore */ }
-    sec.classList.toggle('closed', !open);
-    sec.querySelector('.sec-h')?.addEventListener('click', () => {
-      const closed = sec.classList.toggle('closed');
-      try { localStorage.setItem(`cfo:sec:${id}`, closed ? '0' : '1'); } catch { /* ignore */ }
-    });
-  });
-}
 function setSecSum(id, text, alert) {
   const el = document.querySelector(`[data-sec="${id}"] .sec-sum`);
   if (el) { el.textContent = text || ''; el.classList.toggle('alert', !!alert); }
@@ -2156,7 +2144,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   startWatch();
   document.addEventListener('visibilitychange', () => { if (!document.hidden) pollWatchFolder(); });
 
-  wireSections();
   wireTooltip();
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
   document.getElementById('help-btn')?.addEventListener('click', showHelp);

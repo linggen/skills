@@ -30,14 +30,6 @@
       </header>
       <div id="status" class="status" hidden></div>
 
-      <!-- DYNAMIC section: the only region the agent updates (PageUpdate).
-           Lives at the top — the Report tab is the dashboard the agent writes to. -->
-      <section id="insights-wrap" hidden>
-        <h2>✦ Insights <button id="insights-clear" class="chip" title="Remove all insight cards">clear</button>
-          <label class="auto-chip" title="Run the financial review automatically whenever an import adds new transactions"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
-        <div id="insights"></div>
-      </section>
-
       <section id="empty-state">
         <p class="lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
         <p class="hint">Your statements never leave this Mac — parsing and redaction happen locally, and the AI only ever sees redacted totals. CSV is most accurate; PDF works too (best-effort).</p>
@@ -51,6 +43,13 @@
         <div id="forecast"></div>
         <div id="budgets-wrap"></div>
         <div id="anomalies"></div>
+        <!-- DYNAMIC section: the only region the agent updates (PageUpdate).
+             Sits under the deterministic state summary — numbers first, voice second. -->
+        <section id="insights-wrap" hidden>
+          <h2>✦ Insights <button id="insights-clear" class="chip" title="Remove all insight cards">clear</button>
+            <label class="auto-chip" title="Run the financial review automatically whenever an import adds new transactions"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
+          <div id="insights"></div>
+        </section>
         <p class="hint" id="privacy-foot">🔒 All data stays on this Mac. Statements are parsed and redacted locally — the AI model only ever sees redacted totals (no account numbers, no balances, no raw files).</p>
       </section>
 
@@ -63,15 +62,15 @@
           <span id="range-label"></span>
           <div id="range-pop" hidden></div>
         </div>
-        <section class="rpt-sec" data-sec="trend" data-open="1">
+        <section data-sec="trend">
           <h2 class="sec-h">Monthly trend <span class="legend"><i class="sw spend"></i>spend <i class="sw income"></i>income <i class="sw net"></i>net</span></h2>
           <div class="sec-body"><div id="trend"></div></div>
         </section>
-        <section class="rpt-sec" data-sec="bycat" data-open="1">
+        <section data-sec="bycat">
           <h2 class="sec-h">By category <span class="legend">bars = monthly spend · dashed = budget cap</span><span class="sec-sum"></span></h2>
           <div class="sec-body"><div id="bycat" class="facets"></div></div>
         </section>
-        <section class="rpt-sec" data-sec="breakdown" data-open="0">
+        <section data-sec="breakdown">
           <h2 class="sec-h">Spending &amp; subscriptions <span class="sec-sum"></span></h2>
           <div class="sec-body two-col">
             <div>
@@ -85,11 +84,11 @@
             </div>
           </div>
         </section>
-        <section class="rpt-sec" data-sec="payments" data-open="0" hidden>
+        <section data-sec="payments" hidden>
           <h2 class="sec-h">Card payments <span class="hint inline">pattern-based — statements carry no due dates</span><span class="sec-sum"></span></h2>
           <div class="sec-body" id="payments-wrap"></div>
         </section>
-        <section class="rpt-sec" data-sec="billcal" data-open="0" hidden>
+        <section data-sec="billcal" hidden>
           <h2 class="sec-h">Bill calendar <span class="hint inline">✓ paid · hollow = expected</span><span class="sec-sum"></span></h2>
           <div class="sec-body" id="bill-cal"></div>
         </section>
