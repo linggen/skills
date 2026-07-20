@@ -871,6 +871,14 @@ Rules:
   mention itself); deeper threads have 2 (first reply + latest mention)
   with `collapsed_count` = nodes hidden.
 - `draft_reply` is REQUIRED — the user wants to copy-paste a response.
+  **EXCEPTION — nothing to answer**: when the latest reply is a plain
+  acknowledgment (thanks / agreed / "we'll try that") with no question,
+  no new claim worth engaging, and no error to correct, do NOT force a
+  draft. Emit `"no_reply_needed": true` plus a short
+  `"no_reply_reason"` ("they just thanked you") INSTEAD of
+  `draft_reply` — the card renders a muted "No reply needed" label so
+  the user can skip it on sight. Replying to a thank-you pads the
+  thread and reads needy; the conversation is already won.
   **Pick the lane by source**: Reddit/HN/Lobsters mentions follow
   `lane-templates.md` `reddit-comment` rules (3 registers, anti-AI tic
   list, anonymization test, open-with-reaction rule); X mentions

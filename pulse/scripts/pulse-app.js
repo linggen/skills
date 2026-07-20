@@ -178,6 +178,9 @@ function followerDelta(history, targetDays) {
 const AUDIENCE_METRICS = [
   { key: 'x',    label: 'X followers',       script: 'x-followers.sh',
     enabled: c => c?.sites?.x?.enabled,          count: d => d?.followers, id: d => d?.username },
+  { key: 'reddit', label: 'Reddit karma',    script: 'reddit-karma.sh',
+    enabled: c => c?.sites?.reddit?.enabled && (c?.sites?.reddit?.username || '').trim(),
+    count: d => d?.karma, id: d => d?.username },
   { key: 'hn',   label: 'HN karma',          script: 'hn-karma.sh',
     enabled: c => c?.sites?.hackernews?.enabled, count: d => d?.karma,     id: d => d?.username },
   { key: 'bsky', label: 'Bluesky followers', script: 'bluesky-followers.sh',
@@ -2101,7 +2104,7 @@ function redditDashboardHtml() {
       ${kpi('Pending drafts', drafts, '')}
     </div>
     <div class="xchart">
-      <div class="xchart-head"><span>Comment activity</span><span class="xchart-legend">RSS only — Reddit exposes no karma/scores anonymously</span></div>
+      <div class="xchart-head"><span>Comment activity</span><span class="xchart-legend">own activity via RSS — per-post scores unavailable; karma lives in the header strip</span></div>
       ${svgRedditBars()}
       <div class="xchart-legend"><span class="lg-posted">▮ comments + posts per day</span></div>
     </div>

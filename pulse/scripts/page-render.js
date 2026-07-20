@@ -900,6 +900,19 @@ function renderCard(card) {
 
 // ---- Card renderers ------------------------------------------------------
 
+// A reply that's a plain acknowledgment (thanks/agreed, no question, no
+// wrong claim) needs no answer — the agent flags it no_reply_needed and
+// we show a muted label instead of a draft, so the user can skip on sight.
+function noReplyOrDraftHtml(c) {
+  if (c.no_reply_needed) {
+    const why = c.no_reply_reason || 'plain acknowledgment — nothing to add';
+    return `<div class="draft-inline no-reply"><div class="draft-inline-label">No reply needed</div><div class="draft-inline-body">${escapeHtml(why)}</div></div>`;
+  }
+  return c.draft_reply
+    ? `<div class="draft-inline"><div class="draft-inline-label">Draft reply</div><div class="draft-inline-body">${escapeHtml(c.draft_reply)}</div></div>`
+    : '';
+}
+
 function renderMention(c) {
   // Mention cards now carry the conversational context, not just the
   // mention quote. Shape:
@@ -916,9 +929,7 @@ function renderMention(c) {
   const op = c.original_post;
   const conv = Array.isArray(c.conversation) ? c.conversation : [];
   const collapsed = c.collapsed_count || 0;
-  const draftHtml = c.draft_reply
-    ? `<div class="draft-inline"><div class="draft-inline-label">Draft reply</div><div class="draft-inline-body">${escapeHtml(c.draft_reply)}</div></div>`
-    : '';
+  const draftHtml = noReplyOrDraftHtml(c);
   // Link-only thread roots (typical HN story) have no text of their own, so
   // the agent echoes the mention comment into original_post despite the
   // SKILL.md rule. An OP block that repeats a conversation node is noise.
@@ -969,9 +980,7 @@ function renderReplyToMe(c) {
   const replyHtml = replyBody
     ? `<div class="thread-step latest"><div class="thread-label">${replyMeta}</div><div class="thread-body">${escapeHtml(truncateText(replyBody, 1200))}</div></div>`
     : '';
-  const draftHtml = c.draft_reply
-    ? `<div class="draft-inline"><div class="draft-inline-label">Draft reply</div><div class="draft-inline-body">${escapeHtml(c.draft_reply)}</div></div>`
-    : '';
+  const draftHtml = noReplyOrDraftHtml(c);
   const subDisplay = c.sub ? (c.sub.startsWith('r/') ? c.sub : 'r/' + c.sub) : '';
   return cardEl(c, 'unread', `
     <div class="title">${escapeHtml(c.actor || c.author || 'Someone')} replied to your comment</div>

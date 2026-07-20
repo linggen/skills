@@ -54,6 +54,9 @@ of each lane's tic list, in pass 3:
 - **No aphorisms or morals.** "The product keeps moving because the
   market doesn't pause" is a fortune cookie, not a reply. Say the small
   real thing instead, and stop one sentence earlier than feels complete.
+  The most common offender is the "— otherwise X quietly becomes Y"
+  closer: never END a draft on an "otherwise" clause; end on the
+  concrete detail instead.
 - **A fragment or a rough edge is GOOD.** Opening with "yeah,",
   "honestly,", "wait —", lowercase, or trailing off reads more human
   than a balanced, fully-resolved sentence.
