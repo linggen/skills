@@ -63,7 +63,7 @@ const WEBSITES = [
   },
   {
     name: 'Reddit',
-    desc: 'Newest threads from each subreddit (Source) + per-thread comment drafts (Target), via Reddit\'s public RSS feeds. Reddit closed its anonymous JSON API (Nov 2025), so replies/mentions need a private RSS token (free, no app — see below).',
+    desc: 'Newest threads from each subreddit (Source) + per-thread comment drafts (Target), via Reddit\'s RSS feeds. Reddit closed its anonymous JSON API (Nov 2025); your private RSS token (free, no app — see below) unlocks replies/mentions AND lifts subreddit discovery off the tight shared anonymous rate-limit.',
     source_id: 'reddit',
     target_id: 'reddit-comment',
     source_fields: [
@@ -72,8 +72,17 @@ const WEBSITES = [
       {
         kind: 'text',
         key: 'private_rss_feed_token',
-        label: 'Private RSS feed token (unlocks comment replies & mentions)',
+        label: 'Private RSS feed token (replies, mentions & reliable discovery)',
         placeholder: 'paste the whole feed URL, or just the feed=… token',
+        // Pasted feed URL -> bare token; back-fill username from &user= when blank.
+        normalize: (v, cfg) => {
+          if (!v.includes('feed=')) return v;
+          const q = new URLSearchParams(v.split('?').pop());
+          const tok = q.get('feed');
+          if (!tok) return v;
+          if (!(cfg.username || '').trim() && q.get('user')) cfg.username = q.get('user');
+          return tok;
+        },
         hint:
           'Reddit\'s API is closed, but your private RSS feeds still work — no app, no OAuth, free. To get your token:' +
           '<ol>' +
@@ -81,7 +90,7 @@ const WEBSITES = [
           '<li>Go to the <a href="https://old.reddit.com/prefs/feeds/" target="_blank" rel="noopener"><b>RSS feeds</b></a> tab → under <b>“your inbox”</b>, right-click the orange <b>RSS</b> next to <b>“comment replies only”</b> → <b>Copy Link Address</b>.</li>' +
           '<li>Paste that whole URL here (it contains <code>?feed=…&user=…</code>). Pulse extracts the token automatically.</li>' +
           '</ol>' +
-          'Keep it private — the token is read-access to your inbox; it\'s invalidated only if you change your Reddit password. Without it, only public username mentions show (not replies).',
+          'Keep it private — the token is read-access to your inbox; it\'s invalidated only if you change your Reddit password. Without it, only public username mentions show (not replies), and subreddit discovery runs on the shared anonymous quota — a few subs per scan instead of all of them.',
       },
     ],
   },
@@ -500,6 +509,10 @@ function renderChipField(cfg, field) {
   return wrap;
 }
 
+// Text inputs per config object, so a field's normalize() can refresh a
+// sibling input it back-filled (e.g. pasted feed URL -> username).
+const textInputsByCfg = new WeakMap();
+
 function renderTextField(cfg, field) {
   if (cfg[field.key] == null) cfg[field.key] = '';
   const wrap = document.createElement('div');
@@ -510,7 +523,24 @@ function renderTextField(cfg, field) {
   input.type = 'text';
   input.value = cfg[field.key] || '';
   input.placeholder = field.placeholder || '';
+  if (!textInputsByCfg.has(cfg)) textInputsByCfg.set(cfg, new Map());
+  textInputsByCfg.get(cfg).set(field.key, input);
   input.addEventListener('input', () => { cfg[field.key] = input.value.trim(); });
+  if (field.normalize) {
+    // On paste/blur only — normalizing per keystroke would truncate a
+    // half-typed URL the moment "feed=" appears.
+    const applyNormalize = () => {
+      const v = input.value.trim();
+      const nv = field.normalize(v, cfg);
+      if (nv !== v) input.value = nv;
+      cfg[field.key] = nv;
+      for (const [k, el] of textInputsByCfg.get(cfg)) {
+        if (k !== field.key && el.value.trim() !== (cfg[k] || '')) el.value = cfg[k] || '';
+      }
+    };
+    input.addEventListener('paste', () => setTimeout(applyNormalize, 0));
+    input.addEventListener('blur', applyNormalize);
+  }
   wrap.appendChild(input);
   if (field.hint) {
     const hint = document.createElement('div');

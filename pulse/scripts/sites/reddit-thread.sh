@@ -58,11 +58,18 @@ NS = {"a": "http://www.w3.org/2005/Atom"}
 # thread grounding burns the same anonymous pool as the sub feeds otherwise.
 AUTH = ""
 try:
-    from urllib.parse import quote
+    from urllib.parse import quote, urlparse, parse_qs
     _r = (json.load(open(os.path.expanduser(
         "~/.linggen/skills/pulse/config.json"))).get("sites") or {}).get("reddit") or {}
-    if (_r.get("username") or "").strip() and (_r.get("private_rss_feed_token") or "").strip():
-        AUTH = f"&feed={quote(_r['private_rss_feed_token'].strip())}&user={quote(_r['username'].strip())}"
+    _tok = (_r.get("private_rss_feed_token") or "").strip()
+    _usr = (_r.get("username") or "").strip().lstrip("u/").lstrip("/")
+    if "feed=" in _tok:  # forgiving: whole pasted feed URL (same as reddit-mentions.sh)
+        _q = parse_qs(urlparse(_tok).query)
+        _tok = (_q.get("feed") or [_tok])[0]
+        if not _usr:
+            _usr = (_q.get("user") or [""])[0]
+    if _tok and _usr:
+        AUTH = f"&feed={quote(_tok)}&user={quote(_usr)}"
 except Exception:
     pass
 url = f"https://www.reddit.com/comments/{post_id}/.rss?limit=50{AUTH}"

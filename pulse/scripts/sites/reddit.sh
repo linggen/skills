@@ -59,9 +59,14 @@ NS = {"a": "http://www.w3.org/2005/Atom"}
 # The account's private RSS feed token (old.reddit.com/prefs/feeds) rides the
 # per-account budget instead of the shared anonymous IP pool that 429s after
 # ~2-3 subs per run. Any .rss URL accepts ?feed=<token>&user=<name>.
-from urllib.parse import quote
-_user = (reddit.get("username") or "").strip()
+from urllib.parse import quote, urlparse, parse_qs
+_user = (reddit.get("username") or "").strip().lstrip("u/").lstrip("/")
 _token = (reddit.get("private_rss_feed_token") or "").strip()
+if "feed=" in _token:  # forgiving: whole pasted feed URL (same as reddit-mentions.sh)
+    _q = parse_qs(urlparse(_token).query)
+    _token = (_q.get("feed") or [_token])[0]
+    if not _user:
+        _user = (_q.get("user") or [""])[0]
 AUTH = f"&feed={quote(_token)}&user={quote(_user)}" if _user and _token else ""
 endpoint = f"{mode}.rss?limit=25" + ("&t=day" if mode == "top" else "") + AUTH
 
