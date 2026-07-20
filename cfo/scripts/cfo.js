@@ -102,6 +102,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 let CURRENCY = '$';
 let CURRENCY_CODE = 'USD';
 let CATEGORY_OVERRIDES = null;
+let BUDGETS = {}; // per-category monthly caps (config.json budgets) — the UI is the only writer
 const CURRENCY_CODES = ['USD', 'CAD', 'CNY', 'EUR', 'GBP', 'JPY', 'AUD', 'HKD', 'INR', 'KRW'];
 const currencySymbol = (code) => ({
   USD: '$', CAD: '$', AUD: '$', GBP: '£', EUR: '€', JPY: '¥',
@@ -115,6 +116,7 @@ const analyzeOpts = () => ({
   categoryOverrides: CATEGORY_OVERRIDES,
   commitments: Object.keys(COMMITMENTS).length ? COMMITMENTS : null,
   marketBenchmark: MARKET,
+  budgets: Object.keys(BUDGETS).length ? BUDGETS : null,
 });
 
 // ── Market benchmark — anonymous public posted-rate averages; no user data
@@ -168,6 +170,7 @@ async function loadConfig() {
     CURRENCY = currencySymbol(CURRENCY_CODE);
     const ov = cfg.category_overrides;
     CATEGORY_OVERRIDES = ov && Object.keys(ov).length ? ov : null;
+    BUDGETS = (cfg.budgets && typeof cfg.budgets === 'object') ? cfg.budgets : {};
     WATCH = { enabled: !!cfg.watch_enabled, folder: cfg.watch_folder || '~/Downloads', globs: cfg.watch_globs || '*.csv,*.pdf' };
   } catch (e) { console.warn('[cfo] config load', e); }
 }
@@ -621,6 +624,13 @@ async function saveConfigOverrides() {
   await writeB64(CONF, JSON.stringify(cfg, null, 2));
 }
 
+async function saveConfigBudgets() {
+  const CONF = `$HOME/.linggen/skills/${SKILL}/config.json`;
+  const cfg = await readJson(CONF, {});
+  cfg.budgets = BUDGETS;
+  await writeB64(CONF, JSON.stringify(cfg, null, 2));
+}
+
 // Rewrite one year file in place. Transfer flags persist as false — they are
 // recomputed from the full ledger on every load.
 async function rewriteYearFile(year) {
@@ -828,11 +838,14 @@ let VIEW_MODE = 'report';
 function applyVisibility() {
   const txn = VIEW_MODE === 'txn';
   const commit = VIEW_MODE === 'commit';
-  const away = txn || commit;
+  const trends = VIEW_MODE === 'trends';
+  const away = txn || commit || trends;
   document.getElementById('txn').hidden = !txn;
   document.getElementById('commit').hidden = !commit;
+  document.getElementById('trends').hidden = !trends || !LEDGER.length;
   document.getElementById('report').hidden = away || !LEDGER.length;
-  document.getElementById('empty-state').hidden = away || LEDGER.length > 0;
+  // Trends with no data falls through to the import empty-state.
+  document.getElementById('empty-state').hidden = (txn || commit) || LEDGER.length > 0;
   document.getElementById('insights-wrap').hidden = away || (!LEDGER.length && !INSIGHTS.length);
   renderSuggestions(); // Review card (Report tab only) — self-hides when empty
 }
@@ -857,10 +870,14 @@ function refreshView() {
   // monthly cadence, so the headline card and tab would go blank on short views.
   FULL_VIEW = reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts());
   renderRangeBar(view);
-  renderCards(view);
+  // Dashboard cards read the FULL view — the range chips live on Trends now.
+  renderCards(FULL_VIEW);
   renderForecast(FULL_VIEW.forecast); // always full-history: cadences need it
+  renderBudgets(FULL_VIEW.budgets);   // budgets are current-month by definition
+  syncBudgetInsights(FULL_VIEW.budgets);
   renderAnomalies(FULL_VIEW.anomalies);
   renderTrend(view);
+  renderFacets(view);
   renderCategories(view);
   renderSubs(view);
   renderPayments(view);
@@ -947,15 +964,122 @@ function renderForecast(f) {
   </div>`;
 }
 
+// ── Budgets: user-set monthly caps per category, current-month state from the
+// deterministic budgets block (FULL_VIEW.budgets). The card is also the editor —
+// chips + inline input write config.budgets; the agent only ever narrates.
+let BUDGET_EDIT = null; // category with the inline amount input open
+function renderBudgets(b) {
+  const el = document.getElementById('budgets-wrap');
+  if (!LEDGER.length) { el.innerHTML = ''; return; }
+  const rows = (b && b.categories) || [];
+  const budgeted = new Set(rows.map((r) => r.category));
+  const unset = knownCategories()
+    .filter((c) => !budgeted.has(c) && c !== BUDGET_EDIT && c !== 'transfer' && c !== 'income');
+  const stateCls = { over: 'neg', pacing: 'warn', ok: 'ok' };
+  const nPace = rows.filter((r) => r.state === 'pacing').length;
+  const nOver = rows.filter((r) => r.state === 'over').length;
+  const monthLabel = b ? `${monthName(b.month)} ${b.month.slice(0, 4)} · as of ${monthName(b.month)} ${+b.as_of.slice(8)}` : '';
+
+  const editRow = (cat, val) => `
+    <div class="bg-row edit" data-cat="${esc(cat)}">
+      <span class="bg-label">${esc(cat)}</span>
+      <span class="bg-track"></span>
+      <span class="bg-edit"><input id="bg-input" type="number" min="1" step="1" value="${val || ''}" aria-label="Monthly budget for ${esc(cat)}">
+        <span class="hint-key">↵ save · esc cancel</span></span>
+      <span class="bg-x"></span>
+    </div>`;
+  const row = (r) => {
+    if (BUDGET_EDIT === r.category) return editRow(r.category, r.budget);
+    const pct = Math.min(100, Math.round((100 * r.mtd) / r.budget));
+    const pacePct = Math.round((100 * r.projected) / r.budget);
+    const clip = pacePct > 100;
+    const proj = r.state === 'over' ? `<span class="bg-proj neg">${money(r.mtd - r.budget)} over</span>`
+      : !b.projection_ready ? ''
+        : `<span class="bg-proj${r.state === 'pacing' ? ' warn' : ''}">→ ~${money(r.projected)} by month end</span>`;
+    return `
+    <div class="bg-row" data-cat="${esc(r.category)}">
+      <span class="bg-label">${esc(r.category)}</span>
+      <span class="bg-track">
+        <span class="bg-fill ${stateCls[r.state]}" style="width:${pct}%"></span>
+        ${b.projection_ready ? `<span class="bg-pace${clip ? ' clip' : r.state === 'pacing' ? ' warn' : ''}"${clip ? '' : ` style="left:${Math.max(2, Math.min(98, pacePct))}%"`}></span>` : ''}
+      </span>
+      <span class="bg-nums"><b class="bg-amt" title="Click to edit this budget">${money(r.mtd)}</b> <span class="of">of ${money(r.budget)}</span>${proj}</span>
+      <button class="bg-x" title="Remove this budget">×</button>
+    </div>`;
+  };
+
+  el.innerHTML = `
+  <div class="bg-card">
+    <div class="bg-head">
+      <span class="bg-title">Budgets</span>
+      ${monthLabel ? `<span class="hint">${esc(monthLabel)}</span>` : ''}
+      <span class="bg-sum">${nPace ? `<span class="pill warn">${nPace} pacing over</span>` : ''}${nOver ? `<span class="pill neg">${nOver} over</span>` : ''}</span>
+    </div>
+    ${rows.map(row).join('')}
+    ${BUDGET_EDIT && !budgeted.has(BUDGET_EDIT) ? editRow(BUDGET_EDIT, BUDGETS[BUDGET_EDIT]) : ''}
+    ${unset.length ? `<div class="bg-unset"><span class="lead">${rows.length ? 'Set a budget:' : 'Set a monthly budget per category — the report flags when you’re trending over:'}</span>${unset.map((c) => `<button class="bg-add" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
+  </div>`;
+
+  const rerender = () => renderBudgets((FULL_VIEW && FULL_VIEW.budgets) || null);
+  el.querySelectorAll('.bg-add').forEach((btn) => btn.addEventListener('click', () => {
+    BUDGET_EDIT = btn.dataset.cat; rerender(); document.getElementById('bg-input')?.focus();
+  }));
+  el.querySelectorAll('.bg-amt').forEach((amt) => amt.addEventListener('click', () => {
+    BUDGET_EDIT = amt.closest('.bg-row').dataset.cat; rerender(); document.getElementById('bg-input')?.select();
+  }));
+  el.querySelectorAll('.bg-x').forEach((x) => x.addEventListener('click', async () => {
+    delete BUDGETS[x.closest('.bg-row').dataset.cat];
+    await saveConfigBudgets();
+    refreshView();
+  }));
+  el.querySelector('#bg-input')?.addEventListener('keydown', async (e) => {
+    if (e.key === 'Escape') { BUDGET_EDIT = null; rerender(); return; }
+    if (e.key !== 'Enter') return;
+    const cat = BUDGET_EDIT, val = Math.round(Number(e.target.value));
+    BUDGET_EDIT = null;
+    if (cat && val > 0) { BUDGETS[cat] = val; await saveConfigBudgets(); refreshView(); }
+    else rerender();
+  });
+}
+
+// Budget crossings become insight cards — page-composed and deterministic,
+// never from the model. Re-synced on every recompute so they track the ledger;
+// a dismissed card stays gone until its message changes (or resolves).
+function syncBudgetInsights(b) {
+  const key = (c) => `${c.tone}|${c.title}|${c.body}`;
+  const mk = (r) => (r.state === 'over'
+    ? { src: 'budget', tone: 'alert', title: `Budget: ${r.category} over`, body: `**${r.category}** is ${money(r.mtd - r.budget)} over its ${money(r.budget)} ${monthName(b.month)} budget (${money(r.mtd)} spent).`, at: new Date().toISOString() }
+    : { src: 'budget', tone: 'warn', title: `Budget: ${r.category} pacing over`, body: `**${r.category}** is pacing to ~${money(r.projected)} against its ${money(r.budget)} ${monthName(b.month)} budget.`, at: new Date().toISOString() });
+  let cards = ((b && b.categories) || []).filter((r) => r.state !== 'ok').map(mk);
+  let dismissed = [];
+  try { dismissed = JSON.parse(localStorage.getItem('cfo:budget-dismissed') || '[]'); } catch { /* ignore */ }
+  const live = new Set(cards.map(key));
+  const keep = dismissed.filter((k) => live.has(k)); // resolved ones re-arm
+  if (keep.length !== dismissed.length) try { localStorage.setItem('cfo:budget-dismissed', JSON.stringify(keep)); } catch { /* ignore */ }
+  cards = cards.filter((c) => !keep.includes(key(c)));
+  const prev = INSIGHTS.filter((c) => c.src === 'budget');
+  if (prev.map(key).join('\n') === cards.map(key).join('\n')) return;
+  INSIGHTS = INSIGHTS.filter((c) => c.src !== 'budget').concat(cards);
+  renderInsights();
+  saveInsights().catch(() => {});
+}
+
 function renderCards(v) {
   const t = v.totals || {};
-  // The commitments figure comes from FULL_VIEW — cadence detection needs the
-  // whole history, not the sliced range.
-  const c = (FULL_VIEW && FULL_VIEW.commitments) || { monthly_total: 0, pct_of_income: null };
-  document.getElementById('cards').innerHTML = `
+  const c = v.commitments || { monthly_total: 0, pct_of_income: null };
+  // Dashboard KPIs are the current data-month (anchored at as_of, like the
+  // forecast); history totals belong to Trends. Undated ledgers fall back.
+  const f = v.forecast || null;
+  const net = f ? f.income_so_far - f.spend_so_far : (t.net || 0);
+  const mn = f ? ` · ${monthName(f.month)}` : '';
+  const headCards = f ? `
+    <div class="card"><div class="k">Income${mn}</div><div class="v">${money(f.income_so_far)}</div><div class="sub">as of ${monthName(f.month)} ${+f.as_of.slice(8)}</div></div>
+    <div class="card"><div class="k">Spend${mn}</div><div class="v">${money(f.spend_so_far)}</div><div class="sub">month to date</div></div>
+    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net${mn}</div><div class="v">${money(net)}</div><div class="sub">${t.months || 0} mo history</div></div>` : `
     <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${t.months || 0} mo</div></div>
     <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div></div>
-    <div class="card ${(t.net || 0) >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(t.net)}</div></div>
+    <div class="card ${(t.net || 0) >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(t.net)}</div></div>`;
+  document.getElementById('cards').innerHTML = `${headCards}
     <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(v.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${v.active_subscription_count || 0} active${v.stopped_subscription_count ? ` · ${v.stopped_subscription_count} stopped` : ''}</div></div>
     <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${money(c.monthly_total)}<span class="per">/mo</span></div><div class="sub">${c.pct_of_income != null ? `${Math.round(c.pct_of_income)}% of income` : 'fixed monthly'}</div></div>`;
   document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
@@ -1009,6 +1133,67 @@ function renderTrend(v) {
   el.querySelectorAll('.mgroup').forEach((g) => {
     g.addEventListener('click', () => setRange({ preset: 'custom', from: g.dataset.month, to: g.dataset.month }));
   });
+}
+
+// ── Per-category small multiples: one mini bar chart per category over the
+// same months as the big trend, with the budget cap as a dashed line. The
+// current (data) month wears the budget state color; history stays neutral.
+function renderFacets(v) {
+  const el = document.getElementById('bycat');
+  const sec = document.querySelector('[data-sec="bycat"]');
+  const byCatM = v.by_category_monthly || {};
+  const r = v.range || (v.months_available?.length
+    ? { from: v.months_available[0], to: v.months_available[v.months_available.length - 1] } : null);
+  const catsAll = (v.by_category || []).map((c) => c.category).filter((c) => c !== 'transfer' && c !== 'income');
+  if (!r || !catsAll.length) { sec.hidden = true; el.innerHTML = ''; return; }
+  sec.hidden = false;
+  let months = monthSpan(r.from, r.to);
+  const clipped = months.length > 12;
+  if (clipped) months = months.slice(-12);
+
+  const fb = (FULL_VIEW && FULL_VIEW.budgets) || null;
+  const bState = {};
+  ((fb && fb.categories) || []).forEach((c) => { bState[c.category] = c; });
+  const curMonth = (FULL_VIEW && FULL_VIEW.forecast && FULL_VIEW.forecast.month) || null;
+  const asOf = (FULL_VIEW && FULL_VIEW.forecast && FULL_VIEW.forecast.as_of) || '';
+  const lastDom = curMonth ? new Date(Date.UTC(+curMonth.slice(0, 4), +curMonth.slice(5, 7), 0)).getUTCDate() : 0;
+  const partial = !!curMonth && +asOf.slice(8) < lastDom;
+  const rank = { over: 0, pacing: 1, ok: 2 };
+  const stateCls = { over: 'neg', pacing: 'warn', ok: 'ok' };
+  const cats = catsAll
+    .filter((c) => months.some((m) => (byCatM[c] || {})[m]))
+    .sort((a, b) => (rank[bState[a]?.state] ?? 3) - (rank[bState[b]?.state] ?? 3))
+    .slice(0, 9);
+
+  el.innerHTML = cats.map((cat) => {
+    const ms = byCatM[cat] || {};
+    const st = bState[cat] || null;
+    const cap = Number(BUDGETS[cat]) > 0 ? Number(BUDGETS[cat]) : null;
+    const max = Math.max(1, cap || 0, ...months.map((m) => ms[m] || 0));
+    const stCls = st ? stateCls[st.state] : '';
+    const bars = months.map((m) => {
+      const val = ms[m] || 0;
+      const isCur = m === curMonth;
+      return `<span class="fbar${isCur ? ` cur ${stCls}${partial ? ' mtd' : ''}` : ''}" style="height:${Math.max(2, Math.round((100 * val) / max))}%" data-tip="${esc(`${monthName(m)} ${m.slice(0, 4)} — ${moneyExact(val)}${isCur && partial ? ' (month to date)' : ''}`)}"></span>`;
+    }).join('');
+    const badge = !st ? '<span class="bdg">no budget</span>'
+      : st.state === 'over' ? `<span class="bdg neg">${money(st.mtd)} over ${money(st.budget)}</span>`
+        : fb.projection_ready ? `<span class="bdg${st.state === 'pacing' ? ' warn' : ''}">~${money(st.projected)} vs ${money(st.budget)}</span>`
+          : `<span class="bdg">${money(st.mtd)} of ${money(st.budget)}</span>`;
+    const capLine = cap ? `<span class="fcap" style="bottom:${Math.min(96, Math.round((100 * cap) / max))}%"><i>${money(cap)}</i></span>` : '';
+    return `<div class="facet">
+      <div class="f-h"><b>${esc(cat)}</b>${badge}</div>
+      <div class="fplot">${capLine}${bars}</div>
+      <div class="fmonths">${months.map((m) => `<span>${monthName(m).slice(0, 1)}</span>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  const nOver = cats.filter((c) => bState[c]?.state === 'over').length;
+  const nPace = cats.filter((c) => bState[c]?.state === 'pacing').length;
+  setSecSum('bycat', [
+    nOver ? `${nOver} over budget` : '', nPace ? `${nPace} pacing over` : '',
+    clipped ? 'last 12 months' : '',
+  ].filter(Boolean).join(' · ') || `${cats.length} categories`, !!nOver);
 }
 
 function renderCategories(v) {
@@ -1446,7 +1631,9 @@ function normalizeTone(t) {
 // it's unmistakable which cards are the NEW review (they don't pile onto stale ones).
 function startReview() {
   if (!LEDGER.length) { setStatus('Import a statement first — the review needs data.'); return; }
-  INSIGHTS = [];
+  if (VIEW_MODE !== 'report') switchView('report'); // insights live on the dashboard
+  // Budget cards are page-truth, not review output — they survive the clear.
+  INSIGHTS = INSIGHTS.filter((c) => c.src === 'budget');
   REVIEW_PENDING = true;
   REVIEW_NOCARDS = false;
   renderInsights();
@@ -1482,7 +1669,16 @@ function renderInsights() {
         ? '<p class="hint">Your review came back in the chat this time — no cards were posted. Hit <b>✦ Run review</b> to try again.</p>'
         : '<p class="hint">Nothing yet — hit <b>✦ Run review</b> or ask the assistant a question, and its findings land here.</p>');
   el.querySelectorAll('.insight-x').forEach((b) => b.addEventListener('click', () => {
-    INSIGHTS.splice(+b.dataset.i, 1);
+    const [c] = INSIGHTS.splice(+b.dataset.i, 1);
+    // A dismissed budget card stays gone until its message changes — the sync
+    // on every recompute would otherwise resurrect it immediately.
+    if (c && c.src === 'budget') {
+      try {
+        const dism = JSON.parse(localStorage.getItem('cfo:budget-dismissed') || '[]');
+        dism.push(`${c.tone}|${c.title}|${c.body}`);
+        localStorage.setItem('cfo:budget-dismissed', JSON.stringify(dism));
+      } catch { /* ignore */ }
+    }
     renderInsights();
     saveInsights().catch(() => {});
   }));
@@ -1525,7 +1721,7 @@ function applyPageUpdate(args) {
   lastPageUpdateRaw = raw;
   // `replace` may ride at the top level or inside the engine's body wrapper.
   const replace = !!(args.replace || args.body?.replace || args.body_patch?.replace);
-  if (replace) INSIGHTS = [];
+  if (replace) INSIGHTS = INSIGHTS.filter((c) => c.src === 'budget'); // budget cards are page-truth
   const seen = new Set(INSIGHTS.map((c) => `${c.title}|${c.body}`));
   for (const c of cards) {
     if (!c || (!c.title && !c.body)) continue;

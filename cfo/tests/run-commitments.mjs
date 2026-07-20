@@ -238,5 +238,56 @@ const mtg = reportFromLedger(
 t('KM4 mortgage excluded from subs total, Netflix kept', mtg.subscription_monthly_total === 18.99,
   `subs total ${mtg.subscription_monthly_total}`);
 
+// ── Per-category budgets (anchored at as_of = last txn date, 2026-06-10) ──
+console.log('— budgets —');
+const btx = [
+  // monthly mortgage: an active commitment — already paid Jun 1, must NOT pace
+  ...['2026-03-01', '2026-04-01', '2026-05-01', '2026-06-01'].map((date) => ({ date, merchant: 'BMO MORTGAGE PAYMENT', amount: -2150 })),
+  // netflix bills ~12th, last May 12 → expected ~Jun 11, lands in recreation's projection
+  ...['2026-03-12', '2026-04-12', '2026-05-12'].map((date) => ({ date, merchant: 'NETFLIX.COM', amount: -18.99 })),
+  { date: '2026-05-20', merchant: 'HANAMI SUSHI', amount: -75 },
+  { date: '2026-06-03', merchant: 'HANAMI SUSHI', amount: -30 },
+  { date: '2026-06-08', merchant: 'HANAMI SUSHI', amount: -20 },
+  { date: '2026-06-05', merchant: 'LOBLAWS', amount: -80 },
+  { date: '2026-06-09', merchant: 'AMAZON.CA', amount: -450 },
+  { date: '2026-06-10', merchant: 'PETRO CANADA', amount: -40 }, // sets as_of; no budget
+];
+const bOv = { sushi: 'dining', loblaws: 'groceries', amazon: 'shopping', mortgage: 'housing', netflix: 'recreation' };
+const bRep = analyzeTransactions(btx, {}, {
+  categoryOverrides: bOv,
+  budgets: { dining: 100, groceries: 400, shopping: 400, housing: 2200, recreation: 15 },
+});
+const bg = bRep.budgets;
+const bCat = (c) => bg.categories.find((x) => x.category === c);
+t('BG1 anchored + ready', bg.month === '2026-06' && bg.as_of === '2026-06-10' && bg.projection_ready === true);
+t('BG2 pacing: dining $50 over 10 days → $150 vs $100 cap',
+  bCat('dining').state === 'pacing' && near(bCat('dining').mtd, 50) && near(bCat('dining').projected, 150));
+t('BG3 ok: groceries project $240 under $400', bCat('groceries').state === 'ok' && near(bCat('groceries').projected, 240));
+t('BG4 over: shopping $450 past $400', bCat('shopping').state === 'over');
+t('BG5 paid commitment never paces: housing projects $2150, not $6450',
+  bCat('housing').state === 'ok' && near(bCat('housing').projected, 2150), `${bCat('housing').projected}`);
+t('BG6 upcoming fixed lands in its category: recreation paces on netflix alone',
+  bCat('recreation').state === 'pacing' && near(bCat('recreation').mtd, 0) && near(bCat('recreation').projected, 18.99));
+t('BG7 sort: over → pacing (by mtd) → ok',
+  bg.categories.map((c) => c.category).join(',') === 'shopping,dining,recreation,housing,groceries',
+  bg.categories.map((c) => `${c.category}:${c.state}`).join(','));
+t('BG8 no budgets → null block',
+  analyzeTransactions(btx, {}, { categoryOverrides: bOv }).budgets === null
+  && analyzeTransactions(btx, {}, { categoryOverrides: bOv, budgets: { dining: 0 } }).budgets === null);
+
+// Early month: pace is noise before day 7 — over still fires, pacing suppressed.
+const etx = [
+  { date: '2026-06-02', merchant: 'HANAMI SUSHI', amount: -120 },
+  { date: '2026-06-05', merchant: 'LOBLAWS', amount: -20 },
+];
+const eg = analyzeTransactions(etx, {}, { categoryOverrides: bOv, budgets: { dining: 100, groceries: 50 } }).budgets;
+t('BG9 gate: over fires on day 5, projected-over stays ok',
+  eg.projection_ready === false
+  && eg.categories.find((c) => c.category === 'dining').state === 'over'
+  && eg.categories.find((c) => c.category === 'groceries').state === 'ok');
+
+t('BG10 by_category_monthly: dining months exact',
+  JSON.stringify(bRep.by_category_monthly.dining) === JSON.stringify({ '2026-05': 75, '2026-06': 50 }));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

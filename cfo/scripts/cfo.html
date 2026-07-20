@@ -15,6 +15,7 @@
         <h1>Personal CFO</h1>
         <nav id="tabs">
           <button class="tab on" data-view="report">Report</button>
+          <button class="tab" data-view="trends">Trends</button>
           <button class="tab" data-view="txn">Transactions</button>
           <button class="tab" data-view="commit">Commitments</button>
         </nav>
@@ -29,6 +30,14 @@
       </header>
       <div id="status" class="status" hidden></div>
 
+      <!-- DYNAMIC section: the only region the agent updates (PageUpdate).
+           Lives at the top — the Report tab is the dashboard the agent writes to. -->
+      <section id="insights-wrap" hidden>
+        <h2>✦ Insights <button id="insights-clear" class="chip" title="Remove all insight cards">clear</button>
+          <label class="auto-chip" title="Run the financial review automatically whenever an import adds new transactions"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
+        <div id="insights"></div>
+      </section>
+
       <section id="empty-state">
         <p class="lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
         <p class="hint">Your statements never leave this Mac — parsing and redaction happen locally, and the AI only ever sees redacted totals. CSV is most accurate; PDF works too (best-effort).</p>
@@ -38,20 +47,29 @@
         <p class="hint" id="drop-hint">📥 Drag &amp; drop statement files (CSV or PDF) anywhere on this page to import — several at once is fine.</p>
         <!-- Agent-teacher: merchant→category/transfer rule proposals to review. -->
         <div id="suggestions-wrap" hidden></div>
+        <div id="cards" class="cards"></div>
+        <div id="forecast"></div>
+        <div id="budgets-wrap"></div>
+        <div id="anomalies"></div>
+        <p class="hint" id="privacy-foot">🔒 All data stays on this Mac. Statements are parsed and redacted locally — the AI model only ever sees redacted totals (no account numbers, no balances, no raw files).</p>
+      </section>
+
+      <!-- Trends: all historical charts, range-scoped. Page-owned, deterministic;
+           the agent never writes here. -->
+      <section id="trends" hidden>
         <div id="range-bar">
           <div id="range-chips"></div>
           <button id="range-custom" class="chip">… ▾</button>
           <span id="range-label"></span>
           <div id="range-pop" hidden></div>
         </div>
-        <div id="cards" class="cards"></div>
-        <div id="forecast"></div>
-        <div id="anomalies"></div>
-        <!-- Below the act-now zone (cards/forecast/anomalies), every section is
-             collapsible with a one-line summary — first page stays glanceable. -->
         <section class="rpt-sec" data-sec="trend" data-open="1">
           <h2 class="sec-h">Monthly trend <span class="legend"><i class="sw spend"></i>spend <i class="sw income"></i>income <i class="sw net"></i>net</span></h2>
           <div class="sec-body"><div id="trend"></div></div>
+        </section>
+        <section class="rpt-sec" data-sec="bycat" data-open="1">
+          <h2 class="sec-h">By category <span class="legend">bars = monthly spend · dashed = budget cap</span><span class="sec-sum"></span></h2>
+          <div class="sec-body"><div id="bycat" class="facets"></div></div>
         </section>
         <section class="rpt-sec" data-sec="breakdown" data-open="0">
           <h2 class="sec-h">Spending &amp; subscriptions <span class="sec-sum"></span></h2>
@@ -75,7 +93,6 @@
           <h2 class="sec-h">Bill calendar <span class="hint inline">✓ paid · hollow = expected</span><span class="sec-sum"></span></h2>
           <div class="sec-body" id="bill-cal"></div>
         </section>
-        <p class="hint" id="privacy-foot">🔒 All data stays on this Mac. Statements are parsed and redacted locally — the AI model only ever sees redacted totals (no account numbers, no balances, no raw files).</p>
       </section>
 
       <!-- Transactions: full ledger browser + import-review staging. Static page JS. -->
@@ -94,13 +111,6 @@
         <div id="commit-groups"></div>
       </section>
       <div id="scope-pop" hidden></div>
-
-      <!-- DYNAMIC section: the only region the agent updates (PageUpdate). -->
-      <section id="insights-wrap" hidden>
-        <h2>✦ Insights <button id="insights-clear" class="chip" title="Remove all insight cards">clear</button>
-          <label class="auto-chip" title="Run the financial review automatically whenever an import adds new transactions"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
-        <div id="insights"></div>
-      </section>
     </main>
 
     <div id="pane-resizer" title="Drag to resize the chat panel — double-click to reset"></div>

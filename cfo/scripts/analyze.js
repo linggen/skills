@@ -652,6 +652,59 @@ function buildForecast(txns, subs, lastDate) {
   };
 }
 
+// ── Per-category monthly budgets: deterministic current-month state against
+// the user's caps (config.budgets — the UI is the only writer; the agent only
+// narrates). Same anchoring law as the forecast: everything is relative to the
+// ledger's last day, never the wall clock, so stale imports stay honest.
+function buildBudgets(txns, subs, budgets, lastDate, catOf) {
+  if (!lastDate || !budgets) return null;
+  const caps = Object.entries(budgets).filter(([, cap]) => Number(cap) > 0);
+  if (!caps.length) return null;
+  const month = lastDate.slice(0, 7);
+  const lastDom = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5, 7), 0)).getUTCDate();
+  const monthEndIso = `${month}-${pad2(lastDom)}`;
+  const asOfDay = +lastDate.slice(8, 10);
+  const commitKeys = new Set(subs.filter((s) => s.active).map((s) => merchantKey(s.merchant)));
+
+  // Month-to-date per category, split variable vs committed: only the variable
+  // part paces forward — rent already paid must not multiply.
+  const mtd = {}, variable = {};
+  for (const t of txns) {
+    if (t.amount >= 0 || !t.date || !t.date.startsWith(month)) continue;
+    const cat = catOf(t);
+    mtd[cat] = (mtd[cat] || 0) - t.amount;
+    if (!commitKeys.has(merchantKey(t.merchant))) variable[cat] = (variable[cat] || 0) - t.amount;
+  }
+
+  // Fixed charges still expected this month, bucketed to the committed
+  // merchant's category — a cap on recreation should see Netflix coming.
+  const upcoming = {};
+  for (const s of subs) {
+    if (!s.active || !s.last_date || !s.cadence_days) continue;
+    const cat = catOf({ merchant: s.merchant, category: null });
+    let next = addDaysIso(s.last_date, s.cadence_days);
+    for (let i = 0; i < 3 && next <= monthEndIso; i++) {
+      if (next > lastDate) upcoming[cat] = (upcoming[cat] || 0) + s.monthly;
+      next = addDaysIso(next, s.cadence_days);
+    }
+  }
+
+  const projection_ready = asOfDay >= 7; // pace on day 2 is noise — totals still show
+  const rank = { over: 0, pacing: 1, ok: 2 };
+  const categories = caps.map(([category, cap]) => {
+    const spent = round2(mtd[category] || 0);
+    const vari = variable[category] || 0;
+    const fixedSoFar = (mtd[category] || 0) - vari;
+    const projected = round2((asOfDay > 0 ? (vari / asOfDay) * lastDom : 0)
+      + fixedSoFar + (upcoming[category] || 0));
+    const state = spent >= cap ? 'over'
+      : (projection_ready && projected > cap ? 'pacing' : 'ok');
+    return { category, budget: round2(+cap), mtd: spent, projected, state };
+  }).sort((a, b) => (rank[a.state] - rank[b.state]) || b.mtd - a.mtd);
+
+  return { month, as_of: lastDate, projection_ready, categories };
+}
+
 // ── Debt strategy: simulate paying ALL loans together with a shared extra
 // budget. Freed payments roll over when a loan closes (the part people skip),
 // and the extra targets one loan: 'avalanche' = highest rate (optimal),
@@ -780,16 +833,22 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
   }
   for (const m of Object.keys(byMonth)) for (const k of Object.keys(byMonth[m])) byMonth[m][k] = round2(byMonth[m][k]);
 
-  const catSpend = {}, merch = {};
+  const catSpend = {}, merch = {}, catMonthly = {};
   for (const t of txns) {
     if (t.amount >= 0) continue;
     // A category stored on the row (user correction) beats the keyword guess.
     const cat = t.category || categorize(t.merchant, overrides);
     catSpend[cat] = (catSpend[cat] || 0) - t.amount;
+    if (t.date) {
+      const m = t.date.slice(0, 7);
+      (catMonthly[cat] ||= {})[m] = (catMonthly[cat][m] || 0) - t.amount;
+    }
     const mk = merchantKey(t.merchant);
     (merch[mk] ||= { spend: 0, count: 0 });
     merch[mk].spend -= t.amount; merch[mk].count += 1;
   }
+  const byCategoryMonthly = Object.fromEntries(Object.entries(catMonthly).map(([c, ms]) =>
+    [c, Object.fromEntries(Object.entries(ms).sort().map(([m, v]) => [m, round2(v)]))]));
   const byCategory = Object.entries(catSpend)
     .map(([category, v]) => ({ category, spend: round2(v), pct: spend ? round2((100 * v) / spend) : 0 }))
     .sort((a, b) => b.spend - a.spend);
@@ -823,6 +882,9 @@ export function analyzeTransactions(txns, meta = {}, opts = {}) {
       Object.keys(byMonth).length ? income / Object.keys(byMonth).length : 0,
       opts.marketBenchmark || null),
     forecast: buildForecast(txns, subs, lastDate),
+    budgets: buildBudgets(txns, subs, opts.budgets || null, lastDate,
+      (t) => t.category || categorize(t.merchant, overrides)),
+    by_category_monthly: byCategoryMonthly,
     anomalies: detectAnomalies(txns, subs, lastDate, (m) => categorize(m, overrides)),
     bill_calendar: buildBillCalendar(txns, subs, lastDate),
     active_subscription_count: active.filter((s) => !s.essential).length,
