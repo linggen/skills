@@ -24,6 +24,20 @@
     .status { font-size: 12px; }
     .status.ok { color: var(--pos); }
     .status.bad { color: var(--warn); }
+    .lm-card { background: var(--panel-2); border: 1px solid var(--line); border-radius: 9px; padding: 12px 14px; margin-bottom: 12px; }
+    .lm-title { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-bottom: 4px; }
+    .lm-badge { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--pos); border: 1px solid var(--pos); border-radius: 99px; padding: 1px 7px; }
+    .lm-device { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+    .lm-device + .lm-device { border-top: 1px solid var(--line); }
+    .lm-device .who { flex: 1; min-width: 0; }
+    .lm-device .who b { font-size: 13px; }
+    .lm-device .who .hint { margin-top: 2px; }
+    .lm-cover { width: 120px; height: 5px; border-radius: 99px; background: var(--line); overflow: hidden; flex: none; }
+    .lm-cover i { display: block; height: 100%; background: var(--pos); }
+    .lm-qr { display: flex; gap: 14px; align-items: center; margin-top: 10px; }
+    .lm-qr svg { width: 108px; height: 108px; border-radius: 8px; background: #fff; padding: 5px; flex: none; }
+    .lm-steps { font-size: 12px; color: var(--muted); line-height: 1.9; }
+    #other-players summary { cursor: pointer; color: var(--muted); font-size: 12px; }
   </style>
 </head>
 <body>
@@ -53,7 +67,17 @@
 
   <fieldset>
     <legend>Phone sync</legend>
-    <div class="field">
+
+    <!-- Linggen Mobile — the recommended path. The phone pulls the library
+         itself over the paired channel; nothing to configure here. Renders a
+         device card when paired, a QR promo when not. -->
+    <div id="lm-card" class="lm-card">
+      <div class="hint">Checking for paired phones…</div>
+    </div>
+
+    <details id="other-players">
+      <summary>Other players (VLC, WebDAV, cloud folder)…</summary>
+    <div class="field" style="margin-top:12px">
       <label for="sync_type">Method</label>
       <select id="sync_type">
         <option value="vlc">VLC — Sharing via WiFi</option>
@@ -99,6 +123,7 @@
       <button class="btn ghost small" id="test-btn">Test connection</button>
       <span class="status" id="test-status"></span>
     </div>
+    </details>
   </fieldset>
 
   <div class="bar">
@@ -107,11 +132,43 @@
   </div>
 
   <script type="module">
-    import { loadConfig, saveConfig } from './library.js';
+    import { loadConfig, saveConfig, loadLibrary } from './library.js';
     import { testTarget } from './sync.js';
+    import { phoneDevices, coverage, pairQr, agoLabel } from './phone.js';
 
     const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     let cfg = { sync_targets: [] };
+
+    // The Linggen Mobile card: paired → per-device coverage; not paired → the
+    // pairing QR right here (same single-use mint as Settings → Phone).
+    async function renderPhoneCard() {
+      const card = $('lm-card');
+      const [devices, lib] = await Promise.all([phoneDevices(), loadLibrary()]);
+      if (devices.length) {
+        const rows = devices.map((d) => {
+          const c = coverage(lib.tracks || [], d);
+          const pct = c.total ? Math.round((c.synced / c.total) * 100) : 0;
+          const waiting = c.waiting
+            ? `${c.waiting} new track${c.waiting === 1 ? '' : 's'} waiting — open DJ on your phone`
+            : `up to date • ${agoLabel(d.last_fetch)}`;
+          return `<div class="lm-device">
+            <div class="who"><b>📱 ${esc(d.name)}</b><div class="hint">${c.synced}/${c.total} tracks • ${waiting}</div></div>
+            <div class="lm-cover"><i style="width:${pct}%"></i></div>
+          </div>`;
+        }).join('');
+        card.innerHTML = `<div class="lm-title">Linggen Mobile <span class="lm-badge">wireless</span></div>
+          <div class="hint">Your phone syncs itself over WiFi — new downloads appear next time you open DJ on it.</div>${rows}`;
+        return;
+      }
+      const qr = await pairQr();
+      card.innerHTML = `<div class="lm-title">Linggen Mobile <span class="lm-badge">recommended</span></div>
+        <div class="hint">Wireless sync, offline play, synced lyrics — no cables, no third-party player.</div>
+        <div class="lm-qr">${qr ? qr.svg : ''}
+          <div class="lm-steps">1. Get Linggen Mobile on your iPhone<br/>2. Scan this code with the Camera app<br/>3. Confirm on this Mac — music syncs itself</div>
+        </div>`;
+    }
+    renderPhoneCard();
 
     function showType(type) {
       document.querySelectorAll('[data-for]').forEach((el) => { el.hidden = el.dataset.for !== type; });
@@ -144,6 +201,7 @@
       $('naming_template').value = cfg.naming_template || '%(artist)s - %(title)s';
       const t = (cfg.sync_targets || [])[0];
       if (t) {
+        $('other-players').open = true;
         $('sync_type').value = t.type || 'vlc';
         $('sync_name').value = t.name || '';
         if (t.type === 'vlc') $('vlc_host').value = t.host || '';

@@ -1,5 +1,6 @@
 // dj.js — the DJ page. Wires the agent's curation (PageUpdate → a proposed
-// "set") to the user's local actions (Get → yt-dlp download, Sync → VLC push).
+// "set") to the user's local actions (Get → yt-dlp download, Sync → the paired
+// Linggen Mobile pulls the library itself; VLC/WebDAV push is the fallback).
 //
 //   FIXED  — the library grid: the page owns it, the agent never touches it.
 //   DYNAMIC — the #set panel: filled ONLY by the agent via PageUpdate.
@@ -12,6 +13,7 @@ import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { openPlayer } from './player.js';
 import { syncToPhone } from './sync.js';
+import { phoneDevices, coverage, onAnyPhone } from './phone.js';
 import { ensureThumbs, thumbUrl } from './thumbs.js';
 
 const SKILL = 'dj';
@@ -27,6 +29,7 @@ const savedUi = loadUi();
 const state = {
   config: { sync_targets: [] },
   library: { tracks: [], playlists: [] },
+  phone: [], // paired Linggen Mobile devices with their fetch ledgers
   set: null, // the currently proposed tracklist
   busy: false,
   // all | recent | playlist (+ name) — the sidebar selection; restored from
@@ -48,7 +51,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
-  [state.config, state.library] = await Promise.all([loadConfig(), loadLibrary()]);
+  [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
   // A restored playlist selection may point at a playlist that no longer exists.
   if (state.collection.kind === 'playlist' && !playlistsOf().includes(state.collection.name)) {
     setCollection({ kind: 'all' });
@@ -67,6 +70,10 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 
 // ── library: sidebar collections + dense list + multi-select → playlists ─────
 const trackKey = (t) => t.id || trackId(t);
+
+// On-phone means either path: pushed by this Mac (legacy VLC/WebDAV ledger in
+// synced_to) or pulled by a paired Linggen Mobile (the engine's fetch ledger).
+const onPhone = (t) => (t.synced_to || []).length > 0 || onAnyPhone(t, state.phone);
 
 // Playlists are tags into the one library: a song can sit in many. So "Remove"
 // means different things by context — inside a playlist it untags (file kept);
@@ -96,8 +103,8 @@ function libraryView() {
   const q = state.query.trim().toLowerCase();
   if (q) tracks = tracks.filter((t) => `${t.artist} ${t.title}`.toLowerCase().includes(q));
   const f = state.filter;
-  if (f.phone === 'on') tracks = tracks.filter((t) => (t.synced_to || []).length);
-  if (f.phone === 'off') tracks = tracks.filter((t) => !(t.synced_to || []).length);
+  if (f.phone === 'on') tracks = tracks.filter(onPhone);
+  if (f.phone === 'off') tracks = tracks.filter((t) => !onPhone(t));
   if (f.lyrics) tracks = tracks.filter((t) => t.lrc);
   return tracks;
 }
@@ -125,7 +132,14 @@ function renderFilters() {
 
 function renderLibrary() {
   const all = state.library.tracks || [];
-  $('lib-count').textContent = all.length ? `${all.length} song${all.length === 1 ? '' : 's'}` : '';
+  let count = all.length ? `${all.length} song${all.length === 1 ? '' : 's'}` : '';
+  // Paired phone → live coverage next to the count ("· 📱 iPhone 12/14").
+  const dev = state.phone[0];
+  if (count && dev) {
+    const c = coverage(all, dev);
+    count += ` · 📱 ${dev.name} ${c.synced}/${c.total}`;
+  }
+  $('lib-count').textContent = count;
   renderSidebar();
   renderFilters();
   renderSelbar();
@@ -218,7 +232,7 @@ function rowHtml(t) {
   const sel = state.selected.has(id);
   const pending = state.pendingRemove === id;
   const badges =
-    ((t.synced_to || []).length ? '<span class="badge" title="On your phone">📱</span>' : '') +
+    (onPhone(t) ? '<span class="badge" title="On your phone">📱</span>' : '') +
     (t.lrc ? '<span class="badge lyr" title="Has lyrics">♪</span>' : '');
   return `<div class="lib-row${sel ? ' sel' : ''}" data-id="${esc(id)}">
     <input type="checkbox" class="lib-chk" data-id="${esc(id)}"${sel ? ' checked' : ''} />
@@ -306,6 +320,15 @@ function syncProgress(p) {
 }
 
 async function syncSelected() {
+  // A paired Linggen Mobile pulls the library itself — nothing to push from
+  // here. Tell the user where the sync actually happens.
+  if (state.phone.length) {
+    const c = coverage(state.library.tracks || [], state.phone[0]);
+    toast(c.waiting
+      ? `${c.waiting} track${c.waiting === 1 ? '' : 's'} waiting — open DJ on ${esc(state.phone[0].name)} and it syncs itself.`
+      : `${esc(state.phone[0].name)} is up to date.`);
+    return;
+  }
   const target = (state.config.sync_targets || [])[0];
   if (!target) { toast('No phone set up — open ⚙ Settings.'); return; }
   if (state.busy) return;
