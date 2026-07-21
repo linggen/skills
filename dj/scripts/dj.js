@@ -8,7 +8,7 @@
 import './chat-bridge.js'; // sets window.LinggenUI
 import { runBash, sq, trashFile } from './bash.js';
 import { listSkillSessions } from './api.js';
-import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned } from './library.js';
+import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned, reconcileLibrary } from './library.js';
 import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { openPlayer } from './player.js';
@@ -52,6 +52,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
   [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
+  await reindex(true);
   // A restored playlist selection may point at a playlist that no longer exists.
   if (state.collection.kind === 'playlist' && !playlistsOf().includes(state.collection.name)) {
     setCollection({ kind: 'all' });
@@ -70,6 +71,36 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 
 // ── library: sidebar collections + dense list + multi-select → playlists ─────
 const trackKey = (t) => t.id || trackId(t);
+
+// Keep library.json in step with the library folder: adopt files that landed
+// outside DJ's flow, retire rows whose file was Finder-deleted. Runs at boot
+// (announced) and quietly whenever the page becomes visible again; adopted
+// tracks missing lyrics feed the existing background backfill.
+let reindexing = false;
+async function reindex(announce) {
+  if (reindexing) return;
+  reindexing = true;
+  try {
+    const r = await reconcileLibrary(state.library, state.config);
+    if (r.adopted || r.retired) {
+      await saveLibrary(state.library);
+      renderLibrary();
+      if (announce) {
+        const bits = [];
+        if (r.adopted) bits.push(`adopted ${r.adopted} song${r.adopted === 1 ? '' : 's'} from the folder`);
+        if (r.retired) bits.push(`removed ${r.retired} missing`);
+        toast(`Library: ${bits.join(', ')}.`);
+      }
+      backfillLyrics(state.library.tracks.filter((t) => !t.lrc && t.file).map(trackKey));
+    }
+  } catch { /* next visibility pass retries */ } finally {
+    reindexing = false;
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) reindex(false);
+});
 
 // On-phone means either path: pushed by this Mac (legacy VLC/WebDAV ledger in
 // synced_to) or pulled by a paired Linggen Mobile (the engine's fetch ledger).
