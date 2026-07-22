@@ -34,7 +34,37 @@ function syncToolbarBusy() {
 
 // ── Init ──
 
+/** Settings live in settings.html; the gear opens it over the page (DJ's
+    pattern). Inside the unified launcher the shell owns settings, so the gear
+    hides rather than giving the user two doors to the same room. */
+function wireSettingsButton() {
+  const btn = document.getElementById('settings-btn');
+  if (!btn) return;
+  if (params.get('in_launcher') === '1') {
+    btn.style.display = 'none';
+    return;
+  }
+  btn.onclick = () => {
+    let ov = document.querySelector('.app-mode-overlay');
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.className = 'app-mode-overlay';
+      ov.innerHTML = `
+        <div class="app-mode-overlay-bar">
+          <span class="app-mode-overlay-title">Settings</span>
+          <button class="app-mode-overlay-close" aria-label="Close settings">×</button>
+        </div>
+        <iframe class="app-mode-overlay-frame" src="settings.html" title="Settings"></iframe>`;
+      ov.querySelector('.app-mode-overlay-close').onclick =
+        () => ov.classList.remove('visible');
+      document.body.appendChild(ov);
+    }
+    ov.classList.add('visible');
+  };
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  wireSettingsButton();
   // App mode: per-skill override in localStorage('mac-shifu:model') if set.
   // Otherwise leave modelId empty so the engine uses the user's global
   // default model — the fresh-install default is the built-in Linggen Cloud

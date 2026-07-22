@@ -538,6 +538,17 @@ async function loadPairedDevices() {
   } catch { /* daemon unreachable — keep last known */ }
 }
 
+/** The phone's own counters, from this side: what the phone mirrored here and
+    how much of it has an archive copy. Same two numbers the phone shows, so
+    both screens can be trusted to agree. */
+function wirelessSummary() {
+  const synced = roll.filter((it) => (it.phone_path || '').startsWith('wireless/'));
+  if (!synced.length) return '';
+  const backed = synced.filter((it) => archiveShas.has(it.sha256)).length;
+  return `<span class="abar-synced">${synced.length.toLocaleString()} synced ·
+    ${backed.toLocaleString()} backed up</span>`;
+}
+
 function isQueued(it) {
   return !!it?.phone_path?.startsWith('wireless/') && pendingDeletes.has(it.phone_path.slice(9));
 }
@@ -637,6 +648,7 @@ function renderReview() {
       <button class="media-cta" id="apply-btn">Remove…</button>
       <button class="media-cta ghost" id="back-btn">↻ Sync</button>
       <span class="abar-meta"><span id="sel-count"></span>
+        ${wirelessSummary()}
         ${pendingDeletes.size ? `<span class="abar-queued">⏳ ${pendingDeletes.size.toLocaleString()} queued for iPhone</span>` : ''}
         <span class="media-dim">removals recoverable on this Mac for 30 days</span></span>
     </div>

@@ -4,6 +4,20 @@
    Full-window slide-over shown only when the page is hosted by a Linggen
    app shell (?app_mode=1). See app-mode.js for the postMessage protocol. */
 
+/* Header gear — pushed to the right edge, same overlay as the app shell's. */
+.gear-btn {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.gear-btn:hover { color: var(--text); border-color: var(--border-strong, var(--accent)); }
+
 .app-mode-overlay {
   position: fixed;
   inset: 0;
