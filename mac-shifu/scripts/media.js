@@ -48,13 +48,26 @@ function shellEsc(s) {
   return "'" + s.replace(/'/g, "'\\''") + "'";
 }
 
+let serverDownAt = 0;
+
+/** Every pipeline call goes through here. A rejected fetch (daemon restarting
+    or stopped) used to unwind the click handler with no trace — the button
+    simply did nothing. Say so instead, and hand callers an empty result. */
 async function bash(command) {
-  const resp = await fetch('/api/bash', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ project_root: '/tmp', command }),
-  });
-  return resp.json();
+  try {
+    const resp = await fetch('/api/bash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project_root: '/tmp', command }),
+    });
+    return await resp.json();
+  } catch {
+    if (Date.now() - serverDownAt > 5000) {   // one message per outage, not per call
+      serverDownAt = Date.now();
+      flashToast('Linggen server unreachable — try again in a moment');
+    }
+    return {};
+  }
 }
 
 async function media(cmd) {
@@ -818,7 +831,7 @@ function renderMacReview() {
   panel.innerHTML = `
     ${statusStripDiv()}
     <div class="media-actionbar">
-      <button class="media-cta" id="mac-trash-btn">Move to Trash…</button>
+      <button class="media-cta" id="mac-trash-btn">🗑 Move to Trash</button>
       <button class="media-cta ghost" id="mac-reindex-btn">↻ Re-index Mac</button>
       <span class="abar-meta"><span id="mac-sel-count"></span>
         <span class="media-dim">Mac cleanup goes to the macOS Trash — restore anytime from there</span></span>
@@ -968,8 +981,11 @@ function updateMacSelbar() {
   el.innerHTML = `<b>${macSelected.size.toLocaleString()} selected · ${fmtGb(bytes)}</b>`;
   const btn = document.getElementById('mac-trash-btn');
   if (btn) {
+    // fixed label like the phone pane — the count lives in the meta line
     btn.disabled = macSelected.size === 0;
-    btn.textContent = `🗑 Move ${macSelected.size.toLocaleString()} to Trash (${fmtGb(bytes)})…`;
+    btn.title = macSelected.size
+      ? `Move ${macSelected.size.toLocaleString()} file${macSelected.size === 1 ? '' : 's'} (${fmtGb(bytes)}) to the macOS Trash`
+      : 'Check files to move them to the macOS Trash';
   }
 }
 
@@ -1847,18 +1863,35 @@ async function backupInline(targets, dest) {
   toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`, {
     label: 'Free up phone →',
     fn: () => {
+      // Land on the PHONE review even if the user wandered to the Mac pane
+      // while the backup ran — renderReview() defers to renderMacReview()
+      // when source is 'mac', which made this whole action look like a no-op.
+      source = 'phone';
       activeCat = 'on_mac';
       // select only verified copies (archive or byte-identical) — never "probably"
       for (const it of itemsFor('on_mac')) {
         if (archiveShas.has(it.sha256) || it.flags.includes('on_mac')) selected.add(it.id);
       }
-      if (screen === 'review') { renderReview(); window.scrollTo(0, 0); }
+      if (screen !== 'review') return;
+      renderReview();
+      window.scrollTo(0, 0);
+      // say what the jump did — the fixed-label buttons no longer announce it
+      if (selected.size) {
+        flashToast(`${selected.size.toLocaleString()} checked — Remove frees them from the iPhone`);
+      }
     },
   });
   const info = await media('info');
   const freeLine = freeBefore != null && info?.mac_free_gb != null
     ? ` Mac free space ${freeBefore} → ${info.mac_free_gb} GB.` : '';
   notify(`Backup finished: ${(p.verified ?? 0).toLocaleString()} files copied to ${p.dest || '~/Pictures/iPhone Backup'} and re-hash verified${p.failed ? `, ${p.failed} FAILED verification (their originals stay on the phone)` : ''}.${freeLine} Backups never expire. Report this to the user in 1-2 sentences.`);
+}
+
+/** One-shot toast for an instant result — no progress phase, fades itself. */
+function flashToast(msg) {
+  const t = showToast(msg);
+  t.done(msg);
+  return t;
 }
 
 /** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
