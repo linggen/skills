@@ -144,10 +144,14 @@ function wireStatusStrip() {
 }
 
 async function refreshStatus() {
-  const [info, st] = await Promise.all([media('info'), media('state')]);
+  const queuedBefore = [...pendingDeletes].sort().join();
+  const [info, st] = await Promise.all([media('info'), media('state'), loadPendingDeletes()]);
   statusCache = { info, st };
   const el = document.getElementById('media-status');
   if (el) el.innerHTML = statusStripHtml();
+  // Phone executed (or user unqueued elsewhere) → badges must follow.
+  if (screen === 'review' && source === 'phone'
+      && [...pendingDeletes].sort().join() !== queuedBefore) renderReview();
 }
 
 // ── screen router ──
@@ -461,6 +465,32 @@ async function loadArchive() {
   archiveShas = new Set(archiveRows.map((r) => r.sha256));
 }
 
+/** localIds queued for on-phone deletion — Remove on wireless rows feeds it,
+    the phone's reconcile drains it once the deletion really happened. */
+let pendingDeletes = new Set();
+
+async function loadPendingDeletes() {
+  try {
+    const r = await fetch('/api/media/pending-deletes');
+    if (r.ok) pendingDeletes = new Set((await r.json()).localIds || []);
+  } catch { /* daemon unreachable — keep last known */ }
+}
+
+function isQueued(it) {
+  return !!it?.phone_path?.startsWith('wireless/') && pendingDeletes.has(it.phone_path.slice(9));
+}
+
+/** Add to (or cancel from) the phone-delete queue; mirrors locally on success. */
+async function setQueued(localIds, cancel = false) {
+  const res = await fetch('/api/media/request-delete', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ localIds, ...(cancel ? { cancel: true } : {}) }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  for (const id of localIds) cancel ? pendingDeletes.delete(id) : pendingDeletes.add(id);
+}
+
 const IMAGE_RE = /\.(heic|heif|jpg|jpeg|png|gif|tiff|webp|dng)$/i;
 
 /** Item id = sha256(phone path)[:12] — must match cmd_scan's derivation. */
@@ -514,7 +544,7 @@ function showReview() {
   applyPrechecks();
   setScreen('review', renderReview);
   refreshStatus();
-  Promise.all([loadRemovals(), loadMacIndex(), loadRoll(), loadArchive()])
+  Promise.all([loadRemovals(), loadMacIndex(), loadRoll(), loadArchive(), loadPendingDeletes()])
     .then(() => { if (screen === 'review') renderReview(); });
   pollTimer = setInterval(refreshStatus, 15000);
 }
@@ -537,6 +567,7 @@ function renderReview() {
       <button class="media-cta" id="apply-btn">Remove…</button>
       <button class="media-cta ghost" id="back-btn">↻ Sync</button>
       <span class="abar-meta"><span id="sel-count"></span>
+        ${pendingDeletes.size ? `<span class="abar-queued">⏳ ${pendingDeletes.size.toLocaleString()} queued for iPhone</span>` : ''}
         <span class="media-dim">removals recoverable on this Mac for 30 days</span></span>
     </div>
     <div class="media-chips">${chips}</div>
@@ -936,7 +967,12 @@ async function openMacLightbox(path) {
         <button class="media-cta ghost sm" id="lb-open">Reveal in Finder</button>
         <button class="media-cta ghost sm" id="lb-close">✕ Close</button></div></div>
     <button class="lb-nav" id="lb-next" aria-label="Next" ${lbIdx < lbOrder.length - 1 ? '' : 'disabled'}>›</button>`;
-  box.onclick = (e) => { if (e.target === box) closeLightbox(); };
+  box.onclick = (e) => {
+    const t = e.target;
+    if (t === box || t.classList?.contains('lb-body') || t.classList?.contains('lb-media')) {
+      closeLightbox();
+    }
+  };
   document.body.appendChild(box);
   document.addEventListener('keydown', macLightboxKey);
   document.getElementById('lb-close').onclick = closeLightbox;
@@ -994,10 +1030,12 @@ function thumbHtml(it, checked) {
   const kept = activeCat === 'dupe' && !checked;
   const archived = archiveShas.has(it.sha256);
   const probably = activeCat === 'on_mac' && !it.flags.includes('on_mac') && !archived;
-  const tag = activeCat === 'dupe' ? '<span class="tag keep-tag">★ KEEP</span>'
+  const queued = isQueued(it);
+  const tag = queued ? '<span class="tag queued" title="Deletes on the iPhone when Linggen opens there">⏳ queued</span>'
+    : activeCat === 'dupe' ? '<span class="tag keep-tag">★ KEEP</span>'
     : probably ? '<span class="tag cut">probably</span>'
     : activeCat === 'on_mac' ? `<span class="tag">${archived ? '💾 backed up' : 'on Mac ✓'}</span>` : '';
-  return `<div class="media-thumb ${vid ? 'vid' : ''} ${kept ? 'kept' : ''}" data-id="${it.id}">
+  return `<div class="media-thumb ${vid ? 'vid' : ''} ${kept ? 'kept' : ''} ${queued ? 'queued' : ''}" data-id="${it.id}">
     ${img}${vid ? '<span class="play">▶</span>' : ''}
     <input type="checkbox" ${checked ? 'checked' : ''} aria-label="remove">
     <button class="zoom" title="View full size" aria-label="View full size">⤢</button>
@@ -1431,12 +1469,18 @@ async function openLightbox(id) {
     <div class="lb-body"><div class="lb-media media-dim">Loading…</div>
       <div class="lb-cap"><span>${esc(it.staged.split('/').pop())} · ${fmtGb(it.size)}
           · ${lbIdx + 1} / ${lbOrder.length}</span>
+        ${isQueued(it) ? '<span class="lb-queued">⏳ deletes on iPhone when Linggen opens there</span>' : ''}
         ${isKeep(it.id) ? '<span class="lb-keep">★ KEEP — recommended</span>' : ''}
         <button class="media-cta sm" id="lb-mark"></button>
         <button class="media-cta ghost sm" id="lb-open">Open on Mac</button>
         <button class="media-cta ghost sm" id="lb-close">✕ Close</button></div></div>
     <button class="lb-nav" id="lb-next" aria-label="Next" ${lbIdx < lbOrder.length - 1 ? '' : 'disabled'}>›</button>`;
-  box.onclick = (e) => { if (e.target === box) closeLightbox(); };
+  box.onclick = (e) => {
+    const t = e.target;
+    if (t === box || t.classList?.contains('lb-body') || t.classList?.contains('lb-media')) {
+      closeLightbox();
+    }
+  };
   document.body.appendChild(box);
   document.addEventListener('keydown', lightboxKey);
   document.getElementById('lb-close').onclick = closeLightbox;
@@ -1445,9 +1489,23 @@ async function openLightbox(id) {
   document.getElementById('lb-open').onclick = () =>
     bash(`open "${DATA_DIR}/staging/${it.staged}"`);
   const delBtn = document.getElementById('lb-mark');
-  delBtn.textContent = '🗑 Delete';
-  delBtn.title = 'Remove this item from the iPhone (recoverable for 30 days)';
-  delBtn.onclick = () => deleteInLightbox(it.id);
+  if (isQueued(it)) {
+    // Queued is cancellable intent — the button flips to the undo.
+    delBtn.textContent = 'Unqueue';
+    delBtn.classList.add('ghost');
+    delBtn.title = 'Cancel the pending iPhone deletion';
+    delBtn.onclick = async () => {
+      try {
+        await setQueued([it.phone_path.slice(9)], true);
+        renderReview();
+        openLightbox(it.id);
+      } catch { /* daemon unreachable — leave queued */ }
+    };
+  } else {
+    delBtn.textContent = '🗑 Delete';
+    delBtn.title = 'Remove this item from the iPhone (recoverable for 30 days)';
+    delBtn.onclick = () => deleteInLightbox(it.id);
+  }
   const slot = box.querySelector('.lb-media');
   const ext = it.staged.split('.').pop().toLowerCase();
   if (it.kind === 'video') {
@@ -1474,17 +1532,13 @@ async function deleteInLightbox(id) {
   const delBtn = document.getElementById('lb-mark');
   if (!cap || !delBtn) return;
   // Wireless-synced photo → queue for on-phone PhotoKit deletion (no AFC).
+  // Re-open the same photo so the caption shows the queued state + Unqueue.
   const it = allById().get(id);
   if (it?.phone_path?.startsWith('wireless/')) {
     try {
-      const res = await fetch('/api/media/request-delete', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ localIds: [it.phone_path.slice(9)] }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      cap.insertAdjacentHTML('afterbegin',
-        '<span class="media-chip">queued — deletes on the iPhone when Linggen opens there</span> ');
+      await setQueued([it.phone_path.slice(9)]);
+      renderReview();
+      openLightbox(id);
     } catch (e) {
       cap.insertAdjacentHTML('afterbegin', `<span class="media-chip bad">${esc(`queue failed — ${e.message || e}`)}</span> `);
     }
@@ -1540,13 +1594,8 @@ async function removeInline(ids) {
   if (wireless.length) {
     const t = showToast('Queueing phone deletions…', true);
     try {
-      const res = await fetch('/api/media/request-delete', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ localIds: wireless }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      t.done(`✓ ${wireless.length.toLocaleString()} queued — the iPhone deletes them next time Linggen is open there`);
+      await setQueued(wireless);
+      t.done(`⏳ ${wireless.length.toLocaleString()} queued — the iPhone deletes them next time Linggen is open there`);
       for (const id of ids) if (!rest.has(id)) selected.delete(id);
       if (screen === 'review' && source === 'phone') renderReview();
     } catch (e) {

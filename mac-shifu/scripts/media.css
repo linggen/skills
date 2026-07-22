@@ -275,6 +275,10 @@ label.glabel { display: flex; align-items: center; gap: 7px; cursor: pointer; wi
 
 .media-thumb .tag.cut { background: var(--text-muted); }
 
+/* Queued for on-phone deletion: the photo steps back, the amber tag says why. */
+.media-thumb .tag.queued { background: var(--warning); color: #1c1917; }
+.media-thumb.queued img { opacity: 0.45; }
+
 .media-thumb .score {
   position: absolute;
   right: 4px;
@@ -507,6 +511,23 @@ label.glabel { display: flex; align-items: center; gap: 7px; cursor: pointer; wi
   border-radius: 4px;
   background: var(--success);
   color: #fff;
+}
+
+.media-lightbox .lb-cap .lb-queued {
+  flex: 0 0 auto;
+  font: 600 11px/1 ui-monospace, Menlo, monospace;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--warning) 18%, transparent);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.abar-queued {
+  font-size: 12px;
+  color: var(--warning);
+  margin-right: 10px;
+  white-space: nowrap;
 }
 
 .media-toast {
