@@ -106,6 +106,12 @@ case "$cmd" in
       index)
         nohup "$PY" "$PIPELINE" index >"$DATA/op.log" 2>&1 &
         ;;
+      scan)
+        # analyzers only, over what is already staged — the wireless path's
+        # Sync (no phone walk, so no cable and no AFC needed)
+        printf '%s\n' '{"op":"scan","status":"running","phase":"starting"}' >"$DATA/progress.json"
+        nohup "$PY" "$PIPELINE" scan >"$DATA/op.log" 2>&1 &
+        ;;
       offload)
         # backup (+ verify) to dest, then delete the verified set from the phone
         sel="${1:--}"; dest="${2:--}"; del="${3:-1}"

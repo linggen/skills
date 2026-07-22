@@ -646,7 +646,7 @@ function renderReview() {
     chip.onclick = () => { activeCat = chip.dataset.cat; renderReview(); };
   }
   wireStatusStrip();
-  document.getElementById('back-btn').onclick = () => showConnect();
+  document.getElementById('back-btn').onclick = syncNow;
   document.getElementById('apply-btn').onclick = async () => {
     if (!selected.size) return;
     if (await confirmRemoveDialog(selected)) removeInline(new Set(selected));
@@ -1612,6 +1612,40 @@ async function openLightbox(id) {
   } else {
     slot.innerHTML = `<img src="${stagedUrl}" alt="">`;
   }
+}
+
+/** Sync, in place — no screen change. A paired phone pushes its own photos,
+    so the Mac's half of "sync" is re-running the analyzers over what is
+    staged and reloading the review. With a cable attached it still does the
+    full walk (index → pull → scan); without one it skips straight to scan. */
+async function syncNow() {
+  const usb = statusCache.info?.connected;
+  const t = showToast(usb ? 'Syncing over USB…' : 'Refreshing from your Mac…', true);
+  await media(usb ? 'start scan-all' : 'start scan');
+  stopPolling();
+  await new Promise((resolve) => {
+    const poll = async () => {
+      const p = await media('progress');
+      if (p.total) t.update(`${p.phase || 'Working'} ${(p.done || 0).toLocaleString()}/${p.total.toLocaleString()}…`);
+      if (p.status === 'done' || p.status === 'error') { stopPolling(); resolve(p); }
+    };
+    poll();
+    pollTimer = setInterval(poll, 1000);
+  });
+  const p = await media('progress');
+  flags = await media('flags');
+  await Promise.all([loadRoll(), loadRemovals(), loadArchive(), loadPendingDeletes()]);
+  pruneSelected();
+  if (screen === 'review') renderReview();
+  refreshStatus();
+  pollTimer = setInterval(refreshStatus, 15000);
+  if (p.status === 'error') {
+    t.done(`✕ Sync failed — ${p.error || 'see logs'}`);
+    return;
+  }
+  t.done(usb
+    ? `✓ Synced · ${roll.length.toLocaleString()} items`
+    : `✓ Up to date · ${roll.length.toLocaleString()} items · open Linggen on the phone to send new ones`);
 }
 
 /** Inline single-item delete (iOS-Photos style): remove now, advance to the
