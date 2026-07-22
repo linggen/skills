@@ -8,8 +8,8 @@ data/media/progress.json and are launched in the background by media.sh):
   index    build/refresh the Mac photo index (SHA-256 + dHash, incremental)
   pull     incremental camera-roll pull over USB (manifest-driven)
   scan     analyze staged files -> flags.json (hash/pHash/blur/luma/ffprobe)
-  backup   offload: copy selected files to an archive root (--dest, default
-           ~/Pictures/iPhone Backup) with per-copy re-hash verify
+  backup   copy the --selection files to an archive root (--dest, default
+           ~/Pictures/iPhone Backup) with per-copy re-hash verify; copy-only
   remove   delete from the iPhone over AFC (requires --confirm). Default reads
            the backup-verified set; --trash reads the raw selection and moves
            each staged copy into the 30-day restore area instead
@@ -602,33 +602,60 @@ def cmd_scan(_args):
 
 # ── backup (copy + verify) ────────────────────────────────────────────────
 
-def load_selection(path):
-    sel = json.loads(Path(path).read_text())
-    ids = set(sel['ids'])
-    flags = json.loads(FLAGS.read_text())
+def build_id_map(manifest_rows=None):
+    """id -> item for EVERY staged media file: the scan's flag records plus
+    synthesized rows for whatever the flags don't carry. The UI sends ids for
+    unflagged files too (the All view, the backup work-list), so both the
+    backup and remove legs resolve against this — same path-derived id as
+    cmd_scan, same Live-Photo MOV fold."""
+    flags = json.loads(FLAGS.read_text()) if FLAGS.exists() else {'items': []}
     id_map = {it['id']: it for it in flags['items']}
+    rows = load_jsonl(MANIFEST) if manifest_rows is None else manifest_rows
+    man_rows = [r for r in rows
+                if r.get('staged') and Path(r['staged']).suffix.lower() in IMAGE_EXTS | VIDEO_EXTS]
+    mov_pairs = live_photo_pairs(man_rows)
+    by_staged = {r['staged']: r for r in man_rows}
+    mov_of_still = {}
+    for mov_s, still_s in mov_pairs.items():
+        mov_of_still.setdefault(still_s, by_staged[mov_s])
+    for r in man_rows:
+        if r['staged'] in mov_pairs:
+            continue  # MOV half of a Live Photo — folded into its still
+        iid = hashlib.sha256(r['path'].encode()).hexdigest()[:12]
+        if iid in id_map:
+            continue
+        it = {'id': iid, 'phone_path': r['path'], 'staged': r['staged'],
+              'size': r['size'], 'mtime': r.get('mtime') or 0, 'sha256': r['sha256'],
+              'thumb': f"{r['sha256'][:12]}.jpg"}
+        mov = mov_of_still.get(r['staged'])
+        if mov:
+            it['live_mov'] = mov['path']
+            it['size'] += mov['size']
+        id_map[iid] = it
+    return id_map
+
+
+def load_selection(path):
+    ids = set(json.loads(Path(path).read_text())['ids'])
+    id_map = build_id_map()
     missing = ids - set(id_map)
     if missing:
-        raise ValueError(f'{len(missing)} selected ids not in flags.json')
+        raise ValueError(f'{len(missing)} selected ids are not staged on this Mac')
     return [id_map[i] for i in ids]
 
 
 def cmd_backup(args):
-    """Offload leg: copy every selected item to the chosen archive root
-    (Mac folder or external volume) and hash-verify each copy. With --all,
-    archives the whole camera roll from the manifest (copy-only, never deletes)."""
+    """Copy every selected item to the chosen archive root (Mac folder or
+    external volume) and hash-verify each copy. Copy-only — it never deletes
+    from the phone. The UI decides the work-list; whole-roll is just a
+    selection of everything not archived yet."""
     op = 'backup'
-    if getattr(args, 'all', False):
-        items = load_jsonl(MANIFEST)  # whole camera roll — every pulled file
-        if not items:
-            fail(op, 'load', 'nothing staged — pull the camera roll first')
-    elif args.selection:
-        try:
-            items = load_selection(args.selection)
-        except Exception as e:
-            fail(op, 'load', e)
-    else:
-        fail(op, 'args', 'backup needs --selection or --all')
+    try:
+        items = load_selection(args.selection)
+    except Exception as e:
+        fail(op, 'load', e)
+    if not items:
+        fail(op, 'load', 'nothing selected — check items or run a scan first')
     root = Path(args.dest) if getattr(args, 'dest', None) else BACKUP_ROOT
     need_gb = sum(it['size'] for it in items) / 1e9
     try:
@@ -692,33 +719,8 @@ async def _remove_async(args):
     else:
         # offload mode: only backup-verified ids; the archive copy is the record
         ids = json.loads((DATA_DIR / 'verified.json').read_text())['ids']
-    flags = json.loads(FLAGS.read_text()) if FLAGS.exists() else {'items': []}
-    id_map = {it['id']: it for it in flags['items']}
     manifest = {r['path']: r for r in load_jsonl(MANIFEST)}
-    # the All view sends ids for unflagged files too — synthesize items for
-    # manifest rows the flags don't carry (same path-derived id as cmd_scan,
-    # same Live-Photo MOV fold)
-    man_rows = [r for r in manifest.values()
-                if r.get('staged') and Path(r['staged']).suffix.lower() in IMAGE_EXTS | VIDEO_EXTS]
-    mov_pairs = live_photo_pairs(man_rows)
-    by_staged = {r['staged']: r for r in man_rows}
-    mov_of_still = {}
-    for mov_s, still_s in mov_pairs.items():
-        mov_of_still.setdefault(still_s, by_staged[mov_s])
-    for r in man_rows:
-        if r['staged'] in mov_pairs:
-            continue  # MOV half of a Live Photo — folded into its still
-        iid = hashlib.sha256(r['path'].encode()).hexdigest()[:12]
-        if iid in id_map:
-            continue
-        it = {'id': iid, 'phone_path': r['path'], 'staged': r['staged'],
-              'size': r['size'], 'mtime': r.get('mtime') or 0, 'sha256': r['sha256'],
-              'thumb': f"{r['sha256'][:12]}.jpg"}
-        mov = mov_of_still.get(r['staged'])
-        if mov:
-            it['live_mov'] = mov['path']
-            it['size'] += mov['size']
-        id_map[iid] = it
+    id_map = build_id_map(list(manifest.values()))
     items = [id_map[i] for i in ids if i in id_map]
     try:
         ld = await connect_lockdown()
@@ -963,8 +965,7 @@ def main():
     sub.add_parser('pull')
     sub.add_parser('scan')
     b = sub.add_parser('backup')
-    b.add_argument('--selection')
-    b.add_argument('--all', action='store_true')
+    b.add_argument('--selection', required=True)
     b.add_argument('--dest')
     r = sub.add_parser('remove')
     r.add_argument('--confirm', action='store_true')

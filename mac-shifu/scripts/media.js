@@ -8,10 +8,13 @@ const MEDIA_SH = '$HOME/.linggen/skills/mac-shifu/scripts/media/media.sh';
 const DATA_DIR = '$HOME/.linggen/skills/mac-shifu/data/media';
 const TAB_KEY = 'mac-shifu:tab';
 const RENDER_CAP = 200; // thumbs per category; selection still covers all items
+/** Categories rendered as the month-by-month roll view (whole roll subsets). */
+const ROLL_CATS = new Set(['all', 'not_backed']);
 const FOLDER_PREVIEW = 30; // Mac "All by folder" tiles before a "+N more" expander
 
 const CATEGORIES = [
   { key: 'all', label: 'All media', precheck: false },
+  { key: 'not_backed', label: 'Not backed up', precheck: false },
   { key: 'on_mac', label: '💾 On Mac', precheck: true },
   { key: 'dupe', label: 'Duplicates', precheck: true },
   { key: 'blurry', label: 'Blurry', precheck: true },
@@ -464,6 +467,7 @@ function blurEligible(it) {
 
 function itemsFor(key) {
   if (key === 'all') return roll;
+  if (key === 'not_backed') return roll.filter((it) => !archiveShas.has(it.sha256));
   if (key === 'queued') return roll.filter(isQueued);
   if (key === 'on_mac') {
     // one bucket for "a copy exists on this Mac": organic ~/Pictures matches
@@ -496,6 +500,17 @@ function suggestedIds() {
 
 function applyPrechecks() {
   selected = suggestedIds();
+}
+
+/** What Backup would copy: the checked items, or — when nothing is checked —
+    the whole roll. Items with a hash-verified archive copy drop out either
+    way, so Backup always means "finish the archive", never re-copy it. */
+function backupTargets() {
+  const byId = allById();
+  const pool = selected.size
+    ? [...selected].map((id) => byId.get(id)).filter(Boolean)
+    : roll;
+  return pool.filter((it) => !archiveShas.has(it.sha256));
 }
 
 function isKeep(id) {
@@ -605,6 +620,12 @@ function monthKey(it) {
   return it.mtime ? new Date(it.mtime * 1000).toISOString().slice(0, 7) : 'undated';
 }
 
+/** Items in one month group of the active roll view — scoped to the category,
+    so a month checkbox in "Not backed up" never grabs archived siblings. */
+function monthItems(month) {
+  return itemsFor(activeCat).filter((it) => monthKey(it) === month);
+}
+
 /** id → item across BOTH the flag list and the whole roll. */
 function allById() {
   const m = new Map(roll.map((it) => [it.id, it]));
@@ -644,8 +665,8 @@ function renderReview() {
   panel.innerHTML = `
     ${statusStripDiv()}
     <div class="media-actionbar">
-      <button class="media-cta ghost" id="backup-btn">💾 Back up all…</button>
-      <button class="media-cta" id="apply-btn">Remove…</button>
+      <button class="media-cta ghost" id="backup-btn">💾 Backup</button>
+      <button class="media-cta" id="apply-btn">🗑 Remove</button>
       <button class="media-cta ghost" id="back-btn">↻ Sync</button>
       <span class="abar-meta"><span id="sel-count"></span>
         ${wirelessSummary()}
@@ -664,8 +685,10 @@ function renderReview() {
     if (await confirmRemoveDialog(selected)) removeInline(new Set(selected));
   };
   document.getElementById('backup-btn').onclick = async () => {
-    const r = await confirmBackupDialog();
-    if (r) backupRollInline(r.dest);
+    const targets = backupTargets();
+    if (!targets.length) return;  // button is disabled in this state
+    const r = await confirmBackupDialog(targets);
+    if (r) backupInline(targets, r.dest);
   };
   renderCategoryPane();
   updateSelbar();
@@ -1232,6 +1255,7 @@ function renderCategoryPane() {
 
   const hint = activeCat === 'all'
     ? 'suggested = duplicates (best kept), blurry, dark, exact copies on Mac · check months below for a time range'
+    : activeCat === 'not_backed' ? 'no archive copy yet — check what you want, then Backup (top)'
     : activeCat === 'dupe' ? 'unchecked = kept on phone'
     : activeCat === 'on_mac' ? 'verified Mac copies (backup or ~/Pictures) are safe to remove from the phone'
     : activeCat === 'queued' ? 'the iPhone deletes these next time Linggen opens there — still cancellable'
@@ -1256,12 +1280,20 @@ function renderCategoryPane() {
       <button class="media-cta ghost" style="margin:0;padding:3px 10px;font-size:11.5px" id="old-shots-btn">select older than 6 months</button></div>`;
   }
 
-  if (activeCat === 'all') {
+  if (activeCat === 'not_backed') {
+    html += `<div class="media-dim" style="margin-bottom:8px"><b>These have no verified archive copy yet</b> —
+      Backup (top) copies them and skips everything already archived. Back up before removing anything
+      that lives only on the phone.</div>`;
+  }
+
+  if (ROLL_CATS.has(activeCat)) {
     if (!roll.length) {
       html += `<div class="media-dim">Loading the camera roll…</div>`;
+    } else if (!items.length) {
+      html += `<div class="media-dim">Nothing here — every item has a verified backup copy.</div>`;
     } else {
       const months = new Map();
-      for (const it of roll) {
+      for (const it of items) {
         const key = monthKey(it);
         if (!months.has(key)) months.set(key, []);
         months.get(key).push(it);
@@ -1303,10 +1335,7 @@ function renderCategoryPane() {
       if (e.target.checked) selected.add(thumbEl.dataset.id); else selected.delete(thumbEl.dataset.id);
       if (activeCat === 'dupe') thumbEl.classList.toggle('kept', !e.target.checked);
       const mBox = thumbEl.closest('.media-group')?.querySelector('.month-sel');
-      if (mBox) {
-        mBox.checked = roll.filter((x) => monthKey(x) === mBox.dataset.month)
-          .every((x) => selected.has(x.id));
-      }
+      if (mBox) mBox.checked = monthItems(mBox.dataset.month).every((x) => selected.has(x.id));
       updateSelbar();
       updateCatbar();
     };
@@ -1328,7 +1357,7 @@ function renderCategoryPane() {
   }
   for (const box of pane.querySelectorAll('.month-sel')) {
     box.onchange = () => {
-      for (const it of roll.filter((x) => monthKey(x) === box.dataset.month)) {
+      for (const it of monthItems(box.dataset.month)) {
         if (box.checked) selected.add(it.id); else selected.delete(it.id);
       }
       renderCategoryPane();
@@ -1477,10 +1506,11 @@ function confirmRemoveDialog(ids) {
   });
 }
 
-/** Whole-roll archive to long-term storage — copy-only, never touches the
+/** Archive `targets` to long-term storage — copy-only, never touches the
     phone (removal is its own verb). Resolves {dest} or null. */
-async function confirmBackupDialog() {
-  const rollBytes = roll.reduce((s, it) => s + it.size, 0);
+async function confirmBackupDialog(targets) {
+  const bytes = targets.reduce((s, it) => s + it.size, 0);
+  const scope = selected.size ? 'Checked items not backed up yet' : 'Everything not backed up yet';
   let volumes = await media('volumes');
   if (!Array.isArray(volumes)) volumes = [];
   const saved = (await media('get-dest')).dest || '';
@@ -1495,16 +1525,16 @@ async function confirmBackupDialog() {
     box.className = 'media-lightbox';
     box.innerHTML = `
       <div class="media-confirm">
-        <div><b>Back up the whole camera roll — ${roll.length.toLocaleString()} items · ${fmtGb(rollBytes)}</b></div>
+        <div><b>Back up ${targets.length.toLocaleString()} item${targets.length === 1 ? '' : 's'} · ${fmtGb(bytes)}</b></div>
         <div class="media-dim" style="margin-top:6px">
-          Copies are sorted by year/month and every copy is re-hash verified. Backups never expire
-          and nothing is deleted from the iPhone — remove is its own step.
+          ${scope} — already-archived items are skipped. Copies are sorted by year/month and
+          re-hash verified, never expire, and nothing is deleted from the iPhone.
         </div>
         <label class="media-dim" style="display:block;margin-top:12px">Destination
           <select id="cf-dest" style="display:block;width:100%;margin-top:4px">${opts}</select></label>
         <div class="row">
           <button class="media-cta ghost sm" id="cf-no">Cancel</button>
-          <button class="media-cta sm" id="cf-yes">Back up all</button>
+          <button class="media-cta sm" id="cf-yes">Back up ${targets.length.toLocaleString()}</button>
         </div>
       </div>`;
     const destSel = box.querySelector('#cf-dest');
@@ -1787,12 +1817,13 @@ async function removeInline(ids) {
   toast.done(`✓ Removed ${removed.toLocaleString()}${freed} · recoverable 30 days${errs}${icloud}`);
 }
 
-/** Archive the whole camera roll to Mac/external — inline progress toast,
-    copy-only (never touches the phone). Long-running but non-blocking. */
-async function backupRollInline(dest) {
+/** Archive `targets` to Mac/external — inline progress toast, copy-only
+    (never touches the phone). Long-running but non-blocking. */
+async function backupInline(targets, dest) {
   const freeBefore = statusCache.info?.mac_free_gb;
-  await media(`start backup-all ${dest ? shellEsc(dest) : '-'}`);
-  const toast = showToast('Backing up camera roll…', true);
+  await writeSelection(new Set(targets.map((it) => it.id)), 'backup-selection.json');
+  await media(`start backup ${dest ? shellEsc(dest) : '-'}`);
+  const toast = showToast(`Backing up ${targets.length.toLocaleString()}…`, true);
   stopPolling();
   await new Promise((resolve) => {
     const poll = async () => {
@@ -1807,7 +1838,7 @@ async function backupRollInline(dest) {
   refreshStatus();
   if (p.status === 'error') {
     toast.done(`✕ Backup failed — ${p.error || 'see logs'}`);
-    notify(`Whole-roll backup FAILED: ${p.error || 'unknown error'}. Tell the user in one sentence.`);
+    notify(`Backup FAILED: ${p.error || 'unknown error'}. Tell the user in one sentence.`);
     return;
   }
   const failed = p.failed ? ` · ${p.failed} failed` : '';
@@ -1827,7 +1858,7 @@ async function backupRollInline(dest) {
   const info = await media('info');
   const freeLine = freeBefore != null && info?.mac_free_gb != null
     ? ` Mac free space ${freeBefore} → ${info.mac_free_gb} GB.` : '';
-  notify(`Whole-roll backup finished: ${(p.verified ?? 0).toLocaleString()} files copied to ${p.dest || '~/Pictures/iPhone Backup'} and re-hash verified${p.failed ? `, ${p.failed} FAILED verification (their originals stay on the phone)` : ''}.${freeLine} Backups never expire. Report this to the user in 1-2 sentences.`);
+  notify(`Backup finished: ${(p.verified ?? 0).toLocaleString()} files copied to ${p.dest || '~/Pictures/iPhone Backup'} and re-hash verified${p.failed ? `, ${p.failed} FAILED verification (their originals stay on the phone)` : ''}.${freeLine} Backups never expire. Report this to the user in 1-2 sentences.`);
 }
 
 /** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
@@ -1875,18 +1906,23 @@ function updateSelbar() {
   let bytes = 0;
   for (const id of selected) bytes += byId.get(id)?.size || 0;
   el.innerHTML = `<b>${selected.size.toLocaleString()} selected · ${fmtGb(bytes)}</b>`;
+  // Both verbs act on the checked items and keep FIXED labels — the counts
+  // live in the meta line and the confirm sheet, never in churning button text.
   const btn = document.getElementById('apply-btn');
   if (btn) {
     btn.disabled = selected.size === 0;
-    btn.textContent = `🗑 Remove ${selected.size.toLocaleString()} selected (${fmtGb(bytes)})…`;
+    btn.title = selected.size ? `Remove ${selected.size.toLocaleString()} checked (${fmtGb(bytes)}) from the iPhone`
+      : 'Check items to remove them from the iPhone';
   }
   const bk = document.getElementById('backup-btn');
   if (bk) {
-    // backup is the whole-roll archive — independent of the removal selection
-    const rollBytes = roll.reduce((s, it) => s + it.size, 0);
-    bk.textContent = roll.length
-      ? `💾 Back up all ${roll.length.toLocaleString()} (${fmtGb(rollBytes)})`
-      : '💾 Back up all…';
+    const targets = backupTargets();
+    const tBytes = targets.reduce((s, it) => s + it.size, 0);
+    bk.disabled = targets.length === 0;
+    bk.title = targets.length
+      ? `Archive ${targets.length.toLocaleString()} item${targets.length === 1 ? '' : 's'} (${fmtGb(tBytes)})`
+        + `${selected.size ? ' — the checked items still missing a copy' : ' — everything not backed up yet'}`
+      : selected.size ? 'Everything checked is already backed up' : 'Everything is backed up';
   }
 }
 
@@ -1903,8 +1939,10 @@ async function writeJsonFile(name, obj) {
   await bash(`printf '\\n' >> "${DATA_DIR}/${name}"`);
 }
 
-function writeSelection(ids) {
-  return writeJsonFile('selection.json', { ids: [...ids] });
+/** Remove reads selection.json, backup reads backup-selection.json — separate
+    files so a removal can't rewrite a running backup's work-list. */
+function writeSelection(ids, name = 'selection.json') {
+  return writeJsonFile(name, { ids: [...ids] });
 }
 
 document.addEventListener('DOMContentLoaded', initMediaTab);

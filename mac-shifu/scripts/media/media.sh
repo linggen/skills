@@ -95,7 +95,7 @@ case "$cmd" in
     echo "{\"started\":\"setup\",\"pid\":$!}"
     ;;
   start)
-    # start scan-all | index | offload <selection.json> <dest|-> <del 0|1> | remove-trash
+    # start scan-all | index | scan | backup <dest|-> | remove-trash
     require_venv
     op="${1:-scan-all}"; shift || true
     case "$op" in
@@ -112,34 +112,20 @@ case "$cmd" in
         printf '%s\n' '{"op":"scan","status":"running","phase":"starting"}' >"$DATA/progress.json"
         nohup "$PY" "$PIPELINE" scan >"$DATA/op.log" 2>&1 &
         ;;
-      offload)
-        # backup (+ verify) to dest, then delete the verified set from the phone
-        sel="${1:--}"; dest="${2:--}"; del="${3:-1}"
-        [ "$sel" = "-" ] && sel="$DATA/selection.json"
-        backup_cmd="'$PY' '$PIPELINE' backup --selection '$sel'"
-        if [ "$dest" != "-" ]; then
-          dest_esc=$(printf %s "$dest" | sed "s/'/'\\\\''/g")  # volume names can hold apostrophes
-          backup_cmd="$backup_cmd --dest '$dest_esc'"
-        fi
-        if [ "$del" = "1" ]; then
-          nohup bash -c "$backup_cmd && '$PY' '$PIPELINE' remove --confirm" >"$DATA/op.log" 2>&1 &
-        else
-          nohup bash -c "$backup_cmd" >"$DATA/op.log" 2>&1 &
-        fi
-        ;;
       remove-trash)
         # cleanup delete: staged copies move to the 30-day restore area.
         # reset progress first so a poller can't latch onto a prior op's 'done'
         printf '%s\n' '{"op":"remove","status":"running","phase":"starting"}' >"$DATA/progress.json"
         nohup "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1 &
         ;;
-      backup-all)
-        # archive the WHOLE camera roll (manifest) to dest — copy-only, no delete
+      backup)
+        # archive selection.json to dest — copy-only, never deletes. The UI
+        # writes the work-list (checked items, else everything unarchived).
         dest="${1:--}"
         printf '%s\n' '{"op":"backup","status":"running","phase":"starting"}' >"$DATA/progress.json"
-        cmd="'$PY' '$PIPELINE' backup --all"
+        cmd="'$PY' '$PIPELINE' backup --selection '$DATA/backup-selection.json'"
         if [ "$dest" != "-" ]; then
-          dest_esc=$(printf %s "$dest" | sed "s/'/'\\\\''/g")
+          dest_esc=$(printf %s "$dest" | sed "s/'/'\\\\''/g")  # volume names can hold apostrophes
           cmd="$cmd --dest '$dest_esc'"
         fi
         nohup bash -c "$cmd" >"$DATA/op.log" 2>&1 &
