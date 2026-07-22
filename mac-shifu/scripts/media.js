@@ -1473,6 +1473,23 @@ async function deleteInLightbox(id) {
   const cap = document.querySelector('#media-lightbox .lb-cap');
   const delBtn = document.getElementById('lb-mark');
   if (!cap || !delBtn) return;
+  // Wireless-synced photo → queue for on-phone PhotoKit deletion (no AFC).
+  const it = allById().get(id);
+  if (it?.phone_path?.startsWith('wireless/')) {
+    try {
+      const res = await fetch('/api/media/request-delete', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ localIds: [it.phone_path.slice(9)] }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      cap.insertAdjacentHTML('afterbegin',
+        '<span class="media-chip">queued — deletes on the iPhone when Linggen opens there</span> ');
+    } catch (e) {
+      cap.insertAdjacentHTML('afterbegin', `<span class="media-chip bad">${esc(`queue failed — ${e.message || e}`)}</span> `);
+    }
+    return;
+  }
   delBtn.disabled = true;
   delBtn.textContent = 'Removing…';
   const res = await media(`remove-one ${id}`);
@@ -1508,6 +1525,36 @@ function pruneSelected() {
 /** Bulk trash-remove, inline — no apply screen, no report card. Shows a
     progress toast, refreshes the grid in place, then a result toast. */
 async function removeInline(ids) {
+  // Wireless-synced items can't be touched over AFC — queue them for the
+  // phone to delete via PhotoKit (its system confirm is the gate); the cache
+  // row stays until reconcile sees the photo gone. USB items keep the
+  // pipeline's trash path.
+  const byId = allById();
+  const wireless = [];
+  const rest = new Set();
+  for (const id of ids) {
+    const it = byId.get(id);
+    if (it?.phone_path?.startsWith('wireless/')) wireless.push(it.phone_path.slice(9));
+    else rest.add(id);
+  }
+  if (wireless.length) {
+    const t = showToast('Queueing phone deletions…', true);
+    try {
+      const res = await fetch('/api/media/request-delete', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ localIds: wireless }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      t.done(`✓ ${wireless.length.toLocaleString()} queued — the iPhone deletes them next time Linggen is open there`);
+      for (const id of ids) if (!rest.has(id)) selected.delete(id);
+      if (screen === 'review' && source === 'phone') renderReview();
+    } catch (e) {
+      t.done(`✕ Couldn't queue phone deletions — ${e.message || e}`);
+    }
+  }
+  if (!rest.size) return;
+  ids = rest;
   const n = ids.size;
   await writeSelection(ids);
   await media('start remove-trash');
