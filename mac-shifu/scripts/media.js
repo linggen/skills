@@ -464,6 +464,7 @@ function blurEligible(it) {
 
 function itemsFor(key) {
   if (key === 'all') return roll;
+  if (key === 'queued') return roll.filter(isQueued);
   if (key === 'on_mac') {
     // one bucket for "a copy exists on this Mac": organic ~/Pictures matches
     // (exact + probable, from the scan) ∪ hash-verified archive copies
@@ -618,8 +619,16 @@ function renderReview() {
     return `<button class="media-chip-f ${c.key === activeCat ? 'on' : ''}" data-cat="${c.key}">
       <b>${items.length.toLocaleString()}</b>${c.label}${size ? ` · ${fmtGb(size)}` : ''}</button>`;
   }).join('');
-  chips += `<span class="chip-divider"></span>
-    <button class="media-chip-f ${activeCat === 'removed' ? 'on' : ''}" data-cat="removed">
+  chips += '<span class="chip-divider"></span>';
+  // Waiting on the phone — its own chip so the whole queue is reviewable
+  // (and unqueueable) in one place, mirroring the phone's Mac-asks chip.
+  if (pendingDeletes.size) {
+    const queued = itemsFor('queued');
+    chips += `<button class="media-chip-f queued ${activeCat === 'queued' ? 'on' : ''}" data-cat="queued">
+      <b>${pendingDeletes.size.toLocaleString()}</b>⏳ Queued for iPhone${queued.length
+        ? ` · ${fmtGb(queued.reduce((s, it) => s + it.size, 0))}` : ''}</button>`;
+  }
+  chips += `<button class="media-chip-f ${activeCat === 'removed' ? 'on' : ''}" data-cat="removed">
     <b>${removals.length.toLocaleString()}</b>🕘 Removed · ${fmtGb(removals.reduce((s, r) => s + (r.size || 0), 0))}</button>`;
   panel.innerHTML = `
     ${statusStripDiv()}
@@ -1193,10 +1202,13 @@ function renderCategoryPane() {
     ? 'suggested = duplicates (best kept), blurry, dark, exact copies on Mac · check months below for a time range'
     : activeCat === 'dupe' ? 'unchecked = kept on phone'
     : activeCat === 'on_mac' ? 'verified Mac copies (backup or ~/Pictures) are safe to remove from the phone'
+    : activeCat === 'queued' ? 'the iPhone deletes these next time Linggen opens there — still cancellable'
     : 'checks follow you across filters — Remove (top) takes everything checked';
   html += `<div class="catbar">
     <button class="media-cta ghost sm" id="cat-select-btn"></button>
     <button class="media-cta ghost sm" id="cat-clear-btn">Clear</button>
+    ${activeCat === 'queued'
+      ? '<button class="media-cta ghost sm" id="unqueue-all-btn">Unqueue all</button>' : ''}
     <span class="media-dim">${hint}</span></div>`;
 
   if (activeCat === 'blurry') {
@@ -1310,6 +1322,22 @@ function renderCategoryPane() {
     renderCategoryPane();
     updateSelbar();
   };
+  const unqueueAll = document.getElementById('unqueue-all-btn');
+  if (unqueueAll) {
+    unqueueAll.onclick = async () => {
+      unqueueAll.disabled = true;
+      const t = showToast('Cancelling queued deletions…', true);
+      try {
+        await setQueued([...pendingDeletes], true);
+        activeCat = 'all';
+        renderReview();
+        t.done('✓ Queue cleared — nothing pending on the iPhone');
+      } catch (e) {
+        unqueueAll.disabled = false;
+        t.done(`✕ Couldn't clear the queue — ${e.message || e}`);
+      }
+    };
+  }
   updateCatbar();
   const blurRange = document.getElementById('blur-range');
   if (blurRange) {

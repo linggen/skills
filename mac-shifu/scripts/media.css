@@ -196,6 +196,14 @@
   color: var(--text);
 }
 .media-chip-f.on b { color: var(--accent); }
+
+/* Pending on the phone — amber, matching the tile tag and the lightbox pill. */
+.media-chip-f.queued { border-color: var(--warning); color: var(--warning); }
+.media-chip-f.queued b { color: var(--warning); }
+.media-chip-f.queued.on {
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  color: var(--text);
+}
 .chip-divider { width: 1px; align-self: stretch; background: var(--border); margin: 2px 4px; }
 
 /* review tiles (Mac source still uses these) */
