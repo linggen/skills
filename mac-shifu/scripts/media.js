@@ -218,14 +218,57 @@ async function showConnect() {
     panel.innerHTML = `
       <div class="media-card dashed" id="device-card">
         <h4 class="media-dim">Looking for your iPhone…</h4>
-        <div class="media-dim">Plug in your iPhone with a cable, unlock it, and tap <b>Trust</b> when it asks.</div>
+        <div class="media-dim">Wirelessly via Linggen Mobile, or over a cable for the USB workflow.</div>
       </div>
+      <div class="media-card" id="phone-card" hidden></div>
       <div class="media-card" id="mac-card" hidden></div>
       <div class="media-card" id="setup-card" hidden></div>`;
   });
   const poll = () => refreshDevice();
   poll();
   pollTimer = setInterval(poll, 5000);
+}
+
+/** The wireless half of "is a phone here?" — paired devices and what they
+    already sent. Without this the connect screen only knows about cables and
+    claims "no iPhone" while Linggen Mobile is paired and syncing. */
+async function renderPhoneCard() {
+  const el = document.getElementById('phone-card');
+  if (!el) return;
+  let paired = [];
+  try {
+    const res = await fetch('/api/pair/info');
+    if (res.ok) paired = (await res.json()).devices || [];
+  } catch { /* daemon unreachable — leave the card hidden */ }
+  const rows = await loadJsonl('manifest.jsonl');
+  const wireless = rows.filter((r) => (r.path || '').startsWith('wireless/'));
+  const size = wireless.reduce((s, r) => s + (r.size || 0), 0);
+  el.hidden = false;
+  if (!paired.length) {
+    el.className = 'media-card dashed';
+    el.innerHTML = `
+      <h4 class="media-dim">📱 No phone paired</h4>
+      <div class="media-dim">Linggen Mobile syncs photos over Wi-Fi — no cable. Pair it in
+        <b>Settings → Phone</b>, then open Linggen on the phone.</div>`;
+    return;
+  }
+  const names = paired.map((d) => esc(d.name)).join(', ');
+  el.className = 'media-card';
+  el.innerHTML = `
+    <h4>📱 ${names} <span class="media-chip">paired</span></h4>
+    ${wireless.length
+      ? `<div class="media-dim"><b>${wireless.length.toLocaleString()}</b> items synced wirelessly · ${fmtGb(size)}</div>`
+      : ''}
+    <div class="media-dim">Open Linggen on the phone to sync what’s new — no cable needed.</div>
+    ${wireless.length ? '<button class="media-cta" id="phone-review-btn">Review synced photos</button>' : ''}`;
+  const btn = document.getElementById('phone-review-btn');
+  if (btn) {
+    btn.onclick = async () => {
+      flags = await media('flags');
+      await Promise.all([loadRoll(), loadRemovals(), loadArchive(), loadPendingDeletes()]);
+      showReview();
+    };
+  }
 }
 
 async function refreshDevice() {
@@ -260,6 +303,7 @@ async function refreshDevice() {
     return;
   }
   setupCard.hidden = true;
+  await renderPhoneCard();
 
   if (macCard) {
     const idx = st?.mac_index;
@@ -277,8 +321,8 @@ async function refreshDevice() {
   if (!info.connected) {
     card.className = 'media-card dashed';
     card.innerHTML = `
-      <h4 class="media-dim">No iPhone detected</h4>
-      <div class="media-dim">Plug in your iPhone with a cable, unlock it, and tap <b>Trust</b> when it asks. Checking every few seconds…</div>`;
+      <h4 class="media-dim">🔌 No iPhone on USB</h4>
+      <div class="media-dim">Only needed for the cable workflow — plug in, unlock, and tap <b>Trust</b>. Checking every few seconds…</div>`;
     return;
   }
 
