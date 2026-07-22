@@ -112,12 +112,19 @@ function statusStripHtml() {
   const dev = (info?.connected ? info : null) || st?.device;
   const photos = info?.photos_gb ?? st?.pull?.dcim_gb;
   const idx = st?.mac_index;
+  // A paired phone IS connected — over Wi-Fi. Only call it disconnected when
+  // neither transport is there.
   const conn = info?.connected
     ? '<span class="media-chip">USB connected</span>'
-    : '<span class="media-chip warn">not connected</span>';
+    : pairedDevices.length
+      ? '<span class="media-chip">Wi-Fi paired</span>'
+      : '<span class="media-chip warn">not connected</span>';
+  const wirelessName = pairedDevices.map((d) => d.name).find(Boolean);
   const phone = dev
     ? `📱 <b>${esc(dev.name || 'iPhone')}</b> · ${dev.free_gb ?? '?'} GB free of ${dev.total_gb ?? '?'} GB${photos != null ? ` · camera roll ${photos} GB` : ''} ${conn}`
-    : '📱 <span class="media-dim">no iPhone seen yet</span>';
+    : wirelessName
+      ? `📱 <b>${esc(wirelessName)}</b> ${conn}`
+      : '📱 <span class="media-dim">no iPhone seen yet</span>';
   const mac = `💻 <b>This Mac</b> · ${info?.mac_free_gb ?? '?'} GB free${idx ? ` · photo index ${(idx.files ?? 0).toLocaleString()} files · ${idx.gb ?? '?'} GB` : ''}`;
   // On the review screen the two halves ARE the source tabs
   if (screen === 'review') {
@@ -145,7 +152,9 @@ function wireStatusStrip() {
 
 async function refreshStatus() {
   const queuedBefore = [...pendingDeletes].sort().join();
-  const [info, st] = await Promise.all([media('info'), media('state'), loadPendingDeletes()]);
+  const [info, st] = await Promise.all([
+    media('info'), media('state'), loadPendingDeletes(), loadPairedDevices(),
+  ]);
   statusCache = { info, st };
   const el = document.getElementById('media-status');
   if (el) el.innerHTML = statusStripHtml();
@@ -235,11 +244,8 @@ async function showConnect() {
 async function renderPhoneCard() {
   const el = document.getElementById('phone-card');
   if (!el) return;
-  let paired = [];
-  try {
-    const res = await fetch('/api/pair/info');
-    if (res.ok) paired = (await res.json()).devices || [];
-  } catch { /* daemon unreachable — leave the card hidden */ }
+  await loadPairedDevices();
+  const paired = pairedDevices;
   const rows = await loadJsonl('manifest.jsonl');
   const wireless = rows.filter((r) => (r.path || '').startsWith('wireless/'));
   const size = wireless.reduce((s, r) => s + (r.size || 0), 0);
@@ -513,10 +519,21 @@ async function loadArchive() {
     the phone's reconcile drains it once the deletion really happened. */
 let pendingDeletes = new Set();
 
+/** Phones paired over Wi-Fi — the other half of "is a device here?" next to
+    the USB probe. Refreshed with the status strip. */
+let pairedDevices = [];
+
 async function loadPendingDeletes() {
   try {
     const r = await fetch('/api/media/pending-deletes');
     if (r.ok) pendingDeletes = new Set((await r.json()).localIds || []);
+  } catch { /* daemon unreachable — keep last known */ }
+}
+
+async function loadPairedDevices() {
+  try {
+    const r = await fetch('/api/pair/info');
+    if (r.ok) pairedDevices = (await r.json()).devices || [];
   } catch { /* daemon unreachable — keep last known */ }
 }
 
