@@ -1078,7 +1078,10 @@ async function openMacLightbox(path) {
   // Archive copies can be trashed too — the confirm says what that costs,
   // macOS Trash keeps them recoverable, and the ledger row goes with them.
   const delBtn = document.getElementById('lb-mark');
-  delBtn.textContent = r.archive ? '🗑 Trash backup copy' : '🗑 Move to Trash';
+  delBtn.textContent = '🗑 Delete';
+  delBtn.title = r.archive
+    ? 'Move this backup copy to the macOS Trash'
+    : 'Move this file to the macOS Trash';
   delBtn.onclick = async () => {
     if (await trashPaths([path])) {
       closeLightbox();
