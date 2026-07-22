@@ -938,6 +938,13 @@ def cmd_trash(args):
     gone = set(trashed)
     rows = [r for r in load_jsonl(MAC_INDEX) if r['path'] not in gone]
     MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
+    # An archive copy that just went to the Trash is no longer a backup — drop
+    # its ledger row, or "backed up" (and the phone's delete gate) would lie.
+    ledger_path = DATA_DIR / 'archive.jsonl'
+    ledger = load_jsonl(ledger_path)
+    kept = [r for r in ledger if r.get('dest') not in gone]
+    if len(kept) != len(ledger):
+        ledger_path.write_text(''.join(json.dumps(r) + '\n' for r in kept))
     update_state(mac_index={'files': len(rows),
                             'gb': round(sum(r['size'] for r in rows) / 1e9, 1),
                             'at': datetime.now().isoformat(timespec='seconds')})

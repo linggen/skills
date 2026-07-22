@@ -951,22 +951,36 @@ function updateMacSelbar() {
 }
 
 async function trashPaths(rawPaths) {
+  // Archive copies live in the ledger, not mac-index — include them so a
+  // backup file can be pruned too (the pipeline drops its ledger row, so
+  // "backed up" never outlives the file).
   const byPath = new Map(macIndex.map((r) => [r.path, r]));
-  const paths = rawPaths.filter((p) => byPath.has(p));
+  const archived = new Map(archiveRows.map((r) => [r.dest, r]));
+  const paths = rawPaths.filter((p) => byPath.has(p) || archived.has(p));
   if (!paths.length) return false;
-  const bytes = paths.reduce((s, p) => s + (byPath.get(p)?.size || 0), 0);
+  const fromArchive = paths.filter((p) => !byPath.has(p) && archived.has(p));
+  const bytes = paths.reduce(
+    (s, p) => s + (byPath.get(p)?.size || archived.get(p)?.size || 0), 0);
   const ok = await confirmDialog(
     `<b>${paths.length.toLocaleString()} file${paths.length === 1 ? '' : 's'} (${fmtGb(bytes)})</b>
-     will be moved to the macOS Trash. You can restore them from the Trash anytime.`, 'Move to Trash');
+     will be moved to the macOS Trash. You can restore them from the Trash anytime.
+     ${fromArchive.length
+       ? `<br><br>${fromArchive.length.toLocaleString()} of them
+          ${fromArchive.length === 1 ? 'is a backup copy' : 'are backup copies'}
+          of your iPhone photos — removing
+          ${fromArchive.length === 1 ? 'it' : 'them'} means those photos count as
+          <b>not backed up</b> again.`
+       : ''}`, 'Move to Trash');
   if (!ok) return false;
   const btn = document.getElementById('mac-trash-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Moving to Trash…'; }
-  const sizes = Object.fromEntries(paths.map((p) => [p, byPath.get(p)?.size || 0]));
+  const sizes = Object.fromEntries(paths.map(
+    (p) => [p, byPath.get(p)?.size || archived.get(p)?.size || 0]));
   await writeJsonFile('trash-selection.json', { paths, sizes });
-  const res = await media('trash');
+  await media('trash');
   for (const p of paths) macSelected.delete(p);
   macGroupsCache = null;
-  await loadMacIndex();
+  await Promise.all([loadMacIndex(), loadArchive()]);
   refreshStatus();
   return true;
 }
@@ -1061,18 +1075,16 @@ async function openMacLightbox(path) {
   document.getElementById('lb-prev').onclick = () => openMacLightbox(lbOrder[lbIdx - 1]);
   document.getElementById('lb-next').onclick = () => openMacLightbox(lbOrder[lbIdx + 1]);
   document.getElementById('lb-open').onclick = () => bash(`open -R ${shellEsc(path)}`);
+  // Archive copies can be trashed too — the confirm says what that costs,
+  // macOS Trash keeps them recoverable, and the ledger row goes with them.
   const delBtn = document.getElementById('lb-mark');
-  if (r.archive) {
-    delBtn.remove();  // the archive is the recovery guarantee — never trashed here
-  } else {
-    delBtn.textContent = '🗑 Move to Trash';
-    delBtn.onclick = async () => {
-      if (await trashPaths([path])) {
-        closeLightbox();
-        if (screen === 'review' && source === 'mac') renderMacReview();
-      }
-    };
-  }
+  delBtn.textContent = r.archive ? '🗑 Trash backup copy' : '🗑 Move to Trash';
+  delBtn.onclick = async () => {
+    if (await trashPaths([path])) {
+      closeLightbox();
+      if (screen === 'review' && source === 'mac') renderMacReview();
+    }
+  };
   const slot = box.querySelector('.lb-media');
   if (VIDEO_RE.test(path)) {
     // hard-link ~/Pictures video into the served dir so it plays in-page;
