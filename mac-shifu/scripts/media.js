@@ -300,7 +300,7 @@ async function refreshDevice() {
       <span><span class="sw" style="background:color-mix(in srgb, var(--accent) 40%, var(--bg-surface))"></span>${knowsPhotos ? 'Apps &amp; system' : 'Used'} <b>${other.toFixed(1)} GB</b></span>
       <span><span class="sw" style="background:var(--bg-surface);border:1px solid var(--border)"></span>Free <b>${free} GB</b></span>
     </div>
-    <button class="media-cta" id="scan-btn">Scan Photos &amp; Videos</button>`;
+    <button class="media-cta" id="scan-btn">Sync Photos &amp; Videos</button>`;
   document.getElementById('scan-btn').onclick = startScan;
 }
 
@@ -535,7 +535,7 @@ function renderReview() {
     <div class="media-actionbar">
       <button class="media-cta ghost" id="backup-btn">💾 Back up all…</button>
       <button class="media-cta" id="apply-btn">Remove…</button>
-      <button class="media-cta ghost" id="back-btn">↻ Rescan</button>
+      <button class="media-cta ghost" id="back-btn">↻ Sync</button>
       <span class="abar-meta"><span id="sel-count"></span>
         <span class="media-dim">removals recoverable on this Mac for 30 days</span></span>
     </div>
