@@ -283,6 +283,12 @@ label.glabel { display: flex; align-items: center; gap: 7px; cursor: pointer; wi
 
 .media-thumb .tag.cut { background: var(--text-muted); }
 
+/* Mirrored on the Mac, not yet archived — quieter than "backed up". */
+.media-thumb .tag.synced {
+  background: color-mix(in srgb, var(--success) 30%, var(--bg-card));
+  color: #fff;
+}
+
 /* Queued for on-phone deletion: the photo steps back, the amber tag says why. */
 .media-thumb .tag.queued { background: var(--warning); color: #1c1917; }
 .media-thumb.queued img { opacity: 0.45; }

@@ -1113,10 +1113,15 @@ function thumbHtml(it, checked) {
   const archived = archiveShas.has(it.sha256);
   const probably = activeCat === 'on_mac' && !it.flags.includes('on_mac') && !archived;
   const queued = isQueued(it);
+  // Same vocabulary as the phone: backed up = an archive copy exists;
+  // synced = the phone mirrored it here but it isn't archived yet.
+  const wireless = (it.phone_path || '').startsWith('wireless/');
   const tag = queued ? '<span class="tag queued" title="Deletes on the iPhone when Linggen opens there">⏳ queued</span>'
     : activeCat === 'dupe' ? '<span class="tag keep-tag">★ KEEP</span>'
     : probably ? '<span class="tag cut">probably</span>'
-    : activeCat === 'on_mac' ? `<span class="tag">${archived ? '💾 backed up' : 'on Mac ✓'}</span>` : '';
+    : archived ? '<span class="tag">backed up</span>'
+    : activeCat === 'on_mac' ? '<span class="tag">on Mac ✓</span>'
+    : wireless ? '<span class="tag synced">synced</span>' : '';
   return `<div class="media-thumb ${vid ? 'vid' : ''} ${kept ? 'kept' : ''} ${queued ? 'queued' : ''}" data-id="${it.id}">
     ${img}${vid ? '<span class="play">▶</span>' : ''}
     <input type="checkbox" ${checked ? 'checked' : ''} aria-label="remove">
