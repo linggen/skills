@@ -442,7 +442,11 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
       cadence_days: Math.round(monthlyish.reduce((a, b) => a + b, 0) / monthlyish.length),
       first_amount: round2(first), last_amount: round2(last),
       prior_amount: prior != null ? round2(prior) : null,
-      increased: last > first + 0.01, increase_amount: round2(last - first),
+      // A hike is the LATEST bill rising above the PREVIOUS one. Comparing to the
+      // all-time first charge falsely flags a promo/partial first month (a $1
+      // trial then a steady $8 is not a $7 hike). `prior` is the charge before last.
+      increased: prior != null && last > prior + 0.01,
+      increase_amount: round2(prior != null ? last - prior : 0),
       first_date: firstChargeDate,
       last_date: lastChargeDate,
       charges: items.length,

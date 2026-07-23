@@ -1337,7 +1337,7 @@ function commitDerived(it) {
       lines.push(`Market: <b>${MARKET.rate}%</b> ${esc(MARKET.label)} (${esc(MARKET.source)}, ${esc(MARKET.date)}) — your ${it.rate_pct}% is ${above ? '<span class="cm-warn">above the posted average — strong case to rate-shop</span>' : 'below the posted average (posted runs higher than negotiated)'}`);
     }
   }
-  if (it.increased) lines.push(`<span class="cm-warn">↑ Price creep: ${moneyExact(it.first_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo since first seen)</span>`);
+  if (it.increased) lines.push(`<span class="cm-warn">↑ Price creep: ${moneyExact(it.prior_amount)} → ${moneyExact(it.last_amount)} (+${moneyExact(it.increase_amount)}/mo)</span>`);
   return lines;
 }
 
@@ -1912,7 +1912,7 @@ function announceImport(results) {
   if (LAST_VIEW) {
     const hike = (LAST_VIEW.subscriptions || []).find((s) => s.active && !s.essential && s.increased);
     const missed = (LAST_VIEW.payment_schedule || []).find((p) => p.missed_in_data);
-    if (hike) msg += `\n\nHeads-up: ${hike.merchant} went up ${moneyExact(hike.first_amount)} → ${moneyExact(hike.last_amount)} (+${moneyExact(hike.increase_amount)}/mo).`;
+    if (hike) msg += `\n\nHeads-up: ${hike.merchant} went up ${moneyExact(hike.prior_amount)} → ${moneyExact(hike.last_amount)} (+${moneyExact(hike.increase_amount)}/mo).`;
     else if (missed) msg += `\n\n⚠ ${missed.label}: I'd expect a payment around ${missed.next_expected}, but it isn't in your data yet.`;
   }
   // Proactive tier 2: new data is the one moment insights actually change.
