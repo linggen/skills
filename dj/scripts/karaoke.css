@@ -38,6 +38,13 @@ body {
     linear-gradient(160deg, #0b0c12, #07080c);
 }
 .stage.audio .kbg { display: block; }
+/* Album-art backdrop: cover the stage, heavily blurred + dimmed so lyrics stay
+   legible; overscan hides the blur's soft edges. Set inline by setBackdrop(). */
+.kbg.has-art {
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+  filter: blur(48px) brightness(.42) saturate(1.15);
+  transform: scale(1.18);
+}
 
 /* ── big synced lyrics (audio mode) ── */
 .klyrics {
@@ -58,7 +65,9 @@ body {
 /* When the up-next drawer is open, keep the stage chrome clear of it (drawer = 320px). */
 .stage.queue-open .ktop { right: 320px; }
 .stage.queue-open .kctrl,
-.stage.queue-open .kmix { left: calc(50% - 160px); }
+.stage.queue-open .kmix,
+.stage.queue-open .kprog,
+.stage.queue-open .koffset { left: calc(50% - 160px); }
 .stage.queue-open .klyrics { transform: translateX(-160px); }
 .stage.queue-open .kv { width: calc(100% - 320px); }
 
@@ -73,6 +82,14 @@ body {
 .ktitle { flex: 1; text-align: center; font-size: 15px; color: #c8cdd8; }
 .ktitle b { color: #fff; }
 .ktitle span { color: #8a93a6; margin-left: 8px; }
+/* which audio is playing — instrumental vs the original, under the title.
+   Scoped to .ktitle so it outranks the generic `.ktitle span` colour/margin. */
+.ktitle .ksrc {
+  display: inline-block; margin: 6px 0 0; font-size: 11px; font-weight: 600;
+  padding: 2px 10px; border-radius: 999px; letter-spacing: .2px;
+}
+.ktitle .ksrc.src-karaoke { color: var(--hot); background: rgba(255, 212, 77, .14); border: 1px solid rgba(255, 212, 77, .35); }
+.ktitle .ksrc.src-original { color: #aeb6c4; background: #ffffff12; border: 1px solid #ffffff1f; }
 
 /* ── transport controls ── */
 .kctrl {
@@ -157,6 +174,51 @@ body {
   text-shadow: 0 6px 60px rgba(255, 212, 77, .35); pointer-events: none;
 }
 .kcount.hidden { display: none; }
+
+/* ── fetch progress pill + lyric-offset badge ── */
+.kprog {
+  position: absolute; left: 50%; bottom: 100px; transform: translateX(-50%); z-index: 8;
+  display: flex; align-items: center; gap: 10px;
+  background: #11131bee; border: 1px solid #ffffff1f; color: #e7e9ee;
+  padding: 10px 16px; border-radius: 10px; font-size: 13px;
+}
+.kspin {
+  width: 14px; height: 14px; border-radius: 50%; flex: none;
+  border: 2px solid #ffffff33; border-top-color: var(--hot); animation: kspin .8s linear infinite;
+}
+@keyframes kspin { to { transform: rotate(360deg); } }
+.koffset {
+  position: absolute; left: 50%; top: 70px; transform: translateX(-50%); z-index: 8;
+  background: #11131bee; border: 1px solid #ffffff1f; color: var(--hot);
+  padding: 6px 12px; border-radius: 999px; font-size: 13px; font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* ── version switcher (original / karaoke audio / karaoke video) ── */
+.ksrcpanel {
+  position: absolute; right: 20px; bottom: 92px; z-index: 6;
+  display: flex; flex-direction: column; gap: 6px; width: 260px;
+  padding: 8px; border-radius: 14px;
+  background: #11131bee; backdrop-filter: blur(12px); border: 1px solid #ffffff1f;
+}
+.stage.queue-open .ksrcpanel { right: 340px; }
+.ksrc-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  appearance: none; cursor: pointer; padding: 10px 12px; border-radius: 10px;
+  background: #ffffff08; border: 1px solid transparent; color: #e7e9ee; font: inherit;
+}
+.ksrc-opt:hover { background: #ffffff16; }
+.ksrc-opt.on { background: rgba(255, 212, 77, .12); border-color: rgba(255, 212, 77, .35); }
+.ksrc-opt:disabled { cursor: default; }
+.ksrc-ic { font-size: 18px; flex: none; }
+.ksrc-lbl { flex: 1; min-width: 0; line-height: 1.25; }
+.ksrc-lbl b { display: block; font-size: 13px; font-weight: 600; }
+.ksrc-lbl small { color: #8a93a6; font-size: 11px; }
+.ksrc-act { flex: none; font-size: 11px; color: #8a93a6; display: inline-flex; align-items: center; gap: 6px; }
+.ksrc-opt.on .ksrc-act { color: var(--hot); }
+.ksrc-opt.busy { background: rgba(255, 212, 77, .08); }
+.ksrc-opt.busy .ksrc-act { color: var(--hot); }
+.ksrc-act .kspin { width: 12px; height: 12px; }
 
 /* ── up-next drawer ── */
 .kqueue {

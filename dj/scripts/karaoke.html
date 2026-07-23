@@ -15,6 +15,8 @@
     <div id="bg" class="kbg"></div>
     <div id="lyrics" class="klyrics" aria-live="polite"></div>
     <div id="countdown" class="kcount hidden"></div>
+    <div id="kprog" class="kprog hidden"></div>
+    <div id="koffset" class="koffset hidden"></div>
 
     <div class="ktop">
       <button id="back" class="kbtn" title="Back to library">← Library</button>
@@ -47,7 +49,7 @@
       <span id="dur" class="ktime">0:00</span>
       <button id="mixbtn" class="kbtn" title="Mic & mix">🎚 Mix</button>
       <button id="setupbtn" class="kbtn" title="Audio setup — mic & speaker">⚙ Audio</button>
-      <button id="getvid" class="kbtn" title="Find a karaoke video — lyrics on screen, vocals removed">🎬 Karaoke video</button>
+      <button id="srcbtn" class="kbtn" title="Switch version — original, karaoke audio, or karaoke video">🎛 Version</button>
       <button id="queue" class="kbtn" title="Up next">📋</button>
     </div>
 
@@ -70,6 +72,9 @@
         <div id="dev-hint" class="ksetup-hint hidden">Turn the mic on once to see device names.</div>
       </div>
     </div>
+
+    <!-- Version picker: original mp3 · karaoke audio · karaoke video. Opens from 🎛. -->
+    <div id="srcpanel" class="ksrcpanel hidden"></div>
 
     <div id="qdrawer" class="kqueue hidden"></div>
   </div>

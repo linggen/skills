@@ -60,6 +60,15 @@
   </div>
 
   <div class="field">
+    <label for="karaoke_source">Karaoke source</label>
+    <select id="karaoke_source">
+      <option value="audio">Audio — lighter, drag lyrics to sync</option>
+      <option value="video">Video — lyrics on screen, guaranteed in sync</option>
+    </select>
+    <div class="hint">Audio grabs a small instrumental MP3 and finds lyrics; video downloads the full karaoke clip. Audio syncs to your phone.</div>
+  </div>
+
+  <div class="field">
     <label for="naming_template">File naming</label>
     <input id="naming_template" type="text" placeholder="%(artist)s - %(title)s" />
     <div class="hint">yt-dlp template. Default: <code>%(artist)s - %(title)s</code></div>
@@ -198,6 +207,7 @@
       cfg = await loadConfig();
       $('library_dir').value = cfg.library_dir || '~/Music/DJ';
       $('bitrate').value = cfg.bitrate || '320';
+      $('karaoke_source').value = cfg.karaoke_source || 'audio';
       $('naming_template').value = cfg.naming_template || '%(artist)s - %(title)s';
       const t = (cfg.sync_targets || [])[0];
       if (t) {
@@ -230,6 +240,7 @@
     $('save-btn').onclick = async () => {
       cfg.library_dir = $('library_dir').value.trim() || '~/Music/DJ';
       cfg.bitrate = $('bitrate').value;
+      cfg.karaoke_source = $('karaoke_source').value;
       cfg.naming_template = $('naming_template').value.trim() || '%(artist)s - %(title)s';
       const t = targetFromForm();
       cfg.sync_targets = t ? [t] : [];

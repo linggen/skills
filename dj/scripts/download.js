@@ -83,6 +83,9 @@ export async function downloadTrack(bins, cfg, track) {
     `mkdir -p ${sq(libDir)} &&`,
     sq(bins.yt_dlp),
     `--no-warnings --ignore-errors --max-downloads 1`,
+    // Fail fast on a stalled source (default is effectively no timeout, which
+    // let one dead candidate hang for 30+ min) and pull fragments in parallel.
+    `--socket-timeout 15 --retries 3 --fragment-retries 3 --concurrent-fragments 4`,
     `-x --audio-format mp3 --audio-quality ${sq(quality)}`,
     `--embed-thumbnail`,
     ...ppas,
@@ -110,7 +113,11 @@ export async function downloadTrack(bins, cfg, track) {
 export async function downloadKaraokeVideo(bins, cfg, track) {
   const libDir = await resolvePath(cfg.library_dir || '~/Music/DJ');
   const name = `${safe(track.artist)} - ${safe(track.title)} (Karaoke)`;
-  const outTmpl = `${libDir}/${name}.%(ext)s`;
+  // Karaoke sources live in a hidden .karaoke/ subdir. reconcileLibrary globs the
+  // library's top level only, so it never adopts these as first-class tracks
+  // (which caused "(Karaoke)" and even "(Karaoke) (Karaoke)" duplicate songs).
+  const kdir = `${libDir}/.karaoke`;
+  const outTmpl = `${kdir}/${name}.%(ext)s`;
   const query = `${track.artist} ${track.title} karaoke`.trim();
 
   // Cap at 720p so files stay reasonable; merge to a single .mp4. Same
@@ -119,9 +126,12 @@ export async function downloadKaraokeVideo(bins, cfg, track) {
   // AV1/Opus, which the app's WKWebView can't decode (black screen / no sound)
   // on Macs without AV1 hardware (pre-M3).
   const cmd = [
-    `mkdir -p ${sq(libDir)} &&`,
+    `mkdir -p ${sq(kdir)} &&`,
     sq(bins.yt_dlp),
     `--no-warnings --ignore-errors --max-downloads 1`,
+    // Fail fast on a stalled source (default is effectively no timeout, which
+    // let one dead candidate hang for 30+ min) and pull fragments in parallel.
+    `--socket-timeout 15 --retries 3 --fragment-retries 3 --concurrent-fragments 4`,
     `-f ${sq('bv*[vcodec^=avc1][height<=720]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=720]+ba/bv*[height<=720]+ba/b[height<=720]/b')}`,
     `--merge-output-format mp4`,
     `--ffmpeg-location ${sq(bins.ffmpeg)}`,
@@ -136,6 +146,58 @@ export async function downloadKaraokeVideo(bins, cfg, track) {
     const lines = out.trim().split('\n').filter(Boolean);
     const file = [...lines].reverse().find((l) => /\.(mp4|mkv|webm)$/.test(l)) || '';
     return file ? { ok: true, file } : { ok: false, error: 'no karaoke video found' };
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+}
+
+// Download a KARAOKE INSTRUMENTAL — the AUDIO of a "<song> karaoke" upload (lead
+// vocal already removed), extracted straight to mp3. No video stream is fetched,
+// so it is a fraction of the size of the .mp4 and syncs to the phone as plain
+// audio; the on-screen lyrics come from the fetched .lrc instead of being burned
+// into a picture. Returns { ok, file } (an .mp3) or { ok:false, error }.
+export async function downloadKaraokeAudio(bins, cfg, track) {
+  const libDir = await resolvePath(cfg.library_dir || '~/Music/DJ');
+  const br = cfg.bitrate || '320';
+  const quality = br === 'best' ? '0' : `${br}K`;
+  const name = `${safe(track.artist)} - ${safe(track.title)} (Karaoke)`;
+  // Karaoke sources live in a hidden .karaoke/ subdir. reconcileLibrary globs the
+  // library's top level only, so it never adopts these as first-class tracks
+  // (which caused "(Karaoke)" and even "(Karaoke) (Karaoke)" duplicate songs).
+  const kdir = `${libDir}/.karaoke`;
+  const outTmpl = `${kdir}/${name}.%(ext)s`;
+  const query = `${track.artist} ${track.title} karaoke`.trim();
+
+  // Tag it as the karaoke cut so the library never confuses it with the original.
+  const metaArgs =
+    `-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)} (Karaoke)"`;
+
+  // Same audio-only pipeline as downloadTrack, but the query targets karaoke
+  // uploads. No loudnorm here — a karaoke instrumental is already mastered, and
+  // scoping loudnorm to ExtractAudio again would only re-introduce the
+  // thumbnail-embed footgun for no gain.
+  const cmd = [
+    `mkdir -p ${sq(kdir)} &&`,
+    sq(bins.yt_dlp),
+    `--no-warnings --ignore-errors --max-downloads 1`,
+    // Fail fast on a stalled source (default is effectively no timeout, which
+    // let one dead candidate hang for 30+ min) and pull fragments in parallel.
+    `--socket-timeout 15 --retries 3 --fragment-retries 3 --concurrent-fragments 4`,
+    `-x --audio-format mp3 --audio-quality ${sq(quality)}`,
+    `--embed-thumbnail`,
+    `--postprocessor-args ${sq(`ffmpeg:${metaArgs}`)}`,
+    `--ffmpeg-location ${sq(bins.ffmpeg)}`,
+    `--print after_move:filepath`,
+    `-o ${sq(outTmpl)}`,
+    sq(`ytsearch5:${query}`),
+    `|| true`,
+  ].join(' ');
+
+  try {
+    const out = await runBash(cmd, { timeoutMs: 300_000 });
+    const lines = out.trim().split('\n').filter(Boolean);
+    const file = [...lines].reverse().find((l) => l.endsWith('.mp3')) || '';
+    return file ? { ok: true, file } : { ok: false, error: 'no karaoke audio found' };
   } catch (e) {
     return { ok: false, error: String(e.message || e) };
   }
