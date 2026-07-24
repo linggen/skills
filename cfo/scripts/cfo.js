@@ -42,6 +42,48 @@ function confirmDialog(message) {
   });
 }
 
+// In-page text prompt — window.prompt is a silent no-op in the app shell's
+// WKWebView (returns null, no panel), so it can never collect input there.
+// Same modal chrome as confirmDialog; resolves the trimmed value or null.
+function promptDialog(message, initial = '') {
+  return new Promise((resolve) => {
+    const ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;';
+    const card = document.createElement('div');
+    card.style.cssText = 'background:#fff;color:#1e293b;border-radius:12px;padding:16px;width:320px;max-width:90vw;font:13px/1.5 -apple-system,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.2);';
+    if (matchMedia('(prefers-color-scheme: dark)').matches) { card.style.background = '#1c1c1c'; card.style.color = '#e2e8f0'; }
+    const msg = document.createElement('div');
+    msg.style.cssText = 'white-space:pre-wrap;word-break:break-word;margin-bottom:10px;';
+    msg.textContent = message;
+    const input = document.createElement('input');
+    input.type = 'text'; input.value = initial;
+    input.style.cssText = 'width:100%;box-sizing:border-box;padding:6px 8px;border-radius:8px;border:1px solid #94a3b8;background:transparent;color:inherit;font:inherit;';
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;margin-top:14px;';
+    const done = (val) => { ov.remove(); resolve(val); };
+    const mk = (label, val, style) => {
+      const b = document.createElement('button');
+      b.textContent = label; b.style.cssText = style; b.onclick = () => done(val);
+      return b;
+    };
+    const okBtn = mk('OK', undefined, 'padding:6px 12px;border-radius:8px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;');
+    okBtn.onclick = () => done(input.value.trim() || null);
+    row.append(
+      mk('Cancel', null, 'padding:6px 12px;border-radius:8px;border:0;background:transparent;color:inherit;font-weight:600;cursor:pointer;'),
+      okBtn,
+    );
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); done(input.value.trim() || null); }
+      else if (e.key === 'Escape') { e.preventDefault(); done(null); }
+    });
+    card.append(msg, input, row);
+    ov.append(card);
+    ov.onclick = (e) => { if (e.target === ov) done(null); };
+    document.body.append(ov);
+    input.focus(); input.select();
+  });
+}
+
 
 const SKILL = 'cfo';
 const DATA = `$HOME/.linggen/skills/${SKILL}/data`; // $HOME stays literal for bash
@@ -206,10 +248,18 @@ const saveInsights = () => writeB64(`${DATA}/insights.json`, JSON.stringify(INSI
 
 async function loadLedger() {
   const out = await runBash(`cat "${DATA}"/ledger/*.jsonl 2>/dev/null || true`);
-  const rows = [];
+  const rows = [], seen = new Set();
   for (const line of out.split('\n')) {
     const s = line.trim();
-    if (s) { try { rows.push(JSON.parse(s)); } catch { /* skip bad line */ } }
+    if (!s) continue;
+    try {
+      const r = JSON.parse(s);
+      // Defense-in-depth: never let a duplicate-id line (from a past concurrent
+      // append) become two LEDGER rows — that would double-count money. The
+      // import lock prevents the race; this keeps any pre-existing dup harmless.
+      if (r && r.id != null) { if (seen.has(r.id)) continue; seen.add(r.id); }
+      rows.push(r);
+    } catch { /* skip bad line */ }
   }
   return rows;
 }
@@ -306,7 +356,24 @@ function bestAccountMatch(filename, accounts) {
 // One file at a time; resolves with the chosen accountId or null on cancel.
 let STAGING = null;
 
+// Serializes the ledger read→merge→append critical section so a manual import
+// and a folder-watch tick (or two quick drops) can never read the same
+// `existing` and both append overlapping rows → double-counted money. A failed
+// import must not wedge the queue, hence the .catch swallow on the chain.
+let IMPORT_LOCK = Promise.resolve();
+function withImportLock(fn) {
+  const run = IMPORT_LOCK.then(fn, fn);
+  IMPORT_LOCK = run.then(() => {}, () => {});
+  return run;
+}
+
 function stageImport(ctx) {
+  // A review is already open — never clobber its STAGING (that strands the
+  // first import's resolve, hanging it forever). Ask the user to finish first.
+  if (STAGING) {
+    setStatus(`Finish the current import review first, then re-drop ${ctx.filename}.`);
+    return Promise.resolve(null);
+  }
   return new Promise((resolve) => {
     const match = bestAccountMatch(ctx.filename, ACCOUNTS);
     STAGING = {
@@ -379,10 +446,10 @@ function renderStaging() {
   el.querySelector('#st-label')?.addEventListener('input', (e) => { s.newLabel = e.target.value; });
   el.querySelector('#st-label')?.addEventListener('focus', () => { if (s.accountId !== '__new__') { s.accountId = '__new__'; renderStaging(); } });
   el.querySelector('#st-type')?.addEventListener('change', (e) => { s.newType = e.target.value; renderStaging(); });
-  el.querySelectorAll('.cat-sel.st').forEach((sel) => sel.addEventListener('change', () => {
+  el.querySelectorAll('.cat-sel.st').forEach((sel) => sel.addEventListener('change', async () => {
     let v = sel.value;
     if (v === '__new__') {
-      v = (window.prompt('New category name:') || '').trim().toLowerCase();
+      v = ((await promptDialog('New category name:')) || '').trim().toLowerCase();
       if (!v) { renderStaging(); return; }
     }
     s.catEdits[+sel.dataset.i] = v;
@@ -617,19 +684,24 @@ function askScope(anchor, row, cat) {
   };
 }
 
-async function saveConfigOverrides() {
+// Serialize every config.json read-modify-write so concurrent savers (a
+// background agent rule-apply, a budget edit, a currency switch) can't each
+// read the same file and clobber the other's field. Each mutator runs to
+// completion — read → mutate one key → write — before the next starts.
+let CONFIG_LOCK = Promise.resolve();
+function updateConfig(mutate) {
   const CONF = `$HOME/.linggen/skills/${SKILL}/config.json`;
-  const cfg = await readJson(CONF, {});
-  cfg.category_overrides = CATEGORY_OVERRIDES || {};
-  await writeB64(CONF, JSON.stringify(cfg, null, 2));
+  const run = CONFIG_LOCK.then(async () => {
+    const cfg = await readJson(CONF, {});
+    mutate(cfg);
+    await writeB64(CONF, JSON.stringify(cfg, null, 2));
+  });
+  CONFIG_LOCK = run.catch((e) => { console.warn('[cfo] config write', e); });
+  return run;
 }
 
-async function saveConfigBudgets() {
-  const CONF = `$HOME/.linggen/skills/${SKILL}/config.json`;
-  const cfg = await readJson(CONF, {});
-  cfg.budgets = BUDGETS;
-  await writeB64(CONF, JSON.stringify(cfg, null, 2));
-}
+const saveConfigOverrides = () => updateConfig((cfg) => { cfg.category_overrides = CATEGORY_OVERRIDES || {}; });
+const saveConfigBudgets = () => updateConfig((cfg) => { cfg.budgets = BUDGETS; });
 
 // Rewrite one year file in place. Transfer flags persist as false — they are
 // recomputed from the full ledger on every load.
@@ -678,15 +750,21 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   if (oriented.flipped) notes.push('This statement lists charges as positive amounts — signs were flipped so spend reads correctly.');
 
   const incoming = toLedgerRows(oriented.transactions, accountId);
-  const existing = await loadLedger();
-  const { merged, added } = mergeLedger(existing, incoming);
-  if (added.length) await appendLedgerRows(added);
+  // The read→merge→append runs under the import lock: the next importer re-reads
+  // `existing` only after this append lands, so overlapping rows dedup instead of
+  // double-appending. LEDGER is set here too, inside the serialized section.
+  const added = await withImportLock(async () => {
+    const existing = await loadLedger();
+    const merge = mergeLedger(existing, incoming);
+    if (merge.added.length) await appendLedgerRows(merge.added);
+    LEDGER = merge.merged;
+    return merge.added;
+  });
   // Record the exact ids this import added so it can be reverted later. id is a
   // local timestamp-ish token (Date.now is fine in the browser; this is UI state).
   const importId = `imp_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
   await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), at: new Date().toISOString() });
 
-  LEDGER = merged;
   await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent's full-history copy
   refreshView();
   const dup = incoming.length - added.length;
@@ -1295,7 +1373,13 @@ const GROUP_META = [['debt', 'Debt'], ['insurance', 'Insurance'], ['bills', 'Rec
 const hasTerms = (kind) => kind.startsWith('loan') || kind.startsWith('insurance');
 const COMMIT_OPEN = new Map(); // key -> bool; rows with saved terms default open
 const isOpen = (it) => (COMMIT_OPEN.has(it.key) ? COMMIT_OPEN.get(it.key) : !!COMMITMENTS[it.key]);
-const addMonthsIso = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 7); };
+// Add n months, returning YYYY-MM. Pure month arithmetic — NOT Date.setMonth,
+// which overflows for end-of-month anchors ("Jan 31" + 1mo → "Mar 3", a month
+// late). The day is irrelevant to a YYYY-MM answer, so drop it.
+const addMonthsIso = (iso, n) => {
+  const total = (+iso.slice(0, 4)) * 12 + (+iso.slice(5, 7) - 1) + n;
+  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}`;
+};
 
 // Exact (fractional) remaining months from the closed form — the stress line
 // must NOT use the ceiled months_left, or short horizons show a payment BELOW
@@ -1698,25 +1782,31 @@ function extractInsights(node, depth = 0) {
 let lastPageUpdateRaw = null; // streaming phases can deliver the same args twice
 function applyPageUpdate(args) {
   const raw = JSON.stringify(args || null);
-  if (!args || raw === lastPageUpdateRaw) return;
+  if (!args) return;
   // The agent-teacher replies through the same PageUpdate channel but with a
   // `suggestions` body — route it to the Review card, not the insights region.
   // Models wrap args unpredictably, so search recursively (like extractInsights).
   const sugg = extractSuggestions(args);
-  if (sugg) { lastPageUpdateRaw = raw; applySuggestions(sugg); return; }
+  if (sugg) { if (raw !== lastPageUpdateRaw) { lastPageUpdateRaw = raw; applySuggestions(sugg); } return; }
   const cards = extractInsights(args);
   if (!cards) { console.warn('[cfo] PageUpdate args not recognized', args); return; }
+  // A re-review of unchanged data can emit byte-identical cards. Dedup only the
+  // card RE-PUSH — never the pending-state clear below, or the spinner would
+  // hang on "Running…" until the timeout even though the review did land.
+  const duplicate = raw === lastPageUpdateRaw;
   lastPageUpdateRaw = raw;
-  // `replace` may ride at the top level or inside the engine's body wrapper.
-  const replace = !!(args.replace || args.body?.replace || args.body_patch?.replace);
-  if (replace) INSIGHTS = INSIGHTS.filter((c) => c.src === 'budget'); // budget cards are page-truth
-  const seen = new Set(INSIGHTS.map((c) => `${c.title}|${c.body}`));
-  for (const c of cards) {
-    if (!c || (!c.title && !c.body)) continue;
-    const key = `${String(c.title || '')}|${String(c.body || '')}`;
-    if (seen.has(key)) continue; // a failed-then-retried tool call delivers twice
-    seen.add(key);
-    INSIGHTS.push({ title: String(c.title || ''), body: String(c.body || ''), tone: normalizeTone(c.tone), at: new Date().toISOString() });
+  if (!duplicate) {
+    // `replace` may ride at the top level or inside the engine's body wrapper.
+    const replace = !!(args.replace || args.body?.replace || args.body_patch?.replace);
+    if (replace) INSIGHTS = INSIGHTS.filter((c) => c.src === 'budget'); // budget cards are page-truth
+    const seen = new Set(INSIGHTS.map((c) => `${c.title}|${c.body}`));
+    for (const c of cards) {
+      if (!c || (!c.title && !c.body)) continue;
+      const key = `${String(c.title || '')}|${String(c.body || '')}`;
+      if (seen.has(key)) continue; // a failed-then-retried tool call delivers twice
+      seen.add(key);
+      INSIGHTS.push({ title: String(c.title || ''), body: String(c.body || ''), tone: normalizeTone(c.tone), at: new Date().toISOString() });
+    }
   }
   REVIEW_PENDING = false;       // the review (or any insight push) has landed
   REVIEW_NOCARDS = false;
@@ -2156,10 +2246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     curSel.addEventListener('change', async () => {
       CURRENCY_CODE = curSel.value;
       CURRENCY = currencySymbol(CURRENCY_CODE);
-      const CONF = `$HOME/.linggen/skills/${SKILL}/config.json`;
-      const cfg = await readJson(CONF, {});
-      cfg.currency = CURRENCY_CODE;
-      await writeB64(CONF, JSON.stringify(cfg, null, 2));
+      await updateConfig((cfg) => { cfg.currency = CURRENCY_CODE; });
       loadMarketRate(); // benchmark is per-currency; nulls now, refills async
       refreshView();
       if (VIEW_MODE === 'txn') renderTxnView();

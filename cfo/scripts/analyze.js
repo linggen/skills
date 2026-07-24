@@ -158,9 +158,14 @@ const RESERVED_CLASS = new Set(['transfer', 'income']);
 export function categorize(m, overrides) {
   const ml = (m || '').toLowerCase();
   if (overrides) {
+    // Longest matching keyword wins — a specific rule ("uber eats") must beat a
+    // broader earlier one ("uber") regardless of object-key insertion order.
+    // Mirrors ledger.js userTransferRule; the two must not disagree.
+    let best = null, len = -1;
     for (const [kw, cat] of Object.entries(overrides)) {
-      if (kw && !RESERVED_CLASS.has(cat) && ml.includes(kw.toLowerCase())) return cat; // user-configured wins
+      if (kw && !RESERVED_CLASS.has(cat) && kw.length > len && ml.includes(kw.toLowerCase())) { best = cat; len = kw.length; }
     }
+    if (best != null) return best; // user-configured wins
   }
   for (const [cat, kws] of CATEGORY_RULES) if (kws.some((k) => ml.includes(k))) return cat;
   return 'other';
@@ -414,13 +419,19 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
     if (!monthlyish.length) continue;
     const amts = items.map((i) => Math.abs(i.amount));
     const avg = amts.reduce((a, b) => a + b, 0) / amts.length;
-    if (avg === 0 || Math.max(...amts) > avg * 1.5) continue; // variable spend, not a sub
-    // True subscriptions bill IDENTICAL amounts (a price hike just adds a
-    // second exact level). Monthly-cadence variable spend (gas fill-ups,
-    // grocery runs) never repeats to the cent — drop it.
+    if (avg === 0) continue;
+    // True subscriptions bill IDENTICAL amounts and cluster on a few exact
+    // levels — a price hike just adds a second exact level. Monthly-cadence
+    // variable spend (gas fill-ups, grocery runs) rarely repeats to the cent.
+    // Gate on level STRUCTURE, not on the max/avg spread: a genuine hike
+    // ([8,8,20]) has a wide spread but is still a clean two-level series, and a
+    // spread guard would wrongly drop it — and its price-creep alert with it.
     const level = {};
     for (const a of amts) { const k = a.toFixed(2); level[k] = (level[k] || 0) + 1; }
-    if (!Object.values(level).some((c) => c >= 2)) continue;
+    // Most charges must sit on a repeated exact level; otherwise it's variable
+    // spend that merely happens to recur monthly.
+    const onLevel = Object.values(level).filter((c) => c >= 2).reduce((a, c) => a + c, 0);
+    if (onLevel < amts.length * 0.6) continue;
     const first = amts[0], last = Math.abs(items[items.length - 1].amount);
     const firstChargeDate = items[0].date;
     const lastChargeDate = items[items.length - 1].date;
