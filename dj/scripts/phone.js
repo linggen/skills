@@ -11,7 +11,7 @@ const basename = (p) => String(p).split('/').pop().toLowerCase().normalize('NFC'
 /// Paired devices with their fetch ledgers: [{ id, name, files, last_fetch }].
 export async function phoneDevices() {
   try {
-    const res = await fetch('/api/dj/devices');
+    const res = await fetch('/api/skill-sync/dj/devices');
     if (!res.ok) return [];
     return (await res.json()).devices || [];
   } catch {

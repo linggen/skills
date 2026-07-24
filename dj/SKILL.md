@@ -24,6 +24,19 @@ app:
   entry: scripts/index.html
   width: 1100
   height: 820
+# The library the engine serves to paired phones. Purely declarative — the
+# engine watches, lists, and serves; it knows nothing about music.
+sync:
+  dir: ~/Music/DJ
+  topic: dj
+  items: [mp3, m4a, flac, wav, ogg, aac]
+  subdirs:
+    karaoke: .karaoke
+  companions:
+    - { name: lrc, exts: [lrc] }
+    - { name: cover, exts: [webp, jpg, jpeg, png] }
+    - { name: karaoke_audio, subdir: karaoke, suffix: " (Karaoke)", exts: [mp3] }
+    - { name: karaoke_video, subdir: karaoke, suffix: " (Karaoke)", exts: [mp4] }
 tools:
   - name: ListLibrary
     description: >-
