@@ -17,8 +17,10 @@ const DATE_RE = new RegExp(
   + `|\\b\\d{1,2}[/-]\\d{1,2}(?:[/-]\\d{2,4})?\\b`
   + `|\\b${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s*\\d{2,4})?\\b` // "Jul 02" or "Jul 02, 2026"
   + `|\\b\\d{1,2}\\s+${MONTH_RE}[a-z]*(?:,?\\s*\\d{2,4})?\\b`, 'i');
-// A money token: 1,234.56 / $12.00 / -8.99 / 12.00- / 12.00 CR
-const MONEY_RE = /-?\$?\d{1,3}(?:,\d{3})*\.\d{2}-?(?:\s?(?:cr|dr))?/ig;
+// A money token: 1,234.56 / 2500.00 / $12.00 / -8.99 / 12.00- / 12.00 CR.
+// The thousands comma is OPTIONAL (`,?`) — some statements render "$2500.00"
+// with no separator; requiring the comma matched "500.00" out of "2500.00".
+const MONEY_RE = /-?\$?\d{1,3}(?:,?\d{3})*\.\d{2}-?(?:\s?(?:cr|dr))?/ig;
 const CREDIT_HINT = /\b(payment|deposit|refund|credit|reversal|transfer in|e-?transfer)\b/i;
 
 // Reconstruct text lines from a PDF's positioned text items via the vendored
