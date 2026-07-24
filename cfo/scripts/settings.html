@@ -413,17 +413,9 @@
       }));
     }
 
-    // ── Rules CFO learned (config.category_overrides) ─────────────────────
-    // The merchant-keyword -> classification map the engine applies. A value is
-    // a category, or the reserved 'transfer' (exclude from spend/income) /
-    // 'income' (force-keep). Same store cfo.js writes from the row dropdown and
-    // the Review card — editing here just exposes it directly.
-    const BUILTIN_CATS = ["dining", "fees", "groceries", "health", "housing", "other", "shopping", "subscriptions", "transport", "travel", "utilities"];
-    const ruleList = document.getElementById("rule-list");
-    const ruleKw = document.getElementById("rule-kw");
-    const ruleType = document.getElementById("rule-type");
-    const ruleAddBtn = document.getElementById("rule-add-btn");
-
+    // Settings that genuinely live in config.json (currency, folder-watch).
+    // The classification rules moved to the edit register — see the module
+    // block below.
     async function readConfig() {
       try { return JSON.parse((await runBash(`cat "${CONFIG}" 2>/dev/null || echo '{}'`)) || "{}"); }
       catch { return {}; }
@@ -432,56 +424,6 @@
       const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(cfg, null, 2) + "\n")));
       await runBash(`printf '%s' "${b64}" | base64 --decode > "${CONFIG}"`);
     }
-
-    function fillRuleTypes(extra) {
-      const cats = [...BUILTIN_CATS];
-      (extra || []).forEach((t) => { if (t && t !== "transfer" && t !== "income" && !cats.includes(t)) cats.push(t); });
-      cats.sort();
-      ruleType.innerHTML =
-        '<optgroup label="Category">' + cats.map((t) => `<option value="${memEsc(t)}">${memEsc(t)}</option>`).join("") + "</optgroup>" +
-        '<optgroup label="Special"><option value="transfer">⇄ Transfer / Payment</option><option value="income">Income</option></optgroup>';
-    }
-
-    async function loadRules() {
-      const cfg = await readConfig();
-      const ov = cfg.category_overrides || {};
-      const keys = Object.keys(ov).sort();
-      fillRuleTypes(Object.values(ov));
-      if (!keys.length) {
-        ruleList.innerHTML = "No rules yet — CFO writes them as you classify rows and approve suggestions.";
-        return;
-      }
-      ruleList.innerHTML = keys.map((k) => {
-        const v = String(ov[k]);
-        const special = v === "transfer" || v === "income";
-        return `<div class="rule-row">
-          <span class="rule-kw" title="${memEsc(k)}">${memEsc(k)}</span>
-          <span class="rule-type${special ? " special" : ""}">${v === "transfer" ? "⇄ transfer" : memEsc(v)}</span>
-          <button class="btn btn-ghost rule-del" data-kw="${memEsc(k)}" type="button">Remove</button>
-        </div>`;
-      }).join("");
-      ruleList.querySelectorAll(".rule-del").forEach((b) => b.addEventListener("click", async () => {
-        b.disabled = true;
-        const cfg2 = await readConfig();
-        if (cfg2.category_overrides) delete cfg2.category_overrides[b.dataset.kw];
-        await writeConfig(cfg2);
-        loadRules();
-      }));
-    }
-
-    ruleAddBtn.addEventListener("click", async () => {
-      const kw = (ruleKw.value || "").trim().toLowerCase();
-      if (!kw) { ruleKw.focus(); return; }
-      ruleAddBtn.disabled = true;
-      const cfg = await readConfig();
-      cfg.category_overrides = cfg.category_overrides || {};
-      cfg.category_overrides[kw] = ruleType.value;
-      await writeConfig(cfg);
-      ruleKw.value = "";
-      ruleAddBtn.disabled = false;
-      loadRules();
-    });
-    ruleKw.addEventListener("keydown", (e) => { if (e.key === "Enter") ruleAddBtn.click(); });
 
     // ── Auto-import folder (folder-watch) ─────────────────────────────────
     // Writes config.watch_enabled / watch_folder; cfo.js reads them on load and
@@ -512,7 +454,6 @@
     loadAccount();
     loadModel();
     loadMemory();
-    loadRules();
     loadWatch();
 
     // ── Desktop pet ───────────────────────────────────────────────────────
@@ -552,6 +493,92 @@
         petPaintRows();
       } catch (_) {}
     })();
+  </script>
+
+  <script type="module">
+    // ── Rules CFO learned (register `ov:` cells) ──────────────────────────
+    // The merchant-keyword -> classification map the engine applies: a category,
+    // or the reserved 'transfer' (exclude from spend/income) / 'income' (force
+    // keep). Same store cfo.js writes from the row dropdown and the Review card,
+    // and the same one the phone merges into — so a rule added here reaches every
+    // paired device, and one removed here stays removed (a tombstone competes in
+    // the merge; deleting a key would just let the phone's copy win).
+    import { Register, overridesOf } from './lww.js';
+
+    const RULES_DATA = `$HOME/.linggen/skills/cfo/data`;
+    const rEsc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const BUILTIN_CATS = ['dining', 'fees', 'groceries', 'health', 'housing', 'other', 'shopping', 'subscriptions', 'transport', 'travel', 'utilities'];
+
+    const ruleList = document.getElementById('rule-list');
+    const ruleKw = document.getElementById('rule-kw');
+    const ruleType = document.getElementById('rule-type');
+    const ruleAddBtn = document.getElementById('rule-add-btn');
+
+    // `runBash` is a function declaration in the classic block above, so it is a
+    // global by the time this deferred module runs.
+    async function readEdits() {
+      let state = null;
+      try { state = JSON.parse((await runBash(`cat "${RULES_DATA}/edits.json" 2>/dev/null || echo 'null'`)) || 'null'); } catch { /* first run */ }
+      let device = 'mac';
+      try { device = (await runBash(`cat "${RULES_DATA}/device-id" 2>/dev/null || true`)).trim() || 'mac'; } catch { /* default */ }
+      return new Register(device, state);
+    }
+
+    async function writeEdits(reg) {
+      const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(reg.toState(), null, 2) + '\n')));
+      await runBash(`mkdir -p "${RULES_DATA}" && printf '%s' "${b64}" | base64 --decode > "${RULES_DATA}/edits.json"`);
+    }
+
+    function fillRuleTypes(extra) {
+      const cats = [...BUILTIN_CATS];
+      (extra || []).forEach((t) => { if (t && t !== 'transfer' && t !== 'income' && !cats.includes(t)) cats.push(t); });
+      cats.sort();
+      ruleType.innerHTML =
+        '<optgroup label="Category">' + cats.map((t) => `<option value="${rEsc(t)}">${rEsc(t)}</option>`).join('') + '</optgroup>' +
+        '<optgroup label="Special"><option value="transfer">⇄ Transfer / Payment</option><option value="income">Income</option></optgroup>';
+    }
+
+    async function loadRules() {
+      const reg = await readEdits();
+      const ov = overridesOf(reg);
+      const keys = Object.keys(ov).sort();
+      fillRuleTypes(Object.values(ov));
+      if (!keys.length) {
+        ruleList.innerHTML = 'No rules yet — CFO writes them as you classify rows and approve suggestions.';
+        return;
+      }
+      ruleList.innerHTML = keys.map((k) => {
+        const v = String(ov[k]);
+        const special = v === 'transfer' || v === 'income';
+        return `<div class="rule-row">
+          <span class="rule-kw" title="${rEsc(k)}">${rEsc(k)}</span>
+          <span class="rule-type${special ? ' special' : ''}">${v === 'transfer' ? '⇄ transfer' : rEsc(v)}</span>
+          <button class="btn btn-ghost rule-del" data-kw="${rEsc(k)}" type="button">Remove</button>
+        </div>`;
+      }).join('');
+      ruleList.querySelectorAll('.rule-del').forEach((b) => b.addEventListener('click', async () => {
+        b.disabled = true;
+        const cur = await readEdits(); // re-read: the report page may have written since
+        cur.remove(`ov:${b.dataset.kw}`);
+        await writeEdits(cur);
+        loadRules();
+      }));
+    }
+
+    ruleAddBtn.addEventListener('click', async () => {
+      const kw = (ruleKw.value || '').trim().toLowerCase();
+      if (!kw) { ruleKw.focus(); return; }
+      ruleAddBtn.disabled = true;
+      const reg = await readEdits();
+      reg.set(`ov:${kw}`, ruleType.value);
+      await writeEdits(reg);
+      ruleKw.value = '';
+      ruleAddBtn.disabled = false;
+      loadRules();
+    });
+    ruleKw.addEventListener('keydown', (e) => { if (e.key === 'Enter') ruleAddBtn.click(); });
+
+    loadRules();
   </script>
   <script>
     // Embedded in the merged Linggen settings (?embed=1): hide the shared

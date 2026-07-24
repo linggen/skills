@@ -9,6 +9,7 @@ import { listSkillSessions } from './api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
+import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy } from './lww.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -101,8 +102,17 @@ const loadUi = () => { try { return JSON.parse(localStorage.getItem(UI_KEY)) || 
 const saveUi = (patch) => { try { localStorage.setItem(UI_KEY, JSON.stringify({ ...loadUi(), ...patch, v: 1 })); } catch { /* ignore */ } };
 
 // Page state: full ledger + accounts in memory; RANGE drives the fixed view.
+// LEDGER is the ACTIVE view of RAW_LEDGER — reverted rows dropped, corrections
+// applied — so every reader below sees what the report sees. Rebuilt by
+// applyEdits() after any register write.
+let RAW_LEDGER = [];
 let LEDGER = [];
 let ACCOUNTS = {};
+// Every edit the user makes lives here as a timestamped cell (data/edits.json),
+// the same register the phone writes — see lww.js. It is the AUTHORITY for
+// corrections, merchant rules, budgets, commitment terms, account fields and
+// reverts; config.json keeps only settings (currency, folder-watch).
+let EDITS = new Register('mac');
 // Time-range selection restored from cfo:ui; a stale custom range is
 // re-validated against the ledger's months in resumeState().
 let RANGE = loadUi().range?.preset ? loadUi().range : { preset: '12M', from: null, to: null };
@@ -114,7 +124,7 @@ let SUGGESTIONS = []; // agent-teacher proposals awaiting a tap (transfers/incom
 let LAST_AUTO_APPLIED = 0; // category proposals auto-applied in the last batch (don't move totals)
 let LAST_VIEW = null; // most recent computed view — read by announceImport
 let FULL_VIEW = null; // full-history view — commitments ignore the range slicer
-let COMMITMENTS = {}; // user-entered terms per merchant key (data/commitments.json)
+let COMMITMENTS = {}; // user-entered terms per merchant key (register `com:` cells)
 let ANOM_DISMISSED = new Set(); // dismissed anomaly ids (data/anomalies-dismissed.json)
 let WATCH = { enabled: false, folder: '~/Downloads', globs: '*.csv,*.pdf' }; // folder-watch auto-import (config.json)
 let WATCH_SEEN = {}; // path -> "mtime:size" already processed (data/watch-state.json)
@@ -144,7 +154,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 let CURRENCY = '$';
 let CURRENCY_CODE = 'USD';
 let CATEGORY_OVERRIDES = null;
-let BUDGETS = {}; // per-category monthly caps (config.json budgets) — the UI is the only writer
+let BUDGETS = {}; // per-category monthly caps (register `bud:` cells) — the UI is the only writer
 const CURRENCY_CODES = ['USD', 'CAD', 'CNY', 'EUR', 'GBP', 'JPY', 'AUD', 'HKD', 'INR', 'KRW'];
 const currencySymbol = (code) => ({
   USD: '$', CAD: '$', AUD: '$', GBP: '£', EUR: '€', JPY: '¥',
@@ -210,9 +220,8 @@ async function loadConfig() {
     const cfg = out.trim() ? JSON.parse(out) : {};
     CURRENCY_CODE = (cfg.currency || 'USD').toUpperCase();
     CURRENCY = currencySymbol(CURRENCY_CODE);
-    const ov = cfg.category_overrides;
-    CATEGORY_OVERRIDES = ov && Object.keys(ov).length ? ov : null;
-    BUDGETS = (cfg.budgets && typeof cfg.budgets === 'object') ? cfg.budgets : {};
+    // category_overrides / budgets used to live here; they are register cells
+    // now (loadEdits migrates the old fields once). config.json keeps settings.
     WATCH = { enabled: !!cfg.watch_enabled, folder: cfg.watch_folder || '~/Downloads', globs: cfg.watch_globs || '*.csv,*.pdf' };
   } catch (e) { console.warn('[cfo] config load', e); }
 }
@@ -239,10 +248,64 @@ async function readJson(path, fallback) {
   try { return t ? JSON.parse(t) : fallback; } catch { return fallback; }
 }
 
-const loadAccounts = () => readJson(`${DATA}/accounts.json`, {});
-const saveAccounts = (a) => writeB64(`${DATA}/accounts.json`, JSON.stringify(a, null, 2));
-const loadCommitments = () => readJson(`${DATA}/commitments.json`, {});
-const saveCommitmentsFile = () => writeB64(`${DATA}/commitments.json`, JSON.stringify(COMMITMENTS, null, 2));
+// ── The edit register (data/edits.json) ────────────────────────────────────
+// One cell per edit, each stamped — so this Mac and a paired phone merge
+// per-field instead of one side's file winning wholesale. See lww.js.
+
+/// This machine's id: the LWW tiebreak, not a secret. Written once, next to the
+/// register, so it survives across sessions.
+async function deviceId() {
+  const existing = (await readText(`${DATA}/device-id`)).trim();
+  if (existing) return existing;
+  const id = `mac-${hashId(`${navigator.userAgent}|${Date.now()}|${Math.random()}`)}`;
+  await writeB64(`${DATA}/device-id`, `${id}\n`);
+  return id;
+}
+
+/// Load the register, migrating the legacy files on first run. The old files
+/// are left untouched: nothing is lost if you roll back to an older CFO, and
+/// this only ever runs once (afterwards the register is non-empty).
+async function loadEdits(rows) {
+  const state = await readJson(`${DATA}/edits.json`, null);
+  const reg = new Register(await deviceId(), state);
+  if (reg.size) return reg;
+  const cfg = await readJson(`$HOME/.linggen/skills/${SKILL}/config.json`, {});
+  seedFromLegacy(reg, {
+    overrides: cfg.category_overrides,
+    budgets: cfg.budgets,
+    commitments: await readJson(`${DATA}/commitments.json`, {}),
+    accounts: await readJson(`${DATA}/accounts.json`, {}),
+    rows,
+  });
+  if (reg.size) await saveEdits(reg);
+  return reg;
+}
+
+/// Persist the register, then re-derive everything read off it. Every mutation
+/// goes through here, so the page can never show a value it hasn't stored.
+async function saveEdits(reg = EDITS) {
+  await writeB64(`${DATA}/edits.json`, `${JSON.stringify(reg.toState(), null, 2)}\n`);
+}
+
+/// Re-derive the page's view of the register: the projections the renderers
+/// read, and the active ledger.
+function applyEdits() {
+  const ov = overridesOf(EDITS);
+  CATEGORY_OVERRIDES = Object.keys(ov).length ? ov : null;
+  BUDGETS = budgetsOf(EDITS);
+  COMMITMENTS = commitmentsOf(EDITS);
+  ACCOUNTS = accountsOf(EDITS);
+  LEDGER = activeRows(EDITS, RAW_LEDGER);
+}
+
+/// Write one cell and re-derive. `save=false` batches several writes into one
+/// file write (the caller then awaits saveEdits itself).
+async function setEdit(key, value, save = true) {
+  EDITS.set(key, value);
+  applyEdits();
+  if (save) await saveEdits();
+}
+
 const loadInsights = () => readJson(`${DATA}/insights.json`, []);
 const saveInsights = () => writeB64(`${DATA}/insights.json`, JSON.stringify(INSIGHTS));
 
@@ -462,8 +525,10 @@ function renderStaging() {
     if (isNew) {
       const label = (s.newLabel || 'Account').trim();
       id = s.fingerprint || `acct_${hashId(label + s.newType)}`;
-      ACCOUNTS[id] = { label, type: s.newType };
-      await saveAccounts(ACCOUNTS);
+      EDITS.set(`acc:${id}|label`, label);
+      EDITS.set(`acc:${id}|type`, s.newType);
+      applyEdits();
+      await saveEdits();
     }
     for (const [i, cat] of Object.entries(s.catEdits)) s.transactions[+i].category = cat;
     finishStaging(id);
@@ -620,8 +685,7 @@ async function applyRuleByMerchant(merchant, val, recompute = true) {
   // Key on the cleaned name so one rule covers all raw variants (store numbers,
   // city suffixes) — and it still word-matches the raw ledger strings.
   const key = (cleanMerchant(merchant) || String(merchant)).toLowerCase();
-  CATEGORY_OVERRIDES = { ...(CATEGORY_OVERRIDES || {}), [key]: val };
-  await saveConfigOverrides();
+  await setEdit(`ov:${key}`, val);
   if (recompute) await afterCategoriesChanged();
 }
 
@@ -674,11 +738,11 @@ function askScope(anchor, row, cat) {
     const scope = pop.querySelector('input[name=scope]:checked').value;
     close();
     if (scope === 'rule') {
-      CATEGORY_OVERRIDES = { ...(CATEGORY_OVERRIDES || {}), [row.merchant.toLowerCase()]: cat };
-      await saveConfigOverrides();
+      await setEdit(`ov:${row.merchant.toLowerCase()}`, cat);
     } else {
-      row.category = cat;
-      await rewriteYearFile((row.date || '').slice(0, 4) || 'undated');
+      // The row keeps its imported category on disk; the correction is a cell,
+      // so it merges with the phone's and can be cleared without a rewrite.
+      await setEdit(`cat:${row.id}`, cat);
     }
     await afterCategoriesChanged();
   };
@@ -700,16 +764,6 @@ function updateConfig(mutate) {
   return run;
 }
 
-const saveConfigOverrides = () => updateConfig((cfg) => { cfg.category_overrides = CATEGORY_OVERRIDES || {}; });
-const saveConfigBudgets = () => updateConfig((cfg) => { cfg.budgets = BUDGETS; });
-
-// Rewrite one year file in place. Transfer flags persist as false — they are
-// recomputed from the full ledger on every load.
-async function rewriteYearFile(year) {
-  const rows = LEDGER.filter((r) => (((r.date || '').slice(0, 4)) || 'undated') === year);
-  const body = rows.map((r) => JSON.stringify({ ...r, transfer: false, transfer_pair: null })).join('\n');
-  await writeB64(`${DATA}/ledger/${year}.jsonl`, body ? body + '\n' : '', false);
-}
 
 async function afterCategoriesChanged() {
   await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent sees corrections too
@@ -734,7 +788,6 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     throw new Error([...(notes.length ? notes : ['No transactions found in this file.'])].join(' '));
   }
 
-  ACCOUNTS = await loadAccounts();
   let accountId = fingerprint && ACCOUNTS[fingerprint] ? fingerprint : null; // known → fast path
   if (!accountId) {
     // Folder-watch only auto-imports files for accounts it already knows — it
@@ -757,7 +810,13 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
     const existing = await loadLedger();
     const merge = mergeLedger(existing, incoming);
     if (merge.added.length) await appendLedgerRows(merge.added);
-    LEDGER = merge.merged;
+    RAW_LEDGER = merge.merged;
+    // Re-importing a file you reverted brings it back: the rows dedup by id, so
+    // the tombstone has to lift or the import would look like a no-op.
+    const restored = incoming.filter((r) => EDITS.get(`del:${r.id}`) === true);
+    for (const r of restored) EDITS.remove(`del:${r.id}`);
+    applyEdits();
+    if (restored.length) await saveEdits();
     return merge.added;
   });
   // Record the exact ids this import added so it can be reverted later. id is a
@@ -779,15 +838,14 @@ async function undoImport(importId) {
   const log = await readJson(`${DATA}/imports.json`, []);
   const entry = log.find((e) => e.id === importId);
   if (!entry || entry.reverted || !Array.isArray(entry.added_ids) || !entry.added_ids.length) return false;
-  const remove = new Set(entry.added_ids);
-  const years = new Set(LEDGER.filter((r) => remove.has(r.id)).map((r) => ((r.date || '').slice(0, 4)) || 'undated'));
-  LEDGER = LEDGER.filter((r) => !remove.has(r.id));
-  for (const y of years) await rewriteYearFile(y);
+  for (const id of entry.added_ids) EDITS.set(`del:${id}`, true);
+  applyEdits();
   // Drop the account if this import created it and nothing else uses it.
   if (entry.account && !LEDGER.some((r) => r.account === entry.account)) {
-    delete ACCOUNTS[entry.account];
-    await saveAccounts(ACCOUNTS);
+    for (const f of Object.keys(ACCOUNTS[entry.account] || {})) EDITS.remove(`acc:${entry.account}|${f}`);
+    applyEdits();
   }
+  await saveEdits();
   entry.reverted = true;
   entry.reverted_at = new Date().toISOString();
   await writeB64(`${DATA}/imports.json`, JSON.stringify(log, null, 2));
@@ -802,11 +860,11 @@ async function undoImport(importId) {
 // the report survives /clear, refresh, and the 24h session rollover.
 async function resumeState() {
   try {
-    LEDGER = await loadLedger();
-    ACCOUNTS = await loadAccounts();
+    RAW_LEDGER = await loadLedger();
+    EDITS = await loadEdits(RAW_LEDGER);
+    applyEdits(); // ACCOUNTS / COMMITMENTS / BUDGETS / overrides / LEDGER
     INSIGHTS = await loadInsights();
     SUGGESTIONS = await loadSuggestions();
-    COMMITMENTS = await loadCommitments();
     ANOM_DISMISSED = new Set(await readJson(`${DATA}/anomalies-dismissed.json`, []));
     // Clean up any historical duplicates (pre-dedup saves) + legacy tones.
     const seen = new Set();
@@ -1107,7 +1165,7 @@ function renderBudgets(b) {
   }));
   el.querySelectorAll('.bg-x').forEach((x) => x.addEventListener('click', async () => {
     delete BUDGETS[x.closest('.bg-row').dataset.cat];
-    await saveConfigBudgets();
+    await saveEdits();
     refreshView();
   }));
   el.querySelector('#bg-input')?.addEventListener('keydown', async (e) => {
@@ -1115,7 +1173,7 @@ function renderBudgets(b) {
     if (e.key !== 'Enter') return;
     const cat = BUDGET_EDIT, val = Math.round(Number(e.target.value));
     BUDGET_EDIT = null;
-    if (cat && val > 0) { BUDGETS[cat] = val; await saveConfigBudgets(); refreshView(); }
+    if (cat && val > 0) { await setEdit(`bud:${cat}`, val); refreshView(); }
     else rerender();
   });
 }
@@ -1675,9 +1733,16 @@ async function saveCommitment(key, patch) {
       if (Number.isFinite(n) && n > 0) next[k] = n; else delete next[k];
     }
   }
-  if (Object.keys(next).length) { COMMITMENTS[key] = next; COMMIT_OPEN.set(key, true); }
-  else delete COMMITMENTS[key];
-  await saveCommitmentsFile();
+  // One cell PER FIELD: editing the balance here and the rate on the phone
+  // must not clobber each other on merge.
+  const before = COMMITMENTS[key] || {};
+  for (const f of new Set([...Object.keys(before), ...Object.keys(next)])) {
+    if (next[f] === undefined) EDITS.remove(`com:${key}|${f}`);
+    else if (next[f] !== before[f]) EDITS.set(`com:${key}|${f}`, next[f]);
+  }
+  applyEdits();
+  if (Object.keys(next).length) COMMIT_OPEN.set(key, true);
+  await saveEdits();
   await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent sees terms + kind overrides
   refreshView(); // FULL_VIEW + headline card + (when active) this view
 }
