@@ -422,9 +422,26 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
     for (const a of amts) { const k = a.toFixed(2); level[k] = (level[k] || 0) + 1; }
     if (!Object.values(level).some((c) => c >= 2)) continue;
     const first = amts[0], last = Math.abs(items[items.length - 1].amount);
-    const prior = items.length >= 2 ? Math.abs(items[items.length - 2].amount) : null;
     const firstChargeDate = items[0].date;
     const lastChargeDate = items[items.length - 1].date;
+    // Baseline for hike detection = the price LEVEL just before the current one.
+    // Walk back over the trailing run of charges equal to `last`; the charge
+    // before that run is the prior level. Comparing `last` to the immediately
+    // preceding charge misses a sustained rise once the new price repeats
+    // (148,148,148 → 171,171,171 reads as no change); comparing to the all-time
+    // first charge falsely flags a promo/partial first month. This does both
+    // right: it tracks the level change and stays flagged while it holds.
+    const eqAmt = (a, b) => Math.abs(a - b) <= 0.01;
+    let ri = amts.length - 1;
+    while (ri > 0 && eqAmt(amts[ri - 1], last)) ri--;
+    let baseline = ri > 0 ? amts[ri - 1] : null;
+    // Ignore a lone promo/partial first charge (a $1 trial before a steady $8):
+    // it's the very first charge, never recurs, and is a fraction of the
+    // current price — not a real prior level. A modest first step (16.49 →
+    // 18.99) is a genuine hike and is kept.
+    if (baseline != null && ri - 1 === 0
+      && amts.filter((a) => eqAmt(a, baseline)).length === 1
+      && baseline < last * 0.6) baseline = null;
     // "stopped" = hasn't billed in 45+ days while newer activity exists. NOT money
     // you can recover (it stopped) — only a "did you cancel this?" signal. Active
     // subs are the ones still charging — those are what you actually pay for.
@@ -441,12 +458,11 @@ function detectSubscriptions(txns, lastDate, catOf, kindOf) {
       monthly: round2(last), // current billing level, not the historical average
       cadence_days: Math.round(monthlyish.reduce((a, b) => a + b, 0) / monthlyish.length),
       first_amount: round2(first), last_amount: round2(last),
-      prior_amount: prior != null ? round2(prior) : null,
-      // A hike is the LATEST bill rising above the PREVIOUS one. Comparing to the
-      // all-time first charge falsely flags a promo/partial first month (a $1
-      // trial then a steady $8 is not a $7 hike). `prior` is the charge before last.
-      increased: prior != null && last > prior + 0.01,
-      increase_amount: round2(prior != null ? last - prior : 0),
+      // `prior_amount` = the prior price LEVEL (the display's "from" baseline),
+      // not merely the charge before last, so the creep line reads level→level.
+      prior_amount: baseline != null ? round2(baseline) : null,
+      increased: baseline != null && last > baseline + 0.01,
+      increase_amount: round2(baseline != null && last > baseline ? last - baseline : 0),
       first_date: firstChargeDate,
       last_date: lastChargeDate,
       charges: items.length,
@@ -762,7 +778,8 @@ function buildCommitments(subs, userMap, monthlyIncome, marketBenchmark) {
       merchant: s.merchant, key, kind, group: kindGroup(kind),
       monthly: s.monthly, cadence_days: s.cadence_days, last_date: s.last_date,
       active: s.active, increased: s.increased,
-      first_amount: s.first_amount, last_amount: s.last_amount, increase_amount: s.increase_amount,
+      first_amount: s.first_amount, last_amount: s.last_amount,
+      prior_amount: s.prior_amount, increase_amount: s.increase_amount,
     };
     if (u.balance != null && u.balance !== '') item.balance = Number(u.balance);
     if (u.rate_pct != null && u.rate_pct !== '') item.rate_pct = Number(u.rate_pct);
