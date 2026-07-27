@@ -170,19 +170,27 @@ export function activeRows(reg, rows) {
 
 // ── Migration: the register seeded from the files that used to hold this ────
 
-/// Fold the legacy shapes into an empty register. Idempotent by construction —
-/// callers only run it when the register has no cells, and it writes each key
-/// once. `rows` are raw ledger rows; a non-null `category` on one is a
-/// correction the user made before the register existed.
+/// Fold the legacy shapes into the register, filling only the keys it has never
+/// held. Idempotent, and safe to run on a NON-empty register — which it must
+/// be: a paired phone can create `edits.json` before this Mac ever migrated, and
+/// an "only when empty" migration would then skip forever and silently drop
+/// every budget, rule and account this machine had on disk. Cells the user has
+/// since removed carry a tombstone, so `has()` is true and they stay removed.
+/// `rows` are raw ledger rows; a non-null `category` on one is a correction the
+/// user made before the register existed.
+///
+/// Returns the register. It only ever grows here, so a caller that wants to
+/// know whether anything was seeded can compare `reg.size` across the call.
 export function seedFromLegacy(reg, { overrides, budgets, commitments, accounts, rows } = {}) {
-  for (const [kw, cat] of Object.entries(overrides || {})) if (kw) reg.set(`ov:${kw}`, cat);
-  for (const [cat, cap] of Object.entries(budgets || {})) if (Number(cap) > 0) reg.set(`bud:${cat}`, cap);
+  const fill = (key, v) => { if (!reg.has(key)) reg.set(key, v); };
+  for (const [kw, cat] of Object.entries(overrides || {})) if (kw) fill(`ov:${kw}`, cat);
+  for (const [cat, cap] of Object.entries(budgets || {})) if (Number(cap) > 0) fill(`bud:${cat}`, cap);
   for (const [key, terms] of Object.entries(commitments || {})) {
-    for (const [field, v] of Object.entries(terms || {})) if (v !== null && v !== '') reg.set(`com:${key}|${field}`, v);
+    for (const [field, v] of Object.entries(terms || {})) if (v !== null && v !== '') fill(`com:${key}|${field}`, v);
   }
   for (const [id, acct] of Object.entries(accounts || {})) {
-    for (const [field, v] of Object.entries(acct || {})) if (v !== null && v !== '') reg.set(`acc:${id}|${field}`, v);
+    for (const [field, v] of Object.entries(acct || {})) if (v !== null && v !== '') fill(`acc:${id}|${field}`, v);
   }
-  for (const r of rows || []) if (r && r.id != null && r.category) reg.set(`cat:${r.id}`, r.category);
+  for (const r of rows || []) if (r && r.id != null && r.category) fill(`cat:${r.id}`, r.category);
   return reg;
 }

@@ -178,6 +178,36 @@ const sameReg = (a, b) => canon(a) === canon(b);
   // Round-trip through the file shape.
   const reloaded = new Register('mac', JSON.parse(JSON.stringify(reg.toState())));
   t('the register round-trips through JSON', sameReg(reloaded.toState().reg, reg.toState().reg));
+
+  // Re-running the migration must be a no-op: it runs on every page load now,
+  // because a paired phone can create edits.json before this Mac ever migrated.
+  const again = new Register('mac', JSON.parse(JSON.stringify(reg.toState())));
+  const size = again.size;
+  seedFromLegacy(again, { overrides: { 'uber eats': 'dining' }, budgets: { dining: 400 } });
+  t('re-seeding an already-migrated register changes nothing',
+    again.size === size && sameReg(again.toState().reg, reg.toState().reg));
+}
+
+// ── Migration onto a register a synced phone created first ─────────────────
+{
+  // The phone syncs before this Mac has ever opened CFO: edits.json exists, but
+  // this machine's own budgets/rules only live in the legacy files. Seeding has
+  // to fill them in, and must not touch what the phone already decided.
+  const phone = new Register('phone');
+  phone.set('bud:dining', 50);
+  phone.remove('ov:shell'); // the user deleted this rule on the phone
+
+  const mac = new Register('mac', JSON.parse(JSON.stringify(phone.toState())));
+  seedFromLegacy(mac, {
+    overrides: { 'uber eats': 'dining', shell: 'transport' },
+    budgets: { dining: 400, groceries: 600 },
+  });
+
+  t('the Mac\'s own legacy values still migrate onto a phone-made register',
+    budgetsOf(mac).groceries === 600 && overridesOf(mac)['uber eats'] === 'dining');
+  t('the phone\'s value is not overwritten by the legacy file', budgetsOf(mac).dining === 50);
+  t('a rule deleted on the phone is not resurrected by the legacy file',
+    mac.get('ov:shell') === null);
 }
 
 console.log(`\n${fail ? '❌' : '✅'} ${pass} passed, ${fail} failed`);

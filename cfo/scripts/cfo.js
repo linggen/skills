@@ -262,14 +262,20 @@ async function deviceId() {
   return id;
 }
 
-/// Load the register, migrating the legacy files on first run. The old files
-/// are left untouched: nothing is lost if you roll back to an older CFO, and
-/// this only ever runs once (afterwards the register is non-empty).
+/// Load the register, filling in anything the legacy files still hold that it
+/// doesn't. The old files are left untouched: nothing is lost if you roll back
+/// to an older CFO.
+///
+/// This runs on EVERY load, not just when the register is empty, because the
+/// register may exist without this machine ever having migrated — a paired
+/// phone creates `edits.json` the first time it syncs. Seeding only fills keys
+/// the register has never held (see seedFromLegacy), so it re-seeds nothing and
+/// resurrects nothing the user removed.
 async function loadEdits(rows) {
   const state = await readJson(`${DATA}/edits.json`, null);
   const reg = new Register(await deviceId(), state);
-  if (reg.size) return reg;
   const cfg = await readJson(`$HOME/.linggen/skills/${SKILL}/config.json`, {});
+  const before = reg.size;
   seedFromLegacy(reg, {
     overrides: cfg.category_overrides,
     budgets: cfg.budgets,
@@ -277,7 +283,7 @@ async function loadEdits(rows) {
     accounts: await readJson(`${DATA}/accounts.json`, {}),
     rows,
   });
-  if (reg.size) await saveEdits(reg);
+  if (reg.size > before) await saveEdits(reg);
   return reg;
 }
 
