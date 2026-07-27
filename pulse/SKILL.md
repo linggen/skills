@@ -29,6 +29,9 @@ app:
   entry: scripts/pulse.html
   width: 1200
   height: 900
+  # Not finished — stay out of the launcher's tab bar until it is. Still runs
+  # when opened directly, so development is unaffected.
+  list: false
 permission:
   paths:
     - { path: ~/.linggen/skills/pulse, mode: edit }
