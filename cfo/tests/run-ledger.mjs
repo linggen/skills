@@ -74,6 +74,37 @@ const sRep = reportFromLedger(synth, { chk: { type: 'checking' }, visa: { type: 
 t('A6 totals exclude the transfer on BOTH sides', sRep.totals.spend === 1220 && sRep.totals.income === 6000,
   `spend ${sRep.totals.spend} income ${sRep.totals.income}`);
 
+// ── Part A1b: the pairing must not depend on row order ─────────────────────
+//
+// The Mac walks the ledger in file order; the phone walks it sorted by (date,
+// id). Any choice left to "whichever came first in the list" makes the two
+// devices report different numbers from the SAME ledger — this cost $900 of
+// June income on 2026-07-27, when a -$900 card payment sat exactly one day from
+// two different +$900 credits and each side paired a different one.
+
+const ambiguous = [
+  { id: 'zz-before', account: 'chk', date: '2026-06-23', merchant: 'Online Bill Payment, AMEX CARDS', amount: 900, transfer: false, transfer_pair: null },
+  { id: 'mm-debit', account: 'visa', date: '2026-06-24', merchant: 'PAYMENT TO VISA', amount: -900, transfer: false, transfer_pair: null },
+  { id: 'aa-after', account: 'card2', date: '2026-06-25', merchant: 'PAYMENT THANK YOU', amount: 900, transfer: false, transfer_pair: null },
+];
+const pairedWith = (order) => {
+  const rows = order.map((r) => ({ ...r }));
+  detectTransfers(rows, {});
+  return rows.find((r) => r.id === 'mm-debit').transfer_pair;
+};
+const orders = [
+  ambiguous,
+  [...ambiguous].reverse(),
+  [ambiguous[1], ambiguous[0], ambiguous[2]],
+  [ambiguous[2], ambiguous[1], ambiguous[0]],
+];
+const picks = new Set(orders.map(pairedWith));
+t('A5b equidistant credits pair the same way in every row order', picks.size === 1, [...picks].join(' / '));
+// The id ordering is deliberately hostile here: 'aa-after' sorts FIRST, so a
+// bare smallest-id tiebreak would also pass the test above while picking the
+// credit that landed before the payment. The stated rule is date-direction.
+t('A5c the credit ON/AFTER the debit wins the tie', [...picks][0] === 'aa-after', [...picks][0]);
+
 // ── Part A2: single-row transfer signals + learning rules (issue #1) ──
 // These fire when the counterparty account was never imported, so pairing can't.
 console.log('\n— Part A2: transfer signals + learning rules —');

@@ -121,6 +121,21 @@ export function mergeLedger(existing, incoming) {
 //      when the counterparty account was never imported (the common case: an
 //      Amex you don't track). Only the rows pairing couldn't resolve.
 // Mutates rows in place; idempotent. `overrides` = config.category_overrides.
+const byDateThenId = (a, b) =>
+  (a.date || '').localeCompare(b.date || '') || a.id.localeCompare(b.id);
+
+// Which of two equally-close credits should pair with this debit. Money leaves
+// the account and then lands, so a credit ON or AFTER the debit beats one before
+// it — a card's "PAYMENT THANK YOU" the day after you paid it, rather than an
+// unrelated bill payment for the same amount the day before. The smaller id
+// settles what's left, so the answer never depends on iteration order.
+function preferredCredit(debit, candidate, best) {
+  const candidateAfter = candidate.date >= debit.date;
+  const bestAfter = best.date >= debit.date;
+  if (candidateAfter !== bestAfter) return candidateAfter;
+  return candidate.id < best.id;
+}
+
 export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrides = null) {
   for (const r of rows) { r.transfer = false; r.transfer_pair = null; }
 
@@ -134,9 +149,15 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
   }
 
   // 2. Cross-account exact-amount pairing.
+  //
+  // Order-independent by construction. This Mac walks the ledger in file order
+  // and the phone walks it sorted, so ANY decision left to "whichever came first
+  // in the list" makes two devices holding the same ledger report different
+  // numbers — it cost $900 of June income once. Candidates are sorted, and ties
+  // are settled by a stated rule (see `preferredCredit`), never by arrival.
   const avail = (r) => r.date && !r.transfer && !locked.has(r.id);
-  const credits = rows.filter((r) => r.amount > 0 && avail(r));
-  const debits = rows.filter((r) => r.amount < 0 && avail(r));
+  const credits = rows.filter((r) => r.amount > 0 && avail(r)).sort(byDateThenId);
+  const debits = rows.filter((r) => r.amount < 0 && avail(r)).sort(byDateThenId);
   const usedCredit = new Set();
   for (const d of debits) {
     let best = null, bestGap = Infinity;
@@ -148,7 +169,9 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
       const looksTransfer = (PAYMENT_RE.test(d.merchant) || PAYMENT_RE.test(c.merchant))
         && !REFUND_RE.test(c.merchant);
       if (!looksTransfer) continue;
-      if (gap < bestGap) { best = c; bestGap = gap; }
+      if (best === null || gap < bestGap || (gap === bestGap && preferredCredit(d, c, best))) {
+        best = c; bestGap = gap;
+      }
     }
     if (best) {
       d.transfer = best.transfer = true;
