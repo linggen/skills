@@ -1170,8 +1170,11 @@ function renderBudgets(b) {
     BUDGET_EDIT = amt.closest('.bg-row').dataset.cat; rerender(); document.getElementById('bg-input')?.select();
   }));
   el.querySelectorAll('.bg-x').forEach((x) => x.addEventListener('click', async () => {
-    delete BUDGETS[x.closest('.bg-row').dataset.cat];
-    await saveEdits();
+    // BUDGETS is a PROJECTION of the register — deleting a key here changed the
+    // page and nothing else, so the budget came back on the next load (and a
+    // paired phone never heard about it). Removal is a tombstone in the
+    // register, like every other edit.
+    await setEdit(`bud:${x.closest('.bg-row').dataset.cat}`, null);
     refreshView();
   }));
   el.querySelector('#bg-input')?.addEventListener('keydown', async (e) => {

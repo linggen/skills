@@ -8,6 +8,8 @@
 // convergence properties: merge must be order-independent, idempotent, and must
 // not resurrect a removal. Everything here is pure — no daemon, no files.
 
+import { readFileSync } from 'node:fs';
+
 import {
   Register,
   LwwEntry,
@@ -208,6 +210,19 @@ const sameReg = (a, b) => canon(a) === canon(b);
   t('the phone\'s value is not overwritten by the legacy file', budgetsOf(mac).dining === 50);
   t('a rule deleted on the phone is not resurrected by the legacy file',
     mac.get('ov:shell') === null);
+}
+
+// ── The projections are READ-ONLY views ────────────────────────────────────
+{
+  // BUDGETS / ACCOUNTS / COMMITMENTS / CATEGORY_OVERRIDES are derived from the
+  // register by applyEdits(). Mutating one changes the page and NOTHING else:
+  // the edit doesn't persist and a paired phone never hears about it. Removing
+  // a budget did exactly that (found by clicking it, 2026-07-27) — the row
+  // vanished, then came back on reload. Every write goes through setEdit.
+  const src = readFileSync(new URL('../scripts/cfo.js', import.meta.url), 'utf8');
+  const projections = ['BUDGETS', 'ACCOUNTS', 'COMMITMENTS', 'CATEGORY_OVERRIDES'];
+  const bad = projections.filter((p) => new RegExp(`delete\\s+${p}\\[`).test(src));
+  t(`no code deletes straight out of a projection (${bad.join(', ') || 'none'})`, !bad.length);
 }
 
 console.log(`\n${fail ? '❌' : '✅'} ${pass} passed, ${fail} failed`);
