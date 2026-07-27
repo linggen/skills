@@ -11,7 +11,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { reportFromLedger } from '../scripts/ledger.js';
+import { reportFromLedger, viewFromLedger } from '../scripts/ledger.js';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const URL = process.env.CFO_URL || 'http://localhost:9898/apps/cfo/scripts/cfo.html';
@@ -43,18 +43,24 @@ for (const f of readdirSync(join(DATA, 'ledger'))) {
   for (const l of readFileSync(join(DATA, 'ledger', f), 'utf8').split('\n')) if (l.trim()) rows.push(JSON.parse(l));
 }
 const accounts = JSON.parse(readFileSync(join(DATA, 'accounts.json'), 'utf8'));
+// The head cards cover the SELECTED range, so recompute for the range the page
+// actually resolved — it publishes it on #range-bar for exactly this reason.
+// Rates (subscriptions, commitments) stay full-history on the page, so they
+// still compare against the unranged report.
+const m = dom.match(/id="range-bar"[^>]*data-range="([^"]+)"/);
+const shown = m && m[1] !== 'all' ? { from: m[1].split('..')[0], to: m[1].split('..')[1] } : null;
+const view = viewFromLedger(rows, accounts, {}, shown);
 const rep = reportFromLedger(rows, accounts);
+console.log(`page range: ${m ? m[1] : '(none published)'}`);
 const money = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const expect = {
-  Spend: money(rep.totals.spend),
-  Income: money(rep.totals.income),
-  Net: money(rep.totals.net),
+  Spend: money(view.totals.spend),
+  Income: money(view.totals.income),
+  Net: money(view.totals.net),
   Subscriptions: '$' + rep.subscription_monthly_total.toFixed(2) + '/mo',
 };
 const expectSubs = `${rep.active_subscription_count} active${rep.stopped_subscription_count ? ` · ${rep.stopped_subscription_count} stopped` : ''}`;
 
-// NOTE: the page defaults to the 12M range; when the ledger spans >12 months
-// this comparison needs the ALL range — set CFO_STRICT=0 to warn-only then.
 let fail = 0;
 for (const [k, v] of Object.entries(expect)) {
   const got = cards[k];

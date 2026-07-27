@@ -115,7 +115,10 @@ let ACCOUNTS = {};
 let EDITS = new Register('mac');
 // Time-range selection restored from cfo:ui; a stale custom range is
 // re-validated against the ledger's months in resumeState().
-let RANGE = loadUi().range?.preset ? loadUi().range : { preset: '12M', from: null, to: null };
+// Same default the phone ships with, so a fresh device on either side frames
+// the same months rather than inviting "these don't match".
+const DEFAULT_RANGE = { preset: '3M', from: null, to: null };
+let RANGE = loadUi().range?.preset ? loadUi().range : { ...DEFAULT_RANGE };
 let INSIGHTS = [];
 let REVIEW_PENDING = false; // a review was just triggered — Insights cleared, awaiting the agent's cards
 let REVIEW_TIMER = null;    // safety net: if the agent answers without pushing cards, stop hanging
@@ -886,7 +889,7 @@ async function resumeState() {
     if (RANGE.preset === 'custom') {
       const months = [...new Set(LEDGER.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
       if (!months.length || RANGE.to < months[0] || RANGE.from > months[months.length - 1]) {
-        RANGE = { preset: '12M', from: null, to: null };
+        RANGE = { ...DEFAULT_RANGE };
         saveUi({ range: RANGE });
       }
     }
@@ -929,6 +932,10 @@ function setRange(next) {
 
 function renderRangeBar(view) {
   const chips = document.getElementById('range-chips');
+  // The resolved range, on the element, so anything reading the rendered page
+  // knows which months these figures cover without re-deriving it from a label.
+  const rr = view.range;
+  document.getElementById('range-bar').dataset.range = rr ? `${rr.from}..${rr.to}` : 'all';
   chips.innerHTML = PRESETS.map(([p]) =>
     `<button class="chip${RANGE.preset === p ? ' on' : ''}" data-preset="${p}">${p === 'ALL' ? 'All' : p}</button>`).join('');
   chips.querySelectorAll('button').forEach((b) => { b.onclick = () => setRange({ preset: b.dataset.preset }); });
@@ -989,6 +996,10 @@ function applyVisibility() {
   // Trends with no data falls through to the import empty-state.
   document.getElementById('empty-state').hidden = (txn || commit) || LEDGER.length > 0;
   document.getElementById('insights-wrap').hidden = away || (!LEDGER.length && !INSIGHTS.length);
+  // Report and Trends both read RANGE, so the control belongs to both. It has
+  // no meaning on Transactions (its own filters) or Commitments (always full
+  // history — a cadence can't be seen through a one-month window).
+  document.getElementById('range-bar').hidden = (txn || commit) || !LEDGER.length;
   renderSuggestions(); // Review card (Report tab only) — self-hides when empty
 }
 
@@ -1012,8 +1023,11 @@ function refreshView() {
   // monthly cadence, so the headline card and tab would go blank on short views.
   FULL_VIEW = reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts());
   renderRangeBar(view);
-  // Dashboard cards read the FULL view — the range chips live on Trends now.
-  renderCards(FULL_VIEW);
+  // Dashboard cards follow the range: a headline with no period attached is
+  // unreadable next to another one, which is exactly how the Mac and the phone
+  // came to look like they disagreed about the same ledger.
+  renderCards(view, FULL_VIEW);
+  renderTrendCards(view);
   renderForecast(FULL_VIEW.forecast); // always full-history: cadences need it
   renderBudgets(FULL_VIEW.budgets);   // budgets are current-month by definition
   syncBudgetInsights(FULL_VIEW.budgets);
@@ -1209,25 +1223,52 @@ function syncBudgetInsights(b) {
   saveInsights().catch(() => {});
 }
 
-function renderCards(v) {
+function renderCards(v, full) {
   const t = v.totals || {};
-  const c = v.commitments || { monthly_total: 0, pct_of_income: null };
-  // Dashboard KPIs are the current data-month (anchored at as_of, like the
-  // forecast); history totals belong to Trends. Undated ledgers fall back.
-  const f = v.forecast || null;
-  const net = f ? f.income_so_far - f.spend_so_far : (t.net || 0);
-  const mn = f ? ` · ${monthName(f.month)}` : '';
-  const headCards = f ? `
-    <div class="card"><div class="k">Income${mn}</div><div class="v">${money(f.income_so_far)}</div><div class="sub">as of ${monthName(f.month)} ${+f.as_of.slice(8)}</div></div>
-    <div class="card"><div class="k">Spend${mn}</div><div class="v">${money(f.spend_so_far)}</div><div class="sub">month to date</div></div>
-    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net${mn}</div><div class="v">${money(net)}</div><div class="sub">${t.months || 0} mo history</div></div>` : `
-    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${t.months || 0} mo</div></div>
-    <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div></div>
-    <div class="card ${(t.net || 0) >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(t.net)}</div></div>`;
+  // Subscriptions and commitments are monthly rates, not period sums, and a
+  // cadence can't be read through a short window — so they always come from the
+  // full history no matter what the range says.
+  const src = full || v;
+  const c = src.commitments || { monthly_total: 0, pct_of_income: null };
+  // The head cards describe THE SELECTED PERIOD, and say which one. When that
+  // period is the month the data ends in, "month to date" is the truer label —
+  // the month isn't over, and the figure will keep moving.
+  const f = src.forecast || null;
+  const r = v.range;
+  const current = f && r && r.from === r.to && r.from === f.month;
+  const period = current ? `${monthName(f.month)} ${f.month.slice(0, 4)}` : rangeWords(v);
+  const sub = current ? `as of ${monthName(f.month)} ${+f.as_of.slice(8)}` : `${t.months || 0} mo`;
+  const net = t.net || 0;
+  const headCards = `
+    <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${esc(period)}</div></div>
+    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${current ? 'month to date' : esc(period)}</div></div>
+    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${esc(sub)}</div></div>`;
   document.getElementById('cards').innerHTML = `${headCards}
-    <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(v.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${v.active_subscription_count || 0} active${v.stopped_subscription_count ? ` · ${v.stopped_subscription_count} stopped` : ''}</div></div>
+    <div class="card"><div class="k">Subscriptions</div><div class="v">${moneyExact(src.subscription_monthly_total)}<span class="per">/mo</span></div><div class="sub">${src.active_subscription_count || 0} active${src.stopped_subscription_count ? ` · ${src.stopped_subscription_count} stopped` : ''}</div></div>
     <div class="card link" id="card-commit" title="Loans, insurance, bills, subscriptions — open the Commitments tab"><div class="k">Commitments</div><div class="v">${money(c.monthly_total)}<span class="per">/mo</span></div><div class="sub">${c.pct_of_income != null ? `${Math.round(c.pct_of_income)}% of income` : 'fixed monthly'}</div></div>`;
   document.getElementById('card-commit')?.addEventListener('click', () => switchView('commit'));
+}
+
+// What the range covers, in words — "Jun 2026", "May 2026 – Jul 2026", or the
+// ledger's own span when there is no range at all.
+function rangeWords(v) {
+  const months = v.months_available || [];
+  const r = v.range || (months.length ? { from: months[0], to: months[months.length - 1] } : null);
+  if (!r) return '';
+  const say = (m) => `${monthName(m)} ${m.slice(0, 4)}`;
+  return r.from === r.to ? say(r.from) : `${say(r.from)} – ${say(r.to)}`;
+}
+
+// Trends leads with the numbers its charts are made of. The shape of a trend is
+// the point of the tab, but the figures behind it were only on Report.
+function renderTrendCards(v) {
+  const t = v.totals || {};
+  const net = t.net || 0;
+  const period = rangeWords(v);
+  document.getElementById('trend-cards').innerHTML = `
+    <div class="card"><div class="k">Spend</div><div class="v">${money(t.spend)}</div><div class="sub">${esc(period)}</div></div>
+    <div class="card"><div class="k">Income</div><div class="v">${money(t.income)}</div><div class="sub">${t.months || 0} mo</div></div>
+    <div class="card ${net >= 0 ? 'pos' : 'neg'}"><div class="k">Net</div><div class="v">${money(net)}</div><div class="sub">${net >= 0 ? 'kept' : 'short'}</div></div>`;
 }
 
 // Hand-rolled SVG: paired spend/income bars per month + net line. No chart lib.

@@ -29,6 +29,15 @@
         </label>
       </header>
       <div id="status" class="status" hidden></div>
+      <!-- The period every figure on Report and Trends covers. One control,
+           one RANGE: two tabs headlining different periods is what made the
+           Mac and the phone look like they disagreed. -->
+      <div id="range-bar" hidden>
+        <div id="range-chips"></div>
+        <button id="range-custom" class="chip">… ▾</button>
+        <span id="range-label"></span>
+        <div id="range-pop" hidden></div>
+      </div>
 
       <section id="empty-state">
         <p class="lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
@@ -56,12 +65,7 @@
       <!-- Trends: all historical charts, range-scoped. Page-owned, deterministic;
            the agent never writes here. -->
       <section id="trends" hidden>
-        <div id="range-bar">
-          <div id="range-chips"></div>
-          <button id="range-custom" class="chip">… ▾</button>
-          <span id="range-label"></span>
-          <div id="range-pop" hidden></div>
-        </div>
+        <div id="trend-cards" class="cards"></div>
         <section data-sec="trend">
           <h2 class="sec-h">Monthly trend <span class="legend"><i class="sw spend"></i>spend <i class="sw income"></i>income <i class="sw net"></i>net</span></h2>
           <div class="sec-body"><div id="trend"></div></div>

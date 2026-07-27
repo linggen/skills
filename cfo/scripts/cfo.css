@@ -72,6 +72,8 @@ body.resizing iframe { pointer-events: none; } /* iframe would swallow the drag 
 .hint { color: var(--muted); font-size: 13px; }
 
 .cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 26px; }
+/* Trends summarises the range in three figures, not the Report's five. */
+#trend-cards { grid-template-columns: repeat(3, 1fr); margin-bottom: 22px; }
 @media (max-width: 1200px) { .cards { grid-template-columns: repeat(3, 1fr); } }
 .card.link { cursor: pointer; }
 .card.link:hover { border-color: var(--accent); }
@@ -179,6 +181,8 @@ h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: v
 #status { margin: -12px 0 14px; }
 
 #range-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 18px; position: relative; flex-wrap: wrap; }
+/* `display:flex` outranks the UA's [hidden] rule, so hiding it needs saying. */
+#range-bar[hidden] { display: none; }
 .chip { background: var(--panel); border: 1px solid var(--line); color: var(--muted);
   border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .chip:hover { color: var(--ink); }
