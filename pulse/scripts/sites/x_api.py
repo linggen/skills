@@ -60,7 +60,7 @@ def cache_put(key, value):
 # The linggen-browser extension reads the user's logged-in x.com session for $0.
 # Skills don't speak its WebSocket — they POST one read to the local daemon,
 # which brokers it to the extension. See doc/browser-bridge-spec.md.
-BRIDGE_URL = "http://127.0.0.1:9898/api/bridge/call"
+BRIDGE_URL = "http://127.0.0.1:9527/api/bridge/call"
 
 
 def bridge_call(op, params, timeout_ms=20000):
