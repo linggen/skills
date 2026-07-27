@@ -481,7 +481,19 @@ configure_codex_features() {
   mkdir -p "$(dirname "$codex_toml")"
   touch "$codex_toml"
 
-  if grep -qE '^\s*codex_hooks\s*=' "$codex_toml"; then
+  if grep -qE '^[[:space:]]*hooks[[:space:]]*=' "$codex_toml"; then
+    return 0
+  fi
+
+  # Codex deprecated `[features].codex_hooks` in favour of `[features].hooks`
+  # and warns about the old key on every launch. Rewrite it in place: an
+  # early return here would leave every EXISTING install on the dead key
+  # forever, so renaming the writes below would only ever help fresh ones.
+  if grep -qE '^[[:space:]]*codex_hooks[[:space:]]*=' "$codex_toml"; then
+    local tmp; tmp="$(mktemp)"
+    sed -E 's/^([[:space:]]*)codex_hooks([[:space:]]*=)/\1hooks\2/' "$codex_toml" > "$tmp"
+    mv "$tmp" "$codex_toml"
+    echo "  Codex features: codex_hooks → hooks (migrated deprecated key)"
     return 0
   fi
 
@@ -491,14 +503,14 @@ configure_codex_features() {
       BEGIN { inserted=0 }
       /^\[features\]/ && !inserted {
         print
-        print "codex_hooks = true   # added by shared-memory install.sh"
+        print "hooks = true   # added by shared-memory install.sh"
         inserted=1
         next
       }
       { print }
     ' "$codex_toml" > "$tmp"
     mv "$tmp" "$codex_toml"
-    echo "  Codex features: codex_hooks = true"
+    echo "  Codex features: hooks = true"
     return 0
   fi
 
@@ -513,12 +525,12 @@ configure_codex_features() {
 
 # BEGIN ling-mem features
 [features]
-codex_hooks = true
+hooks = true
 # END ling-mem features
 TOML
 
   mv "$tmp" "$codex_toml"
-  echo "  Codex features: codex_hooks = true"
+  echo "  Codex features: hooks = true"
 }
 
 configure_codex_sandbox() {
