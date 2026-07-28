@@ -238,8 +238,27 @@ Everything the app does, for the description and for mining more terms:
   sign-in.
 - Later: Apple Watch companion, CarPlay for DJ.
 
-Still open: whether purchases move in-app (IAP, 15% small-business rate)
-instead of Stripe on linggen.dev. The spec's current answer is Stripe.
+### Money
+
+Decided 2026-07-28: **purchases stay on linggen.dev via Stripe.** No IAP.
+Zero Apple commission, one subscription across Mac, web and phone.
+
+What that forces, and it is not a detail:
+
+- Outside the US storefront the app must not advertise the external purchase
+  at all. The app shows **Sign in**, never "subscribe on our site". The US
+  storefront may link out, commission-free.
+- The listing cannot say where to buy either.
+- So a cold download never enters a purchase funnel inside the app. Every
+  in-app conversion benchmark — trial-to-paid, paywall view-to-payment —
+  simply does not apply here.
+
+Which fixes what this surface is for: **the free cleanup is acquisition and
+retention, not the thing being sold.** Cleaning photos, videos and files
+works fully free and fully standalone, with no Mac and no account. Revenue
+happens later, on the Linggen suite subscription, when someone wants the Mac
+side. Plan the funnel that way — a phone-side paywall would earn nothing and
+break the "never a paywall on core function" promise at the same time.
 
 ## To verify before promising
 
