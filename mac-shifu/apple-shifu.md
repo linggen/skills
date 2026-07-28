@@ -106,6 +106,35 @@ New, both ends, same shape as Media.
   Verification semantics stay identical: SHA-256, archive ledger, and
   **nothing is deletable until it verifies**.
 
+### Where phone files land on the Mac
+
+Their own tree, separate from the media archive. Files carry a meaningful
+path and photos do not; merging the two would mean inventing a fake path for
+every photo or a fake date for every file.
+
+- Default root `~/Documents/iPhone Files/`, mirroring
+  `~/Pictures/iPhone Backup/`. Destination is configurable through the same
+  native folder picker and remembered default the Media tab already uses.
+- Layout `<root>/<device>/<granted-folder>/<original relative path>` — the
+  phone-side path is preserved, because restore has somewhere real to put the
+  file back. (Photos file by capture year/month instead; that stays.)
+- Same SHA-256 + path is a no-op, so re-running is idempotent. Same path with
+  different content keeps both, the later one suffixed with a short hash.
+- Ledger `data/files/archive.jsonl`, same schema as the media archive plus
+  `device` and `rel_path`.
+
+Restore, two directions:
+
+- **To the Mac** — `~/Documents/iPhone Files Restored/`, whole tree or single
+  file, mirroring `~/Pictures/iPhone Restored`.
+- **To the phone** — written back to its original relative path, but only
+  inside a directory the user has granted. Anything outside a granted
+  directory can be restored to the Mac only; say so in the UI rather than
+  failing at write time.
+
+Deleted files go to `data/files/trash/` with the media tab's 30-day expiry
+and per-item restore, so accident recovery works the same way on both tabs.
+
 Directory access on iOS: `getDirectoryPath()`, then persist a bookmark. The
 user points at a folder once; no full-disk scan exists on iOS. Note iOS 18
 removed the system picker's own long-press delete — the delete UI is ours.
@@ -157,12 +186,6 @@ Second tier — pick or hand-roll:
 - Jailbreak heuristics' false-positive rate.
 - `thermalState` availability in the background.
 - Which free-space figure to show, and that it matches Settings.
-
-## Open
-
-- **Where phone files land on the Mac** — merged into the media archive tree
-  (by device/date) or a separate `files/` tree. Decides the manifest schema
-  and the Mac-side Files browser.
 
 ## Rename checklist
 
