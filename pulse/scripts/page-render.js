@@ -364,6 +364,26 @@ function rerouteMisfiledCards(sections) {
   }
 }
 
+// "This lane found nothing" is a mechanical fact about the patch, not the
+// model's call — a lane that emitted real cards cannot also be empty, and a
+// LANELESS empty on a patch that carried cards is pure noise (it renders
+// nowhere: the source tabs filter discovery by cardSource).
+// Observed 2026-07-28: a Reddit rescan emitted three discovery cards AND
+// { type:"empty", reason:"No fresh Reddit thread cleared the grounded-reply
+// check this scan." } with no source. Resolve it at ingest instead of
+// trusting every prompt to hold the rule.
+function dropContradictoryEmpties(cards) {
+  const realLanes = new Set(
+    cards.filter(c => c.type !== 'empty').map(cardSource));
+  if (realLanes.size === 0) return cards;   // genuinely empty patch — keep
+  return cards.filter(c => {
+    if (c.type !== 'empty') return true;
+    const lane = cardSource(c);
+    if (!lane || lane === 'other') return false;   // laneless: unrenderable
+    return !realLanes.has(lane);                   // lane spoke for itself
+  });
+}
+
 function applyBodyPatch(patch) {
   if (!patch || typeof patch !== 'object' || !patch.section) return;
   const sectionId = patch.section;
@@ -377,7 +397,8 @@ function applyBodyPatch(patch) {
     // before the render-time filter hides them. (Seed loads before any
     // gather — see init() — so dismissedUrls is populated by the time a
     // body_patch arrives.)
-    const incoming = patch.cards.filter(c => !isDismissed(c)).map(ensureCardId);
+    const incoming = dropContradictoryEmpties(
+      patch.cards.filter(c => !isDismissed(c))).map(ensureCardId);
     // Two modes:
     //   default (replace) — cards in patch fully replace existing cards.
     //                       Used by Gather web's mentions/trend/discovery
@@ -719,7 +740,11 @@ function renderTabContent(tab, body) {
   rescan.textContent = RESCAN_LABELS[tab.id] || '↻ Rescan';
   rescan.addEventListener('click', () => {
     if (typeof onRescanCallback !== 'function') return;
-    onRescanCallback(tab.id);
+    // The callback is async (it refreshes the already-commented set before
+    // sending the prompt) — swallow rejections so a failed rescan can't
+    // surface as an unhandled promise error.
+    Promise.resolve(onRescanCallback(tab.id))
+      .catch(err => console.warn('[pulse] rescan failed', err));
     rescan.disabled = true;
     rescan.textContent = 'Rescanning…';
     setTimeout(() => { rescan.disabled = false; rescan.textContent = RESCAN_LABELS[tab.id] || '↻ Rescan'; }, 4000);

@@ -2185,24 +2185,51 @@ function renderRedditTab(tabId, mount) {
 const MENTIONS_RECHECK = (tool) =>
   `Also re-check my mentions for this source: call ${tool} and emit \`mention\` / \`reply_to_me\` cards into the \`mentions\` section per SKILL.md — a tool error or empty result contributes no card.`;
 
+// A rescan is single-lane, so its `empty` card is all-or-nothing: it speaks
+// for THIS lane and only when the lane produced no real card. SKILL.md's
+// generic "no signal → emit one empty card" rule was the only guidance these
+// prompts carried, and the agent read it as per-step — emitting a sourceless
+// empty alongside three real Reddit cards (2026-07-28).
+const EMPTY_RULE = (lane) =>
+  `EMPTY CARD (all-or-nothing): if you emitted at least one real \`discovery\` card for ${lane} this run, emit NO empty card — the lane spoke for itself. ONLY if this lane produced zero real cards, emit exactly one { type:"empty", source:"${lane}", reason:<one line> } in \`discovery\`. The \`source\` is REQUIRED — a sourceless empty renders nowhere on the ${lane} tab. Never both, never more than one.`;
+
 const RESCAN_PROMPTS = {
   x: [
     'Refresh my X targets in THIS session.',
     'First ensure the target roster: if sites.x.roster is empty (or I am asking to refresh accounts), rebuild it per the discover-customers "X target roster" procedure — FetchXWhoToFollow (source 1), authors of on-topic FetchX hits (source 2), FetchXFollowing <handle> on my strongest targets (source 3); tag each `followed` via FetchXFollowing (no arg = my own following); exclude self + sites.x.ignored_accounts + sites.x.dismissed_suggestions; curate ~20 with a one-line `why`; emit a `x_roster` body_patch (source-1 first). If the roster already has accounts and I did not ask to refresh, skip rebuilding.',
     'Then call FetchXTargets and emit the freshest posts as `discovery` cards (source:"x") — bypass the 0.6 fit gate (the roster is pre-vetted), drop any whose status id is in SKIP_URLS, freshest first.',
     MENTIONS_RECHECK('FetchXMentions'),
+    EMPTY_RULE('x'),
     'No prose response.',
   ].join('\n'),
-  hn: `Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply; emit \`discovery\` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit \`hn_submit\` cards. Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchHNMentions')} No prose response.`,
-  reddit: `Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit; drop SKIP_URLS; for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and draft a top-level reddit-comment reply; emit \`discovery\` cards (source:"reddit"). ${MENTIONS_RECHECK('FetchRedditMentions')} No prose response.`,
-  bluesky: `Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit \`discovery\` cards (sub:"bsky"). Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchBlueskyMentions')} No prose response.`,
+  hn: `Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply; emit \`discovery\` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit \`hn_submit\` cards. Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchHNMentions')} ${EMPTY_RULE('hn')} No prose response.`,
+  reddit: `Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit. ALREADY-COMMENTED CHECK FIRST — before scoring or drafting, drop every hit whose post id (the segment after /comments/<id>) appears in SKIP_URLS as \`reddit:<id>\`; that list is threads I have already commented in or dismissed, and a draft for one is wasted work the page hides at render. Then, for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and drop the thread as well if the tree contains a comment authored by REDDIT_HANDLE (case-insensitive, ignore a leading "u/"); draft a top-level reddit-comment reply for the survivors and emit \`discovery\` cards (source:"reddit"). ${MENTIONS_RECHECK('FetchRedditMentions')} ${EMPTY_RULE('reddit')} No prose response.`,
+  bluesky: `Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit \`discovery\` cards (sub:"bsky"). Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchBlueskyMentions')} ${EMPTY_RULE('bluesky')} No prose response.`,
   mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchHNMentions / FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md. NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card. No prose response.',
 };
 
-function handleTabRescan(tabId) {
+async function handleTabRescan(tabId) {
   if (tabId === 'progress') { runGatherLocal(); return; }
-  const prompt = RESCAN_PROMPTS[tabId];
+  let prompt = RESCAN_PROMPTS[tabId];
   if (!prompt) return;
+  // Reddit's prompt names my handle so the agent can spot my own comment in
+  // a thread tree — the catch for threads older than the comments.rss window.
+  if (prompt.includes('REDDIT_HANDLE')) {
+    let handle = '';
+    try {
+      const cfg = await readPulseConfig();
+      handle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
+    } catch {}
+    prompt = prompt.replace(/REDDIT_HANDLE/g,
+      handle ? `"${handle}"` : '<sites.reddit.username>');
+  }
+  // Refresh the already-commented set FIRST, exactly like runGatherWeb.
+  // Without this the rescan sent whatever init() happened to load — so a
+  // thread commented on after page load was absent from SKIP_URLS and the
+  // agent re-proposed it, burning a draft the renderer then hid
+  // (observed 2026-07-28: two of three Reddit cards were already answered).
+  await refreshCommentedThreadUrls().catch(
+    err => console.warn('[pulse] rescan own-comments refresh', err));
   // The prompts tell the agent to "drop SKIP_URLS" — prepend the actual
   // list (the same block Gather web sends) so there's data behind it.
   sendChatHidden(buildSkipBlock() + prompt);

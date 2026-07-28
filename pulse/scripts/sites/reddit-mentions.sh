@@ -24,7 +24,12 @@
 #   { items: [{kind, title, body, url, author, sub, created_iso, score,
 #              num_comments, watched_term,
 #              parent_comment_body?, parent_comment_url?}], count, errors }
-#   kind ∈ "reply_to_me" | "mention"
+#   kind ∈ "reply_to_me" | "mention" | "own_comment"
+#
+# `own_comment` rows are page-side plumbing, never cards: they are the
+# threads the user has already commented in, unioned across runs in
+# state/reddit-own-threads.json so a 429 (or Reddit's ~100-comment RSS
+# window) can never silently empty the discovery already-commented filter.
 #
 # For "reply_to_me" items we pre-walk the thread (the reply's permalink
 # `.rss?context=1`) to recover the parent comment — i.e. YOUR comment that
@@ -251,6 +256,42 @@ def parse_feed(xml_bytes, kind, watched_term=None, cap=15):
         })
         n += 1
 
+# Durable record of threads I've commented in, unioned across runs.
+# Two reasons the live feed alone is not enough, both of which silently
+# emptied SKIP_URLS and made discovery re-propose threads I'd answered
+# (observed 2026-07-28: two r/LLMDevs threads I'd already replied to came
+# back as discovery cards and were only caught by the render-time filter):
+#   1. Reddit's anonymous rate limit trips constantly — a 429 here meant
+#      ZERO own_comment rows, so the whole suppression list vanished.
+#   2. comments.rss only returns my last ~100 comments; older threads fall
+#      out of the window and become "never commented" again forever.
+OWN_CACHE = os.path.expanduser(
+    "~/.linggen/skills/pulse/state/reddit-own-threads.json")
+OWN_CACHE_CAP = 500   # newest N threads kept; well past the RSS window
+
+def load_own_cache():
+    try:
+        c = json.load(open(OWN_CACHE))
+    except Exception:
+        return {}
+    if (c.get("username") or "").lower() != username.lower():
+        return {}          # handle changed — the cache is someone else's
+    t = c.get("threads")
+    return t if isinstance(t, dict) else {}
+
+def save_own_cache(threads):
+    try:
+        newest = sorted(threads.items(),
+                        key=lambda kv: (kv[1].get("ts") or ""),
+                        reverse=True)[:OWN_CACHE_CAP]
+        os.makedirs(os.path.dirname(OWN_CACHE), exist_ok=True)
+        tmp = OWN_CACHE + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump({"username": username, "threads": dict(newest)}, f)
+        os.replace(tmp, OWN_CACHE)
+    except Exception as ex:
+        errors.append(f"own-threads cache write: {type(ex).__name__}")
+
 def fetch_own_comments(cap=100):
     # Public feed of MY recent comments — the authoritative "threads I've
     # already commented in" source for the discovery already-commented
@@ -259,37 +300,55 @@ def fetch_own_comments(cap=100):
     # carries the thread id (/comments/<id>/), so it dedups against the
     # discovery card's thread_url. This was lost in the .json→RSS migration
     # (old.reddit /user/<u>/comments.json is now bot-walled); restored here.
+    # The live feed is UNIONED into the on-disk cache, and a failed fetch
+    # falls back to the cache alone — suppression must never silently empty.
+    threads = load_own_cache()
     url = (f"https://www.reddit.com/user/{urllib.parse.quote(username)}"
            f"/comments.rss?limit={cap}")
+    live = 0
     try:
         root = ET.fromstring(fetch(url))
+        for e in root.findall("a:entry", NS):
+            link_el = e.find("a:link", NS)
+            href = link_el.get("href") if link_el is not None else ""
+            if not href:
+                continue
+            www = to_www(href)
+            ts = (e.findtext("a:updated", "", NS) or "").strip()
+            m = re.search(r"/comments/([^/?#]+)", www)
+            key = m.group(1) if m else www
+            if not key:
+                continue
+            live += 1
+            prev = threads.get(key) or {}
+            # Feed is newest-first, so the first hit per thread is my latest
+            # comment there; keep the newest timestamp we've ever seen.
+            if not prev or (ts or "") > (prev.get("ts") or ""):
+                threads[key] = {
+                    "url": www,
+                    "ts": ts,
+                    "title": (e.findtext("a:title", "", NS) or "").strip()[:300],
+                }
+        save_own_cache(threads)
     except Exception as ex:
         errors.append(f"own-comments feed failed: {str(ex)[:80]}")
-        return
-    seen = set()
-    for e in root.findall("a:entry", NS):
-        link_el = e.find("a:link", NS)
-        href = link_el.get("href") if link_el is not None else ""
-        if not href:
-            continue
-        www = to_www(href)
-        ts = (e.findtext("a:updated", "", NS) or "").strip()
-        m = re.search(r"/comments/([^/?#]+)", www)
-        key = m.group(1) if m else www
-        # Record my latest comment time per thread (feed is newest-first, so
-        # the first hit per thread is the latest) for the answered-fallback.
-        if key and ts:
+        if threads:
+            errors.append(
+                f"using {len(threads)} cached own-comment threads "
+                "(already-commented suppression still active)")
+
+    for key, rec in threads.items():
+        ts = rec.get("ts") or ""
+        # Latest comment time per thread — the answered-fallback signal.
+        if ts:
             cur = my_thread_ts.get(key)
             if not cur or ts > cur:
                 my_thread_ts[key] = ts
-        if key in seen:               # collapse multiple comments in one thread
-            continue
-        seen.add(key)
         items.append({
             "kind": "own_comment",
-            "title": (e.findtext("a:title", "", NS) or "").strip()[:300],
-            "url": www,
-            "created_iso": (e.findtext("a:updated", "", NS) or "").strip() or None,
+            "title": rec.get("title") or "",
+            "url": rec.get("url") or "",
+            "created_iso": ts or None,
         })
 
 # Always pull my own comments — drives the discovery already-commented

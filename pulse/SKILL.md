@@ -467,7 +467,13 @@ partner.
   Silence is the correct response when there's nothing to surface
   on the page.
 - When a step has no real signal, emit ONE `empty` card with a
-  one-line reason and stop. Don't fabricate.
+  one-line reason and stop. Don't fabricate. **An `empty` card is
+  all-or-nothing per lane**: if the lane produced even one real card,
+  emit NO empty card for it — never both in the same patch. In the
+  multi-lane sections (`discovery`, `mentions`) it MUST carry the lane
+  it speaks for — `{ type:"empty", source:"reddit"|"hn"|"x"|"bluesky",
+  reason }` — one per scanned lane that came back empty. A sourceless
+  empty card renders nowhere on the source tabs.
 - **A tool error or empty result is NEVER a card.** Every mention /
   reply / discovery card must come from a real item a Fetch
   tool actually returned, about a real person/repo/thread. Do NOT
