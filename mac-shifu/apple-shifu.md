@@ -80,13 +80,21 @@ Security, iPhone:
 - **photos not yet archived to the Mac** — the real data risk on a phone
 - **sensitive photos in the roll** — IDs, bank cards, password screenshots
 
-Health score, phone weights (the Mac's disk-30/battery-15 does not transfer —
-battery health is unreadable and space is the phone's actual pain):
+Health score — the existing Mac Shifu 0–100 composite (`health-score.js`;
+today disk 30 / memory 15 / battery 15 / security 20 / garbage 10 /
+freshness 10). Both ends share one function; a component that cannot be read
+on this device gets **weight 0 and drops out of the denominator**, which is
+already how a desktop Mac handles battery. iPhone battery health falls out by
+that same rule, no special case.
+
+**Pairing is never scored.** Whether a Mac is connected says nothing about
+the health of this device, and scoring it would leave every standalone user
+permanently short of 100. Phone weights:
 
 - free space 40%
-- backup coverage 25%
-- security baseline 20%
-- library tidiness 15% (duplicate + screenshot share)
+- security baseline 25%
+- library tidiness 25% (duplicate + screenshot share)
+- device state 10% (thermal, low-power mode)
 
 ## Media tab
 
@@ -103,8 +111,17 @@ New, both ends, same shape as Media.
 - Mac: `~/Downloads`, large files, duplicate files, caches.
 - Phone → Mac archiving reuses the media `manifest → ingest → verify`
   pipeline unchanged; only the content type widens from assets to files.
-  Verification semantics stay identical: SHA-256, archive ledger, and
-  **nothing is deletable until it verifies**.
+  Verification semantics stay identical: SHA-256 and an archive ledger.
+
+**Backing up to a Mac is never required to clean.** A standalone user deletes
+freely — PhotoKit sends assets to Recently Deleted, which is a 30-day net on
+its own, and our own trash covers files. The archive gate applies only to the
+explicit *back up, then delete* flow: there, nothing is removed until it
+verifies. Never a paywall on core function, and never a Mac gate on it.
+
+On iPhone the Files tab is often nearly empty, because most documents live
+inside other apps' sandboxes where iOS grants no access. Say that in the
+empty state rather than showing a blank panel that reads as broken.
 
 ### Where phone files land on the Mac
 
@@ -178,6 +195,51 @@ Second tier — pick or hand-roll:
   `device_safety_info` ^1.2.0. **Not** `flutter_jailbreak_detection` —
   popular but unmaintained since 2023-01.
 - `system_info2` is high-traffic but has no iOS support.
+
+## App Store listing
+
+Decided 2026-07-28: keywords go in at submission. Store name stays
+**Linggen**; the subtitle and keyword field carry the search terms, since
+nobody searches the brand. Primary category **Utilities** (where cleaners
+live), secondary Productivity.
+
+Draft subtitle (30 chars max):
+
+```
+Photo & File Cleaner + Backup
+```
+
+Draft keyword field (100 chars, comma-separated, no spaces after commas,
+singular forms, never repeat a word already in the name or subtitle):
+
+```
+duplicate,storage,space,cleanup,screenshot,gallery,sync,mac,downloads,music,karaoke,budget
+```
+
+Everything the app does, for the description and for mining more terms:
+
+- **Photos** — duplicate groups, bursts, screenshots, receipts and document
+  shots, blurry rejects, memes, RAW+JPEG pairs; batch delete via PhotoKit.
+- **Videos** — oversized, screen recordings, slow-mo originals, repeats.
+- **Live Photo** — motion component (pending verification).
+- **Files** — granted folders, downloads, large files, Linggen's own data.
+- **Backup and restore** — to a paired Mac and back, hash-verified, 30-day
+  trash with per-item restore.
+- **Device report** — storage and fill trend, thermal, low-power mode,
+  passcode and OS-version checks, health score with history.
+- **DJ** — background music player, lock-screen and Control Center controls,
+  offline library, synced lyrics, karaoke; library sync from the Mac.
+- **CFO** — bank export import via the share sheet, categories, budgets,
+  reports, trends, import history with undo; local-first, no cloud account.
+- **Yinyue** — on-phone agent chat with photo, player and note tools; the
+  Mac's `ling` session when paired.
+- **Games** — Chinese Chess, Gomoku, Snake, Pong, Tetris.
+- **Pairing** — QR, Bonjour on the LAN, relay from anywhere; linggen.dev
+  sign-in.
+- Later: Apple Watch companion, CarPlay for DJ.
+
+Still open: whether purchases move in-app (IAP, 15% small-business rate)
+instead of Stripe on linggen.dev. The spec's current answer is Stripe.
 
 ## To verify before promising
 
