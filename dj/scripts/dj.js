@@ -6,9 +6,10 @@
 //   DYNAMIC — the #set panel: filled ONLY by the agent via PageUpdate.
 
 import './chat-bridge.js'; // sets window.LinggenUI
-import { runBash, sq, trashFile, resolvePath } from './bash.js';
+import { runBash, sq } from './bash.js';
 import { listSkillSessions } from './api.js';
-import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned, reconcileLibrary, exportPlaylists } from './library.js';
+import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned, reconcileLibrary, register, adopted } from './library.js';
+import * as reg from './lww.js';
 import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { openPlayer } from './player.js';
@@ -29,6 +30,7 @@ const savedUi = loadUi();
 const state = {
   config: { sync_targets: [] },
   library: { tracks: [], playlists: [] },
+  reg: null, // the playlist edit register — see lww.js
   phone: [], // paired Linggen Mobile devices with their fetch ledgers
   set: null, // the currently proposed tracklist
   busy: false,
@@ -52,6 +54,9 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
   [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
+  // The register before anything reads a playlist — it is the truth now, and
+  // library.json's tags are the copy it seeds from on a library that predates it.
+  state.reg = await register(state.library);
   await reindex(true);
   // A restored playlist selection may point at a playlist that no longer exists.
   if (state.collection.kind === 'playlist' && !playlistsOf().includes(state.collection.name)) {
@@ -82,11 +87,10 @@ async function reindex(announce) {
   reindexing = true;
   try {
     const r = await reconcileLibrary(state.library, state.config);
-    // Refresh what a paired phone can see even when nothing drifted — playlists
-    // predate this export, so the first run after an update has one to write and
-    // no edit to hang it off.
-    exportPlaylists(state.library, await resolvePath(state.config.library_dir));
     if (r.adopted || r.retired) {
+      // A file that just appeared under a name deleted earlier is a NEW song;
+      // clear the tombstone or the projection would delete it straight back.
+      await adopted(state.library.tracks.map((t) => t.file).filter(Boolean));
       await saveLibrary(state.library);
       renderLibrary();
       if (announce) {
@@ -241,10 +245,7 @@ function startRenamePlaylist(node, name) {
 // Rename a playlist; renaming to an existing name MERGES them.
 async function renamePlaylist(oldName, newName) {
   if (!newName || newName === oldName) { renderLibrary(); return; }
-  for (const t of state.library.tracks) {
-    const pls = t.playlists || [];
-    if (pls.includes(oldName)) t.playlists = [...new Set(pls.map((p) => (p === oldName ? newName : p)))];
-  }
+  reg.renameList(state.reg, oldName, newName, reg.filesInList(state.reg, oldName));
   if (state.collection.kind === 'playlist' && state.collection.name === oldName) setCollection({ kind: 'playlist', name: newName });
   await saveLibrary(state.library);
   renderLibrary();
@@ -253,9 +254,7 @@ async function renamePlaylist(oldName, newName) {
 
 // Remove a playlist (songs stay in the library).
 async function deletePlaylist(name) {
-  for (const t of state.library.tracks) {
-    if ((t.playlists || []).includes(name)) t.playlists = t.playlists.filter((p) => p !== name);
-  }
+  reg.deleteList(state.reg, name, reg.filesInList(state.reg, name));
   if (state.collection.kind === 'playlist' && state.collection.name === name) setCollection({ kind: 'all' });
   await saveLibrary(state.library);
   renderLibrary();
@@ -333,10 +332,11 @@ function showAddMenu() {
 }
 
 async function addToPlaylist(name) {
-  let n = 0;
-  for (const t of state.library.tracks) {
-    if (state.selected.has(trackKey(t))) { t.playlists = [...new Set([...(t.playlists || []), name])]; n += 1; }
-  }
+  const files = state.library.tracks
+    .filter((t) => state.selected.has(trackKey(t)) && t.file)
+    .map((t) => t.file);
+  const n = files.length;
+  reg.addToList(state.reg, files, name);
   await saveLibrary(state.library);
   state.selected.clear();
   setCollection({ kind: 'playlist', name });
@@ -393,28 +393,28 @@ async function removeSelected() {
   if (inPlaylistView()) { await untagSelected(state.collection.name); return; }
   const ids = new Set(state.selected);
   const victims = state.library.tracks.filter((t) => ids.has(trackKey(t)));
+  // The cell is what a paired phone merges; saveLibrary's projection unlinks
+  // the file. Sidecars go here, since only the audio file has a cell.
   for (const t of victims) {
-    for (const f of [t.file, t.lrc, t.karaoke_video]) {
-      if (f) { try { await trashFile(f); } catch { /* ignore */ } }
+    if (t.file) reg.deleteTrack(state.reg, t.file);
+    for (const f of [t.lrc, t.karaoke_video]) {
+      if (f) { try { await runBash(`rm -f ${sq(f)}`); } catch { /* already gone */ } }
     }
   }
-  state.library.tracks = state.library.tracks.filter((t) => !ids.has(trackKey(t)));
   await saveLibrary(state.library);
   state.selected.clear();
   renderLibrary();
-  toast(`Deleted ${victims.length} song${victims.length === 1 ? '' : 's'} — moved to Trash.`);
+  toast(`Deleted ${victims.length} song${victims.length === 1 ? '' : 's'}.`);
 }
 
 // Untag the selected songs from the current playlist (files & library untouched).
 async function untagSelected(name) {
   const ids = new Set(state.selected);
-  let n = 0;
-  for (const t of state.library.tracks) {
-    if (ids.has(trackKey(t)) && (t.playlists || []).includes(name)) {
-      t.playlists = t.playlists.filter((p) => p !== name);
-      n += 1;
-    }
-  }
+  const files = state.library.tracks
+    .filter((t) => ids.has(trackKey(t)) && t.file && reg.listsForFile(state.reg, t.file).includes(name))
+    .map((t) => t.file);
+  const n = files.length;
+  reg.removeFromList(state.reg, files, name);
   await saveLibrary(state.library);
   state.selected.clear();
   renderLibrary();
@@ -493,7 +493,7 @@ async function onRowAction(e) {
 // Untag one song from the current playlist. The song stays in the library (and
 // in any other playlists); nothing on disk changes.
 async function removeFromPlaylist(t, name) {
-  t.playlists = (t.playlists || []).filter((p) => p !== name);
+  reg.removeFromList(state.reg, [t.file], name);
   await saveLibrary(state.library);
   renderLibrary();
   toast(`Removed “${t.title}” from “${name}”.`);
@@ -516,17 +516,21 @@ async function fetchTrackLyrics(t) {
   return null;
 }
 
-// Delete a song from the library: move its files (mp3 + .lrc + karaoke video) to
-// the Trash and drop it from every playlist. Only reachable from the All songs /
-// Recently added views — playlist views untag instead.
+// Delete a song from the library: the file, its sidecars, and its place in every
+// playlist. Only reachable from the All songs / Recently added views — playlist
+// views untag instead.
+//
+// A plain delete, not the Trash: DJ music is reproducible, so this is a
+// re-download rather than a loss. The cell is what a paired phone merges;
+// saveLibrary's projection is what unlinks the audio file.
 async function removeTrack(t) {
-  for (const f of [t.file, t.lrc, t.karaoke_video]) {
-    if (f) { try { await trashFile(f); } catch { /* may already be gone */ } }
+  if (t.file) reg.deleteTrack(state.reg, t.file);
+  for (const f of [t.lrc, t.karaoke_video]) {
+    if (f) { try { await runBash(`rm -f ${sq(f)}`); } catch { /* already gone */ } }
   }
-  state.library.tracks = state.library.tracks.filter((x) => x !== t);
   await saveLibrary(state.library);
   renderLibrary();
-  toast(`Deleted “${t.title}” — moved to Trash.`);
+  toast(`Deleted “${t.title}”.`);
 }
 
 async function syncCrate(crate) {
@@ -570,10 +574,11 @@ const keyOf = (t) => `${(t.artist || '').toLowerCase().trim()}|${(t.title || '')
 async function applyAgentPlaylist(pl) {
   if (!pl.name || !Array.isArray(pl.tracks)) return;
   const want = new Set(pl.tracks.map(keyOf));
-  let n = 0;
-  for (const t of state.library.tracks) {
-    if (want.has(trackKey(t))) { t.playlists = [...new Set([...(t.playlists || []), pl.name])]; n += 1; }
-  }
+  const files = state.library.tracks
+    .filter((t) => want.has(trackKey(t)) && t.file)
+    .map((t) => t.file);
+  const n = files.length;
+  reg.addToList(state.reg, files, pl.name);
   await saveLibrary(state.library);
   setCollection({ kind: 'playlist', name: pl.name });
   renderLibrary();
@@ -762,9 +767,12 @@ function addToLibrary(t, file, lrc) {
     file,
     lrc: lrc || undefined,
     added_at: new Date().toISOString(),
-    playlists: state.set ? [cleanPlaylistName(state.set.name)] : [],
+    playlists: [],
     synced_to: [],
   });
+  // Downloading a name that was deleted before makes it a new song again.
+  reg.undeleteTrack(state.reg, file);
+  if (state.set) reg.addToList(state.reg, [file], cleanPlaylistName(state.set.name));
 }
 
 function setProgress(frac) {

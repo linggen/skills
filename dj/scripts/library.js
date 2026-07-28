@@ -3,6 +3,7 @@
 // agent and the page always agree on what's owned.
 
 import { runBash, writeFile, resolvePath, sq } from './bash.js';
+import { Register, project, seedFromTracks, undeleteTrack } from './lww.js';
 
 const DJ_DIR = '$HOME/.linggen/skills/dj';
 
@@ -42,55 +43,85 @@ export async function loadLibrary() {
   }
 }
 
-export async function saveLibrary(lib) {
-  await writeFile(`${DJ_DIR}/library.json`, JSON.stringify(lib, null, 2));
-  await exportPlaylists(lib);
+// ── the edit register (data/playlist-edits.json) ─────────────────────────────
+// Playlist membership, order and deletions live in cells, not in library.json —
+// so this Mac and a paired phone merge per-key instead of one side's file
+// winning wholesale. library.json keeps a projected COPY in `tracks[].playlists`
+// and `playlists[]`, which is what the page, the ListLibrary tool and the agent
+// have always read; none of them has to learn about cells. See lww.js.
+
+const DATA = `${DJ_DIR}/data`;
+
+let _reg = null;
+
+/// This machine's id: the LWW tiebreak, not a secret. Written once, next to the
+/// register, so it survives across sessions.
+async function deviceId() {
+  let id = '';
+  try {
+    id = (await runBash(`cat "${DATA}/device-id" 2>/dev/null; true`)).trim();
+  } catch { /* first run */ }
+  if (id) return id;
+  id = `mac-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+  await writeFile(`${DATA}/device-id`, `${id}\n`);
+  return id;
 }
 
-// ── the playlists a paired phone can see ─────────────────────────────────────
-//
-// library.json lives under the skill dir, and the engine's device sync serves
-// the library FOLDER and nothing else — so a phone has never been able to see
-// a playlist, only loose files. Every save drops a small derived copy of them
-// inside the folder, where sync can already reach it. No engine change: it
-// rides the `sync:` declaration DJ already has.
-//
-// Derived from the per-track tags rather than lib.playlists, because the tags
-// are what the sidebar has always read and the top-level array has drifted
-// empty. And the names written out are the ones on DISK, not the ones in the
-// index: a phone matches what sync handed it, and macOS is free to disagree
-// with us about Unicode normalization.
-export async function exportPlaylists(lib, dirOverride) {
+/// The register, loaded once per page.
+///
+/// Seeded from whatever `tracks[].playlists[]` already holds, so a library that
+/// predates this file keeps its playlists. Seeding only fills keys the register
+/// has never held, so it re-seeds nothing and resurrects nothing you removed —
+/// and it runs on every load, because the register can exist without this Mac
+/// ever having migrated: a paired phone creates it the first time it syncs.
+export async function register(lib) {
+  if (_reg) return _reg;
+  let state = null;
   try {
-    const dir = dirOverride || (await resolvePath((await loadConfig()).library_dir));
-    const onDisk = new Map();
-    const out = await runBash(`cd ${sq(dir)} 2>/dev/null && ls -1 -- * 2>/dev/null; true`);
-    for (const name of out.split('\n').map((l) => l.trim()).filter(Boolean)) {
-      onDisk.set(norm(name), name);
-    }
+    const raw = await runBash(`cat "${DATA}/playlist-edits.json" 2>/dev/null; true`);
+    state = raw.trim() ? JSON.parse(raw) : null;
+  } catch { /* absent or half-written — start clean */ }
+  _reg = new Register(await deviceId(), state);
+  // Persist the seed straight away rather than waiting for an edit — and write
+  // the library through with it, so `playlists[]` is never a stale copy of what
+  // the register says. A library nobody has touched today still has playlists,
+  // and a phone that syncs before the first edit must find them: it has the
+  // files, but only this side has the tags to seed from.
+  if (lib && seedFromTracks(_reg, lib) > 0) await _persist(lib, _reg);
+  return _reg;
+}
 
-    const lists = new Map();
-    for (const t of lib.tracks || []) {
-      if (!t.file) continue;
-      const file = onDisk.get(norm(t.file));
-      if (!file) continue; // retired, or not in this folder — not the phone's
-      for (const name of t.playlists || []) {
-        if (!lists.has(name)) lists.set(name, []);
-        lists.get(name).push(file);
-      }
-    }
+export async function saveRegister(r) {
+  await writeFile(`${DATA}/playlist-edits.json`, `${JSON.stringify(r.toState(), null, 2)}\n`);
+}
 
-    const playlists = [...lists.entries()]
-      .map(([name, files]) => ({ name, files }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    await writeFile(
-      `${dir}/playlists.json`,
-      JSON.stringify({ updated_at: new Date().toISOString(), playlists }, null, 2),
-    );
-  } catch {
-    // Best-effort: the phone keeps whatever it last synced. Never let this
-    // break the save the user actually asked for.
+/// Persist the library AND the register, with the register projected through
+/// first. Every mutation goes through here, so the page can never show a
+/// playlist it hasn't stored — and a song the register says is gone is gone
+/// from the folder too, plainly: DJ music is reproducible, so a delete is a
+/// re-download rather than a loss.
+export async function saveLibrary(lib) {
+  await _persist(lib, await register(lib));
+}
+
+/// The write itself, taking the register rather than fetching it — so the seed
+/// path can persist before `register()` has returned.
+async function _persist(lib, r) {
+  for (const file of project(r, lib)) {
+    try {
+      await runBash(`rm -f ${sq(file)}`);
+    } catch { /* already gone */ }
   }
+  await writeFile(`${DJ_DIR}/library.json`, JSON.stringify(lib, null, 2));
+  await saveRegister(r);
+}
+
+/// A song arriving under a name that was deleted before is a NEW song — clear
+/// the tombstone so the projection can't delete it again. Called wherever a
+/// file enters the library.
+export async function adopted(files) {
+  const r = await register();
+  for (const f of files) undeleteTrack(r, f);
 }
 
 // Stable id for a track so dupes collapse and sync state sticks.

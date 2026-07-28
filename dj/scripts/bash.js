@@ -44,7 +44,11 @@ export async function resolvePath(p) {
 // language and any quoting survive intact. openssl is always present on macOS.
 export async function writeFile(path, content) {
   const b64 = btoa(unescape(encodeURIComponent(content)));
-  await runBash(`printf %s ${sq(b64)} | openssl base64 -A -d > "${path}"`);
+  // Create the parent first: writers are free to keep their files in a subdir
+  // (the edit register lives in data/), and a bare `>` fails on a missing one.
+  await runBash(
+    `mkdir -p "$(dirname "${path}")" && printf %s ${sq(b64)} | openssl base64 -A -d > "${path}"`,
+  );
 }
 
 // Move a file to the macOS Trash (recoverable, supports Finder "Put Back") —
