@@ -1,13 +1,14 @@
 ---
 type: design
 guide: |
-  Apple Shifu — the Mac Shifu skill and the Linggen Mobile phone surface as one
-  product. What to build. Not scheduled, not started.
+  Apple Shifu — the Mac skill and the Linggen Mobile phone surface as one
+  product. What to build.
 ---
 
 # Apple Shifu
 
-Status: design, 2026-07-28. Nothing implemented; the rename has not run.
+Status: design, 2026-07-28. The rename has shipped (see "Rename" below);
+nothing else here is built yet.
 
 ## Decisions
 
@@ -268,17 +269,38 @@ break the "never a paywall on core function" promise at the same time.
 - `thermalState` availability in the background.
 - Which free-space figure to show, and that it matches Settings.
 
-## Rename checklist
+## Rename — done 2026-07-28
 
-From the 2026-07-16 `sys-doctor → mac-shifu` sweep, which the first pass got
-wrong:
+Five trees swept: `skills/` (a166ddb), `linggen-app/` (939719d), engine
+(83d34e1, 4dab8de), `linggensite/` (10b0be0), and the local `~/.linggen/`
+install.
 
-- Five trees: `skills/`, `linggen-app/`, engine, `linggensite/`, and local
-  `~/.linggen/`.
-- Engine Launcher hard-codes skill names (`LauncherApp`, `LauncherSettings`,
-  `PREFERRED_ORDER`, `HAS_SETTINGS`).
-- Billing and telemetry must accept old and new ids together.
-- **User data files carry absolute paths** — `removals.jsonl` held 193 paths
-  into the old directory; restore/purge breaks without a rewrite.
-- Grep case variants, not just the folder name.
-- Keep `install-mac-shifu.sh` as an alias.
+What the 2026-07-16 `sys-doctor → mac-shifu` sweep got wrong, fixed at the
+root this time rather than by hand:
+
+- **Renames are declarative now.** A skill lists `renamed-from:` in its
+  frontmatter and the engine migrates whichever old slug is on disk, before
+  load, so no stale copy registers as a second skill. The engine names no
+  app. `apple-shifu` declares `[mac-shifu, sys-doctor]`.
+- **Migration rewrites absolute paths.** `removals.jsonl` held 193 paths into
+  the old directory; a move alone leaves restore and purge dangling.
+  `rewrite_slug_paths` fixes the text state files and skips binaries.
+- **Browser state carries too** — `api.js` migrates the `mac-shifu:*`
+  localStorage keys, so score history survives.
+
+Verified on the live install: 1,962 removal rows and 2,972 archive rows
+intact, all 193 rewritten trash paths resolve on disk, 2,729 thumbnails and
+the venv unharmed, 924 MB moved, and `media.sh info` answers from the new
+location.
+
+Both older ids stay accepted where an unmigrated install can still be seen:
+the billing product matcher, the telemetry install-source probe, the
+launcher's display-name maps, and the site's `AppId` / `Product` /
+`KNOWN_APPS` / `VALID_PRODUCTS` lists and Stripe price map.
+`install-mac-shifu.sh` and `install-sys-doctor.sh` remain working aliases.
+
+Still stale: **Linggen.app bundles the old skill folder** in
+`Contents/Resources/app-resources/skills/mac-shifu`, so launching the app
+re-creates an empty `~/.linggen/skills/mac-shifu`. Harmless — it carries no
+data and the next daemon start deletes it again — but it clears for good on
+the app's next build from the bumped vendor.

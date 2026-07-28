@@ -6,6 +6,7 @@ description: >-
   (disk, apps, caches, dashboard) plus iPhone/Mac photo-video cleanup.
   Use --web for the interactive dashboard, or run directly in chat.
 allowed-tools: [Bash, Task, WebSearch, WebFetch, agent_chat]
+renamed-from: [mac-shifu, sys-doctor]
 user-invocable: true
 argument-hint: "[full | disk | apps | quick | --web]"
 app:
