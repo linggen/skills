@@ -4,8 +4,8 @@
 # Returns the user's OWN recent X posts with engagement metrics (likes,
 # reposts, replies, impressions), read from the logged-in x.com session via the
 # linggen-browser extension (bridge op "own") — no metered API, $0/read.
-# Returns an empty (but valid) payload until that reader op ships in the
-# extension (the bridge degrades and this script reports it in `errors`).
+# The op is live (x module v3). When the bridge or extension is unavailable
+# this still returns an empty but valid payload and reports why in `errors`.
 #
 # Two uses:
 #   - draft-content reads this so a new x-post builds on what the user
