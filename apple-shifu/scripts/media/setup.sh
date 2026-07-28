@@ -4,7 +4,11 @@
 # no system Python, CLT, or brew needed. Idempotent — safe to re-run.
 set -eu
 
-DATA="$HOME/.linggen/skills/mac-shifu/data/media"
+# Carry a pre-rename install's data/ over before we touch it (no-op after).
+_here="$(cd "$(dirname "$0")" && pwd)"
+[ -x "$_here/migrate-slug.sh" ] && bash "$_here/migrate-slug.sh" 2>/dev/null
+
+DATA="$HOME/.linggen/skills/apple-shifu/data/media"
 VENV="$DATA/venv"
 BIN="$HOME/.linggen/bin"
 UV="$BIN/uv"

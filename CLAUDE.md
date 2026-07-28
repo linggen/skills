@@ -4,6 +4,7 @@ This is the Linggen skills repository — the standalone source of truth for the
 
 ## Skills
 
+- **`apple-shifu/`** — Your Apple gear's shifu: system health (disk, apps, caches, dashboard) + iPhone/Mac photo-video cleanup.
 - **`cfo/`** — Personal CFO. Imports bank/credit CSV/PDF exports, builds spend reports, learns categorization rules.
 - **`dj/`** — Disc Jockey. Vibe → AI-curated tracklist → download → tagged library → push to phone via VLC.
 - **`game-table/`** — Board games against AI (Chinese Chess, Gomoku) plus Snake, Pong, Tetris.
@@ -11,7 +12,6 @@ This is the Linggen skills repository — the standalone source of truth for the
 - **`pulse/`** — GTM brain for solo founders: gathers signal (X/HN/Reddit/Bluesky), monitors mentions, drafts posts.
 - **`shared-memory/`** — Cross-host durable memory on the `ling-mem` daemon. Canonical SKILL.md lives here; host installs are stubs.
 - **`skiller/`** — Skill marketplace: search, install, browse library packs (skills.sh + ClawHub).
-- **`mac-shifu/`** — Your Mac's shifu: system health (disk, apps, caches, dashboard) + iPhone/Mac photo-video cleanup.
 - **`xbot/`** — X (Twitter) assistant: post, search, reply, mentions, engagement. User-provided API credentials.
 
 ## Edit workflow — three synced surfaces

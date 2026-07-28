@@ -221,7 +221,7 @@ export function renderBodyWidget(w) {
   };
   const fn = renderers[w.type];
   if (!fn) {
-    console.warn('[mac-shifu] Unknown widget type:', w.type);
+    console.warn('[apple-shifu] Unknown widget type:', w.type);
     return null;
   }
   return fn(w);

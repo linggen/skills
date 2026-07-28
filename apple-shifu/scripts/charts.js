@@ -1,4 +1,4 @@
-// Minimal chart library for mac-shifu (zero dependencies)
+// Minimal chart library for apple-shifu (zero dependencies)
 
 const COLORS = [
   '#6366f1', '#8b5cf6', '#a78bfa', '#c084fc',

@@ -1,14 +1,14 @@
-# Mac Shifu — Design Doc
+# Apple Shifu — Design Doc
 
 ## Vision
 
 A system health analyst skill for Linggen. Runs as an interactive session or autonomous mission. Collects system data via parallel tasks, renders a live dashboard with charts and data panels, and provides an AI chat sidebar for diagnosis and advice — all powered by the LinggenUI SDK.
 
-**Name**: `mac-shifu`
+**Name**: `apple-shifu`
 
 ## Use Cases
 
-1. **On-demand**: User runs `/mac-shifu` — opens dashboard, scans system, chat for advice
+1. **On-demand**: User runs `/apple-shifu` — opens dashboard, scans system, chat for advice
 2. **Scheduled mission**: Weekly cron scan, user opens report later with chat context preserved
 3. **Targeted**: "why is my disk full?" — agent focuses on disk, updates dashboard in real-time
 
@@ -16,7 +16,7 @@ A system health analyst skill for Linggen. Runs as an interactive session or aut
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│ Header: ← Back │ Mac Shifu │ Model Picker │ Scan / Re-scan │
+│ Header: ← Back │ Apple Shifu │ Model Picker │ Scan / Re-scan │
 ├─────────────────────────────────────┬───────────────────────┤
 │                                     │                       │
 │  Dashboard (left, flex)             │  Chat Panel (right)   │
@@ -54,7 +54,7 @@ A system health analyst skill for Linggen. Runs as an interactive session or aut
 ## Data Flow
 
 ```text
-1. User opens /apps/mac-shifu/ (or agent launches via RunApp)
+1. User opens /apps/apple-shifu/ (or agent launches via RunApp)
 2. UI mounts LinggenUI chat panel on right
 3. Chat auto-sends: "[SYS_SCAN] full" (hidden message)
 4. Agent receives, runs parallel Bash tasks to collect data
@@ -74,7 +74,7 @@ Following the game-table pattern exactly:
 
 ```javascript
 const chat = LinggenUI.mount(document.getElementById('chat-panel'), {
-  skillName: 'mac-shifu',
+  skillName: 'apple-shifu',
   agentId: 'ling',
   modelId: selectedModel,
   sessionId: existingSessionId,     // resume from URL param
@@ -201,7 +201,7 @@ The agent sends structured data via `[DASHBOARD_UPDATE]`:
 ### File Structure
 
 ```text
-mac-shifu/
+apple-shifu/
 ├── SKILL.md
 ├── design.md
 └── scripts/
@@ -217,7 +217,7 @@ mac-shifu/
 
 ```text
 ┌────────────────────────────────────┐
-│         🩺 Mac Shifu              │
+│         🩺 Apple Shifu              │
 │                                    │
 │  ┌──────┐ ┌──────┐ ┌──────┐      │
 │  │ Full │ │ Disk │ │Quick │      │
@@ -241,7 +241,7 @@ mac-shifu/
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mac Shifu</title>
+  <title>Apple Shifu</title>
   <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="doctor.css">
@@ -249,7 +249,7 @@ mac-shifu/
 <body>
   <div class="header">
     <button class="btn-back" id="back-btn">← Menu</button>
-    <h1>Mac Shifu</h1>
+    <h1>Apple Shifu</h1>
     <div class="header-actions">
       <span class="scan-status" id="scan-status">Ready</span>
       <button class="btn btn-primary btn-sm" id="scan-btn">Scan</button>
@@ -550,7 +550,7 @@ export function drawDiskChart(canvas, topDirs, totalGb) {
 
 ```yaml
 ---
-name: mac-shifu
+name: apple-shifu
 description: >-
   System health analyst. Scans disk, apps, caches, and system info.
   Opens interactive dashboard with charts and AI-powered diagnosis chat.
@@ -564,7 +564,7 @@ app:
   height: 800
 ---
 
-You are Mac Shifu, a system health analyst for Linggen.
+You are Apple Shifu, a system health analyst for Linggen.
 
 ## Your Job
 
@@ -658,7 +658,7 @@ Agent: runs docker-focused commands
 ### Pattern 4: Mission Mode
 
 ```text
-Cron triggers → creates session with skill: mac-shifu
+Cron triggers → creates session with skill: apple-shifu
 Agent auto-runs full scan (no user interaction needed)
 Sends [DASHBOARD_UPDATE] + summary as final message
 User opens session later → sees dashboard + can chat with full context

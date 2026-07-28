@@ -3,10 +3,13 @@
 # Usage: media.sh <info|progress|flags|state|verified|remove-result|setup|start <op...>|cancel>
 set -u
 
-DATA="$HOME/.linggen/skills/mac-shifu/data/media"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+# Carry a pre-rename install's data/ over before we touch it (no-op after).
+[ -x "$HERE/migrate-slug.sh" ] && bash "$HERE/migrate-slug.sh" 2>/dev/null
+
+DATA="$HOME/.linggen/skills/apple-shifu/data/media"
 VENV="$DATA/venv"
 PY="$VENV/bin/python"
-HERE="$(cd "$(dirname "$0")" && pwd)"
 PIPELINE="$HERE/media_pipeline.py"
 mkdir -p "$DATA"
 

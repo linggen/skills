@@ -1,17 +1,17 @@
 ---
 type: spec
 guide: |
-  Product specification for mac-shifu v2.
+  Product specification for apple-shifu v2.
   Describes what to build and why. Avoid implementation details.
 ---
 
-# Mac Shifu v2 — Your AI System Manager
+# Apple Shifu v2 — Your AI System Manager
 
 ## Vision
 
-Mac Shifu becomes linggen's flagship non-coding skill. It replaces $40/year Mac cleaners (CleanMyMac, DaisyDisk) with something smarter: an AI agent that understands your system, not just scans it.
+Apple Shifu becomes linggen's flagship non-coding skill. It replaces $40/year Mac cleaners (CleanMyMac, DaisyDisk) with something smarter: an AI agent that understands your system, not just scans it.
 
-Traditional cleaners find junk by rules. Mac Shifu understands context: "this node_modules belongs to a project you committed to yesterday — keep it. That one hasn't been touched in 8 months — safe to delete."
+Traditional cleaners find junk by rules. Apple Shifu understands context: "this node_modules belongs to a project you committed to yesterday — keep it. That one hasn't been touched in 8 months — safe to delete."
 
 ### Goals
 
@@ -124,7 +124,7 @@ Help users understand what's slowing their machine.
 
 ### 5. Smart Advisor (new — the AI differentiator)
 
-This is what makes mac-shifu an agent, not a scanner. After collecting all data, AI synthesizes a personalized report.
+This is what makes apple-shifu an agent, not a scanner. After collecting all data, AI synthesizes a personalized report.
 
 #### What it covers
 
@@ -182,7 +182,7 @@ Always two-column. Chat panel fixed on right. Left panel is entirely model-drive
 
 ```
 ┌───────────────────────────────────────────────────────────┐
-│ Header: 🩺 Mac Shifu                           [Model ▾] │
+│ Header: 🩺 Apple Shifu                           [Model ▾] │
 ├─────────────────────────────────┬─────────────────────────┤
 │                                 │                         │
 │  TOP BAR (model-defined)        │  CHAT PANEL (fixed)     │
@@ -265,7 +265,7 @@ Each top bar widget is a known component with optimized rendering. The model pro
 Different skills use different top bars:
 
 ```json
-// mac-shifu
+// apple-shifu
 "top_bar": [
   { "widget": "cpu", "data": {...} },
   { "widget": "memory", "data": {...} },
@@ -562,7 +562,7 @@ When user clicks Start, it sends a chat message (e.g. "scan disk"). The model re
 ### Why this architecture
 
 - **Fully model-driven**: The model defines the entire layout. No hardcoded views, tabs, or page navigation.
-- **Skill-agnostic**: Any skill app can use the same page/widget renderer. Mac Shifu, photo organizer, network monitor — different top bars, different body widgets, same renderer.
+- **Skill-agnostic**: Any skill app can use the same page/widget renderer. Apple Shifu, photo organizer, network monitor — different top bars, different body widgets, same renderer.
 - **Progressive**: The page evolves through conversation. Open → action cards → results → deeper analysis. No page reloads, no routing — just JSON swaps.
 - **Simple for the model**: Emit a JSON block. No HTML, no CSS, no component APIs. The model thinks in data, the renderer thinks in pixels.
 - **Extensible**: Add new widget types by adding a renderer function. The model can use it immediately — no coordination needed.

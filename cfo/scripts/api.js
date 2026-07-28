@@ -1,4 +1,4 @@
-// Linggen API client for mac-shifu
+// Linggen API client for apple-shifu
 const API_BASE = '';
 
 export async function fetchModels() {

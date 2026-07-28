@@ -1,8 +1,8 @@
-# Mac Shifu — UX Design
+# Apple Shifu — UX Design
 
 ## Core principle
 
-**The agent is the interface.** There are no menus, no "click to start" buttons, no traditional app chrome. You open mac-shifu and the agent greets you, assesses the situation, and drives the experience. Panels and charts appear as the agent discovers things — they're the agent's output, not pre-built forms.
+**The agent is the interface.** There are no menus, no "click to start" buttons, no traditional app chrome. You open apple-shifu and the agent greets you, assesses the situation, and drives the experience. Panels and charts appear as the agent discovers things — they're the agent's output, not pre-built forms.
 
 The feeling: you walked into a doctor's office. The doctor speaks first.
 
@@ -18,7 +18,7 @@ Full screen. Clean. A single chat-style area centered on screen. No dashboard ye
 │                                                          │
 │                         🩺                                │
 │                                                          │
-│    Hi, I'm Mac Shifu. I help you understand and         │
+│    Hi, I'm Apple Shifu. I help you understand and         │
 │    manage your computer.                                 │
 │                                                          │
 │    I can scan your system, find wasted disk space,       │
@@ -359,7 +359,7 @@ Via WebRTC from phone, the layout adapts:
 
 ```
 ┌──────────────────┐
-│    Mac Shifu     │
+│    Apple Shifu     │
 ├──────────────────┤
 │                  │
 │ Your Mac scored  │

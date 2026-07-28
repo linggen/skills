@@ -2227,7 +2227,7 @@ async function mountChat(sessionId) {
   } catch (e) { console.error('[cfo] chat mount failed', e); }
 }
 
-// Fresh sessions get a HIDDEN trigger message (pulse/mac-shifu pattern) — the
+// Fresh sessions get a HIDDEN trigger message (pulse/apple-shifu pattern) — the
 // agent's actual opening is scripted in SKILL.md § 0. Greeting. One LLM turn
 // per new session; resumed sessions stay silent.
 const GREETING_TRIGGER = 'The user just opened the CFO app (this message is hidden from them). Greet them now, following the "0. Greeting" section of your instructions.';

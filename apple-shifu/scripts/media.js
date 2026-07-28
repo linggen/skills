@@ -4,9 +4,9 @@
 // remove) via /api/bash -> scripts/media/media.sh; detection is pure scripts.
 // The agent narrates milestones (window._chatNotify) but never gates progress.
 
-const MEDIA_SH = '$HOME/.linggen/skills/mac-shifu/scripts/media/media.sh';
-const DATA_DIR = '$HOME/.linggen/skills/mac-shifu/data/media';
-const TAB_KEY = 'mac-shifu:tab';
+const MEDIA_SH = '$HOME/.linggen/skills/apple-shifu/scripts/media/media.sh';
+const DATA_DIR = '$HOME/.linggen/skills/apple-shifu/data/media';
+const TAB_KEY = 'apple-shifu:tab';
 const RENDER_CAP = 200; // thumbs per category; selection still covers all items
 /** Categories rendered as the month-by-month roll view (whole roll subsets). */
 const ROLL_CATS = new Set(['all', 'not_backed']);

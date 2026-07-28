@@ -28,7 +28,7 @@ Five agent-side capabilities, dispatched by a single free-text **goal**:
 | `track-progress` | Scan sessions / commits / memory → what shipped, what was learned, where in the launch sequence |
 | `draft-content` | Synthesize the above into platform-shaped drafts (X, Reddit, blog, DM, email, …) |
 
-The user types a goal — *"Help me launch Mac Shifu on r/macapps"* / *"Daily X-post if I shipped"* / *"What's happening in local AI agent space"* — and the agent picks which capabilities to invoke. No fixed recipes; no enum.
+The user types a goal — *"Help me launch Apple Shifu on r/macapps"* / *"Daily X-post if I shipped"* / *"What's happening in local AI agent space"* — and the agent picks which capabilities to invoke. No fixed recipes; no enum.
 
 ## Core entity
 
@@ -139,7 +139,7 @@ The brief is the difference between "generic LLM output" and "writing that sound
 In addition to the brief, the user points pulse at a **workspace path** (e.g., `/path/to/linggen-monorepo`). The agent reads the workspace on every run — README, docs, recent commits, source — to know the product as well as the user does. Drafts grounded in workspace context read like the founder wrote them, not an AI guessing about a product:
 
 - *Generic AI:* "Excited to share that we just shipped a new feature!"
-- *Pulse w/ workspace:* "We just shipped multi-product telemetry — engine, ling-mem, and Mac Shifu share one analytics endpoint with IP-rate-limiting instead of API keys, because OSS clients can't keep secrets. If you've built dev tools you know how this goes."
+- *Pulse w/ workspace:* "We just shipped multi-product telemetry — engine, ling-mem, and Apple Shifu share one analytics endpoint with IP-rate-limiting instead of API keys, because OSS clients can't keep secrets. If you've built dev tools you know how this goes."
 
 Reading is **just-in-time** via Linggen's standard `Read` / `Glob` / `Grep` tools, scoped to the configured workspace dir. No pre-ingestion, no vector cache, no file watcher. The agent pulls what it needs in-loop.
 
@@ -165,7 +165,7 @@ AI-led means the agent decides *how* to satisfy a step from the brief and worksp
 | Goal text the user might type | Capabilities the agent invokes |
 |:------------------------------|:-------------------------------|
 | "Daily short post if I shipped or learned something yesterday" | track-progress + draft-content (x-post only) |
-| "Launch Mac Shifu on r/macapps and HN" | research-market + discover-customers + draft-content |
+| "Launch Apple Shifu on r/macapps and HN" | research-market + discover-customers + draft-content |
 | "Broadcast my blog post at <URL>" | draft-content from artifact + comment-candidates |
 | "Find threads worth commenting on this week" | discover-customers (no own posts) |
 | "Weekly recap of progress" | track-progress @ 7-day window + draft-content (blog or substack) |

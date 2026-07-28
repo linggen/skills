@@ -1,5 +1,5 @@
 // Chat bridge: mounts the full Linggen chat panel as an iframe.
-// Same shape as mac-shifu's chat-bridge.js — see that skill for the
+// Same shape as apple-shifu's chat-bridge.js — see that skill for the
 // canonical version. Pulse uses it to drive a one-shot drafting run
 // from the review page when today's data is missing.
 

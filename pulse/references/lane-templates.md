@@ -26,7 +26,7 @@ stretched to 4000 chars with byte-level minutiae.
   pieces of evidence. If the draft is one fact + filler around it,
   it's an x-post.
 - **blog**: tech article about a CONCEPT from the user's product
-  (Linggen, ling-mem, mac-shifu — whichever the brief names),
+  (Linggen, ling-mem, apple-shifu — whichever the brief names),
   anchored against a current trend or signal from the web cards.
   See the `blog` section below for the required shape. **A single
   debugging anecdote is NEVER a blog.** Default to `empty` unless
@@ -156,7 +156,7 @@ Niche local-led posts go to reddit-comment instead.
   specific over abstraction, no aphorism endings — even a broadcast
   post reads as AI without them.
 - **No emojis except** when the post is genuinely funny or the emoji
-  IS the point (e.g., a literal stethoscope 🩺 for Mac Shifu). Skip
+  IS the point (e.g., a literal stethoscope 🩺 for Apple Shifu). Skip
   decorative emojis.
 
 ## x-reply
@@ -228,7 +228,7 @@ happens to be public.
 
 This lane is a tech ARTICLE, not a debugging journal. A blog draft
 must teach the reader something durable about the user's product
-(Linggen, ling-mem, mac-shifu — whichever the brief centers), tied
+(Linggen, ling-mem, apple-shifu — whichever the brief centers), tied
 to a current industry trend the audience already cares about. If you
 can't deliver both halves, emit `empty`. Garbage is worse than
 nothing — every padded blog the user has to read and discard erodes
@@ -246,7 +246,7 @@ alone:
    first paragraph.
 2. **Pivot to a concept from the user's product** that bears on
    that trend — how Linggen handles X, why ling-mem's design solves
-   Y, what mac-shifu does about Z. The product is the article's
+   Y, what apple-shifu does about Z. The product is the article's
    technical centerpiece, not a one-line plug at the end. Read the
    workspace files (README, /doc/*.md, source) and the brief to
    ground the concept; don't fabricate behavior.

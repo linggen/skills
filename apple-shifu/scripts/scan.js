@@ -21,7 +21,7 @@ async function bash(command, sessionId) {
 // rescans. Written under the skill's data dir; files end with \n (the
 // /api/bash sentinel-strip relies on a trailing newline).
 export async function persistScanSnapshot(summary, sessionId) {
-  const dir = '$HOME/.linggen/skills/mac-shifu/data';
+  const dir = '$HOME/.linggen/skills/apple-shifu/data';
   const json = JSON.stringify(summary, null, 1);
   const stamp = `${summary.date || 'scan'}-${Date.now()}`;
   const cmd = `mkdir -p "${dir}/scans" && printf '%s\\n' ${shellEsc(json)} > "${dir}/scans/${stamp}.json" && printf '%s\\n' ${shellEsc(json)} > "${dir}/latest.json"`;
@@ -199,7 +199,7 @@ export async function runScan(mode, sessionId, onProgress) {
       bash('ioreg -r -c AppleSmartBattery 2>/dev/null | grep CycleCount', sessionId),
       bash('ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk "{print \\$1}"', sessionId),
       // Fallback chain for Wi-Fi SSID — networksetup is broken on macOS 14+.
-      bash('~/.linggen/skills/mac-shifu/scripts/get-wifi.sh 2>/dev/null || iwgetid -r 2>/dev/null', sessionId),
+      bash('~/.linggen/skills/apple-shifu/scripts/get-wifi.sh 2>/dev/null || iwgetid -r 2>/dev/null', sessionId),
       bash('iostat -c 1 2>/dev/null | tail -1', sessionId),
       // Hardware model + age
       bash('system_profiler SPHardwareDataType 2>/dev/null | grep -E "Model Name|Model Identifier|Serial|Memory|Chip"', sessionId),
@@ -245,7 +245,7 @@ export async function runScan(mode, sessionId, onProgress) {
     // dormant-app cleanup card. Skill is expected at the standard install
     // path; if absent, the agent simply gets no APPLICATIONS section and
     // skips the widget.
-    bash('~/.linggen/skills/mac-shifu/scripts/scan-applications.sh 2>/dev/null', sessionId),
+    bash('~/.linggen/skills/apple-shifu/scripts/scan-applications.sh 2>/dev/null', sessionId),
   ]);
 
   const disk = parseDiskUsage(df.stdout);
