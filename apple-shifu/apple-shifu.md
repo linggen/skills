@@ -184,18 +184,30 @@ First tier — adopt:
 - `photo_manager` ^3.11.0 (already in use), `permission_handler`,
   `package_info_plus`, `connectivity_plus`, `network_info_plus`.
 
-Second tier — pick or hand-roll:
+Second tier — settled by reading the plugin sources:
 
-- Disk space: `disk_space_2` ^1.0.13 exists, but `device_info_plus` already
-  reports free/total. If used, confirm which iOS figure it reads
-  (importantUsage / opportunistic / raw) — they differ by gigabytes.
-- Thermal: `thermal` ^1.2.2 claims iOS but its docs never map
-  `ProcessInfo.thermalState`. Read the source; if unconfirmed, hand-roll —
-  it is a public API and about twenty lines.
-- Jailbreak: `flutter_rasp` ^7.1.0, `jailbreak_root_detection` ^1.2.0, or
-  `device_safety_info` ^1.2.0. **Not** `flutter_jailbreak_detection` —
-  popular but unmaintained since 2023-01.
-- `system_info2` is high-traffic but has no iOS support.
+- **Disk space: use `disk_space_2` ^1.0.13 for the number we display, not
+  `device_info_plus`.** They do not measure the same thing.
+  `device_info_plus` reads `NSFileSystemFreeSize` — raw free bytes —
+  while `disk_space_2` reads
+  `URLResourceKey.volumeAvailableCapacityForImportantUsageKey`, which counts
+  purgeable space and is what iOS Settings shows the user. Reporting the raw
+  figure means our "free space" disagrees with Settings by gigabytes, and on
+  a cleaner that reads as a bug.
+- **Thermal: `thermal` ^1.2.2 is real on iOS.** `SwiftThermalPlugin.swift`
+  reads `ProcessInfo.processInfo.thermalState` and observes
+  `thermalStateDidChangeNotification`; states map nominal→0, fair→1,
+  serious→3, critical→4 (2 is unused — index by name, not position). Battery
+  temperature is Android-only, so don't promise a temperature reading.
+- **Jailbreak: `jailbreak_root_detection` ^1.2.0**, because it returns a list
+  of `JailbreakIssue` values rather than one boolean. Surface only
+  `jailbreak`, `cydiaFound`, `fridaFound` and `tampered`. **Ignore
+  `proxied`, `debugged`, `devMode` and `notRealDevice`** — a VPN or a
+  debugging proxy, a dev build, iOS 16+ Developer Mode and the simulator are
+  all normal states, and treating them as compromise is where this category
+  earns its false-positive reputation. Never a verdict; always "suspected".
+- **Not** `flutter_jailbreak_detection` — popular but unmaintained since
+  2023-01. `system_info2` is high-traffic but has no iOS support.
 
 ## App Store listing
 
@@ -261,13 +273,31 @@ happens later, on the Linggen suite subscription, when someone wants the Mac
 side. Plan the funnel that way — a phone-side paywall would earn nothing and
 break the "never a paywall on core function" promise at the same time.
 
-## To verify before promising
+## Verified 2026-07-28
 
-- Live Photo "de-motion" (export still, delete original) — space saved and
-  metadata preserved.
-- Jailbreak heuristics' false-positive rate.
-- `thermalState` availability in the background.
-- Which free-space figure to show, and that it matches Settings.
+Three of the four are settled from the plugin sources and recorded above:
+which free-space figure to show, that `thermalState` is genuinely readable on
+iOS, and a concrete jailbreak rule instead of a hoped-for false-positive rate.
+
+**Live Photo de-motion** is viable, with caveats worth knowing before it is
+promised in the UI. `AssetEntity.isLivePhoto` identifies them (PhotoKit
+subtype bit), `originBytes` gives the still, and
+`PhotoManager.editor.saveImage` accepts `creationDate`, `latitude`,
+`longitude`, `orientation` and `title`, so the capture date and place
+survive. What does not survive: the result is a **new** asset, so album
+membership, favourite flag and edit history are lost, and its date-added is
+now. And the original goes to Recently Deleted — **the space is not
+reclaimed for 30 days**, which the UI has to say plainly, since "free 4 GB"
+that changes nothing today is exactly the dishonesty this product is
+positioned against.
+
+Still needs a device, not a source read:
+
+- Bytes actually saved per Live Photo on a real roll.
+- Whether re-saving `originBytes` is byte-identical or silently transcodes.
+- `thermalState` while backgrounded — readable whenever our code runs, but
+  the notification only fires in-process; irrelevant for a foreground scan,
+  worth knowing before any background job depends on it.
 
 ## Rename — done 2026-07-28
 
