@@ -6,9 +6,9 @@
 //   DYNAMIC — the #set panel: filled ONLY by the agent via PageUpdate.
 
 import './chat-bridge.js'; // sets window.LinggenUI
-import { runBash, sq, trashFile } from './bash.js';
+import { runBash, sq, trashFile, resolvePath } from './bash.js';
 import { listSkillSessions } from './api.js';
-import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned, reconcileLibrary } from './library.js';
+import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned, reconcileLibrary, exportPlaylists } from './library.js';
 import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { openPlayer } from './player.js';
@@ -82,6 +82,10 @@ async function reindex(announce) {
   reindexing = true;
   try {
     const r = await reconcileLibrary(state.library, state.config);
+    // Refresh what a paired phone can see even when nothing drifted — playlists
+    // predate this export, so the first run after an update has one to write and
+    // no edit to hang it off.
+    exportPlaylists(state.library, await resolvePath(state.config.library_dir));
     if (r.adopted || r.retired) {
       await saveLibrary(state.library);
       renderLibrary();

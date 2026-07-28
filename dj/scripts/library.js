@@ -44,6 +44,53 @@ export async function loadLibrary() {
 
 export async function saveLibrary(lib) {
   await writeFile(`${DJ_DIR}/library.json`, JSON.stringify(lib, null, 2));
+  await exportPlaylists(lib);
+}
+
+// ── the playlists a paired phone can see ─────────────────────────────────────
+//
+// library.json lives under the skill dir, and the engine's device sync serves
+// the library FOLDER and nothing else — so a phone has never been able to see
+// a playlist, only loose files. Every save drops a small derived copy of them
+// inside the folder, where sync can already reach it. No engine change: it
+// rides the `sync:` declaration DJ already has.
+//
+// Derived from the per-track tags rather than lib.playlists, because the tags
+// are what the sidebar has always read and the top-level array has drifted
+// empty. And the names written out are the ones on DISK, not the ones in the
+// index: a phone matches what sync handed it, and macOS is free to disagree
+// with us about Unicode normalization.
+export async function exportPlaylists(lib, dirOverride) {
+  try {
+    const dir = dirOverride || (await resolvePath((await loadConfig()).library_dir));
+    const onDisk = new Map();
+    const out = await runBash(`cd ${sq(dir)} 2>/dev/null && ls -1 -- * 2>/dev/null; true`);
+    for (const name of out.split('\n').map((l) => l.trim()).filter(Boolean)) {
+      onDisk.set(norm(name), name);
+    }
+
+    const lists = new Map();
+    for (const t of lib.tracks || []) {
+      if (!t.file) continue;
+      const file = onDisk.get(norm(t.file));
+      if (!file) continue; // retired, or not in this folder — not the phone's
+      for (const name of t.playlists || []) {
+        if (!lists.has(name)) lists.set(name, []);
+        lists.get(name).push(file);
+      }
+    }
+
+    const playlists = [...lists.entries()]
+      .map(([name, files]) => ({ name, files }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    await writeFile(
+      `${dir}/playlists.json`,
+      JSON.stringify({ updated_at: new Date().toISOString(), playlists }, null, 2),
+    );
+  } catch {
+    // Best-effort: the phone keeps whatever it last synced. Never let this
+    // break the save the user actually asked for.
+  }
 }
 
 // Stable id for a track so dupes collapse and sync state sticks.
