@@ -7,8 +7,9 @@ guide: |
 
 # Apple Shifu
 
-Status: design, 2026-07-28. The rename has shipped (see "Rename" below);
-nothing else here is built yet.
+Status: the rename shipped 2026-07-28 (see "Rename"), and the **phone's System
+tab shipped 2026-07-29** (see "Phone System tab — built"). The Mac's Files tab,
+the Mac UI reshape, and the phone's Files tab are still design only.
 
 ## Decisions
 
@@ -17,6 +18,10 @@ nothing else here is built yet.
 - **The phone surface stays inside Linggen Mobile.** No separate App Store
   listing. Trade-off accepted: no standalone ASO entry for "photo cleaner"
   search traffic, in exchange for one account, one paywall, one codebase.
+- **The product is Apple Shifu; the phone tab is just "Shifu."** On an iPhone
+  the "Apple" half is redundant, and Apple's name on a prominent feature label
+  inside a submitted binary is a review risk the Mac skill never carries. The
+  Mac header, the doc and the site all still say Apple Shifu.
 - **Three tabs on both ends: System / Media / Files.**
 - **Four verbs, same order, in every tab: scan → report → back up → clean.**
 - **Honest by construction.** A category unreachable on this end is still
@@ -76,10 +81,13 @@ Performance, iPhone:
 
 Security, iPhone:
 - passcode or biometric set
-- OS version behind latest
+- OS version — shown; "behind latest" needs a source the device does not have,
+  so no verdict is printed
 - jailbreak — heuristic only, label it "suspected", never a verdict
 - **photos not yet archived to the Mac** — the real data risk on a phone
-- **sensitive photos in the roll** — IDs, bank cards, password screenshots
+- **sensitive photos in the roll** — IDs, bank cards, password screenshots.
+  Waiting on the Mac's vision pass; not shipped, and not shown as a greyed row
+  either (see "Phone System tab — built")
 
 Health score — the existing Mac Shifu 0–100 composite (`health-score.js`;
 today disk 30 / memory 15 / battery 15 / security 20 / garbage 10 /
@@ -172,17 +180,31 @@ removed the system picker's own long-press delete — the delete UI is ours.
 
 First tier — adopt:
 
-- `device_info_plus` ^13.2.0 — covers most of the System tab alone:
-  `physicalRamSize`, `availableRamSize`, `freeDiskSize`, `totalDiskSize`,
-  `modelName`, `systemVersion`, `isPhysicalDevice`, `identifierForVendor`.
+- `device_info_plus` — **^12.4.0, not ^13.2.0**, and an override does not fix
+  it. 13.0.0 moved to win32 ^6 while `file_picker`'s latest (11.0.2) still pins
+  win32 ^5.9.0. `dependency_overrides` looked free because the app has no
+  `windows/` directory — but file_picker *exports its Windows implementation
+  unconditionally*, so that file is compiled into an iOS build too, and win32 6
+  breaks it outright (`COMObject`, `FOS_*`, `TEXT`, `HRESULT` all changed).
+  Tried and reverted 2026-07-29. 12.4.0 has every field we read —
+  `physicalRamSize`, `availableRamSize`, `modelName`, `systemVersion`,
+  `isPhysicalDevice` — plus the 2026 iPhone identifiers, so nothing is lost.
+  `package_info_plus` is held at ^8 for the same reason. Revisit when
+  file_picker ships a win32 6 release.
 - `battery_plus` ^7.1.1 — level, state stream, `isInBatterySaveMode` (iOS
   low-power mode).
 - `local_auth` ^3.0.2 — biometrics; `isDeviceSupported()` for passcode-set.
 - `file_picker` ^11.0.2 — `getDirectoryPath()` for the Files tab.
-- `app_settings` ^8.0.3 — deep links to Settings and Photos for everything we
-  can only point at.
 - `photo_manager` ^3.11.0 (already in use), `permission_handler`,
-  `package_info_plus`, `connectivity_plus`, `network_info_plus`.
+  `connectivity_plus`, `network_info_plus`.
+
+**Not `app_settings`.** It was going to carry the deep links for everything we
+can only point at, but on iOS its plugin always opens
+`UIApplication.openSettingsURLString` — the app's *own* Settings page — for
+every `AppSettingsType`. It cannot jump to Settings › Battery. A button using
+it would promise a destination it never reaches, so the panel prints the path
+as text instead, and `PhotoManager.openSetting()` still covers the one case
+that genuinely works.
 
 Second tier — settled by reading the plugin sources:
 
@@ -201,11 +223,18 @@ Second tier — settled by reading the plugin sources:
   temperature is Android-only, so don't promise a temperature reading.
 - **Jailbreak: `jailbreak_root_detection` ^1.2.0**, because it returns a list
   of `JailbreakIssue` values rather than one boolean. Surface only
-  `jailbreak`, `cydiaFound`, `fridaFound` and `tampered`. **Ignore
-  `proxied`, `debugged`, `devMode` and `notRealDevice`** — a VPN or a
-  debugging proxy, a dev build, iOS 16+ Developer Mode and the simulator are
-  all normal states, and treating them as compromise is where this category
-  earns its false-positive reputation. Never a verdict; always "suspected".
+  `jailbreak`, `cydiaFound`, `fridaFound` and `tampered`. **Ignore `proxied`,
+  `debugged` and `devMode`** — a VPN or a debugging proxy, a dev build and
+  iOS 16+ Developer Mode are all normal states, and treating them as
+  compromise is where this category earns its false-positive reputation. Never
+  a verdict; always "suspected".
+
+  `notRealDevice` needed one correction, found by running it: it is not an
+  issue to ignore alongside the others, it **disqualifies the whole check**.
+  The first simulator run reported `cydiaFound` and rendered "Tampering
+  suspected" — the path checks were reading the host Mac's filesystem. So when
+  `notRealDevice` is present the row goes unreadable with that reason rather
+  than reporting a finding. A real phone never sets it.
 - **Not** `flutter_jailbreak_detection` — popular but unmaintained since
   2023-01. `system_info2` is high-traffic but has no iOS support.
 
@@ -298,6 +327,56 @@ Still needs a device, not a source read:
 - `thermalState` while backgrounded — readable whenever our code runs, but
   the notification only fires in-process; irrelevant for a foreground scan,
   worth knowing before any background job depends on it.
+
+## Phone System tab — built 2026-07-29
+
+Shipped in `linggen-mobile`. The old Photos destination is now **Shifu**, with
+System and Media as its two sections; Media's own views (All / To back up /
+Duplicates / Videos / Mac asks) moved one level down into a chip row at the top
+of the Media panel. Photos declares into Shifu's stand-in handle instead of the
+shell's and is otherwise untouched — it does not know it stopped being a
+destination.
+
+**Files is not a third section yet.** A tab that exists to be empty lies about
+what the app can do, so it lands with its own work.
+
+Everything on the panel comes from a `Probe` in one registry
+(`screens/shifu/system/`). A probe declares which group its rows appear in and,
+optionally, which `ScoreFacet` they score; the panel renders whatever comes
+back and the score sums whatever declared a facet. There is no switch anywhere
+that knows the name of a row — adding a line means adding a probe and nothing
+else.
+
+The composite is the Mac's rule generalised. Facets are space 40 / security 25
+/ tidiness 25 / device 10, and **a facet nothing readable landed in drops out
+of the denominator**, with the card saying so out loud ("Scored on the 75% this
+device could answer for"). Battery health and an unpaired Mac both fall out
+that way with no special case for either. Verified live: the iPad run scored 31
+on three facets while the roll was still loading, and the Library facet was
+absent rather than zero.
+
+Two things the build corrected in itself:
+
+- **The battery probe degrades per row, not per probe.** A simulator has no
+  battery, and the whole-probe guard was taking Low Power Mode and the
+  battery-health row down with the charge reading. Each row is read on its own
+  now.
+- **`notRealDevice` disqualifies the integrity check** rather than being
+  ignored — see the jailbreak note above.
+
+Left out deliberately: **"sensitive photos in the roll"** (IDs, bank cards,
+password screenshots). Nothing on the phone can classify them today — it needs
+the Mac's vision pass — and a row saying "not built yet" is clutter, not
+honesty. Honesty is for categories that are genuinely out of reach, like
+battery health. This one is out of *scope*, and it comes back when there is a
+classifier behind it. Same reasoning for "OS version behind latest": the
+version is shown, the verdict is not, because nothing on the device knows what
+the latest version is.
+
+Covered by tests: the dropout rule and the ramps
+(`shifu_health_score_test.dart`), the honesty path under a plugin-less
+environment (`shifu_system_panel_test.dart`), and every integrity rule
+including the simulator one (`shifu_integrity_test.dart`).
 
 ## Rename — done 2026-07-28
 
