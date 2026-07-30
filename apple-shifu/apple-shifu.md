@@ -10,7 +10,9 @@ guide: |
 Status: the rename shipped 2026-07-28 (see "Rename"), the **phone's System tab
 shipped 2026-07-29** (see "Phone System tab — built"), and the **Mac UI
 reshape and the Mac's Files tab shipped 2026-07-30** (see the two "built"
-sections). The **phone's Files tab** is the last piece still design only.
+sections). Still design only, both settled 2026-07-30: the **device readout**
+the phone's System tab grows into, and the **agent layer** that reads it. The
+phone's Files tab was cancelled the same day — see "Files tab".
 
 ## Decisions
 
@@ -23,12 +25,22 @@ sections). The **phone's Files tab** is the last piece still design only.
   the "Apple" half is redundant, and Apple's name on a prominent feature label
   inside a submitted binary is a review risk the Mac skill never carries. The
   Mac header, the doc and the site all still say Apple Shifu.
-- **Three tabs on both ends: System / Media / Files.**
+- **Mac: three tabs — System / Media / Files. Phone: two — System / Media.**
 - **Four verbs, same order, in every tab: scan → report → back up → clean.**
 - **Honest by construction.** A category unreachable on this end is still
   shown — greyed, with the reason. Never hidden, never filled with a made-up
   number. Competing cleaners advertise system-junk figures iOS cannot produce;
   saying so plainly is the product's position.
+- **No Files tab on the phone.** Cancelled 2026-07-30, both halves on their own
+  terms. See "Files tab".
+- **No video compression on the phone.** The category leads with re-encoding
+  because it is their only way to free gigabytes without deleting a memory. We
+  have the Mac: back up, then delete returns the whole file instead of half of
+  it, and skips the new-asset penalty compression and Live Photo de-motion both
+  carry.
+- **Where we cannot clean, we measure and advise.** The phone's System tab
+  becomes a full device readout and the agent explains it. See "Device readout"
+  and "Ask Shifu".
 
 ## Categories
 
@@ -40,10 +52,10 @@ posture the category is allowed.
 | Photos | PhotoKit | media pipeline | back up, then delete |
 | Videos | PhotoKit | media pipeline | back up, then delete |
 | Live Photo motion | unverified | yes | back up, then delete |
-| Documents | user-granted folder | full disk | back up, then delete |
-| Downloads | user-granted folder | `~/Downloads`, Trash | delete, backup optional |
+| Documents | **no** (sandbox) | full disk | back up, then delete |
+| Downloads | **no** (sandbox) | `~/Downloads`, Trash | delete, backup optional |
 | Applications | **no** (sandbox) | yes | report only / Mac deletes leftovers |
-| Caches & logs | **only Linggen's own** | full | delete, no backup |
+| Caches & logs | **not cleaned** (ours only, tens of MB) | full | delete, no backup |
 | Capacity readouts | yes | yes | report only |
 
 Photo sub-piles: duplicate groups, bursts, screenshots, receipts and document
@@ -64,9 +76,25 @@ Absent APIs, not permissions:
 - **Recently Deleted album contents** — Apple confirms no PhotoKit access.
   What we do instead: after a delete, report "N GB is still held in Recently
   Deleted" and deep-link to Photos.
+- **CPU clock speed** — `hw.cpufrequency` returns 0 on Apple silicon. CPU-Z's
+  headline number does not exist on iOS.
+- **Per-app storage** — Settings › General › iPhone Storage ranks apps by size;
+  no API exposes that ranking. Storage is one bar and nothing itemises it.
+- **A folder's size before the grant** — iOS cannot stat a directory the user
+  has not picked, so a granted-folder view can only say "point me at a folder",
+  never "here is what we found".
 
 This narrows, but does not reverse, the 2026-07-27 decision against an iOS
 disk cleaner: the photo-library route was always the reachable half.
+
+Checked against the market 2026-07-30. Every credible iOS cleaner —
+CleanMy®Phone, Clever Cleaner, Cleanor, MobileClean — lives entirely inside the
+photo library, and not one ships a folder-grant storage scanner. Cleanor
+publishes a page explaining the sandbox and stating it will not pretend to
+cross it, which is the position this doc already took. Two moves of theirs are
+worth having and stay inside PhotoKit: a **heaviest** pile (assets by size,
+descending — their answer to "find large files", scoped to where the gigabytes
+actually are) and **swipe triage** month by month instead of a checkbox list.
 
 ## System tab
 
@@ -106,70 +134,122 @@ permanently short of 100. Phone weights:
 - library tidiness 25% (duplicate + screenshot share)
 - device state 10% (thermal, low-power mode)
 
+### Device readout — settled 2026-07-30
+
+The tab is also the device's spec sheet, at the coverage a CPU-Z clone gives:
+uptime, CPU model and core counts, cache sizes, CPU load, RAM total and
+breakdown, storage, battery, network addresses and throughput, GPU, display,
+camera, sensors, Bluetooth. Each is a probe declaring **no `ScoreFacet`** —
+readout only, no effect on the composite.
+
+Every reading carries where it came from, and the panel shows it:
+
+- **measured**, read from this device — uptime `kern.boottime`; load
+  `host_processor_info`; core counts, byte order and L1/L2 cache sizes from
+  sysctl; RAM `ProcessInfo.physicalMemory` plus `host_statistics64`; storage
+  `disk_space_2`; battery level, charging, low-power mode; interface addresses
+  and throughput from `getifaddrs` deltas; **GPU name verbatim from
+  `MTLDevice.name`** ("Apple A17 Pro GPU"); Face ID and proximity as capability
+  checks.
+- **looked up**, true of this model but not read from this unit — camera sensor
+  size and pixel pitch, display nits and panel type, body dimensions, Bluetooth
+  and Wi-Fi generation, and the marketing name of the chip. "Apple A17 Pro" is
+  a table lookup on `hw.machine`, not a register.
+- **unreadable**, shown with the reason, as everywhere else.
+
+The distinction is the point. Every app in this category prints a camera's
+sensor size beside a live CPU figure as though it read both off the hardware.
+AVFoundation will never report a sensor size. We say which is which.
+
+**No bundled spec table.** The looked-up rows are fetched by the agent for the
+one model it is running on and cached, so there is nothing to re-maintain every
+September. Until it can look them up — web search is cloud and signed-in —
+those rows are simply absent, which is the honest state.
+
+System-wide free RAM via `host_statistics64` is readable and shown, but label
+it carefully: on iOS "free" means almost nothing to a user, and a big number
+there invites the wrong conclusion.
+
 ## Media tab
 
-Already shipped on both ends. Keeps the `📱 iPhone | 💻 Mac` source switch,
-which becomes the model for Files.
+Already shipped on both ends. The `📱 iPhone | 💻 Mac` source switch started
+here and moved to the header in the 2026-07-30 reshape.
+
+Two piles worth adding, both inside PhotoKit: **heaviest** (assets by size,
+descending — the honest answer to "find my large files" on a phone, since the
+photo library is where the gigabytes are) and **swipe triage**, a month at a
+time, instead of working a checkbox list.
 
 ## Files tab
 
-New, both ends, same shape as Media.
+**Mac only.** Shipped 2026-07-30 — `~/Downloads`, large files, duplicate files,
+caches. See "Mac Files tab — built".
 
-- iPhone: user-granted directories (On My iPhone, Downloads, iCloud Drive
-  local) plus Linggen's own container — DJ audio, karaoke video, thumbnail
-  cache, CFO store.
-- Mac: `~/Downloads`, large files, duplicate files, caches.
-- Phone → Mac archiving reuses the media `manifest → ingest → verify`
-  pipeline unchanged; only the content type widens from assets to files.
-  Verification semantics stay identical: SHA-256 and an archive ledger.
+**The phone half was cancelled 2026-07-30**, and with it the phone → Mac file
+archive: the `~/Documents/iPhone Files/` tree, the `data/files/archive.jsonl`
+ledger, the two-direction restore, and the granted-folder picker flow. That
+design is gone from this doc rather than left standing, because a design nobody
+will build reads as a plan.
 
-**Backing up to a Mac is never required to clean.** A standalone user deletes
-freely — PhotoKit sends assets to Recently Deleted, which is a 30-day net on
-its own, and our own trash covers files. The archive gate applies only to the
-explicit *back up, then delete* flow: there, nothing is removed until it
-verifies. Never a paywall on core function, and never a Mac gate on it.
+Both halves failed on their own terms. Linggen's own container holds the user's
+music, ledger and conversation — clearing that is data loss, not cleaning — and
+what is left after removing it is caches, tmp and the hash index, tens of
+megabytes. And iOS cannot size a folder before the grant, so a granted-folder
+view could only ever ask the user to point at a folder, never report what it
+found. Nothing on the App Store ships one either. If it returns it needs a new
+premise, not this design.
 
-On iPhone the Files tab is often nearly empty, because most documents live
-inside other apps' sandboxes where iOS grants no access. Say that in the
-empty state rather than showing a blank panel that reads as broken.
+**Backing up to a Mac is never required to clean.** Still true, now scoped to
+Media: a standalone user deletes freely, since PhotoKit sends assets to Recently
+Deleted, a 30-day net on its own. The archive gate applies only to the explicit
+*back up, then delete* flow, where nothing is removed until it verifies. Never a
+paywall on core function, and never a Mac gate on it.
 
-### Where phone files land on the Mac
+## Ask Shifu — the agent layer, settled 2026-07-30
 
-Their own tree, separate from the media archive. Files carry a meaningful
-path and photos do not; merging the two would mean inventing a fake path for
-every photo or a fake date for every file.
+The readout is the instrument; the agent is what makes it a shifu. It reports,
+summarises and advises — battery health, why the score is what it is, whether
+it is time to buy a new phone. No app in this category answers the last one.
 
-- Default root `~/Documents/iPhone Files/`, mirroring
-  `~/Pictures/iPhone Backup/`. Destination is configurable through the same
-  native folder picker and remembered default the Media tab already uses.
-- Layout `<root>/<device>/<granted-folder>/<original relative path>` — the
-  phone-side path is preserved, because restore has somewhere real to put the
-  file back. (Photos file by capture year/month instead; that stays.)
-- Same SHA-256 + path is a no-op, so re-running is idempotent. Same path with
-  different content keeps both, the later one suffixed with a short hash.
-- Ledger `data/files/archive.jsonl`, same schema as the media archive plus
-  `device` and `rel_path`.
+**One button per end, sending a message to that end's resident agent.** Phone →
+Yinyue, Mac → ling. The skill names no agent; it emits a question and the host
+routes it. No second chat surface and no new session model — the reply lands in
+the conversation the user already has, so the button is pure UI. It types the
+question for you.
 
-Restore, two directions:
+**The agent pulls the readout; the button does not push it.** A get-info tool
+has to exist regardless, because the user can ask "how is my phone" in chat
+without ever opening Shifu, and pushing would be a second path bolted on top of
+it. On the phone this is `get_environment` growing up: same call, now backed by
+the probe registry, so a probe added later is visible to the agent with no extra
+wiring and nothing hand-assembled can drift from the panel. One call returns
+everything; there is no tool per probe. The Mac needs the equivalent for ling.
 
-- **To the Mac** — `~/Documents/iPhone Files Restored/`, whole tree or single
-  file, mirroring `~/Pictures/iPhone Restored`.
-- **To the phone** — written back to its original relative path, but only
-  inside a directory the user has granted. Anything outside a granted
-  directory can be restored to the Mac only; say so in the UI rather than
-  failing at write time.
+**Provenance travels with the readings, and the agent is held to it.** It may
+say what is typical of a two-year-old A17 Pro; it may not print that as *your*
+battery health. A row that is unreadable stays unreadable in the answer, and a
+looked-up value is never described as measured.
 
-Deleted files go to `data/files/trash/` with the media tab's 30-day expiry
-and per-item restore, so accident recovery works the same way on both tabs.
+**The report is written, not spoken.** Neither end reads it aloud. Yinyue's
+short-spoken-sentences rule exists because she talks, and a written report is
+not that — so the exception rides on the button's prompt for that one turn
+rather than a rewrite of her persona.
 
-Directory access on iOS: `getDirectoryPath()`, then persist a bookmark. The
-user points at a folder once; no full-disk scan exists on iOS. Note iOS 18
-removed the system picker's own long-press delete — the delete UI is ours.
+**Advice is the agent's job, not a table of thresholds.** A phone with Optimize
+Storage already on has no photo problem and should not be told to clean photos.
+Where we measured, it quotes the number; where we could not, it names the
+Settings path and reasons about what the user reports back —
+`openSettingsURLString` reaches only our own page, so those paths stay text.
+This is the measure-and-advise half of the product, and the agent is what makes
+it more than a list of tips.
+
+Open: Yinyue runs `gpt-5.4-mini` for fast companion replies, which is likely too
+light for a buyer's-guide turn with web search behind it.
 
 ## UI changes
 
 1. **Source switch goes global.** Today `📱 | 💻` lives inside Media. Move it
-   to the Apple Shifu header so all three tabs follow one selected device.
+   to the Apple Shifu header so every tab follows one selected device.
 2. **The four verbs become a fixed toolbar** at the top of every tab:
    `↻ Scan · 📊 Report · ☁️ Back up · 🧹 Clean`. Same position, same order,
    contents differ per tab.
@@ -313,7 +393,10 @@ First tier — adopt:
 - `battery_plus` ^7.1.1 — level, state stream, `isInBatterySaveMode` (iOS
   low-power mode).
 - `local_auth` ^3.0.2 — biometrics; `isDeviceSupported()` for passcode-set.
-- `file_picker` ^11.0.2 — `getDirectoryPath()` for the Files tab.
+- `file_picker` ^11.0.2 — was adopted for the Files tab's `getDirectoryPath()`.
+  That reason is gone with the tab; it stays only if something else in the app
+  still imports it, and it is the package pinning `device_info_plus` to ^12
+  (below), so dropping it would lift that ceiling.
 - `photo_manager` ^3.11.0 (already in use), `permission_handler`,
   `connectivity_plus`, `network_info_plus`.
 
@@ -383,11 +466,15 @@ Everything the app does, for the description and for mining more terms:
   shots, blurry rejects, memes, RAW+JPEG pairs; batch delete via PhotoKit.
 - **Videos** — oversized, screen recordings, slow-mo originals, repeats.
 - **Live Photo** — motion component (pending verification).
-- **Files** — granted folders, downloads, large files, Linggen's own data.
 - **Backup and restore** — to a paired Mac and back, hash-verified, 30-day
   trash with per-item restore.
 - **Device report** — storage and fill trend, thermal, low-power mode,
-  passcode and OS-version checks, health score with history.
+  passcode and OS-version checks, health score with history, plus the full
+  hardware readout (CPU, GPU, RAM, battery, network, display, camera) with
+  every row marked measured or looked-up.
+- **Ask Shifu** — the report handed to the on-device agent, which summarises
+  it, explains the score, reasons about battery health, and answers whether
+  it is time to upgrade.
 - **DJ** — background music player, lock-screen and Control Center controls,
   offline library, synced lyrics, karaoke; library sync from the Mac.
 - **CFO** — bank export import via the share sheet, categories, budgets,
@@ -456,8 +543,9 @@ of the Media panel. Photos declares into Shifu's stand-in handle instead of the
 shell's and is otherwise untouched — it does not know it stopped being a
 destination.
 
-**Files is not a third section yet.** A tab that exists to be empty lies about
-what the app can do, so it lands with its own work.
+**Files was not made a third section**, on the grounds that a tab existing to be
+empty lies about what the app can do. That held: it was cancelled outright on
+2026-07-30 (see "Files tab"). System and Media are the phone's two sections.
 
 Everything on the panel comes from a `Probe` in one registry
 (`screens/shifu/system/`). A probe declares which group its rows appear in and,
