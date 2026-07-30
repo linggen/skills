@@ -9,14 +9,21 @@
 // adding a row.
 
 import { media } from './media.js';
-import { fmtBytes, esc, getBackupSummary, setSourceInfo } from './shifu-shell.js';
+import { getBackupSummary, setSourceInfo } from './shifu-shell.js';
+import { fmtBytes, esc } from './shifu-io.js';
 
 /** A reading the Mac cannot take from here. */
 const onPhone = (what) => ({ unreadable: `${what} is readable on the phone — open Shifu in Linggen Mobile` });
 
+/** Rows marked `cable` come off the lockdown connection. With no iPhone
+    attached they are not "not reported" — nothing asked. Saying which one it
+    is matters: one means the device answered nothing, the other means there
+    was no device. */
+const NO_CABLE = 'no iPhone on the cable — connect one by USB to read this';
+
 const ROWS = [
   {
-    group: 'Storage', label: 'Free space',
+    group: 'Storage', label: 'Free space', cable: true,
     read: ({ info }) => (info.free_gb == null
       ? { unreadable: 'the iPhone did not report its disk usage' }
       : {
@@ -26,7 +33,7 @@ const ROWS = [
       }),
   },
   {
-    group: 'Storage', label: 'Camera roll',
+    group: 'Storage', label: 'Camera roll', cable: true,
     // "0 GB" from the device and "0 GB" because nothing measured it are not
     // the same claim, so the figure carries where it came from.
     read: ({ info }) => (info.photos_gb == null
@@ -46,20 +53,20 @@ const ROWS = [
         : { value: 'nothing pending', detail: 'every item has a verified copy' }),
   },
   {
-    group: 'Device', label: 'Device',
-    read: ({ info }) => ({ value: info.name || 'iPhone' }),
+    group: 'Device', label: 'Device', cable: true,
+    read: ({ info }) => (info.name ? { value: info.name } : { unreadable: 'the iPhone did not report a name' }),
   },
   {
-    group: 'Device', label: 'Model',
-    read: ({ info }) => (info.model ? { value: info.model } : { unreadable: 'not reported' }),
+    group: 'Device', label: 'Model', cable: true,
+    read: ({ info }) => (info.model ? { value: info.model } : { unreadable: 'the iPhone did not report a model identifier' }),
   },
   {
-    group: 'Device', label: 'iOS',
+    group: 'Device', label: 'iOS', cable: true,
     // Shown, never judged: nothing on this Mac knows what the latest iOS is.
-    read: ({ info }) => (info.ios ? { value: info.ios } : { unreadable: 'not reported' }),
+    read: ({ info }) => (info.ios ? { value: info.ios } : { unreadable: 'the iPhone did not report an OS version' }),
   },
   {
-    group: 'Device', label: 'Battery',
+    group: 'Device', label: 'Battery', cable: true,
     read: ({ info }) => (info.battery_percent == null
       ? { unreadable: 'this iPhone does not report battery level over the cable' }
       : {
@@ -103,7 +110,8 @@ export async function renderPhoneSystem(el, probe = true) {
   const groups = new Map();
   for (const row of ROWS) {
     if (!groups.has(row.group)) groups.set(row.group, []);
-    groups.get(row.group).push({ label: row.label, ...row.read(ctx) });
+    const reading = row.cable && !info.connected ? { unreadable: NO_CABLE } : row.read(ctx);
+    groups.get(row.group).push({ label: row.label, ...reading });
   }
 
   const banner = info.connected

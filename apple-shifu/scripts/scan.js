@@ -1,6 +1,9 @@
 // Client-side system scanner — runs bash commands directly via /api/bash,
 // parses output into structured data for the dashboard. No model involved.
 
+const FILES_SH = '$HOME/.linggen/skills/apple-shifu/scripts/files.sh';
+const DATA_DIR = '$HOME/.linggen/skills/apple-shifu/data/files';
+
 /** Escape a string for safe use inside single-quoted shell arguments. */
 function shellEsc(s) {
   return "'" + s.replace(/'/g, "'\\''") + "'";
@@ -494,78 +497,35 @@ export async function runDeepFileScan(sessionId, onProgress) {
   // Falls back to a single-pass find if mdfind is unavailable (Linux).
   onProgress('indexing', 'start');
 
-  const TARGET = 50;
   const LARGE_THRESHOLD_BYTES = 50 * 1024 * 1024;
-  const TIERS_BYTES = [
-    10 * 1024 ** 3,
-    5 * 1024 ** 3,
-    1 * 1024 ** 3,
-    500 * 1024 ** 2,
-    200 * 1024 ** 2,
-    100 * 1024 ** 2,
-    LARGE_THRESHOLD_BYTES,
-  ];
-
-  const EXCLUDE_PATTERNS = [
-    '/Library/Caches/',
-    '/\\.Trash/',
-    '/node_modules/',
-    '/target/',
-    '/\\.git/',
-    '/Library/Containers/',
-  ];
-  const grepFilter = `grep -vE '${EXCLUDE_PATTERNS.join('|')}'`;
-
-  const seenPaths = new Set();
-  const statLines = [];
   const files = [];
   const categoryTotals = {};
   let totalSize = 0;
   let fileCount = 0;
 
-  // Stat format uses '|' so paths with spaces don't break parsing.
-  // First field 'R' (regular file) filters out bundles/directories that
-  // Spotlight matches by recursive size but stat reports as 384-byte dirs.
-  for (const minBytes of TIERS_BYTES) {
-    const cmd =
-      `if command -v mdfind >/dev/null 2>&1; then ` +
-      `  mdfind "kMDItemFSSize > ${minBytes}" -onlyin "$HOME" 2>/dev/null ` +
-      `    | ${grepFilter} | head -n 300 ` +
-      `    | while IFS= read -r f; do stat -f "%HT|%z|%a|%N" "$f" 2>/dev/null; done; ` +
-      `else ` +
-      `  find ~ -type f -size +${Math.round(minBytes / (1024 ** 2))}M ` +
-      `    -not -path "*/.*" -not -path "*/node_modules/*" -not -path "*/target/*" -not -path "*/.Trash/*" ` +
-      `    2>/dev/null | head -n 300 ` +
-      `    | while IFS= read -r f; do stat --format="Regular File|%s|%X|%n" "$f" 2>/dev/null; done; ` +
-      `fi`;
-    const tierResult = await bash(cmd, sessionId);
-    for (const line of tierResult.stdout.split('\n')) {
-      if (!line.trim()) continue;
-      const idx1 = line.indexOf('|');
-      const idx2 = line.indexOf('|', idx1 + 1);
-      const idx3 = line.indexOf('|', idx2 + 1);
-      if (idx1 < 0 || idx2 < 0 || idx3 < 0) continue;
-      const type = line.slice(0, idx1);
-      if (type !== 'Regular File') continue;
-      const sizeBytes = parseInt(line.slice(idx1 + 1, idx2));
-      const atime = parseInt(line.slice(idx2 + 1, idx3));
-      const path = line.slice(idx3 + 1);
-      if (isNaN(sizeBytes) || !path || seenPaths.has(path)) continue;
-      if (sizeBytes < LARGE_THRESHOLD_BYTES) continue;
-      seenPaths.add(path);
-      statLines.push({ path, sizeBytes, atime });
-    }
-    if (seenPaths.size >= TARGET) break;
-  }
-
-  for (const f of statLines) {
-    const sizeGb = f.sizeBytes / (1024 ** 3);
-    const ext = (f.path.split('.').pop() || '').toLowerCase();
+  // Enumeration lives in files.sh — the same call the Files tab makes, so the
+  // agent's figures and the tab's list can never disagree about what is on
+  // this disk. It queries Spotlight at shrinking size thresholds (the index is
+  // already built, so each tier costs ~100ms against ~100s for a traversal)
+  // and stops once enough have surfaced, biggest first.
+  const listing = await bash(`bash ${FILES_SH} large 50`, sessionId);
+  for (const line of (listing.stdout || '').split('\n')) {
+    if (!line.trim()) continue;
+    const a = line.indexOf('|');
+    const b = line.indexOf('|', a + 1);
+    const c = line.indexOf('|', b + 1);
+    if (a < 0 || b < 0 || c < 0) continue;
+    const sizeBytes = parseInt(line.slice(0, a), 10);
+    const atime = parseInt(line.slice(a + 1, b), 10);
+    const path = line.slice(c + 1);
+    if (isNaN(sizeBytes) || !path || sizeBytes < LARGE_THRESHOLD_BYTES) continue;
+    const sizeGb = sizeBytes / (1024 ** 3);
+    const ext = (path.split('.').pop() || '').toLowerCase();
     const category = categorizeExt(ext);
-    files.push({ path: f.path, sizeBytes: f.sizeBytes, sizeGb, ext, category, atime: f.atime });
+    files.push({ path, sizeBytes, sizeGb, ext, category, atime });
     categoryTotals[category] = (categoryTotals[category] || 0) + sizeGb;
     totalSize += sizeGb;
-    fileCount++;
+    fileCount += 1;
   }
 
   onProgress('indexing', { fileCount, totalSize });
@@ -618,42 +578,39 @@ export async function runDeepFileScan(sessionId, onProgress) {
     sizeGroups[key].push(f);
   }
 
-  // Only groups with 2+ files of same size are candidates
-  const candidates = Object.values(sizeGroups).filter(g => g.length >= 2);
+  // Same size is a candidate signal, nothing more. This used to compare the
+  // first 4 KB, which two different large files can share — and the Files tab
+  // puts a delete button next to whatever lands here. Hash in full.
+  const candidates = Object.values(sizeGroups).filter(g => g.length >= 2).flat().slice(0, 60);
   const duplicates = [];
-
-  // Hash first 4KB of each candidate (batch to avoid too many bash calls)
-  for (const group of candidates.slice(0, 50)) {
-    const paths = group.map(f => f.path);
-    const hashCmd = paths.map(p => {
-      const sp = shellEsc(p);
-      return `h=$(head -c 4096 ${sp} 2>/dev/null | md5 -q 2>/dev/null || head -c 4096 ${sp} 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1); printf '%s %s\\n' "$h" ${sp}`;
-    }).join('; ');
-    const hashResult = await bash(hashCmd, sessionId);
-
-    const hashMap = {};
-    for (const line of hashResult.stdout.split('\n')) {
-      if (!line.trim()) continue;
-      const sp = line.indexOf(' ');
-      if (sp < 1) continue;
-      const hash = line.substring(0, sp);
-      const path = line.substring(sp + 1);
-      if (hash.length < 8) continue;
-      if (!hashMap[hash]) hashMap[hash] = [];
-      hashMap[hash].push(path);
+  if (candidates.length) {
+    const listPath = `${DATA_DIR}/dupe-candidates.txt`;
+    await bash(`mkdir -p "${DATA_DIR}" && : > "${listPath}"`, sessionId);
+    for (const f of candidates) {
+      await bash(`printf '%s\\n' ${shellEsc(f.path)} >> "${listPath}"`, sessionId);
     }
-
-    for (const [hash, paths] of Object.entries(hashMap)) {
-      if (paths.length >= 2) {
-        const sizeGb = group[0].sizeGb;
-        duplicates.push({
-          files: paths.map(p => p.replace(/^\/Users\/\w+/, '~')),
-          copies: paths.length,
-          sizeEach: formatSizeBytes(group[0].sizeBytes),
-          wastedGb: +(sizeGb * (paths.length - 1)).toFixed(2),
-          name: paths[0].split('/').pop(),
-        });
-      }
+    const hashed = await bash(`bash ${FILES_SH} sha "${listPath}"`, sessionId);
+    const sizeByPath = new Map(candidates.map(f => [f.path, f.sizeBytes]));
+    const bySha = {};
+    for (const line of (hashed.stdout || '').split('\n')) {
+      const at = line.indexOf('|');
+      if (at < 1) continue;
+      const sha = line.slice(0, at);
+      const path = line.slice(at + 1);
+      if (!path) continue;
+      (bySha[sha] ||= []).push(path);
+    }
+    for (const paths of Object.values(bySha)) {
+      if (paths.length < 2) continue;
+      const sizeBytes = sizeByPath.get(paths[0]) || 0;
+      const sizeGb = sizeBytes / (1024 ** 3);
+      duplicates.push({
+        files: paths.map(p => p.replace(/^\/Users\/[^/]+/, '~')),
+        copies: paths.length,
+        sizeEach: formatSizeBytes(sizeBytes),
+        wastedGb: +(sizeGb * (paths.length - 1)).toFixed(2),
+        name: paths[0].split('/').pop(),
+      });
     }
   }
 

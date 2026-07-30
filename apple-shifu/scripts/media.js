@@ -8,6 +8,10 @@ import {
   registerTab, setSourceInfo, setBackupBadge, getSource, setSource,
   onSourceChange, onTabChange, refreshVerbs,
 } from './shifu-shell.js';
+import {
+  bash, shellEsc, esc, abbrevPath, confirmDialog, showToast, flashToast,
+  writeJsonFile as ioWriteJsonFile, fmtBytes as fmtGb,
+} from './shifu-io.js';
 
 const MEDIA_SH = '$HOME/.linggen/skills/apple-shifu/scripts/media/media.sh';
 const DATA_DIR = '$HOME/.linggen/skills/apple-shifu/data/media';
@@ -47,32 +51,6 @@ let blurThreshold = 25;
 
 // ── plumbing ──
 
-function shellEsc(s) {
-  return "'" + s.replace(/'/g, "'\\''") + "'";
-}
-
-let serverDownAt = 0;
-
-/** Every pipeline call goes through here. A rejected fetch (daemon restarting
-    or stopped) used to unwind the click handler with no trace — the button
-    simply did nothing. Say so instead, and hand callers an empty result. */
-async function bash(command) {
-  try {
-    const resp = await fetch('/api/bash', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ project_root: '/tmp', command }),
-    });
-    return await resp.json();
-  } catch {
-    if (Date.now() - serverDownAt > 5000) {   // one message per outage, not per call
-      serverDownAt = Date.now();
-      flashToast('Linggen server unreachable — try again in a moment');
-    }
-    return {};
-  }
-}
-
 export async function media(cmd) {
   const res = await bash(`bash ${MEDIA_SH} ${cmd}`);
   try { return JSON.parse(res.stdout || res.output || '{}'); }
@@ -81,21 +59,6 @@ export async function media(cmd) {
 
 function notify(text) {
   if (window._chatNotify) window._chatNotify(`[MEDIA_EVENT] ${text}`);
-}
-
-function fmtGb(bytes) {
-  if (!bytes) return '0 KB';
-  if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`;
-  if (bytes >= 1e6) return `${Math.round(bytes / 1e6)} MB`;
-  return `${Math.max(1, Math.round(bytes / 1e3))} KB`;
-}
-
-function esc(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-}
-
-function abbrevPath(p) {
-  return String(p).replace(/^\/Users\/[^/]+/, '~');
 }
 
 // ── shell registration ──
@@ -1613,26 +1576,6 @@ function updateCatbar() {
 }
 
 /** In-page confirm (native confirm() is a no-op in the app shell). */
-function confirmDialog(messageHtml, actionLabel) {
-  return new Promise((resolve) => {
-    const box = document.createElement('div');
-    box.className = 'media-lightbox';
-    box.innerHTML = `
-      <div class="media-confirm">
-        <div>${messageHtml}</div>
-        <div class="row">
-          <button class="media-cta ghost sm" id="cf-no">Cancel</button>
-          <button class="media-cta sm" id="cf-yes">${actionLabel}</button>
-        </div>
-      </div>`;
-    const done = (v) => { box.remove(); resolve(v); };
-    box.onclick = (e) => { if (e.target === box) done(false); };
-    box.querySelector('#cf-no').onclick = () => done(false);
-    box.querySelector('#cf-yes').onclick = () => done(true);
-    document.body.appendChild(box);
-  });
-}
-
 /** Cleanup delete: every removal is recoverable — the staged copy moves to
     the 30-day restore area. Resolves true or null on cancel. */
 function confirmRemoveDialog(ids) {
@@ -2038,45 +1981,6 @@ async function backupInline(targets, dest) {
 }
 
 /** One-shot toast for an instant result — no progress phase, fades itself. */
-function flashToast(msg) {
-  const t = showToast(msg);
-  t.done(msg);
-  return t;
-}
-
-/** Lightweight bottom toast. Returns {update, done, close}. `done` swaps to a
-    final message and auto-dismisses; pass an {label, fn} action to keep the
-    toast up with a button (e.g. "Free up phone" after a backup). */
-function showToast(msg, spinner = false) {
-  let el = document.getElementById('media-toast');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'media-toast';
-    el.className = 'media-toast';
-    document.body.appendChild(el);
-  }
-  const render = (m, sp) => { el.innerHTML = `${sp ? '<span class="media-spin"></span>' : ''}<span>${esc(m)}</span>`; };
-  render(msg, spinner);
-  return {
-    update: (m) => render(m, true),
-    done: (m, action = null) => {
-      render(m, false);
-      if (action) {
-        const btn = document.createElement('button');
-        btn.className = 'media-cta sm';
-        btn.style.margin = '0 0 0 10px';
-        btn.textContent = action.label;
-        btn.onclick = () => { el.remove(); action.fn(); };
-        el.appendChild(btn);
-        setTimeout(() => el.remove(), 30000);
-      } else {
-        setTimeout(() => el.remove(), 4500);
-      }
-    },
-    close: () => el.remove(),
-  };
-}
-
 /** True if another pre-checked category (not `cat`) still claims this item. */
 function heldByOtherCat(it, cat) {
   return CATEGORIES.some((c) => c.precheck && c.key !== cat && it.flags.includes(c.key));
@@ -2091,16 +1995,7 @@ function updateSelbar() {
 
 // ── screen 4 · back up & remove ──
 
-async function writeJsonFile(name, obj) {
-  const json = JSON.stringify(obj);
-  const chunks = [];
-  for (let i = 0; i < json.length; i += 40000) chunks.push(json.slice(i, i + 40000));
-  await bash(`mkdir -p "${DATA_DIR}" && : > "${DATA_DIR}/${name}"`);
-  for (const c of chunks) {
-    await bash(`printf '%s' ${shellEsc(c)} >> "${DATA_DIR}/${name}"`);
-  }
-  await bash(`printf '\\n' >> "${DATA_DIR}/${name}"`);
-}
+const writeJsonFile = (name, obj) => ioWriteJsonFile(DATA_DIR, name, obj);
 
 /** Remove reads selection.json, backup reads backup-selection.json — separate
     files so a removal can't rewrite a running backup's work-list. */

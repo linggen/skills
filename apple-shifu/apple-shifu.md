@@ -9,8 +9,8 @@ guide: |
 
 Status: the rename shipped 2026-07-28 (see "Rename"), the **phone's System tab
 shipped 2026-07-29** (see "Phone System tab — built"), and the **Mac UI
-reshape shipped 2026-07-30** (see "Mac UI reshape — built"). The Mac's Files
-tab and the phone's Files tab are still design only.
+reshape and the Mac's Files tab shipped 2026-07-30** (see the two "built"
+sections). The **phone's Files tab** is the last piece still design only.
 
 ## Decisions
 
@@ -225,11 +225,75 @@ printing one fact:
   subset while the badge always counts the whole roll; without saying so the
   two read as contradicting each other.
 
+A fourth, found later the same day by running the panel with the cable
+unplugged: **"not reported" and "nothing asked" are different claims.** With
+no iPhone attached the rows read "Model — not reported", and the Device row
+printed "iPhone" as though it were a reading. Rows that come off lockdown now
+declare `cable: true` and go unreadable with "no iPhone on the cable" when
+none is connected — one flag in the registry, no branch in the renderer.
+
 Verified against the live daemon with a real iPhone attached (headless Chrome
 over CDP): the verb order is fixed across both tabs and both sources, the Scan
 menu still carries all five original rescans, tab and source survive a reload,
 the old in-panel action buttons are gone rather than duplicated, and the
 archive row and the badge agree.
+
+## Mac Files tab — built 2026-07-30
+
+The third tab, on the Mac end. `files.sh` + `files.js`, and deliberately
+**venv-free**: unlike the Media pipeline it needs nothing but the shell, so
+Files works on a fresh install before the Media tools are ever set up.
+
+Four piles, sorted by reclaimable bytes: Downloads · Large files · Duplicates ·
+Caches.
+
+**Two removal postures, and the difference is the point.** Downloads, large
+files and duplicates go to the macOS Trash — the user's own data, so removal
+stays recoverable, and the space frees when the Trash is emptied. Caches are
+**deleted outright**, because a cache sitting in the Trash frees nothing until
+then, and calling it reclaimed at that moment would be false. Caches
+regenerate, so nothing of the user's is lost. The confirm sheet names which
+one is about to happen.
+
+**The purge guard lives in `files.sh`, not the UI.** It refuses any path
+outside a known cache root, and refuses `~/Library/Caches` itself — only the
+per-app children under it. A caller cannot talk it into deleting something
+else. Verified by handing it a `~/Documents` path alongside a cache: the cache
+went, the document was refused and left intact.
+
+Build outputs (`node_modules`, `target/`) are **not** in the cache roots. They
+regenerate too, but expensively and per-project; the System tab already
+reports them.
+
+Two defects fixed on the way, both older than this tab:
+
+- **Duplicate detection compared only the first 4 KB** of same-size
+  candidates. Fine for a report, not fine for a list with a delete button —
+  two different large files can share a size and a first block. Both the tab
+  and the agent's deep scan now confirm with full SHA-256.
+- **`SKILL.md`'s permission warning claimed the app "cannot modify files"**,
+  which stopped being true when the Media tab started trashing photos in
+  2026-07. It now describes what actually happens and who does it.
+
+**One enumerator, two consumers.** `runDeepFileScan` no longer runs its own
+Spotlight query — it calls the same `files.sh large` the tab does, so the
+agent's figures and the tab's list cannot disagree about what is on the disk.
+
+**Reclaimed bytes come from the sizes already on screen.** `trash` and `purge`
+write the paths that actually went to `<list>.done`, and the pane sums its own
+row sizes over that list. Measuring again with `du` would report blocks on
+disk while the listing reports apparent size, and a sparse or compressed file
+makes those two numbers disagree about the very same file.
+
+**Unmeasured piles show `…`, not `0`.** A scan fills the piles one at a time;
+a chip reading "0 Caches" before anything looked would claim the pile is
+empty. The same rule already applied to Duplicates, which stay unhashed until
+the chip is opened.
+
+**Under 📱 the tab is honest about being empty**: every verb is blocked with
+the reason, and the panel says phone files need the Files section in Linggen
+Mobile, which isn't built — plus the standing fact that most iPhone documents
+live in other apps' sandboxes where iOS grants no access at all.
 
 ## iOS packages (pub.dev, surveyed 2026-07-28)
 

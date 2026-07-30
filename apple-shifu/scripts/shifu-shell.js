@@ -10,6 +10,8 @@
 // greyed with the reason on it. It is never dropped from the row — position is
 // the point — and it is never left live with nothing behind it.
 
+import { fmtBytes, esc } from './shifu-io.js';
+
 const SOURCE_KEY = 'apple-shifu:source';
 const TAB_KEY = 'apple-shifu:tab';
 
@@ -240,15 +242,3 @@ function openMenu(anchor, items) {
   document.body.appendChild(menuEl);
 }
 
-// ── shared formatting ──
-
-export function fmtBytes(bytes) {
-  if (!bytes) return '0 KB';
-  if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`;
-  if (bytes >= 1e6) return `${Math.round(bytes / 1e6)} MB`;
-  return `${Math.max(1, Math.round(bytes / 1e3))} KB`;
-}
-
-export function esc(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-}

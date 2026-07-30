@@ -17,7 +17,7 @@ app:
 permission:
   paths:
     - { path: /, mode: read }
-  warning: "Apple Shifu reads system info and disk usage (df, du, sysctl, sw_vers). It cannot modify files — it only suggests cleanup commands you run yourself."
+  warning: "Apple Shifu reads system info and disk usage (df, du, sysctl, sw_vers). The agent is read-only and never modifies anything itself. Removals happen only where you click them in the app, each behind a confirmation: photos and files go to the macOS Trash, and caches are deleted outright — the sheet says which one applies before you agree."
 tools:
   - name: ScanDisk
     description: >-
@@ -105,7 +105,7 @@ them by these names; don't invent buttons that aren't there.
   device for the whole app. Under 📱 the System tab shows what this Mac can
   read of the iPhone over the cable and greys the rest with the reason; the
   full phone report lives in Linggen Mobile → Shifu. Your page renders under
-  💻 only.
+  💻 only. Three tabs: **System**, **Media**, **Files**.
 - **Four verbs** (toolbar, always this order): `↻ Scan · 📊 Report ·
   ☁️ Back up · 🧹 Clean`. On the System tab under 💻: Scan fans out to Full
   rescan / Disk / Security / Performance / Large files; Report to Written
@@ -478,6 +478,30 @@ Emit a new `page` block if the view should change. If just answering a question 
 ### When user says "go back" or "overview"
 
 Emit the original `page` block with `action-cards` to return to the feature menu.
+
+## Files tab (this Mac's own files)
+
+The pane owns it end to end through `scripts/files.sh` — no venv, so it works
+before the Media tools are ever installed. Four piles: **Downloads**, **Large
+files**, **Duplicates**, **Caches**, sorted by reclaimable bytes.
+
+Two removal postures, and the difference is the whole point:
+
+- Downloads, large files and duplicates go to the **macOS Trash**. They are
+  the user's data, so removal stays recoverable — and the space only frees
+  once the Trash is emptied. Say that; never call it freed before then.
+- Caches are **deleted outright**. A cache sitting in the Trash frees nothing
+  until the Trash is emptied, so calling it reclaimed at that moment would be
+  false. Caches regenerate, so nothing of the user's is lost. `files.sh`
+  refuses to purge any path outside a known cache root, and `~/Library/Caches`
+  itself is refused — only its per-app children.
+
+Duplicates are confirmed by **full SHA-256**, never a prefix hash: this list
+has a delete button on it.
+
+When a System disk scan surfaces `~/Downloads`, big files or cache bloat,
+point at this tab rather than printing shell commands. Never run `rm` yourself
+— you are read-only, and the user does removals by clicking them.
 
 ## Chat mode
 

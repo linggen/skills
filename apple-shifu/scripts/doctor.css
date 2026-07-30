@@ -592,6 +592,66 @@ body {
   max-width: 70ch;
 }
 
+/* ── Files tab rows ── */
+
+.file-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  margin-bottom: 4px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.file-row:hover { border-color: var(--accent); }
+
+.file-row.on {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.file-check { flex: 0 0 14px; }
+
+.file-size {
+  flex: 0 0 78px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* The directory gives way; the filename never does. */
+.file-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.file-dir {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.file-name {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.file-meta {
+  flex: 0 0 auto;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
 .verb-icon {
   font-size: 14px;
   line-height: 1;

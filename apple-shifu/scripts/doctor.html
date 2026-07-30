@@ -15,6 +15,7 @@
     <div class="apptabs">
       <button class="atab" data-tab="system">🩺 System</button>
       <button class="atab" data-tab="media" title="Connect your iPhone by USB — manage photos and videos on both Mac and iPhone">📷 Media</button>
+      <button class="atab" data-tab="files" title="Downloads, large files, duplicates and caches on this Mac">📁 Files</button>
     </div>
     <!-- One selected device for the whole app; every tab follows it. -->
     <div class="source-switch" id="source-switch"></div>
@@ -42,6 +43,9 @@
 
       <!-- Media tab: iPhone + Mac photo/video cleanup (media.js owns this pane) -->
       <div class="media-panel" id="media-panel" hidden></div>
+
+      <!-- Files tab: this Mac's Downloads, large files, duplicates, caches -->
+      <div class="media-panel" id="files-panel" hidden></div>
     </div>
 
     <!-- Right: chat panel (always fixed, shared across tabs) -->
@@ -51,6 +55,7 @@
   <script type="module" src="chat-bridge.js"></script>
   <script type="module" src="doctor.js"></script>
   <script type="module" src="media.js"></script>
+  <script type="module" src="files.js"></script>
   <script type="module" src="app-mode.js"></script>
 </body>
 </html>
