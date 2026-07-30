@@ -95,7 +95,13 @@ tools:
             title:  { type: string }
             year:   { type: integer }
           required: [artist, title]
-    cmd: "bash $SKILL_DIR/scripts/get.sh '{{tracks}}'"
+    # No quotes around the placeholder — the engine already shell-escapes
+    # every value it substitutes. Quoting here too produced `''[{...}]''`:
+    # the two pairs cancel and the JSON lands UNQUOTED, so the shell globs
+    # `[...]` and word-splits on any space. A Chinese title survived that;
+    # `{"title":"Smooth Criminal"}` would have arrived as `[{"artist":"Michael`
+    # and nothing else. Every pulse template already gets this right.
+    cmd: "bash $SKILL_DIR/scripts/get.sh {{tracks}}"
     tier: edit
     timeout_ms: 900000
 ---
