@@ -83,6 +83,8 @@ const ROWS = [
 ];
 
 let lastInfo = null;
+/** The probe currently running, so concurrent callers share one device read. */
+let inFlight = null;
 
 /** The facts the panel last drew — the Report verb sends these to the agent. */
 export function phoneFacts() { return lastInfo; }
@@ -102,7 +104,16 @@ export async function renderPhoneSystem(el, probe = true) {
   if (!el) return;
   if (!probe && !lastInfo) return;   // nothing read yet; the probing call will draw
   if (!lastInfo) el.innerHTML = '<div class="ps-loading">Looking for your iPhone…</div>';
-  const info = probe ? await media('info') : lastInfo;
+  else if (probe) markProbing(el);
+
+  let info = lastInfo;
+  if (probe) {
+    // One probe at a time. Every switch into this source starts one, and a
+    // cold lockdown read runs to twenty seconds — flicking between tabs used
+    // to stack them, each walking the device again for the same answer.
+    inFlight = inFlight || media('info');
+    try { info = await inFlight; } finally { inFlight = null; }
+  }
   lastInfo = info;
   if (probe) publishSourceInfo(info);
   const ctx = { info, backup: getBackupSummary() };
@@ -124,6 +135,22 @@ export async function renderPhoneSystem(el, probe = true) {
       <h3 class="ps-group-title">${esc(name)}</h3>
       ${rows.map(rowHtml).join('')}
     </div>`).join('') + noteHtml(groups);
+}
+
+/**
+ * Say that a re-read is happening.
+ *
+ * The panel only draws its loading state when it has nothing yet, so a re-read
+ * with rows already on screen sat silent for however long it took — under a
+ * second warm, twenty on a cold cable — and then replaced them with the same
+ * values. The strip is wiped by the redraw that follows.
+ */
+function markProbing(el) {
+  if (el.querySelector('.ps-probing')) return;
+  const strip = document.createElement('div');
+  strip.className = 'ps-probing';
+  strip.textContent = 'Reading the iPhone over the cable…';
+  el.prepend(strip);
 }
 
 /** Why there is no number here. A score off this slice would sit next to the

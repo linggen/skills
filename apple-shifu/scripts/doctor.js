@@ -100,7 +100,12 @@ const SYSTEM_VERBS = {
     },
   }),
   phone: () => ({
-    scan: { hint: 'Re-read the iPhone over the cable', run: () => refreshPhoneSystem() },
+    // No Scan here, and not because it failed. The panel already probes over
+    // the cable on every switch into this source, so the button re-ran the
+    // scan that had just drawn it. And the rows a probe cannot reach are the
+    // phone's own — which it publishes when it is awake, so asking for them on
+    // demand would promise a reading a suspended app cannot give.
+    scan: { blocked: 'Readings come from the phone — open Shifu in Linggen Mobile' },
     report: {
       hint: 'Write up what this Mac can see of the iPhone',
       run: () => {

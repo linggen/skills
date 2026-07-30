@@ -318,6 +318,52 @@ menu still carries all five original rescans, tab and source survive a reload,
 the old in-panel action buttons are gone rather than duplicated, and the
 archive row and the badge agree.
 
+## A Mac-side verb that needs the phone — settled 2026-07-30
+
+The phone can only answer while it is awake. iOS suspends the app within
+seconds of backgrounding, and a suspended process cannot run a probe —
+`host_processor_info`, the sysctls and PhotoKit all need it executing. The peer
+connection dies with it, and push notifications are deferred, so there is no
+wake path. **Nothing on the Mac may promise a fresh reading from the phone on
+demand.** Three kinds of verb follow from that:
+
+- **Changes something on the phone → queue it.** Value does not decay:
+  deleting forty photos tomorrow morning is as good as deleting them now. The
+  Mac queues the request, badges the pending state, and the phone drains it on
+  open. Photo deletion is the model — `request-delete` → `pendingDeletes` →
+  amber ⏳ on the tile and the action bar → cleared by the status poll once the
+  phone executes.
+- **Reads something on the phone → no button at all.** A reading loses its
+  value the moment the user looks away; a queued read lands hours later while
+  nobody is at the Mac. The phone publishes its readout whenever it is alive
+  anyway, and the Mac renders the last one with its age. Queuing the read
+  would add a button, a pending badge and a round trip to produce exactly what
+  the publish already produces.
+- **Neither → hand off**, the way `backup` and `clean` already open the Media
+  tab.
+
+The verb is still never dropped from the row — it greys with its reason, per
+the toolbar contract above.
+
+**Scan under 📱 was the one mis-shaped verb.** `applySystemSource` already
+probes over the cable on every switch into the phone source and on every
+return to the System tab, so Scan re-ran the probe that had just drawn the
+panel and rewrote the same values — nothing to see, which is exactly how it
+reads. It greys with "readings come from the phone."
+
+The probe itself is ~0.8 s warm but around twenty on the first read after the
+daemon or the cable has been idle, and the panel only showed a loading state
+when it had *no* prior reading — so a re-probe sat silent however long it
+took. It now says it is reading, and concurrent callers share one device read
+rather than stacking walks of the same device.
+
+Unsettled: **how the published readout reaches the panel.** Device topics are
+a pure relay — `topic_publish` fans out to connected peers and nothing is
+retained — and a skill page has no peer of its own (its chat is an iframe to
+`/embed`, which owns the transport). So the page can publish but cannot
+subscribe, and there is nothing to poll. Resolving this needs either a
+retained topic in the engine or a different landing place for the payload.
+
 ## Mac Files tab — built 2026-07-30
 
 The third tab, on the Mac end. `files.sh` + `files.js`, and deliberately
