@@ -385,15 +385,27 @@ of the reading and says plainly that the Mac cannot ask for a fresher one.
 The phone's own score is shown there, which retires the "no score here" note —
 the panel now says whose number it is rather than that there isn't one.
 
-Three defects found by running it, all the familiar shape:
+Which row wins when both ends have one: **the fresher**. A reading the Mac took
+off the cable a second ago beats one the phone took an hour ago, so the phone's
+copy stands down; a row the Mac could *not* read is the phone's to tell, so the
+Mac's greyed version stands down instead. Either way the fact is printed once.
+
+Defects found by running it, all the familiar shape:
 
 - **Battery health printed twice** — the Mac lists it under Device and the
-  phone also reports it, so standing down "the phone-only group" was the wrong
-  rule. Rows now stand down **by label**: whatever the phone has answered for,
-  the Mac's sign pointing at the phone gives way.
+  phone also reports it, so standing down "the phone-only group" was not
+  enough. Labels have to be matched too.
+- **Three signs left pointing at readings printed below them** — matching
+  labels alone was not enough *either*, because the phone calls those rows
+  Temperature, Lock and Integrity where the sign says Thermal state, Passcode
+  & biometrics and Device integrity. Both rules are needed, and it took a
+  screenshot to see it: the assertions were all green.
 - **`where_to_look` was never rendered.** The phone sends the Settings path with
   every row it cannot read, and dropping it left the panel saying only that
   nobody knows — worse than the placeholder it replaced.
+- **The phone's readout carried no `scanned_at`.** The Mac's had one from the
+  start, so "one schema, two hosts" was not true, and the age — the whole
+  difference between a reading and a claim about now — could not be shown.
 - **"it reaches 1 rows"** — the note counted what the cable answered this time
   and framed it as a capability.
 

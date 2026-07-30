@@ -108,7 +108,10 @@ async function fetchPhoneReadout() {
     const body = await res.json();
     const payload = body?.payload;
     if (!payload || !Array.isArray(payload.readings) || !payload.readings.length) return null;
-    return payload;
+    // `scanned_at` is when the phone measured; `retained_at` is when the
+    // daemon received it. The first is the truer age and the second is the
+    // fallback, for a readout published by a build that predates the field.
+    return { ...payload, retained_at: body.retained_at };
   } catch {
     return null;               // daemon unreachable: say nothing rather than guess
   }
@@ -127,10 +130,12 @@ function ago(iso) {
   return `${days} day${days === 1 ? '' : 's'} ago`;
 }
 
-function phoneReadoutHtml(readout) {
-  const when = ago(readout.scanned_at);
+function phoneReadoutHtml(readout, measuredHere) {
+  const when = ago(readout.scanned_at) || ago(readout.retained_at);
   const groups = new Map();
   for (const row of readout.readings) {
+    // The cable answered this one just now — no need to say it twice, older.
+    if (measuredHere.has(String(row.label || '').toLowerCase())) continue;
     if (!groups.has(row.group)) groups.set(row.group, []);
     groups.get(row.group).push(row);
   }
@@ -189,20 +194,31 @@ export async function renderPhoneSystem(el, probe = true) {
   // on every draw and keeps the age on screen honest.
   const readout = await fetchPhoneReadout();
 
-  // Whatever the phone has actually answered for, the Mac's version of that row
-  // stands down — it was only ever a sign pointing at the phone. Matched on the
-  // label rather than on the "On the phone only" group, because the duplicate
-  // that got through first was Battery health, which the Mac lists under Device
-  // and which the phone also reports: one fact, printed twice, on one screen.
+  // Once the phone has published, the Mac's version of a row it answered for
+  // stands down — that row was only ever a sign pointing at the phone.
+  //
+  // Two rules, because one was not enough either way round. Dropping the whole
+  // "On the phone only" group missed Battery health, which the Mac lists under
+  // Device and the phone also reports. Matching labels missed the reverse: the
+  // phone calls them Temperature, Lock and Integrity where the sign says
+  // Thermal state, Passcode & biometrics and Device integrity, so three signs
+  // survived pointing at readings printed directly below them.
   const answered = new Set(
     (readout?.readings || []).map((r) => String(r.label || '').toLowerCase()),
   );
 
+  // Labels this Mac just measured for itself. A live reading off the cable
+  // beats one the phone took some time ago, so where both have a row the
+  // fresher one keeps it and the other stands down — whichever side that is.
+  const measuredHere = new Set();
+
   const groups = new Map();
   for (const row of ROWS) {
-    if (answered.has(row.label.toLowerCase())) continue;
-    if (!groups.has(row.group)) groups.set(row.group, []);
+    if (readout && row.group === 'On the phone only') continue;
     const reading = row.cable && !info.connected ? { unreadable: NO_CABLE } : row.read(ctx);
+    if (reading.unreadable && answered.has(row.label.toLowerCase())) continue;
+    if (!reading.unreadable) measuredHere.add(row.label.toLowerCase());
+    if (!groups.has(row.group)) groups.set(row.group, []);
     groups.get(row.group).push({ label: row.label, ...reading });
   }
 
@@ -216,7 +232,7 @@ export async function renderPhoneSystem(el, probe = true) {
       <h3 class="ps-group-title">${esc(name)}</h3>
       ${rows.map(rowHtml).join('')}
     </div>`).join('')
-    + (readout ? phoneReadoutHtml(readout) : '')
+    + (readout ? phoneReadoutHtml(readout, measuredHere) : '')
     + noteHtml(groups, readout);
 }
 
