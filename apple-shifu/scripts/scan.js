@@ -136,19 +136,23 @@ function parseDiskUsage(dfOut) {
   const lines = dfOut.trim().split('\n');
   if (lines.length < 2) return null;
   const parts = lines[1].split(/\s+/);
+  const total = parseInt(parts[1], 10);
+  if (!Number.isFinite(total)) return null;
   return {
-    total_gb: parseSize(parts[1] || ''),
-    used_gb: parseSize(parts[2] || ''),
-    free_gb: parseSize(parts[3] || ''),
-    percent: parseInt(parts[4] || '0') || 0,
+    total_gb: volumeGb(total),
+    used_gb: volumeGb(parseInt(parts[2], 10)),
+    free_gb: volumeGb(parseInt(parts[3], 10)),
+    percent: parseInt(parts[4] || '0', 10) || 0,
   };
 }
 
+/// `du -sk` emits `<kilobytes>\t<path>`, so a path containing whitespace
+/// survives — which `du -sh`'s column output did not guarantee.
 function parseDirSizes(duOut) {
   return duOut.trim().split('\n').filter(Boolean).map(line => {
-    const match = line.trim().match(/^([\d.]+[KMGTPE]i?)\s+(.+)$/);
+    const match = line.match(/^(\d+)\t(.+)$/);
     if (!match) return null;
-    return { size_gb: parseSize(match[1]), path: match[2] };
+    return { size_gb: kbToGb(parseInt(match[1], 10)), path: match[2] };
   }).filter(Boolean).sort((a, b) => b.size_gb - a.size_gb);
 }
 
@@ -156,19 +160,34 @@ function parseDirSizes(duOut) {
 // Size parsing
 // ---------------------------------------------------------------------------
 
-function parseSize(str) {
-  if (!str) return 0;
-  const num = parseFloat(str);
-  if (isNaN(num)) return 0;
-  const unit = str.replace(/[\d.]/g, '').replace(/i$/i, '').trim().toUpperCase();
-  if (unit.startsWith('T')) return +(num * 1024).toFixed(1);
-  if (unit.startsWith('G')) return +num.toFixed(2);
-  if (unit.startsWith('M')) return +(num / 1024).toFixed(3);
-  if (unit.startsWith('K')) return +(num / (1024 * 1024)).toFixed(6);
-  if (unit.startsWith('B') || unit === '') {
-    return num > 10000 ? +(num / (1024 ** 3)).toFixed(3) : num;
-  }
-  return num;
+/**
+ * Kilobytes (1024-byte blocks, what `df -k` and `du -sk` count in) to GB.
+ *
+ * The GB here is Apple's GB — 10^9 bytes, what Finder, About This Mac and
+ * System Settings › Storage show, and what `media_pipeline.py mac_free_gb()`
+ * and the Files tab already report. This scan used to parse `df -h`/`du -sh`
+ * instead, whose output is 1024-based: `63Gi` became `63` and got printed as
+ * "63 GB" beside a header chip reading 67.7 GB for the same volume, ~7.4%
+ * apart on every figure. One volume, one number — so the conversion happens
+ * once, here, and nothing downstream sees a block count.
+ *
+ * Reading the block counts rather than the pretty strings also keeps the
+ * precision `-h` threw away: a 2 TB disk printed as `1.8Ti` came back as
+ * 1843.2 GB when it is 1995.2 GB.
+ */
+function kbToGb(kb) {
+  if (!Number.isFinite(kb)) return 0;
+  const gb = (kb * 1024) / 1e9;
+  if (gb >= 100) return +gb.toFixed(1);
+  if (gb >= 1) return +gb.toFixed(2);
+  return +gb.toFixed(3);
+}
+
+/// A whole volume, at the precision the header chip and Finder use. Free space
+/// is printed in two places on one screen; "66.67 GB" beside "66.7 GB free" is
+/// the same reading, but it does not look like one.
+function volumeGb(kb) {
+  return +((kb * 1024) / 1e9).toFixed(1);
 }
 
 function extractLine(text, prefix) {
@@ -236,13 +255,15 @@ export async function runScan(mode, sessionId, onProgress) {
   // ── Disk usage (all modes) ──
   onProgress('disk', 'start');
   const [df, homeDirs, caches, apps] = await Promise.all([
-    bash('df -h /System/Volumes/Data 2>/dev/null || df -h /', sessionId),
-    bash('du -sh ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
+    // -k / -sk, never -h: the pretty output is 1024-based and rounded, and
+    // this app reports Apple's decimal GB everywhere else. See kbToGb.
+    bash('df -k /System/Volumes/Data 2>/dev/null || df -k /', sessionId),
+    bash('du -sk ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
     bash([
-      'du -sh ~/.Trash 2>/dev/null',
-      'du -sh ~/Library/Caches 2>/dev/null',
-      'du -sh ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
-      'du -sh ~/Library/Developer/CoreSimulator 2>/dev/null',
+      'du -sk ~/.Trash 2>/dev/null',
+      'du -sk ~/Library/Caches 2>/dev/null',
+      'du -sk ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
+      'du -sk ~/Library/Developer/CoreSimulator 2>/dev/null',
     ].join('; '), sessionId),
     // Installed apps with last-used + size for the "Apps to Review"
     // dormant-app cleanup card. Skill is expected at the standard install
@@ -274,8 +295,8 @@ export async function runScan(mode, sessionId, onProgress) {
   if (mode === 'full' || mode === 'deep') {
     onProgress('garbage', 'start');
     const [nodeModules, targets, oldDownloads] = await Promise.all([
-      bash('find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -10', sessionId),
-      bash('find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -5', sessionId),
+      bash('find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -10', sessionId),
+      bash('find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -5', sessionId),
       bash('find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l', sessionId),
     ]);
     results.garbage = [
@@ -327,16 +348,18 @@ export async function runScan(mode, sessionId, onProgress) {
 
 export async function runDiskScan(sessionId) {
   const [df, homeDirs, caches, nodeModules, targets, oldDownloads] = await Promise.all([
-    bash('df -h /System/Volumes/Data 2>/dev/null || df -h /', sessionId),
-    bash('du -sh ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
+    // -k / -sk, never -h: the pretty output is 1024-based and rounded, and
+    // this app reports Apple's decimal GB everywhere else. See kbToGb.
+    bash('df -k /System/Volumes/Data 2>/dev/null || df -k /', sessionId),
+    bash('du -sk ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
     bash([
-      'du -sh ~/.Trash 2>/dev/null',
-      'du -sh ~/Library/Caches 2>/dev/null',
-      'du -sh ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
-      'du -sh ~/Library/Developer/CoreSimulator 2>/dev/null',
+      'du -sk ~/.Trash 2>/dev/null',
+      'du -sk ~/Library/Caches 2>/dev/null',
+      'du -sk ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
+      'du -sk ~/Library/Developer/CoreSimulator 2>/dev/null',
     ].join('; '), sessionId),
-    bash('find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -10', sessionId),
-    bash('find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -5', sessionId),
+    bash('find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -10', sessionId),
+    bash('find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -5', sessionId),
     bash('find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l', sessionId),
   ]);
 

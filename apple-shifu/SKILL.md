@@ -21,8 +21,11 @@ permission:
 tools:
   - name: ScanDisk
     description: >-
-      Run a fresh disk scan. Returns text sections: DISK (df), HOME DIRS,
-      CACHES, NODE_MODULES, RUST_TARGET, OLD_DOWNLOADS_COUNT, APPLICATIONS.
+      Run a fresh disk scan. Returns text sections: DISK (total/used/free/
+      capacity), HOME DIRS, CACHES, NODE_MODULES, RUST_TARGET,
+      OLD_DOWNLOADS_COUNT, APPLICATIONS. Every size is already in GB —
+      Apple's GB, the same figure Finder shows — so quote them as they come
+      and never re-scale them.
       Call this when the user asks to rescan disk usage, find space consumers,
       or check disk after a cleanup. You MUST emit a body_patch updating
       ALL THREE widgets: `bars` (Disk Usage), `recommendations` (Cleanup),
