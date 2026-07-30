@@ -17,9 +17,18 @@ cwd: ~/.linggen/skills/dj
 install: install.sh
 permission:
   paths:
-    # ListLibrary reads the library index here — pre-grant it so the agent
-    # (incl. when reached via another agent, e.g. Yinyue) never prompts.
-    - { path: ~/.linggen/skills/dj, mode: read }
+    # Pre-grant the skill's own directory so the agent never prompts — not
+    # when the owner drives it, and not when it is reached through another
+    # agent (Yinyue handing over a download).
+    #
+    # `edit`, not `read`, because a skill tool's tier is checked against the
+    # session's CWD — which is this directory — rather than against whatever
+    # the script writes. ListLibrary is `tier: read` and would be happy with
+    # less; GetTracks is `tier: edit`, so `read` here stopped every download
+    # to ask. Note the grant therefore names a folder GetTracks does not
+    # write to: the tracks land in ~/Music/DJ and the yt-dlp/ffmpeg binaries
+    # in ~/.linggen/bin. Same level cfo and pulse already declare.
+    - { path: ~/.linggen/skills/dj, mode: edit }
 app:
   launcher: web
   entry: scripts/index.html
