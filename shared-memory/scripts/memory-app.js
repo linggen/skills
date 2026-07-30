@@ -54,9 +54,9 @@ const BOOT_PROMPT = `You are Ling inside the Memory skill. The dashboard (tier c
 On boot, send ONE warm, short greeting (≤25 words) introducing yourself and what this skill does: durable memory across all your AI sessions. Mention they can hit "Dream" (or click an undreamed day) to remember it into long-term memory, or just ask what you remember. No preamble, no bullet lists, no "Done"/"awaiting action" phrasing.
 
 Then wait. When the user acts:
-- "/shared-memory dream" or "/shared-memory dream <YYYY-MM-DD>" → follow references/dream-flow.md: remember the undreamed day(s) via Memory_query/Memory_write (days worklist → day list → cluster → promote → remember_day stamp → sweep). No PageUpdate needed — the page watches the tool stream and repaints the calendar itself; just end with your one-line totals.
-- "/shared-memory solve" → follow the SKILL.md Solve runbook: Memory_query {"verb":"issues"} for the queue, per item gather the rows and evidence, solve confident derived-row items directly (add + replace_ids), AskUser ONE item at a time when the user's call is needed, close each via Memory_write {"verb":"issue_resolve","id":...,"outcome":...}.
-- Anything else → answer normally, use Memory_query when relevant.`;
+- "/shared-memory dream" or "/shared-memory dream <YYYY-MM-DD>" → follow references/dream-flow.md: remember the undreamed day(s) via the memory_* tools (days worklist → day list → cluster → promote → remember_day stamp → sweep). No PageUpdate needed — the page watches the tool stream and repaints the calendar itself; just end with your one-line totals.
+- "/shared-memory solve" → follow the SKILL.md Solve runbook: memory_issues for the queue, per item gather the rows and evidence, solve confident derived-row items directly (add + replace_ids), AskUser ONE item at a time when the user's call is needed, close each via memory_issue_resolve({"id":...,"outcome":...}).
+- Anything else → answer normally, use memory_search when relevant.`;
 
 const params = new URLSearchParams(window.location.search);
 let modelId = params.get('model') || '';
@@ -452,7 +452,7 @@ function ageOf(iso) {
 // The buttons in memory.html's header send plain chat messages — the
 // agent parses them per BOOT_PROMPT and runs the corresponding action.
 // Progress streams in the chat panel; the calendar repaints from the
-// daemon rollup as the agent's Memory_write calls land (see
+// daemon rollup as the agent's memory writes land (see
 // handleContentBlock).
 
 function setupActionBar() {
@@ -468,7 +468,7 @@ function setupActionBar() {
 // ── Tool-stream ingestion ──
 //
 // The chat bridge surfaces every tool call the agent makes. Two kinds
-// matter here: PageUpdate (agent-drawn widgets) and Memory_write (a
+// matter here: PageUpdate (agent-drawn widgets) and a memory write (a
 // remember/sweep just changed store state → repaint counts + calendar
 // from the daemon, debounced so a burst of promotes repaints once).
 
@@ -483,9 +483,14 @@ function scheduleStateRefresh() {
 }
 
 function handleContentBlock(payload) {
-  // Memory_write on Linggen; Bash on hosts where the agent drives the
-  // `ling-mem` CLI instead. Either way the store may have moved.
-  if (payload?.tool === 'Memory_write' || payload?.tool === 'Bash') {
+  // Any of the memory server's tools on Linggen (they arrive qualified,
+  // `mcp__memory__memory_add`); Bash on hosts where the agent drives the
+  // `ling-mem` CLI instead. Either way the store may have moved. Matching the
+  // whole family by prefix rather than one write tool by name: a promote is an
+  // add, a stamp is a remember_day, a sweep is a sweep, and the calendar has to
+  // repaint after each.
+  const tool = payload?.tool || '';
+  if (tool.startsWith('mcp__memory__') || tool === 'Bash') {
     scheduleStateRefresh();
     return;
   }

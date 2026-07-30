@@ -43,7 +43,7 @@ button — all routes converge on `dream-flow.md`.
 
 ## After a dream run — no report PageUpdate
 
-The page watches the tool stream (`Memory_write` / `Bash` blocks) and
+The page watches the tool stream (`mcp__memory__*` / `Bash` blocks) and
 re-fetches the `days` rollup itself, repainting the calendar and
 footer in place. The agent must **not** emit a `PageUpdate`:
 
@@ -87,7 +87,7 @@ WebRTC remote-access clients.
 
 This file used to spec a five-state dashboard flow (Open / Waiting /
 Scanning / Report) with verbose A+B+C agent rendering instructions
-and 7× parallel `Memory_query({verb:"list", type:T})` calls. That
+and 7× parallel `memory_list({type:T})` calls. That
 whole flow was retired in the rebuild — JS does the on-open render,
 and dream produces the post-action report. If you find references
 to the old states elsewhere, treat this file as the source of truth.

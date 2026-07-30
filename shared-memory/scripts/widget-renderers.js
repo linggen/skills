@@ -43,6 +43,12 @@ const MEM_CAP_URL = (tool) => `/apps/memory/capability/${tool}`;
 
 // ── Helpers ──
 
+// The user's own path into memory, not the agent's: a click in this page
+// POSTs to /apps/<skill>/capability/<tool>, which is a REST door and keeps the
+// verb-dispatched `Memory_query` / `Memory_write` names. The model's tools are
+// ling-mem's own `memory_*` over MCP and were renamed with the migration; this
+// door was not, because bundles already installed on users' machines call it by
+// these names and a rename would break their pages.
 async function callMemoryTool(tool, args) {
   const resp = await fetch(MEM_CAP_URL(tool), {
     method: 'POST',
@@ -962,7 +968,7 @@ function renderActionCards(w) {
 //         "detail": "7 found · 0.8s" },
 //       { "label": "Merge & write candidates",    "status": "active",
 //         "detail": "3 of 12",
-//         "sub": "Memory_query parallel · writing + / ~ / −" },
+//         "sub": "memory_list parallel · writing + / ~ / −" },
 //       { "label": "Stamp day harvested",          "status": "pending" }
 //     ],
 //     "footer": "elapsed 47s · ≈ 1m 30s remaining" }

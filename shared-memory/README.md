@@ -41,7 +41,7 @@ ling-mem delete <id>
 |:-----|:------------|
 | Claude Code | SKILL.md + a `UserPromptSubmit` hook (`hooks/recall.sh`). Hook auto-injects relevant memories every prompt; agent calls the CLI for ad-hoc lookups. |
 | Codex / OpenClaw | Standard SKILL.md skill. Agent shells out via the CLI for every memory operation. |
-| Linggen | This skill is loaded the same way (CLI via `Bash`). Separately, the Linggen engine ships built-in `Memory_query` / `Memory_write` tools wired to the same daemon for its own auto-recall + dream paths — same store, same semantics, no skill round-trip needed inside the engine. |
+| Linggen | This skill is loaded the same way (CLI via `Bash`). Separately, the Linggen engine connects the same daemon as a built-in MCP server, so its agents call `memory_*` directly for auto-recall + dream — same store, same semantics, no skill round-trip needed inside the engine. |
 | Standalone | Any script shells out: `ling-mem search "query" --format json` |
 
 The auto-detect installer (`install.sh`) places the skill into whichever host runtimes are present (`~/.claude/skills/`, `~/.openclaw/skills/`, `~/.linggen/skills/`).
@@ -59,7 +59,7 @@ Intel Mac: prebuilt binaries not provided. Build from source with `cargo build -
 
 ## What's stored
 
-- Stored: durable signal you (or the agent on your behalf) add via `ling-mem add` (or, inside the Linggen engine, the equivalent built-in `Memory_write` tool). Indexed in `~/.linggen/memory/memory.lancedb/` (two tables: `semantic` for promoted core/long-term rows, `episodic` for recently-encoded staging).
+- Stored: durable signal you (or the agent on your behalf) add via `ling-mem add` (or, on any MCP host, the equivalent `memory_add` tool). Indexed in `~/.linggen/memory/memory.lancedb/` (two tables: `semantic` for promoted core/long-term rows, `episodic` for recently-encoded staging).
 - Not stored: session transcripts, code you don't explicitly save, anything not added through the CLI.
 
 ## Links

@@ -18,7 +18,7 @@ episodic staging. Pending days drain **oldest first**.
 
 ## Interface
 
-On **Linggen**, use the built-in `Memory_query` / `Memory_write` tools
+On **Linggen**, use the memory server's own `memory_*` tools
 (Chat-tier, ungated — zero permission prompts across a pass full of
 writes): verbs `days`, `list` (+`day`), `add`, `remember_day`,
 `harvest_day` (the scan stamp), `sweep`.
@@ -167,7 +167,7 @@ can prove, queue the rest for the user. Two capped passes:
    queueing is bookkeeping, not merging). Per candidate: skip rows
    younger than ~14 days (write-time supersede gets first chance);
    otherwise queue via
-   `Memory_write {"verb":"issue_add","kind":"<k>","row_ids":[...],"note":"..."}`
+   `memory_issue_add {"kind":"<k>","row_ids":[...],"note":"..."}`
    (CLI: `ling-mem issue-add --kind <k> --row <id> "<note>"`) —
    `chain` for an uncertain merge (note: subject + both gists),
    `stale-status` for a provisional claim with no completing neighbor
@@ -181,6 +181,6 @@ can prove, queue the rest for the user. Two capped passes:
 
 No PageUpdate is needed: the memory page watches the tool stream and
 repaints tier counts + the calendar from the daemon's `days` rollup
-after your `Memory_write` calls land. End with the status lines and a
+after your memory writes land. End with the status lines and a
 one-line totals sentence — e.g. *"Remembered 2 days: 5 promoted, 31
 judged; sweep evicted 12."*

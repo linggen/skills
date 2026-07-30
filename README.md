@@ -34,7 +34,7 @@ Skills are automatically installed when you run `ling init --global`.
 ## Usage
 
 - **Skiller**: `/skiller find <query>`, `/skiller add <name>`, `/skiller list`
-- **Shared Memory**: `/shared-memory` — or call `Memory_query` / `Memory_write` directly in Linggen; `ling-mem add|search|list` from any shell
+- **Shared Memory**: `/shared-memory` — or call the `memory_*` tools directly on any MCP host; `ling-mem add|search|list` from any shell
 - **Apple Shifu**: `/apple-shifu` or `/apple-shifu --web` for the interactive dashboard
 - **Linggen Guide**: `/linggen-guide` to ask questions about Linggen
 - **Game Table**: `/game-table` — Chinese Chess and Gomoku vs. AI, plus Snake, Pong, and Tetris

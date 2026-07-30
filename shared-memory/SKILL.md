@@ -21,8 +21,7 @@ allowed-tools:
   - Grep
   - Task
   - AskUser
-  - Memory_query
-  - Memory_write
+  - mcp__memory
 user-invocable: true
 cwd: ~/.linggen
 install: install.sh
@@ -130,7 +129,7 @@ change when you switch agents.
 | Stamp  | `ling-mem remember-day <date> --judged N --promoted K` — mark a day judged after a remember pass |
 | Sweep  | `ling-mem sweep [--dry-run]` — the forget stage: evict judged episodic rows past TTL; never touches un-judged rows |
 
-(Linggen separately ships `Memory_query` / `Memory_write` as engine-
+(Linggen separately connects ling-mem as a built-in MCP server, engine-
 built-in tools wired to the same daemon. In **chat mode**, call the CLI
 here so behaviour is identical across hosts. The **dream** is the one
 exception: on Linggen it prefers those built-in tools because they're
@@ -362,20 +361,20 @@ overtaken by the world (`stale-status`), and conflicts needing the
 user's pick (`contradiction`). The daemon only bookkeeps — **you are
 the solver**, and this is an attended surface: the user is right here.
 
-1. **List.** `Memory_query {"verb":"issues"}`. Empty → say so, done.
-2. **Per item, gather evidence.** `Memory_query {"verb":"get","id":<row_id>}`
+1. **List.** `memory_issues`. Empty → say so, done.
+2. **Per item, gather evidence.** `memory_get {"id":<row_id>}`
    for each referenced row. For `stale-status`: check the WORLD — git
    history since the row's date, files, whatever the note says to
    verify (hand technical checks to a Task subagent if this session
    lacks the tools).
 3. **Confidence rule.** Conclusive evidence AND all affected rows are
    your own notes (`from=derived`) → solve directly: one
-   `Memory_write {"verb":"add", ..., "replace_ids":[...]}` writing
+   `memory_add {..., "replace_ids":[...]}` writing
    current truth. Ambiguous, or any user-voice row → **AskUser, ONE
    item per call** — never batch the queue into one wall of
    questions. User-voice fixes carry `user_directed:true` after the
    answer.
-4. **Close as you go.** `Memory_write {"verb":"issue_resolve","id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
+4. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
    (or `"dismissed"` when not worth fixing).
 5. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
    plus a closing count. The page footer's "N to review" refreshes on
