@@ -393,10 +393,12 @@ First tier — adopt:
 - `battery_plus` ^7.1.1 — level, state stream, `isInBatterySaveMode` (iOS
   low-power mode).
 - `local_auth` ^3.0.2 — biometrics; `isDeviceSupported()` for passcode-set.
-- `file_picker` ^11.0.2 — was adopted for the Files tab's `getDirectoryPath()`.
-  That reason is gone with the tab; it stays only if something else in the app
-  still imports it, and it is the package pinning `device_info_plus` to ^12
-  (below), so dropping it would lift that ceiling.
+- `file_picker` ^11.0.2 — adopted for the Files tab's `getDirectoryPath()`,
+  which went with the tab, but **the package stays**. Checked 2026-07-30: one
+  other call site, CFO's bank-statement import
+  (`FilePicker.pickFiles`, CSV and PDF, `lib/screens/cfo/cfo_screen.dart:227`)
+  — load-bearing, not a leftover. So the `device_info_plus` ^12 ceiling below
+  stays with it; cancelling Files did not lift it.
 - `photo_manager` ^3.11.0 (already in use), `permission_handler`,
   `connectivity_plus`, `network_info_plus`.
 
