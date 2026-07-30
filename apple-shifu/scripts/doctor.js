@@ -2,7 +2,8 @@
 // Runs hardware probe on open, sends data to model, renders model's page JSON.
 
 import { listSkillSessions } from './api.js';
-import { runScan, runDeepFileScan, persistScanSnapshot } from './scan.js';
+import { runScan, runDeepFileScan, persistScanSnapshot, persistReadout } from './scan.js';
+import { buildReadout } from './mac-readout.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
 import { initShell, registerTab, setActiveTab, getActiveTab, getSource, onSourceChange, onTabChange, onBackupChange, refreshVerbs, getBackupSummary } from './shifu-shell.js';
@@ -37,6 +38,42 @@ function syncToolbarBusy() {
 // differs. Back up means one thing everywhere — archive the iPhone roll to
 // this Mac — so it never changes meaning when the switch moves.
 
+// What Report asks for. The phone's Ask Shifu button sends Yinyue the same
+// shape of question, and for the same reason: the agent pulls the readout with
+// its own tool instead of being handed one here, so it works identically when
+// the user just types the question into the chat panel.
+//
+// The honesty clauses are repeated in the prompt rather than left to the
+// readout's `notes` alone — it is one line each, and a report is exactly where
+// an unreadable row tempts a plausible number.
+const REPORT_PROMPT =
+  'Write me a report on this Mac.\n\n'
+  + 'Call SystemReadout first — everything you need is there, including the '
+  + 'score and when the scan ran. Then, in writing:\n\n'
+  + '- Say how the machine is doing overall, and what is actually worth acting '
+  + 'on. Lead with whatever frees the most space or matters most, not with the '
+  + 'first row in the list.\n'
+  + '- Quote the real numbers for anything measured.\n'
+  + '- For anything the readout marks unreadable, do not guess a value. Say '
+  + 'what the scan does not read and give them the path from `where_to_look`.\n'
+  + '- Anything you add from elsewhere, or any row marked `looked_up`, is not '
+  + 'a reading of their machine — say so plainly.\n\n'
+  + 'Short sections, plain prose, no wall of text. Skip the pleasantries and '
+  + 'start with the verdict.';
+
+const BUYERS_GUIDE_PROMPT =
+  'Should I replace this Mac, or is it fine?\n\n'
+  + 'Call SystemReadout first. Ground the answer in what this machine actually '
+  + 'is — the chip, the memory, the disk, the battery cycles, how hard it is '
+  + 'being worked — and be honest when the answer is "keep it".\n\n'
+  + 'The age row is inferred from the chip generation, not read from the '
+  + 'machine; treat it as the estimate it is. Anything about current models or '
+  + 'prices is yours, not a reading — say which is which, and search the web '
+  + 'rather than quoting a price from memory.\n\n'
+  + 'If replacing is worth it, say what to buy and what would actually be '
+  + 'better about it for the way this one is used. If an upgrade or a cleanup '
+  + 'would fix the real complaint for a fraction of the money, say that first.';
+
 const SYSTEM_VERBS = {
   mac: () => ({
     scan: {
@@ -52,8 +89,8 @@ const SYSTEM_VERBS = {
     report: {
       hint: 'Write up what the last scan found',
       menu: [
-        { label: '📊 Written report', run: () => send('Write a full report on my Mac from the latest scan — what is healthy, what needs attention, and what I should do first.') },
-        { label: '🛒 Buyer\'s Guide', run: () => send('Generate a Buyer\'s Guide for my Mac') },
+        { label: '📊 Written report', run: () => send(REPORT_PROMPT) },
+        { label: '🛒 Buyer\'s Guide', run: () => send(BUYERS_GUIDE_PROMPT) },
       ],
     },
     backup: backupVerb(),
@@ -388,6 +425,12 @@ async function startHardwareProbe(rescan = false) {
     const summary = buildScanSummary(results);
     markScanComplete(summary);
     persistScanSnapshot(summary, sessionId).catch(() => {});
+
+    // And the whole readout, from the same results this page was built from,
+    // so a question three turns later is answered from the scan the user is
+    // looking at rather than from nine summary numbers.
+    persistReadout(buildReadout(results, score, breakdown), sessionId)
+      .catch(() => {});
 
     // Build and send the scan data (hidden — user doesn't need to see raw data)
     const prompt = buildOpeningPrompt(results, prevSummary);

@@ -31,6 +31,22 @@ export async function persistScanSnapshot(summary, sessionId) {
   await bash(cmd, sessionId);
 }
 
+// The full readout the agent pulls with SystemReadout — every row of the scan
+// the dashboard was built from, not the nine-field summary above.
+//
+// The two are different jobs and both stay. `latest.json` is the *history*
+// row: nine numbers, one per scan, so "what changed since last time" has a
+// series to compare. This is *now*: everything the machine said, once, so a
+// question asked three turns later doesn't get answered from four numbers.
+export async function persistReadout(readout, sessionId) {
+  const dir = '$HOME/.linggen/skills/apple-shifu/data';
+  const json = JSON.stringify(readout, null, 1);
+  await bash(
+    `mkdir -p "${dir}" && printf '%s\\n' ${shellEsc(json)} > "${dir}/readout.json"`,
+    sessionId,
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Parsers
 // ---------------------------------------------------------------------------

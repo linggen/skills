@@ -67,11 +67,28 @@ tools:
   - name: LastScan
     description: >-
       Read the persisted summary of the most recent full scan (date, health
-      score, disk free, memory, security pass count, battery). Use it to
-      answer "what changed since last time?" and to ground advice in a
-      resumed session where no fresh scan data has arrived. Returns JSON;
-      empty object if no scan has completed yet.
+      score, disk free, memory, security pass count, battery). Nine numbers,
+      one row per scan — this is the history series, so use it for "what
+      changed since last time?". For what the machine is like NOW, use
+      SystemReadout. Returns JSON; empty object if no scan has completed yet.
     cmd: "cat $SKILL_DIR/data/latest.json 2>/dev/null || echo '{}'"
+    tier: read
+    timeout_ms: 5000
+  - name: SystemReadout
+    description: >-
+      The whole last scan, every row, as the dashboard was built from it —
+      storage and the directories filling it, model and chip and age, macOS,
+      uptime, battery charge and cycles, CPU and load, GPU, memory and swap,
+      network, the security checks, and the heaviest processes. Call this
+      FIRST for any question about how this Mac is doing, before writing a
+      report, before a Buyer's Guide, and in a resumed session where no fresh
+      scan has arrived. Returns JSON `{scanned_at, score, readings[], notes[]}`
+      — one call, everything, so you never need to guess at a figure you could
+      have read. Every reading says whether it was `measured` on this machine
+      or `looked_up` from the model, and a row the scan could not answer says
+      why and where the user can see it. Obey `notes`. Empty object before the
+      first full scan — say so rather than answering from nothing.
+    cmd: "cat $SKILL_DIR/data/readout.json 2>/dev/null || echo '{}'"
     tier: read
     timeout_ms: 5000
 ---
