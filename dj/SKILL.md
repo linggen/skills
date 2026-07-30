@@ -70,6 +70,31 @@ tools:
       re-download something they already own. The files land in the folder the
       page and any paired phone both watch, so they appear in both without
       anything else being asked of you.
+    # Without this block the model is handed `properties: {}` and can only
+    # call GetTracks({}) — which is what it did. The engine builds both the
+    # tool schema AND the {{...}} substitution from these args, so an
+    # undeclared parameter is invisible to the model and never rendered:
+    # get.sh then receives the literal `{{tracks}}`, falls through to its
+    # stdin guard, finds nothing there either, and reports that it got no
+    # tracks. The page's own Get button never went through this path, which
+    # is why a library full of songs sat next to a tool that had never once
+    # downloaded one.
+    args:
+      tracks:
+        type: array
+        required: true
+        description: >-
+          The songs to fetch, as objects with `artist` and `title` (and
+          `year` when you know it) — the same rows you would propose in a
+          set. Example: [{"artist": "Andy Lau", "title": "來生緣",
+          "year": 1991}].
+        items:
+          type: object
+          properties:
+            artist: { type: string }
+            title:  { type: string }
+            year:   { type: integer }
+          required: [artist, title]
     cmd: "bash $SKILL_DIR/scripts/get.sh '{{tracks}}'"
     tier: edit
     timeout_ms: 900000
