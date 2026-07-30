@@ -70,7 +70,6 @@
   font-size: 12px;
   color: #9ca3af;
   font-variant-numeric: tabular-nums;
-  margin-left: auto;
   align-self: center;
 }
 
@@ -138,6 +137,15 @@ body {
   min-height: 0;
 }
 
+/* Left column: the shared verb toolbar above whichever tab panel is active. */
+.work-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .view-panel {
   flex: 1;
   overflow-y: auto;
@@ -146,6 +154,17 @@ body {
   flex-direction: column;
   gap: 0;
 }
+
+.view-panel[hidden] { display: none; }
+
+.mac-system {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mac-system[hidden],
+.phone-system[hidden] { display: none; }
 
 .chat-panel {
   width: 480px;
@@ -342,21 +361,75 @@ body {
 
 /* ── Action cards ── */
 
-/* ── Static tools toolbar ── */
+/* ── Header: device switch + backup badge ── */
 
-.tools-toolbar {
+.source-switch {
   display: flex;
-  gap: 8px;
-  padding: 10px 0 14px;
-  flex-wrap: wrap;
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: var(--bg);
-  backdrop-filter: blur(6px);
+  gap: 4px;
+  margin-left: auto;
 }
 
-.tool-btn {
+.src-btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.src-btn:hover { color: var(--text); }
+
+.src-btn.on {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.src-detail {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.backup-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--warn, #d97706);
+  color: var(--warn, #d97706);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.backup-badge.clear {
+  border-color: var(--border);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.backup-badge[hidden] { display: none; }
+
+/* ── The four verbs — same position and order in every tab ── */
+
+.verbs-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.verb-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -371,28 +444,160 @@ body {
   transition: all 0.15s;
 }
 
-.tool-btn:hover:not(:disabled) {
+.verb-btn:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
   background: rgba(99, 102, 241, 0.06);
 }
 
-.tool-btn:active:not(:disabled) {
+.verb-btn:active:not(:disabled) {
   transform: translateY(1px);
 }
 
-.tool-btn:disabled,
-.tool-btn.is-busy {
-  opacity: 0.5;
+/* A verb this tab cannot serve keeps its place and carries the reason in its
+   tooltip — never dropped, never live with nothing behind it. */
+.verb-btn:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-.tool-icon {
+.verb-caret {
+  font-size: 9px;
+  opacity: 0.6;
+}
+
+.verb-meta {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.verb-busy { font-style: italic; }
+
+.verb-menu {
+  position: fixed;
+  z-index: 40;
+  min-width: 220px;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+}
+
+.verb-menu-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.verb-menu-item:hover:not(:disabled) { background: rgba(99, 102, 241, 0.1); }
+.verb-menu-item:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.verb-menu-hint {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ── The Mac's read of the iPhone (System tab under 📱) ── */
+
+.phone-system { padding-bottom: 20px; }
+
+.ps-loading,
+.ps-banner {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  padding: 12px 14px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.ps-group { margin-bottom: 18px; }
+
+.ps-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.ps-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg-card);
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.ps-label { flex: 0 0 190px; color: var(--text-muted); }
+.ps-value { font-weight: 700; }
+.ps-detail { color: var(--text-muted); font-size: 12px; }
+
+.ps-bar {
+  margin-left: auto;
+  width: 120px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.ps-bar i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+/* Out of reach from a Mac — shown, greyed, with the reason on the row. */
+.ps-row.out {
+  background: transparent;
+  border-style: dashed;
+}
+
+.ps-row.out .ps-label { opacity: 0.65; }
+
+.ps-reason {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.ps-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  max-width: 70ch;
+}
+
+.verb-icon {
   font-size: 14px;
   line-height: 1;
 }
 
-.tool-label {
+.verb-label {
   line-height: 1;
 }
 

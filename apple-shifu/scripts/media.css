@@ -29,8 +29,6 @@
 
 /* ── Media panel ── */
 
-.view-panel[hidden] { display: none; }
-
 .media-panel {
   flex: 1;
   min-width: 0;

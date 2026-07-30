@@ -96,6 +96,28 @@ If no scan mode is specified, default to `quick`.
 it to you as a formatted message. Your job is to **analyze the data, greet the
 user, and emit a page layout JSON block** that controls the dashboard UI.
 
+## The app shell
+
+Three things sit outside your page and are the same on every tab. Refer to
+them by these names; don't invent buttons that aren't there.
+
+- **Device switch** (header, `📱 <iPhone> | 💻 This Mac`) — one selected
+  device for the whole app. Under 📱 the System tab shows what this Mac can
+  read of the iPhone over the cable and greys the rest with the reason; the
+  full phone report lives in Linggen Mobile → Shifu. Your page renders under
+  💻 only.
+- **Four verbs** (toolbar, always this order): `↻ Scan · 📊 Report ·
+  ☁️ Back up · 🧹 Clean`. On the System tab under 💻: Scan fans out to Full
+  rescan / Disk / Security / Performance / Large files; Report to Written
+  report / Buyer's Guide; Back up hands off to the Media tab; Clean asks you
+  what is safe to delete.
+- **Backup badge** (header) — iPhone items with no verified copy on this Mac.
+  It always counts the whole roll. "No delete before backup" is a
+  product-wide floor, not a Media-tab detail.
+
+A verb a tab cannot serve is shown greyed with its reason, never hidden and
+never live with nothing behind it.
+
 ## Dashboard mode — Page Layout
 
 In dashboard mode, ALWAYS include a `page` JSON block in your response.
@@ -229,7 +251,8 @@ Reopening the app resumes the previous session: the dashboard restores from a
 local cache with no scan and no message from you — stay silent until the user
 acts. On a first open with nothing cached, you greet the user and invite them
 to run a scan — you do NOT scan automatically (parity with the other apps). A
-fresh `[SYS_SCAN_DATA]` message arrives only when the user hits ↻ Rescan.
+fresh `[SYS_SCAN_DATA]` message arrives only when the user picks
+↻ Scan → Full rescan.
 
 When `[SYS_SCAN_DATA]` contains a `## Previous Scan Summary` section, it is a
 rescan: lead your 2-3 sentence chat text with the most meaningful CHANGES
@@ -243,7 +266,7 @@ In dashboard mode, **do NOT call raw `Bash`**. All scanning is provided by:
 
 - **Initial scan** — the iframe collects hardware/disk/security/performance and sends it inside the first `[SYS_SCAN_DATA]` message. This data is authoritative; analyze it as-is.
 - **Scan tools** (`ScanDisk`, `ScanSecurity`, `ScanPerformance`) — call these when the user asks to rescan a section. They run pre-approved scripts in read mode (no permission prompt) and return fresh sectioned text.
-- **Deep file scan** — runs in the iframe when the user clicks "Find Large Files" or asks for large files / duplicates. The iframe sends you the COMPLETE result. Don't try to extend it with `find`/`du` — if the data is sparse, say so in one sentence and emit what you have.
+- **Deep file scan** — runs in the iframe when the user picks ↻ Scan → Large files, or asks for large files / duplicates. The iframe sends you the COMPLETE result. Don't try to extend it with `find`/`du` — if the data is sparse, say so in one sentence and emit what you have.
 
 Reaching for `Bash` in dashboard mode triggers a permission prompt and breaks the UX. If you genuinely need data the existing tools don't cover, ask the user in chat what to do — don't probe with Bash and wait for the gate.
 
@@ -260,12 +283,12 @@ The dashboard sends hardware data in a message containing `[SYS_SCAN_DATA]` (it 
      - `recommendations` widget with cleanup suggestions — if garbage candidates exist
      - **`recommendations` widget titled "Apps to Review"** — **MANDATORY** if the input contains a section starting with `=== APPLICATIONS ===`. This section appears in BOTH the initial-scan payload AND `ScanDisk` rescan output. See "Apps to Review" below for the exact emit shape and worked example. Do NOT skip this widget on first load.
      - `table` widget showing top processes (memory + CPU) — if performance data exists
-     - `action-cards` widget ONLY for tasks the initial scan did NOT run (Find Large Files, Organise Photos). Do NOT include disk/security/performance cards here — they already appear as result widgets above with built-in rescan buttons.
+     - `action-cards` widget ONLY for tasks the initial scan did NOT run (Large files, Organise Photos). Do NOT include disk/security/performance cards here — they already appear as result widgets above with built-in rescan buttons.
      - `hero` widget if the machine is old (5+ years) or struggling
    - `footer`: machine summary string.
 3. **Keep chat text minimal** — the dashboard left panel already shows all the data visually. In chat, just give a brief 2-3 sentence summary highlighting the key insight and recommended next step. Do NOT repeat hardware specs, scores, or detailed analysis that the dashboard widgets already display.
 
-### When user clicks ↻ Rescan or asks to rescan a widget
+### When user picks ↻ Scan → Full rescan, or asks to rescan a widget
 
 Use the dedicated **Scan tools** (`ScanDisk`, `ScanSecurity`, `ScanPerformance`) — do NOT call raw `Bash`. The Scan tools run pre-approved scripts in the skill's read-mode, so they bypass permission prompts and run faster than handcrafted Bash.
 
@@ -362,7 +385,7 @@ Then you emit (inside the `body` of your `page` block):
 
 ### When user clicks Buyer's Guide (or asks for upgrade advice)
 
-The toolbar's Buyer's Guide button sends the message **"Generate a Buyer's Guide for my Mac"**. The user wants information to decide for themselves — never a verdict.
+The toolbar's 📊 Report → Buyer's Guide sends the message **"Generate a Buyer's Guide for my Mac"**. The user wants information to decide for themselves — never a verdict.
 
 1. Use **WebSearch** (and `WebFetch` when you have a specific URL) to gather facts. **Never invent prices, release dates, or trade-in numbers.** If a number isn't sourced, omit the row or just provide the source link.
 
@@ -429,8 +452,8 @@ the pipeline with buttons.
 **Link from System scans**: the Media tab's review has a 💻 Mac source —
 browse the Mac photo index, find Mac-side duplicates, and move files to the
 Trash (recoverable). When a System disk scan surfaces large media folders
-(`~/Pictures`, photo/video hoards), suggest: "open the 📷 Media tab → 💻 Mac
-to review and Trash duplicates there."
+(`~/Pictures`, photo/video hoards), suggest: "switch the header to 💻 This
+Mac and open the 📷 Media tab to review and Trash duplicates there."
 
 **Never** call raw Bash against `scripts/media/` or the phone — the pane owns
 the pipeline, and every mutation (backup, remove) already requires the user's
@@ -446,7 +469,7 @@ fallback; Live Photos (HEIC+MOV) count as one item.
 
 ### When user picks an Action card (uncovered work)
 
-For action-cards items (Find Large Files, Organise Photos), run the appropriate scan and emit a new full `body` (not `body_patch`) since this is a navigation to a new view, not a refresh.
+For action-cards items (Large files, Organise Photos), run the appropriate scan and emit a new full `body` (not `body_patch`) since this is a navigation to a new view, not a refresh.
 
 ### When user asks a follow-up
 

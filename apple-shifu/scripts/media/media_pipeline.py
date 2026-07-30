@@ -264,6 +264,13 @@ async def _info_async():
     try:
         info = await ld.get_value() or {}
         disk = await ld.get_value(domain='com.apple.disk_usage') or {}
+        # Battery is a separate domain and not every iOS version answers it.
+        # Absent keys stay absent — the panel greys the row rather than
+        # inventing a reading.
+        try:
+            batt = await ld.get_value(domain='com.apple.mobile.battery') or {}
+        except Exception:
+            batt = {}
         gb = lambda v: round(v / 1e9, 1) if isinstance(v, (int, float)) else None
         # AmountDataAvailable = truly free (Finder's number); TotalDataAvailable
         # inflates it with purgeable space iOS could reclaim
@@ -271,9 +278,17 @@ async def _info_async():
         if avail is None:
             avail = disk.get('TotalDataAvailable')
         photos = gb(disk.get('PhotoUsage') or disk.get('CameraUsage'))
-        if photos is None:  # iOS 26 dropped PhotoUsage — use the last DCIM walk instead
+        # Where the figure came from, because "0 GB" from the device and
+        # "0 GB" because nothing could measure it mean different things and a
+        # bare number cannot tell them apart.
+        photos_source = 'lockdown' if photos else None
+        # iOS 26 dropped PhotoUsage and leaves a residual CameraUsage that
+        # rounds to 0.0 GB — treat anything falsy as unknown and fall back to
+        # the last DCIM walk; if that is missing too, report nothing.
+        if not photos:
             try:
                 photos = json.loads(STATE.read_text()).get('pull', {}).get('dcim_gb')
+                photos_source = 'dcim_walk' if photos is not None else None
             except Exception:
                 photos = None
         out.update({
@@ -284,7 +299,14 @@ async def _info_async():
             'total_gb': gb(disk.get('TotalDiskCapacity')),
             'free_gb': gb(avail),
             'photos_gb': photos,
+            'photos_source': photos_source,
         })
+        if isinstance(batt.get('BatteryCurrentCapacity'), (int, float)):
+            out['battery_percent'] = int(batt['BatteryCurrentCapacity'])
+        if 'BatteryIsCharging' in batt:
+            out['battery_charging'] = bool(batt['BatteryIsCharging'])
+        if 'ExternalConnected' in batt:
+            out['battery_plugged'] = bool(batt['ExternalConnected'])
         update_state(device={'name': out['name'], 'ios': out['ios'],
                              'free_gb': out['free_gb'], 'total_gb': out['total_gb']})
     except Exception as e:

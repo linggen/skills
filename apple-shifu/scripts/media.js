@@ -4,9 +4,13 @@
 // remove) via /api/bash -> scripts/media/media.sh; detection is pure scripts.
 // The agent narrates milestones (window._chatNotify) but never gates progress.
 
+import {
+  registerTab, setSourceInfo, setBackupBadge, getSource, setSource,
+  onSourceChange, onTabChange, refreshVerbs,
+} from './shifu-shell.js';
+
 const MEDIA_SH = '$HOME/.linggen/skills/apple-shifu/scripts/media/media.sh';
 const DATA_DIR = '$HOME/.linggen/skills/apple-shifu/data/media';
-const TAB_KEY = 'apple-shifu:tab';
 const RENDER_CAP = 200; // thumbs per category; selection still covers all items
 /** Categories rendered as the month-by-month roll view (whole roll subsets). */
 const ROLL_CATS = new Set(['all', 'not_backed']);
@@ -27,7 +31,6 @@ let panel = null;
 let removals = [];      // permanent removal history (removals.jsonl)
 let macIndex = [];      // Mac photo index rows (mac-index.jsonl)
 let macSelected = new Set();   // Mac file paths picked for Trash
-let source = 'phone';   // review source: 'phone' | 'mac'
 let activeMacCat = 'all';
 let macFolderExpanded = new Set();  // folder indices shown in full (All-by-folder)
 let screen = 'connect';
@@ -70,7 +73,7 @@ async function bash(command) {
   }
 }
 
-async function media(cmd) {
+export async function media(cmd) {
   const res = await bash(`bash ${MEDIA_SH} ${cmd}`);
   try { return JSON.parse(res.stdout || res.output || '{}'); }
   catch { return {}; }
@@ -95,27 +98,181 @@ function abbrevPath(p) {
   return String(p).replace(/^\/Users\/[^/]+/, '~');
 }
 
-// ── tab bar ──
+// ── shell registration ──
 
 export function initMediaTab() {
   panel = document.getElementById('media-panel');
-  const tabs = document.querySelectorAll('.atab');
-  for (const tab of tabs) {
-    tab.addEventListener('click', () => activateTab(tab.dataset.tab));
-  }
-  activateTab(localStorage.getItem(TAB_KEY) || 'system');
+  registerTab('media', mediaProvider);
+  onTabChange((name) => { if (name === 'media') resumeMedia(); else stopPolling(); });
+  onSourceChange(() => { if (screen === 'review') renderReview(); });
+  // Numbers the header shows on every tab, so they can't wait on this one
+  // being opened.
+  refreshBackupBadge();
 }
 
-function activateTab(name) {
-  localStorage.setItem(TAB_KEY, name);
-  for (const tab of document.querySelectorAll('.atab')) {
-    tab.classList.toggle('active', tab.dataset.tab === name);
+/** A long op owning the toolbar, e.g. 'Indexing…'. While set, every verb is
+    blocked with it as the reason — the buttons used to carry this in their own
+    label text, which the shared toolbar has no room for. */
+let busyOp = null;
+
+function setBusy(op) {
+  busyOp = op;
+  refreshVerbs();
+}
+
+/** The Media tab's four verbs. Back up means the same thing under both
+    sources — archive the iPhone roll onto this Mac — so the switch never
+    changes what the button does, only what Scan and Clean act on. */
+const mediaProvider = {
+  panel: 'media-panel',
+  verbs: (source) => {
+    const actions = source === 'mac' ? macVerbs() : phoneVerbs();
+    if (busyOp) for (const k of Object.keys(actions)) actions[k] = { blocked: busyOp };
+    return actions;
+  },
+  meta: (source) => (busyOp ? `<span class="verb-busy">${busyOp}</span>`
+    : source === 'mac' ? macVerbMeta() : phoneVerbMeta()),
+};
+
+/** Every pipeline verb needs the venv — say which one-time step is missing
+    rather than letting the button fail into a toast. */
+const NEEDS_SETUP = 'Install the Media tools first — the card on the Media tab does it';
+
+function setupPending() {
+  return statusCache.info?.error === 'setup_required';
+}
+
+/** One definition, used under both sources — Back up never changes meaning
+    when the device switch moves. The hint names the pile it would copy,
+    because the header badge always counts the whole roll and the two figures
+    must not look like they disagree. */
+function backupVerb() {
+  const targets = backupTargets();
+  if (!targets.length) {
+    return { blocked: selected.size ? 'Everything checked is already backed up' : 'Everything is backed up' };
   }
-  const system = document.getElementById('view-panel');
-  const isMedia = name === 'media';
-  system.hidden = isMedia;
-  panel.hidden = !isMedia;
-  if (isMedia) resumeMedia(); else stopPolling();
+  const bytes = targets.reduce((s, it) => s + it.size, 0);
+  const n = targets.length.toLocaleString();
+  const noun = `item${targets.length === 1 ? '' : 's'}`;
+  return {
+    hint: selected.size
+      ? `Archive the ${n} checked ${noun} (${fmtGb(bytes)}) still missing a copy — the header badge counts the whole roll`
+      : `Archive ${n} ${noun} (${fmtGb(bytes)}) — everything not backed up yet`,
+    run: openBackupFlow,
+  };
+}
+
+function phoneVerbs() {
+  const bytes = selectedBytes();
+  return {
+    scan: setupPending()
+      ? { label: 'Sync', blocked: NEEDS_SETUP }
+      : { label: 'Sync', hint: 'Pull new photos and videos off the iPhone', run: syncNow },
+    report: screen === 'review'
+      ? { hint: 'Ask Ling to summarise the roll', run: () => reportRoll() }
+      : { blocked: 'Sync the iPhone first — there is nothing to report on yet' },
+    backup: backupVerb(),
+    clean: selected.size
+      ? {
+        hint: `Remove ${selected.size.toLocaleString()} checked (${fmtGb(bytes)}) from the iPhone`,
+        run: async () => {
+          if (await confirmRemoveDialog(selected)) removeInline(new Set(selected));
+        },
+      }
+      : { blocked: 'Check items to remove them from the iPhone' },
+  };
+}
+
+function macVerbs() {
+  const bytes = macIndex.filter((r) => macSelected.has(r.path))
+    .reduce((s, r) => s + (r.size || 0), 0);
+  return {
+    scan: setupPending()
+      ? { label: 'Re-index', blocked: NEEDS_SETUP }
+      : { label: 'Re-index', hint: 'Rebuild this Mac\'s photo index', run: reindexMac },
+    report: macIndex.length
+      ? { hint: 'Ask Ling to summarise the Mac library', run: () => reportMacLibrary() }
+      : { blocked: 'No Mac photo index yet — re-index first' },
+    backup: backupVerb(),
+    clean: macSelected.size
+      ? {
+        label: 'Trash',
+        hint: `Move ${macSelected.size.toLocaleString()} checked (${fmtGb(bytes)}) to the macOS Trash`,
+        run: trashSelected,
+      }
+      : { blocked: 'Check files to move them to the macOS Trash' },
+  };
+}
+
+function selectedBytes() {
+  const byId = allById();
+  let bytes = 0;
+  for (const id of selected) bytes += byId.get(id)?.size || 0;
+  return bytes;
+}
+
+/** Backup is one flow wherever it is triggered from — the toolbar on either
+    source, or the System tab. */
+export async function openBackupFlow() {
+  const targets = backupTargets();
+  if (!targets.length) return;
+  const r = await confirmBackupDialog(targets);
+  if (r) backupInline(targets, r.dest);
+}
+
+/** Report asks Ling out loud — the counts come from this pane, so the model
+    never has to guess at them. */
+function ask(msg) {
+  if (window._chatSend) window._chatSend(msg);
+}
+
+function reportRoll() {
+  const cats = CATEGORIES.map((c) => {
+    const items = itemsFor(c.key);
+    return `${c.label}: ${items.length} items, ${fmtGb(items.reduce((s, it) => s + it.size, 0))}`;
+  }).join('; ');
+  ask(`Write a short report on my iPhone camera roll. Counts by category — ${cats}. `
+    + 'Sort your advice by reclaimable bytes, not item count.');
+}
+
+function reportMacLibrary() {
+  const bytes = macIndex.reduce((s, r) => s + (r.size || 0), 0);
+  const dupes = macDupeGroups().reduce((s, g) => s + g.rows.length - 1, 0);
+  ask(`Write a short report on my Mac photo library: ${macIndex.length} indexed files, `
+    + `${fmtGb(bytes)}, ${dupes} redundant copies across duplicate groups.`);
+}
+
+function phoneVerbMeta() {
+  if (screen !== 'review') return '';
+  const parts = [`<b>${selected.size.toLocaleString()} selected · ${fmtGb(selectedBytes())}</b>`];
+  if (pendingDeletes.size) {
+    parts.push(`<span class="abar-queued">⏳ ${pendingDeletes.size.toLocaleString()} queued for iPhone</span>`);
+  }
+  return parts.join(' ');
+}
+
+function macVerbMeta() {
+  if (!macSelected.size) return '';
+  const bytes = macIndex.filter((r) => macSelected.has(r.path))
+    .reduce((s, r) => s + (r.size || 0), 0);
+  return `<b>${macSelected.size.toLocaleString()} selected · ${fmtGb(bytes)}</b>`;
+}
+
+/** The header's unarchived figure. Computed from the ledger and the manifest,
+    so it is the same number the "Not backed up" chip shows and it is known
+    before the Media tab has ever been opened. */
+async function refreshBackupBadge() {
+  if (roll.length) {          // tab is open — reuse what it already loaded
+    const pending = roll.filter((it) => !archiveShas.has(it.sha256));
+    setBackupBadge({ count: pending.length, bytes: pending.reduce((s, it) => s + it.size, 0) });
+    return;
+  }
+  const [rows, archive] = await Promise.all([loadJsonl('manifest.jsonl'), loadJsonl('archive.jsonl')]);
+  const shas = new Set(archive.map((r) => r.sha256));
+  const folded = foldLiveMovs(rows);
+  if (!folded.length) { setBackupBadge(null); return; }
+  const pending = folded.filter((r) => !shas.has(r.sha256));
+  setBackupBadge({ count: pending.length, bytes: pending.reduce((s, r) => s + r.size, 0) });
 }
 
 // ── device/Mac status strip (visible on every screen after connect) ──
@@ -142,11 +299,8 @@ function statusStripHtml() {
       ? `📱 <b>${esc(wirelessName)}</b> ${conn}`
       : '📱 <span class="media-dim">no iPhone seen yet</span>';
   const mac = `💻 <b>This Mac</b> · ${info?.mac_free_gb ?? '?'} GB free${idx ? ` · photo index ${(idx.files ?? 0).toLocaleString()} files · ${idx.gb ?? '?'} GB` : ''}`;
-  // On the review screen the two halves ARE the source tabs
-  if (screen === 'review') {
-    return `<button class="stat ${source === 'phone' ? 'active' : ''}" data-src="phone">${phone}</button>
-      <button class="stat ${source === 'mac' ? 'active' : ''}" data-src="mac">${mac}</button>`;
-  }
+  // Both halves are plain readouts now — picking a device is the header's job,
+  // and one switch beats two that can disagree.
   return `<span class="stat">${phone}</span><span class="stat">${mac}</span>`;
 }
 
@@ -154,16 +308,23 @@ function statusStripDiv() {
   return `<div class="media-status" id="media-status">${statusStripHtml()}</div>`;
 }
 
-function wireStatusStrip() {
-  const el = document.getElementById('media-status');
-  if (!el) return;
-  el.onclick = (e) => {
-    const b = e.target.closest('.stat');
-    if (b && b.dataset.src && screen === 'review' && b.dataset.src !== source) {
-      source = b.dataset.src;
-      renderReview();
-    }
-  };
+/** Feed the header switch. It carries the names and free space; the strip
+    keeps the fuller line. Same numbers, drawn once from one cache. */
+function publishSourceInfo() {
+  const { info, st } = statusCache;
+  const dev = (info?.connected ? info : null) || st?.device;
+  const wirelessName = pairedDevices.map((d) => d.name).find(Boolean);
+  setSourceInfo('phone', {
+    label: dev?.name || wirelessName || 'iPhone',
+    detail: dev?.free_gb != null ? `${dev.free_gb} GB free` : '',
+    title: info?.connected ? 'iPhone connected over USB'
+      : pairedDevices.length ? 'iPhone paired over Wi-Fi' : 'No iPhone connected',
+  });
+  setSourceInfo('mac', {
+    label: 'This Mac',
+    detail: info?.mac_free_gb != null ? `${info.mac_free_gb} GB free` : '',
+    title: 'This Mac',
+  });
 }
 
 async function refreshStatus() {
@@ -174,8 +335,9 @@ async function refreshStatus() {
   statusCache = { info, st };
   const el = document.getElementById('media-status');
   if (el) el.innerHTML = statusStripHtml();
+  publishSourceInfo();
   // Phone executed (or user unqueued elsewhere) → badges must follow.
-  if (screen === 'review' && source === 'phone'
+  if (screen === 'review' && getSource() === 'phone'
       && [...pendingDeletes].sort().join() !== queuedBefore) renderReview();
 }
 
@@ -230,8 +392,9 @@ async function watchInlineOp(op) {
   const p = await media('progress');
   flags = await media('flags');
   await Promise.all([loadRoll(), loadRemovals(), loadArchive()]);
+  refreshBackupBadge();
   pruneSelected();
-  if (screen === 'review' && source === 'phone') renderReview();
+  if (screen === 'review' && getSource() === 'phone') renderReview();
   refreshStatus();
   toast.done(p.status === 'error' ? `✕ ${p.error || `${label} failed`}` : `✓ ${label} finished`);
 }
@@ -288,6 +451,7 @@ async function renderPhoneCard() {
     btn.onclick = async () => {
       flags = await media('flags');
       await Promise.all([loadRoll(), loadRemovals(), loadArchive(), loadPendingDeletes()]);
+      refreshBackupBadge();
       showReview();
     };
   }
@@ -295,6 +459,12 @@ async function renderPhoneCard() {
 
 async function refreshDevice() {
   const [info, st] = await Promise.all([media('info'), media('state')]);
+  // The connect screen is the only poller before a scan exists, so it feeds
+  // the header switch and the toolbar too — otherwise both sit blank until the
+  // review screen is reached.
+  statusCache = { info, st };
+  publishSourceInfo();
+  refreshVerbs();
   if (screen !== 'connect') return;
   device = info;
   const card = document.getElementById('device-card');
@@ -600,29 +770,38 @@ async function pathId(p) {
   return [...new Uint8Array(d).slice(0, 6)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** Build the All view from manifest.jsonl: every media file, Live-Photo MOVs
-    folded into their stills (same rule as the scan). Flagged items keep their
-    richer flags.json record; the rest get a synthesized flag-shaped item. */
-async function loadRoll() {
-  if (!crypto.subtle) { roll = []; return; }  // non-secure context — All view unavailable
-  const rows = (await loadJsonl('manifest.jsonl'))
-    .filter((r) => r.staged && (IMAGE_RE.test(r.staged) || VIDEO_RE.test(r.staged)));
+/** Manifest rows with each Live-Photo MOV folded into its still (same rule as
+    the scan): one row per visible item, carrying the pair's combined size.
+    Both the roll view and the header's unarchived count derive from this, so
+    the two numbers cannot drift apart. */
+function foldLiveMovs(manifestRows) {
+  const rows = manifestRows.filter((r) => r.staged && (IMAGE_RE.test(r.staged) || VIDEO_RE.test(r.staged)));
   const stem = (p) => p.slice(0, p.lastIndexOf('.')).toLowerCase();
   const stills = new Set(rows.filter((r) => IMAGE_RE.test(r.staged)).map((r) => stem(r.staged)));
-  const movHalf = (r) => /\.mov$/i.test(r.staged) && stills.has(stem(r.staged));
+  const isMovHalf = (r) => /\.mov$/i.test(r.staged) && stills.has(stem(r.staged));
   const movByStem = new Map();
-  for (const r of rows) if (movHalf(r)) movByStem.set(stem(r.staged), r);
+  for (const r of rows) if (isMovHalf(r)) movByStem.set(stem(r.staged), r);
+  return rows.filter((r) => !isMovHalf(r)).map((r) => {
+    const mov = IMAGE_RE.test(r.staged) ? movByStem.get(stem(r.staged)) : null;
+    return mov ? { ...r, size: r.size + mov.size, live_mov: mov.path } : r;
+  });
+}
+
+/** Build the All view from manifest.jsonl. Flagged items keep their richer
+    flags.json record; the rest get a synthesized flag-shaped item. */
+async function loadRoll() {
+  if (!crypto.subtle) { roll = []; return; }  // non-secure context — All view unavailable
+  const rows = foldLiveMovs(await loadJsonl('manifest.jsonl'));
   const flagsById = new Map((flags?.items || []).map((it) => [it.id, it]));
-  const items = await Promise.all(rows.filter((r) => !movHalf(r)).map(async (r) => {
+  const items = await Promise.all(rows.map(async (r) => {
     const id = await pathId(r.path);
     const known = flagsById.get(id);
     if (known) return known;
-    const mov = IMAGE_RE.test(r.staged) ? movByStem.get(stem(r.staged)) : null;
     return {
       id, phone_path: r.path, staged: r.staged, sha256: r.sha256,
-      size: r.size + (mov ? mov.size : 0), mtime: r.mtime,
+      size: r.size, mtime: r.mtime,
       kind: VIDEO_RE.test(r.staged) ? 'video' : 'image', flags: [],
-      thumb: `${r.sha256.slice(0, 12)}.jpg`, ...(mov ? { live_mov: mov.path } : {}),
+      thumb: `${r.sha256.slice(0, 12)}.jpg`, ...(r.live_mov ? { live_mov: r.live_mov } : {}),
     };
   }));
   items.sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
@@ -652,12 +831,12 @@ function showReview() {
   setScreen('review', renderReview);
   refreshStatus();
   Promise.all([loadRemovals(), loadMacIndex(), loadRoll(), loadArchive(), loadPendingDeletes()])
-    .then(() => { if (screen === 'review') renderReview(); });
+    .then(() => { refreshBackupBadge(); if (screen === 'review') renderReview(); });
   pollTimer = setInterval(refreshStatus, 15000);
 }
 
 function renderReview() {
-  if (source === 'mac') return renderMacReview();
+  if (getSource() === 'mac') return renderMacReview();
   let chips = CATEGORIES.map((c) => {
     const items = itemsFor(c.key);
     const size = items.reduce((s, it) => s + it.size, 0);
@@ -678,12 +857,7 @@ function renderReview() {
   panel.innerHTML = `
     ${statusStripDiv()}
     <div class="media-actionbar">
-      <button class="media-cta ghost" id="backup-btn">💾 Backup</button>
-      <button class="media-cta" id="apply-btn">🗑 Remove</button>
-      <button class="media-cta ghost" id="back-btn">↻ Sync</button>
-      <span class="abar-meta"><span id="sel-count"></span>
-        ${wirelessSummary()}
-        ${pendingDeletes.size ? `<span class="abar-queued">⏳ ${pendingDeletes.size.toLocaleString()} queued for iPhone</span>` : ''}
+      <span class="abar-meta">${wirelessSummary()}
         <span class="media-dim">removals recoverable on this Mac for 30 days</span></span>
     </div>
     <div class="media-chips">${chips}</div>
@@ -691,18 +865,6 @@ function renderReview() {
   for (const chip of panel.querySelectorAll('.media-chip-f')) {
     chip.onclick = () => { activeCat = chip.dataset.cat; renderReview(); };
   }
-  wireStatusStrip();
-  document.getElementById('back-btn').onclick = syncNow;
-  document.getElementById('apply-btn').onclick = async () => {
-    if (!selected.size) return;
-    if (await confirmRemoveDialog(selected)) removeInline(new Set(selected));
-  };
-  document.getElementById('backup-btn').onclick = async () => {
-    const targets = backupTargets();
-    if (!targets.length) return;  // button is disabled in this state
-    const r = await confirmBackupDialog(targets);
-    if (r) backupInline(targets, r.dest);
-  };
   renderCategoryPane();
   updateSelbar();
 }
@@ -831,9 +993,7 @@ function renderMacReview() {
   panel.innerHTML = `
     ${statusStripDiv()}
     <div class="media-actionbar">
-      <button class="media-cta" id="mac-trash-btn">🗑 Move to Trash</button>
-      <button class="media-cta ghost" id="mac-reindex-btn">↻ Re-index Mac</button>
-      <span class="abar-meta"><span id="mac-sel-count"></span>
+      <span class="abar-meta">
         <span class="media-dim">Mac cleanup goes to the macOS Trash — restore anytime from there</span></span>
     </div>
     <div class="media-chips">${chips}</div>
@@ -841,9 +1001,6 @@ function renderMacReview() {
   for (const chip of panel.querySelectorAll('.media-chip-f')) {
     chip.onclick = () => { activeMacCat = chip.dataset.cat; renderMacReview(); };
   }
-  wireStatusStrip();
-  document.getElementById('mac-reindex-btn').onclick = reindexMac;
-  document.getElementById('mac-trash-btn').onclick = trashSelected;
   renderMacPane();
   updateMacSelbar();
 }
@@ -973,20 +1130,8 @@ function updateMacCatbar() {
 }
 
 function updateMacSelbar() {
-  const el = document.getElementById('mac-sel-count');
-  if (!el) return;
-  const byPath = new Map(macIndex.map((r) => [r.path, r]));
-  let bytes = 0;
-  for (const p of macSelected) bytes += byPath.get(p)?.size || 0;
-  el.innerHTML = `<b>${macSelected.size.toLocaleString()} selected · ${fmtGb(bytes)}</b>`;
-  const btn = document.getElementById('mac-trash-btn');
-  if (btn) {
-    // fixed label like the phone pane — the count lives in the meta line
-    btn.disabled = macSelected.size === 0;
-    btn.title = macSelected.size
-      ? `Move ${macSelected.size.toLocaleString()} file${macSelected.size === 1 ? '' : 's'} (${fmtGb(bytes)}) to the macOS Trash`
-      : 'Check files to move them to the macOS Trash';
-  }
+  // The selection count and the Trash verb both live in the shell's toolbar.
+  refreshVerbs();
 }
 
 async function trashPaths(rawPaths) {
@@ -1011,8 +1156,7 @@ async function trashPaths(rawPaths) {
           <b>not backed up</b> again.`
        : ''}`, 'Move to Trash');
   if (!ok) return false;
-  const btn = document.getElementById('mac-trash-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Moving to Trash…'; }
+  setBusy('Moving to Trash…');
   const sizes = Object.fromEntries(paths.map(
     (p) => [p, byPath.get(p)?.size || archived.get(p)?.size || 0]));
   await writeJsonFile('trash-selection.json', { paths, sizes });
@@ -1020,7 +1164,9 @@ async function trashPaths(rawPaths) {
   for (const p of paths) macSelected.delete(p);
   macGroupsCache = null;
   await Promise.all([loadMacIndex(), loadArchive()]);
+  setBusy(null);
   refreshStatus();
+  refreshBackupBadge();
   return true;
 }
 
@@ -1030,13 +1176,13 @@ async function trashSelected() {
 
 function reindexMac() {
   media('start index');
-  const btn = document.getElementById('mac-reindex-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Indexing…'; }
+  setBusy('Indexing…');
   const t = setInterval(async () => {
-    if (screen !== 'review' || source !== 'mac') { clearInterval(t); return; }
+    if (screen !== 'review' || getSource() !== 'mac') { clearInterval(t); setBusy(null); return; }
     const p = await media('progress');
     if (p.op === 'index' && (p.status === 'done' || p.status === 'error')) {
       clearInterval(t);
+      setBusy(null);
       macGroupsCache = null;
       macFolderExpanded.clear();
       await loadMacIndex();
@@ -1124,7 +1270,7 @@ async function openMacLightbox(path) {
   delBtn.onclick = async () => {
     if (await trashPaths([path])) {
       closeLightbox();
-      if (screen === 'review' && source === 'mac') renderMacReview();
+      if (screen === 'review' && getSource() === 'mac') renderMacReview();
     }
   };
   const slot = box.querySelector('.lb-media');
@@ -1713,6 +1859,7 @@ async function syncNow() {
   const p = await media('progress');
   flags = await media('flags');
   await Promise.all([loadRoll(), loadRemovals(), loadArchive(), loadPendingDeletes()]);
+  refreshBackupBadge();
   pruneSelected();
   if (screen === 'review') renderReview();
   refreshStatus();
@@ -1761,6 +1908,7 @@ async function deleteInLightbox(id) {
   const nextId = lbOrder[lbIdx + 1] ?? lbOrder[lbIdx - 1] ?? null;
   flags = await media('flags');
   await loadRoll();
+  refreshBackupBadge();
   selected.delete(id);
   pruneSelected();
   await loadRemovals();
@@ -1798,7 +1946,7 @@ async function removeInline(ids) {
       await setQueued(wireless);
       t.done(`⏳ ${wireless.length.toLocaleString()} queued — the iPhone deletes them next time Linggen is open there`);
       for (const id of ids) if (!rest.has(id)) selected.delete(id);
-      if (screen === 'review' && source === 'phone') renderReview();
+      if (screen === 'review' && getSource() === 'phone') renderReview();
     } catch (e) {
       t.done(`✕ Couldn't queue phone deletions — ${e.message || e}`);
     }
@@ -1823,8 +1971,9 @@ async function removeInline(ids) {
   flags = await media('flags');
   await loadRoll();
   pruneSelected();
+  refreshBackupBadge();
   await loadRemovals();
-  if (screen === 'review' && source === 'phone') renderReview();
+  if (screen === 'review' && getSource() === 'phone') renderReview();
   refreshStatus();
   const removed = r?.removed ?? 0;
   const freed = r?.freed_gb ? ` · freed ${r.freed_gb} GB` : '';
@@ -1859,14 +2008,15 @@ async function backupInline(targets, dest) {
   }
   const failed = p.failed ? ` · ${p.failed} failed` : '';
   await loadArchive();
-  if (screen === 'review' && source === 'phone') renderReview();
+  refreshBackupBadge();
+  if (screen === 'review' && getSource() === 'phone') renderReview();
   toast.done(`✓ Backed up ${(p.verified ?? 0).toLocaleString()} to ${p.dest || 'Mac'}${failed}`, {
     label: 'Free up phone →',
     fn: () => {
       // Land on the PHONE review even if the user wandered to the Mac pane
       // while the backup ran — renderReview() defers to renderMacReview()
-      // when source is 'mac', which made this whole action look like a no-op.
-      source = 'phone';
+      // when the source is 'mac', which made this whole action look like a no-op.
+      setSource('phone');
       activeCat = 'on_mac';
       // select only verified copies (archive or byte-identical) — never "probably"
       for (const it of itemsFor('on_mac')) {
@@ -1933,30 +2083,10 @@ function heldByOtherCat(it, cat) {
 }
 
 function updateSelbar() {
-  const el = document.getElementById('sel-count');
-  if (!el) return;
-  const byId = allById();
-  let bytes = 0;
-  for (const id of selected) bytes += byId.get(id)?.size || 0;
-  el.innerHTML = `<b>${selected.size.toLocaleString()} selected · ${fmtGb(bytes)}</b>`;
-  // Both verbs act on the checked items and keep FIXED labels — the counts
-  // live in the meta line and the confirm sheet, never in churning button text.
-  const btn = document.getElementById('apply-btn');
-  if (btn) {
-    btn.disabled = selected.size === 0;
-    btn.title = selected.size ? `Remove ${selected.size.toLocaleString()} checked (${fmtGb(bytes)}) from the iPhone`
-      : 'Check items to remove them from the iPhone';
-  }
-  const bk = document.getElementById('backup-btn');
-  if (bk) {
-    const targets = backupTargets();
-    const tBytes = targets.reduce((s, it) => s + it.size, 0);
-    bk.disabled = targets.length === 0;
-    bk.title = targets.length
-      ? `Archive ${targets.length.toLocaleString()} item${targets.length === 1 ? '' : 's'} (${fmtGb(tBytes)})`
-        + `${selected.size ? ' — the checked items still missing a copy' : ' — everything not backed up yet'}`
-      : selected.size ? 'Everything checked is already backed up' : 'Everything is backed up';
-  }
+  // Selection count, Back up and Clean all live in the shell's toolbar now.
+  // Both verbs keep FIXED labels — the counts live in the meta slot and the
+  // confirm sheet, never in churning button text.
+  refreshVerbs();
 }
 
 // ── screen 4 · back up & remove ──

@@ -7,9 +7,10 @@ guide: |
 
 # Apple Shifu
 
-Status: the rename shipped 2026-07-28 (see "Rename"), and the **phone's System
-tab shipped 2026-07-29** (see "Phone System tab — built"). The Mac's Files tab,
-the Mac UI reshape, and the phone's Files tab are still design only.
+Status: the rename shipped 2026-07-28 (see "Rename"), the **phone's System tab
+shipped 2026-07-29** (see "Phone System tab — built"), and the **Mac UI
+reshape shipped 2026-07-30** (see "Mac UI reshape — built"). The Mac's Files
+tab and the phone's Files tab are still design only.
 
 ## Decisions
 
@@ -175,6 +176,60 @@ removed the system picker's own long-press delete — the delete UI is ours.
 3. **Backup state becomes a persistent global badge** ("1,204 items unarchived
    · 8.2 GB"), not a per-tab detail — "no delete before backup" is a
    product-wide floor.
+
+All three shipped 2026-07-30 — see below.
+
+## Mac UI reshape — built 2026-07-30
+
+The three changes above, on the Mac skill. `shifu-shell.js` owns the header
+switch, the verb toolbar and the badge; a tab registers a provider and the
+shell renders whatever comes back. Nothing in the shell knows what a tab does,
+so a verb is added or retired in that tab's provider and nowhere else — the
+same shape the phone's probe registry took.
+
+**Back up means one thing under both sources**: archive the iPhone roll onto
+this Mac. Time Machine was considered for the Mac source and rejected — the
+verb changing meaning with the switch is worse than a Mac having no backup
+verb of its own. On the System tab it hands off to Media rather than opening
+the sheet itself, because the item list lives there; promising a count it
+would not be the one to honour is the same defect as a stubbed field.
+
+**A verb a tab cannot serve is greyed with the reason, never dropped.**
+Position is the point. Blocked reasons name the missing precondition — check
+some items, install the Media tools, re-index first.
+
+**The System tab under 📱** shows what the Mac genuinely reads over lockdown —
+device, model, iOS, capacity, free space, camera roll, battery level — and
+greys the rest with "readable on the phone." Battery level came free: the
+`com.apple.mobile.battery` domain answers `BatteryCurrentCapacity` and
+`BatteryIsCharging`, absent keys stay absent.
+
+Deliberately **no health score on that panel**. 7 of its 13 rows are readable
+from a Mac, and a facet-dropout score off that slice would sit beside the
+phone's own full score and disagree with it — two numbers, one subject. The
+panel says where the score lives instead.
+
+Three things the build corrected in itself, all the same defect — two surfaces
+printing one fact:
+
+- **The camera-roll figure now carries its provenance.** iOS 26 dropped
+  `PhotoUsage` and leaves a residual `CameraUsage` that rounds to 0.0 GB, so
+  the panel read "0 GB" for a roll it had not measured. It falls back to the
+  last DCIM walk and labels the number "measured at the last USB sync";
+  with neither source the row greys. "0 GB" and "could not measure" are not
+  the same claim.
+- **The archive row reads the badge at draw time**, never a value passed in.
+  A lockdown probe takes seconds, and a figure captured before it painted a
+  row saying "nothing synced" beside a badge saying "8 unarchived".
+- **The Media toolbar's Back up hint names its pile.** It copies the checked
+  subset while the badge always counts the whole roll; without saying so the
+  two read as contradicting each other.
+
+Verified against the live daemon with a real iPhone attached (headless Chrome
+over CDP): the verb order is fixed across both tabs and both sources, the Scan
+menu still carries all five original rescans, tab and source survive a reload,
+the old in-panel action buttons are gone rather than duplicated, and the
+archive row and the badge agree.
 
 ## iOS packages (pub.dev, surveyed 2026-07-28)
 

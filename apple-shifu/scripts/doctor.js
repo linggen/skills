@@ -5,6 +5,8 @@ import { listSkillSessions } from './api.js';
 import { runScan, runDeepFileScan, persistScanSnapshot } from './scan.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
+import { initShell, registerTab, setActiveTab, getActiveTab, getSource, onSourceChange, onTabChange, onBackupChange, refreshVerbs, getBackupSummary } from './shifu-shell.js';
+import { renderPhoneSystem, phoneFacts } from './phone-system.js';
 
 const SKILL_NAME = 'apple-shifu';
 const params = new URLSearchParams(window.location.search);
@@ -26,10 +28,105 @@ let expectPageBlock = false; // only true right after sending a prompt that shou
 // chat widget (server pushes `busy_sessions`); we don't try to mirror it
 // because the skill iframe doesn't receive that signal.
 function syncToolbarBusy() {
-  for (const btn of document.querySelectorAll('#tools-toolbar .tool-btn')) {
-    btn.disabled = scanning;
-    btn.classList.toggle('is-busy', scanning);
-  }
+  refreshVerbs();
+}
+
+// ── The System tab's four verbs ──
+//
+// Same four in the same order under both sources; what sits behind them
+// differs. Back up means one thing everywhere — archive the iPhone roll to
+// this Mac — so it never changes meaning when the switch moves.
+
+const SYSTEM_VERBS = {
+  mac: () => ({
+    scan: {
+      hint: 'Re-run a system check',
+      menu: [
+        { label: '↻ Full rescan', hint: 'CPU, memory, disk, battery, security', run: () => startRescan() },
+        { label: '💾 Disk', run: () => send('Scan disk and show top space consumers') },
+        { label: '🔒 Security', run: () => send('Run a security check') },
+        { label: '⚡ Performance', run: () => send('Check performance') },
+        { label: '📦 Large files', hint: 'walks the filesystem', run: () => send('Find large files and label them') },
+      ],
+    },
+    report: {
+      hint: 'Write up what the last scan found',
+      menu: [
+        { label: '📊 Written report', run: () => send('Write a full report on my Mac from the latest scan — what is healthy, what needs attention, and what I should do first.') },
+        { label: '🛒 Buyer\'s Guide', run: () => send('Generate a Buyer\'s Guide for my Mac') },
+      ],
+    },
+    backup: backupVerb(),
+    clean: {
+      hint: 'Review what is safe to delete',
+      run: () => send('Show me what is safe to clean on this Mac and how much space each item frees.'),
+    },
+  }),
+  phone: () => ({
+    scan: { hint: 'Re-read the iPhone over the cable', run: () => refreshPhoneSystem() },
+    report: {
+      hint: 'Write up what this Mac can see of the iPhone',
+      run: () => {
+        const f = phoneFacts();
+        if (!f) return;
+        send(`Write a short report on my iPhone from what this Mac can read: ${JSON.stringify(f)}. `
+          + 'Say plainly which checks only the phone can answer, and do not invent readings for them.');
+      },
+    },
+    backup: backupVerb(),
+    clean: {
+      label: 'Clean',
+      hint: 'iPhone cleanup is photos and videos — opens the Media tab',
+      run: () => setActiveTab('media'),
+    },
+  }),
+};
+
+/** Back up means the phone's roll onto this Mac under either source. The work
+    happens in the Media tab, over the item list that tab has loaded — so this
+    one hands off rather than promising a count it would not be the one to
+    honour. The number here is the header badge's, and it is the whole roll. */
+function backupVerb() {
+  const summary = getBackupSummary();
+  if (!summary) return { blocked: 'Nothing synced from an iPhone yet — sync in the Media tab first' };
+  if (!summary.count) return { blocked: 'Every iPhone item already has a verified copy on this Mac' };
+  const n = summary.count.toLocaleString();
+  return {
+    hint: `${n} iPhone item${summary.count === 1 ? '' : 's'} have no copy on this Mac yet — opens the Media tab`,
+    run: () => setActiveTab('media'),
+  };
+}
+
+function send(msg) {
+  if (window._chatSend) window._chatSend(msg);
+}
+
+const systemProvider = {
+  panel: 'view-panel',
+  verbs: (source) => {
+    const actions = SYSTEM_VERBS[source]();
+    // A local scan owns the toolbar while it runs — no parallel starts.
+    if (scanning) {
+      for (const key of Object.keys(actions)) actions[key] = { blocked: 'A scan is running' };
+    }
+    return actions;
+  },
+  meta: (source) => (source === 'mac' ? lastScanMetaHtml() : ''),
+};
+
+/** Swap the System tab between the agent dashboard (💻) and the Mac's read of
+    the iPhone (📱). Two panes, one visible — never both drawn at once. */
+function applySystemSource(source) {
+  const mac = document.getElementById('mac-system');
+  const phone = document.getElementById('phone-system');
+  if (!mac || !phone) return;
+  mac.hidden = source !== 'mac';
+  phone.hidden = source !== 'phone';
+  if (source === 'phone') refreshPhoneSystem();
+}
+
+function refreshPhoneSystem(probe = true) {
+  return renderPhoneSystem(document.getElementById('phone-system'), probe);
 }
 
 // ── Init ──
@@ -65,6 +162,17 @@ function wireSettingsButton() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   wireSettingsButton();
+  // The shell must exist before any tab registers — media.js registers from
+  // its own DOMContentLoaded, which can land while this handler is awaiting.
+  initShell();
+  registerTab('system', systemProvider);
+  onSourceChange((source) => { if (getActiveTab() === 'system') applySystemSource(source); });
+  onTabChange((tab) => { if (tab === 'system') applySystemSource(getSource()); });
+  // The archive figure arrives from the Media tab after this panel first
+  // drew — redraw it so the "Not archived here" row matches the header badge.
+  onBackupChange(() => { if (getSource() === 'phone') refreshPhoneSystem(false); });
+  applySystemSource(getSource());
+
   // App mode: per-skill override in localStorage('apple-shifu:model') if set.
   // Otherwise leave modelId empty so the engine uses the user's global
   // default model — the fresh-install default is the built-in Linggen Cloud
@@ -155,16 +263,6 @@ async function mountAndStart(sessionId, carryPage = null) {
   if (sessionId) mountOpts.sessionId = sessionId;
   chat = await LinggenUI.mount(chatPanel, mountOpts);
 
-  // Wire up the static tools toolbar. Buttons send pre-set chat messages
-  // — the agent picks up the intent (Scan tools / deep scan dispatch).
-  for (const btn of document.querySelectorAll('#tools-toolbar .tool-btn')) {
-    btn.addEventListener('click', () => {
-      if (btn.disabled) return;
-      const msg = btn.dataset.msg;
-      if (msg && window._chatSend) window._chatSend(msg);
-    });
-  }
-
   // Expose send for widget click handlers. The agent decides what to do with
   // each message — it has Scan* tools (declared in SKILL.md) for rescan-style
   // requests and runs the deep file scan in-iframe for "Find Large Files".
@@ -184,9 +282,8 @@ async function mountAndStart(sessionId, carryPage = null) {
   // events without the raw event text appearing in chat.
   window._chatNotify = (text) => chat?.sendHidden(text);
 
-  document.getElementById('rescan-btn')?.addEventListener('click', () => startRescan());
-  updateScanMeta();
-  setInterval(updateScanMeta, 60_000);
+  refreshVerbs();
+  setInterval(refreshVerbs, 60_000);   // keeps "Last scan 3m ago" honest
 
   if (sessionId && hasCachedPage(sessionId)) {
     // Restore dashboard from cache — no re-scan, no tokens, no greeting.
@@ -214,7 +311,7 @@ function startFresh() {
         icon: '🩺',
         title: 'Apple Shifu',
         fields: [
-          { label: '', value: 'Click ↻ Full Rescan in the toolbar above to run a full system check — CPU, memory, disk, battery, security, and performance.' },
+          { label: '', value: 'Click ↻ Scan in the toolbar above and pick Full rescan for a full system check — CPU, memory, disk, battery, security, and performance.' },
         ],
       },
     ],
@@ -232,7 +329,7 @@ function startFresh() {
     if (greetKey) localStorage.setItem(greetKey, '1');
     chat.addMessage('assistant',
       "I'm Ling, your personal system health assistant inside Apple Shifu. " +
-      'Click ↻ Full Rescan in the System toolbar whenever you want a full health check — ' +
+      'Hit ↻ Scan → Full rescan whenever you want a full health check — ' +
       'CPU, memory, disk, battery, security, and performance.');
   }, 2000);
 }
@@ -384,7 +481,7 @@ function markScanComplete(summary) {
     localStorage.setItem(LAST_SCAN_KEY, String(Date.now()));
     localStorage.setItem(LAST_SUMMARY_KEY, JSON.stringify(summary));
   } catch { /* quota */ }
-  updateScanMeta();
+  refreshVerbs();
 }
 
 function relTime(ms) {
@@ -396,14 +493,13 @@ function relTime(ms) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-function updateScanMeta() {
-  const label = document.getElementById('last-scan-label');
-  if (!label) return;
+/** The System tab's trailing slot in the verb toolbar. */
+function lastScanMetaHtml() {
   const at = getLastScanAt();
-  if (!at) { label.textContent = ''; label.title = ''; return; }
-  label.textContent = `Last scan ${relTime(Date.now() - at)}`;
-  label.title = `Data gathered ${new Date(at).toLocaleString()}`;
-  label.classList.toggle('stale', Date.now() - at > STALE_MS);
+  if (!at) return '';
+  const stale = Date.now() - at > STALE_MS ? ' stale' : '';
+  return `<span class="last-scan${stale}" title="Data gathered ${
+    new Date(at).toLocaleString()}">Last scan ${relTime(Date.now() - at)}</span>`;
 }
 
 // Stale policy: suggest, don't run. The dashboard restores instantly either

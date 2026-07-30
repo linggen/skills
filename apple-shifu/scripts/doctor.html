@@ -16,50 +16,33 @@
       <button class="atab" data-tab="system">🩺 System</button>
       <button class="atab" data-tab="media" title="Connect your iPhone by USB — manage photos and videos on both Mac and iPhone">📷 Media</button>
     </div>
+    <!-- One selected device for the whole app; every tab follows it. -->
+    <div class="source-switch" id="source-switch"></div>
+    <!-- "No delete before backup" is product-wide, so its state is too. -->
+    <span class="backup-badge" id="backup-badge" hidden></span>
     <button id="settings-btn" class="gear-btn" title="Settings" aria-label="Settings">⚙</button>
   </div>
 
   <div class="doctor-container">
-    <!-- Left: model-driven view panel -->
-    <div class="view-panel" id="view-panel">
-      <div class="top-bar-area" id="top-bar-area"></div>
-      <!-- Static tools toolbar — always visible (sticky), single source of
-           truth for every dashboard action. Rescan buttons map to the agent's
-           Scan* tools; deep / photo buttons route to iframe-side handlers. -->
-      <div class="tools-toolbar" id="tools-toolbar">
-        <button class="tool-btn" id="rescan-btn" title="Run a fresh full scan — CPU, memory, disk, battery, security, performance">
-          <span class="tool-icon">↻</span>
-          <span class="tool-label">Full Rescan</span>
-        </button>
-        <button class="tool-btn" data-msg="Scan disk and show top space consumers">
-          <span class="tool-icon">💾</span>
-          <span class="tool-label">Rescan Disk</span>
-        </button>
-        <button class="tool-btn" data-msg="Run a security check">
-          <span class="tool-icon">🔒</span>
-          <span class="tool-label">Rescan Security</span>
-        </button>
-        <button class="tool-btn" data-msg="Check performance">
-          <span class="tool-icon">⚡</span>
-          <span class="tool-label">Rescan Performance</span>
-        </button>
-        <button class="tool-btn" data-msg="Find large files and label them">
-          <span class="tool-icon">📦</span>
-          <span class="tool-label">Find Large Files</span>
-        </button>
-        <button class="tool-btn" data-msg="Generate a Buyer's Guide for my Mac">
-          <span class="tool-icon">🛒</span>
-          <span class="tool-label">Buyer's Guide</span>
-        </button>
-        <span id="last-scan-label" class="last-scan"></span>
-      </div>
-      <div class="stale-banner" id="stale-banner" hidden></div>
-      <div class="body-area" id="body-area"></div>
-      <div class="footer-area" id="footer-area"></div>
-    </div>
+    <div class="work-panel">
+      <!-- The four verbs, same position and order in every tab. Each tab
+           supplies what sits behind them (shifu-shell.js). -->
+      <div class="verbs-toolbar" id="verbs-toolbar"></div>
 
-    <!-- Media tab: iPhone + Mac photo/video cleanup (media.js owns this pane) -->
-    <div class="media-panel" id="media-panel" hidden></div>
+      <!-- System tab: model-driven dashboard (💻) or the Mac's iPhone read (📱) -->
+      <div class="view-panel" id="view-panel">
+        <div class="mac-system" id="mac-system">
+          <div class="top-bar-area" id="top-bar-area"></div>
+          <div class="stale-banner" id="stale-banner" hidden></div>
+          <div class="body-area" id="body-area"></div>
+          <div class="footer-area" id="footer-area"></div>
+        </div>
+        <div class="phone-system" id="phone-system" hidden></div>
+      </div>
+
+      <!-- Media tab: iPhone + Mac photo/video cleanup (media.js owns this pane) -->
+      <div class="media-panel" id="media-panel" hidden></div>
+    </div>
 
     <!-- Right: chat panel (always fixed, shared across tabs) -->
     <div class="chat-panel" id="chat-panel"></div>
