@@ -357,12 +357,45 @@ when it had *no* prior reading — so a re-probe sat silent however long it
 took. It now says it is reading, and concurrent callers share one device read
 rather than stacking walks of the same device.
 
-Unsettled: **how the published readout reaches the panel.** Device topics are
-a pure relay — `topic_publish` fans out to connected peers and nothing is
-retained — and a skill page has no peer of its own (its chat is an iframe to
-`/embed`, which owns the transport). So the page can publish but cannot
-subscribe, and there is nothing to poll. Resolving this needs either a
-retained topic in the engine or a different landing place for the payload.
+### How the phone's readout reaches the panel — built 2026-07-30
+
+Device topics were a pure relay: `topic_publish` fanned out to whoever was
+connected at that instant and nothing was kept. A skill page has no peer of its
+own — its chat is an iframe to `/embed`, which owns the transport — so it could
+publish and never subscribe, and there was nothing to poll.
+
+So topics gained **retention**, in the engine, general to any surface: publish
+with `retain: true` and the daemon keeps the last payload per topic and op
+under `~/.linggen/topics/<topic>/<op>.json`, served from
+`GET /api/topic/latest`. One value, overwritten, never a log — which is the
+difference from the delete queue. A queue holds every item because each is work
+to be done exactly once; a reading is worthless the moment a newer one exists.
+The payload stays opaque to the daemon, as a live publish already was.
+
+The phone publishes `shifu/readout` on connect (`ReadoutPublisher`, bound in
+the shell rather than in the Shifu screen — the reading is for the Mac, and
+waiting for the user to open that tab would mean it usually never arrives), and
+again on a deliberate scan. Rate-limited to one sweep every two minutes so
+reconnect flaps do not re-probe, which a deliberate scan overrides.
+
+The Mac panel draws it in its **own section**, never blended into the cable
+rows: one is what this Mac just read, the other is what the phone said earlier,
+and a reader has to be able to tell which. The section is stamped with the age
+of the reading and says plainly that the Mac cannot ask for a fresher one.
+The phone's own score is shown there, which retires the "no score here" note —
+the panel now says whose number it is rather than that there isn't one.
+
+Three defects found by running it, all the familiar shape:
+
+- **Battery health printed twice** — the Mac lists it under Device and the
+  phone also reports it, so standing down "the phone-only group" was the wrong
+  rule. Rows now stand down **by label**: whatever the phone has answered for,
+  the Mac's sign pointing at the phone gives way.
+- **`where_to_look` was never rendered.** The phone sends the Settings path with
+  every row it cannot read, and dropping it left the panel saying only that
+  nobody knows — worse than the placeholder it replaced.
+- **"it reaches 1 rows"** — the note counted what the cable answered this time
+  and framed it as a capability.
 
 ## Mac Files tab — built 2026-07-30
 

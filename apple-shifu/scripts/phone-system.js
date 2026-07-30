@@ -86,6 +86,74 @@ let lastInfo = null;
 /** The probe currently running, so concurrent callers share one device read. */
 let inFlight = null;
 
+// ── What the phone said about itself ────────────────────────────────────────
+//
+// The rows above are what a Mac can reach over a cable. The phone can read
+// every row, and publishes its whole readout to the daemon whenever it is
+// awake and connected — retained, so it survives the phone going back in a
+// pocket. The Mac cannot ask for a fresh one: iOS suspends the app within
+// seconds of backgrounding, and a suspended process cannot run a probe.
+//
+// So this is a *last known* reading and it is drawn as one, in its own section,
+// stamped with when the phone took it. It is never blended into the cable rows
+// — one section is what this Mac just read, the other is what the phone said
+// earlier, and a reader has to be able to tell which is which.
+
+const READOUT_URL = '/api/topic/latest?topic=shifu&op=readout';
+
+async function fetchPhoneReadout() {
+  try {
+    const res = await fetch(READOUT_URL);
+    if (!res.ok) return null;   // 404 — nothing published yet, which is a real answer
+    const body = await res.json();
+    const payload = body?.payload;
+    if (!payload || !Array.isArray(payload.readings) || !payload.readings.length) return null;
+    return payload;
+  } catch {
+    return null;               // daemon unreachable: say nothing rather than guess
+  }
+}
+
+/** "just now" / "14 minutes ago" / "3 days ago" — an age, not a timestamp to decode. */
+function ago(iso) {
+  const then = Date.parse(iso || '');
+  if (Number.isNaN(then)) return null;
+  const mins = Math.round((Date.now() - then) / 60000);
+  if (mins < 2) return 'just now';
+  if (mins < 60) return `${mins} minutes ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  const days = Math.round(hours / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+function phoneReadoutHtml(readout) {
+  const when = ago(readout.scanned_at);
+  const groups = new Map();
+  for (const row of readout.readings) {
+    if (!groups.has(row.group)) groups.set(row.group, []);
+    groups.get(row.group).push(row);
+  }
+  const score = readout.score;
+  const scoreLine = score
+    ? `<span class="ps-from-score">${score.value}/100${score.verdict ? ` · ${esc(score.verdict)}` : ''}</span>`
+    : '';
+  return `<div class="ps-from-phone">
+    <div class="ps-from-head">
+      <h3 class="ps-group-title">From the phone</h3>
+      ${scoreLine}
+      <span class="ps-from-when">${when ? `read ${esc(when)}` : 'reading has no timestamp'}</span>
+    </div>
+    <p class="ps-note">The phone published these; this Mac did not measure them. It cannot ask for a
+      fresh set — iOS suspends the app in the background — so open Shifu in Linggen Mobile to update.</p>
+    ${[...groups.entries()].map(([name, rows]) => `
+      <div class="ps-group">
+        <h4 class="ps-subgroup-title">${esc(name)}</h4>
+        ${rows.map(rowHtml).join('')}
+      </div>`).join('')}
+  </div>`;
+}
+
 /** The facts the panel last drew — the Report verb sends these to the agent. */
 export function phoneFacts() { return lastInfo; }
 
@@ -117,9 +185,22 @@ export async function renderPhoneSystem(el, probe = true) {
   lastInfo = info;
   if (probe) publishSourceInfo(info);
   const ctx = { info, backup: getBackupSummary() };
+  // Cheap and local — the daemon reads one file — so it costs nothing to ask
+  // on every draw and keeps the age on screen honest.
+  const readout = await fetchPhoneReadout();
+
+  // Whatever the phone has actually answered for, the Mac's version of that row
+  // stands down — it was only ever a sign pointing at the phone. Matched on the
+  // label rather than on the "On the phone only" group, because the duplicate
+  // that got through first was Battery health, which the Mac lists under Device
+  // and which the phone also reports: one fact, printed twice, on one screen.
+  const answered = new Set(
+    (readout?.readings || []).map((r) => String(r.label || '').toLowerCase()),
+  );
 
   const groups = new Map();
   for (const row of ROWS) {
+    if (answered.has(row.label.toLowerCase())) continue;
     if (!groups.has(row.group)) groups.set(row.group, []);
     const reading = row.cable && !info.connected ? { unreadable: NO_CABLE } : row.read(ctx);
     groups.get(row.group).push({ label: row.label, ...reading });
@@ -134,7 +215,9 @@ export async function renderPhoneSystem(el, probe = true) {
     <div class="ps-group">
       <h3 class="ps-group-title">${esc(name)}</h3>
       ${rows.map(rowHtml).join('')}
-    </div>`).join('') + noteHtml(groups);
+    </div>`).join('')
+    + (readout ? phoneReadoutHtml(readout) : '')
+    + noteHtml(groups, readout);
 }
 
 /**
@@ -153,9 +236,17 @@ function markProbing(el) {
   el.prepend(strip);
 }
 
-/** Why there is no number here. A score off this slice would sit next to the
-    phone's own full score and disagree with it — two figures, one subject. */
-function noteHtml(groups) {
+/** Why there is no number of *our own* here. A score off the cable slice would
+    sit next to the phone's own full score and disagree with it — two figures,
+    one subject. When the phone has published, its score is shown above, and
+    this says whose it is rather than repeating that there isn't one. */
+function noteHtml(groups, readout) {
+  if (readout?.score) {
+    const { readable, total } = readableCount(groups);
+    return `<p class="ps-note">The score above is the phone's own, over every row it can read.
+      This Mac does not compute one: it reads ${readable} of the ${total} row${total === 1 ? '' : 's'}
+      it lists here, and a score off that slice would disagree with the phone's.</p>`;
+  }
   const { readable, total } = readableCount(groups);
   return `<p class="ps-note">No health score here: ${readable} of the ${total} rows above are readable
     from a Mac, and a score built on that slice would disagree with the phone's own. The score lives
@@ -178,9 +269,14 @@ function publishSourceInfo(info) {
 
 function rowHtml(row) {
   if (row.unreadable) {
+    // The phone sends `where_to_look` with a row it cannot answer, and that
+    // path is the whole point of keeping the row: drop it and the panel says
+    // only that nobody knows. The Mac's own rows carry theirs inline; the
+    // phone's arrive in their own field.
     return `<div class="ps-row out">
       <span class="ps-label">${esc(row.label)}</span>
-      <span class="ps-reason">${esc(row.unreadable)}</span></div>`;
+      <span class="ps-reason">${esc(row.unreadable)}</span>
+      ${row.where_to_look ? `<span class="ps-where">${esc(row.where_to_look)}</span>` : ''}</div>`;
   }
   const bar = row.bar == null ? '' :
     `<span class="ps-bar"><i style="width:${Math.round(Math.min(1, Math.max(0, row.bar)) * 100)}%"></i></span>`;
