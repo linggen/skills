@@ -118,3 +118,9 @@ for t in tracks:
 
 out(got=len(files), failed=len(errors), files=files, errors=errors)
 PY
+
+# Register what landed without waiting for a page visit — the reconcile verb
+# adopts the new files into library.json (and clears any old delete tombstones)
+# so ListLibrary and a paired phone see them immediately. Best-effort: the next
+# page open reconciles anyway.
+bash "$DIR/scripts/run-js.sh" "$DIR/scripts/actions.mjs" reconcile >/dev/null 2>&1 || true

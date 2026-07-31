@@ -2,8 +2,8 @@
 // library.json is the source of truth the ListLibrary tool also reads, so the
 // agent and the page always agree on what's owned.
 
-import { runBash, writeFile, resolvePath, sq } from './bash.js';
-import { Register, project, seedFromTracks, undeleteTrack } from './lww.js';
+import { runBash, writeFile, sq } from './bash.js';
+import { Register, project, seedFromTracks } from './lww.js';
 
 const DJ_DIR = '$HOME/.linggen/skills/dj';
 
@@ -96,17 +96,27 @@ export async function saveRegister(r) {
 }
 
 /// Persist the library AND the register, with the register projected through
-/// first. Every mutation goes through here, so the page can never show a
-/// playlist it hasn't stored — and a song the register says is gone is gone
-/// from the folder too, plainly: DJ music is reproducible, so a delete is a
-/// re-download rather than a loss.
+/// first. Playlist/track mutations live in actions.mjs now (one writer, called
+/// by the agent's tools and the page's buttons alike); this path remains for
+/// the fields only the page writes (karaoke files, lyrics, sync ledgers) — and
+/// a song the register says is gone is gone from the folder too, plainly:
+/// DJ music is reproducible, so a delete is a re-download rather than a loss.
 export async function saveLibrary(lib) {
   await _persist(lib, await register(lib));
 }
 
 /// The write itself, taking the register rather than fetching it — so the seed
 /// path can persist before `register()` has returned.
+///
+/// Merge the on-disk register in first: actions.mjs (or a phone sync) may have
+/// written cells since this page loaded, and toState() would silently drop
+/// them. The merge is per-key LWW — this page's own fresh edits still win
+/// their keys, everyone else's survive.
 async function _persist(lib, r) {
+  try {
+    const raw = await runBash(`cat "${DATA}/playlist-edits.json" 2>/dev/null; true`);
+    if (raw.trim()) r.mergeState(JSON.parse(raw));
+  } catch { /* unreadable — write what we have */ }
   for (const file of project(r, lib)) {
     try {
       await runBash(`rm -f ${sq(file)}`);
@@ -114,14 +124,6 @@ async function _persist(lib, r) {
   }
   await writeFile(`${DJ_DIR}/library.json`, JSON.stringify(lib, null, 2));
   await saveRegister(r);
-}
-
-/// A song arriving under a name that was deleted before is a NEW song — clear
-/// the tombstone so the projection can't delete it again. Called wherever a
-/// file enters the library.
-export async function adopted(files) {
-  const r = await register();
-  for (const f of files) undeleteTrack(r, f);
 }
 
 // Stable id for a track so dupes collapse and sync state sticks.
@@ -133,85 +135,6 @@ export const isOwned = (lib, t) => {
   return lib.tracks.some((x) => x.id === id || trackId(x) === id);
 };
 
-// ── folder ⇄ index reconcile ─────────────────────────────────────────────────
-// The library FOLDER is ground truth for which files exist; library.json is
-// the curated view (playlists, sync state). Files can land in the folder
-// outside DJ's download flow (Finder drops, other machines) and rows can
-// outlive a Finder-deleted file — reconcile adopts the former and retires the
-// latter so the page, the agent, and phone sync all agree.
-
-const AUDIO_EXTS = ['mp3', 'm4a', 'flac', 'wav', 'ogg', 'aac'];
-const ext = (n) => n.slice(n.lastIndexOf('.') + 1).toLowerCase();
-const stemOf = (n) => n.slice(0, n.lastIndexOf('.'));
-// NFC-normalized basename compare — macOS stores decomposed Unicode.
-const norm = (n) => String(n).split('/').pop().normalize('NFC').toLowerCase();
-
-/// Mutates `lib` in place; returns { adopted, retired } counts.
-export async function reconcileLibrary(lib, cfg) {
-  const dir = await resolvePath(cfg.library_dir || '~/Music/DJ');
-  let out = '';
-  try {
-    out = await runBash(`cd ${sq(dir)} 2>/dev/null && stat -f '%m|%N' -- * 2>/dev/null; true`);
-  } catch {
-    return { adopted: 0, retired: 0 };
-  }
-  const entries = out
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.includes('|'))
-    .map((l) => {
-      const i = l.indexOf('|');
-      return { mtime: Number(l.slice(0, i)), name: l.slice(i + 1) };
-    });
-  // Unreadable/empty folder → never mass-retire a whole library.
-  if (!entries.length) return { adopted: 0, retired: 0 };
-
-  const byNorm = new Map(entries.map((e) => [norm(e.name), e.name]));
-  const sidecar = (stem, exts) => {
-    for (const x of exts) {
-      const hit = byNorm.get(norm(`${stem}.${x}`));
-      if (hit) return `${dir}/${hit}`;
-    }
-    return null;
-  };
-
-  const known = new Set(lib.tracks.filter((t) => t.file).map((t) => norm(t.file)));
-  let adopted = 0;
-  for (const e of entries) {
-    if (!AUDIO_EXTS.includes(ext(e.name)) || known.has(norm(e.name))) continue;
-    const stem = stemOf(e.name);
-    const dash = stem.indexOf(' - ');
-    const artist = dash > 0 ? stem.slice(0, dash) : '';
-    const title = dash > 0 ? stem.slice(dash + 3) : stem;
-    const row = {
-      id: trackId({ artist, title }),
-      artist,
-      title,
-      file: `${dir}/${e.name}`,
-      added_at: new Date(e.mtime * 1000).toISOString(),
-      playlists: [],
-      synced_to: [],
-    };
-    const lrc = sidecar(stem, ['lrc']);
-    if (lrc) row.lrc = lrc;
-    lib.tracks.push(row);
-    adopted += 1;
-  }
-
-  const before = lib.tracks.length;
-  lib.tracks = lib.tracks.filter((t) => !t.file || byNorm.has(norm(t.file)));
-  const retired = before - lib.tracks.length;
-
-  // Existing rows: pick up a .lrc that appeared beside the file, drop one that
-  // vanished — same drift, smaller scale.
-  for (const t of lib.tracks) {
-    if (!t.file) continue;
-    if (t.lrc && !byNorm.has(norm(t.lrc))) delete t.lrc;
-    if (!t.lrc) {
-      const lrc = sidecar(stemOf(String(t.file).split('/').pop()), ['lrc']);
-      if (lrc) t.lrc = lrc;
-    }
-  }
-
-  return { adopted, retired };
-}
+// The folder ⇄ index reconcile moved to actions.mjs (`reconcile`) — the one
+// writer — so the agent's downloads register without a page open. The page
+// calls the same verb.

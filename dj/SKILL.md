@@ -104,6 +104,136 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/get.sh {{tracks}}"
     tier: edit
     timeout_ms: 900000
+  # ── library mutations — every verb below runs actions.mjs, the ONE writer
+  # the page's buttons also call, so a tool call and a button click can never
+  # drift. Track args are the `file` values ListLibrary returns (full path or
+  # basename) — resolve against ListLibrary first, never guess a filename.
+  - name: CreatePlaylist
+    description: >-
+      Create an empty playlist. Idempotent — creating an existing name is fine.
+      Returns { ok, playlist }. Usually you want AddToPlaylist instead (it
+      creates the playlist as it files songs); use this only for a deliberately
+      empty one the user will fill.
+    args:
+      name:
+        type: string
+        required: true
+        description: Clean, stable playlist title — no song counts, no "Vol 2".
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-create {{name}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: AddToPlaylist
+    description: >-
+      File songs the user already owns into a playlist (creates it if new —
+      this is the normal way to save a playlist). Takes the playlist name and
+      a JSON array of tracks named by the `file` value from ListLibrary (full
+      path or basename; "artist|title" also resolves). Returns { ok, playlist,
+      added }. Errors listing any name it can't match — call ListLibrary first
+      and pass its exact values. Reuse an existing playlist's exact name to
+      merge into it.
+    args:
+      name:
+        type: string
+        required: true
+        description: Playlist to file into; created if it doesn't exist yet.
+      files:
+        type: array
+        required: true
+        description: >-
+          Tracks to add, by ListLibrary `file` value. Example:
+          ["Beyond - 海闊天空.mp3", "Faye Wong - 夢中人.mp3"].
+        items: { type: string }
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-add {{name}} {{files}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: RemoveFromPlaylist
+    description: >-
+      Untag songs from one playlist. The songs stay in the library and in
+      every other playlist; nothing is deleted from disk. Takes the playlist
+      name and a JSON array of ListLibrary `file` values. Returns { ok,
+      playlist, removed }.
+    args:
+      name:
+        type: string
+        required: true
+        description: The playlist to remove them from (must exist).
+      files:
+        type: array
+        required: true
+        description: Tracks to untag, by ListLibrary `file` value.
+        items: { type: string }
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-remove {{name}} {{files}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: ReorderPlaylist
+    description: >-
+      Set a playlist's running order. Takes the playlist name and a JSON array
+      of ListLibrary `file` values in the desired order; members you leave out
+      keep their place at the end. Returns { ok, playlist, order }. Use when
+      the user asks to re-sequence ("open with the ballad", "shuffle-proof my
+      set order").
+    args:
+      name:
+        type: string
+        required: true
+        description: The playlist to reorder (must exist).
+      files:
+        type: array
+        required: true
+        description: The new order, first to last, by ListLibrary `file` value.
+        items: { type: string }
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-reorder {{name}} {{files}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: RenamePlaylist
+    description: >-
+      Rename a playlist; renaming onto an existing name MERGES the two into
+      one. Returns { ok, playlist, merged }. Songs and order carry over; a
+      paired phone converges on the same result.
+    args:
+      old_name:
+        type: string
+        required: true
+        description: The playlist's current name (must exist).
+      new_name:
+        type: string
+        required: true
+        description: The new title — clean and stable, no counts or "Vol 2".
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-rename {{old_name}} {{new_name}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: DeletePlaylist
+    description: >-
+      Delete a playlist. The songs stay in the library — only the grouping
+      goes. Returns { ok, deleted, songs_kept }. DESTRUCTIVE of the user's
+      curation: confirm with the user first unless they just asked for exactly
+      this by name.
+    args:
+      name:
+        type: string
+        required: true
+        description: The playlist to delete (must exist).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-delete {{name}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: DeleteTracks
+    description: >-
+      Delete songs from the library: the audio file, its lyrics/karaoke
+      sidecars, and its place in every playlist. A paired phone removes its
+      copy on next sync. Takes a JSON array of ListLibrary `file` values;
+      returns { ok, deleted, files }. DESTRUCTIVE — always confirm with the
+      user first, naming the exact songs, unless they just listed exactly
+      these to delete. DJ music is re-downloadable, but a delete is still a
+      delete.
+    args:
+      files:
+        type: array
+        required: true
+        description: Tracks to delete, by ListLibrary `file` value.
+        items: { type: string }
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs tracks-delete {{files}}"
+    tier: edit
+    timeout_ms: 20000
 ---
 
 # DJ — your personal Disc Jockey
@@ -256,23 +386,32 @@ Cantopop"):
    download first, and say so (*"You don't have these yet — here's a set to
    grab."*).
 
-## Organizing into playlists
+## Organizing the library
 
-When the user asks to **make/save a playlist** from their library ("make a
-playlist of my upbeat 90s", "save these as Roadtrip"):
-1. Call `ListLibrary`, pick the matching owned tracks.
-2. Save with a `playlist` PageUpdate (the page tags them + selects the new
-   playlist):
-   ```json
-   { "body": { "playlist": { "name": "Roadtrip", "tracks": [
-     { "artist": "Beyond", "title": "海闊天空" }
-   ] } } }
-   ```
-3. Confirm in one line (*"Saved 'Roadtrip' — 12 songs."*). Only include tracks
-   that are actually in `ListLibrary`.
+You have real library tools now — they run the same writer the page's buttons
+do, and they work whether or not the page is open:
+
+- **Save/extend a playlist** ("make a playlist of my upbeat 90s", "save these
+  as Roadtrip"): `ListLibrary` → pick the matching owned tracks → call
+  **`AddToPlaylist`** with the playlist name and the tracks' `file` values.
+  It creates the playlist if new; reuse an existing playlist's exact name to
+  merge. Confirm in one line (*"Saved 'Roadtrip' — 12 songs."*).
+- **Rename / merge**: `RenamePlaylist` (renaming onto an existing name merges).
+- **Re-sequence**: `ReorderPlaylist` with the files in your intended order.
+- **Untag songs**: `RemoveFromPlaylist` — the songs stay in the library.
+- **Delete a playlist / delete songs**: `DeletePlaylist` / `DeleteTracks` —
+  destructive; confirm with the user first (see Hard rails).
+
+Track args are always the `file` values from `ListLibrary` — call it first,
+pass its exact strings, never guess a filename. The page repaints itself after
+your tools run; don't also push a `playlist` PageUpdate for the same change.
 
 ## Hard rails
 
+- **Confirm before you destroy.** `DeleteTracks` and `DeletePlaylist` remove
+  the user's music or curation. Unless the user just named exactly what to
+  delete, ask first — name the songs or the playlist, get a yes, then call the
+  tool. Never delete as a side effect of tidying.
 - **Fetch when asked, not by reflex.** `GetTracks` is yours to call once they've
   said so. Don't fetch off the back of a browsing question, don't fetch more
   than they asked for, and never fetch something `ListLibrary` shows they own.

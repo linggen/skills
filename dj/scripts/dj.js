@@ -8,8 +8,7 @@
 import './chat-bridge.js'; // sets window.LinggenUI
 import { runBash, sq } from './bash.js';
 import { listSkillSessions } from './api.js';
-import { loadConfig, loadLibrary, saveLibrary, trackId, isOwned, reconcileLibrary, register, adopted } from './library.js';
-import * as reg from './lww.js';
+import { loadConfig, loadLibrary, trackId, isOwned } from './library.js';
 import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { openPlayer } from './player.js';
@@ -30,7 +29,6 @@ const savedUi = loadUi();
 const state = {
   config: { sync_targets: [] },
   library: { tracks: [], playlists: [] },
-  reg: null, // the playlist edit register — see lww.js
   phone: [], // paired Linggen Mobile devices with their fetch ledgers
   set: null, // the currently proposed tracklist
   busy: false,
@@ -51,12 +49,30 @@ let chat = null;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+// ── the one writer ───────────────────────────────────────────────────────────
+// Every library mutation runs through actions.mjs — the same verbs the agent's
+// SKILL.md tools call. The page renders; the script writes. See actions.mjs.
+async function action(verb, ...args) {
+  const cmd =
+    `bash "$HOME/.linggen/skills/dj/scripts/run-js.sh" ` +
+    `"$HOME/.linggen/skills/dj/scripts/actions.mjs" ${verb} ${args.map(sq).join(' ')}`;
+  const out = await runBash(cmd, { timeoutMs: 30000 });
+  const line = out.trim().split('\n').pop();
+  let r;
+  try { r = JSON.parse(line); } catch { throw new Error(line || 'action failed'); }
+  if (!r.ok) throw new Error(r.error || 'action failed');
+  return r;
+}
+
+// Re-read what the writer wrote, then repaint.
+async function refreshLibrary() {
+  state.library = await loadLibrary();
+  renderLibrary();
+}
+
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
   [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
-  // The register before anything reads a playlist — it is the truth now, and
-  // library.json's tags are the copy it seeds from on a library that predates it.
-  state.reg = await register(state.library);
   await reindex(true);
   // A restored playlist selection may point at a playlist that no longer exists.
   if (state.collection.kind === 'playlist' && !playlistsOf().includes(state.collection.name)) {
@@ -86,13 +102,9 @@ async function reindex(announce) {
   if (reindexing) return;
   reindexing = true;
   try {
-    const r = await reconcileLibrary(state.library, state.config);
+    const r = await action('reconcile');
     if (r.adopted || r.retired) {
-      // A file that just appeared under a name deleted earlier is a NEW song;
-      // clear the tombstone or the projection would delete it straight back.
-      await adopted(state.library.tracks.map((t) => t.file).filter(Boolean));
-      await saveLibrary(state.library);
-      renderLibrary();
+      await refreshLibrary();
       if (announce) {
         const bits = [];
         if (r.adopted) bits.push(`adopted ${r.adopted} song${r.adopted === 1 ? '' : 's'} from the folder`);
@@ -245,20 +257,22 @@ function startRenamePlaylist(node, name) {
 // Rename a playlist; renaming to an existing name MERGES them.
 async function renamePlaylist(oldName, newName) {
   if (!newName || newName === oldName) { renderLibrary(); return; }
-  reg.renameList(state.reg, oldName, newName, reg.filesInList(state.reg, oldName));
-  if (state.collection.kind === 'playlist' && state.collection.name === oldName) setCollection({ kind: 'playlist', name: newName });
-  await saveLibrary(state.library);
-  renderLibrary();
-  toast(`Renamed to “${newName}”.`);
+  try {
+    await action('playlist-rename', oldName, newName);
+    if (state.collection.kind === 'playlist' && state.collection.name === oldName) setCollection({ kind: 'playlist', name: newName });
+    await refreshLibrary();
+    toast(`Renamed to “${newName}”.`);
+  } catch (e) { toast(String(e.message || e)); renderLibrary(); }
 }
 
 // Remove a playlist (songs stay in the library).
 async function deletePlaylist(name) {
-  reg.deleteList(state.reg, name, reg.filesInList(state.reg, name));
-  if (state.collection.kind === 'playlist' && state.collection.name === name) setCollection({ kind: 'all' });
-  await saveLibrary(state.library);
-  renderLibrary();
-  toast(`Removed playlist “${name}” (songs kept).`);
+  try {
+    await action('playlist-delete', name);
+    if (state.collection.kind === 'playlist' && state.collection.name === name) setCollection({ kind: 'all' });
+    await refreshLibrary();
+    toast(`Removed playlist “${name}” (songs kept).`);
+  } catch (e) { toast(String(e.message || e)); }
 }
 
 function rowHtml(t) {
@@ -335,13 +349,13 @@ async function addToPlaylist(name) {
   const files = state.library.tracks
     .filter((t) => state.selected.has(trackKey(t)) && t.file)
     .map((t) => t.file);
-  const n = files.length;
-  reg.addToList(state.reg, files, name);
-  await saveLibrary(state.library);
-  state.selected.clear();
-  setCollection({ kind: 'playlist', name });
-  renderLibrary();
-  toast(`Added ${n} to “${name}”.`);
+  try {
+    const r = await action('playlist-add', name, JSON.stringify(files));
+    state.selected.clear();
+    setCollection({ kind: 'playlist', name });
+    await refreshLibrary();
+    toast(`Added ${r.added} to “${name}”.`);
+  } catch (e) { toast(String(e.message || e)); }
 }
 
 // Shared onProgress for all three sync entry points. Track-level events carry
@@ -389,36 +403,32 @@ async function syncSelected() {
 
 async function removeSelected() {
   // In a playlist → untag the selection from it (keep the files). In the library
-  // views → delete the songs (files to Trash).
+  // views → delete the songs.
   if (inPlaylistView()) { await untagSelected(state.collection.name); return; }
   const ids = new Set(state.selected);
-  const victims = state.library.tracks.filter((t) => ids.has(trackKey(t)));
-  // The cell is what a paired phone merges; saveLibrary's projection unlinks
-  // the file. Sidecars go here, since only the audio file has a cell.
-  for (const t of victims) {
-    if (t.file) reg.deleteTrack(state.reg, t.file);
-    for (const f of [t.lrc, t.karaoke_video]) {
-      if (f) { try { await runBash(`rm -f ${sq(f)}`); } catch { /* already gone */ } }
-    }
-  }
-  await saveLibrary(state.library);
-  state.selected.clear();
-  renderLibrary();
-  toast(`Deleted ${victims.length} song${victims.length === 1 ? '' : 's'}.`);
+  const files = state.library.tracks.filter((t) => ids.has(trackKey(t)) && t.file).map((t) => t.file);
+  if (!files.length) return;
+  try {
+    const r = await action('tracks-delete', JSON.stringify(files));
+    state.selected.clear();
+    await refreshLibrary();
+    toast(`Deleted ${r.deleted} song${r.deleted === 1 ? '' : 's'}.`);
+  } catch (e) { toast(String(e.message || e)); }
 }
 
 // Untag the selected songs from the current playlist (files & library untouched).
 async function untagSelected(name) {
   const ids = new Set(state.selected);
   const files = state.library.tracks
-    .filter((t) => ids.has(trackKey(t)) && t.file && reg.listsForFile(state.reg, t.file).includes(name))
+    .filter((t) => ids.has(trackKey(t)) && t.file && (t.playlists || []).includes(name))
     .map((t) => t.file);
-  const n = files.length;
-  reg.removeFromList(state.reg, files, name);
-  await saveLibrary(state.library);
-  state.selected.clear();
-  renderLibrary();
-  toast(`Removed ${n} song${n === 1 ? '' : 's'} from “${name}”.`);
+  if (!files.length) { state.selected.clear(); renderLibrary(); return; }
+  try {
+    const r = await action('playlist-remove', name, JSON.stringify(files));
+    state.selected.clear();
+    await refreshLibrary();
+    toast(`Removed ${r.removed} song${r.removed === 1 ? '' : 's'} from “${name}”.`);
+  } catch (e) { toast(String(e.message || e)); }
 }
 
 function updateModeBtn() {
@@ -493,10 +503,11 @@ async function onRowAction(e) {
 // Untag one song from the current playlist. The song stays in the library (and
 // in any other playlists); nothing on disk changes.
 async function removeFromPlaylist(t, name) {
-  reg.removeFromList(state.reg, [t.file], name);
-  await saveLibrary(state.library);
-  renderLibrary();
-  toast(`Removed “${t.title}” from “${name}”.`);
+  try {
+    await action('playlist-remove', name, JSON.stringify([t.file]));
+    await refreshLibrary();
+    toast(`Removed “${t.title}” from “${name}”.`);
+  } catch (e) { toast(String(e.message || e)); }
 }
 
 async function fetchTrackLyrics(t) {
@@ -505,8 +516,8 @@ async function fetchTrackLyrics(t) {
   try {
     const lrc = await attachLyrics(t, t.file);
     if (!lrc) { toast(`No lyrics found for “${t.title}”.`); return; }
+    await action('track-set-lrc', t.file, lrc);
     t.lrc = lrc;
-    await saveLibrary(state.library);
     renderLibrary();
     toast(`Got lyrics for “${t.title}”.`);
     return lrc;
@@ -518,19 +529,15 @@ async function fetchTrackLyrics(t) {
 
 // Delete a song from the library: the file, its sidecars, and its place in every
 // playlist. Only reachable from the All songs / Recently added views — playlist
-// views untag instead.
-//
-// A plain delete, not the Trash: DJ music is reproducible, so this is a
-// re-download rather than a loss. The cell is what a paired phone merges;
-// saveLibrary's projection is what unlinks the audio file.
+// views untag instead. A plain delete, not the Trash: DJ music is reproducible,
+// so this is a re-download rather than a loss.
 async function removeTrack(t) {
-  if (t.file) reg.deleteTrack(state.reg, t.file);
-  for (const f of [t.lrc, t.karaoke_video]) {
-    if (f) { try { await runBash(`rm -f ${sq(f)}`); } catch { /* already gone */ } }
-  }
-  await saveLibrary(state.library);
-  renderLibrary();
-  toast(`Deleted “${t.title}”.`);
+  if (!t.file) return;
+  try {
+    await action('tracks-delete', JSON.stringify([t.file]));
+    await refreshLibrary();
+    toast(`Deleted “${t.title}”.`);
+  } catch (e) { toast(String(e.message || e)); }
 }
 
 async function syncCrate(crate) {
@@ -571,18 +578,22 @@ function extractKey(args, key) {
 const keyOf = (t) => `${(t.artist || '').toLowerCase().trim()}|${(t.title || '').toLowerCase().trim()}`;
 
 // Agent organizes the library into a playlist: { name, tracks:[{artist,title}] }.
+// Legacy surface — the agent's real write path is its AddToPlaylist tool now;
+// this PageUpdate shape still lands in the same writer when an older session
+// uses it.
 async function applyAgentPlaylist(pl) {
   if (!pl.name || !Array.isArray(pl.tracks)) return;
   const want = new Set(pl.tracks.map(keyOf));
   const files = state.library.tracks
     .filter((t) => want.has(trackKey(t)) && t.file)
     .map((t) => t.file);
-  const n = files.length;
-  reg.addToList(state.reg, files, pl.name);
-  await saveLibrary(state.library);
-  setCollection({ kind: 'playlist', name: pl.name });
-  renderLibrary();
-  toast(`DJ made “${pl.name}” — ${n} song${n === 1 ? '' : 's'}.`);
+  if (!files.length) { toast('None of those are in the library yet.'); return; }
+  try {
+    const r = await action('playlist-add', pl.name, JSON.stringify(files));
+    setCollection({ kind: 'playlist', name: pl.name });
+    await refreshLibrary();
+    toast(`DJ made “${pl.name}” — ${r.added} song${r.added === 1 ? '' : 's'}.`);
+  } catch (e) { toast(String(e.message || e)); }
 }
 
 // Agent plays owned tracks: { tracks:[{artist,title}] }. Only plays what's
@@ -704,12 +715,18 @@ async function getAll() {
     const r = await downloadTrack(bins, state.config, t);
     if (r.ok) {
       t.status = 'done';
-      addToLibrary(t, r.file);
+      // Register + show it now — playable immediately, no waiting for the
+      // rest, and progress survives if the page closes mid-batch. The writer
+      // clears any old tombstone and files it under the set's playlist.
+      try {
+        await action('track-add', JSON.stringify({
+          artist: t.artist, title: t.title, year: t.year || undefined,
+          file: r.file,
+          playlist: state.set ? cleanPlaylistName(state.set.name) : undefined,
+        }));
+      } catch (e) { toast(String(e.message || e)); }
       downloadedIds.push(trackId(t));
-      // Persist + show it now — playable immediately, no waiting for the rest,
-      // and progress survives if the page closes mid-batch.
-      await saveLibrary(state.library);
-      renderLibrary();
+      await refreshLibrary();
       // Thumbnail per-track, not batched at the end of the whole set — a
       // track that's already playable shouldn't sit cover-less for the
       // minutes the rest of a big batch takes to finish downloading.
@@ -725,8 +742,7 @@ async function getAll() {
   }
 
   state.busy = false;
-  await saveLibrary(state.library);
-  renderLibrary();
+  await refreshLibrary();
   renderSet();
   const ok = todo.filter((t) => t.status === 'done').length;
   toast(`Added ${ok}/${todo.length} to your library.${ok ? ' Hit Sync to phone to copy them across.' : ''}`);
@@ -744,7 +760,7 @@ async function backfillLyrics(ids) {
     if (!t || t.lrc || !t.file) continue;
     try {
       const lrc = await attachLyrics(t, t.file);
-      if (lrc) { t.lrc = lrc; await saveLibrary(state.library); renderLibrary(); }
+      if (lrc) { await action('track-set-lrc', t.file, lrc); t.lrc = lrc; renderLibrary(); }
     } catch { /* lyrics are optional */ }
   }
 }
@@ -755,25 +771,6 @@ const cleanPlaylistName = (s) => {
   const t = String(s || '').trim();
   return t.replace(/\s*[—\-–]\s*\d+\s*(songs?|tracks?|首)\s*$/i, '').trim() || t;
 };
-
-function addToLibrary(t, file, lrc) {
-  const id = trackId(t);
-  if (state.library.tracks.some((x) => x.id === id)) return;
-  state.library.tracks.push({
-    id,
-    artist: t.artist,
-    title: t.title,
-    year: t.year || undefined,
-    file,
-    lrc: lrc || undefined,
-    added_at: new Date().toISOString(),
-    playlists: [],
-    synced_to: [],
-  });
-  // Downloading a name that was deleted before makes it a new song again.
-  reg.undeleteTrack(state.reg, file);
-  if (state.set) reg.addToList(state.reg, [file], cleanPlaylistName(state.set.name));
-}
 
 function setProgress(frac) {
   const bar = $('set-progress');
@@ -929,6 +926,18 @@ async function recentSessionId() {
 const GREETING_TRIGGER =
   'The user just opened the DJ app (this message is hidden from them). Greet them now, following the "0. Greeting" section of your instructions.';
 
+// The agent tools that mutate the library (they run the same actions.mjs this
+// page calls). One trailing refresh per burst.
+const AGENT_WRITERS = new Set([
+  'CreatePlaylist', 'RenamePlaylist', 'DeletePlaylist', 'AddToPlaylist',
+  'RemoveFromPlaylist', 'ReorderPlaylist', 'DeleteTracks', 'GetTracks',
+]);
+let agentRefreshTimer = null;
+function scheduleAgentRefresh() {
+  clearTimeout(agentRefreshTimer);
+  agentRefreshTimer = setTimeout(() => { refreshLibrary().catch(() => {}); }, 1200);
+}
+
 async function mountChat() {
   const resume = await recentSessionId();
   let activity = false;
@@ -948,6 +957,10 @@ async function mountChat() {
             applyPageUpdate(args);
           } catch (e) { console.warn('[dj] PageUpdate parse', e); }
         }
+        // The agent's own tools write through actions.mjs beside this page —
+        // repaint from disk shortly after one runs so the grid never lags a
+        // mutation the user just watched happen in chat.
+        if (AGENT_WRITERS.has(payload?.tool)) scheduleAgentRefresh();
       },
     });
   } catch (e) {
