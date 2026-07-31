@@ -902,6 +902,10 @@ function archiveFolders() {
   const stemOf = (p) => { const n = p.split('/').pop(); return n.slice(0, n.lastIndexOf('.')).toLowerCase(); };
   const dirs = new Map();
   for (const r of archiveRows) {
+    // This pane counts THIS MAC. Rows on an external disk are the other
+    // side of the ledger — showing them here would claim media the Mac
+    // no longer holds.
+    if (r.dest.startsWith('/Volumes/')) continue;
     const dir = r.dest.split('/').slice(0, -1).join('/');
     if (!dirs.has(dir)) dirs.set(dir, []);
     dirs.get(dir).push(r);
@@ -987,7 +991,10 @@ function renderMacPane() {
     <button class="media-cta ghost sm" id="mac-clear-btn">Clear</button>
     <span class="media-dim">${hint}</span></div>`;
 
-  if (!macIndex.length) {
+  // No index is not "nothing on the Mac": the backup archive renders from
+  // its ledger either way — after a Clean empties the index, what remains
+  // in ~/Pictures/iPhone Backup must still show (the chip counts it).
+  if (!macIndex.length && !archiveFolders().size) {
     pane.innerHTML = `<div class="media-dim">No Mac photo index yet — it is built during a scan
       (or hit ↻ Re-index Mac below).</div>`;
     return;
@@ -2190,7 +2197,7 @@ async function renderBackupHistory() {
     .filter(Boolean).slice(-20).reverse();
   if (!rows.length) { el.innerHTML = ''; return; }
   const icon = { phone_mac: '📱→💻', mac_disk: '💽', clean: '🧹' };
-  el.innerHTML = `<div class="glabel" style="margin-top:16px">Backup history</div>` + rows.map((r) => {
+  el.innerHTML = `<div class="glabel" style="margin-top:16px">Activities</div>` + rows.map((r) => {
     const when = (r.ts || '').replace('T', ' ').slice(0, 16);
     const what = r.kind === 'clean'
       ? `cleaned ${(r.items || 0).toLocaleString()} local copies · ${fmtGb(r.bytes || 0)} freed`
