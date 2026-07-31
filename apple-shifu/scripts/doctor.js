@@ -224,35 +224,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     catch { /* ignore */ }
   }
 
-  // Resume the most recent session whose dashboard page is cached locally —
-  // reopening costs zero tokens and zero scan time (CFO/Pulse pattern). A
-  // session without a cached page has nothing to resume *to* (chat history
-  // alone has no widget tree) and is skipped. A true first run (nothing
-  // resumable) auto-scans — that's the activation moment.
+  // Resume the latest session inside the window — whoever created it (this
+  // page, the app shell, or a phone relay). All apps share this one rule:
+  // latest if < 24h, else fresh (CFO/DJ/Pulse/Memory do the same). The
+  // dashboard restores independently of chat: the newest session with a
+  // locally cached page supplies the widget tree when the resumed session
+  // has none.
   if (!existingSession) {
     let sessions = [];
     try {
       sessions = await listSkillSessions(SKILL_NAME);
       sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
     } catch { /* ignore */ }
-    const resumable = sessions.find((s) => hasCachedPage(s.id));
-    if (resumable) {
-      seedLastScanAt(resumable.created_at);
+    const latest = sessions[0];
+    const cached = sessions.find((s) => hasCachedPage(s.id));
+    if (latest && sessionAgeMs(latest) < RESUME_WINDOW_MS) {
+      seedLastScanAt((cached || latest).created_at);
       const url = new URL(window.location);
-      if (sessionAgeMs(resumable) < RESUME_WINDOW_MS) {
-        // Recent: resume with full chat continuity.
-        url.searchParams.set('session', resumable.id);
-        history.replaceState(null, '', url);
-        await mountAndStart(resumable.id);
-        return;
-      }
-      // Older than the resume window: rotate. Carry the dashboard forward
-      // (page restore is local and free) but bind chat to a fresh session so
-      // context stays bounded — cross-scan memory lives in data/latest.json,
-      // not in the conversation.
+      url.searchParams.set('session', latest.id);
+      history.replaceState(null, '', url);
+      const carry = !hasCachedPage(latest.id) && cached ? readCachedPage(cached.id) : null;
+      await mountAndStart(latest.id, carry);
+      return;
+    }
+    if (cached) {
+      // Latest is older than the resume window: rotate. Carry the dashboard
+      // forward (page restore is local and free) but bind chat to a fresh
+      // session so context stays bounded — cross-scan memory lives in
+      // data/latest.json, not in the conversation.
+      seedLastScanAt(cached.created_at);
+      const url = new URL(window.location);
       url.searchParams.delete('session');
       history.replaceState(null, '', url);
-      await mountAndStart(null, readCachedPage(resumable.id));
+      await mountAndStart(null, readCachedPage(cached.id));
       return;
     }
   }
