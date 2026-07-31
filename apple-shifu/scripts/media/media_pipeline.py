@@ -1161,7 +1161,7 @@ def cmd_backup_external(args):
     if not need:
         log_backup('mac_disk', dest_root, 0, 0, 'done')
         progress(op, 'done', 0, 0, status='done',
-                 extra={'copied': 0, 'failed': 0, 'dest': str(dest_root),
+                 extra={'copied': 0, 'skipped': 0, 'failed': 0, 'dest': str(dest_root),
                         'note': 'everything already on the disk'})
         return
     need_bytes = sum(it['size'] for it in need)
@@ -1171,7 +1171,7 @@ def cmd_backup_external(args):
              f'needs {need_bytes / 1e9:.1f} GB but only {free / 1e9:.1f} GB free on the disk')
     progress(op, 'copying', 0, len(need),
              note=f'{len(items) - len(need)} already on the disk')
-    copied, copied_bytes = 0, 0
+    copied, skipped, copied_bytes = 0, 0, 0
     now = datetime.now().isoformat(timespec='seconds')
     ledger_dir = dest_root / '.linggen'
     ledger_dir.mkdir(parents=True, exist_ok=True)
@@ -1181,10 +1181,20 @@ def cmd_backup_external(args):
              open(EXTERNAL_LEDGER, 'a') as mac_ledger:
             for i, it in enumerate(need):
                 src = Path(it['src'])
-                # Untracked archive files (Live-MOV siblings) arrive unhashed —
-                # hash now, and skip if the content is already on the disk.
+                # Untracked archive files (Live-MOV siblings, snapshot-day
+                # duplicates) arrive unhashed — hash now. Content already on
+                # the disk is a SKIP, not a failure; a previously-untracked
+                # file still earns its local ledger row so it stops being
+                # rehashed on every run.
                 sha = it['sha256'] or sha256_file(src)
                 if sha in done:
+                    if it['sha256'] is None and it['origin'] in ('archive', 'staging'):
+                        phone_ledger.write(json.dumps({'sha256': sha, 'dest': it['src'],
+                                                       'size': it['size'], 'at': now}) + '\n')
+                    skipped += 1
+                    if i % 25 == 0:
+                        progress(op, 'copying', i, len(need),
+                                 note=f'{skipped} duplicates skipped')
                     continue
                 done.add(sha)
                 d = datetime.fromtimestamp(it['mtime'] or 0)
@@ -1232,13 +1242,14 @@ def cmd_backup_external(args):
     except Exception as e:
         log_backup('mac_disk', dest_root, copied, copied_bytes, 'failed', e)
         fail(op, 'copying', e)
-    failed = len(need) - copied
+    failed = len(need) - copied - skipped
     log_backup('mac_disk', dest_root, copied, copied_bytes,
                'done' if not failed else 'failed',
                '' if not failed else f'{failed} of {len(need)} items failed to verify')
     progress(op, 'done', len(need), len(need), status='done',
-             extra={'copied': copied, 'failed': failed, 'dest': str(dest_root)})
-    update_state(external_backup={'copied': copied, 'failed': failed,
+             extra={'copied': copied, 'skipped': skipped, 'failed': failed,
+                    'dest': str(dest_root)})
+    update_state(external_backup={'copied': copied, 'skipped': skipped, 'failed': failed,
                                   'dest': str(dest_root), 'at': now})
 
 
