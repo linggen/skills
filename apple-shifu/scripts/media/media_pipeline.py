@@ -1088,9 +1088,11 @@ def cmd_backup_sources(_args):
     print(json.dumps({'groups': groups}))
 
 
-def _scope_items(keys):
-    """Uniform work rows for the chosen groups — one copy per content hash,
-    so the same photo in staging AND archive travels once."""
+def _scope_items(keys, dedupe=True):
+    """Uniform work rows for the chosen groups. `dedupe` keeps one row per
+    content hash — right for COPYING (the same photo in staging and archive
+    travels once), wrong for CLEANING (every local path whose content is on
+    the disk should go, duplicates most of all)."""
     items = []
     for key in keys:
         if key == 'archive':
@@ -1114,6 +1116,8 @@ def _scope_items(keys):
                     items.append({'src': r['path'], 'size': r['size'],
                                   'sha256': r['sha256'], 'mtime': r.get('mtime') or 0,
                                   'origin': 'mac'})
+    if not dedupe:
+        return items
     seen, out = set(), []
     for it in items:
         if it['sha256'] and it['sha256'] in seen:
@@ -1267,7 +1271,13 @@ def cmd_clean_local(args):
     if not done:
         fail(op, 'preflight',
              'no verified copies reachable — is the external disk connected?')
-    items = [it for it in _scope_items(keys) if it['sha256'] in done]
+    # Every LOCAL PATH whose content is proven on the disk goes — including
+    # the snapshot-day duplicate copies of a content the disk holds once.
+    items, seen_src = [], set()
+    for it in _scope_items(keys, dedupe=False):
+        if it['sha256'] and it['sha256'] in done and it['src'] not in seen_src:
+            seen_src.add(it['src'])
+            items.append(it)
     if args.plan:
         print(json.dumps({'items': len(items),
                           'bytes': sum(i['size'] for i in items)}))
