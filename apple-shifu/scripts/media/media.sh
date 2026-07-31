@@ -138,6 +138,24 @@ case "$cmd" in
     echo $! > "$DATA/op.pid"
     echo "{\"started\":\"$op\",\"pid\":$(cat "$DATA/op.pid")}"
     ;;
+  sync-phone)
+    # Ask the paired iPhone to start a photo sync — the same run as the Sync
+    # button on its Photos tab. Published as a RETAINED topic action ("actions
+    # want a queue"): a phone that is connected starts at once; one that is
+    # away honors the request on its next connect (the phone keeps a
+    # last-honored stamp, so a request fires once, and ignores requests older
+    # than a day). The phone owns the transfer; this Mac only receives.
+    PORT="${LINGGEN_PORT:-9527}"
+    now=$(date +%s)
+    if curl -s -m 5 -X POST "http://127.0.0.1:$PORT/api/topic/publish" \
+      -H 'Content-Type: application/json' \
+      -d "{\"topic\":\"media\",\"op\":\"sync-requested\",\"payload\":{\"requested_at\":$now},\"retain\":true}" \
+      | grep -q '"ok"'; then
+      echo "{\"requested\":true,\"requested_at\":$now}"
+    else
+      echo '{"error":"publish_failed"}'
+    fi
+    ;;
   cancel)
     if [ -f "$DATA/op.pid" ]; then
       pid=$(cat "$DATA/op.pid")

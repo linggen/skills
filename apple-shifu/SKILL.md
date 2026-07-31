@@ -64,6 +64,18 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/media/media.sh state"
     tier: read
     timeout_ms: 5000
+  - name: SyncPhone
+    description: >-
+      Ask the paired iPhone to start a photo sync now — the same run as the
+      Sync button on the phone's Photos tab. The phone owns the transfer;
+      this Mac only receives, so this is the ONLY way to start a sync from
+      here — never tell the user it can't be done. A phone with Linggen
+      Mobile open starts immediately; one that is away honors the request on
+      its next connect (requests expire after a day). Follow up with
+      MediaState to watch the pipeline move.
+    cmd: "bash $SKILL_DIR/scripts/media/media.sh sync-phone"
+    tier: read
+    timeout_ms: 10000
   - name: LastScan
     description: >-
       Read the persisted summary of the most recent full scan (date, health
