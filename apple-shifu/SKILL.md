@@ -17,6 +17,11 @@ app:
 permission:
   paths:
     - { path: /, mode: read }
+    # Edit-tier grant for the skill's own directory, the session CWD — a
+    # skill tool's tier is checked against the CWD, so without this every
+    # edit-tier tool (SyncPhone) would prompt. Same grant dj/cfo/pulse
+    # declare; the agent still can't write anywhere: it has no Write/Bash.
+    - { path: ~/.linggen/skills/apple-shifu, mode: edit }
   warning: "Apple Shifu reads system info and disk usage (df, du, sysctl, sw_vers). The agent is read-only and never modifies anything itself. Removals happen only where you click them in the app, each behind a confirmation: photos and files go to the macOS Trash, and caches are deleted outright — the sheet says which one applies before you agree."
 tools:
   - name: ScanDisk
@@ -74,7 +79,9 @@ tools:
       its next connect (requests expire after a day). Follow up with
       MediaState to watch the pipeline move.
     cmd: "bash $SKILL_DIR/scripts/media/media.sh sync-phone"
-    tier: read
+    # `edit`, not `read`: this asks another device to act. A tool's tier
+    # matches its effect, not its local footprint (app-action-spec.md).
+    tier: edit
     timeout_ms: 10000
   - name: LastScan
     description: >-
@@ -329,7 +336,7 @@ Map the user's intent to the tool:
 - "rescan security", "security check", "is X enabled" → `ScanSecurity`
 - "rescan performance", "memory hogs", "what's slow" → `ScanPerformance`
 
-After the tool returns, parse its sectioned output and emit a `PageUpdate` with **`body_patch`** (not `body`) so only the affected widget swaps and the rest of the dashboard remains intact:
+After the tool returns, parse its sectioned output and emit a `PageUpdate` with **`body_patch`** (not `body`) so only the affected widget swaps and the rest of the dashboard remains intact. **Emit it in the SAME turn the tool ran — never wait to be asked.** The user watches the dashboard; a result that lands only in chat leaves the page stale and looks like nothing happened:
 
 ```
 PageUpdate({ "body_patch": [
