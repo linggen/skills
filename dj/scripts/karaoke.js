@@ -3,9 +3,9 @@
 // gone). No mic yet — that's a later build step. The library page hands off a
 // queue via localStorage('dj:karaoke'); we read the rest from library.json.
 
-import { runBash, sq, writeFile, home } from './bash.js';
+import { runBash, sq, writeFile, home, runAction } from './bash.js';
 import { parseLrc } from './player.js';
-import { loadLibrary, saveLibrary, loadConfig, trackId } from './library.js';
+import { loadLibrary, loadConfig, trackId } from './library.js';
 import { ensureBins, downloadTrack, downloadKaraokeVideo, downloadKaraokeAudio } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { KaraokeAudio } from './karaoke-audio.js';
@@ -194,7 +194,7 @@ async function fetchKaraoke(t, kind) {
     if (kind === 'video') t.karaoke_video = r.file; else t.karaoke_audio = r.file;
     const lib = libEntry(t);
     if (lib) { if (kind === 'video') lib.karaoke_video = r.file; else lib.karaoke_audio = r.file; }
-    await saveLibrary(state.library);
+    await runAction('track-set-karaoke', t.file, kind === 'video' ? 'video' : 'audio', r.file);
   } catch (e) {
     toast(String(e.message || e));
   } finally {
@@ -216,7 +216,7 @@ async function fetchLyricsAuto(t) {
       t.lrc = lrc;
       const lib = libEntry(t);
       if (lib) lib.lrc = lrc;
-      await saveLibrary(state.library);
+      await runAction('track-set-lrc', t.file, lrc);
     }
   } catch { /* best effort — a track can still play without lyrics */ }
   finally { clearProgress(); }
@@ -315,7 +315,7 @@ async function ensureAudioFile(t) {
     const lib = state.library.tracks.find((x) => (x.id || trackId(x)) === (t.id || trackId(t)));
     if (lib) lib.file = r.file;
     else state.library.tracks.push({ id: t.id || trackId(t), artist: t.artist, title: t.title, year: t.year, file: r.file, added_at: new Date().toISOString(), playlists: [], synced_to: [] });
-    await saveLibrary(state.library);
+    await runAction('track-add', JSON.stringify({ artist: t.artist, title: t.title, year: t.year || undefined, file: r.file }));
     return true;
   } catch (e) {
     toast(String(e.message || e));
@@ -398,7 +398,7 @@ async function findLyrics() {
     t.lrc = lrc;
     const lib = state.library.tracks.find((x) => (x.id || trackId(x)) === (t.id || trackId(t)));
     if (lib) lib.lrc = lrc;
-    await saveLibrary(state.library);
+    await runAction('track-set-lrc', t.file, lrc);
     const txt = await runBash(`cat ${sq(lrc)} 2>/dev/null || true`).catch(() => '');
     state.lines = parseLrc(txt);
     state.activeIdx = -1;

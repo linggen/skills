@@ -6,7 +6,7 @@
 //   DYNAMIC — the #set panel: filled ONLY by the agent via PageUpdate.
 
 import './chat-bridge.js'; // sets window.LinggenUI
-import { runBash, sq } from './bash.js';
+import { runBash, sq, runAction as action } from './bash.js';
 import { listSkillSessions } from './api.js';
 import { loadConfig, loadLibrary, trackId, isOwned } from './library.js';
 import { ensureBins, downloadTrack } from './download.js';
@@ -49,22 +49,9 @@ let chat = null;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-// ── the one writer ───────────────────────────────────────────────────────────
-// Every library mutation runs through actions.mjs — the same verbs the agent's
-// SKILL.md tools call. The page renders; the script writes. See actions.mjs.
-async function action(verb, ...args) {
-  const cmd =
-    `bash "$HOME/.linggen/skills/dj/scripts/run-js.sh" ` +
-    `"$HOME/.linggen/skills/dj/scripts/actions.mjs" ${verb} ${args.map(sq).join(' ')}`;
-  const out = await runBash(cmd, { timeoutMs: 30000 });
-  const line = out.trim().split('\n').pop();
-  let r;
-  try { r = JSON.parse(line); } catch { throw new Error(line || 'action failed'); }
-  if (!r.ok) throw new Error(r.error || 'action failed');
-  return r;
-}
-
-// Re-read what the writer wrote, then repaint.
+// Every library mutation runs through actions.mjs (bash.js runAction) — the
+// same verbs the agent's SKILL.md tools call. The page renders; the script
+// writes. Re-read what the writer wrote, then repaint.
 async function refreshLibrary() {
   state.library = await loadLibrary();
   renderLibrary();

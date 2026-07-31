@@ -243,7 +243,8 @@ const VERBS = {
     if (!t.file || !t.title) die('track needs at least { title, file }');
     const { lib, reg } = loadStore();
     const id = t.id || idOf(t);
-    const known = lib.tracks.some((x) => x.id === id);
+    const row = lib.tracks.find((x) => x.id === id);
+    const known = !!row;
     if (!known) {
       lib.tracks.push({
         id,
@@ -256,6 +257,12 @@ const VERBS = {
         playlists: [],
         synced_to: [],
       });
+    } else {
+      // A known song gaining its file (karaoke fetched the original) or
+      // filling gaps — never blank an existing value.
+      if (t.file && row.file !== t.file) row.file = t.file;
+      if (t.year && !row.year) row.year = t.year;
+      if (t.lrc && !row.lrc) row.lrc = t.lrc;
     }
     undeleteTrack(reg, t.file);
     if (t.playlist) addToList(reg, [t.file], t.playlist);
@@ -271,6 +278,30 @@ const VERBS = {
     t.lrc = lrc;
     persist(lib, reg);
     return { ok: true };
+  },
+
+  'track-set-karaoke': (a) => {
+    const file = arg(a[0], 'file');
+    const kind = arg(a[1], 'kind');
+    const p = arg(a[2], 'path');
+    if (kind !== 'audio' && kind !== 'video') die('kind must be audio or video');
+    const { lib, reg } = loadStore();
+    const [t] = resolveTracks(lib, [file]);
+    if (kind === 'audio') t.karaoke_audio = p;
+    else t.karaoke_video = p;
+    persist(lib, reg);
+    return { ok: true };
+  },
+
+  // The per-device push ledger (VLC/WebDAV legacy path). Union, idempotent.
+  'tracks-mark-synced': (a) => {
+    const target = arg(a[0], 'target');
+    const files = jsonArg(a[1], 'files');
+    const { lib, reg } = loadStore();
+    const tracks = resolveTracks(lib, files);
+    for (const t of tracks) t.synced_to = [...new Set([...(t.synced_to || []), target])];
+    persist(lib, reg);
+    return { ok: true, marked: tracks.length };
   },
 
   // Folder ⇄ index reconcile (was library.js reconcileLibrary): the folder is

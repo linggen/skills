@@ -25,6 +25,21 @@ export async function runBash(command, { cwd = '/tmp', timeoutMs } = {}) {
 // Single-quote a value for safe interpolation into a bash command.
 export const sq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
 
+// Run a library mutation through actions.mjs — the ONE writer (see that file).
+// Every page (dj, karaoke, sync) calls this instead of writing library.json;
+// the same verbs back the agent's SKILL.md tools.
+export async function runAction(verb, ...args) {
+  const cmd =
+    `bash "$HOME/.linggen/skills/dj/scripts/run-js.sh" ` +
+    `"$HOME/.linggen/skills/dj/scripts/actions.mjs" ${verb} ${args.map(sq).join(' ')}`;
+  const out = await runBash(cmd, { timeoutMs: 30000 });
+  const line = out.trim().split('\n').pop();
+  let r;
+  try { r = JSON.parse(line); } catch { throw new Error(line || 'action failed'); }
+  if (!r.ok) throw new Error(r.error || 'action failed');
+  return r;
+}
+
 // The real home dir, resolved once. Lets us turn a config path like
 // "~/Music/DJ" into a concrete absolute path that's safe to single-quote
 // (single-quoting "$HOME/..." would block expansion).

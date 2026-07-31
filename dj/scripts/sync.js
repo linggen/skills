@@ -5,7 +5,8 @@
 import { vlcTarget } from './sync/vlc.js';
 import { webdavTarget } from './sync/webdav.js';
 import { folderTarget } from './sync/folder.js';
-import { loadLibrary, saveLibrary } from './library.js';
+import { runAction } from './bash.js';
+import { loadLibrary } from './library.js';
 
 function makeTarget(cfg) {
   switch (cfg.type) {
@@ -50,9 +51,11 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
   let onPhone = new Set();
   try { onPhone = new Set((await (target.list?.() || [])).map((n) => basename(n))); } catch { /* best-effort */ }
   const has = (p) => !!p && onPhone.has(basename(p));
+  const newlySynced = []; // files whose ledger gained cfg.id this run
   for (const t of lib.tracks) {
     if (has(t.file) && !(t.synced_to || []).includes(cfg.id)) {
       t.synced_to = [...new Set([...(t.synced_to || []), cfg.id])];
+      newlySynced.push(t.file);
     }
   }
 
@@ -70,6 +73,7 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
       // Push the .lrc if the phone is missing it (covers tracks already on the
       // device whose lyrics were fetched later).
       if (t.lrc && !has(t.lrc)) { await target.push(t.lrc); if (has(t.file)) lyricsOnly += 1; }
+      if (!(t.synced_to || []).includes(cfg.id)) newlySynced.push(t.file);
       t.synced_to = [...new Set([...(t.synced_to || []), cfg.id])];
       pushed += 1;
     } catch (e) {
@@ -78,7 +82,12 @@ export async function syncToPhone(cfg, onProgress, opts = {}) {
     done += 1;
   }
 
-  await saveLibrary(lib);
+  // Record the ledger through the one writer. Best-effort: a miss just means
+  // the next run reconciles from the device's own listing again.
+  if (newlySynced.length) {
+    try { await runAction('tracks-mark-synced', cfg.id, JSON.stringify(newlySynced)); }
+    catch { /* see above */ }
+  }
 
   // Send playlists as .m3u files so crates land as real playlists on the device,
   // not just loose tracks. Which playlists: a single named crate (opts.playlist),
