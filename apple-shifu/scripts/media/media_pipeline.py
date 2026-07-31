@@ -717,6 +717,10 @@ def cmd_backup(args):
     write_json(DATA_DIR / 'verified.json',
                {'ids': verified, 'failed': failed, 'dest': str(dest_root),
                 'at': datetime.now().isoformat(timespec='seconds')})
+    log_backup('phone_mac', dest_root, len(verified),
+               sum(it['size'] for it in items if it.get('id', it['sha256']) in set(verified)),
+               'done' if not failed else 'failed',
+               '' if not failed else f'{len(failed)} items failed to verify')
     progress(op, 'done', len(items), len(items), status='done',
              extra={'verified': len(verified), 'failed': len(failed), 'dest': str(dest_root)})
     update_state(backup={'verified': len(verified), 'failed': len(failed),
@@ -935,10 +939,10 @@ def cmd_restore(args):
 
 # ── trash (Mac-side cleanup — recoverable, files go to the macOS Trash) ───
 
-def cmd_trash(args):
-    op = 'trash'
-    sel = json.loads(Path(args.selection).read_text())
-    paths = [p for p in sel.get('paths', []) if Path(p).exists()]
+def _trash_paths(paths):
+    """Move files to the macOS Trash — Finder batches of 50, per-file
+    ~/.Trash fallback. Returns (trashed, errors); recoverable, never a
+    hard delete. Shared by cmd_trash and clean-local."""
     trashed, errors = [], []
     for chunk_start in range(0, len(paths), 50):
         chunk = paths[chunk_start:chunk_start + 50]
@@ -959,6 +963,14 @@ def cmd_trash(args):
                     trashed.append(p)
                 except Exception as e:
                     errors.append({'path': p, 'error': str(e)})
+    return trashed, errors
+
+
+def cmd_trash(args):
+    op = 'trash'
+    sel = json.loads(Path(args.selection).read_text())
+    paths = [p for p in sel.get('paths', []) if Path(p).exists()]
+    trashed, errors = _trash_paths(paths)
     gone = set(trashed)
     rows = [r for r in load_jsonl(MAC_INDEX) if r['path'] not in gone]
     MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
@@ -974,6 +986,273 @@ def cmd_trash(args):
                             'at': datetime.now().isoformat(timespec='seconds')})
     print(json.dumps({'trashed': len(trashed), 'errors': errors[:5],
                       'freed_gb': round(sum(sel.get('sizes', {}).get(p, 0) for p in trashed) / 1e9, 2)}))
+
+
+# ── external-disk backup (free space on the Mac) ─────────────────────────
+#
+# Two explicit steps, never one "move": backup-external COPIES the chosen
+# sources to the disk (incremental, resumable, date-organized), clean-local
+# then TRASHES the local copies whose disk copy is verified. The work-list
+# is recomputed from ledgers every run — a failed 40-GB copy resumes where
+# it stopped because "done" is what the disk proves, not what a plan said.
+
+EXTERNAL_LEDGER = DATA_DIR / 'external.jsonl'   # Mac-native files on a disk
+BACKUP_LOG = DATA_DIR / 'backup-log.jsonl'      # unified history, page-rendered
+BACKUP_SCOPE = DATA_DIR / 'backup-scope.json'   # the user's source checklist
+
+
+def log_backup(kind, dest, items, size, status, error=''):
+    """One history row per finished run. Kinds: phone_mac, mac_disk, clean."""
+    row = {'ts': datetime.now().isoformat(timespec='seconds'), 'kind': kind,
+           'dest': str(dest), 'items': items, 'bytes': size, 'status': status}
+    if error:
+        row['error'] = str(error)[:300]
+    with open(BACKUP_LOG, 'a') as f:
+        f.write(json.dumps(row) + '\n')
+
+
+def _archive_local_rows():
+    """archive.jsonl rows whose copy lives on THIS Mac, deduped by dest,
+    file still present. Rows pointing at a disk are the external copies."""
+    seen, out = set(), []
+    for r in load_jsonl(DATA_DIR / 'archive.jsonl'):
+        dest = r.get('dest', '')
+        if not dest.startswith(str(HOME)) or dest in seen:
+            continue
+        seen.add(dest)
+        if Path(dest).exists():
+            out.append(r)
+    return out
+
+
+def _staged_rows():
+    return [r for r in load_jsonl(MANIFEST)
+            if r.get('staged') and (STAGING_DIR / r['staged']).exists()]
+
+
+def _mac_folder(path):
+    """Group key for a mac-index row: the first folder below an index root
+    (or the root itself) — the granularity of the source checklist."""
+    p = Path(path)
+    for root in index_roots():
+        try:
+            rel = p.relative_to(root)
+        except ValueError:
+            continue
+        return str(root / rel.parts[0]) if len(rel.parts) > 1 else str(root)
+    return str(p.parent)
+
+
+def cmd_backup_sources(_args):
+    """What the To-disk dialog offers — every group sized, the user picks."""
+    groups = []
+    arch = _archive_local_rows()
+    groups.append({'key': 'archive', 'label': '~/Pictures/iPhone Backup (archive)',
+                   'items': len(arch), 'bytes': sum(r.get('size', 0) for r in arch)})
+    staged = _staged_rows()
+    groups.append({'key': 'staging', 'label': 'iPhone staged copies',
+                   'items': len(staged), 'bytes': sum(r.get('size', 0) for r in staged)})
+    folders = {}
+    for r in load_jsonl(MAC_INDEX):
+        folders.setdefault(_mac_folder(r['path']), []).append(r)
+    for folder in sorted(folders, key=lambda f: -sum(r['size'] for r in folders[f])):
+        rows = folders[folder]
+        groups.append({'key': f'mac:{folder}', 'label': folder.replace(str(HOME), '~'),
+                       'items': len(rows), 'bytes': sum(r['size'] for r in rows)})
+    print(json.dumps({'groups': groups}))
+
+
+def _scope_items(keys):
+    """Uniform work rows for the chosen groups — one copy per content hash,
+    so the same photo in staging AND archive travels once."""
+    items = []
+    for key in keys:
+        if key == 'archive':
+            for r in _archive_local_rows():
+                p = Path(r['dest'])
+                items.append({'src': str(p), 'size': r.get('size') or p.stat().st_size,
+                              'sha256': r['sha256'], 'mtime': int(p.stat().st_mtime),
+                              'origin': 'archive'})
+        elif key == 'staging':
+            for r in _staged_rows():
+                p = STAGING_DIR / r['staged']
+                items.append({'src': str(p), 'size': r.get('size') or p.stat().st_size,
+                              'sha256': r['sha256'],
+                              'mtime': r.get('mtime') or int(p.stat().st_mtime),
+                              'origin': 'staging'})
+        elif key.startswith('mac:'):
+            folder = key[4:]
+            for r in load_jsonl(MAC_INDEX):
+                if _mac_folder(r['path']) == folder:
+                    items.append({'src': r['path'], 'size': r['size'],
+                                  'sha256': r['sha256'], 'mtime': r.get('mtime') or 0,
+                                  'origin': 'mac'})
+    seen, out = set(), []
+    for it in items:
+        if it['sha256'] in seen:
+            continue
+        seen.add(it['sha256'])
+        out.append(it)
+    return out
+
+
+def _disk_done(dest_root):
+    """Content hashes proven ON the disk: a ledger row whose file is present
+    at the recorded size. Recomputed every run — this is the resume."""
+    done = set()
+    for r in load_jsonl(dest_root / '.linggen' / 'ledger.jsonl'):
+        p = Path(r.get('dest', ''))
+        try:
+            if p.exists() and p.stat().st_size == r.get('size'):
+                done.add(r['sha256'])
+        except OSError:
+            pass
+    return done
+
+
+def _scope_keys():
+    return json.loads(BACKUP_SCOPE.read_text())['keys']
+
+
+def cmd_backup_external(args):
+    op = 'backup-external'
+    dest_root = Path(args.dest)
+    try:
+        keys = _scope_keys()
+    except Exception as e:
+        fail(op, 'scope', f'no backup scope saved: {e}')
+    items = _scope_items(keys)
+    if not items:
+        fail(op, 'plan', 'nothing in the chosen sources')
+    try:
+        dest_root.mkdir(parents=True, exist_ok=True)
+        done = _disk_done(dest_root)
+    except OSError as e:
+        fail(op, 'preflight', f'Cannot reach {dest_root}: {e}')
+    need = [it for it in items if it['sha256'] not in done]
+    if not need:
+        log_backup('mac_disk', dest_root, 0, 0, 'done')
+        progress(op, 'done', 0, 0, status='done',
+                 extra={'copied': 0, 'failed': 0, 'dest': str(dest_root),
+                        'note': 'everything already on the disk'})
+        return
+    need_bytes = sum(it['size'] for it in need)
+    free = shutil.disk_usage(dest_root).free
+    if need_bytes > free - 2e9:
+        fail(op, 'preflight',
+             f'needs {need_bytes / 1e9:.1f} GB but only {free / 1e9:.1f} GB free on the disk')
+    progress(op, 'copying', 0, len(need),
+             note=f'{len(items) - len(need)} already on the disk')
+    copied, copied_bytes = 0, 0
+    now = datetime.now().isoformat(timespec='seconds')
+    ledger_dir = dest_root / '.linggen'
+    ledger_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(ledger_dir / 'ledger.jsonl', 'a') as disk_ledger, \
+             open(DATA_DIR / 'archive.jsonl', 'a') as phone_ledger, \
+             open(EXTERNAL_LEDGER, 'a') as mac_ledger:
+            for i, it in enumerate(need):
+                src = Path(it['src'])
+                d = datetime.fromtimestamp(it['mtime'] or 0)
+                folder = dest_root / f'{d.year:04d}' / f'{d.year:04d}-{d.month:02d}'
+                folder.mkdir(parents=True, exist_ok=True)
+                dest = folder / src.name
+                if dest.exists():  # same name, different content — uniquify by hash
+                    dest = folder / f'{src.stem}-{it["sha256"][:8]}{src.suffix}'
+                part = Path(str(dest) + '.part')
+                try:
+                    # copy → verify → rename: a crash leaves only a .part
+                    # orphan the next run overwrites; verified files are done.
+                    shutil.copy2(src, part)
+                    ok = sha256_file(part) == it['sha256']
+                    if ok:
+                        os.replace(part, dest)
+                except Exception:
+                    ok = False
+                finally:
+                    part.unlink(missing_ok=True)
+                if not ok:
+                    continue
+                row = {'sha256': it['sha256'], 'src': it['src'], 'dest': str(dest),
+                       'size': it['size'], 'at': now}
+                disk_ledger.write(json.dumps(row) + '\n')
+                # Mac-side ledgers: phone-derived rows keep feeding the
+                # "backed up" gate (the phone's delete safety); Mac-native
+                # rows gate Clean on Mac.
+                if it['origin'] in ('archive', 'staging'):
+                    phone_ledger.write(json.dumps({'sha256': it['sha256'], 'dest': str(dest),
+                                                   'size': it['size'], 'at': now}) + '\n')
+                else:
+                    mac_ledger.write(json.dumps(row) + '\n')
+                copied += 1
+                copied_bytes += it['size']
+                if i % 5 == 0:
+                    progress(op, 'copying', i, len(need),
+                             note=f'{copied_bytes / 1e9:.1f} of {need_bytes / 1e9:.1f} GB')
+    except Exception as e:
+        log_backup('mac_disk', dest_root, copied, copied_bytes, 'failed', e)
+        fail(op, 'copying', e)
+    failed = len(need) - copied
+    log_backup('mac_disk', dest_root, copied, copied_bytes,
+               'done' if not failed else 'failed',
+               '' if not failed else f'{failed} of {len(need)} items failed to verify')
+    progress(op, 'done', len(need), len(need), status='done',
+             extra={'copied': copied, 'failed': failed, 'dest': str(dest_root)})
+    update_state(external_backup={'copied': copied, 'failed': failed,
+                                  'dest': str(dest_root), 'at': now})
+
+
+def cmd_clean_local(args):
+    """Trash the local copies of everything in the chosen sources that is
+    verified on the disk. Staged iPhone copies are never cleaned — they
+    mirror the phone, and the next sync would pull them straight back."""
+    op = 'clean-local'
+    dest_root = Path(args.dest)
+    try:
+        keys = [k for k in _scope_keys() if k != 'staging']
+    except Exception as e:
+        fail(op, 'scope', f'no backup scope saved: {e}')
+    done = _disk_done(dest_root)
+    if not done:
+        fail(op, 'preflight',
+             'no verified copies reachable — is the external disk connected?')
+    items = [it for it in _scope_items(keys) if it['sha256'] in done]
+    if args.plan:
+        print(json.dumps({'items': len(items),
+                          'bytes': sum(i['size'] for i in items)}))
+        return
+    if not args.confirm:
+        fail(op, 'confirm', 'clean-local needs --confirm')
+    if not items:
+        fail(op, 'plan', 'nothing cleanable — back up to the disk first')
+    progress(op, 'cleaning', 0, len(items))
+    trashed, errors = _trash_paths([it['src'] for it in items])
+    gone = set(trashed)
+    freed = sum(it['size'] for it in items if it['src'] in gone)
+    cleaned_shas = {it['sha256'] for it in items if it['src'] in gone}
+
+    # Prune the local records: mac-index rows and LOCAL archive rows for
+    # cleaned paths (the disk rows survive — still backed up), and thumbs
+    # for hashes nothing references any more. Cleaned files leave the
+    # local browse entirely.
+    rows = [r for r in load_jsonl(MAC_INDEX) if r['path'] not in gone]
+    MAC_INDEX.write_text(''.join(json.dumps(r) + '\n' for r in rows))
+    ledger_path = DATA_DIR / 'archive.jsonl'
+    ledger = load_jsonl(ledger_path)
+    kept = [r for r in ledger if r.get('dest') not in gone]
+    if len(kept) != len(ledger):
+        ledger_path.write_text(''.join(json.dumps(r) + '\n' for r in kept))
+    still_referenced = {r['sha256'] for r in rows} | {r.get('sha256') for r in load_jsonl(MANIFEST)}
+    for sha in cleaned_shas - still_referenced:
+        (THUMBS_DIR / f'{sha[:12]}.jpg').unlink(missing_ok=True)
+
+    update_state(mac_index={'files': len(rows),
+                            'gb': round(sum(r['size'] for r in rows) / 1e9, 1),
+                            'at': datetime.now().isoformat(timespec='seconds')})
+    log_backup('clean', dest_root, len(trashed), freed, 'done',
+               '' if not errors else f'{len(errors)} files could not be trashed')
+    progress(op, 'done', len(items), len(items), status='done',
+             extra={'trashed': len(trashed), 'freed_gb': round(freed / 1e9, 2)})
 
 
 # ── main ──────────────────────────────────────────────────────────────────
@@ -998,12 +1277,21 @@ def main():
     s.add_argument('--sha', required=True)
     t = sub.add_parser('trash')
     t.add_argument('--selection', required=True)
+    sub.add_parser('backup-sources')
+    be = sub.add_parser('backup-external')
+    be.add_argument('--dest', required=True)
+    cl = sub.add_parser('clean-local')
+    cl.add_argument('--dest', required=True)
+    cl.add_argument('--plan', action='store_true')
+    cl.add_argument('--confirm', action='store_true')
     args = ap.parse_args()
     try:
         {'info': cmd_info, 'index': cmd_index, 'pull': cmd_pull,
          'scan': cmd_scan, 'backup': cmd_backup, 'remove': cmd_remove,
          'purge': cmd_purge, 'restore': cmd_restore,
-         'trash': cmd_trash}[args.cmd](args)
+         'trash': cmd_trash, 'backup-sources': cmd_backup_sources,
+         'backup-external': cmd_backup_external,
+         'clean-local': cmd_clean_local}[args.cmd](args)
     except SystemExit:
         raise
     except Exception as e:  # crash must land in progress.json or the UI spins forever

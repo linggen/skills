@@ -958,14 +958,22 @@ function renderMacReview() {
     <div class="media-actionbar">
       <span class="abar-meta">
         <span class="media-dim">Mac cleanup goes to the macOS Trash — restore anytime from there</span></span>
+      <span class="abar-disk">
+        <button class="media-cta sm" id="todisk-btn" title="Copy the sources you pick to an external disk — incremental and verified">💽 To disk</button>
+        <button class="media-cta ghost sm" id="cleanmac-btn" title="Trash local copies whose disk copy is verified — frees Mac space">🧹 Clean on Mac</button>
+      </span>
     </div>
     <div class="media-chips">${chips}</div>
-    <div id="cat-pane"></div>`;
+    <div id="cat-pane"></div>
+    <div id="backup-history"></div>`;
   for (const chip of panel.querySelectorAll('.media-chip-f')) {
     chip.onclick = () => { activeMacCat = chip.dataset.cat; renderMacReview(); };
   }
+  panel.querySelector('#todisk-btn').onclick = openToDiskFlow;
+  panel.querySelector('#cleanmac-btn').onclick = openCleanFlow;
   renderMacPane();
   updateMacSelbar();
+  renderBackupHistory();
 }
 
 function renderMacPane() {
@@ -1978,6 +1986,219 @@ async function backupInline(targets, dest) {
   const freeLine = freeBefore != null && info?.mac_free_gb != null
     ? ` Mac free space ${freeBefore} → ${info.mac_free_gb} GB.` : '';
   notify(`Backup finished: ${(p.verified ?? 0).toLocaleString()} files copied to ${p.dest || '~/Pictures/iPhone Backup'} and re-hash verified${p.failed ? `, ${p.failed} FAILED verification (their originals stay on the phone)` : ''}.${freeLine} Backups never expire. Report this to the user in 1-2 sentences.`);
+}
+
+// ── external disk: back up the Mac, then clean it ──
+//
+// Two explicit steps, never one move: 💽 To disk COPIES the checked sources
+// to an external volume (incremental — a re-run resumes from the disk's own
+// ledger), 🧹 Clean on Mac then TRASHES the local copies whose disk copy is
+// verified. The History list below the pane reads backup-log.jsonl — every
+// backup and clean run, phone→Mac included.
+
+/** media.sh output as raw text — backup-log is JSONL, not one JSON object. */
+async function mediaText(cmd) {
+  const res = await bash(`bash ${MEDIA_SH} ${cmd}`);
+  return res.stdout || res.output || '';
+}
+
+/** The saved source checklist + destination ({keys, dest}); {} on first use. */
+async function readDiskScope() {
+  try {
+    const r = await bash(`cat ${DATA_DIR}/backup-scope.json 2>/dev/null`);
+    return JSON.parse(r.stdout || r.output || '{}');
+  } catch { return {}; }
+}
+
+async function openToDiskFlow() {
+  const [src, volumes, saved] = await Promise.all([
+    media('backup-sources'), media('volumes'), readDiskScope(),
+  ]);
+  const groups = (src.groups || []).filter((g) => g.items || (saved.keys || []).includes(g.key));
+  if (!groups.some((g) => g.items)) {
+    flashToast('Nothing to back up yet — sync the iPhone or re-index the Mac first');
+    return;
+  }
+  const vols = Array.isArray(volumes) ? volumes : [];
+  const destOpts = vols.map((v) => ({ v: `/Volumes/${v}/Linggen Photos`, label: `${v} (external) — Linggen Photos` }));
+  if (saved.dest && !destOpts.some((o) => o.v === saved.dest)) {
+    destOpts.push({ v: saved.dest, label: abbrevPath(saved.dest) });
+  }
+  destOpts.push({ v: '__choose__', label: '📁 Choose folder…' });
+  const picked = await toDiskDialog(groups, destOpts, new Set(saved.keys || []), saved.dest || '');
+  if (!picked) return;
+  await writeJsonFile('backup-scope.json', { keys: picked.keys, dest: picked.dest });
+  await runDiskOp(`start backup-external ${shellEsc(picked.dest)}`, 'backup-external', 'Copying to disk');
+}
+
+/** Destination + source checklist + live plan line. Resolves {keys, dest}. */
+function toDiskDialog(groups, destOpts, savedKeys, savedDest) {
+  const defaultOn = (g) => (savedKeys.size ? savedKeys.has(g.key)
+    : g.key === 'archive' || g.key === 'staging');
+  const rows = groups.map((g) => `
+    <label class="disk-src">
+      <input type="checkbox" data-bytes="${g.bytes}" data-items="${g.items}"
+        value="${esc(g.key)}" ${g.items ? '' : 'disabled'} ${g.items && defaultOn(g) ? 'checked' : ''}>
+      <span>${esc(g.label)}</span>
+      <span class="media-dim">${g.items.toLocaleString()} · ${fmtGb(g.bytes)}</span>
+    </label>`).join('');
+  const opts = destOpts.map((o) =>
+    `<option value="${esc(o.v)}"${o.v === savedDest ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
+  return new Promise((resolve) => {
+    const box = document.createElement('div');
+    box.className = 'media-lightbox';
+    box.innerHTML = `
+      <div class="media-confirm">
+        <div><b>Back up Mac to external disk</b></div>
+        <div class="media-dim" style="margin-top:6px">
+          Copies land on the disk sorted by year/month and are hash-verified.
+          Incremental: a failed or repeated run continues where it stopped.
+          Nothing is deleted here — Clean on Mac is its own step afterwards.</div>
+        <label class="media-dim" style="display:block;margin-top:10px">Destination
+          <select id="td-dest" style="display:block;width:100%;margin-top:4px">${opts}</select></label>
+        <div style="margin-top:10px">${rows}</div>
+        <div id="td-plan" style="margin-top:8px"><b></b></div>
+        <div class="row">
+          <button class="media-cta ghost sm" id="td-no">Cancel</button>
+          <button class="media-cta sm" id="td-yes">Start backup</button>
+        </div>
+      </div>`;
+    const destSel = box.querySelector('#td-dest');
+    destSel.dataset.prev = savedDest;
+    destSel.onchange = async () => {
+      if (destSel.value !== '__choose__') { destSel.dataset.prev = destSel.value; return; }
+      const r = await media('choose-dest');
+      if (r && r.path) {
+        let opt = [...destSel.options].find((o) => o.value === r.path);
+        if (!opt) {
+          opt = new Option(abbrevPath(r.path), r.path);
+          destSel.add(opt, destSel.querySelector('option[value="__choose__"]'));
+        }
+        destSel.value = r.path;
+        destSel.dataset.prev = r.path;
+      } else {
+        destSel.value = destSel.dataset.prev || '';
+      }
+    };
+    const boxes = [...box.querySelectorAll('.disk-src input')];
+    const startBtn = box.querySelector('#td-yes');
+    const plan = () => {
+      const on = boxes.filter((b) => b.checked);
+      const items = on.reduce((s, b) => s + Number(b.dataset.items), 0);
+      const bytes = on.reduce((s, b) => s + Number(b.dataset.bytes), 0);
+      box.querySelector('#td-plan b').textContent = items
+        ? `${items.toLocaleString()} items · ${fmtGb(bytes)} — already-on-disk copies are skipped`
+        : 'Nothing checked';
+      startBtn.disabled = !items;
+    };
+    boxes.forEach((b) => { b.onchange = plan; });
+    plan();
+    const done = (v) => { box.remove(); resolve(v); };
+    box.onclick = (e) => { if (e.target === box) done(null); };
+    box.querySelector('#td-no').onclick = () => done(null);
+    startBtn.onclick = () => {
+      const dest = destSel.value === '__choose__' ? (destSel.dataset.prev || '') : destSel.value;
+      if (!dest) { flashToast('Pick a destination on the external disk'); return; }
+      done({ keys: boxes.filter((b) => b.checked).map((b) => b.value), dest });
+    };
+    document.body.appendChild(box);
+  });
+}
+
+async function openCleanFlow() {
+  const saved = await readDiskScope();
+  if (!saved.dest) {
+    flashToast('Back up to a disk first — Clean frees only what the disk already holds');
+    return;
+  }
+  const plan = await media(`clean-plan ${shellEsc(saved.dest)}`);
+  if (plan.error || !plan.items) {
+    flashToast(plan.error
+      ? 'No verified copies reachable — is the external disk connected?'
+      : 'Nothing cleanable — back up to the disk first');
+    return;
+  }
+  if (!(await confirmCleanDialog(plan))) return;
+  await runDiskOp(`start clean-local ${shellEsc(saved.dest)}`, 'clean-local', 'Cleaning');
+}
+
+function confirmCleanDialog(plan) {
+  return new Promise((resolve) => {
+    const box = document.createElement('div');
+    box.className = 'media-lightbox';
+    box.innerHTML = `
+      <div class="media-confirm">
+        <div><b>Clean ${plan.items.toLocaleString()} items · ${fmtGb(plan.bytes)} on this Mac</b></div>
+        <div class="media-dim" style="margin-top:6px">
+          Every one of them has a hash-verified copy on the external disk.
+          Local copies move to the macOS Trash — restore anytime from there.
+          Staged iPhone copies are never cleaned: they mirror the phone, and
+          the next sync would pull them straight back.</div>
+        <div class="row">
+          <button class="media-cta ghost sm" id="cl-no">Cancel</button>
+          <button class="media-cta sm danger" id="cl-yes">Clean ${plan.items.toLocaleString()}</button>
+        </div>
+      </div>`;
+    const done = (v) => { box.remove(); resolve(v); };
+    box.onclick = (e) => { if (e.target === box) done(null); };
+    box.querySelector('#cl-no').onclick = () => done(null);
+    box.querySelector('#cl-yes').onclick = () => done(true);
+    document.body.appendChild(box);
+  });
+}
+
+/** Start a disk op and follow progress.json to the end — same toast pattern
+    as backupInline, shared by both steps. */
+async function runDiskOp(startCmd, op, label) {
+  await media(startCmd);
+  const toast = showToast(`${label}…`, true);
+  stopPolling();
+  await new Promise((resolve) => {
+    const poll = async () => {
+      const p = await media('progress');
+      if (p.op === op && p.total) {
+        toast.update(`${label} ${(p.done || 0).toLocaleString()}/${p.total.toLocaleString()}${p.note ? ` · ${p.note}` : ''}…`);
+      }
+      if (p.status === 'done' || p.status === 'error') { stopPolling(); resolve(); }
+    };
+    poll();
+    pollTimer = setInterval(poll, 1000);
+  });
+  const p = await media('progress');
+  if (p.status === 'error') {
+    toast.done(`✕ ${label} failed — ${p.error || 'see History below'}`);
+    notify(`${label} FAILED: ${p.error || 'unknown'}. Tell the user in one sentence — a re-run continues where it stopped.`);
+  } else if (op === 'backup-external') {
+    toast.done(`✓ Copied ${(p.copied ?? 0).toLocaleString()} to ${abbrevPath(p.dest || 'disk')}${p.failed ? ` · ${p.failed} failed` : ''}`);
+    notify(`External backup finished: ${(p.copied ?? 0)} files copied to ${p.dest} and hash-verified. Clean on Mac can now free the local copies. Report in 1-2 sentences.`);
+  } else {
+    toast.done(`✓ Cleaned ${(p.trashed ?? 0).toLocaleString()} · ${p.freed_gb ?? 0} GB freed (recoverable in the macOS Trash)`);
+    notify(`Clean on Mac finished: ${(p.trashed ?? 0)} local copies moved to the Trash, ${p.freed_gb} GB freed; their disk copies stay verified. Report in one sentence.`);
+  }
+  await Promise.all([loadMacIndex(), loadArchive()]);
+  refreshStatus();
+  refreshBackupBadge();
+  if (screen === 'review' && getSource() === 'mac') renderMacReview();
+}
+
+/** The unified backup history — newest first, capped at 20 rows. */
+async function renderBackupHistory() {
+  const el = document.getElementById('backup-history');
+  if (!el) return;
+  const rows = (await mediaText('backup-log')).split('\n').filter(Boolean)
+    .map((l) => { try { return JSON.parse(l); } catch { return null; } })
+    .filter(Boolean).slice(-20).reverse();
+  if (!rows.length) { el.innerHTML = ''; return; }
+  const icon = { phone_mac: '📱→💻', mac_disk: '💽', clean: '🧹' };
+  el.innerHTML = `<div class="glabel" style="margin-top:16px">Backup history</div>` + rows.map((r) => {
+    const when = (r.ts || '').replace('T', ' ').slice(0, 16);
+    const what = r.kind === 'clean'
+      ? `cleaned ${(r.items || 0).toLocaleString()} local copies · ${fmtGb(r.bytes || 0)} freed`
+      : `backed up ${(r.items || 0).toLocaleString()} items · ${fmtGb(r.bytes || 0)} → ${esc(abbrevPath(r.dest || ''))}`;
+    const bad = r.status !== 'done';
+    return `<div class="hist-row${bad ? ' bad' : ''}">${icon[r.kind] || '•'} ${what}
+      <span class="media-dim">· ${when}${bad ? ` · ⚠️ ${esc(r.error || r.status)} — run again to continue` : ''}</span></div>`;
+  }).join('');
 }
 
 /** One-shot toast for an instant result — no progress phase, fades itself. */

@@ -39,6 +39,15 @@ case "$cmd" in
     "$PY" "$PIPELINE" trash --selection "$sel" 2>/dev/null || echo '{"error":"trash_failed"}'
     ;;
   remove-result) cat "$DATA/remove-result.json" 2>/dev/null || echo '{}' ;;
+  backup-sources)
+    require_venv
+    "$PY" "$PIPELINE" backup-sources 2>/dev/null || echo '{"groups":[]}'
+    ;;
+  backup-log)    cat "$DATA/backup-log.jsonl" 2>/dev/null || true ;;
+  clean-plan)
+    require_venv
+    "$PY" "$PIPELINE" clean-local --dest "${1:-}" --plan 2>/dev/null || echo '{"error":"plan_failed"}'
+    ;;
   volumes)
     # writable external volumes usable as a backup destination (JSON array)
     list=$(for d in /Volumes/*/; do
@@ -120,6 +129,19 @@ case "$cmd" in
         # reset progress first so a poller can't latch onto a prior op's 'done'
         printf '%s\n' '{"op":"remove","status":"running","phase":"starting"}' >"$DATA/progress.json"
         nohup "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1 &
+        ;;
+      backup-external)
+        # copy the checked sources (backup-scope.json) to the external disk —
+        # incremental and resumable, the ledger on the disk is what's "done"
+        dest="${1:-}"
+        printf '%s\n' '{"op":"backup-external","status":"running","phase":"starting"}' >"$DATA/progress.json"
+        nohup "$PY" "$PIPELINE" backup-external --dest "$dest" >"$DATA/op.log" 2>&1 &
+        ;;
+      clean-local)
+        # trash local copies verified on the disk — the explicit second step
+        dest="${1:-}"
+        printf '%s\n' '{"op":"clean-local","status":"running","phase":"starting"}' >"$DATA/progress.json"
+        nohup "$PY" "$PIPELINE" clean-local --dest "$dest" --confirm >"$DATA/op.log" 2>&1 &
         ;;
       backup)
         # archive selection.json to dest — copy-only, never deletes. The UI

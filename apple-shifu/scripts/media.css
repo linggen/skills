@@ -633,3 +633,16 @@ label.glabel { display: flex; align-items: center; gap: 7px; cursor: pointer; wi
   margin-top: 14px;
 }
 
+
+/* ── external disk: To disk / Clean on Mac / history ── */
+.abar-disk { margin-left: auto; display: flex; gap: 8px; }
+.disk-src {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  cursor: pointer;
+}
+.disk-src span:first-of-type { flex: 1; }
+.hist-row { padding: 4px 0; font-size: 12.5px; }
+.hist-row.bad { color: var(--warn, #c9a227); }
