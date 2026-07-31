@@ -1025,6 +1025,29 @@ def _archive_local_rows():
     return out
 
 
+def _archive_untracked():
+    """Files inside the archive with no ledger row of their own — the
+    Live-Photo MOV siblings cmd_backup copies alongside a still without
+    ledgering them. Hashed lazily at copy time (sha256 None here); once
+    copied they get BOTH rows (local + disk) and stop being untracked."""
+    known = {r.get('dest') for r in load_jsonl(DATA_DIR / 'archive.jsonl')}
+    out = []
+    if not BACKUP_ROOT.is_dir():
+        return out
+    for dirpath, _dirnames, filenames in os.walk(BACKUP_ROOT):
+        for name in filenames:
+            p = Path(dirpath) / name
+            if str(p) in known or p.suffix.lower() not in IMAGE_EXTS | VIDEO_EXTS:
+                continue
+            try:
+                st = p.stat()
+            except OSError:
+                continue
+            out.append({'src': str(p), 'size': st.st_size, 'sha256': None,
+                        'mtime': int(st.st_mtime), 'origin': 'archive'})
+    return out
+
+
 def _staged_rows():
     return [r for r in load_jsonl(MANIFEST)
             if r.get('staged') and (STAGING_DIR / r['staged']).exists()]
@@ -1047,8 +1070,11 @@ def cmd_backup_sources(_args):
     """What the To-disk dialog offers — every group sized, the user picks."""
     groups = []
     arch = _archive_local_rows()
+    stray = _archive_untracked()
     groups.append({'key': 'archive', 'label': '~/Pictures/iPhone Backup (archive)',
-                   'items': len(arch), 'bytes': sum(r.get('size', 0) for r in arch)})
+                   'items': len(arch) + len(stray),
+                   'bytes': sum(r.get('size', 0) for r in arch)
+                   + sum(r['size'] for r in stray)})
     staged = _staged_rows()
     groups.append({'key': 'staging', 'label': 'iPhone staged copies',
                    'items': len(staged), 'bytes': sum(r.get('size', 0) for r in staged)})
@@ -1073,6 +1099,7 @@ def _scope_items(keys):
                 items.append({'src': str(p), 'size': r.get('size') or p.stat().st_size,
                               'sha256': r['sha256'], 'mtime': int(p.stat().st_mtime),
                               'origin': 'archive'})
+            items.extend(_archive_untracked())
         elif key == 'staging':
             for r in _staged_rows():
                 p = STAGING_DIR / r['staged']
@@ -1089,10 +1116,11 @@ def _scope_items(keys):
                                   'origin': 'mac'})
     seen, out = set(), []
     for it in items:
-        if it['sha256'] in seen:
+        if it['sha256'] and it['sha256'] in seen:
             continue
-        seen.add(it['sha256'])
-        out.append(it)
+        if it['sha256']:
+            seen.add(it['sha256'])
+        out.append(it)  # unhashed rows can't dedupe here; the copy loop does
     return out
 
 
@@ -1129,7 +1157,7 @@ def cmd_backup_external(args):
         done = _disk_done(dest_root)
     except OSError as e:
         fail(op, 'preflight', f'Cannot reach {dest_root}: {e}')
-    need = [it for it in items if it['sha256'] not in done]
+    need = [it for it in items if it['sha256'] is None or it['sha256'] not in done]
     if not need:
         log_backup('mac_disk', dest_root, 0, 0, 'done')
         progress(op, 'done', 0, 0, status='done',
@@ -1153,18 +1181,24 @@ def cmd_backup_external(args):
              open(EXTERNAL_LEDGER, 'a') as mac_ledger:
             for i, it in enumerate(need):
                 src = Path(it['src'])
+                # Untracked archive files (Live-MOV siblings) arrive unhashed —
+                # hash now, and skip if the content is already on the disk.
+                sha = it['sha256'] or sha256_file(src)
+                if sha in done:
+                    continue
+                done.add(sha)
                 d = datetime.fromtimestamp(it['mtime'] or 0)
                 folder = dest_root / f'{d.year:04d}' / f'{d.year:04d}-{d.month:02d}'
                 folder.mkdir(parents=True, exist_ok=True)
                 dest = folder / src.name
                 if dest.exists():  # same name, different content — uniquify by hash
-                    dest = folder / f'{src.stem}-{it["sha256"][:8]}{src.suffix}'
+                    dest = folder / f'{src.stem}-{sha[:8]}{src.suffix}'
                 part = Path(str(dest) + '.part')
                 try:
                     # copy → verify → rename: a crash leaves only a .part
                     # orphan the next run overwrites; verified files are done.
                     shutil.copy2(src, part)
-                    ok = sha256_file(part) == it['sha256']
+                    ok = sha256_file(part) == sha
                     if ok:
                         os.replace(part, dest)
                 except Exception:
@@ -1173,15 +1207,21 @@ def cmd_backup_external(args):
                     part.unlink(missing_ok=True)
                 if not ok:
                     continue
-                row = {'sha256': it['sha256'], 'src': it['src'], 'dest': str(dest),
+                row = {'sha256': sha, 'src': it['src'], 'dest': str(dest),
                        'size': it['size'], 'at': now}
                 disk_ledger.write(json.dumps(row) + '\n')
                 # Mac-side ledgers: phone-derived rows keep feeding the
                 # "backed up" gate (the phone's delete safety); Mac-native
                 # rows gate Clean on Mac.
                 if it['origin'] in ('archive', 'staging'):
-                    phone_ledger.write(json.dumps({'sha256': it['sha256'], 'dest': str(dest),
+                    phone_ledger.write(json.dumps({'sha256': sha, 'dest': str(dest),
                                                    'size': it['size'], 'at': now}) + '\n')
+                    if it['sha256'] is None:
+                        # ...and a LOCAL row for the file itself, so it stops
+                        # being untracked: next runs skip it by ledger, and
+                        # Clean on Mac can free it like everything else.
+                        phone_ledger.write(json.dumps({'sha256': sha, 'dest': it['src'],
+                                                       'size': it['size'], 'at': now}) + '\n')
                 else:
                     mac_ledger.write(json.dumps(row) + '\n')
                 copied += 1
