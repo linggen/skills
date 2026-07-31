@@ -14,7 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  Register, project, seedFromTracks,
+  Register, project, seedFromTracks, isDeleted,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
   deleteTrack, undeleteTrack, listsOf, filesInList,
 } from './lww.js';
@@ -25,10 +25,11 @@ const DATA = path.join(DJ_DIR, 'data');
 const LIB = path.join(DJ_DIR, 'library.json');
 const REG = path.join(DATA, 'playlist-edits.json');
 
+// Thrown, never process.exit(): an exit inside a verb would skip the finally
+// that releases the lock, and a routine agent error (a stale filename) would
+// stall every later caller for the lock-steal deadline.
 const die = (error) => {
-  console.log(JSON.stringify({ ok: false, error }));
-  console.error(error); // /api/bash callers surface stderr on a non-zero exit
-  process.exit(1);
+  throw new Error(error);
 };
 
 // The engine substitutes {{arg}} literally when the model omits an arg — a
@@ -114,8 +115,17 @@ function loadStore() {
 }
 
 // Mirror of the page's old _persist: project the register through the library,
-// unlink what it says is gone, write both files.
+// unlink what it says is gone, write both files. Sidecars ride along with a
+// tombstoned row here — whatever wrote the tombstone (this process, or a
+// paired phone whose merge landed a del: cell) — because after the projection
+// drops the row nothing can ever name them again.
 function persist(lib, reg) {
+  for (const t of lib.tracks) {
+    if (!t.file || !isDeleted(reg, t.file)) continue;
+    for (const f of [t.lrc, t.karaoke_audio, t.karaoke_video]) {
+      if (f) { try { fs.rmSync(f, { force: true }); } catch { /* already gone */ } }
+    }
+  }
   for (const file of project(reg, lib)) {
     try { fs.rmSync(file, { force: true }); } catch { /* already gone */ }
   }
@@ -217,19 +227,14 @@ const VERBS = {
     return { ok: true, playlist: name, order: tracks.map((t) => norm(t.file)) };
   },
 
-  // The song leaves the library: its cell (what a paired phone merges), its
-  // sidecars here, and — via the projection in persist() — the audio file.
+  // The song leaves the library: its cell (what a paired phone merges), and —
+  // via persist()'s projection — the audio file and every sidecar.
   // Reproducible by design, so a plain delete rather than a Trash trip.
   'tracks-delete': (a) => {
     const files = jsonArg(a[0], 'files');
     const { lib, reg } = loadStore();
     const tracks = resolveTracks(lib, files);
-    for (const t of tracks) {
-      deleteTrack(reg, t.file);
-      for (const f of [t.lrc, t.karaoke_video]) {
-        if (f) { try { fs.rmSync(f, { force: true }); } catch { /* already gone */ } }
-      }
-    }
+    for (const t of tracks) deleteTrack(reg, t.file);
     persist(lib, reg);
     return { ok: true, deleted: tracks.length, files: tracks.map((t) => norm(t.file)) };
   },
@@ -360,16 +365,20 @@ const VERBS = {
     lib.tracks = lib.tracks.filter((t) => !t.file || byNorm.has(norm(t.file)));
     const retired = before - lib.tracks.length;
 
+    let lrcChanged = 0;
     for (const t of lib.tracks) {
       if (!t.file) continue;
-      if (t.lrc && !byNorm.has(norm(t.lrc))) delete t.lrc;
+      if (t.lrc && !byNorm.has(norm(t.lrc))) { delete t.lrc; lrcChanged += 1; }
       if (!t.lrc) {
         const lrc = sidecar(stemOf(String(t.file).split('/').pop()));
-        if (lrc) t.lrc = lrc;
+        if (lrc) { t.lrc = lrc; lrcChanged += 1; }
       }
     }
 
-    if (adopted || retired) {
+    // Persist on ANY drift — an .lrc that appeared beside an unchanged audio
+    // file is a real change too, not something to recompute-and-discard on
+    // every pass until an unrelated adopt happens to save it.
+    if (adopted || retired || lrcChanged) {
       // A file that reappeared under a deleted name is a NEW song — the
       // tombstone must lose, or the projection deletes it straight back.
       for (const t of lib.tracks) if (t.file) undeleteTrack(reg, t.file);
@@ -382,16 +391,18 @@ const VERBS = {
 // ── main ─────────────────────────────────────────────────────────────────────
 
 const [verb, ...rest] = process.argv.slice(2);
-const run = VERBS[verb];
-if (!run) die(`unknown verb “${verb || ''}” — one of: ${Object.keys(VERBS).join(', ')}`);
-
-lock();
 try {
-  console.log(JSON.stringify(run(rest)));
+  const run = VERBS[verb];
+  if (!run) die(`unknown verb “${verb || ''}” — one of: ${Object.keys(VERBS).join(', ')}`);
+  lock();
+  try {
+    console.log(JSON.stringify(run(rest)));
+  } finally {
+    unlock();
+  }
 } catch (e) {
-  console.log(JSON.stringify({ ok: false, error: String(e?.message || e) }));
-  console.error(String(e?.message || e));
+  const msg = String(e?.message || e);
+  console.log(JSON.stringify({ ok: false, error: msg }));
+  console.error(msg); // /api/bash callers surface stderr on a non-zero exit
   process.exitCode = 1;
-} finally {
-  unlock();
 }
