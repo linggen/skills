@@ -83,6 +83,54 @@ tools:
     # matches its effect, not its local footprint (app-action-spec.md).
     tier: edit
     timeout_ms: 10000
+  - name: PhoneActions
+    description: >-
+      List the actions the paired iPhone can run — its published catalog:
+      [{ app, name, description, params, tier, requires_mac }]. The phone
+      publishes this each time it connects, so an empty list means no phone
+      has connected since this feature shipped. Call this BEFORE AskPhone so
+      you request a real action with its real params — never guess names.
+    cmd: "bash $SKILL_DIR/scripts/phone-actions.sh list"
+    tier: read
+    timeout_ms: 8000
+  - name: AskPhone
+    description: >-
+      Ask the paired iPhone to run one of its actions (from PhoneActions),
+      e.g. photos-photo_backup. Queued as a retained request: a connected
+      phone runs it in seconds; one that is away runs it on next connect
+      (requests expire after a day). The phone refuses destructive actions
+      queued this way — those need the user present on the phone. Returns
+      { requested, requested_at }; read the outcome with PhoneActionResult.
+    args:
+      action:
+        type: string
+        required: true
+        description: >-
+          The action as <app>-<tool>, exactly as PhoneActions lists it —
+          e.g. "photos-photo_backup".
+      params:
+        type: string
+        required: true
+        description: >-
+          The action's params as a JSON object string, matching its schema
+          from PhoneActions. Pass "{}" when it takes none.
+    cmd: "bash $SKILL_DIR/scripts/phone-actions.sh request {{action}} {{params}}"
+    tier: edit
+    timeout_ms: 8000
+  - name: PhoneActionResult
+    description: >-
+      Read the phone's latest outcome for an action requested via AskPhone:
+      { ok, result-or-error, requested_at }, or done:false while nothing has
+      come back yet (a connected phone answers in seconds; an away phone on
+      its next connect). Pass the same <app>-<tool> you requested.
+    args:
+      action:
+        type: string
+        required: true
+        description: The <app>-<tool> you asked for, e.g. "photos-photo_backup".
+    cmd: "bash $SKILL_DIR/scripts/phone-actions.sh result {{action}}"
+    tier: read
+    timeout_ms: 8000
   - name: LastScan
     description: >-
       Read the persisted summary of the most recent full scan (date, health
