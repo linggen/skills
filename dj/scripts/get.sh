@@ -5,8 +5,8 @@
 # Reads a JSON array of {artist, title, year?} on stdin or as $1, and downloads
 # each into the library folder with the same yt-dlp pipeline the page uses
 # (scripts/download.js) — same search strategy, same tagging, same loudness
-# normalization. Kept in step with that file by hand; if you change one, change
-# both.
+# normalization, and the same LRCLIB .lrc sidecars (scripts/lyrics.js). Kept in
+# step with those files by hand; if you change one, change both.
 #
 # It writes FILES ONLY, never library.json. The folder is ground truth for what
 # exists: the page's reconcile adopts new files on its next look, and the
@@ -21,9 +21,32 @@ REQ="${1:-}"
 case "$REQ" in "{{"*"}}"|"") REQ="$(cat)" ;; esac   # placeholder or stdin
 
 python3 - "$DIR" "$REQ" <<'PY'
-import json, os, re, subprocess, sys, time, urllib.request
+import json, os, re, subprocess, sys, time, urllib.parse, urllib.request
 
 skill_dir, raw = sys.argv[1], sys.argv[2]
+
+UA = "DJ (Linggen music app) https://linggen.dev"
+
+def fetch_lrc(artist, title):
+    # Mirror of lyrics.js fetchLyrics: LRCLIB free-text search (the exact
+    # artist/track fields miss original-language titles), prefer synced.
+    q = f"{artist} {title}".strip()
+    if not q:
+        return None
+    req = urllib.request.Request(
+        "https://lrclib.net/api/search?q=" + urllib.parse.quote(q),
+        headers={"User-Agent": UA})
+    try:
+        arr = json.loads(urllib.request.urlopen(req, timeout=12).read().decode())
+    except Exception:
+        return None
+    if not isinstance(arr, list):
+        return None
+    pick = (next((r for r in arr if r.get("syncedLyrics")), None)
+            or next((r for r in arr if r.get("plainLyrics")), None))
+    if not pick:
+        return None
+    return pick.get("syncedLyrics") or pick.get("plainLyrics")
 
 TASK_ID = int(time.time())
 
@@ -133,6 +156,16 @@ for i, t in enumerate(tracks):
         got = [l for l in r.stdout.strip().splitlines() if l.endswith(".mp3")]
         if got:
             files.append(got[-1])
+            # The page backfills lyrics after its downloads (lyrics.js); a
+            # headless get must too, or agent-ordered songs reach the phone
+            # bare while page-ordered ones carry their .lrc.
+            try:
+                body = fetch_lrc(artist, title)
+                if body and body.strip():
+                    with open(os.path.splitext(got[-1])[0] + ".lrc", "w") as f:
+                        f.write(body if body.endswith("\n") else body + "\n")
+            except Exception:
+                pass
         else:
             errors.append(f"{artist} - {title}: no playable source found")
     except subprocess.TimeoutExpired:
