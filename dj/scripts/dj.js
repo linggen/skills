@@ -57,6 +57,34 @@ async function refreshLibrary() {
   renderLibrary();
 }
 
+// ── long-task strip ──────────────────────────────────────────────────────────
+// A background errand (an agent-driven download run) publishes progress on the
+// retained `tasks` topic; the strip mirrors it while fresh and unfinished —
+// the same numbers the phone's relay card shows — then refreshes the library
+// once when the run completes, so the new songs appear without a reload.
+let taskStripSeen = null;
+async function pollTaskStrip() {
+  const el = $('task-strip');
+  if (!el) return;
+  try {
+    const r = await fetch('/api/topic/latest?topic=tasks&op=dj');
+    if (!r.ok) { el.hidden = true; return; }
+    const p = (await r.json()).payload || {};
+    const fresh = p.at && Date.now() / 1000 - p.at < 600;
+    if (!fresh || p.finished || !p.total) {
+      if (fresh && p.finished && taskStripSeen === p.task_id) refreshLibrary();
+      taskStripSeen = null;
+      el.hidden = true;
+      return;
+    }
+    taskStripSeen = p.task_id;
+    el.textContent =
+      `⇣ ${p.label || 'Working…'} · ${p.done}/${p.total}` +
+      (p.current ? ` · ${p.current}` : '');
+    el.hidden = false;
+  } catch { el.hidden = true; }
+}
+
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
   [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
@@ -70,6 +98,8 @@ async function refreshLibrary() {
   wireResizer();
   wireBuild();
   wireLibrary();
+  pollTaskStrip();
+  setInterval(pollTaskStrip, 5000);
   await mountChat();
   // Background, non-blocking: extract any missing cover thumbnails, then
   // re-render so they pop in once ready (first run can take a few seconds

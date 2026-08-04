@@ -38,6 +38,11 @@ body {
 .logo { font-weight: 800; font-size: 20px; letter-spacing: 1px; color: var(--accent); }
 .tagline { color: var(--muted); font-size: 12px; }
 .lib-count { color: var(--muted); font-size: 12px; margin-left: auto; }
+.task-strip {
+  margin: 2px 0 6px; padding: 6px 10px; border: 1px solid var(--line);
+  border-radius: 8px; font-size: 12px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .actions { display: flex; gap: 8px; }
 
 .btn {

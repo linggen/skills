@@ -21,9 +21,31 @@ REQ="${1:-}"
 case "$REQ" in "{{"*"}}"|"") REQ="$(cat)" ;; esac   # placeholder or stdin
 
 python3 - "$DIR" "$REQ" <<'PY'
-import json, os, re, subprocess, sys
+import json, os, re, subprocess, sys, time, urllib.request
 
 skill_dir, raw = sys.argv[1], sys.argv[2]
+
+TASK_ID = int(time.time())
+
+def publish(done, total, current, finished=False):
+    # Progress rides the retained `tasks` topic — the phone's relay card and
+    # the DJ page both read it. Telemetry must never break a download, so
+    # every failure here is swallowed.
+    try:
+        body = json.dumps({
+            "topic": "tasks", "op": "dj", "retain": True,
+            "payload": {"app": "dj", "task_id": TASK_ID,
+                        "label": f"Downloading {total} songs",
+                        "done": done, "total": total, "current": current,
+                        "finished": finished, "at": int(time.time())},
+        }).encode()
+        req = urllib.request.Request(
+            "http://127.0.0.1:%s/api/topic/publish"
+            % os.environ.get("LINGGEN_PORT", "9527"),
+            data=body, headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=3).read()
+    except Exception:
+        pass
 
 def out(**kw):
     print(json.dumps(kw))
@@ -72,14 +94,16 @@ def safe(v):
 
 os.makedirs(lib_dir, exist_ok=True)
 files, errors = [], []
+total = len(tracks)
 
-for t in tracks:
+for i, t in enumerate(tracks):
     if not isinstance(t, dict):
         continue
     artist, title = safe(t.get("artist")), safe(t.get("title"))
     if not title:
         errors.append("a track had no title")
         continue
+    publish(i, total, f"{artist} - {title}".strip(" -"))
     name = (template.replace("%(artist)s", artist)
                     .replace("%(title)s", title)
                     .replace("%(year)s", safe(t.get("year")))).strip() or f"{artist} - {title}"
@@ -116,6 +140,7 @@ for t in tracks:
     except Exception as e:
         errors.append(f"{artist} - {title}: {e}")
 
+publish(total, total, "", finished=True)
 out(got=len(files), failed=len(errors), files=files, errors=errors)
 PY
 
