@@ -5,10 +5,7 @@
 // scripts/ dir statically (the same mechanism player.js uses for
 // .nowplaying.mp3), so a cached file there is reachable with no engine change.
 
-import { runBash, sq } from './bash.js';
-
-const DJ_DIR = '$HOME/.linggen/skills/dj';
-const THUMBS_DIR = `${DJ_DIR}/scripts/.thumbs`;
+import { home, runBash, sq } from './bash.js';
 
 const thumbKey = (t) => String(t.file || '').split('/').pop().replace(/\.[^.]+$/, '');
 
@@ -19,15 +16,19 @@ export const thumbUrl = (t) =>
 // the `[ -f ... ] ||` guard skips ffmpeg entirely for tracks already cached).
 // Best-effort: a track with no embedded art just never gets a thumb file, and
 // the <img>'s onerror in dj.js hides it gracefully.
+// The dir is resolved through home() and NEVER written as a '$HOME/…' literal:
+// sq() single-quotes its argument, so a $HOME inside it doesn't expand — that
+// exact bug sent every thumbnail to /tmp/'$HOME'/… while the page 404'd.
 export async function ensureThumbs(tracks) {
   const todo = (tracks || []).filter((t) => t.file);
   if (!todo.length) return;
+  const thumbsDir = `${await home()}/.linggen/skills/dj/scripts/.thumbs`;
   const lines = todo.map((t) => {
-    const out = `${THUMBS_DIR}/${thumbKey(t)}.jpg`;
+    const out = `${thumbsDir}/${thumbKey(t)}.jpg`;
     return (
       `[ -f ${sq(out)} ] || ffmpeg -loglevel quiet -y -i ${sq(t.file)} -an -map 0:v:0 ` +
       `-vf "scale=88:88:force_original_aspect_ratio=increase,crop=88:88" -q:v 6 ${sq(out)} 2>/dev/null || true`
     );
   });
-  await runBash(`mkdir -p ${sq(THUMBS_DIR)}\n${lines.join('\n')}`, { timeoutMs: 180_000 });
+  await runBash(`mkdir -p ${sq(thumbsDir)}\n${lines.join('\n')}`, { timeoutMs: 180_000 });
 }

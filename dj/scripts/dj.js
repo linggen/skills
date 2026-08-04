@@ -301,13 +301,14 @@ function rowHtml(t) {
     (t.lrc ? '<span class="badge lyr" title="Has lyrics">♪</span>' : '');
   return `<div class="lib-row${sel ? ' sel' : ''}" data-id="${esc(id)}">
     <input type="checkbox" class="lib-chk" data-id="${esc(id)}"${sel ? ' checked' : ''} />
-    <img class="row-thumb" src="${thumbUrl(t)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'" />
-    <button class="row-play" data-act="play" title="Play">▶</button>
+    <span class="card-cover">
+      <img class="row-thumb" src="${thumbUrl(t)}" loading="lazy" alt="" onerror="this.classList.add('noart')" />
+      <button class="row-play" data-act="play" title="Play">▶</button>
+    </span>
     <div class="row-meta">
       <span class="row-t">${esc(t.title)}</span>
-      <span class="row-a">${esc(t.artist)}${t.year ? ` · ${esc(t.year)}` : ''}</span>
+      <span class="row-a">${esc(t.artist)}${t.year ? ` · ${esc(t.year)}` : ''} <span class="row-badges">${badges}</span></span>
     </div>
-    <span class="row-badges">${badges}</span>
     <div class="row-acts">
       <button data-act="karaoke" title="Karaoke">🎤</button>
       <button data-act="reveal" title="Show in Finder">⤓</button>
@@ -698,9 +699,17 @@ function trackRow(t, i) {
   const stateCell = playable
     ? `<button class="set-play" data-play="${i}" title="Play">▶</button>`
     : `<div class="state">${esc(stateText)}</div>`;
+  // Owned tracks are in the library, so their cover exists — show it; a
+  // not-yet-downloaded track keeps its number until it lands.
+  const lib = playable
+    ? (state.library.tracks || []).find((x) => trackKey(x) === trackId(t))
+    : null;
+  const face = lib
+    ? `<span class="card-cover"><img class="row-thumb" src="${thumbUrl(lib)}" loading="lazy" alt="" onerror="this.classList.add('noart')" /></span>`
+    : `<div class="idx">${i + 1}</div>`;
   return `<div class="trackrow ${cls}">
     <input type="checkbox" class="set-chk" data-i="${i}" ${t.selected !== false ? 'checked' : ''} title="Include this track" />
-    <div class="idx">${i + 1}</div>
+    ${face}
     <div class="meta">
       <div class="t">${esc(t.title)}</div>
       <div class="a">${esc(t.artist)}${t.year ? ` · ${esc(t.year)}` : ''}${t.note ? ` — <span class="note">${esc(t.note)}</span>` : ''}</div>
