@@ -340,6 +340,7 @@ const VERBS = {
 
     const known = new Set(lib.tracks.filter((t) => t.file).map((t) => norm(t.file)));
     let adopted = 0;
+    const adoptedFiles = [];
     for (const e of entries) {
       if (!AUDIO.includes(ext(e.name)) || known.has(norm(e.name))) continue;
       const stem = stemOf(e.name);
@@ -358,6 +359,7 @@ const VERBS = {
       const lrc = sidecar(stem);
       if (lrc) row.lrc = lrc;
       lib.tracks.push(row);
+      adoptedFiles.push(row.file);
       adopted += 1;
     }
 
@@ -381,7 +383,9 @@ const VERBS = {
     if (adopted || retired || lrcChanged) {
       // A file that reappeared under a deleted name is a NEW song — the
       // tombstone must lose, or the projection deletes it straight back.
-      for (const t of lib.tracks) if (t.file) undeleteTrack(reg, t.file);
+      // Only for files adopted THIS pass: clearing every track's tombstone
+      // would also undo a phone's delete that had just merged in.
+      for (const f of adoptedFiles) undeleteTrack(reg, f);
       persist(lib, reg);
     }
     return { ok: true, adopted, retired };
