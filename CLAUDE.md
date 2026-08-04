@@ -32,3 +32,4 @@ Never edit `~/.linggen` or `vendor/skills` directly.
 - Chat panels mount through each skill's `chat-bridge.js` (`LinggenUI.mount`); app pages get `?app_mode=1`, and `&in_launcher=1` when hosted inside the unified launcher.
 - Don't trust the model for mechanical invariants (ids, schema fields, timestamps) — derive them page-side at ingest.
 - Tool `cmd:` template args arrive as the LITERAL placeholder (`{{max}}`) when the agent omits them — every script must strip/default placeholder-shaped args before use (`case "$A" in "{{"*"}}") A=default;; esac`).
+- Never `sq()` a path containing `$HOME` — single quotes kill expansion, and the command then writes to a literal `'$HOME'` dir under the bash cwd instead of failing. Resolve the home dir once via `home()` (bash.js) and build absolute paths (this silently ate every DJ thumbnail until 2026-08-04).
