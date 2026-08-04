@@ -94,6 +94,7 @@ async function pollTaskStrip() {
     setCollection({ kind: 'all' });
   }
   renderLibrary();
+  restoreSet();
   wireButtons();
   wireResizer();
   wireBuild();
@@ -645,7 +646,40 @@ function applyPageUpdate(args) {
   renderSet();
 }
 
+// ── Set persistence ─────────────────────────────────────────────────────────
+// PageUpdate is a live stream event: only a page open at stream time sees the
+// set. A set proposed from the PHONE (Yinyue → ask_mac_app → this session) has
+// no Mac page watching, and a reload loses even a set that did render. So the
+// last proposal is kept, and a fresh page restores it with ownership re-read
+// from today's library.
+const SET_STORE = 'dj.lastSet';
+
+function saveSet() {
+  try {
+    localStorage.setItem(SET_STORE, JSON.stringify({ at: Date.now(), set: state.set }));
+  } catch { /* private mode — the set just stays live-only */ }
+}
+
+function restoreSet() {
+  if (state.set) return;
+  try {
+    const raw = JSON.parse(localStorage.getItem(SET_STORE) || 'null');
+    // Same 24h horizon the session resume uses — an older proposal is stale.
+    if (!raw?.set?.tracks || Date.now() - raw.at > 24 * 3600 * 1000) return;
+    state.set = raw.set;
+    for (const t of state.set.tracks) {
+      // Re-derive what the library can answer: a song downloaded since the
+      // save must not still read pending, and "downloading" died with the run.
+      if (t.status === 'downloading' || t.status === 'pending') {
+        t.status = isOwned(state.library, t) ? 'owned' : 'pending';
+      }
+    }
+    renderSet();
+  } catch { /* unreadable save — start clean */ }
+}
+
 function renderSet() {
+  saveSet();
   const el = $('set');
   if (!state.set) { el.classList.add('hidden'); return; }
   const s = state.set;
