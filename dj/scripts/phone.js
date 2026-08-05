@@ -8,12 +8,17 @@
 // the phone's fetch log can disagree on Unicode composition.
 const basename = (p) => String(p).split('/').pop().toLowerCase().normalize('NFC');
 
-/// Paired devices with their fetch ledgers: [{ id, name, files, last_fetch }].
+/// Paired devices with their fetch ledgers: [{ id, name, files, last_fetch }],
+/// most recently active first — every `phone[0]` reader (the header chip, the
+/// coverage card) then speaks about the device actually in use, not whichever
+/// row happened to pair first.
 export async function phoneDevices() {
   try {
     const res = await fetch('/api/skill-sync/dj/devices');
     if (!res.ok) return [];
-    return (await res.json()).devices || [];
+    const devices = (await res.json()).devices || [];
+    // last_fetch is epoch seconds; a device that never fetched sorts last.
+    return devices.sort((a, b) => (b.last_fetch || 0) - (a.last_fetch || 0));
   } catch {
     return [];
   }
