@@ -87,6 +87,10 @@ async function pollTaskStrip() {
 
 // ── boot ─────────────────────────────────────────────────────────────────────
 (async function boot() {
+  // The strip first: it is one cheap topic read, and a mid-download refresh
+  // must show the run immediately — reindex below can take many seconds.
+  pollTaskStrip();
+  setInterval(pollTaskStrip, 5000);
   [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
   await reindex(true);
   // A restored playlist selection may point at a playlist that no longer exists.
@@ -99,8 +103,6 @@ async function pollTaskStrip() {
   wireResizer();
   wireBuild();
   wireLibrary();
-  pollTaskStrip();
-  setInterval(pollTaskStrip, 5000);
   await mountChat();
   // Background, non-blocking: extract any missing cover thumbnails, then
   // re-render so they pop in once ready (first run can take a few seconds
