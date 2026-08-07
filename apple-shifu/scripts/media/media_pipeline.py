@@ -30,6 +30,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -1009,6 +1010,34 @@ def log_backup(kind, dest, items, size, status, error=''):
         row['error'] = str(error)[:300]
     with open(BACKUP_LOG, 'a') as f:
         f.write(json.dumps(row) + '\n')
+    tell_perception(kind, items, size, status)
+
+
+def tell_perception(kind, items, size, status):
+    """Tell the Mac's activity log what this run did, so its agents can perceive
+    it (linggen/doc/perception-spec.md §3). This pane's History stays the
+    detailed view; perception wants the one-line fact.
+
+    Only finished, non-empty runs — a failed copy is not a change to the world,
+    and a run that moved nothing is not news. Never raises: a log that can break
+    a backup is worse than no log."""
+    if status != 'done' or not items:
+        return
+    verb = 'clean' if kind == 'clean' else 'backup'
+    gb = size / 1_000_000_000
+    where = {'phone_mac': 'from the phone', 'mac_disk': 'to the external disk',
+             'clean': 'from this Mac'}.get(kind, '')
+    obj = f'{items} file{"" if items == 1 else "s"} ({gb:.1f} GB) {where}'.strip()
+    port = os.environ.get('LINGGEN_PORT', '9527')
+    body = json.dumps({'by': 'user', 'app': 'media', 'verb': verb,
+                       'object': obj}).encode()
+    try:
+        req = urllib.request.Request(
+            f'http://127.0.0.1:{port}/api/activity', data=body,
+            headers={'Content-Type': 'application/json'})
+        urllib.request.urlopen(req, timeout=3).read()
+    except Exception:
+        pass
 
 
 def _archive_local_rows():
