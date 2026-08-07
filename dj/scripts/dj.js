@@ -55,6 +55,14 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 async function refreshLibrary() {
   state.library = await loadLibrary();
   renderLibrary();
+  // Covers too, not just rows. Boot extracted thumbnails for everything it
+  // found, and the page's own Get flow does it per track — but a song the
+  // AGENT downloaded arrived through neither, so it rendered with a 404'd
+  // <img> and stayed blank until the next reload. ensureThumbs is cheap to
+  // re-call (a `[ -f ] ||` guard skips ffmpeg for anything already cached),
+  // so every refresh can simply cover whatever it just loaded. Which door
+  // ordered a song does not decide whether it has a picture.
+  ensureThumbs(state.library.tracks).then(renderLibrary).catch(() => {});
 }
 
 // ── long-task strip ──────────────────────────────────────────────────────────
