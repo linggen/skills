@@ -362,10 +362,12 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 }
 .src-pick:hover { background: var(--panel); color: var(--ink); }
 /* A popover, not an inline row: the options used to reflow the toolbar and
-   squeeze "This Mac" onto two lines just by opening. */
-.lib-toolbar { position: relative; }
+   squeeze "This Mac" onto two lines just by opening. It hangs from the switch
+   it belongs to — anchored to the toolbar it opened under "Your library",
+   half a screen from the ▾ that summoned it. */
+.src-wrap { position: relative; display: flex; }
 .src-menu {
-  position: absolute; top: 100%; left: 0; z-index: 20; margin-top: 4px;
+  position: absolute; top: 100%; right: 0; z-index: 20; margin-top: 4px;
   display: flex; flex-direction: column; gap: 2px; padding: 4px; min-width: 180px;
   background: var(--panel); border: 1px solid var(--line);
   border-radius: 10px; box-shadow: 0 6px 20px rgba(16, 24, 40, .12);

@@ -53,10 +53,14 @@
             <button id="mode-btn" class="btn ghost small" title="Playback order"></button>
             <!-- Which library you are in, beside the verbs that act on it.
                  `lib-count` keeps its id: the source switch replaced the count
-                 chip that used to live up in the topbar. -->
-            <div class="lib-count" id="lib-count"></div>
+                 chip that used to live up in the topbar. The wrapper is what
+                 the device menu hangs from — anchored to the switch it belongs
+                 to, not to the far side of the toolbar. -->
+            <div class="src-wrap">
+              <div class="lib-count" id="lib-count"></div>
+              <span class="src-menu" id="src-menu" hidden></span>
+            </div>
             <button id="sync-btn" class="btn ghost small" title="Tell your phone to fetch what it's missing" hidden>⇅ Sync</button>
-            <span class="src-menu" id="src-menu" hidden></span>
             <input id="lib-search" class="lib-search" type="search" placeholder="Search your library…" autocomplete="off" />
           </div>
           <!-- A background errand's progress (retained `tasks` topic) — the

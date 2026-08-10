@@ -273,8 +273,6 @@ function renderLibrary() {
     sync.hidden = !onPhoneView() || !currentDevice();
     sync.onclick = () => syncPhone(sync);
   }
-  const menu = $('src-menu');
-  if (menu && !onPhoneView()) menu.hidden = true;
   renderSidebar();
   renderFilters();
   renderSelbar();
@@ -336,6 +334,16 @@ function renderSource() {
 function showDeviceMenu(others) {
   const menu = $('src-menu');
   if (!menu) return;
+  // A second click closes it, and so does anywhere else on the page — a
+  // repaint used to be enough to shut it, which made it feel like the click
+  // had missed.
+  if (!menu.hidden) { menu.hidden = true; return; }
+  const away = (e) => {
+    if (e.target.closest('#src-menu') || e.target.closest('#src-pick')) return;
+    menu.hidden = true;
+    document.removeEventListener('click', away, true);
+  };
+  setTimeout(() => document.addEventListener('click', away, true), 0);
   menu.innerHTML = others
     .map((d) => `<button class="pl-opt" data-dev="${esc(d.id)}">${esc(d.name)}` +
       `<span class="dev-sub">${d.last_fetch ? `${(d.files || []).length} synced` : 'never synced'}</span></button>`)
