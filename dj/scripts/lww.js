@@ -261,6 +261,36 @@ export function reconcileDeleted(reg) {
   return cleared;
 }
 
+/// A playlist may only name a song the library actually has, and a phone may
+/// only reference one. `has` answers that for a basename.
+///
+/// Deletes cascade and retires prune, but a name can end up in a list without
+/// either ever happening — a file renamed in Finder, a row lost to an old bug,
+/// a membership seeded from a library that has since moved on. Those left
+/// playlists naming songs that existed nowhere, which is how a phone came to
+/// report "9 of 11 here" for a list already holding all 9 it would ever hold.
+///
+/// Cells only: nothing on any disk is touched, so this is safe to run on every
+/// reconcile. Idempotent.
+export function pruneMissing(reg, has) {
+  let pruned = 0;
+  for (const view of [MAC, PHONE]) {
+    for (const [rest] of reg.entries(`${view.member}:`)) {
+      const file = rest.slice(0, rest.lastIndexOf('|'));
+      const name = rest.slice(rest.lastIndexOf('|') + 1);
+      if (has(file)) continue;
+      reg.remove(kMember(file, name, view));
+      pruned += 1;
+    }
+  }
+  for (const [file] of reg.entries('ref:')) {
+    if (has(file)) continue;
+    reg.remove(kRef(file));
+    pruned += 1;
+  }
+  return pruned;
+}
+
 /// A song arriving under a name that was deleted before is a NEW song, so the
 /// tombstone has to lose. Called on every download and on adoption; without it
 /// a re-download would be deleted again the moment the register was consulted.

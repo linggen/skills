@@ -17,7 +17,7 @@ import {
   Register, project, seedFromTracks, isDeleted,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
   deleteTrack, undeleteTrack, listsOf, filesInList, reconcileDeleted,
-  MAC, PHONE, addToPhone, removeFromPhone, seedPhoneView, listsForFile,
+  MAC, PHONE, addToPhone, removeFromPhone, seedPhoneView, pruneMissing,
 } from './lww.js';
 
 const HOME = process.env.HOME || '';
@@ -421,18 +421,15 @@ const VERBS = {
     }
 
     const before = lib.tracks.length;
-    const gone = lib.tracks.filter((t) => t.file && !byNorm.has(norm(t.file)));
     lib.tracks = lib.tracks.filter((t) => !t.file || byNorm.has(norm(t.file)));
     const retired = before - lib.tracks.length;
-    // A file that left the folder cannot be served to a phone, so nothing may
-    // go on referencing it. Retiring used to drop the row and stop there,
-    // which left playlists naming songs that existed nowhere — the reason a
-    // phone could report "9 of 11 here" for a list that held all it ever
-    // would. Only cells move here: no phone loses a file over this.
-    for (const t of gone) {
-      for (const name of listsForFile(reg, t.file)) removeFromList(reg, [t.file], name);
-      removeFromPhone(reg, [t.file]);
-    }
+    // The folder is ground truth for which songs exist, so it is also ground
+    // truth for which songs a list may name and a phone may reference. Retiring
+    // used to drop the row and stop there, leaving playlists pointing at
+    // nothing — the reason a phone could report "9 of 11 here" for a list
+    // already holding all 9 it would ever hold. Cells only: no phone loses a
+    // file over this.
+    const pruned = pruneMissing(reg, (f) => byNorm.has(norm(f)));
 
     let lrcChanged = 0;
     for (const t of lib.tracks) {
@@ -447,7 +444,7 @@ const VERBS = {
     // Persist on ANY drift — an .lrc that appeared beside an unchanged audio
     // file is a real change too, not something to recompute-and-discard on
     // every pass until an unrelated adopt happens to save it.
-    if (adopted || retired || lrcChanged) {
+    if (adopted || retired || lrcChanged || pruned) {
       // A file that reappeared under a deleted name is a NEW song — the
       // tombstone must lose, or the projection deletes it straight back.
       // Only for files adopted THIS pass: clearing every track's tombstone
@@ -455,7 +452,7 @@ const VERBS = {
       for (const f of adoptedFiles) undeleteTrack(reg, f);
       persist(lib, reg);
     }
-    return { ok: true, adopted, retired };
+    return { ok: true, adopted, retired, pruned };
   },
 };
 

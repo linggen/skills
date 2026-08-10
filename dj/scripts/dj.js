@@ -13,7 +13,7 @@ import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';
 import { openPlayer } from './player.js';
 import { syncToPhone } from './sync.js';
-import { phoneDevices, coverage, onAnyPhone } from './phone.js';
+import { phoneDevices, coverage } from './phone.js';
 import { ensureThumbs, thumbUrl } from './thumbs.js';
 
 const SKILL = 'dj';
@@ -28,8 +28,13 @@ const savedUi = loadUi();
 
 const state = {
   config: { sync_targets: [] },
-  library: { tracks: [], playlists: [] },
+  library: { tracks: [], playlists: [], phone: { files: [], playlists: [] } },
   phone: [], // paired Linggen Mobile devices with their fetch ledgers
+  // Which library you are looking at. 'mac' is everything this machine holds,
+  // with the playlists you play here. 'phone' is what a phone carries —
+  // references to those same songs, filed into playlists of its own. They are
+  // two curations, not two copies, and nothing reconciles them.
+  view: savedUi.view === 'phone' ? 'phone' : 'mac',
   set: null, // the currently proposed tracklist
   busy: false,
   // all | recent | playlist (+ name) — the sidebar selection; restored from
@@ -100,6 +105,7 @@ async function pollTaskStrip() {
   pollTaskStrip();
   setInterval(pollTaskStrip, 5000);
   [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
+  await seedPhoneViewOnce();
   await reindex(true);
   // A restored playlist selection may point at a playlist that no longer exists.
   if (state.collection.kind === 'playlist' && !playlistsOf().includes(state.collection.name)) {
@@ -117,6 +123,28 @@ async function pollTaskStrip() {
   // for a big library; cached on every run after).
   ensureThumbs(state.library.tracks).then(renderLibrary).catch(() => {});
 })();
+
+/// Establish the phone view from what a phone is already carrying, once.
+///
+/// The two views arrived after people already had music on their phones, and
+/// an empty phone view would have read as "your phone has nothing" and then
+/// made it true on the next sync. The engine's fetch ledger is the only record
+/// of what is actually over there, and only this page can read it — hence the
+/// seed lives here rather than in the register's own load path.
+///
+/// The action itself is the guard: it writes a marker and refuses to run twice,
+/// so a phone deliberately emptied later stays empty.
+async function seedPhoneViewOnce() {
+  const dev = state.phone[0];
+  if (!dev || !(dev.files || []).length) return;
+  try {
+    const r = await action('phone-seed', JSON.stringify(dev.files));
+    if (r.seeded) {
+      state.library = await loadLibrary();
+      toast(`Your phone's own library set up from the ${dev.files.length} songs it already has.`);
+    }
+  } catch { /* the next open tries again; nothing is lost by waiting */ }
+}
 
 // ── library: sidebar collections + dense list + multi-select → playlists ─────
 const trackKey = (t) => t.id || trackId(t);
@@ -150,30 +178,57 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden) reindex(false);
 });
 
-// On-phone means either path: pushed by this Mac (legacy VLC/WebDAV ledger in
-// synced_to) or pulled by a paired Linggen Mobile (the engine's fetch ledger).
-const onPhone = (t) => (t.synced_to || []).length > 0 || onAnyPhone(t, state.phone);
+// "Is it on the phone" used to be guessed from two ledgers — this Mac's old
+// VLC/WebDAV push record and the engine's fetch log. Both describe copying that
+// has happened. The phone view answers the question the user is actually
+// asking, which is what SHOULD be there, so the guess is gone.
 
 // Playlists are tags into the one library: a song can sit in many. So "Remove"
 // means different things by context — inside a playlist it untags (file kept);
 // in All songs / Recently added it deletes the song from the library (→ Trash).
 const inPlaylistView = () => state.collection.kind === 'playlist';
 
-function playlistsOf() {
-  const set = new Set();
-  for (const t of state.library.tracks || []) for (const p of t.playlists || []) set.add(p);
-  return [...set].sort((a, b) => a.localeCompare(b));
+const onPhoneView = () => state.view === 'phone';
+
+/// The playlists of the view you are looking at, straight off the projection.
+/// Both sides come from the same register, so a name in one is not the list of
+/// the same name in the other.
+function playlists() {
+  const lib = state.library;
+  const rows = onPhoneView() ? lib.phone?.playlists : lib.playlists;
+  return (rows || []).map((p) => p.name).sort((a, b) => a.localeCompare(b));
+}
+
+const playlistsOf = playlists;
+
+/// The songs of the view you are looking at. On the phone side that is what it
+/// carries and nothing else — which is why a playlist here is always whole.
+function viewTracks() {
+  const all = state.library.tracks || [];
+  return onPhoneView() ? all.filter((t) => t.on_phone) : all;
+}
+
+/// The files of one playlist in the current view, in its own running order.
+function playlistFiles(name) {
+  const lib = state.library;
+  const rows = onPhoneView() ? lib.phone?.playlists : lib.playlists;
+  return (rows || []).find((p) => p.name === name)?.files || [];
 }
 
 // Tracks in the selected sidebar collection (before search).
 function collectionTracks() {
-  const all = (state.library.tracks || []).slice();
+  const all = viewTracks().slice();
   const c = state.collection;
-  if (c.kind === 'playlist') return all.filter((t) => (t.playlists || []).includes(c.name)).reverse();
-  if (c.kind === 'recent') {
-    return all.sort((a, b) => String(b.added_at || '').localeCompare(String(a.added_at || ''))).slice(0, 60);
+  if (c.kind === 'playlist') {
+    // The register keeps the running order; honour it rather than the
+    // library's own sort, and drop names it no longer resolves.
+    const byName = new Map(all.filter((t) => t.file).map((t) => [t.file.split('/').pop(), t]));
+    return playlistFiles(c.name).map((f) => byName.get(f)).filter(Boolean);
   }
-  return all.reverse(); // all songs, newest first
+  if (c.kind === 'recent') {
+    return all.slice().sort((a, b) => String(b.added_at || '').localeCompare(String(a.added_at || ''))).slice(0, 60);
+  }
+  return all.slice().reverse(); // all songs, newest first
 }
 
 // What the list shows AND the play queue: collection + search.
@@ -182,27 +237,22 @@ function libraryView() {
   const q = state.query.trim().toLowerCase();
   if (q) tracks = tracks.filter((t) => `${t.artist} ${t.title}`.toLowerCase().includes(q));
   const f = state.filter;
-  if (f.phone === 'on') tracks = tracks.filter(onPhone);
-  if (f.phone === 'off') tracks = tracks.filter((t) => !onPhone(t));
   if (f.lyrics) tracks = tracks.filter((t) => t.lrc);
   return tracks;
 }
 
+/// The "On phone / Not on phone" chips lived here. They said the same thing the
+/// view switch says now, in a second vocabulary and on the same screen — and
+/// they described what had been COPIED, where the view describes what is meant
+/// to be there. Only the lyrics facet is left, which is about the song.
 function renderFilters() {
   const el = $('lib-filters');
   if (!el) return;
   const f = state.filter;
-  const chip = (key, label, on) => `<button class="filt ${on ? 'on' : ''}" data-filt="${key}">${esc(label)}</button>`;
-  el.innerHTML =
-    chip('phone-on', '✓ On phone', f.phone === 'on') +
-    chip('phone-off', 'Not on phone', f.phone === 'off') +
-    chip('lyrics', '♪ Has lyrics', f.lyrics);
+  el.innerHTML = `<button class="filt ${f.lyrics ? 'on' : ''}" data-filt="lyrics">♪ Has lyrics</button>`;
   el.querySelectorAll('.filt').forEach((b) =>
     (b.onclick = () => {
-      const k = b.dataset.filt;
-      if (k === 'phone-on') f.phone = f.phone === 'on' ? null : 'on';
-      else if (k === 'phone-off') f.phone = f.phone === 'off' ? null : 'off';
-      else f.lyrics = !f.lyrics;
+      f.lyrics = !f.lyrics;
       state.selected.clear();
       renderLibrary();
     }),
@@ -211,14 +261,7 @@ function renderFilters() {
 
 function renderLibrary() {
   const all = state.library.tracks || [];
-  let count = all.length ? `${all.length} song${all.length === 1 ? '' : 's'}` : '';
-  // Paired phone → live coverage next to the count ("· 📱 iPhone 12/14").
-  const dev = state.phone[0];
-  if (count && dev) {
-    const c = coverage(all, dev);
-    count += ` · 📱 ${dev.name} ${c.synced}/${c.total}`;
-  }
-  $('lib-count').textContent = count;
+  renderSource();
   renderSidebar();
   renderFilters();
   renderSelbar();
@@ -232,13 +275,52 @@ function renderLibrary() {
   grid.innerHTML = tracks.map(rowHtml).join('');
 }
 
+/// The one control that says which library you are in, and what it holds.
+///
+/// It replaced a chip that reported "46 songs · iPhone 15 Pro 12/46" and gave
+/// you nothing to do about it. The two numbers meant different things — one a
+/// library, one a transfer — and sat in the same breath.
+function renderSource() {
+  const el = $('lib-count');
+  if (!el) return;
+  const macN = (state.library.tracks || []).length;
+  const phoneN = (state.library.phone?.files || []).length;
+  const dev = state.phone[0];
+  // On the phone side, say how far the transfer has got — that is a fact about
+  // this device, not about the curation, so it belongs on the button and not
+  // in the list.
+  const carried = dev ? coverage(viewTracks(), dev).synced : null;
+  const behind = onPhoneView() && carried !== null && carried < phoneN;
+  const tab = (key, label, n, sub) =>
+    `<button class="src ${state.view === key ? 'on' : ''}" data-src="${key}">` +
+    `<span class="src-name">${esc(label)}</span>` +
+    `<span class="src-n">${n} song${n === 1 ? '' : 's'}${sub ? ` · ${esc(sub)}` : ''}</span></button>`;
+  el.innerHTML =
+    tab('mac', 'This Mac', macN, '') +
+    tab('phone', dev ? dev.name : 'Phone', phoneN,
+      behind ? `${carried} here` : dev ? 'up to date' : 'not paired');
+  el.querySelectorAll('.src').forEach((b) => (b.onclick = () => setView(b.dataset.src)));
+}
+
+/// Switching view changes what every control below means, so the selection and
+/// the playlist you were in do not survive it — a name in one view is not the
+/// list of the same name in the other.
+function setView(v) {
+  if (state.view === v) return;
+  state.view = v;
+  saveUi({ view: v });
+  state.selected.clear();
+  if (state.collection.kind === 'playlist') setCollection({ kind: 'all' });
+  renderLibrary();
+}
+
 function renderSidebar() {
-  const all = state.library.tracks || [];
+  const all = viewTracks();
   const c = state.collection;
   const countOf = (kind, name) =>
     kind === 'all' ? all.length
     : kind === 'recent' ? Math.min(60, all.length)
-    : all.filter((t) => (t.playlists || []).includes(name)).length;
+    : playlistFiles(name).length;
   const item = (kind, name, label) => {
     const on = c.kind === kind && (kind !== 'playlist' || c.name === name);
     const acts = kind === 'playlist'
@@ -286,7 +368,7 @@ function startRenamePlaylist(node, name) {
 async function renamePlaylist(oldName, newName) {
   if (!newName || newName === oldName) { renderLibrary(); return; }
   try {
-    await action('playlist-rename', oldName, newName);
+    await action('playlist-rename', oldName, newName, state.view);
     if (state.collection.kind === 'playlist' && state.collection.name === oldName) setCollection({ kind: 'playlist', name: newName });
     await refreshLibrary();
     toast(`Renamed to “${newName}”.`);
@@ -296,7 +378,7 @@ async function renamePlaylist(oldName, newName) {
 // Remove a playlist (songs stay in the library).
 async function deletePlaylist(name) {
   try {
-    await action('playlist-delete', name);
+    await action('playlist-delete', name, state.view);
     if (state.collection.kind === 'playlist' && state.collection.name === name) setCollection({ kind: 'all' });
     await refreshLibrary();
     toast(`Removed playlist “${name}” (songs kept).`);
@@ -307,8 +389,12 @@ function rowHtml(t) {
   const id = trackKey(t);
   const sel = state.selected.has(id);
   const pending = state.pendingRemove === id;
+  // In the phone's own view every row is on the phone, so the badge would be
+  // saying nothing. On the Mac side it marks what the phone carries — the
+  // reference, which is the decision, not the fetch ledger, which is only how
+  // far the copying has got.
   const badges =
-    (onPhone(t) ? '<span class="badge" title="On your phone">📱</span>' : '') +
+    (!onPhoneView() && t.on_phone ? '<span class="badge" title="On your phone">📱</span>' : '') +
     (t.lrc ? '<span class="badge lyr" title="Has lyrics">♪</span>' : '');
   return `<div class="lib-row${sel ? ' sel' : ''}" data-id="${esc(id)}">
     <input type="checkbox" class="lib-chk" data-id="${esc(id)}"${sel ? ' checked' : ''} />
@@ -336,13 +422,20 @@ function renderSelbar() {
   const n = state.selected.size;
   const allSel = view.every((t) => state.selected.has(trackKey(t)));
   bar.hidden = false;
+  // The verbs belong to the view you are standing in. "Delete from library"
+  // destroys files and is reachable only from the Mac side; from the phone
+  // side the strongest thing on offer takes a song off the phone. That is a
+  // better guard than a confirm dialog, because the scope is where you are.
+  const removeLabel = inPlaylistView()
+    ? 'Remove from playlist'
+    : onPhoneView() ? 'Remove from phone' : 'Delete from library';
   bar.innerHTML = `
     <label class="sel-all"><input type="checkbox" id="sel-all-chk" ${allSel ? 'checked' : ''} /> Select all</label>
     ${n
       ? `<span class="sel-n">${n} selected</span>
          <button class="btn ghost small" data-sel="add">Add to playlist…</button>
-         <button class="btn ghost small" data-sel="sync">Sync to phone</button>
-         <button class="btn ghost small" data-sel="remove">${inPlaylistView() ? 'Remove from playlist' : 'Delete from library'}</button>`
+         ${onPhoneView() ? '' : '<button class="btn ghost small" data-sel="tophone">Add to phone</button>'}
+         <button class="btn ghost small${onPhoneView() || inPlaylistView() ? '' : ' danger'}" data-sel="remove">${removeLabel}</button>`
       : ''}
     <span class="sel-menu" id="sel-menu"></span>`;
   $('sel-all-chk').onchange = (e) => {
@@ -351,11 +444,30 @@ function renderSelbar() {
     renderLibrary();
   };
   if (n) {
-    bar.querySelector('[data-sel="sync"]').onclick = () => syncSelected();
     bar.querySelector('[data-sel="remove"]').onclick = () => removeSelected();
     bar.querySelector('[data-sel="add"]').onclick = () => showAddMenu();
+    const toPhone = bar.querySelector('[data-sel="tophone"]');
+    if (toPhone) toPhone.onclick = () => addToPhone();
   }
 }
+
+/// Selected songs join what the phone carries. A reference — the files stay
+/// exactly where they are, and the phone fetches them on its next sync.
+async function addToPhone() {
+  const files = selectedFiles();
+  if (!files.length) return;
+  try {
+    const r = await action('phone-add', JSON.stringify(files));
+    state.selected.clear();
+    await refreshLibrary();
+    toast(`${r.added} song${r.added === 1 ? '' : 's'} added to your phone — it fetches them on the next sync.`);
+  } catch (e) { toast(String(e.message || e)); }
+}
+
+const selectedFiles = () =>
+  (state.library.tracks || [])
+    .filter((t) => state.selected.has(trackKey(t)) && t.file)
+    .map((t) => t.file);
 
 function showAddMenu() {
   const menu = $('sel-menu');
@@ -379,7 +491,7 @@ async function addToPlaylist(name) {
     .filter((t) => state.selected.has(trackKey(t)) && t.file)
     .map((t) => t.file);
   try {
-    const r = await action('playlist-add', name, JSON.stringify(files));
+    const r = await action('playlist-add', name, JSON.stringify(files), state.view);
     state.selected.clear();
     setCollection({ kind: 'playlist', name });
     await refreshLibrary();
@@ -430,30 +542,40 @@ async function syncSelected() {
   }
 }
 
+/// What "remove" means is decided by where you are standing, in one place.
+///
+/// Inside a playlist it unfiles. On the phone side it takes songs off the
+/// phone and the Mac keeps every file. Only in the Mac's own library views does
+/// it destroy anything — the single act in the product that does.
 async function removeSelected() {
-  // In a playlist → untag the selection from it (keep the files). In the library
-  // views → delete the songs.
   if (inPlaylistView()) { await untagSelected(state.collection.name); return; }
-  const ids = new Set(state.selected);
-  const files = state.library.tracks.filter((t) => ids.has(trackKey(t)) && t.file).map((t) => t.file);
+  const files = selectedFiles();
   if (!files.length) return;
   try {
+    if (onPhoneView()) {
+      const r = await action('phone-remove', JSON.stringify(files));
+      state.selected.clear();
+      await refreshLibrary();
+      toast(`${r.removed} song${r.removed === 1 ? '' : 's'} taken off your phone — still here on the Mac.`);
+      return;
+    }
     const r = await action('tracks-delete', JSON.stringify(files));
     state.selected.clear();
     await refreshLibrary();
-    toast(`Deleted ${r.deleted} song${r.deleted === 1 ? '' : 's'}.`);
+    toast(`Deleted ${r.deleted} song${r.deleted === 1 ? '' : 's'} — files, playlists and phone.`);
   } catch (e) { toast(String(e.message || e)); }
 }
 
 // Untag the selected songs from the current playlist (files & library untouched).
 async function untagSelected(name) {
   const ids = new Set(state.selected);
+  const inList = new Set(playlistFiles(name));
   const files = state.library.tracks
-    .filter((t) => ids.has(trackKey(t)) && t.file && (t.playlists || []).includes(name))
+    .filter((t) => ids.has(trackKey(t)) && t.file && inList.has(t.file.split('/').pop()))
     .map((t) => t.file);
   if (!files.length) { state.selected.clear(); renderLibrary(); return; }
   try {
-    const r = await action('playlist-remove', name, JSON.stringify(files));
+    const r = await action('playlist-remove', name, JSON.stringify(files), state.view);
     state.selected.clear();
     await refreshLibrary();
     toast(`Removed ${r.removed} song${r.removed === 1 ? '' : 's'} from “${name}”.`);
@@ -533,7 +655,7 @@ async function onRowAction(e) {
 // in any other playlists); nothing on disk changes.
 async function removeFromPlaylist(t, name) {
   try {
-    await action('playlist-remove', name, JSON.stringify([t.file]));
+    await action('playlist-remove', name, JSON.stringify([t.file]), state.view);
     await refreshLibrary();
     toast(`Removed “${t.title}” from “${name}”.`);
   } catch (e) { toast(String(e.message || e)); }

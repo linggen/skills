@@ -17,6 +17,7 @@ import {
   listsForFile,
   listsOf,
   project,
+  pruneMissing,
   reconcileDeleted,
   removeFromList,
   removeFromPhone,
@@ -337,6 +338,25 @@ ok('the seed does not reference a song that was deleted', () => {
 
   assert.equal(inPhoneView(r, 'a.mp3'), false);
   assert.deepEqual(filesInList(r, 'HK 90s', PHONE), ['b.mp3']);
+});
+
+ok('a list stops naming a song the library does not have', () => {
+  // Neither deleted nor retired: the row simply never existed for it — a file
+  // renamed in Finder, a membership seeded from a library that moved on. This
+  // is the shape that survived every other sweep and kept "9 of 11" alive.
+  const r = mac();
+  addToList(r, ['a.mp3', 'ghost.mp3'], 'HK 90s');
+  addToPhone(r, ['a.mp3', 'ghost.mp3']);
+  addToList(r, ['ghost.mp3'], 'Drive', PHONE);
+
+  const onDisk = new Set(['a.mp3']);
+  assert.equal(pruneMissing(r, (f) => onDisk.has(f)), 3);
+
+  assert.deepEqual(filesInList(r, 'HK 90s'), ['a.mp3']);
+  assert.deepEqual(filesInList(r, 'Drive', PHONE), []);
+  assert.equal(inPhoneView(r, 'ghost.mp3'), false);
+  assert.equal(inPhoneView(r, 'a.mp3'), true, 'the real song is untouched');
+  assert.equal(pruneMissing(r, (f) => onDisk.has(f)), 0, 'idempotent');
 });
 
 console.log(`\n${pass} checks passed`);

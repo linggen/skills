@@ -37,7 +37,20 @@ body {
 .brand { display: flex; align-items: baseline; gap: 10px; }
 .logo { font-weight: 800; font-size: 20px; letter-spacing: 1px; color: var(--accent); }
 .tagline { color: var(--muted); font-size: 12px; }
-.lib-count { color: var(--muted); font-size: 12px; margin-left: auto; }
+/* The source switch: which library you are in. Two buttons rather than a
+   dropdown, because there are two and the one you are not in is worth reading
+   at a glance — the phone's count is the answer to "did that sync work". */
+.lib-count { display: flex; gap: 4px; margin-left: auto; padding: 3px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; }
+.src {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  padding: 5px 12px; border: 0; border-radius: 7px; cursor: pointer;
+  background: transparent; color: var(--muted); font: inherit; text-align: left;
+}
+.src:hover { background: var(--panel); }
+.src.on { background: var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+.src-name { font-size: 12px; font-weight: 600; line-height: 1.2; }
+.src-n { font-size: 11px; color: var(--muted); line-height: 1.2; }
 .task-strip {
   margin: 2px 0 6px; padding: 6px 10px; border: 1px solid var(--line);
   border-radius: 8px; font-size: 12px; color: var(--muted);
@@ -335,3 +348,9 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .app-mode-overlay-title { font-weight: 600; }
 .app-mode-overlay-close { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; }
 .app-mode-overlay-frame { flex: 1; border: none; }
+
+/* "Delete from library" destroys files and is reachable only from the Mac's
+   own view. It reads as what it is; the phone view's strongest verb only takes
+   a song off the phone and stays plain. */
+.btn.ghost.small.danger { color: var(--warn); border-color: var(--warn); }
+.btn.ghost.small.danger:hover { background: var(--warn); color: #fff; }
