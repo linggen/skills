@@ -159,12 +159,16 @@ async function reindex(announce) {
   reindexing = true;
   try {
     const r = await action('reconcile');
-    if (r.adopted || r.retired) {
+    // `pruned` counts too: it rewrites the playlists on disk, and leaving it
+    // out is how the page went on showing a list of 11 that the file it had
+    // just written said was 9.
+    if (r.adopted || r.retired || r.pruned) {
       await refreshLibrary();
       if (announce) {
         const bits = [];
         if (r.adopted) bits.push(`adopted ${r.adopted} song${r.adopted === 1 ? '' : 's'} from the folder`);
         if (r.retired) bits.push(`removed ${r.retired} missing`);
+        if (r.pruned) bits.push(`unfiled ${r.pruned} name${r.pruned === 1 ? '' : 's'} pointing at nothing`);
         toast(`Library: ${bits.join(', ')}.`);
       }
       backfillLyrics(state.library.tracks.filter((t) => !t.lrc && t.file).map(trackKey));

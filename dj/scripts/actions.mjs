@@ -279,9 +279,17 @@ const VERBS = {
   'phone-seed': (a) => {
     const files = jsonArg(a[0], 'files');
     const { lib, reg } = loadStore();
-    const written = seedPhoneView(reg, files.map(String));
+    // Resolve the ledger through the library before it becomes references.
+    // A phone reports the names IT holds, and macOS hands the two sides the
+    // same title in different Unicode compositions — so a raw ledger name can
+    // fail to match the very track it names, and the reference then points at
+    // a song the Mac cannot serve. Anything that doesn't resolve is a song
+    // this Mac doesn't have, and simply isn't referenced.
+    const byBase = new Map(lib.tracks.filter((t) => t.file).map((t) => [norm(t.file), t.file]));
+    const resolved = files.map((f) => byBase.get(norm(f))).filter(Boolean);
+    const written = seedPhoneView(reg, resolved);
     if (written) persist(lib, reg);
-    return { ok: true, seeded: written > 0, cells: written };
+    return { ok: true, seeded: written > 0, cells: written, referenced: resolved.length, skipped: files.length - resolved.length };
   },
 
   // The song leaves the library: its cell (what a paired phone merges), and —
