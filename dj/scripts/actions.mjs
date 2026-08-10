@@ -17,7 +17,7 @@ import {
   Register, project, seedFromTracks, isDeleted,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
   deleteTrack, undeleteTrack, listsOf, filesInList, reconcileDeleted,
-  MAC, PHONE, addToPhone, removeFromPhone, seedPhoneView, pruneMissing,
+  MAC, PHONE, addToPhone, removeFromPhone, pruneMissing,
 } from './lww.js';
 
 const HOME = process.env.HOME || '';
@@ -310,25 +310,6 @@ const VERBS = {
     markPhone();
     persist(lib, reg);
     return { ok: true, removed: tracks.length, files_kept: tracks.length };
-  },
-
-  // One-time: fill the phone view from what a phone is ALREADY carrying, so
-  // splitting the views doesn't empty anyone's phone the day it ships. `files`
-  // is that device's fetch ledger, which only the page can read.
-  'phone-seed': (a) => {
-    const files = jsonArg(a[0], 'files');
-    const { lib, reg } = loadStore();
-    // Resolve the ledger through the library before it becomes references.
-    // A phone reports the names IT holds, and macOS hands the two sides the
-    // same title in different Unicode compositions — so a raw ledger name can
-    // fail to match the very track it names, and the reference then points at
-    // a song the Mac cannot serve. Anything that doesn't resolve is a song
-    // this Mac doesn't have, and simply isn't referenced.
-    const byBase = new Map(lib.tracks.filter((t) => t.file).map((t) => [norm(t.file), t.file]));
-    const resolved = files.map((f) => byBase.get(norm(f))).filter(Boolean);
-    const written = seedPhoneView(reg, resolved);
-    if (written) { markPhone(); persist(lib, reg); }
-    return { ok: true, seeded: written > 0, cells: written, referenced: resolved.length, skipped: files.length - resolved.length };
   },
 
   // The song leaves the library: its cell (what a paired phone merges), and —

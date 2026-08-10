@@ -23,7 +23,6 @@ import {
   removeFromPhone,
   renameList,
   seedFromTracks,
-  seedPhoneView,
   setOrder,
   undeleteTrack,
 } from '../scripts/lww.js';
@@ -298,46 +297,6 @@ ok('a phone view cannot outlive the song it points at', () => {
   assert.ok(reconcileDeleted(r) > 0);
   assert.equal(inPhoneView(r, 'a.mp3'), false);
   assert.deepEqual(filesInList(r, 'Drive', PHONE), []);
-});
-
-// ── the seed ────────────────────────────────────────────────────────────────
-
-ok('the seed fills the phone view from what the phone already holds', () => {
-  const r = mac();
-  addToList(r, ['a.mp3', 'b.mp3', 'c.mp3'], 'HK 90s');
-  addToList(r, ['c.mp3'], 'Ballads');
-
-  // The phone has two of the three; Ballads is entirely absent from it.
-  assert.ok(seedPhoneView(r, ['/wherever/a.mp3', 'b.mp3']) > 0);
-
-  assert.deepEqual(reg2files(r), ['a.mp3', 'b.mp3']);
-  assert.deepEqual(filesInList(r, 'HK 90s', PHONE), ['a.mp3', 'b.mp3'],
-    'narrowed to what is there — never "2 of 3"');
-  assert.deepEqual(listsOf(r, PHONE), ['HK 90s'],
-    'a list with nothing on the phone is not created');
-  assert.deepEqual(filesInList(r, 'HK 90s'), ['a.mp3', 'b.mp3', 'c.mp3'],
-    'the Mac list is untouched');
-});
-
-ok('the seed runs once, and never fights the user afterwards', () => {
-  const r = mac();
-  addToList(r, ['a.mp3'], 'HK 90s');
-  seedPhoneView(r, ['a.mp3']);
-
-  // They clear their phone; the next load must not put it back.
-  removeFromPhone(r, ['a.mp3']);
-  assert.equal(seedPhoneView(r, ['a.mp3']), 0);
-  assert.equal(inPhoneView(r, 'a.mp3'), false);
-});
-
-ok('the seed does not reference a song that was deleted', () => {
-  const r = mac();
-  addToList(r, ['a.mp3', 'b.mp3'], 'HK 90s');
-  deleteTrack(r, 'a.mp3');
-  seedPhoneView(r, ['a.mp3', 'b.mp3']); // a stale ledger still names it
-
-  assert.equal(inPhoneView(r, 'a.mp3'), false);
-  assert.deepEqual(filesInList(r, 'HK 90s', PHONE), ['b.mp3']);
 });
 
 ok('a list stops naming a song the library does not have', () => {

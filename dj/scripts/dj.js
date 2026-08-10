@@ -104,7 +104,6 @@ async function pollTaskStrip() {
   pollTaskStrip();
   setInterval(pollTaskStrip, 5000);
   [state.config, state.library, state.phone] = await Promise.all([loadConfig(), loadLibrary(), phoneDevices()]);
-  await seedPhoneViewOnce();
   await reindex(true);
   // A restored playlist selection may point at a playlist that no longer exists.
   if (state.collection.kind === 'playlist' && !playlistsOf().includes(state.collection.name)) {
@@ -122,28 +121,6 @@ async function pollTaskStrip() {
   // for a big library; cached on every run after).
   ensureThumbs(state.library.tracks).then(renderLibrary).catch(() => {});
 })();
-
-/// Establish the phone view from what a phone is already carrying, once.
-///
-/// The two views arrived after people already had music on their phones, and
-/// an empty phone view would have read as "your phone has nothing" and then
-/// made it true on the next sync. The engine's fetch ledger is the only record
-/// of what is actually over there, and only this page can read it — hence the
-/// seed lives here rather than in the register's own load path.
-///
-/// The action itself is the guard: it writes a marker and refuses to run twice,
-/// so a phone deliberately emptied later stays empty.
-async function seedPhoneViewOnce() {
-  const dev = state.phone[0];
-  if (!dev || !(dev.files || []).length) return;
-  try {
-    const r = await action('phone-seed', JSON.stringify(dev.files));
-    if (r.seeded) {
-      state.library = await loadLibrary();
-      toast(`Your phone's own library set up from the ${dev.files.length} songs it already has.`);
-    }
-  } catch { /* the next open tries again; nothing is lost by waiting */ }
-}
 
 // ── library: sidebar collections + dense list + multi-select → playlists ─────
 const trackKey = (t) => t.id || trackId(t);

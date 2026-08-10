@@ -387,39 +387,3 @@ export function seedFromTracks(reg, lib) {
   }
   return seeded;
 }
-
-/// The marker that says the phone view has been established. Its absence is
-/// what makes [seedPhoneView] a one-time act rather than something that fights
-/// the user every time they empty their phone.
-export const kPhoneSeeded = 'seed:phone';
-
-/// Fill the phone view from what a phone is ALREADY carrying, so the split
-/// doesn't empty anyone's phone the day it ships. `have` is that phone's fetch
-/// ledger — the basenames it has actually pulled.
-///
-/// Every song it holds becomes a reference, and each of the Mac's playlists is
-/// copied into the phone view narrowed to those songs. Copied, not linked: from
-/// here the two lists are separate curations and are meant to drift. A playlist
-/// with nothing on the phone is not created — an empty list nobody made is
-/// clutter, and the user can always add it.
-///
-/// Runs once. Returns the number of cells written, 0 if it had already run.
-export function seedPhoneView(reg, have) {
-  if (reg.get(kPhoneSeeded) === true) return 0;
-  const on = new Set(have.map(base));
-  let written = 0;
-  for (const f of on) {
-    if (isDeleted(reg, f)) continue;
-    reg.set(kRef(f), true);
-    written += 1;
-  }
-  for (const name of listsOf(reg)) {
-    const mine = filesInList(reg, name).filter((f) => on.has(f) && !isDeleted(reg, f));
-    if (!mine.length) continue;
-    addToList(reg, mine, name, PHONE);
-    setOrder(reg, name, mine, PHONE);
-    written += mine.length + 2;
-  }
-  reg.set(kPhoneSeeded, true);
-  return written;
-}
