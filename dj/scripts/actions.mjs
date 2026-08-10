@@ -175,12 +175,45 @@ const requireList = (reg, name, view = MAC) => {
 /// operations over their own keys.
 const viewArg = (v) => (String(v || '').trim() === 'phone' ? PHONE : MAC);
 
+// ── telling the phone ────────────────────────────────────────────────────────
+// The engine's watcher announces the MUSIC FOLDER. Everything the phone view
+// is made of — which songs it references, its own playlists — lives in CELLS,
+// which no file touch reflects. So a phone view edited here reached the phone
+// only when someone pressed the page's ⇅ Sync, and an edit made by the agent
+// reached it never. Mark it where the cells are written and announce once at
+// the end: whoever asked, page button or tool call, the phone hears the same
+// thing.
+
+let phoneChanged = false;
+const markPhone = () => { phoneChanged = true; };
+
+/// Announce that what the phone should carry has moved. This TELLS, it does
+/// not deliver: a connected phone auto-syncs on this topic, one that is asleep
+/// or away picks it up on its next sync, and neither outcome may fail the
+/// write that already succeeded.
+async function announcePhone() {
+  if (typeof fetch !== 'function') return;
+  const port = process.env.LINGGEN_PORT || '9527';
+  try {
+    await fetch(`http://127.0.0.1:${port}/api/topic/publish`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: 'dj', op: 'library-changed', payload: {}, retain: false }),
+      signal: AbortSignal.timeout(3000),
+    });
+  } catch {
+    // No daemon, no phone, no network — all the same here. The phone syncs on
+    // its next open either way; a missed announcement is a delay, not a loss.
+  }
+}
+
 // ── verbs ────────────────────────────────────────────────────────────────────
 
 const VERBS = {
   'playlist-create': (a) => {
     const name = arg(a[0], 'name');
     const view = viewArg(a[1]);
+    if (view === PHONE) markPhone();
     const { lib, reg } = loadStore();
     createList(reg, name, view);
     persist(lib, reg);
@@ -192,6 +225,7 @@ const VERBS = {
     const newName = arg(a[1], 'new_name');
     if (oldName === newName) return { ok: true, playlist: newName };
     const view = viewArg(a[2]);
+    if (view === PHONE) markPhone();
     const { lib, reg } = loadStore();
     requireList(reg, oldName, view);
     const merged = listsOf(reg, view).includes(newName);
@@ -203,6 +237,7 @@ const VERBS = {
   'playlist-delete': (a) => {
     const name = arg(a[0], 'name');
     const view = viewArg(a[1]);
+    if (view === PHONE) markPhone();
     const { lib, reg } = loadStore();
     requireList(reg, name, view);
     const kept = filesInList(reg, name, view).length;
@@ -220,7 +255,7 @@ const VERBS = {
     // Filing into a phone list implies carrying the song: a list here may
     // never name something the phone hasn't got, which is the whole reason it
     // never has to say "9 of 11".
-    if (view === PHONE) addToPhone(reg, tracks.map((t) => t.file));
+    if (view === PHONE) { markPhone(); addToPhone(reg, tracks.map((t) => t.file)); }
     addToList(reg, tracks.map((t) => t.file), name, view);
     persist(lib, reg);
     return { ok: true, playlist: name, added: tracks.length };
@@ -230,6 +265,7 @@ const VERBS = {
     const name = arg(a[0], 'name');
     const files = jsonArg(a[1], 'files');
     const view = viewArg(a[2]);
+    if (view === PHONE) markPhone();
     const { lib, reg } = loadStore();
     requireList(reg, name, view);
     const tracks = resolveTracks(lib, files);
@@ -242,6 +278,7 @@ const VERBS = {
     const name = arg(a[0], 'name');
     const files = jsonArg(a[1], 'files');
     const view = viewArg(a[2]);
+    if (view === PHONE) markPhone();
     const { lib, reg } = loadStore();
     requireList(reg, name, view);
     const tracks = resolveTracks(lib, files);
@@ -260,6 +297,7 @@ const VERBS = {
     const { lib, reg } = loadStore();
     const tracks = resolveTracks(lib, files);
     addToPhone(reg, tracks.map((t) => t.file));
+    markPhone();
     persist(lib, reg);
     return { ok: true, added: tracks.length };
   },
@@ -269,6 +307,7 @@ const VERBS = {
     const { lib, reg } = loadStore();
     const tracks = resolveTracks(lib, files);
     removeFromPhone(reg, tracks.map((t) => t.file));
+    markPhone();
     persist(lib, reg);
     return { ok: true, removed: tracks.length, files_kept: tracks.length };
   },
@@ -288,7 +327,7 @@ const VERBS = {
     const byBase = new Map(lib.tracks.filter((t) => t.file).map((t) => [norm(t.file), t.file]));
     const resolved = files.map((f) => byBase.get(norm(f))).filter(Boolean);
     const written = seedPhoneView(reg, resolved);
-    if (written) persist(lib, reg);
+    if (written) { markPhone(); persist(lib, reg); }
     return { ok: true, seeded: written > 0, cells: written, referenced: resolved.length, skipped: files.length - resolved.length };
   },
 
@@ -300,6 +339,9 @@ const VERBS = {
     const { lib, reg } = loadStore();
     const tracks = resolveTracks(lib, files);
     for (const t of tracks) deleteTrack(reg, t.file);
+    // A Mac delete cascades over there too, so the phone needs telling even
+    // though nobody touched its view by name.
+    markPhone();
     persist(lib, reg);
     return { ok: true, deleted: tracks.length, files: tracks.map((t) => norm(t.file)) };
   },
@@ -471,11 +513,17 @@ try {
   const run = VERBS[verb];
   if (!run) die(`unknown verb “${verb || ''}” — one of: ${Object.keys(VERBS).join(', ')}`);
   lock();
+  let result;
   try {
-    console.log(JSON.stringify(run(rest)));
+    result = run(rest);
   } finally {
     unlock();
   }
+  // Outside the lock: telling the phone is a network call, and no other writer
+  // should wait behind it. After the write, too — the phone is being told about
+  // something that has already happened.
+  if (phoneChanged) await announcePhone();
+  console.log(JSON.stringify(result));
 } catch (e) {
   const msg = String(e?.message || e);
   console.log(JSON.stringify({ ok: false, error: msg }));
