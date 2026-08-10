@@ -51,13 +51,24 @@ tools:
   - name: ListLibrary
     description: >-
       Return the user's current DJ library as JSON: { tracks: [{ artist,
-      title, year?, file, source?, added_at, playlists[], synced_to[] }],
-      playlists: [{ name, brief?, created_at, track_ids[] }] }. Call this
-      FIRST whenever you curate or the user asks what they have — so you never
-      re-propose a track they already own, you can build on their taste, and
-      you can answer "do I have X". Returns { "tracks": [], "playlists": [] }
-      when the library is empty (a brand-new user). The library is what's on
-      disk — what GetTracks has already fetched.
+      title, year?, file, source?, added_at, playlists[], synced_to[],
+      on_phone, lrc?, karaoke_audio?, karaoke_video? }], playlists: [{ name,
+      brief?, created_at, track_ids[] }], phone: { files[], playlists[] } }.
+      Call this FIRST whenever you curate or the user asks what they have — so
+      you never re-propose a track they already own, you can build on their
+      taste, and you can answer "do I have X". Returns empty collections when
+      the library is empty (a brand-new user). The library is what's on disk —
+      what GetTracks has already fetched.
+
+      THE TOP LEVEL IS THE MAC, `phone` IS THE PHONE. `tracks` is every song
+      this Mac holds and `playlists` is the Mac's own lists. `phone.files`
+      names the subset the user's phone carries and `phone.playlists` are the
+      phone's OWN lists, which are not copies of the Mac's and are not
+      expected to match them. Read the half you were asked about: "what's on
+      my phone" is `phone`, "what do I have" is `tracks`. A track's `on_phone`
+      is the same fact per song. `lrc` means it has lyrics, and
+      `karaoke_audio` / `karaoke_video` mean it is singable — that is what the
+      ♪ and 🎤 badges on the page are showing.
     cmd: "bash $SKILL_DIR/scripts/library.sh"
     tier: read
     timeout_ms: 6000
@@ -108,6 +119,10 @@ tools:
   # the page's buttons also call, so a tool call and a button click can never
   # drift. Track args are the `file` values ListLibrary returns (full path or
   # basename) — resolve against ListLibrary first, never guess a filename.
+  #
+  # Every playlist verb takes `view`, because there are two sets of playlists
+  # and they are not copies of each other. Omitting it means the Mac, which is
+  # what a user means when they don't say.
   - name: CreatePlaylist
     description: >-
       Create an empty playlist. Idempotent — creating an existing name is fine.
@@ -119,7 +134,13 @@ tools:
         type: string
         required: true
         description: Clean, stable playlist title — no song counts, no "Vol 2".
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-create {{name}}"
+      view:
+        type: string
+        default: mac
+        description: >-
+          Which set of playlists — "mac" (the default) or "phone". Pass
+          "phone" only when the user is talking about their phone.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-create {{name}} {{view}}"
     tier: edit
     timeout_ms: 15000
   - name: AddToPlaylist
@@ -130,7 +151,8 @@ tools:
       path or basename; "artist|title" also resolves). Returns { ok, playlist,
       added }. Errors listing any name it can't match — call ListLibrary first
       and pass its exact values. Reuse an existing playlist's exact name to
-      merge into it.
+      merge into it. Filing into a PHONE playlist also puts the song on the
+      phone, since a phone list can only ever name songs the phone carries.
     args:
       name:
         type: string
@@ -143,7 +165,13 @@ tools:
           Tracks to add, by ListLibrary `file` value. Example:
           ["Beyond - 海闊天空.mp3", "Faye Wong - 夢中人.mp3"].
         items: { type: string }
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-add {{name}} {{files}}"
+      view:
+        type: string
+        default: mac
+        description: >-
+          Which set of playlists — "mac" (the default) or "phone". Pass
+          "phone" only when the user is talking about their phone.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-add {{name}} {{files}} {{view}}"
     tier: edit
     timeout_ms: 15000
   - name: RemoveFromPlaylist
@@ -162,7 +190,13 @@ tools:
         required: true
         description: Tracks to untag, by ListLibrary `file` value.
         items: { type: string }
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-remove {{name}} {{files}}"
+      view:
+        type: string
+        default: mac
+        description: >-
+          Which set of playlists — "mac" (the default) or "phone". Pass
+          "phone" only when the user is talking about their phone.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-remove {{name}} {{files}} {{view}}"
     tier: edit
     timeout_ms: 15000
   - name: ReorderPlaylist
@@ -182,7 +216,13 @@ tools:
         required: true
         description: The new order, first to last, by ListLibrary `file` value.
         items: { type: string }
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-reorder {{name}} {{files}}"
+      view:
+        type: string
+        default: mac
+        description: >-
+          Which set of playlists — "mac" (the default) or "phone". Pass
+          "phone" only when the user is talking about their phone.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-reorder {{name}} {{files}} {{view}}"
     tier: edit
     timeout_ms: 15000
   - name: RenamePlaylist
@@ -199,7 +239,13 @@ tools:
         type: string
         required: true
         description: The new title — clean and stable, no counts or "Vol 2".
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-rename {{old_name}} {{new_name}}"
+      view:
+        type: string
+        default: mac
+        description: >-
+          Which set of playlists — "mac" (the default) or "phone". Pass
+          "phone" only when the user is talking about their phone.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-rename {{old_name}} {{new_name}} {{view}}"
     tier: edit
     timeout_ms: 15000
   - name: DeletePlaylist
@@ -213,18 +259,62 @@ tools:
         type: string
         required: true
         description: The playlist to delete (must exist).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-delete {{name}}"
+      view:
+        type: string
+        default: mac
+        description: >-
+          Which set of playlists — "mac" (the default) or "phone". Pass
+          "phone" only when the user is talking about their phone.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-delete {{name}} {{view}}"
+    tier: edit
+    timeout_ms: 15000
+  # ── the phone view — which songs the phone carries. A reference, never a
+  # copy: the files never move, and the phone fetches what it is missing on
+  # its own. Destruction is DeleteTracks and lives in the Mac's half alone.
+  - name: AddToPhone
+    description: >-
+      Put songs on the user's phone. Takes a JSON array of ListLibrary `file`
+      values; returns { ok, added }. The files stay exactly where they are on
+      the Mac — this records that the phone should carry them, and the phone
+      fetches them itself on its next sync. Use it whenever the user asks for
+      music "on my phone", "for the car", "for the gym", or to take a set with
+      them. Nothing is copied or deleted, so it needs no confirmation.
+    args:
+      files:
+        type: array
+        required: true
+        description: Tracks to put on the phone, by ListLibrary `file` value.
+        items: { type: string }
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs phone-add {{files}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: RemoveFromPhone
+    description: >-
+      Take songs off the user's phone. Takes a JSON array of ListLibrary
+      `file` values; returns { ok, removed }. NOTHING IS DELETED — the songs
+      stay in the Mac's library and in its playlists; only the phone stops
+      carrying them, and they drop out of that phone's playlists. This is the
+      strongest verb the phone half has, and it is how you answer "clear some
+      space on my phone" or "I'm done with these in the car".
+    args:
+      files:
+        type: array
+        required: true
+        description: Tracks to take off the phone, by ListLibrary `file` value.
+        items: { type: string }
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs phone-remove {{files}}"
     tier: edit
     timeout_ms: 15000
   - name: DeleteTracks
     description: >-
       Delete songs from the library: the audio file, its lyrics/karaoke
-      sidecars, and its place in every playlist. A paired phone removes its
-      copy on next sync. Takes a JSON array of ListLibrary `file` values;
-      returns { ok, deleted, files }. DESTRUCTIVE — always confirm with the
-      user first, naming the exact songs, unless they just listed exactly
+      sidecars, and its place in every playlist — on the Mac AND on the phone,
+      which stops carrying them too. Takes a JSON array of ListLibrary `file`
+      values; returns { ok, deleted, files }. DESTRUCTIVE — always confirm with
+      the user first, naming the exact songs, unless they just listed exactly
       these to delete. DJ music is re-downloadable, but a delete is still a
-      delete.
+      delete. If they only want it off their phone, that is RemoveFromPhone
+      and it destroys nothing.
     args:
       files:
         type: array
@@ -258,8 +348,11 @@ would you put on for a rainy Sunday?") wants a set to look at, not twenty
 downloads; propose it, and offer to fetch. When they say get them, get them.
 
 Everything happens on their own machine, for their own use. The files go into
-their library folder, where the page and any paired phone both pick them up on
-their own — there is no separate "sync" step for you to run.
+their library folder, and the page picks them up on its own. A new song lands
+on the **Mac**; it does not reach the phone until something says it should —
+`AddToPhone`, or filing it into a phone playlist. There is still no "sync"
+button for you to press: the phone fetches what it has been told to carry, by
+itself. See *The Mac and the phone are two libraries* below.
 
 ## How a set gets built
 
@@ -386,10 +479,39 @@ Cantopop"):
    download first, and say so (*"You don't have these yet — here's a set to
    grab."*).
 
+## The Mac and the phone are two libraries
+
+The Mac holds **every** song and its own playlists, for listening at the desk.
+The phone carries a **chosen subset** of those same songs, filed into **its own
+playlists**. Two curations over one set of files — not a copy and its original,
+and they are not expected to agree. "四大天王" on the Mac and "四大天王" on the
+phone are two different lists that happen to share a name.
+
+`ListLibrary` gives you both halves: the top-level `tracks` / `playlists` are
+the Mac, and `phone.files` / `phone.playlists` are the phone. Every playlist
+tool takes `view: "mac" | "phone"` and defaults to `"mac"`.
+
+**Read the user's words for which half they mean.** "Add these to my roadtrip
+playlist" is the Mac. "Put these on my phone", "for the car", "for the gym",
+"take these with me" is the phone. When it is genuinely ambiguous, ask — a
+one-line question beats editing the wrong list, because nothing will look
+wrong afterwards: the edit lands, it is just somewhere the user wasn't looking.
+
+Two rules that follow from the split, and one that does not:
+
+- **Putting a song on the phone never copies or moves a file.** `AddToPhone`
+  records that the phone should carry it; the phone fetches it itself.
+- **`RemoveFromPhone` destroys nothing.** The song stays on the Mac and in
+  the Mac's playlists. It is what "clear space on my phone" means.
+- **Deleting is the Mac's alone.** `DeleteTracks` destroys the files and
+  cascades everywhere, including off the phone. There is no phone-side
+  delete, by design — a phone cannot destroy the family's music.
+
 ## Organizing the library
 
 You have real library tools now — they run the same writer the page's buttons
-do, and they work whether or not the page is open:
+do, and they work whether or not the page is open. Each one takes `view` where
+it makes sense; the examples below are the Mac unless they say otherwise:
 
 - **Save/extend a playlist** ("make a playlist of my upbeat 90s", "save these
   as Roadtrip"): `ListLibrary` → pick the matching owned tracks → call
@@ -401,6 +523,10 @@ do, and they work whether or not the page is open:
 - **Untag songs**: `RemoveFromPlaylist` — the songs stay in the library.
 - **Delete a playlist / delete songs**: `DeletePlaylist` / `DeleteTracks` —
   destructive; confirm with the user first (see Hard rails).
+- **Put music on the phone / take it off**: `AddToPhone` / `RemoveFromPhone`.
+  For a playlist the user wants *on* the phone, `AddToPlaylist` with
+  `view: "phone"` does both at once — a phone list can only name songs the
+  phone carries, so filing into one puts the song there.
 
 Track args are always the `file` values from `ListLibrary` — call it first,
 pass its exact strings, never guess a filename. The page repaints itself after
