@@ -377,8 +377,12 @@ async function syncPhone(btn) {
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     // The phone does the fetching, so this is where our part ends — say that
-    // rather than implying the songs have landed.
-    toast(`${dev.name} told — it fetches what's missing while DJ is open on it.`);
+    // rather than implying the songs have landed. "while DJ is open on it" was
+    // wrong: the phone listens for this app-wide, not from its DJ screen.
+    const here = (await refreshDevices())?.present;
+    toast(here
+      ? `${dev.name} is fetching what it's missing.`
+      : `${dev.name} told — it fetches what's missing next time it's awake.`);
   } catch (e) {
     toast(`Couldn't reach your phone: ${String(e.message || e)}`);
   } finally {
@@ -564,8 +568,25 @@ async function phoneAdd(files) {
     const r = await action('phone-add', JSON.stringify(files));
     state.selected.clear();
     await refreshLibrary();
-    toast(`${r.added} song${r.added === 1 ? '' : 's'} added to your phone — it fetches them on the next sync.`);
+    const n = `${r.added} song${r.added === 1 ? '' : 's'}`;
+    const dev = await refreshDevices();
+    // The verb is "add", because that is the decision and it is true either
+    // way. What FOLLOWED depends on whether the phone is here: the write
+    // announces itself, so a connected one is already fetching, and one that
+    // is away has lost nothing. Only presence can tell those apart, so the
+    // message is composed after re-reading it — never from the boot list.
+    toast(dev?.present
+      ? `${n} on your phone now — ${esc(dev.name)} is fetching.`
+      : `${n} added — your phone picks them up when it wakes.`);
   } catch (e) { toast(String(e.message || e)); }
+}
+
+/// Re-read the paired devices so `present` is current. Presence changes on its
+/// own; a sentence about what a phone is doing right now cannot be composed
+/// from a list read at boot.
+async function refreshDevices() {
+  try { state.phone = await phoneDevices(); } catch { /* keep what we have */ }
+  return currentDevice();
 }
 
 /// The mirror of phoneAdd: the phone stops carrying these. Nothing on disk

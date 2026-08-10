@@ -8,7 +8,10 @@
 // the phone's fetch log can disagree on Unicode composition.
 const basename = (p) => String(p).split('/').pop().toLowerCase().normalize('NFC');
 
-/// Paired devices with their fetch ledgers: [{ id, name, files, last_fetch }],
+/// Paired devices with their fetch ledgers: [{ id, name, files, last_fetch,
+/// present }], where `present` is whether the device is holding a channel RIGHT
+/// NOW — the ledger only says what it last fetched, which cannot tell a phone
+/// that is here from one that synced yesterday.
 /// most recently active first — every `phone[0]` reader (the header chip, the
 /// coverage card) then speaks about the device actually in use, not whichever
 /// row happened to pair first.
