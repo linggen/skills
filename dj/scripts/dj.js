@@ -709,12 +709,15 @@ function wireLibrary() {
 }
 
 async function onRowAction(e) {
-  const btn = e.target.closest('[data-act]');
-  if (!btn) return;
   const id = e.target.closest('.lib-row')?.dataset.id;
+  if (!id) return;
   const t = state.library.tracks.find((x) => trackKey(x) === id);
   if (!t) return;
-  const act = btn.dataset.act;
+  // The card says it is clickable, so all of it is. The checkbox keeps
+  // selection and each action button keeps its own verb; everywhere else on
+  // the card is the play button the cover already shows on hover.
+  if (e.target.closest('.lib-chk')) return;
+  const act = e.target.closest('[data-act]')?.dataset.act || 'play';
 
   if (act === 'play') { openPlayer(t, { toast, fetchLyrics: (cur) => fetchTrackLyrics(cur || t), queue: libraryView() }); return; }
   if (act === 'karaoke') { startKaraoke(t, libraryView()); return; }
