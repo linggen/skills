@@ -71,6 +71,10 @@
             <aside id="lib-sidebar" class="lib-sidebar"></aside>
             <div class="lib-main">
               <div id="lib-selbar" class="lib-selbar" hidden></div>
+              <!-- The key to the card badges, over the cards they describe.
+                   Icons on a card state; they never act — every verb is behind
+                   the card's ⋯ — so the badges need somewhere to be read. -->
+              <div id="lib-legend" class="lib-legend" hidden></div>
               <div id="library" class="lib-list"></div>
             </div>
           </div>
@@ -85,6 +89,10 @@
     </main>
 
     <div id="toast" class="toast hidden"></div>
+    <!-- One song's menu, and the only place a card's verbs live. Fixed to the
+         window rather than nested in the grid, so the last column's menu is
+         not clipped by the scroller. -->
+    <div id="row-menu" class="row-menu-pop" hidden></div>
   </div>
 
   <script type="module" src="dj.js"></script>

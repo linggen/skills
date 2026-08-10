@@ -69,6 +69,8 @@ body {
 .btn.ghost { background: transparent; color: var(--muted); border-color: var(--line); padding: 7px 11px; }
 .btn.ghost:hover { color: var(--ink); background: var(--panel-2); filter: none; }
 .btn.small { padding: 4px 10px; font-size: 12px; }
+/* danger is --warn everywhere on this page, filled or ghost */
+.btn.danger { background: var(--warn); }
 
 /* ── Layout: content | resizer | narrow chat (mirrors CFO) ── */
 .layout { display: grid; grid-template-columns: 1fr 6px 480px; flex: 1; min-height: 0; }
@@ -240,14 +242,53 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .row-meta { min-width: 0; display: flex; flex-direction: column; }
 .row-t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .row-a { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* badges STATE, they never act — the verbs are all behind the ⋯ */
 .row-badges { display: inline-flex; gap: 6px; }
-.row-badges .badge { font-size: 11px; color: var(--pos); }
-.row-badges .badge.lyr { color: var(--warn); }
-.row-acts { display: inline-flex; gap: 2px; opacity: 0; transition: opacity .12s; }
-.lib-row:hover .row-acts { opacity: 1; }
-.row-acts button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 3px 6px; border-radius: 6px; }
-.row-acts button:hover { color: var(--ink); }
-.row-acts button.danger { color: #fff; background: var(--warn); border-radius: 6px; }
+.badge { font-size: 11px; color: var(--pos); }
+.badge.lyr { color: var(--warn); }
+.badge.kar { color: var(--accent); }
+/* the ⋯ stays visible, not hover-revealed: on a card that no longer carries
+   any other verb, a hidden menu is a hidden card */
+.row-menu {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 16px; line-height: 1; padding: 4px 6px; border-radius: 6px;
+}
+.row-menu:hover { color: var(--ink); background: var(--panel-2); }
+
+/* the legend — the badges' key, over the grid they describe */
+.lib-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 0 2px 8px; }
+.lib-legend[hidden] { display: none; }
+.leg { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+
+/* one song's menu — anchored to the window so the last column is not clipped */
+.row-menu-pop {
+  position: fixed; z-index: 60; min-width: 190px;
+  display: flex; flex-direction: column; gap: 2px; padding: 5px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 11px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .28);
+}
+.row-menu-pop[hidden] { display: none; }
+.row-menu-pop .pl-opt {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  border: none; border-radius: 7px; padding: 7px 10px; font-size: 13px; text-align: left;
+}
+.row-menu-pop .pl-opt:hover { background: var(--panel-2); }
+.row-menu-pop .pl-opt.sep { margin-top: 5px; border-top: 1px solid var(--line); border-radius: 0 0 7px 7px; padding-top: 10px; }
+.row-menu-pop .pl-opt.danger { color: var(--warn); }
+.row-menu-pop .opt-i { width: 16px; text-align: center; font-size: 12px; }
+
+/* the page's own confirm — window.confirm is a no-op in the app shell */
+.dj-modal {
+  position: fixed; inset: 0; z-index: 80; display: grid; place-items: center;
+  background: rgba(0, 0, 0, .45);
+}
+.dj-confirm {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px; max-width: 380px; box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+}
+.dj-confirm-msg { font-size: 14px; line-height: 1.5; }
+.dj-confirm-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
 .empty { color: var(--muted); padding: 24px 6px; }
 
 @media (max-width: 720px) { .lib-body { grid-template-columns: 1fr; } .lib-sidebar { flex-direction: row; flex-wrap: wrap; } }

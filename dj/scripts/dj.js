@@ -45,7 +45,6 @@ const state = {
   // persisted; the bare dj:shuffle key is the pre-blob fallback
   shuffle: savedUi.shuffle ?? (() => { try { return localStorage.getItem('dj:shuffle') === '1'; } catch { return false; } })(),
   selected: new Set(), // selected track ids (multi-select)
-  pendingRemove: null, // track id awaiting a second click to confirm removal
 };
 
 const setCollection = (c) => { state.collection = c; saveUi({ collection: c }); };
@@ -278,12 +277,15 @@ function renderLibrary() {
   renderSelbar();
   const grid = $('library');
   if (!all.length) {
+    renderLegend([]);
     grid.innerHTML = `<div class="empty">Your downloaded tracks show up here. Build a set above to start.</div>`;
     return;
   }
   const tracks = libraryView();
+  renderLegend(tracks);
   if (!tracks.length) { grid.innerHTML = `<div class="empty">Nothing here.</div>`; return; }
   grid.innerHTML = tracks.map(rowHtml).join('');
+  closeRowMenu(); // a repaint invalidates whatever the open menu was pointing at
 }
 
 /// Which phone the phone view is about. There are usually several paired —
@@ -467,17 +469,26 @@ async function deletePlaylist(name) {
   } catch (e) { toast(String(e.message || e)); }
 }
 
-function rowHtml(t) {
-  const id = trackKey(t);
-  const sel = state.selected.has(id);
-  const pending = state.pendingRemove === id;
+/// A card says what is true and nothing else: an icon here is a STATE, never a
+/// verb. Every verb lives behind the ⋯ at the end. The two used to be mixed —
+/// 📱 and ♪ reported, 🎤 and ⤓ acted, all in the same row of glyphs — which is
+/// how a download-looking arrow came to mean "show in Finder".
+const BADGES = [
   // In the phone's own view every row is on the phone, so the badge would be
   // saying nothing. On the Mac side it marks what the phone carries — the
   // reference, which is the decision, not the fetch ledger, which is only how
   // far the copying has got.
-  const badges =
-    (!onPhoneView() && t.on_phone ? '<span class="badge" title="On your phone">📱</span>' : '') +
-    (t.lrc ? '<span class="badge lyr" title="Has lyrics">♪</span>' : '');
+  { key: 'phone', icon: '📱', label: 'on your phone', has: (t) => !onPhoneView() && !!t.on_phone },
+  { key: 'lyr', icon: '♪', label: 'lyrics', has: (t) => !!t.lrc },
+  { key: 'kar', icon: '🎤', label: 'karaoke ready', has: (t) => !!(t.karaoke_audio || t.karaoke_video) },
+];
+
+function rowHtml(t) {
+  const id = trackKey(t);
+  const sel = state.selected.has(id);
+  const badges = BADGES.filter((b) => b.has(t))
+    .map((b) => `<span class="badge ${b.key}" title="${esc(b.label)}">${b.icon}</span>`)
+    .join('');
   return `<div class="lib-row${sel ? ' sel' : ''}" data-id="${esc(id)}">
     <input type="checkbox" class="lib-chk" data-id="${esc(id)}"${sel ? ' checked' : ''} />
     <span class="card-cover">
@@ -488,12 +499,21 @@ function rowHtml(t) {
       <span class="row-t">${esc(t.title)}</span>
       <span class="row-a">${esc(t.artist)}${t.year ? ` · ${esc(t.year)}` : ''} <span class="row-badges">${badges}</span></span>
     </div>
-    <div class="row-acts">
-      <button data-act="karaoke" title="Karaoke">🎤</button>
-      <button data-act="reveal" title="Show in Finder">⤓</button>
-      <button data-act="remove" class="${pending ? 'danger' : ''}" title="${inPlaylistView() ? 'Remove from this playlist' : 'Delete from library (to Trash)'}">${pending ? 'Remove?' : '✕'}</button>
-    </div>
+    <button class="row-menu" data-act="menu" title="More">⋯</button>
   </div>`;
+}
+
+/// The key to the badges, over the grid they describe. It lists only what this
+/// view can actually show — the phone view never explains 📱, which means
+/// nothing there — so an empty legend is a legend with nothing to teach.
+function renderLegend(tracks) {
+  const el = $('lib-legend');
+  if (!el) return;
+  const shown = BADGES.filter((b) => tracks.some((t) => b.has(t)));
+  el.hidden = !shown.length;
+  el.innerHTML = shown
+    .map((b) => `<span class="leg"><span class="badge ${b.key}">${b.icon}</span> ${esc(b.label)}</span>`)
+    .join('');
 }
 
 // The selection toolbar — actions on the checked songs (select before sync, etc.)
@@ -529,20 +549,35 @@ function renderSelbar() {
     bar.querySelector('[data-sel="remove"]').onclick = () => removeSelected();
     bar.querySelector('[data-sel="add"]').onclick = () => showAddMenu();
     const toPhone = bar.querySelector('[data-sel="tophone"]');
-    if (toPhone) toPhone.onclick = () => addToPhone();
+    if (toPhone) toPhone.onclick = () => phoneAdd(selectedFiles());
   }
 }
 
-/// Selected songs join what the phone carries. A reference — the files stay
-/// exactly where they are, and the phone fetches them on its next sync.
-async function addToPhone() {
-  const files = selectedFiles();
+/// Songs join what the phone carries. A reference — the files stay exactly
+/// where they are, and the phone fetches them on its next sync. One song from
+/// a card's menu and a checked set from the selection bar are the same verb,
+/// so they are the same call.
+async function phoneAdd(files) {
+  files = (files || []).filter(Boolean);
   if (!files.length) return;
   try {
     const r = await action('phone-add', JSON.stringify(files));
     state.selected.clear();
     await refreshLibrary();
     toast(`${r.added} song${r.added === 1 ? '' : 's'} added to your phone — it fetches them on the next sync.`);
+  } catch (e) { toast(String(e.message || e)); }
+}
+
+/// The mirror of phoneAdd: the phone stops carrying these. Nothing on disk
+/// changes — this is the strongest verb the phone side has, by design.
+async function phoneRemove(files) {
+  files = (files || []).filter(Boolean);
+  if (!files.length) return;
+  try {
+    const r = await action('phone-remove', JSON.stringify(files));
+    state.selected.clear();
+    await refreshLibrary();
+    toast(`${r.removed} song${r.removed === 1 ? '' : 's'} taken off your phone — still here on the Mac.`);
   } catch (e) { toast(String(e.message || e)); }
 }
 
@@ -633,14 +668,10 @@ async function removeSelected() {
   if (inPlaylistView()) { await untagSelected(state.collection.name); return; }
   const files = selectedFiles();
   if (!files.length) return;
+  if (onPhoneView()) { await phoneRemove(files); return; }
+  const n = files.length;
+  if (!(await confirmDialog(`Delete ${n} song${n === 1 ? '' : 's'} from your library?`, 'Delete', true))) return;
   try {
-    if (onPhoneView()) {
-      const r = await action('phone-remove', JSON.stringify(files));
-      state.selected.clear();
-      await refreshLibrary();
-      toast(`${r.removed} song${r.removed === 1 ? '' : 's'} taken off your phone — still here on the Mac.`);
-      return;
-    }
     const r = await action('tracks-delete', JSON.stringify(files));
     state.selected.clear();
     await refreshLibrary();
@@ -699,6 +730,7 @@ function wireLibrary() {
   };
   updateModeBtn();
   $('library').addEventListener('click', onRowAction);
+  $('library').addEventListener('contextmenu', onRowContext);
   $('library').addEventListener('change', (e) => {
     const chk = e.target.closest('.lib-chk');
     if (!chk) return;
@@ -708,32 +740,139 @@ function wireLibrary() {
   });
 }
 
+function trackOf(el) {
+  const id = el?.closest('.lib-row')?.dataset.id;
+  return id ? state.library.tracks.find((x) => trackKey(x) === id) : null;
+}
+
 async function onRowAction(e) {
-  const id = e.target.closest('.lib-row')?.dataset.id;
-  if (!id) return;
-  const t = state.library.tracks.find((x) => trackKey(x) === id);
+  const t = trackOf(e.target);
   if (!t) return;
   // The card says it is clickable, so all of it is. The checkbox keeps
-  // selection and each action button keeps its own verb; everywhere else on
-  // the card is the play button the cover already shows on hover.
+  // selection and the ⋯ opens the verbs; everywhere else on the card is the
+  // play button the cover already shows on hover.
   if (e.target.closest('.lib-chk')) return;
   const act = e.target.closest('[data-act]')?.dataset.act || 'play';
+  if (act === 'menu') { showRowMenu(t, e.target.closest('.row-menu')); return; }
+  await runVerb(act, t);
+}
 
+/// Right-click is the desktop's long-press: the same one menu, from the whole
+/// card rather than only the ⋯.
+function onRowContext(e) {
+  const t = trackOf(e.target);
+  if (!t) return;
+  e.preventDefault();
+  showRowMenu(t, e.target.closest('.lib-row'));
+}
+
+async function runVerb(act, t) {
   if (act === 'play') { openPlayer(t, { toast, fetchLyrics: (cur) => fetchTrackLyrics(cur || t), queue: libraryView() }); return; }
   if (act === 'karaoke') { startKaraoke(t, libraryView()); return; }
   if (act === 'reveal') {
     try { await runBash(`open -R ${sq(t.file)}`); } catch (err) { toast(String(err.message || err)); }
     return;
   }
-  if (act === 'remove') {
-    // Inside a playlist → just untag (file & other playlists untouched), no
-    // confirm needed since nothing is destroyed. In All songs / Recently added,
-    // ✕ deletes from the library — keep the two-click confirm, then Trash.
-    if (inPlaylistView()) { await removeFromPlaylist(t, state.collection.name); return; }
-    if (state.pendingRemove !== id) { state.pendingRemove = id; renderLibrary(); return; }
-    state.pendingRemove = null;
+  if (act === 'tophone') { await phoneAdd([t.file]); return; }
+  if (act === 'fromphone') { await phoneRemove([t.file]); return; }
+  if (act === 'unlist') { await removeFromPlaylist(t, state.collection.name); return; }
+  if (act === 'delete') {
+    if (!(await confirmDialog(`Delete “${esc(t.title)}” from your library?`, 'Delete', true))) return;
     await removeTrack(t);
   }
+}
+
+/// One song's verbs, and the only place they live. Which ones exist is the
+/// same question the selection bar answers for many songs: the view you stand
+/// in decides. From the phone side nothing can destroy a file.
+function rowVerbs(t) {
+  const verbs = [
+    { act: 'play', label: 'Play', icon: '▶' },
+    { act: 'karaoke', label: 'Karaoke', icon: '🎤' },
+  ];
+  if (onPhoneView()) verbs.push({ act: 'fromphone', label: 'Remove from phone', icon: '📴' });
+  else if (!t.on_phone) verbs.push({ act: 'tophone', label: 'Add to phone', icon: '📱' });
+  else verbs.push({ act: 'fromphone', label: 'Take off phone', icon: '📴' });
+  verbs.push({ act: 'reveal', label: 'Show in Finder', icon: '📂' });
+  if (inPlaylistView()) verbs.push({ act: 'unlist', label: 'Remove from this playlist', icon: '✕', sep: true });
+  else if (!onPhoneView()) verbs.push({ act: 'delete', label: 'Delete from library', icon: '🗑', sep: true, danger: true });
+  return verbs;
+}
+
+function showRowMenu(t, anchor) {
+  const menu = $('row-menu');
+  if (!menu || !anchor) return;
+  // A second click on the same ⋯ closes it, and so does anywhere else — the
+  // device menu learned this the hard way, where a repaint alone made the
+  // click feel like it had missed.
+  if (!menu.hidden && menu.dataset.for === trackKey(t)) { closeRowMenu(); return; }
+  menu.dataset.for = trackKey(t);
+  menu.innerHTML = rowVerbs(t)
+    .map((v) => `<button class="pl-opt${v.sep ? ' sep' : ''}${v.danger ? ' danger' : ''}" data-verb="${v.act}">` +
+      `<span class="opt-i">${v.icon}</span>${esc(v.label)}</button>`)
+    .join('');
+  // Measure it where it cannot widen the page, then move it into place.
+  menu.style.left = '-9999px';
+  menu.style.top = '0px';
+  menu.hidden = false;
+  placeMenu(menu, anchor);
+  menu.querySelectorAll('[data-verb]').forEach((b) => (b.onclick = () => {
+    closeRowMenu();
+    runVerb(b.dataset.verb, t);
+  }));
+  const away = (e) => {
+    if (e.target.closest('#row-menu')) return;
+    closeRowMenu();
+    document.removeEventListener('click', away, true);
+    document.removeEventListener('contextmenu', away, true);
+  };
+  setTimeout(() => {
+    document.addEventListener('click', away, true);
+    document.addEventListener('contextmenu', away, true);
+  }, 0);
+}
+
+function closeRowMenu() {
+  const menu = $('row-menu');
+  if (menu) { menu.hidden = true; menu.dataset.for = ''; }
+}
+
+/// Pin the menu under its anchor, pulled back inside the window on both axes —
+/// the cards run to the right edge of the grid, so the last column's menu
+/// would otherwise open off-screen.
+function placeMenu(menu, anchor) {
+  const a = anchor.getBoundingClientRect();
+  const m = menu.getBoundingClientRect();
+  const x = Math.max(8, Math.min(a.left, window.innerWidth - m.width - 8));
+  const y = a.bottom + m.height + 8 > window.innerHeight ? Math.max(8, a.top - m.height - 4) : a.bottom + 4;
+  menu.style.left = `${Math.round(x)}px`;
+  menu.style.top = `${Math.round(y)}px`;
+}
+
+/// A modal the page owns — `window.confirm` is a silent no-op inside the app
+/// shell's sandboxed iframe. Resolves false on Cancel, Escape, or a click on
+/// the backdrop.
+function confirmDialog(messageHtml, actionLabel, danger = false) {
+  return new Promise((resolve) => {
+    const box = document.createElement('div');
+    box.className = 'dj-modal';
+    box.innerHTML = `
+      <div class="dj-confirm">
+        <div class="dj-confirm-msg">${messageHtml}</div>
+        <div class="dj-confirm-row">
+          <button class="btn ghost small" data-cf="no">Cancel</button>
+          <button class="btn small${danger ? ' danger' : ''}" data-cf="yes">${esc(actionLabel)}</button>
+        </div>
+      </div>`;
+    const done = (v) => { box.remove(); document.removeEventListener('keydown', onKey, true); resolve(v); };
+    const onKey = (e) => { if (e.key === 'Escape') done(false); };
+    box.onclick = (e) => { if (e.target === box) done(false); };
+    box.querySelector('[data-cf="no"]').onclick = () => done(false);
+    box.querySelector('[data-cf="yes"]').onclick = () => done(true);
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(box);
+    box.querySelector('[data-cf="yes"]').focus();
+  });
 }
 
 // Untag one song from the current playlist. The song stays in the library (and

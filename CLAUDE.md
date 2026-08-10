@@ -2,18 +2,6 @@
 
 This is the Linggen skills repository — the standalone source of truth for the skills that ship with [Linggen](https://linggen.dev). Most are app skills (SKILL.md + a web UI under `scripts/` served at `/apps/<name>/`).
 
-## Skills
-
-- **`apple-shifu/`** — Your Apple gear's shifu: system health (disk, apps, caches, dashboard) + iPhone/Mac photo-video cleanup.
-- **`cfo/`** — Personal CFO. Imports bank/credit CSV/PDF exports, builds spend reports, learns categorization rules.
-- **`dj/`** — Disc Jockey. Vibe → AI-curated tracklist → download → tagged library → push to phone via VLC.
-- **`game-table/`** — Board games against AI (Chinese Chess, Gomoku) plus Snake, Pong, Tetris.
-- **`linggen-guide/`** — Built-in Linggen documentation: architecture, features, CLI, skills, tools, agents, config.
-- **`pulse/`** — GTM brain for solo founders: gathers signal (X/HN/Reddit/Bluesky), monitors mentions, drafts posts.
-- **`shared-memory/`** — Cross-host durable memory on the `ling-mem` daemon. Canonical SKILL.md lives here; host installs are stubs.
-- **`skiller/`** — Skill marketplace: search, install, browse library packs (skills.sh + ClawHub).
-- **`xbot/`** — X (Twitter) assistant: post, search, reply, mentions, engagement. User-provided API credentials.
-
 ## Edit workflow — three synced surfaces
 
 Edit HERE first, then copy changed files to the other two surfaces (keep all three byte-identical):
