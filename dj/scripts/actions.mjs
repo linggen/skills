@@ -17,6 +17,7 @@ import {
   Register, project, seedFromTracks, isDeleted,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
   deleteTrack, undeleteTrack, listsOf, filesInList, reconcileDeleted,
+  MAC, PHONE, addToPhone, removeFromPhone, seedPhoneView, listsForFile,
 } from './lww.js';
 
 const HOME = process.env.HOME || '';
@@ -165,17 +166,23 @@ function resolveTracks(lib, wanted) {
   return hits;
 }
 
-const requireList = (reg, name) => {
-  if (!listsOf(reg).includes(name)) die(`no playlist named “${name}” — ListLibrary shows the current ones`);
+const requireList = (reg, name, view = MAC) => {
+  if (!listsOf(reg, view).includes(name)) die(`no playlist named “${name}” — ListLibrary shows the current ones`);
 };
+
+/// Which set of playlists a verb is talking about. Every playlist verb takes
+/// one instead of existing twice — the phone view's lists are the same
+/// operations over their own keys.
+const viewArg = (v) => (String(v || '').trim() === 'phone' ? PHONE : MAC);
 
 // ── verbs ────────────────────────────────────────────────────────────────────
 
 const VERBS = {
   'playlist-create': (a) => {
     const name = arg(a[0], 'name');
+    const view = viewArg(a[1]);
     const { lib, reg } = loadStore();
-    createList(reg, name);
+    createList(reg, name, view);
     persist(lib, reg);
     return { ok: true, playlist: name };
   },
@@ -184,20 +191,22 @@ const VERBS = {
     const oldName = arg(a[0], 'old_name');
     const newName = arg(a[1], 'new_name');
     if (oldName === newName) return { ok: true, playlist: newName };
+    const view = viewArg(a[2]);
     const { lib, reg } = loadStore();
-    requireList(reg, oldName);
-    const merged = listsOf(reg).includes(newName);
-    renameList(reg, oldName, newName, filesInList(reg, oldName));
+    requireList(reg, oldName, view);
+    const merged = listsOf(reg, view).includes(newName);
+    renameList(reg, oldName, newName, filesInList(reg, oldName, view), view);
     persist(lib, reg);
     return { ok: true, playlist: newName, merged };
   },
 
   'playlist-delete': (a) => {
     const name = arg(a[0], 'name');
+    const view = viewArg(a[1]);
     const { lib, reg } = loadStore();
-    requireList(reg, name);
-    const kept = filesInList(reg, name).length;
-    deleteList(reg, name, filesInList(reg, name));
+    requireList(reg, name, view);
+    const kept = filesInList(reg, name, view).length;
+    deleteList(reg, name, filesInList(reg, name, view), view);
     persist(lib, reg);
     return { ok: true, deleted: name, songs_kept: kept };
   },
@@ -205,9 +214,14 @@ const VERBS = {
   'playlist-add': (a) => {
     const name = arg(a[0], 'name');
     const files = jsonArg(a[1], 'files');
+    const view = viewArg(a[2]);
     const { lib, reg } = loadStore();
     const tracks = resolveTracks(lib, files);
-    addToList(reg, tracks.map((t) => t.file), name);
+    // Filing into a phone list implies carrying the song: a list here may
+    // never name something the phone hasn't got, which is the whole reason it
+    // never has to say "9 of 11".
+    if (view === PHONE) addToPhone(reg, tracks.map((t) => t.file));
+    addToList(reg, tracks.map((t) => t.file), name, view);
     persist(lib, reg);
     return { ok: true, playlist: name, added: tracks.length };
   },
@@ -215,10 +229,11 @@ const VERBS = {
   'playlist-remove': (a) => {
     const name = arg(a[0], 'name');
     const files = jsonArg(a[1], 'files');
+    const view = viewArg(a[2]);
     const { lib, reg } = loadStore();
-    requireList(reg, name);
+    requireList(reg, name, view);
     const tracks = resolveTracks(lib, files);
-    removeFromList(reg, tracks.map((t) => t.file), name);
+    removeFromList(reg, tracks.map((t) => t.file), name, view);
     persist(lib, reg);
     return { ok: true, playlist: name, removed: tracks.length };
   },
@@ -226,12 +241,47 @@ const VERBS = {
   'playlist-reorder': (a) => {
     const name = arg(a[0], 'name');
     const files = jsonArg(a[1], 'files');
+    const view = viewArg(a[2]);
     const { lib, reg } = loadStore();
-    requireList(reg, name);
+    requireList(reg, name, view);
     const tracks = resolveTracks(lib, files);
-    setOrder(reg, name, tracks.map((t) => t.file));
+    setOrder(reg, name, tracks.map((t) => t.file), view);
     persist(lib, reg);
     return { ok: true, playlist: name, order: tracks.map((t) => norm(t.file)) };
+  },
+
+  // ── the phone view ────────────────────────────────────────────────────────
+  // What a phone carries. Adding is a reference, not a copy; removing takes the
+  // reference back and never the file. Destruction is `tracks-delete` and lives
+  // in the Mac's view alone.
+
+  'phone-add': (a) => {
+    const files = jsonArg(a[0], 'files');
+    const { lib, reg } = loadStore();
+    const tracks = resolveTracks(lib, files);
+    addToPhone(reg, tracks.map((t) => t.file));
+    persist(lib, reg);
+    return { ok: true, added: tracks.length };
+  },
+
+  'phone-remove': (a) => {
+    const files = jsonArg(a[0], 'files');
+    const { lib, reg } = loadStore();
+    const tracks = resolveTracks(lib, files);
+    removeFromPhone(reg, tracks.map((t) => t.file));
+    persist(lib, reg);
+    return { ok: true, removed: tracks.length, files_kept: tracks.length };
+  },
+
+  // One-time: fill the phone view from what a phone is ALREADY carrying, so
+  // splitting the views doesn't empty anyone's phone the day it ships. `files`
+  // is that device's fetch ledger, which only the page can read.
+  'phone-seed': (a) => {
+    const files = jsonArg(a[0], 'files');
+    const { lib, reg } = loadStore();
+    const written = seedPhoneView(reg, files.map(String));
+    if (written) persist(lib, reg);
+    return { ok: true, seeded: written > 0, cells: written };
   },
 
   // The song leaves the library: its cell (what a paired phone merges), and —
@@ -371,8 +421,18 @@ const VERBS = {
     }
 
     const before = lib.tracks.length;
+    const gone = lib.tracks.filter((t) => t.file && !byNorm.has(norm(t.file)));
     lib.tracks = lib.tracks.filter((t) => !t.file || byNorm.has(norm(t.file)));
     const retired = before - lib.tracks.length;
+    // A file that left the folder cannot be served to a phone, so nothing may
+    // go on referencing it. Retiring used to drop the row and stop there,
+    // which left playlists naming songs that existed nowhere — the reason a
+    // phone could report "9 of 11 here" for a list that held all it ever
+    // would. Only cells move here: no phone loses a file over this.
+    for (const t of gone) {
+      for (const name of listsForFile(reg, t.file)) removeFromList(reg, [t.file], name);
+      removeFromPhone(reg, [t.file]);
+    }
 
     let lrcChanged = 0;
     for (const t of lib.tracks) {

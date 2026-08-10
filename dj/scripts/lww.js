@@ -133,52 +133,90 @@ export class Register {
 
 export const base = (path) => String(path || '').split('/').pop();
 
-export const kList = (name) => `pln:${name}`;
-export const kMember = (file, name) => `pl:${base(file)}|${name}`;
-export const kOrder = (name) => `plo:${name}`;
+/// The two views, as the prefixes their cells live under. Everything below
+/// takes a view rather than existing twice: the Mac's playlists and the phone
+/// view's playlists are the same operations over different key spaces, and one
+/// implementation is the only way they cannot drift apart.
+///
+/// They are separate namespaces on purpose. The Mac's lists curate the whole
+/// library for playing here; the phone view's curate what a phone carries.
+/// They are NOT copies of each other and are never reconciled — same name in
+/// both is two lists, which is what makes "9 of 11 here" impossible to say.
+export const MAC = { list: 'pln', member: 'pl', order: 'plo' };
+export const PHONE = { list: 'ppn', member: 'ppl', order: 'ppo' };
+
+export const kList = (name, view = MAC) => `${view.list}:${name}`;
+export const kMember = (file, name, view = MAC) => `${view.member}:${base(file)}|${name}`;
+export const kOrder = (name, view = MAC) => `${view.order}:${name}`;
 export const kDeleted = (file) => `del:${base(file)}`;
+
+/// The phone view's song set: a REFERENCE to a song the Mac holds, never a
+/// song of its own. This is the whole of what a phone carries — the sync fetches
+/// exactly these, and a phone can add or drop references but can never destroy
+/// the file behind one.
+export const kRef = (file) => `ref:${base(file)}`;
 
 // ── Edits ───────────────────────────────────────────────────────────────────
 // Every playlist mutation the page or the phone can make, in one vocabulary.
 
-export function createList(reg, name) {
-  reg.set(kList(name), true);
+export function createList(reg, name, view = MAC) {
+  reg.set(kList(name, view), true);
 }
 
 /// Deleting a playlist unfiles its songs but never touches the files — a song
 /// in no playlist is still a song.
-export function deleteList(reg, name, files) {
-  for (const f of files) reg.remove(kMember(f, name));
-  reg.remove(kOrder(name));
-  reg.remove(kList(name));
+export function deleteList(reg, name, files, view = MAC) {
+  for (const f of files) reg.remove(kMember(f, name, view));
+  reg.remove(kOrder(name, view));
+  reg.remove(kList(name, view));
 }
 
 /// Rename = the new list, its members, its order, then the old list gone. Doing
 /// it as ordinary cells is what makes it merge: a peer that only ever saw the
 /// old name still converges.
-export function renameList(reg, oldName, newName, files) {
-  reg.set(kList(newName), true);
+export function renameList(reg, oldName, newName, files, view = MAC) {
+  reg.set(kList(newName, view), true);
   for (const f of files) {
-    reg.remove(kMember(f, oldName));
-    reg.set(kMember(f, newName), true);
+    reg.remove(kMember(f, oldName, view));
+    reg.set(kMember(f, newName, view), true);
   }
-  const order = reg.get(kOrder(oldName));
-  if (Array.isArray(order)) reg.set(kOrder(newName), order);
-  reg.remove(kOrder(oldName));
-  reg.remove(kList(oldName));
+  const order = reg.get(kOrder(oldName, view));
+  if (Array.isArray(order)) reg.set(kOrder(newName, view), order);
+  reg.remove(kOrder(oldName, view));
+  reg.remove(kList(oldName, view));
 }
 
-export function addToList(reg, files, name) {
-  reg.set(kList(name), true);
-  for (const f of files) reg.set(kMember(f, name), true);
+export function addToList(reg, files, name, view = MAC) {
+  reg.set(kList(name, view), true);
+  for (const f of files) reg.set(kMember(f, name, view), true);
 }
 
-export function removeFromList(reg, files, name) {
-  for (const f of files) reg.remove(kMember(f, name));
+export function removeFromList(reg, files, name, view = MAC) {
+  for (const f of files) reg.remove(kMember(f, name, view));
 }
 
-export function setOrder(reg, name, files) {
-  reg.set(kOrder(name), files.map(base));
+export function setOrder(reg, name, files, view = MAC) {
+  reg.set(kOrder(name, view), files.map(base));
+}
+
+// ── The phone view ──────────────────────────────────────────────────────────
+
+export const inPhoneView = (reg, file) => reg.get(kRef(file)) === true;
+
+/// Put songs on the phone. A reference, not a copy: the file stays exactly
+/// where it is, and the phone fetches it because this cell says to.
+export function addToPhone(reg, files) {
+  for (const f of files) reg.set(kRef(f), true);
+}
+
+/// Take songs off the phone. The file is untouched — this is the whole point
+/// of the split, and it is why the phone can never destroy anything: every
+/// removal a phone can reach is this one.
+export function removeFromPhone(reg, files) {
+  for (const f of files) {
+    reg.remove(kRef(f));
+    for (const name of listsForFile(reg, f, PHONE)) reg.remove(kMember(f, name, PHONE));
+  }
 }
 
 /// The song is gone from the library — the row and the file both. DJ music is
@@ -191,9 +229,13 @@ export function setOrder(reg, name, files) {
 /// should arrive in no list rather than inherit the dead one's places. Leaving
 /// them standing is what left playlists naming songs that no longer exist —
 /// a phone then honestly reported "9 of 11 here" for a list of 9.
+/// Deleting here is the only destruction in the product, so it cascades all the
+/// way down: out of the Mac's lists, off the phone, out of the phone's lists.
+/// Nothing downstream can hold a song this Mac no longer has.
 export function deleteTrack(reg, file) {
   reg.set(kDeleted(file), true);
   for (const name of listsForFile(reg, file)) reg.remove(kMember(file, name));
+  removeFromPhone(reg, [file]);
 }
 
 /// Deletes written before the rule above — or merged in from a peer that
@@ -206,6 +248,13 @@ export function reconcileDeleted(reg) {
   for (const [file] of reg.entries('del:')) {
     for (const name of listsForFile(reg, file)) {
       reg.remove(kMember(file, name));
+      cleared += 1;
+    }
+    // The same invariant one level down: a song this Mac destroyed cannot be
+    // referenced by a phone. Holds even when the tombstone arrived by merge
+    // from a device that never knew about the phone view.
+    if (inPhoneView(reg, file) || listsForFile(reg, file, PHONE).length) {
+      removeFromPhone(reg, [file]);
       cleared += 1;
     }
   }
@@ -224,29 +273,29 @@ export function undeleteTrack(reg, file) {
 // the ListLibrary tool and the agent already speak. Written on every save, so
 // nothing downstream has to learn about cells.
 
-/// Every playlist name, live ones only, alphabetical.
-export function listsOf(reg) {
-  return reg.entries('pln:').map(([name]) => name).sort((a, b) => a.localeCompare(b));
+/// Every playlist name in a view, live ones only, alphabetical.
+export function listsOf(reg, view = MAC) {
+  return reg.entries(`${view.list}:`).map(([name]) => name).sort((a, b) => a.localeCompare(b));
 }
 
-/// The playlists one file belongs to.
-export function listsForFile(reg, file) {
+/// The playlists of one view that a file belongs to.
+export function listsForFile(reg, file, view = MAC) {
   const want = `${base(file)}|`;
   return reg
-    .entries('pl:')
+    .entries(`${view.member}:`)
     .filter(([rest]) => rest.startsWith(want))
     .map(([rest]) => rest.slice(want.length));
 }
 
 /// The files in a playlist, in the user's order. Anything filed since the order
 /// was last set goes on the end rather than vanishing.
-export function filesInList(reg, name) {
+export function filesInList(reg, name, view = MAC) {
   const suffix = `|${name}`;
   const members = reg
-    .entries('pl:')
+    .entries(`${view.member}:`)
     .filter(([rest]) => rest.endsWith(suffix))
     .map(([rest]) => rest.slice(0, rest.length - suffix.length));
-  const order = reg.get(kOrder(name));
+  const order = reg.get(kOrder(name, view));
   if (!Array.isArray(order)) return members.sort((a, b) => a.localeCompare(b));
   const rank = new Map(order.map((f, i) => [f, i]));
   const known = members.filter((f) => rank.has(f)).sort((a, b) => rank.get(a) - rank.get(b));
@@ -259,6 +308,12 @@ export const isDeleted = (reg, file) => reg.get(kDeleted(file)) === true;
 /// Write the register through into `lib` — `tracks[].playlists[]` and the
 /// top-level `playlists[]`, which had drifted empty and is now real again.
 /// Returns the files the register says are gone, for the caller to unlink.
+///
+/// `lib.phone` is the second view: which songs a phone carries and how they are
+/// filed there. It is projected from the same register rather than kept as its
+/// own file, so the page, the agent and the phone all read one truth — and a
+/// reference can only ever name a song `tracks` still has, because a Mac-view
+/// delete cascades before this runs.
 export function project(reg, lib) {
   const gone = [];
   const kept = [];
@@ -268,10 +323,16 @@ export function project(reg, lib) {
       continue;
     }
     t.playlists = t.file ? listsForFile(reg, t.file) : [];
+    t.on_phone = t.file ? inPhoneView(reg, t.file) : false;
     kept.push(t);
   }
   lib.tracks = kept;
   lib.playlists = listsOf(reg).map((name) => ({ name, files: filesInList(reg, name) }));
+  lib.phone = {
+    files: reg.entries('ref:').map(([f]) => f).sort((a, b) => a.localeCompare(b)),
+    playlists: listsOf(reg, PHONE)
+      .map((name) => ({ name, files: filesInList(reg, name, PHONE) })),
+  };
   return gone;
 }
 
@@ -295,4 +356,40 @@ export function seedFromTracks(reg, lib) {
     }
   }
   return seeded;
+}
+
+/// The marker that says the phone view has been established. Its absence is
+/// what makes [seedPhoneView] a one-time act rather than something that fights
+/// the user every time they empty their phone.
+export const kPhoneSeeded = 'seed:phone';
+
+/// Fill the phone view from what a phone is ALREADY carrying, so the split
+/// doesn't empty anyone's phone the day it ships. `have` is that phone's fetch
+/// ledger — the basenames it has actually pulled.
+///
+/// Every song it holds becomes a reference, and each of the Mac's playlists is
+/// copied into the phone view narrowed to those songs. Copied, not linked: from
+/// here the two lists are separate curations and are meant to drift. A playlist
+/// with nothing on the phone is not created — an empty list nobody made is
+/// clutter, and the user can always add it.
+///
+/// Runs once. Returns the number of cells written, 0 if it had already run.
+export function seedPhoneView(reg, have) {
+  if (reg.get(kPhoneSeeded) === true) return 0;
+  const on = new Set(have.map(base));
+  let written = 0;
+  for (const f of on) {
+    if (isDeleted(reg, f)) continue;
+    reg.set(kRef(f), true);
+    written += 1;
+  }
+  for (const name of listsOf(reg)) {
+    const mine = filesInList(reg, name).filter((f) => on.has(f) && !isDeleted(reg, f));
+    if (!mine.length) continue;
+    addToList(reg, mine, name, PHONE);
+    setOrder(reg, name, mine, PHONE);
+    written += mine.length + 2;
+  }
+  reg.set(kPhoneSeeded, true);
+  return written;
 }

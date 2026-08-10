@@ -4,22 +4,31 @@
 
 import assert from 'node:assert';
 import {
+  PHONE,
   Register,
   addToList,
+  addToPhone,
   createList,
   deleteList,
   deleteTrack,
   filesInList,
+  inPhoneView,
+  isDeleted,
   listsForFile,
   listsOf,
   project,
   reconcileDeleted,
   removeFromList,
+  removeFromPhone,
   renameList,
   seedFromTracks,
+  seedPhoneView,
   setOrder,
   undeleteTrack,
 } from '../scripts/lww.js';
+
+/// The phone view's song set, straight off the register.
+const reg2files = (r) => r.entries('ref:').map(([f]) => f).sort();
 
 let pass = 0;
 const ok = (name, fn) => { fn(); pass += 1; console.log(`  ok  ${name}`); };
@@ -215,6 +224,119 @@ ok('a delete that predates the rule is repaired, once', () => {
   assert.equal(reconcileDeleted(r), 1);
   assert.deepEqual(filesInList(r, 'HK 90s'), []);
   assert.equal(reconcileDeleted(r), 0, 'idempotent');
+});
+
+// ── the phone view ──────────────────────────────────────────────────────────
+// A phone carries references to the Mac's songs, filed into playlists of its
+// own. The Mac view is upstream and never downstream: everything a phone can
+// reach lives in here.
+
+ok('a reference puts a song on the phone without moving it', () => {
+  const r = mac();
+  addToPhone(r, ['/Music/DJ/a.mp3']);
+  assert.equal(inPhoneView(r, 'a.mp3'), true);
+  assert.equal(inPhoneView(r, 'b.mp3'), false);
+  const lib = { tracks: [{ file: '/Music/DJ/a.mp3' }, { file: '/Music/DJ/b.mp3' }] };
+  assert.deepEqual(project(r, lib), [], 'nothing was destroyed');
+  assert.equal(lib.tracks.length, 2, 'both songs are still in the library');
+  assert.deepEqual(lib.phone.files, ['a.mp3']);
+});
+
+ok('taking a song off the phone keeps the file', () => {
+  const r = mac();
+  addToPhone(r, ['a.mp3']);
+  addToList(r, ['a.mp3'], 'Drive', PHONE);
+  removeFromPhone(r, ['a.mp3']);
+
+  assert.equal(inPhoneView(r, 'a.mp3'), false);
+  assert.deepEqual(filesInList(r, 'Drive', PHONE), [], 'and out of the phone list');
+  assert.equal(isDeleted(r, 'a.mp3'), false, 'the library still has it');
+  const lib = { tracks: [{ file: '/Music/DJ/a.mp3' }] };
+  assert.deepEqual(project(r, lib), [], 'no file to unlink');
+  assert.equal(lib.tracks.length, 1);
+});
+
+ok('the two views are separate curations under one name', () => {
+  const r = mac();
+  addToList(r, ['a.mp3', 'b.mp3'], 'HK 90s');
+  addToPhone(r, ['a.mp3']);
+  addToList(r, ['a.mp3'], 'HK 90s', PHONE);
+
+  // Same name, different contents, on purpose — nothing reconciles them.
+  assert.deepEqual(filesInList(r, 'HK 90s'), ['a.mp3', 'b.mp3']);
+  assert.deepEqual(filesInList(r, 'HK 90s', PHONE), ['a.mp3']);
+
+  // Adding to the Mac's list does not reach the phone's.
+  addToList(r, ['c.mp3'], 'HK 90s');
+  assert.deepEqual(filesInList(r, 'HK 90s', PHONE), ['a.mp3'],
+    'the phone list is not a subscription');
+});
+
+ok('deleting in the Mac view cascades all the way to the phone', () => {
+  const r = mac();
+  addToList(r, ['a.mp3'], 'HK 90s');
+  addToPhone(r, ['a.mp3']);
+  addToList(r, ['a.mp3'], 'Drive', PHONE);
+
+  deleteTrack(r, '/Music/DJ/a.mp3');
+
+  assert.equal(isDeleted(r, 'a.mp3'), true);
+  assert.deepEqual(filesInList(r, 'HK 90s'), [], 'out of the Mac list');
+  assert.equal(inPhoneView(r, 'a.mp3'), false, 'off the phone');
+  assert.deepEqual(filesInList(r, 'Drive', PHONE), [], 'out of the phone list');
+});
+
+ok('a phone view cannot outlive the song it points at', () => {
+  // The tombstone arrives by merge from a device that never knew about
+  // references — the invariant still has to hold.
+  const r = mac();
+  addToPhone(r, ['a.mp3']);
+  addToList(r, ['a.mp3'], 'Drive', PHONE);
+  r.set('del:a.mp3', true);
+
+  assert.ok(reconcileDeleted(r) > 0);
+  assert.equal(inPhoneView(r, 'a.mp3'), false);
+  assert.deepEqual(filesInList(r, 'Drive', PHONE), []);
+});
+
+// ── the seed ────────────────────────────────────────────────────────────────
+
+ok('the seed fills the phone view from what the phone already holds', () => {
+  const r = mac();
+  addToList(r, ['a.mp3', 'b.mp3', 'c.mp3'], 'HK 90s');
+  addToList(r, ['c.mp3'], 'Ballads');
+
+  // The phone has two of the three; Ballads is entirely absent from it.
+  assert.ok(seedPhoneView(r, ['/wherever/a.mp3', 'b.mp3']) > 0);
+
+  assert.deepEqual(reg2files(r), ['a.mp3', 'b.mp3']);
+  assert.deepEqual(filesInList(r, 'HK 90s', PHONE), ['a.mp3', 'b.mp3'],
+    'narrowed to what is there — never "2 of 3"');
+  assert.deepEqual(listsOf(r, PHONE), ['HK 90s'],
+    'a list with nothing on the phone is not created');
+  assert.deepEqual(filesInList(r, 'HK 90s'), ['a.mp3', 'b.mp3', 'c.mp3'],
+    'the Mac list is untouched');
+});
+
+ok('the seed runs once, and never fights the user afterwards', () => {
+  const r = mac();
+  addToList(r, ['a.mp3'], 'HK 90s');
+  seedPhoneView(r, ['a.mp3']);
+
+  // They clear their phone; the next load must not put it back.
+  removeFromPhone(r, ['a.mp3']);
+  assert.equal(seedPhoneView(r, ['a.mp3']), 0);
+  assert.equal(inPhoneView(r, 'a.mp3'), false);
+});
+
+ok('the seed does not reference a song that was deleted', () => {
+  const r = mac();
+  addToList(r, ['a.mp3', 'b.mp3'], 'HK 90s');
+  deleteTrack(r, 'a.mp3');
+  seedPhoneView(r, ['a.mp3', 'b.mp3']); // a stale ledger still names it
+
+  assert.equal(inPhoneView(r, 'a.mp3'), false);
+  assert.deepEqual(filesInList(r, 'HK 90s', PHONE), ['b.mp3']);
 });
 
 console.log(`\n${pass} checks passed`);
