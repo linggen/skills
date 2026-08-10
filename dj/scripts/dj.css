@@ -69,8 +69,10 @@ body {
 .btn.ghost { background: transparent; color: var(--muted); border-color: var(--line); padding: 7px 11px; }
 .btn.ghost:hover { color: var(--ink); background: var(--panel-2); filter: none; }
 .btn.small { padding: 4px 10px; font-size: 12px; }
-/* danger is --warn everywhere on this page, filled or ghost */
-.btn.danger { background: var(--warn); }
+/* danger is --warn everywhere on this page. Filled only — the ghost variant
+   below paints --warn on the TEXT, and a filled rule reaching it would put
+   gold on gold and leave the label invisible. */
+.btn.danger:not(.ghost) { background: var(--warn); color: #fff; }
 
 /* ── Layout: content | resizer | narrow chat (mirrors CFO) ── */
 .layout { display: grid; grid-template-columns: 1fr 6px 480px; flex: 1; min-height: 0; }
