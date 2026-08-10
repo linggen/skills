@@ -13,6 +13,7 @@ import {
   listsForFile,
   listsOf,
   project,
+  reconcileDeleted,
   removeFromList,
   renameList,
   seedFromTracks,
@@ -173,6 +174,47 @@ ok('seeding never resurrects what someone deliberately removed', () => {
   deleteList(r, 'Gone', []);
   seedFromTracks(r, lib); // runs on every load — must be a no-op now
   assert.deepEqual(listsOf(r), [], 'the tombstones held');
+});
+
+// ── a delete takes the song's playlists with it ──────────────────────────────
+
+ok('a deleted song is in no playlist', () => {
+  const r = mac();
+  addToList(r, ['/Music/DJ/a.mp3', '/Music/DJ/b.mp3'], 'HK 90s');
+  deleteTrack(r, '/Music/DJ/a.mp3');
+  assert.deepEqual(filesInList(r, 'HK 90s'), ['b.mp3'], 'the dead song left the list');
+  assert.deepEqual(listsForFile(r, 'a.mp3'), []);
+});
+
+ok('a playlist stops naming songs that no longer exist', () => {
+  // The bug this rule closes: the list still named the deleted song, so a phone
+  // holding every file it could hold reported "1 of 2 here".
+  const r = mac();
+  addToList(r, ['/Music/DJ/a.mp3', '/Music/DJ/b.mp3'], 'HK 90s');
+  deleteTrack(r, '/Music/DJ/a.mp3');
+  const lib = { tracks: [{ file: '/Music/DJ/a.mp3' }, { file: '/Music/DJ/b.mp3' }] };
+  project(r, lib);
+  assert.deepEqual(lib.playlists, [{ name: 'HK 90s', files: ['b.mp3'] }]);
+});
+
+ok('a name that comes back is a new song, in no list', () => {
+  const r = mac();
+  addToList(r, ['/Music/DJ/a.mp3'], 'HK 90s');
+  deleteTrack(r, '/Music/DJ/a.mp3');
+  undeleteTrack(r, '/Music/DJ/a.mp3'); // re-downloaded under the same name
+  assert.deepEqual(listsForFile(r, 'a.mp3'), [],
+    'it must not inherit the dead song\'s places');
+});
+
+ok('a delete that predates the rule is repaired, once', () => {
+  const r = mac();
+  addToList(r, ['/Music/DJ/a.mp3'], 'HK 90s');
+  // What the old deleteTrack wrote, and what an un-updated phone still merges in.
+  r.set('del:a.mp3', true);
+  assert.deepEqual(filesInList(r, 'HK 90s'), ['a.mp3'], 'the stale cell is there');
+  assert.equal(reconcileDeleted(r), 1);
+  assert.deepEqual(filesInList(r, 'HK 90s'), []);
+  assert.equal(reconcileDeleted(r), 0, 'idempotent');
 });
 
 console.log(`\n${pass} checks passed`);

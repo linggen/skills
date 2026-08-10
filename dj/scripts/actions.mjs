@@ -16,7 +16,7 @@ import path from 'node:path';
 import {
   Register, project, seedFromTracks, isDeleted,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
-  deleteTrack, undeleteTrack, listsOf, filesInList,
+  deleteTrack, undeleteTrack, listsOf, filesInList, reconcileDeleted,
 } from './lww.js';
 
 const HOME = process.env.HOME || '';
@@ -110,7 +110,14 @@ function loadStore() {
   lib.tracks ||= [];
   lib.playlists ||= [];
   const reg = new Register(deviceId(), readJson(REG, null));
-  if (lib && seedFromTracks(reg, lib) > 0) persist(lib, reg);
+  const seeded = lib ? seedFromTracks(reg, lib) : 0;
+  // A delete now takes the song's playlist membership with it, but deletes
+  // written before that rule — and any arriving from a phone still on the old
+  // one — left theirs standing, which is what had playlists naming songs that
+  // no longer exist. Idempotent, so this costs a scan and nothing else once
+  // the register is clean.
+  const repaired = reconcileDeleted(reg);
+  if (seeded > 0 || repaired > 0) persist(lib, reg);
   return { lib, reg };
 }
 

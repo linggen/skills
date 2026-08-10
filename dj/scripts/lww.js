@@ -184,8 +184,32 @@ export function setOrder(reg, name, files) {
 /// The song is gone from the library — the row and the file both. DJ music is
 /// reproducible (the whole loop is a brief, then yt-dlp), so this is a plain
 /// delete and not a trip through the Trash.
+///
+/// A song that is gone is in no playlist, so its membership goes with it. The
+/// cells are tombstoned here rather than filtered out wherever membership is
+/// read: a name that comes back is a NEW song (see [undeleteTrack]), and it
+/// should arrive in no list rather than inherit the dead one's places. Leaving
+/// them standing is what left playlists naming songs that no longer exist —
+/// a phone then honestly reported "9 of 11 here" for a list of 9.
 export function deleteTrack(reg, file) {
   reg.set(kDeleted(file), true);
+  for (const name of listsForFile(reg, file)) reg.remove(kMember(file, name));
+}
+
+/// Deletes written before the rule above — or merged in from a peer that
+/// doesn't know it yet — left their membership cells behind. Clearing them
+/// keeps one meaning of "deleted" whoever wrote the tombstone, and the
+/// tombstones it writes carry the repair to the other device on the next sync.
+/// Idempotent: a second run finds nothing.
+export function reconcileDeleted(reg) {
+  let cleared = 0;
+  for (const [file] of reg.entries('del:')) {
+    for (const name of listsForFile(reg, file)) {
+      reg.remove(kMember(file, name));
+      cleared += 1;
+    }
+  }
+  return cleared;
 }
 
 /// A song arriving under a name that was deleted before is a NEW song, so the
