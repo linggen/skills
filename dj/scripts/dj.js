@@ -568,7 +568,8 @@ async function phoneAdd(files) {
     const r = await action('phone-add', JSON.stringify(files));
     state.selected.clear();
     await refreshLibrary();
-    const n = `${r.added} song${r.added === 1 ? '' : 's'}`;
+    const one = r.added === 1;
+    const n = `${r.added} song${one ? '' : 's'}`;
     const dev = await refreshDevices();
     // The verb is "add", because that is the decision and it is true either
     // way. What FOLLOWED depends on whether the phone is here: the write
@@ -577,7 +578,7 @@ async function phoneAdd(files) {
     // message is composed after re-reading it — never from the boot list.
     toast(dev?.present
       ? `${n} on your phone now — ${esc(dev.name)} is fetching.`
-      : `${n} added — your phone picks them up when it wakes.`);
+      : `${n} added — your phone picks ${one ? 'it' : 'them'} up when it wakes.`);
   } catch (e) { toast(String(e.message || e)); }
 }
 
