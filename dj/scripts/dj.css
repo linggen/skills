@@ -40,7 +40,7 @@ body {
 /* The source switch: which library you are in. Two buttons rather than a
    dropdown, because there are two and the one you are not in is worth reading
    at a glance — the phone's count is the answer to "did that sync work". */
-.lib-count { display: flex; gap: 4px; margin-left: auto; padding: 3px;
+.lib-count { display: flex; gap: 4px; padding: 3px;
   background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; }
 .src {
   display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
@@ -49,8 +49,8 @@ body {
 }
 .src:hover { background: var(--panel); }
 .src.on { background: var(--panel); color: var(--ink); box-shadow: var(--shadow); }
-.src-name { font-size: 12px; font-weight: 600; line-height: 1.2; }
-.src-n { font-size: 11px; color: var(--muted); line-height: 1.2; }
+.src-name { font-size: 12px; font-weight: 600; line-height: 1.2; white-space: nowrap; }
+.src-n { font-size: 11px; color: var(--muted); line-height: 1.2; white-space: nowrap; }
 .task-strip {
   margin: 2px 0 6px; padding: 6px 10px; border: 1px solid var(--line);
   border-radius: 8px; font-size: 12px; color: var(--muted);
@@ -354,3 +354,24 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
    a song off the phone and stays plain. */
 .btn.ghost.small.danger { color: var(--warn); border-color: var(--warn); }
 .btn.ghost.small.danger:hover { background: var(--warn); color: #fff; }
+
+/* The device picker and the one verb that reaches another machine. */
+.src-pick {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  font: inherit; padding: 0 6px; border-radius: 7px; align-self: stretch;
+}
+.src-pick:hover { background: var(--panel); color: var(--ink); }
+/* A popover, not an inline row: the options used to reflow the toolbar and
+   squeeze "This Mac" onto two lines just by opening. */
+.lib-toolbar { position: relative; }
+.src-menu {
+  position: absolute; top: 100%; left: 0; z-index: 20; margin-top: 4px;
+  display: flex; flex-direction: column; gap: 2px; padding: 4px; min-width: 180px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; box-shadow: 0 6px 20px rgba(16, 24, 40, .12);
+}
+.src-menu[hidden] { display: none; }
+.src-menu .pl-opt { display: flex; flex-direction: column; align-items: flex-start; }
+.dev-sub { font-size: 10px; color: var(--muted); }
+/* Search keeps the right edge; everything before it stays with the verbs. */
+.lib-search { margin-left: auto; }

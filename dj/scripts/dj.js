@@ -266,6 +266,15 @@ function renderFilters() {
 function renderLibrary() {
   const all = state.library.tracks || [];
   renderSource();
+  // Sync belongs to the phone: it is the one verb that reaches another device,
+  // and on the Mac side there is nothing to tell.
+  const sync = $('sync-btn');
+  if (sync) {
+    sync.hidden = !onPhoneView() || !currentDevice();
+    sync.onclick = () => syncPhone(sync);
+  }
+  const menu = $('src-menu');
+  if (menu && !onPhoneView()) menu.hidden = true;
   renderSidebar();
   renderFilters();
   renderSelbar();
@@ -279,31 +288,92 @@ function renderLibrary() {
   grid.innerHTML = tracks.map(rowHtml).join('');
 }
 
+/// Which phone the phone view is about. There are usually several paired —
+/// old simulators, a spare handset — and the engine's ledger cannot say which
+/// one is connected right now, only which last fetched. So this is the user's
+/// choice, remembered; defaulting to the one that has actually synced beats
+/// claiming a liveness the page has no way to know.
+function currentDevice() {
+  const list = state.phone;
+  if (!list.length) return null;
+  return list.find((d) => d.id === savedUi.deviceId) || list[0];
+}
+
 /// The one control that says which library you are in, and what it holds.
 ///
 /// It replaced a chip that reported "46 songs · iPhone 15 Pro 12/46" and gave
 /// you nothing to do about it. The two numbers meant different things — one a
-/// library, one a transfer — and sat in the same breath.
+/// library, one a transfer — and sat in the same breath. It lives in the
+/// library's own row now, beside the verbs that act on what it selects.
 function renderSource() {
   const el = $('lib-count');
   if (!el) return;
   const macN = (state.library.tracks || []).length;
   const phoneN = (state.library.phone?.files || []).length;
-  const dev = state.phone[0];
+  const dev = currentDevice();
   // On the phone side, say how far the transfer has got — that is a fact about
   // this device, not about the curation, so it belongs on the button and not
   // in the list.
   const carried = dev ? coverage(viewTracks(), dev).synced : null;
-  const behind = onPhoneView() && carried !== null && carried < phoneN;
+  const behind = carried !== null && carried < phoneN;
   const tab = (key, label, n, sub) =>
     `<button class="src ${state.view === key ? 'on' : ''}" data-src="${key}">` +
     `<span class="src-name">${esc(label)}</span>` +
     `<span class="src-n">${n} song${n === 1 ? '' : 's'}${sub ? ` · ${esc(sub)}` : ''}</span></button>`;
+  const others = state.phone.filter((d) => d.id !== dev?.id);
   el.innerHTML =
     tab('mac', 'This Mac', macN, '') +
     tab('phone', dev ? dev.name : 'Phone', phoneN,
-      behind ? `${carried} here` : dev ? 'up to date' : 'not paired');
+      behind ? `${carried} here` : dev ? 'up to date' : 'not paired') +
+    (others.length
+      ? `<button class="src-pick" id="src-pick" title="Another paired phone">▾</button>`
+      : '');
   el.querySelectorAll('.src').forEach((b) => (b.onclick = () => setView(b.dataset.src)));
+  const pick = $('src-pick');
+  if (pick) pick.onclick = () => showDeviceMenu(others);
+}
+
+function showDeviceMenu(others) {
+  const menu = $('src-menu');
+  if (!menu) return;
+  menu.innerHTML = others
+    .map((d) => `<button class="pl-opt" data-dev="${esc(d.id)}">${esc(d.name)}` +
+      `<span class="dev-sub">${d.last_fetch ? `${(d.files || []).length} synced` : 'never synced'}</span></button>`)
+    .join('');
+  menu.hidden = false;
+  menu.querySelectorAll('[data-dev]').forEach((b) => (b.onclick = () => {
+    saveUi({ deviceId: b.dataset.dev });
+    savedUi.deviceId = b.dataset.dev;
+    menu.hidden = true;
+    state.view = 'phone';
+    saveUi({ view: 'phone' });
+    renderLibrary();
+  }));
+}
+
+/// Tell the phone the library moved. Adding a song to the phone view changes
+/// CELLS, and the engine's watcher only sees the music folder — so without this
+/// the phone would carry on holding yesterday's set until something happened to
+/// touch a file. The topic is the one the phone already listens on.
+async function syncPhone(btn) {
+  const dev = currentDevice();
+  if (!dev) return;
+  if (btn) { btn.disabled = true; btn.textContent = 'Telling your phone…'; }
+  try {
+    const res = await fetch('/api/topic/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: 'dj', op: 'library-changed', payload: {}, retain: false }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    // The phone does the fetching, so this is where our part ends — say that
+    // rather than implying the songs have landed.
+    toast(`${dev.name} told — it fetches what's missing while DJ is open on it.`);
+  } catch (e) {
+    toast(`Couldn't reach your phone: ${String(e.message || e)}`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⇅ Sync'; }
+  }
 }
 
 /// Switching view changes what every control below means, so the selection and

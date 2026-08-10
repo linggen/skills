@@ -14,7 +14,6 @@
         <span class="logo">DJ</span>
         <span class="tagline">your disc jockey</span>
       </div>
-      <div class="lib-count" id="lib-count"></div>
       <div class="actions">
         <button id="party-btn" class="btn" title="Karaoke — sing on the big screen">🎤 Karaoke</button>
         <button id="settings-btn" class="btn ghost" title="Settings" aria-label="Settings">⚙</button>
@@ -52,6 +51,12 @@
             <h2 class="section-title">Your library</h2>
             <button id="play-all" class="btn small" title="Play this list">▶ Play</button>
             <button id="mode-btn" class="btn ghost small" title="Playback order"></button>
+            <!-- Which library you are in, beside the verbs that act on it.
+                 `lib-count` keeps its id: the source switch replaced the count
+                 chip that used to live up in the topbar. -->
+            <div class="lib-count" id="lib-count"></div>
+            <button id="sync-btn" class="btn ghost small" title="Tell your phone to fetch what it's missing" hidden>⇅ Sync</button>
+            <span class="src-menu" id="src-menu" hidden></span>
             <input id="lib-search" class="lib-search" type="search" placeholder="Search your library…" autocomplete="off" />
           </div>
           <!-- A background errand's progress (retained `tasks` topic) — the
