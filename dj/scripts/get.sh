@@ -20,7 +20,23 @@ DIR="${SKILL_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 REQ="${1:-}"
 case "$REQ" in "{{"*"}}"|"") REQ="$(cat)" ;; esac   # placeholder or stdin
 
-python3 - "$DIR" "$REQ" <<'PY'
+# Where the songs are meant to end up. Downloading is the Mac's act — a phone
+# carries only what something said it should — so the destination travels WITH
+# the order instead of arriving as a second call the caller can forget. That
+# forgetting is the whole failure this closes: a download asked for from the
+# phone would land on the Mac and stop, with nobody wrong and nothing said.
+FOR_PHONE="${2:-}"
+case "$FOR_PHONE" in "{{"*"}}") FOR_PHONE="" ;; esac
+
+# Captured, not streamed: the file list has to reach the phone-add below, and
+# both subprocesses inside capture their own output, so this is the one JSON
+# line and nothing else. It is printed at the end, unchanged. Via a file rather
+# than $(…) because bash cannot parse a heredoc inside command substitution
+# when the body has unbalanced quotes, and the python below is full of them.
+OUT="$(mktemp -t dj-get)"
+trap 'rm -f "$OUT"' EXIT
+
+python3 - "$DIR" "$REQ" > "$OUT" <<'PY'
 import json, os, re, subprocess, sys, time, urllib.parse, urllib.request
 
 skill_dir, raw = sys.argv[1], sys.argv[2]
@@ -182,3 +198,21 @@ PY
 # so ListLibrary and a paired phone see them immediately. Best-effort: the next
 # page open reconciles anyway.
 bash "$DIR/scripts/run-js.sh" "$DIR/scripts/actions.mjs" reconcile >/dev/null 2>&1 || true
+
+# Ordered for the phone: put what actually landed into the phone view. It runs
+# AFTER reconcile because phone-add resolves names against the library, and the
+# songs are new — reconcile is what puts them there. phone-add tells the phone
+# itself, so a connected one starts fetching without anything else being asked.
+case "$FOR_PHONE" in
+  true|True|1|yes)
+    FILES="$(python3 -c \
+      'import json,sys; print(json.dumps(json.load(open(sys.argv[1])).get("files") or []))' \
+      "$OUT" 2>/dev/null || printf '[]')"
+    if [ "$FILES" != "[]" ]; then
+      bash "$DIR/scripts/run-js.sh" "$DIR/scripts/actions.mjs" phone-add "$FILES" >/dev/null 2>&1 || true
+    fi
+    ;;
+esac
+
+# The tool's one JSON line, exactly as python wrote it.
+cat "$OUT"

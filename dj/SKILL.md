@@ -78,9 +78,8 @@ tools:
       { artist, title, year? } — the same rows you'd propose — and fetches each
       one, tagged and loudness-normalized, into the library folder. Returns
       { got, failed, files[], errors[] }. Call ListLibrary first so you never
-      re-download something they already own. The files land in the folder the
-      page and any paired phone both watch, so they appear in both without
-      anything else being asked of you.
+      re-download something they already own. What lands is on the MAC; set
+      `for_phone` when the user wants it on their phone.
     # Without this block the model is handed `properties: {}` and can only
     # call GetTracks({}) — which is what it did. The engine builds both the
     # tool schema AND the {{...}} substitution from these args, so an
@@ -106,13 +105,24 @@ tools:
             title:  { type: string }
             year:   { type: integer }
           required: [artist, title]
+      for_phone:
+        type: boolean
+        default: false
+        description: >-
+          True when this music is for the user's PHONE — the ask reached you
+          from the phone, or it names the phone, the car, the gym, a run, a
+          flight, "take it with me". Everything that lands then goes into the
+          phone's library too, and the phone starts fetching it at once. Left
+          false, the songs stay on the Mac, which is what a download asked for
+          at the Mac means. It costs nothing to be wrong in the safe
+          direction: AddToPhone adds them afterwards.
     # No quotes around the placeholder — the engine already shell-escapes
     # every value it substitutes. Quoting here too produced `''[{...}]''`:
     # the two pairs cancel and the JSON lands UNQUOTED, so the shell globs
     # `[...]` and word-splits on any space. A Chinese title survived that;
     # `{"title":"Smooth Criminal"}` would have arrived as `[{"artist":"Michael`
     # and nothing else. Every pulse template already gets this right.
-    cmd: "bash $SKILL_DIR/scripts/get.sh {{tracks}}"
+    cmd: "bash $SKILL_DIR/scripts/get.sh {{tracks}} {{for_phone}}"
     tier: edit
     timeout_ms: 900000
   # ── library mutations — every verb below runs actions.mjs, the ONE writer
@@ -362,10 +372,12 @@ libraries* below.
 **When the ask came from their phone, finish it there.** A request relayed from
 the phone — or any request that names the phone, the car, the gym, a run, a
 flight, "take it with me" — is asking for music *on the phone*. Downloading it
-to the Mac answers half. Follow `GetTracks` with `AddToPhone` on what landed,
-and say so in the same breath: *"Got 8 — they're heading to your phone now."*
-Downloads asked for at the Mac stay on the Mac; don't push music at a phone
-nobody mentioned.
+to the Mac answers half. Say so in the download itself: `GetTracks` with
+`for_phone: true` puts what lands into the phone's library and starts it
+moving, in one call. Then say it in one breath: *"Got 8 — they're heading to
+your phone now."* Downloads asked for at the Mac stay on the Mac; don't push
+music at a phone nobody mentioned. Forgot, or only worked it out afterwards?
+`AddToPhone` on what landed does the same thing.
 
 ## How a set gets built
 
