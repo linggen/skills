@@ -335,6 +335,21 @@ export function filesInList(reg, name, view = MAC) {
 
 export const isDeleted = (reg, file) => reg.get(kDeleted(file)) === true;
 
+/// The phone view as a plain list — the songs a phone carries and how they are
+/// filed there, with no cells, no timestamps and no tombstones in sight.
+///
+/// This is what goes down the wire on a sync. A phone holds it as a CACHE and
+/// replaces it whole; it merges nothing, which is why it needs none of the
+/// machinery above. The cells stay here because this Mac is the single applier
+/// and they are how it keeps its own two views apart.
+export function phoneView(reg) {
+  return {
+    files: reg.entries('ref:').map(([f]) => f).sort((a, b) => a.localeCompare(b)),
+    playlists: listsOf(reg, PHONE)
+      .map((name) => ({ name, files: filesInList(reg, name, PHONE) })),
+  };
+}
+
 /// Write the register through into `lib` — `tracks[].playlists[]` and the
 /// top-level `playlists[]`, which had drifted empty and is now real again.
 /// Returns the files the register says are gone, for the caller to unlink.
@@ -358,11 +373,7 @@ export function project(reg, lib) {
   }
   lib.tracks = kept;
   lib.playlists = listsOf(reg).map((name) => ({ name, files: filesInList(reg, name) }));
-  lib.phone = {
-    files: reg.entries('ref:').map(([f]) => f).sort((a, b) => a.localeCompare(b)),
-    playlists: listsOf(reg, PHONE)
-      .map((name) => ({ name, files: filesInList(reg, name, PHONE) })),
-  };
+  lib.phone = phoneView(reg);
   return gone;
 }
 

@@ -13,11 +13,12 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { Buffer } from 'node:buffer';
 import {
   Register, project, seedFromTracks, isDeleted,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
   deleteTrack, undeleteTrack, listsOf, filesInList, reconcileDeleted,
-  MAC, PHONE, addToPhone, removeFromPhone, pruneMissing,
+  MAC, PHONE, addToPhone, removeFromPhone, pruneMissing, phoneView, base,
 } from './lww.js';
 
 const HOME = process.env.HOME || '';
@@ -25,6 +26,7 @@ const DJ_DIR = process.env.DJ_DIR || path.join(HOME, '.linggen', 'skills', 'dj')
 const DATA = path.join(DJ_DIR, 'data');
 const LIB = path.join(DJ_DIR, 'library.json');
 const REG = path.join(DATA, 'playlist-edits.json');
+const OP_IDS = path.join(DATA, 'op-ids.json');
 
 // Thrown, never process.exit(): an exit inside a verb would skip the finally
 // that releases the lock, and a routine agent error (a stale filename) would
@@ -175,6 +177,169 @@ const requireList = (reg, name, view = MAC) => {
 /// operations over their own keys.
 const viewArg = (v) => (String(v || '').trim() === 'phone' ? PHONE : MAC);
 
+/// resolveTracks' lenient twin: the names that are still songs here, and the
+/// ones that aren't. A phone batch may have been queued while this Mac deleted
+/// something, so a name it can't place is news to report — never a reason to
+/// throw the rest of the batch away.
+function resolveSome(lib, wanted) {
+  const byBase = new Map(
+    lib.tracks.filter((t) => t.file).map((t) => [norm(t.file), t.file]),
+  );
+  const hits = [];
+  const missing = [];
+  for (const w of wanted) {
+    const f = byBase.get(norm(w));
+    if (f) hits.push(f);
+    else missing.push(w);
+  }
+  return { hits, missing };
+}
+
+// ── the phone's op log ───────────────────────────────────────────────────────
+// A phone edits its view while this Mac is asleep, so its edits arrive as
+// INTENTS — one jsonl line each — rather than as a state to merge. This is the
+// single applier: every op lands here, under the same lock every other verb
+// takes, and the whole resulting view goes back down. Nothing about a phone's
+// curation is inferred from a file image, which is why the phone needs neither
+// cells nor tombstones to hold an edit overnight.
+//
+// An op that can't be carried out — its playlist or its song deleted here in
+// the meantime — is SKIPPED and named, never guessed at. It is still spent:
+// the phone clears it on the acknowledgement, so a stale intent can't queue
+// forever.
+
+const opName = (o) => {
+  const s = String(o.name ?? '').trim();
+  if (!s) die('op has no playlist name');
+  return s;
+};
+
+const opFiles = (o) => [
+  ...new Set((Array.isArray(o.files) ? o.files : []).map((f) => base(String(f ?? ''))).filter(Boolean)),
+];
+
+const listMissing = (name) => ({ skipped: `“${name}” is no longer a playlist on your Mac` });
+
+/// One vocabulary, and deliberately a small one: it names the phone view only,
+/// has no Mac-view verb and no file-destroying verb. A phone structurally
+/// cannot reach this Mac's own playlists or its music.
+const PHONE_OPS = {
+  'playlist-create': (lib, reg, o) => {
+    createList(reg, opName(o), PHONE);
+    return {};
+  },
+
+  'playlist-rename': (lib, reg, o) => {
+    const from = opName(o);
+    const to = String(o.to ?? '').trim();
+    if (!to) die('rename has no new name');
+    if (from === to) return {};
+    if (!listsOf(reg, PHONE).includes(from)) return listMissing(from);
+    renameList(reg, from, to, filesInList(reg, from, PHONE), PHONE);
+    return {};
+  },
+
+  // Deleting a list that is already gone is the intent satisfied, not a stale
+  // op: the phone asked for it to not exist, and it doesn't.
+  'playlist-delete': (lib, reg, o) => {
+    const name = opName(o);
+    deleteList(reg, name, filesInList(reg, name, PHONE), PHONE);
+    return {};
+  },
+
+  // Filing into a phone list implies carrying the song, exactly as the page's
+  // own verb does — a list here may never name something the phone hasn't got.
+  //
+  // The order is written through as well, so a song lands where the user
+  // dropped it rather than alphabetically. Without it the phone's own copy —
+  // which appends, because that is what a person watching it expects — would
+  // disagree with this one until the next sync shuffled the list under them.
+  'playlist-add': (lib, reg, o) => {
+    const name = opName(o);
+    const files = opFiles(o);
+    const { hits, missing } = resolveSome(lib, files);
+    if (files.length && !hits.length) return { skipped: goneHere(missing) };
+    const before = filesInList(reg, name, PHONE);
+    addToPhone(reg, hits);
+    addToList(reg, hits, name, PHONE);
+    const added = hits.map(base).filter((f) => !before.includes(f));
+    if (added.length) setOrder(reg, name, [...before, ...added], PHONE);
+    return missing.length ? { missing } : {};
+  },
+
+  // Removals take the names as given: a membership cell is keyed by basename,
+  // so clearing one never needs the library to still have the song.
+  'playlist-remove': (lib, reg, o) => {
+    const name = opName(o);
+    if (!listsOf(reg, PHONE).includes(name)) return listMissing(name);
+    removeFromList(reg, opFiles(o), name, PHONE);
+    return {};
+  },
+
+  'playlist-reorder': (lib, reg, o) => {
+    const name = opName(o);
+    if (!listsOf(reg, PHONE).includes(name)) return listMissing(name);
+    setOrder(reg, name, opFiles(o), PHONE);
+    return {};
+  },
+
+  'ref-add': (lib, reg, o) => {
+    const files = opFiles(o);
+    const { hits, missing } = resolveSome(lib, files);
+    if (files.length && !hits.length) return { skipped: goneHere(missing) };
+    addToPhone(reg, hits);
+    return missing.length ? { missing } : {};
+  },
+
+  // The strongest thing a phone can ask for: it stops carrying the song. The
+  // file stays exactly where it is.
+  'ref-remove': (lib, reg, o) => {
+    removeFromPhone(reg, opFiles(o));
+    return {};
+  },
+};
+
+const goneHere = (names) => `${names.join(', ')} — no longer on your Mac`;
+
+/// The applied-op ring: a re-send after a lost acknowledgement must be a
+/// no-op. Bounded, because an id is only useful until the phone has heard back
+/// and it never sends that op again.
+const RING = 1000;
+
+const readRing = () => {
+  const ids = readJson(OP_IDS, { ids: [] }).ids;
+  return Array.isArray(ids) ? ids.map(String) : [];
+};
+
+/// The batch, as the phone base64'd it. Ops are pure register mutations, so a
+/// malformed one is skipped rather than thrown: it can never succeed on a
+/// later attempt either, and failing the batch would strand the good ops
+/// behind it.
+function decodeOps(b64) {
+  let text;
+  try {
+    text = Buffer.from(b64, 'base64').toString('utf8');
+  } catch {
+    return die('ops is not base64');
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return die(`ops is not valid JSON: ${text.slice(0, 80)}`);
+  }
+  if (!Array.isArray(parsed)) die('ops must be a JSON array');
+  return parsed;
+}
+
+function tryOp(run, lib, reg, o) {
+  try {
+    return run(lib, reg, o);
+  } catch (e) {
+    return { skipped: String(e?.message || e) };
+  }
+}
+
 // ── telling the phone ────────────────────────────────────────────────────────
 // The engine's watcher announces the MUSIC FOLDER. Everything the phone view
 // is made of — which songs it references, its own playlists — lives in CELLS,
@@ -310,6 +475,57 @@ const VERBS = {
     markPhone();
     persist(lib, reg);
     return { ok: true, removed: tracks.length, files_kept: tracks.length };
+  },
+
+  // A phone's queued edits, drained in one round trip. Takes base64 of a JSON
+  // array so a title in any script survives the shell that carries it, and
+  // gives back per-op results plus the whole resulting view — the phone
+  // replaces its copy with that and clears exactly the ops named here.
+  //
+  // An empty batch is the read: a phone with nothing to say still gets the
+  // current view, which is the only way it learns of an edit made here.
+  'phone-ops': (a) => {
+    const batch = decodeOps(arg(a[0], 'ops'));
+    const { lib, reg } = loadStore();
+    const ring = readRing();
+    const seen = new Set(ring);
+    const results = [];
+    const skipped = [];
+    let applied = 0;
+
+    for (const o of batch) {
+      const id = String(o?.id ?? '').trim();
+      // Unaddressable: we could apply it, but never acknowledge it, so the
+      // phone would send it again forever.
+      if (!id) continue;
+      if (seen.has(id)) {
+        results.push({ id, ok: true, duplicate: true });
+        continue;
+      }
+      const run = PHONE_OPS[String(o?.op ?? '')];
+      const outcome = run
+        ? tryOp(run, lib, reg, o)
+        : { skipped: `unknown op “${o?.op ?? ''}”` };
+      seen.add(id);
+      ring.push(id);
+      if (outcome.skipped) {
+        results.push({ id, ok: false, skipped: outcome.skipped });
+        skipped.push({ id, op: o.op, reason: outcome.skipped });
+      } else {
+        results.push({ id, ok: true, ...outcome });
+        applied += 1;
+      }
+    }
+
+    // Persist BEFORE the ring: a write that dies takes the acknowledgement
+    // with it, so the phone re-sends and the ops apply once, not never.
+    if (applied > 0) {
+      markPhone();
+      persist(lib, reg);
+    }
+    if (batch.length) writeJson(OP_IDS, { ids: ring.slice(-RING) });
+
+    return { ok: true, applied, results, skipped, view: phoneView(reg) };
   },
 
   // The song leaves the library: its cell (what a paired phone merges), and —

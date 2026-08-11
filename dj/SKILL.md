@@ -239,7 +239,7 @@ tools:
     description: >-
       Rename a playlist; renaming onto an existing name MERGES the two into
       one. Returns { ok, playlist, merged }. Songs and order carry over; a
-      paired phone converges on the same result.
+      paired phone takes the same result on its next sync.
     args:
       old_name:
         type: string
