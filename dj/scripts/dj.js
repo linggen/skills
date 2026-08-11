@@ -170,9 +170,9 @@ const inPlaylistView = () => state.collection.kind === 'playlist';
 
 const onPhoneView = () => state.view === 'phone';
 
-/// The playlists of the view you are looking at, straight off the projection.
-/// Both sides come from the same register, so a name in one is not the list of
-/// the same name in the other.
+/// The playlists of the view you are looking at. The two views are separate
+/// namespaces in the store, so a name in one is not the list of the same name
+/// in the other.
 function playlists() {
   const lib = state.library;
   const rows = onPhoneView() ? lib.phone?.playlists : lib.playlists;
@@ -200,7 +200,7 @@ function collectionTracks() {
   const all = viewTracks().slice();
   const c = state.collection;
   if (c.kind === 'playlist') {
-    // The register keeps the running order; honour it rather than the
+    // A playlist is stored as its running order; honour it rather than the
     // library's own sort, and drop names it no longer resolves.
     const byName = new Map(all.filter((t) => t.file).map((t) => [t.file.split('/').pop(), t]));
     return playlistFiles(c.name).map((f) => byName.get(f)).filter(Boolean);

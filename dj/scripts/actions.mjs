@@ -1,13 +1,11 @@
 // actions.mjs — the ONE writer for the DJ library. Every mutation, whoever
 // asks for it, runs through here: the agent's SKILL.md tools call it via
-// run-js.sh, and the page's buttons call the same verbs over /api/bash. The
-// page renders; this file writes. (karaoke.js and sync.js still save through
-// library.js for their own fields — that path merges the on-disk register
-// first, so nothing here can be clobbered.)
+// run-js.sh, the page's buttons call the same verbs over /api/bash, and a
+// phone's queued edits arrive as `phone-ops`. The page renders; this file
+// writes. Everything else — library.js, karaoke.js, sync.js, get.sh — reads.
 //
-// Runs under bun or node (run-js.sh picks). Shares lww.js — the exact cell
-// vocabulary the page and the paired phone already speak — so a mutation made
-// here merges with theirs per-key instead of fighting over files.
+// Runs under bun or node (run-js.sh picks). The store is library.json itself
+// (store.js); there is no second file to keep in step with it.
 //
 // Usage: actions.mjs <verb> [args…]; every verb prints one JSON line.
 
@@ -15,11 +13,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Buffer } from 'node:buffer';
 import {
-  Register, project, seedFromTracks, isDeleted,
+  project, normalize,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
-  deleteTrack, undeleteTrack, listsOf, filesInList, reconcileDeleted,
+  deleteTrack, listsOf, filesInList,
   MAC, PHONE, addToPhone, removeFromPhone, pruneMissing, phoneView, base,
-} from './lww.js';
+} from './store.js';
+import { migrateRegister } from './migrate-register.js';
 
 const HOME = process.env.HOME || '';
 const DJ_DIR = process.env.DJ_DIR || path.join(HOME, '.linggen', 'skills', 'dj');
@@ -74,18 +73,6 @@ const writeJson = (file, value) => {
   fs.renameSync(tmp, file);
 };
 
-function deviceId() {
-  const file = path.join(DATA, 'device-id');
-  try {
-    const id = fs.readFileSync(file, 'utf8').trim();
-    if (id) return id;
-  } catch { /* first run */ }
-  const id = `mac-${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
-  fs.mkdirSync(DATA, { recursive: true });
-  fs.writeFileSync(file, `${id}\n`);
-  return id;
-}
-
 // One mutation at a time: two agent calls (or a page call beside one) must not
 // interleave a read-modify-write. mkdir is the portable atomic lock.
 const LOCK = path.join(DATA, '.actions-lock');
@@ -109,38 +96,32 @@ function lock() {
 const unlock = () => { try { fs.rmdirSync(LOCK); } catch { /* already gone */ } };
 
 function loadStore() {
-  const lib = readJson(LIB, { tracks: [], playlists: [] });
-  lib.tracks ||= [];
-  lib.playlists ||= [];
-  const reg = new Register(deviceId(), readJson(REG, null));
-  const seeded = lib ? seedFromTracks(reg, lib) : 0;
-  // A delete now takes the song's playlist membership with it, but deletes
-  // written before that rule — and any arriving from a phone still on the old
-  // one — left theirs standing, which is what had playlists naming songs that
-  // no longer exist. Idempotent, so this costs a scan and nothing else once
-  // the register is clean.
-  const repaired = reconcileDeleted(reg);
-  if (seeded > 0 || repaired > 0) persist(lib, reg);
-  return { lib, reg };
-}
-
-// Mirror of the page's old _persist: project the register through the library,
-// unlink what it says is gone, write both files. Sidecars ride along with a
-// tombstoned row here — whatever wrote the tombstone (this process, or a
-// paired phone whose merge landed a del: cell) — because after the projection
-// drops the row nothing can ever name them again.
-function persist(lib, reg) {
-  for (const t of lib.tracks) {
-    if (!t.file || !isDeleted(reg, t.file)) continue;
-    for (const f of [t.lrc, t.karaoke_audio, t.karaoke_video]) {
-      if (f) { try { fs.rmSync(f, { force: true }); } catch { /* already gone */ } }
+  const lib = normalize(readJson(LIB, {}));
+  // The register that used to be the store, folded in and retired. After the
+  // first run of this build there is nothing to find and this costs one failed
+  // open.
+  if (migrateRegister(lib, REG)) {
+    persist(lib);
+    for (const f of [REG, path.join(DATA, 'device-id')]) {
+      try { fs.rmSync(f, { force: true }); } catch { /* already gone */ }
     }
   }
-  for (const file of project(reg, lib)) {
-    try { fs.rmSync(file, { force: true }); } catch { /* already gone */ }
+  return lib;
+}
+
+/// Rewrite the derived fields and save. One file, so a reader can never catch
+/// the two halves of one edit disagreeing.
+function persist(lib) {
+  writeJson(LIB, project(lib));
+}
+
+/// A song's own files. Deleting is the only destruction in the product, and it
+/// takes the sidecars with it: once the row is gone nothing can name them.
+function unlinkTrack(row) {
+  if (!row) return;
+  for (const f of [row.file, row.lrc, row.karaoke_audio, row.karaoke_video]) {
+    if (f) { try { fs.rmSync(f, { force: true }); } catch { /* already gone */ } }
   }
-  writeJson(LIB, lib);
-  writeJson(REG, reg.toState());
 }
 
 // ── track resolution ─────────────────────────────────────────────────────────
@@ -168,8 +149,8 @@ function resolveTracks(lib, wanted) {
   return hits;
 }
 
-const requireList = (reg, name, view = MAC) => {
-  if (!listsOf(reg, view).includes(name)) die(`no playlist named “${name}” — ListLibrary shows the current ones`);
+const requireList = (lib, name, view = MAC) => {
+  if (!listsOf(lib, view).includes(name)) die(`no playlist named “${name}” — ListLibrary shows the current ones`);
 };
 
 /// Which set of playlists a verb is talking about. Every playlist verb takes
@@ -200,8 +181,8 @@ function resolveSome(lib, wanted) {
 // INTENTS — one jsonl line each — rather than as a state to merge. This is the
 // single applier: every op lands here, under the same lock every other verb
 // takes, and the whole resulting view goes back down. Nothing about a phone's
-// curation is inferred from a file image, which is why the phone needs neither
-// cells nor tombstones to hold an edit overnight.
+// curation is inferred from a file image, which is why neither side needs a
+// register to hold an edit overnight.
 //
 // An op that can't be carried out — its playlist or its song deleted here in
 // the meantime — is SKIPPED and named, never guessed at. It is still spent:
@@ -224,77 +205,72 @@ const listMissing = (name) => ({ skipped: `“${name}” is no longer a playlist
 /// has no Mac-view verb and no file-destroying verb. A phone structurally
 /// cannot reach this Mac's own playlists or its music.
 const PHONE_OPS = {
-  'playlist-create': (lib, reg, o) => {
-    createList(reg, opName(o), PHONE);
+  'playlist-create': (lib, o) => {
+    createList(lib, opName(o), PHONE);
     return {};
   },
 
-  'playlist-rename': (lib, reg, o) => {
+  'playlist-rename': (lib, o) => {
     const from = opName(o);
     const to = String(o.to ?? '').trim();
     if (!to) die('rename has no new name');
     if (from === to) return {};
-    if (!listsOf(reg, PHONE).includes(from)) return listMissing(from);
-    renameList(reg, from, to, filesInList(reg, from, PHONE), PHONE);
+    if (!listsOf(lib, PHONE).includes(from)) return listMissing(from);
+    renameList(lib, from, to, PHONE);
     return {};
   },
 
   // Deleting a list that is already gone is the intent satisfied, not a stale
   // op: the phone asked for it to not exist, and it doesn't.
-  'playlist-delete': (lib, reg, o) => {
-    const name = opName(o);
-    deleteList(reg, name, filesInList(reg, name, PHONE), PHONE);
+  'playlist-delete': (lib, o) => {
+    deleteList(lib, opName(o), PHONE);
     return {};
   },
 
   // Filing into a phone list implies carrying the song, exactly as the page's
   // own verb does — a list here may never name something the phone hasn't got.
   //
-  // The order is written through as well, so a song lands where the user
-  // dropped it rather than alphabetically. Without it the phone's own copy —
-  // which appends, because that is what a person watching it expects — would
-  // disagree with this one until the next sync shuffled the list under them.
-  'playlist-add': (lib, reg, o) => {
-    const name = opName(o);
+  // A list is stored as its running order, so the song lands where the user
+  // dropped it. That has to hold: the phone appends locally, because that is
+  // what a person watching a list expects, and a Mac that filed alphabetically
+  // would shuffle the list under them at the next sync.
+  'playlist-add': (lib, o) => {
     const files = opFiles(o);
     const { hits, missing } = resolveSome(lib, files);
     if (files.length && !hits.length) return { skipped: goneHere(missing) };
-    const before = filesInList(reg, name, PHONE);
-    addToPhone(reg, hits);
-    addToList(reg, hits, name, PHONE);
-    const added = hits.map(base).filter((f) => !before.includes(f));
-    if (added.length) setOrder(reg, name, [...before, ...added], PHONE);
+    addToPhone(lib, hits);
+    addToList(lib, hits, opName(o), PHONE);
     return missing.length ? { missing } : {};
   },
 
-  // Removals take the names as given: a membership cell is keyed by basename,
-  // so clearing one never needs the library to still have the song.
-  'playlist-remove': (lib, reg, o) => {
+  // Removals take the names as given: membership is by basename, so clearing
+  // one never needs the library to still have the song.
+  'playlist-remove': (lib, o) => {
     const name = opName(o);
-    if (!listsOf(reg, PHONE).includes(name)) return listMissing(name);
-    removeFromList(reg, opFiles(o), name, PHONE);
+    if (!listsOf(lib, PHONE).includes(name)) return listMissing(name);
+    removeFromList(lib, opFiles(o), name, PHONE);
     return {};
   },
 
-  'playlist-reorder': (lib, reg, o) => {
+  'playlist-reorder': (lib, o) => {
     const name = opName(o);
-    if (!listsOf(reg, PHONE).includes(name)) return listMissing(name);
-    setOrder(reg, name, opFiles(o), PHONE);
+    if (!listsOf(lib, PHONE).includes(name)) return listMissing(name);
+    setOrder(lib, name, opFiles(o), PHONE);
     return {};
   },
 
-  'ref-add': (lib, reg, o) => {
+  'ref-add': (lib, o) => {
     const files = opFiles(o);
     const { hits, missing } = resolveSome(lib, files);
     if (files.length && !hits.length) return { skipped: goneHere(missing) };
-    addToPhone(reg, hits);
+    addToPhone(lib, hits);
     return missing.length ? { missing } : {};
   },
 
   // The strongest thing a phone can ask for: it stops carrying the song. The
   // file stays exactly where it is.
-  'ref-remove': (lib, reg, o) => {
-    removeFromPhone(reg, opFiles(o));
+  'ref-remove': (lib, o) => {
+    removeFromPhone(lib, opFiles(o));
     return {};
   },
 };
@@ -311,10 +287,9 @@ const readRing = () => {
   return Array.isArray(ids) ? ids.map(String) : [];
 };
 
-/// The batch, as the phone base64'd it. Ops are pure register mutations, so a
-/// malformed one is skipped rather than thrown: it can never succeed on a
-/// later attempt either, and failing the batch would strand the good ops
-/// behind it.
+/// The batch, as the phone base64'd it. A malformed op is skipped rather than
+/// thrown: it can never succeed on a later attempt either, and failing the
+/// batch would strand the good ops behind it.
 function decodeOps(b64) {
   let text;
   try {
@@ -332,22 +307,22 @@ function decodeOps(b64) {
   return parsed;
 }
 
-function tryOp(run, lib, reg, o) {
+function tryOp(run, lib, o) {
   try {
-    return run(lib, reg, o);
+    return run(lib, o);
   } catch (e) {
     return { skipped: String(e?.message || e) };
   }
 }
 
 // ── telling the phone ────────────────────────────────────────────────────────
-// The engine's watcher announces the MUSIC FOLDER. Everything the phone view
-// is made of — which songs it references, its own playlists — lives in CELLS,
-// which no file touch reflects. So a phone view edited here reached the phone
-// only when someone pressed the page's ⇅ Sync, and an edit made by the agent
-// reached it never. Mark it where the cells are written and announce once at
-// the end: whoever asked, page button or tool call, the phone hears the same
-// thing.
+// The engine's watcher announces the MUSIC FOLDER. Everything the phone view is
+// made of — which songs it references, its own playlists — is an entry in
+// library.json, which no file touch reflects. So a phone view edited here
+// reached the phone only when someone pressed the page's ⇅ Sync, and an edit
+// made by the agent reached it never. Mark it where the view is written and
+// announce once at the end: whoever asked, page button or tool call, the phone
+// hears the same thing.
 
 let phoneChanged = false;
 const markPhone = () => { phoneChanged = true; };
@@ -379,9 +354,9 @@ const VERBS = {
     const name = arg(a[0], 'name');
     const view = viewArg(a[1]);
     if (view === PHONE) markPhone();
-    const { lib, reg } = loadStore();
-    createList(reg, name, view);
-    persist(lib, reg);
+    const lib = loadStore();
+    createList(lib, name, view);
+    persist(lib);
     return { ok: true, playlist: name };
   },
 
@@ -391,11 +366,11 @@ const VERBS = {
     if (oldName === newName) return { ok: true, playlist: newName };
     const view = viewArg(a[2]);
     if (view === PHONE) markPhone();
-    const { lib, reg } = loadStore();
-    requireList(reg, oldName, view);
-    const merged = listsOf(reg, view).includes(newName);
-    renameList(reg, oldName, newName, filesInList(reg, oldName, view), view);
-    persist(lib, reg);
+    const lib = loadStore();
+    requireList(lib, oldName, view);
+    const merged = listsOf(lib, view).includes(newName);
+    renameList(lib, oldName, newName, view);
+    persist(lib);
     return { ok: true, playlist: newName, merged };
   },
 
@@ -403,11 +378,11 @@ const VERBS = {
     const name = arg(a[0], 'name');
     const view = viewArg(a[1]);
     if (view === PHONE) markPhone();
-    const { lib, reg } = loadStore();
-    requireList(reg, name, view);
-    const kept = filesInList(reg, name, view).length;
-    deleteList(reg, name, filesInList(reg, name, view), view);
-    persist(lib, reg);
+    const lib = loadStore();
+    requireList(lib, name, view);
+    const kept = filesInList(lib, name, view).length;
+    deleteList(lib, name, view);
+    persist(lib);
     return { ok: true, deleted: name, songs_kept: kept };
   },
 
@@ -415,14 +390,14 @@ const VERBS = {
     const name = arg(a[0], 'name');
     const files = jsonArg(a[1], 'files');
     const view = viewArg(a[2]);
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const tracks = resolveTracks(lib, files);
     // Filing into a phone list implies carrying the song: a list here may
     // never name something the phone hasn't got, which is the whole reason it
     // never has to say "9 of 11".
-    if (view === PHONE) { markPhone(); addToPhone(reg, tracks.map((t) => t.file)); }
-    addToList(reg, tracks.map((t) => t.file), name, view);
-    persist(lib, reg);
+    if (view === PHONE) { markPhone(); addToPhone(lib, tracks.map((t) => t.file)); }
+    addToList(lib, tracks.map((t) => t.file), name, view);
+    persist(lib);
     return { ok: true, playlist: name, added: tracks.length };
   },
 
@@ -431,11 +406,11 @@ const VERBS = {
     const files = jsonArg(a[1], 'files');
     const view = viewArg(a[2]);
     if (view === PHONE) markPhone();
-    const { lib, reg } = loadStore();
-    requireList(reg, name, view);
+    const lib = loadStore();
+    requireList(lib, name, view);
     const tracks = resolveTracks(lib, files);
-    removeFromList(reg, tracks.map((t) => t.file), name, view);
-    persist(lib, reg);
+    removeFromList(lib, tracks.map((t) => t.file), name, view);
+    persist(lib);
     return { ok: true, playlist: name, removed: tracks.length };
   },
 
@@ -444,11 +419,11 @@ const VERBS = {
     const files = jsonArg(a[1], 'files');
     const view = viewArg(a[2]);
     if (view === PHONE) markPhone();
-    const { lib, reg } = loadStore();
-    requireList(reg, name, view);
+    const lib = loadStore();
+    requireList(lib, name, view);
     const tracks = resolveTracks(lib, files);
-    setOrder(reg, name, tracks.map((t) => t.file), view);
-    persist(lib, reg);
+    setOrder(lib, name, tracks.map((t) => t.file), view);
+    persist(lib);
     return { ok: true, playlist: name, order: tracks.map((t) => norm(t.file)) };
   },
 
@@ -459,21 +434,21 @@ const VERBS = {
 
   'phone-add': (a) => {
     const files = jsonArg(a[0], 'files');
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const tracks = resolveTracks(lib, files);
-    addToPhone(reg, tracks.map((t) => t.file));
+    addToPhone(lib, tracks.map((t) => t.file));
     markPhone();
-    persist(lib, reg);
+    persist(lib);
     return { ok: true, added: tracks.length };
   },
 
   'phone-remove': (a) => {
     const files = jsonArg(a[0], 'files');
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const tracks = resolveTracks(lib, files);
-    removeFromPhone(reg, tracks.map((t) => t.file));
+    removeFromPhone(lib, tracks.map((t) => t.file));
     markPhone();
-    persist(lib, reg);
+    persist(lib);
     return { ok: true, removed: tracks.length, files_kept: tracks.length };
   },
 
@@ -486,7 +461,7 @@ const VERBS = {
   // current view, which is the only way it learns of an edit made here.
   'phone-ops': (a) => {
     const batch = decodeOps(arg(a[0], 'ops'));
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const ring = readRing();
     const seen = new Set(ring);
     const results = [];
@@ -504,7 +479,7 @@ const VERBS = {
       }
       const run = PHONE_OPS[String(o?.op ?? '')];
       const outcome = run
-        ? tryOp(run, lib, reg, o)
+        ? tryOp(run, lib, o)
         : { skipped: `unknown op “${o?.op ?? ''}”` };
       seen.add(id);
       ring.push(id);
@@ -521,36 +496,37 @@ const VERBS = {
     // with it, so the phone re-sends and the ops apply once, not never.
     if (applied > 0) {
       markPhone();
-      persist(lib, reg);
+      persist(lib);
     }
     if (batch.length) writeJson(OP_IDS, { ids: ring.slice(-RING) });
 
-    return { ok: true, applied, results, skipped, view: phoneView(reg) };
+    return { ok: true, applied, results, skipped, view: phoneView(lib) };
   },
 
-  // The song leaves the library: its cell (what a paired phone merges), and —
-  // via persist()'s projection — the audio file and every sidecar.
-  // Reproducible by design, so a plain delete rather than a Trash trip.
+  // The song leaves the library: the row, both views, and the audio file with
+  // every sidecar. Reproducible by design, so a plain delete rather than a
+  // Trash trip.
   'tracks-delete': (a) => {
     const files = jsonArg(a[0], 'files');
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const tracks = resolveTracks(lib, files);
-    for (const t of tracks) deleteTrack(reg, t.file);
+    for (const t of tracks) unlinkTrack(deleteTrack(lib, t.file));
     // A Mac delete cascades over there too, so the phone needs telling even
     // though nobody touched its view by name.
     markPhone();
-    persist(lib, reg);
+    persist(lib);
     return { ok: true, deleted: tracks.length, files: tracks.map((t) => norm(t.file)) };
   },
 
   // A downloaded file becomes a library row (page's download flow calls this
-  // per landed track). Re-downloading a deleted name makes it a new song.
+  // per landed track). A deleted name that comes back is a new song: the row
+  // left with the delete, so there is nothing here for it to inherit.
   'track-add': (a) => {
     const t = (() => {
       try { return JSON.parse(arg(a[0], 'track')); } catch { return die('track is not valid JSON'); }
     })();
     if (!t.file || !t.title) die('track needs at least { title, file }');
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const id = t.id || idOf(t);
     const row = lib.tracks.find((x) => x.id === id);
     const known = !!row;
@@ -573,19 +549,18 @@ const VERBS = {
       if (t.year && !row.year) row.year = t.year;
       if (t.lrc && !row.lrc) row.lrc = t.lrc;
     }
-    undeleteTrack(reg, t.file);
-    if (t.playlist) addToList(reg, [t.file], t.playlist);
-    persist(lib, reg);
+    if (t.playlist) addToList(lib, [t.file], t.playlist);
+    persist(lib);
     return { ok: true, added: !known, id };
   },
 
   'track-set-lrc': (a) => {
     const file = arg(a[0], 'file');
     const lrc = arg(a[1], 'lrc');
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const [t] = resolveTracks(lib, [file]);
     t.lrc = lrc;
-    persist(lib, reg);
+    persist(lib);
     return { ok: true };
   },
 
@@ -594,11 +569,11 @@ const VERBS = {
     const kind = arg(a[1], 'kind');
     const p = arg(a[2], 'path');
     if (kind !== 'audio' && kind !== 'video') die('kind must be audio or video');
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const [t] = resolveTracks(lib, [file]);
     if (kind === 'audio') t.karaoke_audio = p;
     else t.karaoke_video = p;
-    persist(lib, reg);
+    persist(lib);
     return { ok: true };
   },
 
@@ -606,10 +581,10 @@ const VERBS = {
   'tracks-mark-synced': (a) => {
     const target = arg(a[0], 'target');
     const files = jsonArg(a[1], 'files');
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const tracks = resolveTracks(lib, files);
     for (const t of tracks) t.synced_to = [...new Set([...(t.synced_to || []), target])];
-    persist(lib, reg);
+    persist(lib);
     return { ok: true, marked: tracks.length };
   },
 
@@ -617,7 +592,7 @@ const VERBS = {
   // ground truth for which files exist — adopt Finder drops, retire rows whose
   // file vanished, pick up .lrc sidecars that appeared.
   reconcile: () => {
-    const { lib, reg } = loadStore();
+    const lib = loadStore();
     const cfg = readJson(path.join(DJ_DIR, 'config.json'), {});
     let dir = cfg.library_dir || '~/Music/DJ';
     if (dir.startsWith('~')) dir = path.join(HOME, dir.slice(1));
@@ -644,7 +619,6 @@ const VERBS = {
 
     const known = new Set(lib.tracks.filter((t) => t.file).map((t) => norm(t.file)));
     let adopted = 0;
-    const adoptedFiles = [];
     for (const e of entries) {
       if (!AUDIO.includes(ext(e.name)) || known.has(norm(e.name))) continue;
       const stem = stemOf(e.name);
@@ -663,7 +637,6 @@ const VERBS = {
       const lrc = sidecar(stem);
       if (lrc) row.lrc = lrc;
       lib.tracks.push(row);
-      adoptedFiles.push(row.file);
       adopted += 1;
     }
 
@@ -674,9 +647,9 @@ const VERBS = {
     // truth for which songs a list may name and a phone may reference. Retiring
     // used to drop the row and stop there, leaving playlists pointing at
     // nothing — the reason a phone could report "9 of 11 here" for a list
-    // already holding all 9 it would ever hold. Cells only: no phone loses a
-    // file over this.
-    const pruned = pruneMissing(reg, (f) => byNorm.has(norm(f)));
+    // already holding all 9 it would ever hold. Memberships only: no phone
+    // loses a file over this.
+    const pruned = pruneMissing(lib, (f) => byNorm.has(norm(f)));
 
     let lrcChanged = 0;
     for (const t of lib.tracks) {
@@ -691,14 +664,7 @@ const VERBS = {
     // Persist on ANY drift — an .lrc that appeared beside an unchanged audio
     // file is a real change too, not something to recompute-and-discard on
     // every pass until an unrelated adopt happens to save it.
-    if (adopted || retired || lrcChanged || pruned) {
-      // A file that reappeared under a deleted name is a NEW song — the
-      // tombstone must lose, or the projection deletes it straight back.
-      // Only for files adopted THIS pass: clearing every track's tombstone
-      // would also undo a phone's delete that had just merged in.
-      for (const f of adoptedFiles) undeleteTrack(reg, f);
-      persist(lib, reg);
-    }
+    if (adopted || retired || lrcChanged || pruned) persist(lib);
     return { ok: true, adopted, retired, pruned };
   },
 };
