@@ -125,6 +125,37 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/get.sh {{tracks}} {{for_phone}}"
     tier: edit
     timeout_ms: 900000
+  - name: GetKaraoke
+    description: >-
+      Fetch the karaoke version of songs ALREADY in the library — the
+      instrumental (vocals removed, an mp3 sidecar) or the karaoke video
+      (lyrics on screen, an mp4). Takes a JSON array of { artist, title,
+      kind? } where kind is "audio" (default) or "video"; use the artist and
+      title exactly as ListLibrary reports them, or the sidecar lands beside
+      nothing and no badge lights. Returns { got, failed, files[], errors[] }.
+      The file syncs to a phone that carries the song on its own — nothing
+      else to press. This is how you answer "get the karaoke for X and sync
+      it to my phone", including when the phone's karaoke screen relayed that
+      exact sentence.
+    args:
+      tracks:
+        type: array
+        required: true
+        description: >-
+          The songs to fetch karaoke versions for, as objects with `artist`
+          and `title` (ListLibrary's fields) and optional `kind`. Example:
+          [{"artist": "Dwayne Johnson", "title": "You're Welcome",
+          "kind": "audio"}].
+        items:
+          type: object
+          properties:
+            artist: { type: string }
+            title:  { type: string }
+            kind:   { type: string }
+          required: [artist, title]
+    cmd: "bash $SKILL_DIR/scripts/karaoke.sh {{tracks}}"
+    tier: edit
+    timeout_ms: 900000
   # ── library mutations — every verb below runs actions.mjs, the ONE writer
   # the page's buttons also call, so a tool call and a button click can never
   # drift. Track args are the `file` values ListLibrary returns (full path or

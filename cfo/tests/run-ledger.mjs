@@ -14,7 +14,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { analyzeCsv, orientTransactions, cleanMerchant } from '../scripts/analyze.js';
-import { toLedgerRows, mergeLedger, detectTransfers, reportFromLedger } from '../scripts/ledger.js';
+import { toLedgerRows, mergeLedger, detectTransfers, reportFromLedger, isStatementArtifact } from '../scripts/ledger.js';
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = '') => {
@@ -163,7 +163,9 @@ if (!existsSync(join(DATA, 'ledger'))) {
   t('B2 every PAIRED transfer has a valid opposite-sign cross-account pair', paired.length % 2 === 0 && !badPair,
     `${transfers.length} transfers (${paired.length} paired, ${transfers.length - paired.length} single-row)`);
 
-  const spendable = rows.filter((r) => !r.transfer);
+  // Same exclusions the report applies: transfers, and statement bookkeeping
+  // rows ("Closing totals") that are not transactions.
+  const spendable = rows.filter((r) => !r.transfer && !isStatementArtifact(r.merchant));
   const spend = r2(spendable.filter((r) => r.amount < 0).reduce((a, r) => a - r.amount, 0));
   const income = r2(spendable.filter((r) => r.amount > 0).reduce((a, r) => a + r.amount, 0));
   t('B3 report totals == independent row sum', near(spend, rep.totals.spend) && near(income, rep.totals.income),

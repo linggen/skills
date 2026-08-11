@@ -230,9 +230,19 @@ export function detectPaymentSchedule(rows, accountsById = {}) {
 // trend, subscriptions). `range` ({from, to} as 'YYYY-MM', or null for all
 // history) filters the VIEW; transfer detection and the payment schedule always
 // run on the full ledger so pairs straddling the range boundary still match.
+// Statement bookkeeping lines some bank exports carry as rows — "Closing
+// totals", "Balance forward". Not transactions: one of them counted as spend
+// turns the month's pace math into fiction. They stay in the ledger (the
+// transaction list shows what the export said), but no rollup reads them.
+const STATEMENT_ARTIFACT_RE = /\b(closing +(totals?|balance)|opening +balance|balance +forward|beginning +balance)\b/i;
+
+export function isStatementArtifact(merchant) {
+  return STATEMENT_ARTIFACT_RE.test(merchant || '');
+}
+
 export function viewFromLedger(rows, accountsById = {}, opts = {}, range = null) {
   detectTransfers(rows, accountsById, opts.transferWindowDays || 5, opts.categoryOverrides || null);
-  let spendable = rows.filter((r) => !r.transfer);
+  let spendable = rows.filter((r) => !r.transfer && !isStatementArtifact(r.merchant));
   const months_available = [...new Set(spendable.filter((r) => r.date).map((r) => r.date.slice(0, 7)))].sort();
   if (range && range.from && range.to) {
     spendable = spendable.filter((r) => r.date && r.date.slice(0, 7) >= range.from && r.date.slice(0, 7) <= range.to);
