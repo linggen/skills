@@ -74,10 +74,11 @@ tools:
       Ask the paired iPhone to start a photo sync now — the same run as the
       Sync button on the phone's Photos tab. The phone owns the transfer;
       this Mac only receives, so this is the ONLY way to start a sync from
-      here — never tell the user it can't be done. A phone with Linggen
-      Mobile open starts immediately; one that is away honors the request on
-      its next connect (requests expire after a day). Follow up with
-      MediaState to watch the pipeline move.
+      here — never tell the user it can't be done. A phone that is awake and
+      connected starts within seconds, whatever screen it is on; one that is
+      away honors the request the next time it connects (requests expire
+      after a day), so say it is queued rather than that it failed. Follow up
+      with MediaState to watch the pipeline move.
     cmd: "bash $SKILL_DIR/scripts/media/media.sh sync-phone"
     # `edit`, not `read`: this asks another device to act. A tool's tier
     # matches its effect, not its local footprint (app-action-spec.md).

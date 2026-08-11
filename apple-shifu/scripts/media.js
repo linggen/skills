@@ -714,7 +714,12 @@ function isQueued(it) {
   return !!it?.phone_path?.startsWith('wireless/') && pendingDeletes.has(it.phone_path.slice(9));
 }
 
-/** Add to (or cancel from) the phone-delete queue; mirrors locally on success. */
+/** Add to (or cancel from) the phone-delete queue; mirrors locally on success.
+    Returns how many of the whole queue are QUEUED BUT NOT OFFERED: the daemon
+    only hands a phone deletions it could put back, and this Mac's copy of a
+    synced-but-not-archived photo lives only in staging — which reconcile
+    removes the moment the photo leaves the roll, so offering one would spend
+    both copies at once. Those entries wait here until a backup archives them. */
 async function setQueued(localIds, cancel = false) {
   const res = await fetch('/api/media/request-delete', {
     method: 'POST',
@@ -723,7 +728,13 @@ async function setQueued(localIds, cancel = false) {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   for (const id of localIds) cancel ? pendingDeletes.delete(id) : pendingDeletes.add(id);
+  const body = await res.json().catch(() => ({}));
+  return Number(body.blocked) || 0;
 }
+
+/** "…, N waiting on a backup" — said wherever a queue result is reported, so
+    "queued" never stands alone for something that will not happen yet. */
+const blockedNote = (n) => (n ? ` · ${n.toLocaleString()} waiting on a backup first` : '');
 
 const IMAGE_RE = /\.(heic|heif|jpg|jpeg|png|gif|tiff|webp|dng)$/i;
 
@@ -1842,9 +1853,13 @@ async function deleteInLightbox(id) {
   const it = allById().get(id);
   if (it?.phone_path?.startsWith('wireless/')) {
     try {
-      await setQueued([it.phone_path.slice(9)]);
+      const blocked = await setQueued([it.phone_path.slice(9)]);
       renderReview();
       openLightbox(id);
+      if (blocked) {
+        cap.insertAdjacentHTML('afterbegin',
+          `<span class="media-chip">${esc(`queued — waiting on a backup${blocked > 1 ? ` (${blocked} in all)` : ''}`)}</span> `);
+      }
     } catch (e) {
       cap.insertAdjacentHTML('afterbegin', `<span class="media-chip bad">${esc(`queue failed — ${e.message || e}`)}</span> `);
     }
@@ -1901,8 +1916,8 @@ async function removeInline(ids) {
   if (wireless.length) {
     const t = showToast('Queueing phone deletions…', true);
     try {
-      await setQueued(wireless);
-      t.done(`⏳ ${wireless.length.toLocaleString()} queued — the iPhone deletes them next time Linggen is open there`);
+      const blocked = await setQueued(wireless);
+      t.done(`⏳ ${wireless.length.toLocaleString()} queued — the iPhone deletes them next time Linggen is open there${blockedNote(blocked)}`);
       for (const id of ids) if (!rest.has(id)) selected.delete(id);
       if (screen === 'review' && getSource() === 'phone') renderReview();
     } catch (e) {
