@@ -13,7 +13,8 @@ data/media/progress.json and are launched in the background by media.sh):
   remove   delete from the iPhone over AFC (requires --confirm). Default reads
            the backup-verified set; --trash reads the raw selection and moves
            each staged copy into the 30-day restore area instead
-  purge    drop expired restore-area files (--all empties it now)
+  purge    drop expired restore-area files (--all empties it now), then sweep
+           preview/thumb cache files whose hash nothing references any more
   restore  move one restore-area file back out to ~/Pictures/iPhone Restored
   trash    move selected Mac files to the macOS Trash (recoverable) + prune index
 
@@ -38,6 +39,7 @@ HOME = Path.home()
 DATA_DIR = HOME / '.linggen' / 'skills' / 'apple-shifu' / 'data' / 'media'
 STAGING_DIR = DATA_DIR / 'staging'
 THUMBS_DIR = DATA_DIR / 'thumbs'
+PREVIEWS_DIR = DATA_DIR / 'previews'    # lightbox render cache (media.js), rebuilt on demand
 MANIFEST = DATA_DIR / 'manifest.jsonl'
 MAC_INDEX = DATA_DIR / 'mac-index.jsonl'
 FLAGS = DATA_DIR / 'flags.json'
@@ -906,7 +908,44 @@ def cmd_purge(args):
         r['trash'] = ''
         purged += 1
     _rewrite_removals(rows)
-    print(json.dumps({'purged': purged, 'freed_gb': round(freed / 1e9, 2)}))
+    dropped, cache_freed = _sweep_render_cache(rows)
+    print(json.dumps({'purged': purged, 'freed_gb': round(freed / 1e9, 2),
+                      'cache_dropped': dropped,
+                      'cache_freed_gb': round(cache_freed / 1e9, 2)}))
+
+
+def _sweep_render_cache(removal_rows):
+    """Drop previews and thumbs whose hash nothing references any more.
+
+    Both caches are keyed `<sha12>.jpg` and rebuilt on demand (the page's
+    ensurePreview guards with `[ -f ]`, scan re-thumbs), so a wrong drop costs
+    one re-conversion — never data. Referenced means: a staged phone row, the
+    Mac browse index, the backup ledger, or a removal still restorable from
+    the trash area (its preview is wanted back on restore). Runs after the
+    trash sweep so rows that just lost their restore copy release theirs too.
+    `vid_*` play-links are the page's own lifecycle (wiped on every open)."""
+    live = set()
+    for path in (MANIFEST, MAC_INDEX, DATA_DIR / 'archive.jsonl'):
+        for r in load_jsonl(path):
+            sha = r.get('sha256')
+            if sha:
+                live.add(sha[:12])
+    for r in removal_rows:
+        if r.get('trash') and r.get('sha256'):
+            live.add(r['sha256'][:12])
+    dropped, freed = 0, 0
+    for d in (PREVIEWS_DIR, THUMBS_DIR):
+        if not d.is_dir():
+            continue
+        for f in d.iterdir():
+            if f.name.startswith(('vid_', '.')) or not f.is_file():
+                continue
+            if f.stem[:12] in live:
+                continue
+            freed += f.stat().st_size
+            f.unlink(missing_ok=True)
+            dropped += 1
+    return dropped, freed
 
 
 def cmd_restore(args):
