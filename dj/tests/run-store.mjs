@@ -6,6 +6,8 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 import {
   PHONE,
@@ -28,6 +30,8 @@ import {
   setOrder,
 } from '../scripts/store.js';
 import { migrateRegister } from '../scripts/migrate-register.js';
+
+const ACTIONS = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'actions.mjs');
 
 let pass = 0;
 const ok = (name, fn) => { fn(); pass += 1; console.log(`  ok  ${name}`); };
@@ -228,6 +232,36 @@ ok('a library.json missing every field still loads', () => {
 ok('a playlist with no name is not a playlist', () => {
   const l = normalize({ playlists: [{ name: '  ', files: ['a.mp3'] }, { files: [] }] });
   assert.deepEqual(l.playlists, []);
+});
+
+// ── the folder is ground truth ──────────────────────────────────────────────
+// Driving the real `actions.mjs reconcile` in a throwaway DJ dir, because what
+// is being checked is what it makes of a folder.
+
+ok('a karaoke render deleted by hand stops being advertised', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dj-rec-'));
+  const music = path.join(dir, 'music');
+  fs.mkdirSync(path.join(music, '.karaoke'), { recursive: true });
+  fs.writeFileSync(path.join(music, 'a.mp3'), 'ID3');
+  const kept = path.join(music, '.karaoke', 'a (Karaoke).mp3');
+  fs.writeFileSync(kept, 'ID3');
+  fs.writeFileSync(path.join(dir, 'config.json'), JSON.stringify({ library_dir: music }));
+  fs.writeFileSync(path.join(dir, 'library.json'), JSON.stringify({
+    tracks: [{
+      id: 'a', title: 'a', file: path.join(music, 'a.mp3'),
+      karaoke_audio: kept,
+      karaoke_video: path.join(music, '.karaoke', 'a (Karaoke).mp4'), // never rendered
+    }],
+  }));
+
+  execFileSync(process.execPath, [ACTIONS, 'reconcile'], {
+    env: { ...process.env, DJ_DIR: dir, LINGGEN_PORT: '1' },
+    encoding: 'utf8',
+  });
+
+  const [t] = JSON.parse(fs.readFileSync(path.join(dir, 'library.json'), 'utf8')).tracks;
+  assert.equal(t.karaoke_video, undefined, 'a path to nothing is a button that opens nothing');
+  assert.equal(t.karaoke_audio, kept, 'and the one that is really there survives the sweep');
 });
 
 // ── the register that used to be the store ──────────────────────────────────

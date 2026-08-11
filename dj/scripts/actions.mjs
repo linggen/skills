@@ -659,6 +659,13 @@ const VERBS = {
         const lrc = sidecar(stemOf(String(t.file).split('/').pop()));
         if (lrc) { t.lrc = lrc; lrcChanged += 1; }
       }
+      // A karaoke render that was deleted by hand used to leave its path
+      // standing here forever — a button on the page that opens nothing. Asked
+      // of the disk rather than of `byNorm`, because these live in the declared
+      // `.karaoke/` subdir and that map is the flat scan.
+      for (const k of ['karaoke_audio', 'karaoke_video']) {
+        if (t[k] && !fs.existsSync(t[k])) { delete t[k]; lrcChanged += 1; }
+      }
     }
 
     // Persist on ANY drift — an .lrc that appeared beside an unchanged audio
