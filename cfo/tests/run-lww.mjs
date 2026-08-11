@@ -225,5 +225,45 @@ const sameReg = (a, b) => canon(a) === canon(b);
   t(`no code deletes straight out of a projection (${bad.join(', ') || 'none'})`, !bad.length);
 }
 
+// ── A long-lived page must not clobber what the phone wrote ────────────────
+{
+  // This page reads edits.json ONCE, at load, and rewrites it whole. A paired
+  // phone writes the same file on every sync, so saving straight from memory
+  // erased everything that had landed since — silently, tombstones included, so
+  // a budget deleted on the phone came back from the dead. The phone guards its
+  // own write with a compare-and-swap; this side has to MERGE instead, because
+  // its window isn't milliseconds, it's however long the tab has been open.
+  // (Found 2026-08-11, reading cfo.md against the code.)
+  const atLoad = new Register('mac', null);
+  atLoad.set('bud:dining', 400);
+
+  // The phone syncs: it merges what it read, adds a rule, drops the budget.
+  const onDisk = new Register('phone', JSON.parse(JSON.stringify(atLoad.toState())));
+  onDisk.set('ov:uber', 'transport');
+  onDisk.remove('bud:dining');
+
+  // Now the user edits something on this Mac. This is saveEdits().
+  atLoad.set('bud:travel', 900);
+  const took = atLoad.mergeState(JSON.parse(JSON.stringify(onDisk.toState())));
+
+  t('the merge says how many cells the peer won', took === 2);
+  t('a rule the phone pushed survives this Mac\'s next save', overridesOf(atLoad).uber === 'transport');
+  t('a budget deleted on the phone stays deleted', atLoad.get('bud:dining') === null);
+  t('and this Mac\'s own new edit is still there', budgetsOf(atLoad).travel === 900);
+  t('merging the same state again takes nothing', atLoad.mergeState(onDisk.toState()) === 0);
+
+  const src = readFileSync(new URL('../scripts/cfo.js', import.meta.url), 'utf8');
+  t('saveEdits reads the file back and merges before writing it',
+    /async function saveEdits[\s\S]{0,300}?readJson\(`\$\{DATA\}\/edits\.json`[\s\S]{0,120}?mergeState/.test(src));
+  // report.json is derived from the ledger, which the phone also appends to.
+  // Every rebuild goes through rebuildReport(), which re-reads first. Exactly
+  // two literal call sites are allowed: rebuildReport's own, and resumeState —
+  // which IS the load, three lines above it.
+  const sites = (src.match(/saveReport\(reportFromLedger/g) || []).length;
+  t(`report.json is rebuilt only where the ledger was just read (${sites} sites)`, sites === 2);
+  t('a whole-file write goes through a temp file and a rename',
+    !/base64 --decode > "\$\{path\}"/.test(src) && /mv -f "\$\{path\}\.tmp" "\$\{path\}"/.test(src));
+}
+
 console.log(`\n${fail ? '❌' : '✅'} ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

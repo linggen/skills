@@ -212,7 +212,7 @@ async function loadMarketRate() {
     if (!m) return;
     MARKET = { ...m, currency: CURRENCY_CODE, fetched_at: new Date().toISOString() };
     await writeB64(`${DATA}/market-rates.json`, JSON.stringify(MARKET, null, 2));
-    if (LEDGER.length) await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent sees it
+    await rebuildReport(); // agent sees it
     if (VIEW_MODE === 'commit') renderCommitView();
   } catch (e) { console.warn('[cfo] market rate', e); }
 }
@@ -241,10 +241,22 @@ function setStatus(msg, isError) {
 async function readText(path) {
   return (await runBash(`cat "${path}" 2>/dev/null || true`)).trim();
 }
+/// Write a whole file through a temp file + rename; APPEND straight through.
+///
+/// `>` truncates the live file before a byte of the new one lands, and this
+/// machine can be put to sleep, lose power, or have the app killed inside that
+/// window. `edits.json` is every budget, rule and correction the user has ever
+/// made, and a truncated one is not a smaller register — it is an unreadable
+/// one, which also fail-closes the phone's sync forever (see cfo_sync.dart).
+/// `rename` on the same filesystem is atomic, so a reader sees the whole old
+/// file or the whole new one. Appends stay appends: the ledger is line-oriented
+/// and every reader on both sides already drops a torn last line.
 async function writeB64(path, text, append) {
   const b64 = btoa(unescape(encodeURIComponent(text)));
-  const op = append ? '>>' : '>';
-  await runBash(`mkdir -p "$(dirname "${path}")" && printf '%s' "${b64}" | base64 --decode ${op} "${path}"`);
+  const write = append
+    ? `printf '%s' "${b64}" | base64 --decode >> "${path}"`
+    : `printf '%s' "${b64}" | base64 --decode > "${path}.tmp" && mv -f "${path}.tmp" "${path}"`;
+  await runBash(`mkdir -p "$(dirname "${path}")" && ${write}`);
 }
 async function readJson(path, fallback) {
   const t = await readText(path);
@@ -290,10 +302,53 @@ async function loadEdits(rows) {
   return reg;
 }
 
-/// Persist the register, then re-derive everything read off it. Every mutation
-/// goes through here, so the page can never show a value it hasn't stored.
+/// Persist the register — merging what is on disk back in FIRST.
+///
+/// This page reads `edits.json` once, at load, and rewrites it whole. A paired
+/// phone writes that same file every time it syncs, so without this merge our
+/// next save would erase everything it pushed since we loaded — silently, and
+/// including tombstones, so a budget the user deleted on the phone would come
+/// back from the dead. The phone guards its own write with a compare-and-swap;
+/// this is the other half, and it has to be a merge rather than a swap because
+/// this page is long-lived: the window is not milliseconds, it is however long
+/// the tab has been open.
+///
+/// Merging is the same per-cell LWW the phone runs, just from this side —
+/// idempotent, so it can never lose a cell, and it drags `lastTs` past
+/// everything the phone stamped, so this machine's next edit sorts after what
+/// it has just seen.
 async function saveEdits(reg = EDITS) {
+  const disk = await readJson(`${DATA}/edits.json`, null);
+  const took = disk ? reg.mergeState(disk) : 0;
   await writeB64(`${DATA}/edits.json`, `${JSON.stringify(reg.toState(), null, 2)}\n`);
+  // A merged cell may have moved something the page is rendering off — re-derive
+  // so the page can never show a value the file doesn't hold.
+  if (took && reg === EDITS) applyEdits();
+}
+
+/// Re-read the files a paired phone also writes, and re-derive from them.
+///
+/// The phone appends ledger rows and merges the register straight into these
+/// files. This page read them once at load, so anything that landed since is
+/// invisible here — and a report rebuilt from that stale picture gets written
+/// back over the phone's, which is how the CFO agent ends up answering from
+/// numbers the user already corrected. Two `cat`s, idempotent, LWW does the
+/// rest. Returns whether anything moved, so a caller can re-render.
+async function refreshShared() {
+  const rowsBefore = RAW_LEDGER.length;
+  RAW_LEDGER = await loadLedger();
+  const disk = await readJson(`${DATA}/edits.json`, null);
+  const took = disk ? EDITS.mergeState(disk) : 0;
+  applyEdits();
+  return took > 0 || RAW_LEDGER.length !== rowsBefore;
+}
+
+/// The agent's copy of the numbers, rebuilt from CURRENT shared state. Every
+/// path that changes those inputs goes through here rather than calling
+/// saveReport directly, so the file can never be written from a stale ledger.
+async function rebuildReport() {
+  if (await refreshShared()) refreshView(); // never leave the page behind the file
+  if (LEDGER.length) await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts()));
 }
 
 /// Re-derive the page's view of the register: the projections the renderers
@@ -775,7 +830,7 @@ function updateConfig(mutate) {
 
 
 async function afterCategoriesChanged() {
-  await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent sees corrections too
+  await rebuildReport(); // agent sees corrections too
   refreshView();
   if (VIEW_MODE === 'txn') renderTxnView();
 }
@@ -833,7 +888,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   const importId = `imp_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
   await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), at: new Date().toISOString() });
 
-  await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent's full-history copy
+  await rebuildReport(); // agent's full-history copy
   refreshView();
   const dup = incoming.length - added.length;
   const head = dup ? `Imported — ${added.length} new, ${dup} already on file.` : `Imported — ${added.length} transactions.`;
@@ -858,7 +913,7 @@ async function undoImport(importId) {
   entry.reverted = true;
   entry.reverted_at = new Date().toISOString();
   await writeB64(`${DATA}/imports.json`, JSON.stringify(log, null, 2));
-  await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts()));
+  await rebuildReport();
   refreshView();
   if (VIEW_MODE === 'txn') renderTxnView();
   try { chat?.addMessage?.('assistant', `Reverted the import of ${entry.file} — removed ${entry.added_ids.length} transaction${entry.added_ids.length === 1 ? '' : 's'}. Your report is back to where it was.`); } catch { /* ignore */ }
@@ -893,6 +948,8 @@ async function resumeState() {
         saveUi({ range: RANGE });
       }
     }
+    // saveReport, not rebuildReport: this function IS the read of both shared
+    // files, three lines up. Re-reading them here would just double the boot cost.
     if (LEDGER.length) await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts()));
     refreshView();
     renderInsights();
@@ -1679,7 +1736,7 @@ function renderAnomalies(list) {
     ANOM_DISMISSED.add(b.dataset.id);
     await writeB64(`${DATA}/anomalies-dismissed.json`, JSON.stringify([...ANOM_DISMISSED]));
     renderAnomalies(FULL_VIEW && FULL_VIEW.anomalies);
-    if (FULL_VIEW) await saveReport(FULL_VIEW); // agent stops seeing it too
+    await rebuildReport(); // agent stops seeing it too
   }));
 }
 
@@ -1793,7 +1850,7 @@ async function saveCommitment(key, patch) {
   applyEdits();
   if (Object.keys(next).length) COMMIT_OPEN.set(key, true);
   await saveEdits();
-  await saveReport(reportFromLedger(LEDGER, ACCOUNTS, analyzeOpts())); // agent sees terms + kind overrides
+  await rebuildReport(); // agent sees terms + kind overrides
   refreshView(); // FULL_VIEW + headline card + (when active) this view
 }
 
@@ -2347,7 +2404,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   openReminders();                      // payment/staleness checks, once per state
   await loadWatchSeen();                // folder-watch: auto-import dropped statements
   startWatch();
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) pollWatchFolder(); });
+  // Coming back into view is the one moment we know the user is looking at this
+  // page — pick up whatever a paired phone wrote into the shared files while the
+  // tab sat idle, then look for dropped statements. Without the first half the
+  // page can sit for hours showing a budget the phone deleted.
+  document.addEventListener('visibilitychange', async () => {
+    if (document.hidden) return;
+    if (await refreshShared()) refreshView();
+    pollWatchFolder();
+  });
 
   wireTooltip();
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));

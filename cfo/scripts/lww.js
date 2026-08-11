@@ -122,14 +122,20 @@ export class Register {
   }
 
   /// Merge a peer's register: per-key last-write-wins. Symmetric and idempotent.
+  ///
+  /// Returns how many cells the peer WON — a caller that renders off this
+  /// register needs to know whether the merge moved anything under it, and
+  /// `size` can't say (a cell replaced by a newer one leaves the count alone).
   mergeState(remote) {
+    let took = 0;
     for (const [k, ej] of Object.entries((remote && remote.reg) || {})) {
       const e = LwwEntry.fromJson(ej);
       const cur = this.cells.get(k);
-      if (!cur || e.newerThan(cur)) this.cells.set(k, e);
+      if (!cur || e.newerThan(cur)) { this.cells.set(k, e); took++; }
     }
     // Never let a future local edit collide with a just-merged timestamp.
     for (const e of this.cells.values()) if (e.ts > this.lastTs) this.lastTs = e.ts;
+    return took;
   }
 }
 
