@@ -98,7 +98,10 @@ tools:
       lobste.rs front page + quality tech subreddits
       (sites.hackernews.submit_sources) — then DEDUPS each URL against HN
       via the public Algolia API and DROPS anything already submitted
-      (reposts get killed). Every candidate is something to READ: the script
+      (reposts get killed), plus against the user's OWN recent submissions
+      read from HN's Firebase API, which has no index lag: Algolia trails
+      the site by minutes, so a link the user posted moments ago would
+      otherwise come back as a suggestion. Every candidate is something to READ: the script
       drops reddit-hosted links (self-posts and the i.redd.it / v.redd.it
       media CDNs) and bare image / video files, so a card is never an image
       URL. Subreddit reads ride the account's private RSS feed and are

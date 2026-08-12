@@ -45,6 +45,7 @@ fi
 MAX="${1:-5}" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
 import json, os, re, sys, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 UA = "linggen-pulse/0.1 (hn-submit-finder)"
@@ -70,7 +71,9 @@ except ValueError:
 # ---- config / sources -------------------------------------------------------
 DEFAULT_SUBS = ["programming", "rust", "MachineLearning", "compsci", "selfhosted"]
 lobsters_on, subs = True, DEFAULT_SUBS
-reddit_cfg = {}
+# Defined before the read, so an unreadable config leaves defaults rather than
+# a NameError further down.
+hn, reddit_cfg = {}, {}
 try:
     cfg = json.load(open(os.environ["CONFIG"]))
     hn = (cfg.get("sites") or {}).get("hackernews") or {}
@@ -311,10 +314,46 @@ def on_hn(u):
             pts = p if pts is None else max(pts, p)
     return (pts is not None), pts
 
+# ---- and against the user's OWN submissions, with no index lag -------------
+# Algolia is an index, so it trails the site by minutes: a link submitted at
+# 18:50 was still absent from a "fresh" check minutes later, and Pulse handed
+# it back as a suggestion (2026-08-12 — Liang had just posted it). HN's
+# Firebase API has no such lag; the user's own submitted list is authoritative
+# the instant they post. Checked FIRST so it also saves the Algolia round-trip.
+OWN_WINDOW = 40   # newest submissions to compare against — covers the lag
+                  # window and recent reposts without a long fetch
+
+def own_submitted_keys():
+    name = (hn.get("username") or "").strip().lstrip("@")
+    if not name:
+        return set()
+    try:
+        prof = json.loads(get(
+            f"https://hacker-news.firebaseio.com/v0/user/{urllib.parse.quote(name)}.json"))
+    except Exception as ex:
+        errors.append(f"own-submissions lookup failed: {type(ex).__name__} {ex}")
+        return set()
+    ids = (prof or {}).get("submitted") or []
+
+    def item_url(iid):
+        try:
+            it = json.loads(get(f"https://hacker-news.firebaseio.com/v0/item/{iid}.json"))
+            return (it or {}).get("url") or ""
+        except Exception:
+            return ""
+
+    with ThreadPoolExecutor(max_workers=12) as ex:
+        urls = list(ex.map(item_url, ids[:OWN_WINDOW]))
+    return {url_key(u) for u in urls if u}
+
+OWN_KEYS = own_submitted_keys()
+
 out = []
 for c in uniq:
     if len(out) >= max_cards:
         break
+    if url_key(c["url"]) in OWN_KEYS:
+        continue                      # the user already submitted this one
     dup, _pts = on_hn(c["url"])
     if dup is True:
         continue                      # already on HN -> repost would be killed
