@@ -606,7 +606,7 @@ async function runGatherWeb() {
   const skipBlock = buildSkipBlock();
   const goal = [
     skipBlock,
-    'Gather web signal for what I\'m working on right now.',
+    'Gather web activity for what I\'m working on right now.',
     '',
     'OUTPUT CONTRACT (read first): this step writes the sections `discovery`, `mentions`, `hn_submit` (when sites.hackernews.enabled), `x_roster` (when sites.x.enabled and the roster is empty/stale), and `replies_due`, and you MUST emit a body_patch for each one you gathered for. `discovery` and `mentions` always run. `replies_due` runs ONLY when state/posted.json has tracked posts (see REPLIES DUE below); when posted.json is empty or missing, omit the section entirely — do not emit an empty replies_due card. Do NOT emit or re-emit `progress_drafts`: that is Gather local\'s section, it is already on the page, and here it is INPUT you read, never output you write. A run that ends having only touched `progress_drafts` is a FAILED run.',
     '',
@@ -731,7 +731,7 @@ function hideCascadeToast() {
   if (toast) toast.hidden = true;
 }
 
-// The gather cascade: local activity, then web signal, with the toast for
+// The gather cascade: local activity, then web activity, with the toast for
 // progress. Draft is user-triggered (header/tab buttons) because
 // auto-drafting without lane / angle / polish input produces generic posts
 // the user won't use — wastes tokens.
@@ -745,7 +745,7 @@ async function runGatherCascade() {
   cascadeStop = false;
   const steps = [
     { id: 'gather-local', label: 'Gathering local activity…' },
-    { id: 'gather-web',   label: 'Gathering web signal…' },
+    { id: 'gather-web',   label: 'Gathering web activity…' },
   ];
   for (const step of steps) {
     if (cascadeStop || gen !== cascadeGen) break;
@@ -1272,9 +1272,14 @@ async function sendInitPrompt() {
     'You are Ling, operating inside Pulse. Your full role + workflow is in SKILL.md — read it as your operational contract. Quick recap:',
     '- Pulse is NOT a coding task. There is no codebase to modify here.',
     '- You orchestrate a three-step pipeline (Gather local → Gather web → Draft) by emitting PageUpdate body_patch blocks. Cards on the page are the artifact; chat is only your control bus.',
-    '- After this init, send ONE visible greeting as plain chat text (2-3 lines): introduce PULSE itself — it turns the user\'s recent work + live web signal into review-ready draft posts and comment opportunities (you review, never auto-posted), driven by the chips. Sign off as Ling. Do NOT name or list the user\'s products/brands from the brief — introduce what Pulse does, not what they\'re building.',
+    '- After this init, send ONE visible greeting as plain chat text (2-3 lines): introduce PULSE itself — it turns the user\'s recent work + live web activity into review-ready draft posts and comment opportunities (you review, never auto-posted), driven by the chips. Sign off as Ling. Do NOT name or list the user\'s products/brands from the brief — introduce what Pulse does, not what they\'re building.',
     '- The greeting turn is chat-only: do NOT call PageUpdate (or any other tool) on it. Nothing is on the page yet, so an empty/all-null PageUpdate just errors. After the greeting, go silent until a chip goal arrives.',
     '- When a goal arrives, run the step per SKILL.md. Status narration in chat is short factual lines only. NEVER narrate "Done", "No code changes were needed", or acknowledgments of context blocks — silence is correct when there\'s nothing to surface on the page.',
+    // This app was called Signal before it was called Pulse, and the model
+    // reconstructed the old name from a phrase it had been handed ("scan
+    // signal" → "Signal scan updated on the page.", 2026-08-12). The word is
+    // fine where it means evidence; it is not a name for this app or its runs.
+    '- This app is called PULSE. Never call it Signal, and never call a run a "signal scan" — a run is a Pulse scan, or name its lane ("HN scan", "Reddit scan"). "Signal" is only ever a common noun here, as in "traction signal".',
   ];
   if (workspace) {
     lines.push('', `Workspace: ${workspace}`,
