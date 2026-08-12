@@ -128,21 +128,26 @@ tools:
     timeout_ms: 45000
   - name: FetchReddit
     description: >-
-      Fetch the 25 newest threads from each subreddit listed in
-      ~/.linggen/skills/pulse/config.json (sites.reddit.subs).
-      Returns JSON array of {sub, title, url, author, comments,
-      age_hours, summary} (author is the OP handle, u/<name>). Used by
-      discover-customers and monitor-mentions.
+      Fetch two passes per subreddit listed in
+      ~/.linggen/skills/pulse/config.json (sites.reddit.subs) — the 28
+      newest AND the 12 top-of-day — merged, deduped by URL, ~40 threads
+      per sub. Returns JSON array of {sub, mode, title, url, author,
+      comments, age_hours, summary} (author is the OP handle, u/<name>).
+      Used by discover-customers and monitor-mentions.
       Reads Reddit's PUBLIC `.rss` feeds (Reddit closed the anonymous
       `.json` API in Nov 2025, but `/r/<sub>/new.rss` still works with
-      no auth). `comments`/`score` are 0 (RSS omits them) — score by
-      title/summary relevance. A sub that hits the anon rate limit
-      serves its last-good cached feed instead (items get `stale:
-      true`, age_hours recomputed) — treat stale items normally, just
-      expect some may already be a scan old.
+      no auth). `comments`/`score` are 0 (RSS omits them), so
+      `mode: "top"` is the ONLY traction signal Reddit gives — a thread
+      in top-of-day earned its place; a `new` one has been judged by
+      nobody. `summary` is trimmed to 200 chars: it is there to score
+      topical fit, not to draft from — call FetchRedditThread for the
+      real discussion. A sub that hits the rate limit serves its
+      last-good cached feed instead (items get `stale: true`, age_hours
+      recomputed) — treat stale items normally, just expect some may
+      already be a scan old.
     cmd: "$SKILL_DIR/scripts/sites/reddit.sh"
     tier: read
-    timeout_ms: 90000
+    timeout_ms: 180000
   - name: FetchRedditThread
     description: >-
       Pull ONE Reddit thread's OP + comments via the public `.rss` feed
@@ -692,11 +697,13 @@ an explicit "refresh accounts" / first run / empty roster.
      freshest posts (reply early, before the slot is buried).
    - **Bluesky** — `like_count` + `repost_count` + `reply_count`
      (no author follower count). Prefer posts with engagement.
-   - **Reddit** — NO heat signal: the public `.rss` feeds return
-     `score: 0` and `comments: 0`, so popularity is genuinely
-     unavailable. Rank Reddit by topical fit only; do not fabricate a
-     hotness number. (Comment count can be roughly inferred by reading
-     the thread, but upvote score never comes over RSS.)
+   - **Reddit** — `mode` is the only heat signal, and it is coarse: the
+     `.rss` feeds return `score: 0` and `comments: 0`, so no number is
+     available and none may be fabricated. `mode:"top"` means the thread
+     made top-of-day in its sub — real traction, so prefer those;
+     `mode:"new"` means nobody has judged it yet, which is not a mark
+     against it (a 2-hour-old question is a fine reply target) but is not
+     evidence either. Within a mode, rank by topical fit.
 6. **Read the discussion for grounding (Reddit + HN).** `FetchReddit`
    only gives the thread title + a short summary. For each surviving
    **Reddit** thread, call `FetchRedditThread` (and for **HN**,
