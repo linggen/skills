@@ -98,7 +98,13 @@ tools:
       lobste.rs front page + quality tech subreddits
       (sites.hackernews.submit_sources) — then DEDUPS each URL against HN
       via the public Algolia API and DROPS anything already submitted
-      (reposts get killed). Arg: [max=5] (default 5 — HN tolerates only a
+      (reposts get killed). Every candidate is something to READ: the script
+      drops reddit-hosted links (self-posts and the i.redd.it / v.redd.it
+      media CDNs) and bare image / video files, so a card is never an image
+      URL. Subreddit reads ride the account's private RSS feed and are
+      paced, with a last-good cache per sub — a refused sub contributes its
+      previous feed rather than letting one sub's links fill the whole list.
+      Arg: [max=5] (default 5 — HN tolerates only a
       couple of your own submissions per day, so a short list is plenty).
       Returns JSON array of
       {title, url, source, score, age_hours, comments_url, hn_status},
@@ -109,7 +115,7 @@ tools:
       sites.hackernews.enabled.
     cmd: "$SKILL_DIR/scripts/sites/hn-submit-finder.sh {{max}}"
     tier: read
-    timeout_ms: 45000
+    timeout_ms: 120000
   - name: FetchHNMentions
     description: >-
       The HN inbox signal HN never sends: comments on YOUR submissions

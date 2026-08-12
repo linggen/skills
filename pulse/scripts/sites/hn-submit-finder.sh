@@ -43,7 +43,7 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 MAX="${1:-5}" CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
-import json, os, re, sys, urllib.parse, urllib.request
+import json, os, re, sys, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
@@ -53,6 +53,15 @@ MAX_AGE_DAYS = 21          # stale links are likely already on HN / past their m
 CANDIDATE_CAP = 30         # how many to spend an Algolia dedup check on
 SELF_DOMAINS = {"linggen.dev"}  # never submit your own work via this lane
 
+# Reddit rate-limits .rss hard, and these requests went out back-to-back: one
+# sub answered and the rest got 429, so the whole candidate list came from a
+# single subreddit (2026-08-12: all of it r/rust, all of it images). Same fix
+# reddit.sh already carries — pace the requests, rotate which sub goes first so
+# the budget doesn't always land in the same place, and fall back to the
+# last-good feed for a sub that gets refused.
+REQUEST_GAP = 6.0
+CACHE = os.path.expanduser("~/.linggen/skills/pulse/state/hn-submit-cache.json")
+
 try:
     max_cards = max(1, int(os.environ.get("MAX", "5") or 5))
 except ValueError:
@@ -61,6 +70,7 @@ except ValueError:
 # ---- config / sources -------------------------------------------------------
 DEFAULT_SUBS = ["programming", "rust", "MachineLearning", "compsci", "selfhosted"]
 lobsters_on, subs = True, DEFAULT_SUBS
+reddit_cfg = {}
 try:
     cfg = json.load(open(os.environ["CONFIG"]))
     hn = (cfg.get("sites") or {}).get("hackernews") or {}
@@ -69,8 +79,27 @@ try:
         lobsters_on = bool(src.get("lobsters"))
     if isinstance(src.get("subreddits"), list):
         subs = [s for s in src["subreddits"] if s]
+    reddit_cfg = (cfg.get("sites") or {}).get("reddit") or {}
 except Exception:
     pass
+
+# Ride the account's private RSS feed (old.reddit.com/prefs/feeds) like
+# reddit.sh does: anonymous .rss shares one per-IP budget that 429s after two
+# or three subs, and this lane was spending it blind — the token moves the
+# whole run onto the per-account budget instead. Same forgiving parse (a whole
+# pasted feed URL works as well as the bare token).
+def _reddit_auth():
+    user = (reddit_cfg.get("username") or "").strip().lstrip("u/").lstrip("/")
+    token = (reddit_cfg.get("private_rss_feed_token") or "").strip()
+    if "feed=" in token:
+        q = urllib.parse.parse_qs(urllib.parse.urlsplit(token).query)
+        token = (q.get("feed") or [token])[0]
+        user = user or (q.get("user") or [""])[0]
+    if not (user and token):
+        return ""
+    return f"&feed={urllib.parse.quote(token)}&user={urllib.parse.quote(user)}"
+
+REDDIT_AUTH = _reddit_auth()
 
 def get(url, timeout=12):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
@@ -83,6 +112,30 @@ def host(u):
         return h[4:] if h.startswith("www.") else h
     except Exception:
         return ""
+
+def host_is(h, domain):
+    """Host match that includes subdomains — `i.redd.it` IS `redd.it`."""
+    return h == domain or h.endswith("." + domain)
+
+# A submission has to be something to READ. These are neither article nor
+# discussion: Reddit's own hosts (a self-post, or its media CDNs i.redd.it /
+# v.redd.it / preview.redd.it) and bare image / video files anywhere.
+# 2026-08-12: every candidate in a rescan was an `i.redd.it` .png — the host
+# check meant to stop them compared `host(u) in ("", "redd.it")`, which an
+# `i.redd.it` URL passes, and nothing looked at the file extension at all.
+NOT_ARTICLE_DOMAINS = ("redd.it", "reddit.com", "imgur.com")
+MEDIA_EXTS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg",
+              ".mp4", ".webm", ".mov", ".m4v", ".avi", ".mp3", ".wav")
+
+def submittable(u):
+    h = host(u)
+    if not u or not h:
+        return False
+    if any(host_is(h, d) for d in NOT_ARTICLE_DOMAINS):
+        return False
+    # imgur gallery links carry no extension, hence the domain rule above; a
+    # PDF stays allowed on purpose — papers are a normal HN submission.
+    return not urllib.parse.urlsplit(u).path.lower().endswith(MEDIA_EXTS)
 
 def url_key(u):
     """Normalize for dedup: scheme/www/trailing-slash/fragment insensitive."""
@@ -112,7 +165,8 @@ if lobsters_on:
     try:
         for it in json.loads(get("https://lobste.rs/hottest.json")):
             u = (it.get("url") or "").strip()
-            if not u or host(u) in ("lobste.rs", ""):   # text/ask posts have no external url
+            # text/ask posts have no external url; the rest must be readable
+            if host_is(host(u), "lobste.rs") or not submittable(u):
                 continue
             cands.append({
                 "title": (it.get("title") or "").strip(),
@@ -128,26 +182,72 @@ if lobsters_on:
 # ---- quality subreddits via public RSS (top of week = vetted) ---------------
 NS = {"a": "http://www.w3.org/2005/Atom"}
 LINK_RE = re.compile(r'href="([^"]+)">\[link\]')
-for sub in subs:
-    try:
-        root = ET.fromstring(get(f"https://www.reddit.com/r/{sub}/top/.rss?t=week&limit=25"))
-    except Exception:
-        continue
+
+try:
+    cache = json.load(open(CACHE))
+except Exception:
+    cache = {}
+
+errors = []
+
+def links_from(root, sub):
+    """The submittable [link] posts in one sub's feed, as cacheable rows."""
+    rows = []
     for e in root.findall("a:entry", NS):
-        content = e.findtext("a:content", "", NS) or ""
-        m = LINK_RE.search(content)
+        m = LINK_RE.search(e.findtext("a:content", "", NS) or "")
         u = (m.group(1) if m else "").strip()
-        # No [link] anchor, or it points back at reddit => self-post, not an article.
-        if not u or "reddit.com" in host(u) or host(u) in ("", "redd.it"):
+        # No [link] anchor, a link back at reddit (self-post or reddit-hosted
+        # media), or a bare image/video => nothing to submit.
+        if not submittable(u):
             continue
-        cands.append({
+        rows.append({
             "title": (e.findtext("a:title", "", NS) or "").strip(),
             "url": u,
+            "updated_iso": (e.findtext("a:updated", "", NS) or "").strip(),
+        })
+    return rows
+
+# Stalest sub first, so a run that gets refused partway still moves coverage
+# forward instead of refreshing the same head of the list every time.
+subs = sorted(subs, key=lambda s: (cache.get(s) or {}).get("fetched_iso", ""))
+
+for i, sub in enumerate(subs):
+    if i:
+        time.sleep(REQUEST_GAP)
+    try:
+        root = ET.fromstring(get(
+            f"https://www.reddit.com/r/{sub}/top/.rss?t=week&limit=25{REDDIT_AUTH}"))
+        rows = links_from(root, sub)
+        cache[sub] = {
+            "fetched_iso": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "links": rows,
+        }
+    except Exception as ex:
+        cached = cache.get(sub) or {}
+        rows = cached.get("links") or []
+        errors.append(f"r/{sub}: {type(ex).__name__} {ex}"
+                      + (f" — served last-good cache from {cached['fetched_iso']}"
+                         if rows else ""))
+    for row in rows:
+        cands.append({
+            "title": row["title"],
+            "url": row["url"],
             "source": f"r/{sub}",
             "score": 0,  # reddit RSS exposes no score
-            "age_hours": age_hours((e.findtext("a:updated", "", NS) or "").strip()),
+            # Recomputed from the post's own timestamp, so a cached row ages
+            # honestly and the MAX_AGE_DAYS gate below still applies to it.
+            "age_hours": age_hours(row.get("updated_iso")),
             "comments_url": "",
         })
+
+try:
+    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
+    tmp = CACHE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(cache, f)
+    os.replace(tmp, CACHE)
+except Exception as ex:
+    errors.append(f"cache write: {type(ex).__name__} {ex}")
 
 # ---- dedup within candidates, drop own domain + stale -----------------------
 seen, uniq = set(), []
@@ -222,4 +322,6 @@ for c in uniq:
     out.append(c)
 
 print(json.dumps(out))
+if errors:
+    sys.stderr.write("[hn-submit-finder] " + "; ".join(errors) + "\n")
 PY
