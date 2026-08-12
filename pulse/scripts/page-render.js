@@ -277,6 +277,9 @@ export function loadSession(sessionData) {
     // existed (or were saved id-less) — otherwise their buttons stay dead.
     for (const sec of Object.values(session.sections)) {
       (sec.cards || []).forEach(ensureCardId);
+      // Heal sessions holding submit cards that point at an image, not an
+      // article — they were persisted before the finder stopped emitting them.
+      sec.cards = dropUnsubmittableCards(sec.cards);
     }
     rerouteMisfiledCards(session.sections);
   }
@@ -364,6 +367,35 @@ function rerouteMisfiledCards(sections) {
   }
 }
 
+// A submit candidate has to be something a HN reader can READ. "Is this URL an
+// article" is a mechanical test, so the page owns it — the same reason card
+// ids and home sections are not the model's call.
+// Observed 2026-08-12: four `submit` cards pointing at i.redd.it .png/.gif,
+// each with a "Submit on HN" button. hn-submit-finder.sh was fixed to stop
+// emitting them, but the cards were ALREADY persisted in the session and the
+// HN rescan that followed emitted no hn_submit patch at all, so nothing
+// replaced them and the page kept serving them as current. A validator here
+// covers both halves: junk can't enter, and it heals sessions that already
+// hold it (loadSession runs this too).
+const NOT_ARTICLE_HOSTS = ['redd.it', 'reddit.com', 'imgur.com'];
+const MEDIA_EXT_RE = /\.(png|jpe?g|gif|webp|bmp|svg|mp4|webm|mov|m4v|avi|mp3|wav)$/i;
+
+function isArticleUrl(url) {
+  if (!url) return false;
+  let u;
+  try { u = new URL(url); } catch { return false; }
+  const host = u.hostname.toLowerCase().replace(/^www\./, '');
+  if (NOT_ARTICLE_HOSTS.some(d => host === d || host.endsWith('.' + d))) return false;
+  return !MEDIA_EXT_RE.test(u.pathname);
+}
+
+function dropUnsubmittableCards(cards) {
+  return (cards || []).filter(c => {
+    if (!c || (c.type !== 'submit' && c.type !== 'hn_submit')) return true;
+    return isArticleUrl(c.url);
+  });
+}
+
 // "This lane found nothing" is a mechanical fact about the patch, not the
 // model's call — a lane that emitted real cards cannot also be empty, and a
 // LANELESS empty on a patch that carried cards is pure noise (it renders
@@ -397,8 +429,8 @@ function applyBodyPatch(patch) {
     // before the render-time filter hides them. (Seed loads before any
     // gather — see init() — so dismissedUrls is populated by the time a
     // body_patch arrives.)
-    const incoming = dropContradictoryEmpties(
-      patch.cards.filter(c => !isDismissed(c))).map(ensureCardId);
+    const incoming = dropUnsubmittableCards(dropContradictoryEmpties(
+      patch.cards.filter(c => !isDismissed(c)))).map(ensureCardId);
     // Two modes:
     //   default (replace) — cards in patch fully replace existing cards.
     //                       Used by Gather web's mentions/trend/discovery
