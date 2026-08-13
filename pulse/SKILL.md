@@ -727,13 +727,16 @@ an explicit "refresh accounts" / first run / empty roster.
    the top, no hunting) and highest-visibility, which is the goal. Do
    NOT emit `reply_target` for discovery cards; that field is only for
    `mentions`/reply_to_me, where the comment is in the user's own inbox.
-7. For each surviving thread, draft a 2–4 sentence top-level reply
-   in voice. **Pick the lane by source**: Reddit threads use
-   lane-templates.md `reddit-comment`; X posts use `x-reply` (≤280,
-   X reply conventions); HN threads use `hn-comment` (substance-first,
-   register (1) implicit / no product mention by default — HN flags
-   self-promo hardest, and the goal is karma; mention ling-mem only
-   when the thread is directly about agent memory AND with disclosure).
+7. For each surviving thread, draft a top-level reply in voice.
+   **Pick the lane by source**: Reddit threads use lane-templates.md
+   `reddit-comment` (2–4 sentences, paste-ready); X posts use `x-reply`
+   (≤280, X reply conventions); HN threads use `hn-comment` — which is
+   **NOT paste-ready prose**: it emits an angle + say-points block the
+   user rewrites in their own words (pasted generated comments got the
+   account's comments auto-killed; see lane-templates.md). Register (1)
+   implicit / no product mention stays the default for the points — HN
+   flags self-promo hardest; mention ling-mem only when the thread is
+   directly about agent memory AND with disclosure.
    Don't link to the user's marketing domain; if a self-mention is
    genuinely natural, max one.
    **Exception — `rec_request` threads**: when the OP is explicitly
@@ -757,9 +760,11 @@ an explicit "refresh accounts" / first run / empty roster.
   give a bit of headroom in case the renderer cuts mid-word). Strip
   markdown / HTML to plain text; include the actual claim or
   question the OP made, not just the title.
-- `draft_starter` — your 2–4 sentence comment draft in voice. Shown
-  inline on the card so the user can copy or open the thread to post
-  without an extra click.
+- `draft_starter` — for Reddit/X: your 2–4 sentence comment draft in
+  voice, shown inline so the user can copy or open the thread to post
+  without an extra click. For HN: the `angle:` + `say:` block from
+  lane-templates.md `hn-comment` — substance the user rewrites
+  themselves, never a paste-ready comment.
 - `rec_request` — `true` ONLY when the OP is explicitly asking for
   tool/product recommendations ("is there a tool", "what do you use
   for", "any alternatives to", "recommend something for"). A question

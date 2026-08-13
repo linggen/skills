@@ -57,9 +57,11 @@ of each lane's tic list, in pass 3:
   The most common offender is the "— otherwise X quietly becomes Y"
   closer: never END a draft on an "otherwise" clause; end on the
   concrete detail instead.
-- **A fragment or a rough edge is GOOD.** Opening with "yeah,",
-  "honestly,", "wait —", lowercase, or trailing off reads more human
-  than a balanced, fully-resolved sentence.
+- **A fragment or a rough edge is GOOD.** Lowercase, trailing off, or
+  a half-formed aside reads more human than a balanced, fully-resolved
+  sentence. But casual openers are a budget, not a recipe — see the
+  fingerprint rule below. ("yeah," is RETIRED: it led 4 of the
+  account's flagged HN comments. Don't suggest it.)
 - **Add one thing the thread doesn't already have.** Before drafting,
   check: does this say anything the OP, the parent comment, or the
   user's own earlier comment in the thread hasn't said? Agreement +
@@ -74,6 +76,21 @@ of each lane's tic list, in pass 3:
   two comments in a row with the same closing shape is the loudest
   bot tell there is. Vary where the weight lands: mid-sentence detail,
   question, plain stop.
+- **Fingerprints live ACROSS drafts, not inside one.** This is how the
+  account's comments actually got flagged: each draft passed alone,
+  but ten of them shared an opener, a length band, and the same
+  one-concrete-thing + fragment recipe — readers pattern-match the
+  corpus, not the sentence. So vary BETWEEN drafts in the same run and
+  against the user's recently posted comments: different openers,
+  hard length spread (make one draft a single sentence; make one just
+  a question), different moods (agree / push back / ask / correct).
+  Never apply every rule in this section to the same draft — a recipe
+  applied uniformly IS the fingerprint.
+- **Reply to a sentence, not the topic.** Quote or closely paraphrase
+  one specific phrase from the OP or parent (≤15 words) and answer
+  THAT. A take on the subject is what generators produce; a reaction
+  to the actual words is what humans produce. If the draft would fit
+  under any thread on this topic, it's a take — cut it.
 
 Worked example — an actual X reply this skill produced, and the fix:
 
@@ -355,16 +372,27 @@ sentences, emit `empty`.
 
 ## hn-comment
 
+**This lane NEVER outputs paste-ready prose.** Pasted generated
+comments are what got the account's comments auto-killed (14 of the
+last 17 dead by 2026-08 — user flags on AI cadence), and HN treats
+comments as the poster's own words. The card hands the user an angle
+and the substance; they write the sentences themselves — thirty
+seconds, and unfakeable. `draft_starter` on an HN card carries exactly
+this shape, labeled so it can't be mistaken for a comment:
+
+    angle: "<the OP's actual words worth reacting to, ≤15 of them>"
+    say:
+    - <point 1 — a fact, number, failure mode, or counterpoint>
+    - <point 2, optional>
+    (write it in your own words — don't paste)
+
 The goal on Hacker News is to **build karma with genuinely useful
 comments** — especially for a new account that can't post much yet. HN
 readers and mods flag anything that smells like marketing *harder* than
 any other platform, and a flagged self-promo on a young account is the
-fastest way to tank it. So the bar here is: would this comment be worth
-posting even if the user had no product at all? If not, drop it.
-
-- **Length**: 2-6 sentences, up to ~150 words. HN tolerates — rewards —
-  more substance than Reddit/X, but only if every sentence carries
-  information. No padding.
+fastest way to tank it. So the bar for the POINTS is: would this be
+worth saying even if the user had no product at all? If not, drop the
+card.
 - **Lead with specifics or direct experience.** A number, a failure
   mode, a concrete trade-off you actually hit, a correction to a claim
   in the thread. HN's best comments add a fact or a counterpoint the OP
