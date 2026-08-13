@@ -385,6 +385,11 @@ def main():
     win = ranked[0]
     print(json.dumps({
         "ok": True,
+        # Ordered, best first. Callers hand the WHOLE list to yt-dlp with
+        # --ignore-errors --max-downloads 1 so it walks down on a dead video,
+        # the way it used to walk down a search. Ranking decides the order;
+        # it must not cost the resilience of having somewhere to fall back to.
+        "urls": [r["url"] for r in ranked[:4]],
         "url": win["url"],
         "id": win["id"],
         "duration": win["duration"],

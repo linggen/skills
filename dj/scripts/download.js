@@ -110,7 +110,7 @@ export async function downloadTrack(bins, cfg, track) {
   // success. `|| true` because both of those exit non-zero; we judge success by
   // whether a filepath was printed.
   const picked = await pickSource(bins, track);
-  const source = picked ? picked.url : `ytsearch5:${query}`;
+  const sources = picked?.urls?.length ? picked.urls : [`ytsearch5:${query}`];
 
   const cmd = [
     `mkdir -p ${sq(libDir)} &&`,
@@ -125,7 +125,7 @@ export async function downloadTrack(bins, cfg, track) {
     `--ffmpeg-location ${sq(bins.ffmpeg)}`,
     `--print after_move:filepath`,
     `-o ${sq(outTmpl)}`,
-    sq(source),
+    sources.map(sq).join(' '),
     `|| true`,
   ].join(' ');
 

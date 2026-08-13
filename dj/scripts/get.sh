@@ -177,7 +177,7 @@ for i, t in enumerate(tracks):
     # when the picker comes back empty, since the top hit is often region- or
     # label-blocked and that fallback takes the first that actually downloads.
     picked = pick_source(bins["yt_dlp"], t)
-    target = picked["url"] if picked else f"ytsearch5:{artist} {title}".strip()
+    targets = (picked or {}).get("urls") or [f"ytsearch5:{artist} {title}".strip()]
 
     cmd = [bins["yt_dlp"], "--no-warnings", "--ignore-errors", "--max-downloads", "1",
            "--socket-timeout", "15", "--retries", "3", "--fragment-retries", "3",
@@ -192,8 +192,7 @@ for i, t in enumerate(tracks):
     cmd += ["--postprocessor-args", f"ffmpeg:{meta}",
             "--ffmpeg-location", bins["ffmpeg"],
             "--print", "after_move:filepath",
-            "-o", f"{lib_dir}/{name}.%(ext)s",
-            target]
+            "-o", f"{lib_dir}/{name}.%(ext)s"] + targets
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
         got = [l for l in r.stdout.strip().splitlines() if l.endswith(".mp3")]
