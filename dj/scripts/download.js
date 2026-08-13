@@ -3,8 +3,34 @@
 // The agent never calls this; it only proposes the list.
 
 import { runBash, sq, resolvePath } from './bash.js';
+import { writeLrc } from './lyrics.js';
 
 const DJ_DIR = '$HOME/.linggen/skills/dj';
+
+// Choose WHICH video this track comes from, rather than taking whatever the
+// search ranked first. scripts/pick-source.py anchors on the studio duration
+// LRCLIB reports and scores the candidates against it; see that file for why.
+// Returns null on any failure, and the caller falls back to a plain search —
+// a picker that cannot reach the network must not stop a download.
+async function pickSource(bins, track) {
+  const req = JSON.stringify({
+    artist: track.artist || '',
+    title: track.title || '',
+    version: track.version || 'studio',
+    query_hints: track.query_hints || [],
+    yt_dlp: bins.yt_dlp,
+  });
+  try {
+    const out = await runBash(
+      `python3 ${sq(`${DJ_DIR}/scripts/pick-source.py`)} ${sq(req)}`,
+      { timeoutMs: 120_000 }, // several searches in parallel, ~12s each
+    );
+    const picked = JSON.parse(out.trim().split('\n').filter(Boolean).pop() || '{}');
+    return picked.ok ? picked : null;
+  } catch {
+    return null;
+  }
+}
 
 // Ensure yt-dlp + ffmpeg exist (fetch yt-dlp on first use, self-update on
 // demand). Returns { yt_dlp, ffmpeg, ok, note }.
@@ -74,11 +100,16 @@ export async function downloadTrack(bins, cfg, track) {
     `--postprocessor-args ${sq(`ffmpeg:${metaArgs}`)}`,
   ].filter(Boolean);
 
-  // Search several results and grab the FIRST that actually downloads — the top
-  // hit is often region/label-blocked ("video not available", common for
-  // Disney/Vevo). --ignore-errors skips the dead ones; --max-downloads 1 stops
-  // at the first success. `|| true` because both of those exit non-zero; we
-  // judge success by whether a filepath was printed.
+  // Pick the source deliberately. With a winner we hand yt-dlp that one URL;
+  // without one we fall back to the old behaviour — search several results and
+  // grab the FIRST that actually downloads, since the top hit is often
+  // region/label-blocked ("video not available", common for Disney/Vevo).
+  // --ignore-errors skips the dead ones; --max-downloads 1 stops at the first
+  // success. `|| true` because both of those exit non-zero; we judge success by
+  // whether a filepath was printed.
+  const picked = await pickSource(bins, track);
+  const source = picked ? picked.url : `ytsearch5:${query}`;
+
   const cmd = [
     `mkdir -p ${sq(libDir)} &&`,
     sq(bins.yt_dlp),
@@ -92,15 +123,23 @@ export async function downloadTrack(bins, cfg, track) {
     `--ffmpeg-location ${sq(bins.ffmpeg)}`,
     `--print after_move:filepath`,
     `-o ${sq(outTmpl)}`,
-    sq(`ytsearch5:${query}`),
+    sq(source),
     `|| true`,
   ].join(' ');
 
   try {
-    const out = await runBash(cmd, { timeoutMs: 300_000 }); // ytsearch5 + extract can be slow
+    const out = await runBash(cmd, { timeoutMs: 300_000 }); // search + extract can be slow
     const lines = out.trim().split('\n').filter(Boolean);
     const file = [...lines].reverse().find((l) => l.endsWith('.mp3')) || '';
-    return file ? { ok: true, file } : { ok: false, error: 'no playable source found' };
+    if (!file) return { ok: false, error: 'no playable source found' };
+    // The picker already asked LRCLIB for the lyrics — that is where the
+    // duration it matched against came from — so write the sidecar here
+    // rather than paying for the same request again in the backfill.
+    let lrc = null;
+    try {
+      if (picked?.lyrics?.body) lrc = await writeLrc(picked.lyrics.body, file);
+    } catch { /* lyrics are optional */ }
+    return { ok: true, file, lrc, picked };
   } catch (e) {
     return { ok: false, error: String(e.message || e) };
   }

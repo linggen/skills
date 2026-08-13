@@ -43,6 +43,29 @@ skill_dir, raw = sys.argv[1], sys.argv[2]
 
 UA = "DJ (Linggen music app) https://linggen.dev"
 
+def pick_source(yt_dlp, t):
+    """Choose WHICH video this track comes from — scripts/pick-source.py, the
+    same picker the page uses, so both paths agree on what a track is.
+
+    Returns the picked dict or None; None means fall back to a plain search,
+    because a picker that cannot reach the network must not stop a download.
+    """
+    req = json.dumps({
+        "artist": t.get("artist") or "", "title": t.get("title") or "",
+        "version": t.get("version") or "studio",
+        "query_hints": t.get("query_hints") or [],
+        "yt_dlp": yt_dlp,
+    })
+    try:
+        r = subprocess.run(
+            ["python3", os.path.join(skill_dir, "scripts/pick-source.py"), req],
+            capture_output=True, text=True, timeout=180)
+        picked = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        return None
+    return picked if picked.get("ok") else None
+
+
 def fetch_lrc(artist, title):
     # Mirror of lyrics.js fetchLyrics: LRCLIB free-text search (the exact
     # artist/track fields miss original-language titles), prefer synced.
@@ -150,8 +173,12 @@ for i, t in enumerate(tracks):
     if t.get("year"):
         meta += f' -metadata date="{safe(t["year"])}"'
 
-    # ytsearch5 + --max-downloads 1: the top hit is often region- or
-    # label-blocked, so take the first that actually downloads.
+    # Pick the source deliberately; fall back to ytsearch5 + --max-downloads 1
+    # when the picker comes back empty, since the top hit is often region- or
+    # label-blocked and that fallback takes the first that actually downloads.
+    picked = pick_source(bins["yt_dlp"], t)
+    target = picked["url"] if picked else f"ytsearch5:{artist} {title}".strip()
+
     cmd = [bins["yt_dlp"], "--no-warnings", "--ignore-errors", "--max-downloads", "1",
            "--socket-timeout", "15", "--retries", "3", "--fragment-retries", "3",
            "--concurrent-fragments", "4",
@@ -166,7 +193,7 @@ for i, t in enumerate(tracks):
             "--ffmpeg-location", bins["ffmpeg"],
             "--print", "after_move:filepath",
             "-o", f"{lib_dir}/{name}.%(ext)s",
-            f"ytsearch5:{artist} {title}".strip()]
+            target]
     try:
         r = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
         got = [l for l in r.stdout.strip().splitlines() if l.endswith(".mp3")]
@@ -174,9 +201,14 @@ for i, t in enumerate(tracks):
             files.append(got[-1])
             # The page backfills lyrics after its downloads (lyrics.js); a
             # headless get must too, or agent-ordered songs reach the phone
-            # bare while page-ordered ones carry their .lrc.
+            # bare while page-ordered ones carry their .lrc. The picker has
+            # usually fetched them already — that is where the duration it
+            # matched against came from — so only ask LRCLIB again if it did
+            # not, which is the fallback-search case.
             try:
-                body = fetch_lrc(artist, title)
+                body = (picked or {}).get("lyrics", {})
+                body = body.get("body") if isinstance(body, dict) else None
+                body = body or fetch_lrc(artist, title)
                 if body and body.strip():
                     with open(os.path.splitext(got[-1])[0] + ".lrc", "w") as f:
                         f.write(body if body.endswith("\n") else body + "\n")

@@ -104,6 +104,21 @@ tools:
             artist: { type: string }
             title:  { type: string }
             year:   { type: integer }
+            version:
+              type: string
+              enum: [studio, live, mv]
+              description: >-
+                Which recording they want. Defaults to `studio` — the album
+                master. Set `live` only when they asked for a concert take;
+                it changes both what is searched for and what wins.
+            query_hints:
+              type: array
+              items: { type: string }
+              description: >-
+                Extra search phrasings you know will surface the right upload,
+                e.g. ["歌词版"] for Mandarin tracks whose plain search fills
+                with variety-show performances. Rarely needed — the picker
+                already tries the usual ones for the title's script.
           required: [artist, title]
       for_phone:
         type: boolean

@@ -29,12 +29,18 @@ export async function fetchLyrics(track) {
   return { synced: pick.syncedLyrics || '', plain: pick.plainLyrics || '' };
 }
 
-// Fetch + write the sidecar. Returns the .lrc path, or null if no lyrics found.
-export async function attachLyrics(track, mp3File) {
-  const lyrics = await fetchLyrics(track);
-  const body = lyrics && (lyrics.synced || lyrics.plain);
+// Write a sidecar next to the MP3. Returns the .lrc path, or null for an empty
+// body. Shared so the download path can write the lyrics the source picker
+// already fetched instead of asking LRCLIB for them a second time.
+export async function writeLrc(body, mp3File) {
   if (!body || !body.trim()) return null;
   const lrc = mp3File.replace(/\.[^./]+$/, '') + '.lrc';
   await writeFile(lrc, body);
   return lrc;
+}
+
+// Fetch + write the sidecar. Returns the .lrc path, or null if no lyrics found.
+export async function attachLyrics(track, mp3File) {
+  const lyrics = await fetchLyrics(track);
+  return writeLrc(lyrics && (lyrics.synced || lyrics.plain), mp3File);
 }
