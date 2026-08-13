@@ -21,8 +21,10 @@ async function pickSource(bins, track) {
     yt_dlp: bins.yt_dlp,
   });
   try {
+    // Double quotes on the path, single on the payload: DJ_DIR carries a
+    // literal $HOME that the shell has to expand, and sq() would freeze it.
     const out = await runBash(
-      `python3 ${sq(`${DJ_DIR}/scripts/pick-source.py`)} ${sq(req)}`,
+      `python3 "${DJ_DIR}/scripts/pick-source.py" ${sq(req)}`,
       { timeoutMs: 120_000 }, // several searches in parallel, ~12s each
     );
     const picked = JSON.parse(out.trim().split('\n').filter(Boolean).pop() || '{}');
