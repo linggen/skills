@@ -372,27 +372,52 @@ sentences, emit `empty`.
 
 ## hn-comment
 
-**This lane NEVER outputs paste-ready prose.** Pasted generated
-comments are what got the account's comments auto-killed (14 of the
-last 17 dead by 2026-08 — user flags on AI cadence), and HN treats
-comments as the poster's own words. The card hands the user an angle
-and the substance; they write the sentences themselves — thirty
-seconds, and unfakeable. `draft_starter` on an HN card carries exactly
-this shape, labeled so it can't be mistaken for a comment:
+Output is a **paste-ready comment** — but this account has been burned
+here before (14 of 17 comments killed by 2026-08, mostly user flags on
+AI cadence), so this lane holds the strictest human bar of any lane.
+The calibration set is the account's own history — write ONLY things
+shaped like the survivors:
 
-    angle: "<the OP's actual words worth reacting to, ≤15 of them>"
-    say:
-    - <point 1 — a fact, number, failure mode, or counterpoint>
-    - <point 2, optional>
-    (write it in your own words — don't paste)
+SURVIVED (real comments from this account — the target register):
+
+    "same here. i usually only notice fonts when something feels off,
+    not when it's working. the article made the hidden defaults feel a
+    lot less arbitrary."
+
+    "the hard part probably isn't search over 500k emails, it's keeping
+    the generated wiki from becoming a second messy inbox. i'd want to
+    see how it handles stale facts and conflicting versions of the same
+    project. email has a lot of "this was true for two weeks in 2019"
+    buried inside it."
+
+FLAGGED (same account, killed by readers — do NOT write like this):
+
+    "yeah, this gets ugly fast if every transcript becomes equally
+    retrievable. i'd want the memory layer to keep source, retention,
+    and who can retrieve it as first-class fields, not hope a vector
+    store's metadata saves you later."
+
+What separates them: the survivors have ONE loose thought with a
+specific, almost mundane detail ("this was true for two weeks in
+2019"); the flagged one is dense — three polished clauses, zero slack,
+every noun load-bearing. Density IS the tell. Write the comment a
+person types in 40 seconds, not the one an editor approves.
+
+- **Length**: 1–3 sentences default. Sometimes just a question.
+  Go longer ONLY when there's a concrete war story to tell.
+- **Leave slack in the sentence.** One aside, one hedge, one plain
+  connective ("and honestly", "which is fine"). If every clause
+  carries information, it reads generated.
+- **Apply the corpus-variation rules** ("Sound human" above) against
+  the OTHER drafts in this run and the account's recent comments:
+  vary opener, length, mood. Never two drafts with the same shape.
 
 The goal on Hacker News is to **build karma with genuinely useful
 comments** — especially for a new account that can't post much yet. HN
 readers and mods flag anything that smells like marketing *harder* than
 any other platform, and a flagged self-promo on a young account is the
-fastest way to tank it. So the bar for the POINTS is: would this be
-worth saying even if the user had no product at all? If not, drop the
-card.
+fastest way to tank it. So the bar is: would this comment be worth
+posting even if the user had no product at all? If not, drop the card.
 - **Lead with specifics or direct experience.** A number, a failure
   mode, a concrete trade-off you actually hit, a correction to a claim
   in the thread. HN's best comments add a fact or a counterpoint the OP
