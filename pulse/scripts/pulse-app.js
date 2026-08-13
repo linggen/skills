@@ -1892,12 +1892,28 @@ function svgKarmaHero() {
     const since = (hnDash.karma[0] && hnDash.karma[0].date) || 'today';
     return `<div class="chart-empty">Karma tracking started ${escapeHtml(since)} — your growth curve fills in over the next few days.</div>`;
   }
-  const W = 600, H = 150, PADT = 12, PADB = 16, PADX = 2;
-  const xAt = i => PADX + (i / (kar.length - 1)) * (W - 2 * PADX);
+  // Axes follow the Reddit chart's idiom (grid-line + chart-tick). No
+  // preserveAspectRatio="none" — that would stretch the tick text.
+  const W = 1200, H = 210, PADT = 18, PADB = 30, PADL = 46, PADR = 14;
+  const plotW = W - PADL - PADR, plotH = H - PADT - PADB;
+  const xAt = i => PADL + (i / (kar.length - 1)) * plotW;
   const counts = kar.map(p => p.count);
   let lo = Math.min(...counts), hi = Math.max(...counts);
   if (lo === hi) { lo -= 1; hi += 1; }
-  const yAt = v => PADT + (1 - (v - lo) / (hi - lo)) * (H - PADT - PADB);
+  const yAt = v => PADT + (1 - (v - lo) / (hi - lo)) * plotH;
+  // y axis: karma levels lo..hi in quarters, integer-rounded, deduped
+  let grid = '';
+  for (const v of [...new Set([0, 1, 2, 3, 4].map(k => Math.round(lo + (k / 4) * (hi - lo))))]) {
+    grid += `<line x1="${PADL}" y1="${yAt(v).toFixed(1)}" x2="${W - PADR}" y2="${yAt(v).toFixed(1)}" class="grid-line"/>` +
+      `<text x="${PADL - 6}" y="${(yAt(v) + 4).toFixed(1)}" class="chart-tick" text-anchor="end">${v}</text>`;
+  }
+  grid += `<line x1="${PADL}" y1="${(H - PADB).toFixed(1)}" x2="${W - PADR}" y2="${(H - PADB).toFixed(1)}" class="grid-line base"/>`;
+  // x axis: dates at start / quarters / end (deduped when the window is short)
+  let ticks = '';
+  const last = kar.length - 1;
+  for (const i of [...new Set([0, 1, 2, 3, 4].map(k => Math.round((k / 4) * last)))]) {
+    ticks += `<text x="${xAt(i).toFixed(1)}" y="${(H - PADB + 18).toFixed(1)}" class="chart-tick" text-anchor="middle">${kar[i].date.slice(5).replace('-', '/')}</text>`;
+  }
   const pts = kar.map((p, i) => [xAt(i), yAt(p.count)]);
   const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
   const area = `M${pts[0][0].toFixed(1)} ${(H - PADB).toFixed(1)} ` +
@@ -1912,13 +1928,18 @@ function svgKarmaHero() {
   const bars = kar.map((p, i) => {
     const v = perDay[p.date] || 0;
     if (!v) return '';
-    const bh = (v / pmax) * (H - PADT - PADB) * 0.55;
-    return `<rect x="${(xAt(i) - 2).toFixed(1)}" y="${(H - PADB - bh).toFixed(1)}" width="4" height="${bh.toFixed(1)}" class="bar-posted"/>`;
+    const bh = (v / pmax) * plotH * 0.55;
+    return `<g><title>${p.date} — ${v} submission${v === 1 ? '' : 's'}</title>` +
+      `<rect x="${(xAt(i) - 2).toFixed(1)}" y="${(H - PADB - bh).toFixed(1)}" width="4" height="${bh.toFixed(1)}" class="bar-posted"/>` +
+      `<text x="${xAt(i).toFixed(1)}" y="${(H - PADB - bh - 4).toFixed(1)}" class="chart-tick bar-count" text-anchor="middle">${v}</text></g>`;
   }).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="none">
+  // current karma labeled above the line's right end
+  const endLabel = `<text x="${(W - PADR - 4).toFixed(1)}" y="${(yAt(counts[counts.length - 1]) - 7).toFixed(1)}" class="chart-tick" text-anchor="end">${counts[counts.length - 1]}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg">
+    ${grid}${ticks}
     <path d="${area}" class="area-foll"/>
     <path d="${line}" class="line-foll" vector-effect="non-scaling-stroke"/>
-    ${bars}
+    ${bars}${endLabel}
   </svg>`;
 }
 
