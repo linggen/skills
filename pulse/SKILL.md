@@ -1017,7 +1017,10 @@ samples, lane-templates, configured `targets[]` from config.json.
    concrete specific.** Replace with concrete prose, a reaction, or a
    question. When in doubt, cut the closing sentence. See
    `references/lane-templates.md` → "Sound human" for the full rules
-   and a worked before/after.
+   and a worked before/after. For longer-form lanes (substack-post,
+   blog, anything over a few sentences), also read and apply
+   `../shared/humanize.md` — the shared catalog of AI word/shape/format
+   tells; the lane rules here stay authoritative where they overlap.
 
 Lane selection: only draft for `targets[*].enabled = true` in
 config.json. If goal specifies a lane, prefer that one.
