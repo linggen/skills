@@ -1019,8 +1019,9 @@ samples, lane-templates, configured `targets[]` from config.json.
    `references/lane-templates.md` → "Sound human" for the full rules
    and a worked before/after. For longer-form lanes (substack-post,
    blog, anything over a few sentences), also read and apply
-   `../shared/humanize.md` — the shared catalog of AI word/shape/format
-   tells; the lane rules here stay authoritative where they overlap.
+   `~/.linggen/agents/shared/humanize.md` — the built-in catalog of AI
+   word/shape/format tells (shipped with the engine, always present);
+   the lane rules here stay authoritative where they overlap.
 
 Lane selection: only draft for `targets[*].enabled = true` in
 config.json. If goal specifies a lane, prefer that one.
