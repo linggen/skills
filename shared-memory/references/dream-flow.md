@@ -131,8 +131,8 @@ Backfill staging, always user-triggered, idempotent:
      (`from=derived` — built/fixed/tried/learned) and the new row
      completes or obsoletes them ("impl not started" → "shipped"),
      write ONE current-truth row with `replace_ids` listing those
-     semantic losers (MCP/HTTP — atomic; CLI: add the winner first,
-     then delete each loser). Never list a user-voice row
+     semantic losers (atomic on every path; CLI:
+     `ling-mem add ... --replace <id> --replace <id>`). Never list a user-voice row
      (`from=user`) or an episodic id.
    - **Skip** noise (activity logs, file-derivable facts,
      single-mention chatter) and already-in-semantic facts: do

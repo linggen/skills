@@ -350,7 +350,7 @@ it's what a bare `/shared-memory` greeting should mention first.
 | `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
 | `days` | Show the per-day dream state (the calendar, as text). |
 | `sweep` | Run the forget stage on its own. |
-| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm); collapse each into one current-truth row. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice + completion-bar marker merges automatically as its last stage; this verb is the attended deep pass.) |
+| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm; `--kind subject` = quiet same-subject clusters to digest, attended); collapse each into one current-truth row — losers are archived (`expired_at`), recoverable via `list --superseded-by <id>`. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice + completion-bar marker merges automatically as its last stage; this verb is the attended deep pass.) |
 | `solve` | **Drain the review queue** — see the Solve runbook below. |
 
 ### Solve runbook — `/shared-memory solve`

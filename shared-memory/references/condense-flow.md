@@ -29,6 +29,13 @@ Condense retires rows (atomically, via `replace_ids`), and the first
 runs should be supervised: watch the `MERGE` lines, spot-check a few
 survivors, keep the export until you trust the pass.
 
+Retiring is **archiving, not deleting** (2026-08-17): a semantic loser
+gets `expired_at` + `superseded_by = <survivor id>` — it leaves search,
+list, scans, and counts, but stays on disk. Every merge and digest is
+reversible: `ling-mem list --superseded-by <survivor-id>` unpacks one;
+`--include-expired` widens any list to the archive. (Episodic losers
+are still hard-deleted — staging is disposable.)
+
 ## The scan — `chains`
 
 ```bash
@@ -48,12 +55,21 @@ Three kinds, one law:
   "uncommitted", …) plus nearest-neighbor rows. Guesses: collapse only
   after confirming a neighbor is the same subject AND one row
   completes or obsoletes the other; otherwise skip.
-- **`subject`** (v2 digests) — same-subject vector clusters, 3+ rows.
+- **`subject`** (digests) — same-subject vector clusters, 3+ rows.
   Parallel notes on one subject, not a newest-wins chain: write one
-  focused per-subject **digest** row. Vector neighbors carry boundary
-  noise — digest the largest genuinely-one-subject subset
-  (`replace_ids` only its ids), leave outliers untouched; never one
-  mega state row.
+  focused per-subject **digest** row, tagged `digest`. Vector neighbors
+  carry boundary noise — digest the largest genuinely-one-subject
+  subset (`replace_ids` only its ids), leave outliers untouched; never
+  one mega state row. The scan serves only **quiet** subjects (newest
+  member >30 days old — a live subject keeps its detail; `live_skipped`
+  reports how many were withheld) and skips clusters a prior ruling
+  covers (`ruled_skipped`). Cap: 5 digests per run. **Attended only,
+  early era**: confirm each digest with the user before writing. When
+  the user says keep-separate, RECORD THE RULING so the cluster stops
+  re-serving: `ling-mem issue-add --kind subject --row <id> [--row
+  <id> …] "<subject>: ruled keep-separate <date>"` listing EVERY member
+  id, then `ling-mem issue-resolve <issue-id> dismissed` — the ruling
+  is the user's, not an open question.
 
 **Always pass `derived_only`** on an unattended or semi-attended pass —
 it filters to clusters that are entirely the agent's own notes
@@ -86,8 +102,9 @@ Drafting rules (same as the memory agent's):
   noise and provisional markers that no longer hold.
 - Never invent — every claim must come from a member row. On conflict,
   keep the newest claim and note the change.
-- **Never cite raw row ids in the new content** — members are being
-  deleted; a dangling id re-chains the survivor on the next scan.
+- **Never cite raw row ids in the new content** — the members leave
+  live memory, and `superseded_by` already carries the lineage; an id
+  in prose would only confuse the next reader.
 - `replace_ids` may list only `from=derived, tier=semantic` rows.
   Never a user-voice row, a core row, or an episodic id — one in the
   cluster means skip the whole cluster.
