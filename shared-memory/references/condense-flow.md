@@ -8,7 +8,10 @@ a recall window; condense cures what no recall ever touches.
 - **Linggen** — the last stage of the nightly `dream` mission (the
   `memory` agent): once the remember worklist is clear, one capped
   fetch of **cited** chains (`derived_only`, limit 10) merges
-  unattended — the engine snapshots the store first. `marker` /
+  unattended — the engine snapshots the store first. `marker`
+  candidates merge unattended only on the completion bar (a strictly
+  newer same-subject derived neighbor asserts the marked work done —
+  see the dream flow's audit pass); below the bar they are queued.
   `subject` clusters never run unattended; they wait for an attended
   pass where the user can be asked.
 - **Claude Code / Codex / OpenClaw** — no mission runtime; the host

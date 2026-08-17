@@ -165,20 +165,36 @@ can prove, queue the rest for the user. Two capped passes:
    Pre-confirmed id-citation chains of your own notes: collapse each
    into ONE current-truth row via `replace_ids`. See
    `references/condense-flow.md` for drafting rules.
-2. **Queue what you can't solve** —
+2. **Merge the provable, queue the rest** —
    `{"verb":"chains","kind":"marker","limit":5}` (no `derived_only`:
-   queueing is bookkeeping, not merging). Per candidate: skip rows
-   younger than ~14 days (write-time supersede gets first chance);
-   otherwise queue via
-   `memory_issue_add {"kind":"<k>","row_ids":[...],"note":"..."}`
-   (CLI: `ling-mem issue-add --kind <k> --row <id> "<note>"`) —
-   `chain` for an uncertain merge (note: subject + both gists),
-   `stale-status` for a provisional claim with no completing neighbor
-   (note: the claim + "verify against git/files at solve time"),
-   `contradiction` when user-voice rows disagree. A deduped response
-   ("already queued") is success. **Never merge marker or subject
-   clusters in a dream** — solving queued items is the attended solve
-   verb, with the user present.
+   user-voice candidates still need queueing). The daemon excludes
+   rows a review issue already names (`queued_skipped` reports how
+   many), so every candidate is fresh. Per candidate, in order:
+   - **MERGE on the completion bar** — every clause required: row AND
+     neighbor are agent notes (`from=derived`, `tier=semantic`); the
+     neighbor is strictly newer; same subject (the same work, not
+     merely the same project); and it asserts completion of the
+     marked work (SHIPPED / FIXED / DONE / VERIFIED /
+     committed-and-pushed). The store already holds the answer —
+     collapse per `references/condense-flow.md` drafting rules,
+     `replace_ids` = the marker row + every qualifying neighbor. In
+     doubt on ANY clause (partial completion, subject drift, a
+     user-voice row in the cluster) the bar is NOT met — queue
+     instead. A bad queue wastes a click; a bad merge loses a row.
+   - Skip rows younger than ~14 days (write-time supersede gets
+     first chance).
+   - Otherwise queue via
+     `memory_issue_add {"kind":"<k>","row_ids":[...],"note":"..."}`
+     (CLI: `ling-mem issue-add --kind <k> --row <id> "<note>"`) —
+     `chain` for an uncertain merge (note: subject + both gists),
+     `stale-status` for a provisional claim with no completing
+     neighbor (note: the claim + "verify against git/files at solve
+     time"), `contradiction` when user-voice rows disagree. A deduped
+     response ("already queued") is success.
+
+   **Never merge `subject` clusters in a dream**, and never a marker
+   candidate below the bar — solving queued items is the attended
+   solve verb, with the user present.
 
 ## Reporting (Linggen dashboard)
 
