@@ -363,24 +363,28 @@ subject coherence (`subject`). The daemon only bookkeeps — **you are
 the solver**, and this is an attended surface: the user is right here.
 
 1. **List.** `memory_issues`. Empty → say so, done.
-2. **Per item, gather evidence.** `memory_get {"id":<row_id>}`
-   for each referenced row. For `stale-status`: check the WORLD — git
-   history since the row's date, files, whatever the note says to
-   verify (hand technical checks to a Task subagent if this session
-   lacks the tools).
-3. **Confidence rule.** Conclusive evidence AND all affected rows are
+2. **Per item, gather evidence — solve it yourself first.**
+   `memory_get {"id":<row_id>}` for each referenced row, then read
+   whatever settles the question: git history since the row's date,
+   the code, docs, files — whatever the note says to verify (hand
+   technical checks to a Task subagent if this session lacks the
+   tools). Asking the user is the last resort, not a step.
+3. **Confidence rule.** Evidence settles it AND all affected rows are
    your own notes (`from=derived`) → solve directly: one
    `memory_add {..., "replace_ids":[...]}` writing
-   current truth. Ambiguous, or any user-voice row → **AskUser, ONE
-   item per call** — never batch the queue into one wall of
-   questions. User-voice fixes carry `user_directed:true` after the
-   answer.
-4. **`subject` items.** Show the user the cluster (a gist per row)
-   and ask: one digest, or keep separate? Digest → write it per the
-   condense drafting rules (`replace_ids` = the members, tag
-   `digest`), resolve the issue `resolved`. Keep separate → resolve
-   it `dismissed` — the dismissal IS the ruling; the scan never
-   serves that cluster again.
+   current truth. Ask ONLY when evidence cannot settle it after a
+   real attempt, or a user-voice row is affected. When you do ask:
+   **AskUser, ONE item per call**, phrased as a simple fact question
+   in plain words — one-line gist per fact, then "same thing, or
+   different?" / "which is true now?", with your recommendation; no
+   row ids, commit hashes, or cluster jargon. User-voice fixes carry
+   `user_directed:true` after the answer.
+4. **`subject` items.** Rule on coherence yourself from the full
+   member contents: one genuine subject → digest per the condense
+   drafting rules (`replace_ids` = the members, tag `digest`),
+   resolve `resolved`; distinct workstreams → resolve `dismissed` —
+   the dismissal IS the ruling; the scan never serves that cluster
+   again. Ask only when you genuinely can't tell.
 5. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
    (or `"dismissed"` when not worth fixing).
 6. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
