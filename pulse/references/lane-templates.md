@@ -57,11 +57,15 @@ of each lane's tic list, in pass 3:
   The most common offender is the "— otherwise X quietly becomes Y"
   closer: never END a draft on an "otherwise" clause; end on the
   concrete detail instead.
-- **A fragment or a rough edge is GOOD.** Lowercase, trailing off, or
+- **A fragment or a rough edge is GOOD.** Trailing off, or
   a half-formed aside reads more human than a balanced, fully-resolved
   sentence. But casual openers are a budget, not a recipe — see the
   fingerprint rule below. ("yeah," is RETIRED: it led 4 of the
   account's flagged HN comments. Don't suggest it.)
+- **Sentence case, always.** Capitalize sentence starts and "I".
+  All-lowercase is not a rough edge — it reads affected on HN/reddit
+  and is itself a fingerprint. Rough edges live in structure
+  (fragments, asides), never in casing.
 - **Add one thing the thread doesn't already have.** Before drafting,
   check: does this say anything the OP, the parent comment, or the
   user's own earlier comment in the thread hasn't said? Agreement +
@@ -101,8 +105,8 @@ Worked example — an actual X reply this skill produced, and the fix:
      all abstractions; symmetric aphorism; reacts to the topic, not to
      anything specific they said.
 
-  ✅ "doesn't really match what I've seen — most teams keep shipping
-     right through the quiet period. it limits what you can say, not
+  ✅ "Doesn't really match what I've seen — most teams keep shipping
+     right through the quiet period. It limits what you can say, not
      how fast you build."
      — contractions; reacts to their one claim; no fortune-cookie moral;
      slightly rough opener. (Even better: drop in a real detail from
@@ -112,8 +116,8 @@ Second worked example — a reddit reply this skill drafted in a thread
 where the user and the OP had already agreed failing cases should be
 kept replayable and re-run:
 
-  ❌ "exactly. one green is just an anecdote when the model's sampling.
-     i like keeping the original failure plus a few nearby cases
+  ❌ "Exactly. One green is just an anecdote when the model's sampling.
+     I like keeping the original failure plus a few nearby cases
      together, otherwise the fix gets tuned to the screenshot instead
      of the failure mode."
      — middle sentence restates what BOTH sides already said (zero new
@@ -121,8 +125,8 @@ kept replayable and re-run:
      "otherwise it's just dashboard theatre" and this ends "otherwise
      the fix gets tuned to…" — same closing shape twice in a row.
 
-  ✅ "exactly. one green is just an anecdote when the model's sampling.
-     the annoying part is deciding how many reruns is enough — i
+  ✅ "Exactly. One green is just an anecdote when the model's sampling.
+     The annoying part is deciding how many reruns is enough — I
      usually do 3-5 at the model's real temperature, not temp 0, since
      temp 0 hides exactly the variance users actually hit."
      — adds two things the thread didn't have (a rerun count, the
