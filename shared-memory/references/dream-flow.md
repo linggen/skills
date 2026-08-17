@@ -165,7 +165,7 @@ can prove, queue the rest for the user. Two capped passes:
    Pre-confirmed id-citation chains of your own notes: collapse each
    into ONE current-truth row via `replace_ids`. See
    `references/condense-flow.md` for drafting rules.
-2. **Merge the provable, queue the rest** —
+2. **Markers — merge the provable, queue the rest** —
    `{"verb":"chains","kind":"marker","limit":5}` (no `derived_only`:
    user-voice candidates still need queueing). The daemon excludes
    rows a review issue already names (`queued_skipped` reports how
@@ -192,9 +192,27 @@ can prove, queue the rest for the user. Two capped passes:
      time"), `contradiction` when user-voice rows disagree. A deduped
      response ("already queued") is success.
 
-   **Never merge `subject` clusters in a dream**, and never a marker
-   candidate below the bar — solving queued items is the attended
-   solve verb, with the user present.
+3. **Digest the quiet** —
+   `{"verb":"chains","kind":"subject","limit":5,"derived_only":true}`
+   (CLI: `ling-mem chains --kind subject --derived-only --limit 5`).
+   The daemon serves only QUIET clusters (newest member >30 days),
+   only your own notes, never rows a prior subject ruling covers.
+   Per cluster, exactly one of:
+   - **DIGEST** — confident the members (or a coherent 3+ subset)
+     share ONE subject: one digest row per the condense drafting
+     rules — `add` with `tags:["digest"]` + `replace_ids` = the
+     coherent subset only (CLI: `--replace <id>` per member);
+     outliers untouched. Members are archived, not deleted — a
+     wrong digest is an unpack, which is why this runs unattended.
+   - **QUEUE** — subject coherence doubtful:
+     `issue-add --kind subject` listing ALL member ids (that is
+     what stops the cluster re-forming around a neighboring seed),
+     note = the subject question + a gist per member. The user
+     rules in solve; keep-separate becomes a permanent exclusion.
+
+   Never merge below a bar you can defend, and never a marker
+   candidate below the completion bar — doubt always queues; solving
+   queued items is the attended solve verb, with the user present.
 
 ## Reporting (Linggen dashboard)
 

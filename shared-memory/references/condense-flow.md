@@ -10,10 +10,11 @@ a recall window; condense cures what no recall ever touches.
   fetch of **cited** chains (`derived_only`, limit 10) merges
   unattended — the engine snapshots the store first. `marker`
   candidates merge unattended only on the completion bar (a strictly
-  newer same-subject derived neighbor asserts the marked work done —
-  see the dream flow's audit pass); below the bar they are queued.
-  `subject` clusters never run unattended; they wait for an attended
-  pass where the user can be asked.
+  newer same-subject derived neighbor asserts the marked work done);
+  quiet `subject` clusters digest unattended when the judge is
+  confident they share one subject. Doubt always queues for the
+  user's solve flow — and every merge archives its losers, so a
+  wrong call is an unpack, not a loss.
 - **Claude Code / Codex / OpenClaw** — no mission runtime; the host
   agent runs the steps below via the `ling-mem` CLI (or the
   `memory_chains` / `memory_add` MCP tools), on demand — this is also
@@ -63,9 +64,11 @@ Three kinds, one law:
   one mega state row. The scan serves only **quiet** subjects (newest
   member >30 days old — a live subject keeps its detail; `live_skipped`
   reports how many were withheld) and skips clusters a prior ruling
-  covers (`ruled_skipped`). Cap: 5 digests per run. **Attended only,
-  early era**: confirm each digest with the user before writing. When
-  the user says keep-separate, RECORD THE RULING so the cluster stops
+  covers (`ruled_skipped`). Cap: 5 digests per run. In an
+  attended pass, confirm each digest with the user before writing;
+  unattended (the dream), digest only what you are confident is one
+  subject and queue the rest as `subject` issues. When the user says
+  keep-separate, RECORD THE RULING so the cluster stops
   re-serving: `ling-mem issue-add --kind subject --row <id> [--row
   <id> …] "<subject>: ruled keep-separate <date>"` listing EVERY member
   id, then `ling-mem issue-resolve <issue-id> dismissed` — the ruling

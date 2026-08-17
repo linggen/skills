@@ -319,7 +319,7 @@ mode's references.
 |:---|:---|:---|
 | **Dream** | Message says `/shared-memory dream` (all undreamed days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook, and on Linggen the memory app's buttons trigger that mission directly. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
 | **Scan** | Message says `/shared-memory scan <YYYY-MM-DD>` — stage that day's session logs (backfill), see the verb table. The calendar's scan button sends this. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (its Scan section) and `references/extractor-prompt.md` (what to stage). |
-| **Condense** | Message says `/shared-memory condense` — collapse stale chains in long-term memory. On Linggen the nightly `dream` mission already runs the high-confidence slices (cited chains + completion-bar marker merges) as its last stage; the chat verb is the attended deep pass (below-the-bar marker/subject clusters, where the user can be asked) and the path for hosts without a mission runtime. | `Read ~/.linggen/skills/shared-memory/references/condense-flow.md` (the canonical condense runbook). |
+| **Condense** | Message says `/shared-memory condense` — collapse stale chains in long-term memory. On Linggen the nightly `dream` mission already runs the high-confidence slices (cited chains + completion-bar marker merges) as its last stage; the chat verb is the attended deep pass (below-the-bar candidates, where the user can be asked) and the path for hosts without a mission runtime. | `Read ~/.linggen/skills/shared-memory/references/condense-flow.md` (the canonical condense runbook). |
 | **Solve** | Message says `/shared-memory solve` — drain the review queue: items the nightly dream's audit could not solve with confidence and queued for the user. | The Solve runbook below; `references/routing-rules.md` for write decisions. |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
@@ -350,15 +350,16 @@ it's what a bare `/shared-memory` greeting should mention first.
 | `update <id> --content "<new>"` | Edit a row in-place (content / contexts / tags). |
 | `days` | Show the per-day dream state (the calendar, as text). |
 | `sweep` | Run the forget stage on its own. |
-| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm; `--kind subject` = quiet same-subject clusters to digest, attended); collapse each into one current-truth row — losers are archived (`expired_at`), recoverable via `list --superseded-by <id>`. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice + completion-bar marker merges automatically as its last stage; this verb is the attended deep pass.) |
+| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm; `--kind subject` = quiet same-subject clusters to digest, attended); collapse each into one current-truth row — losers are archived (`expired_at`), recoverable via `list --superseded-by <id>`. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice + completion-bar marker merges + quiet-subject digests automatically as its last stage; this verb is the attended deep pass.) |
 | `solve` | **Drain the review queue** — see the Solve runbook below. |
 
 ### Solve runbook — `/shared-memory solve`
 
 The review queue holds what the nightly dream's audit could NOT solve
 with confidence: uncertain merges (`chain`), status claims likely
-overtaken by the world (`stale-status`), and conflicts needing the
-user's pick (`contradiction`). The daemon only bookkeeps — **you are
+overtaken by the world (`stale-status`), conflicts needing the
+user's pick (`contradiction`), and digest clusters of doubtful
+subject coherence (`subject`). The daemon only bookkeeps — **you are
 the solver**, and this is an attended surface: the user is right here.
 
 1. **List.** `memory_issues`. Empty → say so, done.
@@ -374,9 +375,15 @@ the solver**, and this is an attended surface: the user is right here.
    item per call** — never batch the queue into one wall of
    questions. User-voice fixes carry `user_directed:true` after the
    answer.
-4. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
+4. **`subject` items.** Show the user the cluster (a gist per row)
+   and ask: one digest, or keep separate? Digest → write it per the
+   condense drafting rules (`replace_ids` = the members, tag
+   `digest`), resolve the issue `resolved`. Keep separate → resolve
+   it `dismissed` — the dismissal IS the ruling; the scan never
+   serves that cluster again.
+5. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
    (or `"dismissed"` when not worth fixing).
-5. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
+6. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
    plus a closing count. The page footer's "N to review" refreshes on
    the next dashboard paint.
 
