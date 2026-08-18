@@ -222,7 +222,7 @@ function dcalArmButton(label, title, onFire) {
 // survives the rollup repaint (the run executes in its own session;
 // this page gets no tool stream from it). Cleared when the rollup
 // shows the day stamped after the trigger, or after a 5-min window.
-let dcalDreaming = null; // { day, since }
+let dcalDreaming = null; // { day, since, sessionId }
 
 function dcalDreamingActive(iso, rec) {
   if (!dcalDreaming || dcalDreaming.day !== iso) return false;
@@ -242,6 +242,7 @@ function dcalDreamingActive(iso, rec) {
 async function dcalTriggerDream(day, btn) {
   btn.disabled = true;
   btn.textContent = 'dreaming…';
+  let sessionId = null;
   try {
     const res = await fetch('/api/missions/dream/trigger', {
       method: 'POST',
@@ -253,12 +254,15 @@ async function dcalTriggerDream(day, btn) {
       setTimeout(() => { btn.disabled = false; btn.textContent = 'dream'; }, 5000);
       return;
     }
+    // The trigger pre-creates the run's session and returns its id —
+    // that is what the "dreaming in mission" chip links to.
+    try { sessionId = (await res.json())?.session_id || null; } catch { /* chip stays plain */ }
   } catch {
     btn.disabled = false;
     btn.textContent = 'dream';
     return;
   }
-  dcalDreaming = { day, since: Date.now() };
+  dcalDreaming = { day, since: Date.now(), sessionId };
   if (window._chatNotify) {
     window._chatNotify(`Dream mission started for ${day} — it runs in its own session (see the session list). `
       + `The calendar updates as it works; if a low-confidence merge needs your call, the question appears in that session.`);
@@ -293,8 +297,22 @@ function dcalDayControls(iso, rec) {
 
   const unjudged = rec?.unjudged || 0;
   if (dcalDreamingActive(iso, rec)) {
-    const chip = el('div', 'dcal-chip dcal-chip-running', 'dreaming…');
-    chip.title = `${iso} · dream mission in flight — it runs in its own session (see the session list); chips here update when it finishes.`;
+    // The run lives in its own mission session — the chip is the door,
+    // not just a label (the run may end with an AskUser question there).
+    const sid = dcalDreaming?.sessionId;
+    const chip = el('div', 'dcal-chip dcal-chip-running',
+      sid ? 'dreaming in mission →' : 'dreaming in mission…');
+    if (sid) {
+      chip.classList.add('dcal-chip-link');
+      chip.title = `${iso} · dream mission in flight — click to watch the run in its session (it may ask for your call there).`;
+      chip.onclick = () => {
+        const url = `/?session=${encodeURIComponent(sid)}`;
+        const w = window.open(url, '_blank');
+        if (!w) window.top.location.href = url;
+      };
+    } else {
+      chip.title = `${iso} · dream mission in flight — it runs in its own session (see the session list); chips here update when it finishes.`;
+    }
     wrap.appendChild(chip);
   } else if (unjudged > 0) {
     wrap.appendChild(dcalArmButton(

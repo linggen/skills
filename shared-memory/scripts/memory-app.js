@@ -147,7 +147,7 @@ async function mountAndStart(sessionId) {
     if (chat) chat.send(text);
   };
   // The calendar widget polls this while a mission run is in flight.
-  window._refreshDreamCalendar = () => refreshDaysCalendar().catch(() => {});
+  window._refreshDreamCalendar = () => refreshDashboard().catch(() => {});
   // Local-only chat notice (no LLM turn) — the calendar uses it to tell
   // the user a mission run started in its own session.
   window._chatNotify = (text) => { if (chat) chat.addMessage(text); };
@@ -155,11 +155,10 @@ async function mountAndStart(sessionId) {
 
   if (sessionId && await tryRestoreCached(sessionId)) {
     // Resumed session with a cached page — don't re-boot the agent.
-    // The cached page comes back via tryRestoreCached; tier counts +
-    // day states refresh below so the user sees current data even on
-    // resume (the cached calendar may predate a dream run).
-    refreshTierCounts().catch(() => {});
-    refreshDaysCalendar().catch(() => {});
+    // The cached page comes back via tryRestoreCached; the dashboard
+    // repaints below so the user sees current data even on resume (the
+    // cached greeting/calendar may predate a dream run).
+    refreshDashboard().catch(() => {});
     return;
   }
 
@@ -297,41 +296,45 @@ async function triggerDreamMission() {
   let ticks = 0;
   const timer = setInterval(async () => {
     ticks += 1;
-    await refreshDaysCalendar().catch(() => {});
+    await refreshDashboard().catch(() => {});
     if (ticks >= 36) clearInterval(timer); // ~3 min of 5s polls
   }, 5000);
 }
 
-// Re-fetch the days rollup + review queue and swap both widgets in
-// place, leaving the rest of the body (greeting / report widgets)
-// untouched.
-async function refreshDaysCalendar() {
-  const [daysData, issuesData] = await Promise.all([
-    fetchMemoryDays(),
-    fetchMemoryIssues('open').catch(() => null),
-  ]);
+// Live repaint of the JS-owned dashboard — greeting, tier cards,
+// calendar, review queue, footer — from fresh daemon state, leaving
+// agent-drawn report widgets in place. The cached page is a snapshot:
+// a restored greeting saying "2 days are waiting" after those days were
+// dreamed is exactly the stale state this repaint exists to kill.
+async function refreshDashboard() {
+  let coreC, semC, epC, daysData, issuesData;
+  try {
+    [coreC, semC, epC, daysData, issuesData, lastStats] = await Promise.all([
+      fetchMemoryCount({ tier: 'core' }),
+      fetchMemoryCount({ tier: 'semantic' }),
+      fetchMemoryCount({ episodic: true }),
+      fetchMemoryDays(),
+      fetchMemoryIssues('open').catch(() => null),
+      fetchMemoryStats(),
+    ]);
+  } catch {
+    return; // daemon unreachable — keep what's on screen
+  }
   if (!daysData) return;
+  const summary = { coreC, semC, epC, daysData };
   const page = getCurrentPage();
   const body = Array.isArray(page.body) ? page.body : [];
-  const calendar = buildDreamCalendar(daysData);
+  const rest = body.filter((w) => !(w && (
+    w.type === 'greeting' || w.type === 'dream-calendar' || w.type === 'review-queue')));
+  const next = [pickGreeting(summary), ...rest, buildDreamCalendar(daysData)];
   const queue = buildReviewQueue(issuesData);
-  const rest = body.filter((w) =>
-    !(w && (w.type === 'dream-calendar' || w.type === 'review-queue')));
-  const next = queue ? [...rest, calendar, queue] : [...rest, calendar];
-  applyPageUpdate({ body: next, footer: buildFooter({ daysData }) });
-  cacheCurrentPage();
-}
-
-async function refreshTierCounts() {
-  const [coreC, semC, epC] = await Promise.all([
-    fetchMemoryCount({ tier: 'core' }),
-    fetchMemoryCount({ tier: 'semantic' }),
-    fetchMemoryCount({ episodic: true }),
-  ]);
-  // Top-bar only — body stays as whatever the agent (or cache) put there.
+  if (queue) next.push(queue);
   applyPageUpdate({
-    top_bar: buildTierCards({ coreC, semC, epC }),
+    top_bar: buildTierCards(summary),
+    body: next,
+    footer: buildFooter(summary),
   });
+  cacheCurrentPage();
 }
 
 function buildTierCards({ coreC, semC, epC }) {
@@ -477,8 +480,7 @@ function scheduleStateRefresh() {
   if (refreshTimer) clearTimeout(refreshTimer);
   refreshTimer = setTimeout(() => {
     refreshTimer = null;
-    refreshTierCounts().catch(() => {});
-    refreshDaysCalendar().catch(() => {});
+    refreshDashboard().catch(() => {});
   }, 1200);
 }
 
@@ -520,7 +522,7 @@ function handleLegacyPageBlock(text) {
   if (!page) return;
   applyPageUpdate(page);
   cacheCurrentPage();
-  refreshTierCounts().catch(() => {});
+  refreshDashboard().catch(() => {});
 }
 
 // ── Cache ──
