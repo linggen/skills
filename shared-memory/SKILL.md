@@ -100,9 +100,15 @@ already present** (Linggen bundles it; the Claude Code / Codex plugin's
 hook installs it):
 
 ```bash
-command -v ling-mem >/dev/null 2>&1 || \
-  bash <(curl -fsSL https://raw.githubusercontent.com/linggen/linggen-memory/main/plugins/shared-memory/scripts/install-bin.sh) --version '^1'
+command -v ling-mem >/dev/null 2>&1 || {
+  curl -fsSL https://raw.githubusercontent.com/linggen/linggen-memory/main/plugins/linggen/scripts/install-bin.sh \
+    -o /tmp/ling-mem-install.sh && bash /tmp/ling-mem-install.sh --version '^1'
+}
 ```
+
+Download-then-run, not `bash <(curl …)`: Linggen runs shell commands under
+`sh -c`, and `sh` has no process substitution — `<(…)` is a parse error
+there, not a fallback.
 
 Just run it yourself if the binary is missing — don't ask the user. The
 installer drops `ling-mem` on `PATH` (`/usr/local/bin`, or `~/.local/bin`
