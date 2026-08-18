@@ -12,8 +12,22 @@ set -euo pipefail
 #   ~/.codex/skills/shared-memory/SKILL.md       ← copy of canonical
 #   ~/.openclaw/skills/shared-memory/SKILL.md    ← copy of canonical
 #
-#   /usr/local/bin/ling-mem  (preferred)   ← the daemon binary, on PATH
-#   ~/.local/bin/ling-mem    (fallback)      sits next to `ling`
+# This script installs SKILL FILES AND HOST WIRING ONLY. It does not
+# install the `ling-mem` binary, and must never start doing so again.
+#
+#   ~/.local/bin/ling-mem   ← the ONE binary, owned by install-bin.sh
+#                             (linggen-memory/plugins/*/scripts/install-bin.sh),
+#                             driven by the plugin's autostart.sh hook and
+#                             the SKILL.md first-use gate.
+#
+# Why the binary is not ours to write: it is a singleton shared by every
+# host and channel, so exactly one installer may place it. install-bin.sh
+# is that installer — it resolves a semver RANGE (`^1`) to the highest
+# matching release, verifies SHA-256, and REFUSES TO DOWNGRADE. This
+# script used to install the binary itself, to /usr/local/bin, pinned at
+# v1.0.0, with a skip-guard that only fired when the version was
+# "latest" — so on every fresh Linggen it shadowed the correct binary
+# with an ancient one that first-match-wins resolvers then preferred.
 #
 # Why this shape:
 # - Single source of truth — edit content once at ~/.linggen/skills/
@@ -23,26 +37,18 @@ set -euo pipefail
 # - SKILL.md uses absolute paths (~/.linggen/skills/shared-memory/...)
 #   for cross-tree reads, so the host's agent never needs the per-host
 #   bundle to contain references/ or scripts/.
-# - Binary on PATH at /usr/local/bin or ~/.local/bin — no per-host
-#   `bin/ling-mem` copies, no PATH symlink dance.
 #
-# Supply-chain posture: defaults are pinned versions; SHA-256 verification
-# is mandatory by default and can only be disabled by an explicit
-# LING_MEM_SKIP_CHECKSUM=1 (not recommended). No data leaves the machine.
-# No remote code execution beyond extracting tarballs published by the
-# linggen org. Source + releases:
+# Supply-chain posture: no downloads, no remote code execution — this
+# script only copies files already on disk and edits host config. No data
+# leaves the machine. Source:
 # https://github.com/linggen/linggen-memory
 # https://github.com/linggen/skills
 
 SOURCE_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SOURCE_DIR=""
-REPO="linggen/linggen-memory"
 
-# Default version is pinned to a specific release. `latest` is allowed as
-# an explicit opt-in (LING_MEM_VERSION=latest) but is not the default —
-# unpinned defaults are flagged as a supply-chain weakness by skill
-# scanners and create silent drift between install.sh and the release
-# its checksum verifier expects.
-VERSION="${LING_MEM_VERSION:-v1.0.0}"
+# The one binary, for the messages below and Codex's sandbox PATH. This
+# script never writes it — install-bin.sh owns it.
+BIN_DIR="$HOME/.local/bin"
 
 # Canonical layout — one bundle, on disk under ~/.linggen.
 CANONICAL_DIR="$HOME/.linggen/skills/shared-memory"
@@ -107,15 +113,13 @@ Installs the shared-memory skill, one canonical copy at
 ~/.codex/, ~/.openclaw/) gets a thin SKILL.md stub that points back
 to the canonical bundle.
 
-Binary: /usr/local/bin/ling-mem if writable, otherwise
-~/.local/bin/ling-mem (matches the \`ling\` install).
+Skill files and host wiring only. The \`ling-mem\` binary is NOT installed
+here — it is a singleton at ~/.local/bin/ling-mem, installed by
+install-bin.sh via the plugin's autostart hook or the SKILL.md first-use
+gate (semver range \`^1\`, SHA-256 verified, never downgraded).
 
-  LING_MEM_VERSION=vX.Y.Z    pin a specific binary version (default: ${VERSION})
-                             use 'latest' for the most recent release
   LING_MEM_REPO_REF=<ref>    skills repo ref for curl|bash bootstrap
                              (default: shared-memory-v0.7.2)
-  LING_MEM_SKIP_CHECKSUM=1   skip SHA256 verification (not recommended)
-  LING_MEM_FORCE_DOWNLOAD=1  re-fetch the binary even if present
   LING_MEM_SKIP_CODEX=1      skip the Codex stub + sandbox wiring
   LING_MEM_SKIP_OPENCLAW=1   skip the OpenClaw USER.md directive
 EOF
@@ -124,42 +128,6 @@ EOF
     *) echo "Unknown argument: $arg" >&2; exit 1 ;;
   esac
 done
-
-# -------------------------------------------------------------------
-# Platform → release asset slug
-# -------------------------------------------------------------------
-
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-ARCH="$(uname -m)"
-case "$OS-$ARCH" in
-  darwin-arm64|darwin-aarch64) TARGET="macos-aarch64" ;;
-  darwin-x86_64|darwin-amd64)  TARGET="macos-x86_64" ;;
-  linux-x86_64|linux-amd64)    TARGET="linux-x86_64" ;;
-  linux-aarch64|linux-arm64)   TARGET="linux-aarch64" ;;
-  *)
-    echo "Error: unsupported platform $OS-$ARCH" >&2
-    echo "  Manual install: https://github.com/${REPO}/releases" >&2
-    exit 1
-    ;;
-esac
-
-# -------------------------------------------------------------------
-# Helpers — checksum, writability
-# -------------------------------------------------------------------
-
-sha256_check() {
-  local checksum_file="$1" cwd="$2"
-  if   command -v shasum    >/dev/null 2>&1; then ( cd "$cwd" && shasum -a 256 -c "$checksum_file" >/dev/null 2>&1 )
-  elif command -v sha256sum >/dev/null 2>&1; then ( cd "$cwd" && sha256sum -c "$checksum_file" >/dev/null 2>&1 )
-  else return 127
-  fi
-}
-
-ensure_dir_writable() {
-  local dir="$1"
-  if [ ! -d "$dir" ]; then mkdir -p "$dir" 2>/dev/null || return 1; fi
-  [ -w "$dir" ]
-}
 
 # -------------------------------------------------------------------
 # Canonical bundle — every file lives once at ~/.linggen/skills/shared-memory/
@@ -236,102 +204,24 @@ install_host_stubs() {
 }
 
 # -------------------------------------------------------------------
-# Binary install — /usr/local/bin/ling-mem if writable, else
-# ~/.local/bin/ling-mem. Same logic the `ling` installer uses, so the
-# two binaries land in the same directory by default. SHA-256
-# verified against the release's sibling .sha256 file.
+# Binary — NOT INSTALLED HERE. See the header: ~/.local/bin/ling-mem is
+# a singleton owned by install-bin.sh. All this does is report whether
+# it is already present, so a user running install.sh by hand knows
+# whether anything is still missing.
 # -------------------------------------------------------------------
 
-BIN_DIR=""
-
-choose_bin_dir() {
-  if ensure_dir_writable "/usr/local/bin"; then
-    BIN_DIR="/usr/local/bin"
-  elif ensure_dir_writable "$HOME/.local/bin"; then
-    BIN_DIR="$HOME/.local/bin"
-  else
-    echo "Error: neither /usr/local/bin nor ~/.local/bin is writable" >&2
-    exit 1
-  fi
-  echo "Binary install dir: $BIN_DIR"
-}
-
-download_binary() {
+report_binary() {
   local bin="$BIN_DIR/ling-mem"
-
-  if [ -x "$bin" ] \
-     && [ "${LING_MEM_FORCE_DOWNLOAD:-}" != "1" ] \
-     && [ "$VERSION" = "latest" ]; then
-    echo "  ling-mem already at $bin — skipping download"
+  if [ -x "$bin" ]; then
+    echo "Binary: $bin ($("$bin" --version 2>/dev/null | awk '{print $2}' || echo unknown))"
     return
   fi
-
-  local asset="ling-mem-${TARGET}.tar.gz"
-  local base
-  if [ "$VERSION" = "latest" ]; then
-    base="https://github.com/${REPO}/releases/latest/download"
-  else
-    base="https://github.com/${REPO}/releases/download/${VERSION}"
-  fi
-  local url="${base}/${asset}"
-  local sum_url="${base}/${asset}.sha256"
-
-  local tmp_dir; tmp_dir="$(mktemp -d -t "ling-mem-dl-XXXXXX")"
-  trap 'rm -rf "$tmp_dir"' RETURN
-  local tmp_tar="$tmp_dir/$asset"
-  local tmp_sum="$tmp_dir/${asset}.sha256"
-
-  echo "  Downloading ling-mem ${VERSION} (${TARGET})"
-  if ! curl -fsSL --retry 3 --retry-delay 2 "$url" -o "$tmp_tar"; then
-    echo "Error: download failed. See https://github.com/${REPO}/releases" >&2
-    exit 1
-  fi
-
-  if [ "${LING_MEM_SKIP_CHECKSUM:-0}" = "1" ]; then
-    echo "  Warning: SHA256 verification disabled by LING_MEM_SKIP_CHECKSUM=1" >&2
-  else
-    if ! curl -fsSL --retry 3 --retry-delay 2 "$sum_url" -o "$tmp_sum"; then
-      echo "Error: failed to fetch checksum from $sum_url" >&2
-      echo "  Override with LING_MEM_SKIP_CHECKSUM=1 (not recommended)." >&2
-      exit 1
-    fi
-    if ! sha256_check "${asset}.sha256" "$tmp_dir"; then
-      local rc=$?
-      if [ "$rc" -eq 127 ]; then
-        echo "Error: neither shasum nor sha256sum found on this system." >&2
-      else
-        echo "Error: SHA256 verification failed for $asset" >&2
-        sed 's/^/    /' "$tmp_sum" >&2
-      fi
-      exit 1
-    fi
-    echo "  Verified: SHA256 matches $sum_url"
-  fi
-
-  tar -xzf "$tmp_tar" -C "$BIN_DIR" ling-mem
-  chmod +x "$bin"
-
-  local built_ver
-  built_ver="$("$bin" --version 2>/dev/null | awk '{print $2}' || true)"
-  if [ "$VERSION" != "latest" ]; then
-    local expected="${VERSION#v}"
-    if [ "$built_ver" != "$expected" ]; then
-      echo "  Warning: binary reports '$built_ver', expected '$expected'." >&2
-    fi
-  fi
-  echo "  Installed: $bin (${built_ver:-unknown})"
-
-  case ":$PATH:" in
-    *":$BIN_DIR:"*) ;;
-    *)
-      echo "  Note: $BIN_DIR is not on PATH. Add it to your shell rc, e.g.:"
-      echo "    echo 'export PATH=\"$BIN_DIR:\$PATH\"' >> ~/.zshrc"
-      ;;
-  esac
+  echo "Binary: not installed yet — the plugin's autostart hook or the"
+  echo "        SKILL.md first-use gate installs it to $bin on next use."
 }
 
 # -------------------------------------------------------------------
-# Memory dir + telemetry marker
+# Memory dir
 # -------------------------------------------------------------------
 #
 # Note: `dream` ships as a `/shared-memory dream` slash command, not a
@@ -343,16 +233,10 @@ seed_memory_dir() {
   mkdir -p "$HOME/.linggen/memory"
 }
 
-write_install_source_marker() {
-  local via="${LING_MEM_SOURCE:-wrapper}"
-  local marker="$HOME/.linggen/.ling-mem-install-source"
-  mkdir -p "$HOME/.linggen"
-  {
-    printf 'via=%s\n' "$via"
-    printf 'installer_version=%s\n' "$VERSION"
-    printf 'installed_at=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  } > "$marker"
-}
+# No install-source marker is written here. install-bin.sh writes
+# ~/.linggen/.ling-mem-install-source itself as part of placing the
+# binary — provenance belongs to whoever actually installed it, and a
+# second writer would just overwrite the truth with a guess.
 
 # -------------------------------------------------------------------
 # Claude Code wiring — CLAUDE.md @-imports + settings.json hook entry
@@ -567,12 +451,11 @@ TOML
   echo "  Codex sandbox: writable_roots += $linggen_root"
 }
 
-# Only wire PATH if the binary went somewhere Codex's default sandbox
-# PATH doesn't already cover. /usr/local/bin is on every sane PATH;
-# ~/.local/bin sometimes isn't (especially on macOS GUI launches).
+# The binary always lives in ~/.local/bin, which Codex's default sandbox
+# PATH does NOT cover (especially on macOS GUI launches), so this wiring
+# is now unconditional — it used to be skipped whenever the binary had
+# landed in /usr/local/bin.
 configure_codex_env() {
-  [ "$BIN_DIR" = "/usr/local/bin" ] && return 0
-
   local codex_toml="${CODEX_CONFIG:-$HOME/.codex/config.toml}"
   mkdir -p "$(dirname "$codex_toml")"
   touch "$codex_toml"
@@ -702,11 +585,9 @@ $marker_end"
 # -------------------------------------------------------------------
 
 install_canonical_bundle
-choose_bin_dir
-download_binary
 seed_memory_dir
-write_install_source_marker
 install_host_stubs
+report_binary
 
 # Host-specific wiring — runs only when the host's home exists.
 if [ -d "$HOME/.claude" ]; then
@@ -729,7 +610,6 @@ fi
 
 echo ""
 echo "Done. Canonical bundle: $CANONICAL_DIR"
-echo "      Binary:           $BIN_DIR/ling-mem"
 echo ""
 echo "Browse / edit rows: run 'ling-mem start' then open http://127.0.0.1:9528"
 echo ""
