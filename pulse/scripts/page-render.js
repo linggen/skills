@@ -470,37 +470,29 @@ function applyBodyPatch(patch) {
   const ts = patch.last_updated || new Date().toISOString();
   session.sections[sectionId].last_updated = ts;
   rerouteMisfiledCards(session.sections);
-  stampTabScan(sectionId, session.sections[sectionId].cards, ts);
+  stampTabScan(sectionId, ts);
 }
 
-// Record per-tab "last scanned" so each tab can show when it last got data.
-// discovery is cross-source, so stamp by each card's source; the rest map
-// section→tab directly.
-function stampTabScan(sectionId, cards, ts) {
+// Record per-tab "last scanned". Fetch-tool activity is the only honest
+// evidence a lane's source was checked — pulse-app.js calls stampLaneScan
+// as the agent's Fetch* calls stream past. Card presence in a patch proves
+// nothing: models re-emit whole sections, so stamping by card source moved
+// the Reddit tab's "last scan" during an HN-only run (2026-08-18). The one
+// non-fetch lane is progress — drafts have no Fetch tool, so their section
+// patch is the stamp.
+function stampTabScan(sectionId, ts) {
   if (!session.last_scan) session.last_scan = {};
-  const stamp = (id) => { session.last_scan[id] = ts; };
-  if (sectionId === 'discovery') {
-    for (const c of (cards || [])) {
-      // Sourced empty cards count: a lane that scanned and found nothing
-      // still scanned — its "last scan" stamp must move.
-      if (!c) continue;
-      const s = cardSource(c);
-      if (s === 'x' || s === 'hn' || s === 'reddit' || s === 'bluesky') stamp(s);
-    }
-  } else if (sectionId === 'hn_submit') stamp('hn');
-  else if (sectionId === 'x_roster') stamp('x');
-  else if (sectionId === 'mentions' || sectionId === 'replies_due') {
-    stamp('mentions');
-    // A lane's mention cards in a fresh patch prove that lane was scanned —
-    // move its source tab's "last scan" too (mention-only runs previously
-    // left the source tab reading "never scanned").
-    for (const c of (cards || [])) {
-      if (!c) continue;
-      const s = cardSource(c);
-      if (s === 'x' || s === 'hn' || s === 'reddit' || s === 'bluesky') stamp(s);
-    }
-  }
-  else if (sectionId === 'progress_drafts') stamp('progress');
+  if (sectionId === 'progress_drafts') session.last_scan.progress = ts;
+}
+
+// A lane's Fetch tool ran — that lane was scanned now, whatever cards do or
+// don't land later (a lane that scanned and found nothing still scanned).
+export function stampLaneScan(lane) {
+  if (!lane) return;
+  if (!session.last_scan) session.last_scan = {};
+  session.last_scan[lane] = new Date().toISOString();
+  renderAll();
+  if (onChangeCallback) onChangeCallback(session);
 }
 
 // "3m ago" / "2h ago" / "5d ago" from an ISO timestamp.

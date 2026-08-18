@@ -14,7 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -1207,6 +1207,20 @@ async function mountChat() {
     modelId = search.get('model') || (appMode ? (localStorage.getItem('pulse:model') || '') : '');
   } catch { modelId = ''; }
 
+  // Which tab stamps does one Fetch tool move? A *Mentions fetch proves both
+  // its source lane and the mentions inbox were checked. Non-lane fetches
+  // (FetchLobsters, FetchArxiv, FetchRSS…) map to no tab.
+  function lanesForTool(tool) {
+    if (!tool || !tool.startsWith('Fetch')) return [];
+    const lanes = [];
+    if (tool.startsWith('FetchReddit')) lanes.push('reddit');
+    else if (tool.startsWith('FetchHN') || tool === 'FetchHackerNews') lanes.push('hn');
+    else if (tool.startsWith('FetchX')) lanes.push('x');
+    else if (tool.startsWith('FetchBluesky')) lanes.push('bluesky');
+    if (tool.includes('Mentions')) lanes.push('mentions');
+    return lanes;
+  }
+
   state.chat = await window.LinggenUI.mount(document.getElementById('chat-panel'), {
     skillName: 'pulse',
     sessionId: resumeSid || undefined,
@@ -1221,6 +1235,10 @@ async function mountChat() {
       // time out during the fetch phase. Pinging on every block keeps
       // the chip alive as long as the agent is doing anything.
       pingRunningChips();
+      // A lane's "last scan" moves when its Fetch tool actually runs —
+      // the only evidence the source was checked (cards in a patch prove
+      // nothing; models re-emit whole sections).
+      for (const lane of lanesForTool(payload?.tool)) stampLaneScan(lane);
       if (payload?.tool === 'PageUpdate' && payload?.args) {
         try {
           const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
