@@ -395,7 +395,7 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
   const totalRows = (coreC?.count || 0) + (semC?.count || 0) + (epC?.count || 0);
   const undreamed = undreamedDays(daysData);
   const last = lastRememberedAt(daysData);
-  const runDream = { label: 'Run dream', icon: '🧠', message: '/shared-memory dream', kind: 'primary' };
+  const runDream = { label: 'Run dream', icon: '📖', message: '/shared-memory dream', kind: 'primary' };
 
   const openIssues = daysData?.open_issues || 0;
   const runSolve = { label: 'Review queue', icon: '🧩', message: '/shared-memory solve', kind: 'primary' };
@@ -423,7 +423,7 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
 
   return {
     type: 'greeting',
-    icon: '🧠',
+    icon: '📖',
     title,
     stats: 'Dream = remember + forget: each day\'s staging is judged once (durable signal promoted to long-term), then judged rows age out after the short-term window.',
     // Single contextual CTA — the header bar already carries the

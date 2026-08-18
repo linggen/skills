@@ -585,7 +585,7 @@ function renderDreamReport(w) {
 
   panel.innerHTML = `
     <div class="drep-head">
-      <span class="drep-icon">🧠</span>
+      <span class="drep-icon">📖</span>
       <div class="drep-title">${esc(w.title || 'Dream complete')}</div>
     </div>
     <div class="drep-stats">
@@ -604,11 +604,11 @@ function renderDreamReport(w) {
 //
 // Shape:
 //   { "type": "greeting",
-//     "icon": "🧠",
+//     "icon": "📖",
 //     "title": "Here's what I know about you.",
 //     "stats": "42 RAG facts · 5 core bullets · last hippocampus 3h ago, +8 facts",
 //     "actions": [
-//       { "label": "Run hippocampus", "icon": "🧠", "message": "/shared-memory dream", "kind": "primary" },
+//       { "label": "Run hippocampus", "icon": "📖", "message": "/shared-memory dream", "kind": "primary" },
 //       { "label": "Week",            "message": "/shared-memory dream week" },
 //       { "label": "Clean", "icon": "🧹", "message": "Analyze and clean" }
 //     ] }
@@ -895,8 +895,8 @@ function renderInfo(w) {
 // A prominent primary-action panel. The agent emits this to ask a single
 // high-value question like "Run hippocampus now?" with one big button
 // as the answer. Shape:
-//   { "type": "cta", "icon": "🧠", "title": "...", "description": "...",
-//     "button": { "label": "Run hippocampus", "icon": "🧠", "message": "/shared-memory dream" } }
+//   { "type": "cta", "icon": "📖", "title": "...", "description": "...",
+//     "button": { "label": "Run hippocampus", "icon": "📖", "message": "/shared-memory dream" } }
 
 function renderCta(w) {
   const panel = el('div', 'widget-cta');
