@@ -24,7 +24,11 @@ allowed-tools:
   - mcp__memory
 user-invocable: true
 cwd: ~/.linggen
-install: install.sh
+# No `install:` key on purpose. This skill has nothing to install: the
+# bundle arrives with the skill itself, the `ling-mem` binary is a
+# singleton owned by install-bin.sh, and host wiring belongs to each
+# host's own plugin. The install script that used to do all three is
+# gone — it was a second writer for every one of them.
 app:
   launcher: web
   entry: scripts/memory.html
