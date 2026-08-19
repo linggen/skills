@@ -24,7 +24,7 @@ case "$REQ" in "{{"*"}}"|"") REQ="$(cat)" ;; esac   # placeholder or stdin
 OUT="$(mktemp -t dj-karaoke)"
 trap 'rm -f "$OUT"' EXIT
 
-python3 - "$DIR" "$REQ" > "$OUT" <<'PY'
+"${LINGGEN_PY:-python3}" - "$DIR" "$REQ" > "$OUT" <<'PY'
 import json, os, re, subprocess, sys, time, urllib.request
 
 skill_dir, raw = sys.argv[1], sys.argv[2]

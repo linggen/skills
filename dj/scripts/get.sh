@@ -36,7 +36,7 @@ case "$FOR_PHONE" in "{{"*"}}") FOR_PHONE="" ;; esac
 OUT="$(mktemp -t dj-get)"
 trap 'rm -f "$OUT"' EXIT
 
-python3 - "$DIR" "$REQ" > "$OUT" <<'PY'
+"${LINGGEN_PY:-python3}" - "$DIR" "$REQ" > "$OUT" <<'PY'
 import json, os, re, subprocess, sys, time, urllib.parse, urllib.request
 
 skill_dir, raw = sys.argv[1], sys.argv[2]
@@ -58,7 +58,9 @@ def pick_source(yt_dlp, t):
     })
     try:
         r = subprocess.run(
-            ["python3", os.path.join(skill_dir, "scripts/pick-source.py"), req],
+            # sys.executable, not "python3": the picker must run on the same
+            # interpreter as this script (managed runtime on a CLT-less Mac).
+            [sys.executable, os.path.join(skill_dir, "scripts/pick-source.py"), req],
             capture_output=True, text=True, timeout=180)
         picked = json.loads(r.stdout.strip().splitlines()[-1])
     except Exception:
@@ -236,7 +238,7 @@ bash "$DIR/scripts/run-js.sh" "$DIR/scripts/actions.mjs" reconcile >/dev/null 2>
 # itself, so a connected one starts fetching without anything else being asked.
 case "$FOR_PHONE" in
   true|True|1|yes)
-    FILES="$(python3 -c \
+    FILES="$("${LINGGEN_PY:-python3}" -c \
       'import json,sys; print(json.dumps(json.load(open(sys.argv[1])).get("files") or []))' \
       "$OUT" 2>/dev/null || printf '[]')"
     if [ "$FILES" != "[]" ]; then

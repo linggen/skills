@@ -16,11 +16,16 @@ MODE="${1:-ensure}"
 
 YTDLP="$BIN/yt-dlp"
 YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos"
+# The engine's managed runtime carries yt-dlp as a thin script — no ~10s
+# PyInstaller unpack-and-validate on every exec, engine-managed updates.
+RUNTIME_YTDLP="$HOME/.linggen/runtime/envs/tools/bin/yt-dlp"
 
 emit() { printf '{"yt_dlp":"%s","ffmpeg":"%s","ok":%s,"note":"%s"}\n' "$1" "$2" "$3" "${4:-}"; }
 
-# ── yt-dlp: official standalone macOS binary into ~/.linggen/bin ──────────────
-if [ ! -x "$YTDLP" ]; then
+# ── yt-dlp: managed runtime first; standalone binary as the fallback ──────────
+if [ -x "$RUNTIME_YTDLP" ]; then
+  YTDLP="$RUNTIME_YTDLP"   # updates are the engine prewarm's job, skip -U
+elif [ ! -x "$YTDLP" ]; then
   if ! curl -fsSL "$YTDLP_URL" -o "$YTDLP.tmp"; then
     emit "" "" false "yt-dlp download failed"; exit 1
   fi
