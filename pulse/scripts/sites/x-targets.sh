@@ -96,7 +96,10 @@ if _cached is not None:
 
 # Bridge-only: read the logged-in x.com session for $0 via linggen-browser.
 # None = bridge/extension unavailable → emit [] so callers continue.
-_items = bridge_call("targets", {"handles": handles, "per_author": 3, "max": max_results})
+# Batched + retried in the extension (25 handles = 2 searches, one retry
+# each, human-paced gaps) — give the whole dance time instead of the
+# default 20s, which only ever covered a single search tab.
+_items = bridge_call("targets", {"handles": handles, "per_author": 3, "max": max_results}, timeout_ms=150000)
 if _items is None:
     print(degrade_json()); sys.exit(0)
 # NEVER cache an empty result: a transient capture miss must not poison the

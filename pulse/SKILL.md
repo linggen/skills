@@ -240,7 +240,7 @@ tools:
       hits with low age_hours.
     cmd: "$SKILL_DIR/scripts/sites/x-targets.sh {{handles}}"
     tier: read
-    timeout_ms: 25000
+    timeout_ms: 160000
     args:
       handles:
         type: string
@@ -657,7 +657,17 @@ prunes it (Ignore / Dismiss). Build it like this:
 
 When the roster already exists and is fresh (the user just wants new
 posts), SKIP rebuilding — go straight to `FetchXTargets`. Only rebuild on
-an explicit "refresh accounts" / first run / empty roster.
+an explicit "refresh accounts" / first run / empty roster. Mechanical
+floor: `sites.x.roster` has ≥ 10 entries → do NOT call
+`FetchXFollowing` or `FetchXWhoToFollow` this scan, full stop.
+
+**X calls are serialized in the browser** — the extension opens one
+hidden x.com tab at a time with human-paced gaps, so parallel X tool
+calls just queue behind each other until their own timeouts kill them,
+and a burst of tabs is exactly the automation signature X throttles.
+Per scan: call at most TWO X tools, one after the other — `FetchXTargets`
+first (the growth lane), then `FetchX` only if targets came back thin.
+Never fire X tools in the same parallel block as each other.
 
 **Process**:
 1. Call `FetchReddit` (configured subs), `FetchHackerNews`,
