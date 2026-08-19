@@ -44,7 +44,7 @@ MAX="$MAX" SITES_DIR="$SITES_DIR" python3 <<'PY'
 import json, os, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])  # heredoc has no __file__
-from x_api import bridge_call  # noqa: E402
+from x_api import bridge_call, degrade_json  # noqa: E402
 
 try:
     max_results = max(5, min(int(os.environ.get("MAX", "10")), 100))
@@ -67,7 +67,11 @@ except Exception:
 result = bridge_call("own", {"username": username, "max": max_results})
 if result is None:
     items, replied_to = [], []
-    errors = ["x own-posts: bridge/extension unavailable"]
+    # degrade_json carries the actionable status (x_logged_out / no_bridge)
+    # when there is one; fold it into this script's errors shape.
+    _st = json.loads(degrade_json())
+    _why = _st.get("status") if isinstance(_st, dict) else None
+    errors = [f"x own-posts: {_why or 'bridge/extension unavailable'}"]
 elif isinstance(result, dict):
     items = result.get("items") or []
     replied_to = result.get("replied_to") or []

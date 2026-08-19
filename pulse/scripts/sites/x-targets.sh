@@ -46,7 +46,7 @@ HANDLES_ARG="$HANDLES_ARG" MAX="${MAX:-25}" SITES_DIR="$SITES_DIR" CONFIG="$HOME
 import json, os, re, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])
-from x_api import cache_get, cache_put, bridge_call  # noqa: E402
+from x_api import cache_get, cache_put, bridge_call, degrade_json  # noqa: E402
 
 try:
     max_results = max(10, min(int(os.environ.get("MAX", "25")), 100))
@@ -98,7 +98,7 @@ if _cached is not None:
 # None = bridge/extension unavailable → emit [] so callers continue.
 _items = bridge_call("targets", {"handles": handles, "per_author": 3, "max": max_results})
 if _items is None:
-    print("[]"); sys.exit(0)
+    print(degrade_json()); sys.exit(0)
 # NEVER cache an empty result: a transient capture miss must not poison the
 # primary X discovery source for the whole TTL. Only a real list is worth caching.
 if _items:

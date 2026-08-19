@@ -63,11 +63,34 @@ def cache_put(key, value):
 BRIDGE_URL = "http://127.0.0.1:9527/api/bridge/call"
 
 
+# Set by bridge_call when the bridge answered with an error code (or was
+# unreachable). Lets a reader script tell an ACTIONABLE failure apart from an
+# authoritative empty when it decides what to print.
+LAST_BRIDGE_CODE = None
+
+# Failures the USER can fix — the gather agent turns these into an
+# instruction card instead of a quiet "no results" empty state.
+_ACTIONABLE_CODES = {"x_logged_out", "no_bridge"}
+
+
+def degrade_json(source="x"):
+    """What a reader script prints when bridge_call returned None. A status
+    object for failures the user can fix (logged out in the connected browser /
+    no extension connected); the plain empty array for everything else, so
+    downstream ranking keeps its list contract."""
+    if LAST_BRIDGE_CODE in _ACTIONABLE_CODES:
+        return json.dumps({"source": source, "items": [], "status": LAST_BRIDGE_CODE})
+    return "[]"
+
+
 def bridge_call(op, params, timeout_ms=20000):
     """Broker one X read through the browser bridge. Returns the result list on
     success (possibly empty — an authoritative empty), or None when the bridge
     or extension is absent / not ready / errored (the reader op may not exist
-    yet). Never raises: a missing daemon/extension just returns None."""
+    yet). Never raises: a missing daemon/extension just returns None and stamps
+    LAST_BRIDGE_CODE so degrade_json() can say why."""
+    global LAST_BRIDGE_CODE
+    LAST_BRIDGE_CODE = None
     body = json.dumps(
         {"module": "x", "op": op, "params": params or {}, "timeout_ms": timeout_ms}
     ).encode()
@@ -81,11 +104,13 @@ def bridge_call(op, params, timeout_ms=20000):
         with urllib.request.urlopen(req, timeout=timeout_ms / 1000 + 5) as r:
             out = json.loads(r.read().decode("utf-8"))
     except Exception:
-        return None  # daemon down / route absent → caller degrades to empty
+        LAST_BRIDGE_CODE = "no_bridge"  # daemon down / route absent
+        return None
     if not isinstance(out, dict) or not out.get("ok"):
         # Bridge present but degraded (no extension, not logged in, op missing).
         # Log the code to the daemon log so it's debuggable, then degrade.
         code = out.get("code") if isinstance(out, dict) else None
+        LAST_BRIDGE_CODE = code or "upstream_error"
         if code:
             sys.stderr.write(f"[x_bridge] {op}: degrade ({code})\n")
         return None

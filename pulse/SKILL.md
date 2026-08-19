@@ -209,8 +209,10 @@ tools:
       excludes retweets/replies, English only. Returns a JSON array of
       {source:"x", author, handle, followers, title, text, url, score,
       likes, reposts, replies, created_iso, age_hours} (title == text, so
-      score it like a Reddit thread). [] when the bridge/extension is
-      unavailable — cap to the top few topics regardless.
+      score it like a Reddit thread). [] when nothing matched; a status
+      object { source:"x", items:[], status:"x_logged_out"|"no_bridge" }
+      when the read was blocked by something the user can fix (see the
+      empty-card status rule) — cap to the top few topics regardless.
     cmd: "$SKILL_DIR/scripts/sites/x-search.sh {{query}}"
     tier: read
     timeout_ms: 25000
@@ -231,8 +233,11 @@ tools:
       lever — far better than keyword search (FetchX). Same output shape as
       FetchX, newest-first. Pass an optional space/comma-separated handle list
       to fetch a SPECIFIC subset (used for progressive per-source refresh);
-      with no arg it pulls the whole roster. [] when the roster is empty or the
-      bridge/extension is unavailable. Prefer hits with low age_hours.
+      with no arg it pulls the whole roster. [] when the roster is empty or
+      nothing fresh matched; a status object { source:"x", items:[],
+      status:"x_logged_out"|"no_bridge" } when the read was blocked by
+      something the user can fix (see the empty-card status rule). Prefer
+      hits with low age_hours.
     cmd: "$SKILL_DIR/scripts/sites/x-targets.sh {{handles}}"
     tier: read
     timeout_ms: 25000
@@ -501,6 +506,16 @@ partner.
   linggen-browser extension") when a tool returns empty or an `errors`
   entry. Skip that source silently; surface "nothing found" only via
   the section's single `empty` card. Tool plumbing never becomes content.
+- **The one sanctioned exception — a typed `status` from the tool.**
+  When an X Fetch tool returns `{ source:"x", items:[], status }`
+  instead of a plain array, the failure is REAL and user-fixable; the
+  lane's `empty` card `reason` must carry the fix, verbatim:
+  - `x_logged_out` → "Couldn't read X — x.com is logged out in the
+    browser running linggen-browser. Sign in there, then Rescan."
+  - `no_bridge` → "Browser extension not connected — open the browser
+    with linggen-browser installed (and enabled), then Rescan."
+  Never invent these texts from a bare `[]` or a timeout — only from
+  the tool's own `status` field.
 - **Reddit needs a token for replies:** Reddit's mention/reply data
   comes from RSS. If `FetchRedditMentions` returns an `errors` entry
   mentioning `no private_rss_feed_token`, only public username mentions

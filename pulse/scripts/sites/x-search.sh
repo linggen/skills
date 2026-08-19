@@ -39,7 +39,7 @@ QUERY="$QUERY" MAX="$MAX" SITES_DIR="$SITES_DIR" python3 <<'PY'
 import json, os, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])  # heredoc has no __file__
-from x_api import cache_get, cache_put, bridge_call  # noqa: E402
+from x_api import cache_get, cache_put, bridge_call, degrade_json  # noqa: E402
 
 query = os.environ["QUERY"].strip()
 try:
@@ -70,7 +70,7 @@ if _cached is not None:
 # None = bridge/extension unavailable → emit [] so callers continue.
 _items = bridge_call("search", {"query": query, "max": max_results})
 if _items is None:
-    print("[]"); sys.exit(0)
+    print(degrade_json()); sys.exit(0)
 # NEVER cache an empty result: a transient capture miss must not poison this
 # query for the whole TTL. Only a real list is worth caching.
 if _items:
