@@ -14,7 +14,7 @@
 // Schema in design.md. Bash bridge is /api/bash (ungated by Linggen's
 // agent permission system, so the page does its own filesystem work).
 
-import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
+import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, isThreadCommented, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -2376,6 +2376,11 @@ async function postXReply(cardId, btn) {
   // sequitur under the user's own name — refuse instead of guessing.
   const replyTo = card?.reply_target?.url || card?.url || '';
   if (!replyTo) { flash(btn, 'No post to reply to'); return; }
+  // Never reply twice to the same post. The card hides its own Post button once
+  // it records a success, but a post that succeeds AFTER the bridge call times
+  // out is never recorded — the button stays and a second click would publish a
+  // duplicate. The already-replied list is the authority either way.
+  if (isThreadCommented(replyTo)) { flash(btn, 'Already replied to this'); return; }
 
   const label = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = 'Posting…'; }

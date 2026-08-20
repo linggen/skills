@@ -107,6 +107,13 @@ export function getCommentedThreadUrls() {
   return Array.from(commentedThreadUrls);
 }
 
+/// Has the user already replied to this post? Same normalizer the render-time
+/// filter uses, so an action and the display can never disagree about it.
+export function isThreadCommented(url) {
+  if (!url) return false;
+  return commentedThreadUrls.has(normalizeThreadUrl(url));
+}
+
 // URLs the user has explicitly dismissed (× button) — persisted to
 // state/dismissed.json across sessions so a dismissed mention doesn't
 // keep coming back every time reddit-mentions.sh returns the same item.
