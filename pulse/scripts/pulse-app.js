@@ -519,6 +519,19 @@ async function pushLocalContextToChat(data) {
 // do NOT mark threads as committed (Copy ≠ Posted; the user may copy a
 // draft and never paste it, and false-positive suppression is worse than
 // the 30s lag before Reddit indexes a fresh comment).
+// Last known already-commented set, cached on disk. The live refresh below is
+// three NETWORK reads (~15s); the page paints long before they land, so on a
+// reload every already-answered card is visible until they do — which reads as
+// "the filter is broken", not "the filter is loading". Seeding from this file
+// first is the same trick dismissed.json uses: a fast local read before the
+// first render, with the network refresh behind it for freshness.
+const COMMENTED_PATH = `${SKILL_DIR}/state/commented.json`;
+
+async function loadCommentedSet() {
+  const data = await readJson(COMMENTED_PATH, { urls: [] });
+  return Array.isArray(data?.urls) ? data.urls : [];
+}
+
 async function refreshCommentedThreadUrls() {
   const remote = [];
   // Reddit — own_comment thread URLs (free RSS, always fetched).
@@ -558,6 +571,13 @@ async function refreshCommentedThreadUrls() {
     console.warn('[pulse] hn own-comments fetch failed', e);
   }
   setCommentedThreadUrls(remote);
+  // Never cache an empty result: a transient fetch miss would then suppress
+  // nothing on the next reload AND overwrite a good list. Same rule as
+  // reddit-own-threads.json.
+  if (remote.length) {
+    await writeJson(COMMENTED_PATH, { urls: remote, updated_at: new Date().toISOString() })
+      .catch(err => console.warn('[pulse] commented cache write', err));
+  }
 }
 
 // Use the shared-memory skill's extract_session.sh to pull a flattened
@@ -1514,6 +1534,19 @@ async function init() {
     setDismissedGroups(dismissed.groups);
   } catch (err) {
     console.warn('[pulse] dismissed prefetch', err);
+  }
+  // Same reasoning for the already-commented set — seed it from the cache
+  // before the first render so a reload never shows answered cards while the
+  // network refresh (started above) is still in flight.
+  try {
+    const commented = await loadCommentedSet();
+    // The live refresh was started above; if it somehow beat this local read,
+    // it holds fresher data and the cache must not clobber it.
+    if (commented.length && getCommentedThreadUrls().length === 0) {
+      setCommentedThreadUrls(commented);
+    }
+  } catch (err) {
+    console.warn('[pulse] commented prefetch', err);
   }
   // Resolve which session this open should attach to BEFORE mounting chat,
   // so we resume the most-recent session instead of minting a new one.
