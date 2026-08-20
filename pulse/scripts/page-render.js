@@ -1120,9 +1120,12 @@ function renderDiscovery(c) {
   const draftLabel = (t && !targetDupesExcerpt) ? 'Draft reply' : 'Draft comment';
   // X reply cards get a "Mark posted" action so the user can log which replies
   // they actually posted — that feeds the X dashboard's posted-per-day series.
+  // "Post" replies through the browser extension in a tab you watch; the
+  // extension asks before it sends. "Mark posted" stays for replies posted by
+  // hand, so the dashboard's posted-per-day series counts those too.
   const isX = (c.source || '').toLowerCase() === 'x';
   const discActions = (isX && c.draft_starter && !c.posted)
-    ? ['copy', 'open', 'copy-url', 'x-posted', 'dismiss']
+    ? ['post', 'copy', 'open', 'copy-url', 'x-posted', 'dismiss']
     : ['copy', 'open', 'copy-url', 'dismiss'];
   const postedBadge = c.posted ? ' · <span class="posted-badge">✓ posted</span>' : '';
   // OP explicitly solicits tool recommendations — the one thread type where
@@ -1271,6 +1274,7 @@ function actionRow(card, actionList) {
 }
 
 const ACTION_LABELS = {
+  'post':           { label: '↗ Post',           primary: true },
   'draft-reply':    { label: '✎ Draft reply',    primary: true },
   'draft-replies':  { label: '✎ Draft replies',  primary: true },
   'draft-starter':  { label: '✎ Draft starter',  primary: true },

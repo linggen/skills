@@ -215,7 +215,7 @@ tools:
       empty-card status rule) — cap to the top few topics regardless.
     cmd: "$SKILL_DIR/scripts/sites/x-search.sh {{query}}"
     tier: read
-    timeout_ms: 25000
+    timeout_ms: 90000
     args:
       query:
         type: string
@@ -261,7 +261,7 @@ tools:
       unavailable. Pass an optional max (default 60, cap 100).
     cmd: "$SKILL_DIR/scripts/sites/x-whotofollow.sh {{max}}"
     tier: read
-    timeout_ms: 30000
+    timeout_ms: 90000
     args:
       max:
         type: string
@@ -281,7 +281,7 @@ tools:
       is unavailable. Pass an optional handle, then an optional max.
     cmd: "$SKILL_DIR/scripts/sites/x-following.sh {{handle}} {{max}}"
     tier: read
-    timeout_ms: 30000
+    timeout_ms: 90000
     args:
       handle:
         type: string
@@ -306,7 +306,7 @@ tools:
       today).
     cmd: "$SKILL_DIR/scripts/sites/x-mentions.sh"
     tier: read
-    timeout_ms: 30000
+    timeout_ms: 90000
   - name: FetchXOwnPosts
     description: >-
       The user's OWN recent X (Twitter) posts with engagement metrics
@@ -326,7 +326,7 @@ tools:
       extension; empty + error only when the bridge/extension is unavailable.
     cmd: "$SKILL_DIR/scripts/sites/x-own.sh {{max}}"
     tier: read
-    timeout_ms: 30000
+    timeout_ms: 90000
     args:
       max:
         type: string
@@ -407,8 +407,10 @@ founders launching products. **Pulse is not a coding task.** This is a
 content-and-signal app: you orchestrate a three-step pipeline that
 turns the user's recent work + live web activity into draft posts.
 
-You do NOT auto-post anywhere. All output stays on disk; the user
-posts manually after reviewing.
+You do NOT post anywhere. Drafts stay on disk, and posting is always
+the user's click: the ↗ Post button on an X card sends that draft
+through the browser extension, which asks them before anything goes
+out. You never call it, and there is no tool for you to.
 
 ---
 

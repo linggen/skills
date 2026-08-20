@@ -58,6 +58,29 @@ async function readJson(path, fallback = null) {
   try { return JSON.parse(out); } catch { return fallback; }
 }
 
+// ---- Browser-extension bridge --------------------------------------------
+
+// The daemon brokers linggen-browser ops on the same origin that serves this
+// page. Failures arrive inside the envelope rather than as a status code, and
+// the `code` is what the caller shows the user — `no_bridge` (extension not
+// connected) and `not_permitted` (declined in the browser) are ordinary
+// outcomes here, not faults.
+async function bridgeCall(module, op, params, timeoutMs = 30000) {
+  const res = await fetch('/api/bridge/call', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ module, op, params, timeout_ms: timeoutMs }),
+  });
+  if (!res.ok) throw new Error(`bridge ${res.status}`);
+  const body = await res.json();
+  if (!body.ok) {
+    const e = new Error(body.message || body.code || 'bridge call failed');
+    e.code = body.code;
+    throw e;
+  }
+  return body.data;
+}
+
 // Newest engine session id for this skill, by session.json mtime. Only
 // `sess-*` dirs (engine-resumable); legacy date-named dirs are skipped.
 // Sessions older than 24h are not resumed (all apps share this rule:
@@ -888,6 +911,9 @@ function handleCardAction(action, cardId, btn) {
       flash(btn, 'URL copied — submit promptly');
       break;
     }
+    case 'post':
+      postXReply(cardId, btn);
+      break;
     case 'mark-posted':
       markCardPosted(cardId, btn);
       break;
@@ -2286,6 +2312,57 @@ const TAB_LANES = { x: 'x-post', hn: 'hn-comment', reddit: 'reddit-comment' };
 function handleTabDraft(tabId) {
   const lane = TAB_LANES[tabId];
   runDraft(lane).catch(err => console.warn('[pulse] draft failed', err));
+}
+
+// Post an X reply through the browser extension, from the card the draft is on.
+//
+// The extension opens a visible x.com tab, asks permission (posting is its hard
+// floor, so it asks every time), types the draft and clicks Post — and resolves
+// only once x.com has confirmed the new post, so nothing is marked posted on
+// optimism. The long timeout is because that whole sequence includes waiting on
+// a human at the permission prompt.
+const X_POST_LIMIT = 280;
+const X_POST_TIMEOUT_MS = 180000;
+const X_POST_ERRORS = {
+  no_bridge: 'Browser extension not connected',
+  not_permitted: 'Declined in the browser',
+  x_logged_out: 'Sign in to x.com first',
+  timeout: 'x.com did not answer in time',
+};
+
+async function postXReply(cardId, btn) {
+  const card = findCard(cardId);
+  const text = (card?.draft_starter || card?.content || card?.draft_reply || '').trim();
+  if (!text) { flash(btn, 'Nothing to post'); return; }
+  if (text.length > X_POST_LIMIT) {
+    flash(btn, `${text.length}/${X_POST_LIMIT} — too long`);
+    return;
+  }
+  // These drafts are written as REPLIES to a specific post. Without the target
+  // the extension would post the text standalone, where it reads as a non
+  // sequitur under the user's own name — refuse instead of guessing.
+  const replyTo = card?.reply_target?.url || card?.url || '';
+  if (!replyTo) { flash(btn, 'No post to reply to'); return; }
+
+  const label = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Posting…'; }
+  try {
+    const res = await bridgeCall(
+      'x', 'post', { text, reply_to: replyTo }, X_POST_TIMEOUT_MS
+    );
+    if (card) {
+      card.posted = true;
+      card.posted_url = (res && res.url) || '';
+      const sess = getSession();
+      loadSession(sess);
+      persistSession(sess);
+    }
+    await bumpXActivity('posted', 1);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = label; }
+    flash(btn, X_POST_ERRORS[e.code] || 'Post failed');
+    console.warn('[pulse] x post failed', e);
+  }
 }
 
 // User marks an X reply card as posted → feed the cadence/posted series.

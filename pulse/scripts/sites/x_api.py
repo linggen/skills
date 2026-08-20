@@ -83,7 +83,15 @@ def degrade_json(source="x"):
     return "[]"
 
 
-def bridge_call(op, params, timeout_ms=20000):
+# An x read is mostly WAITING, and the default has to cover all of it: the
+# bridge paces 3-10s before it dispatches, the x module another 4-9s before the
+# tab opens, then the capture itself runs to 20s and the tab dwells 1-4s — about
+# 45s worst case before a healthy op answers. The old 20s default could not fit
+# that, so ops timed out on pacing alone and returned None, which every caller
+# renders as an authoritative empty. A DISCONNECTED bridge still fails fast
+# (the daemon answers `no_bridge` without waiting), so the longer budget costs
+# nothing in the common failure. `targets` overrides upward — it batches.
+def bridge_call(op, params, timeout_ms=60000):
     """Broker one X read through the browser bridge. Returns the result list on
     success (possibly empty — an authoritative empty), or None when the bridge
     or extension is absent / not ready / errored (the reader op may not exist

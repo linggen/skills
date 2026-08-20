@@ -63,7 +63,11 @@ except Exception:
 # Bridge-only: the linggen-browser extension reads the user's own timeline
 # (x.com/<handle>/with_replies). The `own` reader returns a dict
 # {items: [...original posts...], replied_to: [...parent status urls...]}.
-# bridge_call returns None when the bridge/extension is unavailable.
+# bridge_call returns None when the bridge/extension is unavailable — and a
+# timeout counts as unavailable, which here means an empty replied_to. That
+# silently EMPTIES the already-replied suppression list and resurfaces posts the
+# user has answered, looking like a scan bug rather than a timeout. The budget
+# that makes that safe is bridge_call's default; don't shorten it here.
 result = bridge_call("own", {"username": username, "max": max_results})
 if result is None:
     items, replied_to = [], []
