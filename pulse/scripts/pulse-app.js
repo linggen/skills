@@ -2398,7 +2398,14 @@ async function postXReply(cardId, btn) {
     await bumpXActivity('posted', 1);
   } catch (e) {
     if (btn) { btn.disabled = false; btn.textContent = label; }
-    flash(btn, X_POST_ERRORS[e.code] || 'Post failed');
+    // Show what actually went wrong. The known codes get plain words; anything
+    // else shows the real message rather than "Post failed", which is what a
+    // long day of debugging looked like from this button. The full text goes on
+    // the tooltip, since a button is too small to hold a sentence.
+    const detail = String(e.message || e);
+    const short = X_POST_ERRORS[e.code] || (detail.length > 44 ? `${detail.slice(0, 44)}…` : detail);
+    if (btn) btn.title = detail;
+    flash(btn, short);
     console.warn('[pulse] x post failed', e);
   }
 }
