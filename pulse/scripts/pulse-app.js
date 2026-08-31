@@ -532,48 +532,69 @@ async function loadCommentedSet() {
   return Array.isArray(data?.urls) ? data.urls : [];
 }
 
-async function refreshCommentedThreadUrls() {
-  const remote = [];
-  // Reddit — own_comment thread URLs (free RSS, always fetched).
-  try {
-    const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-mentions.sh"`);
-    const data = JSON.parse(out);
-    remote.push(...(data?.items || [])
-      .filter(it => it.kind === 'own_comment' && it.url)
-      .map(it => it.url));
-  } catch (e) {
-    console.warn('[pulse] reddit-mentions own_comment fetch failed', e);
+// The lanes the list is built from. Keys in the set are normalized
+// "<lane>:<id>" (page-render's normalizeThreadUrl), so a key's lane is its
+// prefix — that's what lets one lane be replaced without touching the rest.
+const COMMENTED_LANES = ['reddit', 'x', 'hn'];
+const laneOfKey = (k) => String(k).split(':')[0];
+
+// Rebuild the already-engaged list for `lanes` (default: all three). A per-tab
+// rescan names ONE lane — its own — because the other lanes' reads cost real
+// things a Reddit rescan never uses: x-own.sh makes the browser extension open
+// an x.com tab to read my replies (observed 2026-08-31: "Rescan Reddit" opened
+// x.com). Lanes not asked for keep their current entries; a lane that was
+// asked for but came back empty ALSO keeps its old entries — a transient miss
+// must never wipe a good list (same rule as reddit-own-threads.json).
+async function refreshCommentedThreadUrls(lanes = COMMENTED_LANES) {
+  const want = new Set(lanes);
+  if (!want.size) return;
+  const fresh = { reddit: [], x: [], hn: [] };
+  let cfg = null;
+  try { cfg = await readPulseConfig(); } catch {}
+  // Reddit — own_comment thread URLs (free RSS).
+  if (want.has('reddit')) {
+    try {
+      const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-mentions.sh"`);
+      const data = JSON.parse(out);
+      fresh.reddit.push(...(data?.items || [])
+        .filter(it => it.kind === 'own_comment' && it.url)
+        .map(it => it.url));
+    } catch (e) {
+      console.warn('[pulse] reddit-mentions own_comment fetch failed', e);
+    }
   }
-  // X — parent tweets I've already replied to. Same "don't resurface what
-  // I've engaged" rule as Reddit. Gated on sites.x.enabled; x-own.sh reads via
-  // the linggen-browser bridge ($0). Pull a wide window (100) so older replies
-  // still suppress. Bridge/extension unavailable → x-own.sh returns empty.
-  try {
-    const cfg = await readPulseConfig();
-    if (cfg?.sites?.x?.enabled) {
+  // X — parent tweets I've already replied to. Gated on sites.x.enabled;
+  // x-own.sh reads via the linggen-browser bridge ($0), which opens a
+  // background x.com tab. Wide window (100) so older replies still suppress.
+  // Bridge/extension unavailable → x-own.sh returns empty.
+  if (want.has('x') && cfg?.sites?.x?.enabled) {
+    try {
       const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/x-own.sh" 100`);
       const data = JSON.parse(out);
-      remote.push(...(data?.replied_to || []));
+      fresh.x.push(...(data?.replied_to || []));
+    } catch (e) {
+      console.warn('[pulse] x-own replied_to fetch failed', e);
     }
-  } catch (e) {
-    console.warn('[pulse] x-own replied_to fetch failed', e);
   }
   // HN — threads I've already commented in (free Algolia API). Gated on
   // sites.hackernews.enabled; no username in config → returns empty.
-  try {
-    const cfg = await readPulseConfig();
-    if (cfg?.sites?.hackernews?.enabled) {
+  if (want.has('hn') && cfg?.sites?.hackernews?.enabled) {
+    try {
       const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/hn-own-comments.sh"`);
       const data = JSON.parse(out);
-      remote.push(...(data?.urls || []));
+      fresh.hn.push(...(data?.urls || []));
+    } catch (e) {
+      console.warn('[pulse] hn own-comments fetch failed', e);
     }
-  } catch (e) {
-    console.warn('[pulse] hn own-comments fetch failed', e);
   }
+  const replaced = (k) => want.has(laneOfKey(k)) && fresh[laneOfKey(k)]?.length > 0;
+  const remote = [
+    ...getCommentedThreadUrls().filter(k => !replaced(k)),
+    ...fresh.reddit, ...fresh.x, ...fresh.hn,
+  ];
   setCommentedThreadUrls(remote);
   // Never cache an empty result: a transient fetch miss would then suppress
-  // nothing on the next reload AND overwrite a good list. Same rule as
-  // reddit-own-threads.json.
+  // nothing on the next reload AND overwrite a good list.
   if (remote.length) {
     await writeJson(COMMENTED_PATH, { urls: remote, updated_at: new Date().toISOString() })
       .catch(err => console.warn('[pulse] commented cache write', err));
@@ -2311,6 +2332,9 @@ const RESCAN_PROMPTS = {
   mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchHNMentions / FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md. NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card. No prose response.',
 };
 
+// Which already-engaged lanes a tab's rescan re-reads. undefined = all.
+const RESCAN_OWN_LANES = { reddit: ['reddit'], x: ['x'], hn: ['hn'], bluesky: [] };
+
 async function handleTabRescan(tabId) {
   if (tabId === 'progress') { runGatherLocal(); return; }
   let prompt = RESCAN_PROMPTS[tabId];
@@ -2326,12 +2350,13 @@ async function handleTabRescan(tabId) {
     prompt = prompt.replace(/REDDIT_HANDLE/g,
       handle ? `"${handle}"` : '<sites.reddit.username>');
   }
-  // Refresh the already-commented set FIRST, exactly like runGatherWeb.
-  // Without this the rescan sent whatever init() happened to load — so a
-  // thread commented on after page load was absent from SKIP_URLS and the
-  // agent re-proposed it, burning a draft the renderer then hid
-  // (observed 2026-07-28: two of three Reddit cards were already answered).
-  await refreshCommentedThreadUrls().catch(
+  // Refresh the already-commented set FIRST, like runGatherWeb — but only
+  // THIS lane's part of it. Without the refresh the rescan sent whatever
+  // init() happened to load, so a thread commented on after page load was
+  // absent from SKIP_URLS and the agent re-proposed it (2026-07-28). Without
+  // the lane scope every rescan re-read all three lanes, and the X read opens
+  // an x.com tab in the browser (2026-08-31). Mentions spans sources → all.
+  await refreshCommentedThreadUrls(RESCAN_OWN_LANES[tabId]).catch(
     err => console.warn('[pulse] rescan own-comments refresh', err));
   // The prompts tell the agent to "drop SKIP_URLS" — prepend the actual
   // list (the same block Gather web sends) so there's data behind it.
