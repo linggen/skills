@@ -45,7 +45,22 @@ except ValueError:
 # and returns them already shaped as the `items` list (kind/title/body/parent…).
 # Until the op ships, bridge_call returns None and we emit a valid empty payload.
 items = bridge_call("mentions", {"max": max_results})
-errors = [] if items is not None else ["x mentions: bridge/extension unavailable (no reader op yet)"]
-items = items or []
+errors = []
+if items is None:
+    errors.append("x mentions: bridge/extension unavailable (no reader op yet)")
+    items = []
+elif not isinstance(items, list):
+    # The bridge must hand back a shaped item list. Anything else is NOT
+    # mentions and must never reach the model: on 2026-09-01 the extension's
+    # temporary shape-probe on this op returned a ~200KB raw SearchTimeline
+    # dump, this script wrapped it as one "item", the agent's context blew
+    # past its budget, compaction dropped the Reddit replies, and the whole
+    # mentions run ended with no cards. Degrade loudly instead.
+    errors.append(
+        f"x mentions: bridge returned an unshaped payload ({type(items).__name__}) "
+        "— the extension's mentions op is not implemented yet; ignored")
+    items = []
+else:
+    items = [i for i in items if isinstance(i, dict)][:max_results]
 print(json.dumps({"items": items, "count": len(items), "errors": errors}))
 PY
