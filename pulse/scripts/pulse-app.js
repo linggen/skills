@@ -358,6 +358,30 @@ function startChip(chipId, expects) {
 // 10+ Fetch tools — the chip flips to 'failed' (red !) even though the
 // section content arrived a moment later. Adaptive timeout: fail only
 // when the agent has been genuinely silent for CHIP_TIMEOUT_MS.
+// Whether the embedded chat iframe can still hear the server. A skill page
+// has no transport of its own, so without this it cannot tell "the agent went
+// quiet" from "the data channel is down".
+let transportStatus = 'connected';
+
+// An idle clock measures AGENT silence. While the channel is down it would be
+// measuring OUR deafness instead, which proves nothing — on 2026-09-01 a
+// 3-minute channel reconnect after a page reload ran the gather-web chip out
+// and painted a healthy run as failed. So the clocks stop while we cannot
+// hear, and restart from zero when we can.
+function setTransportStatus(status) {
+  const next = status || 'disconnected';
+  if (next === transportStatus) return;
+  const wasDown = transportStatus !== 'connected';
+  transportStatus = next;
+  if (next !== 'connected') {
+    for (const rec of runningChips.values()) clearTimeout(rec.timer);
+    if (runningChips.size) showConnectionToast();
+  } else {
+    pingRunningChips();
+    if (wasDown) hideCascadeToast();
+  }
+}
+
 function pingRunningChips() {
   for (const rec of runningChips.values()) {
     clearTimeout(rec.timer);
@@ -900,6 +924,17 @@ function hideCascadeToast() {
   toast.classList.remove('is-error');
 }
 
+// The channel to the agent is down. Say that, rather than blaming the run:
+// the agent is very likely still working, we just cannot hear it.
+function showConnectionToast() {
+  const toast = document.getElementById('cascade-toast');
+  const label = document.getElementById('cascade-toast-label');
+  if (!toast || !label) return;
+  label.textContent = 'Connection to the agent lost — reconnecting. Cards will land if the run is still going.';
+  toast.classList.add('is-error');
+  toast.hidden = false;
+}
+
 // A step threw. Keep the toast up naming which one, so the user knows the
 // cards on screen are stale rather than a fresh empty result. `Stop`
 // dismisses it, same button.
@@ -911,6 +946,10 @@ function failCascadeToast(what, err) {
   // watchdog timeout means the goal WAS sent and its cards may still land,
   // so claiming the page is stale would be a guess — and a wrong one on a
   // slow-but-healthy run.
+  if (transportStatus !== 'connected') {
+    showConnectionToast();
+    return;
+  }
   label.textContent = err && err.code === 'chip_idle'
     ? `${what}: no update for ${Math.round(CHIP_TIMEOUT_MS / 1000)}s — the page stopped tracking it. The agent may still be working; cards will land if it finishes.`
     : `${what} failed before it started — ${(err && err.message) || err}`;
@@ -1421,6 +1460,7 @@ async function mountChat() {
     sessionId: resumeSid || undefined,
     modelId,
     onSessionCreated: grantOnce,
+    onConnectionChange: setTransportStatus,
     onContentBlock: (payload) => {
       // Any content block (tool call, text streaming, PageUpdate, …) is
       // fresh evidence the agent is still working — bump the running

@@ -51,6 +51,10 @@ async function mount(el, options) {
   // For relative iframe URLs (local mode), this resolves to the parent origin.
   const iframeOrigin = new URL(iframe.src, window.location.href).origin;
 
+  // Assume healthy until the iframe says otherwise: a page that never hears
+  // a connection event (older embed build) must behave exactly as before.
+  let connectionStatus = 'connected';
+
   function handleMessage(e) {
     if (e.origin !== iframeOrigin) return;
     if (e.data?.type !== 'linggen-skill-event') return;
@@ -66,6 +70,11 @@ async function mount(el, options) {
         break;
       case 'content_block':
         if (options.onContentBlock) options.onContentBlock(payload);
+        break;
+      case 'connection':
+        // The iframe owns the transport; we only see the agent through it.
+        connectionStatus = payload?.status || 'disconnected';
+        if (options.onConnectionChange) options.onConnectionChange(connectionStatus);
         break;
       case 'session_created':
         if (payload?.sessionId) {
@@ -100,6 +109,8 @@ async function mount(el, options) {
     send,
     sendHidden,
     addMessage,
+    /** 'connected' | 'reconnecting' | 'disconnected' — the iframe's transport. */
+    connectionStatus: () => connectionStatus,
     destroy() {
       window.removeEventListener('message', handleMessage);
       iframe.remove();
