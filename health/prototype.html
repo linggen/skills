@@ -1,0 +1,681 @@
+<title>Health Keeper</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #F6F8F6; --surface: #FFFFFF; --raised: #EBEFEC; --line: #D9E1DC;
+    --text: #12181A; --dim: #5C6A66; --jade: #2C7355; --jade-deep: #2F7B5D;
+    --jade-soft: #DCE9E3; --gold: #97722A; --gold-soft: #F3EAD6;
+    --crit: #B5473F; --crit-soft: #F6E1DF;
+    --phone: #0B0D12; --phone-edge: #2B2F3A;
+    --ui: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12151D; --surface: #1A1E29; --raised: #232837; --line: #2C3244;
+      --text: #E8E6DF; --dim: #8F94A3; --jade: #6FBF9E; --jade-deep: #3D8A6C;
+      --jade-soft: #1E3A30; --gold: #D9B36C; --gold-soft: #3A3120;
+      --crit: #E07A70; --crit-soft: #3E2523;
+      --phone: #05070A; --phone-edge: #3A3F4C;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #12151D; --surface: #1A1E29; --raised: #232837; --line: #2C3244;
+    --text: #E8E6DF; --dim: #8F94A3; --jade: #6FBF9E; --jade-deep: #3D8A6C;
+    --jade-soft: #1E3A30; --gold: #D9B36C; --gold-soft: #3A3120;
+    --crit: #E07A70; --crit-soft: #3E2523;
+    --phone: #05070A; --phone-edge: #3A3F4C;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--text); font-family: var(--ui); font-size: 15px; line-height: 1.5; }
+  a { color: var(--jade); }
+  h1, h2, h3, h4 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
+  h1 { font-size: 34px; line-height: 1.15; }
+  h2 { font-size: 22px; }
+  h3 { font-size: 16px; }
+  p { margin: 0; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+  .dim { color: var(--dim); }
+  :focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; display: grid; gap: 56px; }
+
+  /* Hero */
+  .hero { display: grid; gap: 18px; max-width: 760px; }
+  .hero .thesis { font-size: 26px; line-height: 1.3; font-weight: 500; letter-spacing: -0.01em; }
+  .hero .thesis em { font-style: normal; color: var(--jade); }
+  .hero .lede { max-width: 62ch; color: var(--dim); font-size: 16px; }
+  .status { display: inline-flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
+
+  /* Section */
+  section { display: grid; gap: 20px; }
+  .sec-head { display: grid; gap: 6px; max-width: 70ch; }
+  .sec-head p { color: var(--dim); }
+
+  /* Phone walkthrough layout */
+  .walk { display: grid; grid-template-columns: 420px 1fr; gap: 32px; align-items: start; }
+  @media (max-width: 900px) { .walk { grid-template-columns: 1fr; } }
+  .picker { display: flex; flex-wrap: wrap; gap: 6px; }
+  .picker button, .btn { font: inherit; font-size: 13px; font-weight: 500; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .picker button[aria-selected="true"] { background: var(--jade); border-color: var(--jade); color: #fff; }
+  .notes { display: grid; gap: 14px; position: sticky; top: 24px; }
+  .note { display: grid; gap: 6px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  .note h3 { font-size: 15px; }
+  .note ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--dim); }
+  .note code { font-family: var(--mono); font-size: 12px; background: var(--raised); padding: 1px 5px; border-radius: 4px; color: var(--text); }
+  .note.tool { border-left: 3px solid var(--jade); }
+
+  /* Phone frame */
+  .phone { width: 390px; height: 800px; background: var(--phone); border-radius: 44px; padding: 12px; border: 1px solid var(--phone-edge); box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); margin: 0 auto; }
+  .screen { width: 100%; height: 100%; background: var(--ground); border-radius: 34px; overflow: hidden; display: grid; grid-template-rows: auto auto 1fr; color: var(--text); }
+  .statusbar { display: flex; justify-content: space-between; padding: 14px 26px 0; font-family: var(--mono); font-size: 12px; }
+  .appbar { display: grid; grid-template-columns: 40px 1fr 40px 40px; align-items: center; padding: 8px 8px 8px 12px; }
+  .appbar .title { display: flex; align-items: baseline; gap: 6px; font-weight: 600; font-size: 17px; }
+  .appbar .title small { font-size: 12px; color: var(--dim); font-weight: 500; }
+  .icon { width: 36px; height: 36px; display: grid; place-items: center; color: var(--dim); font-size: 18px; }
+  .icon svg { width: 20px; height: 20px; }
+  .body { overflow-y: auto; padding: 4px 16px 24px; display: grid; gap: 14px; align-content: start; }
+  .body::-webkit-scrollbar { width: 0; }
+  .view { display: none; }
+  .view[data-active="true"] { display: grid; gap: 14px; }
+
+  /* In-screen components */
+  .brief { display: grid; gap: 12px; }
+  .brief .date { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .brief .sentence { font-size: 20px; line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font: inherit; font-family: var(--mono); font-size: 12px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+  .chip b { font-weight: 600; }
+  .chip .d { color: var(--dim); }
+  .chip .d.up { color: var(--crit); } .chip .d.down { color: var(--crit); } .chip .d.ok { color: var(--jade); }
+  .action { display: grid; gap: 10px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  .action .kind { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+  .action .kind.done { color: var(--jade); }
+  .action .what { font-weight: 500; }
+  .action .row { display: flex; gap: 8px; }
+  .action .row button { font: inherit; font-size: 13px; font-weight: 600; border-radius: 8px; padding: 8px 12px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+  .action .row button.primary { background: var(--jade); border-color: var(--jade); color: #fff; }
+  .ask { display: flex; gap: 8px; align-items: center; padding: 8px 8px 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; color: var(--dim); font-size: 14px; }
+  .ask span { flex: 1; }
+  .ask .mic { width: 30px; height: 30px; border-radius: 50%; background: var(--gold-soft); color: var(--gold); display: grid; place-items: center; font-size: 14px; }
+
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tile { padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 2px; }
+  .tile .k { font-size: 12px; color: var(--dim); }
+  .tile .v { font-family: var(--mono); font-size: 20px; font-weight: 600; line-height: 1.1; }
+  .tile .v small { font-size: 12px; font-weight: 500; color: var(--dim); }
+  .tile .b { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .tile .b.low { color: var(--crit); } .tile .b.high { color: var(--crit); } .tile .b.ok { color: var(--jade); }
+  .tile.wide { grid-column: 1 / -1; }
+  .tile.work { border-color: var(--jade); }
+  .tile .spark { height: 28px; width: 100%; margin-top: 4px; }
+
+  .list { display: grid; gap: 8px; }
+  .item { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+  .item .t { font-weight: 500; }
+  .item .s { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .item .more { grid-row: 1 / span 2; color: var(--dim); font-size: 18px; }
+  .item.sel { border-color: var(--jade); }
+
+  .card { padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: grid; gap: 8px; }
+  .card.forming { background: var(--raised); border-style: dashed; }
+  .card .conf { font-family: var(--mono); font-size: 11px; color: var(--dim); display: flex; gap: 8px; align-items: center; }
+  .pill { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
+  .pill.stable { background: var(--jade-soft); color: var(--jade); }
+  .pill.forming { background: var(--gold-soft); color: var(--gold); }
+  .pill.retired { background: var(--raised); color: var(--dim); }
+  .ev { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
+  .ev th { text-align: left; font-weight: 500; color: var(--dim); padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .ev td { padding: 4px 0; border-bottom: 1px solid var(--line); }
+  .ev tr:last-child td { border-bottom: 0; }
+  .ev td.r, .ev th.r { text-align: right; }
+  .ev .rel { color: var(--gold); }
+
+  .stages { display: grid; gap: 6px; }
+  .stagebar { display: flex; height: 22px; border-radius: 6px; overflow: hidden; }
+  .stagebar i { display: block; height: 100%; }
+  .st-awake { background: var(--crit); opacity: .75; } .st-rem { background: var(--gold); } .st-core { background: var(--jade-deep); } .st-deep { background: var(--jade); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 13px; }
+  .kv dt { color: var(--dim); } .kv dd { margin: 0; font-family: var(--mono); text-align: right; }
+  .kv dd.low, .kv dd.high { color: var(--crit); } .kv dd.ok { color: var(--jade); }
+
+  .zones { display: flex; height: 18px; border-radius: 6px; overflow: hidden; }
+  .zones i { display: block; height: 100%; background: var(--jade); }
+  .zones i:nth-child(1) { opacity: .25; } .zones i:nth-child(2) { opacity: .45; } .zones i:nth-child(3) { opacity: .7; } .zones i:nth-child(4) { opacity: 1; } .zones i:nth-child(5) { background: var(--gold); }
+  .route { width: 100%; height: 120px; background: var(--raised); border-radius: 10px; }
+
+  .types { display: grid; gap: 6px; }
+  .type { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+  .type .n { font-size: 13px; font-weight: 500; } .type .m { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .type .c { font-family: var(--mono); font-size: 12px; text-align: right; } .type .c small { display: block; color: var(--dim); font-size: 10px; }
+  .type.empty { background: var(--raised); } .type.empty .c { color: var(--dim); }
+  .type.sel { border-color: var(--jade); }
+  .raw { font-family: var(--mono); font-size: 11px; display: grid; gap: 2px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .raw div { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; }
+  .raw .src { color: var(--dim); }
+  .ledger { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .ledger div { padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .ledger .v { font-family: var(--mono); font-size: 18px; font-weight: 600; } .ledger .k { font-size: 11px; color: var(--dim); }
+
+  .setting { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .setting .k { font-weight: 500; font-size: 14px; } .setting .s { font-size: 12px; color: var(--dim); }
+  .setting .val { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .toggle { width: 40px; height: 24px; border-radius: 12px; background: var(--jade); position: relative; }
+  .toggle::after { content: ""; position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+  .toggle.off { background: var(--line); } .toggle.off::after { right: auto; left: 3px; }
+  .sub { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); padding-top: 6px; }
+
+  /* Mac page mock */
+  .mac { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .mac-top { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .mac-top .dots i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--line); margin-right: 5px; }
+  .mac-top .name { font-weight: 600; } .mac-top .path { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .mac-grid { display: grid; grid-template-columns: 1fr 320px; min-height: 620px; }
+  @media (max-width: 900px) { .mac-grid { grid-template-columns: 1fr; } }
+  .mac-main { padding: 18px 20px; display: grid; gap: 18px; align-content: start; overflow-x: auto; }
+  .mac-chat { border-left: 1px solid var(--line); background: var(--ground); display: grid; grid-template-rows: auto 1fr auto; }
+  @media (max-width: 900px) { .mac-chat { border-left: 0; border-top: 1px solid var(--line); } }
+  .mac-chat .h { padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; }
+  .mac-chat .h span { font-family: var(--mono); font-size: 11px; color: var(--dim); font-weight: 400; }
+  .msgs { padding: 14px 16px; display: grid; gap: 12px; align-content: start; font-size: 13px; }
+  .msg { padding: 10px 12px; border-radius: 12px; max-width: 92%; }
+  .msg.me { background: var(--jade-soft); justify-self: end; }
+  .msg.ai { background: var(--surface); border: 1px solid var(--line); }
+  .msg .toolchip { display: inline-flex; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--dim); background: var(--raised); padding: 2px 8px; border-radius: 999px; margin-top: 6px; }
+  .compose { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--dim); }
+  .multiples { display: grid; gap: 6px; }
+  .multiple { display: grid; grid-template-columns: 150px 1fr 70px; align-items: center; gap: 12px; }
+  .multiple .k { font-size: 13px; font-weight: 500; } .multiple .k small { display: block; font-family: var(--mono); font-size: 11px; color: var(--dim); font-weight: 400; }
+  .multiple svg { width: 100%; height: 44px; display: block; }
+  .multiple .now { font-family: var(--mono); font-size: 13px; text-align: right; } .multiple .now small { display: block; font-size: 10px; color: var(--dim); }
+  .axis { display: grid; grid-template-columns: 150px 1fr 70px; gap: 12px; font-family: var(--mono); font-size: 10px; color: var(--dim); }
+  .axis .ticks { display: flex; justify-content: space-between; }
+  .board { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+  .mac-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .mac-two { grid-template-columns: 1fr; } }
+  .plain { display: grid; gap: 6px; font-size: 13px; }
+  .plain .r { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .plain .r:last-child { border-bottom: 0; }
+  .plain .r span:last-child { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .bandnote { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .bandnote i { display: inline-block; width: 12px; height: 8px; background: var(--gold); opacity: .25; vertical-align: 0; margin-right: 4px; }
+
+  /* Watch */
+  .watches { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+  .watch { width: 200px; height: 240px; border-radius: 52px; background: var(--phone); border: 1px solid var(--phone-edge); padding: 14px; display: grid; }
+  .wface { background: #000; border-radius: 40px; color: #fff; padding: 22px 18px; display: grid; align-content: space-between; gap: 8px; font-size: 13px; }
+  .wface .time { font-family: var(--mono); font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; text-align: right; color: #fff; }
+  .wface .comp { color: #9BE0C1; font-size: 13px; line-height: 1.3; }
+  .wface .q { font-size: 16px; font-weight: 600; }
+  .wface .ans { display: flex; gap: 8px; }
+  .wface .ans span { flex: 1; text-align: center; padding: 8px 0; border-radius: 12px; background: #1E3A30; color: #9BE0C1; font-weight: 600; }
+  .wface .ans span.alt { background: #2A2A2E; color: #ddd; }
+  .watch-notes { display: grid; gap: 8px; max-width: 46ch; color: var(--dim); }
+
+  /* Workflows */
+  .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; counter-reset: step; }
+  .step { position: relative; padding: 14px 14px 14px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: grid; gap: 6px; }
+  .step::before { counter-increment: step; content: counter(step); font-family: var(--mono); font-size: 11px; color: var(--jade); }
+  .step .w { font-weight: 600; font-size: 14px; } .step .who { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .step p { font-size: 13px; color: var(--dim); }
+  .flows { display: grid; gap: 22px; }
+  .flows h3 { display: flex; gap: 10px; align-items: baseline; } .flows h3 small { font-family: var(--mono); font-size: 11px; color: var(--dim); font-weight: 400; }
+
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+  .rule { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; gap: 4px; }
+  .rule b { font-weight: 600; } .rule p { color: var(--dim); font-size: 13px; }
+
+  .example { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  @media (prefers-reduced-motion: no-preference) { .view, .card, .item { transition: border-color .15s ease; } }
+</style>
+
+<main class="page">
+  <header class="hero">
+    <span class="eyebrow">Linggen · Health Keeper · prototype</span>
+    <h1>Health Keeper</h1>
+    <p class="thesis">"You slept <em>5h40</em>. You pushed <em>14 commits after 23:00</em>, third night this release. Resting HR is <em>4 above your normal</em>. Move the 9:00 to 10:30?"</p>
+    <p class="lede">The health app for people whose job is a computer. Everything Apple Health holds, kept on your own Mac, joined to what you were doing when the number moved, and acted on by the agent. Every figure on this page is example data, shaped like Liang's week.</p>
+    <span class="status"><i></i> draft for review · 2026-09-01 · design in <code>skills/health/product-spec.md</code> + <code>design.md</code></span>
+  </header>
+
+  <!-- PHONE -->
+  <section id="phone">
+    <div class="sec-head">
+      <span class="eyebrow">Phone · under ON THIS PHONE</span>
+      <h2>Seven screens, one front door</h2>
+      <p>The Brief is home. Everything else is evidence you can open. Title ▾ switches the period, ⋮ holds Sync now, Log a note, Permissions and Export. Pick a screen to walk it.</p>
+    </div>
+    <div class="picker" role="tablist" aria-label="Phone screens">
+      <button role="tab" aria-selected="true" data-view="brief">Brief</button>
+      <button role="tab" aria-selected="false" data-view="today">Today</button>
+      <button role="tab" aria-selected="false" data-view="workouts">Workouts</button>
+      <button role="tab" aria-selected="false" data-view="sleep">Sleep</button>
+      <button role="tab" aria-selected="false" data-view="patterns">Patterns</button>
+      <button role="tab" aria-selected="false" data-view="data">Data</button>
+      <button role="tab" aria-selected="false" data-view="settings">Settings</button>
+    </div>
+    <div class="walk">
+      <div class="phone" aria-label="Phone mock">
+        <div class="screen">
+          <div class="statusbar"><span>07:32</span><span>●●● ᯤ 81%</span></div>
+          <div class="appbar">
+            <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></div>
+            <div class="title"><span id="screen-title">Health</span><small>▾ Today</small></div>
+            <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+            <div class="icon" aria-hidden="true">⋮</div>
+          </div>
+          <div class="body">
+
+            <!-- BRIEF -->
+            <div class="view" data-view="brief" data-active="true">
+              <div class="brief">
+                <span class="date">WED 2 SEP · written 06:58 · synced 2 min ago</span>
+                <p class="sentence">You slept 5h40. You pushed 14 commits after 23:00, third night this release. Resting HR is 4 above your normal.</p>
+                <div class="chips">
+                  <button class="chip" data-go="sleep"><b>Sleep</b> 5h40 <span class="d down">−1h25</span></button>
+                  <button class="chip" data-go="today"><b>Commits after 23:00</b> 14</button>
+                  <button class="chip" data-go="today"><b>Resting HR</b> 56 <span class="d up">+4</span></button>
+                  <button class="chip" data-go="sleep"><b>HRV</b> 39 ms <span class="d down">−9</span></button>
+                </div>
+              </div>
+              <div class="action" id="action">
+                <span class="kind">Proposed</span>
+                <p class="what">Move the 9:00 standup to 10:30. Keep the long run for Friday.</p>
+                <div class="row">
+                  <button class="primary" id="doit">Do it</button>
+                  <button id="notnow">Not today</button>
+                </div>
+              </div>
+              <div class="card">
+                <span class="eyebrow">Pattern behind it</span>
+                <p style="font-size:14px">Sleep drops about 1h10 in release weeks. <span class="num dim">5 of 6 since June</span></p>
+              </div>
+              <div class="ask"><span>Ask Yinyue about this…</span><span class="mic">●</span></div>
+            </div>
+
+            <!-- TODAY -->
+            <div class="view" data-view="today">
+              <span class="sub">Last night · vs your 28-day normal</span>
+              <div class="tiles">
+                <div class="tile"><span class="k">Sleep</span><span class="v">5h40</span><span class="b low">−1h25 · normal 7h05</span></div>
+                <div class="tile"><span class="k">Resting HR</span><span class="v">56<small> bpm</small></span><span class="b high">+4 · normal 52</span></div>
+                <div class="tile"><span class="k">HRV</span><span class="v">39<small> ms</small></span><span class="b low">−9 · normal 48</span></div>
+                <div class="tile"><span class="k">Wrist temp</span><span class="v">+0.3<small> °C</small></span><span class="b">within range</span></div>
+              </div>
+              <span class="sub">Yesterday</span>
+              <div class="tiles">
+                <div class="tile"><span class="k">Steps</span><span class="v">4,120</span><span class="b low">−3,680 · normal 7,800</span></div>
+                <div class="tile"><span class="k">Stand hours</span><span class="v">6<small> / 12</small></span><span class="b low">normal 11</span></div>
+                <div class="tile"><span class="k">Exercise</span><span class="v">0<small> min</small></span><span class="b low">normal 24</span></div>
+                <div class="tile"><span class="k">Daylight</span><span class="v">12<small> min</small></span><span class="b low">normal 41</span></div>
+                <div class="tile wide work">
+                  <span class="k">Work · the join</span>
+                  <dl class="kv">
+                    <dt>IDE hours</dt><dd class="high">9h12</dd>
+                    <dt>Commits after 23:00</dt><dd class="high">14</dd>
+                    <dt>Meetings</dt><dd>1h30</dd>
+                    <dt>Release week</dt><dd class="high">yes · 1.8.1</dd>
+                  </dl>
+                </div>
+                <div class="tile wide">
+                  <span class="k">Resting HR · 14 days</span>
+                  <svg class="spark" data-spark="52,51,53,52,52,54,55,53,52,52,53,55,56,56" data-base="52" viewBox="0 0 320 28" preserveAspectRatio="none" aria-label="Resting heart rate, 14 days"></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- WORKOUTS -->
+            <div class="view" data-view="workouts">
+              <div class="list">
+                <div class="item sel"><span class="t">Outdoor Run</span><span class="more">⋯</span><span class="s">SAT 29 AUG · 5.02 km · 27:41 · avg 158</span></div>
+                <div class="item"><span class="t">Functional Strength</span><span class="more">⋯</span><span class="s">THU 27 AUG · 42 min · avg 121</span></div>
+                <div class="item"><span class="t">Outdoor Walk</span><span class="more">⋯</span><span class="s">TUE 25 AUG · 3.1 km · 38 min</span></div>
+              </div>
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Outdoor Run · Sat</h3><span class="num dim" style="font-size:12px">Apple Watch</span></div>
+                <svg class="route" viewBox="0 0 340 120" aria-label="Route map, example"><path d="M20 90 C 60 20, 120 30, 150 60 S 230 100, 280 50 S 320 30, 325 40" fill="none" stroke="var(--jade)" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="90" r="4" fill="var(--jade)"/><circle cx="325" cy="40" r="4" fill="var(--gold)"/></svg>
+                <dl class="kv">
+                  <dt>Pace</dt><dd class="ok">5:31 /km · 12 s faster than your last 5</dd>
+                  <dt>Power · cadence</dt><dd>285 W · 172 spm</dd>
+                  <dt>Max HR</dt><dd>176</dd>
+                  <dt>Recovery 1 min</dt><dd class="ok">28 bpm · +3</dd>
+                  <dt>Effort</dt><dd>7 / 10</dd>
+                </dl>
+                <div class="zones" aria-label="Heart rate zones"><i style="width:4%"></i><i style="width:18%"></i><i style="width:41%"></i><i style="width:31%"></i><i style="width:6%"></i></div>
+                <div class="legend"><span>Z1 4%</span><span>Z2 18%</span><span>Z3 41%</span><span>Z4 31%</span><span>Z5 6%</span></div>
+                <table class="ev"><tr><th>km</th><th class="r">split</th><th class="r">avg HR</th></tr><tr><td>1</td><td class="r">5:38</td><td class="r">148</td></tr><tr><td>2</td><td class="r">5:29</td><td class="r">156</td></tr><tr><td>3</td><td class="r">5:31</td><td class="r">160</td></tr><tr><td>4</td><td class="r">5:27</td><td class="r">163</td></tr><tr><td>5</td><td class="r">5:34</td><td class="r">165</td></tr></table>
+                <p style="font-size:13px">Best recovery in a month, and it came after your first full night that week. Keep Friday easy; the release-week sleep debt is still there.</p>
+              </div>
+            </div>
+
+            <!-- SLEEP -->
+            <div class="view" data-view="sleep">
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Tue → Wed</h3><span class="num dim" style="font-size:12px">23:52 → 05:41</span></div>
+                <div class="stages">
+                  <div class="stagebar" aria-label="Sleep stages"><i class="st-awake" style="width:5%"></i><i class="st-core" style="width:14%"></i><i class="st-deep" style="width:9%"></i><i class="st-core" style="width:17%"></i><i class="st-rem" style="width:12%"></i><i class="st-awake" style="width:4%"></i><i class="st-core" style="width:15%"></i><i class="st-deep" style="width:4%"></i><i class="st-rem" style="width:11%"></i><i class="st-core" style="width:6%"></i><i class="st-awake" style="width:3%"></i></div>
+                  <div class="legend"><span><i class="st-core"></i>Core 3h10</span><span><i class="st-deep"></i>Deep 0h42</span><span><i class="st-rem"></i>REM 1h05</span><span><i class="st-awake"></i>Awake 0h43</span></div>
+                </div>
+                <dl class="kv">
+                  <dt>Asleep</dt><dd class="low">5h40 · normal 7h05</dd>
+                  <dt>Debt this week</dt><dd class="low">3h50</dd>
+                  <dt>Bedtime drift</dt><dd class="low">1h10 later than normal</dd>
+                  <dt>Overnight HRV</dt><dd class="low">39 ms · −9</dd>
+                  <dt>Wrist temp</dt><dd>+0.3 °C</dd>
+                  <dt>Breathing rate</dt><dd>14.8 /min</dd>
+                </dl>
+              </div>
+              <div class="card">
+                <span class="eyebrow">What tracks with it</span>
+                <table class="ev"><tr><th>night</th><th class="r">commits &gt;23:00</th><th class="r">asleep</th></tr><tr><td>Sun</td><td class="r">0</td><td class="r">7h20</td></tr><tr><td>Mon</td><td class="r">9</td><td class="r">6h05</td></tr><tr><td>Tue</td><td class="r">14</td><td class="r">5h40</td></tr></table>
+                <p style="font-size:13px" class="dim">Three nights are a hunch, not a pattern. The release-week pattern is the one with weight.</p>
+              </div>
+            </div>
+
+            <!-- PATTERNS -->
+            <div class="view" data-view="patterns">
+              <div class="card">
+                <div class="conf"><span class="pill stable">stable</span><span>5 of 6 release weeks since June</span></div>
+                <h3>Sleep drops ~1h10 in release weeks</h3>
+                <table class="ev"><tr><th>week</th><th>release</th><th class="r">sleep</th><th class="r">normal</th></tr>
+                  <tr><td>W36</td><td class="rel">1.8.1</td><td class="r">5h55</td><td class="r">7h05</td></tr>
+                  <tr><td>W35</td><td class="rel">1.8</td><td class="r">6h02</td><td class="r">7h08</td></tr>
+                  <tr><td>W31</td><td class="rel">1.6.0</td><td class="r">5h48</td><td class="r">7h00</td></tr>
+                  <tr><td>W29</td><td class="rel">PH launch</td><td class="r">6h10</td><td class="r">7h02</td></tr>
+                  <tr><td>W27</td><td class="rel">app 0.2.9</td><td class="r">6h58</td><td class="r">6h55</td></tr></table>
+              </div>
+              <div class="card">
+                <div class="conf"><span class="pill stable">stable</span><span>19 of 24 nights</span></div>
+                <h3>Resting HR +4 the morning after commits past 23:00</h3>
+                <p style="font-size:13px" class="dim">First seen 12 Jul. Effect 1.6× your day-to-day variation.</p>
+              </div>
+              <div class="card forming">
+                <div class="conf"><span class="pill forming">forming</span><span>2 of 4 weeks · not enough data yet</span></div>
+                <h3>HRV lower after a skipped wind-down</h3>
+                <p style="font-size:13px" class="dim">Two more weeks with DJ wind-down data before this counts.</p>
+              </div>
+              <div class="card forming">
+                <div class="conf"><span class="pill retired">retired</span><span>contradicted two weeks running</span></div>
+                <h3>More steps on karaoke nights</h3>
+              </div>
+            </div>
+
+            <!-- DATA -->
+            <div class="view" data-view="data">
+              <div class="ledger">
+                <div><span class="v">118</span><span class="k">types granted</span></div>
+                <div><span class="v">74</span><span class="k">with data</span></div>
+                <div><span class="v">44</span><span class="k">empty</span></div>
+              </div>
+              <div class="types">
+                <div class="type sel" data-raw="hr"><span class="n">Heart Rate</span><span class="c">412,380<small>6 min ago</small></span><span class="m">Apple Watch</span></div>
+                <div class="type"><span class="n">Sleep Analysis</span><span class="c">3,912<small>06:41</small></span><span class="m">Apple Watch</span></div>
+                <div class="type"><span class="n">Workouts</span><span class="c">212<small>Sat</small></span><span class="m">Apple Watch · Strava</span></div>
+                <div class="type"><span class="n">HRV (SDNN)</span><span class="c">1,140<small>06:12</small></span><span class="m">Apple Watch</span></div>
+                <div class="type"><span class="n">Steps</span><span class="c">98,210<small>12 min ago</small></span><span class="m">iPhone · Apple Watch</span></div>
+                <div class="type"><span class="n">VO₂ max</span><span class="c">61<small>Sat</small></span><span class="m">Apple Watch</span></div>
+                <div class="type"><span class="n">Medications</span><span class="c">2<small>context only</small></span><span class="m">Health app</span></div>
+                <div class="type empty"><span class="n">Blood Glucose</span><span class="c">empty</span><span class="m">not granted, or no source writes it</span></div>
+                <div class="type empty"><span class="n">Dietary Energy</span><span class="c">empty</span><span class="m">no source writes it</span></div>
+              </div>
+              <div class="raw" id="raw">
+                <div><span>Heart Rate · raw, newest first</span><span></span><span class="src">bpm</span></div>
+                <div><span>07:26:14</span><span class="src">Apple Watch</span><span>61</span></div>
+                <div><span>07:21:09</span><span class="src">Apple Watch</span><span>58</span></div>
+                <div><span>07:15:52</span><span class="src">Apple Watch</span><span>57</span></div>
+                <div><span>07:10:33</span><span class="src">Apple Watch</span><span>59</span></div>
+                <div><span>07:04:47</span><span class="src">Apple Watch</span><span>56</span></div>
+              </div>
+            </div>
+
+            <!-- SETTINGS -->
+            <div class="view" data-view="settings">
+              <span class="sub">Reading</span>
+              <div class="setting"><div><div class="k">Types</div><div class="s">Everything readable · 118 granted</div></div><span class="val">Change ›</span></div>
+              <div class="setting"><div><div class="k">Background sync</div><div class="s">When a workout ends or the night lands</div></div><div class="toggle"></div></div>
+              <span class="sub">Brief</span>
+              <div class="setting"><div><div class="k">Brief time</div><div class="s">Or as soon as the night lands</div></div><span class="val">07:30</span></div>
+              <div class="setting"><div><div class="k">Voice</div><div class="s">How blunt Yinyue is about it</div></div><span class="val">Plain</span></div>
+              <span class="sub">Nudges</span>
+              <div class="setting"><div><div class="k">Nudges through Yinyue</div><div class="s">Stand, wind down, water</div></div><div class="toggle"></div></div>
+              <div class="setting"><div><div class="k">Quiet hours</div><div class="s">No nudges, no brief</div></div><span class="val">22:30–07:00</span></div>
+              <div class="setting"><div><div class="k">Calendar changes</div><div class="s">Propose only, never write</div></div><div class="toggle off"></div></div>
+              <span class="sub">Your Mac</span>
+              <div class="setting"><div><div class="k">Liang's Mac</div><div class="s">Synced 2 min ago · 3 years on the Mac</div></div><span class="val">●</span></div>
+              <div class="setting"><div><div class="k">Export everything</div><div class="s">CSV + Markdown, to a folder</div></div><span class="val">›</span></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <aside class="notes" id="notes">
+        <div class="note" data-for="brief"><h3>Brief · the front door</h3><ul><li>One sentence, at most four evidence chips, at most one action. Written by the morning-brief mission the moment last night's sleep lands.</li><li>Chips are doors: tap Sleep and you are on the Sleep screen.</li><li>The action is proposed in v1; Do it is one tool call and shows as a chip in Yinyue's thread.</li></ul></div>
+        <div class="note tool" data-for="brief"><h3>Behind it</h3><ul><li><code>GetSleep</code> · <code>GetDay</code> · <code>GetLife</code> · <code>GetPatterns</code> → <code>WriteBrief</code> → retained <code>health/brief</code></li><li>Memory recall for goals and last week's context.</li></ul></div>
+        <div class="note" data-for="today" hidden><h3>Today · every number beside your normal</h3><ul><li>28-day median and spread per metric. Never Apple's colours, never a population range.</li><li>The Work tile is the join, visible every day even when nothing is wrong.</li></ul></div>
+        <div class="note tool" data-for="today" hidden><h3>Behind it</h3><ul><li><code>daily/&lt;date&gt;.json</code> ⋈ <code>life/&lt;date&gt;.json</code>; baselines from <code>baselines.json</code>.</li></ul></div>
+        <div class="note" data-for="workouts" hidden><h3>Workouts · the Watch in full</h3><ul><li>HR series at 5 s, splits, zones from your measured max, route, recovery, effort, running power and cadence.</li><li>"vs your last five" of the same type, then one paragraph on what to do next.</li></ul></div>
+        <div class="note tool" data-for="workouts" hidden><h3>Behind it</h3><ul><li>Watch ends the workout → background delivery wakes the phone → outbox → next connect drains → <code>GetWorkout</code> → workout report mission.</li></ul></div>
+        <div class="note" data-for="sleep" hidden><h3>Sleep · stages, debt, what tracks with it</h3><ul><li>Stages from the Watch, overnight HRV, wrist temperature and breathing rate against your normal.</li><li>"What tracks with it" shows the evidence rows and says when three nights are only a hunch.</li></ul></div>
+        <div class="note tool" data-for="sleep" hidden><h3>Behind it</h3><ul><li><code>GetSleep</code> + <code>FindPattern(sleep × commits_after_23)</code>.</li></ul></div>
+        <div class="note" data-for="patterns" hidden><h3>Patterns · the kill risk, handled in code</h3><ul><li>Forming until 4 aligned weeks and an effect of one MAD; stable after 6; retired after two contradictions.</li><li>Every claim carries its evidence rows. Grey cards show what is forming and how many weeks are left.</li></ul></div>
+        <div class="note tool" data-for="patterns" hidden><h3>Behind it</h3><ul><li>Nightly patterns pass → <code>patterns.json</code>. Stable ones go to memory in your words at the weekly report.</li></ul></div>
+        <div class="note" data-for="data" hidden><h3>Data · show everything</h3><ul><li>Every type with count, last sample and sources. Tap one to read raw rows.</li><li>Apple hides read denials, so an empty type says both possible reasons instead of showing 0.</li></ul></div>
+        <div class="note tool" data-for="data" hidden><h3>Behind it</h3><ul><li><code>GetLedger</code> over <code>state.json</code>; raw rows from <code>samples/&lt;type&gt;/</code>.</li></ul></div>
+        <div class="note" data-for="settings" hidden><h3>Settings · the user is never gated</h3><ul><li>Which types, brief time, nudges and quiet hours, how blunt, calendar policy, sync state per Mac, export.</li><li>Calendar writes stay propose-only until the confirm tier exists.</li></ul></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- MAC -->
+  <section id="mac">
+    <div class="sec-head">
+      <span class="eyebrow">Mac · /apps/health/</span>
+      <h2>Months on one time axis, patterns with their evidence, and the chat beside it</h2>
+      <p>The Mac holds three years. Small multiples share one axis so a release week (gold band) reads across sleep, heart, and work at once. The agent updates this page when you ask it something in the panel.</p>
+    </div>
+    <div class="mac">
+      <div class="mac-top"><span class="dots"><i></i><i></i><i></i></span><span class="name">Health Keeper</span><span class="path">Liang's Mac · iPhone synced 2 min ago · Apple Watch via phone</span></div>
+      <div class="mac-grid">
+        <div class="mac-main">
+          <div class="multiples" id="multiples">
+            <div class="multiple"><div class="k">Sleep<small>hours asleep · nightly</small></div><svg data-line="7.1,7.3,6.9,7.2,6.0,6.1,7.0,7.2,6.9,7.1,5.8,6.2,7.0,7.1,6.9,7.3,7.0,6.8,6.0,5.7" data-min="5" data-max="8" data-bands="4,5;10,11;18,19" viewBox="0 0 600 44" preserveAspectRatio="none" aria-label="Sleep hours, 20 weeks"></svg><div class="now">5h40<small>normal 7h05</small></div></div>
+            <div class="multiple"><div class="k">Resting HR<small>bpm · morning</small></div><svg data-line="51,52,52,51,55,54,52,52,53,52,56,55,52,51,52,52,53,52,55,56" data-min="48" data-max="58" data-bands="4,5;10,11;18,19" viewBox="0 0 600 44" preserveAspectRatio="none" aria-label="Resting heart rate, 20 weeks"></svg><div class="now">56<small>normal 52</small></div></div>
+            <div class="multiple"><div class="k">HRV<small>ms · overnight</small></div><svg data-line="49,48,50,47,41,42,48,49,47,48,38,40,49,50,48,47,49,48,42,39" data-min="35" data-max="55" data-bands="4,5;10,11;18,19" viewBox="0 0 600 44" preserveAspectRatio="none" aria-label="HRV, 20 weeks"></svg><div class="now">39<small>normal 48</small></div></div>
+            <div class="multiple"><div class="k">IDE hours<small>per day · Apple Shifu</small></div><svg data-line="6.5,6.8,6.2,7.0,9.4,9.1,6.6,6.4,7.0,6.9,9.8,9.2,6.1,6.7,7.2,6.8,7.0,7.1,9.0,9.2" data-min="5" data-max="11" data-bands="4,5;10,11;18,19" viewBox="0 0 600 44" preserveAspectRatio="none" aria-label="IDE hours, 20 weeks"></svg><div class="now">9h12<small>normal 6h50</small></div></div>
+            <div class="multiple"><div class="k">Commits after 23:00<small>per week · git</small></div><svg data-line="2,1,3,2,18,14,3,2,4,3,21,16,2,3,2,4,3,2,17,22" data-min="0" data-max="25" data-bands="4,5;10,11;18,19" viewBox="0 0 600 44" preserveAspectRatio="none" aria-label="Late commits, 20 weeks"></svg><div class="now">22<small>normal 3</small></div></div>
+            <div class="axis"><span></span><div class="ticks"><span>W17 · Apr</span><span>W22 · May</span><span>W27 · Jul</span><span>W31 · Aug</span><span>W36 · Sep</span></div><span></span></div>
+            <span class="bandnote"><i></i>release weeks · 1.6.0 · 1.8 · 1.8.1</span>
+          </div>
+
+          <div class="board">
+            <div class="card"><div class="conf"><span class="pill stable">stable</span><span>5 of 6 release weeks</span></div><h3>Sleep drops ~1h10 in release weeks</h3><p class="dim" style="font-size:13px">Effect 2.1 MAD · first seen W29 · tested on 20 weeks</p></div>
+            <div class="card"><div class="conf"><span class="pill stable">stable</span><span>19 of 24 nights</span></div><h3>Resting HR +4 after late commits</h3><p class="dim" style="font-size:13px">Effect 1.6 MAD · first seen 12 Jul</p></div>
+            <div class="card forming"><div class="conf"><span class="pill forming">forming</span><span>2 of 4 weeks</span></div><h3>HRV lower after a skipped wind-down</h3><p class="dim" style="font-size:13px">Needs two more weeks of DJ data</p></div>
+          </div>
+
+          <div class="mac-two">
+            <div class="card"><span class="eyebrow">Reports</span><div class="plain">
+              <div class="r"><span>Week 35 · release week, 3h50 debt, one run</span><span>Sun 31 Aug</span></div>
+              <div class="r"><span>Week 34 · best sleep month since May</span><span>Sun 24 Aug</span></div>
+              <div class="r"><span>Outdoor Run · Sat 29 Aug</span><span>workout</span></div>
+              <div class="r"><span>Week 33</span><span>Sun 17 Aug</span></div></div></div>
+            <div class="card"><span class="eyebrow">Sync</span><div class="plain">
+              <div class="r"><span>iPhone 15 Pro · 118 types · outbox empty</span><span>2 min ago</span></div>
+              <div class="r"><span>Backfill · 2023-06 → today · 1.2M samples</span><span>done</span></div>
+              <div class="r"><span>Life signals · git, sessions, calendar, Shifu</span><span>06:57</span></div>
+              <div class="r"><span>Patterns pass</span><span>02:10</span></div></div></div>
+          </div>
+        </div>
+        <div class="mac-chat">
+          <div class="h">Ling <span>health · gpt-5.6-terra</span></div>
+          <div class="msgs">
+            <div class="msg me">How did I sleep the week of the 1.8 launch?</div>
+            <div class="msg ai">Week 35: 6h02 a night against your 7h08 normal, and four of seven bedtimes after 01:00. Deep sleep held at 48 minutes; REM took the loss. It matches the release-week pattern. I put the week on the page above.<br><span class="toolchip">GetRange sleep W35</span> <span class="toolchip">GetLife W35</span> <span class="toolchip">PageUpdate</span></div>
+            <div class="msg me">And the run on Saturday, was it too soon?</div>
+            <div class="msg ai">No. It came after your first full night that week, and recovery was your best in a month. Too soon would have been Thursday.<br><span class="toolchip">GetWorkout sat</span></div>
+          </div>
+          <div class="compose">Message Ling…</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WATCH -->
+  <section id="watch">
+    <div class="sec-head">
+      <span class="eyebrow">Watch · later</span>
+      <h2>Three seconds on the wrist</h2>
+      <p>The complication carries the brief's first clause. The app asks the day's one question and takes a one-tap answer back to the Mac as typed context.</p>
+    </div>
+    <div class="watches">
+      <div class="watch"><div class="wface"><div class="time">7:32</div><div class="comp">5h40 · HR +4<br>Move the 9:00?</div><div class="ans"><span>Yes</span><span class="alt">No</span></div></div></div>
+      <div class="watch"><div class="wface"><div class="time">7:33</div><div class="q">Knee, after Saturday?</div><div class="ans"><span>Fine</span><span class="alt">Sore</span></div></div></div>
+      <div class="watch-notes">
+        <p>Native SwiftUI target in the same Xcode project as the Flutter runner, phone-tethered. A tap becomes <span class="num">LogNote</span> on the Mac; the workout starts through the system Workout app.</p>
+        <p>No rings, no scores, no reading on the wrist.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKFLOWS -->
+  <section id="workflows">
+    <div class="sec-head">
+      <span class="eyebrow">Workflows</span>
+      <h2>The agent runs the loop; the user answers</h2>
+      <p>Four loops. Each step names who does it. The phone reads, the Mac thinks, Yinyue speaks.</p>
+    </div>
+    <div class="flows">
+      <div>
+        <h3>Every morning <small>fires when the night lands, 08:00 at the latest</small></h3>
+        <div class="flow">
+          <div class="step"><span class="w">Night lands in HealthKit</span><span class="who">Watch → iPhone · 06:40</span><p>Sleep stages, overnight HRV, wrist temperature, breathing rate.</p></div>
+          <div class="step"><span class="w">Phone wakes, writes the delta</span><span class="who">HealthBridge · background delivery</span><p>Anchored query per type. Outbox file written. Nothing sent yet.</p></div>
+          <div class="step"><span class="w">Outbox drains to the Mac</span><span class="who">health_sync.dart → ingest.mjs</span><p>One call per file over WebRTC, acked by sequence. Lost ack re-sends, dedupe by uuid.</p></div>
+          <div class="step"><span class="w">Rollup, life signals, patterns</span><span class="who">rollup.mjs · life.mjs · patterns.mjs</span><p>Baselines refresh. Yesterday's commits, sessions, IDE hours, calendar join in.</p></div>
+          <div class="step"><span class="w">Brief written</span><span class="who">morning-brief mission · 06:58</span><p>One sentence, four chips, one action. Retained on <span class="num">health/brief</span>.</p></div>
+          <div class="step"><span class="w">Shown, said once, acted on</span><span class="who">phone · Yinyue · Mac Right now</span><p>Do it is one tool call. Not today is remembered.</p></div>
+        </div>
+      </div>
+      <div>
+        <h3>First run <small>once</small></h3>
+        <div class="flow">
+          <div class="step"><span class="w">Everything, or pick</span><span class="who">user · Health in the drawer</span><p>Everything is recommended. The ledger explains that a denied type just shows empty.</p></div>
+          <div class="step"><span class="w">iOS permission sheet</span><span class="who">user · Turn All Categories On</span></div>
+          <div class="step"><span class="w">Backfill, newest first</span><span class="who">HealthBridge · month windows</span><p>Last month lands in the first minute. Progress on the tasks strip and the Mac page.</p></div>
+          <div class="step"><span class="w">First brief after one night</span><span class="who">morning-brief mission</span><p>Until then the Brief screen says what it is waiting for.</p></div>
+          <div class="step"><span class="w">First pattern after four weeks</span><span class="who">patterns pass</span><p>Forming cards show the count from week one.</p></div>
+        </div>
+      </div>
+      <div>
+        <h3>After a workout <small>minutes</small></h3>
+        <div class="flow">
+          <div class="step"><span class="w">Workout ends on the Watch</span><span class="who">Watch → HealthKit</span><p>Series, events, route, recovery arrive over the next minutes.</p></div>
+          <div class="step"><span class="w">Phone wakes, syncs</span><span class="who">background delivery · immediate</span></div>
+          <div class="step"><span class="w">Workout report</span><span class="who">workout-report mission</span><p>Zones, splits, vs last five, one paragraph. Lands in Workouts.</p></div>
+          <div class="step"><span class="w">Tomorrow's brief may lead with it</span><span class="who">morning-brief mission</span></div>
+        </div>
+      </div>
+      <div>
+        <h3>Away from the Mac <small>any time</small></h3>
+        <div class="flow">
+          <div class="step"><span class="w">Outbox grows</span><span class="who">phone</span><p>HealthKit keeps being read; nothing is lost.</p></div>
+          <div class="step"><span class="w">Relay, same lane</span><span class="who">MacLink · linggen.dev signaling</span><p>Identical drain over the relay when the Mac is reachable from anywhere.</p></div>
+          <div class="step"><span class="w">Yinyue answers from what she has</span><span class="who">phone · today.json</span><p>Last brief and today's numbers. Nothing pretends to be fresh.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RULES -->
+  <section id="rules">
+    <div class="sec-head">
+      <span class="eyebrow">Rules</span>
+      <h2>What keeps it honest</h2>
+    </div>
+    <div class="rules">
+      <div class="rule"><b>Personal baseline beside every number</b><p>28-day median and spread. Never a population range, never Apple's colours.</p></div>
+      <div class="rule"><b>A pattern needs weeks</b><p>Forming until 4 aligned weeks and one MAD of effect. Stable after 6. Retired after two contradictions. Evidence rows always attached.</p></div>
+      <div class="rule"><b>Empty is not zero</b><p>Apple hides read denials. An empty type shows both possible reasons.</p></div>
+      <div class="rule"><b>Wellness only</b><p>No diagnosis, no medication advice. Medications are context the agent reads and never raises.</p></div>
+      <div class="rule"><b>Local</b><p>Phone → Mac over WebRTC. Never iCloud, never sold, never for ads. Cloud model sees a day's summary only with consent.</p></div>
+      <div class="rule"><b>One writer per mutation</b><p>Brief, patterns, notes, goals each have one script. Page buttons and agent tools call the same one.</p></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.picker [role="tab"]');
+    var views = document.querySelectorAll('.view');
+    var notes = document.querySelectorAll('#notes .note');
+    var titles = { brief: 'Health', today: 'Today', workouts: 'Workouts', sleep: 'Sleep', patterns: 'Patterns', data: 'Data', settings: 'Settings' };
+    function show(name) {
+      tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.view === name)); });
+      views.forEach(function (v) { v.setAttribute('data-active', String(v.dataset.view === name)); });
+      notes.forEach(function (n) { n.hidden = n.dataset.for !== name; });
+      document.getElementById('screen-title').textContent = titles[name] || 'Health';
+      var body = document.querySelector('.body'); if (body) body.scrollTop = 0;
+    }
+    tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.view); }); });
+    document.querySelectorAll('.chip[data-go]').forEach(function (c) { c.addEventListener('click', function () { show(c.dataset.go); }); });
+
+    // The proposed action: Do it → Done with Undo; Not today → remembered.
+    var action = document.getElementById('action');
+    function setAction(kind, what, buttons) {
+      action.querySelector('.kind').textContent = kind;
+      action.querySelector('.kind').className = 'kind' + (kind === 'Done' ? ' done' : '');
+      action.querySelector('.what').textContent = what;
+      var row = action.querySelector('.row'); row.innerHTML = '';
+      buttons.forEach(function (b) {
+        var el = document.createElement('button'); el.textContent = b.label; if (b.primary) el.className = 'primary';
+        el.addEventListener('click', b.on); row.appendChild(el);
+      });
+    }
+    var proposed = function () {
+      setAction('Proposed', 'Move the 9:00 standup to 10:30. Keep the long run for Friday.', [
+        { label: 'Do it', primary: true, on: function () {
+          setAction('Done', 'Standup moved to 10:30. Calendar updated, Yinyue told.', [{ label: 'Undo', on: proposed }]);
+        } },
+        { label: 'Not today', on: function () {
+          setAction('Not today', 'Kept the 9:00. I will not suggest this again this week.', [{ label: 'Undo', on: proposed }]);
+        } }
+      ]);
+    };
+    document.getElementById('doit').addEventListener('click', function () { proposed(); action.querySelector('.row .primary').click(); });
+    document.getElementById('notnow').addEventListener('click', function () { proposed(); action.querySelectorAll('.row button')[1].click(); });
+
+    // Sparkline (phone Today tile): baseline as a faint rule, series as a line, endpoint emphasised.
+    document.querySelectorAll('svg[data-spark]').forEach(function (svg) {
+      var ys = svg.dataset.spark.split(',').map(Number), base = Number(svg.dataset.base);
+      var W = 320, H = 28, min = Math.min.apply(null, ys.concat([base])) - 1, max = Math.max.apply(null, ys.concat([base])) + 1;
+      var x = function (i) { return 4 + i * (W - 8) / (ys.length - 1); }, y = function (v) { return H - 3 - (v - min) / (max - min) * (H - 6); };
+      var ns = 'http://www.w3.org/2000/svg';
+      var b = document.createElementNS(ns, 'line'); b.setAttribute('x1', 0); b.setAttribute('x2', W); b.setAttribute('y1', y(base)); b.setAttribute('y2', y(base)); b.setAttribute('stroke', 'var(--line)'); b.setAttribute('stroke-dasharray', '3 3'); svg.appendChild(b);
+      var p = document.createElementNS(ns, 'polyline'); p.setAttribute('points', ys.map(function (v, i) { return x(i) + ',' + y(v); }).join(' ')); p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'var(--jade)'); p.setAttribute('stroke-width', '2'); p.setAttribute('vector-effect', 'non-scaling-stroke'); svg.appendChild(p);
+      var e = document.createElementNS(ns, 'circle'); e.setAttribute('cx', x(ys.length - 1)); e.setAttribute('cy', y(ys[ys.length - 1])); e.setAttribute('r', 3); e.setAttribute('fill', 'var(--crit)'); svg.appendChild(e);
+    });
+
+    // Mac small multiples: shared x, per-row y range, release-week bands, line, endpoint.
+    document.querySelectorAll('svg[data-line]').forEach(function (svg) {
+      var ys = svg.dataset.line.split(',').map(Number), min = Number(svg.dataset.min), max = Number(svg.dataset.max);
+      var W = 600, H = 44, n = ys.length;
+      var x = function (i) { return 6 + i * (W - 12) / (n - 1); }, y = function (v) { return H - 4 - (v - min) / (max - min) * (H - 8); };
+      var ns = 'http://www.w3.org/2000/svg';
+      (svg.dataset.bands || '').split(';').filter(Boolean).forEach(function (b) {
+        var ab = b.split(',').map(Number), r = document.createElementNS(ns, 'rect');
+        r.setAttribute('x', x(ab[0]) - (W - 12) / (n - 1) / 2); r.setAttribute('width', (ab[1] - ab[0] + 1) * (W - 12) / (n - 1)); r.setAttribute('y', 0); r.setAttribute('height', H);
+        r.setAttribute('fill', 'var(--gold)'); r.setAttribute('opacity', '0.22'); svg.appendChild(r);
+      });
+      var g = document.createElementNS(ns, 'line'); g.setAttribute('x1', 0); g.setAttribute('x2', W); g.setAttribute('y1', H - 4); g.setAttribute('y2', H - 4); g.setAttribute('stroke', 'var(--line)'); svg.appendChild(g);
+      var p = document.createElementNS(ns, 'polyline'); p.setAttribute('points', ys.map(function (v, i) { return x(i) + ',' + y(v); }).join(' ')); p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'var(--jade)'); p.setAttribute('stroke-width', '2'); p.setAttribute('vector-effect', 'non-scaling-stroke'); p.setAttribute('stroke-linejoin', 'round'); svg.appendChild(p);
+      var e = document.createElementNS(ns, 'circle'); e.setAttribute('cx', x(n - 1)); e.setAttribute('cy', y(ys[n - 1])); e.setAttribute('r', 3.5); e.setAttribute('fill', 'var(--text)'); svg.appendChild(e);
+    });
+  })();
+</script>
