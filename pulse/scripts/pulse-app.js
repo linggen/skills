@@ -16,6 +16,7 @@
 
 import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, isThreadCommented, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
+import { normalizeMention, computeMentionBudgets, buildMentionBlock } from './mention-policy.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
@@ -536,6 +537,13 @@ async function loadCommentedSet() {
 // "<lane>:<id>" (page-render's normalizeThreadUrl), so a key's lane is its
 // prefix — that's what lets one lane be replaced without touching the rest.
 const COMMENTED_LANES = ['reddit', 'x', 'hn'];
+// Own-comment bodies, kept on disk by the refresh below so the mention budget
+// (mention-policy.js) is counted from what I actually wrote, without a fetch
+// at goal time. reddit-account.sh writes its own cache (the Reddit dashboard
+// reads it too); HN and X are written here.
+const REDDIT_ACCOUNT_CACHE = `${SKILL_DIR}/state/reddit-account-cache.json`;
+const HN_OWN_CACHE = `${SKILL_DIR}/state/hn-own-cache.json`;
+const X_OWN_CACHE = `${SKILL_DIR}/state/x-own-cache.json`;
 const laneOfKey = (k) => String(k).split(':')[0];
 
 // Rebuild the already-engaged list for `lanes` (default: all three). A per-tab
@@ -562,6 +570,11 @@ async function refreshCommentedThreadUrls(lanes = COMMENTED_LANES) {
     } catch (e) {
       console.warn('[pulse] reddit-mentions own_comment fetch failed', e);
     }
+    // My newest comments WITH bodies — the mention budget's Reddit input.
+    // The script caches to REDDIT_ACCOUNT_CACHE itself; a 429 keeps the last
+    // good file.
+    runBash(`bash "${SKILL_DIR}/scripts/sites/reddit-account.sh" >/dev/null`)
+      .catch(e => console.warn('[pulse] reddit-account refresh failed', e));
   }
   // X — parent tweets I've already replied to. Gated on sites.x.enabled;
   // x-own.sh reads via the linggen-browser bridge ($0), which opens a
@@ -572,6 +585,12 @@ async function refreshCommentedThreadUrls(lanes = COMMENTED_LANES) {
       const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/x-own.sh" 100`);
       const data = JSON.parse(out);
       fresh.x.push(...(data?.replied_to || []));
+      if ((data?.items || []).length) {
+        writeJson(X_OWN_CACHE, {
+          items: data.items.map(i => ({ url: i.url || '', text: i.text || i.title || '' })),
+          updated_at: new Date().toISOString(),
+        }).catch(err => console.warn('[pulse] x-own cache write', err));
+      }
     } catch (e) {
       console.warn('[pulse] x-own replied_to fetch failed', e);
     }
@@ -583,6 +602,10 @@ async function refreshCommentedThreadUrls(lanes = COMMENTED_LANES) {
       const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/hn-own-comments.sh"`);
       const data = JSON.parse(out);
       fresh.hn.push(...(data?.urls || []));
+      if ((data?.comments || []).length) {
+        writeJson(HN_OWN_CACHE, { comments: data.comments, updated_at: new Date().toISOString() })
+          .catch(err => console.warn('[pulse] hn-own cache write', err));
+      }
     } catch (e) {
       console.warn('[pulse] hn own-comments fetch failed', e);
     }
@@ -653,6 +676,65 @@ function buildSkipBlock() {
   ].join('\n');
 }
 
+// ---- Mention policy + product digest --------------------------------------
+//
+// Both ride every drafting goal (Gather web, per-tab rescans, Draft). The
+// policy block says where a draft may name the product and how; its budget
+// is counted here from my own recent comments on disk, never estimated by
+// the model. The digest is the product's README head + latest CHANGELOG
+// entry: the agent was told to Read the workspace itself and never did
+// (every Pulse session on disk through 2026-09-01 — zero workspace reads),
+// so the page hands it over, the way it already hands over the brief.
+
+async function loadOwnBodies() {
+  const [reddit, hn, x] = await Promise.all([
+    readJson(REDDIT_ACCOUNT_CACHE, null),
+    readJson(HN_OWN_CACHE, null),
+    readJson(X_OWN_CACHE, null),
+  ]);
+  return {
+    reddit: (reddit?.comments || []).map(c => c.body || ''),
+    hackernews: (hn?.comments || []).map(c => c.body || ''),
+    x: (x?.items || []).map(i => i.text || ''),
+    bluesky: [],
+  };
+}
+
+async function buildMentionBlockLive(cfg) {
+  try {
+    const conf = cfg || await readPulseConfig();
+    const policy = normalizeMention(conf?.mention);
+    const budgets = computeMentionBudgets(policy, await loadOwnBodies());
+    return buildMentionBlock(policy, budgets);
+  } catch (e) {
+    console.warn('[pulse] mention block failed', e);
+    return '';
+  }
+}
+
+const DIGEST_HEAD_BYTES = 1500;
+
+async function buildProductDigest(cfg) {
+  const ws = (cfg?.workspace_path || '').trim();
+  if (!ws) return '';
+  const q = ws.replace(/"/g, '\\"');
+  // First `## ` block of CHANGELOG.md = the latest entry; `# Changelog` (one
+  // hash) does not match. No trailing newline: /api/bash rejects one.
+  const cmd = `cd "${q}" 2>/dev/null || exit 0; if [ -f README.md ]; then echo "### README.md (head)"; head -c ${DIGEST_HEAD_BYTES} README.md; echo; fi; if [ -f CHANGELOG.md ]; then echo; echo "### CHANGELOG.md (latest entry)"; awk '/^## /{n++} n==1{print} n==2{exit}' CHANGELOG.md | head -c ${DIGEST_HEAD_BYTES}; echo; fi`;
+  try {
+    const out = (await runBash(cmd)).trim();
+    if (!out) return '';
+    return [
+      'PRODUCT DIGEST — read by the page from the workspace. Ground every product sentence in THIS (what it does, what just shipped), never in a guess:',
+      out,
+      '',
+    ].join('\n');
+  } catch (e) {
+    console.warn('[pulse] product digest failed', e);
+    return '';
+  }
+}
+
 async function runGatherWeb() {
   const promise = startChip('gather-web', PIPELINE_CHIPS['gather-web'].expects);
   // Refresh the own-commented set BEFORE the agent emits discovery cards
@@ -668,8 +750,12 @@ async function runGatherWeb() {
     redditHandle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
   } catch {}
   const skipBlock = buildSkipBlock();
+  const mentionBlock = await buildMentionBlockLive(cfg);
+  const digest = await buildProductDigest(cfg);
   const goal = [
     skipBlock,
+    mentionBlock,
+    digest,
     'Gather web activity for what I\'m working on right now.',
     '',
     'OUTPUT CONTRACT (read first): this step writes the sections `discovery`, `mentions`, `hn_submit` (when sites.hackernews.enabled), `x_roster` (when sites.x.enabled and the roster is empty/stale), and `replies_due`, and you MUST emit a body_patch for each one you gathered for. `discovery` and `mentions` always run. `replies_due` runs ONLY when state/posted.json has tracked posts (see REPLIES DUE below); when posted.json is empty or missing, omit the section entirely — do not emit an empty replies_due card. Do NOT emit or re-emit `progress_drafts`: that is Gather local\'s section, it is already on the page, and here it is INPUT you read, never output you write. A run that ends having only touched `progress_drafts` is a FAILED run.',
@@ -678,7 +764,7 @@ async function runGatherWeb() {
     '',
     'Then for each topic, call the relevant configured source tools (FetchReddit, FetchHackerNews, FetchLobsters, FetchArxiv, FetchRSS) in parallel. Filter results for direct topical fit (score ≥ 0.6). If sites.x.enabled, X discovery is REACH-FIRST and roster-driven (the goal is follower growth, and a reply only grows the account if it lands early under a post whose audience is my niche). FIRST ensure the target ROSTER is built: if sites.x.roster is empty (or I asked to refresh accounts), build it per the SKILL.md discover-customers "X target roster" procedure — gather candidates from FetchXWhoToFollow (source 1, highest), the authors of on-topic FetchX hits (source 2), and FetchXFollowing <handle> on my strongest existing targets (source 3); tag each `followed` by intersecting FetchXFollowing (no arg = my own following); exclude self + sites.x.ignored_accounts + sites.x.dismissed_suggestions; curate to ~20 with a one-line `why`; and emit a `x_roster` body_patch (cards: { handle, name, followers, bio, followed, source:"1"|"2"|"3"|"following", why }, source-1 first). If the roster already has accounts and I did not ask to refresh, SKIP rebuilding. THEN call FetchXTargets (no arg = whole roster) — it pulls the freshest posts from the roster, the prime reply targets. ONLY if sites.x.keyword_search is true (it is OFF by default — the script returns [] otherwise, since the keyword firehose is mostly tiny/promo accounts), ALSO call FetchX with a focused query per topic as a GATED supplement; keep to the top 1-2 topics. If sites.hackernews.enabled, ALSO call FetchHNSearch with a focused query per topic (it takes "<query>" [days]; recent HN threads on that topic) — these are comment opportunities for building HN karma, handled like Reddit discovery (see HN handling below).',
     '',
-    'HANDLING HN (FetchHNSearch) RESULTS — these are HN threads I could COMMENT on to build karma on a young account. Apply the already-commented rule: drop any hit whose id appears in SKIP_URLS as `hn:<id>` (a thread I have already commented in). RANK BY HEAT, then fit: strongly prefer threads with more `points` AND more `num_comments` AND recency (low age_hours) — a hot thread means more readers, which is the whole point of commenting to build karma. DROP cold threads: skip any thread that is not fresh AND has little traction (rule of thumb: age_hours > 24 with points < 10 and num_comments < 3) — a comment there is invisible and earns nothing. Exception: a very fresh thread (age_hours < 3) still on the way up is fine even at low points. For each survivor that clears 0.6 topical fit: call FetchHNThread(id) to read the OP + discussion for GROUNDING only, then draft a TOP-LEVEL reply to the OP/post — do NOT pick a nested comment and do NOT emit reply_target. (Replying to the OP is easiest to post — the reply box is at the top of the thread — and a top-level comment on an active thread gets the most visibility, which is the karma goal. reply_target is only for mentions in my own inbox.) Use the existing comments only to avoid repeating a point someone already made; the draft still answers the OP. Write `draft_starter` as an HN comment following references/lane-templates.md `hn-comment`: substance-first, register (1) IMPLICIT by default (NO product mention — most HN drafts are register 1); mention ling-mem ONLY when the thread is directly about agent memory AND always with disclosure; never a link/CTA/hype. Emit each as a `discovery` card { source:"hn", thread_title:<the HN thread title, REQUIRED — not empty>, author:<the HN submitter handle, from the hit\'s author/by field>, excerpt:<OP body / thread context, ~500 chars>, url:<the news.ycombinator.com/item?id=… url, REQUIRED>, comments?:<num_comments>, age_hours?, draft_starter }. If the only comment you could write is generic ("great point", "interesting"), emit NOTHING for that thread — HN flags low-effort/promo and it tanks a new account, the opposite of the goal.',
+    'HANDLING HN (FetchHNSearch) RESULTS — these are HN threads I could COMMENT on to build karma on a young account. Apply the already-commented rule: drop any hit whose id appears in SKIP_URLS as `hn:<id>` (a thread I have already commented in). RANK BY HEAT, then fit: strongly prefer threads with more `points` AND more `num_comments` AND recency (low age_hours) — a hot thread means more readers, which is the whole point of commenting to build karma. DROP cold threads: skip any thread that is not fresh AND has little traction (rule of thumb: age_hours > 24 with points < 10 and num_comments < 3) — a comment there is invisible and earns nothing. Exception: a very fresh thread (age_hours < 3) still on the way up is fine even at low points. For each survivor that clears 0.6 topical fit: call FetchHNThread(id) to read the OP + discussion for GROUNDING only, then draft a TOP-LEVEL reply to the OP/post — do NOT pick a nested comment and do NOT emit reply_target. (Replying to the OP is easiest to post — the reply box is at the top of the thread — and a top-level comment on an active thread gets the most visibility, which is the karma goal. reply_target is only for mentions in my own inbox.) Use the existing comments only to avoid repeating a point someone already made; the draft still answers the OP. Write `draft_starter` as an HN comment following references/lane-templates.md `hn-comment`: substance-first, register per the MENTION POLICY block at the top of this goal (HN stays implicit unless the thread is squarely about what the product does; a disclosed sentence is the shape given there, with the disclosure); never a link/CTA/hype. Emit each as a `discovery` card { source:"hn", thread_title:<the HN thread title, REQUIRED — not empty>, author:<the HN submitter handle, from the hit\'s author/by field>, excerpt:<OP body / thread context, ~500 chars>, url:<the news.ycombinator.com/item?id=… url, REQUIRED>, comments?:<num_comments>, age_hours?, draft_starter }. If the only comment you could write is generic ("great point", "interesting"), emit NOTHING for that thread — HN flags low-effort/promo and it tanks a new account, the opposite of the goal.',
     '',
     'HANDLING HN SUBMIT CANDIDATES — separate from HN comments; this BUILDS the account by lowering my own-post ratio (HN auto-filters accounts that submit mostly their own links; the fix is interspersing OTHER people\'s interesting links — comments build karma but do NOT move that ratio). If sites.hackernews.enabled, call FetchHNSubmitCandidates (no args — it returns up to 5, which is plenty; HN tolerates only a couple of my own submissions a day). It returns fresh third-party ARTICLES to submit to HN (sourced from lobste.rs + quality subreddits) and has ALREADY deduped them against HN. These are submit-this-link items: there is NO comment to draft, and they are NEVER my own work. For each returned item, emit a card into the `hn_submit` section (NOT `discovery`, NOT `trend`): { type:"submit", source:<e.g. "lobste.rs" or "r/rust">, title:<the article title, REQUIRED>, url:<the EXTERNAL article url, REQUIRED — never a news.ycombinator.com link>, score?:<source score>, age_hours?, hn_status:<"fresh" or "unchecked"> }. Emit both "fresh" and "unchecked" items (the card flags "unchecked" ones for me to verify); the tool already removed anything already on HN. If it returns zero items, emit ONE `empty` card in `hn_submit`.',
     '',
@@ -706,6 +792,7 @@ async function runGatherWeb() {
     '  1. ALREADY-COMMENTED CHECK. Drop any thread whose post id is in SKIP_URLS — that is the authoritative list of threads I have already commented on or dismissed. Additionally, if FetchRedditThread surfaced a comment authored by "' + (redditHandle || '<sites.reddit.username>') + '" (case-insensitive, strip leading "u/"), skip that thread too. But do NOT skip a thread merely because you could not read its full comment tree: SKIP_URLS plus the page\'s render-time already-commented filter already catch those, so a missing/partial thread read is NEVER a reason to emit zero discovery cards.',
     '  2. REPLY TO THE OP — not to a nested comment. The draft is a top-level reply to the post itself: it is the easiest for me to post (the reply box sits at the top of the thread, no hunting for a buried comment) and a top-level comment on an active thread gets far more visibility, which is the point. Do NOT emit `reply_target` for discovery cards. (reply_target is only for `mentions`/reply_to_me, where the comment is in my own inbox.)',
     '  3. GROUND THE DRAFT. Use the OP body + whatever comments FetchRedditThread returned to understand the discussion (at minimum the OP). Don\'t parrot points existing commenters already made — offer a distinct angle — but the draft replies to the OP, not to any one commenter.',
+    '  4. REGISTER. Pick it from the MENTION POLICY block at the top of this goal: disclosed only where the product is the direct answer to the OP AND the lane\'s budget is OPEN, else implicit. Set `register` on the card.',
     'Then emit the card with `author` (the OP handle — `u/<name>` from FetchReddit\'s author field, or op.author from FetchRedditThread — so I see who I\'d be replying to), `excerpt` (plain-text OP body, ~500 chars; strip markdown/HTML, for UI display) and `draft_starter` (your 2-4 sentence top-level reply in voice). Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft button handles broadcast posts, not comment-on-thread starters.',
   ].join('\n');
   sendChatHidden(goal);
@@ -718,10 +805,16 @@ async function runGatherWeb() {
 // reddit → reddit-comment). Unset = all enabled lanes (Progress tab).
 async function runDraft(lane) {
   const promise = startChip('draft', PIPELINE_CHIPS['draft'].expects);
+  let cfg = null;
+  try { cfg = await readPulseConfig(); } catch {}
+  const mentionBlock = await buildMentionBlockLive(cfg);
+  const digest = await buildProductDigest(cfg);
   const scopeLine = lane
     ? `LANE SCOPE: the user clicked ✎ Draft on a source tab — draft ONLY for the "${lane}" lane this run, even if config.targets marks it disabled (an explicit click overrides the lane toggle). Where the instructions below say "each enabled lane", read "the ${lane} lane".`
     : '';
   const goal = [
+    mentionBlock,
+    digest,
     'Draft posts for the enabled target lanes using the local + web cards already in this session.',
     scopeLine,
     '',
@@ -2326,10 +2419,10 @@ const RESCAN_PROMPTS = {
     EMPTY_RULE('x'),
     'No prose response.',
   ].join('\n'),
-  hn: `Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply; emit \`discovery\` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit an \`hn_submit\` patch EVERY run without exception — the section is replaced by that patch, so skipping it leaves the PREVIOUS run's links on screen looking current; if the tool returns nothing usable, emit exactly one { type:"empty", source:"hn", reason:<one line> } in \`hn_submit\` instead. Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchHNMentions')} ${EMPTY_RULE('hn')} No prose response.`,
-  reddit: `Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit — it returns two passes per sub, and \`mode:"top"\` (made top-of-day) is the ONLY traction signal Reddit gives, so work those first before \`mode:"new"\`. ALREADY-COMMENTED CHECK FIRST — before scoring or drafting, drop every hit whose post id (the segment after /comments/<id>) appears in SKIP_URLS as \`reddit:<id>\`; that list is threads I have already commented in or dismissed, and a draft for one is wasted work the page hides at render. Then, for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and drop the thread as well if the tree contains a comment authored by REDDIT_HANDLE (case-insensitive, ignore a leading "u/"); draft a top-level reddit-comment reply for the survivors and emit \`discovery\` cards (source:"reddit"). ${MENTIONS_RECHECK('FetchRedditMentions')} ${EMPTY_RULE('reddit')} No prose response.`,
+  hn: `Find fresh Hacker News threads on my topics in THIS session. Call FetchHNSearch per topic (and FetchHackerNews); rank by heat (points + comments + recency); for survivors clearing 0.6 fit, read with FetchHNThread and draft a top-level hn-comment reply (register per the MENTION POLICY block above); emit \`discovery\` cards (source:"hn"). Also call FetchHNSubmitCandidates and emit an \`hn_submit\` patch EVERY run without exception — the section is replaced by that patch, so skipping it leaves the PREVIOUS run's links on screen looking current; if the tool returns nothing usable, emit exactly one { type:"empty", source:"hn", reason:<one line> } in \`hn_submit\` instead. Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchHNMentions')} ${EMPTY_RULE('hn')} No prose response.`,
+  reddit: `Find fresh Reddit threads in my configured subs on my topics, in THIS session. Call FetchReddit — it returns two passes per sub, and \`mode:"top"\` (made top-of-day) is the ONLY traction signal Reddit gives, so work those first before \`mode:"new"\`. ALREADY-COMMENTED CHECK FIRST — before scoring or drafting, drop every hit whose post id (the segment after /comments/<id>) appears in SKIP_URLS as \`reddit:<id>\`; that list is threads I have already commented in or dismissed, and a draft for one is wasted work the page hides at render. Then, for question / pain-point threads clearing 0.6 fit, read with FetchRedditThread and drop the thread as well if the tree contains a comment authored by REDDIT_HANDLE (case-insensitive, ignore a leading "u/"); draft a top-level reddit-comment reply for the survivors (register per the MENTION POLICY block above — set \`register\` on each card) and emit \`discovery\` cards (source:"reddit"). ${MENTIONS_RECHECK('FetchRedditMentions')} ${EMPTY_RULE('reddit')} No prose response.`,
   bluesky: `Find fresh Bluesky posts on my keywords, in THIS session. Call FetchBlueskyKeywords; for on-topic question / pain-point posts, draft a reply and emit \`discovery\` cards (sub:"bsky"). Drop SKIP_URLS. ${MENTIONS_RECHECK('FetchBlueskyMentions')} ${EMPTY_RULE('bluesky')} No prose response.`,
-  mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchHNMentions / FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md. NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card. No prose response.',
+  mentions: 'Check my mentions across sources in THIS session. Call FetchRedditMentions (and FetchHNMentions / FetchXMentions / FetchBlueskyMentions if their sites are enabled). Emit `mention` and `reply_to_me` cards into the `mentions` section per SKILL.md; draft replies follow the MENTION POLICY block above (someone asking about my product is the textbook disclosed case; a plain reply names nothing). NEVER fabricate — a tool error or empty result contributes no card; only if nothing real exists anywhere, emit one `empty` card. No prose response.',
 };
 
 // Which already-engaged lanes a tab's rescan re-reads. undefined = all.
@@ -2359,8 +2452,9 @@ async function handleTabRescan(tabId) {
   await refreshCommentedThreadUrls(RESCAN_OWN_LANES[tabId]).catch(
     err => console.warn('[pulse] rescan own-comments refresh', err));
   // The prompts tell the agent to "drop SKIP_URLS" — prepend the actual
-  // list (the same block Gather web sends) so there's data behind it.
-  sendChatHidden(buildSkipBlock() + prompt);
+  // list (the same block Gather web sends) so there's data behind it, and
+  // the MENTION POLICY block the drafting rules refer to.
+  sendChatHidden(buildSkipBlock() + await buildMentionBlockLive() + prompt);
 }
 
 // Per-tab ✎ Draft — source tabs draft for their own lane; the Progress tab

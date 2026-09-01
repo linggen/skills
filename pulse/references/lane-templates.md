@@ -167,7 +167,9 @@ Niche local-led posts go to reddit-comment instead.
 - **Structure**: one claim + one piece of evidence. No bullet lists.
   No threads in the x-post lane — if it needs threading, escalate to
   medium.
-- **No URLs in main tweet body** (X downranks links). Citation goes
+- **No URLs in main tweet body** (X downranks links) — and a bare
+  domain as text counts: X wraps it in t.co anyway. The bio carries the
+  link; the post names the product at most. Citation goes
   in a follow-up reply tweet, surfaced as `citations[]` in JSON for
   the user to post manually after the main one.
 - **Opening pattern**: lead with the trend hook or the concrete
@@ -202,12 +204,14 @@ happens to be public.
     are people already engaging with you.
 - **Voice — first person, from the user.** Same as `reddit-comment`:
   someone with skin in the game talking, not a neutral advisor.
-- **Three registers — pick one, default to (1)** (same as
-  `reddit-comment`): (1) implicit — no project mention, the default;
+- **Three registers — pick one per the MENTION POLICY block** (same
+  shapes as `reddit-comment`): (1) implicit — no project mention;
   (2) contextual — "hit the same thing building X" only when the
-  thread directly overlaps; (3) explicit — "we do X in <project>"
-  only when they ask "what handles this?". Cold discovery is basically
-  always (1).
+  thread directly overlaps; (3) disclosed — "I built <product> (<site>)
+  for this — it does X" only when the product is the direct answer and
+  the lane's budget is OPEN. On X a bare domain still becomes a t.co
+  link: harmless inside a reply that actually answers, never as the
+  whole reply, and never in a post body (see `x-post`).
 - **Anonymization test**: would the reply work just as well with the
   project name stripped? If yes — fine. If it exists to *plant* the
   name — drop the draft. Replies that smell like promo are what get
@@ -337,14 +341,28 @@ sentences, emit `empty`.
      this on a similar thing." Used only when the thread topic
      directly overlaps with what the brief describes, so it'd feel
      evasive *not* to ground the opinion in actual experience.
-  3. **Explicit.** "We do X in <project> because Y." Only when the
-     OP asks "what tools handle this?" or otherwise invites it.
-     Basically never in cold discovery.
+  3. **Disclosed.** The product is the direct answer to the OP's
+     problem — what it does IS what they asked for. Answer on the
+     merits first, then ONE sentence of this shape:
+     "I built <product> (<site>) for this — it does <the one concrete
+     thing that answers the OP>." The site is plain text (`linggen.dev`,
+     never `https://`, never `www.`, never a markdown link) — Reddit's
+     markdown and HN don't auto-link a bare domain, so it is text to
+     their link filters. Vary the wording between comments ("disclosure:
+     X is mine", "I'm the author of X"); keep the three parts. Never
+     pose as a user of it — you built it, and saying so is what makes
+     the mention allowed; undisclosed affiliation is what gets accounts
+     banned. Allowed only when the MENTION POLICY block says that lane
+     is `disclosed` and its budget is OPEN (Reddit's 10% rule, counted
+     by the page). Worked example from the user, in voice: "I built
+     Linggen (linggen.dev) for this — it runs the agent on your Mac and
+     the phone is just a peer of it."
 - **Anonymization test** (use this to decide promo vs. authentic):
   would the comment work just as well if you stripped the project
   name? If yes — fine. If the comment exists to *plant* the name —
-  drop the draft. No URLs to landing pages, no CTAs, no "you should
-  try X."
+  drop the draft. For register (3) the test is: does the comment still
+  answer the OP with the disclosed sentence deleted? If not, you are
+  planting. No URLs to landing pages, no CTAs, no "you should try X."
 - **Anti-AI tics — strip in pass 3:**
   - Diagnostic openers: "X has two problems" / "X comes down to" /
     "the issue is" — humans don't open with whole-problem framings,
@@ -433,19 +451,22 @@ posting even if the user had no product at all? If not, drop the card.
      mention at all.
   2. **Contextual.** "Hit this building a memory layer for coding
      agents — the thing that bit us was …" Used ONLY when the thread is
-     *directly* about agent memory / cross-session state and your
+     *directly* about the problem the product solves and your
      experience is genuinely the relevant evidence. Still no link.
-  3. **Disclosed.** Name ling-mem ONLY when the thread is specifically
-     about this exact problem AND a reader would want the pointer — and
-     then *always disclose authorship* ("I build one of these, so grain
-     of salt — …"). HN forgives self-promo only when it's honest and
-     on-topic. Never in a thread that's merely adjacent.
-- **The mention test**: if you removed the ling-mem reference, would the
+  3. **Disclosed.** Name the product ONLY when the thread is squarely
+     about the exact problem it solves AND a reader would want the
+     pointer — and then *always disclose authorship* ("I built
+     <product> (<site>) for this — …", the site as plain text, never a
+     URL). HN forgives self-promo only when it's honest and on-topic.
+     Never in a thread that's merely adjacent. The MENTION POLICY block
+     configures HN as implicit by default and says whether the budget
+     is open; the block wins.
+- **The mention test**: if you removed the product reference, would the
   comment still stand as a useful contribution? If no, you're planting a
   name — rewrite to register (1) or emit `empty`. Most HN drafts should
   be register (1) with zero mention.
-- **No links to landing pages, no CTAs, no "check out".** A bare
-  `news.ycombinator.com`-native mention with disclosure is the ceiling.
+- **No links to landing pages, no CTAs, no "check out".** A plain-text
+  mention with disclosure is the ceiling.
 - **Anti-AI / anti-fluff tics — strip in pass 3:**
   - "Great point / interesting / thanks for sharing" openers — say
     something or say nothing.

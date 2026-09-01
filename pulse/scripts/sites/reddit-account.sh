@@ -11,7 +11,7 @@
 #
 # Output (JSON, exit 0):
 #   { "username": "...",
-#     "comments": [ { "sub","title","url","created_iso" }, … ],
+#     "comments": [ { "sub","title","url","created_iso","body" }, … ],
 #     "posts":    [ { "sub","title","url","created_iso" }, … ],
 #     "errors":   [ "..." ] }        # e.g. rate-limited feeds — fail soft
 #
@@ -28,6 +28,12 @@ CONFIG="$HOME/.linggen/skills/pulse/config.json" \
 CACHE="$HOME/.linggen/skills/pulse/state/reddit-account-cache.json" python3 <<'PY'
 import json, os, re, urllib.request
 import xml.etree.ElementTree as ET
+
+def strip_html(s):
+    s = re.sub(r"(?s)<[^>]+>", " ", s or "")
+    s = (s.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">")
+           .replace("&quot;", '"').replace("&#39;", "'").replace("&#32;", " "))
+    return re.sub(r"\s+", " ", s).strip()
 
 UA = "linggen-pulse/0.1 (reddit-account)"
 NS = {"a": "http://www.w3.org/2005/Atom"}
@@ -92,6 +98,9 @@ def feed(kind):
             "title": title,
             "url": (link.get("href") if link is not None else "") or "",
             "created_iso": (e.findtext("a:updated", "", NS) or "").strip(),
+            # Plain-text head of the comment — the page counts how many of
+            # the newest ten name the product (the self-promotion budget).
+            "body": strip_html(e.findtext("a:content", "", NS))[:300],
         })
     return items
 

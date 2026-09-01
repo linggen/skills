@@ -69,6 +69,47 @@
     </section>
 
     <section class="card">
+      <h2>Mentions</h2>
+      <p class="card-sub">
+        How drafts may name your product. On a thread where the product is
+        the direct answer, a <em>disclosed</em> draft answers on the merits
+        first, then adds one sentence — "I built &lt;product&gt;
+        (&lt;site&gt;) for this — it does X" — with the site as plain text,
+        never a link. <em>Implicit</em> never names it. The self-promotion
+        ratio is Reddit's rule (1 in 10 by default); Pulse counts it from
+        your own recent comments and forces implicit when the budget is
+        spent. Every draft carries the register it used.
+      </p>
+      <div class="workspace-row">
+        <input type="text" id="mention-product" class="workspace-input" placeholder="Product name, e.g. Linggen" />
+      </div>
+      <div class="workspace-row">
+        <input type="text" id="mention-domain" class="workspace-input" placeholder="Site as plain text, e.g. linggen.dev (no https://)" />
+      </div>
+      <div class="workspace-row">
+        <label class="card-meta" for="mention-default" style="margin-right: 8px;">Default register</label>
+        <select id="mention-default" class="workspace-input" style="max-width: 200px;">
+          <option value="disclosed">disclosed</option>
+          <option value="implicit">implicit</option>
+        </select>
+        <label class="card-meta" for="mention-hn" style="margin: 0 8px;">Hacker News</label>
+        <select id="mention-hn" class="workspace-input" style="max-width: 200px;">
+          <option value="">same as default</option>
+          <option value="implicit">implicit</option>
+          <option value="disclosed">disclosed</option>
+        </select>
+      </div>
+      <div class="workspace-row">
+        <input type="number" id="mention-ratio" class="workspace-input" min="0" max="100" step="5" placeholder="10" style="max-width: 120px;" />
+        <span class="card-meta" style="margin-left: 8px;">% of your recent comments that may name it (counted per 10)</span>
+      </div>
+      <p class="card-meta">
+        Saved to <code>config.json</code> as <code>mention</code>. Empty
+        product = implicit everywhere.
+      </p>
+    </section>
+
+    <section class="card">
       <h2>Auto-compact threshold</h2>
       <p class="card-sub">
         Pulse pulls full Reddit threads (OP + every comment) during Gather Web,

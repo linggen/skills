@@ -557,8 +557,14 @@ Read these files with `Read` for additional context as needed:
    constraints per output lane (x-post, reddit-comment, blog,
    medium, linkedin, substack).
 2. `~/.linggen/skills/pulse/config.json` — `sites` (enabled source
-   tools), `targets` (enabled output lanes), `workspace_path`, and
-   `brief`. Only call enabled tools; only draft for enabled lanes.
+   tools), `targets` (enabled output lanes), `workspace_path`,
+   `brief`, and `mention` (the product's name, its site as plain
+   text, the default register, the self-promotion ratio, per-lane
+   overrides). Only call enabled tools; only draft for enabled lanes.
+   You never read `mention` yourself: the page turns it into the
+   hidden **MENTION POLICY** block that prefixes every drafting goal,
+   with the budget already counted from the user's own recent
+   comments. Obey the block; never estimate the budget.
 3. `~/.linggen/skills/pulse/references/x-setup-guide.md` — how to connect
    X via the linggen-browser extension ($0, reads your logged-in x.com
    session; no API keys). Read it when the user asks to set up X or when an
@@ -760,12 +766,14 @@ Never fire X tools in the same parallel block as each other.
    X reply conventions); HN threads use `hn-comment` — paste-ready,
    but held to the lane's survivor/flagged calibration examples and
    the corpus-variation rules (this account's comments have been
-   killed for AI cadence; see lane-templates.md). Register (1)
-   implicit / no product mention stays the default — HN flags
-   self-promo hardest; mention ling-mem only when the thread is
-   directly about agent memory AND with disclosure.
-   Don't link to the user's marketing domain; if a self-mention is
-   genuinely natural, max one.
+   killed for AI cadence; see lane-templates.md). **Register comes
+   from the MENTION POLICY block** at the top of the goal: `disclosed`
+   only where the product is the direct answer to the OP AND that
+   lane's budget is OPEN — then answer on the merits first and add ONE
+   sentence of the block's shape ("I built <product> (<site>) for
+   this — it does X", the site as plain text, never a URL, wording
+   varied across comments); otherwise `implicit`, no product named.
+   HN's configured default is implicit. Set `register` on the card.
    **Exception — `rec_request` threads**: when the OP is explicitly
    asking for tool/product recommendations (see the `rec_request`
    field below), a single disclosed product mention is the culturally
@@ -949,7 +957,10 @@ Rules:
   Register tilts toward **contextual** more often than discovery does
   (since someone explicitly mentioned the user's project, a brief
   shared-experience grounding usually reads naturally — but apply
-  the anonymization test before keeping any project mention).
+  the anonymization test before keeping any project mention). The
+  MENTION POLICY block at the top of the goal still rules: a reply to
+  someone asking about the product is the textbook `disclosed` case
+  when that lane's budget is OPEN; a plain reply names nothing.
 
 For non-Reddit sources (HN, lobsters) where the comment tree isn't
 trivially walkable, fall back to a 1-element conversation with just
@@ -1028,9 +1039,10 @@ samples, lane-templates, configured `targets[]` from config.json.
    which questions get asked and which trade-offs get noticed. The
    reader should feel that someone with real exposure to this
    problem is talking, not a neutral advisor. For `reddit-comment`
-   specifically, pick a register (implicit / contextual / explicit
-   per lane-templates.md) and apply the anonymization test before
-   keeping any project mention.
+   specifically, pick a register (implicit / contextual / disclosed
+   per lane-templates.md and the MENTION POLICY block at the top of
+   the goal) and apply the anonymization test before keeping any
+   project mention.
 3. **Pass 3 — tic check**: delete every "🚀", "I'm thrilled", "TL;DR",
    "Hot take", "game changer", "level up", "AI-powered", opening
    hashtag, closing "what do you think?". Also delete AI-cadence

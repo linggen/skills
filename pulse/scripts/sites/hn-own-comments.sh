@@ -23,11 +23,15 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 CONFIG="$HOME/.linggen/skills/pulse/config.json" python3 <<'PY'
-import json, os, sys, urllib.parse, urllib.request
+import json, os, re, sys, urllib.parse, urllib.request
+
+comments = []   # newest first: [{url, body, created_iso}] — the page counts
+                # product mentions among the newest ten (self-promo budget)
 
 def out(username="", urls=None, err=None):
     print(json.dumps({"username": username, "urls": urls or [],
-                      "count": len(urls or []), "errors": [err] if err else []}))
+                      "count": len(urls or []), "comments": comments,
+                      "errors": [err] if err else []}))
     sys.exit(0)
 
 try:
@@ -53,6 +57,13 @@ try:
     with urllib.request.urlopen(req, timeout=10) as r:
         data = json.load(r)
     for h in data.get("hits", []) or []:
+        if len(comments) < 25 and h.get("objectID"):
+            comments.append({
+                "url": f"https://news.ycombinator.com/item?id={h['objectID']}",
+                "body": re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ",
+                               h.get("comment_text") or "")).strip()[:300],
+                "created_iso": h.get("created_at") or "",
+            })
         sid = h.get("story_id")
         if sid and sid not in seen:
             seen.add(sid)
