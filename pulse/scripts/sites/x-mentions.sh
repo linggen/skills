@@ -3,8 +3,8 @@
 #
 # Surfaces recent X (Twitter) mentions + replies to the user's tweets, read
 # from the logged-in x.com session via the linggen-browser extension (bridge
-# op "mentions") — no metered API, $0/read. Returns an empty (but valid)
-# payload until that reader op ships in the extension.
+# op "mentions", extension >= 0.4.6) — no metered API, $0/read. The extension
+# reads the Mentions notifications tab and hands back the shaped item list.
 #
 # For each item we resolve the tweet it replied to (referenced_tweets); when
 # that parent is one of YOUR tweets it's kind="reply_to_me" and we attach your
@@ -14,8 +14,9 @@
 # Output (always JSON, exit 0):
 #   { items: [{kind, title, body, url, author, created_iso, score,
 #              watched_term, parent_comment_body?, parent_comment_url?}],
-#     count, errors }
+#     count, errors, status? }
 #   kind in {"reply_to_me","mention"}
+#   status is set only for a failure the USER can fix (x_logged_out, no_bridge).
 #
 # Cost: $0 — reads via the linggen-browser bridge, no paid X API.
 #
@@ -34,6 +35,7 @@ MAX="$MAX" SITES_DIR="$SITES_DIR" python3 <<'PY'
 import json, os, sys
 
 sys.path.insert(0, os.environ["SITES_DIR"])  # heredoc has no __file__
+import x_api  # noqa: E402
 from x_api import bridge_call  # noqa: E402
 
 try:
@@ -41,13 +43,26 @@ try:
 except ValueError:
     max_results = 15
 
+# The handle tells a reply to YOU apart from a bare mention, and names the
+# watched term on each card. Same config read as x-own.sh — no API self-lookup.
+username = ""
+try:
+    with open(os.path.expanduser("~/.linggen/skills/pulse/config.json")) as f:
+        username = (((json.load(f).get("sites") or {}).get("x") or {})
+                    .get("username") or "").strip().lstrip("@")
+except Exception:
+    pass
+
 # Bridge-only: the linggen-browser extension reads the user's mentions/replies
 # and returns them already shaped as the `items` list (kind/title/body/parent…).
-# Until the op ships, bridge_call returns None and we emit a valid empty payload.
-items = bridge_call("mentions", {"max": max_results})
+items = bridge_call("mentions", {"username": username, "max": max_results})
 errors = []
+status = None
 if items is None:
-    errors.append("x mentions: bridge/extension unavailable (no reader op yet)")
+    # Say which failure it was. "Logged out" and "no extension" are the user's
+    # to fix; anything else is ours, and an empty card is the right answer.
+    status = x_api.LAST_BRIDGE_CODE
+    errors.append(f"x mentions: bridge unavailable ({status or 'upstream_error'})")
     items = []
 elif not isinstance(items, list):
     # The bridge must hand back a shaped item list. Anything else is NOT
@@ -58,9 +73,12 @@ elif not isinstance(items, list):
     # mentions run ended with no cards. Degrade loudly instead.
     errors.append(
         f"x mentions: bridge returned an unshaped payload ({type(items).__name__}) "
-        "— the extension's mentions op is not implemented yet; ignored")
+        "— expected a list of items; ignored")
     items = []
 else:
     items = [i for i in items if isinstance(i, dict)][:max_results]
-print(json.dumps({"items": items, "count": len(items), "errors": errors}))
+out = {"items": items, "count": len(items), "errors": errors}
+if status in ("x_logged_out", "no_bridge"):
+    out["status"] = status
+print(json.dumps(out))
 PY
