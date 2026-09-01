@@ -746,15 +746,23 @@ Never fire X tools in the same parallel block as each other.
      `mode:"new"` means nobody has judged it yet, which is not a mark
      against it (a 2-hour-old question is a fine reply target) but is not
      evidence either. Within a mode, rank by topical fit.
-6. **Read the discussion for grounding (Reddit + HN).** `FetchReddit`
-   only gives the thread title + a short summary. For each surviving
-   **Reddit** thread, call `FetchRedditThread` (and for **HN**,
-   `FetchHNThread`) with its URL/id to pull the OP body + top comments.
-   Ground the `excerpt` and `draft_starter` in what was actually said —
-   answer the OP's real question, and avoid repeating a point an
-   existing comment already made. (Cap thread fetches to the top ~10 to
-   stay quick.) **X** results already carry the full tweet text in
-   `text` — no extra fetch; use it as the `excerpt`.
+6. **Read the discussion for grounding (Reddit + HN) — never draft from
+   a thread you have not read.** `FetchReddit` only gives the thread
+   title + a short summary. For each surviving **Reddit** thread, call
+   `FetchRedditThread` (and for **HN**, `FetchHNThread`) with its URL/id
+   to pull the OP body + top comments. Ground the `excerpt` and
+   `draft_starter` in what was actually said — answer the OP's real
+   question, and avoid repeating a point an existing comment already
+   made.
+   **The ~10 thread fetches are a ceiling, not a budget you may
+   underspend.** Read every survivor up to it; if more than ~10 survive,
+   keep the top ~10 by the step-5a ranking and DROP the rest — an unread
+   thread is not a card. (2026-09-01: a gather that reached ~280
+   candidates read 4 of them, so nearly every draft came from a title
+   plus a one-line summary — exactly the generic comment HN kills for AI
+   cadence. Ten grounded drafts beat twenty-five guesses.)
+   **X** results already carry the full tweet text in `text` — no extra
+   fetch; use it as the `excerpt`.
    **Reply to the OP, not a nested comment.** Discovery drafts are
    always TOP-LEVEL replies to the post — easiest to post (reply box at
    the top, no hunting) and highest-visibility, which is the goal. Do
