@@ -2432,14 +2432,12 @@ async function handleTabRescan(tabId) {
   if (tabId === 'progress') { runGatherLocal(); return; }
   let prompt = RESCAN_PROMPTS[tabId];
   if (!prompt) return;
+  let cfg = null;
+  try { cfg = await readPulseConfig(); } catch {}
   // Reddit's prompt names my handle so the agent can spot my own comment in
   // a thread tree — the catch for threads older than the comments.rss window.
   if (prompt.includes('REDDIT_HANDLE')) {
-    let handle = '';
-    try {
-      const cfg = await readPulseConfig();
-      handle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
-    } catch {}
+    const handle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
     prompt = prompt.replace(/REDDIT_HANDLE/g,
       handle ? `"${handle}"` : '<sites.reddit.username>');
   }
@@ -2452,9 +2450,12 @@ async function handleTabRescan(tabId) {
   await refreshCommentedThreadUrls(RESCAN_OWN_LANES[tabId]).catch(
     err => console.warn('[pulse] rescan own-comments refresh', err));
   // The prompts tell the agent to "drop SKIP_URLS" — prepend the actual
-  // list (the same block Gather web sends) so there's data behind it, and
-  // the MENTION POLICY block the drafting rules refer to.
-  sendChatHidden(buildSkipBlock() + await buildMentionBlockLive() + prompt);
+  // list (the same block Gather web sends) so there's data behind it, the
+  // MENTION POLICY block the drafting rules refer to, and the product digest
+  // a disclosed sentence is grounded in (a rescan drafts, same as Gather web).
+  const mentionBlock = await buildMentionBlockLive(cfg);
+  const digest = tabId === 'mentions' ? '' : await buildProductDigest(cfg);
+  sendChatHidden(buildSkipBlock() + mentionBlock + digest + prompt);
 }
 
 // Per-tab ✎ Draft — source tabs draft for their own lane; the Progress tab
