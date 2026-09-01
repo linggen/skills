@@ -341,7 +341,11 @@ function startChip(chipId, expects) {
       const rec = runningChips.get(chipId);
       if (rec) {
         runningChips.delete(chipId);
-        rec.reject(new Error(`chip "${chipId}" idle for ${CHIP_TIMEOUT_MS}ms`));
+        const err = new Error(`chip "${chipId}" idle for ${CHIP_TIMEOUT_MS}ms`);
+        // The goal was already sent — this is the PAGE losing track, not the
+        // agent stopping. The two need different words on screen.
+        err.code = 'chip_idle';
+        rec.reject(err);
       }
     }, CHIP_TIMEOUT_MS);
     runningChips.set(chipId, { resolve, reject, timer: armTimer(), expects, armTimer });
@@ -745,8 +749,14 @@ async function runGatherWeb() {
   // authors and detect old comments (past Reddit's last-15 window that
   // FetchRedditMentions surfaces).
   let redditHandle = '';
+  // `cfg` must outlive the try — the mention block and the product digest
+  // below both read it. Declaring it inside made every gather-web run die on
+  // "cfg is not defined" before it sent anything (2026-09-01, d9bb000): the
+  // cascade caught it, hid the toast, and the page looked like a finished run
+  // with no leads. runDraft and the per-tab rescan already hoist it.
+  let cfg = null;
   try {
-    const cfg = await readPulseConfig();
+    cfg = await readPulseConfig();
     redditHandle = (cfg?.sites?.reddit?.username || '').trim().replace(/^u\//, '');
   } catch {}
   const skipBlock = buildSkipBlock();
@@ -885,7 +895,27 @@ function showCascadeToast(label) {
 
 function hideCascadeToast() {
   const toast = document.getElementById('cascade-toast');
-  if (toast) toast.hidden = true;
+  if (!toast) return;
+  toast.hidden = true;
+  toast.classList.remove('is-error');
+}
+
+// A step threw. Keep the toast up naming which one, so the user knows the
+// cards on screen are stale rather than a fresh empty result. `Stop`
+// dismisses it, same button.
+function failCascadeToast(what, err) {
+  const toast = document.getElementById('cascade-toast');
+  const label = document.getElementById('cascade-toast-label');
+  if (!toast || !label) return;
+  // Say only what is known. A step that threw never reached the agent; a
+  // watchdog timeout means the goal WAS sent and its cards may still land,
+  // so claiming the page is stale would be a guess — and a wrong one on a
+  // slow-but-healthy run.
+  label.textContent = err && err.code === 'chip_idle'
+    ? `${what}: no update for ${Math.round(CHIP_TIMEOUT_MS / 1000)}s — the page stopped tracking it. The agent may still be working; cards will land if it finishes.`
+    : `${what} failed before it started — ${(err && err.message) || err}`;
+  toast.classList.add('is-error');
+  toast.hidden = false;
 }
 
 // The gather cascade: local activity, then web activity, with the toast for
@@ -911,7 +941,12 @@ async function runGatherCascade() {
       await PIPELINE_CHIPS[step.id].handler();
     } catch (err) {
       console.warn(`[pulse] cascade step ${step.id} failed`, err);
-      break;
+      // Say so on the page. A swallowed step used to hide the toast and leave
+      // the old cards sitting there, so a run that never happened read as a
+      // run that found nothing — which is how gather-web stayed dead for a
+      // day. The toast stays up until dismissed.
+      if (gen === cascadeGen) failCascadeToast(step.label.replace(/…$/, ''), err);
+      return;
     }
   }
   if (gen === cascadeGen) hideCascadeToast();

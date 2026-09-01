@@ -144,6 +144,11 @@ body {
   border-radius: 8px;
   width: max-content;
 }
+.cascade-toast.is-error {
+  background: var(--red-soft, rgba(220, 60, 60, 0.1));
+  color: var(--red, #dc3c3c);
+  border-color: currentColor;
+}
 .cascade-toast-stop {
   background: transparent;
   color: inherit;
