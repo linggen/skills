@@ -34,8 +34,10 @@
 # For "reply_to_me" items we pre-walk the thread (the reply's permalink
 # `.rss?context=1`) to recover the parent comment — i.e. YOUR comment that
 # got replied to — since the inbox RSS item carries only the reply itself.
-# All permalinks are normalized to www.reddit.com (the inbox feeds emit
-# old.reddit.com links).
+# All permalinks are normalized to www.reddit.com whatever host the feed
+# emits. The inbox feeds themselves are fetched from www.reddit.com — as of
+# 2026-09-01 old.reddit.com redirects /message/*/.rss to its login page even
+# with a valid token (see the feeds list below).
 #
 # Deps: python3 (stdlib only). No jq/curl needed here.
 
@@ -92,7 +94,13 @@ if not username:
 def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=8) as r:
-        return r.read()
+        body = r.read()
+        # A feed URL that answers with HTML is Reddit's login page (it
+        # redirects there with a 200 when the token isn't honored) — name
+        # it, instead of letting the XML parser report "invalid token".
+        if r.headers.get("Content-Type", "").lower().startswith("text/html"):
+            raise Exception("got HTML (login page), not a feed — token not honored at this URL")
+        return body
 
 def fetch_retry(url, tries=2, pause=0.7):
     """fetch() with one retry — the per-reply walk competes with the inbox
@@ -357,10 +365,13 @@ fetch_own_comments()
 
 if token:
     # Authenticated private feeds — the real inbox signal.
+    # www, not old: since 2026-09-01 old.reddit.com bounces /message/*/.rss
+    # to /login/?reason=lor2 even with a valid feed token (HTTP 200, HTML),
+    # while www.reddit.com still serves the Atom feed for the same token.
     feeds = [
-        ("https://old.reddit.com/message/comments/.rss",   "reply_to_me"),
-        ("https://old.reddit.com/message/selfreply/.rss",  "reply_to_me"),
-        ("https://old.reddit.com/message/mentions/.rss",   "mention"),
+        ("https://www.reddit.com/message/comments/.rss",   "reply_to_me"),
+        ("https://www.reddit.com/message/selfreply/.rss",  "reply_to_me"),
+        ("https://www.reddit.com/message/mentions/.rss",   "mention"),
     ]
     for base, kind in feeds:
         url = f"{base}?feed={urllib.parse.quote(token)}&user={urllib.parse.quote(username)}"
