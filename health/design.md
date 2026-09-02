@@ -7,7 +7,7 @@ guide: |
   Mac (mirror, memory, work signals), sync between them, the profile /
   composition / plan / checklist schemas, the tool catalog, and the rules
   that keep it honest. Companion to product-spec.md. Brief; no code.
-status: draft 2026-09-02 — direction set by Liang; nothing built yet
+status: draft 2026-09-02 — direction set by Liang; slice 1 built 2026-09-02 (HealthKit bridge, phone store, backfill + live feed, Home/Data screens, three tools) — see linggen-mobile/doc/health.md for what runs
 ---
 
 # Design: Linggen Health
@@ -176,10 +176,16 @@ script under one lock.** Zero engine work.
 - **Work signals, Mac → phone.** `life/<date>.json` for the last 7 days rides
   the existing `sync:` declaration (Mac → phone, read-only), so the phone's
   morning pass can join yesterday's work when a Mac exists.
-- **Backfill** walks history newest-first per type in month windows, so the
-  last months land on the phone in the first minute and the profile pass can
-  run while 2023 is still arriving; the Mac receives the same stream through
-  the outbox. Progress rides the retained `tasks/health` topic.
+- **Backfill** (built): one HealthKit verb for both jobs. An anchored query
+  pages each type in insertion order from its horizon, 5 000 rows a page,
+  until a page comes back short; the live feed continues from the same
+  anchor. One cursor per type, so the backfill and the live feed can neither
+  overlap nor leave a gap — which month windows beside a live feed could not
+  promise while a Watch was still syncing last night. Decisive types go
+  first (workouts, weight, sleep, heart), so the profile pass has what it
+  needs in the first seconds while step counts are still arriving. The Mac
+  will receive the same stream through the outbox. Progress will ride the
+  retained `tasks/health` topic (not yet: nothing publishes for Health).
 - **Never the media channel.** Health payloads are small JSON.
 
 Later, if a second skill needs phone → Mac records, `ingest:` becomes an
@@ -434,16 +440,21 @@ The rules are code, not prompt:
 
 ## Phone app module
 
-`linggen-mobile/lib/services/health/` — `health_bridge.dart` (channel to the
-Swift `HealthBridge`), `health_store.dart` (the store above), `health_passes.dart`
-(schedules and runs the passes through Yinyue's session with the health tools;
-`BGProcessingTask` for the morning pass), `health_sync.dart` (outbox + register
-exchange, only when paired), `health_tools.dart` (ToolRegistry).
-`lib/screens/health/` — `first_run.dart`, `home.dart` renders `layout.json`
-through `cards/` (one widget per catalog kind), plus `plan.dart`, `track.dart`,
-`workouts.dart`, `patterns.dart`, `data.dart`, `settings.dart`,
-`who_you_are.dart`. Drawer row under ON THIS PHONE. Item menu via
-`item_menu.dart`; long-press a card for Pin / Hide / Why.
+Built (2026-09-02): `linggen-mobile/lib/services/health/` — `health_types.dart`
+(the catalog as the user names it: label, group, unit, horizon, priority),
+`health_bridge.dart` (channel to the Swift `HealthBridge`), `health_store.dart`
+(state.json + samples/<type>/<month>.jsonl), `health_library.dart` (the
+singleton: authorize, backfill, live feed, catch-up), `health_tools.dart`
+(`health_ledger`, `health_samples`, `health_read_history`).
+`lib/screens/health/health_screen.dart` (Home + Data) and
+`health_type_screen.dart` (raw rows). Drawer row under ON THIS PHONE.
+
+Still to build: `health_passes.dart` (the passes through Yinyue's session;
+`BGProcessingTask` for the morning pass), `health_sync.dart` (outbox +
+register exchange, only when paired); the Home renderer over `layout.json`
+with one widget per card kind; `plan`, `track`, `workouts`, `patterns`,
+`settings`, `who_you_are`. Item menu via `item_menu.dart`; long-press a card
+for Pin / Hide / Why.
 
 Native: `ios/Runner/HealthBridge.swift` — authorization for the full type list,
 characteristics, anchored queries, background delivery, workout expansion.

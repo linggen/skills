@@ -5,7 +5,7 @@ guide: |
   Product specification for Linggen Health — what it is, every feature we
   could build, the v1 cut, the surfaces, and the workflows. design.md is the
   companion (data, sync, storage, schemas, tools). Brief; not a code reference.
-status: draft 2026-09-02 — direction set by Liang; phone-first; nothing built yet
+status: draft 2026-09-02 — direction set by Liang; phone-first; slice 1 (A1, A5, A7, A8, A10, H4, I2) built 2026-09-02 in linggen-mobile
 ---
 
 # Product Spec: Linggen Health
