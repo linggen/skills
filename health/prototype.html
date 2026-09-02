@@ -73,6 +73,7 @@
   .picker { display: flex; flex-wrap: wrap; gap: 6px; }
   .picker button, .btn { font-size: 13px; font-weight: 500; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
   .picker button[aria-selected="true"] { background: var(--jade); border-color: var(--jade); color: #fff; }
+  .picker [data-mac] { font: inherit; }
   .notes { display: grid; gap: 14px; position: sticky; top: 24px; }
   .note { display: grid; gap: 6px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
   .note h3 { font-size: 15px; }
@@ -295,23 +296,24 @@
     <span class="eyebrow">Linggen · Health · prototype</span>
     <h1>Linggen Health</h1>
     <p class="thesis">Apple Health shows the <em>same app</em> to everyone. Linggen Health <em>composes the app from you</em>: the agent works out who you are from your data, builds the screen for that person, plans your next days, and changes as you change. Every change says why. One tap undoes it.</p>
-    <p class="lede">Pick a person. The phone below is the same code, one catalog of cards, three different apps. Every figure is example data.</p>
+    <p class="lede">Pick a person. The phone below is the same code, one catalog of cards, three different apps. It works on the phone alone; a Mac is optional and adds the months and the work side. Every figure is example data.</p>
     <div class="people" role="group" aria-label="Three people, one app">
       <button class="person" data-person="runner" aria-pressed="true"><span class="who">The outdoor runner</span><span class="what">41 · 3 runs a week · 10 km under 52:00 by November</span><span class="top">▲ running · pace · weather window</span></button>
       <button class="person" data-person="lifter" aria-pressed="false"><span class="who">The lifter, bulking</span><span class="what">28 · 4 sessions a week · 82 kg by December</span><span class="top">▲ weight trend · protein · the split</span></button>
       <button class="person" data-person="office" aria-pressed="false"><span class="who">The office worker</span><span class="what">36 · 9 hours at a desk · move more, sleep better</span><span class="top">▲ screen time · sitting · one walk</span></button>
     </div>
-    <span class="status"><i></i> draft for review · 2026-09-02 · design in <code>skills/health/product-spec.md</code> + <code>design.md</code></span>
+    <span class="status"><i></i> draft for review · 2026-09-02 · phone-first · design in <code>skills/health/product-spec.md</code> + <code>design.md</code></span>
   </header>
 
   <!-- PHONE -->
   <section id="phone">
     <div class="sec-head">
       <span class="eyebrow">Phone · under ON THIS PHONE</span>
-      <h2>Seven screens, composed for one person</h2>
-      <p>Home is what the agent built this week, with the why on top. Plan is the next seven days. Track is today's checklist and the chart the goal needs. Pick a screen to walk it; the ⋯ on a card holds Pin, Hide and Why this.</p>
+      <h2>One conversation, then a phone composed for one person</h2>
+      <p>First run is the one conversation that replaces a questionnaire. Home is what the agent built this week, with the why on top. Plan is the next seven days. Track is today's checklist and the chart the goal needs. All of it runs on the phone; a Mac is optional. Pick a screen to walk it; the ⋯ on a card holds Pin, Hide and Why this.</p>
     </div>
     <div class="picker" role="tablist" aria-label="Phone screens">
+      <button role="tab" aria-selected="false" data-view="firstrun">First run</button>
       <button role="tab" aria-selected="true" data-view="home">Home</button>
       <button role="tab" aria-selected="false" data-view="plan">Plan</button>
       <button role="tab" aria-selected="false" data-view="track">Track</button>
@@ -332,6 +334,7 @@
             <div class="icon" aria-hidden="true">⋮</div>
           </div>
           <div class="body" id="body">
+            <div class="view" data-view="firstrun" id="v-firstrun"></div>
             <div class="view" data-view="home" data-active="true" id="v-home"></div>
             <div class="view" data-view="plan" id="v-plan"></div>
             <div class="view" data-view="track" id="v-track"></div>
@@ -367,7 +370,8 @@
               <div class="setting"><div><div class="k">Quiet hours</div><div class="s">No nudges, no brief</div></div><span class="val">22:30–07:00</span></div>
               <div class="setting"><div><div class="k">How blunt</div><div class="s">A coach who notices, never a nag</div></div><span class="val">Plain</span></div>
               <span class="sub">Your Mac</span>
-              <div class="setting"><div><div class="k">Liang's Mac</div><div class="s">Synced 2 min ago · 3 years on the Mac</div></div><span class="val">●</span></div>
+              <div class="setting"><div><div class="k">Your Mac · optional</div><div class="s">Liang's Mac · synced 2 min ago · the years and the work side live there</div></div><span class="val">●</span></div>
+              <div class="setting"><div><div class="k">Without a Mac</div><div class="s">Everything runs on this phone. Nothing is greyed out.</div></div><span class="val">✓</span></div>
               <div class="setting"><div><div class="k">Export everything</div><div class="s">CSV + Markdown, to a folder</div></div><span class="val">›</span></div>
             </div>
           </div>
@@ -375,18 +379,20 @@
       </div>
 
       <aside class="notes" id="notes">
+        <div class="note" data-for="firstrun" hidden><h3>First run · confirm, then one question</h3><ul><li>Within the first minute the profile pass has read the last months. Yinyue opens with what she found and one tap confirms it. Nothing the data already holds is asked.</li><li>Then the goal, the one field data can never infer. Plan waits for it and says so.</li><li>Later asks come only when a decision needs them, one at a time, with the consequence.</li></ul></div>
+        <div class="note tool" data-for="firstrun" hidden><h3>Behind it</h3><ul><li><code>profile.json</code> from HealthKit characteristics + workouts + the latest weigh-in; name from Yinyue's first meeting in memory; goal written with <code>source: user</code>.</li></ul></div>
         <div class="note" data-for="home"><h3>Home · composed, with the why on top</h3><ul><li>The layout is written by the weekly pass from the profile. The why-line says what moved and why; Undo restores last week's layout and pins it for four weeks.</li><li>Numbers change every day. The shape changes only weekly or when you act.</li><li>⋯ on a card: Pin, Hide, Why this. Your choice wins forever.</li></ul></div>
-        <div class="note tool" data-for="home"><h3>Behind it</h3><ul><li><code>profile.mjs</code> → <code>compose.mjs</code> → <code>layout.json</code> (cards, order, headline, why, previous) → retained <code>health/layout</code> → one widget per catalog kind.</li></ul></div>
+        <div class="note tool" data-for="home"><h3>Behind it</h3><ul><li>Profile → compose → <code>layout.json</code> (cards, order, headline, why, previous), run on the phone; one widget per catalog kind; mirrored to a paired Mac as a last-writer-wins register.</li></ul></div>
         <div class="note" data-for="plan" hidden><h3>Plan · the next seven days</h3><ul><li>Written Sunday from goal, level, load, adherence and the calendar. Outdoor athletes get the weather joined per day; indoor ones never trigger the weather call.</li><li>The morning pass may move one day, and says why in gold.</li><li>The plan lives here. Calendar is a mirror, later, opt-in.</li></ul></div>
-        <div class="note tool" data-for="plan" hidden><h3>Behind it</h3><ul><li><code>plan.mjs</code> → <code>plans/&lt;week&gt;.json</code> + <code>targets.json</code>; <code>weather.mjs</code> (Open-Meteo) only when <code>profile.athlete.environment</code> is outdoor.</li></ul></div>
+        <div class="note tool" data-for="plan" hidden><h3>Behind it</h3><ul><li><code>plans/&lt;week&gt;.json</code> + <code>targets.json</code> on the phone; Open-Meteo only when <code>profile.athlete.environment</code> is outdoor. A paired Mac takes the weekly pass over the long store.</li></ul></div>
         <div class="note" data-for="track" hidden><h3>Track · checklist, then the chart the goal needs</h3><ul><li>Items come from the plan and targets. HealthKit checks what it can see (a workout, a weigh-in, protein from a food app); you tap or say the rest.</li><li>Progress is the goal's own chart: weight against the goal line, per-km time, active minutes. Then heart history and adherence.</li></ul></div>
-        <div class="note tool" data-for="track" hidden><h3>Behind it</h3><ul><li><code>checklist.mjs</code> derives the day; <code>GetProgress</code> reads <code>progress/&lt;metric&gt;.json</code>. A check is an attention line in the outbox, so it works offline.</li></ul></div>
+        <div class="note tool" data-for="track" hidden><h3>Behind it</h3><ul><li>The checklist derives from the plan and targets on the phone; progress from <code>progress/&lt;metric&gt;.json</code>. A check is a local write, synced to a Mac when there is one.</li></ul></div>
         <div class="note" data-for="workouts" hidden><h3>Workouts · the Watch in full</h3><ul><li>HR series at 5 s, splits, zones from your measured max, route, recovery, effort, power and cadence.</li><li>"vs your last five" of the same type, then one paragraph on what to do next.</li></ul></div>
         <div class="note" data-for="patterns" hidden><h3>Patterns · the kill risk, handled in code</h3><ul><li>Forming until 4 aligned weeks and one MAD of effect; stable after 6; retired after two contradictions.</li><li>Every claim carries its evidence rows.</li></ul></div>
         <div class="note" data-for="who" hidden><h3>Who you are · the profile, visible</h3><ul><li>Inferred from years of workouts, the scale, your routine, what you open, what you said. Never a quiz.</li><li>Each row shows confidence and evidence. "Not quite" corrects it, and the correction wins over inference.</li></ul></div>
         <div class="note tool" data-for="who" hidden><h3>Behind it</h3><ul><li><code>profile.json</code>: body from HealthKit characteristics + the latest weigh-in; athlete from workouts (indoor flag, routes); routine from sleep + Apple Shifu; goal from what you said.</li></ul></div>
         <div class="note" data-for="data" hidden><h3>Data · show everything</h3><ul><li>Every type with count, last sample and sources. Apple hides read denials, so an empty type says both possible reasons instead of 0.</li></ul></div>
-        <div class="note" data-for="settings" hidden><h3>Settings · the user is never gated</h3><ul><li>Layout changes are automatic with why and undo; the history is here. Hidden cards stay hidden. The plan lives in the app. Weather only for outdoor sessions.</li></ul></div>
+        <div class="note" data-for="settings" hidden><h3>Settings · the user is never gated</h3><ul><li>Layout changes are automatic with why and undo; the history is here. Hidden cards stay hidden. The plan lives in the app. Weather only for outdoor sessions. Your Mac is optional.</li></ul></div>
       </aside>
     </div>
   </section>
@@ -405,8 +411,12 @@
   <section id="mac">
     <div class="sec-head">
       <span class="eyebrow">Mac · /apps/health/</span>
-      <h2>The profile with its evidence, what changed and why, the week, the months</h2>
-      <p>The Mac holds three years and the agent. Left: who it thinks you are, the composition history with Restore, this week's plan. Centre: months of the goal's own metrics. Right: Ling, who updates the page when you ask.</p>
+      <h2>Optional. Paired, it holds the years and the work side; alone, it says where the body lives</h2>
+      <p>Left: who the agent thinks you are, the composition history with Restore, this week's plan. Centre: months of the goal's own metrics. Right: Ling, who updates the page when you ask. HealthKit exists only on iPhone, so a Mac with no phone composes from the work side and shows the pair card.</p>
+    </div>
+    <div class="picker" role="group" aria-label="Mac state">
+      <button data-mac="phone" aria-selected="true">Paired with an iPhone</button>
+      <button data-mac="none" aria-selected="false">No iPhone paired</button>
     </div>
     <div class="mac">
       <div class="mac-top"><span class="dots"><i></i><i></i><i></i></span><span class="name">Linggen Health</span><span class="path" id="mac-path"></span></div>
@@ -416,18 +426,14 @@
           <div><span class="eyebrow">What changed</span><div class="hist" id="mac-hist" style="margin-top:8px"></div></div>
         </div>
         <div class="mac-main">
+          <div id="mac-pair"></div>
           <div class="multiples" id="multiples"></div>
           <div class="mac-two">
             <div class="card"><span class="eyebrow">This week</span><div class="plain" id="mac-week"></div></div>
             <div class="card"><span class="eyebrow">Targets</span><div class="targets" id="mac-targets"></div></div>
           </div>
           <div class="board" id="mac-board"></div>
-          <div class="card"><span class="eyebrow">Sync</span><div class="plain">
-            <div class="r"><span>iPhone 15 Pro · 121 types · outbox empty</span><span>2 min ago</span></div>
-            <div class="r"><span>Backfill · 2023-06 → today · 1.2M samples</span><span>done</span></div>
-            <div class="r"><span>Life signals · Shifu, git, calendar</span><span>06:57</span></div>
-            <div class="r"><span>Morning pass · brief, checklist, 1 adjustment</span><span>06:58</span></div>
-            <div class="r"><span>Weekly pass · profile, layout, plan, targets</span><span>Sun 19:02</span></div></div></div>
+          <div class="card"><span class="eyebrow">Sync and passes</span><div class="plain" id="mac-sync"></div></div>
         </div>
         <div class="mac-chat">
           <div class="h">Ling <span>health · gpt-5.6-terra</span></div>
@@ -447,32 +453,32 @@
     </div>
     <div class="flows">
       <div>
-        <h3>First run <small>the first minute</small></h3>
+        <h3>First run <small>the first minute · one conversation, never a questionnaire</small></h3>
         <div class="flow">
           <div class="step"><span class="w">Everything, or pick</span><span class="who">user · Health in the drawer</span><p>Everything is recommended. The ledger explains that a denied type just shows empty.</p></div>
           <div class="step"><span class="w">iOS permission sheet</span><span class="who">user · Turn All Categories On</span></div>
           <div class="step"><span class="w">Backfill, newest first</span><span class="who">HealthBridge · month windows</span><p>The last months land in the first minute. 2023 keeps arriving behind.</p></div>
-          <div class="step"><span class="w">Profile from history</span><span class="who">profile.mjs · within a minute</span><p>"You look like an outdoor runner, 3 runs a week, 5:30 pace. Not quite?"</p></div>
-          <div class="step"><span class="w">First Home composed</span><span class="who">compose.mjs</span><p>From the catalog, with the why. The Plan screen asks one question: what are you after?</p></div>
-          <div class="step"><span class="w">First plan once the goal is known</span><span class="who">plan.mjs</span><p>Weather joined if outdoors. Targets with the formula.</p></div>
+          <div class="step"><span class="w">Yinyue confirms what she found</span><span class="who">phone · profile pass · within a minute</span><p>"You look like an outdoor runner, about three runs a week, 71 kg. Right?" One tap. Nothing the data holds is asked.</p></div>
+          <div class="step"><span class="w">One question: the goal</span><span class="who">phone · the first Home card</span><p>Bulking, cutting, a race, sleep better, just move. The only field data can never infer. Plan waits and says so.</p></div>
+          <div class="step"><span class="w">First Home and first plan</span><span class="who">phone · compose + plan passes</span><p>From the catalog, with the why. Weather joined if outdoors. Targets with the formula.</p></div>
         </div>
       </div>
       <div>
         <h3>Every morning <small>fires when the night lands, 08:00 at the latest</small></h3>
         <div class="flow">
-          <div class="step"><span class="w">Night lands, phone wakes, outbox drains</span><span class="who">HealthBridge → ingest.mjs</span><p>Sleep, overnight HRV, temperature; yesterday's samples; last night's checks.</p></div>
-          <div class="step"><span class="w">Rollup, life, weather</span><span class="who">rollup.mjs · life.mjs · weather.mjs</span><p>Baselines refresh. Screen time and commits join. Forecast only for outdoor profiles.</p></div>
-          <div class="step"><span class="w">Brief, checklist, one adjustment</span><span class="who">morning pass · 06:58</span><p>One sentence, today's session, the day's items. At most one day moved, with its why. Never the layout.</p></div>
-          <div class="step"><span class="w">Shown, said once</span><span class="who">phone · Yinyue · Mac Right now</span><p>Items auto-check as samples land through the day.</p></div>
+          <div class="step"><span class="w">Night lands, phone wakes</span><span class="who">HealthBridge · background delivery</span><p>Sleep, overnight HRV, temperature into the phone store. A background task schedules the pass.</p></div>
+          <div class="step"><span class="w">Rollup, weather</span><span class="who">phone · Open-Meteo only if outdoors</span><p>Baselines refresh. With a Mac paired, yesterday's work signals join in.</p></div>
+          <div class="step"><span class="w">Brief, checklist, one adjustment</span><span class="who">morning pass · on the phone · cloud model · 06:58</span><p>One sentence, today's session, the day's items. At most one day moved, with its why. Never the layout.</p></div>
+          <div class="step"><span class="w">Shown, said once, mirrored</span><span class="who">phone · Yinyue · Mac if paired</span><p>Items auto-check as samples land through the day. The Mac page and Right now follow.</p></div>
         </div>
       </div>
       <div>
         <h3>Every Sunday <small>19:00</small></h3>
         <div class="flow">
-          <div class="step"><span class="w">Profile refresh</span><span class="who">profile.mjs</span><p>The week's workouts, weigh-ins, attention, notes. A field moves only past its threshold.</p></div>
-          <div class="step"><span class="w">Re-compose if the person moved</span><span class="who">compose.mjs</span><p>New layout with why and previous. Pinned and hidden cards respected. Otherwise Home stays.</p></div>
-          <div class="step"><span class="w">Next week's plan and targets</span><span class="who">plan.mjs</span><p>From goal, level, load, adherence, calendar, the weather outlook. Deload when due.</p></div>
-          <div class="step"><span class="w">Weekly report; memory</span><span class="who">weekly pass · ling-mem</span><p>What moved toward the goal. Durable profile facts to memory in your words.</p></div>
+          <div class="step"><span class="w">Profile refresh</span><span class="who">weekly pass · Mac if paired and reachable, else phone</span><p>The week's workouts, weigh-ins, attention, notes. A field moves only past its threshold.</p></div>
+          <div class="step"><span class="w">Re-compose if the person moved</span><span class="who">compose pass</span><p>New layout with why and previous. Pinned and hidden cards respected. Otherwise Home stays.</p></div>
+          <div class="step"><span class="w">Next week's plan and targets</span><span class="who">plan pass</span><p>From goal, level, load, adherence, calendar, the weather outlook. Deload when due.</p></div>
+          <div class="step"><span class="w">Weekly report; memory</span><span class="who">weekly pass · ling-mem when on the Mac</span><p>What moved toward the goal. Durable profile facts to memory in your words.</p></div>
         </div>
       </div>
       <div>
@@ -482,6 +488,23 @@
           <div class="step"><span class="w">Phone wakes, syncs</span><span class="who">background delivery · immediate</span></div>
           <div class="step"><span class="w">Report; session checked; progress updated</span><span class="who">workout-report pass</span><p>Zones, splits, vs last five, one paragraph. The checklist item closes itself.</p></div>
           <div class="step"><span class="w">Tomorrow's brief may lead with it</span><span class="who">morning pass</span></div>
+        </div>
+      </div>
+      <div>
+        <h3>Without a Mac <small>any day</small></h3>
+        <div class="flow">
+          <div class="step"><span class="w">Everything above, on the phone</span><span class="who">phone · Yinyue · cloud model</span><p>Store, passes, Home, plan, checklist. Nothing is greyed out.</p></div>
+          <div class="step"><span class="w">Outbox stays empty</span><span class="who">phone</span><p>No Mac, nothing to drain. Sync now is hidden.</p></div>
+          <div class="step"><span class="w">Pair a Mac later</span><span class="who">user · QR or Bonjour</span><p>The whole store goes over; the months appear on the Mac page; the Mac takes the weekly pass.</p></div>
+        </div>
+      </div>
+      <div>
+        <h3>Mac without a phone <small>HealthKit lives only on iPhone</small></h3>
+        <div class="flow">
+          <div class="step"><span class="w">Compose from the work side</span><span class="who">Mac · Apple Shifu, git, calendar</span><p>Screen time, sitting, late commits, meetings, a plan of breaks. The same catalog, fewer cards.</p></div>
+          <div class="step"><span class="w">Say where the body lives</span><span class="who">Mac · pair card</span><p>"Your body data lives on your iPhone", with the pair QR. HealthKit shows as not connected, never as empty types.</p></div>
+          <div class="step"><span class="w">Pair an iPhone</span><span class="who">user</span><p>Backfill lands within the first minute and the page fills in.</p></div>
+          <div class="step"><span class="w">Or connect a service</span><span class="who">Mac · later</span><p>Oura, Garmin, Whoop, Strava, Withings through their own APIs.</p></div>
         </div>
       </div>
     </div>
@@ -501,7 +524,9 @@
       <div class="rule"><b>A pattern needs weeks; a weight trend needs two</b><p>Forming until 4 aligned weeks and one MAD. Weight is a 7-day average; one weigh-in is never a headline.</p></div>
       <div class="rule"><b>Personal baseline beside every number</b><p>28-day median and spread. Never a population range, never Apple's colours.</p></div>
       <div class="rule"><b>Empty is not zero</b><p>Apple hides read denials. An empty type shows both possible reasons. An auto-checked item names its source.</p></div>
-      <div class="rule"><b>Wellness only, local only</b><p>No diagnosis, no medication advice. Phone → Mac over WebRTC; never iCloud, never sold, never for ads.</p></div>
+      <div class="rule"><b>Works alone</b><p>The phone is the whole product. A Mac adds the years and the work side. A Mac alone never pretends to see the body.</p></div>
+      <div class="rule"><b>Never a questionnaire</b><p>Confirm what the data holds, ask the one thing it cannot know, ask later only when a decision needs it.</p></div>
+      <div class="rule"><b>Wellness only, yours only</b><p>No diagnosis, no medication advice. Data stays on your phone and your Mac; never iCloud, never sold, never for ads.</p></div>
     </div>
   </section>
 </main>
@@ -593,6 +618,7 @@
   var PEOPLE = {
     runner: {
       name: 'the outdoor runner', pathline: 'Liang\'s Mac · iPhone synced 2 min ago · Apple Watch via phone',
+      meet: { found: 'You look like an outdoor runner, about three runs a week, 5:30 pace, 71 kg. Right?', confirmed: 'Good. Running goes on top, then.', after: '10 km under 52:00 by November. That is a pace goal, so per-km time is your chart.', plan: 'First plan lands once tonight\'s sleep is in. Fridays look like your hard day.' },
       why: 'Running moved to the top on Sunday: you ran 4 of the last 7 days and set a 10 km goal on 28 Aug.',
       why_prev: 'Last week\'s layout: sleep and steps on top. Kept for four weeks unless you change it.',
       profile: [
@@ -659,6 +685,7 @@
     },
     lifter: {
       name: 'the lifter, bulking', pathline: 'Jun\'s Mac · iPhone synced 2 min ago · Withings scale via phone',
+      meet: { found: 'You look like a lifter, four sessions a week, evenings, 78 kg. Right?', confirmed: 'Good. The split goes on top.', after: 'Bulking. Protein target is 160 g, 2.0 g per kilo, and the scale is your chart.', plan: 'Push, pull, legs across the week. Deload every fourth.' },
       why: 'Weight trend and protein moved to the top on Sunday: you said you\'re bulking on 28 Aug.',
       why_prev: 'Last week\'s layout: sleep and steps on top. Kept for four weeks unless you change it.',
       profile: [
@@ -728,6 +755,7 @@
     },
     office: {
       name: 'the office worker', pathline: 'Mei\'s Mac · iPhone synced 4 min ago · Apple Watch via phone',
+      meet: { found: 'You walk a little, mostly weekends, and your bedtime drifts past midnight. Right?', confirmed: 'Good. Sleep and steps go on top until a Mac tells me about your desk.', after: 'Move more, sleep better. Active minutes and bedtime are your charts.', plan: 'Three 20-minute walks on your lightest days, bed by 23:45.' },
       why: 'Screen time and sitting moved to the top on Sunday: 9 hours in an IDE on 4 of 5 workdays, and you said you want to move more.',
       why_prev: 'Last week\'s layout: steps and sleep on top. Kept for four weeks unless you change it.',
       profile: [
@@ -799,7 +827,37 @@
   };
 
   // ---------- Renderers ----------
-  var state = { person: 'runner', view: 'home', undone: false, hidden: {}, pinned: {} };
+  var state = { person: 'runner', view: 'home', undone: false, hidden: {}, pinned: {}, macPhone: true };
+  var MACONLY = {
+    pathline: 'Liang\'s Mac · no iPhone paired · Apple Shifu, git, calendar',
+    profile: [
+      { f: 'Body', v: 'Unknown · lives on your iPhone', e: 'HealthKit exists only on iPhone; pair one and this fills in', conf: 'fixed' },
+      { f: 'Routine', v: 'Desk 9.2 h · screen 10.4 h · longest sit 2h20', e: 'Apple Shifu, 28-day median', conf: 0.92 },
+      { f: 'Work', v: 'Late commits 3 of 5 nights · meetings 2 h a day', e: 'git log + calendar, 28 days', conf: 0.88 },
+      { f: 'Goal', v: 'Not asked yet', e: 'the first conversation runs on the phone', conf: 'fixed' }
+    ],
+    history: [ { d: 'Wed 2 Sep · first run', t: 'Composed from the work side only: screen time, sitting, late commits, meetings. Body data lives on your iPhone.', cur: true } ],
+    multiples: [
+      { k: 'Screen', s: 'hours per day · weekly avg', series: [9.6, 9.9, 10.1, 9.8, 10.4, 10.2, 9.9, 10.3, 10.6, 10.1, 10.4, 10.4], base: 9.83, min: 8, max: 12, fmt: hrs, now: '10h24', sub: 'normal 9h50' },
+      { k: 'IDE hours', s: 'per day · Apple Shifu', series: [6.5, 6.8, 6.2, 7.0, 9.4, 9.1, 6.6, 6.4, 7.0, 6.9, 9.8, 8.8], base: 6.9, min: 5, max: 11, fmt: hrs, now: '8h50', sub: 'normal 6h55' },
+      { k: 'Commits after 23:00', s: 'per week · git', series: [2, 1, 3, 2, 18, 14, 3, 2, 4, 3, 21, 9], base: 3, min: 0, max: 25, now: '9', sub: 'normal 3' },
+      { k: 'Meeting hours', s: 'per day · calendar', series: [1.5, 2.0, 1.8, 2.4, 1.2, 2.1, 2.6, 1.9, 2.2, 2.8, 2.0, 2.0], base: 2.0, min: 0, max: 4, fmt: hrs, now: '2h00', sub: 'normal 2h00' }
+    ],
+    plan: [
+      { d: 'Mon', s: 'Walk 20 min · 12:00', w: 'done', adj: false }, { d: 'Tue', s: 'Breaks only · back-to-back calls', w: '' }, { d: 'Wed', s: 'Walk 20 min · 12:30', w: 'today', adj: true },
+      { d: 'Thu', s: 'Stretch 10 min · 17:00', w: '' }, { d: 'Fri', s: 'Walk 20 min · 12:00', w: '' }, { d: 'Sat', s: 'Nothing planned · no body data', w: '' }, { d: 'Sun', s: 'Screen off by 23:30', w: '' }
+    ],
+    targets: [['Stand', 'every hour', 'Yinyue nudges from Shifu'], ['Screen off', 'by 23:30', 'late commits track with 00:40 bedtimes'], ['Walk', '3 × 20 min', 'lightest calendar slots'], ['Body targets', 'none yet', 'need the phone']],
+    board: [
+      { st: 'stable', c: '11 of 14 nights', h: 'Commits after 23:00 on nights the screen stayed on past 00:30', p: 'Shifu + git. What that does to sleep needs the phone.' },
+      { st: 'forming', c: '2 of 4 weeks · not enough data yet', h: 'Sitting streaks longer in release weeks', p: 'Two more release weeks.' }
+    ],
+    chat: [
+      ['me', 'Can you see my sleep?'],
+      ['ai', 'Not from here. Sleep lives in HealthKit on your iPhone and there is no Mac API for it. Pair the phone with the QR above and last night shows up within a minute. What I can see: 10h24 of screen yesterday and a 2h20 sit before lunch.', ['GetLedger', 'GetLife today']]
+    ],
+    sync: [['iPhone', 'not paired'], ['Work signals · Shifu, git, calendar', '06:57'], ['Morning pass · work side only', '06:58'], ['HealthKit', 'not connected: no iPhone paired']]
+  };
   function P() { return PEOPLE[state.person]; }
 
   function cardShell(kind, wide, k, body) {
@@ -931,8 +989,11 @@
     Object.keys(CATALOG).forEach(function (k) { var on = active.indexOf(k) >= 0; c.innerHTML += '<div class="ck' + (on ? ' on' : '') + '"><b>' + k + '</b><span>' + esc(CATALOG[k].answers) + '</span></div>'; });
   }
   function renderMac() {
+    if (!state.macPhone) { renderMacOnly(); return; }
     var p = P();
+    document.getElementById('mac-pair').innerHTML = '';
     document.getElementById('mac-path').textContent = p.pathline;
+    document.getElementById('mac-sync').innerHTML = [['iPhone 15 Pro · 121 types · outbox empty', '2 min ago'], ['Backfill · 2023-06 → today · 1.2M samples', 'done'], ['Work signals · Shifu, git, calendar → phone', '06:57'], ['Morning pass · ran on the phone · mirrored', '06:58'], ['Weekly pass · ran here · profile, layout, plan, targets', 'Sun 19:02']].map(function (r) { return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
     profileRows(document.getElementById('mac-prof'));
     var h = document.getElementById('mac-hist'); h.innerHTML = '';
     p.history.forEach(function (x, i) { var cur = state.undone ? i === 1 : i === 0; var d = el('div', 'hi' + (cur ? ' cur' : '')); d.innerHTML = '<span class="d"><span>' + esc(x.d) + '</span>' + (cur ? '<span>current</span>' : '<button>Restore</button>') + '</span><span>' + esc(x.t) + '</span>'; var b = d.querySelector('button'); if (b) b.addEventListener('click', function () { state.undone = i === 1; renderHome(); renderMac(); }); h.appendChild(d); });
@@ -949,11 +1010,49 @@
       '<div class="type empty"><span class="n">Blood Glucose</span><span class="cnt">empty</span><span class="m">not granted, or no source writes it</span></div><div class="type empty"><span class="n">Dietary Water</span><span class="cnt">empty</span><span class="m">no source writes it · water stays a tap</span></div>';
   }
 
-  function renderAll() { renderHome(); renderPlan(); renderTrack(); renderWorkouts(); renderPatterns(); renderWho(); renderMac(); }
+  function renderFirstRun() {
+    var p = P(), v = document.getElementById('v-firstrun'); v.innerHTML = '';
+    v.appendChild(el('span', 'sub', 'Minute one · history read · nothing asked yet'));
+    var meet = el('div', 'c wide brief'); meet.innerHTML = '<div class="k"><span>Yinyue</span></div><p class="t lead">' + esc(p.meet.found) + '</p>';
+    var row = el('div', 'chips'); var yes = el('button', 'chip', '<b>That\'s me</b>'); var no = el('button', 'chip', 'Not quite');
+    yes.addEventListener('click', function () { meet.querySelector('.t').textContent = p.meet.confirmed; row.remove(); });
+    no.addEventListener('click', function () { show('who'); });
+    row.appendChild(yes); row.appendChild(no); meet.appendChild(row); v.appendChild(meet);
+    var plan = el('div', 'c wide'); plan.innerHTML = '<div class="k"><span>Plan</span></div><p class="t dim">Waits for your answer. Nothing else is asked.</p>';
+    var q = el('div', 'c wide'); q.innerHTML = '<div class="k"><span>One question</span></div><p class="t">What are you after right now?</p>';
+    var opts = el('div', 'chips');
+    ['Bulking', 'Cutting', 'A race', 'Run further', 'Sleep better', 'Just move'].forEach(function (o) {
+      var b = el('button', 'chip', esc(o)); b.addEventListener('click', function () {
+        q.innerHTML = '<div class="k"><span>Goal · you said</span></div><p class="t">' + esc(p.meet.after) + '</p>';
+        plan.innerHTML = '<div class="k"><span>Plan</span></div><p class="t">' + esc(p.meet.plan) + '</p>';
+      }); opts.appendChild(b);
+    });
+    q.appendChild(opts); v.appendChild(q); v.appendChild(plan);
+    var note = el('p', 'dim', 'Not asked, because the data holds it: age, sex, height, weight, what you do, how often, indoors or out. Name came from Yinyue\'s first meeting.'); note.style.fontSize = '13px'; v.appendChild(note);
+  }
+  function renderMacOnly() {
+    var m = MACONLY;
+    document.getElementById('mac-path').textContent = m.pathline;
+    var pr = document.getElementById('mac-prof'); pr.innerHTML = '';
+    m.profile.forEach(function (r) { var row = el('div', 'pr' + (r.conf === 'fixed' ? ' fixed' : '')); var cf = r.conf === 'fixed' ? 'no phone' : Math.round(r.conf * 100) + '% sure'; row.innerHTML = '<span class="f">' + esc(r.f) + '</span><span class="cf"><span>' + esc(cf) + '</span></span><span class="val">' + esc(r.v) + '</span><span class="e">' + esc(r.e) + '</span>'; pr.appendChild(row); });
+    var h = document.getElementById('mac-hist'); h.innerHTML = m.history.map(function (x) { return '<div class="hi cur"><span class="d"><span>' + esc(x.d) + '</span><span>current</span></span><span>' + esc(x.t) + '</span></div>'; }).join('');
+    var pair = document.getElementById('mac-pair'); pair.innerHTML = '';
+    var card = el('div', 'card'); card.style.borderColor = 'var(--gold)';
+    card.innerHTML = '<span class="eyebrow" style="color:var(--gold)">Your body data lives on your iPhone</span><div style="display:grid;grid-template-columns:1fr 96px;gap:14px;align-items:center"><div><p style="font-size:15px">HealthKit exists only on iPhone. Pair the Linggen phone app and sleep, heart, workouts and weight show up here within the first minute. Until then this page is composed from what the Mac knows: your screen, your commits, your calendar.</p><div class="chips" style="margin-top:10px"><span class="chip"><b>Pair an iPhone</b></span><span class="chip">Connect a service · later</span></div></div><svg viewBox="0 0 96 96" width="96" height="96" aria-label="Pair QR, example" style="background:var(--surface);border:1px solid var(--line);border-radius:8px"><rect x="8" y="8" width="24" height="24" fill="none" stroke="var(--text)" stroke-width="4"/><rect x="64" y="8" width="24" height="24" fill="none" stroke="var(--text)" stroke-width="4"/><rect x="8" y="64" width="24" height="24" fill="none" stroke="var(--text)" stroke-width="4"/><rect x="16" y="16" width="8" height="8" fill="var(--text)"/><rect x="72" y="16" width="8" height="8" fill="var(--text)"/><rect x="16" y="72" width="8" height="8" fill="var(--text)"/><rect x="40" y="12" width="6" height="6" fill="var(--text)"/><rect x="50" y="20" width="6" height="6" fill="var(--text)"/><rect x="40" y="30" width="6" height="6" fill="var(--text)"/><rect x="14" y="42" width="6" height="6" fill="var(--text)"/><rect x="26" y="46" width="6" height="6" fill="var(--text)"/><rect x="40" y="44" width="6" height="6" fill="var(--text)"/><rect x="52" y="40" width="6" height="6" fill="var(--text)"/><rect x="64" y="46" width="6" height="6" fill="var(--text)"/><rect x="78" y="42" width="6" height="6" fill="var(--text)"/><rect x="44" y="58" width="6" height="6" fill="var(--text)"/><rect x="56" y="62" width="6" height="6" fill="var(--text)"/><rect x="68" y="70" width="6" height="6" fill="var(--text)"/><rect x="80" y="64" width="6" height="6" fill="var(--text)"/><rect x="46" y="76" width="6" height="6" fill="var(--text)"/><rect x="60" y="82" width="6" height="6" fill="var(--text)"/><rect x="76" y="80" width="6" height="6" fill="var(--text)"/></svg></div>';
+    pair.appendChild(card);
+    var mu = document.getElementById('multiples'); mu.innerHTML = '';
+    m.multiples.forEach(function (x) { var row = el('div', 'multiple'); row.innerHTML = '<div class="k">' + esc(x.k) + '<small>' + esc(x.s) + '</small></div>'; var o = {}; for (var key in x) o[key] = x[key]; o.w = 600; o.h = 56; o.label = x.k; row.appendChild(lineChart(o)); row.innerHTML += '<div class="now">' + esc(x.now) + '<small>' + esc(x.sub) + '</small></div>'; mu.appendChild(row); });
+    document.getElementById('mac-week').innerHTML = m.plan.map(function (d) { return '<div class="r"><span>' + esc(d.d) + ' · ' + esc(d.s) + (d.adj ? ' <span style="color:var(--gold)">adjusted</span>' : '') + '</span><span>' + esc(d.w) + '</span></div>'; }).join('');
+    document.getElementById('mac-targets').innerHTML = m.targets.map(function (t) { return '<div class="target"><span>' + esc(t[0]) + '<small>' + esc(t[2]) + '</small></span><span class="num">' + esc(t[1]) + '</span></div>'; }).join('');
+    document.getElementById('mac-board').innerHTML = m.board.map(function (pt) { return '<div class="card' + (pt.st !== 'stable' ? ' forming' : '') + '"><div class="conf"><span class="pill ' + pt.st + '">' + pt.st + '</span><span>' + esc(pt.c) + '</span></div><h3>' + esc(pt.h) + '</h3><p class="dim" style="font-size:13px">' + esc(pt.p) + '</p></div>'; }).join('');
+    document.getElementById('mac-msgs').innerHTML = m.chat.map(function (c) { return '<div class="msg ' + c[0] + '">' + esc(c[1]) + (c[2] ? '<br>' + c[2].map(function (t) { return '<span class="toolchip">' + esc(t) + '</span>'; }).join(' ') : '') + '</div>'; }).join('');
+    document.getElementById('mac-sync').innerHTML = m.sync.map(function (r) { return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
+  }
+  function renderAll() { renderFirstRun(); renderHome(); renderPlan(); renderTrack(); renderWorkouts(); renderPatterns(); renderWho(); renderMac(); }
 
   // ---------- Navigation ----------
   var tabs = document.querySelectorAll('.picker [role="tab"]'), views = document.querySelectorAll('.view'), notes = document.querySelectorAll('#notes .note');
-  var titles = { home: 'Health', plan: 'Plan', track: 'Track', workouts: 'Workouts', patterns: 'Patterns', who: 'Who you are', data: 'Data', settings: 'Settings' };
+  var titles = { firstrun: 'Health', home: 'Health', plan: 'Plan', track: 'Track', workouts: 'Workouts', patterns: 'Patterns', who: 'Who you are', data: 'Data', settings: 'Settings' };
   function show(name) {
     state.view = name;
     tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.view === name)); });
@@ -968,6 +1067,12 @@
     document.querySelectorAll('.person').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
     var wt = document.getElementById('weather-toggle'); wt.className = 'toggle' + (state.person === 'lifter' ? ' off' : '');
     renderAll(); show('home');
+  }); });
+
+  document.querySelectorAll('[data-mac]').forEach(function (b) { b.addEventListener('click', function () {
+    state.macPhone = b.dataset.mac === 'phone';
+    document.querySelectorAll('[data-mac]').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
+    renderMac();
   }); });
 
   renderTypes(); renderAll();
