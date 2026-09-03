@@ -118,9 +118,14 @@
   .ask span { flex: 1; }
   .ask i { width: 27px; height: 27px; border-radius: 50%; background: var(--jade-soft); color: var(--jade); display: grid; place-items: center; font-style: normal; font-size: 13px; }
   .quiet { text-align: center; font-size: 12.5px; color: var(--faint); padding: 4px 8px 0; }
-  .under { display: grid; gap: 5px; padding-top: 2px; }
-  .under button { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: none; border: 0; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--dim); cursor: pointer; }
-  .under button b { font-weight: 500; color: var(--text); }
+  /* The doors. Small, quiet, and always the same set, so a person learns
+     where things are instead of hunting for what the agent moved. */
+  .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding-top: 4px; }
+  .door { display: grid; gap: 1px; text-align: left; padding: 9px 11px; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; cursor: pointer; }
+  .door b { font-weight: 500; font-size: 13px; }
+  .door span { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .door.wide { grid-column: 1 / -1; }
+  .door.lead { border-color: var(--jade); background: var(--jade-soft); }
 
   /* Examination */
   .exam { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -166,16 +171,58 @@
   .words ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 13.5px; color: var(--dim); }
   .words h3 { font-size: 14px; }
 
-  /* Mac strip */
-  .mac { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); }
-  .mac-top { display: flex; gap: 11px; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  /* Mac */
+  .mac { border: 1px solid var(--line); border-radius: 15px; overflow: hidden; background: var(--surface); }
+  .mac-top { display: flex; gap: 11px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
   .mac-top i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--line); margin-right: 4px; }
   .mac-top .p { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-left: auto; }
-  .mac-body { display: grid; grid-template-columns: 1fr 260px; }
-  @media (max-width: 760px) { .mac-body { grid-template-columns: 1fr; } }
-  .mac-main { padding: 17px 19px; display: grid; gap: 13px; align-content: start; }
-  .mac-side { border-left: 1px solid var(--line); background: var(--ground); padding: 17px; display: grid; gap: 9px; align-content: start; font-size: 13px; }
-  @media (max-width: 760px) { .mac-side { border-left: 0; border-top: 1px solid var(--line); } }
+  .mac-body { display: grid; grid-template-columns: 186px minmax(0, 1fr) 244px; min-height: 560px; }
+  @media (max-width: 980px) { .mac-body { grid-template-columns: 1fr; } }
+
+  .rail { border-right: 1px solid var(--line); background: var(--ground); padding: 14px 12px; display: grid; gap: 3px; align-content: start; }
+  .rail .cap { padding: 4px 8px 7px; }
+  .rail button { display: grid; gap: 1px; text-align: left; padding: 8px 10px; background: none; border: 0; border-radius: 9px; cursor: pointer; }
+  .rail button b { font-weight: 500; font-size: 13.5px; }
+  .rail button span { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .rail button[aria-current="true"] { background: var(--jade-soft); }
+  .rail button:hover { background: var(--raised); }
+
+  .thread { display: grid; grid-template-rows: 1fr auto; min-width: 0; }
+  .msgs { padding: 18px 20px; display: grid; gap: 15px; align-content: start; }
+  .m-me { justify-self: end; max-width: 74%; background: var(--jade-soft); border-radius: 14px 14px 4px 14px; padding: 10px 14px; font-size: 14px; }
+  .m-ai { display: grid; gap: 11px; max-width: 100%; min-width: 0; }
+  .m-ai .say { font-size: 14.5px; line-height: 1.55; }
+  .m-ai .tools { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .compose { border-top: 1px solid var(--line); padding: 12px 20px; font-size: 13.5px; color: var(--faint); display: flex; gap: 10px; align-items: center; }
+  .compose i { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: var(--jade-soft); color: var(--jade); display: grid; place-items: center; font-style: normal; font-size: 12px; }
+
+  /* A rendered answer, not a paragraph about one */
+  .rich { border: 1px solid var(--line); border-radius: 13px; background: var(--ground); overflow: hidden; }
+  .rich .rh { display: flex; gap: 10px; align-items: baseline; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .rich .rh b { font-weight: 600; font-size: 13.5px; }
+  .rich .rh span { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-left: auto; }
+  .rich .rb { padding: 12px 14px; }
+  .bigchart { width: 100%; height: auto; display: block; }
+  .bigchart text { font-family: "JetBrains Mono", monospace; font-size: 9px; fill: var(--faint); }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.mini th { text-align: left; font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); font-weight: 500; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
+  table.mini td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); }
+  table.mini tr:last-child td { border-bottom: 0; }
+  table.mini td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.mini td.flag { color: var(--crit); font-weight: 500; }
+  table.mini td.fine { color: var(--dim); }
+  .rich .rn { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--dim); background: var(--surface); }
+
+  .now { border-left: 1px solid var(--line); background: var(--ground); padding: 15px 15px 18px; display: grid; gap: 13px; align-content: start; }
+  @media (max-width: 980px) {
+    .rail { border-right: 0; border-bottom: 1px solid var(--line); grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .now { border-left: 0; border-top: 1px solid var(--line); }
+  }
+  .now .mini-find { display: grid; gap: 4px; padding: 11px 12px; border-radius: 11px; border: 1px solid var(--gold); background: var(--gold-soft); }
+  .now .mini-find.crit { border-color: var(--crit); background: var(--crit-soft); }
+  .now .mini-find b { font-size: 13px; line-height: 1.35; }
+  .now .mini-find span { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+  .now .mini-find.crit span { color: var(--crit); }
   .kvs { display: grid; gap: 4px; font-size: 13.5px; }
   .kvs .r { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
   .kvs .r:last-child { border-bottom: 0; }
@@ -291,22 +338,21 @@
   <section id="mac">
     <div class="head">
       <span class="eyebrow">The Mac · optional</span>
-      <h2>Where the years live, and where the nightly examination runs</h2>
-      <p>A phone keeps about thirteen months. A paired Mac keeps everything, which is what a claim about how your autumns differ from your summers needs. Apple Health exists only on an iPhone, so a Mac with no phone paired says exactly that and shows no body data at all.</p>
+      <h2>A big screen earns a conversation that draws its answers</h2>
+      <p>The phone answers in a sentence because a sentence is what fits. A Mac has room, so the answer arrives as the thing itself: the chart, the weeks, the table of what moved. Same question, same numbers, a surface that can show its work. The doors are down the left, what is true right now is down the right, and a phone keeps about thirteen months while this keeps all of it.</p>
     </div>
     <div class="mac">
       <div class="mac-top"><span><i></i><i></i><i></i></span><b>Linggen Health</b><span class="p" id="mac-path"></span></div>
       <div class="mac-body">
-        <div class="mac-main">
-          <span class="eyebrow">Examined last night</span>
-          <div class="kvs" id="mac-exam"></div>
+        <nav class="rail" id="mac-rail" aria-label="Health sections"></nav>
+        <div class="thread">
+          <div class="msgs" id="mac-msgs"></div>
+          <div class="compose"><span>Ask about any of it…</span><i>●</i></div>
         </div>
-        <div class="mac-side">
-          <span class="eyebrow">The mirror</span>
-          <div class="kvs" id="mac-mirror"></div>
-        </div>
+        <aside class="now" id="mac-now"></aside>
       </div>
     </div>
+    <p class="dim" style="font-size:13.5px; max-width:68ch">With no iPhone paired this page has no body data at all, says so in those words, and leads with the pairing card. Apple Health exists only on an iPhone and none of it can be inferred from a Mac.</p>
   </section>
 
   <section id="words">
@@ -425,6 +471,65 @@
     return svg;
   }
 
+  /* The chart a big screen can afford: one scale, labelled ticks, the person's
+     own normal drawn through it, and the stretch that matters shaded. Every
+     label names a value the chart actually reaches. */
+  function bigChart(o) {
+    var W = 560, H = 168, padL = 40, padR = 86, padT = 12, padB = 22;
+    var ys = o.series, n = ys.length;
+    var all = ys.concat([o.base]);
+    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    var pad = (hi - lo) * 0.16 || 1;
+    lo -= pad; hi += pad;
+    var x = function (i) { return padL + i * (W - padL - padR) / (n - 1); };
+    var y = function (v) { return padT + (H - padT - padB) * (1 - (v - lo) / (hi - lo)); };
+    var col = o.tone === 'crit' ? 'var(--crit)' : o.tone === 'warn' ? 'var(--gold)' : 'var(--jade)';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('class', 'bigchart'); svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', o.title + ', against your normal of ' + o.base + ' ' + o.unit);
+    function add(tag, attrs, txt) {
+      var e = document.createElementNS(NS, tag);
+      for (var k in attrs) { e.setAttribute(k, attrs[k]); }
+      if (txt != null) { e.textContent = txt; }
+      svg.appendChild(e); return e;
+    }
+    if (o.band) {
+      add('rect', {
+        x: x(o.band[0]), y: padT, width: Math.max(1, x(o.band[1]) - x(o.band[0])),
+        height: H - padT - padB, fill: col, opacity: '0.09'
+      });
+    }
+    [lo + (hi - lo) * 0.08, o.base, hi - (hi - lo) * 0.08].forEach(function (v, i) {
+      if (i === 1) { return; }
+      add('line', { x1: padL, x2: W - padR, y1: y(v), y2: y(v), stroke: 'var(--line)', 'stroke-width': 1 });
+      add('text', { x: padL - 6, y: y(v) + 3, 'text-anchor': 'end' }, (Math.round(v * 10) / 10) + '');
+    });
+    add('line', {
+      x1: padL, x2: W - padR, y1: y(o.base), y2: y(o.base),
+      stroke: 'var(--faint)', 'stroke-dasharray': '4 3', 'stroke-width': 1.5
+    });
+    add('text', { x: W - padR + 7, y: y(o.base) + 3, 'text-anchor': 'start' },
+      'normal ' + o.base);
+    add('polyline', {
+      points: ys.map(function (v, i) { return x(i) + ',' + y(v); }).join(' '),
+      fill: 'none', stroke: col, 'stroke-width': 2, 'stroke-linejoin': 'round'
+    });
+    (o.marks || []).forEach(function (i) {
+      add('circle', { cx: x(i), cy: y(ys[i]), r: 3, fill: 'var(--surface)', stroke: col, 'stroke-width': 2 });
+    });
+    add('circle', { cx: x(n - 1), cy: y(ys[n - 1]), r: 4, fill: col });
+    add('text', { x: W - padR + 7, y: y(ys[n - 1]) + 3, 'text-anchor': 'start' },
+      'now ' + ys[n - 1]).style.fill = 'var(--text)';
+    o.xl.forEach(function (lab, k) {
+      add('text', {
+        x: k === 0 ? padL : W - padR, y: H - 5,
+        'text-anchor': k === 0 ? 'start' : 'end'
+      }, lab);
+    });
+    return svg;
+  }
+
   var PEOPLE = {
     lifter: {
       path: 'Liang’s Mac · iPhone synced 3 min ago',
@@ -444,7 +549,36 @@
         { d: 'MON', n: 'Push', m: '58 min', x: 'Bench 4×8 at 80 kg. Same bar speed as a month ago at 5 kg more.' },
         { d: 'SAT', n: 'Legs', m: '64 min', x: 'Squat 4×8 at 100 kg. Longest session of the week.' }
       ],
-      under: [['This week', 'Push · Pull · Legs · rest'], ['Today’s list', '4 items, 1 done'], ['Everything measured', '38 types']],
+      doors: [
+        ['Health review', '38 checked last night', 'lead'],
+        ['My body', '44 · 183 cm · no scale'],
+        ['This week', 'Push · Pull · Legs'],
+        ['Today’s list', '4 items, 1 done'],
+        ['Patterns', '2 stable, 1 forming'],
+        ['Workouts', '1,438 kept'],
+        ['Everything measured', '38 types · since 2016', 'wide']
+      ],
+      macQ: 'How did last week go?',
+      macA: {
+        say: 'Four sessions, all four kept, and your pull tonnage is up 6% on the last five. What moved is recovery, not strength: HRV has slid seven points over the fortnight and every step down lands the morning after a Legs day.',
+        tools: 'Report · GetRange hrv · ListWorkouts',
+        chart: {
+          title: 'HRV · last 14 days', unit: 'ms',
+          series: [34, 36, 33, 35, 37, 34, 32, 35, 36, 33, 31, 30, 29, 27], base: 34,
+          xl: ['21 Aug', 'today'], tone: 'warn', marks: [3, 9, 13]
+        },
+        chartNote: 'Dashes are your own normal over the last 28 days. The three marked mornings each follow a Legs session.',
+        table: {
+          head: ['Session', 'Day', 'Tonnage', 'vs last five'],
+          rows: [
+            ['Push', 'Mon', '7.8 t', ['+4%', 'fine']],
+            ['Pull', 'Tue', '9.4 t', ['+6%', 'fine']],
+            ['Legs', 'Sat', '11.2 t', ['+9%', 'fine']],
+            ['Push', 'Fri', '7.9 t', ['+5%', 'fine']]
+          ]
+        },
+        note: 'Nothing here is worth a doctor. A drop that tracks your own hard days is training, and it comes back when you rest.'
+      },
       verdicts: {
         clear: 'blood oxygen 97% · usual 97%',
         see: 'HRV 27 ms · usual 34 · lowest in 14 days',
@@ -498,7 +632,36 @@
         { d: 'WED', n: 'Outdoor walk', m: '19 min', x: '1.5 km at lunch. Steps that day finished 38% above your normal.' },
         { d: 'MON', n: 'Outdoor walk', m: '22 min', x: '1.7 km. The slot before your 13:30 call.' }
       ],
-      under: [['This week', 'Three walks, two home sessions'], ['Today’s list', '5 items, 2 done'], ['Everything measured', '41 types']],
+      doors: [
+        ['Health review', '41 checked last night', 'lead'],
+        ['My body', '64.3 kg · 28.6% fat'],
+        ['This week', 'Three walks, two home'],
+        ['Today’s list', '5 items, 2 done'],
+        ['Patterns', '1 stable, 1 forming'],
+        ['Workouts', '312 kept'],
+        ['Everything measured', '41 types · since 2021', 'wide']
+      ],
+      macQ: 'Why is my weight up?',
+      macA: {
+        say: 'Because body fat went up with it. The seven-day average moved 62.4 to 64.3 over five weeks, and body fat moved 27.4 to 28.6 in the same window, so it is not water and it is not muscle. Your walking did not change, so it is not activity either.',
+        tools: 'Report · GetProgress weight · GetProgress body_fat',
+        chart: {
+          title: 'Weight, seven-day average · 14 weeks', unit: 'kg',
+          series: [62.4, 62.5, 62.6, 62.8, 62.9, 63.1, 63.2, 63.4, 63.5, 63.7, 63.9, 64.0, 64.2, 64.3], base: 62.4,
+          xl: ['Jun', 'this week'], tone: 'warn', band: [9, 13]
+        },
+        chartNote: 'Dashes are where you sat before the climb. The shaded weeks are the five that moved.',
+        table: {
+          head: ['', 'Five weeks ago', 'Now', 'Change'],
+          rows: [
+            ['Weight', '62.4 kg', '64.3 kg', ['+1.9 kg', 'flag']],
+            ['Body fat', '27.4%', '28.6%', ['+1.2 pts', 'flag']],
+            ['Lean mass', '45.3 kg', '45.9 kg', ['+0.6 kg', 'fine']],
+            ['Walking', '78 min/wk', '81 min/wk', ['unchanged', 'fine']]
+          ]
+        },
+        note: 'Five weeks is a short window and one I would not call a trend on its own. It is on your screen because two measurements agree, not because one moved.'
+      },
       verdicts: {
         clear: 'sleep 6h48 · usual 6h50',
         see: 'weight 64.3 kg · up 1.9 over 5 weeks',
@@ -552,7 +715,36 @@
         { d: 'THU', n: 'Outdoor run', m: '6.0 km', x: 'Average heart rate 166. Effort logged as 8 of 10 for an easy run.' },
         { d: 'TUE', n: 'Outdoor run', m: '5.0 km', x: 'The last one that felt normal, by your own note that evening.' }
       ],
-      under: [['This week', 'Nothing planned · held back'], ['Today’s list', '2 items'], ['Everything measured', '44 types']],
+      doors: [
+        ['Health review', '1 needs you', 'lead'],
+        ['My body', '38 · 71.4 kg'],
+        ['This week', 'Nothing planned'],
+        ['Today’s list', '2 items'],
+        ['Patterns', '3 stable'],
+        ['Workouts', '904 kept'],
+        ['Everything measured', '44 types · since 2019', 'wide']
+      ],
+      macQ: 'What changed?',
+      macA: {
+        say: 'Three things, and they moved together nine days ago. Your resting heart rate is the one I want you to take to a doctor: twelve above your own normal, every morning since, and it has not come down on the days you rested. I am not able to tell you what is behind it.',
+        tools: 'Report · GetRange resting_hr · GetRange hrv · GetSleep',
+        chart: {
+          title: 'Resting heart rate · last 14 mornings', unit: 'bpm',
+          series: [51, 52, 51, 53, 58, 61, 62, 63, 62, 64, 63, 65, 64, 63], base: 51,
+          xl: ['21 Aug', 'today'], tone: 'crit', band: [4, 13]
+        },
+        chartNote: 'Dashes are your own normal. The shaded stretch is nine consecutive mornings above it, including two rest days.',
+        table: {
+          head: ['', 'Your normal', 'Now', 'Verdict'],
+          rows: [
+            ['Resting heart rate', '51 bpm', '63 bpm', ['worth a doctor', 'flag']],
+            ['HRV', '58 ms', '49 ms', ['moved with it', 'flag']],
+            ['Sleep', '7h05', '6h02', ['worth seeing', 'fine']],
+            ['Blood oxygen', '97%', '97%', ['clear', 'fine']]
+          ]
+        },
+        note: 'Those four rows are what to take with you. I have left this week empty rather than plan around a number I cannot explain.'
+      },
       verdicts: {
         clear: 'blood oxygen 97% · usual 97%',
         see: 'sleep 6h02 · usual 7h05',
@@ -629,10 +821,14 @@
     return wrap;
   }
 
-  function underBlock(rows) {
-    var wrap = el('div', 'under');
+  /* The doors to everything the screen is not showing. Always the same set in
+     the same order, because a person who has to hunt for the plan twice stops
+     looking for it. */
+  function doorsBlock(rows) {
+    var wrap = el('div', 'doors');
     rows.forEach(function (r) {
-      wrap.appendChild(el('button', null, '<b>' + esc(r[0]) + '</b><span>' + esc(r[1]) + ' ›</span>'));
+      wrap.appendChild(el('button', 'door' + (r[2] ? ' ' + r[2] : ''),
+        '<b>' + esc(r[0]) + '</b><span>' + esc(r[1]) + '</span>'));
     });
     return wrap;
   }
@@ -644,7 +840,7 @@
     q.appendChild(statusBlock(p.quiet, 'ok'));
     q.appendChild(el('p', 'quiet', 'Nothing else is on screen. What follows is what you did.'));
     q.appendChild(actsBlock(p.acts));
-    q.appendChild(underBlock(p.under));
+    q.appendChild(doorsBlock(p.doors));
     q.appendChild(el('div', 'ask', '<span>Ask Yinyue about any of it…</span><i>●</i>'));
 
     var l = document.getElementById('loud-body');
@@ -652,7 +848,7 @@
     l.appendChild(statusBlock(p.loud, p.find.tone === 'crit' ? 'crit' : 'warn'));
     l.appendChild(findBlock(p.find));
     l.appendChild(actsBlock(p.acts));
-    l.appendChild(underBlock(p.under));
+    l.appendChild(doorsBlock(p.doors));
     l.appendChild(el('div', 'ask', '<span>Ask Yinyue about any of it…</span><i>●</i>'));
 
     document.getElementById('quiet-cap').textContent = p.quietCap;
@@ -682,13 +878,78 @@
         (m[2] ? '<br><span class="tool">' + esc(m[2]) + '</span>' : '') + '</div>';
     }).join('');
 
+    renderMac(p);
+  }
+
+  /* The Mac. Doors down the left, the conversation in the middle with its
+     answers drawn rather than described, and what is true right now down the
+     right so the thread never has to repeat it. */
+  function renderMac(p) {
     document.getElementById('mac-path').textContent = p.path;
-    document.getElementById('mac-exam').innerHTML = p.exam.map(function (r) {
+
+    var rail = document.getElementById('mac-rail');
+    rail.innerHTML = '<span class="eyebrow cap">Health</span>';
+    p.doors.forEach(function (d, i) {
+      var b = el('button', null, '<b>' + esc(d[0]) + '</b><span>' + esc(d[1]) + '</span>');
+      if (i === 0) { b.setAttribute('aria-current', 'true'); }
+      rail.appendChild(b);
+    });
+
+    var a = p.macA;
+    var msgs = document.getElementById('mac-msgs');
+    msgs.innerHTML = '';
+    msgs.appendChild(el('div', 'm-me', esc(p.macQ)));
+
+    var ai = el('div', 'm-ai');
+    ai.appendChild(el('p', 'say', esc(a.say)));
+
+    var rich = el('div', 'rich');
+    var rh = el('div', 'rh');
+    rh.appendChild(el('b', null, esc(a.chart.title)));
+    rh.appendChild(el('span', null, esc(a.chart.unit)));
+    rich.appendChild(rh);
+    var rb = el('div', 'rb');
+    rb.appendChild(bigChart(a.chart));
+    rich.appendChild(rb);
+    rich.appendChild(el('div', 'rn', esc(a.chartNote)));
+    ai.appendChild(rich);
+
+    var tbl = el('div', 'rich');
+    var tb = el('div', 'rb');
+    tb.innerHTML = '<table class="mini"><thead><tr>' +
+      a.table.head.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') +
+      '</tr></thead><tbody>' +
+      a.table.rows.map(function (r) {
+        return '<tr>' + r.map(function (c, i) {
+          if (Object.prototype.toString.call(c) === '[object Array]') {
+            return '<td class="n ' + c[1] + '">' + esc(c[0]) + '</td>';
+          }
+          return '<td' + (i > 0 ? ' class="n"' : '') + '>' + esc(c) + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table>';
+    tbl.appendChild(tb);
+    ai.appendChild(tbl);
+
+    ai.appendChild(el('p', 'say', esc(a.note)));
+    ai.appendChild(el('span', 'tools', esc(a.tools)));
+    msgs.appendChild(ai);
+
+    var now = document.getElementById('mac-now');
+    now.innerHTML = '';
+    now.appendChild(el('span', 'eyebrow', 'Right now'));
+    now.appendChild(statusBlock(p.loud, p.find.tone === 'crit' ? 'crit' : 'warn'));
+    var mf = el('div', 'mini-find' + (p.find.tone === 'crit' ? ' crit' : ''));
+    mf.appendChild(el('span', null, esc(p.find.tag)));
+    mf.appendChild(el('b', null, esc(p.find.h)));
+    now.appendChild(mf);
+    now.appendChild(el('span', 'eyebrow', 'Examined last night'));
+    now.appendChild(el('div', 'kvs', p.exam.map(function (r) {
       return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
-    }).join('');
-    document.getElementById('mac-mirror').innerHTML = p.mirror.map(function (r) {
+    }).join('')));
+    now.appendChild(el('span', 'eyebrow', 'The mirror'));
+    now.appendChild(el('div', 'kvs', p.mirror.map(function (r) {
       return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
-    }).join('');
+    }).join('')));
   }
 
   document.querySelectorAll('.person').forEach(function (b) {
