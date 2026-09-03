@@ -7,7 +7,7 @@ guide: |
   Mac (mirror, memory, work signals), sync between them, the profile /
   composition / plan / checklist schemas, the tool catalog, and the rules
   that keep it honest. Companion to product-spec.md. Brief; no code.
-status: draft, building — direction reset 2026-09-03 to the QUIET SCREEN and to agents that come to you; prototype.html is the spec and the built phone app has not caught up (it still renders the composed nine-card Home of 2026-09-02). The phone is built through Plan and Track and runs on a real iPhone; the Mac mirror and page landed 2026-09-03. See linggen-mobile/doc/health.md for what runs on the phone.
+status: building — the quiet screen and the examination are BUILT on the phone (2026-09-03): health_review.dart, health_tell.dart, the quiet-screen renderer, the Health review screen. Not yet run against real HealthKit data on a device. The Mac mirror and page landed 2026-09-03. See linggen-mobile/doc/health.md for what runs on the phone.
 ---
 
 # Design: Linggen Health
@@ -282,6 +282,10 @@ backfill window is in:
    things — goal, what you do, and the missing body facts — and says why.
 
 ### review/<date>.json — the night's examination
+
+Built as `health_review.dart`. The shape below is what it writes, plus
+`ranked` (every candidate with its coverage, weight, movement and, where it
+was dropped, why) and `thin` alongside the other counts.
 
 ```
 { "at": "2026-09-03T02:14Z", "by_device": "phone",
@@ -579,17 +583,32 @@ Built since: `health_passes.dart`, `health_profile.dart`, `health_daily.dart`,
 `who_you_are`, and `health_sync.dart` (the mirror: positions, registers,
 notes).
 
-**The built phone app has not caught up to this document.** It renders the
-composed nine-card Home of 2026-09-02; the quiet screen, the examination and
-the agent coming to you are specified here and in prototype.html and are not
-written yet.
+**The quiet screen is built** (2026-09-03). `health_review.dart` is the
+examination — the judging table, the verdicts, the score and the index picker;
+`health_tell.dart` is the report she comes to the user with, plus `told.jsonl`;
+`screens/health/health_quiet.dart` is the screen (status · findings · acts ·
+doors) and replaced the nine-card `health_home.dart`, which is deleted;
+`screens/health/health_review_screen.dart` is the lead door. `HealthCards`
+kept only the six kinds that are real and every metric-specific kind is gone —
+a finding renders from its measurement, not from a card kind of its own. The
+library gained `examine()` and `report()` in `runDuePasses`, `doors` as the
+one declaration both the screen and the shell read, and `health_review` as a
+tool so Yinyue answers from the verdicts rather than from raw rows.
 
-Still to build: `health_examine.dart` (the nightly pass and `review/<date>.json`),
-the quiet-screen renderer (status · findings · acts · doors) replacing the
-nine-card Home, `Tell` into Yinyue's thread plus `told.jsonl`, the `Health
-review` screen behind the lead door, `BGProcessingTask` for the morning pass,
-the `workouts` and `patterns` screens, weather for outdoor plans (needs
-location), and nudges through Yinyue's herald.
+ONE THING THE PROTOTYPE DID NOT SAY, learned by running it: **a spread is not
+a meaningful change.** Eight weigh-ins inside half a kilo give a MAD of 0.2 kg,
+and against that a 400 g swing is two of them — "your weight moved" on somebody's
+screen for a glass of water. So a judge carries a `floor`: the smallest
+difference that is a difference at all, defaulting to 3% of the person's own
+median and declared absolutely where the unit demands it (0.5 kg for weight,
+2 bpm for resting heart rate, 1 point for blood oxygen, 0.3 °C for a wrist
+temperature that is already a delta around zero). One MAD is worth
+`max(mad, floor)`. Without it a quiet measurement is loud for being quiet.
+
+Still to build: `BGProcessingTask` so the pass runs without the app being
+opened, the `workouts` and `patterns` screens behind their doors, weather for
+outdoor plans (needs location), nudges through Yinyue's herald, and the review
+riding the sync to the Mac page.
 
 Native: `ios/Runner/HealthBridge.swift` — authorization for the full type list,
 characteristics, anchored queries, background delivery, workout expansion.
