@@ -144,7 +144,14 @@ function state() {
   s.version ||= 1;
   s.ledger ||= {};
   s.devices ||= {};
-  if (!s.mirror_id) s.mirror_id = crypto.randomUUID();
+  if (!s.mirror_id) {
+    // Minted once and written before it is spoken. A read verb that returned
+    // a fresh id without keeping it would hand every caller a different
+    // identity, and a phone comparing them would reset its positions and
+    // re-send its whole history on every single sync.
+    s.mirror_id = crypto.randomUUID();
+    saveState(s);
+  }
   return s;
 }
 
@@ -319,7 +326,6 @@ const VERBS = {
     const body = payload(rest[0], { gzipped: false });
     const names = Array.isArray(body.names) ? body.names : [];
     const s = state();
-    saveState(s); // mints the id on a first-ever pull
     return {
       ok: true,
       mirror_id: s.mirror_id,

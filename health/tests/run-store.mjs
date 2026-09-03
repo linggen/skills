@@ -154,6 +154,19 @@ const run = (dir, verb, body, { gzipped = true } = {}) => {
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'health-mirror-'));
 
+ok('the identity is minted once and kept, so a read never invents one', () => {
+  const fresh = fs.mkdtempSync(path.join(os.tmpdir(), 'health-id-'));
+  const first = run(fresh, 'ledger').mirror_id;
+  assert.ok(first);
+  assert.equal(run(fresh, 'ledger').mirror_id, first);
+  assert.equal(run(fresh, 'report').mirror_id, first);
+  // A phone comparing two different ids would reset its positions and re-send
+  // its whole history on every sync.
+  const onDisk = JSON.parse(fs.readFileSync(path.join(fresh, 'data', 'state.json'), 'utf8'));
+  assert.equal(onDisk.mirror_id, first);
+  fs.rmSync(fresh, { recursive: true, force: true });
+});
+
 ok('a batch lands, and the same batch again adds nothing', () => {
   const rows = [
     sample('a', 'steps', '2026-09-02T08:00:00Z'),
