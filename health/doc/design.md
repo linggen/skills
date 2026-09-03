@@ -7,7 +7,7 @@ guide: |
   Mac (mirror, memory, work signals), sync between them, the profile /
   composition / plan / checklist schemas, the tool catalog, and the rules
   that keep it honest. Companion to product-spec.md. Brief; no code.
-status: draft, building — the phone is built through Plan and Track and runs on a real iPhone; the Mac mirror landed 2026-09-03 (this skill: SKILL.md, ingest.mjs, the store model). The Mac page is next. See linggen-mobile/doc/health.md for what runs on the phone.
+status: draft, building — direction reset 2026-09-03 to the QUIET SCREEN and to agents that come to you; prototype.html is the spec and the built phone app has not caught up (it still renders the composed nine-card Home of 2026-09-02). The phone is built through Plan and Track and runs on a real iPhone; the Mac mirror and page landed 2026-09-03. See linggen-mobile/doc/health.md for what runs on the phone.
 ---
 
 # Design: Linggen Health
@@ -25,9 +25,11 @@ status: draft, building — the phone is built through Plan and Track and runs o
 │   Passes (Yinyue + cloud model):  morning · workout report · weekly ·        │
 │                                   patterns — all runnable here               │
 │   ToolRegistry   health-* : the whole catalog, Dart over the local store     │
-│   Screens        First run · Home (composed) · Plan · Track · Workouts ·     │
-│                  Patterns · Who you are · Data · Settings                    │
-│   Renderer       card catalog → layout.json → Home                           │
+│   Screens        First run · The screen (quiet) · Health review · Plan ·     │
+│                  Track · Workouts · Patterns · My body · Data · Settings     │
+│   Renderer       review.json → the cards that earned a place → the screen    │
+│   Voice          the agent speaks in Yinyue's thread, never on the screen —  │
+│                  and speaks FIRST, when a pass has something to report       │
 └──────────────────────────────┬───────────────────────────────────────────────┘
                                │ WebRTC only, when a Mac is paired (optional)
                                ▼
@@ -56,9 +58,20 @@ an iPhone. The Mac page then composes from the work side and shows the pair
 card. Later, vendor APIs (Oura, Garmin, Whoop, Strava, Withings) give a
 phone-less Mac a body feed.
 
-The persona is not code. The profile pass infers it, the compose pass turns it
-into a layout from a fixed card catalog, the plan pass turns it into a week. A
-new kind of user needs a new card at most, never a new branch.
+The persona is not code. The profile pass infers it, the examination decides
+what earned a place, the compose pass turns that into a layout from a fixed
+card catalog, the plan pass turns it into a week. A new kind of user needs a
+new card at most, never a new branch.
+
+**Two rules sit above all of it and are why the app looks the way it does.**
+First: *a measurement at the user's own normal is never shown.* The examination
+walks every type and stays silent about the ones that are fine, so the screen
+is what is left over, not a template with numbers poured in. Second: *the
+agent's voice lives in the conversation, never on the view.* Anything the agent
+wants to say about itself — that it built the view, why it is in this order,
+the offer to build another — is said in its own thread, where the user can
+answer back. And it says it unprompted: a pass that finds something and waits
+to be asked has kept the finding to itself.
 
 ## What HealthKit gives us (verified 2026-09-01)
 
@@ -121,7 +134,12 @@ Documents/Health/
   plans/<week>.json        the week's plan + adjustments
   checklist/<date>.json    derived daily checklist with check state
   weather/<date>.json      Open-Meteo day + hours, cached
-  briefs/<date>.json       the morning brief
+  briefs/<date>.json       the morning brief (the status line's sentence)
+  review/<date>.json       the night's examination: a verdict per type, the
+                           index picked, the score and what it was made of
+  told.jsonl               what the agent came to the user with, and when —
+                           {at, surface, text, tools[], pass} — so it neither
+                           repeats itself nor stays silent
   reports/<week>.md        weekly report;  workouts/<uuid>.md  workout report
   patterns.json            [{id, claim, metric, signal, effect, weeks,
                             confidence, evidence[], first_seen, status}]
@@ -141,10 +159,18 @@ account) because two phones on one Mac are two bodies.
 | Pass | Fires | Runs on | Writes |
 |:-----|:------|:--------|:-------|
 | Profile (first run) | first backfill window lands | phone | profile.json, first layout |
-| Morning | night's sleep lands, 08:00 latest | **phone** (cloud model) | brief, checklist, ≤ 1 `AdjustDay` |
+| **Examination** | nightly after rollup, ~02:00 | **phone** (cloud model) | `review/<date>.json`: a verdict per type, the index, the score |
+| Morning | night's sleep lands, 08:00 latest | **phone** (cloud model) | brief, layout from the review, checklist, ≤ 1 `AdjustDay`, one `Tell` |
 | Workout report | new workout | **phone** | workouts/<uuid>.md, checklist item, progress |
-| Weekly | Sunday 19:00 | **Mac if paired and reachable by 23:00, else phone** | profile refresh, layout (if moved), next plan, targets, report, memory |
+| Weekly | Sunday 19:00 | **Mac if paired and reachable by 23:00, else phone** | profile refresh, layout (if moved), next plan, targets, report, memory, one `Tell` |
 | Patterns | nightly after rollup | Mac if paired (long store), else phone (13 months) | patterns.json |
+
+**Every pass that produces something a person would want to know ends in a
+`Tell`** — one message into the agent's own thread, unprompted, saying what the
+pass read, what came out and what it changed. The quiet morning gets one too, in
+a line: that is the proof it looked, not noise. `Tell` writes `told.jsonl` and
+posts to the thread; at most one per pass, and the morning `Tell` is suppressed
+if the user is already mid-conversation with the agent about the same thing.
 
 One owner per pass, decided at fire time from `state.json.paired` and a
 reachability probe, so a pass never runs twice. Every derived file is a
@@ -255,6 +281,45 @@ backfill window is in:
 4. **No history** (ledger shows every type empty): the card asks three
    things — goal, what you do, and the missing body facts — and says why.
 
+### review/<date>.json — the night's examination
+
+```
+{ "at": "2026-09-03T02:14Z", "by_device": "phone",
+  "examined": 38, "normal": 36, "see": 1, "doc": 0, "thin": 2,
+  "score": 64,
+  "score_from": ["hrv", "resting_hr", "spo2"],
+  "score_formula": "mean(80 + 12z) over metrics with ≥ 14 days; z = (today − median28) / MAD28",
+  "index": { "picked": "hrv", "why": "5,266 rows · decides whether a hard session goes ahead · down 7 on the fortnight",
+             "ranked": [ {"metric": "hrv", "coverage": 0.98, "relevance": 0.9, "movement": 2.1},
+                         {"metric": "bmi", "coverage": 0.0, "relevance": 0.2, "movement": null,
+                          "dropped": "absent — 1 weigh-in, from 2022; and BMI reads a muscular lifter as overweight"} ] },
+  "verdicts": [
+    { "type": "hrv", "verdict": "see", "now": 27, "normal": 34, "unit": "ms", "z": -2.1,
+      "held_days": 3, "evidence": ["lowest of 14 days", "follows Monday's Legs"],
+      "changed": ["plan: Legs → rest", "plan: Push → Friday"] },
+    { "type": "resting_hr", "verdict": "normal", "now": 57, "normal": 58 },
+    { "type": "sleep", "verdict": "thin", "why": "32 nights held" } ] }
+```
+
+`verdict` is one of `normal` (never shown, counted only), `see`, `doc`, `thin`
+(not enough data — an absence, never a zero). The **score exists only above two
+usable metrics**, and it is today against this person's own normal, never a
+health score: `score_from` and `score_formula` go on screen beside it. The
+**index** is ranked per user on coverage × relevance × movement and records why
+each candidate was dropped, so the choice can be argued with.
+
+### told.jsonl — what the agent came to the user with
+
+```
+{ "at": "2026-09-03T07:02Z", "surface": "yinyue", "pass": "morning",
+  "text": "I went through your Apple Health while you slept — 38 kinds of measurement…",
+  "tools": ["Report", "GetRange hrv", "SetPlan"], "review": "review/2026-09-03.json" }
+```
+
+One line per unprompted message. It is a log so the agent can see what it has
+already said: it never repeats a finding it has told, and a finding with no line
+here is a finding it has kept to itself.
+
 ### Card catalog — code, declarative
 
 Each card kind declares what it needs and what it answers. The compose pass
@@ -262,10 +327,19 @@ validates a layout against this list; the phone renderer has one widget per
 kind; the Mac page has one renderer per kind. Adding a kind is one entry plus
 one widget on each surface.
 
-| kind | needs | answers |
-|:-----|:------|:--------|
-| `meet` | profile (first run) | the confirmation and the one question |
-| `brief` | briefs/today | the sentence, evidence chips, today's session |
+Every kind also declares **what earns it a place**. A kind with `earns: news`
+appears only when the examination gave its measurement a `see` or `doc` verdict;
+`earns: always` is reserved for the two that must be on screen whatever the
+night held — the status line and the doors.
+
+| kind | needs | earns | answers |
+|:-----|:------|:------|:--------|
+| `status` | review/today | always | the number, the sentence, and what it was made of — "38 measurements examined" |
+| `finding` | review/today | news | the measurement that moved: its own baseline through the fortnight, the evidence, and what it changed |
+| `acts` | workouts | always | the last few sessions, expandable |
+| `doors` | — | always | the same seven, in the same order |
+| `meet` | profile (first run) | always | the confirmation and the one question |
+| `brief` | briefs/today | news | the sentence, evidence chips, today's session |
 | `plan_today` | plans/week | what to do today and why; weather if outdoors |
 | `checklist` | checklist/today | the items, checked state |
 | `running` | last run, baselines | last run vs your normal |
@@ -284,33 +358,46 @@ one widget on each surface.
 | `patterns` | patterns.json | the stable and forming claims |
 | `weather_window` | weather/today | the dry hours today (outdoor only) |
 | `work_join` | life/today | IDE hours, late commits, meetings (Mac paired) |
-| `pair_phone` | state (Mac only, no phone) | where the body data lives + pair QR |
+| `pair_phone` | state (Mac only, no phone) | always | where the body data lives + pair QR |
 
-A card whose `needs` are absent is never composed: no screen-time card
-without a Mac, no sleep card on a phone-less Mac.
+The remaining kinds above (`running`, `weight_trend`, `sleep`, `hrv`, `steps`,
+`vo2max`, …) all carry `earns: news`. `plan_today`, `checklist`, `patterns`,
+`pace_history`, `heart_history` and the rest are **doors, not cards** — they
+live one tap behind the screen and no longer compete for it.
+
+A card whose `needs` are absent is never composed: no screen-time card without a
+Mac, no sleep card on a phone-less Mac. A card whose measurement came back *at
+your normal* is not composed either — that is the whole design.
 
 ### layout.json — the composition
 
 ```
-{ "by": "…", "composed_at": "2026-08-31T19:02Z", "pass": "weekly", "by_device": "mac",
-  "why": "Weight trend on top because you said you're bulking on 28 Aug.",
-  "previous": "layouts/2026-08-24T19:01Z.json",
-  "pinned": ["sleep"], "hidden": ["steps"],
+{ "by": "…", "composed_at": "2026-09-03T07:01Z", "pass": "morning", "by_device": "phone",
+  "review": "review/2026-09-03.json",
+  "why": "HRV is the one measurement of 38 that moved.",
+  "previous": "layouts/2026-09-02T07:00Z.json",
+  "pinned": [], "hidden": ["steps"],
   "cards": [
-    { "kind": "brief" },
-    { "kind": "plan_today", "size": "wide" },
-    { "kind": "weight_trend", "size": "wide", "headline": "78.4 → 82 by December" },
-    { "kind": "protein", "headline": "160 g · 2.0 g/kg" },
-    { "kind": "checklist" },
-    { "kind": "sleep" }, { "kind": "hrv" }, { "kind": "patterns" } ] }
+    { "kind": "status" },
+    { "kind": "finding", "metric": "hrv", "tone": "warn" },
+    { "kind": "acts" },
+    { "kind": "doors" } ] }
 ```
 
-Rules, in the compose code not in the prompt: at most 9 cards; `brief` always
-first (`meet` first until the goal is known); pinned cards keep their slot;
-hidden cards never appear; a layout is written only by the weekly pass, a
-profile correction, or a goal change; every write records `previous`; Undo
-restores `previous` and pins every card it contains for four weeks so the
-agent does not re-propose the same move.
+Rules, in the compose code not in the prompt:
+
+- **`status`, `acts` and `doors` are always present**; everything between them
+  is what the examination gave a `see` or `doc` verdict. On a quiet morning
+  that is nothing, and the layout is three cards.
+- **At most three findings**, worst verdict first. A `doc` verdict is always
+  first, cannot be collapsed, cannot be hidden, and ignores `hidden` and the
+  attention order entirely.
+- Pinned cards keep their slot; hidden cards never appear **except a `doc`**.
+- Every write records `previous` and the `review` it came from; Undo restores
+  `previous` and pins every card it contains for four weeks.
+- **`why` is not rendered.** It is carried so the agent can say it in the
+  conversation and so `ListLayouts` can show the history; no surface paints it
+  on the view.
 
 ### plans/<week>.json
 
@@ -393,8 +480,11 @@ confirms on the executing device.
 | `GetProfile` | the profile with confidence and evidence | read |
 | `SetProfileField` | a correction from the user ("not quite") — wins over inference | edit |
 | `SetGoal` / `ClearGoal` | the goal as said, with a tracked metric | edit |
+| `Examine` | run the night's pass: every type against its own baseline → verdicts, index, score | edit |
+| `GetReview` | the night's examination: verdicts, what was ruled out, the score and its formula | read |
+| `Tell` | come to the user unprompted in the agent's own thread; writes `told.jsonl`. One per pass | edit |
 | `GetLayout` / `ListLayouts` | current composition; history with reasons | read |
-| `Compose` | write a new layout with why + previous (weekly pass, goal change, correction) | edit |
+| `Compose` | write a new layout from a review, with why + previous | edit |
 | `Undo` / `PinCard` / `HideCard` | user actions on the composition | edit |
 | `GetPlan` / `WritePlan` / `AdjustDay` | the week; a day moved with its why | read / edit |
 | `GetTargets` / `SetTargets` | nutrition and training targets with formula | read / edit |
@@ -424,8 +514,14 @@ for moving a meeting. Health never writes another app's data.
 - Never ask what the data already holds; confirm it instead. One question at a
   time, with its consequence.
 - Personal baseline beside every number; never a population range.
-- Say why: every layout, plan day and adjustment carries its reason in the
-  user's terms.
+- Say why — **in the conversation**. Every layout, plan day and adjustment
+  carries its reason in the user's terms, and that reason is spoken in the
+  thread, never painted on the view. The view carries findings.
+- Come to them. When a pass has something, say so before being asked: what you
+  read, how much of it, what came out, what you changed. Once per pass.
+- Plain words beside the acronym. "HRV — how much your heartbeat varies, which
+  is the best thing you have for how recovered you are". The owner of this
+  product had to ask what HRV meant; the copy carries the meaning.
 - Wellness only; supplements as evidence, never a brand unprompted; medications
   and clinical records are context, never a topic.
 - Voice: Yinyue's, one or two sentences on the phone; the Mac report may run a
@@ -437,10 +533,23 @@ The rules are code, not prompt:
 
 - **Profile**: a field is shown only above 0.6 confidence with its evidence;
   below that Home asks one question instead of guessing. A correction wins.
-- **Layout**: moves only at the weekly pass or on a user action; every write
-  has a why and a previous; Undo pins for four weeks.
-- **Cards**: a card whose data is absent is never composed. No Mac, no
-  screen-time card. No phone, no sleep card.
+- **Layout**: every write has a why and a previous; Undo pins for four weeks.
+  The `why` is said in the conversation and never drawn on the view.
+- **Cards**: a card whose data is absent is never composed, and a card whose
+  measurement came back at the user's own normal is not composed either. No
+  Mac, no screen-time card. No phone, no sleep card.
+- **The quiet is stated**: the status line always says how many measurements
+  were examined. An empty screen with no line reads as a broken app.
+- **The baseline is the user's own**: a resting heart rate of 58 is flagged by
+  a population rule and is nothing to worry about. Never a population range.
+- **Sustained, not single**: one reading changes today's session; nine days of
+  a shifted baseline is what raises a warning.
+- **A warning outranks the quiet rule** and every other rule here: it cannot be
+  collapsed, hidden, or pushed below anything, and it never names a condition —
+  the words are "worth showing a doctor".
+- **The agent comes to you**: a pass that produced a finding and wrote no
+  `told.jsonl` line is a bug. Silence is only correct when the pass itself was
+  quiet, and even then the quiet is reported in a line.
 - **Patterns**: forming until ≥ 4 aligned weeks and ≥ 1 MAD of effect; stable
   after 6; retired after two contradictions.
 - **Weight**: shown as a 7-day average; a trend needs two weeks; a single
@@ -470,9 +579,17 @@ Built since: `health_passes.dart`, `health_profile.dart`, `health_daily.dart`,
 `who_you_are`, and `health_sync.dart` (the mirror: positions, registers,
 notes).
 
-Still to build: `BGProcessingTask` for the morning pass, the `workouts` and
-`patterns` screens, weather for outdoor plans (needs location), and nudges
-through Yinyue's herald.
+**The built phone app has not caught up to this document.** It renders the
+composed nine-card Home of 2026-09-02; the quiet screen, the examination and
+the agent coming to you are specified here and in prototype.html and are not
+written yet.
+
+Still to build: `health_examine.dart` (the nightly pass and `review/<date>.json`),
+the quiet-screen renderer (status · findings · acts · doors) replacing the
+nine-card Home, `Tell` into Yinyue's thread plus `told.jsonl`, the `Health
+review` screen behind the lead door, `BGProcessingTask` for the morning pass,
+the `workouts` and `patterns` screens, weather for outdoor plans (needs
+location), and nudges through Yinyue's herald.
 
 Native: `ios/Runner/HealthBridge.swift` — authorization for the full type list,
 characteristics, anchored queries, background delivery, workout expansion.
@@ -481,12 +598,27 @@ Entitlements: `healthkit`, `healthkit.background-delivery`.
 ## Mac page
 
 Built 2026-09-03: `scripts/index.html` → `health.html` + `health.js` +
-`health.css`, launcher `web`, like DJ. One scrolling column beside the chat:
-this morning's brief, who you are with evidence and the goals in lead order,
-targets with their formulas, this week with its reasons and adjustments,
-today's checklist, and what this Mac keeps. `PageUpdate` puts the agent's
-findings at the top. `settings.html` says where the mirror is, what it holds,
-which phones send, and its identity.
+`health.css`, launcher `web`, like DJ.
+
+**The first view is the same promise as the phone's** and leads with the same
+thing: the strip of what the pass found, the four counts (types examined · at
+your normal · worth seeing · worth a doctor), the chart of whatever moved with
+the person's own normal drawn through it, and the table under it. What a Mac
+adds is not more on that first screen — it is that everything is reachable one
+tab behind it. The tabs are the phone's doors under the short names a tab strip
+has room for, and the **Data** tab holds every measurement examined last night
+including the ones that had nothing to say, so *nothing needs you* can be
+checked instead of believed. A phone never shows that list.
+
+The **chat is on the right** at the width every Linggen app uses, and Ling
+opens it rather than the user: the pass finished at 02:14, this is what it
+found, this is why the page is in this order. After that the user asks, the
+answer comes back in a sentence or two, and `PageUpdate` puts the working on
+the page beside it. **The page never carries Ling explaining the page** — that
+sentence belongs in the thread, where it can be argued with.
+
+`settings.html` says where the mirror is, what it holds, which phones send, and
+its identity.
 
 It renders the registers the phone wrote and nothing more — the phone owns the
 passes, so there is no second implementation of the plan or the profile to
@@ -505,20 +637,49 @@ within the first minute of backfill.
 | Topic | Direction | Retained | Carries |
 |:------|:----------|:---------|:--------|
 | `tasks/health` | both | yes | backfill / sync progress |
-| `health/registers` | both | yes | profile, layout, plan, targets, checklist, brief as LWW registers |
+| `health/registers` | both | yes | profile, layout, plan, targets, checklist, brief, review as LWW registers |
+| `health/told` | both | yes | what the agent has already come to the user with, so it neither repeats nor double-tells across devices |
 | `health/sync-requested` | Mac → phone | no | the Mac asking for a drain |
 | `actions/health-*`, `-done` | both | request retained | cross-device tool calls |
 
 Readings retain, actions queue. Registers are readings: the newest
 `written_at` wins on both sides.
 
+## Settled (2026-09-03)
+
+- **Show the unhealthy part only.** The nightly examination walks every type
+  the user has and stays silent about the ones that are fine. Unhealthy means a
+  sustained adverse change against the user's *own* baseline, or a published
+  red flag — never below a population average.
+- **A card earns its place by having news today.** At your normal is not a
+  slot. This retired the nine-card composed Home of 2026-09-02, four of whose
+  cards sat there whether or not anything had happened.
+- **A warning outranks the quiet rule**: always on top, never collapsed, never
+  hidden by a tap, and it never names a condition.
+- **The number is not a health score.** It is today against the user's own
+  normal (80 = at your normal), it names what it was made of, and it does not
+  exist below two usable metrics.
+- **The index is picked per user** on coverage × relevance × movement. BMI is
+  the worked example of why a fixed list is wrong.
+- **The agent's voice lives in the conversation, never on the view.** The
+  why-line came off the screen; the screen carries findings. This retires C3 of
+  2026-09-02 as a *screen* feature — automatic layout change and Undo stand.
+- **The agent comes to the user.** When a pass finishes or something is seen,
+  it says so unprompted in its own thread: what it did, what it read, what came
+  out, what it changed. The quiet morning is reported too.
+- **The phone screen can go fully quiet** because Yinyue's screen is one thread
+  for every Linggen app — there is always somewhere for her to say it.
+- Build the capability; do not claim the title. A diagnosis claim from a
+  non-cleared app is an App Review rejection in the US and a regulated medical
+  device in the EU.
+
 ## Settled (2026-09-02)
 
 - The phone is the whole product; the Mac is optional (Liang: "user can use
   their phone independently like DJ and sync data to Mac").
 - Price is Linggen's $5 a month for every app; Health is one of them.
-- The agent composes Home from the user's data; changes are automatic with a
-  why-line and Undo. Never propose-and-wait.
+- Layout changes are automatic with an Undo — never propose-and-wait. (The
+  why-line that accompanied them moved into the conversation on 2026-09-03.)
 - First run is one conversation (confirm, then the goal), never a
   questionnaire; later asks only when a decision needs them.
 - The plan lives in the app and is the source of truth. Calendar mirror is
@@ -532,11 +693,18 @@ Readings retain, actions queue. Registers are readings: the newest
 
 ## Open questions for Liang
 
-1. Skill and app name: `health` / "Linggen Health", or something in the
-   Yinyue world?
-2. Free vs Paid split inside the suite as proposed in product-spec, or the
-   daily pass free too?
-3. Should durable profile facts go to ling-mem automatically (weekly pass), or
+1. **The alarm boundary.** Own-baseline change only, or own-baseline plus a
+   short list of published absolute red flags? The recommendation is both, each
+   phrased "worth showing a doctor" and never naming a condition.
+2. **In-app attention.** May the app learn from what you look at at all, or
+   only from deliberate acts (pin, hide, and what you ask the chat)? Asking is
+   the strongest untapped signal and Apple has no equivalent; watching what you
+   open is the part that needs permission.
+3. Skill and app name: `health` / "Linggen Health", or something in the Yinyue
+   world?
+4. Free vs Paid split inside the suite as proposed in product-spec, or the
+   nightly examination free too?
+5. Should durable profile facts go to ling-mem automatically (weekly pass), or
    only when the user says "remember that"?
 
 ## Related docs

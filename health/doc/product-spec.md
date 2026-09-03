@@ -5,39 +5,45 @@ guide: |
   Product specification for Linggen Health — what it is, every feature we
   could build, the v1 cut, the surfaces, and the workflows. design.md is the
   companion (data, sync, storage, schemas, tools). Brief; not a code reference.
-status: draft 2026-09-02 — direction set by Liang; phone-first; slice 1 (A1, A5, A7, A8, A10, H4, I2) built 2026-09-02 in linggen-mobile
+status: draft 2026-09-03 — the quiet screen, and agents that come to you. Supersedes the composed-dashboard direction of 2026-09-02. Phone-first; slice 1 (A1, A5, A7, A8, A10, H4, I2) built 2026-09-02 in linggen-mobile. The prototype is the spec; the built app has not caught up.
 ---
 
 # Product Spec: Linggen Health
 
 ## Vision
 
-**Apple Health shows the same app to everyone. Linggen Health composes the app
-from you.**
+**Apple Health shows you everything and tells you nothing. Linggen Health reads
+everything and shows you almost nothing.**
 
-The agent is the core. It reads everything Apple Health holds and from that
-data works out who you are: a runner who trains outdoors, a lifter who is
-bulking, someone whose job is a chair and a screen. Then it builds the app for
-that person: which cards sit on top, what the plan for the next days looks
-like, what today's checklist holds, which progress chart matters. It keeps
-learning from what you look at, what you do, and what you tell it, and it
-changes the app as you change. Every change says why, and one tap undoes it.
+Every night the agent walks every measurement this person has — every type,
+against that person's own history — and comes back with one of three verdicts
+each: at your normal, worth seeing, worth a doctor. Nearly all come back at
+your normal, and those are never shown. What reaches the screen is the part
+that is not right, and on most mornings that is nothing at all. A quiet screen
+is the finding, and the app says so out loud rather than leaving a blank.
+
+The agent is still the core, and it still builds the view from this person's
+own data — which measurement matters is picked per user, not fixed in the app.
+What changed is where it does its talking. **The screen carries findings; the
+agent carries everything else, in the conversation.** It does not explain the
+layout on the layout. And it does not wait to be asked: when a pass finishes or
+something is seen, it comes to the user in its own thread and says what it did,
+how much it read, what came out, and what it changed as a result.
 
 The agent has one goal, written into its charter: **help the user get better at
 what they are trying to do, and make them love Linggen Health.**
 
 Three things no incumbent does:
 
-1. **It knows you.** Age, sex, weight, hobby, routine, level, and goal — inferred
-   from years of Watch data in the first minute, from what you open, and from
-   what you say. Never a quiz.
-2. **It composes the app.** A runner gets pace, per-km history and a run plan on
-   top. A lifter gets the split, protein, and the weight trend. A desk worker
-   gets screen time, sitting streaks and move breaks. Same code, one catalog of
-   cards, different app.
-3. **It plans and tracks.** Next several days scheduled around weather, sleep
-   and load; a daily checklist for nutrition and training; progress toward the
-   goal in charts. It adapts when you skip.
+1. **It examines everything, every night.** Not a grid of favourites you pinned
+   by hand: every type you have, judged against your own last month. Apple
+   shows the same screen to everyone and leaves you to spot the problem.
+2. **It stays quiet.** A card earns its place by having news today. At your
+   normal is not a slot. Apple gives three rings because everything cannot be
+   on screen; we go further and show only the part that is wrong.
+3. **It comes to you.** The finding arrives in the conversation, unprompted,
+   with what the agent did about it. A finding that waits for you to open the
+   right screen is a finding the app kept to itself.
 
 Persona depth is free. There is no runner code and no lifter code; there is a
 profile the agent infers and a catalog the agent composes from. The app says
@@ -47,14 +53,16 @@ out loud what it inferred and lets you correct it.
 
 **The phone is the whole product.** Like DJ, Linggen Health works on the iPhone
 alone: it reads HealthKit, keeps its own store, runs the agent passes with the
-account's cloud model, composes Home, writes the plan and the checklist. A user
-with no Mac is a complete user.
+account's cloud model, examines every type against its own baseline, builds the
+screen from what is left, and writes the plan and the checklist. A user with no
+Mac is a complete user.
 
 **The Mac is optional and adds two things.** Long memory (years of samples,
 months of patterns, ling-mem) and the work side of the join (screen time, IDE
 hours, commits, calendar from Apple Shifu and the engine). With a Mac paired,
 the phone syncs its store there, the Mac takes the heavier weekly pass, and the
-Mac page shows everything the phone shows plus the months.
+Mac page leads with the same finding the phone led with — putting the months,
+and every measurement that had nothing to say, one tab behind it.
 
 **A Mac with no iPhone gets no body data.** HealthKit exists only on iPhone and
 iPad, iCloud Health is end-to-end encrypted, and an Apple Watch cannot be set
@@ -66,11 +74,19 @@ Withings to the Mac through their own APIs.
 ## Positioning
 
 - **Not a fixed dashboard.** Apple's Summary is a Favorites list you pin by
-  hand. Ours is composed from your data and re-composed as you change.
-- **Not a score.** Rings, Oura, Whoop own the score. We show your numbers
-  beside your own baseline and never lead with a grade.
-- **Not a chat with your data.** Chat exists (Yinyue on the phone, Ling on the
-  Mac); the front door is the composed Home.
+  hand, and it looks the same on the day everything is fine as on the day it
+  is not. Ours is built each morning out of what actually moved.
+- **Not a health score.** No consumer sensor supports a clinical judgment of a
+  body, and Apple deliberately never ships one. The number on the status line
+  is today against *your own* normal — 80 means at your normal — and it names
+  the measurements it was made of.
+- **Not a chat with your data, and not a screen either.** Both are the app.
+  The screen is where findings land; the conversation (Yinyue on the phone,
+  Ling on the Mac) is where the agent speaks — including first, unasked.
+- **It builds the capability; it does not claim the title.** A daily
+  examination, an index chosen per person, a warning that will not be
+  dismissed: all of it ships. The word "doctor" appears only as *worth showing
+  a doctor*, never as a claim about what the app is.
 - **A coach, not a nag.** One plan, one checklist, one why. Nudges only through
   Yinyue's herald, quiet while you are enjoying something.
 - **Wellness only.** Activity, sleep, load, nutrition targets, habits, patterns.
@@ -90,10 +106,10 @@ tokens every day.
 Proposed split inside the suite (open — Liang's call):
 
 - **Free (trial bucket):** full import, the data browser, workout and sleep
-  detail, the first composition, one weekly brief.
-- **Paid:** the daily pass (brief, checklist, plan adjustments), weekly
-  re-composition, the plan, patterns, agency, ask-anything over months, buyer
-  advice.
+  detail, the first examination, one weekly report.
+- **Paid:** the nightly examination (verdicts, status line, checklist, plan
+  adjustments), weekly re-composition, the plan, patterns, the agent coming to
+  you unprompted, ask-anything over months, buyer advice.
 
 ## Everything we could build
 
@@ -134,19 +150,22 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 | B7 | Profile refreshes at the weekly pass; a new goal or a corrected field refreshes it now | v1 |
 | B8 | Durable profile facts promoted to ling-mem in the user's words, so the rest of Linggen knows | v1 (weekly) — see open question |
 
-### C. Compose — the app built from the profile
+### C. Examine and compose — the quiet screen
 
 | # | Feature | v1 |
 |:--|:--------|:--:|
-| C1 | **Card catalog in code**: brief, plan today, checklist, running, pace history, HR history, lifting split, weight trend, screen time, sitting, sleep, HRV, steps, VO₂max, patterns, weather window | v1 |
-| C2 | **Composition by the agent**: which cards, in what order, what size, each with a headline and a one-line why | v1 |
-| C3 | Layout changes are automatic, with a why-line at the top of Home and one-tap Undo | v1 |
-| C4 | Churn cap: the layout moves only at the weekly pass or on the user's own action; numbers change daily, the shape does not | v1 |
-| C5 | Pin and hide by the user win forever; the agent composes around them | v1 |
-| C6 | First composition from history within the first minute of the first run | v1 |
-| C7 | "What changed" history: every composition with its reason, restorable | v1 |
-| C8 | Card headlines written in the user's terms and Yinyue's voice | v1 |
-| C9 | Mac without a phone: Home composed from the work side alone, plus the "your body data lives on your iPhone" card | v1 |
+| C1 | **Nightly examination**: every type this person has, judged against their own 28-day baseline → one of three verdicts: *at your normal*, *worth seeing*, *worth a doctor* | v1 |
+| C2 | **At your normal is never a card.** A card earns its place by having news today; the screen grows on the day something happened and shrinks back when it passes | v1 |
+| C3 | **The screen is three things**: the status line, then anything that needs attention, then a short recent-activity list. Everything else is behind a door | v1 |
+| C4 | **Today against your own normal** as one number: z per metric, sub-score 80 + 12z, weighted over the metrics with enough history. 80 = at your normal. It names what it was made of, and does not exist below two usable metrics | v1 |
+| C5 | **The index is picked per user**, ranked on coverage × relevance × movement — never a fixed list. BMI is dropped for a muscular lifter, and dropped again as redundant for someone whose scale already says it | v1 |
+| C6 | **A warning outranks the quiet rule**: always on top, never collapsed, never hidden by a tap, and it never names a condition | v1 |
+| C7 | **The quiet is stated, never implied**: the status line says how many measurements were examined, so *nothing needs you* can be read as a result rather than a blank | v1 |
+| C8 | **Card catalog in code**; the pass picks from it, the phone and the Mac each hold one renderer per kind. A card whose data is absent is never composed | v1 |
+| C9 | **The doors**: the same set in the same order under the screen — health review, my body, this week, today's list, patterns, workouts, everything measured. A person who has to hunt for the plan twice stops looking | v1 |
+| C10 | Pin and hide by the user win forever; attention reorders cards that already earned a place, never invents one and never suppresses a warning | v1 |
+| C11 | "What changed" history: every composition with its reason, restorable; Undo pins what it restores for four weeks | v1 |
+| C12 | Mac without a phone: the page leads with the pairing card and says in those words that it has no body data | v1 |
 
 ### D. Plan — the next several days
 
@@ -180,7 +199,7 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 
 | # | Feature | v1 |
 |:--|:--------|:--:|
-| F1 | **Morning brief** as the top card: one sentence, the evidence, today's session | v1 |
+| F1 | **The status line**: one line that proves it looked — today's number against your own normal, what it was made of, and how many measurements were examined | v1 |
 | F2 | Personal baselines, not population ranges; every number shown as a delta from *your* normal | v1 |
 | F3 | Pattern memory across months: "every release week", "after 23:00 commits", with evidence and confidence | v1 |
 | F4 | Sleep: stages, debt, consistency, overnight HRV and wrist temperature, and what tracks with a bad night | v1 |
@@ -193,24 +212,26 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 | F11 | Our own scores rebuilt from raw with the formula visible: readiness, training load | later |
 | F12 | Monthly and yearly review in Yinyue's voice | later |
 
-### G. Agency — the agent drives
+### G. Agency — the agent comes to you
 
 | # | Feature | v1 |
 |:--|:--------|:--:|
-| G1 | Nudges through Yinyue's herald: today's session, stand, water, wind down — rule-gated, model-judged, quiet while enjoying | v1 |
-| G2 | Cross-app actions: DJ wind-down playlist at bedtime, Yinyue goes quiet, Pulse waits | v1 (DJ + Yinyue) |
-| G3 | Act on the cause: move a meeting, refuse a long run after a bad night | v1 (propose), later (calendar write) |
-| G4 | Log by voice: "ran 6k, knee sore", "legs done, 4 sets", "protein shake" → checklist + note | v1 |
-| G5 | Write back to HealthKit: water, caffeine, dietary protein, mindful minutes, workouts | later |
-| G6 | Watch: today's session and the checklist on the wrist, one-tap check, start the planned workout | later |
-| G7 | Family: several phones, one Mac; each person's rows carry `by`; profile and plan are per person | later |
+| G1 | **The agent reports its own work, unprompted.** When a pass finishes it says so in its own thread: what it read, how much of it, what came out, and what it changed. The quiet morning is reported too — that is the proof it looked, not noise | v1 |
+| G2 | **The agent's voice lives in the conversation, never on the view.** No why-line on the screen, no card explaining the layout, no self-introduction painted on a page. The explanation goes where the user can answer back | v1 |
+| G3 | Nudges through Yinyue's herald: today's session, stand, water, wind down — rule-gated, model-judged, quiet while enjoying | v1 |
+| G4 | Cross-app actions: DJ wind-down playlist at bedtime, Yinyue goes quiet, Pulse waits | v1 (DJ + Yinyue) |
+| G5 | Act on the cause: move a meeting, refuse a long run after a bad night | v1 (propose), later (calendar write) |
+| G6 | Log by voice: "ran 6k, knee sore", "legs done, 4 sets", "protein shake" → checklist + note | v1 |
+| G7 | Write back to HealthKit: water, caffeine, dietary protein, mindful minutes, workouts | later |
+| G8 | Watch: today's session and the checklist on the wrist, one-tap check, start the planned workout | later |
+| G9 | Family: several phones, one Mac; each person's rows carry `by`; profile and plan are per person | later |
 
 ### H. Surfaces
 
 | # | Feature | v1 |
 |:--|:--------|:--:|
-| H1 | Phone: Health under ON THIS PHONE — Home (composed), Plan, Track, Workouts, Patterns, Data, Settings; complete without a Mac | v1 |
-| H2 | Mac: Linggen Health page — the profile with evidence, the composition history, the plan, months of trend, patterns, chat; work-side only when no phone is paired | v1 |
+| H1 | Phone: Health under ON THIS PHONE — the quiet screen, then the doors to Plan, Track, Workouts, Patterns, Data, Settings; complete without a Mac | v1 |
+| H2 | Mac: Linggen Health page — the same first view the phone led with, and behind it everything reachable one tab away, including every measurement that had nothing to say; chat on the right at the width every Linggen app uses | v1 |
 | H3 | "Right now" block on the Mac carries the body state and today's session | v1 |
 | H4 | Data browser: every type, count, last sample, source, granted / silent-empty — show everything | v1 |
 | H5 | Watch complication and glance | later |
@@ -223,45 +244,55 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 | I1 | Health data stays on the phone, and on a paired Mac; never in iCloud, never sold, never for ads | v1 |
 | I2 | Permission ledger on screen: which types were granted, which return nothing, since when | v1 |
 | I3 | The profile is visible with its evidence; "not quite" corrects it and the correction wins | v1 |
-| I4 | Every composition carries its why and its undo; every agent action visible as a chip | v1 |
+| I4 | Every composition carries its why and its undo — the why said in the conversation, the undo on the screen; every agent action visible as a tool chip | v1 |
 | I5 | Wellness scope written into the skill and the UI; the agent declines diagnosis and says who to ask | v1 |
 | I6 | No brand is named unprompted; on ask, the source is shown | v1 |
 
 ## v1 in one paragraph
 
 Import everything on the phone, infer the profile from history in the first
-minute, open with one conversation that confirms it and asks the goal, compose
-Home from the card catalog with a why-line and Undo, write the week's plan
-(weather for outdoor athletes, the split and targets for lifters, move breaks
-for desk workers), derive the daily checklist and auto-check it from HealthKit,
-show progress toward the goal as charts, keep personal baselines and patterns
-that say "not enough data yet" until they can prove something, nudge only
-through Yinyue, re-compose weekly as the user changes, and sync all of it to a
-Mac when there is one. The plan lives in the app. No brands, no calendar
-writes, no diagnosis, no Mac required.
+minute, open with one conversation that confirms it and asks the goal, then run
+an examination every night over every type the person has and stay silent about
+the ones that are fine. Build the screen from what is left: the status line
+that proves it looked, the finding if there is one, the last few sessions, and
+the doors. Say the rest in the conversation, and say it first — when a pass
+finishes, the agent comes to the user with what it did and what it found. Write
+the week's plan (weather for outdoor athletes, the split and targets for
+lifters, move breaks for desk workers), derive the daily checklist and
+auto-check it from HealthKit, show progress toward the goal as charts, keep
+personal baselines and patterns that say "not enough data yet" until they can
+prove something, nudge only through Yinyue, and sync all of it to a Mac when
+there is one. The plan lives in the app. No brands, no calendar writes, no
+diagnosis, no Mac required.
 
 ## Three people, one app
 
-Examples of what composition yields. These are outputs, not code paths.
+Examples of what the examination yields. These are outputs, not code paths.
+Each person has an ordinary day and the day the app speaks; the ordinary day is
+the common one.
 
-**The outdoor runner.** Home: brief, today's run with the weather window, pace
-history, weekly distance, HRV. Plan: five days scheduled around rain, long run
-on the dry weekend day, rest after the long one. Track: per-km time chart, run
-6 km ✓, water ✓. Why-line: "Running on top because you ran 4 of the last 7
-days."
+**The lifter, bulking, no scale.** 38 types examined, 36 at your normal.
+Ordinary day: "Nothing needs you today", then Pull / Push / Legs and the doors.
+The day it speaks: HRV is 27 ms, seven below his normal and the lowest of the
+fortnight, the morning after a Legs day — Legs comes off, Push moves to Friday.
+The index picker lands on HRV (5,266 rows) and drops BMI twice over: he has one
+weigh-in from 2022, and even with a scale BMI reads a muscular lifter as
+overweight. Yinyue's thread carries the report; the screen carries the finding.
 
-**The lifter, bulking.** Home: brief, today's session (legs), protein target
-and progress, weight trend against the goal line, sleep. Plan: push / pull /
-legs across the week, deload in week 4, 2.0 g/kg protein shown as the formula.
-Track: protein 128 of 160 g, legs 4 sets ✓, weigh-in ✓, creatine ✓. Why-line:
-"Weight trend on top because you said you're bulking on 28 Aug."
+**The office worker, with a scale.** 41 types examined, 39 at your normal.
+The day it speaks: weight up 1.9 kg over five weeks *and* body fat up 1.2
+points with it — one number alone would not have earned the screen; two that
+agree do. Walking is unchanged, which is what rules out the other explanation.
+BMI is available here and still not chosen: for her it repeats what the weight
+and the body fat already said.
 
-**The office worker.** Home: brief, screen time vs normal, sitting streak,
-today's move break, steps, sleep. Plan: three 20-minute walks and two short
-strength sessions on the lightest calendar days. Track: walk ✓, stand 8 of 12,
-water. Why-line: "Screen time on top because you logged 9 hours in an IDE
-yesterday." (Screen time needs a paired Mac; without one the same person gets
-steps, stand hours and sleep on top.)
+**The runner, unwell.** 44 types examined, 41 at your normal, one worth a
+doctor. Resting heart rate 12 above his own normal for nine consecutive
+mornings, and it did not come down on rest days; HRV fell with it and sleep is
+an hour short. The warning leads and cannot be swapped out; his pace goal — his
+metric in an ordinary month — loses its place, and the app does not coach him
+through it. The agent names the change, says to take those numbers to a doctor,
+leaves the week unplanned, and stops there.
 
 ## Surfaces (UI)
 
@@ -272,38 +303,72 @@ otherwise. Title ▾ lists **Today / This week / This month**; ⋮ carries **Log
 voice / Who you are / Permissions / Export**, plus **Sync now** when paired.
 Lists use the ⋯ item menu; nothing swipes.
 
-1. **Home** (composed). The why-line when the layout changed this week, with
-   Undo. Then the cards the agent chose, top card first. Every card opens its
-   detail. A text and mic field at the bottom goes to Yinyue with Home as
-   context. Long-press a card: Pin, Hide, Why this.
-2. **Plan.** The next seven days, one row each: session or rest, the reason,
+1. **The screen.** Three things and then the doors. The **status line**: the
+   number against your own normal, the sentence ("Nothing needs you today" /
+   "One thing worth seeing" / "Something has held long enough to show a
+   doctor"), and what it was made of — "from HRV, resting heart rate and blood
+   oxygen · 38 measurements examined". Then **anything that needs attention**:
+   nothing on a good day, the finding on a bad one, with its evidence, its
+   fortnight, and what it changed. Then the **last few sessions**, tappable to
+   expand. Then the **doors**, always the same set in the same order. An "Ask
+   Yinyue about any of it…" bar at the bottom opens her thread. Long-press a
+   card: Pin, Hide, Why this.
+
+   Nothing on this screen is the agent talking about itself. No why-line, no
+   introduction, no offer to rebuild the view — that is said in Yinyue's
+   thread, which is one conversation for every Linggen app and therefore always
+   available. The screen is left holding findings.
+
+   The seven doors, in this order, with what each shows underneath: **Health
+   review** ("38 checked last night", the lead door) · **My body** ("44 · 183
+   cm · no scale") · **This week** ("Push · Pull · Legs") · **Today's list**
+   ("4 items, 1 done") · **Patterns** ("2 stable, 1 forming") · **Workouts**
+   ("1,438 kept") · **Everything measured** ("38 types · since 2016", full
+   width). They open the screens below, and the set never changes with the
+   composition — a person who has to hunt for the plan twice stops looking.
+2. **Health review.** What last night's pass found and how it decided: the
+   verdict counts, the measurement that moved with its own baseline drawn
+   through the fortnight, and what was ruled out.
+3. **Plan.** The next seven days, one row each: session or rest, the reason,
    weather where it matters. Tap a day to see the session detail (sets, route,
    duration). "Adjusted this morning" rows say why.
-3. **Track.** Today's checklist on top: each item with its target, auto-checked
+4. **Track.** Today's checklist on top: each item with its target, auto-checked
    or tap to check, voice to log. Beneath, progress toward the goal: the chart
    the goal needs (weight trend, per-km time, tonnage, weekly distance), then
    heart history. Adherence for the week at the bottom.
-4. **Workouts.** List; detail has the route, HR zones, splits, recovery, effort,
+5. **Workouts.** List; detail has the route, HR zones, splits, recovery, effort,
    "vs your last five", and the agent's one paragraph.
-5. **Patterns.** Cards: claim, confidence ("4 of 5 release weeks since June"),
+6. **Patterns.** Cards: claim, confidence ("4 of 5 release weeks since June"),
    evidence rows, first seen. A grey card reads "Not enough data yet — 2 of 4
    weeks".
-6. **Data.** Every type: samples, last sample, source, granted or silent-empty.
+7. **Data.** Every type: samples, last sample, source, granted or silent-empty.
    Tap a type to browse raw samples.
-7. **Settings.** Which types to read, pass time, nudges and quiet hours, how
-   blunt the voice is, layout changes (automatic with undo; history), the plan
-   (calendar mirror off), your Mac (paired or not), export.
+8. **Settings.** Which types to read, pass time, nudges and quiet hours, how
+   blunt the voice is, layout changes (automatic with undo; history), how
+   often the agent may come to you unprompted, the plan (calendar mirror off),
+   your Mac (paired or not), export.
 
-**Who you are** (sheet from ⋮ or from the why-line): the profile as the agent
-holds it, each field with confidence and evidence, a "Not quite" on every row.
+**Who you are** (the *My body* door, or ⋮): the profile as the agent holds it,
+each field with confidence and evidence, a "Not quite" on every row.
 
 ### Mac — Linggen Health page
 
-Web app at `/apps/health/`, same launcher as DJ. Left column: the profile with
-evidence, the composition history ("what changed and why", restorable), this
-week's plan with adjustments. Centre: months of trend as small multiples on one
-axis, progress charts, the patterns board, reports, sync state. Right: the chat
-panel. The agent updates the page through PageUpdate.
+Web app at `/apps/health/`, same launcher as DJ. **The first view is the same
+promise as the phone's** and leads with the same thing: the strip that says what
+the pass found, the four counts (types examined · at your normal · worth seeing
+· worth a doctor), the chart of whatever moved, and the table under it. What a
+Mac adds is not more on that first screen — it is that everything is reachable
+behind it. The tabs carry the same doors the phone lists, and the **Data** tab
+holds every measurement examined last night including the thirty-odd that had
+nothing to say, so *nothing needs you* can be checked instead of believed. A
+phone never shows that list; it would be the confusion we started by removing.
+
+The **chat sits on the right** at the width every Linggen app uses, and it
+opens with Ling rather than with the user: the pass finished at 02:14, this is
+what it found, this is why the page is in this order. After that the user asks,
+the answer comes back in a sentence or two, and the working goes on the page
+beside it through `PageUpdate`. The page itself never carries Ling explaining
+the page.
 
 **With no iPhone paired** the same page composes from the work side only:
 screen time and IDE hours, sitting streaks, late commits, meetings, calendar
@@ -336,17 +401,24 @@ planned workout.
    waits for it and says so.
 6. Later questions come only when a decision needs them, one at a time, with
    the consequence attached: "Gym or at home? It changes Thursday."
-7. First brief needs one night. First pattern needs four weeks and says so.
+7. The first examination needs one night; until then the status line says so
+   rather than showing a number. The first pattern needs four weeks and says
+   so.
 8. **No history at all** (new phone, no Watch): the conversation asks three
    things, goal first, and the ledger says why it had to.
 
 ### 2. Every day — on the phone
 
-- Night lands in HealthKit → the phone wakes → the morning pass runs on the
-  phone with the cloud model: baselines, last night, the plan, weather if
-  outdoors → writes the brief, today's checklist, and any plan adjustment with
-  its why → Home shows them, Yinyue says the session once when first spoken
-  to.
+- Night lands in HealthKit → the phone wakes → the pass runs on the phone with
+  the cloud model: it walks **every** type against that type's own baseline,
+  files a verdict for each, then joins the ones that moved to sleep, load, the
+  plan and the weather if outdoors → writes the verdicts, the status line,
+  today's checklist, and any plan adjustment with its why.
+- The screen shows what is left after the quiet ones are dropped — on most
+  mornings just the status line, the sessions and the doors.
+- **Yinyue then comes to the user**, unprompted, in her own thread: what she
+  read, how much of it, what came out, and what she changed. On a quiet morning
+  she says that too, in a line. She does not wait to be spoken to.
 - With a Mac paired, the phone syncs the store and the Mac adds yesterday's
   work signals to the brief; the Mac "Right now" carries the state.
 - Through the day the checklist auto-checks as samples land; voice fills the
@@ -362,8 +434,8 @@ with it.
 ### 4. Weekly
 
 Sunday evening: profile refresh from the week's data, attention and notes →
-re-composition if the profile moved (why-line + undo) → next week's plan →
-the weekly report. With a Mac paired and reachable, the Mac runs this pass
+re-composition if the profile moved (the agent says why in the thread; Undo on
+the screen) → next week's plan → the weekly report. With a Mac paired and reachable, the Mac runs this pass
 over the long store and writes durable profile facts to memory in the user's
 words; otherwise the phone runs it over its own store.
 
@@ -385,10 +457,16 @@ Pairing an iPhone fills it in within the first minute.
 
 ## What Linggen Health never does
 
-- Diagnose, or comment on medication.
+- Diagnose, or comment on medication, or claim to be a doctor.
 - Ask a question the data already answers, or hand the user a questionnaire.
-- Show the same Home to two different people, or rearrange it daily.
+- Show the same screen to two different people, or rearrange it daily.
+- Give a measurement a slot for being at your normal.
+- Explain itself on the screen: no why-line on the view, no card introducing
+  the agent, no commentary where findings belong.
+- Wait to be asked. A pass that found something and said nothing until the
+  user opened the right screen is a failure, not discretion.
 - Change the layout without saying why, or without an undo.
+- Compare a number to a population range instead of the user's own history.
 - Name a brand unprompted, or name one without the source.
 - Lead with a score, or show a number without the personal baseline beside it.
 - Surface a pattern from one week, or a weight trend from one morning.

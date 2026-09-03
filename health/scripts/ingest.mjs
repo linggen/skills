@@ -369,6 +369,10 @@ const VERBS = {
       `plans/${week}.json`,
       `checklist/${day}.json`,
       `briefs/${day}.json`,
+      // The night's examination: a verdict per type against that type's own
+      // baseline. Null until the phone has run one — which is why the agent is
+      // told to read a null as "no pass yet", never as "nothing was wrong".
+      `review/${day}.json`,
     ];
     const registers = pull(names);
     const paired = Object.keys(s.devices || {}).length > 0;
@@ -389,6 +393,7 @@ const VERBS = {
       plan: registers[`plans/${week}.json`] ?? null,
       checklist: registers[`checklist/${day}.json`] ?? null,
       brief: registers[`briefs/${day}.json`] ?? null,
+      review: registers[`review/${day}.json`] ?? null,
     };
   },
 
