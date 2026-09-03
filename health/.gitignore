@@ -1,0 +1,5 @@
+# Runtime state — created at ~/.linggen/skills/health by install.sh and filled
+# by the phone. The source ships config.example.json; the live config and the
+# mirror itself are never committed.
+config.json
+data/

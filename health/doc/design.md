@@ -7,7 +7,7 @@ guide: |
   Mac (mirror, memory, work signals), sync between them, the profile /
   composition / plan / checklist schemas, the tool catalog, and the rules
   that keep it honest. Companion to product-spec.md. Brief; no code.
-status: draft 2026-09-02 — direction set by Liang; slice 1 built 2026-09-02 (HealthKit bridge, phone store, backfill + live feed, Home/Data screens, three tools) — see linggen-mobile/doc/health.md for what runs
+status: draft, building — the phone is built through Plan and Track and runs on a real iPhone; the Mac mirror landed 2026-09-03 (this skill: SKILL.md, ingest.mjs, the store model). The Mac page is next. See linggen-mobile/doc/health.md for what runs on the phone.
 ---
 
 # Design: Linggen Health
@@ -130,9 +130,11 @@ Documents/Health/
   .outbox/<seq>.jsonl.gz   deltas waiting for a paired Mac
 ```
 
-JSONL like every other Linggen store, on the phone first. The Mac mirror under
-`~/.linggen/skills/health/` has the same layout plus years of samples. Rows
-carry `by` (device + account) because two phones on one Mac are two bodies.
+JSONL like every other Linggen store, on the phone first. The Mac mirror has
+the same layout one level down, under `~/.linggen/skills/health/data/` — beside
+`config.json` the way `cfo` and `dj` keep theirs — plus years of samples and
+`state.json`'s `mirror_id` and per-device positions. Rows carry `by` (device +
+account) because two phones on one Mac are two bodies.
 
 ## Where each pass runs
 
@@ -160,19 +162,32 @@ depend on it.
 Same door DJ's phone ops use: **batches up through `/api/bash` into one skill
 script under one lock.** Zero engine work.
 
-- **Body data, phone → Mac.** `HealthBridge` keeps an anchor per type per Mac;
-  each delta becomes `.outbox/<seq>.jsonl.gz` with added samples, deleted
-  UUIDs, attention lines, and a coarse location line once a day. While
-  connected, `health_sync.dart` drains the outbox in order, one file per
-  `/api/bash` call: `bun ingest.mjs --device <id> --seq <n>` with the payload
-  base64 on stdin, chunks capped at ~500 samples or 256 KB. Reply is `{seq,
-  added, deleted, skipped[]}`; the phone deletes exactly the acknowledged
-  file; `ingest.mjs` dedupes by uuid and keeps a bounded ring of applied `seq`,
-  so a re-send is a no-op. A `del` line marks `deleted_at`; the Mac never
-  removes a row.
-- **Derived objects, both ways.** profile, layout, plans, targets, checklist,
-  briefs, patterns, goals, notes: LWW registers exchanged on connect and on
-  write, newest `written_at` wins, both sides converge.
+- **Body data, phone → Mac** (built 2026-09-03). **No outbox.** The phone's
+  month files under `samples/` are already an append-only log of every row it
+  has read, so a mirror is a POSITION in that log — a byte offset per month
+  file, kept in `state.json` under `mirror` — and never a second copy of the
+  rows waiting to be sent. This replaces the `.outbox/<seq>.jsonl.gz` sketch:
+  an outbox would have duplicated tens of thousands of rows on the phone, and
+  would still have needed a separate first-mirror path for a Mac paired after
+  the fact. A position needs neither. `health_sync.dart` walks each type's
+  months, reads a window (256 KB, cut back to its last newline so a
+  half-written tail waits), and sends it as one `/api/bash` call into
+  `ingest.mjs samples` with the payload gzipped and base64'd. Reply is
+  `{ok, added, deleted, duplicate, unfiled, held}`; the position moves only
+  after that reply, so a batch that never landed is sent again. `ingest.mjs`
+  dedupes by uuid, so a re-send is free. A `del` line is filed by the day it
+  was noticed; the Mac never removes a row. The mirror carries an id: a Mac
+  whose store was made again is a stranger, and meeting one resets every
+  position, because the history it never received would otherwise never be
+  offered again.
+- **Derived objects, both ways** (built 2026-09-03). profile, layout, this
+  week's plan, targets, today's checklist and brief: LWW registers exchanged
+  on connect, newest `written_at` wins, both sides converge. A copy adopted
+  from the other side is written EXACTLY as it was written there — re-stamping
+  it would make the reader the newer writer of a file it did not write, and
+  the two would trade the same register forever. Notes are the exception: a
+  union, never a winner, because a line the user said cannot be stale.
+  Patterns and goals join the list when they are written.
 - **Work signals, Mac → phone.** `life/<date>.json` for the last 7 days rides
   the existing `sync:` declaration (Mac → phone, read-only), so the phone's
   morning pass can join yesterday's work when a Mac exists.
@@ -449,12 +464,15 @@ singleton: authorize, backfill, live feed, catch-up), `health_tools.dart`
 `lib/screens/health/health_screen.dart` (Home + Data) and
 `health_type_screen.dart` (raw rows). Drawer row under ON THIS PHONE.
 
-Still to build: `health_passes.dart` (the passes through Yinyue's session;
-`BGProcessingTask` for the morning pass), `health_sync.dart` (outbox +
-register exchange, only when paired); the Home renderer over `layout.json`
-with one widget per card kind; `plan`, `track`, `workouts`, `patterns`,
-`settings`, `who_you_are`. Item menu via `item_menu.dart`; long-press a card
-for Pin / Hide / Why.
+Built since: `health_passes.dart`, `health_profile.dart`, `health_daily.dart`,
+`health_cards.dart`, `health_plan.dart`, `health_targets.dart`,
+`health_checklist.dart`, the Home renderer over `layout.json`, `plan`, `track`,
+`who_you_are`, and `health_sync.dart` (the mirror: positions, registers,
+notes).
+
+Still to build: `BGProcessingTask` for the morning pass, the `workouts` and
+`patterns` screens, weather for outdoor plans (needs location), and nudges
+through Yinyue's herald.
 
 Native: `ios/Runner/HealthBridge.swift` — authorization for the full type list,
 characteristics, anchored queries, background delivery, workout expansion.
