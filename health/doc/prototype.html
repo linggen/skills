@@ -171,62 +171,64 @@
   .words ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 13.5px; color: var(--dim); }
   .words h3 { font-size: 14px; }
 
-  /* Mac */
+  /* Mac — the house shape: what the agent produced on the left, the agent on
+     the right at the width every other Linggen app uses. The chat is not a
+     sidebar. It is where the work is asked for, and the page is its output. */
   .mac { border: 1px solid var(--line); border-radius: 15px; overflow: hidden; background: var(--surface); }
-  .mac-top { display: flex; gap: 11px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .mac-top i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--line); margin-right: 4px; }
-  .mac-top .p { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-left: auto; }
-  .mac-body { display: grid; grid-template-columns: 186px minmax(0, 1fr) 244px; min-height: 560px; }
+  .mac-top { display: flex; gap: 10px; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+  .mac-top .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--jade); }
+  .mac-top .set { margin-left: auto; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+  .mac-body { display: grid; grid-template-columns: minmax(0, 1fr) 452px; min-height: 620px; }
   @media (max-width: 980px) { .mac-body { grid-template-columns: 1fr; } }
 
-  .rail { border-right: 1px solid var(--line); background: var(--ground); padding: 14px 12px; display: grid; gap: 3px; align-content: start; }
-  .rail .cap { padding: 4px 8px 7px; }
-  .rail button { display: grid; gap: 1px; text-align: left; padding: 8px 10px; background: none; border: 0; border-radius: 9px; cursor: pointer; }
-  .rail button b { font-weight: 500; font-size: 13.5px; }
-  .rail button span { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
-  .rail button[aria-current="true"] { background: var(--jade-soft); }
-  .rail button:hover { background: var(--raised); }
+  .mac-main { padding: 18px 20px; display: grid; gap: 14px; align-content: start; min-width: 0; background: var(--ground); }
+  .mac-h { display: flex; gap: 12px; align-items: baseline; }
+  .mac-h h3 { font-size: 18px; }
+  .mac-h .btn { margin-left: auto; font-family: var(--mono); font-size: 11.5px; padding: 5px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--dim); }
+  .strip { font-family: var(--mono); font-size: 11.5px; line-height: 1.6; color: var(--dim); background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; }
+  .tabs { display: flex; gap: 2px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+  .tabs button { padding: 7px 11px; background: none; border: 0; border-bottom: 2px solid transparent; font-size: 13.5px; color: var(--dim); cursor: pointer; margin-bottom: -1px; }
+  .tabs button[aria-current="true"] { color: var(--jade); border-bottom-color: var(--jade); font-weight: 500; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+  @media (max-width: 700px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile { padding: 11px 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 11px; display: grid; gap: 1px; }
+  .tile b { font-family: var(--mono); font-size: 23px; font-weight: 600; line-height: 1.1; }
+  .tile .k { font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); }
+  .tile .s { font-size: 11.5px; color: var(--dim); }
+  .tile.flag { border-color: var(--crit); }
+  .tile.flag b { color: var(--crit); }
 
-  .thread { display: grid; grid-template-rows: 1fr auto; min-width: 0; }
-  .msgs { padding: 18px 20px; display: grid; gap: 15px; align-content: start; }
-  .m-me { justify-self: end; max-width: 74%; background: var(--jade-soft); border-radius: 14px 14px 4px 14px; padding: 10px 14px; font-size: 14px; }
-  .m-ai { display: grid; gap: 11px; max-width: 100%; min-width: 0; }
-  .m-ai .say { font-size: 14.5px; line-height: 1.55; }
-  .m-ai .tools { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
-  .compose { border-top: 1px solid var(--line); padding: 12px 20px; font-size: 13.5px; color: var(--faint); display: flex; gap: 10px; align-items: center; }
-  .compose i { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: var(--jade-soft); color: var(--jade); display: grid; place-items: center; font-style: normal; font-size: 12px; }
-
-  /* A rendered answer, not a paragraph about one */
-  .rich { border: 1px solid var(--line); border-radius: 13px; background: var(--ground); overflow: hidden; }
-  .rich .rh { display: flex; gap: 10px; align-items: baseline; padding: 10px 14px; border-bottom: 1px solid var(--line); }
-  .rich .rh b { font-weight: 600; font-size: 13.5px; }
-  .rich .rh span { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-left: auto; }
-  .rich .rb { padding: 12px 14px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .panel .ph { display: flex; gap: 10px; align-items: baseline; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .panel .ph b { font-weight: 600; font-size: 13.5px; }
+  .panel .ph span { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-left: auto; }
+  .panel .pb { padding: 12px 14px; }
+  .panel .pn { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--dim); background: var(--ground); }
   .bigchart { width: 100%; height: auto; display: block; }
   .bigchart text { font-family: "JetBrains Mono", monospace; font-size: 9px; fill: var(--faint); }
   table.mini { width: 100%; border-collapse: collapse; font-size: 13px; }
-  table.mini th { text-align: left; font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); font-weight: 500; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); }
+  table.mini th { text-align: left; font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); font-weight: 500; padding: 0 10px 7px 0; border-bottom: 1px solid var(--line); }
   table.mini td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); }
   table.mini tr:last-child td { border-bottom: 0; }
   table.mini td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
   table.mini td.flag { color: var(--crit); font-weight: 500; }
   table.mini td.fine { color: var(--dim); }
-  .rich .rn { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--dim); background: var(--surface); }
 
-  .now { border-left: 1px solid var(--line); background: var(--ground); padding: 15px 15px 18px; display: grid; gap: 13px; align-content: start; }
-  @media (max-width: 980px) {
-    .rail { border-right: 0; border-bottom: 1px solid var(--line); grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
-    .now { border-left: 0; border-top: 1px solid var(--line); }
-  }
-  .now .mini-find { display: grid; gap: 4px; padding: 11px 12px; border-radius: 11px; border: 1px solid var(--gold); background: var(--gold-soft); }
-  .now .mini-find.crit { border-color: var(--crit); background: var(--crit-soft); }
-  .now .mini-find b { font-size: 13px; line-height: 1.35; }
-  .now .mini-find span { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
-  .now .mini-find.crit span { color: var(--crit); }
-  .kvs { display: grid; gap: 4px; font-size: 13.5px; }
-  .kvs .r { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
-  .kvs .r:last-child { border-bottom: 0; }
-  .kvs .r span:last-child { font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+  /* The chat. Same width, same furniture, as Pulse and DJ. */
+  .chat { border-left: 1px solid var(--line); display: grid; grid-template-rows: auto 1fr auto; min-width: 0; background: var(--surface); }
+  @media (max-width: 980px) { .chat { border-left: 0; border-top: 1px solid var(--line); } }
+  .chat-h { padding: 10px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 5px; }
+  .chat-h .sess { font-family: var(--mono); font-size: 11px; color: var(--faint); display: flex; gap: 8px; align-items: center; }
+  .chat-h .sess b { color: var(--dim); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; font-size: 10px; }
+  .chat-h .sess .edit { margin-left: auto; border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; color: var(--jade); }
+  .chat-h .model { font-family: var(--mono); font-size: 11.5px; color: var(--dim); border: 1px solid var(--line); border-radius: 7px; padding: 5px 9px; }
+  .chat-msgs { padding: 15px 16px; display: grid; gap: 14px; align-content: start; overflow-y: auto; }
+  .cm { display: grid; gap: 4px; font-size: 14px; line-height: 1.55; }
+  .cm .who { font-weight: 600; color: var(--jade); font-size: 13.5px; }
+  .cm.me { justify-self: end; max-width: 82%; background: var(--jade-soft); border-radius: 13px 13px 3px 13px; padding: 9px 13px; }
+  .cm .tool { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .chat-c { border-top: 1px solid var(--line); padding: 12px 16px; display: flex; gap: 10px; align-items: center; font-size: 13.5px; color: var(--faint); }
+  .chat-c i { margin-left: auto; width: 28px; height: 28px; border-radius: 8px; background: var(--jade); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 12px; }
 
   @media (prefers-reduced-motion: no-preference) {
     .person, .act-row, .find, .status { transition: border-color .15s ease, box-shadow .15s ease; }
@@ -338,18 +340,28 @@
   <section id="mac">
     <div class="head">
       <span class="eyebrow">The Mac · optional</span>
-      <h2>A big screen earns a conversation that draws its answers</h2>
-      <p>The phone answers in a sentence because a sentence is what fits. A Mac has room, so the answer arrives as the thing itself: the chart, the weeks, the table of what moved. Same question, same numbers, a surface that can show its work. The doors are down the left, what is true right now is down the right, and a phone keeps about thirteen months while this keeps all of it.</p>
+      <h2>The chat is the app; the page is what it produced</h2>
+      <p>Every Linggen app on the Mac puts the conversation on the right at the same width, and Health is no exception. You ask; the answer comes back in a sentence or two and the working goes on the page beside it, where there is room for the fortnight, the marked mornings and the table. A phone keeps about thirteen months. This keeps all of it.</p>
     </div>
     <div class="mac">
-      <div class="mac-top"><span><i></i><i></i><i></i></span><b>Linggen Health</b><span class="p" id="mac-path"></span></div>
+      <div class="mac-top"><span class="dot"></span><b>Health</b><span class="set" id="mac-path"></span><span class="set">⚙ Settings</span></div>
       <div class="mac-body">
-        <nav class="rail" id="mac-rail" aria-label="Health sections"></nav>
-        <div class="thread">
-          <div class="msgs" id="mac-msgs"></div>
-          <div class="compose"><span>Ask about any of it…</span><i>●</i></div>
+        <div class="mac-main">
+          <div class="mac-h"><h3 id="mac-title">Health review</h3><span class="btn">↻ Examine again</span></div>
+          <div class="strip" id="mac-strip"></div>
+          <nav class="tabs" id="mac-tabs" aria-label="Health sections"></nav>
+          <div class="tiles" id="mac-tiles"></div>
+          <div class="panel" id="mac-chart"></div>
+          <div class="panel" id="mac-table"></div>
         </div>
-        <aside class="now" id="mac-now"></aside>
+        <div class="chat">
+          <div class="chat-h">
+            <div class="sess"><b>Session</b> sess-1788452725-a8af7574 <span class="edit">edit ▾</span></div>
+            <div class="model">Default (gpt-5.6-terra)</div>
+          </div>
+          <div class="chat-msgs" id="mac-chat"></div>
+          <div class="chat-c"><span>Message… (/ for skills, @ for files)</span><i>➤</i></div>
+        </div>
       </div>
     </div>
     <p class="dim" style="font-size:13.5px; max-width:68ch">With no iPhone paired this page has no body data at all, says so in those words, and leads with the pairing card. Apple Health exists only on an iPhone and none of it can be inferred from a Mac.</p>
@@ -558,6 +570,19 @@
         ['Workouts', '1,438 kept'],
         ['Everything measured', '38 types · since 2016', 'wide']
       ],
+      macStrip: '38 types · 36 at your normal · 1 worth seeing · 0 worth a doctor · mirror 2,216,860 samples since 2016-11-26',
+      macTiles: [
+        ['38', 'Types examined', 'last night, 02:14'],
+        ['36', 'At your normal', 'nothing to say'],
+        ['1', 'Worth seeing', 'HRV'],
+        ['0', 'Worth a doctor', 'clear']
+      ],
+      macChat: [
+        ['me', 'How did last week go?'],
+        ['ai', 'Four sessions, all four kept, and pull tonnage is up 6% on your last five. What moved is recovery, not strength. I put the fortnight of HRV on the page and marked the three mornings that followed a Legs day.', 'Report · GetRange hrv · ListWorkouts'],
+        ['me', 'Anything to worry about?'],
+        ['ai', 'No. A drop that tracks your own hard days is training, and it comes back when you rest. Nothing in last night’s pass was worth a doctor.', 'Report']
+      ],
       macQ: 'How did last week go?',
       macA: {
         say: 'Four sessions, all four kept, and your pull tonnage is up 6% on the last five. What moved is recovery, not strength: HRV has slid seven points over the fortnight and every step down lands the morning after a Legs day.',
@@ -641,6 +666,19 @@
         ['Workouts', '312 kept'],
         ['Everything measured', '41 types · since 2021', 'wide']
       ],
+      macStrip: '41 types · 39 at your normal · 2 worth seeing · 0 worth a doctor · mirror 861,402 samples since 2021-04-02',
+      macTiles: [
+        ['41', 'Types examined', 'last night, 02:09'],
+        ['39', 'At your normal', 'nothing to say'],
+        ['2', 'Worth seeing', 'weight, body fat'],
+        ['0', 'Worth a doctor', 'clear']
+      ],
+      macChat: [
+        ['me', 'Why is my weight up?'],
+        ['ai', 'Because body fat went up with it, so it is not water and it is not muscle. Five weeks of both are on the page, with your walking in the table underneath — it has not changed.', 'Report · GetProgress weight · GetProgress body_fat'],
+        ['me', 'Should I be worried?'],
+        ['ai', 'Not yet, and five weeks is short. It is on your screen because two measurements agree, not because one moved. Ask me again in a fortnight and I will know more.', 'Report']
+      ],
       macQ: 'Why is my weight up?',
       macA: {
         say: 'Because body fat went up with it. The seven-day average moved 62.4 to 64.3 over five weeks, and body fat moved 27.4 to 28.6 in the same window, so it is not water and it is not muscle. Your walking did not change, so it is not activity either.',
@@ -723,6 +761,21 @@
         ['Patterns', '3 stable'],
         ['Workouts', '904 kept'],
         ['Everything measured', '44 types · since 2019', 'wide']
+      ],
+      macStrip: '44 types · 41 at your normal · 2 worth seeing · 1 WORTH A DOCTOR · mirror 1,504,911 samples since 2019-08-14',
+      macTiles: [
+        ['44', 'Types examined', 'last night, 02:11'],
+        ['41', 'At your normal', 'nothing to say'],
+        ['2', 'Worth seeing', 'sleep, HRV'],
+        ['1', 'Worth a doctor', 'resting heart rate', 'flag']
+      ],
+      macChat: [
+        ['me', 'What changed?'],
+        ['ai', 'Three things, nine days ago, and they moved together. Your resting heart rate is the one to take to a doctor: twelve above your own normal every morning since, and it did not come down on the days you rested. The nine days are shaded on the page.', 'Report · GetRange resting_hr · GetSleep'],
+        ['me', 'What is wrong with me?'],
+        ['ai', 'I cannot tell you that, and I am not going to guess at it. What I can give you is exactly what changed and for how long. Take the four rows on the page with you.', 'GetRange'],
+        ['me', 'Can I still run?'],
+        ['ai', 'I have left this week empty rather than plan around a number I cannot explain. That call belongs to whoever you see.', 'GetPlan']
       ],
       macQ: 'What changed?',
       macA: {
@@ -881,42 +934,45 @@
     renderMac(p);
   }
 
-  /* The Mac. Doors down the left, the conversation in the middle with its
-     answers drawn rather than described, and what is true right now down the
-     right so the thread never has to repeat it. */
+  /* The Mac. The conversation on the right at the width every Linggen app
+     uses; the page on the left is what that conversation produced. The agent
+     answers in two sentences and puts the working where there is room for it. */
+  var SHORT = {
+    'Health review': 'Review', 'My body': 'Body', 'This week': 'Week',
+    'Today\u2019s list': 'Today', 'Everything measured': 'Data'
+  };
+
   function renderMac(p) {
     document.getElementById('mac-path').textContent = p.path;
+    document.getElementById('mac-strip').textContent = p.macStrip;
 
-    var rail = document.getElementById('mac-rail');
-    rail.innerHTML = '<span class="eyebrow cap">Health</span>';
+    // Same doors as the phone, in the same order, under the short names a
+    // tab strip has room for — every other Linggen app labels tabs this way.
+    var tabs = document.getElementById('mac-tabs');
+    tabs.innerHTML = '';
     p.doors.forEach(function (d, i) {
-      var b = el('button', null, '<b>' + esc(d[0]) + '</b><span>' + esc(d[1]) + '</span>');
+      var b = el('button', null, esc(SHORT[d[0]] || d[0]));
       if (i === 0) { b.setAttribute('aria-current', 'true'); }
-      rail.appendChild(b);
+      tabs.appendChild(b);
     });
 
+    var tiles = document.getElementById('mac-tiles');
+    tiles.innerHTML = p.macTiles.map(function (t) {
+      return '<div class="tile' + (t[3] ? ' ' + t[3] : '') + '"><b>' + esc(t[0]) + '</b>' +
+        '<span class="k">' + esc(t[1]) + '</span><span class="s">' + esc(t[2]) + '</span></div>';
+    }).join('');
+
     var a = p.macA;
-    var msgs = document.getElementById('mac-msgs');
-    msgs.innerHTML = '';
-    msgs.appendChild(el('div', 'm-me', esc(p.macQ)));
+    var chart = document.getElementById('mac-chart');
+    chart.innerHTML = '<div class="ph"><b>' + esc(a.chart.title) + '</b><span>' + esc(a.chart.unit) + '</span></div>';
+    var pb = el('div', 'pb');
+    pb.appendChild(bigChart(a.chart));
+    chart.appendChild(pb);
+    chart.appendChild(el('div', 'pn', esc(a.chartNote)));
 
-    var ai = el('div', 'm-ai');
-    ai.appendChild(el('p', 'say', esc(a.say)));
-
-    var rich = el('div', 'rich');
-    var rh = el('div', 'rh');
-    rh.appendChild(el('b', null, esc(a.chart.title)));
-    rh.appendChild(el('span', null, esc(a.chart.unit)));
-    rich.appendChild(rh);
-    var rb = el('div', 'rb');
-    rb.appendChild(bigChart(a.chart));
-    rich.appendChild(rb);
-    rich.appendChild(el('div', 'rn', esc(a.chartNote)));
-    ai.appendChild(rich);
-
-    var tbl = el('div', 'rich');
-    var tb = el('div', 'rb');
-    tb.innerHTML = '<table class="mini"><thead><tr>' +
+    var tbl = document.getElementById('mac-table');
+    tbl.innerHTML = '<div class="ph"><b>What the pass found</b><span>last night</span></div><div class="pb">' +
+      '<table class="mini"><thead><tr>' +
       a.table.head.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') +
       '</tr></thead><tbody>' +
       a.table.rows.map(function (r) {
@@ -926,30 +982,15 @@
           }
           return '<td' + (i > 0 ? ' class="n"' : '') + '>' + esc(c) + '</td>';
         }).join('') + '</tr>';
-      }).join('') + '</tbody></table>';
-    tbl.appendChild(tb);
-    ai.appendChild(tbl);
+      }).join('') + '</tbody></table></div>' +
+      '<div class="pn">' + esc(a.note) + '</div>';
 
-    ai.appendChild(el('p', 'say', esc(a.note)));
-    ai.appendChild(el('span', 'tools', esc(a.tools)));
-    msgs.appendChild(ai);
-
-    var now = document.getElementById('mac-now');
-    now.innerHTML = '';
-    now.appendChild(el('span', 'eyebrow', 'Right now'));
-    now.appendChild(statusBlock(p.loud, p.find.tone === 'crit' ? 'crit' : 'warn'));
-    var mf = el('div', 'mini-find' + (p.find.tone === 'crit' ? ' crit' : ''));
-    mf.appendChild(el('span', null, esc(p.find.tag)));
-    mf.appendChild(el('b', null, esc(p.find.h)));
-    now.appendChild(mf);
-    now.appendChild(el('span', 'eyebrow', 'Examined last night'));
-    now.appendChild(el('div', 'kvs', p.exam.map(function (r) {
-      return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
-    }).join('')));
-    now.appendChild(el('span', 'eyebrow', 'The mirror'));
-    now.appendChild(el('div', 'kvs', p.mirror.map(function (r) {
-      return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
-    }).join('')));
+    var chat = document.getElementById('mac-chat');
+    chat.innerHTML = p.macChat.map(function (m) {
+      if (m[0] === 'me') { return '<div class="cm me">' + esc(m[1]) + '</div>'; }
+      return '<div class="cm"><span class="who">Ling</span>' + esc(m[1]) +
+        (m[2] ? '<span class="tool">' + esc(m[2]) + '</span>' : '') + '</div>';
+    }).join('');
   }
 
   document.querySelectorAll('.person').forEach(function (b) {

@@ -132,7 +132,9 @@ button {
 
 .shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  /* 480 is the house width: Pulse and DJ both use it, and the chat is the
+     app rather than a sidebar beside it. */
+  grid-template-columns: minmax(0, 1fr) 480px;
   height: calc(100vh - 53px);
 }
 @media (max-width: 900px) {
