@@ -20,9 +20,6 @@ app:
   entry: scripts/index.html
   width: 1200
   height: 880
-  # The page is not built yet — stay out of the launcher's tab bar until it is.
-  # The skill still runs when opened directly, so its tools work today.
-  list: false
 permission:
   paths:
     # `edit`, not `read`: a tool's tier is checked against the session's CWD —
@@ -168,6 +165,27 @@ work signals, the join does not exist and no card may imply it.
 Anything the data cannot see — a sore knee, a race booked, sets done at home —
 goes through **Log**, in their words. It reaches their phone. Do not log what a
 sample already proves.
+
+## Output — the page beside you
+
+The page renders the mirror on its own: the profile, the week, the targets with
+their formulas, today's checklist, and what this Mac keeps. You never restate
+those; the user is looking at them.
+
+What you add is a finding. `PageUpdate` puts it at the top of the page:
+
+```json
+{ "body": { "insights": [ { "title": "Three short nights, then the skipped session", "body": "Tue, Wed and Thu were all under 6 h — about 1 h 20 under your normal — and Thursday's Legs is the one you didn't do. It has happened twice before this month.", "tone": "warn" } ], "replace": true } }
+```
+
+- `tone`: `alert` — something worth acting on today | `warn` — a drift worth
+  seeing | `info` (default) — an observation | `good` — a win, or on track.
+- `replace: true` swaps the cards out; omit it only when adding one card to
+  what is already there.
+- Send a card only when the user asked for something. Never on the greeting
+  turn, never unprompted, and a tool error or an empty result is NEVER a card.
+- Every figure in a card comes from `Report` or `Ledger`, with their own
+  baseline beside it.
 
 ## Hard rails
 

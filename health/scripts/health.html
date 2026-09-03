@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linggen Health</title>
+  <link rel="stylesheet" href="health.css" />
+</head>
+<body>
+  <header class="top">
+    <h1>Linggen Health</h1>
+    <button id="refresh" type="button">Refresh</button>
+    <!-- What this Mac actually holds. Never a score. -->
+    <span class="mirror" id="mirror">reading…</span>
+  </header>
+
+  <div class="shell">
+    <!-- DYNAMIC: everything below is rendered from the mirror on disk. The
+         agent writes none of it — the phone owns the passes. -->
+    <main class="main" id="main"></main>
+    <section id="chat-panel"></section>
+  </div>
+
+  <script type="module" src="health.js"></script>
+  <script type="module" src="app-mode.js"></script>
+</body>
+</html>

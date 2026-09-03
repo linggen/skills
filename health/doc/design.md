@@ -480,11 +480,19 @@ Entitlements: `healthkit`, `healthkit.background-delivery`.
 
 ## Mac page
 
-`skills/health/scripts/index.html` + `health.js`, launcher `web`, like DJ.
-Left: profile with evidence and "Not quite", composition history with
-Restore, this week's plan with adjustments. Centre: small multiples over the
-years, progress charts, patterns board, reports, sync. Right: chat through
-`chat-bridge.js`. Buttons call the same scripts the tools call.
+Built 2026-09-03: `scripts/index.html` → `health.html` + `health.js` +
+`health.css`, launcher `web`, like DJ. One scrolling column beside the chat:
+this morning's brief, who you are with evidence and the goals in lead order,
+targets with their formulas, this week with its reasons and adjustments,
+today's checklist, and what this Mac keeps. `PageUpdate` puts the agent's
+findings at the top. `settings.html` says where the mirror is, what it holds,
+which phones send, and its identity.
+
+It renders the registers the phone wrote and nothing more — the phone owns the
+passes, so there is no second implementation of the plan or the profile to
+drift. Charts over the years and the patterns board wait on a Mac-side rollup;
+until there is one, this page would have to invent the numbers, and inventing
+them is the thing the whole design is against.
 
 **No iPhone paired:** the page composes from `life/` alone (screen time,
 sitting, late commits, meetings, a plan of breaks, the patterns those prove),

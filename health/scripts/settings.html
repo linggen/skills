@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Health — Settings</title>
+  <link rel="stylesheet" href="health.css" />
+</head>
+<body>
+  <header class="top"><h1>Health — Settings</h1></header>
+  <main class="main" id="main"></main>
+  <script type="module">
+    // Settings says what is true and offers only what this side actually
+    // owns. The body data belongs to the phone; nothing here can change it.
+    import { verb, runBash } from './bash.js';
+
+    const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+    const card = (title, ...kids) => { const c = el('section', 'card'); if (title) c.append(el('span', 'eyebrow', title)); kids.forEach((k) => k && c.append(k)); return c; };
+    const row = (k, v, note) => { const r = el('div', 'row'); r.append(el('div', 'k', k)); const b = el('div', 'v'); b.append(el('div', null, v)); if (note) b.append(el('small', null, note)); r.append(b); return r; };
+
+    const main = document.getElementById('main');
+    try {
+      const [l, cfg] = await Promise.all([
+        verb('ledger'),
+        runBash('cat "$HOME/.linggen/skills/health/config.json" 2>/dev/null || echo "{}"'),
+      ]);
+      const c = JSON.parse(cfg.trim() || '{}');
+      const devices = Object.entries(l.devices || {});
+      main.append(card('This mirror',
+        row('Where', '~/.linggen/skills/health/data', 'samples, and the files the phone derives'),
+        row('Holds', `${(l.held.samples || 0).toLocaleString()} samples`, `${l.held.types} types, since ${(l.held.first || '—').slice(0, 10)}`),
+        row('Phones', devices.length ? `${devices.length} sending` : 'none paired yet',
+          devices.length ? `last heard ${(devices[0][1].at || '').slice(0, 10)}` : 'Apple Health only exists on an iPhone'),
+        row('Identity', l.mirror_id, 'a phone remembers how far it has sent against this')));
+      main.append(card('Config',
+        row('Units', c.units || 'metric', 'edit config.json to change it'),
+        row('Workspaces', (c.workspaces || []).join(', ') || 'none',
+          'folders the work signals read commit times from; empty means no work signals and no card claiming them')));
+    } catch (e) {
+      main.append(card('Something went wrong', el('p', 'err', String(e.message || e))));
+    }
+  </script>
+</body>
+</html>
