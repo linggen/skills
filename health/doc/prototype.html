@@ -118,13 +118,6 @@
   .ask span { flex: 1; }
   .ask i { width: 27px; height: 27px; border-radius: 50%; background: var(--jade-soft); color: var(--jade); display: grid; place-items: center; font-style: normal; font-size: 13px; }
   .quiet { text-align: center; font-size: 12.5px; color: var(--faint); padding: 4px 8px 0; }
-  /* The agent's own line about why this view is in this order. It appears on
-     both surfaces, because both first views are composed and neither should
-     pretend to be a fixed template. */
-  .composed { display: grid; gap: 3px; padding: 9px 12px; background: var(--raised); border-radius: 10px; }
-  .composed b { font-size: 12.5px; color: var(--jade); font-weight: 600; }
-  .composed span { font-size: 12.5px; color: var(--text); line-height: 1.45; }
-  .mac-main .composed { background: var(--surface); border: 1px solid var(--line); }
   /* The doors. Small, quiet, and always the same set, so a person learns
      where things are instead of hunting for what the agent moved. */
   .doors { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding-top: 4px; }
@@ -164,6 +157,12 @@
   .bub.me { background: var(--jade-soft); justify-self: end; }
   .bub.ai { background: var(--raised); }
   .bub .tool { display: inline-block; font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 6px; }
+  /* A message nobody asked for. The agent finished a pass, found something,
+     and said so — marked so it does not read as an answer to a question that
+     scrolled off the top. */
+  .bub.first, .cm.first { border-left: 2px solid var(--jade); padding-left: 11px; max-width: 88%; }
+  .bub.first::before, .cm.first::before { content: 'Yinyue, unprompted'; display: block; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--jade); margin-bottom: 5px; font-weight: 600; }
+  .cm.first::before { content: 'Came to you, unprompted'; }
 
   /* Rules + words */
   .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 11px; }
@@ -278,7 +277,7 @@
     <div class="head">
       <span class="eyebrow">The screen</span>
       <h2>One line that proves it looked, then only what is wrong</h2>
-      <p>The first view is built each morning by the agent, which says so in its own voice and offers to build a different one. It holds the most important part and nothing else. On this device that is the whole app. The number is not a health score, which no consumer sensor can support: it is today against this person's own normal, and it says what it was made of. Under it, nothing on a good day, the finding on a bad one, then the last few sessions and the doors.</p>
+      <p>The first view is built each morning by the agent, and the agent says so in the conversation, not here — this screen carries findings and nothing it wants to tell you about itself. It holds the most important part and nothing else. On this device that is the whole app. The number is not a health score, which no consumer sensor can support: it is today against this person's own normal, and it says what it was made of. Under it, nothing on a good day, the finding on a bad one, then the last few sessions and the doors.</p>
     </div>
     <div class="days">
       <div class="day-col">
@@ -343,8 +342,8 @@
   <section id="talk">
     <div class="head">
       <span class="eyebrow">Everything else</span>
-      <h2>She introduces herself once, then she is the way to everything</h2>
-      <p>The first thing said in a new session is what this is: what she does each night, how much of your history she holds, and that you can ask for anything. Three sentences, in her own words, never a list of features. After that the plan, the checklist, the years of history and every one of the hundreds of measurements are all still there and none of it is on screen. Health is one of Linggen's apps, so the companion who already answers about your music and your money answers about your body from the same fourteen tools.</p>
+      <h2>She comes to you — the screen never has to</h2>
+      <p>Yinyue's thread is one conversation for every Linggen app, and it is where she reports her own work: what she read last night, how much of it there was, and the one thing that came out. Nothing was asked for that first message. It is why the health screen can be as quiet as it is — the explaining happens somewhere you can answer back, and the screen is left holding findings. Behind it the plan, the checklist, the years of history and every one of the hundreds of measurements are all still there and none of it is on screen. The companion who already answers about your music and your money answers about your body from the same fourteen tools.</p>
     </div>
     <div class="talk" id="talk-thread"></div>
   </section>
@@ -354,14 +353,13 @@
       <span class="eyebrow">The Mac · optional</span>
       <h2>Same first view, and then everything else within reach</h2>
       <p>The first view here is composed by the same pass and leads with the same thing the phone led with. What a Mac adds is not more on that first screen: it is that everything is reachable behind it. The Data tab below is live — every measurement examined last night, including the thirty-odd that had nothing to say, so <em>nothing needs you</em> can be checked instead of believed. A phone never shows that list; it would be the confusion we started by removing.</p>
-      <p>The conversation sits on the right at the width every Linggen app uses. You ask; the answer comes back in a sentence or two and the working goes on the page beside it.</p>
+      <p>The conversation sits on the right at the width every Linggen app uses, and it opens with Ling rather than with you: the pass finished at 02:14, this is what it found, and this is why the page is in this order. After that you ask; the answer comes back in a sentence or two and the working goes on the page beside it.</p>
     </div>
     <div class="mac">
       <div class="mac-top"><span class="dot"></span><b>Health</b><span class="set" id="mac-path"></span><span class="set">⚙ Settings</span></div>
       <div class="mac-body">
         <div class="mac-main">
           <div class="mac-h"><h3 id="mac-title">Health review</h3><span class="btn">↻ Examine again</span></div>
-          <div id="mac-composed"></div>
           <div class="strip" id="mac-strip"></div>
           <nav class="tabs" id="mac-tabs" aria-label="Health sections"></nav>
           <div class="tiles" id="mac-tiles"></div>
@@ -417,8 +415,8 @@
     </div>
     <div class="rules">
       <div class="rule"><b>A card earns its place by having news</b><p>At your normal is not a slot. The screen grows on the days something happened and shrinks back when it passes.</p></div>
-      <div class="rule"><b>It introduces itself once</b><p>What it does each night, how much of your history it holds, and that you can ask for anything. Three sentences at the start of a session, never a feature list and never again.</p></div>
-      <div class="rule"><b>The agent says it built the screen</b><p>In its own voice, with the reason, and with the offer: ask for anything else and it lays the view out again. A composed screen the user cannot argue with is a screen that happened to them.</p></div>
+      <div class="rule"><b>It comes to you</b><p>When a pass finds something, the agent says so in the conversation without being asked, and says what it did about it. A finding that waits for the user to open the right screen is a finding the app kept to itself.</p></div>
+      <div class="rule"><b>The agent talks in the conversation, not on the screen</b><p>That it built the view, why it is in this order, and the offer to lay it out again — all of it is said where you can answer back. The screen carries findings and nothing the agent wants to tell you about itself.</p></div>
       <div class="rule"><b>Same first view, different depth</b><p>Both devices lead with the most important part and nothing else. A Mac puts the rest within reach; a phone leaves it behind a door or a question.</p></div>
       <div class="rule"><b>The quiet is stated, never implied</b><p>The status line says how many measurements were examined. An empty screen with no line reads as a broken app.</p></div>
       <div class="rule"><b>A warning outranks the quiet rule</b><p>It cannot be collapsed, hidden, or pushed below anything. Everything else on the screen can be.</p></div>
@@ -588,9 +586,7 @@
         ['Workouts', '1,438 kept'],
         ['Everything measured', '38 types · since 2016', 'wide']
       ],
-      composedQuiet: 'Nothing needed you this morning, so I left the screen as your sessions. Ask me for anything else and I’ll put it here.',
-      composedLoud: 'I built today around recovery, because HRV is the only one of your 38 that moved. Want something else on top? Tell me and I’ll rebuild it.',
-      macComposed: 'I built this page around recovery: HRV is the one measurement of 38 that moved, so its fortnight leads and the week’s tonnage sits under it as the likely cause. Ask for anything else and I’ll lay the page out again.',
+      macComposed: ['Last night I read everything Apple Health holds for you — 38 kinds of measurement, 2.2 million readings back to 2016. Thirty-six are sitting at your normal. One is not: your HRV — the beat-to-beat variation that tracks how recovered you are — came in at 27 ms, seven under your normal and the lowest of the fortnight. So I have put its fortnight at the top of the page and this week’s tonnage under it, because that is the likeliest cause. Ask for anything else and I’ll lay the page out again.', '02:14 · Report · GetRange hrv · ListWorkouts'],
       macStrip: '38 types · 36 at your normal · 1 worth seeing · 0 worth a doctor · mirror 2,216,860 samples since 2016-11-26',
       macTiles: [
         ['38', 'Types examined', 'last night, 02:14'],
@@ -598,8 +594,8 @@
         ['1', 'Worth seeing', 'HRV'],
         ['0', 'Worth a doctor', 'clear']
       ],
-      intro: 'I’m your keeper here. Every night I read everything Apple Health holds for you — 38 kinds of measurement, back to November 2016 — and I build this page around whatever actually needs you. Most mornings that is nothing, and I say so rather than fill the screen. Ask me anything, and if you want something else on the page, just say it.',
-      phoneIntro: 'I read everything Apple Health has for you each night — 38 kinds of it, back to 2016 — and put only what needs you on this screen. Ask me for anything else and I’ll show it.',
+      intro: 'I’m your keeper here. Health is one of the things I look after, and all of it stays on this machine and your phone. You will not have to come asking: when I find something, I tell you. Ask me anything in between and I’ll answer from your own data.',
+      told: ['I went through your Apple Health while you slept — 38 kinds of measurement, 2.2 million readings back to 2016. Thirty-six are at your normal and I’ll say nothing about those. One is not: your HRV — how much your heartbeat varies, which is the best thing you have for how recovered you are — came in at 27 ms, seven under your normal and the lowest in a fortnight, the morning after a Legs day. I’ve taken Legs off today and moved Push to Friday. Say the word and I’ll put it back.', '07:02 · Report · GetRange hrv · SetPlan'],
       macChat: [
         ['me', 'How did last week go?'],
         ['ai', 'Four sessions, all four kept, and pull tonnage is up 6% on your last five. What moved is recovery, not strength. I put the fortnight of HRV on the page and marked the three mornings that followed a Legs day.', 'Report · GetRange hrv · ListWorkouts'],
@@ -705,9 +701,7 @@
         ['Workouts', '312 kept'],
         ['Everything measured', '41 types · since 2021', 'wide']
       ],
-      composedQuiet: 'Nothing needed you this morning. Your walks are here because that is what you did. Say the word and I’ll show you something else.',
-      composedLoud: 'I put the weight trend on top because body fat agrees with it — one number alone would not have earned this. Ask for sleep or steps and I’ll swap it.',
-      macComposed: 'I built this page around the weight trend, because body fat moved with it. Lean mass and your walking are underneath, since those are what rule out the other explanations. Tell me what else you want to see and I’ll change the page.',
+      macComposed: ['Last night I read everything Apple Health holds for you — 41 kinds of measurement, your scale included. Thirty-nine are at your normal. Two moved, and they moved together: your weight is up 1.9 kg over five weeks and your body fat rose with it, which is why it is worth your time rather than a note in a file. I have put the trend at the top of the page with lean mass and your walking underneath, since those are what rule out the other explanations. Tell me what else you want to see and I’ll change the page.', '02:09 · Report · GetRange body_mass · GetRange body_fat'],
       macStrip: '41 types · 39 at your normal · 2 worth seeing · 0 worth a doctor · mirror 861,402 samples since 2021-04-02',
       macTiles: [
         ['41', 'Types examined', 'last night, 02:09'],
@@ -715,8 +709,8 @@
         ['2', 'Worth seeing', 'weight, body fat'],
         ['0', 'Worth a doctor', 'clear']
       ],
-      intro: 'I’m your keeper here. Every night I read everything Apple Health holds for you — 41 kinds of measurement, back to April 2021, including your scale — and I build this page around whatever actually needs you. Most mornings that is nothing. Ask me anything, and if you want something else on the page, just say it.',
-      phoneIntro: 'I read everything Apple Health has for you each night — 41 kinds of it, your scale included — and put only what needs you on this screen. Ask me for anything else and I’ll show it.',
+      intro: 'I’m your keeper here. Health is one of the things I look after, and all of it stays on this machine and your phone. You will not have to come asking: when I find something, I tell you. Ask me anything in between and I’ll answer from your own data.',
+      told: ['I went through your Apple Health while you slept — 41 kinds of measurement, your scale included. Thirty-nine are at your normal. Two moved together: your weight is up 1.9 kg over five weeks, and your body fat went up with it, from 27.4% to 28.6% — so it is not water and it is not muscle. Your walking has not changed, so that is not where it came from. It is a trend, not a warning, and I have put it on your screen.', '07:14 · Report · GetRange body_mass · GetRange body_fat'],
       macChat: [
         ['me', 'Why is my weight up?'],
         ['ai', 'Because body fat went up with it, so it is not water and it is not muscle. Five weeks of both are on the page, with your walking in the table underneath — it has not changed.', 'Report · GetProgress weight · GetProgress body_fat'],
@@ -822,9 +816,7 @@
         ['Workouts', '904 kept'],
         ['Everything measured', '44 types · since 2019', 'wide']
       ],
-      composedQuiet: 'Nothing needed you that morning. This is how I kept the screen all through August. Ask for anything and I’ll add it.',
-      composedLoud: 'I have put resting heart rate on top and moved your pace goal down. This is the one thing I will not let you swap out until it passes.',
-      macComposed: 'I built this page around your resting heart rate and set the pace goal aside — on a day like this it is not the most important thing on your screen. You can ask me for anything else and I will add it, but this stays on top until it passes.',
+      macComposed: ['Last night I read everything Apple Health holds for you — 44 kinds of measurement, back to 2019. Forty-one are at your normal. One has held long enough that I am not going to wait for you to ask: your resting heart rate has sat 12 above your own normal for nine mornings and has not come down on rest days. I have built this page around it and set your pace goal aside — on a day like this it is not the most important thing on your screen. You can ask me for anything else and I will add it, but this stays on top until it passes.', '02:11 · Report · GetRange resting_hr'],
       macStrip: '44 types · 41 at your normal · 2 worth seeing · 1 WORTH A DOCTOR · mirror 1,504,911 samples since 2019-08-14',
       macTiles: [
         ['44', 'Types examined', 'last night, 02:11'],
@@ -832,8 +824,8 @@
         ['2', 'Worth seeing', 'sleep, HRV'],
         ['1', 'Worth a doctor', 'resting heart rate', 'flag']
       ],
-      intro: 'I’m your keeper here. Every night I read everything Apple Health holds for you — 44 kinds of measurement, back to August 2019 — and I build this page around whatever actually needs you. This morning one thing does. Ask me anything, and if you want something else on the page, just say it.',
-      phoneIntro: 'I read everything Apple Health has for you each night — 44 kinds of it, back to 2019 — and put only what needs you on this screen. This morning one thing does.',
+      intro: 'I’m your keeper here. Health is one of the things I look after, and all of it stays on this machine and your phone. You will not have to come asking: when I find something, I tell you. Ask me anything in between and I’ll answer from your own data.',
+      told: ['I went through your Apple Health while you slept — 44 kinds of measurement, back to 2019 — and this morning I am not waiting for you to open the app. Your resting heart rate has been 12 beats above your own normal for nine mornings running and it has not come down on the days you rested. Your HRV fell with it and you are sleeping an hour short. I am not able to tell you what is causing that, and I am not going to guess — take those three numbers to a doctor. I have left this week unplanned until you have.', '06:48 · Report · GetRange resting_hr · ClearPlan'],
       macChat: [
         ['me', 'What changed?'],
         ['ai', 'Three things, nine days ago, and they moved together. Your resting heart rate is the one to take to a doctor: twelve above your own normal every morning since, and it did not come down on the days you rested. The nine days are shaded on the page.', 'Report · GetRange resting_hr · GetSleep'],
@@ -938,16 +930,6 @@
     return box;
   }
 
-  /* Not a caption. The agent saying, in its own voice, that it built this
-     view and will build a different one on request — so a composed screen
-     reads as an offer rather than as something that happened to the user. */
-  function composedLine(cap, text) {
-    var box = el('div', 'composed');
-    box.appendChild(el('b', null, esc(cap)));
-    box.appendChild(el('span', null, esc(text)));
-    return box;
-  }
-
   function actsBlock(rows) {
     var wrap = el('div', 'acts');
     rows.forEach(function (r, i) {
@@ -982,7 +964,6 @@
     var q = document.getElementById('quiet-body');
     q.innerHTML = '';
     q.appendChild(statusBlock(p.quiet, 'ok'));
-    q.appendChild(composedLine('Yinyue', p.composedQuiet));
     q.appendChild(actsBlock(p.acts));
     q.appendChild(doorsBlock(p.doors));
     q.appendChild(el('div', 'ask', '<span>Ask Yinyue about any of it…</span><i>●</i>'));
@@ -990,7 +971,6 @@
     var l = document.getElementById('loud-body');
     l.innerHTML = '';
     l.appendChild(statusBlock(p.loud, p.find.tone === 'crit' ? 'crit' : 'warn'));
-    l.appendChild(composedLine('Yinyue', p.composedLoud));
     l.appendChild(findBlock(p.find));
     l.appendChild(actsBlock(p.acts));
     l.appendChild(doorsBlock(p.doors));
@@ -1017,8 +997,12 @@
     }).join('');
     document.getElementById('idx-note').textContent = p.note;
 
+    // She opens the thread herself. Nothing was asked; the nightly pass
+    // finished, it found something, and telling the user is the point of
+    // having run it. The screen stayed quiet because this got said here.
     var thread = document.getElementById('talk-thread');
-    thread.innerHTML = '<div class="bub ai">' + esc(p.phoneIntro) + '</div>' +
+    thread.innerHTML = '<div class="bub ai first">' + esc(p.told[0]) +
+      '<br><span class="tool">' + esc(p.told[1]) + '</span></div>' +
       p.talk.map(function (m) {
       return '<div class="bub ' + m[0] + '">' + esc(m[1]) +
         (m[2] ? '<br><span class="tool">' + esc(m[2]) + '</span>' : '') + '</div>';
@@ -1036,7 +1020,7 @@
       b.setAttribute('aria-current', String(b.textContent === name));
     });
     document.getElementById('mac-title').textContent = review ? 'Health review' : 'Everything measured';
-    ['mac-composed', 'mac-tiles', 'mac-chart', 'mac-table'].forEach(function (id) {
+    ['mac-tiles', 'mac-chart', 'mac-table'].forEach(function (id) {
       document.getElementById(id).hidden = !review;
     });
     document.getElementById('mac-all').hidden = review;
@@ -1050,10 +1034,6 @@
   function renderMac(p) {
     document.getElementById('mac-path').textContent = p.path;
     document.getElementById('mac-strip').textContent = p.macStrip;
-    var mc = document.getElementById('mac-composed');
-    mc.innerHTML = '';
-    mc.appendChild(composedLine('Ling', p.macComposed));
-
     // Same doors as the phone, in the same order, under the short names a
     // tab strip has room for — every other Linggen app labels tabs this way.
     var tabs = document.getElementById('mac-tabs');
@@ -1119,8 +1099,12 @@
 
     var chat = document.getElementById('mac-chat');
     // The first thing said in a new session: what it does, what it holds, and
-    // how to use it — three sentences, not a capability list.
+    // how to use it — three sentences, not a capability list. Then what it
+    // did with today's page. That sentence is the agent talking, so it lives
+    // in the conversation; the page carries findings, never commentary.
     chat.innerHTML = '<div class="cm"><span class="who">Ling</span>' + esc(p.intro) + '</div>' +
+      '<div class="cm first"><span class="who">Ling</span>' + esc(p.macComposed[0]) +
+      '<span class="tool">' + esc(p.macComposed[1]) + '</span></div>' +
       p.macChat.map(function (m) {
       if (m[0] === 'me') { return '<div class="cm me">' + esc(m[1]) + '</div>'; }
       return '<div class="cm"><span class="who">Ling</span>' + esc(m[1]) +
