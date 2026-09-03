@@ -1,1080 +1,708 @@
 <meta charset="utf-8">
 <title>Linggen Health</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <style>
   :root {
-    --ground: #F6F8F6; --surface: #FFFFFF; --raised: #EBEFEC; --line: #D9E1DC;
-    --text: #12181A; --dim: #5C6A66; --jade: #2C7355; --jade-deep: #2F7B5D;
-    --jade-soft: #DCE9E3; --gold: #97722A; --gold-soft: #F3EAD6;
-    --crit: #B5473F; --crit-soft: #F6E1DF;
-    --phone: #0B0D12; --phone-edge: #2B2F3A;
+    --ground: #F4F7F5; --surface: #FFFFFF; --raised: #E9EEEB; --line: #D6DFDA;
+    --text: #10171A; --dim: #5A6864; --faint: #8B9793;
+    --jade: #2C7355; --jade-soft: #DBE8E2;
+    --gold: #8C6A20; --gold-soft: #F4EAD2;
+    --crit: #A93F37; --crit-soft: #F7E0DD;
+    --phone: #0A0C11; --phone-edge: #2A2E38;
     --ui: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --ground: #12151D; --surface: #1A1E29; --raised: #232837; --line: #2C3244;
-      --text: #E8E6DF; --dim: #8F94A3; --jade: #6FBF9E; --jade-deep: #3D8A6C;
-      --jade-soft: #1E3A30; --gold: #D9B36C; --gold-soft: #3A3120;
-      --crit: #E07A70; --crit-soft: #3E2523;
-      --phone: #05070A; --phone-edge: #3A3F4C;
+      --ground: #10141B; --surface: #181D26; --raised: #212734; --line: #2B3140;
+      --text: #E9E7E0; --dim: #949AA7; --faint: #6E7686;
+      --jade: #74C2A1; --jade-soft: #1C382E;
+      --gold: #DCB670; --gold-soft: #3A3120;
+      --crit: #E58279; --crit-soft: #3E2422;
+      --phone: #04060A; --phone-edge: #383D4A;
     }
   }
   :root[data-theme="dark"] {
-    --ground: #12151D; --surface: #1A1E29; --raised: #232837; --line: #2C3244;
-    --text: #E8E6DF; --dim: #8F94A3; --jade: #6FBF9E; --jade-deep: #3D8A6C;
-    --jade-soft: #1E3A30; --gold: #D9B36C; --gold-soft: #3A3120;
-    --crit: #E07A70; --crit-soft: #3E2523;
-    --phone: #05070A; --phone-edge: #3A3F4C;
+    --ground: #10141B; --surface: #181D26; --raised: #212734; --line: #2B3140;
+    --text: #E9E7E0; --dim: #949AA7; --faint: #6E7686;
+    --jade: #74C2A1; --jade-soft: #1C382E;
+    --gold: #DCB670; --gold-soft: #3A3120;
+    --crit: #E58279; --crit-soft: #3E2422;
+    --phone: #04060A; --phone-edge: #383D4A;
   }
 
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--ground); color: var(--text); font-family: var(--ui); font-size: 15px; line-height: 1.5; }
-  a { color: var(--jade); }
-  h1, h2, h3, h4 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
-  h1 { font-size: 34px; line-height: 1.15; }
-  h2 { font-size: 22px; }
-  h3 { font-size: 16px; }
+  body { margin: 0; background: var(--ground); color: var(--text); font-family: var(--ui); font-size: 15px; line-height: 1.55; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.015em; }
+  h1 { font-size: 40px; line-height: 1.08; }
+  h2 { font-size: 23px; }
+  h3 { font-size: 15px; }
   p { margin: 0; }
   button { font: inherit; color: inherit; }
-  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
-  .dim { color: var(--dim); }
   :focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .dim { color: var(--dim); }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
 
-  .page { max-width: 1180px; margin: 0 auto; padding: 40px 24px 80px; display: grid; gap: 56px; }
+  .page { max-width: 1120px; margin: 0 auto; padding: 44px 24px 96px; display: grid; gap: 60px; }
 
   /* Hero */
-  .hero { display: grid; gap: 18px; max-width: 800px; }
-  .hero .thesis { font-size: 26px; line-height: 1.3; font-weight: 500; letter-spacing: -0.01em; }
+  .hero { display: grid; gap: 20px; max-width: 780px; }
+  .hero .thesis { font-size: 25px; line-height: 1.34; font-weight: 500; letter-spacing: -0.012em; }
   .hero .thesis em { font-style: normal; color: var(--jade); }
-  .hero .lede { max-width: 64ch; color: var(--dim); font-size: 16px; }
-  .status { display: inline-flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--dim); }
-  .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); display: inline-block; }
+  .hero .lede { color: var(--dim); max-width: 62ch; }
+  .stamp { display: inline-flex; gap: 9px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--faint); }
+  .stamp i { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
 
-  /* People switch */
+  /* People */
   .people { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  @media (max-width: 720px) { .people { grid-template-columns: 1fr; } }
-  .person { text-align: left; display: grid; gap: 6px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; cursor: pointer; }
+  @media (max-width: 760px) { .people { grid-template-columns: 1fr; } }
+  .person { text-align: left; display: grid; gap: 5px; padding: 13px 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 13px; cursor: pointer; }
   .person[aria-pressed="true"] { border-color: var(--jade); box-shadow: inset 0 0 0 1px var(--jade); }
-  .person .who { font-weight: 600; font-size: 16px; }
+  .person .who { font-weight: 600; }
   .person .what { color: var(--dim); font-size: 13px; }
-  .person .top { font-family: var(--mono); font-size: 11px; color: var(--jade); }
+  .person .idx { font-family: var(--mono); font-size: 11px; color: var(--jade); }
 
-  /* Section */
-  section { display: grid; gap: 20px; }
-  .sec-head { display: grid; gap: 6px; max-width: 70ch; }
-  .sec-head p { color: var(--dim); }
+  section { display: grid; gap: 22px; }
+  .head { display: grid; gap: 7px; max-width: 68ch; }
+  .head p { color: var(--dim); }
 
-  /* Phone walkthrough layout */
-  .walk { display: grid; grid-template-columns: 420px 1fr; gap: 32px; align-items: start; }
-  @media (max-width: 900px) { .walk { grid-template-columns: 1fr; } }
-  .picker { display: flex; flex-wrap: wrap; gap: 6px; }
-  .picker button, .btn { font-size: 13px; font-weight: 500; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
-  .picker button[aria-selected="true"] { background: var(--jade); border-color: var(--jade); color: #fff; }
-  .picker [data-mac] { font: inherit; }
-  .notes { display: grid; gap: 14px; position: sticky; top: 24px; }
-  .note { display: grid; gap: 6px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
-  .note h3 { font-size: 15px; }
-  .note ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--dim); }
-  .note code { font-family: var(--mono); font-size: 12px; background: var(--raised); padding: 1px 5px; border-radius: 4px; color: var(--text); }
-  .note.tool { border-left: 3px solid var(--jade); }
+  /* The two days */
+  .days { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  @media (max-width: 860px) { .days { grid-template-columns: 1fr; } }
+  .day-col { display: grid; gap: 14px; justify-items: center; }
+  .day-cap { display: grid; gap: 4px; justify-items: center; text-align: center; max-width: 40ch; }
+  .day-cap b { font-weight: 600; }
+  .day-cap span { color: var(--dim); font-size: 13px; }
 
-  /* Phone frame */
-  .phone { width: 390px; height: 820px; background: var(--phone); border-radius: 44px; padding: 12px; border: 1px solid var(--phone-edge); box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); margin: 0 auto; }
-  .screen { width: 100%; height: 100%; background: var(--ground); border-radius: 34px; overflow: hidden; display: grid; grid-template-rows: auto auto 1fr; color: var(--text); }
-  .statusbar { display: flex; justify-content: space-between; padding: 14px 26px 0; font-family: var(--mono); font-size: 12px; }
-  .appbar { display: grid; grid-template-columns: 40px 1fr 40px 40px; align-items: center; padding: 8px 8px 8px 12px; }
-  .appbar .title { display: flex; align-items: baseline; gap: 6px; font-weight: 600; font-size: 17px; }
-  .appbar .title small { font-size: 12px; color: var(--dim); font-weight: 500; }
-  .icon { width: 36px; height: 36px; display: grid; place-items: center; color: var(--dim); font-size: 18px; }
-  .icon svg { width: 20px; height: 20px; }
-  .body { overflow-y: auto; padding: 4px 16px 24px; display: grid; gap: 12px; align-content: start; position: relative; }
-  .body::-webkit-scrollbar { width: 0; }
-  .view { display: none; }
-  .view[data-active="true"] { display: grid; gap: 12px; }
+  .phone { width: 348px; max-width: 100%; background: var(--phone); border-radius: 40px; padding: 10px; border: 1px solid var(--phone-edge); box-shadow: 0 26px 54px -28px rgba(0,0,0,.55); }
+  .screen { background: var(--ground); border-radius: 31px; overflow: hidden; display: grid; grid-template-rows: auto auto 1fr; min-height: 590px; }
+  .sbar { display: flex; justify-content: space-between; padding: 13px 22px 0; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+  .abar { display: grid; grid-template-columns: 32px 1fr 32px; align-items: center; padding: 8px 10px 6px; }
+  .abar .t { text-align: center; font-weight: 600; font-size: 16px; }
+  .abar .g { color: var(--faint); text-align: center; font-size: 17px; }
+  .sbody { padding: 4px 14px 20px; display: grid; gap: 10px; align-content: start; overflow: hidden; }
 
-  /* Why-line */
-  .why { display: grid; grid-template-columns: 1fr auto; gap: 8px 10px; align-items: start; padding: 10px 12px; background: var(--gold-soft); border-radius: 10px; font-size: 13px; }
-  .why .k { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); grid-column: 1 / -1; }
-  .why p { color: var(--text); }
-  .why button { font-size: 12px; font-weight: 600; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; cursor: pointer; align-self: center; white-space: nowrap; }
-  .why.restored { background: var(--jade-soft); } .why.restored .k { color: var(--jade); }
+  /* Status line — the proof it looked */
+  .status { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; padding: 14px 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 15px; }
+  .dial { width: 52px; height: 52px; }
+  .status .n { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+  .status .s { font-size: 13px; line-height: 1.4; }
+  .status .m { font-family: var(--mono); font-size: 11px; color: var(--faint); }
 
-  /* Cards on Home */
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .c { position: relative; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: grid; gap: 6px; align-content: start; }
-  .c.wide { grid-column: 1 / -1; }
-  .c .k { font-size: 12px; color: var(--dim); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-  .c .k .more { color: var(--dim); font-size: 16px; line-height: 1; padding: 0 2px; cursor: pointer; background: none; border: 0; }
-  .c .v { font-family: var(--mono); font-size: 20px; font-weight: 600; line-height: 1.1; }
-  .c .v small { font-size: 12px; font-weight: 500; color: var(--dim); }
-  .c .b { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .c .b.low, .c .b.high { color: var(--crit); } .c .b.ok { color: var(--jade); }
-  .c .t { font-size: 14px; line-height: 1.4; }
-  .c .t.lead { font-size: 18px; line-height: 1.35; font-weight: 500; letter-spacing: -0.01em; }
-  .c.brief { border-color: var(--jade); }
-  .c .pin { font-family: var(--mono); font-size: 10px; color: var(--jade); }
-  .menu { position: absolute; right: 8px; top: 30px; z-index: 3; display: grid; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 30px -12px rgba(0,0,0,.4); overflow: hidden; }
-  .menu button { text-align: left; font-size: 13px; padding: 8px 14px; background: none; border: 0; cursor: pointer; }
-  .menu button:hover { background: var(--raised); }
-  .menu .whyt { font-size: 12px; color: var(--dim); padding: 8px 14px; max-width: 220px; border-top: 1px solid var(--line); }
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { font-family: var(--mono); font-size: 12px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
-  .chip b { font-weight: 600; }
-  .chip .d { color: var(--dim); } .chip .d.bad { color: var(--crit); } .chip .d.ok { color: var(--jade); }
-  .bar { height: 8px; border-radius: 4px; background: var(--raised); overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--jade); border-radius: 4px; }
-  .bar i.gold { background: var(--gold); }
-  .ask { display: flex; gap: 8px; align-items: center; padding: 8px 8px 8px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; color: var(--dim); font-size: 14px; }
+  /* A finding */
+  .find { display: grid; gap: 6px; padding: 13px 15px; border-radius: 14px; border: 1px solid var(--gold); background: var(--gold-soft); }
+  .find.crit { border-color: var(--crit); background: var(--crit-soft); }
+  .find .tag { font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--gold); }
+  .find.crit .tag { color: var(--crit); }
+  .find .h { font-size: 15px; font-weight: 600; line-height: 1.35; }
+  .find .e { font-size: 12.5px; color: var(--dim); }
+  .find .act { font-family: var(--mono); font-size: 11px; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; justify-self: start; margin-top: 2px; }
+  .spark { width: 100%; height: 34px; display: block; }
+
+  /* Activities */
+  .acts { display: grid; gap: 5px; }
+  .act-row { display: grid; grid-template-columns: 46px 1fr auto; gap: 2px 10px; align-items: baseline; padding: 9px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; text-align: left; width: 100%; }
+  /* Placed explicitly: two of the three children span both rows, and letting
+     the browser auto-place the third put the duration where the name goes. */
+  .act-row .d { grid-column: 1; grid-row: 1 / span 2; font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .act-row .n { grid-column: 2; grid-row: 1; font-weight: 500; font-size: 14px; }
+  .act-row .m { grid-column: 3; grid-row: 1 / span 2; font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: right; }
+  .act-row .x { grid-column: 2 / span 2; grid-row: 2; font-size: 12px; color: var(--dim); display: none; padding-top: 5px; }
+  .act-row[aria-expanded="true"] .x { display: block; }
+  .act-row[aria-expanded="true"] { border-color: var(--jade); }
+
+  .ask { display: flex; gap: 9px; align-items: center; padding: 9px 9px 9px 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; color: var(--faint); font-size: 13.5px; }
   .ask span { flex: 1; }
-  .ask .mic { width: 30px; height: 30px; border-radius: 50%; background: var(--gold-soft); color: var(--gold); display: grid; place-items: center; font-size: 14px; }
-  .kv { display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; font-size: 13px; margin: 0; }
-  .kv dt { color: var(--dim); } .kv dd { margin: 0; font-family: var(--mono); text-align: right; }
-  .kv dd.low, .kv dd.high { color: var(--crit); } .kv dd.ok { color: var(--jade); }
-  .chart { width: 100%; height: auto; display: block; }
-  .chart text { font-family: var(--mono); font-size: 9px; fill: var(--dim); }
-  .split { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-  .split div { text-align: center; font-family: var(--mono); font-size: 10px; padding: 6px 0; border-radius: 6px; background: var(--raised); color: var(--dim); display: grid; gap: 1px; }
-  .split div b { font-size: 11px; color: var(--text); font-weight: 600; }
-  .split div.on { background: var(--jade-soft); } .split div.on b { color: var(--jade); }
-  .split div.today { outline: 2px solid var(--jade); }
-  .split div.done b::after { content: " ✓"; }
+  .ask i { width: 27px; height: 27px; border-radius: 50%; background: var(--jade-soft); color: var(--jade); display: grid; place-items: center; font-style: normal; font-size: 13px; }
+  .quiet { text-align: center; font-size: 12.5px; color: var(--faint); padding: 4px 8px 0; }
+  .under { display: grid; gap: 5px; padding-top: 2px; }
+  .under button { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: none; border: 0; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--dim); cursor: pointer; }
+  .under button b { font-weight: 500; color: var(--text); }
 
-  /* Plan */
-  .days { display: grid; gap: 6px; }
-  .day { display: grid; grid-template-columns: 44px 1fr auto; gap: 2px 10px; align-items: center; padding: 9px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
-  .day .d { font-family: var(--mono); font-size: 11px; color: var(--dim); grid-row: 1 / span 2; display: grid; }
-  .day .d b { font-size: 13px; color: var(--text); font-weight: 600; }
-  .day .s { font-weight: 500; font-size: 14px; }
-  .day .w { grid-row: 1 / span 2; font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: right; }
-  .day .r { font-size: 12px; color: var(--dim); grid-column: 2; }
-  .day.rest .s { color: var(--dim); font-weight: 400; }
-  .day.today { border-color: var(--jade); }
-  .day.done .s::after { content: " ✓"; color: var(--jade); }
-  .day.adj .r { color: var(--gold); }
-  .day .det { grid-column: 2 / -1; display: none; font-size: 13px; padding-top: 6px; border-top: 1px solid var(--line); margin-top: 4px; }
-  .day.open .det { display: block; }
-  .targets { display: grid; gap: 4px; }
-  .target { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--line); }
-  .target:last-child { border-bottom: 0; }
-  .target small { display: block; font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .target .num { font-weight: 600; }
+  /* Examination */
+  .exam { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .exam { grid-template-columns: 1fr; } }
+  .verdict { display: grid; gap: 7px; padding: 16px 17px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); }
+  .verdict .k { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+  .verdict .k i { width: 9px; height: 9px; border-radius: 50%; font-style: normal; }
+  .verdict.clear .k i { background: var(--jade); }
+  .verdict.see .k i { background: var(--gold); }
+  .verdict.doc .k i { background: var(--crit); }
+  .verdict p { font-size: 13.5px; color: var(--dim); }
+  .verdict .r { font-family: var(--mono); font-size: 11.5px; color: var(--text); background: var(--raised); border-radius: 7px; padding: 7px 9px; }
 
-  /* Checklist */
-  .check { display: grid; gap: 6px; }
-  .ci { display: grid; grid-template-columns: 26px 1fr auto; gap: 0 10px; align-items: center; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
-  .ci .box { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-size: 12px; color: #fff; grid-row: 1 / span 2; }
-  .ci.done .box { background: var(--jade); border-color: var(--jade); }
-  .ci .l { font-weight: 500; font-size: 14px; } .ci.done .l { color: var(--dim); text-decoration: line-through; }
-  .ci .src { font-family: var(--mono); font-size: 10px; color: var(--dim); grid-column: 2; }
-  .ci .val { font-family: var(--mono); font-size: 12px; text-align: right; grid-row: 1 / span 2; }
-  .ci .val.ok { color: var(--jade); }
+  /* Index picker table */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  table.idx { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
+  table.idx th { text-align: left; font-weight: 500; color: var(--faint); font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+  table.idx td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.idx tr:last-child td { border-bottom: 0; }
+  table.idx td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.idx tr.pick td { background: var(--jade-soft); }
+  table.idx tr.out td { color: var(--dim); }
+  table.idx td b { font-weight: 600; }
+  .pickmark { font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--jade); }
 
-  .list { display: grid; gap: 8px; }
-  .item { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
-  .item .t { font-weight: 500; }
-  .item .s { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .item .more { grid-row: 1 / span 2; color: var(--dim); font-size: 18px; }
-  .item.sel { border-color: var(--jade); }
+  /* Talk */
+  .talk { display: grid; gap: 10px; padding: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 15px; }
+  .bub { padding: 10px 13px; border-radius: 13px; max-width: 78%; font-size: 14px; }
+  .bub.me { background: var(--jade-soft); justify-self: end; }
+  .bub.ai { background: var(--raised); }
+  .bub .tool { display: inline-block; font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 6px; }
 
-  .card { padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: grid; gap: 8px; }
-  .card.forming { background: var(--raised); border-style: dashed; }
-  .card .conf { font-family: var(--mono); font-size: 11px; color: var(--dim); display: flex; gap: 8px; align-items: center; }
-  .pill { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
-  .pill.stable { background: var(--jade-soft); color: var(--jade); }
-  .pill.forming { background: var(--gold-soft); color: var(--gold); }
-  .pill.retired { background: var(--raised); color: var(--dim); }
-  .pill.user { background: var(--jade-soft); color: var(--jade); }
-  .ev { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px; }
-  .ev th { text-align: left; font-weight: 500; color: var(--dim); padding: 4px 0; border-bottom: 1px solid var(--line); }
-  .ev td { padding: 4px 0; border-bottom: 1px solid var(--line); }
-  .ev tr:last-child td { border-bottom: 0; }
-  .ev td.r, .ev th.r { text-align: right; }
+  /* Rules + words */
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 11px; }
+  .rule { padding: 14px 16px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface); display: grid; gap: 5px; }
+  .rule b { font-weight: 600; }
+  .rule p { color: var(--dim); font-size: 13.5px; }
+  .words { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  @media (max-width: 620px) { .words { grid-template-columns: 1fr; } }
+  .words > div { padding: 18px 20px; display: grid; gap: 9px; align-content: start; background: var(--surface); }
+  .words > div + div { border-left: 1px solid var(--line); background: var(--raised); }
+  @media (max-width: 620px) { .words > div + div { border-left: 0; border-top: 1px solid var(--line); } }
+  .words ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: 13.5px; color: var(--dim); }
+  .words h3 { font-size: 14px; }
 
-  .zones { display: flex; height: 18px; border-radius: 6px; overflow: hidden; }
-  .zones i { display: block; height: 100%; background: var(--jade); }
-  .zones i:nth-child(1) { opacity: .25; } .zones i:nth-child(2) { opacity: .45; } .zones i:nth-child(3) { opacity: .7; } .zones i:nth-child(4) { opacity: 1; } .zones i:nth-child(5) { background: var(--gold); }
-  .legend { display: flex; flex-wrap: wrap; gap: 10px; font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .route { width: 100%; height: 110px; background: var(--raised); border-radius: 10px; }
+  /* Mac strip */
+  .mac { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); }
+  .mac-top { display: flex; gap: 11px; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--line); font-size: 13px; }
+  .mac-top i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--line); margin-right: 4px; }
+  .mac-top .p { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-left: auto; }
+  .mac-body { display: grid; grid-template-columns: 1fr 260px; }
+  @media (max-width: 760px) { .mac-body { grid-template-columns: 1fr; } }
+  .mac-main { padding: 17px 19px; display: grid; gap: 13px; align-content: start; }
+  .mac-side { border-left: 1px solid var(--line); background: var(--ground); padding: 17px; display: grid; gap: 9px; align-content: start; font-size: 13px; }
+  @media (max-width: 760px) { .mac-side { border-left: 0; border-top: 1px solid var(--line); } }
+  .kvs { display: grid; gap: 4px; font-size: 13.5px; }
+  .kvs .r { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .kvs .r:last-child { border-bottom: 0; }
+  .kvs .r span:last-child { font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
 
-  .types { display: grid; gap: 6px; }
-  .type { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-  .type .n { font-size: 13px; font-weight: 500; } .type .m { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .type .cnt { font-family: var(--mono); font-size: 12px; text-align: right; } .type .cnt small { display: block; color: var(--dim); font-size: 10px; }
-  .type.empty { background: var(--raised); } .type.empty .cnt { color: var(--dim); }
-  .ledger { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .ledger div { padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-  .ledger .v { font-family: var(--mono); font-size: 18px; font-weight: 600; } .ledger .k { font-size: 11px; color: var(--dim); }
-
-  .setting { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-  .setting .k { font-weight: 500; font-size: 14px; } .setting .s { font-size: 12px; color: var(--dim); }
-  .setting .val { font-family: var(--mono); font-size: 12px; color: var(--dim); }
-  .toggle { width: 40px; height: 24px; border-radius: 12px; background: var(--jade); position: relative; }
-  .toggle::after { content: ""; position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
-  .toggle.off { background: var(--line); } .toggle.off::after { right: auto; left: 3px; }
-  .sub { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); padding-top: 4px; }
-
-  /* Profile rows (Who you are, Mac) */
-  .prof { display: grid; gap: 6px; }
-  .pr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-  .pr .f { font-size: 12px; color: var(--dim); }
-  .pr .val { font-weight: 500; font-size: 14px; }
-  .pr .e { grid-column: 1; font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .pr .cf { grid-row: 1 / span 3; align-self: center; display: grid; gap: 4px; justify-items: end; }
-  .pr .cf span { font-family: var(--mono); font-size: 11px; color: var(--jade); }
-  .pr .cf button { font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
-  .pr.fixed .cf span { color: var(--dim); }
-  .pr .fix { grid-column: 1 / -1; display: none; gap: 6px; padding-top: 6px; }
-  .pr.asking .fix { display: flex; }
-  .pr .fix button { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
-
-  /* Mac page mock */
-  .mac { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-  .mac-top { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 13px; }
-  .mac-top .dots i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--line); margin-right: 5px; }
-  .mac-top .name { font-weight: 600; } .mac-top .path { font-family: var(--mono); font-size: 12px; color: var(--dim); }
-  .mac-grid { display: grid; grid-template-columns: 300px 1fr 300px; min-height: 620px; }
-  @media (max-width: 1000px) { .mac-grid { grid-template-columns: 1fr; } }
-  .mac-side { padding: 16px; display: grid; gap: 16px; align-content: start; border-right: 1px solid var(--line); background: var(--ground); }
-  .mac-main { padding: 18px 20px; display: grid; gap: 18px; align-content: start; overflow-x: auto; }
-  .mac-chat { border-left: 1px solid var(--line); background: var(--ground); display: grid; grid-template-rows: auto 1fr auto; }
-  @media (max-width: 1000px) { .mac-side { border-right: 0; border-bottom: 1px solid var(--line); } .mac-chat { border-left: 0; border-top: 1px solid var(--line); } }
-  .mac-chat .h { padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; display: flex; justify-content: space-between; }
-  .mac-chat .h span { font-family: var(--mono); font-size: 11px; color: var(--dim); font-weight: 400; }
-  .msgs { padding: 14px 16px; display: grid; gap: 12px; align-content: start; font-size: 13px; }
-  .msg { padding: 10px 12px; border-radius: 12px; max-width: 94%; }
-  .msg.me { background: var(--jade-soft); justify-self: end; }
-  .msg.ai { background: var(--surface); border: 1px solid var(--line); }
-  .msg .toolchip { display: inline-flex; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--dim); background: var(--raised); padding: 2px 8px; border-radius: 999px; margin-top: 6px; }
-  .compose { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--dim); }
-  .hist { display: grid; gap: 6px; }
-  .hi { display: grid; gap: 2px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; font-size: 12px; }
-  .hi .d { font-family: var(--mono); font-size: 11px; color: var(--dim); display: flex; justify-content: space-between; }
-  .hi .d button { font-size: 11px; padding: 1px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
-  .hi.cur { border-color: var(--jade); }
-  .multiples { display: grid; gap: 6px; }
-  .multiple { display: grid; grid-template-columns: 150px 1fr 80px; align-items: center; gap: 12px; }
-  .multiple .k { font-size: 13px; font-weight: 500; } .multiple .k small { display: block; font-family: var(--mono); font-size: 11px; color: var(--dim); font-weight: 400; }
-  .multiple svg { width: 100%; height: 56px; display: block; }
-  .multiple .now { font-family: var(--mono); font-size: 13px; text-align: right; } .multiple .now small { display: block; font-size: 10px; color: var(--dim); }
-  .board { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-  .mac-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 700px) { .mac-two { grid-template-columns: 1fr; } }
-  .plain { display: grid; gap: 6px; font-size: 13px; }
-  .plain .r { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
-  .plain .r:last-child { border-bottom: 0; }
-  .plain .r span:last-child { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-
-  /* Workflows */
-  .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; counter-reset: step; }
-  .step { position: relative; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: grid; gap: 6px; }
-  .step::before { counter-increment: step; content: counter(step); font-family: var(--mono); font-size: 11px; color: var(--jade); }
-  .step .w { font-weight: 600; font-size: 14px; } .step .who { font-family: var(--mono); font-size: 11px; color: var(--dim); }
-  .step p { font-size: 13px; color: var(--dim); }
-  .flows { display: grid; gap: 22px; }
-  .flows h3 { display: flex; gap: 10px; align-items: baseline; } .flows h3 small { font-family: var(--mono); font-size: 11px; color: var(--dim); font-weight: 400; }
-
-  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-  .rule { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: grid; gap: 4px; }
-  .rule b { font-weight: 600; } .rule p { color: var(--dim); font-size: 13px; }
-
-  /* Catalog */
-  .catalog { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
-  .ck { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: grid; gap: 2px; }
-  .ck b { font-family: var(--mono); font-size: 12px; font-weight: 600; }
-  .ck span { font-size: 12px; color: var(--dim); }
-  .ck.on { border-color: var(--jade); background: var(--jade-soft); }
-  .ck.on span { color: var(--text); }
-
-  @media (prefers-reduced-motion: no-preference) { .view, .card, .item, .person, .c { transition: border-color .15s ease; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .person, .act-row, .find, .status { transition: border-color .15s ease, box-shadow .15s ease; }
+  }
 </style>
 
 <main class="page">
+
   <header class="hero">
-    <span class="eyebrow">Linggen · Health · prototype</span>
-    <h1>Linggen Health</h1>
-    <p class="thesis">Apple Health shows the <em>same app</em> to everyone. Linggen Health <em>composes the app from you</em>: the agent works out who you are from your data, builds the screen for that person, plans your next days, and changes as you change. Every change says why. One tap undoes it.</p>
-    <p class="lede">Pick a person. The phone below is the same code, one catalog of cards, three different apps. It works on the phone alone; a Mac is optional and adds the months and the work side. Every figure is example data.</p>
+    <span class="eyebrow">Linggen · Health · prototype v4</span>
+    <h1>Most days it says almost nothing</h1>
+    <p class="thesis">Apple Health holds hundreds of measurements and shows you all of them. Linggen Health reads every one of yours each night, against <em>your own history</em>, and puts on screen only what is not right. A quiet screen is the finding.</p>
+    <p class="lede">Pick a person below. Both phones are the same code and the same person: on the left an ordinary day, on the right the day the app had something to say. Everything under those two screens is one tap or one question away. All figures are examples.</p>
     <div class="people" role="group" aria-label="Three people, one app">
-      <button class="person" data-person="runner" aria-pressed="true"><span class="who">The outdoor runner</span><span class="what">41 · 3 runs a week · 10 km under 52:00 by November</span><span class="top">▲ running · pace · weather window</span></button>
-      <button class="person" data-person="lifter" aria-pressed="false"><span class="who">The lifter, bulking</span><span class="what">28 · 4 sessions a week · 82 kg by December</span><span class="top">▲ weight trend · protein · the split</span></button>
-      <button class="person" data-person="office" aria-pressed="false"><span class="who">The office worker</span><span class="what">36 · 9 hours at a desk · move more, sleep better</span><span class="top">▲ screen time · sitting · one walk</span></button>
+      <button class="person" data-p="lifter" aria-pressed="true">
+        <span class="who">The lifter</span>
+        <span class="what">44 · functional strength, 4.6 a week · no scale connected</span>
+        <span class="idx">watches HRV</span>
+      </button>
+      <button class="person" data-p="desk" aria-pressed="false">
+        <span class="who">The office worker</span>
+        <span class="what">36 · 9 hours at a desk · smart scale since March</span>
+        <span class="idx">watches the weight trend</span>
+      </button>
+      <button class="person" data-p="runner" aria-pressed="false">
+        <span class="who">The runner, unwell</span>
+        <span class="what">38 · 4 runs a week · nine days of a shifted baseline</span>
+        <span class="idx">watches resting heart rate</span>
+      </button>
     </div>
-    <span class="status"><i></i> draft for review · 2026-09-02 · phone-first · design in <code>skills/health/product-spec.md</code> + <code>design.md</code></span>
+    <span class="stamp"><i></i> design round · 2026-09-03 · supersedes the composed-dashboard prototype</span>
   </header>
 
-  <!-- PHONE -->
-  <section id="phone">
-    <div class="sec-head">
-      <span class="eyebrow">Phone · under ON THIS PHONE</span>
-      <h2>One conversation, then a phone composed for one person</h2>
-      <p>First run is the one conversation that replaces a questionnaire. Home is what the agent built this week, with the why on top. Plan is the next seven days. Track is today's checklist and the chart the goal needs. All of it runs on the phone; a Mac is optional. Pick a screen to walk it; the ⋯ on a card holds Pin, Hide and Why this.</p>
+  <section id="two-days">
+    <div class="head">
+      <span class="eyebrow">The screen</span>
+      <h2>One line that proves it looked, then only what is wrong</h2>
+      <p>The number is not a health score, which no consumer sensor can support. It is today against this person's own normal, and it says what it was made of. Under it: nothing on a good day, the finding on a bad one, then the last few sessions. Detail is never on screen until it is asked for.</p>
     </div>
-    <div class="picker" role="tablist" aria-label="Phone screens">
-      <button role="tab" aria-selected="false" data-view="firstrun">First run</button>
-      <button role="tab" aria-selected="true" data-view="home">Home</button>
-      <button role="tab" aria-selected="false" data-view="plan">Plan</button>
-      <button role="tab" aria-selected="false" data-view="track">Track</button>
-      <button role="tab" aria-selected="false" data-view="workouts">Workouts</button>
-      <button role="tab" aria-selected="false" data-view="patterns">Patterns</button>
-      <button role="tab" aria-selected="false" data-view="who">Who you are</button>
-      <button role="tab" aria-selected="false" data-view="data">Data</button>
-      <button role="tab" aria-selected="false" data-view="settings">Settings</button>
-    </div>
-    <div class="walk">
-      <div class="phone" aria-label="Phone mock">
-        <div class="screen">
-          <div class="statusbar"><span>07:32</span><span>●●● ᯤ 81%</span></div>
-          <div class="appbar">
-            <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></div>
-            <div class="title"><span id="screen-title">Health</span><small>▾ Today</small></div>
-            <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
-            <div class="icon" aria-hidden="true">⋮</div>
-          </div>
-          <div class="body" id="body">
-            <div class="view" data-view="firstrun" id="v-firstrun"></div>
-            <div class="view" data-view="home" data-active="true" id="v-home"></div>
-            <div class="view" data-view="plan" id="v-plan"></div>
-            <div class="view" data-view="track" id="v-track"></div>
-            <div class="view" data-view="workouts" id="v-workouts"></div>
-            <div class="view" data-view="patterns" id="v-patterns"></div>
-            <div class="view" data-view="who" id="v-who"></div>
-
-            <!-- DATA (same for everyone: show everything) -->
-            <div class="view" data-view="data">
-              <div class="ledger">
-                <div><span class="v">121</span><span class="k">types granted</span></div>
-                <div><span class="v">76</span><span class="k">with data</span></div>
-                <div><span class="v">45</span><span class="k">empty</span></div>
-              </div>
-              <div class="types" id="types"></div>
-            </div>
-
-            <!-- SETTINGS -->
-            <div class="view" data-view="settings">
-              <span class="sub">Reading</span>
-              <div class="setting"><div><div class="k">Types</div><div class="s">Everything readable · 121 granted</div></div><span class="val">Change ›</span></div>
-              <div class="setting"><div><div class="k">Background sync</div><div class="s">When a workout, a weigh-in or the night lands</div></div><div class="toggle"></div></div>
-              <span class="sub">Home</span>
-              <div class="setting"><div><div class="k">Layout changes</div><div class="s">Automatic at the weekly pass, with why and undo</div></div><div class="toggle"></div></div>
-              <div class="setting"><div><div class="k">What changed</div><div class="s">Every layout with its reason · restore any</div></div><span class="val">3 ›</span></div>
-              <div class="setting"><div><div class="k">Hidden cards</div><div class="s">Stay hidden until you unhide here</div></div><span class="val" id="hidden-count">0 ›</span></div>
-              <span class="sub">Plan</span>
-              <div class="setting"><div><div class="k">The plan lives here</div><div class="s">Mirror into Calendar</div></div><div class="toggle off"></div></div>
-              <div class="setting"><div><div class="k">Weather</div><div class="s">Only for outdoor sessions · coarse location, once a day</div></div><div class="toggle" id="weather-toggle"></div></div>
-              <div class="setting"><div><div class="k">Buyer advice</div><div class="s">Only when you ask · live search · source shown</div></div><span class="val">later</span></div>
-              <span class="sub">Voice</span>
-              <div class="setting"><div><div class="k">Nudges through Yinyue</div><div class="s">Today's session, stand, water, wind down</div></div><div class="toggle"></div></div>
-              <div class="setting"><div><div class="k">Quiet hours</div><div class="s">No nudges, no brief</div></div><span class="val">22:30–07:00</span></div>
-              <div class="setting"><div><div class="k">How blunt</div><div class="s">A coach who notices, never a nag</div></div><span class="val">Plain</span></div>
-              <span class="sub">Your Mac</span>
-              <div class="setting"><div><div class="k">Your Mac · optional</div><div class="s">Liang's Mac · synced 2 min ago · the years and the work side live there</div></div><span class="val">●</span></div>
-              <div class="setting"><div><div class="k">Without a Mac</div><div class="s">Everything runs on this phone. Nothing is greyed out.</div></div><span class="val">✓</span></div>
-              <div class="setting"><div><div class="k">Export everything</div><div class="s">CSV + Markdown, to a folder</div></div><span class="val">›</span></div>
-            </div>
-          </div>
-        </div>
+    <div class="days">
+      <div class="day-col">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
+          <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
+          <div class="sbody" id="quiet-body"></div>
+        </div></div>
+        <div class="day-cap"><b>An ordinary day</b><span id="quiet-cap"></span></div>
       </div>
-
-      <aside class="notes" id="notes">
-        <div class="note" data-for="firstrun" hidden><h3>First run · confirm, then one question</h3><ul><li>Within the first minute the profile pass has read the last months. Yinyue opens with what she found and one tap confirms it. Nothing the data already holds is asked.</li><li>Then the goal, the one field data can never infer. Plan waits for it and says so.</li><li>Later asks come only when a decision needs them, one at a time, with the consequence.</li></ul></div>
-        <div class="note tool" data-for="firstrun" hidden><h3>Behind it</h3><ul><li><code>profile.json</code> from HealthKit characteristics + workouts + the latest weigh-in; name from Yinyue's first meeting in memory; goal written with <code>source: user</code>.</li></ul></div>
-        <div class="note" data-for="home"><h3>Home · composed, with the why on top</h3><ul><li>The layout is written by the weekly pass from the profile. The why-line says what moved and why; Undo restores last week's layout and pins it for four weeks.</li><li>Numbers change every day. The shape changes only weekly or when you act.</li><li>⋯ on a card: Pin, Hide, Why this. Your choice wins forever.</li></ul></div>
-        <div class="note tool" data-for="home"><h3>Behind it</h3><ul><li>Profile → compose → <code>layout.json</code> (cards, order, headline, why, previous), run on the phone; one widget per catalog kind; mirrored to a paired Mac as a last-writer-wins register.</li></ul></div>
-        <div class="note" data-for="plan" hidden><h3>Plan · the next seven days</h3><ul><li>Written Sunday from goal, level, load, adherence and the calendar. Outdoor athletes get the weather joined per day; indoor ones never trigger the weather call.</li><li>The morning pass may move one day, and says why in gold.</li><li>The plan lives here. Calendar is a mirror, later, opt-in.</li></ul></div>
-        <div class="note tool" data-for="plan" hidden><h3>Behind it</h3><ul><li><code>plans/&lt;week&gt;.json</code> + <code>targets.json</code> on the phone; Open-Meteo only when <code>profile.athlete.environment</code> is outdoor. A paired Mac takes the weekly pass over the long store.</li></ul></div>
-        <div class="note" data-for="track" hidden><h3>Track · checklist, then the chart the goal needs</h3><ul><li>Items come from the plan and targets. HealthKit checks what it can see (a workout, a weigh-in, protein from a food app); you tap or say the rest.</li><li>Progress is the goal's own chart: weight against the goal line, per-km time, active minutes. Then heart history and adherence.</li></ul></div>
-        <div class="note tool" data-for="track" hidden><h3>Behind it</h3><ul><li>The checklist derives from the plan and targets on the phone; progress from <code>progress/&lt;metric&gt;.json</code>. A check is a local write, synced to a Mac when there is one.</li></ul></div>
-        <div class="note" data-for="workouts" hidden><h3>Workouts · the Watch in full</h3><ul><li>HR series at 5 s, splits, zones from your measured max, route, recovery, effort, power and cadence.</li><li>"vs your last five" of the same type, then one paragraph on what to do next.</li></ul></div>
-        <div class="note" data-for="patterns" hidden><h3>Patterns · the kill risk, handled in code</h3><ul><li>Forming until 4 aligned weeks and one MAD of effect; stable after 6; retired after two contradictions.</li><li>Every claim carries its evidence rows.</li></ul></div>
-        <div class="note" data-for="who" hidden><h3>Who you are · the profile, visible</h3><ul><li>Inferred from years of workouts, the scale, your routine, what you open, what you said. Never a quiz.</li><li>Each row shows confidence and evidence. "Not quite" corrects it, and the correction wins over inference.</li></ul></div>
-        <div class="note tool" data-for="who" hidden><h3>Behind it</h3><ul><li><code>profile.json</code>: body from HealthKit characteristics + the latest weigh-in; athlete from workouts (indoor flag, routes); routine from sleep + Apple Shifu; goal from what you said.</li></ul></div>
-        <div class="note" data-for="data" hidden><h3>Data · show everything</h3><ul><li>Every type with count, last sample and sources. Apple hides read denials, so an empty type says both possible reasons instead of 0.</li></ul></div>
-        <div class="note" data-for="settings" hidden><h3>Settings · the user is never gated</h3><ul><li>Layout changes are automatic with why and undo; the history is here. Hidden cards stay hidden. The plan lives in the app. Weather only for outdoor sessions. Your Mac is optional.</li></ul></div>
-      </aside>
+      <div class="day-col">
+        <div class="phone"><div class="screen">
+          <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
+          <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
+          <div class="sbody" id="loud-body"></div>
+        </div></div>
+        <div class="day-cap"><b>The day it speaks</b><span id="loud-cap"></span></div>
+      </div>
     </div>
   </section>
 
-  <!-- CATALOG -->
-  <section id="catalog">
-    <div class="sec-head">
-      <span class="eyebrow">The card catalog · code</span>
-      <h2>One catalog, composed three ways</h2>
-      <p>Card kinds are code: one widget each, declaring what data it needs. Composition is the agent's: which kinds, what order, what headline, what why. A new kind of person needs a new card at most, never a new branch. Green marks what the current person's Home holds.</p>
+  <section id="examination">
+    <div class="head">
+      <span class="eyebrow">The nightly examination</span>
+      <h2>Every measurement this person has, judged against their own history</h2>
+      <p>One job, run each night, walks every type in the store. Most come back with nothing to say. What it produces is one of three verdicts, and only two of them ever reach the screen. Sustained is the word that keeps it useful: one low morning is a rest day, nine days of a shifted baseline is something else.</p>
     </div>
-    <div class="catalog" id="catalog"></div>
+    <div class="exam">
+      <div class="verdict clear">
+        <span class="k"><i></i>At your normal</span>
+        <p>The measurement sits inside its usual spread. It is not shown at all, and it is not a card taking up a slot. It counts toward the status line, which is where "everything is fine" gets said once.</p>
+        <span class="r" id="v-clear">—</span>
+      </div>
+      <div class="verdict see">
+        <span class="k"><i></i>Worth seeing</span>
+        <p>Moved enough to change what today should be, or drifting week over week. It appears with its evidence and what it changes. It leaves on its own when the number comes back.</p>
+        <span class="r" id="v-see">—</span>
+      </div>
+      <div class="verdict doc">
+        <span class="k"><i></i>Worth a doctor</span>
+        <p>A sustained adverse shift against this person's own baseline, or one of a short list of published red flags. Always on top, never collapsed, never hidden by a tap, and it never names a condition.</p>
+        <span class="r" id="v-doc">—</span>
+      </div>
+    </div>
   </section>
 
-  <!-- MAC -->
+  <section id="picker">
+    <div class="head">
+      <span class="eyebrow">Which number matters</span>
+      <h2>The index is chosen for the person, not fixed in the app</h2>
+      <p>Each candidate is ranked on three things: whether there is enough recent data, whether it means anything for who this person is, and whether it has actually moved. A fixed list would put a misleading number on someone's screen. The clearest case is BMI, which reads a muscular lifter as overweight because it cannot tell muscle from fat.</p>
+    </div>
+    <div class="tablewrap">
+      <table class="idx">
+        <thead><tr><th>Candidate</th><th>Data held</th><th>Relevant here</th><th>Moved</th><th>Verdict</th></tr></thead>
+        <tbody id="idx-rows"></tbody>
+      </table>
+    </div>
+    <p class="dim" style="font-size:13.5px; max-width:68ch" id="idx-note"></p>
+  </section>
+
+  <section id="talk">
+    <div class="head">
+      <span class="eyebrow">Everything else</span>
+      <h2>Yinyue is the way to the detail, and she already has the tools</h2>
+      <p>The plan, the checklist, the years of history, every one of the hundreds of measurements: all still there, none of it on screen. Health is one of Linggen's apps, so the companion who already answers about your music and your money answers about your body from the same fourteen tools.</p>
+    </div>
+    <div class="talk" id="talk-thread"></div>
+  </section>
+
   <section id="mac">
-    <div class="sec-head">
-      <span class="eyebrow">Mac · /apps/health/</span>
-      <h2>Optional. Paired, it holds the years and the work side; alone, it says where the body lives</h2>
-      <p>Left: who the agent thinks you are, the composition history with Restore, this week's plan. Centre: months of the goal's own metrics. Right: Ling, who updates the page when you ask. HealthKit exists only on iPhone, so a Mac with no phone composes from the work side and shows the pair card.</p>
-    </div>
-    <div class="picker" role="group" aria-label="Mac state">
-      <button data-mac="phone" aria-selected="true">Paired with an iPhone</button>
-      <button data-mac="none" aria-selected="false">No iPhone paired</button>
+    <div class="head">
+      <span class="eyebrow">The Mac · optional</span>
+      <h2>Where the years live, and where the nightly examination runs</h2>
+      <p>A phone keeps about thirteen months. A paired Mac keeps everything, which is what a claim about how your autumns differ from your summers needs. Apple Health exists only on an iPhone, so a Mac with no phone paired says exactly that and shows no body data at all.</p>
     </div>
     <div class="mac">
-      <div class="mac-top"><span class="dots"><i></i><i></i><i></i></span><span class="name">Linggen Health</span><span class="path" id="mac-path"></span></div>
-      <div class="mac-grid">
-        <div class="mac-side">
-          <div><span class="eyebrow">Who the agent thinks you are</span><div class="prof" id="mac-prof" style="margin-top:8px"></div></div>
-          <div><span class="eyebrow">What changed</span><div class="hist" id="mac-hist" style="margin-top:8px"></div></div>
-        </div>
+      <div class="mac-top"><span><i></i><i></i><i></i></span><b>Linggen Health</b><span class="p" id="mac-path"></span></div>
+      <div class="mac-body">
         <div class="mac-main">
-          <div id="mac-pair"></div>
-          <div class="multiples" id="multiples"></div>
-          <div class="mac-two">
-            <div class="card"><span class="eyebrow">This week</span><div class="plain" id="mac-week"></div></div>
-            <div class="card"><span class="eyebrow">Targets</span><div class="targets" id="mac-targets"></div></div>
-          </div>
-          <div class="board" id="mac-board"></div>
-          <div class="card"><span class="eyebrow">Sync and passes</span><div class="plain" id="mac-sync"></div></div>
+          <span class="eyebrow">Examined last night</span>
+          <div class="kvs" id="mac-exam"></div>
         </div>
-        <div class="mac-chat">
-          <div class="h">Ling <span>health · gpt-5.6-terra</span></div>
-          <div class="msgs" id="mac-msgs"></div>
-          <div class="compose">Message Ling…</div>
+        <div class="mac-side">
+          <span class="eyebrow">The mirror</span>
+          <div class="kvs" id="mac-mirror"></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- WORKFLOWS -->
-  <section id="workflows">
-    <div class="sec-head">
-      <span class="eyebrow">Workflows</span>
-      <h2>The agent runs the loop; the user answers</h2>
-      <p>Four loops. Each step names who does it. The phone reads and renders, the Mac thinks, Yinyue speaks.</p>
+  <section id="words">
+    <div class="head">
+      <span class="eyebrow">The words</span>
+      <h2>Build the capability; do not claim the title</h2>
+      <p>A daily examination of everything, an index chosen per person, a warning that will not be dismissed: all of that ships. What changes is the sentence on the screen and in the App Store listing. A diagnosis claim from an app that has not been cleared is a review rejection in the United States and a regulated medical device in the EU, and a user who believes the app is their doctor may not go to a real one.</p>
     </div>
-    <div class="flows">
+    <div class="words">
       <div>
-        <h3>First run <small>the first minute · one conversation, never a questionnaire</small></h3>
-        <div class="flow">
-          <div class="step"><span class="w">Everything, or pick</span><span class="who">user · Health in the drawer</span><p>Everything is recommended. The ledger explains that a denied type just shows empty.</p></div>
-          <div class="step"><span class="w">iOS permission sheet</span><span class="who">user · Turn All Categories On</span></div>
-          <div class="step"><span class="w">Backfill, newest first</span><span class="who">HealthBridge · month windows</span><p>The last months land in the first minute. 2023 keeps arriving behind.</p></div>
-          <div class="step"><span class="w">Yinyue confirms what she found</span><span class="who">phone · profile pass · within a minute</span><p>"You look like an outdoor runner, about three runs a week, 71 kg. Right?" One tap. Nothing the data holds is asked.</p></div>
-          <div class="step"><span class="w">One question: the goal</span><span class="who">phone · the first Home card</span><p>Bulking, cutting, a race, sleep better, just move. The only field data can never infer. Plan waits and says so.</p></div>
-          <div class="step"><span class="w">First Home and first plan</span><span class="who">phone · compose + plan passes</span><p>From the catalog, with the why. Weather joined if outdoors. Targets with the formula.</p></div>
-        </div>
+        <h3>What it says</h3>
+        <ul>
+          <li>"Your resting heart rate has been 12 above your normal for nine days."</li>
+          <li>"That has held long enough to be worth showing a doctor."</li>
+          <li>"HRV is 7 below your normal, so today is an easy day."</li>
+          <li>"Examined 38 measurements. Nothing needs you today."</li>
+        </ul>
       </div>
       <div>
-        <h3>Every morning <small>fires when the night lands, 08:00 at the latest</small></h3>
-        <div class="flow">
-          <div class="step"><span class="w">Night lands, phone wakes</span><span class="who">HealthBridge · background delivery</span><p>Sleep, overnight HRV, temperature into the phone store. A background task schedules the pass.</p></div>
-          <div class="step"><span class="w">Rollup, weather</span><span class="who">phone · Open-Meteo only if outdoors</span><p>Baselines refresh. With a Mac paired, yesterday's work signals join in.</p></div>
-          <div class="step"><span class="w">Brief, checklist, one adjustment</span><span class="who">morning pass · on the phone · cloud model · 06:58</span><p>One sentence, today's session, the day's items. At most one day moved, with its why. Never the layout.</p></div>
-          <div class="step"><span class="w">Shown, said once, mirrored</span><span class="who">phone · Yinyue · Mac if paired</span><p>Items auto-check as samples land through the day. The Mac page and Right now follow.</p></div>
-        </div>
-      </div>
-      <div>
-        <h3>Every Sunday <small>19:00</small></h3>
-        <div class="flow">
-          <div class="step"><span class="w">Profile refresh</span><span class="who">weekly pass · Mac if paired and reachable, else phone</span><p>The week's workouts, weigh-ins, attention, notes. A field moves only past its threshold.</p></div>
-          <div class="step"><span class="w">Re-compose if the person moved</span><span class="who">compose pass</span><p>New layout with why and previous. Pinned and hidden cards respected. Otherwise Home stays.</p></div>
-          <div class="step"><span class="w">Next week's plan and targets</span><span class="who">plan pass</span><p>From goal, level, load, adherence, calendar, the weather outlook. Deload when due.</p></div>
-          <div class="step"><span class="w">Weekly report; memory</span><span class="who">weekly pass · ling-mem when on the Mac</span><p>What moved toward the goal. Durable profile facts to memory in your words.</p></div>
-        </div>
-      </div>
-      <div>
-        <h3>After a workout <small>minutes</small></h3>
-        <div class="flow">
-          <div class="step"><span class="w">Workout ends on the Watch</span><span class="who">Watch → HealthKit</span><p>Series, events, route, recovery arrive over the next minutes.</p></div>
-          <div class="step"><span class="w">Phone wakes, syncs</span><span class="who">background delivery · immediate</span></div>
-          <div class="step"><span class="w">Report; session checked; progress updated</span><span class="who">workout-report pass</span><p>Zones, splits, vs last five, one paragraph. The checklist item closes itself.</p></div>
-          <div class="step"><span class="w">Tomorrow's brief may lead with it</span><span class="who">morning pass</span></div>
-        </div>
-      </div>
-      <div>
-        <h3>Without a Mac <small>any day</small></h3>
-        <div class="flow">
-          <div class="step"><span class="w">Everything above, on the phone</span><span class="who">phone · Yinyue · cloud model</span><p>Store, passes, Home, plan, checklist. Nothing is greyed out.</p></div>
-          <div class="step"><span class="w">Outbox stays empty</span><span class="who">phone</span><p>No Mac, nothing to drain. Sync now is hidden.</p></div>
-          <div class="step"><span class="w">Pair a Mac later</span><span class="who">user · QR or Bonjour</span><p>The whole store goes over; the months appear on the Mac page; the Mac takes the weekly pass.</p></div>
-        </div>
-      </div>
-      <div>
-        <h3>Mac without a phone <small>HealthKit lives only on iPhone</small></h3>
-        <div class="flow">
-          <div class="step"><span class="w">Compose from the work side</span><span class="who">Mac · Apple Shifu, git, calendar</span><p>Screen time, sitting, late commits, meetings, a plan of breaks. The same catalog, fewer cards.</p></div>
-          <div class="step"><span class="w">Say where the body lives</span><span class="who">Mac · pair card</span><p>"Your body data lives on your iPhone", with the pair QR. HealthKit shows as not connected, never as empty types.</p></div>
-          <div class="step"><span class="w">Pair an iPhone</span><span class="who">user</span><p>Backfill lands within the first minute and the page fills in.</p></div>
-          <div class="step"><span class="w">Or connect a service</span><span class="who">Mac · later</span><p>Oura, Garmin, Whoop, Strava, Withings through their own APIs.</p></div>
-        </div>
+        <h3>What it never says</h3>
+        <ul>
+          <li>Any condition, by name or by hint.</li>
+          <li>A score of health, as though 82 out of 100 were a fact about a body.</li>
+          <li>"Normal" or "abnormal" against a population range instead of this person's own history.</li>
+          <li>Anything about a medication, a dose, or a clinical record it was given as context.</li>
+        </ul>
       </div>
     </div>
   </section>
 
-  <!-- RULES -->
   <section id="rules">
-    <div class="sec-head">
+    <div class="head">
       <span class="eyebrow">Rules</span>
-      <h2>What keeps it honest</h2>
+      <h2>What keeps a quiet screen honest</h2>
     </div>
     <div class="rules">
-      <div class="rule"><b>The layout moves weekly, or when you act</b><p>Never daily. Every change has a why and a previous. Undo pins last week's layout for four weeks.</p></div>
-      <div class="rule"><b>The profile shows its evidence</b><p>A field appears only above 0.6 confidence. Below that, Home asks one question instead of guessing. Your correction wins.</p></div>
-      <div class="rule"><b>Targets show their formula</b><p>2.0 g/kg × 78.4 kg. Change a body fact and the target re-derives on screen.</p></div>
-      <div class="rule"><b>No brand unprompted</b><p>Supplements as evidence in plain words. A product is named only when you ask, from a live search, with the source.</p></div>
-      <div class="rule"><b>A pattern needs weeks; a weight trend needs two</b><p>Forming until 4 aligned weeks and one MAD. Weight is a 7-day average; one weigh-in is never a headline.</p></div>
-      <div class="rule"><b>Personal baseline beside every number</b><p>28-day median and spread. Never a population range, never Apple's colours.</p></div>
-      <div class="rule"><b>Empty is not zero</b><p>Apple hides read denials. An empty type shows both possible reasons. An auto-checked item names its source.</p></div>
-      <div class="rule"><b>Works alone</b><p>The phone is the whole product. A Mac adds the years and the work side. A Mac alone never pretends to see the body.</p></div>
-      <div class="rule"><b>Never a questionnaire</b><p>Confirm what the data holds, ask the one thing it cannot know, ask later only when a decision needs it.</p></div>
-      <div class="rule"><b>Wellness only, yours only</b><p>No diagnosis, no medication advice. Data stays on your phone and your Mac; never iCloud, never sold, never for ads.</p></div>
+      <div class="rule"><b>A card earns its place by having news</b><p>At your normal is not a slot. The screen grows on the days something happened and shrinks back when it passes.</p></div>
+      <div class="rule"><b>The quiet is stated, never implied</b><p>The status line says how many measurements were examined. An empty screen with no line reads as a broken app.</p></div>
+      <div class="rule"><b>A warning outranks the quiet rule</b><p>It cannot be collapsed, hidden, or pushed below anything. Everything else on the screen can be.</p></div>
+      <div class="rule"><b>Absent is never zero</b><p>No scale means no weight trend, not a weight of nothing. A denied permission and an unused sensor look identical to us, and we say so.</p></div>
+      <div class="rule"><b>Your own baseline, never a population</b><p>A resting heart rate of 58 is flagged by a population rule and is nothing to worry about. The comparison is always to your own last month.</p></div>
+      <div class="rule"><b>Sustained, not single</b><p>One reading changes today's session. Nine days of a shifted baseline is what raises a warning.</p></div>
+      <div class="rule"><b>Every number shows its formula</b><p>Two grams per kilo of a weight measured on a date you can see. Change the body fact and the target re-derives in front of you.</p></div>
+      <div class="rule"><b>It stays on your devices</b><p>Your phone, and your Mac if you have one. Only the sentences you and the agent exchange reach a model. Never iCloud, never sold.</p></div>
     </div>
   </section>
+
 </main>
 
 <script>
 (function () {
   'use strict';
   var NS = 'http://www.w3.org/2000/svg';
-  function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+  function el(t, c, h) { var e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
-  // ---------- Charts: one scale, labelled ticks, baseline / goal, emphasised endpoint ----------
-  function lineChart(opts) {
-    var ys = opts.series, W = opts.w || 340, H = opts.h || 110, padL = 34, padR = 10, padT = 8, padB = 18;
-    var all = ys.slice(); if (opts.goal != null) all.push(opts.goal); if (opts.base != null) all.push(opts.base);
-    var min = opts.min != null ? opts.min : Math.min.apply(null, all), max = opts.max != null ? opts.max : Math.max.apply(null, all);
+  /* The status dial. One arc, one scale: 0 at the bottom left, 100 at the
+     bottom right, 80 marked because that is where "your normal" sits. */
+  function dial(score, tone) {
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 56 56'); svg.setAttribute('class', 'dial');
+    svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Today ' + score + ' out of 100 against your normal');
+    var cx = 28, cy = 28, r = 22;
+    function arc(from, to) {
+      var a0 = Math.PI * (0.75 + 1.5 * from), a1 = Math.PI * (0.75 + 1.5 * to);
+      var x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+      var x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+      return 'M ' + x0.toFixed(2) + ' ' + y0.toFixed(2) + ' A ' + r + ' ' + r + ' 0 ' + ((a1 - a0) > Math.PI ? 1 : 0) + ' 1 ' + x1.toFixed(2) + ' ' + y1.toFixed(2);
+    }
+    var back = document.createElementNS(NS, 'path');
+    back.setAttribute('d', arc(0, 1)); back.setAttribute('fill', 'none');
+    back.setAttribute('stroke', 'var(--raised)'); back.setAttribute('stroke-width', '6'); back.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(back);
+    var col = tone === 'crit' ? 'var(--crit)' : tone === 'warn' ? 'var(--gold)' : 'var(--jade)';
+    var fill = document.createElementNS(NS, 'path');
+    fill.setAttribute('d', arc(0, Math.max(0.02, score / 100))); fill.setAttribute('fill', 'none');
+    fill.setAttribute('stroke', col); fill.setAttribute('stroke-width', '6'); fill.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(fill);
+    var t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', cx); t.setAttribute('y', cy + 5); t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('font-family', 'JetBrains Mono, monospace'); t.setAttribute('font-size', '15');
+    t.setAttribute('font-weight', '600'); t.setAttribute('fill', 'var(--text)');
+    t.textContent = String(score);
+    svg.appendChild(t);
+    return svg;
+  }
+
+  /* Fourteen days of one measurement, with the person's own normal drawn
+     through it. Endpoint emphasised because it is the day being judged. */
+  function spark(series, base, tone) {
+    var W = 300, H = 34, pad = 3;
+    var all = series.concat([base]);
+    var min = Math.min.apply(null, all), max = Math.max.apply(null, all);
     if (max === min) { max = min + 1; }
-    var n = ys.length;
-    var x = function (i) { return padL + i * (W - padL - padR) / (n - 1); };
-    var y = function (v) { return padT + (H - padT - padB) * (1 - (v - min) / (max - min)); };
-    var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'chart'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', opts.label || '');
-    var fmt = opts.fmt || function (v) { return String(v); };
-    [min, (min + max) / 2, max].forEach(function (v) {
-      var g = document.createElementNS(NS, 'line'); g.setAttribute('x1', padL); g.setAttribute('x2', W - padR); g.setAttribute('y1', y(v)); g.setAttribute('y2', y(v)); g.setAttribute('stroke', 'var(--line)'); g.setAttribute('stroke-width', '1'); svg.appendChild(g);
-      var t = document.createElementNS(NS, 'text'); t.setAttribute('x', padL - 4); t.setAttribute('y', y(v) + 3); t.setAttribute('text-anchor', 'end'); t.textContent = fmt(v); svg.appendChild(t);
-    });
-    if (opts.xl) { opts.xl.forEach(function (lab, k) { var t = document.createElementNS(NS, 'text'); var i = k === 0 ? 0 : n - 1; t.setAttribute('x', x(i)); t.setAttribute('y', H - 5); t.setAttribute('text-anchor', k === 0 ? 'start' : 'end'); t.textContent = lab; svg.appendChild(t); }); }
-    function rule(v, color, text) {
-      var l = document.createElementNS(NS, 'line'); l.setAttribute('x1', padL); l.setAttribute('x2', W - padR); l.setAttribute('y1', y(v)); l.setAttribute('y2', y(v)); l.setAttribute('stroke', color); l.setAttribute('stroke-dasharray', '4 3'); l.setAttribute('stroke-width', '1.5'); svg.appendChild(l);
-      var t = document.createElementNS(NS, 'text'); t.setAttribute('x', W - padR); t.setAttribute('y', y(v) - 3); t.setAttribute('text-anchor', 'end'); t.setAttribute('fill', color); t.style.fill = color; t.textContent = text; svg.appendChild(t);
-    }
-    if (opts.base != null) rule(opts.base, 'var(--dim)', 'your normal ' + fmt(opts.base));
-    if (opts.goal != null) rule(opts.goal, 'var(--gold)', 'goal ' + fmt(opts.goal));
-    var area = document.createElementNS(NS, 'polygon');
-    area.setAttribute('points', ys.map(function (v, i) { return x(i) + ',' + y(v); }).join(' ') + ' ' + x(n - 1) + ',' + y(min) + ' ' + x(0) + ',' + y(min));
-    area.setAttribute('fill', 'var(--jade)'); area.setAttribute('opacity', '0.08'); svg.appendChild(area);
-    var p = document.createElementNS(NS, 'polyline'); p.setAttribute('points', ys.map(function (v, i) { return x(i) + ',' + y(v); }).join(' ')); p.setAttribute('fill', 'none'); p.setAttribute('stroke', 'var(--jade)'); p.setAttribute('stroke-width', '2'); p.setAttribute('stroke-linejoin', 'round'); p.setAttribute('vector-effect', 'non-scaling-stroke'); svg.appendChild(p);
-    var e = document.createElementNS(NS, 'circle'); e.setAttribute('cx', x(n - 1)); e.setAttribute('cy', y(ys[n - 1])); e.setAttribute('r', 3.5); e.setAttribute('fill', 'var(--text)'); svg.appendChild(e);
+    var n = series.length;
+    var x = function (i) { return pad + i * (W - pad * 2) / (n - 1); };
+    var y = function (v) { return pad + (H - pad * 2) * (1 - (v - min) / (max - min)); };
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'spark');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'Last 14 days against your normal');
+    var b = document.createElementNS(NS, 'line');
+    b.setAttribute('x1', pad); b.setAttribute('x2', W - pad); b.setAttribute('y1', y(base)); b.setAttribute('y2', y(base));
+    b.setAttribute('stroke', 'var(--faint)'); b.setAttribute('stroke-dasharray', '3 3'); b.setAttribute('stroke-width', '1');
+    svg.appendChild(b);
+    var col = tone === 'crit' ? 'var(--crit)' : 'var(--gold)';
+    var p = document.createElementNS(NS, 'polyline');
+    p.setAttribute('points', series.map(function (v, i) { return x(i) + ',' + y(v); }).join(' '));
+    p.setAttribute('fill', 'none'); p.setAttribute('stroke', col); p.setAttribute('stroke-width', '2');
+    p.setAttribute('stroke-linejoin', 'round'); p.setAttribute('vector-effect', 'non-scaling-stroke');
+    svg.appendChild(p);
+    var e = document.createElementNS(NS, 'circle');
+    e.setAttribute('cx', x(n - 1)); e.setAttribute('cy', y(series[n - 1])); e.setAttribute('r', 2.6);
+    e.setAttribute('fill', col);
+    svg.appendChild(e);
     return svg;
   }
-  function barChart(opts) {
-    var ys = opts.series, W = opts.w || 340, H = opts.h || 90, padL = 34, padR = 10, padT = 8, padB = 18;
-    var max = opts.max != null ? opts.max : Math.max.apply(null, ys.concat([opts.goal || 0])); var min = 0; if (max === 0) max = 1;
-    var n = ys.length, slot = (W - padL - padR) / n, bw = slot * 0.62;
-    var y = function (v) { return padT + (H - padT - padB) * (1 - (v - min) / (max - min)); };
-    var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('class', 'chart'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', opts.label || '');
-    var fmt = opts.fmt || function (v) { return String(v); };
-    [0, max / 2, max].forEach(function (v) {
-      var g = document.createElementNS(NS, 'line'); g.setAttribute('x1', padL); g.setAttribute('x2', W - padR); g.setAttribute('y1', y(v)); g.setAttribute('y2', y(v)); g.setAttribute('stroke', 'var(--line)'); svg.appendChild(g);
-      var t = document.createElementNS(NS, 'text'); t.setAttribute('x', padL - 4); t.setAttribute('y', y(v) + 3); t.setAttribute('text-anchor', 'end'); t.textContent = fmt(v); svg.appendChild(t);
-    });
-    ys.forEach(function (v, i) {
-      var r = document.createElementNS(NS, 'rect'); r.setAttribute('x', padL + i * slot + (slot - bw) / 2); r.setAttribute('y', y(v)); r.setAttribute('width', bw); r.setAttribute('height', Math.max(0, y(0) - y(v))); r.setAttribute('rx', '2');
-      r.setAttribute('fill', i === n - 1 ? 'var(--jade)' : 'var(--jade)'); r.setAttribute('opacity', i === n - 1 ? '1' : '0.45'); svg.appendChild(r);
-    });
-    if (opts.goal != null) { var l = document.createElementNS(NS, 'line'); l.setAttribute('x1', padL); l.setAttribute('x2', W - padR); l.setAttribute('y1', y(opts.goal)); l.setAttribute('y2', y(opts.goal)); l.setAttribute('stroke', 'var(--gold)'); l.setAttribute('stroke-dasharray', '4 3'); l.setAttribute('stroke-width', '1.5'); svg.appendChild(l); var t = document.createElementNS(NS, 'text'); t.setAttribute('x', W - padR); t.setAttribute('y', y(opts.goal) - 3); t.setAttribute('text-anchor', 'end'); t.style.fill = 'var(--gold)'; t.textContent = 'plan ' + fmt(opts.goal); svg.appendChild(t); }
-    if (opts.xl) { opts.xl.forEach(function (lab, k) { var t = document.createElementNS(NS, 'text'); t.setAttribute('x', k === 0 ? padL : W - padR); t.setAttribute('y', H - 5); t.setAttribute('text-anchor', k === 0 ? 'start' : 'end'); t.textContent = lab; svg.appendChild(t); }); }
-    return svg;
-  }
-  var pace = function (s) { var m = Math.floor(s / 60), r = Math.round(s - m * 60); return m + ':' + (r < 10 ? '0' : '') + r; };
-  var kg = function (v) { return (Math.round(v * 10) / 10).toFixed(1); };
-  var hrs = function (v) { var h = Math.floor(v), m = Math.round((v - h) * 60); return h + 'h' + (m < 10 ? '0' : '') + m; };
 
-  // ---------- Card catalog (code) ----------
-  var CATALOG = {
-    brief: { needs: 'briefs/today', answers: 'the sentence, the evidence, today\'s session' },
-    plan_today: { needs: 'plans/week', answers: 'what to do today and why; weather if outdoors' },
-    checklist: { needs: 'checklist/today', answers: 'the items, checked state' },
-    running: { needs: 'last run, baselines', answers: 'last run vs your normal' },
-    pace_history: { needs: 'progress/pace_km', answers: 'per-km time over weeks' },
-    distance_week: { needs: 'progress/weekly_km', answers: 'weekly km vs plan' },
-    lifting_split: { needs: 'plans/week', answers: 'this week\'s split, next session' },
-    weight_trend: { needs: 'progress/weight, goal', answers: '7-day average vs goal line' },
-    protein: { needs: 'checklist, targets', answers: 'today\'s protein vs target, formula' },
-    screen_time: { needs: 'life/today, baselines', answers: 'screen and IDE hours vs normal' },
-    sitting: { needs: 'stand hours, life', answers: 'longest sitting streak, breaks' },
-    sleep: { needs: 'last night, baselines', answers: 'asleep, stages, debt' },
-    hrv: { needs: 'daily, baselines', answers: 'HRV vs normal, 14-day spark' },
-    resting_hr: { needs: 'daily, baselines', answers: 'resting HR vs normal' },
-    heart_history: { needs: 'progress/resting_hr, hrv', answers: 'months of heart' },
-    vo2max: { needs: 'daily', answers: 'trend' },
-    steps: { needs: 'daily', answers: 'vs normal' },
-    patterns: { needs: 'patterns.json', answers: 'stable and forming claims' },
-    weather_window: { needs: 'weather/today', answers: 'the dry hours today (outdoor only)' },
-    work_join: { needs: 'life/today', answers: 'IDE hours, late commits, meetings' }
-  };
-
-  // ---------- Three people (example data) ----------
   var PEOPLE = {
-    runner: {
-      name: 'the outdoor runner', pathline: 'Liang\'s Mac · iPhone synced 2 min ago · Apple Watch via phone',
-      meet: { found: 'You look like an outdoor runner, about three runs a week, 5:30 pace, 71 kg. Right?', confirmed: 'Good. Running goes on top, then.', after: '10 km under 52:00 by November. That is a pace goal, so per-km time is your chart.', plan: 'First plan lands once tonight\'s sleep is in. Fridays look like your hard day.' },
-      why: 'Running moved to the top on Sunday: you ran 4 of the last 7 days and set a 10 km goal on 28 Aug.',
-      why_prev: 'Last week\'s layout: sleep and steps on top. Kept for four weeks unless you change it.',
-      profile: [
-        { f: 'Body', v: '41 · male · 176 cm · 71.2 kg', e: 'HealthKit characteristics · Withings, Mon', conf: 'fixed' },
-        { f: 'Athlete', v: 'Runner · outdoors · regular · 3.4 a week', e: '41 of 52 workouts since May are Outdoor Run with a route', conf: 0.86, fix: ['Outdoors', 'Indoors', 'Both'] },
-        { f: 'Goal', v: '10 km under 52:00 by November', e: 'you said it on 28 Aug', conf: 'user' },
-        { f: 'Routine', v: 'Wake 06:40 · bed 23:50 · desk 8.9 h', e: 'sleep samples + Apple Shifu, 28-day median', conf: 0.9 },
-        { f: 'Attention', v: 'Opens running, pace, sleep most', e: '31 opens in 14 days', conf: 0.7 }
-      ],
-      cards: ['brief', 'plan_today', 'running', 'pace_history', 'distance_week', 'checklist', 'sleep', 'hrv', 'patterns'],
-      cards_prev: ['brief', 'sleep', 'steps', 'hrv', 'running', 'checklist', 'patterns'],
-      brief: { date: 'WED 2 SEP · written 06:58', text: 'Slept 6h55. Easy 6 km this morning: dry until 10:00, rain from noon. HRV is back to normal.', chips: [['Sleep', '6h55', '−10', 'dim'], ['HRV', '46 ms', '−2', 'ok'], ['Resting HR', '52', 'normal', 'ok'], ['Rain', 'from 12:00', '', 'dim']] },
-      today: { name: 'Easy 6 km', sub: '07:00–10:00 dry · 17 °C · 0.2 mm', why: 'Thursday is rain all day, so the intervals moved to Friday.' },
-      running: { last: 'Sat · 5.02 km · 27:41', pace: '5:31 /km', delta: '12 s faster than your last 5', hr: 'avg 158 · recovery 28 bpm' },
-      pace: { series: [348, 345, 344, 342, 340, 338, 339, 336, 334, 333, 331, 331], goal: 312, label: 'Per-km time, 12 weeks', fmt: pace, xl: ['Jun', 'Sep'] },
-      weekly: { series: [14, 16, 12, 18, 17, 19, 15, 20, 18, 21, 22, 18.4], goal: 22, label: 'Weekly km, 12 weeks', xl: ['Jun', 'this week'] },
-      heart: { series: [54, 53, 53, 54, 52, 53, 52, 52, 53, 52, 52, 52], base: 52, min: 46, max: 58, label: 'Resting HR, 12 weeks', xl: ['Jun', 'Sep'] },
-      sleep: { v: '6h55', b: '−10 · normal 7h05', cls: '' }, hrv: { v: '46', unit: ' ms', b: '−2 · normal 48', cls: 'ok' }, steps: { v: '6,900', b: '−900 · normal 7,800', cls: '' },
-      checklist: [
-        { l: 'Run 6 km', src: 'HealthKit workout', done: false, val: '07:00–10:00' },
-        { l: 'Water 3 L', src: 'HealthKit dietaryWater', done: false, val: '0.6 / 3 L' },
-        { l: 'Stretch 10 min', src: 'tap or say it', done: false, val: '' },
-        { l: 'Weigh-in', src: 'HealthKit bodyMass · Withings', done: true, val: '71.2 kg' }
-      ],
-      plan: [
-        { d: 'Mon', n: '1', s: 'Rest', r: 'Long run Sunday; HRV still 5 below.', rest: true, done: true, w: '' },
-        { d: 'Tue', n: '2', s: 'Easy 6 km', r: 'Dry morning, 16 °C.', done: true, w: '☀ 16°', det: '6.0 km · 33:10 · avg HR 151 · done 07:04' },
-        { d: 'Wed', n: '3', s: 'Easy 6 km', r: 'Dry until 10:00, rain from noon.', today: true, w: '☂ 12:00', det: 'Easy pace 5:40–5:50. Window 07:00–10:00. Route: the harbour loop.' },
-        { d: 'Thu', n: '4', s: 'Rest', r: 'Rain all day. Intervals moved to Friday.', rest: true, adj: true, w: '☂ all day' },
-        { d: 'Fri', n: '5', s: 'Intervals 6 × 800 m', r: 'Dry, 15 °C. Two days before the long run.', w: '☀ 15°', det: '6 × 800 m at 4:55 with 2:00 jog. Warm up 10 min.' },
-        { d: 'Sat', n: '6', s: 'Rest', r: 'Before the long one.', rest: true, w: '☁ 14°' },
-        { d: 'Sun', n: '7', s: 'Long run 12 km', r: 'Dry, 14 °C. Longest yet toward the 10 km.', w: '☀ 14°', det: 'Easy the whole way. This is the week\'s point.' }
-      ],
-      targets: [['Sessions', '4 / week', 'regular · 10 km goal'], ['Weekly distance', '22 km', 'building 10% a week'], ['Water', '3 L', 'run days'], ['Creatine', 'not needed', 'no benefit for a 10 km goal']],
-      adherence: '5 of 6 sessions last week',
-      workouts: [
-        { t: 'Outdoor Run', s: 'SAT 29 AUG · 5.02 km · 27:41 · avg 158', sel: true },
-        { t: 'Outdoor Run', s: 'THU 27 AUG · 8.1 km · 45:52 · avg 154' },
-        { t: 'Outdoor Run', s: 'TUE 25 AUG · 6.0 km · 33:40 · avg 150' }
-      ],
-      detail: { title: 'Outdoor Run · Sat', src: 'Apple Watch', route: true, kv: [['Pace', '5:31 /km · 12 s faster than your last 5', 'ok'], ['Power · cadence', '285 W · 172 spm', ''], ['Max HR', '176', ''], ['Recovery 1 min', '28 bpm · +3', 'ok'], ['Effort', '7 / 10', '']], zones: [4, 18, 41, 31, 6], splits: [['1', '5:38', '148'], ['2', '5:29', '156'], ['3', '5:31', '160'], ['4', '5:27', '163'], ['5', '5:34', '165']], para: 'Best recovery in a month, and it came after a full night. Keep Wednesday easy; Friday is the hard one.' },
-      patterns: [
-        { st: 'stable', c: '14 of 17 runs', h: 'Pace 8 s/km slower after a night under 6 h', p: 'First seen 12 Jul. Effect 1.4× your run-to-run variation.' },
-        { st: 'stable', c: '5 of 6 release weeks', h: 'Sleep drops ~1h10 in release weeks', p: 'Tested on 20 weeks.' },
-        { st: 'forming', c: '2 of 4 weeks · not enough data yet', h: 'HRV lower after a skipped wind-down', p: 'Two more weeks before this counts.' }
-      ],
-      multiples: [
-        { k: 'Per-km time', s: 'easy runs · weekly', series: [348, 345, 344, 342, 340, 338, 339, 336, 334, 333, 331, 331], goal: 312, fmt: pace, now: '5:31', sub: 'goal 5:12' },
-        { k: 'Weekly km', s: 'run distance', series: [14, 16, 12, 18, 17, 19, 15, 20, 18, 21, 22, 18.4], goal: 22, now: '18.4', sub: 'plan 22' },
-        { k: 'Resting HR', s: 'bpm · morning', series: [54, 53, 53, 54, 52, 53, 52, 52, 53, 52, 52, 52], base: 52, min: 46, max: 58, now: '52', sub: 'normal 52' },
-        { k: 'Sleep', s: 'hours · weekly avg', series: [7.1, 7.0, 6.9, 7.2, 6.0, 7.0, 7.1, 6.9, 5.9, 7.0, 7.1, 6.9], base: 7.08, fmt: hrs, now: '6h55', sub: 'normal 7h05' }
-      ],
-      history: [
-        { d: 'Sun 31 Aug · weekly pass', t: 'Running, pace and the weather window to the top. You ran 4 of 7 days and set the 10 km goal.', cur: true },
-        { d: 'Sun 24 Aug · weekly pass', t: 'Sleep and steps on top. No goal yet; release week pattern active.' },
-        { d: 'Sat 16 Aug · first run', t: 'First Home from 3 years of history: outdoor runner, 3 runs a week.' }
-      ],
-      chat: [
-        ['me', 'Why did the intervals move?'],
-        ['ai', 'Thursday is rain all day here, and Friday is dry at 15 °C with two days before the long run. Same session, better day. I left the easy run this morning because the rain starts at noon.', ['GetWeather Thu–Fri', 'AdjustDay Thu→Fri']],
-        ['me', 'Am I on track for 52:00?'],
-        ['ai', 'Easy pace has come down 17 s/km since June, and your last 5 km was 5:31. At this rate 5:12 lands in late October. The intervals on Friday are what move it.', ['GetProgress pace_km', 'GetGoal']]
-      ]
-    },
     lifter: {
-      name: 'the lifter, bulking', pathline: 'Jun\'s Mac · iPhone synced 2 min ago · Withings scale via phone',
-      meet: { found: 'You look like a lifter, four sessions a week, evenings, 78 kg. Right?', confirmed: 'Good. The split goes on top.', after: 'Bulking. Protein target is 160 g, 2.0 g per kilo, and the scale is your chart.', plan: 'Push, pull, legs across the week. Deload every fourth.' },
-      why: 'Weight trend and protein moved to the top on Sunday: you said you\'re bulking on 28 Aug.',
-      why_prev: 'Last week\'s layout: sleep and steps on top. Kept for four weeks unless you change it.',
-      profile: [
-        { f: 'Body', v: '28 · male · 180 cm · 78.4 kg', e: 'HealthKit characteristics · Withings, Mon', conf: 'fixed' },
-        { f: 'Athlete', v: 'Lifter · indoors · regular · 4.1 a week', e: '38 of 44 workouts are Traditional Strength Training, indoor flag set', conf: 0.91, fix: ['Indoors', 'Outdoors', 'Both'] },
-        { f: 'Goal', v: 'Bulking · 82 kg by December', e: 'you said it on 28 Aug', conf: 'user' },
-        { f: 'Routine', v: 'Wake 07:10 · bed 00:20 · trains 18:30', e: 'workout start times, 11 of 12 on weekday evenings', conf: 0.88 },
-        { f: 'Attention', v: 'Opens weight, protein, the split most', e: '24 opens in 14 days', conf: 0.7 }
+      path: 'Liang’s Mac · iPhone synced 3 min ago',
+      quiet: { score: 82, line: 'Nothing needs you today.', made: 'from HRV, resting heart rate and blood oxygen · 38 measurements examined' },
+      loud: { score: 64, line: 'One thing worth seeing.', made: 'from HRV, resting heart rate and blood oxygen · 38 measurements examined' },
+      quietCap: 'Three of the last five days looked like this. The screen is the status line and what he did.',
+      loudCap: 'His HRV dropped after Monday’s legs session. Today’s planned session became a rest day.',
+      find: {
+        tone: 'warn', tag: 'Worth seeing · recovery',
+        h: 'HRV is 27 ms, 7 below your normal',
+        e: 'Lowest of the last fourteen days, and it follows Monday’s Legs. Legs is off today; Push moves to Friday.',
+        act: 'Why this ›',
+        series: [34, 36, 33, 35, 37, 34, 32, 35, 36, 33, 31, 30, 29, 27], base: 34
+      },
+      acts: [
+        { d: 'TUE', n: 'Pull', m: '61 min', x: 'Deadlift 4×6 at 140 kg, row 4×8, pulldown 3×10. Tonnage 9.4 t, up 6% on your last five pulls.' },
+        { d: 'MON', n: 'Push', m: '58 min', x: 'Bench 4×8 at 80 kg. Same bar speed as a month ago at 5 kg more.' },
+        { d: 'SAT', n: 'Legs', m: '64 min', x: 'Squat 4×8 at 100 kg. Longest session of the week.' }
       ],
-      cards: ['brief', 'plan_today', 'weight_trend', 'protein', 'checklist', 'lifting_split', 'sleep', 'hrv', 'patterns'],
-      cards_prev: ['brief', 'sleep', 'steps', 'hrv', 'checklist', 'lifting_split', 'patterns'],
-      brief: { date: 'WED 2 SEP · written 06:58', text: 'Slept 7h20. Legs tonight at 18:30. Protein was 128 g yesterday, 32 short of target.', chips: [['Sleep', '7h20', '+10', 'ok'], ['Protein', '128 g', '−32', 'bad'], ['Weight', '78.4', '+0.3 / wk', 'ok'], ['HRV', '58 ms', 'normal', 'ok']] },
-      today: { name: 'Legs', sub: 'quads, hamstrings, calves · 5 exercises · 4 × 8 · 60 min · 18:30', why: 'Week 3 of 4. Deload next week.' },
-      weight: { series: [76.9, 77.1, 77.3, 77.4, 77.7, 77.9, 78.2, 78.4], goal: 82, min: 76, max: 83, label: 'Weight, 7-day average, 8 weeks', fmt: kg, xl: ['Jul', 'this week'] },
-      tonnage: { series: [8.2, 8.6, 8.4, 9.1, 9.3, 9.0, 9.8, 10.1, 9.6, 10.4, 10.8, 8.9], label: 'Tonnage per week, tonnes', xl: ['Jun', 'this week'] },
-      heart: { series: [58, 57, 58, 56, 57, 57, 56, 56, 57, 56, 55, 56], base: 56, min: 50, max: 62, label: 'Resting HR, 12 weeks', xl: ['Jun', 'Sep'] },
-      protein: { v: 42, t: 160, formula: '2.0 g/kg × 78.4 kg · bulking, regular' },
-      sleep: { v: '7h20', b: '+10 · normal 7h10', cls: 'ok' }, hrv: { v: '58', unit: ' ms', b: 'normal 57', cls: 'ok' }, steps: { v: '5,100', b: 'normal 5,400', cls: '' },
-      split: [['Mon', 'Push', 'done'], ['Tue', 'Pull', 'done'], ['Wed', 'Legs', 'today'], ['Thu', 'Rest', ''], ['Fri', 'Push', 'on'], ['Sat', 'Pull', 'on'], ['Sun', 'Rest', '']],
-      checklist: [
-        { l: 'Protein 160 g', src: 'HealthKit dietaryProtein · MyFitnessPal', done: false, val: '42 / 160 g' },
-        { l: 'Legs · 5 exercises', src: 'HealthKit workout · 18:30', done: false, val: '' },
-        { l: 'Squat · 4 sets', src: 'say it: "4 sets legs done"', done: false, val: '' },
-        { l: 'Creatine 5 g', src: 'tap', done: false, val: '' },
-        { l: 'Weigh-in', src: 'HealthKit bodyMass · Withings', done: true, val: '78.4 kg' },
-        { l: 'Water 3 L', src: 'HealthKit dietaryWater', done: false, val: '0.9 / 3 L' }
+      under: [['This week', 'Push · Pull · Legs · rest'], ['Today’s list', '4 items, 1 done'], ['Everything measured', '38 types']],
+      verdicts: {
+        clear: 'blood oxygen 97% · usual 97%',
+        see: 'HRV 27 ms · usual 34 · lowest in 14 days',
+        doc: 'nothing today'
+      },
+      idx: [
+        { k: 'HRV', held: '5,266 rows, daily since 2023', rel: 'decides whether a hard session goes ahead', mv: 'down 7 on the fortnight', v: 'chosen', pick: true },
+        { k: 'Resting heart rate', held: '1,057 rows', rel: 'the slower companion to HRV', mv: 'flat', v: 'second' },
+        { k: 'Blood oxygen', held: '2,676 rows', rel: 'a red flag only when it stays low', mv: 'flat', v: 'watched, not shown' },
+        { k: 'Sleep', held: '32 nights', rel: 'would matter, but he does not wear the Watch at night', mv: 'too few nights', v: 'not enough data', out: true },
+        { k: 'Weight, BMI, body fat', held: '1 weigh-in, from 2022', rel: 'he is bulking, so this is the goal metric', mv: 'unknown', v: 'no scale connected', out: true }
       ],
-      plan: [
-        { d: 'Mon', n: '1', s: 'Push', r: 'Chest, shoulders, triceps. Your most-kept day, 11 of 12.', done: true, w: '58 min', det: 'Bench 4×8 80 kg · OHP 3×8 · incline DB 3×10 · lateral raise 3×12 · pushdown 3×12' },
-        { d: 'Tue', n: '2', s: 'Pull', r: 'Moved to 19:30: the calendar had an 18:00 call.', done: true, adj: true, w: '61 min', det: 'Deadlift 4×6 · row 4×8 · pulldown 3×10 · face pull 3×15 · curl 3×12' },
-        { d: 'Wed', n: '3', s: 'Legs', r: 'Week 3 of 4. HRV normal, sleep 7h20: full session.', today: true, w: '18:30', det: 'Squat 4×8 100 kg · RDL 3×8 · leg press 3×10 · leg curl 3×12 · calf raise 4×15' },
-        { d: 'Thu', n: '4', s: 'Rest', r: 'Protein day: hit 160 g without training.', rest: true, w: '' },
-        { d: 'Fri', n: '5', s: 'Push', r: 'Add 2.5 kg to bench if Monday\'s sets were clean.', w: '18:30', det: 'Bench 4×8 82.5 kg · the rest as Monday' },
-        { d: 'Sat', n: '6', s: 'Pull', r: 'Then two days off before the deload week.', w: '10:00', det: 'As Tuesday' },
-        { d: 'Sun', n: '7', s: 'Rest', r: 'Weekly pass writes the deload.', rest: true, w: '' }
+      note: 'BMI and body fat are absent, not zero. The app says so and offers the one thing that would fix it: connect a scale. Even with one, BMI would not be chosen here — it reads a muscular lifter as overweight.',
+      talk: [
+        ['me', 'Why no session today?'],
+        ['ai', 'Your HRV came in at 27 this morning, 7 under your normal and the lowest in a fortnight. It usually reads like that after a heavy legs day, and Monday was one. Legs is off, Push is on Friday.', 'Report · GetPlan'],
+        ['me', 'How is the bulk going?'],
+        ['ai', 'I cannot tell you yet. Your last weigh-in was December 2022, so the protein target of 170 g is built on a four-year-old number. Connect a scale to Apple Health and I can track it properly from the next weigh-in.', 'Report']
       ],
-      targets: [['Protein', '160 g', '2.0 g/kg × 78.4 kg'], ['Calories', '2,900', 'TDEE 2,600 + 300 surplus'], ['Creatine monohydrate', '5 g / day', 'well supported for strength and lean mass'], ['BCAA', 'skip', 'no added benefit when protein is met'], ['Water', '3 L', '']],
-      adherence: '4 of 4 sessions last week · protein 5 of 7 days',
-      workouts: [
-        { t: 'Traditional Strength Training', s: 'TUE 1 SEP · 61 min · avg 118 · Pull', sel: true },
-        { t: 'Traditional Strength Training', s: 'MON 31 AUG · 58 min · avg 121 · Push' },
-        { t: 'Traditional Strength Training', s: 'SAT 29 AUG · 64 min · avg 116 · Legs' }
+      exam: [
+        ['38 measurement types walked', '02:14'],
+        ['At your normal', '36'],
+        ['Worth seeing', '1 · HRV'],
+        ['Worth a doctor', '0'],
+        ['Trend still forming', '1 · resting HR down since June']
       ],
-      detail: { title: 'Pull · Tue', src: 'Apple Watch + your log', route: false, kv: [['Sets logged', '17 · by voice', ''], ['Tonnage', '9.4 t · +6% vs your last 5 pulls', 'ok'], ['Avg HR', '118', ''], ['Deadlift top set', '6 × 140 kg', 'ok'], ['Effort', '8 / 10', '']], zones: [22, 48, 26, 4, 0], splits: [['Deadlift', '4 × 6', '140 kg'], ['Row', '4 × 8', '70 kg'], ['Pulldown', '3 × 10', '65 kg'], ['Face pull', '3 × 15', '20 kg'], ['Curl', '3 × 12', '14 kg']], para: 'Deadlift is up 5 kg on the month with the same bar speed. Keep the surplus; the scale is moving at the rate the plan wants.' },
-      patterns: [
-        { st: 'stable', c: '9 of 11 sessions', h: 'Tonnage −12% after a night under 6h30', p: 'First seen 3 Jul. The Tuesday call pattern is the usual cause.' },
-        { st: 'forming', c: '1 of 2 weeks · not enough data yet', h: 'Weight +0.35 kg/wk since the surplus started', p: 'One more week before this is a trend. Target rate 0.25–0.5.' },
-        { st: 'forming', c: '3 of 4 weeks', h: 'Protein short on days without a session', p: 'Rest days average 118 g. Thursday is the one to watch.' }
-      ],
-      multiples: [
-        { k: 'Weight', s: '7-day average · kg', series: [76.9, 77.1, 77.3, 77.4, 77.7, 77.9, 78.2, 78.4], goal: 82, min: 76, max: 83, fmt: kg, now: '78.4', sub: 'goal 82 by Dec' },
-        { k: 'Tonnage', s: 'tonnes per week', series: [8.2, 8.6, 8.4, 9.1, 9.3, 9.0, 9.8, 10.1, 9.6, 10.4, 10.8, 8.9], now: '8.9', sub: 'week 3 · 2 of 4 done' },
-        { k: 'Protein', s: 'g per day · weekly avg', series: [118, 124, 121, 130, 128, 135, 141, 139, 144, 150, 148, 146], goal: 160, now: '146', sub: 'target 160' },
-        { k: 'Resting HR', s: 'bpm · morning', series: [58, 57, 58, 56, 57, 57, 56, 56, 57, 56, 55, 56], base: 56, min: 50, max: 62, now: '56', sub: 'normal 56' }
-      ],
-      history: [
-        { d: 'Sun 31 Aug · weekly pass', t: 'Weight trend and protein to the top; the split stays. You said you\'re bulking on 28 Aug.', cur: true },
-        { d: 'Sun 24 Aug · weekly pass', t: 'The split moved up: 4 sessions a week for six weeks straight.' },
-        { d: 'Sat 12 Jul · first run', t: 'First Home from 14 months of history: lifter, indoors, 3–4 a week.' }
-      ],
-      chat: [
-        ['me', 'Should I take BCAA?'],
-        ['ai', 'No. At 160 g of protein a day BCAA adds nothing the evidence can find. Creatine monohydrate is the one that does: 5 g a day, any time. I put it on your checklist. If you want a product, ask and I\'ll search with the source shown.', ['GetTargets', 'CheckItem creatine']],
-        ['me', 'Why 160?'],
-        ['ai', '2.0 g per kg at 78.4 kg, the upper end for a bulk with your training age. When the scale passes 80 the target moves to 164 and you\'ll see it change.', ['GetProfile body']]
+      mirror: [
+        ['Samples held', '2,216,860'],
+        ['Types', '38'],
+        ['Earliest', '2016-11-26'],
+        ['On disk', '597 MB'],
+        ['Phone', 'synced 3 min ago']
       ]
     },
-    office: {
-      name: 'the office worker', pathline: 'Mei\'s Mac · iPhone synced 4 min ago · Apple Watch via phone',
-      meet: { found: 'You walk a little, mostly weekends, and your bedtime drifts past midnight. Right?', confirmed: 'Good. Sleep and steps go on top until a Mac tells me about your desk.', after: 'Move more, sleep better. Active minutes and bedtime are your charts.', plan: 'Three 20-minute walks on your lightest days, bed by 23:45.' },
-      why: 'Screen time and sitting moved to the top on Sunday: 9 hours in an IDE on 4 of 5 workdays, and you said you want to move more.',
-      why_prev: 'Last week\'s layout: steps and sleep on top. Kept for four weeks unless you change it.',
-      profile: [
-        { f: 'Body', v: '36 · female · 165 cm · 61.0 kg', e: 'HealthKit characteristics · scale, Sun', conf: 'fixed' },
-        { f: 'Athlete', v: 'Walker · outdoors · new · 1.2 a week', e: '6 workouts in 90 days, all Outdoor Walk', conf: 0.78, fix: ['Walker', 'Runner', 'Neither yet'] },
-        { f: 'Goal', v: 'Move more, sleep better', e: 'you said it on 30 Aug', conf: 'user' },
-        { f: 'Routine', v: 'Wake 07:20 · bed 00:40 · desk 9.2 h · screen 10.4 h', e: 'Apple Shifu, 28-day median · longest sitting streak 2h20', conf: 0.92 },
-        { f: 'Attention', v: 'Opens screen time and sleep most', e: '19 opens in 14 days', conf: 0.66 }
+
+    desk: {
+      path: 'Mei’s Mac · iPhone synced 8 min ago',
+      quiet: { score: 79, line: 'Nothing needs you today.', made: 'from sleep, weight, resting heart rate and steps · 41 measurements examined' },
+      loud: { score: 71, line: 'One thing worth seeing.', made: 'from sleep, weight, resting heart rate and steps · 41 measurements examined' },
+      quietCap: 'She has a scale, so the app has a body composition to follow. Most days it has nothing to add.',
+      loudCap: 'Her weight has climbed for five weeks. Not a warning, but the trend it has been watching turned.',
+      find: {
+        tone: 'warn', tag: 'Worth seeing · trend',
+        h: 'Weight is up 1.9 kg over five weeks',
+        e: 'Seven-day average, 62.4 to 64.3 kg. Body fat moved with it, from 27.4% to 28.6%, so it is not water or muscle.',
+        act: 'Show me the weeks ›',
+        series: [62.4, 62.5, 62.6, 62.8, 62.9, 63.1, 63.2, 63.4, 63.5, 63.7, 63.9, 64.0, 64.2, 64.3], base: 62.4
+      },
+      acts: [
+        { d: 'SAT', n: 'Outdoor walk', m: '41 min', x: '3.1 km at an easy pace, all of it in daylight. Your longest of the month.' },
+        { d: 'WED', n: 'Outdoor walk', m: '19 min', x: '1.5 km at lunch. Steps that day finished 38% above your normal.' },
+        { d: 'MON', n: 'Outdoor walk', m: '22 min', x: '1.7 km. The slot before your 13:30 call.' }
       ],
-      cards: ['brief', 'screen_time', 'sitting', 'plan_today', 'checklist', 'steps', 'sleep', 'work_join', 'patterns'],
-      cards_prev: ['brief', 'steps', 'sleep', 'hrv', 'checklist', 'patterns'],
-      brief: { date: 'WED 2 SEP · written 06:58', text: 'Slept 6h10, bed at 00:40 again. Screen time 10h24 yesterday. A 20-minute walk fits at 12:30, before the 13:30 call.', chips: [['Sleep', '6h10', '−40', 'bad'], ['Screen', '10h24', '+34 min', 'bad'], ['Sitting', '2h20 streak', '', 'bad'], ['Steps', '3,900', '−1,300', 'bad']] },
-      today: { name: 'Walk 20 min', sub: '12:30 · the lightest slot on your calendar · 19 °C', why: 'The 11:00 slot got a meeting, so the walk moved to 12:30.' },
-      screen: { v: '10h24', b: '+34 min · normal 9h50', ide: '8h50 IDE', cls: 'high' },
-      sitting: { streak: '2h20', stand: '6 / 12', next: 'break due 10:30' },
-      active: { series: [40, 55, 30, 62, 48, 70, 65, 80, 74, 90, 96, 44], goal: 150, label: 'Active minutes per week, 12 weeks', xl: ['Jun', 'this week'] },
-      screenwk: { series: [9.6, 9.9, 10.1, 9.8, 10.4, 10.2, 9.9, 10.3, 10.6, 10.1, 10.4, 10.4], base: 9.83, min: 8, max: 12, label: 'Screen hours per day, weekly avg', fmt: hrs, xl: ['Jun', 'Sep'] },
-      sleepwk: { series: [6.9, 6.7, 6.8, 6.5, 6.6, 6.4, 6.7, 6.3, 6.5, 6.2, 6.4, 6.2], base: 6.83, min: 5.5, max: 7.5, label: 'Sleep hours, weekly avg', fmt: hrs, xl: ['Jun', 'Sep'] },
-      heart: { series: [66, 65, 66, 66, 65, 66, 67, 66, 66, 67, 67, 66], base: 66, min: 60, max: 72, label: 'Resting HR, 12 weeks', xl: ['Jun', 'Sep'] },
-      sleep: { v: '6h10', b: '−40 · normal 6h50', cls: 'low' }, hrv: { v: '34', unit: ' ms', b: '−3 · normal 37', cls: '' }, steps: { v: '3,900', b: '−1,300 · normal 5,200', cls: 'low' },
-      work: [['IDE hours', '8h50', 'high'], ['Meetings', '2h00', ''], ['Commits after 23:00', '3', 'high'], ['Last screen off', '00:25', 'high']],
-      checklist: [
-        { l: 'Walk 20 min', src: 'HealthKit workout · 12:30', done: false, val: '' },
-        { l: 'Stand 8 of 12 hours', src: 'HealthKit standHours', done: false, val: '3 / 8' },
-        { l: 'Water 2 L', src: 'HealthKit dietaryWater', done: false, val: '0.4 / 2 L' },
-        { l: 'Eyes off the screen each hour', src: 'Yinyue reminds · tap', done: false, val: '' },
-        { l: 'Bed by 23:45', src: 'HealthKit sleep, checked tomorrow', done: false, val: '' }
+      under: [['This week', 'Three walks, two home sessions'], ['Today’s list', '5 items, 2 done'], ['Everything measured', '41 types']],
+      verdicts: {
+        clear: 'sleep 6h48 · usual 6h50',
+        see: 'weight 64.3 kg · up 1.9 over 5 weeks',
+        doc: 'nothing today'
+      },
+      idx: [
+        { k: 'Weight trend', held: 'daily since March', rel: 'the goal she stated, and the scale reports it', mv: 'up 1.9 kg in five weeks', v: 'chosen', pick: true },
+        { k: 'Body fat', held: 'daily since March', rel: 'says whether the weight is fat or muscle', mv: 'up 1.2 points', v: 'shown with it' },
+        { k: 'BMI', held: 'derived daily', rel: 'no more than the weight already says for her', mv: 'up 0.7', v: 'redundant here', out: true },
+        { k: 'Sleep', held: '284 nights', rel: 'the thing she asks about most', mv: 'flat', v: 'second' },
+        { k: 'Steps', held: 'daily since 2021', rel: 'the simplest daily number', mv: 'flat', v: 'not shown', out: true }
       ],
-      plan: [
-        { d: 'Mon', n: '1', s: 'Walk 20 min', r: 'Lunchtime, the lightest slot.', done: true, w: '22 min', det: '1.7 km · avg HR 98' },
-        { d: 'Tue', n: '2', s: 'Rest', r: 'Back-to-back meetings; stand hours only.', rest: true, w: '' },
-        { d: 'Wed', n: '3', s: 'Walk 20 min', r: 'Moved to 12:30: the 11:00 slot got a meeting.', today: true, adj: true, w: '☀ 19°', det: 'Out the door at 12:30, back for the 13:30 call. Round the block twice.' },
-        { d: 'Thu', n: '4', s: 'Strength 15 min at home', r: 'Bands and bodyweight. Nothing to book.', w: '19:00', det: 'Squat 3×10 · push-up 3×8 · band row 3×12 · plank 3×30 s' },
-        { d: 'Fri', n: '5', s: 'Walk 20 min', r: 'Same slot as Monday.', w: '12:00' },
-        { d: 'Sat', n: '6', s: 'Walk 40 min', r: 'The park. The week\'s long one.', w: '☀ 18°', det: 'No pace. Daylight is the point: 41 min of it beats your 12.' },
-        { d: 'Sun', n: '7', s: 'Strength 15 min', r: 'And bed by 23:45 before Monday.', w: '19:00' }
+      note: 'She has the scale, so BMI is available and still not chosen: for her it repeats what the weight and the body fat already said. An index is dropped for being redundant as readily as for being absent.',
+      talk: [
+        ['me', 'Is that gain a problem?'],
+        ['ai', 'Not on its own, and five weeks is short. What makes it worth showing is that body fat moved with it, so it is not water or muscle. Your walks are unchanged, so the likeliest place to look is what you are eating on the desk days.', 'Report · GetProgress'],
+        ['me', 'Show me the sleep instead.'],
+        ['ai', 'Steady: 6h48 last night against your 6h50 normal, and nothing has moved in a month. That is why it is not on your screen.', 'Report']
       ],
-      targets: [['Active minutes', '150 / week', 'the floor that moves resting HR'], ['Stand', '8 of 12 hours', 'break every hour after 10:00'], ['Bed', 'by 23:45', 'your 6h50 needs it'], ['Water', '2 L', ''], ['Supplements', 'none', 'nothing the evidence supports for this goal']],
-      adherence: '3 of 4 sessions last week · bed by 23:45 on 2 of 7 nights',
-      workouts: [
-        { t: 'Outdoor Walk', s: 'MON 31 AUG · 1.7 km · 22 min · avg 98', sel: true },
-        { t: 'Outdoor Walk', s: 'SAT 29 AUG · 3.1 km · 41 min · avg 104' },
-        { t: 'Outdoor Walk', s: 'TUE 25 AUG · 1.5 km · 19 min · avg 96' }
+      exam: [
+        ['41 measurement types walked', '02:09'],
+        ['At your normal', '39'],
+        ['Worth seeing', '2 · weight, body fat'],
+        ['Worth a doctor', '0'],
+        ['Trend still forming', '1 · bedtime drifting later']
       ],
-      detail: { title: 'Outdoor Walk · Mon', src: 'Apple Watch', route: true, kv: [['Pace', '12:56 /km', ''], ['Avg HR', '98 · normal 66 at rest', ''], ['Daylight', '22 min · 41 normal', 'ok'], ['Steps', '2,240', ''], ['Effort', '2 / 10', '']], zones: [70, 28, 2, 0, 0], splits: [['1', '13:10', '96'], ['2', '12:44', '101']], para: 'Twenty-two minutes, all daylight, before the afternoon block. Steps for the day ended 40% above your normal. Same slot Friday.' },
-      patterns: [
-        { st: 'forming', c: '3 of 4 weeks · not enough data yet', h: 'Bed after 00:30 on nights with more than 2 h of evening screen', p: 'One more week. If it holds, the 23:45 item moves to a 22:30 wind-down.' },
-        { st: 'stable', c: '17 of 20 workdays', h: 'Steps −40% on days with 4+ meeting hours', p: 'First seen 6 Jul. The walk is planned on the light days for this reason.' },
-        { st: 'retired', c: 'contradicted two weeks running', h: 'More steps on Fridays', p: '' }
+      mirror: [
+        ['Samples held', '861,402'],
+        ['Types', '41'],
+        ['Earliest', '2021-04-02'],
+        ['On disk', '233 MB'],
+        ['Phone', 'synced 8 min ago']
+      ]
+    },
+
+    runner: {
+      path: 'Sam’s Mac · iPhone synced 1 min ago',
+      quiet: { score: 84, line: 'Nothing needs you today.', made: 'from resting heart rate, HRV, sleep and blood oxygen · 44 measurements examined' },
+      loud: { score: 41, line: 'Something has held long enough to show a doctor.', made: 'from resting heart rate, HRV, sleep and blood oxygen · 44 measurements examined' },
+      quietCap: 'How his screen looked through August, while he was running four times a week.',
+      loudCap: 'Nine mornings in a row above his own normal. The app names the change and stops there.',
+      find: {
+        tone: 'crit', tag: 'Worth a doctor · nine days',
+        h: 'Your resting heart rate has been 12 above your normal for nine days',
+        e: 'Morning readings of 62 to 66 against your usual 51. It has not come down on rest days. A change this size, held this long, is worth showing a doctor. I am not able to tell you what is causing it.',
+        act: 'What to bring to the appointment ›',
+        series: [51, 52, 51, 53, 58, 61, 62, 63, 62, 64, 63, 65, 64, 63], base: 51
+      },
+      acts: [
+        { d: 'SUN', n: 'Outdoor run', m: '8.1 km', x: 'Average heart rate 171 at a pace you normally hold at 154. You stopped twice.' },
+        { d: 'THU', n: 'Outdoor run', m: '6.0 km', x: 'Average heart rate 166. Effort logged as 8 of 10 for an easy run.' },
+        { d: 'TUE', n: 'Outdoor run', m: '5.0 km', x: 'The last one that felt normal, by your own note that evening.' }
       ],
-      multiples: [
-        { k: 'Active minutes', s: 'per week', series: [40, 55, 30, 62, 48, 70, 65, 80, 74, 90, 96, 44], goal: 150, now: '44', sub: 'this week so far' },
-        { k: 'Screen', s: 'hours per day · weekly avg', series: [9.6, 9.9, 10.1, 9.8, 10.4, 10.2, 9.9, 10.3, 10.6, 10.1, 10.4, 10.4], base: 9.83, min: 8, max: 12, fmt: hrs, now: '10h24', sub: 'normal 9h50' },
-        { k: 'Sleep', s: 'hours · weekly avg', series: [6.9, 6.7, 6.8, 6.5, 6.6, 6.4, 6.7, 6.3, 6.5, 6.2, 6.4, 6.2], base: 6.83, min: 5.5, max: 7.5, fmt: hrs, now: '6h10', sub: 'normal 6h50' },
-        { k: 'Resting HR', s: 'bpm · morning', series: [66, 65, 66, 66, 65, 66, 67, 66, 66, 67, 67, 66], base: 66, min: 60, max: 72, now: '66', sub: 'normal 66' }
+      under: [['This week', 'Nothing planned · held back'], ['Today’s list', '2 items'], ['Everything measured', '44 types']],
+      verdicts: {
+        clear: 'blood oxygen 97% · usual 97%',
+        see: 'sleep 6h02 · usual 7h05',
+        doc: 'resting HR 63 bpm · usual 51 · nine days'
+      },
+      idx: [
+        { k: 'Resting heart rate', held: '1,840 rows, daily', rel: 'the clearest signal that something systemic changed', mv: 'up 12 for nine days', v: 'chosen', pick: true },
+        { k: 'HRV', held: '3,100 rows', rel: 'moves with it and confirms it', mv: 'down 9', v: 'shown with it' },
+        { k: 'Blood oxygen', held: '2,410 rows', rel: 'a red flag if it stayed low', mv: 'flat at 97%', v: 'checked, clear' },
+        { k: 'Sleep', held: '390 nights', rel: 'a plausible cause, and it is short', mv: 'down 1h03', v: 'second' },
+        { k: 'Pace per km', held: 'daily since 2022', rel: 'his goal metric in an ordinary month', mv: 'slower', v: 'set aside today', out: true }
       ],
-      history: [
-        { d: 'Sun 31 Aug · weekly pass', t: 'Screen time and sitting to the top, one walk a day in the plan. 9 IDE hours on 4 of 5 workdays; you said move more on 30 Aug.', cur: true },
-        { d: 'Sun 24 Aug · weekly pass', t: 'Steps and sleep on top. No goal yet.' },
-        { d: 'Wed 20 Aug · first run', t: 'First Home from 2 years of history: mostly walking, long desk days.' }
+      note: 'The goal metric loses its place. On a day with a warning, what he was training for is not the most important thing on his screen, and the app is not going to coach him through it.',
+      talk: [
+        ['me', 'What is wrong with me?'],
+        ['ai', 'I cannot tell you that, and I am not going to guess. What I can tell you is exactly what changed: your resting heart rate has sat 12 above your own normal for nine mornings, it has not come down on rest days, and your HRV fell with it. Sleep is an hour short. Take those three numbers to a doctor.', 'Report · GetRange'],
+        ['me', 'Can I still run?'],
+        ['ai', 'I have left this week empty rather than plan around it. That is a decision for whoever you see, not for me.', 'GetPlan']
       ],
-      chat: [
-        ['me', 'I don\'t have time for a gym.'],
-        ['ai', 'The plan doesn\'t need one. Three 20-minute walks in your lightest calendar slots and two 15-minute sessions at home with a band. The walk today is at 12:30 because your 11:00 got booked. Monday\'s walk already put your steps 40% above normal.', ['GetPlan', 'GetLife calendar']],
-        ['me', 'Why is sleep on the page and not steps?'],
-        ['ai', 'Because you open sleep, and because your bedtime is drifting: 00:40 last night against your 23:50 from June. Steps are still there, lower down. Pin it if you want it back on top.', ['GetLayout', 'GetProfile attention']]
+      exam: [
+        ['44 measurement types walked', '02:11'],
+        ['At your normal', '41'],
+        ['Worth seeing', '2 · sleep, HRV'],
+        ['Worth a doctor', '1 · resting heart rate'],
+        ['Trend still forming', '0']
+      ],
+      mirror: [
+        ['Samples held', '1,504,911'],
+        ['Types', '44'],
+        ['Earliest', '2019-08-14'],
+        ['On disk', '404 MB'],
+        ['Phone', 'synced 1 min ago']
       ]
     }
   };
 
-  // ---------- Renderers ----------
-  var state = { person: 'runner', view: 'home', undone: false, hidden: {}, pinned: {}, macPhone: true };
-  var MACONLY = {
-    pathline: 'Liang\'s Mac · no iPhone paired · Apple Shifu, git, calendar',
-    profile: [
-      { f: 'Body', v: 'Unknown · lives on your iPhone', e: 'HealthKit exists only on iPhone; pair one and this fills in', conf: 'fixed' },
-      { f: 'Routine', v: 'Desk 9.2 h · screen 10.4 h · longest sit 2h20', e: 'Apple Shifu, 28-day median', conf: 0.92 },
-      { f: 'Work', v: 'Late commits 3 of 5 nights · meetings 2 h a day', e: 'git log + calendar, 28 days', conf: 0.88 },
-      { f: 'Goal', v: 'Not asked yet', e: 'the first conversation runs on the phone', conf: 'fixed' }
-    ],
-    history: [ { d: 'Wed 2 Sep · first run', t: 'Composed from the work side only: screen time, sitting, late commits, meetings. Body data lives on your iPhone.', cur: true } ],
-    multiples: [
-      { k: 'Screen', s: 'hours per day · weekly avg', series: [9.6, 9.9, 10.1, 9.8, 10.4, 10.2, 9.9, 10.3, 10.6, 10.1, 10.4, 10.4], base: 9.83, min: 8, max: 12, fmt: hrs, now: '10h24', sub: 'normal 9h50' },
-      { k: 'IDE hours', s: 'per day · Apple Shifu', series: [6.5, 6.8, 6.2, 7.0, 9.4, 9.1, 6.6, 6.4, 7.0, 6.9, 9.8, 8.8], base: 6.9, min: 5, max: 11, fmt: hrs, now: '8h50', sub: 'normal 6h55' },
-      { k: 'Commits after 23:00', s: 'per week · git', series: [2, 1, 3, 2, 18, 14, 3, 2, 4, 3, 21, 9], base: 3, min: 0, max: 25, now: '9', sub: 'normal 3' },
-      { k: 'Meeting hours', s: 'per day · calendar', series: [1.5, 2.0, 1.8, 2.4, 1.2, 2.1, 2.6, 1.9, 2.2, 2.8, 2.0, 2.0], base: 2.0, min: 0, max: 4, fmt: hrs, now: '2h00', sub: 'normal 2h00' }
-    ],
-    plan: [
-      { d: 'Mon', s: 'Walk 20 min · 12:00', w: 'done', adj: false }, { d: 'Tue', s: 'Breaks only · back-to-back calls', w: '' }, { d: 'Wed', s: 'Walk 20 min · 12:30', w: 'today', adj: true },
-      { d: 'Thu', s: 'Stretch 10 min · 17:00', w: '' }, { d: 'Fri', s: 'Walk 20 min · 12:00', w: '' }, { d: 'Sat', s: 'Nothing planned · no body data', w: '' }, { d: 'Sun', s: 'Screen off by 23:30', w: '' }
-    ],
-    targets: [['Stand', 'every hour', 'Yinyue nudges from Shifu'], ['Screen off', 'by 23:30', 'late commits track with 00:40 bedtimes'], ['Walk', '3 × 20 min', 'lightest calendar slots'], ['Body targets', 'none yet', 'need the phone']],
-    board: [
-      { st: 'stable', c: '11 of 14 nights', h: 'Commits after 23:00 on nights the screen stayed on past 00:30', p: 'Shifu + git. What that does to sleep needs the phone.' },
-      { st: 'forming', c: '2 of 4 weeks · not enough data yet', h: 'Sitting streaks longer in release weeks', p: 'Two more release weeks.' }
-    ],
-    chat: [
-      ['me', 'Can you see my sleep?'],
-      ['ai', 'Not from here. Sleep lives in HealthKit on your iPhone and there is no Mac API for it. Pair the phone with the QR above and last night shows up within a minute. What I can see: 10h24 of screen yesterday and a 2h20 sit before lunch.', ['GetLedger', 'GetLife today']]
-    ],
-    sync: [['iPhone', 'not paired'], ['Work signals · Shifu, git, calendar', '06:57'], ['Morning pass · work side only', '06:58'], ['HealthKit', 'not connected: no iPhone paired']]
-  };
-  function P() { return PEOPLE[state.person]; }
+  var current = 'lifter';
 
-  function cardShell(kind, wide, k, body) {
-    var c = el('div', 'c' + (wide ? ' wide' : '') + (kind === 'brief' ? ' brief' : '')); c.dataset.kind = kind;
-    var head = el('div', 'k'); head.innerHTML = '<span>' + esc(k) + (state.pinned[kind] ? ' <span class="pin">pinned</span>' : '') + '</span>';
-    if (kind !== 'brief') { var m = el('button', 'more', '⋯'); m.setAttribute('aria-label', 'Card menu'); m.addEventListener('click', function (ev) { ev.stopPropagation(); openMenu(c, kind); }); head.appendChild(m); }
-    c.appendChild(head); body.forEach(function (n) { c.appendChild(n); }); return c;
-  }
-  function openMenu(card, kind) {
-    document.querySelectorAll('.menu').forEach(function (m) { m.remove(); });
-    var m = el('div', 'menu');
-    var pin = el('button', null, state.pinned[kind] ? 'Unpin' : 'Pin'); pin.addEventListener('click', function () { state.pinned[kind] = !state.pinned[kind]; renderHome(); });
-    var hide = el('button', null, 'Hide'); hide.addEventListener('click', function () { state.hidden[kind] = true; renderHome(); });
-    var why = el('div', 'whyt', whyFor(kind)); m.appendChild(pin); m.appendChild(hide); m.appendChild(why); card.appendChild(m);
-    setTimeout(function () { document.addEventListener('click', function h() { m.remove(); document.removeEventListener('click', h); }); }, 0);
-  }
-  function whyFor(kind) {
-    var p = P(); var ws = {
-      running: 'Here because 41 of your last 52 workouts are runs.', pace_history: 'Here because of the 10 km goal.', distance_week: 'Here because the plan builds distance 10% a week.',
-      weight_trend: 'Here because you said you\'re bulking.', protein: 'Here because protein is the target you miss most.', lifting_split: 'Here because you train 4 days a week.',
-      screen_time: 'Here because screen time is the number that moved most this month.', sitting: 'Here because your longest sitting streak is 2h20.', work_join: 'Here because late commits track with short nights.',
-      sleep: 'Here because you open it, and it explains most bad days.', hrv: 'Here because it decides rest days.', steps: 'Here because it is the simplest daily number.',
-      patterns: 'Here so you can see what the agent is sure of.', checklist: 'Here because today\'s items live here.', plan_today: 'Here because the plan is the point.'
-    }; return ws[kind] || ('Composed for ' + p.name + '.');
+  function statusBlock(s, tone) {
+    var box = el('div', 'status');
+    box.appendChild(dial(s.score, tone));
+    var right = el('div', null);
+    right.appendChild(el('div', 'n', 'Today'));
+    right.appendChild(el('div', 's', esc(s.line)));
+    right.appendChild(el('div', 'm', esc(s.made)));
+    box.appendChild(right);
+    return box;
   }
 
-  function cardFor(kind) {
-    var p = P();
-    switch (kind) {
-      case 'brief': { var b = p.brief; var chips = el('div', 'chips'); b.chips.forEach(function (ch) { var s = el('button', 'chip', '<b>' + esc(ch[0]) + '</b> ' + esc(ch[1]) + (ch[2] ? ' <span class="d ' + ch[3] + '">' + esc(ch[2]) + '</span>' : '')); s.addEventListener('click', function () { show('track'); }); chips.appendChild(s); });
-        return cardShell('brief', true, b.date, [el('p', 't lead', esc(b.text)), chips]); }
-      case 'plan_today': { var t = p.today; var w = el('p', 't', '<b>' + esc(t.name) + '</b><br><span class="dim" style="font-size:12px">' + esc(t.sub) + '</span>'); var y = el('p', 'b', esc(t.why)); var row = el('div', 'chips'); var go = el('button', 'chip', 'Open the plan'); go.addEventListener('click', function () { show('plan'); }); row.appendChild(go);
-        return cardShell(kind, true, 'Today', [w, y, row]); }
-      case 'running': { var r = p.running; return cardShell(kind, false, 'Last run', [el('div', 'v', esc(r.pace)), el('div', 'b ok', esc(r.delta)), el('div', 'b', esc(r.last))]); }
-      case 'pace_history': { var c = cardShell(kind, true, 'Per-km time · 12 weeks', [lineChart(p.pace)]); return c; }
-      case 'distance_week': { var wk = p.weekly; var last = wk.series[wk.series.length - 1]; var bar = el('div', 'bar', '<i style="width:' + Math.round(last / wk.goal * 100) + '%"></i>'); return cardShell(kind, false, 'This week', [el('div', 'v', last + '<small> / ' + wk.goal + ' km</small>'), bar, el('div', 'b', 'Sunday\'s 12 km closes it')]); }
-      case 'weight_trend': { var wt = p.weight; return cardShell(kind, true, 'Weight · 7-day average', [el('div', 'b ok', '+0.35 kg / week · target 0.25–0.5'), lineChart(wt)]); }
-      case 'protein': { var pr = p.protein; var bar2 = el('div', 'bar', '<i class="gold" style="width:' + Math.round(pr.v / pr.t * 100) + '%"></i>'); return cardShell(kind, false, 'Protein', [el('div', 'v', pr.v + '<small> / ' + pr.t + ' g</small>'), bar2, el('div', 'b', esc(pr.formula))]); }
-      case 'lifting_split': { var sp = el('div', 'split'); p.split.forEach(function (d) { var dv = el('div', d[2] === 'done' ? 'on done' : d[2] === 'today' ? 'on today' : d[2] === 'on' ? 'on' : '', '<b>' + esc(d[1]) + '</b>' + esc(d[0])); sp.appendChild(dv); }); return cardShell(kind, true, 'The split · week 3 of 4 · deload next', [sp]); }
-      case 'checklist': { var items = p.checklist.slice(0, 3); var list = el('div', 'check'); items.forEach(function (it, i) { list.appendChild(checkRow(it, i)); }); var more = el('button', 'chip', 'All ' + p.checklist.length + ' on Track'); more.addEventListener('click', function () { show('track'); }); return cardShell(kind, true, 'Today', [list, more]); }
-      case 'sleep': { return cardShell(kind, false, 'Sleep', [el('div', 'v', esc(p.sleep.v)), el('div', 'b ' + p.sleep.cls, esc(p.sleep.b))]); }
-      case 'hrv': { return cardShell(kind, false, 'HRV', [el('div', 'v', p.hrv.v + '<small>' + p.hrv.unit + '</small>'), el('div', 'b ' + p.hrv.cls, esc(p.hrv.b))]); }
-      case 'steps': { return cardShell(kind, false, 'Steps', [el('div', 'v', esc(p.steps.v)), el('div', 'b ' + p.steps.cls, esc(p.steps.b))]); }
-      case 'screen_time': { var sc = p.screen; return cardShell(kind, false, 'Screen time', [el('div', 'v', esc(sc.v)), el('div', 'b ' + sc.cls, esc(sc.b)), el('div', 'b', esc(sc.ide))]); }
-      case 'sitting': { var si = p.sitting; return cardShell(kind, false, 'Sitting', [el('div', 'v', esc(si.streak)), el('div', 'b high', 'longest streak · stand ' + esc(si.stand)), el('div', 'b', esc(si.next))]); }
-      case 'work_join': { var dl = el('dl', 'kv'); p.work.forEach(function (r) { dl.innerHTML += '<dt>' + esc(r[0]) + '</dt><dd class="' + r[2] + '">' + esc(r[1]) + '</dd>'; }); return cardShell(kind, true, 'Work · yesterday', [dl]); }
-      case 'patterns': { var pt = p.patterns[0]; return cardShell(kind, true, 'Pattern', [el('p', 't', esc(pt.h) + ' <span class="num dim" style="font-size:12px">' + esc(pt.c) + '</span>')]); }
-      default: return cardShell(kind, false, kind, [el('div', 'b', 'no widget yet')]);
-    }
-  }
-  function checkRow(it, i) {
-    var row = el('div', 'ci' + (it.done ? ' done' : '')); row.setAttribute('role', 'checkbox'); row.setAttribute('aria-checked', String(!!it.done)); row.tabIndex = 0;
-    row.innerHTML = '<span class="box">' + (it.done ? '✓' : '') + '</span><span class="l">' + esc(it.l) + '</span><span class="val' + (it.done ? ' ok' : '') + '">' + esc(it.val) + '</span><span class="src">' + esc(it.src) + '</span>';
-    var toggle = function () { it.done = !it.done; if (it.done && !it.val) { it.val = '07:3' + (i + 2); it.src = 'tapped'; } renderHome(); renderTrack(); };
-    row.addEventListener('click', toggle); row.addEventListener('keydown', function (ev) { if (ev.key === ' ' || ev.key === 'Enter') { ev.preventDefault(); toggle(); } });
-    return row;
+  function findBlock(f) {
+    var box = el('div', 'find' + (f.tone === 'crit' ? ' crit' : ''));
+    box.appendChild(el('span', 'tag', esc(f.tag)));
+    box.appendChild(el('div', 'h', esc(f.h)));
+    box.appendChild(spark(f.series, f.base, f.tone));
+    box.appendChild(el('div', 'e', esc(f.e)));
+    box.appendChild(el('span', 'act', esc(f.act)));
+    return box;
   }
 
-  function renderHome() {
-    var p = P(), v = document.getElementById('v-home'); v.innerHTML = '';
-    var why = el('div', 'why' + (state.undone ? ' restored' : ''));
-    why.innerHTML = '<span class="k">' + (state.undone ? 'Restored · last week\'s layout' : 'Changed Sunday · why') + '</span><p>' + esc(state.undone ? p.why_prev : p.why) + '</p>';
-    var u = el('button', null, state.undone ? 'Redo' : 'Undo'); u.addEventListener('click', function () { state.undone = !state.undone; renderHome(); renderMac(); }); why.appendChild(u); v.appendChild(why);
-    var grid = el('div', 'cards'); var kinds = (state.undone ? p.cards_prev : p.cards).filter(function (k) { return !state.hidden[k]; });
-    Object.keys(state.pinned).forEach(function (k) { if (state.pinned[k] && kinds.indexOf(k) < 0 && !state.hidden[k]) kinds.push(k); });
-    kinds.forEach(function (k) { grid.appendChild(cardFor(k)); }); v.appendChild(grid);
-    var hid = Object.keys(state.hidden).filter(function (k) { return state.hidden[k]; });
-    if (hid.length) { var hb = el('div', 'why', '<span class="k">Hidden by you</span><p>' + esc(hid.join(', ')) + ' stay hidden until you unhide in Settings.</p>'); var un = el('button', null, 'Unhide'); un.addEventListener('click', function () { state.hidden = {}; renderHome(); }); hb.appendChild(un); v.appendChild(hb); }
-    document.getElementById('hidden-count').textContent = hid.length + ' ›';
-    v.appendChild(el('div', 'ask', '<span>Ask Yinyue about this…</span><span class="mic">●</span>'));
-    renderCatalog(kinds);
-  }
-  function renderPlan() {
-    var p = P(), v = document.getElementById('v-plan'); v.innerHTML = '';
-    v.appendChild(el('span', 'sub', 'This week · written Sunday 19:02'));
-    var days = el('div', 'days');
-    p.plan.forEach(function (d) {
-      var row = el('div', 'day' + (d.rest ? ' rest' : '') + (d.today ? ' today' : '') + (d.done ? ' done' : '') + (d.adj ? ' adj' : ''));
-      row.innerHTML = '<span class="d"><b>' + esc(d.d) + '</b>' + esc(d.n) + ' Sep</span><span class="s">' + esc(d.s) + '</span><span class="w">' + esc(d.w) + '</span><span class="r">' + (d.adj ? 'Adjusted this morning · ' : '') + esc(d.r) + '</span>' + (d.det ? '<span class="det">' + esc(d.det) + '</span>' : '');
-      if (d.det) row.addEventListener('click', function () { row.classList.toggle('open'); });
-      days.appendChild(row);
+  function actsBlock(rows) {
+    var wrap = el('div', 'acts');
+    rows.forEach(function (r, i) {
+      var b = el('button', 'act-row');
+      b.setAttribute('aria-expanded', 'false');
+      b.innerHTML = '<span class="d">' + esc(r.d) + '</span><span class="n">' + esc(r.n) + '</span>' +
+        '<span class="m">' + esc(r.m) + '</span><span class="x">' + esc(r.x) + '</span>';
+      b.addEventListener('click', function () {
+        var open = b.getAttribute('aria-expanded') === 'true';
+        b.setAttribute('aria-expanded', open ? 'false' : 'true');
+      });
+      if (i === 0) { b.setAttribute('aria-expanded', 'true'); }
+      wrap.appendChild(b);
     });
-    v.appendChild(days);
-    var tg = el('div', 'card'); tg.appendChild(el('span', 'eyebrow', 'Targets · with the formula')); var tl = el('div', 'targets'); p.targets.forEach(function (t) { tl.innerHTML += '<div class="target"><span>' + esc(t[0]) + '<small>' + esc(t[2]) + '</small></span><span class="num">' + esc(t[1]) + '</span></div>'; }); tg.appendChild(tl); v.appendChild(tg);
-    v.appendChild(el('div', 'why', '<span class="k">The plan lives here</span><p>Reminders come through Yinyue. Mirroring into Calendar is off; turn it on in Settings when you want it.</p>'));
+    return wrap;
   }
-  function renderTrack() {
-    var p = P(), v = document.getElementById('v-track'); v.innerHTML = '';
-    v.appendChild(el('span', 'sub', 'Today · tap to check, or say it'));
-    var list = el('div', 'check'); p.checklist.forEach(function (it, i) { list.appendChild(checkRow(it, i)); }); v.appendChild(list);
-    v.appendChild(el('span', 'sub', 'Progress toward the goal'));
-    var charts = [];
-    if (state.person === 'runner') { charts = [['Per-km time · easy runs', p.pace], ['Weekly km vs plan', p.weekly, 'bar'], ['Resting HR · 12 weeks', p.heart]]; }
-    if (state.person === 'lifter') { charts = [['Weight · 7-day average vs goal', p.weight], ['Tonnage per week · tonnes', p.tonnage, 'bar'], ['Resting HR · 12 weeks', p.heart]]; }
-    if (state.person === 'office') { charts = [['Active minutes per week vs target', p.active, 'bar'], ['Screen hours per day · weekly average', p.screenwk], ['Sleep · weekly average', p.sleepwk], ['Resting HR · 12 weeks', p.heart]]; }
-    charts.forEach(function (c) { var card = el('div', 'card'); card.appendChild(el('span', 'eyebrow', c[0])); card.appendChild(c[2] === 'bar' ? barChart(c[1]) : lineChart(c[1])); v.appendChild(card); });
-    v.appendChild(el('div', 'card', '<span class="eyebrow">Adherence</span><p style="font-size:14px">' + esc(p.adherence) + '</p><p class="dim" style="font-size:12px">Folded into next week\'s plan on Sunday.</p>'));
-  }
-  function renderWorkouts() {
-    var p = P(), v = document.getElementById('v-workouts'); v.innerHTML = '';
-    var list = el('div', 'list'); p.workouts.forEach(function (w) { list.innerHTML += '<div class="item' + (w.sel ? ' sel' : '') + '"><span class="t">' + esc(w.t) + '</span><span class="more">⋯</span><span class="s">' + esc(w.s) + '</span></div>'; }); v.appendChild(list);
-    var d = p.detail, card = el('div', 'card');
-    card.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:baseline"><h3>' + esc(d.title) + '</h3><span class="num dim" style="font-size:12px">' + esc(d.src) + '</span></div>' +
-      (d.route ? '<svg class="route" viewBox="0 0 340 110" aria-label="Route map, example"><path d="M20 84 C 60 18, 120 28, 150 56 S 230 94, 280 46 S 320 28, 325 36" fill="none" stroke="var(--jade)" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="84" r="4" fill="var(--jade)"/><circle cx="325" cy="36" r="4" fill="var(--gold)"/></svg>' : '') +
-      '<dl class="kv">' + d.kv.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd class="' + r[2] + '">' + esc(r[1]) + '</dd>'; }).join('') + '</dl>' +
-      '<div class="zones" aria-label="Heart rate zones">' + d.zones.map(function (z) { return '<i style="width:' + z + '%"></i>'; }).join('') + '</div>' +
-      '<div class="legend">' + d.zones.map(function (z, i) { return '<span>Z' + (i + 1) + ' ' + z + '%</span>'; }).join('') + '</div>' +
-      '<table class="ev"><tr><th>' + (d.route ? 'km' : 'lift') + '</th><th class="r">' + (d.route ? 'split' : 'sets') + '</th><th class="r">' + (d.route ? 'avg HR' : 'load') + '</th></tr>' + d.splits.map(function (s) { return '<tr><td>' + esc(s[0]) + '</td><td class="r">' + esc(s[1]) + '</td><td class="r">' + esc(s[2]) + '</td></tr>'; }).join('') + '</table>' +
-      '<p style="font-size:13px">' + esc(d.para) + '</p>';
-    v.appendChild(card);
-  }
-  function renderPatterns() {
-    var p = P(), v = document.getElementById('v-patterns'); v.innerHTML = '';
-    p.patterns.forEach(function (pt) { v.appendChild(el('div', 'card' + (pt.st !== 'stable' ? ' forming' : ''), '<div class="conf"><span class="pill ' + pt.st + '">' + pt.st + '</span><span>' + esc(pt.c) + '</span></div><h3>' + esc(pt.h) + '</h3>' + (pt.p ? '<p style="font-size:13px" class="dim">' + esc(pt.p) + '</p>' : ''))); });
-  }
-  function profileRows(container, compact) {
-    container.innerHTML = '';
-    P().profile.forEach(function (r) {
-      var row = el('div', 'pr' + (r.conf === 'fixed' || r.conf === 'user' ? ' fixed' : ''));
-      var cf = r.conf === 'fixed' ? 'from HealthKit' : r.conf === 'user' ? 'you said' : Math.round(r.conf * 100) + '% sure';
-      row.innerHTML = '<span class="f">' + esc(r.f) + '</span><span class="cf"><span>' + esc(cf) + '</span></span><span class="val">' + esc(r.v) + '</span><span class="e">' + esc(r.e) + '</span>';
-      if (r.fix) { var b = el('button', null, 'Not quite'); row.querySelector('.cf').appendChild(b); var fx = el('div', 'fix'); r.fix.forEach(function (o) { var ob = el('button', null, o); ob.addEventListener('click', function (ev) { ev.stopPropagation(); row.classList.remove('asking'); row.classList.add('fixed'); row.querySelector('.cf span').textContent = 'you said'; row.querySelector('.e').textContent = 'corrected by you just now · wins over inference'; row.querySelector('.val').textContent = r.v.replace(/outdoors|indoors|Walker/i, o.toLowerCase() === 'both' ? 'indoors and out' : o.toLowerCase()); }); fx.appendChild(ob); }); row.appendChild(fx); b.addEventListener('click', function () { row.classList.toggle('asking'); }); }
-      container.appendChild(row);
+
+  function underBlock(rows) {
+    var wrap = el('div', 'under');
+    rows.forEach(function (r) {
+      wrap.appendChild(el('button', null, '<b>' + esc(r[0]) + '</b><span>' + esc(r[1]) + ' ›</span>'));
     });
-  }
-  function renderWho() { var v = document.getElementById('v-who'); v.innerHTML = ''; v.appendChild(el('span', 'sub', 'Who the agent thinks you are')); var pr = el('div', 'prof'); profileRows(pr); v.appendChild(pr); v.appendChild(el('p', 'dim', 'Inferred from your history, what you open, and what you said. A correction wins over inference until you change it again.')); v.lastChild.style.fontSize = '13px'; }
-  function renderCatalog(active) {
-    var c = document.getElementById('catalog'); c.innerHTML = '';
-    Object.keys(CATALOG).forEach(function (k) { var on = active.indexOf(k) >= 0; c.innerHTML += '<div class="ck' + (on ? ' on' : '') + '"><b>' + k + '</b><span>' + esc(CATALOG[k].answers) + '</span></div>'; });
-  }
-  function renderMac() {
-    if (!state.macPhone) { renderMacOnly(); return; }
-    var p = P();
-    document.getElementById('mac-pair').innerHTML = '';
-    document.getElementById('mac-path').textContent = p.pathline;
-    document.getElementById('mac-sync').innerHTML = [['iPhone 15 Pro · 121 types · outbox empty', '2 min ago'], ['Backfill · 2023-06 → today · 1.2M samples', 'done'], ['Work signals · Shifu, git, calendar → phone', '06:57'], ['Morning pass · ran on the phone · mirrored', '06:58'], ['Weekly pass · ran here · profile, layout, plan, targets', 'Sun 19:02']].map(function (r) { return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
-    profileRows(document.getElementById('mac-prof'));
-    var h = document.getElementById('mac-hist'); h.innerHTML = '';
-    p.history.forEach(function (x, i) { var cur = state.undone ? i === 1 : i === 0; var d = el('div', 'hi' + (cur ? ' cur' : '')); d.innerHTML = '<span class="d"><span>' + esc(x.d) + '</span>' + (cur ? '<span>current</span>' : '<button>Restore</button>') + '</span><span>' + esc(x.t) + '</span>'; var b = d.querySelector('button'); if (b) b.addEventListener('click', function () { state.undone = i === 1; renderHome(); renderMac(); }); h.appendChild(d); });
-    var m = document.getElementById('multiples'); m.innerHTML = '';
-    p.multiples.forEach(function (x) { var row = el('div', 'multiple'); row.innerHTML = '<div class="k">' + esc(x.k) + '<small>' + esc(x.s) + '</small></div>'; var o = {}; for (var key in x) o[key] = x[key]; o.w = 600; o.h = 56; o.label = x.k; row.appendChild(lineChart(o)); row.innerHTML += '<div class="now">' + esc(x.now) + '<small>' + esc(x.sub) + '</small></div>'; m.appendChild(row); });
-    var wk = document.getElementById('mac-week'); wk.innerHTML = p.plan.map(function (d) { return '<div class="r"><span>' + esc(d.d) + ' · ' + esc(d.s) + (d.adj ? ' <span style="color:var(--gold)">adjusted</span>' : '') + '</span><span>' + esc(d.w) + '</span></div>'; }).join('');
-    var tg = document.getElementById('mac-targets'); tg.innerHTML = p.targets.map(function (t) { return '<div class="target"><span>' + esc(t[0]) + '<small>' + esc(t[2]) + '</small></span><span class="num">' + esc(t[1]) + '</span></div>'; }).join('');
-    var bd = document.getElementById('mac-board'); bd.innerHTML = p.patterns.map(function (pt) { return '<div class="card' + (pt.st !== 'stable' ? ' forming' : '') + '"><div class="conf"><span class="pill ' + pt.st + '">' + pt.st + '</span><span>' + esc(pt.c) + '</span></div><h3>' + esc(pt.h) + '</h3>' + (pt.p ? '<p class="dim" style="font-size:13px">' + esc(pt.p) + '</p>' : '') + '</div>'; }).join('');
-    var ms = document.getElementById('mac-msgs'); ms.innerHTML = p.chat.map(function (c) { return '<div class="msg ' + c[0] + '">' + esc(c[1]) + (c[2] ? '<br>' + c[2].map(function (t) { return '<span class="toolchip">' + esc(t) + '</span>'; }).join(' ') : '') + '</div>'; }).join('');
-  }
-  function renderTypes() {
-    var t = document.getElementById('types'); var rows = [['Heart Rate', '412,380', '6 min ago', 'Apple Watch'], ['Sleep Analysis', '3,912', '06:41', 'Apple Watch'], ['Workouts', '212', 'Sat', 'Apple Watch · Strava'], ['Body Mass', '486', 'Mon', 'Withings'], ['Dietary Protein', '1,204', 'yesterday', 'MyFitnessPal'], ['HRV (SDNN)', '1,140', '06:12', 'Apple Watch'], ['VO₂ max', '61', 'Sat', 'Apple Watch'], ['Running Power', '88,410', 'Sat', 'Apple Watch'], ['Medications', '2', 'context only', 'Health app']];
-    t.innerHTML = rows.map(function (r) { return '<div class="type"><span class="n">' + esc(r[0]) + '</span><span class="cnt">' + esc(r[1]) + '<small>' + esc(r[2]) + '</small></span><span class="m">' + esc(r[3]) + '</span></div>'; }).join('') +
-      '<div class="type empty"><span class="n">Blood Glucose</span><span class="cnt">empty</span><span class="m">not granted, or no source writes it</span></div><div class="type empty"><span class="n">Dietary Water</span><span class="cnt">empty</span><span class="m">no source writes it · water stays a tap</span></div>';
+    return wrap;
   }
 
-  function renderFirstRun() {
-    var p = P(), v = document.getElementById('v-firstrun'); v.innerHTML = '';
-    v.appendChild(el('span', 'sub', 'Minute one · history read · nothing asked yet'));
-    var meet = el('div', 'c wide brief'); meet.innerHTML = '<div class="k"><span>Yinyue</span></div><p class="t lead">' + esc(p.meet.found) + '</p>';
-    var row = el('div', 'chips'); var yes = el('button', 'chip', '<b>That\'s me</b>'); var no = el('button', 'chip', 'Not quite');
-    yes.addEventListener('click', function () { meet.querySelector('.t').textContent = p.meet.confirmed; row.remove(); });
-    no.addEventListener('click', function () { show('who'); });
-    row.appendChild(yes); row.appendChild(no); meet.appendChild(row); v.appendChild(meet);
-    var plan = el('div', 'c wide'); plan.innerHTML = '<div class="k"><span>Plan</span></div><p class="t dim">Waits for your answer. Nothing else is asked.</p>';
-    var q = el('div', 'c wide'); q.innerHTML = '<div class="k"><span>One question</span></div><p class="t">What are you after right now?</p>';
-    var opts = el('div', 'chips');
-    ['Bulking', 'Cutting', 'A race', 'Run further', 'Sleep better', 'Just move'].forEach(function (o) {
-      var b = el('button', 'chip', esc(o)); b.addEventListener('click', function () {
-        q.innerHTML = '<div class="k"><span>Goal · you said</span></div><p class="t">' + esc(p.meet.after) + '</p>';
-        plan.innerHTML = '<div class="k"><span>Plan</span></div><p class="t">' + esc(p.meet.plan) + '</p>';
-      }); opts.appendChild(b);
+  function renderPhones() {
+    var p = PEOPLE[current];
+    var q = document.getElementById('quiet-body');
+    q.innerHTML = '';
+    q.appendChild(statusBlock(p.quiet, 'ok'));
+    q.appendChild(el('p', 'quiet', 'Nothing else is on screen. What follows is what you did.'));
+    q.appendChild(actsBlock(p.acts));
+    q.appendChild(underBlock(p.under));
+    q.appendChild(el('div', 'ask', '<span>Ask Yinyue about any of it…</span><i>●</i>'));
+
+    var l = document.getElementById('loud-body');
+    l.innerHTML = '';
+    l.appendChild(statusBlock(p.loud, p.find.tone === 'crit' ? 'crit' : 'warn'));
+    l.appendChild(findBlock(p.find));
+    l.appendChild(actsBlock(p.acts));
+    l.appendChild(underBlock(p.under));
+    l.appendChild(el('div', 'ask', '<span>Ask Yinyue about any of it…</span><i>●</i>'));
+
+    document.getElementById('quiet-cap').textContent = p.quietCap;
+    document.getElementById('loud-cap').textContent = p.loudCap;
+  }
+
+  function renderRest() {
+    var p = PEOPLE[current];
+    document.getElementById('v-clear').textContent = p.verdicts.clear;
+    document.getElementById('v-see').textContent = p.verdicts.see;
+    document.getElementById('v-doc').textContent = p.verdicts.doc;
+
+    var rows = document.getElementById('idx-rows');
+    rows.innerHTML = p.idx.map(function (r) {
+      return '<tr class="' + (r.pick ? 'pick' : r.out ? 'out' : '') + '">' +
+        '<td><b>' + esc(r.k) + '</b></td>' +
+        '<td class="n">' + esc(r.held) + '</td>' +
+        '<td>' + esc(r.rel) + '</td>' +
+        '<td class="n">' + esc(r.mv) + '</td>' +
+        '<td>' + (r.pick ? '<span class="pickmark">' + esc(r.v) + '</span>' : esc(r.v)) + '</td></tr>';
+    }).join('');
+    document.getElementById('idx-note').textContent = p.note;
+
+    var thread = document.getElementById('talk-thread');
+    thread.innerHTML = p.talk.map(function (m) {
+      return '<div class="bub ' + m[0] + '">' + esc(m[1]) +
+        (m[2] ? '<br><span class="tool">' + esc(m[2]) + '</span>' : '') + '</div>';
+    }).join('');
+
+    document.getElementById('mac-path').textContent = p.path;
+    document.getElementById('mac-exam').innerHTML = p.exam.map(function (r) {
+      return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
+    }).join('');
+    document.getElementById('mac-mirror').innerHTML = p.mirror.map(function (r) {
+      return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>';
+    }).join('');
+  }
+
+  document.querySelectorAll('.person').forEach(function (b) {
+    b.addEventListener('click', function () {
+      current = b.dataset.p;
+      document.querySelectorAll('.person').forEach(function (x) {
+        x.setAttribute('aria-pressed', String(x === b));
+      });
+      renderPhones();
+      renderRest();
     });
-    q.appendChild(opts); v.appendChild(q); v.appendChild(plan);
-    var note = el('p', 'dim', 'Not asked, because the data holds it: age, sex, height, weight, what you do, how often, indoors or out. Name came from Yinyue\'s first meeting.'); note.style.fontSize = '13px'; v.appendChild(note);
-  }
-  function renderMacOnly() {
-    var m = MACONLY;
-    document.getElementById('mac-path').textContent = m.pathline;
-    var pr = document.getElementById('mac-prof'); pr.innerHTML = '';
-    m.profile.forEach(function (r) { var row = el('div', 'pr' + (r.conf === 'fixed' ? ' fixed' : '')); var cf = r.conf === 'fixed' ? 'no phone' : Math.round(r.conf * 100) + '% sure'; row.innerHTML = '<span class="f">' + esc(r.f) + '</span><span class="cf"><span>' + esc(cf) + '</span></span><span class="val">' + esc(r.v) + '</span><span class="e">' + esc(r.e) + '</span>'; pr.appendChild(row); });
-    var h = document.getElementById('mac-hist'); h.innerHTML = m.history.map(function (x) { return '<div class="hi cur"><span class="d"><span>' + esc(x.d) + '</span><span>current</span></span><span>' + esc(x.t) + '</span></div>'; }).join('');
-    var pair = document.getElementById('mac-pair'); pair.innerHTML = '';
-    var card = el('div', 'card'); card.style.borderColor = 'var(--gold)';
-    card.innerHTML = '<span class="eyebrow" style="color:var(--gold)">Your body data lives on your iPhone</span><div style="display:grid;grid-template-columns:1fr 96px;gap:14px;align-items:center"><div><p style="font-size:15px">HealthKit exists only on iPhone. Pair the Linggen phone app and sleep, heart, workouts and weight show up here within the first minute. Until then this page is composed from what the Mac knows: your screen, your commits, your calendar.</p><div class="chips" style="margin-top:10px"><span class="chip"><b>Pair an iPhone</b></span><span class="chip">Connect a service · later</span></div></div><svg viewBox="0 0 96 96" width="96" height="96" aria-label="Pair QR, example" style="background:var(--surface);border:1px solid var(--line);border-radius:8px"><rect x="8" y="8" width="24" height="24" fill="none" stroke="var(--text)" stroke-width="4"/><rect x="64" y="8" width="24" height="24" fill="none" stroke="var(--text)" stroke-width="4"/><rect x="8" y="64" width="24" height="24" fill="none" stroke="var(--text)" stroke-width="4"/><rect x="16" y="16" width="8" height="8" fill="var(--text)"/><rect x="72" y="16" width="8" height="8" fill="var(--text)"/><rect x="16" y="72" width="8" height="8" fill="var(--text)"/><rect x="40" y="12" width="6" height="6" fill="var(--text)"/><rect x="50" y="20" width="6" height="6" fill="var(--text)"/><rect x="40" y="30" width="6" height="6" fill="var(--text)"/><rect x="14" y="42" width="6" height="6" fill="var(--text)"/><rect x="26" y="46" width="6" height="6" fill="var(--text)"/><rect x="40" y="44" width="6" height="6" fill="var(--text)"/><rect x="52" y="40" width="6" height="6" fill="var(--text)"/><rect x="64" y="46" width="6" height="6" fill="var(--text)"/><rect x="78" y="42" width="6" height="6" fill="var(--text)"/><rect x="44" y="58" width="6" height="6" fill="var(--text)"/><rect x="56" y="62" width="6" height="6" fill="var(--text)"/><rect x="68" y="70" width="6" height="6" fill="var(--text)"/><rect x="80" y="64" width="6" height="6" fill="var(--text)"/><rect x="46" y="76" width="6" height="6" fill="var(--text)"/><rect x="60" y="82" width="6" height="6" fill="var(--text)"/><rect x="76" y="80" width="6" height="6" fill="var(--text)"/></svg></div>';
-    pair.appendChild(card);
-    var mu = document.getElementById('multiples'); mu.innerHTML = '';
-    m.multiples.forEach(function (x) { var row = el('div', 'multiple'); row.innerHTML = '<div class="k">' + esc(x.k) + '<small>' + esc(x.s) + '</small></div>'; var o = {}; for (var key in x) o[key] = x[key]; o.w = 600; o.h = 56; o.label = x.k; row.appendChild(lineChart(o)); row.innerHTML += '<div class="now">' + esc(x.now) + '<small>' + esc(x.sub) + '</small></div>'; mu.appendChild(row); });
-    document.getElementById('mac-week').innerHTML = m.plan.map(function (d) { return '<div class="r"><span>' + esc(d.d) + ' · ' + esc(d.s) + (d.adj ? ' <span style="color:var(--gold)">adjusted</span>' : '') + '</span><span>' + esc(d.w) + '</span></div>'; }).join('');
-    document.getElementById('mac-targets').innerHTML = m.targets.map(function (t) { return '<div class="target"><span>' + esc(t[0]) + '<small>' + esc(t[2]) + '</small></span><span class="num">' + esc(t[1]) + '</span></div>'; }).join('');
-    document.getElementById('mac-board').innerHTML = m.board.map(function (pt) { return '<div class="card' + (pt.st !== 'stable' ? ' forming' : '') + '"><div class="conf"><span class="pill ' + pt.st + '">' + pt.st + '</span><span>' + esc(pt.c) + '</span></div><h3>' + esc(pt.h) + '</h3><p class="dim" style="font-size:13px">' + esc(pt.p) + '</p></div>'; }).join('');
-    document.getElementById('mac-msgs').innerHTML = m.chat.map(function (c) { return '<div class="msg ' + c[0] + '">' + esc(c[1]) + (c[2] ? '<br>' + c[2].map(function (t) { return '<span class="toolchip">' + esc(t) + '</span>'; }).join(' ') : '') + '</div>'; }).join('');
-    document.getElementById('mac-sync').innerHTML = m.sync.map(function (r) { return '<div class="r"><span>' + esc(r[0]) + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
-  }
-  function renderAll() { renderFirstRun(); renderHome(); renderPlan(); renderTrack(); renderWorkouts(); renderPatterns(); renderWho(); renderMac(); }
+  });
 
-  // ---------- Navigation ----------
-  var tabs = document.querySelectorAll('.picker [role="tab"]'), views = document.querySelectorAll('.view'), notes = document.querySelectorAll('#notes .note');
-  var titles = { firstrun: 'Health', home: 'Health', plan: 'Plan', track: 'Track', workouts: 'Workouts', patterns: 'Patterns', who: 'Who you are', data: 'Data', settings: 'Settings' };
-  function show(name) {
-    state.view = name;
-    tabs.forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.view === name)); });
-    views.forEach(function (v) { v.setAttribute('data-active', String(v.dataset.view === name)); });
-    notes.forEach(function (n) { n.hidden = n.dataset.for !== name; });
-    document.getElementById('screen-title').textContent = titles[name] || 'Health';
-    document.getElementById('body').scrollTop = 0;
-  }
-  tabs.forEach(function (t) { t.addEventListener('click', function () { show(t.dataset.view); }); });
-  document.querySelectorAll('.person').forEach(function (b) { b.addEventListener('click', function () {
-    state.person = b.dataset.person; state.undone = false; state.hidden = {}; state.pinned = {};
-    document.querySelectorAll('.person').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-    var wt = document.getElementById('weather-toggle'); wt.className = 'toggle' + (state.person === 'lifter' ? ' off' : '');
-    renderAll(); show('home');
-  }); });
-
-  document.querySelectorAll('[data-mac]').forEach(function (b) { b.addEventListener('click', function () {
-    state.macPhone = b.dataset.mac === 'phone';
-    document.querySelectorAll('[data-mac]').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
-    renderMac();
-  }); });
-
-  renderTypes(); renderAll();
+  renderPhones();
+  renderRest();
 })();
 </script>
