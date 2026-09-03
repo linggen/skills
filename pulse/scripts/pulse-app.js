@@ -17,6 +17,7 @@
 import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, isThreadCommented, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
 import { normalizeMention, computeMentionBudgets, buildMentionBlock } from './mention-policy.js';
+import { normalizeRepoPaths, buildDigestCommand, parseDigestOutput, renderDigestBlock } from './product-digest.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
 
@@ -709,10 +710,14 @@ function buildSkipBlock() {
 // Both ride every drafting goal (Gather web, per-tab rescans, Draft). The
 // policy block says where a draft may name the product and how; its budget
 // is counted here from my own recent comments on disk, never estimated by
-// the model. The digest is the product's README head + latest CHANGELOG
-// entry: the agent was told to Read the workspace itself and never did
-// (every Pulse session on disk through 2026-09-01 — zero workspace reads),
-// so the page hands it over, the way it already hands over the brief.
+// the model. The digest is the README + latest CHANGELOG entry of every
+// repo in config.product_repos: the agent was told to Read the workspace
+// itself and never did (every Pulse session on disk through 2026-09-01 —
+// zero workspace reads), so the page hands it over, the way it already
+// hands over the brief. The two work as a pair — a disclosed register with
+// an empty digest is a mention with nothing to say (2026-09-03: a thread
+// squarely about agent memory drafted implicit because workspace_path
+// pointed at a parent dir with no README and the digest came back empty).
 
 async function loadOwnBodies() {
   const [reddit, hn, x] = await Promise.all([
@@ -740,23 +745,15 @@ async function buildMentionBlockLive(cfg) {
   }
 }
 
-const DIGEST_HEAD_BYTES = 1500;
-
 async function buildProductDigest(cfg) {
-  const ws = (cfg?.workspace_path || '').trim();
-  if (!ws) return '';
-  const q = ws.replace(/"/g, '\\"');
-  // First `## ` block of CHANGELOG.md = the latest entry; `# Changelog` (one
-  // hash) does not match. No trailing newline: /api/bash rejects one.
-  const cmd = `cd "${q}" 2>/dev/null || exit 0; if [ -f README.md ]; then echo "### README.md (head)"; head -c ${DIGEST_HEAD_BYTES} README.md; echo; fi; if [ -f CHANGELOG.md ]; then echo; echo "### CHANGELOG.md (latest entry)"; awk '/^## /{n++} n==1{print} n==2{exit}' CHANGELOG.md | head -c ${DIGEST_HEAD_BYTES}; echo; fi`;
+  // The repos to read come from config (product_repos, falling back to
+  // workspace_path) — Pulse knows nothing about any particular product.
+  const paths = normalizeRepoPaths(cfg);
+  const cmd = buildDigestCommand(paths);
+  if (!cmd) return '';
   try {
-    const out = (await runBash(cmd)).trim();
-    if (!out) return '';
-    return [
-      'PRODUCT DIGEST — read by the page from the workspace. Ground every product sentence in THIS (what it does, what just shipped), never in a guess:',
-      out,
-      '',
-    ].join('\n');
+    const sections = parseDigestOutput(await runBash(cmd));
+    return renderDigestBlock(sections);
   } catch (e) {
     console.warn('[pulse] product digest failed', e);
     return '';

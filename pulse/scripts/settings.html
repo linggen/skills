@@ -47,24 +47,44 @@
     <section class="card">
       <h2>Workspace</h2>
       <p class="card-sub">
-        Where the product you're launching lives on disk. Pulse reads
-        the README, <code>doc/</code>, and source on every run so drafts
-        cite real features instead of guessing — the difference between
-        <em>"excited to ship a new feature!"</em> and writing that
-        sounds like you. Optional but high-leverage.
+        Where your work lives on disk. Pulse reads it read-only: commits
+        for the progress card, and your product's README + latest
+        CHANGELOG entry for the <strong>product digest</strong> that rides
+        every drafting goal — the difference between
+        <em>"excited to ship a new feature!"</em> and a draft that names
+        the thing you actually built. Optional but high-leverage.
       </p>
       <div class="workspace-row">
         <input
           type="text"
           id="workspace-path"
           class="workspace-input"
-          placeholder="/path/to/your/project"
+          placeholder="/path/to/your/workspace"
           spellcheck="false"
         />
       </div>
       <p class="card-meta">
+        Root. Saved as <code>workspace_path</code> — also the read grant
+        and the dir scanned for commits.
+      </p>
+      <p class="card-sub" style="margin-top: 14px;">
+        <strong>Product repos</strong> — one path per line, up to 6. The
+        repos that describe what you're launching; each one's README and
+        latest CHANGELOG entry goes into the digest. Absolute,
+        <code>~/…</code>, or relative to the root above. A launch is often
+        several repos (app, CLI, site) and the sentence that answers a
+        thread may be in any of them. Leave empty to read the root itself.
+      </p>
+      <textarea
+        id="product-repos"
+        class="brief-textarea"
+        rows="4"
+        spellcheck="false"
+        placeholder="my-app&#10;my-app-cli&#10;~/workspace/my-site"
+      ></textarea>
+      <p class="card-meta">
         Read-only access. Pulse never writes to the workspace.
-        Saved to <code>config.json</code> as <code>workspace_path</code>.
+        Saved to <code>config.json</code> as <code>product_repos</code>.
       </p>
     </section>
 

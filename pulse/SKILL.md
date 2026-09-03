@@ -557,14 +557,15 @@ Read these files with `Read` for additional context as needed:
    constraints per output lane (x-post, reddit-comment, blog,
    medium, linkedin, substack).
 2. `~/.linggen/skills/pulse/config.json` — `sites` (enabled source
-   tools), `targets` (enabled output lanes), `workspace_path`,
-   `brief`, and `mention` (the product's name, its site as plain
-   text, the default register, the self-promotion ratio, per-lane
-   overrides). Only call enabled tools; only draft for enabled lanes.
-   You never read `mention` yourself: the page turns it into the
-   hidden **MENTION POLICY** block that prefixes every drafting goal,
-   with the budget already counted from the user's own recent
-   comments. Obey the block; never estimate the budget.
+   tools), `targets` (enabled output lanes), `workspace_path` +
+   `product_repos`, `brief`, and `mention` (the product's name, its
+   site as plain text, the default register, the self-promotion ratio,
+   per-lane overrides). Only call enabled tools; only draft for enabled
+   lanes. You never read `mention` or `product_repos` yourself: the page
+   turns them into the hidden **MENTION POLICY** and **PRODUCT DIGEST**
+   blocks that prefix every drafting goal, with the budget already
+   counted from the user's own recent comments. Obey the blocks; never
+   estimate the budget.
 3. `~/.linggen/skills/pulse/references/x-setup-guide.md` — how to connect
    X via the linggen-browser extension ($0, reads your logged-in x.com
    session; no API keys). Read it when the user asks to set up X or when an
@@ -577,15 +578,25 @@ how the brief was written — sentence length, article use, comma
 habits, vocabulary, register — when drafting. No separate voice
 samples file; the brief is the user's actual prose.
 
-**Workspace context** — for drafting content or scoring signal,
-read key files from `config.workspace_path`:
-- `README.md` and `doc/` for product description and roadmap
-- `CHANGELOG.md` for recent shipping (when present)
-- `Cargo.toml` / `package.json` / `pyproject.toml` for stack/version
-- `Grep` for specific feature names from the brief
+**Product knowledge** — every drafting goal is prefixed with a
+**PRODUCT DIGEST** block: the README and latest CHANGELOG entry of each
+repo in `config.product_repos`, read off disk by the page (the same way
+it hands you the mention policy — you never fetch either yourself).
+That block is your grounded product knowledge. Ground every product
+sentence in it; never state a capability that is not written there.
+
+It pairs with the MENTION POLICY block above it: a thread the digest
+answers concretely is exactly where a *disclosed* draft belongs. If the
+digest says nothing about the thread's subject, draft implicit — a
+disclosed mention with nothing concrete behind it is a planted name.
+
+The digest is a head, not the whole repo. When you need more for one
+draft — `doc/` for roadmap, `Cargo.toml` / `package.json` for stack, a
+`Grep` for a feature name — read it from `config.workspace_path`
+(read-only) rather than guessing.
 
 Drafts grounded in actual product knowledge are the differentiator.
-Don't draft generically when the workspace is sitting right there.
+Don't draft generically when the digest is sitting right there.
 
 Cross-cutting collection (sessions, commits, ling-mem rows, changed
 files) is handled by the page side via scripts — you don't invoke
