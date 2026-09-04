@@ -244,7 +244,7 @@
   /* ── The two-tab shell ────────────────────────────────────────────────
      Five tabs was the app's table of contents printed along the bottom of
      every screen. Two is a question a person can answer without reading:
-     what about me today, and where is everything else. */
+     what stood out of all of it, and where is everything else. */
   .screen.tabbed { grid-template-rows: auto auto 1fr auto; }
   .tabbar { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); background: var(--surface); }
   .tabbar button { display: grid; gap: 2px; justify-items: center; padding: 9px 0 13px; background: none; border: 0; cursor: pointer; color: var(--faint); font-size: 11px; font-family: var(--ui); }
@@ -305,9 +305,9 @@
 
   <header class="hero">
     <span class="eyebrow">Linggen · Health · prototype v5</span>
-    <h1>Two tabs: what about you today, and everything else</h1>
+    <h1>Two tabs: what stood out, and everything else</h1>
     <p class="thesis">Apple Health holds hundreds of measurements and shows you all of them. Linggen Health reads every one of yours each night, against <em>your own history</em>, and builds one screen out of what it found. Nothing wrong is still a screen — it just is not a warning.</p>
-    <p class="lede">The phone had five tabs, which is the app printing its own table of contents along the bottom of every view. Now it has two. <b>Today</b> is composed each morning by the agent: the number, whatever needs you, what you did, and the one thing you are working on — four cards at most, read in seconds. <b>Everything</b> is the drawer you open when you want something specific, and every row in it says how much is behind it. A Mac keeps the full tab strip, because a Mac has room. Pick a person below. All figures are examples.</p>
+    <p class="lede">The phone had five tabs, which is the app printing its own table of contents along the bottom of every view. Now it has two. <b>Highlights</b> is composed each morning by the agent out of your whole history — not out of today. The examination reads years; what reaches this page is the few things that stood out, and something that started nine days ago leads it just as readily as something that started this morning. Four cards at most, read in seconds. <b>Everything</b> is the drawer you open when you want something specific, and every row in it says how much is behind it. A Mac keeps the full tab strip, because a Mac has room. Pick a person below. All figures are examples.</p>
     <div class="people" role="group" aria-label="Three people, one app">
       <button class="person" data-p="lifter" aria-pressed="true">
         <span class="who">The lifter</span>
@@ -330,9 +330,9 @@
 
   <section id="two-days">
     <div class="head">
-      <span class="eyebrow">Today</span>
-      <h2>Four cards at most, composed that morning</h2>
-      <p>The dashboard is built each morning by the agent, and the agent says so in the conversation, not here — this screen carries findings and nothing it wants to tell you about itself. The number is not a health score, which no consumer sensor can support: it is today against this person's own normal, and it says what it was made of. Under it: the finding, if there is one; what you actually did; and the one measurement you are working on, drawn against your own normal. <b>Quiet means no warning, not an empty screen</b> — on a good day the space the finding would have taken goes to your week, because that is what you came to look at.</p>
+      <span class="eyebrow">Highlights</span>
+      <h2>Four cards at most, drawn from all of it</h2>
+      <p>Built each morning by the agent, and the agent says so in the conversation, not here — this screen carries findings and nothing it wants to tell you about itself. <b>It is not a page about today.</b> The examination reads every measurement this person has ever recorded, and what earns a place is whatever is still true: a shift that began nine days ago leads this page every morning until it passes, and every chart on it is drawn over weeks. The number is the one thing here that is about today — it is today against this person's own normal, it is not a health score, and it says what it was made of. Under it: the finding, if there is one, with how long it has held; what you actually did; and the one measurement you are working on. <b>Quiet means no warning, not an empty screen</b> — on a good day the space the finding would have taken goes to your week, because that is what you came to look at.</p>
     </div>
     <div class="days">
       <div class="day-col">
@@ -340,7 +340,7 @@
           <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
           <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
           <div class="sbody" id="quiet-body"></div>
-          <nav class="tabbar"><button aria-current="true"><b>◈</b>Today</button><button><b>☰</b>Everything</button></nav>
+          <nav class="tabbar"><button aria-current="true"><b>◈</b>Highlights</button><button><b>☰</b>Everything</button></nav>
         </div></div>
         <div class="day-cap"><b>An ordinary day</b><span id="quiet-cap"></span></div>
       </div>
@@ -349,7 +349,7 @@
           <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
           <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
           <div class="sbody" id="loud-body"></div>
-          <nav class="tabbar"><button aria-current="true"><b>◈</b>Today</button><button><b>☰</b>Everything</button></nav>
+          <nav class="tabbar"><button aria-current="true"><b>◈</b>Highlights</button><button><b>☰</b>Everything</button></nav>
         </div></div>
         <div class="day-cap"><b>The day it speaks</b><span id="loud-cap"></span></div>
       </div>
@@ -368,7 +368,7 @@
           <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
           <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
           <div class="sbody" id="drawer-body"></div>
-          <nav class="tabbar"><button><b>◈</b>Today</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+          <nav class="tabbar"><button><b>◈</b>Highlights</button><button aria-current="true"><b>☰</b>Everything</button></nav>
         </div></div>
         <div class="day-cap"><b>Everything this app holds</b><span>Nine rows, each a fact rather than a label. Nothing here is hidden behind a gesture.</span></div>
       </div>
@@ -377,7 +377,7 @@
           <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
           <div class="abar"><span class="g">‹</span><span class="t" id="work-title">Workouts</span><span class="g">⋯</span></div>
           <div class="sbody" id="work-body"></div>
-          <nav class="tabbar"><button><b>◈</b>Today</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+          <nav class="tabbar"><button><b>◈</b>Highlights</button><button aria-current="true"><b>☰</b>Everything</button></nav>
         </div></div>
         <div class="day-cap"><b>Workouts, opened</b><span id="work-cap"></span></div>
       </div>
@@ -396,7 +396,7 @@
           <div class="sbar"><span>19:04</span><span>●●● ᯤ 61%</span></div>
           <div class="abar"><span class="g">‹</span><span class="t" id="sess-title">Session</span><span class="g">⋯</span></div>
           <div class="sbody" id="sess-body"></div>
-          <nav class="tabbar"><button><b>◈</b>Today</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+          <nav class="tabbar"><button><b>◈</b>Highlights</button><button aria-current="true"><b>☰</b>Everything</button></nav>
         </div></div>
         <div class="day-cap"><b>The session itself</b><span id="sess-cap"></span></div>
       </div>
@@ -524,6 +524,7 @@
       <div class="rule"><b>Two tabs, and one of them is composed</b><p>A tab is a promise you will want that view often enough to pay for it with permanent screen. Only one view earns that: today. Everything else is a drawer, in a fixed order, with a count on every row.</p></div>
       <div class="rule"><b>Four cards, never more</b><p>The dashboard is read in seconds or it is not read. A fifth card is the agent failing to choose, and choosing is what it is for.</p></div>
       <div class="rule"><b>Quiet means no warning, not an empty screen</b><p>A measurement at your normal never gets a slot of its own. But the space a finding would have taken goes to your week and the one thing you are working on, because that is what you opened the app to see.</p></div>
+      <div class="rule"><b>The first page is not about today</b><p>The examination reads all of it. Something that began nine days ago and has not passed leads the page every morning until it does, and it says how long it has held rather than arriving as this morning's news. Only the number is today's.</p></div>
       <div class="rule"><b>It comes to you</b><p>When a pass finds something, the agent says so in the conversation without being asked, and says what it did about it. A finding that waits for the user to open the right screen is a finding the app kept to itself.</p></div>
       <div class="rule"><b>The agent talks in the conversation, not on the screen</b><p>That it built the view, why it is in this order, and the offer to lay it out again — all of it is said where you can answer back. The screen carries findings and nothing the agent wants to tell you about itself.</p></div>
       <div class="rule"><b>Same first view, different depth</b><p>Both devices lead with the most important part and nothing else. A Mac keeps the full tab strip because it has room; a phone puts the same set one drawer down.</p></div>
@@ -677,7 +678,7 @@
       quietCap: 'Three of the last five days looked like this. The screen is the status line and what he did.',
       loudCap: 'His HRV dropped after Monday’s legs session. Today’s planned session became a rest day.',
       find: {
-        tone: 'warn', tag: 'Worth seeing · recovery',
+        tone: 'warn', tag: 'Worth seeing · recovery · four days',
         h: 'HRV is 27 ms, 7 below your normal',
         e: 'Lowest of the last fourteen days, and it follows Monday’s Legs. Legs is off today; Push moves to Friday.',
         act: 'Why this ›',
@@ -792,7 +793,7 @@
       quietCap: 'She has a scale, so the app has a body composition to follow. Most days it has nothing to add.',
       loudCap: 'Her weight has climbed for five weeks. Not a warning, but the trend it has been watching turned.',
       find: {
-        tone: 'warn', tag: 'Worth seeing · trend',
+        tone: 'warn', tag: 'Worth seeing · trend · five weeks',
         h: 'Weight is up 1.9 kg over five weeks',
         e: 'Seven-day average, 62.4 to 64.3 kg. Body fat moved with it, from 27.4% to 28.6%, so it is not water or muscle.',
         act: 'Show me the weeks ›',
@@ -1165,7 +1166,7 @@
     var box = el('div', 'status');
     box.appendChild(dial(s.score, tone));
     var right = el('div', null);
-    right.appendChild(el('div', 'n', 'Today'));
+    right.appendChild(el('div', 'n', 'Against your normal'));
     right.appendChild(el('div', 's', esc(s.line)));
     right.appendChild(el('div', 'm', esc(s.made)));
     box.appendChild(right);
@@ -1354,7 +1355,7 @@
     document.getElementById('sess-notes').innerHTML =
       '<p>Everything on that screen is already in HealthKit: the heart-rate series at about five seconds, the sets a lifting app wrote, the splits from the route. None of it is inferred and none of it is a score.</p>' +
       '<p class="dim">The last card is the only one doing work. Zones and splits are a record; <b>against your usual</b> is a judgement, and it is made the same way every verdict in this app is made — this session against your own last five of its kind, never against anybody else\u2019s.</p>' +
-      '<p class="dim">A session earns a place on Today only when that last card has something to say. Four sessions in a normal week produce no cards at all; the week that breaks a year-old load produces one.</p>';
+      '<p class="dim">A session earns a place on Highlights only when that last card has something to say. Four sessions in a normal week produce no cards at all; the week that breaks a year-old load produces one.</p>';
   }
 
   function renderRest() {
