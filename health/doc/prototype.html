@@ -241,6 +241,61 @@
   .chat-c { border-top: 1px solid var(--line); padding: 12px 16px; display: flex; gap: 10px; align-items: center; font-size: 13.5px; color: var(--faint); }
   .chat-c i { margin-left: auto; width: 28px; height: 28px; border-radius: 8px; background: var(--jade); color: #fff; display: grid; place-items: center; font-style: normal; font-size: 12px; }
 
+  /* ── The two-tab shell ────────────────────────────────────────────────
+     Five tabs was the app's table of contents printed along the bottom of
+     every screen. Two is a question a person can answer without reading:
+     what about me today, and where is everything else. */
+  .screen.tabbed { grid-template-rows: auto auto 1fr auto; }
+  .tabbar { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); background: var(--surface); }
+  .tabbar button { display: grid; gap: 2px; justify-items: center; padding: 9px 0 13px; background: none; border: 0; cursor: pointer; color: var(--faint); font-size: 11px; font-family: var(--ui); }
+  .tabbar button b { font-size: 15px; line-height: 1; font-weight: 500; }
+  .tabbar button[aria-current="true"] { color: var(--jade); }
+
+  /* ── Composed cards ───────────────────────────────────────────────────
+     Every card on the dashboard is the same frame: what it is, the thing
+     itself, and one line saying why it is here. A card with nothing to put
+     in the middle is a card that should not have been composed. */
+  .card { display: grid; gap: 7px; padding: 13px 15px; background: var(--surface); border: 1px solid var(--line); border-radius: 15px; }
+  .card .cap { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .card .cap b { font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); font-weight: 500; white-space: nowrap; }
+  .card .cap span { font-family: var(--mono); font-size: 10.5px; color: var(--faint); text-align: right; min-width: 0; }
+  .card .big { font-size: 15px; font-weight: 600; line-height: 1.35; }
+  .card .why { font-size: 12px; color: var(--dim); line-height: 1.4; }
+
+  /* Weekly bars: what you actually did, at a glance. Height is the week's
+     load; the current week is drawn open because it is not finished yet. */
+  .bars { display: flex; align-items: flex-end; gap: 5px; height: 62px; }
+  .bars i { flex: 1; border-radius: 3px 3px 0 0; background: var(--jade-soft); border: 1px solid var(--jade); border-bottom: 0; min-height: 3px; }
+  .bars i.now { background: transparent; }
+  .bars i.rest { border-color: var(--line); background: var(--raised); }
+  .barcap { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--faint); }
+
+  /* One session, in the list and opened. */
+  .sess-row { display: grid; grid-template-columns: 42px 1fr auto; gap: 2px 10px; align-items: baseline; padding: 9px 4px; border-bottom: 1px solid var(--line); text-align: left; width: 100%; background: none; border-left: 0; border-right: 0; border-top: 0; cursor: pointer; font-family: var(--ui); }
+  .sess-row:last-child { border-bottom: 0; }
+  .sess-row .d { grid-column: 1; grid-row: 1 / span 2; font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .sess-row .n { grid-column: 2; grid-row: 1; font-weight: 500; font-size: 14px; }
+  .sess-row .m { grid-column: 3; grid-row: 1; font-family: var(--mono); font-size: 11px; color: var(--dim); text-align: right; }
+  .sess-row .x { grid-column: 2 / span 2; grid-row: 2; font-size: 12px; color: var(--dim); }
+  .zones { display: flex; height: 7px; border-radius: 4px; overflow: hidden; }
+  .zones i { display: block; }
+  .setgrid { display: grid; grid-template-columns: 1fr auto auto; gap: 3px 12px; font-size: 12.5px; }
+  .setgrid .h { font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--faint); }
+  .setgrid .n { font-family: var(--mono); text-align: right; }
+
+  /* ── The drawer ───────────────────────────────────────────────────────
+     Not a menu of screens: a list of what this app holds, each row saying
+     how much of it there is, so choosing is reading rather than guessing. */
+  .note-col { align-self: center; display: grid; gap: 12px; font-size: 14.5px; line-height: 1.6; max-width: 46ch; }
+  .note-col .dim { color: var(--dim); font-size: 13.5px; }
+  .finder { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; color: var(--faint); font-size: 13.5px; }
+  .drawer { display: grid; gap: 0; }
+  .drawer .grp { font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); padding: 13px 4px 5px; }
+  .drawer .row { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: baseline; padding: 10px 4px; border-bottom: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-top: 0; text-align: left; width: 100%; cursor: pointer; font-family: var(--ui); }
+  .drawer .row b { grid-column: 1; grid-row: 1; font-size: 14px; font-weight: 500; }
+  .drawer .row span { grid-column: 1; grid-row: 2; font-size: 12px; color: var(--dim); }
+  .drawer .row i { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-style: normal; color: var(--faint); font-size: 15px; }
+
   @media (prefers-reduced-motion: no-preference) {
     .person, .act-row, .find, .status { transition: border-color .15s ease, box-shadow .15s ease; }
   }
@@ -249,10 +304,10 @@
 <main class="page">
 
   <header class="hero">
-    <span class="eyebrow">Linggen · Health · prototype v4</span>
-    <h1>Most days it says almost nothing</h1>
-    <p class="thesis">Apple Health holds hundreds of measurements and shows you all of them. Linggen Health reads every one of yours each night, against <em>your own history</em>, and puts on screen only what is not right. A quiet screen is the finding.</p>
-    <p class="lede">The first view is the same promise on both devices: the most important part, composed that morning, and nothing else. What differs is what lies behind it. A Mac can put everything within reach; a phone never does. Pick a person below. All figures are examples.</p>
+    <span class="eyebrow">Linggen · Health · prototype v5</span>
+    <h1>Two tabs: what about you today, and everything else</h1>
+    <p class="thesis">Apple Health holds hundreds of measurements and shows you all of them. Linggen Health reads every one of yours each night, against <em>your own history</em>, and builds one screen out of what it found. Nothing wrong is still a screen — it just is not a warning.</p>
+    <p class="lede">The phone had five tabs, which is the app printing its own table of contents along the bottom of every view. Now it has two. <b>Today</b> is composed each morning by the agent: the number, whatever needs you, what you did, and the one thing you are working on — four cards at most, read in seconds. <b>Everything</b> is the drawer you open when you want something specific, and every row in it says how much is behind it. A Mac keeps the full tab strip, because a Mac has room. Pick a person below. All figures are examples.</p>
     <div class="people" role="group" aria-label="Three people, one app">
       <button class="person" data-p="lifter" aria-pressed="true">
         <span class="who">The lifter</span>
@@ -270,31 +325,83 @@
         <span class="idx">watches resting heart rate</span>
       </button>
     </div>
-    <span class="stamp"><i></i> design round · 2026-09-03 · supersedes the composed-dashboard prototype</span>
+    <span class="stamp"><i></i> design round · 2026-09-04 · five tabs become two, and workouts join the composition</span>
   </header>
 
   <section id="two-days">
     <div class="head">
-      <span class="eyebrow">The screen</span>
-      <h2>One line that proves it looked, then only what is wrong</h2>
-      <p>The first view is built each morning by the agent, and the agent says so in the conversation, not here — this screen carries findings and nothing it wants to tell you about itself. It holds the most important part and nothing else. On this device that is the whole app. The number is not a health score, which no consumer sensor can support: it is today against this person's own normal, and it says what it was made of. Under it, nothing on a good day, the finding on a bad one, then the last few sessions and the doors.</p>
+      <span class="eyebrow">Today</span>
+      <h2>Four cards at most, composed that morning</h2>
+      <p>The dashboard is built each morning by the agent, and the agent says so in the conversation, not here — this screen carries findings and nothing it wants to tell you about itself. The number is not a health score, which no consumer sensor can support: it is today against this person's own normal, and it says what it was made of. Under it: the finding, if there is one; what you actually did; and the one measurement you are working on, drawn against your own normal. <b>Quiet means no warning, not an empty screen</b> — on a good day the space the finding would have taken goes to your week, because that is what you came to look at.</p>
     </div>
     <div class="days">
       <div class="day-col">
-        <div class="phone"><div class="screen">
+        <div class="phone"><div class="screen tabbed">
           <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
           <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
           <div class="sbody" id="quiet-body"></div>
+          <nav class="tabbar"><button aria-current="true"><b>◈</b>Today</button><button><b>☰</b>Everything</button></nav>
         </div></div>
         <div class="day-cap"><b>An ordinary day</b><span id="quiet-cap"></span></div>
       </div>
       <div class="day-col">
-        <div class="phone"><div class="screen">
+        <div class="phone"><div class="screen tabbed">
           <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
           <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
           <div class="sbody" id="loud-body"></div>
+          <nav class="tabbar"><button aria-current="true"><b>◈</b>Today</button><button><b>☰</b>Everything</button></nav>
         </div></div>
         <div class="day-cap"><b>The day it speaks</b><span id="loud-cap"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="drawer">
+    <div class="head">
+      <span class="eyebrow">Everything</span>
+      <h2>The second tab is a drawer, not a menu of screens</h2>
+      <p>Five tabs made the app carry its own table of contents along the bottom of every view, and a tab is a promise that you will want that view often enough to pay for it with permanent screen. Most of these you want a few times a month. So they live in one list, in a fixed order — a person who has to hunt for the plan twice stops looking for it — and every row says how much is behind it, so choosing is reading rather than guessing. The last two rows are the app being honest about itself: what the Mac has, and whether tonight's examination will actually run.</p>
+    </div>
+    <div class="days">
+      <div class="day-col">
+        <div class="phone"><div class="screen tabbed">
+          <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
+          <div class="abar"><span class="g">‹</span><span class="t">Health</span><span class="g">⋯</span></div>
+          <div class="sbody" id="drawer-body"></div>
+          <nav class="tabbar"><button><b>◈</b>Today</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+        </div></div>
+        <div class="day-cap"><b>Everything this app holds</b><span>Nine rows, each a fact rather than a label. Nothing here is hidden behind a gesture.</span></div>
+      </div>
+      <div class="day-col">
+        <div class="phone"><div class="screen tabbed">
+          <div class="sbar"><span>07:41</span><span>●●● ᯤ 78%</span></div>
+          <div class="abar"><span class="g">‹</span><span class="t" id="work-title">Workouts</span><span class="g">⋯</span></div>
+          <div class="sbody" id="work-body"></div>
+          <nav class="tabbar"><button><b>◈</b>Today</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+        </div></div>
+        <div class="day-cap"><b>Workouts, opened</b><span id="work-cap"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="session">
+    <div class="head">
+      <span class="eyebrow">One session</span>
+      <h2>What a workout was, not that it happened</h2>
+      <p>Apple already tells you a workout took place. What it does not do is put it beside your last five of the same kind, which is the only way to know whether it was a good one. So a session opens on its heart-rate curve with the time in each zone under it, then what was actually in it — the sets or the splits — and one line comparing it to your usual. That comparison is the whole reason the screen exists; without it this is a receipt.</p>
+    </div>
+    <div class="days">
+      <div class="day-col">
+        <div class="phone"><div class="screen tabbed">
+          <div class="sbar"><span>19:04</span><span>●●● ᯤ 61%</span></div>
+          <div class="abar"><span class="g">‹</span><span class="t" id="sess-title">Session</span><span class="g">⋯</span></div>
+          <div class="sbody" id="sess-body"></div>
+          <nav class="tabbar"><button><b>◈</b>Today</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+        </div></div>
+        <div class="day-cap"><b>The session itself</b><span id="sess-cap"></span></div>
+      </div>
+      <div class="day-col">
+        <div class="note-col" id="sess-notes"></div>
       </div>
     </div>
   </section>
@@ -414,10 +521,13 @@
       <h2>What keeps a quiet screen honest</h2>
     </div>
     <div class="rules">
-      <div class="rule"><b>A card earns its place by having news</b><p>At your normal is not a slot. The screen grows on the days something happened and shrinks back when it passes.</p></div>
+      <div class="rule"><b>Two tabs, and one of them is composed</b><p>A tab is a promise you will want that view often enough to pay for it with permanent screen. Only one view earns that: today. Everything else is a drawer, in a fixed order, with a count on every row.</p></div>
+      <div class="rule"><b>Four cards, never more</b><p>The dashboard is read in seconds or it is not read. A fifth card is the agent failing to choose, and choosing is what it is for.</p></div>
+      <div class="rule"><b>Quiet means no warning, not an empty screen</b><p>A measurement at your normal never gets a slot of its own. But the space a finding would have taken goes to your week and the one thing you are working on, because that is what you opened the app to see.</p></div>
       <div class="rule"><b>It comes to you</b><p>When a pass finds something, the agent says so in the conversation without being asked, and says what it did about it. A finding that waits for the user to open the right screen is a finding the app kept to itself.</p></div>
       <div class="rule"><b>The agent talks in the conversation, not on the screen</b><p>That it built the view, why it is in this order, and the offer to lay it out again — all of it is said where you can answer back. The screen carries findings and nothing the agent wants to tell you about itself.</p></div>
-      <div class="rule"><b>Same first view, different depth</b><p>Both devices lead with the most important part and nothing else. A Mac puts the rest within reach; a phone leaves it behind a door or a question.</p></div>
+      <div class="rule"><b>Same first view, different depth</b><p>Both devices lead with the most important part and nothing else. A Mac keeps the full tab strip because it has room; a phone puts the same set one drawer down.</p></div>
+      <div class="rule"><b>A session is a comparison, not a receipt</b><p>Apple already told you a workout happened. What earns a screen is the same session beside your last five of its kind — tonnage against your usual pulls, heart rate at a pace you have run before.</p></div>
       <div class="rule"><b>The quiet is stated, never implied</b><p>The status line says how many measurements were examined. An empty screen with no line reads as a broken app.</p></div>
       <div class="rule"><b>A warning outranks the quiet rule</b><p>It cannot be collapsed, hidden, or pushed below anything. Everything else on the screen can be.</p></div>
       <div class="rule"><b>Absent is never zero</b><p>No scale means no weight trend, not a weight of nothing. A denied permission and an unused sensor look identical to us, and we say so.</p></div>
@@ -486,7 +596,8 @@
     b.setAttribute('x1', pad); b.setAttribute('x2', W - pad); b.setAttribute('y1', y(base)); b.setAttribute('y2', y(base));
     b.setAttribute('stroke', 'var(--faint)'); b.setAttribute('stroke-dasharray', '3 3'); b.setAttribute('stroke-width', '1');
     svg.appendChild(b);
-    var col = tone === 'crit' ? 'var(--crit)' : 'var(--gold)';
+    var col = tone === 'crit' ? 'var(--crit)'
+      : tone === 'ok' ? 'var(--jade)' : 'var(--gold)';
     var p = document.createElementNS(NS, 'polyline');
     p.setAttribute('points', series.map(function (v, i) { return x(i) + ',' + y(v); }).join(' '));
     p.setAttribute('fill', 'none'); p.setAttribute('stroke', col); p.setAttribute('stroke-width', '2');
@@ -907,6 +1018,147 @@
     }
   };
 
+  /* What the new screens need, per person. Kept beside PEOPLE so the three
+     read as one table rather than three long objects. */
+  var WORK = {
+    lifter: {
+      focus: { cap: 'Working on', title: 'Pull tonnage', unit: 't per session',
+        series: [8.1, 8.4, 8.2, 8.8, 8.6, 9.0, 8.9, 9.4], base: 8.6,
+        big: 'Pull is up 6% on your last five', why: 'Chosen because you said you are bulking, and it is the lift that has moved.' },
+      card: { cap: 'What you did', when: 'this week',
+        weeks: [26.4, 28.1, 24.0, 27.7, 29.2, 28.4, 30.1, 18.6], now: true,
+        from: '8 weeks ago', to: 'this week',
+        big: '3 of 4 done · 18.6 t so far', why: 'Legs came off today, so the week lands at three unless you move it.' },
+      cardQuiet: { cap: 'What you did', when: 'this week',
+        weeks: [26.4, 28.1, 24.0, 27.7, 29.2, 28.4, 30.1, 27.6], now: true,
+        from: '8 weeks ago', to: 'this week',
+        big: '4 of 4 done · 27.6 t', why: 'Your fifth week over 27 tonnes. Saturday’s Legs was the longest session of the eight.' },
+      list: [
+        { d: 'TUE', n: 'Pull', m: '61 min', x: '9.4 t · up 6% on your last five', open: true },
+        { d: 'MON', n: 'Push', m: '58 min', x: '7.8 t · same bar speed at 5 kg more' },
+        { d: 'SAT', n: 'Legs', m: '64 min', x: '11.2 t · longest of the week' },
+        { d: 'THU', n: 'Pull', m: '57 min', x: '8.9 t' },
+        { d: 'WED', n: 'Push', m: '55 min', x: '7.4 t' }
+      ],
+      weekcap: '4 sessions · 3 h 52 · 28.1 t',
+      sess: {
+        title: 'Pull · Tuesday',
+        hr: [96, 118, 141, 126, 152, 133, 158, 139, 161, 142, 156, 131, 149, 127, 118, 104],
+        base: 132, zones: [['var(--jade-soft)', 22], ['var(--jade)', 46], ['var(--gold)', 26], ['var(--crit)', 6]],
+        zonecap: 'Easy 13 min · Steady 28 · Hard 16 · Very hard 4',
+        rows: [['Deadlift', '4 × 6', '140 kg'], ['Barbell row', '4 × 8', '90 kg'],
+               ['Pulldown', '3 × 10', '70 kg'], ['Face pull', '3 × 15', '25 kg']],
+        head: ['Lift', 'Sets', 'Load'],
+        compare: 'Tonnage 9.4 t — up 6% on your last five pulls, and the first time you have held 140 kg for four sets.',
+        cap: 'The comparison is the point. Apple already told him a workout happened.'
+      }
+    },
+    desk: {
+      focus: { cap: 'Working on', title: 'Weight', unit: 'kg',
+        series: [71.2, 71.4, 71.6, 71.9, 72.2, 72.5, 72.8, 73.1], base: 71.2,
+        big: 'Up 1.9 kg over five weeks', why: 'Chosen because your scale writes it daily and it is the one thing that has moved.' },
+      card: { cap: 'What you did', when: 'this week',
+        weeks: [180, 145, 210, 165, 120, 190, 155, 95], now: true,
+        from: '8 weeks ago', to: 'this week',
+        big: '95 minutes on your feet', why: 'Two thirds of your usual week, and it is Thursday.' },
+      focusQuiet: { cap: 'Working on', title: 'Time on your feet', unit: 'minutes a week',
+        series: [180, 145, 210, 165, 120, 190, 155, 172], base: 168,
+        big: '172 minutes, a normal week',
+        why: 'Chosen because your longest sitting stretch is the thing you have said you want to break, and this is what moves it.' },
+      list: [
+        { d: 'WED', n: 'Walk', m: '38 min', x: '3.1 km · after the 2 pm meeting', open: true },
+        { d: 'TUE', n: 'Gym', m: '44 min', x: 'Full body · first in eleven days' },
+        { d: 'MON', n: 'Walk', m: '21 min', x: '1.7 km' },
+        { d: 'SUN', n: 'Walk', m: '52 min', x: '4.4 km · the longest this month' }
+      ],
+      weekcap: '4 sessions · 2 h 35 · 9.2 km',
+      sess: {
+        title: 'Walk · Wednesday',
+        hr: [88, 96, 104, 112, 109, 118, 121, 115, 124, 119, 112, 108, 101, 96, 92, 88],
+        base: 108, zones: [['var(--jade-soft)', 48], ['var(--jade)', 44], ['var(--gold)', 8], ['var(--crit)', 0]],
+        zonecap: 'Easy 18 min · Steady 17 · Hard 3',
+        rows: [['Distance', '', '3.1 km'], ['Average pace', '', '12:15 /km'],
+               ['Steps', '', '4,120'], ['Time on feet', '', '38 min']],
+        head: ['', '', ''],
+        compare: 'Your longest unbroken stretch off the chair in nine days — the sitting streak that morning was 4 h 10.',
+        cap: 'For someone who does not train, the session that matters is the one that broke the sitting.'
+      }
+    },
+    runner: {
+      focus: { cap: 'Working on', title: 'Resting heart rate', unit: 'bpm',
+        series: [57, 58, 57, 59, 62, 66, 68, 69, 70, 70, 69, 70, 71, 70], base: 58,
+        big: '12 above your normal, nine mornings running', why: 'It replaced pace today. On a day like this, what you were training for is not the most important thing on your screen.' },
+      card: { cap: 'What you did', when: 'this week',
+        weeks: [42, 46, 44, 48, 45, 38, 22, 0], now: true, rest: true,
+        from: '8 weeks ago', to: 'this week',
+        big: 'Nothing this week', why: 'The week was left empty rather than planned around it. That is a decision for whoever you see.' },
+      cardQuiet: { cap: 'What you did', when: 'this week',
+        weeks: [42, 46, 44, 48, 45, 44, 47, 31], now: true,
+        from: '8 weeks ago', to: 'this week',
+        big: '3 runs · 31 km so far', why: 'Sunday’s long run is still to come, which would make it your fourth 45 km week.' },
+      focusQuiet: { cap: 'Working on', title: 'Pace at an easy effort', unit: 'min / km',
+        series: [5.52, 5.49, 5.47, 5.48, 5.44, 5.42, 5.40, 5.38], base: 5.5,
+        big: '5:38 /km at the same heart rate',
+        why: 'Chosen because it is what you are training for: the same effort, eight seconds a kilometre quicker than in July.' },
+      list: [
+        { d: 'SUN', n: 'Long run', m: '1 h 41', x: '18.2 km · 5:34 /km · 8 bpm higher than usual at that pace', open: true },
+        { d: 'FRI', n: 'Easy run', m: '34 min', x: '6.1 km · 5:35 /km' },
+        { d: 'WED', n: 'Intervals', m: '48 min', x: '8 × 400 m · last two abandoned' },
+        { d: 'MON', n: 'Easy run', m: '36 min', x: '6.4 km · 5:38 /km' }
+      ],
+      weekcap: 'Last week · 4 runs · 3 h 39 · 38.9 km',
+      sess: {
+        title: 'Long run · Sunday',
+        hr: [118, 141, 149, 152, 156, 158, 161, 163, 166, 168, 167, 169, 172, 170, 158, 132],
+        base: 149, zones: [['var(--jade-soft)', 6], ['var(--jade)', 24], ['var(--gold)', 52], ['var(--crit)', 18]],
+        zonecap: 'Easy 6 min · Steady 24 · Hard 53 · Very hard 18',
+        rows: [['5 km', '', '5:29 /km'], ['10 km', '', '5:31 /km'],
+               ['15 km', '', '5:36 /km'], ['Last 3.2 km', '', '5:44 /km']],
+        head: ['Split', '', 'Pace'],
+        compare: 'Same pace as a month ago and 8 bpm higher throughout. The drift is in the effort, not the speed — which is why this run is in the case rather than in the training log.',
+        cap: 'The run that looked fine and was not. The number that says so is heart rate at a known pace.'
+      }
+    }
+  };
+
+  /* The drawer, in one fixed order for everyone. Counts differ; the order
+     never does. */
+  var DRAWER = {
+    lifter: [
+      ['Yours', [['Health review', '38 measurements checked last night'],
+                 ['My body', '44 · 183 cm · no scale connected'],
+                 ['Patterns', '2 stable, 1 forming']]],
+      ['What you do', [['Workouts', '1,438 kept · since 2016'],
+                       ['This week', 'Push · Pull · Legs · 3 of 4 done'],
+                       ['Today’s list', '4 items, 1 done']]],
+      ['Underneath', [['All measurements', '38 types · 2,216,860 samples'],
+                      ['The copy on your Mac', 'synced 3 min ago'],
+                      ['The nightly examination', 'next after 02:00']]]
+    ],
+    desk: [
+      ['Yours', [['Health review', '41 measurements checked last night'],
+                 ['My body', '36 · 168 cm · 73.1 kg, weighed today'],
+                 ['Patterns', '3 stable, 1 forming']]],
+      ['What you do', [['Workouts', '212 kept · since 2021'],
+                       ['This week', 'two walks and a gym session'],
+                       ['Today’s list', '5 items, 2 done']]],
+      ['Underneath', [['All measurements', '41 types · 861,402 samples'],
+                      ['The copy on your Mac', 'no Mac paired'],
+                      ['The nightly examination', 'next after 02:00']]]
+    ],
+    runner: [
+      ['Yours', [['Health review', '44 measurements checked last night'],
+                 ['My body', '38 · 176 cm · 68.4 kg'],
+                 ['Patterns', '1 stable, 2 forming']]],
+      ['What you do', [['Workouts', '946 kept · since 2019'],
+                       ['This week', 'left empty'],
+                       ['Today’s list', '2 items, 0 done']]],
+      ['Underneath', [['All measurements', '44 types · 1,504,911 samples'],
+                      ['The copy on your Mac', 'synced 1 min ago'],
+                      ['The nightly examination', 'next after 02:00']]]
+    ]
+  };
+
   var current = 'lifter';
 
   function statusBlock(s, tone) {
@@ -947,37 +1199,162 @@
     return wrap;
   }
 
-  /* The doors to everything the screen is not showing. Always the same set in
-     the same order, because a person who has to hunt for the plan twice stops
-     looking for it. */
-  function doorsBlock(rows) {
-    var wrap = el('div', 'doors');
-    rows.forEach(function (r) {
-      wrap.appendChild(el('button', 'door' + (r[2] ? ' ' + r[2] : ''),
-        '<b>' + esc(r[0]) + '</b><span>' + esc(r[1]) + '</span>'));
+  /* Every dashboard card is the same frame: what it is, the thing itself,
+     and one line saying why it is here. A card with nothing to put in the
+     middle is a card that should not have been composed. */
+  function card(o, body) {
+    var box = el('div', 'card');
+    var cap = el('div', 'cap');
+    cap.appendChild(el('b', null, esc(o.cap)));
+    if (o.when) { cap.appendChild(el('span', null, esc(o.when))); }
+    box.appendChild(cap);
+    if (o.big) { box.appendChild(el('div', 'big', esc(o.big))); }
+    if (body) { box.appendChild(body); }
+    if (o.why) { box.appendChild(el('div', 'why', esc(o.why))); }
+    return box;
+  }
+
+  /* Eight weeks of load. The current week is drawn open because it is not
+     finished — a solid bar for a Thursday would read as a bad week. */
+  function bars(o) {
+    var wrap = el('div', null);
+    var row = el('div', 'bars');
+    var max = Math.max.apply(null, o.weeks) || 1;
+    o.weeks.forEach(function (v, i) {
+      var b = el('i');
+      var last = i === o.weeks.length - 1;
+      b.style.height = Math.max(3, Math.round(v / max * 60)) + 'px';
+      if (last && o.now) { b.className = o.rest ? 'rest' : 'now'; }
+      row.appendChild(b);
+    });
+    wrap.appendChild(row);
+    var cap = el('div', 'barcap');
+    cap.appendChild(el('span', null, esc(o.from)));
+    cap.appendChild(el('span', null, esc(o.to)));
+    wrap.appendChild(cap);
+    return wrap;
+  }
+
+  /* The one measurement this person is working on, drawn against their own
+     normal. On a quiet day this is what the finding's place goes to. */
+  function focusCard(f) {
+    var box = card({ cap: f.cap, when: f.title + ' · ' + f.unit, big: f.big, why: f.why },
+      spark(f.series, f.base, 'ok'));
+    return box;
+  }
+
+  function workCard(w) {
+    return card(w.card, bars(w.card));
+  }
+
+  function sessionRow(r) {
+    var b = el('button', 'sess-row');
+    b.innerHTML = '<span class="d">' + esc(r.d) + '</span><span class="n">' + esc(r.n) + '</span>' +
+      '<span class="m">' + esc(r.m) + '</span><span class="x">' + esc(r.x) + '</span>';
+    return b;
+  }
+
+  /* The drawer. Not a menu of screens: a list of what the app holds, each
+     row saying how much, so choosing is reading rather than guessing. */
+  function drawerBlock(groups) {
+    var wrap = el('div', 'drawer');
+    groups.forEach(function (g) {
+      wrap.appendChild(el('div', 'grp', esc(g[0])));
+      g[1].forEach(function (r) {
+        wrap.appendChild(el('button', 'row',
+          '<b>' + esc(r[0]) + '</b><span>' + esc(r[1]) + '</span><i>›</i>'));
+      });
     });
     return wrap;
   }
 
+  function zonesBlock(z, capText) {
+    var wrap = el('div', null);
+    var bar = el('div', 'zones');
+    z.forEach(function (pair) {
+      if (!pair[1]) { return; }
+      var i = el('i');
+      i.style.background = pair[0];
+      i.style.width = pair[1] + '%';
+      bar.appendChild(i);
+    });
+    wrap.appendChild(bar);
+    wrap.appendChild(el('div', 'barcap', '<span>' + esc(capText) + '</span>'));
+    return wrap;
+  }
+
+  function setsBlock(head, rows) {
+    var g = el('div', 'setgrid');
+    if (head[0] || head[2]) {
+      g.appendChild(el('div', 'h', esc(head[0])));
+      g.appendChild(el('div', 'h', esc(head[1])));
+      g.appendChild(el('div', 'h', esc(head[2])));
+    }
+    rows.forEach(function (r) {
+      g.appendChild(el('div', null, esc(r[0])));
+      g.appendChild(el('div', 'n', esc(r[1])));
+      g.appendChild(el('div', 'n', esc(r[2])));
+    });
+    return g;
+  }
+
   function renderPhones() {
     var p = PEOPLE[current];
+    var w = WORK[current];
+
+    // The composition rule, in four lines. Status always. The finding only
+    // when the night found one. Then what you did, then what you are working
+    // on — and those two are why a quiet day is still a screen worth opening.
     var q = document.getElementById('quiet-body');
     q.innerHTML = '';
     q.appendChild(statusBlock(p.quiet, 'ok'));
-    q.appendChild(actsBlock(p.acts));
-    q.appendChild(doorsBlock(p.doors));
+    q.appendChild(card(w.cardQuiet || w.card, bars(w.cardQuiet || w.card)));
+    q.appendChild(focusCard(w.focusQuiet || w.focus));
     q.appendChild(el('div', 'ask', '<span>Ask Yinyue about any of it…</span><i>●</i>'));
 
     var l = document.getElementById('loud-body');
     l.innerHTML = '';
     l.appendChild(statusBlock(p.loud, p.find.tone === 'crit' ? 'crit' : 'warn'));
     l.appendChild(findBlock(p.find));
-    l.appendChild(actsBlock(p.acts));
-    l.appendChild(doorsBlock(p.doors));
+    l.appendChild(workCard(w));
     l.appendChild(el('div', 'ask', '<span>Ask Yinyue about any of it…</span><i>●</i>'));
 
     document.getElementById('quiet-cap').textContent = p.quietCap;
     document.getElementById('loud-cap').textContent = p.loudCap;
+
+    // The drawer.
+    var d = document.getElementById('drawer-body');
+    d.innerHTML = '';
+    d.appendChild(el('div', 'finder', '<span>Find anything…</span>'));
+    d.appendChild(drawerBlock(DRAWER[current]));
+
+    // Workouts, opened out of it.
+    var k = document.getElementById('work-body');
+    k.innerHTML = '';
+    k.appendChild(card({ cap: 'Your weeks', when: w.weekcap }, bars(w.card)));
+    var list = el('div', null);
+    w.list.forEach(function (r) { list.appendChild(sessionRow(r)); });
+    k.appendChild(list);
+    document.getElementById('work-cap').textContent =
+      'Sessions newest first, under the eight weeks they sit in. Each row carries the one number that matters for its kind — tonnage for a lift, distance and pace for a run.';
+
+    // One session.
+    var sess = w.sess;
+    document.getElementById('sess-title').textContent = sess.title;
+    var sb = document.getElementById('sess-body');
+    sb.innerHTML = '';
+    sb.appendChild(card({ cap: 'Heart rate', when: 'through the session' },
+      spark(sess.hr, sess.base, 'ok')));
+    sb.appendChild(card({ cap: 'Time in each zone' }, zonesBlock(sess.zones, sess.zonecap)));
+    sb.appendChild(card({ cap: 'What was in it' }, setsBlock(sess.head, sess.rows)));
+    sb.appendChild(card({ cap: 'Against your usual', why: sess.compare }));
+    document.getElementById('sess-cap').textContent = sess.cap;
+    // The column beside the phone argues; it does not repeat what the phone
+    // already says.
+    document.getElementById('sess-notes').innerHTML =
+      '<p>Everything on that screen is already in HealthKit: the heart-rate series at about five seconds, the sets a lifting app wrote, the splits from the route. None of it is inferred and none of it is a score.</p>' +
+      '<p class="dim">The last card is the only one doing work. Zones and splits are a record; <b>against your usual</b> is a judgement, and it is made the same way every verdict in this app is made — this session against your own last five of its kind, never against anybody else\u2019s.</p>' +
+      '<p class="dim">A session earns a place on Today only when that last card has something to say. Four sessions in a normal week produce no cards at all; the week that breaks a year-old load produces one.</p>';
   }
 
   function renderRest() {
@@ -1028,17 +1405,23 @@
 
   var SHORT = {
     'Health review': 'Review', 'My body': 'Body', 'This week': 'Week',
-    'Today\u2019s list': 'Today', 'Everything measured': 'Data'
+    'Today\u2019s list': 'Today', 'All measurements': 'Data',
+    'Workouts': 'Workouts', 'Patterns': 'Patterns'
   };
 
   function renderMac(p) {
     document.getElementById('mac-path').textContent = p.path;
     document.getElementById('mac-strip').textContent = p.macStrip;
-    // Same doors as the phone, in the same order, under the short names a
-    // tab strip has room for — every other Linggen app labels tabs this way.
+    // The SAME set as the phone's drawer, in the same order, read from the
+    // same table — a Mac shows them as tabs because it has room for a strip,
+    // a phone puts them one tab down. Two renderings, never two lists.
     var tabs = document.getElementById('mac-tabs');
     tabs.innerHTML = '';
-    p.doors.forEach(function (d, i) {
+    var places = [];
+    DRAWER[current].forEach(function (g) {
+      g[1].forEach(function (r) { if (SHORT[r[0]]) { places.push(r); } });
+    });
+    places.forEach(function (d, i) {
       var name = SHORT[d[0]] || d[0];
       var b = el('button', null, esc(name));
       if (i === 0) { b.setAttribute('aria-current', 'true'); }
@@ -1050,6 +1433,7 @@
         b.disabled = true;
         b.title = 'In the app, not in this prototype';
       }
+      tabs.appendChild(b);
     });
     showMacTab('Review');
 
