@@ -321,6 +321,20 @@ export function refresh(date) {
   return day;
 }
 
+/// A day that has finished, assembled once and then left alone.
+///
+/// Yesterday is the day a morning conversation is actually about — "you were
+/// still committing at 23:41" is about last night — and nothing would ever
+/// have built it: `refresh` is for the day being lived. A finished day cannot
+/// change, so it is written once and read forever after.
+export function settled(date) {
+  return read(date) ?? (() => {
+    const day = build(date);
+    write(day);
+    return day;
+  })();
+}
+
 // Run directly, or import: the tool calls the functions, the shell calls this.
 if (import.meta.url === `file://${process.argv[1]}`) {
   const verb = process.argv[2] || 'build';

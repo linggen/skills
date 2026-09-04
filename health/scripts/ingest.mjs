@@ -26,7 +26,7 @@ import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 
 import { fold, mergeNotes, monthOf, parseLines, planWrite, summarize, wins } from './store.js';
-import { refresh as refreshLife, read as readLife } from './life.mjs';
+import { refresh as refreshLife, settled as settledLife } from './life.mjs';
 
 const HOME = process.env.HOME || '';
 const DIR = process.env.HEALTH_DIR || path.join(HOME, '.linggen', 'skills', 'health');
@@ -398,13 +398,14 @@ const VERBS = {
 
     // The other half of the join, and the only half this Mac produces itself:
     // when the day started, when it stopped, and what was still going on at
-    // 23:40. Today is rebuilt if it has gone stale — the day moves while it is
-    // being lived — and yesterday is read as written, because a night the user
-    // is being asked about is a night that has finished.
+    // 23:40. Today is rebuilt when it has gone stale — the day moves while it
+    // is being lived. Yesterday is assembled once and then left alone: a day
+    // that has finished cannot change, and it is the day a morning
+    // conversation is actually about.
     const yesterday = dayKey(new Date(now.getTime() - 86400000));
     let life = null;
     try {
-      life = { today: refreshLife(day), yesterday: readLife(yesterday) };
+      life = { today: refreshLife(day), yesterday: settledLife(yesterday) };
     } catch {
       life = null; // a work signal that cannot be read is absent, never zero
     }

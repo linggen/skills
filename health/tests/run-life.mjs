@@ -9,7 +9,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { build, read, refresh, say, write, dayOf } from '../scripts/life.mjs';
+import { build, read, refresh, settled, say, write, dayOf } from '../scripts/life.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
@@ -172,6 +172,13 @@ ok('a fresh file is kept and a stale one is built again', () => {
   assert.equal(read(DAY).date, DAY);
 });
 
+ok('a finished day is assembled once and then left alone', () => {
+  stage([]);
+  const first = settled('2026-08-30');
+  const again = settled('2026-08-30');
+  assert.equal(again.written_at, first.written_at, 'a finished day cannot change');
+});
+
 ok('the report carries the working day, and today is refreshed on the way', () => {
   const { health } = stage([]);
   const out = execFileSync(
@@ -182,7 +189,8 @@ ok('the report carries the working day, and today is refreshed on the way', () =
   const r = JSON.parse(out.trim().split('\n').pop());
   assert.ok(r.work, 'report says what this Mac saw of the day');
   assert.equal(r.work.today.date, dayOf(new Date()));
-  assert.equal(r.work.yesterday, null, 'a day never assembled is absent');
+  assert.ok(r.work.yesterday, 'yesterday is assembled on the way — it is the '
+    + 'day a morning conversation is about');
 });
 
 console.log(`\n${pass} checks passed`);
