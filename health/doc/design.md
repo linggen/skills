@@ -620,12 +620,32 @@ with no Mac and no network, and syncs when a Mac is there.
 
 ## Work signals (the join, needs a Mac)
 
-On the Mac, `life.mjs` assembles one file per day from what the Mac already
-has: Apple Shifu's screen time and IDE hours, `git log` across configured
-workspaces bucketed by hour, Linggen sessions, calendar events, DJ listening,
-Pulse launches. The join is `daily/<date>.json ⋈ life/<date>.json`. The last
-seven days ride `sync:` to the phone. Without a Mac the join is absent and no
-card claims it.
+**Built 2026-09-04.** On the Mac, `scripts/life.mjs` assembles one file per
+day, `data/life/<date>.json`, from three things the Mac already has on disk —
+no new permission, no service:
+
+- **git**, across the folders `config.json` names in `workspaces`, scanned two
+  levels down and filtered to the commits under that repo's own `user.email`.
+  Count, first, last, how many after 23:00, and which repositories. A commit is
+  stamped with the minute it was made, which makes it the best record of a late
+  night anything on this machine holds.
+- **Linggen's own sessions** — how many things were asked of it and when the
+  last one was.
+- **the perception activity log** — the coarse shape of when the Mac was in
+  use.
+
+Each day carries a `said` line, composed from the parts rather than by a model,
+so it says the same thing every time. `Report` refreshes today (stale after 20
+minutes — the day moves while it is being lived) and reads yesterday as
+written, and hands both back as `work`. The phone pulls `life/<today>.json` and
+`life/<yesterday>.json` through the register exchange it already runs; it never
+writes them, so the exchange always adopts. Absent is never zero: no
+`workspaces` configured is `commits: null` with the reason, not a day with no
+commits.
+
+Screen time, calendar and IDE hours are not in it. Screen time on macOS is a
+private database behind Full Disk Access and the calendar needs EventKit;
+neither is worth a permission prompt for the value it adds over commits.
 
 ## Weather
 

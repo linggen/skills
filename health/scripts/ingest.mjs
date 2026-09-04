@@ -26,6 +26,7 @@ import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 
 import { fold, mergeNotes, monthOf, parseLines, planWrite, summarize, wins } from './store.js';
+import { refresh as refreshLife, read as readLife } from './life.mjs';
 
 const HOME = process.env.HOME || '';
 const DIR = process.env.HEALTH_DIR || path.join(HOME, '.linggen', 'skills', 'health');
@@ -394,6 +395,19 @@ const VERBS = {
     const review = newestDayed('review');
     if (review) names.push(review);
     const registers = pull(names);
+
+    // The other half of the join, and the only half this Mac produces itself:
+    // when the day started, when it stopped, and what was still going on at
+    // 23:40. Today is rebuilt if it has gone stale — the day moves while it is
+    // being lived — and yesterday is read as written, because a night the user
+    // is being asked about is a night that has finished.
+    const yesterday = dayKey(new Date(now.getTime() - 86400000));
+    let life = null;
+    try {
+      life = { today: refreshLife(day), yesterday: readLife(yesterday) };
+    } catch {
+      life = null; // a work signal that cannot be read is absent, never zero
+    }
     const paired = Object.keys(s.devices || {}).length > 0;
     return {
       ok: true,
@@ -413,6 +427,9 @@ const VERBS = {
       checklist: registers[`checklist/${day}.json`] ?? null,
       brief: registers[`briefs/${day}.json`] ?? null,
       review: (review ? registers[review] : null) ?? null,
+      // Absent where this Mac has nothing to say about the working day —
+      // never an empty day, which would read as a day off.
+      work: life,
     };
   },
 

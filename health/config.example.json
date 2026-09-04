@@ -1,5 +1,5 @@
 {
-  "$comment": "Health config. Copied to config.json on first install. `units` labels every number on the page (metric or imperial); `workspaces` are the folders the work signals read commit times from, so the body-and-work join has something to join to — an empty list means no work signals and no card claiming them. Nothing here changes what the phone reads: HealthKit lives on the iPhone, and this Mac only keeps what the phone sends.",
+  "$comment": "Health config. Copied to config.json on first install. `units` labels every number on the page (metric or imperial); `workspaces` are the folders the work signals read commit times from \u2014 each is scanned two levels down, so both ~/code/thing and ~/code/org/thing are found, and only commits under your own git email are counted. An empty list means no work signals and no card claiming them. Nothing here changes what the phone reads: HealthKit lives on the iPhone, and this Mac only keeps what the phone sends.",
   "units": "metric",
   "workspaces": []
 }
