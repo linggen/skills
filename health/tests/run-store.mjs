@@ -265,6 +265,25 @@ ok('the cursor a phone reports comes back to it', () => {
   assert.equal(run(tmp, 'pull', { device: 'phone-2', names: [] }, { gzipped: false }).cursor, null);
 });
 
+ok('the report hands back the newest examination held, not only today\'s', () => {
+  const id = run(tmp, 'ledger').mirror_id;
+  // Nothing yet: an absence the agent is told to read as "no pass", never as
+  // "nothing was wrong".
+  assert.equal(run(tmp, 'report').review, null);
+  run(tmp, 'push', {
+    mirror_id: id,
+    registers: {
+      'review/2026-09-02.json': { written_at: '2026-09-02T02:00:00Z', date: '2026-09-02', see: 0 },
+      'review/2026-09-03.json': { written_at: '2026-09-03T02:00:00Z', date: '2026-09-03', see: 1 },
+    },
+  });
+  const r = run(tmp, 'report');
+  // A phone that has not synced today must not turn last night's verdict into
+  // a silence — the file carries its own date and the reader checks it.
+  assert.equal(r.review.date, '2026-09-03');
+  assert.notEqual(r.review.date, r.today);
+});
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 console.log(`\n${pass} checks passed`);

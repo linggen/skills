@@ -58,8 +58,12 @@ body {
   font-family: var(--ui);
   font-size: 15px;
   line-height: 1.5;
+  /* The header takes what it needs and the shell takes the rest — measured,
+     not guessed, so nothing scrolls the tab strip off the top. */
   height: 100vh;
   overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 h1,
@@ -135,7 +139,19 @@ button {
   /* 480 is the house width: Pulse and DJ both use it, and the chat is the
      app rather than a sidebar beside it. */
   grid-template-columns: minmax(0, 1fr) 480px;
-  height: calc(100vh - 53px);
+  min-height: 0;
+}
+/* Each column keeps its own scroller. Without this a long conversation grows
+   the grid past the viewport and takes the tab strip off the top of the page
+   with it. */
+.shell > * {
+  min-height: 0;
+  overflow: hidden;
+}
+.left {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
 }
 @media (max-width: 900px) {
   .shell {
@@ -152,6 +168,35 @@ button {
   display: grid;
   gap: 18px;
   align-content: start;
+}
+
+/* ── the doors ─────────────────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  padding: 0 22px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.tabs:empty {
+  display: none;
+}
+.tabs button {
+  padding: 9px 12px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 13.5px;
+  color: var(--dim);
+  cursor: pointer;
+}
+.tabs button[aria-current="true"] {
+  color: var(--jade);
+  border-bottom-color: var(--jade);
+  font-weight: 500;
 }
 
 #chat-panel {
@@ -358,4 +403,192 @@ button {
 .err {
   color: var(--crit);
   font-size: 13px;
+}
+
+/* ── the examination ───────────────────────────────────────────────────── */
+
+.card.status {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.card.status .v {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.card.status.warm {
+  border-color: var(--gold);
+}
+
+.dial {
+  flex: none;
+}
+.dial .track {
+  fill: none;
+  stroke: var(--raised);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.dial .fill {
+  fill: none;
+  stroke: var(--jade);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+.dial .fill.warm {
+  stroke: var(--gold);
+}
+/* Where "at your normal" sits, so the arc has a meaning to be read against. */
+.dial .mark {
+  stroke: var(--dim);
+  stroke-width: 1.5;
+}
+.dial .n {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 600;
+  fill: var(--text);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 720px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.tile {
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 10px 12px;
+  display: grid;
+  gap: 1px;
+  align-content: start;
+  background: var(--ground);
+}
+.tile b {
+  font-size: 22px;
+  line-height: 1.1;
+  font-weight: 600;
+}
+.tile .k {
+  font-size: 12.5px;
+}
+.tile .s {
+  font-size: 11.5px;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tile.warm {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+}
+.tile.crit {
+  border-color: var(--crit);
+}
+
+.card.finding {
+  border-color: var(--gold);
+}
+.card.finding.alarm {
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+.eyebrow.warm {
+  color: var(--gold);
+}
+
+.spark {
+  width: 100%;
+  height: 56px;
+  overflow: visible;
+}
+.spark .line {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+/* The person's own normal, drawn through it — the line the verdict is read
+   against, never a population average. */
+.spark .base {
+  stroke: var(--dim);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+.spark .dot,
+.spark .now {
+  stroke: var(--gold);
+  stroke-width: 5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.pn {
+  font-size: 12px;
+  color: var(--dim);
+  font-family: var(--mono);
+}
+
+/* ── everything examined ───────────────────────────────────────────────── */
+
+.tablewrap {
+  overflow-x: auto;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+table.mini {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.mini th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--dim);
+  font-weight: 500;
+  padding: 0 10px 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+table.mini td {
+  padding: 7px 10px 7px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+table.mini tr:last-child td {
+  border-bottom: 0;
+}
+table.mini td.n {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+table.mini td.ok {
+  color: var(--dim);
+}
+table.mini td.see {
+  color: var(--gold);
+  font-weight: 500;
+}
+table.mini td.doc {
+  color: var(--crit);
+  font-weight: 600;
+}
+table.mini td.thin {
+  color: var(--dim);
+  font-style: italic;
 }

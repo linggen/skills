@@ -10,14 +10,19 @@
   <header class="top">
     <h1>Linggen Health</h1>
     <button id="refresh" type="button">Refresh</button>
-    <!-- What this Mac actually holds. Never a score. -->
-    <span class="mirror" id="mirror">reading…</span>
+    <!-- What the pass found and what this Mac holds. Counts, never a score. -->
+    <span class="mirror" id="strip">reading…</span>
   </header>
 
   <div class="shell">
     <!-- DYNAMIC: everything below is rendered from the mirror on disk. The
          agent writes none of it — the phone owns the passes. -->
-    <main class="main" id="main"></main>
+    <div class="left">
+      <!-- The phone's doors, under the short names a tab strip has room for.
+           A tab appears only when the mirror holds what is behind it. -->
+      <nav class="tabs" id="tabs" aria-label="Health sections"></nav>
+      <main class="main" id="main"></main>
+    </div>
     <section id="chat-panel"></section>
   </div>
 

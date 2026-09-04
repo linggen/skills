@@ -238,6 +238,23 @@ function pull(names) {
   return out;
 }
 
+/// The newest day-stamped register in [dir], as a name `pull` will take.
+///
+/// A Mac's advantage over a phone is reach: it keeps what the phone has
+/// already moved on from. Asking only for today's file would hide last
+/// night's examination all of today, and answer "not examined yet" with a
+/// verdict sitting on the disk beside it.
+function newestDayed(dir) {
+  let names;
+  try {
+    names = fs.readdirSync(path.join(DATA, dir));
+  } catch {
+    return null;
+  }
+  const days = names.filter((n) => /^\d{4}-\d{2}-\d{2}\.json$/.test(n)).sort();
+  return days.length ? `${dir}/${days[days.length - 1]}` : null;
+}
+
 /// Write the registers the phone's copy won, and say which were refused.
 ///
 /// A register is only replaced when the incoming `written_at` is newer than
@@ -369,11 +386,13 @@ const VERBS = {
       `plans/${week}.json`,
       `checklist/${day}.json`,
       `briefs/${day}.json`,
-      // The night's examination: a verdict per type against that type's own
-      // baseline. Null until the phone has run one — which is why the agent is
-      // told to read a null as "no pass yet", never as "nothing was wrong".
-      `review/${day}.json`,
     ];
+    // The night's examination: a verdict per type against that type's own
+    // baseline. The NEWEST one this Mac holds, not today's — it carries its own
+    // date and the reader is told to check it. Null until the phone has run
+    // one, which is read as "no pass yet", never as "nothing was wrong".
+    const review = newestDayed('review');
+    if (review) names.push(review);
     const registers = pull(names);
     const paired = Object.keys(s.devices || {}).length > 0;
     return {
@@ -393,7 +412,7 @@ const VERBS = {
       plan: registers[`plans/${week}.json`] ?? null,
       checklist: registers[`checklist/${day}.json`] ?? null,
       brief: registers[`briefs/${day}.json`] ?? null,
-      review: registers[`review/${day}.json`] ?? null,
+      review: (review ? registers[review] : null) ?? null,
     };
   },
 

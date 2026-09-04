@@ -7,7 +7,7 @@ guide: |
   Mac (mirror, memory, work signals), sync between them, the profile /
   composition / plan / checklist schemas, the tool catalog, and the rules
   that keep it honest. Companion to product-spec.md. Brief; no code.
-status: building — the quiet screen and the examination are BUILT on the phone (2026-09-03): health_review.dart, health_tell.dart, the quiet-screen renderer, the Health review screen. Not yet run against real HealthKit data on a device. The Mac mirror and page landed 2026-09-03. See linggen-mobile/doc/health.md for what runs on the phone.
+status: building — the quiet screen and the examination are BUILT on the phone (2026-09-03) and proven against 2.2M real samples on a device: health_review.dart, health_tell.dart, the quiet-screen renderer, the Health review screen. The Mac mirror and page landed 2026-09-03; the page was reshaped to the quiet screen 2026-09-04, and a verdict now carries its own fortnight so both surfaces draw the same line. See linggen-mobile/doc/health.md for what runs on the phone.
 ---
 
 # Design: Linggen Health
@@ -300,13 +300,22 @@ was dropped, why) and `thin` alongside the other counts.
   "verdicts": [
     { "type": "hrv", "verdict": "see", "now": 27, "normal": 34, "unit": "ms", "z": -2.1,
       "held_days": 3, "evidence": ["lowest of 14 days", "follows Monday's Legs"],
+      "series": [33, null, 34, 32, 31, 30, 29, 27], "series_to": "2026-09-03",
       "changed": ["plan: Legs → rest", "plan: Push → Friday"] },
     { "type": "resting_hr", "verdict": "normal", "now": 57, "normal": 58 },
     { "type": "sleep", "verdict": "thin", "why": "32 nights held" } ] }
 ```
 
 `verdict` is one of `normal` (never shown, counted only), `see`, `doc`, `thin`
-(not enough data — an absence, never a zero). The **score exists only above two
+(not enough data — an absence, never a zero). A judged verdict carries its own
+`series` — the fortnight ending on `series_to`, a null for every day with no
+reading — because the examination is the only place that knows how a day of
+this type becomes a number (a sum for steps, a mean for heart rate, the newest
+for weight, the judge's scale applied). Anything redrawing that line from the
+raw rows would be a second copy of the judging table, free to drift, which is
+why both screens and the Mac page read the series rather than folding again.
+`series_to` is usually today and is yesterday for a measurement that is a
+day's total, because a day still being lived is not a total. The **score exists only above two
 usable metrics**, and it is today against this person's own normal, never a
 health score: `score_from` and `score_formula` go on screen beside it. The
 **index** is ranked per user on coverage × relevance × movement and records why
@@ -607,8 +616,7 @@ temperature that is already a delta around zero). One MAD is worth
 
 Still to build: `BGProcessingTask` so the pass runs without the app being
 opened, the `workouts` and `patterns` screens behind their doors, weather for
-outdoor plans (needs location), nudges through Yinyue's herald, and the review
-riding the sync to the Mac page.
+outdoor plans (needs location), and nudges through Yinyue's herald.
 
 Native: `ios/Runner/HealthBridge.swift` — authorization for the full type list,
 characteristics, anchored queries, background delivery, workout expansion.
@@ -616,18 +624,30 @@ Entitlements: `healthkit`, `healthkit.background-delivery`.
 
 ## Mac page
 
-Built 2026-09-03: `scripts/index.html` → `health.html` + `health.js` +
-`health.css`, launcher `web`, like DJ.
+Built 2026-09-03, reshaped to the quiet screen 2026-09-04:
+`scripts/index.html` → `health.html` + `health.js` + `health.css`, launcher
+`web`, like DJ.
 
 **The first view is the same promise as the phone's** and leads with the same
-thing: the strip of what the pass found, the four counts (types examined · at
-your normal · worth seeing · worth a doctor), the chart of whatever moved with
-the person's own normal drawn through it, and the table under it. What a Mac
-adds is not more on that first screen — it is that everything is reachable one
-tab behind it. The tabs are the phone's doors under the short names a tab strip
-has room for, and the **Data** tab holds every measurement examined last night
-including the ones that had nothing to say, so *nothing needs you* can be
-checked instead of believed. A phone never shows that list.
+thing: the strip of what the pass found, the status line with the number and
+what it was made of, the four counts (types examined · at your normal · worth
+seeing · worth a doctor), whatever earned a place with its own fortnight and
+the person's normal drawn through it, and the table of what the number was
+made of. Nothing moved is a first view too — then the page shows the index
+measurement and says why that one was picked. What a Mac adds is not more on
+that first screen: it is that everything is reachable one tab behind it. The
+tabs are the phone's doors under the short names a tab strip has room for, and
+a tab appears only when the mirror holds what is behind it. The **Data** tab
+holds every measurement examined, including the ones that had nothing to say
+and with each thin row's own reason, so *nothing needs you* can be checked
+instead of believed. A phone never shows that list.
+
+`report` hands back the **newest** examination the mirror holds rather than
+today's, because a Mac's advantage over a phone is reach: asking only for
+today's file would answer "not examined yet" with last night's verdict sitting
+on the disk beside it. The file carries its own date and the page checks it —
+until today's pass has reached the Mac, the first view says so plainly and
+names the day it does have, which is what the phone screen says too.
 
 The **chat is on the right** at the width every Linggen app uses, and Ling
 opens it rather than the user: the pass finished at 02:14, this is what it

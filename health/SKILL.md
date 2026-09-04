@@ -54,9 +54,13 @@ tools:
       `brief` is this morning's sentence. `review` is the night's
       examination — how many types were walked, how many came back at the
       user's own normal, and which moved and by how much against that
-      measurement's own baseline. A type marked *at your normal* is a type you
-      do not mention. A null `review` means the phone has not run a pass yet,
-      NEVER that nothing was wrong.
+      measurement's own baseline. It is the NEWEST examination this Mac holds
+      and carries its own `date`: check it against `today` before you speak,
+      and say which day you are reading when they differ. Each verdict may
+      carry a `series` — that measurement's own fortnight, ending on
+      `series_to`, with a null for every day with no reading. A type marked
+      *at your normal* is a type you do not mention. A null `review` means the
+      phone has not run a pass yet, NEVER that nothing was wrong.
 
       **A null is an absence, never a zero.** `phone_paired: false` means no
       iPhone has ever synced here, so there is no body data at all and you say
