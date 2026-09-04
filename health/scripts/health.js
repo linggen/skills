@@ -406,7 +406,9 @@ function findingCard(f, r) {
       'span',
       'eyebrow warm',
       alarm
-        ? `Worth a doctor · ${f.held_days} days`
+        ? f.held_days
+          ? `Worth a doctor · ${f.held_days} days`
+          : 'Worth a doctor · today'
         : `Worth seeing · ${f.label}`,
     ),
   );
@@ -414,14 +416,17 @@ function findingCard(f, r) {
     typeof f.now === 'number' && typeof f.normal === 'number'
       ? Math.abs(f.now - f.normal)
       : null;
+  // A flag has no normal and no gap — the examination wrote the sentence
+  // because it is the only thing that knows how to say what happened.
   c.append(
     el(
       'p',
       'big',
-      gap == null
-        ? `${f.label} is ${value(f.now, f.unit)}`
-        : `${f.label} is ${value(f.now, f.unit)}, ${value(gap, f.unit)} ` +
-          `${f.now < f.normal ? 'below' : 'above'} your normal`,
+      f.headline ||
+        (gap == null
+          ? `${f.label} is ${value(f.now, f.unit)}`
+          : `${f.label} is ${value(f.now, f.unit)}, ${value(gap, f.unit)} ` +
+            `${f.now < f.normal ? 'below' : 'above'} your normal`),
     ),
   );
   const chart = spark(f);
@@ -447,6 +452,9 @@ function findingCard(f, r) {
 /// The finding in the user's own words, with the numbers the card is showing
 /// so the answer is about this measurement and not about the idea of it.
 function findingQuestion(f, gap) {
+  if (f.headline) {
+    return `${f.headline}. Explain what that means for me, and what would help.`;
+  }
   const where =
     gap == null
       ? `${f.label} is ${value(f.now, f.unit)}`
