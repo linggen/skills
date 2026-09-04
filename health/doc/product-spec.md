@@ -199,6 +199,7 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 | E8 | Export everything as CSV and Markdown; it is the user's data | v1 |
 
 | E9 | **What you ate, roughly.** A sentence or a photo becomes an estimate: shown as a range, never a measurement, never given a verdict, and corrected in one tap — the correction is the user's word and outranks both. Depth is captured with the photo, because volume measured beats volume guessed and it cannot be recovered later. The agent never interrogates the user about a meal | v1 |
+| E10 | **A sentence always works; a photo needs a model that can see.** The cloud model Linggen supplies is text-only, so a photo goes to the user's own ChatGPT over OAuth — their account, their data, and Linggen's proxy stays out of the picture. With no vision-capable model connected there is no camera button at all, and the reason says so | v1 |
 
 ### F. Understand — better than Apple, AI native
 
@@ -480,6 +481,9 @@ Pairing an iPhone fills it in within the first minute.
 - Nudge outside the herald, or nudge while the user is enjoying something.
 - Show an estimate as though it were measured, give one a verdict, or print a
   guessed calorie count to the digit.
+- Offer a button the connected models cannot honour. A camera that needs a
+  model which cannot see is not shown at all, and says why.
+- Carry a photo of your food through Linggen's own servers.
 - Interrogate the user about a meal. One estimate, one correction, no
   questionnaire — follow-up questions test as friction that does not improve
   the number.

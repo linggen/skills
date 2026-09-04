@@ -494,22 +494,44 @@ An estimate is marked as one everywhere:
   is a lie with a decimal point. Once the user adjusts it, it is their number
   and it is shown as one.
 
-**Open — the privacy cost is the real decision, and it is Liang's.** The app
-promises that only the sentences you and the agent exchange reach a model. A
-dinner photo is not a sentence. Two paths:
+**Settled 2026-09-04 (Liang): a photo goes to the user's own ChatGPT.** The
+cloud model Linggen supplies is `deepseek-v4-flash`, which is text-only and
+returns 400 on an image. Rather than put a photo through Linggen's proxy, the
+user connects their ChatGPT account and the image goes to their own GPT-5.6
+over the OAuth path the engine already has. Their account, their data, and the
+promise — *only the sentences you and the agent exchange reach a model* — is
+kept by us because we are not the ones carrying the picture.
 
-1. **Mac-local vision** (recommended). Photo and depth ride the sync that
-   already exists and the Mac runs a vision model through the MLX runtime
-   already shipping for TTS; the estimate comes back as a register. The promise
-   stays literally true. Costs several gigabytes of model, and there is no
-   estimate while the Mac is away — acceptable, because dinner is not urgent.
-2. **Cloud vision**, behind an explicit per-photo consent, with the promise
-   reworded on the site and in the App Store listing. Cheaper to build, and it
-   changes something already said in public.
+**Considered and declined: `deepseek-v4-flash-vision-exp`.** DeepSeek shipped
+it on 2026-08-21 at V4-Flash pricing with each image capped at 384 tokens, and
+it claims text parity with V4-Flash. Pointing the cloud default at it would have
+given every user the feature for no extra money. It was declined because the
+cloud default carries CFO, Pulse, sys-doctor, Yinyue and every phone user, and
+`-exp` is an experimental endpoint: renamed, throttled or withdrawn without the
+deprecation courtesy a GA model gets — and a model id that stops resolving fails
+**silently** into a fallback here, which is how "Yinyue has no voice" happened
+twice in 2026-06 and 2026-07. Images are also `user`-message-only on that API,
+so a replayed or compacted transcript carrying one would 400. Same money, far
+more blast radius. If it goes GA it is worth revisiting as a *second* cloud
+model chosen only when a request carries an image — never as the default.
 
-Depth narrows the gap between them: if volume is measured on the phone, what a
-model is asked is "what is this and how dense is it", which is a smaller
-question than "how much of it is there".
+**The capability rule, which is what actually keeps this honest.** A photo goes
+to the first connected model that can see; `has_vision()` already exists and is
+the right seam. And the door is closed before it is opened: with no
+vision-capable model connected there is **no camera button at all**, and the
+reason is on the screen — *a photo needs a model that can see; connect your
+ChatGPT account, or just tell me what you ate.* Never offer a capability the
+connected models cannot deliver, and never let a photo discover it at send time.
+Two engine facts stand in the way of that today and are fixed alongside:
+`ProviderClient::Proxy` reports no vision unconditionally, and an
+OpenAI-compatible model with no `tags` is *assumed* to have vision, so the
+engine currently believes `deepseek-v4-pro` can see.
+
+**What the model can and cannot do with the picture.** Images are resized to
+about 800×800 and capped at 384 tokens whichever way they arrive, so a vision
+model can tell chicken from fish and see there is rice. It cannot read fine
+print on a packet, and it cannot recover how deep a bowl is. That is the
+division of labour: the depth frame measures, the model identifies.
 
 Logging by sentence needs neither: `health_log` ships today, and a text
 estimate is about as accurate as a photo one without depth.
@@ -889,12 +911,9 @@ Readings retain, actions queue. Registers are readings: the newest
    nightly examination free too?
 5. Should durable profile facts go to ling-mem automatically (weekly pass), or
    only when the user says "remember that"?
-6. **A photo of dinner, and the promise.** Estimating what you ate needs a
-   vision model. Mac-local through the MLX runtime keeps *only the sentences
-   you and the agent exchange reach a model* literally true and costs several
-   gigabytes plus "no estimate while the Mac is away"; cloud vision is cheaper
-   and rewords something already published. Recommended: Mac-local. See
-   [What you eat](#what-you-eat--an-estimate-is-never-a-measurement).
+*(6, the photo and the promise, was settled on 2026-09-04 — the image goes to
+the user's own ChatGPT over OAuth. See
+[What you eat](#what-you-eat--an-estimate-is-never-a-measurement).)*
 
 ## Related docs
 
