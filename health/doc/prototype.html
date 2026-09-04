@@ -476,11 +476,12 @@
     </div>
     <div class="tablewrap">
       <table class="idx">
-        <thead><tr><th>Candidate</th><th>Data held</th><th>Relevant here</th><th>Moved</th><th>Verdict</th></tr></thead>
+        <thead><tr><th>Candidate</th><th>Drawn as</th><th>Data held</th><th>Relevant here</th><th>Moved</th><th>Verdict</th></tr></thead>
         <tbody id="idx-rows"></tbody>
       </table>
     </div>
     <p class="dim" style="font-size:13.5px; max-width:68ch" id="idx-note"></p>
+    <p class="dim" style="font-size:13.5px; max-width:68ch">Note the row dropped for its <em>form</em> rather than its data. Heart rate has 666,110 readings and plenty of them are intraday, and it is still not a day shape: that form needs a total that accumulates through the day, and a heart rate is not one. A candidate whose form cannot be drawn is dropped with the reason, never quietly redrawn as something else.</p>
   </section>
 
   <section id="eat">
@@ -501,13 +502,19 @@
         <div class="day-cap"><b>One meal, logged</b><span>A range, the things it saw, and one tap to say it was bigger. No questions.</span></div>
       </div>
       <div class="day-col">
-        <div class="note-col">
-          <p>Against a 3,368 kcal target derived from a weigh-in, an estimate inside 20% is the difference between a number you can steer by and no number at all. Week over week the errors partly cancel, so the trend is worth more than any single plate.</p>
-          <p class="dim">The cost is a promise. The app says only the sentences you and the agent exchange reach a model, and a dinner photo is not a sentence. So the photo goes to <b>your own ChatGPT</b>, over the account you connect — your data, your relationship, and Linggen's servers stay out of the picture. The cloud model we supply is text-only and stays that way; a sentence always works, and a sentence is about as accurate as a photo without depth.</p>
-          <p class="dim">Which is why <b>with no model that can see, there is no camera button at all</b> — not a button that fails at send time. A capability the connected models cannot honour is not offered, and the screen says which one is missing and what to do instead.</p>
-          <p class="dim">Depth is the division of labour. An image arrives at the model resized to about 800×800: enough to tell chicken from fish and see there is rice, nowhere near enough to know how deep the bowl is. The depth frame measures; the model identifies.</p>
-        </div>
+        <div class="phone"><div class="screen tabbed">
+          <div class="sbar"><span>19:26</span><span>●●● ᯤ 54%</span></div>
+          <div class="abar"><span class="g">‹</span><span class="t">Dinner</span><span class="g">⋯</span></div>
+          <div class="sbody" id="nocam-body"></div>
+          <nav class="tabbar"><button><b>◈</b>Highlights</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+        </div></div>
+        <div class="day-cap"><b>With no model that can see</b><span>Not a camera that fails when you press it. No camera, the reason, and the two ways on.</span></div>
       </div>
+    </div>
+    <div class="note-col" style="max-width:none">
+      <p>Against a 3,368 kcal target derived from a weigh-in, an estimate inside 20% is the difference between a number you can steer by and no number at all. Week over week the errors partly cancel, so the trend is worth more than any single plate.</p>
+      <p class="dim">The cost is a promise. The app says only the sentences you and the agent exchange reach a model, and a dinner photo is not a sentence. So the photo goes to <b>your own ChatGPT</b>, over the account you connect — your data, your relationship, and Linggen's servers stay out of the picture. The cloud model we supply is text-only and stays that way; a sentence always works, and a sentence is about as accurate as a photo without depth.</p>
+      <p class="dim">Depth is the division of labour. An image arrives at the model resized to about 800×800: enough to tell chicken from fish and see there is rice, nowhere near enough to know how deep the bowl is. The depth frame measures; the model identifies.</p>
     </div>
   </section>
 
@@ -822,11 +829,13 @@
         doc: 'nothing today'
       },
       idx: [
-        { k: 'HRV', held: '5,266 rows, daily since 2023', rel: 'decides whether a hard session goes ahead', mv: 'down 7 on the fortnight', v: 'chosen', pick: true },
-        { k: 'Resting heart rate', held: '1,057 rows', rel: 'the slower companion to HRV', mv: 'flat', v: 'second' },
-        { k: 'Blood oxygen', held: '2,676 rows', rel: 'a red flag only when it stays low', mv: 'flat', v: 'watched, not shown' },
-        { k: 'Sleep', held: '32 nights', rel: 'would matter, but he does not wear the Watch at night', mv: 'too few nights', v: 'not enough data', out: true },
-        { k: 'Weight, BMI, body fat', held: '1 weigh-in, from 2022', rel: 'he is bulking, so this is the goal metric', mv: 'unknown', v: 'no scale connected', out: true }
+        { k: 'HRV', f: 'A · against your normal', held: '5,266 rows, daily since 2023', rel: 'decides whether a hard session goes ahead', mv: 'down 7 on the fortnight', v: 'chosen', pick: true },
+        { k: 'Resting heart rate', f: 'A · against your normal', held: '1,057 rows', rel: 'the slower companion to HRV', mv: 'flat', v: 'second' },
+        { k: 'Pull tonnage', f: 'B · week bars', held: '1,438 sessions', rel: 'the lift he is training, and it has moved', mv: 'up 6% on five', v: 'shown as the activity chart' },
+        { k: 'Blood oxygen', f: 'A · against your normal', held: '2,676 rows', rel: 'a red flag only when it stays low', mv: 'flat', v: 'watched, not shown' },
+        { k: 'Heart rate', f: 'C · day shape', held: '666,110 rows', rel: 'plenty of it, and it is intraday', mv: '—', v: 'cannot be drawn that way', out: true },
+        { k: 'Sleep', f: 'A · against your normal', held: '32 nights', rel: 'would matter, but he does not wear the Watch at night', mv: 'too few nights', v: 'not enough data', out: true },
+        { k: 'Weight, BMI, body fat', f: 'A · against your normal', held: '1 weigh-in, from 2022', rel: 'he is bulking, so this is the goal metric', mv: 'unknown', v: 'no scale connected', out: true }
       ],
       note: 'BMI and body fat are absent, not zero. The app says so and offers the one thing that would fix it: connect a scale. Even with one, BMI would not be chosen here — it reads a muscular lifter as overweight.',
       talk: [
@@ -937,11 +946,11 @@
         doc: 'nothing today'
       },
       idx: [
-        { k: 'Weight trend', held: 'daily since March', rel: 'the goal she stated, and the scale reports it', mv: 'up 1.9 kg in five weeks', v: 'chosen', pick: true },
-        { k: 'Body fat', held: 'daily since March', rel: 'says whether the weight is fat or muscle', mv: 'up 1.2 points', v: 'shown with it' },
-        { k: 'BMI', held: 'derived daily', rel: 'no more than the weight already says for her', mv: 'up 0.7', v: 'redundant here', out: true },
-        { k: 'Sleep', held: '284 nights', rel: 'the thing she asks about most', mv: 'flat', v: 'second' },
-        { k: 'Steps', held: 'daily since 2021', rel: 'the simplest daily number', mv: 'flat', v: 'not shown', out: true }
+        { k: 'Weight trend', f: 'A · against your normal', held: 'daily since March', rel: 'the goal she stated, and the scale reports it', mv: 'up 1.9 kg in five weeks', v: 'chosen', pick: true },
+        { k: 'Body fat', f: 'A · against your normal', held: 'daily since March', rel: 'says whether the weight is fat or muscle', mv: 'up 1.2 points', v: 'shown with it' },
+        { k: 'BMI', f: 'A · against your normal', held: 'derived daily', rel: 'no more than the weight already says for her', mv: 'up 0.7', v: 'redundant here', out: true },
+        { k: 'Sleep', f: 'A · against your normal', held: '284 nights', rel: 'the thing she asks about most', mv: 'flat', v: 'second' },
+        { k: 'Steps', f: 'C · day shape', held: 'daily since 2021', rel: 'the simplest daily number', mv: 'flat', v: 'not shown', out: true }
       ],
       note: 'She has the scale, so BMI is available and still not chosen: for her it repeats what the weight and the body fat already said. An index is dropped for being redundant as readily as for being absent.',
       talk: [
@@ -1054,11 +1063,11 @@
         doc: 'resting HR 63 bpm · usual 51 · nine days'
       },
       idx: [
-        { k: 'Resting heart rate', held: '1,840 rows, daily', rel: 'the clearest signal that something systemic changed', mv: 'up 12 for nine days', v: 'chosen', pick: true },
-        { k: 'HRV', held: '3,100 rows', rel: 'moves with it and confirms it', mv: 'down 9', v: 'shown with it' },
-        { k: 'Blood oxygen', held: '2,410 rows', rel: 'a red flag if it stayed low', mv: 'flat at 97%', v: 'checked, clear' },
-        { k: 'Sleep', held: '390 nights', rel: 'a plausible cause, and it is short', mv: 'down 1h03', v: 'second' },
-        { k: 'Pace per km', held: 'daily since 2022', rel: 'his goal metric in an ordinary month', mv: 'slower', v: 'set aside today', out: true }
+        { k: 'Resting heart rate', f: 'A · against your normal', held: '1,840 rows, daily', rel: 'the clearest signal that something systemic changed', mv: 'up 12 for nine days', v: 'chosen', pick: true },
+        { k: 'HRV', f: 'A · against your normal', held: '3,100 rows', rel: 'moves with it and confirms it', mv: 'down 9', v: 'shown with it' },
+        { k: 'Blood oxygen', f: 'A · against your normal', held: '2,410 rows', rel: 'a red flag if it stayed low', mv: 'flat at 97%', v: 'checked, clear' },
+        { k: 'Sleep', f: 'A · against your normal', held: '390 nights', rel: 'a plausible cause, and it is short', mv: 'down 1h03', v: 'second' },
+        { k: 'Pace per km', f: 'A · against your normal', held: 'daily since 2022', rel: 'his goal metric in an ordinary month', mv: 'slower', v: 'set aside today', out: true }
       ],
       note: 'The goal metric loses its place. On a day with a warning, what he was training for is not the most important thing on his screen, and the app is not going to coach him through it.',
       talk: [
@@ -1532,6 +1541,35 @@
     b.appendChild(day);
   }
 
+  /* The same screen with nothing that can read a picture. The rule is that
+     the door is closed before it is opened: a capability the connected models
+     cannot honour is not offered at all, and the screen says which one is
+     missing rather than letting a photo find out at send time. */
+  function renderNoCam() {
+    var b = document.getElementById('nocam-body');
+    b.innerHTML = '';
+    var c = el('div', 'card');
+    c.appendChild(el('div', 'cap', '<b>Tell me what you ate</b><span>no camera</span>'));
+    c.appendChild(el('div', 'why', 'Chicken, rice, broccoli, big bowl…'));
+    b.appendChild(c);
+
+    var why = el('div', 'card est');
+    why.appendChild(el('div', 'cap', '<b>Why no photo</b>'));
+    why.appendChild(el('div', 'why', 'A photo needs a model that can read one, and none of yours can. The model Linggen supplies is text-only.'));
+    var fix = el('div', 'fix');
+    ['Connect ChatGPT', 'Not now'].forEach(function (t, i) {
+      fix.appendChild(el('span', i === 0 ? 'on' : null, esc(t)));
+    });
+    why.appendChild(fix);
+    b.appendChild(why);
+
+    var day = el('div', 'card');
+    day.appendChild(el('div', 'cap', '<b>Today</b><span>estimated in · measured out</span>'));
+    day.appendChild(el('div', 'big', '2,850 in · 3,058 out'));
+    day.appendChild(el('div', 'why', 'Typed, not photographed, and no worse for it — a sentence and a picture are guessing the same portion.'));
+    b.appendChild(day);
+  }
+
   function renderRest() {
     var p = PEOPLE[current];
     document.getElementById('v-clear').textContent = p.verdicts.clear;
@@ -1542,6 +1580,7 @@
     rows.innerHTML = p.idx.map(function (r) {
       return '<tr class="' + (r.pick ? 'pick' : r.out ? 'out' : '') + '">' +
         '<td><b>' + esc(r.k) + '</b></td>' +
+        '<td class="n">' + esc(r.f || '—') + '</td>' +
         '<td class="n">' + esc(r.held) + '</td>' +
         '<td>' + esc(r.rel) + '</td>' +
         '<td class="n">' + esc(r.mv) + '</td>' +
@@ -1562,6 +1601,7 @@
 
     renderForms();
     renderEat();
+    renderNoCam();
     renderMac(p);
   }
 
