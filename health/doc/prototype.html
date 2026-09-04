@@ -55,6 +55,11 @@
   .hero .lede { color: var(--dim); max-width: 62ch; }
   .stamp { display: inline-flex; gap: 9px; align-items: center; font-family: var(--mono); font-size: 12px; color: var(--faint); }
   .stamp i { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+  /* What is real and what is only drawn. A prototype that is also the spec
+     has to say which of it exists, or the next person to read it — including
+     the one who wrote it — cannot tell. */
+  .built { font-size: 13.5px; color: var(--dim); border-left: 2px solid var(--gold); padding-left: 13px; max-width: 62ch; }
+  .built b { color: var(--text); }
 
   /* People */
   .people { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -346,6 +351,7 @@
       </button>
     </div>
     <span class="stamp"><i></i> design round · 2026-09-04 · five tabs become two, and workouts join the composition</span>
+    <p class="built"><b>Designed, not built.</b> The nightly examination, the quiet screen and the Mac page are running on a real phone against 2.2 million samples. The two tabs, the drawer, the workouts screens and the meal estimate are drawings — the app still ships five tabs.</p>
   </header>
 
   <section id="two-days">
