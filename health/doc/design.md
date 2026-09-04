@@ -214,6 +214,19 @@ script under one lock.** Zero engine work.
   the two would trade the same register forever. Notes are the exception: a
   union, never a winner, because a line the user said cannot be stale.
   Patterns and goals join the list when they are written.
+- **When a run happens** (built 2026-09-04). Whenever the phone writes
+  something the Mac does not have — rows filed, rows deleted, a register
+  written, a line logged — it arms one. The store is where that is known, so
+  the store is what says so; a register ADOPTED from the Mac is deliberately
+  not counted, or the two sides would sync each other's syncs forever.
+  Twenty seconds of quiet lets a burst go up as one run: a backfill files
+  thousands of batches, a pass writes half a dozen registers in a row. The
+  mirror stays marked behind until a run actually happens — unpaired, away
+  and throttled all give the same answer — and the next attempt is armed for
+  when the throttle expires. Before this, an examination written at 08:14 sat
+  on the phone until the app was opened again, and the Mac page said "not
+  examined yet" with the verdict on the phone that wrote it. Connect, the
+  **Sync now** button and `health_sync` still run one too.
 - **Work signals, Mac → phone.** `life/<date>.json` for the last 7 days rides
   the existing `sync:` declaration (Mac → phone, read-only), so the phone's
   morning pass can join yesterday's work when a Mac exists.
