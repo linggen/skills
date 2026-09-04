@@ -5,7 +5,7 @@ guide: |
   Product specification for Linggen Health — what it is, every feature we
   could build, the v1 cut, the surfaces, and the workflows. design.md is the
   companion (data, sync, storage, schemas, tools). Brief; not a code reference.
-status: draft 2026-09-03 — the quiet screen, and agents that come to you. Supersedes the composed-dashboard direction of 2026-09-02. Phone-first; slice 1 (A1, A5, A7, A8, A10, H4, I2) built 2026-09-02 in linggen-mobile. The prototype is the spec; the built app has not caught up.
+status: draft 2026-09-04 — two tabs, a chart catalog with one pick, and what you ate as an estimate you correct. Supersedes the five-tab shape of 2026-09-03, which itself superseded the composed dashboard of 2026-09-02. Phone-first. The prototype is the spec; the built app has not caught up — the two-tab surface, the drawer, the workouts screens and the intake lane are designed and not yet coded.
 ---
 
 # Product Spec: Linggen Health
@@ -166,6 +166,9 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 | C10 | Pin and hide by the user win forever; attention reorders cards that already earned a place, never invents one and never suppresses a warning | v1 |
 | C11 | "What changed" history: every composition with its reason, restorable; Undo pins what it restores for four weeks | v1 |
 | C12 | Mac without a phone: the page leads with the pairing card and says in those words that it has no body data | v1 |
+| C13 | **Two tabs, not five.** *Highlights* is composed each morning out of the whole history — a shift that began nine days ago leads it until it passes — and holds four cards at most. *Everything* is a drawer with a count on every row. The first page is not a page about today; only the number is | v1 |
+| C14 | **Charts are a catalog, and one is picked.** A candidate is a metric × a form (against your normal · week bars · day shape · session curve), scored on coverage × relevance × movement, dropped for being thin, redundant, or undrawable in that form. A finding always outranks the pick | v1 |
+| C15 | **Rules pick, the agent names and may overrule.** The pass must work at 02:00 with no model, give the same page twice on the same data, and show why every candidate lost. The agent supplies the sentence, breaks ties, and honours "show me sleep instead" — and its override is recorded | v1 |
 
 ### D. Plan — the next several days
 
@@ -194,6 +197,8 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 | E6 | Lifting progress: sets, reps, weight by voice; tonnage per muscle group | v1 (voice log), later (photo, plate math) |
 | E7 | Adherence: planned vs done per week, said honestly and folded into next week's plan | v1 |
 | E8 | Export everything as CSV and Markdown; it is the user's data | v1 |
+
+| E9 | **What you ate, roughly.** A sentence or a photo becomes an estimate: shown as a range, never a measurement, never given a verdict, and corrected in one tap — the correction is the user's word and outranks both. Depth is captured with the photo, because volume measured beats volume guessed and it cannot be recovered later. The agent never interrogates the user about a meal | v1 |
 
 ### F. Understand — better than Apple, AI native
 
@@ -473,6 +478,11 @@ Pairing an iPhone fills it in within the first minute.
 - Require a Mac, or pretend a Mac alone can see the body.
 - Send health data anywhere but the user's own devices.
 - Nudge outside the herald, or nudge while the user is enjoying something.
+- Show an estimate as though it were measured, give one a verdict, or print a
+  guessed calorie count to the digit.
+- Interrogate the user about a meal. One estimate, one correction, no
+  questionnaire — follow-up questions test as friction that does not improve
+  the number.
 
 ## Related docs
 

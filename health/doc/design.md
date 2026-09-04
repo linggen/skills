@@ -7,7 +7,7 @@ guide: |
   Mac (mirror, memory, work signals), sync between them, the profile /
   composition / plan / checklist schemas, the tool catalog, and the rules
   that keep it honest. Companion to product-spec.md. Brief; no code.
-status: building — the quiet screen and the examination are BUILT on the phone (2026-09-03) and proven against 2.2M real samples on a device: health_review.dart, health_tell.dart, the quiet-screen renderer, the Health review screen. The Mac mirror and page landed 2026-09-03; the page was reshaped to the quiet screen 2026-09-04, and a verdict now carries its own fortnight so both surfaces draw the same line. See linggen-mobile/doc/health.md for what runs on the phone.
+status: building — the chart catalog, the chart picker and the food-estimate lane are DESIGNED (2026-09-04) and not yet coded. The quiet screen and the examination are BUILT on the phone (2026-09-03) and proven against 2.2M real samples on a device: health_review.dart, health_tell.dart, the quiet-screen renderer, the Health review screen. The Mac mirror and page landed 2026-09-03; the page was reshaped to the quiet screen 2026-09-04, and a verdict now carries its own fortnight so both surfaces draw the same line. See linggen-mobile/doc/health.md for what runs on the phone.
 ---
 
 # Design: Linggen Health
@@ -395,6 +395,125 @@ A card whose `needs` are absent is never composed: no screen-time card without a
 Mac, no sleep card on a phone-less Mac. A card whose measurement came back *at
 your normal* is not composed either — that is the whole design.
 
+### Charts — four forms, one picked
+
+A chart is not decoration and it is not one-per-metric. A candidate is a
+**metric × a form**, because the same number drawn the wrong way lies.
+
+| Form | What it draws | What it needs | Answers |
+|:-----|:--------------|:--------------|:--------|
+| **A · against your normal** | daily value over 8 weeks, the person's median as a line and their spread as a band | ≥ 14 judged days | is this one of mine, or not? |
+| **B · week bars** | one total per week, the current week drawn open because it is unfinished | ≥ 4 complete weeks | am I doing more or less than usual? |
+| **C · day shape** | today's running total against the usual curve **at this hour** | intraday rows | am I behind, or is it only 10am? |
+| **D · session curve** | heart rate through one workout, with time in each zone | a workout with a series | what was that session? |
+
+Form C exists because a day total lies until the day ends. 560 kcal against a
+normal of 703 is not a low day at 10am, and a bare number cannot say so.
+
+**The candidates** are every judged type paired with the forms it can carry —
+HRV, resting heart rate, heart rate, blood oxygen, VO₂ max and the findings on
+A; active and resting energy, exercise minutes, distance and workout tonnage on
+B; energy and steps also on C; a workout on D. The list is the judging table,
+not a second list: a type the examination knows how to judge is a type that can
+be drawn.
+
+**The picker is the one already shipped**, widened. `_pickIndex` ranks on
+`coverage × relevance × (0.25 + movement)` and drops the thin and the redundant,
+recording every candidate and its reason in `ranked`. Charts add one term:
+
+- **readability** — the form's requirements above. A candidate whose form cannot
+  be drawn is **dropped with a reason**, never degraded into a worse chart. Two
+  points is not a line.
+
+And the rule that governs all of it: **a finding outranks the index.** If the
+night found something, its chart is the chart; the picker only decides what
+fills that space when nothing is wrong.
+
+**Rules pick, the agent names and may overrule.** The pass runs at 02:00 on a
+phone that may be offline, so the choice must be makeable with no model: a
+model call there costs battery and reliability for a decision a table makes
+well. It must be **stable** — the same data on two mornings must give the same
+page, or nobody learns where anything is — and **auditable**, which the `ranked`
+table is and a model's pick is not. What the agent is better at is the
+sentence ("your HRV, because it decides whether today's session goes ahead"
+rather than `coverage 0.9 × relevance 0.85`), breaking near-ties, vetoing a
+pick that is technically right and contextually silly, and honouring "show me
+sleep instead". An override is written into `layout.json` like any other, so
+the rule's pick and the agent's change are both visible.
+
+### What you eat — an estimate is never a measurement
+
+Nothing writes food to HealthKit for most people, so the intake half of energy
+is missing: the targets card computes a kcal number the user cannot measure
+against. A model can close that gap from a sentence ("chicken, rice, broccoli,
+big bowl") or a photo.
+
+**Settled 2026-09-04 (Liang): roughly is enough, and the user adjusts the
+number.** That is what every shipping app in this category does, and the
+correction loop is the product rather than a fallback.
+
+**What the field actually achieves.** Independent testing of Cal AI puts mean
+absolute error at 11–14%, roughly 10–15% on a simple single-item plate and
+15–25% once items overlap. SnapCalorie — founded by the people behind Google
+Lens and Cloud Vision, and built on *Nutrition5k*, 5 000 dishes with every
+ingredient weighed — reports under 20% average error and claims to beat trained
+nutritionists. So ±20% is the realistic bar, not the ±40% a bare vision model
+gets, and the difference is entirely in how portion is solved.
+
+**Portion is the whole problem, and depth is how it is solved.** A photo
+flattens a bowl; the model has to guess how deep it goes. Three levers, in
+order of value:
+
+1. **Depth at capture.** SnapCalorie uses the iPhone depth sensor to get a 3D
+   shape and derive volume; the academic version (LiDARCalorieCam) does the
+   same. Volume from depth is *measured*, not guessed, and it leaves the model
+   only the job it is good at — naming the food and its density. **Liang's
+   iPhone 15 Pro has LiDAR**, and depth can only be captured at the moment the
+   photo is taken. Capture it whether or not v1 uses it: it cannot be recovered
+   afterwards.
+2. **A reference object.** Plate size, or a fork in frame. Cheap, and users
+   already do it when told.
+3. **The model alone.** The fallback, and the least accurate.
+
+**The correction loop, and one trap in it.** The pattern that works is: get to
+a logged draft fast, then make fixing it one tap. What does *not* work is the
+agent asking about it — the SnappyMeal study found interactive follow-up
+questions were judged relevant to the food and still added friction without
+improving the data. That is a direct warning for us, because our agent is
+chatty by disposition: **estimate, show the range, let the user correct it, and
+do not interrogate them about their dinner.**
+
+An estimate is marked as one everywhere:
+
+- **Its own source.** It never joins the HealthKit rows and is never charted as
+  though it were measured. A corrected number is marked differently again — it
+  is the user's word, which outranks both.
+- **No verdict, ever.** The examination judges measurements against a baseline.
+  A guess has no business raising *worth seeing*.
+- **A range until it is corrected.** "Roughly 900–1,200" is honest; "1,047 kcal"
+  is a lie with a decimal point. Once the user adjusts it, it is their number
+  and it is shown as one.
+
+**Open — the privacy cost is the real decision, and it is Liang's.** The app
+promises that only the sentences you and the agent exchange reach a model. A
+dinner photo is not a sentence. Two paths:
+
+1. **Mac-local vision** (recommended). Photo and depth ride the sync that
+   already exists and the Mac runs a vision model through the MLX runtime
+   already shipping for TTS; the estimate comes back as a register. The promise
+   stays literally true. Costs several gigabytes of model, and there is no
+   estimate while the Mac is away — acceptable, because dinner is not urgent.
+2. **Cloud vision**, behind an explicit per-photo consent, with the promise
+   reworded on the site and in the App Store listing. Cheaper to build, and it
+   changes something already said in public.
+
+Depth narrows the gap between them: if volume is measured on the phone, what a
+model is asked is "what is this and how dense is it", which is a smaller
+question than "how much of it is there".
+
+Logging by sentence needs neither: `health_log` ships today, and a text
+estimate is about as accurate as a photo one without depth.
+
 ### layout.json — the composition
 
 ```
@@ -627,9 +746,21 @@ median and declared absolutely where the unit demands it (0.5 kg for weight,
 temperature that is already a delta around zero). One MAD is worth
 `max(mad, floor)`. Without it a quiet measurement is loud for being quiet.
 
-Still to build: `BGProcessingTask` so the pass runs without the app being
-opened, the `workouts` and `patterns` screens behind their doors, weather for
-outdoor plans (needs location), and nudges through Yinyue's herald.
+Still to build: the `workouts` and `patterns` screens behind their doors,
+weather for outdoor plans (needs location), and nudges through Yinyue's
+herald. The unattended pass is built (2026-09-04) — see
+`linggen-mobile/doc/health.md`.
+
+**Known bug, found 2026-09-04 and not yet fixed.** A dense measurement can be
+muted by the read cap rather than by any absence. `_fold` reads
+`judge.limit` rows (20 000 by default) newest-first, and resting energy writes
+about 7 700 rows a day — so the window covers three days and the verdict says
+*"3 days in the last four weeks — too few to have a normal"* about a person
+holding thirty. Active energy escapes only because `HealthDaily` folds it with
+a much larger cap. This is the blood-oxygen bug of 2026-09-03 in another
+costume: a real measurement silenced, and then a false sentence written about
+the silence. The fix is to bound the read by **days covered**, not rows, and to
+report the days actually reached when a ceiling is hit.
 
 Native: `ios/Runner/HealthBridge.swift` — authorization for the full type list,
 characteristics, anchored queries, background delivery, workout expansion.
@@ -758,6 +889,12 @@ Readings retain, actions queue. Registers are readings: the newest
    nightly examination free too?
 5. Should durable profile facts go to ling-mem automatically (weekly pass), or
    only when the user says "remember that"?
+6. **A photo of dinner, and the promise.** Estimating what you ate needs a
+   vision model. Mac-local through the MLX runtime keeps *only the sentences
+   you and the agent exchange reach a model* literally true and costs several
+   gigabytes plus "no estimate while the Mac is away"; cloud vision is cheaper
+   and rewords something already published. Recommended: Mac-local. See
+   [What you eat](#what-you-eat--an-estimate-is-never-a-measurement).
 
 ## Related docs
 

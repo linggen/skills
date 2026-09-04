@@ -286,6 +286,26 @@
   /* ── The drawer ───────────────────────────────────────────────────────
      Not a menu of screens: a list of what this app holds, each row saying
      how much of it there is, so choosing is reading rather than guessing. */
+  /* The chart catalog: a form, a small live example of it, and what it
+     answers. Four rows, because four questions. */
+  .forms { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .forms { grid-template-columns: 1fr; } }
+  .form { display: grid; gap: 8px; padding: 15px 17px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  .form .t { display: flex; gap: 9px; align-items: baseline; }
+  .form .t b { font-weight: 600; }
+  .form .t span { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--jade); }
+  .form .q { font-size: 13.5px; color: var(--dim); }
+  .form .needs { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+  .form .demo { background: var(--ground); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+
+  /* An estimate wears a different coat from a measurement, everywhere. */
+  .est { border-style: dashed !important; }
+  .est .tag { font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint); }
+  .est .range { font-size: 17px; font-weight: 600; }
+  .est .fix { display: flex; gap: 6px; }
+  .est .fix span { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; background: var(--surface); }
+  .est .fix span.on { border-color: var(--jade); background: var(--jade-soft); color: var(--text); }
+
   .note-col { align-self: center; display: grid; gap: 12px; font-size: 14.5px; line-height: 1.6; max-width: 46ch; }
   .note-col .dim { color: var(--dim); font-size: 13.5px; }
   .finder { display: flex; align-items: center; gap: 8px; padding: 9px 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; color: var(--faint); font-size: 13.5px; }
@@ -370,7 +390,7 @@
           <div class="sbody" id="drawer-body"></div>
           <nav class="tabbar"><button><b>◈</b>Highlights</button><button aria-current="true"><b>☰</b>Everything</button></nav>
         </div></div>
-        <div class="day-cap"><b>Everything this app holds</b><span>Nine rows, each a fact rather than a label. Nothing here is hidden behind a gesture.</span></div>
+        <div class="day-cap"><b>Everything this app holds</b><span>Ten rows, each a fact rather than a label. Nothing here is hidden behind a gesture.</span></div>
       </div>
       <div class="day-col">
         <div class="phone"><div class="screen tabbed">
@@ -431,11 +451,22 @@
     </div>
   </section>
 
+  <section id="forms">
+    <div class="head">
+      <span class="eyebrow">The charts</span>
+      <h2>Four forms, and one of them gets the space</h2>
+      <p>A chart is not one per measurement. A candidate is a <b>metric × a form</b>, because the same number drawn the wrong way lies — and the app carries four forms, one per kind of question. Every judged type pairs with the forms it can carry: the list is the judging table, not a second list. What reaches the screen is one of them, picked the way the index has always been picked, plus the week bars, which answer a different question and are always there.</p>
+    </div>
+    <div class="forms" id="form-cards"></div>
+    <p class="dim" style="font-size:13.5px; max-width:68ch">Form C exists because a day total lies until the day ends: 560 kcal against a normal of 703 is not a low day at 10am, and a bare number cannot say so. A candidate whose form cannot be drawn — two points is not a line — is dropped with a reason rather than degraded into a worse chart.</p>
+  </section>
+
   <section id="picker">
     <div class="head">
-      <span class="eyebrow">Which number matters</span>
-      <h2>The index is chosen for the person, not fixed in the app</h2>
-      <p>Each candidate is ranked on three things: whether there is enough recent data, whether it means anything for who this person is, and whether it has actually moved. A fixed list would put a misleading number on someone's screen. The clearest case is BMI, which reads a muscular lifter as overweight because it cannot tell muscle from fat.</p>
+      <span class="eyebrow">Which chart</span>
+      <h2>Picked for the person, not fixed in the app</h2>
+      <p>Each candidate is ranked on three things: whether there is enough recent data, whether it means anything for who this person is, and whether it has actually moved — then dropped if its form cannot be drawn, or if it repeats what another candidate already says. A fixed list would put a misleading number on someone's screen. The clearest case is BMI, which reads a muscular lifter as overweight because it cannot tell muscle from fat.</p>
+      <p><b>Rules pick; the agent names and may overrule.</b> The pass runs at 02:00 on a phone that may be offline, so the choice must be makeable with no model at all — and it must be stable, or nobody learns where anything is, and auditable, which this table is and a model's answer is not. What the agent is better at is the sentence, breaking a near-tie, vetoing a pick that is technically right and contextually silly, and honouring <em>show me sleep instead</em>. Its override is written down like any other layout change.</p>
     </div>
     <div class="tablewrap">
       <table class="idx">
@@ -444,6 +475,33 @@
       </table>
     </div>
     <p class="dim" style="font-size:13.5px; max-width:68ch" id="idx-note"></p>
+  </section>
+
+  <section id="eat">
+    <div class="head">
+      <span class="eyebrow">What you ate</span>
+      <h2>Roughly, and then you correct it</h2>
+      <p>Nothing writes food to Apple Health for most people, so the intake half of energy is missing and the calorie target on the body page is a number nobody can measure against. A sentence or a photo closes it. The shipping apps in this category land within 11–25% depending on how crowded the plate is, and the whole difference is <b>portion</b> — a photo flattens a bowl and the model has to guess how deep it goes. The ones that do best measure it instead, using the phone's depth sensor to get a shape and a volume. This iPhone has one. Depth can only be captured at the moment the photo is taken, so it is captured whether or not the first version uses it.</p>
+      <p><b>An estimate wears a different coat from a measurement, everywhere.</b> Its own source, never mixed into the Apple Health rows, never charted as though it were measured, and never given a verdict — the examination judges measurements against your own history, and a guess has no business raising <em>worth seeing</em>. It shows a range until you correct it; after that it is your number and it is shown as yours. And the agent does not ask you about it: follow-up questions about a meal test as friction that does not improve the answer.</p>
+    </div>
+    <div class="days">
+      <div class="day-col">
+        <div class="phone"><div class="screen tabbed">
+          <div class="sbar"><span>19:26</span><span>●●● ᯤ 54%</span></div>
+          <div class="abar"><span class="g">‹</span><span class="t">Dinner</span><span class="g">⋯</span></div>
+          <div class="sbody" id="eat-body"></div>
+          <nav class="tabbar"><button><b>◈</b>Highlights</button><button aria-current="true"><b>☰</b>Everything</button></nav>
+        </div></div>
+        <div class="day-cap"><b>One meal, logged</b><span>A range, the things it saw, and one tap to say it was bigger. No questions.</span></div>
+      </div>
+      <div class="day-col">
+        <div class="note-col">
+          <p>Against a 3,368 kcal target derived from a weigh-in, an estimate inside 20% is the difference between a number you can steer by and no number at all. Week over week the errors partly cancel, so the trend is worth more than any single plate.</p>
+          <p class="dim">The cost is a promise. The app says only the sentences you and the agent exchange reach a model, and a dinner photo is not a sentence. Running the vision model on the paired Mac — through the runtime already there for speech — keeps that sentence literally true, at the price of several gigabytes and no estimate while the Mac is away. Sending it to the cloud is cheaper and rewords something already published. <b>Liang's call, still open.</b></p>
+          <p class="dim">Depth narrows the gap between those two: with volume measured on the phone, what a model is asked is <em>what is this and how dense is it</em> — a smaller question than <em>how much of it is there</em>.</p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="talk">
@@ -1131,6 +1189,7 @@
                  ['Patterns', '2 stable, 1 forming']]],
       ['What you do', [['Workouts', '1,438 kept · since 2016'],
                        ['This week', 'Push · Pull · Legs · 3 of 4 done'],
+                       ['What you ate', '2,850 kcal today · 3 estimates, corrected'],
                        ['Today’s list', '4 items, 1 done']]],
       ['Underneath', [['All measurements', '38 types · 2,216,860 samples'],
                       ['The copy on your Mac', 'synced 3 min ago'],
@@ -1142,6 +1201,7 @@
                  ['Patterns', '3 stable, 1 forming']]],
       ['What you do', [['Workouts', '212 kept · since 2021'],
                        ['This week', 'two walks and a gym session'],
+                       ['What you ate', 'nothing logged today'],
                        ['Today’s list', '5 items, 2 done']]],
       ['Underneath', [['All measurements', '41 types · 861,402 samples'],
                       ['The copy on your Mac', 'no Mac paired'],
@@ -1153,6 +1213,7 @@
                  ['Patterns', '1 stable, 2 forming']]],
       ['What you do', [['Workouts', '946 kept · since 2019'],
                        ['This week', 'left empty'],
+                       ['What you ate', '1,900 kcal today · 2 estimates'],
                        ['Today’s list', '2 items, 0 done']]],
       ['Underneath', [['All measurements', '44 types · 1,504,911 samples'],
                       ['The copy on your Mac', 'synced 1 min ago'],
@@ -1358,6 +1419,112 @@
       '<p class="dim">A session earns a place on Highlights only when that last card has something to say. Four sessions in a normal week produce no cards at all; the week that breaks a year-old load produces one.</p>';
   }
 
+  /* The four forms, each drawn small beside what it answers. The examples are
+     this person's own numbers, so the catalog is not an abstraction. */
+  var FORMS = [
+    { k: 'A', n: 'Against your normal', q: 'Is this one of mine, or not?',
+      needs: '≥ 14 judged days', draw: function (p) {
+        return spark(p.find.series, p.find.base, 'ok');
+      } },
+    { k: 'B', n: 'Week bars', q: 'Am I doing more or less than usual?',
+      needs: '≥ 4 complete weeks', draw: function () {
+        return bars(WORK[current].card);
+      } },
+    { k: 'C', n: 'Day shape', q: 'Am I behind, or is it only 10am?',
+      needs: 'rows through the day', draw: function () {
+        // Today against the usual curve at this hour — the one form that can
+        // say a number is low because the day is young.
+        return dayShape();
+      } },
+    { k: 'D', n: 'Session curve', q: 'What was that session?',
+      needs: 'a workout with a series', draw: function () {
+        return spark(WORK[current].sess.hr, WORK[current].sess.base, 'ok');
+      } }
+  ];
+
+  /* Two lines on one scale: what a usual day looks like by this hour, and
+     what today has actually done. Drawn to the hour, so the gap is readable
+     as "behind" rather than as "low". */
+  function dayShape() {
+    // A usual day's whole curve, and what today has done by this hour. They
+    // must be visibly apart or the form does not demonstrate itself: the
+    // point is that 560 is behind 640, not that 560 is a low number.
+    var usual = [0, 55, 130, 230, 330, 430, 520, 590, 640, 680, 700, 703];
+    var today = [0, 30, 70, 130, 210, 300, 390, 470, 560];
+    var W = 300, H = 44, pad = 3;
+    var max = 760;
+    var x = function (i) { return pad + i * (W - pad * 2) / (usual.length - 1); };
+    var y = function (v) { return pad + (H - pad * 2) * (1 - v / max); };
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('class', 'spark'); svg.setAttribute('preserveAspectRatio', 'none');
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', 'Active energy so far today against a usual day by this hour');
+    function line(pts, col, dash) {
+      var e = document.createElementNS(NS, 'polyline');
+      e.setAttribute('points', pts.map(function (v, i) { return x(i) + ',' + y(v); }).join(' '));
+      e.setAttribute('fill', 'none'); e.setAttribute('stroke', col);
+      e.setAttribute('stroke-width', dash ? 1 : 2);
+      if (dash) { e.setAttribute('stroke-dasharray', '3 3'); }
+      e.setAttribute('vector-effect', 'non-scaling-stroke');
+      e.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(e);
+    }
+    line(usual, 'var(--faint)', true);
+    line(today, 'var(--gold)', false);
+    var dot = document.createElementNS(NS, 'line');
+    dot.setAttribute('x1', x(today.length - 1)); dot.setAttribute('x2', x(today.length - 1));
+    dot.setAttribute('y1', y(today[today.length - 1])); dot.setAttribute('y2', y(today[today.length - 1]));
+    dot.setAttribute('stroke', 'var(--jade)'); dot.setAttribute('stroke-width', '5');
+    dot.setAttribute('stroke-linecap', 'round'); dot.setAttribute('vector-effect', 'non-scaling-stroke');
+    svg.appendChild(dot);
+    return svg;
+  }
+
+  function renderForms() {
+    var p = PEOPLE[current];
+    var wrap = document.getElementById('form-cards');
+    wrap.innerHTML = '';
+    FORMS.forEach(function (f) {
+      var box = el('div', 'form');
+      box.appendChild(el('div', 't', '<span>Form ' + f.k + '</span><b>' + esc(f.n) + '</b>'));
+      var demo = el('div', 'demo');
+      demo.appendChild(f.draw(p));
+      box.appendChild(demo);
+      box.appendChild(el('div', 'q', esc(f.q)));
+      box.appendChild(el('div', 'needs', esc(f.needs)));
+      wrap.appendChild(box);
+    });
+  }
+
+  /* One meal. A range, what it saw, and the correction — which is the product,
+     not the fallback. Nothing here asks the user a question. */
+  function renderEat() {
+    var b = document.getElementById('eat-body');
+    b.innerHTML = '';
+    var shot = el('div', 'card');
+    shot.appendChild(el('div', 'cap', '<b>Photo</b><span>19:24 · depth captured</span>'));
+    shot.appendChild(el('div', 'why', 'Chicken thigh, jasmine rice, broccoli, and something oily on the chicken.'));
+    b.appendChild(shot);
+
+    var est = el('div', 'card est');
+    est.appendChild(el('div', 'cap', '<b>Estimate · not measured</b><span>±20%</span>'));
+    est.appendChild(el('div', 'range', 'Roughly 900–1,200 kcal'));
+    est.appendChild(el('div', 'why', 'Volume from the depth frame, 640 ml of rice; the oil is the part it cannot see and the reason for the range.'));
+    var fix = el('div', 'fix');
+    ['Smaller', 'About right', 'Bigger', 'Type it'].forEach(function (t, i) {
+      fix.appendChild(el('span', i === 1 ? 'on' : null, esc(t)));
+    });
+    est.appendChild(fix);
+    b.appendChild(est);
+
+    var day = el('div', 'card');
+    day.appendChild(el('div', 'cap', '<b>Today</b><span>estimated in · measured out</span>'));
+    day.appendChild(el('div', 'big', '2,850 in · 3,058 out'));
+    day.appendChild(el('div', 'why', 'Out is measured by your Watch. In is three estimates you have corrected, and it is the softer of the two numbers — which is why neither gets a verdict.'));
+    b.appendChild(day);
+  }
+
   function renderRest() {
     var p = PEOPLE[current];
     document.getElementById('v-clear').textContent = p.verdicts.clear;
@@ -1386,6 +1553,8 @@
         (m[2] ? '<br><span class="tool">' + esc(m[2]) + '</span>' : '') + '</div>';
     }).join('');
 
+    renderForms();
+    renderEat();
     renderMac(p);
   }
 
@@ -1407,7 +1576,7 @@
   var SHORT = {
     'Health review': 'Review', 'My body': 'Body', 'This week': 'Week',
     'Today\u2019s list': 'Today', 'All measurements': 'Data',
-    'Workouts': 'Workouts', 'Patterns': 'Patterns'
+    'Workouts': 'Workouts', 'Patterns': 'Patterns', 'What you ate': 'Meals'
   };
 
   function renderMac(p) {
