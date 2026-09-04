@@ -886,6 +886,28 @@ thing that will need the table below.
 Readings retain, actions queue. Registers are readings: the newest
 `written_at` wins on both sides.
 
+## Settled (2026-09-04)
+
+- **The alarm boundary** — closed, and built. Two first-sight paths bypass the
+  nine-day sustained rule, because a warning that waits nine days is not a
+  warning. (1) **Apple's own detections, relayed**: irregular rhythm, high or
+  low heart rate while still, and sleep apnea events say *doctor*; low walking
+  steadiness and low cardio fitness say *see*. No judgement of ours is added —
+  the Watch decided against thresholds the user set, and has already told them
+  once. Seven-day window, because a warning nobody can clear teaches people to
+  ignore warnings. (2) **One published threshold**: blood oxygen whose day
+  median sits below 90% over at least three readings. A count of low readings
+  was tried first and failed against real data — a loose strap wrote 86% and
+  89% on a day that also held 96, 96, 97, 97 and 99. Everything else worth
+  alarming on already has an Apple event tuned to the user, and a threshold we
+  invent fires on the athlete whose resting rate is 38.
+- **A notification fires on the doctor tier only** (Liang, 2026-09-04). Not on
+  a *see* finding: that stays on the screen and in the thread, reached when the
+  user opens the app. So the phone will be quiet for months at a stretch, which
+  is the point of a warning — and it means the lane cannot be proved by
+  waiting, only by staging a review onto the device. Not built; the app has no
+  notifications of any kind yet. Planned for 2026-09-07.
+
 ## Settled (2026-09-03)
 
 - **Show the unhealthy part only.** The nightly examination walks every type
@@ -934,20 +956,17 @@ Readings retain, actions queue. Registers are readings: the newest
 
 ## Open questions for Liang
 
-1. **The alarm boundary.** Own-baseline change only, or own-baseline plus a
-   short list of published absolute red flags? The recommendation is both, each
-   phrased "worth showing a doctor" and never naming a condition.
-2. **In-app attention.** May the app learn from what you look at at all, or
+1. **In-app attention.** May the app learn from what you look at at all, or
    only from deliberate acts (pin, hide, and what you ask the chat)? Asking is
    the strongest untapped signal and Apple has no equivalent; watching what you
    open is the part that needs permission.
-3. Skill and app name: `health` / "Linggen Health", or something in the Yinyue
+2. Skill and app name: `health` / "Linggen Health", or something in the Yinyue
    world?
-4. Free vs Paid split inside the suite as proposed in product-spec, or the
+3. Free vs Paid split inside the suite as proposed in product-spec, or the
    nightly examination free too?
-5. Should durable profile facts go to ling-mem automatically (weekly pass), or
+4. Should durable profile facts go to ling-mem automatically (weekly pass), or
    only when the user says "remember that"?
-*(6, the photo and the promise, was settled on 2026-09-04 — the image goes to
+*(The photo and the promise was settled on 2026-09-04 — the image goes to
 the user's own ChatGPT over OAuth. See
 [What you eat](#what-you-eat--an-estimate-is-never-a-measurement).)*
 
