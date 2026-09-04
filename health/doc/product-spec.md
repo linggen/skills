@@ -5,7 +5,7 @@ guide: |
   Product specification for Linggen Health — what it is, every feature we
   could build, the v1 cut, the surfaces, and the workflows. design.md is the
   companion (data, sync, storage, schemas, tools). Brief; not a code reference.
-status: draft 2026-09-04 — two tabs, a chart catalog with one pick, and what you ate as an estimate you correct. Supersedes the five-tab shape of 2026-09-03, which itself superseded the composed dashboard of 2026-09-02. Phone-first. The prototype is the spec; the built app has not caught up — the two-tab surface, the drawer, the workouts screens and the intake lane are designed and not yet coded.
+status: draft 2026-09-04 — two tabs, a chart catalog with one pick, and what you ate as an estimate you correct. Supersedes the five-tab shape of 2026-09-03, which itself superseded the composed dashboard of 2026-09-02. Phone-first. The prototype is the spec. The two-tab surface, the drawer and the workouts screens were coded on 2026-09-04; still designed and not coded are the intake lane and three of the four chart forms.
 ---
 
 # Product Spec: Linggen Health

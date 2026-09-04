@@ -25,8 +25,8 @@ status: building — the chart catalog, the chart picker and the food-estimate l
 │   Passes (Yinyue + cloud model):  morning · workout report · weekly ·        │
 │                                   patterns — all runnable here               │
 │   ToolRegistry   health-* : the whole catalog, Dart over the local store     │
-│   Screens        First run · The screen (quiet) · Health review · Plan ·     │
-│                  Track · Workouts · Patterns · My body · Data · Settings     │
+│   Screens        First run · Highlights (quiet) · Everything (the drawer:    │
+│                  review · plan · track · workouts · body · data · settings)  │
 │   Renderer       review.json → the cards that earned a place → the screen    │
 │   Voice          the agent speaks in Yinyue's thread, never on the screen —  │
 │                  and speaks FIRST, when a pass has something to report       │
@@ -788,21 +788,32 @@ median and declared absolutely where the unit demands it (0.5 kg for weight,
 temperature that is already a delta around zero). One MAD is worth
 `max(mad, floor)`. Without it a quiet measurement is loud for being quiet.
 
-Still to build: the `workouts` and `patterns` screens behind their doors,
-weather for outdoor plans (needs location), and nudges through Yinyue's
-herald. The unattended pass is built (2026-09-04) — see
+Still to build: the `patterns` screen behind its door, weather for outdoor
+plans (needs location), and nudges through Yinyue's herald — the app has no
+notifications of any kind yet, so a pass that finds something at 02:00 reaches
+only someone who opens the app. Designed on 2026-09-04 and not built: the meal
+lane (a photo to the user's own ChatGPT, depth captured with the shot) and the
+chart catalog's other three forms — the phone draws the dial and the fortnight,
+not the week bars, the day shape or the session curve. Built on 2026-09-04: the
+`workouts` screen, the unattended pass, and the work-signal lane — see
 `linggen-mobile/doc/health.md`.
 
-**Known bug, found 2026-09-04 and not yet fixed.** A dense measurement can be
-muted by the read cap rather than by any absence. `_fold` reads
-`judge.limit` rows (20 000 by default) newest-first, and resting energy writes
-about 7 700 rows a day — so the window covers three days and the verdict says
-*"3 days in the last four weeks — too few to have a normal"* about a person
-holding thirty. Active energy escapes only because `HealthDaily` folds it with
-a much larger cap. This is the blood-oxygen bug of 2026-09-03 in another
-costume: a real measurement silenced, and then a false sentence written about
-the silence. The fix is to bound the read by **days covered**, not rows, and to
-report the days actually reached when a ceiling is hit.
+**The window is the bound, not a row count** (fixed 2026-09-04). A dense
+measurement used to be muted by the read cap rather than by any absence: the
+old `_fold` read `judge.limit` rows (20 000 by default) newest-first, and
+resting energy writes about 7 700 rows a day, so a four-week window was three
+days deep and the verdict said *"3 days in the last four weeks — too few to
+have a normal"* about a person holding thirty. That was the blood-oxygen bug of
+2026-09-03 in another costume: a real measurement silenced, then a false
+sentence written about the silence. `HealthStore.eachDay` now walks a type
+newest-first and hands back one whole day at a time — a row is filed by the
+month it started in, so a day never spans two files and memory stays flat
+whatever the density. `limit` is gone from all twenty-four judges rather than
+left as a knob with no consumer. The rewrite also fixed two things the old fold
+had wrong: a `latest` day finds its newest row instead of trusting file order,
+which is append order and not time order; and the oldest day of the window is
+dropped only for a sum, because half a total is wrong while half an average or
+a newest reading is fine.
 
 Native: `ios/Runner/HealthBridge.swift` — authorization for the full type list,
 characteristics, anchored queries, background delivery, workout expansion.
@@ -858,6 +869,11 @@ reads *HealthKit: not connected — no iPhone paired*. Pairing fills the page in
 within the first minute of backfill.
 
 ## Topics
+
+**None of this is built** (2026-09-04). The mirror is request/response over
+`/api/bash` into `ingest.mjs`, so nothing publishes and no surface can
+subscribe — a progress strip or a second device watching a sync is the first
+thing that will need the table below.
 
 | Topic | Direction | Retained | Carries |
 |:------|:----------|:---------|:--------|
