@@ -228,6 +228,28 @@ function reviewTab() {
   ];
 }
 
+/// A card that carries a number carries the question about it too.
+///
+/// The phone puts the same button on a finding, because a finding is the
+/// start of a question rather than the end of one. Here the conversation is
+/// already on screen beside the card, so the only thing missing is which card
+/// the user means — the button says it, in their own words, and the answer
+/// comes back where they can argue with it.
+///
+/// Dead until the conversation is up, and it says so rather than swallowing
+/// the click.
+function askButton(question, label = 'Ask Ling about this') {
+  const b = el('button', 'ask', label);
+  b.type = 'button';
+  if (!chat) {
+    b.disabled = true;
+    b.title = 'The conversation is not up yet.';
+    return b;
+  }
+  b.addEventListener('click', () => chat.send(question));
+  return b;
+}
+
 /// The one line, with the number beside it. 80 is at your normal — the arc is
 /// drawn against that mark so it reads as a position in this person's own
 /// history rather than as a grade out of a hundred.
@@ -240,8 +262,25 @@ function statusCard(r) {
   box.append(el('span', 'eyebrow', 'Today'));
   box.append(el('p', 'big', line(r)));
   box.append(el('p', 'why', madeOf(r)));
+  box.append(askButton(scoreQuestion(r), 'Ask Ling about this number'));
   c.append(box);
   return c;
+}
+
+/// What a person would actually type about the number: explain it, and say
+/// what would help. Not "how do I raise it" — it is a position against their
+/// own normal, not a target to farm.
+function scoreQuestion(r) {
+  const from = Array.isArray(r.score_from) ? r.score_from : [];
+  const made = from.length ? ` It was made of ${list(from)}.` : '';
+  const number =
+    typeof r.score === 'number'
+      ? `Today came out at ${r.score} against my own normal, where 80 is at it.`
+      : 'There was no number today.';
+  return (
+    `${number}${made} Explain what that is actually saying about me, and ` +
+    `given what you know of my goal, what would help.`
+  );
 }
 
 /// The sentence the status line leads with — the same words the phone used,
@@ -401,7 +440,25 @@ function findingCard(f, r) {
       ),
     );
   }
+  c.append(askButton(findingQuestion(f, gap)));
   return c;
+}
+
+/// The finding in the user's own words, with the numbers the card is showing
+/// so the answer is about this measurement and not about the idea of it.
+function findingQuestion(f, gap) {
+  const where =
+    gap == null
+      ? `${f.label} is ${value(f.now, f.unit)}`
+      : `${f.label} is ${value(f.now, f.unit)}, ${value(gap, f.unit)} ` +
+        `${f.now < f.normal ? 'below' : 'above'} my normal of ` +
+        `${value(f.normal, f.unit)}`;
+  const ev = Array.isArray(f.evidence) && f.evidence.length
+    ? ` ${sentence(f.evidence)}`
+    : '';
+  return (
+    `${where}.${ev} Explain what that means for me, and what would help.`
+  );
 }
 
 /// Nothing moved, so the page shows the one measurement this person is most
@@ -796,6 +853,11 @@ async function load() {
 
 // ── chat ─────────────────────────────────────────────────────────────────────
 
+/// The conversation, once it is up. Held here because the cards ask it
+/// things: a finding is the start of a question, and the panel is right
+/// there beside it.
+let chat = null;
+
 const GREETING =
   'The user just opened Linggen Health (this message is hidden from them). ' +
   'Greet them now, following the "0. Greeting" section of your instructions.';
@@ -806,7 +868,6 @@ const WRITERS = new Set(['Log']);
 
 async function mountChat() {
   let alive = false;
-  let chat;
   try {
     chat = await window.LinggenUI.mount($('chat-panel'), {
       skillName: SKILL,
@@ -831,8 +892,13 @@ async function mountChat() {
     });
   } catch (e) {
     console.error('[health] chat mount failed', e);
+    chat = null;
+    render();
     return;
   }
+  // The Ask buttons were drawn dead while there was nothing to ask; now
+  // there is.
+  render();
   setTimeout(() => chat?.sendHidden(GREETING), 700);
   setTimeout(() => {
     if (!alive) chat?.sendHidden(GREETING);

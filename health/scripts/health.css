@@ -496,6 +496,31 @@ button {
 .card.finding {
   border-color: var(--gold);
 }
+
+/* The question about a card, on the card. Quiet: the numbers are the point
+   and this is a door beside them, not a call to action. */
+.ask {
+  justify-self: start;
+  margin-top: 8px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12.5px;
+  color: var(--jade);
+  cursor: pointer;
+}
+.ask:hover:not(:disabled) {
+  border-color: var(--jade);
+  background: var(--raised);
+}
+.ask:disabled {
+  color: var(--dim);
+  cursor: default;
+}
+.card.finding .ask {
+  align-self: start;
+}
 .card.finding.alarm {
   box-shadow: inset 0 0 0 1px var(--gold);
 }
