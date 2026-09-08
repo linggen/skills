@@ -16,6 +16,7 @@
 //   ingest.mjs report                          the whole current picture
 //   ingest.mjs ledger                          what the mirror holds
 //   ingest.mjs log      <text>                 one line the user said
+//   ingest.mjs focus    <id> <action> [kind] [why]  choose what Focus shows
 //
 // Every verb prints one JSON line. A payload may also arrive on stdin, which is
 // how a batch too long for one shell command gets here.
@@ -27,6 +28,7 @@ import crypto from 'node:crypto';
 
 import { fold, mergeNotes, monthOf, parseLines, planWrite, summarize, wins } from './store.js';
 import { refresh as refreshLife, settled as settledLife } from './life.mjs';
+import { changeFocus, homeOf, selectedOf, validHome } from './home.js';
 
 const HOME = process.env.HOME || '';
 const DIR = process.env.HEALTH_DIR || path.join(HOME, '.linggen', 'skills', 'health');
@@ -374,6 +376,53 @@ const VERBS = {
   /// A key is absent rather than empty when the mirror has not been given that
   /// file — no phone paired, or the pass that writes it has not run. Absent is
   /// the honest answer and the agent is told to read it as one.
+  /// One change to Focus — the person's hands on the page, or the agent's.
+  ///
+  /// The phone composes the catalog; this chooses among it and never touches
+  /// a value. Written as the newer `layout.json`, so the phone adopts it on
+  /// the next sync; the one it replaces is filed under `layouts/` for Undo.
+  /// `undo` puts that one back.
+  focus(rest) {
+    const arg = (i) => {
+      const v = String(rest[i] ?? '').trim();
+      return !v || placeholder(v) || v === 'none' ? undefined : v;
+    };
+    const action = arg(1);
+    const report = VERBS.report();
+    const prior = report.layout;
+    if (!prior || typeof prior !== 'object') die('No layout yet — the phone has not composed one');
+    const stamp = new Date().toISOString();
+    let next;
+    if (action === 'undo') {
+      const prev = typeof prior.previous === 'string' && /^layouts\/[A-Za-z0-9_.:-]+\.json$/.test(prior.previous)
+        ? readJson(path.join(DATA, prior.previous), null)
+        : null;
+      if (!prev || validHome(prev.home)) die('No previous layout to go back to');
+      next = { ...prev, pass: 'undo' };
+    } else {
+      const home = homeOf(report);
+      if (home.fallback) die('The phone has not composed a Focus yet — nothing here to change');
+      let changed;
+      try {
+        changed = changeFocus(home, { action, id: arg(0), kind: arg(2), why: arg(3) });
+      } catch (e) {
+        die(String(e.message || e));
+      }
+      next = { ...prior, home: changed, pass: action === 'agent' ? 'agent' : 'user' };
+    }
+    const previous = `layouts/${stamp}.json`;
+    writeJson(path.join(DATA, previous), prior);
+    const layout = { ...next, previous, composed_at: stamp, written_at: stamp, by_device: 'mac' };
+    writeJson(path.join(DATA, 'layout.json'), layout);
+    const lead = selectedOf(layout.home);
+    return {
+      ok: true,
+      focus: lead ? `${lead.question} (${lead.title}, ${lead.period}, as ${lead.kind})` : null,
+      why: layout.home?.why ?? null,
+      layout,
+    };
+  },
+
   report() {
     const s = state();
     const now = new Date();

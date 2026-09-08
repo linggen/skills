@@ -10,6 +10,12 @@ status: draft 2026-09-04 — two tabs, a chart catalog with one pick, and what y
 
 # Product Spec: Linggen Health
 
+> UI direction updated 2026-09-08: [Agent-Composed UI](ui-ux-design.md) defines
+> stable Brief, Focus, and Attention sections with agent-selected content and
+> component layouts, and is built on both devices. It supersedes conflicting
+> first-view rules below, including the abnormal-only restriction and the
+> prototype-as-spec claim.
+
 ## Vision
 
 **Apple Health shows you everything and tells you nothing. Linggen Health reads

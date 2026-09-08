@@ -12,6 +12,14 @@ status: building — the chart catalog, the chart picker and the food-estimate l
 
 # Design: Linggen Health
 
+> UI direction updated 2026-09-08: [Agent-Composed UI](ui-ux-design.md) is the
+> current first view — built the same day on both devices. Its stable
+> sections and composed components supersede conflicting UI rules below,
+> including the rule that normal measurements can never appear on the first
+> view. `layout.json` now carries the composition under `home` (the catalog,
+> the choice, the why, pins, hides, data gaps); the data and sync
+> architecture below is unchanged.
+
 ## Architecture in one diagram
 
 ```

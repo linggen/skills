@@ -18,6 +18,8 @@
 
 import './chat-bridge.js'; // sets window.LinggenUI
 import { verb } from './bash.js';
+import { focusView } from './focus-view.js';
+import { homeOf } from './home.js';
 
 const SKILL = 'health';
 const $ = (id) => document.getElementById(id);
@@ -81,7 +83,7 @@ let report = null;
 let ledger = null;
 let insights = [];
 let error = null;
-let tab = 'review';
+let tab = 'home';
 
 // ── tabs ─────────────────────────────────────────────────────────────────────
 
@@ -91,6 +93,7 @@ let tab = 'review';
 function tabs() {
   const has = (k) => report && report[k] != null;
   return [
+    { id: 'home', name: 'Home', on: true },
     { id: 'review', name: 'Review', on: true },
     { id: 'body', name: 'Body', on: has('profile') || has('targets') },
     { id: 'week', name: 'Week', on: has('plan') },
@@ -103,7 +106,7 @@ function renderTabs() {
   const nav = $('tabs');
   nav.textContent = '';
   const open = tabs();
-  if (!open.some((t) => t.id === tab)) tab = 'review';
+  if (!open.some((t) => t.id === tab)) tab = 'home';
   for (const t of open) {
     const b = el('button', null, t.name);
     b.type = 'button';
@@ -144,6 +147,7 @@ function render() {
 
   renderTabs();
   const panel = {
+    home: homeTab,
     review: reviewTab,
     body: bodyTab,
     week: weekTab,
@@ -192,9 +196,86 @@ function pairCard() {
 
 // ── the review ───────────────────────────────────────────────────────────────
 
+/// Home: three sections that never move, composed from the inside. Brief
+/// says what matters today and proves it looked; Focus answers one question
+/// this person's data can answer, drawn as the component that answers it;
+/// Attention is there only when something needs a decision — a finding, or
+/// a gap in the data said as a gap. A warning sits above all three.
+function homeTab() {
+  const r = report.review;
+  const fresh = r && r.date === report.today;
+  const section = (title, ...nodes) => {
+    const s = el('section', 'home-section');
+    const head = el('div', 'focus-head');
+    head.append(el('h2', null, title));
+    s.append(head);
+    for (const n of nodes) if (n) s.append(n);
+    return s;
+  };
+  const shown = r ? findingsOf(r).filter((f) => f.verdict === 'doc' || f.verdict === 'see') : [];
+  const hidden = report.layout?.hidden || [];
+  const attention = shown.filter((f) => f.verdict === 'see' && !hidden.includes(`finding:${f.type}`));
+  const home = homeOf(report);
+  const gaps = fresh && Array.isArray(home.attention) ? home.attention : [];
+  const brief =
+    report.brief?.date === report.today && typeof report.brief.text === 'string'
+      ? report.brief.text
+      : fresh
+        ? line(r)
+        : 'No examination today yet.';
+  const proof = fresh
+    ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal` +
+      (typeof r.score === 'number' ? ` · ${r.score} against it` : '')
+    : r
+      ? `Latest examination: ${day(r.date)}`
+      : 'The first examination has not run.';
+  const proofLine = el('p', 'dim small', proof);
+  return [
+    ...shown.filter((f) => f.verdict === 'doc').map((f) => findingCard(f, r)),
+    section('Brief', el('p', 'big', brief), proofLine),
+    focusView(report, {
+      change: changeFocus,
+      explore: () => {
+        tab = 'data';
+        render();
+      },
+      ask: chat ? (q) => chat.send(q) : null,
+      canUndo: typeof report.layout?.previous === 'string',
+    }),
+    attention.length || gaps.length
+      ? section('Attention', ...attention.map((f) => findingCard(f, r)), ...gaps.map(gapCard))
+      : null,
+    askButton('What should I focus on in Health, given my goals?', 'Ask Ling'),
+  ];
+}
+
+/// A data issue: something this person usually records and lately has not.
+/// Neutral on purpose — it is not a finding, and it must never read as one.
+function gapCard(g) {
+  const c = card(`Data · ${g.label || ''}`);
+  c.append(el('p', 'big', g.text || ''));
+  c.append(el('p', 'why', 'Not a health concern — a gap in what is being recorded. The source is on the phone.'));
+  return c;
+}
+
+/// One change to Focus, through the one writer, then a repaint from disk.
+async function changeFocus({ action, id, kind, why }) {
+  const buttons = document.querySelectorAll('.focus button, .focus select');
+  buttons.forEach((b) => (b.disabled = true));
+  try {
+    await verb('focus', id || 'none', action, kind || 'none', why || 'none');
+    await load();
+  } catch (e) {
+    const message = el('p', 'err', String(e.message || e));
+    message.setAttribute('role', 'alert');
+    document.querySelector('.focus')?.append(message);
+    buttons.forEach((b) => (b.disabled = false));
+  }
+}
+
 /// Everything the night's examination produced, in the order it matters:
 /// the one line that proves it looked, the counts behind it, whatever earned
-/// a place, and what the number was made of.
+/// a place, and what the number was made of. The working behind Home.
 function reviewTab() {
   const r = report.review;
   if (!r || r.date !== report.today) {
@@ -872,7 +953,7 @@ const GREETING =
 
 // The agent writes through the same one writer this page reads from, so a
 // repaint shortly after one of its tools runs keeps the two in step.
-const WRITERS = new Set(['Log']);
+const WRITERS = new Set(['Log', 'Focus']);
 
 async function mountChat() {
   let alive = false;

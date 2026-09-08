@@ -71,7 +71,7 @@ h2,
 h3 {
   margin: 0;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 h1 {
   font-size: 19px;
@@ -616,4 +616,314 @@ table.mini td.doc {
 table.mini td.thin {
   color: var(--dim);
   font-style: italic;
+}
+
+/* ── home: three sections that never move ─────────────────────────────── */
+
+/* Unframed: a section is a place, not a card. Only a finding is framed. */
+.home-section {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 4px 0 20px;
+  border-bottom: 1px solid var(--line);
+}
+.home-section h2 {
+  font-size: 13px;
+  color: var(--dim);
+}
+.home-section .big {
+  font-size: 19px;
+  max-width: 60ch;
+}
+.home-section .card {
+  border-radius: 12px;
+}
+.small {
+  font-size: 12px;
+}
+.focus-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.focus h3.q {
+  font-size: 17px;
+  line-height: 1.35;
+  max-width: 60ch;
+}
+.focus-row {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 18px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .focus-row {
+    grid-template-columns: 1fr;
+  }
+}
+.focus figure.chart {
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+.focus figure.chart.side {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--ground);
+}
+.chart-body {
+  min-width: 0;
+}
+.chart-stack {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.chart-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.chart-ends {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--dim);
+  font-family: var(--mono);
+}
+.spark.tall {
+  height: 120px;
+}
+.spark .line.jade {
+  stroke: var(--jade);
+  stroke-width: 1.6;
+}
+.spark .dot.jade,
+.spark .now.jade {
+  stroke: var(--jade);
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 84px;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+.bar-row .k {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-row .v {
+  text-align: right;
+  color: var(--dim);
+  font-size: 12px;
+}
+.bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--raised);
+  overflow: hidden;
+}
+.bar-track > div {
+  height: 100%;
+  background: var(--jade);
+}
+.bar-track.big {
+  height: 12px;
+  border-radius: 6px;
+}
+.chart-share {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.ring {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.ring > span {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  text-align: center;
+}
+.legend {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  flex: 1 1 160px;
+}
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.legend-row i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.legend-row .k {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nights {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.night-row {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  height: 9px;
+}
+.night-row .d {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--dim);
+  line-height: 1;
+}
+.night-track {
+  position: relative;
+  height: 100%;
+}
+.night-track .tick {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--line);
+}
+.night-track .tick.strong {
+  background: var(--dim);
+  opacity: 0.6;
+}
+.night-track .night {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 3px;
+  background: var(--jade);
+  opacity: 0.6;
+}
+.night-track .night.now {
+  opacity: 1;
+}
+.night-track .gap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px dashed var(--dim);
+  opacity: 0.5;
+}
+.night-row.axis {
+  height: 14px;
+  margin-top: 4px;
+}
+.night-track .hour {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+.chart-head b.lead {
+  font-size: 22px;
+  font-weight: 600;
+}
+.weeks {
+  width: 100%;
+  height: 90px;
+  overflow: visible;
+}
+.weeks .week {
+  fill: var(--jade);
+  opacity: 0.55;
+}
+.weeks .week.now {
+  opacity: 1;
+}
+.weeks .week.open {
+  fill: var(--jade-soft);
+  stroke: var(--jade);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  opacity: 1;
+}
+.weeks .base {
+  stroke: var(--dim);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  vector-effect: non-scaling-stroke;
+}
+.focus-controls {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+}
+.focus-controls .ask {
+  margin-top: 0;
+}
+.focus-controls .ask.quiet {
+  color: var(--dim);
+}
+.focus-pick {
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--jade);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  max-width: 260px;
+  cursor: pointer;
+}
+.main > *,
+.home-section > * {
+  overflow-wrap: anywhere;
+}
+.top {
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .main {
+    padding: 16px;
+  }
+  .top .mirror {
+    width: 100%;
+    margin-left: 0;
+  }
+  .home-section .big {
+    font-size: 17px;
+  }
+  .tabs {
+    padding: 0 8px;
+  }
 }
