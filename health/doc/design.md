@@ -890,6 +890,13 @@ budget.
 |:-----|:-----|:-----|:--------|
 | A warning | warning — bypasses the budget, lights the screen | the pass that found it | always on |
 | The morning line | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed the plan |
+| When I could not look | for the record | two mornings after the last examination, moved on by each one | on |
+
+All three go through Yinyue's herald (built 2026-09-08 —
+`linggen-mobile/doc/yinyue.md`): declared in `HealthTell`'s constructor,
+handed over as notices, her answer filed in `told.jsonl`. The third line is
+what makes silence honest: the night the passes stop is the night it stays
+where it was set and fires once, and then nothing is waiting.
 
 **The warning** is built (2026-09-08): a doctor-tier finding, once per
 subject and once more a week later if it holds, the same sentence her thread
