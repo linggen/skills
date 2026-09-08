@@ -676,6 +676,31 @@ Screen time, calendar and IDE hours are not in it. Screen time on macOS is a
 private database behind Full Disk Access and the calendar needs EventKit;
 neither is worth a permission prompt for the value it adds over commits.
 
+## The debrief (built 2026-09-08)
+
+What a coach standing at the finish says, at the moment it is wanted. The
+Watch writes a workout the minute it ends and iOS delivers it at once
+(background delivery is `immediate` for workouts); the library pulls it in
+that wake and `debrief()` says one line: the session's name and that it is
+done, then the comparison the session screen leads with — *6.00 km at 5:00
+/km — 30 seconds a kilometre quicker than your last 5.* — and any first the
+session set as a clause on the same line: *Your longest run yet, 12.1 km.*
+/ *This month is already past your best month of running, 41 km.* One
+session, one thing said; no confetti.
+
+Rules (`health_debrief.dart`): a session is owed a line for three hours
+after it ends and not after (one that landed late is one they have forgotten
+the feel of); shorter than five minutes is a tap, not a session; when several
+land at once the newest gets the line and the others are passed over, filed
+so they are never owed one later. A first is "longest of its kind" — by
+distance where it covered ground, by time where it did not — only with three
+or more behind it, and "best month of its kind" only against two or more
+complete months, said once per month by key. Said on the lock screen through
+her herald (*After a session*, in hand, counts against her two a day) and in
+her thread regardless: the budget is the lock screen's, not the thread's. A
+tap lands on the session itself (`health/session/<uuid>`). Filed in
+`told.jsonl` by the session's uuid, so a pull that sees it twice says it once.
+
 ## The one question and the follow-up (built 2026-09-08)
 
 A doctor notices one thing and asks about the thing no instrument can see; a
@@ -955,6 +980,7 @@ budget.
 | A warning | warning — bypasses the budget, lights the screen | the pass that found it | always on |
 | The morning line | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed the plan |
 | When I could not look | for the record | two mornings after the last examination, moved on by each one | on |
+| After a session | in hand — lights the screen, counts against the budget | within minutes of a workout ending | on |
 
 All three go through Yinyue's herald (built 2026-09-08 —
 `linggen-mobile/doc/yinyue.md`): declared in `HealthTell`'s constructor,
