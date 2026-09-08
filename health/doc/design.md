@@ -152,7 +152,8 @@ Documents/Health/
   patterns.json            [{id, claim, metric, signal, effect, weeks,
                             confidence, evidence[], first_seen, status}]
   goals.json               goals as the user said them + tracked metric
-  notes.jsonl              typed context: {at, text, tags[]}
+  notes.jsonl              what they said: {at, text, kind?, subject?, re?, follow_up?}
+                           kind = said | answer | intent | symptom; never edited
   .outbox/<seq>.jsonl.gz   deltas waiting for a paired Mac
 ```
 
@@ -347,12 +348,18 @@ each candidate was dropped, so the choice can be argued with.
 ```
 { "at": "2026-09-03T07:02Z", "surface": "yinyue", "pass": "morning",
   "text": "I went through your Apple Health while you slept — 38 kinds of measurement…",
-  "tools": ["Report", "GetRange hrv", "SetPlan"], "review": "review/2026-09-03.json" }
+  "tools": ["Report", "GetRange hrv", "SetPlan"], "review": "review/2026-09-03.json",
+  "asked": { "kind": "question", "type": "HKQuantityTypeIdentifierHeartRateVariabilitySDNN",
+             "label": "HRV", "question": "Anything going on — a cold coming, stress, a late night?",
+             "key": "ask:HKQuantityTypeIdentifierHeartRateVariabilitySDNN:2026-09-03" } }
 ```
 
 One line per unprompted message. It is a log so the agent can see what it has
 already said: it never repeats a finding it has told, and a finding with no line
-here is a finding it has kept to itself.
+here is a finding it has kept to itself. `asked` is the one thing the morning
+line asked, when it asked — a question on a finding or a follow-up on a note —
+and is what the week's rule and the agent's open list read back (see *The one
+question and the follow-up*).
 
 ### Card catalog — code, declarative
 
@@ -668,6 +675,49 @@ commits.
 Screen time, calendar and IDE hours are not in it. Screen time on macOS is a
 private database behind Full Disk Access and the calendar needs EventKit;
 neither is worth a permission prompt for the value it adds over commits.
+
+## The one question and the follow-up (built 2026-09-08)
+
+A doctor notices one thing and asks about the thing no instrument can see; a
+coach who was told "bed before midnight this week" says on Sunday how many
+nights it happened. These two are that, on the phone, in Yinyue's thread, and
+they are the honest replacement for the shelved work signal: the person says
+why, and what they said is data.
+
+**One thing asked a morning.** It rides the morning report line rather than
+being a line of its own, so a quiet morning asks nothing and a loud one asks
+once. A follow-up she promised comes before a fresh question. Filed as
+`asked` on the report's row in `told.jsonl`.
+
+**The question** (`health_ask.dart`) is on the finding that leads the
+report — worst first, the same order the screen uses — about what a sensor
+cannot answer, in the direction it moved: HRV or resting heart rate → *Anything
+going on — a cold coming, stress, a late night?*; a short night → *What kept
+you up?*; a long one → *Catching up, or feeling run down?*; weight → *Has
+anything changed in how you eat, or when?*; fewer steps → *A quieter stretch on
+purpose, or something in the way?*; a Watch flag → *Did you notice anything at
+the time?*. Never a diagnosis, never a population range. A subject is asked
+about once and not again for seven days while it holds, or until answered;
+when the lead was asked this week the next finding is asked instead and the
+line names it ("Your resting heart rate moved as well — …").
+
+**The follow-up** (`health_follow.dart`) is a note with a `follow_up` day:
+"You said "headache since lunch" on Monday. How is it now?" Where the
+intention is one the app can count — the subject grammar is `bed_by HH:MM`,
+`sleep_hours N`, `steps N`, `sessions N` — it carries the count instead of a
+question: "You said you would be in bed by 00:00. Four of the six nights
+since, you were." Nights count by the evening they began; days count up to
+yesterday, today being unfinished. No data says so in words. Said once; open
+until answered.
+
+**The answer** is a note of kind `answer` whose `re` names what it answers:
+a question's key or the note's own `at`. Yinyue writes it with `health_log`
+(`kind`, `subject`, `re`, `follow_up_days`); `health_examine` lists what is
+open under `open` with the handle, so she knows what a reply is answering.
+Notes are never edited — they are the person's words, merged as a union by
+time and text across two devices — so everything she does with a note lives
+in `told.jsonl`. The Mac's `Log` still writes plain notes; the shaping runs
+where Yinyue lives.
 
 ## Weather
 

@@ -370,7 +370,9 @@ when the engine can say a person was at the keyboard.
 
 Anything the data cannot see — a sore knee, a race booked, sets done at home —
 goes through **Log**, in their words. It reaches their phone. Do not log what a
-sample already proves.
+sample already proves. On the phone Yinyue shapes notes further — an answer to
+a question she asked, an intention she comes back to, a symptom — and asks the
+one question a morning; here you write the plain line.
 
 ## Output — the page beside you
 
