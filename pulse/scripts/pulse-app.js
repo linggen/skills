@@ -2397,26 +2397,95 @@ function svgRedditHero() {
   return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg">${grid}${ticks}${bars}${karmaLine}</svg>`;
 }
 
-function redditRecentHtml() {
-  const items = redditDash.comments.slice(0, 10);
-  if (!items.length) {
-    return `<div class="xchart"><div class="xchart-head"><span>Recent comments</span></div>
-      <div class="chart-empty">No own comments found — Reddit's feeds may be rate-limited; try again in a minute.</div></div>`;
+// Reddit's comment RSS carries the PARENT POST's title on every entry (there
+// is no per-comment title), so six comments on one thread used to render as
+// six identical rows. Group by post instead: the post once, each comment
+// under it showing its OWN text. Own submissions join the same list — a post
+// the user made and then commented in is ONE group, not two.
+const collapsedRedditGroups = new Set();
+
+// /r/<sub>/comments/<postid>/<slug>/<commentid>/ — the post id is the only
+// stable join key between the comments feed and the submitted feed.
+function redditPostKey(url, title) {
+  const m = /\/comments\/([a-z0-9]+)/i.exec(url || '');
+  return m ? m[1] : `t:${(title || url || '').slice(0, 120).toLowerCase()}`;
+}
+
+// Trim a comment permalink back to the thread it lives in, so the group
+// header opens the post rather than one reply inside it.
+function redditThreadUrl(url) {
+  const m = /^(https?:\/\/[^/]+\/r\/[^/]+\/comments\/[^/]+\/[^/]+\/)/i.exec(url || '');
+  return m ? m[1] : (url || '');
+}
+
+// One entry per post, newest first, carrying every own comment on it.
+function redditActivityGroups() {
+  const groups = new Map();
+  const touch = (item, url) => {
+    const key = redditPostKey(item.url, item.title);
+    let g = groups.get(key);
+    if (!g) {
+      g = { key, title: item.title || url, sub: item.sub || '', url, own: false, comments: [], newest: '' };
+      groups.set(key, g);
+    }
+    if (!g.sub) g.sub = item.sub || '';
+    if ((item.created_iso || '') > g.newest) g.newest = item.created_iso || '';
+    return g;
+  };
+  for (const p of redditDash.posts) {
+    const g = touch(p, p.url || '');
+    g.own = true;
+    g.title = p.title || g.title;
+    g.url = p.url || g.url;
   }
-  const rows = items.map(c => {
-    const h = redditAgeHours(c.created_iso);
-    const age = h != null ? fmtAge(h) : '';
-    return `<div class="hn-sub">
-      <a class="hn-sub-title" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">${escapeHtml(c.title || c.url)}</a>
-      <div class="hn-sub-meta">
-        <span class="hn-sub-stat">${escapeHtml(c.sub || '')}</span>
-        ${age ? `<span class="hn-sub-age">${age}</span>` : ''}
+  for (const c of redditDash.comments) {
+    const g = touch(c, redditThreadUrl(c.url));
+    g.comments.push(c);
+  }
+  const list = [...groups.values()];
+  for (const g of list) g.comments.sort((a, b) => (b.created_iso || '').localeCompare(a.created_iso || ''));
+  list.sort((a, b) => (b.newest || '').localeCompare(a.newest || ''));
+  return list;
+}
+
+function redditRecentHtml() {
+  const groups = redditActivityGroups();
+  if (!groups.length) {
+    return `<div class="xchart"><div class="xchart-head"><span>Recent activity</span></div>
+      <div class="chart-empty">No own posts or comments found — Reddit's feeds may be rate-limited; try again in a minute.</div></div>`;
+  }
+  const ageOf = (iso) => {
+    const h = redditAgeHours(iso);
+    return h != null ? fmtAge(h) : '';
+  };
+  const rows = groups.map(g => {
+    const n = g.comments.length;
+    const collapsed = collapsedRedditGroups.has(g.key);
+    const chev = n
+      ? `<button class="rg-chev" data-rg="${escapeHtml(g.key)}" title="${collapsed ? 'Show' : 'Hide'} ${n} comment${n === 1 ? '' : 's'}">▸</button>`
+      : `<span class="rg-chev-pad"></span>`;
+    const body = g.comments.map(c => `
+      <a class="rg-c" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">
+        <span class="rg-c-body">${escapeHtml(c.body || '(no text in feed)')}</span>
+        <span class="rg-c-age">${ageOf(c.created_iso)}</span>
+      </a>`).join('');
+    return `<div class="rg${collapsed ? ' collapsed' : ''}">
+      <div class="rg-head">
+        ${chev}
+        <a class="rg-title" href="${escapeHtml(g.url)}" target="_blank" rel="noopener">${escapeHtml(g.title || g.url)}</a>
       </div>
+      <div class="rg-meta">
+        <span class="hn-sub-stat">${escapeHtml(g.sub || '')}</span>
+        ${g.own ? `<span class="rg-own">my post</span>` : ''}
+        ${n ? `<span class="rg-count">${n} comment${n === 1 ? '' : 's'}</span>` : ''}
+        <span class="hn-sub-age">${ageOf(g.newest)}</span>
+      </div>
+      ${n ? `<div class="rg-body">${body}</div>` : ''}
     </div>`;
   }).join('');
   return `<div class="xchart hn-subs">
-    <div class="xchart-head"><span>Recent comments</span><span class="xchart-legend">your newest public comments</span></div>
-    <div class="hn-subs-scroll">${rows}</div>
+    <div class="xchart-head"><span>Recent activity</span><span class="xchart-legend">your newest posts and comments, grouped by post</span></div>
+    <div class="rg-scroll">${rows}</div>
   </div>`;
 }
 
@@ -2463,6 +2532,16 @@ function renderRedditTab(tabId, mount) {
   const dash = document.createElement('div');
   dash.className = 'x-dash';
   dash.innerHTML = redditDashboardHtml();
+  // Collapse state is per post key and survives renderAll().
+  dash.querySelectorAll('.rg-chev').forEach(b => {
+    b.addEventListener('click', () => {
+      const key = b.dataset.rg;
+      if (!key) return;
+      if (collapsedRedditGroups.has(key)) collapsedRedditGroups.delete(key);
+      else collapsedRedditGroups.add(key);
+      b.closest('.rg')?.classList.toggle('collapsed');
+    });
+  });
   mount.appendChild(dash);
 }
 
