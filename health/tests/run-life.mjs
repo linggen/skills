@@ -179,7 +179,7 @@ ok('a finished day is assembled once and then left alone', () => {
   assert.equal(again.written_at, first.written_at, 'a finished day cannot change');
 });
 
-ok('the report carries the working day, and today is refreshed on the way', () => {
+ok('the report hands the agent no working day — the lane is shelved', () => {
   const { health } = stage([]);
   const out = execFileSync(
     process.execPath,
@@ -187,10 +187,7 @@ ok('the report carries the working day, and today is refreshed on the way', () =
     { encoding: 'utf8', env: { ...process.env, HEALTH_DIR: health } },
   );
   const r = JSON.parse(out.trim().split('\n').pop());
-  assert.ok(r.work, 'report says what this Mac saw of the day');
-  assert.equal(r.work.today.date, dayOf(new Date()));
-  assert.ok(r.work.yesterday, 'yesterday is assembled on the way — it is the '
-    + 'day a morning conversation is about');
+  assert.equal(r.work, undefined, 'Report hands the agent no work signal — shelved 2026-09-08');
 });
 
 console.log(`\n${pass} checks passed`);

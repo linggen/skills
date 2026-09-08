@@ -27,7 +27,6 @@ import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 
 import { fold, mergeNotes, monthOf, parseLines, planWrite, summarize, wins } from './store.js';
-import { refresh as refreshLife, settled as settledLife } from './life.mjs';
 import { changeFocus, homeOf, selectedOf, validHome } from './home.js';
 
 const HOME = process.env.HOME || '';
@@ -445,19 +444,10 @@ const VERBS = {
     if (review) names.push(review);
     const registers = pull(names);
 
-    // The other half of the join, and the only half this Mac produces itself:
-    // when the day started, when it stopped, and what was still going on at
-    // 23:40. Today is rebuilt when it has gone stale — the day moves while it
-    // is being lived. Yesterday is assembled once and then left alone: a day
-    // that has finished cannot change, and it is the day a morning
-    // conversation is actually about.
-    const yesterday = dayKey(new Date(now.getTime() - 86400000));
-    let life = null;
-    try {
-      life = { today: refreshLife(day), yesterday: settledLife(yesterday) };
-    } catch {
-      life = null; // a work signal that cannot be read is absent, never zero
-    }
+    // The work side of the join is shelved (2026-09-08): nothing on this Mac
+    // can tell a person from an agent, and commits exist only for people who
+    // use git. `life.mjs` still builds a day on request, but Report hands the
+    // agent nothing it might blame a late night on.
     const paired = Object.keys(s.devices || {}).length > 0;
     return {
       ok: true,
@@ -477,9 +467,6 @@ const VERBS = {
       checklist: registers[`checklist/${day}.json`] ?? null,
       brief: registers[`briefs/${day}.json`] ?? null,
       review: (review ? registers[review] : null) ?? null,
-      // Absent where this Mac has nothing to say about the working day —
-      // never an empty day, which would read as a day off.
-      work: life,
     };
   },
 

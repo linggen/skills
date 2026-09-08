@@ -382,7 +382,7 @@ night held — the status line and the doors.
 | `lifting_split` | plans/week | this week's split, next session |
 | `weight_trend` | progress/weight, goal | 7-day average vs goal line |
 | `protein` | checklist, targets | today's protein vs target, formula |
-| `screen_time` | life/today, baselines | screen and IDE hours vs normal (Mac paired) |
+| `screen_time` | life/today, baselines | shelved 2026-09-08 with the work lane |
 | `sitting` | stand hours, life | longest sitting streak, breaks |
 | `sleep` | last night, baselines | asleep, stages, debt |
 | `hrv` / `resting_hr` | daily, baselines | value vs normal, 14-day spark |
@@ -391,7 +391,7 @@ night held — the status line and the doors.
 | `steps` | daily | vs normal |
 | `patterns` | patterns.json | the stable and forming claims |
 | `weather_window` | weather/today | the dry hours today (outdoor only) |
-| `work_join` | life/today | IDE hours, late commits, meetings (Mac paired) |
+| `work_join` | life/today | shelved 2026-09-08 with the work lane |
 | `pair_phone` | state (Mac only, no phone) | always | where the body data lives + pair QR |
 
 The remaining kinds above (`running`, `weight_trend`, `sleep`, `hrv`, `steps`,
@@ -626,7 +626,21 @@ then marks them from samples as they land; what HealthKit cannot see (sets, a
 pill) is a tap or a voice line. A check is a local write first, so it works
 with no Mac and no network, and syncs when a Mac is there.
 
-## Work signals (the join, needs a Mac)
+## Work signals (the join, needs a Mac) — SHELVED 2026-09-08
+
+**Shelved 2026-09-08 (Liang).** Nothing below reaches an agent any more:
+`Report` carries no `work`, the phone's examine tool hands Yinyue no
+`their_days`, and both skill texts say to ask what kept the person up rather
+than infer it. Two reasons, both his: a Mac being busy is not a person being
+present — agents commit under the user's name and keep the Mac awake while
+they sleep — and commits exist only for people who use git, while Linggen is
+for everyone. The trustworthy signal would be physical input (macOS exposes
+seconds since the last key or pointer event with no permission, and an agent
+never produces one), sampled by the engine as a general "is a person at this
+machine" capability. Until that exists the lane stays as plumbing only:
+`life.mjs` still builds a day on request and the phone still pulls
+`life/<date>.json`, and no one reads either. The description below is what
+was built on 2026-09-04, kept as the record.
 
 **Built 2026-09-04.** On the Mac, `scripts/life.mjs` assembles one file per
 day, `data/life/<date>.json`, from three things the Mac already has on disk —
