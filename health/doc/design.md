@@ -929,8 +929,13 @@ warning. The person can switch to every morning or never on the drawer row
 synced — another device has its own lock screen.
 
 **Presence without a line** — a widget: "Rest today · HRV 7 under your
-normal", or "Examined 02:14 · at your normal". Glanceable, never interrupts,
-through the WidgetKit extension DJ already ships. Designed, not built.
+normal", or "Examined 02:14 · at your normal". Glanceable, never interrupts.
+Built 2026-09-08 as the app's own WidgetKit extension (`ios/GlanceWidget`;
+the DJ widget the pubspec mentioned had never been added): the phone writes
+`health.glance` after every pass, the widget renders it and computes
+nothing, and at midnight it says "Not examined yet today" rather than wear
+yesterday's line. Lock screen inline and rectangular, home screen small and
+medium; a tap opens Health.
 
 **Rejected for this:** a Watch app — iOS mirrors notifications to a paired
 Watch while the phone is locked, so the brief reaches the wrist for free; a
