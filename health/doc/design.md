@@ -913,8 +913,15 @@ Readings retain, actions queue. Registers are readings: the newest
   a *see* finding: that stays on the screen and in the thread, reached when the
   user opens the app. So the phone will be quiet for months at a stretch, which
   is the point of a warning — and it means the lane cannot be proved by
-  waiting, only by staging a review onto the device. Not built; the app has no
-  notifications of any kind yet. Planned for 2026-09-07.
+  waiting, only by staging a review onto the device. **Built 2026-09-08**: a
+  local notification on the phone at the end of the pass, once per subject
+  and once more a week later if it is still there; the same sentence her
+  thread carries, then *Take it to a doctor.*, never a condition; filed in
+  `told.jsonl` with `surface: notification` so what reached the person is one
+  account whichever door it came through; a tap lands on the review. The
+  permission is asked right after the HealthKit sheet and shown on the
+  drawer's *Underneath* group, read back from iOS. See
+  `linggen-mobile/doc/health.md` — *A warning reaches a closed phone*.
 
 ## Settled (2026-09-03)
 

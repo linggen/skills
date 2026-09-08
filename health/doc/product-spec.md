@@ -237,6 +237,7 @@ Grouped. **v1** marks the first cut. Nothing here is a fixed dashboard number.
 | G7 | Write back to HealthKit: water, caffeine, dietary protein, mindful minutes, workouts | later |
 | G8 | Watch: today's session and the checklist on the wrist, one-tap check, start the planned workout | later |
 | G9 | Family: several phones, one Mac; each person's rows carry `by`; profile and plan are per person | later |
+| G10 | **The doctor tier reaches a closed phone.** A finding worth a doctor goes to the lock screen the night it is found — the same sentence the thread carries, then *take it to a doctor*, never a condition; once per subject, again a week later if it holds. Nothing below that tier ever notifies | v1 |
 
 ### H. Surfaces
 
