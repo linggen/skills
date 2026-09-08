@@ -676,6 +676,45 @@ Screen time, calendar and IDE hours are not in it. Screen time on macOS is a
 private database behind Full Disk Access and the calendar needs EventKit;
 neither is worth a permission prompt for the value it adds over commits.
 
+## The page for a doctor (built 2026-09-08)
+
+A person walks into an appointment with a phone full of readings and no way
+to say which matter. *For your doctor* (drawer, under *Yours*) is one page,
+built from the nightly examinations already on the phone
+(`health_doctor.dart`, `HealthStore.registers('review')`), so it costs no
+second read and says nothing the app did not already decide:
+
+- **Who** — age, sex, height, weight, the training the profile inferred, the
+  goal. **Data** — how many readings across how many kinds, back to when, and
+  how many examinations the 90-day window held.
+- **What changed in the last 90 days** — every subject that sat off the
+  person's own normal on three or more examined days, or on any doctor-tier
+  day: *Resting heart rate: above my normal on 11 of the last 20 examined
+  days; worth a doctor since 23 Aug. Latest 63 bpm, my normal 51 bpm.* Doctor
+  tier first, then by days.
+- **Readings to show** — the same subjects as a range over the window (low ·
+  median · high, latest with its date), out of the examinations' own values.
+- **The Watch's own detections** — each headline with the first date seen.
+- **In my words** — symptoms, answers and notes from the window, newest first,
+  never an intention (a promise is not a symptom).
+- **Questions to ask** — at most three: one per leading subject in the
+  group's words ("Is that worth checking?" for the heart, "anything I should
+  rule out?" for sleep, "a pace you would expect?" for the body), a Watch
+  detection ("Should that be followed up?"), then the one that fits every
+  visit. None names a condition.
+- The footer, on every copy: *Readings are from Apple Health on this phone,
+  judged nightly against my own 28-day normal, not a population range.
+  Nothing here is a diagnosis.*
+
+**Share as PDF** renders the text through a small native bridge
+(`ShareBridge.swift`, channel `dev.linggen/share`: US Letter, one column,
+`## ` heads) and presents the system sheet — Mail, Files, AirDrop, print —
+so it leaves the phone the way the person chooses; *Copy text* is the same
+page as text. The `health_doctor_note` tool hands Yinyue the same text, so
+she can offer it when an appointment comes up. It is the bridge to a real
+doctor the whole design leans on: build the capability, never claim the
+title.
+
 ## The debrief (built 2026-09-08)
 
 What a coach standing at the finish says, at the moment it is wanted. The
