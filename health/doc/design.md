@@ -676,6 +676,36 @@ Screen time, calendar and IDE hours are not in it. Screen time on macOS is a
 private database behind Full Disk Access and the calendar needs EventKit;
 neither is worth a permission prompt for the value it adds over commits.
 
+## The Sunday letter (built 2026-09-08)
+
+Doctors write letters. Once a week, from Sunday 18:00, she writes one
+(`health_letter.dart`, `HealthPasses.writeLetter`): three short paragraphs —
+the week as it was, the one thing she would change, one question — kept as
+`letters/<week>.json` (a register, so a paired Mac gets it) and read under
+*Letters* in the drawer, newest first, signed *— Yinyue*.
+
+The rules draft it from what the phone holds: the plan against the sessions
+that happened, named by weekday ("two of the three sessions planned — Push on
+Tuesday and Long run on Saturday; Thursday's Legs did not happen"); the hours
+and kilometres against the median of the previous weeks; the nights against
+the person's own normal ("a median of 6 h 20, 50 min under your normal, short
+on four"); resting heart rate and HRV mornings off the normal by a MAD; how
+many mornings the examination raised something. The one thing to change is
+one rule, in order: bed time when three or more nights were short; the missed
+session when one was; an easier start when the heart sat off its normal on
+three or more mornings; otherwise *Nothing. Keep it exactly like this.* When
+the cloud is allowed the model may reword the two paragraphs within the facts,
+under 120 words; the question is the app's: *Anything next week I should plan
+around — travel, a deadline, a race?* An answer is a note like any other
+(`re: letter:<week>`); it is kept and shown, and not yet read by the plan.
+
+Due from Sunday 18:00 because the week's training is done by then and the
+evening is when a person reads a letter; whichever pass runs first after that
+writes it — the app opened on Sunday evening, or the 02:00 wake on Monday, in
+which case it is waiting in Notification Center (for the record, no light)
+when they get up. Once per week by key. The `health_letter` tool hands
+Yinyue the newest, or a named week.
+
 ## The page for a doctor (built 2026-09-08)
 
 A person walks into an appointment with a phone full of readings and no way
@@ -1020,6 +1050,7 @@ budget.
 | The morning line | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed the plan |
 | When I could not look | for the record | two mornings after the last examination, moved on by each one | on |
 | After a session | in hand — lights the screen, counts against the budget | within minutes of a workout ending | on |
+| The Sunday letter | for the record | from Sunday 18:00, by whichever pass runs first | on |
 
 All three go through Yinyue's herald (built 2026-09-08 —
 `linggen-mobile/doc/yinyue.md`): declared in `HealthTell`'s constructor,
