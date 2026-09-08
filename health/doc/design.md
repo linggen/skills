@@ -396,7 +396,7 @@ night held — the status line and the doors.
 | `heart_history` | progress/resting_hr, hrv | months of heart |
 | `vo2max` | daily | trend |
 | `steps` | daily | vs normal |
-| `patterns` | patterns.json | the stable and forming claims |
+| `patterns` | patterns.json | the stable and forming claims — built 2026-09-08 as the *What I have learned* door |
 | `weather_window` | weather/today | the dry hours today (outdoor only) |
 | `work_join` | life/today | shelved 2026-09-08 with the work lane |
 | `pair_phone` | state (Mac only, no phone) | always | where the body data lives + pair QR |
@@ -675,6 +675,53 @@ commits.
 Screen time, calendar and IDE hours are not in it. Screen time on macOS is a
 private database behind Full Disk Access and the calendar needs EventKit;
 neither is worth a permission prompt for the value it adds over commits.
+
+## What I have learned about you (built 2026-09-08)
+
+The patterns door, in her voice. Not a rule from a textbook: a count.
+*After a night under 6 h 10, your HRV was under your normal 6 times out of
+8. On the other 41 days, 3 in 41. The gap is 1.4 of your own spread; 5 of 6
+weeks agree.* (`health_patterns.dart`, `patterns.json`, rewritten nightly
+after the examination from the same eight-week rollups; *What I have
+learned* in the drawer; the `health_patterns` tool.)
+
+Each claim is a condition on one day and an outcome the morning after, both
+against the person's own 28-day normal. Conditions: a night under the normal
+by a MAD (the night ending that morning), a bed time later than the median by
+a MAD, a day they trained, a day over the step normal by a MAD. Outcomes: HRV
+under, resting heart rate over, sleep under. The doc's rule as code: at least
+six condition days and six others; the mean adverse distance on condition
+days minus the rest at least one MAD; each week with a condition day votes
+with its mean — *forming* from four aligned weeks, *stable* from six, and
+two weeks that said the opposite retire it before it is ever shown. A thing
+never explains itself (a short night is not a cause of short sleep). The
+register keeps how many pairings were looked at, so an empty page can say it
+looked. A claim that has just earned a place, or just become stable, is said
+once in her thread — "I think I have noticed something" / "I am sure of
+something now" — never on the lock screen.
+
+## Symptoms, written to Apple Health (built 2026-09-08)
+
+"My stomach hurts" said to her becomes a real HealthKit symptom sample — the
+same category Apple's own Health app writes (`HKCategoryTypeIdentifier
+AbdominalCramps`, thirty-eight of them), so it sits beside the readings,
+survives this app, and reaches a doctor through Health's own sharing. The
+one thing this app writes to Health; everything else it reads.
+
+`health_symptom {symptom, severity?, when?, said?}` → `HealthLibrary.
+logSymptom`: the words map to a category (`HealthSymptoms`: the names,
+plus what people actually say — "tired" is fatigue, "stuffy nose" is sinus
+congestion, longest match wins; no match is said in words, never guessed);
+the first time, iOS is asked for permission to write, at that moment rather
+than at install (`NSHealthUpdateUsageDescription`; `authorizeSymptoms` /
+`symptomStatus` / `saveSymptom` on the bridge — the share side iOS does
+disclose); severity is HealthKit's own scale and unspecified when the person
+gave no word; the sample is pulled back into the store through the same
+anchored query as everything else. Their words are kept as a note of kind
+`symptom` with a follow-up tomorrow, so she asks how it is. Writing refused
+in Settings keeps the note and says where it did not go. The categories
+appear under *Symptoms* on the Data screen, counted by the examination,
+never judged against a baseline.
 
 ## The Sunday letter (built 2026-09-08)
 
