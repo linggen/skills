@@ -1,28 +1,41 @@
-// Mention policy — how, where and how often a draft may name the user's
-// product. Pure functions (no DOM, no fetch) so pulse-app.js can build the
-// same MENTION POLICY block for every goal and node can test it.
+// Mention policy — how and where a draft may name the user's product. Pure
+// functions (no DOM, no fetch) so pulse-app.js can build the same MENTION
+// POLICY block for every goal and node can test it.
 //
 // Config (config.json `mention`):
 //   product  — the product's name as it should appear in a sentence
 //   domain   — its site, said as PLAIN TEXT ("linggen.dev"); never a URL
-//   default  — "disclosed" | "implicit": the register on threads where the
-//              product is the direct answer to the OP
-//   ratio    — max share of the user's recent comments that may carry the
-//              product (Reddit's 10% self-promotion guideline → 0.1)
+//   default  — "disclosed" | "implicit": the register a lane may reach for
 //   sites    — per-lane overrides, e.g. { hackernews: "implicit" }
 //
-// The budget is counted by the page from the user's own recent comments —
-// the model never estimates it. A lane over budget drafts implicit this run.
+// RELEVANCE IS THE ONLY GATE (Liang, 2026-09-08: "the most important thing
+// is mention linggen when necessary … if all discovery is about linggen, we
+// can mention linggen on all drafts, but if zero relative, 0 mention").
+// There used to be a `ratio` quota — Reddit's 1-per-10 self-promotion rule,
+// counted by the page from the user's own recent comments and able to force
+// a lane implicit for a whole run. It is deleted, not merely relaxed: a
+// count cannot tell a thread the product genuinely answers from one it does
+// not, and silencing the former is the expensive mistake. On 2026-09-08
+// three of his own comments spent the budget — two of them answers under
+// his OWN announcement thread, which is not self-promotion at all — and
+// every draft went implicit, including threads squarely about agent memory.
+//
+// Do NOT reintroduce a quota as a safety net "because a human reviews every
+// draft". Review is where Pulse is today, not what it is for: the goal is
+// auto-posting, held back only until drafts stop reading as machine-written
+// (Liang, 2026-09-08 — "if it is very like human's message, I will build
+// auto post for sure, that is the goal"). What keeps a mention safe under
+// auto-post is not a counter but the relevance test below — a comment that
+// answers the OP and names the product because it is the answer is the one
+// shape that survives both a mod and a reader.
 
 export const MENTION_LANES = ['reddit', 'hackernews', 'x', 'bluesky'];
-export const MENTION_WINDOW = 10;
 export const REGISTERS = ['disclosed', 'implicit'];
 
 export const MENTION_DEFAULTS = Object.freeze({
   product: '',
   domain: '',
   default: 'disclosed',
-  ratio: 0.1,
   sites: {},
 });
 
@@ -38,8 +51,6 @@ export function plainDomain(s) {
 export function normalizeMention(raw) {
   const m = raw && typeof raw === 'object' ? raw : {};
   const def = REGISTERS.includes(m.default) ? m.default : MENTION_DEFAULTS.default;
-  const ratio = Number.isFinite(m.ratio) && m.ratio >= 0 && m.ratio <= 1
-    ? m.ratio : MENTION_DEFAULTS.ratio;
   const sites = {};
   for (const lane of MENTION_LANES) {
     const v = m.sites && m.sites[lane];
@@ -49,52 +60,14 @@ export function normalizeMention(raw) {
     product: String(m.product || '').trim(),
     domain: plainDomain(m.domain),
     default: def,
-    ratio,
     sites,
   };
 }
 
-// Does this comment/post body name the product? Case-insensitive, either the
-// name or the domain — that's what a subreddit's self-promo count sees.
-export function mentionsProduct(text, policy) {
-  const t = String(text || '').toLowerCase();
-  if (!t) return false;
-  const needles = [policy.product, policy.domain].map(s => s.toLowerCase()).filter(Boolean);
-  return needles.some(n => t.includes(n));
-}
-
-// bodies: the user's own recent comments/posts on one lane, NEWEST FIRST.
-// The window is always MENTION_WINDOW — the rule is "n per 10", so a young
-// account with 3 comments is judged against 10, not 3.
-export function laneBudget(bodies, policy) {
-  const recent = (Array.isArray(bodies) ? bodies : []).slice(0, MENTION_WINDOW);
-  const used = recent.filter(b => mentionsProduct(b, policy)).length;
-  const allowed = Math.floor(policy.ratio * MENTION_WINDOW + 1e-9);
-  return {
-    window: MENTION_WINDOW,
-    seen: recent.length,
-    used,
-    allowed,
-    open: used < allowed,
-    known: recent.length > 0,
-  };
-}
-
-export function computeMentionBudgets(policy, bodiesByLane) {
-  const out = {};
-  for (const lane of MENTION_LANES) {
-    out[lane] = laneBudget((bodiesByLane || {})[lane], policy);
-  }
-  return out;
-}
-
-// The register a lane drafts in THIS run: the configured one, forced to
-// implicit when its budget is spent.
-export function effectiveRegister(lane, policy, budgets) {
-  const configured = policy.sites[lane] || policy.default;
-  const b = budgets && budgets[lane];
-  if (configured === 'disclosed' && b && !b.open) return { register: 'implicit', why: 'budget spent' };
-  return { register: configured, why: '' };
+// The highest register a lane may reach for. Whether a given draft actually
+// gets there is decided per thread by the relevance test, never here.
+export function effectiveRegister(lane, policy) {
+  return policy.sites[lane] || policy.default;
 }
 
 export function oneLiner(policy) {
@@ -108,10 +81,21 @@ export function oneLiner(policy) {
 export const ONE_LINER_RULE =
   'Vary the wording from comment to comment ("I built X for exactly this", "disclosure: X is mine", "I\'m the author of X") — keep the three parts, never the same sentence twice.';
 
+// The test that replaced the quota. It has to be answerable in one concrete
+// sentence, because "is this relevant?" on its own is a question a model
+// says yes to.
+export const RELEVANCE_TEST = [
+  'THE TEST, thread by thread: name the ONE concrete thing the product does that answers THIS OP.',
+  'Say that thing to yourself before you draft. If the best you can reach is a category ("it is an',
+  'agent system", "it does memory"), or the sentence you wrote would fit fifty other threads, the',
+  'thread FAILS — draft implicit. Judge it against the PRODUCT DIGEST above: if the digest does not',
+  'describe the thing, the thing does not exist and you may not claim it.',
+].join('\n');
+
 // The hidden block prepended to every drafting goal. Everything the model
-// needs to decide a register is here; nothing is left to its judgment except
-// "is the product the direct answer to this OP".
-export function buildMentionBlock(policy, budgets) {
+// needs to decide a register is here; the one judgment left to it is the
+// relevance test, which is the judgment that actually needs a reader.
+export function buildMentionBlock(policy) {
   if (!policy.product) {
     return [
       'MENTION POLICY — no product is configured (Settings → Mentions), so every',
@@ -124,23 +108,23 @@ export function buildMentionBlock(policy, budgets) {
     `Product: ${policy.product}.` + (policy.domain
       ? ` Its site is said as PLAIN TEXT — "${policy.domain}" — never as a URL: no https://, no www., no markdown link, no "check out".`
       : ' No site is configured — name the product only.'),
+    '',
+    'RELEVANCE IS THE ONLY GATE. There is no quota and no per-run limit: every thread is judged on',
+    'its own. If ten threads this run are squarely what the product does, all ten drafts name it. If',
+    'none are, none do. Never name it to fill a slot; never withhold it from a thread it truly answers.',
+    RELEVANCE_TEST,
+    '',
     'Registers:',
-    `  disclosed — ONLY on a thread where the product is the direct answer (the OP's problem is what it does). Answer the OP on the merits FIRST, then ONE sentence of this shape: "${oneLiner(policy)}" ${ONE_LINER_RULE} At most once per comment. Never a link, never a feature list. Never pose as a user of it — you built it, and saying so is what makes the mention allowed. If the comment would not stand without that sentence, you are planting a name — drop to implicit.`,
-    '  implicit  — no product and no site named at all.',
-    'Per lane this run (configured register, then the budget the page counted from my own recent comments):',
+    `  disclosed — the thread PASSED the test. Answer the OP on the merits FIRST, then ONE sentence of this shape: "${oneLiner(policy)}" ${ONE_LINER_RULE} At most once per comment. Never a link, never a feature list. Never pose as a user of it — you built it, and saying so is what makes the mention allowed. If the comment would not stand as a good answer with that sentence deleted, you are planting a name — drop to implicit.`,
+    '  implicit  — the thread FAILED the test, or the lane is implicit-only. No product and no site named at all; still a full, useful answer.',
+    'Per lane, the highest register available this run:',
   ];
   for (const lane of MENTION_LANES) {
-    const eff = effectiveRegister(lane, policy, budgets);
-    const b = budgets && budgets[lane];
-    const configured = policy.sites[lane] || policy.default;
-    let budget;
-    if (!b || !b.known) budget = 'no comment history on file → budget OPEN';
-    else budget = `${b.used} of my last ${b.window} carry the product (${b.allowed} allowed) → budget ${b.open ? 'OPEN' : 'SPENT'}`;
-    const note = eff.why ? ` → draft IMPLICIT this run (${eff.why})` : '';
-    lines.push(`  ${lane}: ${configured}; ${budget}${note}`);
+    const reg = effectiveRegister(lane, policy);
+    lines.push(`  ${lane}: ${reg}${reg === 'implicit' ? ' — never name the product on this lane' : ' — may name the product on threads that pass the test'}`);
   }
   lines.push(
-    `Ratio ${policy.ratio} per ${MENTION_WINDOW} is Reddit's self-promotion rule (posts AND comments count); HN flags promo hardest, so its default stays implicit unless the thread is squarely about what the product does.`,
+    'HN flags promotion hardest, which is why its lane is usually implicit-only.',
     'Set `register` on every drafted card to the register you actually used.',
     '',
   );

@@ -281,9 +281,10 @@ function render() {
 
 // ---- Mentions ------------------------------------------------------------
 // config.mention — the product name, its site as plain text, the default
-// register, a per-lane HN override, and the self-promotion ratio (stored as
-// a fraction, shown as a percent). The page turns this into the MENTION
-// POLICY block that prefixes every drafting goal (see mention-policy.js).
+// register and a per-lane HN override. There is no self-promotion ratio:
+// the quota was deleted 2026-09-08 (mention-policy.js carries why), so a
+// register is a ceiling and relevance decides each draft. The page turns
+// this into the MENTION POLICY block that prefixes every drafting goal.
 
 const REGISTERS = ['disclosed', 'implicit'];
 // Keep in step with DIGEST_LIMITS.maxRepos in scripts/product-digest.js.
@@ -297,8 +298,6 @@ function renderMention() {
   set('mention-default', REGISTERS.includes(m.default) ? m.default : 'disclosed');
   const hn = m.sites && REGISTERS.includes(m.sites.hackernews) ? m.sites.hackernews : '';
   set('mention-hn', hn);
-  const ratio = Number.isFinite(m.ratio) ? m.ratio : 0.1;
-  set('mention-ratio', String(Math.round(ratio * 100)));
 }
 
 function readMention() {
@@ -307,11 +306,9 @@ function readMention() {
   const domain = get('mention-domain').replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/+$/, '');
   const def = REGISTERS.includes(get('mention-default')) ? get('mention-default') : 'disclosed';
   const hn = get('mention-hn');
-  const pct = parseInt(get('mention-ratio'), 10);
-  const ratio = Number.isFinite(pct) && pct >= 0 && pct <= 100 ? pct / 100 : 0.1;
   const sites = {};
   if (REGISTERS.includes(hn)) sites.hackernews = hn;
-  return { product, domain, default: def, ratio, sites };
+  return { product, domain, default: def, sites };
 }
 
 // ---- Unified websites list -----------------------------------------------

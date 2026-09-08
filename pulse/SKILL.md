@@ -559,13 +559,14 @@ Read these files with `Read` for additional context as needed:
 2. `~/.linggen/skills/pulse/config.json` — `sites` (enabled source
    tools), `targets` (enabled output lanes), `workspace_path` +
    `product_repos`, `brief`, and `mention` (the product's name, its
-   site as plain text, the default register, the self-promotion ratio,
-   per-lane overrides). Only call enabled tools; only draft for enabled
-   lanes. You never read `mention` or `product_repos` yourself: the page
-   turns them into the hidden **MENTION POLICY** and **PRODUCT DIGEST**
-   blocks that prefix every drafting goal, with the budget already
-   counted from the user's own recent comments. Obey the blocks; never
-   estimate the budget.
+   site as plain text, the default register, per-lane overrides). Only
+   call enabled tools; only draft for enabled lanes. You never read
+   `mention` or `product_repos` yourself: the page turns them into the
+   hidden **MENTION POLICY** and **PRODUCT DIGEST** blocks that prefix
+   every drafting goal. There is no self-promotion quota — relevance
+   alone decides each draft, by the test the policy block states: name
+   the one concrete thing the product does that answers THIS OP, or
+   draft implicit.
 3. `~/.linggen/skills/pulse/references/x-setup-guide.md` — how to connect
    X via the linggen-browser extension ($0, reads your logged-in x.com
    session; no API keys). Read it when the user asks to set up X or when an
@@ -787,8 +788,9 @@ Never fire X tools in the same parallel block as each other.
    the corpus-variation rules (this account's comments have been
    killed for AI cadence; see lane-templates.md). **Register comes
    from the MENTION POLICY block** at the top of the goal: `disclosed`
-   only where the product is the direct answer to the OP AND that
-   lane's budget is OPEN — then answer on the merits first and add ONE
+   only where the product is the direct answer to the OP — you must be
+   able to name the one concrete thing it does that answers this OP, or
+   the thread fails — then answer on the merits first and add ONE
    sentence of the block's shape ("I built <product> (<site>) for
    this — it does X", the site as plain text, never a URL, wording
    varied across comments); otherwise `implicit`, no product named.
@@ -978,8 +980,8 @@ Rules:
   shared-experience grounding usually reads naturally — but apply
   the anonymization test before keeping any project mention). The
   MENTION POLICY block at the top of the goal still rules: a reply to
-  someone asking about the product is the textbook `disclosed` case
-  when that lane's budget is OPEN; a plain reply names nothing.
+  someone asking about the product is the textbook `disclosed` case;
+  a plain reply names nothing.
 
 For non-Reddit sources (HN, lobsters) where the comment tree isn't
 trivially walkable, fall back to a 1-element conversation with just

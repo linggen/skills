@@ -16,7 +16,7 @@
 
 import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, isThreadCommented, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
 import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
-import { normalizeMention, computeMentionBudgets, buildMentionBlock } from './mention-policy.js';
+import { normalizeMention, buildMentionBlock } from './mention-policy.js';
 import { normalizeRepoPaths, buildDigestCommand, parseDigestOutput, renderDigestBlock } from './product-digest.js';
 
 const SKILL_DIR = '$HOME/.linggen/skills/pulse';
@@ -571,8 +571,6 @@ const COMMENTED_LANES = ['reddit', 'x', 'hn'];
 // at goal time. reddit-account.sh writes its own cache (the Reddit dashboard
 // reads it too); HN and X are written here.
 const REDDIT_ACCOUNT_CACHE = `${SKILL_DIR}/state/reddit-account-cache.json`;
-const HN_OWN_CACHE = `${SKILL_DIR}/state/hn-own-cache.json`;
-const X_OWN_CACHE = `${SKILL_DIR}/state/x-own-cache.json`;
 const laneOfKey = (k) => String(k).split(':')[0];
 
 // Rebuild the already-engaged list for `lanes` (default: all three). A per-tab
@@ -614,12 +612,6 @@ async function refreshCommentedThreadUrls(lanes = COMMENTED_LANES) {
       const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/x-own.sh" 100`);
       const data = JSON.parse(out);
       fresh.x.push(...(data?.replied_to || []));
-      if ((data?.items || []).length) {
-        writeJson(X_OWN_CACHE, {
-          items: data.items.map(i => ({ url: i.url || '', text: i.text || i.title || '' })),
-          updated_at: new Date().toISOString(),
-        }).catch(err => console.warn('[pulse] x-own cache write', err));
-      }
     } catch (e) {
       console.warn('[pulse] x-own replied_to fetch failed', e);
     }
@@ -631,10 +623,6 @@ async function refreshCommentedThreadUrls(lanes = COMMENTED_LANES) {
       const out = await runBash(`bash "${SKILL_DIR}/scripts/sites/hn-own-comments.sh"`);
       const data = JSON.parse(out);
       fresh.hn.push(...(data?.urls || []));
-      if ((data?.comments || []).length) {
-        writeJson(HN_OWN_CACHE, { comments: data.comments, updated_at: new Date().toISOString() })
-          .catch(err => console.warn('[pulse] hn-own cache write', err));
-      }
     } catch (e) {
       console.warn('[pulse] hn own-comments fetch failed', e);
     }
@@ -708,9 +696,10 @@ function buildSkipBlock() {
 // ---- Mention policy + product digest --------------------------------------
 //
 // Both ride every drafting goal (Gather web, per-tab rescans, Draft). The
-// policy block says where a draft may name the product and how; its budget
-// is counted here from my own recent comments on disk, never estimated by
-// the model. The digest is the README + latest CHANGELOG entry of every
+// policy block says how a draft may name the product; WHETHER it does is
+// decided per thread by the relevance test, not by any count the page
+// keeps (the 1-per-10 quota was deleted 2026-09-08 — see mention-policy.js
+// for why). The digest is the README + latest CHANGELOG entry of every
 // repo in config.product_repos: the agent was told to Read the workspace
 // itself and never did (every Pulse session on disk through 2026-09-01 —
 // zero workspace reads), so the page hands it over, the way it already
@@ -719,26 +708,10 @@ function buildSkipBlock() {
 // squarely about agent memory drafted implicit because workspace_path
 // pointed at a parent dir with no README and the digest came back empty).
 
-async function loadOwnBodies() {
-  const [reddit, hn, x] = await Promise.all([
-    readJson(REDDIT_ACCOUNT_CACHE, null),
-    readJson(HN_OWN_CACHE, null),
-    readJson(X_OWN_CACHE, null),
-  ]);
-  return {
-    reddit: (reddit?.comments || []).map(c => c.body || ''),
-    hackernews: (hn?.comments || []).map(c => c.body || ''),
-    x: (x?.items || []).map(i => i.text || ''),
-    bluesky: [],
-  };
-}
-
 async function buildMentionBlockLive(cfg) {
   try {
     const conf = cfg || await readPulseConfig();
-    const policy = normalizeMention(conf?.mention);
-    const budgets = computeMentionBudgets(policy, await loadOwnBodies());
-    return buildMentionBlock(policy, budgets);
+    return buildMentionBlock(normalizeMention(conf?.mention));
   } catch (e) {
     console.warn('[pulse] mention block failed', e);
     return '';
@@ -823,7 +796,7 @@ async function runGatherWeb() {
     '  1. ALREADY-COMMENTED CHECK. Drop any thread whose post id is in SKIP_URLS — that is the authoritative list of threads I have already commented on or dismissed. Additionally, if FetchRedditThread surfaced a comment authored by "' + (redditHandle || '<sites.reddit.username>') + '" (case-insensitive, strip leading "u/"), skip that thread too. But do NOT skip a thread merely because you could not read its full comment tree: SKIP_URLS plus the page\'s render-time already-commented filter already catch those, so a missing/partial thread read is NEVER a reason to emit zero discovery cards.',
     '  2. REPLY TO THE OP — not to a nested comment. The draft is a top-level reply to the post itself: it is the easiest for me to post (the reply box sits at the top of the thread, no hunting for a buried comment) and a top-level comment on an active thread gets far more visibility, which is the point. Do NOT emit `reply_target` for discovery cards. (reply_target is only for `mentions`/reply_to_me, where the comment is in my own inbox.)',
     '  3. GROUND THE DRAFT. Use the OP body + whatever comments FetchRedditThread returned to understand the discussion (at minimum the OP). Don\'t parrot points existing commenters already made — offer a distinct angle — but the draft replies to the OP, not to any one commenter.',
-    '  4. REGISTER. Pick it from the MENTION POLICY block at the top of this goal: disclosed only where the product is the direct answer to the OP AND the lane\'s budget is OPEN, else implicit. Set `register` on the card.',
+    '  4. REGISTER. Pick it from the MENTION POLICY block at the top of this goal: disclosed only where the product is the direct answer to the OP and you can name the one concrete thing it does that answers it, else implicit. There is no quota — judge every thread on its own. Set `register` on the card.',
     'Then emit the card with `author` (the OP handle — `u/<name>` from FetchReddit\'s author field, or op.author from FetchRedditThread — so I see who I\'d be replying to), `excerpt` (plain-text OP body, ~500 chars; strip markdown/HTML, for UI display) and `draft_starter` (your 2-4 sentence top-level reply in voice). Drafting the discovery starter IS this step\'s job; this is the only place you draft. The separate Draft button handles broadcast posts, not comment-on-thread starters.',
   ].join('\n');
   sendChatHidden(goal);

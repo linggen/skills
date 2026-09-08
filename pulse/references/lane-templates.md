@@ -208,8 +208,8 @@ happens to be public.
   shapes as `reddit-comment`): (1) implicit — no project mention;
   (2) contextual — "hit the same thing building X" only when the
   thread directly overlaps; (3) disclosed — "I built <product> (<site>)
-  for this — it does X" only when the product is the direct answer and
-  the lane's budget is OPEN. On X a bare domain still becomes a t.co
+  for this — it does X" only when the product is the direct answer.
+  On X a bare domain still becomes a t.co
   link: harmless inside a reply that actually answers, never as the
   whole reply, and never in a post body (see `x-post`).
 - **Anonymization test**: would the reply work just as well with the
@@ -352,9 +352,9 @@ sentences, emit `empty`.
      X is mine", "I'm the author of X"); keep the three parts. Never
      pose as a user of it — you built it, and saying so is what makes
      the mention allowed; undisclosed affiliation is what gets accounts
-     banned. Allowed only when the MENTION POLICY block says that lane
-     is `disclosed` and its budget is OPEN (Reddit's 10% rule, counted
-     by the page). Worked example from the user, in voice: "I built
+     banned. Allowed when the MENTION POLICY block says that lane is
+     `disclosed` and the thread passes the block's relevance test —
+     there is no quota. Worked example from the user, in voice: "I built
      Linggen (linggen.dev) for this — it runs the agent on your Mac and
      the phone is just a peer of it."
 - **Anonymization test** (use this to decide promo vs. authentic):
@@ -459,8 +459,7 @@ posting even if the user had no product at all? If not, drop the card.
      <product> (<site>) for this — …", the site as plain text, never a
      URL). HN forgives self-promo only when it's honest and on-topic.
      Never in a thread that's merely adjacent. The MENTION POLICY block
-     configures HN as implicit by default and says whether the budget
-     is open; the block wins.
+     configures HN as implicit by default; the block wins.
 - **The mention test**: if you removed the product reference, would the
   comment still stand as a useful contribution? If no, you're planting a
   name — rewrite to register (1) or emit `empty`. Most HN drafts should
