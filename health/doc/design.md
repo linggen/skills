@@ -889,7 +889,7 @@ budget.
 | Line | Tier | When | Default |
 |:-----|:-----|:-----|:--------|
 | A warning | warning — bypasses the budget, lights the screen | the pass that found it | always on |
-| The morning line | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed something |
+| The morning line | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed the plan |
 
 **The warning** is built (2026-09-08): a doctor-tier finding, once per
 subject and once more a week later if it holds, the same sentence her thread
@@ -897,20 +897,29 @@ carries then *Take it to a doctor.*, never a condition, filed in `told.jsonl`
 with `surface: notification`. It posts through the bridge directly today and
 moves under her herald when that exists, unchanged in behaviour.
 
-**The morning line** is the brief, off the phone. It is composed on the
-**HealthKit sleep wake** — the Watch writes the night's sleep about when the
-person gets up, iOS wakes the app for twenty seconds, and that is the freshest
-data the day will have and the right minute. The rules half of the brief is
-the line; the model rewording is a bonus if it finishes inside the wake, never
-waited on. If that wake never came, the night's task schedules the line for
-the wake time the profile already infers (`routine.up`), with `until` the end
-of that morning, so a brief about Tuesday is never said on Wednesday. Tap
-lands on `health` — the brief is the first thing on Highlights.
+**The morning line** is the brief, off the phone. Built 2026-09-08
+(`HealthTell.morning`, called at the end of `morningPass`). It is composed on
+the **HealthKit sleep wake** — the Watch writes the night's sleep about when
+the person gets up, iOS wakes the app for twenty seconds, and that is the
+freshest data the day will have and the right minute. That wake now re-runs
+the morning pass, because the 02:00 brief could not have seen the night; the
+morning rule decides once (a rest it imposed is never filled by yesterday's
+session carrying over). The rules half of the brief is the line; the model
+rewording is a bonus if it finishes inside the wake, never waited on. Where
+the brief was composed at 02:00 the line is scheduled for the wake time the
+profile already infers (`routine.wake`), and iOS delivers it whether or not
+the app runs again; a fresher line replaces one still waiting and never one
+that already went, so nobody gets the same morning twice; after noon nothing
+is sent, because an afternoon brief is on the screen of whoever composed it.
+Opening the app takes down a line still waiting for its time. Tap lands on
+`health` — the brief is the first thing on Highlights.
 
-Default cadence is only a morning that changed something: rest imposed, a
-session moved, a finding. "Today: Push, 55 min" as planned stays quiet. The
-person can switch it to every morning or never, on the same row that says
-whether the phone allows warnings. *(Liang's call — see open question 5.)*
+**Settled 2026-09-08 (Liang): only when the plan changed** — rest imposed,
+or a session moved. "Today: Push, 55 min" as planned stays quiet. A `see`
+finding does not earn it (2026-09-04), and a doctor-tier finding has its own
+warning. The person can switch to every morning or never on the drawer row
+*The morning line*, kept in the phone's own `state.json` prefs, never
+synced — another device has its own lock screen.
 
 **Presence without a line** — a widget: "Rest today · HRV 7 under your
 normal", or "Examined 02:14 · at your normal". Glanceable, never interrupts,
@@ -943,6 +952,15 @@ thing that will need the table below.
 
 Readings retain, actions queue. Registers are readings: the newest
 `written_at` wins on both sides.
+
+## Settled (2026-09-08)
+
+- **Yinyue owns the budget.** Everything Linggen says to a closed phone is
+  her voice under one budget; apps hand her notices and declare their lines.
+  The lane is in `linggen-mobile/doc/yinyue.md`; Health's two lines are under
+  [Notifications](#notifications--what-health-hands-her).
+- **The morning line goes only when the plan changed** — rest imposed or a
+  session moved — quietly, at the person's own wake time. Built the same day.
 
 ## Settled (2026-09-04)
 
@@ -1031,9 +1049,6 @@ Readings retain, actions queue. Registers are readings: the newest
    nightly examination free too?
 4. Should durable profile facts go to ling-mem automatically (weekly pass), or
    only when the user says "remember that"?
-5. **The morning line's default**: only on a morning that changed something
-   (recommended), or every morning? See
-   [Notifications](#notifications--what-health-hands-her).
 *(The photo and the promise was settled on 2026-09-04 — the image goes to
 the user's own ChatGPT over OAuth. See
 [What you eat](#what-you-eat--an-estimate-is-never-a-measurement).)*
