@@ -691,7 +691,7 @@ confirms on the executing device.
 | `ListWorkouts` / `GetWorkout` / `GetSleep` | detail | read |
 | `GetLedger` / `GetPatterns` / `FindPattern` / `GetLife` | ledger; patterns; test a claim; work signals | read |
 | `WriteBrief` / `WriteReport` | the brief; weekly or workout report | edit |
-| `Nudge` | enqueue a herald line for Yinyue with a quiet window | edit |
+| `Nudge` | hand Yinyue a notice — text, tier, route, when, until; her herald owns the budget | edit |
 | `Export` | CSV + Markdown bundle | edit |
 | `SyncNow` | drain the outbox / exchange registers (phone; no-op unpaired) | read |
 | `PlanToCalendar` | mirror the week into Calendar (later; opt-in; confirm) | edit |
@@ -797,10 +797,10 @@ temperature that is already a delta around zero). One MAD is worth
 `max(mad, floor)`. Without it a quiet measurement is loud for being quiet.
 
 Still to build: the `patterns` screen behind its door, weather for outdoor
-plans (needs location), and nudges through Yinyue's herald — the app has no
-notifications of any kind yet, so a pass that finds something at 02:00 reaches
-only someone who opens the app. Designed on 2026-09-04 and not built: the meal
-lane (a photo to the user's own ChatGPT, depth captured with the shot) and the
+plans (needs location), and the morning line and presence widget under
+[Notifications](#notifications--what-health-hands-her) — the doctor-tier
+warning reaches the lock screen since 2026-09-08. Designed on 2026-09-04 and
+not built: the meal lane (a photo to the user's own ChatGPT, depth captured with the shot) and the
 chart catalog's other three forms — the phone draws the dial and the fortnight,
 not the week bars, the day shape or the session curve. Built on 2026-09-04: the
 `workouts` screen, the unattended pass, and the work-signal lane — see
@@ -875,6 +875,56 @@ sitting, late commits, meetings, a plan of breaks, the patterns those prove),
 leads with the `pair_phone` card (the pair-from-anywhere QR), and the ledger
 reads *HealthKit: not connected — no iPhone paired*. Pairing fills the page in
 within the first minute of backfill.
+
+## Notifications — what Health hands her
+
+Yinyue speaks to a closed phone; Health hands her lines. The lane — the
+wakes iOS grants, the bridge, her budget, the honesty rules — is
+[linggen-mobile/doc/yinyue.md](../../../linggen-mobile/doc/yinyue.md#reaching-them-when-the-app-is-closed--her-herald-on-the-lock-screen).
+This is Health's side of it. Designed 2026-09-08; Liang: Yinyue owns the
+budget.
+
+**Two lines, declared:**
+
+| Line | Tier | When | Default |
+|:-----|:-----|:-----|:--------|
+| A warning | warning — bypasses the budget, lights the screen | the pass that found it | always on |
+| The morning line | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed something |
+
+**The warning** is built (2026-09-08): a doctor-tier finding, once per
+subject and once more a week later if it holds, the same sentence her thread
+carries then *Take it to a doctor.*, never a condition, filed in `told.jsonl`
+with `surface: notification`. It posts through the bridge directly today and
+moves under her herald when that exists, unchanged in behaviour.
+
+**The morning line** is the brief, off the phone. It is composed on the
+**HealthKit sleep wake** — the Watch writes the night's sleep about when the
+person gets up, iOS wakes the app for twenty seconds, and that is the freshest
+data the day will have and the right minute. The rules half of the brief is
+the line; the model rewording is a bonus if it finishes inside the wake, never
+waited on. If that wake never came, the night's task schedules the line for
+the wake time the profile already infers (`routine.up`), with `until` the end
+of that morning, so a brief about Tuesday is never said on Wednesday. Tap
+lands on `health` — the brief is the first thing on Highlights.
+
+Default cadence is only a morning that changed something: rest imposed, a
+session moved, a finding. "Today: Push, 55 min" as planned stays quiet. The
+person can switch it to every morning or never, on the same row that says
+whether the phone allows warnings. *(Liang's call — see open question 5.)*
+
+**Presence without a line** — a widget: "Rest today · HRV 7 under your
+normal", or "Examined 02:14 · at your normal". Glanceable, never interrupts,
+through the WidgetKit extension DJ already ships. Designed, not built.
+
+**Rejected for this:** a Watch app — iOS mirrors notifications to a paired
+Watch while the phone is locked, so the brief reaches the wrist for free; a
+Live Activity — it is for a thing in progress with an end, cannot start from
+a background task, and iOS ends it after eight hours.
+
+**When she could not look:** a swiped-away app gets no wakes, and Background
+App Refresh off refuses the night's task. After two missed nights she says so
+once — "I have not been able to look since Tuesday" — and then stays quiet.
+Never a line from data older than the day it claims to be about.
 
 ## Topics
 
@@ -981,6 +1031,9 @@ Readings retain, actions queue. Registers are readings: the newest
    nightly examination free too?
 4. Should durable profile facts go to ling-mem automatically (weekly pass), or
    only when the user says "remember that"?
+5. **The morning line's default**: only on a morning that changed something
+   (recommended), or every morning? See
+   [Notifications](#notifications--what-health-hands-her).
 *(The photo and the promise was settled on 2026-09-04 — the image goes to
 the user's own ChatGPT over OAuth. See
 [What you eat](#what-you-eat--an-estimate-is-never-a-measurement).)*
