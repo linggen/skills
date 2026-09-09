@@ -39,7 +39,7 @@ point. These are semantic sections, not floating cards containing more cards.
 Brief targets one line when space permits, but wraps naturally on phone or
 with larger text. Never shrink or truncate important meaning to enforce a line.
 
-Focus leads with one useful visualization on phone. Mac can place related
+Focus is a short stack on phone — the pinned or chosen question, then what the person asked about this week, then the rules' pick, at most four. Mac can place related
 visualizations beside it when they answer the same question. More screen
 space is not a reason to add unrelated metrics.
 
