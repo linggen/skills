@@ -1094,7 +1094,7 @@ budget.
 | Line | Tier | When | Default |
 |:-----|:-----|:-----|:--------|
 | A warning | warning — bypasses the budget, lights the screen | the pass that found it | always on |
-| The morning line | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed the plan |
+| The morning line (Yinyue's, since 2026-09-09; Health hands her the brief as a note) | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed the plan, unless they asked for every morning |
 | When I could not look | for the record | two mornings after the last examination, moved on by each one | on |
 | After a session | in hand — lights the screen, counts against the budget | within minutes of a workout ending | on |
 | The Sunday letter | for the record | from Sunday 18:00, by whichever pass runs first | on |
@@ -1111,9 +1111,13 @@ carries then *Take it to a doctor.*, never a condition, filed in `told.jsonl`
 with `surface: notification`. It posts through the bridge directly today and
 moves under her herald when that exists, unchanged in behaviour.
 
-**The morning line** is the brief, off the phone. Built 2026-09-08
-(`HealthTell.morning`, called at the end of `morningPass`). It is composed on
-the **HealthKit sleep wake** — the Watch writes the night's sleep about when
+**The morning line is Yinyue's since 2026-09-09** (Liang: the morning is
+hers, composed from every app — Health, CFO, Ling). Health hands her the
+brief as one note, with whether the night changed the plan and the wake
+hour; she composes the one line, quiet on an ordinary morning, and greets the
+person after three days away. What follows is Health's half. Built 2026-09-08
+(now `HealthTell.morningLine`, called at the end of `morningPass`). It is
+composed on the **HealthKit sleep wake** — the Watch writes the night's sleep about when
 the person gets up, iOS wakes the app for twenty seconds, and that is the
 freshest data the day will have and the right minute. That wake now re-runs
 the morning pass, because the 02:00 brief could not have seen the night; the
@@ -1131,9 +1135,9 @@ Opening the app takes down a line still waiting for its time. Tap lands on
 **Settled 2026-09-08 (Liang): only when the plan changed** — rest imposed,
 or a session moved. "Today: Push, 55 min" as planned stays quiet. A `see`
 finding does not earn it (2026-09-04), and a doctor-tier finding has its own
-warning. The person can switch to every morning or never on the drawer row
-*The morning line*, kept in the phone's own `state.json` prefs, never
-synced — another device has its own lock screen.
+warning. Since 2026-09-09 the choice — every morning, or only when something
+changed — is Yinyue's settings row, not Health's drawer row, and holds for
+every app's note at once.
 
 **Presence without a line** — a widget: "Rest today · HRV 7 under your
 normal", or "Examined 02:14 · at your normal". Glanceable, never interrupts.
