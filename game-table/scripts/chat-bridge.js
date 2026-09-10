@@ -214,3 +214,44 @@ async function mount(el, options) {
 }
 
 window.LinggenUI = { mount };
+
+// ── Presence beat ───────────────────────────────────────────────────────────
+// Somebody reading an app page is present, and until now the only surface that
+// said so was the main Linggen UI: chatting with Ling here read as "away", and
+// Yinyue heralded "their reply is ready" at a person watching it arrive
+// (2026-09-10, the DJ page). Same beat as linggen/ui/src/lib/presence.ts —
+// recency, focus and a typing flag, never a keystroke. The engine keeps the
+// most present of the live surfaces, so a blurred tab beside this one cannot
+// erase it.
+(function () {
+  const BEAT_MS = 4000;
+  const TYPING_WINDOW_MS = 1500;
+  let lastInputAt = Date.now();
+  let lastKeyAt = 0;
+
+  const beat = () => {
+    const now = Date.now();
+    // Focus is what makes it Linggen the person is in: keystrokes in another
+    // window never reach this page, so a blurred or hidden tab is away.
+    const focused = document.hasFocus() && document.visibilityState === 'visible';
+    fetch('/api/presence', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        focused,
+        typing: focused && now - lastKeyAt < TYPING_WINDOW_MS,
+        idle_ms: now - lastInputAt,
+      }),
+      keepalive: true,
+    }).catch(() => { /* offline, or no daemon — nothing to do about it here */ });
+  };
+
+  window.addEventListener('keydown', () => { lastInputAt = lastKeyAt = Date.now(); }, { passive: true });
+  window.addEventListener('pointermove', () => { lastInputAt = Date.now(); }, { passive: true });
+  window.addEventListener('focus', beat);
+  window.addEventListener('blur', beat);
+  document.addEventListener('visibilitychange', beat);
+
+  beat();
+  setInterval(beat, BEAT_MS);
+})();

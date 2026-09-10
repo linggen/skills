@@ -353,13 +353,12 @@ async function syncPhone(btn) {
       body: JSON.stringify({ topic: 'dj', op: 'library-changed', payload: {}, retain: false }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    // The phone does the fetching, so this is where our part ends — say that
-    // rather than implying the songs have landed. "while DJ is open on it" was
-    // wrong: the phone listens for this app-wide, not from its DJ screen.
-    const here = (await refreshDevices())?.present;
-    toast(here
-      ? `${dev.name} is fetching what it's missing.`
-      : `${dev.name} told — it fetches what's missing next time it's awake.`);
+    // The phone does the fetching, so this is where our part ends: say what was
+    // sent, never what is on the phone. The counts beside the device are the
+    // last inventory it reported — reading them back a moment after asking for
+    // a sync describes the state BEFORE the fetch, which is how a button that
+    // worked came to look like it did nothing (2026-09-10).
+    toast(`Sync request sent to ${dev.name} — it fetches what's missing when it's awake.`);
   } catch (e) {
     toast(`Couldn't reach your phone: ${String(e.message || e)}`);
   } finally {
