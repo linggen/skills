@@ -1176,6 +1176,67 @@ thing that will need the table below.
 Readings retain, actions queue. Registers are readings: the newest
 `written_at` wins on both sides.
 
+## 1.2 — she knows you (designed 2026-09-10)
+
+Apple's Health redesign of 2026-09-09 (Insights, For You, Readiness 0–10,
+Health Age, Longevity, labs, expert videos) owns the cards and the scores.
+We own the conversation. 1.2 builds the conversation, in this order.
+
+1. **The talk that examines.** Health words in a message on Yinyue's page
+   switch the health pack on, whatever tab is open, and she runs the
+   examination before she answers. A question about the body is never
+   answered from memory alone.
+2. **A finding beside an absent sensor.** The question may pair the leading
+   finding with a night that has no data: *HRV sat under your normal this
+   morning and there is no sleep from last night — not wearing the watch,
+   or a short one?* She checks workouts first: when the Watch recorded a
+   session she names it instead of asking.
+3. **The cause, dated.** An answer that names an event becomes a note
+   `{kind: event, at: <date>, text, re: <subject>}` — *basketball, 9 Sep, re
+   hrv*. The next morning the same pattern shows she says it instead of
+   asking (*basketball again yesterday — expected*). Three of the same event
+   kind feed Patterns as a condition, so "after basketball, HRV under next
+   morning, 3 of 4" earns a place like short nights do. Her reply keeps the
+   voice rules: one observation, one question, one recommendation — praise
+   for the match and the warm-up belong in the recommendation.
+4. **No score.** The ring on the Mac page and every `score*` surface go;
+   `index` stays. Apple's Readiness, Sleep Score and Health Age are read as
+   inputs if HealthKit exposes them; if not, the person tells her and she
+   folds it in. We never compute one.
+5. **The letter is a Monday card.** Highlights carries the Sunday letter from
+   Monday; it closes the day after it is opened, and on Friday regardless.
+6. **The doctor page, clinical only, on two occasions.** Subjects: resting
+   heart rate, HRV, blood oxygen, sleep, weight, blood pressure, Apple's
+   flags, logged symptoms, medications. Shown as a card only on a warning
+   (with the line *When you book, share this page — as PDF, or pasted into
+   the portal*) or on the morning of an appointment the person mentioned.
+   When nothing qualifies its first line is *Nothing here needs a doctor.
+   90 days at your normal.*
+7. **The work signal, un-shelved.** `life/<date>.json` from the Mac reaches
+   the examination and the brief, so a late night has a reason before it
+   becomes a question.
+
+After 1.2: **1.3 lessons** — every term she uses has one lesson in four fixed
+parts (what it is · yours against typical for age and sex · what moves it ·
+what she watches), said in one line the first time it matters, dropped after
+it has been opened twice, kept on a *Learn* page in the order the body raised
+them. **1.4 the coach in session** — the debrief becomes a conversation, live
+pace and effort from the Watch, cadence from the phone's own sensors.
+
+## Settled (2026-09-10)
+
+- **Yinyue's page is the core of the app.** Her screen is shared by every
+  app and she walks the person to a screen; Health stays quiet, says what
+  is and never why. The why, the question and the offer to act are hers.
+  Concept: <https://claude.ai/code/artifact/8fcbe403-6623-4efa-a66c-d9816785c3a5>.
+- **Extend Apple Health, never duplicate it.** No Insights, For You, Health
+  Age, Longevity, labs, videos or camera assessments. Conversation, memory,
+  life outside HealthKit, lessons, the plan with hands, the doctor line.
+- **No score, anywhere.** See 1.2 (4).
+- **The doctor page is clinical-only and appears on a warning or an
+  appointment.** See 1.2 (6).
+- **The letter is a Monday Highlights card.** See 1.2 (5).
+
 ## Settled (2026-09-08)
 
 - **Yinyue owns the budget.** Everything Linggen says to a closed phone is
