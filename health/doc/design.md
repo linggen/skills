@@ -1292,7 +1292,7 @@ Kept from the original feature list; nothing here is built or scheduled.
 - Settings the phone will grow: which types to read, pass time, quiet hours,
   how blunt the voice is, layout history, export as CSV and Markdown.
 
-## 1.2 — she knows you (designed 2026-09-10; 1–3 built the same day)
+## 1.2 — she knows you (designed 2026-09-10; 1–6 built the same day)
 
 Apple's Health redesign of 2026-09-09 (Insights, For You, Readiness 0–10,
 Health Age, Longevity, labs, expert videos) owns the cards and the scores.
@@ -1333,13 +1333,13 @@ We own the conversation. 1.2 builds the conversation, in this order.
    after*). Events stay on the phone, the fact travels. Her reply keeps the
    voice rules — one observation, one question, one recommendation; praise
    for the match and the warm-up are the recommendation.
-4. **No score.** The ring on the Mac page and every `score*` surface go;
+4. **No score** (built: `score*` fields no longer written, the phone's number card and the Mac dial gone, `health_review` says there is none)**.** The ring on the Mac page and every `score*` surface go;
    `index` stays. Apple's Readiness, Sleep Score and Health Age are read as
    inputs if HealthKit exposes them; if not, the person tells her and she
    folds it in. We never compute one.
-5. **The letter is a Monday card.** Highlights carries the Sunday letter from
+5. **The letter is a Monday card** (built: `HealthHome.notices`, `opened_at` stamped by the Letters page, the card under Attention)**.** Highlights carries the Sunday letter from
    Monday; it closes the day after it is opened, and on Friday regardless.
-6. **The doctor page, clinical only, on two occasions.** Subjects: resting
+6. **The doctor page, clinical only, on two occasions** (built: `HealthDoctorNote.clinical`, the appointment as an intent note with subject `appointment`, the card under Attention, the clean first line)**.** Subjects: resting
    heart rate, HRV, blood oxygen, sleep, weight, blood pressure, Apple's
    flags, logged symptoms, medications. Shown as a card only on a warning
    (with the line *When you book, share this page — as PDF, or pasted into
