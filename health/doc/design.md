@@ -1191,14 +1191,32 @@ We own the conversation. 1.2 builds the conversation, in this order.
    morning and there is no sleep from last night — not wearing the watch,
    or a short one?* She checks workouts first: when the Watch recorded a
    session she names it instead of asking.
-3. **The cause, dated.** An answer that names an event becomes a note
-   `{kind: event, at: <date>, text, re: <subject>}` — *basketball, 9 Sep, re
-   hrv*. The next morning the same pattern shows she says it instead of
-   asking (*basketball again yesterday — expected*). Three of the same event
-   kind feed Patterns as a condition, so "after basketball, HRV under next
-   morning, 3 of 4" earns a place like short nights do. Her reply keeps the
-   voice rules: one observation, one question, one recommendation — praise
-   for the match and the warm-up belong in the recommendation.
+3. **What the sensors can't see — the invitation, the register, the
+   cause.** Never a questionnaire. She says it once, on first meeting in
+   Health, and again as the Sunday letter's closing line: *I see what your
+   Watch and the devices in Apple Health record. Anything they didn't — a
+   match, a swim, a late night — just tell me. It helps the review.* The
+   person types it whenever; rules resolve the date ("yesterday" → 9 Sep)
+   and a kind from a small fixed list (session with a sport, worked late,
+   travel, ill, alcohol, caffeine, late meal, other), keep the words
+   verbatim, and file `{kind: event, at, text, re}` in the event register.
+   A later note about the same date corrects the kind and keeps both texts.
+   `tracking.json` is her list of blind spots — what HealthKit cannot tell
+   her (sleep on a night the Watch was off, late work, stress, alcohol,
+   caffeine, meals, pain, sessions played without the Watch, travel) — shown
+   on the Watching page as *What I can't see — tell me*. A list, not a
+   schedule: no proposing, no cadence, no retiring. A question still comes
+   only from a finding, one a day, on the thing that leads, when the data
+   has no reason. When an answer names a cause she remembers it: the next
+   morning the same pattern shows she says *basketball again yesterday —
+   expected* instead of asking. Three of one kind feed Patterns as a
+   condition ("after basketball, HRV under next morning, 3 of 4"); the
+   letter and the doctor page quote events as the person's words; when a
+   pattern goes stable the nightly pass writes one durable line to her
+   memory rows (*plays basketball Tuesday evenings; HRV dips the morning
+   after*). Events stay on the phone, the fact travels. Her reply keeps the
+   voice rules — one observation, one question, one recommendation; praise
+   for the match and the warm-up are the recommendation.
 4. **No score.** The ring on the Mac page and every `score*` surface go;
    `index` stays. Apple's Readiness, Sleep Score and Health Age are read as
    inputs if HealthKit exposes them; if not, the person tells her and she
@@ -1213,8 +1231,8 @@ We own the conversation. 1.2 builds the conversation, in this order.
    When nothing qualifies its first line is *Nothing here needs a doctor.
    90 days at your normal.*
 The work signal stays shelved (Liang, 2026-09-10): there is no trustworthy
-source for it yet. The person's own answer — build 3 above — is the reason a
-late night gets, until there is one.
+source for it yet. The person's own words — build 3 above, "worked late" as a
+kind they tell her — are the reason a late night gets, until there is one.
 
 After 1.2: **1.3 lessons** — every term she uses has one lesson in four fixed
 parts (what it is · yours against typical for age and sex · what moves it ·
