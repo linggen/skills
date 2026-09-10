@@ -1353,23 +1353,29 @@ We own the conversation. 1.2 builds the conversation, in this order.
    under two screens; a swipe dismisses a card for that fact and the next
    candidate takes the slot; a warning cannot be dismissed. The mechanism
    is app-wide: `linggen/doc/dynamic-ui-spec.md`, "The composed screen".
-8. **Nutrition and supplements, as advice.** Not a diary. Intake is an
-   event in words ("40 g whey after gym", "creatine 5 g") filed with a
-   kind and an amount; the day's totals sit against the targets already
-   computed (protein per kilo by goal, calories), energy out from
-   HealthKit, energy in from HealthKit when a logging app writes it, else
-   from their words, said as an estimate. Advice on two triggers — an event
-   (a session ended, a weigh-in trend, a short night, travel) or a message
-   ("should I take creatine") — one line as a Highlights candidate, the why
-   in her thread. Supplements from a short evidence-graded catalog
-   (creatine, protein, caffeine, vitamin D, omega-3, magnesium,
-   electrolytes, iron): what the evidence says, who it is for, dose,
-   timing, cautions; recommended only against their goal and data, never a
-   medical claim, "ask your doctor" where an interaction is plausible; a
-   yes makes it a checklist item. A Nutrition page in the drawer: in
-   against out, protein against target, supplements against the checklist.
-   Open: the catalog as curated facts in the skill (recommended) or the
-   model's own answer.
+8. **Nutrition and supplements — a list settled together.** Not a diary,
+   and not a leaflet. When she sees the person training — sessions in the
+   data, a goal set — she comes to them once: *I see your workout data.
+   Here is a supplement and nutrition list based on your weight, your
+   training energy and your goal. Take a look and tell me what to adjust.*
+   The list is a register, `nutrition.json`: items with a name, a dose, a
+   timing, and the reason in their numbers (protein per kilo by goal,
+   calories from the formula, creatine for a lifter, electrolytes for a
+   long session), each marked proposed or theirs. They adjust in words —
+   "no creatine", "whey after gym only", "add magnesium" — and the settled
+   list is the fact: the checklist reads from it, the debrief reminds from
+   it ("after 12 km: protein within the hour"), a weigh-in trend or a short
+   night may move one line, said in her thread. Intake is an event in
+   words ("40 g whey after gym") with a kind and an amount; the day's
+   totals sit against the targets; energy out from HealthKit, energy in
+   from HealthKit when a logging app writes it, else from their words, said
+   as an estimate. She never makes a medical claim, says "ask your doctor"
+   where an interaction is plausible, and proposes only what their data
+   argues for. A Nutrition page in the drawer: the list, in against out,
+   protein against target. A Highlights candidate when a line moved or the
+   list is waiting for their word (Liang, 2026-09-10: "fact should be
+   settled with the user together… Yinyue needs to be proactive, ask the
+   user when needed").
 
 The work signal stays shelved (Liang, 2026-09-10): there is no trustworthy
 source for it yet. The person's own words — build 3 above, "worked late" as a
