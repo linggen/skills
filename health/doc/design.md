@@ -1292,7 +1292,7 @@ Kept from the original feature list; nothing here is built or scheduled.
 - Settings the phone will grow: which types to read, pass time, quiet hours,
   how blunt the voice is, layout history, export as CSV and Markdown.
 
-## 1.2 — she knows you (designed 2026-09-10; 1–6 built the same day)
+## 1.2 — she knows you (designed 2026-09-10; 1–7 and 9 built the same day)
 
 Apple's Health redesign of 2026-09-09 (Insights, For You, Readiness 0–10,
 Health Age, Longevity, labs, expert videos) owns the cards and the scores.
@@ -1346,7 +1346,7 @@ We own the conversation. 1.2 builds the conversation, in this order.
    the portal*) or on the morning of an appointment the person mentioned.
    When nothing qualifies its first line is *Nothing here needs a doctor.
    90 days at your normal.*
-7. **Highlights, composed by her.** Health publishes its candidates —
+7. **Highlights, composed by her** (built 2026-09-10: `candidates` / `highlights` / `dismissed` in the Home document, `HealthHome.composeHighlights` + `dismiss`, `screen_compose`, the swipe on the quiet screen)**.** Health publishes its candidates —
    findings, charts, the plan for today, the checklist, a nutrition or
    supplement line, the letter, the doctor page — and Yinyue writes the
    page from them on a signal; the rules write the default; at most six,
