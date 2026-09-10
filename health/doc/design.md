@@ -1377,6 +1377,14 @@ We own the conversation. 1.2 builds the conversation, in this order.
    settled with the user together… Yinyue needs to be proactive, ask the
    user when needed").
 
+9. **Her wakes — a signal is a turn** (built 2026-09-10; the engine under
+   7 and 8). The rules' lines stay the floor; each morning line, debrief,
+   screen move and letter also raises a wake: a kickoff the person never
+   sees, one turn with her tools, the final paragraph spoken or SILENT.
+   Once per key a day, six a day, dropped unrun after 18 h, run only with
+   the app open and her thread attached. `linggen-mobile/doc/yinyue.md`,
+   "Her wakes".
+
 The work signal stays shelved (Liang, 2026-09-10): there is no trustworthy
 source for it yet. The person's own words — build 3 above, "worked late" as a
 kind they tell her — are the reason a late night gets, until there is one.
