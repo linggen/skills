@@ -1,6 +1,6 @@
 ---
 name: health
-model: deepseek-v4-flash
+model: deepseek-flash
 description: >-
   Linggen Health — the health app for people whose job is a computer. Your
   iPhone reads Apple Health and keeps your body data; this Mac keeps the long

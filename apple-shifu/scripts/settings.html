@@ -184,7 +184,7 @@
 
     <div class="section">
       <h2 class="section-title">Model</h2>
-      <p class="section-desc">The model Apple Shifu runs on. Defaults to the built-in Linggen Cloud model (<code>deepseek-v4-flash</code>) — no key needed. This sets <strong>Apple Shifu's model only</strong> — never other apps or the engine-wide default. Manage providers and keys in the main Linggen app.</p>
+      <p class="section-desc">The model Apple Shifu runs on. Defaults to the built-in Linggen Cloud model (<code>deepseek-flash</code>) — no key needed. This sets <strong>Apple Shifu's model only</strong> — never other apps or the engine-wide default. Manage providers and keys in the main Linggen app.</p>
       <div class="field-card">
         <div class="field-label">Apple Shifu runs on</div>
         <div class="field-row">
@@ -306,7 +306,7 @@
     // the engine-wide default or other apps.
     const modelSelect = document.getElementById("model-select");
     const modelStatus = document.getElementById("model-status");
-    const APP_DEFAULT_MODEL = "deepseek-v4-flash";
+    const APP_DEFAULT_MODEL = "deepseek-flash";
     async function loadModel() {
       let models = [];
       try {

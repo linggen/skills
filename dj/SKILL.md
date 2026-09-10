@@ -1,6 +1,6 @@
 ---
 name: dj
-model: deepseek-v4-flash
+model: deepseek-flash
 description: >-
   DJ — your personal Disc Jockey. Describe a vibe ("Hong Kong 90s top 50",
   "rainy-Sunday jazz", "best of Beyond") and DJ builds the set, finds each

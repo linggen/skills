@@ -61,7 +61,7 @@ const turnIndicator = document.getElementById('turn-indicator');
 async function init() {
   // Parse model and optional session from URL
   const params = new URLSearchParams(window.location.search);
-  modelId = params.get('model') || localStorage.getItem('game-table:model') || 'deepseek-v4-flash';
+  modelId = params.get('model') || localStorage.getItem('game-table:model') || 'deepseek-flash';
 
   // Restore the running match score for this game (game-table:ui).
   const savedScores = (window.GameTableUI?.loadUi().scores || {})[GAME_KEY];
