@@ -2,13 +2,12 @@
 type: spec
 reader: Liang, coding agent, contributors
 guide: |
-  The one document for Linggen Health — what it is and what it never does,
-  where it runs, the HealthKit surface, the phone store and the passes, the
-  optional Mac, sync, the schemas, the tools, the honesty rules, what is
-  built, what 1.2 builds, and what was settled when. Brief; no code. The
-  first-view UI lives in ui-ux-design.md; the phone's built behaviour in
-  linggen-mobile/doc/health.md.
-status: building — 1.1 (build 22) submitted to the App Store 2026-09-10 with the examination, the quiet screen, the plan, the debrief, the letter, the doctor page, patterns, symptoms and the lock-screen lines. 1.2 is designed (see "1.2 — she knows you") and not coded. product-spec.md was folded in here on 2026-09-10.
+  How Linggen Health is built: where it runs, the HealthKit surface, the phone
+  store and the passes, the optional Mac and the sync between them, the
+  schemas, the card and chart catalogs, the tools, the honesty rules. Brief;
+  no code. What the product is and does is product-spec.md; the first view is
+  ui-ux-design.md; the phone's built behaviour is linggen-mobile/doc/health.md.
+status: 1.1 (build 22) in App Store review since 2026-09-10; 1.2 built on main, in no store build.
 ---
 
 # Linggen Health
@@ -17,110 +16,8 @@ status: building — 1.1 (build 22) submitted to the App Store 2026-09-10 with t
 > and Attention sections whose content the agent composes; built on both
 > devices 2026-09-08. It wins over any older first-view rule below.
 
-## What it is
-
-**Apple Health shows you everything and tells you nothing. Linggen Health
-reads everything and shows you almost nothing — and Yinyue tells you the
-rest.**
-
-Every night the agent walks every measurement this person has, against that
-person's own history, and files one of three verdicts each: at your normal,
-worth seeing, worth a doctor. Nearly all come back at your normal and are
-never shown. What reaches the screen is the part that is not right, and on
-most mornings that is nothing. The quiet is stated, never a blank.
-
-The screen carries findings. Yinyue carries everything else, in her own
-thread, unprompted: what she read, what came out, what she changed, and the
-one question no sensor can answer. Her page is the core of the app; Health
-is a quiet screen she walks the person to.
-
-Three things no incumbent does:
-
-1. **It examines everything, every night** — every type you have, against
-   your own last month, never a population range.
-2. **It stays quiet.** A card earns its place by having news today. At your
-   normal is not a slot.
-3. **It comes to you, and it remembers.** The finding arrives in the
-   conversation with what she did about it; what you tell her is data the
-   next examination has beside the number.
-
-Charter, written into the agent: help this person get better at what they
-are trying to do, and make them love Linggen Health. Behave like their doctor
-and coach; never claim the title.
-
-Persona is not code. There is no runner code and no lifter code; the profile
-is inferred, said out loud, and corrected by the person.
-
-## Where it runs
-
-**The phone is the whole product.** It reads HealthKit, keeps its own store,
-runs the passes with the account's cloud model, examines every type against
-its own baseline, and writes the plan and the checklist. A user with no Mac
-is a complete user.
-
-**The Mac is optional.** It mirrors the store, keeps years of it, holds
-ling-mem, takes the heavier weekly pass when reachable, and shows the same
-first view one tab deeper. The work side of the join (commits, sessions) is
-plumbing only — see *Work signals*, shelved.
-
-**A Mac with no iPhone gets no body data.** HealthKit exists only on iPhone
-and iPad; the Mac page composes from what it has and shows the pair card.
-Later, vendor APIs (Oura, Garmin, Whoop, Strava, Withings) give a phone-less
-Mac a body feed.
-
-## Positioning
-
-- **Extend Apple Health, never duplicate it** (2026-09-10). Apple's 09-09
-  redesign owns the cards and the scores: Insights, For You, Readiness,
-  Health Age, Longevity, labs, expert videos, camera assessments. We build
-  none of those. We own the conversation, memory, what the sensors cannot
-  see, lessons in the person's own numbers, the plan with hands, and the
-  doctor line.
-- **Not a dashboard.** Built each morning out of what moved; the same screen
-  is never shown to two people.
-- **No score.** Not a health score, and since 2026-09-10 not a number of our
-  own at all. Apple's scores are read as inputs where HealthKit exposes them;
-  otherwise the person tells her.
-- **The conversation has its own room.** Yinyue's page is shared by every app
-  and she navigates to Health; Health says what is, never why.
-- **Build the capability, never claim the title.** A nightly examination, an
-  index chosen per person, a warning that will not be dismissed — all of it
-  ships. "Doctor" appears only as *worth showing a doctor*.
-- **A coach, not a nag.** One plan, one checklist, one why. Nudges only
-  through Yinyue's herald, under her budget.
-- **Wellness only.** Never diagnosis, never medication advice. Supplements as
-  evidence in plain words; brands only on ask, with the source, later.
-- **Yours.** Health data stays on the phone, and on a paired Mac. The cloud
-  model sees a day's summary to run a pass, never the raw store, and nothing
-  is kept there.
-
-## Who pays
-
-Linggen is $5 a month for every app; Health is one app in the suite, not a
-tier, and the one that makes the plan worth keeping. Proposed split, open
-(Liang's call): free — import, the data browser, workout and sleep detail,
-the first examination, one weekly report; paid — the nightly examination,
-the plan, patterns, the agent coming to you, ask-anything over months.
-
-## What Linggen Health never does
-
-- Diagnose, comment on medication, or claim to be a doctor.
-- Ask a question the data already answers, or hand the user a questionnaire.
-- Show the same screen to two different people, or rearrange it daily.
-- Give a measurement a slot for being at your normal.
-- Explain itself on the screen: no why-line, no card introducing the agent.
-- Wait to be asked. A finding said nowhere is a failure, not discretion.
-- Change the layout without saying why, or without an undo.
-- Compare a number to a population range instead of the person's own history.
-- Compute a score, or show a number without the personal baseline beside it.
-- Name a brand unprompted, or name one without the source.
-- Surface a pattern from one week, or a weight trend from one morning.
-- Require a Mac, or pretend a Mac alone can see the body.
-- Send health data anywhere but the person's own devices; never iCloud.
-- Nudge outside the herald, or while the person is enjoying something.
-- Show an estimate as though it were measured, or give one a verdict.
-- Offer a button the connected models cannot honour.
-- Interrogate the user about a meal, or about anything: one question, once.
+> What it is, what it does, where it runs, what it never does and who pays:
+> [product-spec.md](product-spec.md). This document is how it is built.
 
 ## Architecture in one diagram
 
@@ -436,9 +333,9 @@ for weight, the judge's scale applied). Anything redrawing that line from the
 raw rows would be a second copy of the judging table, free to drift, which is
 why both screens and the Mac page read the series rather than folding again.
 `series_to` is usually today and is yesterday for a measurement that is a
-day's total, because a day still being lived is not a total. The file still
-carries `score`, `score_from` and `score_formula` as written today; they are
-removed in 1.2 (4) and nothing may read them. The **index** is ranked per user
+day's total, because a day still being lived is not a total. `score`, `score_from` and
+`score_formula` are no longer written and nothing may read them — see *No
+number of our own*. The **index** is ranked per user
 on coverage × relevance × movement and records why each candidate was dropped,
 so the choice can be argued with.
 
@@ -474,7 +371,7 @@ night held — the status line and the doors.
 
 | kind | needs | earns | answers |
 |:-----|:------|:------|:--------|
-| `status` | review/today | always | the sentence and what was examined — "38 measurements examined"; the number goes in 1.2 (4) |
+| `status` | review/today | always | the sentence and what was examined — "38 measurements examined" |
 | `finding` | review/today | news | the measurement that moved: its own baseline through the fortnight, the evidence, and what it changed |
 | `acts` | workouts | always | the last few sessions, expandable |
 | `doors` | — | always | the same seven, in the same order |
@@ -732,9 +629,9 @@ then marks them from samples as they land; what HealthKit cannot see (sets, a
 pill) is a tap or a voice line. A check is a local write first, so it works
 with no Mac and no network, and syncs when a Mac is there.
 
-## Work signals (the join, needs a Mac) — SHELVED 2026-09-08
+## Work signals (the join, needs a Mac) — SHELVED
 
-**Shelved 2026-09-08 (Liang).** Nothing below reaches an agent any more:
+**Shelved (Liang).** Nothing below reaches an agent any more:
 `Report` carries no `work`, the phone's examine tool hands Yinyue no
 `their_days`, and both skill texts say to ask what kept the person up rather
 than infer it. Two reasons, both his: a Mac being busy is not a person being
@@ -775,7 +672,7 @@ Screen time, calendar and IDE hours are not in it. Screen time on macOS is a
 private database behind Full Disk Access and the calendar needs EventKit;
 neither is worth a permission prompt for the value it adds over commits.
 
-## What I have learned about you (built 2026-09-08)
+## What I have learned about you
 
 The patterns door, in her voice. Not a rule from a textbook: a count.
 *After a night under 6 h 10, your HRV was under your normal 6 times out of
@@ -799,7 +696,7 @@ looked. A claim that has just earned a place, or just become stable, is said
 once in her thread — "I think I have noticed something" / "I am sure of
 something now" — never on the lock screen.
 
-## Symptoms, written to Apple Health (built 2026-09-08)
+## Symptoms, written to Apple Health
 
 "My stomach hurts" said to her becomes a real HealthKit symptom sample — the
 same category Apple's own Health app writes (`HKCategoryTypeIdentifier
@@ -822,7 +719,7 @@ in Settings keeps the note and says where it did not go. The categories
 appear under *Symptoms* on the Data screen, counted by the examination,
 never judged against a baseline.
 
-## The Sunday letter (built 2026-09-08)
+## The Sunday letter
 
 Doctors write letters. Once a week, from Sunday 18:00, she writes one
 (`health_letter.dart`, `HealthPasses.writeLetter`): three short paragraphs —
@@ -850,9 +747,11 @@ evening is when a person reads a letter; whichever pass runs first after that
 writes it — the app opened on Sunday evening, or the 02:00 wake on Monday, in
 which case it is waiting in Notification Center (for the record, no light)
 when they get up. Once per week by key. The `health_letter` tool hands
-Yinyue the newest, or a named week.
+Yinyue the newest, or a named week. Highlights carries it from Monday; it closes
+the day after it is opened, and on Friday regardless (`HealthHome.notices`,
+`opened_at` stamped by the Letters page).
 
-## The page for a doctor (built 2026-09-08)
+## The page for a doctor
 
 A person walks into an appointment with a phone full of readings and no way
 to say which matter. *For your doctor* (drawer, under *Yours*) is one page,
@@ -887,11 +786,18 @@ second read and says nothing the app did not already decide:
 `## ` heads) and presents the system sheet — Mail, Files, AirDrop, print —
 so it leaves the phone the way the person chooses; *Copy text* is the same
 page as text. The `health_doctor_note` tool hands Yinyue the same text, so
-she can offer it when an appointment comes up. It is the bridge to a real
-doctor the whole design leans on: build the capability, never claim the
-title.
+she can offer it when an appointment comes up. Clinical subjects only (`HealthDoctorNote.clinical`): resting heart rate, HRV,
+blood oxygen, sleep, weight, blood pressure, Apple's flags, logged symptoms,
+medications. Shown as a card on two occasions — a warning, with the line *When
+you book, share this page — as PDF, or pasted into the portal*, or the morning
+of an appointment the person mentioned (an intent note with subject
+`appointment`). When nothing qualifies its first line is *Nothing here needs a
+doctor. 90 days at your normal.*
 
-## The debrief (built 2026-09-08)
+It is the bridge to a real doctor the whole design leans on: build the
+capability, never claim the title.
+
+## The debrief
 
 What a coach standing at the finish says, at the moment it is wanted. The
 Watch writes a workout the minute it ends and iOS delivers it at once
@@ -916,7 +822,7 @@ her thread regardless: the budget is the lock screen's, not the thread's. A
 tap lands on the session itself (`health/session/<uuid>`). Filed in
 `told.jsonl` by the session's uuid, so a pull that sees it twice says it once.
 
-## The one question and the follow-up (built 2026-09-08)
+## The one question and the follow-up
 
 A doctor notices one thing and asks about the thing no instrument can see; a
 coach who was told "bed before midnight this week" says on Sunday how many
@@ -958,6 +864,104 @@ Notes are never edited — they are the person's words, merged as a union by
 time and text across two devices — so everything she does with a note lives
 in `told.jsonl`. The Mac's `Log` still writes plain notes; the shaping runs
 where Yinyue lives.
+
+**A finding beside an absent sensor.** The question may pair the leading
+finding with a night that has no data: *HRV sat under your normal this morning
+and there is no sleep from last night — not wearing the watch, or a short
+one?* (`HealthAsk.nightAbsent`.) Workouts are checked first: when the Watch
+recorded a session she names it instead of asking (`HealthEvents.causeFor`).
+
+## The talk that examines
+
+Health words in a message on Yinyue's page switch the health pack on, whatever
+tab is open, and she runs the examination before she answers. A question about
+the body is never answered from memory alone. `HealthEvents.mentionsHealth`,
+`YinyueTools.lastUserText`, and the examine-first line in her prompt.
+
+## What the sensors can't see — the invitation, the register, the cause
+
+Never a questionnaire. She says it once, on first meeting in Health, and again
+as the Sunday letter's closing line: *I see what your Watch and the devices in
+Apple Health record. Anything they didn't — a match, a swim, a late night —
+just tell me. It helps the review.*
+
+The person types it whenever. Rules resolve the date ("yesterday" → 9 Sep) and
+a kind from a small fixed list (session with a sport, worked late, travel, ill,
+alcohol, caffeine, late meal, other), keep the words verbatim, and file
+`{kind: event, at, text, re}` in the event register (`health_events.dart`, note
+kind `event` with `on`). A later note about the same date corrects the kind and
+keeps both texts.
+
+`tracking.json` is her list of blind spots — what HealthKit cannot tell her
+(sleep on a night the Watch was off, late work, stress, alcohol, caffeine,
+meals, pain, sessions played without the Watch, travel) — shown on the Watching
+page as *What I can't see — tell me*, and read by the `health_tracking` tool. A
+list, not a schedule: no proposing, no cadence, no retiring. A question still
+comes only from a finding, one a day, on the thing that leads, when the data has
+no reason.
+
+When an answer names a cause she remembers it (`HealthAsk.explain`): the next
+morning the same pattern shows she says *basketball again yesterday — expected*
+instead of asking. Three of one kind feed Patterns as a condition ("after
+basketball, HRV under next morning, 3 of 4"); the letter and the doctor page
+quote events as the person's words; when a pattern goes stable the nightly pass
+writes one durable line to her memory rows (*plays basketball Tuesday evenings;
+HRV dips the morning after*). Events stay on the phone, the fact travels. Her
+reply keeps the voice rules — one observation, one question, one recommendation;
+praise for the match and the warm-up are the recommendation.
+
+## No number of our own
+
+`score`, `score_from` and `score_formula` are no longer written, the phone's
+number card and the Mac dial are gone, and `health_review` says there is none.
+`index` stays. Apple's Readiness, Sleep Score and Health Age are read as inputs
+where HealthKit exposes them; where it does not, the person tells her and she
+folds it in. Nothing here computes one.
+
+## Highlights, composed by her
+
+Health publishes its candidates — findings, charts, the plan for today, the
+checklist, a nutrition or supplement line, the letter, the doctor page — and
+Yinyue writes the page from them on a signal; the rules write the default. At
+most six, under two screens; a swipe dismisses a card for that fact and the
+next candidate takes the slot; a warning cannot be dismissed. `candidates` /
+`highlights` / `dismissed` in the Home document, `HealthHome.composeHighlights`
+and `dismiss`, `screen_compose`, the swipe on the quiet screen. The mechanism is
+app-wide: `linggen/doc/dynamic-ui-spec.md`, "The composed screen".
+
+## Nutrition and supplements — a list settled together
+
+Not a diary, and not a leaflet. When she sees the person training — sessions in
+the data, a goal set — she comes to them once: *I see your workout data. Here is
+a supplement and nutrition list based on your weight, your training energy and
+your goal. Take a look and tell me what to adjust.*
+
+The list is a register, `nutrition.json`: items with a name, a dose, a timing,
+and the reason in their numbers (protein per kilo by goal, calories from the
+formula, creatine for a lifter, electrolytes for a long session), each marked
+proposed or theirs. They adjust in words — "no creatine", "whey after gym only",
+"add magnesium" — and the settled list is the fact: the checklist reads from it,
+the debrief reminds from it ("after 12 km: protein within the hour"), a weigh-in
+trend or a short night may move one line, said in her thread.
+
+Intake is an event in words ("40 g whey after gym") with a kind and an amount
+(`intake:<what>`); the day's totals sit against the targets; energy out from
+HealthKit, energy in from HealthKit when a logging app writes it, else from
+their words, said as an estimate. She never makes a medical claim, says "ask
+your doctor" where an interaction is plausible, and proposes only what their
+data argues for. A Nutrition page in the drawer: the list, in against out,
+protein against target. A Highlights candidate when a line moved or the list is
+waiting for their word. `health_nutrition.dart`, `nutritionPass` once the
+training shows, the `health_nutrition` tool, the waiting-for-your-word notice,
+daily lines on the checklist.
+
+## Her wakes
+
+The rules' lines stay the floor; each morning line, debrief, screen move and
+letter also raises a wake: a kickoff the person never sees, one turn with her
+tools, the final paragraph spoken or SILENT. Once per key a day, six a day,
+dropped unrun after 18 h, run only with the app open and her thread attached.
+`linggen-mobile/doc/yinyue.md`, "Her wakes".
 
 ## Weather
 
@@ -1100,14 +1104,10 @@ median and declared absolutely where the unit demands it (0.5 kg for weight,
 temperature that is already a delta around zero). One MAD is worth
 `max(mad, floor)`. Without it a quiet measurement is loud for being quiet.
 
-Still to build: the `patterns` screen behind its door, weather for outdoor
-plans (needs location), and the morning line and presence widget under
-[Notifications](#notifications--what-health-hands-her) — the doctor-tier
-warning reaches the lock screen since 2026-09-08. Designed on 2026-09-04 and
-not built: the meal lane (a photo to the user's own ChatGPT, depth captured with the shot) and the
-chart catalog's other three forms — the phone draws the dial and the fortnight,
-not the week bars, the day shape or the session curve. Built on 2026-09-04: the
-`workouts` screen, the unattended pass, and the work-signal lane — see
+Still to build: weather for outdoor plans (needs location); the meal lane (a
+photo to the user's own ChatGPT, depth captured with the shot); and the chart
+catalog's other three forms — the phone draws the fortnight, not the week bars,
+the day shape or the session curve. What the phone has built is
 `linggen-mobile/doc/health.md`.
 
 **The window is the bound, not a row count** (fixed 2026-09-04). A dense
@@ -1292,227 +1292,9 @@ Kept from the original feature list; nothing here is built or scheduled.
 - Settings the phone will grow: which types to read, pass time, quiet hours,
   how blunt the voice is, layout history, export as CSV and Markdown.
 
-## 1.2 — she knows you (designed and built 2026-09-10)
-
-Apple's Health redesign of 2026-09-09 (Insights, For You, Readiness 0–10,
-Health Age, Longevity, labs, expert videos) owns the cards and the scores.
-We own the conversation. 1.2 builds the conversation, in this order.
-
-1. **The talk that examines** (built: `HealthEvents.mentionsHealth`, `YinyueTools.lastUserText`, the examine-first line in her prompt)**.** Health words in a message on Yinyue's page
-   switch the health pack on, whatever tab is open, and she runs the
-   examination before she answers. A question about the body is never
-   answered from memory alone.
-2. **A finding beside an absent sensor** (built: `HealthAsk.nightAbsent`, `HealthEvents.causeFor` reads the Watch's sessions first)**.** The question may pair the leading
-   finding with a night that has no data: *HRV sat under your normal this
-   morning and there is no sleep from last night — not wearing the watch,
-   or a short one?* She checks workouts first: when the Watch recorded a
-   session she names it instead of asking.
-3. **What the sensors can't see — the invitation, the register, the
-   cause** (built: `health_events.dart`, note kind `event` with `on`, `HealthAsk.explain`, `HealthPatterns` event conditions, `tracking.json` + `health_tracking`, the Watching page, the letter and the meet card)**.** Never a questionnaire. She says it once, on first meeting in
-   Health, and again as the Sunday letter's closing line: *I see what your
-   Watch and the devices in Apple Health record. Anything they didn't — a
-   match, a swim, a late night — just tell me. It helps the review.* The
-   person types it whenever; rules resolve the date ("yesterday" → 9 Sep)
-   and a kind from a small fixed list (session with a sport, worked late,
-   travel, ill, alcohol, caffeine, late meal, other), keep the words
-   verbatim, and file `{kind: event, at, text, re}` in the event register.
-   A later note about the same date corrects the kind and keeps both texts.
-   `tracking.json` is her list of blind spots — what HealthKit cannot tell
-   her (sleep on a night the Watch was off, late work, stress, alcohol,
-   caffeine, meals, pain, sessions played without the Watch, travel) — shown
-   on the Watching page as *What I can't see — tell me*. A list, not a
-   schedule: no proposing, no cadence, no retiring. A question still comes
-   only from a finding, one a day, on the thing that leads, when the data
-   has no reason. When an answer names a cause she remembers it: the next
-   morning the same pattern shows she says *basketball again yesterday —
-   expected* instead of asking. Three of one kind feed Patterns as a
-   condition ("after basketball, HRV under next morning, 3 of 4"); the
-   letter and the doctor page quote events as the person's words; when a
-   pattern goes stable the nightly pass writes one durable line to her
-   memory rows (*plays basketball Tuesday evenings; HRV dips the morning
-   after*). Events stay on the phone, the fact travels. Her reply keeps the
-   voice rules — one observation, one question, one recommendation; praise
-   for the match and the warm-up are the recommendation.
-4. **No score** (built: `score*` fields no longer written, the phone's number card and the Mac dial gone, `health_review` says there is none)**.** The ring on the Mac page and every `score*` surface go;
-   `index` stays. Apple's Readiness, Sleep Score and Health Age are read as
-   inputs if HealthKit exposes them; if not, the person tells her and she
-   folds it in. We never compute one.
-5. **The letter is a Monday card** (built: `HealthHome.notices`, `opened_at` stamped by the Letters page, the card under Attention)**.** Highlights carries the Sunday letter from
-   Monday; it closes the day after it is opened, and on Friday regardless.
-6. **The doctor page, clinical only, on two occasions** (built: `HealthDoctorNote.clinical`, the appointment as an intent note with subject `appointment`, the card under Attention, the clean first line)**.** Subjects: resting
-   heart rate, HRV, blood oxygen, sleep, weight, blood pressure, Apple's
-   flags, logged symptoms, medications. Shown as a card only on a warning
-   (with the line *When you book, share this page — as PDF, or pasted into
-   the portal*) or on the morning of an appointment the person mentioned.
-   When nothing qualifies its first line is *Nothing here needs a doctor.
-   90 days at your normal.*
-7. **Highlights, composed by her** (built 2026-09-10: `candidates` / `highlights` / `dismissed` in the Home document, `HealthHome.composeHighlights` + `dismiss`, `screen_compose`, the swipe on the quiet screen)**.** Health publishes its candidates —
-   findings, charts, the plan for today, the checklist, a nutrition or
-   supplement line, the letter, the doctor page — and Yinyue writes the
-   page from them on a signal; the rules write the default; at most six,
-   under two screens; a swipe dismisses a card for that fact and the next
-   candidate takes the slot; a warning cannot be dismissed. The mechanism
-   is app-wide: `linggen/doc/dynamic-ui-spec.md`, "The composed screen".
-8. **Nutrition and supplements — a list settled together** (built 2026-09-10: `health_nutrition.dart`, `nutrition.json`, `nutritionPass` once the training shows, the `health_nutrition` tool, intake events `intake:<what>` with amounts, the Nutrition page, the waiting-for-your-word notice, daily lines on the checklist)**.** Not a diary,
-   and not a leaflet. When she sees the person training — sessions in the
-   data, a goal set — she comes to them once: *I see your workout data.
-   Here is a supplement and nutrition list based on your weight, your
-   training energy and your goal. Take a look and tell me what to adjust.*
-   The list is a register, `nutrition.json`: items with a name, a dose, a
-   timing, and the reason in their numbers (protein per kilo by goal,
-   calories from the formula, creatine for a lifter, electrolytes for a
-   long session), each marked proposed or theirs. They adjust in words —
-   "no creatine", "whey after gym only", "add magnesium" — and the settled
-   list is the fact: the checklist reads from it, the debrief reminds from
-   it ("after 12 km: protein within the hour"), a weigh-in trend or a short
-   night may move one line, said in her thread. Intake is an event in
-   words ("40 g whey after gym") with a kind and an amount; the day's
-   totals sit against the targets; energy out from HealthKit, energy in
-   from HealthKit when a logging app writes it, else from their words, said
-   as an estimate. She never makes a medical claim, says "ask your doctor"
-   where an interaction is plausible, and proposes only what their data
-   argues for. A Nutrition page in the drawer: the list, in against out,
-   protein against target. A Highlights candidate when a line moved or the
-   list is waiting for their word (Liang, 2026-09-10: "fact should be
-   settled with the user together… Yinyue needs to be proactive, ask the
-   user when needed").
-
-9. **Her wakes — a signal is a turn** (built 2026-09-10; the engine under
-   7 and 8). The rules' lines stay the floor; each morning line, debrief,
-   screen move and letter also raises a wake: a kickoff the person never
-   sees, one turn with her tools, the final paragraph spoken or SILENT.
-   Once per key a day, six a day, dropped unrun after 18 h, run only with
-   the app open and her thread attached. `linggen-mobile/doc/yinyue.md`,
-   "Her wakes".
-
-The work signal stays shelved (Liang, 2026-09-10): there is no trustworthy
-source for it yet. The person's own words — build 3 above, "worked late" as a
-kind they tell her — are the reason a late night gets, until there is one.
-
-After 1.2: **1.3 lessons** — every term she uses has one lesson in four fixed
-parts (what it is · yours against typical for age and sex · what moves it ·
-what she watches), said in one line the first time it matters, dropped after
-it has been opened twice, kept on a *Learn* page in the order the body raised
-them. **1.4 the coach in session** — the debrief becomes a conversation, live
-pace and effort from the Watch, cadence from the phone's own sensors.
-
-## Settled (2026-09-10)
-
-- **Yinyue's page is the core of the app.** Her screen is shared by every
-  app and she walks the person to a screen; Health stays quiet, says what
-  is and never why. The why, the question and the offer to act are hers.
-  Concept: <https://claude.ai/code/artifact/8fcbe403-6623-4efa-a66c-d9816785c3a5>.
-- **Extend Apple Health, never duplicate it.** No Insights, For You, Health
-  Age, Longevity, labs, videos or camera assessments. Conversation, memory,
-  life outside HealthKit, lessons, the plan with hands, the doctor line.
-- **No score, anywhere.** See 1.2 (4).
-- **The doctor page is clinical-only and appears on a warning or an
-  appointment.** See 1.2 (6).
-- **The letter is a Monday Highlights card.** See 1.2 (5).
-
-## Settled (2026-09-08)
-
-- **Yinyue owns the budget.** Everything Linggen says to a closed phone is
-  her voice under one budget; apps hand her notices and declare their lines.
-  The lane is in `linggen-mobile/doc/yinyue.md`; Health's two lines are under
-  [Notifications](#notifications--what-health-hands-her).
-- **The morning line goes only when the plan changed** — rest imposed or a
-  session moved — quietly, at the person's own wake time. Built the same day.
-
-## Settled (2026-09-04)
-
-- **The alarm boundary** — closed, and built. Two first-sight paths bypass the
-  nine-day sustained rule, because a warning that waits nine days is not a
-  warning. (1) **Apple's own detections, relayed**: irregular rhythm, high or
-  low heart rate while still, and sleep apnea events say *doctor*; low walking
-  steadiness and low cardio fitness say *see*. No judgement of ours is added —
-  the Watch decided against thresholds the user set, and has already told them
-  once. Seven-day window, because a warning nobody can clear teaches people to
-  ignore warnings. (2) **One published threshold**: blood oxygen whose day
-  median sits below 90% over at least three readings. A count of low readings
-  was tried first and failed against real data — a loose strap wrote 86% and
-  89% on a day that also held 96, 96, 97, 97 and 99. Everything else worth
-  alarming on already has an Apple event tuned to the user, and a threshold we
-  invent fires on the athlete whose resting rate is 38.
-- **A notification fires on the doctor tier only** (Liang, 2026-09-04). Not on
-  a *see* finding: that stays on the screen and in the thread, reached when the
-  user opens the app. So the phone will be quiet for months at a stretch, which
-  is the point of a warning — and it means the lane cannot be proved by
-  waiting, only by staging a review onto the device. **Built 2026-09-08**: a
-  local notification on the phone at the end of the pass, once per subject
-  and once more a week later if it is still there; the same sentence her
-  thread carries, then *Take it to a doctor.*, never a condition; filed in
-  `told.jsonl` with `surface: notification` so what reached the person is one
-  account whichever door it came through; a tap lands on the review. The
-  permission is asked right after the HealthKit sheet and shown on the
-  drawer's *Underneath* group, read back from iOS. See
-  `linggen-mobile/doc/health.md` — *A warning reaches a closed phone*.
-
-## Settled (2026-09-03)
-
-- **Show the unhealthy part only.** The nightly examination walks every type
-  the user has and stays silent about the ones that are fine. Unhealthy means a
-  sustained adverse change against the user's *own* baseline, or a published
-  red flag — never below a population average.
-- **A card earns its place by having news today.** At your normal is not a
-  slot. This retired the nine-card composed Home of 2026-09-02, four of whose
-  cards sat there whether or not anything had happened.
-- **A warning outranks the quiet rule**: always on top, never collapsed, never
-  hidden by a tap, and it never names a condition.
-- **The number is not a health score.** It is today against the user's own
-  normal (80 = at your normal), it names what it was made of, and it does not
-  exist below two usable metrics. *Retired 2026-09-10: no number at all — see
-  1.2 (4).*
-- **The index is picked per user** on coverage × relevance × movement. BMI is
-  the worked example of why a fixed list is wrong.
-- **The agent's voice lives in the conversation, never on the view.** The
-  why-line came off the screen; the screen carries findings. This retires C3 of
-  2026-09-02 as a *screen* feature — automatic layout change and Undo stand.
-- **The agent comes to the user.** When a pass finishes or something is seen,
-  it says so unprompted in its own thread: what it did, what it read, what came
-  out, what it changed. The quiet morning is reported too.
-- **The phone screen can go fully quiet** because Yinyue's screen is one thread
-  for every Linggen app — there is always somewhere for her to say it.
-- Build the capability; do not claim the title. A diagnosis claim from a
-  non-cleared app is an App Review rejection in the US and a regulated medical
-  device in the EU.
-
-## Settled (2026-09-02)
-
-- The phone is the whole product; the Mac is optional (Liang: "user can use
-  their phone independently like DJ and sync data to Mac").
-- Price is Linggen's $5 a month for every app; Health is one of them.
-- Layout changes are automatic with an Undo — never propose-and-wait. (The
-  why-line that accompanied them moved into the conversation on 2026-09-03.)
-- First run is one conversation (confirm, then the goal), never a
-  questionnaire; later asks only when a decision needs them.
-- The plan lives in the app and is the source of truth. Calendar mirror is
-  later, behind a one-time opt-in.
-- No brand names in v1. On ask, buyer advice comes from a live market search
-  with the source shown — later, Paid.
-- Checklist and progress charts (weight for bulking / cutting, per-km time,
-  heart history) are v1.
-- A Mac alone gets no body data; it composes from the work side and shows the
-  pair card. Vendor APIs later.
-
-## Open questions for Liang
-
-1. **In-app attention.** May the app learn from what you look at at all, or
-   only from deliberate acts (pin, hide, and what you ask the chat)? Asking is
-   the strongest untapped signal and Apple has no equivalent; watching what you
-   open is the part that needs permission.
-2. Skill and app name: `health` / "Linggen Health", or something in the Yinyue
-   world?
-3. Free vs Paid split inside the suite as proposed under *Who pays*, or the
-   nightly examination free too?
-4. Should durable profile facts go to ling-mem automatically (weekly pass), or
-   only when the user says "remember that"?
-*(The photo and the promise was settled on 2026-09-04 — the image goes to
-the user's own ChatGPT over OAuth. See
-[What you eat](#what-you-eat--an-estimate-is-never-a-measurement).)*
-
 ## Related docs
 
+- [product-spec.md](product-spec.md) — what it is and what it does.
 - [ui-ux-design.md](ui-ux-design.md) — the first view: Brief, Focus, Attention.
 - [prototype.html](prototype.html) — the interactive prototype (three
   people, the first run, the screens); published at
