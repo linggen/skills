@@ -1212,9 +1212,9 @@ We own the conversation. 1.2 builds the conversation, in this order.
    the portal*) or on the morning of an appointment the person mentioned.
    When nothing qualifies its first line is *Nothing here needs a doctor.
    90 days at your normal.*
-7. **The work signal, un-shelved.** `life/<date>.json` from the Mac reaches
-   the examination and the brief, so a late night has a reason before it
-   becomes a question.
+The work signal stays shelved (Liang, 2026-09-10): there is no trustworthy
+source for it yet. The person's own answer — build 3 above — is the reason a
+late night gets, until there is one.
 
 After 1.2: **1.3 lessons** — every term she uses has one lesson in four fixed
 parts (what it is · yours against typical for age and sex · what moves it ·
