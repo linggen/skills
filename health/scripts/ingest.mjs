@@ -17,6 +17,7 @@
 //   ingest.mjs ledger                          what the mirror holds
 //   ingest.mjs log      <text>                 one line the user said
 //   ingest.mjs focus    <id> <action> [kind] [why]  choose what Focus shows
+//   ingest.mjs dismiss  <id>                        take a card off Highlights
 //
 // Every verb prints one JSON line. A payload may also arrive on stdin, which is
 // how a batch too long for one shell command gets here.
@@ -27,7 +28,7 @@ import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 
 import { fold, mergeNotes, monthOf, parseLines, planWrite, summarize, wins } from './store.js';
-import { changeFocus, homeOf, selectedOf, validHome } from './home.js';
+import { changeFocus, dismissCard, homeOf, selectedOf, validHome } from './home.js';
 
 const HOME = process.env.HOME || '';
 const DIR = process.env.HEALTH_DIR || path.join(HOME, '.linggen', 'skills', 'health');
@@ -420,6 +421,39 @@ const VERBS = {
       why: layout.home?.why ?? null,
       layout,
     };
+  },
+
+  /// One card off Highlights — the same hand the phone's swipe is, through the
+  /// same validator, written as the newer `layout.json` so the phone adopts it.
+  /// The card it replaces is filed under `layouts/` like any other change.
+  dismiss(rest) {
+    const id = String(rest[0] ?? '').trim();
+    if (!id || placeholder(id)) die('Say which card — Report lists what is on the page');
+    const report = VERBS.report();
+    const prior = report.layout;
+    if (!prior || typeof prior !== 'object') die('No layout yet — the phone has not composed one');
+    const home = homeOf(report);
+    if (home.fallback) die('The phone has not composed this page yet — nothing here to dismiss');
+    let changed;
+    try {
+      changed = dismissCard(home, id);
+    } catch (e) {
+      die(String(e.message || e));
+    }
+    const stamp = new Date().toISOString();
+    const previous = `layouts/${stamp}.json`;
+    writeJson(path.join(DATA, previous), prior);
+    const layout = {
+      ...prior,
+      home: changed,
+      pass: 'user',
+      previous,
+      composed_at: stamp,
+      written_at: stamp,
+      by_device: 'mac',
+    };
+    writeJson(path.join(DATA, 'layout.json'), layout);
+    return { ok: true, cards: changed.highlights?.cards ?? [], layout };
   },
 
   report() {

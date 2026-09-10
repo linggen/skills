@@ -17,9 +17,10 @@
 // conversation, never on the view — nothing here explains the page.
 
 import './chat-bridge.js'; // sets window.LinggenUI
+import { listSkillSessions } from './api.js';
 import { verb } from './bash.js';
 import { focusView } from './focus-view.js';
-import { homeOf } from './home.js';
+import { candidatesOf, cardsOf, homeOf } from './home.js';
 
 const SKILL = 'health';
 const $ = (id) => document.getElementById(id);
@@ -83,7 +84,7 @@ let report = null;
 let ledger = null;
 let insights = [];
 let error = null;
-let tab = 'home';
+let tab = 'highlights';
 
 // ── tabs ─────────────────────────────────────────────────────────────────────
 
@@ -93,7 +94,7 @@ let tab = 'home';
 function tabs() {
   const has = (k) => report && report[k] != null;
   return [
-    { id: 'home', name: 'Home', on: true },
+    { id: 'highlights', name: 'Highlights', on: true },
     { id: 'review', name: 'Review', on: true },
     { id: 'body', name: 'Body', on: has('profile') || has('targets') },
     { id: 'week', name: 'Week', on: has('plan') },
@@ -106,7 +107,7 @@ function renderTabs() {
   const nav = $('tabs');
   nav.textContent = '';
   const open = tabs();
-  if (!open.some((t) => t.id === tab)) tab = 'home';
+  if (!open.some((t) => t.id === tab)) tab = 'highlights';
   for (const t of open) {
     const b = el('button', null, t.name);
     b.type = 'button';
@@ -147,7 +148,7 @@ function render() {
 
   renderTabs();
   const panel = {
-    home: homeTab,
+    highlights: highlightsTab,
     review: reviewTab,
     body: bodyTab,
     week: weekTab,
@@ -201,7 +202,131 @@ function pairCard() {
 /// this person's data can answer, drawn as the component that answers it;
 /// Attention is there only when something needs a decision — a finding, or
 /// a gap in the data said as a gap. A warning sits above all three.
-function homeTab() {
+/// The page the phone composed, drawn here in the order it composed it.
+///
+/// The document is the phone's (`layout.json`'s `home`): `candidates` is
+/// everything today could show, `highlights.cards` is what was picked, and
+/// this Mac renders that list and recomputes nothing — the dynamic-UI rule
+/// that a paired Mac shows the same screen from the same file. A dismissal
+/// here is the same hand as the phone's swipe and goes back through the same
+/// validator, so the two never disagree about what is on the page.
+///
+/// A mirror from before Highlights was composed still has a Focus and an
+/// Attention list; that page is kept below and drawn when there is no
+/// composition to draw.
+function highlightsTab() {
+  const home = homeOf(report);
+  const cards = cardsOf(home);
+  if (!cards.length) return legacyHomeTab();
+
+  const r = report.review;
+  const byId = new Map(candidatesOf(home).map((c) => [`${c.id}`, c]));
+  const findings = r ? findingsOf(r) : [];
+  const gaps = Array.isArray(home.attention) ? home.attention : [];
+  let firstFocus = true;
+
+  const nodes = cards.map((id) => {
+    const cand = byId.get(id);
+    if (!cand) return null; // a card whose candidate is gone is not drawn
+    const kind = `${cand.kind || ''}`;
+    if (kind === 'brief') return briefSection();
+    if (kind === 'warning' || kind === 'finding') {
+      const f = findings.find((x) => x.type === cand.subject);
+      return f ? dismissable(findingCard(f, r), cand) : null;
+    }
+    if (kind === 'notice') return dismissable(noticeCard(cand), cand);
+    if (kind === 'gap') {
+      const g = gaps.find((x) => x.subject === cand.subject || x.label === cand.label);
+      return g ? dismissable(gapCard(g), cand) : null;
+    }
+    if (kind === 'focus') {
+      const view = focusView(report, {
+        entryId: `${id}`.replace(/^focus:/, ''), // the candidate id wraps the catalog id
+        header: firstFocus,
+        change: changeFocus,
+        explore: () => {
+          tab = 'data';
+          render();
+        },
+        ask: chat ? (q) => chat.send(q) : null,
+        canUndo: typeof report.layout?.previous === 'string',
+      });
+      firstFocus = false;
+      return dismissable(view, cand);
+    }
+    return null;
+  });
+
+  return [
+    ...nodes,
+    askButton('What should I focus on in Health, given my goals?', 'Ask Ling'),
+  ];
+}
+
+/// The line that proves the night looked, with the counts behind it.
+function briefSection() {
+  const r = report.review;
+  const fresh = r && r.date === report.today;
+  const s = el('section', 'home-section');
+  const head = el('div', 'focus-head');
+  head.append(el('h2', null, 'Brief'));
+  s.append(head);
+  const text =
+    report.brief?.date === report.today && typeof report.brief.text === 'string'
+      ? report.brief.text
+      : fresh
+        ? line(r)
+        : 'No examination today yet.';
+  s.append(el('p', 'big', text));
+  s.append(
+    el(
+      'p',
+      'dim small',
+      fresh
+        ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal`
+        : r
+          ? `Latest examination: ${day(r.date)}`
+          : 'The first examination has not run.',
+    ),
+  );
+  return s;
+}
+
+/// A door the phone put on the page — the Sunday letter, the doctor page, a
+/// nutrition list waiting for their word. The label is the candidate's; where
+/// the card leads is the phone's business, so this names it and stops.
+function noticeCard(cand) {
+  const c = card(cand.label || 'Something for you');
+  const where = { letters: 'Letters', doctor: 'For your doctor', nutrition: 'Nutrition' }[cand.route];
+  c.append(el('p', 'why', where ? `${where} — open it on your phone.` : 'Open it on your phone.'));
+  return c;
+}
+
+/// Every dismissable card carries the hand that takes it off the page. The
+/// phone swipes; a Mac has a pointer, so it is a button — the same verb, the
+/// same validator, and it travels back on the next sync.
+function dismissable(node, cand) {
+  if (!node || cand.dismissable !== true) return node;
+  const b = el('button', 'dismiss', 'Got it');
+  b.type = 'button';
+  b.title = 'Take this off the page until something changes';
+  b.addEventListener('click', async () => {
+    b.disabled = true;
+    try {
+      await verb('dismiss', cand.id);
+      await load();
+    } catch (e) {
+      const message = el('p', 'err', String(e.message || e));
+      message.setAttribute('role', 'alert');
+      node.append(message);
+      b.disabled = false;
+    }
+  });
+  node.append(b);
+  return node;
+}
+
+function legacyHomeTab() {
   const r = report.review;
   const fresh = r && r.date === report.today;
   const section = (title, ...nodes) => {
@@ -898,13 +1023,31 @@ const GREETING =
 // repaint shortly after one of its tools runs keeps the two in step.
 const WRITERS = new Set(['Log', 'Focus']);
 
+/// The chat this page reopens: the newest session, if it is from today's
+/// stretch. Same rule as DJ, CFO and Shifu — a page that mounted without one
+/// made a brand-new session on every refresh and left the last conversation
+/// where nobody could see it again.
+async function recentSessionId() {
+  try {
+    const sessions = await listSkillSessions(SKILL);
+    if (!sessions.length) return null;
+    sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+    const ageHours = (Date.now() / 1000 - (sessions[0].created_at || 0)) / 3600;
+    return ageHours < 24 ? sessions[0].id : null;
+  } catch {
+    return null;
+  }
+}
+
 async function mountChat() {
   let alive = false;
+  const resume = await recentSessionId();
   try {
     chat = await window.LinggenUI.mount($('chat-panel'), {
       skillName: SKILL,
       agentId: 'ling',
       title: 'Health',
+      sessionId: resume || undefined,
       onStreamToken: () => {
         alive = true;
       },
@@ -931,10 +1074,15 @@ async function mountChat() {
   // The Ask buttons were drawn dead while there was nothing to ask; now
   // there is.
   render();
-  setTimeout(() => chat?.sendHidden(GREETING), 700);
-  setTimeout(() => {
-    if (!alive) chat?.sendHidden(GREETING);
-  }, 4500);
+  // A reopened conversation is picked up in silence. Greeting into a thread
+  // that is already going would say hello to somebody mid-sentence, and a
+  // refresh would do it again every time.
+  if (!resume) {
+    setTimeout(() => chat?.sendHidden(GREETING), 700);
+    setTimeout(() => {
+      if (!alive) chat?.sendHidden(GREETING);
+    }, 4500);
+  }
 }
 
 /// The model is not perfectly consistent about the shape it sends; be liberal

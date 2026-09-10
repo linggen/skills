@@ -1133,9 +1133,26 @@ Entitlements: `healthkit`, `healthkit.background-delivery`.
 
 ## Mac page
 
-Built 2026-09-03, reshaped to the quiet screen 2026-09-04:
 `scripts/index.html` → `health.html` + `health.js` + `health.css`, launcher
 `web`, like DJ.
+
+**The first tab is Highlights, and it is the phone's page.** The Mac renders
+`layout.json`'s `home.highlights.cards` in the order the phone composed them —
+brief, warnings, notices, Focus cards, findings, gaps — resolving each id
+against `home.candidates` and recomputing nothing, which is the dynamic-UI
+rule that a paired Mac shows the same screen from the same file
+(`linggen/doc/dynamic-ui-spec.md`, rule 8). Every dismissable card carries
+*Got it*: the pointer's version of the phone's swipe, through `dismissCard` in
+`home.js` — the phone's `HealthHome.dismiss` written a second time — and
+written as the newer `layout.json`, so the phone adopts the dismissal on the
+next sync and the two never disagree about what is on the page. The page it
+replaced is filed under `layouts/` like any other change, so Undo puts it
+back. A mirror from before Highlights was composed falls back to the older
+Brief / Focus / Attention page.
+
+The chat reopens the newest session when it is under 24 hours old, the same
+rule DJ, CFO and Shifu use, and a reopened conversation is picked up in
+silence — no greeting.
 
 **The first view is the same promise as the phone's** and leads with the same
 thing: the strip of what the pass found, the status line with the number and

@@ -7,7 +7,7 @@
 // leading one — the same question over its longer period, or the same
 // share as bars — never an unrelated measurement.
 
-import { homeOf, selectedOf } from './home.js';
+import { entryOf, homeOf, selectedOf } from './home.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const svg = (tag, attrs = {}) => {
@@ -41,14 +41,20 @@ export function describe(e) {
 
 /// The section. [change] runs one action through the writer; [explore]
 /// opens the Data tab; [ask] hands the conversation a question.
-export function focusView(report, { change, explore, ask, canUndo }) {
+/// `entryId` draws one named catalog entry instead of the selected one — the
+/// composed page names its own Focus cards, and there can be more than one.
+/// `header` is false for every card after the first, the way the phone stacks
+/// them under a single heading.
+export function focusView(report, { change, explore, ask, canUndo, entryId, header = true }) {
   const home = homeOf(report);
   const section = el('section', 'home-section focus');
-  const head = el('div', 'focus-head');
-  head.append(el('h2', null, 'Focus'));
-  section.append(head);
+  if (header) {
+    const head = el('div', 'focus-head');
+    head.append(el('h2', null, 'Focus'));
+    section.append(head);
+  }
 
-  const entry = selectedOf(home);
+  const entry = entryId ? entryOf(home, entryId) : selectedOf(home);
   if (!entry) {
     section.append(
       el(

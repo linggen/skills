@@ -16,6 +16,43 @@ export const KINDS = new Set(['line', 'bars', 'share', 'nights', 'weeks', 'progr
 
 export const ACTIONS = new Set(['select', 'agent', 'pin', 'unpin', 'hide', 'unhide', 'kind']);
 
+/// At most this many cards on the page, the phone's `HealthHome.maxHighlights`.
+export const MAX_HIGHLIGHTS = 6;
+
+export const candidatesOf = (home) => (Array.isArray(home?.candidates) ? home.candidates : []);
+
+/// The page as composed: card ids in order. Empty when nothing has composed.
+export const cardsOf = (home) => {
+  const c = home?.highlights?.cards;
+  return Array.isArray(c) ? c.map((x) => `${x}`) : [];
+};
+
+/// One dismissal — the phone's `HealthHome.dismiss` written a second time, and
+/// the two must agree: this lands as the newer `layout.json` and the phone
+/// adopts it whole. A card is dismissed FOR ITS FACT, so the same subject comes
+/// back the moment the fact changes; the freed slot is refilled from the rules'
+/// order rather than left as a hole.
+export function dismissCard(home, id, now = new Date()) {
+  const cand = candidatesOf(home).find((c) => `${c.id}` === id);
+  if (!cand) throw new Error(`${id} is not on the page`);
+  if (cand.dismissable !== true) throw new Error(`${cand.label || id} stays until it passes`);
+  const dismissed = { ...(home.dismissed || {}), [id]: cand.fact };
+  const cards = cardsOf(home).filter((x) => x !== id);
+  for (const c of candidatesOf(home)) {
+    if (cards.length >= MAX_HIGHLIGHTS) break;
+    const cid = `${c.id}`;
+    if (cards.includes(cid)) continue;
+    if (c.dismissable === true && dismissed[cid] === c.fact) continue;
+    cards.push(cid);
+  }
+  return {
+    ...home,
+    dismissed,
+    highlights: { ...(home.highlights || {}), cards },
+    changed_at: now.toISOString(),
+  };
+}
+
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 const nonEmpty = (s) => typeof s === 'string' && s.length > 0;
 
@@ -131,13 +168,15 @@ export function homeOf(report) {
 }
 
 /// The entry that leads, drawn as the kind the person chose for it.
-export function selectedOf(home) {
+export function entryOf(home, id) {
   if (!home || validHome(home)) return null;
-  const e = home.catalog.find((c) => c.id === home.selected);
+  const e = home.catalog.find((c) => c.id === id);
   if (!e) return null;
   const chosen = home.kinds?.[e.id];
   return chosen && e.kinds.includes(chosen) ? { ...e, kind: chosen } : e;
 }
+
+export const selectedOf = (home) => entryOf(home, home?.selected);
 
 const words = (subject, catalog) =>
   (catalog.find((e) => e.subject === subject)?.title || subject).toLowerCase();

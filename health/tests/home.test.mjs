@@ -7,7 +7,17 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { changeFocus, homeOf, selectedOf, validEntry, validHome, VERSION } from '../scripts/home.js';
+import {
+  cardsOf,
+  changeFocus,
+  dismissCard,
+  homeOf,
+  MAX_HIGHLIGHTS,
+  selectedOf,
+  validEntry,
+  validHome,
+  VERSION,
+} from '../scripts/home.js';
 
 const line = (subject, days = 14) => ({
   id: `${subject}#line${days}`,
@@ -210,6 +220,98 @@ test('the writer files the change as the newer layout and undo puts the old one 
     const bad = run('nothing#here', 'select');
     assert.equal(bad.ok, false);
     assert.match(bad.error, /No "nothing#here"/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// ── Highlights: the composed page, and the hand that takes a card off it ─────
+//
+// The phone composes `candidates` + `highlights.cards`; this Mac renders that
+// list and may dismiss from it. The rule here is the phone's
+// `HealthHome.dismiss` written a second time, so the two must agree: a
+// dismissal made here lands as the newer layout and the phone adopts it whole.
+
+const composed = () => ({
+  ...home(),
+  candidates: [
+    { id: 'brief', kind: 'brief', label: 'Brief', warning: false, dismissable: false, fact: '2026-09-08' },
+    { id: 'warning:hrv', kind: 'warning', label: 'HRV', subject: 'hrv', warning: true, dismissable: false, fact: '2026-09-08:22' },
+    { id: 'notice:letter', kind: 'notice', label: 'The Sunday letter', route: 'letters', warning: false, dismissable: true, fact: '2026-W36' },
+    { id: 'focus:hrv#line14', kind: 'focus', label: 'HRV', subject: 'hrv', warning: false, dismissable: true, fact: 'hrv#line14:2026-09-08' },
+    { id: 'finding:rhr', kind: 'finding', label: 'Resting heart rate', subject: 'rhr', warning: false, dismissable: true, fact: '2026-09-08:61' },
+    { id: 'gap:sleep', kind: 'gap', label: 'Sleep', subject: 'sleep', warning: false, dismissable: true, fact: '2026-09-08' },
+  ],
+  highlights: { cards: ['brief', 'warning:hrv', 'notice:letter', 'focus:hrv#line14'], by: 'rules' },
+  dismissed: {},
+});
+
+test('a dismissal takes the card off, remembers the fact, and refills the slot', () => {
+  const next = dismissCard(composed(), 'notice:letter', new Date('2026-09-08T09:00:00.000Z'));
+  assert.deepEqual(
+    cardsOf(next),
+    ['brief', 'warning:hrv', 'focus:hrv#line14', 'finding:rhr', 'gap:sleep'],
+    'the freed slot is refilled from the rules’ order, never left as a hole',
+  );
+  assert.equal(next.dismissed['notice:letter'], '2026-W36', 'dismissed FOR ITS FACT');
+  assert.equal(next.changed_at, '2026-09-08T09:00:00.000Z');
+  // The same card comes back the moment the fact changes — a new week's letter
+  // is not the one they waved away.
+  const nextWeek = {
+    ...next,
+    candidates: next.candidates.map((c) =>
+      c.id === 'notice:letter' ? { ...c, fact: '2026-W37' } : c,
+    ),
+  };
+  const after = dismissCard(nextWeek, 'finding:rhr', new Date('2026-09-08T10:00:00.000Z'));
+  assert.ok(cardsOf(after).includes('notice:letter'), 'a new fact is new news');
+});
+
+test('what must stay on the page cannot be dismissed', () => {
+  assert.throws(() => dismissCard(composed(), 'warning:hrv'), /stays until it passes/);
+  assert.throws(() => dismissCard(composed(), 'brief'), /stays until it passes/);
+  assert.throws(() => dismissCard(composed(), 'nothing:here'), /is not on the page/);
+});
+
+test('the page never grows past what it may hold', () => {
+  const many = composed();
+  many.candidates = [
+    ...many.candidates,
+    ...Array.from({ length: 6 }, (_, i) => ({
+      id: `finding:x${i}`,
+      kind: 'finding',
+      label: `X${i}`,
+      subject: `x${i}`,
+      warning: false,
+      dismissable: true,
+      fact: `2026-09-08:${i}`,
+    })),
+  ];
+  many.highlights = { cards: many.candidates.slice(0, MAX_HIGHLIGHTS).map((c) => c.id), by: 'rules' };
+  const next = dismissCard(many, 'notice:letter');
+  assert.equal(cardsOf(next).length, MAX_HIGHLIGHTS);
+});
+
+test('the writer files a dismissal as the newer layout, for the phone to adopt', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'health-dismiss-'));
+  try {
+    fs.mkdirSync(path.join(dir, 'data'));
+    fs.writeFileSync(
+      path.join(dir, 'data/layout.json'),
+      JSON.stringify({ version: 4, cards: [], home: composed(), written_at: '2026-09-08T05:00:00.000Z' }),
+    );
+    const r = spawnSync(
+      process.execPath,
+      [new URL('../scripts/ingest.mjs', import.meta.url).pathname, 'dismiss', 'notice:letter'],
+      { env: { ...process.env, HEALTH_DIR: dir }, encoding: 'utf8' },
+    );
+    const out = JSON.parse(r.stdout.trim().split('\n').pop());
+    assert.equal(out.ok, true);
+    assert.ok(!out.cards.includes('notice:letter'));
+    assert.equal(out.layout.by_device, 'mac');
+    assert.ok(out.layout.written_at > '2026-09-08T05:00:00.000Z', 'newer, so the phone adopts it');
+    const filed = JSON.parse(fs.readFileSync(path.join(dir, 'data', out.layout.previous), 'utf8'));
+    assert.ok(cardsOf(filed.home).includes('notice:letter'), 'the page it replaced is filed for undo');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

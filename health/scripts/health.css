@@ -899,3 +899,26 @@ table.mini td.thin {
     padding: 0 8px;
   }
 }
+
+/* The hand that takes a card off Highlights — the pointer's version of the
+   phone's swipe. Quiet until the card is hovered: it is an action on
+   something the agent chose, never a call to act. */
+.dismiss {
+  align-self: flex-start;
+  width: fit-content;
+  margin-top: 10px;
+  margin-right: auto;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--dim);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.12s ease;
+}
+.dismiss:hover,
+.dismiss:focus-visible { opacity: 1; }
+.dismiss[disabled] { cursor: default; opacity: 0.3; }
