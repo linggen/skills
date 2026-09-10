@@ -421,35 +421,7 @@ button {
   border-color: var(--gold);
 }
 
-.dial {
-  flex: none;
-}
-.dial .track {
-  fill: none;
-  stroke: var(--raised);
-  stroke-width: 6;
-  stroke-linecap: round;
-}
-.dial .fill {
-  fill: none;
-  stroke: var(--jade);
-  stroke-width: 6;
-  stroke-linecap: round;
-}
-.dial .fill.warm {
-  stroke: var(--gold);
-}
 /* Where "at your normal" sits, so the arc has a meaning to be read against. */
-.dial .mark {
-  stroke: var(--dim);
-  stroke-width: 1.5;
-}
-.dial .n {
-  font-family: var(--mono);
-  font-size: 16px;
-  font-weight: 600;
-  fill: var(--text);
-}
 
 .tiles {
   display: grid;

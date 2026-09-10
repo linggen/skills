@@ -224,8 +224,7 @@ function homeTab() {
         ? line(r)
         : 'No examination today yet.';
   const proof = fresh
-    ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal` +
-      (typeof r.score === 'number' ? ` · ${r.score} against it` : '')
+    ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal`
     : r
       ? `Latest examination: ${day(r.date)}`
       : 'The first examination has not run.';
@@ -305,7 +304,6 @@ function reviewTab() {
     tilesCard(r, shown),
     ...shown.map((f) => findingCard(f, r)),
     shown.length ? null : indexCard(r),
-    madeOfCard(r),
   ];
 }
 
@@ -331,35 +329,31 @@ function askButton(question, label = 'Ask Ling about this') {
   return b;
 }
 
-/// The one line, with the number beside it. 80 is at your normal — the arc is
-/// drawn against that mark so it reads as a position in this person's own
-/// history rather than as a grade out of a hundred.
+/// The one line, and the proof it looked. No score: a number that grades a
+/// person is Apple's to give and never ours (removed 2026-09-10); what is
+/// here is a position against their own normal, said in words.
 function statusCard(r) {
   const c = card(null);
   c.classList.add('status');
   if (r.doc > 0 || r.see > 0) c.classList.add('warm');
-  c.append(dial(r.score, r.doc > 0 || r.see > 0));
   const box = el('div', 'v');
   box.append(el('span', 'eyebrow', 'Today'));
   box.append(el('p', 'big', line(r)));
   box.append(el('p', 'why', madeOf(r)));
-  box.append(askButton(scoreQuestion(r), 'Ask Ling about this number'));
+  box.append(askButton(todayQuestion(r), 'Ask Ling about today'));
   c.append(box);
   return c;
 }
 
-/// What a person would actually type about the number: explain it, and say
-/// what would help. Not "how do I raise it" — it is a position against their
-/// own normal, not a target to farm.
-function scoreQuestion(r) {
-  const from = Array.isArray(r.score_from) ? r.score_from : [];
-  const made = from.length ? ` It was made of ${list(from)}.` : '';
-  const number =
-    typeof r.score === 'number'
-      ? `Today came out at ${r.score} against my own normal, where 80 is at it.`
-      : 'There was no number today.';
+/// What a person would actually type about the morning: explain it, and say
+/// what would help — against their own normal, never a target to farm.
+function todayQuestion(r) {
+  const found =
+    r.doc > 0 || r.see > 0
+      ? `The examination raised ${num(r.see + r.doc)} thing${r.see + r.doc === 1 ? '' : 's'} against my own normal today.`
+      : 'The examination found nothing off my own normal today.';
   return (
-    `${number}${made} Explain what that is actually saying about me, and ` +
+    `${found} Explain what that is actually saying about me, and ` +
     `given what you know of my goal, what would help.`
   );
 }
@@ -374,12 +368,7 @@ function line(r) {
 }
 
 function madeOf(r) {
-  const from = Array.isArray(r.score_from) ? r.score_from : [];
-  const examined = `${num(r.examined)} measurements examined against your own normal`;
-  if (typeof r.score !== 'number' || !from.length) {
-    return `${examined}. Too few of them have a normal yet for a number.`;
-  }
-  return `${r.score} is today against your own normal — 80 is at it — made of ${list(from)}. ${examined}.`;
+  return `${num(r.examined)} measurements examined against your own normal.`;
 }
 
 const list = (xs) =>
@@ -392,40 +381,6 @@ const svg = (tag, attrs) => {
   return e;
 };
 
-/// The number as an arc, with a tick where "at your normal" sits.
-function dial(score, warm) {
-  const size = 62;
-  const s = svg('svg', { class: 'dial', viewBox: `0 0 ${size} ${size}`, width: size, height: size });
-  const c = size / 2;
-  const rad = c - 5;
-  const start = 135;
-  const sweep = 270;
-  const at = (deg, r) => {
-    const a = ((deg - 90) * Math.PI) / 180;
-    return [c + r * Math.cos(a), c + r * Math.sin(a)];
-  };
-  const arc = (from, to, cls) => {
-    const [x1, y1] = at(from, rad);
-    const [x2, y2] = at(to, rad);
-    return svg('path', {
-      class: cls,
-      d: `M ${x1} ${y1} A ${rad} ${rad} 0 ${to - from > 180 ? 1 : 0} 1 ${x2} ${y2}`,
-    });
-  };
-  s.append(arc(start, start + sweep, 'track'));
-  if (typeof score === 'number') {
-    const end = start + sweep * (Math.min(100, Math.max(0, score)) / 100);
-    if (end > start + 0.5) s.append(arc(start, end, warm ? 'fill warm' : 'fill'));
-  }
-  const mark = start + sweep * 0.8; // 80 = at your normal
-  const [mx1, my1] = at(mark, rad - 5);
-  const [mx2, my2] = at(mark, rad + 4);
-  s.append(svg('line', { class: 'mark', x1: mx1, y1: my1, x2: mx2, y2: my2 }));
-  const t = svg('text', { class: 'n', x: c, y: c, 'text-anchor': 'middle', 'dominant-baseline': 'central' });
-  t.textContent = typeof score === 'number' ? String(score) : '—';
-  s.append(t);
-  return s;
-}
 
 /// The four counts. Each says what it is made of, so a zero can be read.
 function tilesCard(r, shown) {
@@ -640,18 +595,6 @@ function spark(f) {
   return s;
 }
 
-/// What the number was made of, as a table. The score names its own inputs;
-/// this is where they can be checked.
-function madeOfCard(r) {
-  const from = (Array.isArray(r.score_from) ? r.score_from : []).map((s) => String(s).toLowerCase());
-  if (!from.length) return null;
-  const rows = findingsOf(r).filter((f) => from.includes(String(f.label).toLowerCase()));
-  if (!rows.length) return null;
-  const c = card('What the number was made of');
-  c.append(verdictTable(rows));
-  if (r.score_formula) c.append(el('p', 'pn', `${r.score_formula}.`));
-  return c;
-}
 
 // ── the other doors ──────────────────────────────────────────────────────────
 

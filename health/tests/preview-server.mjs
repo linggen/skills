@@ -51,7 +51,7 @@ const report = () => ({
   ok: true, today, phone_paired: true, layout,
   brief: { date: today, text: 'Your activity is up this week, while your sleep schedule is steady.' },
   held: { samples: 2400, first: '2026-08-01' },
-  review: { date: today, examined: 8, normal: 8, see: 0, doc: 0, score: 81, verdicts: [] },
+  review: { date: today, examined: 8, normal: 8, see: 0, doc: 0, verdicts: [] },
 });
 
 const server = http.createServer(async (req, res) => {
