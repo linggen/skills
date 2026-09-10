@@ -1292,7 +1292,7 @@ Kept from the original feature list; nothing here is built or scheduled.
 - Settings the phone will grow: which types to read, pass time, quiet hours,
   how blunt the voice is, layout history, export as CSV and Markdown.
 
-## 1.2 — she knows you (designed 2026-09-10; 1–7 and 9 built the same day)
+## 1.2 — she knows you (designed and built 2026-09-10)
 
 Apple's Health redesign of 2026-09-09 (Insights, For You, Readiness 0–10,
 Health Age, Longevity, labs, expert videos) owns the cards and the scores.
@@ -1353,7 +1353,7 @@ We own the conversation. 1.2 builds the conversation, in this order.
    under two screens; a swipe dismisses a card for that fact and the next
    candidate takes the slot; a warning cannot be dismissed. The mechanism
    is app-wide: `linggen/doc/dynamic-ui-spec.md`, "The composed screen".
-8. **Nutrition and supplements — a list settled together.** Not a diary,
+8. **Nutrition and supplements — a list settled together** (built 2026-09-10: `health_nutrition.dart`, `nutrition.json`, `nutritionPass` once the training shows, the `health_nutrition` tool, intake events `intake:<what>` with amounts, the Nutrition page, the waiting-for-your-word notice, daily lines on the checklist)**.** Not a diary,
    and not a leaflet. When she sees the person training — sessions in the
    data, a goal set — she comes to them once: *I see your workout data.
    Here is a supplement and nutrition list based on your weight, your
