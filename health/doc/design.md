@@ -1,24 +1,126 @@
 ---
-type: design
-reader: Coding agent and contributors
+type: spec
+reader: Liang, coding agent, contributors
 guide: |
-  Architectural design for Linggen Health — phone-first: the HealthKit
-  surface, the phone store and the agent passes on the phone, the optional
-  Mac (mirror, memory, work signals), sync between them, the profile /
-  composition / plan / checklist schemas, the tool catalog, and the rules
-  that keep it honest. Companion to product-spec.md. Brief; no code.
-status: building — the chart catalog, the chart picker and the food-estimate lane are DESIGNED (2026-09-04) and not yet coded. The quiet screen and the examination are BUILT on the phone (2026-09-03) and proven against 2.2M real samples on a device: health_review.dart, health_tell.dart, the quiet-screen renderer, the Health review screen. The Mac mirror and page landed 2026-09-03; the page was reshaped to the quiet screen 2026-09-04, and a verdict now carries its own fortnight so both surfaces draw the same line. See linggen-mobile/doc/health.md for what runs on the phone.
+  The one document for Linggen Health — what it is and what it never does,
+  where it runs, the HealthKit surface, the phone store and the passes, the
+  optional Mac, sync, the schemas, the tools, the honesty rules, what is
+  built, what 1.2 builds, and what was settled when. Brief; no code. The
+  first-view UI lives in ui-ux-design.md; the phone's built behaviour in
+  linggen-mobile/doc/health.md.
+status: building — 1.1 (build 22) submitted to the App Store 2026-09-10 with the examination, the quiet screen, the plan, the debrief, the letter, the doctor page, patterns, symptoms and the lock-screen lines. 1.2 is designed (see "1.2 — she knows you") and not coded. product-spec.md was folded in here on 2026-09-10.
 ---
 
-# Design: Linggen Health
+# Linggen Health
 
-> UI direction updated 2026-09-08: [Agent-Composed UI](ui-ux-design.md) is the
-> current first view — built the same day on both devices. Its stable
-> sections and composed components supersede conflicting UI rules below,
-> including the rule that normal measurements can never appear on the first
-> view. `layout.json` now carries the composition under `home` (the catalog,
-> the choice, the why, pins, hides, data gaps); the data and sync
-> architecture below is unchanged.
+> First-view UI: [Agent-Composed UI](ui-ux-design.md) — stable Brief, Focus
+> and Attention sections whose content the agent composes; built on both
+> devices 2026-09-08. It wins over any older first-view rule below.
+
+## What it is
+
+**Apple Health shows you everything and tells you nothing. Linggen Health
+reads everything and shows you almost nothing — and Yinyue tells you the
+rest.**
+
+Every night the agent walks every measurement this person has, against that
+person's own history, and files one of three verdicts each: at your normal,
+worth seeing, worth a doctor. Nearly all come back at your normal and are
+never shown. What reaches the screen is the part that is not right, and on
+most mornings that is nothing. The quiet is stated, never a blank.
+
+The screen carries findings. Yinyue carries everything else, in her own
+thread, unprompted: what she read, what came out, what she changed, and the
+one question no sensor can answer. Her page is the core of the app; Health
+is a quiet screen she walks the person to.
+
+Three things no incumbent does:
+
+1. **It examines everything, every night** — every type you have, against
+   your own last month, never a population range.
+2. **It stays quiet.** A card earns its place by having news today. At your
+   normal is not a slot.
+3. **It comes to you, and it remembers.** The finding arrives in the
+   conversation with what she did about it; what you tell her is data the
+   next examination has beside the number.
+
+Charter, written into the agent: help this person get better at what they
+are trying to do, and make them love Linggen Health. Behave like their doctor
+and coach; never claim the title.
+
+Persona is not code. There is no runner code and no lifter code; the profile
+is inferred, said out loud, and corrected by the person.
+
+## Where it runs
+
+**The phone is the whole product.** It reads HealthKit, keeps its own store,
+runs the passes with the account's cloud model, examines every type against
+its own baseline, and writes the plan and the checklist. A user with no Mac
+is a complete user.
+
+**The Mac is optional.** It mirrors the store, keeps years of it, holds
+ling-mem, takes the heavier weekly pass when reachable, and shows the same
+first view one tab deeper. The work side of the join (commits, sessions) is
+plumbing only — see *Work signals*, shelved.
+
+**A Mac with no iPhone gets no body data.** HealthKit exists only on iPhone
+and iPad; the Mac page composes from what it has and shows the pair card.
+Later, vendor APIs (Oura, Garmin, Whoop, Strava, Withings) give a phone-less
+Mac a body feed.
+
+## Positioning
+
+- **Extend Apple Health, never duplicate it** (2026-09-10). Apple's 09-09
+  redesign owns the cards and the scores: Insights, For You, Readiness,
+  Health Age, Longevity, labs, expert videos, camera assessments. We build
+  none of those. We own the conversation, memory, what the sensors cannot
+  see, lessons in the person's own numbers, the plan with hands, and the
+  doctor line.
+- **Not a dashboard.** Built each morning out of what moved; the same screen
+  is never shown to two people.
+- **No score.** Not a health score, and since 2026-09-10 not a number of our
+  own at all. Apple's scores are read as inputs where HealthKit exposes them;
+  otherwise the person tells her.
+- **The conversation has its own room.** Yinyue's page is shared by every app
+  and she navigates to Health; Health says what is, never why.
+- **Build the capability, never claim the title.** A nightly examination, an
+  index chosen per person, a warning that will not be dismissed — all of it
+  ships. "Doctor" appears only as *worth showing a doctor*.
+- **A coach, not a nag.** One plan, one checklist, one why. Nudges only
+  through Yinyue's herald, under her budget.
+- **Wellness only.** Never diagnosis, never medication advice. Supplements as
+  evidence in plain words; brands only on ask, with the source, later.
+- **Yours.** Health data stays on the phone, and on a paired Mac. The cloud
+  model sees a day's summary to run a pass, never the raw store, and nothing
+  is kept there.
+
+## Who pays
+
+Linggen is $5 a month for every app; Health is one app in the suite, not a
+tier, and the one that makes the plan worth keeping. Proposed split, open
+(Liang's call): free — import, the data browser, workout and sleep detail,
+the first examination, one weekly report; paid — the nightly examination,
+the plan, patterns, the agent coming to you, ask-anything over months.
+
+## What Linggen Health never does
+
+- Diagnose, comment on medication, or claim to be a doctor.
+- Ask a question the data already answers, or hand the user a questionnaire.
+- Show the same screen to two different people, or rearrange it daily.
+- Give a measurement a slot for being at your normal.
+- Explain itself on the screen: no why-line, no card introducing the agent.
+- Wait to be asked. A finding said nowhere is a failure, not discretion.
+- Change the layout without saying why, or without an undo.
+- Compare a number to a population range instead of the person's own history.
+- Compute a score, or show a number without the personal baseline beside it.
+- Name a brand unprompted, or name one without the source.
+- Surface a pattern from one week, or a weight trend from one morning.
+- Require a Mac, or pretend a Mac alone can see the body.
+- Send health data anywhere but the person's own devices; never iCloud.
+- Nudge outside the herald, or while the person is enjoying something.
+- Show an estimate as though it were measured, or give one a verdict.
+- Offer a button the connected models cannot honour.
+- Interrogate the user about a meal, or about anything: one question, once.
 
 ## Architecture in one diagram
 
@@ -144,7 +246,7 @@ Documents/Health/
   weather/<date>.json      Open-Meteo day + hours, cached
   briefs/<date>.json       the morning brief (the status line's sentence)
   review/<date>.json       the night's examination: a verdict per type, the
-                           index picked, the score and what it was made of
+                           index picked
   told.jsonl               what the agent came to the user with, and when —
                            {at, surface, text, tools[], pass} — so it neither
                            repeats itself nor stays silent
@@ -168,7 +270,7 @@ account) because two phones on one Mac are two bodies.
 | Pass | Fires | Runs on | Writes |
 |:-----|:------|:--------|:-------|
 | Profile (first run) | first backfill window lands | phone | profile.json, first layout |
-| **Examination** | nightly after rollup, ~02:00 | **phone** (cloud model) | `review/<date>.json`: a verdict per type, the index, the score |
+| **Examination** | nightly after rollup, ~02:00 | **phone** (cloud model) | `review/<date>.json`: a verdict per type, the index |
 | Morning | night's sleep lands, 08:00 latest | **phone** (cloud model) | brief, layout from the review, checklist, ≤ 1 `AdjustDay`, one `Tell` |
 | Workout report | new workout | **phone** | workouts/<uuid>.md, checklist item, progress |
 | Weekly | Sunday 19:00 | **Mac if paired and reachable by 23:00, else phone** | profile refresh, layout (if moved), next plan, targets, report, memory, one `Tell` |
@@ -312,9 +414,6 @@ was dropped, why) and `thin` alongside the other counts.
 ```
 { "at": "2026-09-03T02:14Z", "by_device": "phone",
   "examined": 38, "normal": 36, "see": 1, "doc": 0, "thin": 2,
-  "score": 64,
-  "score_from": ["hrv", "resting_hr", "spo2"],
-  "score_formula": "mean(80 + 12z) over metrics with ≥ 14 days; z = (today − median28) / MAD28",
   "index": { "picked": "hrv", "why": "5,266 rows · decides whether a hard session goes ahead · down 7 on the fortnight",
              "ranked": [ {"metric": "hrv", "coverage": 0.98, "relevance": 0.9, "movement": 2.1},
                          {"metric": "bmi", "coverage": 0.0, "relevance": 0.2, "movement": null,
@@ -337,11 +436,11 @@ for weight, the judge's scale applied). Anything redrawing that line from the
 raw rows would be a second copy of the judging table, free to drift, which is
 why both screens and the Mac page read the series rather than folding again.
 `series_to` is usually today and is yesterday for a measurement that is a
-day's total, because a day still being lived is not a total. The **score exists only above two
-usable metrics**, and it is today against this person's own normal, never a
-health score: `score_from` and `score_formula` go on screen beside it. The
-**index** is ranked per user on coverage × relevance × movement and records why
-each candidate was dropped, so the choice can be argued with.
+day's total, because a day still being lived is not a total. The file still
+carries `score`, `score_from` and `score_formula` as written today; they are
+removed in 1.2 (4) and nothing may read them. The **index** is ranked per user
+on coverage × relevance × movement and records why each candidate was dropped,
+so the choice can be argued with.
 
 ### told.jsonl — what the agent came to the user with
 
@@ -375,7 +474,7 @@ night held — the status line and the doors.
 
 | kind | needs | earns | answers |
 |:-----|:------|:------|:--------|
-| `status` | review/today | always | the number, the sentence, and what it was made of — "38 measurements examined" |
+| `status` | review/today | always | the sentence and what was examined — "38 measurements examined"; the number goes in 1.2 (4) |
 | `finding` | review/today | news | the measurement that moved: its own baseline through the fortnight, the evidence, and what it changed |
 | `acts` | workouts | always | the last few sessions, expandable |
 | `doors` | — | always | the same seven, in the same order |
@@ -880,8 +979,8 @@ confirms on the executing device.
 | `GetProfile` | the profile with confidence and evidence | read |
 | `SetProfileField` | a correction from the user ("not quite") — wins over inference | edit |
 | `SetGoal` / `ClearGoal` | the goal as said, with a tracked metric | edit |
-| `Examine` | run the night's pass: every type against its own baseline → verdicts, index, score | edit |
-| `GetReview` | the night's examination: verdicts, what was ruled out, the score and its formula | read |
+| `Examine` | run the night's pass: every type against its own baseline → verdicts, index | edit |
+| `GetReview` | the night's examination: verdicts, what was ruled out, the index and why | read |
 | `Tell` | come to the user unprompted in the agent's own thread; writes `told.jsonl`. One per pass | edit |
 | `GetLayout` / `ListLayouts` | current composition; history with reasons | read |
 | `Compose` | write a new layout from a review, with why + previous | edit |
@@ -980,7 +1079,7 @@ Built since: `health_passes.dart`, `health_profile.dart`, `health_daily.dart`,
 notes).
 
 **The quiet screen is built** (2026-09-03). `health_review.dart` is the
-examination — the judging table, the verdicts, the score and the index picker;
+examination — the judging table, the verdicts and the index picker;
 `health_tell.dart` is the report she comes to the user with, plus `told.jsonl`;
 `screens/health/health_quiet.dart` is the screen (status · findings · acts ·
 doors) and replaced the nine-card `health_home.dart`, which is deleted;
@@ -1176,6 +1275,23 @@ thing that will need the table below.
 Readings retain, actions queue. Registers are readings: the newest
 `written_at` wins on both sides.
 
+## Later, and never
+
+Kept from the original feature list; nothing here is built or scheduled.
+
+- Race and pace prediction from VO₂max and recent runs feeding the plan;
+  lifting progress by photo and plate math; a monthly and yearly review in
+  her voice.
+- Mirror the plan into Apple Calendar behind a one-time opt-in; buyer advice
+  on ask from a live search with the source shown (Paid); write back to
+  HealthKit (water, caffeine, protein, mindful minutes, workouts).
+- A Watch complication and glance; family on one Mac (rows already carry
+  `by`); Android via Health Connect; medications, state of mind and clinical
+  FHIR records as context; vendor APIs on the Mac.
+- CarPlay: never. A score of our own: never again.
+- Settings the phone will grow: which types to read, pass time, quiet hours,
+  how blunt the voice is, layout history, export as CSV and Markdown.
+
 ## 1.2 — she knows you (designed 2026-09-10)
 
 Apple's Health redesign of 2026-09-09 (Insights, For You, Readiness 0–10,
@@ -1306,7 +1422,8 @@ pace and effort from the Watch, cadence from the phone's own sensors.
   hidden by a tap, and it never names a condition.
 - **The number is not a health score.** It is today against the user's own
   normal (80 = at your normal), it names what it was made of, and it does not
-  exist below two usable metrics.
+  exist below two usable metrics. *Retired 2026-09-10: no number at all — see
+  1.2 (4).*
 - **The index is picked per user** on coverage × relevance × movement. BMI is
   the worked example of why a fixed list is wrong.
 - **The agent's voice lives in the conversation, never on the view.** The
@@ -1347,7 +1464,7 @@ pace and effort from the Watch, cadence from the phone's own sensors.
    open is the part that needs permission.
 2. Skill and app name: `health` / "Linggen Health", or something in the Yinyue
    world?
-3. Free vs Paid split inside the suite as proposed in product-spec, or the
+3. Free vs Paid split inside the suite as proposed under *Who pays*, or the
    nightly examination free too?
 4. Should durable profile facts go to ling-mem automatically (weekly pass), or
    only when the user says "remember that"?
@@ -1357,7 +1474,13 @@ the user's own ChatGPT over OAuth. See
 
 ## Related docs
 
-- [product-spec.md](product-spec.md)
+- [ui-ux-design.md](ui-ux-design.md) — the first view: Brief, Focus, Attention.
+- [prototype.html](prototype.html) — the interactive prototype (three
+  people, the first run, the screens); published at
+  https://claude.ai/code/artifact/43f03b3e-15df-4831-ac89-62a182e35525
+- `linggen-mobile/doc/health.md` — what the phone has built.
 - `linggen-mobile/doc/tech-spec.md` — transport, attribution, device topics.
 - `linggen-mobile/doc/dj.md` — the phone-standalone + sync shape this copies.
 - `linggen/doc/app-action-spec.md` — one writer per mutation, tool tiers.
+- `linggen-app/doc/app-ideas.md` § Health Keeper — the backlog entry.
+- Concept, 2026-09-10: https://claude.ai/code/artifact/8fcbe403-6623-4efa-a66c-d9816785c3a5
