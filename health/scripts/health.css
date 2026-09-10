@@ -922,3 +922,16 @@ table.mini td.thin {
 .dismiss:hover,
 .dismiss:focus-visible { opacity: 1; }
 .dismiss[disabled] { cursor: default; opacity: 0.3; }
+
+/* The Sunday letter, read on the Mac rather than pointed at. Paragraphs, not
+   a card of figures — it is the one thing here written to be read. */
+.letter {
+  margin: 0 0 10px;
+  max-width: 62ch;
+  line-height: 1.55;
+}
+
+/* What she left off the page. Set back from the composed cards above it so
+   the two are never read as one list. */
+.also { margin-top: 28px; opacity: 0.92; }
+.also > .focus-head h2 { color: var(--dim); }

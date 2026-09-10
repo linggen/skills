@@ -476,6 +476,10 @@ const VERBS = {
     // one, which is read as "no pass yet", never as "nothing was wrong".
     const review = newestDayed('review');
     if (review) names.push(review);
+    // The newest Sunday letter. A wide screen can carry the letter itself
+    // where a phone card only has room to point at it.
+    const letter = newestDayed('letters');
+    if (letter) names.push(letter);
     const registers = pull(names);
 
     // The work side of the join is shelved (2026-09-08): nothing on this Mac
@@ -501,6 +505,7 @@ const VERBS = {
       checklist: registers[`checklist/${day}.json`] ?? null,
       brief: registers[`briefs/${day}.json`] ?? null,
       review: (review ? registers[review] : null) ?? null,
+      letter: (letter ? registers[letter] : null) ?? null,
     };
   },
 

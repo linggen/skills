@@ -1150,6 +1150,23 @@ replaced is filed under `layouts/` like any other change, so Undo puts it
 back. A mirror from before Highlights was composed falls back to the older
 Brief / Focus / Attention page.
 
+**What the Mac spends its room on is depth, not a longer page.** The
+composition is the phone's and is drawn exactly as composed; a wide screen
+then carries what a phone card has no room to print — a finding's working
+under its fortnight (how long it has held, how far off in the person's own
+spread, how many measured days the normal is from, all the examination's own
+figures), the four counts beside the brief, and the Sunday letter itself
+rather than a line pointing at the phone (`letters/` is in the mirror; the
+report hands over the newest). The doctor page stays a pointer: composing it
+here would be a second implementation of a phone-side composer, free to
+drift from the one that writes it.
+
+**Below the composed page, *Also today*** — the candidates she did not pick,
+in the rules' order, read-only and set back so the two are never read as one
+list. A card dismissed for its fact stays gone from it. A phone has no room
+for this and does not draw it: what differs between the two screens is the
+screen, never the page.
+
 The chat reopens the newest session when it is under 24 hours old, the same
 rule DJ, CFO and Shifu use, and a reopened conversation is picked up in
 silence — no greeting.

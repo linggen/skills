@@ -225,24 +225,22 @@ function highlightsTab() {
   const gaps = Array.isArray(home.attention) ? home.attention : [];
   let firstFocus = true;
 
-  const nodes = cards.map((id) => {
-    const cand = byId.get(id);
-    if (!cand) return null; // a card whose candidate is gone is not drawn
+  const draw = (cand, { header }) => {
     const kind = `${cand.kind || ''}`;
     if (kind === 'brief') return briefSection();
     if (kind === 'warning' || kind === 'finding') {
       const f = findings.find((x) => x.type === cand.subject);
-      return f ? dismissable(findingCard(f, r), cand) : null;
+      return f ? findingCard(f, r) : null;
     }
-    if (kind === 'notice') return dismissable(noticeCard(cand), cand);
+    if (kind === 'notice') return noticeCard(cand);
     if (kind === 'gap') {
       const g = gaps.find((x) => x.subject === cand.subject || x.label === cand.label);
-      return g ? dismissable(gapCard(g), cand) : null;
+      return g ? gapCard(g) : null;
     }
     if (kind === 'focus') {
-      const view = focusView(report, {
-        entryId: `${id}`.replace(/^focus:/, ''), // the candidate id wraps the catalog id
-        header: firstFocus,
+      return focusView(report, {
+        entryId: `${cand.id}`.replace(/^focus:/, ''), // the candidate id wraps the catalog id
+        header,
         change: changeFocus,
         explore: () => {
           tab = 'data';
@@ -251,16 +249,54 @@ function highlightsTab() {
         ask: chat ? (q) => chat.send(q) : null,
         canUndo: typeof report.layout?.previous === 'string',
       });
-      firstFocus = false;
-      return dismissable(view, cand);
     }
     return null;
+  };
+
+  const nodes = cards.map((id) => {
+    const cand = byId.get(id);
+    if (!cand) return null; // a card whose candidate is gone is not drawn
+    const node = draw(cand, { header: cand.kind === 'focus' ? firstFocus : true });
+    if (cand.kind === 'focus' && node) firstFocus = false;
+    return dismissable(node, cand);
   });
 
   return [
     ...nodes,
+    alsoToday(cards, byId, draw),
     askButton('What should I focus on in Health, given my goals?', 'Ask Ling'),
   ];
+}
+
+/// What she did not put on the page, on a screen with room for it.
+///
+/// The composition is hers and stays exactly as composed — this sits BELOW it,
+/// named for what it is, so nothing here can be mistaken for what she picked.
+/// A phone has no room for this and does not draw it; that is the one place
+/// the two screens differ, and it is the screen's size that differs, not the
+/// page. A card dismissed for its fact stays gone here too.
+function alsoToday(cards, byId, draw) {
+  const rest = [...byId.values()].filter((c) => {
+    if (cards.includes(`${c.id}`)) return false;
+    const home = homeOf(report);
+    return !(c.dismissable === true && home.dismissed?.[`${c.id}`] === c.fact);
+  });
+  if (!rest.length) return null;
+  const s = el('section', 'home-section also');
+  const head = el('div', 'focus-head');
+  head.append(el('h2', null, 'Also today'));
+  s.append(head);
+  s.append(
+    el('p', 'dim small', 'Ranked below what is above, and on this screen there is room for it.'),
+  );
+  let firstFocus = true;
+  for (const cand of rest) {
+    const node = draw(cand, { header: false });
+    if (!node) continue;
+    if (cand.kind === 'focus') firstFocus = false;
+    s.append(node);
+  }
+  return s.children.length > 2 ? s : null;
 }
 
 /// The line that proves the night looked, with the counts behind it.
@@ -283,7 +319,8 @@ function briefSection() {
       'p',
       'dim small',
       fresh
-        ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal`
+        ? `${num(r.examined)} measurements examined · ${num(r.normal)} at your normal · ` +
+          `${num(r.see)} worth seeing · ${num(r.doc)} worth a doctor`
         : r
           ? `Latest examination: ${day(r.date)}`
           : 'The first examination has not run.',
@@ -297,9 +334,36 @@ function briefSection() {
 /// the card leads is the phone's business, so this names it and stops.
 function noticeCard(cand) {
   const c = card(cand.label || 'Something for you');
+  // The letter is on this Mac; a card pointing at the phone while holding the
+  // text was the phone's card drawn on a screen with room for the letter.
+  const letter = cand.route === 'letters' ? report.letter : null;
+  if (letter && typeof letter.text === 'string' && letter.text.trim()) {
+    for (const para of letter.text.split(/\n\s*\n/)) {
+      const line = para.trim();
+      if (line) c.append(el('p', 'letter', line));
+    }
+    c.append(el('p', 'why', '— Yinyue'));
+    return c;
+  }
   const where = { letters: 'Letters', doctor: 'For your doctor', nutrition: 'Nutrition' }[cand.route];
   c.append(el('p', 'why', where ? `${where} — open it on your phone.` : 'Open it on your phone.'));
   return c;
+}
+
+/// The working behind a finding, which a phone card has no room to print.
+/// Every figure is the examination's own — nothing here is computed twice.
+function findingDetail(f) {
+  const parts = [];
+  if (typeof f.held_days === 'number' && f.held_days > 0) {
+    parts.push(`held ${f.held_days} day${f.held_days === 1 ? '' : 's'}`);
+  }
+  if (typeof f.z === 'number' && Number.isFinite(f.z)) {
+    parts.push(`${Math.abs(f.z).toFixed(1)}× your usual spread ${f.z < 0 ? 'below' : 'above'}`);
+  }
+  if (typeof f.days === 'number' && f.days > 0) {
+    parts.push(`your normal is from ${f.days} measured day${f.days === 1 ? '' : 's'}`);
+  }
+  return parts.length ? el('p', 'pn', `${parts.join(' · ')}.`) : null;
 }
 
 /// Every dismissable card carries the hand that takes it off the page. The
@@ -594,6 +658,8 @@ function findingCard(f, r) {
   if (chart) c.append(chart);
   const note = chartNote(f, r);
   if (note) c.append(note);
+  const detail = findingDetail(f);
+  if (detail) c.append(detail);
   const ev = Array.isArray(f.evidence) ? f.evidence : [];
   if (ev.length) c.append(el('p', 'why', sentence(ev)));
   if (alarm) {
