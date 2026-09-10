@@ -1292,23 +1292,23 @@ Kept from the original feature list; nothing here is built or scheduled.
 - Settings the phone will grow: which types to read, pass time, quiet hours,
   how blunt the voice is, layout history, export as CSV and Markdown.
 
-## 1.2 — she knows you (designed 2026-09-10)
+## 1.2 — she knows you (designed 2026-09-10; 1–3 built the same day)
 
 Apple's Health redesign of 2026-09-09 (Insights, For You, Readiness 0–10,
 Health Age, Longevity, labs, expert videos) owns the cards and the scores.
 We own the conversation. 1.2 builds the conversation, in this order.
 
-1. **The talk that examines.** Health words in a message on Yinyue's page
+1. **The talk that examines** (built: `HealthEvents.mentionsHealth`, `YinyueTools.lastUserText`, the examine-first line in her prompt)**.** Health words in a message on Yinyue's page
    switch the health pack on, whatever tab is open, and she runs the
    examination before she answers. A question about the body is never
    answered from memory alone.
-2. **A finding beside an absent sensor.** The question may pair the leading
+2. **A finding beside an absent sensor** (built: `HealthAsk.nightAbsent`, `HealthEvents.causeFor` reads the Watch's sessions first)**.** The question may pair the leading
    finding with a night that has no data: *HRV sat under your normal this
    morning and there is no sleep from last night — not wearing the watch,
    or a short one?* She checks workouts first: when the Watch recorded a
    session she names it instead of asking.
 3. **What the sensors can't see — the invitation, the register, the
-   cause.** Never a questionnaire. She says it once, on first meeting in
+   cause** (built: `health_events.dart`, note kind `event` with `on`, `HealthAsk.explain`, `HealthPatterns` event conditions, `tracking.json` + `health_tracking`, the Watching page, the letter and the meet card)**.** Never a questionnaire. She says it once, on first meeting in
    Health, and again as the Sunday letter's closing line: *I see what your
    Watch and the devices in Apple Health record. Anything they didn't — a
    match, a swim, a late night — just tell me. It helps the review.* The
