@@ -1346,6 +1346,31 @@ We own the conversation. 1.2 builds the conversation, in this order.
    the portal*) or on the morning of an appointment the person mentioned.
    When nothing qualifies its first line is *Nothing here needs a doctor.
    90 days at your normal.*
+7. **Highlights, composed by her.** Health publishes its candidates —
+   findings, charts, the plan for today, the checklist, a nutrition or
+   supplement line, the letter, the doctor page — and Yinyue writes the
+   page from them on a signal; the rules write the default; at most six,
+   under two screens; a swipe dismisses a card for that fact and the next
+   candidate takes the slot; a warning cannot be dismissed. The mechanism
+   is app-wide: `linggen/doc/dynamic-ui-spec.md`, "The composed screen".
+8. **Nutrition and supplements, as advice.** Not a diary. Intake is an
+   event in words ("40 g whey after gym", "creatine 5 g") filed with a
+   kind and an amount; the day's totals sit against the targets already
+   computed (protein per kilo by goal, calories), energy out from
+   HealthKit, energy in from HealthKit when a logging app writes it, else
+   from their words, said as an estimate. Advice on two triggers — an event
+   (a session ended, a weigh-in trend, a short night, travel) or a message
+   ("should I take creatine") — one line as a Highlights candidate, the why
+   in her thread. Supplements from a short evidence-graded catalog
+   (creatine, protein, caffeine, vitamin D, omega-3, magnesium,
+   electrolytes, iron): what the evidence says, who it is for, dose,
+   timing, cautions; recommended only against their goal and data, never a
+   medical claim, "ask your doctor" where an interaction is plausible; a
+   yes makes it a checklist item. A Nutrition page in the drawer: in
+   against out, protein against target, supplements against the checklist.
+   Open: the catalog as curated facts in the skill (recommended) or the
+   model's own answer.
+
 The work signal stays shelved (Liang, 2026-09-10): there is no trustworthy
 source for it yet. The person's own words — build 3 above, "worked late" as a
 kind they tell her — are the reason a late night gets, until there is one.
