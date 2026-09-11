@@ -2,13 +2,13 @@
 type: product-spec
 reader: coding agent, contributors
 guide: |
-  What The World of Linggen is and what each of its systems does, in one read.
+  What Lingjing is and what each of its systems does, in one read.
   How it is built belongs in design.md (not written yet). The idea's first
   record is linggen-app/doc/app-ideas.md.
 status: Design only, settled 2026-09-11. Nothing built.
 ---
 
-# The World of Linggen · 《灵境》
+# Lingjing: The World of Linggen · 《灵境》
 
 **A text game: you play it by chatting, and the world is the background.**
 
