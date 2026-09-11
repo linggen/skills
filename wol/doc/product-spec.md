@@ -8,7 +8,7 @@ guide: |
 status: Design only, settled 2026-09-11. Nothing built.
 ---
 
-# The World of Linggen
+# The World of Linggen · 《灵根世界》
 
 **A text game: you play it by chatting, and the world is the background.**
 
@@ -176,12 +176,9 @@ fast 修为 grows.**
 
 ## Open questions
 
-- 灵根 after v1: whether players differ, and how. One idea, unsettled: the
-  root follows the model the player plays on (e.g. Gemini 金, GPT 土,
-  DeepSeek 伪灵根).
+- 灵根 after v1: whether players differ, and how.
 - Playable without any Linggen app (real life as a bonus), or Linggen users
   only.
-- Chinese title: 《灵根世界》?
 - Surfaces: Mac app page first; the phone's place.
 - Point values and realm thresholds.
 - How Yinyue's memories end.
