@@ -816,11 +816,11 @@ land at once the newest gets the line and the others are passed over, filed
 so they are never owed one later. A first is "longest of its kind" — by
 distance where it covered ground, by time where it did not — only with three
 or more behind it, and "best month of its kind" only against two or more
-complete months, said once per month by key. Said on the lock screen through
-her herald (*After a session*, in hand, counts against her two a day) and in
-her thread regardless: the budget is the lock screen's, not the thread's. A
-tap lands on the session itself (`health/session/<uuid>`). Filed in
-`told.jsonl` by the session's uuid, so a pull that sees it twice says it once.
+complete months, said once per month by key. Said in her thread only, never
+on the lock screen: the person ended the session and knows it is done, and
+the lock screen is for what they do not know (Hanli, 2026-09-11: "user ended
+workout, we don't need to notice"). Filed in `told.jsonl` by the session's
+uuid, so a pull that sees it twice says it once.
 
 ## The one question and the follow-up
 
@@ -1222,17 +1222,16 @@ wakes iOS grants, the bridge, her budget, the honesty rules — is
 This is Health's side of it. Designed 2026-09-08; Hanli: Yinyue owns the
 budget.
 
-**Two lines, declared:**
+**The lines, declared:**
 
 | Line | Tier | When | Default |
 |:-----|:-----|:-----|:--------|
 | A warning | warning — bypasses the budget, lights the screen | the pass that found it | always on |
 | The morning line (Yinyue's, since 2026-09-09; Health hands her the brief as a note) | for the record — passive, no light, no sound | the person's own wake time | only on a morning that changed the plan, unless they asked for every morning |
 | When I could not look | for the record | two mornings after the last examination, moved on by each one | on |
-| After a session | in hand — lights the screen, counts against the budget | within minutes of a workout ending | on |
 | The Sunday letter | for the record | from Sunday 18:00, by whichever pass runs first | on |
 
-All three go through Yinyue's herald (built 2026-09-08 —
+Health's lines go through Yinyue's herald (built 2026-09-08 —
 `linggen-mobile/doc/yinyue.md`): declared in `HealthTell`'s constructor,
 handed over as notices, her answer filed in `told.jsonl`. The third line is
 what makes silence honest: the night the passes stop is the night it stays

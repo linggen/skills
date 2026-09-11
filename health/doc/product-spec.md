@@ -82,9 +82,10 @@ for anything outdoors. Today's checklist derives from the plan and the
 targets and ticks itself from the data; what HealthKit cannot see is a tap or
 a line said.
 
-**Debriefs a session.** Within minutes of a workout ending: its name, the
-comparison the session leads with, and any first it set as a clause on the
-same line. One session, one thing said, three hours to say it.
+**Debriefs a session.** Within minutes of a workout ending, in Yinyue's
+thread: its name, the comparison the session leads with, and any first it set
+as a clause on the same line. One session, one thing said, three hours to say
+it. Never on the lock screen — they ended it themselves.
 
 **Learns your patterns.** Not a rule from a textbook, a count: *after a night
 under 6 h 10 your HRV was under your normal 6 times out of 8; on the other 41
@@ -114,8 +115,8 @@ debrief read from. Intake is said in words; the day's totals sit against the
 targets. Never a medical claim, never a brand unprompted.
 
 **Reaches a closed phone.** A doctor-tier warning lights the screen. The
-morning line is Yinyue's, quiet on an ordinary morning. A debrief lands after
-a session, the letter from Sunday evening, and a widget shows the state
+morning line is Yinyue's, quiet on an ordinary morning. The letter lands from
+Sunday evening, and a widget shows the state
 without interrupting: *Rest today · HRV 7 under your normal.*
 
 **Keeps everything one tap behind.** The drawer: the examination, the plan,
