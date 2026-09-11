@@ -25,6 +25,7 @@ export function loadContent(dir = CONTENT_DIR) {
     hexagrams: at('hexagrams.json'),
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
     tasks: at('tasks/world.json'),
+    branches: at('branches.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
   };
 }
@@ -60,6 +61,10 @@ export function lint(content) {
   lintCreatures(content, bad);
   lintRiddles(content.riddles, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
+  for (const b of content.branches.templates) {
+    if (!content.rewards.tables[b.table]) bad(`branch ${b.kind}`, `unknown reward table ${b.table}`);
+    if (!b.may_not?.includes('spine')) bad(`branch ${b.kind}`, 'must not touch the spine');
+  }
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   return problems;
 }

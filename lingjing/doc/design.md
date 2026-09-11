@@ -64,10 +64,11 @@ skills/lingjing/
     art/<creature>.webp    one picture per creature, ink style (sketches as .svg)
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
+    branches.json          奇遇 templates and the daily cap
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
     chapters/01-ji/        …
   data/                    this player; never in the repo
-    state.json · story.md · log.jsonl · days/<date>.json
+    state.json · log.jsonl
   tests/
 ```
 
@@ -162,18 +163,23 @@ branch table when it closes.
 ```json
 { "version": 1, "lang": "zh", "daohao": "青玄",
   "root": ["wood", "water", "fire", "earth"],
-  "realm": "qi-2", "xw": 40, "ls": 10,
-  "bag": { "lingzhi": 1 }, "beasts": ["fuzhu"],
-  "chapter": "00-prologue", "scene": "00-hook", "done": ["00-fuzhu"],
-  "tasks": { "shifu-scan": { "period": "2026-W37", "status": "done" } },
-  "branch": null }
+  "realm": "qi", "stage": 0, "xw": 70, "ls": 10,
+  "bag": {}, "beasts": ["fuzhu"],
+  "chapter": "00-prologue", "scene": "00-north", "done_scenes": ["00-river", "…"], "ended": [],
+  "tasks": { "alchemy-first": { "status": "done", "period": "once" } },
+  "quests": { "shifu-scan": { "period": "2026-W37", "paid_at": "…" } },
+  "branch": null,
+  "story": "青玄在泗水边醒来……",
+  "day": { "key": "2026-09-11", "xw": 70, "ls": 10, "branches": 0 } }
 ```
 
-- `story.md` — the story so far, ≤300 words, rewritten at each scene's end by
-  Ling through `Summarize`. The rules store it; they never read it.
-- `log.jsonl` — every rules call `{at, verb, args, result}`: the audit, and
-  the undo.
-- `days/<date>.json` — the day's task ledger and reward totals (for caps).
+- `stage` counts from 0 within the realm; `xw` is what the current stage has
+  earned toward its threshold, held at the threshold at a realm's peak.
+- `story` — the story so far, ≤300 words (≤600 characters in Chinese),
+  written by Ling through `Summarize`. The rules store it; they never read it.
+- `day` — the day's totals for the caps; it rolls over at local midnight.
+- `log.jsonl` — every change `{at, verb, args, before}`: the audit, and what
+  `undo` restores.
 
 ## A turn — what the context holds
 
@@ -182,7 +188,7 @@ branch table when it closes.
 | Ling's game-master rules | SKILL.md | 1,200 | yes |
 | Tools | frontmatter | 600 | yes |
 | State brief | `Look` | 150 | no |
-| Story so far | story.md via `Look` | 400 | no |
+| Story so far | the state's `story`, via `Look` | 400 | no |
 | Current scene: setup + exits' `means` | `Look` / `Resolve` | 300 | no |
 | Last ~10 messages | the session | 800 | no |
 
@@ -191,21 +197,29 @@ About 3.5k tokens a turn, half of it cached. The next scene arrives inside
 
 - **One session per game day** (the app session rule: resume the latest under
   24 h, else fresh). A fresh session begins with `Look`.
-- Long days fall to the engine's compaction; `story.md` survives either way.
+- Long days fall to the engine's compaction; the story survives either way.
 
 ## Tools
 
-Shell tools — `node $SKILL_DIR/scripts/rules.mjs <verb>`; each returns JSON.
+Shell tools — `node $SKILL_DIR/scripts/rules.mjs <verb> --key value …`; each
+prints one JSON object. A refusal is `{ok: false, refused, say}` — `say` is
+the world's own line when the content has one — and never changes state. An
+argument the agent left as a literal `{{placeholder}}` is dropped.
 
 | Tool | Does | Refuses |
 |---|---|---|
-| `Look` | State brief, story, current scene. Call at session start and when unsure. | — |
-| `Resolve {exit}` | Takes an exit: checks `needs`, applies `take`, pays `grant` within caps, advances; returns the next scene. | unknown exit, unmet `needs`, a closed chapter |
-| `Judge {key, answer}` | Checks an answer against the key. | — |
-| `Task {action: list \| offer \| check}` | Today's due tasks; `check` reads the owning app's quest record. | a task already paid this period |
-| `Branch {action: open \| close, kind}` | Opens or closes a 奇遇; pays on close. | a second open branch, an exhausted daily cap |
-| `Summarize {text}` | Replaces `story.md`. | over 300 words |
-| `Move {province}` | Travels. | a province whose chapter has not opened |
+| `Look` | Realm, 修为, 灵石, root, bag, creatures, the scene brief, story, the day's omen, offered tasks and due quests. Call at session start and when unsure. | — |
+| `Resolve {exit, value?, answer?, won?}` | Takes an exit: checks `needs` and the answer, sets the value, applies `take` and `set`, pays `grant`, advances; returns the beat and the next scene. | `unknown-exit`, `needs`, `needs-answer`, `wrong-answer` (with the hint), `game-not-won`, `value-invalid`, `no-scene` |
+| `Judge {key, answer}` | Checks an answer against the key, either language. | `unknown-riddle` |
+| `Task {action: list \| done \| check, id}` | `list` the offered tasks and due quests; `done` pays an in-world task the page completed; `check` pays a quest its app marked done this period. | `not-offered`, `already-done`, `not-done`, `already-paid` |
+| `Branch {action: open \| turn \| close, kind, xw, ls}` | Opens a 奇遇, counts its turns, pays within the branch cap on close. | `branch-open`, `branch-cap`, `no-branch` |
+| `Summarize {text}` | Replaces the story. | `too-long` |
+| `Move {province}` | Travels. | `road-closed` |
+| `Lang {lang}` | Switches zh / en. | — |
+
+`init --lang` starts a game, and `undo` restores the state before the last
+change — for the page and for testing, not for Ling. Env: `LINGJING_DATA`,
+`LINGJING_QUESTS`, `LINGJING_NOW`.
 
 Data tool — `Show {card, …}` (no `cmd`): its args reach the page as a
 `content_block` and render as a card — creature, task, board, map, hexagram,

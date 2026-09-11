@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "_about": "奇遇 templates. Ling writes the tale; the rules count turns and pay from the capped table on close.",
+  "per_day": 3,
+  "templates": [
+    {
+      "kind": "province-tale",
+      "max_turns": 6,
+      "table": "branch",
+      "may_not": ["spine", "cauldron", "yinyue-memory", "realm"],
+      "about": { "zh": "一州的见闻或传说，取自《山海经》与地方故事。", "en": "A sight or legend of the province, from the Classic of Mountains and Seas and local lore." }
+    },
+    {
+      "kind": "night-tale",
+      "max_turns": 6,
+      "table": "branch",
+      "may_not": ["spine", "cauldron", "yinyue-memory", "realm"],
+      "about": { "zh": "聊斋式的夜谈：狐、鬼、书生，点到为止。", "en": "A night tale in the manner of Liaozhai — fox, ghost, scholar — told lightly." }
+    }
+  ]
+}
