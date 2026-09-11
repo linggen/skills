@@ -8,7 +8,7 @@ export const WORDS = {
   zh: {
     title: '灵境', xw: '修为', ls: '灵石', tray: '今日功课', trayEmpty: '今日无事，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
-    paid: '已记', due: '待做', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
+    paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处',
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
@@ -109,9 +109,12 @@ export function trayHtml(ctx) {
     return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
       <div class="taskfoot"><span class="chip">${ctx.words[state]}</span>${act}</div></div>`;
   });
-  const quests = (ctx.look.quests || []).map((q) => `<div class="card task${q.paid ? ' done' : ''}">
+  const quests = (ctx.look.quests || []).map((q) => {
+    const state = q.paid ? 'paid' : q.done ? 'seen' : 'due';
+    return `<div class="card task ${{ paid: 'done', seen: 'won', due: '' }[state]}">
       <div class="tasktitle">${esc(q.title)}</div>
-      <div class="taskfoot"><span class="chip real">${ctx.words.quest}</span><span class="chip">${ctx.words[q.paid ? 'paid' : 'due']}</span></div></div>`);
+      <div class="taskfoot"><span class="chip real">${ctx.words.quest}</span><span class="chip">${ctx.words[state]}</span></div></div>`;
+  });
   const all = [...tasks, ...quests];
   return all.length ? all.join('') : `<div class="dimline">${ctx.words.trayEmpty}</div>`;
 }

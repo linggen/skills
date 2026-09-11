@@ -72,7 +72,7 @@ function tasksBrief(content, state, ctx) {
   }));
   const quests = (ctx.quests ?? []).filter(q => q.due || questDone(q, ctx.now)).map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang),
-    paid: state.quests[q.id]?.period === periodKey(q.period, ctx.now),
+    done: questDone(q, ctx.now), paid: state.quests[q.id]?.period === periodKey(q.period, ctx.now),
   }));
   return { tasks, quests };
 }

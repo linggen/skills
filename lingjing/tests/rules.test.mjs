@@ -200,9 +200,12 @@ test('a quest pays when its app says it was done this period, once', () => {
   const quest = { id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: true, reward: 30, title: { zh: '扫描', en: 'Scan' } };
   const done = ctx({ quests: [{ ...quest, done_at: '2026-09-10T09:00:00' }] });
   const s = start();
+  const seen = look(s, content, done).quests[0];
+  assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
   assert.equal(paid.result.paid.xw, 30);
   assert.equal(paid.state.quests['shifu-scan'].period, weekKey(NOW));
+  assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);
   const lastWeek = ctx({ quests: [{ ...quest, done_at: '2026-09-02T09:00:00' }] });
   refused(task, s, { action: 'check', id: 'shifu-scan' }, 'not-done', lastWeek);

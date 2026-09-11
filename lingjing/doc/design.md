@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-11 — content, rules.mjs, SKILL.md and the Mac scene page built (build order 1–4); quests next.
+status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and Shifu's quest built (build order 1–4, half of 5); Health's night next.
 ---
 
 # Lingjing — design
@@ -328,8 +328,14 @@ changes:
 - **Done means the app's own record** — Shifu's last scan time, the night in
   Health's mirror. Never self-reported.
 - **Only these facts cross** — due, done, when. No raw health or money data.
-- `Practice check` pays when `done_at` falls in the current period and the period
-  is unpaid.
+- Look marks a quest `done` when `done_at` falls in the current period and
+  `paid` once that period is paid; `Practice check` pays the first and
+  refuses the second — so a fresh session pays a quest the chat was never
+  told of, the way it collects a recorded win.
+- **Built (step 5): Shifu.** `apple-shifu/scripts/quest.sh` writes the file
+  when a scan completes — the page's full scan, as it saves the scan, and the
+  agent's `ScanDisk`. `done_at` is UTC; `due` stays true, since the scan is
+  weekly by nature. Next: Health's night.
 
 ## 灵气 — the budget
 
@@ -385,7 +391,7 @@ Establishment, Core Formation, Nascent Soul).
 2. `rules.mjs` with its tests and the content lint. ✓
 3. SKILL.md — Ling's rules and the tools. ✓ (the prologue played live)
 4. The Mac scene page and its `Show` cards; choices through AskUser. ✓
-5. Quests: Shifu's scan first, then Health's night.
+5. Quests: Shifu's scan first ✓, then Health's night.
 6. The `lingjing` window in the proxy.
 7. Chapter 1 — 冀州.
 

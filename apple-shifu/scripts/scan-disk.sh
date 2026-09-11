@@ -51,3 +51,6 @@ echo "=== APPLICATIONS ==="
 echo "# REQUIRED: emit 'Apps to Review' recommendations widget from these rows."
 echo "# Format per line: <last-used>\\t<size>\\t<name>. last-used='never' = no usage signal."
 "$(dirname "$0")/scan-applications.sh"
+
+# The finished scan is the quest fact other apps may count. Silent.
+"$(dirname "$0")/quest.sh"

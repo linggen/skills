@@ -22,7 +22,7 @@ permission:
     # edit-tier tool (SyncPhone) would prompt. Same grant dj/cfo/pulse
     # declare; the agent still can't write anywhere: it has no Write/Bash.
     - { path: ~/.linggen/skills/apple-shifu, mode: edit }
-  warning: "Apple Shifu reads system info and disk usage (df, du, sysctl, sw_vers). The agent is read-only and never modifies anything itself. Removals happen only where you click them in the app, each behind a confirmation: photos and files go to the macOS Trash, and caches are deleted outright — the sheet says which one applies before you agree."
+  warning: "Apple Shifu reads system info and disk usage (df, du, sysctl, sw_vers). The agent is read-only and never modifies anything itself. Removals happen only where you click them in the app, each behind a confirmation: photos and files go to the macOS Trash, and caches are deleted outright — the sheet says which one applies before you agree. A finished disk scan leaves one note in ~/.linggen/quests — when you scanned, nothing it found."
 tools:
   - name: ScanDisk
     description: >-

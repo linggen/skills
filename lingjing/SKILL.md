@@ -28,7 +28,8 @@ tools:
       The game as it stands, as JSON: realm and 修为 (`xw` toward `next`),
       灵石 (`ls`), root, bag, creatures, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
-      `story` so far, the day's `omen`, offered `tasks` and due `quests` — and
+      `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
+      quest `done` was recorded by its app; `paid` is already counted) — and
       in English play, `terms`: the game's words in English. Call it first in
       every session and whenever you are unsure.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}}"
@@ -314,10 +315,12 @@ begin, the same way.
   task's `line`. A player *saying* they won is not a win — the rules refuse;
   the board is waiting for them. Never ask to be told of a win: the board
   reports itself.
-- **Real-life quests** come from the player's other apps. Offer only what
-  Look lists due and unpaid. When the player says one is done, Practice `check`:
-  it pays only if the app recorded it. `not-done` → the app has not seen it
-  yet; say so in the world.
+- **Real-life quests** come from the player's other apps. Look lists the due
+  ones; `done` means the app recorded it this period, `paid` that it is
+  counted. A quest `done` and not `paid`: Practice `check` it and say what was
+  paid — the player need not ask. When the player says one is done and Look
+  does not, `check` anyway: `not-done` → the app has not seen it yet; say so
+  in the world.
 
 ## Branches — 奇遇
 

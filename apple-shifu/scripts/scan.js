@@ -22,12 +22,14 @@ async function bash(command, sessionId) {
 
 // Persist a compact scan summary for the agent's LastScan tool and delta-led
 // rescans. Written under the skill's data dir; files end with \n (the
-// /api/bash sentinel-strip relies on a trailing newline).
+// /api/bash sentinel-strip relies on a trailing newline). The saved scan is
+// also the quest fact other apps may count (quest.sh).
 export async function persistScanSnapshot(summary, sessionId) {
   const dir = '$HOME/.linggen/skills/apple-shifu/data';
   const json = JSON.stringify(summary, null, 1);
   const stamp = `${summary.date || 'scan'}-${Date.now()}`;
-  const cmd = `mkdir -p "${dir}/scans" && printf '%s\\n' ${shellEsc(json)} > "${dir}/scans/${stamp}.json" && printf '%s\\n' ${shellEsc(json)} > "${dir}/latest.json"`;
+  const cmd = `mkdir -p "${dir}/scans" && printf '%s\\n' ${shellEsc(json)} > "${dir}/scans/${stamp}.json" && printf '%s\\n' ${shellEsc(json)} > "${dir}/latest.json"`
+    + ' && "$HOME/.linggen/skills/apple-shifu/scripts/quest.sh"';
   await bash(cmd, sessionId);
 }
 
