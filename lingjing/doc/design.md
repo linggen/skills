@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and the first quests (Shifu's scan, Health's workout) built (build order 1–5); online — the cloud save and the 灵气 heartbeat — designed, next.
+status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and the first quests (Shifu's scan, Health's workout) built (build order 1–5); online — the cloud save and the 灵气 heartbeat — designed, next; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -400,19 +400,99 @@ game server.
   progress. It matters only where players compare — a ranking, a duel
   between two players — and the server judges those moments when they come.
 
-## Playing together
+## Playing together — the table
 
-**Not designed yet.** Several players in one chat, with Ling driving the
-table, makes this a different game from every other app — it gets its own
-design round. What is settled so far:
+**Several players in one chat, Ling as the host.** It is what makes this
+game unlike every other app, and it asks the engine for things no app has.
 
-- **Live, in a room.** One player's Linggen hosts the scene — Ling as game
-  master for the table, on the host's models — and up to four friends join
-  over WebRTC (the existing rooms). The host's 灵气 pays for the table. Each
-  guest's rewards land in their own save, within the reward tables and the
-  day's caps, so a generous host cannot hand out a realm.
+### The room
+
+- **Live, in a room.** One player's Linggen hosts the table — Ling on the
+  host's models — and up to four friends join over WebRTC (the existing
+  rooms). The host's 灵气 pays for the table.
+- **Rewards land in each player's own save.** The table announces a grant;
+  each player's own Linggen applies it through its own rules, within the
+  reward tables and the day's caps. No machine writes another account's
+  save, and a generous host cannot hand out a realm.
 - **Apart, through the cloud.** 传音, 同修 and 论道 challenges need no one
   online at once; a room lives only while its host is online.
+
+### How a table plays
+
+```
+[Ling]  a question, a task, a moment — the round opens
+[青玄]  告
+[云舟]  an egg?
+[Ling]  青玄 answered first — 告. 修为 +20
+```
+
+- **Rounds, by default.** Ling opens a round, the players answer, the round
+  closes, Ling announces. Ling drives; a round costs Ling about two turns
+  however many play.
+- **Free talk, any time.** Players talk to each other in the same chat; it
+  never wakes Ling, who reads it when the next round opens.
+- **Choices: anyone may tap.** An AskUser at the table takes the first tap,
+  and the chat says who — *云舟 chose 绕行*.
+- **Stragglers never hold the table.** A round has a time limit.
+
+### Three judges
+
+Every play is judged one of three ways, so a reward is fair however many
+play:
+
+| Judge | How | Model |
+|---|---|---|
+| **Key** | The rules check the answer against a key shipped in `content/` — a riddle's answer, a creature, a poem corpus — in either language | none |
+| **Board** | The scene witnesses the win, as it does for 炼丹 | none |
+| **Ling** | No key — a couplet, a plan, a creative act: everyone answers within the time limit, and Ling reads them all in one turn and picks, paying from the capped tables | one turn |
+
+The host's scene watches a keyed round the way it watches a board: it checks
+each answer as it arrives, records the first right one with `rules.mjs`, and
+tells Ling `[scene] round won by <player>`. Wrong guesses and table talk
+never reach the model.
+
+### Teams
+
+Every play runs as **one team** (the table against the world; all earn),
+**two teams**, or **each for themselves**. In v1 teams plan in the open, like
+a party game at one table.
+
+### The plays
+
+| Play | What happens | Judge | Modes |
+|---|---|---|---|
+| 灯谜 race | Ling reads a riddle; the first right answer wins | Key | teams · solo |
+| 山海经 guess | A creature revealed clue by clue; fewer clues, more 修为 | Key | teams · solo |
+| 飞花令 | Teams take turns with a classical line holding the word (月, 花 …) | Key — the corpus checks it is real and unrepeated | two teams |
+| 成语接龙 | Each idiom starts where the last ended (English: a word chain) | Key — an idiom list | two teams |
+| 对对联 | Ling gives a first line; each team writes the second | Ling | two teams |
+| 奇遇 together | A side story; each player says what their character does; Ling resolves the round | Ling, with party exits in the rules | one team |
+| 守鼎 | A creature attacks the cauldron; each picks a move by their 五行 root; the rules resolve it by 相生相克 | Key — a rule table | one team |
+| 斗法 | 象棋, 围棋, 五子棋 — one against one, or teams taking turns | Board | 1v1 · two teams |
+| 连连看 race | The same board for everyone; first to clear wins | Board | solo · teams |
+| 九宫 seal | Each holds part of the 洛书 numbers; they must talk to break it | Board | one team |
+| Who am I | One holds a secret creature card; the rest ask yes-or-no | Key | solo · teams |
+
+**The first set:** 灯谜 race, 山海经 guess, 飞花令, 奇遇 together and 斗法 —
+all three judges, all three modes. Word games keep a set per language; 飞花令
+and 成语接龙 ship public-domain corpora (in English, a word chain; a "line
+with the word" is Ling-judged).
+
+### What the engine needs — none of it names the game
+
+1. **A shared chat with members** — one session several people are in;
+   today a room gives each guest a private one. The largest piece.
+2. **The speaker on every message** — Ling reads `[青玄] 告`.
+3. **Talk that is not a turn** — table messages are saved and shown to all
+   without waking the model.
+4. **AskUser for a group** — the first tap answers, and the chat names who.
+5. **A shared board channel** for 斗法 and 连连看 race, on the existing
+   topics.
+6. Later: **private cards per player** (九宫 seal, Who am I) and
+   **team-only chat**.
+
+`rules.mjs` grows rounds, party exits ("any one player holds the lingzhi")
+and per-player grants; `content/` grows keys, corpora and clue sets.
 
 ## Memory
 
@@ -462,7 +542,8 @@ Establishment, Core Formation, Nascent Soul).
 6. Online: the cloud save and the 灵气 heartbeat — the skill declares its
    budget, the engine reports and asks, linggen.dev counts and keeps the save.
 7. Chapter 1 — 冀州.
-8. Playing together: rooms, then 传音 · 同修 · 论道 through the cloud.
+8. The table: the engine's shared chat, then the first set of plays; 传音 ·
+   同修 · 论道 through the cloud.
 
 ## Open
 

@@ -178,8 +178,9 @@ fast 修为 grows.**
 - **论道:** async quiz duels.
 - **切磋:** async board games and same-board 连连看 races.
 - **传音:** messages carried by Yinyue.
-- **v1 is async.** Playing together live comes later, in a room one player
-  hosts.
+- **v1 is async.** Then the table: friends play live in a room one player
+  hosts, Ling as host — riddles, 飞花令, side stories, 斗法; one team, two
+  teams or each alone.
 
 ## Economy
 
