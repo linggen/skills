@@ -8,7 +8,7 @@ guide: |
 status: Design only, settled 2026-09-11. Nothing built.
 ---
 
-# The World of Linggen · 《灵根世界》
+# The World of Linggen · 《灵境》
 
 **A text game: you play it by chatting, and the world is the background.**
 
