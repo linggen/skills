@@ -72,11 +72,23 @@
   .moon { width: 64px; height: 64px; border-radius: 50%; flex: none;
           background: radial-gradient(circle at 38% 35%, #FFFFFF, #DCE4EA 55%, #AFC0CC);
           box-shadow: 0 0 22px 4px rgba(190,210,225,.55); transition: box-shadow .4s; }
-  .stage.speaking .moon { animation: glow 1.6s ease-in-out infinite; }
+  .stage[data-mood="speaking"] .moon { animation: glow 1.6s ease-in-out infinite; }
+  .stage[data-mood="listening"] .moon { opacity: .82; animation: breathe 3s ease-in-out infinite; }
+  .stage[data-mood="happy"] .moon { animation: hop .55s ease-out 2; box-shadow: 0 0 40px 12px rgba(243,215,120,.6); }
   @keyframes glow { 50% { box-shadow: 0 0 34px 10px rgba(190,210,225,.85); } }
+  @keyframes breathe { 50% { transform: scale(.96); } }
+  @keyframes hop { 40% { transform: translateY(-10px) scale(1.04); } }
+  .sparks { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s; }
+  .stage[data-mood="happy"] .sparks { opacity: 1; }
+  .sparks i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #F3D778; animation: rise 1.3s ease-out infinite; }
+  .sparks i:nth-child(1) { left: 30%; top: 70%; } .sparks i:nth-child(2) { left: 45%; top: 80%; animation-delay: .3s; }
+  .sparks i:nth-child(3) { left: 58%; top: 72%; animation-delay: .6s; } .sparks i:nth-child(4) { left: 68%; top: 78%; animation-delay: .15s; }
+  .sparks i:nth-child(5) { left: 38%; top: 62%; animation-delay: .45s; }
+  @keyframes rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-60px); opacity: 0; } }
   .stagecap { position: relative; display: grid; gap: 2px; }
   .stagecap b { font-family: var(--serif); font-weight: 600; font-size: 17px; }
   .stagecap small { font-family: var(--mono); font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
+  .mood { font-family: var(--mono); font-size: 10.5px; color: var(--yinyue); letter-spacing: .06em; }
 
   .status { flex: none; display: flex; align-items: center; gap: 14px; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; flex-wrap: wrap; }
   .status .realm { font-family: var(--serif); font-weight: 600; font-size: 14px; }
@@ -93,7 +105,7 @@
   .ls { font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
   .ls b { color: var(--ling); font-weight: 500; }
 
-  .stream { flex: 1; overflow-y: auto; padding: 14px 16px 18px; scroll-behavior: smooth; }
+  .stream { flex: 1; overflow-y: auto; padding: 14px 16px 18px; }
   .msg { margin: 12px 0; }
   .msg .who { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; margin-bottom: 3px; color: var(--faint); }
   .msg.ling .who { color: var(--ling); }
@@ -150,13 +162,21 @@
   .ok { color: var(--jade); font-size: 12.5px; font-weight: 500; }
   .task.done, .task.confirmed { background: var(--jade-soft); border-color: transparent; }
 
-  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; max-width: 260px; }
+  .board { --cols: 4; display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 6px; margin-top: 8px; max-width: calc(var(--cols) * 65px); }
   .tile { aspect-ratio: 1; border: 1px solid var(--line); background: var(--surface); border-radius: 7px; font-family: var(--serif); font-size: 21px; font-weight: 600; color: var(--wood); transition: transform .12s, opacity .25s; }
   .tile:not(:disabled):hover { transform: translateY(-1px); border-color: var(--ling); }
   .tile.sel { border-color: var(--ling); box-shadow: 0 0 0 2px var(--ling-soft); background: var(--ling-soft); }
   .tile.gone { opacity: 0; pointer-events: none; }
 
-  .creature { display: flex; gap: 12px; }
+  .crow { display: flex; gap: 12px; }
+  .illus { display: none; width: 100%; height: auto; border-radius: 7px; margin-bottom: 12px; color: var(--text); }
+
+  .map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; max-width: 300px; }
+  .prov { aspect-ratio: 1.5; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); display: grid; place-content: center; text-align: center;
+          font-family: var(--serif); font-size: 18px; color: var(--faint); }
+  .prov small { display: block; font-family: var(--ui); font-size: 10px; line-height: 1.3; }
+  .prov.goal { border-color: var(--ling); color: var(--ling); background: var(--ling-soft); }
+  .prov.here { border-color: var(--yinyue); color: var(--yinyue); background: var(--yinyue-soft); }
   .seal { flex: none; width: 62px; height: 62px; border: 2px solid var(--seal); color: var(--seal); border-radius: 6px; display: grid; place-content: center;
           font-family: var(--serif); font-weight: 600; font-size: 19px; writing-mode: vertical-rl; letter-spacing: .1em; }
   .creature .src { font-size: 11.5px; color: var(--faint); margin-bottom: 4px; }
@@ -198,6 +218,36 @@
   .rules b { color: var(--text); font-weight: 600; }
   .stamp { display: inline-flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
   .stamp i { width: 7px; height: 7px; border-radius: 50%; background: var(--seal); }
+
+  .toolbar { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .toolbar .lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin-right: 8px; }
+
+  .titlebar { display: none; }
+  .gbody { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .chat { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+  /* ── Mac: the same page on a bigger screen ── */
+  body[data-device="mac"] .page { max-width: 1180px; }
+  body[data-device="mac"] .work { grid-template-columns: minmax(0, 1fr); }
+  body[data-device="mac"] .notes { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  body[data-device="mac"] .game { height: min(780px, calc(100vh - 40px)); border-radius: 12px; }
+  body[data-device="mac"] .titlebar { display: flex; align-items: center; gap: 8px; height: 38px; flex: none; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--raised); }
+  .titlebar i { width: 12px; height: 12px; border-radius: 50%; background: #EC6A5E; }
+  .titlebar i:nth-child(2) { background: #F4BF4F; } .titlebar i:nth-child(3) { background: #61C554; }
+  .titlebar span { flex: 1; text-align: center; font-size: 12.5px; color: var(--dim); margin-right: 52px; }
+  body[data-device="mac"] .gbody { flex-direction: row; }
+  body[data-device="mac"] .stage { width: 300px; height: auto; flex: none; flex-direction: column; gap: 24px; border-bottom: none; border-right: 1px solid var(--line); }
+  body[data-device="mac"] .moon { width: 150px; height: 150px; }
+  body[data-device="mac"] .stagecap { text-align: center; }
+  body[data-device="mac"] .stagecap b { font-size: 21px; }
+  body[data-device="mac"] .stream { padding: 20px 32px 24px; }
+  body[data-device="mac"] .msg.ling .body { font-size: 16.5px; max-width: 64ch; }
+  body[data-device="mac"] .card { max-width: 620px; padding: 14px 16px; }
+  body[data-device="mac"] .illus { display: block; }
+  body[data-device="mac"] .tile { font-size: 22px; }
+  body[data-device="mac"] .map { max-width: 560px; gap: 8px; }
+  body[data-device="mac"] .prov { aspect-ratio: 2.2; font-size: 22px; }
+  body[data-device="mac"] .inputbar { padding: 12px 20px; }
 </style>
 </head>
 <body>
@@ -206,14 +256,28 @@
     <div class="eyebrow">Prototype · design only</div>
     <h1>Lingjing: The World of Linggen · <span>《灵境》</span></h1>
     <p>A text game played in one chat panel. Ling drives the world and gives the tasks; Yinyue stays at the player's side. Everything below is scripted — no model runs.</p>
+    <div class="toolbar">
+      <span><span class="lbl">Device</span><span class="seg" role="group" aria-label="Device">
+        <button type="button" data-device="phone" aria-pressed="true">Phone</button>
+        <button type="button" data-device="mac" aria-pressed="false">Mac</button>
+      </span></span>
+      <span><span class="lbl">Language</span><span class="seg" role="group" aria-label="Language">
+        <button type="button" data-lang="zh" aria-pressed="true">中文</button>
+        <button type="button" data-lang="en" aria-pressed="false">English</button>
+      </span></span>
+    </div>
   </header>
 
   <div class="work">
     <section class="game" aria-label="Game panel">
-      <div class="stage" id="stage">
+      <div class="titlebar" aria-hidden="true"><i></i><i></i><i></i><span>灵境 · Lingjing</span></div>
+      <div class="gbody">
+      <div class="stage" id="stage" data-mood="idle">
+        <div class="sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <div class="moon" aria-hidden="true"></div>
-        <div class="stagecap"><b id="stageName">银月</b><small>YINYUE · 3D MODEL LIVES HERE</small></div>
+        <div class="stagecap"><b id="stageName">银月</b><small id="stageCap">YINYUE · 3D MODEL LIVES HERE</small><span class="mood" id="mood"></span></div>
       </div>
+      <div class="chat">
       <div class="status">
         <span class="realm" id="realm"></span>
         <span class="xw"><span class="dim" id="lxw"></span><span class="bar"><i id="xwbar"></i></span><span class="num" id="xwtext"></span></span>
@@ -226,16 +290,11 @@
         <button class="send" id="send" type="submit"></button>
         <button class="choice proto" id="refill" type="button" hidden></button>
       </form>
+      </div>
+      </div>
     </section>
 
     <aside class="notes">
-      <div>
-        <h2>Language</h2>
-        <div class="seg" role="group" aria-label="Language">
-          <button type="button" data-lang="zh" aria-pressed="true">中文</button>
-          <button type="button" data-lang="en" aria-pressed="false">English</button>
-        </div>
-      </div>
       <div>
         <h2>Scenes</h2>
         <div class="scenes">
@@ -257,6 +316,7 @@
           <li><b>Tasks earn 修为; 100 fills a layer.</b> The real-life task counts only when Shifu confirms.</li>
           <li><b>灵气 is tokens, shown as the 丹田.</b> Typing and story choices spend it; 连连看 never does.</li>
           <li><b>四灵根 for everyone in v1</b> — 木 水 火 土.</li>
+          <li><b>Mac is the same page on a bigger screen.</b> Yinyue stands at full height and reacts; the board grows to 6×6; creatures carry their illustration; the map runs wide.</li>
         </ul>
       </div>
       <div>
@@ -266,6 +326,7 @@
           <li>The moon stands in for Yinyue's 3D model.</li>
           <li>The 斗法 board and the Shifu confirmation are placeholders.</li>
           <li>连连看 here matches any pair; the real board uses the path rule.</li>
+          <li>The ink illustration and the map are sketches.</li>
         </ul>
       </div>
       <div class="stamp"><i></i>Spec: skills/lingjing/doc/product-spec.md</div>
@@ -278,6 +339,8 @@ const $ = s => document.querySelector(s);
 const CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
 const NAMES = [{ zh: '青玄', en: 'Qingxuan' }, { zh: '云舟', en: 'Yunzhou' }, { zh: '墨白', en: 'Mobai' }];
 const HERBS = ['芝', '参', '莲', '乌', '归', '草', '苓', '精'];
+const HERBS_MAC = [...HERBS, '桂', '菊', '兰', '竹', '松', '梅', '杞', '芍', '芪', '蓉'];
+let device = 'phone';
 
 const T = {
   xiuwei: { zh: '修为', en: 'Cultivation' },
@@ -291,6 +354,13 @@ const T = {
   phEmpty: { zh: '丹田已空 · {t} 后回满', en: 'Dantian empty · full again in {t}' },
   refill: { zh: '原型：快进，灵气回满', en: 'Prototype: skip ahead, refill qi' },
   stageName: { zh: '银月', en: 'Yinyue' },
+  mood_idle: { zh: '静候', en: 'Idle' },
+  mood_speaking: { zh: '说话中', en: 'Speaking' },
+  mood_listening: { zh: '倾听', en: 'Listening' },
+  mood_happy: { zh: '欢喜', en: 'Happy' },
+  mapTitle: { zh: '九州', en: 'The Nine Provinces' },
+  mapGoal: { zh: '第一鼎', en: 'First cauldron' },
+  mapHere: { zh: '你 · 泗水', en: 'You · Si River' },
 
   o1: { zh: '雨夜。泗水之畔，水声压过了一切。', en: 'A night of rain. On the bank of the Si River, the water drowns out everything else.' },
   o2: { zh: '浅水里有一点银光，忽明忽暗，像在等谁。', en: 'In the shallows a point of silver light flickers, as if waiting for someone.' },
@@ -447,8 +517,15 @@ function gain(n) {
     S.xw -= 100;
     log.push({ kind: 'level', from: S.layer, to: S.layer + 1 });
     S.layer += 1;
+    cheer();
   }
   render();
+}
+/* Yinyue reacts to a win: the stage shows it, never a line of text. */
+function cheer() {
+  S.happyUntil = Date.now() + 2600;
+  renderChrome();
+  setTimeout(renderChrome, 2700);
 }
 
 /* ── Views ── */
@@ -482,9 +559,14 @@ const CARDS = {
   },
   board: e => `<div class="card"><div class="cardtitle">${tr('boardTitle')}${e.practice ? ` <span class="dim small">· ${tr('boardPractice')}</span>` : ''}</div>
     <div class="dim small">${e.done ? tr(e.practice ? 'boardDoneP' : 'boardDone') : tr('boardHint')}</div>
-    <div class="board">${e.tiles.map((c, i) => `<button class="tile${e.gone.includes(i) ? ' gone' : ''}${e.sel === i ? ' sel' : ''}" data-act="tile" data-cid="${e.cid}" data-i="${i}"${e.gone.includes(i) || e.done ? ' disabled' : ''} aria-label="${c}">${c}</button>`).join('')}</div></div>`,
-  creature: e => `<div class="card creature${e.tamed ? ' tamed' : ''}"><div class="seal">夫诸</div><div><div class="cardtitle">${tr('fuzhu')}</div>
-    <div class="src">${tr('fuzhuSrc')}</div><q>${tr('fuzhuQuote')}</q><span class="chip">${tr(e.tamed ? 'tamed' : 'untamed')}</span></div></div>`,
+    ${e.done ? '' : `<div class="board" style="--cols:${e.cols}">${e.tiles.map((c, i) => `<button class="tile${e.gone.includes(i) ? ' gone' : ''}${e.sel === i ? ' sel' : ''}" data-act="tile" data-cid="${e.cid}" data-i="${i}"${e.gone.includes(i) ? ' disabled' : ''} aria-label="${c}">${c}</button>`).join('')}</div>`}</div>`,
+  creature: e => `<div class="card creature${e.tamed ? ' tamed' : ''}">${ILLUS}<div class="crow"><div class="seal">夫诸</div><div><div class="cardtitle">${tr('fuzhu')}</div>
+    <div class="src">${tr('fuzhuSrc')}</div><q>${tr('fuzhuQuote')}</q><span class="chip">${tr(e.tamed ? 'tamed' : 'untamed')}</span></div></div></div>`,
+  map: () => {
+    const rows = [[['雍'], ['冀', 'goal'], ['兖']], [['梁'], ['豫'], ['青']], [['荆'], ['扬'], ['徐', 'here']]];
+    return `<div class="card"><div class="cardtitle">${tr('mapTitle')}</div><div class="map">${rows.flat().map(([c, k]) =>
+      `<div class="prov${k ? ' ' + k : ''}">${c}${k ? `<small>${tr(k === 'goal' ? 'mapGoal' : 'mapHere')}</small>` : ''}</div>`).join('')}</div></div>`;
+  },
   gate: () => `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${tr('gateTitle')}</div><div class="small" style="color:var(--ling)">${tr('gateDate')}</div><div class="dim small">${tr('gateNote')}</div></div></div>`,
   trib: e => `<div class="card trib${e.flash ? ' flash' : ''}"><div class="cardtitle">${tr('tribTitle')}</div>
     <div class="bolts">${[1, 2, 3].map(k => `<i class="${k <= e.strikes ? 'hit' : ''}"></i>`).join('')}</div>
@@ -492,6 +574,22 @@ const CARDS = {
     ${e.strikes < 3 ? `<button class="choice" data-act="strike" data-cid="${e.cid}">${tr('holdMind')}</button>` : ''}</div>`,
   chuanyin: () => `<div class="card chuanyin"><div class="dim small">${tr('cyFrom')}</div><div class="txt">${tr('cyText')}</div></div>`,
 };
+/* A sketch of the Mac's ink illustration: mountains in wash, mist, a moon, the white deer. */
+const ILLUS = `<svg class="illus" viewBox="0 0 320 150" role="img" aria-label="夫诸">
+  <defs><linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".02"/><stop offset="1" stop-color="currentColor" stop-opacity=".10"/></linearGradient></defs>
+  <rect width="320" height="150" fill="url(#mist)"/>
+  <circle cx="248" cy="38" r="15" fill="currentColor" opacity=".08"/>
+  <path d="M0 110 L40 70 L66 88 L104 46 L140 84 L170 66 L210 100 L250 72 L286 92 L320 76 L320 150 L0 150Z" fill="currentColor" opacity=".10"/>
+  <path d="M0 126 L52 98 L92 112 L130 90 L176 116 L220 98 L268 118 L320 104 L320 150 L0 150Z" fill="currentColor" opacity=".16"/>
+  <g transform="translate(122 74) scale(1.3)" stroke="currentColor" stroke-width=".85" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M34 30 L32.5 44 M12 30 L15 44" fill="none" opacity=".6"/>
+    <path d="M6 20 Q22 16 34 19 L38 12 L42 6 L46 5 L52 8 L48 11 L43 13 L41 22 L38 28 L39 44 L37 44 L35.5 30 L26 29.5 L15 29.5 L13.5 44 L11.5 44 L9 32 Q5 28 6 20 Z" style="fill:var(--surface)"/>
+    <path d="M43 6 L40.5 1.5 L44.5 4" style="fill:var(--surface)"/>
+    <path d="M42 6 Q37 -2 33 -6 M36 -1 L32.5 -1.5 M43.5 5 Q41.5 -4 40 -9 M46 5 Q47.5 -4 49.5 -8 M47 6 Q52 0 56 -3 M52 1 L55 2" fill="none"/>
+  </g>
+  <path d="M0 132 Q80 124 160 132 T320 130 L320 150 L0 150Z" fill="currentColor" opacity=".05"/>
+</svg>`;
+
 function view(e) {
   switch (e.kind) {
     case 'typing': return `<div class="msg ${e.who}"><span class="who">[${esc(whoName(e))}]</span><span class="dots"><i></i><i></i><i></i></span></div>`;
@@ -506,8 +604,12 @@ function view(e) {
 
 function render() {
   const el = $('#stream');
+  // Follow the conversation like a chat does: stay pinned to the newest line
+  // unless the player has scrolled up to read.
+  const pinned = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
   el.innerHTML = log.map(view).join('');
-  if (log.length !== lastLen) { el.scrollTop = el.scrollHeight; lastLen = log.length; }
+  if (pinned || log.length !== lastLen) el.scrollTop = el.scrollHeight;
+  lastLen = log.length;
   renderChrome();
 }
 function renderChrome() {
@@ -525,8 +627,13 @@ function renderChrome() {
   $('#stageName').textContent = tr('stageName');
   $('#send').textContent = tr('send');
   $('#refill').textContent = tr('refill');
+  $('#stageCap').textContent = device === 'mac' ? 'YINYUE · 3D MODEL, FULL HEIGHT' : 'YINYUE · 3D MODEL LIVES HERE';
   const last = log[log.length - 1];
-  $('#stage').classList.toggle('speaking', !!last && (last.kind === 'yinyue' || (last.kind === 'typing' && last.who === 'yinyue')));
+  const mood = S.happyUntil > Date.now() ? 'happy'
+    : last && (last.kind === 'yinyue' || (last.kind === 'typing' && last.who === 'yinyue')) ? 'speaking'
+    : last && last.kind === 'typing' ? 'listening' : 'idle';
+  $('#stage').dataset.mood = mood;
+  $('#mood').textContent = tr('mood_' + mood);
   renderInput();
 }
 function renderInput() {
@@ -604,9 +711,11 @@ async function encounter(id) {
   }
   await say(id, 'npc', 'right', {}, 'fuzhu');
   beast.tamed = true; S.ls += 10;
+  cheer();
   gain(50);
   await sleep(600, id);
   await say(id, 'ling', 'hook');
+  push({ kind: 'card', type: 'map' });
   await sleep(900, id);
   await chuanyin(id);
 }
@@ -628,7 +737,7 @@ async function breakthrough(id) {
   await until(() => t.strikes >= 3, id);
   await sleep(700, id);
   S.foundation = true; S.xw = 0;
-  log.push({ kind: 'level', from: 9, toFoundation: true }); render();
+  log.push({ kind: 'level', from: 9, toFoundation: true }); cheer(); render();
   await say(id, 'yinyue', 'b2');
 }
 async function emptyLines() {
@@ -639,9 +748,10 @@ async function emptyLines() {
   if (v === 'practice') push(newBoard(true));
 }
 function newBoard(practice, taskCid) {
-  const tiles = [...HERBS, ...HERBS];
+  const set = device === 'mac' ? HERBS_MAC : HERBS;
+  const tiles = [...set, ...set];
   for (let i = tiles.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tiles[i], tiles[j]] = [tiles[j], tiles[i]]; }
-  return { kind: 'card', type: 'board', tiles, gone: [], sel: null, done: false, practice, taskCid };
+  return { kind: 'card', type: 'board', tiles, cols: device === 'mac' ? 6 : 4, gone: [], sel: null, done: false, practice, taskCid };
 }
 
 const PRESETS = {
@@ -681,6 +791,7 @@ $('#stream').addEventListener('click', ev => {
       else e.sel = i;
       if (e.gone.length === e.tiles.length) {
         e.done = true;
+        cheer();
         const task = e.taskCid && find(e.taskCid);
         if (task) { task.status = 'done'; gain(task.reward); }
       }
@@ -712,6 +823,12 @@ document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click'
   document.documentElement.lang = S.lang === 'zh' ? 'zh-Hans' : 'en';
   document.querySelectorAll('[data-lang]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   render();
+}));
+document.querySelectorAll('[data-device]').forEach(b => b.addEventListener('click', () => {
+  device = b.dataset.device;
+  document.body.dataset.device = device;
+  document.querySelectorAll('[data-device]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  lastLen = -1; render();
 }));
 document.querySelectorAll('[data-scene]').forEach(b => b.addEventListener('click', () => start(b.dataset.scene)));
 
