@@ -32,6 +32,8 @@ permission:
     agent exchange reach the model, never the samples. The grant lets it file
     what your phone sends and record the lines you say. Health's memory is
     scoped to Health alone — it never reads or writes your other apps' memory.
+    A finished workout leaves one note in ~/.linggen/quests — when it ended,
+    nothing else.
 tools:
   - name: Report
     description: >-

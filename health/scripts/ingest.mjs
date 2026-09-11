@@ -15,6 +15,7 @@
 //   ingest.mjs push     <base64(gzip(json))>   registers the phone won
 //   ingest.mjs report                          the whole current picture
 //   ingest.mjs ledger                          what the mirror holds
+//   ingest.mjs quest                           write the quest fact (quest.mjs)
 //   ingest.mjs log      <text>                 one line the user said
 //   ingest.mjs focus    <id> <action> [kind] [why]  choose what Focus shows
 //   ingest.mjs dismiss  <id>                        take a card off Highlights
@@ -29,6 +30,7 @@ import crypto from 'node:crypto';
 
 import { fold, mergeNotes, monthOf, parseLines, planWrite, summarize, wins } from './store.js';
 import { changeFocus, dismissCard, homeOf, selectedOf, validHome } from './home.js';
+import { writeQuest } from './quest.mjs';
 
 const HOME = process.env.HOME || '';
 const DIR = process.env.HEALTH_DIR || path.join(HOME, '.linggen', 'skills', 'health');
@@ -338,7 +340,18 @@ const VERBS = {
       ...(body.cursor ? { cursor: body.cursor } : {}),
     };
     saveState(s);
+    // The quest fact follows the mirror, and never fails the batch it follows.
+    try {
+      writeQuest(SAMPLES);
+    } catch {
+      /* the next batch writes it again */
+    }
     return { ok: true, mirror_id: s.mirror_id, ...counts, held: summarize(s.ledger) };
+  },
+
+  /// Write the quest fact from what the mirror already holds, with no batch.
+  quest() {
+    return { ok: true, quest: writeQuest(SAMPLES) };
   },
 
   /// Hand back the registers a phone asked for, and this mirror's identity.

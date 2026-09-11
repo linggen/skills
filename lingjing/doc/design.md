@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and Shifu's quest built (build order 1–4, half of 5); Health's night next.
+status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and the first quests (Shifu's scan, Health's workout) built (build order 1–5); the proxy window next.
 ---
 
 # Lingjing — design
@@ -335,7 +335,12 @@ changes:
 - **Built (step 5): Shifu.** `apple-shifu/scripts/quest.sh` writes the file
   when a scan completes — the page's full scan, as it saves the scan, and the
   agent's `ScanDisk`. `done_at` is UTC; `due` stays true, since the scan is
-  weekly by nature. Next: Health's night.
+  weekly by nature.
+- **Built (step 5): Health's workout.** `health/scripts/quest.mjs` rewrites
+  the file after every batch the mirror files: `health-workout`, daily, done
+  when a workout of twenty minutes or more has ended today. The night came
+  second and waits: a mirror can hold no night sleep at all (a Watch left off
+  at night), and a quest that can never pay is busywork.
 
 ## 灵气 — the budget
 
@@ -391,7 +396,7 @@ Establishment, Core Formation, Nascent Soul).
 2. `rules.mjs` with its tests and the content lint. ✓
 3. SKILL.md — Ling's rules and the tools. ✓ (the prologue played live)
 4. The Mac scene page and its `Show` cards; choices through AskUser. ✓
-5. Quests: Shifu's scan first ✓, then Health's night.
+5. Quests: Shifu's scan ✓, Health's workout ✓; Health's night waits for sleep in the mirror.
 6. The `lingjing` window in the proxy.
 7. Chapter 1 — 冀州.
 
