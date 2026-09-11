@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>灵境 · Lingjing</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="stylesheet" href="lingjing.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- The scene: everything here is drawn from the rules' Look and the
+         authored content. Ling moves it with Show; the rules own the numbers. -->
+    <section class="scene" aria-label="Scene">
+      <header class="status" id="status"></header>
+      <div class="view" id="view">
+        <svg class="backdrop" viewBox="0 0 320 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <circle cx="262" cy="30" r="13" fill="currentColor" opacity=".07"/>
+          <path d="M0 110 L40 70 L66 88 L104 46 L140 84 L170 66 L210 100 L250 72 L286 92 L320 76 L320 150 L0 150Z" fill="currentColor" opacity=".08"/>
+          <path d="M0 126 L52 98 L92 112 L130 90 L176 116 L220 98 L268 118 L320 104 L320 150 L0 150Z" fill="currentColor" opacity=".12"/>
+          <path d="M0 136 Q80 128 160 136 T320 134 L320 150 L0 150Z" fill="currentColor" opacity=".06"/>
+        </svg>
+        <div class="place" id="place"></div>
+        <!-- Yinyue stands here. Her 3D model waits on where she lives while
+             the game is open (one Yinyue at a time); the moon holds her place. -->
+        <div class="stage" id="stage" hidden><div class="moon" aria-hidden="true"></div><b id="stageName"></b></div>
+        <div class="focus" id="focus"></div>
+      </div>
+      <div class="tray"><div class="traytitle" id="trayTitle"></div><div id="tray"></div></div>
+    </section>
+    <section id="chat-panel"></section>
+  </div>
+  <script type="module" src="lingjing.js"></script>
+</body>
+</html>

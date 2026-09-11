@@ -91,6 +91,7 @@ function termsEn(content) {
 export function look(state, content, ctx) {
   const lang = state.lang;
   const root = state.root && {
+    ids: state.root,
     elements: state.root.map(e => pick(content.roots.elements[e], lang)),
     name: pick(content.roots.names[String(state.root.length)], lang),
     speed: speedOf(content, state),
@@ -101,7 +102,7 @@ export function look(state, content, ctx) {
     realm: { id: state.realm, stage: state.stage + 1, name: stageName(content, state.realm, state.stage, lang) },
     xw: state.xw, next: threshold(content, state), ls: state.ls,
     root, bag: state.bag,
-    beasts: state.beasts.map(id => pick(creatureOf(content, id).name, lang)),
+    beasts: state.beasts.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: sceneBrief(content, state),
     ended: state.ended, branch: state.branch, story: state.story,

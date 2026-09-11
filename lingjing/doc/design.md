@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-11 — content, rules.mjs and SKILL.md built (build order 1–3); the Mac scene page next.
+status: 2026-09-11 — content, rules.mjs, SKILL.md and the Mac scene page built (build order 1–4); quests next.
 ---
 
 # Lingjing — design
@@ -50,7 +50,9 @@ Three rules hold the whole build together:
 skills/lingjing/
   SKILL.md                 Ling's game-master rules + tool declarations
   scripts/
-    index.html, game.js    the page (from prototype.html)
+    index.html, lingjing.css, lingjing.js   the Mac scene (from prototype.html)
+    cards.js, board.js     the cards Ling can Show; the alchemy board
+    rules.js               the page's door to rules.mjs (/api/bash)
     chat-bridge.js, api.js the shared bridge copies
     rules.mjs              the rules engine, a CLI: node rules.mjs <verb> …
     run-js.sh              runs it under the bundled bun, else node
@@ -268,10 +270,26 @@ change.
   buttons, its *Other* field is free text. A tapped option returns to Ling as
   the answer, so `Resolve` gets the exit exactly; *Other* text goes through
   Ling's matching.
-- **Puzzles never touch the model.** The scene runs 连连看, 七巧板 and 华容道,
-  records a win with `rules.mjs win` through the same door Health's page uses
-  for its writes, then sends `[scene] won <id>`; Ling's tool pays it.
-- The board grows to 6×6 on the Mac; the map runs wide.
+- **Puzzles never touch the model.** The scene runs the boards, records a win
+  with `rules.mjs win` through `/api/bash` (Health's door), then tells Ling
+  `[scene] won <id>`: **as the answer to Ling's open AskUser** when one is
+  pending — a new message would queue behind it for up to five minutes — else
+  as a hidden message. Ling's tool pays it.
+- **Built (step 4):** the status strip (道号, realm, 修为 bar, 灵石), the place,
+  the focus card, today's practice. The scene reads Look after every writer
+  tool and every turn; entering a scene puts its own `show` cards up (a
+  creature is pictured even if Ling forgets), and an open board always sits
+  on the scene — Ling says it is before the player, so it is. A fresh day
+  sends a hidden `[scene] opened`; a reopened one (under 24 h) is silent. A
+  brand-new game takes the machine's language. PageUpdate is not used.
+- **Not yet:** Yinyue's 3D model (the moon holds her place — she renders in
+  one surface at a time, so the game needs a call on where she lives while it
+  is open); the 斗法 duel (the 夫诸 `duel` exit refuses until a board for it
+  exists); 七巧板 and 华容道; the 丹田 ring (with the proxy window). The board
+  is 4×4 — "pair the eight herbs" — not the 6×6 once planned.
+- **Engine gap:** text Ling writes between tool calls is shown live but never
+  saved — only a turn's final reply is. A game day is one long turn (narration
+  and AskUser in a loop), so a reopened page shows an empty chat.
 
 **Phone — the chat is everything.** The phone's own chat (Flutter) draws the
 same cards inline, shows choices as buttons that send `[choice scene:exit]`,
@@ -365,7 +383,7 @@ Establishment, Core Formation, Nascent Soul).
 1. Content schemas and the prologue (泗水 → 测灵根 → first tasks → 夫诸) as data. ✓
 2. `rules.mjs` with its tests and the content lint. ✓
 3. SKILL.md — Ling's rules and the tools. ✓ (the prologue played live)
-4. The Mac scene page and its `Show` cards; choices through AskUser.
+4. The Mac scene page and its `Show` cards; choices through AskUser. ✓
 5. Quests: Shifu's scan first, then Health's night.
 6. The `lingjing` window in the proxy.
 7. Chapter 1 — 冀州.
