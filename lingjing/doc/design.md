@@ -287,9 +287,10 @@ change.
   is open); the 斗法 duel (the 夫诸 `duel` exit refuses until a board for it
   exists); 七巧板 and 华容道; the 丹田 ring (with the proxy window). The board
   is 4×4 — "pair the eight herbs" — not the 6×6 once planned.
-- **Engine gap:** text Ling writes between tool calls is shown live but never
-  saved — only a turn's final reply is. A game day is one long turn (narration
-  and AskUser in a loop), so a reopened page shows an empty chat.
+- **A reopened day shows the day so far.** Text Ling writes between tool
+  calls is saved as it is written (linggen `b1fec94`); until then only a
+  turn's final reply was, and a game day — one long turn of narration and
+  AskUser — reopened as an empty chat.
 
 **Phone — the chat is everything.** The phone's own chat (Flutter) draws the
 same cards inline, shows choices as buttons that send `[choice scene:exit]`,

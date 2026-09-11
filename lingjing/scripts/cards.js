@@ -84,10 +84,12 @@ function tribulation(card, ctx) {
   return `<div class="card trib"><div class="cardtitle">${ctx.words.tribTitle}</div><div class="bolts">${bolts}</div></div>`;
 }
 
+/// A board for a task already won or done is a made pill, never a fresh deal.
 function board(card, ctx) {
-  const b = ctx.boardFor(card.id);
-  if (!b) return '';
-  return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${boardHtml(b, ctx.words)}</div>`;
+  const task = (ctx.look.tasks || []).find((t) => t.id === card.id);
+  const made = task && (task.status === 'done' || task.won);
+  const body = made ? `<div class="dim small">${ctx.words.boardDone}</div>` : boardHtml(ctx.boardFor(card.id), ctx.words);
+  return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}</div>`;
 }
 
 const RENDER = { creature, root, map, hexagram, gate, tribulation, board };
