@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "id": "00-fuzhu",
+  "chapter": "00-prologue",
+  "place": { "zh": "泗水北岸 · 雾中", "en": "North of the Si · in the mist" },
+  "setup": {
+    "zh": "你沿泗水北行。雾里立着一只白鹿，头生四角。",
+    "en": "You follow the river north. In the mist stands a white deer with four antlers."
+  },
+  "cast": ["yinyue", "fuzhu"],
+  "show": [{ "card": "creature", "id": "fuzhu" }],
+  "lines": [
+    { "who": "yinyue", "text": { "zh": "是夫诸……它出现的地方会发大水。小心。", "en": "That's Fuzhu… floods follow wherever it appears. Careful." } },
+    { "who": "yinyue", "text": { "zh": "也可以直接跟它说话，或者做点什么。", "en": "You can also just talk to it — or do something." } }
+  ],
+  "buttons": ["duel", "riddle", "around"],
+  "exits": [
+    {
+      "id": "gift",
+      "means": "gives or feeds it an herb, especially the lingzhi",
+      "needs": { "bag": "lingzhi" },
+      "take": { "bag": "lingzhi" },
+      "refuse": { "zh": "你身上没有灵芝。", "en": "You have no lingzhi on you." },
+      "grant": { "table": "scene", "xw": 50, "ls": 10, "beast": "fuzhu" },
+      "beat": [
+        { "who": "ling", "text": { "zh": "你摊开掌心，递上那株灵芝。夫诸低头嗅了嗅，四只角在雾里轻轻一晃，把灵芝衔走了。", "en": "You open your palm and hold out the lingzhi. Fuzhu lowers its head, sniffs, and with a slow sway of its four antlers takes the herb from your hand." } },
+        { "who": "fuzhu", "text": { "zh": "……你倒不怕我。好，我跟你走。", "en": "…You are not afraid of me. Very well — I will go with you." } }
+      ],
+      "next": "00-north"
+    },
+    {
+      "id": "riddle",
+      "label": { "zh": "论道 · 猜一字", "en": "Debate · A riddle" },
+      "means": "answers the riddle Fuzhu asks",
+      "key": "fuzhu-1",
+      "grant": { "table": "scene", "xw": 50, "ls": 10, "beast": "fuzhu" },
+      "beat": [
+        { "who": "fuzhu", "text": { "zh": "……人类，你倒有些意思。", "en": "…Human, you are more interesting than you look." } }
+      ],
+      "next": "00-north"
+    },
+    {
+      "id": "duel",
+      "label": { "zh": "斗法 · 象棋残局", "en": "Duel · A xiangqi endgame" },
+      "means": "challenges it to a duel or a contest of skill",
+      "game": "xiangqi-endgame",
+      "grant": { "table": "scene", "xw": 50, "beast": "fuzhu" },
+      "beat": [
+        { "who": "fuzhu", "text": { "zh": "……你赢了。我跟你走。", "en": "…You win. I will go with you." } }
+      ],
+      "next": "00-north"
+    },
+    {
+      "id": "around",
+      "label": { "zh": "绕行", "en": "Go around" },
+      "means": "avoids it or goes around it",
+      "stay": true,
+      "beat": [
+        { "who": "ling", "text": { "zh": "你绕开了它。它在雾里看了你很久，没有走。", "en": "You go around it. It watches you from the mist for a long time, and does not leave." } }
+      ]
+    },
+    {
+      "id": "touch",
+      "means": "tries to touch, pet or grab it",
+      "stay": true,
+      "beat": [
+        { "who": "ling", "text": { "zh": "夫诸退了一步，不让你碰。", "en": "Fuzhu steps back. It will not let you touch it." } }
+      ]
+    }
+  ]
+}

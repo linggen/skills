@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "_about": "In-world tasks. Real-life ones are never here — each app writes its own to ~/.linggen/quests/<app>.json.",
+  "tasks": [
+    {
+      "id": "alchemy-first",
+      "title": { "zh": "炼丹 · 配齐八味灵草", "en": "Alchemy · Pair the eight spirit herbs" },
+      "kind": "board",
+      "period": "once",
+      "grant": { "table": "task", "xw": 20 },
+      "gives": { "bag": "lingzhi" },
+      "done_line": { "zh": "八味灵草配齐，丹成。还剩一株灵芝。", "en": "All eight herbs paired. The pill is made — one lingzhi left over." }
+    }
+  ]
+}

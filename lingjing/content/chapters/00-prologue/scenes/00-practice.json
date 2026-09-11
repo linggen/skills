@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "id": "00-practice",
+  "chapter": "00-prologue",
+  "place": { "zh": "泗水之畔", "en": "The bank of the Si River" },
+  "setup": {
+    "zh": "修行靠日日不辍。今日功课：",
+    "en": "Cultivation is kept day by day. Today's practice:"
+  },
+  "cast": ["yinyue"],
+  "offers": { "tasks": ["alchemy-first"], "quests": true },
+  "buttons": ["set-out"],
+  "exits": [
+    {
+      "id": "set-out",
+      "label": { "zh": "出发 · 沿泗水北行", "en": "Set out · Follow the river north" },
+      "means": "sets out, travels on, or asks to move on",
+      "needs": { "task": "alchemy-first" },
+      "refuse": { "zh": "丹还没炼成。先把功课做完，路不会跑。", "en": "The pill isn't made yet. Finish the practice first — the road will wait." },
+      "beat": [
+        { "who": "ling", "text": { "zh": "功课已毕。", "en": "Today's practice is done." } }
+      ],
+      "next": "00-fuzhu"
+    }
+  ]
+}

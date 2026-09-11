@@ -60,7 +60,8 @@ skills/lingjing/
     rewards.json           reward tables and caps (scene, branch, task, day)
     creatures.json         山海经 entries: name{zh,en}, source, quote{zh,en}, province
     herbs.json             alchemy tiles
-    art/<creature>.webp    one picture per creature, ink style
+    hexagrams.json         the day's omen (the eight doubled trigrams so far)
+    art/<creature>.webp    one picture per creature, ink style (sketches as .svg)
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
@@ -77,9 +78,9 @@ skills/lingjing/
 `chapter.json`:
 
 ```json
-{ "id": "01-ji", "opens": "2026-10-01", "province": "冀",
-  "gate": { "from": "qi-9", "to": "foundation" },
+{ "id": "01-ji", "opens": "2026-10-01", "province": "冀", "gate": 1,
   "first_scene": "01-ji-arrive",
+  "title": { "zh": "第一章 · 冀州之鼎", "en": "Chapter 1 · The Cauldron of Ji" },
   "summary": { "zh": "…", "en": "…" } }
 ```
 
@@ -89,7 +90,9 @@ it; the model never reads the whole sheet.
 - **Opening dates are local.** Chapters ship inside the skill through
   Linggen's normal skill update; `rules.mjs` refuses a chapter before its
   `opens`. The skill downloads nothing.
-- **A realm gate** holds the player at the peak until the chapter opens.
+- **A realm gate** holds the player at the peak until the chapter opens: the
+  realm in `realms.json` names its chapter (`foundation` has `gate: 1`). The
+  prologue has none (`opens: null`, `gate: null`).
 
 ### A scene
 
@@ -97,29 +100,48 @@ A scene is a setup and its exits. Each exit has plain words (`means`) — what
 Ling matches the player's text against — and the rules that apply.
 
 ```json
-{ "id": "00-fuzhu",
-  "setup": { "zh": "雾里立着一只白鹿，头生四角。", "en": "…" },
-  "cast": ["fuzhu"],
+{ "id": "00-fuzhu", "chapter": "00-prologue",
+  "place": { "zh": "泗水北岸 · 雾中", "en": "North of the Si · in the mist" },
+  "setup": { "zh": "你沿泗水北行。雾里立着一只白鹿，头生四角。", "en": "…" },
+  "cast": ["yinyue", "fuzhu"],
+  "show": [{ "card": "creature", "id": "fuzhu" }],
+  "lines": [{ "who": "yinyue", "text": { "zh": "是夫诸……", "en": "That's Fuzhu…" } }],
   "buttons": ["duel", "riddle", "around"],
   "exits": [
-    { "id": "gift",   "means": "offers it an herb",
+    { "id": "gift", "means": "gives or feeds it an herb, especially the lingzhi",
       "needs": { "bag": "lingzhi" }, "take": { "bag": "lingzhi" },
+      "refuse": { "zh": "你身上没有灵芝。", "en": "You have no lingzhi on you." },
       "grant": { "table": "scene", "xw": 50, "ls": 10, "beast": "fuzhu" },
-      "next": "00-hook" },
-    { "id": "riddle", "means": "answers its riddle",
-      "key": "gao-egg", "grant": { "table": "scene", "xw": 50, "ls": 10, "beast": "fuzhu" },
-      "next": "00-hook" },
-    { "id": "duel",   "means": "duels it at xiangqi", "game": "xiangqi-endgame",
-      "grant": { "table": "scene", "xw": 50, "beast": "fuzhu" }, "next": "00-hook" },
-    { "id": "around", "means": "goes around it", "next": "00-hook" } ] }
+      "beat": [{ "who": "fuzhu", "text": { "zh": "……我跟你走。", "en": "…I will go with you." } }],
+      "next": "00-north" },
+    { "id": "around", "label": { "zh": "绕行", "en": "Go around" },
+      "means": "avoids it or goes around it", "stay": true } ] }
 ```
 
-- `buttons` are the exits shown as choices; the others are found only by
-  typing (the gift above).
-- `needs` / `take` are checked and applied by the rules.
-- `grant` can never exceed its table's cap.
-- `key` points into the riddle file; the rules check the answer, the model
-  only extracts it from the player's words.
+The fields, as `scripts/content.mjs` checks them:
+
+| Field | Means |
+|---|---|
+| `place`, `setup` | Where it is; what Ling narrates on entry — paraphrased, facts unchanged. `{daohao}` fills in the player's name. |
+| `cast` | Who is present: `yinyue`, creature ids. |
+| `show` | Cards `Show`n on entry: `creature`, `root`, `map`, `board`, `hexagram`, `gate`, `tribulation`. |
+| `lines` | Hand-written spine lines spoken on entry, near verbatim. |
+| `offers` | Tasks set here, and whether due quests appear beside them. |
+| `buttons` | The exits shown as choices; every other exit is found only by typing. |
+| exit `label` | The button's words. Required for a button. |
+| exit `means` | Plain words Ling matches the player's text against. |
+| exit `needs` / `take` | What must be in hand (`bag`) or done (`task`); what it uses up. A need carries a `refuse` line. |
+| exit `grant` | 修为, 灵石, a creature — never over its table's cap. |
+| exit `key` | A riddle; the rules check the answer, the model only extracts it. |
+| exit `value` | A value the player gives — the 道号 — with offered choices. |
+| exit `set` | State the rules set, e.g. `root: v1`. |
+| exit `game` | A puzzle or duel whose win the page reports. |
+| exit `beat` | Lines spoken when the exit is taken. |
+| exit `next` · `stay` · `ends` | Exactly one: the next scene, stay here, or end the chapter. |
+
+The lint also refuses a scene nobody can reach, a chapter with no ending, a
+grant over its cap, a string missing a language and a creature without its
+picture.
 
 ### Branch stories (奇遇)
 

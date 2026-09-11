@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "elements": {
+    "metal": { "zh": "金", "en": "Metal" },
+    "wood":  { "zh": "木", "en": "Wood" },
+    "water": { "zh": "水", "en": "Water" },
+    "fire":  { "zh": "火", "en": "Fire" },
+    "earth": { "zh": "土", "en": "Earth" }
+  },
+  "_speed": "修为 multiplier by how many roots are mixed. Four roots is the v1 baseline.",
+  "speed": { "1": 2.0, "2": 1.6, "3": 1.3, "4": 1.0, "5": 0.8 },
+  "names": {
+    "1": { "zh": "天灵根", "en": "Heavenly root" },
+    "2": { "zh": "双灵根", "en": "Dual root" },
+    "3": { "zh": "三灵根", "en": "Triple root" },
+    "4": { "zh": "四灵根 · 伪灵根", "en": "Four roots — a false root" },
+    "5": { "zh": "五灵根 · 伪灵根", "en": "Five roots — a false root" }
+  },
+  "v1": ["wood", "water", "fire", "earth"]
+}

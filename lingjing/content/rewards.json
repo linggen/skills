@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "_caps": "A grant never exceeds its table's cap; a day never exceeds `day`. First pass.",
+  "tables": {
+    "scene":  { "xw": 60, "ls": 20 },
+    "task":   { "xw": 40, "ls": 10 },
+    "puzzle": { "xw": 20, "ls": 0 },
+    "branch": { "xw": 20, "ls": 5 }
+  },
+  "day": { "xw": 240, "ls": 60 }
+}

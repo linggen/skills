@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "creatures": [
+    {
+      "id": "fuzhu",
+      "name": { "zh": "夫诸", "en": "Fuzhu" },
+      "source": { "zh": "《山海经 · 中山经》", "en": "Classic of Mountains and Seas — Central Mountains" },
+      "quote": {
+        "zh": "有兽焉，其状如白鹿而四角，名曰夫诸，见则其邑大水。",
+        "en": "There is a beast shaped like a white deer with four antlers, called Fuzhu. Where it is seen, the town floods."
+      },
+      "look": { "zh": "白鹿，头生四角。", "en": "A white deer with four antlers." },
+      "province": "豫",
+      "art": "art/fuzhu.svg",
+      "art_source": "Sketch from the prototype — replace with an ink picture."
+    }
+  ]
+}

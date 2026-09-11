@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "id": "00-river",
+  "chapter": "00-prologue",
+  "place": { "zh": "泗水之畔", "en": "The bank of the Si River" },
+  "setup": {
+    "zh": "雨夜。泗水之畔，水声压过了一切。浅水里有一点银光，忽明忽暗，像在等谁。",
+    "en": "A night of rain. On the bank of the Si River, the water drowns out everything else. In the shallows a point of silver light flickers, as if waiting for someone."
+  },
+  "cast": [],
+  "buttons": ["reach", "leave"],
+  "exits": [
+    {
+      "id": "reach",
+      "label": { "zh": "伸手入水", "en": "Reach into the water" },
+      "means": "reaches into the water or touches the light",
+      "next": "00-waking"
+    },
+    {
+      "id": "leave",
+      "label": { "zh": "转身离开", "en": "Walk away" },
+      "means": "walks away from the light or ignores it",
+      "stay": true,
+      "beat": [
+        { "who": "ling", "text": { "zh": "你走出十步。银光追着你的影子，不肯熄灭。", "en": "You walk ten paces. The light follows your shadow and will not go out." } }
+      ]
+    }
+  ]
+}

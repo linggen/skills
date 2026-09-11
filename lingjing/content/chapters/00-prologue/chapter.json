@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "00-prologue",
+  "opens": null,
+  "province": "徐",
+  "first_scene": "00-river",
+  "gate": null,
+  "title": { "zh": "序章 · 泗水", "en": "Prologue · The Si River" },
+  "summary": {
+    "zh": "雨夜泗水，银光里醒来一个不记得自己是谁的少女。测过灵根，做完第一份功课，在雾里遇见夫诸。第一鼎的气息在北方。",
+    "en": "A rain night on the Si River; a girl who remembers nothing wakes from a silver light. The root test, the first practice, Fuzhu in the mist. The first cauldron's breath lies north."
+  }
+}

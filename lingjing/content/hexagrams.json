@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "_about": "The day's omen. Lines are bottom to top, 1 = yang. The eight doubled trigrams first; the rest of the 64 later. Each 象 line is the 周易's own.",
+  "hexagrams": [
+    { "id": 1,  "lines": [1, 1, 1, 1, 1, 1], "name": { "zh": "乾", "en": "Qián — The Creative" },
+      "image": { "zh": "天行健，君子以自强不息。", "en": "Heaven moves without rest; so the noble one strengthens themself without end." } },
+    { "id": 2,  "lines": [0, 0, 0, 0, 0, 0], "name": { "zh": "坤", "en": "Kūn — The Receptive" },
+      "image": { "zh": "地势坤，君子以厚德载物。", "en": "The earth lies open; so the noble one carries all things with deep virtue." } },
+    { "id": 51, "lines": [1, 0, 0, 1, 0, 0], "name": { "zh": "震", "en": "Zhèn — The Arousing" },
+      "image": { "zh": "洊雷，震；君子以恐惧修省。", "en": "Thunder upon thunder; so the noble one, in awe, mends and examines their ways." } },
+    { "id": 57, "lines": [0, 1, 1, 0, 1, 1], "name": { "zh": "巽", "en": "Xùn — The Gentle" },
+      "image": { "zh": "随风，巽；君子以申命行事。", "en": "Wind following wind; so the noble one makes their word known and carries it out." } },
+    { "id": 29, "lines": [0, 1, 0, 0, 1, 0], "name": { "zh": "坎", "en": "Kǎn — The Abysmal" },
+      "image": { "zh": "水洊至，习坎；君子以常德行，习教事。", "en": "Water flows on and on; so the noble one keeps virtue constant and practises teaching." } },
+    { "id": 30, "lines": [1, 0, 1, 1, 0, 1], "name": { "zh": "离", "en": "Lí — The Clinging" },
+      "image": { "zh": "明两作，离；大人以继明照于四方。", "en": "Brightness rises twice; so the great one carries the light on to the four quarters." } },
+    { "id": 52, "lines": [0, 0, 1, 0, 0, 1], "name": { "zh": "艮", "en": "Gèn — Keeping Still" },
+      "image": { "zh": "兼山，艮；君子以思不出其位。", "en": "Mountain upon mountain; so the noble one's thoughts stay within their place." } },
+    { "id": 58, "lines": [1, 1, 0, 1, 1, 0], "name": { "zh": "兑", "en": "Duì — The Joyous" },
+      "image": { "zh": "丽泽，兑；君子以朋友讲习。", "en": "Lakes joined together; so the noble one studies and practises with friends." } }
+  ]
+}

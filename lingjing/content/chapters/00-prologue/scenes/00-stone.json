@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "id": "00-stone",
+  "chapter": "00-prologue",
+  "place": { "zh": "泗水之畔", "en": "The bank of the Si River" },
+  "setup": {
+    "zh": "{daohao}，入道之前，先测灵根。把手放在测灵石上。",
+    "en": "{daohao}, before you walk the Way, your spirit root must be tested. Place your hand on the stone."
+  },
+  "cast": ["yinyue"],
+  "buttons": ["touch"],
+  "exits": [
+    {
+      "id": "touch",
+      "label": { "zh": "放上测灵石", "en": "Place your hand on the stone" },
+      "means": "puts a hand on the stone or agrees to the test",
+      "set": { "root": "v1" },
+      "show": [{ "card": "root" }],
+      "beat": [
+        { "who": "ling", "text": { "zh": "四灵根。修炼会比旁人慢上许多。", "en": "Four roots. You will cultivate far more slowly than most." } },
+        { "who": "yinyue", "text": { "zh": "慢又怎样。路是一步一步走的，我陪你走。", "en": "So what if it is slow? A road is walked one step at a time. I will walk it with you." } }
+      ],
+      "next": "00-practice"
+    }
+  ]
+}

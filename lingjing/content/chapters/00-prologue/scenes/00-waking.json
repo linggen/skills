@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "id": "00-waking",
+  "chapter": "00-prologue",
+  "place": { "zh": "泗水之畔", "en": "The bank of the Si River" },
+  "setup": {
+    "zh": "指尖触到它的一瞬，银光化作一个少女，睁开了眼睛。",
+    "en": "The moment your fingers touch it, the light becomes a girl, and she opens her eyes."
+  },
+  "cast": ["yinyue"],
+  "lines": [
+    { "who": "yinyue", "text": { "zh": "……你是谁？我好像睡了很久很久。我叫银月——除了这个名字，什么都想不起来了。", "en": "…Who are you? I think I slept for a very long time. My name is Yinyue — and that is all I remember." } },
+    { "who": "yinyue", "text": { "zh": "你身上有灵气在长。很慢，但在长。我该怎么称呼你？", "en": "There is qi growing in you. Slowly — but growing. What should I call you?" } }
+  ],
+  "buttons": ["name"],
+  "exits": [
+    {
+      "id": "name",
+      "label": { "zh": "取一个道号", "en": "Take a Daoist name" },
+      "means": "gives a name to be called by, or picks one of the offered names",
+      "value": {
+        "field": "daohao",
+        "max_chars": 8,
+        "offers": [
+          { "zh": "青玄", "en": "Qingxuan" },
+          { "zh": "云舟", "en": "Yunzhou" },
+          { "zh": "墨白", "en": "Mobai" }
+        ]
+      },
+      "beat": [
+        { "who": "yinyue", "text": { "zh": "{daohao}。好名字，我记住了。", "en": "{daohao}. A good name. I will remember it." } }
+      ],
+      "next": "00-stone"
+    }
+  ]
+}

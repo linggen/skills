@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "_balance": "First pass. Point values and thresholds are an open question in the spec.",
+  "realms": [
+    {
+      "id": "qi",
+      "name": { "zh": "练气", "en": "Qi Condensation" },
+      "stages": { "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+                  "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"] },
+      "thresholds": [100, 120, 140, 160, 180, 200, 220, 240, 260]
+    },
+    {
+      "id": "foundation", "gate": 1,
+      "name": { "zh": "筑基", "en": "Foundation Establishment" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [400, 500, 600]
+    },
+    {
+      "id": "core", "gate": 2,
+      "name": { "zh": "结丹", "en": "Core Formation" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [800, 1000, 1200]
+    },
+    {
+      "id": "nascent", "gate": 3,
+      "name": { "zh": "元婴", "en": "Nascent Soul" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [1600, 2000, 2400]
+    },
+    {
+      "id": "deity", "gate": 4,
+      "name": { "zh": "化神", "en": "Deity Transformation" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [3000, 3600, 4200]
+    },
+    {
+      "id": "void", "gate": 5,
+      "name": { "zh": "炼虚", "en": "Void Refinement" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [5000, 6000, 7000]
+    },
+    {
+      "id": "body", "gate": 6,
+      "name": { "zh": "合体", "en": "Body Integration" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [8000, 9500, 11000]
+    },
+    {
+      "id": "maha", "gate": 7,
+      "name": { "zh": "大乘", "en": "Mahayana" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [12500, 14500, 16500]
+    },
+    {
+      "id": "tribulation", "gate": 8,
+      "name": { "zh": "渡劫", "en": "Tribulation Transcendence" },
+      "stages": { "zh": ["初期", "中期", "后期"], "en": ["Early", "Middle", "Late"] },
+      "thresholds": [19000, 22000, 25000]
+    }
+  ]
+}

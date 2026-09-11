@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "riddles": {
+    "fuzhu-1": {
+      "q": "What must be broken before it can be used?",
+      "a": ["egg", "an egg"],
+      "hint": "A hen could tell you."
+    }
+  }
+}

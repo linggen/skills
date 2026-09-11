@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "_tiles": "The first 8 make the phone board; all 18 make the Mac board.",
+  "herbs": [
+    { "id": "lingzhi",  "tile": "芝", "name": { "zh": "灵芝",   "en": "Lingzhi" } },
+    { "id": "ginseng",  "tile": "参", "name": { "zh": "人参",   "en": "Ginseng" } },
+    { "id": "lotus",    "tile": "莲", "name": { "zh": "雪莲",   "en": "Snow lotus" } },
+    { "id": "heshouwu", "tile": "乌", "name": { "zh": "何首乌", "en": "Fleeceflower root" } },
+    { "id": "danggui",  "tile": "归", "name": { "zh": "当归",   "en": "Angelica root" } },
+    { "id": "licorice", "tile": "草", "name": { "zh": "甘草",   "en": "Licorice root" } },
+    { "id": "poria",    "tile": "苓", "name": { "zh": "茯苓",   "en": "Poria" } },
+    { "id": "huangjing","tile": "精", "name": { "zh": "黄精",   "en": "Solomon's seal" } },
+    { "id": "cinnamon", "tile": "桂", "name": { "zh": "肉桂",   "en": "Cinnamon bark" } },
+    { "id": "chrysanth","tile": "菊", "name": { "zh": "菊花",   "en": "Chrysanthemum" } },
+    { "id": "orchid",   "tile": "兰", "name": { "zh": "兰草",   "en": "Orchid" } },
+    { "id": "bamboo",   "tile": "竹", "name": { "zh": "竹叶",   "en": "Bamboo leaf" } },
+    { "id": "pine",     "tile": "松", "name": { "zh": "松针",   "en": "Pine needle" } },
+    { "id": "plum",     "tile": "梅", "name": { "zh": "乌梅",   "en": "Smoked plum" } },
+    { "id": "goji",     "tile": "杞", "name": { "zh": "枸杞",   "en": "Goji" } },
+    { "id": "peony",    "tile": "芍", "name": { "zh": "白芍",   "en": "White peony root" } },
+    { "id": "astragal", "tile": "芪", "name": { "zh": "黄芪",   "en": "Astragalus" } },
+    { "id": "cistanche","tile": "蓉", "name": { "zh": "肉苁蓉", "en": "Cistanche" } }
+  ]
+}

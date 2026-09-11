@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "id": "00-north",
+  "chapter": "00-prologue",
+  "place": { "zh": "泗水北岸", "en": "North bank of the Si" },
+  "setup": {
+    "zh": "第一鼎的气息，在北方。",
+    "en": "The breath of the first cauldron lies to the north."
+  },
+  "cast": ["yinyue", "fuzhu"],
+  "show": [{ "card": "map", "goal": "冀", "here": "徐" }],
+  "buttons": ["rest"],
+  "exits": [
+    {
+      "id": "rest",
+      "label": { "zh": "今日到此", "en": "Rest for today" },
+      "means": "rests, ends the day, or asks what comes next",
+      "beat": [
+        { "who": "ling", "text": { "zh": "今日到此为止。冀州的路，开的时候我会告诉你。", "en": "That is all for today. When the road to Ji opens, I will tell you." } }
+      ],
+      "ends": "00-prologue"
+    }
+  ]
+}
