@@ -29,6 +29,7 @@ export function loadContent(dir = CONTENT_DIR) {
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
     tasks: at('tasks/world.json'),
     branches: at('branches.json'),
+    terms: at('terms.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
   };
 }

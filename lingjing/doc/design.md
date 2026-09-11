@@ -66,6 +66,7 @@ skills/lingjing/
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
     branches.json          奇遇 templates and the daily cap
+    terms.json             the game's words and provinces, zh + en
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
     chapters/01-ji/        …
   data/                    this player; never in the repo
@@ -339,10 +340,15 @@ changes:
 
 ## Languages
 
-`lang` is in the state; every authored string is `{zh, en}`; Ling answers in
-the player's language. Word games and riddles keep a set per language. English
-uses the fandom's terms (Qi Condensation, Foundation Establishment, Core
-Formation, Nascent Soul).
+`lang` is in the state; every authored string is `{zh, en}`. **The player's
+own words set the language:** Chinese characters mean `zh`, English words with
+no Chinese mean `en`, anything else (an emoji, a tapped option) changes
+nothing; Ling calls `Lang` before answering, and `Lang` returns the scene in
+the new language. In English play Look carries `terms` (`content/terms.json`:
+修为 cultivation, 灵石 spirit stones, 灵根 spirit root, the provinces …), and no
+Chinese appears inside an English sentence. Word games and riddles keep a set
+per language. English uses the fandom's terms (Qi Condensation, Foundation
+Establishment, Core Formation, Nascent Soul).
 
 ## Testing
 

@@ -7,8 +7,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
-import { newState, weekKey } from '../scripts/state.mjs';
-import { branch, judge, look, move, parseArgs, resolve, summarize, task, win } from '../scripts/rules.mjs';
+import { langOf, newState, weekKey } from '../scripts/state.mjs';
+import { branch, heed, judge, lang, look, move, parseArgs, resolve, summarize, task, win } from '../scripts/rules.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -223,6 +223,42 @@ test('the story summary has a length limit', () => {
   assert.equal(must(summarize, start(), { text: '青玄在泗水边醒来。' }).state.story, '青玄在泗水边醒来。');
 });
 
+test('switching language returns the scene in it; the same language writes nothing', () => {
+  const out = must(lang, start('zh'), { lang: 'en' });
+  assert.equal(out.state.lang, 'en');
+  assert.equal(out.result.changed, true);
+  assert.equal(out.result.scene.place, 'The bank of the Si River');
+  const same = must(lang, start('zh'), { lang: 'zh' });
+  assert.equal(same.state, null);
+  assert.equal(same.result.changed, false);
+  assert.equal(same.result.scene.place, '泗水之畔');
+});
+
+test('the player’s words set the language; a tap, an emoji or the page’s report do not', () => {
+  assert.equal(langOf('我伸手去摸那道光'), 'zh');
+  assert.equal(langOf('call me Mobai'), 'en');
+  assert.equal(langOf('hi'), 'en');
+  assert.equal(langOf('ok 好'), 'zh');
+  for (const quiet of ['', '👍', '42', '[scene] won alchemy-first', null]) assert.equal(langOf(quiet), null);
+  const zh = start('zh');
+  assert.equal(heed(zh, '伸手入水'), zh, 'a tapped Chinese label leaves a Chinese game alone');
+  assert.equal(heed(zh, 'where am I?').lang, 'en');
+  assert.equal(zh.lang, 'zh', 'heed never mutates');
+});
+
+test('English play carries the game’s words; Chinese play does not need them', () => {
+  const en = look(start('en'), content, ctx());
+  assert.equal(en.terms.xw, 'cultivation');
+  assert.equal(en.terms.ls, 'spirit stones');
+  assert.deepEqual(en.terms.realms.slice(0, 3), ['Qi Condensation', 'Foundation Establishment', 'Core Formation']);
+  assert.equal(look(start('zh'), content, ctx()).terms, undefined);
+});
+
+test('a province is known by its character, its name or its English', () => {
+  for (const province of ['徐', '徐州', 'Xu', 'xu']) assert.equal(must(move, start(), { province }).result.here, true);
+  assert.equal(refused(move, start('en'), { province: 'Ji' }, 'road-closed').say, 'That road has not opened yet.');
+});
+
 test('a closed road is refused in the world', () => {
   const r = refused(move, start(), { province: '冀州' }, 'road-closed');
   assert.equal(r.say, '冀州的路还没开。');
@@ -257,5 +293,10 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   // What the engine renders for an omitted optional arg: an empty --key=.
   const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='reach' --value= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
   assert.equal(JSON.parse(sh.stdout).scene.id, '00-waking');
+  // Words in the other language switch the game before the verb reads it.
+  const heard = cli('look', '--said=我在哪里？');
+  assert.equal(heard.lang, 'zh');
+  assert.equal(heard.lang_set, 'zh');
+  assert.equal(cli('look', '--said=伸手').lang_set, undefined);
   fs.rmSync(data, { recursive: true, force: true });
 });

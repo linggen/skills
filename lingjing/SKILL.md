@@ -23,11 +23,19 @@ tools:
       The game as it stands, as JSON: realm and 修为 (`xw` toward `next`),
       灵石 (`ls`), root, bag, creatures, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
-      `story` so far, the day's `omen`, offered `tasks` and due `quests`. Call
-      it first in every session, after Lang, and whenever you are unsure.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look"
+      `story` so far, the day's `omen`, offered `tasks` and due `quests` — and
+      in English play, `terms`: the game's words in English. Call it first in
+      every session and whenever you are unsure.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}}"
     tier: read
     timeout_ms: 8000
+    args:
+      said:
+        type: string
+        required: true
+        description: >-
+          The player's latest words, verbatim — typed or the tapped label. The
+          rules set the game's language from them before answering.
 
   - name: Resolve
     description: >-
@@ -35,7 +43,7 @@ tools:
       a riddle's answer, pay its reward and move the story; the result carries
       the `beat` to speak, what was `paid`, cards to `show` and the next
       `scene`. A refusal `{ok:false, refused, say}` changed nothing.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}} --said={{said}}"
     tier: edit
     timeout_ms: 8000
     args:
@@ -46,11 +54,17 @@ tools:
       value:
         type: string
         required: false
-        description: For an exit with `value` (the 道号) — the name the player chose or typed, nothing else.
+        description: For an exit with `value` (the 道号) — the name exactly as the player wrote it, never translated.
       answer:
         type: string
         required: false
         description: For an exit with `riddle` — only the answer, extracted from the player's words.
+      said:
+        type: string
+        required: true
+        description: >-
+          The player's latest words, verbatim — typed or the tapped label. The
+          rules set the game's language from them before answering.
 
   - name: Judge
     description: >-
@@ -137,10 +151,13 @@ tools:
       province:
         type: string
         required: true
-        description: The province, e.g. 冀.
+        description: The province — 冀, 冀州 or Ji.
 
   - name: Lang
-    description: Switch the game's language. Call Look after it — the scene's words change.
+    description: >-
+      Set the game's language to the player's. Returns the scene in that
+      language — continue from it, no Look needed. The language already in use
+      changes nothing.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lang --lang={{lang}}"
     tier: edit
     timeout_ms: 8000
@@ -189,7 +206,8 @@ from inside the world. There is no assistant here to greet them.
 - **Whenever a result carries `paid`, say it** — from Resolve, Practice or
   Branch alike — exactly as returned: *修为 +20 · 灵石 +10* / *+20
   cultivation · +10 spirit stones*. A `beast` joins the player; each of
-  `levels` is a moment — *练气一层 → 练气二层*; `capped`: the day's 修为 is
+  `levels` is a moment — *练气一层 → 练气二层* / *Qi Condensation · Layer 1 →
+  Layer 2*; `capped`: the day's 修为 is
   full, come back tomorrow; `hold`: they stand at the realm's peak until its
   chapter opens. A zero is left out; nothing paid, nothing said.
 - **When a result carries `summarize: true`, Summarize** before the reply
@@ -203,8 +221,7 @@ from inside the world. There is no assistant here to greet them.
 ## A turn
 
 1. **Session start:** Look. A new game (no `daohao`, scene `00-river`) begins
-   at the river — and if the player's first words are English, Lang `en`
-   first. A returning player gets one or two sentences from `story`, the
+   at the river. A returning player gets one or two sentences from `story`, the
    day's omen (Show its hexagram, say its image in a line), then the scene.
 2. **Entering a scene** (Look's `scene`, or the one Resolve returns):
    - **Show** the scene's `show` cards first. **A creature is never named
@@ -221,8 +238,9 @@ from inside the world. There is no assistant here to greet them.
      the buttons; typing finds what buttons do not. A creative act that
      plainly fits a `means` counts. Pass only the name as `value`, only the
      answer as `answer`.
-   - Nothing fits: it is a question or chatter. Answer briefly, in the
-     world, from the heritage and Look; change nothing; offer the way on.
+   - Nothing fits: it is a question or chatter. Look with their words as
+     `said`, then answer briefly, in the world; change nothing; offer the way
+     on.
 4. **Resolve comes back.**
    - `ok`: speak the `beat`, say what was `paid`, Show its `show` cards, then
      enter the next `scene`. A staying exit keeps the scene: re-offer it.
@@ -311,5 +329,14 @@ remembers.
 
 ## Language
 
-Speak the state's `lang`. When the player asks to switch, or writes whole
-sentences in the other language, Lang, then Look.
+**The player's own words set it, and the rules do the setting.** Pass their
+latest words as `said` to Look and Resolve — every reply to typed words goes
+through one of them — and the rules switch the game to the language those
+words are in (`lang_set` says it happened). Answer in the `lang` the result
+carries. When the player asks for a language outright, **Lang** it. Never ask
+which language they want.
+
+**Everything you write is in that language** — narration, every line, the
+choice's question, header and options. In English the game's words come from
+Look's `terms` — cultivation, spirit stones, Qi Condensation, spirit root —
+never Chinese inside an English sentence.

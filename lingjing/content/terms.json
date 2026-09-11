@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "_about": "The game's own words. In English play Ling uses these — never the Chinese inside an English sentence. Realm names live in realms.json.",
+  "terms": {
+    "xw":           { "zh": "修为", "en": "cultivation" },
+    "ls":           { "zh": "灵石", "en": "spirit stones" },
+    "qi":           { "zh": "灵气", "en": "qi" },
+    "dantian":      { "zh": "丹田", "en": "dantian" },
+    "root":         { "zh": "灵根", "en": "spirit root" },
+    "daohao":       { "zh": "道号", "en": "Daoist name" },
+    "beast":        { "zh": "灵兽", "en": "spirit beast" },
+    "encounter":    { "zh": "奇遇", "en": "chance encounter" },
+    "practice":     { "zh": "功课", "en": "practice" },
+    "alchemy":      { "zh": "炼丹", "en": "alchemy" },
+    "pill":         { "zh": "丹", "en": "pill" },
+    "breakthrough": { "zh": "突破", "en": "breakthrough" },
+    "tribulation":  { "zh": "雷劫", "en": "heavenly tribulation" },
+    "abode":        { "zh": "洞府", "en": "cave abode" },
+    "cauldron":     { "zh": "鼎", "en": "cauldron" },
+    "cauldrons":    { "zh": "九鼎", "en": "the Nine Cauldrons" },
+    "duel":         { "zh": "斗法", "en": "duel" },
+    "debate":       { "zh": "论道", "en": "debate" },
+    "omen":         { "zh": "卦", "en": "omen" }
+  },
+  "provinces": {
+    "冀": { "zh": "冀州", "en": "Ji" },
+    "兖": { "zh": "兖州", "en": "Yan" },
+    "青": { "zh": "青州", "en": "Qing" },
+    "徐": { "zh": "徐州", "en": "Xu" },
+    "扬": { "zh": "扬州", "en": "Yang" },
+    "荆": { "zh": "荆州", "en": "Jing" },
+    "豫": { "zh": "豫州", "en": "Yu" },
+    "梁": { "zh": "梁州", "en": "Liang" },
+    "雍": { "zh": "雍州", "en": "Yong" }
+  }
+}

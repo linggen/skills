@@ -13,7 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAST, loadContent } from './content.mjs';
 import {
-  addXw, fill, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
+  addXw, fill, langOf, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   speedOf, stageName, threshold,
 } from './state.mjs';
 
@@ -77,6 +77,17 @@ function tasksBrief(content, state, ctx) {
   return { tasks, quests };
 }
 
+/* The game's words in English — Ling's glossary for English play. Chinese
+   play needs none: the words are the game's own. */
+function termsEn(content) {
+  const words = Object.fromEntries(Object.entries(content.terms.terms).map(([id, t]) => [id, t.en]));
+  return {
+    ...words,
+    realms: content.realms.realms.map(r => r.name.en),
+    provinces: Object.values(content.terms.provinces).map(p => p.en),
+  };
+}
+
 export function look(state, content, ctx) {
   const lang = state.lang;
   const root = state.root && {
@@ -95,6 +106,7 @@ export function look(state, content, ctx) {
     scene: sceneBrief(content, state),
     ended: state.ended, branch: state.branch, story: state.story,
     omen: omen(content, ctx.now, lang),
+    ...(lang === 'en' ? { terms: termsEn(content) } : {}),
     ...tasksBrief(content, state, ctx),
   };
 }
@@ -299,19 +311,36 @@ export function summarize(state, content, ctx, args) {
   return { state: s, result: { ok: true, story: text } };
 }
 
+/* A province by its character (冀), its name (冀州) or its English (Ji). */
+function provinceOf(content, raw) {
+  const said = String(raw ?? '').trim().replace(/州$/, '').toLowerCase();
+  return Object.keys(content.terms.provinces).find(k => k === said || content.terms.provinces[k].en.toLowerCase() === said) ?? null;
+}
+
 export function move(state, content, ctx, args) {
-  const p = String(args.province ?? '').replace(/州$/, '');
+  const p = provinceOf(content, args.province);
   const here = content.chapters[state.chapter];
-  if (here?.province === p) return { state: null, result: { ok: true, here: true } };
-  const say = { zh: `${p}州的路还没开。`, en: 'That road has not opened yet.' };
+  if (p && here?.province === p) return { state: null, result: { ok: true, here: true } };
+  const say = { zh: `${p ?? String(args.province ?? '').replace(/州$/, '')}州的路还没开。`, en: 'That road has not opened yet.' };
   return refuse('road-closed', pick(say, state.lang));
 }
 
+/* The player's words set the language. The result carries the scene in it,
+   so one call switches and re-reads; asking for the language already in
+   use changes nothing. */
 export function lang(state, content, ctx, args) {
   if (!['zh', 'en'].includes(args.lang)) return refuse('unknown-lang', null, { langs: ['zh', 'en'] });
-  const s = clone(state);
-  s.lang = args.lang;
-  return { state: s, result: { ok: true, lang: s.lang } };
+  const s = args.lang === state.lang ? state : { ...clone(state), lang: args.lang };
+  const result = { ok: true, lang: s.lang, changed: s !== state, scene: sceneBrief(content, s) };
+  return { state: s === state ? null : s, result };
+}
+
+/* The player's words set the language before any verb reads the state, so
+   what Ling reads back is already in the language the player wrote. Ling's
+   tools pass them as `said`. */
+export function heed(state, said) {
+  const lang = langOf(said);
+  return lang && lang !== state.lang ? { ...clone(state), lang } : state;
 }
 
 export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, branch, summarize, move, lang };
@@ -372,13 +401,15 @@ function run(verb, args) {
 
   const fn = VERBS[verb];
   if (!fn) return { ok: false, refused: 'unknown-verb', verbs: ['init', ...Object.keys(VERBS), 'undo'] };
-  const out = fn(state, content, { now, quests: readQuests() }, args);
-  if (out.state) {
-    out.state.updated = now.toISOString();
-    writeAtomic(stateFile, JSON.stringify(out.state));
+  const heard = heed(state, args.said);
+  const out = fn(heard, content, { now, quests: readQuests() }, args);
+  const next = out.state ?? (heard !== state ? heard : null);
+  if (next) {
+    next.updated = now.toISOString();
+    writeAtomic(stateFile, JSON.stringify(next));
     fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: state }) + '\n');
   }
-  return out.result;
+  return heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
 }
 
 function undo(stateFile, logFile) {

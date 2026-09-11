@@ -36,6 +36,17 @@ export function normalizeAnswer(answer) {
     .replace(/^(an?|the) /, '');
 }
 
+/* The language of what the player typed: Chinese characters → zh, an English
+   word and no Chinese → en, anything else (an emoji, a number, a page's
+   `[scene]` report) → null, which changes nothing. */
+export function langOf(said) {
+  const text = String(said ?? '').trim();
+  if (!text || text.startsWith('[scene]')) return null;
+  if (/\p{Script=Han}/u.test(text)) return 'zh';
+  if (/[A-Za-z]{2,}/.test(text)) return 'en';
+  return null;
+}
+
 /* ── Time: local days, ISO weeks ── */
 
 const pad = n => String(n).padStart(2, '0');
