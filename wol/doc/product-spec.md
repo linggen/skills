@@ -1,11 +1,11 @@
 ---
 type: product-spec
-reader: Liang, coding agent, contributors
+reader: coding agent, contributors
 guide: |
   What The World of Linggen is and what each of its systems does, in one read.
   How it is built belongs in design.md (not written yet). The idea's first
   record is linggen-app/doc/app-ideas.md.
-status: Design only, settled with Liang 2026-09-11. Nothing built.
+status: Design only, settled 2026-09-11. Nothing built.
 ---
 
 # The World of Linggen
