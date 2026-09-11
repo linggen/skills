@@ -6,7 +6,10 @@ import { fileURLToPath } from 'node:url';
 
 export const CONTENT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../content');
 
-const SPEAKERS = new Set(['ling', 'yinyue']);
+/* Who speaks besides the creatures. Ling is the world's voice — narration,
+   never a named speaker. */
+export const CAST = { yinyue: { zh: '银月', en: 'Yinyue' } };
+const SPEAKERS = new Set(['ling', ...Object.keys(CAST)]);
 const CARDS = new Set(['creature', 'root', 'map', 'board', 'hexagram', 'gate', 'tribulation']);
 const VALUE_FIELDS = new Set(['daohao']);
 const SETTABLE = { root: new Set(['v1']) };

@@ -16,7 +16,7 @@ export function newState(content, lang, now) {
     realm: 'qi', stage: 0, xw: 0, ls: 0,
     bag: {}, beasts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
-    tasks: {}, quests: {}, branch: null, story: '',
+    tasks: {}, quests: {}, wins: {}, branch: null, story: '',
     day: { key: dayKey(now), xw: 0, ls: 0, branches: 0 },
     created: at, updated: at,
   };

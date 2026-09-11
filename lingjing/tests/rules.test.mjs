@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { newState, weekKey } from '../scripts/state.mjs';
-import { branch, judge, look, move, parseArgs, resolve, summarize, task } from '../scripts/rules.mjs';
+import { branch, judge, look, move, parseArgs, resolve, summarize, task, win } from '../scripts/rules.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -29,12 +29,19 @@ function refused(fn, state, args, code, c = ctx()) {
   return out.result;
 }
 
+/* The first task offered, its board already won on the page. */
+function offerWon(s) {
+  s.tasks['alchemy-first'] = { status: 'offered' };
+  s.wins['alchemy-first'] = NOW.toISOString();
+}
+
 /* Walk to 夫诸 the ordinary way. */
 function toFuzhu() {
   let s = start();
   s = must(resolve, s, { exit: 'reach' }).state;
   s = must(resolve, s, { exit: 'name', value: '青玄' }).state;
   s = must(resolve, s, { exit: 'touch' }).state;
+  s = must(win, s, { id: 'alchemy-first' }).state;
   s = must(task, s, { action: 'done', id: 'alchemy-first' }).state;
   return must(resolve, s, { exit: 'set-out' }).state;
 }
@@ -104,6 +111,8 @@ test('without the herb the gift is refused in the world', () => {
 test('staying exits narrate and keep the scene', () => {
   const out = must(resolve, start(), { exit: 'leave' });
   assert.equal(out.state.scene, '00-river');
+  assert.equal(out.result.summarize, false);
+  assert.equal(must(resolve, start(), { exit: 'reach' }).result.summarize, true);
   assert.match(out.result.beat[0].text, /银光追着你的影子/);
 });
 
@@ -112,7 +121,38 @@ test('an unknown exit, a missing answer and an unwon duel are refused', () => {
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');
   refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
   refused(resolve, s, { exit: 'duel' }, 'game-not-won');
-  assert.equal(must(resolve, s, { exit: 'duel', won: true }).state.scene, '00-north');
+});
+
+test('only the page witnesses a win, and a win pays once', () => {
+  const s = toFuzhu();
+  refused(resolve, s, { exit: 'duel', won: true }, 'game-not-won');
+  refused(win, s, { id: 'chess-anywhere' }, 'not-here');
+  const won = must(win, s, { id: 'xiangqi-endgame' }).state;
+  assert.equal(look(won, content, ctx()).scene.exits.find(e => e.id === 'duel').won, true);
+  const out = must(resolve, won, { exit: 'duel' });
+  assert.equal(out.state.scene, '00-north');
+  assert.deepEqual(out.state.wins, {});
+});
+
+test('an in-world task pays only after the page recorded its win', () => {
+  let s = start();
+  for (const [exit, extra] of [['reach'], ['name', { value: '青玄' }], ['touch']]) s = must(resolve, s, { exit, ...extra }).state;
+  refused(task, s, { action: 'done', id: 'alchemy-first' }, 'not-won');
+  s = must(win, s, { id: 'alchemy-first' }).state;
+  assert.equal(look(s, content, ctx()).tasks[0].won, true);
+  const done = must(task, s, { action: 'done', id: 'alchemy-first' });
+  assert.equal(done.state.bag.lingzhi, 1);
+  refused(win, done.state, { id: 'alchemy-first' }, 'not-here');
+});
+
+test('every line carries its speaker’s name; Ling narrates unnamed', () => {
+  const s = toFuzhu();
+  const scene = look(s, content, ctx()).scene;
+  assert.deepEqual(scene.cast, [{ id: 'yinyue', name: '银月' }, { id: 'fuzhu', name: '夫诸' }]);
+  assert.equal(scene.lines[0].name, '银月');
+  const out = must(resolve, s, { exit: 'riddle', answer: '告' });
+  assert.equal(out.result.beat[0].name, '夫诸');
+  assert.equal(must(resolve, start('en'), { exit: 'leave' }).result.beat[0].name, null);
 });
 
 test('answers are judged in either language, punctuation and articles aside', () => {
@@ -125,7 +165,7 @@ test('answers are judged in either language, punctuation and articles aside', ()
 test('a layer fills and the next begins, the rest carried over', () => {
   const s = start();
   s.xw = 90;
-  s.tasks['alchemy-first'] = { status: 'offered' };
+  offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.state.stage, 1);
   assert.equal(out.state.xw, 10);
@@ -135,7 +175,7 @@ test('a layer fills and the next begins, the rest carried over', () => {
 test('at the realm peak the player holds until the chapter opens', () => {
   const s = start();
   s.stage = 8; s.xw = 250;
-  s.tasks['alchemy-first'] = { status: 'offered' };
+  offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.state.xw, 260);
   assert.deepEqual(out.result.paid.hold, { gate: 1 });
@@ -144,7 +184,7 @@ test('at the realm peak the player holds until the chapter opens', () => {
 test('the day caps what can be earned', () => {
   const s = start();
   s.day.xw = 230; // cap 240
-  s.tasks['alchemy-first'] = { status: 'offered' };
+  offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.result.paid.xw, 10);
   assert.equal(out.result.paid.capped, true);
@@ -200,6 +240,10 @@ test('placeholder arguments the agent left unfilled are dropped', () => {
   assert.deepEqual(parseArgs(['--exit', 'riddle', '--answer', '{{answer}}', '--won', 'true']), { exit: 'riddle', won: true });
 });
 
+test('--key=value is read whole, and an omitted arg (empty) is dropped', () => {
+  assert.deepEqual(parseArgs(['--exit=riddle', '--value=', '--answer=一口 = 告', '--text=a\nb']), { exit: 'riddle', answer: '一口 = 告', text: 'a\nb' });
+});
+
 test('the command line keeps state on disk, logs it and undoes it', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-'));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
@@ -210,5 +254,8 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
   assert.equal(cli('undo').undid, 'resolve');
   assert.equal(cli('look').scene.id, '00-river');
+  // What the engine renders for an omitted optional arg: an empty --key=.
+  const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='reach' --value= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
+  assert.equal(JSON.parse(sh.stdout).scene.id, '00-waking');
   fs.rmSync(data, { recursive: true, force: true });
 });

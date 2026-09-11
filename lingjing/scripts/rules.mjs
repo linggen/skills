@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task branch summarize move lang undo
+//   verbs: init look resolve judge task win branch summarize move lang undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW.
@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadContent } from './content.mjs';
+import { CAST, loadContent } from './content.mjs';
 import {
   addXw, fill, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   speedOf, stageName, threshold,
@@ -25,6 +25,12 @@ const sceneOf = (content, state) => content.chapters[state.chapter]?.scenes[stat
 const creatureOf = (content, id) => content.creatures.creatures.find(c => c.id === id);
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
 
+/* A speaker's name in the player's language; Ling narrates, unnamed. */
+const nameOf = (content, who, lang) => (who === 'ling' ? null : pick(CAST[who] ?? creatureOf(content, who)?.name, lang));
+const spoken = (content, state, lines) => (lines ?? []).map(l => ({
+  who: l.who, name: nameOf(content, l.who, state.lang), text: fill(pick(l.text, state.lang), state),
+}));
+
 function sceneBrief(content, state) {
   const scene = sceneOf(content, state);
   if (!scene) return null;
@@ -34,9 +40,9 @@ function sceneBrief(content, state) {
     id: scene.id,
     place: say(scene.place),
     setup: say(scene.setup),
-    cast: scene.cast ?? [],
+    cast: (scene.cast ?? []).map(id => ({ id, name: nameOf(content, id, lang) })),
     show: scene.show ?? [],
-    lines: (scene.lines ?? []).map(l => ({ who: l.who, text: say(l.text) })),
+    lines: spoken(content, state, scene.lines),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
     exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id))),
   };
@@ -46,7 +52,7 @@ function exitBrief(content, state, exit, button) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
   if (exit.key) brief.riddle = content.riddles[state.lang].riddles[exit.key].q;
-  if (exit.game) brief.game = exit.game;
+  if (exit.game) Object.assign(brief, { game: exit.game, won: Boolean(state.wins?.[exit.game]) });
   if (exit.value) brief.value = { field: exit.value.field, max_chars: exit.value.max_chars, offers: exit.value.offers.map(o => pick(o, state.lang)) };
   return brief;
 }
@@ -62,6 +68,7 @@ function tasksBrief(content, state, ctx) {
   const lang = state.lang;
   const tasks = Object.entries(state.tasks).map(([id, t]) => ({
     id, title: pick(taskOf(content, id).title, lang), kind: taskOf(content, id).kind, status: t.status,
+    won: Boolean(state.wins?.[id]),
   }));
   const quests = (ctx.quests ?? []).filter(q => q.due || questDone(q, ctx.now)).map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang),
@@ -161,7 +168,8 @@ export function resolve(state, content, ctx, args) {
     if (args.answer == null) return refuse('needs-answer', riddle.q);
     if (!judgeAnswer(content, exit.key, args.answer)) return refuse('wrong-answer', null, { hint: riddle.hint });
   }
-  if (exit.game && args.won !== true) return refuse('game-not-won', null, { game: exit.game });
+  if (exit.game && !s.wins?.[exit.game]) return refuse('game-not-won', null, { game: exit.game });
+  if (exit.game) delete s.wins[exit.game];
   if (exit.value) {
     const value = cleanValue(args.value, exit.value);
     if (!value) return refuse('value-invalid', null, { max_chars: exit.value.max_chars });
@@ -173,7 +181,7 @@ export function resolve(state, content, ctx, args) {
   }
   if (exit.set?.root === 'v1') s.root = [...content.roots.v1];
   const paid = exit.grant ? pay(content, s, ctx, exit.grant) : null;
-  const beat = (exit.beat ?? []).map(l => ({ who: l.who, text: fill(pick(l.text, lang), s) }));
+  const beat = spoken(content, s, exit.beat);
 
   let waiting = null;
   if (exit.next || exit.ends) s.done_scenes.push(scene.id);
@@ -181,7 +189,10 @@ export function resolve(state, content, ctx, args) {
   if (exit.ends) { s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
   return {
     state: s,
-    result: { ok: true, took: exit.id, beat, paid, show: exit.show ?? [], scene: sceneBrief(content, s), ended: exit.ends ?? null, waiting },
+    result: {
+      ok: true, took: exit.id, beat, paid, show: exit.show ?? [], scene: sceneBrief(content, s), ended: exit.ends ?? null, waiting,
+      summarize: Boolean(exit.next || exit.ends),
+    },
   };
 }
 
@@ -205,13 +216,21 @@ export function task(state, content, ctx, args) {
   return refuse('unknown-action', null, { actions: ['list', 'done', 'check'] });
 }
 
+/* Offered, and not yet done this period. */
+function taskOpen(content, state, id, now) {
+  const t = taskOf(content, id), held = state.tasks[id];
+  if (!t || !held) return false;
+  return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
+}
+
 function taskDone(state, content, ctx, id) {
   const t = taskOf(content, id);
   if (!t) return refuse('unknown-task', null);
-  const now = state.tasks[id];
-  if (!now) return refuse('not-offered', null);
-  if (now.status === 'done' && (t.period === 'once' || now.period === periodKey(t.period, ctx.now))) return refuse('already-done', null);
+  if (!state.tasks[id]) return refuse('not-offered', null);
+  if (!taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
+  if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
+  delete s.wins[id];
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now) };
   if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
   const paid = pay(content, s, ctx, t.grant);
@@ -228,6 +247,18 @@ function questCheck(state, content, ctx, id) {
   s.quests[id] = { period, paid_at: ctx.now.toISOString() };
   const paid = pay(content, s, ctx, { table: 'task', xw: q.reward ?? 0 });
   return { state: s, result: { ok: true, quest: id, app: q.app, paid } };
+}
+
+/* The page is the only witness to a board or a duel: it records the win here,
+   and Resolve or Task done pays it. Never one of Ling's tools — a win Ling
+   could claim would be a self-reported one. */
+export function win(state, content, ctx, args) {
+  const id = String(args.id ?? '');
+  const inScene = sceneOf(content, state)?.exits.some(e => e.game === id);
+  if (!inScene && !taskOpen(content, state, id, ctx.now)) return refuse('not-here', null);
+  const s = clone(state);
+  s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  return { state: s, result: { ok: true, won: id } };
 }
 
 /* ── Branches, story, travel, language ── */
@@ -253,7 +284,7 @@ export function branch(state, content, ctx, args) {
   if (args.action === 'close') {
     const paid = pay(content, s, ctx, { table: template.table, xw: Number(args.xw) || 0, ls: Number(args.ls) || 0 });
     s.branch = null;
-    return { state: s, result: { ok: true, closed: template.kind, paid } };
+    return { state: s, result: { ok: true, closed: template.kind, paid, summarize: true } };
   }
   return refuse('unknown-action', null, { actions: ['open', 'turn', 'close'] });
 }
@@ -283,7 +314,7 @@ export function lang(state, content, ctx, args) {
   return { state: s, result: { ok: true, lang: s.lang } };
 }
 
-export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, branch, summarize, move, lang };
+export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, branch, summarize, move, lang };
 
 /* ── Files and the command line ── */
 
@@ -312,13 +343,16 @@ function readQuests() {
   return quests;
 }
 
-/* `--key value` pairs; a placeholder the agent left unfilled ({{x}}) is dropped. */
+/* `--key=value` (what SKILL.md's templates send: an omitted arg arrives as an
+   empty `--key=`, never a missing token) or `--key value` by hand. An empty
+   value or a placeholder the agent left unfilled ({{x}}) is dropped. */
 export function parseArgs(argv) {
   const args = {};
-  for (let i = 0; i < argv.length; i += 2) {
-    const key = argv[i]?.replace(/^--/, '');
-    const raw = argv[i + 1];
-    if (!key || raw == null || /^\{\{.*\}\}$/.test(raw)) continue;
+  for (let i = 0; i < argv.length; i += 1) {
+    const joined = /^--([^=]+)=([\s\S]*)$/.exec(argv[i] ?? '');
+    const key = joined ? joined[1] : argv[i]?.replace(/^--/, '');
+    const raw = joined ? joined[2] : argv[++i];
+    if (!key || raw == null || raw === '' || /^\{\{.*\}\}$/.test(raw)) continue;
     args[key] = raw === 'true' ? true : raw === 'false' ? false : raw;
   }
   return args;

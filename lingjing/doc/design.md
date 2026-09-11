@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: Design only, 2026-09-11. Nothing built.
+status: 2026-09-11 — content, rules.mjs and SKILL.md built (build order 1–3); the Mac scene page next.
 ---
 
 # Lingjing — design
@@ -53,6 +53,7 @@ skills/lingjing/
     index.html, game.js    the page (from prototype.html)
     chat-bridge.js, api.js the shared bridge copies
     rules.mjs              the rules engine, a CLI: node rules.mjs <verb> …
+    run-js.sh              runs it under the bundled bun, else node
     content.mjs            loads + validates content/
   content/                 authored; ships with the skill
     realms.json            the ladder: 练气 1–9, 筑基 … with 修为 thresholds
@@ -185,14 +186,15 @@ branch table when it closes.
 
 | Part | From | ~tokens | Cached |
 |---|---|---|---|
-| Ling's game-master rules | SKILL.md | 1,200 | yes |
-| Tools | frontmatter | 600 | yes |
+| Ling's game-master rules | SKILL.md | 1,800 | yes |
+| Tools | frontmatter | 900 | yes |
 | State brief | `Look` | 150 | no |
 | Story so far | the state's `story`, via `Look` | 400 | no |
 | Current scene: setup + exits' `means` | `Look` / `Resolve` | 300 | no |
 | Last ~10 messages | the session | 800 | no |
 
-About 3.5k tokens a turn, half of it cached. The next scene arrives inside
+About 4.5k tokens a turn, most of it cached. Measured live on deepseek-flash:
+~5k of context on the first turn, ~7k after the whole prologue. The next scene arrives inside
 `Resolve`'s result and replaces this one.
 
 - **One session per game day** (the app session rule: resume the latest under
@@ -201,24 +203,35 @@ About 3.5k tokens a turn, half of it cached. The next scene arrives inside
 
 ## Tools
 
-Shell tools — `node $SKILL_DIR/scripts/rules.mjs <verb> --key value …`; each
+Shell tools — `bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs
+<verb> --key={{key}} …` (run-js.sh finds the bundled bun, else node); each
 prints one JSON object. A refusal is `{ok: false, refused, say}` — `say` is
-the world's own line when the content has one — and never changes state. An
-argument the agent left as a literal `{{placeholder}}` is dropped.
+the world's own line when the content has one — and never changes state.
+Args travel as `--key=value`: the engine renders an omitted arg as nothing,
+which would shift `--key value` pairs, so an empty value — or one left as a
+literal `{{placeholder}}` — is dropped. Tool names must not collide with the
+engine's built-ins (`Task` is its delegation tool): the provider refuses the
+whole turn.
 
 | Tool | Does | Refuses |
 |---|---|---|
 | `Look` | Realm, 修为, 灵石, root, bag, creatures, the scene brief, story, the day's omen, offered tasks and due quests. Call at session start and when unsure. | — |
-| `Resolve {exit, value?, answer?, won?}` | Takes an exit: checks `needs` and the answer, sets the value, applies `take` and `set`, pays `grant`, advances; returns the beat and the next scene. | `unknown-exit`, `needs`, `needs-answer`, `wrong-answer` (with the hint), `game-not-won`, `value-invalid`, `no-scene` |
+| `Resolve {exit, value?, answer?}` | Takes an exit: checks `needs` and the answer, sets the value, applies `take` and `set`, pays `grant`, advances; returns the beat (each line with its speaker's `name`), the next scene and `summarize: true` when the scene changed. A `game` exit needs the scene's recorded win. | `unknown-exit`, `needs`, `needs-answer`, `wrong-answer` (with the hint), `game-not-won`, `value-invalid`, `no-scene` |
 | `Judge {key, answer}` | Checks an answer against the key, either language. | `unknown-riddle` |
-| `Task {action: list \| done \| check, id}` | `list` the offered tasks and due quests; `done` pays an in-world task the page completed; `check` pays a quest its app marked done this period. | `not-offered`, `already-done`, `not-done`, `already-paid` |
+| `Practice {action: list \| done \| check, id}` (verb `task`) | `list` the offered tasks and due quests; `done` pays an in-world task whose win the scene recorded; `check` pays a quest its app marked done this period. | `not-offered`, `already-done`, `not-won`, `not-done`, `already-paid` |
 | `Branch {action: open \| turn \| close, kind, xw, ls}` | Opens a 奇遇, counts its turns, pays within the branch cap on close. | `branch-open`, `branch-cap`, `no-branch` |
 | `Summarize {text}` | Replaces the story. | `too-long` |
 | `Move {province}` | Travels. | `road-closed` |
 | `Lang {lang}` | Switches zh / en. | — |
 
 `init --lang` starts a game, and `undo` restores the state before the last
-change — for the page and for testing, not for Ling. Env: `LINGJING_DATA`,
+change — for the page and for testing, not for Ling. **`win --id` is the
+page's alone:** the scene is the only witness to a board or a duel, so it
+records the win (a game an exit of this scene names, or an offered task), and
+Resolve or `Practice done` pays it and consumes it. No Ling tool can pass a
+win — the same rule as quests: done is the witness's record, never
+self-reported. Look marks a recorded win `won: true`, so a fresh session sees
+one the chat was never told of; the page tells the chat `[scene] won <id>`. Env: `LINGJING_DATA`,
 `LINGJING_QUESTS`, `LINGJING_NOW`.
 
 Data tool — `Show {card, …}` (no `cmd`): its args reach the page as a
@@ -254,9 +267,9 @@ change.
   buttons, its *Other* field is free text. A tapped option returns to Ling as
   the answer, so `Resolve` gets the exit exactly; *Other* text goes through
   Ling's matching.
-- **Puzzles never touch the model.** The scene runs 连连看, 七巧板 and 华容道
-  and reports the result to `rules.mjs` through the same door Health's page
-  uses for its writes; the rules pay and log it.
+- **Puzzles never touch the model.** The scene runs 连连看, 七巧板 and 华容道,
+  records a win with `rules.mjs win` through the same door Health's page uses
+  for its writes, then sends `[scene] won <id>`; Ling's tool pays it.
 - The board grows to 6×6 on the Mac; the map runs wide.
 
 **Phone — the chat is everything.** The phone's own chat (Flutter) draws the
@@ -295,7 +308,7 @@ changes:
 - **Done means the app's own record** — Shifu's last scan time, the night in
   Health's mirror. Never self-reported.
 - **Only these facts cross** — due, done, when. No raw health or money data.
-- `Task check` pays when `done_at` falls in the current period and the period
+- `Practice check` pays when `done_at` falls in the current period and the period
   is unpaid.
 
 ## 灵气 — the budget
@@ -310,7 +323,10 @@ changes:
 
 ## Memory
 
-- `memory-context: lingjing` — the game's own facts stay in the game.
+- **No memory recall.** SKILL.md declares no `memory-context`: a scoped
+  recall found only notes about *building* the game — answer keys and hidden
+  exits included — and put them in Ling's context (seen live, 2026-09-11).
+  The game's memory is `state.json` and its `story`.
 - Game events live in `data/`, not in ling-mem.
 - Yinyue reads the player's name from core memory; the game writes nothing
   into her memory.
@@ -334,9 +350,9 @@ Formation, Nascent Soul).
 
 ## Build order
 
-1. Content schemas and the prologue (泗水 → 测灵根 → first tasks → 夫诸) as data.
-2. `rules.mjs` with its tests and the content lint.
-3. SKILL.md — Ling's rules and the tools.
+1. Content schemas and the prologue (泗水 → 测灵根 → first tasks → 夫诸) as data. ✓
+2. `rules.mjs` with its tests and the content lint. ✓
+3. SKILL.md — Ling's rules and the tools. ✓ (the prologue played live)
 4. The Mac scene page and its `Show` cards; choices through AskUser.
 5. Quests: Shifu's scan first, then Health's night.
 6. The `lingjing` window in the proxy.
