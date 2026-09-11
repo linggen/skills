@@ -12,8 +12,8 @@ status: Design only, settled 2026-09-11. Nothing built.
 
 **A text game: you play it by chatting, and the world is the background.**
 
-Yinyue and Ling live in a cultivation world drawn from China's public heritage.
-You talk with them, take tasks, and grow. Real-life tasks, done in the other
+Ling runs a cultivation world drawn from China's public heritage; Yinyue is at
+the player's side. You talk, take Ling's tasks, and grow. Real-life tasks, done in the other
 Linggen apps, count as 修炼. Every part of the game happens inside one chat
 panel, like Ling's today.
 
@@ -55,22 +55,25 @@ them sense the cauldrons.
 ## Characters
 
 - **The player:** takes a 道号 at the start, suggested by Yinyue.
-- **Yinyue:** the companion and narrator. Name only, origin unspoken. She
-  remembers nothing of who she is; each cauldron gives back one memory. She is
-  the same Yinyue as in the rest of Linggen and remembers the player.
-- **Ling:** gives the player tasks and reads the cauldrons' inscriptions.
+- **Ling — the game driver.** Runs the world and narrates it, gives every task,
+  and knows everything in the game: rules, story, map, state. Reads the
+  cauldrons' inscriptions.
+- **Yinyue — the player's pet and assistant.** Always at their side, helps
+  them play. Name only, origin unspoken: she remembers nothing of who she is;
+  each cauldron gives back one memory. She is the same Yinyue as in the rest of
+  Linggen and remembers the player.
 - **Everyone else:** NPCs, spirits and 灵兽, voiced by the model from the
   heritage.
 - Yinyue's 3D model is the only 3D in the game; everything else is 2D in chat.
 
 ## Chat
 
-- **One chat panel is the whole game.** Messages come from Yinyue, Ling and
-  NPCs, each attributed.
+- **One chat panel is the whole game.** Messages come from Ling (the world),
+  Yinyue (the player's side) and NPCs, each attributed.
 - **Cards appear inside the chat:** choices, task cards, creature cards, the
   map, puzzle boards.
-- **Free text anytime.** Ask about anything in the world and get the answer in
-  the player's language.
+- **Free text anytime.** Ask Ling anything about the world and get the answer
+  in the player's language.
 - **The rules own every number, the model owns the words.** Points, realms,
   灵气, inventory and world state are data; the model narrates around them.
 
@@ -111,7 +114,7 @@ them sense the cauldrons.
   assistant uses.
 - **Metered by cost,** so English and Chinese are charged fairly.
 - **Shown as the 丹田:** full, half, low. Tokens are never shown.
-- **When it runs out,** Yinyue says one line in the story. The story waits.
+- **When it runs out,** Ling says one line in the story. The story waits.
 - **Rule-run puzzles cost no 灵气.** They stay playable as practice.
 - **Real-life bonus:** a kept workout or a deep night refills a capped amount.
 - **Paid plan:** a bigger 丹田 per window. Never power.
