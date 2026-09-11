@@ -72,8 +72,26 @@ them sense the cauldrons.
   Yinyue (the player's side) and NPCs, each attributed.
 - **Cards appear inside the chat:** choices, task cards, creature cards, the
   map, puzzle boards.
-- **Free text anytime.** Ask Ling anything about the world and get the answer
-  in the player's language.
+- **Free text anytime, in the player's language.** Buttons are shortcuts;
+  typing is always allowed.
+
+**Free chat.** The model proposes, the rules decide: Ling replies in words and
+changes the game only through game tools — resolve a scene, give a task, open
+a branch, move the player. The rules check every call and refuse what the
+state does not allow.
+
+- **Free text resolves scenes.** Ling maps the player's words to one of the
+  scene's exits — feeding 夫诸 an herb tames it, if the herb is in hand. A
+  creative answer the model judges right counts.
+- **A question changes nothing.** Ling answers from the heritage and the
+  player's state.
+- **Curiosity can open a branch (奇遇).** A branch never touches the main
+  story; its rewards come from a small capped table.
+- **Out of bounds is refused in the world** — *冀州的路还没开*,
+  *天地灵石，从不白给*. Words never change state.
+- **Real life goes to Yinyue, outside the game,** never on game 灵气.
+- **Every reply ends with a way forward** — usually choices.
+- **A running story summary** keeps free chat consistent across days.
 - **The rules own every number, the model owns the words.** Points, realms,
   灵气, inventory and world state are data; the model narrates around them.
 
