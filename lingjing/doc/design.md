@@ -402,6 +402,9 @@ Establishment, Core Formation, Nascent Soul).
 
 ## Open
 
+- **Idea — a healthy user gets a better Linggen.** Health kept (the facts
+  the apps already record) earns more than game 灵气: a better Linggen
+  overall. To talk through.
 - 灵气 refills from a workout or a deep night need the proxy to accept a
   host-reported event.
 - 灵气 for players on their own key or a ChatGPT login.
