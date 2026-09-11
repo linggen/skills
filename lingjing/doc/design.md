@@ -323,10 +323,16 @@ changes:
 
 ## Memory
 
-- **No memory recall.** SKILL.md declares no `memory-context`: a scoped
-  recall found only notes about *building* the game — answer keys and hidden
-  exits included — and put them in Ling's context (seen live, 2026-09-11).
-  The game's memory is `state.json` and its `story`.
+- **No memory recall.** SKILL.md declares no `memory-context`: the game's
+  memory is `state.json` and its `story`, and nothing in ling-mem belongs in
+  Ling's context.
+- **A turn must arrive as a skill turn.** The engine takes "skill session"
+  from the request's `skill_name`, not from the session. Seen live
+  2026-09-11: turns typed into the main chat of a skill-bound session ran as
+  a user's — core block plus full recall — and pulled notes about *building*
+  the game, answer keys included, into Ling's context. App pages send
+  `skill_name`, so the scene page is safe; the phone's chat must send it too
+  (or the engine should read the session's own `creator`).
 - Game events live in `data/`, not in ling-mem.
 - Yinyue reads the player's name from core memory; the game writes nothing
   into her memory.
