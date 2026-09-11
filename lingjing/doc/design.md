@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and the first quests (Shifu's scan, Health's workout) built (build order 1–5); the proxy window next.
+status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and the first quests (Shifu's scan, Health's workout) built (build order 1–5); online — the cloud save and the 灵气 heartbeat — designed, next.
 ---
 
 # Lingjing — design
@@ -71,7 +71,7 @@ skills/lingjing/
     terms.json             the game's words and provinces, zh + en
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
     chapters/01-ji/        …
-  data/                    this player; never in the repo
+  data/                    this player; never in the repo — the cloud save mirrors it
     state.json · log.jsonl
   tests/
 ```
@@ -285,7 +285,7 @@ change.
 - **Not yet:** Yinyue's 3D model (the moon holds her place — she renders in
   one surface at a time, so the game needs a call on where she lives while it
   is open); the 斗法 duel (the 夫诸 `duel` exit refuses until a board for it
-  exists); 七巧板 and 华容道; the 丹田 ring (with the proxy window). The board
+  exists); 七巧板 and 华容道; the 丹田 ring (with the 灵气 heartbeat). The board
   is 4×4 — "pair the eight herbs" — not the 6×6 once planned.
 - **A reopened day shows the day so far.** Text Ling writes between tool
   calls is saved as it is written (linggen `b1fec94`); until then only a
@@ -342,15 +342,77 @@ changes:
   second and waits: a mirror can hold no night sleep at all (a Watch left off
   at night), and a quest that can never pay is busywork.
 
-## 灵气 — the budget
+## Access and pay
 
-- **The proxy enforces it.** Linggen Cloud meters the game as its own product,
-  `lingjing`, on a rolling 5-hour window, apart from the monthly quota.
-  Nothing in the skill counts or enforces.
-- **The host reports it** the way it reports the quota today; the page draws
-  the 丹田 from that reading.
-- **A turn costs what it costs** — typed or tapped, one model turn. Puzzles
-  cost nothing.
+- **Sign in to play.** A signed-in player gets Linggen's free tier, then the
+  $5 Linggen plan — the game is included, never sold apart.
+- **Any model plays:** Linggen Cloud or the player's own, as in every app.
+  On Linggen Cloud the game already travels like Health — the shared trial,
+  then the plan's monthly pool (linggensite `llm.ts`).
+
+## 灵气 — the 5-hour budget
+
+**It keeps the game from taking too much of a day.** Cost is the plan's job;
+灵气 is a pace.
+
+- **A rolling 5-hour window of tokens,** the same whatever model answers.
+- **Counted in the cloud by heartbeat.** After each game turn the engine
+  reports its tokens to linggen.dev; before the next it asks what is left.
+  One counter, fed by the engine for every game turn — the proxy does not
+  count it again.
+- **The skill declares it; the engine names no game.** SKILL.md names the
+  meter, and the engine applies it to any session bound to a skill that
+  declares one. linggen.dev holds the window's size, so it changes without
+  a skill update.
+- **Empty:** the engine sends no new story turn. The scene says one line in
+  the world and when 灵气 returns; the boards stay playable — they use no
+  model.
+- **The 丹田 ring** draws the engine's latest reading: full, half, low,
+  empty. Tokens are never shown.
+- **A pace, not a lock.** A modified client could skip the heartbeat; money
+  is guarded by the plan's pool, not by this window.
+
+## Online — the save in the cloud, the rules at home
+
+**The rules run on the player's machine; the cloud stores and counts.**
+Content ships in the skill and `rules.mjs` decides, as before — there is no
+game server.
+
+```
+ player's machine                                linggen.dev
+ ┌─ engine + skill ──────────────┐  save (versioned)  ┌─ per account ─────────┐
+ │ rules.mjs → data/state.json   │ ─────────────────▶ │ the save: state,      │
+ │ Ling's turns, any model       │ ◀───────────────── │ story, recent log     │
+ │                               │  heartbeat: tokens │ the 灵气 window       │
+ │                               │ ─────────────────▶ │ (10-min buckets)      │
+ └───────────────────────────────┘  "what is left?"   └───────────────────────┘
+```
+
+- **One save per account:** `state.json`, the story and the recent log — a
+  few KB. The Mac and the phone continue the same game; a new machine starts
+  from it.
+- **Written after every change.** A write names the version it read; a
+  stale one is refused and the device re-reads, so two devices never
+  overwrite each other silently.
+- **What crosses:** the game's own state. From other apps, still only a
+  quest's done and when — never Health or money data.
+- **The cost of rules at home:** a player who edits files can fake their own
+  progress. It matters only where players compare — a ranking, a duel
+  between two players — and the server judges those moments when they come.
+
+## Playing together
+
+**Not designed yet.** Several players in one chat, with Ling driving the
+table, makes this a different game from every other app — it gets its own
+design round. What is settled so far:
+
+- **Live, in a room.** One player's Linggen hosts the scene — Ling as game
+  master for the table, on the host's models — and up to four friends join
+  over WebRTC (the existing rooms). The host's 灵气 pays for the table. Each
+  guest's rewards land in their own save, within the reward tables and the
+  day's caps, so a generous host cannot hand out a realm.
+- **Apart, through the cloud.** 传音, 同修 and 论道 challenges need no one
+  online at once; a room lives only while its host is online.
 
 ## Memory
 
@@ -397,15 +459,18 @@ Establishment, Core Formation, Nascent Soul).
 3. SKILL.md — Ling's rules and the tools. ✓ (the prologue played live)
 4. The Mac scene page and its `Show` cards; choices through AskUser. ✓
 5. Quests: Shifu's scan ✓, Health's workout ✓; Health's night waits for sleep in the mirror.
-6. The `lingjing` window in the proxy.
+6. Online: the cloud save and the 灵气 heartbeat — the skill declares its
+   budget, the engine reports and asks, linggen.dev counts and keeps the save.
 7. Chapter 1 — 冀州.
+8. Playing together: rooms, then 传音 · 同修 · 论道 through the cloud.
 
 ## Open
 
 - **Idea — a healthy user gets a better Linggen.** Health kept (the facts
   the apps already record) earns more than game 灵气: a better Linggen
   overall. To talk through.
-- 灵气 refills from a workout or a deep night need the proxy to accept a
-  host-reported event.
-- 灵气 for players on their own key or a ChatGPT login.
+- 灵气 refills from a workout or a deep night — the heartbeat could carry
+  the quest fact; how much, and capped how.
+- The window's size, and whether the plan's players get a larger one.
+- Offline play: the save and the heartbeat need the network.
 - The phone.

@@ -143,14 +143,16 @@ fast 修为 grows.**
 **灵气 is the model's tokens.**
 
 - **Rolling 5-hour window,** like Claude Code or ChatGPT.
-- **Separate game budget.** It never draws on the Linggen Cloud quota the
-  assistant uses.
-- **Metered by cost,** so English and Chinese are charged fairly.
+- **A pace, not a price.** It keeps the game from taking too much of a day.
+- **Every model counts** — Linggen Cloud or the player's own — reported to
+  the cloud after each turn.
 - **Shown as the 丹田:** full, half, low. Tokens are never shown.
-- **When it runs out,** Ling says one line in the story. The story waits.
+- **When it runs out,** one line in the story says so. The story waits.
 - **Rule-run puzzles cost no 灵气.** They stay playable as practice.
 - **Real-life bonus:** a kept workout or a deep night refills a capped amount.
-- **Paid plan:** a bigger 丹田 per window. Never power.
+- **Sign in to play:** Linggen's free tier, then the $5 Linggen plan — the
+  game is included. Progress is saved to the account, so it follows the
+  player to any device.
 
 ## Mini-games
 
@@ -176,13 +178,14 @@ fast 修为 grows.**
 - **论道:** async quiz duels.
 - **切磋:** async board games and same-board 连连看 races.
 - **传音:** messages carried by Yinyue.
-- **v1 is async.** Real-time play between friends online at once comes later.
+- **v1 is async.** Playing together live comes later, in a room one player
+  hosts.
 
 ## Economy
 
 - **灵石** are earned in play and buy 丹药, 洞府 upgrades, and 法器 cosmetics
   for Yinyue.
-- **Money buys a bigger 丹田,** nothing else.
+- **Money buys the Linggen plan,** never power.
 
 ## Never does
 
