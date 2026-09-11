@@ -314,6 +314,7 @@
           <li><b>Ling drives.</b> Narrates the world, gives every task, answers anything typed.</li>
           <li><b>Yinyue is at your side.</b> The only 3D figure — the moon above the stream.</li>
           <li><b>Tasks earn 修为; 100 fills a layer.</b> The real-life task counts only when Shifu confirms.</li>
+          <li><b>Typing resolves scenes.</b> At 夫诸, type <i>喂它灵芝</i> / <i>feed it the lingzhi</i> — an exit no button offers — or answer its riddle in your own words.</li>
           <li><b>灵气 is tokens, shown as the 丹田.</b> Typing and story choices spend it; 连连看 never does.</li>
           <li><b>四灵根 for everyone in v1</b> — 木 水 火 土.</li>
           <li><b>Mac is the same page on a bigger screen.</b> Yinyue stands at full height and reacts; the board grows to 6×6; creatures carry their illustration; the map runs wide.</li>
@@ -322,7 +323,7 @@
       <div>
         <h2>Drawn, not real</h2>
         <ul class="rules">
-          <li>Ling's replies are scripted by keyword; the real game asks a model.</li>
+          <li>Ling reads typed words by keyword; the real game asks a model to map them to the scene's exits.</li>
           <li>The moon stands in for Yinyue's 3D model.</li>
           <li>The 斗法 board and the Shifu confirmation are placeholders.</li>
           <li>连连看 here matches any pair; the real board uses the path rule.</li>
@@ -403,7 +404,16 @@ const T = {
   boardTitle: { zh: '炼丹 · 连连看', en: 'Alchemy · Match pairs' },
   boardPractice: { zh: '练习 · 不耗灵气', en: 'Practice · costs no qi' },
   boardHint: { zh: '点两块相同的灵草。', en: 'Tap two matching herbs.' },
-  boardDone: { zh: '八味灵草配齐，丹成。', en: 'All eight herbs paired. The pill is made.' },
+  boardDone: { zh: '八味灵草配齐，丹成。还剩一株灵芝。', en: 'All eight herbs paired. The pill is made — one lingzhi left over.' },
+  yType: { zh: '也可以直接跟它说话，或者做点什么。', en: 'You can also just talk to it — or do something.' },
+  phScene: { zh: '说点什么，或做点什么…', en: 'Say something, or do something…' },
+  feedText: { zh: '你摊开掌心，递上那株灵芝。夫诸低头嗅了嗅，四只角在雾里轻轻一晃，把灵芝衔走了。', en: 'You open your palm and hold out the lingzhi. Fuzhu lowers its head, sniffs, and with a slow sway of its four antlers takes the herb from your hand.' },
+  feedAccept: { zh: '……你倒不怕我。好，我跟你走。', en: '…You are not afraid of me. Very well — I will go with you.' },
+  noHerb: { zh: '你身上没有灵芝。', en: 'You have no lingzhi on you.' },
+  noTouch: { zh: '夫诸退了一步，不让你碰。', en: 'Fuzhu steps back. It will not let you touch it.' },
+  hint: { zh: '口在上，牛在下——少了一截尾巴。', en: 'A hen could tell you.' },
+  aStones: { zh: '天地灵石，从不白给。', en: 'Heaven gives no spirit stones for nothing.' },
+  aFly: { zh: '冀州的路还没开。', en: 'The road to Ji has not opened yet.' },
   boardDoneP: { zh: '练习完成。', en: 'Practice done.' },
   tDone: { zh: '功课已毕。', en: 'Today’s practice is done.' },
   cSetOut: { zh: '出发 · 沿泗水北行', en: 'Set out · Follow the river north' },
@@ -459,7 +469,10 @@ const T = {
   aDefault: { zh: '（原型）正式版里，Ling 会回答关于这个世界的任何问题。', en: '(Prototype) In the real game, Ling answers anything about this world.' },
 };
 
-const fresh = () => ({ lang: S ? S.lang : 'zh', nameIdx: null, layer: 1, xw: 0, qi: 100, ls: 0, foundation: false, emptyAt: null });
+const fresh = () => ({ lang: S ? S.lang : 'zh', nameIdx: null, layer: 1, xw: 0, qi: 100, ls: 0, foundation: false, emptyAt: null, bag: [] });
+/* The open scene's reading of typed text: text → { v } resolves the pending
+   choice, { reply } answers without moving, null falls through to Ling. */
+let typed = null;
 let S = null; S = fresh();
 let log = [];
 let run = 0;
@@ -502,6 +515,8 @@ function ask(card) {
   return new Promise(res => { waiters[card.cid] = res; });
 }
 function choice(opts, cost = 0) { return ask({ kind: 'card', type: 'choice', opts, cost, chosen: null }); }
+/* Let typed text resolve the choice card just pushed. */
+function openTyped(read) { typed = { cid: log[log.length - 1].cid, read }; renderInput(); }
 function push(card) { card.cid = cid(); log.push(card); render(); return card; }
 
 function spend(n) {
@@ -640,7 +655,7 @@ function renderInput() {
   const empty = S.qi <= 0;
   const input = $('#input');
   input.disabled = empty; $('#send').disabled = empty; $('#refill').hidden = !empty;
-  if (!empty) { input.placeholder = tr('ph'); return; }
+  if (!empty) { input.placeholder = tr(typed ? 'phScene' : 'ph'); return; }
   const left = Math.max(0, 5 * 3600e3 - (Date.now() - (S.emptyAt || Date.now())));
   const h = Math.floor(left / 3600e3), m = Math.floor(left % 3600e3 / 60e3), s = Math.floor(left % 60e3 / 1e3);
   input.value = '';
@@ -695,21 +710,41 @@ async function encounter(id) {
   const beast = push({ kind: 'card', type: 'creature', tamed: false });
   await sleep(500, id);
   await say(id, 'yinyue', 'y5');
+  await say(id, 'yinyue', 'yType');
+  // The scene's exits, by button or by words. Feeding it the herb is an exit
+  // the buttons never offer — only typing finds it, and only with the herb in hand.
+  let way;
   for (;;) {
-    const v = await choice([{ v: 'duel', key: 'cDuel' }, { v: 'debate', key: 'cDebate' }, { v: 'around', key: 'cAround' }], 3);
-    if (v === 'debate') break;
-    await say(id, 'ling', v === 'duel' ? 'duelNote' : 'aroundText');
+    const p = choice([{ v: 'duel', key: 'cDuel' }, { v: 'debate', key: 'cDebate' }, { v: 'around', key: 'cAround' }], 3);
+    openTyped(text => /喂|灵芝|feed|lingzhi|herb/i.test(text)
+      ? (S.bag.includes('灵芝') ? { v: 'feed' } : { reply: 'noHerb', who: 'ling' })
+      : /摸|抚|碰|pet|stroke|touch/i.test(text) ? { reply: 'noTouch', who: 'ling' } : null);
+    way = await p;
+    typed = null;
+    if (way === 'debate' || way === 'feed') break;
+    await say(id, 'ling', way === 'duel' ? 'duelNote' : 'aroundText');
   }
-  await say(id, 'npc', 'riddle', {}, 'fuzhu');
-  const opts = [{ v: 'a', key: 'rA' }, { v: 'b', key: 'rB' }, { v: 'c', key: 'rC' }];
-  const tried = new Set();
-  for (;;) {
-    const v = await choice(opts.map(o => ({ ...o, gone: tried.has(o.v) })), 3);
-    if (v === 'a') break;
-    tried.add(v);
-    await say(id, 'npc', 'wrong', {}, 'fuzhu');
+  if (way === 'feed') {
+    S.bag = S.bag.filter(x => x !== '灵芝');
+    await say(id, 'ling', 'feedText');
+    await say(id, 'npc', 'feedAccept', {}, 'fuzhu');
+  } else {
+    await say(id, 'npc', 'riddle', {}, 'fuzhu');
+    const opts = [{ v: 'a', key: 'rA' }, { v: 'b', key: 'rB' }, { v: 'c', key: 'rC' }];
+    const tried = new Set();
+    for (;;) {
+      const p = choice(opts.map(o => ({ ...o, gone: tried.has(o.v) })), 3);
+      // An answer in the player's own words counts as much as a button.
+      openTyped(text => /告|egg|蛋/i.test(text) ? { v: 'a' }
+        : /提示|hint|clue/i.test(text) ? { reply: 'hint', who: 'npc', npc: 'fuzhu' } : { v: 'typed-wrong' });
+      const v = await p;
+      typed = null;
+      if (v === 'a') break;
+      if (v !== 'typed-wrong') tried.add(v);
+      await say(id, 'npc', 'wrong', {}, 'fuzhu');
+    }
+    await say(id, 'npc', 'right', {}, 'fuzhu');
   }
-  await say(id, 'npc', 'right', {}, 'fuzhu');
   beast.tamed = true; S.ls += 10;
   cheer();
   gain(50);
@@ -755,12 +790,13 @@ function newBoard(practice, taskCid) {
 }
 
 const PRESETS = {
-  opening: {}, root: { nameIdx: 0 }, tasks: { nameIdx: 0 }, encounter: { nameIdx: 0, xw: 50 },
+  opening: {}, root: { nameIdx: 0 }, tasks: { nameIdx: 0 }, encounter: { nameIdx: 0, xw: 50, bag: ['灵芝'] },
   chuanyin: { nameIdx: 0, layer: 2, ls: 10 }, breakthrough: { nameIdx: 0, layer: 9, xw: 100 }, empty: { nameIdx: 0, layer: 2 },
 };
 const SCENES = { opening, root: rootTest, tasks, encounter, chuanyin, breakthrough };
 function start(name) {
   run += 1; const id = run;
+  typed = null;
   S = { ...fresh(), ...PRESETS[name] };
   log = []; lastLen = 0; render();
   if (name === 'empty') { S.qi = 0; S.emptyAt = Date.now(); render(); emptyLines(); return; }
@@ -793,7 +829,7 @@ $('#stream').addEventListener('click', ev => {
         e.done = true;
         cheer();
         const task = e.taskCid && find(e.taskCid);
-        if (task) { task.status = 'done'; gain(task.reward); }
+        if (task) { task.status = 'done'; S.bag.push('灵芝'); gain(task.reward); }
       }
       render();
       break;
@@ -809,13 +845,33 @@ $('#form').addEventListener('submit', async ev => {
   if (!v || S.qi <= 0) return;
   input.value = '';
   log.push({ kind: 'player', text: v });
-  const key = /灵根|root/i.test(v) ? 'aRoot' : /夫诸|fuzhu|deer|鹿/i.test(v) ? 'aFuzhu' : /鼎|cauldron/i.test(v) ? 'aDing' : /灵气|丹田|\bqi\b|dantian/i.test(v) ? 'aQi' : 'aDefault';
-  const wasEmpty = S.qi <= 0;
   S.qi = Math.max(0, S.qi - 8);
   render();
-  await say(null, 'ling', key);
-  if (!wasEmpty && S.qi === 0 && !S.emptyAt) { S.emptyAt = Date.now(); emptyLines(); }
+  await readTyped(v);
+  if (S.qi === 0 && !S.emptyAt) { S.emptyAt = Date.now(); emptyLines(); }
 });
+/* Typed words first try the open scene; if it resolves, the scene moves on
+   exactly as a button would. Otherwise Ling answers — words alone never
+   change state. */
+async function readTyped(v) {
+  // Out of bounds is refused before any scene reads the words.
+  const refuse = /灵石|spirit stone/i.test(v) ? 'aStones' : /飞|冀州|fly/i.test(v) ? 'aFly' : null;
+  if (refuse) { await say(null, 'ling', refuse); return; }
+  const hit = typed && typed.read(v);
+  if (hit && hit.v) {
+    const card = find(typed.cid);
+    if (card && card.chosen == null) {
+      card.chosen = hit.v;
+      const res = waiters[card.cid]; delete waiters[card.cid];
+      typed = null; render(); res && res(hit.v);
+      return;
+    }
+  }
+  if (hit && hit.reply) { await say(null, hit.who, hit.reply, {}, hit.npc); return; }
+  const key = /灵根|root/i.test(v) ? 'aRoot'
+    : /夫诸|fuzhu|deer|鹿/i.test(v) ? 'aFuzhu' : /鼎|cauldron/i.test(v) ? 'aDing' : /灵气|丹田|\bqi\b|dantian/i.test(v) ? 'aQi' : 'aDefault';
+  await say(null, 'ling', key);
+}
 $('#refill').addEventListener('click', () => { S.qi = 100; S.emptyAt = null; render(); say(null, 'ling', 'refilled'); });
 
 document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
