@@ -25,7 +25,7 @@ panel, like Ling's today.
 
 **The main story is 《九鼎》.** 大禹 cast nine cauldrons, one per province,
 bearing every spirit of that land. They vanished at the fall of 周. Since then
-the 灵脉 have thinned. The player's 灵根 grows from real life, and that lets
+the 灵脉 have thinned. The player cultivates through real life, and that lets
 them sense the cauldrons.
 
 - **Opening:** a rain night on the 泗水 bank. A silver light in the water. The
@@ -105,6 +105,17 @@ them sense the cauldrons.
   reaches the peak before the chapter opens holds there.
 - **Pacing:** a realm takes weeks, so the full journey takes about a year.
 
+## 灵根
+
+**灵根 is the player's 五行 roots — 金 木 水 火 土, alone or mixed. It sets how
+fast 修为 grows.**
+
+- **Fewer roots, faster cultivation:** one root (天灵根) is fastest; the more
+  roots are mixed, the slower 修为 builds from the same task.
+- **v1: every player has the same 灵根 — four roots, 木 水 火 土** (a 伪灵根).
+  Everyone starts slow and climbs by diligence.
+- Ling reveals it at the 测灵根 scene near the start.
+
 ## 灵气 system
 
 **灵气 is the model's tokens.**
@@ -165,8 +176,7 @@ them sense the cauldrons.
 
 ## Open questions
 
-- What 灵根 means under the points model. Suggestion: steadiness — its purity
-  rises with weeks of kept 修炼 and speeds 修为.
+- 灵根 after v1: whether players differ, and how.
 - Playable without any Linggen app (real life as a bonus), or Linggen users
   only.
 - Chinese title: 《灵根世界》?
