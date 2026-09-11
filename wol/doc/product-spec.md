@@ -176,7 +176,9 @@ fast 修为 grows.**
 
 ## Open questions
 
-- 灵根 after v1: whether players differ, and how.
+- 灵根 after v1: whether players differ, and how. One idea, unsettled: the
+  root follows the model the player plays on (e.g. Gemini 金, GPT 土,
+  DeepSeek 伪灵根).
 - Playable without any Linggen app (real life as a bonus), or Linggen users
   only.
 - Chinese title: 《灵根世界》?
