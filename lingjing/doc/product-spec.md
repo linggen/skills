@@ -14,8 +14,8 @@ status: Design only, settled 2026-09-11. Nothing built.
 
 Ling runs a cultivation world drawn from China's public heritage; Yinyue is at
 the player's side. You talk, take Ling's tasks, and grow. Real-life tasks, done in the other
-Linggen apps, count as 修炼. Every part of the game happens inside one chat
-panel, like Ling's today.
+Linggen apps, count as 修炼. On the phone the chat is the whole game; on the
+Mac a scene beside the chat shows the same cards.
 
 - **Genre:** AI chat game, 13+.
 - **Languages:** English and Chinese at launch.
@@ -47,7 +47,7 @@ them sense the cauldrons.
   characters, places or plot.
 - **Map:** the nine provinces, each drawn from its 山海经 chapter.
 - **灵兽:** the 山海经 bestiary, met in the story and collected, each with its
-  ancient text.
+  ancient text and a picture. A creature is never named without its picture.
 - **Calendar:** events follow the real 24 节气 and festivals. Each morning
   brings one 周易 hexagram as the day's omen.
 - **洞府:** the player's home base, which grows with them.
@@ -64,14 +64,18 @@ them sense the cauldrons.
   Linggen and remembers the player.
 - **Everyone else:** NPCs, spirits and 灵兽, voiced by the model from the
   heritage.
-- Yinyue's 3D model is the only 3D in the game; everything else is 2D in chat.
+- Yinyue's 3D model is the only 3D in the game; on the Mac she stands in the
+  scene. Everything else is 2D.
 
 ## Chat
 
-- **One chat panel is the whole game.** Messages come from Ling (the world),
-  Yinyue (the player's side) and NPCs, each attributed.
-- **Cards appear inside the chat:** choices, task cards, creature cards, the
-  map, puzzle boards.
+- **The chat carries the game.** Messages come from Ling (the world), Yinyue
+  (the player's side) and NPCs, each attributed.
+- **One set of cards, two placements:** task cards, creature cards, the map,
+  puzzle boards. On the phone they arrive inside the chat. On the Mac they sit
+  on the scene — the space left of the chat, with Yinyue standing in the
+  current place.
+- **Choices are asked in the chat** on both screens.
 - **Free text anytime, in the player's language.** Buttons are shortcuts;
   typing is always allowed.
 

@@ -12,21 +12,21 @@ status: Design only, 2026-09-11. Nothing built.
 ## The shape in one diagram
 
 ```
- player taps / types
-        │
-        ▼
- ┌─ page (scripts/index.html) ──────────────────────────────┐
- │  Yinyue stage · status strip · stream + cards · input     │
- │  puzzles run here, no model                               │
- └──────┬──────────────────────────────────────▲─────────────┘
-        │ send / sendHidden                    │ stream_token · stream_end ·
-        ▼                                      │ content_block (tool calls)
- ┌─ session: Ling, skill lingjing ─────────────┴─────────────┐
- │  SKILL.md = the game-master rules                          │
- │  context = rules + state brief + story + THIS scene only   │
- └──────┬─────────────────────────────────────────────────────┘
-        │ shell tools                     data tool: Show
-        ▼                                 (args → the page as a card)
+ Mac: the app page                              Phone: the chat is everything
+ ┌─ scene (scripts/index.html) ─┬─ stock chat ─┐  ┌─ phone chat (Flutter) ─┐
+ │ status · Yinyue in the place │ Ling's words │  │ Ling's words           │
+ │ focus card: creature, board, │ AskUser      │  │ the same cards, inline │
+ │ map … · today's tasks        │ choices      │  │ choices · free text    │
+ │ puzzles run here, no model   │ free text    │  │ puzzles, no model      │
+ └──────▲───────────────────────┴──────┬───────┘  └───────────┬────────────┘
+        │ content_block (Show)         │ messages             │
+        │                              ▼                      ▼
+ ┌─ session: Ling, skill lingjing ────────────────────────────────────────┐
+ │  SKILL.md = the game-master rules                                      │
+ │  context = rules + state brief + story + THIS scene only               │
+ └──────┬─────────────────────────────────────────────────────────────────┘
+        │ shell tools              data tool Show → a card on the scene
+        ▼                          (Mac) or inline (phone)
  ┌─ scripts/rules.mjs ───────────────┐
  │  reads  content/  (authored)       │
  │  writes data/     (this player)    │
@@ -60,6 +60,7 @@ skills/lingjing/
     rewards.json           reward tables and caps (scene, branch, task, day)
     creatures.json         山海经 entries: name{zh,en}, source, quote{zh,en}, province
     herbs.json             alchemy tiles
+    art/<creature>.webp    one picture per creature, ink style
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
@@ -185,8 +186,9 @@ Shell tools — `node $SKILL_DIR/scripts/rules.mjs <verb>`; each returns JSON.
 | `Move {province}` | Travels. | a province whose chapter has not opened |
 
 Data tool — `Show {card, …}` (no `cmd`): its args reach the page as a
-`content_block` and render as a card — choice, creature, task, board, map,
-hexagram, root test, chapter gate, tribulation.
+`content_block` and render as a card — creature, task, board, map, hexagram,
+root test, chapter gate, tribulation. Choices are not cards: they go through
+AskUser.
 
 Prompt rules that ride in SKILL.md:
 
@@ -195,36 +197,50 @@ Prompt rules that ride in SKILL.md:
 - Map the player's words to an exit's `means`; if none fits, answer and offer
   the way forward.
 - Refuse out-of-bounds asks in the world's voice, never as a system message.
-- End every reply with a way forward — a `Show` choice card, usually.
+- End every reply with a way forward — choices, usually, through AskUser.
 - Real-life requests belong to Yinyue outside the game.
 
-## The page
+## The screens
 
-The look and flow are `prototype.html`. Two things it adds for real:
+The look and flow are `prototype.html`. **One set of cards, two placements:**
+the Mac shows them on a scene beside the chat, the phone inline in the chat.
 
-- **Taps are exact.** A choice tap sends a hidden line `[choice 00-fuzhu:riddle]`;
-  Ling calls `Resolve` with that exit — no matching needed. Typed text goes
-  through Ling's matching.
-- **Puzzles never touch the model.** The page runs 连连看, 七巧板 and 华容道
+**Mac — the scene on the left, the conversation on the right.** No engine
+change.
+
+- **The scene is the skill's app page:** the status strip, Yinyue's 3D model
+  standing in the current place, the focus card (creature, board, map, root
+  test, hexagram, chapter gate, tribulation) and today's tasks.
+- **Ling drives it with `Show`,** a data tool: its args reach the page as a
+  `content_block`, the way `PageUpdate` does today.
+- **The conversation is the stock chat panel:** Ling's narration, the
+  player's words, and choices through **AskUser** — its options are the
+  buttons, its *Other* field is free text. A tapped option returns to Ling as
+  the answer, so `Resolve` gets the exit exactly; *Other* text goes through
+  Ling's matching.
+- **Puzzles never touch the model.** The scene runs 连连看, 七巧板 and 华容道
   and reports the result to `rules.mjs` through the same door Health's page
   uses for its writes; the rules pay and log it.
+- The board grows to 6×6 on the Mac; the map runs wide.
 
-**Cards in the chat — a decision owed.** The stock chat panel is an iframe; a
-page can send into it and hear its streams and tool calls, but cannot put its
-own cards inside it. Two ways:
+**Phone — the chat is everything.** The phone's own chat (Flutter) draws the
+same cards inline, shows choices as buttons that send `[choice scene:exit]`,
+and runs the same `rules.mjs` contract. Later.
 
-- **(a) The page draws the stream** — recommended, skill-only. The embed
-  mounts hidden as the transport; the page renders `stream_token` /
-  `stream_end` as messages and `content_block` as cards. To check: reading a
-  session's history when the page reopens, and that no permission prompt is
-  ever needed (the skill's grants cover its own folder).
-- **(b) The chat panel renders skill cards** — a general engine feature any
-  app could use: a skill declares card renderers, the panel draws them. Engine
-  and UI work.
+## Pictures
 
-**Mac and phone.** The Mac is the prototype's Mac view: Yinyue at full height,
-the chat beside her, wider cards, a 6×6 board. The phone comes later; its own
-tool loop would run the same `rules.mjs` contract.
+A creature is never named without its picture — a player cannot know 夫诸
+from its name.
+
+- **One picture per creature,** `content/art/<id>.webp`, shipped in the skill.
+- **One style:** ink wash. Where a classical woodblock illustration of the
+  creature exists — the Ming and Qing illustrated editions of the 山海经 are
+  old enough to be public — it is the source; otherwise the picture is drawn
+  to match.
+- `creatures.json` carries `art` and `art_source` for every entry; the content
+  lint refuses a creature without both.
+- **Shown on both screens:** large in the scene's focus card on the Mac,
+  inline in the creature card on the phone.
 
 ## Real-life tasks — quests
 
@@ -275,7 +291,8 @@ Formation, Nascent Soul).
 - **`rules.mjs` is pure** and node-tested: exits, needs, caps, chapter gates,
   once-per-period, refusals.
 - **A content lint**: every `next` exists, every `grant` fits its table, every
-  string has both languages, every `key` exists.
+  string has both languages, every `key` exists, every creature has its
+  picture.
 - **A playthrough without a model**: the prologue driven by exit ids alone,
   asserting the state at the end.
 
@@ -284,15 +301,13 @@ Formation, Nascent Soul).
 1. Content schemas and the prologue (泗水 → 测灵根 → first tasks → 夫诸) as data.
 2. `rules.mjs` with its tests and the content lint.
 3. SKILL.md — Ling's rules and the tools.
-4. The page, on the chosen card path.
+4. The Mac scene page and its `Show` cards; choices through AskUser.
 5. Quests: Shifu's scan first, then Health's night.
 6. The `lingjing` window in the proxy.
 7. Chapter 1 — 冀州.
 
 ## Open
 
-- Card path: (a) the page draws the stream, or (b) the chat panel renders
-  skill cards.
 - 灵气 refills from a workout or a deep night need the proxy to accept a
   host-reported event.
 - 灵气 for players on their own key or a ChatGPT login.

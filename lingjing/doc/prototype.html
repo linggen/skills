@@ -169,7 +169,7 @@
   .tile.gone { opacity: 0; pointer-events: none; }
 
   .crow { display: flex; gap: 12px; }
-  .illus { display: none; width: 100%; height: auto; border-radius: 7px; margin-bottom: 12px; color: var(--text); }
+  .illus { display: block; width: 100%; height: auto; border-radius: 7px; margin-bottom: 12px; color: var(--text); }
 
   .map { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; max-width: 300px; }
   .prov { aspect-ratio: 1.5; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); display: grid; place-content: center; text-align: center;
@@ -230,24 +230,44 @@
   body[data-device="mac"] .page { max-width: 1180px; }
   body[data-device="mac"] .work { grid-template-columns: minmax(0, 1fr); }
   body[data-device="mac"] .notes { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  body[data-device="mac"] .game { height: min(780px, calc(100vh - 40px)); border-radius: 12px; }
+  body[data-device="mac"] .game { height: min(820px, calc(100vh - 24px)); min-height: 680px; border-radius: 12px; }
   body[data-device="mac"] .titlebar { display: flex; align-items: center; gap: 8px; height: 38px; flex: none; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--raised); }
   .titlebar i { width: 12px; height: 12px; border-radius: 50%; background: #EC6A5E; }
   .titlebar i:nth-child(2) { background: #F4BF4F; } .titlebar i:nth-child(3) { background: #61C554; }
   .titlebar span { flex: 1; text-align: center; font-size: 12.5px; color: var(--dim); margin-right: 52px; }
   body[data-device="mac"] .gbody { flex-direction: row; }
-  body[data-device="mac"] .stage { width: 300px; height: auto; flex: none; flex-direction: column; gap: 24px; border-bottom: none; border-right: 1px solid var(--line); }
-  body[data-device="mac"] .moon { width: 150px; height: 150px; }
+  .scene { display: none; }
+  body[data-device="mac"] .scene { display: flex; flex-direction: column; flex: 1; min-width: 0; border-right: 1px solid var(--line); }
+  body[data-device="mac"] .chat { flex: none; width: 400px; }
+  .view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(180deg, var(--sky-a), var(--sky-b)); }
+  .backdrop { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; color: var(--text); }
+  .place { position: absolute; top: 14px; left: 20px; font-family: var(--serif); font-size: 15px; color: var(--dim); z-index: 1; }
+  .focus { position: absolute; top: 46px; right: 24px; bottom: 20px; left: 168px; overflow-y: auto; display: flex; flex-direction: column; justify-content: center; }
+  .focus .card { background: color-mix(in srgb, var(--surface) 94%, transparent); width: 100%; max-width: 540px; margin: 0 auto; padding: 14px 16px; }
+  .tray { flex: none; border-top: 1px solid var(--line); padding: 10px 16px 12px; max-height: 168px; overflow-y: auto; background: var(--surface); }
+  .traytitle { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+  .tray #tray { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-top: 7px; }
+  .tray .card { margin: 0; padding: 8px 10px; }
+  .tray .card .dim.small { display: none; }
+  .tray .taskfoot { margin-top: 5px; }
+  .focus .board { max-width: calc(var(--cols) * 50px); gap: 5px; }
+  body[data-device="mac"] .focus .tile { font-size: 19px; }
+  .tray .dimline { color: var(--faint); font-size: 12.5px; margin-top: 6px; }
+  body[data-device="mac"] .stage { position: absolute; left: 20px; bottom: 18px; width: auto; height: auto; flex-direction: column; gap: 8px;
+                                  background: none; border: none; overflow: visible; z-index: 1; }
+  body[data-device="mac"] .stage::before { display: none; }
+  body[data-device="mac"] .moon { width: 104px; height: 104px; }
   body[data-device="mac"] .stagecap { text-align: center; }
-  body[data-device="mac"] .stagecap b { font-size: 21px; }
-  body[data-device="mac"] .stream { padding: 20px 32px 24px; }
-  body[data-device="mac"] .msg.ling .body { font-size: 16.5px; max-width: 64ch; }
-  body[data-device="mac"] .card { max-width: 620px; padding: 14px 16px; }
-  body[data-device="mac"] .illus { display: block; }
+  body[data-device="mac"] .stagecap small { display: none; }
+  body[data-device="mac"] .status { background: var(--surface); }
   body[data-device="mac"] .tile { font-size: 22px; }
-  body[data-device="mac"] .map { max-width: 560px; gap: 8px; }
+  body[data-device="mac"] .map { max-width: 520px; gap: 8px; }
   body[data-device="mac"] .prov { aspect-ratio: 2.2; font-size: 22px; }
-  body[data-device="mac"] .inputbar { padding: 12px 20px; }
+  /* Choices in the Mac chat read as the stock panel's AskUser card. */
+  body[data-device="mac"] .choices { flex-direction: column; align-items: stretch; gap: 6px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: var(--raised); }
+  body[data-device="mac"] .choices::before { content: attr(data-q); font-family: var(--mono); font-size: 10.5px; color: var(--ling); }
+  body[data-device="mac"] .choices::after { content: attr(data-other); font-size: 12px; color: var(--faint); padding: 2px 2px 0; }
+  body[data-device="mac"] .choice { text-align: left; }
 </style>
 </head>
 <body>
@@ -271,14 +291,18 @@
   <div class="work">
     <section class="game" aria-label="Game panel">
       <div class="titlebar" aria-hidden="true"><i></i><i></i><i></i><span>灵境 · Lingjing</span></div>
-      <div class="gbody">
+      <div class="gbody" id="gbody">
+      <div class="scene" id="scene">
+        <div class="view" id="view"><div class="place" id="place"></div><div class="focus" id="focus"></div></div>
+        <div class="tray"><div class="traytitle" id="trayTitle"></div><div id="tray"></div></div>
+      </div>
       <div class="stage" id="stage" data-mood="idle">
         <div class="sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <div class="moon" aria-hidden="true"></div>
         <div class="stagecap"><b id="stageName">银月</b><small id="stageCap">YINYUE · 3D MODEL LIVES HERE</small><span class="mood" id="mood"></span></div>
       </div>
-      <div class="chat">
-      <div class="status">
+      <div class="chat" id="chat">
+      <div class="status" id="status">
         <span class="realm" id="realm"></span>
         <span class="xw"><span class="dim" id="lxw"></span><span class="bar"><i id="xwbar"></i></span><span class="num" id="xwtext"></span></span>
         <span class="qi" id="qi"><i class="ring" id="qiring"></i><span id="qitext"></span></span>
@@ -310,14 +334,16 @@
       <div>
         <h2>What it shows</h2>
         <ul class="rules">
-          <li><b>One chat panel is the whole game.</b> Story, tasks, puzzles and creatures arrive as messages and cards.</li>
+          <li><b>The chat carries the game.</b> Story, choices and free text live in it; the cards are the same on both screens.</li>
           <li><b>Ling drives.</b> Narrates the world, gives every task, answers anything typed.</li>
           <li><b>Yinyue is at your side.</b> The only 3D figure — the moon above the stream.</li>
           <li><b>Tasks earn 修为; 100 fills a layer.</b> The real-life task counts only when Shifu confirms.</li>
           <li><b>Typing resolves scenes.</b> At 夫诸, type <i>喂它灵芝</i> / <i>feed it the lingzhi</i> — an exit no button offers — or answer its riddle in your own words.</li>
           <li><b>灵气 is tokens, shown as the 丹田.</b> Typing and story choices spend it; 连连看 never does.</li>
           <li><b>四灵根 for everyone in v1</b> — 木 水 火 土.</li>
-          <li><b>Mac is the same page on a bigger screen.</b> Yinyue stands at full height and reacts; the board grows to 6×6; creatures carry their illustration; the map runs wide.</li>
+          <li><b>Mac: the scene on the left, the conversation on the right.</b> Yinyue stands in the current place with the card that matters now; today's tasks sit below; choices are asked in the chat as AskUser. The board grows to 6×6.</li>
+          <li><b>Phone: the chat is everything</b> — the same cards arrive inline.</li>
+          <li><b>A creature is never named without its picture.</b></li>
         </ul>
       </div>
       <div>
@@ -327,7 +353,7 @@
           <li>The moon stands in for Yinyue's 3D model.</li>
           <li>The 斗法 board and the Shifu confirmation are placeholders.</li>
           <li>连连看 here matches any pair; the real board uses the path rule.</li>
-          <li>The ink illustration and the map are sketches.</li>
+          <li>The pictures and the map are sketches; real art comes from the classical illustrated 山海经 or is drawn to match.</li>
         </ul>
       </div>
       <div class="stamp"><i></i>Spec: skills/lingjing/doc/product-spec.md</div>
@@ -359,6 +385,13 @@ const T = {
   mood_speaking: { zh: '说话中', en: 'Speaking' },
   mood_listening: { zh: '倾听', en: 'Listening' },
   mood_happy: { zh: '欢喜', en: 'Happy' },
+  trayTitle: { zh: '今日功课', en: 'Today’s practice' },
+  trayEmpty: { zh: 'Ling 还没布置功课。', en: 'Ling has set no practice yet.' },
+  askQ: { zh: 'Ling 问你', en: 'Ling asks' },
+  otherHint: { zh: '或在下方直接输入', en: 'or type your own below' },
+  placeSi: { zh: '泗水之畔', en: 'The bank of the Si River' },
+  placeNorth: { zh: '泗水北岸 · 雾中', en: 'North of the Si · in the mist' },
+  placeJi: { zh: '冀州边界', en: 'The border of Ji' },
   mapTitle: { zh: '九州', en: 'The Nine Provinces' },
   mapGoal: { zh: '第一鼎', en: 'First cauldron' },
   mapHere: { zh: '你 · 泗水', en: 'You · Si River' },
@@ -469,7 +502,7 @@ const T = {
   aDefault: { zh: '（原型）正式版里，Ling 会回答关于这个世界的任何问题。', en: '(Prototype) In the real game, Ling answers anything about this world.' },
 };
 
-const fresh = () => ({ lang: S ? S.lang : 'zh', nameIdx: null, layer: 1, xw: 0, qi: 100, ls: 0, foundation: false, emptyAt: null, bag: [] });
+const fresh = () => ({ lang: S ? S.lang : 'zh', nameIdx: null, layer: 1, xw: 0, qi: 100, ls: 0, foundation: false, emptyAt: null, bag: [], place: 'placeSi' });
 /* The open scene's reading of typed text: text → { v } resolves the pending
    choice, { reply } answers without moving, null falls through to Ling. */
 let typed = null;
@@ -549,7 +582,7 @@ function whoName(e) {
   return e.who === 'yinyue' || e.kind === 'yinyue' ? 'Yinyue' : 'Ling';
 }
 const CARDS = {
-  choice: e => `<div class="choices">${e.opts.map(o => {
+  choice: e => `<div class="choices" data-q="${esc(tr('askQ'))}" data-other="${e.chosen == null ? esc(tr('otherHint')) : ''}">${e.opts.map(o => {
     const on = e.chosen === o.v, off = e.chosen != null && !on;
     const blocked = e.chosen == null && e.cost > 0 && S.qi <= 0;
     const label = o.name != null ? NAMES[o.name][S.lang] : tr(o.key);
@@ -617,15 +650,35 @@ function view(e) {
   return '';
 }
 
+/* One set of cards, two placements: the phone puts every card in the chat;
+   the Mac lifts the visual ones onto the scene and the tasks into the tray. */
+const SCENE_CARDS = new Set(['root', 'hex', 'board', 'creature', 'gate', 'trib', 'map']);
 function render() {
   const el = $('#stream');
+  const mac = device === 'mac';
+  const onScene = e => mac && e.kind === 'card' && (SCENE_CARDS.has(e.type) || e.type === 'task');
   // Follow the conversation like a chat does: stay pinned to the newest line
   // unless the player has scrolled up to read.
   const pinned = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-  el.innerHTML = log.map(view).join('');
+  el.innerHTML = log.filter(e => !onScene(e)).map(view).join('');
   if (pinned || log.length !== lastLen) el.scrollTop = el.scrollHeight;
   lastLen = log.length;
+  if (mac) renderScene();
   renderChrome();
+}
+function renderScene() {
+  const focus = [...log].reverse().find(e => e.kind === 'card' && SCENE_CARDS.has(e.type));
+  $('#focus').innerHTML = focus ? view(focus) : '';
+  const tasks = log.filter(e => e.kind === 'card' && e.type === 'task');
+  $('#trayTitle').textContent = tr('trayTitle');
+  $('#tray').innerHTML = tasks.length ? tasks.map(view).join('') : `<div class="dimline">${tr('trayEmpty')}</div>`;
+  $('#place').textContent = tr(S.place);
+}
+/* The Mac scene holds the status and Yinyue; the phone keeps them over the chat. */
+function placeChrome() {
+  if (device === 'mac') { $('#scene').prepend($('#status')); $('#view').appendChild($('#stage')); return; }
+  $('#chat').prepend($('#status'));
+  $('#gbody').insertBefore($('#stage'), $('#chat'));
 }
 function renderChrome() {
   $('#realm').textContent = realm(S.layer, S.foundation);
@@ -642,7 +695,7 @@ function renderChrome() {
   $('#stageName').textContent = tr('stageName');
   $('#send').textContent = tr('send');
   $('#refill').textContent = tr('refill');
-  $('#stageCap').textContent = device === 'mac' ? 'YINYUE · 3D MODEL, FULL HEIGHT' : 'YINYUE · 3D MODEL LIVES HERE';
+  $('#stageCap').textContent = 'YINYUE · 3D MODEL LIVES HERE';
   const last = log[log.length - 1];
   const mood = S.happyUntil > Date.now() ? 'happy'
     : last && (last.kind === 'yinyue' || (last.kind === 'typing' && last.who === 'yinyue')) ? 'speaking'
@@ -706,6 +759,7 @@ async function tasks(id) {
   await encounter(id);
 }
 async function encounter(id) {
+  S.place = 'placeNorth';
   await say(id, 'ling', 'e1');
   const beast = push({ kind: 'card', type: 'creature', tamed: false });
   await sleep(500, id);
@@ -791,7 +845,8 @@ function newBoard(practice, taskCid) {
 
 const PRESETS = {
   opening: {}, root: { nameIdx: 0 }, tasks: { nameIdx: 0 }, encounter: { nameIdx: 0, xw: 50, bag: ['灵芝'] },
-  chuanyin: { nameIdx: 0, layer: 2, ls: 10 }, breakthrough: { nameIdx: 0, layer: 9, xw: 100 }, empty: { nameIdx: 0, layer: 2 },
+  chuanyin: { nameIdx: 0, layer: 2, ls: 10, place: 'placeNorth' }, breakthrough: { nameIdx: 0, layer: 9, xw: 100, place: 'placeJi' },
+  empty: { nameIdx: 0, layer: 2 },
 };
 const SCENES = { opening, root: rootTest, tasks, encounter, chuanyin, breakthrough };
 function start(name) {
@@ -804,7 +859,7 @@ function start(name) {
 }
 
 /* ── Input ── */
-$('#stream').addEventListener('click', ev => {
+document.querySelector('.game').addEventListener('click', ev => {
   const b = ev.target.closest('[data-act]');
   if (!b || b.disabled) return;
   const e = find(b.dataset.cid);
@@ -883,10 +938,19 @@ document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click'
 document.querySelectorAll('[data-device]').forEach(b => b.addEventListener('click', () => {
   device = b.dataset.device;
   document.body.dataset.device = device;
+  placeChrome();
   document.querySelectorAll('[data-device]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   lastLen = -1; render();
 }));
 document.querySelectorAll('[data-scene]').forEach(b => b.addEventListener('click', () => start(b.dataset.scene)));
+
+/* The scene's backdrop: the same ink hills as the illustration, without the deer. */
+$('#view').insertAdjacentHTML('afterbegin', `<svg class="backdrop" viewBox="0 0 320 150" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <circle cx="262" cy="30" r="13" fill="currentColor" opacity=".07"/>
+  <path d="M0 110 L40 70 L66 88 L104 46 L140 84 L170 66 L210 100 L250 72 L286 92 L320 76 L320 150 L0 150Z" fill="currentColor" opacity=".08"/>
+  <path d="M0 126 L52 98 L92 112 L130 90 L176 116 L220 98 L268 118 L320 104 L320 150 L0 150Z" fill="currentColor" opacity=".12"/>
+  <path d="M0 136 Q80 128 160 136 T320 134 L320 150 L0 150Z" fill="currentColor" opacity=".06"/>
+</svg>`);
 
 start('opening');
 </script>
