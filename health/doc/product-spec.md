@@ -1,6 +1,6 @@
 ---
 type: product-spec
-reader: Liang, coding agent, contributors
+reader: coding agent, contributors
 guide: |
   What Linggen Health is and what it does, in one read. How it is built —
   the store, the passes, the schemas, the tools, the honesty rules — is
@@ -170,7 +170,7 @@ Mac a body feed.
 
 Linggen is $5 a month for every app; Health is one app in the suite, not a
 tier, and the one that makes the plan worth keeping. Proposed split, open
-(Liang's call): free — import, the data browser, workout and sleep detail,
+(Hanli's call): free — import, the data browser, workout and sleep detail,
 the first examination, one weekly report; paid — the nightly examination, the
 plan, patterns, the agent coming to you, ask-anything over months.
 
@@ -210,7 +210,7 @@ plan, patterns, the agent coming to you, ask-anything over months.
   complication, family on one Mac, Android via Health Connect, vendor APIs.
 - **Never**: CarPlay. A score of our own.
 
-## Open questions for Liang
+## Open questions
 
 1. **In-app attention.** May the app learn from what you look at at all, or
    only from deliberate acts (pin, hide, what you ask the chat)?

@@ -140,7 +140,7 @@ The agent sends structured data via `[DASHBOARD_UPDATE]`:
       { "mount": "/", "size_gb": 500, "used_gb": 412, "fs": "apfs" }
     ],
     "top_dirs": [
-      { "path": "/Users/liang", "size_gb": 280 },
+      { "path": "/Users/alex", "size_gb": 280 },
       { "path": "/Applications", "size_gb": 45 },
       { "path": "/Library", "size_gb": 32 },
       { "path": "/System", "size_gb": 15 }

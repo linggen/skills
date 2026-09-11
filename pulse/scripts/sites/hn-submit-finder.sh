@@ -317,7 +317,7 @@ def on_hn(u):
 # ---- and against the user's OWN submissions, with no index lag -------------
 # Algolia is an index, so it trails the site by minutes: a link submitted at
 # 18:50 was still absent from a "fresh" check minutes later, and Pulse handed
-# it back as a suggestion (2026-08-12 — Liang had just posted it). HN's
+# it back as a suggestion (2026-08-12 — Hanli had just posted it). HN's
 # Firebase API has no such lag; the user's own submitted list is authoritative
 # the instant they post. Checked FIRST so it also saves the Algolia round-trip.
 OWN_WINDOW = 40   # newest submissions to compare against — covers the lag

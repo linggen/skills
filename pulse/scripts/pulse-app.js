@@ -1534,7 +1534,7 @@ function sendChatMessage(text) {
 // hallucinate GitHub URLs like `github.com/<username>/...` in drafts.
 // The username is the OS user, not a handle — strip it before the
 // model ever sees it. Discovered after qwen3.6 fabricated
-// `github.com/lianghuang/linggen` in a comment draft.
+// `github.com/<username>/linggen` in a comment draft.
 function sendChatHidden(text) {
   if (!state.chat) {
     console.warn('[pulse] chat not ready, queueing not yet implemented');

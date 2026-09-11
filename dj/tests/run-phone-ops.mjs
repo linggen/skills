@@ -136,7 +136,7 @@ ok('a reorder re-sent after the list moved on does not resurrect the old order',
 // ── stale ops ───────────────────────────────────────────────────────────────
 
 ok('a song deleted here skips the op that names it, and says so', () => {
-  // Liang's probe: the Mac deletes X while an offline phone makes a list and
+  // Hanli's probe: the Mac deletes X while an offline phone makes a list and
   // files X into it. The list-create is honest curation and applies; the add
   // cannot, and is named rather than guessed at.
   const dir = freshDir(['x.mp3']);

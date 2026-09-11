@@ -2,7 +2,7 @@
 // library itself over the paired channel, so there is nothing to push from
 // here: this module only reads state — which devices are paired (the engine's
 // pair registry) and what each has already fetched (the engine's dj-sync
-// ledger) — so the UI can say "Liang's iPhone — 12/14 tracks • 2 waiting".
+// ledger) — so the UI can say "Alex's iPhone — 12/14 tracks • 2 waiting".
 
 // Basenames NFC-normalized on both sides, same as sync.js: macOS paths and
 // the phone's fetch log can disagree on Unicode composition.

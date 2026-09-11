@@ -1,6 +1,6 @@
 ---
 type: spec
-reader: Liang, coding agent, contributors
+reader: coding agent, contributors
 guide: |
   How Linggen Health is built: where it runs, the HealthKit surface, the phone
   store and the passes, the optional Mac and the sync between them, the
@@ -459,7 +459,7 @@ is missing: the targets card computes a kcal number the user cannot measure
 against. A model can close that gap from a sentence ("chicken, rice, broccoli,
 big bowl") or a photo.
 
-**Settled 2026-09-04 (Liang): roughly is enough, and the user adjusts the
+**Settled 2026-09-04 (Hanli): roughly is enough, and the user adjusts the
 number.** That is what every shipping app in this category does, and the
 correction loop is the product rather than a fallback.
 
@@ -478,7 +478,7 @@ order of value:
 1. **Depth at capture.** SnapCalorie uses the iPhone depth sensor to get a 3D
    shape and derive volume; the academic version (LiDARCalorieCam) does the
    same. Volume from depth is *measured*, not guessed, and it leaves the model
-   only the job it is good at — naming the food and its density. **Liang's
+   only the job it is good at — naming the food and its density. **Hanli's
    iPhone 15 Pro has LiDAR**, and depth can only be captured at the moment the
    photo is taken. Capture it whether or not v1 uses it: it cannot be recovered
    afterwards.
@@ -505,7 +505,7 @@ An estimate is marked as one everywhere:
   is a lie with a decimal point. Once the user adjusts it, it is their number
   and it is shown as one.
 
-**Settled 2026-09-04 (Liang): a photo goes to the user's own ChatGPT.** The
+**Settled 2026-09-04 (Hanli): a photo goes to the user's own ChatGPT.** The
 cloud model Linggen supplies is `deepseek-v4-flash`, which is text-only and
 returns 400 on an image. Rather than put a photo through Linggen's proxy, the
 user connects their ChatGPT account and the image goes to their own GPT-5.6
@@ -631,7 +631,7 @@ with no Mac and no network, and syncs when a Mac is there.
 
 ## Work signals (the join, needs a Mac) — SHELVED
 
-**Shelved (Liang).** Nothing below reaches an agent any more:
+**Shelved (Hanli).** Nothing below reaches an agent any more:
 `Report` carries no `work`, the phone's examine tool hands Yinyue no
 `their_days`, and both skill texts say to ask what kept the person up rather
 than infer it. Two reasons, both his: a Mac being busy is not a person being
@@ -1219,7 +1219,7 @@ within the first minute of backfill.
 Yinyue speaks to a closed phone; Health hands her lines. The lane — the
 wakes iOS grants, the bridge, her budget, the honesty rules — is
 [linggen-mobile/doc/yinyue.md](../../../linggen-mobile/doc/yinyue.md#reaching-them-when-the-app-is-closed--her-herald-on-the-lock-screen).
-This is Health's side of it. Designed 2026-09-08; Liang: Yinyue owns the
+This is Health's side of it. Designed 2026-09-08; Hanli: Yinyue owns the
 budget.
 
 **Two lines, declared:**
@@ -1244,7 +1244,7 @@ carries then *Take it to a doctor.*, never a condition, filed in `told.jsonl`
 with `surface: notification`. It posts through the bridge directly today and
 moves under her herald when that exists, unchanged in behaviour.
 
-**The morning line is Yinyue's since 2026-09-09** (Liang: the morning is
+**The morning line is Yinyue's since 2026-09-09** (Hanli: the morning is
 hers, composed from every app — Health, CFO, Ling). Health hands her the
 brief as one note, with whether the night changed the plan and the wake
 hour; she composes the one line, quiet on an ordinary morning, and greets the
@@ -1265,7 +1265,7 @@ is sent, because an afternoon brief is on the screen of whoever composed it.
 Opening the app takes down a line still waiting for its time. Tap lands on
 `health` — the brief is the first thing on Highlights.
 
-**Settled 2026-09-08 (Liang): only when the plan changed** — rest imposed,
+**Settled 2026-09-08 (Hanli): only when the plan changed** — rest imposed,
 or a session moved. "Today: Push, 55 min" as planned stays quiet. A `see`
 finding does not earn it (2026-09-04), and a doctor-tier finding has its own
 warning. Since 2026-09-09 the choice — every morning, or only when something

@@ -1,6 +1,6 @@
 ---
 type: design
-reader: Liang, designers, coding agents, contributors
+reader: designers, coding agents, contributors
 status: agreed direction 2026-09-08 — BUILT the same day on both devices; see "What is built" at the end
 ---
 

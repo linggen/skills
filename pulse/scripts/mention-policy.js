@@ -8,7 +8,7 @@
 //   default  — "disclosed" | "implicit": the register a lane may reach for
 //   sites    — per-lane overrides, e.g. { hackernews: "implicit" }
 //
-// RELEVANCE IS THE ONLY GATE (Liang, 2026-09-08: "the most important thing
+// RELEVANCE IS THE ONLY GATE (Hanli, 2026-09-08: "the most important thing
 // is mention linggen when necessary … if all discovery is about linggen, we
 // can mention linggen on all drafts, but if zero relative, 0 mention").
 // There used to be a `ratio` quota — Reddit's 1-per-10 self-promotion rule,
@@ -23,7 +23,7 @@
 // Do NOT reintroduce a quota as a safety net "because a human reviews every
 // draft". Review is where Pulse is today, not what it is for: the goal is
 // auto-posting, held back only until drafts stop reading as machine-written
-// (Liang, 2026-09-08 — "if it is very like human's message, I will build
+// (Hanli, 2026-09-08 — "if it is very like human's message, I will build
 // auto post for sure, that is the goal"). What keeps a mention safe under
 // auto-post is not a counter but the relevance test below — a comment that
 // answers the OP and names the product because it is the answer is the one
