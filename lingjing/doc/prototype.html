@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lingjing · 灵境 — prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #F1ECE1; --surface: #FBF8F2; --raised: #EFE9DC; --line: #DCD3C1;
+    --text: #1D1B17; --dim: #6A6458; --faint: #9A9284;
+    --ling: #8A6224; --ling-soft: #F2E6CE;
+    --yinyue: #46708C; --yinyue-soft: #E2EBF1;
+    --seal: #B03A2B; --seal-soft: #F5DFDA;
+    --jade: #2E7A57; --jade-soft: #DCEBE3;
+    --metal: #B89A3E; --wood: #4C8A4A; --water: #3A6CA3; --fire: #C04A30; --earth: #9C7641;
+    --sky-a: #E9E2D2; --sky-b: #D9CFBB;
+    --serif: "Noto Serif SC", "Songti SC", "STSong", "Source Han Serif SC", Georgia, serif;
+    --ui: "Figtree", "PingFang SC", "Hiragino Sans GB", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #12110E; --surface: #1A1815; --raised: #242119; --line: #353026;
+      --text: #ECE5D6; --dim: #A69E8E; --faint: #7A7365;
+      --ling: #D9AC5E; --ling-soft: #3A2F1B;
+      --yinyue: #9DBCD3; --yinyue-soft: #1F2C36;
+      --seal: #E27461; --seal-soft: #3D211C;
+      --jade: #78C4A2; --jade-soft: #1B352A;
+      --sky-a: #1D1B24; --sky-b: #0E0D12;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #12110E; --surface: #1A1815; --raised: #242119; --line: #353026;
+    --text: #ECE5D6; --dim: #A69E8E; --faint: #7A7365;
+    --ling: #D9AC5E; --ling-soft: #3A2F1B;
+    --yinyue: #9DBCD3; --yinyue-soft: #1F2C36;
+    --seal: #E27461; --seal-soft: #3D211C;
+    --jade: #78C4A2; --jade-soft: #1B352A;
+    --sky-a: #1D1B24; --sky-b: #0E0D12;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--text); font-family: var(--ui); font-size: 14.5px; line-height: 1.55; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:disabled { cursor: default; }
+  :focus-visible { outline: 2px solid var(--ling); outline-offset: 2px; }
+  .dim { color: var(--dim); }
+  .small { font-size: 12.5px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+
+  .page { max-width: 1060px; margin: 0 auto; padding: 36px 16px 64px; display: grid; gap: 28px; }
+  .intro { display: grid; gap: 10px; max-width: 720px; }
+  .intro h1 { margin: 0; font-family: var(--serif); font-weight: 600; font-size: 34px; line-height: 1.15; letter-spacing: -0.01em; text-wrap: balance; }
+  .intro h1 span { color: var(--ling); }
+  .intro p { margin: 0; color: var(--dim); max-width: 60ch; }
+
+  .work { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 32px; align-items: start; }
+  @media (max-width: 900px) { .work { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ── The game panel: Ling's chat panel, dressed for the world ── */
+  .game { display: flex; flex-direction: column; height: min(860px, calc(100vh - 64px)); min-height: 620px;
+          background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+          box-shadow: 0 1px 0 rgba(0,0,0,.02), 0 18px 40px -24px rgba(40,30,10,.35); }
+
+  .stage { position: relative; height: 118px; flex: none; background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
+           border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: center; gap: 16px; overflow: hidden; }
+  .stage::before { content: ""; position: absolute; inset: auto -10% -60% -10%; height: 90%;
+                   background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.18), transparent 70%); }
+  .moon { width: 64px; height: 64px; border-radius: 50%; flex: none;
+          background: radial-gradient(circle at 38% 35%, #FFFFFF, #DCE4EA 55%, #AFC0CC);
+          box-shadow: 0 0 22px 4px rgba(190,210,225,.55); transition: box-shadow .4s; }
+  .stage.speaking .moon { animation: glow 1.6s ease-in-out infinite; }
+  @keyframes glow { 50% { box-shadow: 0 0 34px 10px rgba(190,210,225,.85); } }
+  .stagecap { position: relative; display: grid; gap: 2px; }
+  .stagecap b { font-family: var(--serif); font-weight: 600; font-size: 17px; }
+  .stagecap small { font-family: var(--mono); font-size: 10.5px; color: var(--faint); letter-spacing: .06em; }
+
+  .status { flex: none; display: flex; align-items: center; gap: 14px; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; flex-wrap: wrap; }
+  .status .realm { font-family: var(--serif); font-weight: 600; font-size: 14px; }
+  .xw { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 120px; }
+  .xw .bar { flex: 1; height: 5px; border-radius: 3px; background: var(--raised); overflow: hidden; }
+  .xw .bar i { display: block; height: 100%; width: 0; background: var(--ling); transition: width .6s ease; }
+  .xw .num { font-family: var(--mono); font-size: 11px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .qi { display: flex; align-items: center; gap: 6px; }
+  .qi .ring { --p: 100; width: 16px; height: 16px; border-radius: 50%;
+              background: conic-gradient(var(--yinyue) calc(var(--p) * 1%), var(--raised) 0); position: relative; }
+  .qi .ring::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--surface); }
+  .qi[data-st="low"] .ring, .qi[data-st="empty"] .ring { background: conic-gradient(var(--seal) calc(var(--p) * 1%), var(--raised) 0); }
+  .qi[data-st="empty"] span { color: var(--seal); }
+  .ls { font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+  .ls b { color: var(--ling); font-weight: 500; }
+
+  .stream { flex: 1; overflow-y: auto; padding: 14px 16px 18px; scroll-behavior: smooth; }
+  .msg { margin: 12px 0; }
+  .msg .who { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; margin-bottom: 3px; color: var(--faint); }
+  .msg.ling .who { color: var(--ling); }
+  .msg.yinyue .who { color: var(--yinyue); }
+  .msg.npc .who { color: var(--seal); }
+  .msg.ling .body { font-family: var(--serif); font-size: 15.5px; line-height: 1.8; }
+  .msg.yinyue .body, .msg.npc .body { display: inline-block; max-width: 90%; padding: 8px 12px; border-radius: 12px 12px 12px 4px; line-height: 1.6; }
+  .msg.yinyue .body { background: var(--yinyue-soft); }
+  .msg.npc .body { background: var(--seal-soft); font-family: var(--serif); }
+  .msg.player { text-align: right; }
+  .msg.player .body { display: inline-block; max-width: 85%; text-align: left; padding: 8px 12px; border-radius: 12px 12px 4px 12px; background: var(--raised); }
+  .dots { display: inline-flex; gap: 4px; padding: 6px 2px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--faint); animation: dot 1.1s infinite; }
+  .dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 30% { opacity: .25; transform: translateY(-2px); } }
+
+  .level { display: flex; align-items: center; gap: 10px; margin: 16px 0; color: var(--seal); font-family: var(--serif); font-size: 13.5px; font-weight: 600; }
+  .level::before, .level::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--seal), transparent); opacity: .55; }
+
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+  .choice { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 13px; font-size: 13.5px; transition: border-color .15s, background .15s; }
+  .choice:not(:disabled):hover { border-color: var(--ling); }
+  .choice.on { border-color: var(--ling); background: var(--ling-soft); }
+  .choice:disabled:not(.on) { opacity: .42; }
+  .choice.proto { border-style: dashed; color: var(--dim); font-size: 12.5px; }
+
+  .card { border: 1px solid var(--line); background: var(--raised); border-radius: 10px; padding: 12px 13px; margin: 12px 0; }
+  .cardtitle { font-family: var(--serif); font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+
+  .roots { display: flex; gap: 8px; margin: 10px 0 8px; }
+  .root { flex: 1; aspect-ratio: 1; max-width: 58px; border-radius: 50%; border: 1.5px dashed var(--faint); display: grid; place-content: center; text-align: center;
+          color: var(--faint); transition: all .45s ease; }
+  .root b { font-family: var(--serif); font-size: 20px; font-weight: 600; line-height: 1; }
+  .root small { font-size: 9.5px; margin-top: 2px; }
+  .root.lit { border-style: solid; color: #fff; }
+  .root.lit.metal { background: var(--metal); border-color: var(--metal); }
+  .root.lit.wood { background: var(--wood); border-color: var(--wood); }
+  .root.lit.water { background: var(--water); border-color: var(--water); }
+  .root.lit.fire { background: var(--fire); border-color: var(--fire); }
+  .root.lit.earth { background: var(--earth); border-color: var(--earth); }
+  .rootres { font-family: var(--serif); font-weight: 600; }
+
+  .hex { display: flex; gap: 14px; align-items: center; }
+  .hexbars { display: grid; gap: 4px; width: 46px; flex: none; }
+  .hexbars i { height: 5px; background: var(--text); border-radius: 1px; }
+  .hextext { font-family: var(--serif); line-height: 1.7; }
+
+  .taskhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .chip { font-family: var(--mono); font-size: 10.5px; padding: 2px 7px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--dim); }
+  .chip.real { border-color: var(--jade); color: var(--jade); }
+  .reward { font-family: var(--mono); font-size: 11.5px; color: var(--ling); }
+  .tasktitle { font-weight: 600; }
+  .taskfoot { margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ok { color: var(--jade); font-size: 12.5px; font-weight: 500; }
+  .task.done, .task.confirmed { background: var(--jade-soft); border-color: transparent; }
+
+  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; max-width: 260px; }
+  .tile { aspect-ratio: 1; border: 1px solid var(--line); background: var(--surface); border-radius: 7px; font-family: var(--serif); font-size: 21px; font-weight: 600; color: var(--wood); transition: transform .12s, opacity .25s; }
+  .tile:not(:disabled):hover { transform: translateY(-1px); border-color: var(--ling); }
+  .tile.sel { border-color: var(--ling); box-shadow: 0 0 0 2px var(--ling-soft); background: var(--ling-soft); }
+  .tile.gone { opacity: 0; pointer-events: none; }
+
+  .creature { display: flex; gap: 12px; }
+  .seal { flex: none; width: 62px; height: 62px; border: 2px solid var(--seal); color: var(--seal); border-radius: 6px; display: grid; place-content: center;
+          font-family: var(--serif); font-weight: 600; font-size: 19px; writing-mode: vertical-rl; letter-spacing: .1em; }
+  .creature .src { font-size: 11.5px; color: var(--faint); margin-bottom: 4px; }
+  .creature q { display: block; font-family: var(--serif); font-size: 13.5px; line-height: 1.7; quotes: none; }
+  .creature .chip { display: inline-block; margin-top: 7px; }
+  .creature.tamed .chip { border-color: var(--seal); color: var(--seal); }
+
+  .gate { display: flex; gap: 12px; align-items: center; }
+  .gate .ding { font-family: var(--serif); font-size: 38px; color: var(--ling); line-height: 1; }
+
+  .trib { background: linear-gradient(180deg, #2A2A36, #15151C); color: #E8E6F0; border-color: #2A2A36; text-align: center; }
+  .trib.flash { animation: flash .5s ease-out; }
+  @keyframes flash { 0% { background: #F6F4FF; } 100% { background: linear-gradient(180deg, #2A2A36, #15151C); } }
+  .trib .cardtitle { font-size: 16px; }
+  .bolts { display: flex; justify-content: center; gap: 10px; margin: 10px 0; }
+  .bolts i { width: 12px; height: 26px; clip-path: polygon(55% 0, 15% 55%, 45% 55%, 30% 100%, 85% 40%, 55% 40%, 75% 0); background: #55556A; }
+  .bolts i.hit { background: #F3D778; }
+  .trib .choice { background: transparent; color: #E8E6F0; border-color: #55556A; margin-top: 8px; }
+
+  .chuanyin { border-left: 3px solid var(--yinyue); }
+  .chuanyin .txt { font-family: var(--serif); margin-top: 3px; }
+
+  .inputbar { flex: none; border-top: 1px solid var(--line); padding: 10px; display: flex; gap: 8px; align-items: center; background: var(--surface); flex-wrap: wrap; }
+  .inputbar input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--raised); color: var(--text); border-radius: 9px; padding: 9px 12px; font: inherit; }
+  .inputbar input:disabled { color: var(--seal); }
+  .send { border: none; background: var(--ling); color: #fff; border-radius: 9px; padding: 9px 14px; font-weight: 600; }
+  .send:disabled { opacity: .4; }
+
+  /* ── Notes beside the panel ── */
+  .notes { display: grid; gap: 22px; }
+  .notes h2 { margin: 0 0 8px; font-size: 13px; font-family: var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 500; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: none; background: transparent; padding: 6px 13px; font-size: 13px; }
+  .seg button[aria-pressed="true"] { background: var(--ling-soft); color: var(--ling); font-weight: 600; }
+  .scenes { display: flex; flex-wrap: wrap; gap: 7px; }
+  .scenes button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 11px; font-size: 13px; }
+  .scenes button:hover { border-color: var(--ling); }
+  .rules { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--dim); }
+  .rules b { color: var(--text); font-weight: 600; }
+  .stamp { display: inline-flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+  .stamp i { width: 7px; height: 7px; border-radius: 50%; background: var(--seal); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="intro">
+    <div class="eyebrow">Prototype · design only</div>
+    <h1>Lingjing: The World of Linggen · <span>《灵境》</span></h1>
+    <p>A text game played in one chat panel. Ling drives the world and gives the tasks; Yinyue stays at the player's side. Everything below is scripted — no model runs.</p>
+  </header>
+
+  <div class="work">
+    <section class="game" aria-label="Game panel">
+      <div class="stage" id="stage">
+        <div class="moon" aria-hidden="true"></div>
+        <div class="stagecap"><b id="stageName">银月</b><small>YINYUE · 3D MODEL LIVES HERE</small></div>
+      </div>
+      <div class="status">
+        <span class="realm" id="realm"></span>
+        <span class="xw"><span class="dim" id="lxw"></span><span class="bar"><i id="xwbar"></i></span><span class="num" id="xwtext"></span></span>
+        <span class="qi" id="qi"><i class="ring" id="qiring"></i><span id="qitext"></span></span>
+        <span class="ls"><span id="lls"></span> <b id="ls">0</b></span>
+      </div>
+      <div class="stream" id="stream" aria-live="polite"></div>
+      <form class="inputbar" id="form">
+        <input id="input" autocomplete="off" aria-label="Message">
+        <button class="send" id="send" type="submit"></button>
+        <button class="choice proto" id="refill" type="button" hidden></button>
+      </form>
+    </section>
+
+    <aside class="notes">
+      <div>
+        <h2>Language</h2>
+        <div class="seg" role="group" aria-label="Language">
+          <button type="button" data-lang="zh" aria-pressed="true">中文</button>
+          <button type="button" data-lang="en" aria-pressed="false">English</button>
+        </div>
+      </div>
+      <div>
+        <h2>Scenes</h2>
+        <div class="scenes">
+          <button type="button" data-scene="opening">1 · Opening</button>
+          <button type="button" data-scene="root">2 · 测灵根</button>
+          <button type="button" data-scene="tasks">3 · Ling's tasks</button>
+          <button type="button" data-scene="encounter">4 · 夫诸</button>
+          <button type="button" data-scene="chuanyin">5 · 传音</button>
+          <button type="button" data-scene="breakthrough">6 · 突破</button>
+          <button type="button" data-scene="empty">7 · 丹田 empty</button>
+        </div>
+      </div>
+      <div>
+        <h2>What it shows</h2>
+        <ul class="rules">
+          <li><b>One chat panel is the whole game.</b> Story, tasks, puzzles and creatures arrive as messages and cards.</li>
+          <li><b>Ling drives.</b> Narrates the world, gives every task, answers anything typed.</li>
+          <li><b>Yinyue is at your side.</b> The only 3D figure — the moon above the stream.</li>
+          <li><b>Tasks earn 修为; 100 fills a layer.</b> The real-life task counts only when Shifu confirms.</li>
+          <li><b>灵气 is tokens, shown as the 丹田.</b> Typing and story choices spend it; 连连看 never does.</li>
+          <li><b>四灵根 for everyone in v1</b> — 木 水 火 土.</li>
+        </ul>
+      </div>
+      <div>
+        <h2>Drawn, not real</h2>
+        <ul class="rules">
+          <li>Ling's replies are scripted by keyword; the real game asks a model.</li>
+          <li>The moon stands in for Yinyue's 3D model.</li>
+          <li>The 斗法 board and the Shifu confirmation are placeholders.</li>
+          <li>连连看 here matches any pair; the real board uses the path rule.</li>
+        </ul>
+      </div>
+      <div class="stamp"><i></i>Spec: skills/lingjing/doc/product-spec.md</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
+const NAMES = [{ zh: '青玄', en: 'Qingxuan' }, { zh: '云舟', en: 'Yunzhou' }, { zh: '墨白', en: 'Mobai' }];
+const HERBS = ['芝', '参', '莲', '乌', '归', '草', '苓', '精'];
+
+const T = {
+  xiuwei: { zh: '修为', en: 'Cultivation' },
+  lingshi: { zh: '灵石', en: 'Spirit stones' },
+  qi_full: { zh: '丹田 充盈', en: 'Dantian full' },
+  qi_half: { zh: '丹田 半满', en: 'Dantian half' },
+  qi_low: { zh: '丹田 将尽', en: 'Dantian low' },
+  qi_empty: { zh: '丹田 已空', en: 'Dantian empty' },
+  send: { zh: '发送', en: 'Send' },
+  ph: { zh: '对 Ling 说点什么…', en: 'Say something to Ling…' },
+  phEmpty: { zh: '丹田已空 · {t} 后回满', en: 'Dantian empty · full again in {t}' },
+  refill: { zh: '原型：快进，灵气回满', en: 'Prototype: skip ahead, refill qi' },
+  stageName: { zh: '银月', en: 'Yinyue' },
+
+  o1: { zh: '雨夜。泗水之畔，水声压过了一切。', en: 'A night of rain. On the bank of the Si River, the water drowns out everything else.' },
+  o2: { zh: '浅水里有一点银光，忽明忽暗，像在等谁。', en: 'In the shallows a point of silver light flickers, as if waiting for someone.' },
+  cReach: { zh: '伸手入水', en: 'Reach into the water' },
+  cLeave: { zh: '转身离开', en: 'Walk away' },
+  oLeave: { zh: '你走出十步。银光追着你的影子，不肯熄灭。', en: 'You walk ten paces. The light follows your shadow and will not go out.' },
+  o3: { zh: '指尖触到它的一瞬，银光化作一个少女，睁开了眼睛。', en: 'The moment your fingers touch it, the light becomes a girl, and she opens her eyes.' },
+  y1: { zh: '……你是谁？我好像睡了很久很久。我叫银月——除了这个名字，什么都想不起来了。', en: '…Who are you? I think I slept for a very long time. My name is Yinyue — and that is all I remember.' },
+  y2: { zh: '你身上有灵气在长。很慢，但在长。我该怎么称呼你？', en: 'There is qi growing in you. Slowly — but growing. What should I call you?' },
+  pName: { zh: '叫我{n}吧。', en: 'Call me {n}.' },
+  y3: { zh: '{n}。好名字，我记住了。', en: '{n}. A good name. I will remember it.' },
+
+  r1: { zh: '{n}，入道之前，先测灵根。把手放在测灵石上。', en: '{n}, before you walk the Way, your spirit root must be tested. Place your hand on the stone.' },
+  cStone: { zh: '放上测灵石', en: 'Place your hand on the stone' },
+  rootTitle: { zh: '测灵根', en: 'Spirit root test' },
+  rootResult: { zh: '四灵根 · 木 水 火 土 — 伪灵根', en: 'Four roots · Wood, Water, Fire, Earth — a false root' },
+  rootSpeed: { zh: '修炼速度：慢', en: 'Cultivation speed: slow' },
+  r2: { zh: '四灵根。修炼会比旁人慢上许多。', en: 'Four roots. You will cultivate far more slowly than most.' },
+  y4: { zh: '慢又怎样。路是一步一步走的，我陪你走。', en: 'So what if it is slow? A road is walked one step at a time. I will walk it with you.' },
+  h0: { zh: '每日一卦。', en: 'The day’s hexagram.' },
+  hexTitle: { zh: '乾 · 第一卦', en: 'Qián · Hexagram 1' },
+  hexText: { zh: '天行健，君子以自强不息。', en: 'Heaven moves without rest; so the noble one strengthens themself without end.' },
+
+  t0: { zh: '修行靠日日不辍。今日功课：', en: 'Cultivation is kept day by day. Today’s practice:' },
+  taskA: { zh: '炼丹 · 配齐八味灵草', en: 'Alchemy · Pair the eight spirit herbs' },
+  taskB: { zh: '清扫洞府 · 用 Shifu 扫描一次磁盘', en: 'Sweep your cave · Run a disk scan in Shifu' },
+  taskC: { zh: '同修 · 今晚睡足八小时', en: 'Cultivate together · Sleep a full eight hours tonight' },
+  srcWorld: { zh: '游戏内', en: 'In the world' },
+  srcShifu: { zh: '现实 · Shifu', en: 'Real life · Shifu' },
+  srcHealth: { zh: '现实 · Health', en: 'Real life · Health' },
+  noteShifu: { zh: 'Shifu 确认扫描完成后才计入。', en: 'Counts only once Shifu confirms the scan.' },
+  noteHealth: { zh: '明早由 Health 确认。', en: 'Health confirms it tomorrow morning.' },
+  reward: { zh: '+{r} 修为', en: '+{r} cultivation' },
+  startBoard: { zh: '开始炼丹', en: 'Start alchemy' },
+  simShifu: { zh: '原型：模拟 Shifu 确认', en: 'Prototype: simulate Shifu’s confirmation' },
+  waiting: { zh: '待完成', en: 'To do' },
+  inProgress: { zh: '炼丹中', en: 'In progress' },
+  done: { zh: '✓ 已完成', en: '✓ Done' },
+  confirmed: { zh: '✓ Shifu 已确认', en: '✓ Confirmed by Shifu' },
+  boardTitle: { zh: '炼丹 · 连连看', en: 'Alchemy · Match pairs' },
+  boardPractice: { zh: '练习 · 不耗灵气', en: 'Practice · costs no qi' },
+  boardHint: { zh: '点两块相同的灵草。', en: 'Tap two matching herbs.' },
+  boardDone: { zh: '八味灵草配齐，丹成。', en: 'All eight herbs paired. The pill is made.' },
+  boardDoneP: { zh: '练习完成。', en: 'Practice done.' },
+  tDone: { zh: '功课已毕。', en: 'Today’s practice is done.' },
+  cSetOut: { zh: '出发 · 沿泗水北行', en: 'Set out · Follow the river north' },
+
+  e1: { zh: '你沿泗水北行。雾里立着一只白鹿，头生四角。', en: 'You follow the river north. In the mist stands a white deer with four antlers.' },
+  fuzhu: { zh: '夫诸', en: 'Fuzhu' },
+  fuzhuSrc: { zh: '《山海经 · 中山经》', en: 'Classic of Mountains and Seas · Central Mountains' },
+  fuzhuQuote: { zh: '有兽焉，其状如白鹿而四角，名曰夫诸，见则其邑大水。', en: '“There is a beast shaped like a white deer with four antlers, called Fuzhu. Where it is seen, the town floods.”' },
+  untamed: { zh: '未收服', en: 'Not yet tamed' },
+  tamed: { zh: '已收服 · +10 灵石', en: 'Tamed · +10 spirit stones' },
+  y5: { zh: '是夫诸……它出现的地方会发大水。小心。', en: 'That’s Fuzhu… floods follow wherever it appears. Careful.' },
+  cDuel: { zh: '斗法 · 象棋残局', en: 'Duel · A xiangqi endgame' },
+  cDebate: { zh: '论道 · 猜一字', en: 'Debate · A riddle' },
+  cAround: { zh: '绕行', en: 'Go around' },
+  duelNote: { zh: '（原型）斗法的棋盘会在这里展开。先与它论道吧。', en: '(Prototype) The duel board opens here. Try debating it instead.' },
+  aroundText: { zh: '你绕开了它。它在雾里看了你很久，没有走。', en: 'You go around it. It watches you from the mist for a long time, and does not leave.' },
+  riddle: { zh: '答我一谜：一口咬掉牛尾巴。打一字。', en: 'Answer my riddle: what must be broken before it can be used?' },
+  rA: { zh: '告', en: 'An egg' }, rB: { zh: '吉', en: 'A promise' }, rC: { zh: '舌', en: 'A seal' },
+  wrong: { zh: '不对。再想想。', en: 'No. Think again.' },
+  right: { zh: '……人类，你倒有些意思。', en: '…Human, you are more interesting than you look.' },
+  level: { zh: '修为圆满 · {from} → {to}', en: 'Cultivation full · {from} → {to}' },
+  hook: { zh: '第一鼎的气息，在北方。', en: 'The breath of the first cauldron lies to the north.' },
+
+  c0: { zh: '竹溪给你传音了。', en: 'Zhuxi sent you a message.' },
+  cyFrom: { zh: '传音 · 竹溪', en: 'Message · Zhuxi' },
+  cyText: { zh: '“今晚同修？两人都睡足八小时，各得一份加成。”', en: '“Cultivate together tonight? If we both sleep a full eight hours, we each get a bonus.”' },
+  cAccept: { zh: '应允', en: 'Accept' },
+  cDecline: { zh: '婉拒', en: 'Decline' },
+  yAccept: { zh: '我替你回了：今晚同修。', en: 'I replied for you: tonight, together.' },
+  yDecline: { zh: '我替你婉拒了。', en: 'I declined for you.' },
+  end: { zh: '今日到此为止。', en: 'That is all for today.' },
+
+  b1: { zh: '修为已至练气九层巅峰。', en: 'Your cultivation stands at the peak of Layer 9.' },
+  gateTitle: { zh: '第一章 · 冀州之鼎', en: 'Chapter 1 · The Cauldron of Ji' },
+  gateDate: { zh: '十月一日 开启', en: 'Opens October 1' },
+  gateNote: { zh: '章节开启前，停在巅峰。', en: 'Until the chapter opens, you hold at the peak.' },
+  cPreview: { zh: '预览 · 章节开启之后', en: 'Preview · after the chapter opens' },
+  tribTitle: { zh: '雷劫', en: 'Heavenly Tribulation' },
+  strike: { zh: '第 {k} 道天雷', en: 'Thunderbolt {k} of 3' },
+  holdMind: { zh: '守住心神', en: 'Hold your mind steady' },
+  tribDone: { zh: '三道天雷已过。', en: 'All three thunderbolts have passed.' },
+  b2: { zh: '你做到了。', en: 'You did it.' },
+
+  q1: { zh: '你的灵气耗尽了，先去调息吧。故事在这里等你。', en: 'Your qi is spent. Go and rest — the story will wait here for you.' },
+  q2: { zh: '炼丹不耗灵气，要不要练练手？', en: 'Alchemy costs no qi. Want to practise?' },
+  cPractice: { zh: '练习炼丹', en: 'Practise alchemy' },
+  refilled: { zh: '灵气回来了。', en: 'Your qi has returned.' },
+
+  aRoot: { zh: '灵根即五行之根：金木水火土。根越少，修炼越快。你是木水火土四灵根。', en: 'A spirit root is your share of the five elements: metal, wood, water, fire, earth. The fewer roots, the faster you cultivate. You have four: wood, water, fire and earth.' },
+  aFuzhu: { zh: '夫诸，见于《山海经·中山经》：白鹿四角，见则其邑大水。', en: 'Fuzhu, from the Classic of Mountains and Seas: a white deer with four antlers. Where it is seen, the town floods.' },
+  aDing: { zh: '大禹铸九鼎，一州一鼎，铸百物于其上。周亡，鼎失。九鼎去了哪里，就是你要找的。', en: 'Yu the Great cast nine cauldrons, one for each province, with every creature of that land upon them. When Zhou fell, they vanished. Where they went is what you are here to find.' },
+  aQi: { zh: '灵气会随时辰回满。说话和推进故事耗灵气；炼丹、布阵不耗。', en: 'Qi refills over time. Talking and moving the story spend it; alchemy and arrays don’t.' },
+  aDefault: { zh: '（原型）正式版里，Ling 会回答关于这个世界的任何问题。', en: '(Prototype) In the real game, Ling answers anything about this world.' },
+};
+
+const fresh = () => ({ lang: S ? S.lang : 'zh', nameIdx: null, layer: 1, xw: 0, qi: 100, ls: 0, foundation: false, emptyAt: null });
+let S = null; S = fresh();
+let log = [];
+let run = 0;
+let cidSeq = 0;
+let lastLen = 0;
+const waiters = {};
+
+function tr(key, vars = {}) {
+  const e = T[key];
+  if (!e) return key;
+  const all = { n: S.nameIdx == null ? '' : NAMES[S.nameIdx][S.lang], ...vars };
+  return (e[S.lang] ?? e.zh).replace(/\{(\w+)\}/g, (_, k) => all[k] ?? '');
+}
+function realm(layer, foundation) {
+  if (foundation) return S.lang === 'zh' ? '筑基期' : 'Foundation Establishment';
+  return S.lang === 'zh' ? `练气${CN[layer - 1]}层` : `Qi Condensation · Layer ${layer}`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const cid = () => 'c' + (++cidSeq);
+const find = id => log.find(e => e.cid === id);
+
+/* Timers: a scene's sleeps die when another scene starts; free ones never do. */
+const sleep = (ms, id) => new Promise((res, rej) => setTimeout(() => (id === run ? res() : rej('cancel')), ms));
+const pause = ms => new Promise(res => setTimeout(res, ms));
+async function until(fn, id) { while (!fn()) await sleep(250, id); }
+
+async function say(id, who, key, vars = {}, npc) {
+  const typing = { kind: 'typing', who, npc };
+  log.push(typing); render();
+  const wait = 380 + Math.min(1000, tr(key, vars).length * 16);
+  await (id == null ? pause(wait) : sleep(wait, id));
+  const i = log.indexOf(typing);
+  const msg = { kind: who, key, vars, npc };
+  if (i >= 0) log.splice(i, 1, msg); else log.push(msg);
+  render();
+}
+function ask(card) {
+  card.cid = cid();
+  log.push(card); render();
+  return new Promise(res => { waiters[card.cid] = res; });
+}
+function choice(opts, cost = 0) { return ask({ kind: 'card', type: 'choice', opts, cost, chosen: null }); }
+function push(card) { card.cid = cid(); log.push(card); render(); return card; }
+
+function spend(n) {
+  if (n <= 0) return;
+  S.qi = Math.max(0, S.qi - n);
+  if (S.qi === 0 && !S.emptyAt) { S.emptyAt = Date.now(); emptyLines(); }
+}
+function gain(n) {
+  if (S.foundation) return;
+  S.xw += n;
+  while (S.xw >= 100) {
+    if (S.layer >= 9) { S.xw = 100; break; }
+    S.xw -= 100;
+    log.push({ kind: 'level', from: S.layer, to: S.layer + 1 });
+    S.layer += 1;
+  }
+  render();
+}
+
+/* ── Views ── */
+function whoName(e) {
+  if (e.who === 'npc' || e.kind === 'npc') return tr(e.npc);
+  return e.who === 'yinyue' || e.kind === 'yinyue' ? 'Yinyue' : 'Ling';
+}
+const CARDS = {
+  choice: e => `<div class="choices">${e.opts.map(o => {
+    const on = e.chosen === o.v, off = e.chosen != null && !on;
+    const blocked = e.chosen == null && e.cost > 0 && S.qi <= 0;
+    const label = o.name != null ? NAMES[o.name][S.lang] : tr(o.key);
+    return `<button class="choice${on ? ' on' : ''}${o.proto ? ' proto' : ''}" data-act="choose" data-cid="${e.cid}" data-v="${o.v}"${on || off || blocked || (o.gone) ? ' disabled' : ''}>${esc(label)}</button>`;
+  }).join('')}</div>`,
+  root: e => {
+    const els = [['金', 'Metal', 'metal'], ['木', 'Wood', 'wood'], ['水', 'Water', 'water'], ['火', 'Fire', 'fire'], ['土', 'Earth', 'earth']];
+    return `<div class="card"><div class="cardtitle">${tr('rootTitle')}</div><div class="roots">${els.map((x, k) =>
+      `<div class="root ${x[2]}${k >= 1 && k <= e.lit ? ' lit' : ''}"><b>${x[0]}</b>${S.lang === 'en' ? `<small>${x[1]}</small>` : ''}</div>`).join('')}</div>${
+      e.lit >= 4 ? `<div class="rootres">${tr('rootResult')}</div><div class="dim small">${tr('rootSpeed')}</div>` : ''}</div>`;
+  },
+  hex: () => `<div class="card hex"><div class="hexbars">${'<i></i>'.repeat(6)}</div><div><div class="cardtitle">${tr('hexTitle')}</div><div class="hextext">${tr('hexText')}</div></div></div>`,
+  task: e => {
+    let foot = '';
+    if (e.status === 'done') foot = `<span class="ok">${tr('done')}</span>`;
+    else if (e.status === 'confirmed') foot = `<span class="ok">${tr('confirmed')}</span>`;
+    else if (e.act === 'board') foot = e.started ? `<span class="dim small">${tr('inProgress')}</span>` : `<button class="choice" data-act="startboard" data-cid="${e.cid}">${tr('startBoard')}</button>`;
+    else if (e.act === 'shifu') foot = `<span class="chip">${tr('waiting')}</span><button class="choice proto" data-act="shifu" data-cid="${e.cid}">${tr('simShifu')}</button>`;
+    else foot = `<span class="chip">${tr('waiting')}</span>`;
+    return `<div class="card task ${e.status}"><div class="taskhead"><span class="chip${e.real ? ' real' : ''}">${tr(e.src)}</span><span class="reward">${tr('reward', { r: e.reward })}</span></div>
+      <div class="tasktitle">${tr(e.title)}</div>${e.note ? `<div class="dim small">${tr(e.note)}</div>` : ''}<div class="taskfoot">${foot}</div></div>`;
+  },
+  board: e => `<div class="card"><div class="cardtitle">${tr('boardTitle')}${e.practice ? ` <span class="dim small">· ${tr('boardPractice')}</span>` : ''}</div>
+    <div class="dim small">${e.done ? tr(e.practice ? 'boardDoneP' : 'boardDone') : tr('boardHint')}</div>
+    <div class="board">${e.tiles.map((c, i) => `<button class="tile${e.gone.includes(i) ? ' gone' : ''}${e.sel === i ? ' sel' : ''}" data-act="tile" data-cid="${e.cid}" data-i="${i}"${e.gone.includes(i) || e.done ? ' disabled' : ''} aria-label="${c}">${c}</button>`).join('')}</div></div>`,
+  creature: e => `<div class="card creature${e.tamed ? ' tamed' : ''}"><div class="seal">夫诸</div><div><div class="cardtitle">${tr('fuzhu')}</div>
+    <div class="src">${tr('fuzhuSrc')}</div><q>${tr('fuzhuQuote')}</q><span class="chip">${tr(e.tamed ? 'tamed' : 'untamed')}</span></div></div>`,
+  gate: () => `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${tr('gateTitle')}</div><div class="small" style="color:var(--ling)">${tr('gateDate')}</div><div class="dim small">${tr('gateNote')}</div></div></div>`,
+  trib: e => `<div class="card trib${e.flash ? ' flash' : ''}"><div class="cardtitle">${tr('tribTitle')}</div>
+    <div class="bolts">${[1, 2, 3].map(k => `<i class="${k <= e.strikes ? 'hit' : ''}"></i>`).join('')}</div>
+    <div class="small">${e.strikes < 3 ? tr('strike', { k: e.strikes + 1 }) : tr('tribDone')}</div>
+    ${e.strikes < 3 ? `<button class="choice" data-act="strike" data-cid="${e.cid}">${tr('holdMind')}</button>` : ''}</div>`,
+  chuanyin: () => `<div class="card chuanyin"><div class="dim small">${tr('cyFrom')}</div><div class="txt">${tr('cyText')}</div></div>`,
+};
+function view(e) {
+  switch (e.kind) {
+    case 'typing': return `<div class="msg ${e.who}"><span class="who">[${esc(whoName(e))}]</span><span class="dots"><i></i><i></i><i></i></span></div>`;
+    case 'ling': case 'yinyue': case 'npc':
+      return `<div class="msg ${e.kind}"><span class="who">[${esc(whoName(e))}]</span><div class="body">${esc(tr(e.key, e.vars))}</div></div>`;
+    case 'player': return `<div class="msg player"><div class="body">${esc(e.text ?? tr(e.key, e.vars))}</div></div>`;
+    case 'level': return `<div class="level">${esc(tr('level', { from: realm(e.from, false), to: e.toFoundation ? realm(0, true) : realm(e.to, false) }))}</div>`;
+    case 'card': return CARDS[e.type](e);
+  }
+  return '';
+}
+
+function render() {
+  const el = $('#stream');
+  el.innerHTML = log.map(view).join('');
+  if (log.length !== lastLen) { el.scrollTop = el.scrollHeight; lastLen = log.length; }
+  renderChrome();
+}
+function renderChrome() {
+  $('#realm').textContent = realm(S.layer, S.foundation);
+  $('#lxw').textContent = tr('xiuwei');
+  const xw = S.foundation ? 0 : S.xw;
+  $('#xwbar').style.width = xw + '%';
+  $('#xwtext').textContent = `${xw}/100`;
+  const st = S.qi <= 0 ? 'empty' : S.qi < 25 ? 'low' : S.qi < 60 ? 'half' : 'full';
+  $('#qi').dataset.st = st;
+  $('#qiring').style.setProperty('--p', S.qi);
+  $('#qitext').textContent = tr('qi_' + st);
+  $('#lls').textContent = tr('lingshi');
+  $('#ls').textContent = S.ls;
+  $('#stageName').textContent = tr('stageName');
+  $('#send').textContent = tr('send');
+  $('#refill').textContent = tr('refill');
+  const last = log[log.length - 1];
+  $('#stage').classList.toggle('speaking', !!last && (last.kind === 'yinyue' || (last.kind === 'typing' && last.who === 'yinyue')));
+  renderInput();
+}
+function renderInput() {
+  const empty = S.qi <= 0;
+  const input = $('#input');
+  input.disabled = empty; $('#send').disabled = empty; $('#refill').hidden = !empty;
+  if (!empty) { input.placeholder = tr('ph'); return; }
+  const left = Math.max(0, 5 * 3600e3 - (Date.now() - (S.emptyAt || Date.now())));
+  const h = Math.floor(left / 3600e3), m = Math.floor(left % 3600e3 / 60e3), s = Math.floor(left % 60e3 / 1e3);
+  input.value = '';
+  input.placeholder = tr('phEmpty', { t: `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}` });
+}
+setInterval(() => { if (S.qi <= 0) renderInput(); }, 1000);
+
+/* ── Scenes ── */
+async function opening(id) {
+  await say(id, 'ling', 'o1');
+  await say(id, 'ling', 'o2');
+  for (;;) {
+    const v = await choice([{ v: 'reach', key: 'cReach' }, { v: 'leave', key: 'cLeave' }], 3);
+    if (v === 'reach') break;
+    await say(id, 'ling', 'oLeave');
+  }
+  await say(id, 'ling', 'o3');
+  await say(id, 'yinyue', 'y1');
+  await say(id, 'yinyue', 'y2');
+  const pick = await choice(NAMES.map((_, i) => ({ v: String(i), name: i })), 3);
+  S.nameIdx = Number(pick);
+  log.push({ kind: 'player', key: 'pName' }); render();
+  await sleep(300, id);
+  await say(id, 'yinyue', 'y3');
+  await rootTest(id);
+}
+async function rootTest(id) {
+  await say(id, 'ling', 'r1');
+  await choice([{ v: 'stone', key: 'cStone' }], 3);
+  const card = push({ kind: 'card', type: 'root', lit: 0 });
+  for (let k = 0; k < 4; k++) { await sleep(520, id); card.lit += 1; render(); }
+  await sleep(500, id);
+  await say(id, 'ling', 'r2');
+  await say(id, 'yinyue', 'y4');
+  await say(id, 'ling', 'h0');
+  push({ kind: 'card', type: 'hex' });
+  await sleep(700, id);
+  await tasks(id);
+}
+async function tasks(id) {
+  await say(id, 'ling', 't0');
+  const a = push({ kind: 'card', type: 'task', title: 'taskA', src: 'srcWorld', reward: 20, act: 'board', status: 'todo' });
+  const b = push({ kind: 'card', type: 'task', title: 'taskB', src: 'srcShifu', real: true, note: 'noteShifu', reward: 30, act: 'shifu', status: 'todo' });
+  await until(() => a.status !== 'todo' && b.status !== 'todo', id);
+  await sleep(400, id);
+  await say(id, 'ling', 'tDone');
+  await choice([{ v: 'go', key: 'cSetOut' }], 3);
+  await encounter(id);
+}
+async function encounter(id) {
+  await say(id, 'ling', 'e1');
+  const beast = push({ kind: 'card', type: 'creature', tamed: false });
+  await sleep(500, id);
+  await say(id, 'yinyue', 'y5');
+  for (;;) {
+    const v = await choice([{ v: 'duel', key: 'cDuel' }, { v: 'debate', key: 'cDebate' }, { v: 'around', key: 'cAround' }], 3);
+    if (v === 'debate') break;
+    await say(id, 'ling', v === 'duel' ? 'duelNote' : 'aroundText');
+  }
+  await say(id, 'npc', 'riddle', {}, 'fuzhu');
+  const opts = [{ v: 'a', key: 'rA' }, { v: 'b', key: 'rB' }, { v: 'c', key: 'rC' }];
+  const tried = new Set();
+  for (;;) {
+    const v = await choice(opts.map(o => ({ ...o, gone: tried.has(o.v) })), 3);
+    if (v === 'a') break;
+    tried.add(v);
+    await say(id, 'npc', 'wrong', {}, 'fuzhu');
+  }
+  await say(id, 'npc', 'right', {}, 'fuzhu');
+  beast.tamed = true; S.ls += 10;
+  gain(50);
+  await sleep(600, id);
+  await say(id, 'ling', 'hook');
+  await sleep(900, id);
+  await chuanyin(id);
+}
+async function chuanyin(id) {
+  await say(id, 'yinyue', 'c0');
+  push({ kind: 'card', type: 'chuanyin' });
+  const v = await choice([{ v: 'yes', key: 'cAccept' }, { v: 'no', key: 'cDecline' }], 3);
+  await say(id, 'yinyue', v === 'yes' ? 'yAccept' : 'yDecline');
+  if (v === 'yes') push({ kind: 'card', type: 'task', title: 'taskC', src: 'srcHealth', real: true, note: 'noteHealth', reward: 40, act: 'later', status: 'todo' });
+  await sleep(500, id);
+  await say(id, 'ling', 'end');
+}
+async function breakthrough(id) {
+  await say(id, 'ling', 'b1');
+  push({ kind: 'card', type: 'gate' });
+  await sleep(400, id);
+  await choice([{ v: 'p', key: 'cPreview', proto: true }]);
+  const t = push({ kind: 'card', type: 'trib', strikes: 0, flash: false });
+  await until(() => t.strikes >= 3, id);
+  await sleep(700, id);
+  S.foundation = true; S.xw = 0;
+  log.push({ kind: 'level', from: 9, toFoundation: true }); render();
+  await say(id, 'yinyue', 'b2');
+}
+async function emptyLines() {
+  await pause(250);
+  await say(null, 'ling', 'q1');
+  await say(null, 'yinyue', 'q2');
+  const v = await choice([{ v: 'practice', key: 'cPractice' }]);
+  if (v === 'practice') push(newBoard(true));
+}
+function newBoard(practice, taskCid) {
+  const tiles = [...HERBS, ...HERBS];
+  for (let i = tiles.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tiles[i], tiles[j]] = [tiles[j], tiles[i]]; }
+  return { kind: 'card', type: 'board', tiles, gone: [], sel: null, done: false, practice, taskCid };
+}
+
+const PRESETS = {
+  opening: {}, root: { nameIdx: 0 }, tasks: { nameIdx: 0 }, encounter: { nameIdx: 0, xw: 50 },
+  chuanyin: { nameIdx: 0, layer: 2, ls: 10 }, breakthrough: { nameIdx: 0, layer: 9, xw: 100 }, empty: { nameIdx: 0, layer: 2 },
+};
+const SCENES = { opening, root: rootTest, tasks, encounter, chuanyin, breakthrough };
+function start(name) {
+  run += 1; const id = run;
+  S = { ...fresh(), ...PRESETS[name] };
+  log = []; lastLen = 0; render();
+  if (name === 'empty') { S.qi = 0; S.emptyAt = Date.now(); render(); emptyLines(); return; }
+  SCENES[name](id).catch(() => {});
+}
+
+/* ── Input ── */
+$('#stream').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-act]');
+  if (!b || b.disabled) return;
+  const e = find(b.dataset.cid);
+  if (!e) return;
+  switch (b.dataset.act) {
+    case 'choose': {
+      if (e.chosen != null) return;
+      e.chosen = b.dataset.v;
+      spend(e.cost);
+      const res = waiters[e.cid]; delete waiters[e.cid];
+      render(); res && res(e.chosen);
+      break;
+    }
+    case 'startboard': e.started = true; push(newBoard(false, e.cid)); break;
+    case 'shifu': e.status = 'confirmed'; gain(e.reward); break;
+    case 'tile': {
+      const i = Number(b.dataset.i);
+      if (e.sel === null || e.sel === i) e.sel = e.sel === i ? null : i;
+      else if (e.tiles[e.sel] === e.tiles[i]) { e.gone.push(e.sel, i); e.sel = null; }
+      else e.sel = i;
+      if (e.gone.length === e.tiles.length) {
+        e.done = true;
+        const task = e.taskCid && find(e.taskCid);
+        if (task) { task.status = 'done'; gain(task.reward); }
+      }
+      render();
+      break;
+    }
+    case 'strike': e.strikes += 1; e.flash = true; render(); setTimeout(() => { e.flash = false; }, 500); break;
+  }
+});
+
+$('#form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const input = $('#input');
+  const v = input.value.trim();
+  if (!v || S.qi <= 0) return;
+  input.value = '';
+  log.push({ kind: 'player', text: v });
+  const key = /灵根|root/i.test(v) ? 'aRoot' : /夫诸|fuzhu|deer|鹿/i.test(v) ? 'aFuzhu' : /鼎|cauldron/i.test(v) ? 'aDing' : /灵气|丹田|\bqi\b|dantian/i.test(v) ? 'aQi' : 'aDefault';
+  const wasEmpty = S.qi <= 0;
+  S.qi = Math.max(0, S.qi - 8);
+  render();
+  await say(null, 'ling', key);
+  if (!wasEmpty && S.qi === 0 && !S.emptyAt) { S.emptyAt = Date.now(); emptyLines(); }
+});
+$('#refill').addEventListener('click', () => { S.qi = 100; S.emptyAt = null; render(); say(null, 'ling', 'refilled'); });
+
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
+  S.lang = b.dataset.lang;
+  document.documentElement.lang = S.lang === 'zh' ? 'zh-Hans' : 'en';
+  document.querySelectorAll('[data-lang]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  render();
+}));
+document.querySelectorAll('[data-scene]').forEach(b => b.addEventListener('click', () => start(b.dataset.scene)));
+
+start('opening');
+</script>
+</body>
+</html>
