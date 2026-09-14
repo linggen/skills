@@ -30,6 +30,7 @@ export function loadContent(dir = CONTENT_DIR) {
     tasks: at('tasks/world.json'),
     branches: at('branches.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
+    templates: { made: at('templates/made-scene.json') },
     terms: at('terms.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
   };
@@ -60,6 +61,43 @@ function loadSeeds(root) {
     seeds[doc.province] = doc;
   }
   return seeds;
+}
+
+/* ── Made scenes ── */
+
+export const MADE = { chapter: 'made', max_scenes: 10, max_bytes: 3000, max_exits: 4, max_buttons: 3, tables: ['branch'] };
+const MADE_FORBIDDEN = ['set', 'value', 'key', 'game'];
+
+/* A scene Ling wrote, checked the way authored ones are — against the
+   player's other made scenes as its chapter — plus what a made scene may
+   not do. Returns the problems; none means playable. */
+export function lintMade(scene, madeScenes, content) {
+  const problems = [];
+  const bad = (where, msg) => problems.push(`${where}: ${msg}`);
+  const where = `scene ${scene?.id ?? '?'}`;
+  if (!scene || typeof scene !== 'object') return ['not a scene'];
+  if (typeof scene.id !== 'string' || !scene.id.startsWith('made-')) bad(where, 'id must start with made-');
+  if (JSON.stringify(scene).length > MADE.max_bytes) bad(where, `over ${MADE.max_bytes} bytes`);
+  if (!Array.isArray(scene.exits) || scene.exits.length < 1 || scene.exits.length > MADE.max_exits) bad(where, `needs 1 to ${MADE.max_exits} exits`);
+  if ((scene.buttons ?? []).length > MADE.max_buttons) bad(where, `at most ${MADE.max_buttons} buttons`);
+  if (scene.offers) bad(where, 'a made scene offers no tasks');
+  for (const [k, v] of Object.entries({ place: scene.place, setup: scene.setup })) {
+    if (!v?.zh && !v?.en) bad(where, `${k} needs zh or en`);
+  }
+  for (const exit of scene.exits ?? []) {
+    for (const f of MADE_FORBIDDEN) if (exit[f] != null) bad(`${where} exit ${exit.id}`, `may not use ${f}`);
+    if (exit.grant && !MADE.tables.includes(exit.grant.table)) bad(`${where} exit ${exit.id}`, `grant only from ${MADE.tables.join(', ')}`);
+    if (exit.ends != null && exit.ends !== MADE.chapter) bad(`${where} exit ${exit.id}`, 'ends must be "made"');
+  }
+  if (problems.length) return problems;
+  const ids = {
+    creatures: new Set(content.creatures.creatures.map(c => c.id)),
+    herbs: new Set(content.herbs.herbs.map(h => h.id)),
+    tasks: new Set(),
+  };
+  const chapter = { id: MADE.chapter, scenes: { ...madeScenes, [scene.id]: scene } };
+  lintScene({ ...scene, chapter: MADE.chapter }, chapter, content, ids, bad);
+  return problems;
 }
 
 /* ── Lint ── */

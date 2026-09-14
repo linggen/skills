@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina and 徐's seeds built (build order 1–8); next the catalog; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds and made scenes built (build order 1–9); next the catalog; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -274,6 +274,41 @@ picture, a price and one effect.
 - **The lint:** every item pictured; every `needs.bag`, `gives.bag` and
   `grant.item` names a catalog item; a price never below its sell price.
 
+### Made scenes — the template, and Ling as the maker
+
+**Decided 2026-09-14** ("let's build a template, a predefined scene as an
+example; the user doesn't need to build before starting a game; tell Ling
+to build the same scene as the template when the user wants a new one").
+The world is open to the player's own scenes, and the rule that makes it
+safe is the one the whole game runs on: **the model proposes, the rules
+decide — extended to authoring.** Ling writes content in the same shape the
+authored content has; the same lint checks it; the same rules play it.
+
+- **The template** is a whole worked scene, `content/templates/made-scene.json`
+  — the Huai ferry: a place, a setup, Yinyue's line, three exits (one that
+  stays, one that needs the lingzhi, one that ends) — with `_rules` beside
+  it. `Make` with nothing returns it; Ling reads it only when making.
+- **`Make {scene}`** checks the scene as authored content is checked
+  (`lintMade`: the scene lint against the player's other made scenes as its
+  chapter) plus what a made scene may not do: grants only from the `branch`
+  table, no `set` / `value` / `key` / `game` / `offers`, one to four exits,
+  three buttons, `ends` only `"made"`, under 3 KB, ten scenes a player.
+  `not-playable` carries the problems; Ling fixes and tries again. Costs
+  灵气 (`make` 5).
+- **`Enter {scene}` / `Leave`** — the player steps into a made scene; the
+  spine keeps its place (`state.made.at` overrides `sceneOf`; `state.scene`
+  never moves); an exit that `ends: "made"` comes home. Steps cost 灵气 as
+  anywhere; grants pay through the same capped tables.
+- **Made scenes live in the save** (`state.made.scenes`), so they sync and
+  play on any device; a few at a time. The player changes one not yet
+  entered by asking — Ling Makes it again with the same id.
+- **Themes** — a 山海经 hunt, a 易经 reading, a 三国 council, a 黄帝内经
+  diagnosis — are what Ling writes into that shape from the heritage;
+  later, *packs* (a source, its terms, a key set, its cards) give each theme
+  authored bones. A living author's novel is never a theme.
+- **Not yet:** made scenes with a board or a riddle of their own; sharing a
+  made scene with another player; packs.
+
 ### 降妖 — fighting a creature
 
 **Decided 2026-09-14.** Fighting a creature is a game the scene runs, like
@@ -475,6 +510,11 @@ change.
   {id, line, source, creature}` plus `show` for a creature's card; the tale
   grows from it. SKILL.md tells Ling to begin from the line and, at the
   close, to say the source in a line. 45 tests.
+- **Built (step 9):** made scenes — the template, `Make` (template when
+  empty; else lint + keep, 灵气 5), `Enter`, `Leave`; `sceneOf` reads
+  `state.made.at` first; a made exit's `next` moves within made scenes and
+  `ends` comes home; `pick` falls back across languages so a scene in one
+  language plays. SKILL.md: the three tools and "Making scenes". 46 tests.
 - **A reopened day shows the day so far.** Text Ling writes between tool
   calls is saved as it is written (linggen `b1fec94`); until then only a
   turn's final reply was, and a game day — one long turn of narration and
@@ -776,14 +816,15 @@ Establishment, Core Formation, Nascent Soul).
    `cloud.meter`.
 8. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
    the lint on seed creatures — the daily loop before more spine.
-9. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
+9. Made scenes: the template, `Make` / `Enter` / `Leave`, the made lint. ✓
+10. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
    scene, the `item` card, the lint.
-10. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
+11. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
    rule; the 夫诸 exit renamed `subdue`.
-11. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
-12. Server authority: `rules.mjs` in a Worker, content bundled, tools as
+12. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
+13. Server authority: `rules.mjs` in a Worker, content bundled, tools as
     endpoints, the save cloud-only — before any play where players compare.
-13. The table: the engine's shared chat, then the first set of plays; 传音 ·
+14. The table: the engine's shared chat, then the first set of plays; 传音 ·
     同修 · 论道 through the cloud.
 
 ## Open

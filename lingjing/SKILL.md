@@ -181,6 +181,39 @@ tools:
         required: true
         description: zh or en.
 
+  - name: Make
+    description: >-
+      A scene of the player's own. Called with nothing it returns the
+      template — a whole example scene — and the rules of making; called
+      with `scene` (the JSON of one scene in that exact shape) the rules
+      check it and keep it, refusing `not-playable` with the `problems` to
+      fix. Costs 灵气.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs make --scene={{scene}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      scene:
+        type: string
+        required: false
+        description: The scene as JSON text, in the template's shape. Omit to read the template.
+
+  - name: Enter
+    description: Step into a made scene by id; the main story keeps its place. Play it with Resolve like any scene; an exit that `ends` returns to the story.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs enter --scene={{scene}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      scene:
+        type: string
+        required: true
+        description: A made scene id from Look's `made.scenes`.
+
+  - name: Leave
+    description: Back to the main story from a made scene, wherever it stood.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs leave"
+    tier: edit
+    timeout_ms: 8000
+
   - name: Show
     description: >-
       Put cards before the player — on the scene beside the chat on the Mac,
@@ -348,6 +381,31 @@ proposing 修为 and 灵石; say what was paid — and, in a line, the `source`:
 what the player has just met is the world's real inheritance. A branch never touches the spine, a cauldron, Yinyue's memory or a
 realm. `branch-cap` → enough 奇遇 for one day. While a branch runs, the scene
 waits.
+
+## Making scenes — the player's own
+
+When the player wants a scene of their own — *tell me a story of the 淮水
+ferry*, *let's play a 山海经 hunt*, *a 三国 council*, *a 易经 reading* — you
+build it, they never do:
+
+1. **Make** with nothing: read the template and the rules of making.
+2. **Write one scene in exactly that shape** — the template's fields, the
+   player's language, one to four exits with plain-words `means`, buttons
+   with labels, grants only from the `branch` table, and one exit that
+   `ends: "made"` to come home. The world's heritage only; a novel's names
+   never; the spine, the cauldrons and Yinyue's memory untouched.
+3. **Make** with the scene. `not-playable` lists what to fix — fix it and
+   Make again, silently. Then **Enter** it and play it like any scene: Show
+   its cards, narrate its setup, speak its lines, offer its buttons through
+   AskUser, Resolve what the player does. Write the next scene only when an
+   exit needs it.
+4. The player may change a scene not yet entered — *make the boatman a
+   spy* — Make it again with the same id.
+5. **Leave** when they want the main story back; an `ends` exit does the
+   same.
+
+Made scenes are the player's: a few at a time (Look's `made.scenes`), kept
+with the game, played on any device.
 
 ## The story so far
 

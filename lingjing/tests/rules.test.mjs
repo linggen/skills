@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, newState, weekKey } from '../scripts/state.mjs';
-import { branch, heed, judge, lang, look, move, parseArgs, resolve, summarize, task, win } from '../scripts/rules.mjs';
+import { branch, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, win } from '../scripts/rules.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -257,6 +257,41 @@ test('a 奇遇 grows from a seed of the province — by the day, unused first', 
   // a seed with a creature shows its card
   const withCard = content.seeds['徐'].seeds.find(x => x.creature);
   assert.equal(withCard.creature, 'fuzhu');
+});
+
+test('Make with nothing is the template; a scene in its shape is kept and played; a bad one is refused with its problems', () => {
+  let s = start('en');
+  const t = make(s, content, ctx(), {}).result;
+  assert.equal(t.ok, true);
+  assert.equal(t.template.id, 'made-ferry');
+  assert.ok(Array.isArray(t.rules) && t.rules.length);
+  assert.equal(JSON.stringify(t.template).includes('"_'), false, 'notes are stripped');
+  // the template itself is playable — its `gift` exit needs a second scene, so make that first
+  const second = { id: 'made-ferry-2', chapter: 'made', place: { en: 'Midstream' }, setup: { en: 'The boat is midstream.' },
+    exits: [{ id: 'land', label: { en: 'Land' }, means: 'lands, steps off', ends: 'made' }] };
+  s = must(make, s, { scene: JSON.stringify(second) }).state;
+  s = must(make, s, { scene: JSON.stringify(t.template) }).state;
+  assert.equal(s.qi, 90); // 5 each
+  assert.deepEqual(Object.keys(s.made.scenes).sort(), ['made-ferry', 'made-ferry-2']);
+  // enter it; the spine keeps its place
+  s = must(enter, s, { scene: 'made-ferry' }).state;
+  assert.equal(look(s, content, ctx()).scene.id, 'made-ferry');
+  assert.equal(s.scene, '00-river');
+  // an exit that stays, then one that ends: home again, paid within the branch table
+  s = must(resolve, s, { exit: 'ask' }).state;
+  const out = must(resolve, s, { exit: 'cross' });
+  assert.equal(out.result.paid.xw, 10);
+  assert.equal(out.state.made.at, null);
+  assert.equal(look(out.state, content, ctx()).scene.id, '00-river');
+  // refusals: a forbidden field, a grant off the branch table, a next that does not exist
+  const bad = { ...second, id: 'made-bad', exits: [{ id: 'x', means: 'x', key: 'riddle', grant: { table: 'scene', xw: 50 }, next: 'made-nowhere' }] };
+  const r = refused(make, s, { scene: JSON.stringify(bad) }, 'not-playable');
+  assert.ok(r.problems.some(p => /may not use key/.test(p)));
+  assert.ok(r.problems.some(p => /grant only from branch/.test(p)));
+  refused(make, s, { scene: '{not json' }, 'not-json');
+  refused(enter, s, { scene: 'made-nowhere' }, 'unknown-scene');
+  refused(leave, out.state, {}, 'not-in-made'); // home already
+  assert.equal(must(leave, s, {}).state.made.at, null); // from inside, straight home
 });
 
 test('a task pays once; one never offered cannot be claimed', () => {

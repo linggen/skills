@@ -94,6 +94,9 @@ state does not allow.
 - **Out of bounds is refused in the world** — *冀州的路还没开*,
   *天地灵石，从不白给*. Words never change state.
 - **Real life goes to Yinyue, outside the game,** never on game 灵气.
+- **A scene of your own.** Ask for one — a ferry tale, a 山海经 hunt, a
+  三国 council — and Ling builds it from a template while you wait, the
+  rules check it, and you play it like any scene. You never build; you ask.
 - **Every reply ends with a way forward** — usually choices.
 - **A running story summary** keeps free chat consistent across days.
 - **The rules own every number, the model owns the words.** Points, realms,

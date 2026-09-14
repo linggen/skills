@@ -17,6 +17,7 @@ export function newState(content, lang, now) {
     bag: {}, beasts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     tasks: {}, quests: {}, wins: {}, branch: null, story: '', seeds_used: [],
+    made: { scenes: {}, at: null },
     day: { key: dayKey(now), xw: 0, ls: 0, branches: 0 },
     qi: content.rewards.qi.max, qi_at: at,
     created: at, updated: at,
@@ -25,7 +26,7 @@ export function newState(content, lang, now) {
 
 /* ── Words ── */
 
-export const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh : null);
+export const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh ?? pair.en : null);
 export const fill = (text, state) => (text == null ? text : text.replaceAll('{daohao}', state.daohao ?? ''));
 
 /* Lowercase, drop punctuation and articles: "An egg!" and "egg" meet. */

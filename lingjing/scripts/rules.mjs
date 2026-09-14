@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win branch summarize move lang undo
+//   verbs: init look resolve judge task win branch summarize move lang make enter leave undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW.
@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CAST, loadContent } from './content.mjs';
+import { CAST, MADE, lintMade, loadContent } from './content.mjs';
 import {
   addXw, dayKey, fill, langOf, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   payOf, speedOf, stageName, threshold,
@@ -22,7 +22,12 @@ const STORY_WORDS = 300, STORY_CHARS = 600;
 
 /* ── Reading the state ── */
 
-const sceneOf = (content, state) => content.chapters[state.chapter]?.scenes[state.scene] ?? null;
+/* The scene the player stands in: a made one when they have stepped into
+   one, else the spine's. */
+const inMade = state => Boolean(state.made?.at);
+const sceneOf = (content, state) => (inMade(state)
+  ? state.made.scenes[state.made.at] ?? null
+  : content.chapters[state.chapter]?.scenes[state.scene] ?? null);
 const creatureOf = (content, id) => content.creatures.creatures.find(c => c.id === id);
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
 
@@ -111,6 +116,7 @@ export function look(state, content, ctx) {
     ended: state.ended, branch: state.branch, story: state.story,
     omen: omen(content, ctx.now, lang),
     qi: qiBrief(content, state, ctx.now),
+    made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     ...(lang === 'en' ? { terms: termsEn(content) } : {}),
     ...tasksBrief(content, state, ctx),
   };
@@ -181,7 +187,7 @@ function cleanValue(raw, rule) {
 }
 
 /* Entering a scene offers its tasks. */
-function enter(content, state) {
+function offerTasks(content, state) {
   const scene = sceneOf(content, state);
   for (const id of scene?.offers?.tasks ?? []) state.tasks[id] ??= { status: 'offered' };
 }
@@ -194,7 +200,7 @@ function advanceChapter(content, state, now) {
   if (!next) return { waiting: null };
   if (next.opens && new Date(next.opens) > now) return { waiting: { chapter: next.id, opens: next.opens } };
   state.chapter = next.id; state.scene = next.first_scene;
-  enter(content, state);
+  offerTasks(content, state);
   return { waiting: null };
 }
 
@@ -230,9 +236,15 @@ export function resolve(state, content, ctx, args) {
   const beat = spoken(content, s, exit.beat);
 
   let waiting = null;
-  if (exit.next || exit.ends) s.done_scenes.push(scene.id);
-  if (exit.next) { s.scene = exit.next; enter(content, s); }
-  if (exit.ends) { s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
+  if (inMade(s)) {
+    // A made scene leads only to another made scene or back to the spine.
+    if (exit.next) s.made.at = exit.next;
+    if (exit.ends) s.made.at = null;
+  } else {
+    if (exit.next || exit.ends) s.done_scenes.push(scene.id);
+    if (exit.next) { s.scene = exit.next; offerTasks(content, s); }
+    if (exit.ends) { s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
+  }
   return {
     state: s,
     result: {
@@ -404,7 +416,54 @@ export function heed(state, said) {
   return lang && lang !== state.lang ? { ...clone(state), lang } : state;
 }
 
-export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, branch, summarize, move, lang };
+/* ── Made scenes: the player's own, written by Ling from the template ── */
+
+const strip = node => {
+  if (Array.isArray(node)) return node.map(strip);
+  if (!node || typeof node !== 'object') return node;
+  return Object.fromEntries(Object.entries(node).filter(([k]) => !k.startsWith('_')).map(([k, v]) => [k, strip(v)]));
+};
+
+/* No scene: the template and the rules of making. With one: check it as
+   the lint checks authored content, and keep it with the player. */
+export function make(state, content, ctx, args) {
+  if (args.scene == null) {
+    const t = content.templates.made;
+    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: content.rewards.qi.cost.make, limits: MADE } };
+  }
+  let scene;
+  try { scene = typeof args.scene === 'string' ? JSON.parse(args.scene) : args.scene; } catch { return refuse('not-json', null); }
+  scene = strip(scene);
+  const s = clone(state);
+  s.made ??= { scenes: {}, at: null };
+  const others = { ...s.made.scenes }; delete others[scene?.id];
+  if (Object.keys(others).length >= MADE.max_scenes) return refuse('made-full', null, { max: MADE.max_scenes });
+  const problems = lintMade(scene, others, content);
+  if (problems.length) return refuse('not-playable', null, { problems });
+  const empty = spendQi(content, s, ctx, 'make');
+  if (empty) return empty;
+  s.made.scenes[scene.id] = scene;
+  return { state: s, result: { ok: true, made: scene.id, scenes: Object.keys(s.made.scenes) } };
+}
+
+/* Step into a made scene; the spine keeps its place for the return. */
+export function enter(state, content, ctx, args) {
+  const id = String(args.scene ?? '');
+  if (!state.made?.scenes?.[id]) return refuse('unknown-scene', null, { scenes: Object.keys(state.made?.scenes ?? {}) });
+  const s = clone(state);
+  s.made.at = id;
+  return { state: s, result: { ok: true, scene: sceneBrief(content, s), summarize: true } };
+}
+
+/* Back to the spine, wherever the made scene stood. */
+export function leave(state, content) {
+  if (!inMade(state)) return refuse('not-in-made', null);
+  const s = clone(state);
+  s.made.at = null;
+  return { state: s, result: { ok: true, scene: sceneBrief(content, s), summarize: true } };
+}
+
+export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, branch, summarize, move, lang, make, enter, leave };
 
 /* ── Files and the command line ── */
 

@@ -1,0 +1,116 @@
+{
+  "_about": "A made scene: what Ling writes when the player wants a scene of their own. Same shape as an authored scene, in the player's language (zh or en, both if you can). Fields starting with _ are notes, dropped on save.",
+  "id": "made-ferry",
+  "chapter": "made",
+  "place": {
+    "zh": "淮水渡口",
+    "en": "The Huai ferry"
+  },
+  "setup": {
+    "zh": "暮色里的渡口，一条船，一个老船家。船家说，这船渡人，不渡心事。",
+    "en": "A ferry at dusk: one boat, one old boatman. He says the boat carries people, not their troubles."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "show": [],
+  "lines": [
+    {
+      "who": "yinyue",
+      "text": {
+        "zh": "他在看你的袖子。",
+        "en": "He is looking at your sleeve."
+      }
+    }
+  ],
+  "buttons": [
+    "cross",
+    "ask",
+    "gift"
+  ],
+  "exits": [
+    {
+      "id": "cross",
+      "label": {
+        "zh": "上船",
+        "en": "Board the boat"
+      },
+      "means": "boards the boat, pays, or asks to cross",
+      "grant": {
+        "table": "branch",
+        "xw": 10,
+        "ls": 2
+      },
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "船离岸时，你觉得袖子轻了。",
+            "en": "As the boat leaves the bank, your sleeve feels lighter."
+          }
+        }
+      ],
+      "ends": "made"
+    },
+    {
+      "id": "ask",
+      "label": {
+        "zh": "问他渡过谁",
+        "en": "Ask whom he has carried"
+      },
+      "means": "asks the boatman a question, talks with him",
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "他数了三个名字，第三个没说完。",
+            "en": "He counts three names and stops before the third."
+          }
+        }
+      ],
+      "stay": true
+    },
+    {
+      "id": "gift",
+      "label": {
+        "zh": "赠他灵芝",
+        "en": "Give him the lingzhi"
+      },
+      "means": "gives or offers him the lingzhi or an herb",
+      "needs": {
+        "bag": "lingzhi"
+      },
+      "take": {
+        "bag": "lingzhi"
+      },
+      "refuse": {
+        "zh": "你身上没有灵芝。",
+        "en": "You have no lingzhi on you."
+      },
+      "grant": {
+        "table": "branch",
+        "xw": 20,
+        "ls": 5
+      },
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "他把灵芝别在船头，像别一盏灯。",
+            "en": "He pins the lingzhi to the prow like a lamp."
+          }
+        }
+      ],
+      "next": "made-ferry-2"
+    }
+  ],
+  "_rules": [
+    "id starts with made-; chapter is made.",
+    "place, setup and every text are {zh, en} — the player's language at least.",
+    "1 to 4 exits; each has means (plain words) and exactly one of next (another made scene id), stay (true) or ends (\"made\", back to the spine).",
+    "buttons name exits that have a label; at most 3.",
+    "grant only from the branch table (xw up to 20, ls up to 5); needs/take only items in the bag list Look gives; a need has a refuse line.",
+    "cast and show only creatures with a card (Look's creatures) and yinyue; no set, value, key, game or offers.",
+    "The world's heritage only; never the spine, a cauldron, Yinyue's memory or a realm."
+  ]
+}
