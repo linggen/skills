@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "_about": "Names this world refuses: characters, places, sects, techniques and items of living authors' novels. The lint refuses any string in the world — and any scene Ling makes — that contains one. 银月 is Linggen's own Yinyue and is never on this list. The public heritage (山海经, 周易, the dynasties) is never a name here.",
+  "books": [
+    {
+      "title": "凡人修仙传",
+      "names": ["韩立", "厉飞雨", "墨大夫", "墨居仁", "七玄门", "黄枫谷", "掩月宗", "南宫婉", "紫灵", "陈巧倩", "董萱儿", "元瑶", "曲魂", "大衍神君", "青元剑诀", "大衍诀", "长春功", "罗烟步", "乱星海", "落云宗", "虚天殿", "极阴岛", "血色禁地", "掌天瓶", "王蝉", "冰凤", "李化元"]
+    },
+    {
+      "title": "诛仙",
+      "names": ["张小凡", "碧瑶", "陆雪琪", "青云门", "鬼厉", "烧火棍", "天音寺", "焚香谷"]
+    },
+    {
+      "title": "斗破苍穹",
+      "names": ["萧炎", "药尘", "云韵", "美杜莎", "纳兰嫣然", "异火", "萧薰儿", "迦南学院"]
+    },
+    {
+      "title": "斗罗大陆",
+      "names": ["唐三", "小舞", "魂环", "史莱克学院", "戴沐白", "武魂殿"]
+    },
+    {
+      "title": "遮天",
+      "names": ["叶凡", "庞博", "狠人大帝", "荒古圣体"]
+    },
+    {
+      "title": "仙逆",
+      "names": ["王林", "恒岳派"]
+    },
+    {
+      "title": "完美世界",
+      "names": ["石昊", "石村", "柳神"]
+    }
+  ]
+}

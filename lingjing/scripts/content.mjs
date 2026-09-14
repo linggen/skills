@@ -1,10 +1,24 @@
-// Loads Lingjing's authored content and checks it. Pure reads — nothing here
-// writes. `node content.mjs lint` prints every problem and exits 1 on any.
+// Loads a world's authored content and checks it. Pure reads — nothing here
+// writes. `node content.mjs lint [world]` prints every problem and exits 1 on
+// any; with no world named it lints every world in `worlds/`.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const CONTENT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../content');
+/* The worlds ship with the skill, one folder each under `worlds/`; the
+   folder's name is the world's id and the save's `world`. */
+export const WORLDS_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../worlds');
+export const DEFAULT_WORLD = 'jiuding';
+
+export const worldDir = id => path.join(WORLDS_DIR, id);
+export const listWorlds = () => fs.readdirSync(WORLDS_DIR).filter(id => fs.existsSync(path.join(worldDir(id), 'world.json'))).sort();
+export const hasWorld = id => typeof id === 'string' && /^[a-z0-9-]+$/.test(id) && fs.existsSync(path.join(worldDir(id), 'world.json'));
+
+/* A world by id; an unknown id throws with the ids that exist. */
+export function loadWorld(id = DEFAULT_WORLD) {
+  if (!hasWorld(id)) throw new Error(`unknown world ${id}; worlds: ${listWorlds().join(', ')}`);
+  return loadContent(worldDir(id));
+}
 
 /* Who speaks besides the creatures. Ling is the world's voice — narration,
    never a named speaker. */
@@ -16,10 +30,12 @@ const SETTABLE = { traits: new Set(['v1']) };
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 
-export function loadContent(dir = CONTENT_DIR) {
+export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
   const at = file => readJson(path.join(dir, file));
   return {
     dir,
+    world: at('world.json'),
+    names: at('names.json'),
     ladder: at('ladder.json'),
     traits: at('traits.json'),
     rewards: at('rewards.json'),
@@ -89,6 +105,7 @@ export function lintMade(scene, madeScenes, content) {
     if (exit.grant && !MADE.tables.includes(exit.grant.table)) bad(`${where} exit ${exit.id}`, `grant only from ${MADE.tables.join(', ')}`);
     if (exit.ends != null && exit.ends !== MADE.chapter) bad(`${where} exit ${exit.id}`, 'ends must be "made"');
   }
+  refusedNames(scene, content, where, bad);
   if (problems.length) return problems;
   const ids = {
     creatures: new Set(content.creatures.creatures.map(c => c.id)),
@@ -110,7 +127,11 @@ export function lint(content) {
     herbs: new Set(content.herbs.herbs.map(h => h.id)),
     tasks: new Set(content.tasks.tasks.map(t => t.id)),
   };
+  lintWorld(content.world, bad);
   bilingual(content, 'content', bad);
+  for (const [part, node] of Object.entries(content)) {
+    if (!['dir', 'world', 'names'].includes(part)) refusedNames(node, content, part, bad);
+  }
   lintLadder(content.ladder, bad);
   lintCreatures(content, bad);
   lintRiddles(content.riddles, bad);
@@ -122,6 +143,29 @@ export function lint(content) {
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   lintSeeds(content, ids, bad);
   return problems;
+}
+
+/* The world card: an id that matches its folder, a title and a style in
+   both languages. */
+function lintWorld(world, bad) {
+  if (!/^[a-z0-9-]+$/.test(world.id ?? '')) bad('world', 'id must be lowercase letters, digits and dashes');
+  for (const k of ['title', 'style']) if (!world[k]?.zh || !world[k]?.en) bad('world', `${k} needs zh and en`);
+}
+
+/* The names a world refuses — a novel's — found anywhere in its strings.
+   Notes (keys starting with _) are skipped: they may name the book. */
+export function refusedNames(node, content, where, bad) {
+  const names = (content.names?.books ?? []).flatMap(b => b.names.map(n => ({ name: n, book: b.title })));
+  const walk = (n, at) => {
+    if (typeof n === 'string') {
+      for (const { name, book } of names) if (n.includes(name)) bad(at, `names ${name} (${book})`);
+      return;
+    }
+    if (Array.isArray(n)) { n.forEach((x, i) => walk(x, `${at}[${i}]`)); return; }
+    if (!n || typeof n !== 'object') return;
+    for (const [k, v] of Object.entries(n)) if (!k.startsWith('_')) walk(v, `${at}.${k}`);
+  };
+  walk(node, where);
 }
 
 /* Every {zh, en} pair carries both, non-empty, and arrays of equal length. */
@@ -269,10 +313,14 @@ function endsSomewhere(chapter) {
 /* ── CLI ── */
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [verb] = process.argv.slice(2);
-  if (verb !== 'lint') { console.error('usage: node content.mjs lint'); process.exit(2); }
-  const problems = lint(loadContent());
-  for (const p of problems) console.log(p);
-  console.log(problems.length ? `${problems.length} problem(s)` : 'content ok');
-  process.exit(problems.length ? 1 : 0);
+  const [verb, world] = process.argv.slice(2);
+  if (verb !== 'lint') { console.error('usage: node content.mjs lint [world]'); process.exit(2); }
+  let total = 0;
+  for (const id of world ? [world] : listWorlds()) {
+    const problems = lint(loadWorld(id));
+    for (const p of problems) console.log(`${id}: ${p}`);
+    console.log(problems.length ? `${id}: ${problems.length} problem(s)` : `${id}: world ok`);
+    total += problems.length;
+  }
+  process.exit(total ? 1 : 0);
 }

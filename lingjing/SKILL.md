@@ -30,7 +30,8 @@ permission:
 tools:
   - name: Look
     description: >-
-      The game as it stands, as JSON: `tier` and `progress` (toward `next`),
+      The game as it stands, as JSON: the `world` (id, title, style — the
+      story this save plays; its words are the only words), `tier` and `progress` (toward `next`),
       `wealth`, `traits`, bag, `cast`, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
       `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
@@ -397,7 +398,8 @@ build it, they never do:
    player's language, one to four exits with plain-words `means`, buttons
    with labels, grants only from the `branch` table, and one exit that
    `ends: "made"` to come home. The world's heritage only; a novel's names
-   never; the spine, the cauldrons and Yinyue's memory untouched.
+   never (the world keeps a list, and `not-playable` names the one you used);
+   the spine, the cauldrons and Yinyue's memory untouched.
 3. **Make** with the scene. `not-playable` lists what to fix — fix it and
    Make again, silently. Then **Enter** it and play it like any scene: Show
    its cards, narrate its setup, speak its lines, offer its buttons through

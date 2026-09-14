@@ -1,7 +1,8 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
+export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
   return Object.values(content.chapters).sort((a, b) => a.id.localeCompare(b.id))[0];
@@ -11,7 +12,7 @@ export function newState(content, lang, now) {
   const first = firstChapter(content);
   const at = now.toISOString();
   return {
-    version: STATE_VERSION, lang: lang === 'en' ? 'en' : 'zh',
+    version: STATE_VERSION, world: content.world.id, lang: lang === 'en' ? 'en' : 'zh',
     name: null, traits: null,
     tier: content.ladder.tiers[0].id, step: 0, progress: 0, wealth: 0,
     bag: {}, cast: [],
@@ -168,7 +169,8 @@ export function addProgress(content, state, amount) {
   return { levels, hold };
 }
 
-/* A save from before the dictionary: the world's words were the keys. */
+/* Older saves: version 1 used the world's words as keys; version 2 had no
+   `world` — it was always 《九鼎》. */
 export function migrate(state) {
   if (!state || (state.version ?? 1) >= STATE_VERSION) return state;
   const m = { ...state, version: STATE_VERSION };
@@ -176,5 +178,6 @@ export function migrate(state) {
   move('daohao', 'name'); move('root', 'traits'); move('realm', 'tier'); move('stage', 'step');
   move('xw', 'progress'); move('ls', 'wealth'); move('beasts', 'cast'); move('qi', 'stamina'); move('qi_at', 'stamina_at');
   if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0, branches: m.day.branches ?? 0 };
+  m.world ??= FIRST_WORLD;
   return m;
 }

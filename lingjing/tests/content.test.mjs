@@ -3,14 +3,42 @@
 // with no picture, a scene nobody can reach.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { lint, loadContent } from '../scripts/content.mjs';
+import { lint, listWorlds, loadContent, loadWorld } from '../scripts/content.mjs';
 
 const fresh = () => loadContent();
 const prologue = c => c.chapters['00-prologue'];
 const has = (problems, text) => problems.some(p => p.includes(text));
 
-test('the shipped content lints clean', () => {
-  assert.deepEqual(lint(fresh()), []);
+test('every shipped world lints clean', () => {
+  assert.deepEqual(listWorlds(), ['jiuding']);
+  for (const id of listWorlds()) assert.deepEqual(lint(loadWorld(id)), [], id);
+});
+
+test('a world is loaded by its id, and an unknown id names the ones that exist', () => {
+  assert.equal(loadWorld('jiuding').world.id, 'jiuding');
+  assert.equal(loadWorld().world.title.zh, '九鼎');
+  assert.throws(() => loadWorld('nowhere'), /unknown world nowhere; worlds: jiuding/);
+  assert.throws(() => loadWorld('../jiuding'), /unknown world/);
+});
+
+test('a novel\'s name anywhere in the world is caught', () => {
+  const c = fresh();
+  prologue(c).scenes['00-river'].setup.zh += '，韩立在岸边。';
+  assert.ok(has(lint(c), 'scenes.00-river.setup.zh: names 韩立 (凡人修仙传)'));
+  const d = fresh();
+  d.creatures.creatures[0].quote.en += ' Xiao Yan';
+  assert.ok(!has(lint(d), 'names'), 'only the listed names, never a translation the list lacks');
+  d.creatures.creatures[0].quote.zh += '萧炎';
+  assert.ok(has(lint(d), 'names 萧炎 (斗破苍穹)'));
+});
+
+test('the world card needs a folder-shaped id and a bilingual title and style', () => {
+  const c = fresh();
+  c.world.id = 'Jiu Ding';
+  delete c.world.style.en;
+  const problems = lint(c);
+  assert.ok(has(problems, 'world: id must be'));
+  assert.ok(has(problems, 'world: style needs zh and en'));
 });
 
 test('the prologue runs from the river to its end', () => {

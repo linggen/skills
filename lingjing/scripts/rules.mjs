@@ -6,12 +6,14 @@
 //   verbs: init look resolve judge task win branch summarize move lang make enter leave undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
-// and never changes state. Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW.
+// and never changes state. The save says which world it plays; `init` takes
+// `--world` (default jiuding) and starts a fresh save in it.
+// Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CAST, MADE, lintMade, loadContent } from './content.mjs';
+import { CAST, DEFAULT_WORLD, MADE, hasWorld, lintMade, listWorlds, loadWorld } from './content.mjs';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   payOf, speedOf, stepName, threshold,
@@ -105,8 +107,10 @@ export function look(state, content, ctx) {
     speed: speedOf(content, state),
   };
   const chapter = content.chapters[state.chapter];
+  const world = content.world;
   return {
     ok: true, lang, name: state.name,
+    world: { id: world.id, title: pick(world.title, lang), style: pick(world.style, lang) },
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
     progress: state.progress, next: threshold(content, state), wealth: state.wealth,
     traits, bag: state.bag,
@@ -510,13 +514,15 @@ export function parseArgs(argv) {
 }
 
 function run(verb, args) {
-  const content = loadContent();
   const stateFile = path.join(dataDir(), 'state.json');
   const logFile = path.join(dataDir(), 'log.jsonl');
   const now = clock();
   const saved = fs.existsSync(stateFile) ? migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8'))) : null;
 
   if (verb === 'undo') return undo(stateFile, logFile);
+  const worldId = verb === 'init' ? args.world ?? DEFAULT_WORLD : saved?.world ?? DEFAULT_WORLD;
+  if (!hasWorld(worldId)) return { ok: false, refused: 'unknown-world', world: worldId, worlds: listWorlds() };
+  const content = loadWorld(worldId);
   const state = verb === 'init' || !saved ? newState(content, args.lang, now) : saved;
   if (verb === 'init' || !saved) writeAtomic(stateFile, JSON.stringify(state));
   if (verb === 'init') return look(state, content, { now, quests: readQuests() });

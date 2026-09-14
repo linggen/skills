@@ -32,9 +32,13 @@ export async function verb(name, args = {}) {
   }
 }
 
-/// Authored content, read straight off the skill folder the engine serves.
-export async function content(file) {
-  const res = await fetch(`../content/${file}`);
-  if (!res.ok) throw new Error(`${file} ${res.status}`);
+/// A world's folder, relative to the page: art and content live there.
+export const worldPath = (world, file) => `../worlds/${encodeURIComponent(world)}/${file}`;
+
+/// A world's authored content, read straight off the skill folder the
+/// engine serves.
+export async function content(world, file) {
+  const res = await fetch(worldPath(world, file));
+  if (!res.ok) throw new Error(`${world}/${file} ${res.status}`);
   return res.json();
 }

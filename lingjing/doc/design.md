@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes and the dictionary built (build order 1–10a); next the worlds split, then places; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary and the worlds split built (build order 1–10); next places; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -28,7 +28,7 @@ status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the fir
         │ shell tools              data tool Show → a card on the scene
         ▼                          (Mac) or inline (phone)
  ┌─ scripts/rules.mjs ───────────────┐
- │  reads  content/  (authored)       │
+ │  reads  worlds/<id>/ (authored)    │
  │  writes data/     (this player)    │
  │  refuses what the state disallows  │
  └───────────────────────────────────┘
@@ -56,8 +56,10 @@ skills/lingjing/
     chat-bridge.js, api.js the shared bridge copies
     rules.mjs              the rules engine, a CLI: node rules.mjs <verb> …
     run-js.sh              runs it under the bundled bun, else node
-    content.mjs            loads + validates content/
-  content/                 authored; ships with the skill
+    content.mjs            loads + validates a world; `lint [world]`
+  worlds/<id>/             one folder per world; the folder's name is its id
+    world.json             the world card: id, title, premise, style, sources
+    names.json             the novels' names this world refuses, by book
     dictionary.json        the harness's ids → this world's words, zh + en; the provinces
     ladder.json            the tiers: 练气 1–9, 筑基 … with progress thresholds, pay, gate
     traits.json            灵根 kinds and their progress multiplier
@@ -84,7 +86,7 @@ should reuse our systems — fight, 修炼, economy — Ling only needs to inven
 a story"; "the architecture could be the same in all worlds, but the
 content needs to align with the world". A player never builds before
 playing: they start inside a world that is already whole. 《九鼎》 —
-everything in `content/` today — is the first world and the example.
+everything in `worlds/jiuding/` — is the first world and the example.
 
 - **The harness holds the systems, with no names.** The ladder and
   progress, wealth, stamina and its costs, traits, the bag and the catalog,
@@ -116,12 +118,21 @@ everything in `content/` today — is the first world and the example.
   `progress` 武力 for a general, but a fight resolves by a table or a board
   in every world — no HP, ever. That is what keeps a new world cheap to
   balance: it has nothing to balance.
-- **Layout to come (step 10b):** `content/` → `worlds/jiuding/`; a
-  `world.json`; the loader takes a world id; `state.world` says which; the
-  lint runs per world; a names list per world the lint refuses. Built-in
-  worlds are authored; a player's world is Ling's; both play identically.
-  One story in play per save; a new world starts a fresh save (the account
-  keeps several).
+- **Built (step 10b):** `content/` → `worlds/jiuding/`, one folder per
+  world, the folder's name its id. `world.json` is the world card (id, title,
+  premise, style, sources); `loadWorld(id)` loads it, `listWorlds()` names
+  the shipped ones; `state.world` says which the save plays (version 3; a
+  version-2 save was always 《九鼎》 and migrates to it); `rules.mjs` loads
+  the save's world, `init --world=<id>` starts a fresh save in another and
+  refuses `unknown-world` with the list; Look carries the `world` card and
+  the page reads content and art from `worlds/<id>/` once it knows. The lint
+  runs per world (`node content.mjs lint [world]`, all when unnamed) and
+  checks the card. `names.json` lists the novels' names the world refuses,
+  by book; the lint walks every string of the world — and every scene Ling
+  makes, `not-playable: names 黄枫谷 (凡人修仙传)` — and refuses one that
+  contains any; `_` notes are skipped. Built-in worlds are authored; a
+  player's world is Ling's; both play identically. One story in play per
+  save; a new world starts a fresh save (the account keeps several).
 - **Style of 《九鼎》: 修仙 · 凡人流 — no names from the book.** Decided
   2026-09-14 ("use 凡人流 style, no names from the book"). The *system* is
   道教 and genre inheritance older than any novel — nine realms 练气 to 渡劫,
@@ -157,7 +168,7 @@ nowhere in code.
 | `alchemy` · `pill` · `breakthrough` · `tribulation` · `abode` · `cauldron` · `omen` | the world's furniture | 炼丹 · 丹 · 突破 · 雷劫 · 洞府 · 鼎 · 卦 | — |
 
 - **The save is ids:** `{ name, traits, tier, step, progress, wealth, stamina,
-  stamina_at, bag, cast, … }` (version 2; a version-1 save migrates on read —
+  stamina_at, bag, cast, … }` (version 3; older saves migrate on read —
   `migrate` in `state.mjs`).
 - **Content is ids:** grants say `progress` and `wealth` and `cast`; a scene
   sets `traits`; the value exit's field is `name`; the card kind is `traits`.
@@ -285,7 +296,7 @@ from ("a legend of the province"), which is the same tale by the third day.
 A seed is one authored line — a creature, a place, a thing from that
 province's 山海经 chapter — and Ling only fleshes it out.
 
-`content/seeds/<province>.json`, thirty to fifty a province:
+`worlds/<id>/seeds/<province>.json`, thirty to fifty a province:
 
 ```json
 { "province": "徐",
@@ -331,7 +342,7 @@ the quests carry every other day.
 the prologue runs on an item. The catalog gives every item a name, a
 picture, a price and one effect.
 
-`content/items.json`:
+`worlds/<id>/items.json`:
 
 ```json
 { "id": "lingzhi", "kind": "material",
@@ -406,7 +417,7 @@ safe is the one the whole game runs on: **the model proposes, the rules
 decide — extended to authoring.** Ling writes content in the same shape the
 authored content has; the same lint checks it; the same rules play it.
 
-- **The template** is a whole worked scene, `content/templates/made-scene.json`
+- **The template** is a whole worked scene, `worlds/<id>/templates/made-scene.json`
   — the Huai ferry: a place, a setup, Yinyue's line, three exits (one that
   stays, one that needs the lingzhi, one that ends) — with `_rules` beside
   it. `Make` with nothing returns it; Ling reads it only when making.
@@ -621,7 +632,7 @@ change.
   30, Shifu's scan 20) else the default, capped, reported as `qi`. Look carries
   `qi: {now, max, step, empty, returns_at}`; the ring and the empty card draw
   from it; SKILL.md dropped `cloud.meter`. 44 tests.
-- **Built (step 8):** the seeds. `content/seeds/xu.json` — forty for 徐,
+- **Built (step 8):** the seeds. `worlds/<id>/seeds/xu.json` — forty for 徐,
   thirty province tales and ten night tales, each one line zh/en with its
   `source` (禹贡, 史记, 论语, 山海经, 苏轼, the Liaozhai manner); only 夫诸
   names a creature, the rest describe by sight until their cards exist.
@@ -637,7 +648,7 @@ change.
   `state.made.at` first; a made exit's `next` moves within made scenes and
   `ends` comes home; `pick` falls back across languages so a scene in one
   language plays. SKILL.md: the three tools and "Making scenes". 46 tests.
-- **Built (step 10a):** the dictionary. `content/dictionary.json` (ids → zh/en,
+- **Built (step 10a):** the dictionary. `worlds/<id>/dictionary.json` (ids → zh/en,
   provinces); `realms.json` → `ladder.json` (tiers, steps); `roots.json` →
   `traits.json`; `terms.json` gone. State keys are ids (save v2, `migrate`
   on read); rewards tables and day caps keyed `progress`/`wealth`;
@@ -662,7 +673,7 @@ and runs the same `rules.mjs` contract. Later.
 A creature is never named without its picture — a player cannot know 夫诸
 from its name.
 
-- **One picture per creature,** `content/art/<id>.webp`, shipped in the skill.
+- **One picture per creature,** `worlds/<id>/art/<id>.webp`, shipped in the skill.
 - **One style:** ink wash. Where a classical woodblock illustration of the
   creature exists — the Ming and Qing illustrated editions of the 山海经 are
   old enough to be public — it is the source; otherwise the picture is drawn
@@ -725,7 +736,7 @@ refills by the clock.
   hour), never over 100. `state.qi` and `state.qi_at` (when it was last
   settled); the rules settle the refill on every read, so two devices agree
   through the save alone.
-- **Actions cost it, from `content/rewards.json → qi`:** a story step (an
+- **Actions cost it, from `worlds/<id>/rewards.json → qi`:** a story step (an
   exit that moves the scene or ends a chapter) **10** · opening a 奇遇
   **15** · a 降妖 bout **10** · a 坊市 visit **5**.
 - **Free:** questions and chatter, a board played as practice, Look,
@@ -845,7 +856,7 @@ play:
 
 | Judge | How | Model |
 |---|---|---|
-| **Key** | The rules check the answer against a key shipped in `content/` — a riddle's answer, a creature, a poem corpus — in either language | none |
+| **Key** | The rules check the answer against a key shipped in the world — a riddle's answer, a creature, a poem corpus — in either language | none |
 | **Board** | The scene witnesses the win, as it does for 炼丹 | none |
 | **Ling** | No key — a couplet, a plan, a creative act: everyone answers within the time limit, and Ling reads them all in one turn and picks, paying from the capped tables | one turn |
 
@@ -895,7 +906,7 @@ with the word" is Ling-judged).
    **team-only chat**.
 
 `rules.mjs` grows rounds, party exits ("any one player holds the lingzhi")
-and per-player grants; `content/` grows keys, corpora and clue sets.
+and per-player grants; the world grows keys, corpora and clue sets.
 
 ## Memory
 
@@ -919,7 +930,7 @@ and per-player grants; `content/` grows keys, corpora and clue sets.
 own words set the language:** Chinese characters mean `zh`, English words with
 no Chinese mean `en`, anything else (an emoji, a tapped option) changes
 nothing; Ling calls `Lang` before answering, and `Lang` returns the scene in
-the new language. In English play Look carries `terms` (`content/terms.json`:
+the new language. In English play Look carries `words` (the world's `dictionary.json`:
 修为 cultivation, 灵石 spirit stones, 灵根 spirit root, the provinces …), and no
 Chinese appears inside an English sentence. Word games and riddles keep a set
 per language. English uses the fandom's terms (Qi Condensation, Foundation
@@ -954,10 +965,10 @@ Establishment, Core Formation, Nascent Soul).
     every internal key renamed to its id, save version 2 with migration. ✓
     Then worlds: `content/` → `worlds/jiuding/`, `world.json` with the style,
     `state.world`, the loader by world id, the lint per world, the names
-    list.
+    list. ✓
 11. Places: `places.json` for 徐, `Move` for real, tiers and the fitting
     place, the director's brief in Look, the map card by places.
-12. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
+12. The catalog: `worlds/<id>/items.json` for 徐, the `Trade` tool, the 坊市
    scene, the `item` card, the lint.
 13. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
    rule; the 夫诸 exit renamed `subdue`.

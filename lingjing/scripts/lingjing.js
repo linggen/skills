@@ -15,7 +15,7 @@ const $ = (id) => document.getElementById(id);
 const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize']);
 
 let look = null; //       the rules' view of the game — the only source of numbers
-let authored = null; //   the content files
+let authored = null; //   the world's content files, for the world Look names
 let focus = []; //        cards on the scene
 let focusScene = null; // the scene the focus was last reset for
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
@@ -42,11 +42,15 @@ const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boar
 
 /* ── Reading ── */
 
-async function loadContent() {
+/// The content of the world the save plays, read once per world: a save
+/// pulled from the cloud may stand in another world than the last one drawn.
+async function loadContent(world) {
+  if (authored?.world === world) return;
   const [creatures, herbs, hexagrams, roots, terms] = await Promise.all(
-    ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json'].map(content),
+    ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json'].map((f) => content(world, f)),
   );
-  authored = { creatures: creatures.creatures, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary: terms };
+  authored = { world, creatures: creatures.creatures, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary: terms };
+  boards.clear();
 }
 
 /// The account as the engine sees it. The meter moves with every model call,
@@ -64,8 +68,10 @@ async function readCloud() {
 async function refresh() {
   try {
     [look] = await Promise.all([verb('look'), readCloud()]);
+    await loadContent(look.world.id);
   } catch (e) {
     console.warn('[lingjing] look', e);
+    if (!authored) $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
     return;
   }
   const sceneId = look.scene?.id ?? null;
@@ -307,13 +313,7 @@ async function enter() {
 
 async function boot() {
   $('focus').innerHTML = `<div class="loading">${WORDS.zh.loading} · ${WORDS.en.loading}</div>`;
-  try {
-    await Promise.all([loadContent(), readCloud()]);
-  } catch (e) {
-    console.error('[lingjing] boot', e);
-    $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
-    return;
-  }
+  await readCloud();
   // A cloud declared and no account behind it: the gate. No cloud at all
   // (an older engine) plays from the file here, as before.
   if (cloud && !cloud.signed_in) return gate();

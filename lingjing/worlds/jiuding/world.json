@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "_about": "A world: a story laid over the harness's fixed systems. The id names the folder and the save's `world`; the title and style are what the world card says; the sources are the public heritage it draws on. The words for every id are in dictionary.json; the names it refuses are in names.json.",
+  "id": "jiuding",
+  "title": {
+    "zh": "九鼎",
+    "en": "The Nine Cauldrons"
+  },
+  "premise": {
+    "zh": "大禹铸九鼎，周亡而鼎失。九州为图，九境为梯，每寻回一鼎，便破一境。",
+    "en": "Yu the Great cast nine cauldrons; when Zhou fell, they were lost. Nine provinces for a map, nine realms for a ladder — each cauldron found is a breakthrough."
+  },
+  "style": {
+    "zh": "修仙 · 凡人流",
+    "en": "Cultivation · the mortal who climbs by diligence"
+  },
+  "sources": [
+    "山海经",
+    "周易",
+    "道教",
+    "尚书·禹贡",
+    "史记"
+  ],
+  "authored": true
+}

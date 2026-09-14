@@ -3,6 +3,7 @@
 // model wrote, so a card can't show a number the rules didn't return.
 
 import { boardHtml } from './board.js';
+import { worldPath } from './rules.js';
 
 export const WORDS = {
   zh: {
@@ -44,7 +45,7 @@ function creature(card, ctx) {
   if (!c) return '';
   const tamed = (ctx.look.cast || []).some((b) => b.id === c.id);
   return `<div class="card creature${tamed ? ' tamed' : ''}">
-    <img class="illus" src="../content/${esc(c.art)}" alt="${esc(pick(c.name, ctx.lang))}">
+    <img class="illus" src="${esc(worldPath(ctx.look.world.id, c.art))}" alt="${esc(pick(c.name, ctx.lang))}">
     <div class="crow"><div class="seal">${esc(c.name.zh)}</div><div>
       <div class="cardtitle">${esc(pick(c.name, ctx.lang))}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>

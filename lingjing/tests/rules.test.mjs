@@ -368,12 +368,28 @@ test('a save from before the dictionary migrates to the ids', () => {
   const old = { version: 1, lang: 'zh', daohao: '青玄', root: ['wood'], realm: 'qi', stage: 2, xw: 30, ls: 5, beasts: ['fuzhu'], qi: 40, qi_at: NOW.toISOString(),
     bag: {}, chapter: '00-prologue', scene: '00-practice', done_scenes: [], ended: [], tasks: {}, quests: {}, wins: {}, branch: null, story: '', day: { key: '2026-09-11', xw: 30, ls: 5, branches: 0 } };
   const m = migrate(old);
-  assert.equal(m.version, 2);
+  assert.equal(m.version, 3);
+  assert.equal(m.world, 'jiuding', 'a save from before worlds was playing 《九鼎》');
   assert.equal(m.name, '青玄'); assert.deepEqual(m.traits, ['wood']); assert.equal(m.tier, 'qi'); assert.equal(m.step, 2);
   assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
   assert.deepEqual(m.day, { key: '2026-09-11', progress: 30, wealth: 5, branches: 0 });
   assert.equal(m.xw, undefined);
   assert.equal(look(m, content, ctx()).tier.name, '练气三层');
+});
+
+test('a new save says its world, and Look carries the world card', () => {
+  const s = start();
+  assert.equal(s.world, 'jiuding');
+  assert.deepEqual(look(s, content, ctx()).world, { id: 'jiuding', title: '九鼎', style: '修仙 · 凡人流' });
+  assert.equal(look(start('en'), content, ctx()).world.title, 'The Nine Cauldrons');
+});
+
+test('a made scene with a novel\'s name is not playable', () => {
+  let s = toFuzhu();
+  const scene = { id: 'made-sect', chapter: 'made', place: { zh: '黄枫谷山门' }, setup: { zh: '一座山门。' },
+    exits: [{ id: 'home', means: 'go home', ends: 'made' }], buttons: [] };
+  const r = refused(make, s, { scene: JSON.stringify(scene) }, 'not-playable');
+  assert.ok(r.problems.some(p => p.includes('names 黄枫谷 (凡人修仙传)')), JSON.stringify(r.problems));
 });
 
 test('a province is known by its character, its name or its English', () => {
@@ -406,7 +422,10 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-'));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
   const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
-  assert.equal(cli('init', '--lang', 'en').scene.id, '00-river');
+  assert.deepEqual(cli('init', '--world=nowhere'), { ok: false, refused: 'unknown-world', world: 'nowhere', worlds: ['jiuding'] });
+  assert.equal(cli('init', '--lang', 'en').world.id, 'jiuding');
+  assert.equal(cli('look').scene.id, '00-river');
+  assert.equal(JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8')).world, 'jiuding');
   assert.equal(cli('resolve', '--exit', 'reach', '--answer', '{{answer}}').scene.id, '00-waking');
   assert.equal(cli('look').scene.id, '00-waking');
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
