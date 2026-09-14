@@ -785,7 +785,18 @@ from its name.
   laid on our paper by `tools/frame.py` (crop, multiply onto a warm ground
   with grain, the red seal); `art/plates/` keeps the untouched originals;
   `art/CREDITS.md` and each creature's `art_source` carry the edition and
-  the Commons file. Nothing is fetched at play time. Items stay drawn
+  the Commons file; `art_caption` {zh,en} names the edition in small type
+  under the picture on the card. Nothing is fetched at play time. **Finding a
+  plate by name, not by browsing (learned 2026-09-14):** the Qing
+  encyclopaedia's animal volume is 535 named vector plates on Commons (one
+  `allimages` query with the filename prefix lists them all); 胡文煥's book
+  has a table of contents, so page = position; 蔣應鎬's 1597 edition puts
+  its plates inside the text, so only the pages of the creature's 經 need
+  rendering (Commons renders any PDF page as a thumbnail on demand). No one
+  edition draws every creature, and editions disagree — 夫諸 is a goat in
+  the encyclopaedia and a deer in 1597; pick per creature, prefer the
+  reading the text describes. His ruling on the look: "not fancy, very old
+  fashion, but fine for the first version". Items stay drawn
   (`art/items/<id>.svg`, SVG brushwork); at thousands of items the plan is
   re-inked silhouettes from a CC-BY icon set (game-icons.net, credited) or
   an image model at authoring time — never hand-drawing them all. Sizes:

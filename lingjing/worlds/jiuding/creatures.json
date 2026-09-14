@@ -22,7 +22,11 @@
       "province": "豫",
       "root": "water",
       "art": "art/fuzhu.webp",
-      "art_source": "《古今圖書集成·博物彙編·禽蟲典》夫諸圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic298 - 夫諸圖.svg. Cropped and laid on paper by tools/frame.py."
+      "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷五 中山經 第三十二圖，左葉。Public domain. Wikimedia Commons: File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 108. Cropped, levelled and laid on paper by tools/frame.py.",
+      "art_caption": {
+        "zh": "蔣應鎬繪《山海經》，明萬曆本",
+        "en": "Jiang Yinghao's illustrated Shanhaijing, Ming, c. 1597"
+      }
     },
     {
       "id": "paoxiao",
@@ -45,7 +49,11 @@
       "province": "冀",
       "root": "earth",
       "art": "art/paoxiao.webp",
-      "art_source": "《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650）。Public domain. Wikimedia Commons: File:狍鴞.jpg. Laid on paper by tools/frame.py."
+      "art_source": "《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650）。Public domain. Wikimedia Commons: File:狍鴞.jpg. Laid on paper by tools/frame.py.",
+      "art_caption": {
+        "zh": "胡文煥《山海經圖》，明萬曆本",
+        "en": "Hu Wenhuan's Shanhaijing Pictures, Ming, c. 1600"
+      }
     },
     {
       "id": "jingwei",
@@ -68,7 +76,11 @@
       "province": "冀",
       "root": "fire",
       "art": "art/jingwei.webp",
-      "art_source": "《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg. Cropped and laid on paper by tools/frame.py."
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg. Cropped and laid on paper by tools/frame.py.",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      }
     }
   ]
 }

@@ -49,6 +49,7 @@ function creature(card, ctx) {
   const tamed = (ctx.look.cast || []).some((b) => b.id === c.id);
   return `<div class="card creature${tamed ? ' tamed' : ''}">
     <img class="illus" src="${esc(worldPath(ctx.look.world.id, c.art))}" alt="${esc(pick(c.name, ctx.lang))}">
+    ${c.art_caption ? `<div class="artcap">${esc(pick(c.art_caption, ctx.lang))}</div>` : ''}
     <div class="crow"><div class="seal">${esc(c.name.zh)}</div><div>
       <div class="cardtitle">${esc(pick(c.name, ctx.lang))}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>

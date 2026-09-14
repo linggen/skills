@@ -54,11 +54,23 @@ def main():
     ap.add_argument('--width', type=int, default=1200)
     ap.add_argument('--margin', type=float, default=0.03)
     ap.add_argument('--quality', type=int, default=80)
+    ap.add_argument('--levels', action='store_true', help='a scan on toned paper: stretch so the paper reads white and the ink black')
     a = ap.parse_args()
     plate = rasterise(a.src, a.width * 2)
     if a.crop:
         x0, y0, x1, y1 = [float(v) for v in a.crop.split(',')]
         plate = plate.crop((int(plate.width * x0), int(plate.height * y0), int(plate.width * x1), int(plate.height * y1)))
+    if a.levels:
+        hist = plate.histogram(); total = sum(hist)
+        def pct(q):
+            acc = 0
+            for v, n in enumerate(hist):
+                acc += n
+                if acc >= total * q: return v
+            return 255
+        lo, hi = pct(0.02), pct(0.70)   # the darkest ink, the paper's own tone
+        plate = plate.point(lambda v: max(0, min(255, int((v - lo) * 255 / max(1, hi - lo)))))
+        plate = plate.filter(ImageFilter.MedianFilter(3)).point(lambda v: 255 if v > 190 else int(v * 0.85))
     # soften the halftone of a scan a touch, keep the line
     plate = plate.filter(ImageFilter.GaussianBlur(0.6)).point(lambda v: 255 if v > 236 else v)
     scale = a.width / plate.width
