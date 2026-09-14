@@ -21,8 +21,8 @@
       },
       "province": "豫",
       "root": "water",
-      "art": "art/fuzhu.svg",
-      "art_source": "Ink picture drawn for Lingjing after the 山海经 line — SVG: brush strokes, washes, a seal."
+      "art": "art/fuzhu.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》夫諸圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic298 - 夫諸圖.svg. Cropped and laid on paper by tools/frame.py."
     },
     {
       "id": "paoxiao",
@@ -44,8 +44,8 @@
       },
       "province": "冀",
       "root": "earth",
-      "art": "art/paoxiao.svg",
-      "art_source": "Ink picture drawn for Lingjing after the 山海经 line — SVG: brush strokes, washes, a seal."
+      "art": "art/paoxiao.webp",
+      "art_source": "《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650）。Public domain. Wikimedia Commons: File:狍鴞.jpg. Laid on paper by tools/frame.py."
     },
     {
       "id": "jingwei",
@@ -67,8 +67,8 @@
       },
       "province": "冀",
       "root": "fire",
-      "art": "art/jingwei.svg",
-      "art_source": "Ink picture drawn for Lingjing after the 山海经 line — SVG: brush strokes, washes, a seal."
+      "art": "art/jingwei.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg. Cropped and laid on paper by tools/frame.py."
     }
   ]
 }

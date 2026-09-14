@@ -69,7 +69,7 @@ skills/lingjing/
     herbs.json             alchemy tiles
     items.json             the catalog: kinds, prices, one effect each; art/items/<id>.svg
     hexagrams.json         the day's omen (the eight doubled trigrams so far)
-    art/<creature>.svg     one ink picture per creature — SVG brushwork, washes, a seal (2026-09-14)
+    art/<creature>.webp    the classical woodcut on our paper (tools/frame.py); plates/ the originals; CREDITS.md
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
     seeds/<province>.json  奇遇 seeds, one file per province
@@ -777,7 +777,20 @@ and runs the same `rules.mjs` contract. Later.
 A creature is never named without its picture — a player cannot know 夫诸
 from its name.
 
-- **One picture per creature,** `worlds/<id>/art/<id>.svg`, shipped in the skill: ink pictures drawn as SVG (a paper ground inside the file so they read on both themes; rough-edged brush strokes via a turbulence filter; washes; a red seal). Items the same, `art/items/<id>.svg`. Sketches replaced 2026-09-14.
+- **One picture per creature,** `worlds/<id>/art/<id>.webp`, shipped in the
+  skill. **Decided 2026-09-14 (his "fetch the three woodcuts"):** creatures
+  are the classical woodcuts — public domain plates from the illustrated
+  山海经 editions (胡文煥 Ming, 蔣應鎬 1597) and 《古今圖書集成·禽蟲典》
+  (Qing, 1725), fetched once from Wikimedia Commons at authoring time and
+  laid on our paper by `tools/frame.py` (crop, multiply onto a warm ground
+  with grain, the red seal); `art/plates/` keeps the untouched originals;
+  `art/CREDITS.md` and each creature's `art_source` carry the edition and
+  the Commons file. Nothing is fetched at play time. Items stay drawn
+  (`art/items/<id>.svg`, SVG brushwork); at thousands of items the plan is
+  re-inked silhouettes from a CC-BY icon set (game-icons.net, credited) or
+  an image model at authoring time — never hand-drawing them all. Sizes:
+  a woodcut lands at 40–150 KB; art beyond a few hundred pictures ships
+  per chapter.
 - **One style:** ink wash. Where a classical woodblock illustration of the
   creature exists — the Ming and Qing illustrated editions of the 山海经 are
   old enough to be public — it is the source; otherwise the picture is drawn
