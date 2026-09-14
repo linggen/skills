@@ -7,5 +7,11 @@
     "puzzle": { "xw": 20, "ls": 0 },
     "branch": { "xw": 20, "ls": 5 }
   },
-  "day": { "xw": 240, "ls": 60 }
+  "day": { "xw": 240, "ls": 60 },
+  "_qi": "灵气 is the game's stamina — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest).",
+  "qi": {
+    "max": 100, "refill_hours": 5,
+    "cost": { "step": 10, "branch": 15, "duel": 10, "shop": 5 },
+    "refill": { "quest": 20 }
+  }
 }

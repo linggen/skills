@@ -201,6 +201,43 @@ test('a later realm pays more for the same task; the day cap counts base', () =>
   assert.equal(out.result.paid.capped, false);
 });
 
+test('a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
+  let s = start();
+  assert.equal(s.qi, 100);
+  s = must(resolve, s, { exit: 'reach' }).state;
+  assert.equal(s.qi, 90);
+  s.qi = 5; s.qi_at = NOW.toISOString();
+  const r = refused(resolve, s, { exit: 'name', value: '青玄' }, 'no-qi');
+  assert.equal(r.cost, 10);
+  // 5 points short at 20 an hour = 15 minutes
+  assert.equal(new Date(r.returns_at).getTime(), NOW.getTime() + 15 * 60_000);
+  assert.match(r.say, /丹田已空/);
+  const seen = look(s, content, ctx());
+  assert.equal(seen.qi.empty, true);
+  assert.equal(seen.qi.returns_at, r.returns_at);
+});
+
+test('灵气 refills by the clock, whole points, never over the top', () => {
+  const s = start();
+  s.qi = 40; s.qi_at = NOW.toISOString();
+  const later = look(s, content, ctx({ now: new Date(NOW.getTime() + 90 * 60_000) }));
+  assert.equal(later.qi.now, 70); // 1.5 h × 20
+  const full = look(s, content, ctx({ now: new Date(NOW.getTime() + 24 * 3600_000) }));
+  assert.equal(full.qi.now, 100);
+  // an old save with no 灵气 wakes full
+  delete s.qi; delete s.qi_at;
+  assert.equal(look(s, content, ctx()).qi.now, 100);
+});
+
+test('a checked quest refills 灵气 — the app\'s own amount, capped', () => {
+  const s = start();
+  s.qi = 80; s.qi_at = NOW.toISOString();
+  const quests = [{ id: 'health-workout', app: 'health', period: 'day', due: true, done_at: NOW.toISOString(), reward: 20, qi: 30 }];
+  const out = must(task, s, { action: 'check', id: 'health-workout' }, ctx({ quests }));
+  assert.equal(out.result.qi, 20); // 80 + 30, capped at 100
+  assert.equal(out.state.qi, 100);
+});
+
 test('a task pays once; one never offered cannot be claimed', () => {
   refused(task, start(), { action: 'done', id: 'alchemy-first' }, 'not-offered');
   const s = toFuzhu();

@@ -14,11 +14,10 @@ app:
   width: 1280
   height: 820
 # The account behind the game (skill-spec § Cloud): the save follows the
-# player across devices, and 灵气 is a rolling token window sized by
-# linggen.dev — a pace, not a price. Declaring it means: sign in to play.
+# player across devices. Declaring it means: sign in to play. 灵气 is the
+# rules' own stamina inside the save, not a token meter.
 cloud:
   save: data/state.json
-  meter: lingjing
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this
@@ -35,9 +34,10 @@ tools:
       灵石 (`ls`), root, bag, creatures, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
       `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
-      quest `done` was recorded by its app; `paid` is already counted) — and
-      in English play, `terms`: the game's words in English. Call it first in
-      every session and whenever you are unsure.
+      quest `done` was recorded by its app; `paid` is already counted), the
+      丹田 (`qi`: `now` of `max`; `empty` with `returns_at` when a story
+      step is out of reach) — and in English play, `terms`: the game's words
+      in English. Call it first in every session and whenever you are unsure.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}}"
     tier: read
     timeout_ms: 8000
@@ -228,6 +228,12 @@ begin, the same way.
   ends (below).
 - **A refusal is final and stays in the world.** Speak its `say` line when it
   has one; otherwise refuse as the world would — *天地灵石，从不白给。*
+- **`no-qi`: the 丹田 is empty.** Speak its `say` (it names the hour 灵气
+  returns), turn the player to the world in one line — rest, a walk, their
+  other practice — and let the story wait. Never count, spend or promise 灵气
+  yourself: a story step, a 奇遇 and a bout cost it; talk, questions and the
+  boards are free; a quest paid refills it (`qi` on the result — say it, as
+  you say what was paid).
 - **Show is your only card.** The scene draws the status, the place and
   today's practice from the rules by itself; never call PageUpdate here.
 - **Stay inside the world.** Never an error, a tool, a rule, JSON, a model

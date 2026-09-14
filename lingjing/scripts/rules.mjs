@@ -15,6 +15,7 @@ import { CAST, loadContent } from './content.mjs';
 import {
   addXw, fill, langOf, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   payOf, speedOf, stageName, threshold,
+  addQi, qiReturnsAt, settleQi,
 } from './state.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
@@ -90,6 +91,8 @@ function termsEn(content) {
 
 export function look(state, content, ctx) {
   const lang = state.lang;
+  state = clone(state);
+  settleQi(content, state, ctx.now);
   const root = state.root && {
     ids: state.root,
     elements: state.root.map(e => pick(content.roots.elements[e], lang)),
@@ -107,9 +110,18 @@ export function look(state, content, ctx) {
     scene: sceneBrief(content, state),
     ended: state.ended, branch: state.branch, story: state.story,
     omen: omen(content, ctx.now, lang),
+    qi: qiBrief(content, state, ctx.now),
     ...(lang === 'en' ? { terms: termsEn(content) } : {}),
     ...tasksBrief(content, state, ctx),
   };
+}
+
+/* The 丹田 as the scene draws it: what is there, the top, and — when a story
+   step is out of reach — the hour it returns. */
+function qiBrief(content, state, now) {
+  const q = content.rewards.qi;
+  const empty = state.qi < q.cost.step;
+  return { now: state.qi, max: q.max, step: q.cost.step, empty, returns_at: empty ? qiReturnsAt(content, state, q.cost.step).toISOString() : null };
 }
 
 /* ── Changing it ── */
@@ -145,6 +157,21 @@ function judgeAnswer(content, key, answer) {
   const said = normalizeAnswer(answer);
   if (!said) return false;
   return ['zh', 'en'].some(lang => content.riddles[lang].riddles[key].a.some(a => normalizeAnswer(a) === said));
+}
+
+const hourOf = (at, lang) => at.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' });
+
+/* An action costs 灵气 — settled by the clock first. Refused, it says when
+   the 丹田 holds enough again, and the state is untouched. */
+function spendQi(content, s, ctx, kind) {
+  settleQi(content, s, ctx.now);
+  const cost = content.rewards.qi.cost[kind] ?? 0;
+  if (s.qi >= cost) { s.qi -= cost; return null; }
+  const at = qiReturnsAt(content, s, cost);
+  const say = s.lang === 'zh'
+    ? `丹田已空，先去调息。${hourOf(at, 'zh')} 再来。`
+    : `Your dantian is empty — go and rest. Come back at ${hourOf(at, 'en')}.`;
+  return refuse('no-qi', say, { qi: s.qi, cost, returns_at: at.toISOString() });
 }
 
 function cleanValue(raw, rule) {
@@ -184,12 +211,16 @@ export function resolve(state, content, ctx, args) {
     if (!judgeAnswer(content, exit.key, args.answer)) return refuse('wrong-answer', null, { hint: riddle.hint });
   }
   if (exit.game && !s.wins?.[exit.game]) return refuse('game-not-won', null, { game: exit.game });
-  if (exit.game) delete s.wins[exit.game];
   if (exit.value) {
     const value = cleanValue(args.value, exit.value);
     if (!value) return refuse('value-invalid', null, { max_chars: exit.value.max_chars });
     s[exit.value.field] = value;
   }
+  if (exit.next || exit.ends) {
+    const empty = spendQi(content, s, ctx, 'step');
+    if (empty) return empty;
+  }
+  if (exit.game) delete s.wins[exit.game];
   if (exit.take?.bag) {
     s.bag[exit.take.bag] -= 1;
     if (s.bag[exit.take.bag] <= 0) delete s.bag[exit.take.bag];
@@ -261,7 +292,9 @@ function questCheck(state, content, ctx, id) {
   const s = clone(state);
   s.quests[id] = { period, paid_at: ctx.now.toISOString() };
   const paid = pay(content, s, ctx, { table: 'task', xw: q.reward ?? 0 });
-  return { state: s, result: { ok: true, quest: id, app: q.app, paid } };
+  settleQi(content, s, ctx.now);
+  const qi = addQi(content, s, q.qi ?? content.rewards.qi.refill.quest, ctx.now);
+  return { state: s, result: { ok: true, quest: id, app: q.app, paid, qi } };
 }
 
 /* The page is the only witness to a board or a duel: it records the win here,
@@ -286,6 +319,8 @@ export function branch(state, content, ctx, args) {
     if (!template) return refuse('unknown-branch', null, { kinds: content.branches.templates.map(b => b.kind) });
     if (s.branch) return refuse('branch-open', null, { open: s.branch.kind });
     if (s.day.branches >= content.branches.per_day) return refuse('branch-cap', null);
+    const empty = spendQi(content, s, ctx, 'branch');
+    if (empty) return empty;
     s.branch = { kind: template.kind, turns: 0, opened: ctx.now.toISOString() };
     s.day.branches += 1;
     return { state: s, result: { ok: true, opened: template.kind, max_turns: template.max_turns, may_not: template.may_not } };

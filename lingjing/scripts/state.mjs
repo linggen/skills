@@ -18,6 +18,7 @@ export function newState(content, lang, now) {
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     tasks: {}, quests: {}, wins: {}, branch: null, story: '',
     day: { key: dayKey(now), xw: 0, ls: 0, branches: 0 },
+    qi: content.rewards.qi.max, qi_at: at,
     created: at, updated: at,
   };
 }
@@ -81,6 +82,40 @@ export function periodStart(period, now) {
 export function rollDay(state, now) {
   const key = dayKey(now);
   if (state.day?.key !== key) state.day = { key, xw: 0, ls: 0, branches: 0 };
+}
+
+/* ── 灵气: the game's stamina ── */
+
+const secsPerPoint = q => (q.refill_hours * 3600) / q.max;
+
+/* Refill by the clock since it was last settled — whole points only, the
+   remainder keeps waiting in `qi_at`. A save from before 灵气 wakes full. */
+export function settleQi(content, state, now) {
+  const q = content.rewards.qi;
+  if (state.qi == null || !state.qi_at) { state.qi = q.max; state.qi_at = now.toISOString(); return; }
+  if (state.qi >= q.max) { state.qi = q.max; state.qi_at = now.toISOString(); return; }
+  const gained = Math.floor(Math.max(0, now - new Date(state.qi_at)) / 1000 / secsPerPoint(q));
+  if (gained <= 0) return;
+  state.qi = Math.min(q.max, state.qi + gained);
+  state.qi_at = state.qi >= q.max
+    ? now.toISOString()
+    : new Date(new Date(state.qi_at).getTime() + gained * secsPerPoint(q) * 1000).toISOString();
+}
+
+/* When the 丹田 will hold `cost` again, at the refill rate. */
+export function qiReturnsAt(content, state, cost) {
+  const q = content.rewards.qi;
+  const missing = Math.max(0, cost - state.qi);
+  return new Date(new Date(state.qi_at).getTime() + missing * secsPerPoint(q) * 1000);
+}
+
+/* A refill from real life — never over the top. */
+export function addQi(content, state, n, now) {
+  const q = content.rewards.qi;
+  const before = state.qi;
+  state.qi = Math.min(q.max, state.qi + Math.max(0, n));
+  if (state.qi >= q.max) state.qi_at = now.toISOString();
+  return state.qi - before;
 }
 
 /* ── Realms ── */

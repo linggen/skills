@@ -75,16 +75,14 @@ async function refresh() {
 
 /* ── 灵气: the 丹田 ring ── */
 
-/// The window as a state, never a number: full, half, low, empty — or
-/// unknown while the engine holds no reading (signed in, the site out of
-/// reach). No cloud at all draws no ring.
+/// The 丹田 as a state, never a number: full, half, low, empty — from the
+/// rules' Look, which settles the clock's refill on every read.
 function qi() {
-  if (!cloud) return null;
-  const m = cloud.meter;
-  if (!m || !m.size) return { st: 'unknown', p: 100, refillAt: null };
-  const p = Math.max(0, Math.min(100, Math.round((m.left / m.size) * 100)));
-  const st = m.left === 0 ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full';
-  return { st, p, refillAt: m.refill_at || null };
+  const q = look?.qi;
+  if (!q || !q.max) return null;
+  const p = Math.max(0, Math.min(100, Math.round((q.now / q.max) * 100)));
+  const st = q.empty ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full';
+  return { st, p, refillAt: q.returns_at ? Math.floor(new Date(q.returns_at).getTime() / 1000) : null };
 }
 
 const clock = (unixSecs) =>

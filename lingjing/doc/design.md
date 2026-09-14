@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout) and online — the cloud save, the 灵气 meter, sign in to play — built (build order 1–6); next chapter 1; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) and 灵气 as stamina built (build order 1–7); next the seeds; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -454,6 +454,16 @@ change.
   plays from the file, as before. *Superseded 2026-09-14 for the ring: 灵气
   is the rules' own stamina (§ 灵气), read from Look; the sign-in gate and the
   save sync stay as built.*
+- **Built (step 7):** 灵气 as stamina. `rewards.json → qi` (max 100, full
+  in 5 h, costs step 10 · branch 15 · duel 10 · shop 5, quest refill 20 by
+  default); `state.qi` / `state.qi_at`, settled by the clock on every read
+  (`settleQi`, whole points, remainder kept; a save from before wakes full);
+  Resolve charges a moving exit after every other check, Branch open charges
+  its cost, a refused action is `no-qi` with `say` (the hour it returns) and
+  `returns_at`; Practice `check` refills the app's own `qi` (Health's workout
+  30, Shifu's scan 20) else the default, capped, reported as `qi`. Look carries
+  `qi: {now, max, step, empty, returns_at}`; the ring and the empty card draw
+  from it; SKILL.md dropped `cloud.meter`. 44 tests.
 - **A reopened day shows the day so far.** Text Ling writes between tool
   calls is saved as it is written (linggen `b1fec94`); until then only a
   turn's final reply was, and a game day — one long turn of narration and
