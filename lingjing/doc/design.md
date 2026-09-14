@@ -323,6 +323,7 @@ the tameable one; the same card can offer both (夫诸: feed it, or fight it).
   "quests": { "shifu-scan": { "period": "2026-W37", "paid_at": "…" } },
   "branch": null,
   "story": "青玄在泗水边醒来……",
+  "qi": 60, "qi_at": "2026-09-11T12:00:00-03:00",
   "day": { "key": "2026-09-11", "xw": 70, "ls": 10, "branches": 0 } }
 ```
 
@@ -450,7 +451,9 @@ change.
   faint ring. **Empty** puts one line at the top of the scene — 丹田已空，先去
   调息。灵气回满于 HH:MM — and the boards stay. An engine without the route
   answers the web index page: the page treats non-JSON as "no cloud" and
-  plays from the file, as before.
+  plays from the file, as before. *Superseded 2026-09-14 for the ring: 灵气
+  is the rules' own stamina (§ 灵气), read from Look; the sign-in gate and the
+  save sync stay as built.*
 - **A reopened day shows the day so far.** Text Ling writes between tool
   calls is saved as it is written (linggen `b1fec94`); until then only a
   turn's final reply was, and a game day — one long turn of narration and
@@ -514,33 +517,38 @@ changes:
   On Linggen Cloud the game already travels like Health — the shared trial,
   then the plan's monthly pool (linggensite `llm.ts`).
 
-## 灵气 — the 5-hour budget
+## 灵气 — the game's own stamina
 
-**It keeps the game from taking too much of a day.** Cost is the plan's job;
-灵气 is a pace.
+**It keeps the game from taking too much of a day, and sends the player back
+to the world.** Decided 2026-09-14, replacing the token window: 灵气 is a
+number the rules own, like 修为 and 灵石 — the 体力 of every mobile game —
+not tokens and not turns. Tokens differed by provider (5.5k an exchange on
+Gemini, ~2k cached elsewhere), moved with engine changes, and meant nothing
+to the player; a stamina bar is the same on every model, visible, and
+refills by the clock.
 
-- **A rolling 5-hour window of tokens,** the same whatever model answers.
-  **Counted: the uncached prompt plus the output** (decided 2026-09-14). Most
-  of a turn's ~19k tokens is the cached world — SKILL.md, the tools, the
-  story — and a pace should count what the player did: their words and
-  Ling's reply. Providers without cache accounting count the whole prompt.
-- **Counted in the cloud, around every model call.** Before a call the
-  engine asks linggen.dev what is left; after it, it reports the call's
-  tokens. Around each call rather than each turn, because a game sitting —
-  narration, an AskUser answer, more narration — is one long turn (found
-  live: a turn-level check never stopped one). One counter, fed by the
-  engine — the proxy does not count it again.
-- **The skill declares it; the engine names no game.** SKILL.md names the
-  meter, and the engine applies it to any session bound to a skill that
-  declares one. linggen.dev holds the window's size, so it changes without
-  a skill update.
-- **Empty:** the engine sends no new story turn. The scene says one line in
-  the world and when 灵气 returns; the boards stay playable — they use no
-  model.
-- **The 丹田 ring** draws the engine's latest reading: full, half, low,
-  empty. Tokens are never shown.
-- **A pace, not a lock.** A modified client could skip the heartbeat; money
-  is guarded by the plan's pool, not by this window.
+- **丹田 holds 100.** It refills by the clock, full in five hours (20 an
+  hour), never over 100. `state.qi` and `state.qi_at` (when it was last
+  settled); the rules settle the refill on every read, so two devices agree
+  through the save alone.
+- **Actions cost it, from `content/rewards.json → qi`:** a story step (an
+  exit that moves the scene or ends a chapter) **10** · opening a 奇遇
+  **15** · a 降妖 bout **10** · a 坊市 visit **5**.
+- **Free:** questions and chatter, a board played as practice, Look,
+  buying and selling, a real-life quest checked. Talk costs nothing — but
+  nothing advances without 灵气, which is the point.
+- **Real life refills it:** the quest facts the apps already write — a kept
+  workout **+30**, a full night **+30**, a Shifu scan **+20** — paid with the
+  quest, capped at 100. The "healthy user gets a better Linggen" idea, in
+  its natural unit.
+- **Empty:** the rules refuse the action (`no-qi`, with the hour it returns)
+  and change nothing; Ling speaks the line — *丹田已空，先去调息，戌时再来* —
+  and turns the player to the world. The story waits; the boards stay.
+- **The 丹田 ring** draws `state.qi` from Look: full, half, low, empty.
+- **The engine's token meter is not the game's.** `cloud.meter` stays a
+  general facility for any skill that wants a token pace; Lingjing declares
+  only `cloud.save`. The scene stops reading `/api/skill-cloud` for the
+  ring.
 
 ## Online — the save in the cloud, the rules at home
 
@@ -592,7 +600,7 @@ What moves, and how little:
   args, the account token as auth. SKILL.md changes only its `cmd:` lines;
   Ling's rules do not change at all.
 - **The save lives only in the cloud;** `data/` on the machine becomes a
-  cache. The meter stays where it is.
+  cache. 灵气 moves with the rules — it is state.
 - **The scene still witnesses a board** — it reports the win to the site
   instead of the file.
 
@@ -742,16 +750,19 @@ Establishment, Core Formation, Nascent Soul).
 5. Quests: Shifu's scan ✓, Health's workout ✓; Health's night waits for sleep in the mirror.
 6. Online: the cloud save and the 灵气 meter — the skill declares them, the
    engine reports and asks, linggen.dev counts and keeps the save. ✓
-7. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
+7. 灵气 as stamina: `qi`/`qi_at` in the state, costs and refills in
+   `rewards.json`, `no-qi` refusals, the ring from Look; SKILL.md drops
+   `cloud.meter`.
+8. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
    the lint on seed creatures — the daily loop before more spine.
-8. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
+9. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
    scene, the `item` card, the lint.
-9. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
+10. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
    rule; the 夫诸 exit renamed `subdue`.
-10. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
-11. Server authority: `rules.mjs` in a Worker, content bundled, tools as
+11. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
+12. Server authority: `rules.mjs` in a Worker, content bundled, tools as
     endpoints, the save cloud-only — before any play where players compare.
-12. The table: the engine's shared chat, then the first set of plays; 传音 ·
+13. The table: the engine's shared chat, then the first set of plays; 传音 ·
     同修 · 论道 through the cloud.
 
 ## Open
@@ -759,8 +770,6 @@ Establishment, Core Formation, Nascent Soul).
 - **Idea — a healthy user gets a better Linggen.** Health kept (the facts
   the apps already record) earns more than game 灵气: a better Linggen
   overall. To talk through.
-- 灵气 refills from a workout or a deep night — the heartbeat could carry
-  the quest fact; how much, and capped how.
-- The window's size, and whether the plan's players get a larger one.
-- Offline play: the save and the heartbeat need the network.
+- Whether the plan's players get a larger 丹田.
+- Offline play: the save needs the network.
 - The phone.

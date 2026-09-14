@@ -150,17 +150,19 @@ fast 修为 grows.**
 
 ## 灵气 system
 
-**灵气 is the model's tokens** — what the player's turn costs: their words and
-Ling's reply, not the cached world behind them.
+**灵气 is the game's stamina** — a number of its own, like every game's 体力,
+not tokens and not turns.
 
-- **Rolling 5-hour window,** like Claude Code or ChatGPT.
-- **A pace, not a price.** It keeps the game from taking too much of a day.
-- **Every model counts** — Linggen Cloud or the player's own — reported to
-  the cloud around each model call.
-- **Shown as the 丹田:** full, half, low. Tokens are never shown.
-- **When it runs out,** one line in the story says so. The story waits.
-- **Rule-run puzzles cost no 灵气.** They stay playable as practice.
-- **Real-life bonus:** a kept workout or a deep night refills a capped amount.
+- **丹田 holds 100** and refills by the clock, full in five hours.
+- **A pace, not a price.** It keeps the game from taking too much of a day
+  and sends the player back to the world.
+- **Actions cost it:** a story step, a 奇遇, a 降妖 bout, a 坊市 visit.
+  Talking, asking, practising on a board, buying and selling are free — but
+  nothing advances without it.
+- **Real life refills it:** a kept workout, a full night, a Shifu scan.
+- **Shown as the 丹田:** full, half, low, empty. Never a number.
+- **When it runs out,** one line in the story says so and when it returns.
+  The story waits.
 - **Sign in to play:** Linggen's free tier, then the $5 Linggen plan — the
   game is included. Progress is saved to the account, so it follows the
   player to any device.
