@@ -10,7 +10,7 @@ export const WORDS = {
     title: '灵境', xw: '修为', ls: '灵石', tray: '今日功课', trayEmpty: '今日无事，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
-    tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处',
+    tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
     qi: '丹田', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空',
@@ -23,7 +23,7 @@ export const WORDS = {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: "Today's practice", trayEmpty: 'Nothing waits today. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
-    tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You',
+    tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     qi: 'Dantian', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty',
@@ -115,7 +115,25 @@ function board(card, ctx) {
   return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}</div>`;
 }
 
-const RENDER = { creature, traits, map, hexagram, gate, tribulation, board };
+/// One item, or a shelf of them — words, prices and what is held come from
+/// Look's place.shelf or bag; the page prices nothing.
+function item(card, ctx) {
+  const ids = card.ids ?? [card.id];
+  const known = new Map((ctx.look.place?.shelf || []).map((i) => [i.id, i]));
+  const world = ctx.look.world.id;
+  const cells = ids.map((id) => {
+    const i = known.get(id) ?? { id, name: id, kind: '', buy: null, sell: null, held: (ctx.look.bag || []).find((b) => b.id === id)?.n ?? 0 };
+    const held = i.held ? `<span class="chip">${ctx.words.inBag} ×${i.held}</span>` : '';
+    const price = i.buy != null ? `<div class="price"><span>${ctx.words.buy} ${i.buy}</span><span>${ctx.words.sell} ${i.sell}</span></div>` : '';
+    const art = i.art ? `<img class="itemart" src="${esc(worldPath(world, i.art))}" alt="">` : '';
+    return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
+      <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)}</div>${price}${held}</div>`;
+  });
+  const title = ids.length > 1 ? ctx.look.words?.shop ?? ctx.words.shelf : ctx.look.words?.item ?? ctx.words.shelf;
+  return `<div class="card"><div class="cardtitle">${esc(title)}</div><div class="shelf">${cells.join('')}</div></div>`;
+}
+
+const RENDER = { creature, traits, map, hexagram, gate, tribulation, board, item };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

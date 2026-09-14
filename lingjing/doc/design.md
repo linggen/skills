@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split and 徐's places (Move for real, the director's brief) built (build order 1–11); next the catalog and the 坊市; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) and the catalog (Trade, the 坊市 at 彭城, the item card) built (build order 1–12); next 降妖; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -66,6 +66,7 @@ skills/lingjing/
     rewards.json           reward tables and caps (scene, branch, task, day)
     creatures.json         山海经 entries: name{zh,en}, source, quote{zh,en}, province
     herbs.json             alchemy tiles
+    items.json             the catalog: kinds, prices, one effect each; art/items/<id>.svg
     hexagrams.json         the day's omen (the eight doubled trigrams so far)
     art/<creature>.webp    one picture per creature, ink style (sketches as .svg)
     riddles/zh.json, en.json   answer keys the rules check
@@ -379,6 +380,29 @@ picture, a price and one effect.
   item id, checked against the catalog.
 - **The lint:** every item pictured; every `needs.bag`, `gives.bag` and
   `grant.item` names a catalog item; a price never below its sell price.
+- **Built (step 12):** `worlds/jiuding/items.json` — eight for 徐 (灵芝 ·
+  聚气丹 · 人参 · 竹剑 · 蓑衣 · 玉鱼 · 渡牌, and 银月铃 sold only in 冀), each
+  `{id, kind, name, about, art, buy, sell, sold, effect?}` with an ink sketch
+  in `art/items/`. The effect key is `progress` (the id, not 修为); an item
+  may have none — a sword is a thing you own. **The market is a place**, not
+  a scene: 彭城 has `shop`, and Look's `place.shelf` is the catalog `sold` in
+  the province, each with its prices and how many are `held`; `place.show`
+  carries the shelf as one `{card: "item", ids}`. **`Trade {action, id}`**:
+  `buy` / `sell` only at a market, a visit's 灵气 (`shop` 5) each, the
+  catalog's prices; `no-market` (*这里没有坊市*), `not-for-sale-here` (with
+  the shelf), `no-stones` (*灵石不够* + price), `not-in-bag`, `key-in-use`
+  (*这东西还有用处，先留着* — an exit of the chapter's undone scenes still
+  `needs.bag` it), `not-usable`. `use` anywhere: a pill pays `progress`
+  through `pay` (capped, sped, tiered) and is spent; a wear sets
+  `state.wear[slot]` (yinyue / abode) and stays in the bag — selling it
+  takes it off. Selling never counts toward the day's wealth cap: it
+  converts, it does not earn. `grant.item` on an exit or a branch puts the
+  thing in the bag (`paid.item`). Look's `bag` now carries names. The `item`
+  card draws one thing or a shelf with prices and *在囊中 ×n*; the dictionary
+  gained the market words and the seven kinds. The lint: kind, art on disk,
+  whole prices with buy ≥ sell, `sold` provinces known, exactly one effect
+  of the three, a pill within its table, a wear on a slot; every bag
+  reference names a catalog item (herbs stay the board's tiles only).
 
 ### The open world — places, roads, tiers, the director
 
@@ -570,8 +594,8 @@ whole turn.
 | `Practice {action: list \| done \| check, id}` (verb `task`) | `list` the offered tasks and due quests; `done` pays an in-world task whose win the scene recorded; `check` pays a quest its app marked done this period. | `not-offered`, `already-done`, `not-won`, `not-done`, `already-paid` |
 | `Branch {action: open \| turn \| close, kind, xw, ls}` | Opens a 奇遇, counts its turns, pays within the branch cap on close. | `branch-open`, `branch-cap`, `no-branch` |
 | `Summarize {text}` | Replaces the story. | `too-long` |
-| `Move {province}` | Travels. | `road-closed` |
-| `Trade {action: buy \| sell \| use, id}` | Buys, sells or uses a catalog item at the catalog's price; `use` pays a pill's 修为 within its table. Not built. | `unknown-item`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
+| `Move {place}` | Goes to a place by road; a province still answers. | `corridor`, `no-road`, `too-hard` (with `fitting`), `unknown-place`, `road-closed` |
+| `Trade {action: buy \| sell \| use, id}` | Buys or sells at a market at the catalog's price, a visit's 灵气 each; `use` pays a pill's progress within its table or puts a wear on. | `unknown-item`, `no-market`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
 | `Lang {lang}` | Switches zh / en. | — |
 
 `init --lang` starts a game, and `undo` restores the state before the last
@@ -997,7 +1021,7 @@ Establishment, Core Formation, Nascent Soul).
 11. Places: `places.json` for 徐, `Move` for real, tiers and the fitting
     place, the director's brief in Look, the map card by places. ✓
 12. The catalog: `worlds/<id>/items.json` for 徐, the `Trade` tool, the 坊市
-   scene, the `item` card, the lint.
+   as a place, the `item` card, the lint. ✓
 13. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
    rule; the 夫诸 exit renamed `subdue`.
 14. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.

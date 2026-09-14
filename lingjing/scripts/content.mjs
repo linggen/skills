@@ -24,7 +24,9 @@ export function loadWorld(id = DEFAULT_WORLD) {
    never a named speaker. */
 export const CAST = { yinyue: { zh: '银月', en: 'Yinyue' } };
 const SPEAKERS = new Set(['ling', ...Object.keys(CAST)]);
-const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation']);
+const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation', 'item']);
+export const ITEM_KINDS = new Set(['pill', 'weapon', 'gear', 'artifact', 'treasure', 'key', 'material']);
+export const WEAR_SLOTS = new Set(['yinyue', 'abode']);
 const VALUE_FIELDS = new Set(['name']);
 const SETTABLE = { traits: new Set(['v1']) };
 
@@ -41,6 +43,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     rewards: at('rewards.json'),
     creatures: at('creatures.json'),
     herbs: at('herbs.json'),
+    items: at('items.json'),
     hexagrams: at('hexagrams.json'),
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
     tasks: at('tasks/world.json'),
@@ -121,7 +124,7 @@ export function lintMade(scene, madeScenes, content) {
   if (problems.length) return problems;
   const ids = {
     creatures: new Set(content.creatures.creatures.map(c => c.id)),
-    herbs: new Set(content.herbs.herbs.map(h => h.id)),
+    items: new Set(content.items.items.map(i => i.id)),
     tasks: new Set(),
   };
   const chapter = { id: MADE.chapter, scenes: { ...madeScenes, [scene.id]: scene } };
@@ -136,10 +139,11 @@ export function lint(content) {
   const bad = (where, msg) => problems.push(`${where}: ${msg}`);
   const ids = {
     creatures: new Set(content.creatures.creatures.map(c => c.id)),
-    herbs: new Set(content.herbs.herbs.map(h => h.id)),
+    items: new Set(content.items.items.map(i => i.id)),
     tasks: new Set(content.tasks.tasks.map(t => t.id)),
   };
   lintWorld(content.world, bad);
+  lintItems(content, bad);
   bilingual(content, 'content', bad);
   for (const [part, node] of Object.entries(content)) {
     if (!['dir', 'world', 'names'].includes(part)) refusedNames(node, content, part, bad);
@@ -273,7 +277,7 @@ function lintRiddles(riddles, bad) {
 function lintTask(task, content, ids, bad) {
   const where = `task ${task.id}`;
   lintGrant(where, task.grant, content, ids, bad);
-  if (task.gives?.bag && !ids.herbs.has(task.gives.bag)) bad(where, `gives unknown item ${task.gives.bag}`);
+  if (task.gives?.bag && !ids.items.has(task.gives.bag)) bad(where, `gives unknown item ${task.gives.bag}`);
 }
 
 function lintGrant(where, grant, content, ids, bad) {
@@ -284,6 +288,7 @@ function lintGrant(where, grant, content, ids, bad) {
     if ((grant[key] ?? 0) > cap) bad(where, `${key} ${grant[key]} is over the ${grant.table} cap of ${cap}`);
   }
   if (grant.cast && !ids.creatures.has(grant.cast)) bad(where, `grants unknown creature ${grant.cast}`);
+  if (grant.item && !ids.items.has(grant.item)) bad(where, `grants unknown item ${grant.item}`);
 }
 
 function lintChapter(chapter, content, ids, bad) {
@@ -321,7 +326,7 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.next && !chapter.scenes[exit.next]) bad(where, `next ${exit.next} does not exist`);
   if (exit.ends && exit.ends !== chapter.id) bad(where, `ends ${exit.ends}, not its own chapter`);
   for (const rule of [exit.needs, exit.take]) {
-    if (rule?.bag && !ids.herbs.has(rule.bag)) bad(where, `unknown item ${rule.bag}`);
+    if (rule?.bag && !ids.items.has(rule.bag)) bad(where, `unknown item ${rule.bag}`);
     if (rule?.task && !ids.tasks.has(rule.task)) bad(where, `unknown task ${rule.task}`);
   }
   if (exit.take && !exit.needs) bad(where, 'takes what it never checks for');
@@ -339,6 +344,35 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
 function lintCard(where, card, ids, bad) {
   if (!CARDS.has(card.card)) bad(where, `unknown card ${card.card}`);
   if (card.card === 'creature' && !ids.creatures.has(card.id)) bad(where, `shows unknown creature ${card.id}`);
+  if (card.card === 'item') for (const id of card.ids ?? [card.id]) if (!ids.items.has(id)) bad(where, `shows unknown item ${id}`);
+}
+
+/* The catalog: a known kind, a picture on disk, a price never below its
+   sell price, provinces the world knows, and one effect of the three —
+   a key, a pill within its table, a wear on a slot the game has. */
+function lintItems(content, bad) {
+  const seen = new Set();
+  for (const item of content.items.items) {
+    const where = `item ${item.id}`;
+    if (seen.has(item.id)) bad(where, 'duplicate id');
+    seen.add(item.id);
+    if (!ITEM_KINDS.has(item.kind)) bad(where, `unknown kind ${item.kind}`);
+    if (!item.art) bad(where, 'needs art');
+    else if (!fs.existsSync(path.join(content.dir, item.art))) bad(where, `art ${item.art} is missing`);
+    if (!Number.isInteger(item.buy) || !Number.isInteger(item.sell) || item.buy < 0 || item.sell < 0) bad(where, 'buy and sell must be whole numbers');
+    else if (item.buy < item.sell) bad(where, `buys for ${item.buy}, below its sell price ${item.sell}`);
+    for (const province of item.sold ?? []) if (!content.dictionary.provinces[province]) bad(where, `sold in unknown province ${province}`);
+    const e = item.effect;
+    if (!e) continue;
+    const kinds = ['key', 'progress', 'wear'].filter(k => e[k] != null);
+    if (kinds.length !== 1) bad(where, 'an effect is one of key, progress, wear');
+    if (e.progress != null) {
+      const table = content.rewards.tables[e.table];
+      if (!table) bad(where, `unknown reward table ${e.table}`);
+      else if (e.progress > table.progress) bad(where, `progress ${e.progress} is over the ${e.table} cap of ${table.progress}`);
+    }
+    if (e.wear != null && !WEAR_SLOTS.has(e.wear)) bad(where, `cannot wear on ${e.wear}`);
+  }
 }
 
 function unreachable(chapter) {

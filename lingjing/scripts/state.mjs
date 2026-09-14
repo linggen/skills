@@ -15,7 +15,7 @@ export function newState(content, lang, now) {
     version: STATE_VERSION, world: content.world.id, lang: lang === 'en' ? 'en' : 'zh',
     name: null, traits: null,
     tier: content.ladder.tiers[0].id, step: 0, progress: 0, wealth: 0,
-    bag: {}, cast: [],
+    bag: {}, cast: [], wear: {},
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     place: first.scenes[first.first_scene]?.at ?? content.places[first.province]?.start ?? null,
     tasks: {}, quests: {}, wins: {}, branch: null, story: '', seeds_used: [],
@@ -181,5 +181,6 @@ export function migrate(state) {
   if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0, branches: m.day.branches ?? 0 };
   m.world ??= FIRST_WORLD;
   m.place ??= null; // settled by the rules from the scene, or the province's start
+  m.wear ??= {};
   return m;
 }

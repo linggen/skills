@@ -93,6 +93,50 @@
     "omen": {
       "zh": "卦",
       "en": "omen"
+    },
+    "bag": {
+      "zh": "行囊",
+      "en": "bag"
+    },
+    "item": {
+      "zh": "物品",
+      "en": "item"
+    },
+    "buy": {
+      "zh": "买",
+      "en": "buy"
+    },
+    "sell": {
+      "zh": "卖",
+      "en": "sell"
+    },
+    "use": {
+      "zh": "用",
+      "en": "use"
+    },
+    "weapon": {
+      "zh": "兵器",
+      "en": "weapon"
+    },
+    "gear": {
+      "zh": "装备",
+      "en": "gear"
+    },
+    "artifact": {
+      "zh": "法器",
+      "en": "artifact"
+    },
+    "treasure": {
+      "zh": "宝物",
+      "en": "treasure"
+    },
+    "key": {
+      "zh": "钥匙",
+      "en": "key"
+    },
+    "material": {
+      "zh": "材料",
+      "en": "material"
     }
   },
   "provinces": {

@@ -113,3 +113,23 @@ test('places: a road to nowhere, a road that does not come back, a tier off the 
   d.places['徐'].places.find(p => p.id === 'xushan').roads = [];
   assert.ok(has(lint(d), 'place xushan: no road reaches it from the start'));
 });
+
+test('the catalog: a price below its sell, a missing picture, a pill over its table, a bag that names no item', () => {
+  const c = fresh();
+  const item = id => c.items.items.find(i => i.id === id);
+  item('qi-pill').buy = 10;
+  item('ginseng').art = 'art/items/nothing.svg';
+  item('lingzhi').effect = { progress: 99, table: 'puzzle' };
+  item('moon-bell').effect = { wear: 'hat' };
+  item('jade-fish').kind = 'relic';
+  prologue(c).scenes['00-fuzhu'].exits.find(e => e.id === 'gift').needs.bag = 'unicorn-horn';
+  c.tasks.tasks[0].gives = { bag: 'unicorn-horn' };
+  const problems = lint(c);
+  assert.ok(has(problems, 'item qi-pill: buys for 10, below its sell price 20'));
+  assert.ok(has(problems, 'item ginseng: art art/items/nothing.svg is missing'));
+  assert.ok(has(problems, 'item lingzhi: progress 99 is over the puzzle cap of 20'));
+  assert.ok(has(problems, 'item moon-bell: cannot wear on hat'));
+  assert.ok(has(problems, 'item jade-fish: unknown kind relic'));
+  assert.ok(has(problems, 'unknown item unicorn-horn'));
+  assert.ok(has(problems, 'gives unknown item unicorn-horn'));
+});

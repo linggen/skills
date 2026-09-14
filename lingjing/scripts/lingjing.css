@@ -170,3 +170,10 @@ button:disabled { cursor: default; }
 .bolts { display: flex; justify-content: center; gap: 10px; margin: 10px 0; }
 .bolts i { width: 12px; height: 26px; clip-path: polygon(55% 0, 15% 55%, 45% 55%, 30% 100%, 85% 40%, 55% 40%, 75% 0); background: #55556A; }
 .bolts i.hit { background: #F3D778; }
+
+/* ── The shelf ── */
+.shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 8px; }
+.item { border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: var(--surface); display: grid; gap: 3px; }
+.itemart { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
+.itemname { font-weight: 600; }
+.price { display: flex; justify-content: space-between; font-family: var(--ui); font-size: 11px; opacity: 0.8; }

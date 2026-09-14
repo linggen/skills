@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win branch summarize move lang make enter leave undo
+//   verbs: init look resolve judge task win branch summarize move trade lang make enter leave undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` takes
@@ -66,7 +66,11 @@ function placeBrief(content, state) {
   if (!place) return null;
   const lang = state.lang, doc = content.places[place.province];
   const has = place.has ?? {};
-  const show = has.creature ? [{ card: 'creature', id: has.creature }] : [];
+  const shelf = has.shop ? shelfOf(content, place.province) : [];
+  const show = [
+    ...(has.creature ? [{ card: 'creature', id: has.creature }] : []),
+    ...(shelf.length ? [{ card: 'item', ids: shelf.map(i => i.id) }] : []),
+  ];
   return {
     ...placeName(content, state, place),
     province: { id: place.province, name: pick(content.dictionary.provinces[place.province], lang) },
@@ -80,6 +84,7 @@ function placeBrief(content, state) {
       ...placeName(content, state, p), tier: p.tier,
       here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
     })),
+    shelf: shelf.map(i => itemBrief(content, state, i)),
     show,
   };
 }
@@ -134,6 +139,22 @@ function directorBrief(content, state, ctx) {
   };
 }
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
+const itemOf = (content, id) => content.items.items.find(i => i.id === id);
+
+/* An item as Look and the card tell it: its words, its prices, its one
+   effect, and how many the player holds. */
+function itemBrief(content, state, item) {
+  const lang = state.lang, e = item.effect ?? {};
+  return {
+    id: item.id, kind: item.kind, name: pick(item.name, lang), about: pick(item.about, lang), art: item.art,
+    buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
+    effect: e.key ? { key: true } : e.progress ? { progress: e.progress } : e.wear ? { wear: e.wear } : null,
+    worn: Object.values(state.wear ?? {}).includes(item.id),
+  };
+}
+
+/* The market's shelf: the catalog sold in this province. */
+const shelfOf = (content, province) => content.items.items.filter(i => (i.sold ?? []).includes(province));
 
 /* A speaker's name in the player's language; Ling narrates, unnamed. */
 const nameOf = (content, who, lang) => (who === 'ling' ? null : pick(CAST[who] ?? creatureOf(content, who)?.name, lang));
@@ -217,7 +238,9 @@ export function look(state, content, ctx) {
     world: { id: world.id, title: pick(world.title, lang), style: pick(world.style, lang) },
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
     progress: state.progress, next: threshold(content, state), wealth: state.wealth,
-    traits, bag: state.bag,
+    traits,
+    bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: pick(itemOf(content, id)?.name, lang) ?? id, n })),
+    wear: state.wear ?? {},
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: sceneBrief(content, state),
@@ -265,8 +288,9 @@ function pay(content, state, ctx, grant) {
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
+  if (grant.item) state.bag[grant.item] = (state.bag[grant.item] ?? 0) + 1;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
-  return { progress, wealth, cast: grant.cast ?? null, levels: named, hold, capped: base < want };
+  return { progress, wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want };
 }
 
 function judgeAnswer(content, key, answer) {
@@ -543,6 +567,74 @@ export function move(state, content, ctx, args) {
   return { state: s, result: { ok: true, place, show: place.show, director: directorBrief(content, s, ctx), summarize: true } };
 }
 
+/* A key the story still needs: an exit of the current chapter's scenes not
+   yet done asks for it in the bag. */
+function keyInUse(content, state, id) {
+  if (inMade(state)) return false;
+  const chapter = content.chapters[state.chapter];
+  if (!chapter || state.ended.includes(chapter.id)) return false;
+  return Object.values(chapter.scenes).some(scene => !state.done_scenes.includes(scene.id)
+    && scene.exits.some(e => e.needs?.bag === id));
+}
+
+/* Buy, sell or use a catalog item. Buying and selling happen at a market
+   (a place with a shop) and cost a visit's stamina; the prices are the
+   catalog's, never Ling's. Using a pill pays its progress within its table;
+   using a wear puts it on Yinyue or the abode. */
+export function trade(state, content, ctx, args) {
+  const item = itemOf(content, String(args.id ?? ''));
+  const s = clone(state);
+  settlePlace(content, s);
+  const here = placeOf(content, s.place);
+  const lang = s.lang, w = wordsOf(content, lang);
+  if (!item) return refuse('unknown-item', null, { shelf: here?.has?.shop ? shelfOf(content, here.province).map(i => i.id) : [] });
+  const held = s.bag[item.id] ?? 0;
+  if (args.action === 'buy' || args.action === 'sell') {
+    if (!here?.has?.shop) {
+      return refuse('no-market', pick({ zh: `这里没有${w.shop}。`, en: `There is no ${w.shop} here.` }, lang));
+    }
+    if (args.action === 'buy') {
+      if (!(item.sold ?? []).includes(here.province)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here.province).map(i => i.id) });
+      if (s.wealth < item.buy) {
+        return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: item.buy, wealth: s.wealth });
+      }
+      const empty = spendStamina(content, s, ctx, 'shop');
+      if (empty) return empty;
+      s.wealth -= item.buy;
+      s.bag[item.id] = held + 1;
+      return { state: s, result: { ok: true, bought: item.id, item: itemBrief(content, s, item), paid: { wealth: -item.buy }, wealth: s.wealth } };
+    }
+    if (held < 1) return refuse('not-in-bag', null);
+    if (item.effect?.key && keyInUse(content, s, item.id)) {
+      return refuse('key-in-use', pick({ zh: '这东西还有用处，先留着。', en: 'You will need that yet — keep it.' }, lang));
+    }
+    const empty = spendStamina(content, s, ctx, 'shop');
+    if (empty) return empty;
+    s.bag[item.id] = held - 1;
+    if (s.bag[item.id] <= 0) delete s.bag[item.id];
+    if (s.wear) for (const [slot, id] of Object.entries(s.wear)) if (id === item.id && !s.bag[item.id]) delete s.wear[slot];
+    s.wealth += item.sell;
+    return { state: s, result: { ok: true, sold: item.id, item: itemBrief(content, s, item), paid: { wealth: item.sell }, wealth: s.wealth } };
+  }
+  if (args.action === 'use') {
+    if (held < 1) return refuse('not-in-bag', null);
+    const e = item.effect ?? {};
+    if (e.progress) {
+      s.bag[item.id] = held - 1;
+      if (s.bag[item.id] <= 0) delete s.bag[item.id];
+      const paid = pay(content, s, ctx, { table: e.table, progress: e.progress });
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid } };
+    }
+    if (e.wear) {
+      s.wear ??= {};
+      s.wear[e.wear] = item.id;
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear } };
+    }
+    return refuse('not-usable', null);
+  }
+  return refuse('unknown-action', null, { actions: ['buy', 'sell', 'use'] });
+}
+
 /* The player's words set the language. The result carries the scene in it,
    so one call switches and re-reads; asking for the language already in
    use changes nothing. */
@@ -608,7 +700,7 @@ export function leave(state, content) {
   return { state: s, result: { ok: true, scene: sceneBrief(content, s), summarize: true } };
 }
 
-export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, branch, summarize, move, lang, make, enter, leave };
+export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, branch, summarize, move, trade, lang, make, enter, leave };
 
 /* ── Files and the command line ── */
 

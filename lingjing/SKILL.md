@@ -180,6 +180,28 @@ tools:
         required: true
         description: The place — its id, 云龙山, or Yunlong Mountain; or a province.
 
+  - name: Trade
+    description: >-
+      Buy, sell or use a catalog item. `buy` and `sell` happen only at a
+      place with a market (`place.has.shop`; its `shelf` carries every price —
+      you never invent one) and cost a visit's stamina; `use` works anywhere:
+      a pill pays its progress, a wear goes on Yinyue or the abode. Refusals:
+      `no-market`, `not-for-sale-here` (with the shelf), `no-stones` (its
+      line), `not-in-bag`, `key-in-use` (its line — the story still needs
+      it), `not-usable`.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs trade --action={{action}} --id={{id}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: buy, sell or use.
+      id:
+        type: string
+        required: true
+        description: The item id from the shelf or the bag.
+
   - name: Lang
     description: >-
       Set the game's language to the player's. Returns the scene in that
@@ -231,7 +253,7 @@ tools:
     description: >-
       Put cards before the player — on the scene beside the chat on the Mac,
       inline on the phone. The kinds are creature, traits, map, board, hexagram,
-      gate and tribulation; there are no others. Pass the `show` entries
+      gate, tribulation and item; there are no others. Pass the `show` entries
       exactly as the rules gave them; add `{card: "hexagram", id}` for the
       omen and `{card: "gate", chapter, opens}` for a chapter that has not
       opened.
@@ -365,6 +387,15 @@ begin, the same way.
   line: *冀州的路还没开。* A road that is not there, a place beyond the
   player: the refusal's `say`, then Yinyue's `yinyue` line naming the
   `fitting` place. Never a lecture; nobody is stuck.
+
+## The market
+
+At a place with a shop, Look's `place.show` carries the shelf as one `item`
+card — Show it, then let the player say what they want; Trade does the
+rest. Speak prices only as the shelf gives them, in `words.wealth`. A thing
+bought or sold is said in a line — *竹剑到手，灵石 −60* — and the story goes
+on. A pill is used anywhere; say what it paid. What the player carries is
+Look's `bag`; `{card: "item", id}` shows one thing.
 
 ## The director's brief
 

@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { branch, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, win } from '../scripts/rules.mjs';
+import { branch, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, win } from '../scripts/rules.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -470,6 +470,76 @@ test('the director names today\'s seed only where seeds grow, and the pool', () 
 test('a save from before places starts where its province starts', () => {
   const s = { ...toOpenWorld(), place: undefined };
   assert.equal(look(s, content, ctx()).place.id, 'sishui');
+});
+
+/* Out of the prologue and into 彭城's market, with stones to spend. */
+function toMarket(wealth = 100) {
+  let s = toOpenWorld();
+  s = must(move, s, { place: 'sishui' }).state;
+  s = must(move, s, { place: 'pengcheng' }).state;
+  return { ...s, wealth, stamina: 100 };
+}
+
+test('the market: the shelf on the place, buying, selling, the visit\'s stamina', () => {
+  const s = toMarket();
+  const l = look(s, content, ctx());
+  assert.equal(l.place.has.shop, true);
+  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token']);
+  assert.equal(l.place.shelf[1].buy, 80);
+  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token'] }]);
+  const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
+  assert.equal(bought.state.wealth, 20);
+  assert.deepEqual(bought.state.bag, { 'qi-pill': 1 });
+  assert.equal(bought.state.stamina, 95, 'a visit costs five');
+  assert.equal(bought.result.item.held, 1);
+  assert.deepEqual(look(bought.state, content, ctx()).bag, [{ id: 'qi-pill', name: '聚气丹', n: 1 }]);
+  const sold = must(trade, bought.state, { action: 'sell', id: 'qi-pill' });
+  assert.equal(sold.state.wealth, 40);
+  assert.deepEqual(sold.state.bag, {});
+  refused(trade, sold.state, { action: 'sell', id: 'qi-pill' }, 'not-in-bag');
+  const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
+  assert.equal(poor.say, '灵石不够。');
+  assert.equal(poor.price, 80);
+  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 7);
+  refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
+  refused(trade, { ...s, stamina: 2 }, { action: 'buy', id: 'straw-cloak' }, 'no-stamina');
+});
+
+test('no market away from one; a pill is used anywhere; a wear goes on Yinyue', () => {
+  const s = toMarket();
+  const away = must(move, s, { place: 'sishui' }).state;
+  assert.equal(refused(trade, away, { action: 'buy', id: 'ginseng' }, 'no-market').say, '这里没有坊市。');
+  const withPill = must(trade, s, { action: 'buy', id: 'qi-pill' }).state;
+  const used = must(trade, must(move, withPill, { place: 'sishui' }).state, { action: 'use', id: 'qi-pill' });
+  assert.equal(used.result.paid.progress, 20);
+  assert.deepEqual(used.state.bag, {});
+  refused(trade, s, { action: 'use', id: 'qi-pill' }, 'not-in-bag');
+  const withSword = must(trade, s, { action: 'buy', id: 'bamboo-sword' }).state;
+  refused(trade, withSword, { action: 'use', id: 'bamboo-sword' }, 'not-usable');
+  const withBell = { ...s, bag: { 'moon-bell': 1 } };
+  const worn = must(trade, withBell, { action: 'use', id: 'moon-bell' });
+  assert.deepEqual(worn.state.wear, { yinyue: 'moon-bell' });
+  assert.equal(worn.result.item.worn, true);
+  const bellSold = must(trade, worn.state, { action: 'sell', id: 'moon-bell' }).state;
+  assert.deepEqual(bellSold.wear, {}, 'sold, no longer worn');
+});
+
+test('a key the story still needs cannot be sold', () => {
+  // At the market with the prologue not yet done: 夫诸 still needs the lingzhi.
+  const s = { ...toMarket(), chapter: '00-prologue', scene: null, ended: [], done_scenes: ['00-river'], bag: { lingzhi: 1 } };
+  const r = refused(trade, s, { action: 'sell', id: 'lingzhi' }, 'key-in-use');
+  assert.equal(r.say, '这东西还有用处，先留着。');
+  const done = { ...s, ended: ['00-prologue'] };
+  assert.equal(must(trade, done, { action: 'sell', id: 'lingzhi' }).state.wealth, 110);
+});
+
+test('an exit can grant a thing', () => {
+  const c = structuredClone(content);
+  c.chapters['00-prologue'].scenes['00-river'].exits[0].grant = { table: 'scene', item: 'straw-cloak' };
+  const out = resolve(start(), c, ctx(), { exit: 'reach' });
+  assert.equal(out.result.ok, true);
+  assert.equal(out.result.paid.item, 'straw-cloak');
+  assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });
 });
 
 test('a province is known by its character, its name or its English', () => {
