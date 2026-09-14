@@ -69,7 +69,7 @@ skills/lingjing/
     herbs.json             alchemy tiles
     items.json             the catalog: kinds, prices, one effect each; art/items/<id>.svg
     hexagrams.json         the day's omen (the eight doubled trigrams so far)
-    art/<creature>.webp    one picture per creature, ink style (sketches as .svg)
+    art/<creature>.svg     one ink picture per creature — SVG brushwork, washes, a seal (2026-09-14)
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
     seeds/<province>.json  奇遇 seeds, one file per province
@@ -777,7 +777,7 @@ and runs the same `rules.mjs` contract. Later.
 A creature is never named without its picture — a player cannot know 夫诸
 from its name.
 
-- **One picture per creature,** `worlds/<id>/art/<id>.webp`, shipped in the skill.
+- **One picture per creature,** `worlds/<id>/art/<id>.svg`, shipped in the skill: ink pictures drawn as SVG (a paper ground inside the file so they read on both themes; rough-edged brush strokes via a turbulence filter; washes; a red seal). Items the same, `art/items/<id>.svg`. Sketches replaced 2026-09-14.
 - **One style:** ink wash. Where a classical woodblock illustration of the
   creature exists — the Ming and Qing illustrated editions of the 山海经 are
   old enough to be public — it is the source; otherwise the picture is drawn

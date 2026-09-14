@@ -22,7 +22,7 @@
       "province": "豫",
       "root": "water",
       "art": "art/fuzhu.svg",
-      "art_source": "Sketch from the prototype — replace with an ink picture."
+      "art_source": "Ink picture drawn for Lingjing after the 山海经 line — SVG: brush strokes, washes, a seal."
     },
     {
       "id": "paoxiao",
@@ -45,7 +45,7 @@
       "province": "冀",
       "root": "earth",
       "art": "art/paoxiao.svg",
-      "art_source": "Sketch — replace with an ink picture."
+      "art_source": "Ink picture drawn for Lingjing after the 山海经 line — SVG: brush strokes, washes, a seal."
     },
     {
       "id": "jingwei",
@@ -68,7 +68,7 @@
       "province": "冀",
       "root": "fire",
       "art": "art/jingwei.svg",
-      "art_source": "Sketch — replace with an ink picture."
+      "art_source": "Ink picture drawn for Lingjing after the 山海经 line — SVG: brush strokes, washes, a seal."
     }
   ]
 }

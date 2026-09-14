@@ -1,1 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" fill="none" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 46 C34 22 78 22 96 46 C78 70 34 70 16 46 Z"/><path d="M96 46 L112 34 L110 58 Z"/><circle cx="34" cy="44" r="2.5" fill="#2b2b2b"/><path d="M44 34 C54 40 64 40 74 34 M44 58 C54 52 64 52 74 58" stroke-width="1.2"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="bleed" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="0.6"/>
+    </filter>
+    <filter id="wash" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.4"/></filter>
+    <filter id="mist" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>
+    <radialGradient id="paper" cx="50%" cy="45%" r="75%">
+      <stop offset="0" stop-color="#F7F2E7"/><stop offset="1" stop-color="#EAE2D2"/>
+    </radialGradient>
+    <pattern id="grain" width="6" height="6" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r=".5" fill="#1E1B18" opacity=".05"/><circle cx="4" cy="4" r=".4" fill="#1E1B18" opacity=".04"/>
+    </pattern>
+  </defs>
+  <rect width="160" height="120" fill="url(#paper)"/>
+  <rect width="160" height="120" fill="url(#grain)"/>
+
+  <path d="M84 18 Q86 26 82 34" fill="none" stroke="#1E1B18" stroke-width="1.4"/>
+  <path d="M22 70 Q48 42 88 42 Q118 42 130 60 L142 50 L140 90 L130 80 Q118 98 88 98 Q48 98 22 70 Z" fill="#8DA98A" opacity=".55" filter="url(#bleed)"/>
+  <path d="M22 70 Q48 42 88 42 Q118 42 130 60 L142 50 L140 90 L130 80 Q118 98 88 98 Q48 98 22 70 Z" fill="none" stroke="#1E1B18" stroke-width="1.8" filter="url(#rough)"/>
+  <g fill="none" stroke="#1E1B18" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" opacity=".75">
+    <path d="M60 56 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 M56 70 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 M60 84 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0"/>
+    <path d="M76 42 L82 34 L88 42"/>
+  </g>
+  <circle cx="40" cy="66" r="2.6" fill="#1E1B18"/>
+  <circle cx="82" cy="36" r="2.2" fill="none" stroke="#1E1B18" stroke-width="1.2"/>
+
+  <g transform="translate(140 100)">
+    <rect x="-9" y="-9" width="18" height="18" rx="1.5" fill="#B03A2B" opacity=".92" filter="url(#rough)"/>
+    <text x="0" y="5" text-anchor="middle" font-size="12" font-family="'Songti SC','Noto Serif CJK SC',serif" fill="#F7F2E7">玉</text>
+  </g>
+</svg>
