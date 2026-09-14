@@ -24,7 +24,12 @@ export function loadWorld(id = DEFAULT_WORLD) {
    never a named speaker. */
 export const CAST = { yinyue: { zh: '银月', en: 'Yinyue' } };
 const SPEAKERS = new Set(['ling', ...Object.keys(CAST)]);
-const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation', 'item']);
+const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation', 'item', 'duel']);
+const GAME_KINDS = new Set(['duel', 'board']);
+
+/* An exit's game, one shape: `{id, kind, creature?}`; a bare string is a
+   board known by its id. */
+export const gameOf = exit => (exit?.game == null ? null : typeof exit.game === 'string' ? { id: exit.game, kind: 'board' } : exit.game);
 export const ITEM_KINDS = new Set(['pill', 'weapon', 'gear', 'artifact', 'treasure', 'key', 'material']);
 export const WEAR_SLOTS = new Set(['yinyue', 'abode']);
 const VALUE_FIELDS = new Set(['name']);
@@ -258,6 +263,7 @@ function lintLadder(ladder, bad) {
 
 function lintCreatures(content, bad) {
   for (const c of content.creatures.creatures) {
+    if (!content.traits.elements[c.root]) bad(`creature ${c.id}`, `needs a root the traits know, not ${c.root}`);
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
   }
@@ -332,6 +338,13 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   if (exit.take && !exit.needs) bad(where, 'takes what it never checks for');
   if (exit.needs && !exit.refuse) bad(where, 'a need needs a refusal line');
   if (exit.key && !content.riddles.zh.riddles[exit.key]) bad(where, `unknown riddle ${exit.key}`);
+  const game = gameOf(exit);
+  if (game) {
+    if (typeof game.id !== 'string' || !game.id) bad(where, 'a game needs an id');
+    if (!GAME_KINDS.has(game.kind)) bad(where, `unknown game kind ${game.kind}`);
+    if (game.kind === 'duel' && !ids.creatures.has(game.creature)) bad(where, `duels unknown creature ${game.creature}`);
+    if (game.kind === 'duel' && !exit.withdrawn) bad(where, 'a duel needs a withdrawn line');
+  }
   if (exit.value && !VALUE_FIELDS.has(exit.value.field)) bad(where, `cannot set ${exit.value.field}`);
   for (const [field, value] of Object.entries(exit.set ?? {})) {
     if (!SETTABLE[field]?.has(value)) bad(where, `cannot set ${field} to ${value}`);

@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win branch summarize move trade lang make enter leave undo
+//   verbs: init look resolve judge task win duel branch summarize move trade lang make enter leave undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` takes
@@ -13,7 +13,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CAST, DEFAULT_WORLD, MADE, hasWorld, lintMade, listWorlds, loadWorld } from './content.mjs';
+import { CAST, DEFAULT_WORLD, MADE, gameOf, hasWorld, lintMade, listWorlds, loadWorld } from './content.mjs';
+import { bout, creatureMoves } from './duel.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   payOf, speedOf, stepName, threshold,
@@ -162,9 +163,10 @@ const spoken = (content, state, lines) => (lines ?? []).map(l => ({
   who: l.who, name: nameOf(content, l.who, state.lang), text: fill(pick(l.text, state.lang), state),
 }));
 
-function sceneBrief(content, state) {
+function sceneBrief(content, state, now = new Date()) {
   const scene = sceneOf(content, state);
   if (!scene) return null;
+  const ctxNow = now;
   const lang = state.lang, say = pair => fill(pick(pair, lang), state);
   const buttons = scene.buttons ?? [];
   return {
@@ -175,15 +177,36 @@ function sceneBrief(content, state) {
     show: scene.show ?? [],
     lines: spoken(content, state, scene.lines),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
-    exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id))),
+    exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow)),
   };
 }
 
-function exitBrief(content, state, exit, button) {
+/* The bout as the scene draws it: the creature and its root, the player's
+   roots, and today's bout if one is open or done. */
+function duelBrief(content, state, game, now) {
+  const creature = creatureOf(content, game.creature);
+  const lang = state.lang, today = state.duels?.[game.creature];
+  const open = today?.day === dayKey(now) ? today : null;
+  return {
+    id: game.id, creature: { id: creature.id, name: pick(creature.name, lang), root: creature.root, root_name: pick(content.traits.elements[creature.root], lang) },
+    roots: (state.traits ?? []).map(e => ({ id: e, name: pick(content.traits.elements[e], lang) })),
+    today: open ? { outcome: open.outcome, rounds: open.rounds ?? [] } : null,
+  };
+}
+
+function exitBrief(content, state, exit, button, ctxNow = new Date()) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
   if (exit.key) brief.riddle = content.riddles[state.lang].riddles[exit.key].q;
-  if (exit.game) Object.assign(brief, { game: exit.game, won: Boolean(state.wins?.[exit.game]) });
+  const game = gameOf(exit);
+  if (game) {
+    Object.assign(brief, { game, won: Boolean(state.wins?.[game.id]) });
+    if (game.kind === 'duel') {
+      const today = state.duels?.[game.creature];
+      brief.withdrawn = today?.day === dayKey(ctxNow) && today.outcome === 'lost';
+      brief.duel = duelBrief(content, state, game, ctxNow);
+    }
+  }
   if (exit.value) brief.value = { field: exit.value.field, max_chars: exit.value.max_chars, offers: exit.value.offers.map(o => pick(o, state.lang)) };
   return brief;
 }
@@ -243,7 +266,7 @@ export function look(state, content, ctx) {
     wear: state.wear ?? {},
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
-    scene: sceneBrief(content, state),
+    scene: sceneBrief(content, state, ctx.now),
     place: placeBrief(content, state),
     director: directorBrief(content, state, ctx),
     ended: state.ended, branch: state.branch, story: state.story,
@@ -353,7 +376,12 @@ export function resolve(state, content, ctx, args) {
     if (args.answer == null) return refuse('needs-answer', riddle.q);
     if (!judgeAnswer(content, exit.key, args.answer)) return refuse('wrong-answer', null, { hint: riddle.hint });
   }
-  if (exit.game && !s.wins?.[exit.game]) return refuse('game-not-won', null, { game: exit.game });
+  const game = gameOf(exit);
+  if (game && !s.wins?.[game.id]) {
+    const today = game.kind === 'duel' ? s.duels?.[game.creature] : null;
+    if (today?.day === dayKey(ctx.now) && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, lang), { game: game.id });
+    return refuse('game-not-won', null, { game: game.id });
+  }
   if (exit.value) {
     const value = cleanValue(args.value, exit.value);
     if (!value) return refuse('value-invalid', null, { max_chars: exit.value.max_chars });
@@ -363,7 +391,7 @@ export function resolve(state, content, ctx, args) {
     const empty = spendStamina(content, s, ctx, 'step');
     if (empty) return empty;
   }
-  if (exit.game) delete s.wins[exit.game];
+  if (game) delete s.wins[game.id];
   if (exit.take?.bag) {
     s.bag[exit.take.bag] -= 1;
     if (s.bag[exit.take.bag] <= 0) delete s.bag[exit.take.bag];
@@ -385,7 +413,7 @@ export function resolve(state, content, ctx, args) {
   return {
     state: s,
     result: {
-      ok: true, took: exit.id, beat, paid, show: exit.show ?? [], scene: sceneBrief(content, s), ended: exit.ends ?? null, waiting,
+      ok: true, took: exit.id, beat, paid, show: exit.show ?? [], scene: sceneBrief(content, s, ctx.now), ended: exit.ends ?? null, waiting,
       summarize: Boolean(exit.next || exit.ends),
     },
   };
@@ -451,11 +479,45 @@ function questCheck(state, content, ctx, id) {
    could claim would be a self-reported one. */
 export function win(state, content, ctx, args) {
   const id = String(args.id ?? '');
-  const inScene = sceneOf(content, state)?.exits.some(e => e.game === id);
+  const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
   if (!inScene && !taskOpen(content, state, id, ctx.now)) return refuse('not-here', null);
   const s = clone(state);
   s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
   return { state: s, result: { ok: true, won: id } };
+}
+
+/* 降妖 — the scene plays the bout, the rules decide it. `start` checks the
+   creature has not withdrawn today, charges a bout's stamina and draws the
+   creature's moves for the day; then, with `picks`, the rules replay the
+   bout and record the outcome: a win the exit can take, or a loss that
+   sends the creature into the mist until tomorrow. A loss costs nothing
+   else. After a win today a bout is practice: it costs, it pays nothing. */
+export function duel(state, content, ctx, args) {
+  const id = String(args.id ?? '');
+  const exit = sceneOf(content, state)?.exits.find(e => gameOf(e)?.id === id && gameOf(e).kind === 'duel');
+  if (!exit) return refuse('not-here', null);
+  const game = gameOf(exit), creature = creatureOf(content, game.creature);
+  const s = clone(state);
+  const day = dayKey(ctx.now), today = s.duels?.[creature.id];
+  const seed = `${day}|${creature.id}|${s.name ?? ''}`;
+  const moves = creatureMoves(creature.root, seed);
+  if (!args.picks) {
+    if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, s.lang), { game: id });
+    if (!s.traits?.length) return refuse('no-traits', null);
+    const empty = spendStamina(content, s, ctx, 'duel');
+    if (empty) return empty;
+    s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open', rounds: [] } };
+    return { state: s, result: { ok: true, started: id, moves, duel: duelBrief(content, s, game, ctx.now) } };
+  }
+  if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
+  const picks = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
+  if (picks.some(x => !s.traits?.includes(x))) return refuse('not-your-root', null, { roots: s.traits ?? [] });
+  const played = bout(picks, moves);
+  if (played.outcome === 'open') return refuse('unfinished', null, { rounds: played.rounds });
+  s.duels[creature.id] = { day, outcome: played.outcome, rounds: played.rounds };
+  if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  const say = played.outcome === 'lost' ? pick(exit.withdrawn, s.lang) : null;
+  return { state: s, result: { ok: true, outcome: played.outcome, rounds: played.rounds, game: id, say } };
 }
 
 /* ── Branches, story, travel, language ── */
@@ -700,7 +762,7 @@ export function leave(state, content) {
   return { state: s, result: { ok: true, scene: sceneBrief(content, s), summarize: true } };
 }
 
-export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, branch, summarize, move, trade, lang, make, enter, leave };
+export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave };
 
 /* ── Files and the command line ── */
 

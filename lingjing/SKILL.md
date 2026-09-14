@@ -253,7 +253,7 @@ tools:
     description: >-
       Put cards before the player — on the scene beside the chat on the Mac,
       inline on the phone. The kinds are creature, traits, map, board, hexagram,
-      gate, tribulation and item; there are no others. Pass the `show` entries
+      gate, tribulation, item and duel; there are no others. Pass the `show` entries
       exactly as the rules gave them; add `{card: "hexagram", id}` for the
       omen and `{card: "gate", chapter, opens}` for a chapter that has not
       opened.
@@ -387,6 +387,18 @@ begin, the same way.
   line: *冀州的路还没开。* A road that is not there, a place beyond the
   player: the refusal's `say`, then Yinyue's `yinyue` line naming the
   `fitting` place. Never a lecture; nobody is stuck.
+
+## 降妖 — fighting a creature
+
+A fight is played on the scene, like a board — the 五行 bout: the player
+picks a root each round, 相克 wins, two rounds subdue it. **You never roll a
+round or call a fight.** An exit with `game.kind: "duel"` sits on the scene
+as its card; when the player wants to fight, say so in a line and let the
+scene take it. The scene reports `[scene] won <id>` — Resolve that exit and
+speak its beat — or `[scene] lost <id>`: the creature withdraws into the
+mist until tomorrow; the exit refuses `withdrawn` with its line, and a loss
+costs nothing. Tomorrow the same exit fights again. Yinyue's line after a
+loss is kind and short.
 
 ## The market
 

@@ -133,3 +133,17 @@ test('the catalog: a price below its sell, a missing picture, a pill over its ta
   assert.ok(has(problems, 'unknown item unicorn-horn'));
   assert.ok(has(problems, 'gives unknown item unicorn-horn'));
 });
+
+test('a creature needs a root; a duel needs a known creature, a kind and its withdrawn line', () => {
+  const c = fresh();
+  c.creatures.creatures[0].root = 'plasma';
+  const subdue = prologue(c).scenes['00-fuzhu'].exits.find(e => e.id === 'subdue');
+  subdue.game = { id: 'subdue-x', kind: 'duel', creature: 'qilin' };
+  delete subdue.withdrawn;
+  prologue(c).scenes['00-fuzhu'].exits.find(e => e.id === 'around').game = { id: 'tickle-x', kind: 'tickle' };
+  const problems = lint(c);
+  assert.ok(has(problems, 'creature fuzhu: needs a root the traits know, not plasma'));
+  assert.ok(has(problems, 'unknown game kind tickle'));
+  assert.ok(has(problems, 'duels unknown creature qilin'));
+  assert.ok(has(problems, 'a duel needs a withdrawn line'));
+});

@@ -14,7 +14,7 @@
     { "who": "yinyue", "text": { "zh": "是夫诸……它出现的地方会发大水。小心。", "en": "That's Fuzhu… floods follow wherever it appears. Careful." } },
     { "who": "yinyue", "text": { "zh": "也可以直接跟它说话，或者做点什么。", "en": "You can also just talk to it — or do something." } }
   ],
-  "buttons": ["duel", "riddle", "around"],
+  "buttons": ["subdue", "riddle", "around"],
   "exits": [
     {
       "id": "gift",
@@ -41,10 +41,11 @@
       "next": "00-north"
     },
     {
-      "id": "duel",
-      "label": { "zh": "斗法 · 象棋残局", "en": "Duel · A xiangqi endgame" },
-      "means": "challenges it to a duel or a contest of skill",
-      "game": "xiangqi-endgame",
+      "id": "subdue",
+      "label": { "zh": "降妖 · 五行", "en": "Subdue · The five elements" },
+      "means": "fights it, challenges it, tries to subdue or drive it off",
+      "game": { "id": "subdue-fuzhu", "kind": "duel", "creature": "fuzhu" },
+      "withdrawn": { "zh": "夫诸隐入雾中。明日再来。", "en": "Fuzhu has withdrawn into the mist. Come back tomorrow." },
       "grant": { "table": "scene", "progress": 50, "cast": "fuzhu" },
       "beat": [
         { "who": "fuzhu", "text": { "zh": "……你赢了。我跟你走。", "en": "…You win. I will go with you." } }

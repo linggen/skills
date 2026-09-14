@@ -8,7 +8,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { branch, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, win } from '../scripts/rules.mjs';
+import { branch, duel, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, win } from '../scripts/rules.mjs';
+import { BEATS, bout, creatureMoves, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -116,22 +117,84 @@ test('staying exits narrate and keep the scene', () => {
   assert.match(out.result.beat[0].text, /银光追着你的影子/);
 });
 
-test('an unknown exit, a missing answer and an unwon duel are refused', () => {
+test('an unknown exit, a missing answer and an unfought duel are refused', () => {
   const s = toFuzhu();
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');
   refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
-  refused(resolve, s, { exit: 'duel' }, 'game-not-won');
+  refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
 });
 
-test('only the page witnesses a win, and a win pays once', () => {
+test('only the rules decide a fight: a win the exit takes, and pays once', () => {
   const s = toFuzhu();
-  refused(resolve, s, { exit: 'duel', won: true }, 'game-not-won');
+  refused(resolve, s, { exit: 'subdue', won: true }, 'game-not-won');
   refused(win, s, { id: 'chess-anywhere' }, 'not-here');
-  const won = must(win, s, { id: 'xiangqi-endgame' }).state;
-  assert.equal(look(won, content, ctx()).scene.exits.find(e => e.id === 'duel').won, true);
-  const out = must(resolve, won, { exit: 'duel' });
+  refused(win, s, { id: 'subdue-fuzhu' }, 'not-here', ctx());
+  const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue');
+  assert.deepEqual(brief.game, { id: 'subdue-fuzhu', kind: 'duel', creature: 'fuzhu' });
+  assert.equal(brief.duel.creature.root, 'water');
+  assert.deepEqual(brief.duel.roots.map(r => r.id), ['wood', 'water', 'fire', 'earth']);
+  assert.equal(brief.duel.today, null);
+  // start: a bout's stamina, the creature's moves for the day
+  const started = must(duel, s, { id: 'subdue-fuzhu' });
+  assert.equal(started.state.stamina, s.stamina - 10);
+  assert.equal(started.result.moves.length, 5);
+  assert.equal(started.state.duels.fuzhu.outcome, 'open');
+  // the winning picks, replayed by the rules
+  const moves = started.result.moves;
+  const beat = m => Object.keys(BEATS).find(k => BEATS[k] === m);
+  const picks = moves.map(beat).map(x => (['wood', 'water', 'fire', 'earth'].includes(x) ? x : 'wood'));
+  const settled = must(duel, started.state, { id: 'subdue-fuzhu', picks: picks.join(',') });
+  assert.equal(settled.result.outcome, 'won', JSON.stringify(settled.result.rounds));
+  assert.ok(settled.state.wins['subdue-fuzhu']);
+  assert.equal(look(settled.state, content, ctx()).scene.exits.find(e => e.id === 'subdue').won, true);
+  const out = must(resolve, settled.state, { exit: 'subdue' });
   assert.equal(out.state.scene, '00-north');
+  assert.ok(out.state.cast.includes('fuzhu'));
   assert.deepEqual(out.state.wins, {});
+});
+
+test('a loss is free and the creature withdraws until tomorrow', () => {
+  const s = toFuzhu();
+  const started = must(duel, s, { id: 'subdue-fuzhu' });
+  const moves = started.result.moves;
+  const loseTo = m => BEATS[m]; // the pick the creature's move beats
+  const picks = moves.map(loseTo).map(x => (['wood', 'water', 'fire', 'earth'].includes(x) ? x : 'earth'));
+  const lost = must(duel, started.state, { id: 'subdue-fuzhu', picks: picks.join(',') });
+  assert.equal(lost.result.outcome, 'lost', JSON.stringify(lost.result.rounds));
+  assert.equal(lost.result.say, '夫诸隐入雾中。明日再来。');
+  assert.equal(lost.state.wealth, s.wealth); assert.equal(lost.state.progress, s.progress);
+  assert.equal(refused(resolve, lost.state, { exit: 'subdue' }, 'withdrawn').say, '夫诸隐入雾中。明日再来。');
+  assert.equal(refused(duel, lost.state, { id: 'subdue-fuzhu' }, 'withdrawn').say, '夫诸隐入雾中。明日再来。');
+  assert.equal(look(lost.state, content, ctx()).scene.exits.find(e => e.id === 'subdue').withdrawn, true);
+  // tomorrow the mist clears
+  const tomorrow = ctx({ now: new Date('2026-09-12T12:00:00') });
+  assert.equal(duel(lost.state, content, tomorrow, { id: 'subdue-fuzhu' }).result.ok, true);
+  assert.equal(look(lost.state, content, tomorrow).scene.exits.find(e => e.id === 'subdue').withdrawn, false);
+});
+
+test('a bout must be started, picks must be the player\'s roots, and the same day draws the same moves', () => {
+  const s = toFuzhu();
+  refused(duel, s, { id: 'subdue-fuzhu', picks: 'wood' }, 'not-started');
+  refused(duel, s, { id: 'nothing' }, 'not-here');
+  refused(duel, { ...s, stamina: 3 }, { id: 'subdue-fuzhu' }, 'no-stamina');
+  const a = must(duel, s, { id: 'subdue-fuzhu' }), b = must(duel, s, { id: 'subdue-fuzhu' });
+  assert.deepEqual(a.result.moves, b.result.moves);
+  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'metal,metal' }, 'not-your-root');
+  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'wood' }, 'unfinished');
+});
+
+test('the 五行 bout: 相克 wins, the reverse loses, else a draw; best of three in five', () => {
+  assert.equal(roundOf('wood', 'earth'), 'won');
+  assert.equal(roundOf('earth', 'wood'), 'lost');
+  assert.equal(roundOf('fire', 'wood'), 'draw');
+  assert.equal(bout(['wood', 'wood'], ['earth', 'earth', 'x', 'x', 'x']).outcome, 'won');
+  assert.equal(bout(['wood', 'wood', 'wood'], ['earth', 'metal', 'metal', 'x', 'x']).outcome, 'lost');
+  assert.equal(bout(['wood'], ['earth', 'earth']).outcome, 'open');
+  const five = bout(['wood', 'fire', 'fire', 'fire', 'wood'], ['earth', 'fire', 'fire', 'fire', 'wood']);
+  assert.equal(five.rounds.length, 5); assert.equal(five.outcome, 'won', 'one win and four draws');
+  const moves = creatureMoves('water', '2026-09-11|fuzhu|青玄');
+  assert.deepEqual(moves, creatureMoves('water', '2026-09-11|fuzhu|青玄'));
+  assert.ok(moves.filter(m => m === 'water').length >= 2, 'leans to its root');
 });
 
 test('an in-world task pays only after the page recorded its win', () => {

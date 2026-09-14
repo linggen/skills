@@ -1,0 +1,1 @@
+{ "type": "module", "private": true, "_about": "Every script here is an ES module: the page imports them, and node runs rules.mjs. duel.js is shared by both." }

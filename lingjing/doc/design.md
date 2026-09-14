@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) and the catalog (Trade, the 坊市 at 彭城, the item card) built (build order 1–12); next 降妖; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card) and 降妖 (the 五行 bout on the scene) built (build order 1–13); next chapter 1; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -52,6 +52,7 @@ skills/lingjing/
   scripts/
     index.html, lingjing.css, lingjing.js   the Mac scene (from prototype.html)
     cards.js, board.js     the cards Ling can Show; the alchemy board
+    duel.js, duel-card.js  the 五行 bout (shared with the rules) and its card
     rules.js               the page's door to rules.mjs (/api/bash)
     chat-bridge.js, api.js the shared bridge copies
     rules.mjs              the rules engine, a CLI: node rules.mjs <verb> …
@@ -528,6 +529,29 @@ the tameable one; the same card can offer both (夫诸: feed it, or fight it).
   nothing. Losing never costs 灵石 or 修为.
 - **The 夫诸 `duel` exit becomes `subdue`** with this game when it is built;
   its 象棋 endgame stays a later, harder form of the same exit type.
+- **Built (step 13).** `scripts/duel.js` is the bout, pure and shared by
+  the page and the rules (`scripts/package.json` makes the folder ES
+  modules): `BEATS`, `creatureMoves(root, seed)` (five for the day, the
+  creature's own root six times in ten, seeded by day · creature · 道号),
+  `roundOf`, `bout(picks, moves)` — best of three in five, a draw for no one,
+  five rounds settle by the tally. `creatures.json` carries `root` (夫诸:
+  water; the lint requires one the traits know). An exit's `game` is an
+  object `{id, kind: duel | board, creature}` (`gameOf` reads a bare string
+  as a board); a duel exit carries its `withdrawn` line. **Two calls, both
+  the rules':** `duel --id` *starts* — refuses `withdrawn` today, charges
+  the bout's 灵气 (10), opens `state.duels[creature] = {day, outcome: open}`
+  and returns the creature's `moves`; `duel --id --picks=wood,fire,…`
+  *settles* — the rules replay the bout with the same moves and record
+  `won` (into `wins`, for Resolve) or `lost` (the creature withdraws:
+  Resolve and a new start refuse `withdrawn` until tomorrow; a loss costs
+  nothing more). There is no `lost` verb to claim: the page relays picks,
+  the rules decide. Refusals: `not-here`, `no-traits`, `no-stamina`,
+  `not-started`, `not-your-root`, `unfinished`. Look's exit brief carries
+  `game`, `won`, `withdrawn` and `duel` (the creature with its root, the
+  player's roots, today's bout). The scene draws every duel exit as a card
+  (`duel-card.js`): begin → the roots as buttons → the rounds as they fall →
+  the outcome; then `[scene] won <id>` / `[scene] lost <id>` to Ling, as a
+  board's win goes. 夫诸's `duel` exit is now `subdue` (降妖 · 五行).
 
 ## Player state
 
@@ -594,6 +618,7 @@ whole turn.
 | `Practice {action: list \| done \| check, id}` (verb `task`) | `list` the offered tasks and due quests; `done` pays an in-world task whose win the scene recorded; `check` pays a quest its app marked done this period. | `not-offered`, `already-done`, `not-won`, `not-done`, `already-paid` |
 | `Branch {action: open \| turn \| close, kind, xw, ls}` | Opens a 奇遇, counts its turns, pays within the branch cap on close. | `branch-open`, `branch-cap`, `no-branch` |
 | `Summarize {text}` | Replaces the story. | `too-long` |
+| `duel --id [--picks]` (the page's) | Starts a bout (stamina, the creature's moves) or settles it from the picks; records the win or the withdrawal. | `not-here`, `withdrawn`, `no-traits`, `not-started`, `not-your-root`, `unfinished` |
 | `Move {place}` | Goes to a place by road; a province still answers. | `corridor`, `no-road`, `too-hard` (with `fitting`), `unknown-place`, `road-closed` |
 | `Trade {action: buy \| sell \| use, id}` | Buys or sells at a market at the catalog's price, a visit's 灵气 each; `use` pays a pill's progress within its table or puts a wear on. | `unknown-item`, `no-market`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
 | `Lang {lang}` | Switches zh / en. | — |
@@ -1023,7 +1048,7 @@ Establishment, Core Formation, Nascent Soul).
 12. The catalog: `worlds/<id>/items.json` for 徐, the `Trade` tool, the 坊市
    as a place, the `item` card, the lint. ✓
 13. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
-   rule; the 夫诸 exit renamed `subdue`.
+   rule; the 夫诸 exit renamed `subdue`. ✓
 14. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
 15. Server authority: `rules.mjs` in a Worker, content bundled, tools as
     endpoints, the save cloud-only — before any play where players compare.

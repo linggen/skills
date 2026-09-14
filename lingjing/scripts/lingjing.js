@@ -6,6 +6,7 @@ import './chat-bridge.js';
 import { listSkillSessions, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
+import { bout } from './duel.js';
 import { WORDS, cardHtml, trayHtml, esc } from './cards.js';
 
 const SKILL = 'lingjing';
@@ -20,6 +21,7 @@ let focus = []; //        cards on the scene
 let focusScene = null; // the scene the focus was last reset for
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 const boards = new Map();
+const duels = new Map(); // game id → {status, moves, picks, rounds, outcome, say}
 let chat = null;
 
 const lang = () => (look?.lang === 'en' ? 'en' : 'zh');
@@ -38,7 +40,15 @@ function boardFor(taskId) {
   return boards.get(taskId);
 }
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor });
+/// The page's side of a bout: idle until begun; open while roots are picked;
+/// done once the rules have settled it. Reset when the day's bout in Look
+/// says nothing is open.
+function duelFor(id) {
+  if (!duels.has(id)) duels.set(id, { status: 'idle', moves: [], picks: [], rounds: [], outcome: null, say: null });
+  return duels.get(id);
+}
+
+const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor });
 
 /* ── Reading ── */
 
@@ -80,6 +90,7 @@ async function refresh() {
   if (sceneId !== focusScene) {
     focusScene = sceneId;
     focus = look.scene?.show ?? look.place?.show ?? [];
+    duels.clear();
   }
   render();
 }
@@ -138,6 +149,10 @@ function focusHtml() {
   const cards = focus.length ? [...focus] : [{ card: 'hexagram', id: look.omen?.id }];
   const open = (look.tasks ?? []).find((t) => t.kind === 'board' && t.status !== 'done' && !t.won);
   if (open && !cards.some((c) => c.card === 'board' && c.id === open.id)) cards.push({ card: 'board', id: open.id });
+  // A fight the scene offers is always on the scene, like an open board.
+  for (const e of look.scene?.exits ?? []) {
+    if (e.game?.kind === 'duel' && !cards.some((c) => c.card === 'duel' && c.id === e.game.id)) cards.push({ card: 'duel', id: e.game.id });
+  }
   return emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('');
 }
 
@@ -206,6 +221,45 @@ document.addEventListener('click', (e) => {
   const cleared = tap(board, Number(tile.dataset.tile));
   render();
   if (cleared) onWin(board.taskId);
+});
+
+/* ── 降妖: the page plays the bout, the rules decide it ── */
+
+async function onDuelStart(id) {
+  const d = duelFor(id);
+  const r = await verb('duel', { id });
+  if (!r.ok) {
+    d.status = 'done'; d.outcome = 'lost'; d.say = r.say || r.refused;
+    render();
+    return;
+  }
+  Object.assign(d, { status: 'open', moves: r.moves, picks: [], rounds: [], outcome: null, say: null });
+  render();
+}
+
+async function onDuelPick(id, root) {
+  const d = duelFor(id);
+  if (d.status !== 'open') return;
+  d.picks.push(root);
+  const played = bout(d.picks, d.moves);
+  d.rounds = played.rounds;
+  render();
+  if (played.outcome === 'open') return;
+  const r = await verb('duel', { id, picks: d.picks.join(',') });
+  d.status = 'done';
+  d.outcome = r.ok ? r.outcome : 'lost';
+  d.say = r.say || null;
+  render();
+  await report(`[scene] ${d.outcome} ${id}`);
+  if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
+  await refresh();
+}
+
+document.addEventListener('click', (e) => {
+  const start = e.target.closest('[data-duel-start]');
+  if (start) { onDuelStart(start.dataset.duelStart); return; }
+  const pick = e.target.closest('[data-duel-pick]');
+  if (pick) onDuelPick(pick.dataset.duel, pick.dataset.duelPick);
 });
 
 /* ── The chat ── */
