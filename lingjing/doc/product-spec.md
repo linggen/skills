@@ -134,6 +134,8 @@ quests carry every other day.
 - **A realm breakthrough is paired with its cauldron's chapter.** A player who
   reaches the peak before the chapter opens holds there.
 - **Pacing:** a realm takes weeks, so the full journey takes about a year.
+  Rewards scale with the realm — a task in 化神 pays more 修为 than the same
+  task in 练气 — so the later, larger realms take weeks too, not years.
 
 ## 灵根
 

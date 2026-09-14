@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 import { CAST, loadContent } from './content.mjs';
 import {
   addXw, fill, langOf, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
-  speedOf, stageName, threshold,
+  payOf, speedOf, stageName, threshold,
 } from './state.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
@@ -124,19 +124,21 @@ function meets(state, needs) {
 }
 
 /* Pay a grant: the table capped it when it was authored, the root speeds 修为,
-   the day caps both. */
+   the day caps both — all in base 修为 — and the realm's `pay` scales what
+   is finally added, so a later realm's task pays like one. */
 function pay(content, state, ctx, grant) {
   rollDay(state, ctx.now);
   const table = content.rewards.tables[grant.table];
   const day = content.rewards.day;
   const want = Math.round(Math.min(grant.xw ?? 0, table.xw) * speedOf(content, state));
-  const xw = Math.max(0, Math.min(want, day.xw - state.day.xw));
+  const base = Math.max(0, Math.min(want, day.xw - state.day.xw));
+  const xw = base * payOf(content, state);
   const ls = Math.max(0, Math.min(grant.ls ?? 0, table.ls, day.ls - state.day.ls));
-  state.day.xw += xw; state.day.ls += ls; state.ls += ls;
+  state.day.xw += base; state.day.ls += ls; state.ls += ls;
   const { levels, hold } = addXw(content, state, xw);
   if (grant.beast && !state.beasts.includes(grant.beast)) state.beasts.push(grant.beast);
   const named = levels.map(l => ({ from: stageName(content, l.from.realm, l.from.stage, state.lang), to: stageName(content, l.to.realm, l.to.stage, state.lang) }));
-  return { xw, ls, beast: grant.beast ?? null, levels: named, hold, capped: xw < want };
+  return { xw, ls, beast: grant.beast ?? null, levels: named, hold, capped: base < want };
 }
 
 function judgeAnswer(content, key, answer) {

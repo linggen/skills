@@ -190,6 +190,17 @@ test('the day caps what can be earned', () => {
   assert.equal(out.result.paid.capped, true);
 });
 
+test('a later realm pays more for the same task; the day cap counts base', () => {
+  const s = start();
+  s.realm = 'deity'; s.stage = 0; s.xw = 0; // 化神, pay ×3
+  offerWon(s);
+  const out = must(task, s, { action: 'done', id: 'alchemy-first' });
+  assert.equal(out.result.paid.xw, 60); // 20 base × 3
+  assert.equal(out.state.xw, 60);
+  assert.equal(out.state.day.xw, 20);
+  assert.equal(out.result.paid.capped, false);
+});
+
 test('a task pays once; one never offered cannot be claimed', () => {
   refused(task, start(), { action: 'done', id: 'alchemy-first' }, 'not-offered');
   const s = toFuzhu();

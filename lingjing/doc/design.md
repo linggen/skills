@@ -99,6 +99,33 @@ it; the model never reads the whole sheet.
   realm in `realms.json` names its chapter (`foundation` has `gate: 1`). The
   prologue has none (`opens: null`, `gate: null`).
 
+### Pacing — rewards scale by realm
+
+**Decided 2026-09-14.** The tables and caps are written in base 修为 and
+never change; each realm carries a `pay` multiplier in `realms.json`, applied
+last: `paid = min(grant, table cap) × root speed × realm pay`, and the day
+cap counts base 修为 before the multiplier. So a 化神 奇遇 pays like one, and
+the prologue's numbers stay as they are.
+
+With a diligent day at about 80 base (a kept workout and three 奇遇) and the
+thresholds as written:
+
+| Realm | 修为 to cross | `pay` | Days |
+|---|---|---|---|
+| 练气 | 1,620 | 1 | ~20 |
+| 筑基 | 1,500 | 1 | ~19 |
+| 结丹 | 3,000 | 1 | ~37 |
+| 元婴 | 6,000 | 2 | ~37 |
+| 化神 | 10,800 | 3 | ~45 |
+| 炼虚 | 18,000 | 6 | ~37 |
+| 合体 | 28,500 | 9 | ~40 |
+| 大乘 | 43,500 | 14 | ~39 |
+| 渡劫 | 66,000 | 20 | ~41 |
+
+About 315 diligent days end to end — the spec's year, with slack for the
+days a chapter is not yet open. Without the multiplier the same tables took
+six years. The numbers are a first pass; the shape is the decision.
+
 ### A scene
 
 A scene is a setup and its exits. Each exit has plain words (`means`) — what

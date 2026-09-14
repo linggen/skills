@@ -101,6 +101,12 @@ export function speedOf(content, state) {
   return content.roots.speed[String(state.root?.length ?? 4)] ?? 1;
 }
 
+/* The realm's reward multiplier: tables and caps are base 修为; a 化神 task
+   pays like one. Applied last, after the day cap. */
+export function payOf(content, state) {
+  return realmOf(content, state.realm).pay ?? 1;
+}
+
 /* Add 修为; rise through the realm's stages; hold at its peak, where only the
    next realm's chapter can take the player on. */
 export function addXw(content, state, amount) {
