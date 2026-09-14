@@ -274,6 +274,41 @@ picture, a price and one effect.
 - **The lint:** every item pictured; every `needs.bag`, `gives.bag` and
   `grant.item` names a catalog item; a price never below its sell price.
 
+### 降妖 — fighting a creature
+
+**Decided 2026-09-14.** Fighting a creature is a game the scene runs, like
+the alchemy board: no model, no 灵气, no fighting numbers. Words: **斗法** is
+cultivator against cultivator (the table, *duel*); **降妖** is against a
+creature (*subdue*). A creature is not an NPC — NPCs are people Ling voices;
+creatures are their own class, with a card. 妖兽 is the hostile stance, 灵兽
+the tameable one; the same card can offer both (夫诸: feed it, or fight it).
+
+- **The 五行 duel.** Every creature carries a root in `creatures.json`
+  (`root: "water"` — the lint requires it). A bout is best of three won
+  rounds, at most five: each round the player picks one of their roots; the
+  creature's move is drawn by the rules, seeded by the day and the round,
+  leaning to its own root. 相克 wins the round (木克土 · 土克水 · 水克火 ·
+  火克金 · 金克木); the reverse loses it; anything else is a draw and counts
+  for no one. Deterministic for the day: retrying the same picks gives the
+  same bout.
+- **On the scene:** a `duel` card — the creature, its root shown, the
+  player's roots as buttons, the rounds as they fall. On the phone the same
+  card inline. The page runs it, as it runs the board.
+- **The exit:** `game: { kind: "duel", creature: "fuzhu" }` on an exit that
+  `stay`s. The page records the outcome with `rules.mjs win --id` or
+  `rules.mjs lost --id` and tells Ling `[scene] won <id>` / `[scene] lost
+  <id>` — the same witness rule as the board; no Ling tool can claim a
+  fight. Ling narrates from the result and never rolls a round itself.
+- **A loss is free, and the creature withdraws until tomorrow** — one
+  attempt per creature per day (`state.duels[creature] = {day, outcome}`);
+  the exit refuses a second try with its own line (*夫诸隐入雾中，明日再来*).
+  "I want to fight it again" tomorrow maps to the same exit.
+- **A win pays once,** from the exit's `grant` — 修为, 灵石, a catalog `drop`,
+  sometimes the creature itself; a fight after a win is practice and pays
+  nothing. Losing never costs 灵石 or 修为.
+- **The 夫诸 `duel` exit becomes `subdue`** with this game when it is built;
+  its 象棋 endgame stays a later, harder form of the same exit type.
+
 ## Player state
 
 `state.json`:
@@ -711,10 +746,12 @@ Establishment, Core Formation, Nascent Soul).
    the lint on seed creatures — the daily loop before more spine.
 8. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
    scene, the `item` card, the lint.
-9. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
-10. Server authority: `rules.mjs` in a Worker, content bundled, tools as
+9. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
+   rule; the 夫诸 exit renamed `subdue`.
+10. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
+11. Server authority: `rules.mjs` in a Worker, content bundled, tools as
     endpoints, the save cloud-only — before any play where players compare.
-11. The table: the engine's shared chat, then the first set of plays; 传音 ·
+12. The table: the engine's shared chat, then the first set of plays; 传音 ·
     同修 · 论道 through the cloud.
 
 ## Open

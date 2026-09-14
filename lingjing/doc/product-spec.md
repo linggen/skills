@@ -175,10 +175,15 @@ Ling's reply, not the cached world behind them.
 | 七巧板 | 布阵 |
 | 华容道 | escaping a 秘境 |
 | 洛书九宫 | breaking a cauldron's seal |
-| 象棋 · 五子棋 | 斗法 |
+| 五行相克 (best of three) | 降妖 — fighting a creature |
+| 象棋 · 五子棋 | 斗法 — cultivator against cultivator |
 | 飞花令 · 对对联 · 灯谜 · 成语接龙 | 论道 with a scholar spirit |
 
 - The puzzles and boards are run by rules, with no model and no 灵气.
+- **降妖:** every creature has a 五行 root; the player picks from their own
+  roots each round, 相克 wins. A loss costs nothing, but the creature
+  withdraws until tomorrow — one try a day. A win pays once: 修为, 灵石, a
+  thing, sometimes the creature itself. No fighting numbers, ever.
 - Word games are judged by the model, with a separate set per language: in
   English, a riddle, a word chain, a line containing the keyword.
 
