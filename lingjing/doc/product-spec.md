@@ -3,8 +3,8 @@ type: product-spec
 reader: coding agent, contributors
 guide: |
   What Lingjing is and what each of its systems does, in one read.
-  How it is built belongs in design.md (not written yet). The idea's first
-  record is linggen-app/doc/app-ideas.md.
+  How it is built belongs in design.md. The idea's first record is
+  linggen-app/doc/app-ideas.md.
 status: Settled 2026-09-11; built through online (the prologue, the Mac scene, quests, the cloud save and 灵气 meter) as of 2026-09-14 — see design.md.
 ---
 
@@ -60,6 +60,27 @@ them sense the cauldrons.
 - **Calendar:** events follow the real 24 节气 and festivals. Each morning
   brings one 周易 hexagram as the day's omen.
 - **洞府:** the player's home base, which grows with them.
+
+## Worlds
+
+**One game, many worlds.** The way you play — talk to Ling, take tasks,
+climb, fight, trade, keep 灵气 — is the same in every world. What changes is
+the story and the words.
+
+- **《九鼎》 is the built-in world** — 修仙 · 凡人流, the Nine Provinces, the
+  山海经 bestiary. Everyone starts here, whole, with nothing to build.
+- **Ask for another and Ling builds it while you wait** — *a 山海经 hunt*, *a
+  三国 council*, *a 易经 reading* — a title, a map, a cast, the first scene,
+  in under a minute; the rest is written as you play. Nothing to fill in;
+  change anything by saying so.
+- **Each world has its own words for the same things.** Where 《九鼎》 says
+  修为, 灵石, 灵气, 境界, a 三国 world says 声望, 粮草, 精力, 官阶. Ling, the
+  cards and every line use the world's words and no others.
+- **Fights are never numbers.** In every world a contest resolves by its
+  rule — 五行, 兵种, a board — never by hit points.
+- **Never a novel's names.** A world in the *style* of the tales you love,
+  never their characters, places or plot.
+- Real-life practice counts in every world alike.
 
 ## Characters
 
@@ -236,6 +257,7 @@ not tokens and not turns.
 - Writes into another app.
 - Lets strangers chat with players (v1).
 - Uses a novel's named characters, places or plot.
+- Uses hit points, or any number that fights.
 
 ## Open questions
 

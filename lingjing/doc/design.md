@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds and made scenes built (build order 1–9); next worlds and places; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes and the dictionary built (build order 1–10a); next the worlds split, then places; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -76,37 +76,62 @@ skills/lingjing/
   tests/
 ```
 
-## Worlds — the template is a whole game
+## Worlds — systems are fixed, story is the only dynamic part
 
-**Decided 2026-09-14** ("the template is not just one scene, it is a
-predefined game… a world"). A player never builds before playing: they
-start inside a world that is already whole. 《九鼎》 — everything in
-`content/` today — is the first world, and the example of the shape.
+**Decided 2026-09-14**, in three steps: "the template is not just one scene,
+it is a predefined game… a world"; "when Ling builds a new world or scene it
+should reuse our systems — fight, 修炼, economy — Ling only needs to invent
+a story"; "the architecture could be the same in all worlds, but the
+content needs to align with the world". A player never builds before
+playing: they start inside a world that is already whole. 《九鼎》 —
+everything in `content/` today — is the first world and the example.
 
-- **Two layers.** A *world* is an authored pack: `world.json` (name, style,
-  sources, terms), its ladder (`realms.json` or its own), reward tables,
-  creatures with art, seeds, chapters, places. A *scene* is what Ling makes
-  at play time inside a world, from the world's own materials (§ Made
-  scenes). The harness — `rules.mjs`, the lint, the cards, SKILL.md — is
-  the same for every world and names none of them.
-- **Layout to come:** `content/` → `worlds/jiuding/`; the loader takes a
-  world id; `state.world` says which; the lint runs per world. A second
-  world — 山海经, where the game is the bestiary itself: find, picture,
-  tame, learn the line — is the first proof that the harness is general.
-  三国, 易经, 黄帝内经 later, each with its own boards and keys.
-- **Ling makes a world with the player, not in a turn.** A world is a few
-  hundred lines and pictures; the *world editor* is a conversation that
-  fills the folder shape, the lint checks it, and it plays tomorrow.
-- **Style: 修仙 · 凡人流 — no names from the book.** Decided 2026-09-14 ("use
-  凡人流 style, no names from the book"). The *system* is 道教 and genre
-  inheritance older than any novel — nine realms 练气 to 渡劫, 灵根 with
-  天灵根 and 伪灵根, 灵石, 丹药, 法器, 宗门, 秘境, 妖兽, the mortal with poor
-  roots who climbs by diligence — and 灵境 is built on it: four-root 伪灵根
-  for all, 灵石 counted in tens, a 坊市, a 宗门 to join. What is never used
-  is any named character, place, item, technique or plot of 《凡人修仙传》
-  (or any living author's novel): that is licensed IP, and the recognition
-  it would buy is exactly the part that cannot be had. The world card may
-  say the style; the lint's word list refuses the names.
+- **The harness holds the systems, with no names.** The ladder and
+  progress, wealth, stamina and its costs, traits, the bag and the catalog,
+  tasks and real-life quests, the contest resolvers, the boards and word
+  games, places and roads, seeds, made scenes — one implementation in
+  `rules.mjs`, never regenerated, never touched by Ling. What a world can
+  change is which of them it uses and what it calls them (§ The
+  dictionary).
+- **A world is a story laid over the systems.** `world.json` (id, title,
+  style, sources), `dictionary.json`, a ladder, its reward tables, a cast
+  with art, seeds, places and roads, chapters, the key sets its word games
+  judge by, which resolver its contest uses. 《九鼎》's is the 九鼎 spine;
+  a 山海经 world's is the bestiary itself — find, picture, tame, learn the
+  line; a 三国 world's is a council and a campaign, its contest resolved by
+  兵种相克 or a board. Same rules, same Ling, the world's own words.
+- **Ling invents story, never systems.** Asked for a world in a line — *a
+  山海经 hunt in 青州* — Ling writes the **outline** first: title, premise,
+  eight places, the cast drawn from the bestiary, the first scene — about 2k
+  tokens, under a minute — and the player starts. Each next scene is written
+  when an exit needs it, while they play (§ Made scenes). Nothing is asked;
+  the player changes anything afterwards by saying so.
+- **The lint is the bug catcher.** Outline and scenes go through the same
+  check authored content does — exits resolve, grants within caps, cast
+  only from the bestiary with art, roads to real places, both languages
+  where required — and `not-playable` sends Ling back to fix, silently. What
+  the lint cannot judge is prose; the running summary and the fixed systems
+  keep even a small model coherent.
+- **Numbers that grow, never numbers that fight.** A world may name
+  `progress` 武力 for a general, but a fight resolves by a table or a board
+  in every world — no HP, ever. That is what keeps a new world cheap to
+  balance: it has nothing to balance.
+- **Layout to come (step 10b):** `content/` → `worlds/jiuding/`; a
+  `world.json`; the loader takes a world id; `state.world` says which; the
+  lint runs per world; a names list per world the lint refuses. Built-in
+  worlds are authored; a player's world is Ling's; both play identically.
+  One story in play per save; a new world starts a fresh save (the account
+  keeps several).
+- **Style of 《九鼎》: 修仙 · 凡人流 — no names from the book.** Decided
+  2026-09-14 ("use 凡人流 style, no names from the book"). The *system* is
+  道教 and genre inheritance older than any novel — nine realms 练气 to 渡劫,
+  灵根 with 天灵根 and 伪灵根, 灵石, 丹药, 法器, 宗门, 秘境, 妖兽, the mortal
+  with poor roots who climbs by diligence — and 灵境 is built on it:
+  four-root 伪灵根 for all, 灵石 counted in tens, a 坊市, a 宗门 to join.
+  What is never used is any named character, place, item, technique or plot
+  of 《凡人修仙传》 (or any living author's novel): that is licensed IP, and
+  the recognition it would buy is exactly the part that cannot be had. The
+  world card may say the style; the lint's names list refuses the rest.
 
 ## The dictionary — one id, a name in every world
 
