@@ -150,7 +150,8 @@ fast 修为 grows.**
 
 ## 灵气 system
 
-**灵气 is the model's tokens.**
+**灵气 is the model's tokens** — what the player's turn costs: their words and
+Ling's reply, not the cached world behind them.
 
 - **Rolling 5-hour window,** like Claude Code or ChatGPT.
 - **A pace, not a price.** It keeps the game from taking too much of a day.

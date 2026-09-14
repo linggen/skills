@@ -485,6 +485,10 @@ changes:
 灵气 is a pace.
 
 - **A rolling 5-hour window of tokens,** the same whatever model answers.
+  **Counted: the uncached prompt plus the output** (decided 2026-09-14). Most
+  of a turn's ~19k tokens is the cached world — SKILL.md, the tools, the
+  story — and a pace should count what the player did: their words and
+  Ling's reply. Providers without cache accounting count the whole prompt.
 - **Counted in the cloud, around every model call.** Before a call the
   engine asks linggen.dev what is left; after it, it reports the call's
   tokens. Around each call rather than each turn, because a game sitting —
