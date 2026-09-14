@@ -13,7 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAST, loadContent } from './content.mjs';
 import {
-  addXw, fill, langOf, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
+  addXw, dayKey, fill, langOf, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   payOf, speedOf, stageName, threshold,
   addQi, qiReturnsAt, settleQi,
 } from './state.mjs';
@@ -311,6 +311,26 @@ export function win(state, content, ctx, args) {
 
 /* ── Branches, story, travel, language ── */
 
+/* A small stable hash: the same day and name land on the same seed. */
+function hashOf(text) {
+  let h = 0;
+  for (const ch of String(text)) h = (h * 31 + ch.codePointAt(0)) % 2147483647;
+  return h;
+}
+
+/* The seed a 奇遇 grows from: the player's province, this kind, unused
+   first; chosen by the day and the 道号, so a day reopens the same seed. A
+   province with no seeds grows the tale from the template alone. */
+function pickSeed(content, state, kind, now) {
+  const province = content.chapters[state.chapter]?.province;
+  const all = (content.seeds[province]?.seeds ?? []).filter(x => x.kind === kind);
+  if (!all.length) return null;
+  const used = new Set(state.seeds_used ?? []);
+  const pool = all.some(x => !used.has(x.id)) ? all.filter(x => !used.has(x.id)) : all;
+  const seed = pool[hashOf(`${dayKey(now)}|${state.daohao ?? ''}|${kind}`) % pool.length];
+  return { id: seed.id, line: pick(seed.line, state.lang), source: pick(seed.source, state.lang), creature: seed.creature ?? null };
+}
+
 export function branch(state, content, ctx, args) {
   const s = clone(state);
   rollDay(s, ctx.now);
@@ -321,9 +341,12 @@ export function branch(state, content, ctx, args) {
     if (s.day.branches >= content.branches.per_day) return refuse('branch-cap', null);
     const empty = spendQi(content, s, ctx, 'branch');
     if (empty) return empty;
-    s.branch = { kind: template.kind, turns: 0, opened: ctx.now.toISOString() };
+    const seed = pickSeed(content, s, template.kind, ctx.now);
+    s.branch = { kind: template.kind, turns: 0, opened: ctx.now.toISOString(), seed: seed?.id ?? null };
+    if (seed) s.seeds_used = [...(s.seeds_used ?? []), seed.id];
     s.day.branches += 1;
-    return { state: s, result: { ok: true, opened: template.kind, max_turns: template.max_turns, may_not: template.may_not } };
+    const show = seed?.creature ? [{ card: 'creature', id: seed.creature }] : [];
+    return { state: s, result: { ok: true, opened: template.kind, max_turns: template.max_turns, may_not: template.may_not, seed, show } };
   }
   if (!s.branch) return refuse('no-branch', null);
   const template = content.branches.templates.find(b => b.kind === s.branch.kind);

@@ -238,6 +238,27 @@ test('a checked quest refills 灵气 — the app\'s own amount, capped', () => {
   assert.equal(out.state.qi, 100);
 });
 
+test('a 奇遇 grows from a seed of the province — by the day, unused first', () => {
+  let s = start();
+  s.daohao = '青玄';
+  const one = must(branch, s, { action: 'open', kind: 'province-tale' });
+  const seed = one.result.seed;
+  assert.match(seed.id, /^xu-/);
+  assert.ok(seed.line && seed.source);
+  assert.deepEqual(one.state.seeds_used, [seed.id]);
+  assert.equal(one.state.branch.seed, seed.id);
+  // the same day, the same player: the same seed
+  const again = must(branch, s, { action: 'open', kind: 'province-tale' });
+  assert.equal(again.result.seed.id, seed.id);
+  // once used, the day moves to another
+  s = must(branch, one.state, { action: 'close', xw: 5, ls: 0 }).state;
+  const next = must(branch, s, { action: 'open', kind: 'province-tale' });
+  assert.notEqual(next.result.seed.id, seed.id);
+  // a seed with a creature shows its card
+  const withCard = content.seeds['徐'].seeds.find(x => x.creature);
+  assert.equal(withCard.creature, 'fuzhu');
+});
+
 test('a task pays once; one never offered cannot be claimed', () => {
   refused(task, start(), { action: 'done', id: 'alchemy-first' }, 'not-offered');
   const s = toFuzhu();

@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) and 灵气 as stamina built (build order 1–7); next the seeds; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina and 徐's seeds built (build order 1–8); next the catalog; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -464,6 +464,17 @@ change.
   30, Shifu's scan 20) else the default, capped, reported as `qi`. Look carries
   `qi: {now, max, step, empty, returns_at}`; the ring and the empty card draw
   from it; SKILL.md dropped `cloud.meter`. 44 tests.
+- **Built (step 8):** the seeds. `content/seeds/xu.json` — forty for 徐,
+  thirty province tales and ten night tales, each one line zh/en with its
+  `source` (禹贡, 史记, 论语, 山海经, 苏轼, the Liaozhai manner); only 夫诸
+  names a creature, the rest describe by sight until their cards exist.
+  `content.mjs` loads `seeds/*.json` by province and lints kind, province,
+  creature and both languages. `Branch open` picks from the player's
+  province and kind, unused first (`state.seeds_used`), by a hash of the day
+  and the 道号 — the same day reopens the same seed — and returns `seed
+  {id, line, source, creature}` plus `show` for a creature's card; the tale
+  grows from it. SKILL.md tells Ling to begin from the line and, at the
+  close, to say the source in a line. 45 tests.
 - **A reopened day shows the day so far.** Text Ling writes between tool
   calls is saved as it is written (linggen `b1fec94`); until then only a
   turn's final reply was, and a game day — one long turn of narration and

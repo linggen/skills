@@ -117,8 +117,10 @@ tools:
   - name: Branch
     description: >-
       A 奇遇 off the main story. `open` with a kind (province-tale,
-      night-tale); `turn` once per reply while it runs; `close` with the 修为
-      and 灵石 you judge it earned — the rules cap both.
+      night-tale) — the rules hand you a `seed`: one authored line from the
+      province's heritage, and its `source`; the tale grows from that line,
+      never against it. `turn` once per reply while it runs; `close` with the
+      修为 and 灵石 you judge it earned — the rules cap both.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs branch --action={{action}} --kind={{kind}} --xw={{xw}} --ls={{ls}}"
     tier: edit
     timeout_ms: 8000
@@ -337,9 +339,13 @@ begin, the same way.
 ## Branches — 奇遇
 
 When curiosity leads off the spine — a legend of the province, a night tale —
-Branch `open` with a kind, and tell the tale: Branch `turn` each reply, and
-`close` at `close_now` or when the tale ends, proposing 修为 and 灵石; say what
-was paid. A branch never touches the spine, a cauldron, Yinyue's memory or a
+Branch `open` with a kind. The rules hand you a **seed**: one line from the
+province's heritage, and where it comes from. **Begin the tale from that
+line** — it is the sight, the place or the thing the tale is about; add the
+rest yourself, and Show the seed's `show` cards first if it has any. Branch
+`turn` each reply, and `close` at `close_now` or when the tale ends,
+proposing 修为 and 灵石; say what was paid — and, in a line, the `source`:
+what the player has just met is the world's real inheritance. A branch never touches the spine, a cauldron, Yinyue's memory or a
 realm. `branch-cap` → enough 奇遇 for one day. While a branch runs, the scene
 waits.
 

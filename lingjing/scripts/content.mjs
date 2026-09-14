@@ -29,6 +29,7 @@ export function loadContent(dir = CONTENT_DIR) {
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
     tasks: at('tasks/world.json'),
     branches: at('branches.json'),
+    seeds: loadSeeds(path.join(dir, 'seeds')),
     terms: at('terms.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
   };
@@ -48,6 +49,17 @@ function loadChapters(root) {
     chapters[chapter.id] = chapter;
   }
   return chapters;
+}
+
+/* 奇遇 seeds, one file per province: { 徐: { province, seeds } }. */
+function loadSeeds(root) {
+  const seeds = {};
+  if (!fs.existsSync(root)) return seeds;
+  for (const file of fs.readdirSync(root).filter(f => f.endsWith('.json')).sort()) {
+    const doc = readJson(path.join(root, file));
+    seeds[doc.province] = doc;
+  }
+  return seeds;
 }
 
 /* ── Lint ── */
@@ -70,6 +82,7 @@ export function lint(content) {
     if (!b.may_not?.includes('spine')) bad(`branch ${b.kind}`, 'must not touch the spine');
   }
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
+  lintSeeds(content, ids, bad);
   return problems;
 }
 
@@ -85,6 +98,24 @@ function bilingual(node, where, bad) {
   for (const [key, value] of Object.entries(node)) {
     if (key.startsWith('_') || key === 'riddles') continue;
     bilingual(value, `${where}.${key}`, bad);
+  }
+}
+
+/* A seed names a kind the templates know, a province the terms know, and a
+   creature only when the creature has its card. */
+function lintSeeds(content, ids, bad) {
+  const kinds = new Set(content.branches.templates.map(b => b.kind));
+  const seen = new Set();
+  for (const [province, doc] of Object.entries(content.seeds)) {
+    if (!content.terms.provinces[province]) bad(`seeds ${province}`, 'unknown province');
+    for (const seed of doc.seeds) {
+      const where = `seed ${seed.id}`;
+      if (seen.has(seed.id)) bad(where, 'duplicate id');
+      seen.add(seed.id);
+      if (!kinds.has(seed.kind)) bad(where, `unknown kind ${seed.kind}`);
+      if (!seed.line?.zh || !seed.line?.en) bad(where, 'needs a line in both languages');
+      if (seed.creature && !ids.creatures.has(seed.creature)) bad(where, `names unknown creature ${seed.creature}`);
+    }
   }
 }
 

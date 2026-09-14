@@ -1,0 +1,488 @@
+{
+  "version": 1,
+  "province": "徐",
+  "_about": "奇遇 seeds for 徐 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "xu-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "雾里一头四角白鹿，踏水不湿。",
+        "en": "A four-horned white deer in the mist, walking on the water dry-shod."
+      },
+      "source": {
+        "zh": "《山海经·中山经》：其状如白鹿而四角，见则其邑大水。",
+        "en": "Classic of Mountains and Seas, Central Mountains: like a white deer with four horns; where it is seen, the town floods."
+      },
+      "creature": "fuzhu"
+    },
+    {
+      "id": "xu-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "泗水深处，渔夫说沉着一只周鼎，网到那里就发沉。",
+        "en": "Deep in the Si, the fishermen say, lies a cauldron of Zhou; the nets grow heavy there."
+      },
+      "source": {
+        "zh": "《史记·秦始皇本纪》：始皇过彭城，使千人没水求周鼎，弗得。",
+        "en": "Records of the Grand Historian: the First Emperor sent a thousand men into the Si for a Zhou cauldron, and found nothing."
+      }
+    },
+    {
+      "id": "xu-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "彭城有一口老井，井边的老人说自己见过彭祖煮雉。",
+        "en": "An old well in Pengcheng; the old man beside it says he saw Pengzu cook pheasant."
+      },
+      "source": {
+        "zh": "彭祖，寿八百，善为雉羹；《楚辞·天问》：彭铿斟雉帝何飨。",
+        "en": "Pengzu, who lived eight hundred years and made pheasant broth — Heavenly Questions of the Chuci."
+      }
+    },
+    {
+      "id": "xu-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "路边石碑刻着“徐偃王”三字，被摸得发亮。传说他行仁义而失国。",
+        "en": "A roadside stele reads Xu Yanwang, rubbed bright by hands. He ruled by kindness, they say, and lost his kingdom."
+      },
+      "source": {
+        "zh": "《韩非子·五蠹》：徐偃王处汉东，地方五百里，行仁义。",
+        "en": "Han Feizi: King Yan of Xu held five hundred li east of the Han and ruled by benevolence."
+      }
+    },
+    {
+      "id": "xu-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "下邳的圯桥上，一位老者故意把鞋踢下桥，看谁肯去捡。",
+        "en": "On the Yi bridge at Xiapi an old man kicks his shoe into the river to see who will fetch it."
+      },
+      "source": {
+        "zh": "《史记·留侯世家》：黄石公与张良，圯上授书。",
+        "en": "Records of the Grand Historian: the Old Man of the Yellow Stone tests Zhang Liang at the bridge."
+      }
+    },
+    {
+      "id": "xu-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "云龙山上有石床，僧人说山形如龙卧。",
+        "en": "A stone bed on Mount Yunlong; the monk says the mountain lies like a dragon."
+      },
+      "source": {
+        "zh": "徐州云龙山；苏轼《放鹤亭记》。",
+        "en": "Mount Yunlong at Xuzhou; Su Shi's Record of the Crane-Releasing Pavilion."
+      }
+    },
+    {
+      "id": "xu-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "戏马台的风里，像还有马蹄声。",
+        "en": "The wind over the Horse-Sporting Terrace still carries hoofbeats."
+      },
+      "source": {
+        "zh": "项羽都彭城，筑台戏马。",
+        "en": "Xiang Yu made Pengcheng his capital and built a terrace to sport with horses."
+      }
+    },
+    {
+      "id": "xu-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "芒砀山道上一条白蛇横路，樵夫不敢过。",
+        "en": "A white snake lies across the Mangdang road; the woodcutters will not pass."
+      },
+      "source": {
+        "zh": "《史记·高祖本纪》：高祖醉行泽中，斩白蛇。",
+        "en": "Records of the Grand Historian: Gaozu, drunk in the marsh, cut a white snake in two."
+      }
+    },
+    {
+      "id": "xu-09",
+      "kind": "province-tale",
+      "line": {
+        "zh": "峄山石上有古篆，无人识得；读出一字，便有风起。",
+        "en": "Ancient seal script on the rock of Mount Yi that no one can read; read one character aloud and a wind rises."
+      },
+      "source": {
+        "zh": "峄山刻石，秦李斯小篆。",
+        "en": "The Mount Yi inscription, in the small seal script of Li Si of Qin."
+      }
+    },
+    {
+      "id": "xu-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "沂水边有人浴罢而歌，说春服既成。",
+        "en": "By the Yi someone bathes and sings: the spring clothes are made."
+      },
+      "source": {
+        "zh": "《论语·先进》：浴乎沂，风乎舞雩，咏而归。",
+        "en": "Analects: to bathe in the Yi, take the breeze at the Rain Altar, and go home singing."
+      }
+    },
+    {
+      "id": "xu-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "蒙山雾中有鹤唳，樵夫说山里住着不老的人。",
+        "en": "A crane calls in the mist on Mount Meng; the woodcutter says someone there does not grow old."
+      },
+      "source": {
+        "zh": "《诗经·鲁颂·閟宫》：奄有龟蒙。",
+        "en": "Book of Songs, Hymns of Lu: he held Gui and Meng."
+      }
+    },
+    {
+      "id": "xu-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "山中有兽，形如兔而鸟喙，见人便闭眼装睡。",
+        "en": "A beast in the hills like a hare with a bird's beak; it shuts its eyes and plays asleep when seen."
+      },
+      "source": {
+        "zh": "《山海经·东山经》。",
+        "en": "Classic of Mountains and Seas, Eastern Mountains."
+      }
+    },
+    {
+      "id": "xu-13",
+      "kind": "province-tale",
+      "line": {
+        "zh": "淮水深处锁着一个水怪，铁链一动，河水就翻。",
+        "en": "Something is chained deep in the Huai; when the iron stirs, the river turns over."
+      },
+      "source": {
+        "zh": "《古岳渎经》：禹锁淮涡水神无支祁。",
+        "en": "The Classic of Ancient Peaks and Rivers: Yu chained the water spirit of the Huai."
+      }
+    },
+    {
+      "id": "xu-14",
+      "kind": "province-tale",
+      "line": {
+        "zh": "泗水亭的亭长夜里巡逻，提着一盏不灭的灯。",
+        "en": "The head of Sishui Post walks his rounds at night with a lamp that never goes out."
+      },
+      "source": {
+        "zh": "《史记·高祖本纪》：高祖为泗水亭长。",
+        "en": "Records of the Grand Historian: Gaozu was once head of Sishui Post."
+      }
+    },
+    {
+      "id": "xu-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "古城墙的砖上刻着两个字，老人说是大禹分九州时留下的。",
+        "en": "Two characters cut into a brick of the old wall; the elders say they date from Yu's dividing of the Nine Provinces."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：海、岱及淮惟徐州。",
+        "en": "Book of Documents, Tribute of Yu: from the sea to Mount Dai and the Huai lies Xu."
+      }
+    },
+    {
+      "id": "xu-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "淮边渔村唱着古老的歌，说祖先曾是淮夷。",
+        "en": "A fishing village on the Huai sings an old song of ancestors who were the Huai Yi."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：淮夷蠙珠暨鱼。",
+        "en": "Tribute of Yu: the Huai Yi brought pearls and fish."
+      }
+    },
+    {
+      "id": "xu-17",
+      "kind": "province-tale",
+      "line": {
+        "zh": "淮水的蚌里有珠，夜里发光。",
+        "en": "Pearls in the Huai's mussels glow at night."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：淮夷蠙珠。",
+        "en": "Tribute of Yu: the pearls of the Huai Yi."
+      }
+    },
+    {
+      "id": "xu-18",
+      "kind": "province-tale",
+      "line": {
+        "zh": "泗水之滨有石，击之如磬。",
+        "en": "A stone on the bank of the Si rings like a chime when struck."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：泗滨浮磬。",
+        "en": "Tribute of Yu: the sounding stones of the Si's shore."
+      }
+    },
+    {
+      "id": "xu-19",
+      "kind": "province-tale",
+      "line": {
+        "zh": "峄山南面独生一棵桐，琴师说非它不可。",
+        "en": "A lone paulownia on the south face of Mount Yi; the lute-maker says no other will do."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：峄阳孤桐。",
+        "en": "Tribute of Yu: the lone paulownia of Yi's sunny side."
+      }
+    },
+    {
+      "id": "xu-20",
+      "kind": "province-tale",
+      "line": {
+        "zh": "山谷里落下五彩的雉羽，古时是贡品。",
+        "en": "Five-coloured pheasant feathers fall in the valley; once they were tribute."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：羽畎夏翟。",
+        "en": "Tribute of Yu: the summer pheasants of the Feather Valley."
+      }
+    },
+    {
+      "id": "xu-21",
+      "kind": "province-tale",
+      "line": {
+        "zh": "湖上采菱的女子唱着歌，船过处菱叶合拢。",
+        "en": "Girls gathering water chestnuts sing on the lake; the leaves close behind their boat."
+      },
+      "source": {
+        "zh": "乐府《采菱曲》。",
+        "en": "The Water-Chestnut Song of the Music Bureau."
+      }
+    },
+    {
+      "id": "xu-22",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一座山上寸草不生，风过时像有人说话。",
+        "en": "A mountain where nothing grows; when the wind passes it sounds like speech."
+      },
+      "source": {
+        "zh": "《山海经·东山经》：其上无草木。",
+        "en": "Classic of Mountains and Seas, Eastern Mountains: nothing grows upon it."
+      }
+    },
+    {
+      "id": "xu-23",
+      "kind": "province-tale",
+      "line": {
+        "zh": "水里游着一样东西，像一叶肺，有眼六足，口中含珠。",
+        "en": "Something swims in the water like a lung, with eyes and six legs, a pearl in its mouth."
+      },
+      "source": {
+        "zh": "《山海经·东山经》。",
+        "en": "Classic of Mountains and Seas, Eastern Mountains."
+      }
+    },
+    {
+      "id": "xu-24",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一只狐狸张开翅膀，从树梢飞过。",
+        "en": "A fox spreads wings and flies over the treetops."
+      },
+      "source": {
+        "zh": "《山海经·东山经》：状如狐而有翼。",
+        "en": "Classic of Mountains and Seas, Eastern Mountains: like a fox, with wings."
+      }
+    },
+    {
+      "id": "xu-25",
+      "kind": "province-tale",
+      "line": {
+        "zh": "古墓的石壁上刻着车马与神仙，车轮像还在转。",
+        "en": "Carriages and immortals cut into the stone of an old tomb; the wheels seem to turn."
+      },
+      "source": {
+        "zh": "徐州汉画像石。",
+        "en": "The Han pictorial stones of Xuzhou."
+      }
+    },
+    {
+      "id": "xu-26",
+      "kind": "province-tale",
+      "line": {
+        "zh": "老人指着沙地说，那曾是黄河的河床。",
+        "en": "An old man points at the sand: that was the bed of the Yellow River."
+      },
+      "source": {
+        "zh": "黄河夺泗入淮，宋建炎二年。",
+        "en": "The Yellow River seized the Si and ran into the Huai, 1128."
+      }
+    },
+    {
+      "id": "xu-27",
+      "kind": "province-tale",
+      "line": {
+        "zh": "燕子楼上一位女子守着灯，等一个不回的人。",
+        "en": "In the Swallow Tower a woman keeps a lamp for someone who will not return."
+      },
+      "source": {
+        "zh": "徐州燕子楼，关盼盼；白居易《燕子楼》诗。",
+        "en": "The Swallow Tower of Xuzhou and Guan Panpan; Bai Juyi's poem."
+      }
+    },
+    {
+      "id": "xu-28",
+      "kind": "province-tale",
+      "line": {
+        "zh": "云龙山人放两只鹤，清晨飞去，日暮归来。",
+        "en": "The hermit of Yunlong releases two cranes: away at dawn, home at dusk."
+      },
+      "source": {
+        "zh": "苏轼《放鹤亭记》。",
+        "en": "Su Shi, Record of the Crane-Releasing Pavilion."
+      }
+    },
+    {
+      "id": "xu-29",
+      "kind": "province-tale",
+      "line": {
+        "zh": "彭城有一座黄楼，说是以土克水，镇住河患。",
+        "en": "A Yellow Tower stands in Pengcheng, built so earth would conquer water and hold the floods."
+      },
+      "source": {
+        "zh": "苏轼知徐州，筑黄楼；五行土克水。",
+        "en": "Su Shi, governing Xuzhou, built the Yellow Tower — earth conquers water among the five phases."
+      }
+    },
+    {
+      "id": "xu-30",
+      "kind": "province-tale",
+      "line": {
+        "zh": "淮上有渡口，船家说船只渡人，不渡心事。",
+        "en": "A ferry on the Huai; the boatman says it carries people, not their troubles."
+      },
+      "source": {
+        "zh": "淮水渡口，民间语。",
+        "en": "A saying of the Huai ferries."
+      }
+    },
+    {
+      "id": "xu-n1",
+      "kind": "night-tale",
+      "line": {
+        "zh": "泗水渔翁夜得一鲤，鲤能言。",
+        "en": "A Si River fisherman nets a carp at night; the carp can speak."
+      },
+      "source": {
+        "zh": "聊斋之风，无所本",
+        "en": "In the manner of Liaozhai — no single source"
+      }
+    },
+    {
+      "id": "xu-n2",
+      "kind": "night-tale",
+      "line": {
+        "zh": "客栈里书生夜读，窗外有人应声。",
+        "en": "A scholar reads aloud at an inn by night; outside the window, someone answers."
+      },
+      "source": {
+        "zh": "聊斋之风，无所本",
+        "en": "In the manner of Liaozhai — no single source"
+      }
+    },
+    {
+      "id": "xu-n3",
+      "kind": "night-tale",
+      "line": {
+        "zh": "渡口的船家说，子夜的船不能上，那船是渡别人的。",
+        "en": "The ferryman says never board the midnight boat — it is crossing for others."
+      },
+      "source": {
+        "zh": "聊斋之风，无所本",
+        "en": "In the manner of Liaozhai — no single source"
+      }
+    },
+    {
+      "id": "xu-n4",
+      "kind": "night-tale",
+      "line": {
+        "zh": "田埂上走着一盏灯，没有提灯的人。",
+        "en": "A lamp walks the field path with no one carrying it."
+      },
+      "source": {
+        "zh": "聊斋之风，无所本",
+        "en": "In the manner of Liaozhai — no single source"
+      }
+    },
+    {
+      "id": "xu-n5",
+      "kind": "night-tale",
+      "line": {
+        "zh": "古井夜里传出磬声，一下，又一下。",
+        "en": "A chime sounds from the old well at night — once, and again."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：泗滨浮磬；聊斋之风。",
+        "en": "The sounding stones of the Si; in the manner of Liaozhai."
+      }
+    },
+    {
+      "id": "xu-n6",
+      "kind": "night-tale",
+      "line": {
+        "zh": "山路上灯火成行，说是狐仙嫁女。",
+        "en": "Lanterns in a line along the mountain road: the fox spirits, they say, are marrying a daughter."
+      },
+      "source": {
+        "zh": "聊斋之风，无所本",
+        "en": "In the manner of Liaozhai — no single source"
+      }
+    },
+    {
+      "id": "xu-n7",
+      "kind": "night-tale",
+      "line": {
+        "zh": "老僧夜半敲门借火，天亮才知那庙早已荒废。",
+        "en": "An old monk knocks at midnight to borrow fire; at dawn you learn his temple has lain in ruins for years."
+      },
+      "source": {
+        "zh": "聊斋之风，无所本",
+        "en": "In the manner of Liaozhai — no single source"
+      }
+    },
+    {
+      "id": "xu-n8",
+      "kind": "night-tale",
+      "line": {
+        "zh": "月下有人在戏马台上舞剑，走近只有风。",
+        "en": "Someone dances with a sword on the Horse-Sporting Terrace under the moon; up close, only wind."
+      },
+      "source": {
+        "zh": "项羽戏马台；聊斋之风。",
+        "en": "Xiang Yu's terrace; in the manner of Liaozhai."
+      }
+    },
+    {
+      "id": "xu-n9",
+      "kind": "night-tale",
+      "line": {
+        "zh": "沂水的鹅卵石在夜里排成了字。",
+        "en": "The pebbles of the Yi arrange themselves into characters at night."
+      },
+      "source": {
+        "zh": "聊斋之风，无所本",
+        "en": "In the manner of Liaozhai — no single source"
+      }
+    },
+    {
+      "id": "xu-n10",
+      "kind": "night-tale",
+      "line": {
+        "zh": "一只白鹿的影子从雾里经过，却不见鹿。",
+        "en": "The shadow of a white deer passes through the mist, and no deer."
+      },
+      "source": {
+        "zh": "《山海经·中山经》夫诸；聊斋之风。",
+        "en": "The Fuzhu of the Central Mountains; in the manner of Liaozhai."
+      }
+    }
+  ]
+}
