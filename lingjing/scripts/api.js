@@ -48,3 +48,39 @@ export async function fetchSessionMessages(skill, sessionId) {
   const data = await res.json();
   return data.messages || [];
 }
+
+/// The skill's cloud as the engine sees it: `{signed_in, meter}` — the
+/// meter is the window's last reading (`size, used, left, refill_at`) or
+/// null when signed out. 404 when the skill declares no cloud.
+export async function fetchCloud(skill) {
+  const res = await fetch(`${API_BASE}/api/skill-cloud/${encodeURIComponent(skill)}`);
+  // An engine without the route answers the web app's index page, 200.
+  if (!res.ok || !(res.headers.get('content-type') || '').includes('json')) return null;
+  return res.json();
+}
+
+/// Bring the save into step with the account's copy — on open, and after a
+/// change the page made itself. Answers `{done, version}`; null when signed
+/// out or the site is out of reach (the game plays on from the file here).
+export async function syncCloud(skill) {
+  const res = await fetch(`${API_BASE}/api/skill-cloud/${encodeURIComponent(skill)}/sync`, { method: 'POST' });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+/// Sign in to linggen.dev: the daemon opens the browser; resolves once the
+/// account reports signed in, or false when the login window closes.
+export async function signIn() {
+  const res = await fetch(`${API_BASE}/api/account/login`, { method: 'POST' });
+  const out = await res.json().catch(() => ({}));
+  if (out && out.opened === false && out.url) window.open(out.url, '_blank', 'noopener');
+  const until = Date.now() + 300_000;
+  while (Date.now() < until) {
+    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      const acc = await (await fetch(`${API_BASE}/api/account`)).json();
+      if (acc?.signed_in) return true;
+    } catch { /* keep waiting */ }
+  }
+  return false;
+}

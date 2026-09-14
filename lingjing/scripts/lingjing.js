@@ -3,7 +3,7 @@
 // the only thing the page itself reports is a board the player won.
 
 import './chat-bridge.js';
-import { listSkillSessions } from './api.js';
+import { listSkillSessions, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { WORDS, cardHtml, trayHtml, esc } from './cards.js';
@@ -18,6 +18,7 @@ let look = null; //       the rules' view of the game — the only source of num
 let authored = null; //   the content files
 let focus = []; //        cards on the scene
 let focusScene = null; // the scene the focus was last reset for
+let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 const boards = new Map();
 let chat = null;
 
@@ -43,11 +44,21 @@ async function loadContent() {
   authored = { creatures: creatures.creatures, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, roots, terms };
 }
 
+/// The account as the engine sees it. The meter moves with every model call,
+/// so it is read whenever the game is.
+async function readCloud() {
+  try {
+    cloud = await fetchCloud(SKILL);
+  } catch (e) {
+    console.warn('[lingjing] cloud', e);
+  }
+}
+
 /// Re-read the game. Entering a new scene puts its own cards on the scene,
 /// so a creature is pictured even if Ling forgets to Show it.
 async function refresh() {
   try {
-    look = await verb('look');
+    [look] = await Promise.all([verb('look'), readCloud()]);
   } catch (e) {
     console.warn('[lingjing] look', e);
     return;
@@ -62,6 +73,43 @@ async function refresh() {
 
 /* ── Drawing ── */
 
+/* ── 灵气: the 丹田 ring ── */
+
+/// The window as a state, never a number: full, half, low, empty — or
+/// unknown while the engine holds no reading (signed in, the site out of
+/// reach). No cloud at all draws no ring.
+function qi() {
+  if (!cloud) return null;
+  const m = cloud.meter;
+  if (!m || !m.size) return { st: 'unknown', p: 100, refillAt: null };
+  const p = Math.max(0, Math.min(100, Math.round((m.left / m.size) * 100)));
+  const st = m.left === 0 ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full';
+  return { st, p, refillAt: m.refill_at || null };
+}
+
+const clock = (unixSecs) =>
+  new Date(unixSecs * 1000).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' });
+
+function qiHtml() {
+  const q = qi();
+  if (!q) return '';
+  const w = words();
+  const state = { full: w.qiFull, half: w.qiHalf, low: w.qiLow, empty: w.qiEmpty, unknown: '' }[q.st];
+  return `<span class="qi" data-st="${q.st}" title="${w.qi}"><span class="lbl">${w.qi}</span>
+    <i class="ring" style="--p:${q.p}"></i><span class="st">${esc(state)}</span></span>`;
+}
+
+/// One line in the world while the window is spent — and the boards stay:
+/// they use no model.
+function emptyCard() {
+  const q = qi();
+  if (q?.st !== 'empty') return '';
+  const w = words();
+  const line = q.refillAt ? w.emptyLine.replace('{t}', clock(q.refillAt)) : w.emptySoon;
+  return `<div class="card empty"><div class="cardtitle">${w.qi} · ${w.qiEmpty}</div>
+    <div>${esc(line)}</div><div class="small dim">${w.boardsStay}</div></div>`;
+}
+
 function statusHtml() {
   const w = words();
   const pct = look.next ? Math.min(100, Math.round((look.xw / look.next) * 100)) : 0;
@@ -69,6 +117,7 @@ function statusHtml() {
   return `${name}<span class="realm">${esc(look.realm.name)}</span>
     <div class="xw"><span class="lbl">${w.xw}</span><div class="bar"><i style="width:${pct}%"></i></div>
       <span class="num">${look.xw}/${look.next}</span></div>
+    ${qiHtml()}
     <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.ls}</b></span>`;
 }
 
@@ -78,7 +127,7 @@ function focusHtml() {
   const cards = focus.length ? [...focus] : [{ card: 'hexagram', id: look.omen?.id }];
   const open = (look.tasks ?? []).find((t) => t.kind === 'board' && t.status !== 'done' && !t.won);
   if (open && !cards.some((c) => c.card === 'board' && c.id === open.id)) cards.push({ card: 'board', id: open.id });
-  return cards.map((c) => cardHtml(c, ctx())).join('');
+  return emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('');
 }
 
 function render() {
@@ -102,6 +151,9 @@ async function onWin(taskId) {
   const r = await verb('win', { id: taskId });
   if (!r.ok) console.warn('[lingjing] win refused', r);
   await report(`[scene] won ${taskId}`);
+  // A change the page made itself: keep the account's copy in step now,
+  // rather than at the next turn's edge.
+  if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
   await refresh();
 }
 
@@ -206,18 +258,64 @@ async function firstLanguage() {
   }
 }
 
-async function boot() {
+/* ── The gate: sign in to play ── */
+
+/// The page's language before there is a game to take it from.
+const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en');
+
+/// Signed out, nothing of the game is shown: the save lives with the
+/// account, and a turn would be refused anyway. One button; the daemon
+/// opens the browser, and the scene enters once the account reports in.
+function gate(note = '') {
+  const w = WORDS[machineLang()];
+  document.documentElement.lang = machineLang();
+  document.title = w.title;
+  $('status').innerHTML = '';
+  $('place').textContent = '';
+  $('stage').hidden = true;
+  $('tray').innerHTML = '';
+  $('trayTitle').textContent = '';
+  $('focus').innerHTML = `<div class="card gate-card"><div class="cardtitle">${w.signTitle}</div>
+    <p>${w.signBody}</p><button class="act" id="signin">${w.signBtn}</button>
+    ${note ? `<div class="note">${esc(note)}</div>` : ''}</div>`;
+  $('signin').onclick = async () => {
+    const btn = $('signin');
+    btn.disabled = true;
+    btn.textContent = w.signWait;
+    const ok = await signIn().catch(() => false);
+    if (ok) return enter();
+    gate(w.signFail);
+  };
+}
+
+/// Into the world: the account's save first, so a new machine — or one
+/// another device moved past — reads the game as it stands.
+async function enter() {
   $('focus').innerHTML = `<div class="loading">${WORDS.zh.loading} · ${WORDS.en.loading}</div>`;
   try {
-    await loadContent();
-    await refresh();
-    await firstLanguage();
+    await syncCloud(SKILL);
   } catch (e) {
-    console.error('[lingjing] boot', e);
-    $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
+    console.warn('[lingjing] sync on open', e);
   }
+  await refresh();
+  await firstLanguage();
   await mountChat();
 }
 
-window.addEventListener('focus', refresh);
+async function boot() {
+  $('focus').innerHTML = `<div class="loading">${WORDS.zh.loading} · ${WORDS.en.loading}</div>`;
+  try {
+    await Promise.all([loadContent(), readCloud()]);
+  } catch (e) {
+    console.error('[lingjing] boot', e);
+    $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
+    return;
+  }
+  // A cloud declared and no account behind it: the gate. No cloud at all
+  // (an older engine) plays from the file here, as before.
+  if (cloud && !cloud.signed_in) return gate();
+  await enter();
+}
+
+window.addEventListener('focus', () => { if (look) refresh(); });
 boot();

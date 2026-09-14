@@ -13,6 +13,12 @@ app:
   entry: scripts/index.html
   width: 1280
   height: 820
+# The account behind the game (skill-spec § Cloud): the save follows the
+# player across devices, and 灵气 is a rolling token window sized by
+# linggen.dev — a pace, not a price. Declaring it means: sign in to play.
+cloud:
+  save: data/state.json
+  meter: lingjing
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this

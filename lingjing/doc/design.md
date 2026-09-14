@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-11 — content, rules.mjs, SKILL.md, the Mac scene page and the first quests (Shifu's scan, Health's workout) built (build order 1–5); online — the cloud save and the 灵气 heartbeat — designed, next; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout) and online — the cloud save, the 灵气 meter, sign in to play — built (build order 1–6); next chapter 1; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -285,8 +285,22 @@ change.
 - **Not yet:** Yinyue's 3D model (the moon holds her place — she renders in
   one surface at a time, so the game needs a call on where she lives while it
   is open); the 斗法 duel (the 夫诸 `duel` exit refuses until a board for it
-  exists); 七巧板 and 华容道; the 丹田 ring (with the 灵气 heartbeat). The board
-  is 4×4 — "pair the eight herbs" — not the 6×6 once planned.
+  exists); 七巧板 and 华容道. The board is 4×4 — "pair the eight herbs" — not
+  the 6×6 once planned.
+- **Built (step 6):** SKILL.md declares `cloud: {save: data/state.json,
+  meter: lingjing}` (linggen `cab317c`, skill-spec § Cloud). The page reads
+  `GET /api/skill-cloud/lingjing` with every Look — `{signed_in, meter}`.
+  Signed out: **the gate** — nothing of the game shown, one button; the
+  daemon opens the browser (`POST /api/account/login`), the page polls
+  `/api/account` and enters once signed in. On entering it calls
+  `POST /api/skill-cloud/lingjing/sync` first, so a new machine reads the
+  account's save before Look; a won board syncs again at once. The **丹田
+  ring** in the status strip draws the reading as full / half / low / empty
+  (a number never); no reading yet — signed in, site out of reach — draws a
+  faint ring. **Empty** puts one line at the top of the scene — 丹田已空，先去
+  调息。灵气回满于 HH:MM — and the boards stay. An engine without the route
+  answers the web index page: the page treats non-JSON as "no cloud" and
+  plays from the file, as before.
 - **A reopened day shows the day so far.** Text Ling writes between tool
   calls is saved as it is written (linggen `b1fec94`); until then only a
   turn's final reply was, and a game day — one long turn of narration and
@@ -356,10 +370,12 @@ changes:
 灵气 is a pace.
 
 - **A rolling 5-hour window of tokens,** the same whatever model answers.
-- **Counted in the cloud by heartbeat.** After each game turn the engine
-  reports its tokens to linggen.dev; before the next it asks what is left.
-  One counter, fed by the engine for every game turn — the proxy does not
-  count it again.
+- **Counted in the cloud, around every model call.** Before a call the
+  engine asks linggen.dev what is left; after it, it reports the call's
+  tokens. Around each call rather than each turn, because a game sitting —
+  narration, an AskUser answer, more narration — is one long turn (found
+  live: a turn-level check never stopped one). One counter, fed by the
+  engine — the proxy does not count it again.
 - **The skill declares it; the engine names no game.** SKILL.md names the
   meter, and the engine applies it to any session bound to a skill that
   declares one. linggen.dev holds the window's size, so it changes without
@@ -539,8 +555,8 @@ Establishment, Core Formation, Nascent Soul).
 3. SKILL.md — Ling's rules and the tools. ✓ (the prologue played live)
 4. The Mac scene page and its `Show` cards; choices through AskUser. ✓
 5. Quests: Shifu's scan ✓, Health's workout ✓; Health's night waits for sleep in the mirror.
-6. Online: the cloud save and the 灵气 heartbeat — the skill declares its
-   budget, the engine reports and asks, linggen.dev counts and keeps the save.
+6. Online: the cloud save and the 灵气 meter — the skill declares them, the
+   engine reports and asks, linggen.dev counts and keeps the save. ✓
 7. Chapter 1 — 冀州.
 8. The table: the engine's shared chat, then the first set of plays; 传音 ·
    同修 · 论道 through the cloud.

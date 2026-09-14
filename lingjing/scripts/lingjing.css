@@ -59,6 +59,29 @@ button:disabled { cursor: default; }
 .xw .num { color: var(--dim); }
 .ls b { color: var(--ling); font-weight: 500; }
 
+/* The 丹田 ring: the engine's latest reading of the 灵气 window — full, half,
+   low, empty. Never a number. */
+.qi { display: flex; align-items: center; gap: 6px; }
+.qi .lbl { color: var(--faint); }
+.qi .ring { --p: 100; width: 16px; height: 16px; border-radius: 50%; position: relative; flex: none;
+            background: conic-gradient(var(--yinyue) calc(var(--p) * 1%), var(--raised) 0); transition: background .6s ease; }
+.qi .ring::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--surface); }
+.qi[data-st="low"] .ring, .qi[data-st="empty"] .ring { background: conic-gradient(var(--seal) calc(var(--p) * 1%), var(--raised) 0); }
+.qi[data-st="empty"] .st { color: var(--seal); }
+.qi[data-st="unknown"] .ring { background: conic-gradient(var(--faint) 100%, var(--raised) 0); }
+.qi .st { font-family: var(--serif); font-size: 12.5px; }
+
+/* One line in the world while the window is spent — the boards stay. */
+.focus .card.empty { border-color: var(--seal); background: color-mix(in srgb, var(--seal-soft) 70%, var(--surface)); }
+.focus .card.empty .cardtitle { color: var(--seal); }
+
+/* Signed out: the gate. Nothing of the game is shown behind it. */
+.gate-card { text-align: center; padding: 24px 20px; }
+.gate-card .cardtitle { font-size: 18px; }
+.gate-card p { margin: 6px 0 14px; color: var(--dim); }
+.gate-card .act { padding: 6px 16px; font-size: 13.5px; }
+.gate-card .note { margin-top: 10px; font-size: 12px; color: var(--seal); }
+
 /* ── the view: ink hills, the place, Yinyue, the focus card ── */
 .view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(180deg, var(--sky-a), var(--sky-b)); }
 .backdrop { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; color: var(--text); }
