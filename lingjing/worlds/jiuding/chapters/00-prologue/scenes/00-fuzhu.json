@@ -2,6 +2,7 @@
   "version": 1,
   "id": "00-fuzhu",
   "chapter": "00-prologue",
+  "at": "sibei",
   "place": { "zh": "泗水北岸 · 雾中", "en": "North of the Si · in the mist" },
   "setup": {
     "zh": "你沿泗水北行。雾里立着一只白鹿，头生四角。",

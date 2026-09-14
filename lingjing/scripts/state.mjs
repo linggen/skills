@@ -17,6 +17,7 @@ export function newState(content, lang, now) {
     tier: content.ladder.tiers[0].id, step: 0, progress: 0, wealth: 0,
     bag: {}, cast: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
+    place: first.scenes[first.first_scene]?.at ?? content.places[first.province]?.start ?? null,
     tasks: {}, quests: {}, wins: {}, branch: null, story: '', seeds_used: [],
     made: { scenes: {}, at: null },
     day: { key: dayKey(now), progress: 0, wealth: 0, branches: 0 },
@@ -179,5 +180,6 @@ export function migrate(state) {
   move('xw', 'progress'); move('ls', 'wealth'); move('beasts', 'cast'); move('qi', 'stamina'); move('qi_at', 'stamina_at');
   if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0, branches: m.day.branches ?? 0 };
   m.world ??= FIRST_WORLD;
+  m.place ??= null; // settled by the rules from the scene, or the province's start
   return m;
 }

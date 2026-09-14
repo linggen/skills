@@ -31,6 +31,108 @@ const sceneOf = (content, state) => (inMade(state)
   ? state.made.scenes[state.made.at] ?? null
   : content.chapters[state.chapter]?.scenes[state.scene] ?? null);
 const creatureOf = (content, id) => content.creatures.creatures.find(c => c.id === id);
+
+/* ── Places: the province as a map ── */
+
+const allPlaces = content => Object.values(content.places).flatMap(doc => doc.places.map(p => ({ ...p, province: doc.province })));
+const placeOf = (content, id) => allPlaces(content).find(p => p.id === id) ?? null;
+const tierIndex = (content, state) => content.ladder.tiers.findIndex(t => t.id === state.tier);
+
+/* Where the player stands: the scene's place while a scene runs, else the
+   save's; a save from before places starts where its province starts. */
+function settlePlace(content, state) {
+  const scene = inMade(state) ? null : sceneOf(content, state);
+  if (scene?.at) state.place = scene.at;
+  if (!state.place || !placeOf(content, state.place)) {
+    const province = content.chapters[state.chapter]?.province;
+    state.place = content.places[province]?.start ?? null;
+  }
+}
+
+/* A place by its id, its name or its English. */
+function findPlace(content, raw) {
+  const said = String(raw ?? '').trim().toLowerCase();
+  if (!said) return null;
+  return allPlaces(content).find(p => p.id === said || p.name.zh === said || p.name.en.toLowerCase() === said || `the ${p.name.en.toLowerCase()}` === said) ?? null;
+}
+
+const tooHard = (content, state, place) => place.tier > tierIndex(content, state);
+const placeName = (content, state, place) => ({ id: place.id, name: pick(place.name, state.lang) });
+
+/* The place as Look tells it: what is there, the roads out, and the whole
+   province for the map — here, a road away, or beyond the player's tier. */
+function placeBrief(content, state) {
+  const place = placeOf(content, state.place);
+  if (!place) return null;
+  const lang = state.lang, doc = content.places[place.province];
+  const has = place.has ?? {};
+  const show = has.creature ? [{ card: 'creature', id: has.creature }] : [];
+  return {
+    ...placeName(content, state, place),
+    province: { id: place.province, name: pick(content.dictionary.provinces[place.province], lang) },
+    tier: place.tier, line: pick(place.line, lang),
+    has: {
+      creature: has.creature ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
+      seeds: Boolean(has.seeds), shop: Boolean(has.shop), scene: has.scene ?? null,
+    },
+    roads: place.roads.map(id => ({ ...placeName(content, state, placeOf(content, id)), tier: placeOf(content, id).tier, too_hard: tooHard(content, state, placeOf(content, id)) })),
+    places: doc.places.map(p => ({
+      ...placeName(content, state, p), tier: p.tier,
+      here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
+    })),
+    show,
+  };
+}
+
+/* The nearest place the player's tier allows: here, else a road out. */
+function fittingPlace(content, state, from) {
+  if (!tooHard(content, state, from)) return from;
+  return from.roads.map(id => placeOf(content, id)).find(p => !tooHard(content, state, p)) ?? from;
+}
+
+/* The corridor: a chapter that walks the player scene by scene; the world
+   opens when it ends. */
+const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && Boolean(content.chapters[state.chapter]?.corridor);
+
+/* The thread — the pull: the scene while one runs, else the next chapter
+   and when it opens; nothing when the spine has run out. */
+function threadOf(content, state, now) {
+  const lang = state.lang;
+  const scene = inMade(state) ? null : sceneOf(content, state);
+  if (scene) return { scene: scene.id, text: fill(pick(scene.setup, lang), state) };
+  const next = Object.values(content.chapters)
+    .filter(c => !state.ended.includes(c.id) && c.id > state.chapter)
+    .sort((a, b) => a.id.localeCompare(b.id))[0];
+  if (!next) return null;
+  const opens = next.opens && new Date(next.opens) > now ? next.opens : null;
+  const at = next.scenes[next.first_scene]?.at;
+  return { chapter: next.id, title: pick(next.title, lang), opens, province: pick(content.dictionary.provinces[next.province], lang), place: at ? placeName(content, state, placeOf(content, at)) : null };
+}
+
+const poolOf = (content, state) => {
+  const q = content.rewards.stamina, r = state.stamina / q.max;
+  return r >= 0.6 ? 'full' : r >= 0.25 ? 'half' : state.stamina >= q.cost.step ? 'low' : 'empty';
+};
+
+/* The director's brief: what Ling improvises inside this turn — what is
+   near, what is beyond the player, the thread, the pool, today's seed. The
+   rules still decide every outcome. */
+function directorBrief(content, state, ctx) {
+  const place = placeOf(content, state.place);
+  if (!place) return null;
+  const roads = place.roads.map(id => placeOf(content, id));
+  const seed = place.has?.seeds && state.day.branches < content.branches.per_day && !state.branch
+    ? pickSeed(content, state, content.branches.templates[0].kind, ctx.now) : null;
+  return {
+    here: placeName(content, state, place),
+    near: roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p)),
+    too_hard: roads.filter(p => tooHard(content, state, p)).map(p => placeName(content, state, p)),
+    corridor: inCorridor(content, state),
+    thread: threadOf(content, state, ctx.now),
+    pool: poolOf(content, state),
+    seed: seed ? { id: seed.id, line: seed.line } : null,
+  };
+}
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
 
 /* A speaker's name in the player's language; Ling narrates, unnamed. */
@@ -100,6 +202,8 @@ export function look(state, content, ctx) {
   const lang = state.lang;
   state = clone(state);
   settleStamina(content, state, ctx.now);
+  settlePlace(content, state);
+  rollDay(state, ctx.now);
   const traits = state.traits && {
     ids: state.traits,
     elements: state.traits.map(e => pick(content.traits.elements[e], lang)),
@@ -117,6 +221,8 @@ export function look(state, content, ctx) {
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: sceneBrief(content, state),
+    place: placeBrief(content, state),
+    director: directorBrief(content, state, ctx),
     ended: state.ended, branch: state.branch, story: state.story,
     omen: omen(content, ctx.now, lang),
     stamina: staminaBrief(content, state, ctx.now),
@@ -206,6 +312,7 @@ function advanceChapter(content, state, now) {
   if (!next) return { waiting: null };
   if (next.opens && new Date(next.opens) > now) return { waiting: { chapter: next.id, opens: next.opens } };
   state.chapter = next.id; state.scene = next.first_scene;
+  settlePlace(content, state);
   offerTasks(content, state);
   return { waiting: null };
 }
@@ -248,7 +355,7 @@ export function resolve(state, content, ctx, args) {
     if (exit.ends) s.made.at = null;
   } else {
     if (exit.next || exit.ends) s.done_scenes.push(scene.id);
-    if (exit.next) { s.scene = exit.next; offerTasks(content, s); }
+    if (exit.next) { s.scene = exit.next; settlePlace(content, s); offerTasks(content, s); }
     if (exit.ends) { s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
   }
   return {
@@ -340,7 +447,7 @@ function hashOf(text) {
    first; chosen by the day and the 道号, so a day reopens the same seed. A
    province with no seeds grows the tale from the template alone. */
 function pickSeed(content, state, kind, now) {
-  const province = content.chapters[state.chapter]?.province;
+  const province = placeOf(content, state.place)?.province ?? content.chapters[state.chapter]?.province;
   const all = (content.seeds[province]?.seeds ?? []).filter(x => x.kind === kind);
   if (!all.length) return null;
   const used = new Set(state.seeds_used ?? []);
@@ -396,12 +503,44 @@ function provinceOf(content, raw) {
   return Object.keys(content.dictionary.provinces).find(k => k === said || content.dictionary.provinces[k].en.toLowerCase() === said) ?? null;
 }
 
+/* Go to a place. The rules check the road and the tier against the player;
+   too hard is refused in the mist with a fitting place, so Yinyue's "not
+   yet — back to the ford" is the rules' hint, spoken kindly. While the
+   corridor runs the scene comes first. A province named instead of a place
+   answers as before: here, or a road not yet open. */
 export function move(state, content, ctx, args) {
-  const p = provinceOf(content, args.province);
-  const here = content.chapters[state.chapter];
-  if (p && here?.province === p) return { state: null, result: { ok: true, here: true } };
-  const say = { zh: `${p ?? String(args.province ?? '').replace(/州$/, '')}州的路还没开。`, en: 'That road has not opened yet.' };
-  return refuse('road-closed', pick(say, state.lang));
+  const s = clone(state);
+  settlePlace(content, s);
+  const here = placeOf(content, s.place);
+  const raw = args.place ?? args.province;
+  const target = findPlace(content, raw);
+  const lang = s.lang;
+  if (!target) {
+    const p = provinceOf(content, raw);
+    if (p && here?.province === p) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
+    if (p || !here) {
+      const say = { zh: `${p ?? String(raw ?? '').replace(/州$/, '')}州的路还没开。`, en: 'That road has not opened yet.' };
+      return refuse('road-closed', pick(say, lang));
+    }
+    return refuse('unknown-place', null, { near: here.roads.map(id => placeName(content, s, placeOf(content, id))) });
+  }
+  if (target.id === here?.id) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
+  if (inCorridor(content, s)) {
+    return refuse('corridor', pick({ zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene });
+  }
+  if (!here.roads.includes(target.id)) {
+    const say = { zh: `从${pick(here.name, 'zh')}没有路通向${pick(target.name, 'zh')}。`, en: `No road runs from ${pick(here.name, 'en')} to ${pick(target.name, 'en')}.` };
+    return refuse('no-road', pick(say, lang), { near: here.roads.map(id => placeName(content, s, placeOf(content, id))) });
+  }
+  if (tooHard(content, s, target)) {
+    const fitting = fittingPlace(content, s, here);
+    const say = { zh: '雾更浓了，看不见路。', en: 'The mist thickens; the road is lost.' };
+    const yinyue = { zh: `还不是时候。先回${pick(fitting.name, 'zh')}吧。`, en: `Not yet. Let's go back to ${pick(fitting.name, 'en')}.` };
+    return refuse('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
+  }
+  s.place = target.id;
+  const place = placeBrief(content, s);
+  return { state: s, result: { ok: true, place, show: place.show, director: directorBrief(content, s, ctx), summarize: true } };
 }
 
 /* The player's words set the language. The result carries the scene in it,

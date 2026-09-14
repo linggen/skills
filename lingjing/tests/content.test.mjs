@@ -95,3 +95,21 @@ test('a need without a refusal line is caught', () => {
   delete prologue(c).scenes['00-practice'].exits[0].refuse;
   assert.ok(has(lint(c), 'a need needs a refusal line'));
 });
+
+test('places: a road to nowhere, a road that does not come back, a tier off the ladder, a scene at no place', () => {
+  const c = fresh();
+  const xu = c.places['徐'];
+  xu.places[0].roads.push('atlantis');
+  xu.places[1].roads = xu.places[1].roads.filter(r => r !== 'sishui');
+  xu.places[2].tier = 9;
+  prologue(c).scenes['00-river'].at = 'atlantis';
+  const problems = lint(c);
+  assert.ok(has(problems, 'place sishui: road to atlantis, which is not a place of 徐'));
+  assert.ok(has(problems, 'place sishui: road to sibei does not come back'));
+  assert.ok(has(problems, 'place pengcheng: tier 9 is not on the ladder'));
+  assert.ok(has(problems, 'scene 00-river: at atlantis, which is not a place of 徐'));
+  const d = fresh();
+  for (const p of d.places['徐'].places) p.roads = p.roads.filter(r => r !== 'xushan');
+  d.places['徐'].places.find(p => p.id === 'xushan').roads = [];
+  assert.ok(has(lint(d), 'place xushan: no road reaches it from the start'));
+});

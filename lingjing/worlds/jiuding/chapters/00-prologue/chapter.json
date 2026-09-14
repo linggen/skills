@@ -3,6 +3,7 @@
   "id": "00-prologue",
   "opens": null,
   "province": "徐",
+  "corridor": true,
   "first_scene": "00-river",
   "gate": null,
   "title": { "zh": "序章 · 泗水", "en": "Prologue · The Si River" },

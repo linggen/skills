@@ -12,7 +12,7 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize']);
+const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move']);
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
@@ -74,10 +74,12 @@ async function refresh() {
     if (!authored) $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
     return;
   }
-  const sceneId = look.scene?.id ?? null;
+  // A scene's cards while one runs; a place's (its creature) when the
+  // world is open and the player stands somewhere.
+  const sceneId = look.scene?.id ?? (look.place ? `place:${look.place.id}` : null);
   if (sceneId !== focusScene) {
     focusScene = sceneId;
-    focus = look.scene?.show ?? [];
+    focus = look.scene?.show ?? look.place?.show ?? [];
   }
   render();
 }
@@ -143,9 +145,9 @@ function render() {
   if (!look || !authored) return;
   const w = words();
   document.documentElement.lang = lang();
-  document.title = `${w.title} · ${look.scene?.place ?? ''}`;
+  document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
   $('status').innerHTML = statusHtml();
-  $('place').textContent = look.scene?.place ?? look.chapter?.title ?? '';
+  $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   const withYinyue = (look.scene?.cast ?? []).some((c) => c.id === 'yinyue');
   $('stage').hidden = !withYinyue;
   $('stageName').textContent = w.yinyue;

@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "province": "徐",
+  "start": "sishui",
+  "_about": "The places of 徐 — a map, not a chain. `roads` go both ways; `tier` is the ladder index a place asks for (0 练气 … 8 渡劫), and a place above the player's tier is refused in the mist with a fitting place to go instead. `has` says what is there: a creature with its card, the province's seed pool, the market, a chapter scene. `line` is one sentence of what is there, for the director's brief.",
+  "places": [
+    {
+      "id": "sishui",
+      "name": { "zh": "泗水岸", "en": "The Si River bank" },
+      "tier": 0,
+      "roads": ["sibei", "pengcheng", "huaidu"],
+      "has": { "seeds": true },
+      "line": { "zh": "泗水南岸，芦苇齐人高，你醒来的地方。", "en": "The south bank of the Si, reeds as tall as you — where you woke." }
+    },
+    {
+      "id": "sibei",
+      "name": { "zh": "泗水北岸", "en": "North bank of the Si" },
+      "tier": 0,
+      "roads": ["sishui", "yunlong", "lvliang"],
+      "has": { "creature": "fuzhu", "seeds": true },
+      "line": { "zh": "雾常年不散，夫诸在雾里踏水。", "en": "The mist never lifts; Fuzhu walks the water inside it." }
+    },
+    {
+      "id": "pengcheng",
+      "name": { "zh": "彭城", "en": "Pengcheng" },
+      "tier": 0,
+      "roads": ["sishui", "yunlong", "peize"],
+      "has": { "shop": true },
+      "line": { "zh": "徐州的城，坊市在南门里。", "en": "The city of Xu; the market lies inside the south gate." }
+    },
+    {
+      "id": "yunlong",
+      "name": { "zh": "云龙山", "en": "Yunlong Mountain" },
+      "tier": 0,
+      "roads": ["sibei", "pengcheng", "xushan"],
+      "has": { "seeds": true },
+      "line": { "zh": "山形如卧龙，山上有石床，传说仙人在此醉卧。", "en": "A hill shaped like a sleeping dragon, a stone bed on top where an immortal is said to have slept off his wine." }
+    },
+    {
+      "id": "huaidu",
+      "name": { "zh": "淮水渡口", "en": "The Huai ferry" },
+      "tier": 0,
+      "roads": ["sishui", "sikou", "yiqiao"],
+      "has": {},
+      "line": { "zh": "一条船，一个老船家。渡人，不渡心事。", "en": "One boat, one old boatman. He carries people, not their troubles." }
+    },
+    {
+      "id": "yiqiao",
+      "name": { "zh": "圯桥", "en": "The Yi Bridge" },
+      "tier": 1,
+      "roads": ["huaidu", "sikou"],
+      "has": { "seeds": true },
+      "line": { "zh": "下邳的老桥。当年一位老人在桥上掉了鞋，一个少年替他拾了三次。", "en": "The old bridge at Xiapi. An old man once dropped his shoe here; a young man picked it up three times." }
+    },
+    {
+      "id": "sikou",
+      "name": { "zh": "泗口", "en": "The mouth of the Si" },
+      "tier": 1,
+      "roads": ["huaidu", "yiqiao", "lvliang"],
+      "has": {},
+      "line": { "zh": "泗水入淮之处，两水相激，船家在此歇桨。", "en": "Where the Si meets the Huai; two waters collide, and boatmen rest their oars." }
+    },
+    {
+      "id": "lvliang",
+      "name": { "zh": "吕梁洪", "en": "The Lüliang Rapids" },
+      "tier": 1,
+      "roads": ["sibei", "sikou", "weishan"],
+      "has": { "seeds": true },
+      "line": { "zh": "泗水最险的一段，石齿如林，水声如雷。", "en": "The wildest stretch of the Si: rocks like teeth, water like thunder." }
+    },
+    {
+      "id": "peize",
+      "name": { "zh": "沛泽", "en": "The Pei Marsh" },
+      "tier": 1,
+      "roads": ["pengcheng", "weishan"],
+      "has": {},
+      "line": { "zh": "大泽无边，芦苇里藏着走蛇的小路。", "en": "A marsh without edges; snake-paths hide in the reeds." }
+    },
+    {
+      "id": "weishan",
+      "name": { "zh": "微山湖", "en": "Lake Weishan" },
+      "tier": 2,
+      "roads": ["lvliang", "peize", "xushan"],
+      "has": { "seeds": true },
+      "line": { "zh": "湖上千顷荷，湖心有岛，岛上有古墓。", "en": "A thousand acres of lotus; an island at the heart, and an old tomb on the island." }
+    },
+    {
+      "id": "xushan",
+      "name": { "zh": "徐山", "en": "Mount Xu" },
+      "tier": 2,
+      "roads": ["yunlong", "weishan"],
+      "has": {},
+      "line": { "zh": "徐州得名之山，山顶终年有云。", "en": "The mountain the province is named for; clouds sit on its top all year." }
+    }
+  ]
+}

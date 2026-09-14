@@ -392,6 +392,86 @@ test('a made scene with a novel\'s name is not playable', () => {
   assert.ok(r.problems.some(p => p.includes('names 黄枫谷 (凡人修仙传)')), JSON.stringify(r.problems));
 });
 
+/* Through the prologue and out: the world opens at 泗水北岸. */
+function toOpenWorld() {
+  let s = toFuzhu();
+  s = must(resolve, s, { exit: 'gift' }).state;
+  s = must(resolve, s, { exit: 'rest' }).state;
+  assert.equal(s.scene, null);
+  return s;
+}
+
+test('the corridor walks the player from place to place, and Move waits', () => {
+  let s = start();
+  assert.equal(s.place, 'sishui');
+  assert.equal(look(s, content, ctx()).place.name, '泗水岸');
+  const r = refused(move, s, { place: 'pengcheng' }, 'corridor');
+  assert.equal(r.say, '先把眼前的事做完。');
+  s = toFuzhu();
+  assert.equal(s.place, 'sibei');
+  assert.equal(look(s, content, ctx()).director.corridor, true);
+  assert.equal(look(s, content, ctx()).director.thread.scene, '00-fuzhu');
+});
+
+test('Move for real: roads, tiers, a fitting place, the names', () => {
+  let s = toOpenWorld();
+  assert.equal(s.place, 'sibei');
+  const l = look(s, content, ctx());
+  assert.equal(l.scene, null);
+  assert.deepEqual(l.director.near.map(p => p.id), ['sishui', 'yunlong']);
+  assert.deepEqual(l.director.too_hard.map(p => p.id), ['lvliang']);
+  assert.equal(l.director.thread, null, 'no chapter after the prologue yet');
+  assert.equal(l.director.corridor, false);
+  assert.equal(l.place.has.creature.name, '夫诸');
+  assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
+  assert.equal(l.place.places.length, 11);
+  assert.ok(l.place.places.find(p => p.id === 'sibei').here);
+  // the same place is no move
+  assert.equal(must(move, s, { place: 'sibei' }).result.here, true);
+  // a road away, by id, by name, by English
+  const out = must(move, s, { place: '云龙山' });
+  assert.equal(out.state.place, 'yunlong');
+  assert.equal(out.result.summarize, true);
+  assert.equal(out.result.director.here.id, 'yunlong');
+  assert.equal(must(move, s, { place: 'The Si River bank' }).state.place, 'sishui');
+  assert.equal(must(move, s, { place: 'yunlong' }).state.place, 'yunlong');
+  // no road
+  const nr = refused(move, s, { place: 'pengcheng' }, 'no-road');
+  assert.equal(nr.say, '从泗水北岸没有路通向彭城。');
+  assert.deepEqual(nr.near.map(p => p.id), ['sishui', 'yunlong', 'lvliang']);
+  // too hard: the mist, and Yinyue's fitting place
+  const th = refused(move, s, { place: 'lvliang' }, 'too-hard');
+  assert.equal(th.say, '雾更浓了，看不见路。');
+  assert.equal(th.fitting.id, 'sibei');
+  assert.equal(th.yinyue, '还不是时候。先回泗水北岸吧。');
+  // unknown
+  assert.deepEqual(refused(move, s, { place: 'nowhere' }, 'unknown-place').near.map(p => p.id), ['sishui', 'yunlong', 'lvliang']);
+  // a province still answers: here, or a road not open
+  assert.equal(must(move, s, { province: 'Xu' }).result.here, true);
+  assert.equal(refused(move, s, { place: '冀州' }, 'road-closed').say, '冀州的路还没开。');
+  // at foundation the rapids open
+  s = { ...s, tier: 'foundation', step: 0, progress: 0 };
+  assert.equal(must(move, s, { place: 'lvliang' }).state.place, 'lvliang');
+  assert.deepEqual(look(s, content, ctx()).director.too_hard, []);
+});
+
+test('the director names today\'s seed only where seeds grow, and the pool', () => {
+  const s = toOpenWorld();
+  const d = look(s, content, ctx()).director;
+  assert.ok(d.seed?.id.startsWith('xu-'));
+  assert.equal(d.pool, 'half', 'six story steps of ten from a hundred');
+  assert.equal(look(start(), content, ctx()).director.pool, 'full');
+  const moved = must(move, s, { place: 'sishui' }).state;
+  const t = must(move, moved, { place: 'huaidu' }).state;
+  assert.equal(look(t, content, ctx()).director.seed, null, 'the ferry has no seeds');
+  assert.equal(look({ ...s, stamina: 5 }, content, ctx()).director.pool, 'empty');
+});
+
+test('a save from before places starts where its province starts', () => {
+  const s = { ...toOpenWorld(), place: undefined };
+  assert.equal(look(s, content, ctx()).place.id, 'sishui');
+});
+
 test('a province is known by its character, its name or its English', () => {
   for (const province of ['徐', '徐州', 'Xu', 'xu']) assert.equal(must(move, start(), { province }).result.here, true);
   assert.equal(refused(move, start('en'), { province: 'Ji' }, 'road-closed').say, 'That road has not opened yet.');

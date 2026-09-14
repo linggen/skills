@@ -72,7 +72,19 @@ function map(card, ctx) {
     const tag = kind ? `<small>${ctx.words[kind]}</small>` : '';
     return `<div class="prov${kind ? ` ${kind}` : ''}">${esc(name(c))}${tag}</div>`;
   });
-  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div><div class="map">${cells.join('')}</div></div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div><div class="map">${cells.join('')}</div>${placesHtml(ctx)}</div>`;
+}
+
+/// The province's places under the grid: here, a road away, or beyond the
+/// player's tier — from Look, never decided here.
+function placesHtml(ctx) {
+  const place = ctx.look.place;
+  if (!place?.places?.length) return '';
+  const chips = place.places.map((p) => {
+    const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
+    return `<span class="pl${kind ? ` ${kind}` : ''}">${esc(p.name)}</span>`;
+  });
+  return `<div class="placesTitle">${esc(place.province.name)}</div><div class="places">${chips.join('')}</div>`;
 }
 
 function hexagram(card, ctx) {

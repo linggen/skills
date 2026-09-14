@@ -46,6 +46,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     tasks: at('tasks/world.json'),
     branches: at('branches.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
+    places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json') },
     dictionary: at('dictionary.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
@@ -77,6 +78,17 @@ function loadSeeds(root) {
     seeds[doc.province] = doc;
   }
   return seeds;
+}
+
+/* The places of a province, one file each: { 徐: { province, start, places } }. */
+function loadPlaces(root) {
+  const places = {};
+  if (!fs.existsSync(root)) return places;
+  for (const file of fs.readdirSync(root).filter(f => f.endsWith('.json')).sort()) {
+    const doc = readJson(path.join(root, file));
+    places[doc.province] = doc;
+  }
+  return places;
 }
 
 /* ── Made scenes ── */
@@ -142,7 +154,39 @@ export function lint(content) {
   }
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   lintSeeds(content, ids, bad);
+  lintPlaces(content, ids, bad);
   return problems;
+}
+
+/* A province's places: roads both ways to places of the same province, a
+   tier the ladder has, a creature with its card, a scene that exists, and
+   every place reachable from the start. */
+function lintPlaces(content, ids, bad) {
+  const scenes = new Set(Object.values(content.chapters).flatMap(c => Object.keys(c.scenes)));
+  const seen = new Set();
+  for (const [province, doc] of Object.entries(content.places)) {
+    const where = `places ${province}`;
+    if (!content.dictionary.provinces[province]) bad(where, 'unknown province');
+    const byId = Object.fromEntries(doc.places.map(p => [p.id, p]));
+    if (!byId[doc.start]) bad(where, `start ${doc.start} is not a place`);
+    for (const place of doc.places) {
+      const at = `place ${place.id}`;
+      if (seen.has(place.id)) bad(at, 'duplicate id');
+      seen.add(place.id);
+      if (!Number.isInteger(place.tier) || place.tier < 0 || place.tier >= content.ladder.tiers.length) bad(at, `tier ${place.tier} is not on the ladder`);
+      if (!place.line?.zh || !place.line?.en) bad(at, 'needs a line in both languages');
+      for (const road of place.roads ?? []) {
+        if (!byId[road]) bad(at, `road to ${road}, which is not a place of ${province}`);
+        else if (!byId[road].roads?.includes(place.id)) bad(at, `road to ${road} does not come back`);
+      }
+      if (place.has?.creature && !ids.creatures.has(place.has.creature)) bad(at, `has unknown creature ${place.has.creature}`);
+      if (place.has?.scene && !scenes.has(place.has.scene)) bad(at, `has unknown scene ${place.has.scene}`);
+    }
+    const reached = new Set();
+    const walk = id => { if (!byId[id] || reached.has(id)) return; reached.add(id); (byId[id].roads ?? []).forEach(walk); };
+    walk(doc.start);
+    for (const place of doc.places) if (!reached.has(place.id)) bad(`place ${place.id}`, 'no road reaches it from the start');
+  }
 }
 
 /* The world card: an id that matches its folder, a title and a style in
@@ -253,6 +297,8 @@ function lintChapter(chapter, content, ids, bad) {
 function lintScene(scene, chapter, content, ids, bad) {
   const where = `scene ${scene.id}`;
   if (scene.chapter !== chapter.id) bad(where, `says chapter ${scene.chapter}, lives in ${chapter.id}`);
+  const places = content.places[chapter.province]?.places ?? [];
+  if (scene.at && !places.some(p => p.id === scene.at)) bad(where, `at ${scene.at}, which is not a place of ${chapter.province}`);
   const speakers = new Set([...SPEAKERS, ...ids.creatures]);
   for (const line of scene.lines ?? []) if (!speakers.has(line.who)) bad(where, `unknown speaker ${line.who}`);
   for (const card of scene.show ?? []) lintCard(where, card, ids, bad);

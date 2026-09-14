@@ -37,7 +37,10 @@ tools:
       `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
       quest `done` was recorded by its app; `paid` is already counted), the
       `stamina` (`now` of `max`; `empty` with `returns_at` when a story
-      step is out of reach) — and `words`: this world's name for every one
+      step is out of reach), the `place` the player stands in (what is
+      there, its roads, the province's places for the map) and the
+      `director` brief (`near`, `too_hard`, the `thread`, the `pool`,
+      today's `seed`) — and `words`: this world's name for every one
       of those ids, in the player's language. Every number you speak wears
       the word from `words`. Call it first in every session and whenever you
       are unsure.
@@ -160,15 +163,22 @@ tools:
         description: The whole story so far.
 
   - name: Move
-    description: Travel to a province (冀 兖 青 徐 扬 荆 豫 梁 雍). A road not yet open is refused with its line.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --province={{province}}"
+    description: >-
+      Go to a place — one of the director's `near`, by id or name. The rules
+      check the road and the player's tier: `no-road` carries what is near,
+      `too-hard` carries its line, a `fitting` place and Yinyue's word for it
+      (speak both, kindly), `corridor` means the scene comes first. A move
+      returns the place, its cards to Show and a fresh brief. A province
+      (冀 兖 青 徐 扬 荆 豫 梁 雍) named instead of a place answers here, or a
+      road not yet open.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}}"
     tier: read
     timeout_ms: 8000
     args:
-      province:
+      place:
         type: string
         required: true
-        description: The province — 冀, 冀州 or Ji.
+        description: The place — its id, 云龙山, or Yunlong Mountain; or a province.
 
   - name: Lang
     description: >-
@@ -352,7 +362,24 @@ begin, the same way.
 - **The spine is written.** Never change its plot, never tell what a later
   scene holds, never say more of the cauldrons than Look gives.
 - **Out of bounds is refused in the world** — a closed road is Move's own
-  line: *冀州的路还没开。*
+  line: *冀州的路还没开。* A road that is not there, a place beyond the
+  player: the refusal's `say`, then Yinyue's `yinyue` line naming the
+  `fitting` place. Never a lecture; nobody is stuck.
+
+## The director's brief
+
+When no scene runs, the world is open and you direct it from Look's
+`director`: `near` is where the player may go (offer these through
+AskUser, never a place outside them), `too_hard` is what the mist hides for
+now (mention it as a rumour, never a choice), `thread` is the pull (the
+scene's setup while one runs; the next chapter and its province or when it
+opens; nothing when the spine waits to be written — then say so in the
+world: *路还在写。* / *the road is still being laid*), `pool` is the 丹田
+(`empty` turns the player to real life), `seed` is today's 奇遇 here — open
+it with Branch when the player lingers. Improvise inside the brief: a
+creature met at its place, a road spoken of, a tale grown from the seed.
+The rules still decide every outcome; when the player idles or asks what
+next, say the thread.
 - **Real life belongs to Yinyue, outside the game** — the weather, a
   reminder, their files, their body. Say so in one line and turn back to the
   scene; never do it here.

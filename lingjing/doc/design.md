@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary and the worlds split built (build order 1–10); next places; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split and 徐's places (Move for real, the director's brief) built (build order 1–11); next the catalog and the 坊市; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -70,6 +70,8 @@ skills/lingjing/
     art/<creature>.webp    one picture per creature, ink style (sketches as .svg)
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
+    seeds/<province>.json  奇遇 seeds, one file per province
+    places/<province>.json the province's places, roads and tiers
     branches.json          奇遇 templates and the daily cap
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
     chapters/01-ji/        …
@@ -405,7 +407,33 @@ is a map of places, not a chain of scenes.
 - **Risk, named:** more freedom for Ling means more variance on a small
   model. The brief stays tight; every refusal carries its line; a weak
   model still lands on rails.
-- **Not built.** Comes with the catalog's 坊市 (a place) and chapter 1.
+- **Built (step 11):** `worlds/<id>/places/<province>.json` — eleven for
+  徐 (泗水岸 · 泗水北岸 · 彭城 · 云龙山 · 淮水渡口 · 圯桥 · 泗口 · 吕梁洪 ·
+  沛泽 · 微山湖 · 徐山), each `{id, name, tier, roads, has, line}`; `start`
+  names the first. `has` is what is there: `creature` (with its card),
+  `seeds` (the province's pool), `shop` (the 坊市, step 12), `scene` (a
+  chapter's, step 14). A scene carries `at`, its place; the corridor walks
+  the player (`settlePlace` on every scene change); `state.place` is the
+  save's stand when no scene runs; a save from before places starts where
+  its province starts. `chapter.json → corridor: true` keeps Move waiting
+  (`corridor`: *先把眼前的事做完*) until the chapter ends. **`Move {place}`**
+  by id, name or English: `no-road` (its line + `near`), `too-hard` (*雾更浓
+  了，看不见路* + `fitting` + Yinyue's *还不是时候。先回X吧*), `unknown-place`
+  (`near`); a province still answers as before. A move costs no 灵气 — what
+  is done at the place does — and returns the place, its `show` (the
+  creature) and a fresh brief with `summarize`. **Look** carries `place`
+  (what is there, `roads` with `too_hard`, the province's `places` with
+  here/road/too_hard for the map) and **`director`**: `here`, `near`,
+  `too_hard`, `corridor`, `thread` (the scene's setup while one runs; else
+  the next chapter, its province, its first place and `opens`; null when
+  the spine is unwritten), `pool` (full/half/low/empty as the ring), `seed`
+  (today's, only where seeds grow and a branch may still open). The map card
+  draws the province's places under the nine-province grid: here (Yinyue's
+  colour), a road away (Ling's), beyond the tier (dashed, faint). The lint:
+  roads both ways within the province, tiers on the ladder, a creature with
+  its card, a scene that exists, every place reached from the start, every
+  `at` a place of the chapter's province. SKILL.md gained *The director's
+  brief*. Not yet: 坊市 as a place (12), spine waypoints (14).
 
 ### Made scenes — the template, and Ling as the maker
 
@@ -967,7 +995,7 @@ Establishment, Core Formation, Nascent Soul).
     `state.world`, the loader by world id, the lint per world, the names
     list. ✓
 11. Places: `places.json` for 徐, `Move` for real, tiers and the fitting
-    place, the director's brief in Look, the map card by places.
+    place, the director's brief in Look, the map card by places. ✓
 12. The catalog: `worlds/<id>/items.json` for 徐, the `Trade` tool, the 坊市
    scene, the `item` card, the lint.
 13. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
