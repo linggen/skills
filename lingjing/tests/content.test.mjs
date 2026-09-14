@@ -40,7 +40,7 @@ test('a dead next is caught', () => {
 
 test('a grant over its cap is caught', () => {
   const c = fresh();
-  prologue(c).scenes['00-fuzhu'].exits[0].grant.xw = 999;
+  prologue(c).scenes['00-fuzhu'].exits[0].grant.progress = 999;
   assert.ok(has(lint(c), 'over the scene cap'));
 });
 

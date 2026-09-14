@@ -38,8 +38,8 @@
       "means": "boards the boat, pays, or asks to cross",
       "grant": {
         "table": "branch",
-        "xw": 10,
-        "ls": 2
+        "progress": 10,
+        "wealth": 2
       },
       "beat": [
         {
@@ -89,8 +89,8 @@
       },
       "grant": {
         "table": "branch",
-        "xw": 20,
-        "ls": 5
+        "progress": 20,
+        "wealth": 5
       },
       "beat": [
         {

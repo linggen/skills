@@ -10,9 +10,9 @@ export const CONTENT_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.u
    never a named speaker. */
 export const CAST = { yinyue: { zh: '银月', en: 'Yinyue' } };
 const SPEAKERS = new Set(['ling', ...Object.keys(CAST)]);
-const CARDS = new Set(['creature', 'root', 'map', 'board', 'hexagram', 'gate', 'tribulation']);
-const VALUE_FIELDS = new Set(['daohao']);
-const SETTABLE = { root: new Set(['v1']) };
+const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation']);
+const VALUE_FIELDS = new Set(['name']);
+const SETTABLE = { traits: new Set(['v1']) };
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 
@@ -20,8 +20,8 @@ export function loadContent(dir = CONTENT_DIR) {
   const at = file => readJson(path.join(dir, file));
   return {
     dir,
-    realms: at('realms.json'),
-    roots: at('roots.json'),
+    ladder: at('ladder.json'),
+    traits: at('traits.json'),
     rewards: at('rewards.json'),
     creatures: at('creatures.json'),
     herbs: at('herbs.json'),
@@ -31,7 +31,7 @@ export function loadContent(dir = CONTENT_DIR) {
     branches: at('branches.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
     templates: { made: at('templates/made-scene.json') },
-    terms: at('terms.json'),
+    dictionary: at('dictionary.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
   };
 }
@@ -111,7 +111,7 @@ export function lint(content) {
     tasks: new Set(content.tasks.tasks.map(t => t.id)),
   };
   bilingual(content, 'content', bad);
-  lintRealms(content.realms, bad);
+  lintLadder(content.ladder, bad);
   lintCreatures(content, bad);
   lintRiddles(content.riddles, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
@@ -145,7 +145,7 @@ function lintSeeds(content, ids, bad) {
   const kinds = new Set(content.branches.templates.map(b => b.kind));
   const seen = new Set();
   for (const [province, doc] of Object.entries(content.seeds)) {
-    if (!content.terms.provinces[province]) bad(`seeds ${province}`, 'unknown province');
+    if (!content.dictionary.provinces[province]) bad(`seeds ${province}`, 'unknown province');
     for (const seed of doc.seeds) {
       const where = `seed ${seed.id}`;
       if (seen.has(seed.id)) bad(where, 'duplicate id');
@@ -157,10 +157,10 @@ function lintSeeds(content, ids, bad) {
   }
 }
 
-function lintRealms(realms, bad) {
-  for (const r of realms.realms) {
-    const n = r.thresholds.length;
-    if (r.stages.zh.length !== n) bad(`realm ${r.id}`, `${r.stages.zh.length} stages but ${n} thresholds`);
+function lintLadder(ladder, bad) {
+  for (const t of ladder.tiers) {
+    const n = t.thresholds.length;
+    if (t.steps.zh.length !== n) bad(`tier ${t.id}`, `${t.steps.zh.length} steps but ${n} thresholds`);
   }
 }
 
@@ -195,7 +195,7 @@ function lintGrant(where, grant, content, ids, bad) {
   for (const [key, cap] of Object.entries(table)) {
     if ((grant[key] ?? 0) > cap) bad(where, `${key} ${grant[key]} is over the ${grant.table} cap of ${cap}`);
   }
-  if (grant.beast && !ids.creatures.has(grant.beast)) bad(where, `grants unknown creature ${grant.beast}`);
+  if (grant.cast && !ids.creatures.has(grant.cast)) bad(where, `grants unknown creature ${grant.cast}`);
 }
 
 function lintChapter(chapter, content, ids, bad) {

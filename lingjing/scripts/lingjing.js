@@ -23,7 +23,12 @@ const boards = new Map();
 let chat = null;
 
 const lang = () => (look?.lang === 'en' ? 'en' : 'zh');
-const words = () => WORDS[lang()];
+/// The page's own labels, with the stat names from the world's dictionary
+/// on top — the harness names nothing.
+const words = () => {
+  const w = look?.words ?? {};
+  return { ...WORDS[lang()], xw: w.progress ?? WORDS[lang()].xw, ls: w.wealth ?? WORDS[lang()].ls, qi: w.pool ?? WORDS[lang()].qi, yinyue: WORDS[lang()].yinyue };
+};
 
 function boardFor(taskId) {
   if (!boards.has(taskId)) {
@@ -39,9 +44,9 @@ const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boar
 
 async function loadContent() {
   const [creatures, herbs, hexagrams, roots, terms] = await Promise.all(
-    ['creatures.json', 'herbs.json', 'hexagrams.json', 'roots.json', 'terms.json'].map(content),
+    ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json'].map(content),
   );
-  authored = { creatures: creatures.creatures, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, roots, terms };
+  authored = { creatures: creatures.creatures, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary: terms };
 }
 
 /// The account as the engine sees it. The meter moves with every model call,
@@ -78,7 +83,7 @@ async function refresh() {
 /// The 丹田 as a state, never a number: full, half, low, empty — from the
 /// rules' Look, which settles the clock's refill on every read.
 function qi() {
-  const q = look?.qi;
+  const q = look?.stamina;
   if (!q || !q.max) return null;
   const p = Math.max(0, Math.min(100, Math.round((q.now / q.max) * 100)));
   const st = q.empty ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full';
@@ -110,13 +115,13 @@ function emptyCard() {
 
 function statusHtml() {
   const w = words();
-  const pct = look.next ? Math.min(100, Math.round((look.xw / look.next) * 100)) : 0;
-  const name = look.daohao ? `<span class="daohao">${esc(look.daohao)}</span>` : '';
-  return `${name}<span class="realm">${esc(look.realm.name)}</span>
+  const pct = look.next ? Math.min(100, Math.round((look.progress / look.next) * 100)) : 0;
+  const name = look.name ? `<span class="daohao">${esc(look.name)}</span>` : '';
+  return `${name}<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${w.xw}</span><div class="bar"><i style="width:${pct}%"></i></div>
-      <span class="num">${look.xw}/${look.next}</span></div>
+      <span class="num">${look.progress}/${look.next}</span></div>
     ${qiHtml()}
-    <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.ls}</b></span>`;
+    <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.wealth}</b></span>`;
 }
 
 /// Ling's cards, else the day's omen — and an open board always beside them:
@@ -247,7 +252,7 @@ async function mountChat() {
 
 /// A brand-new game starts in the language of the machine it is played on.
 async function firstLanguage() {
-  const fresh = look && !look.daohao && look.scene?.id === '00-river' && !look.story;
+  const fresh = look && !look.name && look.scene?.id === '00-river' && !look.story;
   if (!fresh) return;
   const want = (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
   if (want !== look.lang) {

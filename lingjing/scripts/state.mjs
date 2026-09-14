@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 1;
+export const STATE_VERSION = 2;
 
 export function firstChapter(content) {
   return Object.values(content.chapters).sort((a, b) => a.id.localeCompare(b.id))[0];
@@ -12,14 +12,14 @@ export function newState(content, lang, now) {
   const at = now.toISOString();
   return {
     version: STATE_VERSION, lang: lang === 'en' ? 'en' : 'zh',
-    daohao: null, root: null,
-    realm: 'qi', stage: 0, xw: 0, ls: 0,
-    bag: {}, beasts: [],
+    name: null, traits: null,
+    tier: content.ladder.tiers[0].id, step: 0, progress: 0, wealth: 0,
+    bag: {}, cast: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     tasks: {}, quests: {}, wins: {}, branch: null, story: '', seeds_used: [],
     made: { scenes: {}, at: null },
-    day: { key: dayKey(now), xw: 0, ls: 0, branches: 0 },
-    qi: content.rewards.qi.max, qi_at: at,
+    day: { key: dayKey(now), progress: 0, wealth: 0, branches: 0 },
+    stamina: content.rewards.stamina.max, stamina_at: at,
     created: at, updated: at,
   };
 }
@@ -27,7 +27,7 @@ export function newState(content, lang, now) {
 /* ── Words ── */
 
 export const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh ?? pair.en : null);
-export const fill = (text, state) => (text == null ? text : text.replaceAll('{daohao}', state.daohao ?? ''));
+export const fill = (text, state) => (text == null ? text : text.replaceAll('{name}', state.name ?? ''));
 
 /* Lowercase, drop punctuation and articles: "An egg!" and "egg" meet. */
 export function normalizeAnswer(answer) {
@@ -82,88 +82,99 @@ export function periodStart(period, now) {
 /* The day's totals roll over at local midnight. */
 export function rollDay(state, now) {
   const key = dayKey(now);
-  if (state.day?.key !== key) state.day = { key, xw: 0, ls: 0, branches: 0 };
+  if (state.day?.key !== key) state.day = { key, progress: 0, wealth: 0, branches: 0 };
 }
 
-/* ── 灵气: the game's stamina ── */
+/* ── Stamina: the pace ── */
 
 const secsPerPoint = q => (q.refill_hours * 3600) / q.max;
 
 /* Refill by the clock since it was last settled — whole points only, the
    remainder keeps waiting in `qi_at`. A save from before 灵气 wakes full. */
-export function settleQi(content, state, now) {
-  const q = content.rewards.qi;
-  if (state.qi == null || !state.qi_at) { state.qi = q.max; state.qi_at = now.toISOString(); return; }
-  if (state.qi >= q.max) { state.qi = q.max; state.qi_at = now.toISOString(); return; }
-  const gained = Math.floor(Math.max(0, now - new Date(state.qi_at)) / 1000 / secsPerPoint(q));
+export function settleStamina(content, state, now) {
+  const q = content.rewards.stamina;
+  if (state.stamina == null || !state.stamina_at) { state.stamina = q.max; state.stamina_at = now.toISOString(); return; }
+  if (state.stamina >= q.max) { state.stamina = q.max; state.stamina_at = now.toISOString(); return; }
+  const gained = Math.floor(Math.max(0, now - new Date(state.stamina_at)) / 1000 / secsPerPoint(q));
   if (gained <= 0) return;
-  state.qi = Math.min(q.max, state.qi + gained);
-  state.qi_at = state.qi >= q.max
+  state.stamina = Math.min(q.max, state.stamina + gained);
+  state.stamina_at = state.stamina >= q.max
     ? now.toISOString()
-    : new Date(new Date(state.qi_at).getTime() + gained * secsPerPoint(q) * 1000).toISOString();
+    : new Date(new Date(state.stamina_at).getTime() + gained * secsPerPoint(q) * 1000).toISOString();
 }
 
-/* When the 丹田 will hold `cost` again, at the refill rate. */
-export function qiReturnsAt(content, state, cost) {
-  const q = content.rewards.qi;
-  const missing = Math.max(0, cost - state.qi);
-  return new Date(new Date(state.qi_at).getTime() + missing * secsPerPoint(q) * 1000);
+/* When the pool will hold `cost` again, at the refill rate. */
+export function staminaReturnsAt(content, state, cost) {
+  const q = content.rewards.stamina;
+  const missing = Math.max(0, cost - state.stamina);
+  return new Date(new Date(state.stamina_at).getTime() + missing * secsPerPoint(q) * 1000);
 }
 
 /* A refill from real life — never over the top. */
-export function addQi(content, state, n, now) {
-  const q = content.rewards.qi;
-  const before = state.qi;
-  state.qi = Math.min(q.max, state.qi + Math.max(0, n));
-  if (state.qi >= q.max) state.qi_at = now.toISOString();
-  return state.qi - before;
+export function addStamina(content, state, n, now) {
+  const q = content.rewards.stamina;
+  const before = state.stamina;
+  state.stamina = Math.min(q.max, state.stamina + Math.max(0, n));
+  if (state.stamina >= q.max) state.stamina_at = now.toISOString();
+  return state.stamina - before;
 }
 
-/* ── Realms ── */
+/* ── The ladder: tiers and their steps ── */
 
-export const realmOf = (content, id) => content.realms.realms.find(r => r.id === id);
+export const tierOf = (content, id) => content.ladder.tiers.find(t => t.id === id);
 
 export function threshold(content, state) {
-  return realmOf(content, state.realm).thresholds[state.stage];
+  return tierOf(content, state.tier).thresholds[state.step];
 }
 
-export function stageName(content, realmId, stage, lang) {
-  const realm = realmOf(content, realmId);
-  const name = pick(realm.name, lang), step = realm.stages[lang][stage];
-  return lang === 'zh' ? `${name}${step}` : `${name} · ${step}`;
+export function stepName(content, tierId, step, lang) {
+  const tier = tierOf(content, tierId);
+  const name = pick(tier.name, lang), s = tier.steps[lang][step];
+  return lang === 'zh' ? `${name}${s}` : `${name} · ${s}`;
 }
 
 export function speedOf(content, state) {
-  return content.roots.speed[String(state.root?.length ?? 4)] ?? 1;
+  return content.traits.speed[String(state.traits?.length ?? 4)] ?? 1;
 }
 
-/* The realm's reward multiplier: tables and caps are base 修为; a 化神 task
-   pays like one. Applied last, after the day cap. */
+/* The tier's reward multiplier: tables and caps are base progress; a task
+   high on the ladder pays like one. Applied last, after the day cap. */
 export function payOf(content, state) {
-  return realmOf(content, state.realm).pay ?? 1;
+  return tierOf(content, state.tier).pay ?? 1;
 }
 
-/* Add 修为; rise through the realm's stages; hold at its peak, where only the
-   next realm's chapter can take the player on. */
-export function addXw(content, state, amount) {
+/* Add progress; rise through the tier's steps; hold at its peak, where only
+   the next tier's chapter can take the player on. */
+export function addProgress(content, state, amount) {
   const levels = [];
   let hold = null;
-  state.xw += amount;
+  state.progress += amount;
   for (;;) {
     const need = threshold(content, state);
-    if (state.xw < need) break;
-    const realm = realmOf(content, state.realm);
-    if (state.stage < realm.thresholds.length - 1) {
-      state.xw -= need;
-      levels.push({ from: { realm: state.realm, stage: state.stage }, to: { realm: state.realm, stage: state.stage + 1 } });
-      state.stage += 1;
+    if (state.progress < need) break;
+    const tier = tierOf(content, state.tier);
+    if (state.step < tier.thresholds.length - 1) {
+      state.progress -= need;
+      levels.push({ from: { tier: state.tier, step: state.step }, to: { tier: state.tier, step: state.step + 1 } });
+      state.step += 1;
       continue;
     }
-    state.xw = need;
-    const realms = content.realms.realms;
-    const next = realms[realms.indexOf(realm) + 1];
+    state.progress = need;
+    const tiers = content.ladder.tiers;
+    const next = tiers[tiers.indexOf(tier) + 1];
     hold = { gate: next?.gate ?? null };
     break;
   }
   return { levels, hold };
+}
+
+/* A save from before the dictionary: the world's words were the keys. */
+export function migrate(state) {
+  if (!state || (state.version ?? 1) >= STATE_VERSION) return state;
+  const m = { ...state, version: STATE_VERSION };
+  const move = (from, to) => { if (from in m) { m[to] = m[from]; delete m[from]; } };
+  move('daohao', 'name'); move('root', 'traits'); move('realm', 'tier'); move('stage', 'step');
+  move('xw', 'progress'); move('ls', 'wealth'); move('beasts', 'cast'); move('qi', 'stamina'); move('qi_at', 'stamina_at');
+  if (m.day) m.day = { key: m.day.key, progress: m.day.xw ?? m.day.progress ?? 0, wealth: m.day.ls ?? m.day.wealth ?? 0, branches: m.day.branches ?? 0 };
+  return m;
 }

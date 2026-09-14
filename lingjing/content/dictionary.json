@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "_about": "The dictionary: the harness's ids, and this world's word for each, zh and en. Ids are the same in every world; only the words change. Look returns `words` in the player's language, and Ling, the cards and the rules' lines use nothing else.",
+  "words": {
+    "progress": {
+      "zh": "修为",
+      "en": "cultivation"
+    },
+    "wealth": {
+      "zh": "灵石",
+      "en": "spirit stones"
+    },
+    "stamina": {
+      "zh": "灵气",
+      "en": "qi"
+    },
+    "pool": {
+      "zh": "丹田",
+      "en": "dantian"
+    },
+    "tier": {
+      "zh": "境界",
+      "en": "realm"
+    },
+    "traits": {
+      "zh": "灵根",
+      "en": "spirit root"
+    },
+    "name": {
+      "zh": "道号",
+      "en": "Daoist name"
+    },
+    "cast": {
+      "zh": "灵兽",
+      "en": "spirit beast"
+    },
+    "contest": {
+      "zh": "降妖",
+      "en": "subdue"
+    },
+    "duel": {
+      "zh": "斗法",
+      "en": "duel"
+    },
+    "debate": {
+      "zh": "论道",
+      "en": "debate"
+    },
+    "branch": {
+      "zh": "奇遇",
+      "en": "chance encounter"
+    },
+    "task": {
+      "zh": "功课",
+      "en": "practice"
+    },
+    "quest": {
+      "zh": "人间功课",
+      "en": "real-life practice"
+    },
+    "shop": {
+      "zh": "坊市",
+      "en": "market"
+    },
+    "alchemy": {
+      "zh": "炼丹",
+      "en": "alchemy"
+    },
+    "pill": {
+      "zh": "丹",
+      "en": "pill"
+    },
+    "breakthrough": {
+      "zh": "突破",
+      "en": "breakthrough"
+    },
+    "tribulation": {
+      "zh": "雷劫",
+      "en": "heavenly tribulation"
+    },
+    "abode": {
+      "zh": "洞府",
+      "en": "cave abode"
+    },
+    "cauldron": {
+      "zh": "鼎",
+      "en": "cauldron"
+    },
+    "cauldrons": {
+      "zh": "九鼎",
+      "en": "the Nine Cauldrons"
+    },
+    "omen": {
+      "zh": "卦",
+      "en": "omen"
+    }
+  },
+  "provinces": {
+    "冀": {
+      "zh": "冀州",
+      "en": "Ji"
+    },
+    "兖": {
+      "zh": "兖州",
+      "en": "Yan"
+    },
+    "青": {
+      "zh": "青州",
+      "en": "Qing"
+    },
+    "徐": {
+      "zh": "徐州",
+      "en": "Xu"
+    },
+    "扬": {
+      "zh": "扬州",
+      "en": "Yang"
+    },
+    "荆": {
+      "zh": "荆州",
+      "en": "Jing"
+    },
+    "豫": {
+      "zh": "豫州",
+      "en": "Yu"
+    },
+    "梁": {
+      "zh": "梁州",
+      "en": "Liang"
+    },
+    "雍": {
+      "zh": "雍州",
+      "en": "Yong"
+    }
+  }
+}

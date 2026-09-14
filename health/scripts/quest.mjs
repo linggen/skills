@@ -36,7 +36,7 @@ export function questOf(rows, now = new Date()) {
         period: 'day',
         due: true,
         reward: 20,
-        qi: 30, // 灵气 refilled in Lingjing — a kept workout sends the player back with breath
+        stamina: 30, // stamina refilled in Lingjing — a kept workout sends the player back with breath
         done_at: done ? done.toISOString() : null,
         title: { zh: '炼体 · 运动二十分钟以上', en: 'Temper the body · a workout of twenty minutes or more' },
       },

@@ -58,8 +58,9 @@ skills/lingjing/
     run-js.sh              runs it under the bundled bun, else node
     content.mjs            loads + validates content/
   content/                 authored; ships with the skill
-    realms.json            the ladder: 练气 1–9, 筑基 … with 修为 thresholds
-    roots.json             灵根 kinds and their 修为 multiplier
+    dictionary.json        the harness's ids → this world's words, zh + en; the provinces
+    ladder.json            the tiers: 练气 1–9, 筑基 … with progress thresholds, pay, gate
+    traits.json            灵根 kinds and their progress multiplier
     rewards.json           reward tables and caps (scene, branch, task, day)
     creatures.json         山海经 entries: name{zh,en}, source, quote{zh,en}, province
     herbs.json             alchemy tiles
@@ -68,7 +69,6 @@ skills/lingjing/
     riddles/zh.json, en.json   answer keys the rules check
     tasks/world.json       in-world tasks
     branches.json          奇遇 templates and the daily cap
-    terms.json             the game's words and provinces, zh + en
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
     chapters/01-ji/        …
   data/                    this player; never in the repo — the cloud save mirrors it
@@ -107,6 +107,42 @@ start inside a world that is already whole. 《九鼎》 — everything in
   (or any living author's novel): that is licensed IP, and the recognition
   it would buy is exactly the part that cannot be had. The world card may
   say the style; the lint's word list refuses the names.
+
+## The dictionary — one id, a name in every world
+
+**Decided 2026-09-14** ("we need a dictionary, give it an id with different
+name in each world"; "ids are same among worlds"). The harness's systems
+have **ids**, fixed across worlds; each world's `dictionary.json` gives
+every id its words, zh and en. The rules, the save, the tools and the tests
+speak only ids; Look returns `words` in the player's language; Ling, the
+cards and the rules' own lines use nothing but those words. 修为 appears
+nowhere in code.
+
+| id | system | 《九鼎》 | a 三国 world |
+|---|---|---|---|
+| `progress` · `next` | the number that climbs; the next threshold | 修为 | 声望 |
+| `tier` · `step` | the ladder (`ladder.json`: tiers, steps, thresholds, `pay`, `gate`) | 境界 · 练气一层 | 官阶 · 白身 |
+| `wealth` | money | 灵石 | 粮草 |
+| `stamina` · `pool` | the pace and its vessel (`rewards.json → stamina`) | 灵气 · 丹田 | 精力 · 体力 |
+| `traits` | speed modifiers (`traits.json`, or none) | 灵根 五行 | 天赋 |
+| `name` | the player's name in the world | 道号 | 表字 |
+| `cast` | the creatures and people with cards | 灵兽 | 武将 |
+| `contest` · `duel` · `debate` | the resolvers | 降妖 · 斗法 · 论道 | 攻城 · 单挑 · 舌战 |
+| `branch` · `task` · `quest` · `shop` | the encounter, in-world tasks, real-life quests, the market | 奇遇 · 功课 · 人间功课 · 坊市 | 机缘 · 军务 · 人间功课 · 市集 |
+| `alchemy` · `pill` · `breakthrough` · `tribulation` · `abode` · `cauldron` · `omen` | the world's furniture | 炼丹 · 丹 · 突破 · 雷劫 · 洞府 · 鼎 · 卦 | — |
+
+- **The save is ids:** `{ name, traits, tier, step, progress, wealth, stamina,
+  stamina_at, bag, cast, … }` (version 2; a version-1 save migrates on read —
+  `migrate` in `state.mjs`).
+- **Content is ids:** grants say `progress` and `wealth` and `cast`; a scene
+  sets `traits`; the value exit's field is `name`; the card kind is `traits`.
+  Card *kinds* (creature, traits, map, board, hexagram, gate, tribulation)
+  are the harness's, like ids; their titles come from the words.
+- **Real-life quests are the same in every world:** an app's file carries
+  `reward` (progress) and `stamina`, never a world's word.
+- **What a world may not rename:** the ids, the card kinds, the reward
+  tables' keys, the refusal codes. What it must: every word in
+  `dictionary.json`, the ladder, the provinces (or its map's regions).
 
 ## Content
 
@@ -410,17 +446,17 @@ the tameable one; the same card can offer both (夫诸: feed it, or fight it).
 `state.json`:
 
 ```json
-{ "version": 1, "lang": "zh", "daohao": "青玄",
-  "root": ["wood", "water", "fire", "earth"],
-  "realm": "qi", "stage": 0, "xw": 70, "ls": 10,
-  "bag": {}, "beasts": ["fuzhu"],
+{ "version": 2, "lang": "zh", "name": "青玄",
+  "traits": ["wood", "water", "fire", "earth"],
+  "tier": "qi", "step": 0, "progress": 70, "wealth": 10,
+  "bag": {}, "cast": ["fuzhu"],
   "chapter": "00-prologue", "scene": "00-north", "done_scenes": ["00-river", "…"], "ended": [],
   "tasks": { "alchemy-first": { "status": "done", "period": "once" } },
   "quests": { "shifu-scan": { "period": "2026-W37", "paid_at": "…" } },
   "branch": null,
   "story": "青玄在泗水边醒来……",
-  "qi": 60, "qi_at": "2026-09-11T12:00:00-03:00",
-  "day": { "key": "2026-09-11", "xw": 70, "ls": 10, "branches": 0 } }
+  "stamina": 60, "stamina_at": "2026-09-11T12:00:00-03:00",
+  "day": { "key": "2026-09-11", "progress": 70, "wealth": 10, "branches": 0 } }
 ```
 
 - `stage` counts from 0 within the realm; `xw` is what the current stage has
@@ -576,6 +612,17 @@ change.
   `state.made.at` first; a made exit's `next` moves within made scenes and
   `ends` comes home; `pick` falls back across languages so a scene in one
   language plays. SKILL.md: the three tools and "Making scenes". 46 tests.
+- **Built (step 10a):** the dictionary. `content/dictionary.json` (ids → zh/en,
+  provinces); `realms.json` → `ladder.json` (tiers, steps); `roots.json` →
+  `traits.json`; `terms.json` gone. State keys are ids (save v2, `migrate`
+  on read); rewards tables and day caps keyed `progress`/`wealth`;
+  `rewards.stamina`; grants `progress`/`wealth`/`cast`; `set.traits`; the
+  value field `name`; the `traits` card. Look: `tier {id, step, name}`,
+  `progress`, `next`, `wealth`, `stamina {…}`, `traits`, `cast`, `name`,
+  `words` (always, the player's language, plus `tiers` and `provinces`).
+  Refusal `no-stamina`; its line uses `words.pool`. Branch close args
+  `progress`/`wealth`; quests carry `stamina`. The page's labels come from
+  `look.words`. SKILL.md speaks ids and `words`. 47 tests.
 - **A reopened day shows the day so far.** Text Ling writes between tool
   calls is saved as it is written (linggen `b1fec94`); until then only a
   turn's final reply was, and a game day — one long turn of narration and
@@ -878,7 +925,9 @@ Establishment, Core Formation, Nascent Soul).
 8. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
    the lint on seed creatures — the daily loop before more spine.
 9. Made scenes: the template, `Make` / `Enter` / `Leave`, the made lint. ✓
-10. Worlds: `content/` → `worlds/jiuding/`, `world.json` with the style,
+10. The dictionary and the ids: `dictionary.json`, `ladder.json`, `traits.json`,
+    every internal key renamed to its id, save version 2 with migration. ✓
+    Then worlds: `content/` → `worlds/jiuding/`, `world.json` with the style,
     `state.world`, the loader by world id, the lint per world, the names
     list.
 11. Places: `places.json` for 徐, `Move` for real, tiers and the fitting

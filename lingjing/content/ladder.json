@@ -1,0 +1,258 @@
+{
+  "version": 1,
+  "_balance": "Thresholds are base progress. `pay` scales every reward in that realm (applied last, after the day cap) — design.md § Pacing. First pass.",
+  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for.",
+  "tiers": [
+    {
+      "id": "qi",
+      "pay": 1,
+      "name": {
+        "zh": "练气",
+        "en": "Qi Condensation"
+      },
+      "steps": {
+        "zh": [
+          "一层",
+          "二层",
+          "三层",
+          "四层",
+          "五层",
+          "六层",
+          "七层",
+          "八层",
+          "九层"
+        ],
+        "en": [
+          "Layer 1",
+          "Layer 2",
+          "Layer 3",
+          "Layer 4",
+          "Layer 5",
+          "Layer 6",
+          "Layer 7",
+          "Layer 8",
+          "Layer 9"
+        ]
+      },
+      "thresholds": [
+        100,
+        120,
+        140,
+        160,
+        180,
+        200,
+        220,
+        240,
+        260
+      ]
+    },
+    {
+      "id": "foundation",
+      "gate": 1,
+      "pay": 1,
+      "name": {
+        "zh": "筑基",
+        "en": "Foundation Establishment"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        400,
+        500,
+        600
+      ]
+    },
+    {
+      "id": "core",
+      "gate": 2,
+      "pay": 1,
+      "name": {
+        "zh": "结丹",
+        "en": "Core Formation"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        800,
+        1000,
+        1200
+      ]
+    },
+    {
+      "id": "nascent",
+      "gate": 3,
+      "pay": 2,
+      "name": {
+        "zh": "元婴",
+        "en": "Nascent Soul"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        1600,
+        2000,
+        2400
+      ]
+    },
+    {
+      "id": "deity",
+      "gate": 4,
+      "pay": 3,
+      "name": {
+        "zh": "化神",
+        "en": "Deity Transformation"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        3000,
+        3600,
+        4200
+      ]
+    },
+    {
+      "id": "void",
+      "gate": 5,
+      "pay": 6,
+      "name": {
+        "zh": "炼虚",
+        "en": "Void Refinement"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        5000,
+        6000,
+        7000
+      ]
+    },
+    {
+      "id": "body",
+      "gate": 6,
+      "pay": 9,
+      "name": {
+        "zh": "合体",
+        "en": "Body Integration"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        8000,
+        9500,
+        11000
+      ]
+    },
+    {
+      "id": "maha",
+      "gate": 7,
+      "pay": 14,
+      "name": {
+        "zh": "大乘",
+        "en": "Mahayana"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        12500,
+        14500,
+        16500
+      ]
+    },
+    {
+      "id": "tribulation",
+      "gate": 8,
+      "pay": 20,
+      "name": {
+        "zh": "渡劫",
+        "en": "Tribulation Transcendence"
+      },
+      "steps": {
+        "zh": [
+          "初期",
+          "中期",
+          "后期"
+        ],
+        "en": [
+          "Early",
+          "Middle",
+          "Late"
+        ]
+      },
+      "thresholds": [
+        19000,
+        22000,
+        25000
+      ]
+    }
+  ]
+}

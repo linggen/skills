@@ -13,9 +13,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAST, MADE, lintMade, loadContent } from './content.mjs';
 import {
-  addXw, dayKey, fill, langOf, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
-  payOf, speedOf, stageName, threshold,
-  addQi, qiReturnsAt, settleQi,
+  addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
+  payOf, speedOf, stepName, threshold,
+  addStamina, staminaReturnsAt, settleStamina,
 } from './state.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
@@ -83,51 +83,51 @@ function tasksBrief(content, state, ctx) {
   return { tasks, quests };
 }
 
-/* The game's words in English — Ling's glossary for English play. Chinese
-   play needs none: the words are the game's own. */
-function termsEn(content) {
-  const words = Object.fromEntries(Object.entries(content.terms.terms).map(([id, t]) => [id, t.en]));
+/* The world's words for the harness's ids, in the player's language — the
+   only names Ling, the cards and the lines ever use. */
+function wordsOf(content, lang) {
+  const words = Object.fromEntries(Object.entries(content.dictionary.words).map(([id, w]) => [id, pick(w, lang)]));
   return {
     ...words,
-    realms: content.realms.realms.map(r => r.name.en),
-    provinces: Object.values(content.terms.provinces).map(p => p.en),
+    tiers: content.ladder.tiers.map(t => pick(t.name, lang)),
+    provinces: Object.values(content.dictionary.provinces).map(p => pick(p, lang)),
   };
 }
 
 export function look(state, content, ctx) {
   const lang = state.lang;
   state = clone(state);
-  settleQi(content, state, ctx.now);
-  const root = state.root && {
-    ids: state.root,
-    elements: state.root.map(e => pick(content.roots.elements[e], lang)),
-    name: pick(content.roots.names[String(state.root.length)], lang),
+  settleStamina(content, state, ctx.now);
+  const traits = state.traits && {
+    ids: state.traits,
+    elements: state.traits.map(e => pick(content.traits.elements[e], lang)),
+    name: pick(content.traits.names[String(state.traits.length)], lang),
     speed: speedOf(content, state),
   };
   const chapter = content.chapters[state.chapter];
   return {
-    ok: true, lang, daohao: state.daohao,
-    realm: { id: state.realm, stage: state.stage + 1, name: stageName(content, state.realm, state.stage, lang) },
-    xw: state.xw, next: threshold(content, state), ls: state.ls,
-    root, bag: state.bag,
-    beasts: state.beasts.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
+    ok: true, lang, name: state.name,
+    tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
+    progress: state.progress, next: threshold(content, state), wealth: state.wealth,
+    traits, bag: state.bag,
+    cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: sceneBrief(content, state),
     ended: state.ended, branch: state.branch, story: state.story,
     omen: omen(content, ctx.now, lang),
-    qi: qiBrief(content, state, ctx.now),
+    stamina: staminaBrief(content, state, ctx.now),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
-    ...(lang === 'en' ? { terms: termsEn(content) } : {}),
+    words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
   };
 }
 
-/* The 丹田 as the scene draws it: what is there, the top, and — when a story
+/* The pool as the scene draws it: what is there, the top, and — when a story
    step is out of reach — the hour it returns. */
-function qiBrief(content, state, now) {
-  const q = content.rewards.qi;
-  const empty = state.qi < q.cost.step;
-  return { now: state.qi, max: q.max, step: q.cost.step, empty, returns_at: empty ? qiReturnsAt(content, state, q.cost.step).toISOString() : null };
+function staminaBrief(content, state, now) {
+  const q = content.rewards.stamina;
+  const empty = state.stamina < q.cost.step;
+  return { now: state.stamina, max: q.max, step: q.cost.step, empty, returns_at: empty ? staminaReturnsAt(content, state, q.cost.step).toISOString() : null };
 }
 
 /* ── Changing it ── */
@@ -141,22 +141,22 @@ function meets(state, needs) {
   return true;
 }
 
-/* Pay a grant: the table capped it when it was authored, the root speeds 修为,
-   the day caps both — all in base 修为 — and the realm's `pay` scales what
-   is finally added, so a later realm's task pays like one. */
+/* Pay a grant: the table capped it when it was authored, the traits speed
+   progress, the day caps both — all in base progress — and the tier's `pay`
+   scales what is finally added, so a task high on the ladder pays like one. */
 function pay(content, state, ctx, grant) {
   rollDay(state, ctx.now);
   const table = content.rewards.tables[grant.table];
   const day = content.rewards.day;
-  const want = Math.round(Math.min(grant.xw ?? 0, table.xw) * speedOf(content, state));
-  const base = Math.max(0, Math.min(want, day.xw - state.day.xw));
-  const xw = base * payOf(content, state);
-  const ls = Math.max(0, Math.min(grant.ls ?? 0, table.ls, day.ls - state.day.ls));
-  state.day.xw += base; state.day.ls += ls; state.ls += ls;
-  const { levels, hold } = addXw(content, state, xw);
-  if (grant.beast && !state.beasts.includes(grant.beast)) state.beasts.push(grant.beast);
-  const named = levels.map(l => ({ from: stageName(content, l.from.realm, l.from.stage, state.lang), to: stageName(content, l.to.realm, l.to.stage, state.lang) }));
-  return { xw, ls, beast: grant.beast ?? null, levels: named, hold, capped: base < want };
+  const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state));
+  const base = Math.max(0, Math.min(want, day.progress - state.day.progress));
+  const progress = base * payOf(content, state);
+  const wealth = Math.max(0, Math.min(grant.wealth ?? 0, table.wealth, day.wealth - state.day.wealth));
+  state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
+  const { levels, hold } = addProgress(content, state, progress);
+  if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
+  const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
+  return { progress, wealth, cast: grant.cast ?? null, levels: named, hold, capped: base < want };
 }
 
 function judgeAnswer(content, key, answer) {
@@ -167,17 +167,19 @@ function judgeAnswer(content, key, answer) {
 
 const hourOf = (at, lang) => at.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' });
 
-/* An action costs 灵气 — settled by the clock first. Refused, it says when
-   the 丹田 holds enough again, and the state is untouched. */
-function spendQi(content, s, ctx, kind) {
-  settleQi(content, s, ctx.now);
-  const cost = content.rewards.qi.cost[kind] ?? 0;
-  if (s.qi >= cost) { s.qi -= cost; return null; }
-  const at = qiReturnsAt(content, s, cost);
+/* An action costs stamina — settled by the clock first. Refused, it says
+   when the pool holds enough again, in the world's words, and the state is
+   untouched. */
+function spendStamina(content, s, ctx, kind) {
+  settleStamina(content, s, ctx.now);
+  const cost = content.rewards.stamina.cost[kind] ?? 0;
+  if (s.stamina >= cost) { s.stamina -= cost; return null; }
+  const at = staminaReturnsAt(content, s, cost);
+  const w = wordsOf(content, s.lang);
   const say = s.lang === 'zh'
-    ? `丹田已空，先去调息。${hourOf(at, 'zh')} 再来。`
-    : `Your dantian is empty — go and rest. Come back at ${hourOf(at, 'en')}.`;
-  return refuse('no-qi', say, { qi: s.qi, cost, returns_at: at.toISOString() });
+    ? `${w.pool}已空，先去调息。${hourOf(at, 'zh')} 再来。`
+    : `Your ${w.pool} is empty — go and rest. Come back at ${hourOf(at, 'en')}.`;
+  return refuse('no-stamina', say, { stamina: s.stamina, cost, returns_at: at.toISOString() });
 }
 
 function cleanValue(raw, rule) {
@@ -223,7 +225,7 @@ export function resolve(state, content, ctx, args) {
     s[exit.value.field] = value;
   }
   if (exit.next || exit.ends) {
-    const empty = spendQi(content, s, ctx, 'step');
+    const empty = spendStamina(content, s, ctx, 'step');
     if (empty) return empty;
   }
   if (exit.game) delete s.wins[exit.game];
@@ -231,7 +233,7 @@ export function resolve(state, content, ctx, args) {
     s.bag[exit.take.bag] -= 1;
     if (s.bag[exit.take.bag] <= 0) delete s.bag[exit.take.bag];
   }
-  if (exit.set?.root === 'v1') s.root = [...content.roots.v1];
+  if (exit.set?.traits === 'v1') s.traits = [...content.traits.v1];
   const paid = exit.grant ? pay(content, s, ctx, exit.grant) : null;
   const beat = spoken(content, s, exit.beat);
 
@@ -303,10 +305,10 @@ function questCheck(state, content, ctx, id) {
   if (!questDone(q, ctx.now)) return refuse('not-done', null, { app: q.app });
   const s = clone(state);
   s.quests[id] = { period, paid_at: ctx.now.toISOString() };
-  const paid = pay(content, s, ctx, { table: 'task', xw: q.reward ?? 0 });
-  settleQi(content, s, ctx.now);
-  const qi = addQi(content, s, q.qi ?? content.rewards.qi.refill.quest, ctx.now);
-  return { state: s, result: { ok: true, quest: id, app: q.app, paid, qi } };
+  const paid = pay(content, s, ctx, { table: 'task', progress: q.reward ?? 0 });
+  settleStamina(content, s, ctx.now);
+  const stamina = addStamina(content, s, q.stamina ?? content.rewards.stamina.refill.quest, ctx.now);
+  return { state: s, result: { ok: true, quest: id, app: q.app, paid, stamina } };
 }
 
 /* The page is the only witness to a board or a duel: it records the win here,
@@ -339,7 +341,7 @@ function pickSeed(content, state, kind, now) {
   if (!all.length) return null;
   const used = new Set(state.seeds_used ?? []);
   const pool = all.some(x => !used.has(x.id)) ? all.filter(x => !used.has(x.id)) : all;
-  const seed = pool[hashOf(`${dayKey(now)}|${state.daohao ?? ''}|${kind}`) % pool.length];
+  const seed = pool[hashOf(`${dayKey(now)}|${state.name ?? ''}|${kind}`) % pool.length];
   return { id: seed.id, line: pick(seed.line, state.lang), source: pick(seed.source, state.lang), creature: seed.creature ?? null };
 }
 
@@ -351,7 +353,7 @@ export function branch(state, content, ctx, args) {
     if (!template) return refuse('unknown-branch', null, { kinds: content.branches.templates.map(b => b.kind) });
     if (s.branch) return refuse('branch-open', null, { open: s.branch.kind });
     if (s.day.branches >= content.branches.per_day) return refuse('branch-cap', null);
-    const empty = spendQi(content, s, ctx, 'branch');
+    const empty = spendStamina(content, s, ctx, 'branch');
     if (empty) return empty;
     const seed = pickSeed(content, s, template.kind, ctx.now);
     s.branch = { kind: template.kind, turns: 0, opened: ctx.now.toISOString(), seed: seed?.id ?? null };
@@ -367,7 +369,7 @@ export function branch(state, content, ctx, args) {
     return { state: s, result: { ok: true, turns: s.branch.turns, close_now: s.branch.turns >= template.max_turns } };
   }
   if (args.action === 'close') {
-    const paid = pay(content, s, ctx, { table: template.table, xw: Number(args.xw) || 0, ls: Number(args.ls) || 0 });
+    const paid = pay(content, s, ctx, { table: template.table, progress: Number(args.progress) || 0, wealth: Number(args.wealth) || 0 });
     s.branch = null;
     return { state: s, result: { ok: true, closed: template.kind, paid, summarize: true } };
   }
@@ -387,7 +389,7 @@ export function summarize(state, content, ctx, args) {
 /* A province by its character (冀), its name (冀州) or its English (Ji). */
 function provinceOf(content, raw) {
   const said = String(raw ?? '').trim().replace(/州$/, '').toLowerCase();
-  return Object.keys(content.terms.provinces).find(k => k === said || content.terms.provinces[k].en.toLowerCase() === said) ?? null;
+  return Object.keys(content.dictionary.provinces).find(k => k === said || content.dictionary.provinces[k].en.toLowerCase() === said) ?? null;
 }
 
 export function move(state, content, ctx, args) {
@@ -429,7 +431,7 @@ const strip = node => {
 export function make(state, content, ctx, args) {
   if (args.scene == null) {
     const t = content.templates.made;
-    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: content.rewards.qi.cost.make, limits: MADE } };
+    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: content.rewards.stamina.cost.make, limits: MADE } };
   }
   let scene;
   try { scene = typeof args.scene === 'string' ? JSON.parse(args.scene) : args.scene; } catch { return refuse('not-json', null); }
@@ -440,7 +442,7 @@ export function make(state, content, ctx, args) {
   if (Object.keys(others).length >= MADE.max_scenes) return refuse('made-full', null, { max: MADE.max_scenes });
   const problems = lintMade(scene, others, content);
   if (problems.length) return refuse('not-playable', null, { problems });
-  const empty = spendQi(content, s, ctx, 'make');
+  const empty = spendStamina(content, s, ctx, 'make');
   if (empty) return empty;
   s.made.scenes[scene.id] = scene;
   return { state: s, result: { ok: true, made: scene.id, scenes: Object.keys(s.made.scenes) } };
@@ -512,7 +514,7 @@ function run(verb, args) {
   const stateFile = path.join(dataDir(), 'state.json');
   const logFile = path.join(dataDir(), 'log.jsonl');
   const now = clock();
-  const saved = fs.existsSync(stateFile) ? JSON.parse(fs.readFileSync(stateFile, 'utf8')) : null;
+  const saved = fs.existsSync(stateFile) ? migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8'))) : null;
 
   if (verb === 'undo') return undo(stateFile, logFile);
   const state = verb === 'init' || !saved ? newState(content, args.lang, now) : saved;

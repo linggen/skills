@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
-import { langOf, newState, weekKey } from '../scripts/state.mjs';
+import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { branch, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, win } from '../scripts/rules.mjs';
 
 const content = loadContent();
@@ -50,7 +50,7 @@ test('a new game starts at the river, 练气一层, nothing in hand', () => {
   const s = start();
   assert.equal(s.scene, '00-river');
   const seen = look(s, content, ctx());
-  assert.equal(seen.realm.name, '练气一层');
+  assert.equal(seen.tier.name, '练气一层');
   assert.equal(seen.scene.buttons.length, 2);
   assert.equal(seen.scene.exits.find(e => e.id === 'leave').button, true);
 });
@@ -64,11 +64,11 @@ test('the prologue walks from the river to its end by exits alone', () => {
   s = end.state;
   assert.deepEqual(s.ended, ['00-prologue']);
   assert.equal(s.scene, null);
-  assert.equal(s.daohao, '青玄');
-  assert.deepEqual(s.root, ['wood', 'water', 'fire', 'earth']);
-  assert.deepEqual(s.beasts, ['fuzhu']);
-  assert.equal(s.xw, 70); // alchemy 20 + Fuzhu 50
-  assert.equal(s.ls, 10);
+  assert.equal(s.name, '青玄');
+  assert.deepEqual(s.traits, ['wood', 'water', 'fire', 'earth']);
+  assert.deepEqual(s.cast, ['fuzhu']);
+  assert.equal(s.progress, 70); // alchemy 20 + Fuzhu 50
+  assert.equal(s.wealth, 10);
   assert.equal(end.result.ended, '00-prologue');
 });
 
@@ -97,7 +97,7 @@ test('feeding Fuzhu the leftover lingzhi tames it and uses the herb up', () => {
   assert.equal(s.bag.lingzhi, 1);
   const fed = must(resolve, s, { exit: 'gift' });
   assert.equal(fed.state.bag.lingzhi, undefined);
-  assert.deepEqual(fed.state.beasts, ['fuzhu']);
+  assert.deepEqual(fed.state.cast, ['fuzhu']);
   assert.equal(fed.result.beat[1].who, 'fuzhu');
 });
 
@@ -164,83 +164,83 @@ test('answers are judged in either language, punctuation and articles aside', ()
 
 test('a layer fills and the next begins, the rest carried over', () => {
   const s = start();
-  s.xw = 90;
+  s.progress = 90;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.state.stage, 1);
-  assert.equal(out.state.xw, 10);
+  assert.equal(out.state.step, 1);
+  assert.equal(out.state.progress, 10);
   assert.deepEqual(out.result.paid.levels, [{ from: '练气一层', to: '练气二层' }]);
 });
 
 test('at the realm peak the player holds until the chapter opens', () => {
   const s = start();
-  s.stage = 8; s.xw = 250;
+  s.step = 8; s.progress = 250;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.state.xw, 260);
+  assert.equal(out.state.progress, 260);
   assert.deepEqual(out.result.paid.hold, { gate: 1 });
 });
 
 test('the day caps what can be earned', () => {
   const s = start();
-  s.day.xw = 230; // cap 240
+  s.day.progress = 230; // cap 240
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.result.paid.xw, 10);
+  assert.equal(out.result.paid.progress, 10);
   assert.equal(out.result.paid.capped, true);
 });
 
 test('a later realm pays more for the same task; the day cap counts base', () => {
   const s = start();
-  s.realm = 'deity'; s.stage = 0; s.xw = 0; // 化神, pay ×3
+  s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神, pay ×3
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.result.paid.xw, 60); // 20 base × 3
-  assert.equal(out.state.xw, 60);
-  assert.equal(out.state.day.xw, 20);
+  assert.equal(out.result.paid.progress, 60); // 20 base × 3
+  assert.equal(out.state.progress, 60);
+  assert.equal(out.state.day.progress, 20);
   assert.equal(out.result.paid.capped, false);
 });
 
 test('a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
   let s = start();
-  assert.equal(s.qi, 100);
+  assert.equal(s.stamina, 100);
   s = must(resolve, s, { exit: 'reach' }).state;
-  assert.equal(s.qi, 90);
-  s.qi = 5; s.qi_at = NOW.toISOString();
-  const r = refused(resolve, s, { exit: 'name', value: '青玄' }, 'no-qi');
+  assert.equal(s.stamina, 90);
+  s.stamina = 5; s.stamina_at = NOW.toISOString();
+  const r = refused(resolve, s, { exit: 'name', value: '青玄' }, 'no-stamina');
   assert.equal(r.cost, 10);
   // 5 points short at 20 an hour = 15 minutes
   assert.equal(new Date(r.returns_at).getTime(), NOW.getTime() + 15 * 60_000);
   assert.match(r.say, /丹田已空/);
   const seen = look(s, content, ctx());
-  assert.equal(seen.qi.empty, true);
-  assert.equal(seen.qi.returns_at, r.returns_at);
+  assert.equal(seen.stamina.empty, true);
+  assert.equal(seen.stamina.returns_at, r.returns_at);
 });
 
 test('灵气 refills by the clock, whole points, never over the top', () => {
   const s = start();
-  s.qi = 40; s.qi_at = NOW.toISOString();
+  s.stamina = 40; s.stamina_at = NOW.toISOString();
   const later = look(s, content, ctx({ now: new Date(NOW.getTime() + 90 * 60_000) }));
-  assert.equal(later.qi.now, 70); // 1.5 h × 20
+  assert.equal(later.stamina.now, 70); // 1.5 h × 20
   const full = look(s, content, ctx({ now: new Date(NOW.getTime() + 24 * 3600_000) }));
-  assert.equal(full.qi.now, 100);
+  assert.equal(full.stamina.now, 100);
   // an old save with no 灵气 wakes full
-  delete s.qi; delete s.qi_at;
-  assert.equal(look(s, content, ctx()).qi.now, 100);
+  delete s.stamina; delete s.stamina_at;
+  assert.equal(look(s, content, ctx()).stamina.now, 100);
 });
 
 test('a checked quest refills 灵气 — the app\'s own amount, capped', () => {
   const s = start();
-  s.qi = 80; s.qi_at = NOW.toISOString();
-  const quests = [{ id: 'health-workout', app: 'health', period: 'day', due: true, done_at: NOW.toISOString(), reward: 20, qi: 30 }];
+  s.stamina = 80; s.stamina_at = NOW.toISOString();
+  const quests = [{ id: 'health-workout', app: 'health', period: 'day', due: true, done_at: NOW.toISOString(), reward: 20, stamina: 30 }];
   const out = must(task, s, { action: 'check', id: 'health-workout' }, ctx({ quests }));
-  assert.equal(out.result.qi, 20); // 80 + 30, capped at 100
-  assert.equal(out.state.qi, 100);
+  assert.equal(out.result.stamina, 20); // 80 + 30, capped at 100
+  assert.equal(out.state.stamina, 100);
 });
 
 test('a 奇遇 grows from a seed of the province — by the day, unused first', () => {
   let s = start();
-  s.daohao = '青玄';
+  s.name = '青玄';
   const one = must(branch, s, { action: 'open', kind: 'province-tale' });
   const seed = one.result.seed;
   assert.match(seed.id, /^xu-/);
@@ -251,7 +251,7 @@ test('a 奇遇 grows from a seed of the province — by the day, unused first', 
   const again = must(branch, s, { action: 'open', kind: 'province-tale' });
   assert.equal(again.result.seed.id, seed.id);
   // once used, the day moves to another
-  s = must(branch, one.state, { action: 'close', xw: 5, ls: 0 }).state;
+  s = must(branch, one.state, { action: 'close', progress: 5, wealth: 0 }).state;
   const next = must(branch, s, { action: 'open', kind: 'province-tale' });
   assert.notEqual(next.result.seed.id, seed.id);
   // a seed with a creature shows its card
@@ -271,7 +271,7 @@ test('Make with nothing is the template; a scene in its shape is kept and played
     exits: [{ id: 'land', label: { en: 'Land' }, means: 'lands, steps off', ends: 'made' }] };
   s = must(make, s, { scene: JSON.stringify(second) }).state;
   s = must(make, s, { scene: JSON.stringify(t.template) }).state;
-  assert.equal(s.qi, 90); // 5 each
+  assert.equal(s.stamina, 90); // 5 each
   assert.deepEqual(Object.keys(s.made.scenes).sort(), ['made-ferry', 'made-ferry-2']);
   // enter it; the spine keeps its place
   s = must(enter, s, { scene: 'made-ferry' }).state;
@@ -280,11 +280,11 @@ test('Make with nothing is the template; a scene in its shape is kept and played
   // an exit that stays, then one that ends: home again, paid within the branch table
   s = must(resolve, s, { exit: 'ask' }).state;
   const out = must(resolve, s, { exit: 'cross' });
-  assert.equal(out.result.paid.xw, 10);
+  assert.equal(out.result.paid.progress, 10);
   assert.equal(out.state.made.at, null);
   assert.equal(look(out.state, content, ctx()).scene.id, '00-river');
   // refusals: a forbidden field, a grant off the branch table, a next that does not exist
-  const bad = { ...second, id: 'made-bad', exits: [{ id: 'x', means: 'x', key: 'riddle', grant: { table: 'scene', xw: 50 }, next: 'made-nowhere' }] };
+  const bad = { ...second, id: 'made-bad', exits: [{ id: 'x', means: 'x', key: 'riddle', grant: { table: 'scene', progress: 50 }, next: 'made-nowhere' }] };
   const r = refused(make, s, { scene: JSON.stringify(bad) }, 'not-playable');
   assert.ok(r.problems.some(p => /may not use key/.test(p)));
   assert.ok(r.problems.some(p => /grant only from branch/.test(p)));
@@ -307,7 +307,7 @@ test('a quest pays when its app says it was done this period, once', () => {
   const seen = look(s, content, done).quests[0];
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
-  assert.equal(paid.result.paid.xw, 30);
+  assert.equal(paid.result.paid.progress, 30);
   assert.equal(paid.state.quests['shifu-scan'].period, weekKey(NOW));
   assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);
@@ -319,9 +319,9 @@ test('a branch opens alone, counts its turns and pays within its cap', () => {
   let s = must(branch, start(), { action: 'open', kind: 'night-tale' }).state;
   refused(branch, s, { action: 'open', kind: 'province-tale' }, 'branch-open');
   s = must(branch, s, { action: 'turn' }).state;
-  const closed = must(branch, s, { action: 'close', xw: '500', ls: '99' });
-  assert.equal(closed.result.paid.xw, 20);
-  assert.equal(closed.result.paid.ls, 5);
+  const closed = must(branch, s, { action: 'close', progress: '500', wealth: '99' });
+  assert.equal(closed.result.paid.progress, 20);
+  assert.equal(closed.result.paid.wealth, 5);
   assert.equal(closed.state.branch, null);
 });
 
@@ -353,12 +353,27 @@ test('the player’s words set the language; a tap, an emoji or the page’s rep
   assert.equal(zh.lang, 'zh', 'heed never mutates');
 });
 
-test('English play carries the game’s words; Chinese play does not need them', () => {
+test('Look carries the world’s words for the harness’s ids, in the player’s language', () => {
   const en = look(start('en'), content, ctx());
-  assert.equal(en.terms.xw, 'cultivation');
-  assert.equal(en.terms.ls, 'spirit stones');
-  assert.deepEqual(en.terms.realms.slice(0, 3), ['Qi Condensation', 'Foundation Establishment', 'Core Formation']);
-  assert.equal(look(start('zh'), content, ctx()).terms, undefined);
+  assert.equal(en.words.progress, 'cultivation');
+  assert.equal(en.words.wealth, 'spirit stones');
+  assert.equal(en.words.pool, 'dantian');
+  assert.deepEqual(en.words.tiers.slice(0, 3), ['Qi Condensation', 'Foundation Establishment', 'Core Formation']);
+  const zh = look(start('zh'), content, ctx());
+  assert.equal(zh.words.progress, '修为');
+  assert.equal(zh.words.stamina, '灵气');
+});
+
+test('a save from before the dictionary migrates to the ids', () => {
+  const old = { version: 1, lang: 'zh', daohao: '青玄', root: ['wood'], realm: 'qi', stage: 2, xw: 30, ls: 5, beasts: ['fuzhu'], qi: 40, qi_at: NOW.toISOString(),
+    bag: {}, chapter: '00-prologue', scene: '00-practice', done_scenes: [], ended: [], tasks: {}, quests: {}, wins: {}, branch: null, story: '', day: { key: '2026-09-11', xw: 30, ls: 5, branches: 0 } };
+  const m = migrate(old);
+  assert.equal(m.version, 2);
+  assert.equal(m.name, '青玄'); assert.deepEqual(m.traits, ['wood']); assert.equal(m.tier, 'qi'); assert.equal(m.step, 2);
+  assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
+  assert.deepEqual(m.day, { key: '2026-09-11', progress: 30, wealth: 5, branches: 0 });
+  assert.equal(m.xw, undefined);
+  assert.equal(look(m, content, ctx()).tier.name, '练气三层');
 });
 
 test('a province is known by its character, its name or its English', () => {

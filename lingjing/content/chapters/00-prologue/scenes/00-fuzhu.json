@@ -21,7 +21,7 @@
       "needs": { "bag": "lingzhi" },
       "take": { "bag": "lingzhi" },
       "refuse": { "zh": "你身上没有灵芝。", "en": "You have no lingzhi on you." },
-      "grant": { "table": "scene", "xw": 50, "ls": 10, "beast": "fuzhu" },
+      "grant": { "table": "scene", "progress": 50, "wealth": 10, "cast": "fuzhu" },
       "beat": [
         { "who": "ling", "text": { "zh": "你摊开掌心，递上那株灵芝。夫诸低头嗅了嗅，四只角在雾里轻轻一晃，把灵芝衔走了。", "en": "You open your palm and hold out the lingzhi. Fuzhu lowers its head, sniffs, and with a slow sway of its four antlers takes the herb from your hand." } },
         { "who": "fuzhu", "text": { "zh": "……你倒不怕我。好，我跟你走。", "en": "…You are not afraid of me. Very well — I will go with you." } }
@@ -33,7 +33,7 @@
       "label": { "zh": "论道 · 猜一字", "en": "Debate · A riddle" },
       "means": "answers the riddle Fuzhu asks",
       "key": "fuzhu-1",
-      "grant": { "table": "scene", "xw": 50, "ls": 10, "beast": "fuzhu" },
+      "grant": { "table": "scene", "progress": 50, "wealth": 10, "cast": "fuzhu" },
       "beat": [
         { "who": "fuzhu", "text": { "zh": "……人类，你倒有些意思。", "en": "…Human, you are more interesting than you look." } }
       ],
@@ -44,7 +44,7 @@
       "label": { "zh": "斗法 · 象棋残局", "en": "Duel · A xiangqi endgame" },
       "means": "challenges it to a duel or a contest of skill",
       "game": "xiangqi-endgame",
-      "grant": { "table": "scene", "xw": 50, "beast": "fuzhu" },
+      "grant": { "table": "scene", "progress": 50, "cast": "fuzhu" },
       "beat": [
         { "who": "fuzhu", "text": { "zh": "……你赢了。我跟你走。", "en": "…You win. I will go with you." } }
       ],

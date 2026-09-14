@@ -42,7 +42,7 @@ const MAP = [['雍', '冀', '兖'], ['梁', '豫', '青'], ['荆', '扬', '徐']
 function creature(card, ctx) {
   const c = ctx.content.creatures.find((x) => x.id === card.id);
   if (!c) return '';
-  const tamed = (ctx.look.beasts || []).some((b) => b.id === c.id);
+  const tamed = (ctx.look.cast || []).some((b) => b.id === c.id);
   return `<div class="card creature${tamed ? ' tamed' : ''}">
     <img class="illus" src="../content/${esc(c.art)}" alt="${esc(pick(c.name, ctx.lang))}">
     <div class="crow"><div class="seal">${esc(c.name.zh)}</div><div>
@@ -53,19 +53,19 @@ function creature(card, ctx) {
     </div></div></div>`;
 }
 
-function root(card, ctx) {
-  const lit = new Set(ctx.look.root?.ids || []);
+function traits(card, ctx) {
+  const lit = new Set(ctx.look.traits?.ids || []);
   const els = ELEMENTS.map((id) => {
-    const e = ctx.content.roots.elements[id];
+    const e = ctx.content.traits.elements[id];
     const small = ctx.lang === 'en' ? `<small>${esc(e.en)}</small>` : '';
     return `<div class="root ${id}${lit.has(id) ? ' lit' : ''}"><b>${esc(e.zh)}</b>${small}</div>`;
   });
-  const result = ctx.look.root ? `<div class="rootres">${esc(ctx.look.root.name)}</div>` : '';
+  const result = ctx.look.traits ? `<div class="rootres">${esc(ctx.look.traits.name)}</div>` : '';
   return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}</div>`;
 }
 
 function map(card, ctx) {
-  const name = (c) => (ctx.lang === 'en' ? ctx.content.terms.provinces[c]?.en : c);
+  const name = (c) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[c]?.en : c);
   const cells = MAP.flat().map((c) => {
     const kind = c === card.goal ? 'goal' : c === card.here ? 'here' : '';
     const tag = kind ? `<small>${ctx.words[kind]}</small>` : '';
@@ -102,7 +102,7 @@ function board(card, ctx) {
   return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}</div>`;
 }
 
-const RENDER = { creature, root, map, hexagram, gate, tribulation, board };
+const RENDER = { creature, traits, map, hexagram, gate, tribulation, board };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

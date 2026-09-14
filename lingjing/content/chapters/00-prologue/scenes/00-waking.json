@@ -19,7 +19,7 @@
       "label": { "zh": "取一个道号", "en": "Take a Daoist name" },
       "means": "gives a name to be called by, or picks one of the offered names",
       "value": {
-        "field": "daohao",
+        "field": "name",
         "max_chars": 8,
         "offers": [
           { "zh": "青玄", "en": "Qingxuan" },
@@ -28,7 +28,7 @@
         ]
       },
       "beat": [
-        { "who": "yinyue", "text": { "zh": "{daohao}。好名字，我记住了。", "en": "{daohao}. A good name. I will remember it." } }
+        { "who": "yinyue", "text": { "zh": "{name}。好名字，我记住了。", "en": "{name}. A good name. I will remember it." } }
       ],
       "next": "00-stone"
     }
