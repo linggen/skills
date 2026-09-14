@@ -160,6 +160,50 @@ Not authored scene by scene. A branch is a template:
 Ling writes the tale; the rules count its turns and pay from the capped
 branch table when it closes.
 
+**A branch grows from a seed.** A template alone gave Ling one line to write
+from ("a legend of the province"), which is the same tale by the third day.
+A seed is one authored line — a creature, a place, a thing from that
+province's 山海经 chapter — and Ling only fleshes it out.
+
+`content/seeds/<province>.json`, thirty to fifty a province:
+
+```json
+{ "province": "徐",
+  "seeds": [
+    { "id": "xu-01", "kind": "province-tale", "creature": "fuzhu",
+      "line": { "zh": "雾里一头四角白鹿，踏水不湿。", "en": "A four-horned white deer in the mist, walking on the water dry-shod." } },
+    { "id": "xu-02", "kind": "night-tale",
+      "line": { "zh": "泗水渔翁夜得一鲤，鲤能言。", "en": "A Si River fisherman nets a carp at night; the carp can speak." } } ] }
+```
+
+- **The rules pick the seed, by the day.** `Branch open` chooses from the
+  player's province, unused first (`state.seeds_used`), seeded by the day
+  key, and returns the line to Ling; the same day reopens the same seed.
+  Ling never chooses.
+- **A seed with a creature shows its card** — the picture rule holds in
+  branches too. A seed's `creature` must exist in `creatures.json`, with art;
+  the lint refuses one that does not.
+- **A seed is a beginning, not a plot.** What happens is Ling's; the template's
+  `may_not` still holds; the reward table and the day cap are unchanged.
+- **The prologue's province is 徐,** so 徐 ships first.
+
+### A day
+
+What a player does on an ordinary day — between chapters, which is most
+days — is the game's real shape:
+
+1. **The omen.** Look brings the day's hexagram; Ling shows it and says its
+   image in a line.
+2. **A due quest, if any** — the workout kept, the scan run — paid on sight.
+3. **One 奇遇 from a seed,** offered by Ling as the way forward when the spine
+   has nothing new. Up to `per_day`.
+4. **Practice** — a board on the scene, no model, no 灵气.
+5. **The story waits** at its gate when a chapter is not yet open — said in
+   one line, never nagged.
+
+A few minutes. The spine moves on the days a chapter opens; the seeds and
+the quests carry every other day.
+
 ## Player state
 
 `state.json`:
@@ -557,8 +601,10 @@ Establishment, Core Formation, Nascent Soul).
 5. Quests: Shifu's scan ✓, Health's workout ✓; Health's night waits for sleep in the mirror.
 6. Online: the cloud save and the 灵气 meter — the skill declares them, the
    engine reports and asks, linggen.dev counts and keeps the save. ✓
-7. Chapter 1 — 冀州.
-8. The table: the engine's shared chat, then the first set of plays; 传音 ·
+7. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
+   the lint on seed creatures — the daily loop before more spine.
+8. Chapter 1 — 冀州, with its seeds and its creatures pictured.
+9. The table: the engine's shared chat, then the first set of plays; 传音 ·
    同修 · 论道 through the cloud.
 
 ## Open

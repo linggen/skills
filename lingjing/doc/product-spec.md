@@ -5,7 +5,7 @@ guide: |
   What Lingjing is and what each of its systems does, in one read.
   How it is built belongs in design.md (not written yet). The idea's first
   record is linggen-app/doc/app-ideas.md.
-status: Design only, settled 2026-09-11. Nothing built.
+status: Settled 2026-09-11; built through online (the prologue, the Mac scene, quests, the cloud save and 灵气 meter) as of 2026-09-14 — see design.md.
 ---
 
 # Lingjing: The World of Linggen · 《灵境》
@@ -99,6 +99,14 @@ state does not allow.
 - **The rules own every number, the model owns the words.** Points, realms,
   灵气, inventory and world state are data; the model narrates around them.
 
+## A day
+
+Most days fall between chapters. An ordinary day is: the omen; a due
+real-life quest paid on sight; one 奇遇 grown from an authored seed — a line
+from the province's 山海经, its creature pictured; a board to practise on.
+A few minutes. The spine moves on the days a chapter opens; seeds and
+quests carry every other day.
+
 ## Task system
 
 **Ling gives tasks; finishing one earns 修为 points.**
@@ -145,7 +153,7 @@ fast 修为 grows.**
 - **Rolling 5-hour window,** like Claude Code or ChatGPT.
 - **A pace, not a price.** It keeps the game from taking too much of a day.
 - **Every model counts** — Linggen Cloud or the player's own — reported to
-  the cloud after each turn.
+  the cloud around each model call.
 - **Shown as the 丹田:** full, half, low. Tokens are never shown.
 - **When it runs out,** one line in the story says so. The story waits.
 - **Rule-run puzzles cost no 灵气.** They stay playable as practice.
