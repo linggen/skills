@@ -3,8 +3,27 @@
   "riddles": {
     "fuzhu-1": {
       "q": "What must be broken before it can be used?",
-      "a": ["egg", "an egg"],
+      "a": [
+        "egg",
+        "an egg"
+      ],
       "hint": "A hen could tell you."
+    },
+    "wu-1": {
+      "q": "A head and no neck, eyes and no brows; it walks without feet, and its wings cannot fly. What is it?",
+      "a": [
+        "fish",
+        "a fish"
+      ],
+      "hint": "It lives in the River Lord's water."
+    },
+    "seal-ji": {
+      "q": "Nine at the crown, one at the foot; three on the left, seven on the right; two and four for shoulders, six and eight for feet. What sits at the heart?",
+      "a": [
+        "five",
+        "5"
+      ],
+      "hint": "The Luo River square — every line makes fifteen."
     }
   }
 }

@@ -167,17 +167,18 @@ export function lint(content) {
   return problems;
 }
 
-/* A province's places: roads both ways to places of the same province, a
-   tier the ladder has, a creature with its card, a scene that exists, and
-   every place reachable from the start. */
+/* A province's places: roads both ways to places anywhere in the world (a
+   road into another province opens with that province's chapter), a tier
+   the ladder has, a creature with its card, a scene that exists, and every
+   place reachable from the start. */
 function lintPlaces(content, ids, bad) {
   const scenes = new Set(Object.values(content.chapters).flatMap(c => Object.keys(c.scenes)));
+  const byId = Object.fromEntries(Object.values(content.places).flatMap(doc => doc.places.map(p => [p.id, p])));
   const seen = new Set();
   for (const [province, doc] of Object.entries(content.places)) {
     const where = `places ${province}`;
     if (!content.dictionary.provinces[province]) bad(where, 'unknown province');
-    const byId = Object.fromEntries(doc.places.map(p => [p.id, p]));
-    if (!byId[doc.start]) bad(where, `start ${doc.start} is not a place`);
+    if (!doc.places.some(p => p.id === doc.start)) bad(where, `start ${doc.start} is not a place`);
     for (const place of doc.places) {
       const at = `place ${place.id}`;
       if (seen.has(place.id)) bad(at, 'duplicate id');
@@ -185,7 +186,7 @@ function lintPlaces(content, ids, bad) {
       if (!Number.isInteger(place.tier) || place.tier < 0 || place.tier >= content.ladder.tiers.length) bad(at, `tier ${place.tier} is not on the ladder`);
       if (!place.line?.zh || !place.line?.en) bad(at, 'needs a line in both languages');
       for (const road of place.roads ?? []) {
-        if (!byId[road]) bad(at, `road to ${road}, which is not a place of ${province}`);
+        if (!byId[road]) bad(at, `road to ${road}, which is not a place`);
         else if (!byId[road].roads?.includes(place.id)) bad(at, `road to ${road} does not come back`);
       }
       if (place.has?.creature && !ids.creatures.has(place.has.creature)) bad(at, `has unknown creature ${place.has.creature}`);
@@ -337,6 +338,11 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
   }
   if (exit.take && !exit.needs) bad(where, 'takes what it never checks for');
   if (exit.needs && !exit.refuse) bad(where, 'a need needs a refusal line');
+  if (exit.breakthrough) {
+    if (!exit.refuse) bad(where, 'a breakthrough needs a refusal line for the one not yet at the peak');
+    if (chapter.gate == null) bad(where, `a breakthrough in ${chapter.id}, which has no gate`);
+    else if (!content.ladder.tiers.some(t => t.gate === chapter.gate)) bad(where, `no tier on the ladder has gate ${chapter.gate}`);
+  }
   if (exit.key && !content.riddles.zh.riddles[exit.key]) bad(where, `unknown riddle ${exit.key}`);
   const game = gameOf(exit);
   if (game) {

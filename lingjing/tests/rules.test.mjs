@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { branch, duel, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, win } from '../scripts/rules.mjs';
+import { VERBS, branch, duel, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, wake, win } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -483,7 +483,10 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(l.scene, null);
   assert.deepEqual(l.director.near.map(p => p.id), ['sishui', 'yunlong']);
   assert.deepEqual(l.director.too_hard.map(p => p.id), ['lvliang']);
-  assert.equal(l.director.thread, null, 'no chapter after the prologue yet');
+  assert.deepEqual(l.director.closed.map(p => p.id), ['zhangnan'], 'the road north waits for chapter 1');
+  assert.equal(l.director.thread.chapter, '01-ji');
+  assert.equal(l.director.thread.opens, '2026-10-01');
+  assert.equal(l.director.thread.place.id, 'zhangnan');
   assert.equal(l.director.corridor, false);
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
@@ -501,14 +504,16 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   // no road
   const nr = refused(move, s, { place: 'pengcheng' }, 'no-road');
   assert.equal(nr.say, '从泗水北岸没有路通向彭城。');
-  assert.deepEqual(nr.near.map(p => p.id), ['sishui', 'yunlong', 'lvliang']);
+  assert.deepEqual(nr.near.map(p => p.id), ['sishui', 'yunlong', 'lvliang', 'zhangnan']);
   // too hard: the mist, and Yinyue's fitting place
   const th = refused(move, s, { place: 'lvliang' }, 'too-hard');
   assert.equal(th.say, '雾更浓了，看不见路。');
   assert.equal(th.fitting.id, 'sibei');
   assert.equal(th.yinyue, '还不是时候。先回泗水北岸吧。');
   // unknown
-  assert.deepEqual(refused(move, s, { place: 'nowhere' }, 'unknown-place').near.map(p => p.id), ['sishui', 'yunlong', 'lvliang']);
+  assert.deepEqual(refused(move, s, { place: 'nowhere' }, 'unknown-place').near.map(p => p.id), ['sishui', 'yunlong', 'lvliang', 'zhangnan']);
+  // a road into a province whose chapter has not opened
+  assert.equal(refused(move, s, { place: 'zhangnan' }, 'road-closed').say, '冀州的路还没开。');
   // a province still answers: here, or a road not open
   assert.equal(must(move, s, { province: 'Xu' }).result.here, true);
   assert.equal(refused(move, s, { place: '冀州' }, 'road-closed').say, '冀州的路还没开。');
@@ -603,6 +608,102 @@ test('an exit can grant a thing', () => {
   assert.equal(out.result.ok, true);
   assert.equal(out.result.paid.item, 'straw-cloak');
   assert.deepEqual(out.state.bag, { 'straw-cloak': 1 });
+});
+
+/* ── Chapter 1 ── */
+
+const OCT = new Date('2026-10-02T12:00:00');
+const octx = (extra = {}) => ({ now: OCT, quests: [], ...extra });
+const answer = (fn, st, args) => must(fn, st, args, octx());
+
+test('the chapter opens on its day: Look wakes the story, the road north opens, the scene waits at its place', () => {
+  const rested = toOpenWorld();
+  assert.equal(wake(rested, content, ctx()), null, 'not before October');
+  assert.equal(VERBS.look(rested, content, ctx()).state, null);
+  const woke = VERBS.look(rested, content, octx());
+  assert.equal(woke.state.chapter, '01-ji');
+  assert.equal(woke.state.scene, '01-arrive');
+  assert.equal(woke.state.place, 'sibei', 'no teleport outside a corridor');
+  assert.equal(woke.result.scene, null, 'the scene waits at 漳水南岸');
+  assert.equal(woke.result.waypoint.place.id, 'zhangnan');
+  assert.equal(woke.result.director.thread.text, '路通向漳水南岸。');
+  assert.deepEqual(woke.result.director.closed, []);
+  // the exit cannot be taken from here
+  assert.equal(refused(resolve, woke.state, { exit: 'town' }, 'not-at-scene', octx()).say, '你还没到漳水南岸。');
+  const there = answer(move, woke.state, { place: 'zhangnan' });
+  assert.equal(there.result.scene.id, '01-arrive');
+  assert.equal(there.result.director.thread.scene, '01-arrive');
+});
+
+/* Wake and walk to the Zhang. */
+function toJi() {
+  const woke = VERBS.look(toOpenWorld(), content, octx()).state;
+  return { ...answer(move, woke, { place: 'zhangnan' }).state, stamina: 100, wealth: 300 };
+}
+
+test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron\'s gate, the end', () => {
+  let s = toJi();
+  // arrive → Ye: the scene moves, the player must walk
+  let r = answer(resolve, s, { exit: 'town' });
+  assert.equal(r.state.scene, '01-ye'); assert.equal(r.result.scene, null); assert.equal(r.result.waypoint.place.id, 'ye');
+  s = r.state;
+  assert.equal(look(s, content, octx()).scene, null);
+  refused(resolve, s, { exit: 'shrine' }, 'not-at-scene', octx());
+  s = answer(move, s, { place: 'ye' }).state;
+  const ye = look(s, content, octx());
+  assert.equal(ye.scene.id, '01-ye');
+  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill']);
+  s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
+  assert.equal(s.wealth, 180);
+  s = answer(resolve, s, { exit: 'market' }).state; // stays
+  s = answer(resolve, s, { exit: 'shrine' }).state;
+  s = answer(move, s, { place: 'hebo' }).state;
+  const altar = look(s, content, octx()).scene;
+  assert.equal(altar.id, '01-altar');
+  assert.ok(altar.exits.find(e => e.id === 'subdue').duel.creature.root === 'earth');
+  // the riddle way through
+  refused(resolve, s, { exit: 'riddle', answer: '虾' }, 'wrong-answer', octx());
+  r = answer(resolve, s, { exit: 'riddle', answer: '鱼' });
+  assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 40);
+  s = answer(move, r.state, { place: 'zhangyuan' }).state;
+  r = answer(resolve, s, { exit: 'seal', answer: '5' });
+  assert.equal(r.state.scene, '01-cauldron');
+  assert.equal(look(r.state, content, octx()).scene.id, '01-cauldron', 'same place, no walk');
+  s = r.state;
+  // the gate: not at the peak of 练气
+  const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', octx());
+  assert.ok(held.say.startsWith('鼎气扑到你身上'));
+  assert.equal(held.peak_step, 9);
+  // at the peak: the Foundation is laid, then paid into the new tier
+  s = { ...s, step: 8, progress: 260 };
+  r = answer(resolve, s, { exit: 'take' });
+  assert.deepEqual(r.result.breakthrough, { from: '练气九层', to: '筑基初期', tier: 'foundation' });
+  assert.equal(r.state.tier, 'foundation'); assert.equal(r.state.step, 0);
+  assert.equal(r.state.progress, 60);
+  assert.deepEqual(r.result.show, [{ card: 'tribulation', strikes: 3 }]);
+  assert.equal(r.state.scene, '01-end');
+  r = answer(resolve, r.state, { exit: 'rest' });
+  assert.deepEqual(r.state.ended, ['00-prologue', '01-ji']);
+  assert.equal(r.state.scene, null);
+  assert.equal(look(r.state, content, octx()).director.thread, null, 'no chapter 2 yet');
+  assert.equal(wake(r.state, content, octx()), null);
+});
+
+test('chapter 1: the fight at the shrine, and Ximen Bao\'s way', () => {
+  let s = toJi();
+  s = answer(resolve, s, { exit: 'town' }).state;
+  s = answer(move, s, { place: 'ye' }).state;
+  s = answer(resolve, s, { exit: 'shrine' }).state;
+  s = answer(move, s, { place: 'hebo' }).state;
+  const started = answer(duel, s, { id: 'subdue-paoxiao' });
+  const beat = m => Object.keys(BEATS).find(k => BEATS[k] === m);
+  const picks = started.result.moves.map(beat).map(x => (['wood', 'water', 'fire', 'earth'].includes(x) ? x : 'wood'));
+  const won = answer(duel, started.state, { id: 'subdue-paoxiao', picks: picks.join(',') });
+  assert.equal(won.result.outcome, 'won');
+  const r = answer(resolve, won.state, { exit: 'subdue' });
+  assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 60);
+  const sent = answer(resolve, s, { exit: 'send' });
+  assert.equal(sent.state.scene, '01-deep');
 });
 
 test('a province is known by its character, its name or its English', () => {

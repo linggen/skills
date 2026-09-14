@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card) and 降妖 (the 五行 bout on the scene) built (build order 1–13); next chapter 1; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -75,8 +75,8 @@ skills/lingjing/
     seeds/<province>.json  奇遇 seeds, one file per province
     places/<province>.json the province's places, roads and tiers
     branches.json          奇遇 templates and the daily cap
-    chapters/00-prologue/  chapter.json · beats.md · scenes/*.json
-    chapters/01-ji/        …
+    chapters/00-prologue/  chapter.json · beats.md · scenes/*.json — the corridor
+    chapters/01-ji/        the same — waypoints; opens 2026-10-01, gate 1
   data/                    this player; never in the repo — the cloud save mirrors it
     state.json · log.jsonl
   tests/
@@ -458,7 +458,34 @@ is a map of places, not a chain of scenes.
   roads both ways within the province, tiers on the ladder, a creature with
   its card, a scene that exists, every place reached from the start, every
   `at` a place of the chapter's province. SKILL.md gained *The director's
-  brief*. Not yet: 坊市 as a place (12), spine waypoints (14).
+  brief*. 坊市 as a place: built (12). Spine waypoints: built (14).
+- **Built (step 14) — chapter 1 and the waypoints.** `chapters/01-ji/`
+  (opens 2026-10-01, gate 1, `corridor: false`): six scenes at four places
+  of 冀 — the Zhang, Ye and its market, the River Lord's shrine where the
+  "god" is 狍鸮 (fight it, answer the sorceress, or send her in as 西门豹
+  did), the deeps with the 洛书 seal, the cauldron, the end pointing east
+  to 兖. `places/ji.json` (nine, 漳水南岸 the start; 泗水北岸 has the road
+  north — roads may cross provinces, the lint allows it), `seeds/ji.json`
+  (twenty), 狍鸮 and 精卫 with sketches, two riddles, 铁剑 and 筑基丹 sold in
+  冀. **Provinces open with their chapters** (`provinceOpen`: a chapter of
+  the province with `opens` null or past; a province with no chapter stays
+  behind the mist): Move into a closed one is `road-closed` with the
+  province's line; the director's `closed` lists such roads; `place.roads`
+  carry `closed`. **Waypoints** (`atScene`): outside a corridor a scene runs
+  only where it stands — Look's `scene` is null and `waypoint` (and the
+  thread: *路通向X*) names the place; Resolve elsewhere refuses
+  `not-at-scene`; Move onto the place returns the scene with its cards;
+  `settlePlace` carries the player only in a corridor. **Look wakes the
+  story** (`wake`): when the save waited on a chapter that has since
+  opened, the `look` verb advances into it and writes — the one change
+  Look makes. **The breakthrough** is an exit flag: `breakthrough: true`
+  with a `refuse` line; refused `not-at-peak` (with the peak step) unless
+  the player stands at the last step of their tier with the threshold met
+  and the next tier's `gate` is the chapter's; taken, tier → next, step 0,
+  progress 0, then the exit's grant pays into the new tier; the result
+  carries `breakthrough {from, to, tier}` and the exit shows the tribulation
+  card. The lint: a breakthrough needs its line and a gated chapter whose
+  gate a tier carries.
 
 ### Made scenes — the template, and Ling as the maker
 
@@ -1049,7 +1076,7 @@ Establishment, Core Formation, Nascent Soul).
    as a place, the `item` card, the lint. ✓
 13. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
    rule; the 夫诸 exit renamed `subdue`. ✓
-14. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
+14. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市. ✓
 15. Server authority: `rules.mjs` in a Worker, content bundled, tools as
     endpoints, the save cloud-only — before any play where players compare.
 16. The table: the engine's shared chat, then the first set of plays; 传音 ·

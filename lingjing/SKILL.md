@@ -409,6 +409,23 @@ bought or sold is said in a line — *竹剑到手，灵石 −60* — and the s
 on. A pill is used anywhere; say what it paid. What the player carries is
 Look's `bag`; `{card: "item", id}` shows one thing.
 
+## The spine as waypoints
+
+After the prologue, a chapter's scenes stand at places: Look's `scene` is
+null while the scene waits elsewhere, and `waypoint` (also the director's
+`thread`) names the place — *路通向漳水南岸* — so the player walks there
+(Move) and the scene begins. Resolve from elsewhere is refused
+`not-at-scene` with its line. A road into a province whose chapter has not
+opened is `road-closed` (*冀州的路还没开*); the director's `closed` lists
+those roads — speak of them as the road that waits. On the day a chapter
+opens, Look takes the story into it: say so, and point the way.
+
+**The breakthrough.** A cauldron's exit carries `breakthrough`: it refuses
+`not-at-peak` (its own line) until the player stands at the peak of their
+tier — send them back to real life and the province's days; the cauldron
+waits. Taken, the result's `breakthrough` names the tier from and to: Show
+the tribulation, speak the beat, say the new tier by its word.
+
 ## The director's brief
 
 When no scene runs, the world is open and you direct it from Look's

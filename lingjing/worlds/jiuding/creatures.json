@@ -3,17 +3,72 @@
   "creatures": [
     {
       "id": "fuzhu",
-      "name": { "zh": "夫诸", "en": "Fuzhu" },
-      "source": { "zh": "《山海经 · 中山经》", "en": "Classic of Mountains and Seas — Central Mountains" },
+      "name": {
+        "zh": "夫诸",
+        "en": "Fuzhu"
+      },
+      "source": {
+        "zh": "《山海经 · 中山经》",
+        "en": "Classic of Mountains and Seas — Central Mountains"
+      },
       "quote": {
         "zh": "有兽焉，其状如白鹿而四角，名曰夫诸，见则其邑大水。",
         "en": "There is a beast shaped like a white deer with four antlers, called Fuzhu. Where it is seen, the town floods."
       },
-      "look": { "zh": "白鹿，头生四角。", "en": "A white deer with four antlers." },
+      "look": {
+        "zh": "白鹿，头生四角。",
+        "en": "A white deer with four antlers."
+      },
       "province": "豫",
       "root": "water",
       "art": "art/fuzhu.svg",
       "art_source": "Sketch from the prototype — replace with an ink picture."
+    },
+    {
+      "id": "paoxiao",
+      "name": {
+        "zh": "狍鸮",
+        "en": "Paoxiao"
+      },
+      "source": {
+        "zh": "《山海经 · 北山经》",
+        "en": "Classic of Mountains and Seas — Northern Mountains"
+      },
+      "quote": {
+        "zh": "钩吾之山有兽焉，其状如羊身人面，其目在腋下，虎齿人爪，其音如婴儿，名曰狍鸮，是食人。",
+        "en": "On Mount Gouwu is a beast with a sheep's body and a human face, its eyes under its arms, tiger's teeth and human nails; it cries like an infant. It is called Paoxiao, and it eats people."
+      },
+      "look": {
+        "zh": "羊身人面，目在腋下。",
+        "en": "A sheep's body with a human face, eyes under the arms."
+      },
+      "province": "冀",
+      "root": "earth",
+      "art": "art/paoxiao.svg",
+      "art_source": "Sketch — replace with an ink picture."
+    },
+    {
+      "id": "jingwei",
+      "name": {
+        "zh": "精卫",
+        "en": "Jingwei"
+      },
+      "source": {
+        "zh": "《山海经 · 北山经》",
+        "en": "Classic of Mountains and Seas — Northern Mountains"
+      },
+      "quote": {
+        "zh": "发鸠之山有鸟焉，其状如乌，文首、白喙、赤足，名曰精卫。是炎帝之少女，游于东海，溺而不返，故为精卫，常衔西山之木石，以堙于东海。",
+        "en": "On Mount Fajiu is a bird like a crow, with a patterned head, white beak and red feet, called Jingwei. She was the Flame Emperor's youngest daughter, drowned in the Eastern Sea; now she carries twigs and stones from the western hills to fill it."
+      },
+      "look": {
+        "zh": "花头白喙赤足的小鸟，衔着石子。",
+        "en": "A small bird, patterned head, white beak, red feet, a pebble in its beak."
+      },
+      "province": "冀",
+      "root": "fire",
+      "art": "art/jingwei.svg",
+      "art_source": "Sketch — replace with an ink picture."
     }
   ]
 }

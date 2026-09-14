@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "province": "冀",
+  "_about": "奇遇 seeds for 冀 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "ji-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "发鸠山上有鸟，衔着石子往东海飞，飞了几千年。",
+        "en": "On Mount Fajiu a bird carries pebbles east to the sea, and has for thousands of years."
+      },
+      "source": {
+        "zh": "《山海经·北山经》：精卫，常衔西山之木石，以堙于东海。",
+        "en": "Classic of Mountains and Seas: Jingwei carries twigs and stones from the western hills to fill the Eastern Sea."
+      },
+      "creature": "jingwei"
+    },
+    {
+      "id": "ji-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "涿鹿的风里有铜味。老人说，蚩尤的兵器就是从这片土里长出来的。",
+        "en": "The wind at Zhuolu smells of bronze. The old say Chiyou's weapons grew out of this very earth."
+      },
+      "source": {
+        "zh": "《史记·五帝本纪》：黄帝与蚩尤战于涿鹿之野。",
+        "en": "Records of the Grand Historian: the Yellow Emperor fought Chiyou on the field of Zhuolu."
+      }
+    },
+    {
+      "id": "ji-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "邺城的县令西门豹，把巫婆投进漳水去问河伯，河伯没有回话。",
+        "en": "Ximen Bao, magistrate of Ye, threw the sorceress into the Zhang to ask the River Lord in person. The River Lord did not reply."
+      },
+      "source": {
+        "zh": "《史记·滑稽列传》：西门豹治邺，投巫于河。",
+        "en": "Records of the Grand Historian: Ximen Bao governed Ye and threw the sorceress into the river."
+      }
+    },
+    {
+      "id": "ji-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "易水边有人唱：风萧萧兮易水寒。唱完就上了车，没有回头。",
+        "en": "By the Yi River someone sang: the wind sighs, the Yi is cold. Then he mounted the cart and did not look back."
+      },
+      "source": {
+        "zh": "《史记·刺客列传》：荆轲辞燕，歌于易水之上。",
+        "en": "Records of the Grand Historian: Jing Ke took leave of Yan, singing on the bank of the Yi."
+      }
+    },
+    {
+      "id": "ji-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "邯郸街上有个少年走路古怪——学邯郸人的步子没学会，自己的也忘了。",
+        "en": "A youth on the streets of Handan walks strangely: he never mastered the Handan gait, and forgot his own."
+      },
+      "source": {
+        "zh": "《庄子·秋水》：寿陵余子学行于邯郸。",
+        "en": "Zhuangzi: the youth of Shouling went to learn to walk in Handan."
+      }
+    },
+    {
+      "id": "ji-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "太行山下住着一个老人，天天挖山。他说：子子孙孙无穷匮也。",
+        "en": "An old man lives under the Taihang and digs at the mountain every day. He says: my sons and their sons will never run out."
+      },
+      "source": {
+        "zh": "《列子·汤问》：愚公移山。",
+        "en": "Liezi: the foolish old man who moved the mountains."
+      }
+    },
+    {
+      "id": "ji-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "碣石山下，海翻白浪。有人在山上写过一首诗，写的是星汉。",
+        "en": "Below Jieshi the sea turns white. Someone once wrote a poem on that rock, about the river of stars."
+      },
+      "source": {
+        "zh": "曹操《观沧海》：东临碣石，以观沧海。",
+        "en": "Cao Cao, Viewing the Sea: I climb Jieshi in the east to look upon the sea."
+      }
+    },
+    {
+      "id": "ji-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "赵国的老将军背着荆条上门请罪，门口的人都不敢笑。",
+        "en": "The old general of Zhao came to the door with brambles on his back to beg pardon. No one at the gate dared laugh."
+      },
+      "source": {
+        "zh": "《史记·廉颇蔺相如列传》：负荆请罪。",
+        "en": "Records of the Grand Historian: Lian Po bore brambles to beg forgiveness of Lin Xiangru."
+      }
+    },
+    {
+      "id": "ji-09",
+      "kind": "province-tale",
+      "line": {
+        "zh": "燕昭王筑了一座台，台上放着黄金，说：来一个贤人，给一斗金。",
+        "en": "King Zhao of Yan built a terrace and set gold on it: for every worthy who comes, a measure of gold."
+      },
+      "source": {
+        "zh": "《战国策·燕策》：黄金台。",
+        "en": "Strategies of the Warring States: the Golden Terrace."
+      }
+    },
+    {
+      "id": "ji-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "赵王换了胡人的短衣，骑马射箭。大臣们说不合礼，他说：礼是为人立的。",
+        "en": "The King of Zhao put on the northern riders' short coat and shot from horseback. The ministers said it broke the rites; he said the rites were made for men."
+      },
+      "source": {
+        "zh": "《史记·赵世家》：胡服骑射。",
+        "en": "Records of the Grand Historian: King Wuling of Zhao adopted the riders' dress and archery."
+      }
+    },
+    {
+      "id": "ji-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "马成之山有白狗黑头的兽，见了人就飞起来，名叫天马。",
+        "en": "On Mount Macheng lives a beast like a white dog with a black head; when it sees a man it takes flight. It is called Tianma."
+      },
+      "source": {
+        "zh": "《山海经·北山经》：马成之山有兽焉，其状如白犬而黑头，见人则飞，其名曰天马。",
+        "en": "Classic of Mountains and Seas: on Mount Macheng a beast like a white dog with a black head, which flies when it sees a man, called Tianma."
+      }
+    },
+    {
+      "id": "ji-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "决决之水里有人鱼，四只脚，叫声像婴儿。渔人说吃了不痴。",
+        "en": "In the Juejue stream live fish with four legs that cry like infants. The fishermen say eating one keeps the wits."
+      },
+      "source": {
+        "zh": "《山海经·北山经》：龙侯之山，决决之水出焉，其中多人鱼。",
+        "en": "Classic of Mountains and Seas: from Mount Longhou flows the Juejue, with many manfish in it."
+      }
+    },
+    {
+      "id": "ji-13",
+      "kind": "province-tale",
+      "line": {
+        "zh": "天池山上有兽，兔子的身子，老鼠的头，靠背毛飞。",
+        "en": "On Mount Tianchi is a beast with a hare's body and a rat's head; it flies on the fur of its back."
+      },
+      "source": {
+        "zh": "《山海经·北山经》：天池之山有兽焉，其状如兔而鼠首，以其背飞，其名曰飞鼠。",
+        "en": "Classic of Mountains and Seas: on Mount Tianchi a beast like a hare with a rat's head that flies on its back, called Feishu."
+      }
+    },
+    {
+      "id": "ji-14",
+      "kind": "province-tale",
+      "line": {
+        "zh": "石者之山有豹，白身子，额上有花纹，一见人就装死。",
+        "en": "On Mount Shizhe is a leopard, white-bodied, patterned on the brow; it plays dead when it sees a man."
+      },
+      "source": {
+        "zh": "《山海经·北山经》：石者之山有兽焉，其状如豹而文题白身，名曰孟极，是善伏。",
+        "en": "Classic of Mountains and Seas: on Mount Shizhe a beast like a leopard with a patterned brow and white body, called Mengji, good at lying low."
+      }
+    },
+    {
+      "id": "ji-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "邺城城头有座高台，台上养过铜雀。风大的时候，台上有人唱。",
+        "en": "On the wall of Ye stood a high terrace where bronze sparrows were kept. On windy days someone sings up there."
+      },
+      "source": {
+        "zh": "《三国志·魏书》：建安十五年，作铜雀台。",
+        "en": "Records of the Three Kingdoms: in the fifteenth year of Jian'an the Bronze Sparrow Terrace was built."
+      }
+    },
+    {
+      "id": "ji-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "恒山的庙在云里。上山的人说，半路上会碰见下山的自己。",
+        "en": "Mount Heng's temple sits in the clouds. Those who climb say that halfway up they meet themselves coming down."
+      },
+      "source": {
+        "zh": "北岳恒山，五岳之一。",
+        "en": "Mount Heng, the Northern Peak, one of the Five Great Mountains."
+      }
+    },
+    {
+      "id": "ji-17",
+      "kind": "night-tale",
+      "line": {
+        "zh": "客栈的灯下，一个书生说，他昨夜在漳水边看见一顶红轿子，抬轿的人没有影子。",
+        "en": "Under the inn's lamp a scholar says he saw a red bridal sedan by the Zhang last night. The bearers had no shadows."
+      },
+      "source": {
+        "zh": "邺地河伯娶妇之俗。",
+        "en": "The custom of the River Lord's bride at Ye."
+      }
+    },
+    {
+      "id": "ji-18",
+      "kind": "night-tale",
+      "line": {
+        "zh": "夜里有人敲门，说是赵氏的孤儿，来寻他的两个恩人。开门却没有人。",
+        "en": "Someone knocks at night, saying he is the orphan of Zhao come to find his two benefactors. There is no one when the door opens."
+      },
+      "source": {
+        "zh": "《史记·赵世家》：赵氏孤儿。",
+        "en": "Records of the Grand Historian: the orphan of Zhao."
+      }
+    },
+    {
+      "id": "ji-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "太行山口的破庙里，一个老妇人夜夜织布，织好的布一到天亮就化成了雾。",
+        "en": "In the ruined temple at the Taihang pass an old woman weaves every night; the finished cloth turns to mist at dawn."
+      },
+      "source": {
+        "zh": "太行山民间传说。",
+        "en": "A folk tale of the Taihang."
+      }
+    },
+    {
+      "id": "ji-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "漳水边的渔人说，有个穿红衣的姑娘每晚坐在水边数石子，数到九就哭。",
+        "en": "A fisherman on the Zhang says a girl in red sits by the water every night counting pebbles; at nine, she weeps."
+      },
+      "source": {
+        "zh": "邺地河伯娶妇之俗；洛书九数。",
+        "en": "The bride of the River Lord at Ye; the nine of the Luo square."
+      }
+    }
+  ]
+}

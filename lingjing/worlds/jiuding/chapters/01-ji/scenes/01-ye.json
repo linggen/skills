@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "id": "01-ye",
+  "chapter": "01-ji",
+  "at": "ye",
+  "place": { "zh": "邺城 · 城门", "en": "Ye · The city gate" },
+  "setup": {
+    "zh": "告示上写：今岁河伯娶妇，巫已择定东街李氏女，日落祠前行礼，阖城不得喧哗。落款是县令。",
+    "en": "The notice reads: this year the River Lord takes his bride; the sorceress has chosen the Li family's daughter of East Street; the rite at the shrine at sundown; the city shall keep silence. Signed, the magistrate."
+  },
+  "cast": ["yinyue"],
+  "lines": [
+    { "who": "yinyue", "text": { "zh": "鼎的气息顺着水走。祠在下游。", "en": "The cauldron's breath follows the water. The shrine is downstream." } },
+    { "who": "ling", "text": { "zh": "东街有坊市；你要的东西，多半在那儿。", "en": "There is a market on East Street; what you need is most likely there." } }
+  ],
+  "buttons": ["shrine", "market"],
+  "exits": [
+    {
+      "id": "shrine",
+      "label": { "zh": "日落去祠前", "en": "To the shrine at sundown" },
+      "means": "goes to the shrine, the rite, or the river at dusk",
+      "beat": [
+        { "who": "ling", "text": { "zh": "日落。鼓声从下游传来。", "en": "Sundown. Drums from downstream." } }
+      ],
+      "next": "01-altar"
+    },
+    {
+      "id": "market",
+      "label": { "zh": "先逛坊市", "en": "The market first" },
+      "means": "goes shopping, asks about the market, wants to buy or sell",
+      "stay": true,
+      "beat": [
+        { "who": "ling", "text": { "zh": "东街的坊市摆到城根。铁匠铺的炉火最旺。", "en": "East Street's market runs to the wall. The smith's fire burns brightest." } }
+      ]
+    },
+    {
+      "id": "girl",
+      "means": "asks about the girl, the Li family, or tries to stop the rite now",
+      "stay": true,
+      "beat": [
+        { "who": "ling", "text": { "zh": "李家门口挂着红布，屋里没有哭声——哭过了。巫婆的人守在门外。", "en": "Red cloth hangs at the Li door. No crying inside — that was earlier. The sorceress's people keep the gate." } },
+        { "who": "yinyue", "text": { "zh": "在祠前拦，比在这儿拦有用。", "en": "Better to stop it at the shrine than here." } }
+      ]
+    }
+  ]
+}

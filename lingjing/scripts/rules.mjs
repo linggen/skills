@@ -17,7 +17,7 @@ import { CAST, DEFAULT_WORLD, MADE, gameOf, hasWorld, lintMade, listWorlds, load
 import { bout, creatureMoves } from './duel.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
-  payOf, speedOf, stepName, threshold,
+  payOf, speedOf, stepName, threshold, tierOf,
   addStamina, staminaReturnsAt, settleStamina,
 } from './state.mjs';
 
@@ -39,11 +39,27 @@ const allPlaces = content => Object.values(content.places).flatMap(doc => doc.pl
 const placeOf = (content, id) => allPlaces(content).find(p => p.id === id) ?? null;
 const tierIndex = (content, state) => content.ladder.tiers.findIndex(t => t.id === state.tier);
 
-/* Where the player stands: the scene's place while a scene runs, else the
-   save's; a save from before places starts where its province starts. */
+/* A province opens with its chapter: any chapter of it that has opened (or
+   never waits). A province with no chapter stays behind the mist. */
+function provinceOpen(content, province, now) {
+  return Object.values(content.chapters).some(c => c.province === province && (!c.opens || new Date(c.opens) <= now));
+}
+
+/* The spine as waypoints: outside a corridor a scene runs only where it
+   stands — the player walks to it. */
+function atScene(content, state) {
+  const scene = sceneOf(content, state);
+  if (!scene) return false;
+  if (inMade(state) || content.chapters[state.chapter]?.corridor) return true;
+  return !scene.at || state.place === scene.at;
+}
+
+/* Where the player stands: a corridor's scene carries them to its place;
+   elsewhere the save says, and a save from before places starts where its
+   province starts. */
 function settlePlace(content, state) {
   const scene = inMade(state) ? null : sceneOf(content, state);
-  if (scene?.at) state.place = scene.at;
+  if (scene?.at && content.chapters[state.chapter]?.corridor) state.place = scene.at;
   if (!state.place || !placeOf(content, state.place)) {
     const province = content.chapters[state.chapter]?.province;
     state.place = content.places[province]?.start ?? null;
@@ -62,7 +78,7 @@ const placeName = (content, state, place) => ({ id: place.id, name: pick(place.n
 
 /* The place as Look tells it: what is there, the roads out, and the whole
    province for the map — here, a road away, or beyond the player's tier. */
-function placeBrief(content, state) {
+function placeBrief(content, state, now = new Date()) {
   const place = placeOf(content, state.place);
   if (!place) return null;
   const lang = state.lang, doc = content.places[place.province];
@@ -80,7 +96,10 @@ function placeBrief(content, state) {
       creature: has.creature ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
       seeds: Boolean(has.seeds), shop: Boolean(has.shop), scene: has.scene ?? null,
     },
-    roads: place.roads.map(id => ({ ...placeName(content, state, placeOf(content, id)), tier: placeOf(content, id).tier, too_hard: tooHard(content, state, placeOf(content, id)) })),
+    roads: place.roads.map(id => placeOf(content, id)).map(p => ({
+      ...placeName(content, state, p), tier: p.tier, too_hard: tooHard(content, state, p),
+      province: p.province, closed: !provinceOpen(content, p.province, now),
+    })),
     places: doc.places.map(p => ({
       ...placeName(content, state, p), tier: p.tier,
       here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
@@ -105,7 +124,12 @@ const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) &&
 function threadOf(content, state, now) {
   const lang = state.lang;
   const scene = inMade(state) ? null : sceneOf(content, state);
-  if (scene) return { scene: scene.id, text: fill(pick(scene.setup, lang), state) };
+  if (scene && atScene(content, state)) return { scene: scene.id, text: fill(pick(scene.setup, lang), state) };
+  if (scene) {
+    const at = placeOf(content, scene.at);
+    return { scene: scene.id, place: placeName(content, state, at), province: pick(content.dictionary.provinces[at.province], lang),
+      text: lang === 'zh' ? `路通向${pick(at.name, 'zh')}。` : `The road leads to ${pick(at.name, 'en')}.` };
+  }
   const next = Object.values(content.chapters)
     .filter(c => !state.ended.includes(c.id) && c.id > state.chapter)
     .sort((a, b) => a.id.localeCompare(b.id))[0];
@@ -126,13 +150,15 @@ const poolOf = (content, state) => {
 function directorBrief(content, state, ctx) {
   const place = placeOf(content, state.place);
   if (!place) return null;
-  const roads = place.roads.map(id => placeOf(content, id));
+  const roads = place.roads.map(id => placeOf(content, id)).filter(p => provinceOpen(content, p.province, ctx.now));
+  const closed = place.roads.map(id => placeOf(content, id)).filter(p => !provinceOpen(content, p.province, ctx.now));
   const seed = place.has?.seeds && state.day.branches < content.branches.per_day && !state.branch
     ? pickSeed(content, state, content.branches.templates[0].kind, ctx.now) : null;
   return {
     here: placeName(content, state, place),
     near: roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p)),
     too_hard: roads.filter(p => tooHard(content, state, p)).map(p => placeName(content, state, p)),
+    closed: closed.map(p => ({ ...placeName(content, state, p), province: pick(content.dictionary.provinces[p.province], state.lang) })),
     corridor: inCorridor(content, state),
     thread: threadOf(content, state, ctx.now),
     pool: poolOf(content, state),
@@ -266,8 +292,9 @@ export function look(state, content, ctx) {
     wear: state.wear ?? {},
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
-    scene: sceneBrief(content, state, ctx.now),
-    place: placeBrief(content, state),
+    scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
+    waypoint: !atScene(content, state) && sceneOf(content, state) && !inMade(state) ? threadOf(content, state, ctx.now) : null,
+    place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
     ended: state.ended, branch: state.branch, story: state.story,
     omen: omen(content, ctx.now, lang),
@@ -276,6 +303,15 @@ export function look(state, content, ctx) {
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
   };
+}
+
+/* When the story waited on a chapter and the chapter has opened, the next
+   Look takes the player into it — the one change Look makes. */
+export function wake(state, content, ctx) {
+  if (state.scene || inMade(state)) return null;
+  const s = clone(state);
+  advanceChapter(content, s, ctx.now);
+  return s.scene ? s : null;
 }
 
 /* The pool as the scene draws it: what is there, the top, and — when a story
@@ -370,7 +406,22 @@ export function resolve(state, content, ctx, args) {
   const exit = scene.exits.find(e => e.id === args.exit);
   if (!exit) return refuse('unknown-exit', null, { exits: scene.exits.map(e => e.id) });
   const s = clone(state), lang = s.lang;
+  settlePlace(content, s);
+  if (!atScene(content, s)) {
+    const at = placeOf(content, scene.at);
+    return refuse('not-at-scene', lang === 'zh' ? `你还没到${pick(at.name, 'zh')}。` : `You are not at ${pick(at.name, 'en')} yet.`, { place: placeName(content, s, at) });
+  }
   if (exit.needs && !meets(s, exit.needs)) return refuse('needs', pick(exit.refuse, lang));
+  let breakthrough = null;
+  if (exit.breakthrough) {
+    const tier = tierOf(content, s.tier), tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
+    const peak = s.step === tier.thresholds.length - 1 && s.progress >= threshold(content, s);
+    const gate = content.chapters[s.chapter]?.gate;
+    if (!peak || !next || next.gate !== gate) {
+      return refuse('not-at-peak', pick(exit.refuse, lang), { tier: s.tier, step: s.step + 1, progress: s.progress, next: threshold(content, s), peak_step: tier.thresholds.length });
+    }
+    breakthrough = { from: stepName(content, s.tier, s.step, lang), to: stepName(content, next.id, 0, lang), tier: next.id };
+  }
   if (exit.key) {
     const riddle = content.riddles[lang].riddles[exit.key];
     if (args.answer == null) return refuse('needs-answer', riddle.q);
@@ -397,6 +448,7 @@ export function resolve(state, content, ctx, args) {
     if (s.bag[exit.take.bag] <= 0) delete s.bag[exit.take.bag];
   }
   if (exit.set?.traits === 'v1') s.traits = [...content.traits.v1];
+  if (breakthrough) { s.tier = breakthrough.tier; s.step = 0; s.progress = 0; }
   const paid = exit.grant ? pay(content, s, ctx, exit.grant) : null;
   const beat = spoken(content, s, exit.beat);
 
@@ -413,7 +465,8 @@ export function resolve(state, content, ctx, args) {
   return {
     state: s,
     result: {
-      ok: true, took: exit.id, beat, paid, show: exit.show ?? [], scene: sceneBrief(content, s, ctx.now), ended: exit.ends ?? null, waiting,
+      ok: true, took: exit.id, beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
+      waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
       summarize: Boolean(exit.next || exit.ends),
     },
   };
@@ -618,6 +671,10 @@ export function move(state, content, ctx, args) {
     const say = { zh: `从${pick(here.name, 'zh')}没有路通向${pick(target.name, 'zh')}。`, en: `No road runs from ${pick(here.name, 'en')} to ${pick(target.name, 'en')}.` };
     return refuse('no-road', pick(say, lang), { near: here.roads.map(id => placeName(content, s, placeOf(content, id))) });
   }
+  if (!provinceOpen(content, target.province, ctx.now)) {
+    const say = { zh: `${target.province}州的路还没开。`, en: 'That road has not opened yet.' };
+    return refuse('road-closed', pick(say, lang), { province: target.province });
+  }
   if (tooHard(content, s, target)) {
     const fitting = fittingPlace(content, s, here);
     const say = { zh: '雾更浓了，看不见路。', en: 'The mist thickens; the road is lost.' };
@@ -625,8 +682,9 @@ export function move(state, content, ctx, args) {
     return refuse('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
   }
   s.place = target.id;
-  const place = placeBrief(content, s);
-  return { state: s, result: { ok: true, place, show: place.show, director: directorBrief(content, s, ctx), summarize: true } };
+  const place = placeBrief(content, s, ctx.now);
+  const scene = atScene(content, s) ? sceneBrief(content, s, ctx.now) : null;
+  return { state: s, result: { ok: true, place, scene, show: [...place.show, ...(scene?.show ?? [])], director: directorBrief(content, s, ctx), summarize: true } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not
@@ -762,7 +820,7 @@ export function leave(state, content) {
   return { state: s, result: { ok: true, scene: sceneBrief(content, s), summarize: true } };
 }
 
-export const VERBS = { look: (s, c, x) => ({ state: null, result: look(s, c, x) }), resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave };
+export const VERBS = { look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; }, resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave };
 
 /* ── Files and the command line ── */
 

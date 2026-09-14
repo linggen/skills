@@ -3,56 +3,201 @@
   "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks. Never a number that fights. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. Kinds are for the shelf and the card and carry no rules.",
   "items": [
     {
-      "id": "lingzhi", "kind": "material",
-      "name": { "zh": "灵芝", "en": "Lingzhi" }, "art": "art/items/lingzhi.svg",
-      "about": { "zh": "山中所生，灵兽所喜。", "en": "Grows in the hills; spirit beasts love it." },
-      "buy": 30, "sell": 10, "sold": ["徐"],
-      "effect": { "key": true }
+      "id": "lingzhi",
+      "kind": "material",
+      "name": {
+        "zh": "灵芝",
+        "en": "Lingzhi"
+      },
+      "art": "art/items/lingzhi.svg",
+      "about": {
+        "zh": "山中所生，灵兽所喜。",
+        "en": "Grows in the hills; spirit beasts love it."
+      },
+      "buy": 30,
+      "sell": 10,
+      "sold": [
+        "徐"
+      ],
+      "effect": {
+        "key": true
+      }
     },
     {
-      "id": "qi-pill", "kind": "pill",
-      "name": { "zh": "聚气丹", "en": "Qi-gathering pill" }, "art": "art/items/qi-pill.svg",
-      "about": { "zh": "一粒抵半日打坐。", "en": "One pill is worth half a day's sitting." },
-      "buy": 80, "sell": 20, "sold": ["徐"],
-      "effect": { "progress": 20, "table": "puzzle" }
+      "id": "qi-pill",
+      "kind": "pill",
+      "name": {
+        "zh": "聚气丹",
+        "en": "Qi-gathering pill"
+      },
+      "art": "art/items/qi-pill.svg",
+      "about": {
+        "zh": "一粒抵半日打坐。",
+        "en": "One pill is worth half a day's sitting."
+      },
+      "buy": 80,
+      "sell": 20,
+      "sold": [
+        "徐"
+      ],
+      "effect": {
+        "progress": 20,
+        "table": "puzzle"
+      }
     },
     {
-      "id": "ginseng", "kind": "material",
-      "name": { "zh": "人参", "en": "Ginseng" }, "art": "art/items/ginseng.svg",
-      "about": { "zh": "形如人，年久者有灵。", "en": "Shaped like a person; an old one has a spirit of its own." },
-      "buy": 24, "sell": 8, "sold": ["徐"]
+      "id": "ginseng",
+      "kind": "material",
+      "name": {
+        "zh": "人参",
+        "en": "Ginseng"
+      },
+      "art": "art/items/ginseng.svg",
+      "about": {
+        "zh": "形如人，年久者有灵。",
+        "en": "Shaped like a person; an old one has a spirit of its own."
+      },
+      "buy": 24,
+      "sell": 8,
+      "sold": [
+        "徐"
+      ]
     },
     {
-      "id": "bamboo-sword", "kind": "weapon",
-      "name": { "zh": "竹剑", "en": "Bamboo sword" }, "art": "art/items/bamboo-sword.svg",
-      "about": { "zh": "练气者的第一把剑，斩不了妖，斩得了心。", "en": "A first sword: it cuts no demon, only doubt." },
-      "buy": 60, "sell": 15, "sold": ["徐"]
+      "id": "bamboo-sword",
+      "kind": "weapon",
+      "name": {
+        "zh": "竹剑",
+        "en": "Bamboo sword"
+      },
+      "art": "art/items/bamboo-sword.svg",
+      "about": {
+        "zh": "练气者的第一把剑，斩不了妖，斩得了心。",
+        "en": "A first sword: it cuts no demon, only doubt."
+      },
+      "buy": 60,
+      "sell": 15,
+      "sold": [
+        "徐"
+      ]
     },
     {
-      "id": "straw-cloak", "kind": "gear",
-      "name": { "zh": "蓑衣", "en": "Straw cloak" }, "art": "art/items/straw-cloak.svg",
-      "about": { "zh": "泗水多雨。", "en": "It rains often on the Si." },
-      "buy": 20, "sell": 5, "sold": ["徐"]
+      "id": "straw-cloak",
+      "kind": "gear",
+      "name": {
+        "zh": "蓑衣",
+        "en": "Straw cloak"
+      },
+      "art": "art/items/straw-cloak.svg",
+      "about": {
+        "zh": "泗水多雨。",
+        "en": "It rains often on the Si."
+      },
+      "buy": 20,
+      "sell": 5,
+      "sold": [
+        "徐"
+      ]
     },
     {
-      "id": "jade-fish", "kind": "treasure",
-      "name": { "zh": "玉鱼", "en": "Jade fish" }, "art": "art/items/jade-fish.svg",
-      "about": { "zh": "汉墓里出来的东西，握着微温。", "en": "Something from a Han tomb; faintly warm in the hand." },
-      "buy": 150, "sell": 50, "sold": ["徐"]
+      "id": "jade-fish",
+      "kind": "treasure",
+      "name": {
+        "zh": "玉鱼",
+        "en": "Jade fish"
+      },
+      "art": "art/items/jade-fish.svg",
+      "about": {
+        "zh": "汉墓里出来的东西，握着微温。",
+        "en": "Something from a Han tomb; faintly warm in the hand."
+      },
+      "buy": 150,
+      "sell": 50,
+      "sold": [
+        "徐"
+      ]
     },
     {
-      "id": "ferry-token", "kind": "key",
-      "name": { "zh": "渡牌", "en": "Ferry token" }, "art": "art/items/ferry-token.svg",
-      "about": { "zh": "船家只认牌，不认人。", "en": "The boatman knows the token, not the face." },
-      "buy": 10, "sell": 3, "sold": ["徐"],
-      "effect": { "key": true }
+      "id": "ferry-token",
+      "kind": "key",
+      "name": {
+        "zh": "渡牌",
+        "en": "Ferry token"
+      },
+      "art": "art/items/ferry-token.svg",
+      "about": {
+        "zh": "船家只认牌，不认人。",
+        "en": "The boatman knows the token, not the face."
+      },
+      "buy": 10,
+      "sell": 3,
+      "sold": [
+        "徐"
+      ],
+      "effect": {
+        "key": true
+      }
     },
     {
-      "id": "moon-bell", "kind": "artifact",
-      "name": { "zh": "银月铃", "en": "Silver-moon bell" }, "art": "art/items/moon-bell.svg",
-      "about": { "zh": "系在银月颈上，走路便有声。", "en": "Tied at Yinyue's neck, it rings as she walks." },
-      "buy": 200, "sell": 60, "sold": ["冀"],
-      "effect": { "wear": "yinyue" }
+      "id": "moon-bell",
+      "kind": "artifact",
+      "name": {
+        "zh": "银月铃",
+        "en": "Silver-moon bell"
+      },
+      "art": "art/items/moon-bell.svg",
+      "about": {
+        "zh": "系在银月颈上，走路便有声。",
+        "en": "Tied at Yinyue's neck, it rings as she walks."
+      },
+      "buy": 200,
+      "sell": 60,
+      "sold": [
+        "冀"
+      ],
+      "effect": {
+        "wear": "yinyue"
+      }
+    },
+    {
+      "id": "iron-sword",
+      "kind": "weapon",
+      "name": {
+        "zh": "铁剑",
+        "en": "Iron sword"
+      },
+      "art": "art/items/iron-sword.svg",
+      "about": {
+        "zh": "邺城铁匠打的，燕赵的样式。",
+        "en": "Forged in Ye, in the style of Yan and Zhao."
+      },
+      "buy": 120,
+      "sell": 40,
+      "sold": [
+        "冀"
+      ]
+    },
+    {
+      "id": "foundation-pill",
+      "kind": "pill",
+      "name": {
+        "zh": "筑基丹",
+        "en": "Foundation pill"
+      },
+      "art": "art/items/foundation-pill.svg",
+      "about": {
+        "zh": "练气圆满者服之，事半功倍。",
+        "en": "For one at the peak of Qi Condensation: twice the work for half the effort."
+      },
+      "buy": 200,
+      "sell": 50,
+      "sold": [
+        "冀"
+      ],
+      "effect": {
+        "progress": 40,
+        "table": "task"
+      }
     }
   ]
 }

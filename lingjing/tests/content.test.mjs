@@ -104,7 +104,7 @@ test('places: a road to nowhere, a road that does not come back, a tier off the 
   xu.places[2].tier = 9;
   prologue(c).scenes['00-river'].at = 'atlantis';
   const problems = lint(c);
-  assert.ok(has(problems, 'place sishui: road to atlantis, which is not a place of 徐'));
+  assert.ok(has(problems, 'place sishui: road to atlantis, which is not a place'));
   assert.ok(has(problems, 'place sishui: road to sibei does not come back'));
   assert.ok(has(problems, 'place pengcheng: tier 9 is not on the ladder'));
   assert.ok(has(problems, 'scene 00-river: at atlantis, which is not a place of 徐'));
@@ -146,4 +146,25 @@ test('a creature needs a root; a duel needs a known creature, a kind and its wit
   assert.ok(has(problems, 'unknown game kind tickle'));
   assert.ok(has(problems, 'duels unknown creature qilin'));
   assert.ok(has(problems, 'a duel needs a withdrawn line'));
+});
+
+test('a road may cross into another province; a breakthrough needs its line and a gated chapter', () => {
+  const c = fresh();
+  assert.ok(c.places['徐'].places.find(p => p.id === 'sibei').roads.includes('zhangnan'));
+  assert.deepEqual(lint(c), []);
+  const take = c.chapters['01-ji'].scenes['01-cauldron'].exits.find(e => e.id === 'take');
+  delete take.refuse;
+  c.chapters['01-ji'].gate = 99;
+  const problems = lint(c);
+  assert.ok(has(problems, 'a breakthrough needs a refusal line'));
+  assert.ok(has(problems, 'no tier on the ladder has gate 99'));
+});
+
+test('chapter 1 walks from the Zhang to the cauldron and ends', () => {
+  const ch = fresh().chapters['01-ji'];
+  assert.equal(ch.opens, '2026-10-01'); assert.equal(ch.gate, 1); assert.equal(ch.corridor, false);
+  const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
+  assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-ye@ye']);
+  assert.ok(ch.scenes['01-end'].exits.some(e => e.ends === '01-ji'));
+  assert.ok(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').breakthrough);
 });

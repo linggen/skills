@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "id": "01-arrive",
+  "chapter": "01-ji",
+  "at": "zhangnan",
+  "place": { "zh": "漳水南岸", "en": "South bank of the Zhang" },
+  "setup": {
+    "zh": "北上的路到漳水尽了。水是黄的，急的，对岸的城墙在雾里。一个渔人坐在船头，不肯开船。",
+    "en": "The road north ends at the Zhang. The water is yellow and fast; the far bank's wall stands in the mist. A fisherman sits in the bow and will not cast off."
+  },
+  "cast": ["yinyue"],
+  "show": [{ "card": "map", "goal": "冀", "here": "冀" }],
+  "lines": [
+    { "who": "yinyue", "text": { "zh": "在水底下。你听——它在呼吸。", "en": "It's under the water. Listen — it's breathing." } },
+    { "who": "ling", "text": { "zh": "渔人说：今晚河伯娶妇，谁也不过河。要过，去邺城等明天。", "en": "The fisherman says: tonight the River Lord takes his bride; no one crosses. If you must, go to Ye and wait for morning." } }
+  ],
+  "buttons": ["town", "water"],
+  "exits": [
+    {
+      "id": "town",
+      "label": { "zh": "去邺城", "en": "Go to Ye" },
+      "means": "goes to the town, follows the road, agrees to wait",
+      "beat": [
+        { "who": "ling", "text": { "zh": "你沿岸往北。邺城的城门上贴着一张新告示。", "en": "You follow the bank north. A fresh notice is pasted on the gate of Ye." } }
+      ],
+      "next": "01-ye"
+    },
+    {
+      "id": "water",
+      "label": { "zh": "下水看看", "en": "Wade in" },
+      "means": "tries to enter the river, swim, or reach the cauldron now",
+      "stay": true,
+      "beat": [
+        { "who": "ling", "text": { "zh": "水没到膝盖就把你往下拽。渔人一把拉你回来。", "en": "The water is at your knees and already pulling you down. The fisherman hauls you back." } },
+        { "who": "yinyue", "text": { "zh": "不是从这儿下去的。先去镇上问问。", "en": "Not from here. Let's ask in town first." } }
+      ]
+    },
+    {
+      "id": "ask",
+      "means": "asks the fisherman about the River Lord, the bride, or the town",
+      "stay": true,
+      "beat": [
+        { "who": "ling", "text": { "zh": "渔人压低声音：巫婆年年挑一个姑娘，穿了红衣送下水。河伯收了，一年不发水。", "en": "The fisherman lowers his voice: every year the sorceress picks a girl, dresses her in red and sends her into the water. The River Lord takes her, and the river keeps its banks a year." } }
+      ]
+    }
+  ]
+}
