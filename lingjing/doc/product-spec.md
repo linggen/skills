@@ -42,6 +42,15 @@ them sense the cauldrons.
 
 ## World
 
+- **Style: 修仙 · 凡人流.** The mortal with poor roots who climbs by
+  diligence; nine realms, 灵根, 灵石, 丹药, 宗门, 秘境 — the 道教 and genre
+  inheritance older than any novel. No name from any novel, ever.
+- **Worlds.** 《九鼎》 is the first world and the shape of every other; a
+  player starts inside a whole world, never builds first. A 山海经 world
+  comes next; 三国, 易经, 黄帝内经 later — same rules, same Ling.
+- **Open.** A province is places and roads, not a corridor. Wander; the
+  rules turn you back from what is too hard, kindly, and Ling keeps the
+  thread of the story in view.
 - **Sources:** China's public heritage only — 道教 cultivation terms,
   山海经, 佛教 parables, 周易, the dynasties. Never a novel's named
   characters, places or plot.

@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds and made scenes built (build order 1–9); next the catalog; the table (playing together) designed.
+status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds and made scenes built (build order 1–9); next worlds and places; the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -75,6 +75,38 @@ skills/lingjing/
     state.json · log.jsonl
   tests/
 ```
+
+## Worlds — the template is a whole game
+
+**Decided 2026-09-14** ("the template is not just one scene, it is a
+predefined game… a world"). A player never builds before playing: they
+start inside a world that is already whole. 《九鼎》 — everything in
+`content/` today — is the first world, and the example of the shape.
+
+- **Two layers.** A *world* is an authored pack: `world.json` (name, style,
+  sources, terms), its ladder (`realms.json` or its own), reward tables,
+  creatures with art, seeds, chapters, places. A *scene* is what Ling makes
+  at play time inside a world, from the world's own materials (§ Made
+  scenes). The harness — `rules.mjs`, the lint, the cards, SKILL.md — is
+  the same for every world and names none of them.
+- **Layout to come:** `content/` → `worlds/jiuding/`; the loader takes a
+  world id; `state.world` says which; the lint runs per world. A second
+  world — 山海经, where the game is the bestiary itself: find, picture,
+  tame, learn the line — is the first proof that the harness is general.
+  三国, 易经, 黄帝内经 later, each with its own boards and keys.
+- **Ling makes a world with the player, not in a turn.** A world is a few
+  hundred lines and pictures; the *world editor* is a conversation that
+  fills the folder shape, the lint checks it, and it plays tomorrow.
+- **Style: 修仙 · 凡人流 — no names from the book.** Decided 2026-09-14 ("use
+  凡人流 style, no names from the book"). The *system* is 道教 and genre
+  inheritance older than any novel — nine realms 练气 to 渡劫, 灵根 with
+  天灵根 and 伪灵根, 灵石, 丹药, 法器, 宗门, 秘境, 妖兽, the mortal with poor
+  roots who climbs by diligence — and 灵境 is built on it: four-root 伪灵根
+  for all, 灵石 counted in tens, a 坊市, a 宗门 to join. What is never used
+  is any named character, place, item, technique or plot of 《凡人修仙传》
+  (or any living author's novel): that is licensed IP, and the recognition
+  it would buy is exactly the part that cannot be had. The world card may
+  say the style; the lint's word list refuses the names.
 
 ## Content
 
@@ -273,6 +305,35 @@ picture, a price and one effect.
   item id, checked against the catalog.
 - **The lint:** every item pictured; every `needs.bag`, `gives.bag` and
   `grant.item` names a catalog item; a price never below its sell price.
+
+### The open world — places, roads, tiers, the director
+
+**Decided 2026-09-14** ("what you said about open world game is correct";
+the prologue stays a corridor and the world opens after 夫诸). A province
+is a map of places, not a chain of scenes.
+
+- **Places** — `places.json` per province, eight to twelve: 泗水岸, 彭城,
+  云龙山, 圯桥, 淮水渡口, the 坊市 … each with `roads` to neighbours, a
+  `tier` (the realm index it asks for), and what is there: a creature, a
+  seed pool, a shop, a spine scene when the chapter is open.
+- **`Move {place}` for real.** The rules check the road and the tier
+  against the player's realm. Too hard is refused in the world — *雾更浓了；
+  银月：还不是时候* — and the refusal carries a fitting place, so Yinyue's
+  "let's go back to the ford" is the rules' hint, spoken kindly. Nobody is
+  stuck; nobody is lectured. A lost fight costs nothing already.
+- **The spine as waypoints.** Chapter scenes attach to places; the player
+  reaches them by wandering. Ling holds the *thread* — the next waypoint —
+  and says it when the player idles. A sandbox without pull is aimless; the
+  thread is the pull.
+- **Ling as director.** Each turn Look carries a small *director's brief*:
+  what is near, what is too hard, the thread, the 丹田, today's seed. Ling
+  improvises inside it — a 奇遇 here, a creature there, a road mentioned —
+  and the rules still decide every outcome. A tabletop game master with a
+  prepared spine.
+- **Risk, named:** more freedom for Ling means more variance on a small
+  model. The brief stays tight; every refusal carries its line; a weak
+  model still lands on rails.
+- **Not built.** Comes with the catalog's 坊市 (a place) and chapter 1.
 
 ### Made scenes — the template, and Ling as the maker
 
@@ -817,14 +878,19 @@ Establishment, Core Formation, Nascent Soul).
 8. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
    the lint on seed creatures — the daily loop before more spine.
 9. Made scenes: the template, `Make` / `Enter` / `Leave`, the made lint. ✓
-10. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
+10. Worlds: `content/` → `worlds/jiuding/`, `world.json` with the style,
+    `state.world`, the loader by world id, the lint per world, the names
+    list.
+11. Places: `places.json` for 徐, `Move` for real, tiers and the fitting
+    place, the director's brief in Look, the map card by places.
+12. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
    scene, the `item` card, the lint.
-11. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
+13. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
    rule; the 夫诸 exit renamed `subdue`.
-12. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
-13. Server authority: `rules.mjs` in a Worker, content bundled, tools as
+14. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
+15. Server authority: `rules.mjs` in a Worker, content bundled, tools as
     endpoints, the save cloud-only — before any play where players compare.
-14. The table: the engine's shared chat, then the first set of plays; 传音 ·
+16. The table: the engine's shared chat, then the first set of plays; 传音 ·
     同修 · 论道 through the cloud.
 
 ## Open
