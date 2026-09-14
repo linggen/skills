@@ -204,6 +204,49 @@ days — is the game's real shape:
 A few minutes. The spine moves on the days a chapter opens; the seeds and
 the quests carry every other day.
 
+### Items — the catalog
+
+灵石 is money, and money needs things to buy. The bag already exists
+(`bag: {lingzhi: 1}`; exits `needs.bag` / `take.bag`; tasks `gives.bag`) —
+the prologue runs on an item. The catalog gives every item a name, a
+picture, a price and one effect.
+
+`content/items.json`:
+
+```json
+{ "id": "lingzhi", "kind": "material",
+  "name": { "zh": "灵芝", "en": "Lingzhi" }, "art": "art/items/lingzhi.webp",
+  "buy": 30, "sell": 10,
+  "effect": { "key": true } }
+{ "id": "qi-pill", "kind": "pill",
+  "name": { "zh": "聚气丹", "en": "Qi-gathering pill" }, "art": "…",
+  "buy": 80, "sell": 20,
+  "effect": { "xw": 20, "table": "puzzle" } }
+{ "id": "moon-bell", "kind": "artifact",
+  "name": { "zh": "银月铃", "en": "Silver-moon bell" }, "art": "…",
+  "buy": 200, "sell": 60,
+  "effect": { "wear": "yinyue" } }
+```
+
+- **Kinds:** 丹药 `pill` · 武器 `weapon` · 装备 `gear` · 法器 `artifact` ·
+  宝物 `treasure` · 钥匙 `key` · 材料 `material`. Kinds are for the shelf and
+  the card; they carry no rules of their own.
+- **Three effects, and no fourth.** A *key* is needed by an exit
+  (`needs.bag`); a *pill* pays 修为 on use, from a capped table; a *wear*
+  changes how Yinyue or the 洞府 looks (`state.wear`). **Never a number
+  that fights** — no attack, no defence, no durability. The game has no
+  combat; 斗法 is a board. A sword is a thing you own, show and sell.
+- **`Trade {action: buy | sell | use, id}`** — the rules check the 灵石, the
+  bag and the catalog price; Ling never names a price. `sell` is refused for
+  a key the story still needs (`key-in-use`).
+- **A 坊市 in each province** — a scene with a `shop` exit that stays; its
+  shelf is the catalog filtered by province. Ling shows the shelf with an
+  `item` card; the player says what they want.
+- **Rewards can be things:** an exit's `grant` or a task's `gives` names an
+  item id, checked against the catalog.
+- **The lint:** every item pictured; every `needs.bag`, `gives.bag` and
+  `grant.item` names a catalog item; a price never below its sell price.
+
 ## Player state
 
 `state.json`:
@@ -269,6 +312,7 @@ whole turn.
 | `Branch {action: open \| turn \| close, kind, xw, ls}` | Opens a 奇遇, counts its turns, pays within the branch cap on close. | `branch-open`, `branch-cap`, `no-branch` |
 | `Summarize {text}` | Replaces the story. | `too-long` |
 | `Move {province}` | Travels. | `road-closed` |
+| `Trade {action: buy \| sell \| use, id}` | Buys, sells or uses a catalog item at the catalog's price; `use` pays a pill's 修为 within its table. Not built. | `unknown-item`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
 | `Lang {lang}` | Switches zh / en. | — |
 
 `init --lang` starts a game, and `undo` restores the state before the last
@@ -282,9 +326,9 @@ one the chat was never told of; the page tells the chat `[scene] won <id>`. Env:
 `LINGJING_QUESTS`, `LINGJING_NOW`.
 
 Data tool — `Show {card, …}` (no `cmd`): its args reach the page as a
-`content_block` and render as a card — creature, task, board, map, hexagram,
-root test, chapter gate, tribulation. Choices are not cards: they go through
-AskUser.
+`content_block` and render as a card — creature, board, map, hexagram,
+root test, chapter gate, tribulation; `item` (a shelf or one thing) when the
+catalog comes. Choices are not cards: they go through AskUser.
 
 Prompt rules that ride in SKILL.md:
 
@@ -457,8 +501,39 @@ game server.
 - **What crosses:** the game's own state. From other apps, still only a
   quest's done and when — never Health or money data.
 - **The cost of rules at home:** a player who edits files can fake their own
-  progress. It matters only where players compare — a ranking, a duel
-  between two players — and the server judges those moments when they come.
+  progress — `state.json`, the catalog's prices, `rules.mjs` itself all sit
+  in their folder. It matters only where players compare — a ranking, a
+  duel, trade between players — and it costs nothing here: money never buys
+  power, so a cheat cheats only their own game.
+
+### The road to server authority
+
+**Decided 2026-09-14: rules at home for v1; the rules move to the cloud
+when players meet.** Trade between players, a ranking, or the table is the
+moment a cheat starts to hurt someone else — and the moment the rules leave
+the player's machine.
+
+What moves, and how little:
+
+- **`rules.mjs` runs in a Worker on linggen.dev.** It is pure and reads
+  content through one loader, so the move is mechanical: the same verbs,
+  the same JSON answers, the state read and written in D1 instead of a
+  file.
+- **Content is bundled into the site.** Chapters, seeds and the catalog
+  deploy on their date without a skill release — serialized chapters,
+  finally the way the spec says.
+- **The skill's tools become one endpoint call each,** the same names and
+  args, the account token as auth. SKILL.md changes only its `cmd:` lines;
+  Ling's rules do not change at all.
+- **The save lives only in the cloud;** `data/` on the machine becomes a
+  cache. The meter stays where it is.
+- **The scene still witnesses a board** — it reports the win to the site
+  instead of the file.
+
+What stays true now, so nothing built before then blocks it: rules pure and
+file-free inside; content through one loader; every tool one verb with one
+JSON answer; the page writes nothing but a win. Offline play is the price,
+already on the open list.
 
 ## Playing together — the table
 
@@ -603,9 +678,13 @@ Establishment, Core Formation, Nascent Soul).
    engine reports and asks, linggen.dev counts and keeps the save. ✓
 7. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
    the lint on seed creatures — the daily loop before more spine.
-8. Chapter 1 — 冀州, with its seeds and its creatures pictured.
-9. The table: the engine's shared chat, then the first set of plays; 传音 ·
-   同修 · 论道 through the cloud.
+8. The catalog: `content/items.json` for 徐, the `Trade` tool, the 坊市
+   scene, the `item` card, the lint.
+9. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市.
+10. Server authority: `rules.mjs` in a Worker, content bundled, tools as
+    endpoints, the save cloud-only — before any play where players compare.
+11. The table: the engine's shared chat, then the first set of plays; 传音 ·
+    同修 · 论道 through the cloud.
 
 ## Open
 

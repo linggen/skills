@@ -192,9 +192,16 @@ fast 修为 grows.**
 
 ## Economy
 
-- **灵石** are earned in play and buy 丹药, 洞府 upgrades, and 法器 cosmetics
-  for Yinyue.
+- **灵石** are earned in play and buy things from a catalog: 丹药, 武器,
+  装备, 法器, 宝物, 钥匙, 材料 — each with a picture and a price. Things also
+  come as task rewards, and sell back for 灵石.
+- **A thing does one of three things:** opens a way (a key the story needs),
+  pays 修为 when used (a pill), or changes how Yinyue or the 洞府 looks. Never
+  a fighting number — the game has no combat, so no stats, no durability.
 - **Money buys the Linggen plan,** never power.
+- **The rules run on the player's machine until players meet.** A cheat
+  fakes only their own game. Trade between players, a ranking or the table
+  moves the rules to the cloud first.
 
 ## Never does
 
