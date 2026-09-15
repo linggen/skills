@@ -479,3 +479,27 @@ td.num.pos { color: var(--pos); }
 .fcap i { position: absolute; right: 0; top: -14px; font-style: normal; font-size: 10px; color: var(--muted); }
 .fmonths { display: flex; gap: 4px; margin-top: 4px; }
 .fmonths span { flex: 1; text-align: center; font-size: 9.5px; color: var(--muted); }
+
+/* ── Investments ── */
+#inv-add { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+#inv-add input { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; width: 260px;
+  background: var(--panel); color: var(--ink); font: inherit; }
+.inv-summary { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin: 0 0 10px; }
+.inv-total b { font-size: 20px; margin-right: 6px; }
+.inv-row { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 8px; }
+.inv-main { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr) minmax(0, 1.3fr) auto;
+  gap: 12px; align-items: center; }
+.inv-id { min-width: 0; }
+.inv-name { color: var(--muted); }
+.inv-sub { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inv-price, .inv-hold { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.inv-hold { text-align: right; }
+.inv-move { font-size: 12px; margin-left: 4px; }
+.inv-move.pos { color: var(--pos); }
+.inv-move.neg { color: var(--neg); }
+.inv-menu, .inv-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  border-top: 1px dashed var(--line); margin-top: 9px; padding-top: 9px; font-size: 13px; }
+.inv-form label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.inv-form input { width: 110px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--ink); font: inherit; }

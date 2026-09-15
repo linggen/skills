@@ -7,21 +7,27 @@ Mac; no Linggen Cloud, no data-provider key.
 
 ## Data (data/)
 
-- `investments.json` — `watchlist[] {symbol, exchange: US|TSX, name}` and
-  `holdings[] {symbol, shares, avg_cost, account?}` (account = free label:
-  TFSA, RRSP, Margin…). A holding is always on the watchlist. Page writes it
-  via /api/bash, same as corrections.
-- `quotes.json` — per symbol `{price, change, change_pct, currency, pe,
-  forward_pe, market_cap, earnings_date, as_of, source}`.
+- Holdings are register cells in `edits.json`: `inv:<symbol>|watch` (true),
+  `|shares`, `|avg_cost`, `|account` (free label: TFSA, RRSP, Margin…). Symbol
+  is `AAPL` (US) or `RY.TO` (TSX). One cell per field, so the phone merges them.
+- `investments.json` — the agent's copy, written by the page after every edit
+  and refresh: `{updated_at, holdings[{symbol, name, shares, avg_cost, account,
+  currency, price, value, gain, gain_pct}], watchlist[symbol]}`.
+- `quotes.json` — `{symbols: {SYM: {price, change, change_pct, prev_close,
+  high_52w, low_52w, market, price_time, name, kind, pe, forward_pe,
+  market_cap, earnings_date, earnings_on, dividend, dividend_yield, aum,
+  expense_ratio, cik, quote_at, stats_at}}}`.
 - `reports.json` — per symbol `[{period, form, filed, url, summary,
   saved_at}]`, plus `last_checked`.
 
-## Market tool (scripts/market.sh — zero LLM)
+## Market tool (scripts/market.pl — zero LLM, Perl core + curl)
 
-- `quotes <symbols>` — price and day change. `stats <symbols>` — P/E, forward
-  P/E, market cap, earnings date. Source: stockanalysis.com (US
-  `/stocks/<sym>/`, TSX `/quote/tsx/<SYM>/`). Merges into `quotes.json`,
-  prints JSON.
+- `quotes <symbols>` — price and day change, from
+  `stockanalysis.com/api/quotes/{s|e}/<sym>` (US stock, then ETF) or
+  `a/tsx-<sym>`. `stats [--fresh] <symbols>` — name, kind, P/E, forward P/E,
+  market cap, earnings date, ETF expense ratio, from the overview page's
+  `__data.json` (SvelteKit devalue), cached 20 h. Merges into `quotes.json`
+  under a lock, prints JSON.
 - `reports-check` — US: SEC EDGAR submissions (ticker → CIK from
   `company_tickers.json`, cached) for 10-Q, 10-K and 8-K item 2.02 filed after
   `last_checked`. TSX: `earnings_date` passed with no stored report for that
@@ -32,9 +38,10 @@ Mac; no Linggen Cloud, no data-provider key.
 ## UI (cfo.html / cfo.js — no new page)
 
 - New tab `data-view="invest"` **Investments**, same pattern as Commitments.
-- List: symbol, name, price, day change; holdings add value and gain, with a
-  total row on top. Add by ticker; edit shares / avg cost / account inline;
-  remove from the row's ⋯ menu.
+- List: symbol, name, a P/E · Fwd P/E · Earnings line, price, day change;
+  holdings add value and gain, with totals per currency on top. Add by ticker;
+  edit shares / avg cost / account inline; remove from the row's ⋯ menu
+  (right-click opens the same menu). Page module `investments.js`.
 - Refresh: quotes on open and every 5 min while the tab is visible; stats
   daily.
 - Company card (click a row): the numbers, next earnings date, report
@@ -85,8 +92,8 @@ Mac; no Linggen Cloud, no data-provider key.
 
 1. ~~Engine: skill missions (discovery, user-owned enabled/schedule, skill
    tools in the run)~~ — built, linggen `998793f`
-2. `market.sh` quotes/stats + `investments.json` + the tab (list, add/edit,
-   refresh)
+2. ~~`market.pl` quotes/stats + holdings cells + the tab (list, add/edit,
+   refresh)~~ — built
 3. Company card + `reports-check` + `SaveReport` + both report buttons
 4. SKILL.md tools; advice rule removed
 5. `missions/reports` + the settings switch

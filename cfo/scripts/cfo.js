@@ -10,6 +10,7 @@ import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, de
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy } from './lww.js';
+import { initInvestments, renderInvestView, leaveInvestView } from './investments.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -1045,18 +1046,22 @@ function applyVisibility() {
   const txn = VIEW_MODE === 'txn';
   const commit = VIEW_MODE === 'commit';
   const trends = VIEW_MODE === 'trends';
-  const away = txn || commit || trends;
+  const invest = VIEW_MODE === 'invest';
+  const away = txn || commit || trends || invest;
+  const ownData = txn || commit || invest; // tabs that never show the import empty-state
   document.getElementById('txn').hidden = !txn;
   document.getElementById('commit').hidden = !commit;
+  document.getElementById('invest').hidden = !invest;
   document.getElementById('trends').hidden = !trends || !LEDGER.length;
   document.getElementById('report').hidden = away || !LEDGER.length;
   // Trends with no data falls through to the import empty-state.
-  document.getElementById('empty-state').hidden = (txn || commit) || LEDGER.length > 0;
+  document.getElementById('empty-state').hidden = ownData || LEDGER.length > 0;
   document.getElementById('insights-wrap').hidden = away || (!LEDGER.length && !INSIGHTS.length);
   // Report and Trends both read RANGE, so the control belongs to both. It has
-  // no meaning on Transactions (its own filters) or Commitments (always full
-  // history — a cadence can't be seen through a one-month window).
-  document.getElementById('range-bar').hidden = (txn || commit) || !LEDGER.length;
+  // no meaning on Transactions (its own filters), Commitments (always full
+  // history — a cadence can't be seen through a one-month window) or
+  // Investments (prices, not statements).
+  document.getElementById('range-bar').hidden = ownData || !LEDGER.length;
   renderSuggestions(); // Review card (Report tab only) — self-hides when empty
 }
 
@@ -1067,6 +1072,7 @@ function switchView(mode) {
   applyVisibility();
   if (mode === 'txn') renderTxnView();
   if (mode === 'commit') renderCommitView();
+  if (mode === 'invest') renderInvestView(); else leaveInvestView();
 }
 
 function refreshView() {
@@ -2415,6 +2421,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   wireTooltip();
+  initInvestments({
+    runBash, readJson, writeB64, esc, saveEdits,
+    edits: () => EDITS,
+    confirm: confirmDialog,
+    data: DATA,
+  });
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
   document.getElementById('help-btn')?.addEventListener('click', showHelp);
 

@@ -18,6 +18,7 @@
           <button class="tab" data-view="trends">Trends</button>
           <button class="tab" data-view="txn">Transactions</button>
           <button class="tab" data-view="commit">Commitments</button>
+          <button class="tab" data-view="invest">Investments</button>
         </nav>
         <button id="help-btn" class="chip" title="How to use Personal CFO">Help</button>
         <select id="currency-sel" class="chip" title="Display currency"></select>
@@ -112,6 +113,17 @@
       <section id="commit" hidden>
         <div id="commit-head"></div>
         <div id="commit-groups"></div>
+      </section>
+      <!-- Investments: watchlist + holdings, numbers from scripts/market.pl.
+           Page-owned, no LLM (investments.js). -->
+      <section id="invest" hidden>
+        <form id="inv-add" autocomplete="off">
+          <input id="inv-symbol" placeholder="Ticker — AAPL, or RY.TO for TSX" spellcheck="false">
+          <button class="btn" type="submit">Add</button>
+          <span id="inv-add-msg" class="hint inline"></span>
+        </form>
+        <div id="inv-summary"></div>
+        <div id="inv-list"></div>
       </section>
       <div id="scope-pop" hidden></div>
     </main>
