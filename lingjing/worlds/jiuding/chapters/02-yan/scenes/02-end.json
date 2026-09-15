@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "id": "02-end",
+  "chapter": "02-yan",
+  "at": "leiyuan",
+  "place": {
+    "zh": "雷泽 · 天明",
+    "en": "Lake Lei · Daybreak"
+  },
+  "setup": {
+    "zh": "水合上了。雷泽安静得能听见桑叶落。大野泽的鱼沉回水里，渡工的船开了。",
+    "en": "The water closes. Lake Lei is so quiet you can hear a mulberry leaf fall. The fish of Daye sink back into the water; the ferries sail."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "show": [
+    {
+      "card": "map",
+      "goal": "青",
+      "here": "兖"
+    }
+  ],
+  "lines": [
+    {
+      "who": "ling",
+      "text": {
+        "zh": "第三鼎的气息在东边——青州，海岱之间。",
+        "en": "The third cauldron's breath lies east — Qing, between the sea and Mount Tai."
+      }
+    }
+  ],
+  "buttons": [
+    "rest"
+  ],
+  "exits": [
+    {
+      "id": "rest",
+      "label": {
+        "zh": "今日到此",
+        "en": "Rest for today"
+      },
+      "means": "rests, ends the chapter, asks what comes next",
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "今日到此为止。青州的路，开的时候我会告诉你。",
+            "en": "That is all for today. When the road to Qing opens, I will tell you."
+          }
+        }
+      ],
+      "ends": "02-yan"
+    }
+  ]
+}

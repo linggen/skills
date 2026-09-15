@@ -81,6 +81,60 @@
         "zh": "灵境所绘",
         "en": "Drawn in Lingjing"
       }
+    },
+    {
+      "id": "leishen",
+      "name": {
+        "zh": "雷神",
+        "en": "The Thunder God"
+      },
+      "source": {
+        "zh": "《山海经 · 海内东经》",
+        "en": "Classic of Mountains and Seas — Within the Seas, East"
+      },
+      "quote": {
+        "zh": "雷泽中有雷神，龙身而人头，鼓其腹。在吴西。",
+        "en": "In Lake Lei there is a Thunder God, with a dragon's body and a man's head; it drums on its belly. It lies west of Wu."
+      },
+      "look": {
+        "zh": "龙的身子，人的头，两只手拍着自己的肚子；每拍一下，天上响一声雷。",
+        "en": "A dragon's body and a man's head, both hands beating its own belly; every beat, a crack of thunder in the sky."
+      },
+      "province": "兖",
+      "root": "wood",
+      "art": "art/leishen.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a dragon-bodied, man-headed god standing in a white lake, beating its belly, lightning in a cloudless sky. No classical plate is kept: the Ming and Qing 山海经 editions draw the entry as a plain dragon-man, and the text alone was the model.",
+      "art_caption": {
+        "zh": "灵境所绘",
+        "en": "Drawn in Lingjing"
+      }
+    },
+    {
+      "id": "longzhi",
+      "name": {
+        "zh": "蠪侄",
+        "en": "Longzhi"
+      },
+      "source": {
+        "zh": "《山海经 · 东次二经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains, second sequence"
+      },
+      "quote": {
+        "zh": "凫丽之山……有兽焉，其状如狐，而九尾、九首、虎爪，名曰蠪侄，其音如婴儿，是食人。",
+        "en": "On Mount Fuli there is a beast like a fox, with nine tails, nine heads and a tiger's claws, called Longzhi; it sounds like an infant, and it eats people."
+      },
+      "look": {
+        "zh": "狐的身子，九条尾巴，九个头，虎的爪子；叫起来像婴儿哭。",
+        "en": "A fox's body with nine tails, nine heads and a tiger's claws; its cry is an infant's."
+      },
+      "province": "兖",
+      "root": "metal",
+      "art": "art/longzhi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a nine-headed, nine-tailed fox with tiger's claws among mountain rocks. No classical plate is kept; the text alone was the model.",
+      "art_caption": {
+        "zh": "灵境所绘",
+        "en": "Drawn in Lingjing"
+      }
     }
   ]
 }

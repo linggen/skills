@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "province": "兖",
+  "_about": "奇遇 seeds for 兖 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "yan-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "濮水边一个钓鱼的老人，两个穿官服的人在他身后站了三天。",
+        "en": "An old man fishing on the Pu; two men in official robes have stood behind him three days."
+      },
+      "source": {
+        "zh": "《庄子·秋水》：庄子钓于濮水，楚王使大夫二人往先焉。",
+        "en": "Zhuangzi, Autumn Floods: Zhuangzi fished on the Pu, and the King of Chu sent two ministers to him."
+      }
+    },
+    {
+      "id": "yan-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "桑林里有人唱歌，唱的是几百年前的曲子。",
+        "en": "Someone is singing in the mulberries, a tune from centuries ago."
+      },
+      "source": {
+        "zh": "《礼记·乐记》：桑间濮上之音。",
+        "en": "Book of Rites: the airs of Sangjian on the Pu."
+      }
+    },
+    {
+      "id": "yan-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "雷泽的渔人把最好的位置让给了你。",
+        "en": "A fisherman at Lake Lei gives you the best spot."
+      },
+      "source": {
+        "zh": "《史记·五帝本纪》：舜渔雷泽，雷泽上人皆让居。",
+        "en": "Records of the Grand Historian: Shun fished at Lake Lei, and the people of the lake yielded their places to one another."
+      }
+    },
+    {
+      "id": "yan-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "泽边泥上有一个大脚印，比人的长三倍。",
+        "en": "On the mud by the lake, a footprint three times the length of a man's."
+      },
+      "source": {
+        "zh": "《帝王世纪》：华胥履大人迹于雷泽，生伏羲。",
+        "en": "Diwang Shiji: Huaxu stepped in a giant's footprint at Lake Lei and bore Fuxi."
+      }
+    },
+    {
+      "id": "yan-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "定陶的商人说，他家祖上三次散尽家财，三次又富起来。",
+        "en": "A merchant of Dingtao says his ancestor gave away three fortunes and made three more."
+      },
+      "source": {
+        "zh": "《史记·货殖列传》：范蠡止于陶，三致千金，再分散与贫交疏昆弟。",
+        "en": "Records of the Grand Historian: Fan Li settled at Tao, thrice made a thousand gold, and gave it to the poor and his kin."
+      }
+    },
+    {
+      "id": "yan-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "大野泽的猎人捕到一只从没见过的兽，独角，蹄子是马的。",
+        "en": "Hunters at Daye have taken a beast no one has seen: one horn, a horse's hooves."
+      },
+      "source": {
+        "zh": "《春秋·哀公十四年》：西狩获麟。",
+        "en": "Spring and Autumn Annals, Duke Ai year 14: in the western hunt a unicorn was taken."
+      }
+    },
+    {
+      "id": "yan-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "凫丽山里有婴儿在哭。山里没有人家。",
+        "en": "Infants crying on Mount Fuli. There are no homes in those hills."
+      },
+      "source": {
+        "zh": "《山海经·东次二经》：蠪侄，其音如婴儿，是食人。",
+        "en": "Classic of Mountains and Seas: Longzhi, whose cry is an infant's, eats people."
+      },
+      "creature": "longzhi"
+    },
+    {
+      "id": "yan-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "泽上白光一夜没灭，雷声却是从水底来的。",
+        "en": "White light over the lake all night, and the thunder comes from under the water."
+      },
+      "source": {
+        "zh": "《山海经·海内东经》：雷泽中有雷神，龙身而人头，鼓其腹。",
+        "en": "Classic of Mountains and Seas: in Lake Lei is a Thunder God, dragon-bodied, man-headed, drumming its belly."
+      },
+      "creature": "leishen"
+    },
+    {
+      "id": "yan-09",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一株空心的桑树，树洞里有个婴儿在睡。",
+        "en": "A hollow mulberry, and in the hollow an infant asleep."
+      },
+      "source": {
+        "zh": "《吕氏春秋·本味》：伊尹生于空桑。",
+        "en": "Lüshi Chunqiu: Yi Yin was born in the hollow mulberry."
+      }
+    },
+    {
+      "id": "yan-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "济水从地下走了一段，又冒出来。",
+        "en": "The Ji River goes underground for a stretch and rises again."
+      },
+      "source": {
+        "zh": "济水三伏三见，四渎之一。",
+        "en": "The Ji sinks three times and rises three times, one of the Four Great Rivers."
+      }
+    },
+    {
+      "id": "yan-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "雨停了，泽水退了，露出一片黑土地。",
+        "en": "The rain stops, the marsh drains, and black earth shows."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：雷夏既泽，灉沮会同。",
+        "en": "Book of Documents, Tribute of Yu: Leixia became a marsh; the Yong and Ju joined it."
+      }
+    },
+    {
+      "id": "yan-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "濮阳的老人说，从前的国君养鹤，鹤坐大夫的车。",
+        "en": "Old men of Puyang say a duke once kept cranes, and the cranes rode in ministers' carriages."
+      },
+      "source": {
+        "zh": "《左传·闵公二年》：卫懿公好鹤，鹤有乘轩者。",
+        "en": "Zuo Zhuan: Duke Yi of Wei loved cranes; some cranes rode in carriages of state."
+      }
+    },
+    {
+      "id": "yan-13",
+      "kind": "province-tale",
+      "line": {
+        "zh": "城濮的旧战场，有人说晋军先退了三舍。",
+        "en": "At the old battlefield of Chengpu, they say the army of Jin first withdrew three days' march."
+      },
+      "source": {
+        "zh": "《左传·僖公二十八年》：退避三舍，城濮之战。",
+        "en": "Zuo Zhuan: withdrawing three stages; the battle of Chengpu."
+      }
+    },
+    {
+      "id": "yan-14",
+      "kind": "province-tale",
+      "line": {
+        "zh": "耿山上有一只狐狸，背上长着鱼的鳍。",
+        "en": "A fox on Mount Geng with a fish's fins on its back."
+      },
+      "source": {
+        "zh": "《山海经·东次二经》：耿山有兽，状如狐而鱼翼，名曰朱獳，见则其国有恐。",
+        "en": "Classic of Mountains and Seas: on Mount Geng a beast like a fox with fish's fins, called Zhuru; where it is seen, the state is in fear."
+      }
+    },
+    {
+      "id": "yan-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "余峨山的猎户说，山里的兔子长着鸟嘴。",
+        "en": "Hunters of Mount Yu'e say the hares there have birds' beaks."
+      },
+      "source": {
+        "zh": "《山海经·东次二经》：余峨之山有兽，状如菟而鸟喙，名曰犰狳，见则螽蝗为败。",
+        "en": "Classic of Mountains and Seas: on Mount Yu'e a beast like a hare with a bird's beak, called Qiuyu; where it is seen, locusts ruin the crops."
+      }
+    },
+    {
+      "id": "yan-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "九条河在这儿分开，又在海边合上。",
+        "en": "Nine rivers part here and meet again by the sea."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：九河既道。",
+        "en": "Book of Documents: the nine rivers were led to their courses."
+      }
+    },
+    {
+      "id": "yan-17",
+      "kind": "night-tale",
+      "line": {
+        "zh": "客栈的灯下，一个渡工说，他昨夜听见湖底有人数数，数到九就停。",
+        "en": "Under the inn's lamp a ferryman says he heard someone counting under the lake last night, and it stopped at nine."
+      },
+      "source": {
+        "zh": "雷泽之雷。",
+        "en": "The thunder of Lake Lei."
+      }
+    },
+    {
+      "id": "yan-18",
+      "kind": "night-tale",
+      "line": {
+        "zh": "夜里桑林中有歌声，走近了却只有风。",
+        "en": "Singing in the mulberries at night; up close, only wind."
+      },
+      "source": {
+        "zh": "桑间濮上。",
+        "en": "Sangjian on the Pu."
+      }
+    },
+    {
+      "id": "yan-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "定陶的商人夜里点灯算账，算到第三遍把账本烧了。",
+        "en": "A Dingtao merchant does his accounts by lamplight, and on the third pass burns the book."
+      },
+      "source": {
+        "zh": "陶朱公三散家财。",
+        "en": "Lord Tao gave away three fortunes."
+      }
+    },
+    {
+      "id": "yan-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "大野泽的雾里，有蹄声，不是马。",
+        "en": "Hoofbeats in the mist over Daye. Not a horse."
+      },
+      "source": {
+        "zh": "西狩获麟。",
+        "en": "The unicorn of the western hunt."
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "02-yan",
+  "opens": "2026-11-01",
+  "province": "兖",
+  "corridor": false,
+  "first_scene": "02-arrive",
+  "gate": 2,
+  "title": {
+    "zh": "第二章 · 兖州之鼎",
+    "en": "Chapter 2 · The Cauldron of Yan"
+  },
+  "summary": {
+    "zh": "东南入兖州。雷泽的雷四十天没有停，大野泽的鱼浮满岸。雷不是天上来的，是水里来的——鼎在雷神底下醒了。安抚雷神，破开河图之封，第二鼎归来——筑基圆满者，在此结丹。",
+    "en": "South-east into Yan. The thunder over Lake Lei has not stopped in forty days, and the fish of Daye float to the shore. The thunder is not from the sky but from the water: a cauldron has woken beneath the Thunder God. Quiet the god, break the seal of the River Chart, and the second cauldron returns — one at the peak of Foundation forms their Core here."
+  }
+}

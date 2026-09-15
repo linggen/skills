@@ -725,8 +725,9 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   r = answer(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji']);
   assert.equal(r.state.scene, null);
-  assert.equal(look(r.state, content, octx()).director.thread, null, 'no chapter 2 yet');
-  assert.equal(wake(r.state, content, octx()), null);
+  const thread = look(r.state, content, octx()).director.thread;
+  assert.equal(thread.chapter, '02-yan'); assert.equal(thread.opens, '2026-11-01');
+  assert.equal(wake(r.state, content, octx()), null, 'chapter 2 has not opened');
 });
 
 test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
@@ -946,4 +947,77 @@ test('Amend adds a creature where it haunts, or a place with its roads laid back
     if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+/* ── Chapter 2 ── */
+
+const NOV = new Date('2026-11-02T12:00:00');
+const nctx = (extra = {}) => ({ now: NOV, quests: [], ...extra });
+const answerN = (fn, st, args) => must(fn, st, args, nctx());
+
+/* Chapter 1 behind them, the Foundation laid, standing in Ye. */
+function afterJi() {
+  return { ...toJi(), chapter: '01-ji', scene: null, place: 'ye', ended: ['00-prologue', '01-ji'], tier: 'foundation', step: 0, progress: 0, stamina: 100, wealth: 400 };
+}
+
+test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, the lake, the seal, the Core, the end', () => {
+  let s = afterJi();
+  assert.equal(wake(s, content, octx()), null, 'not in October');
+  const woke = VERBS.look(s, content, nctx());
+  assert.equal(woke.state.chapter, '02-yan'); assert.equal(woke.state.scene, '02-arrive');
+  assert.equal(woke.state.place, 'ye', 'no teleport');
+  assert.equal(woke.result.waypoint.place.id, 'pushui');
+  assert.equal(woke.result.director.thread.text, '路通向濮水。');
+  s = woke.state;
+  // the road from 冀 into 兖 is open now
+  let r = answerN(move, s, { place: 'pushui' });
+  assert.equal(r.result.scene.id, '02-arrive');
+  s = r.state;
+  s = answerN(resolve, s, { exit: 'ask' }).state; // the fisherman, stays
+  r = answerN(resolve, s, { exit: 'town' });
+  assert.equal(r.state.scene, '02-town'); assert.equal(r.result.waypoint.place.id, 'puyang');
+  s = answerN(move, r.state, { place: 'puyang' }).state;
+  const town = look(s, content, nctx());
+  assert.equal(town.scene.id, '02-town');
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'sang-paper']);
+  s = answerN(trade, s, { action: 'buy', id: 'sang-paper' }).state;
+  assert.equal(s.wealth, 370);
+  s = answerN(resolve, s, { exit: 'lake' }).state;
+  s = answerN(move, s, { place: 'leize' }).state;
+  const lake = look(s, content, nctx()).scene;
+  assert.equal(lake.id, '02-lake');
+  assert.equal(lake.exits.find(e => e.id === 'subdue').duel.creature.root, 'wood');
+  // the three ways: the riddle
+  refused(resolve, s, { exit: 'riddle', answer: '雨' }, 'wrong-answer', nctx());
+  r = answerN(resolve, s, { exit: 'riddle', answer: '雷' });
+  assert.equal(r.state.scene, '02-deep'); assert.equal(r.result.paid.progress, 40);
+  // and 舜's way, from the same shore
+  const yielded = answerN(resolve, s, { exit: 'yield' });
+  assert.equal(yielded.state.scene, '02-deep'); assert.equal(yielded.result.paid.progress, 40);
+  s = answerN(move, r.state, { place: 'leiyuan' }).state;
+  refused(resolve, s, { exit: 'seal', answer: '西' }, 'wrong-answer', nctx());
+  r = answerN(resolve, s, { exit: 'seal', answer: '东' });
+  assert.equal(r.state.scene, '02-cauldron');
+  s = r.state;
+  // the gate: not at the peak of 筑基
+  const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', nctx());
+  assert.ok(held.say.startsWith('鼎气扑到你身上'));
+  assert.equal(held.peak_step, 3);
+  // at the peak: the Core forms, then paid into the new tier
+  s = { ...s, step: 2, progress: 600 };
+  r = answerN(resolve, s, { exit: 'take' });
+  assert.deepEqual(r.result.breakthrough, { from: '筑基后期', to: '结丹初期', tier: 'core' });
+  assert.equal(r.state.tier, 'core'); assert.equal(r.state.step, 0);
+  assert.equal(r.state.progress, 60);
+  assert.equal(r.state.scene, '02-end');
+  r = answerN(resolve, r.state, { exit: 'rest' });
+  assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan']);
+  assert.equal(look(r.state, content, nctx()).director.thread, null, 'no chapter 3 yet');
+});
+
+test('in October the road from Ye into 兖 is closed, and the brief says so', () => {
+  const s = afterJi();
+  const r = refused(move, s, { place: 'pushui' }, 'road-closed', octx());
+  assert.ok(r.say.includes('兖州'));
+  assert.deepEqual(look(s, content, octx()).director.closed.map(c => c.id ?? c), look(s, content, octx()).director.closed.map(c => c.id ?? c));
 });

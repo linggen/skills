@@ -24,6 +24,21 @@
         "5"
       ],
       "hint": "The Luo River square — every line makes fifteen."
+    },
+    "lei-1": {
+      "q": "It roars without a mouth and runs without feet, and it comes with the rain. What is it?",
+      "a": [
+        "thunder"
+      ],
+      "hint": "Listen to the lake."
+    },
+    "seal-yan": {
+      "q": "The River Chart: one and six in the north, two and seven in the south, four and nine in the west, five and ten at the heart. Where do three and eight sit?",
+      "a": [
+        "east",
+        "the east"
+      ],
+      "hint": "Where wood is born, and spring comes from."
     }
   }
 }

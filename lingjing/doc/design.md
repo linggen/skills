@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
+status: 2026-09-15 — chapter 2 (兖, opens 2026-11-01) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -77,6 +77,7 @@ skills/lingjing/
     branches.json          奇遇 templates and the daily cap
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json — the corridor
     chapters/01-ji/        the same — waypoints; opens 2026-10-01, gate 1
+    chapters/02-yan/       the same; opens 2026-11-01, gate 2 (筑基 → 结丹)
   data/                    this player; never in the repo — the cloud save mirrors it
     state.json · log.jsonl
   tests/
@@ -561,6 +562,20 @@ is a map of places, not a chain of scenes.
   carries `breakthrough {from, to, tier}` and the exit shows the tribulation
   card. The lint: a breakthrough needs its line and a gated chapter whose
   gate a tier carries.
+
+- **Chapter 2 built 2026-09-15 —** 《兖州之鼎》 (`chapters/02-yan/`, opens
+  2026-11-01, gate 2): the same shape as chapter 1, six scenes at four
+  places of 兖 — the Pu with its fisherman who chose the mud (庄子), Puyang
+  and its market inside the Mulberry Gate, 雷泽 where 雷神 (龙身人头，鼓其腹)
+  beats a drum it cannot stop because the cauldron woke beneath it (fight
+  it, its root wood; answer its riddle 雨落田上 = 雷; or yield the shore as
+  舜's lake-folk did), the deeps with the 河图 seal (三八 belong in the east),
+  the cauldron where the peak of 筑基 forms the Core and Yinyue's second
+  memory surfaces (the hand had a cauldron's pattern and counted to nine),
+  the end pointing east to 青. `places/yan.json` (nine, 濮水 the start; the
+  road in is from 邺城), `seeds/yan.json` (twenty), 雷神 and 蠪侄 painted by
+  FLUX, two riddles, 固基丹 and 桑皮纸 sold in 兖. Chapter 1's closing
+  thread now names chapter 2 and its day.
 
 ### Made scenes — the template, and Ling as the maker
 

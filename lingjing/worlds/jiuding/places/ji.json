@@ -6,75 +6,178 @@
   "places": [
     {
       "id": "zhangnan",
-      "name": { "zh": "漳水南岸", "en": "South bank of the Zhang" },
+      "name": {
+        "zh": "漳水南岸",
+        "en": "South bank of the Zhang"
+      },
       "tier": 0,
-      "roads": ["sibei", "ye", "hebo"],
-      "has": { "seeds": true, "scene": "01-arrive" },
-      "line": { "zh": "漳水浑黄，北去是邺城。水底有什么在呼吸。", "en": "The Zhang runs yellow; north of it lies Ye. Something under the water is breathing." }
+      "roads": [
+        "sibei",
+        "ye",
+        "hebo"
+      ],
+      "has": {
+        "seeds": true,
+        "scene": "01-arrive"
+      },
+      "line": {
+        "zh": "漳水浑黄，北去是邺城。水底有什么在呼吸。",
+        "en": "The Zhang runs yellow; north of it lies Ye. Something under the water is breathing."
+      }
     },
     {
       "id": "ye",
-      "name": { "zh": "邺城", "en": "Ye" },
+      "name": {
+        "zh": "邺城",
+        "en": "Ye"
+      },
       "tier": 0,
-      "roads": ["zhangnan", "hebo", "taihang"],
-      "has": { "shop": true, "scene": "01-ye" },
-      "line": { "zh": "漳水边的城。城门贴着告示，坊市在东街。", "en": "The city on the Zhang. A notice on the gate; the market on East Street." }
+      "roads": [
+        "zhangnan",
+        "hebo",
+        "taihang",
+        "pushui"
+      ],
+      "has": {
+        "shop": true,
+        "scene": "01-ye"
+      },
+      "line": {
+        "zh": "漳水边的城。城门贴着告示，坊市在东街。",
+        "en": "The city on the Zhang. A notice on the gate; the market on East Street."
+      }
     },
     {
       "id": "hebo",
-      "name": { "zh": "河伯祠", "en": "The River Lord's shrine" },
+      "name": {
+        "zh": "河伯祠",
+        "en": "The River Lord's shrine"
+      },
       "tier": 0,
-      "roads": ["zhangnan", "ye", "zhangyuan"],
-      "has": { "creature": "paoxiao", "scene": "01-altar" },
-      "line": { "zh": "祠在水边，香灰堆得很高。年年有新娘从这里下水。", "en": "A shrine at the water's edge, ash piled high. Every year a bride walks in from here." }
+      "roads": [
+        "zhangnan",
+        "ye",
+        "zhangyuan"
+      ],
+      "has": {
+        "creature": "paoxiao",
+        "scene": "01-altar"
+      },
+      "line": {
+        "zh": "祠在水边，香灰堆得很高。年年有新娘从这里下水。",
+        "en": "A shrine at the water's edge, ash piled high. Every year a bride walks in from here."
+      }
     },
     {
       "id": "zhangyuan",
-      "name": { "zh": "漳渊", "en": "The Zhang deeps" },
+      "name": {
+        "zh": "漳渊",
+        "en": "The Zhang deeps"
+      },
       "tier": 0,
-      "roads": ["hebo"],
-      "has": { "scene": "01-deep" },
-      "line": { "zh": "祠后的水最深，船家不肯去。鼎的气息从这里升上来。", "en": "The deepest water lies behind the shrine; no boatman will go. The cauldron's breath rises from here." }
+      "roads": [
+        "hebo"
+      ],
+      "has": {
+        "scene": "01-deep"
+      },
+      "line": {
+        "zh": "祠后的水最深，船家不肯去。鼎的气息从这里升上来。",
+        "en": "The deepest water lies behind the shrine; no boatman will go. The cauldron's breath rises from here."
+      }
     },
     {
       "id": "taihang",
-      "name": { "zh": "太行山口", "en": "The Taihang pass" },
+      "name": {
+        "zh": "太行山口",
+        "en": "The Taihang pass"
+      },
       "tier": 0,
-      "roads": ["ye", "fajiu", "zhuolu", "hengshan"],
-      "has": { "seeds": true },
-      "line": { "zh": "太行八陉之一。山那边是并州，山这边是冀。", "en": "One of the eight passes of the Taihang. Bing lies beyond the mountains; Ji on this side." }
+      "roads": [
+        "ye",
+        "fajiu",
+        "zhuolu",
+        "hengshan"
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "太行八陉之一。山那边是并州，山这边是冀。",
+        "en": "One of the eight passes of the Taihang. Bing lies beyond the mountains; Ji on this side."
+      }
     },
     {
       "id": "fajiu",
-      "name": { "zh": "发鸠山", "en": "Mount Fajiu" },
+      "name": {
+        "zh": "发鸠山",
+        "en": "Mount Fajiu"
+      },
       "tier": 1,
-      "roads": ["taihang", "jieshi"],
-      "has": { "creature": "jingwei", "seeds": true },
-      "line": { "zh": "山上多柘木。一只花头白喙的鸟，衔着石子往东飞。", "en": "Cudrania trees cover the hill. A bird with a patterned head and white beak flies east with a pebble in its beak." }
+      "roads": [
+        "taihang",
+        "jieshi"
+      ],
+      "has": {
+        "creature": "jingwei",
+        "seeds": true
+      },
+      "line": {
+        "zh": "山上多柘木。一只花头白喙的鸟，衔着石子往东飞。",
+        "en": "Cudrania trees cover the hill. A bird with a patterned head and white beak flies east with a pebble in its beak."
+      }
     },
     {
       "id": "zhuolu",
-      "name": { "zh": "涿鹿之野", "en": "The field of Zhuolu" },
+      "name": {
+        "zh": "涿鹿之野",
+        "en": "The field of Zhuolu"
+      },
       "tier": 1,
-      "roads": ["taihang"],
-      "has": { "seeds": true },
-      "line": { "zh": "黄帝与蚩尤战过的地方。风里还有铜味。", "en": "Where the Yellow Emperor fought Chiyou. The wind still smells of bronze." }
+      "roads": [
+        "taihang"
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "黄帝与蚩尤战过的地方。风里还有铜味。",
+        "en": "Where the Yellow Emperor fought Chiyou. The wind still smells of bronze."
+      }
     },
     {
       "id": "jieshi",
-      "name": { "zh": "碣石", "en": "Jieshi" },
+      "name": {
+        "zh": "碣石",
+        "en": "Jieshi"
+      },
       "tier": 1,
-      "roads": ["fajiu"],
-      "has": { "seeds": true },
-      "line": { "zh": "东临碣石，以观沧海。海在山下翻白。", "en": "Stand on Jieshi and look upon the sea. It turns white below the rock." }
+      "roads": [
+        "fajiu"
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "东临碣石，以观沧海。海在山下翻白。",
+        "en": "Stand on Jieshi and look upon the sea. It turns white below the rock."
+      }
     },
     {
       "id": "hengshan",
-      "name": { "zh": "恒山", "en": "Mount Heng" },
+      "name": {
+        "zh": "恒山",
+        "en": "Mount Heng"
+      },
       "tier": 2,
-      "roads": ["taihang"],
+      "roads": [
+        "taihang"
+      ],
       "has": {},
-      "line": { "zh": "北岳。云在半山，庙在云里。", "en": "The Northern Peak. Clouds at the waist; a temple inside the clouds." }
+      "line": {
+        "zh": "北岳。云在半山，庙在云里。",
+        "en": "The Northern Peak. Clouds at the waist; a temple inside the clouds."
+      }
     }
   ]
 }

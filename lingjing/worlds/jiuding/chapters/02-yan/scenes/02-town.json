@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "id": "02-town",
+  "chapter": "02-yan",
+  "at": "puyang",
+  "place": {
+    "zh": "濮阳 · 桑门",
+    "en": "Puyang · The Mulberry Gate"
+  },
+  "setup": {
+    "zh": "告示上写：雷泽雷鸣四十日不歇，大野泽鱼浮满岸，渡工不出船。有能止雷者，县令重赏。落款是县令，印是新盖的。",
+    "en": "The notice reads: forty days of thunder over Lake Lei without pause; the fish of Daye float to the shore; no ferryman sails. Whoever can stop the thunder, the magistrate will reward. Signed by the magistrate, the seal still fresh."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "lines": [
+    {
+      "who": "yinyue",
+      "text": {
+        "zh": "鼎在雷底下醒了。它在敲——像心跳。",
+        "en": "The cauldron woke under the thunder. It's beating — like a heart."
+      }
+    },
+    {
+      "who": "ling",
+      "text": {
+        "zh": "桑门里有坊市。要去雷泽，先把东西备齐。",
+        "en": "There is a market inside the Mulberry Gate. Before the lake, get what you need."
+      }
+    }
+  ],
+  "buttons": [
+    "lake",
+    "market"
+  ],
+  "exits": [
+    {
+      "id": "lake",
+      "label": {
+        "zh": "去雷泽",
+        "en": "To Lake Lei"
+      },
+      "means": "goes to the lake, toward the thunder, to stop it",
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "你出了桑门往东。雷声一步比一步近，天上还是没有云。",
+            "en": "You leave by the Mulberry Gate, east. The thunder comes closer with every step, and still there is no cloud."
+          }
+        }
+      ],
+      "next": "02-lake"
+    },
+    {
+      "id": "market",
+      "label": {
+        "zh": "先逛坊市",
+        "en": "The market first"
+      },
+      "means": "goes shopping, asks about the market, wants to buy or sell",
+      "stay": true,
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "桑门内的坊市摆满了陶器和桑皮纸。药铺的老板在柜后打瞌睡。",
+            "en": "The market inside the gate is all pottery and mulberry paper. The apothecary dozes behind his counter."
+          }
+        }
+      ]
+    },
+    {
+      "id": "ask",
+      "means": "asks about the thunder, the reward, the magistrate, or what has been tried",
+      "stay": true,
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "县令的人说：巫祝去过三回，鼓打破了也没用。雷不是天上来的，是水里来的。",
+            "en": "The magistrate's man says: the shamans have gone three times, and broke their drums for nothing. The thunder is not from the sky. It comes from the water."
+          }
+        },
+        {
+          "who": "yinyue",
+          "text": {
+            "zh": "他说对了一半。",
+            "en": "He is half right."
+          }
+        }
+      ]
+    }
+  ]
+}

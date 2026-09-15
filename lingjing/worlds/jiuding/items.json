@@ -198,6 +198,48 @@
         "progress": 40,
         "table": "task"
       }
+    },
+    {
+      "id": "firm-pill",
+      "kind": "pill",
+      "name": {
+        "zh": "固基丹",
+        "en": "Foundation-firming pill"
+      },
+      "art": "art/items/firm-pill.webp",
+      "about": {
+        "zh": "筑基者服之，根基愈固，结丹之路愈近。",
+        "en": "For one who has laid the Foundation: the base grows firmer, the Core comes nearer."
+      },
+      "buy": 260,
+      "sell": 65,
+      "sold": [
+        "兖"
+      ],
+      "effect": {
+        "progress": 40,
+        "table": "task"
+      },
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the description."
+    },
+    {
+      "id": "sang-paper",
+      "kind": "material",
+      "name": {
+        "zh": "桑皮纸",
+        "en": "Mulberry paper"
+      },
+      "art": "art/items/sang-paper.webp",
+      "about": {
+        "zh": "濮阳桑门的纸，写符最好。",
+        "en": "Paper from Puyang's Mulberry Gate; the best for writing talismans."
+      },
+      "buy": 30,
+      "sell": 8,
+      "sold": [
+        "兖"
+      ],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the description."
     }
   ]
 }

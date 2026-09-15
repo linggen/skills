@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "id": "02-deep",
+  "chapter": "02-yan",
+  "at": "leiyuan",
+  "place": {
+    "zh": "雷泽深处 · 湖心",
+    "en": "The deeps of Lake Lei · The middle of the lake"
+  },
+  "setup": {
+    "zh": "水分开了。湖底的泥里卧着一口鼎，鼎口盖着一张石板，板上刻着河图：一六在北，二七在南，四九在西，五十在中——东边空着。",
+    "en": "The water parts. In the mud of the lakebed lies a cauldron, its mouth covered by a stone slab cut with the River Chart: one and six in the north, two and seven in the south, four and nine in the west, five and ten at the heart — and the east left blank."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "lines": [
+    {
+      "who": "yinyue",
+      "text": {
+        "zh": "河图。冀州那口用的是洛书，这口用的是河图。",
+        "en": "The River Chart. The one in Ji was sealed with the Luo square; this one with the River Chart."
+      }
+    }
+  ],
+  "buttons": [
+    "seal"
+  ],
+  "exits": [
+    {
+      "id": "seal",
+      "label": {
+        "zh": "读封 · 填东方",
+        "en": "Read the seal · Fill the east"
+      },
+      "means": "reads the seal, answers which numbers belong in the east",
+      "key": "seal-yan",
+      "grant": {
+        "table": "scene",
+        "progress": 60,
+        "wealth": 20
+      },
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "你在东边写下答案。石板从中裂开，两半沉进泥里。鼎口的气息冲上来，带着雷味和桑叶味。",
+            "en": "You write the answer in the east. The slab splits down the middle and both halves sink into the mud. The cauldron's breath rushes up, thunder and mulberry leaf."
+          }
+        }
+      ],
+      "next": "02-cauldron"
+    },
+    {
+      "id": "force",
+      "means": "tries to break, lift or pry the slab by force",
+      "stay": true,
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "石板不动。河图的数在你掌下一亮一暗，像心跳。",
+            "en": "The slab does not move. Under your palm the numbers of the Chart brighten and dim, like a heartbeat."
+          }
+        }
+      ]
+    }
+  ]
+}
