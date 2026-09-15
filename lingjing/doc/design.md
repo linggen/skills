@@ -783,9 +783,10 @@ change.
   on the scene — Ling says it is before the player, so it is. A fresh day
   sends a hidden `[scene] opened`; a reopened one (under 24 h) is silent. A
   brand-new game takes the machine's language. PageUpdate is not used.
-- **Yinyue on the stage (2026-09-15).** One device, one voice: her body and
-  voice live on exactly one surface per device, and the engine's presenter
-  lock keeps it so. The scene loads the engine's own pet view (`/?pet=1`)
+- **Yinyue on the stage (2026-09-15).** One device, one Yinyue: a device
+  shows one 3D model of her, and that one carries her voice; the engine's
+  presenter lock keeps it so. Devices are independent — a Mac and a phone
+  each have their own Yinyue and may both speak at once. The scene loads the engine's own pet view (`/?pet=1`)
   with `stage=1`, and a stage outranks a pet corner, so she walks over from
   the desktop window or the web tab while a scene has her and goes back when
   it ends. The page never draws a second Yinyue; the moon stands in only
@@ -1050,8 +1051,9 @@ game unlike every other app, and it asks the engine for things no app has.
   save, and a generous host cannot hand out a realm.
 - **Apart, through the cloud.** 传音, 同修 and 论道 challenges need no one
   online at once; a room lives only while its host is online.
-- **One device, one voice.** Each player's own Yinyue stands on their own
-  screen, held by their own engine's presenter lock, so the table needs
+- **One device, one Yinyue.** Each player's own Yinyue stands on their own
+  screen, held by their own engine's presenter lock, and every player's
+  Yinyue speaks on her own player's device at the same time. The table needs
   nothing new for that. If other players' Yinyue ever appear at the table,
   they are figures with their words as text — only the player's own Yinyue
   speaks aloud on that device.
