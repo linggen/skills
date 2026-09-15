@@ -1193,6 +1193,19 @@ Establishment, Core Formation, Nascent Soul).
 
 ## Open
 
+- **From the first full playthrough (2026-09-15, Flash-Lite, clock 10-02,
+  a scratch engine).** Fixed then: a 奇遇 pays only after two turns in the
+  player's own words (`min_turns`, `said`, the closing words count); the
+  question is one short line with narration and `paid` in the reply; a
+  tapped place is a Move; a road is closed only when Move says so; the
+  prologue's last beat no longer promises a road that is already open.
+  His calls: the prologue spends 70 of 100 stamina in the first sitting;
+  the cauldron wants the peak of 练气 (1,620 progress, 240 a day — a week
+  of play at best) the day chapter 1 opens; Flash-Lite still tells a 奇遇 in
+  one breath (a turn count from the engine would let the rules know a real
+  player turn), drops authored lines in a long session, and skips the
+  chapter's last button; the engine shows a provider's raw 429 as Ling's
+  words, and a one-option AskUser costs a round trip.
 - **Idea — a healthy user gets a better Linggen.** Health kept (the facts
   the apps already record) earns more than game 灵气: a better Linggen
   overall. To talk through.

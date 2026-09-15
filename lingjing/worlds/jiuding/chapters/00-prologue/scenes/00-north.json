@@ -17,7 +17,7 @@
       "label": { "zh": "今日到此", "en": "Rest for today" },
       "means": "rests, ends the day, or asks what comes next",
       "beat": [
-        { "who": "ling", "text": { "zh": "今日到此为止。冀州的路，开的时候我会告诉你。", "en": "That is all for today. When the road to Ji opens, I will tell you." } }
+        { "who": "ling", "text": { "zh": "今日到此为止。北去是冀州，第一鼎在那里。", "en": "That is all for today. North lies Ji, and the first cauldron with it." } }
       ],
       "ends": "00-prologue"
     }

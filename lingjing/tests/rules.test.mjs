@@ -381,7 +381,17 @@ test('a quest pays when its app says it was done this period, once', () => {
 test('a branch opens alone, counts its turns and pays within its cap', () => {
   let s = must(branch, start(), { action: 'open', kind: 'night-tale' }).state;
   refused(branch, s, { action: 'open', kind: 'province-tale' }, 'branch-open');
-  s = must(branch, s, { action: 'turn' }).state;
+  // a tale closed before the player took part pays nothing
+  const early = must(branch, s, { action: 'close', progress: '20', wealth: '5' });
+  assert.equal(early.result.paid, null);
+  assert.equal(early.result.unpaid, 'too-soon');
+  // a turn is the player's words; the same words twice are one turn
+  refused(branch, s, { action: 'turn' }, 'no-player-turn');
+  s = must(branch, s, { action: 'turn', said: '我跟着那点灯火走' }).state;
+  refused(branch, s, { action: 'turn', said: '我跟着那点灯火走' }, 'no-player-turn');
+  // the words that end the tale count as the player's last turn
+  assert.equal(must(branch, s, { action: 'close', said: '问她叫什么', progress: '20', wealth: '5' }).result.paid.progress, 20);
+  s = must(branch, s, { action: 'turn', said: '问她叫什么' }).state;
   const closed = must(branch, s, { action: 'close', progress: '500', wealth: '99' });
   assert.equal(closed.result.paid.progress, 20);
   assert.equal(closed.result.paid.wealth, 5);

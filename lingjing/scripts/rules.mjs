@@ -687,22 +687,32 @@ export function branch(state, content, ctx, args) {
     const empty = spendStamina(content, s, ctx, 'branch');
     if (empty) return empty;
     const seed = pickSeed(content, s, template.kind, ctx.now);
-    s.branch = { kind: template.kind, turns: 0, opened: ctx.now.toISOString(), seed: seed?.id ?? null };
+    s.branch = { kind: template.kind, turns: 0, said: null, opened: ctx.now.toISOString(), seed: seed?.id ?? null };
     if (seed) s.seeds_used = [...(s.seeds_used ?? []), seed.id];
     s.day.branches += 1;
     const show = seed?.creature ? [{ card: 'creature', id: seed.creature }] : [];
-    return { state: s, result: { ok: true, opened: template.kind, max_turns: template.max_turns, may_not: template.may_not, seed, show } };
+    return { state: s, result: { ok: true, opened: template.kind, min_turns: template.min_turns ?? 0, max_turns: template.max_turns, may_not: template.may_not, seed, show } };
   }
   if (!s.branch) return refuse('no-branch', null);
   const template = content.branches.templates.find(b => b.kind === s.branch.kind);
+  // A turn is the player's: it carries their words, and the same words
+  // twice are one turn. A tale closed before the player has taken part in
+  // `min_turns` of them pays nothing — the reward is for playing it.
   if (args.action === 'turn') {
+    const said = String(args.said ?? '').trim();
+    if (!said || said === s.branch.said) return refuse('no-player-turn', null, { turns: s.branch.turns });
     s.branch.turns += 1;
+    s.branch.said = said;
     return { state: s, result: { ok: true, turns: s.branch.turns, close_now: s.branch.turns >= template.max_turns } };
   }
   if (args.action === 'close') {
-    const paid = pay(content, s, ctx, { table: template.table, progress: Number(args.progress) || 0, wealth: Number(args.wealth) || 0 });
+    // The words that ended the tale are the player's last turn.
+    const said = String(args.said ?? '').trim();
+    if (said && said !== s.branch.said) { s.branch.turns += 1; s.branch.said = said; }
+    const early = s.branch.turns < (template.min_turns ?? 0);
+    const paid = early ? null : pay(content, s, ctx, { table: template.table, progress: Number(args.progress) || 0, wealth: Number(args.wealth) || 0 });
     s.branch = null;
-    return { state: s, result: { ok: true, closed: template.kind, paid, summarize: true } };
+    return { state: s, result: { ok: true, closed: template.kind, paid, ...(early ? { unpaid: 'too-soon', min_turns: template.min_turns } : {}), summarize: true } };
   }
   return refuse('unknown-action', null, { actions: ['open', 'turn', 'close'] });
 }

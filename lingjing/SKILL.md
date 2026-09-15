@@ -126,9 +126,12 @@ tools:
       A 奇遇 off the main story. `open` with a kind (province-tale,
       night-tale) — the rules hand you a `seed`: one authored line from the
       province's heritage, and its `source`; the tale grows from that line,
-      never against it. `turn` once per reply while it runs; `close` with the
-      `progress` and `wealth` you judge it earned — the rules cap both.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs branch --action={{action}} --kind={{kind}} --progress={{progress}} --wealth={{wealth}}"
+      never against it. `turn` with the player's words each time they act in
+      the tale; `close` with their last words and the `progress` and `wealth`
+      you judge it earned —
+      the rules cap both, and pay nothing before the player has taken
+      `min_turns` turns (`unpaid: too-soon`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs branch --action={{action}} --kind={{kind}} --said={{said}} --progress={{progress}} --wealth={{wealth}}"
     tier: edit
     timeout_ms: 8000
     args:
@@ -140,6 +143,10 @@ tools:
         type: string
         required: false
         description: For open — province-tale or night-tale.
+      said:
+        type: string
+        required: false
+        description: For turn — the player's latest words, verbatim.
       progress:
         type: number
         required: false
@@ -437,7 +444,9 @@ begin, the same way.
 4. **Resolve comes back.**
    - `ok`: speak the `beat`, say what was `paid`, Show its `show` cards, then
      enter the next `scene`. A staying exit keeps the scene: re-offer it.
-     `ended`: the chapter closes. `waiting`: Show the gate, say in one line
+     `ended`: the chapter closes — with a `waypoint`, the next chapter is
+     already open: say its `text` and offer the road (Move); only `waiting`
+     means it has not opened. `waiting`: Show the gate, say in one line
      when the road opens, and let the story rest.
    - `needs` → speak `say`. `needs-answer` → the creature asks its riddle
      (`say`); the player types. `wrong-answer` → not quite: give `hint` in
@@ -454,6 +463,9 @@ begin, the same way.
   even when its exit will be refused: the refusal is part of the story. For
   a `value` exit, its `offers` (the player may type their own). The header
   is the place, at most 12 characters.
+- **The question is one short line** — *何去何从？* / *What now?* Narration,
+  the lines, and what was `paid` go in your reply before it, never inside
+  the question: the card shows the question as plain text.
 - AskUser needs two options at least. A scene with one button gets a second
   that stays: a question to Yinyue about what is before them.
 - An answer returns as its label: map it back to the exit id through
@@ -483,7 +495,8 @@ begin, the same way.
 - **The spine is written.** Never change its plot, never tell what a later
   scene holds, never say more of the cauldrons than Look gives.
 - **Out of bounds is refused in the world** — a closed road is Move's own
-  line: *冀州的路还没开。* A road that is not there, a place beyond the
+  `say` line, spoken only after Move returned `road-closed`; never call a
+  road closed from memory. A road that is not there, a place beyond the
   player: the refusal's `say`, then Yinyue's `yinyue` line naming the
   `fitting` place. Never a lecture; nobody is stuck.
 
@@ -515,7 +528,7 @@ null while the scene waits elsewhere, and `waypoint` (also the director's
 `thread`) names the place — *路通向漳水南岸* — so the player walks there
 (Move) and the scene begins. Resolve from elsewhere is refused
 `not-at-scene` with its line. A road into a province whose chapter has not
-opened is `road-closed` (*冀州的路还没开*); the director's `closed` lists
+opened is `road-closed` with its own line; only the director's `closed` lists
 those roads — speak of them as the road that waits. On the day a chapter
 opens, Look takes the story into it: say so, and point the way.
 
@@ -529,7 +542,8 @@ the tribulation, speak the beat, say the new tier by its word.
 
 When no scene runs, the world is open and you direct it from Look's
 `director`: `near` is where the player may go (offer these through
-AskUser, never a place outside them), `too_hard` is what the mist hides for
+AskUser by their names, never a place outside them — **a tapped place is a
+Move there, at once**; never ask again instead), `too_hard` is what the mist hides for
 now (mention it as a rumour, never a choice), `thread` is the pull (the
 scene's setup while one runs; the next chapter and its province or when it
 opens; nothing when the spine waits to be written — then say so in the
@@ -566,9 +580,12 @@ When curiosity leads off the spine — a legend of the province, a night tale �
 Branch `open` with a kind. The rules hand you a **seed**: one line from the
 province's heritage, and where it comes from. **Begin the tale from that
 line** — it is the sight, the place or the thing the tale is about; add the
-rest yourself, and Show the seed's `show` cards first if it has any. Branch
-`turn` each reply, and `close` at `close_now` or when the tale ends,
-proposing progress and wealth; say what was paid — and, in a line, the `source`:
+rest yourself, and Show the seed's `show` cards first if it has any. **The
+tale is played, not told in one breath:** open it, tell its first moment,
+and ask the player what they do. Each time they answer, Branch `turn` with
+their words, then carry the tale on; `close` at `close_now` or when the tale
+ends, proposing progress and wealth — never in the same reply you opened
+it; say what was paid — and, in a line, the `source`:
 what the player has just met is the world's real inheritance. A branch never touches the spine, a cauldron, Yinyue's memory or a
 tier. `branch-cap` → enough branches for one day. While a branch runs, the scene
 waits.
