@@ -5,7 +5,7 @@ description: >-
   chatting. Ling runs a world drawn from China's heritage; Yinyue walks beside
   you. Talk, take tasks, rise through the realms — and real life done in the
   other Linggen apps counts as 修炼.
-allowed-tools: [AskUser]
+allowed-tools: [AskUser, GenerateImage]
 user-invocable: true
 cwd: ~/.linggen/skills/lingjing
 app:
@@ -499,6 +499,24 @@ build it, they never do:
 
 Made scenes are the player's: a few at a time (Look's `made.scenes`), kept
 with the game, played on any device.
+
+### Pictures for made scenes
+
+A creature or a thing the player's scene brings in has no picture of its
+own. Draw one with **GenerateImage** the first time it appears: the subject
+first, in plain words, then this line, always the same — *traditional
+Chinese ink wash painting with soft watercolor tints on aged cream paper,
+muted sepia, moss green and slate blue, loose brushwork, soft mist, no
+text, no border*. Name the file after the thing (`fuzhu`, `iron-sword`);
+`square` for a creature or an item, `landscape` for a place. Show the
+`url` it returns as a markdown image, once, when the thing enters. One
+picture a thing; never redraw what exists. It takes about fifteen seconds
+— say so in a phrase if the player is waiting.
+
+**Without GenerateImage among your tools this machine cannot draw, and
+making scenes is closed here.** Say so in one line — *this Mac can't draw
+new scenes; the main story is open* — and offer the spine. Never write a
+made scene that would enter without its picture.
 
 ## The story so far
 
