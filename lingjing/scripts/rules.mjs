@@ -683,7 +683,8 @@ function provinceOf(content, raw) {
    corridor runs the scene comes first. A province named instead of a place
    answers as before: here, or a road not yet open. Every refusal says `here`
    — the player went nowhere — and a place with no road from here says
-   `toward`, the first road on the way to it. */
+   `toward`, the first road on the way to it. Walking away leaves a made
+   scene (`left`); Enter brings it back. */
 export function move(state, content, ctx, args) {
   const s = clone(state);
   settlePlace(content, s);
@@ -703,7 +704,8 @@ export function move(state, content, ctx, args) {
     return stay('unknown-place', null, { near: near() });
   }
   if (target.id === here?.id) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
-  if (inCorridor(content, s)) {
+  // A made scene played inside the corridor does not open the road.
+  if (inCorridor(content, { ...s, made: null })) {
     return stay('corridor', pick({ zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene });
   }
   if (!here.roads.includes(target.id)) {
@@ -721,11 +723,13 @@ export function move(state, content, ctx, args) {
     return stay('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
   }
   s.place = target.id;
+  const left = inMade(s) ? s.made.at : null;
+  if (left) s.made.at = null;
   const place = placeBrief(content, s, ctx.now);
   const scene = atScene(content, s) ? sceneBrief(content, s, ctx.now) : null;
   const cards = [...place.show, ...(scene?.show ?? [])];
   const show = cards.filter((c, i) => cards.findIndex(d => JSON.stringify(d) === JSON.stringify(c)) === i);
-  return { state: s, result: { ok: true, place, scene, show, director: directorBrief(content, s, ctx), summarize: true } };
+  return { state: s, result: { ok: true, place, scene, show, ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize: true } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not

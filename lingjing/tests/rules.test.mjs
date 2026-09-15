@@ -459,6 +459,14 @@ test('a made scene with a novel\'s name is not playable', () => {
 });
 
 /* Through the prologue and out: the world opens at 泗水北岸. */
+/* Inside the template's ferry, made without its exit to a second scene. */
+function inFerry(s) {
+  const ferry = make(s, content, ctx(), {}).result.template;
+  const exits = ferry.exits.filter(e => !e.next);
+  const scene = { ...ferry, exits, buttons: ferry.buttons.filter(id => exits.some(e => e.id === id)) };
+  return must(enter, must(make, s, { scene: JSON.stringify(scene) }).state, { scene: 'made-ferry' }).state;
+}
+
 function toOpenWorld() {
   let s = toFuzhu();
   s = must(resolve, s, { exit: 'gift' }).state;
@@ -472,6 +480,7 @@ test('the corridor walks the player from place to place, and Move waits', () => 
   assert.equal(s.place, 'sishui');
   assert.equal(look(s, content, ctx()).place.name, '泗水岸');
   const r = refused(move, s, { place: 'pengcheng' }, 'corridor');
+  refused(move, inFerry(s), { place: 'huaidu' }, 'corridor'); // a made scene does not open the corridor's road
   assert.equal(r.say, '先把眼前的事做完。');
   s = toFuzhu();
   assert.equal(s.place, 'sibei');
@@ -528,6 +537,15 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   // a province still answers: here, or a road not open
   assert.equal(must(move, s, { province: 'Xu' }).result.here, true);
   assert.equal(refused(move, s, { place: '冀州' }, 'road-closed').say, '冀州的路还没开。');
+  // walking away leaves a made scene; Enter brings it back where the player stands
+  const m = inFerry(s);
+  assert.equal(look(m, content, ctx()).scene.id, 'made-ferry');
+  const away = must(move, m, { place: 'yunlong' });
+  assert.equal(away.result.left, 'made-ferry');
+  assert.equal(away.state.made.at, null);
+  assert.equal(look(away.state, content, ctx()).scene, null, 'the open world again, at 云龙山');
+  assert.equal(must(move, s, { place: 'yunlong' }).result.left, undefined, 'no made scene, nothing left');
+  assert.equal(must(enter, away.state, { scene: 'made-ferry' }).result.scene.id, 'made-ferry');
   // at foundation the rapids open
   s = { ...s, tier: 'foundation', step: 0, progress: 0 };
   assert.equal(must(move, s, { place: 'lvliang' }).state.place, 'lvliang');

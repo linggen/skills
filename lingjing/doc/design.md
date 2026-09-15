@@ -178,7 +178,9 @@ everything in `worlds/jiuding/` — is the first world and the example.
   Move refusal carries `here`, and `no-road` carries `toward` — the first
   road on the shortest way through places the player may enter (null when
   none) — and SKILL.md forbids describing a place before a Move there comes
-  back ok. Open: a weak model may skip reading the template and need several
+  back ok. The same run found the opening scene following the player to 芦荡
+  (a made scene with only a staying exit never ends); walking away now
+  leaves a made scene (§ Made scenes). Open: a weak model may skip reading the template and need several
   lint rounds.
 - **Style of 《九鼎》: 修仙 · 凡人流 — no names from the book.** Decided
   2026-09-14 ("use 凡人流 style, no names from the book"). The *system* is
@@ -554,7 +556,10 @@ authored content has; the same lint checks it; the same rules play it.
   灵气 (`make` 5).
 - **`Enter {scene}` / `Leave`** — the player steps into a made scene; the
   spine keeps its place (`state.made.at` overrides `sceneOf`; `state.scene`
-  never moves); an exit that `ends: "made"` comes home. Steps cost 灵气 as
+  never moves); an exit that `ends: "made"` comes home, and so does walking
+  away (decided 2026-09-15, his "yes, go"): a Move that goes leaves the made
+  scene and says `left`; Enter brings it back where the player stands. In
+  a corridor Move still waits, made scene or not. Steps cost 灵气 as
   anywhere; grants pay through the same capped tables.
 - **Made scenes live in the save** (`state.made.scenes`), so they sync and
   play on any device; a few at a time. The player changes one not yet

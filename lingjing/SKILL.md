@@ -171,7 +171,8 @@ tools:
       next when the player asked to be walked; null when no way is open to
       them), `too-hard` carries its line, a `fitting` place and Yinyue's word
       for it (speak both, kindly), `corridor` means the scene comes first. A
-      move returns the place, its cards to Show and a fresh brief. A province
+      move returns the place, its cards to Show and a fresh brief; `left`
+      names a made scene the player walked out of. A province
       (冀 兖 青 徐 扬 荆 豫 梁 雍) named instead of a place answers here, or a
       road not yet open.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}}"
@@ -247,7 +248,7 @@ tools:
         description: A made scene id from Look's `made.scenes`.
 
   - name: Leave
-    description: Back to the main story from a made scene, wherever it stood.
+    description: Back to the main story from a made scene, wherever it stood. A Move away does the same.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs leave"
     tier: edit
     timeout_ms: 8000
@@ -581,7 +582,8 @@ build it, they never do:
 4. The player may change a scene not yet entered — *make the boatman a
    spy* — Make it again with the same id.
 5. **Leave** when they want the main story back; an `ends` exit does the
-   same.
+   same, and so does walking away — a Move that comes back ok with `left`.
+   **Enter** takes them back in, wherever they stand.
 
 Made scenes are the player's: a few at a time (Look's `made.scenes`), kept
 with the game, played on any device.
