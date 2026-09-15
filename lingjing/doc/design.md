@@ -67,7 +67,7 @@ skills/lingjing/
     rewards.json           reward tables and caps (scene, branch, task, day)
     creatures.json         山海经 entries: name{zh,en}, source, quote{zh,en}, province
     herbs.json             alchemy tiles
-    items.json             the catalog: kinds, prices, one effect each; art/items/<id>.svg
+    items.json             the catalog: kinds, prices, one effect each; art/items/<id>.webp
     hexagrams.json         the day's omen (the eight doubled trigrams so far)
     art/<creature>.webp    the classical woodcut on our paper (tools/frame.py); plates/ the originals; CREDITS.md
     riddles/zh.json, en.json   answer keys the rules check
@@ -878,10 +878,11 @@ from its name.
   edition draws every creature, and editions disagree — 夫諸 is a goat in
   the encyclopaedia and a deer in 1597; pick per creature, prefer the
   reading the text describes. His ruling on the look: "not fancy, very old
-  fashion, but fine for the first version". Items stay drawn
-  (`art/items/<id>.svg`, SVG brushwork); at thousands of items the plan is
-  re-inked silhouettes from a CC-BY icon set (game-icons.net, credited) or
-  an image model at authoring time — never hand-drawing them all. Sizes:
+  fashion, but fine for the first version". Items were drawn as SVG
+  brushwork until 2026-09-15, when he judged them poor ("your svgs are poor,
+  redraw them by flux"): items are painted by the local picture model too
+  (`art/items/<id>.webp`, 640×480), authored ahead of time like the
+  creatures — an image model at authoring time is the plan at thousands. Sizes:
   a woodcut lands at 40–150 KB; art beyond a few hundred pictures ships
   per chapter.
 - **One style:** ink wash. Where a classical woodblock illustration of the

@@ -9,7 +9,7 @@
         "zh": "灵芝",
         "en": "Lingzhi"
       },
-      "art": "art/items/lingzhi.svg",
+      "art": "art/items/lingzhi.webp",
       "about": {
         "zh": "山中所生，灵兽所喜。",
         "en": "Grows in the hills; spirit beasts love it."
@@ -30,7 +30,7 @@
         "zh": "聚气丹",
         "en": "Qi-gathering pill"
       },
-      "art": "art/items/qi-pill.svg",
+      "art": "art/items/qi-pill.webp",
       "about": {
         "zh": "一粒抵半日打坐。",
         "en": "One pill is worth half a day's sitting."
@@ -52,7 +52,7 @@
         "zh": "人参",
         "en": "Ginseng"
       },
-      "art": "art/items/ginseng.svg",
+      "art": "art/items/ginseng.webp",
       "about": {
         "zh": "形如人，年久者有灵。",
         "en": "Shaped like a person; an old one has a spirit of its own."
@@ -70,7 +70,7 @@
         "zh": "竹剑",
         "en": "Bamboo sword"
       },
-      "art": "art/items/bamboo-sword.svg",
+      "art": "art/items/bamboo-sword.webp",
       "about": {
         "zh": "练气者的第一把剑，斩不了妖，斩得了心。",
         "en": "A first sword: it cuts no demon, only doubt."
@@ -88,7 +88,7 @@
         "zh": "蓑衣",
         "en": "Straw cloak"
       },
-      "art": "art/items/straw-cloak.svg",
+      "art": "art/items/straw-cloak.webp",
       "about": {
         "zh": "泗水多雨。",
         "en": "It rains often on the Si."
@@ -106,7 +106,7 @@
         "zh": "玉鱼",
         "en": "Jade fish"
       },
-      "art": "art/items/jade-fish.svg",
+      "art": "art/items/jade-fish.webp",
       "about": {
         "zh": "汉墓里出来的东西，握着微温。",
         "en": "Something from a Han tomb; faintly warm in the hand."
@@ -124,7 +124,7 @@
         "zh": "渡牌",
         "en": "Ferry token"
       },
-      "art": "art/items/ferry-token.svg",
+      "art": "art/items/ferry-token.webp",
       "about": {
         "zh": "船家只认牌，不认人。",
         "en": "The boatman knows the token, not the face."
@@ -145,7 +145,7 @@
         "zh": "银月铃",
         "en": "Silver-moon bell"
       },
-      "art": "art/items/moon-bell.svg",
+      "art": "art/items/moon-bell.webp",
       "about": {
         "zh": "系在银月颈上，走路便有声。",
         "en": "Tied at Yinyue's neck, it rings as she walks."
@@ -166,7 +166,7 @@
         "zh": "铁剑",
         "en": "Iron sword"
       },
-      "art": "art/items/iron-sword.svg",
+      "art": "art/items/iron-sword.webp",
       "about": {
         "zh": "邺城铁匠打的，燕赵的样式。",
         "en": "Forged in Ye, in the style of Yan and Zhao."
@@ -184,7 +184,7 @@
         "zh": "筑基丹",
         "en": "Foundation pill"
       },
-      "art": "art/items/foundation-pill.svg",
+      "art": "art/items/foundation-pill.webp",
       "about": {
         "zh": "练气圆满者服之，事半功倍。",
         "en": "For one at the peak of Qi Condensation: twice the work for half the effort."

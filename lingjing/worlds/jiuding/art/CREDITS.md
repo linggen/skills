@@ -21,7 +21,7 @@ in Lingjing*. `tools/frame.py` framed the woodcuts that shipped before
 (crop, `--levels` for a scan on toned paper, a warm paper ground with grain,
 the red seal) and stays for any plate shown as itself.
 
-## Items — drawn for Lingjing
+## Items — painted for Lingjing
 
-`items/*.svg` are ink-style drawings made for the game (SVG brushwork). No
-outside source.
+`items/*.webp` are painted for the game by the local picture model (FLUX.2
+klein 4B), 2026-09-15, from each item's description. No outside source.
