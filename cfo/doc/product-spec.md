@@ -53,6 +53,21 @@ statements; it builds the full picture, finds the leaks, and answers
   renewals, a "+1% rate" stress test, and the current market average
   alongside your rate.
 
+## Your investments
+
+- **Watch and hold** — add stocks and ETFs by ticker, US or TSX. Add
+  shares and your average cost to track value and gain — or tell the
+  assistant "I bought 20 RY at 142" and confirm.
+- **The numbers that matter** — price and today's move, P/E and forward
+  P/E, market cap, next earnings date — fresh while you look.
+- **Reports, read for you** — "Check reports" finds new quarterly and
+  annual results and puts a short summary on the company's card; "Latest
+  report" reads the newest one any time.
+- **Know when one lands** — turn it on, and Yinyue tells you on your
+  phone when a company you watch reports.
+- **Ask straight questions** — "is RY expensive right now?", "am I too
+  concentrated?" — answers with a view, using your holdings.
+
 ## An assistant that earns it
 
 - **Ask why** — "why was June higher?" gets named merchants and amounts,
@@ -74,8 +89,10 @@ statements; it builds the full picture, finds the leaks, and answers
   anything; it works only from redacted totals.
 - All money math is computed locally and exactly — the AI explains
   numbers, it never invents them.
-- **Read-only on money.** No bank logins, no payments, no auto-cancel.
-  It analyzes and drafts; you act.
+- Prices and filings come from public finance sites; only ticker symbols
+  are sent to fetch them.
+- **Read-only on money.** No bank logins, no payments, no trades, no
+  auto-cancel. It analyzes and drafts; you act.
 
-*Informational analysis of your own spending — not investment, tax, or
-legal advice.*
+*Analysis of your own money — not professional investment, tax, or legal
+advice.*
