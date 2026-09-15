@@ -249,6 +249,7 @@ export function lintNewCreature(c, content, taken, bad) {
   if (!c || typeof c !== 'object') { bad(at, 'not a creature'); return; }
   if (!ID.test(c.id ?? '')) bad(at, 'id must be lowercase letters, digits and dashes');
   else if (content.creatures.creatures.some(x => x.id === c.id) || taken.has(c.id)) bad(at, 'id already taken');
+  else if (c.id === 'map') bad(at, 'map names the world\'s map, not a creature');
   if (!content.traits.elements[c.root]) bad(at, `needs a root the traits know, not ${c.root}`);
   for (const k of ['name', 'quote', 'look']) if (!c[k]?.zh && !c[k]?.en) bad(at, `${k} needs zh or en`);
   if (c.art) bad(at, 'art is drawn later, never written');

@@ -319,7 +319,9 @@ tools:
     description: >-
       Give a creature of this made world its picture — the `path` (or `url`)
       GenerateImage returned. The rules keep the file beside the world and
-      write it into the creature's card.
+      write it into the creature's card. `creature: map` is the world's map:
+      with the file it becomes the map's picture; with no file it answers
+      `paint`, the arguments to paint it (again).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}}"
     tier: edit
     timeout_ms: 8000
@@ -327,10 +329,10 @@ tools:
       creature:
         type: string
         required: true
-        description: The creature's id, one this world made.
+        description: The creature's id, one this world made — or map.
       file:
         type: string
-        required: true
+        required: false
         description: The path or url GenerateImage returned.
 
   - name: Show
@@ -381,6 +383,10 @@ begin, the same way.
   chapter opens. A zero is left out; nothing paid, nothing said.
 - **When a result carries `summarize: true`, Summarize** before the reply
   ends (below).
+- **When Look's `world` carries `paint_map`, paint the map** before the
+  reply ends: **GenerateImage** with exactly its `prompt`, `name` and
+  `shape`, then **Art** with `creature: map` and the `path` returned. Once a
+  world (§ Worlds, step 5).
 - **A refusal is final and stays in the world.** Speak its `say` line when it
   has one; otherwise refuse as the world would — *天地灵石，从不白给。*
 - **A refused Move went nowhere.** The player still stands at its `here`:
@@ -630,9 +636,17 @@ whole. Nothing is asked of them first.
    scenes; name it by the creature's id; `square`), then **Art** with the
    creature's id and the `path` returned. Once, on first appearance; say in
    a phrase that the brush is at work if the player is waiting.
-5. **Worlds** lists them; **Travel** moves between them. Each world keeps
+5. **The map.** While Look's `world.paint_map` is set, the world's map is
+   unpainted. Before the choice: **GenerateImage** with exactly its
+   `prompt`, `name` and `shape`, then **Art** with `creature: map` and the
+   `path` returned — say in a phrase that the brush is at work. Once a
+   world. When the player asks for the map painted again,
+   **Art** `creature: map` with no file gives the arguments. Never write the
+   prompt yourself: it says where each place stands, so the names sit on
+   the picture.
+6. **Worlds** lists them; **Travel** moves between them. Each world keeps
    its own save: leaving 《九鼎》 for a made world and back loses nothing.
-6. **The player changes their world by saying so.** *Put a beast in the
+7. **The player changes their world by saying so.** *Put a beast in the
    cave*, *there should be a temple past the ridge*: **Amend** with a
    creature and the place it haunts, or with a place and its roads. Then
    play on — the beast is shown when the player reaches it, and painted

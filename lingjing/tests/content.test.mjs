@@ -185,6 +185,8 @@ test('a made world: a shipped id, a base province, a road that does not come bac
   assert.ok(has(lintMadeWorld(a, base), 'jiuding is a shipped world'));
   const b = outline(); b.province.id = '冀';
   assert.ok(has(lintMadeWorld(b, base), 'province: id must be lowercase'));
+  const m = outline(); m.creatures[0].id = 'map';
+  assert.ok(has(lintMadeWorld(m, base), 'map names the world'));
   const c = outline(); c.places[0].roads = ['bell'];
   assert.ok(has(lintMadeWorld(c, base), 'does not come back'));
   const d = outline(); d.creatures[0].art = 'art/x.png';

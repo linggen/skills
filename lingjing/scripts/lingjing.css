@@ -173,6 +173,13 @@ button:disabled { cursor: default; }
 .roadmap .pl { position: absolute; width: max-content; transform: translate(-50%, -50%); text-align: center; line-height: 1.3; }
 .roadmap .pl.far { opacity: 1; color: var(--faint); }
 .roadmap .pl small { display: block; font-size: 10px; }
+.roadmap.painted { aspect-ratio: 3 / 2; max-width: 640px; background-size: cover; background-position: center; border-radius: 8px; }
+.roadmap.painted path { stroke: #4A3E2A; opacity: 0.6; stroke-dasharray: 3 5; }
+.roadmap.painted path.out { stroke: #8A6224; opacity: 0.9; stroke-dasharray: none; stroke-width: 2; }
+.roadmap.painted .pl { background: rgba(251, 248, 242, 0.86); border-color: rgba(106, 100, 88, 0.45); color: #1D1B17; box-shadow: 0 1px 3px rgba(40, 30, 10, 0.18); }
+.roadmap.painted .pl.here { background: rgba(226, 235, 241, 0.94); border-color: #46708C; color: #46708C; }
+.roadmap.painted .pl.road { border-color: #8A6224; color: #8A6224; }
+.roadmap.painted .pl.far { color: #6A6458; border-style: dashed; }
 
 .gate { display: flex; gap: 12px; align-items: center; }
 .gate .ding { font-family: var(--serif); font-size: 38px; color: var(--ling); line-height: 1; }

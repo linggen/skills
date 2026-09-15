@@ -99,11 +99,17 @@ function placesHtml(ctx) {
 /// A made world is one province: its places joined by their roads, here and
 /// the roads out marked as the chips mark them. Positions come from the roads
 /// in Look; a road from here is drawn in Ling's colour, one beyond the
-/// player's tier dashed.
+/// player's tier dashed. A painted map lies under the names, each place where
+/// the picture was painted for it; a place added since stands where the roads
+/// put it now.
 function roadMap(ctx) {
   const place = ctx.look.place;
   if (!place?.places?.length) return '';
-  const { at, roads, rows, widest } = layoutRoads(place.places, place.province.start);
+  const layout = layoutRoads(place.places, place.province.start);
+  const { roads, rows, widest } = layout;
+  const painted = ctx.look.world.map;
+  const at = { ...layout.at };
+  for (const [id, [x, y]] of Object.entries(painted?.at ?? {})) if (at[id]) at[id] = { ...at[id], x, y };
   const byId = new Map(place.places.map((p) => [p.id, p]));
   const lines = roads.map(([a, b]) => {
     const [p, q] = [at[a], at[b]];
@@ -121,8 +127,11 @@ function roadMap(ctx) {
     const tag = p.here ? `<small>${ctx.words.here}</small>` : '';
     return `<span class="pl${kind ? ` ${kind}` : ''}" style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%">${esc(p.name)}${tag}</span>`;
   });
+  const frame = painted
+    ? `class="roadmap painted" style="background-image:url('${esc(worldPath(ctx.look.world.dir, painted.file))}')"`
+    : `class="roadmap" style="height:${rows * 62}px"`;
   return `<div class="card"><div class="cardtitle">${esc(place.province.name)}</div>
-    <div class="roadmap" style="height:${rows * 62}px"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines.join('')}</svg>${chips.join('')}</div></div>`;
+    <div ${frame}><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines.join('')}</svg>${chips.join('')}</div></div>`;
 }
 
 function hexagram(card, ctx) {

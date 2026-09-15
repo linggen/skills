@@ -2,7 +2,7 @@
 // place on the map even when no road reaches it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { layoutRoads } from '../scripts/roadmap.js';
+import { layoutRoads, placeWords } from '../scripts/roadmap.js';
 
 // 《荆州泽国》 as it was played: the pool, the deep marsh, then two ways on.
 const marsh = [
@@ -48,4 +48,15 @@ test('an unknown start falls back to the first place; a place no road reaches st
   assert.equal(at['marsh-edge'].row, 0);
   assert.equal(at.island.row, rows - 1);
   assert.equal(layoutRoads([], 'x').rows, 0);
+});
+
+test('positions spread like a painter reads them, and say themselves in words', () => {
+  const { at } = layoutRoads(marsh, 'beast-lair');
+  assert.deepEqual(['beast-lair', 'deep-marsh', 'marsh-edge', 'fog-isle', 'reed-bank'].map((id) => placeWords(at[id])),
+    ['Top center', 'Upper center', 'Lower left', 'Lower right', 'Bottom center']);
+  const star = [{ id: 'hub', roads: ['a', 'b', 'c'] }, { id: 'a', roads: ['hub'] }, { id: 'b', roads: ['hub'] }, { id: 'c', roads: ['hub'] }];
+  const s = layoutRoads(star, 'hub').at;
+  assert.equal(placeWords(s.hub), 'Upper center');
+  assert.deepEqual(['a', 'b', 'c'].map((id) => placeWords(s[id])), ['Lower left', 'Lower center', 'Lower right']);
+  assert.equal(placeWords({ x: 0.39, y: 0.5 }), 'Middle left of center');
 });

@@ -807,6 +807,12 @@ test('Build takes the player to a fresh save in their world; Travel parks and re
   assert.equal(built.scene.id, 'made-yunmeng-reeds', 'the opening scene is entered at once');
   assert.deepEqual(built.scene.show.at(-1), { card: 'map' }, 'a made scene ends with the map');
   assert.equal(built.place.id, 'reeds');
+  // the map's picture, asked for in words where the road map puts each place
+  const paint = built.world.paint_map;
+  assert.deepEqual([paint.name, paint.shape], ['the-yunmeng-marsh-map', 'landscape']);
+  for (const said of ['Top center: The reed ford. Reeds stand taller than a man; water sounds on every side. Middle left: Heron Isle', 'Middle left: Heron Isle', 'Middle right: The shrine of the Xiang lord', 'Bottom center: The sunken bell pool']) {
+    assert.ok(paint.prompt.includes(said), said);
+  }
   assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json')));
   assert.ok(fs.existsSync(path.join(dir, 'saves/jiuding.json')), 'the shipped world\'s save is parked');
   // play: the opening ends, the province is open, a road leads on
@@ -838,6 +844,15 @@ test('Build takes the player to a fresh save in their world; Travel parks and re
     assert.deepEqual(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, creature: 'lushu', art: 'art/lushu.png' });
     assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/art/lushu.png')));
     assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/creatures.json'), 'utf8')).creatures[0].art, 'art/lushu.png');
+    // the map: no file gives the arguments; a file is kept with the positions it was painted for
+    assert.equal(run('art', '--creature=map').paint.prompt, paint.prompt);
+    assert.equal(run('art', '--creature=map', `--file=${path.join(dir, 'nowhere.png')}`).refused, 'no-such-file');
+    assert.deepEqual(run('art', '--creature=map', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, map: 'art/map.png' });
+    const card = JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json'), 'utf8'));
+    assert.deepEqual(Object.keys(card.map.at).sort(), ['bell', 'isle', 'reeds', 'shrine']);
+    const seen = run('look');
+    assert.equal(seen.world.map.file, 'art/map.png');
+    assert.equal(seen.world.paint_map, null, 'painted once');
   } finally {
     fs.rmSync(png, { force: true });
     if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);

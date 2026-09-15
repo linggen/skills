@@ -21,6 +21,7 @@ import {
   lintMade, lintMadeWorld, listWorlds, loadWorld, madeWorldDir, overlayOf, ownPlaces, pairsOf,
 } from './content.mjs';
 import { bout, creatureMoves } from './duel.js';
+import { layoutRoads, placeWords } from './roadmap.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
   payOf, speedOf, stepName, threshold, tierOf,
@@ -337,6 +338,26 @@ function worldBrief(content, lang) {
   return {
     id: w.id, title: pick(w.title, lang), style: pick(w.style, lang), premise: pick(w.premise, lang) ?? null,
     made: Boolean(w.made), base: w.base ?? null, dir: w.made ? `data/worlds/${w.id}` : `worlds/${w.id}`,
+    ...(w.made ? { map: w.map ?? null, paint_map: w.map ? null : mapPaint(content) } : {}),
+  };
+}
+
+/* The map's picture, as GenerateImage's arguments: the made province seen
+   from above, each place said where the road map puts it, in the one style
+   line every made picture carries. English, and no writing asked for — the
+   model paints false characters when it is. */
+const MAP_STYLE = 'Traditional Chinese ink wash painting with soft watercolor tints on aged cream paper, muted sepia, moss green and slate blue, loose brushwork, soft mist, faded vignette edges, no text, no writing, no characters, no labels, no border';
+function mapPaint(content) {
+  const doc = Object.values(content.places)[0];
+  if (!doc) return null;
+  const { at } = layoutRoads(doc.places, doc.start);
+  const plain = t => String(pick(t, 'en') ?? '').trim().replace(/[.。]$/, '');
+  const reading = [...doc.places].sort((a, b) => at[a.id].y - at[b.id].y || at[a.id].x - at[b.id].x);
+  const places = reading.map(p => `${placeWords(at[p.id])}: ${plain(p.name)}. ${plain(p.line)}.`);
+  const province = pick(content.dictionary.provinces[doc.province], 'en') ?? doc.province;
+  return {
+    name: `${content.world.id}-map`, shape: 'landscape',
+    prompt: `A bird's-eye landscape of ${province} painted as an old Chinese map scroll. ${places.join(' ')} Pale footpaths join them. ${MAP_STYLE}`,
   };
 }
 
@@ -988,6 +1009,7 @@ export function amend(state, content, ctx, args) {
 export function art(state, content, ctx, args) {
   if (!content.world.made) return refuse('not-a-made-world', null);
   const id = String(args.creature ?? '');
+  if (id === 'map') return mapArt(content, args);
   const creature = creatureOf(content, id);
   if (!creature?.made) return refuse('not-a-made-creature', null, { creatures: content.creatures.creatures.filter(c => c.made).map(c => c.id) });
   const src = insideSkill(args.file);
@@ -1004,6 +1026,26 @@ export function art(state, content, ctx, args) {
   entry.art_caption = { zh: '灵境所绘', en: 'Drawn in Lingjing' };
   writeAtomic(file, JSON.stringify(doc, null, 2));
   return { state: null, result: { ok: true, creature: id, art: rel } };
+}
+
+/* The world's map: with no file, the arguments to paint it; with the file
+   GenerateImage wrote, kept beside the world with the positions it was
+   painted for, so a place added later never moves the ones on the picture. */
+function mapArt(content, args) {
+  if (args.file == null) return { state: null, result: { ok: true, paint: mapPaint(content) } };
+  const src = insideSkill(args.file);
+  if (!src) return refuse('no-such-file', null, { file: args.file });
+  const dir = madeWorldDir(content.world.id);
+  const rel = `art/map${path.extname(src) || '.png'}`;
+  fs.mkdirSync(path.join(dir, 'art'), { recursive: true });
+  fs.copyFileSync(src, path.join(dir, rel));
+  const doc = Object.values(content.places)[0];
+  const { at } = layoutRoads(doc.places, doc.start);
+  const cardFile = path.join(dir, 'world.json');
+  const card = JSON.parse(fs.readFileSync(cardFile, 'utf8'));
+  card.map = { file: rel, at: Object.fromEntries(Object.entries(at).map(([id, p]) => [id, [p.x, p.y]])) };
+  writeAtomic(cardFile, JSON.stringify(card, null, 2));
+  return { state: null, result: { ok: true, map: rel } };
 }
 
 /* A file the tool may read: the path GenerateImage returned, or its URL

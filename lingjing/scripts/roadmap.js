@@ -1,6 +1,8 @@
 // roadmap.js — a province drawn from its roads alone: rows by how many roads
 // a place lies from the start, each row ordered under the places it is
-// reached from. Nobody writes coordinates; the page lays them out.
+// reached from. Nobody writes coordinates; the page lays them out. The same
+// positions, said in words, tell the picture model where to paint each
+// place, so a painted map sits under its names.
 
 /// `places`: Look's `place.places` ({id, roads}). Returns every place at
 /// {x, y} in 0..1, and each road once as a pair of ids.
@@ -36,13 +38,23 @@ export function layoutRoads(places, start) {
     row.forEach((id, i) => col.set(id, i));
   });
 
+  // Spread across the frame the way a painter reads "left" and "top": two
+  // in a row stand at a quarter and three quarters, three near the edges.
+  const spread = (i, n, most, span) => (n > 1 ? 0.5 + (i - (n - 1) / 2) * Math.min(most, span / (n - 1)) : 0.5);
   const at = {};
   rows.forEach((row, r) => row.forEach((id, i) => {
-    at[id] = { x: (i + 1) / (row.length + 1), y: (r + 0.5) / rows.length, row: r, col: i };
+    at[id] = { x: spread(i, row.length, 0.5, 0.64), y: spread(r, rows.length, 0.32, 0.64), row: r, col: i };
   }));
   const roads = [];
   for (const p of places) {
     for (const n of p.roads ?? []) if (byId.has(n) && p.id < n) roads.push([p.id, n]);
   }
   return { at, roads, rows: rows.length, widest: Math.max(1, ...rows.map((row) => row.length)) };
+}
+
+/// Where a place stands, in a painter's words: "Top center", "Lower left".
+export function placeWords({ x, y }) {
+  const v = y < 0.28 ? 'Top' : y < 0.43 ? 'Upper' : y <= 0.57 ? 'Middle' : y < 0.72 ? 'Lower' : 'Bottom';
+  const h = x < 0.3 ? 'left' : x < 0.44 ? 'left of center' : x <= 0.56 ? 'center' : x < 0.7 ? 'right of center' : 'right';
+  return `${v} ${h}`;
 }

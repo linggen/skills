@@ -178,7 +178,21 @@ everything in `worlds/jiuding/` — is the first world and the example.
   Move refusal carries `here`, and `no-road` carries `toward` — the first
   road on the shortest way through places the player may enter (null when
   none) — and SKILL.md forbids describing a place before a Move there comes
-  back ok. The same run found the opening scene following the player to 芦荡
+  back ok. **The painted map** (same day, his "can we build a map by flux?"
+  → "yes, go"): FLUX paints the province once and the page lays the names
+  and roads on top. Tested first: an edit pass over a layout sketch drew the
+  same picture as words alone (22 s against 13 s), so the prompt carries the
+  layout — each place said where the road map puts it ("Top center:
+  Clearwater Pool. …"), rows spread the way a painter reads left and top
+  (`placeWords` in `scripts/roadmap.js`), the made-picture style line, no
+  writing asked for (one seed still painted false characters). Look's
+  `world.paint_map` holds GenerateImage's arguments until the map is
+  painted; `Art {creature: map, file}` keeps the picture as `art/map.png` in
+  `world.json` with the positions it was painted for, so a place Amend adds
+  later gets a name on the old picture and moves nothing; `Art {creature:
+  map}` with no file gives the arguments again. SKILL.md carries the rule
+  beside `summarize: true` — in the Worlds steps alone Flash-Lite skipped it.
+  Live on Flash-Lite: 《荆州泽国》 painted in 13.8 s, every name on its place. The same run found the opening scene following the player to 芦荡
   (a made scene with only a staying exit never ends); walking away now
   leaves a made scene (§ Made scenes). Open: a weak model may skip reading the template and need several
   lint rounds.
