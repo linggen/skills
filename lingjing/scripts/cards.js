@@ -21,6 +21,7 @@ export const WORDS = {
     boardsStay: '炼丹不耗灵气。',
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
+    building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
   },
   en: {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: "Today's practice", trayEmpty: 'Nothing waits today. Wander a while.',
@@ -35,6 +36,7 @@ export const WORDS = {
     boardsStay: 'Alchemy costs no qi.',
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
+    building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
   },
 };
 

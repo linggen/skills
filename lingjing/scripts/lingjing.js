@@ -163,7 +163,17 @@ function focusHtml() {
   for (const e of look.scene?.exits ?? []) {
     if (e.game?.kind === 'duel' && !cards.some((c) => c.card === 'duel' && c.id === e.game.id)) cards.push({ card: 'duel', id: e.game.id });
   }
-  return emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('');
+  return buildingCard() + emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('');
+}
+
+/// A made world still being painted: the story waits for the brush, so the
+/// scene says how many pictures are left — from Look, never counted here.
+function buildingCard() {
+  const left = look.building?.paint?.length;
+  if (!left) return '';
+  const w = words();
+  return `<div class="card building"><div class="cardtitle">${w.building}</div>
+    <div>${esc(w.buildingLine.replace('{n}', left))}</div></div>`;
 }
 
 function render() {

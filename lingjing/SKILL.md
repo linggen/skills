@@ -31,7 +31,8 @@ tools:
   - name: Look
     description: >-
       The game as it stands, as JSON: the `world` (id, title, style — the
-      story this save plays; its words are the only words), `tier` and `progress` (toward `next`),
+      story this save plays; its words are the only words), `building`
+      (a made world's pictures still to paint — paint them first), `tier` and `progress` (toward `next`),
       `wealth`, `traits`, bag, `cast`, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
       `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
@@ -319,9 +320,9 @@ tools:
     description: >-
       Give a creature of this made world its picture — the `path` (or `url`)
       GenerateImage returned. The rules keep the file beside the world and
-      write it into the creature's card. `creature: map` is the world's map:
-      with the file it becomes the map's picture; with no file it answers
-      `paint`, the arguments to paint it (again).
+      write it into the creature's card; `creature: map` is the world's map.
+      With no file it answers `paint`, the arguments to paint it (again).
+      Answers what is still to `paint`, or `ready` when the world can play.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}}"
     tier: edit
     timeout_ms: 8000
@@ -383,10 +384,15 @@ begin, the same way.
   chapter opens. A zero is left out; nothing paid, nothing said.
 - **When a result carries `summarize: true`, Summarize** before the reply
   ends (below).
-- **When Look's `world` carries `paint_map`, paint the map** before the
-  reply ends: **GenerateImage** with exactly its `prompt`, `name` and
-  `shape`, then **Art** with `creature: map` and the `path` returned. Once a
-  world (§ Worlds, step 5).
+- **When a result carries `paint`, paint every entry before anything else**
+  — **GenerateImage** with exactly its `prompt`, `name` and `shape`, then
+  **Art** with its `creature` and the `path` returned; each Art answers what
+  is left, or `ready`. Say in a phrase that the brush is at work, then narrate.
+  The cards show what was painted — never post it as a markdown image, and
+  never speak of the painting as part of the place.
+  Only building paints — a world just built or travelled to, an Amend, a
+  scene being made; play never draws. `still-building` (and Look's
+  `building`) is the same list: paint it, then go on.
 - **A refusal is final and stays in the world.** Speak its `say` line when it
   has one; otherwise refuse as the world would — *天地灵石，从不白给。*
 - **A refused Move went nowhere.** The player still stands at its `here`:
@@ -597,15 +603,16 @@ with the game, played on any device.
 ### Pictures for made scenes
 
 A creature or a thing the player's scene brings in has no picture of its
-own. Draw one with **GenerateImage** the first time it appears: the subject
+own. Draw it with **GenerateImage** while you make the scene, before
+**Enter** — a picture takes twenty seconds, fine while building, never in
+play: the subject
 first, in plain words, then this line, always the same — *traditional
 Chinese ink wash painting with soft watercolor tints on aged cream paper,
 muted sepia, moss green and slate blue, loose brushwork, soft mist, no
 text, no border*. Name the file after the thing (`fuzhu`, `iron-sword`);
 `square` for a creature or an item, `landscape` for a place. Show the
 `url` it returns as a markdown image, once, when the thing enters. One
-picture a thing; never redraw what exists. It takes about fifteen seconds
-— say so in a phrase if the player is waiting.
+picture a thing; never redraw what exists.
 
 **Without GenerateImage among your tools this machine cannot draw, and
 making scenes is closed here.** Say so in one line — *this Mac can't draw
@@ -627,30 +634,25 @@ whole. Nothing is asked of them first.
    shape. Under a minute. The systems are never yours to change — they are
    the base's.
 3. **Build** with the outline. `not-playable` lists what to fix — fix it and
-   Build again, silently. The answer is the new world's Look: narrate its
-   opening scene the way you narrate any scene. The next scene is written
+   Build again, silently. The answer is the new world's Look, with
+   `building`: paint it first (step 4), then narrate its opening scene the
+   way you narrate any scene. The next scene is written
    when an exit needs it (§ Making scenes); the places are walked with Move.
-4. **Pictures.** A creature from the bestiary has its picture. A creature
-   this world made has none until it first appears: then **GenerateImage**
-   (its look in plain words, then the style line from § Pictures for made
-   scenes; name it by the creature's id; `square`), then **Art** with the
-   creature's id and the `path` returned. Once, on first appearance; say in
-   a phrase that the brush is at work if the player is waiting.
-5. **The map.** While Look's `world.paint_map` is set, the world's map is
-   unpainted. Before the choice: **GenerateImage** with exactly its
-   `prompt`, `name` and `shape`, then **Art** with `creature: map` and the
-   `path` returned — say in a phrase that the brush is at work. Once a
-   world. When the player asks for the map painted again,
-   **Art** `creature: map` with no file gives the arguments. Never write the
-   prompt yourself: it says where each place stands, so the names sit on
-   the picture.
-6. **Worlds** lists them; **Travel** moves between them. Each world keeps
+4. **Pictures — while building, never in play.** A creature from the
+   bestiary has its picture. Every creature this world made, and its map,
+   is painted before the world plays: the rules list them as `paint`, and
+   the story waits (`still-building`) until the last **Art** says `ready`.
+   Never write a picture's prompt yourself — the map's says where each place
+   stands, so the names sit on the picture. When the player asks for a
+   picture painted again, **Art** with its `creature` (or `map`) and no file
+   gives the arguments.
+5. **Worlds** lists them; **Travel** moves between them. Each world keeps
    its own save: leaving 《九鼎》 for a made world and back loses nothing.
-7. **The player changes their world by saying so.** *Put a beast in the
+6. **The player changes their world by saying so.** *Put a beast in the
    cave*, *there should be a temple past the ridge*: **Amend** with a
-   creature and the place it haunts, or with a place and its roads. Then
-   play on — the beast is shown when the player reaches it, and painted
-   then, as in step 4. Never Build the world again to change it.
+   creature and the place it haunts, or with a place and its roads. A new
+   beast comes back as `paint`: paint it at once, then play on. Never Build
+   the world again to change it.
 
 **Without GenerateImage among your tools this machine cannot draw, and
 building worlds is closed here** — the same line as for scenes, and the

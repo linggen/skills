@@ -181,6 +181,7 @@ button:disabled { cursor: default; }
 .roadmap.painted .pl.road { border-color: #8A6224; color: #8A6224; }
 .roadmap.painted .pl.far { color: #6A6458; border-style: dashed; }
 
+.building { border-color: var(--ling); background: var(--ling-soft); }
 .gate { display: flex; gap: 12px; align-items: center; }
 .gate .ding { font-family: var(--serif); font-size: 38px; color: var(--ling); line-height: 1; }
 

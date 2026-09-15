@@ -786,7 +786,7 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
 });
 
 // ── Worlds of the player's own: the command line parks and restores saves ──
-test('Build takes the player to a fresh save in their world; Travel parks and restores; Art paints a made creature', () => {
+test('Build takes the player to a fresh save in their world, which plays once its pictures are painted; Travel parks and restores', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-worlds-'));
   const skill = path.resolve('.');
   const rules = path.join(skill, 'scripts/rules.mjs');
@@ -794,72 +794,81 @@ test('Build takes the player to a fresh save in their world; Travel parks and re
     const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
     return JSON.parse(out.stdout.trim().split('\n').pop());
   };
-  assert.equal(run('init', '--lang=en').world.id, 'jiuding');
-  const t = run('build');
-  assert.equal(t.template.id, 'yunmeng');
-  assert.ok(t.rules.length && t.cost === 10);
-  const bare = { ...t.template }; delete bare.base; delete bare.id;
-  const built = run('build', `--world=${JSON.stringify(bare)}`); // base and id are the only answers there are
-  assert.equal(built.ok, true, JSON.stringify(built));
-  assert.deepEqual(built.travelled, { from: 'jiuding', to: 'the-yunmeng-marsh', fresh: true }, 'no id given: the title becomes one');
-  assert.equal(built.world.made, true);
-  assert.equal(built.world.dir, 'data/worlds/the-yunmeng-marsh');
-  assert.equal(built.scene.id, 'made-yunmeng-reeds', 'the opening scene is entered at once');
-  assert.deepEqual(built.scene.show.at(-1), { card: 'map' }, 'a made scene ends with the map');
-  assert.equal(built.place.id, 'reeds');
-  // the map's picture, asked for in words where the road map puts each place
-  const paint = built.world.paint_map;
-  assert.deepEqual([paint.name, paint.shape], ['the-yunmeng-marsh-map', 'landscape']);
-  for (const said of ['Top center: The reed ford. Reeds stand taller than a man; water sounds on every side. Middle left: Heron Isle', 'Middle left: Heron Isle', 'Middle right: The shrine of the Xiang lord', 'Bottom center: The sunken bell pool']) {
-    assert.ok(paint.prompt.includes(said), said);
-  }
-  assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json')));
-  assert.ok(fs.existsSync(path.join(dir, 'saves/jiuding.json')), 'the shipped world\'s save is parked');
-  // play: the opening ends, the province is open, a road leads on
-  assert.equal(run('resolve', '--exit=wade').paid.progress, 10);
-  const moved = run('move', '--place=isle');
-  assert.equal(moved.ok, true);
-  assert.deepEqual(moved.show, [{ card: 'creature', id: 'jingwei' }, { card: 'map' }], 'a made world draws its own map with every place');
-  assert.equal(moved.place.province.start, 'reeds');
-  assert.deepEqual(moved.place.places.find(p => p.id === 'isle').roads, ['reeds', 'bell']);
-  const lost = run('move', '--place=shrine');
-  assert.equal(lost.refused, 'no-road');
-  assert.equal(lost.here.id, 'isle', 'refused: still where they stood');
-  assert.equal(lost.toward.id, 'reeds', 'by the ford, not the pool beyond the tier');
-  // worlds and travel
-  assert.deepEqual(run('worlds').worlds.map(w => [w.id, w.playing, w.saved]), [['jiuding', false, true], ['the-yunmeng-marsh', true, true]]);
-  const home = run('travel', '--world=jiuding');
-  assert.deepEqual(home.travelled, { from: 'the-yunmeng-marsh', to: 'jiuding', fresh: false });
-  assert.equal(home.scene.id, '00-river');
-  assert.equal(home.stamina.now, 90, 'building cost the save it was built from');
-  assert.equal(run('travel', '--world=the-yunmeng-marsh').place.id, 'isle', 'restored where it stood');
-  assert.equal(run('travel', '--world=nowhere').refused, 'unknown-world');
-  assert.equal(run('build', `--world=${JSON.stringify(bare)}`).refused, 'world-in-play');
-  // art: only a file inside the skill, only a made creature
   const pictures = path.join(skill, 'data/pictures'); fs.mkdirSync(pictures, { recursive: true });
   const png = path.join(pictures, 'test-lushu.png'); fs.writeFileSync(png, 'png');
   try {
+    assert.equal(run('init', '--lang=en').world.id, 'jiuding');
+    const t = run('build');
+    assert.equal(t.template.id, 'yunmeng');
+    assert.ok(t.rules.length && t.cost === 10);
+    const bare = { ...t.template }; delete bare.base; delete bare.id;
+    const built = run('build', `--world=${JSON.stringify(bare)}`); // base and id are the only answers there are
+    assert.equal(built.ok, true, JSON.stringify(built));
+    assert.deepEqual(built.travelled, { from: 'jiuding', to: 'the-yunmeng-marsh', fresh: true }, 'no id given: the title becomes one');
+    assert.equal(built.world.made, true);
+    assert.equal(built.world.dir, 'data/worlds/the-yunmeng-marsh');
+    assert.equal(built.scene.id, 'made-yunmeng-reeds', 'the opening scene is entered at once');
+    assert.deepEqual(built.scene.show.at(-1), { card: 'map' }, 'a made scene ends with the map');
+    assert.equal(built.place.id, 'reeds');
+    assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json')));
+    assert.ok(fs.existsSync(path.join(dir, 'saves/jiuding.json')), 'the shipped world\'s save is parked');
+    // building: its new creature and its map to paint — the map in words where the road map puts each place
+    const paint = built.building.paint;
+    assert.deepEqual(paint.map(p => [p.creature, p.name, p.shape]), [['lushu', 'lushu', 'square'], ['map', 'the-yunmeng-marsh-map', 'landscape']]);
+    assert.ok(paint[0].prompt.includes('Traditional Chinese ink wash painting'));
+    for (const said of ['Top center: The reed ford. Reeds stand taller than a man; water sounds on every side. Middle left: Heron Isle', 'Middle right: The shrine of the Xiang lord', 'Bottom center: The sunken bell pool']) {
+      assert.ok(paint[1].prompt.includes(said), said);
+    }
+    // the story waits for the brush; talk does not
+    const waits = run('resolve', '--exit=wade');
+    assert.equal(waits.refused, 'still-building');
+    assert.deepEqual(waits.paint, paint);
+    assert.equal(run('move', '--place=isle').refused, 'still-building');
+    assert.deepEqual(run('look', '--said=hi').building.paint, paint);
+    // art: only a file inside the skill, only a made creature; with no file, the arguments
     assert.equal(run('art', '--creature=lushu', `--file=${path.join(dir, 'nowhere.png')}`).refused, 'no-such-file');
     assert.equal(run('art', '--creature=fuzhu', `--file=${png}`).refused, 'not-a-made-creature');
-    assert.deepEqual(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, creature: 'lushu', art: 'art/lushu.png' });
+    assert.deepEqual(run('art', '--creature=lushu').paint, paint[0]);
+    assert.deepEqual(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, creature: 'lushu', art: 'art/lushu.png', paint: [paint[1]] });
     assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/art/lushu.png')));
     assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/creatures.json'), 'utf8')).creatures[0].art, 'art/lushu.png');
-    // the map: no file gives the arguments; a file is kept with the positions it was painted for
-    assert.equal(run('art', '--creature=map').paint.prompt, paint.prompt);
+    // the map is kept with the positions it was painted for; the last picture opens the world
+    assert.equal(run('art', '--creature=map').paint.prompt, paint[1].prompt);
     assert.equal(run('art', '--creature=map', `--file=${path.join(dir, 'nowhere.png')}`).refused, 'no-such-file');
-    assert.deepEqual(run('art', '--creature=map', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, map: 'art/map.png' });
+    assert.deepEqual(run('art', '--creature=map', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, map: 'art/map.png', ready: true });
     const card = JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json'), 'utf8'));
     assert.deepEqual(Object.keys(card.map.at).sort(), ['bell', 'isle', 'reeds', 'shrine']);
     const seen = run('look');
     assert.equal(seen.world.map.file, 'art/map.png');
-    assert.equal(seen.world.paint_map, null, 'painted once');
+    assert.equal(seen.building, undefined, 'painted: the world plays');
+    // play: the opening ends, the province is open, a road leads on
+    assert.equal(run('resolve', '--exit=wade').paid.progress, 10);
+    const moved = run('move', '--place=isle');
+    assert.equal(moved.ok, true);
+    assert.deepEqual(moved.show, [{ card: 'creature', id: 'jingwei' }, { card: 'map' }], 'a made world draws its own map with every place');
+    assert.equal(moved.place.province.start, 'reeds');
+    assert.deepEqual(moved.place.places.find(p => p.id === 'isle').roads, ['reeds', 'bell']);
+    const lost = run('move', '--place=shrine');
+    assert.equal(lost.refused, 'no-road');
+    assert.equal(lost.here.id, 'isle', 'refused: still where they stood');
+    assert.equal(lost.toward.id, 'reeds', 'by the ford, not the pool beyond the tier');
+    // worlds and travel
+    assert.deepEqual(run('worlds').worlds.map(w => [w.id, w.playing, w.saved]), [['jiuding', false, true], ['the-yunmeng-marsh', true, true]]);
+    const home = run('travel', '--world=jiuding');
+    assert.deepEqual(home.travelled, { from: 'the-yunmeng-marsh', to: 'jiuding', fresh: false });
+    assert.equal(home.scene.id, '00-river');
+    assert.equal(home.building, undefined, 'a shipped world never builds');
+    assert.equal(home.stamina.now, 90, 'building cost the save it was built from');
+    assert.equal(run('travel', '--world=the-yunmeng-marsh').place.id, 'isle', 'restored where it stood');
+    assert.equal(run('travel', '--world=nowhere').refused, 'unknown-world');
+    assert.equal(run('build', `--world=${JSON.stringify(bare)}`).refused, 'world-in-play');
+    // undo steps back across the last travel
+    assert.equal(run('undo').undid, 'travel');
   } finally {
     fs.rmSync(png, { force: true });
     if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
+    fs.rmSync(dir, { recursive: true, force: true });
   }
-  // undo steps back across the last travel
-  assert.equal(run('undo').undid, 'travel');
-  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 test('Amend adds a creature where it haunts, or a place with its roads laid back; never to a shipped world', () => {
@@ -869,10 +878,15 @@ test('Amend adds a creature where it haunts, or a place with its roads laid back
     const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
     return JSON.parse(out.stdout.trim().split('\n').pop());
   };
+  const pictures = path.resolve('data/pictures'); fs.mkdirSync(pictures, { recursive: true });
+  const png = path.join(pictures, 'test-heron.png'); fs.writeFileSync(png, 'png');
+  const paintAll = () => (run('look').building?.paint ?? []).map(p => run('art', `--creature=${p.creature}`, `--file=${png}`));
+  try {
   run('init', '--lang=en');
   const beast = { id: 'heron-king', name: { zh: '鹭王', en: 'The heron king' }, quote: { zh: '有鸟焉，其状如鹭而人语。', en: 'A bird like a heron that speaks as people do.' }, look: { zh: '白鹭，高过人。', en: 'A white heron taller than a man.' }, root: 'water' };
   assert.equal(run('amend', `--creature=${JSON.stringify(beast)}`).refused, 'not-a-made-world');
   run('build', `--world=${JSON.stringify(run('build').template)}`);
+  assert.equal(paintAll().at(-1).ready, true);
   assert.equal(run('amend').refused, 'nothing-to-add');
   // a creature at a place that already has one is refused; at an empty one it is kept and shown when standing there
   assert.ok(run('amend', `--creature=${JSON.stringify(beast)}`, '--at=isle').problems.some(p => /already has jingwei/.test(p)));
@@ -880,6 +894,8 @@ test('Amend adds a creature where it haunts, or a place with its roads laid back
   assert.equal(added.ok, true, JSON.stringify(added));
   assert.deepEqual(added.added, { creature: 'heron-king', at: 'reeds', place: null });
   assert.deepEqual(added.show, [{ card: 'creature', id: 'heron-king' }], 'the player stands at the reeds');
+  assert.deepEqual(added.paint.map(p => [p.creature, p.shape]), [['heron-king', 'square']], 'what Amend adds is painted before play goes on');
+  assert.ok(added.paint[0].prompt.startsWith('A white heron taller than a man. Traditional Chinese ink wash'));
   const look = run('look', '--said=hi');
   assert.equal(look.place.has.creature.id, 'heron-king');
   assert.equal(look.stamina.now, 95, 'the build was paid by the save it was built from; the amend by this one');
@@ -895,16 +911,15 @@ test('Amend adds a creature where it haunts, or a place with its roads laid back
   assert.deepEqual(run('amend', `--place=${JSON.stringify(temple)}`).added, { creature: null, at: null, place: 'temple' });
   const places = JSON.parse(fs.readFileSync(path.join(dir, 'worlds/yunmeng/places/yunmeng.json'), 'utf8')).places;
   assert.ok(places.find(p => p.id === 'shrine').roads.includes('temple'), 'the road runs back');
+  assert.equal(run('move', '--place=shrine').refused, 'still-building', 'the amended creatures wait for the brush');
+  const painted = paintAll();
+  assert.equal(painted[0].art, 'art/heron-king.png');
+  assert.equal(painted.at(-1).ready, true);
   run('move', '--place=shrine');
   assert.equal(run('move', '--place=temple').place.id, 'temple');
-  // art for the amended creature works like any made creature
-  const pictures = path.resolve('data/pictures'); fs.mkdirSync(pictures, { recursive: true });
-  const png = path.join(pictures, 'test-heron.png'); fs.writeFileSync(png, 'png');
-  try {
-    assert.equal(run('art', '--creature=heron-king', `--file=${png}`).art, 'art/heron-king.png');
   } finally {
     fs.rmSync(png, { force: true });
     if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
+    fs.rmSync(dir, { recursive: true, force: true });
   }
-  fs.rmSync(dir, { recursive: true, force: true });
 });

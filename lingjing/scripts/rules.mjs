@@ -311,6 +311,7 @@ export function look(state, content, ctx) {
   return {
     ok: true, lang, name: state.name,
     world: worldBrief(content, lang),
+    ...building(content),
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
     progress: state.progress, next: threshold(content, state), wealth: state.wealth,
     traits,
@@ -338,26 +339,50 @@ function worldBrief(content, lang) {
   return {
     id: w.id, title: pick(w.title, lang), style: pick(w.style, lang), premise: pick(w.premise, lang) ?? null,
     made: Boolean(w.made), base: w.base ?? null, dir: w.made ? `data/worlds/${w.id}` : `worlds/${w.id}`,
-    ...(w.made ? { map: w.map ?? null, paint_map: w.map ? null : mapPaint(content) } : {}),
+    ...(w.made ? { map: w.map ?? null } : {}),
   };
 }
 
-/* The map's picture, as GenerateImage's arguments: the made province seen
-   from above, each place said where the road map puts it, in the one style
-   line every made picture carries. English, and no writing asked for — the
+/* ── Building: a made world's pictures ──
+   Only building paints. A made world plays once every creature it made has
+   its picture and its map is painted; until then its story waits, and
+   every answer that matters says what is left to paint. A picture takes
+   twenty seconds — fine while building, never in play. */
+
+const PICTURE_STYLE = 'Traditional Chinese ink wash painting with soft watercolor tints on aged cream paper, muted sepia, moss green and slate blue, loose brushwork, soft mist, faded vignette edges, no text, no writing, no characters, no labels, no border';
+const plainEn = t => String(pick(t, 'en') ?? '').trim().replace(/[.。]$/, '');
+
+/* The verbs that move the story, and so wait for the brush. */
+export const BUILDING_WAITS = new Set(['resolve', 'judge', 'duel', 'branch', 'move', 'trade', 'make', 'enter', 'leave']);
+
+/* What a made world still needs painted, as GenerateImage's arguments, each
+   with the `creature` Art takes back: its new creatures, then its map. */
+export function paintList(content) {
+  if (!content.world.made) return [];
+  const beasts = content.creatures.creatures.filter(c => c.made && !c.art).map(creaturePaint);
+  const map = content.world.map ? null : mapPaint(content);
+  return map ? [...beasts, map] : beasts;
+}
+const building = content => {
+  const paint = paintList(content);
+  return paint.length ? { building: { paint } } : {};
+};
+const creaturePaint = c => ({ creature: c.id, name: c.id, shape: 'square', prompt: `${plainEn(c.look)}. ${PICTURE_STYLE}` });
+
+/* The map's picture: the made province seen from above, each place said
+   where the road map puts it. English, and no writing asked for — the
    model paints false characters when it is. */
-const MAP_STYLE = 'Traditional Chinese ink wash painting with soft watercolor tints on aged cream paper, muted sepia, moss green and slate blue, loose brushwork, soft mist, faded vignette edges, no text, no writing, no characters, no labels, no border';
 function mapPaint(content) {
   const doc = Object.values(content.places)[0];
   if (!doc) return null;
   const { at } = layoutRoads(doc.places, doc.start);
-  const plain = t => String(pick(t, 'en') ?? '').trim().replace(/[.。]$/, '');
+  const plain = plainEn;
   const reading = [...doc.places].sort((a, b) => at[a.id].y - at[b.id].y || at[a.id].x - at[b.id].x);
   const places = reading.map(p => `${placeWords(at[p.id])}: ${plain(p.name)}. ${plain(p.line)}.`);
   const province = pick(content.dictionary.provinces[doc.province], 'en') ?? doc.province;
   return {
-    name: `${content.world.id}-map`, shape: 'landscape',
-    prompt: `A bird's-eye landscape of ${province} painted as an old Chinese map scroll. ${places.join(' ')} Pale footpaths join them. ${MAP_STYLE}`,
+    creature: 'map', name: `${content.world.id}-map`, shape: 'landscape',
+    prompt: `A bird's-eye landscape of ${province} painted as an old Chinese map scroll. ${places.join(' ')} Pale footpaths join them. ${PICTURE_STYLE}`,
   };
 }
 
@@ -1001,7 +1026,7 @@ export function amend(state, content, ctx, args) {
   writeAtomic(placesFile, JSON.stringify(doc, null, 2));
   const added = { creature: creature?.id ?? null, at, place: place?.id ?? null };
   const show = creature && at === s.place ? [{ card: 'creature', id: creature.id }] : [];
-  return { state: s, result: { ok: true, added, show } };
+  return { state: s, result: { ok: true, added, show, ...(creature ? { paint: [creaturePaint(creature)] } : {}) } };
 }
 
 /* A picture for a creature of this made world — the file GenerateImage
@@ -1012,6 +1037,7 @@ export function art(state, content, ctx, args) {
   if (id === 'map') return mapArt(content, args);
   const creature = creatureOf(content, id);
   if (!creature?.made) return refuse('not-a-made-creature', null, { creatures: content.creatures.creatures.filter(c => c.made).map(c => c.id) });
+  if (args.file == null) return { state: null, result: { ok: true, paint: creaturePaint(creature) } };
   const src = insideSkill(args.file);
   if (!src) return refuse('no-such-file', null, { file: args.file ?? null });
   const dir = madeWorldDir(content.world.id);
@@ -1025,7 +1051,13 @@ export function art(state, content, ctx, args) {
   entry.art_source = 'Drawn on this machine by the local picture model, for this world.';
   entry.art_caption = { zh: '灵境所绘', en: 'Drawn in Lingjing' };
   writeAtomic(file, JSON.stringify(doc, null, 2));
-  return { state: null, result: { ok: true, creature: id, art: rel } };
+  return { state: null, result: { ok: true, creature: id, art: rel, ...leftToPaint(content, id) } };
+}
+
+/* After a picture is kept: what is still to paint, or ready to play. */
+function leftToPaint(content, done) {
+  const paint = paintList(content).filter(p => p.creature !== done);
+  return paint.length ? { paint } : { ready: true };
 }
 
 /* The world's map: with no file, the arguments to paint it; with the file
@@ -1045,7 +1077,7 @@ function mapArt(content, args) {
   const card = JSON.parse(fs.readFileSync(cardFile, 'utf8'));
   card.map = { file: rel, at: Object.fromEntries(Object.entries(at).map(([id, p]) => [id, [p.x, p.y]])) };
   writeAtomic(cardFile, JSON.stringify(card, null, 2));
-  return { state: null, result: { ok: true, map: rel } };
+  return { state: null, result: { ok: true, map: rel, ...leftToPaint(content, 'map') } };
 }
 
 /* A file the tool may read: the path GenerateImage returned, or its URL
@@ -1151,6 +1183,10 @@ function run(verb, args) {
 
   const fn = VERBS[verb];
   if (!fn) return { ok: false, refused: 'unknown-verb', verbs: ['init', ...Object.keys(VERBS), 'undo'] };
+  if (BUILDING_WAITS.has(verb)) {
+    const paint = paintList(content);
+    if (paint.length) return { ok: false, refused: 'still-building', say: null, paint };
+  }
   const heard = heed(state, args.said);
   const out = fn(heard, content, { now, quests: readQuests() }, args);
   const next = out.state ?? (heard !== state ? heard : null);

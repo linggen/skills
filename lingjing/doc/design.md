@@ -156,7 +156,8 @@ everything in `worlds/jiuding/` — is the first world and the example.
   `data/saves/<world>.json`, the other's restored or begun; `undo` steps back
   across it), `art` (the file GenerateImage wrote, moved beside the world and
   written into the creature's card). Cast may come from the bestiary, with
-  its picture, or be new and drawn on first appearance — both, his ruling.
+  its picture, or be new and painted — both, his ruling (painted while
+  building since the same day, below).
   The page reads a made world's creatures and words over its base's; a
   creature not yet painted shows its look in words. Closed where the machine
   cannot draw (no GenerateImage). Live on Gemini Flash-Lite: 《青州山海猎》 in
@@ -186,16 +187,30 @@ everything in `worlds/jiuding/` — is the first world and the example.
   Clearwater Pool. …"), rows spread the way a painter reads left and top
   (`placeWords` in `scripts/roadmap.js`), the made-picture style line, no
   writing asked for (one seed still painted false characters). Look's
-  `world.paint_map` holds GenerateImage's arguments until the map is
-  painted; `Art {creature: map, file}` keeps the picture as `art/map.png` in
+  `world.paint_map` held GenerateImage's arguments until the map was
+  painted (now `building`, below); `Art {creature: map, file}` keeps the picture as `art/map.png` in
   `world.json` with the positions it was painted for, so a place Amend adds
   later gets a name on the old picture and moves nothing; `Art {creature:
   map}` with no file gives the arguments again. SKILL.md carries the rule
   beside `summarize: true` — in the Worlds steps alone Flash-Lite skipped it.
-  Live on Flash-Lite: 《荆州泽国》 painted in 13.8 s, every name on its place. The same run found the opening scene following the player to 芦荡
-  (a made scene with only a staying exit never ends); walking away now
-  leaves a made scene (§ Made scenes). Open: a weak model may skip reading the template and need several
-  lint rounds.
+  Live on Flash-Lite: 《荆州泽国》 painted in 13.8 s, every name on its place.
+  The same run found the opening scene following the player to 芦荡 (a made
+  scene with only a staying exit never ends); walking away now leaves a
+  made scene (§ Made scenes). **Only building paints** (same day, his "20
+  seconds is ok for building mode, but not ok for playing mode"): a made
+  world plays once every creature it made has its picture and its map is
+  painted. `paintList` is GenerateImage's arguments for each (a creature's
+  from its `look` and the style line, the map's as above), each with the
+  `creature` Art takes back; Look carries it as `building`; the story's
+  verbs (resolve, judge, duel, branch, move, trade, make, enter, leave)
+  refuse `still-building` with the list; Art answers what is left, or
+  `ready`; Amend answers `paint` for a beast it adds. Build still travels at
+  once — Art works on the world in play — so a new world opens in building
+  mode and the scene shows *painting the world, n to go*. A made scene's
+  new things are drawn while it is made, before Enter. Measured the same
+  day: a painting is 20–25 s warm or cold (a cold model costs ~3 s, the
+  network check 0.3 s), so there is no warm-up. Open: a weak model may skip
+  reading the template and need several lint rounds.
 - **Style of 《九鼎》: 修仙 · 凡人流 — no names from the book.** Decided
   2026-09-14 ("use 凡人流 style, no names from the book"). The *system* is
   道教 and genre inheritance older than any novel — nine realms 练气 to 渡劫,
