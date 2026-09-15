@@ -62,6 +62,8 @@ Mac; no Linggen Cloud, no data-provider key.
 
 - A skill mission (`linggen/doc/mission-spec.md`, "Skill missions"):
   `schedule: "0 9,18 * * 1-5"`, `catchup_hours: 12`, `enabled: false`.
+  Its tools need `tier: read` — a mission run is non-interactive and an
+  untiered skill tool defaults to admin.
 - Runbook: `CheckReports` → empty → end `DONE`. Otherwise read each item
   (`WebFetch` the filing or release, `WebSearch` for TSX results) →
   `SaveReport`. No `AskUser`, no `PageUpdate`.
@@ -81,8 +83,8 @@ Mac; no Linggen Cloud, no data-provider key.
 
 ## MVP order
 
-1. Engine: skill missions (discovery, user-owned enabled/schedule, skill
-   tools in the run) + catch-up from the scheduler tick
+1. ~~Engine: skill missions (discovery, user-owned enabled/schedule, skill
+   tools in the run)~~ — built, linggen `998793f`
 2. `market.sh` quotes/stats + `investments.json` + the tab (list, add/edit,
    refresh)
 3. Company card + `reports-check` + `SaveReport` + both report buttons
