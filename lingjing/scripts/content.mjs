@@ -237,15 +237,83 @@ function lintWorldCast(o, base, bad) {
   for (const id of cast) if (!baseIds.has(id)) bad('cast', `${id} is not in the bestiary`);
   const seen = new Set();
   for (const c of news) {
-    const at = `creature ${c?.id ?? '?'}`;
-    if (!ID.test(c?.id ?? '')) bad(at, 'id must be lowercase letters, digits and dashes');
-    else if (baseIds.has(c.id) || seen.has(c.id)) bad(at, 'id already taken');
+    lintNewCreature(c, base, seen, bad);
     seen.add(c?.id);
-    if (!base.traits.elements[c?.root]) bad(at, `needs a root the traits know, not ${c?.root}`);
-    for (const k of ['name', 'quote', 'look']) if (!pair(c?.[k])) bad(at, `${k} needs zh and en`);
-    if (c?.art) bad(at, 'art is drawn later, never written');
   }
 }
+
+/* One creature Ling made: an id of its own, a root, its words — the
+   player's language at least, as for a made scene — and no art yet. */
+export function lintNewCreature(c, content, taken, bad) {
+  const at = `creature ${c?.id ?? '?'}`;
+  if (!c || typeof c !== 'object') { bad(at, 'not a creature'); return; }
+  if (!ID.test(c.id ?? '')) bad(at, 'id must be lowercase letters, digits and dashes');
+  else if (content.creatures.creatures.some(x => x.id === c.id) || taken.has(c.id)) bad(at, 'id already taken');
+  if (!content.traits.elements[c.root]) bad(at, `needs a root the traits know, not ${c.root}`);
+  for (const k of ['name', 'quote', 'look']) if (!c[k]?.zh && !c[k]?.en) bad(at, `${k} needs zh or en`);
+  if (c.art) bad(at, 'art is drawn later, never written');
+}
+
+/* Words a model hands over bare — "Nixuan" for a name — are one language's
+   words: a Han string is zh, anything else en. Applied to the fields that
+   are {zh, en} pairs before the lint, so the lint judges the meaning. */
+export function pairsOf(thing, fields) {
+  if (!thing || typeof thing !== 'object') return thing;
+  const out = { ...thing };
+  for (const k of fields) {
+    if (typeof out[k] !== 'string') continue;
+    out[k] = /\p{Script=Han}/u.test(out[k]) ? { zh: out[k] } : { en: out[k] };
+  }
+  return out;
+}
+
+/* ── Amending a made world in play ── */
+
+/* A creature added to the world in play, and the place it haunts. Checked
+   like one written at the outset: the count, the id, the root, the words,
+   the names; the place must be the world's and stand empty. */
+export function lintAmendCreature(creature, at, content) {
+  const problems = [];
+  const bad = (where, msg) => problems.push(`${where}: ${msg}`);
+  const made = content.creatures.creatures.filter(c => c.made);
+  if (made.length >= WORLD.new_creatures) bad('creatures', `at most ${WORLD.new_creatures} new creatures`);
+  lintNewCreature(creature, content, new Set(), bad);
+  refusedNames(creature, content, `creature ${creature?.id ?? '?'}`, bad);
+  if (at != null) {
+    const place = ownPlaces(content).find(p => p.id === at);
+    if (!place) bad('at', `${at} is not a place of this world`);
+    else if (place.has?.creature) bad('at', `${at} already has ${place.has.creature}`);
+  }
+  return problems;
+}
+
+/* A place added to the world in play: its own id, a tier on the ladder, a
+   line in both languages, roads to places that exist (the rules lay the
+   road back), and the map still whole. */
+export function lintAmendPlace(place, content) {
+  const problems = [];
+  const bad = (where, msg) => problems.push(`${where}: ${msg}`);
+  const at = `place ${place?.id ?? '?'}`;
+  if (!place || typeof place !== 'object') return ['not a place'];
+  const places = ownPlaces(content);
+  if (places.length >= WORLD.places[1]) bad('places', `at most ${WORLD.places[1]} places`);
+  if (!ID.test(place.id ?? '')) bad(at, 'id must be lowercase letters, digits and dashes');
+  else if (places.some(p => p.id === place.id)) bad(at, 'id already taken');
+  if (!pair(place.name)) bad(at, 'name needs zh and en');
+  if (!Array.isArray(place.roads) || !place.roads.length) bad(at, 'needs at least one road');
+  for (const r of place.roads ?? []) if (!places.some(p => p.id === r)) bad(at, `road to ${r}, which is not a place of this world`);
+  refusedNames(place, content, at, bad);
+  if (problems.length) return problems;
+  const pid = content.world.province.id;
+  const doc = content.places[pid];
+  const withRoads = doc.places.map(p => (place.roads.includes(p.id) ? { ...p, roads: [...new Set([...p.roads, place.id])] } : p));
+  const ids = { creatures: new Set(content.creatures.creatures.map(c => c.id)), items: new Set(content.items.items.map(i => i.id)), tasks: new Set() };
+  lintPlaces({ ...content, places: { [pid]: { ...doc, places: [...withRoads, place] } }, chapters: { story: { scenes: {} } } }, ids, bad);
+  return problems;
+}
+
+/* The made world's own places — the one province it has. */
+export const ownPlaces = content => content.places[content.world.province?.id]?.places ?? [];
 
 /* Words a world renames: only ids the base has, each in both languages. */
 function lintWorldWords(o, base, bad) {

@@ -4,7 +4,7 @@
 //
 //   node rules.mjs <verb> [--key value …]
 //   verbs: init look resolve judge task win duel branch summarize move trade lang make enter leave
-//          build worlds travel art undo
+//          build worlds travel amend art undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` takes
@@ -17,8 +17,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CAST, DEFAULT_WORLD, MADE, WORLD, allWorlds, cardOf, gameOf, hasMadeWorld, hasWorld, knownWorld, lintMade, lintMadeWorld,
-  listWorlds, loadWorld, madeWorldDir, overlayOf,
+  CAST, DEFAULT_WORLD, MADE, WORLD, allWorlds, cardOf, gameOf, hasWorld, knownWorld, lintAmendCreature, lintAmendPlace,
+  lintMade, lintMadeWorld, listWorlds, loadWorld, madeWorldDir, overlayOf, ownPlaces, pairsOf,
 } from './content.mjs';
 import { bout, creatureMoves } from './duel.js';
 import {
@@ -848,7 +848,7 @@ export function build(state, content, ctx, args) {
     return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: content.rewards.stamina.cost.build, limits: WORLD } };
   }
   let outline;
-  try { outline = typeof args.world === 'string' ? JSON.parse(args.world) : args.world; } catch { return refuse('not-json', null); }
+  try { outline = jsonOf(args.world); } catch { return refuse('not-json', null); }
   outline = withDefaults(strip(outline));
   if (!hasWorld(outline.base)) return refuse('not-playable', null, { problems: [`world: base must be one of ${listWorlds().join(', ')}`] });
   const base = loadWorld(outline.base);
@@ -860,6 +860,13 @@ export function build(state, content, ctx, args) {
   if (empty) return empty;
   writeMadeWorld(outline, ctx.now);
   return { state: s, result: { ok: true, built: outline.id, travel: outline.id } };
+}
+
+/* JSON as a model hands it over: parsed, or already an object; a string
+   whose quotes arrived escaped (\") is unescaped once and parsed again. */
+function jsonOf(raw) {
+  if (typeof raw !== 'string') return raw;
+  try { return JSON.parse(raw); } catch { return JSON.parse(raw.replace(/\\"/g, '"')); }
 }
 
 /* What an outline may leave out because only one answer exists: the base
@@ -898,6 +905,54 @@ export function travel(state, content, ctx, args) {
   return { state: null, result: { ok: true, travel: id } };
 }
 
+/* Add to the world in play — a made one: a creature, and the place it
+   haunts; or a place, with its roads laid both ways. The rules check it as
+   they check an outline, write the world's files, and charge the save. */
+export function amend(state, content, ctx, args) {
+  if (!content.world.made) return refuse('not-a-made-world', null);
+  if (args.creature == null && args.place == null) return refuse('nothing-to-add', null, { takes: ['creature', 'place'] });
+  let creature = null, place = null;
+  try {
+    creature = args.creature == null ? null : pairsOf(strip(jsonOf(args.creature)), ['name', 'quote', 'look']);
+    place = args.place == null ? null : pairsOf(strip(jsonOf(args.place)), ['name', 'line']);
+  } catch { return refuse('not-json', null); }
+  let at = args.at == null ? null : String(args.at);
+  // "add the beast at the reed bank" arrives as the existing place under
+  // `place`: that is where, not a new place.
+  if (creature && place && ownPlaces(content).some(p => p.id === place.id)) { at ??= place.id; place = null; }
+  if (creature && at == null && place == null) return refuse('not-playable', null, { problems: ['at: a creature needs the place it haunts'] });
+  const problems = [
+    ...(creature ? lintAmendCreature(creature, at, content) : []),
+    ...(place ? lintAmendPlace(place, content) : []),
+  ];
+  if (problems.length) return refuse('not-playable', null, { problems });
+  const s = clone(state);
+  const empty = spendStamina(content, s, ctx, 'amend');
+  if (empty) return empty;
+  const dir = madeWorldDir(content.world.id);
+  const pid = content.world.province.id;
+  const placesFile = path.join(dir, `places/${pid}.json`);
+  const doc = JSON.parse(fs.readFileSync(placesFile, 'utf8'));
+  if (place) {
+    for (const p of doc.places) if (place.roads.includes(p.id) && !p.roads.includes(place.id)) p.roads.push(place.id);
+    doc.places.push(place);
+  }
+  if (creature) {
+    const file = path.join(dir, 'creatures.json');
+    const beasts = JSON.parse(fs.readFileSync(file, 'utf8'));
+    beasts.creatures.push(creature);
+    writeAtomic(file, JSON.stringify(beasts, null, 2));
+    if (at) {
+      const home = doc.places.find(p => p.id === at);
+      home.has = { ...(home.has ?? {}), creature: creature.id };
+    }
+  }
+  writeAtomic(placesFile, JSON.stringify(doc, null, 2));
+  const added = { creature: creature?.id ?? null, at, place: place?.id ?? null };
+  const show = creature && at === s.place ? [{ card: 'creature', id: creature.id }] : [];
+  return { state: s, result: { ok: true, added, show } };
+}
+
 /* A picture for a creature of this made world — the file GenerateImage
    wrote, moved beside the world and written into its card. */
 export function art(state, content, ctx, args) {
@@ -934,7 +989,7 @@ function insideSkill(raw) {
 
 export const VERBS = {
   look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; },
-  resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, art,
+  resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
 };
 
 /* ── Files and the command line ── */

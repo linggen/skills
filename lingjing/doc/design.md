@@ -161,10 +161,15 @@ everything in `worlds/jiuding/` — is the first world and the example.
   creature not yet painted shows its look in words. Closed where the machine
   cannot draw (no GenerateImage). Live on Gemini Flash-Lite: 《青州山海猎》 in
   20 s (five places, 夫诸 in a cave); 《荆州泽国》 with an invented four-winged
-  serpent, drawn in 16 s and shown. Open: amending a world in play (add a
-  creature or a place — Build refuses `world-in-play`); the map card knows
-  only the nine provinces; a weak model may skip reading the template and
-  need several lint rounds.
+  serpent, drawn in 16 s and shown. **Amend** (same day) changes a world in
+  play by the player's word: a creature and the place it haunts, or a place
+  with roads the rules lay back, checked as the outline is, charged to the
+  save; it takes what a model hands over — quotes escaped once, a bare
+  string for a name (Han → zh, else en), the existing place under `place`
+  read as *where*. Live: 泥玄, a jade-feathered turtle, added to 芦岸 and
+  painted. Open: the map card knows only the nine provinces; a weak model may
+  skip reading the template and need several lint rounds, and may narrate an
+  arrival the roads refused.
 - **Style of 《九鼎》: 修仙 · 凡人流 — no names from the book.** Decided
   2026-09-14 ("use 凡人流 style, no names from the book"). The *system* is
   道教 and genre inheritance older than any novel — nine realms 练气 to 渡劫,

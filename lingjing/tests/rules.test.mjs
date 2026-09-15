@@ -813,3 +813,50 @@ test('Build takes the player to a fresh save in their world; Travel parks and re
   assert.equal(run('undo').undid, 'travel');
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('Amend adds a creature where it haunts, or a place with its roads laid back; never to a shipped world', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-amend-'));
+  const rules = path.resolve('scripts/rules.mjs');
+  const run = (...args) => {
+    const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
+    return JSON.parse(out.stdout.trim().split('\n').pop());
+  };
+  run('init', '--lang=en');
+  const beast = { id: 'heron-king', name: { zh: '鹭王', en: 'The heron king' }, quote: { zh: '有鸟焉，其状如鹭而人语。', en: 'A bird like a heron that speaks as people do.' }, look: { zh: '白鹭，高过人。', en: 'A white heron taller than a man.' }, root: 'water' };
+  assert.equal(run('amend', `--creature=${JSON.stringify(beast)}`).refused, 'not-a-made-world');
+  run('build', `--world=${JSON.stringify(run('build').template)}`);
+  assert.equal(run('amend').refused, 'nothing-to-add');
+  // a creature at a place that already has one is refused; at an empty one it is kept and shown when standing there
+  assert.ok(run('amend', `--creature=${JSON.stringify(beast)}`, '--at=isle').problems.some(p => /already has jingwei/.test(p)));
+  const added = run('amend', `--creature=${JSON.stringify(beast)}`, '--at=reeds');
+  assert.equal(added.ok, true, JSON.stringify(added));
+  assert.deepEqual(added.added, { creature: 'heron-king', at: 'reeds', place: null });
+  assert.deepEqual(added.show, [{ card: 'creature', id: 'heron-king' }], 'the player stands at the reeds');
+  const look = run('look', '--said=hi');
+  assert.equal(look.place.has.creature.id, 'heron-king');
+  assert.equal(look.stamina.now, 95, 'the build was paid by the save it was built from; the amend by this one');
+  assert.ok(run('amend', `--creature=${JSON.stringify(beast)}`, '--at=shrine').problems.some(p => /id already taken/.test(p)));
+  // as a model hands it over: quotes escaped, bare strings for words, the existing place under `place` meaning where
+  const bare = JSON.stringify({ id: 'marsh-ox', name: 'The marsh ox', quote: '泽中有牛，其角如芦。', look: 'An ox with reed-like horns.', root: 'earth' }).replace(/"/g, '\\"');
+  const hint = run('amend', `--creature=${bare}`, `--place=${JSON.stringify({ id: 'shrine', name: 'shrine' })}`);
+  assert.deepEqual(hint.added, { creature: 'marsh-ox', at: 'shrine', place: null }, JSON.stringify(hint));
+  assert.equal(run('amend', `--creature=${JSON.stringify({ ...beast, id: 'lost' })}`).problems[0], 'at: a creature needs the place it haunts');
+  // a place: roads must exist; the road back is laid; the new place is walkable
+  const temple = { id: 'temple', name: { zh: '水神庙', en: 'The water god\'s temple' }, tier: 0, roads: ['shrine'], line: { zh: '庙门半开。', en: 'The temple door stands half open.' } };
+  assert.ok(run('amend', `--place=${JSON.stringify({ ...temple, roads: ['nowhere'] })}`).problems.some(p => /not a place of this world/.test(p)));
+  assert.deepEqual(run('amend', `--place=${JSON.stringify(temple)}`).added, { creature: null, at: null, place: 'temple' });
+  const places = JSON.parse(fs.readFileSync(path.join(dir, 'worlds/yunmeng/places/yunmeng.json'), 'utf8')).places;
+  assert.ok(places.find(p => p.id === 'shrine').roads.includes('temple'), 'the road runs back');
+  run('move', '--place=shrine');
+  assert.equal(run('move', '--place=temple').place.id, 'temple');
+  // art for the amended creature works like any made creature
+  const pictures = path.resolve('data/pictures'); fs.mkdirSync(pictures, { recursive: true });
+  const png = path.join(pictures, 'test-heron.png'); fs.writeFileSync(png, 'png');
+  try {
+    assert.equal(run('art', '--creature=heron-king', `--file=${png}`).art, 'art/heron-king.png');
+  } finally {
+    fs.rmSync(png, { force: true });
+    if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
+  }
+  fs.rmSync(dir, { recursive: true, force: true });
+});

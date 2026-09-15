@@ -287,6 +287,30 @@ tools:
         required: true
         description: A world id from Worlds.
 
+  - name: Amend
+    description: >-
+      Add to the world in play, when it is the player's own: a `creature`
+      (JSON, the shape of a creature in the world template) and `at`, the
+      place it haunts; or a `place` (JSON, the shape of a place in the
+      template) with roads to places that exist — the rules lay the roads
+      back. Refuses `not-playable` with the `problems`. Costs stamina.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs amend --creature={{creature}} --at={{at}} --place={{place}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      creature:
+        type: string
+        required: false
+        description: A new creature as JSON — id, name, quote, look, root; no art.
+      at:
+        type: string
+        required: false
+        description: The id of the place the creature haunts; one with no creature yet.
+      place:
+        type: string
+        required: false
+        description: A new place as JSON — id, name, tier, roads, line.
+
   - name: Art
     description: >-
       Give a creature of this made world its picture — the `path` (or `url`)
@@ -600,6 +624,11 @@ whole. Nothing is asked of them first.
    a phrase that the brush is at work if the player is waiting.
 5. **Worlds** lists them; **Travel** moves between them. Each world keeps
    its own save: leaving 《九鼎》 for a made world and back loses nothing.
+6. **The player changes their world by saying so.** *Put a beast in the
+   cave*, *there should be a temple past the ridge*: **Amend** with a
+   creature and the place it haunts, or with a place and its roads. Then
+   play on — the beast is shown when the player reaches it, and painted
+   then, as in step 4. Never Build the world again to change it.
 
 **Without GenerateImage among your tools this machine cannot draw, and
 building worlds is closed here** — the same line as for scenes, and the
