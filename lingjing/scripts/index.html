@@ -21,9 +21,11 @@
           <path d="M0 136 Q80 128 160 136 T320 134 L320 150 L0 150Z" fill="currentColor" opacity=".06"/>
         </svg>
         <div class="place" id="place"></div>
-        <!-- Yinyue stands here. Her 3D model waits on where she lives while
-             the game is open (one Yinyue at a time); the moon holds her place. -->
-        <div class="stage" id="stage" hidden><div class="moon" aria-hidden="true"></div><b id="stageName"></b></div>
+        <!-- Yinyue stands here: the engine's own pet view, told this is a
+             stage, so she walks over from the desktop corner while a scene
+             holds her and goes back when it ends. One device, one voice —
+             the moon holds her place only until she arrives. -->
+        <div class="stage" id="stage" hidden><div class="body"><div class="moon" aria-hidden="true"></div><iframe class="pet" id="pet" title="Yinyue" hidden></iframe></div><b id="stageName"></b></div>
         <div class="focus" id="focus"></div>
       </div>
       <div class="tray"><div class="traytitle" id="trayTitle"></div><div id="tray"></div></div>

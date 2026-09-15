@@ -87,12 +87,15 @@ button:disabled { cursor: default; }
 .backdrop { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; color: var(--text); }
 .place { position: absolute; top: 14px; left: 20px; font-family: var(--serif); font-size: 16px; color: var(--dim); z-index: 1; }
 .stage { position: absolute; left: 24px; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 1; }
+.stage .body { position: relative; width: 240px; height: 420px; display: flex; align-items: flex-end; justify-content: center; }
+.stage .pet { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; color-scheme: normal; }
+.stage .pet[hidden] { display: none; }
 .moon { width: 96px; height: 96px; border-radius: 50%;
         background: radial-gradient(circle at 38% 35%, #FFFFFF, #DCE4EA 55%, #AFC0CC);
         box-shadow: 0 0 22px 4px rgba(190, 210, 225, .55); animation: breathe 4s ease-in-out infinite; }
 @keyframes breathe { 50% { transform: scale(.97); box-shadow: 0 0 30px 8px rgba(190, 210, 225, .7); } }
 .stage b { font-family: var(--serif); font-weight: 600; font-size: 15px; color: var(--yinyue); }
-.focus { position: absolute; top: 48px; right: 24px; bottom: 20px; left: 160px; overflow-y: auto;
+.focus { position: absolute; top: 48px; right: 24px; bottom: 20px; left: 290px; overflow-y: auto;
          display: flex; flex-direction: column; justify-content: center; gap: 12px; }
 .focus .card { background: color-mix(in srgb, var(--surface) 94%, transparent); width: 100%; max-width: 540px; margin: 0 auto; padding: 14px 16px; }
 .focus .loading { margin: auto; color: var(--faint); font-family: var(--serif); }

@@ -185,6 +185,7 @@ function render() {
   $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   const withYinyue = (look.scene?.cast ?? []).some((c) => c.id === 'yinyue');
   $('stage').hidden = !withYinyue;
+  stageYinyue(withYinyue);
   $('stageName').textContent = w.yinyue;
   $('focus').innerHTML = focusHtml();
   $('trayTitle').textContent = w.tray;
@@ -352,6 +353,19 @@ const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('
 /// Signed out, nothing of the game is shown: the save lives with the
 /// account, and a turn would be refused anyway. One button; the daemon
 /// opens the browser, and the scene enters once the account reports in.
+/* Yinyue on the stage: the engine's pet view, loaded as a stage so it
+   outranks the desktop corner. Loaded only while a scene has her — unloading
+   releases her, and she goes back to wherever she was. The moon stands in
+   until the view has loaded. */
+function stageYinyue(on) {
+  const pet = $('pet');
+  const moon = document.querySelector('.stage .moon');
+  if (!on) { pet.hidden = true; moon.hidden = false; if (pet.dataset.on) { delete pet.dataset.on; pet.src = 'about:blank'; } return; }
+  if (pet.dataset.on) return;
+  pet.dataset.on = '1';
+  pet.onload = () => { pet.hidden = false; moon.hidden = true; };
+  pet.src = `${location.origin}/?pet=1&stage=1`;
+}
 function gate(note = '') {
   const w = WORDS[machineLang()];
   document.documentElement.lang = machineLang();
@@ -359,6 +373,7 @@ function gate(note = '') {
   $('status').innerHTML = '';
   $('place').textContent = '';
   $('stage').hidden = true;
+  stageYinyue(false);
   $('tray').innerHTML = '';
   $('trayTitle').textContent = '';
   $('focus').innerHTML = `<div class="card gate-card"><div class="cardtitle">${w.signTitle}</div>
