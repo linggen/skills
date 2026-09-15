@@ -856,7 +856,11 @@ A creature is never named without its picture — a player cannot know 夫诸
 from its name.
 
 - **One picture per creature,** `worlds/<id>/art/<id>.webp`, shipped in the
-  skill. **Decided 2026-09-14 (his "fetch the three woodcuts"):** creatures
+  skill. **Since 2026-09-15 the creatures are painted** by the local picture
+  model ahead of time (his picks from candidate sheets: 夫诸, 狍鸮, 精卫;
+  captions *Drawn in Lingjing*), the woodcuts below kept in `art/plates/` as
+  the reference and in `CREDITS.md`; FLUX draws two antlers where the text
+  says four, and no human face on 狍鸮. Before that: **Decided 2026-09-14 (his "fetch the three woodcuts"):** creatures
   are the classical woodcuts — public domain plates from the illustrated
   山海经 editions (胡文煥 Ming, 蔣應鎬 1597) and 《古今圖書集成·禽蟲典》
   (Qing, 1725), fetched once from Wikimedia Commons at authoring time and

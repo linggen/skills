@@ -49,10 +49,10 @@
       "province": "冀",
       "root": "earth",
       "art": "art/paoxiao.webp",
-      "art_source": "《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650）。Public domain. Wikimedia Commons: File:狍鴞.jpg. Laid on paper by tools/frame.py.",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a sheep-bodied beast with tiger teeth by a river shrine. The classical reference is kept in art/plates/paoxiao.jpg: 《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650） — public domain, Wikimedia Commons, File:狍鴞.jpg.",
       "art_caption": {
-        "zh": "胡文煥《山海經圖》，明萬曆本",
-        "en": "Hu Wenhuan's Shanhaijing Pictures, Ming, c. 1600"
+        "zh": "灵境所绘",
+        "en": "Drawn in Lingjing"
       }
     },
     {
@@ -76,10 +76,10 @@
       "province": "冀",
       "root": "fire",
       "art": "art/jingwei.webp",
-      "art_source": "《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg. Cropped and laid on paper by tools/frame.py.",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a small black bird with a patterned head, white beak and red feet, a pebble in its beak, over the sea. The classical reference is kept in art/plates/jingwei.svg: 《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725 — public domain, Wikimedia Commons, File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg.",
       "art_caption": {
-        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
-        "en": "Gujin Tushu Jicheng, Qing, 1725"
+        "zh": "灵境所绘",
+        "en": "Drawn in Lingjing"
       }
     }
   ]
