@@ -96,7 +96,7 @@ function placeBrief(content, state, now = new Date()) {
   ];
   return {
     ...placeName(content, state, place),
-    province: { id: place.province, name: pick(content.dictionary.provinces[place.province], lang) },
+    province: { id: place.province, name: pick(content.dictionary.provinces[place.province], lang), start: doc.start },
     tier: place.tier, line: pick(place.line, lang),
     has: {
       creature: has.creature ? { id: has.creature, name: pick(creatureOf(content, has.creature).name, lang) } : null,
@@ -107,12 +107,28 @@ function placeBrief(content, state, now = new Date()) {
       province: p.province, closed: !provinceOpen(content, p.province, now),
     })),
     places: doc.places.map(p => ({
-      ...placeName(content, state, p), tier: p.tier,
+      ...placeName(content, state, p), tier: p.tier, roads: p.roads,
       here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
     })),
     shelf: shelf.map(i => itemBrief(content, state, i)),
-    show,
+    show: withMap(content, show),
   };
+}
+
+/* The first road on the shortest way from one place to another, walking
+   only places the player may enter — or null when no such way runs. */
+function towardOf(content, state, from, to, now) {
+  const walkable = p => p && !tooHard(content, state, p) && provinceOpen(content, p.province, now);
+  if (!walkable(to)) return null;
+  const first = new Map(from.roads.map(id => [id, id]));
+  const queue = [...from.roads], seen = new Set([from.id, ...from.roads]);
+  while (queue.length) {
+    const p = placeOf(content, queue.shift());
+    if (!walkable(p)) continue;
+    if (p.id === to.id) return placeName(content, state, placeOf(content, first.get(p.id)));
+    for (const id of p.roads) if (!seen.has(id)) { seen.add(id); first.set(id, first.get(p.id)); queue.push(id); }
+  }
+  return null;
 }
 
 /* The nearest place the player's tier allows: here, else a road out. */
@@ -195,6 +211,10 @@ const spoken = (content, state, lines) => (lines ?? []).map(l => ({
   who: l.who, name: nameOf(content, l.who, state.lang), text: fill(pick(l.text, state.lang), state),
 }));
 
+/* A made world is read by its map: its scenes stand at places, so their
+   cards end with the province's map, as its places' do. */
+const withMap = (content, show) => (content.world.made && !show.some(c => c.card === 'map') ? [...show, { card: 'map' }] : show);
+
 function sceneBrief(content, state, now = new Date()) {
   const scene = sceneOf(content, state);
   if (!scene) return null;
@@ -206,7 +226,7 @@ function sceneBrief(content, state, now = new Date()) {
     place: say(scene.place),
     setup: say(scene.setup),
     cast: (scene.cast ?? []).map(id => ({ id, name: nameOf(content, id, lang) })),
-    show: scene.show ?? [],
+    show: withMap(content, scene.show ?? []),
     lines: spoken(content, state, scene.lines),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
     exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow)),
@@ -661,7 +681,9 @@ function provinceOf(content, raw) {
    too hard is refused in the mist with a fitting place, so Yinyue's "not
    yet — back to the ford" is the rules' hint, spoken kindly. While the
    corridor runs the scene comes first. A province named instead of a place
-   answers as before: here, or a road not yet open. */
+   answers as before: here, or a road not yet open. Every refusal says `here`
+   — the player went nowhere — and a place with no road from here says
+   `toward`, the first road on the way to it. */
 export function move(state, content, ctx, args) {
   const s = clone(state);
   settlePlace(content, s);
@@ -669,37 +691,41 @@ export function move(state, content, ctx, args) {
   const raw = args.place ?? args.province;
   const target = findPlace(content, raw);
   const lang = s.lang;
+  const stay = (code, say, extra = {}) => refuse(code, say, { here: here ? placeName(content, s, here) : null, ...extra });
+  const near = () => here.roads.map(id => placeName(content, s, placeOf(content, id)));
   if (!target) {
     const p = provinceOf(content, raw);
     if (p && here?.province === p) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
     if (p || !here) {
       const say = { zh: `${p ?? String(raw ?? '').replace(/州$/, '')}州的路还没开。`, en: 'That road has not opened yet.' };
-      return refuse('road-closed', pick(say, lang));
+      return stay('road-closed', pick(say, lang));
     }
-    return refuse('unknown-place', null, { near: here.roads.map(id => placeName(content, s, placeOf(content, id))) });
+    return stay('unknown-place', null, { near: near() });
   }
   if (target.id === here?.id) return { state: null, result: { ok: true, here: true, place: placeBrief(content, s) } };
   if (inCorridor(content, s)) {
-    return refuse('corridor', pick({ zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene });
+    return stay('corridor', pick({ zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene });
   }
   if (!here.roads.includes(target.id)) {
     const say = { zh: `从${pick(here.name, 'zh')}没有路通向${pick(target.name, 'zh')}。`, en: `No road runs from ${pick(here.name, 'en')} to ${pick(target.name, 'en')}.` };
-    return refuse('no-road', pick(say, lang), { near: here.roads.map(id => placeName(content, s, placeOf(content, id))) });
+    return stay('no-road', pick(say, lang), { near: near(), toward: towardOf(content, s, here, target, ctx.now) });
   }
   if (!provinceOpen(content, target.province, ctx.now)) {
     const say = { zh: `${target.province}州的路还没开。`, en: 'That road has not opened yet.' };
-    return refuse('road-closed', pick(say, lang), { province: target.province });
+    return stay('road-closed', pick(say, lang), { province: target.province });
   }
   if (tooHard(content, s, target)) {
     const fitting = fittingPlace(content, s, here);
     const say = { zh: '雾更浓了，看不见路。', en: 'The mist thickens; the road is lost.' };
     const yinyue = { zh: `还不是时候。先回${pick(fitting.name, 'zh')}吧。`, en: `Not yet. Let's go back to ${pick(fitting.name, 'en')}.` };
-    return refuse('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
+    return stay('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
   }
   s.place = target.id;
   const place = placeBrief(content, s, ctx.now);
   const scene = atScene(content, s) ? sceneBrief(content, s, ctx.now) : null;
-  return { state: s, result: { ok: true, place, scene, show: [...place.show, ...(scene?.show ?? [])], director: directorBrief(content, s, ctx), summarize: true } };
+  const cards = [...place.show, ...(scene?.show ?? [])];
+  const show = cards.filter((c, i) => cards.findIndex(d => JSON.stringify(d) === JSON.stringify(c)) === i);
+  return { state: s, result: { ok: true, place, scene, show, director: directorBrief(content, s, ctx), summarize: true } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not

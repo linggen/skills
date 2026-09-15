@@ -137,7 +137,7 @@ everything in `worlds/jiuding/` — is the first world and the example.
   contains any; `_` notes are skipped. Built-in worlds are authored; a
   player's world is Ling's; both play identically. One story in play per
   save; a new world starts a fresh save (the account keeps several).
-- **Built (step 15, 2026-09-15): made worlds.** A world of the player's is
+- **Built (step 14b, 2026-09-15): made worlds.** A world of the player's is
   laid over 《九鼎》 and lives in the skill's `data/worlds/<id>/`, holding only
   what Ling wrote: the card (`base: jiuding`, its province, its opening
   scene's id), the words it renames, its new creatures, one province of
@@ -167,9 +167,19 @@ everything in `worlds/jiuding/` — is the first world and the example.
   save; it takes what a model hands over — quotes escaped once, a bare
   string for a name (Han → zh, else en), the existing place under `place`
   read as *where*. Live: 泥玄, a jade-feathered turtle, added to 芦岸 and
-  painted. Open: the map card knows only the nine provinces; a weak model may
-  skip reading the template and need several lint rounds, and may narrate an
-  arrival the roads refused.
+  painted. **Its map** (same week): a made world's place `show` ends with
+  `{card: "map"}`, and the map card draws that one province from its roads —
+  rows by roads from the start (`place.province.start`), each row under the
+  places it is reached from, every place's `roads` in Look's `places`
+  (`scripts/roadmap.js`, laid out on the page, no coordinates written by
+  anyone); here, the roads out and beyond the tier marked as the chips are.
+  **A refused Move went nowhere:** live on Flash-Lite, Ling described the
+  turtle at 芦荡 while the rules held the player one road short, so every
+  Move refusal carries `here`, and `no-road` carries `toward` — the first
+  road on the shortest way through places the player may enter (null when
+  none) — and SKILL.md forbids describing a place before a Move there comes
+  back ok. Open: a weak model may skip reading the template and need several
+  lint rounds.
 - **Style of 《九鼎》: 修仙 · 凡人流 — no names from the book.** Decided
   2026-09-14 ("use 凡人流 style, no names from the book"). The *system* is
   道教 and genre inheritance older than any novel — nine realms 练气 to 渡劫,
@@ -486,7 +496,8 @@ is a map of places, not a chain of scenes.
   the next chapter, its province, its first place and `opens`; null when
   the spine is unwritten), `pool` (full/half/low/empty as the ring), `seed`
   (today's, only where seeds grow and a branch may still open). The map card
-  draws the province's places under the nine-province grid: here (Yinyue's
+  draws the province's places under the nine-province grid (a made world's
+  draws its roads instead — step 14b): here (Yinyue's
   colour), a road away (Ling's), beyond the tier (dashed, faint). The lint:
   roads both ways within the province, tiers on the ladder, a creature with
   its card, a scene that exists, every place reached from the start, every
@@ -679,7 +690,7 @@ whole turn.
 | `Branch {action: open \| turn \| close, kind, xw, ls}` | Opens a 奇遇, counts its turns, pays within the branch cap on close. | `branch-open`, `branch-cap`, `no-branch` |
 | `Summarize {text}` | Replaces the story. | `too-long` |
 | `duel --id [--picks]` (the page's) | Starts a bout (stamina, the creature's moves) or settles it from the picks; records the win or the withdrawal. | `not-here`, `withdrawn`, `no-traits`, `not-started`, `not-your-root`, `unfinished` |
-| `Move {place}` | Goes to a place by road; a province still answers. | `corridor`, `no-road`, `too-hard` (with `fitting`), `unknown-place`, `road-closed` |
+| `Move {place}` | Goes to a place by road; a province still answers. | `corridor`, `no-road` (with `near`, `toward`), `too-hard` (with `fitting`), `unknown-place`, `road-closed` — each with `here` |
 | `Trade {action: buy \| sell \| use, id}` | Buys or sells at a market at the catalog's price, a visit's 灵气 each; `use` pays a pill's progress within its table or puts a wear on. | `unknown-item`, `no-market`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
 | `Lang {lang}` | Switches zh / en. | — |
 
@@ -1118,9 +1129,9 @@ Establishment, Core Formation, Nascent Soul).
    engine reports and asks, linggen.dev counts and keeps the save. ✓
 7. 灵气 as stamina: `qi`/`qi_at` in the state, costs and refills in
    `rewards.json`, `no-qi` refusals, the ring from Look; SKILL.md drops
-   `cloud.meter`.
+   `cloud.meter`. ✓
 8. A day: 徐's seeds in `content/seeds/`, `Branch open` picking by the day,
-   the lint on seed creatures — the daily loop before more spine.
+   the lint on seed creatures — the daily loop before more spine. ✓
 9. Made scenes: the template, `Make` / `Enter` / `Leave`, the made lint. ✓
 10. The dictionary and the ids: `dictionary.json`, `ladder.json`, `traits.json`,
     every internal key renamed to its id, save version 2 with migration. ✓
@@ -1134,6 +1145,8 @@ Establishment, Core Formation, Nascent Soul).
 13. 降妖: creature roots, the 五行 duel on the scene, `lost`, the withdraw
    rule; the 夫诸 exit renamed `subdue`. ✓
 14. Chapter 1 — 冀州, with its seeds, its creatures pictured, its 坊市. ✓
+    14b. Made worlds: Build, Worlds, Travel, Art, Amend; the made world's
+    road map. ✓
 15. Server authority: `rules.mjs` in a Worker, content bundled, tools as
     endpoints, the save cloud-only — before any play where players compare.
 16. The table: the engine's shared chat, then the first set of plays; 传音 ·

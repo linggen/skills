@@ -5,6 +5,7 @@
 import { boardHtml } from './board.js';
 import { worldPath } from './rules.js';
 import { duelHtml } from './duel-card.js';
+import { layoutRoads } from './roadmap.js';
 
 export const WORDS = {
   zh: {
@@ -24,7 +25,7 @@ export const WORDS = {
   en: {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: "Today's practice", trayEmpty: 'Nothing waits today. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
-    paid: 'Counted', due: 'To do', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
+    paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
     tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
@@ -73,6 +74,7 @@ function traits(card, ctx) {
 }
 
 function map(card, ctx) {
+  if (ctx.look.world?.made) return roadMap(ctx);
   const name = (c) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[c]?.en : c);
   const cells = MAP.flat().map((c) => {
     const kind = c === card.goal ? 'goal' : c === card.here ? 'here' : '';
@@ -92,6 +94,35 @@ function placesHtml(ctx) {
     return `<span class="pl${kind ? ` ${kind}` : ''}">${esc(p.name)}</span>`;
   });
   return `<div class="placesTitle">${esc(place.province.name)}</div><div class="places">${chips.join('')}</div>`;
+}
+
+/// A made world is one province: its places joined by their roads, here and
+/// the roads out marked as the chips mark them. Positions come from the roads
+/// in Look; a road from here is drawn in Ling's colour, one beyond the
+/// player's tier dashed.
+function roadMap(ctx) {
+  const place = ctx.look.place;
+  if (!place?.places?.length) return '';
+  const { at, roads, rows, widest } = layoutRoads(place.places, place.province.start);
+  const byId = new Map(place.places.map((p) => [p.id, p]));
+  const lines = roads.map(([a, b]) => {
+    const [p, q] = [at[a], at[b]];
+    const from = byId.get(a).here ? byId.get(b) : byId.get(b).here ? byId.get(a) : null;
+    const kind = from ? (from.too_hard ? 'far' : 'out') : byId.get(a).too_hard || byId.get(b).too_hard ? 'far' : '';
+    // Two places in one row that are not side by side bow below the row, so
+    // the road never runs behind the place between them.
+    const d = p.row === q.row && Math.abs(p.col - q.col) > 1
+      ? `M${p.x * 100} ${p.y * 100} Q${((p.x + q.x) / 2) * 100} ${(p.y + 0.9 / rows) * 100} ${q.x * 100} ${q.y * 100}`
+      : `M${p.x * 100} ${p.y * 100} L${q.x * 100} ${q.y * 100}`;
+    return `<path class="${kind}" d="${d}"/>`;
+  });
+  const chips = place.places.map((p) => {
+    const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
+    const tag = p.here ? `<small>${ctx.words.here}</small>` : '';
+    return `<span class="pl${kind ? ` ${kind}` : ''}" style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%">${esc(p.name)}${tag}</span>`;
+  });
+  return `<div class="card"><div class="cardtitle">${esc(place.province.name)}</div>
+    <div class="roadmap" style="height:${rows * 62}px"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines.join('')}</svg>${chips.join('')}</div></div>`;
 }
 
 function hexagram(card, ctx) {

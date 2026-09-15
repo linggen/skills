@@ -164,11 +164,14 @@ tools:
 
   - name: Move
     description: >-
-      Go to a place — one of the director's `near`, by id or name. The rules
-      check the road and the player's tier: `no-road` carries what is near,
-      `too-hard` carries its line, a `fitting` place and Yinyue's word for it
-      (speak both, kindly), `corridor` means the scene comes first. A move
-      returns the place, its cards to Show and a fresh brief. A province
+      Go to a place — one of the director's `near`, by id or name; one road
+      at a time. The rules check the road and the player's tier. Every
+      refusal carries `here`: the player did not move. `no-road` carries
+      what is `near` and `toward`, the first road on the way (Move there
+      next when the player asked to be walked; null when no way is open to
+      them), `too-hard` carries its line, a `fitting` place and Yinyue's word
+      for it (speak both, kindly), `corridor` means the scene comes first. A
+      move returns the place, its cards to Show and a fresh brief. A province
       (冀 兖 青 徐 扬 荆 豫 梁 雍) named instead of a place answers here, or a
       road not yet open.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}}"
@@ -379,6 +382,9 @@ begin, the same way.
   ends (below).
 - **A refusal is final and stays in the world.** Speak its `say` line when it
   has one; otherwise refuse as the world would — *天地灵石，从不白给。*
+- **A refused Move went nowhere.** The player still stands at its `here`:
+  never describe the place they asked for — its creature, its water, its
+  air — until a Move there comes back ok. Say where they are and the way on.
 - **`no-stamina`: the pool (`words.pool`) is empty.** Speak its `say` (it
   names the hour stamina returns), turn the player to the world in one line —
   rest, a walk, their other practice — and let the story wait. Never count,

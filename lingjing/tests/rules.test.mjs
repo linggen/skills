@@ -508,11 +508,19 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   const nr = refused(move, s, { place: 'pengcheng' }, 'no-road');
   assert.equal(nr.say, '从泗水北岸没有路通向彭城。');
   assert.deepEqual(nr.near.map(p => p.id), ['sishui', 'yunlong', 'lvliang', 'zhangnan']);
+  assert.equal(nr.here.id, 'sibei', 'a refused move says where the player still stands');
+  assert.equal(nr.toward.id, 'sishui', 'and the first road on the way');
+  // the way walks only places the player may enter: 微山 waits behind the rapids and 沛泽
+  assert.equal(refused(move, s, { place: 'huaidu' }, 'no-road').toward.id, 'sishui');
+  assert.equal(refused(move, s, { place: 'weishan' }, 'no-road').toward, null, 'beyond the tier: no way to offer');
+  assert.deepEqual(l.place.places.find(p => p.id === 'sibei').roads, ['sishui', 'yunlong', 'lvliang', 'zhangnan']);
+  assert.equal(l.place.province.start, 'sishui');
   // too hard: the mist, and Yinyue's fitting place
   const th = refused(move, s, { place: 'lvliang' }, 'too-hard');
   assert.equal(th.say, '雾更浓了，看不见路。');
   assert.equal(th.fitting.id, 'sibei');
   assert.equal(th.yinyue, '还不是时候。先回泗水北岸吧。');
+  assert.equal(th.here.id, 'sibei');
   // unknown
   assert.deepEqual(refused(move, s, { place: 'nowhere' }, 'unknown-place').near.map(p => p.id), ['sishui', 'yunlong', 'lvliang', 'zhangnan']);
   // a road into a province whose chapter has not opened
@@ -779,6 +787,7 @@ test('Build takes the player to a fresh save in their world; Travel parks and re
   assert.equal(built.world.made, true);
   assert.equal(built.world.dir, 'data/worlds/the-yunmeng-marsh');
   assert.equal(built.scene.id, 'made-yunmeng-reeds', 'the opening scene is entered at once');
+  assert.deepEqual(built.scene.show.at(-1), { card: 'map' }, 'a made scene ends with the map');
   assert.equal(built.place.id, 'reeds');
   assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json')));
   assert.ok(fs.existsSync(path.join(dir, 'saves/jiuding.json')), 'the shipped world\'s save is parked');
@@ -786,7 +795,13 @@ test('Build takes the player to a fresh save in their world; Travel parks and re
   assert.equal(run('resolve', '--exit=wade').paid.progress, 10);
   const moved = run('move', '--place=isle');
   assert.equal(moved.ok, true);
-  assert.deepEqual(moved.show, [{ card: 'creature', id: 'jingwei' }]);
+  assert.deepEqual(moved.show, [{ card: 'creature', id: 'jingwei' }, { card: 'map' }], 'a made world draws its own map with every place');
+  assert.equal(moved.place.province.start, 'reeds');
+  assert.deepEqual(moved.place.places.find(p => p.id === 'isle').roads, ['reeds', 'bell']);
+  const lost = run('move', '--place=shrine');
+  assert.equal(lost.refused, 'no-road');
+  assert.equal(lost.here.id, 'isle', 'refused: still where they stood');
+  assert.equal(lost.toward.id, 'reeds', 'by the ford, not the pool beyond the tier');
   // worlds and travel
   assert.deepEqual(run('worlds').worlds.map(w => [w.id, w.playing, w.saved]), [['jiuding', false, true], ['the-yunmeng-marsh', true, true]]);
   const home = run('travel', '--world=jiuding');

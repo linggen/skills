@@ -165,6 +165,14 @@ button:disabled { cursor: default; }
 .pl.here { border-color: var(--yinyue); color: var(--yinyue); background: var(--yinyue-soft); }
 .pl.road { border-color: var(--ling); color: var(--ling); }
 .pl.far { opacity: 0.4; border-style: dashed; }
+.roadmap { position: relative; margin-top: 10px; max-width: 480px; min-height: 124px; }
+.roadmap svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.roadmap path { fill: none; stroke: var(--line); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.roadmap path.out { stroke: var(--ling); }
+.roadmap path.far { stroke-dasharray: 4 4; }
+.roadmap .pl { position: absolute; width: max-content; transform: translate(-50%, -50%); text-align: center; line-height: 1.3; }
+.roadmap .pl.far { opacity: 1; color: var(--faint); }
+.roadmap .pl small { display: block; font-size: 10px; }
 
 .gate { display: flex; gap: 12px; align-items: center; }
 .gate .ding { font-family: var(--serif); font-size: 38px; color: var(--ling); line-height: 1; }
