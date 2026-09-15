@@ -1,0 +1,67 @@
+{
+  "_about": "A made world: what Ling writes when the player wants a world of their own. One outline in this shape, laid over a shipped world (`base`): the systems — ladder, stamina, wealth, the bag, tasks, quests, contests — are the base's; the story, the words, the places and the cast are this world's. Fields starting with _ are notes, dropped on save.",
+  "id": "yunmeng",
+  "base": "jiuding",
+  "title": { "zh": "云梦泽", "en": "The Yunmeng Marsh" },
+  "premise": { "zh": "楚地南境，云梦泽千里芦苇。泽中有兽，见人则鸣；泽底有一口沉钟，敲一声，水退一里。", "en": "In the south of Chu the Yunmeng Marsh runs a thousand li of reeds. A beast in the reeds cries when it sees people; a sunken bell lies on the marsh floor, and every stroke drives the water back a li." },
+  "style": { "zh": "山海经 · 泽国寻兽", "en": "Shanhaijing · a hunt through the marsh" },
+  "sources": ["山海经", "楚辞", "水经注"],
+  "province": { "id": "yunmeng", "name": { "zh": "云梦", "en": "Yunmeng" } },
+  "start": "reeds",
+  "places": [
+    { "id": "reeds", "name": { "zh": "芦苇渡", "en": "The reed ford" }, "tier": 0, "roads": ["isle", "shrine"], "line": { "zh": "芦苇高过人头，水声在四面。", "en": "Reeds stand taller than a man; water sounds on every side." } },
+    { "id": "isle", "name": { "zh": "鹭洲", "en": "Heron Isle" }, "tier": 0, "roads": ["reeds", "bell"], "has": { "creature": "jingwei" }, "line": { "zh": "一片沙洲，鹭鸟不惊。", "en": "A sandbar; the herons do not startle." } },
+    { "id": "shrine", "name": { "zh": "湘君祠", "en": "The shrine of the Xiang lord" }, "tier": 0, "roads": ["reeds", "bell"], "line": { "zh": "祠门朝水，香灰是湿的。", "en": "Its door faces the water; the incense ash is damp." } },
+    { "id": "bell", "name": { "zh": "沉钟潭", "en": "The sunken bell pool" }, "tier": 1, "roads": ["isle", "shrine"], "has": { "creature": "lushu" }, "line": { "zh": "潭水黑而静，底下有东西在等。", "en": "The pool is black and still; something waits below." } }
+  ],
+  "cast": ["jingwei"],
+  "creatures": [
+    {
+      "id": "lushu",
+      "name": { "zh": "鹿蜀", "en": "Lushu" },
+      "source": { "zh": "《山海经 · 南山经》", "en": "Classic of Mountains and Seas — Southern Mountains" },
+      "quote": { "zh": "杻阳之山有兽焉，其状如马而白首，其文如虎而赤尾，其音如谣，其名曰鹿蜀，佩之宜子孙。", "en": "On Mount Niuyang is a beast like a horse with a white head, striped like a tiger, with a red tail; its cry is like a song. It is called Lushu; wear its hide and your line prospers." },
+      "look": { "zh": "白首赤尾，身有虎纹，鸣如歌谣。", "en": "White-headed, red-tailed, tiger-striped; it sings when it cries." },
+      "root": "wood"
+    }
+  ],
+  "words": {},
+  "scene": {
+    "id": "made-yunmeng-reeds",
+    "chapter": "made",
+    "place": { "zh": "芦苇渡", "en": "The reed ford" },
+    "setup": { "zh": "船到芦苇渡，船家不肯再往里走。他说泽里有歌声，听见的人会跟着走。", "en": "The boat stops at the reed ford; the boatman will go no further. There is singing in the marsh, he says, and those who hear it follow." },
+    "cast": ["yinyue"],
+    "show": [],
+    "lines": [
+      { "who": "yinyue", "text": { "zh": "我也听见了。不是人唱的。", "en": "I hear it too. It is not a person singing." } }
+    ],
+    "buttons": ["listen", "wade"],
+    "exits": [
+      {
+        "id": "listen",
+        "label": { "zh": "站在渡口听", "en": "Stand at the ford and listen" },
+        "means": "listens, waits, asks the boatman about the song",
+        "beat": [{ "who": "ling", "text": { "zh": "歌声从西边来，一声近，一声远。", "en": "The song comes from the west, one note near, one far." } }],
+        "stay": true
+      },
+      {
+        "id": "wade",
+        "label": { "zh": "涉水进苇荡", "en": "Wade into the reeds" },
+        "means": "goes into the marsh, follows the song, leaves the boat",
+        "grant": { "table": "branch", "progress": 10 },
+        "beat": [{ "who": "ling", "text": { "zh": "水没到膝。芦苇在身后合拢，渡口不见了。", "en": "The water reaches your knees. The reeds close behind you; the ford is gone." } }],
+        "ends": "made"
+      }
+    ]
+  },
+  "_rules": [
+    "id is lowercase letters, digits and dashes, not a shipped world's; base is a shipped world (jiuding).",
+    "title, premise, style: {zh, en}, both. sources: the heritage the world draws on — 山海经, 楚辞, 三国志, 周易…; never a novel.",
+    "province: an id of its own and a {zh, en} name. places: 4 to 8, ids of their own, a tier the ladder has (0 to start), roads both ways, a {zh, en} line each; start names one of them; has.creature names a creature of the cast.",
+    "cast: creature ids from the bestiary (Look's creatures). creatures: up to 4 new ones — id, {zh, en} name, quote, look, and a root (metal, wood, water, fire, earth); no art: it is drawn on first appearance.",
+    "words: only ids the base has (progress, wealth, stamina, tier, cast, contest…), each {zh, en} — rename what the story needs and nothing else.",
+    "scene: the opening, in the made-scene shape (id starts with made-, chapter is made, 1 to 4 exits with means, buttons at most 3, grants from the branch table only). It is entered the moment the world begins.",
+    "The world's heritage only; never a living author's names; nothing of 九鼎's spine."
+  ]
+}

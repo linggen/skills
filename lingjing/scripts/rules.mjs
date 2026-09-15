@@ -3,17 +3,23 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win duel branch summarize move trade lang make enter leave undo
+//   verbs: init look resolve judge task win duel branch summarize move trade lang make enter leave
+//          build worlds travel art undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` takes
-// `--world` (default jiuding) and starts a fresh save in it.
+// `--world` (default jiuding) and starts a fresh save in it. `build` and
+// `travel` switch worlds: the save in play is parked under data/saves/ and
+// the other world's is restored, or begun.
 // Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CAST, DEFAULT_WORLD, MADE, gameOf, hasWorld, lintMade, listWorlds, loadWorld } from './content.mjs';
+import {
+  CAST, DEFAULT_WORLD, MADE, WORLD, allWorlds, cardOf, gameOf, hasMadeWorld, hasWorld, knownWorld, lintMade, lintMadeWorld,
+  listWorlds, loadWorld, madeWorldDir, overlayOf,
+} from './content.mjs';
 import { bout, creatureMoves } from './duel.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
@@ -281,10 +287,9 @@ export function look(state, content, ctx) {
     speed: speedOf(content, state),
   };
   const chapter = content.chapters[state.chapter];
-  const world = content.world;
   return {
     ok: true, lang, name: state.name,
-    world: { id: world.id, title: pick(world.title, lang), style: pick(world.style, lang) },
+    world: worldBrief(content, lang),
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
     progress: state.progress, next: threshold(content, state), wealth: state.wealth,
     traits,
@@ -302,6 +307,16 @@ export function look(state, content, ctx) {
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
+  };
+}
+
+/* The world card as Look tells it — and where its files are, relative to
+   the skill, so the page finds a made world's art beside a shipped one's. */
+function worldBrief(content, lang) {
+  const w = content.world;
+  return {
+    id: w.id, title: pick(w.title, lang), style: pick(w.style, lang), premise: pick(w.premise, lang) ?? null,
+    made: Boolean(w.made), base: w.base ?? null, dir: w.made ? `data/worlds/${w.id}` : `worlds/${w.id}`,
   };
 }
 
@@ -820,12 +835,141 @@ export function leave(state, content) {
   return { state: s, result: { ok: true, scene: sceneBrief(content, s), summarize: true } };
 }
 
-export const VERBS = { look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; }, resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave };
+/* ── Worlds: the player's own ── */
+
+/* A world of the player's. With nothing: the template, the rules of making
+   and the cost. With `world` — one outline in that shape — the rules check
+   it against the base it names, keep it under data/worlds/, and the runner
+   travels there: a fresh save, the opening scene entered. A world whose
+   save exists is never rebuilt under it. */
+export function build(state, content, ctx, args) {
+  if (args.world == null) {
+    const t = content.templates.world;
+    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: content.rewards.stamina.cost.build, limits: WORLD } };
+  }
+  let outline;
+  try { outline = typeof args.world === 'string' ? JSON.parse(args.world) : args.world; } catch { return refuse('not-json', null); }
+  outline = withDefaults(strip(outline));
+  if (!hasWorld(outline.base)) return refuse('not-playable', null, { problems: [`world: base must be one of ${listWorlds().join(', ')}`] });
+  const base = loadWorld(outline.base);
+  const problems = lintMadeWorld(outline, base);
+  if (problems.length) return refuse('not-playable', null, { problems, hint: 'Build with nothing returns the template; the outline must be in exactly that shape.' });
+  if (outline.id === state.world || savedFor(outline.id)) return refuse('world-in-play', null, { world: outline.id });
+  const s = clone(state);
+  const empty = spendStamina(content, s, ctx, 'build');
+  if (empty) return empty;
+  writeMadeWorld(outline, ctx.now);
+  return { state: s, result: { ok: true, built: outline.id, travel: outline.id } };
+}
+
+/* What an outline may leave out because only one answer exists: the base
+   (the one shipped world) and the id (the title, made folder-shaped). */
+function withDefaults(outline) {
+  if (!outline || typeof outline !== 'object') return outline;
+  const o = { ...outline };
+  if (o.base == null && listWorlds().length === 1) o.base = DEFAULT_WORLD;
+  if (o.id == null && o.title) o.id = slugOf(o.title.en ?? o.title.zh);
+  return o;
+}
+
+/* A folder-shaped id from a title: ascii letters and digits, dashes
+   between; a title with none (all Chinese) hashes instead. */
+function slugOf(title) {
+  const slug = String(title ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  return slug || `world-${hashOf(String(title)).toString(36).slice(0, 6)}`;
+}
+
+/* Every world there is — shipped and made — and which one the save plays. */
+export function worlds(state) {
+  const lang = state.lang;
+  const list = allWorlds().map(id => {
+    const w = loadWorld(id).world;
+    return { id, title: pick(w.title, lang), style: pick(w.style, lang), made: Boolean(w.made), playing: id === state.world, saved: id === state.world || savedFor(id) };
+  });
+  return { state: null, result: { ok: true, worlds: list } };
+}
+
+/* Go to another world: the runner parks this save and restores that one,
+   or begins it. */
+export function travel(state, content, ctx, args) {
+  const id = String(args.world ?? '');
+  if (!knownWorld(id)) return refuse('unknown-world', null, { worlds: allWorlds() });
+  if (id === state.world) return { state: null, result: { ok: true, here: true, world: id } };
+  return { state: null, result: { ok: true, travel: id } };
+}
+
+/* A picture for a creature of this made world — the file GenerateImage
+   wrote, moved beside the world and written into its card. */
+export function art(state, content, ctx, args) {
+  if (!content.world.made) return refuse('not-a-made-world', null);
+  const id = String(args.creature ?? '');
+  const creature = creatureOf(content, id);
+  if (!creature?.made) return refuse('not-a-made-creature', null, { creatures: content.creatures.creatures.filter(c => c.made).map(c => c.id) });
+  const src = insideSkill(args.file);
+  if (!src) return refuse('no-such-file', null, { file: args.file ?? null });
+  const dir = madeWorldDir(content.world.id);
+  const rel = `art/${id}${path.extname(src) || '.png'}`;
+  fs.mkdirSync(path.join(dir, 'art'), { recursive: true });
+  fs.copyFileSync(src, path.join(dir, rel));
+  const file = path.join(dir, 'creatures.json');
+  const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const entry = doc.creatures.find(c => c.id === id);
+  entry.art = rel;
+  entry.art_source = 'Drawn on this machine by the local picture model, for this world.';
+  entry.art_caption = { zh: '灵境所绘', en: 'Drawn in Lingjing' };
+  writeAtomic(file, JSON.stringify(doc, null, 2));
+  return { state: null, result: { ok: true, creature: id, art: rel } };
+}
+
+/* A file the tool may read: the path GenerateImage returned, or its URL
+   under /apps/lingjing/ — inside the skill's folder, nowhere else. */
+function insideSkill(raw) {
+  const said = String(raw ?? '').trim().replace(/^\/apps\/lingjing\//, '');
+  if (!said) return null;
+  const candidate = path.isAbsolute(said) ? said : path.resolve(skillDir(), said);
+  if (!fs.existsSync(candidate)) return null;
+  const real = fs.realpathSync(candidate);
+  return real.startsWith(fs.realpathSync(skillDir()) + path.sep) ? real : null;
+}
+
+export const VERBS = {
+  look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; },
+  resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, art,
+};
 
 /* ── Files and the command line ── */
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const skillDir = () => path.resolve(HERE, '..');
 const dataDir = () => process.env.LINGJING_DATA || path.resolve(HERE, '../data');
+const savesDir = () => path.join(dataDir(), 'saves');
+const savedFile = id => path.join(savesDir(), `${id}.json`);
+const savedFor = id => fs.existsSync(savedFile(id));
+
+/* The made world's folder, from its outline: the card, the words, the new
+   creatures, its province, the opening scene. Art comes later, by `art`. */
+function writeMadeWorld(outline, now) {
+  const dir = madeWorldDir(outline.id);
+  const overlay = overlayOf(outline);
+  const pid = outline.province.id;
+  fs.rmSync(dir, { recursive: true, force: true });
+  const put = (rel, doc) => writeAtomic(path.join(dir, rel), JSON.stringify(doc, null, 2));
+  put('world.json', cardOf(outline, now));
+  put('dictionary.json', overlay.dictionary);
+  put('creatures.json', overlay.creatures);
+  put(`places/${pid}.json`, overlay.places[pid]);
+  put(`scenes/${outline.scene.id}.json`, outline.scene);
+}
+
+/* A save begun in a world: a made world's opening scene is entered at
+   once — its story starts there, not on a spine. */
+function freshState(content, lang, now) {
+  const s = newState(content, lang, now);
+  if (content.opening && content.world.opening) {
+    s.made = { scenes: { ...content.opening }, at: content.world.opening };
+  }
+  return s;
+}
 const questsDir = () => process.env.LINGJING_QUESTS || path.join(os.homedir(), '.linggen', 'quests');
 const clock = () => (process.env.LINGJING_NOW ? new Date(process.env.LINGJING_NOW) : new Date());
 
@@ -872,9 +1016,9 @@ function run(verb, args) {
 
   if (verb === 'undo') return undo(stateFile, logFile);
   const worldId = verb === 'init' ? args.world ?? DEFAULT_WORLD : saved?.world ?? DEFAULT_WORLD;
-  if (!hasWorld(worldId)) return { ok: false, refused: 'unknown-world', world: worldId, worlds: listWorlds() };
+  if (!knownWorld(worldId)) return { ok: false, refused: 'unknown-world', world: worldId, worlds: allWorlds() };
   const content = loadWorld(worldId);
-  const state = verb === 'init' || !saved ? newState(content, args.lang, now) : saved;
+  const state = verb === 'init' || !saved ? freshState(content, args.lang, now) : saved;
   if (verb === 'init' || !saved) writeAtomic(stateFile, JSON.stringify(state));
   if (verb === 'init') return look(state, content, { now, quests: readQuests() });
 
@@ -888,7 +1032,22 @@ function run(verb, args) {
     writeAtomic(stateFile, JSON.stringify(next));
     fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: state }) + '\n');
   }
+  if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   return heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
+}
+
+/* Park the save in play under its world and take up the other world's —
+   restored where it stood, or begun. The answer is the new world's Look,
+   with `travelled` saying where from and whether the save is fresh. */
+function travelTo(id, current, { stateFile, logFile, now, verb }) {
+  writeAtomic(savedFile(current.world), JSON.stringify(current));
+  const content = loadWorld(id);
+  const parked = savedFor(id) ? migrate(JSON.parse(fs.readFileSync(savedFile(id), 'utf8'))) : null;
+  const state = parked ?? freshState(content, current.lang, now);
+  state.updated = now.toISOString();
+  writeAtomic(stateFile, JSON.stringify(state));
+  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: current }) + '\n');
+  return { ...look(state, content, { now, quests: readQuests() }), travelled: { from: current.world, to: id, fresh: !parked } };
 }
 
 function undo(stateFile, logFile) {

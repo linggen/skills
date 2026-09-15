@@ -14,10 +14,89 @@ export const worldDir = id => path.join(WORLDS_DIR, id);
 export const listWorlds = () => fs.readdirSync(WORLDS_DIR).filter(id => fs.existsSync(path.join(worldDir(id), 'world.json'))).sort();
 export const hasWorld = id => typeof id === 'string' && /^[a-z0-9-]+$/.test(id) && fs.existsSync(path.join(worldDir(id), 'world.json'));
 
-/* A world by id; an unknown id throws with the ids that exist. */
+/* ── Made worlds: the player's own, laid over a shipped one ── */
+
+/* They live in the skill's data folder (LINGJING_DATA in tests), one folder
+   per world, holding only what Ling wrote: the card, the words that differ,
+   new creatures, one province of places, the opening scene. Everything
+   else — ladder, rewards, herbs, items, riddles, tasks, branches — is the
+   base world's. */
+const dataDir = () => process.env.LINGJING_DATA || path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data');
+export const madeWorldsDir = () => path.join(dataDir(), 'worlds');
+export const madeWorldDir = id => path.join(madeWorldsDir(), id);
+export const hasMadeWorld = id => typeof id === 'string' && /^[a-z0-9-]+$/.test(id) && fs.existsSync(path.join(madeWorldDir(id), 'world.json'));
+export const listMadeWorlds = () => (fs.existsSync(madeWorldsDir()) ? fs.readdirSync(madeWorldsDir()).filter(hasMadeWorld).sort() : []);
+export const knownWorld = id => hasWorld(id) || hasMadeWorld(id);
+export const allWorlds = () => [...listWorlds(), ...listMadeWorlds()];
+
+/* A world by id — shipped or made; an unknown id throws with the ids that
+   exist. */
 export function loadWorld(id = DEFAULT_WORLD) {
-  if (!hasWorld(id)) throw new Error(`unknown world ${id}; worlds: ${listWorlds().join(', ')}`);
-  return loadContent(worldDir(id));
+  if (hasWorld(id)) return loadContent(worldDir(id));
+  if (hasMadeWorld(id)) return loadMadeWorld(id);
+  throw new Error(`unknown world ${id}; worlds: ${allWorlds().join(', ')}`);
+}
+
+function loadMadeWorld(id) {
+  const dir = madeWorldDir(id);
+  const at = file => readJson(path.join(dir, file));
+  const card = at('world.json');
+  if (!hasWorld(card.base)) throw new Error(`world ${id} is laid over ${card.base}, which is not shipped`);
+  const overlay = {
+    dictionary: at('dictionary.json'),
+    creatures: at('creatures.json'),
+    places: loadPlaces(path.join(dir, 'places')),
+    scenes: loadMadeScenes(path.join(dir, 'scenes')),
+  };
+  return overlayWorld(loadContent(worldDir(card.base)), card, overlay);
+}
+
+function loadMadeScenes(root) {
+  const scenes = {};
+  if (!fs.existsSync(root)) return scenes;
+  for (const file of fs.readdirSync(root).filter(f => f.endsWith('.json')).sort()) {
+    const scene = readJson(path.join(root, file));
+    scenes[scene.id] = scene;
+  }
+  return scenes;
+}
+
+/* The made world as the rules see it: the base's systems, the made world's
+   story. Its one chapter is a stub with no spine scenes — the story is the
+   opening scene and whatever Ling makes next — so the province opens at
+   once and nothing waits. */
+export function overlayWorld(base, card, overlay) {
+  const pid = card.province.id;
+  return {
+    ...base,
+    world: { ...card, made: true },
+    dictionary: {
+      ...base.dictionary,
+      words: { ...base.dictionary.words, ...(overlay.dictionary.words ?? {}) },
+      provinces: { ...base.dictionary.provinces, ...(overlay.dictionary.provinces ?? {}) },
+    },
+    creatures: { ...base.creatures, creatures: [...base.creatures.creatures, ...(overlay.creatures.creatures ?? []).map(c => ({ ...c, made: true }))] },
+    places: overlay.places,
+    seeds: {},
+    chapters: { story: { version: 1, id: 'story', province: pid, corridor: false, first_scene: null, title: card.title, scenes: {} } },
+    opening: overlay.scenes,
+  };
+}
+
+/* What the folder holds, from one outline: the card, the words, the new
+   creatures, the province, the opening scene. */
+export function cardOf(outline, now = new Date()) {
+  const { id, base, title, premise, style, sources, province, chapter } = outline;
+  return { version: 1, id, base, title, premise, style, sources, province, chapter: chapter ?? null, opening: outline.scene.id, made: true, created: now.toISOString() };
+}
+export function overlayOf(outline) {
+  const pid = outline.province.id;
+  return {
+    dictionary: { version: 1, words: outline.words ?? {}, provinces: { [pid]: outline.province.name } },
+    creatures: { version: 1, creatures: outline.creatures ?? [] },
+    places: { [pid]: { version: 1, province: pid, start: outline.start, places: outline.places } },
+    scenes: { [outline.scene.id]: outline.scene },
+  };
 }
 
 /* Who speaks besides the creatures. Ling is the world's voice — narration,
@@ -55,7 +134,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     branches: at('branches.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
     places: loadPlaces(path.join(dir, 'places')),
-    templates: { made: at('templates/made-scene.json') },
+    templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
     chapters: loadChapters(path.join(dir, 'chapters')),
   };
@@ -97,6 +176,83 @@ function loadPlaces(root) {
     places[doc.province] = doc;
   }
   return places;
+}
+
+/* ── Made worlds: the lint ── */
+
+export const WORLD = { max_bytes: 16000, places: [4, 8], cast: [1, 8], new_creatures: 4 };
+const ID = /^[a-z0-9-]+$/;
+const pair = v => Boolean(v?.zh && v?.en);
+
+/* A world Ling wrote, checked the way authored ones are and as a made
+   thing: a shipped base, a province of its own, roads that come back,
+   creatures from the bestiary or new with a root, an opening scene in the
+   made shape, no novel's names. Returns the problems; none means playable. */
+export function lintMadeWorld(outline, base) {
+  const problems = [];
+  const bad = (where, msg) => problems.push(`${where}: ${msg}`);
+  if (!outline || typeof outline !== 'object') return ['not a world'];
+  lintWorldCard(outline, base, bad);
+  lintWorldProvince(outline, base, bad);
+  lintWorldCast(outline, base, bad);
+  lintWorldWords(outline, base, bad);
+  if (!outline.scene || typeof outline.scene !== 'object') bad('scene', 'needs an opening scene');
+  refusedNames(outline, base, 'world', bad);
+  bilingual({ ...outline, scene: undefined }, 'world', bad);
+  if (problems.length) return problems;
+  const merged = overlayWorld(base, cardOf(outline), overlayOf(outline));
+  const ids = { creatures: new Set(merged.creatures.creatures.map(c => c.id)), items: new Set(base.items.items.map(i => i.id)), tasks: new Set() };
+  lintPlaces({ ...merged, chapters: { story: { scenes: { [outline.scene.id]: outline.scene } } } }, ids, bad);
+  for (const p of lintMade(outline.scene, {}, merged)) problems.push(p);
+  return problems;
+}
+
+function lintWorldCard(o, base, bad) {
+  if (!ID.test(o.id ?? '')) bad('world', 'id must be lowercase letters, digits and dashes');
+  else if (hasWorld(o.id)) bad('world', `${o.id} is a shipped world`);
+  if (o.base !== base.world.id) bad('world', `base must be ${base.world.id}`);
+  if (JSON.stringify(o).length > WORLD.max_bytes) bad('world', `over ${WORLD.max_bytes} bytes`);
+  for (const k of ['title', 'premise', 'style']) if (!pair(o[k])) bad('world', `${k} needs zh and en`);
+  if (!Array.isArray(o.sources) || !o.sources.length) bad('world', 'needs sources — the heritage it draws on');
+}
+
+function lintWorldProvince(o, base, bad) {
+  const pid = o.province?.id;
+  if (!ID.test(pid ?? '')) bad('province', 'id must be lowercase letters, digits and dashes');
+  else if (base.dictionary.provinces[pid]) bad('province', `${pid} is a province of ${base.world.id}`);
+  if (!pair(o.province?.name)) bad('province', 'name needs zh and en');
+  const places = Array.isArray(o.places) ? o.places : [];
+  if (places.length < WORLD.places[0] || places.length > WORLD.places[1]) bad('places', `needs ${WORLD.places[0]} to ${WORLD.places[1]} places`);
+  if (!o.start) bad('places', 'needs a start');
+  for (const p of places) if (!ID.test(p?.id ?? '')) bad(`place ${p?.id ?? '?'}`, 'id must be lowercase letters, digits and dashes');
+}
+
+function lintWorldCast(o, base, bad) {
+  const baseIds = new Set(base.creatures.creatures.map(c => c.id));
+  const news = Array.isArray(o.creatures) ? o.creatures : [];
+  const cast = Array.isArray(o.cast) ? o.cast : [];
+  if (news.length > WORLD.new_creatures) bad('creatures', `at most ${WORLD.new_creatures} new creatures`);
+  if (cast.length + news.length < WORLD.cast[0]) bad('cast', 'needs at least one creature');
+  if (cast.length + news.length > WORLD.cast[1]) bad('cast', `at most ${WORLD.cast[1]} creatures in all`);
+  for (const id of cast) if (!baseIds.has(id)) bad('cast', `${id} is not in the bestiary`);
+  const seen = new Set();
+  for (const c of news) {
+    const at = `creature ${c?.id ?? '?'}`;
+    if (!ID.test(c?.id ?? '')) bad(at, 'id must be lowercase letters, digits and dashes');
+    else if (baseIds.has(c.id) || seen.has(c.id)) bad(at, 'id already taken');
+    seen.add(c?.id);
+    if (!base.traits.elements[c?.root]) bad(at, `needs a root the traits know, not ${c?.root}`);
+    for (const k of ['name', 'quote', 'look']) if (!pair(c?.[k])) bad(at, `${k} needs zh and en`);
+    if (c?.art) bad(at, 'art is drawn later, never written');
+  }
+}
+
+/* Words a world renames: only ids the base has, each in both languages. */
+function lintWorldWords(o, base, bad) {
+  for (const [id, w] of Object.entries(o.words ?? {})) {
+    if (!base.dictionary.words[id]) bad(`word ${id}`, 'is not an id the harness has');
+    if (!pair(w)) bad(`word ${id}`, 'needs zh and en');
+  }
 }
 
 /* ── Made scenes ── */

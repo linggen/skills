@@ -13,7 +13,7 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade']);
+const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Make', 'Enter', 'Leave', 'Build', 'Travel', 'Art']);
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
@@ -54,12 +54,22 @@ const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boar
 
 /// The content of the world the save plays, read once per world: a save
 /// pulled from the cloud may stand in another world than the last one drawn.
+/// A made world is its base's files with the player's laid over: its new
+/// creatures and its words. Each creature remembers the folder its art is in.
 async function loadContent(world) {
-  if (authored?.world === world) return;
+  if (authored?.world === world.id) return;
+  const baseDir = world.made ? `worlds/${world.base}` : world.dir;
   const [creatures, herbs, hexagrams, roots, terms] = await Promise.all(
-    ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json'].map((f) => content(world, f)),
+    ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json'].map((f) => content(baseDir, f)),
   );
-  authored = { world, creatures: creatures.creatures, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary: terms };
+  let all = creatures.creatures.map((c) => ({ ...c, dir: baseDir }));
+  let dictionary = terms;
+  if (world.made) {
+    const [mine, words] = await Promise.all([content(world.dir, 'creatures.json'), content(world.dir, 'dictionary.json')]);
+    all = [...all, ...mine.creatures.map((c) => ({ ...c, dir: world.dir }))];
+    dictionary = { ...terms, words: { ...terms.words, ...(words.words ?? {}) }, provinces: { ...terms.provinces, ...(words.provinces ?? {}) } };
+  }
+  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary };
   boards.clear();
 }
 
@@ -78,7 +88,7 @@ async function readCloud() {
 async function refresh() {
   try {
     [look] = await Promise.all([verb('look'), readCloud()]);
-    await loadContent(look.world.id);
+    await loadContent(look.world);
   } catch (e) {
     console.warn('[lingjing] look', e);
     if (!authored) $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
@@ -290,6 +300,7 @@ function onContentBlock(payload) {
       console.warn('[lingjing] Show parse', e);
     }
   }
+  if (payload?.tool === 'Art') authored = null; // a creature was just painted: read the cards again
   if (WRITERS.has(payload?.tool)) setTimeout(refresh, 1500);
 }
 

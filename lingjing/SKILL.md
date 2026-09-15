@@ -249,6 +249,62 @@ tools:
     tier: edit
     timeout_ms: 8000
 
+  - name: Build
+    description: >-
+      A world of the player's own. Called with nothing it returns the
+      template — a whole example world — and the rules of making; called
+      with `world` (the JSON of one outline in that exact shape) the rules
+      check it, keep it, and take the player there: a fresh save in that
+      world, its opening scene already entered. Refuses `not-playable` with
+      the `problems` to fix, and `world-in-play` for an id whose save
+      exists. Costs stamina.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs build --world={{world}}"
+    tier: edit
+    timeout_ms: 15000
+    args:
+      world:
+        type: string
+        required: false
+        description: The outline as JSON text, in the template's shape. Omit to read the template.
+
+  - name: Worlds
+    description: Every world there is — the built-in ones and the player's — with which one this save plays and which have a save waiting.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs worlds"
+    tier: read
+    timeout_ms: 8000
+
+  - name: Travel
+    description: >-
+      Go to another world by id. This save is kept where it stands; the
+      other world's is taken up where it stood, or begun. Answers with the
+      new world's Look.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs travel --world={{world}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      world:
+        type: string
+        required: true
+        description: A world id from Worlds.
+
+  - name: Art
+    description: >-
+      Give a creature of this made world its picture — the `path` (or `url`)
+      GenerateImage returned. The rules keep the file beside the world and
+      write it into the creature's card.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      creature:
+        type: string
+        required: true
+        description: The creature's id, one this world made.
+      file:
+        type: string
+        required: true
+        description: The path or url GenerateImage returned.
+
   - name: Show
     description: >-
       Put cards before the player — on the scene beside the chat on the Mac,
@@ -517,6 +573,37 @@ picture a thing; never redraw what exists. It takes about fifteen seconds
 making scenes is closed here.** Say so in one line — *this Mac can't draw
 new scenes; the main story is open* — and offer the spine. Never write a
 made scene that would enter without its picture.
+
+## Worlds — the player's own
+
+When the player wants a world of their own — *a 山海经 hunt in 青州*, *a
+三国 council*, *a 易经 reading* — you build it and they start inside it,
+whole. Nothing is asked of them first.
+
+1. **Build** with nothing: read the template and the rules of making.
+2. **Write one outline in exactly that shape** — a title, a premise and a
+   style in both languages; the heritage it draws on; a province of its own
+   with four to eight places, roads both ways, a start; a cast from the
+   bestiary and up to four new creatures with a quote, a look and a root;
+   the words the story renames, if any; the opening scene in the made-scene
+   shape. Under a minute. The systems are never yours to change — they are
+   the base's.
+3. **Build** with the outline. `not-playable` lists what to fix — fix it and
+   Build again, silently. The answer is the new world's Look: narrate its
+   opening scene the way you narrate any scene. The next scene is written
+   when an exit needs it (§ Making scenes); the places are walked with Move.
+4. **Pictures.** A creature from the bestiary has its picture. A creature
+   this world made has none until it first appears: then **GenerateImage**
+   (its look in plain words, then the style line from § Pictures for made
+   scenes; name it by the creature's id; `square`), then **Art** with the
+   creature's id and the `path` returned. Once, on first appearance; say in
+   a phrase that the brush is at work if the player is waiting.
+5. **Worlds** lists them; **Travel** moves between them. Each world keeps
+   its own save: leaving 《九鼎》 for a made world and back loses nothing.
+
+**Without GenerateImage among your tools this machine cannot draw, and
+building worlds is closed here** — the same line as for scenes, and the
+built-in world is open.
 
 ## The story so far
 

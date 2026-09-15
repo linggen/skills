@@ -33,12 +33,14 @@ export async function verb(name, args = {}) {
 }
 
 /// A world's folder, relative to the page: art and content live there.
-export const worldPath = (world, file) => `../worlds/${encodeURIComponent(world)}/${file}`;
+/// `dir` is what Look's `world.dir` says — `worlds/<id>` for a shipped
+/// world, `data/worlds/<id>` for one the player made.
+export const worldPath = (dir, file) => `../${dir.split('/').map(encodeURIComponent).join('/')}/${file}`;
 
-/// A world's authored content, read straight off the skill folder the
-/// engine serves.
-export async function content(world, file) {
-  const res = await fetch(worldPath(world, file));
-  if (!res.ok) throw new Error(`${world}/${file} ${res.status}`);
+/// A world's content file, read straight off the skill folder the engine
+/// serves.
+export async function content(dir, file) {
+  const res = await fetch(worldPath(dir, file));
+  if (!res.ok) throw new Error(`${dir}/${file} ${res.status}`);
   return res.json();
 }

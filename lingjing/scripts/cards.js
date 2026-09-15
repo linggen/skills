@@ -47,9 +47,12 @@ function creature(card, ctx) {
   const c = ctx.content.creatures.find((x) => x.id === card.id);
   if (!c) return '';
   const tamed = (ctx.look.cast || []).some((b) => b.id === c.id);
+  const art = c.art
+    ? `<img class="illus" src="${esc(worldPath(c.dir ?? ctx.look.world.dir, c.art))}" alt="${esc(pick(c.name, ctx.lang))}">`
+    : `<div class="illus unpainted">${esc(pick(c.look, ctx.lang))}</div>`;
   return `<div class="card creature${tamed ? ' tamed' : ''}">
-    <img class="illus" src="${esc(worldPath(ctx.look.world.id, c.art))}" alt="${esc(pick(c.name, ctx.lang))}">
-    ${c.art_caption ? `<div class="artcap">${esc(pick(c.art_caption, ctx.lang))}</div>` : ''}
+    ${art}
+    ${c.art && c.art_caption ? `<div class="artcap">${esc(pick(c.art_caption, ctx.lang))}</div>` : ''}
     <div class="crow"><div class="seal">${esc(c.name.zh)}</div><div>
       <div class="cardtitle">${esc(pick(c.name, ctx.lang))}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
@@ -124,7 +127,7 @@ function board(card, ctx) {
 function item(card, ctx) {
   const ids = card.ids ?? [card.id];
   const known = new Map((ctx.look.place?.shelf || []).map((i) => [i.id, i]));
-  const world = ctx.look.world.id;
+  const world = ctx.content.dir ?? ctx.look.world.dir;
   const cells = ids.map((id) => {
     const i = known.get(id) ?? { id, name: id, kind: '', buy: null, sell: null, held: (ctx.look.bag || []).find((b) => b.id === id)?.n ?? 0 };
     const held = i.held ? `<span class="chip">${ctx.words.inBag} ×${i.held}</span>` : '';

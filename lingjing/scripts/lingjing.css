@@ -116,6 +116,8 @@ button:disabled { cursor: default; }
 .act { border: 1px solid var(--ling); background: var(--ling-soft); color: var(--ling); border-radius: 7px; padding: 3px 10px; font-size: 12.5px; }
 
 .illus { display: block; width: 100%; height: auto; border-radius: 7px; margin-bottom: 4px; }
+/* A creature not yet painted: its look, in words, where the picture will be. */
+.illus.unpainted { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; padding: 12%; text-align: center; font-style: italic; opacity: 0.7; border: 1px dashed currentColor; }
 .artcap { font-family: var(--ui); font-size: 10.5px; letter-spacing: 0.02em; opacity: 0.55; text-align: right; margin-bottom: 10px; }
 .crow { display: flex; gap: 12px; }
 .seal { flex: none; width: 62px; height: 62px; border: 2px solid var(--seal); color: var(--seal); border-radius: 6px; display: grid; place-content: center;

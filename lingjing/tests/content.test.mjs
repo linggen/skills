@@ -168,3 +168,53 @@ test('chapter 1 walks from the Zhang to the cauldron and ends', () => {
   assert.ok(ch.scenes['01-end'].exits.some(e => e.ends === '01-ji'));
   assert.ok(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').breakthrough);
 });
+
+// ── Made worlds ──
+import { WORLD, lintMadeWorld, overlayWorld, madeWorldsDir } from '../scripts/content.mjs';
+
+const outline = () => JSON.parse(JSON.stringify(loadContent().templates.world));
+
+test('the made-world template is playable over the shipped world', () => {
+  assert.deepEqual(lintMadeWorld(outline(), loadContent()), []);
+  assert.equal(WORLD.places[1], 8);
+});
+
+test('a made world: a shipped id, a base province, a road that does not come back, a creature with art, a word the harness lacks', () => {
+  const base = loadContent();
+  const a = outline(); a.id = 'jiuding';
+  assert.ok(has(lintMadeWorld(a, base), 'jiuding is a shipped world'));
+  const b = outline(); b.province.id = '冀';
+  assert.ok(has(lintMadeWorld(b, base), 'province: id must be lowercase'));
+  const c = outline(); c.places[0].roads = ['bell'];
+  assert.ok(has(lintMadeWorld(c, base), 'does not come back'));
+  const d = outline(); d.creatures[0].art = 'art/x.png';
+  assert.ok(has(lintMadeWorld(d, base), 'art is drawn later'));
+  const e = outline(); e.words = { hitpoints: { zh: '血', en: 'HP' } };
+  assert.ok(has(lintMadeWorld(e, base), 'word hitpoints: is not an id the harness has'));
+  const f = outline(); f.cast = ['dragon'];
+  assert.ok(has(lintMadeWorld(f, base), 'dragon is not in the bestiary'));
+  const g = outline(); g.scene.exits[1].grant = { table: 'scene', progress: 50 };
+  assert.ok(has(lintMadeWorld(g, base), 'grant only from branch'));
+  const h = outline(); h.premise.zh = '韩立来到云梦泽';
+  assert.ok(has(lintMadeWorld(h, base), 'names 韩立'));
+});
+
+test('a made world lays its story over the base: its province, its creatures marked, one stub chapter, the opening scene', () => {
+  const base = loadContent();
+  const o = outline();
+  const merged = overlayWorld(base, { ...o, opening: o.scene.id, made: true }, {
+    dictionary: { words: { progress: { zh: '道行', en: 'the Way' } }, provinces: { yunmeng: o.province.name } },
+    creatures: { creatures: o.creatures },
+    places: { yunmeng: { province: 'yunmeng', start: o.start, places: o.places } },
+    scenes: { [o.scene.id]: o.scene },
+  });
+  assert.equal(merged.world.made, true);
+  assert.equal(merged.dictionary.words.progress.zh, '道行');
+  assert.equal(merged.dictionary.words.wealth.zh, base.dictionary.words.wealth.zh, 'unrenamed words are the base\'s');
+  assert.deepEqual(Object.keys(merged.places), ['yunmeng'], 'only its own province is on the map');
+  assert.ok(merged.creatures.creatures.some(c => c.id === 'fuzhu') && merged.creatures.creatures.find(c => c.id === 'lushu').made);
+  assert.deepEqual(Object.keys(merged.chapters), ['story']);
+  assert.equal(merged.chapters.story.first_scene, null);
+  assert.equal(merged.ladder, base.ladder);
+  assert.ok(madeWorldsDir().endsWith('/data/worlds'));
+});

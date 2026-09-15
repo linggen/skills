@@ -137,6 +137,34 @@ everything in `worlds/jiuding/` — is the first world and the example.
   contains any; `_` notes are skipped. Built-in worlds are authored; a
   player's world is Ling's; both play identically. One story in play per
   save; a new world starts a fresh save (the account keeps several).
+- **Built (step 15, 2026-09-15): made worlds.** A world of the player's is
+  laid over 《九鼎》 and lives in the skill's `data/worlds/<id>/`, holding only
+  what Ling wrote: the card (`base: jiuding`, its province, its opening
+  scene's id), the words it renames, its new creatures, one province of
+  places, the opening scene. `loadWorld` merges base then overlay: ladder,
+  rewards, herbs, items, riddles, tasks, branches are the base's; the map is
+  the made province alone; the one chapter is a stub with no spine, so the
+  province opens at once and the story is the opening scene (entered the
+  moment the save begins) plus what Ling makes next. `templates/made-world.json`
+  is the example and carries the rules; `lintMadeWorld` checks an outline the
+  way authored content is checked, plus the made limits (4–8 places, roads
+  both ways, a start, ≤4 new creatures with a root, words only for ids the
+  harness has, the opening scene through the made-scene lint, no novel's
+  names); a missing `base` or `id` takes the only answer there is. Verbs:
+  `build` (nothing → template + rules + cost; an outline → lint → folder →
+  travel), `worlds`, `travel` (the save in play is parked under
+  `data/saves/<world>.json`, the other's restored or begun; `undo` steps back
+  across it), `art` (the file GenerateImage wrote, moved beside the world and
+  written into the creature's card). Cast may come from the bestiary, with
+  its picture, or be new and drawn on first appearance — both, his ruling.
+  The page reads a made world's creatures and words over its base's; a
+  creature not yet painted shows its look in words. Closed where the machine
+  cannot draw (no GenerateImage). Live on Gemini Flash-Lite: 《青州山海猎》 in
+  20 s (five places, 夫诸 in a cave); 《荆州泽国》 with an invented four-winged
+  serpent, drawn in 16 s and shown. Open: amending a world in play (add a
+  creature or a place — Build refuses `world-in-play`); the map card knows
+  only the nine provinces; a weak model may skip reading the template and
+  need several lint rounds.
 - **Style of 《九鼎》: 修仙 · 凡人流 — no names from the book.** Decided
   2026-09-14 ("use 凡人流 style, no names from the book"). The *system* is
   道教 and genre inheritance older than any novel — nine realms 练气 to 渡劫,

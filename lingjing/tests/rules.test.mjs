@@ -443,7 +443,10 @@ test('a save from before the dictionary migrates to the ids', () => {
 test('a new save says its world, and Look carries the world card', () => {
   const s = start();
   assert.equal(s.world, 'jiuding');
-  assert.deepEqual(look(s, content, ctx()).world, { id: 'jiuding', title: '九鼎', style: '修仙 · 凡人流' });
+  assert.deepEqual(look(s, content, ctx()).world, {
+    id: 'jiuding', title: '九鼎', style: '修仙 · 凡人流', premise: '大禹铸九鼎，周亡而鼎失。九州为图，九境为梯，每寻回一鼎，便破一境。',
+    made: false, base: null, dir: 'worlds/jiuding',
+  });
   assert.equal(look(start('en'), content, ctx()).world.title, 'The Nine Cauldrons');
 });
 
@@ -754,4 +757,59 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   assert.equal(heard.lang_set, 'zh');
   assert.equal(cli('look', '--said=伸手').lang_set, undefined);
   fs.rmSync(data, { recursive: true, force: true });
+});
+
+// ── Worlds of the player's own: the command line parks and restores saves ──
+test('Build takes the player to a fresh save in their world; Travel parks and restores; Art paints a made creature', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-worlds-'));
+  const skill = path.resolve('.');
+  const rules = path.join(skill, 'scripts/rules.mjs');
+  const run = (...args) => {
+    const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
+    return JSON.parse(out.stdout.trim().split('\n').pop());
+  };
+  assert.equal(run('init', '--lang=en').world.id, 'jiuding');
+  const t = run('build');
+  assert.equal(t.template.id, 'yunmeng');
+  assert.ok(t.rules.length && t.cost === 10);
+  const bare = { ...t.template }; delete bare.base; delete bare.id;
+  const built = run('build', `--world=${JSON.stringify(bare)}`); // base and id are the only answers there are
+  assert.equal(built.ok, true, JSON.stringify(built));
+  assert.deepEqual(built.travelled, { from: 'jiuding', to: 'the-yunmeng-marsh', fresh: true }, 'no id given: the title becomes one');
+  assert.equal(built.world.made, true);
+  assert.equal(built.world.dir, 'data/worlds/the-yunmeng-marsh');
+  assert.equal(built.scene.id, 'made-yunmeng-reeds', 'the opening scene is entered at once');
+  assert.equal(built.place.id, 'reeds');
+  assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json')));
+  assert.ok(fs.existsSync(path.join(dir, 'saves/jiuding.json')), 'the shipped world\'s save is parked');
+  // play: the opening ends, the province is open, a road leads on
+  assert.equal(run('resolve', '--exit=wade').paid.progress, 10);
+  const moved = run('move', '--place=isle');
+  assert.equal(moved.ok, true);
+  assert.deepEqual(moved.show, [{ card: 'creature', id: 'jingwei' }]);
+  // worlds and travel
+  assert.deepEqual(run('worlds').worlds.map(w => [w.id, w.playing, w.saved]), [['jiuding', false, true], ['the-yunmeng-marsh', true, true]]);
+  const home = run('travel', '--world=jiuding');
+  assert.deepEqual(home.travelled, { from: 'the-yunmeng-marsh', to: 'jiuding', fresh: false });
+  assert.equal(home.scene.id, '00-river');
+  assert.equal(home.stamina.now, 90, 'building cost the save it was built from');
+  assert.equal(run('travel', '--world=the-yunmeng-marsh').place.id, 'isle', 'restored where it stood');
+  assert.equal(run('travel', '--world=nowhere').refused, 'unknown-world');
+  assert.equal(run('build', `--world=${JSON.stringify(bare)}`).refused, 'world-in-play');
+  // art: only a file inside the skill, only a made creature
+  const pictures = path.join(skill, 'data/pictures'); fs.mkdirSync(pictures, { recursive: true });
+  const png = path.join(pictures, 'test-lushu.png'); fs.writeFileSync(png, 'png');
+  try {
+    assert.equal(run('art', '--creature=lushu', `--file=${path.join(dir, 'nowhere.png')}`).refused, 'no-such-file');
+    assert.equal(run('art', '--creature=fuzhu', `--file=${png}`).refused, 'not-a-made-creature');
+    assert.deepEqual(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, creature: 'lushu', art: 'art/lushu.png' });
+    assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/art/lushu.png')));
+    assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/creatures.json'), 'utf8')).creatures[0].art, 'art/lushu.png');
+  } finally {
+    fs.rmSync(png, { force: true });
+    if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
+  }
+  // undo steps back across the last travel
+  assert.equal(run('undo').undid, 'travel');
+  fs.rmSync(dir, { recursive: true, force: true });
 });
