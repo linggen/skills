@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_balance": "Thresholds are base progress. `pay` scales every reward in that realm (applied last, after the day cap) — design.md § Pacing. First pass.",
+  "_balance": "Thresholds are base progress. `pay` scales every reward in that realm (applied last, after the day cap) — design.md § Pacing. 练气 halved 2026-09-15 so the cauldron waits about a week, not two.",
   "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for.",
   "tiers": [
     {
@@ -35,15 +35,15 @@
         ]
       },
       "thresholds": [
+        50,
+        60,
+        70,
+        80,
+        90,
         100,
+        110,
         120,
-        140,
-        160,
-        180,
-        200,
-        220,
-        240,
-        260
+        130
       ]
     },
     {

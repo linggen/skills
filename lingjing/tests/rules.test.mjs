@@ -68,7 +68,8 @@ test('the prologue walks from the river to its end by exits alone', () => {
   assert.equal(s.name, '青玄');
   assert.deepEqual(s.traits, ['wood', 'water', 'fire', 'earth']);
   assert.deepEqual(s.cast, ['fuzhu']);
-  assert.equal(s.progress, 70); // alchemy 20 + Fuzhu 50
+  assert.equal(s.step, 1); // alchemy 20 + Fuzhu 50 crosses the first layer (50)
+  assert.equal(s.progress, 20);
   assert.equal(s.wealth, 10);
   assert.equal(end.result.ended, '00-prologue');
 });
@@ -227,7 +228,7 @@ test('answers are judged in either language, punctuation and articles aside', ()
 
 test('a layer fills and the next begins, the rest carried over', () => {
   const s = start();
-  s.progress = 90;
+  s.progress = 40;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.state.step, 1);
@@ -237,10 +238,10 @@ test('a layer fills and the next begins, the rest carried over', () => {
 
 test('at the realm peak the player holds until the chapter opens', () => {
   const s = start();
-  s.step = 8; s.progress = 250;
+  s.step = 8; s.progress = 120;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.state.progress, 260);
+  assert.equal(out.state.progress, 130);
   assert.deepEqual(out.result.paid.hold, { gate: 1 });
 });
 
@@ -714,7 +715,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   assert.ok(held.say.startsWith('鼎气扑到你身上'));
   assert.equal(held.peak_step, 9);
   // at the peak: the Foundation is laid, then paid into the new tier
-  s = { ...s, step: 8, progress: 260 };
+  s = { ...s, step: 8, progress: 130 };
   r = answer(resolve, s, { exit: 'take' });
   assert.deepEqual(r.result.breakthrough, { from: '练气九层', to: '筑基初期', tier: 'foundation' });
   assert.equal(r.state.tier, 'foundation'); assert.equal(r.state.step, 0);

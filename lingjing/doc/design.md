@@ -294,7 +294,7 @@ thresholds as written:
 
 | Realm | 修为 to cross | `pay` | Days |
 |---|---|---|---|
-| 练气 | 1,620 | 1 | ~20 |
+| 练气 | 810 | 1 | ~10 |
 | 筑基 | 1,500 | 1 | ~19 |
 | 结丹 | 3,000 | 1 | ~37 |
 | 元婴 | 6,000 | 2 | ~37 |
@@ -304,7 +304,7 @@ thresholds as written:
 | 大乘 | 43,500 | 14 | ~39 |
 | 渡劫 | 66,000 | 20 | ~41 |
 
-About 315 diligent days end to end — the spec's year, with slack for the
+About 305 diligent days end to end — the spec's year, with slack for the
 days a chapter is not yet open. Without the multiplier the same tables took
 six years. The numbers are a first pass; the shape is the decision.
 
@@ -1204,8 +1204,9 @@ Establishment, Core Formation, Nascent Soul).
   tapped place is a Move; a road is closed only when Move says so; the
   prologue's last beat no longer promises a road that is already open.
   His calls: the prologue spent 70 of 100 stamina in the first sitting
-  (made free the same day); the cauldron wants the peak of 练气 (1,620 progress, 240 a day — a week
-  of play at best) the day chapter 1 opens; Flash-Lite still tells a 奇遇 in
+  (made free the same day); the cauldron wants the peak of 练气 the day chapter 1 opens — 练气
+  halved to 810 on 2026-09-15 (50–130 a layer; a real day earns 80–110,
+  so about a week); Flash-Lite still tells a 奇遇 in
   one breath (a turn count from the engine would let the rules know a real
   player turn), drops authored lines in a long session, and skips the
   chapter's last button; the engine shows a provider's raw 429 as Ling's
