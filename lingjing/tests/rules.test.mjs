@@ -134,9 +134,9 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
   assert.equal(brief.duel.creature.root, 'water');
   assert.deepEqual(brief.duel.roots.map(r => r.id), ['wood', 'water', 'fire', 'earth']);
   assert.equal(brief.duel.today, null);
-  // start: a bout's stamina, the creature's moves for the day
+  // start: the creature's moves for the day (a bout in the prologue is free)
   const started = must(duel, s, { id: 'subdue-fuzhu' });
-  assert.equal(started.state.stamina, s.stamina - 10);
+  assert.equal(started.state.stamina, s.stamina);
   assert.equal(started.result.moves.length, 5);
   assert.equal(started.state.duels.fuzhu.outcome, 'open');
   // the winning picks, replayed by the rules
@@ -176,7 +176,7 @@ test('a bout must be started, picks must be the player\'s roots, and the same da
   const s = toFuzhu();
   refused(duel, s, { id: 'subdue-fuzhu', picks: 'wood' }, 'not-started');
   refused(duel, s, { id: 'nothing' }, 'not-here');
-  refused(duel, { ...s, stamina: 3 }, { id: 'subdue-fuzhu' }, 'no-stamina');
+  must(duel, { ...s, stamina: 3 }, { id: 'subdue-fuzhu' }); // free in the prologue
   const a = must(duel, s, { id: 'subdue-fuzhu' }), b = must(duel, s, { id: 'subdue-fuzhu' });
   assert.deepEqual(a.result.moves, b.result.moves);
   refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'metal,metal' }, 'not-your-root');
@@ -264,20 +264,17 @@ test('a later realm pays more for the same task; the day cap counts base', () =>
   assert.equal(out.result.paid.capped, false);
 });
 
-test('a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
-  let s = start();
-  assert.equal(s.stamina, 100);
+test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
+  let s = { ...start(), stamina: 0, stamina_at: NOW.toISOString() };
   s = must(resolve, s, { exit: 'reach' }).state;
-  assert.equal(s.stamina, 90);
-  s.stamina = 5; s.stamina_at = NOW.toISOString();
-  const r = refused(resolve, s, { exit: 'name', value: '青玄' }, 'no-stamina');
-  assert.equal(r.cost, 10);
-  // 5 points short at 20 an hour = 15 minutes
-  assert.equal(new Date(r.returns_at).getTime(), NOW.getTime() + 15 * 60_000);
-  assert.match(r.say, /丹田已空/);
-  const seen = look(s, content, ctx());
-  assert.equal(seen.stamina.empty, true);
-  assert.equal(seen.stamina.returns_at, r.returns_at);
+  s = must(resolve, s, { exit: 'name', value: '青玄' }).state;
+  assert.equal(s.scene, '00-stone');
+  assert.equal(s.stamina, 0);
+  // making a scene inside it still costs
+  const ferry = make(s, content, ctx(), {}).result.template;
+  const exits = ferry.exits.filter(e => !e.next);
+  const scene = { ...ferry, exits, buttons: ferry.buttons.filter(id => exits.some(e => e.id === id)) };
+  refused(make, s, { scene: JSON.stringify(scene) }, 'no-stamina');
 });
 
 test('灵气 refills by the clock, whole points, never over the top', () => {
@@ -566,7 +563,8 @@ test('the director names today\'s seed only where seeds grow, and the pool', () 
   const s = toOpenWorld();
   const d = look(s, content, ctx()).director;
   assert.ok(d.seed?.id.startsWith('xu-'));
-  assert.equal(d.pool, 'half', 'six story steps of ten from a hundred');
+  assert.equal(d.pool, 'full', 'the prologue asked nothing');
+  assert.equal(look({ ...s, stamina: 40 }, content, ctx()).director.pool, 'half');
   assert.equal(look(start(), content, ctx()).director.pool, 'full');
   const moved = must(move, s, { place: 'sishui' }).state;
   const t = must(move, moved, { place: 'huaidu' }).state;
@@ -684,6 +682,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   let s = toJi();
   // arrive → Ye: the scene moves, the player must walk
   let r = answer(resolve, s, { exit: 'town' });
+  assert.equal(r.state.stamina, 90, 'chapter 1 is not free');
   assert.equal(r.state.scene, '01-ye'); assert.equal(r.result.scene, null); assert.equal(r.result.waypoint.place.id, 'ye');
   s = r.state;
   assert.equal(look(s, content, octx()).scene, null);
@@ -700,6 +699,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   const altar = look(s, content, octx()).scene;
   assert.equal(altar.id, '01-altar');
   assert.ok(altar.exits.find(e => e.id === 'subdue').duel.creature.root === 'earth');
+  assert.equal(answer(duel, s, { id: altar.exits.find(e => e.id === 'subdue').game.id }).state.stamina, s.stamina - 10, 'a bout here costs');
   // the riddle way through
   refused(resolve, s, { exit: 'riddle', answer: '虾' }, 'wrong-answer', octx());
   r = answer(resolve, s, { exit: 'riddle', answer: '鱼' });
@@ -726,6 +726,19 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   assert.equal(r.state.scene, null);
   assert.equal(look(r.state, content, octx()).director.thread, null, 'no chapter 2 yet');
   assert.equal(wake(r.state, content, octx()), null);
+});
+
+test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
+  let s = answer(move, answer(resolve, toJi(), { exit: 'town' }).state, { place: 'ye' }).state;
+  s.stamina = 5; s.stamina_at = OCT.toISOString();
+  const r = refused(resolve, s, { exit: 'shrine' }, 'no-stamina', octx());
+  assert.equal(r.cost, 10);
+  // 5 points short at 20 an hour = 15 minutes
+  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 15 * 60_000);
+  assert.match(r.say, /丹田已空/);
+  const seen = look(s, content, octx());
+  assert.equal(seen.stamina.empty, true);
+  assert.equal(seen.stamina.returns_at, r.returns_at);
 });
 
 test('chapter 1: the fight at the shrine, and Ximen Bao\'s way', () => {

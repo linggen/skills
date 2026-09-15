@@ -409,7 +409,7 @@ begin, the same way.
   names the hour stamina returns), turn the player to the world in one line —
   rest, a walk, their other practice — and let the story wait. Never count,
   spend or promise stamina yourself: a story step, a branch and a bout cost
-  it; talk, questions and the boards are free; a quest paid refills it
+  it (the prologue's steps and bouts are free); talk, questions and the boards are free; a quest paid refills it
   (`stamina` on the result — say it in the world's word, as you say what was
   paid).
 - **Show is your only card.** The scene draws the status, the place and

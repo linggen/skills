@@ -444,7 +444,14 @@ const hourOf = (at, lang) => at.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en
 /* An action costs stamina — settled by the clock first. Refused, it says
    when the pool holds enough again, in the world's words, and the state is
    untouched. */
+/* A chapter marked `free` (the prologue) asks no 灵气 for its own steps
+   and bouts: a new player finishes the opening in one sitting. */
+const CHAPTER_COSTS = new Set(['step', 'duel']);
+const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
+  && Boolean(content.chapters[s.chapter]?.free) && !s.ended.includes(s.chapter);
+
 function spendStamina(content, s, ctx, kind) {
+  if (freeHere(content, s, kind)) return null;
   settleStamina(content, s, ctx.now);
   const cost = content.rewards.stamina.cost[kind] ?? 0;
   if (s.stamina >= cost) { s.stamina -= cost; return null; }

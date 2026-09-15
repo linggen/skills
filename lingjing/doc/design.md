@@ -950,6 +950,10 @@ refills by the clock.
 - **Actions cost it, from `worlds/<id>/rewards.json → qi`:** a story step (an
   exit that moves the scene or ends a chapter) **10** · opening a 奇遇
   **15** · a 降妖 bout **10** · a 坊市 visit **5**.
+- **The prologue is free** (decided 2026-09-15, his "yes, make the prologue
+  free"): a chapter marked `free: true` asks nothing for its own steps and
+  bouts, so a new player finishes the opening in one sitting — it had spent
+  70 of 100. Making a scene, a 奇遇 or the market inside it still cost.
 - **Free:** questions and chatter, a board played as practice, Look,
   buying and selling, a real-life quest checked. Talk costs nothing — but
   nothing advances without 灵气, which is the point.
@@ -1199,8 +1203,8 @@ Establishment, Core Formation, Nascent Soul).
   question is one short line with narration and `paid` in the reply; a
   tapped place is a Move; a road is closed only when Move says so; the
   prologue's last beat no longer promises a road that is already open.
-  His calls: the prologue spends 70 of 100 stamina in the first sitting;
-  the cauldron wants the peak of 练气 (1,620 progress, 240 a day — a week
+  His calls: the prologue spent 70 of 100 stamina in the first sitting
+  (made free the same day); the cauldron wants the peak of 练气 (1,620 progress, 240 a day — a week
   of play at best) the day chapter 1 opens; Flash-Lite still tells a 奇遇 in
   one breath (a turn count from the engine would let the rules know a real
   player turn), drops authored lines in a long session, and skips the
