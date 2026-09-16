@@ -183,9 +183,10 @@ function render() {
   document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
   $('status').innerHTML = statusHtml();
   $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
-  const withYinyue = (look.scene?.cast ?? []).some((c) => c.id === 'yinyue');
-  $('stage').hidden = !withYinyue;
-  stageYinyue(withYinyue);
+  // She is always at the player's side: on the stage whenever the game is
+  // open, scene or road, not only where a scene casts her.
+  $('stage').hidden = false;
+  stageYinyue(true);
   $('stageName').textContent = w.yinyue;
   $('focus').innerHTML = focusHtml();
   $('trayTitle').textContent = w.tray;
@@ -354,9 +355,9 @@ const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('
 /// account, and a turn would be refused anyway. One button; the daemon
 /// opens the browser, and the scene enters once the account reports in.
 /* Yinyue on the stage: the engine's pet view, loaded as a stage so it
-   outranks the desktop corner. Loaded only while a scene has her — unloading
-   releases her, and she goes back to wherever she was. The moon stands in
-   until the view has loaded. */
+   outranks the desktop corner. Loaded while the game is open — the gate
+   unloads it, which releases her, and she goes back to wherever she was.
+   The moon stands in until the view has loaded. */
 function stageYinyue(on) {
   const pet = $('pet');
   const moon = document.querySelector('.stage .moon');
