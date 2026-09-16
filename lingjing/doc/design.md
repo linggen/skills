@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-16 — creatures at their haunts (降妖 once a day, 驯 by what they like — `place.encounter`, Tame), every card with buttons, the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
+status: 2026-09-16 — 功法 designed (swords lend a root, 符 from 桑皮纸, learned arts — not built); creatures at their haunts (降妖 once a day, 驯 by what they like — `place.encounter`, Tame), every card with buttons, the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -939,6 +939,57 @@ and runs the same `rules.mjs` contract. Later.
   roots)` now deals at least two moves the player's roots overcome, which
   rounds drawn by the same hash; the card tells the 相克 ring in a line
   and says two wins (the Chinese hint said three).
+
+## 功法 — swords, talismans and learned arts (designed 2026-09-16, not built)
+
+His question after losing to 蠪侄 with no 金 root: "can user learn some
+功法, 法术, or attack by sword?" Today a player has roots, the 五行 bout,
+items with three effects (pill, wear, key) and the story; a sword in the
+market does nothing. Three pieces, all inside the rules and the bout card —
+no fighting numbers, the rules decide, heritage only. Ling narrates, the
+page plays; every effect is deterministic and capped per bout.
+
+1. **A weapon lends a root.** A weapon item gains `effect: {root: "metal"}`
+   (铁剑 → 金, 竹剑 → 木; later blades by their metal or wood). Worn in a
+   new `weapon` slot of `state.wear` (Trade `use` on a weapon wears it, as
+   the bell is worn by Yinyue), the bout offers that root beside the
+   player's own: `duelBrief.roots` gains `{id, name, from: "iron-sword"}`
+   and the card draws it marked as the sword's. `duel --picks` accepts it
+   while the weapon is worn. Nothing else changes: the ring, the moves, the
+   day-hash. This makes every creature beatable by craft, and the market
+   matter; it does not touch the root test.
+2. **符 from 桑皮纸.** A new item `talisman` (符, kind `charm`, not sold —
+   made). A `write` verb (Ling's *写符*) at a place with a 坊市 or an
+   altar, or anywhere at 结丹 and above: one 桑皮纸 becomes one 符, costs
+   `shop` stamina, one a day. In a bout the card shows a 符 button beside
+   the roots when one is held; `duel --picks` takes `talisman` as a pick:
+   that round is won outright, the 符 is spent, once per bout. The paper's
+   own line already says it: 写符最好.
+3. **功法 — learned arts, tier-gated.** A small catalog `worlds/<id>/arts.json`,
+   from 道教 heritage, each one bout effect, one line of source, never a
+   number: 五雷法 (a draw becomes a win, once per bout; 结丹+), 遁法 (one
+   lost round is taken back, once; 筑基+), 借势 (one pick counts as the root
+   it generates by 相生 — 木生火 火生土 土生金 金生水 水生木 — once; 练气+),
+   later 御剑 (the worn sword's root may be picked twice in a row) and 符水
+   (a 符 also refills 10 灵气). Learned, never bought: a scene exit
+   `grant.art`, a 奇遇 close that offers one from the branch table, or a
+   tamed creature teaching its own (夫诸 → 遁法, 雷神 → 五雷法). `state.arts`
+   holds ids; Look's `arts` lists them with `about`; the bout card shows
+   each learnable art as a button when its condition holds this round,
+   greyed with its reason otherwise; `duel --picks` takes `art:<id>` tokens
+   in the sequence, the rules replay and refuse `art-used`/`art-not-known`/
+   `art-needs-tier`. The dictionary carries the words; made worlds may
+   rename, never invent effects (the systems are fixed).
+
+Build order: 1 with 2 first (they use items already sold — 铁剑 in 冀,
+桑皮纸 in 兖), then 3 with five arts and one teacher creature per chapter.
+Tests: a 木水火土 player beats a 金 creature with the 铁剑 worn; a 符 wins
+its round and is spent; an art refuses out of tier and twice in a bout.
+SKILL.md: Trade `use` on a weapon says it is worn; *写符* → Write; the
+bout section names the 符 and the arts as the scene's buttons (Ling never
+plays them). Open for his call: whether a worn sword also changes the
+creature's lean (a 金 blade drawing 木 moves), and whether 斗法 at the
+table uses the same arts.
 
 ## At a creature's haunt — the world outside the spine
 
