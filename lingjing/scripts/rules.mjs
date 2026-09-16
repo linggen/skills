@@ -1329,6 +1329,7 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
   keepSave('world', current.world, current, now.toISOString());
   const content = loadWorld(id);
   const parked = savedFor(id) ? readSave(savedFile(id)).state : null;
+  if (parked) fs.rmSync(savedFile(id), { force: true }); // in play now, not kept
   const state = parked ?? freshState(content, current.lang, now);
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
