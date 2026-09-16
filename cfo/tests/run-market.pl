@@ -328,6 +328,96 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
       JSON::PP->new->canonical->encode(\@policy));
 }
 
+# ── Watch: judged and ranked ──────────────────────────────────────────────
+{
+    my $positions = {
+        TSLA    => { currency => 'USD', shares => 40, value => 14263.2, weight_pct => 77.1 },
+        NVDA    => { currency => 'USD', shares => 20, value => 4243.4, weight_pct => 22.9 },
+        'RY.TO' => { currency => 'CAD', shares => 0, value => 0, weight_pct => 0 },
+    };
+    my @events = (
+        { id => 'move:TSLA:2026-09-16', symbol => 'TSLA', kind => 'move', at => '2026-09-16T20:00:00Z', position_change => -2172.8 },
+        { id => 'news:a', symbol => 'NVDA', also => ['TSLA'], kind => 'news', at => '2026-09-16T12:00:00Z' },
+        { id => 'policy:1', scope => 'economy', kind => 'policy', at => '2026-09-16T12:00:00Z' },
+        { id => 'earnings:NVDA:2026-09-18', symbol => 'NVDA', kind => 'earnings', when => 'tomorrow', at => '2026-09-18T12:00:00Z' },
+        { id => 'news:b', symbol => 'TSLA', kind => 'news', at => '2026-09-16T11:00:00Z' },
+        { id => 'fx:USDCAD:2026-09-16', scope => 'economy', kind => 'fx', change_pct => 1.2, at => '2026-09-16T20:00:00Z' },
+        { id => 'move:RY.TO:2026-09-16', symbol => 'RY.TO', kind => 'move', at => '2026-09-16T20:00:00Z', position_change => undef },
+        { id => 'news:c', symbol => 'NVDA', kind => 'news', at => '2026-09-16T10:00:00Z' },
+        { id => 'news:d', symbol => 'NVDA', kind => 'news', at => '2026-09-16T09:00:00Z' },
+    );
+    my $scan = { scanned_at => '2026-09-17T05:00:00Z', home => 'USD', positions => $positions, events => \@events };
+    my @judged = (
+        { id => 'move:TSLA:2026-09-16', materiality => 'high', line => 'Tesla fell 14.5% after results.' },
+        { id => 'news:a', materiality => 'medium', line => "NVIDIA   and\nTesla named in a chip deal." },
+        { id => 'policy:1', materiality => 'MEDIUM', holdings => ['tsla', 'AAPL'], line => 'New tariffs on Canadian vehicles.' },
+        { id => 'earnings:NVDA:2026-09-18', materiality => 'low', line => 'NVIDIA reports tomorrow.' },
+        { id => 'news:b', materiality => 'low', line => 'A Tesla opinion piece.' },
+        { id => 'fx:USDCAD:2026-09-16', materiality => 'high', holdings => ['TSLA', 'NVDA'], line => 'The US dollar rose 1.2% against the Canadian.' },
+        { id => 'move:RY.TO:2026-09-16', materiality => 'high', line => 'Royal Bank fell 6%.' },
+        { id => 'news:c', materiality => 'none', line => 'Nothing to do with the stock.' },
+        { id => 'invented', materiality => 'high', line => 'Made up.' },
+    );
+    my $brief = sub { my ($doc) = @_; join ',', @{ $doc->{briefs}{'2026-09-17'}{lines} } };
+
+    my $doc = {};
+    my $out = record_watch($doc, $scan, \@judged, '2026-09-17', 'normal', 0);
+    t('the brief is holdings by the share of their money at stake, three at most',
+      $brief->($doc) eq 'move:TSLA:2026-09-16,news:a,policy:1', $brief->($doc));
+    my %item = map { $_->{id} => $_ } @{ $doc->{items} };
+    t('a move\'s stake is the position\'s real change; a policy\'s a share of what it touches',
+      $item{'move:TSLA:2026-09-16'}{stake} == 2173 && $item{'move:TSLA:2026-09-16'}{stake_pct} == 11.74
+      && $item{'policy:1'}{stake} == 428 && join(',', @{ $item{'policy:1'}{holdings} }) eq 'TSLA');
+    t('a headline tagged with two holdings weighs both', $item{'news:a'}{weight_pct} == 100 && $item{'news:a'}{line} eq 'NVIDIA and Tesla named in a chip deal.');
+    t('a currency day touches only holdings priced in the other currency', !$item{'fx:USDCAD:2026-09-16'}{held});
+    t('judged nothing, or not in the scan: no item; every candidate is seen',
+      !$item{'news:c'} && !$item{'invented'} && !$item{'news:d'} && $doc->{seen}{'news:c'} && $doc->{seen}{'news:d'} && !$doc->{seen}{'invented'}
+      && $out->{judged} == 7 && $out->{candidates} == 9);
+    t('the last run is the scan\'s time', $doc->{last_run} eq '2026-09-17T05:00:00Z');
+
+    my $quiet = {};
+    record_watch($quiet, $scan, \@judged, '2026-09-17', 'quiet', 0);
+    t('quiet: only high on a big holding', $brief->($quiet) eq 'move:TSLA:2026-09-16', $brief->($quiet));
+
+    my $watch_only = {};
+    record_watch($watch_only, $scan, [ grep { $_->{id} =~ /RY|news:b/ } @judged ], '2026-09-17', 'normal', 0);
+    t('a watched ticker\'s big event fills a free slot', $brief->($watch_only) eq 'move:RY.TO:2026-09-16', $brief->($watch_only));
+
+    my $results = {};
+    record_watch($results, $scan, [ grep { $_->{id} =~ /earnings/ } @judged ], '2026-09-17', 'normal', 0);
+    t('results tomorrow speak even when judged low', $brief->($results) eq 'earnings:NVDA:2026-09-18');
+
+    my $none = {};
+    record_watch($none, $scan, [], '2026-09-17', 'normal', 0);
+    t('nothing judged: a quiet brief, and the night still counts', $none->{briefs}{'2026-09-17'}{quiet} && keys %{ $none->{seen} } == 9);
+
+    my $later = { items => [ { id => 'old', saved_on => '2026-09-01' }, { id => 'week', saved_on => '2026-09-12' } ],
+                  seen => { gone => '2026-08-01', kept => '2026-09-01' }, briefs => { '2026-09-01' => {}, '2026-09-10' => {} } };
+    record_watch($later, { %$scan, events => [] }, [], '2026-09-17', 'normal', 0);
+    t('items keep a week, seen a month, briefs two weeks',
+      join(',', map { $_->{id} } @{ $later->{items} }) eq 'week' && !$later->{seen}{gone} && $later->{seen}{kept}
+      && !$later->{briefs}{'2026-09-01'} && $later->{briefs}{'2026-09-10'});
+
+    local $ENV{SKILL_DIR} = tempdir(CLEANUP => 1);
+    mkdir "$ENV{SKILL_DIR}/data";
+    open(my $c, '>', "$ENV{SKILL_DIR}/data/watch-candidates.json") or die;
+    print $c JSON::PP->new->encode($scan);
+    close $c;
+    open(my $cfg, '>', "$ENV{SKILL_DIR}/config.json") or die;
+    print $cfg '{"watch_level":"quiet"}';
+    close $cfg;
+    my $arg = 'judgments=' . JSON::PP->new->utf8->encode([ { id => 'move:TSLA:2026-09-16', materiality => 'high', line => "Tesla's 14.5% drop \x{2014} after results" } ]);
+    $arg =~ s/'/'\\''/g;
+    my $said = `perl $SCRIPT save-watch '$arg' 2>&1`;
+    my $saved = JSON::PP->new->utf8->decode(do { local (@ARGV, $/) = "$ENV{SKILL_DIR}/data/watch.json"; <> });
+    t('save-watch judges the last scan at the user\'s level and keeps the words',
+      $? == 0 && (values %{ $saved->{briefs} })[0]{level} eq 'quiet' && $saved->{items}[0]{line} eq "Tesla's 14.5% drop \x{2014} after results", $said);
+    `perl $SCRIPT save-watch 'judgments={{judgments}}' 2>&1`;
+    t('an omitted judgments arg still ends the night', $? == 0);
+    my $bad = `perl $SCRIPT save-watch 'judgments=not json' 2>&1`;
+    t('judgments that aren\'t JSON are refused with the reason', $? >> 8 == 1 && $bad =~ /^judgments:/, $bad);
+}
+
 # ── Holdings from the edit register ───────────────────────────────────────
 {
     local $ENV{SKILL_DIR} = tempdir(CLEANUP => 1);

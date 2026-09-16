@@ -176,6 +176,39 @@ tools:
     cmd: "perl $SKILL_DIR/scripts/market.pl save-report symbol={{symbol}} period={{period}} form={{form}} filed={{filed}} url={{url}} summary={{summary}}"
     tier: read
     timeout_ms: 8000
+  # The Watch (missions/watch): code finds, you judge, code ranks.
+  - name: WatchScan
+    description: >-
+      What happened to the user's money since the Watch last ran, found by
+      code. Per holding and watched ticker: big moves, 52-week breaks, results
+      today or tomorrow, analyst changes, SEC filings, big insider trades,
+      headlines. For everyone (scope "economy"): Fed and Bank of Canada rate
+      changes, FOMC statements and meetings, CPI and jobs, big USD/CAD days,
+      US policy from the Federal Register. Returns {since, scanned_at, home,
+      positions{SYM: {name, currency, shares, value, weight_pct}}, events[{id,
+      symbol or scope, kind, at, …}], failed}. Events the Watch already judged
+      are left out.
+    cmd: "perl $SKILL_DIR/scripts/market.pl watch-scan"
+    tier: read
+    timeout_ms: 180000
+  - name: SaveWatch
+    description: >-
+      The Watch's one writer: your judgment on every event of the last
+      WatchScan, in one call. Code ranks it into the user's morning brief and
+      replies with the brief; an event left out counts as nothing.
+    args:
+      judgments:
+        type: string
+        required: true
+        description: >-
+          A JSON array, one item per event: {"id": the event's id,
+          "materiality": "high" | "medium" | "low" | "none", "holdings": the
+          user's symbols an economy event touches, "line": one factual
+          sentence — what happened, with the event's own figures; no advice,
+          no prediction, none of the user's money (code adds their stake)}.
+    cmd: "perl $SKILL_DIR/scripts/market.pl save-watch judgments={{judgments}}"
+    tier: read
+    timeout_ms: 15000
 ---
 
 # Personal CFO
@@ -428,6 +461,14 @@ numbers on any symbol.
   No disclaimer padding.
 - Weight and concentration come from `holdings[].value`, per currency —
   never add US and Canadian dollars.
+
+#### The Watch
+
+Every night the Watch mission finds what happened to the user's money and
+ranks it into a morning brief. In chat, "anything I should know?" or "what
+happened overnight?" → `WatchScan` and tell them what matters, with your view
+when they ask for it. Never call `SaveWatch` from chat — the nightly run owns
+the brief, and saving would mark those events as told.
 
 #### Holdings from chat
 

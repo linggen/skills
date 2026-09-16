@@ -21,6 +21,9 @@
 #                                        moves, 52-week breaks, earnings, analysts,
 #                                        filings, insider trades, news; rates, FOMC,
 #                                        CPI, jobs, USD/CAD, US policy (zero LLM)
+#   perl market.pl save-watch judgments=[…]
+#                                        Ling's judgment on the last scan → ranked
+#                                        into the morning brief (data/watch.json)
 #
 # Symbols: AAPL (US) or RY.TO (TSX; TSX:RY is accepted too). Prices and stats
 # come from stockanalysis.com's public pages and merge into data/quotes.json.
@@ -63,6 +66,7 @@ sub main {
         read             => \&cmd_read,
         'save-report'    => \&cmd_save_report,
         'watch-scan'     => \&cmd_watch_scan,
+        'save-watch'     => \&cmd_save_watch,
     );
     my $run = $commands{ $verb // '' }
         or usage();
@@ -73,7 +77,7 @@ sub usage {
     print STDERR "usage: market.pl quotes|stats|market [--fresh] SYMBOL...\n"
                . "       market.pl portfolio | reports-check [SYMBOL...] | reports-latest SYMBOL\n"
                . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n"
-               . "       market.pl watch-scan [--since=TIME] [SYMBOL...]\n";
+               . "       market.pl watch-scan [--since=TIME] [SYMBOL...] | save-watch judgments=JSON\n";
     exit 2;
 }
 
@@ -694,7 +698,7 @@ sub cmd_watch_scan {
         }
         return undef;
     });
-    say_json({
+    my $scan = {
         since      => iso_time($since),
         scanned_at => iso_time($now),
         home       => home_currency(),
@@ -702,7 +706,9 @@ sub cmd_watch_scan {
         events     => fresh_events(\@events, $watch->{seen} || {}),
         failed     => \@failed,
         checked    => \@symbols,
-    });
+    };
+    write_json("$dir/watch-candidates.json", $scan); # what save-watch judges against
+    say_json($scan);
 }
 
 # One symbol's candidates, its position, and today's analyst snapshot. What a
@@ -1211,6 +1217,162 @@ sub policy_events {
         last if @out >= $POLICY_MAX;
     }
     return @out;
+}
+
+# ── Watch: Ling's judgment, ranked into the morning brief ──────────────────
+#
+# `save-watch judgments=[{id, materiality, holdings, line}]` takes Ling's word
+# on each candidate of the last scan (data/watch-candidates.json) and nothing
+# else: ids, facts, positions and stakes come from the scan. Code decides what
+# speaks. data/watch.json:
+#   {last_run, seen{id: day}, items[judged, 7 days], briefs{day: {made_at,
+#    level, lines[id], quiet}}}
+
+my %MATERIALITY = (high => 3, medium => 2, low => 1, none => 0);
+my %STAKE_SHARE = (high => 0.10, medium => 0.03, low => 0.01);  # of a position's value
+my $BRIEF_LINES = 3;
+my $BIG_WEIGHT_PCT = 10;          # a holding this big speaks at medium
+my $ITEMS_DAYS = 7;
+my $SEEN_DAYS = 30;
+my $BRIEFS_DAYS = 14;
+my @LEVELS = qw(quiet normal everything);
+# A watched-only ticker's own big events.
+my %WATCHLIST_KINDS = map { $_ => 1 } qw(move high_52w low_52w earnings filing);
+
+sub cmd_save_watch {
+    my %a = map { /^(\w+)=(.*)$/s ? ($1 => $2) : () } @_;
+    my $raw = $a{judgments} // '';
+    $raw = '[]' if $raw =~ /^\s*(?:\{\{\w+\}\})?\s*$/;
+    my $judged = eval { JSON::PP->new->utf8->decode($raw) };
+    $judged = $judged->{judgments} if ref $judged eq 'HASH';
+    fail('judgments: a JSON array of {id, materiality, holdings, line}') unless ref $judged eq 'ARRAY';
+    my $dir = data_dir();
+    my $scan = read_json("$dir/watch-candidates.json") or fail('no scan to judge — call WatchScan first');
+    my $cfg = read_json(dirname($dir) . '/config.json') || {};
+    my $level = grep({ $_ eq ($cfg->{watch_level} // '') } @LEVELS) ? $cfg->{watch_level} : 'normal';
+    say_json(update_json('watch.json', sub { record_watch($_[0], $scan, $judged, today(), $level, time) }));
+}
+
+# Fold one run into watch.json and make the day's brief. Every candidate of
+# the scan is seen from now on, judged or not — a skipped one would otherwise
+# come back every night.
+sub record_watch {
+    my ($doc, $scan, $judged, $today, $level, $now) = @_;
+    my %judgment = map { ref eq 'HASH' && defined $_->{id} ? ($_->{id} => $_) : () } @$judged;
+    my $positions = $scan->{positions} || {};
+    my @fresh;
+    for my $ev (@{ $scan->{events} || [] }) {
+        my $item = judged_item($ev, $judgment{ $ev->{id} } || {}, $positions, $scan->{home} // 'USD') or next;
+        push @fresh, { %$item, saved_on => $today };
+    }
+    my %fresh_id = map { $_->{id} => 1 } @fresh;
+    my $oldest = shift_date($today, -$ITEMS_DAYS);
+    $doc->{items} = [ (grep { !$fresh_id{ $_->{id} } && ($_->{saved_on} // '') gt $oldest } @{ $doc->{items} || [] }), @fresh ];
+    my $seen = $doc->{seen} ||= {};
+    $seen->{ $_->{id} } //= $today for @{ $scan->{events} || [] };
+    my $forget = shift_date($today, -$SEEN_DAYS);
+    delete @$seen{ grep { $seen->{$_} lt $forget } keys %$seen };
+    $doc->{last_run} = $scan->{scanned_at} if ($scan->{scanned_at} // '') gt ($doc->{last_run} // '');
+    my @lines = brief_lines([ grep { $_->{saved_on} eq $today } @{ $doc->{items} } ], $level);
+    my $briefs = $doc->{briefs} ||= {};
+    $briefs->{$today} = { made_at => iso_time($now), level => $level, lines => [ map { $_->{id} } @lines ],
+                          quiet => @lines ? JSON::PP::false : JSON::PP::true };
+    my $keep = shift_date($today, -$BRIEFS_DAYS);
+    delete @$briefs{ grep { $_ le $keep } keys %$briefs };
+    return { judged => scalar @fresh, candidates => scalar @{ $scan->{events} || [] }, level => $level,
+             brief => [ map { { id => $_->{id}, line => $_->{line}, stake => $_->{stake}, currency => $_->{currency} } } @lines ] };
+}
+
+# A candidate with Ling's judgment, or undef when she judged it nothing. The
+# holdings it touches: a company event always its own symbol; an economy
+# event the ones Ling named, if the user holds them.
+sub judged_item {
+    my ($ev, $j, $positions, $home) = @_;
+    my $materiality = lc($j->{materiality} // 'none');
+    return undef unless $MATERIALITY{$materiality};
+    my $line = $j->{line} // '';
+    $line =~ s/\s+/ /g;
+    $line =~ s/^\s+|\s+$//g;
+    return undef unless length $line;
+    my @named = grep { $positions->{$_} } symbols_of(ref $j->{holdings} eq 'ARRAY' ? @{ $j->{holdings} } : ());
+    my @touched = $ev->{symbol} ? grep({ $positions->{$_} } $ev->{symbol}, @{ $ev->{also} || [] }) : @named;
+    my %uniq;
+    @touched = grep { !$uniq{$_}++ } @touched;
+    return {
+        %$ev,
+        materiality => $materiality,
+        line        => substr($line, 0, 300),
+        holdings    => \@touched,
+        %{ stake_of($ev, [ grep { ($positions->{$_}{shares} // 0) > 0 } @touched ], $positions, $home, $materiality) },
+    };
+}
+
+# What the event puts at stake in the user's money, in the currency most of it
+# is in: a move's real change; a currency day's real change on the holdings
+# priced in the other currency; otherwise a share of the positions' value by
+# materiality. `weight_pct` = the touched holdings' share of that currency's
+# total, `stake_pct` = the stake's.
+sub stake_of {
+    my ($ev, $held, $positions, $home, $materiality) = @_;
+    return { stake => 0, stake_pct => 0, weight_pct => 0, currency => undef, held => JSON::PP::false } unless @$held;
+    my %by;
+    for my $sym (@$held) {
+        my $p = $positions->{$sym};
+        next if $ev->{kind} eq 'fx' && ($p->{currency} // 'USD') eq $home;
+        my $stake = $ev->{kind} eq 'move' && ($ev->{symbol} // '') eq $sym ? abs($ev->{position_change} // 0)
+                  : $ev->{kind} eq 'fx' ? ($p->{value} // 0) * abs($ev->{change_pct} // 0) / 100
+                  : ($p->{value} // 0) * ($STAKE_SHARE{$materiality} // 0);
+        my $g = $by{ $p->{currency} // 'USD' } ||= { value => 0, stake => 0, weight_pct => 0 };
+        $g->{value} += $p->{value} // 0;
+        $g->{stake} += $stake;
+        $g->{weight_pct} += $p->{weight_pct} // 0;
+    }
+    my ($currency) = sort { $by{$b}{value} <=> $by{$a}{value} || $a cmp $b } keys %by;
+    return { stake => 0, stake_pct => 0, weight_pct => 0, currency => undef, held => JSON::PP::false } unless $currency;
+    my $total = sum(0, map { $_->{value} // 0 } grep { ($_->{currency} // 'USD') eq $currency } values %$positions);
+    return {
+        held       => JSON::PP::true,
+        currency   => $currency,
+        stake      => round_to($by{$currency}{stake}, 0),
+        stake_pct  => $total ? round_to($by{$currency}{stake} / $total * 100, 2) : 0,
+        weight_pct => round_to($by{$currency}{weight_pct}, 1),
+    };
+}
+
+# Whether an item earns a line at the user's level. Holdings: high on any,
+# medium on one 10%+ of its currency, results today or tomorrow (quiet: high
+# on a 10%+ holding, results today). Everything: any judged holding item.
+sub speaks {
+    my ($item, $level) = @_;
+    return 0 unless $item->{held};
+    my $rank = $MATERIALITY{ $item->{materiality} } // 0;
+    my $big = ($item->{weight_pct} // 0) >= $BIG_WEIGHT_PCT;
+    my $results = $item->{kind} eq 'earnings' || ($item->{kind} eq 'filing' && grep { $_ eq '2.02' } @{ $item->{items} || [] });
+    return $rank >= 1 if $level eq 'everything';
+    return ($rank >= 3 && $big) || ($item->{kind} eq 'earnings' && ($item->{when} // '') eq 'today') if $level eq 'quiet';
+    return $rank >= 3 || ($rank >= 2 && $big) || $results;
+}
+
+# A watched-only ticker's own big event, for a slot the holdings left free.
+sub watchlist_speaks {
+    my ($item, $level) = @_;
+    return 0 if $item->{held} || !$item->{symbol} || !$WATCHLIST_KINDS{ $item->{kind} } || $level eq 'quiet';
+    return ($MATERIALITY{ $item->{materiality} } // 0) >= ($level eq 'everything' ? 2 : 3);
+}
+
+# The brief: up to three lines — holdings by the share of their money at
+# stake, then watched tickers' big events in what's left.
+sub brief_lines {
+    my ($items, $level) = @_;
+    my $order = sub { ($b->{stake_pct} // 0) <=> ($a->{stake_pct} // 0)
+                      || ($MATERIALITY{ $b->{materiality} } // 0) <=> ($MATERIALITY{ $a->{materiality} } // 0)
+                      || ($b->{at} // '') cmp ($a->{at} // '') };
+    my @held = sort $order grep { speaks($_, $level) } @$items;
+    my @watched = sort { ($MATERIALITY{ $b->{materiality} } // 0) <=> ($MATERIALITY{ $a->{materiality} } // 0)
+                         || ($b->{at} // '') cmp ($a->{at} // '') } grep { watchlist_speaks($_, $level) } @$items;
+    my @lines = (@held, @watched);
+    splice @lines, $BRIEF_LINES if @lines > $BRIEF_LINES;
+    return @lines;
 }
 
 # ── Dates ──────────────────────────────────────────────────────────────────

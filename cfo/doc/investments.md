@@ -237,8 +237,21 @@ lawyer's read before charging for it.
    at, …}], failed, checked}`; `since` defaults to `watch.json` `last_run`,
    else 36 h back; events in `watch.json` `seen` are left out.
 2. ~~Economy and policy finders~~ — built.
-3. `cfo:watch` mission: scan → Ling judges → `SaveWatch` → `data/watch.json`;
-   ranking in code.
+3. ~~`cfo:watch` mission: scan → Ling judges → `SaveWatch` → `data/watch.json`;
+   ranking in code~~ — built. `missions/watch` (`0 1 * * *`, catch-up 20 h,
+   off): `WatchScan` → a judgment per event `{id, materiality, holdings,
+   line}` (repeats of one story → the clearest, the rest `none`; at most 3
+   `ReadReport`s) → one `SaveWatch`. `watch-scan` keeps what it printed in
+   `data/watch-candidates.json`; `save-watch` takes only ids, materiality,
+   economy holdings and the line from Ling — facts, positions and stakes come
+   from the scan — and every candidate becomes `seen`, judged or not.
+   `data/watch.json` = `{last_run, seen{id: day} (30 d), items[event + {
+   materiality, line, holdings, held, currency, stake, stake_pct, weight_pct,
+   saved_on}] (7 d), briefs{day: {made_at, level, lines[id], quiet}} (14 d)}`.
+   Stake: a move's real change; a USD/CAD day's real change on holdings in
+   the other currency; else value × 10% / 3% / 1% (high / medium / low).
+   Level from `config.json` `watch_level` (default normal). Chat may call
+   `WatchScan`, never `SaveWatch`.
 4. Mac Watch feed + the setting.
 5. Phone: sync `watch.json`, Yinyue's morning line, tap → chat.
 6. A week on real holdings: measure tokens, then set the price.
