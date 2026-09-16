@@ -536,9 +536,13 @@ sub cmd_save_report {
         summary  => decode('UTF-8', $a{summary}),
         saved_at => strftime('%Y-%m-%dT%H:%M:%SZ', gmtime),
     };
+    # The company's name rides along for readers without the quotes cache —
+    # the phone tells the user "Apple reported", not "AAPL reported".
+    my $name = ((read_json(data_dir() . '/quotes.json') || {})->{symbols}{$sym} || {})->{name};
     update_json('reports.json', sub {
         my ($doc) = @_;
         my $s = $doc->{symbols}{$sym} //= {};
+        $s->{name} = $name if $name;
         my @kept = grep { !same_period($_->{period}, $entry->{period}) } @{ $s->{reports} || [] };
         $s->{reports} = [ sort { ($b->{filed} // '') cmp ($a->{filed} // '') } @kept, $entry ];
         return undef;

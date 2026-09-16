@@ -74,6 +74,10 @@ t('table rows keep their cells', $text =~ /^Net sales \| \$109,417 \| \(1,234\)$
 # ── save-report ────────────────────────────────────────────────────────────
 {
     local $ENV{SKILL_DIR} = tempdir(CLEANUP => 1);
+    mkdir "$ENV{SKILL_DIR}/data";
+    open(my $q, '>', "$ENV{SKILL_DIR}/data/quotes.json") or die;
+    print $q '{"symbols":{"AAPL":{"symbol":"AAPL","name":"Apple Inc."}}}';
+    close $q;
     my $save = sub {
         my @args = map { my $a = $_; $a =~ s/'/'\\''/g; "'$a'" } @_;
         my $out = `perl $SCRIPT save-report @args 2>&1`;
@@ -90,6 +94,7 @@ t('table rows keep their cells', $text =~ /^Net sales \| \$109,417 \| \(1,234\)$
       @$list == 2 && $list->[0]{form} eq '10-Q' && $list->[1]{period} eq '2026-03-28',
       JSON::PP->new->canonical->encode($list));
     t('an omitted url is null, not the placeholder', !defined $list->[1]{url});
+    t('the company name comes along from the quotes cache', ($doc->{symbols}{AAPL}{name} // '') eq 'Apple Inc.');
     t('non-ASCII in a summary survives', $list->[1]{summary} =~ /\x{2014} up 8%/, $list->[1]{summary});
     my ($bad, $msg) = $save->('symbol=AAPL', 'period={{period}}', 'summary=Something long enough to pass.');
     t('a missing period is refused with the reason', $bad == 1 && $msg =~ /^period:/, $msg);

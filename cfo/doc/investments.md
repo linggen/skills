@@ -17,7 +17,7 @@ Mac; no Linggen Cloud, no data-provider key.
   high_52w, low_52w, market, price_time, name, kind, pe, forward_pe,
   market_cap, earnings_date, earnings_on, dividend, dividend_yield, aum,
   expense_ratio, cik, quote_at, stats_at}}}`.
-- `reports.json` — `{last_checked, symbols: {SYM: {since, reports:
+- `reports.json` — `{last_checked, symbols: {SYM: {since, name, reports:
   [{period, form, filed, url, summary, saved_at}]}}}`, newest first. `since`
   is the day a symbol was first checked: only reports filed from then on
   count as new. Written only by `save-report`, apart from `since` and
@@ -112,10 +112,15 @@ Mac; no Linggen Cloud, no data-provider key.
 
 ## Alerts
 
-- The phone's CFO sync pulls `reports.json`. A summary not yet told → CFO line
-  `report` (tier: for the record) → Yinyue writes it from `{company, period,
-  filed, summary}`. Arrives on the nightly wake or when the app opens — no
-  push (APNs doorbell deferred).
+- The phone's CFO sync reads `reports.json` in its one round-trip. A summary
+  the phone has not told → CFO line `report` (tier: for the record): Yinyue
+  writes one line from `{company, results_for, published, summary}` and it
+  goes to her thread, and to the morning line when the phone is closed. The
+  first sync only learns the backlog; at most three a line; saved within 14
+  days. Her model unreachable → nothing marked, the next sync asks again
+  (Hanli, 2026-09-16). Arrives on the nightly wake or when the app opens — no
+  push (APNs doorbell deferred). `save-report` stores the company `name` so
+  the phone can say it.
 
 ## Phone (release 2)
 
@@ -134,7 +139,7 @@ Mac; no Linggen Cloud, no data-provider key.
 4. ~~SKILL.md tools; advice rule removed~~ — built (holdings proposals from
    chat not yet)
 5. ~~`missions/reports` + the settings switch~~ — built
-6. Phone: pull `reports.json` + the `report` line
+6. ~~Phone: pull `reports.json` + the `report` line~~ — built
 7. Release 2: native phone Investments view
 
 Deferred: brokerage statement import, APNs doorbell, exchanges beyond US/TSX.
