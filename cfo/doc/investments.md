@@ -167,3 +167,64 @@ Mac; no Linggen Cloud, no data-provider key.
 7. ~~Release 2: native phone Investments view~~ — built
 
 Deferred: brokerage statement import, APNs doorbell, exchanges beyond US/TSX.
+
+## The Watch — the morning brief (paid)
+
+The killer feature (Hanli, 2026-09-16). Every night CFO checks everything that
+touches the user's money and ranks it by the dollars at stake for them. In
+the morning Yinyue says at most three lines; nothing that matters → silence.
+A broker's AI digest (Robinhood Cortex) sees one account and sells trades;
+the Watch sees every holding and the bank ledger, stays private, and has
+nothing to sell. The tab stays free; the Watch is the subscription.
+
+**His calls:** morning brief only in v1 (no intraday alerts); a line is what
+happened + the user's stake — Ling's view is one tap away in chat, never in
+the line; a watched-only ticker gets a line only for its own big event, and
+only in a slot holdings left free.
+
+**Lines held:** no price predictions; no trade instructions; a securities
+lawyer's read before charging for it.
+
+### Pipeline
+
+1. **Find** — `market.pl watch-scan`, zero LLM, run by the mission ~01:00
+   (before the phone's 02:00 wake; an asleep Mac catches up). Events since
+   the last run, each with a stable `id`:
+   - `move` — a session's change ≥ 2.5× the stock's typical daily move
+     (standard deviation of the last 60 sessions) and ≥ 2%; the position's
+     real dollar change rides along. `high_52w` / `low_52w` — a close past
+     the 52-week range, when the last break was 20+ sessions ago.
+   - `earnings` — results due today or tomorrow.
+   - `analyst` — consensus rating changed, or the price target moved ≥ 5%,
+     against the snapshot from before the window (`data/watch-scan.json`).
+   - `filing` — an 8-K by item (results, officer change, restatement,
+     impairment, deal, bankruptcy…; exhibit-only filings skipped), SC 13D.
+   - `insider` — a Form 4 open-market sale ≥ $1M or purchase ≥ $100K, with
+     who, and whether it was a pre-planned (10b5-1) sale.
+   - `news` — headlines from the stock's page since the window.
+   ETFs: moves and news only. Economy and US policy (step 2): Fed and Bank of
+   Canada decisions, CPI, jobs, USD/CAD, the Federal Register.
+2. **Judge** — Ling reads only the candidates: which holdings, materiality
+   (high / medium / low), one factual sentence, source. No predictions.
+3. **Rank** — code: a move's stake is the position's real change; any other
+   event's is position value × materiality weight. Speaks for high on any
+   holding, medium on a holding ≥ 10% of its currency's total, or results
+   today/tomorrow; Quiet / Normal / Everything moves the bar. Top three,
+   holdings first.
+4. **Tell** — phone: Yinyue writes the morning line from the facts, tap →
+   CFO chat. Mac: a Watch feed on the Investments tab (7 days, sources).
+
+### Build order
+
+1. ~~`market.pl watch-scan`: company finders (moves, 52-week, earnings,
+   analysts, filings, insiders, news) + tests~~ — built. `watch-scan
+   [--since=TIME] [SYM…]` → `{since, scanned_at, positions{SYM: {name, kind,
+   currency, shares, price, value, weight_pct}}, events[{id, symbol, kind,
+   at, …}], failed, checked}`; `since` defaults to `watch.json` `last_run`,
+   else 36 h back; events in `watch.json` `seen` are left out.
+2. Economy and policy finders.
+3. `cfo:watch` mission: scan → Ling judges → `SaveWatch` → `data/watch.json`;
+   ranking in code.
+4. Mac Watch feed + the setting.
+5. Phone: sync `watch.json`, Yinyue's morning line, tap → chat.
+6. A week on real holdings: measure tokens, then set the price.

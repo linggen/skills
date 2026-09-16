@@ -16,6 +16,10 @@
 #   perl market.pl reports-latest SYM    the newest report, summarized or not
 #   perl market.pl read URL              a report (filing, release page, PDF) as text
 #   perl market.pl save-report symbol=… period=… form=… filed=… url=… summary=…
+#   perl market.pl watch-scan [--since=TIME] [SYM…]
+#                                        what happened since the last Watch run:
+#                                        moves, 52-week breaks, earnings, analysts,
+#                                        filings, insider trades, news (zero LLM)
 #
 # Symbols: AAPL (US) or RY.TO (TSX; TSX:RY is accepted too). Prices and stats
 # come from stockanalysis.com's public pages and merge into data/quotes.json.
@@ -32,6 +36,8 @@ use File::Basename qw(dirname);
 use File::Temp qw(tempfile);
 use POSIX qw(strftime);
 use Time::Local qw(timegm);
+use List::Util qw(min max sum);
+use Digest::MD5 qw(md5_hex);
 
 my $UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
        . '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
@@ -55,6 +61,7 @@ sub main {
         'reports-latest' => \&cmd_reports_latest,
         read             => \&cmd_read,
         'save-report'    => \&cmd_save_report,
+        'watch-scan'     => \&cmd_watch_scan,
     );
     my $run = $commands{ $verb // '' }
         or usage();
@@ -64,7 +71,8 @@ sub main {
 sub usage {
     print STDERR "usage: market.pl quotes|stats|market [--fresh] SYMBOL...\n"
                . "       market.pl portfolio | reports-check [SYMBOL...] | reports-latest SYMBOL\n"
-               . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n";
+               . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n"
+               . "       market.pl watch-scan [--since=TIME] [SYMBOL...]\n";
     exit 2;
 }
 
@@ -75,6 +83,12 @@ sub fail {
 }
 
 sub say_json { print $JSON->encode($_[0]) }
+
+sub round_to {
+    my ($n, $places) = @_;
+    my $f = 10 ** $places;
+    return int($n * $f + ($n < 0 ? -0.5 : 0.5)) / $f;
+}
 
 # ── Symbols ────────────────────────────────────────────────────────────────
 
@@ -612,6 +626,355 @@ sub cmd_save_report {
     say_json({ symbol => $sym, %$entry });
 }
 
+# ── Watch: what happened to the user's money since the last run ────────────
+#
+# `watch-scan` finds the morning brief's candidates (doc/investments.md, "The
+# Watch"): zero LLM, each event with a stable `id`, so an event Ling has
+# judged (data/watch.json `seen`) is never handed over twice. Ling judges
+# them; code ranks them.
+
+my $WATCH_LOOKBACK = 36 * 3600;   # no --since and no last run
+my $MOVE_TYPICAL_DAYS = 60;       # the sessions a stock's usual day is taken from
+my $MOVE_SPREAD = 2.5;            # a move this many usual days wide…
+my $MOVE_MIN_PCT = 2;             # …and at least this many percent
+my $BREAK_GAP = 20;               # sessions since the last 52-week break that way
+my $TARGET_MOVE_PCT = 5;          # the analysts' price target, moved this much
+my $INSIDER_SELL = 1_000_000;     # dollars sold on the open market
+my $INSIDER_BUY = 100_000;        # dollars bought on the open market
+my $FORM4_MAX = 20;               # insider filings read per symbol per scan
+my $NEWS_MAX = 8;                 # headlines per symbol
+my $SNAPSHOTS_KEPT = 10;
+
+my %ITEM = (
+    '1.01' => 'material agreement', '1.02' => 'material agreement ended', '1.03' => 'bankruptcy',
+    '1.05' => 'cybersecurity incident', '2.01' => 'acquisition or sale completed', '2.02' => 'results',
+    '2.03' => 'new debt', '2.04' => 'debt accelerated', '2.05' => 'restructuring costs',
+    '2.06' => 'impairment', '3.01' => 'delisting notice', '3.02' => 'unregistered share sale',
+    '3.03' => 'shareholder rights changed', '4.01' => 'auditor changed',
+    '4.02' => 'past results no longer reliable', '5.01' => 'change in control',
+    '5.02' => 'officer or director change', '5.03' => 'bylaws changed', '5.07' => 'shareholder vote',
+    '7.01' => 'investor disclosure', '8.01' => 'other event',
+);
+
+sub cmd_watch_scan {
+    my ($since_arg) = map { /^--since=(.+)$/ ? $1 : () } @_;
+    my @symbols = symbols_of(grep { !/^--/ } @_);
+    @symbols = watched_symbols() unless @symbols;
+    my $dir = data_dir();
+    my $watch = read_json("$dir/watch.json") || {};
+    my $now = time;
+    my $since = defined $since_arg ? time_of($since_arg) : time_of($watch->{last_run} // '');
+    fail('--since: a time like 2026-09-15T05:00:00Z') if defined $since_arg && !defined $since;
+    $since //= $now - $WATCH_LOOKBACK;
+    my $state = read_json("$dir/watch-scan.json") || {};
+    my $cells = register_investments();
+    my (@events, @failed, %positions, %snapshots);
+    for my $sym (@symbols) {
+        my $scan = scan_symbol($sym, $since, $state->{symbols}{$sym}{analysts}, $cells->{$sym} || {});
+        push @events, @{ $scan->{events} };
+        push @failed, map { { symbol => $sym, error => $_ } } @{ $scan->{errors} };
+        $positions{$sym} = $scan->{position} if $scan->{position};
+        $snapshots{$sym} = $scan->{snapshot} if $scan->{snapshot};
+    }
+    update_json('watch-scan.json', sub {
+        my ($doc) = @_;
+        for my $sym (keys %snapshots) {
+            my $list = $doc->{symbols}{$sym}{analysts} ||= [];
+            push @$list, { at => $now, %{ $snapshots{$sym} } };
+            splice @$list, 0, @$list - $SNAPSHOTS_KEPT if @$list > $SNAPSHOTS_KEPT;
+        }
+        return undef;
+    });
+    say_json({
+        since      => iso_time($since),
+        scanned_at => iso_time($now),
+        positions  => weigh_positions(\%positions),
+        events     => fresh_events(\@events, $watch->{seen} || {}),
+        failed     => \@failed,
+        checked    => \@symbols,
+    });
+}
+
+# One symbol's candidates, its position, and today's analyst snapshot. What a
+# source couldn't answer is an error beside what the others found.
+sub scan_symbol {
+    my ($sym, $since, $snapshots, $cell) = @_;
+    my %out = (events => [], errors => []);
+    my $e = quote_entry($sym);
+    if ($e->{error} && !$e->{kind}) { push @{ $out{errors} }, $e->{error}; return \%out }
+    my $rows = history_of($e);
+    my $page = overview($e);
+    my $data = $page ? $page->[1] : {};
+    push @{ $out{errors} }, 'no price history from stockanalysis.com' unless $rows;
+    push @{ $out{errors} }, 'no news from stockanalysis.com' unless $page;
+    my $shares = $cell->{shares} // 0;
+    my $price = $rows && @$rows ? $rows->[0]{c} : $e->{price};
+    $out{position} = {
+        name => $e->{name}, kind => $e->{kind}, currency => $e->{currency},
+        shares => $shares + 0, price => $price,
+        value => $shares > 0 && defined $price ? round_to($shares * $price, 2) : 0,
+    };
+    my @found;
+    push @found, move_events($sym, $rows, $since, $shares), break_events($sym, $rows, $since) if $rows;
+    push @found, news_events($sym, $data->{news}, $since);
+    unless (($e->{kind} // '') eq 'etf') {
+        push @found, earnings_events($sym, $e->{earnings_on}, today());
+        if ($page) {
+            my $now = { analysts => clean_stat($data->{analysts}), target => clean_stat($data->{target}) };
+            push @found, analyst_events($sym, $now, $snapshots, $since, today());
+            $out{snapshot} = $now;
+        }
+        if ($e->{exchange} eq 'US') {
+            my ($filed, $err) = sec_events($e, $since);
+            push @found, @$filed;
+            push @{ $out{errors} }, $err if $err;
+        }
+    }
+    $out{events} = \@found;
+    return \%out;
+}
+
+sub clean_stat { my ($v) = @_; return defined $v && $v ne '' && $v ne 'n/a' ? $v : undef }
+
+# Newest first, one per id (a headline tagged with two holdings comes once,
+# naming both), minus those Ling has already judged.
+sub fresh_events {
+    my ($events, $seen) = @_;
+    my (%by_id, @out);
+    for my $ev (@$events) {
+        next if $seen->{ $ev->{id} };
+        if (my $had = $by_id{ $ev->{id} }) {
+            push @{ $had->{also} ||= [] }, $ev->{symbol} unless $had->{symbol} eq $ev->{symbol};
+            next;
+        }
+        $by_id{ $ev->{id} } = $ev;
+        push @out, $ev;
+    }
+    return [ sort { $b->{at} cmp $a->{at} || $a->{id} cmp $b->{id} } @out ];
+}
+
+# Each position's share of its currency's holdings — US and Canadian dollars
+# never add up.
+sub weigh_positions {
+    my ($positions) = @_;
+    my %total;
+    $total{ $_->{currency} // 'USD' } += $_->{value} // 0 for values %$positions;
+    for my $p (values %$positions) {
+        my $t = $total{ $p->{currency} // 'USD' };
+        $p->{weight_pct} = $t && $p->{value} ? round_to($p->{value} / $t * 100, 1) : 0;
+    }
+    return $positions;
+}
+
+# A year of daily closes, newest first: [{t, c, ch}] (ch = the day's % change).
+sub history_of {
+    my ($e) = @_;
+    my $t = lc ticker($e);
+    my @paths = $e->{exchange} eq 'TSX' ? ("a/tsx-$t")
+              : ($e->{kind} // '') eq 'etf' ? ("e/$t")
+              : ("s/$t", "e/$t");
+    for my $path (@paths) {
+        my $body = fetch_json("$BASE/api/symbol/$path/history?range=1Y&period=Daily") or next;
+        my $rows = $body->{data};
+        return [ grep { ref eq 'HASH' && defined $_->{t} && defined $_->{c} } @$rows ]
+            if ($body->{status} // 0) == 200 && ref $rows eq 'ARRAY' && @$rows;
+    }
+    return undef;
+}
+
+# A US session closes 16:00 New York time — 20:00 UTC in summer; the hour's
+# difference in winter doesn't move a nightly window.
+sub session_end { return epoch_of($_[0]) + 8 * 3600 }
+
+# Sessions since the window whose move was far past the stock's usual day: at
+# least 2.5 times the standard deviation of the 60 sessions before it, and 2%.
+# The position's real dollar change rides along.
+sub move_events {
+    my ($sym, $rows, $since, $shares) = @_;
+    my @out;
+    for my $i (0 .. $#$rows) {
+        my $r = $rows->[$i];
+        last if session_end($r->{t}) < $since;
+        next unless defined $r->{ch} && $i < $#$rows;
+        my @usual = grep { defined } map { $_->{ch} } @$rows[$i + 1 .. min($i + $MOVE_TYPICAL_DAYS, $#$rows)];
+        next unless @usual >= 20;
+        my $spread = spread(@usual);
+        next unless abs($r->{ch}) >= $MOVE_MIN_PCT && abs($r->{ch}) >= $MOVE_SPREAD * $spread;
+        my $prev = $rows->[$i + 1]{c};
+        push @out, {
+            id => "move:$sym:$r->{t}", symbol => $sym, kind => 'move',
+            at => iso_time(session_end($r->{t})), session => $r->{t},
+            change_pct => $r->{ch} + 0, usual_pct => round_to($spread, 2), close => $r->{c} + 0,
+            position_change => $shares > 0 ? round_to($shares * ($r->{c} - $prev), 2) : undef,
+        };
+    }
+    return @out;
+}
+
+# Standard deviation.
+sub spread {
+    my $mean = sum(@_) / @_;
+    return sqrt(sum(map { ($_ - $mean) ** 2 } @_) / @_);
+}
+
+# A close past the 52-week range since the window, when the last close past
+# it that way was 20+ sessions back: a fresh high or low, not every day of a run.
+sub break_events {
+    my ($sym, $rows, $since) = @_;
+    my @out;
+    for my $i (0 .. $#$rows) {
+        my $r = $rows->[$i];
+        last if session_end($r->{t}) < $since;
+        for my $way (['high_52w', 1], ['low_52w', -1]) {
+            my ($kind, $dir) = @$way;
+            next unless breaks_year($rows, $i, $dir);
+            next if grep { breaks_year($rows, $_, $dir) } $i + 1 .. min($i + $BREAK_GAP, $#$rows);
+            push @out, { id => "$kind:$sym:$r->{t}", symbol => $sym, kind => $kind,
+                         at => iso_time(session_end($r->{t})), session => $r->{t}, close => $r->{c} + 0 };
+        }
+    }
+    return @out;
+}
+
+# Session i closed above (dir 1) or below (-1) every close of the year before.
+sub breaks_year {
+    my ($rows, $i, $dir) = @_;
+    my @year = map { $_->{c} } @$rows[$i + 1 .. min($i + 250, $#$rows)];
+    return 0 unless @year >= 200;
+    return $dir > 0 ? $rows->[$i]{c} > max(@year) : $rows->[$i]{c} < min(@year);
+}
+
+sub earnings_events {
+    my ($sym, $on, $today) = @_;
+    return () unless $on;
+    my $when = $on eq $today ? 'today' : $on eq shift_date($today, 1) ? 'tomorrow' : return ();
+    return { id => "earnings:$sym:$on", symbol => $sym, kind => 'earnings',
+             at => iso_time(epoch_of($on)), on => $on, when => $when };
+}
+
+# The consensus rating changed, or its price target moved 5%+, against the
+# latest snapshot taken before the window. No snapshot yet: nothing to compare.
+sub analyst_events {
+    my ($sym, $now, $snapshots, $since, $today) = @_;
+    my ($before) = sort { $b->{at} <=> $a->{at} } grep { ($_->{at} // 0) <= $since } @{ $snapshots || [] };
+    return () unless $before;
+    my ($was, $is) = (target_price($before->{target}), target_price($now->{target}));
+    my $rated = defined $now->{analysts} && ($before->{analysts} // '') ne $now->{analysts};
+    my $moved = $was && $is && abs($is / $was - 1) * 100 >= $TARGET_MOVE_PCT;
+    return () unless $rated || $moved;
+    return { id => "analyst:$sym:$today", symbol => $sym, kind => 'analyst', at => iso_time(time),
+             rating_was => $before->{analysts}, rating => $now->{analysts},
+             target_was => $was, target => $is };
+}
+
+# "396.94 (+9.72%)" → 396.94
+sub target_price {
+    my ($s) = @_;
+    return undef unless defined $s && $s =~ /^\s*\$?([\d,]+(?:\.\d+)?)/;
+    (my $n = $1) =~ tr/,//d;
+    return $n + 0;
+}
+
+# Headlines from the stock's page since the window (articles, not videos).
+sub news_events {
+    my ($sym, $news, $since) = @_;
+    my $list = ref $news eq 'HASH' ? $news->{data} : $news;
+    my @out;
+    for my $n (ref $list eq 'ARRAY' ? @$list : ()) {
+        next unless ref $n eq 'HASH' && ($n->{url} // '') =~ m{^https?://\S+$} && ($n->{type} // 'Article') eq 'Article';
+        my $at = time_of($n->{time} // '');
+        next unless defined $at && $at >= $since;
+        push @out, { id => 'news:' . substr(md5_hex(encode('UTF-8', $n->{url})), 0, 16), symbol => $sym,
+                     kind => 'news', at => iso_time($at), title => $n->{title}, text => $n->{text},
+                     source => $n->{source}, url => $n->{url} };
+        last if @out >= $NEWS_MAX;
+    }
+    return @out;
+}
+
+# SEC filings since the window: 8-Ks by item and 13D stakes as events; Form 4s
+# read for open-market trades big enough to mean something.
+sub sec_events {
+    my ($e, $since) = @_;
+    my $cik = sec_cik($e) or return ([], 'not found on SEC EDGAR');
+    my $sub = fetch_json(sprintf('https://data.sec.gov/submissions/CIK%010d.json', $cik), $SEC_UA)
+        or return ([], 'no answer from SEC EDGAR');
+    my ($events, $form4s) = filing_events($e->{symbol}, $cik, $sub->{filings}{recent} || {}, $since);
+    for my $f (@$form4s[0 .. min($FORM4_MAX, scalar @$form4s) - 1]) {
+        my $xml = fetch($f->{xml}, $SEC_UA) // next;
+        my $ev = insider_event($e->{symbol}, $f, form4_trades($xml)) or next;
+        push @$events, $ev;
+    }
+    return ($events, undef);
+}
+
+# EDGAR's `filings.recent` columns → [events], [Form 4s to read].
+sub filing_events {
+    my ($sym, $cik, $recent, $since) = @_;
+    my (@events, @form4s);
+    for my $i (0 .. $#{ $recent->{form} || [] }) {
+        my $at = time_of($recent->{acceptanceDateTime}[$i] // '')
+              // (($recent->{filingDate}[$i] // '') =~ /^\d{4}-\d\d-\d\d$/ ? epoch_of($recent->{filingDate}[$i]) : undef);
+        next unless defined $at && $at >= $since;
+        my ($form, $acc, $doc) = ($recent->{form}[$i], $recent->{accessionNumber}[$i], $recent->{primaryDocument}[$i] // '');
+        (my $folder = $acc) =~ s/-//g;
+        my $url = "https://www.sec.gov/Archives/edgar/data/$cik/$folder/$doc";
+        my %base = (id => "filing:$acc", symbol => $sym, kind => 'filing', at => iso_time($at), form => $form, url => $url);
+        if ($form =~ m{^8-K(?:/A)?$}) {
+            my @items = grep { $_ ne '9.01' } split /\s*,\s*/, $recent->{items}[$i] // '';
+            push @events, { %base, items => \@items, what => join('; ', map { $ITEM{$_} // "item $_" } @items) } if @items;
+        }
+        elsif ($form =~ /^(?:SC|SCHEDULE) 13D/) {
+            push @events, { %base, what => 'an investor holds 5%+ and may act on it' };
+        }
+        elsif ($form eq '4') {
+            (my $xml = $doc) =~ s{^xsl[^/]*/}{};
+            push @form4s, { acc => $acc, at => $at, url => $url, xml => "https://www.sec.gov/Archives/edgar/data/$cik/$folder/$xml" };
+        }
+    }
+    return (\@events, \@form4s);
+}
+
+# A Form 4's open-market trades — code P (bought) or S (sold) — summed; grants,
+# option exercises and gifts aren't signals.
+sub form4_trades {
+    my ($xml) = @_;
+    my %t = (bought => 0, bought_shares => 0, sold => 0, sold_shares => 0);
+    while ($xml =~ m{<nonDerivativeTransaction>(.*?)</nonDerivativeTransaction>}gs) {
+        my $row = $1;
+        my $side = { P => 'bought', S => 'sold' }->{ xml_text('transactionCode', $row) // '' } or next;
+        my $shares = xml_value('transactionShares', $row) // 0;
+        $t{$side} += $shares * (xml_value('transactionPricePerShare', $row) // 0);
+        $t{"${side}_shares"} += $shares;
+    }
+    $t{who} = xml_text('rptOwnerName', $xml);
+    $t{role} = xml_text('officerTitle', $xml)
+            || ((xml_text('isDirector', $xml) // '') =~ /^(?:1|true)$/i ? 'director' : undef)
+            || ((xml_text('isTenPercentOwner', $xml) // '') =~ /^(?:1|true)$/i ? '10% owner' : undef);
+    $t{planned} = (xml_text('aff10b5One', $xml) // '') =~ /^(?:1|true)$/i ? JSON::PP::true : JSON::PP::false;
+    return \%t;
+}
+
+sub xml_text { my ($tag, $in) = @_; return $in =~ m{<$tag>\s*([^<]*?)\s*</$tag>}s ? decode_xml($1) : undef }
+
+sub xml_value { my ($tag, $in) = @_; return $in =~ m{<$tag>\s*<value>\s*([^<]*?)\s*</value>}s ? decode_xml($1) : undef }
+
+sub decode_xml {
+    my ($s) = @_;
+    $s =~ s/&amp;/&/g; $s =~ s/&lt;/</g; $s =~ s/&gt;/>/g; $s =~ s/&quot;/"/g; $s =~ s/&apos;/'/g;
+    return $s;
+}
+
+# An insider's trades as an event when they're big enough: a sale of $1M+ or
+# a purchase of $100K+ on the open market.
+sub insider_event {
+    my ($sym, $filing, $t) = @_;
+    my $side = $t->{sold} >= $INSIDER_SELL ? 'sold' : $t->{bought} >= $INSIDER_BUY ? 'bought' : return undef;
+    return { id => "insider:$filing->{acc}", symbol => $sym, kind => 'insider', at => iso_time($filing->{at}),
+             who => $t->{who}, role => $t->{role}, side => $side, value => round_to($t->{$side}, 0),
+             shares => $t->{"${side}_shares"} + 0, planned => $t->{planned}, url => $filing->{url} };
+}
+
 # ── Dates ──────────────────────────────────────────────────────────────────
 
 my %MONTH = (Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6,
@@ -625,6 +988,37 @@ sub iso_date {
 }
 
 sub today { strftime('%Y-%m-%d', localtime) }
+
+sub iso_time { strftime('%Y-%m-%dT%H:%M:%SZ', gmtime($_[0])) }
+
+my %ZONE = (Z => 0, UTC => 0, GMT => 0, EDT => -4, EST => -5, CDT => -5, CST => -6, PDT => -7, PST => -8);
+
+# "2026-09-16T12:46:38.000Z", "Sep 16, 2026, 8:40 AM EDT" or "Wed, 09 Sep
+# 2026 11:05:00 -0400" → epoch seconds; anything else → undef.
+sub time_of {
+    my ($s) = @_;
+    return undef unless defined $s;
+    if ($s =~ /^(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d)(?::(\d\d)(?:\.\d+)?)?(Z|[+-]\d\d:?\d\d)$/) {
+        return timegm($6 // 0, $5, $4, $3, $2 - 1, $1) - zone_seconds($7);
+    }
+    if ($s =~ /^([A-Z][a-z]{2}) (\d{1,2}), (\d{4}),? (\d{1,2}):(\d\d) ([AP]M) ([A-Z]{3})$/
+        && $MONTH{$1} && defined zone_seconds($7)) {
+        return timegm(0, $5, $4 % 12 + ($6 eq 'PM' ? 12 : 0), $2, $MONTH{$1} - 1, $3) - zone_seconds($7);
+    }
+    if ($s =~ /^(?:[A-Z][a-z]{2}, )?(\d{1,2}) ([A-Z][a-z]{2}) (\d{4}) (\d\d):(\d\d)(?::(\d\d))? ([+-]\d{4}|[A-Z]{3})$/
+        && $MONTH{$2} && defined zone_seconds($7)) {
+        return timegm($6 // 0, $5, $4, $1, $MONTH{$2} - 1, $3) - zone_seconds($7);
+    }
+    return undef;
+}
+
+# A zone name or offset → seconds east of UTC.
+sub zone_seconds {
+    my ($z) = @_;
+    return $ZONE{$z} * 3600 if exists $ZONE{$z};
+    return undef unless $z =~ /^([+-])(\d\d):?(\d\d)$/;
+    return ($1 eq '-' ? -1 : 1) * ($2 * 3600 + $3 * 60);
+}
 
 sub epoch_of { my ($y, $m, $d) = split /-/, $_[0]; return timegm(0, 0, 12, $d, $m - 1, $y) }
 

@@ -12,6 +12,9 @@ use File::Basename qw(dirname);
 use File::Spec;
 use File::Temp qw(tempdir);
 use JSON::PP;
+use Time::Local qw(timegm);
+
+sub timegm_of { my ($y, $mo, $d, $h, $mi, $se) = @_; return timegm($se, $mi, $h, $d, $mo - 1, $y) }
 
 my $SCRIPT = File::Spec->rel2abs(dirname(__FILE__) . '/../scripts/market.pl');
 require $SCRIPT;
@@ -140,6 +143,118 @@ t('table rows keep their cells', $text =~ /^Net sales \| \$109,417 \| \(1,234\)$
     ($bad, $msg) = $save->('symbol=AAPL', 'period=2026-06-27', 'summary=ok');
     t('an empty summary is refused', $bad == 1 && $msg =~ /^summary:/, $msg);
 }
+
+# ── Watch: finders ─────────────────────────────────────────────────────────
+t('an ISO time parses', time_of('2026-09-16T12:46:38.000Z') == timegm_of(2026, 9, 16, 12, 46, 38));
+t('a New York time parses', time_of('Sep 16, 2026, 8:40 AM EDT') == timegm_of(2026, 9, 16, 12, 40, 0)
+  && time_of('Sep 15, 2026, 2:24 PM EDT') == timegm_of(2026, 9, 15, 18, 24, 0)
+  && time_of('Jan 5, 2026, 12:05 AM EST') == timegm_of(2026, 1, 5, 5, 5, 0));
+t('a mail-style time parses', time_of('Wed, 09 Sep 2026 11:05:00 -0400') == timegm_of(2026, 9, 9, 15, 5, 0));
+t('anything else is no time', !defined time_of('51 minutes ago') && !defined time_of('') && !defined time_of(undef));
+
+# A year of sessions, newest first: a day's move alternates ±1%, price 100.
+sub sessions {
+    my ($n, %at) = @_;
+    my @rows;
+    for my $i (0 .. $n - 1) {
+        my $day = shift_date('2026-09-15', -$i);
+        push @rows, { t => $day, c => 100, ch => $i % 2 ? 1 : -1, %{ $at{$i} || {} } };
+    }
+    return \@rows;
+}
+my $since = session_end('2026-09-14') - 3600;  # the window holds the last two sessions
+my @moves = move_events('NVDA', sessions(260, 0 => { ch => -3.4, c => 96.6 }, 1 => { ch => 2.2 }), $since, 20);
+t('a move past 2.5 usual days is an event; a smaller one is not',
+  @moves == 1 && $moves[0]{id} eq 'move:NVDA:2026-09-15' && $moves[0]{usual_pct} > 1 && $moves[0]{usual_pct} < 1.1,
+  JSON::PP->new->canonical->encode(\@moves));
+t('the position\'s real dollar change rides along', $moves[0]{position_change} == -68);
+t('a move before the window is not looked at',
+  !move_events('NVDA', sessions(260, 5 => { ch => -9 }), $since, 20));
+t('a watched stock\'s move has no position change',
+  !defined((move_events('NVDA', sessions(260, 0 => { ch => -5, c => 95 }), $since, 0))[0]{position_change}));
+t('a quiet ETF\'s move still needs 2%', !move_events('VOO', sessions(260, 0 => { ch => -1.9 }), $since, 0));
+
+my @high = break_events('NVDA', sessions(260, 0 => { c => 120 }), $since);
+t('a close past the year\'s range is a fresh 52-week high',
+  @high == 1 && $high[0]{kind} eq 'high_52w' && $high[0]{session} eq '2026-09-15');
+t('a break days after the last one is not fresh',
+  !break_events('NVDA', sessions(260, 0 => { c => 121 }, 6 => { c => 120 }), $since));
+t('a low counts too', (break_events('NVDA', sessions(260, 1 => { c => 80 }), $since))[0]{kind} eq 'low_52w');
+
+t('results today or tomorrow are events, later ones not',
+  (earnings_events('TSLA', '2026-10-21', '2026-10-21'))[0]{when} eq 'today'
+  && (earnings_events('TSLA', '2026-10-21', '2026-10-20'))[0]{when} eq 'tomorrow'
+  && !earnings_events('TSLA', '2026-10-21', '2026-10-19') && !earnings_events('TSLA', undef, '2026-10-19'));
+
+my $snaps = [{ at => 100, analysts => 'Buy', target => '396.94 (+9.72%)' }, { at => 900, analysts => 'Hold', target => '1.00' }];
+t('a rating change against the snapshot before the window is an event',
+  (analyst_events('TSLA', { analysts => 'Strong Buy', target => '400.00 (+10%)' }, $snaps, 500, '2026-09-16'))[0]{rating_was} eq 'Buy');
+t('a target moved 5%+ is an event; 3% is not',
+  (analyst_events('TSLA', { analysts => 'Buy', target => '420.00' }, $snaps, 500, '2026-09-16'))[0]{target} == 420
+  && !analyst_events('TSLA', { analysts => 'Buy', target => '408.00' }, $snaps, 500, '2026-09-16'));
+t('no snapshot before the window: nothing to compare',
+  !analyst_events('TSLA', { analysts => 'Sell', target => '1' }, $snaps, 50, '2026-09-16'));
+
+my $news = { data => [
+    { type => 'Article', title => 'Fresh', url => 'https://x.com/a', time => '2026-09-16T12:46:38.000Z', source => 'X' },
+    { type => 'Video', title => 'Clip', url => 'https://x.com/v', time => '2026-09-16T12:00:00.000Z' },
+    { type => 'Article', title => 'Old', url => 'https://x.com/o', time => 'Sep 1, 2026, 8:40 AM EDT' },
+    { type => 'Article', title => 'Undated', url => 'https://x.com/u', time => '3 hours ago' },
+] };
+my @heads = news_events('NVDA', $news, $since);
+t('headlines since the window, articles only, with a stable id',
+  @heads == 1 && $heads[0]{title} eq 'Fresh' && $heads[0]{id} =~ /^news:[0-9a-f]{16}$/,
+  JSON::PP->new->canonical->encode(\@heads));
+
+my $nvda_filings = {
+    form               => ['4', '8-K', '8-K', 'SCHEDULE 13D', '8-K', '4'],
+    acceptanceDateTime => ['2026-09-15T21:04:47.000Z', '2026-09-15T12:03:56.000Z', '2026-09-15T11:00:00.000Z',
+                           '2026-09-15T10:00:00.000Z', '2026-09-01T20:21:19.000Z', '2026-08-24T21:32:04.000Z'],
+    filingDate         => ['2026-09-15', '2026-09-15', '2026-09-15', '2026-09-15', '2026-09-01', '2026-08-24'],
+    items              => ['', '5.02,9.01', '9.01', '', '2.02,9.01', ''],
+    accessionNumber    => ['0002152188-26-000005', '0001045810-26-000078', '0001045810-26-000079',
+                           '0000000000-26-000001', '0001045810-26-000073', '0001347842-26-000015'],
+    primaryDocument    => ['xslF345X06/wk-form4_1.xml', 'nvda-8k.htm', 'nvda-ex.htm', 'sc13d.htm', 'nvda-r.htm', 'xslF345X06/wk-form4_2.xml'],
+};
+my ($filed, $form4s) = filing_events('NVDA', 1045810, $nvda_filings, $since);
+t('8-Ks by item and 13Ds since the window; exhibit-only 8-Ks skipped',
+  join('; ', map { "$_->{id} $_->{what}" } @$filed) eq 'filing:0001045810-26-000078 officer or director change; filing:0000000000-26-000001 an investor holds 5%+ and may act on it',
+  join('; ', map { "$_->{id} $_->{what}" } @$filed));
+t('a Form 4 since the window is read from its raw XML',
+  @$form4s == 1 && $form4s->[0]{xml} eq 'https://www.sec.gov/Archives/edgar/data/1045810/000215218826000005/wk-form4_1.xml');
+
+my $form4 = sub {
+    my ($planned, @rows) = @_;
+    my $tx = join '', map { "<nonDerivativeTransaction><transactionCoding><transactionCode>$_->[0]</transactionCode></transactionCoding>"
+        . "<transactionAmounts><transactionShares><value>$_->[1]</value><footnoteId id=\"F1\"/></transactionShares>"
+        . "<transactionPricePerShare><value>$_->[2]</value></transactionPricePerShare></transactionAmounts></nonDerivativeTransaction>" } @rows;
+    return "<ownershipDocument><reportingOwner><reportingOwnerId><rptOwnerName>Huang Jen Hsun</rptOwnerName></reportingOwnerId>"
+         . "<reportingOwnerRelationship><isDirector>1</isDirector><isOfficer>1</isOfficer><officerTitle>President and CEO</officerTitle>"
+         . "</reportingOwnerRelationship></reportingOwner><aff10b5One>$planned</aff10b5One><nonDerivativeTable>$tx</nonDerivativeTable></ownershipDocument>";
+};
+my $sale = form4_trades($form4->(1, ['S', 5000, 210.5], ['S', 1000, 211], ['A', 172507, 0], ['M', 4000, 10]));
+t('open-market sales sum; grants and exercises don\'t count',
+  $sale->{sold} == 5000 * 210.5 + 1000 * 211 && $sale->{sold_shares} == 6000 && $sale->{bought} == 0
+  && $sale->{who} eq 'Huang Jen Hsun' && $sale->{role} eq 'President and CEO' && $sale->{planned});
+my $f = { acc => 'x', at => $since, url => 'u' };
+t('a $1M+ sale is an insider event; a small one or a grant is not',
+  insider_event('NVDA', $f, $sale)->{value} == 1263500
+  && !insider_event('NVDA', $f, form4_trades($form4->(0, ['S', 100, 210])))
+  && !insider_event('NVDA', $f, form4_trades($form4->(0, ['A', 172507, 0]))));
+t('a $100K+ purchase is an insider event, not a planned sale',
+  do { my $buy = insider_event('NVDA', $f, form4_trades($form4->(0, ['P', 500, 210]))); $buy->{side} eq 'bought' && !$buy->{planned} });
+
+my $fresh = fresh_events([
+    { id => 'news:1', symbol => 'NVDA', at => '2026-09-15T10:00:00Z' },
+    { id => 'move:TSLA:2026-09-15', symbol => 'TSLA', at => '2026-09-15T20:00:00Z' },
+    { id => 'news:1', symbol => 'META', at => '2026-09-15T10:00:00Z' },
+    { id => 'news:2', symbol => 'NVDA', at => '2026-09-15T11:00:00Z' },
+], { 'news:2' => '2026-09-15' });
+t('events newest first, one per id naming every holding, judged ones gone',
+  join(',', map { $_->{id} } @$fresh) eq 'move:TSLA:2026-09-15,news:1' && $fresh->[1]{also}[0] eq 'META');
+my $weighed = weigh_positions({ NVDA => { currency => 'USD', value => 4319 }, TSLA => { currency => 'USD', value => 14484 },
+                                'RY.TO' => { currency => 'CAD', value => 2842 }, VOO => { currency => 'USD', value => 0 } });
+t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'RY.TO'}{weight_pct} == 100 && $weighed->{VOO}{weight_pct} == 0);
 
 # ── Holdings from the edit register ───────────────────────────────────────
 {
