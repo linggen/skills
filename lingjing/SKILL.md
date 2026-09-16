@@ -606,12 +606,15 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   runs, the riddle when one waits, the director's `choice` when the world
   is open. AskUser it exactly as it is; you compose nothing. A tapped
   label is its option's `exit` (Resolve), `move` (Move there at once),
-  `linger` (Branch open) or `ask` (Yinyue answers what is before them).
+  `linger` (Branch open), `ask` (Yinyue answers what is before them) or
+  `look` (say what is around, from the scene's setup or the place's line;
+  nothing moves).
 - **The question is one short line** — *何去何从？* / *What now?* Narration,
   the lines, and what was `paid` go in your reply before it, never inside
   the question: the card shows the question as plain text.
 - AskUser needs two options at least. A scene with one button gets a second
-  that stays: a question to Yinyue about what is before them.
+  from the rules, in `ask`: a word to Yinyue, or a look around — never the
+  one the player just took.
 - An answer returns as its label: map it back to the exit id through
   `buttons`. Typed text in *Other* goes through step 3.
 - A riddle waiting: the riddle is the question; the other buttons are the

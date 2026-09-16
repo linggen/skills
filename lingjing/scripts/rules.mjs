@@ -189,7 +189,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, thread, Boolean(seed)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, thread, Boolean(seed), ctx.said),
   };
 }
 
@@ -199,14 +199,27 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded) {
+function choiceOf(state, here, near, thread, seeded, said) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
   const options = places.map(p => ({ label: p.name, move: p.id }));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
-  if (options.length < 2) options.push({ label: zh ? '问问银月' : 'Ask Yinyue', ask: true });
+  if (options.length < 2) options.push(filler(state, said));
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
+}
+
+/* The second option when the world offers only one: a word to Yinyue, or a
+   look around — never the one the player just took, so the same choice is
+   not offered twice running (his "that is duplicated", 2026-09-16). */
+const FILLERS = {
+  zh: [{ label: '问问银月', ask: true }, { label: '看看四周', look: true }],
+  en: [{ label: 'Ask Yinyue', ask: true }, { label: 'Look around', look: true }],
+};
+function filler(state, said) {
+  const pair = FILLERS[state.lang === 'zh' ? 'zh' : 'en'];
+  const last = String(said ?? '').trim();
+  return pair.find(f => f.label !== last && !Object.values(FILLERS).flat().some(g => g.label === last && g.ask === f.ask && g.look === f.look)) ?? pair[0];
 }
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
@@ -1331,7 +1344,7 @@ export function parseArgs(argv) {
    enough (2026-09-16, gpt-5.6-terra: Look, Show, narration, silence). */
 export function askOf(content, state, ctx, result = {}) {
   const zh = state.lang === 'zh';
-  const yinyue = { label: zh ? '问问银月' : 'Ask Yinyue', ask: true };
+  const yinyue = filler(state, ctx.said);
   const header = s => String(s ?? '');
   const question = zh ? '何去何从？' : 'What now?';
   if (atScene(content, state)) {
@@ -1347,7 +1360,7 @@ export function askOf(content, state, ctx, result = {}) {
   }
   const choice = directorBrief(content, state, ctx)?.choice;
   if (choice) return choice;
-  return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: [{ label: zh ? '四处看看' : 'Look around', ask: true }, yinyue] };
+  return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: FILLERS[zh ? 'zh' : 'en'] };
 }
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
 const withAsk = (result, content, state, ctx) => ({ then: THEN, ask: askOf(content, state, ctx, result), ...result });
@@ -1379,7 +1392,7 @@ function run(verb, args) {
   }
   if (saved) keepDay(saved, now);
   const heard = heed(state, args.said);
-  const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn() }, args);
+  const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
   const next = out.state ?? (heard !== state ? heard : null);
   if (next) {
@@ -1389,7 +1402,7 @@ function run(verb, args) {
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const result = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
-  return withAsk(result, content, next ?? state, { now, quests: readQuests() });
+  return withAsk(result, content, next ?? state, { now, quests: readQuests(), said: args.said });
 }
 
 /* Park the save in play under its world and take up the other world's —

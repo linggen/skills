@@ -88,7 +88,9 @@ function map(card, ctx) {
   const cells = MAP.flat().map((c) => {
     const kind = c === card.goal ? 'goal' : c === card.here ? 'here' : '';
     const tag = kind ? `<small>${ctx.words[kind]}</small>` : '';
-    return `<div class="prov${kind ? ` ${kind}` : ''}">${esc(name(c))}${tag}</div>`;
+    // The next cauldron's province is a word to Ling; the rules say the road.
+    const tap = kind === 'goal' ? ` ${sayAttr(say(ctx.words.sayGo, { name: name(c) + (ctx.lang === 'zh' ? '州' : '') }))}` : '';
+    return `<div class="prov${kind ? ` ${kind}` : ''}"${tap}>${esc(name(c))}${tag}</div>`;
   });
   return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div><div class="map">${cells.join('')}</div>${placesHtml(ctx)}</div>`;
 }
@@ -100,8 +102,8 @@ function placesHtml(ctx) {
   if (!place?.places?.length) return '';
   const chips = place.places.map((p) => {
     const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
-    if (kind === 'road') return `<button class="pl road" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))}>${esc(p.name)}</button>`;
-    return `<span class="pl${kind ? ` ${kind}` : ''}">${esc(p.name)}</span>`;
+    if (p.here) return `<span class="pl here">${esc(p.name)}</span>`;
+    return `<button class="pl${kind ? ` ${kind}` : ''}" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))}>${esc(p.name)}</button>`;
   });
   return `<div class="placesTitle">${esc(place.province.name)}</div><div class="places">${chips.join('')}</div>`;
 }
@@ -136,8 +138,8 @@ function roadMap(ctx) {
     const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
     const tag = p.here ? `<small>${ctx.words.here}</small>` : '';
     const style = `style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%"`;
-    if (kind === 'road') return `<button class="pl road" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))} ${style}>${esc(p.name)}</button>`;
-    return `<span class="pl${kind ? ` ${kind}` : ''}" ${style}>${esc(p.name)}${tag}</span>`;
+    if (p.here) return `<span class="pl here" ${style}>${esc(p.name)}${tag}</span>`;
+    return `<button class="pl${kind ? ` ${kind}` : ''}" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))} ${style}>${esc(p.name)}</button>`;
   });
   const frame = painted
     ? `class="roadmap painted" style="background-image:url('${esc(worldPath(ctx.look.world.dir, painted.file))}')"`

@@ -175,8 +175,10 @@ button:disabled { cursor: default; }
 /* A tap on the stage is a word to Ling: a road chip, Buy and Sell, a
    practice card. Greyed when the rules say it cannot be; dimmed while Ling
    answers, so a slow model never invites a second tap. */
-button.pl { font: inherit; font-size: 12px; cursor: pointer; }
+button.pl { font: inherit; font-size: 12px; cursor: pointer; color: inherit; }
 button.pl:hover { background: var(--ling-soft); }
+.prov[data-say] { cursor: pointer; }
+.prov[data-say]:hover { box-shadow: 0 0 0 1px var(--ling) inset; }
 .price .act { padding: 2px 8px; font-size: 11px; }
 .act:disabled { opacity: 0.4; cursor: default; }
 .task[data-say], .gate[data-say] { cursor: pointer; }

@@ -145,6 +145,11 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.equal(a.question, r.say);
   assert.ok(!a.options.some(o => o.exit === 'riddle'));
   assert.ok(a.options.length >= 2);
+  // the filler never repeats the player's last word: after Yinyue, a look around
+  const one = { ...l.scene, buttons: l.scene.buttons.slice(0, 1) };
+  assert.equal(askOf(content, s, { ...ctx(), said: '问问银月' }).options.at(-1)?.label !== '问问银月', true);
+  assert.equal(askOf(content, s, { ...ctx(), said: '看看四周' }).options.at(-1)?.label !== '看看四周', true);
+  void one;
   // the world open: the director's choice
   const o = toOpenWorld();
   const lo = look(o, content, ctx());
