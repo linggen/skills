@@ -501,5 +501,22 @@ td.num.pos { color: var(--pos); }
 .inv-menu, .inv-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
   border-top: 1px dashed var(--line); margin-top: 9px; padding-top: 9px; font-size: 13px; }
 .inv-form label { display: flex; align-items: center; gap: 6px; color: var(--muted); }
+.inv-main { cursor: pointer; border-radius: 6px; }
+.inv-main:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.inv-row.open { border-color: var(--accent); }
+.inv-card { border-top: 1px dashed var(--line); margin-top: 9px; padding-top: 10px; font-size: 13px; cursor: auto; }
+.inv-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px 16px; }
+.inv-stats div { display: flex; flex-direction: column; min-width: 0; }
+.inv-stats span { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.inv-stats b { font-weight: 600; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inv-card > .hint { margin: 10px 0 0; }
+.inv-reports { margin-top: 14px; }
+.inv-reports-h { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.inv-reports-h > span:first-child { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+.inv-report { border-left: 3px solid var(--line); padding: 2px 0 2px 10px; margin-bottom: 10px; }
+.inv-report-h { color: var(--muted); font-size: 12px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.inv-report p { margin: 4px 0 0; white-space: pre-wrap; line-height: 1.5; }
+button.link { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; cursor: pointer; }
+button.link:hover { text-decoration: underline; }
 .inv-form input { width: 110px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
   background: var(--panel); color: var(--ink); font: inherit; }

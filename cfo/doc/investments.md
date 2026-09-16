@@ -17,8 +17,11 @@ Mac; no Linggen Cloud, no data-provider key.
   high_52w, low_52w, market, price_time, name, kind, pe, forward_pe,
   market_cap, earnings_date, earnings_on, dividend, dividend_yield, aum,
   expense_ratio, cik, quote_at, stats_at}}}`.
-- `reports.json` — per symbol `[{period, form, filed, url, summary,
-  saved_at}]`, plus `last_checked`.
+- `reports.json` — `{last_checked, symbols: {SYM: {since, reports:
+  [{period, form, filed, url, summary, saved_at}]}}}`, newest first. `since`
+  is the day a symbol was first checked: only reports filed from then on
+  count as new. Written only by `save-report`, apart from `since` and
+  `last_checked`.
 
 ## Market tool (scripts/market.pl — zero LLM, Perl core + curl)
 
@@ -28,12 +31,26 @@ Mac; no Linggen Cloud, no data-provider key.
   market cap, earnings date, ETF expense ratio, from the overview page's
   `__data.json` (SvelteKit devalue), cached 20 h. Merges into `quotes.json`
   under a lock, prints JSON.
-- `reports-check` — US: SEC EDGAR submissions (ticker → CIK from
-  `company_tickers.json`, cached) for 10-Q, 10-K and 8-K item 2.02 filed after
-  `last_checked`. TSX: `earnings_date` passed with no stored report for that
-  period. ETFs skipped. Prints only what's new; `[]` = nothing new.
+- A report is one period's results `{symbol, name, form, period, filed,
+  url}`. US: SEC EDGAR submissions (CIK from the stats, else SEC's
+  `company_tickers.json`, cached a week) — 10-Q, 10-K, 20-F, 40-F and the
+  8-K with item 2.02. A release and the 10-Q of its quarter are one report
+  (periods within 10 days); the release's press-release exhibit (99.1) is
+  the url. TSX: the stats' earnings date once passed, `form: "earnings"`,
+  no url. ETFs have none.
+- `reports-check [SYMBOLS]` (default: `investments.json`) — reports filed on
+  or after the symbol's `since` with nothing saved for their period; the
+  first check sets `since` to today. Prints `{new, failed, checked,
+  last_checked}`. Unsaved reports stay new, so a failed read retries.
+- `reports-latest SYM` — the newest report, with `saved` (its summary or
+  null). `read URL` — a filing, results page or results PDF as text (first
+  60,000 characters; PDFs through macOS PDFKit via `osascript`).
+  `save-report key=value…` — the one writer; the same period replaces.
+  `portfolio` — `investments.json` + listed quotes + `reports.json`.
 - Yahoo Finance answers 429 to plain requests (tested 2026-09-15) — not a
-  source. SEC needs a descriptive `User-Agent`. Stats at most daily per symbol.
+  source. SEC answers 403 to browser-like or anonymous agents, the engine's
+  WebFetch included; `market.pl` sends `Linggen CFO https://linggen.dev`.
+  Stats at most daily per symbol. Tests: `tests/run-market.pl`.
 
 ## UI (cfo.html / cfo.js — no new page)
 
@@ -44,21 +61,27 @@ Mac; no Linggen Cloud, no data-provider key.
   (right-click opens the same menu). Page module `investments.js`.
 - Refresh: quotes on open and every 5 min while the tab is visible; stats
   daily.
-- Company card (click a row): the numbers, next earnings date, report
-  summaries newest first, **Latest report** button.
-- Header **Check reports**: runs `reports-check`. Empty → "Nothing new since
-  <date>", no model call. Otherwise a hidden prompt hands the new items to the
-  CFO agent.
+- Company card (click a row): the numbers, next or last earnings date,
+  report summaries newest first with a Source link (opens in the default
+  browser), **Latest report** button. Already summarized → "Already read",
+  no model call.
+- **Check reports** (beside Refresh): runs `reports-check`. Empty → "Nothing
+  new since <time>", no model call. Otherwise a hidden prompt hands the new
+  items to the CFO agent. A `SaveReport` in the chat stream reloads the
+  card.
 - Settings: **Tell me when a report comes out** → turns mission `cfo:reports`
   on/off through the missions API.
 
 ## Agent layer (SKILL.md)
 
-- Tools: `Investments` (the three files), `Market` (quotes + stats for any
-  symbol, listed or not), `CheckReports`, `SaveReport {symbol, period, form,
-  filed, url, summary}` — the one writer of `reports.json`, used by chat and
-  the mission alike.
-- `allowed-tools` += `WebSearch`, `WebFetch` — reading reports and news.
+- Tools (all `tier: read`): `Investments` (`portfolio`), `Market` (quotes +
+  stats for any symbol, listed or not), `CheckReports`, `LatestReport`,
+  `ReadReport` (every report read goes through it — WebFetch can't open
+  sec.gov or read PDFs), `SaveReport {symbol, period, form, filed, url,
+  summary}` — the one writer of `reports.json`, used by chat and the mission
+  alike. Args render as `key={{key}}` so an omitted one can't shift the rest.
+- `allowed-tools` += `WebSearch` (finding a TSX release), `WebFetch` (news).
+- Runbook: SKILL.md § 9 "Company reports".
 - Remove "never give investment/securities advice or tell the user what to
   buy/sell". No limits on opinions (Hanli, 2026-09-15). Numbers still come
   from the tools, never invented.
@@ -72,8 +95,8 @@ Mac; no Linggen Cloud, no data-provider key.
   Its tools need `tier: read` — a mission run is non-interactive and an
   untiered skill tool defaults to admin.
 - Runbook: `CheckReports` → empty → end `DONE`. Otherwise read each item
-  (`WebFetch` the filing or release, `WebSearch` for TSX results) →
-  `SaveReport`. No `AskUser`, no `PageUpdate`.
+  (`ReadReport`; `WebSearch` first for a TSX release) → `SaveReport`. No
+  `AskUser`, no `PageUpdate`.
 
 ## Alerts
 
@@ -94,8 +117,10 @@ Mac; no Linggen Cloud, no data-provider key.
    tools in the run)~~ — built, linggen `998793f`
 2. ~~`market.pl` quotes/stats + holdings cells + the tab (list, add/edit,
    refresh)~~ — built
-3. Company card + `reports-check` + `SaveReport` + both report buttons
-4. SKILL.md tools; advice rule removed
+3. ~~Company card + `reports-check` + `SaveReport` + both report buttons~~
+   — built
+4. ~~SKILL.md tools; advice rule removed~~ — built (holdings proposals from
+   chat not yet)
 5. `missions/reports` + the settings switch
 6. Phone: pull `reports.json` + the `report` line
 7. Release 2: native phone Investments view

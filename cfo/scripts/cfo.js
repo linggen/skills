@@ -10,7 +10,7 @@ import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, de
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy } from './lww.js';
-import { initInvestments, renderInvestView, leaveInvestView } from './investments.js';
+import { initInvestments, renderInvestView, leaveInvestView, reportSaved } from './investments.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -2285,6 +2285,12 @@ async function mountChat(sessionId) {
             applyPageUpdate(args);
           } catch (e) { console.warn('[cfo] PageUpdate parse', e); }
         }
+        // A report summary landed in data/reports.json — show it. Its start
+        // and its finish both arrive; the reload waits for the write.
+        if (payload?.tool === 'SaveReport') {
+          clearTimeout(reportReload);
+          reportReload = setTimeout(() => reportSaved().catch(() => {}), 800);
+        }
       },
     });
   } catch (e) { console.error('[cfo] chat mount failed', e); }
@@ -2295,6 +2301,7 @@ async function mountChat(sessionId) {
 // per new session; resumed sessions stay silent.
 const GREETING_TRIGGER = 'The user just opened the CFO app (this message is hidden from them). Greet them now, following the "0. Greeting" section of your instructions.';
 let chatActivity = false; // any stream/content event from the embed iframe
+let reportReload = null;
 
 // The embed needs its message listener + WebRTC channel up before it can accept
 // a posted message — an immediate post-mount send is silently lost. Send after a
@@ -2425,6 +2432,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     runBash, readJson, writeB64, esc, saveEdits,
     edits: () => EDITS,
     confirm: confirmDialog,
+    ask: (text) => {
+      if (!chat?.sendHidden) return false;
+      chat.sendHidden(text);
+      return true;
+    },
     data: DATA,
   });
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));

@@ -3,22 +3,31 @@
 //
 // Holdings are register cells (`inv:<symbol>|<field>`, lww.js), so a paired
 // phone merges them per field. data/quotes.json holds the numbers;
-// data/investments.json is the agent's copy of the list. No model call here.
+// data/investments.json is the agent's copy of the list; data/reports.json
+// holds report summaries, written only by the agent's SaveReport. The page
+// finds reports itself (market.pl) and calls the model only to read one.
 
 import { investmentsOf } from './lww.js';
 
 const MARKET = '"$HOME/.linggen/skills/cfo/scripts/market.pl"';
 const REFRESH_MS = 5 * 60 * 1000;
+const READ_WAIT_MS = 3 * 60 * 1000; // a read that saves nothing by then has stopped
+const NOTE_MS = 15 * 1000;
 const FIELDS = ['watch', 'shares', 'avg_cost', 'account'];
 
 let deps = null;
 let quotes = {};     // symbol -> data/quotes.json entry
+let reports = {};    // symbol -> data/reports.json entry {since, reports[]}
 let timer = null;
 let editing = null;  // symbol whose holding form is open
 let menuFor = null;  // symbol whose ⋯ menu is open
+let open = null;     // symbol whose company card is open
 let loading = false;
 let again = false;   // a refresh was asked for while one ran
 let failure = '';
+let checking = false;
+let checkNote = '';  // what the last Check reports found
+const reading = new Map(); // symbol -> {note, at, busy} for its report line
 
 /**
  * Wire the tab once, at page load.
@@ -30,6 +39,8 @@ let failure = '';
  * @param {() => Promise<void>} d.saveEdits
  * @param {(message: string) => Promise<boolean>} d.confirm
  * @param {(s: string) => string} d.esc
+ * @param {(text: string) => boolean} d.ask a hidden message to the CFO agent;
+ *   false when the chat isn't up
  * @param {string} d.data data dir, `$HOME` left literal for bash
  */
 export function initInvestments(d) {
@@ -45,6 +56,7 @@ export function initInvestments(d) {
 /// them fresh while the tab is open.
 export async function renderInvestView() {
   quotes = (await deps.readJson(`${deps.data}/quotes.json`, {})).symbols || {};
+  await loadReports();
   draw();
   refresh();
   if (!timer) timer = setInterval(() => { if (!document.hidden) refresh(); }, REFRESH_MS);
@@ -56,6 +68,22 @@ export function leaveInvestView() {
   editing = null;
   menuFor = null;
 }
+
+/// The agent's SaveReport ran (seen in the chat stream): show what it saved.
+export async function reportSaved() {
+  await loadReports();
+  for (const [sym, r] of reading) {
+    if (r.busy && latestSavedAt(sym) > r.at) reading.delete(sym);
+  }
+  if (!document.getElementById('invest').hidden) draw();
+}
+
+async function loadReports() {
+  reports = (await deps.readJson(`${deps.data}/reports.json`, {})).symbols || {};
+}
+
+const latestSavedAt = (sym) =>
+  Math.max(0, ...(reports[sym]?.reports || []).map((r) => Date.parse(r.saved_at) || 0));
 
 // ── Pure: symbols, positions, totals ───────────────────────────────────────
 
@@ -145,6 +173,47 @@ export function parseAmount(raw) {
   return n !== null && n > 0 ? n : null;
 }
 
+// ── Pure: reports ──────────────────────────────────────────────────────────
+
+/// "2026-06-27" → "Jun 27, 2026"; a timestamp keeps its time of day.
+export function dayOf(iso, withTime = false) {
+  if (!iso) return '';
+  const d = new Date(/^\d{4}-\d\d-\d\d$/.test(iso) ? `${iso}T12:00:00` : iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const opts = { month: 'short', day: 'numeric', year: 'numeric' };
+  return withTime ? d.toLocaleString(undefined, { ...opts, hour: 'numeric', minute: '2-digit' }) : d.toLocaleDateString(undefined, opts);
+}
+
+const ANNUAL = new Set(['10-K', '20-F', '40-F']);
+
+/// A saved report's heading: "Quarter ended Jun 27, 2026 · Earnings release".
+export function reportHeading(r) {
+  if (r.form === 'earnings') return `Results out ${dayOf(r.period)}`;
+  const span = `${ANNUAL.has(r.form) ? 'Year' : 'Quarter'} ended ${dayOf(r.period)}`;
+  const form = r.form === '8-K' ? 'Earnings release' : r.form;
+  return [span, form].filter(Boolean).join(' · ');
+}
+
+/// The line under Check reports. `result` is market.pl reports-check's output.
+export function checkNoteOf(result) {
+  const n = result.new.length;
+  const failed = result.failed.map((f) => f.symbol);
+  const parts = [];
+  if (n) parts.push(`${n} new report${n === 1 ? '' : 's'} — reading now`);
+  if (failed.length) parts.push(`couldn't check ${failed.join(', ')}`);
+  if (parts.length) return parts.join(' · ').replace(/^./, (c) => c.toUpperCase());
+  return result.last_checked ? `Nothing new since ${dayOf(result.last_checked, true)}` : 'Nothing new yet — reports from today on will show here';
+}
+
+/// The hidden message that hands reports to the agent. Its runbook lives in
+/// SKILL.md ("Company reports"); this carries only the items.
+export function readPrompt(items, why) {
+  const lead = why === 'latest'
+    ? `The user pressed Latest report for ${items[0].symbol} on the Investments tab (this message is hidden from them).`
+    : 'Check reports on the Investments tab found new company reports (this message is hidden from the user).';
+  return `${lead} Read and save each one as "Company reports" in your instructions says, then tell the user what matters in a few sentences.\n\n${JSON.stringify(items)}`;
+}
+
 // ── Drawing ────────────────────────────────────────────────────────────────
 
 const rowsNow = () => positionsOf(investmentsOf(deps.edits()), quotes);
@@ -180,10 +249,11 @@ function summaryHtml(rows) {
     <span class="inv-total"><b>${money(t.value, cur, 0)}</b>
       ${moveHtml(t.day, cur, null, 0)} today${t.cost ? ` · ${moveHtml(t.gain, cur, (t.gain / t.cost) * 100, 0)} overall` : ''}</span>`);
   const stamp = rows.map((r) => r.price_time).find(Boolean);
-  const state = loading ? 'Updating…' : failure || (stamp ? `Prices ${stamp}` : '');
+  const state = checking ? 'Checking reports…' : checkNote || (loading ? 'Updating…' : failure || (stamp ? `Prices ${stamp}` : ''));
   return `<div class="inv-summary">${totals.join('')}<span class="spacer"></span>
     <span class="hint inline">${deps.esc(state)}</span>
-    ${rows.length ? `<button class="chip" data-act="refresh" ${loading ? 'disabled' : ''}>Refresh</button>` : ''}</div>`;
+    ${rows.length ? `<button class="chip" data-act="refresh" ${loading ? 'disabled' : ''}>Refresh</button>
+      <button class="chip" data-act="check" ${checking ? 'disabled' : ''}>Check reports</button>` : ''}</div>`;
 }
 
 function subline(r) {
@@ -203,8 +273,8 @@ function rowHtml(r) {
     ? `<div>${r.shares} sh${r.account ? ` · ${esc(r.account)}` : ''}</div>
        <div>${money(r.value, r.currency, 0)} ${moveHtml(r.gain, r.currency, r.gain_pct, 0)}</div>`
     : `<button class="chip" data-act="edit" data-sym="${sym}">Add shares</button>`;
-  return `<div class="inv-row" data-sym="${sym}">
-    <div class="inv-main">
+  return `<div class="inv-row${open === r.symbol ? ' open' : ''}" data-sym="${sym}">
+    <div class="inv-main" tabindex="0" aria-expanded="${open === r.symbol}">
       <div class="inv-id"><b>${sym}</b> <span class="inv-name">${esc(r.name)}</span>
         <div class="inv-sub">${esc(subline(r))}</div></div>
       <div class="inv-price">${price}</div>
@@ -213,6 +283,49 @@ function rowHtml(r) {
     </div>
     ${menuFor === r.symbol ? menuHtml(r) : ''}
     ${editing === r.symbol ? formHtml(r) : ''}
+    ${open === r.symbol ? cardHtml(r) : ''}
+  </div>`;
+}
+
+/// The company card: the numbers, the earnings date, and report summaries
+/// newest first.
+function cardHtml(r) {
+  const { esc } = deps;
+  const q = quotes[r.symbol] || {};
+  const etf = q.kind === 'etf';
+  const range = q.low_52w != null && q.high_52w != null ? `${money(num(q.low_52w), r.currency)} – ${money(num(q.high_52w), r.currency)}` : null;
+  const today = new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD
+  const earnings = q.earnings_on
+    ? [q.earnings_on >= today ? 'Next earnings' : 'Last earnings', dayOf(q.earnings_on)]
+    : null;
+  const stats = (etf
+    ? [['Assets', q.aum], ['Expense ratio', q.expense_ratio], ['P/E', q.pe], ['Yield', q.dividend_yield], ['Beta', q.beta], ['52-week', range]]
+    : [['Market cap', q.market_cap], ['P/E', q.pe], ['Fwd P/E', q.forward_pe], ['EPS', q.eps], ['Dividend', q.dividend],
+      ['Beta', q.beta], ['52-week', range], ['Analysts', q.analysts], ['Target', q.target], earnings])
+    .filter((s) => s && s[1] != null && s[1] !== '');
+  const held = r.shares > 0 && r.avg_cost !== null
+    ? `<p class="hint">${r.shares} sh at ${money(r.avg_cost, r.currency)} · cost ${money(r.cost, r.currency, 0)}</p>` : '';
+  const statsHtml = stats.length
+    ? `<div class="inv-stats">${stats.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(String(v))}</b></div>`).join('')}</div>`
+    : '<p class="hint">Numbers load with the next refresh.</p>';
+  return `<div class="inv-card">${statsHtml}${held}${etf ? '' : reportsHtml(r.symbol)}</div>`;
+}
+
+function reportsHtml(symbol) {
+  const { esc } = deps;
+  const sym = esc(symbol);
+  const line = reading.get(symbol);
+  const list = reports[symbol]?.reports || [];
+  const items = list.map((rep) => `<div class="inv-report">
+      <div class="inv-report-h">${esc(reportHeading(rep))}
+        ${/^https:\/\//.test(rep.url || '') ? `<button class="link" data-act="link" data-url="${esc(rep.url)}">Source ↗</button>` : ''}</div>
+      <p>${esc(rep.summary || '')}</p>
+    </div>`).join('');
+  return `<div class="inv-reports">
+    <div class="inv-reports-h"><span>Reports</span>
+      <span class="hint inline">${esc(line?.note || '')}</span><span class="spacer"></span>
+      <button class="chip" data-act="latest" data-sym="${sym}" ${line?.busy ? 'disabled' : ''}>Latest report</button></div>
+    ${items || '<p class="hint">No summaries yet. Latest report has CFO read the newest one.</p>'}
   </div>`;
 }
 
@@ -242,12 +355,17 @@ function formHtml(r) {
 function onClick(e) {
   const btn = e.target.closest('[data-act]');
   if (!btn) {
-    if (menuFor && !e.target.closest('.inv-menu')) { menuFor = null; draw(); }
+    if (menuFor && !e.target.closest('.inv-menu')) { menuFor = null; draw(); return; }
+    const main = e.target.closest('.inv-main');
+    if (main && !editing) toggleCard(main.closest('.inv-row').dataset.sym);
     return;
   }
   const sym = btn.dataset.sym;
   const acts = {
     refresh: () => refresh(),
+    check: () => checkReports(),
+    latest: () => latestReport(sym),
+    link: () => openLink(btn.dataset.url),
     menu: () => { menuFor = menuFor === sym ? null : sym; draw(); },
     edit: () => { menuFor = null; editing = sym; drawList(); focusForm(sym); },
     remove: () => removeSymbol(sym),
@@ -255,6 +373,11 @@ function onClick(e) {
     cancel: () => { editing = null; draw(); },
   };
   acts[btn.dataset.act]?.();
+}
+
+function toggleCard(sym) {
+  open = open === sym ? null : sym;
+  draw();
 }
 
 /// Long-press / right-click opens the same ⋯ menu.
@@ -267,6 +390,11 @@ function onContextMenu(e) {
 }
 
 function onKeydown(e) {
+  if (e.target.classList.contains('inv-main') && (e.key === 'Enter' || e.key === ' ')) {
+    e.preventDefault();
+    toggleCard(e.target.closest('.inv-row').dataset.sym);
+    return;
+  }
   const form = e.target.closest('.inv-form');
   if (!form) return;
   if (e.key === 'Enter') saveHolding(form.dataset.sym, form);
@@ -357,4 +485,85 @@ async function refresh(only) {
 async function fetchInto(verb, symbols) {
   const out = await deps.runBash(`perl ${MARKET} ${verb} ${symbols.join(' ')}`);
   Object.assign(quotes, JSON.parse(out));
+}
+
+// ── Reports ────────────────────────────────────────────────────────────────
+
+/// Look for reports out since each symbol was first checked. Nothing new
+/// costs no model call; anything new goes to the agent to read and save.
+async function checkReports() {
+  const symbols = Object.keys(investmentsOf(deps.edits()));
+  if (!symbols.length || checking) return;
+  checking = true;
+  checkNote = '';
+  draw();
+  try {
+    const result = JSON.parse(await deps.runBash(`perl ${MARKET} reports-check ${symbols.join(' ')}`));
+    if (result.new.length && !deps.ask(readPrompt(result.new, 'check'))) {
+      checkNote = 'Chat is still starting — try again in a moment';
+    } else {
+      checkNote = checkNoteOf(result);
+      for (const item of result.new) startReading(item.symbol);
+    }
+    await loadReports();
+  } catch (err) {
+    console.warn('[cfo] reports check failed', err);
+    checkNote = "Couldn't check reports — check the connection";
+  } finally {
+    checking = false;
+    draw();
+    const note = checkNote;
+    clearLater(() => { if (checkNote === note) checkNote = ''; });
+  }
+}
+
+/// The newest report for one company. Already summarized → nothing to do;
+/// otherwise the agent reads it.
+async function latestReport(sym) {
+  setLine(sym, { note: 'Looking…', busy: true });
+  try {
+    const item = JSON.parse(await deps.runBash(`perl ${MARKET} reports-latest ${sym}`));
+    if (item.saved) {
+      setLine(sym, { note: 'Already read — it’s the top one' });
+    } else if (!deps.ask(readPrompt([item], 'latest'))) {
+      setLine(sym, { note: 'Chat is still starting — try again in a moment' });
+    } else {
+      startReading(sym);
+      return;
+    }
+  } catch (err) {
+    setLine(sym, { note: String(err.message || err).trim().split('\n')[0] || "Couldn't reach the report source" });
+  }
+  forgetLater(sym);
+}
+
+function startReading(sym) {
+  const at = Date.now();
+  setLine(sym, { note: 'Reading…', busy: true, at });
+  setTimeout(() => {
+    if (reading.get(sym)?.at !== at) return;
+    setLine(sym, { note: 'Nothing saved — ask CFO about it in chat' });
+    forgetLater(sym);
+  }, READ_WAIT_MS);
+}
+
+function setLine(sym, line) {
+  reading.set(sym, { at: 0, busy: false, ...line });
+  draw();
+}
+
+/// Drop a symbol's note after a while, unless a newer one replaced it.
+function forgetLater(sym) {
+  const line = reading.get(sym);
+  clearLater(() => { if (reading.get(sym) === line) reading.delete(sym); });
+}
+
+function clearLater(clear) {
+  setTimeout(() => { clear(); if (!document.getElementById('invest').hidden) draw(); }, NOTE_MS);
+}
+
+/// Sources open in the default browser — links inside the app window go nowhere.
+function openLink(url) {
+  if (!/^https:\/\/[^\s'"\\]+$/.test(url || '')) return;
+  deps.runBash(`open '${url}'`).catch((err) => console.warn('[cfo] open link', err));
 }

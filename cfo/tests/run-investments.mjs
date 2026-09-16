@@ -13,6 +13,9 @@ import {
   totalsByCurrency,
   snapshotOf,
   parseAmount,
+  reportHeading,
+  checkNoteOf,
+  readPrompt,
 } from '../scripts/investments.js';
 
 let pass = 0, fail = 0;
@@ -86,6 +89,21 @@ t('snapshot keeps the account label', snap.holdings[1].account === 'TFSA' && sna
   phone.mergeState(mac.toState());
   t('a removal sticks across the merge', !('AAPL' in investmentsOf(phone)));
 }
+
+// ── Reports ────────────────────────────────────────────────────────────────
+t('a release reads as its quarter', reportHeading({ form: '8-K', period: '2026-06-27' }) === 'Quarter ended Jun 27, 2026 · Earnings release');
+t('an annual report reads as its year', reportHeading({ form: '10-K', period: '2025-09-27' }).startsWith('Year ended Sep 27, 2025'));
+t('a TSX report reads as its results date', reportHeading({ form: 'earnings', period: '2026-08-27' }) === 'Results out Aug 27, 2026');
+const none = { new: [], failed: [], last_checked: null };
+t('the first check says what happens from here', checkNoteOf(none).startsWith('Nothing new yet'));
+t('a later check says since when', checkNoteOf({ ...none, last_checked: '2026-09-16T12:02:06Z' }).startsWith('Nothing new since Sep 16, 2026'));
+t('new reports and failures share the line',
+  checkNoteOf({ new: [{ symbol: 'AAPL' }, { symbol: 'MSFT' }], failed: [{ symbol: 'RY.TO' }], last_checked: null })
+  === "2 new reports — reading now · couldn't check RY.TO");
+const item = { symbol: 'AAPL', name: 'Apple Inc.', form: '8-K', period: '2026-06-27', filed: '2026-07-30', url: 'https://www.sec.gov/x' };
+const prompt = readPrompt([item], 'latest');
+t('the read prompt names the button and carries the item whole',
+  prompt.includes('Latest report for AAPL') && prompt.includes('"Company reports"') && prompt.endsWith(JSON.stringify([item])));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
