@@ -45,10 +45,22 @@ an answer.
    - **Not out yet?** An earnings date can pass before the release is
      published. Then skip the item without saving — the next run tries again.
    - **`SaveReport`** with `symbol`, `period`, `form` and `filed` exactly as
-     given, the `url` you read, and a summary of 3–5 plain sentences, no
-     markdown: revenue and EPS with the change from a year ago, what moved (a
-     segment, the margin), guidance, any dividend or buyback change, and what
-     it means for someone holding it (use their shares when they hold it).
-     Every figure comes from the document; leave out what isn't there.
+     given, the `url` you read, and a summary in this shape, one fact per
+     line:
+
+     ```
+     **Q3 FY26** · revenue $X.XB (+N%) · EPS $X.XX (+N%)
+     - **Segment name** $X.XB (+N%); gross margin N% (+N pts)
+     - **Guidance** next quarter revenue $X.XB
+     - **Returned** $X.XB in buybacks and dividends
+     **Take:** one sentence — what it means for this holder.
+     ```
+
+     The headline is the period with revenue and EPS against a year ago; 2–4
+     bullets led by a bold label (what moved, guidance, any dividend or
+     buyback change); `**Take:**` is what it means for someone holding it
+     (use their shares when they hold it). Only `**bold**`, `- ` bullets and
+     line breaks. Every figure comes from the document; leave out what isn't
+     there.
 5. Reply with one line per item — `SYMBOL: saved` or `SYMBOL: not out yet` —
    then DONE on its own line.

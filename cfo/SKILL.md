@@ -141,8 +141,9 @@ tools:
   - name: SaveReport
     description: >-
       Store your summary of one company report; it shows in that company's
-      card on the Investments tab, and a report saved for a period stops
-      showing up as new. Saving the same period again replaces it.
+      card on the Investments tab, and that filing stops showing up as new
+      (a later one for the same quarter still does). Saving the same period
+      again replaces it.
     args:
       symbol:
         type: string
@@ -167,9 +168,11 @@ tools:
         type: string
         required: true
         description: >-
-          3–5 plain sentences, no markdown: revenue and EPS with the change
-          from a year ago, what moved (a segment, margin), guidance, any
-          dividend or buyback change, and what it means for this holder.
+          Short markdown, one fact per line: a bold period headline with
+          revenue and EPS against a year ago; 2–4 "- " bullets led by a bold
+          label (a segment or margin, guidance, dividend or buyback); a last
+          line "**Take:** …" — what it means for this holder. Only **bold**,
+          bullets and line breaks.
     cmd: "perl $SKILL_DIR/scripts/market.pl save-report symbol={{symbol}} period={{period}} form={{form}} filed={{filed}} url={{url}} summary={{summary}}"
     tier: read
     timeout_ms: 8000
@@ -469,8 +472,25 @@ return the same shape. For each item:
 2. **Not out yet?** An earnings date can pass before the release is
    published. Then don't save — say so in one line.
 3. **`SaveReport`** with `symbol`, `period`, `form` and `filed` exactly as
-   given (period null → the results' date), the `url` you read, and a 3–5
-   sentence summary. Every figure from the document.
+   given (period null → the results' date), the `url` you read, and a
+   summary in this shape — one fact per line, read at a glance on the card
+   and the phone:
+
+   ```
+   **Q3 FY26** · revenue $X.XB (+N%) · EPS $X.XX (+N%)
+   - **Segment name** $X.XB (+N%); gross margin N% (+N pts)
+   - **Guidance** next quarter revenue $X.XB
+   - **Returned** $X.XB in buybacks and dividends
+   **Take:** one sentence — what it means for this holder.
+   ```
+
+   - Headline: the period (quarter or year), revenue and EPS, each with the
+     change from a year ago.
+   - 2–4 bullets, each led by a bold label: what moved (a segment, the
+     margin), guidance, any dividend or buyback change.
+   - `**Take:**` — what it means for this holder, one sentence.
+   - Only `**bold**`, `- ` bullets and line breaks; no headings, tables or
+     links. Every figure from the document; leave out what isn't there.
 4. **Chat:** a sentence or two per company with your take. The summary is
    already in the company's card on the tab — don't repeat it.
 

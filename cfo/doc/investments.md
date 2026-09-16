@@ -20,7 +20,11 @@ Mac; no Linggen Cloud, no data-provider key.
   market_cap, earnings_date, earnings_on, dividend, dividend_yield, aum,
   expense_ratio, cik, quote_at, stats_at}}}`.
 - `reports.json` — `{last_checked, symbols: {SYM: {since, name, reports:
-  [{period, form, filed, url, summary, saved_at}]}}}`, newest first. `since`
+  [{period, form, filed, url, summary, saved_at}]}}}`, newest first.
+  `summary` is short markdown, one fact per line: a bold period headline
+  (revenue, EPS against a year ago), 2–4 `- ` bullets led by a bold label, and
+  a `**Take:**` line — only bold, bullets and line breaks, which the Mac card
+  and the phone's company page render (escaped text otherwise). `since`
   is the day a symbol was first checked: only reports filed from then on
   count as new. Written only by `save-report`, apart from `since` and
   `last_checked`.
@@ -39,9 +43,12 @@ Mac; no Linggen Cloud, no data-provider key.
   8-K with item 2.02. A release and the 10-Q of its quarter are one report
   (periods within 10 days); the release's press-release exhibit (99.1) is
   the url. TSX: the stats' earnings date once passed, `form: "earnings"`,
-  no url. ETFs have none.
-- `reports-check [SYMBOLS]` (default: `investments.json`) — reports filed on
-  or after the symbol's `since` with nothing saved for their period; the
+  no url. ETFs have none. Two releases for one quarter (Tesla's deliveries
+  update, then its results, both item 2.02) → the later one.
+- `reports-check [SYMBOLS]` (default: the register's holdings) — reports
+  filed on or after the symbol's `since` with no summary saved from that
+  filing or a later one for their period (a deliveries update saved first
+  doesn't cover the results filed after it); the
   first check sets `since` to today. Prints `{new, failed, checked,
   last_checked}`. Unsaved reports stay new, so a failed read retries.
 - `reports-latest SYM` — the newest report, with `saved` (its summary or

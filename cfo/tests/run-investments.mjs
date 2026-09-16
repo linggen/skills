@@ -21,6 +21,7 @@ import {
   holdingAfter,
   proposalPlans,
   changeOf,
+  markedHtml,
 } from '../scripts/investments.js';
 
 let pass = 0, fail = 0;
@@ -159,6 +160,14 @@ t('snapshot keeps the account label', snap.holdings[1].account === 'TFSA' && sna
 t('a release reads as its quarter', reportHeading({ form: '8-K', period: '2026-06-27' }) === 'Quarter ended Jun 27, 2026 · Earnings release');
 t('an annual report reads as its year', reportHeading({ form: '10-K', period: '2025-09-27' }).startsWith('Year ended Sep 27, 2025'));
 t('a TSX report reads as its results date', reportHeading({ form: 'earnings', period: '2026-08-27' }) === 'Results out Aug 27, 2026');
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+t('a summary\'s headline, bullets and take render as lines',
+  markedHtml('**Q2 FY27** · revenue $96.2B (+106%)\n- **Data Center** $89.0B\n- **Guidance** Q3 $108.0B\n**Take:** accelerating.', esc)
+  === '<p><b>Q2 FY27</b> · revenue $96.2B (+106%)</p><ul><li><b>Data Center</b> $89.0B</li><li><b>Guidance</b> Q3 $108.0B</li></ul><p><b>Take:</b> accelerating.</p>');
+t('an old plain summary is one paragraph', markedHtml('Revenue rose 5%. EPS fell.', esc) === '<p>Revenue rose 5%. EPS fell.</p>');
+t('markup in a summary stays text',
+  markedHtml('<img src=x onerror=alert(1)> **<b>x</b>**', esc) === '<p>&lt;img src=x onerror=alert(1)&gt; <b>&lt;b&gt;x&lt;/b&gt;</b></p>');
+t('blank lines and bullet dots are tolerated', markedHtml('\nHead\n\n• one\n  - two\n', esc) === '<p>Head</p><ul><li>one</li><li>two</li></ul>');
 const none = { new: [], failed: [], last_checked: null };
 t('the first check says what happens from here', checkNoteOf(none).startsWith('Nothing new yet'));
 t('a later check says since when', checkNoteOf({ ...none, last_checked: '2026-09-16T12:02:06Z' }).startsWith('Nothing new since Sep 16, 2026'));

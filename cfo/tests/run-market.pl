@@ -62,6 +62,41 @@ t('a release folds into its 10-Q and keeps the earlier filing date',
 t('filings older than the window are skipped',
   @{ sec_filings('AAPL', 'Apple Inc.', 320193, $recent, '2026-07-01') } == 2);
 
+# Tesla: a deliveries update and the results, both 8-K item 2.02, one quarter.
+my $tsla = {
+    form            => ['10-Q', '8-K', '8-K', '10-Q'],
+    filingDate      => ['2026-07-23', '2026-07-22', '2026-07-02', '2026-04-23'],
+    reportDate      => ['2026-06-30', '2026-07-22', '2026-07-02', '2026-03-31'],
+    items           => ['', '2.02,9.01', '2.02,9.01', ''],
+    accessionNumber => ['q2', 'results', 'deliveries', 'q1'],
+    primaryDocument => ['q2.htm', 'r.htm', 'd.htm', 'q1.htm'],
+};
+my $tr = sec_filings('TSLA', 'Tesla, Inc.', 1318605, $tsla, '2026-01-01');
+t('two releases in one quarter: the results, not the deliveries update',
+  @$tr == 2 && $tr->[0]{acc} eq 'results' && $tr->[0]{filed} eq '2026-07-22' && $tr->[0]{period} eq '2026-06-30',
+  join('; ', map { "$_->{acc} $_->{period} $_->{filed}" } @$tr));
+my $before = sec_filings('TSLA', 'Tesla, Inc.', 1318605, {
+    map { my $k = $_; ($k => [ @{ $tsla->{$k} }[1 .. 3] ]) } keys %$tsla
+}, '2026-01-01');
+t('before the 10-Q, the two releases are still one report',
+  (grep { $_->{period} eq '2026-06-30' } @$before) == 1 && $before->[0]{acc} eq 'results',
+  join('; ', map { "$_->{acc} $_->{period}" } @$before));
+
+my $saved = { symbols => { TSLA => { reports => [{ period => '2026-06-30', filed => '2026-07-02' }] } } };
+t('a summary of the deliveries update leaves the results to read',
+  !saved_for($saved, 'TSLA', { form => '8-K', period => '2026-06-30', filed => '2026-07-22' }));
+t('a summary covers the filing it was read from',
+  saved_for($saved, 'TSLA', { form => '8-K', period => '2026-06-30', filed => '2026-07-02' }));
+t('a TSX report is covered by its quarter alone',
+  saved_for({ symbols => { 'RY.TO' => { reports => [{ period => '2026-08-27', filed => '2026-08-26' }] } } },
+            'RY.TO', { form => 'earnings', period => '2026-08-27', filed => '2026-08-27' }));
+
+t('the press release is found under each exhibit naming',
+  (release_exhibit('tsla-20260722.htm', 'exhibit991.htm', 'exhibit991001.jpg') // '') eq 'exhibit991.htm'
+  && (release_exhibit('a10-q.htm', 'aapl-ex991.htm') // '') eq 'aapl-ex991.htm'
+  && (release_exhibit('x.htm', 'ex99-2.htm', 'ex99-1.htm') // '') eq 'ex99-1.htm'
+  && !defined release_exhibit('tsla-20260722.htm', 'R1.htm'));
+
 # ── Filing HTML → text ─────────────────────────────────────────────────────
 my $html = qq{<DOCUMENT>\n<TYPE>EX-99.1\n<html><head><title>x</title><style>p{}</style></head><body>}
          . qq{<p>Apple&#8217;s revenue&nbsp;rose</p><table><tr><td>Net sales</td><td>\$</td><td>109,417</td><td></td><td>(1,234</td><td>)</td></tr></table>}
@@ -96,6 +131,10 @@ t('table rows keep their cells', $text =~ /^Net sales \| \$109,417 \| \(1,234\)$
     t('an omitted url is null, not the placeholder', !defined $list->[1]{url});
     t('the company name comes along from the quotes cache', ($doc->{symbols}{AAPL}{name} // '') eq 'Apple Inc.');
     t('non-ASCII in a summary survives', $list->[1]{summary} =~ /\x{2014} up 8%/, $list->[1]{summary});
+    $save->('symbol=AAPL', 'period=2026-09-26', 'form=8-K', 'filed=2026-10-30',
+            "summary=**Q4 FY26** \x{b7} revenue \$102.5B (+8%)\n- **iPhone** \$49.0B (+6%)\n**Take:** steady.\n");
+    my $md = JSON::PP->new->utf8->decode(do { local (@ARGV, $/) = "$ENV{SKILL_DIR}/data/reports.json"; <> })->{symbols}{AAPL}{reports}[0]{summary};
+    t('a markdown summary keeps its lines', ($md // '') =~ /^\*\*Q4 FY26\*\* .+\n- \*\*iPhone\*\* .+\n\*\*Take:\*\* steady\.$/, $md);
     my ($bad, $msg) = $save->('symbol=AAPL', 'period={{period}}', 'summary=Something long enough to pass.');
     t('a missing period is refused with the reason', $bad == 1 && $msg =~ /^period:/, $msg);
     ($bad, $msg) = $save->('symbol=AAPL', 'period=2026-06-27', 'summary=ok');

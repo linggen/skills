@@ -323,7 +323,7 @@ sub cmd_reports_check {
         my ($reports, $err) = reports_of($sym);
         if ($err) { push @failed, { symbol => $sym, error => $err }; next }
         for my $r (@$reports) {
-            next if $r->{filed} lt $since || saved_for($before, $sym, $r->{period});
+            next if $r->{filed} lt $since || saved_for($before, $sym, $r);
             push @new, finish_report($r);
         }
     }
@@ -356,7 +356,7 @@ sub cmd_reports_latest {
         return;
     }
     my $doc = read_json(data_dir() . '/reports.json') || {};
-    say_json({ %{ finish_report($latest) }, saved => saved_for($doc, $sym, $latest->{period}) });
+    say_json({ %{ finish_report($latest) }, saved => saved_for($doc, $sym, $latest) });
 }
 
 # Newest first. Error text instead when the source can't answer.
@@ -394,7 +394,8 @@ sub sec_reports {
 }
 
 # EDGAR's `filings.recent` columns → reports newest first, a release merged
-# into the 10-Q/10-K of its period.
+# into the 10-Q/10-K of its period. Two releases for one quarter (Tesla's
+# deliveries update weeks before its results, both item 2.02) → the later.
 sub sec_filings {
     my ($symbol, $name, $cik, $recent, $oldest) = @_;
     my (@periodic, @releases);
@@ -412,7 +413,7 @@ sub sec_filings {
         elsif ($f{form} eq '8-K' && ($recent->{items}[$i] // '') =~ /(^|,)2\.02(,|$)/) { push @releases, \%f }
     }
     my @reports = map { +{ symbol => $symbol, name => $name, %$_ } } @periodic;
-    for my $r (@releases) {
+    for my $r (sort { $a->{filed} cmp $b->{filed} } @releases) { # oldest first: the later one wins
         my $period = release_period($r->{filed}, \@periodic) or next;
         my ($same) = grep { same_period($_->{period}, $period) } @reports;
         my %release = (symbol => $symbol, name => $name, %$r, period => $period);
@@ -459,16 +460,28 @@ sub finish_report {
     $out{url} = "$folder/$r->{doc}";
     return \%out unless $r->{form} eq '8-K';
     my $index = fetch_json("$folder/index.json", $SEC_UA) or return \%out;
-    my @names = map { $_->{name} } @{ $index->{directory}{item} || [] };
-    my ($exhibit) = ((grep { /ex-?99[._-]?0?1(?!\d)/i && /\.html?$/i } @names), (grep { /ex-?99/i && /\.html?$/i } @names));
+    my $exhibit = release_exhibit(map { $_->{name} } @{ $index->{directory}{item} || [] });
     $out{url} = "$folder/$exhibit" if $exhibit;
     return \%out;
 }
 
+# The press release among a filing's documents: exhibit 99.1 as a web page
+# (aapl-ex991.htm, ex99-1.htm, exhibit991.htm), else any exhibit 99.
+sub release_exhibit {
+    my @pages = grep { /\.html?$/i } @_;
+    my ($exhibit) = ((grep { /ex(?:hibit)?-?99[._-]?0?1(?!\d)/i } @pages), (grep { /ex(?:hibit)?-?99/i } @pages));
+    return $exhibit;
+}
+
+# The summary saved for a report's quarter, when it covers that report. One
+# saved from an earlier filing for the quarter (a deliveries update) doesn't:
+# the results filed after it are still to read. A TSX report has no filing.
 sub saved_for {
-    my ($doc, $sym, $period) = @_;
-    my ($hit) = grep { same_period($_->{period}, $period) } @{ $doc->{symbols}{$sym}{reports} || [] };
-    return $hit;
+    my ($doc, $sym, $r) = @_;
+    my ($hit) = grep { same_period($_->{period}, $r->{period}) } @{ $doc->{symbols}{$sym}{reports} || [] };
+    return undef unless $hit;
+    return $hit if ($r->{form} // '') eq 'earnings' || ($hit->{filed} // '') ge ($r->{filed} // '');
+    return undef;
 }
 
 sub same_period {

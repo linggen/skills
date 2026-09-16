@@ -313,6 +313,27 @@ export function reportHeading(r) {
   return [span, form].filter(Boolean).join(' · ');
 }
 
+/// A saved summary's marks — **bold**, "- " bullets, line breaks — as HTML.
+/// Everything else stays text: escaped first, so words the model read on a
+/// web page never become markup. A plain paragraph renders as one.
+export function markedHtml(text, esc) {
+  const inline = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  const out = [];
+  let items = [];
+  const endList = () => {
+    if (items.length) out.push(`<ul>${items.map((li) => `<li>${li}</li>`).join('')}</ul>`);
+    items = [];
+  };
+  for (const line of String(text || '').split('\n')) {
+    const bullet = line.match(/^\s*[-•]\s+(.*)$/);
+    if (bullet) { items.push(inline(bullet[1].trim())); continue; }
+    endList();
+    if (line.trim()) out.push(`<p>${inline(line.trim())}</p>`);
+  }
+  endList();
+  return out.join('');
+}
+
 /// The line under Check reports. `result` is market.pl reports-check's output.
 export function checkNoteOf(result) {
   const n = result.new.length;
@@ -439,7 +460,7 @@ function reportsHtml(symbol) {
   const items = list.map((rep) => `<div class="inv-report">
       <div class="inv-report-h">${esc(reportHeading(rep))}
         ${/^https:\/\//.test(rep.url || '') ? `<button class="link" data-act="link" data-url="${esc(rep.url)}">Source ↗</button>` : ''}</div>
-      <p>${esc(rep.summary || '')}</p>
+      <div class="inv-report-body">${markedHtml(rep.summary, esc)}</div>
     </div>`).join('');
   return `<div class="inv-reports">
     <div class="inv-reports-h"><span>Reports</span>
