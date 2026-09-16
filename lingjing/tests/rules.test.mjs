@@ -248,7 +248,8 @@ test('at the realm peak the player holds until the chapter opens', () => {
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
   assert.equal(out.state.progress, 130);
-  assert.deepEqual(out.result.paid.hold, { gate: 1 });
+  assert.deepEqual(out.result.paid.hold, { gate: 1, held: 10 });
+  assert.equal(out.result.paid.progress, 10, 'only what the peak took is paid');
 });
 
 test('the day caps what can be earned', () => {

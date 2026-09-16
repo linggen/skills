@@ -161,10 +161,13 @@ export function addProgress(content, state, amount) {
       state.step += 1;
       continue;
     }
+    // The peak takes no more: what would overflow is `held` back, so the
+    // caller can report only what was really added.
+    const held = state.progress - need;
     state.progress = need;
     const tiers = content.ladder.tiers;
     const next = tiers[tiers.indexOf(tier) + 1];
-    hold = { gate: next?.gate ?? null };
+    hold = { gate: next?.gate ?? null, held };
     break;
   }
   return { levels, hold };

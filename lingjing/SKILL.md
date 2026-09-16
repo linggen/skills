@@ -470,8 +470,10 @@ begin, the same way.
   `words.wealth`). A `cast` joins the player; each of `levels` is a moment —
   *练气一层 → 练气二层* / *Qi Condensation · Layer 1 → Layer 2*; `capped`: the
   day's progress is full, come back tomorrow; `hold`: they stand at the
-  tier's peak until its
-  chapter opens. A zero is left out; nothing paid, nothing said.
+  tier's peak — the cauldron is the only way up, and `held` is what the
+  peak could not take (never spoken as a gain). A zero is left out;
+  nothing paid, nothing said. **Never add numbers up** — no running
+  totals of your own; the next Look carries the totals.
 - **When a result carries `summarize: true`, Summarize** before the reply
   ends (below).
 - **When a result carries `paint`, paint every entry before anything else**
@@ -532,8 +534,8 @@ begin, the same way.
      means it has not opened. `waiting`: Show the gate, say in one line
      when the road opens, and let the story rest.
    - `needs` → speak `say`. `needs-answer` → the creature asks its riddle
-     (`say`); the player types. `wrong-answer` → not quite: give `hint` in
-     its voice. `value-invalid` → Yinyue asks for a name of at most
+     (`say`); the player types. `wrong-answer` → not quite: one Resolve, then give `hint` in
+     its voice, offer the same choices again, and never suggest answers. `value-invalid` → Yinyue asks for a name of at most
      `max_chars`. `unknown-exit` → your slip: choose again from `exits`,
      silently.
 
@@ -593,7 +595,8 @@ not for a slip of the story. A refusal (`not-open`, `unknown-save`,
 - **Everyone else speaks in their own paragraph, name in bold** —
   `**银月**：是夫诸……` / `**Yinyue:** That's Fuzhu…`. Names come from `name`
   on each line and from `cast`.
-- **Yinyue** is warm, brief, always at the player's side. She remembers
+- **Yinyue** is warm, brief, always at the player's side, and speaks the
+  game's language — in an English game her lines are English. She remembers
   nothing of who she was; each cauldron gives back one memory, and only the
   written story tells them — never invent her past. She is the same Yinyue
   as in the rest of Linggen and knows the player.

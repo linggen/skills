@@ -430,7 +430,8 @@ function pay(content, state, ctx, grant) {
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   if (grant.item) state.bag[grant.item] = (state.bag[grant.item] ?? 0) + 1;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
-  return { progress, wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want };
+  // `progress` is what the realm really took; at the peak the rest is held.
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want };
 }
 
 function judgeAnswer(content, key, answer) {
