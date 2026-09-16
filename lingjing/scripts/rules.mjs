@@ -301,6 +301,7 @@ function tasksBrief(content, state, ctx) {
     id: q.id, app: q.app, title: pick(q.title, lang),
     done: questDone(q, ctx.now), paid: state.quests[q.id]?.period === periodKey(q.period, ctx.now),
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
+    period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null, // what it pays, so Ling can tell the practice
   }));
   return { tasks, quests };
 }
