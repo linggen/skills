@@ -17,6 +17,8 @@ noted; the classical woodcut stays in `plates/` as the reference.
 | jingwei | 精衛 | Painted for Lingjing, 2026-09-15. Reference: 《古今圖書集成·禽蟲典》精衛圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg* |
 | leishen | 雷神 | Painted for Lingjing, 2026-09-15, from the text of 《山海經·海內東經》 alone; no plate kept |
 | longzhi | 蠪侄 | Painted for Lingjing, 2026-09-15, from the text of 《山海經·東次二經》 alone; no plate kept |
+| kui | 夔 | Painted for Lingjing, 2026-09-16, from the text of 《山海經·大荒東經》 alone; no plate kept |
+| tongtong | 狪狪 | Painted for Lingjing, 2026-09-16, from the text of 《山海經·東山經》 alone; no plate kept |
 
 Every creature on the card is now painted; its `art_caption` reads *Drawn
 in Lingjing*. `tools/frame.py` framed the woodcuts that shipped before
@@ -26,4 +28,4 @@ the red seal) and stays for any plate shown as itself.
 ## Items — painted for Lingjing
 
 `items/*.webp` are painted for the game by the local picture model (FLUX.2
-klein 4B), 2026-09-15, from each item's description. No outside source.
+klein 4B), 2026-09-15 (齐盐 and 齐纨 2026-09-16), from each item's description. No outside source.

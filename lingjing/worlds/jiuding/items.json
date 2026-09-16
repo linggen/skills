@@ -240,6 +240,47 @@
         "兖"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the description."
+    },
+    {
+      "id": "qi-salt",
+      "kind": "material",
+      "name": {
+        "zh": "齐盐",
+        "en": "Qi salt"
+      },
+      "art": "art/items/qi-salt.webp",
+      "about": {
+        "zh": "齐有渔盐之利。海边晒出来的盐，雪一样白。",
+        "en": "Qi's wealth is fish and salt: sea salt dried on the shore, white as snow."
+      },
+      "buy": 20,
+      "sell": 6,
+      "sold": [
+        "青"
+      ],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
+    },
+    {
+      "id": "qi-silk",
+      "kind": "artifact",
+      "name": {
+        "zh": "齐纨",
+        "en": "Qi silk"
+      },
+      "art": "art/items/qi-silk.webp",
+      "about": {
+        "zh": "齐纨鲁缟，天下第一。披在银月肩上。",
+        "en": "The silk of Qi, the finest under heaven; laid over Yinyue's shoulders."
+      },
+      "buy": 240,
+      "sell": 70,
+      "sold": [
+        "青"
+      ],
+      "effect": {
+        "wear": "yinyue"
+      },
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     }
   ]
 }

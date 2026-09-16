@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "id": "03-deep",
+  "chapter": "03-qing",
+  "at": "liubo",
+  "place": {
+    "zh": "流波山 · 山根",
+    "en": "Mount Liubo · The root"
+  },
+  "setup": {
+    "zh": "潮退到了底。海底露出流波山的根，根下卧着一口鼎，鼎口盖着石板。板上刻着八卦：乾在南，坤在北，坎在西——东边空着。",
+    "en": "The tide draws all the way out. The root of Mount Liubo shows on the seabed, and under it lies a cauldron, its mouth covered by a slab. Cut on the slab are the eight trigrams: Qian to the south, Kun to the north, Kan to the west — and the east left blank."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "lines": [
+    {
+      "who": "yinyue",
+      "text": {
+        "zh": "洛书、河图，如今是八卦。伏羲画的那一张——他的母亲，在雷泽踩过一个脚印。",
+        "en": "The Luo square, the River Chart — now the eight trigrams. Fuxi's own chart. His mother stepped in a footprint at Lake Lei."
+      }
+    }
+  ],
+  "buttons": [
+    "seal"
+  ],
+  "exits": [
+    {
+      "id": "seal",
+      "label": {
+        "zh": "读封 · 填东方",
+        "en": "Read the seal · Fill the east"
+      },
+      "means": "reads the seal, answers which trigram belongs in the east",
+      "key": "seal-qing",
+      "grant": {
+        "table": "scene",
+        "progress": 60,
+        "wealth": 20
+      },
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "你在东边画下那一卦。石板裂开，两半沉进海泥。鼎口的气冲上来——是盐的味道，和日出的味道。",
+            "en": "You draw the trigram in the east. The slab splits and both halves sink into the sea mud. The cauldron's breath rushes up — salt, and sunrise."
+          }
+        }
+      ],
+      "next": "03-cauldron"
+    },
+    {
+      "id": "force",
+      "means": "tries to break, lift or pry the slab by force",
+      "stay": true,
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "石板不动。八卦的线在你掌下一明一暗，像潮涨潮落。",
+            "en": "The slab does not move. Under your palm the lines brighten and dim, like the tide."
+          }
+        }
+      ]
+    }
+  ]
+}

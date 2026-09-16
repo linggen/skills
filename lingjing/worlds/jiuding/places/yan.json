@@ -157,7 +157,8 @@
       "tier": 1,
       "roads": [
         "daye",
-        "kongsang"
+        "kongsang",
+        "weishui"
       ],
       "has": {
         "creature": "longzhi",

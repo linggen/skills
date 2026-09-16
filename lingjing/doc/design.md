@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-15 — chapter 2 (兖, opens 2026-11-01) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
+status: 2026-09-16 — chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -78,6 +78,7 @@ skills/lingjing/
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json — the corridor
     chapters/01-ji/        the same — waypoints; gate 1 (opens: null while building; 2026-10-01 at launch)
     chapters/02-yan/       the same; gate 2 (筑基 → 结丹; 2026-11-01 at launch)
+    chapters/03-qing/      the same; gate 3 (结丹 → 元婴; 2026-12-01 at launch)
   data/                    this player; never in the repo — the cloud save mirrors it
     state.json · log.jsonl
   tests/
@@ -576,6 +577,22 @@ is a map of places, not a chain of scenes.
   road in is from 邺城), `seeds/yan.json` (twenty), 雷神 and 蠪侄 painted by
   FLUX, two riddles, 固基丹 and 桑皮纸 sold in 兖. Chapter 1's closing
   thread now names chapter 2 and its day.
+
+- **Chapter 3 built 2026-09-16 —** 《青州之鼎》 (`chapters/03-qing/`, gate 3,
+  no lock while building): the same shape, six scenes at four places of 青
+  — the Wei with 太公's straight hook, 临淄 and the 稷下 argument with the
+  market inside the Ji Gate, 蓬莱 where the city on the sea is the light of
+  夔 (《大荒东经》: ox-shaped, hornless, one-legged, light like sun and moon,
+  voice like thunder) calling for the 夔 it thinks answers it (fight it, root
+  water; its riddle 一日一月 = 明; or 孔子's word 夔一而足), the deeps under
+  流波山 with the 八卦 seal (伏羲's chart: 离 in the east), the cauldron
+  where the peak of 结丹 forms the 元婴 (paid double into the new tier) and
+  Yinyue's third memory (salt water — this sea; *等九鼎聚齐*; a name not
+  hers), the end pointing south to 徐 where the player woke. `places/qing.json`
+  (nine, 潍水 the start; the road in is from 凫丽), `seeds/qing.json` (twenty),
+  夔 and 狪狪 painted by FLUX (夔 needed four tries: FLUX draws horns and
+  four legs unless told "hornless … single leg" twice), two riddles, 齐盐 and
+  齐纨 (a wear for Yinyue) sold in 青.
 
 ### Made scenes — the template, and Ling as the maker
 

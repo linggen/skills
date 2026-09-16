@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "province": "青",
+  "_about": "奇遇 seeds for 青 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "qing-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "潍水边一个人直钩垂钓，钩离水面三尺。",
+        "en": "A man fishes the Wei with a straight hook, held three feet above the water."
+      },
+      "source": {
+        "zh": "民谚：姜太公钓鱼，愿者上钩。",
+        "en": "Proverb: Jiang Taigong fishes — whoever is willing bites."
+      }
+    },
+    {
+      "id": "qing-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "稷门下一个先生说，天下的朝代按五行轮着来，一德换一德。",
+        "en": "A master under the Ji Gate says the dynasties turn like the five elements, one virtue giving way to the next."
+      },
+      "source": {
+        "zh": "《史记·孟子荀卿列传》：邹衍……称引天地剖判以来，五德转移。",
+        "en": "Records of the Grand Historian: Zou Yan told of the five virtues succeeding one another since heaven and earth divided."
+      }
+    },
+    {
+      "id": "qing-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "临淄的市上，一个矮小的老人说，他出使时人家让他从小门进城。",
+        "en": "In Linzi's market a small old man tells how, on an embassy, he was shown in by the little gate."
+      },
+      "source": {
+        "zh": "《晏子春秋》：晏子使楚，楚人为小门于大门之侧。晏子曰：使狗国者从狗门入。",
+        "en": "Yanzi Chunqiu: sent to Chu, Yanzi was offered a small door beside the gate. He said: an envoy to a country of dogs enters by the dog-door."
+      }
+    },
+    {
+      "id": "qing-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "市上有人卖桃，说两个桃子曾杀过三个勇士。",
+        "en": "A peach-seller says two peaches once killed three warriors."
+      },
+      "source": {
+        "zh": "《晏子春秋》：二桃杀三士。",
+        "en": "Yanzi Chunqiu: two peaches killed three warriors."
+      }
+    },
+    {
+      "id": "qing-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "即墨来的老兵说，他见过一千头牛角上绑着刀、尾巴烧着火，冲进敌营。",
+        "en": "An old soldier from Jimo saw a thousand oxen with blades on their horns and fire on their tails charge the enemy camp."
+      },
+      "source": {
+        "zh": "《史记·田单列传》：田单……收城中得千余牛……束兵刃于其角，而灌脂束苇于尾，烧其端。",
+        "en": "Records of the Grand Historian: Tian Dan gathered a thousand oxen, bound blades to their horns and burning reeds to their tails."
+      }
+    },
+    {
+      "id": "qing-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "琅琊的海边，有人还在等一支载着童男童女的船队回来。",
+        "en": "On the shore at Langya someone still waits for a fleet that sailed with boys and girls aboard."
+      },
+      "source": {
+        "zh": "《史记·秦始皇本纪》：齐人徐市等上书，言海中有三神山……请得斋戒，与童男女求之。",
+        "en": "Records of the Grand Historian: Xu Fu of Qi wrote of three spirit mountains in the sea and asked to seek them with boys and girls."
+      }
+    },
+    {
+      "id": "qing-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "琅琊台上一块碑，字被海风磨平了一半。",
+        "en": "A stone on Langya Terrace, half its characters worn away by the sea wind."
+      },
+      "source": {
+        "zh": "《史记·秦始皇本纪》：南登琅邪……立石刻，颂秦德。",
+        "en": "Records of the Grand Historian: he climbed Langya, set up a stone and cut on it the praise of Qin."
+      }
+    },
+    {
+      "id": "qing-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "泰山上有人说，秦始皇在这儿遇雨，躲在一棵松树下，封了那松树五大夫。",
+        "en": "On Mount Tai they say the First Emperor was caught in rain, sheltered under a pine, and made the tree a noble of the fifth rank."
+      },
+      "source": {
+        "zh": "《史记·秦始皇本纪》：风雨暴至，休于树下，因封其树为五大夫。",
+        "en": "Records of the Grand Historian: a storm broke, he rested under a tree, and enfeoffed the tree as a noble of the fifth rank."
+      }
+    },
+    {
+      "id": "qing-09",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个书生站在日观峰上说：登泰山而小天下。",
+        "en": "A scholar on the Sunrise Peak says: from Mount Tai the world looks small."
+      },
+      "source": {
+        "zh": "《孟子·尽心上》：孔子登东山而小鲁，登泰山而小天下。",
+        "en": "Mencius: Confucius climbed the eastern hill and Lu looked small; he climbed Mount Tai and the world looked small."
+      }
+    },
+    {
+      "id": "qing-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "成山头的祠里祭的是太阳。太阳从这儿出来。",
+        "en": "The shrine on Chengshan is to the sun. It rises here first."
+      },
+      "source": {
+        "zh": "《史记·封禅书》：八神……七曰日主，祠成山。成山斗入海。",
+        "en": "Records of the Grand Historian, the Feng and Shan sacrifices: of the eight gods the seventh is the Lord of the Sun, worshipped at Chengshan, which juts into the sea."
+      }
+    },
+    {
+      "id": "qing-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "潍水上游有人说，当年一万个沙袋堵住了河，半夜一齐放开。",
+        "en": "Upstream on the Wei they tell of ten thousand sandbags that dammed the river and were loosed together at midnight."
+      },
+      "source": {
+        "zh": "《史记·淮阴侯列传》：韩信乃夜令人为万余囊，满盛沙，壅水上流。",
+        "en": "Records of the Grand Historian: Han Xin had ten thousand sacks filled with sand by night and dammed the river upstream."
+      }
+    },
+    {
+      "id": "qing-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个不肯做官的人说，要是秦称了帝，他宁可跳进东海。",
+        "en": "A man who will take no office says he would sooner leap into the East Sea than see Qin an emperor."
+      },
+      "source": {
+        "zh": "《史记·鲁仲连邹阳列传》：彼则肆然而为帝……则连有蹈东海而死耳。",
+        "en": "Records of the Grand Historian: should Qin make itself emperor, Lu Zhonglian would sooner tread into the East Sea and die."
+      }
+    },
+    {
+      "id": "qing-13",
+      "kind": "province-tale",
+      "line": {
+        "zh": "海上有个岛，五百个人在岛上等一个消息。",
+        "en": "An island in the sea where five hundred wait for one piece of news."
+      },
+      "source": {
+        "zh": "《史记·田儋列传》：田横……与其徒属五百余人入海，居岛中。",
+        "en": "Records of the Grand Historian: Tian Heng and five hundred followers went out to sea and lived on an island."
+      }
+    },
+    {
+      "id": "qing-14",
+      "kind": "province-tale",
+      "line": {
+        "zh": "临淄的老人说，从前有个相国，把射过自己一箭的人辅成了霸主。",
+        "en": "An old man of Linzi tells of a minister who made the man he once shot at into a hegemon."
+      },
+      "source": {
+        "zh": "《史记·管晏列传》：管仲既用，任政于齐，齐桓公以霸。",
+        "en": "Records of the Grand Historian: once Guan Zhong was employed and governed Qi, Duke Huan became hegemon."
+      }
+    },
+    {
+      "id": "qing-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "渔人说，蓬莱的山看得见，船一近就沉到水底下去。",
+        "en": "Fishermen say Mount Penglai can be seen, but sinks beneath the water as a boat draws near."
+      },
+      "source": {
+        "zh": "《史记·封禅书》：三神山……未至，望之如云；及到，三神山反居水下。",
+        "en": "Records of the Grand Historian: the three spirit mountains look like clouds from afar; draw near, and they sink beneath the water."
+      }
+    },
+    {
+      "id": "qing-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "泰山的樵夫说，山里有头猪，嘴里含着一颗会发光的珠。",
+        "en": "A woodcutter of Mount Tai says a pig in the hills carries a glowing pearl in its mouth."
+      },
+      "source": {
+        "zh": "《山海经·东山经》：泰山有兽焉，其状如豚而有珠，名曰狪狪。",
+        "en": "Classic of Mountains and Seas: on Mount Tai is a beast like a pig that carries a pearl, called Tongtong."
+      },
+      "creature": "tongtong"
+    },
+    {
+      "id": "qing-17",
+      "kind": "province-tale",
+      "line": {
+        "zh": "海上的光一夜没灭，每亮一次，风雨就来一阵。",
+        "en": "The light on the sea did not go out all night, and with every flare came wind and rain."
+      },
+      "source": {
+        "zh": "《山海经·大荒东经》：其光如日月，其声如雷，其名曰夔。",
+        "en": "Classic of Mountains and Seas: its light is like the sun and moon, its voice like thunder; its name is Kui."
+      },
+      "creature": "kui"
+    },
+    {
+      "id": "qing-18",
+      "kind": "night-tale",
+      "line": {
+        "zh": "崂山的道观里，夜里有人穿墙进来，又穿墙出去。",
+        "en": "In a Daoist temple on Mount Lao, someone walks in through the wall at night and out again."
+      },
+      "source": {
+        "zh": "《聊斋志异·劳山道士》。",
+        "en": "Strange Tales from a Chinese Studio: the Daoist of Mount Lao."
+      }
+    },
+    {
+      "id": "qing-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "海边客栈的窗外，夜里有楼台灯火；天亮，什么也没有。",
+        "en": "From an inn by the sea, lamplit towers outside the window at night; at dawn, nothing."
+      },
+      "source": {
+        "zh": "《史记·天官书》：海旁蜃气象楼台。",
+        "en": "Records of the Grand Historian: by the sea the breath of the clam-dragon takes the shape of towers."
+      }
+    },
+    {
+      "id": "qing-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "夜里城墙下有女人在哭，哭得墙塌了一角。",
+        "en": "A woman weeping under the city wall at night, until a corner of it falls."
+      },
+      "source": {
+        "zh": "《左传·襄公二十三年》杞梁之妻；后世谓之孟姜女哭城。",
+        "en": "Zuo Zhuan: the wife of Qi Liang; later ages call her Meng Jiangnü, whose weeping brought down the wall."
+      }
+    }
+  ]
+}

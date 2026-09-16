@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "province": "青",
+  "start": "weishui",
+  "_about": "The places of 青 — 潍水 and 临淄 with 稷下 in the west, 蓬莱 and 流波山 on the sea, 泰山 south-west, 琅琊台 and 成山头 on the coast, 崂山 the far height. The road in comes from 兖's 凫丽; it opens with chapter 3.",
+  "places": [
+    {
+      "id": "weishui",
+      "name": {
+        "zh": "潍水",
+        "en": "The Wei"
+      },
+      "tier": 0,
+      "roads": [
+        "fuli",
+        "linzi",
+        "jixia",
+        "taishan"
+      ],
+      "has": {
+        "seeds": true,
+        "scene": "03-arrive"
+      },
+      "line": {
+        "zh": "潍水东流，岸上有人直钩垂钓。",
+        "en": "The Wei runs east; on the bank a man fishes with a straight hook."
+      }
+    },
+    {
+      "id": "linzi",
+      "name": {
+        "zh": "临淄",
+        "en": "Linzi"
+      },
+      "tier": 0,
+      "roads": [
+        "weishui",
+        "jixia",
+        "penglai",
+        "langya"
+      ],
+      "has": {
+        "shop": true,
+        "scene": "03-town"
+      },
+      "line": {
+        "zh": "齐的旧都。稷门外有学宫，门内有坊市。",
+        "en": "The old capital of Qi. The academy outside the Ji Gate, the market within."
+      }
+    },
+    {
+      "id": "jixia",
+      "name": {
+        "zh": "稷下",
+        "en": "Jixia"
+      },
+      "tier": 0,
+      "roads": [
+        "weishui",
+        "linzi"
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "稷门之下，先生们还在争。",
+        "en": "Under the Ji Gate the masters are still arguing."
+      }
+    },
+    {
+      "id": "penglai",
+      "name": {
+        "zh": "蓬莱",
+        "en": "Penglai"
+      },
+      "tier": 0,
+      "roads": [
+        "linzi",
+        "liubo",
+        "chengshan",
+        "laoshan"
+      ],
+      "has": {
+        "creature": "kui",
+        "scene": "03-shore"
+      },
+      "line": {
+        "zh": "海上有城，天亮不散。",
+        "en": "A city on the sea that does not fade at dawn."
+      }
+    },
+    {
+      "id": "liubo",
+      "name": {
+        "zh": "流波山",
+        "en": "Mount Liubo"
+      },
+      "tier": 0,
+      "roads": [
+        "penglai"
+      ],
+      "has": {
+        "scene": "03-deep"
+      },
+      "line": {
+        "zh": "海中七千里的山。潮退了，才见得到山根。",
+        "en": "A mountain seven thousand li out in the sea. Only at low tide is its root seen."
+      }
+    },
+    {
+      "id": "taishan",
+      "name": {
+        "zh": "泰山",
+        "en": "Mount Tai"
+      },
+      "tier": 1,
+      "roads": [
+        "weishui",
+        "langya"
+      ],
+      "has": {
+        "creature": "tongtong",
+        "seeds": true
+      },
+      "line": {
+        "zh": "岱宗。日观峰上看得见海。",
+        "en": "The first of mountains. From the Sunrise Peak you can see the sea."
+      }
+    },
+    {
+      "id": "langya",
+      "name": {
+        "zh": "琅琊台",
+        "en": "Langya Terrace"
+      },
+      "tier": 1,
+      "roads": [
+        "linzi",
+        "taishan",
+        "chengshan"
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "秦始皇在这儿望过海。碑上的字磨平了一半。",
+        "en": "The First Emperor looked out to sea from here. Half the stone's characters are worn away."
+      }
+    },
+    {
+      "id": "chengshan",
+      "name": {
+        "zh": "成山头",
+        "en": "Chengshan"
+      },
+      "tier": 1,
+      "roads": [
+        "penglai",
+        "langya"
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "天尽头。太阳从这儿出来。",
+        "en": "The end of the land. The sun rises here first."
+      }
+    },
+    {
+      "id": "laoshan",
+      "name": {
+        "zh": "崂山",
+        "en": "Mount Lao"
+      },
+      "tier": 2,
+      "roads": [
+        "penglai"
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "海上第一名山。道士在山里。",
+        "en": "The first mountain on the sea. Daoists live in its hills."
+      }
+    }
+  ]
+}

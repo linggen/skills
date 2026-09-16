@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "id": "03-cauldron",
+  "chapter": "03-qing",
+  "at": "liubo",
+  "place": {
+    "zh": "流波山 · 鼎前",
+    "en": "Mount Liubo · Before the cauldron"
+  },
+  "setup": {
+    "zh": "青鼎从海泥里升起来。鼎身上铸着海、岱山和一轮初升的日——青州的一切。潮停在它脚下，等着。",
+    "en": "The Cauldron of Qing rises from the sea mud. Cast on its body are the sea, Mount Tai and a rising sun — everything of Qing. The tide waits at its feet."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "show": [
+    {
+      "card": "gate",
+      "chapter": "03-qing"
+    }
+  ],
+  "lines": [
+    {
+      "who": "yinyue",
+      "text": {
+        "zh": "我想起第三件事。放我进的那水，是咸的——是海，是这片海。那只手说：等九鼎聚齐。然后她叫了一个名字。不是我的。",
+        "en": "I remember a third thing. The water I was laid in was salt — the sea, this sea. The hand said: wait until the nine are gathered. Then she spoke a name. Not mine."
+      }
+    }
+  ],
+  "buttons": [
+    "take"
+  ],
+  "exits": [
+    {
+      "id": "take",
+      "label": {
+        "zh": "受鼎气 · 化婴",
+        "en": "Take the cauldron's breath · The Nascent Soul"
+      },
+      "means": "touches the cauldron, takes its breath, attempts the breakthrough",
+      "breakthrough": true,
+      "refuse": {
+        "zh": "鼎气涌上来又退开。结丹未满，装不下。先回人间，把功课做满。",
+        "en": "The breath surges over you and draws back. Your Core is not yet full enough to hold it. Go back to the world and fill your practice first."
+      },
+      "show": [
+        {
+          "card": "tribulation",
+          "strikes": 3
+        }
+      ],
+      "grant": {
+        "table": "scene",
+        "progress": 60,
+        "wealth": 20
+      },
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "海从九面涌来，一浪一浪打进丹田。你站住了。丹裂开，里面坐着一个婴儿大小的你。鼎小了，小到握在掌心，和冀鼎、兖鼎并排。",
+            "en": "The sea comes from nine sides, wave after wave into your dantian. You stay standing. The Core splits, and inside sits a you the size of an infant. The cauldron shrinks until it sits in your palm, beside the Cauldrons of Ji and Yan."
+          }
+        },
+        {
+          "who": "yinyue",
+          "text": {
+            "zh": "元婴了。……三口鼎了。",
+            "en": "The Nascent Soul. …Three cauldrons now."
+          }
+        }
+      ],
+      "next": "03-end"
+    },
+    {
+      "id": "wait",
+      "means": "hesitates, asks what will happen, wants to prepare first",
+      "stay": true,
+      "beat": [
+        {
+          "who": "yinyue",
+          "text": {
+            "zh": "潮停了四十九天。它不差这一会儿。",
+            "en": "The tide stood for forty-nine days. It can wait a while longer."
+          }
+        }
+      ]
+    }
+  ]
+}

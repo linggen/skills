@@ -39,6 +39,26 @@
         "the east"
       ],
       "hint": "Where wood is born, and spring comes from."
+    },
+    "kui-1": {
+      "q": "One sun and one moon, side by side. One character.",
+      "a": [
+        "明",
+        "ming",
+        "bright",
+        "brightness"
+      ],
+      "hint": "Sun and moon together mean bright."
+    },
+    "seal-qing": {
+      "q": "The eight trigrams: Qian in the south, Kun in the north, Kan in the west. Which trigram belongs in the east?",
+      "a": [
+        "li",
+        "离",
+        "fire",
+        "the fire trigram"
+      ],
+      "hint": "Where the sun rises; fire comes from there."
     }
   }
 }

@@ -17,6 +17,7 @@ const content = loadContent();
 // gate exercised with the dates the launch will set.
 content.chapters['01-ji'].opens = '2026-10-01';
 content.chapters['02-yan'].opens = '2026-11-01';
+content.chapters['03-qing'].opens = '2026-12-01';
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 const start = (lang = 'zh') => newState(content, lang, NOW);
@@ -1087,7 +1088,80 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   assert.equal(r.state.scene, '02-end');
   r = answerN(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan']);
-  assert.equal(look(r.state, content, nctx()).director.thread, null, 'no chapter 3 yet');
+  const thread3 = look(r.state, content, nctx()).director.thread;
+  assert.equal(thread3.chapter, '03-qing'); assert.equal(thread3.opens, '2026-12-01');
+  assert.equal(wake(r.state, content, nctx()), null, 'chapter 3 has not opened');
+});
+
+const DEC = new Date('2026-12-02T12:00:00');
+const dctx = (extra = {}) => ({ now: DEC, quests: [], ...extra });
+const answerD = (fn, st, args) => must(fn, st, args, dctx());
+
+/* Chapter 2 behind them, the Core formed, standing at the deeps of Lake Lei. */
+function afterYan() {
+  return { ...afterJi(), chapter: '02-yan', place: 'leiyuan', ended: ['00-prologue', '01-ji', '02-yan'], tier: 'core', step: 0, progress: 0, stamina: 100, wealth: 400 };
+}
+
+test('in November the road from 兖 into 青 is closed', () => {
+  const s = { ...afterYan(), place: 'fuli' };
+  const r = refused(move, s, { place: 'weishui' }, 'road-closed', nctx());
+  assert.ok(r.say.includes('青州'));
+});
+
+test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market, the shore, the seal, the Nascent Soul, the end', () => {
+  let s = afterYan();
+  assert.equal(wake(s, content, nctx()), null, 'not in November');
+  const woke = VERBS.look(s, content, dctx());
+  assert.equal(woke.state.chapter, '03-qing'); assert.equal(woke.state.scene, '03-arrive');
+  assert.equal(woke.state.place, 'leiyuan', 'no teleport');
+  assert.equal(woke.result.waypoint.place.id, 'weishui');
+  assert.equal(woke.result.director.thread.text, '路通向潍水。');
+  s = woke.state;
+  // the walk east out of 兖 and into 青
+  for (const place of ['leize', 'daye', 'fuli']) s = answerD(move, s, { place }).state;
+  let r = answerD(move, s, { place: 'weishui' });
+  assert.equal(r.result.scene.id, '03-arrive');
+  s = r.state;
+  s = answerD(resolve, s, { exit: 'hook' }).state; // the straight hook, stays
+  r = answerD(resolve, s, { exit: 'town' });
+  assert.equal(r.state.scene, '03-town'); assert.equal(r.result.waypoint.place.id, 'linzi');
+  s = answerD(move, r.state, { place: 'linzi' }).state;
+  const town = look(s, content, dctx());
+  assert.equal(town.scene.id, '03-town');
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['qi-salt', 'qi-silk']);
+  s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
+  assert.equal(s.wealth, 380);
+  s = answerD(resolve, s, { exit: 'shore' }).state;
+  s = answerD(move, s, { place: 'penglai' }).state;
+  const shore = look(s, content, dctx()).scene;
+  assert.equal(shore.id, '03-shore');
+  assert.equal(shore.exits.find(e => e.id === 'subdue').duel.creature.root, 'water');
+  // the three ways: the riddle
+  refused(resolve, s, { exit: 'riddle', answer: '日' }, 'wrong-answer', dctx());
+  r = answerD(resolve, s, { exit: 'riddle', answer: '明' });
+  assert.equal(r.state.scene, '03-deep'); assert.equal(r.result.paid.progress, 40);
+  // and 孔子's word, from the same shore
+  const enough = answerD(resolve, s, { exit: 'enough' });
+  assert.equal(enough.state.scene, '03-deep'); assert.equal(enough.result.paid.progress, 40);
+  s = answerD(move, r.state, { place: 'liubo' }).state;
+  refused(resolve, s, { exit: 'seal', answer: '震' }, 'wrong-answer', dctx());
+  r = answerD(resolve, s, { exit: 'seal', answer: '离' });
+  assert.equal(r.state.scene, '03-cauldron');
+  s = r.state;
+  // the gate: not at the peak of 结丹
+  const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', dctx());
+  assert.ok(held.say.startsWith('鼎气涌上来'));
+  assert.equal(held.peak_step, 3);
+  // at the peak: the Nascent Soul forms, then paid into the new tier — which pays double
+  s = { ...s, step: 2, progress: 1200 };
+  r = answerD(resolve, s, { exit: 'take' });
+  assert.deepEqual(r.result.breakthrough, { from: '结丹后期', to: '元婴初期', tier: 'nascent' });
+  assert.equal(r.state.tier, 'nascent'); assert.equal(r.state.step, 0);
+  assert.equal(r.state.progress, 120);
+  assert.equal(r.state.scene, '03-end');
+  r = answerD(resolve, r.state, { exit: 'rest' });
+  assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan', '03-qing']);
+  assert.equal(look(r.state, content, dctx()).director.thread, null, 'no chapter 4 yet');
 });
 
 test('in October the road from Ye into 兖 is closed, and the brief says so', () => {

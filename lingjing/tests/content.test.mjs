@@ -169,6 +169,16 @@ test('chapter 1 walks from the Zhang to the cauldron and ends', () => {
   assert.ok(ch.scenes['01-cauldron'].exits.find(e => e.id === 'take').breakthrough);
 });
 
+test('chapter 3 walks from the Wei to the cauldron under the sea and ends', () => {
+  const ch = fresh().chapters['03-qing'];
+  assert.equal(ch.opens, null); assert.equal(ch.gate, 3); assert.equal(ch.province, '青');
+  const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
+  assert.deepEqual(at, ['03-arrive@weishui', '03-cauldron@liubo', '03-deep@liubo', '03-end@liubo', '03-shore@penglai', '03-town@linzi']);
+  assert.ok(ch.scenes['03-end'].exits.some(e => e.ends === '03-qing'));
+  assert.ok(ch.scenes['03-cauldron'].exits.find(e => e.id === 'take').breakthrough);
+  assert.deepEqual(ch.scenes['03-shore'].buttons, ['subdue', 'riddle', 'enough']);
+});
+
 // ── Made worlds ──
 import { WORLD, lintMadeWorld, overlayWorld, madeWorldsDir } from '../scripts/content.mjs';
 

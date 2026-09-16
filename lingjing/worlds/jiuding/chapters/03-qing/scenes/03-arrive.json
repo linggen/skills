@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "id": "03-arrive",
+  "chapter": "03-qing",
+  "at": "weishui",
+  "place": {
+    "zh": "潍水 · 东岸",
+    "en": "The Wei · East bank"
+  },
+  "setup": {
+    "zh": "从兖州往东，路沿着潍水走。水往东流，流到头是海。岸上一个人在钓鱼，鱼钩是直的，也没有饵。",
+    "en": "East from Yan the road follows the Wei. The water runs east, and at its end is the sea. A man on the bank is fishing with a straight hook and no bait."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "show": [
+    {
+      "card": "map",
+      "goal": "青",
+      "here": "青"
+    }
+  ],
+  "lines": [
+    {
+      "who": "yinyue",
+      "text": {
+        "zh": "海在往里吸气。第三鼎——在海底下，它把潮水吸进去了。",
+        "en": "The sea is breathing in. The third cauldron — under the sea. It has drawn the tide into itself."
+      }
+    },
+    {
+      "who": "ling",
+      "text": {
+        "zh": "钓鱼的人不看鱼，看海：东海的潮，四十九天没退了。要问路，去临淄。",
+        "en": "The fisherman watches the sea, not the water: the tide of the East Sea has not gone out in forty-nine days. If you want the road, ask in Linzi."
+      }
+    }
+  ],
+  "buttons": [
+    "town",
+    "hook"
+  ],
+  "exits": [
+    {
+      "id": "town",
+      "label": {
+        "zh": "去临淄",
+        "en": "Go to Linzi"
+      },
+      "means": "goes to the town, follows the river down, agrees to ask there",
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "你沿潍水往下，再折向北。临淄的稷门外站满了人，都在听先生们吵架。",
+            "en": "You follow the Wei down, then turn north. Outside Linzi's Ji Gate a crowd stands listening to the masters argue."
+          }
+        }
+      ],
+      "next": "03-town"
+    },
+    {
+      "id": "hook",
+      "label": {
+        "zh": "问那直钩",
+        "en": "Ask about the straight hook"
+      },
+      "means": "asks the fisherman about the straight hook, talks to him, asks what he is fishing for",
+      "stay": true,
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "他说：钩直，饵无，愿者上钩。当年钓起齐国的那位太公，用的也是这样的钩。",
+            "en": "He says: a straight hook and no bait — whoever is willing bites. The old duke who fished up the state of Qi used the same."
+          }
+        },
+        {
+          "who": "yinyue",
+          "text": {
+            "zh": "他钓的不是鱼。走吧。",
+            "en": "He isn't fishing for fish. Come."
+          }
+        }
+      ]
+    },
+    {
+      "id": "sea",
+      "means": "goes straight east to the sea now, tries to reach the shore directly",
+      "stay": true,
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "你往东走到海边。海面平得像镜子，不进也不退。远远有一座城浮在水上。",
+            "en": "East to the shore. The sea lies flat as a mirror, neither in nor out. Far off, a city floats on the water."
+          }
+        },
+        {
+          "who": "yinyue",
+          "text": {
+            "zh": "那不是城。先去临淄。",
+            "en": "That is no city. Linzi first."
+          }
+        }
+      ]
+    }
+  ]
+}

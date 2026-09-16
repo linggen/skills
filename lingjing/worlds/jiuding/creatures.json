@@ -135,6 +135,60 @@
         "zh": "灵境所绘",
         "en": "Drawn in Lingjing"
       }
+    },
+    {
+      "id": "kui",
+      "name": {
+        "zh": "夔",
+        "en": "Kui"
+      },
+      "source": {
+        "zh": "《山海经 · 大荒东经》",
+        "en": "Classic of Mountains and Seas — The Great Wilderness, East"
+      },
+      "quote": {
+        "zh": "东海中有流波山，入海七千里。其上有兽，状如牛，苍身而无角，一足，出入水则必风雨，其光如日月，其声如雷，其名曰夔。黄帝得之，以其皮为鼓。",
+        "en": "In the East Sea lies Mount Liubo, seven thousand li out. On it is a beast like an ox, blue-grey and hornless, with one foot; when it goes in or out of the water there is wind and rain; its light is like the sun and moon, its voice like thunder. Its name is Kui. The Yellow Emperor took it and made a drum of its hide."
+      },
+      "look": {
+        "zh": "牛的样子，青苍的身子，没有角，一条腿；光像日月，声如雷。",
+        "en": "An ox's shape, a blue-grey body, no horns, one leg; its light like the sun and moon, its voice like thunder."
+      },
+      "province": "青",
+      "root": "water",
+      "art": "art/kui.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the text of 《山海经·大荒东经》 alone; no classical plate is kept.",
+      "art_caption": {
+        "zh": "灵境所绘",
+        "en": "Drawn in Lingjing"
+      }
+    },
+    {
+      "id": "tongtong",
+      "name": {
+        "zh": "狪狪",
+        "en": "Tongtong"
+      },
+      "source": {
+        "zh": "《山海经 · 东山经》",
+        "en": "Classic of Mountains and Seas — Eastern Mountains"
+      },
+      "quote": {
+        "zh": "泰山……有兽焉，其状如豚而有珠，名曰狪狪，其鸣自訆。",
+        "en": "On Mount Tai there is a beast like a pig that carries a pearl, called Tongtong; its cry is its own name."
+      },
+      "look": {
+        "zh": "猪的样子，嘴里含着一颗珠；叫起来像在叫自己的名字。",
+        "en": "A pig's shape with a pearl in its mouth; its cry is its own name."
+      },
+      "province": "青",
+      "root": "earth",
+      "art": "art/tongtong.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the text of 《山海经·东山经》 alone; no classical plate is kept.",
+      "art_caption": {
+        "zh": "灵境所绘",
+        "en": "Drawn in Lingjing"
+      }
     }
   ]
 }

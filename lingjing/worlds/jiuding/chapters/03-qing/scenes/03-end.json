@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "id": "03-end",
+  "chapter": "03-qing",
+  "at": "liubo",
+  "place": {
+    "zh": "蓬莱 · 潮生",
+    "en": "Penglai · The tide turns"
+  },
+  "setup": {
+    "zh": "潮回来了，一浪一浪，把流波山的根盖住。海上的城散了。渔船出海。",
+    "en": "The tide comes back, wave upon wave, and covers the root of Mount Liubo. The city on the sea is gone. The boats put out."
+  },
+  "cast": [
+    "yinyue"
+  ],
+  "show": [
+    {
+      "card": "map",
+      "goal": "徐",
+      "here": "青"
+    }
+  ],
+  "lines": [
+    {
+      "who": "ling",
+      "text": {
+        "zh": "第四鼎的气息在南边——徐州，泗水之畔。你醒来的地方。",
+        "en": "The fourth cauldron's breath lies south — Xu, by the Si River. Where you woke."
+      }
+    }
+  ],
+  "buttons": [
+    "rest"
+  ],
+  "exits": [
+    {
+      "id": "rest",
+      "label": {
+        "zh": "今日到此",
+        "en": "Rest for today"
+      },
+      "means": "rests, ends the chapter, asks what comes next",
+      "beat": [
+        {
+          "who": "ling",
+          "text": {
+            "zh": "今日到此为止。徐州的路，开的时候我会告诉你。",
+            "en": "That is all for today. When the road to Xu opens, I will tell you."
+          }
+        }
+      ],
+      "ends": "03-qing"
+    }
+  ]
+}

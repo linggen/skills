@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "id": "03-qing",
+  "opens": null,
+  "province": "青",
+  "corridor": false,
+  "first_scene": "03-arrive",
+  "gate": 3,
+  "title": {
+    "zh": "第三章 · 青州之鼎",
+    "en": "Chapter 3 · The Cauldron of Qing"
+  },
+  "summary": {
+    "zh": "东入青州，海岱之间。东海的潮四十九天没有退，蓬莱海上每日天明有一座城，日高不散。潮不是海若收的，是鼎吸的——第三鼎在流波山底下醒了，吸着气。安抚守山的夔，破开八卦之封，第三鼎归来——结丹圆满者，在此化婴。",
+    "en": "East into Qing, between the sea and Mount Tai. The tide of the East Sea has not gone out in forty-nine days, and every dawn a city stands on the sea off Penglai and does not fade with the sun. The tide is not the sea god's doing: a cauldron is breathing it in — the third woke beneath Mount Liubo. Quiet Kui who keeps the mountain, break the seal of the eight trigrams, and the third cauldron returns — one at the peak of Core Formation forms the Nascent Soul here."
+  }
+}
