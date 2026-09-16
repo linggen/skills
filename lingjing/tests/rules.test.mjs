@@ -396,6 +396,26 @@ test('a branch opens alone, counts its turns and pays within its cap', () => {
   assert.equal(closed.state.branch, null);
 });
 
+test('with the engine counting the player\'s messages, a tale\'s turns are those sent since it opened', () => {
+  // The engine says the player has sent 7 messages when the tale opens: that
+  // message is the asking, not a turn of the tale.
+  let s = must(branch, start(), { action: 'open', kind: 'night-tale' }, ctx({ turn: 7 })).state;
+  assert.equal(s.branch.at_turn, 7);
+  s = must(branch, s, { action: 'turn', said: '走' }, ctx({ turn: 7 })).state;
+  assert.equal(s.branch.turns, 0, 'the opening message is not a turn');
+  // Ling forgot to report a turn; the count catches up on the next call.
+  s = must(branch, s, { action: 'turn', said: '走' }, ctx({ turn: 9 })).state;
+  assert.equal(s.branch.turns, 2, 'the same words, but the engine counted two messages');
+  // Closing pays by the engine's count, whatever Ling said.
+  const closed = must(branch, s, { action: 'close', progress: '20', wealth: '5' }, ctx({ turn: 10 }));
+  assert.equal(closed.state.branch, null);
+  assert.equal(closed.result.paid.progress, 20);
+  // Opened on an engine that counts, played on one that does not: the words count as before.
+  s = must(branch, start(), { action: 'open', kind: 'night-tale' }).state;
+  assert.equal(s.branch.at_turn, null);
+  refused(branch, s, { action: 'turn' }, 'no-player-turn', ctx({ turn: 3 }));
+});
+
 test('the story summary has a length limit', () => {
   refused(summarize, start(), { text: '字'.repeat(601) }, 'too-long');
   assert.equal(must(summarize, start(), { text: '青玄在泗水边醒来。' }).state.story, '青玄在泗水边醒来。');

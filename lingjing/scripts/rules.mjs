@@ -11,7 +11,7 @@
 // it again — or another with `--world` — and logs the save it replaces. `build` and
 // `travel` switch worlds: the save in play is parked under data/saves/ and
 // the other world's is restored, or begun.
-// Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW.
+// Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW; LINGGEN_USER_TURNS from the engine.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -694,7 +694,7 @@ export function branch(state, content, ctx, args) {
     const empty = spendStamina(content, s, ctx, 'branch');
     if (empty) return empty;
     const seed = pickSeed(content, s, template.kind, ctx.now);
-    s.branch = { kind: template.kind, turns: 0, said: null, opened: ctx.now.toISOString(), seed: seed?.id ?? null };
+    s.branch = { kind: template.kind, turns: 0, said: null, opened: ctx.now.toISOString(), seed: seed?.id ?? null, at_turn: ctx.turn ?? null };
     if (seed) s.seeds_used = [...(s.seeds_used ?? []), seed.id];
     s.day.branches += 1;
     const show = seed?.creature ? [{ card: 'creature', id: seed.creature }] : [];
@@ -702,20 +702,30 @@ export function branch(state, content, ctx, args) {
   }
   if (!s.branch) return refuse('no-branch', null);
   const template = content.branches.templates.find(b => b.kind === s.branch.kind);
-  // A turn is the player's: it carries their words, and the same words
-  // twice are one turn. A tale closed before the player has taken part in
-  // `min_turns` of them pays nothing — the reward is for playing it.
+  // A turn is the player's. The engine counts their messages
+  // (LINGGEN_USER_TURNS): the tale's turns are those sent since it opened,
+  // whatever Ling remembered to report. Without the count, a turn carries
+  // their words, and the same words twice are one turn. A tale closed
+  // before the player has taken part in `min_turns` of them pays nothing —
+  // the reward is for playing it.
+  const counted = () => {
+    if (ctx.turn == null || s.branch.at_turn == null) return false;
+    s.branch.turns = Math.max(s.branch.turns, ctx.turn - s.branch.at_turn);
+    return true;
+  };
   if (args.action === 'turn') {
     const said = String(args.said ?? '').trim();
-    if (!said || said === s.branch.said) return refuse('no-player-turn', null, { turns: s.branch.turns });
-    s.branch.turns += 1;
+    if (!counted()) {
+      if (!said || said === s.branch.said) return refuse('no-player-turn', null, { turns: s.branch.turns });
+      s.branch.turns += 1;
+    }
     s.branch.said = said;
     return { state: s, result: { ok: true, turns: s.branch.turns, close_now: s.branch.turns >= template.max_turns } };
   }
   if (args.action === 'close') {
     // The words that ended the tale are the player's last turn.
     const said = String(args.said ?? '').trim();
-    if (said && said !== s.branch.said) { s.branch.turns += 1; s.branch.said = said; }
+    if (!counted() && said && said !== s.branch.said) { s.branch.turns += 1; s.branch.said = said; }
     const early = s.branch.turns < (template.min_turns ?? 0);
     const paid = early ? null : pay(content, s, ctx, { table: template.table, progress: Number(args.progress) || 0, wealth: Number(args.wealth) || 0 });
     s.branch = null;
@@ -1251,6 +1261,9 @@ function freshState(content, lang, now) {
 }
 const questsDir = () => process.env.LINGJING_QUESTS || path.join(os.homedir(), '.linggen', 'quests');
 const clock = () => (process.env.LINGJING_NOW ? new Date(process.env.LINGJING_NOW) : new Date());
+/* How many messages the player has sent this session, the engine's count
+   (LINGGEN_USER_TURNS); null on an engine that does not say. */
+const userTurn = () => (/^\d+$/.test(process.env.LINGGEN_USER_TURNS ?? '') ? Number(process.env.LINGGEN_USER_TURNS) : null);
 
 function writeAtomic(file, text) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -1314,7 +1327,7 @@ function run(verb, args) {
   }
   if (saved) keepDay(saved, now);
   const heard = heed(state, args.said);
-  const out = fn(heard, content, { now, quests: readQuests() }, args);
+  const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn() }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
   const next = out.state ?? (heard !== state ? heard : null);
   if (next) {
