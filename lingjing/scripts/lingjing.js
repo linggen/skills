@@ -262,10 +262,14 @@ async function onWin(taskId) {
 const report = (text) => deliver(text, true);
 
 /// The player's word from the stage: shown in the chat as their own line.
-/// One at a time — a tap waits for Ling's reply before the next is taken.
+/// A tap while Ling is still talking is not dropped — the engine queues it
+/// behind the reply and takes it up next (his "no need to click twice",
+/// 2026-09-16). Only the same words twice within a breath are one tap.
 let saying = false;
+let lastSaid = { text: '', at: 0 };
 async function say(text) {
-  if (saying) return;
+  if (text === lastSaid.text && Date.now() - lastSaid.at < 2500) return;
+  lastSaid = { text, at: Date.now() };
   saying = true;
   setTimeout(() => { saying = false; }, 90000);
   await deliver(text, false);
@@ -280,7 +284,7 @@ async function deliver(text, hidden) {
     const pending = await (await fetch('/api/pending-ask-user')).json();
     const open = pending.find((p) => p.session_id === sid);
     if (open) {
-      await fetch('/api/ask-user-response', {
+      const r = await fetch('/api/ask-user-response', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -288,7 +292,10 @@ async function deliver(text, hidden) {
           answers: [{ question_index: 0, selected: [], custom_text: text }],
         }),
       });
-      return;
+      // Answered through the page, the words never reach the chat as a
+      // line of the player's own — so the tap looked ignored for the ten
+      // seconds Ling took to reply. Show them.
+      if (r.ok) { if (!hidden) chat?.addMessage('user', text); return; }
     }
   } catch (e) {
     console.warn('[lingjing] pending ask', e);
@@ -302,7 +309,7 @@ document.addEventListener('click', (e) => {
   if (sw) { switchLang(sw.dataset.lang); return; }
   const spoken = e.target.closest('[data-say]');
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick],[data-duel-stand]')) {
-    if (spoken.matches(':disabled') || saying) return;
+    if (spoken.matches(':disabled')) return;
     spoken.classList.add('busy');
     running = true;
     say(spoken.dataset.say);
