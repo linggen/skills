@@ -98,6 +98,17 @@ async function readPending() {
   } catch {
     asked = false;
   }
+  if (asked) waitingOnPlayer();
+}
+
+/// Ling has asked and stands waiting: the turn is not over for the chat
+/// (no stream end comes until the answer), but for the player it is — taps
+/// must flow again, each one the answer to that question.
+function waitingOnPlayer() {
+  asked = true;
+  running = false;
+  saying = false;
+  document.querySelectorAll('.busy').forEach((el) => el.classList.remove('busy'));
 }
 
 async function refresh() {
@@ -364,6 +375,7 @@ async function recentSessionId() {
 }
 
 function onContentBlock(payload) {
+  if (payload?.tool === 'AskUser') { waitingOnPlayer(); render(); return; }
   if (payload?.tool === 'Show' && payload.args) {
     try {
       const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
