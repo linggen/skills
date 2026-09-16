@@ -87,8 +87,11 @@ function traits(card, ctx) {
 function map(card, ctx) {
   if (ctx.look.world?.made) return roadMap(ctx);
   const name = (c) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[c]?.en : c);
+  // Where the player stands is the rules' fact, never the model's: Ling once
+  // showed the map with `here` a province away (2026-09-16).
+  const here = ctx.look.place?.province?.id ?? card.here;
   const cells = MAP.flat().map((c) => {
-    const kind = c === card.goal ? 'goal' : c === card.here ? 'here' : '';
+    const kind = c === card.goal && c !== here ? 'goal' : c === here ? 'here' : '';
     const tag = kind ? `<small>${ctx.words[kind]}</small>` : '';
     // The next cauldron's province is a word to Ling; the rules say the road.
     const tap = kind === 'goal' ? ` ${sayAttr(say(ctx.words.sayGo, { name: name(c) + (ctx.lang === 'zh' ? '州' : '') }))}` : '';
