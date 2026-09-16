@@ -19,12 +19,26 @@ export function hashOf(text) {
 }
 
 /* The creature's five moves for the day: its own root six times in ten,
-   else any element. */
-export function creatureMoves(root, seed) {
-  return Array.from({ length: ROUNDS }, (_, r) => {
+   else any element. Given the player's roots, at least two of the five are
+   moves those roots overcome — a bout is always winnable by reading the
+   creature, never lost by birth (a 木水火土 player before a 木 creature
+   could only draw or lose, 2026-09-16). Which rounds open is drawn too. */
+export function creatureMoves(root, seed, roots = []) {
+  const moves = Array.from({ length: ROUNDS }, (_, r) => {
     const h = hashOf(`${seed}|${r}`);
     return h % 10 < 6 ? root : ELEMENTS[Math.floor(h / 10) % ELEMENTS.length];
   });
+  const beatable = roots.map((e) => BEATS[e]).filter(Boolean);
+  if (!beatable.length) return moves;
+  let open = moves.filter((m) => beatable.includes(m)).length;
+  const from = hashOf(`${seed}|open`) % ROUNDS;
+  for (let k = 0; k < ROUNDS && open < TO_WIN; k += 1) {
+    const r = (from + k) % ROUNDS;
+    if (beatable.includes(moves[r])) continue;
+    moves[r] = beatable[hashOf(`${seed}|open|${r}`) % beatable.length];
+    open += 1;
+  }
+  return moves;
 }
 
 /* One round: the player's pick against the creature's move. */

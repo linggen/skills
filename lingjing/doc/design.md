@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-16 — chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
+status: 2026-09-16 — the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -910,6 +910,35 @@ change.
 **Phone — the chat is everything.** The phone's own chat (Flutter) draws the
 same cards inline, shows choices as buttons that send `[choice scene:exit]`,
 and runs the same `rules.mjs` contract. Later.
+
+## The stage speaks — taps are words to Ling
+
+- **Built (2026-09-16).** Seen live on gpt-5.6-terra: a Move, a Summarize,
+  silence — the player stood at the Pu with no way on; the market showed
+  Buy 260 and a chip named Puyang, and neither took a tap. Two fixes, one
+  rule: **a tap is a word to Ling.** The page never trades, moves or pays
+  by itself; a tap sends the player's own line into the chat (*Buy Mulberry
+  paper*, *Go to Puyang*, *Tell me about: Temper the body*) and Ling calls
+  Trade, Move or tells the practice, the rules deciding as ever. When Ling
+  is waiting on a question, the line is its answer (the same path a board
+  win takes). One tap at a time: the tapped thing dims until Ling's reply
+  ends. Buy greys when the stones are short, Sell when none is held — from
+  Look. Boards and bouts stay the page's own play, as before; a real-life
+  quest never gets a Done button (its app is the only witness).
+- **The choice is a law, and the rules build it.** SKILL.md said "nearly
+  always one AskUser"; Terra read that as optional between scenes, where it
+  had to assemble the options itself from `near`. Now Look's `director`
+  carries `choice` — header (here), question (*何去何从？* / *What now?*),
+  options in order: the thread's place first, the other roads, *在此逗留*
+  when today's seed grows here, *问问银月* when fewer than two — and Ling
+  offers it verbatim, exactly as it offers a scene's `buttons`. A tapped
+  label is its `move`, `linger` or `ask`. Every reply ends with one AskUser;
+  the one silence is AskUser back with no answer. Summarize once a turn.
+- **Every bout is winnable.** A 木水火土 player before 雷神 (木) could only
+  draw or lose: nothing but 金 overcomes 木. `creatureMoves(root, seed,
+  roots)` now deals at least two moves the player's roots overcome, which
+  rounds drawn by the same hash; the card tells the 相克 ring in a line
+  and says two wins (the Chinese hint said three).
 
 ## Pictures
 

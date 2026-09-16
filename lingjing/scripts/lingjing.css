@@ -168,6 +168,17 @@ button:disabled { cursor: default; }
 .pl.here { border-color: var(--yinyue); color: var(--yinyue); background: var(--yinyue-soft); }
 .pl.road { border-color: var(--ling); color: var(--ling); }
 .pl.far { opacity: 0.4; border-style: dashed; }
+/* A tap on the stage is a word to Ling: a road chip, Buy and Sell, a
+   practice card. Greyed when the rules say it cannot be; dimmed while Ling
+   answers, so a slow model never invites a second tap. */
+button.pl { font: inherit; font-size: 12px; cursor: pointer; }
+button.pl:hover { background: var(--ling-soft); }
+.price .act { padding: 2px 8px; font-size: 11px; }
+.act:disabled { opacity: 0.4; cursor: default; }
+.task[data-say] { cursor: pointer; }
+.task[data-say]:hover { box-shadow: 0 0 0 1px var(--ling) inset; }
+.busy { opacity: 0.5; pointer-events: none; }
+.kering { letter-spacing: 0.04em; }
 .roadmap { position: relative; margin-top: 10px; max-width: 480px; min-height: 124px; }
 .roadmap svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .roadmap path { fill: none; stroke: var(--line); stroke-width: 1.5; vector-effect: non-scaling-stroke; }

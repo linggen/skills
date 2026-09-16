@@ -1,6 +1,8 @@
 // lingjing.js — the Mac scene beside the chat. It shows the game; it never
 // decides it. Numbers come from the rules' Look, cards from Ling's Show, and
-// the only thing the page itself reports is a board the player won.
+// the only things the page itself reports are a board or a bout the player
+// played. Every other tap on the stage — Buy, a place, a practice card — is
+// a word to Ling, sent as the player's own line; Ling and the rules do the rest.
 
 import './chat-bridge.js';
 import { listSkillSessions, fetchCloud, syncCloud, signIn } from './api.js';
@@ -205,9 +207,23 @@ async function onWin(taskId) {
   await refresh();
 }
 
-/// Tell Ling. When Ling is waiting on a question, the win is its answer —
-/// a new message would queue behind that question; otherwise a hidden message.
-async function report(text) {
+/// Tell Ling, unseen: a board or a bout the page played.
+const report = (text) => deliver(text, true);
+
+/// The player's word from the stage: shown in the chat as their own line.
+/// One at a time — a tap waits for Ling's reply before the next is taken.
+let saying = false;
+async function say(text) {
+  if (saying) return;
+  saying = true;
+  setTimeout(() => { saying = false; }, 90000);
+  await deliver(text, false);
+}
+
+/// When Ling is waiting on a question, the text is its answer — a new
+/// message would queue behind that question; otherwise a message, hidden
+/// or the player's own.
+async function deliver(text, hidden) {
   const sid = chat?.getSessionId();
   try {
     const pending = await (await fetch('/api/pending-ask-user')).json();
@@ -226,10 +242,18 @@ async function report(text) {
   } catch (e) {
     console.warn('[lingjing] pending ask', e);
   }
-  chat?.sendHidden(text);
+  if (hidden) chat?.sendHidden(text);
+  else chat?.send(text);
 }
 
 document.addEventListener('click', (e) => {
+  const spoken = e.target.closest('[data-say]');
+  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick]')) {
+    if (spoken.matches(':disabled') || saying) return;
+    spoken.classList.add('busy');
+    say(spoken.dataset.say);
+    return;
+  }
   const play = e.target.closest('[data-play]');
   if (play) {
     focus = [{ card: 'board', id: play.dataset.play }];
@@ -325,7 +349,7 @@ async function mountChat() {
     title: 'Lingjing',
     sessionId: resume || undefined,
     onStreamToken: () => { alive = true; },
-    onStreamEnd: () => refresh(),
+    onStreamEnd: () => { saying = false; refresh(); },
     onContentBlock: (payload) => { alive = true; onContentBlock(payload); },
   });
   // A reopened day is picked up in silence; a fresh one begins with Ling.

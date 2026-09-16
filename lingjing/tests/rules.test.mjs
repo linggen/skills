@@ -190,6 +190,20 @@ test('a bout must be started, picks must be the player\'s roots, and the same da
   refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'wood' }, 'unfinished');
 });
 
+test('the day\'s moves always hold two the player\'s roots overcome', () => {
+  // 木水火土 before a 木 creature: without 金 nothing overcomes 木, so the
+  // day must deal moves those roots beat — and exactly the same each call
+  const roots = ['wood', 'water', 'fire', 'earth'];
+  const beatable = roots.map(r => BEATS[r]);
+  for (const day of ['2026-09-16', '2026-09-17', '2026-09-18', '2026-10-01']) {
+    const moves = creatureMoves('wood', `${day}|leishen|青玄`, roots);
+    assert.ok(moves.filter(m => beatable.includes(m)).length >= 2, `${day}: ${moves}`);
+    assert.deepEqual(moves, creatureMoves('wood', `${day}|leishen|青玄`, roots));
+  }
+  assert.ok(creatureMoves('wood', '2026-09-16|leishen|青玄', ['metal']).filter(m => m === 'wood').length >= 2);
+  assert.deepEqual(creatureMoves('wood', 'x', []), creatureMoves('wood', 'x'), 'no roots: the plain draw');
+});
+
 test('the 五行 bout: 相克 wins, the reverse loses, else a draw; best of three in five', () => {
   assert.equal(roundOf('wood', 'earth'), 'won');
   assert.equal(roundOf('earth', 'wood'), 'lost');
@@ -535,6 +549,14 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(l.director.thread.opens, '2026-10-01');
   assert.equal(l.director.thread.place.id, 'zhangnan');
   assert.equal(l.director.corridor, false);
+  // the choice is ready for AskUser: the thread's place first when a road
+  // leads there, else the roads as they are; a word to Yinyue keeps it at two
+  assert.equal(l.director.choice.header, '泗水北岸');
+  assert.equal(l.director.choice.question, '何去何从？');
+  assert.deepEqual(l.director.choice.options.slice(0, 2).map(o => o.label), ['泗水岸', '云龙山']);
+  assert.deepEqual(l.director.choice.options.slice(0, 2).map(o => o.move), ['sishui', 'yunlong']);
+  assert.deepEqual(l.director.choice.options[2], { label: '在此逗留', linger: true }, 'seeds grow here: a linger opens the day\'s branch');
+  assert.equal(look(toFuzhu(), content, ctx()).director.choice, null, 'a scene running has its own buttons');
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
   assert.equal(l.place.places.length, 11);

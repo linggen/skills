@@ -13,7 +13,8 @@ export const WORDS = {
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
-    duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，三胜为降。', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
+    sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}',
+    duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，两胜为降。', ring: '相克', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
     qi: '丹田', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空',
@@ -28,7 +29,8 @@ export const WORDS = {
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
     tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
-    duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
+    sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}',
+    duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     qi: 'Dantian', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty',
@@ -44,6 +46,11 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh : '');
 
 const ELEMENTS = ['metal', 'wood', 'water', 'fire', 'earth'];
+
+/// A tap on the stage is a word to Ling — the player's own line in the chat,
+/// never a change the page makes itself. `data-say` carries the line.
+export const say = (tpl, fill) => tpl.replace(/\{(\w+)\}/g, (_, k) => fill[k] ?? '');
+const sayAttr = (line) => `data-say="${esc(line)}"`;
 const MAP = [['雍', '冀', '兖'], ['梁', '豫', '青'], ['荆', '扬', '徐']];
 
 function creature(card, ctx) {
@@ -93,6 +100,7 @@ function placesHtml(ctx) {
   if (!place?.places?.length) return '';
   const chips = place.places.map((p) => {
     const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
+    if (kind === 'road') return `<button class="pl road" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))}>${esc(p.name)}</button>`;
     return `<span class="pl${kind ? ` ${kind}` : ''}">${esc(p.name)}</span>`;
   });
   return `<div class="placesTitle">${esc(place.province.name)}</div><div class="places">${chips.join('')}</div>`;
@@ -127,7 +135,9 @@ function roadMap(ctx) {
   const chips = place.places.map((p) => {
     const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
     const tag = p.here ? `<small>${ctx.words.here}</small>` : '';
-    return `<span class="pl${kind ? ` ${kind}` : ''}" style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%">${esc(p.name)}${tag}</span>`;
+    const style = `style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%"`;
+    if (kind === 'road') return `<button class="pl road" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))} ${style}>${esc(p.name)}</button>`;
+    return `<span class="pl${kind ? ` ${kind}` : ''}" ${style}>${esc(p.name)}${tag}</span>`;
   });
   const frame = painted
     ? `class="roadmap painted" style="background-image:url('${esc(worldPath(ctx.look.world.dir, painted.file))}')"`
@@ -173,7 +183,13 @@ function item(card, ctx) {
   const cells = ids.map((id) => {
     const i = known.get(id) ?? { id, name: id, kind: '', buy: null, sell: null, held: (ctx.look.bag || []).find((b) => b.id === id)?.n ?? 0 };
     const held = i.held ? `<span class="chip">${ctx.words.inBag} ×${i.held}</span>` : '';
-    const price = i.buy != null ? `<div class="price"><span>${ctx.words.buy} ${i.buy}</span><span>${ctx.words.sell} ${i.sell}</span></div>` : '';
+    // Buy and Sell are words to Ling; Trade decides. Greyed when the stones
+    // are short or nothing is held — from Look, never counted here.
+    const canBuy = i.buy != null && (ctx.look.wealth ?? 0) >= i.buy;
+    const price = i.buy != null
+      ? `<div class="price"><button class="act say" ${sayAttr(say(ctx.words.sayBuy, { name: i.name }))}${canBuy ? '' : ' disabled'}>${ctx.words.buy} ${i.buy}</button>
+         <button class="act say" ${sayAttr(say(ctx.words.saySell, { name: i.name }))}${i.held ? '' : ' disabled'}>${ctx.words.sell} ${i.sell}</button></div>`
+      : '';
     const art = i.art ? `<img class="itemart" src="${esc(worldPath(world, i.art))}" alt="">` : '';
     return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
       <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)}</div>${price}${held}</div>`;
@@ -203,12 +219,12 @@ export function trayHtml(ctx) {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const act = state === 'offered' && t.kind === 'board'
       ? `<button class="act" data-play="${esc(t.id)}">${ctx.words.play}</button>` : '';
-    return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
+    return `<div class="card task ${state}" ${sayAttr(say(ctx.words.sayTask, { title: t.title }))}><div class="tasktitle">${esc(t.title)}</div>
       <div class="taskfoot"><span class="chip">${ctx.words[state]}</span>${act}</div></div>`;
   });
   const quests = (ctx.look.quests || []).map((q) => {
     const state = q.paid ? 'paid' : q.done ? 'seen' : 'due';
-    return `<div class="card task ${{ paid: 'done', seen: 'won', due: '' }[state]}">
+    return `<div class="card task ${{ paid: 'done', seen: 'won', due: '' }[state]}" ${sayAttr(say(ctx.words.sayTask, { title: q.title }))}>
       <div class="tasktitle">${esc(q.title)}</div>
       <div class="taskfoot"><span class="chip real">${ctx.words.quest}</span><span class="chip">${ctx.words[state]}</span></div></div>`;
   });

@@ -177,16 +177,36 @@ function directorBrief(content, state, ctx) {
   const closed = place.roads.map(id => placeOf(content, id)).filter(p => !provinceOpen(content, p.province, ctx.now));
   const seed = place.has?.seeds && state.day.branches < content.branches.per_day && !state.branch
     ? pickSeed(content, state, content.branches.templates[0].kind, ctx.now) : null;
+  const here = placeName(content, state, place);
+  const near = roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p));
+  const thread = threadOf(content, state, ctx.now);
   return {
-    here: placeName(content, state, place),
-    near: roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p)),
+    here,
+    near,
     too_hard: roads.filter(p => tooHard(content, state, p)).map(p => placeName(content, state, p)),
     closed: closed.map(p => ({ ...placeName(content, state, p), province: pick(content.dictionary.provinces[p.province], state.lang) })),
     corridor: inCorridor(content, state),
-    thread: threadOf(content, state, ctx.now),
+    thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, thread, Boolean(seed)),
   };
+}
+
+/* The way forward while the world is open, ready for AskUser as it is: the
+   thread's place first, then the other roads, a linger when today's seed
+   waits here, and a word to Yinyue so there are always two. Ling offers it
+   verbatim; a tapped label is its `move` (Move there at once), `linger`
+   (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
+   place while one runs. */
+function choiceOf(state, here, near, thread, seeded) {
+  const zh = state.lang === 'zh';
+  const first = thread?.place && near.find(p => p.id === thread.place.id);
+  const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
+  const options = places.map(p => ({ label: p.name, move: p.id }));
+  if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
+  if (options.length < 2) options.push({ label: zh ? '问问银月' : 'Ask Yinyue', ask: true });
+  return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
 }
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
@@ -642,7 +662,7 @@ export function duel(state, content, ctx, args) {
   const s = clone(state);
   const day = dayKey(ctx.now), today = s.duels?.[creature.id];
   const seed = `${day}|${creature.id}|${s.name ?? ''}`;
-  const moves = creatureMoves(creature.root, seed);
+  const moves = creatureMoves(creature.root, seed, s.traits ?? []);
   if (!args.picks) {
     if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, s.lang), { game: id });
     if (!s.traits?.length) return refuse('no-traits', null);
