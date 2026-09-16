@@ -355,6 +355,16 @@ function onContentBlock(payload) {
   if (WRITERS.has(payload?.tool)) setTimeout(refresh, 1500);
 }
 
+/// Ling speaks first. A fresh day's chat, and a new chat begun from the
+/// panel's own button, open with `[scene] opened` — Ling greets and sets the
+/// scene; a reopened day is picked up in silence. Once per session.
+let openedFor = null;
+function openWith(sid) {
+  if (!sid || openedFor === sid) return;
+  openedFor = sid;
+  chat?.sendHidden('[scene] opened');
+}
+
 async function mountChat() {
   let alive = false;
   const resume = await recentSessionId();
@@ -363,13 +373,14 @@ async function mountChat() {
     agentId: 'ling',
     title: 'Lingjing',
     sessionId: resume || undefined,
+    onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
     onStreamToken: () => { alive = true; },
     onStreamEnd: () => { saying = false; refresh(); },
     onContentBlock: (payload) => { alive = true; onContentBlock(payload); },
   });
-  // A reopened day is picked up in silence; a fresh one begins with Ling.
   if (!resume) {
-    setTimeout(() => chat?.sendHidden('[scene] opened'), 700);
+    setTimeout(() => openWith(chat?.getSessionId()), 700);
+    // Posted before the embed listened? Say it again once it is surely up.
     setTimeout(() => { if (!alive) chat?.sendHidden('[scene] opened'); }, 4500);
   }
 }
