@@ -261,5 +261,14 @@ lawyer's read before charging for it.
    night"), each line with who (ticker, holdings, or Economy), the stake,
    materiality, Source ↗ and **Ask CFO** — a chat message in the user's
    voice quoting the line; "N more this week" opens the rest.
-5. Phone: sync `watch.json`, Yinyue's morning line, tap → chat.
+5. ~~Phone: sync `watch.json`, Yinyue's morning line, tap → chat~~ — built.
+   The CFO sync's one read carries `watch.json` after `reports.json`
+   (`cfo_watch.dart`: the newest brief, lines resolved to their items). CFO
+   line `watch` ("The Watch", tier: for the record): this morning's brief,
+   not quiet, told once (`cfo_watch_told` = `watch|<day>`; the first look
+   only learns). Yinyue writes it from `{about, what_happened, matters,
+   their_money_at_stake}` — what happened and the stake, no advice, no
+   prediction; it goes to her thread and, with the phone closed, to the
+   morning line with no route, so a tap lands in her thread, where she can
+   ask CFO on the Mac. Her model out of reach → nothing marked.
 6. A week on real holdings: measure tokens, then set the price.
