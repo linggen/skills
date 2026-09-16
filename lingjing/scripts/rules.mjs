@@ -331,6 +331,7 @@ export function look(state, content, ctx) {
   };
   const chapter = content.chapters[state.chapter];
   return {
+    then: THEN, ask: askOf(content, state, ctx),
     ok: true, lang, name: state.name,
     world: worldBrief(content, lang),
     ...building(content),
@@ -349,7 +350,6 @@ export function look(state, content, ctx) {
     omen: omen(content, ctx.now, lang),
     stamina: staminaBrief(content, state, ctx.now),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
-    ask: askOf(content, state, ctx), then: THEN,
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
   };
@@ -1350,7 +1350,7 @@ export function askOf(content, state, ctx, result = {}) {
   return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: [{ label: zh ? '四处看看' : 'Look around', ask: true }, yinyue] };
 }
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
-const withAsk = (result, content, state, ctx) => ({ ...result, ask: askOf(content, state, ctx, result), then: THEN });
+const withAsk = (result, content, state, ctx) => ({ then: THEN, ask: askOf(content, state, ctx, result), ...result });
 
 function run(verb, args) {
   const stateFile = path.join(dataDir(), 'state.json');

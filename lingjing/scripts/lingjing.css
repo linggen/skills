@@ -51,6 +51,10 @@ button:disabled { cursor: default; }
           background: var(--surface); font-size: 12.5px; flex-wrap: wrap; min-height: 44px; }
 .status .daohao { font-family: var(--serif); font-weight: 600; font-size: 15px; }
 .status .realm { font-family: var(--serif); font-weight: 600; font-size: 14px; color: var(--ling); }
+/* 中 / En at the strip's end: the game's language, one tap. */
+.langsw { margin-left: auto; display: inline-flex; gap: 2px; }
+.langsw button { font: inherit; font-size: 11px; line-height: 1.4; padding: 2px 7px; border: 1px solid var(--line); background: var(--surface); color: var(--dim); border-radius: 6px; cursor: pointer; }
+.langsw button.on { border-color: var(--ling); color: var(--ling); background: var(--ling-soft); }
 .xw { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 140px; max-width: 320px; }
 .xw .lbl, .ls .lbl { color: var(--faint); }
 .xw .bar { flex: 1; height: 5px; border-radius: 3px; background: var(--raised); overflow: hidden; }

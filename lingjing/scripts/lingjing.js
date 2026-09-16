@@ -152,7 +152,20 @@ function statusHtml() {
     <div class="xw"><span class="lbl">${w.xw}</span><div class="bar"><i style="width:${pct}%"></i></div>
       <span class="num">${look.progress}/${look.next}</span></div>
     ${qiHtml()}
-    <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.wealth}</b></span>`;
+    <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.wealth}</b></span>
+    <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
+}
+
+/// The game's language, at a tap — the rules' Lang, the same word Ling
+/// would use; the page redraws in it and Ling's next reply follows Look.
+async function switchLang(to) {
+  if (to === lang()) return;
+  try {
+    await verb('lang', { lang: to });
+  } catch (e) {
+    console.warn('[lingjing] lang', e);
+  }
+  await refresh();
 }
 
 /// Ling's cards, else the day's omen — and an open board always beside them:
@@ -247,6 +260,8 @@ async function deliver(text, hidden) {
 }
 
 document.addEventListener('click', (e) => {
+  const sw = e.target.closest('[data-lang]');
+  if (sw) { switchLang(sw.dataset.lang); return; }
   const spoken = e.target.closest('[data-say]');
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick]')) {
     if (spoken.matches(':disabled') || saying) return;
