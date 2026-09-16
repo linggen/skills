@@ -289,8 +289,26 @@ The button label flips to "Scan" automatically when the widget has no items yet.
 
 **`recommendations`** — Cleanup list with risk levels and commands:
 ```json
-{ "type": "recommendations", "title": "Cleanup", "badge": "~28 GB", "items": [{ "title": "Clear Xcode DerivedData", "description": "Build artifacts", "savings_gb": 12, "risk": "safe", "command": "rm -rf ~/Library/Developer/Xcode/DerivedData" }] }
+{ "type": "recommendations", "title": "Cleanup", "badge": "~28 GB", "items": [{ "id": "xcode-derived-data", "title": "Clear Xcode DerivedData", "description": "Build artifacts", "savings_gb": 12 }] }
 ```
+
+**Cleanup commands come from the page, never from you.** Give each Cleanup
+item the `id` that matches it and leave out `command` and `risk` — the page
+writes the Terminal command, its risk tag and a one-line note for that id:
+
+| id | when |
+|---|---|
+| `library-caches` | `~/Library/Caches` |
+| `xcode-derived-data` | `~/Library/Developer/Xcode/DerivedData` |
+| `ios-simulators` | `~/Library/Developer/CoreSimulator` |
+| `npm-cache` | the npm/npx download cache |
+| `empty-trash` | `~/.Trash` |
+
+An item with no matching id (`node_modules`, Rust `target/`, old downloads)
+gets no command: set its `risk` yourself and say in its description what to
+look at. Never write an
+`rm` command yourself — the page drops any command it did not write, except
+the `mv -i "/Applications/<App>.app" ~/.Trash/` lines in Apps to Review.
 
 **`donut`** — Donut chart with legend:
 ```json
@@ -587,9 +605,17 @@ Two removal postures, and the difference is the whole point:
 Duplicates are confirmed by **full SHA-256**, never a prefix hash: this list
 has a delete button on it.
 
-When a System disk scan surfaces `~/Downloads`, big files or cache bloat,
-point at this tab rather than printing shell commands. Never run `rm` yourself
-— you are read-only, and the user does removals by clicking them.
+Each row carries a tag the page sets from where the file is: **SAFE** for
+caches and the extra copies of a duplicate, **REVIEW** for the user's own
+files, **CAREFUL** for app and tool data (anything under `~/Library`, hidden
+folders in home, app bundles, Python environments, SDK caches). A file under
+`~/Library/CloudStorage` or iCloud Drive is CAREFUL because trashing it
+deletes it from the cloud drive on every device. Select all leaves CAREFUL
+rows out. When asked whether a row is safe, answer from its tag.
+
+Each row's ⋯ menu has Show in Finder and Move to Trash (Delete on caches).
+Never run `rm` yourself — you are read-only, and the user does removals by
+clicking them.
 
 ## Chat mode
 

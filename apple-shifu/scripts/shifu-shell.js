@@ -111,7 +111,7 @@ export function initShell() {
     if (btn && btn.dataset.src !== source) setSource(btn.dataset.src);
   });
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.verb-menu') && !e.target.closest('.verb-btn')) closeMenu();
+    if (!e.target.closest('.verb-menu, .verb-btn, .menu-anchor')) closeMenu();
   });
 
   setActiveTab(activeTab);
@@ -212,33 +212,42 @@ function verbButton(verb, action) {
   return btn;
 }
 
-// ── verb menu (a verb that fans out, e.g. Scan → disk / security / …) ──
+// ── menus (a verb that fans out, e.g. Scan → disk / security / …, and a
+//    row's ⋯). One menu open at a time, whoever opened it. ──
 
 let menuEl = null;
 
-function closeMenu() {
+export function closeMenu() {
   if (menuEl) { menuEl.remove(); menuEl = null; }
 }
 
-function openMenu(anchor, items) {
-  const reopening = menuEl?.dataset.verb === anchor.dataset.verb;
+/** Items: { label, hint?, run, blocked?, danger? }. A second click on the same
+    anchor closes it. An anchor outside the verb row carries `.menu-anchor` so
+    the click that opens the menu does not also close it. */
+export function openMenu(anchor, items) {
+  const reopening = menuEl?.anchor === anchor;
   closeMenu();
   if (reopening) return;
   menuEl = document.createElement('div');
   menuEl.className = 'verb-menu';
-  menuEl.dataset.verb = anchor.dataset.verb;
+  menuEl.anchor = anchor;
   for (const item of items) {
     const row = document.createElement('button');
-    row.className = 'verb-menu-item';
+    row.className = `verb-menu-item${item.danger ? ' danger' : ''}`;
     row.innerHTML = `<span>${esc(item.label)}</span>${
       item.hint ? `<span class="verb-menu-hint">${esc(item.hint)}</span>` : ''}`;
     if (item.blocked) { row.disabled = true; row.title = item.blocked; }
     else row.onclick = () => { closeMenu(); item.run?.(); };
     menuEl.appendChild(row);
   }
-  const r = anchor.getBoundingClientRect();
-  menuEl.style.top = `${r.bottom + 4}px`;
-  menuEl.style.left = `${r.left}px`;
   document.body.appendChild(menuEl);
+  // Below and left-aligned by default; flip up or right-align when that would
+  // run off the window (a row's ⋯ sits at the right edge, often near the bottom).
+  const r = anchor.getBoundingClientRect();
+  const m = menuEl.getBoundingClientRect();
+  const top = r.bottom + 4 + m.height > window.innerHeight - 8 ? r.top - 4 - m.height : r.bottom + 4;
+  const left = r.left + m.width > window.innerWidth - 8 ? r.right - m.width : r.left;
+  menuEl.style.top = `${Math.max(8, top)}px`;
+  menuEl.style.left = `${Math.max(8, left)}px`;
 }
 

@@ -508,6 +508,9 @@ body {
 
 .verb-menu-item:hover:not(:disabled) { background: rgba(99, 102, 241, 0.1); }
 .verb-menu-item:disabled { opacity: 0.45; cursor: not-allowed; }
+/* Destructive verbs sit last and read gold, as on every other item menu. */
+.verb-menu-item.danger { color: #ca8a04; }
+@media (prefers-color-scheme: dark) { .verb-menu-item.danger { color: #facc15; } }
 
 .verb-menu-hint {
   font-size: 10.5px;
@@ -648,7 +651,7 @@ body {
 
 .file-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   padding: 7px 12px;
   border: 1px solid var(--border);
@@ -666,7 +669,38 @@ body {
   background: rgba(99, 102, 241, 0.08);
 }
 
-.file-check { flex: 0 0 14px; }
+.file-check { flex: 0 0 14px; display: flex; align-items: center; }
+.file-check .media-spin { width: 12px; height: 12px; }
+
+/* A row on its way out: spinner in the check, dimmed, no longer clickable. */
+.file-row.removing { opacity: 0.55; cursor: default; }
+.file-row.removing:hover { border-color: var(--border); }
+
+.file-tag {
+  flex: 0 0 62px;
+  padding: 2px 0;
+  font-size: 9.5px;
+  text-align: center;
+  cursor: help;
+}
+
+.file-more,
+.file-more-slot {
+  flex: 0 0 26px;
+  height: 22px;
+}
+
+.file-more {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.file-more:hover { background: var(--bg-hover); color: var(--text); }
 
 .file-size {
   flex: 0 0 78px;
@@ -815,12 +849,14 @@ body {
 
 .rec-risk.safe { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
 .rec-risk.review { background: rgba(234, 179, 8, 0.15); color: #ca8a04; }
-.rec-risk.caution { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.rec-risk.caution,
+.rec-risk.careful { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
 
 @media (prefers-color-scheme: dark) {
   .rec-risk.safe { color: #4ade80; }
   .rec-risk.review { color: #facc15; }
-  .rec-risk.caution { color: #f87171; }
+  .rec-risk.caution,
+  .rec-risk.careful { color: #f87171; }
 }
 
 .rec-info { flex: 1; min-width: 0; }
@@ -864,6 +900,7 @@ body {
 }
 .rec-copy:hover { background: var(--bg-hover); color: var(--text); border-color: var(--accent); }
 .rec-copy.copied { color: var(--success); border-color: var(--success); }
+.rec-cmd-note { font-size: 11px; color: var(--text-muted); margin: 4px 2px 0; }
 
 /* ── Scorecard ── */
 

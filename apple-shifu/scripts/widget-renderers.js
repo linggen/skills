@@ -338,6 +338,50 @@ function renderScorecard(w) {
 
 // ── recommendations ──
 
+// The commands a Cleanup card offers, keyed by the item's `id`. The agent
+// picks which items to show; the page writes what gets pasted into Terminal.
+// A command someone runs as-is is one typo in a path away from deleting the
+// wrong folder, so it never comes from model text. The risk is fixed here too,
+// so the same cache reads SAFE on this card and on the Files tab.
+const CLEANUP_COMMANDS = {
+  'library-caches': {
+    risk: 'safe',
+    command: 'rm -rf ~/Library/Caches/*',
+    note: 'Quit your apps first. They rebuild these on next launch.',
+  },
+  'xcode-derived-data': {
+    risk: 'safe',
+    command: 'rm -rf ~/Library/Developer/Xcode/DerivedData',
+    note: 'Xcode rebuilds it on the next build.',
+  },
+  'ios-simulators': {
+    risk: 'review',
+    command: 'xcrun simctl shutdown all && xcrun simctl erase all',
+    note: 'Wipes the apps and data inside every simulator. The simulators stay.',
+  },
+  'npm-cache': {
+    risk: 'safe',
+    command: 'npm cache clean --force',
+    note: 'npm downloads packages again when a project needs them.',
+  },
+  'empty-trash': {
+    risk: 'review',
+    command: 'osascript -e \'tell application "Finder" to empty trash\'',
+    note: 'Permanent. Look through the Trash first.',
+  },
+};
+
+// The one shape of command the agent may still write itself: moving an app to
+// the Trash, which stays recoverable (Apps to Review).
+const AGENT_COMMAND = /^mv -i "\/Applications\/[^"]+\.app" ~\/\.Trash\/$/;
+
+function cleanupEntry(r) {
+  const known = CLEANUP_COMMANDS[r.id];
+  if (known) return known;
+  const agent = typeof r.command === 'string' && AGENT_COMMAND.test(r.command) ? r.command : null;
+  return { risk: r.risk || 'review', command: agent, note: null };
+}
+
 function renderRecommendations(w) {
   const panel = el('div', 'panel');
   panel.innerHTML = panelHeaderHtml(w);
@@ -346,29 +390,31 @@ function renderRecommendations(w) {
   const list = el('div', 'rec-list');
   for (const r of (w.items || [])) {
     const item = el('div', 'rec-item');
+    const { risk, command, note } = cleanupEntry(r);
     item.innerHTML = `
       <div class="rec-header">
-        <span class="rec-risk ${esc(r.risk || 'review')}">${esc(r.risk || 'review')}</span>
+        <span class="rec-risk ${esc(risk)}">${esc(risk)}</span>
         <div class="rec-info">
           <div class="rec-title">${esc(r.title)}</div>
           ${r.description ? `<div class="rec-desc">${esc(r.description)}</div>` : ''}
         </div>
         ${r.savings_gb ? `<span class="rec-savings">${fmtGb(r.savings_gb)}</span>` : ''}
       </div>
-      ${r.command ? `
+      ${command ? `
         <div class="rec-cmd-block">
-          <code class="rec-cmd-code">${esc(r.command)}</code>
+          <code class="rec-cmd-code">${esc(command)}</code>
           <button class="rec-copy" type="button">Copy</button>
         </div>
+        ${note ? `<div class="rec-cmd-note">${esc(note)}</div>` : ''}
       ` : ''}
     `;
-    // Close over r.command directly — avoids HTML-attribute escaping
+    // Close over the command directly — avoids HTML-attribute escaping
     // pitfalls. esc() doesn't escape `"`, so commands containing quoted
     // paths (e.g. `mv -i "/Applications/Foo.app" ~/.Trash/`) used to break
     // a data-cmd attribute mid-value.
     const copyBtn = item.querySelector('.rec-copy');
-    if (copyBtn && r.command) {
-      const cmd = r.command;
+    if (copyBtn && command) {
+      const cmd = command;
       copyBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(cmd).then(() => {
           copyBtn.textContent = 'Copied!';

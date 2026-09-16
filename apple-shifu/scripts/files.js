@@ -14,11 +14,11 @@
 // is enforced where it cannot be argued with rather than in this file.
 
 import {
-  registerTab, getSource, onSourceChange, onTabChange, refreshVerbs,
+  registerTab, getSource, getActiveTab, onSourceChange, onTabChange, refreshVerbs, openMenu,
 } from './shifu-shell.js';
 import {
-  bash, writeLines, fmtBytes, esc, abbrevPath, relAge,
-  confirmDialog, showToast, flashToast,
+  bash, writeLines, fmtBytes, esc, abbrevPath, relAge, shellEsc,
+  confirmDialog, showToast,
 } from './shifu-io.js';
 
 const FILES_SH = '$HOME/.linggen/skills/apple-shifu/scripts/files.sh';
@@ -40,7 +40,11 @@ let panel = null;
 let activeCat = 'downloads';
 let selected = new Set();          // absolute paths
 let scanned = false;
-let busyOp = null;
+/** Jobs running now, token -> { kind: 'scan' | 'hash' | 'remove', label }.
+    Removals can overlap (each row's ⋯ starts its own); a scan or a hash
+    cannot run beside anything, or it would redraw rows that are going. */
+const ops = new Map();
+const removing = new Set();        // paths whose removal is in flight
 const rows = { downloads: [], large: [], cache: [] };
 let dupeGroups = [];               // [{ sha, size, paths: [] }]
 let dupesHashed = false;
@@ -55,6 +59,9 @@ export function initFilesTab() {
   registerTab('files', filesProvider);
   onTabChange((name) => { if (name === 'files') render(); });
   onSourceChange(() => render());
+  // A page reopened on this tab switched to it before this module listened,
+  // which left the panel blank. Draw now if it is already the one showing.
+  if (getActiveTab() === 'files') render();
 }
 
 const filesProvider = {
@@ -62,11 +69,13 @@ const filesProvider = {
   verbs: (source) => {
     if (source === 'phone') return phoneVerbs();
     const actions = macVerbs();
-    if (busyOp) for (const k of Object.keys(actions)) actions[k] = { blocked: busyOp };
+    const busy = busyLabel();
+    if (busy) for (const k of Object.keys(actions)) actions[k] = { blocked: busy };
     return actions;
   },
   meta: (source) => {
-    if (busyOp) return `<span class="verb-busy">${esc(busyOp)}</span>`;
+    const busy = busyLabel();
+    if (busy) return `<span class="verb-busy">${esc(busy)}</span>`;
     if (source === 'phone' || !selected.size) return '';
     return `<b>${selected.size.toLocaleString()} selected · ${fmtBytes(selectedBytes())}</b>`;
   },
@@ -98,15 +107,36 @@ function macVerbs() {
         hint: purging
           ? `Delete ${selected.size.toLocaleString()} cache${selected.size === 1 ? '' : 's'} (${fmtBytes(selectedBytes())}) outright — caches regenerate`
           : `Move ${selected.size.toLocaleString()} item${selected.size === 1 ? '' : 's'} (${fmtBytes(selectedBytes())}) to the macOS Trash`,
-        run: () => cleanSelected(cat),
+        run: () => removePaths([...selected], cat),
       }
       : { label: purging ? 'Delete' : 'Trash', blocked: 'Check items to remove them' },
   };
 }
 
-function setBusy(op) {
-  busyOp = op;
+function beginOp(kind, label) {
+  const token = Symbol(kind);
+  ops.set(token, { kind, label });
   refreshVerbs();
+  return token;
+}
+
+function endOp(token) {
+  ops.delete(token);
+  refreshVerbs();
+}
+
+function busyLabel() {
+  let label = null;
+  for (const op of ops.values()) label = op.label;
+  return label;
+}
+
+/** Why a removal cannot start right now, or null when it can. */
+function removalBlocked() {
+  for (const op of ops.values()) {
+    if (op.kind !== 'remove') return 'Wait for the scan to finish';
+  }
+  return null;
 }
 
 // ── scan ──
@@ -144,7 +174,7 @@ function parseCacheLine(line) {
 
 async function scan(force = false) {
   if (scanned && !force) return;
-  setBusy('Scanning…');
+  const op = beginOp('scan', 'Scanning…');
   measured.clear();
   dupesHashed = false;
   dupeGroups = [];
@@ -171,7 +201,7 @@ async function scan(force = false) {
     render();
     toast.done(`✓ ${rows.downloads.length + rows.large.length} files · ${rows.cache.length} caches`);
   } finally {
-    setBusy(null);
+    endOp(op);
   }
 }
 
@@ -204,7 +234,7 @@ async function findDuplicates() {
 
   const capped = candidates.slice(0, DUPE_HASH_CAP);
   const dropped = candidates.length - capped.length;
-  setBusy('Hashing…');
+  const op = beginOp('hash', 'Hashing…');
   const toast = showToast(`Hashing ${capped.length} same-size files…`, true);
   try {
     await writeLines(WORK_DIR, 'dupe-candidates.txt', capped.map((f) => f.path));
@@ -234,7 +264,7 @@ async function findDuplicates() {
       ? `✓ ${dupeGroups.length} duplicate groups · ${dropped} more candidates not hashed this pass`
       : `✓ ${dupeGroups.length} duplicate groups`);
   } finally {
-    setBusy(null);
+    endOp(op);
   }
 }
 
@@ -265,52 +295,141 @@ function pruneSelected() {
   for (const p of [...selected]) if (!live.has(p)) selected.delete(p);
 }
 
+// ── tags ──
+//
+// Every row answers "is this safe?" before anyone has to ask, in the same
+// three words the System tab's Cleanup card uses. The page sets the tag from
+// where the file sits, never from the agent, so a file reads the same way
+// every time it is drawn.
+
+/** The folders whose files belong to an app or a tool rather than to the
+    person, and what removing one costs. First match wins. */
+const CAREFUL_PLACES = [
+  { re: /^~\/Library\/(CloudStorage|Mobile Documents)\//,
+    why: 'Synced. Trashing it deletes it from your cloud drive on every device.' },
+  { re: /^~\/Library\//, why: 'App data. Removing it can break the app that owns it.' },
+  { re: /^~\/\.[^/]+\//, why: 'Tool data. Removing it can break the tool that owns it.' },
+  { re: /\.app\//, why: 'Part of an app. Removing it breaks the app.' },
+  { re: /\/(miniconda3|anaconda3|miniforge3|mambaforge|site-packages|\.venv|venv)\//,
+    why: 'Python environment. Removing it breaks that environment.' },
+  { re: /\/bin\/cache\//, why: 'SDK files. The SDK breaks until it downloads them again.' },
+];
+
+/** `{ risk: 'safe' | 'review' | 'careful', why }` for a row in pile `key`.
+    `original` marks the oldest copy in a duplicate group. */
+function tagFor(key, path, original = false) {
+  if (key === 'cache') return { risk: 'safe', why: 'A cache. Apps rebuild it on next launch.' };
+  const shown = abbrevPath(path);
+  const place = CAREFUL_PLACES.find((c) => c.re.test(shown));
+  if (place) return { risk: 'careful', why: place.why };
+  if (key === 'dupe') {
+    return original
+      ? { risk: 'review', why: 'Likely the original. Keep at least one copy.' }
+      : { risk: 'safe', why: 'An identical copy stays on this Mac.' };
+  }
+  return { risk: 'review', why: 'Your file. It goes to the Trash, recoverable until you empty it.' };
+}
+
 // ── remove ──
 
-async function cleanSelected(cat) {
-  const paths = [...selected];
-  if (!paths.length) return;
-  const bytes = selectedBytes();
+/**
+ * Remove `paths` from pile `cat` — the bulk verb and each row's ⋯ both land
+ * here. Rows show a spinner while they go and drop the moment files.sh
+ * reports them gone, read from its `.done` list as it grows; nothing waits on
+ * a rescan. Each call gets its own list file, so removals started from
+ * different rows can overlap.
+ */
+async function removePaths(paths, cat) {
+  const blocked = removalBlocked();
+  paths = paths.filter((p) => !removing.has(p));
+  if (blocked || !paths.length) return;
   const purge = cat.posture === 'purge';
+  // Sizes as drawn now — the rows are gone by the time the toast adds them up.
+  const sizes = new Map(paths.map((p) => [p, sizeOf(p)]));
+  const bytes = [...sizes.values()].reduce((s, b) => s + b, 0);
+  const n = paths.length;
+  const what = n === 1
+    ? `<b>${esc(abbrevPath(paths[0]).split('/').pop())} (${fmtBytes(bytes)})</b>`
+    : `<b>${n.toLocaleString()} ${purge ? 'caches' : 'items'} (${fmtBytes(bytes)})</b>`;
   const ok = await confirmDialog(
     purge
-      ? `<b>${paths.length.toLocaleString()} cache${paths.length === 1 ? '' : 's'} (${fmtBytes(bytes)})</b>
-         will be <b>deleted outright</b>, not moved to the Trash — a cache sitting in the Trash
-         frees no space until you empty it. Apps rebuild these on next launch, so nothing of
-         yours is lost, but this cannot be undone.`
-      : `<b>${paths.length.toLocaleString()} item${paths.length === 1 ? '' : 's'} (${fmtBytes(bytes)})</b>
-         will be moved to the macOS Trash. You can restore them from the Trash anytime — the
-         space frees when you empty it.`,
-    purge ? `Delete ${paths.length.toLocaleString()}` : `Move ${paths.length.toLocaleString()} to Trash`,
+      ? `${what} will be <b>deleted outright</b>, not moved to the Trash — a cache sitting in the
+         Trash frees no space until you empty it. Apps rebuild caches on next launch, so nothing
+         of yours is lost, but this cannot be undone.`
+      : `${what} will be moved to the macOS Trash. You can restore ${n === 1 ? 'it' : 'them'}
+         from the Trash anytime — the space frees when you empty it.`,
+    purge ? (n === 1 ? 'Delete' : `Delete ${n.toLocaleString()}`)
+      : (n === 1 ? 'Move to Trash' : `Move ${n.toLocaleString()} to Trash`),
     purge);
-  if (!ok) return;
+  if (!ok || removalBlocked()) return;
 
-  setBusy(purge ? 'Deleting…' : 'Moving to Trash…');
-  const toast = showToast(purge ? 'Deleting…' : 'Moving to Trash…', true);
+  const verb = purge ? 'Deleting' : 'Moving to Trash';
+  for (const p of paths) { removing.add(p); selected.delete(p); }
+  const op = beginOp('remove', `${verb}…`);
+  renderPane();
+  const toast = showToast(`${verb}…`, true);
+  const list = `remove-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`;
+  const listPath = `${WORK_DIR}/${list}`;
+  const gone = new Set();
+  const collect = async () => {
+    const res = await bash(`cat "${listPath}.done" 2>/dev/null || true`);
+    let moved = false;
+    for (const p of (res.stdout || '').split('\n')) {
+      if (!p || gone.has(p) || !sizes.has(p)) continue;
+      gone.add(p);
+      dropPath(p);
+      moved = true;
+    }
+    if (moved) {
+      render();
+      if (n > 1) toast.update(`${verb}… ${gone.size.toLocaleString()} of ${n.toLocaleString()}`);
+    }
+  };
+  let r = {};
   try {
-    await writeLines(WORK_DIR, 'remove-list.txt', paths);
-    const res = await bash(`bash ${FILES_SH} ${purge ? 'purge' : 'trash'} "${WORK_DIR}/remove-list.txt"`);
-    let r = {};
-    try { r = JSON.parse(res.stdout || '{}'); } catch { /* reported below */ }
-    // Reclaimed bytes come from the sizes this pane already showed, summed
-    // over exactly the paths that went — not from a second measurement, which
-    // would let the toast and the row disagree about the same file.
-    const gone = await bash(`cat "${WORK_DIR}/remove-list.txt.done" 2>/dev/null || true`);
-    const gonePaths = (gone.stdout || '').split('\n').filter(Boolean);
-    const freed = gonePaths.reduce((s, p) => s + sizeOf(p), 0);
-    const done = r.removed ?? r.trashed ?? gonePaths.length;
-    const notes = [];
-    if (r.failed) notes.push(`${r.failed} could not be removed`);
-    // files.sh refuses non-cache paths; if that ever fires, say so out loud
-    // rather than quietly reporting a smaller number.
-    if (r.refused) notes.push(`${r.refused} refused — not inside a cache root`);
-    for (const p of paths) selected.delete(p);
-    await scan(true);
-    toast.done(`✓ ${purge ? 'Deleted' : 'Trashed'} ${done.toLocaleString()} · ${fmtBytes(freed)}${
-      notes.length ? ` · ${notes.join(' · ')}` : ''}${purge ? '' : ' — empty the Trash to reclaim it'}`);
+    await writeLines(WORK_DIR, list, paths);
+    const timer = setInterval(collect, 800);
+    let res;
+    try {
+      res = await bash(`bash ${FILES_SH} ${purge ? 'purge' : 'trash'} "${listPath}"`);
+    } finally {
+      clearInterval(timer);
+    }
+    try { r = JSON.parse(res.stdout || '{}'); } catch { /* counted from .done below */ }
+    await collect();
   } finally {
-    setBusy(null);
+    for (const p of paths) removing.delete(p);
+    bash(`rm -f "${listPath}" "${listPath}.done"`);
+    endOp(op);
+    render();
   }
+
+  // Reclaimed bytes are the sizes this pane showed, summed over exactly the
+  // paths that went — not a second measurement, which would let the toast and
+  // the row disagree about the same file.
+  const freed = [...gone].reduce((s, p) => s + (sizes.get(p) || 0), 0);
+  const notes = [];
+  if (r.failed) notes.push(`${r.failed} could not be removed`);
+  // files.sh refuses non-cache paths; if that ever fires, say so out loud
+  // rather than quietly reporting a smaller number.
+  if (r.refused) notes.push(`${r.refused} refused — not inside a cache root`);
+  toast.done(`✓ ${purge ? 'Deleted' : 'Trashed'} ${gone.size.toLocaleString()} · ${fmtBytes(freed)}${
+    notes.length ? ` · ${notes.join(' · ')}` : ''}${purge || !gone.size ? '' : ' — empty the Trash to reclaim it'}`);
+}
+
+/** Take a removed path out of every pile — Downloads and Large files overlap,
+    and a removed folder takes the files listed inside it with it. */
+function dropPath(p) {
+  const hit = (q) => q === p || q.startsWith(`${p}/`);
+  for (const key of Object.keys(rows)) rows[key] = rows[key].filter((f) => !hit(f.path));
+  dupeGroups = dupeGroups
+    .map((g) => ({ ...g, paths: g.paths.filter((q) => !hit(q)) }))
+    .filter((g) => g.paths.length > 1);
+  for (const q of [...selected]) if (hit(q)) selected.delete(q);
+}
+
+function revealInFinder(path) {
+  bash(`open -R ${shellEsc(path)}`);
 }
 
 function reportFiles() {
@@ -334,6 +453,12 @@ function itemsFor(key) {
   return (rows[key] || []).map((f) => f.path);
 }
 
+/** What Select all takes: the pile minus CAREFUL rows and rows already going.
+    A careful row is still one click to check by hand. */
+function selectableFor(key) {
+  return itemsFor(key).filter((p) => !removing.has(p) && tagFor(key, p).risk !== 'careful');
+}
+
 function bytesFor(key) {
   if (key === 'dupe') return dupeGroups.reduce((s, g) => s + g.size * (g.paths.length - 1), 0);
   return (rows[key] || []).reduce((s, f) => s + f.size, 0);
@@ -341,14 +466,15 @@ function bytesFor(key) {
 
 function render() {
   if (!panel || getSource() !== 'mac') return renderPhone();
+  const scanning = [...ops.values()].some((op) => op.kind === 'scan');
   // A scan fills the piles one at a time and redraws after each. Gate the
   // empty state on there being nothing to show, not on the scan having
   // finished — otherwise the panel reads "nothing scanned yet" while rows it
   // already has sit undrawn behind it.
-  if (!allRows().length) {
+  if (!allRows().length && (scanning || !scanned)) {
     panel.innerHTML = `<div class="media-card dashed">
-      <h4 class="media-dim">${busyOp ? 'Scanning…' : 'Nothing scanned yet'}</h4>
-      <div class="media-dim">${busyOp
+      <h4 class="media-dim">${scanning ? 'Scanning…' : 'Nothing scanned yet'}</h4>
+      <div class="media-dim">${scanning
         ? 'Reading Downloads, the biggest files under your home folder, and app caches.'
         : 'Hit ↻ Scan above to read Downloads, the biggest files under your home folder, and the caches apps have left behind.'}</div></div>`;
     refreshVerbs();
@@ -379,8 +505,11 @@ function render() {
 
   for (const chip of panel.querySelectorAll('.media-chip-f')) {
     chip.onclick = () => {
+      // Checks belong to the pile they were made in. Trash and Delete differ
+      // by pile, so a check carried across would be removed the other way.
+      if (chip.dataset.cat !== activeCat) selected.clear();
       activeCat = chip.dataset.cat;
-      if (activeCat === 'dupe' && !dupesHashed) { findDuplicates().then(render); return; }
+      if (activeCat === 'dupe' && !dupesHashed && !ops.size) { findDuplicates().then(render); return; }
       render();
     };
   }
@@ -404,72 +533,99 @@ function renderPane() {
   const pane = document.getElementById('files-pane');
   if (!pane) return;
   const pool = itemsFor(activeCat);
+  const skipsCareful = pool.some((p) => tagFor(activeCat, p).risk === 'careful');
+  const hint = activeCat === 'dupe'
+    ? 'oldest copy of each group is left unchecked — it is the likely original'
+    : 'sorted by size, biggest first';
   const bar = `<div class="catbar">
-      <button class="media-cta ghost sm" id="files-select-btn"></button>
-      <button class="media-cta ghost sm" id="files-clear-btn">Clear</button>
-      <span class="media-dim">${activeCat === 'dupe'
-        ? 'oldest copy of each group is left unchecked — it is the likely original'
-        : 'sorted by size, biggest first'}</span></div>`;
+      <button class="media-cta ghost sm" id="files-select-btn">Select all</button>
+      <button class="media-cta ghost sm" id="files-unselect-btn">Unselect</button>
+      <span class="media-dim">${hint}${skipsCareful ? ' · Select all leaves CAREFUL rows out' : ''}</span></div>`;
 
   if (!pool.length) {
-    pane.innerHTML = `${bar}<div class="media-dim">${
-      activeCat === 'dupe'
+    const empty = activeCat === 'dupe' && !dupesHashed
+      ? 'Duplicates are checked once the current job finishes — pick Duplicates again then.'
+      : activeCat === 'dupe'
         ? 'No duplicates among the files scanned — every same-size pair differed once hashed in full.'
-        : 'Nothing in this pile.'}</div>`;
-    wireBar(pool);
+        : 'Nothing in this pile.';
+    pane.innerHTML = `${bar}<div class="media-dim">${empty}</div>`;
+    wireBar();
     return;
   }
 
   pane.innerHTML = bar + (activeCat === 'dupe' ? dupeHtml() : listHtml(activeCat));
   for (const el of pane.querySelectorAll('.file-row')) {
+    const p = el.dataset.path;
     el.onclick = (e) => {
-      if (e.target.tagName === 'A') return;
-      const p = el.dataset.path;
+      if (e.target.tagName === 'A' || e.target.closest('.file-more') || removing.has(p)) return;
       if (selected.has(p)) selected.delete(p); else selected.add(p);
       renderPane();
       refreshVerbs();
     };
+    const more = el.querySelector('.file-more');
+    if (more) more.onclick = () => openRowMenu(more, p);
   }
-  wireBar(pool);
+  wireBar();
 }
 
-function wireBar(pool) {
+/** A row's ⋯: look first, then remove — the destructive verb last. */
+function openRowMenu(anchor, path) {
+  const cat = CATEGORIES.find((c) => c.key === activeCat);
+  const purge = cat.posture === 'purge';
+  const blocked = removalBlocked();
+  openMenu(anchor, [
+    { label: 'Show in Finder', run: () => revealInFinder(path) },
+    {
+      label: purge ? 'Delete' : 'Move to Trash',
+      hint: purge ? 'caches regenerate' : 'recoverable',
+      danger: true,
+      ...(blocked ? { blocked } : { run: () => removePaths([path], cat) }),
+    },
+  ]);
+}
+
+function wireBar() {
   const sel = document.getElementById('files-select-btn');
-  const clr = document.getElementById('files-clear-btn');
-  if (!sel || !clr) return;
-  const allOn = pool.length > 0 && pool.every((p) => selected.has(p));
-  sel.textContent = allOn ? 'Unselect all' : 'Select all';
-  sel.disabled = !pool.length;
+  const uns = document.getElementById('files-unselect-btn');
+  if (!sel || !uns) return;
+  const pool = selectableFor(activeCat);
+  sel.disabled = !pool.length || pool.every((p) => selected.has(p));
   sel.onclick = () => {
-    for (const p of pool) if (allOn) selected.delete(p); else selected.add(p);
+    for (const p of pool) selected.add(p);
     renderPane();
     refreshVerbs();
   };
-  clr.disabled = !selected.size;
-  clr.onclick = () => { selected.clear(); renderPane(); refreshVerbs(); };
+  uns.disabled = !selected.size;
+  uns.onclick = () => { selected.clear(); renderPane(); refreshVerbs(); };
 }
 
 /** Directory dimmed and truncatable, name always whole. Truncating the tail
     would cut the very part that identifies the file, and a right-to-left
     ellipsis reorders the leading `~` ("~/.cache" drawn as "cache./~"). */
-function rowHtml(path, size, meta) {
+function rowHtml(key, path, size, meta, original = false) {
   const shown = abbrevPath(path);
   const cut = shown.lastIndexOf('/');
   const dir = cut >= 0 ? shown.slice(0, cut + 1) : '';
   const name = cut >= 0 ? shown.slice(cut + 1) : shown;
-  return `<div class="file-row ${selected.has(path) ? 'on' : ''}" data-path="${esc(path)}">
-    <span class="file-check">${selected.has(path) ? '☑' : '☐'}</span>
+  const going = removing.has(path);
+  const on = selected.has(path);
+  const tag = tagFor(key, path, original);
+  return `<div class="file-row ${on ? 'on' : ''} ${going ? 'removing' : ''}" data-path="${esc(path)}">
+    <span class="file-check">${going ? '<span class="media-spin"></span>' : on ? '☑' : '☐'}</span>
+    <span class="rec-risk ${tag.risk} file-tag" title="${esc(tag.why)}">${tag.risk}</span>
     <span class="file-size">${fmtBytes(size)}</span>
     <span class="file-path" title="${esc(path)}"><span class="file-dir">${esc(dir)}</span><span
       class="file-name">${esc(name)}</span></span>
-    <span class="file-meta">${esc(meta)}</span></div>`;
+    <span class="file-meta">${esc(meta)}</span>
+    ${going ? '<span class="file-more-slot"></span>'
+    : '<button class="file-more menu-anchor" type="button" title="More">⋯</button>'}</div>`;
 }
 
 function listHtml(key) {
   const list = (rows[key] || []).slice(0, RENDER_CAP);
   const more = (rows[key] || []).length - list.length;
   const meta = (f) => (key === 'cache' ? f.label : `last opened ${relAge(f.atime) || '?'} ago`);
-  return list.map((f) => rowHtml(f.path, f.size, meta(f))).join('')
+  return list.map((f) => rowHtml(key, f.path, f.size, meta(f))).join('')
     + (more > 0 ? `<div class="media-dim">+${more.toLocaleString()} more not drawn — Select all still covers them.</div>` : '');
 }
 
@@ -478,7 +634,7 @@ function dupeHtml() {
     <div class="media-group">
       <div class="glabel">${g.paths.length} copies · ${fmtBytes(g.size)} each ·
         ${fmtBytes(g.size * (g.paths.length - 1))} reclaimable · verified by full SHA-256</div>
-      ${g.paths.map((p, i) => rowHtml(p, g.size, i === 0 ? 'oldest — likely the original' : ''))
+      ${g.paths.map((p, i) => rowHtml('dupe', p, g.size, i === 0 ? 'oldest — likely the original' : '', i === 0))
     .join('')}
     </div>`).join('');
 }
