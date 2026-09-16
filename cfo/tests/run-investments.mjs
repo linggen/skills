@@ -22,6 +22,12 @@ import {
   proposalPlans,
   changeOf,
   markedHtml,
+  latestBrief,
+  weekItems,
+  briefDayLabel,
+  whoOf,
+  stakeText,
+  askText,
 } from '../scripts/investments.js';
 
 let pass = 0, fail = 0;
@@ -178,6 +184,37 @@ const item = { symbol: 'AAPL', name: 'Apple Inc.', form: '8-K', period: '2026-06
 const prompt = readPrompt([item], 'latest');
 t('the read prompt names the button and carries the item whole',
   prompt.includes('Latest report for AAPL') && prompt.includes('"Company reports"') && prompt.endsWith(JSON.stringify([item])));
+
+// ── The Watch ──────────────────────────────────────────────────────────────
+{
+  const doc = {
+    items: [
+      { id: 'move:TSLA', symbol: 'TSLA', kind: 'move', at: '2026-09-16T20:00:00Z', held: true, stake: 2173, currency: 'USD', materiality: 'high', line: 'Tesla fell 14.5%.', url: 'https://x/1' },
+      { id: 'policy:1', scope: 'economy', kind: 'policy', at: '2026-09-16T12:00:00Z', holdings: ['TSLA', 'NVDA'], held: true, stake: 555, currency: 'USD', materiality: 'medium', line: 'Tariffs.' },
+      { id: 'news:ry', symbol: 'RY.TO', kind: 'news', at: '2026-09-15T12:00:00Z', held: false, stake: 0, materiality: 'low', line: 'Royal Bank news.' },
+      { id: 'news:old', symbol: 'NVDA', also: ['TSLA', 'NVDA'], kind: 'news', at: '2026-09-14T12:00:00Z', held: true, stake: 42, currency: 'USD', materiality: 'low', line: 'Older.' },
+    ],
+    briefs: {
+      '2026-09-15': { lines: ['news:ry'], quiet: false },
+      '2026-09-17': { lines: ['move:TSLA', 'gone', 'policy:1'], quiet: false, level: 'quiet' },
+    },
+  };
+  const brief = latestBrief(doc);
+  t('the newest brief, its lines as items (ids no longer kept are skipped)',
+    brief.day === '2026-09-17' && brief.level === 'quiet' && eq(brief.items.map((i) => i.id), ['move:TSLA', 'policy:1']));
+  t('before the first night there is no brief', latestBrief({}) === null && latestBrief({ briefs: {} }) === null);
+  t('the week is the rest, newest first', eq(weekItems(doc, brief).map((i) => i.id), ['news:ry', 'news:old']));
+  t('a brief\'s day reads as this morning, yesterday, or its date',
+    briefDayLabel('2026-09-17', '2026-09-17') === 'This morning' && briefDayLabel('2026-09-16', '2026-09-17') === 'Yesterday'
+    && briefDayLabel('2026-09-01', '2026-09-17') === 'Sep 1, 2026');
+  t('who: the ticker and the other holdings it names, an economy event\'s holdings, or the economy',
+    whoOf(doc.items[3]) === 'NVDA, TSLA' && whoOf(doc.items[1]) === 'TSLA, NVDA' && whoOf({ scope: 'economy' }) === 'Economy');
+  const usd0 = (n) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+  t('a holding shows its stake; a watched ticker says so',
+    stakeText(doc.items[0]) === `${usd0(2173)} at stake` && stakeText(doc.items[2]) === 'Watching' && stakeText({ held: false, scope: 'economy' }) === '');
+  t('Ask CFO quotes the line and its source', askText(doc.items[0]) === 'What does this mean for my holdings? "Tesla fell 14.5%." (https://x/1)'
+    && askText(doc.items[1]) === 'What does this mean for my holdings? "Tariffs."');
+}
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

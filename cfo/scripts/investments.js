@@ -7,7 +7,9 @@
 // holds report summaries, written only by the agent's SaveReport. The page
 // finds reports itself (market.pl) and calls the model only to read one.
 // Holdings the agent proposes in chat (PageUpdate body.holdings) wait on the
-// tab until the user applies them — the agent never writes a cell.
+// tab until the user applies them — the agent never writes a cell. The Watch
+// card shows the nightly brief (data/watch.json, written only by market.pl)
+// and holds its switch (the cfo:watch mission) and level.
 
 import { investmentsOf } from './lww.js';
 
@@ -45,6 +47,8 @@ const unlisted = new Set(); // proposed symbols the lookup found no listing for
  * @param {(s: string) => string} d.esc
  * @param {(text: string) => boolean} d.ask a hidden message to the CFO agent;
  *   false when the chat isn't up
+ * @param {(text: string) => boolean} d.say a message in the user's own words,
+ *   shown in the chat; false when the chat isn't up
  * @param {string} d.data data dir, `$HOME` left literal for bash
  */
 export function initInvestments(d) {
@@ -53,6 +57,7 @@ export function initInvestments(d) {
   root.addEventListener('click', onClick);
   root.addEventListener('contextmenu', onContextMenu);
   root.addEventListener('keydown', onKeydown);
+  root.addEventListener('change', onChange);
   document.getElementById('inv-add').addEventListener('submit', onAdd);
 }
 
@@ -63,7 +68,8 @@ export async function renderInvestView() {
   await loadReports();
   draw();
   refresh();
-  if (!timer) timer = setInterval(() => { if (!document.hidden) refresh(); }, REFRESH_MS);
+  loadWatch();
+  if (!timer) timer = setInterval(() => { if (!document.hidden) { refresh(); loadWatch(); } }, REFRESH_MS);
 }
 
 export function leaveInvestView() {
@@ -354,12 +360,58 @@ export function readPrompt(items, why) {
   return `${lead} Read and save each one as "Company reports" in your instructions says, then tell the user what matters in a few sentences.\n\n${JSON.stringify(items)}`;
 }
 
+// ── Pure: the Watch ────────────────────────────────────────────────────────
+
+/// The newest brief in data/watch.json: {day, quiet, level, items[]} with its
+/// lines as judged items, or null before the first night.
+export function latestBrief(doc) {
+  const days = Object.keys(doc?.briefs || {}).sort();
+  const day = days[days.length - 1];
+  if (!day) return null;
+  const brief = doc.briefs[day];
+  const byId = new Map((doc.items || []).map((i) => [i.id, i]));
+  return { day, quiet: !!brief.quiet, level: brief.level || 'normal', items: (brief.lines || []).map((id) => byId.get(id)).filter(Boolean) };
+}
+
+/// The week's other judged events, newest first.
+export function weekItems(doc, brief) {
+  const shown = new Set((brief?.items || []).map((i) => i.id));
+  return (doc?.items || []).filter((i) => !shown.has(i.id)).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+}
+
+/// "This morning" / "Yesterday" / "Sep 14, 2026" for a brief's day.
+export function briefDayLabel(day, today) {
+  if (day === today) return 'This morning';
+  const d = new Date(`${today}T12:00:00`);
+  d.setDate(d.getDate() - 1);
+  return day === d.toLocaleDateString('en-CA') ? 'Yesterday' : dayOf(day);
+}
+
+/// Whose event it is: its ticker (and any other holding it names), the
+/// holdings an economy event touches, or "Economy".
+export function whoOf(item) {
+  const syms = item.symbol ? [item.symbol, ...(item.also || [])] : item.holdings || [];
+  return syms.length ? [...new Set(syms)].join(', ') : 'Economy';
+}
+
+/// "$428 at stake" for a holding, "Watching" for a watched-only ticker.
+export function stakeText(item) {
+  if (!item.held) return item.symbol ? 'Watching' : '';
+  return item.stake > 0 && item.currency ? `${money(item.stake, item.currency, 0)} at stake` : '';
+}
+
+/// What Ask CFO says in the chat, in the user's voice.
+export function askText(item) {
+  return `What does this mean for my holdings? "${item.line}"${/^https:\/\//.test(item.url || '') ? ` (${item.url})` : ''}`;
+}
+
 // ── Drawing ────────────────────────────────────────────────────────────────
 
 const rowsNow = () => positionsOf(investmentsOf(deps.edits()), quotes);
 
 function draw() {
   const rows = rowsNow();
+  document.getElementById('inv-watch').innerHTML = watchHtml();
   document.getElementById('inv-proposals').innerHTML = proposalsHtml();
   document.getElementById('inv-summary').innerHTML = summaryHtml(rows);
   if (editing) return; // never wipe a form mid-typing
@@ -470,6 +522,58 @@ function reportsHtml(symbol) {
   </div>`;
 }
 
+/// The Watch card: the switch and level, the latest brief, the week behind it.
+function watchHtml() {
+  const { esc } = deps;
+  const { mission, running, doc, more, note } = watch;
+  const on = !!mission?.enabled;
+  const brief = latestBrief(doc);
+  const week = weekItems(doc, brief);
+  const today = new Date().toLocaleDateString('en-CA');
+  const level = doc.level || 'normal';
+  const controls = !mission
+    ? ''
+    : on
+      ? `<select data-act="watch-level" aria-label="How much the Watch tells you">${[['quiet', 'Quiet'], ['normal', 'Normal'], ['everything', 'Everything']]
+        .map(([v, label]) => `<option value="${v}"${v === level ? ' selected' : ''}>${label}</option>`).join('')}</select>
+        <button class="chip" data-act="watch-run" ${running ? 'disabled' : ''}>Check now</button>
+        <button class="chip ghost" data-act="watch-off">Turn off</button>`
+      : `<button class="btn" data-act="watch-on">Turn on</button>`;
+  const intro = !brief && !running
+    ? `<p class="hint">${on ? 'Your first brief comes after tonight’s check.' : 'Every night, what happened to your money — up to three lines by morning, or nothing.'}</p>`
+    : '';
+  const day = brief ? `<div class="inv-watch-day">${esc(briefDayLabel(brief.day, today))}${brief.quiet ? ' · a quiet night' : ''}</div>${brief.items.map(watchLineHtml).join('')}` : '';
+  const rest = week.length
+    ? `<button class="link inv-watch-more" data-act="watch-more">${more ? 'Hide the week' : `${week.length} more this week`}</button>${more ? week.map(watchLineHtml).join('') : ''}`
+    : '';
+  return `<div class="inv-watch">
+    <div class="inv-watch-h"><b>✦ Watch</b><span class="hint inline">${esc(note || watchStatus())}</span><span class="spacer"></span>${controls}</div>
+    ${intro}${day}${rest}
+  </div>`;
+}
+
+function watchStatus() {
+  const { mission, running, lastRun } = watch;
+  if (!mission) return 'Unavailable — restart Linggen';
+  if (running) return 'Checking now…';
+  if (!mission.enabled) return 'Off';
+  if (!lastRun) return 'On — every night at 1:00';
+  const when = new Date(lastRun.triggered_at * 1000).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  return lastRun.status === 'completed' ? `Checked ${when}` : `The check ${when} didn’t finish`;
+}
+
+function watchLineHtml(item) {
+  const { esc } = deps;
+  const stake = stakeText(item);
+  const source = /^https:\/\//.test(item.url || '') ? `<button class="link" data-act="link" data-url="${esc(item.url)}">Source ↗</button>` : '';
+  return `<div class="inv-watch-line">
+    <span class="inv-watch-who">${esc(whoOf(item))}</span>
+    <span>${esc(item.line)}</span>
+    <span class="inv-watch-meta">${stake ? `<span>${esc(stake)}</span>` : ''}<span class="inv-watch-level">${esc(item.materiality)}</span>${source}
+      <button class="link" data-act="watch-ask" data-id="${esc(item.id)}">Ask CFO</button></span>
+  </div>`;
+}
+
 /// Still waiting: a plan the holdings already match (applied, or edited to
 /// the same by hand or on the phone) is gone.
 const waiting = () => {
@@ -549,8 +653,17 @@ function onClick(e) {
     'prop-apply-all': () => applyProposals(waiting().map((p) => p.symbol)),
     'prop-drop': () => { proposed = proposed.filter((p) => p.symbol !== sym); draw(); },
     'prop-drop-all': () => { proposed = []; draw(); },
+    'watch-on': () => switchWatch(true),
+    'watch-off': () => switchWatch(false),
+    'watch-run': () => runWatch(),
+    'watch-more': () => { watch.more = !watch.more; draw(); },
+    'watch-ask': () => askAbout(btn.dataset.id),
   };
   acts[btn.dataset.act]?.();
+}
+
+function onChange(e) {
+  if (e.target.dataset.act === 'watch-level') setWatchLevel(e.target.value);
 }
 
 function toggleCard(sym) {
@@ -698,6 +811,98 @@ async function fetchInto(verb, symbols) {
   const out = JSON.parse(await deps.runBash(`perl ${MARKET} ${verb} ${symbols.join(' ')}`));
   Object.assign(quotes, out);
   return out;
+}
+
+// ── The Watch ──────────────────────────────────────────────────────────────
+
+const WATCH_MISSION = 'cfo:watch';
+const WATCH_POLL_MS = 5000;
+const WATCH_RUN_MAX_MS = 5 * 60 * 1000;
+const watch = { doc: {}, mission: null, lastRun: null, running: false, more: false, note: '' };
+let watchPoll = null;
+
+const missionUrl = (tail = '') => `/api/missions/${encodeURIComponent(WATCH_MISSION)}${tail}`;
+
+async function lastWatchRun() {
+  const runs = (await (await fetch(missionUrl('/runs'))).json()).runs || [];
+  return runs.find((r) => !r.skipped) || null;
+}
+
+/// The brief from data/watch.json, the switch from the missions API.
+async function loadWatch() {
+  watch.doc = await deps.readJson(`${deps.data}/watch.json`, {});
+  try {
+    const res = await fetch('/api/missions');
+    watch.mission = res.ok ? ((await res.json()).missions || []).find((m) => m.id === WATCH_MISSION) || null : null;
+    watch.lastRun = watch.mission ? await lastWatchRun() : null;
+  } catch (err) {
+    console.warn('[cfo] watch mission', err);
+    watch.mission = null;
+  }
+  watch.running = watch.lastRun?.status === 'running';
+  if (!document.getElementById('invest').hidden) draw();
+  if (watch.running && !watchPoll) followRun(Date.now());
+}
+
+/// Turning it on checks at once when there's no brief yet — the first
+/// morning shouldn't be a day away.
+async function switchWatch(on) {
+  try {
+    const res = await fetch(missionUrl(), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }) });
+    if (!res.ok) throw new Error(`update ${res.status}`);
+  } catch (err) {
+    console.warn('[cfo] watch switch', err);
+    noteWatch("Couldn't reach Linggen");
+  }
+  await loadWatch();
+  if (on && !latestBrief(watch.doc)) runWatch();
+}
+
+async function runWatch() {
+  if (watch.running) return;
+  try {
+    const res = await fetch(missionUrl('/trigger'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    if (!res.ok) throw new Error(`trigger ${res.status}`);
+    watch.running = true;
+    draw();
+    followRun(Date.now());
+  } catch (err) {
+    console.warn('[cfo] watch run', err);
+    noteWatch("Couldn't start the check");
+  }
+}
+
+/// Wait for a run to end (5 min at most), then show what it made.
+function followRun(started) {
+  clearTimeout(watchPoll);
+  watchPoll = setTimeout(async () => {
+    let last = null;
+    try { last = await lastWatchRun(); } catch { /* try again */ }
+    if ((!last || last.status === 'running') && Date.now() - started < WATCH_RUN_MAX_MS) { followRun(started); return; }
+    watchPoll = null;
+    await loadWatch();
+  }, WATCH_POLL_MS);
+}
+
+async function setWatchLevel(level) {
+  try {
+    await deps.runBash(`perl ${MARKET} watch-level ${level}`);
+  } catch (err) {
+    console.warn('[cfo] watch level', err);
+    noteWatch("Couldn't change it — try again");
+  }
+  await loadWatch();
+}
+
+function askAbout(id) {
+  const item = (watch.doc.items || []).find((i) => i.id === id);
+  if (item && !deps.say(askText(item))) noteWatch('Chat is still starting — try again in a moment');
+}
+
+function noteWatch(note) {
+  watch.note = note;
+  draw();
+  clearLater(() => { if (watch.note === note) watch.note = ''; });
 }
 
 // ── Reports ────────────────────────────────────────────────────────────────

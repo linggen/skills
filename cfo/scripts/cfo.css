@@ -529,3 +529,19 @@ button.link:hover { text-decoration: underline; }
 .inv-props-h b { color: var(--accent); }
 .inv-prop { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .inv-prop-what { font-variant-numeric: tabular-nums; }
+.inv-watch { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; margin-bottom: 14px; font-size: 13px; }
+.inv-watch-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.inv-watch-h b { color: var(--accent); }
+.inv-watch-h select { padding: 3px 8px; border: 1px solid var(--line); border-radius: 99px;
+  background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; }
+.inv-watch > .hint { margin: 8px 0 0; }
+.inv-watch-day { color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .04em; margin: 12px 0 2px; }
+.inv-watch-line { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 3px 12px;
+  padding: 8px 0; border-top: 1px solid var(--line); line-height: 1.45; }
+.inv-watch-who { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.inv-watch-meta { grid-column: 2; color: var(--muted); font-size: 12px; display: flex; gap: 12px;
+  align-items: baseline; flex-wrap: wrap; }
+.inv-watch-level { text-transform: capitalize; }
+.inv-watch-more { margin-top: 8px; font-size: 12px; }

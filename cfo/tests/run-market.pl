@@ -403,9 +403,9 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
     open(my $c, '>', "$ENV{SKILL_DIR}/data/watch-candidates.json") or die;
     print $c JSON::PP->new->encode($scan);
     close $c;
-    open(my $cfg, '>', "$ENV{SKILL_DIR}/config.json") or die;
-    print $cfg '{"watch_level":"quiet"}';
-    close $cfg;
+    open(my $w, '>', "$ENV{SKILL_DIR}/data/watch.json") or die;
+    print $w '{"level":"quiet"}';
+    close $w;
     my $arg = 'judgments=' . JSON::PP->new->utf8->encode([ { id => 'move:TSLA:2026-09-16', materiality => 'high', line => "Tesla's 14.5% drop \x{2014} after results" } ]);
     $arg =~ s/'/'\\''/g;
     my $said = `perl $SCRIPT save-watch '$arg' 2>&1`;
@@ -416,6 +416,22 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
     t('an omitted judgments arg still ends the night', $? == 0);
     my $bad = `perl $SCRIPT save-watch 'judgments=not json' 2>&1`;
     t('judgments that aren\'t JSON are refused with the reason', $? >> 8 == 1 && $bad =~ /^judgments:/, $bad);
+
+    my $tsla_move = JSON::PP->new->utf8->encode([
+        { id => 'move:TSLA:2026-09-16', materiality => 'high', line => 'Tesla fell.' },
+        { id => 'news:b', materiality => 'low', line => 'A Tesla opinion piece.' },
+    ]);
+    open($w, '>', "$ENV{SKILL_DIR}/data/watch.json") or die;
+    print $w '{}';
+    close $w;
+    `perl $SCRIPT save-watch 'judgments=$tsla_move' 2>&1`;
+    my $level = JSON::PP->new->utf8->decode(scalar `perl $SCRIPT watch-level everything 2>&1`);
+    my $after = JSON::PP->new->utf8->decode(do { local (@ARGV, $/) = "$ENV{SKILL_DIR}/data/watch.json"; <> });
+    t('a new level remakes the latest brief at once',
+      join(',', @{ $level->{lines} }) eq 'move:TSLA:2026-09-16,news:b' && $after->{level} eq 'everything'
+      && (values %{ $after->{briefs} })[0]{level} eq 'everything', JSON::PP->new->canonical->encode($level));
+    `perl $SCRIPT watch-level loud 2>&1`;
+    t('an unknown level is refused', $? >> 8 == 1);
 }
 
 # ── Holdings from the edit register ───────────────────────────────────────

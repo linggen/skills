@@ -24,6 +24,8 @@
 #   perl market.pl save-watch judgments=[…]
 #                                        Ling's judgment on the last scan → ranked
 #                                        into the morning brief (data/watch.json)
+#   perl market.pl watch-level quiet|normal|everything
+#                                        how much the brief says; remakes the latest
 #
 # Symbols: AAPL (US) or RY.TO (TSX; TSX:RY is accepted too). Prices and stats
 # come from stockanalysis.com's public pages and merge into data/quotes.json.
@@ -67,6 +69,7 @@ sub main {
         'save-report'    => \&cmd_save_report,
         'watch-scan'     => \&cmd_watch_scan,
         'save-watch'     => \&cmd_save_watch,
+        'watch-level'    => \&cmd_watch_level,
     );
     my $run = $commands{ $verb // '' }
         or usage();
@@ -77,7 +80,8 @@ sub usage {
     print STDERR "usage: market.pl quotes|stats|market [--fresh] SYMBOL...\n"
                . "       market.pl portfolio | reports-check [SYMBOL...] | reports-latest SYMBOL\n"
                . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n"
-               . "       market.pl watch-scan [--since=TIME] [SYMBOL...] | save-watch judgments=JSON\n";
+               . "       market.pl watch-scan [--since=TIME] [SYMBOL...] | save-watch judgments=JSON\n"
+               . "       market.pl watch-level quiet|normal|everything\n";
     exit 2;
 }
 
@@ -1225,8 +1229,9 @@ sub policy_events {
 # on each candidate of the last scan (data/watch-candidates.json) and nothing
 # else: ids, facts, positions and stakes come from the scan. Code decides what
 # speaks. data/watch.json:
-#   {last_run, seen{id: day}, items[judged, 7 days], briefs{day: {made_at,
-#    level, lines[id], quiet}}}
+#   {last_run, level, seen{id: day}, items[judged, 7 days], briefs{day:
+#    {made_at, level, lines[id], quiet}}}
+# `level` (quiet / normal / everything) is the user's, set by watch-level.
 
 my %MATERIALITY = (high => 3, medium => 2, low => 1, none => 0);
 my %STAKE_SHARE = (high => 0.10, medium => 0.03, low => 0.01);  # of a position's value
@@ -1246,11 +1251,27 @@ sub cmd_save_watch {
     my $judged = eval { JSON::PP->new->utf8->decode($raw) };
     $judged = $judged->{judgments} if ref $judged eq 'HASH';
     fail('judgments: a JSON array of {id, materiality, holdings, line}') unless ref $judged eq 'ARRAY';
-    my $dir = data_dir();
-    my $scan = read_json("$dir/watch-candidates.json") or fail('no scan to judge — call WatchScan first');
-    my $cfg = read_json(dirname($dir) . '/config.json') || {};
-    my $level = grep({ $_ eq ($cfg->{watch_level} // '') } @LEVELS) ? $cfg->{watch_level} : 'normal';
-    say_json(update_json('watch.json', sub { record_watch($_[0], $scan, $judged, today(), $level, time) }));
+    my $scan = read_json(data_dir() . '/watch-candidates.json') or fail('no scan to judge — call WatchScan first');
+    say_json(update_json('watch.json', sub { record_watch($_[0], $scan, $judged, today(), watch_level($_[0]), time) }));
+}
+
+sub watch_level { my ($doc) = @_; return grep({ $_ eq ($doc->{level} // '') } @LEVELS) ? $doc->{level} : 'normal' }
+
+# The user picks how much the brief says; the latest brief is made again at
+# that level, so the change shows at once.
+sub cmd_watch_level {
+    my ($level) = map { /^(?:level=)?(\w+)$/ ? lc $1 : () } @_;
+    fail('level: quiet, normal or everything') unless $level && grep { $_ eq $level } @LEVELS;
+    say_json(update_json('watch.json', sub {
+        my ($doc) = @_;
+        $doc->{level} = $level;
+        my ($day) = sort { $b cmp $a } keys %{ $doc->{briefs} || {} };
+        return { level => $level } unless $day;
+        my @lines = brief_lines([ grep { ($_->{saved_on} // '') eq $day } @{ $doc->{items} || [] } ], $level);
+        $doc->{briefs}{$day} = { %{ $doc->{briefs}{$day} }, level => $level, lines => [ map { $_->{id} } @lines ],
+                                 quiet => @lines ? JSON::PP::false : JSON::PP::true };
+        return { level => $level, day => $day, lines => $doc->{briefs}{$day}{lines} };
+    }));
 }
 
 # Fold one run into watch.json and make the day's brief. Every candidate of

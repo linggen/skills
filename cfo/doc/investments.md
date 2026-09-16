@@ -245,13 +245,21 @@ lawyer's read before charging for it.
    `data/watch-candidates.json`; `save-watch` takes only ids, materiality,
    economy holdings and the line from Ling — facts, positions and stakes come
    from the scan — and every candidate becomes `seen`, judged or not.
-   `data/watch.json` = `{last_run, seen{id: day} (30 d), items[event + {
+   `data/watch.json` = `{last_run, level, seen{id: day} (30 d), items[event + {
    materiality, line, holdings, held, currency, stake, stake_pct, weight_pct,
    saved_on}] (7 d), briefs{day: {made_at, level, lines[id], quiet}} (14 d)}`.
    Stake: a move's real change; a USD/CAD day's real change on holdings in
    the other currency; else value × 10% / 3% / 1% (high / medium / low).
-   Level from `config.json` `watch_level` (default normal). Chat may call
-   `WatchScan`, never `SaveWatch`.
-4. Mac Watch feed + the setting.
+   `level` is the user's (`market.pl watch-level`, default normal). Chat may
+   call `WatchScan`, never `SaveWatch`.
+4. ~~Mac Watch feed + the setting~~ — built. A **Watch** card at the top of
+   the Investments tab: Off → Turn on (enables `cfo:watch`; checks at once
+   when there's no brief yet). On → level select (Quiet / Normal /
+   Everything → `watch-level`, which remakes the latest brief), Check now
+   (triggers the mission, follows the run), Turn off; status = the last run.
+   Body: the latest brief ("This morning" / "Yesterday" / date, "a quiet
+   night"), each line with who (ticker, holdings, or Economy), the stake,
+   materiality, Source ↗ and **Ask CFO** — a chat message in the user's
+   voice quoting the line; "N more this week" opens the rest.
 5. Phone: sync `watch.json`, Yinyue's morning line, tap → chat.
 6. A week on real holdings: measure tokens, then set the price.

@@ -2443,6 +2443,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       chat.sendHidden(text);
       return true;
     },
+    say: (text) => {
+      if (!chat?.send) return false;
+      chat.send(text);
+      return true;
+    },
     data: DATA,
   });
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
