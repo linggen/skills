@@ -34,7 +34,8 @@ tools:
       story this save plays; its words are the only words), `building`
       (a made world's pictures still to paint — paint them first), `tier` and `progress` (toward `next`),
       `wealth`, `traits`, bag, `wear`, `arts` (the 功法 learned, each with
-      what it does and whether the realm allows it yet), `cast`, the current `scene` (place, setup,
+      what it does and whether the realm allows it yet; `learned` lists any
+      taught just now by a companion — say it as a gift, once), `cast`, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
       `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
       quest `done` was recorded by its app; `paid` is already counted), the

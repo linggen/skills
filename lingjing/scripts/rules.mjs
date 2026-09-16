@@ -1460,7 +1460,12 @@ function insideSkill(raw) {
 }
 
 export const VERBS = {
-  look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; },
+  look: (s, c, x) => {
+    const woke = wake(s, c, x);
+    // An art taught on waking (a companion from before the arts) is said once.
+    const learned = woke ? (woke.arts ?? []).filter(id => !(s.arts ?? []).includes(id)).map(id => artBrief(c, woke, artOf(c, id))) : [];
+    return { state: woke, result: { ...look(woke ?? s, c, x), ...(learned.length ? { learned } : {}) } };
+  },
   resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget,
 };

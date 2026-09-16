@@ -267,7 +267,9 @@ test('the worn sword stands beside the roots in the bout; sold, its root is no l
   const woke = VERBS.look(old, content, ctx());
   assert.deepEqual(woke.state.arts, ['jieshi']);
   assert.equal(woke.result.arts[0].id, 'jieshi');
-  assert.equal(VERBS.look(woke.state, content, ctx()).state, null, 'learned once');
+  assert.equal(woke.result.learned[0].name, '借势', 'said once');
+  const again = VERBS.look(woke.state, content, ctx());
+  assert.equal(again.state, null, 'learned once'); assert.equal(again.result.learned, undefined);
   // the art learned is in the kit of the next bout, ready at 练气
   const kit = look(woke.state, content, ctx()).place.encounter.duel.kit;
   assert.deepEqual(kit.arts, { jieshi: { effect: 'generate', ready: true } });
