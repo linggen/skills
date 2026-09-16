@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-16 — the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
+status: 2026-09-16 — creatures at their haunts (降妖 once a day, 驯 by what they like — `place.encounter`, Tame), every card with buttons, the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -939,6 +939,32 @@ and runs the same `rules.mjs` contract. Later.
   roots)` now deals at least two moves the player's roots overcome, which
   rounds drawn by the same hash; the card tells the 相克 ring in a line
   and says two wins (the Chinese hint said three).
+
+## At a creature's haunt — the world outside the spine
+
+- **Built (2026-09-16).** His "it just lets the user move from a place to
+  another; when a creature shows, can't fight or tame it?" — a creature at
+  a place with no scene was a portrait. Now Look's `place.encounter`
+  (`encounterOf`, only when no scene runs here) carries the creature, its
+  bout (`game: haunt:<id>`, `duel` brief), `won`/`withdrawn` for today,
+  `tamed`, and `likes` {item, held}. **降妖 at the haunt:** the `duel` verb
+  accepts `haunt:<creature>` when the player stands there and it is not
+  tamed; the same bout, same day-hash moves; a win is paid by the rules at
+  once from the new `haunt` reward row (20 · 10) — no exit, so the page's
+  `[scene] won haunt:x` means Look and say what was paid; `subdued-today`
+  keeps it to once a day. **驯 by what it likes:** `creatures.json` gained
+  `likes` (人参 for the man-eaters 狍鸮/蠪侄, 玉鱼 for 精卫, the bell for 雷神,
+  齐盐 for 夔, 齐纨 for 狪狪, 灵芝 for 夫诸); the `tame` verb takes one from
+  the bag, adds the creature to the cast, pays the haunt row; refusals
+  `needs-item` (its line names the thing), `already-tamed`, `untameable`,
+  `not-here`. The choice leads with `降妖 · X` and `喂X…` when they are open.
+- **Every card has buttons.** His rule the same day: "all cards on the
+  left should have buttons, at least an explain button". `acts()` in
+  cards.js: every card ends with 说说 (a word to Ling about what it is:
+  creature, omen, item, task, gate, tribulation, roots, board, map), plus
+  its own: 喂它X on a creature at its haunt (greyed when not held), 走向下一鼎
+  on an open gate, Buy · Sell · 服用 on an item, Make the pill on a board.
+  Whole-card taps are gone; a button is the affordance.
 
 ## Pictures
 
