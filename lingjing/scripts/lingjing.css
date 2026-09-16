@@ -175,8 +175,8 @@ button.pl { font: inherit; font-size: 12px; cursor: pointer; }
 button.pl:hover { background: var(--ling-soft); }
 .price .act { padding: 2px 8px; font-size: 11px; }
 .act:disabled { opacity: 0.4; cursor: default; }
-.task[data-say] { cursor: pointer; }
-.task[data-say]:hover { box-shadow: 0 0 0 1px var(--ling) inset; }
+.task[data-say], .gate[data-say] { cursor: pointer; }
+.task[data-say]:hover, .gate[data-say]:hover { box-shadow: 0 0 0 1px var(--ling) inset; }
 .busy { opacity: 0.5; pointer-events: none; }
 .kering { letter-spacing: 0.04em; }
 .roadmap { position: relative; margin-top: 10px; max-width: 480px; min-height: 124px; }

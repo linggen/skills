@@ -13,7 +13,7 @@ export const WORDS = {
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
-    sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}',
+    sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎',
     duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，两胜为降。', ring: '相克', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
@@ -29,7 +29,7 @@ export const WORDS = {
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
     tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
-    sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}',
+    sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron',
     duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
@@ -156,9 +156,12 @@ function hexagram(card, ctx) {
     <div class="hextext">${esc(pick(h.image, ctx.lang) || h.image)}</div></div></div>`;
 }
 
+/// The next cauldron: a word to Ling when the road is open; with a date,
+/// the road waits and the card only says when.
 function gate(card, ctx) {
   const opens = card.opens ? `<div class="small ling">${ctx.words.opens} ${esc(card.opens)}</div>` : '';
-  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}</div></div>`;
+  const tap = card.opens ? '' : ` ${sayAttr(ctx.words.sayGate)}`;
+  return `<div class="card gate"${tap}><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}</div></div>`;
 }
 
 function tribulation(card, ctx) {
