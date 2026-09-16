@@ -9,6 +9,7 @@
 #   perl market.pl stats --fresh AAPL    fetch again even when cached
 #   perl market.pl market AAPL           quotes + stats together
 #   perl market.pl portfolio             holdings, watchlist, numbers, reports
+#                                        (holdings from the edit register)
 #   perl market.pl reports-check [SYM…]  reports out since we started watching
 #                                        and not summarized yet (default: all
 #                                        held and watched symbols)
@@ -106,10 +107,26 @@ sub base_entry {
 
 sub ticker { my ($e) = @_; (my $t = $e->{symbol}) =~ s/\.TO$//; return $t }
 
-# Everything the user holds or watches, as the page last wrote it.
+# symbol -> {watch, shares, avg_cost, account}: the live `inv:` cells of the
+# edit register (data/edits.json) — what the Mac page and a paired phone both
+# write, so a symbol added on the phone counts before the page is opened.
+# Mirrors investmentsOf() in lww.js.
+sub register_investments {
+    my $reg = (read_json(data_dir() . '/edits.json') || {})->{reg};
+    my %out;
+    return \%out unless ref $reg eq 'HASH';
+    for my $key (keys %$reg) {
+        next unless $key =~ /^inv:([^|]+)\|(.+)$/;
+        my $cell = $reg->{$key};
+        next unless ref $cell eq 'HASH' && defined $cell->{v};
+        $out{$1}{$2} = $cell->{v};
+    }
+    return \%out;
+}
+
+# Everything the user holds or watches.
 sub watched_symbols {
-    my $inv = read_json(data_dir() . '/investments.json') || {};
-    return symbols_of((map { $_->{symbol} } @{ $inv->{holdings} || [] }), @{ $inv->{watchlist} || [] });
+    return symbols_of(sort keys %{ register_investments() });
 }
 
 # ── Quotes and stats ───────────────────────────────────────────────────────
@@ -239,15 +256,47 @@ sub devalue {
 
 sub cmd_portfolio {
     my $dir = data_dir();
-    my $inv = read_json("$dir/investments.json") || { holdings => [], watchlist => [] };
+    my $cells = register_investments();
     my $quotes = (read_json("$dir/quotes.json") || {})->{symbols} || {};
-    my $reports = read_json("$dir/reports.json") || {};
-    my %listed = map { $_ => 1 } watched_symbols();
     say_json({
-        investments => $inv,
-        quotes      => { map { $_ => $quotes->{$_} } grep { $listed{$_} } keys %$quotes },
-        reports     => $reports,
+        investments => holdings_of($cells, $quotes),
+        quotes      => { map { $_ => $quotes->{$_} } grep { $cells->{$_} } keys %$quotes },
+        reports     => read_json("$dir/reports.json") || {},
     });
+}
+
+# The register's holdings joined with the cached numbers — the shape the
+# page's investments.json has always had: held first by value, then the
+# watchlist A→Z.
+sub holdings_of {
+    my ($cells, $quotes) = @_;
+    my (@held, @watch);
+    for my $sym (sort keys %$cells) {
+        my $c = $cells->{$sym};
+        my $q = $quotes->{$sym} || {};
+        my $shares = $c->{shares} // 0;
+        unless ($shares > 0) { push @watch, $sym; next }
+        my $price = $q->{price};
+        my $value = defined $price ? $shares * $price : undef;
+        my $cost = defined $c->{avg_cost} ? $shares * $c->{avg_cost} : undef;
+        my $gain = defined $value && defined $cost ? $value - $cost : undef;
+        push @held, {
+            symbol   => $sym,
+            name     => $q->{name},
+            shares   => $shares + 0,
+            avg_cost => $c->{avg_cost},
+            account  => $c->{account},
+            currency => $q->{currency} // ($sym =~ /\.TO$/ ? 'CAD' : 'USD'),
+            price    => $price,
+            value    => $value,
+            gain     => $gain,
+            gain_pct => defined $gain && $cost ? $gain / $cost * 100 : undef,
+        };
+    }
+    return {
+        holdings  => [ sort { ($b->{value} // 0) <=> ($a->{value} // 0) } @held ],
+        watchlist => \@watch,
+    };
 }
 
 # ── Reports ────────────────────────────────────────────────────────────────

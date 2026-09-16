@@ -10,8 +10,10 @@ Mac; no Linggen Cloud, no data-provider key.
 - Holdings are register cells in `edits.json`: `inv:<symbol>|watch` (true),
   `|shares`, `|avg_cost`, `|account` (free label: TFSA, RRSP, Margin…). Symbol
   is `AAPL` (US) or `RY.TO` (TSX). One cell per field, so the phone merges them.
-- `investments.json` — the agent's copy, written by the page after every edit
-  and refresh: `{updated_at, holdings[{symbol, name, shares, avg_cost, account,
+- `investments.json` — the page's snapshot, written after every edit and
+  refresh (market.pl no longer reads it: `reports-check` and `portfolio` take
+  holdings straight from the register, so a symbol added on the phone counts
+  before the Mac page is opened): `{updated_at, holdings[{symbol, name, shares, avg_cost, account,
   currency, price, value, gain, gain_pct}], watchlist[symbol]}`.
 - `quotes.json` — `{symbols: {SYM: {price, change, change_pct, prev_close,
   high_52w, low_52w, market, price_time, name, kind, pe, forward_pe,
@@ -124,9 +126,18 @@ Mac; no Linggen Cloud, no data-provider key.
 
 ## Phone (release 2)
 
-- Native Investments view; fetches quotes itself from the same sources.
-  Holdings sync through `data/edits.json` (`inv:` keys, LWW); summaries read
-  from the Mac.
+- CFO's fifth section, **Investments** (`cfo_investments_screen.dart`): add a
+  ticker, totals per currency, rows with price · day move · holding value and
+  gain, ⋯ / long-press = one menu (Open company, Edit holding / Add shares,
+  Remove with a confirm). Tap → company page: numbers, earnings date, the
+  holding, report summaries from the last sync with a Source link.
+- Holdings are `inv:` cells in the phone's CFO store (`setInvestmentField`,
+  `investments` projection) and travel with the existing sync.
+- Numbers: `cfo_market.dart` ports market.pl's quotes/stats (stockanalysis.com,
+  devalue) in Dart; `cfo_investments.dart` caches them in the phone's own
+  `cfo/quotes.json`, refreshed on open, on resume and every 5 min on screen.
+- Summaries: the sync's `companyReports`, kept in prefs so a company page reads
+  them with no Mac in reach.
 
 ## MVP order
 
@@ -140,6 +151,6 @@ Mac; no Linggen Cloud, no data-provider key.
    chat not yet)
 5. ~~`missions/reports` + the settings switch~~ — built
 6. ~~Phone: pull `reports.json` + the `report` line~~ — built
-7. Release 2: native phone Investments view
+7. ~~Release 2: native phone Investments view~~ — built
 
 Deferred: brokerage statement import, APNs doorbell, exchanges beyond US/TSX.

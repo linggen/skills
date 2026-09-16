@@ -102,5 +102,39 @@ t('table rows keep their cells', $text =~ /^Net sales \| \$109,417 \| \(1,234\)$
     t('an empty summary is refused', $bad == 1 && $msg =~ /^summary:/, $msg);
 }
 
+# ── Holdings from the edit register ───────────────────────────────────────
+{
+    local $ENV{SKILL_DIR} = tempdir(CLEANUP => 1);
+    mkdir "$ENV{SKILL_DIR}/data";
+    my $write = sub {
+        my ($name, $doc) = @_;
+        open(my $f, '>', "$ENV{SKILL_DIR}/data/$name") or die;
+        print $f JSON::PP->new->encode($doc);
+        close $f;
+    };
+    my $cell = sub { { v => $_[0], ts => 1, d => 'phone' } };
+    $write->('edits.json', { device => 'mac', lastTs => 1, reg => {
+        'inv:RY.TO|watch'    => $cell->(JSON::PP::true),
+        'inv:RY.TO|shares'   => $cell->(20),
+        'inv:RY.TO|avg_cost' => $cell->(140),
+        'inv:VOO|watch'      => $cell->(JSON::PP::true),
+        'inv:AAPL|watch'     => $cell->(undef),     # removed: a tombstone
+        'bud:dining'         => $cell->(400),
+    } });
+    $write->('quotes.json', { symbols => {
+        'RY.TO' => { name => 'Royal Bank of Canada', price => 150, currency => 'CAD' },
+        'AAPL'  => { name => 'Apple Inc.', price => 330 },
+    } });
+    t('watched symbols come from the register, tombstones gone', join(',', watched_symbols()) eq 'RY.TO,VOO',
+      join(',', watched_symbols()));
+    my $out = JSON::PP->new->utf8->decode(scalar `perl $SCRIPT portfolio`);
+    my $ry = $out->{investments}{holdings}[0];
+    t('a holding added on the phone is in the agent\'s portfolio with its numbers',
+      $ry->{symbol} eq 'RY.TO' && $ry->{value} == 3000 && $ry->{gain} == 200,
+      JSON::PP->new->canonical->encode($out->{investments}));
+    t('the watchlist and quotes cover only listed symbols',
+      join(',', @{ $out->{investments}{watchlist} }) eq 'VOO' && !exists $out->{quotes}{AAPL});
+}
+
 print "\n$pass passed, $fail failed\n";
 exit($fail ? 1 : 0);
