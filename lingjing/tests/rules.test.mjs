@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, wake, win } from '../scripts/rules.mjs';
+import { VERBS, askOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, wake, win } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -129,6 +129,26 @@ test('an unknown exit, a missing answer and an unfought duel are refused', () =>
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');
   refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
+});
+
+test('every answer carries the question ready: the scene\'s buttons, the riddle when one waits, the choice when the world is open', () => {
+  const s = toFuzhu();
+  const l = look(s, content, ctx());
+  assert.deepEqual(l.ask.options.map(o => o.label), l.scene.buttons.map(b => b.label));
+  assert.deepEqual(l.ask.options.map(o => o.exit), l.scene.buttons.map(b => b.id));
+  assert.equal(l.ask.question, '何去何从？');
+  assert.equal(l.ask.header, l.scene.place);
+  assert.ok(l.then.includes('AskUser'));
+  // a riddle waiting: the riddle is the question, the other buttons the options
+  const r = refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
+  const a = askOf(content, s, ctx(), r);
+  assert.equal(a.question, r.say);
+  assert.ok(!a.options.some(o => o.exit === 'riddle'));
+  assert.ok(a.options.length >= 2);
+  // the world open: the director's choice
+  const o = toOpenWorld();
+  const lo = look(o, content, ctx());
+  assert.deepEqual(lo.ask, lo.director.choice);
 });
 
 test('only the rules decide a fight: a win the exit takes, and pays once', () => {
@@ -953,13 +973,15 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.equal(run('art', '--creature=fuzhu', `--file=${png}`).refused, 'not-a-made-creature');
     assert.deepEqual(run('art', '--creature=lushu').paint, paint[0]);
     const servedAt = rel => `/apps/lingjing/${path.relative(skill, path.join(dir, 'worlds/the-yunmeng-marsh', rel))}`; // the url the page serves it by
-    assert.deepEqual(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, creature: 'lushu', art: 'art/lushu.png', url: servedAt('art/lushu.png'), paint: [paint[1]] });
+    // every command answer also carries the ready question (`ask`, `then`); these compare the verb's own answer
+    const own = ({ ask, then, ...r }) => r;
+    assert.deepEqual(own(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png')), { ok: true, creature: 'lushu', art: 'art/lushu.png', url: servedAt('art/lushu.png'), paint: [paint[1]] });
     assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/art/lushu.png')));
     assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/creatures.json'), 'utf8')).creatures[0].art, 'art/lushu.png');
     // the map is kept with the positions it was painted for; the last picture opens the world
     assert.equal(run('art', '--creature=map').paint.prompt, paint[1].prompt);
     assert.equal(run('art', '--creature=map', `--file=${path.join(dir, 'nowhere.png')}`).refused, 'no-such-file');
-    assert.deepEqual(run('art', '--creature=map', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, map: 'art/map.png', url: servedAt('art/map.png'), ready: true });
+    assert.deepEqual(own(run('art', '--creature=map', '--file=/apps/lingjing/data/pictures/test-lushu.png')), { ok: true, map: 'art/map.png', url: servedAt('art/map.png'), ready: true });
     const card = JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json'), 'utf8'));
     assert.deepEqual(Object.keys(card.map.at).sort(), ['bell', 'isle', 'reeds', 'shrine']);
     const seen = run('look');

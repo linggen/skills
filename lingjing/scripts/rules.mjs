@@ -349,6 +349,7 @@ export function look(state, content, ctx) {
     omen: omen(content, ctx.now, lang),
     stamina: staminaBrief(content, state, ctx.now),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
+    ask: askOf(content, state, ctx), then: THEN,
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
   };
@@ -535,8 +536,8 @@ export function resolve(state, content, ctx, args) {
   }
   if (exit.key) {
     const riddle = content.riddles[lang].riddles[exit.key];
-    if (args.answer == null) return refuse('needs-answer', riddle.q);
-    if (!judgeAnswer(content, exit.key, args.answer)) return refuse('wrong-answer', null, { hint: riddle.hint });
+    if (args.answer == null) return refuse('needs-answer', riddle.q, { exit: exit.id });
+    if (!judgeAnswer(content, exit.key, args.answer)) return refuse('wrong-answer', null, { hint: riddle.hint, exit: exit.id });
   }
   const game = gameOf(exit);
   if (game && !s.wins?.[game.id]) {
@@ -1323,6 +1324,34 @@ export function parseArgs(argv) {
   return args;
 }
 
+/* The choice, ready for AskUser, on every answer the rules give: the scene's
+   buttons while one runs (a riddle waiting is the question, the other
+   buttons the options), the director's choice when the world is open. The
+   model copies it and composes nothing — a rule in the prompt alone was not
+   enough (2026-09-16, gpt-5.6-terra: Look, Show, narration, silence). */
+export function askOf(content, state, ctx, result = {}) {
+  const zh = state.lang === 'zh';
+  const yinyue = { label: zh ? '问问银月' : 'Ask Yinyue', ask: true };
+  const header = s => String(s ?? '');
+  const question = zh ? '何去何从？' : 'What now?';
+  if (atScene(content, state)) {
+    const scene = sceneBrief(content, state, ctx.now);
+    let options = scene.buttons.map(b => ({ label: b.label, exit: b.id }));
+    let asked = question;
+    if (result.refused === 'needs-answer' || result.refused === 'wrong-answer') {
+      const riddle = scene.exits.find(e => e.riddle && (!result.exit || e.id === result.exit));
+      if (riddle) { asked = riddle.riddle; options = options.filter(o => o.exit !== riddle.id); }
+    }
+    if (options.length < 2) options.push(yinyue);
+    return { header: header(scene.place), question: asked, options };
+  }
+  const choice = directorBrief(content, state, ctx)?.choice;
+  if (choice) return choice;
+  return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: [{ label: zh ? '四处看看' : 'Look around', ask: true }, yinyue] };
+}
+const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
+const withAsk = (result, content, state, ctx) => ({ ...result, ask: askOf(content, state, ctx, result), then: THEN });
+
 function run(verb, args) {
   const stateFile = path.join(dataDir(), 'state.json');
   const logFile = path.join(dataDir(), 'log.jsonl');
@@ -1359,7 +1388,8 @@ function run(verb, args) {
     fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: state }) + '\n');
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
-  return heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
+  const result = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
+  return withAsk(result, content, next ?? state, { now, quests: readQuests() });
 }
 
 /* Park the save in play under its world and take up the other world's —

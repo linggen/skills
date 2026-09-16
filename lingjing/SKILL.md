@@ -41,8 +41,8 @@ tools:
       step is out of reach), the `place` the player stands in (what is
       there, its roads, the province's places for the map) and the
       `director` brief (`near`, `too_hard`, the `thread`, the `pool`,
-      today's `seed`, and `choice` — the question to ask when no scene
-      runs, ready as it is) — and `words`: this world's name for every one
+      today's `seed`, `choice`), `ask` — the question that ends your reply,
+      ready as it is — and `words`: this world's name for every one
       of those ids, in the player's language. Every number you speak wears
       the word from `words`. Call it first in every session and whenever you
       are unsure.
@@ -591,11 +591,13 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   order** — never reworded, never a new exit of your making. Offer a button
   even when its exit will be refused: the refusal is part of the story. For
   a `value` exit, its `offers` (the player may type their own). The header
-  is the place, at most 12 characters.
-- **No scene running: the director's `choice`, as it is** — its `header`,
-  its `question`, its `options` labels in order. You compose nothing. A
-  tapped label is its `move` (Move there at once), its `linger` (Branch
-  open) or its `ask` (Yinyue answers what is before them).
+  is the place.
+- **Every result carries `ask`, the question ready** — `header`,
+  `question`, `options` labels in order: the scene's buttons while one
+  runs, the riddle when one waits, the director's `choice` when the world
+  is open. AskUser it exactly as it is; you compose nothing. A tapped
+  label is its option's `exit` (Resolve), `move` (Move there at once),
+  `linger` (Branch open) or `ask` (Yinyue answers what is before them).
 - **The question is one short line** — *何去何从？* / *What now?* Narration,
   the lines, and what was `paid` go in your reply before it, never inside
   the question: the card shows the question as plain text.
