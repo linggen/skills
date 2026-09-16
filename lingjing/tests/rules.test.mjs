@@ -591,7 +591,7 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   // a road away, by id, by name, by English
   const out = must(move, s, { place: '云龙山' });
   assert.equal(out.state.place, 'yunlong');
-  assert.equal(out.result.summarize, true);
+  assert.equal(out.result.summarize, false, 'a road walked inside the province is no story yet');
   assert.equal(out.result.director.here.id, 'yunlong');
   assert.equal(must(move, s, { place: 'The Si River bank' }).state.place, 'sishui');
   assert.equal(must(move, s, { place: 'yunlong' }).state.place, 'yunlong');

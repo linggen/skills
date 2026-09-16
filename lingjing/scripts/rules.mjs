@@ -837,6 +837,7 @@ export function move(state, content, ctx, args) {
     const yinyue = { zh: `还不是时候。先回${pick(fitting.name, 'zh')}吧。`, en: `Not yet. Let's go back to ${pick(fitting.name, 'en')}.` };
     return stay('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
   }
+  const from = here;
   s.place = target.id;
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
@@ -844,7 +845,11 @@ export function move(state, content, ctx, args) {
   const scene = atScene(content, s) ? sceneBrief(content, s, ctx.now) : null;
   const cards = [...place.show, ...(scene?.show ?? [])];
   const show = cards.filter((c, i) => cards.findIndex(d => JSON.stringify(d) === JSON.stringify(c)) === i);
-  return { state: s, result: { ok: true, place, scene, show, ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize: true } };
+  // The story is rewritten when something of it happened: a scene entered,
+  // a province crossed, a made scene left — not on every road walked (a
+  // Summarize is a whole model call; seen live 2026-09-16, one per step).
+  const summarize = Boolean(scene) || target.province !== from.province || Boolean(left);
+  return { state: s, result: { ok: true, place, scene, show, ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not

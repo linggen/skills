@@ -542,7 +542,9 @@ the scene or the place, and the choice.
    - **The stage speaks for the player too.** A line like *Buy Mulberry
      paper*, *Go to Puyang*, *Tell me about: Temper the body*, *Tell me
      about today's omen*, *Tell me about Fuzhu* is a tap on the scene's
-     own cards, sent in the player's voice: Trade it, Move there, read
+     own cards, sent in the player's voice: Trade it (*Use X* is Trade
+     `use`), Move there, tell a thing from the shelf's `about` and its
+     `effect` — what it is for, how it is used, what it pays — read
      the omen (its `image` line, in a few words of your own), tell the
      creature from its card and quote, or tell the practice from Look's
      `tasks` and `quests` (a task `paid: true` is done and counted, once

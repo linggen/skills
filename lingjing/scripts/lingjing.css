@@ -218,6 +218,8 @@ button.pl:hover { background: var(--ling-soft); }
 .item { border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: var(--surface); display: grid; gap: 3px; }
 .itemart { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
 .itemname { font-weight: 600; }
+.item[data-say] { cursor: pointer; }
+.item .about { line-height: 1.35; }
 .price { display: flex; justify-content: space-between; font-family: var(--ui); font-size: 11px; opacity: 0.8; }
 
 /* ── 降妖 ── */
