@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win duel branch summarize move trade lang make enter leave
+//   verbs: init look resolve judge task win duel tame branch summarize move trade lang make enter leave
 //          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -85,6 +85,30 @@ const placeName = (content, state, place) => ({ id: place.id, name: pick(place.n
 
 /* The place as Look tells it: what is there, the roads out, and the whole
    province for the map — here, a road away, or beyond the player's tier. */
+/* A creature at its haunt, outside the spine: the bout on the stage once a
+   day, and a taming by what it likes from the bag. Nothing while a scene
+   runs here — the scene's own exits take over. */
+const hauntId = creature => `haunt:${creature}`;
+function encounterOf(content, state, now) {
+  const place = placeOf(content, state.place);
+  const cid = place?.has?.creature;
+  if (!cid || atScene(content, state)) return null;
+  const creature = creatureOf(content, cid);
+  if (!creature) return null;
+  const lang = state.lang, game = { id: hauntId(cid), kind: 'duel', creature: cid };
+  const today = state.duels?.[cid], day = dayKey(now);
+  const item = creature.likes ? itemOf(content, creature.likes) : null;
+  return {
+    creature: { id: cid, name: pick(creature.name, lang) },
+    game,
+    duel: duelBrief(content, state, game, now),
+    won: Boolean(state.wins?.[game.id]) && today?.day === day && today.outcome === 'won',
+    withdrawn: today?.day === day && today.outcome === 'lost',
+    tamed: state.cast.includes(cid),
+    likes: item ? { id: item.id, name: pick(item.name, lang), held: state.bag[item.id] ?? 0 } : null,
+  };
+}
+
 function placeBrief(content, state, now = new Date()) {
   const place = placeOf(content, state.place);
   if (!place) return null;
@@ -113,6 +137,7 @@ function placeBrief(content, state, now = new Date()) {
     })),
     shelf: shelf.map(i => itemBrief(content, state, i)),
     show: withMap(content, show),
+    encounter: encounterOf(content, state, now),
   };
 }
 
@@ -193,7 +218,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now)),
   };
 }
 
@@ -203,11 +228,17 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said) {
+function choiceOf(state, here, near, thread, seeded, said, encounter = null) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
-  const options = places.map(p => ({ label: p.name, move: p.id }));
+  const options = [];
+  if (encounter && !encounter.tamed) {
+    const n = encounter.creature.name;
+    if (!encounter.won && !encounter.withdrawn) options.push({ label: zh ? `降妖 · ${n}` : `Subdue ${n}`, duel: encounter.game.id });
+    if (encounter.likes?.held) options.push({ label: zh ? `喂${n}${encounter.likes.name}` : `Feed ${n} the ${encounter.likes.name}`, tame: encounter.creature.id });
+  }
+  options.push(...places.map(p => ({ label: p.name, move: p.id })));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
   if (options.length < 2) options.push(filler(state, said));
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
@@ -407,7 +438,7 @@ const PICTURE_STYLE = 'Traditional Chinese ink wash painting with soft watercolo
 const plainEn = t => String(pick(t, 'en') ?? '').trim().replace(/[.。]$/, '');
 
 /* The verbs that move the story, and so wait for the brush. */
-export const BUILDING_WAITS = new Set(['resolve', 'judge', 'duel', 'branch', 'move', 'trade', 'make', 'enter', 'leave']);
+export const BUILDING_WAITS = new Set(['resolve', 'judge', 'duel', 'tame', 'branch', 'move', 'trade', 'make', 'enter', 'leave']);
 
 /* What a made world still needs painted, as GenerateImage's arguments, each
    with the `creature` Art takes back: its new creatures, then its map. */
@@ -691,14 +722,19 @@ export function win(state, content, ctx, args) {
 export function duel(state, content, ctx, args) {
   const id = String(args.id ?? '');
   const exit = sceneOf(content, state)?.exits.find(e => gameOf(e)?.id === id && gameOf(e).kind === 'duel');
-  if (!exit) return refuse('not-here', null);
-  const game = gameOf(exit), creature = creatureOf(content, game.creature);
+  const haunt = !exit && id.startsWith('haunt:') ? encounterOf(content, state, ctx.now) : null;
+  if (!exit && !(haunt && haunt.game.id === id)) return refuse('not-here', null);
+  if (haunt?.tamed) return refuse('tamed', null, { creature: haunt.creature });
+  const game = exit ? gameOf(exit) : haunt.game, creature = creatureOf(content, game.creature);
+  const withdrawnLine = exit ? pick(exit.withdrawn, state.lang)
+    : pick({ zh: `${pick(creature.name, 'zh')}退入林影，明日再来。`, en: `${pick(creature.name, 'en')} withdraws into the shadows; come back tomorrow.` }, state.lang);
   const s = clone(state);
   const day = dayKey(ctx.now), today = s.duels?.[creature.id];
   const seed = `${day}|${creature.id}|${s.name ?? ''}`;
   const moves = creatureMoves(creature.root, seed, s.traits ?? []);
   if (!args.picks) {
-    if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', pick(exit.withdrawn, s.lang), { game: id });
+    if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
+    if (haunt && today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
     if (!s.traits?.length) return refuse('no-traits', null);
     const empty = spendStamina(content, s, ctx, 'duel');
     if (empty) return empty;
@@ -712,8 +748,10 @@ export function duel(state, content, ctx, args) {
   if (played.outcome === 'open') return refuse('unfinished', null, { rounds: played.rounds });
   s.duels[creature.id] = { day, outcome: played.outcome, rounds: played.rounds };
   if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
-  const say = played.outcome === 'lost' ? pick(exit.withdrawn, s.lang) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, rounds: played.rounds, game: id, say } };
+  const say = played.outcome === 'lost' ? withdrawnLine : null;
+  // At a haunt no exit will pay the win: the rules pay it here, once a day.
+  const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 10 }) : null;
+  return { state: s, result: { ok: true, outcome: played.outcome, rounds: played.rounds, game: id, say, ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* ── Branches, story, travel, language ── */
@@ -987,6 +1025,25 @@ export function make(state, content, ctx, args) {
   if (empty) return empty;
   s.made.scenes[scene.id] = scene;
   return { state: s, result: { ok: true, made: scene.id, scenes: Object.keys(s.made.scenes) } };
+}
+
+/* Tame: at its haunt, the thing it likes from the bag, once — it walks
+   with the player from then on. The bag pays; the haunt table pays back. */
+export function tame(state, content, ctx, args) {
+  const want = String(args.creature ?? '').trim();
+  const e = encounterOf(content, state, ctx.now);
+  const named = e && (e.creature.id === want || pick(creatureOf(content, e.creature.id).name, 'zh') === want || pick(creatureOf(content, e.creature.id).name, 'en').toLowerCase() === want.toLowerCase());
+  if (!e || (want && !named)) return refuse('not-here', null, e ? { creature: e.creature } : {});
+  const lang = state.lang, name = e.creature.name;
+  if (e.tamed) return refuse('already-tamed', pick({ zh: `${name}已随你同行。`, en: `${name} already walks with you.` }, lang));
+  if (!e.likes) return refuse('untameable', pick({ zh: `${name}不为任何东西所动。`, en: `${name} is moved by nothing you could carry.` }, lang));
+  if (!e.likes.held) return refuse('needs-item', pick({ zh: `${name}闻了闻，退开了。它要的是${e.likes.name}。`, en: `${name} sniffs and draws back. It wants ${e.likes.name}.` }, lang), { likes: e.likes });
+  const s = clone(state);
+  s.bag[e.likes.id] -= 1;
+  if (!s.bag[e.likes.id]) delete s.bag[e.likes.id];
+  const paid = pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 0, cast: e.creature.id });
+  const beat = pick({ zh: `${name}低头衔了${e.likes.name}，随你走了。`, en: `${name} takes the ${e.likes.name} and falls in beside you.` }, lang);
+  return { state: s, result: { ok: true, tamed: e.creature, fed: e.likes, beat, paid, show: [{ card: 'creature', id: e.creature.id }] } };
 }
 
 /* Step into a made scene; the spine keeps its place for the return. */
@@ -1290,7 +1347,7 @@ function insideSkill(raw) {
 
 export const VERBS = {
   look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; },
-  resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
+  resolve, judge, task, win, duel, tame, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget,
 };
 

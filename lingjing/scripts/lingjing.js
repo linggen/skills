@@ -15,7 +15,7 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
+const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
@@ -202,6 +202,9 @@ function focusHtml() {
   for (const e of look.scene?.exits ?? []) {
     if (e.game?.kind === 'duel' && !cards.some((c) => c.card === 'duel' && c.id === e.game.id)) cards.push({ card: 'duel', id: e.game.id });
   }
+  // A creature at its haunt, no scene running: its bout is on the scene too.
+  const haunt = look.place?.encounter;
+  if (haunt && !haunt.tamed && !cards.some((c) => c.card === 'duel' && c.id === haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
   return buildingCard() + emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('') + choiceCard();
 }
 

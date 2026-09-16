@@ -181,8 +181,8 @@ button.pl:hover { background: var(--ling-soft); }
 .prov[data-say]:hover { box-shadow: 0 0 0 1px var(--ling) inset; }
 .price .act { padding: 2px 8px; font-size: 11px; }
 .act:disabled { opacity: 0.4; cursor: default; }
-.task[data-say], .gate[data-say], .hex[data-say], .creature[data-say] { cursor: pointer; }
-.task[data-say]:hover, .gate[data-say]:hover, .hex[data-say]:hover, .creature[data-say]:hover { box-shadow: 0 0 0 1px var(--ling) inset; }
+.acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.taskfoot .act { margin-left: auto; }
 .busy { opacity: 0.5; pointer-events: none; }
 .choice { border-color: var(--ling); }
 .choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
@@ -218,7 +218,6 @@ button.pl:hover { background: var(--ling-soft); }
 .item { border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: var(--surface); display: grid; gap: 3px; }
 .itemart { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
 .itemname { font-weight: 600; }
-.item[data-say] { cursor: pointer; }
 .item .about { line-height: 1.35; }
 .price { display: flex; justify-content: space-between; font-family: var(--ui); font-size: 11px; opacity: 0.8; }
 

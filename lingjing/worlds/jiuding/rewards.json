@@ -2,16 +2,46 @@
   "version": 1,
   "_caps": "A grant never exceeds its table's cap; a day never exceeds `day`. First pass.",
   "tables": {
-    "scene":  { "progress": 60, "wealth": 20 },
-    "task":   { "progress": 40, "wealth": 10 },
-    "puzzle": { "progress": 20, "wealth": 0 },
-    "branch": { "progress": 20, "wealth": 5 }
+    "scene": {
+      "progress": 60,
+      "wealth": 20
+    },
+    "task": {
+      "progress": 40,
+      "wealth": 10
+    },
+    "puzzle": {
+      "progress": 20,
+      "wealth": 0
+    },
+    "branch": {
+      "progress": 20,
+      "wealth": 5
+    },
+    "haunt": {
+      "progress": 20,
+      "wealth": 10
+    }
   },
-  "day": { "progress": 240, "wealth": 60 },
+  "day": {
+    "progress": 240,
+    "wealth": 60
+  },
   "_stamina": "stamina is the pace — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest).",
   "stamina": {
-    "max": 100, "refill_hours": 5,
-    "cost": { "step": 10, "branch": 15, "duel": 10, "shop": 5, "make": 5, "build": 10, "amend": 5 },
-    "refill": { "quest": 20 }
+    "max": 100,
+    "refill_hours": 5,
+    "cost": {
+      "step": 10,
+      "branch": 15,
+      "duel": 10,
+      "shop": 5,
+      "make": 5,
+      "build": 10,
+      "amend": 5
+    },
+    "refill": {
+      "quest": 20
+    }
   }
 }

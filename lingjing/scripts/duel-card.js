@@ -20,11 +20,14 @@ function ringHtml(ctx) {
 /// {status: idle|open|done, picks, rounds, outcome, say}.
 export function duelHtml(exit, d, ctx) {
   const w = ctx.words, b = exit.duel;
-  const head = `<div class="duelhead"><b>${esc(b.creature.name)}</b> <span class="croot">${GLYPH[b.creature.root]} ${esc(b.creature.root_name)}</span></div>`;
+  // The root once: the glyph, and its English name only in an English game.
+  const rootName = ctx.lang === 'en' ? ` ${esc(b.creature.root_name)}` : '';
+  const head = `<div class="duelhead"><b>${esc(b.creature.name)}</b> <span class="croot">${GLYPH[b.creature.root]}${rootName}</span></div>`;
   const rounds = (d.rounds || []).map((r, i) => `<div class="rnd ${r.result}"><span>${w.round} ${i + 1}</span>
     <span>${GLYPH[r.pick]} · ${GLYPH[r.move]}</span><span class="res">${w[{ won: 'rWon', lost: 'rLost', draw: 'rDraw' }[r.result]]}</span></div>`).join('');
   let body = '';
-  if (exit.won) body = `<div class="small ling">${w.wonWait}</div>`;
+  // A haunt's win is paid by the rules at once; a scene's waits for its exit.
+  if (exit.won) body = `<div class="small ling">${String(exit.game?.id ?? '').startsWith('haunt:') ? w.duelWon : w.wonWait}</div>`;
   else if (exit.withdrawn && d.status !== 'done') body = `<div class="small dim">${w.withdrawn}</div>`;
   else if (d.status === 'idle') body = `<div class="small dim">${w.duelHint}</div>${ringHtml(ctx)}<button class="act" data-duel-start="${esc(exit.game.id)}">${w.begin}</button>`;
   else if (d.status === 'open') {

@@ -215,6 +215,22 @@ tools:
         required: true
         description: The item id from the shelf or the bag.
 
+  - name: Tame
+    description: >-
+      At a creature's haunt (Look's `place.encounter`), feed it the thing it
+      likes from the bag — `encounter.likes` — and it walks with the player
+      from then on, once. The bag pays one; the result carries the `beat`,
+      what was `paid` and its card to `show`. Refusals: `needs-item` (its
+      line names what it wants), `already-tamed`, `untameable`, `not-here`.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tame --creature={{creature}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      creature:
+        type: string
+        required: true
+        description: The creature's id or name, from `place.encounter.creature`.
+
   - name: Lang
     description: >-
       Set the game's language to the player's. Returns the scene in that
@@ -613,9 +629,10 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   runs, the riddle when one waits, the director's `choice` when the world
   is open. AskUser it exactly as it is; you compose nothing. A tapped
   label is its option's `exit` (Resolve), `move` (Move there at once),
-  `linger` (Branch open), `ask` (Yinyue answers what is before them) or
+  `linger` (Branch open), `ask` (Yinyue answers what is before them),
   `look` (say what is around, from the scene's setup or the place's line;
-  nothing moves).
+  nothing moves), `duel` (the bout is before them on the scene — say so in
+  a line, no tool) or `tame` (Tame with its creature).
 - **The question is one short line** — *何去何从？* / *What now?* Narration,
   the lines, and what was `paid` go in your reply before it, never inside
   the question: the card shows the question as plain text.
@@ -655,6 +672,21 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   road closed from memory. A road that is not there, a place beyond the
   player: the refusal's `say`, then Yinyue's `yinyue` line naming the
   `fitting` place. Never a lecture; nobody is stuck.
+
+## At a creature's haunt
+
+A place with a creature and no scene running is not empty: Look's
+`place.encounter` names the creature, its bout (`game`, `duel`) and what
+it `likes`, with how many the player holds. Two ways, both the rules':
+
+- **降妖 here** — the same 五行 bout, on the scene, once a day. The scene
+  reports `[scene] won haunt:<creature>`: **Look**, say what the rules
+  `paid` (a haunt pays like a branch), no Resolve — there is no exit. Lost:
+  it withdraws until tomorrow, `[scene] lost …`, a kind line from Yinyue.
+- **驯 by what it likes** — *喂它灵芝*, *feed it the jade fish*: **Tame**
+  with the creature. The bag pays one; it joins the `cast` and walks with
+  the player. `needs-item` tells what it wants in its own line — the
+  market or the road may hold it. A tamed creature fights no more here.
 
 ## 降妖 — fighting a creature
 

@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, askOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, wake, win } from '../scripts/rules.mjs';
+import { VERBS, askOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -129,6 +129,45 @@ test('an unknown exit, a missing answer and an unfought duel are refused', () =>
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');
   refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
+});
+
+test('a creature at its haunt: the bout on the stage pays once a day, and what it likes tames it', () => {
+  // 精卫 at 发鸠山 in 冀, no scene there: the world open, chapter 1 in play
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const october = () => ctx({ now: new Date('2026-10-05T10:00:00') });
+  const l = look(base, content, october());
+  assert.equal(l.scene, null);
+  assert.equal(l.place.encounter.creature.id, 'jingwei');
+  assert.equal(l.place.encounter.game.id, 'haunt:jingwei');
+  assert.deepEqual(l.place.encounter.likes, { id: 'jade-fish', name: '玉鱼', held: 0 });
+  assert.equal(l.director.choice.options[0].label, '降妖 · 精卫', 'the bout leads the choice');
+  assert.ok(!l.director.choice.options.some(o => o.tame), 'nothing to feed it with');
+  // the bout: started at the haunt, won by the rules' own replay, paid by the haunt table
+  const started = must(duel, base, { id: 'haunt:jingwei' }, october());
+  const moves = started.result.moves;
+  const beats = { earth: 'wood', water: 'earth', fire: 'water', metal: 'fire', wood: 'metal' };
+  // beat what the roots can beat; elsewhere pick a root the move does not beat (a draw)
+  const picks = moves.map(m => (base.traits.includes(beats[m]) ? beats[m] : base.traits.find(r => BEATS[m] !== r)));
+  const settled = must(duel, started.state, { id: 'haunt:jingwei', picks: picks.join(',') }, october());
+  assert.equal(settled.result.outcome, 'won');
+  assert.ok(settled.result.paid.progress > 0, 'the rules pay the haunt win');
+  assert.equal(settled.result.haunt.id, 'jingwei');
+  refused(duel, settled.state, { id: 'haunt:jingwei' }, 'subdued-today', october());
+  assert.ok(!look(settled.state, content, october()).director.choice.options.some(o => o.duel), 'won today: the bout leaves the choice');
+  // taming: the thing it likes, from the bag, once
+  refused(tame, base, { creature: 'jingwei' }, 'needs-item', october());
+  const fed = { ...base, bag: { ...base.bag, 'jade-fish': 1 } };
+  assert.equal(look(fed, content, october()).director.choice.options[1].tame, 'jingwei', 'held: the feeding is offered');
+  const out = must(tame, fed, { creature: '精卫' }, october());
+  assert.ok(out.state.cast.includes('jingwei'));
+  assert.equal(out.state.bag['jade-fish'], undefined);
+  assert.equal(out.result.fed.id, 'jade-fish');
+  assert.ok(out.result.paid.progress > 0);
+  refused(tame, out.state, { creature: 'jingwei' }, 'already-tamed', october());
+  refused(duel, out.state, { id: 'haunt:jingwei' }, 'tamed', october());
+  assert.equal(look(out.state, content, october()).place.encounter.tamed, true);
+  // elsewhere: nothing to tame
+  refused(tame, toOpenWorld(), { creature: 'jingwei' }, 'not-here');
 });
 
 test('Lang never hands over a scene the player has not reached', () => {

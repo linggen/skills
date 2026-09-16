@@ -13,7 +13,8 @@ export const WORDS = {
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
-    sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}',
+    sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
+    about: '说说', feed: '喂它{item}', subdue: '降妖',
     effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', use: '服用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
     duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，两胜为降。', ring: '相克', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
@@ -30,7 +31,8 @@ export const WORDS = {
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
     tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
-    sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}',
+    sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
+    about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
     effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', use: 'Use', questBy: 'Recorded by {app} · done today at {t}', questWait: 'Recorded by {app} · not yet today',
     duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
@@ -53,6 +55,11 @@ const ELEMENTS = ['metal', 'wood', 'water', 'fire', 'earth'];
 /// never a change the page makes itself. `data-say` carries the line.
 export const say = (tpl, fill) => tpl.replace(/\{(\w+)\}/g, (_, k) => fill[k] ?? '');
 const sayAttr = (line) => `data-say="${esc(line)}"`;
+/// The card's own buttons: every card on the stage has at least one — a
+/// word to Ling about what it is (his rule, 2026-09-16). `disabled` carries
+/// a reason as its title.
+const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) =>
+  `<button class="act say" ${sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`).join('')}</div>`;
 const MAP = [['雍', '冀', '兖'], ['梁', '豫', '青'], ['荆', '扬', '徐']];
 
 function creature(card, ctx) {
@@ -62,15 +69,21 @@ function creature(card, ctx) {
   const art = c.art
     ? `<img class="illus" src="${esc(worldPath(c.dir ?? ctx.look.world.dir, c.art))}" alt="${esc(pick(c.name, ctx.lang))}">`
     : `<div class="illus unpainted">${esc(pick(c.look, ctx.lang))}</div>`;
-  return `<div class="card creature${tamed ? ' tamed' : ''}" ${sayAttr(say(ctx.words.sayCreature, { name: pick(c.name, ctx.lang) }))}>
+  const name = pick(c.name, ctx.lang);
+  const e = ctx.look.place?.encounter;
+  const here = e && e.creature.id === c.id ? e : null;
+  const feed = here && !here.tamed && here.likes
+    ? { label: say(ctx.words.feed, { item: here.likes.name }), say: say(ctx.words.sayFeed, { name, item: here.likes.name }), disabled: here.likes.held ? '' : here.likes.name }
+    : null;
+  return `<div class="card creature${tamed ? ' tamed' : ''}">
     ${art}
     ${c.art && c.art_caption ? `<div class="artcap">${esc(pick(c.art_caption, ctx.lang))}</div>` : ''}
     <div class="crow"><div class="seal">${esc(c.name.zh)}</div><div>
-      <div class="cardtitle">${esc(pick(c.name, ctx.lang))}</div>
+      <div class="cardtitle">${esc(name)}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
       <q>${esc(pick(c.quote, ctx.lang))}</q>
       <span class="chip">${ctx.words[tamed ? 'tamed' : 'untamed']}</span>
-    </div></div></div>`;
+    </div></div>${acts([{ label: ctx.words.about, say: say(ctx.words.sayCreature, { name }) }, feed])}</div>`;
 }
 
 function traits(card, ctx) {
@@ -81,7 +94,7 @@ function traits(card, ctx) {
     return `<div class="root ${id}${lit.has(id) ? ' lit' : ''}"><b>${esc(e.zh)}</b>${small}</div>`;
   });
   const result = ctx.look.traits ? `<div class="rootres">${esc(ctx.look.traits.name)}</div>` : '';
-  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}</div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${acts([{ label: ctx.words.about, say: ctx.words.sayRoots }])}</div>`;
 }
 
 function map(card, ctx) {
@@ -97,7 +110,7 @@ function map(card, ctx) {
     const tap = kind === 'goal' ? ` ${sayAttr(say(ctx.words.sayGo, { name: name(c) + (ctx.lang === 'zh' ? '州' : '') }))}` : '';
     return `<div class="prov${kind ? ` ${kind}` : ''}"${tap}>${esc(name(c))}${tag}</div>`;
   });
-  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div><div class="map">${cells.join('')}</div>${placesHtml(ctx)}</div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div><div class="map">${cells.join('')}</div>${placesHtml(ctx)}${acts([{ label: ctx.words.about, say: ctx.words.sayMap }])}</div>`;
 }
 
 /// The province's places under the grid: here, a road away, or beyond the
@@ -150,7 +163,7 @@ function roadMap(ctx) {
     ? `class="roadmap painted" style="background-image:url('${esc(worldPath(ctx.look.world.dir, painted.file))}')"`
     : `class="roadmap" style="height:${rows * 62}px"`;
   return `<div class="card"><div class="cardtitle">${esc(place.province.name)}</div>
-    <div ${frame}><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines.join('')}</svg>${chips.join('')}</div></div>`;
+    <div ${frame}><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines.join('')}</svg>${chips.join('')}</div>${acts([{ label: ctx.words.about, say: ctx.words.sayMap }])}</div>`;
 }
 
 function hexagram(card, ctx) {
@@ -158,23 +171,23 @@ function hexagram(card, ctx) {
   if (!h) return '';
   // Lines are stored bottom to top; a hexagram is drawn top down.
   const bars = [...h.lines].reverse().map((y) => `<i class="${y ? 'yang' : 'yin'}"></i>`).join('');
-  return `<div class="card hex" ${sayAttr(ctx.words.sayOmen)}><div class="hexbars">${bars}</div><div>
+  return `<div class="card hex"><div class="hexbars">${bars}</div><div>
     <div class="cardtitle">${ctx.words.omen} · ${esc(pick(h.name, ctx.lang) || h.name)}</div>
-    <div class="hextext">${esc(pick(h.image, ctx.lang) || h.image)}</div></div></div>`;
+    <div class="hextext">${esc(pick(h.image, ctx.lang) || h.image)}</div>${acts([{ label: ctx.words.about, say: ctx.words.sayOmen }])}</div></div>`;
 }
 
 /// The next cauldron: a word to Ling when the road is open; with a date,
 /// the road waits and the card only says when.
 function gate(card, ctx) {
   const opens = card.opens ? `<div class="small ling">${ctx.words.opens} ${esc(card.opens)}</div>` : '';
-  // A word only on the open road: at a scene the cauldron is the scene's own exit.
-  const tap = card.opens || ctx.look.scene ? '' : ` ${sayAttr(ctx.words.sayGate)}`;
-  return `<div class="card gate"${tap}><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}</div></div>`;
+  // The road on is a word only when it is open and no scene runs here.
+  const go = card.opens || ctx.look.scene ? null : { label: ctx.words.sayGate, say: ctx.words.sayGate };
+  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}${acts([{ label: ctx.words.about, say: ctx.words.sayGateAbout }, go])}</div></div>`;
 }
 
 function tribulation(card, ctx) {
   const bolts = [1, 2, 3].map((k) => `<i class="${k <= (card.strikes || 0) ? 'hit' : ''}"></i>`).join('');
-  return `<div class="card trib"><div class="cardtitle">${ctx.words.tribTitle}</div><div class="bolts">${bolts}</div></div>`;
+  return `<div class="card trib"><div class="cardtitle">${ctx.words.tribTitle}</div><div class="bolts">${bolts}</div>${acts([{ label: ctx.words.about, say: ctx.words.sayTrib }])}</div>`;
 }
 
 /// A board for a task already won or done is a made pill, never a fresh deal.
@@ -182,7 +195,7 @@ function board(card, ctx) {
   const task = (ctx.look.tasks || []).find((t) => t.id === card.id);
   const made = task && (task.status === 'done' || task.won);
   const body = made ? `<div class="dim small">${ctx.words.boardDone}</div>` : boardHtml(ctx.boardFor(card.id), ctx.words);
-  return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}</div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}${acts([{ label: ctx.words.about, say: ctx.words.sayBoard }])}</div>`;
 }
 
 /// One item, or a shelf of them — words, prices and what is held come from
@@ -210,8 +223,9 @@ function item(card, ctx) {
       : e.wear ? ctx.words.effWear : e.key ? ctx.words.effKey : ctx.words.effNone;
     // A pill in the bag is taken by a word; Trade decides.
     const use = e.progress && i.held ? `<button class="act say" ${sayAttr(say(ctx.words.sayUse, { name: i.name }))}>${ctx.words.use}</button>` : '';
-    return `<div class="item" ${sayAttr(say(ctx.words.sayItem, { name: i.name }))}>${art}<div class="itemname">${esc(i.name)}</div>
-      <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${price}${held}${use}</div>`;
+    const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayItem, { name: i.name }))}>${ctx.words.about}</button>`;
+    return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
+      <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${price}${held}<div class="acts">${tell}${use}</div></div>`;
   });
   const title = ids.length > 1 ? ctx.look.words?.shop ?? ctx.words.shelf : ctx.look.words?.item ?? ctx.words.shelf;
   return `<div class="card"><div class="cardtitle">${esc(title)}</div><div class="shelf">${cells.join('')}</div></div>`;
@@ -219,7 +233,9 @@ function item(card, ctx) {
 
 /// 降妖 on the scene: the exit's duel from Look, the bout from the page.
 function duel(card, ctx) {
-  const exit = (ctx.look.scene?.exits || []).find((e) => e.game?.id === card.id && e.game.kind === 'duel');
+  const e = ctx.look.place?.encounter;
+  const exit = (ctx.look.scene?.exits || []).find((x) => x.game?.id === card.id && x.game.kind === 'duel')
+    ?? (e && e.game.id === card.id && !e.tamed ? e : null);
   if (!exit) return '';
   return duelHtml(exit, ctx.duelFor(card.id), ctx);
 }
@@ -238,8 +254,9 @@ export function trayHtml(ctx) {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const act = state === 'offered' && t.kind === 'board'
       ? `<button class="act" data-play="${esc(t.id)}">${ctx.words.play}</button>` : '';
-    return `<div class="card task ${state}" ${sayAttr(say(ctx.words.sayTask, { title: t.title }))}><div class="tasktitle">${esc(t.title)}</div>
-      <div class="taskfoot"><span class="chip">${ctx.words[state]}</span>${act}</div></div>`;
+    const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayTask, { title: t.title }))}>${ctx.words.about}</button>`;
+    return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
+      <div class="taskfoot"><span class="chip">${ctx.words[state]}</span>${act}${tell}</div></div>`;
   });
   const quests = (ctx.look.quests || []).map((q) => {
     const state = q.paid ? 'paid' : q.done ? 'seen' : 'due';
@@ -248,9 +265,10 @@ export function trayHtml(ctx) {
     const app = q.app ? q.app[0].toUpperCase() + q.app.slice(1) : '';
     const t = q.done_at ? new Date(q.done_at).toLocaleTimeString(ctx.lang === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' }) : '';
     const by = say(q.done_at ? ctx.words.questBy : ctx.words.questWait, { app, t });
-    return `<div class="card task ${{ paid: 'done', seen: 'won', due: '' }[state]}" ${sayAttr(say(ctx.words.sayTask, { title: q.title }))}>
+    const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayTask, { title: q.title }))}>${ctx.words.about}</button>`;
+    return `<div class="card task ${{ paid: 'done', seen: 'won', due: '' }[state]}">
       <div class="tasktitle">${esc(q.title)}</div>
-      <div class="taskfoot"><span class="chip real" title="${esc(by)}">${ctx.words.quest}</span><span class="chip">${ctx.words[state]}</span></div></div>`;
+      <div class="taskfoot"><span class="chip real" title="${esc(by)}">${ctx.words.quest}</span><span class="chip">${ctx.words[state]}</span>${tell}</div></div>`;
   });
   const all = [...tasks, ...quests];
   return all.length ? all.join('') : `<div class="dimline">${ctx.words.trayEmpty}</div>`;
