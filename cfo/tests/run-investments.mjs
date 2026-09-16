@@ -16,6 +16,11 @@ import {
   reportHeading,
   checkNoteOf,
   readPrompt,
+  holdingsIn,
+  proposalOf,
+  holdingAfter,
+  proposalPlans,
+  changeOf,
 } from '../scripts/investments.js';
 
 let pass = 0, fail = 0;
@@ -88,6 +93,66 @@ t('snapshot keeps the account label', snap.holdings[1].account === 'TFSA' && sna
   for (const f of ['watch', 'shares', 'account']) mac.remove(`inv:AAPL|${f}`);
   phone.mergeState(mac.toState());
   t('a removal sticks across the merge', !('AAPL' in investmentsOf(phone)));
+}
+
+// ── Holdings proposed in chat ──────────────────────────────────────────────
+{
+  const list = [{ symbol: 'VOO', shares: 50 }];
+  t('the holdings list is found however the model wrapped it',
+    [{ holdings: list }, { body: { holdings: list } }, { body_patch: { content: { holdings: list } } }].every((a) => holdingsIn(a) === list)
+    && holdingsIn({ body: { insights: [] } }) === null && holdingsIn({ body: { suggestions: [] } }) === null);
+  t('a proposal reads each kind',
+    eq(proposalOf({ symbol: 'voo', shares: '50', avg_cost: 410.25, account: ' TFSA ' }), { symbol: 'VOO', kind: 'shares', amount: 50, cost: 410.25, account: 'TFSA' })
+    && proposalOf({ symbol: 'AAPL', bought: 10, price: 182.5 }).kind === 'bought'
+    && proposalOf({ symbol: 'TSX:RY', sold: 20 }).symbol === 'RY.TO'
+    && proposalOf({ symbol: 'MSFT' }).kind === 'watch');
+  t('an unreadable proposal is dropped',
+    [{ symbol: '$(rm)', shares: 5 }, { symbol: 'AAPL', shares: -1 }, { symbol: 'AAPL', bought: 0, price: 5 },
+      { symbol: 'AAPL', sold: 'lots' }, { symbol: 'AAPL', shares: 5, bought: 5 }, null].every((p) => proposalOf(p) === null));
+  t('a watch-only proposal carries no cost', proposalOf({ symbol: 'MSFT', avg_cost: 300 }).cost === null);
+
+  const now = { shares: 10, avg_cost: 150, account: 'TFSA' };
+  const step = (item, from = now) => holdingAfter(from, proposalOf(item));
+  t('a position as it stands replaces the count and keeps what it omits',
+    eq(step({ symbol: 'AAPL', shares: 12 }), { shares: 12, avg_cost: 150, account: 'TFSA' }));
+  t('a buy averages the cost', eq(step({ symbol: 'AAPL', bought: 10, price: 170 }), { shares: 20, avg_cost: 160, account: 'TFSA' }));
+  t('a buy without a price leaves the cost unknown', step({ symbol: 'AAPL', bought: 5 }).avg_cost === null);
+  t('a first buy costs its price',
+    eq(step({ symbol: 'AAPL', bought: 4, price: 99.99, account: 'RRSP' }, { shares: null, avg_cost: null, account: null }), { shares: 4, avg_cost: 99.99, account: 'RRSP' }));
+  t('a sale keeps the average cost', eq(step({ symbol: 'AAPL', sold: 4 }), { shares: 6, avg_cost: 150, account: 'TFSA' }));
+  t('selling it all, or shares 0, clears the holding',
+    [{ symbol: 'AAPL', sold: 10 }, { symbol: 'AAPL', sold: 25 }, { symbol: 'AAPL', shares: 0 }]
+      .every((i) => eq(step(i), { shares: null, avg_cost: null, account: null })));
+  t('fractional shares do not drift', step({ symbol: 'AAPL', sold: 0.3 }, { shares: 10.5, avg_cost: 1, account: null }).shares === 10.2);
+
+  const held = { AAPL: { watch: true, shares: 10, avg_cost: 150, account: 'TFSA' }, MSFT: { watch: true } };
+  const plans = proposalPlans([
+    { symbol: 'AAPL', bought: 10, price: 170 },
+    { symbol: 'VOO', shares: 30, avg_cost: 400, account: 'TFSA' },
+    { symbol: 'VOO', bought: 20, price: 425, account: 'TFSA + RRSP' },
+    { symbol: 'MSFT' },
+    { symbol: 'AAPL', sold: 5 },
+    { symbol: 'nope nope', shares: 1 },
+  ], held);
+  t('plans fold a symbol\'s items in order and drop no-ops',
+    eq(plans.map((p) => p.symbol), ['AAPL', 'VOO'])
+    && eq(plans[0].after, { shares: 15, avg_cost: 160, account: 'TFSA' })
+    && eq(plans[1].after, { shares: 50, avg_cost: 410, account: 'TFSA + RRSP' })
+    && plans[1].watched === false);
+  t('a plan is worked out once, against the holdings as they stand',
+    eq(proposalPlans([{ symbol: 'AAPL', bought: 10, price: 170 }], { AAPL: { watch: true, ...plans[0].after } })[0].after.shares, 25));
+  t('watching a new symbol is a plan; re-proposing a held position is not',
+    proposalPlans([{ symbol: 'NVDA' }], held).length === 1
+    && proposalPlans([{ symbol: 'AAPL', shares: 10, avg_cost: 150, account: 'TFSA' }], held).length === 0);
+
+  const usd = (n) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(n);
+  t('a change reads as a few words',
+    changeOf(plans[0], 'USD') === `10 → 15 sh · avg ${usd(150)} → ${usd(160)}`
+    && changeOf(plans[1], 'USD') === `New · 50 sh at ${usd(410)} · TFSA + RRSP`
+    && changeOf(proposalPlans([{ symbol: 'AAPL', sold: 10 }], held)[0], 'USD') === 'Sold all 10 sh'
+    && changeOf(proposalPlans([{ symbol: 'NVDA' }], held)[0], 'USD') === 'Watch'
+    && changeOf(proposalPlans([{ symbol: 'MSFT', shares: 3, account: 'RRSP' }], held)[0], 'USD') === '3 sh · RRSP'
+    && changeOf(proposalPlans([{ symbol: 'AAPL', shares: 10, account: 'RRSP' }], held)[0], 'USD') === '10 sh · TFSA → RRSP');
 }
 
 // ── Reports ────────────────────────────────────────────────────────────────

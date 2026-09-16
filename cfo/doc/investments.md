@@ -87,8 +87,14 @@ Mac; no Linggen Cloud, no data-provider key.
 - Remove "never give investment/securities advice or tell the user what to
   buy/sell". No limits on opinions (Hanli, 2026-09-15). Numbers still come
   from the tools, never invented.
-- Holdings from chat: `PageUpdate body.holdings:[…]` proposals, confirmed on
-  the page — same path as category suggestions.
+- Holdings from chat: `PageUpdate body.holdings:[…]`, one item per trade or
+  position — `{symbol, shares, avg_cost?, account?}` (as it stands; 0 = sold
+  all), `{symbol, bought, price?}`, `{symbol, sold}`, or `{symbol}` (watch).
+  The page validates, does the math (share count, average cost) against the
+  register when the proposal arrives, and shows a **From chat** card on the
+  tab (switching to it): one row per symbol, before → after, Apply / ✕,
+  Apply all / Dismiss. Only Apply writes `inv:` cells. A ticker with no
+  listing can't be applied. Proposals live in the page, not on disk.
 
 ## Report mission (missions/reports/mission.md)
 
@@ -147,8 +153,8 @@ Mac; no Linggen Cloud, no data-provider key.
    refresh)~~ — built
 3. ~~Company card + `reports-check` + `SaveReport` + both report buttons~~
    — built
-4. ~~SKILL.md tools; advice rule removed~~ — built (holdings proposals from
-   chat not yet)
+4. ~~SKILL.md tools; advice rule removed; holdings proposals from chat~~
+   — built
 5. ~~`missions/reports` + the settings switch~~ — built
 6. ~~Phone: pull `reports.json` + the `report` line~~ — built
 7. ~~Release 2: native phone Investments view~~ — built

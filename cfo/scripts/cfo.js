@@ -10,7 +10,7 @@ import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, de
 import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
 import { hashId } from './hash.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy } from './lww.js';
-import { initInvestments, renderInvestView, leaveInvestView, reportSaved } from './investments.js';
+import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings } from './investments.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -1966,6 +1966,12 @@ function applyPageUpdate(args) {
   // Models wrap args unpredictably, so search recursively (like extractInsights).
   const sugg = extractSuggestions(args);
   if (sugg) { if (raw !== lastPageUpdateRaw) { lastPageUpdateRaw = raw; applySuggestions(sugg); } return; }
+  // Holdings the user told CFO about: they wait on the Investments tab for Apply.
+  const held = holdingsIn(args);
+  if (held) {
+    if (raw !== lastPageUpdateRaw) { lastPageUpdateRaw = raw; if (proposeHoldings(held)) switchView('invest'); }
+    return;
+  }
   const cards = extractInsights(args);
   if (!cards) { console.warn('[cfo] PageUpdate args not recognized', args); return; }
   // A re-review of unchanged data can emit byte-identical cards. Dedup only the

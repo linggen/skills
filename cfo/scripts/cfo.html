@@ -115,13 +115,15 @@
         <div id="commit-groups"></div>
       </section>
       <!-- Investments: watchlist + holdings, numbers from scripts/market.pl.
-           Page-owned, no LLM (investments.js). -->
+           Page-owned (investments.js); holdings CFO proposes in chat wait in
+           #inv-proposals for Apply. -->
       <section id="invest" hidden>
         <form id="inv-add" autocomplete="off">
           <input id="inv-symbol" placeholder="Ticker — AAPL, or RY.TO for TSX" spellcheck="false">
           <button class="btn" type="submit">Add</button>
           <span id="inv-add-msg" class="hint inline"></span>
         </form>
+        <div id="inv-proposals"></div>
         <div id="inv-summary"></div>
         <div id="inv-list"></div>
       </section>

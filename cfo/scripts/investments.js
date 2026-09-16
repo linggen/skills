@@ -6,6 +6,8 @@
 // data/investments.json is the agent's copy of the list; data/reports.json
 // holds report summaries, written only by the agent's SaveReport. The page
 // finds reports itself (market.pl) and calls the model only to read one.
+// Holdings the agent proposes in chat (PageUpdate body.holdings) wait on the
+// tab until the user applies them — the agent never writes a cell.
 
 import { investmentsOf } from './lww.js';
 
@@ -28,6 +30,8 @@ let failure = '';
 let checking = false;
 let checkNote = '';  // what the last Check reports found
 const reading = new Map(); // symbol -> {note, at, busy} for its report line
+let proposed = [];   // holdings proposed in chat, waiting for Apply
+const unlisted = new Set(); // proposed symbols the lookup found no listing for
 
 /**
  * Wire the tab once, at page load.
@@ -78,6 +82,18 @@ export async function reportSaved() {
   if (!document.getElementById('invest').hidden) draw();
 }
 
+/// Holdings CFO proposed in chat (PageUpdate body.holdings). They wait on the
+/// tab for Apply; a symbol proposed again replaces its row. Returns how many
+/// arrived, so the page can bring the tab forward.
+export function proposeHoldings(list) {
+  const inv = investmentsOf(deps.edits());
+  const plans = proposalPlans(list, inv);
+  const fresh = new Set(plans.map((p) => p.symbol));
+  proposed = [...proposed.filter((p) => !fresh.has(p.symbol)), ...plans];
+  lookUp(plans.map((p) => p.symbol).filter((sym) => !inv[sym]));
+  return plans.length;
+}
+
 async function loadReports() {
   reports = (await deps.readJson(`${deps.data}/reports.json`, {})).symbols || {};
 }
@@ -97,6 +113,7 @@ export function canonicalSymbol(raw) {
 }
 
 const num = (v) => (v === null || v === undefined || v === '' ? null : Number.isFinite(Number(v)) ? Number(v) : null);
+const currencyOf = (symbol, q = {}) => q.currency || (symbol.endsWith('.TO') ? 'CAD' : 'USD');
 
 /// One row per listed symbol: the holding joined with the latest numbers.
 /// Holdings first (largest value first), then the watchlist A→Z.
@@ -120,7 +137,7 @@ function positionOf(symbol, cell, q) {
     shares,
     avg_cost: avg,
     account: cell.account || '',
-    currency: q.currency || (symbol.endsWith('.TO') ? 'CAD' : 'USD'),
+    currency: currencyOf(symbol, q),
     name: q.name || '',
     kind: q.kind || '',
     price,
@@ -173,6 +190,108 @@ export function parseAmount(raw) {
   return n !== null && n > 0 ? n : null;
 }
 
+// ── Pure: holdings proposed in chat ────────────────────────────────────────
+
+const PROPOSAL_KINDS = ['shares', 'bought', 'sold'];
+const round = (n, places) => Math.round(n * 10 ** places) / 10 ** places;
+const positive = (v) => { const n = num(v); return n !== null && n > 0 ? n : null; };
+
+/// The `holdings` array of a PageUpdate, wherever the model nested it; null
+/// when there is none.
+export function holdingsIn(node, depth = 0) {
+  if (!node || typeof node !== 'object' || Array.isArray(node) || depth > 5) return null;
+  if (Array.isArray(node.holdings)) return node.holdings;
+  for (const k of ['body', 'body_patch', 'content', 'data']) {
+    const found = holdingsIn(node[k], depth + 1);
+    if (found) return found;
+  }
+  return null;
+}
+
+/// One proposed item, or null when it can't be read. At most one of `shares`
+/// (the position as it stands; 0 = sold it all), `bought` (with `price`) or
+/// `sold`; none of them = just watch it.
+export function proposalOf(item) {
+  const symbol = canonicalSymbol(item?.symbol);
+  if (!symbol) return null;
+  const kinds = PROPOSAL_KINDS.filter((k) => item[k] !== undefined && item[k] !== null);
+  if (kinds.length > 1) return null;
+  const kind = kinds[0] || 'watch';
+  const amount = kind === 'shares' ? num(item.shares) : kind === 'watch' ? null : positive(item[kind]);
+  if (kind !== 'watch' && (amount === null || amount < 0)) return null;
+  const account = typeof item.account === 'string' && item.account.trim() ? item.account.trim().slice(0, 40) : null;
+  const cost = kind === 'bought' ? positive(item.price) : kind === 'shares' ? positive(item.avg_cost) : null;
+  return { symbol, kind, amount, cost, account };
+}
+
+const holdingOf = (cell = {}) => ({
+  shares: num(cell.shares) || null,
+  avg_cost: num(cell.avg_cost),
+  account: cell.account || null,
+});
+
+const NO_HOLDING = { shares: null, avg_cost: null, account: null };
+
+/// The holding `{shares, avg_cost, account}` (null = none) after one
+/// proposal. The page does the trade math, never the model.
+export function holdingAfter(now, p) {
+  const shares = now.shares || 0;
+  const account = p.account ?? now.account;
+  const steps = {
+    watch: () => now,
+    shares: () => (p.amount === 0 ? NO_HOLDING
+      : { shares: p.amount, avg_cost: p.cost ?? now.avg_cost, account }),
+    bought: () => {
+      const total = shares + p.amount;
+      const known = p.cost !== null && (shares === 0 || now.avg_cost !== null);
+      const avg = known ? (shares * (now.avg_cost || 0) + p.amount * p.cost) / total : null;
+      return { shares: round(total, 6), avg_cost: avg === null ? null : round(avg, 4), account };
+    },
+    sold: () => {
+      const left = round(shares - p.amount, 6);
+      return left > 0 ? { shares: left, avg_cost: now.avg_cost, account } : NO_HOLDING;
+    },
+  };
+  return steps[p.kind]();
+}
+
+const sameHolding = (a, b) => a.shares === b.shares && a.avg_cost === b.avg_cost && a.account === b.account;
+
+/// What a PageUpdate proposed, against the holdings as they stand (`inv`, from
+/// investmentsOf): [{symbol, before, after, watched}], one per symbol, items
+/// for the same symbol applied in order, no-ops dropped. `after` is worked out
+/// once, here, so applying a plan twice changes nothing.
+export function proposalPlans(list, inv) {
+  const plans = new Map();
+  for (const p of (Array.isArray(list) ? list : []).map(proposalOf).filter(Boolean)) {
+    const cell = inv[p.symbol];
+    const plan = plans.get(p.symbol) || { symbol: p.symbol, before: holdingOf(cell), watched: !!cell?.watch };
+    plan.after = holdingAfter(plan.after || plan.before, p);
+    plans.set(p.symbol, plan);
+  }
+  return [...plans.values()].filter((p) => !p.watched || !sameHolding(p.before, p.after));
+}
+
+/// A plan in a few words: "New · 50 sh at $410.25 · TFSA", "10 → 15 sh · avg
+/// $150.00 → $160.00", "Sold all 10 sh".
+export function changeOf(plan, currency) {
+  const { before: b, after: a } = plan;
+  const cost = (n) => (n === null ? 'unknown' : money(n, currency));
+  if (!a.shares) {
+    if (b.shares) return `Sold all ${b.shares} sh`;
+    return plan.watched ? '' : 'Watch';
+  }
+  const parts = [];
+  if (!b.shares) parts.push(`${plan.watched ? '' : 'New · '}${a.shares} sh${a.avg_cost !== null ? ` at ${cost(a.avg_cost)}` : ''}`);
+  else {
+    parts.push(b.shares === a.shares ? `${a.shares} sh` : `${b.shares} → ${a.shares} sh`);
+    if (b.avg_cost !== a.avg_cost) parts.push(b.avg_cost === null ? `at ${cost(a.avg_cost)}` : `avg ${cost(b.avg_cost)} → ${cost(a.avg_cost)}`);
+  }
+  if (a.account !== b.account) parts.push(b.account && b.shares ? `${b.account} → ${a.account || 'no account'}` : a.account);
+  else if (a.account && !b.shares) parts.push(a.account);
+  return parts.filter(Boolean).join(' · ');
+}
+
 // ── Pure: reports ──────────────────────────────────────────────────────────
 
 /// "2026-06-27" → "Jun 27, 2026"; a timestamp keeps its time of day.
@@ -220,6 +339,7 @@ const rowsNow = () => positionsOf(investmentsOf(deps.edits()), quotes);
 
 function draw() {
   const rows = rowsNow();
+  document.getElementById('inv-proposals').innerHTML = proposalsHtml();
   document.getElementById('inv-summary').innerHTML = summaryHtml(rows);
   if (editing) return; // never wipe a form mid-typing
   document.getElementById('inv-list').innerHTML = rows.length
@@ -329,6 +449,39 @@ function reportsHtml(symbol) {
   </div>`;
 }
 
+/// Still waiting: a plan the holdings already match (applied, or edited to
+/// the same by hand or on the phone) is gone.
+const waiting = () => {
+  const inv = investmentsOf(deps.edits());
+  return proposed.filter((p) => !(inv[p.symbol]?.watch && sameHolding(holdingOf(inv[p.symbol]), p.after)));
+};
+
+const notFound = (sym) => unlisted.has(sym);
+
+/// The card for holdings proposed in chat — nothing is saved until Apply.
+function proposalsHtml() {
+  const { esc } = deps;
+  const plans = waiting();
+  if (!plans.length) return '';
+  const rows = plans.map((p) => {
+    const sym = esc(p.symbol);
+    const missing = notFound(p.symbol);
+    const what = missing ? 'Not found — check the ticker' : changeOf(p, currencyOf(p.symbol, quotes[p.symbol]));
+    return `<div class="inv-prop">
+      <b>${sym}</b> <span class="inv-name">${esc(quotes[p.symbol]?.name || '')}</span>
+      <span class="inv-prop-what">${esc(what)}</span><span class="spacer"></span>
+      <button class="chip" data-act="prop-apply" data-sym="${sym}" ${missing ? 'disabled' : ''}>Apply</button>
+      <button class="chip ghost" data-act="prop-drop" data-sym="${sym}" aria-label="Dismiss ${sym}">✕</button>
+    </div>`;
+  }).join('');
+  const all = plans.length > 1 ? '<button class="chip" data-act="prop-apply-all">Apply all</button>' : '';
+  return `<div class="inv-props">
+    <div class="inv-props-h"><b>✦ From chat</b><span class="hint inline">Saved only when you apply</span><span class="spacer"></span>
+      ${all}<button class="chip ghost" data-act="prop-drop-all">Dismiss${plans.length > 1 ? ' all' : ''}</button></div>
+    ${rows}
+  </div>`;
+}
+
 function menuHtml(r) {
   const sym = deps.esc(r.symbol);
   return `<div class="inv-menu">
@@ -371,6 +524,10 @@ function onClick(e) {
     remove: () => removeSymbol(sym),
     save: () => saveHolding(sym, btn.closest('.inv-form')),
     cancel: () => { editing = null; draw(); },
+    'prop-apply': () => applyProposals([sym]),
+    'prop-apply-all': () => applyProposals(waiting().map((p) => p.symbol)),
+    'prop-drop': () => { proposed = proposed.filter((p) => p.symbol !== sym); draw(); },
+    'prop-drop-all': () => { proposed = []; draw(); },
   };
   acts[btn.dataset.act]?.();
 }
@@ -427,19 +584,35 @@ async function onAdd(e) {
 
 async function saveHolding(sym, form) {
   const read = (f) => form.querySelector(`[data-f=${f}]`).value;
-  const next = { shares: parseAmount(read('shares')), avg_cost: parseAmount(read('avg_cost')), account: read('account').trim() || null };
+  writeHolding(sym, { shares: parseAmount(read('shares')), avg_cost: parseAmount(read('avg_cost')), account: read('account').trim() || null });
+  editing = null;
+  await persist();
+  draw();
+}
+
+/// Holdings proposed in chat, applied. Symbols the lookup couldn't find stay
+/// on the card.
+async function applyProposals(symbols) {
+  const plans = waiting().filter((p) => symbols.includes(p.symbol) && !notFound(p.symbol));
+  if (!plans.length) return;
+  for (const p of plans) writeHolding(p.symbol, p.after);
+  proposed = proposed.filter((p) => !plans.includes(p));
+  await persist();
+  draw();
+  refresh(plans.map((p) => p.symbol));
+}
+
+/// One holding `{shares, avg_cost, account}` (null = clear) into the register.
+/// One cell per field, written only when it changed: shares edited here and
+/// the account on the phone must not clobber each other on merge.
+function writeHolding(sym, next) {
   const reg = deps.edits();
   const current = investmentsOf(reg)[sym] || {};
-  // One cell per field: shares edited here and the account on the phone must
-  // not clobber each other on merge.
   for (const [field, value] of Object.entries(next)) {
     if (value === null) { if (current[field] !== undefined) reg.remove(`inv:${sym}|${field}`); }
     else if (value !== current[field]) reg.set(`inv:${sym}|${field}`, value);
   }
   if (!current.watch) reg.set(`inv:${sym}|watch`, true); // cleared shares keep it watched
-  editing = null;
-  await persist();
-  draw();
 }
 
 async function removeSymbol(sym) {
@@ -482,9 +655,28 @@ async function refresh(only) {
   }
 }
 
+/// Name and listing for symbols not on the tab yet, so a proposal shows the
+/// company, or that the ticker doesn't exist.
+async function lookUp(symbols) {
+  if (!symbols.length) return;
+  try {
+    const found = await fetchInto('quotes', symbols);
+    for (const sym of symbols) {
+      if (found[sym]?.error === 'not found') unlisted.add(sym); else unlisted.delete(sym);
+    }
+    draw();
+    const listed = symbols.filter((sym) => !unlisted.has(sym));
+    if (listed.length) await fetchInto('stats', listed);
+  } catch (err) {
+    console.warn('[cfo] look up failed', err);
+  }
+  draw();
+}
+
 async function fetchInto(verb, symbols) {
-  const out = await deps.runBash(`perl ${MARKET} ${verb} ${symbols.join(' ')}`);
-  Object.assign(quotes, JSON.parse(out));
+  const out = JSON.parse(await deps.runBash(`perl ${MARKET} ${verb} ${symbols.join(' ')}`));
+  Object.assign(quotes, out);
+  return out;
 }
 
 // ── Reports ────────────────────────────────────────────────────────────────
