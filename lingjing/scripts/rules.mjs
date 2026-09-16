@@ -696,14 +696,30 @@ export function resolve(state, content, ctx, args) {
     if (exit.next) { s.scene = exit.next; settlePlace(content, s); offerTasks(content, s); }
     if (exit.ends) { s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
   }
+  const walked = exit.next ? walkOn(content, s, ctx.now) : null;
   return {
     state: s,
     result: {
       ok: true, took: exit.id, beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
+      ...(walked ? { walked } : {}),
       summarize: Boolean(exit.next || exit.ends),
     },
   };
+}
+
+/* An exit taken toward the next scene walks the player there when it stands
+   one road away, open and within their tier — *去蓬莱* means go; asking
+   again which road was the player's "click twice" (2026-09-16). Farther
+   off, or beyond them, the road waits as a waypoint. Walking costs nothing,
+   as Move costs nothing. */
+function walkOn(content, s, now) {
+  if (inMade(s) || atScene(content, s)) return null;
+  const scene = sceneOf(content, s), here = placeOf(content, s.place);
+  const target = scene && placeOf(content, scene.at);
+  if (!target || !here?.roads.includes(target.id) || !provinceOpen(content, target.province, now) || tooHard(content, s, target)) return null;
+  s.place = target.id;
+  return { from: placeName(content, s, here), to: placeName(content, s, target) };
 }
 
 export function judge(state, content, ctx, args) {

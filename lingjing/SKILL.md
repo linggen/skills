@@ -752,8 +752,11 @@ say so when the player looks at one. What the player carries is Look's
 
 ## The spine as waypoints
 
-After the prologue, a chapter's scenes stand at places: Look's `scene` is
-null while the scene waits elsewhere, and `waypoint` (also the director's
+After the prologue, a chapter's scenes stand at places. An exit taken
+toward the next scene walks the player there itself when it is one road
+away — the result says `walked` and carries the new `scene`; narrate one
+arrival and ask once, never "which road" again. Farther off, Look's `scene`
+is null while the scene waits, and `waypoint` (also the director's
 `thread`) names the place — *路通向漳水南岸* — so the player walks there
 (Move) and the scene begins. Resolve from elsewhere is refused
 `not-at-scene` with its line. A road into a province whose chapter has not
