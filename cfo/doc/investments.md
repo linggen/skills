@@ -271,4 +271,8 @@ lawyer's read before charging for it.
    prediction; it goes to her thread and, with the phone closed, to the
    morning line with no route, so a tap lands in her thread, where she can
    ask CFO on the Mac. Her model out of reach → nothing marked.
-6. A week on real holdings: measure tokens, then set the price.
+6. A week on real holdings: measure tokens, then set the price. Each run's
+   `usage` (calls, prompt, cached, output, models) is on its line in
+   `GET /api/missions/cfo%3Awatch/runs` (engine `45bdf3a`). First measure,
+   2026-09-16, a quiet check on gpt-5.6-terra: 4 calls, 56.5k prompt (39.4k
+   cached), 0.4k output.
