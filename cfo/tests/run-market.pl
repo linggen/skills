@@ -256,6 +256,78 @@ my $weighed = weigh_positions({ NVDA => { currency => 'USD', value => 4319 }, TS
                                 'RY.TO' => { currency => 'CAD', value => 2842 }, VOO => { currency => 'USD', value => 0 } });
 t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'RY.TO'}{weight_pct} == 100 && $weighed->{VOO}{weight_pct} == 0);
 
+# ── Watch: economy and policy ─────────────────────────────────────────────
+{
+    my $window = session_end('2026-09-16') - 3600;
+    my @rates = map { { effectiveDate => $_->[0], targetRateFrom => $_->[1], targetRateTo => $_->[2] } }
+        ['2026-09-17', 3.25, 3.50], ['2026-09-16', 3.50, 3.75], ['2026-09-15', 3.50, 3.75], ['2026-07-30', 3.75, 4.00];
+    my @cut = fed_rate_events(\@rates, $window);
+    t('a Fed range change inside the window is a rate event',
+      @cut == 1 && $cut[0]{id} eq 'rate:Fed:2026-09-17' && $cut[0]{change_bp} == -25 && $cut[0]{from} eq '3.50–3.75%',
+      JSON::PP->new->canonical->encode(\@cut));
+
+    my $item = sub { "<item><title>$_[0]</title><link><![CDATA[$_[1]]]></link><pubDate><![CDATA[$_[2]]]></pubDate></item>" };
+    my $feed = '<rss><channel>'
+        . $item->('Federal Reserve issues FOMC statement', 'https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm', 'Thu, 17 Sep 2026 18:00:00 GMT')
+        . $item->('Minutes of the Board&#39;s discount rate meetings', 'https://x/monetary20260916b.htm', 'Wed, 16 Sep 2026 18:00:00 GMT')
+        . $item->('Minutes of the Federal Open Market Committee, July 28–29, 2026', 'https://x/monetary20260819a.htm', 'Wed, 19 Aug 2026 18:00:00 GMT')
+        . '</channel></rss>';
+    my @fed = fed_release_events($feed, $window);
+    t('an FOMC statement in the window is an event; board minutes and old releases are not',
+      @fed == 1 && $fed[0]{id} eq 'fed:monetary20260916a.htm', JSON::PP->new->canonical->encode(\@fed));
+
+    my $meeting = sub { qq{<div class="row fomc-meeting"><div class="fomc-meeting__month col"><strong>$_[0]</strong></div><div class="fomc-meeting__date col">$_[1]</div></div>} };
+    my $calendar = '<h4><a id="1">2026 FOMC Meetings</a></h4>' . $meeting->('September', '15-16*') . $meeting->('Apr/May', '30-1')
+                 . '<h4><a id="2">2027 FOMC Meetings</a></h4>' . $meeting->('January', '26-27');
+    t('an FOMC decision tomorrow is an event, with projections flagged',
+      (fomc_meeting_events($calendar, '2026-09-15'))[0]{when} eq 'tomorrow'
+      && (fomc_meeting_events($calendar, '2026-09-15'))[0]{projections});
+    t('a meeting across two months decides in the second',
+      (fomc_meeting_events($calendar, '2026-05-01'))[0]{on} eq '2026-05-01' && !fomc_meeting_events($calendar, '2026-09-18'));
+
+    my @obs;
+    for my $i (0 .. 79) {
+        my $d = shift_date('2026-09-17', -$i);
+        push @obs, { d => $d, V39079 => { v => $i == 0 ? '2.00' : '2.25' }, FXUSDCAD => { v => $i % 2 ? '1.3800' : '1.3828' } };
+    }
+    $obs[0]{FXUSDCAD}{v} = '1.3950'; # +1.09% on the 17th
+    splice @obs, 5, 0, { d => '2026-09-12', V39079 => { v => '' }, FXUSDCAD => {} }; # a holiday: no values
+    my @boc = boc_events(\@obs, $window);
+    t('a Bank of Canada cut and a big USD/CAD day are events',
+      join(',', map { $_->{id} } @boc) eq 'rate:Bank of Canada:2026-09-17,fx:USDCAD:2026-09-17'
+      && $boc[0]{change_bp} == -25 && $boc[1]{change_pct} == 1.09, JSON::PP->new->canonical->encode(\@boc));
+
+    my $row = sub { my ($y, $m, $v) = @_; { year => $y, period => sprintf('M%02d', $m), value => $v } };
+    my $series = {
+        CUSR0000SA0   => [ $row->(2026, 8, 334.131), $row->(2026, 7, 332.813) ],
+        CUUR0000SA0   => [ $row->(2026, 8, 334.980), $row->(2026, 7, 333.918), $row->(2025, 8, 325.000) ],
+        CES0000000001 => [ $row->(2026, 8, 159075), $row->(2026, 7, 158913) ],
+        LNS14000000   => [ $row->(2026, 8, 4.1), $row->(2026, 7, 4.2) ],
+    };
+    my @data = bls_events($series, { at => 1, cpi => '2026-07', jobs => '2026-08' });
+    t('a CPI month newer than the snapshot is an event with its monthly and yearly change',
+      @data == 1 && $data[0]{id} eq 'data:cpi:2026-08' && $data[0]{mom_pct} == 0.4 && $data[0]{yoy_pct} == 3.1,
+      JSON::PP->new->canonical->encode(\@data));
+    my ($jobs) = bls_events($series, { at => 1, cpi => '2026-08', jobs => '2026-07' });
+    t('a new jobs report carries payrolls and unemployment',
+      $jobs->{payrolls_change_k} == 162 && $jobs->{unemployment_pct} == 4.1 && $jobs->{unemployment_was} == 4.2);
+    t('no BLS snapshot yet: nothing to compare', !bls_events($series, undef));
+
+    my @docs = (
+        { document_number => '2026-19001', type => 'Presidential Document', subtype => 'Proclamation', publication_date => '2026-09-17',
+          title => 'Modifying the Scope of Products of Canada Subject to the Additional Duties', agencies => [{ name => 'Executive Office of the President' }], html_url => 'https://fr/1' },
+        { document_number => '2026-19002', type => 'Presidential Document', subtype => 'Proclamation', publication_date => '2026-09-17', title => 'Patriot Day, 2026' },
+        { document_number => '2026-19003', type => 'Presidential Document', subtype => 'Notice', publication_date => '2026-09-17', title => 'Continuation of the National Emergency With Respect to Terrorism' },
+        { document_number => '2026-18800', type => 'Rule', publication_date => '2026-09-01', title => 'Revisions to the Entity List' },
+        { document_number => '2026-19004', type => 'Rule', publication_date => '2026-09-17', title => 'Revisions to the Entity List', agencies => [{ raw_name => 'COMMERCE DEPARTMENT' }] },
+    );
+    my @policy = policy_events(\@docs, $window);
+    t('policy in the window, observances and routine renewals left out',
+      join(',', map { $_->{id} } @policy) eq 'policy:2026-19001,policy:2026-19004'
+      && $policy[0]{type} eq 'Proclamation' && $policy[1]{agencies}[0] eq 'COMMERCE DEPARTMENT',
+      JSON::PP->new->canonical->encode(\@policy));
+}
+
 # ── Holdings from the edit register ───────────────────────────────────────
 {
     local $ENV{SKILL_DIR} = tempdir(CLEANUP => 1);

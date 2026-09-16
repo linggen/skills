@@ -202,8 +202,22 @@ lawyer's read before charging for it.
    - `insider` — a Form 4 open-market sale ≥ $1M or purchase ≥ $100K, with
      who, and whether it was a pre-planned (10b5-1) sale.
    - `news` — headlines from the stock's page since the window.
-   ETFs: moves and news only. Economy and US policy (step 2): Fed and Bank of
-   Canada decisions, CPI, jobs, USD/CAD, the Federal Register.
+   ETFs: moves and news only. Economy and US policy, no symbol (`scope:
+   economy`), all public and keyless:
+   - `rate` — the Fed's target range (New York Fed daily EFFR) or the Bank
+     of Canada's rate (Valet `V39079`) changed inside the window.
+   - `fed` — an FOMC statement or minutes (the Fed's monetary press feed).
+   - `fomc` — a decision today or tomorrow (the Fed's calendar page; `*` =
+     new projections).
+   - `data` — a CPI or jobs month newer than the snapshot from before the
+     window (BLS API v1, one request a scan): CPI month and year change,
+     payrolls change, unemployment.
+   - `fx` — a USD/CAD day ≥ 0.5% and 2.5× its usual (Valet `FXUSDCAD`); the
+     scan's `home` currency (config.json) says which side the user is on.
+   - `policy` — Federal Register documents in the window: presidential
+     documents (observances and routine emergency renewals left out),
+     significant rules, and export-control (BIS) and trade-representative
+     actions; at most 25 a scan.
 2. **Judge** — Ling reads only the candidates: which holdings, materiality
    (high / medium / low), one factual sentence, source. No predictions.
 3. **Rank** — code: a move's stake is the position's real change; any other
@@ -222,7 +236,7 @@ lawyer's read before charging for it.
    currency, shares, price, value, weight_pct}}, events[{id, symbol, kind,
    at, …}], failed, checked}`; `since` defaults to `watch.json` `last_run`,
    else 36 h back; events in `watch.json` `seen` are left out.
-2. Economy and policy finders.
+2. ~~Economy and policy finders~~ — built.
 3. `cfo:watch` mission: scan → Ling judges → `SaveWatch` → `data/watch.json`;
    ranking in code.
 4. Mac Watch feed + the setting.

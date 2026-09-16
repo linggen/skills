@@ -19,7 +19,8 @@
 #   perl market.pl watch-scan [--since=TIME] [SYM…]
 #                                        what happened since the last Watch run:
 #                                        moves, 52-week breaks, earnings, analysts,
-#                                        filings, insider trades, news (zero LLM)
+#                                        filings, insider trades, news; rates, FOMC,
+#                                        CPI, jobs, USD/CAD, US policy (zero LLM)
 #
 # Symbols: AAPL (US) or RY.TO (TSX; TSX:RY is accepted too). Prices and stats
 # come from stockanalysis.com's public pages and merge into data/quotes.json.
@@ -676,8 +677,16 @@ sub cmd_watch_scan {
         $positions{$sym} = $scan->{position} if $scan->{position};
         $snapshots{$sym} = $scan->{snapshot} if $scan->{snapshot};
     }
+    my $economy = economy_scan($since, $state->{economy}, today());
+    push @events, @{ $economy->{events} };
+    push @failed, map { { scope => 'economy', error => $_ } } @{ $economy->{errors} };
     update_json('watch-scan.json', sub {
         my ($doc) = @_;
+        if ($economy->{snapshot}) {
+            my $list = $doc->{economy} ||= [];
+            push @$list, { at => $now, %{ $economy->{snapshot} } };
+            splice @$list, 0, @$list - $SNAPSHOTS_KEPT if @$list > $SNAPSHOTS_KEPT;
+        }
         for my $sym (keys %snapshots) {
             my $list = $doc->{symbols}{$sym}{analysts} ||= [];
             push @$list, { at => $now, %{ $snapshots{$sym} } };
@@ -688,6 +697,7 @@ sub cmd_watch_scan {
     say_json({
         since      => iso_time($since),
         scanned_at => iso_time($now),
+        home       => home_currency(),
         positions  => weigh_positions(\%positions),
         events     => fresh_events(\@events, $watch->{seen} || {}),
         failed     => \@failed,
@@ -734,6 +744,12 @@ sub scan_symbol {
     return \%out;
 }
 
+# The currency CFO reports in (config.json), for weighing a currency move.
+sub home_currency {
+    my $cfg = read_json(dirname(data_dir()) . '/config.json') || {};
+    return uc($cfg->{currency} || 'USD');
+}
+
 sub clean_stat { my ($v) = @_; return defined $v && $v ne '' && $v ne 'n/a' ? $v : undef }
 
 # Newest first, one per id (a headline tagged with two holdings comes once,
@@ -744,7 +760,7 @@ sub fresh_events {
     for my $ev (@$events) {
         next if $seen->{ $ev->{id} };
         if (my $had = $by_id{ $ev->{id} }) {
-            push @{ $had->{also} ||= [] }, $ev->{symbol} unless $had->{symbol} eq $ev->{symbol};
+            push @{ $had->{also} ||= [] }, $ev->{symbol} if $ev->{symbol} && ($had->{symbol} // '') ne $ev->{symbol};
             next;
         }
         $by_id{ $ev->{id} } = $ev;
@@ -975,10 +991,235 @@ sub insider_event {
              shares => $t->{"${side}_shares"} + 0, planned => $t->{planned}, url => $filing->{url} };
 }
 
+# ── Watch: the economy and US policy ───────────────────────────────────────
+#
+# Events with no symbol (`scope: economy`): rate decisions, FOMC statements
+# and meetings, CPI and jobs, big USD/CAD days, and US policy from the Federal
+# Register. Ling decides which holdings they touch. Public sources, no keys.
+
+my $FX_MIN_PCT = 0.5;             # a currency day this big, and 2.5 usual days wide
+my $POLICY_MAX = 25;              # Federal Register documents per scan
+my @POLICY_AGENCIES = qw(industry-and-security-bureau trade-representative-office-of-united-states);
+# Presidential documents that never move money: observances and routine renewals.
+my $CEREMONIAL = qr/\b(?:Day|Week|Month)(?:,? \d{4})?$|Anniversary|Honoring|Memory of|^Continuation of the National Emergency/i;
+my %BLS = (cpi_sa => 'CUSR0000SA0', cpi => 'CUUR0000SA0', payrolls => 'CES0000000001', unemployment => 'LNS14000000');
+
+sub economy_scan {
+    my ($since, $snapshots, $today) = @_;
+    my %out = (events => [], errors => []);
+    my $add = sub {
+        my ($source, @events) = @_;
+        return push @{ $out{errors} }, "no answer from $source" unless defined $events[0];
+        push @{ $out{events} }, grep { ref } @events;
+    };
+    my $effr = fetch_json('https://markets.newyorkfed.org/api/rates/unsecured/effr/last/10.json', $SEC_UA);
+    $add->('the New York Fed', $effr ? ('ok', fed_rate_events($effr->{refRates}, $since)) : undef);
+    my $feed = fetch('https://www.federalreserve.gov/feeds/press_monetary.xml');
+    $add->('the Federal Reserve', $feed ? ('ok', fed_release_events(decode('UTF-8', $feed), $since)) : undef);
+    my $calendar = fetch('https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm');
+    $add->('the FOMC calendar', $calendar ? ('ok', fomc_meeting_events($calendar, $today)) : undef);
+    my $boc = fetch_json('https://www.bankofcanada.ca/valet/observations/V39079,FXUSDCAD/json?recent=80', $SEC_UA);
+    $add->('the Bank of Canada', $boc ? ('ok', boc_events($boc->{observations}, $since)) : undef);
+    my $bls = bls_series();
+    if ($bls) {
+        my $periods = bls_periods($bls);
+        my ($before) = sort { $b->{at} <=> $a->{at} } grep { ($_->{at} // 0) <= $since } @{ $snapshots || [] };
+        $add->('the BLS', 'ok', bls_events($bls, $before));
+        $out{snapshot} = $periods;
+    } else {
+        $add->('the BLS', undef);
+    }
+    my $docs = policy_documents($since);
+    $add->('the Federal Register', $docs ? ('ok', policy_events($docs, $since)) : undef);
+    $_->{scope} = 'economy' for @{ $out{events} };
+    return \%out;
+}
+
+# The Fed's target range changed on a day inside the window (the New York
+# Fed's daily effective rate carries the range in force).
+sub fed_rate_events {
+    my ($rates, $since) = @_;
+    my @days = sort { $b->{effectiveDate} cmp $a->{effectiveDate} } grep { ref eq 'HASH' && $_->{effectiveDate} } @{ $rates || [] };
+    my @out;
+    for my $i (0 .. $#days - 1) {
+        my ($day, $prev) = @days[$i, $i + 1];
+        last if session_end($day->{effectiveDate}) < $since;
+        next if $day->{targetRateFrom} == $prev->{targetRateFrom} && $day->{targetRateTo} == $prev->{targetRateTo};
+        push @out, rate_event('Fed', $day->{effectiveDate}, range_of($prev), range_of($day),
+                              ($day->{targetRateTo} - $prev->{targetRateTo}) * 100);
+    }
+    return @out;
+}
+
+sub range_of { sprintf '%.2f–%.2f%%', $_[0]{targetRateFrom}, $_[0]{targetRateTo} }
+
+sub rate_event {
+    my ($bank, $on, $from, $to, $bp) = @_;
+    return { id => "rate:$bank:$on", kind => 'rate', bank => $bank, at => iso_time(epoch_of($on)),
+             on => $on, from => $from, to => $to, change_bp => round_to($bp, 0) };
+}
+
+# FOMC statements and minutes released inside the window.
+sub fed_release_events {
+    my ($xml, $since) = @_;
+    my @out;
+    while ($xml =~ m{<item>(.*?)</item>}gs) {
+        my $item = $1;
+        my ($title) = map { decode_html_entities(strip_cdata($_)) } $item =~ m{<title>(.*?)</title>}s;
+        my ($link) = map { strip_cdata($_) } $item =~ m{<link>(.*?)</link>}s;
+        my ($date) = map { strip_cdata($_) } $item =~ m{<pubDate>(.*?)</pubDate>}s;
+        next unless $title && $link && $title =~ /FOMC statement|Minutes of the Federal Open Market Committee/i;
+        my $at = time_of($date // '');
+        next unless defined $at && $at >= $since;
+        (my $key = $link) =~ s{^.*/}{};
+        push @out, { id => "fed:$key", kind => 'fed', title => $title, url => $link, at => iso_time($at) };
+    }
+    return @out;
+}
+
+sub strip_cdata { my ($s) = @_; $s =~ s/^\s*<!\[CDATA\[|\]\]>\s*$//g; $s =~ s/^\s+|\s+$//g; return $s }
+
+sub decode_html_entities { my ($s) = @_; $s =~ s/&#(\d+);/chr($1)/ge; return decode_xml($s) }
+
+# An FOMC decision today or tomorrow, from the Fed's calendar ("September
+# 15-16*": the decision comes on the last day; * = new economic projections).
+sub fomc_meeting_events {
+    my ($html, $today) = @_;
+    my $tomorrow = shift_date($today, 1);
+    my @out;
+    while ($html =~ m{>(\d{4}) FOMC Meetings<(.*?)(?=>\d{4} FOMC Meetings<|\z)}gs) {
+        my ($year, $block) = ($1, $2);
+        while ($block =~ m{fomc-meeting__month[^>]*><strong>([^<]+)</strong>.*?fomc-meeting__date[^>]*>([^<]+)<}gs) {
+            my ($months, $days) = ($1, $2);
+            my ($last_month) = ($months =~ m{([A-Za-z]+)\s*$});
+            my ($last_day) = ($days =~ m{(\d+)\D*$});
+            my $m = month_number($last_month) or next;
+            my $on = sprintf '%04d-%02d-%02d', $year, $m, $last_day // next;
+            next unless $on eq $today || $on eq $tomorrow;
+            push @out, { id => "fomc:$on", kind => 'fomc', at => iso_time(epoch_of($on)), on => $on,
+                         when => $on eq $today ? 'today' : 'tomorrow',
+                         projections => $days =~ /\*/ ? JSON::PP::true : JSON::PP::false };
+        }
+    }
+    return @out;
+}
+
+# The Bank of Canada's rate changed, or USD/CAD had a day far past its usual
+# one (2.5 usual days wide and 0.5%), inside the window.
+sub boc_events {
+    my ($observations, $since) = @_;
+    my @days = sort { $b->{d} cmp $a->{d} } grep { ref eq 'HASH' && $_->{d} } @{ $observations || [] };
+    my $value = sub { my ($day, $series) = @_; my $v = ($day->{$series} || {})->{v}; defined $v && $v ne '' ? $v : undef };
+    my @out;
+    my @rates = grep { defined $value->($_, 'V39079') } @days;   # holidays carry no value
+    for my $i (0 .. $#rates - 1) {
+        my ($rate, $was) = map { $value->($_, 'V39079') } @rates[$i, $i + 1];
+        last if session_end($rates[$i]{d}) < $since;
+        next if $rate == $was;
+        push @out, rate_event('Bank of Canada', $rates[$i]{d}, sprintf('%.2f%%', $was), sprintf('%.2f%%', $rate), ($rate - $was) * 100);
+    }
+    my @fx = grep { defined $value->($_, 'FXUSDCAD') } @days;
+    for my $i (0 .. $#fx - 1) {
+        last if session_end($fx[$i]{d}) < $since;
+        my @v = map { $value->($_, 'FXUSDCAD') } @fx[$i .. min($i + 61, $#fx)];
+        my @usual = map { ($v[$_] / $v[$_ + 1] - 1) * 100 } 1 .. $#v - 1;
+        next unless @usual >= 20;
+        my ($change, $spread) = (($v[0] / $v[1] - 1) * 100, spread(@usual));
+        next unless abs($change) >= $FX_MIN_PCT && abs($change) >= $MOVE_SPREAD * $spread;
+        push @out, { id => "fx:USDCAD:$fx[$i]{d}", kind => 'fx', pair => 'USD/CAD', at => iso_time(session_end($fx[$i]{d})),
+                     on => $fx[$i]{d}, rate => $v[0] + 0, change_pct => round_to($change, 2), usual_pct => round_to($spread, 2) };
+    }
+    return @out;
+}
+
+# CPI and the jobs report from the BLS: {series id => [{year, period, value}]}
+# newest first. One request a scan (the keyless API allows 25 a day).
+sub bls_series {
+    my $body = post_json('https://api.bls.gov/publicAPI/v1/timeseries/data/', { seriesid => [ values %BLS ] }, $SEC_UA) or return undef;
+    return undef unless ($body->{status} // '') eq 'REQUEST_SUCCEEDED';
+    return { map { $_->{seriesID} => [ grep { $_->{period} =~ /^M(?:0[1-9]|1[0-2])$/ } @{ $_->{data} || [] } ] }
+             @{ $body->{Results}{series} || [] } };
+}
+
+# The latest month each release covers: {cpi, jobs} → "YYYY-MM".
+sub bls_periods {
+    my ($series) = @_;
+    my $month = sub { my $row = ($series->{ $_[0] } || [])->[0] or return undef; sprintf '%s-%s', $row->{year}, substr($row->{period}, 1) };
+    return { cpi => $month->($BLS{cpi_sa}), jobs => $month->($BLS{payrolls}) };
+}
+
+# A release whose month is newer than the snapshot from before the window.
+# No snapshot yet: nothing to compare.
+sub bls_events {
+    my ($series, $before) = @_;
+    return () unless $before;
+    my $now = bls_periods($series);
+    my @out;
+    if ($now->{cpi} && ($before->{cpi} // '') lt $now->{cpi}) {
+        my ($sa, $nsa) = map { $series->{$_} || [] } @BLS{qw(cpi_sa cpi)};
+        my ($year_ago) = grep { $_->{year} == $nsa->[0]{year} - 1 && $_->{period} eq $nsa->[0]{period} } @$nsa;
+        push @out, { id => "data:cpi:$now->{cpi}", kind => 'data', release => 'CPI', month => $now->{cpi},
+                     at => iso_time(time),
+                     mom_pct => @$sa > 1 ? round_to(($sa->[0]{value} / $sa->[1]{value} - 1) * 100, 1) : undef,
+                     yoy_pct => $year_ago ? round_to(($nsa->[0]{value} / $year_ago->{value} - 1) * 100, 1) : undef };
+    }
+    if ($now->{jobs} && ($before->{jobs} // '') lt $now->{jobs}) {
+        my ($pay, $unemp) = map { $series->{$_} || [] } @BLS{qw(payrolls unemployment)};
+        push @out, { id => "data:jobs:$now->{jobs}", kind => 'data', release => 'jobs report', month => $now->{jobs},
+                     at => iso_time(time),
+                     payrolls_change_k => @$pay > 1 ? $pay->[0]{value} - $pay->[1]{value} : undef,
+                     unemployment_pct => @$unemp ? $unemp->[0]{value} + 0 : undef,
+                     unemployment_was => @$unemp > 1 ? $unemp->[1]{value} + 0 : undef };
+    }
+    return @out;
+}
+
+# Federal Register documents published inside the window that can move
+# markets: presidential documents, significant rules, and export-control and
+# trade-representative actions. undef when the Register doesn't answer.
+sub policy_documents {
+    my ($since) = @_;
+    my $from = strftime('%Y-%m-%d', gmtime($since));
+    my $base = 'https://www.federalregister.gov/api/v1/documents.json?per_page=100'
+             . "&conditions%5Bpublication_date%5D%5Bgte%5D=$from"
+             . join('', map { "&fields%5B%5D=$_" } qw(document_number title abstract type subtype agencies html_url publication_date));
+    my @queries = (
+        '&conditions%5Btype%5D%5B%5D=PRESDOCU',
+        '&conditions%5Btype%5D%5B%5D=RULE&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Bsignificant%5D=1',
+        join('', map { "&conditions%5Bagencies%5D%5B%5D=$_" } @POLICY_AGENCIES)
+            . '&conditions%5Btype%5D%5B%5D=RULE&conditions%5Btype%5D%5B%5D=PRORULE&conditions%5Btype%5D%5B%5D=NOTICE',
+    );
+    my (%seen, @docs);
+    for my $q (@queries) {
+        my $page = fetch_json("$base$q", $SEC_UA) or return undef;
+        push @docs, grep { !$seen{ $_->{document_number} // '' }++ } @{ $page->{results} || [] };
+    }
+    return \@docs;
+}
+
+sub policy_events {
+    my ($docs, $since) = @_;
+    my @out;
+    for my $d (sort { ($b->{publication_date} // '') cmp ($a->{publication_date} // '') } @{ $docs || [] }) {
+        next unless $d->{document_number} && $d->{title} && ($d->{publication_date} // '') =~ /^\d{4}-\d\d-\d\d$/;
+        next if epoch_of($d->{publication_date}) < $since;
+        next if ($d->{type} // '') eq 'Presidential Document' && $d->{title} =~ $CEREMONIAL;
+        push @out, { id => "policy:$d->{document_number}", kind => 'policy', at => iso_time(epoch_of($d->{publication_date})),
+                     type => $d->{subtype} || $d->{type}, title => $d->{title}, abstract => $d->{abstract},
+                     agencies => [ grep { defined } map { $_->{name} // $_->{raw_name} } @{ $d->{agencies} || [] } ],
+                     url => $d->{html_url} };
+        last if @out >= $POLICY_MAX;
+    }
+    return @out;
+}
+
 # ── Dates ──────────────────────────────────────────────────────────────────
 
 my %MONTH = (Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6,
              Jul => 7, Aug => 8, Sep => 9, Oct => 10, Nov => 11, Dec => 12);
+
+# "September" / "Sep" → 9
+sub month_number { my ($name) = @_; return defined $name ? $MONTH{ ucfirst lc substr($name, 0, 3) } : undef }
 
 # "Oct 29, 2026" → "2026-10-29"
 sub iso_date {
@@ -1053,6 +1294,21 @@ sub fetch_json {
     return undef if $? != 0 || !defined $body || $body eq '';
     my $doc = eval { JSON::PP->new->utf8->decode($body) };
     return ref $doc eq 'HASH' ? $doc : undef;
+}
+
+sub post_json {
+    my ($url, $doc, $ua) = @_;
+    my ($fh, $path) = tempfile(UNLINK => 1);
+    print $fh JSON::PP->new->utf8->encode($doc);
+    close $fh;
+    open(my $out, '-|', 'curl', '-s', '--compressed', '--max-time', '20', '-A', $ua // $UA,
+         '-H', 'Content-Type: application/json', '--data-binary', "\@$path", $url) or return undef;
+    local $/;
+    my $body = <$out>;
+    close $out;
+    return undef if $? != 0 || !defined $body || $body eq '';
+    my $parsed = eval { JSON::PP->new->utf8->decode($body) };
+    return ref $parsed eq 'HASH' ? $parsed : undef;
 }
 
 sub data_dir {
