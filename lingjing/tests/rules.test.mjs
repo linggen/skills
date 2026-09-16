@@ -902,13 +902,14 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.equal(run('art', '--creature=lushu', `--file=${path.join(dir, 'nowhere.png')}`).refused, 'no-such-file');
     assert.equal(run('art', '--creature=fuzhu', `--file=${png}`).refused, 'not-a-made-creature');
     assert.deepEqual(run('art', '--creature=lushu').paint, paint[0]);
-    assert.deepEqual(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, creature: 'lushu', art: 'art/lushu.png', paint: [paint[1]] });
+    const servedAt = rel => `/apps/lingjing/${path.relative(skill, path.join(dir, 'worlds/the-yunmeng-marsh', rel))}`; // the url the page serves it by
+    assert.deepEqual(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, creature: 'lushu', art: 'art/lushu.png', url: servedAt('art/lushu.png'), paint: [paint[1]] });
     assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/art/lushu.png')));
     assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/creatures.json'), 'utf8')).creatures[0].art, 'art/lushu.png');
     // the map is kept with the positions it was painted for; the last picture opens the world
     assert.equal(run('art', '--creature=map').paint.prompt, paint[1].prompt);
     assert.equal(run('art', '--creature=map', `--file=${path.join(dir, 'nowhere.png')}`).refused, 'no-such-file');
-    assert.deepEqual(run('art', '--creature=map', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, map: 'art/map.png', ready: true });
+    assert.deepEqual(run('art', '--creature=map', '--file=/apps/lingjing/data/pictures/test-lushu.png'), { ok: true, map: 'art/map.png', url: servedAt('art/map.png'), ready: true });
     const card = JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/world.json'), 'utf8'));
     assert.deepEqual(Object.keys(card.map.at).sort(), ['bell', 'isle', 'reeds', 'shrine']);
     const seen = run('look');

@@ -1166,7 +1166,7 @@ export function art(state, content, ctx, args) {
   entry.art_source = 'Drawn on this machine by the local picture model, for this world.';
   entry.art_caption = { zh: '灵境所绘', en: 'Drawn in Lingjing' };
   writeAtomic(file, JSON.stringify(doc, null, 2));
-  return { state: null, result: { ok: true, creature: id, art: rel, ...leftToPaint(content, id) } };
+  return { state: null, result: { ok: true, creature: id, art: rel, url: servedAt(path.join(dir, rel)), ...leftToPaint(content, id) } };
 }
 
 /* After a picture is kept: what is still to paint, or ready to play. */
@@ -1192,8 +1192,12 @@ function mapArt(content, args) {
   const card = JSON.parse(fs.readFileSync(cardFile, 'utf8'));
   card.map = { file: rel, at: Object.fromEntries(Object.entries(at).map(([id, p]) => [id, [p.x, p.y]])) };
   writeAtomic(cardFile, JSON.stringify(card, null, 2));
-  return { state: null, result: { ok: true, map: rel, ...leftToPaint(content, 'map') } };
+  return { state: null, result: { ok: true, map: rel, url: servedAt(path.join(dir, rel)), ...leftToPaint(content, 'map') } };
 }
+
+/* Where the page serves a file of the skill's folder: the URL Ling shows
+   the picture by, exactly as given. */
+const servedAt = file => `/apps/lingjing/${path.relative(skillDir(), file).split(path.sep).join('/')}`;
 
 /* A file the tool may read: the path GenerateImage returned, or its URL
    under /apps/lingjing/ — inside the skill's folder, nowhere else. */

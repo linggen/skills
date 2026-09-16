@@ -410,7 +410,9 @@ tools:
       GenerateImage returned. The rules keep the file beside the world and
       write it into the creature's card; `creature: map` is the world's map.
       With no file it answers `paint`, the arguments to paint it (again).
-      Answers what is still to `paint`, or `ready` when the world can play.
+      Answers the picture's `url` — show it as a markdown image by that
+      url, exactly as given, never a path of your own — and what is still
+      to `paint`, or `ready` when the world can play.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}}"
     tier: edit
     timeout_ms: 8000
@@ -770,7 +772,8 @@ whole. Nothing is asked of them first.
    is painted before the world plays: the rules list them as `paint`, and
    the story waits (`still-building`) until the last **Art** says `ready`.
    Never write a picture's prompt yourself — the map's says where each place
-   stands, so the names sit on the picture. When the player asks for a
+   stands, so the names sit on the picture. A kept picture is shown by the
+   `url` Art answers, exactly as given. When the player asks for a
    picture painted again, **Art** with its `creature` (or `map`) and no file
    gives the arguments.
 5. **Worlds** lists them; **Travel** moves between them. Each world keeps
