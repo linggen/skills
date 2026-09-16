@@ -279,6 +279,16 @@ tools:
         required: false
         description: The outline as JSON text, in the template's shape. Omit to read the template.
 
+  - name: Restart
+    description: >-
+      Begin this world again from its first scene — name, realm, bag and
+      story all gone; the other worlds' saves untouched. Only after the
+      player has said so and answered one AskUser confirming it. Answers
+      with the fresh Look.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs init"
+    tier: edit
+    timeout_ms: 8000
+
   - name: Worlds
     description: Every world there is — the built-in ones and the player's — with which one this save plays and which have a save waiting.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs worlds"
@@ -453,6 +463,15 @@ begin, the same way.
      its voice. `value-invalid` → Yinyue asks for a name of at most
      `max_chars`. `unknown-exit` → your slip: choose again from `exits`,
      silently.
+
+## Beginning again
+
+The player may tell you to start over — 重来 / 从头再来 / restart / a new
+game. Ask once, in the world's words, with AskUser: *从头再来？此番修行尽数散去。*
+/ *Begin again? Everything of this journey is let go.* — options 从头再来 ·
+再想想 (*Begin again* · *Not yet*). On yes, **Restart**, then play its Look
+as a new game at the river. On no, nothing changes. Never Restart unasked,
+and never for a Yinyue question or a slip of the story.
 
 ## The choice — AskUser
 

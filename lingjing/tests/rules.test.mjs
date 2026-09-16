@@ -799,6 +799,20 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   assert.equal(cli('resolve', '--exit', 'nowhere').refused, 'unknown-exit');
   assert.equal(cli('undo').undid, 'resolve');
   assert.equal(cli('look').scene.id, '00-river');
+  // Restart: `init` with nothing begins the world in play again, in its
+  // language, and logs the save it replaced so `undo` brings it back.
+  assert.equal(cli('resolve', '--exit', 'reach').scene.id, '00-waking');
+  assert.equal(cli('look', '--said=我在哪里？').lang, 'zh');
+  const again = cli('init');
+  assert.equal(again.restarted, true);
+  assert.equal(again.scene.id, '00-river');
+  assert.equal(again.lang, 'zh');
+  assert.equal(cli('undo').undid, 'init');
+  assert.equal(cli('look').scene.id, '00-waking');
+  assert.equal(cli('undo').undid, 'look');
+  assert.equal(cli('undo').undid, 'resolve');
+  assert.equal(cli('look').scene.id, '00-river');
+  assert.equal(cli('look').lang, 'en');
   // What the engine renders for an omitted optional arg: an empty --key=.
   const sh = spawnSync('sh', ['-c', `"${process.execPath}" scripts/rules.mjs resolve --exit='reach' --value= --answer=`], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' });
   assert.equal(JSON.parse(sh.stdout).scene.id, '00-waking');

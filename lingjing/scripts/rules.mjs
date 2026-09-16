@@ -7,8 +7,8 @@
 //          build worlds travel amend art undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
-// and never changes state. The save says which world it plays; `init` takes
-// `--world` (default jiuding) and starts a fresh save in it. `build` and
+// and never changes state. The save says which world it plays; `init` begins
+// it again — or another with `--world` — and logs the save it replaces. `build` and
 // `travel` switch worlds: the save in play is parked under data/saves/ and
 // the other world's is restored, or begun.
 // Env: LINGJING_DATA, LINGJING_QUESTS, LINGJING_NOW.
@@ -1191,12 +1191,17 @@ function run(verb, args) {
   const saved = fs.existsSync(stateFile) ? migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8'))) : null;
 
   if (verb === 'undo') return undo(stateFile, logFile);
-  const worldId = verb === 'init' ? args.world ?? DEFAULT_WORLD : saved?.world ?? DEFAULT_WORLD;
+  // `init` begins the world in play again (or the one named), in the
+  // language in use; the save it replaces is logged so `undo` brings it back.
+  const worldId = verb === 'init' ? args.world ?? saved?.world ?? DEFAULT_WORLD : saved?.world ?? DEFAULT_WORLD;
   if (!knownWorld(worldId)) return { ok: false, refused: 'unknown-world', world: worldId, worlds: allWorlds() };
   const content = loadWorld(worldId);
-  const state = verb === 'init' || !saved ? freshState(content, args.lang, now) : saved;
+  const state = verb === 'init' || !saved ? freshState(content, args.lang ?? saved?.lang, now) : saved;
   if (verb === 'init' || !saved) writeAtomic(stateFile, JSON.stringify(state));
-  if (verb === 'init') return look(state, content, { now, quests: readQuests() });
+  if (verb === 'init') {
+    if (saved) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: saved }) + '\n');
+    return { ...look(state, content, { now, quests: readQuests() }), restarted: !!saved };
+  }
 
   const fn = VERBS[verb];
   if (!fn) return { ok: false, refused: 'unknown-verb', verbs: ['init', ...Object.keys(VERBS), 'undo'] };
