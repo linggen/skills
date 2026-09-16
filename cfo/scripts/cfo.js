@@ -1065,10 +1065,24 @@ function applyVisibility() {
   renderSuggestions(); // Review card (Report tab only) — self-hides when empty
 }
 
+// The buttons above the chat for each tab. A tab without its own shows the
+// starters from SKILL.md. The words are the person's, so they stay short.
+const TAB_SUGGESTIONS = {
+  trends: ['Why did I spend more this month?', 'Where can I cut back?', 'How does this month compare?'],
+  txn: ['Find anything unusual', 'Which of these are subscriptions?'],
+  commit: ['Which subscriptions can I cancel?', 'Any price hikes lately?'],
+  invest: ['Review my portfolio', 'How are my investments doing?', 'What changed this week?', 'Any new company reports?'],
+};
+
+function showTabSuggestions() {
+  chat?.setSuggestions?.(TAB_SUGGESTIONS[VIEW_MODE] || []);
+}
+
 function switchView(mode) {
   if (STAGING && mode !== 'txn') return; // an import review is pending — finish or cancel it
   VIEW_MODE = mode;
   document.querySelectorAll('#tabs .tab').forEach((t) => t.classList.toggle('on', t.dataset.view === mode));
+  showTabSuggestions();
   applyVisibility();
   if (mode === 'txn') renderTxnView();
   if (mode === 'commit') renderCommitView();
@@ -2419,6 +2433,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadMarketRate();                     // background; re-renders/saves when it lands
   const sid = await recentSessionId();
   await mountChat(sid);                 // resume <24h chat, else fresh
+  showTabSuggestions();
   if (!sid) triggerGreeting();
   openReminders();                      // payment/staleness checks, once per state
   await loadWatchSeen();                // folder-watch: auto-import dropped statements

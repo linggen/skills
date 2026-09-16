@@ -132,6 +132,11 @@ async function mount(el, options) {
     post({ type: 'linggen-skill', action: 'send_hidden', payload: { text } });
   }
 
+  /** The buttons above the chat for what the page shows; [] hands the row back to the skill's starters. */
+  function setSuggestions(items) {
+    post({ type: 'linggen-skill', action: 'set_suggestions', payload: { items: Array.isArray(items) ? items : [] } });
+  }
+
   /** Add a local-only message to the chat display. */
   function addMessage(role, text) {
     const mappedRole = (role === 'ai' || role === 'assistant') ? 'assistant' : role;
@@ -141,6 +146,7 @@ async function mount(el, options) {
   return {
     send,
     sendHidden,
+    setSuggestions,
     addMessage,
     destroy() {
       window.removeEventListener('message', handleMessage);

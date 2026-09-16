@@ -14,6 +14,11 @@ memory-context: cfo
 memory-recall-min-score: 0.7
 memory-recall-count: 3
 user-invocable: true
+suggestions:
+  - Why did I spend more this month?
+  - Find subscriptions I can cancel
+  - Review my portfolio
+  - How are my investments doing?
 cwd: ~/.linggen/skills/cfo
 install: install.sh
 app:
