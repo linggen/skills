@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win duel tame branch summarize move trade lang make enter leave
+//   verbs: init look resolve judge task win duel tame write branch summarize move trade lang make enter leave
 //          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -218,7 +218,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state)),
   };
 }
 
@@ -228,7 +228,7 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said, encounter = null) {
+function choiceOf(state, here, near, thread, seeded, said, encounter = null, write = false) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
@@ -238,6 +238,7 @@ function choiceOf(state, here, near, thread, seeded, said, encounter = null) {
     if (!encounter.won && !encounter.withdrawn) options.push({ label: zh ? `降妖 · ${n}` : `Subdue ${n}`, duel: encounter.game.id });
     if (encounter.likes?.held) options.push({ label: zh ? `喂${n}${encounter.likes.name}` : `Feed ${n} the ${encounter.likes.name}`, tame: encounter.creature.id });
   }
+  if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
   options.push(...places.map(p => ({ label: p.name, move: p.id })));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
   if (options.length < 2) options.push(filler(state, said));
@@ -266,8 +267,50 @@ function itemBrief(content, state, item) {
   return {
     id: item.id, kind: item.kind, name: pick(item.name, lang), about: pick(item.about, lang), art: item.art,
     buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
-    effect: e.key ? { key: true } : e.progress ? { progress: e.progress } : e.wear ? { wear: e.wear } : null,
+    effect: e.key ? { key: true } : e.progress ? { progress: e.progress } : e.wear ? { wear: e.wear }
+      : e.root ? { root: e.root, root_name: pick(content.traits.elements[e.root], lang) } : e.charm ? { charm: true } : null,
     worn: Object.values(state.wear ?? {}).includes(item.id),
+    ...(item.made?.from ? { made_from: pick(itemOf(content, item.made.from)?.name, lang) } : {}),
+  };
+}
+
+/* ── 功法: the sword, the 符 and the learned arts ── */
+
+const artOf = (content, id) => (content.arts?.arts ?? []).find(a => a.id === id);
+const tierRank = (content, id) => content.ladder.tiers.findIndex(t => t.id === id);
+const artReady = (content, state, art) => tierRank(content, art.tier) <= tierIndex(content, state);
+const charmOf = content => content.items.items.find(i => i.effect?.charm) ?? null;
+
+function artBrief(content, state, art) {
+  const lang = state.lang, ready = artReady(content, state, art);
+  return {
+    id: art.id, name: pick(art.name, lang), about: pick(art.about, lang), source: pick(art.source, lang), effect: art.effect,
+    tier: { id: art.tier, name: pick(tierOf(content, art.tier)?.name, lang) }, ready, why: ready ? null : 'art-needs-tier',
+  };
+}
+const artsBrief = (content, state) => (state.arts ?? []).map(id => artOf(content, id)).filter(Boolean).map(a => artBrief(content, state, a));
+
+/* An art learned, never bought: null when unknown or already known. */
+function learn(content, state, id) {
+  const art = artOf(content, id);
+  if (!art || state.arts?.includes(id)) return null;
+  state.arts = [...(state.arts ?? []), id];
+  return artBrief(content, state, art);
+}
+/* A creature that walks with the player teaches its own. */
+const teach = (content, state, cid) => learn(content, state, creatureOf(content, cid)?.teaches);
+/* Every companion's art, for a save from before the arts (2026-09-16). */
+const teachAll = (content, state) => state.cast.map(cid => teach(content, state, cid)).filter(Boolean);
+
+/* What the player brings to a bout — duel.js reads it, the card too. */
+function kitOf(content, state) {
+  const weapon = state.wear?.weapon && state.bag[state.wear.weapon] ? itemOf(content, state.wear.weapon) : null;
+  const charm = charmOf(content);
+  const arts = {};
+  for (const id of state.arts ?? []) { const a = artOf(content, id); if (a) arts[id] = { effect: a.effect, ready: artReady(content, state, a) }; }
+  return {
+    roots: state.traits ?? [], sword: weapon?.effect?.root ?? null, weapon: weapon?.id ?? null,
+    charm: charm ? { id: charm.id, held: state.bag[charm.id] ?? 0 } : null, arts,
   };
 }
 
@@ -311,7 +354,21 @@ function duelBrief(content, state, game, now) {
   return {
     id: game.id, creature: { id: creature.id, name: pick(creature.name, lang), root: creature.root, root_name: pick(content.traits.elements[creature.root], lang) },
     roots: (state.traits ?? []).map(e => ({ id: e, name: pick(content.traits.elements[e], lang) })),
+    ...duelKitBrief(content, state),
     today: open ? { outcome: open.outcome, rounds: open.rounds ?? [] } : null,
+  };
+}
+
+/* The sword's root, the 符 in hand and the arts known, as the card draws
+   them beside the player's own roots; `kit` is the same for duel.js. */
+function duelKitBrief(content, state) {
+  const lang = state.lang, kit = kitOf(content, state);
+  const weapon = kit.weapon ? itemOf(content, kit.weapon) : null, charm = charmOf(content);
+  return {
+    sword: weapon ? { id: weapon.id, name: pick(weapon.name, lang), root: kit.sword, root_name: pick(content.traits.elements[kit.sword], lang) } : null,
+    charm: charm ? { id: charm.id, name: pick(charm.name, lang), held: kit.charm.held } : null,
+    arts: artsBrief(content, state),
+    kit,
   };
 }
 
@@ -402,6 +459,7 @@ export function look(state, content, ctx) {
     traits,
     bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: pick(itemOf(content, id)?.name, lang) ?? id, n })),
     wear: state.wear ?? {},
+    arts: artsBrief(content, state),
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
@@ -474,10 +532,10 @@ function mapPaint(content) {
 /* When the story waited on a chapter and the chapter has opened, the next
    Look takes the player into it — the one change Look makes. */
 export function wake(state, content, ctx) {
-  if (state.scene || inMade(state)) return null;
   const s = clone(state);
-  advanceChapter(content, s, ctx.now);
-  return s.scene ? s : null;
+  const learned = teachAll(content, s).length > 0;
+  if (!state.scene && !inMade(state)) advanceChapter(content, s, ctx.now);
+  return learned || (s.scene && !state.scene) ? s : null;
 }
 
 /* The pool as the scene draws it: what is there, the top, and — when a story
@@ -514,9 +572,11 @@ function pay(content, state, ctx, grant) {
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   if (grant.item) state.bag[grant.item] = (state.bag[grant.item] ?? 0) + 1;
+  // A companion teaches its art as it joins; an exit may grant one outright.
+  const learned = (grant.cast ? teach(content, state, grant.cast) : null) ?? (grant.art ? learn(content, state, grant.art) : null);
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(learned ? { learned } : {}) };
 }
 
 function judgeAnswer(content, key, answer) {
@@ -743,15 +803,66 @@ export function duel(state, content, ctx, args) {
   }
   if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
   const picks = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
-  if (picks.some(x => !s.traits?.includes(x))) return refuse('not-your-root', null, { roots: s.traits ?? [] });
-  const played = bout(picks, moves);
+  const kit = kitOf(content, s);
+  const played = bout(picks, moves, kit);
+  if (played.refused) return refuse(played.refused.why, null, { token: played.refused.token, roots: kit.roots, sword: kit.sword, arts: Object.keys(kit.arts) });
   if (played.outcome === 'open') return refuse('unfinished', null, { rounds: played.rounds });
   s.duels[creature.id] = { day, outcome: played.outcome, rounds: played.rounds };
   if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
   const say = played.outcome === 'lost' ? withdrawnLine : null;
+  // A 符 cast is spent, win or lose; with 符水 known it refills the pool.
+  let refilled = 0;
+  if (played.used.charm) {
+    s.bag[kit.charm.id] -= 1;
+    if (!s.bag[kit.charm.id]) delete s.bag[kit.charm.id];
+    if (Object.values(kit.arts).some(a => a.effect === 'charm-refills' && a.ready)) refilled = addStamina(content, s, CHARM_REFILL, ctx.now);
+  }
   // At a haunt no exit will pay the win: the rules pay it here, once a day.
   const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 10 }) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, rounds: played.rounds, game: id, say, ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  const used = { ...(played.used.charm ? { charm: kit.charm.id } : {}), ...(played.used.arts.length ? { arts: played.used.arts } : {}) };
+  return { state: s, result: { ok: true, outcome: played.outcome, rounds: played.rounds, game: id, say, ...(Object.keys(used).length ? { used } : {}), ...(refilled ? { refilled } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+}
+
+/* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
+   catalog's `made.anywhere_from` tier is reached; a visit's stamina; one a
+   day. The 符 is cast on the scene, in a bout; Ling never plays it. */
+const CHARM_REFILL = 10;
+
+/* Whether 写符 would be allowed here today — the choice offers it then. */
+function canWrite(content, state) {
+  const charm = charmOf(content), paper = charm?.made?.from;
+  if (!charm || !paper || !(state.bag[paper] ?? 0) || state.day?.written) return false;
+  const here = placeOf(content, state.place);
+  const adept = charm.made.anywhere_from != null && tierIndex(content, state) >= tierRank(content, charm.made.anywhere_from);
+  return Boolean(here?.has?.[charm.made.at ?? 'shop']) || adept;
+}
+
+export function write(state, content, ctx, args) {
+  const charm = charmOf(content), paper = charm?.made?.from ? itemOf(content, charm.made.from) : null;
+  if (!charm || !paper) return refuse('no-charm-here', null);
+  const s = clone(state);
+  settlePlace(content, s);
+  rollDay(s, ctx.now);
+  const lang = s.lang, w = wordsOf(content, lang), paperName = pick(paper.name, lang), charmName = pick(charm.name, lang);
+  const here = placeOf(content, s.place);
+  const adept = charm.made.anywhere_from != null && tierIndex(content, s) >= tierRank(content, charm.made.anywhere_from);
+  const at = charm.made.at ?? 'shop';
+  if (!here?.has?.[at] && !adept) {
+    const from = charm.made.anywhere_from ? pick(tierOf(content, charm.made.anywhere_from)?.name, lang) : null;
+    return refuse('not-here', pick({
+      zh: `${w.write}要在${w[at]}里${from ? `，或待${from}之后` : ''}。`,
+      en: `A ${charmName} is written at a ${w[at]}${from ? `, or anywhere from ${from} on` : ''}.`,
+    }, lang), { at, ...(from ? { anywhere_from: charm.made.anywhere_from } : {}) });
+  }
+  if (!(s.bag[paper.id] ?? 0)) return refuse('no-paper', pick({ zh: `没有${paperName}，写不得${charmName}。`, en: `No ${paperName} — nothing to write on.` }, lang), { needs: paper.id });
+  if (s.day.written) return refuse('written-today', pick({ zh: `今日已写过一${charmName}，朱砂要歇。`, en: `One ${charmName} a day; the cinnabar rests.` }, lang));
+  const empty = spendStamina(content, s, ctx, 'shop');
+  if (empty) return empty;
+  s.bag[paper.id] -= 1;
+  if (!s.bag[paper.id]) delete s.bag[paper.id];
+  s.bag[charm.id] = (s.bag[charm.id] ?? 0) + 1;
+  s.day.written = 1;
+  return { state: s, result: { ok: true, written: charm.id, from: paper.id, item: itemBrief(content, s, charm), show: [{ card: 'item', id: charm.id }] } };
 }
 
 /* ── Branches, story, travel, language ── */
@@ -916,7 +1027,8 @@ function keyInUse(content, state, id) {
 /* Buy, sell or use a catalog item. Buying and selling happen at a market
    (a place with a shop) and cost a visit's stamina; the prices are the
    catalog's, never Ling's. Using a pill pays its progress within its table;
-   using a wear puts it on Yinyue or the abode. */
+   using a wear puts it on Yinyue or the abode; using a weapon wears it
+   (`wear.weapon`), and a bout borrows its root. */
 export function trade(state, content, ctx, args) {
   const item = itemOf(content, String(args.id ?? ''));
   const s = clone(state);
@@ -941,6 +1053,7 @@ export function trade(state, content, ctx, args) {
       return { state: s, result: { ok: true, bought: item.id, item: itemBrief(content, s, item), paid: { wealth: -item.buy }, wealth: s.wealth } };
     }
     if (held < 1) return refuse('not-in-bag', null);
+    if (item.sell == null) return refuse('not-for-sale', pick({ zh: '这东西没有市价。', en: 'That has no market price.' }, lang));
     if (item.effect?.key && keyInUse(content, s, item.id)) {
       return refuse('key-in-use', pick({ zh: '这东西还有用处，先留着。', en: 'You will need that yet — keep it.' }, lang));
     }
@@ -961,11 +1074,12 @@ export function trade(state, content, ctx, args) {
       const paid = pay(content, s, ctx, { table: e.table, progress: e.progress });
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid } };
     }
-    if (e.wear) {
+    if (e.wear || e.root) {
       s.wear ??= {};
-      s.wear[e.wear] = item.id;
+      s.wear[e.wear ?? 'weapon'] = item.id;
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear } };
     }
+    if (e.charm) return refuse('cast-in-a-bout', pick({ zh: `${pick(item.name, lang)}在${w.contest}时掷出，不在此。`, en: `A ${pick(item.name, lang)} is cast in a bout, not here.` }, lang));
     return refuse('not-usable', null);
   }
   return refuse('unknown-action', null, { actions: ['buy', 'sell', 'use'] });
@@ -1347,7 +1461,7 @@ function insideSkill(raw) {
 
 export const VERBS = {
   look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; },
-  resolve, judge, task, win, duel, tame, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
+  resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget,
 };
 

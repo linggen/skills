@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks. Never a number that fights. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. Kinds are for the shelf and the card and carry no rules.",
+  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks; `root` is a weapon's — worn, it lends that root in a bout; `charm` is a 符 — picked in a bout, the round is won outright, once. Never a number that fights. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. Kinds are for the shelf and the card and carry no rules.",
   "items": [
     {
       "id": "lingzhi",
@@ -72,14 +72,17 @@
       },
       "art": "art/items/bamboo-sword.webp",
       "about": {
-        "zh": "练气者的第一把剑，斩不了妖，斩得了心。",
-        "en": "A first sword: it cuts no demon, only doubt."
+        "zh": "练气者的第一把剑，斩不了妖，斩得了心。佩之借木。",
+        "en": "A first sword: it cuts no demon, only doubt. Worn, it lends 木."
       },
       "buy": 60,
       "sell": 15,
       "sold": [
         "徐"
-      ]
+      ],
+      "effect": {
+        "root": "wood"
+      }
     },
     {
       "id": "straw-cloak",
@@ -168,14 +171,17 @@
       },
       "art": "art/items/iron-sword.webp",
       "about": {
-        "zh": "邺城铁匠打的，燕赵的样式。",
-        "en": "Forged in Ye, in the style of Yan and Zhao."
+        "zh": "邺城铁匠打的，燕赵的样式。佩之借金。",
+        "en": "Forged in Ye, in the style of Yan and Zhao. Worn, it lends 金."
       },
       "buy": 120,
       "sell": 40,
       "sold": [
         "冀"
-      ]
+      ],
+      "effect": {
+        "root": "metal"
+      }
     },
     {
       "id": "foundation-pill",
@@ -279,6 +285,29 @@
       ],
       "effect": {
         "wear": "yinyue"
+      },
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
+    },
+    {
+      "id": "talisman",
+      "kind": "charm",
+      "name": {
+        "zh": "符",
+        "en": "Talisman"
+      },
+      "art": "art/items/talisman.webp",
+      "about": {
+        "zh": "桑皮纸上朱砂一道。斗法时掷出，这一回合必胜；一符一用。",
+        "en": "One stroke of cinnabar on mulberry paper. Cast in a bout, the round is won outright; one use each."
+      },
+      "sold": [],
+      "made": {
+        "from": "sang-paper",
+        "at": "shop",
+        "anywhere_from": "core"
+      },
+      "effect": {
+        "charm": true
       },
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     }

@@ -33,7 +33,8 @@ tools:
       The game as it stands, as JSON: the `world` (id, title, style — the
       story this save plays; its words are the only words), `building`
       (a made world's pictures still to paint — paint them first), `tier` and `progress` (toward `next`),
-      `wealth`, `traits`, bag, `cast`, the current `scene` (place, setup,
+      `wealth`, `traits`, bag, `wear`, `arts` (the 功法 learned, each with
+      what it does and whether the realm allows it yet), `cast`, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
       `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
       quest `done` was recorded by its app; `paid` is already counted), the
@@ -198,10 +199,13 @@ tools:
       Buy, sell or use a catalog item. `buy` and `sell` happen only at a
       place with a market (`place.has.shop`; its `shelf` carries every price —
       you never invent one) and cost a visit's stamina; `use` works anywhere:
-      a pill pays its progress, a wear goes on Yinyue or the abode. Refusals:
-      `no-market`, `not-for-sale-here` (with the shelf), `no-stones` (its
-      line), `not-in-bag`, `key-in-use` (its line — the story still needs
-      it), `not-usable`.
+      a pill pays its progress, a wear goes on Yinyue or the abode, a weapon
+      is worn (`wear.weapon`) and lends its root in every bout while it is
+      in the bag. Refusals: `no-market`, `not-for-sale-here` (with the
+      shelf), `no-stones` (its line), `not-in-bag`, `not-for-sale` (a made
+      thing has no price), `key-in-use` (its line — the story still needs
+      it), `cast-in-a-bout` (a 符 is not used, it is cast on the scene),
+      `not-usable`.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs trade --action={{action}} --id={{id}}"
     tier: edit
     timeout_ms: 8000
@@ -230,6 +234,18 @@ tools:
         type: string
         required: true
         description: The creature's id or name, from `place.encounter.creature`.
+
+  - name: Write
+    description: >-
+      写符 — one 桑皮纸 from the bag becomes one 符: at a place with a market,
+      or anywhere once the Core is formed (结丹); a visit's stamina; one a
+      day. The result carries the 符 as an `item` and its card to `show`.
+      The 符 is cast on the scene, in a bout — never by you. Refusals:
+      `no-paper` (its line names the paper), `not-here` (its line), `written-today`
+      (its line), `no-stamina`.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs write"
+    tier: edit
+    timeout_ms: 8000
 
   - name: Lang
     description: >-
@@ -702,14 +718,36 @@ mist until tomorrow; the exit refuses `withdrawn` with its line, and a loss
 costs nothing. Tomorrow the same exit fights again. Yinyue's line after a
 loss is kind and short.
 
+**功法 — what the player brings to a bout.** All of it is the scene's
+buttons; you never play any of it, you only tell what is there (the exit's
+`duel` carries `sword`, `charm`, `arts`):
+- **A worn sword lends its root** — 铁剑 lends 金, 竹剑 lends 木. *Wear the
+  iron sword* / *佩上铁剑* is Trade `use`; from then on the bout offers that
+  root beside the player's own, one breath between two strokes (never two
+  rounds running, until 御剑). This is how a player without 金 beats a 木
+  creature: by craft, from the market.
+- **A 符 wins its round outright**, once a bout, and is spent. It is
+  written from 桑皮纸 (Write, *写符*), never bought; the market of 濮阳 sells
+  the paper.
+- **The arts** (`arts`, learned never bought — a creature that walks with
+  the player teaches its own as it joins; the result's `paid.learned` says
+  so, speak it as a gift): 借势 borrows the root a pick generates (练气),
+  遁法 takes a lost round back to a draw (筑基), 符水 makes a cast 符 refill
+  the pool (筑基), 五雷法 turns a draw into a win (结丹), 御剑 lets the sword
+  strike twice running (元婴). Each once a bout; below its realm the scene
+  shows it greyed with the realm it waits for. A player asking what they can
+  do in a fight hears these, by name, with `arts[].about`.
+
 ## The market
 
 At a place with a shop, Look's `place.show` carries the shelf as one `item`
 card — Show it, then let the player say what they want; Trade does the
 rest. Speak prices only as the shelf gives them, in `words.wealth`. A thing
 bought or sold is said in a line — *竹剑到手，灵石 −60* — and the story goes
-on. A pill is used anywhere; say what it paid. What the player carries is
-Look's `bag`; `{card: "item", id}` shows one thing.
+on. A pill is used anywhere; say what it paid. A sword is worn by a word
+(Trade `use`), and the shelf's `effect.root` tells which root it lends —
+say so when the player looks at one. What the player carries is Look's
+`bag`; `{card: "item", id}` shows one thing.
 
 ## The spine as waypoints
 

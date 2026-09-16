@@ -14,6 +14,20 @@ test('every shipped world lints clean', () => {
   for (const id of listWorlds()) assert.deepEqual(lint(loadWorld(id)), [], id);
 });
 
+test('the arts name an effect the bout knows and a tier on the ladder; a creature teaches one of them', () => {
+  const c = loadWorld('jiuding');
+  assert.deepEqual(c.arts.arts.map(a => a.id), ['jieshi', 'dunfa', 'fushui', 'wulei', 'yujian']);
+  const bad = structuredClone(c);
+  bad.arts.arts[0].effect = 'hit-harder'; bad.arts.arts[1].tier = 'god'; bad.creatures.creatures[0].teaches = 'nothing';
+  const problems = lint(bad);
+  assert.ok(has(problems, 'art jieshi: unknown effect hit-harder'));
+  assert.ok(has(problems, 'art dunfa: unknown tier god'));
+  assert.ok(has(problems, 'creature fuzhu: teaches unknown art nothing'));
+  const sold = structuredClone(c);
+  sold.items.items.find(i => i.id === 'talisman').sold = ['徐'];
+  assert.ok(has(lint(sold), 'item talisman: a made thing is not sold'));
+});
+
 test('a world is loaded by its id, and an unknown id names the ones that exist', () => {
   assert.equal(loadWorld('jiuding').world.id, 'jiuding');
   assert.equal(loadWorld().world.title.zh, '九鼎');

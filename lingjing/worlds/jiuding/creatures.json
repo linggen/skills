@@ -27,7 +27,8 @@
         "zh": "蔣應鎬繪圖本，明萬曆刊",
         "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       },
-      "likes": "lingzhi"
+      "likes": "lingzhi",
+      "teaches": "jieshi"
     },
     {
       "id": "paoxiao",
@@ -55,7 +56,8 @@
         "zh": "胡文煥《山海經圖》，明萬曆本",
         "en": "Hu Wenhuan's Shanhaijing Pictures, Ming, c. 1600"
       },
-      "likes": "ginseng"
+      "likes": "ginseng",
+      "teaches": "dunfa"
     },
     {
       "id": "jingwei",
@@ -83,7 +85,8 @@
         "zh": "《古今圖書集成·禽蟲典》，清雍正本",
         "en": "Gujin Tushu Jicheng, Qing, 1725"
       },
-      "likes": "jade-fish"
+      "likes": "jade-fish",
+      "teaches": "fushui"
     },
     {
       "id": "leishen",
@@ -111,7 +114,8 @@
         "zh": "蔣應鎬繪圖本，明萬曆刊",
         "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       },
-      "likes": "moon-bell"
+      "likes": "moon-bell",
+      "teaches": "wulei"
     },
     {
       "id": "longzhi",
@@ -167,7 +171,8 @@
         "zh": "蔣應鎬繪圖本，明萬曆刊",
         "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       },
-      "likes": "qi-salt"
+      "likes": "qi-salt",
+      "teaches": "yujian"
     },
     {
       "id": "tongtong",
@@ -198,5 +203,6 @@
       "likes": "qi-silk"
     }
   ],
-  "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it."
+  "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",
+  "_teaches": "What a creature teaches once it walks with the player (arts.json): 夫诸 the borrowing of 相生 (借势), 狍鸮 the way out (遁法), 精卫 the 符水 that refills, 雷神 its own thunder (五雷法), 夔 the sword-riding (御剑)."
 }

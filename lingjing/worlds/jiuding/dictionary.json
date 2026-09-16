@@ -137,6 +137,22 @@
     "material": {
       "zh": "材料",
       "en": "material"
+    },
+    "charm": {
+      "zh": "符",
+      "en": "talisman"
+    },
+    "arts": {
+      "zh": "功法",
+      "en": "arts"
+    },
+    "write": {
+      "zh": "写符",
+      "en": "write a talisman"
+    },
+    "wear": {
+      "zh": "佩戴",
+      "en": "wear"
     }
   },
   "provinces": {

@@ -301,7 +301,7 @@ document.addEventListener('click', (e) => {
   const sw = e.target.closest('[data-lang]');
   if (sw) { switchLang(sw.dataset.lang); return; }
   const spoken = e.target.closest('[data-say]');
-  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick]')) {
+  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick],[data-duel-stand]')) {
     if (spoken.matches(':disabled') || saying) return;
     spoken.classList.add('busy');
     running = true;
@@ -337,14 +337,33 @@ async function onDuelStart(id) {
   render();
 }
 
-async function onDuelPick(id, root) {
+/// The bout's brief from Look: the scene's exit, or the haunt's encounter.
+function duelBriefFor(id) {
+  const exit = (look?.scene?.exits || []).find((x) => x.game?.id === id && x.game.kind === 'duel');
+  if (exit) return exit.duel;
+  const e = look?.place?.encounter;
+  return e && e.game?.id === id ? e.duel : null;
+}
+
+/// A pick: a root, the sword's root, the 符 or an art — duel.js says what may
+/// come, the rules settle it. A decided bout that an art could still turn
+/// waits (`rescue`) for the player's word: the art, or "let it stand".
+async function onDuelPick(id, token) {
   const d = duelFor(id);
-  if (d.status !== 'open') return;
-  d.picks.push(root);
-  const played = bout(d.picks, d.moves);
+  if (d.status !== 'open' && d.status !== 'rescue') return;
+  const kit = duelBriefFor(id)?.kit ?? {};
+  const played = bout([...d.picks, token], d.moves, kit);
+  if (played.refused) return;
+  d.picks.push(token);
   d.rounds = played.rounds;
+  d.status = played.outcome === 'open' ? 'open' : played.rescue ? 'rescue' : d.status;
   render();
-  if (played.outcome === 'open') return;
+  if (played.outcome === 'open' || played.rescue) return;
+  await settleDuel(id);
+}
+
+async function settleDuel(id) {
+  const d = duelFor(id);
   const r = await verb('duel', { id, picks: d.picks.join(',') });
   d.status = 'done';
   d.outcome = r.ok ? r.outcome : 'lost';
@@ -359,7 +378,9 @@ document.addEventListener('click', (e) => {
   const start = e.target.closest('[data-duel-start]');
   if (start) { onDuelStart(start.dataset.duelStart); return; }
   const pick = e.target.closest('[data-duel-pick]');
-  if (pick) onDuelPick(pick.dataset.duel, pick.dataset.duelPick);
+  if (pick) { onDuelPick(pick.dataset.duel, pick.dataset.duelPick); return; }
+  const stand = e.target.closest('[data-duel-stand]');
+  if (stand) settleDuel(stand.dataset.duelStand);
 });
 
 /* ── The chat ── */

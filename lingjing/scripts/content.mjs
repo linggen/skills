@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ART_EFFECTS, ELEMENTS } from './duel.js';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -109,7 +110,7 @@ const GAME_KINDS = new Set(['duel', 'board']);
 /* An exit's game, one shape: `{id, kind, creature?}`; a bare string is a
    board known by its id. */
 export const gameOf = exit => (exit?.game == null ? null : typeof exit.game === 'string' ? { id: exit.game, kind: 'board' } : exit.game);
-export const ITEM_KINDS = new Set(['pill', 'weapon', 'gear', 'artifact', 'treasure', 'key', 'material']);
+export const ITEM_KINDS = new Set(['pill', 'weapon', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm']);
 export const WEAR_SLOTS = new Set(['yinyue', 'abode']);
 const VALUE_FIELDS = new Set(['name']);
 const SETTABLE = { traits: new Set(['v1']) };
@@ -128,6 +129,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     creatures: at('creatures.json'),
     herbs: at('herbs.json'),
     items: at('items.json'),
+    arts: at('arts.json'),
     hexagrams: at('hexagrams.json'),
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
     tasks: at('tasks/world.json'),
@@ -374,6 +376,7 @@ export function lint(content) {
   };
   lintWorld(content.world, bad);
   lintItems(content, bad);
+  lintArts(content, bad);
   bilingual(content, 'content', bad);
   for (const [part, node] of Object.entries(content)) {
     if (!['dir', 'world', 'names'].includes(part)) refusedNames(node, content, part, bad);
@@ -594,6 +597,20 @@ function lintCard(where, card, ids, bad) {
 /* The catalog: a known kind, a picture on disk, a price never below its
    sell price, provinces the world knows, and one effect of the three —
    a key, a pill within its table, a wear on a slot the game has. */
+/* The arts: one effect duel.js knows, a tier on the ladder, and every
+   creature's `teaches` names one of them. */
+function lintArts(content, bad) {
+  const seen = new Set();
+  for (const art of content.arts?.arts ?? []) {
+    const where = `art ${art.id}`;
+    if (seen.has(art.id)) bad(where, 'duplicate id');
+    seen.add(art.id);
+    if (!ART_EFFECTS.includes(art.effect)) bad(where, `unknown effect ${art.effect}`);
+    if (!content.ladder.tiers.some(t => t.id === art.tier)) bad(where, `unknown tier ${art.tier}`);
+  }
+  for (const c of content.creatures.creatures) if (c.teaches && !seen.has(c.teaches)) bad(`creature ${c.id}`, `teaches unknown art ${c.teaches}`);
+}
+
 function lintItems(content, bad) {
   const seen = new Set();
   for (const item of content.items.items) {
@@ -603,13 +620,20 @@ function lintItems(content, bad) {
     if (!ITEM_KINDS.has(item.kind)) bad(where, `unknown kind ${item.kind}`);
     if (!item.art) bad(where, 'needs art');
     else if (!fs.existsSync(path.join(content.dir, item.art))) bad(where, `art ${item.art} is missing`);
-    if (!Number.isInteger(item.buy) || !Number.isInteger(item.sell) || item.buy < 0 || item.sell < 0) bad(where, 'buy and sell must be whole numbers');
+    // A made thing (a 符 from paper) has no price and is sold nowhere.
+    if (item.made) {
+      if (!content.items.items.some(i => i.id === item.made.from)) bad(where, `made from unknown item ${item.made.from}`);
+      if (item.made.anywhere_from && !content.ladder.tiers.some(t => t.id === item.made.anywhere_from)) bad(where, `made anywhere from unknown tier ${item.made.anywhere_from}`);
+      if ((item.sold ?? []).length || item.buy != null || item.sell != null) bad(where, 'a made thing is not sold');
+    } else if (!Number.isInteger(item.buy) || !Number.isInteger(item.sell) || item.buy < 0 || item.sell < 0) bad(where, 'buy and sell must be whole numbers');
     else if (item.buy < item.sell) bad(where, `buys for ${item.buy}, below its sell price ${item.sell}`);
     for (const province of item.sold ?? []) if (!content.dictionary.provinces[province]) bad(where, `sold in unknown province ${province}`);
     const e = item.effect;
     if (!e) continue;
-    const kinds = ['key', 'progress', 'wear'].filter(k => e[k] != null);
-    if (kinds.length !== 1) bad(where, 'an effect is one of key, progress, wear');
+    const kinds = ['key', 'progress', 'wear', 'root', 'charm'].filter(k => e[k] != null);
+    if (kinds.length !== 1) bad(where, 'an effect is one of key, progress, wear, root, charm');
+    if (e.root != null && !ELEMENTS.includes(e.root)) bad(where, `lends unknown root ${e.root}`);
+    if (e.charm != null && !item.made) bad(where, 'a charm is made, never sold');
     if (e.progress != null) {
       const table = content.rewards.tables[e.table];
       if (!table) bad(where, `unknown reward table ${e.table}`);

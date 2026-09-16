@@ -28,4 +28,4 @@ on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.
 ## Items — painted for Lingjing
 
 `items/*.webp` are painted for the game by the local picture model (FLUX.2
-klein 4B), 2026-09-15 (齐盐 and 齐纨 2026-09-16), from each item's description. No outside source.
+klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16), from each item's description. No outside source.

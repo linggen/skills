@@ -8,8 +8,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, askOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
-import { BEATS, bout, creatureMoves, roundOf } from '../scripts/duel.js';
+import { VERBS, askOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { BEATS, bout, creatureMoves, offers, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
 // The shipped chapters carry no `opens` while the game is being built and
@@ -237,6 +237,42 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
   assert.deepEqual(out.state.wins, {});
 });
 
+test('the worn sword stands beside the roots in the bout; sold, its root is no longer theirs; 夫诸 teaches 借势 as it joins', () => {
+  const s = { ...toFuzhu(), bag: { 'iron-sword': 1 }, wear: { weapon: 'iron-sword' } };
+  const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel;
+  assert.deepEqual(brief.sword, { id: 'iron-sword', name: '铁剑', root: 'metal', root_name: '金' });
+  assert.deepEqual(brief.charm, { id: 'talisman', name: '符', held: 0 });
+  assert.deepEqual(brief.arts, []);
+  assert.deepEqual(brief.kit, { roots: ['wood', 'water', 'fire', 'earth'], sword: 'metal', weapon: 'iron-sword', charm: { id: 'talisman', held: 0 }, arts: {} });
+  const started = must(duel, s, { id: 'subdue-fuzhu' });
+  const { picks, played } = playOut(brief.kit, started.result.moves);
+  const settled = must(duel, started.state, { id: 'subdue-fuzhu', picks: picks.join(',') });
+  assert.equal(settled.result.outcome, played.outcome);
+  assert.equal(refused(duel, started.state, { id: 'subdue-fuzhu', picks: 'metal,metal' }, 'sword-twice').token, 'metal');
+  // not in the bag any more: not worn, not theirs
+  const bare = { ...started.state, bag: {} };
+  assert.equal(look(bare, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.sword, null);
+  refused(duel, bare, { id: 'subdue-fuzhu', picks: 'metal' }, 'not-your-root');
+  // the companion teaches its art as it joins
+  const won = must(duel, started.state, { id: 'subdue-fuzhu', picks: picks.join(',') });
+  if (won.result.outcome === 'won') {
+    const out = must(resolve, won.state, { exit: 'subdue' });
+    assert.deepEqual(out.state.arts, ['jieshi']);
+    assert.equal(out.result.paid.learned.name, '借势');
+    assert.equal(out.result.paid.learned.ready, true, '练气 may borrow');
+  }
+  // an old save with 夫诸 already walking learns on the next Look
+  const old = { ...toOpenWorld(), arts: undefined };
+  assert.ok(old.cast.includes('fuzhu'));
+  const woke = VERBS.look(old, content, ctx());
+  assert.deepEqual(woke.state.arts, ['jieshi']);
+  assert.equal(woke.result.arts[0].id, 'jieshi');
+  assert.equal(VERBS.look(woke.state, content, ctx()).state, null, 'learned once');
+  // the art learned is in the kit of the next bout, ready at 练气
+  const kit = look(woke.state, content, ctx()).place.encounter.duel.kit;
+  assert.deepEqual(kit.arts, { jieshi: { effect: 'generate', ready: true } });
+});
+
 test('a loss is free and the creature withdraws until tomorrow', () => {
   const s = toFuzhu();
   const started = must(duel, s, { id: 'subdue-fuzhu' });
@@ -293,6 +329,83 @@ test('the 五行 bout: 相克 wins, the reverse loses, else a draw; best of thre
   const moves = creatureMoves('water', '2026-09-11|fuzhu|青玄');
   assert.deepEqual(moves, creatureMoves('water', '2026-09-11|fuzhu|青玄'));
   assert.ok(moves.filter(m => m === 'water').length >= 2, 'leans to its root');
+});
+
+/* ── 功法: the sword, the 符 and the arts, on the shared engine ── */
+
+const FOUR = ['wood', 'water', 'fire', 'earth'];
+const kitOf = (extra = {}) => ({ roots: FOUR, sword: null, charm: { id: 'talisman', held: 0 }, arts: {}, ...extra });
+/* Play to win from what the kit offers: the first token that overcomes the
+   creature's move, else the first that may come. */
+function playOut(kit, moves) {
+  const picks = [];
+  for (let guard = 0; guard < 12; guard += 1) {
+    const played = bout(picks, moves, kit);
+    if (played.outcome !== 'open' && !played.rescue) return { picks, played };
+    const ok = offers(picks, moves, kit).filter(o => o.ok);
+    const move = moves[played.rounds.length];
+    const best = ok.find(o => o.kind === 'charm') ?? ok.find(o => (o.kind === 'root' || o.kind === 'sword') && BEATS[o.token] === move)
+      ?? ok.find(o => o.kind === 'art') ?? ok.find(o => o.kind === 'root' || o.kind === 'sword');
+    picks.push(best.token);
+  }
+  throw new Error('no end');
+}
+
+test('a worn sword lends its root: a 木水火土 player beats a 木 creature with 金, one breath between strokes', () => {
+  const wood = ['wood', 'wood', 'wood', 'wood', 'wood'];
+  assert.equal(playOut(kitOf(), wood).played.outcome, 'lost', 'five draws lose');
+  const armed = kitOf({ sword: 'metal' });
+  const { picks, played } = playOut(armed, wood);
+  assert.equal(played.outcome, 'won');
+  assert.deepEqual(picks, ['metal', 'wood', 'metal'], 'a breath between two strokes');
+  assert.deepEqual(bout(['metal', 'metal'], wood, armed).refused, { token: 'metal', why: 'sword-twice' });
+  assert.equal(bout(['metal'], wood, kitOf()).refused.why, 'not-your-root', 'not worn: not theirs');
+  assert.equal(offers(['metal'], wood, armed).find(o => o.kind === 'sword').why, 'sword-twice');
+  // 御剑: twice running
+  const rider = kitOf({ sword: 'metal', arts: { yujian: { effect: 'sword-twice', ready: true } } });
+  assert.equal(bout(['metal', 'metal'], wood, rider).outcome, 'won');
+  assert.equal(bout(['metal', 'metal'], wood, kitOf({ sword: 'metal', arts: { yujian: { effect: 'sword-twice', ready: false } } })).refused.why, 'sword-twice');
+});
+
+test('a 符 wins its round outright, once a bout, only when held', () => {
+  const wood = ['wood', 'wood', 'wood', 'wood', 'wood'];
+  const held = kitOf({ charm: { id: 'talisman', held: 1 } });
+  const one = bout(['talisman'], wood, held);
+  assert.deepEqual(one.rounds[0], { pick: 'talisman', move: 'wood', result: 'won', charm: true });
+  assert.equal(one.used.charm, true);
+  assert.equal(bout(['talisman', 'talisman'], wood, held).refused.why, 'charm-used');
+  assert.equal(bout(['talisman'], wood, kitOf()).refused.why, 'no-charm');
+  assert.equal(bout(['x'], wood, held).refused.why, 'bad-token');
+});
+
+test('the arts: 五雷法 turns a draw, 遁法 takes back a loss and rescues a decided bout, 借势 borrows 相生; each once, each in its realm', () => {
+  const wood = ['wood', 'wood', 'wood', 'wood', 'wood'];
+  const thunder = kitOf({ arts: { wulei: { effect: 'draw-wins', ready: true } } });
+  const struck = bout(['wood', 'art:wulei'], wood, thunder);
+  assert.equal(struck.rounds[0].result, 'won'); assert.equal(struck.rounds[0].art, 'wulei');
+  assert.equal(bout(['wood', 'art:wulei', 'wood', 'art:wulei'], wood, thunder).refused.why, 'art-used');
+  assert.equal(bout(['art:wulei'], wood, thunder).refused.why, 'art-no-draw', 'no round yet');
+  assert.equal(bout(['wood', 'art:wulei'], wood, kitOf({ arts: { wulei: { effect: 'draw-wins', ready: false } } })).refused.why, 'art-needs-tier');
+  assert.equal(bout(['wood', 'art:dunfa'], wood, thunder).refused.why, 'art-unknown');
+  // 遁法 after the second loss: the bout was decided, the art reopens it
+  const metal = ['metal', 'metal', 'metal', 'metal', 'metal'];
+  const runner = kitOf({ arts: { dunfa: { effect: 'undo-loss', ready: true } } });
+  const twoDown = bout(['wood', 'wood'], metal, runner);
+  assert.equal(twoDown.outcome, 'lost'); assert.equal(twoDown.rescue, true, 'an art could still turn it');
+  assert.equal(offers(['wood', 'wood'], metal, runner).find(o => o.kind === 'root').why, 'bout-over');
+  const back = bout(['wood', 'wood', 'art:dunfa'], metal, runner);
+  assert.equal(back.outcome, 'open'); assert.equal(back.rounds[1].result, 'draw');
+  assert.equal(bout(['wood', 'wood', 'art:dunfa', 'wood', 'art:dunfa'], metal, runner).refused.why, 'art-used');
+  assert.equal(bout(['fire', 'art:dunfa'], metal, runner).refused.why, 'art-no-loss', 'the round was won');
+  // 借势: wood counts as fire, and fire overcomes metal
+  const borrower = kitOf({ arts: { jieshi: { effect: 'generate', ready: true } } });
+  const lent = bout(['art:jieshi', 'wood'], metal, borrower);
+  assert.deepEqual(lent.rounds[0], { pick: 'wood', move: 'metal', result: 'won', as: 'fire', art: 'jieshi' });
+  assert.equal(bout(['art:jieshi', 'art:jieshi'], metal, borrower).refused.why, 'art-used');
+  assert.equal(bout(['art:jieshi', 'art:jieshi2'], metal, kitOf({ arts: { jieshi: { effect: 'generate', ready: true }, jieshi2: { effect: 'generate', ready: true } } })).refused.why, 'art-pending');
+  assert.equal(bout(['art:jieshi'], metal, borrower).pending, 'jieshi');
+  // a decided bout with no art to turn it needs no word
+  assert.equal(bout(['fire', 'fire'], metal, borrower).rescue, false);
 });
 
 test('an in-world task pays only after the page recorded its win', () => {
@@ -747,13 +860,57 @@ test('no market away from one; a pill is used anywhere; a wear goes on Yinyue', 
   assert.deepEqual(used.state.bag, {});
   refused(trade, s, { action: 'use', id: 'qi-pill' }, 'not-in-bag');
   const withSword = must(trade, s, { action: 'buy', id: 'bamboo-sword' }).state;
-  refused(trade, withSword, { action: 'use', id: 'bamboo-sword' }, 'not-usable');
+  // a weapon used is worn: the bout borrows its root (2026-09-16)
+  const armed = must(trade, withSword, { action: 'use', id: 'bamboo-sword' });
+  assert.deepEqual(armed.state.wear, { weapon: 'bamboo-sword' });
+  assert.deepEqual(armed.result.item.effect, { root: 'wood', root_name: '木' });
+  refused(trade, must(trade, withSword, { action: 'buy', id: 'straw-cloak' }).state, { action: 'use', id: 'straw-cloak' }, 'not-usable');
   const withBell = { ...s, bag: { 'moon-bell': 1 } };
   const worn = must(trade, withBell, { action: 'use', id: 'moon-bell' });
   assert.deepEqual(worn.state.wear, { yinyue: 'moon-bell' });
   assert.equal(worn.result.item.worn, true);
   const bellSold = must(trade, worn.state, { action: 'sell', id: 'moon-bell' }).state;
   assert.deepEqual(bellSold.wear, {}, 'sold, no longer worn');
+});
+
+test('写符: at a market from 桑皮纸, one a day; anywhere at 结丹; the choice offers it; cast in a bout it is spent', () => {
+  const s = toMarket();
+  assert.equal(refused(write, s, {}, 'no-paper').say, '没有桑皮纸，写不得符。');
+  const papered = { ...s, bag: { 'sang-paper': 2 } };
+  assert.ok(look(papered, content, ctx()).director.choice.options.some(o => o.write), 'the choice offers it');
+  const w = must(write, papered, {});
+  assert.deepEqual(w.state.bag, { 'sang-paper': 1, talisman: 1 });
+  assert.equal(w.state.stamina, 95, 'a visit\'s stamina');
+  assert.equal(w.result.item.effect.charm, true); assert.equal(w.result.item.made_from, '桑皮纸');
+  assert.deepEqual(w.result.show, [{ card: 'item', id: 'talisman' }]);
+  assert.equal(refused(write, w.state, {}, 'written-today').say, '今日已写过一符，朱砂要歇。');
+  assert.ok(!look(w.state, content, ctx()).director.choice.options.some(o => o.write));
+  // tomorrow, away from the market: 练气 may not; 结丹 may
+  const tomorrow = ctx({ now: new Date('2026-09-12T12:00:00') });
+  const away = must(move, w.state, { place: 'sishui' }, tomorrow).state;
+  assert.equal(refused(write, away, {}, 'not-here', tomorrow).say, '写符要在坊市里，或待结丹之后。');
+  assert.deepEqual(must(write, { ...away, tier: 'core', step: 0 }, {}, tomorrow).state.bag, { talisman: 2 });
+  // a 符 is not "used"; it has no market price
+  assert.equal(refused(trade, w.state, { action: 'use', id: 'talisman' }, 'cast-in-a-bout').say, '符在降妖时掷出，不在此。');
+  refused(trade, w.state, { action: 'sell', id: 'talisman' }, 'not-for-sale');
+  // cast in a bout at a haunt: the round is won, the 符 spent; with 符水 known at 筑基 the pool refills
+  const october = () => ctx({ now: new Date('2026-10-05T10:00:00') });
+  const base = { ...w.state, chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, stamina: 50, arts: ['fushui'] };
+  const started = must(duel, base, { id: 'haunt:jingwei' }, october());
+  const kit = look(started.state, content, october()).place.encounter.duel.kit;
+  assert.equal(kit.charm.held, 1); assert.deepEqual(kit.arts, { fushui: { effect: 'charm-refills', ready: true } });
+  const { picks, played } = playOut(kit, started.result.moves);
+  assert.equal(picks[0], 'talisman');
+  const settled = must(duel, started.state, { id: 'haunt:jingwei', picks: picks.join(',') }, october());
+  assert.equal(settled.result.outcome, played.outcome);
+  assert.equal(settled.result.used.charm, 'talisman');
+  assert.equal(settled.result.refilled, 10);
+  assert.equal(settled.state.bag.talisman, undefined, 'spent');
+  assert.equal(settled.state.stamina, started.state.stamina + 10);
+  // an art out of its realm, or unknown, is refused by name
+  const thunder = { ...started.state, arts: ['wulei'] };
+  assert.equal(refused(duel, thunder, { id: 'haunt:jingwei', picks: 'wood,art:wulei' }, 'art-needs-tier', october()).token, 'art:wulei');
+  refused(duel, started.state, { id: 'haunt:jingwei', picks: 'wood,art:wulei' }, 'art-unknown', october());
 });
 
 test('a key the story still needs cannot be sold', () => {

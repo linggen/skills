@@ -15,8 +15,11 @@ export const WORDS = {
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     about: '说说', feed: '喂它{item}', subdue: '降妖',
-    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', use: '服用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
+    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effCharm: '斗法时掷出，一回合必胜', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
     duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，两胜为降。', ring: '相克', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
+    rescueHint: '胜负已分——还有一手可出。', stand: '认了',
+    artHint: { 'draw-wins': '平手化胜', 'undo-loss': '收回败局', generate: '借所生之行' },
+    why: { 'art-used': '一战一用', 'art-no-draw': '须是平手', 'art-no-loss': '须是败局', 'art-needs-tier': '境界未到', 'art-pending': '已在借势', 'sword-twice': '换口气再出', 'charm-used': '一战一符', 'no-charm': '囊中无符', 'bout-over': '已分胜负', 'not-your-root': '非你灵根' },
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
     qi: '丹田', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空',
@@ -33,8 +36,11 @@ export const WORDS = {
     tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
-    effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', use: 'Use', questBy: 'Recorded by {app} · done today at {t}', questWait: 'Recorded by {app} · not yet today',
+    effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: 'Recorded by {app} · done today at {t}', questWait: 'Recorded by {app} · not yet today',
     duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
+    rescueHint: 'Decided — but one art could still turn it.', stand: 'Let it stand',
+    artHint: { 'draw-wins': 'a draw becomes a win', 'undo-loss': 'take back the loss', generate: 'borrow the root it generates' },
+    why: { 'art-used': 'once a bout', 'art-no-draw': 'needs a draw', 'art-no-loss': 'needs a lost round', 'art-needs-tier': 'realm too low', 'art-pending': 'already borrowing', 'sword-twice': 'take a breath first', 'charm-used': 'one a bout', 'no-charm': 'none in the bag', 'bout-over': 'decided', 'not-your-root': 'not your root' },
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     qi: 'Dantian', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty',
@@ -94,7 +100,10 @@ function traits(card, ctx) {
     return `<div class="root ${id}${lit.has(id) ? ' lit' : ''}"><b>${esc(e.zh)}</b>${small}</div>`;
   });
   const result = ctx.look.traits ? `<div class="rootres">${esc(ctx.look.traits.name)}</div>` : '';
-  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${acts([{ label: ctx.words.about, say: ctx.words.sayRoots }])}</div>`;
+  // The arts learned, each with what it does; greyed until its realm.
+  const arts = (ctx.look.arts || []).map((a) => `<div class="artrow${a.ready ? '' : ' dim'}"><b>${esc(a.name)}</b> <span class="small">${esc(a.about)}</span>${a.ready ? '' : ` <span class="chip">${esc(say(ctx.words.artFrom, { tier: a.tier.name }))}</span>`}</div>`);
+  const artsHtml = arts.length ? `<div class="cardtitle arts">${esc(ctx.look.words?.arts ?? ctx.words.artsTitle)}</div>${arts.join('')}` : '';
+  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${artsHtml}${acts([{ label: ctx.words.about, say: ctx.words.sayRoots }])}</div>`;
 }
 
 function map(card, ctx) {
@@ -220,12 +229,15 @@ function item(card, ctx) {
     const about = i.about ? `<div class="small about">${esc(i.about)}</div>` : '';
     const e = i.effect ?? {};
     const does = e.progress ? say(ctx.words.effProgress, { xw: ctx.words.xw, n: e.progress })
-      : e.wear ? ctx.words.effWear : e.key ? ctx.words.effKey : ctx.words.effNone;
-    // A pill in the bag is taken by a word; Trade decides.
-    const use = e.progress && i.held ? `<button class="act say" ${sayAttr(say(ctx.words.sayUse, { name: i.name }))}>${ctx.words.use}</button>` : '';
+      : e.wear ? ctx.words.effWear : e.root ? say(ctx.words.effRoot, { root: e.root_name }) : e.charm ? ctx.words.effCharm : e.key ? ctx.words.effKey : ctx.words.effNone;
+    const made = i.made_from ? `<div class="small dim">${esc(say(ctx.words.madeFrom, { item: i.made_from }))}</div>` : '';
+    // A pill in the bag is taken by a word, a wear or a weapon put on by one; Trade decides.
+    const use = e.progress && i.held ? `<button class="act say" ${sayAttr(say(ctx.words.sayUse, { name: i.name }))}>${ctx.words.use}</button>`
+      : (e.wear || e.root) && i.held && !i.worn ? `<button class="act say" ${sayAttr(say(ctx.words.sayWear, { name: i.name }))}>${ctx.words.wear}</button>` : '';
+    const worn = i.worn ? `<span class="chip">${ctx.words.worn}</span>` : '';
     const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayItem, { name: i.name }))}>${ctx.words.about}</button>`;
     return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
-      <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${price}${held}<div class="acts">${tell}${use}</div></div>`;
+      <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${made}${price}${held}${worn}<div class="acts">${tell}${use}</div></div>`;
   });
   const title = ids.length > 1 ? ctx.look.words?.shop ?? ctx.words.shelf : ctx.look.words?.item ?? ctx.words.shelf;
   return `<div class="card"><div class="cardtitle">${esc(title)}</div><div class="shelf">${cells.join('')}</div></div>`;

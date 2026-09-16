@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "_about": "功法 — the learned arts. Each is one bout effect from duel.js (never a number), a source line from 道教 heritage, and the tier it asks for. Learned, never bought: a creature that walks with the player teaches its own (creatures.json `teaches`), a scene exit may `grant.art`. A made world may rename these words, never invent an effect.",
+  "arts": [
+    {
+      "id": "jieshi",
+      "name": {
+        "zh": "借势",
+        "en": "Borrowed Force"
+      },
+      "effect": "generate",
+      "tier": "qi",
+      "about": {
+        "zh": "一回合内，所出灵根作其所生之行：木生火，火生土，土生金，金生水，水生木。一战一用。",
+        "en": "For one round, the root you pick acts as the one it generates: 木→火, 火→土, 土→金, 金→水, 水→木. Once a bout."
+      },
+      "source": {
+        "zh": "《黄帝内经》五行相生",
+        "en": "The Yellow Emperor's Inner Canon — the generating cycle"
+      }
+    },
+    {
+      "id": "dunfa",
+      "name": {
+        "zh": "遁法",
+        "en": "The Way Out"
+      },
+      "effect": "undo-loss",
+      "tier": "foundation",
+      "about": {
+        "zh": "败了的一回合收回，算作平手。一战一用。",
+        "en": "A lost round is taken back and stands as a draw. Once a bout."
+      },
+      "source": {
+        "zh": "《抱朴子·登涉》遁甲之术",
+        "en": "Baopuzi — the arts of concealment"
+      }
+    },
+    {
+      "id": "fushui",
+      "name": {
+        "zh": "符水",
+        "en": "Talisman Water"
+      },
+      "effect": "charm-refills",
+      "tier": "foundation",
+      "about": {
+        "zh": "掷出的符化水入丹田：每用一符，灵气回十。",
+        "en": "A cast talisman turns to water for the dantian: each 符 spent refills ten qi."
+      },
+      "source": {
+        "zh": "《后汉书》太平道以符水治病",
+        "en": "Book of the Later Han — the Way of Great Peace healed with talisman water"
+      }
+    },
+    {
+      "id": "wulei",
+      "name": {
+        "zh": "五雷法",
+        "en": "Five Thunders"
+      },
+      "effect": "draw-wins",
+      "tier": "core",
+      "about": {
+        "zh": "平手的一回合，雷落而胜。一战一用。",
+        "en": "A drawn round is struck by thunder and won. Once a bout."
+      },
+      "source": {
+        "zh": "《道法会元》神霄五雷",
+        "en": "Daofa Huiyuan — the Five Thunders of the Divine Empyrean"
+      }
+    },
+    {
+      "id": "yujian",
+      "name": {
+        "zh": "御剑",
+        "en": "Sword Riding"
+      },
+      "effect": "sword-twice",
+      "tier": "nascent",
+      "about": {
+        "zh": "佩剑所借之根可连出两回合，不必换气。",
+        "en": "The worn sword's root may be picked two rounds running, no breath between."
+      },
+      "source": {
+        "zh": "《列仙传》剑解",
+        "en": "Biographies of Immortals — release by the sword"
+      }
+    }
+  ]
+}

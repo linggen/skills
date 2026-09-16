@@ -940,7 +940,7 @@ and runs the same `rules.mjs` contract. Later.
   rounds drawn by the same hash; the card tells the 相克 ring in a line
   and says two wins (the Chinese hint said three).
 
-## 功法 — swords, talismans and learned arts (designed 2026-09-16, not built)
+## 功法 — swords, talismans and learned arts (designed and built 2026-09-16)
 
 His question after losing to 蠪侄 with no 金 root: "can user learn some
 功法, 法术, or attack by sword?" Today a player has roots, the 五行 bout,
@@ -990,6 +990,45 @@ bout section names the 符 and the arts as the scene's buttons (Ling never
 plays them). Open for his call: whether a worn sword also changes the
 creature's lean (a 金 blade drawing 木 moves), and whether 斗法 at the
 table uses the same arts.
+
+**Built 2026-09-16, all three pieces, as the rules read them now.** One
+truth for the page and the rules: `duel.js` takes the pick sequence and a
+*kit* (own roots, the sword's root, the 符 held, the arts known with
+`ready`) — `legal` says what may come next, `offers` lists it for the card,
+`bout` replays and refuses by name. The sequence carries an element, the
+符's id, or `art:<id>`; a pick after the decision is not played, not
+refused. Rulings made while building, his to flip:
+- **A breath between strokes.** The sword's root may not be picked two
+  rounds running — otherwise 御剑 would mean nothing. With 御剑 it may.
+- **遁法 takes a lost round back to a draw**, not a replay — a replay
+  against a move already seen would be no contest. Played right after the
+  loss, even the second: a decided bout that an art could still turn waits
+  (`rescue`) for the player's word — the art, or *认了*.
+- **借势 is played before the pick** it changes; 五雷法 and 遁法 after the
+  round they change. 符水 and 御剑 are passive.
+- **Teachers, one a chapter, so the arts are reachable in order:** 夫诸 →
+  借势 (练气; joins in the prologue, so every player has one art), 狍鸮 →
+  遁法 (筑基), 精卫 → 符水 (筑基), 雷神 → 五雷法 (结丹), 夔 → 御剑 (元婴). The
+  design said 夫诸 → 遁法; swapped so the prologue companion teaches the
+  练气 art. A creature teaches as it joins (`pay` with `cast`, Tame) — and
+  a save from before today learns from its cast on the next Look. An exit
+  may still `grant.art`; the 奇遇 offer is not built.
+- **写符** needs a market (no altar exists in the places) or 结丹, one
+  桑皮纸, a visit's stamina, one a day (`day.written`); the choice offers
+  *写一道符* whenever it would be allowed. The 符 is a made thing: no
+  price, sold nowhere, `made: {from, at, anywhere_from}`; Trade refuses to
+  sell or "use" it. 符水 refills 10 灵气 when a 符 is cast (`CHARM_REFILL`).
+- **The sword does not change the creature's lean** (the open call —
+  moves still come from the player's own roots, so a bout is winnable
+  without one). 斗法 at the table is not built.
+- Cards: the item card says *佩之借金* and has a *佩戴* button (also for
+  wears — the bell had none); the traits card lists the arts learned under
+  the roots, greyed with the realm they wait for; the bout card draws the
+  sword's root dashed, the 符 red with its count, the arts as buttons with
+  a hint, each greyed with its why. 符 art painted by FLUX (640×480).
+- Tests: 100 (six new: the sword and its breath, the 符, the five arts on
+  the engine; the sword in the bout and the teaching in the rules; 写符
+  end to end with 符水; the linter on arts and made things).
 
 ## At a creature's haunt — the world outside the spine
 
