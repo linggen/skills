@@ -574,8 +574,8 @@ is a map of places, not a chain of scenes.
   the cauldron where the peak of 筑基 forms the Core and Yinyue's second
   memory surfaces (the hand had a cauldron's pattern and counted to nine),
   the end pointing east to 青. `places/yan.json` (nine, 濮水 the start; the
-  road in is from 邺城), `seeds/yan.json` (twenty), 雷神 and 蠪侄 painted by
-  FLUX, two riddles, 固基丹 and 桑皮纸 sold in 兖. Chapter 1's closing
+  road in is from 邺城), `seeds/yan.json` (twenty), 雷神 and 蠪侄 (1597
+  plates since 09-16), two riddles, 固基丹 and 桑皮纸 sold in 兖. Chapter 1's closing
   thread now names chapter 2 and its day.
 
 - **Chapter 3 built 2026-09-16 —** 《青州之鼎》 (`chapters/03-qing/`, gate 3,
@@ -919,8 +919,11 @@ from its name.
 - **One picture per creature,** `worlds/<id>/art/<id>.webp`, shipped in the
   skill. **His ruling 2026-09-16: a 山海经 creature is found, not drawn** —
   "those are hard for a llm" (夔 came out horned and four-legged four
-  times; the 1597 plate is hornless on one leg). The classical plate, laid
-  on our paper by `tools/frame.py`; FLUX only for what no edition drew. **Since 2026-09-15 the creatures are painted** by the local picture
+  times; the 1597 plate is hornless on one leg). All seven creatures are
+  the classical plates again (the five FLUX paintings of 09-15 replaced —
+  雷神 and 蠪侄 from the 1597 edition, pages 200 and 94), laid on our paper
+  by `tools/frame.py`; FLUX only for what no edition drew — items, made
+  worlds. **Since 2026-09-15 the creatures are painted** by the local picture
   model ahead of time (his picks from candidate sheets: 夫诸, 狍鸮, 精卫;
   captions *Drawn in Lingjing*), the woodcuts below kept in `art/plates/` as
   the reference and in `CREDITS.md`; FLUX draws two antlers where the text

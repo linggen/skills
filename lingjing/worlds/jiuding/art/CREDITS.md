@@ -7,23 +7,23 @@ reader's copy. Nothing here is fetched at play time.
 
 ## Creatures
 
-Painted for Lingjing by the local picture model (FLUX.2 klein 4B) where
-noted; the classical woodcut stays in `plates/` as the reference.
+Every creature is a classical woodcut — his ruling 2026-09-16: a 山海经
+creature is found, not drawn. The plate is kept untouched in `plates/` and
+laid on our paper by `tools/frame.py` (crop, `--levels` for a scan on toned
+paper, a warm paper ground with grain, the red seal).
 
 | id | picture | source |
 |---|---|---|
-| fuzhu | 夫諸 | Painted for Lingjing, 2026-09-15. Reference: 《山海經》蔣應鎬繪圖本, Ming 萬曆 (c. 1597), 卷五 中山經 plate 32 — Wikimedia Commons, *山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf*, page 108 (the Qing encyclopaedia's 夫諸圖 draws it goat-like; the 1597 plate is the deer the text describes) |
-| paoxiao | 狍鴞 | Painted for Lingjing, 2026-09-15. Reference: 《山海經圖》, 胡文煥, Ming (1596–1650) — Wikimedia Commons, *狍鴞.jpg* |
-| jingwei | 精衛 | Painted for Lingjing, 2026-09-15. Reference: 《古今圖書集成·禽蟲典》精衛圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg* |
-| leishen | 雷神 | Painted for Lingjing, 2026-09-15, from the text of 《山海經·海內東經》 alone; no plate kept |
-| longzhi | 蠪侄 | Painted for Lingjing, 2026-09-15, from the text of 《山海經·東次二經》 alone; no plate kept |
-| kui | 夔 | 《山海經》蔣應鎬繪圖本, Ming 萬曆 (c. 1597), 卷十四 大荒東經 plate 64 — Wikimedia Commons, *山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf*, page 211 (the whole spread); also 吳任臣《山海經廣注》 1786 print, Commons *Shan Hai Jing Kui.jpg*, kept as reference. Laid on paper by `tools/frame.py`, 2026-09-16 |
-| tongtong | 狪狪 | 《山海經》蔣應鎬繪圖本, Ming 萬曆 (c. 1597), 卷四 東山經 plate 26, lower left — Wikimedia Commons, same PDF, page 91. Laid on paper by `tools/frame.py`, 2026-09-16 |
+| fuzhu | 夫諸 | 《山海經》蔣應鎬繪圖本, Ming 萬曆 (c. 1597), 卷五 中山經 plate 32 — Wikimedia Commons, *山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf*, page 108 (the Qing encyclopaedia's 夫諸圖 draws it goat-like; the 1597 plate is the deer the text describes) |
+| paoxiao | 狍鴞 | 《山海經圖》, 胡文煥, Ming (1596–1650) — Wikimedia Commons, *狍鴞.jpg* |
+| jingwei | 精衛 | 《古今圖書集成·禽蟲典》精衛圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg* |
+| leishen | 雷神 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷十三 海內東經 plate 62 — same PDF, page 200 |
+| longzhi | 蠪侄 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷四 東次二經 plate — same PDF, page 94 |
+| kui | 夔 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷十四 大荒東經 plate 64 — same PDF, page 211 (the whole spread); also 吳任臣《山海經廣注》 1786 print, Commons *Shan Hai Jing Kui.jpg*, kept as reference |
+| tongtong | 狪狪 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷四 東山經 plate 26, lower left — same PDF, page 91 |
 
-Every creature on the card is now painted; its `art_caption` reads *Drawn
-in Lingjing*. `tools/frame.py` framed the woodcuts that shipped before
-(crop, `--levels` for a scan on toned paper, a warm paper ground with grain,
-the red seal) and stays for any plate shown as itself.
+The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
+on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.
 
 ## Items — painted for Lingjing
 

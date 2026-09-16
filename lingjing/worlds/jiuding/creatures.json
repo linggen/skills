@@ -22,10 +22,10 @@
       "province": "豫",
       "root": "water",
       "art": "art/fuzhu.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a white deer in the river mist. The classical reference is kept in art/plates/fuzhu-1597-p108.jpg: 《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷五 中山經 第三十二圖 — public domain, Wikimedia Commons, File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 108.",
+      "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷五 中山經 第三十二圖，左葉。Public domain. Wikimedia Commons: File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 108. Cropped, levelled and laid on paper by tools/frame.py (art/plates/fuzhu-1597-p108.jpg).",
       "art_caption": {
-        "zh": "灵境所绘",
-        "en": "Drawn in Lingjing"
+        "zh": "蔣應鎬繪圖本，明萬曆刊",
+        "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       }
     },
     {
@@ -49,10 +49,10 @@
       "province": "冀",
       "root": "earth",
       "art": "art/paoxiao.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a sheep-bodied beast with tiger teeth by a river shrine. The classical reference is kept in art/plates/paoxiao.jpg: 《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650） — public domain, Wikimedia Commons, File:狍鴞.jpg.",
+      "art_source": "《山海經圖》狍鴞，胡文煥，明 萬曆（1596–1650）。Public domain. Wikimedia Commons: File:狍鴞.jpg. Laid on paper by tools/frame.py (art/plates/paoxiao.jpg).",
       "art_caption": {
-        "zh": "灵境所绘",
-        "en": "Drawn in Lingjing"
+        "zh": "胡文煥《山海經圖》，明萬曆本",
+        "en": "Hu Wenhuan's Shanhaijing Pictures, Ming, c. 1600"
       }
     },
     {
@@ -76,10 +76,10 @@
       "province": "冀",
       "root": "fire",
       "art": "art/jingwei.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a small black bird with a patterned head, white beak and red feet, a pebble in its beak, over the sea. The classical reference is kept in art/plates/jingwei.svg: 《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725 — public domain, Wikimedia Commons, File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg.",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》精衛圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic130 - 精衛圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/jingwei.svg).",
       "art_caption": {
-        "zh": "灵境所绘",
-        "en": "Drawn in Lingjing"
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
       }
     },
     {
@@ -103,10 +103,10 @@
       "province": "兖",
       "root": "wood",
       "art": "art/leishen.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a dragon-bodied, man-headed god standing in a white lake, beating its belly, lightning in a cloudless sky. No classical plate is kept: the Ming and Qing 山海经 editions draw the entry as a plain dragon-man, and the text alone was the model.",
+      "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷十三 海內東經 第六十二圖，左葉上方 — public domain, Wikimedia Commons, File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 200; kept in art/plates/leishen-1597-p200.jpg and laid on paper by tools/frame.py.",
       "art_caption": {
-        "zh": "灵境所绘",
-        "en": "Drawn in Lingjing"
+        "zh": "蔣應鎬繪圖本，明萬曆刊",
+        "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       }
     },
     {
@@ -130,10 +130,10 @@
       "province": "兖",
       "root": "metal",
       "art": "art/longzhi.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the text: a nine-headed, nine-tailed fox with tiger's claws among mountain rocks. No classical plate is kept; the text alone was the model.",
+      "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷四 東次二經 圖，左葉上方 — public domain, Wikimedia Commons, File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 94; kept in art/plates/longzhi-1597-p94.jpg and laid on paper by tools/frame.py. The Qing encyclopaedia's 蠪姪圖 (Commons pic286) exists too.",
       "art_caption": {
-        "zh": "灵境所绘",
-        "en": "Drawn in Lingjing"
+        "zh": "蔣應鎬繪圖本，明萬曆刊",
+        "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       }
     },
     {
