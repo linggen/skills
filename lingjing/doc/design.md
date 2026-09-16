@@ -4,7 +4,7 @@ reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-16 — 功法 designed (swords lend a root, 符 from 桑皮纸, learned arts — not built); creatures at their haunts (降妖 once a day, 驯 by what they like — `place.encounter`, Tame), every card with buttons, the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
+status: 2026-09-16 — 功法 built (swords lend a root, 符 from 桑皮纸, five learned arts, teachers, the rescue); exits walk the one road to the next scene; creatures at their haunts (降妖 once a day, 驯 by what they like — `place.encounter`, Tame), every card with buttons, the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
 ---
 
 # Lingjing — design
@@ -499,7 +499,10 @@ is a map of places, not a chain of scenes.
 - **The spine as waypoints.** Chapter scenes attach to places; the player
   reaches them by wandering. Ling holds the *thread* — the next waypoint —
   and says it when the player idles. A sandbox without pull is aimless; the
-  thread is the pull.
+  thread is the pull. An exit taken toward the next scene walks the player
+  there itself when it stands one road away (2026-09-16, his "no need to
+  click twice": *去蓬莱* means go; asking which road again was a second
+  click) — farther off, the road waits as before.
 - **Ling as director.** Each turn Look carries a small *director's brief*:
   what is near, what is too hard, the thread, the 丹田, today's seed. Ling
   improvises inside it — a 奇遇 here, a creature there, a road mentioned —
