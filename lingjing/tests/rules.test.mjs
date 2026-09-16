@@ -131,6 +131,13 @@ test('an unknown exit, a missing answer and an unfought duel are refused', () =>
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
 });
 
+test('Lang never hands over a scene the player has not reached', () => {
+  const o = toOpenWorld();
+  assert.equal(look(o, content, ctx()).scene, null);
+  assert.equal(must(lang, o, { lang: 'en' }).result.scene, null, 'no scene runs here, so none is told');
+  assert.ok(must(lang, toFuzhu(), { lang: 'en' }).result.scene?.id, 'at a scene, the scene');
+});
+
 test('the engine\'s empty-reply nudge is not the player\'s word: it sets no language', () => {
   const s = { ...toFuzhu(), lang: 'zh' };
   assert.equal(heed(s, 'Your response was empty. Please respond with either a tool call or text.').lang, 'zh');

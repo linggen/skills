@@ -926,7 +926,9 @@ export function trade(state, content, ctx, args) {
 export function lang(state, content, ctx, args) {
   if (!['zh', 'en'].includes(args.lang)) return refuse('unknown-lang', null, { langs: ['zh', 'en'] });
   const s = args.lang === state.lang ? state : { ...clone(state), lang: args.lang };
-  const result = { ok: true, lang: s.lang, changed: s !== state, scene: sceneBrief(content, s) };
+  // The scene only where the player stands — Lang once handed Ling chapter
+  // 3's opening lines a province early (2026-09-16), and Ling recited them.
+  const result = { ok: true, lang: s.lang, changed: s !== state, scene: atScene(content, s) ? sceneBrief(content, s, ctx?.now) : null };
   return { state: s === state ? null : s, result };
 }
 
