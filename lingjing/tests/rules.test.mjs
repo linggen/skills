@@ -131,6 +131,12 @@ test('an unknown exit, a missing answer and an unfought duel are refused', () =>
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
 });
 
+test('the engine\'s empty-reply nudge is not the player\'s word: it sets no language', () => {
+  const s = { ...toFuzhu(), lang: 'zh' };
+  assert.equal(heed(s, 'Your response was empty. Please respond with either a tool call or text.').lang, 'zh');
+  assert.equal(heed(s, 'hello there').lang, 'en');
+});
+
 test('every answer carries the question ready: the scene\'s buttons, the riddle when one waits, the choice when the world is open', () => {
   const s = toFuzhu();
   const l = look(s, content, ctx());

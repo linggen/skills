@@ -933,7 +933,13 @@ export function lang(state, content, ctx, args) {
 /* The player's words set the language before any verb reads the state, so
    what Ling reads back is already in the language the player wrote. Ling's
    tools pass them as `said`. */
+/* Words that are the engine's, not the player's: an empty reply's nudge
+   comes back to the model as a user turn and was passed on as `said`,
+   flipping a Chinese game to English mid-sitting (2026-09-16). */
+const ENGINE_WORDS = /^\s*your response was empty/i;
+
 export function heed(state, said) {
+  if (ENGINE_WORDS.test(String(said ?? ''))) return state;
   const lang = langOf(said);
   return lang && lang !== state.lang ? { ...clone(state), lang } : state;
 }
