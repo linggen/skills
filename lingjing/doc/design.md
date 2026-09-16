@@ -76,8 +76,8 @@ skills/lingjing/
     places/<province>.json the province's places, roads and tiers
     branches.json          奇遇 templates and the daily cap
     chapters/00-prologue/  chapter.json · beats.md · scenes/*.json — the corridor
-    chapters/01-ji/        the same — waypoints; opens 2026-10-01, gate 1
-    chapters/02-yan/       the same; opens 2026-11-01, gate 2 (筑基 → 结丹)
+    chapters/01-ji/        the same — waypoints; gate 1 (opens: null while building; 2026-10-01 at launch)
+    chapters/02-yan/       the same; gate 2 (筑基 → 结丹; 2026-11-01 at launch)
   data/                    this player; never in the repo — the cloud save mirrors it
     state.json · log.jsonl
   tests/

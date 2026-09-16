@@ -8,10 +8,15 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, branch, duel, enter, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, wake, win } from '../scripts/rules.mjs';
+import { VERBS, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, task, trade, wake, win } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
+// The shipped chapters carry no `opens` while the game is being built and
+// tested (his rule, 2026-09-16: "don't lock it"); the tests keep the serial
+// gate exercised with the dates the launch will set.
+content.chapters['01-ji'].opens = '2026-10-01';
+content.chapters['02-yan'].opens = '2026-11-01';
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 const start = (lang = 'zh') => newState(content, lang, NOW);
@@ -858,7 +863,8 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
   assert.equal(cli(d1, 'save').refused, 'no-title');
   // Go: an opened scene, straight; a chapter still to open, refused with when.
   assert.equal(cli(d1, 'go', '--scene=00-fuzhu').scene.id, '00-fuzhu');
-  assert.deepEqual(cli(d1, 'go', '--scene=01-ye'), { ok: false, refused: 'not-open', say: null, chapter: '01-ji', opens: '2026-10-01' });
+  // A chapter still to open refuses with when (the shipped files carry no dates while building; the harness's do).
+  assert.deepEqual(refused(go, start(), { scene: '01-ye' }, 'not-open'), { ok: false, refused: 'not-open', say: null, chapter: '01-ji', opens: '2026-10-01' });
   assert.ok(cli(d1, 'go', '--scene=nowhere').scenes.includes('00-river'));
   // The next day's first move keeps yesterday's closing state.
   assert.equal(cli(d2, 'look', '--said=hi').scene.id, '00-fuzhu');

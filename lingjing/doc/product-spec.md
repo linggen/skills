@@ -35,7 +35,8 @@ them sense the cauldrons.
 - **The main story is hand-written;** the model voices it and never changes its
   plot. Every player shares it.
 - **Chapters are serialized (连载).** A chapter opens for everyone on a date,
-  and it ships as data, not an app update.
+  and it ships as data, not an app update. While the game is being built
+  and tested no chapter is locked (2026-09-16); the dates are set at launch.
 - **Branch stories are AI-written per player:** province tales, 聊斋-style
   night tales, festival scenes on the real calendar, 奇遇, and the player's
   own week told as story.

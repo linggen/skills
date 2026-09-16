@@ -1,7 +1,7 @@
 {
   "version": 1,
   "id": "02-yan",
-  "opens": "2026-11-01",
+  "opens": null,
   "province": "兖",
   "corridor": false,
   "first_scene": "02-arrive",

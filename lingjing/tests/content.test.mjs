@@ -162,7 +162,7 @@ test('a road may cross into another province; a breakthrough needs its line and 
 
 test('chapter 1 walks from the Zhang to the cauldron and ends', () => {
   const ch = fresh().chapters['01-ji'];
-  assert.equal(ch.opens, '2026-10-01'); assert.equal(ch.gate, 1); assert.equal(ch.corridor, false);
+  assert.equal(ch.opens, null, 'no lock while the game is built and tested'); assert.equal(ch.gate, 1); assert.equal(ch.corridor, false);
   const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
   assert.deepEqual(at, ['01-altar@hebo', '01-arrive@zhangnan', '01-cauldron@zhangyuan', '01-deep@zhangyuan', '01-end@zhangyuan', '01-ye@ye']);
   assert.ok(ch.scenes['01-end'].exits.some(e => e.ends === '01-ji'));

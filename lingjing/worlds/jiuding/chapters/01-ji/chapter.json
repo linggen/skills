@@ -1,7 +1,7 @@
 {
   "version": 1,
   "id": "01-ji",
-  "opens": "2026-10-01",
+  "opens": null,
   "province": "冀",
   "corridor": false,
   "first_scene": "01-arrive",
