@@ -157,10 +157,10 @@
       "province": "青",
       "root": "water",
       "art": "art/kui.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the text of 《山海经·大荒东经》 alone; no classical plate is kept.",
+      "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷十四 大荒東經 第六十四圖 — public domain, Wikimedia Commons, File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 211; kept in art/plates/kui-1597-p211.jpg and laid on paper by tools/frame.py. The 1786 print of 吳任臣《山海經廣注》 (Commons File:Shan Hai Jing Kui.jpg, 300 px) is kept beside it as art/plates/kui-1786-guangzhu.jpg. FLUX could not draw it hornless on one leg (four tries, 2026-09-16).",
       "art_caption": {
-        "zh": "灵境所绘",
-        "en": "Drawn in Lingjing"
+        "zh": "蔣應鎬繪圖本，明萬曆刊",
+        "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       }
     },
     {
@@ -184,10 +184,10 @@
       "province": "青",
       "root": "earth",
       "art": "art/tongtong.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the text of 《山海经·东山经》 alone; no classical plate is kept.",
+      "art_source": "《山海經》蔣應鎬繪圖本，明萬曆刊（c. 1597），卷四 東山經 第二十六圖（左下） — public domain, Wikimedia Commons, File:山海經十八卷 蔣應鎬繪圖 明萬曆間刊本.pdf, page 91; kept in art/plates/tongtong-1597-p91.jpg and laid on paper by tools/frame.py.",
       "art_caption": {
-        "zh": "灵境所绘",
-        "en": "Drawn in Lingjing"
+        "zh": "蔣應鎬繪圖本，明萬曆刊",
+        "en": "Jiang Yinghao's illustrated edition, Ming, c. 1597"
       }
     }
   ]

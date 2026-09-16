@@ -590,9 +590,10 @@ is a map of places, not a chain of scenes.
   Yinyue's third memory (salt water — this sea; *等九鼎聚齐*; a name not
   hers), the end pointing south to 徐 where the player woke. `places/qing.json`
   (nine, 潍水 the start; the road in is from 凫丽), `seeds/qing.json` (twenty),
-  夔 and 狪狪 painted by FLUX (夔 needed four tries: FLUX draws horns and
-  four legs unless told "hornless … single leg" twice), two riddles, 齐盐 and
-  齐纨 (a wear for Yinyue) sold in 青.
+  夔 and 狪狪 from the 1597 蔣應鎬 plates (卷十四 p. 211, 卷四 p. 91; FLUX
+  drew 夔 horned and four-legged four times — his ruling: 山海经 creatures
+  are found, not drawn), two riddles, 齐盐 and 齐纨 (a wear for Yinyue)
+  sold in 青.
 
 ### Made scenes — the template, and Ling as the maker
 
@@ -916,7 +917,10 @@ A creature is never named without its picture — a player cannot know 夫诸
 from its name.
 
 - **One picture per creature,** `worlds/<id>/art/<id>.webp`, shipped in the
-  skill. **Since 2026-09-15 the creatures are painted** by the local picture
+  skill. **His ruling 2026-09-16: a 山海经 creature is found, not drawn** —
+  "those are hard for a llm" (夔 came out horned and four-legged four
+  times; the 1597 plate is hornless on one leg). The classical plate, laid
+  on our paper by `tools/frame.py`; FLUX only for what no edition drew. **Since 2026-09-15 the creatures are painted** by the local picture
   model ahead of time (his picks from candidate sheets: 夫诸, 狍鸮, 精卫;
   captions *Drawn in Lingjing*), the woodcuts below kept in `art/plates/` as
   the reference and in `CREDITS.md`; FLUX draws two antlers where the text
