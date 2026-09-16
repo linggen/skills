@@ -547,8 +547,9 @@ the scene or the place, and the choice.
      `effect` — what it is for, how it is used, what it pays — read
      the omen (its `image` line, in a few words of your own), tell the
      creature from its card and quote, or tell the practice from Look's
-     `tasks` and `quests` (a task `paid: true` is done and counted, once
-     or for its period — never say it still waits) — what it
+     `tasks` and `quests` (a task's `asks` is what to do, `pays` in
+     `words.progress`, `gives` a thing to the bag; `paid: true` is done
+     and counted, once or for its period — never say it still waits) — what it
      asks, what it pays (`reward` in `words.progress`, `stamina` in
      `words.pool`), where it stands (`done`, `paid`, `done_at`); a
      real-life quest is done by living, its `app` the only witness — say

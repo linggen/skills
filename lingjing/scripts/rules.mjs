@@ -310,11 +310,24 @@ function omen(content, now, lang) {
 
 function tasksBrief(content, state, ctx) {
   const lang = state.lang;
-  const tasks = Object.entries(state.tasks).map(([id, t]) => ({
-    id, title: pick(taskOf(content, id).title, lang), kind: taskOf(content, id).kind, status: t.status,
-    won: Boolean(state.wins?.[id]),
-    paid: t.status === 'done', period: t.period ?? taskOf(content, id).period ?? null, // done = paid, once or per period
-  }));
+  // Today's practice: what is offered or won, and what was done today. A
+  // task done once on an earlier day is history, not today's (his "what is
+  // this task for today?", 2026-09-16, the prologue's alchemy five days on).
+  const today = dayKey(ctx.now);
+  const tasks = Object.entries(state.tasks)
+    .filter(([, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false))
+    .map(([id, t]) => {
+      const task = taskOf(content, id);
+      return {
+        id, title: pick(task.title, lang), kind: task.kind, status: t.status,
+        won: Boolean(state.wins?.[id]),
+        paid: t.status === 'done', period: t.period ?? task.period ?? null, // done = paid, once or per period
+        done_at: t.done_at ?? null,
+        // what it asks and what it pays, so Ling can tell the practice
+        asks: task.kind === 'board' ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : null,
+        pays: task.grant?.progress ?? null, gives: task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
+      };
+    });
   const quests = (ctx.quests ?? []).filter(q => q.due || questDone(q, ctx.now)).map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang),
     done: questDone(q, ctx.now), paid: state.quests[q.id]?.period === periodKey(q.period, ctx.now),
@@ -637,7 +650,7 @@ function taskDone(state, content, ctx, id) {
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
   delete s.wins[id];
-  s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now) };
+  s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
   if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
   const paid = pay(content, s, ctx, t.grant);
   return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang) } };
