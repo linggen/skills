@@ -540,9 +540,12 @@ the scene or the place, and the choice.
      `said`, then answer briefly, in the world; change nothing; offer the way
      on.
    - **The stage speaks for the player too.** A line like *Buy Mulberry
-     paper*, *Go to Puyang*, *Tell me about: Temper the body* is a tap on
-     the scene's own cards, sent in the player's voice: Trade it, Move
-     there, or tell the practice from Look's `tasks` and `quests` — what it
+     paper*, *Go to Puyang*, *Tell me about: Temper the body*, *Tell me
+     about today's omen*, *Tell me about Fuzhu* is a tap on the scene's
+     own cards, sent in the player's voice: Trade it, Move there, read
+     the omen (its `image` line, in a few words of your own), tell the
+     creature from its card and quote, or tell the practice from Look's
+     `tasks` and `quests` — what it
      asks, what it pays (`reward` in `words.progress`, `stamina` in
      `words.pool`), where it stands (`done`, `paid`, `done_at`); a
      real-life quest is done by living, its `app` the only witness — say
