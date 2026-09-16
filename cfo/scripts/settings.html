@@ -196,6 +196,21 @@
       </div>
     </div>
 
+    <!-- Company reports: turns the skill's cfo:reports mission on/off -->
+    <div class="section">
+      <h2 class="section-title">Company reports</h2>
+      <p class="section-desc">CFO checks the companies you hold or watch, reads anything new, and adds a summary to the company's card.</p>
+      <div class="field-card">
+        <div class="pet-row" id="reports-row" onclick="reportsToggle()">
+          <span class="pet-check"></span>
+          <div class="grow">
+            <div class="acct-name">Tell me when a report comes out</div>
+            <div class="acct-meta" id="reports-status">Off</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="section">
       <h2 class="section-title">Desktop pet</h2>
       <p class="section-desc">Yinyue, your companion on screen. Drag her body to move her anywhere.</p>
@@ -452,10 +467,62 @@
       loadWatch();
     });
 
+    // ── Company reports ───────────────────────────────────────────────────
+    // The switch is the skill mission cfo:reports (missions/reports/mission.md,
+    // shipped off). On/off is stored by the engine with the mission's runs, so
+    // this switch and the Missions page are one setting.
+    const REPORTS_MISSION = "cfo:reports";
+    const reportsUrl = (tail) => `/api/missions/${encodeURIComponent(REPORTS_MISSION)}${tail || ""}`;
+    async function reportsMission() {
+      const res = await fetch("/api/missions");
+      if (!res.ok) throw new Error(`missions ${res.status}`);
+      return ((await res.json()).missions || []).find((m) => m.id === REPORTS_MISSION) || null;
+    }
+    async function lastReportsCheck() {
+      try {
+        const runs = (await (await fetch(reportsUrl("/runs"))).json()).runs || [];
+        const last = runs.find((r) => !r.skipped);
+        if (!last) return "";
+        const when = new Date(last.triggered_at * 1000).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
+        return ` · last checked ${when}`;
+      } catch { return ""; }
+    }
+    async function loadReports() {
+      const row = document.getElementById("reports-row");
+      const status = document.getElementById("reports-status");
+      try {
+        const m = await reportsMission();
+        row.classList.toggle("disabled", !m);
+        row.classList.toggle("on", !!(m && m.enabled));
+        status.textContent = !m ? "Unavailable — restart Linggen"
+          : m.enabled ? `On — weekdays at 9:00 and 18:00${await lastReportsCheck()}` : "Off";
+      } catch {
+        status.textContent = "Couldn't reach Linggen";
+      }
+    }
+    async function reportsToggle() {
+      const row = document.getElementById("reports-row");
+      if (row.classList.contains("disabled")) return;
+      const on = !row.classList.contains("on");
+      row.classList.toggle("on", on);
+      try {
+        const res = await fetch(reportsUrl(), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: on }),
+        });
+        if (!res.ok) throw new Error(`update ${res.status}`);
+      } catch (err) {
+        console.warn("[cfo] reports switch", err);
+      }
+      loadReports();
+    }
+
     loadAccount();
     loadModel();
     loadMemory();
     loadWatch();
+    loadReports();
 
     // ── Desktop pet ───────────────────────────────────────────────────────
     // Two flag files the Tauri shell watches (it applies changes within ~2s);

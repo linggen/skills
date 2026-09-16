@@ -90,13 +90,25 @@ Mac; no Linggen Cloud, no data-provider key.
 
 ## Report mission (missions/reports/mission.md)
 
-- A skill mission (`linggen/doc/mission-spec.md`, "Skill missions"):
-  `schedule: "0 9,18 * * 1-5"`, `catchup_hours: 12`, `enabled: false`.
-  Its tools need `tier: read` — a mission run is non-interactive and an
-  untiered skill tool defaults to admin.
-- Runbook: `CheckReports` → empty → end `DONE`. Otherwise read each item
-  (`ReadReport`; `WebSearch` first for a TSX release) → `SaveReport`. No
+- A skill mission (`linggen/doc/mission-spec.md`, "Skill missions"), id
+  `cfo:reports`: `schedule: "0 9,18 * * 1-5"`, `catchup_hours: 12`,
+  `enabled: false`, `kickoff-stop: [DONE]`.
+- `cwd: ~/.linggen/skills/cfo` — the skill's own `edit` grant covers it, so
+  the run's tools (all `tier: read`) never stop to ask. CFO's tools come with
+  the skill; `allowed-tools` adds `WebSearch`, `WebFetch`.
+- Runbook: `CheckReports` → empty → reply `DONE`. Otherwise `Investments`
+  once (who holds what), then each item: `ReadReport` (`WebSearch` first for
+  a TSX release) → `SaveReport`; not out yet → skip, the next run retries.
+  Final reply: `SYMBOL: saved` / `SYMBOL: not out yet` lines, then `DONE`. No
   `AskUser`, no `PageUpdate`.
+- **Settings → Company reports → Tell me when a report comes out** reads
+  `GET /api/missions` and flips it with `PUT /api/missions/cfo:reports
+  {enabled}`; the engine keeps the choice in
+  `~/.linggen/missions/cfo:reports/user.json`, so the Missions page shows the
+  same setting. The row shows the last run's time.
+- On the Mac, Yinyue's watch hears only the mission's name and status when a
+  run ends, so she stays silent; telling the user what a company reported is
+  the phone's job (below).
 
 ## Alerts
 
@@ -121,7 +133,7 @@ Mac; no Linggen Cloud, no data-provider key.
    — built
 4. ~~SKILL.md tools; advice rule removed~~ — built (holdings proposals from
    chat not yet)
-5. `missions/reports` + the settings switch
+5. ~~`missions/reports` + the settings switch~~ — built
 6. Phone: pull `reports.json` + the `report` line
 7. Release 2: native phone Investments view
 
