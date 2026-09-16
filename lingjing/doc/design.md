@@ -743,8 +743,30 @@ whole turn.
 | `Trade {action: buy \| sell \| use, id}` | Buys or sells at a market at the catalog's price, a visit's 灵气 each; `use` pays a pill's progress within its table or puts a wear on. | `unknown-item`, `no-market`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
 | `Lang {lang}` | Switches zh / en. | — |
 
+| `Restart` (verb `init`) | Begins the world in play again; the save it replaces is logged. | `unknown-world` |
+| `Go {scene}` | Straight to a scene of an opened chapter (a made scene goes through Enter); the chapter's earlier end is forgotten. | `not-open`, `unknown-scene` |
+| `Undo` | Restores the state before the last change — Ling's on the player's word, the page's and the tests' otherwise. | `nothing-to-undo` |
+| `Saves` · `Save {title}` · `Load {id}` · `Forget {id}` | The library (below). | `no-title`, `unknown-save`, `not-named` |
+
+**Ling drives** (his ruling 2026-09-16: "ling can do restart, pick a scene,
+go to map, all control of the game, change the world, load from storage,
+like continue play yesterday"): every one of these is a rules verb, logged
+so `undo` brings the game back, and the destructive ones — Restart, Load,
+Forget, Undo — wait for one AskUser in the world's words. The map is
+`Show {card: map}`; worlds are Worlds / Travel / Build.
+
+**The library — `data/saves/<id>.json`** `{ id, kind, title, at, state }`:
+`day` saves the rules keep by themselves — a new day's first move parks the
+last play day's closing state under its date, two weeks kept — so
+"continue from yesterday" is `Load 2026-09-15`; `named` saves on the
+player's word (`n-<time>`); `world` saves parked by Travel (an older bare
+parked state reads as one). Load of another world's save parks the game in
+play first and lets that world's parked copy go. The library is local for
+now; the cloud carries `state.json` alone (open: the library follows the
+player too — `cloud.save` taking a folder).
+
 `init --lang` starts a game, and `undo` restores the state before the last
-change — for the page and for testing, not for Ling. **`win --id` is the
+change. **`win --id` is the
 page's alone:** the scene is the only witness to a board or a duel, so it
 records the win (a game an exit of this scene names, or an offered task), and
 Resolve or `Practice done` pays it and consumes it. No Ling tool can pass a

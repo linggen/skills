@@ -4,7 +4,7 @@
 //
 //   node rules.mjs <verb> [--key value …]
 //   verbs: init look resolve judge task win duel branch summarize move trade lang make enter leave
-//          build worlds travel amend art undo
+//          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` begins
@@ -928,6 +928,104 @@ export function leave(state, content) {
   return { state: s, result: { ok: true, scene: sceneBrief(content, s), summarize: true } };
 }
 
+/* ── Ling drives: the player's word moves the game ── */
+
+/* Straight to a scene of the spine, in a chapter that has opened — the
+   player asked for it, so the road is not walked. A made scene goes through
+   Enter. The chapter's earlier end is forgotten so the story runs from
+   here again. */
+export function go(state, content, ctx, args) {
+  const id = String(args.scene ?? '');
+  const chapter = Object.values(content.chapters).find(c => c.scenes[id]);
+  if (!chapter) {
+    if (state.made?.scenes?.[id]) return enter(state, content, ctx, args);
+    const scenes = Object.values(content.chapters).filter(c => !c.opens || new Date(c.opens) <= ctx.now).flatMap(c => Object.keys(c.scenes));
+    return refuse('unknown-scene', null, { scenes: [...scenes, ...Object.keys(state.made?.scenes ?? {})] });
+  }
+  if (chapter.opens && new Date(chapter.opens) > ctx.now) return refuse('not-open', null, { chapter: chapter.id, opens: chapter.opens });
+  const s = clone(state);
+  s.chapter = chapter.id; s.scene = id;
+  s.ended = s.ended.filter(c => c !== chapter.id);
+  if (s.made) s.made.at = null;
+  const scene = chapter.scenes[id];
+  if (scene.at) s.place = scene.at;
+  settlePlace(content, s);
+  offerTasks(content, s);
+  return { state: s, result: { ok: true, scene: sceneBrief(content, s, ctx.now), summarize: true } };
+}
+
+/* ── The library: every game the player keeps ──
+   data/saves/<id>.json = { id, kind, title, at, state }. `day` is written by
+   the rules when a new day's first move finds yesterday's closing state;
+   `named` on the player's word; `world` parks the save of a world left by
+   Travel. An older parked save (a bare state) reads as `world`. */
+const DAY_SAVES_KEPT = 14;
+
+function readSave(file) {
+  const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (doc.state) return { ...doc, state: migrate(doc.state) };
+  const state = migrate(doc);
+  return { id: state.world, kind: 'world', title: null, at: state.updated, state };
+}
+const saveFiles = () => (fs.existsSync(savesDir()) ? fs.readdirSync(savesDir()).filter(f => f.endsWith('.json')).map(f => path.join(savesDir(), f)) : []);
+const allSaves = () => saveFiles().map(readSave).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+const saveOf = id => (savedFor(id) ? readSave(savedFile(id)) : null);
+function keepSave(kind, id, state, at, title = null) {
+  writeAtomic(savedFile(id), JSON.stringify({ id, kind, title, at, state }));
+}
+
+/* A new day's first move: yesterday's closing state is kept as that day's
+   save, and the oldest day saves beyond the shelf go. */
+function keepDay(saved, now) {
+  const day = dayKey(new Date(saved.updated));
+  if (day === dayKey(now) || savedFor(day)) return;
+  keepSave('day', day, saved, saved.updated);
+  for (const old of allSaves().filter(x => x.kind === 'day').slice(DAY_SAVES_KEPT)) fs.rmSync(savedFile(old.id), { force: true });
+}
+
+/* One save as Saves tells it: where it stood, in the player's words. */
+function saveBrief(save, lang) {
+  const st = save.state;
+  const content = knownWorld(st.world) ? loadWorld(st.world) : null;
+  const scene = content ? (st.made?.at ? st.made.scenes[st.made.at] : content.chapters[st.chapter]?.scenes[st.scene]) : null;
+  const place = content ? placeOf(content, st.place) : null;
+  return {
+    id: save.id, kind: save.kind, title: save.title, at: save.at,
+    world: content ? pick(content.world.title, lang) : st.world,
+    chapter: content?.chapters[st.chapter] ? pick(content.chapters[st.chapter].title, lang) : null,
+    where: scene ? pick(scene.place, lang) : place ? pick(place.name, lang) : null,
+    name: st.name, tier: st.tier, step: st.step, progress: st.progress,
+  };
+}
+
+export function saves(state) {
+  return { state: null, result: { ok: true, saves: allSaves().map(x => saveBrief(x, state.lang)), playing: { world: state.world, at: state.updated } } };
+}
+
+export function save(state, content, ctx, args) {
+  const title = String(args.title ?? '').trim();
+  if (!title) return refuse('no-title', null);
+  const id = `n-${ctx.now.getTime().toString(36)}`;
+  keepSave('named', id, state, ctx.now.toISOString(), title);
+  return { state: null, result: { ok: true, saved: saveBrief(saveOf(id), state.lang) } };
+}
+
+export function forget(state, content, ctx, args) {
+  const found = saveOf(String(args.id ?? ''));
+  if (!found) return refuse('unknown-save', null, { saves: allSaves().map(x => x.id) });
+  if (found.kind !== 'named') return refuse('not-named', null, { kind: found.kind });
+  fs.rmSync(savedFile(found.id), { force: true });
+  return { state: null, result: { ok: true, forgot: found.id } };
+}
+
+/* Take up a kept save: the runner parks the game in play if the save is of
+   another world, and logs it so undo brings it back. */
+export function load(state, content, ctx, args) {
+  const found = saveOf(String(args.id ?? ''));
+  if (!found) return refuse('unknown-save', null, { saves: allSaves().map(x => x.id) });
+  return { state: null, result: { ok: true, load: found } };
+}
+
 /* ── Worlds: the player's own ── */
 
 /* A world of the player's. With nothing: the template, the rules of making
@@ -1111,6 +1209,7 @@ function insideSkill(raw) {
 export const VERBS = {
   look: (s, c, x) => { const woke = wake(s, c, x); return { state: woke, result: look(woke ?? s, c, x) }; },
   resolve, judge, task, win, duel, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
+  go, saves, save, load, forget,
 };
 
 /* ── Files and the command line ── */
@@ -1209,8 +1308,10 @@ function run(verb, args) {
     const paint = paintList(content);
     if (paint.length) return { ok: false, refused: 'still-building', say: null, paint };
   }
+  if (saved) keepDay(saved, now);
   const heard = heed(state, args.said);
   const out = fn(heard, content, { now, quests: readQuests() }, args);
+  if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
   const next = out.state ?? (heard !== state ? heard : null);
   if (next) {
     next.updated = now.toISOString();
@@ -1225,14 +1326,28 @@ function run(verb, args) {
    restored where it stood, or begun. The answer is the new world's Look,
    with `travelled` saying where from and whether the save is fresh. */
 function travelTo(id, current, { stateFile, logFile, now, verb }) {
-  writeAtomic(savedFile(current.world), JSON.stringify(current));
+  keepSave('world', current.world, current, now.toISOString());
   const content = loadWorld(id);
-  const parked = savedFor(id) ? migrate(JSON.parse(fs.readFileSync(savedFile(id), 'utf8'))) : null;
+  const parked = savedFor(id) ? readSave(savedFile(id)).state : null;
   const state = parked ?? freshState(content, current.lang, now);
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
   fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: current }) + '\n');
   return { ...look(state, content, { now, quests: readQuests() }), travelled: { from: current.world, to: id, fresh: !parked } };
+}
+
+/* The kept save becomes the game in play. Another world's: the game in play
+   is parked under its world first, and that world's parked copy — now in
+   play — is let go. The answer is its Look, with `loaded` saying which. */
+function loadSave(found, current, { stateFile, logFile, now }) {
+  const state = found.state;
+  if (state.world !== current.world) keepSave('world', current.world, current, now.toISOString());
+  if (found.kind === 'world') fs.rmSync(savedFile(found.id), { force: true });
+  state.updated = now.toISOString();
+  writeAtomic(stateFile, JSON.stringify(state));
+  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'load', args: { id: found.id }, before: current }) + '\n');
+  const content = loadWorld(state.world);
+  return { ...look(state, content, { now, quests: readQuests() }), loaded: { id: found.id, kind: found.kind, title: found.title, at: found.at } };
 }
 
 function undo(stateFile, logFile) {

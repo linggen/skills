@@ -824,6 +824,40 @@ test('the command line keeps state on disk, logs it and undoes it', () => {
   fs.rmSync(data, { recursive: true, force: true });
 });
 
+// ── Ling drives: Go, and the library of kept games ──
+test('Go jumps to an opened scene; the rules keep each day\'s closing state, the player keeps named ones, and Load takes one up', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-saves-'));
+  const at = (iso) => ({ ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: iso });
+  const cli = (env, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
+  const d1 = at('2026-09-12T12:00:00Z'), d2 = at('2026-09-13T12:00:00Z');
+  cli(d1, 'init', '--lang=en');
+  assert.equal(cli(d1, 'resolve', '--exit=reach').scene.id, '00-waking');
+  const named = cli(d1, 'save', '--title=At the waking').saved;
+  assert.equal(named.kind, 'named');
+  assert.equal(named.where, 'The bank of the Si River');
+  assert.equal(cli(d1, 'save').refused, 'no-title');
+  // Go: an opened scene, straight; a chapter still to open, refused with when.
+  assert.equal(cli(d1, 'go', '--scene=00-fuzhu').scene.id, '00-fuzhu');
+  assert.deepEqual(cli(d1, 'go', '--scene=01-ye'), { ok: false, refused: 'not-open', say: null, chapter: '01-ji', opens: '2026-10-01' });
+  assert.ok(cli(d1, 'go', '--scene=nowhere').scenes.includes('00-river'));
+  // The next day's first move keeps yesterday's closing state.
+  assert.equal(cli(d2, 'look', '--said=hi').scene.id, '00-fuzhu');
+  const kept = cli(d2, 'saves').saves;
+  assert.deepEqual(kept.map(x => [x.id, x.kind]), [['2026-09-12', 'day'], [named.id, 'named']]);
+  assert.equal(kept[0].where, 'North of the Si · in the mist', 'the day save is the closing state, at the fuzhu');
+  assert.equal(fs.existsSync(path.join(data, 'saves', '2026-09-12.json')), true);
+  // Load, undo, forget.
+  const loaded = cli(d2, 'load', `--id=${named.id}`);
+  assert.equal(loaded.scene.id, '00-waking');
+  assert.equal(loaded.loaded.title, 'At the waking');
+  assert.equal(cli(d2, 'undo').undid, 'load');
+  assert.equal(cli(d2, 'look').scene.id, '00-fuzhu');
+  assert.equal(cli(d2, 'forget', '--id=2026-09-12').refused, 'not-named');
+  assert.equal(cli(d2, 'forget', `--id=${named.id}`).forgot, named.id);
+  assert.equal(cli(d2, 'load', `--id=${named.id}`).refused, 'unknown-save');
+  fs.rmSync(data, { recursive: true, force: true });
+});
+
 // ── Worlds of the player's own: the command line parks and restores saves ──
 test('Build takes the player to a fresh save in their world, which plays once its pictures are painted; Travel parks and restores', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-worlds-'));

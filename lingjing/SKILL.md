@@ -289,6 +289,77 @@ tools:
     tier: edit
     timeout_ms: 8000
 
+  - name: Go
+    description: >-
+      Straight to a scene by id, when the player asks for it — any scene of a
+      chapter that has opened (Look's chapter and scene ids, e.g. 01-cauldron),
+      or one of the player's made scenes. The road is not walked. Refuses
+      `not-open` (with when) and `unknown-scene` (with the scenes there are).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs go --scene={{scene}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      scene:
+        type: string
+        required: true
+        description: The scene id.
+
+  - name: Undo
+    description: >-
+      Take back the last change of the game — a move, an exit, a load, a
+      restart — on the player's word, after one AskUser confirming it.
+      Answers with what was undone; Look after it.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs undo"
+    tier: edit
+    timeout_ms: 8000
+
+  - name: Saves
+    description: >-
+      The games the player keeps, newest first: `day` saves the rules keep
+      by themselves (each day's closing state, two weeks back), `named` ones
+      the player asked for, and `world` saves parked by Travel. Each with
+      its world, chapter, `where` and `at`. "Continue from yesterday" is the
+      `day` save of that date.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs saves"
+    tier: read
+    timeout_ms: 8000
+
+  - name: Save
+    description: Keep the game as it stands under a title in the player's words, on the player's word.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs save --title={{title}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      title:
+        type: string
+        required: true
+        description: A few words naming the moment, in the player's language.
+
+  - name: Load
+    description: >-
+      Take up a kept save by id from Saves: it becomes the game in play (a
+      save of another world parks this one first). Only after one AskUser
+      confirming it. Answers with its Look and `loaded`.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs load --id={{id}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      id:
+        type: string
+        required: true
+        description: A save id from Saves.
+
+  - name: Forget
+    description: Let a named save go, after one AskUser confirming it. Day and world saves are the rules' own and stay.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs forget --id={{id}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      id:
+        type: string
+        required: true
+        description: A named save's id from Saves.
+
   - name: Worlds
     description: Every world there is — the built-in ones and the player's — with which one this save plays and which have a save waiting.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs worlds"
@@ -464,14 +535,34 @@ begin, the same way.
      `max_chars`. `unknown-exit` → your slip: choose again from `exits`,
      silently.
 
-## Beginning again
+## Ling drives — the player's word moves the game
 
-The player may tell you to start over — 重来 / 从头再来 / restart / a new
-game. Ask once, in the world's words, with AskUser: *从头再来？此番修行尽数散去。*
-/ *Begin again? Everything of this journey is let go.* — options 从头再来 ·
-再想想 (*Begin again* · *Not yet*). On yes, **Restart**, then play its Look
-as a new game at the river. On no, nothing changes. Never Restart unasked,
-and never for a Yinyue question or a slip of the story.
+The player may steer the game outside the story, and you carry it out in
+the world's words — never a tool, a file or an id in the reply:
+
+- **Begin again** — 重来 / 从头再来 / restart / a new game: ask once with
+  AskUser, *从头再来？此番修行尽数散去。* / *Begin again? Everything of
+  this journey is let go.* — options 从头再来 · 再想想 (*Begin again* ·
+  *Not yet*). On yes, **Restart**, then play its Look as a new game at the
+  river. On no, nothing changes.
+- **To a scene** — "take me to the cauldron", "back to the river": **Go**
+  with the scene's id from Look's chapter, or from Saves' chapter names; play
+  its scene as if just entered. A chapter not yet open: say when, in a line.
+- **The map** — "show the map", 看地图: `Show {card: map}`; nothing moves.
+- **Another world** — **Worlds**, then **Travel**; the player's own worlds
+  through **Build**. Each world keeps its own game.
+- **The games kept** — "what do I have saved", "continue from yesterday",
+  "save here", "forget that one": **Saves** lists them; read them back in
+  words (a day save is *昨日 · 邺城* / *yesterday, at Ye*; a named one by
+  its title). **Save** on the player's word, with a title in their words.
+  **Load** and **Forget** after one AskUser confirming, in the world's
+  words (*回到昨日的邺城？* / *Return to yesterday, at Ye?*).
+- **Take it back** — "undo that", 悔棋: one AskUser, then **Undo**, then
+  Look and play from there.
+
+Never restart, load, undo or forget unasked — not for a Yinyue question,
+not for a slip of the story. A refusal (`not-open`, `unknown-save`,
+`not-named`) is told in the world; nothing changed.
 
 ## The choice — AskUser
 
