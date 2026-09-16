@@ -624,7 +624,8 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   (its `name` is null) is narration.
 - **Everyone else speaks in their own paragraph, name in bold** —
   `**银月**：是夫诸……` / `**Yinyue:** That's Fuzhu…`. Names come from `name`
-  on each line and from `cast`.
+  on each line and from `cast`. In Chinese the colon stands outside the
+  bold: `**银月：**` does not render.
 - **Yinyue** is warm, brief, always at the player's side, and speaks the
   game's language — in an English game her lines are English. She remembers
   nothing of who she was; each cauldron gives back one memory, and only the

@@ -22,6 +22,8 @@ let authored = null; //   the world's content files, for the world Look names
 let focus = []; //        cards on the scene
 let focusScene = null; // the scene the focus was last reset for
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
+let running = false; //   Ling is mid-reply
+let asked = false; //     Ling's own question is waiting in the chat
 const boards = new Map();
 const duels = new Map(); // game id → {status, moves, picks, rounds, outcome, say}
 let chat = null;
@@ -87,9 +89,20 @@ async function readCloud() {
 
 /// Re-read the game. Entering a new scene puts its own cards on the scene,
 /// so a creature is pictured even if Ling forgets to Show it.
+/// Whether Ling's own question is waiting in the chat — then the stage
+/// draws no choice of its own.
+async function readPending() {
+  try {
+    const pending = await (await fetch('/api/pending-ask-user')).json();
+    asked = pending.some((p) => p.session_id === chat?.getSessionId());
+  } catch {
+    asked = false;
+  }
+}
+
 async function refresh() {
   try {
-    [look] = await Promise.all([verb('look'), readCloud()]);
+    [look] = await Promise.all([verb('look'), readCloud(), readPending()]);
     await loadContent(look.world);
   } catch (e) {
     console.warn('[lingjing] look', e);
@@ -178,7 +191,18 @@ function focusHtml() {
   for (const e of look.scene?.exits ?? []) {
     if (e.game?.kind === 'duel' && !cards.some((c) => c.card === 'duel' && c.id === e.game.id)) cards.push({ card: 'duel', id: e.game.id });
   }
-  return buildingCard() + emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('');
+  return buildingCard() + emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('') + choiceCard();
+}
+
+/// The way forward, from the rules' own `ask`, whenever Ling's reply has
+/// ended without a question of its own: the player is never left without
+/// a next step. A tapped label is the player's word, as Ling's own options
+/// are. Hidden while Ling is mid-reply or a question already waits.
+function choiceCard() {
+  const ask = look?.ask;
+  if (!ask?.options?.length || running || asked) return '';
+  const opts = ask.options.map((o) => `<button class="act say" data-say="${esc(o.label)}">${esc(o.label)}</button>`).join('');
+  return `<div class="card choice"><div class="cardtitle">${esc(ask.question)}</div><div class="choices">${opts}</div></div>`;
 }
 
 /// A made world still being painted: the story waits for the brush, so the
@@ -266,6 +290,7 @@ document.addEventListener('click', (e) => {
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick]')) {
     if (spoken.matches(':disabled') || saying) return;
     spoken.classList.add('busy');
+    running = true;
     say(spoken.dataset.say);
     return;
   }
@@ -374,9 +399,9 @@ async function mountChat() {
     title: 'Lingjing',
     sessionId: resume || undefined,
     onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
-    onStreamToken: () => { alive = true; },
-    onStreamEnd: () => { saying = false; refresh(); },
-    onContentBlock: (payload) => { alive = true; onContentBlock(payload); },
+    onStreamToken: () => { alive = true; running = true; },
+    onStreamEnd: () => { saying = false; running = false; refresh(); },
+    onContentBlock: (payload) => { alive = true; running = true; onContentBlock(payload); },
   });
   if (!resume) {
     setTimeout(() => openWith(chat?.getSessionId()), 700);

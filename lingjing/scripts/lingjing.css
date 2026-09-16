@@ -182,6 +182,9 @@ button.pl:hover { background: var(--ling-soft); }
 .task[data-say], .gate[data-say] { cursor: pointer; }
 .task[data-say]:hover, .gate[data-say]:hover { box-shadow: 0 0 0 1px var(--ling) inset; }
 .busy { opacity: 0.5; pointer-events: none; }
+.choice { border-color: var(--ling); }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.choices .act { padding: 6px 14px; font-size: 13px; }
 .kering { letter-spacing: 0.04em; }
 .roadmap { position: relative; margin-top: 10px; max-width: 480px; min-height: 124px; }
 .roadmap svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }

@@ -160,7 +160,8 @@ function hexagram(card, ctx) {
 /// the road waits and the card only says when.
 function gate(card, ctx) {
   const opens = card.opens ? `<div class="small ling">${ctx.words.opens} ${esc(card.opens)}</div>` : '';
-  const tap = card.opens ? '' : ` ${sayAttr(ctx.words.sayGate)}`;
+  // A word only on the open road: at a scene the cauldron is the scene's own exit.
+  const tap = card.opens || ctx.look.scene ? '' : ` ${sayAttr(ctx.words.sayGate)}`;
   return `<div class="card gate"${tap}><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}</div></div>`;
 }
 
