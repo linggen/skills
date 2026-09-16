@@ -545,7 +545,8 @@ the scene or the place, and the choice.
      own cards, sent in the player's voice: Trade it, Move there, read
      the omen (its `image` line, in a few words of your own), tell the
      creature from its card and quote, or tell the practice from Look's
-     `tasks` and `quests` — what it
+     `tasks` and `quests` (a task `paid: true` is done and counted, once
+     or for its period — never say it still waits) — what it
      asks, what it pays (`reward` in `words.progress`, `stamina` in
      `words.pool`), where it stands (`done`, `paid`, `done_at`); a
      real-life quest is done by living, its `app` the only witness — say

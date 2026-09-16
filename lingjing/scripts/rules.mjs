@@ -180,6 +180,10 @@ function directorBrief(content, state, ctx) {
   const here = placeName(content, state, place);
   const near = roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p));
   const thread = threadOf(content, state, ctx.now);
+  // The first road on the way to the thread's place, when it is not a road
+  // away itself — so the choice leads with the way on, not the way back.
+  const goal = thread?.place && placeOf(content, thread.place.id);
+  const toward = goal && !near.some(p => p.id === goal.id) ? towardOf(content, state, place, goal, ctx.now) : null;
   return {
     here,
     near,
@@ -189,7 +193,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, thread, Boolean(seed), ctx.said),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said),
   };
 }
 
@@ -309,6 +313,7 @@ function tasksBrief(content, state, ctx) {
   const tasks = Object.entries(state.tasks).map(([id, t]) => ({
     id, title: pick(taskOf(content, id).title, lang), kind: taskOf(content, id).kind, status: t.status,
     won: Boolean(state.wins?.[id]),
+    paid: t.status === 'done', period: t.period ?? taskOf(content, id).period ?? null, // done = paid, once or per period
   }));
   const quests = (ctx.quests ?? []).filter(q => q.due || questDone(q, ctx.now)).map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang),
