@@ -256,6 +256,26 @@ tools:
     tier: edit
     timeout_ms: 8000
 
+  - name: Refine
+    description: >-
+      炼化本命 — once, past the Core (结丹): the weapon in hand and one 天材地宝
+      from the bag become the player's own 本命法宝, and **the player names
+      it**, as they named their 道号. Ask for the name in your own words
+      first; never name it for them. Both the weapon and the material are
+      spent, and a treasure is never lost. The result carries the `treasure`
+      and its card to `show`. Refusals: `needs-tier` (its line), `no-weapon`
+      (its line), `needs-material` (with `materials` — what the five are and
+      how many are held), `not-in-bag`, `needs-name`, `already-bound` (its
+      line names the one they have).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs refine --material={{material}} --name={{name}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      - name: material
+        description: the 天材地宝 to bind it with, by catalog id (精金 jingjin · 雷击木 leijimu · 寒玉 hanyu · 火精 huojing · 息壤 xirang).
+      - name: name
+        description: what the player calls their treasure, in their own words — at most 12 characters.
+
   - name: Ring
     description: >-
       摇铃 — the bell rung where water holds a moon, while the one who walks
@@ -511,7 +531,7 @@ tools:
     description: >-
       Put cards before the player — on the scene beside the chat on the Mac,
       inline on the phone. The kinds are creature, traits, map, board, hexagram,
-      gate, tribulation, item and duel; there are no others. Pass the `show` entries
+      gate, tribulation, item, duel and treasure; there are no others. Pass the `show` entries
       exactly as the rules gave them; `{card: "hexagram"}` is today's cast
       (or, before it, the coins waiting); `{card: "gate", chapter, opens}` for a chapter that has not
       opened.
@@ -833,6 +853,21 @@ play any of it, you only tell what is there (the exit's `duel` carries `sword`,
   (结丹); 御剑 strikes twice in one breath, once (元婴). Below its realm the
   scene shows an art greyed with the realm it waits for. A player asking what
   they can do in a fight hears these, by name, with `arts[].about`.
+
+**本命法宝 — the treasure bound at 结丹.** Past the Core a cultivator may bind
+the weapon in hand and one 天材地宝 into a treasure of their own (Refine). From
+that day it *is* the weapon: 物理攻击 strikes with what it was forged from plus
+every 重 it has grown, and a 法术 of its own element gains that much again. It
+grows two ways — **温养**, a quiet hour with it once a day (the card's own tap,
+never yours), and **强化**, a 妖丹 or a 天材地宝 fed to it with Trade `use`
+(一阶 +3 · 二阶 +6 · 三阶 +10 · a 天材地宝 +5). Nine 重 is the top. A treasure
+is never lost. The card is `{card: "treasure"}`; Look carries it as `treasure`,
+and `can_refine` when the realm allows one and none is bound.
+
+**What a fight leaves.** Every win drops the 妖丹 of the realm it was met at,
+and some creatures carry a 天材地宝 besides — 蠪侄 精金 · 雷神 雷击木 · 夔 寒玉 ·
+精卫 火精 · 狪狪 息壤. The result's `dropped` says what went into the bag; speak
+it as a find, not a reward. The later markets sell the five as well, dearly.
 
 **After a fight**, the result carries `log` — every turn as it fell — and both
 sides as they ended. Narrate the finish from it: the blow that landed, what it

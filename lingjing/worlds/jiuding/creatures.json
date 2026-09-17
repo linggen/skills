@@ -113,7 +113,8 @@
         "cast",
         "guard",
         "gather"
-      ]
+      ],
+      "drops": "huojing"
     },
     {
       "id": "leishen",
@@ -151,7 +152,8 @@
         "cast",
         "armor",
         "strike"
-      ]
+      ],
+      "drops": "leijimu"
     },
     {
       "id": "longzhi",
@@ -188,7 +190,8 @@
         "strike",
         "cast",
         "guard"
-      ]
+      ],
+      "drops": "jingjin"
     },
     {
       "id": "kui",
@@ -226,7 +229,8 @@
         "gather",
         "strike",
         "cast"
-      ]
+      ],
+      "drops": "hanyu"
     },
     {
       "id": "tongtong",
@@ -263,10 +267,12 @@
         "strike",
         "guard",
         "strike"
-      ]
+      ],
+      "drops": "xirang"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",
   "_teaches": "What a creature teaches once it walks with the player (arts.json): 夫诸 the borrowing of 相生 (借势), 狍鸮 the way out (遁法), 精卫 the 符水 that refills, 雷神 its own thunder (五雷法), 夔 the sword-riding (御剑).",
-  "_lean": "How it fights, at the player's own realm and step: `lean` moves its numbers about a quarter — hide (厚皮), ward (避法), quick (迅), fierce (猛) — and `pattern` is what it does, turn after turn, cycled from a start the day draws: strike 击 · cast 法术 · gather 蓄 · guard 护体 · armor 甲. A made world writes neither: its id draws them."
+  "_lean": "How it fights, at the player's own realm and step: `lean` moves its numbers about a quarter — hide (厚皮), ward (避法), quick (迅), fierce (猛) — and `pattern` is what it does, turn after turn, cycled from a start the day draws: strike 击 · cast 法术 · gather 蓄 · guard 护体 · armor 甲. A made world writes neither: its id draws them.",
+  "_drops": "What a subdued creature leaves besides its 妖丹 (which every win gives, by the realm it was met at): one catalog item, the 天材地宝 this creature carries. A made world may leave it out."
 }

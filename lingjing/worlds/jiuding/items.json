@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks; `charm` is a 符 — cast in a fight, it ignores 防 and 抗, once. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only.",
+  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks; `charm` is a 符 — cast in a fight, it ignores 防 and 抗, once. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot. `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only.",
   "items": [
     {
       "id": "lingzhi",
@@ -315,6 +315,196 @@
         "charm": true
       },
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
+    },
+    {
+      "id": "jingjin",
+      "kind": "material",
+      "name": {
+        "zh": "精金",
+        "en": "True gold"
+      },
+      "art": "art/items/jingjin.webp",
+      "about": {
+        "zh": "山骨之精，千年始凝。",
+        "en": "The mountain's own bone, a thousand years in the setting."
+      },
+      "buy": 320,
+      "sell": 90,
+      "sold": [
+        "青"
+      ],
+      "effect": {
+        "temper": 5,
+        "core": "metal"
+      }
+    },
+    {
+      "id": "leijimu",
+      "kind": "material",
+      "name": {
+        "zh": "雷击木",
+        "en": "Thunder-struck wood"
+      },
+      "art": "art/items/leijimu.webp",
+      "about": {
+        "zh": "为雷所击而不死之木，纹里带火。",
+        "en": "Wood the lightning struck and did not kill; the grain still carries fire."
+      },
+      "buy": 300,
+      "sell": 85,
+      "sold": [
+        "兖"
+      ],
+      "effect": {
+        "temper": 5,
+        "core": "wood"
+      }
+    },
+    {
+      "id": "hanyu",
+      "kind": "material",
+      "name": {
+        "zh": "寒玉",
+        "en": "Cold jade"
+      },
+      "art": "art/items/hanyu.webp",
+      "about": {
+        "zh": "触之如冰，暑月不温。",
+        "en": "Cold to the hand, and no summer warms it."
+      },
+      "buy": 340,
+      "sell": 95,
+      "sold": [
+        "青"
+      ],
+      "effect": {
+        "temper": 5,
+        "core": "water"
+      }
+    },
+    {
+      "id": "huojing",
+      "kind": "material",
+      "name": {
+        "zh": "火精",
+        "en": "Fire essence"
+      },
+      "art": "art/items/huojing.webp",
+      "about": {
+        "zh": "地火烧尽余下的一点，落水不熄。",
+        "en": "What is left when the earth-fire burns out; water does not put it out."
+      },
+      "buy": 320,
+      "sell": 90,
+      "sold": [
+        "冀"
+      ],
+      "effect": {
+        "temper": 5,
+        "core": "fire"
+      }
+    },
+    {
+      "id": "xirang",
+      "kind": "material",
+      "name": {
+        "zh": "息壤",
+        "en": "Swelling earth"
+      },
+      "art": "art/items/xirang.webp",
+      "about": {
+        "zh": "鲧窃帝之息壤以堙洪水——取之一掬，自生不已。",
+        "en": "The soil Gun stole from the Emperor to dam the flood: a handful of it grows and does not stop."
+      },
+      "buy": 380,
+      "sell": 110,
+      "sold": [
+        "兖"
+      ],
+      "effect": {
+        "temper": 5,
+        "core": "earth"
+      }
+    },
+    {
+      "id": "yaodan-1",
+      "kind": "material",
+      "name": {
+        "zh": "一阶妖丹",
+        "en": "First-order demon core"
+      },
+      "art": "art/items/yaodan-1.webp",
+      "about": {
+        "zh": "寻常妖兽腹中所结，暖如活物。",
+        "en": "Formed in an ordinary beast's belly; it is warm, like something living."
+      },
+      "buy": 60,
+      "sell": 40,
+      "sold": [],
+      "effect": {
+        "temper": 3
+      }
+    },
+    {
+      "id": "yaodan-2",
+      "kind": "material",
+      "name": {
+        "zh": "二阶妖丹",
+        "en": "Second-order demon core"
+      },
+      "art": "art/items/yaodan-2.webp",
+      "about": {
+        "zh": "气已凝而不散，握之微微跳。",
+        "en": "The breath in it holds together now; it beats faintly in the hand."
+      },
+      "buy": 150,
+      "sell": 100,
+      "sold": [],
+      "effect": {
+        "temper": 6
+      }
+    },
+    {
+      "id": "yaodan-3",
+      "kind": "material",
+      "name": {
+        "zh": "三阶妖丹",
+        "en": "Third-order demon core"
+      },
+      "art": "art/items/yaodan-3.webp",
+      "about": {
+        "zh": "内有一线光行走不停。",
+        "en": "A thread of light walks inside it and never stops."
+      },
+      "buy": 360,
+      "sell": 240,
+      "sold": [],
+      "effect": {
+        "temper": 10
+      }
+    },
+    {
+      "id": "jade-ring",
+      "kind": "pendant",
+      "name": {
+        "zh": "玉珏",
+        "en": "Jade ring"
+      },
+      "art": "art/items/jade-ring.webp",
+      "about": {
+        "zh": "缺口的环，古人佩以决事。土气厚，挡得住土行法术。",
+        "en": "A ring with a gap, worn by the ancients when a thing had to be decided. Its earth is thick enough to turn an earth spell."
+      },
+      "buy": 180,
+      "sell": 55,
+      "sold": [
+        "徐"
+      ],
+      "effect": {
+        "ward": {
+          "earth": 2
+        }
+      }
     }
   ]
 }

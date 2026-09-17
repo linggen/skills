@@ -248,6 +248,10 @@ button.pl:hover { background: var(--ling-soft); }
 .fturn.foe { border-left: 2px solid var(--seal); opacity: 0.85; }
 .fturn .hit { color: var(--seal); }
 
+/* 本命法宝: its 温养 bar carries a word, not a two-letter label. */
+.treasurecard .fpool { grid-template-columns: auto 1fr auto; }
+.treasurecard .duelhead { margin-bottom: 2px; }
+
 .roots { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
 .rowlab { font-family: var(--ui); font-size: 10px; opacity: 0.55; min-width: 34px; }
 .rootbtn { display: grid; place-items: center; gap: 2px; min-width: 56px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-family: var(--serif); font-size: 20px; color: var(--wood); cursor: pointer; }

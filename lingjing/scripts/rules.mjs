@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win duel tame write branch summarize move trade lang make enter leave
+//   verbs: init look resolve judge task win duel tame write refine nourish branch summarize move trade lang make enter leave
 //          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -20,7 +20,7 @@ import {
   ARM_SLOTS, CAST, DEFAULT_WORLD, MADE, WORLD, allWorlds, cardOf, gameOf, hasWorld, knownWorld, lintAmendCreature,
   lintAmendPlace, lintMade, lintMadeWorld, listWorlds, loadWorld, madeWorldDir, overlayOf, ownPlaces, pairsOf,
 } from './content.mjs';
-import { fight, foeOf } from './duel.js';
+import { armOf, fight, foeOf } from './duel.js';
 import { layoutRoads, placeWords } from './roadmap.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
@@ -382,6 +382,7 @@ const EFFECT_BRIEF = {
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),
+  temper: (e, content, lang) => ({ temper: e.temper, ...(e.core ? { core: e.core, core_name: ELEMENT_NAME(content, lang, e.core) } : {}) }),
 };
 function effectBrief(content, lang, effect) {
   const e = effect ?? {};
@@ -400,6 +401,95 @@ function itemBrief(content, state, item) {
     worn: Object.values(state.wear ?? {}).includes(item.id),
     ...(item.made?.from ? { made_from: pick(itemOf(content, item.made.from)?.name, lang) } : {}),
   };
+}
+
+/* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
+
+/* What a subdued creature leaves behind: the 妖丹 of the realm it was met at,
+   and the one thing this creature carries (creatures.json `drops`). Both go
+   into the bag; the catalog owns their words and their worth. */
+function drop(content, state, creature) {
+  const lang = state.lang, got = [];
+  for (const id of [TIER_TEMPER[state.tier], creature.drops].filter(Boolean)) {
+    const item = itemOf(content, id);
+    if (!item) continue;
+    state.bag[id] = (state.bag[id] ?? 0) + 1;
+    got.push({ id, name: pick(item.name, lang), n: state.bag[id] });
+  }
+  return got;
+}
+
+/* 一重 … 九重: what each 重 asks in 温养 and 妖丹 before the next. */
+export const TREASURE_TOP = 9;
+export const NOURISH = 1; // 温养, once a day
+const expFor = level => 10 + (level - 1) * 5;
+const TIER_TEMPER = { qi: 'yaodan-1', foundation: 'yaodan-1', core: 'yaodan-2', nascent: 'yaodan-3' };
+/* The realm a cultivator may bind one at, and the material that names its element. */
+const REFINE_TIER = 'core';
+const coreOf = (content, id) => content.items.items.find(i => i.id === id && i.effect?.core);
+const canRefine = (content, state) => tierRank(content, REFINE_TIER) <= tierIndex(content, state);
+
+/* The treasure as the card and Look tell it. */
+function treasureBrief(content, state) {
+  const t = state.treasure;
+  if (!t) return null;
+  const lang = state.lang, steps = content.ladder.treasure_steps ?? null;
+  return {
+    name: t.name, level: t.level, step: steps ? pick(steps, lang)?.[t.level - 1] ?? String(t.level) : String(t.level),
+    element: t.element, element_name: pick(content.traits.elements[t.element], lang),
+    atk: t.base + t.level, exp: t.exp, needs: t.level >= TREASURE_TOP ? null : expFor(t.level),
+    nourished: state.day?.nourished === dayKey(new Date(state.updated ?? Date.now())) ? true : undefined,
+  };
+}
+
+/* Feed a treasure: exp in, 重 out. Never past 九重. */
+function grow(treasure, exp) {
+  const t = { ...treasure, exp: treasure.exp + exp };
+  const gained = [];
+  while (t.level < TREASURE_TOP && t.exp >= expFor(t.level)) { t.exp -= expFor(t.level); t.level += 1; gained.push(t.level); }
+  if (t.level >= TREASURE_TOP) t.exp = 0;
+  return { treasure: t, gained };
+}
+
+/* 炼化本命 — once, at 结丹: the worn weapon and one core material become the
+   player's own treasure, and the player names it as they named their 道号.
+   The weapon and the material are spent; a treasure is never lost. */
+export function refine(state, content, ctx, args) {
+  const lang = state.lang;
+  if (state.treasure) return refuse('already-bound', pick({ zh: `你已有本命法宝${state.treasure.name}。`, en: `${state.treasure.name} is already yours.` }, lang), { treasure: treasureBrief(content, state) });
+  if (!canRefine(content, state)) {
+    const tier = pick(tierOf(content, REFINE_TIER)?.name, lang);
+    return refuse('needs-tier', pick({ zh: `炼化本命须结丹之后。`, en: `A treasure is bound at ${tier}, not before.` }, lang), { tier: REFINE_TIER });
+  }
+  const weapon = wornOf(content, state, 'weapon');
+  if (!weapon) return refuse('no-weapon', pick({ zh: '手中无器可炼。', en: 'There is nothing in your hand to refine.' }, lang));
+  const material = coreOf(content, String(args.material ?? '').trim());
+  if (!material) return refuse('needs-material', pick({ zh: '还须一味天材地宝。', en: 'It wants a material of the five.' }, lang), { materials: content.items.items.filter(i => i.effect?.core).map(i => ({ id: i.id, name: pick(i.name, lang), element: i.effect.core, held: state.bag[i.id] ?? 0 })) });
+  if (!(state.bag[material.id] > 0)) return refuse('not-in-bag', null, { needs: { id: material.id, name: pick(material.name, lang) } });
+  const name = String(args.name ?? '').trim();
+  if (!name || name.length > 12) return refuse('needs-name', pick({ zh: '它还没有名字。', en: 'It has no name yet.' }, lang));
+  const s = clone(state);
+  s.bag[material.id] -= 1;
+  if (!s.bag[material.id]) delete s.bag[material.id];
+  s.bag[weapon.id] -= 1;
+  if (!s.bag[weapon.id]) delete s.bag[weapon.id];
+  if (s.wear?.weapon === weapon.id) delete s.wear.weapon;
+  s.treasure = { name, base: weapon.effect?.atk ?? 0, element: material.effect.core, level: 1, exp: 0 };
+  return { state: s, result: { ok: true, refined: { from: pick(weapon.name, lang), with: pick(material.name, lang) }, treasure: treasureBrief(content, s), show: [{ card: 'treasure' }] } };
+}
+
+/* 温养 — once a day, a quiet hour with it: one breath of growth. The page
+   taps it; no model decides it. */
+export function nourish(state, content, ctx, args) {
+  if (!state.treasure) return refuse('no-treasure', null);
+  const day = dayKey(ctx.now);
+  if (state.day?.nourished === day) return refuse('nourished-today', null, { treasure: treasureBrief(content, state) });
+  if (state.treasure.level >= TREASURE_TOP) return refuse('at-top', null, { treasure: treasureBrief(content, state) });
+  const s = clone(state);
+  const { treasure, gained } = grow(s.treasure, NOURISH);
+  s.treasure = treasure;
+  s.day = { ...(s.day ?? {}), key: day, nourished: day };
+  return { state: s, result: { ok: true, nourished: NOURISH, ...(gained.length ? { rose: gained } : {}), treasure: treasureBrief(content, s) } };
 }
 
 /* ── 功法: the sword, the 符 and the learned arts ── */
@@ -440,10 +530,14 @@ function kitOf(content, state, now = null) {
   const charm = charmOf(content);
   const arts = {};
   for (const id of state.arts ?? []) { const a = artOf(content, id); if (a) arts[id] = { effect: a.effect, ready: artReady(content, state, a) }; }
+  // A 本命法宝 is the weapon from the day it is refined, and lends its own
+  // element the way a 法器 lends its root.
+  const treasure = state.treasure ? { ...state.treasure } : null;
   return {
     roots: state.traits ?? [], tier: state.tier, step: state.step ?? 0,
-    sword: weapon?.effect?.root ?? null,
+    sword: treasure?.element ?? weapon?.effect?.root ?? null,
     weapon: weapon ? { id: weapon.id, atk: weapon.effect?.atk ?? 0 } : null,
+    ...(treasure ? { treasure } : {}),
     robe: robe ? { id: robe.id, def: robe.effect.def } : null,
     pendant: pendant ? { id: pendant.id, ward: pendant.effect.ward } : null,
     charm: charm ? { id: charm.id, held: state.bag[charm.id] ?? 0 } : null, arts,
@@ -524,7 +618,8 @@ function duelKitBrief(content, state, now = null) {
   const named = arm => (arm ? { ...arm, name: pick(itemOf(content, arm.id)?.name, lang) } : null);
   const weapon = kit.weapon ? itemOf(content, kit.weapon.id) : null, charm = charmOf(content);
   return {
-    sword: weapon ? { id: weapon.id, name: pick(weapon.name, lang), atk: kit.weapon.atk, ...(kit.sword ? { root: kit.sword, root_name: pick(content.traits.elements[kit.sword], lang) } : {}) } : null,
+    sword: weapon ? { id: weapon.id, name: pick(weapon.name, lang), atk: kit.weapon.atk, ...(weapon.effect?.root ? { root: weapon.effect.root, root_name: pick(content.traits.elements[weapon.effect.root], lang) } : {}) } : null,
+    ...(kit.treasure ? { treasure: treasureBrief(content, state) } : {}),
     robe: named(kit.robe), pendant: named(kit.pendant),
     charm: charm ? { id: charm.id, name: pick(charm.name, lang), held: kit.charm.held } : null,
     arts: artsBrief(content, state),
@@ -620,6 +715,8 @@ export function look(state, content, ctx) {
     bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: pick(itemOf(content, id)?.name, lang) ?? id, n })),
     wear: state.wear ?? {},
     arts: artsBrief(content, state),
+    treasure: treasureBrief(content, state, ctx.now),
+    ...(state.treasure || !canRefine(content, state) ? {} : { can_refine: true }),
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
@@ -660,7 +757,7 @@ const PICTURE_STYLE = 'Traditional Chinese ink wash painting with soft watercolo
 const plainEn = t => String(pick(t, 'en') ?? '').trim().replace(/[.。]$/, '');
 
 /* The verbs that move the story, and so wait for the brush. */
-export const BUILDING_WAITS = new Set(['resolve', 'judge', 'duel', 'tame', 'branch', 'move', 'trade', 'make', 'enter', 'leave']);
+export const BUILDING_WAITS = new Set(['resolve', 'judge', 'duel', 'tame', 'branch', 'move', 'trade', 'make', 'enter', 'leave', 'refine']);
 
 /* What a made world still needs painted, as GenerateImage's arguments, each
    with the `creature` Art takes back: its new creatures, then its map. */
@@ -1073,10 +1170,13 @@ export function duel(state, content, ctx, args) {
     s.bag[kit.charm.id] -= 1;
     if (!s.bag[kit.charm.id]) delete s.bag[kit.charm.id];
   }
+  // What a subdued creature leaves: its 妖丹, by the realm it was met at,
+  // and whatever else this one carries.
+  const dropped = played.outcome === 'won' ? drop(content, s, creature) : [];
   // At a haunt no exit will pay the win: the rules pay it here, once a day.
   const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 10 }) : null;
   const used = { ...(played.used.charm ? { charm: kit.charm.id } : {}), ...(played.used.arts.length ? { arts: played.used.arts } : {}) };
-  return { state: s, result: { ok: true, outcome: played.outcome, log: played.log, you: played.you, foe: played.foe, game: id, say, ...(Object.keys(used).length ? { used } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, outcome: played.outcome, log: played.log, you: played.you, foe: played.foe, game: id, say, ...(Object.keys(used).length ? { used } : {}), ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
@@ -1339,6 +1439,19 @@ export function trade(state, content, ctx, args) {
       s.wear ??= {};
       s.wear[slot] = item.id;
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear } };
+    }
+    // 强化 — a 妖丹 or a天材地宝 fed to the 本命法宝. A core material with no
+    // treasure yet is kept for the 炼化, not burned.
+    if (e.temper) {
+      if (!s.treasure) {
+        return refuse(e.core ? 'refine-first' : 'no-treasure', pick({ zh: e.core ? '此物待炼本命之用。' : '你还没有本命法宝。', en: e.core ? 'This waits for the day you bind a treasure.' : 'You have no treasure to feed.' }, lang));
+      }
+      if (s.treasure.level >= TREASURE_TOP) return refuse('at-top', pick({ zh: `${s.treasure.name}已至九重。`, en: `${s.treasure.name} is at its ninth.` }, lang));
+      s.bag[item.id] = held - 1;
+      if (s.bag[item.id] <= 0) delete s.bag[item.id];
+      const { treasure, gained } = grow(s.treasure, e.temper);
+      s.treasure = treasure;
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), tempered: e.temper, ...(gained.length ? { rose: gained } : {}), treasure: treasureBrief(content, s, ctx.now), show: [{ card: 'treasure' }] } };
     }
     if (e.charm) return refuse('cast-in-a-bout', pick({ zh: `${pick(item.name, lang)}在${w.contest}时掷出，不在此。`, en: `A ${pick(item.name, lang)} is cast in a bout, not here.` }, lang));
     return refuse('not-usable', null);
@@ -1933,7 +2046,7 @@ export const VERBS = {
     }
     return { state: next, result };
   },
-  resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
+  resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, atlas, divine, fate, ring,
 };
 

@@ -254,5 +254,30 @@
         25000
       ]
     }
-  ]
+  ],
+  "treasure_steps": {
+    "zh": [
+      "一重",
+      "二重",
+      "三重",
+      "四重",
+      "五重",
+      "六重",
+      "七重",
+      "八重",
+      "九重"
+    ],
+    "en": [
+      "1st",
+      "2nd",
+      "3rd",
+      "4th",
+      "5th",
+      "6th",
+      "7th",
+      "8th",
+      "9th"
+    ]
+  },
+  "_treasure": "The nine 重 of a 本命法宝, grown by 温养 and by what a fight leaves — design.md § 斗法."
 }

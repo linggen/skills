@@ -1064,7 +1064,7 @@ refused. Rulings made while building, his to flip:
   the engine; the sword in the bout and the teaching in the rules; 写符
   end to end with 符水; the linter on arts and made things).
 
-## 斗法 — 灵力、法器与本命法宝 (designed 2026-09-17; the fight and gear BUILT 2026-09-17)
+## 斗法 — 灵力、法器与本命法宝 (designed 2026-09-17; BUILT 2026-09-17 — all three steps)
 
 **Why.** His question on the 五行 bout: *如果是金妖，用户一直出火就能赢，对吗？*
 — yes: run over 5,000 days, always countering the creature's root wins 92%
@@ -1235,14 +1235,23 @@ turns, the four choices), the gate as `tools/duel-sim.mjs` and
 **BUILT** — 攻 on 竹剑 2 and 铁剑 3, 防 1 on the 蓑衣, `kind: robe` and
 `kind: pendant` with `wear.robe` / `wear.pendant`, and the lint that keeps arms
 to one number each. **No 佩 is in the catalog yet** — the kind, the slot and 抗
-all work; it wants one picture. (3) The 本命法宝 — 炼化, 温养, 强化, the core
-materials, 妖丹 drops: NOT built.
+all work — **and 玉珏 now fills it** (抗 土 2, sold at 徐). ~~(3) The 本命法宝~~
+**BUILT** — `refine` (once, past 结丹: the worn weapon + one 天材地宝, and the
+player names it, as they name their 道号), `nourish` (温养, the card's own tap,
+once a day, +1), 强化 through Trade `use` (妖丹 一阶 +3 · 二阶 +6 · 三阶 +10 ·
+a 天材地宝 +5), nine 重 at 10 + 5×(n−1) each, the treasure as the weapon in
+`duel.js` (器攻 = base + 重, and its own element's 法术 + 重), drops on every
+win (the 妖丹 of the realm met at, plus what the creature carries: 蠪侄 精金 ·
+雷神 雷击木 · 夔 寒玉 · 精卫 火精 · 狪狪 息壤), the `treasure` card, and the five
+天材地宝 on the later shelves. Nine plates painted by the local FLUX on
+2026-09-17.
 
 **战力 counts** the realm and step, the weapon's 攻, the 法衣's 防 and the
 法术 — a 迅捷 creature adds a quarter. **Still his calls:** the numbers above,
-now that the gate holds them; 反噬; whether a tamed creature fights beside the
-player later; whether 御剑 should be once a fight (it is) or a standing way of
-striking.
+now that the gate holds them; 反噬 (a treasure is never lost today); whether a
+tamed creature fights beside the player later; whether 御剑 should be once a
+fight (it is) or a standing way of striking; and whether 温养 belongs on the
+tray beside the day's practice rather than only on the treasure's card.
 
 ## 银月 joins at 结丹 (designed and built 2026-09-17)
 

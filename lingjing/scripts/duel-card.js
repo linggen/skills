@@ -49,11 +49,12 @@ function turnHtml(t, b, ctx) {
     <span class="hit">${t.damage ? `−${t.damage}` : ''}</span></div>`;
 }
 
-/// A choice, with what it spends and why it may not come.
+/// A choice: what it is, and under it what it spends — or, when it may not
+/// come, why. The why is written, not hovered: a phone has no hover.
 function btn(o, label, hint, id, ctx) {
   const w = ctx.words;
-  const why = o.ok ? '' : ` disabled title="${esc(w.why?.[o.why] ?? o.why)}"`;
-  return `<button class="rootbtn ${o.kind}" data-duel-pick="${esc(o.token)}" data-duel="${esc(id)}"${why}>${label}<small>${hint}</small></button>`;
+  const why = o.ok ? null : esc(w.why?.[o.why] ?? o.why);
+  return `<button class="rootbtn ${o.kind}" data-duel-pick="${esc(o.token)}" data-duel="${esc(id)}"${why ? ' disabled' : ''}>${label}<small>${why ?? hint}</small></button>`;
 }
 
 /// The buttons the fight offers next, from duel.js — in rows the player reads
@@ -61,10 +62,18 @@ function btn(o, label, hint, id, ctx) {
 function picksHtml(exit, d, ctx) {
   const w = ctx.words, b = exit.duel, id = exit.game.id;
   const rows = { cast: [], borrow: [], hit: [], assist: [], art: [] };
+  // The 五行 glyph is the world's own word for a root; in English it needs its
+  // name beside the cost, or 木 says nothing.
+  const en = ctx.lang === 'en';
+  const elName = el => esc(ctx.content.traits.elements[el]?.[ctx.lang] ?? el);
   for (const o of offers(d.picks, b.foe, b.kit)) {
-    const cost = `${o.cost}${w.mana}`;
-    if (o.kind === 'root' || o.kind === 'sword') rows.cast.push(btn(o, GLYPH[o.element], `${o.kind === 'sword' ? `${esc(b.sword?.name ?? '')} ` : ''}${cost}`, id, ctx));
-    else if (o.kind === 'borrow') rows.borrow.push(btn(o, `${GLYPH[o.element]}→${GLYPH[GENERATES[o.element]]}`, cost, id, ctx));
+    // A no-break space keeps "4 Force" whole when the label wraps under it.
+    const cost = en ? `${o.cost}\u00a0${w.mana}` : `${o.cost}${w.mana}`;
+    if (o.kind === 'root' || o.kind === 'sword') {
+      const from = o.kind === 'sword' ? `${esc(b.sword?.name ?? '')} ` : '';
+      rows.cast.push(btn(o, GLYPH[o.element], en ? `${elName(o.element)} · ${cost}` : `${from}${cost}`, id, ctx));
+    }
+    else if (o.kind === 'borrow') rows.borrow.push(btn(o, `${GLYPH[o.element]}→${GLYPH[GENERATES[o.element]]}`, en ? elName(GENERATES[o.element]) : cost, id, ctx));
     else if (o.kind === 'strike') rows.hit.push(btn(o, w.aStrike, `${b.sword ? esc(b.sword.name) : w.barehand} ${cost}`, id, ctx));
     else if (o.kind === 'charm') rows.hit.push(btn(o, w.aCharm, `×${b.charm?.held ?? 0}`, id, ctx));
     else if (o.kind === 'assist') rows.assist.push(btn(o, o.how === 'focus' ? w.aFocus : w.aGuard, cost, id, ctx));

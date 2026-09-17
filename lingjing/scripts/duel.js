@@ -108,10 +108,14 @@ export function realmStats(tier, step = 0) {
 }
 
 /* What the player stands with: the realm, the weapon's 攻, the 法衣's 防 and
-   the 佩's 抗. No gear is no 防 — a bare cultivator takes every blow whole. */
+   the 佩's 抗. No gear is no 防 — a bare cultivator takes every blow whole.
+   A 本命法宝 is the weapon from the day it is refined: its 器攻 is what it was
+   forged from and every 重 it has been grown since. */
+export const armOf = kit => (kit.treasure ? kit.treasure.base + kit.treasure.level : kit.weapon?.atk ?? 0);
+
 export function youOf(kit = {}) {
   const base = realmStats(kit.tier, kit.step);
-  const s = { ...base, atk: base.atk + (kit.weapon?.atk ?? 0), def: kit.robe?.def ?? 0, ward: kit.pendant?.ward ?? {} };
+  const s = { ...base, atk: base.atk + armOf(kit), def: kit.robe?.def ?? 0, ward: kit.pendant?.ward ?? {} };
   return { ...s, power: powerOf(s) };
 }
 
@@ -137,6 +141,8 @@ const parse = token => {
 export const isArt = token => parse(token).head === 'art';
 export const artId = token => parse(token).arg;
 const hasArt = (kit, effect) => Object.values(kit.arts ?? {}).some(a => a.effect === effect && a.ready);
+/* Something in hand to strike with: a 法器, or the 本命法宝 it became. */
+const armed = kit => Boolean(kit.weapon || kit.treasure);
 const clash = (element, root) => (BEATS[element] === root ? 2 : BEATS[root] === element ? 0.5 : 1);
 const wardOf = (s, element) => (typeof s.ward === 'number' ? s.ward : s.ward?.[element] ?? 0);
 /* A root of the player's own, or the one the worn weapon lends (借器施法). */
@@ -177,7 +183,7 @@ function artWhy(id, st, kit, c) {
   if (!art.ready) return 'art-needs-tier';
   if (!ACTION_ARTS.has(art.effect)) return 'art-passive';
   if (ONCE.has(art.effect) && st.you.arts.includes(id)) return 'art-used';
-  if (art.effect === 'twice' && !kit.weapon) return 'art-no-sword';
+  if (art.effect === 'twice' && !armed(kit)) return 'art-no-sword';
   return c[art.effect] > st.you.qi ? 'no-qi' : null;
 }
 
@@ -223,6 +229,8 @@ function castTurn(st, el, foe, kit, borrow = null) {
   if (borrow && !st.you.arts.includes(borrow)) st.you.arts.push(borrow);
   let spell = st.you.stats.spell;
   if (kit.fortune?.root === el) spell += kit.fortune.spell ?? 0;
+  // A 本命法宝 amplifies its own element, 重 by 重.
+  if (kit.treasure?.element === el) spell += kit.treasure.level;
   if (!(kit.roots ?? ELEMENTS).includes(el)) spell -= BORROW;
   const raw = Math.max(1, Math.round(Math.max(1, spell) * clash(as, foe.root)));
   const damage = strikeFoe(st, foe, raw, { element: as });

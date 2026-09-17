@@ -38,4 +38,5 @@ choice, 2026-09-17).
 ## Items — painted for Lingjing
 
 `items/*.webp` are painted for the game by the local picture model (FLUX.2
-klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16), from each item's description. No outside source.
+klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16; the five 天材地宝, the three
+妖丹 and 玉珏 2026-09-17), from each item's description. No outside source.

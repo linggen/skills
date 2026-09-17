@@ -16,12 +16,16 @@ export const WORDS = {
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     about: '说说', feed: '喂它{item}', subdue: '降妖',
-    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
+    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
     aCast: '法术', aStrike: '物理', aCharm: '符箓', aAssist: '辅助', aFocus: '聚势', aGuard: '护体', lend: '借势', arts: '功法',
     fStrike: '击', fCast: '法', stGather: '蓄势', stGuard: '护体', stArmor: '甲',
     lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
+    treasureTitle: '本命法宝', treasureDoes: '器攻 {atk} · {root}法术 +{n}', treasureTop: '已至九重，再养无益。',
+    temper: '温养', nourish: '温养一番', nourishedToday: '今日已养',
+    refine: '炼化本命', sayRefine: '我要炼化本命法宝', sayTreasure: '说说{name}',
+    refineHint: '结丹之后，可将随身法器与一味天材地宝炼作本命。',
     uncast: '今日未卜', uncastHint: '心中默念一事，三钱六掷。', cast: '起一卦', sayCast: '请银月起一卦', throwing: '起卦中……', castAsk: '所问何事？', changedTo: '之卦',
     effEven: '今日无增无减', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '每步之间静坐 {s} 秒',
     effSpell: '{root}法术 {n}', fortuneMark: '卦',
@@ -54,6 +58,10 @@ export const WORDS = {
     aCast: 'Spell', aStrike: 'Strike', aCharm: 'Talisman', aAssist: 'Ready', aFocus: 'Gather', aGuard: 'Guard', lend: 'Borrow', arts: 'Arts',
     fStrike: 'strikes', fCast: ' spell', stGather: 'gathering', stGuard: 'guarded', stArmor: 'armoured',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
+    treasureTitle: 'Bound treasure', treasureDoes: 'Strikes for {atk} · {root} spells +{n}', treasureTop: 'At its ninth. Nothing more will grow.',
+    temper: 'Tempering', nourish: 'Tend it', nourishedToday: 'tended today',
+    refine: 'Bind a treasure', sayRefine: 'I want to bind my treasure', sayTreasure: 'Tell me about {name}',
+    refineHint: 'Past the Core, a carried weapon and one material of the five can be bound into a treasure of your own.',
     uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind: three coins, six throws.', cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', throwing: 'Casting…', castAsk: 'What do you ask about?', changedTo: 'Changing to',
     effEven: 'No gain, no loss today', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '{s}s of stillness between steps',
     effSpell: '{root} spells {n}', fortuneMark: 'cast',
@@ -352,6 +360,7 @@ const DOES = {
   atk: (e, w) => [say(w.effAtk, { n: e.atk }), e.root_name ? say(w.effRoot, { root: e.root_name }) : ''].filter(Boolean).join(' · '),
   def: (e, w) => say(w.effDef, { n: e.def }),
   ward: (e, w) => (e.wards ?? []).map((x) => say(w.effWard, { root: x.name, n: x.n })).join(' · '),
+  temper: (e, w) => [say(w.effTemper, { n: e.temper }), e.core_name ? say(w.effCore, { root: e.core_name }) : ''].filter(Boolean).join(' · '),
   charm: (e, w) => w.effCharm,
   key: (e, w) => w.effKey,
 };
@@ -406,7 +415,35 @@ function duel(card, ctx) {
   return duelHtml(exit, ctx.duelFor(card.id), ctx);
 }
 
-const RENDER = { creature, traits, map, hexagram, gate, tribulation, board, item, duel };
+/// 本命法宝 — the treasure bound at 结丹: its name and 重, what it strikes and
+/// amplifies, and how far it is from the next. 温养 is a tap, once a day: no
+/// model decides it, so the page asks the rules straight.
+function treasure(card, ctx) {
+  const t = ctx.look.treasure, w = ctx.words;
+  if (!t) {
+    // Not bound yet — at 结丹 the card says what it would take.
+    return ctx.look.can_refine
+      ? `<div class="card"><div class="cardtitle">${w.treasureTitle}</div>
+         <div class="small dim">${w.refineHint}</div>
+         <div class="acts"><button class="act say" ${sayAttr(w.sayRefine)}>${w.refine}</button></div></div>`
+      : '';
+  }
+  const full = t.needs == null;
+  const bar = full ? '' : `<div class="fbar qi"><i style="width:${Math.min(100, (t.exp / t.needs) * 100)}%"></i></div>`;
+  // At its ninth nothing grows, so nothing is offered: a button the rules
+  // would refuse is a button that lies.
+  const grow = full ? ''
+    : t.nourished === false ? `<button class="act" data-nourish>${w.nourish}</button>`
+    : t.nourished === true ? `<span class="chip">${w.nourishedToday}</span>` : '';
+  return `<div class="card treasurecard"><div class="cardtitle">${w.treasureTitle}</div>
+    <div class="duelhead"><b>${esc(t.name)}</b> <span class="croot">${esc(t.step)}</span>
+      <span class="lean">${esc(t.element_name)}</span></div>
+    <div class="small dim">${say(w.treasureDoes, { atk: t.atk, root: t.element_name, n: t.level })}</div>
+    ${full ? `<div class="small ling">${w.treasureTop}</div>` : `<div class="fpool"><span>${w.temper}</span>${bar}<b>${t.exp}/${t.needs}</b></div>`}
+    <div class="acts">${grow}<button class="act say" ${sayAttr(say(ctx.words.sayTreasure, { name: t.name }))}>${w.about}</button></div></div>`;
+}
+
+const RENDER = { creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

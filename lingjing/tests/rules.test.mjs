@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -575,6 +575,116 @@ test('聚势 and 护体 are held, not stacked, and the arts a realm has not reac
   assert.ok(empty.find(o => o.token === 'strike').ok, 'two 灵力 left is still a strike');
 });
 
+/* ── 本命法宝 ── */
+
+/* A player at 结丹 with a sword in hand and a 天材地宝 in the bag. */
+const atCore = (extra = {}) => ({
+  ...toOpenWorld(), tier: 'core', step: 0,
+  bag: { 'iron-sword': 1, jingjin: 1, 'yaodan-2': 1, ...(extra.bag ?? {}) },
+  wear: { weapon: 'iron-sword' }, ...extra,
+});
+
+test('炼化本命: once, at 结丹, from the weapon in hand and one 天材地宝 — and the player names it', () => {
+  const early = { ...atCore(), tier: 'foundation' };
+  assert.equal(refused(refine, early, { material: 'jingjin', name: '青锋' }, 'needs-tier').tier, 'core');
+  const s = atCore();
+  assert.equal(look(s, content, ctx()).can_refine, true);
+  assert.equal(look(s, content, ctx()).treasure, null);
+  refused(refine, { ...s, wear: {} }, { material: 'jingjin', name: '青锋' }, 'no-weapon');
+  assert.ok(refused(refine, s, { name: '青锋' }, 'needs-material').materials.some(m => m.id === 'jingjin' && m.element === 'metal'));
+  refused(refine, { ...s, bag: { 'iron-sword': 1 } }, { material: 'jingjin', name: '青锋' }, 'not-in-bag');
+  refused(refine, s, { material: 'jingjin' }, 'needs-name');
+  const bound = must(refine, s, { material: 'jingjin', name: '青锋' });
+  assert.deepEqual(bound.state.treasure, { name: '青锋', base: 3, element: 'metal', level: 1, exp: 0 });
+  assert.equal(bound.state.bag.jingjin, undefined, 'the material is spent');
+  assert.equal(bound.state.bag['iron-sword'], undefined, 'the weapon is spent');
+  assert.deepEqual(bound.state.wear, {}, 'and unworn');
+  assert.deepEqual(bound.result.show, [{ card: 'treasure' }]);
+  assert.equal(bound.result.treasure.step, '一重');
+  assert.equal(bound.result.treasure.atk, 4, '器攻 is what it was forged from, and every 重 since');
+  // once
+  assert.equal(refused(refine, bound.state, { material: 'jingjin', name: '别的' }, 'already-bound').treasure.name, '青锋');
+  assert.equal(look(bound.state, content, ctx()).can_refine, undefined);
+});
+
+test('温养 once a day, 强化 by what a fight leaves, and 九重 is the top', () => {
+  const s = must(refine, atCore(), { material: 'jingjin', name: '青锋' }).state;
+  refused(nourish, { ...s, treasure: null }, {}, 'no-treasure');
+  const fed = must(nourish, s, {});
+  assert.equal(fed.state.treasure.exp, 1);
+  assert.equal(fed.result.treasure.nourished, true);
+  refused(nourish, fed.state, {}, 'nourished-today');
+  // tomorrow it may be tended again
+  const tomorrow = ctx({ now: new Date('2026-09-12T12:00:00') });
+  assert.equal(nourish(fed.state, content, tomorrow, {}).result.ok, true);
+  // 强化: a 妖丹 by its 阶
+  const tempered = must(trade, s, { action: 'use', id: 'yaodan-2' });
+  assert.equal(tempered.result.tempered, 6);
+  assert.equal(tempered.state.treasure.exp, 6);
+  assert.equal(tempered.state.bag['yaodan-2'], undefined, 'spent');
+  // ten carries it to 二重, and what comes after stays toward the third
+  const first = must(trade, { ...s, bag: { ...s.bag, 'yaodan-3': 2 } }, { action: 'use', id: 'yaodan-3' });
+  assert.deepEqual(first.result.rose, [2]);
+  assert.equal(first.result.treasure.step, '二重');
+  assert.equal(first.state.treasure.exp, 0, 'ten in, ten to the 重');
+  const risen = must(trade, first.state, { action: 'use', id: 'yaodan-3' });
+  assert.equal(risen.state.treasure.level, 2);
+  assert.equal(risen.state.treasure.exp, 10, '二重 asks fifteen');
+  assert.equal(risen.result.rose, undefined);
+  assert.equal(risen.result.treasure.needs, 15);
+  // the card says what a thing feeds
+  assert.deepEqual(risen.result.item.effect, { temper: 10 });
+  // a 天材地宝 with no treasure yet is kept for the binding, not burned
+  const nothing = { ...atCore(), treasure: null };
+  assert.equal(refused(trade, nothing, { action: 'use', id: 'jingjin' }, 'refine-first').say, '此物待炼本命之用。');
+  assert.equal(refused(trade, { ...nothing, bag: { 'yaodan-2': 1 } }, { action: 'use', id: 'yaodan-2' }, 'no-treasure').say, '你还没有本命法宝。');
+  // 九重 is the top: nothing more grows
+  const top = { ...s, treasure: { ...s.treasure, level: 9, exp: 0 } };
+  refused(nourish, top, {}, 'at-top');
+  refused(trade, { ...top, bag: { 'yaodan-2': 1 } }, { action: 'use', id: 'yaodan-2' }, 'at-top');
+});
+
+test('a bound treasure is the weapon from then on: it strikes, it lends its element, and 御剑 rides it', () => {
+  const s = must(refine, atCore(), { material: 'jingjin', name: '青锋' }).state;
+  const kit = look(s, content, ctx()).place.encounter?.duel?.kit
+    ?? { roots: s.traits, tier: 'core', step: 0, treasure: s.treasure, weapon: null, sword: 'metal', arts: {} };
+  assert.equal(kit.treasure.name, '青锋');
+  assert.equal(kit.sword, 'metal', 'it lends its own element');
+  const wood = { id: 'x', root: 'wood', lean: 'fierce', pattern: ['guard'], start: 0, hp: 80, qi: 80, spell: 1, atk: 1, def: 0, ward: 0, power: 0 };
+  const bare = { ...kit, treasure: null, sword: null };
+  // 器攻: what it was forged from, and its 重
+  assert.equal(fight(['strike'], wood, kit).log[0].damage - fight(['strike'], wood, bare).log[0].damage, 4);
+  // its own element is amplified, 重 by 重 — 金克木, so the 重 doubles too
+  const plain = { ...kit, treasure: { ...kit.treasure, element: 'fire' } };
+  assert.equal(fight(['cast:metal'], wood, kit).log[0].damage - fight(['cast:metal'], wood, plain).log[0].damage, 2);
+  // 御剑 needs something in hand; the treasure is that
+  const rider = { ...kit, arts: { yujian: { effect: 'twice', ready: true } } };
+  assert.equal(fight(['art:yujian'], wood, rider).log[0].hits, 2);
+  assert.equal(fight(['art:yujian'], wood, { ...rider, treasure: null, weapon: null }).refused.why, 'art-no-sword');
+});
+
+test('a subdued creature leaves its 妖丹, by the realm it was met at, and what it carries', () => {
+  const s = { ...toFuzhu(), tier: 'core', step: 0 };
+  const won = fightOut(s, 'subdue-fuzhu');
+  assert.equal(won.result.outcome, 'won');
+  // 夫诸 carries nothing of its own: the 妖丹 of 结丹 alone
+  assert.deepEqual(won.result.dropped.map(d => d.id), ['yaodan-2']);
+  assert.equal(won.state.bag['yaodan-2'], 1);
+  // at 练气 the same creature leaves a lesser core
+  const young = fightOut(toFuzhu(), 'subdue-fuzhu');
+  assert.deepEqual(young.result.dropped.map(d => d.id), ['yaodan-1']);
+  // 精卫 carries 火精 besides
+  const haunt = { ...toOpenWorld(), place: 'fajiu', traits: ['metal', 'wood', 'water', 'earth'] };
+  const there = look(haunt, content, octx()).place.encounter;
+  if (there?.creature.id === 'jingwei') {
+    const got = fightOut(haunt, there.game.id, { c: octx() });
+    if (got.result.outcome === 'won') assert.ok(got.result.dropped.some(d => d.id === 'huojing'));
+  }
+  // a loss leaves nothing
+  const lost = fightOut(toFuzhu(), 'subdue-fuzhu', { line: 'strike' });
+  assert.equal(lost.result.dropped, undefined);
+});
+
 test('an in-world task pays only after the page recorded its win', () => {
   let s = start();
   for (const [exit, extra] of [['reach'], ['name', { value: '青玄' }], ['touch']]) s = must(resolve, s, { exit, ...extra }).state;
@@ -1004,9 +1114,9 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const s = toMarket();
   const l = look(s, content, ctx());
   assert.equal(l.place.has.shop, true);
-  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token']);
+  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'jade-ring']);
   assert.equal(l.place.shelf[1].buy, 80);
-  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token'] }]);
+  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'jade-ring'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
   assert.deepEqual(bought.state.bag, { 'moon-bell': 1, 'qi-pill': 1 }); // the bell came from the river
@@ -1020,7 +1130,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
   assert.equal(poor.price, 80);
-  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 7);
+  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 8);
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
   refused(trade, { ...s, stamina: 2 }, { action: 'buy', id: 'straw-cloak' }, 'no-stamina');
 });
@@ -1159,7 +1269,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   s = r.state;
   const ye = look(s, content, octx());
   assert.equal(ye.scene.id, '01-ye');
-  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill']);
+  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill', 'huojing']);
   s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
   assert.equal(s.wealth, 180);
   s = answer(resolve, s, { exit: 'market' }).state; // stays
@@ -1640,7 +1750,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   s = r.state;
   const town = look(s, content, nctx());
   assert.equal(town.scene.id, '02-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'sang-paper']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'sang-paper', 'leijimu', 'xirang']);
   s = answerN(trade, s, { action: 'buy', id: 'sang-paper' }).state;
   assert.equal(s.wealth, 370);
   s = answerN(resolve, s, { exit: 'lake' }).state;
@@ -1721,7 +1831,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   s = r.state;
   const town = look(s, content, dctx());
   assert.equal(town.scene.id, '03-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['qi-salt', 'qi-silk']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['qi-salt', 'qi-silk', 'jingjin', 'hanyu']);
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
   assert.equal(s.wealth, 380);
   s = answerD(resolve, s, { exit: 'shore' }).state;

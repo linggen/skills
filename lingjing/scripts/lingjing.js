@@ -458,7 +458,16 @@ async function settleDuel(id) {
   await refresh();
 }
 
+/// 温养 — once a day, a tap. No model decides it, so the page asks the rules
+/// and re-reads; Ling hears about it on the next Look.
+async function onNourish() {
+  const r = await verb('nourish', {});
+  if (r.ok && r.rose?.length) await report(`[scene] treasure ${r.treasure.step}`);
+  await refresh();
+}
+
 document.addEventListener('click', (e) => {
+  if (e.target.closest('[data-nourish]')) { onNourish(); return; }
   const start = e.target.closest('[data-duel-start]');
   if (start) { onDuelStart(start.dataset.duelStart); return; }
   const pick = e.target.closest('[data-duel-pick]');

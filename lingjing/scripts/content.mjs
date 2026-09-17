@@ -105,7 +105,7 @@ export function overlayOf(outline) {
    never a named speaker. */
 export const CAST = { yinyue: { zh: '银月', en: 'Yinyue' } };
 const SPEAKERS = new Set(['ling', ...Object.keys(CAST)]);
-const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation', 'item', 'duel']);
+const CARDS = new Set(['creature', 'traits', 'map', 'board', 'hexagram', 'gate', 'tribulation', 'item', 'duel', 'treasure']);
 const GAME_KINDS = new Set(['duel', 'board']);
 
 /* An exit's game, one shape: `{id, kind, creature?}`; a bare string is a
@@ -527,6 +527,7 @@ function lintCreatures(content, bad) {
     // what is written must be one of the ways a creature fights.
     if (c.lean != null && !LEAN_IDS.includes(c.lean)) bad(`creature ${c.id}`, `leans an unknown way: ${c.lean}`);
     for (const i of c.pattern ?? []) if (!INTENTS.includes(i)) bad(`creature ${c.id}`, `fights an unknown way: ${i}`);
+    if (c.drops && !content.items.items.some(i => i.id === c.drops)) bad(`creature ${c.id}`, `drops unknown item ${c.drops}`);
     if (!c.made) lintPinyin(c, bad, true);
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
@@ -707,8 +708,8 @@ function lintItems(content, bad) {
     // Arms are the fight's own numbers: 攻 on a weapon (with the root it
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
-    const kinds = ['key', 'progress', 'wear', 'charm'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'temper'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, temper, or arms (atk, def, ward)');
     if (arms.length > 1) bad(where, 'arms are one of 攻, 防 or 抗');
     for (const k of arms) {
       if (k !== 'ward' && (!Number.isInteger(e[k]) || e[k] < 1)) bad(where, `${k} must be a whole number above zero`);
@@ -722,6 +723,11 @@ function lintItems(content, bad) {
     }
     if (e.root != null && !ELEMENTS.includes(e.root)) bad(where, `lends unknown root ${e.root}`);
     if (e.root != null && e.atk == null) bad(where, 'a root is lent by a weapon, which needs its 攻');
+    // 强化: what a thing feeds a 本命法宝, and — for a 天材地宝 — the element
+    // it would lend the day one is bound with it.
+    if (e.temper != null && (!Number.isInteger(e.temper) || e.temper < 1)) bad(where, 'temper must be a whole number above zero');
+    if (e.core != null && !ELEMENTS.includes(e.core)) bad(where, `binds unknown element ${e.core}`);
+    if (e.core != null && e.temper == null) bad(where, 'a core element belongs to a material that tempers');
     if (e.charm != null && !item.made) bad(where, 'a charm is made, never sold');
     if (e.progress != null) {
       const table = content.rewards.tables[e.table];
