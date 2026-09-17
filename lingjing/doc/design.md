@@ -1010,7 +1010,7 @@ Build order: 1 with 2 first (they use items already sold — 铁剑 in 冀,
 桑皮纸 in 兖), then 3 with five arts and one teacher creature per chapter.
 Tests: a 木水火土 player beats a 金 creature with the 铁剑 worn; a 符 wins
 its round and is spent; an art refuses out of tier and twice in a bout.
-SKILL.md: Trade `use` on a weapon says it is worn; *写符* → Write; the
+SKILL.md: Trade `use` on a weapon says it is worn; *写符* → Inscribe (renamed from Write 2026-09-17: the engine's file tool took the name); the
 bout section names the 符 and the arts as the scene's buttons (Ling never
 plays them). Open for his call: whether a worn sword also changes the
 creature's lean (a 金 blade drawing 木 moves), and whether 斗法 at the

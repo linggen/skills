@@ -236,7 +236,7 @@ tools:
         required: true
         description: The creature's id or name, from `place.encounter.creature`.
 
-  - name: Write
+  - name: Inscribe
     description: >-
       写符 — one 桑皮纸 from the bag becomes one 符: at a place with a market,
       or anywhere once the Core is formed (结丹); a visit's stamina; one a
@@ -678,7 +678,7 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   `linger` (Branch open), `ask` (Yinyue answers what is before them),
   `look` (say what is around, from the scene's setup or the place's line;
   nothing moves), `duel` (the bout is before them on the scene — say so in
-  a line, no tool), `write` (Write), `tame` (Tame with its creature) or
+  a line, no tool), `write` (Inscribe), `tame` (Tame with its creature) or
   `answer` (Resolve its `exit` with that `answer`), `divine` (Divine,
   with its `ask` when it names one).
   A tap that reaches you as the player's words: Look's `then` names the
@@ -766,7 +766,7 @@ buttons; you never play any of it, you only tell what is there (the exit's
   rounds running, until 御剑). This is how a player without 金 beats a 木
   creature: by craft, from the market.
 - **A 符 wins its round outright**, once a bout, and is spent. It is
-  written from 桑皮纸 (Write, *写符*), never bought; the market of 濮阳 sells
+  written from 桑皮纸 (Inscribe, *写符*), never bought; the market of 濮阳 sells
   the paper.
 - **The arts** (`arts`, learned never bought — a creature that walks with
   the player teaches its own as it joins; the result's `paid.learned` says

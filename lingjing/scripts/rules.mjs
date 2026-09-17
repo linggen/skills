@@ -1916,7 +1916,9 @@ const withAsk = (result, content, state, ctx) => ({ then: thenFor(result), ask: 
 const TAPS = {
   move: o => `Move {place: ${o.move}}`,
   exit: o => `Resolve {exit: ${o.exit}${o.answer ? `, answer: ${o.answer}` : ''}}`,
-  write: () => 'Write',
+  // Inscribe, not Write: the engine's own file tool is Write, and took the
+  // call (2026-09-17: 写一道符 → "missing field `path`").
+  write: () => 'Inscribe',
   tame: o => `Tame {creature: ${o.tame}}`,
   linger: () => 'Branch {action: open}',
   divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),
