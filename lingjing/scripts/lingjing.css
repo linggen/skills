@@ -57,6 +57,10 @@ button:disabled { cursor: default; }
 .langsw button.on { border-color: var(--ling); color: var(--ling); background: var(--ling-soft); }
 .xw { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 140px; max-width: 320px; }
 .xw .lbl, .ls .lbl { color: var(--faint); }
+/* Today's cast beside the number it changes. */
+.omenchip { margin-left: 6px; font-size: 11px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--line); color: var(--faint); white-space: nowrap; }
+.omenchip.great, .omenchip.good { color: var(--ling); border-color: var(--ling); background: var(--ling-soft); }
+.omenchip.ill, .omenchip.dire { color: var(--seal); border-color: var(--seal); background: var(--seal-soft); }
 .xw .bar { flex: 1; height: 5px; border-radius: 3px; background: var(--raised); overflow: hidden; }
 .xw .bar i { display: block; height: 100%; background: var(--ling); transition: width .6s ease; }
 .xw .num, .ls b { font-family: var(--mono); font-size: 11.5px; font-variant-numeric: tabular-nums; }

@@ -201,10 +201,25 @@ function statusHtml() {
   const name = look.name ? `<span class="daohao">${esc(look.name)}</span>` : '';
   return `${name}<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${w.xw}</span><div class="bar"><i style="width:${pct}%"></i></div>
-      <span class="num">${look.progress}/${look.next}</span></div>
+      <span class="num">${look.progress}/${look.next}</span>${omenChip('progress')}</div>
     ${qiHtml()}
-    <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.wealth}</b></span>
+    <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
+}
+
+/// Today's cast beside the number it changes — 修为 ×1.2 by the 修为 bar,
+/// 灵石 ×1.5 by the 灵石, a bout's lean on its own — so the day's omen is
+/// read where it counts, not only on its card (his ask, 2026-09-17).
+function omenChip(kind) {
+  const d = look?.divination, e = d?.effect;
+  if (!e) return '';
+  const w = words();
+  const label = kind === 'progress' ? (e.progress ? `×${e.progress}` : '')
+    : kind === 'wealth' ? (e.wealth ? `×${e.wealth}` : '')
+    : e.root && (e.draws_win || e.wins_draw) ? `${e.root.name}${e.draws_win ? '↑' : '↓'}` : '';
+  if (!label) return '';
+  const title = `${w.omen} · ${d.hexagram.name} · ${d.grade.name} · ${d.ask.name}`;
+  return `<span class="omenchip ${esc(d.grade.id)}" title="${esc(title)}">${esc(d.hexagram.name)} ${esc(label)}</span>`;
 }
 
 /// The game's language, at a tap — the rules' Lang, the same word Ling
