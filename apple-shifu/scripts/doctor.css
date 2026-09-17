@@ -398,6 +398,14 @@ body {
   opacity: 0.75;
 }
 
+/* Shown on the active phone chip when more than one phone is paired: click it
+   again to pick which one. */
+.src-pick {
+  font-size: 10px;
+  margin-left: 2px;
+  opacity: 0.7;
+}
+
 .backup-badge {
   padding: 4px 10px;
   border-radius: 999px;

@@ -6,7 +6,7 @@
 
 import {
   registerTab, setSourceInfo, setBackupBadge, getSource, setSource,
-  onSourceChange, onTabChange, refreshVerbs,
+  onSourceChange, onTabChange, refreshVerbs, getPhoneDevice, onPhoneDeviceChange,
 } from './shifu-shell.js';
 import {
   bash, shellEsc, esc, abbrevPath, confirmDialog, showToast, flashToast,
@@ -62,6 +62,9 @@ function notify(text) {
 }
 
 // ── shell registration ──
+
+// Picking another phone in the header redraws this tab's phone card.
+onPhoneDeviceChange(() => { if (screen === 'connect') refreshDevice(); });
 
 export function initMediaTab() {
   panel = document.getElementById('media-panel');
@@ -276,9 +279,11 @@ function statusStripDiv() {
 function publishSourceInfo() {
   const { info, st } = statusCache;
   const dev = (info?.connected ? info : null) || st?.device;
-  const wirelessName = pairedDevices.map((d) => d.name).find(Boolean);
+  // No name here: the shell names the phone chip from the phone in play (the
+  // pick, else whichever last connected). Passing the first paired row is what
+  // made the chip say "(sim)" beside a card naming the real iPhone.
   setSourceInfo('phone', {
-    label: dev?.name || wirelessName || 'iPhone',
+    label: dev?.name || 'iPhone',
     detail: dev?.free_gb != null ? `${dev.free_gb} GB free` : '',
     title: info?.connected ? 'iPhone connected over USB'
       : pairedDevices.length ? 'iPhone paired over Wi-Fi' : 'No iPhone connected',
@@ -437,20 +442,26 @@ async function renderPhoneCard(noTools = false) {
         <b>Settings → Phone</b>, then open Linggen on the phone.</div>`;
     return;
   }
-  const names = paired.map((d) => esc(d.name)).join(', ');
-  const who = link?.name ? esc(link.name) : names;
-  const state = link?.live
-    ? '<span class="media-chip">Linggen open</span>'
-    : link
-      ? `<span class="media-chip">last connected ${esc(sinceText(link.at))}</span>`
-      : '<span class="media-chip">paired</span>';
+  // The phone the header chip names — the pick, else whichever last connected.
+  // A picked phone that isn't the one that connected is said plainly, rather
+  // than borrowing the other one's "connected" chip.
+  const chosen = getPhoneDevice();
+  const isChosen = !chosen || !link || chosen.id === link.id || chosen.name === link.name;
+  const who = esc(chosen?.name || link?.name || paired.map((d) => d.name).join(', '));
+  const state = !isChosen
+    ? '<span class="media-chip">paired · not the phone that last connected</span>'
+    : link?.live
+      ? '<span class="media-chip">Linggen open</span>'
+      : link
+        ? `<span class="media-chip">last connected ${esc(sinceText(link.at))}</span>`
+        : '<span class="media-chip">paired</span>';
   el.className = 'media-card';
   el.innerHTML = `
     <h4>📱 ${who} ${state}</h4>
     ${wireless.length
       ? `<div class="media-dim"><b>${wireless.length.toLocaleString()}</b> items synced wirelessly · ${fmtGb(size)}</div>`
       : ''}
-    <div class="media-dim">${link?.live
+    <div class="media-dim">${link?.live && isChosen
       ? 'Open <b>Photos</b> on the phone and tap <b>Back up to Mac</b> — over Wi-Fi, no cable.'
       : 'Open Linggen on the phone to sync what’s new — no cable needed.'}</div>
     ${wireless.length ? '' : `<div class="media-dim">What the phone sends lands here to look through, keep a copy of on

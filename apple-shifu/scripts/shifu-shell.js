@@ -30,6 +30,14 @@ const SOURCES = [
 
 let source = 'phone';
 let activeTab = 'system';
+// Which paired phone the phone side means. Several can be paired — three
+// simulators and a real iPhone here — and the chip used to name whichever was
+// paired first, which is how it said "(sim)" while the card named the phone
+// that had actually connected.
+let phoneDevice = null;          // {id, name} the user picked, or null = the live one
+let pairedPhones = [];           // [{id, name}] from /api/pair/info
+let livePhone = null;            // {id, name, at} from the phone/tools topic
+const deviceListeners = [];
 const providers = new Map();          // tab name -> provider
 const sourceInfo = { phone: null, mac: null };  // tab-supplied device labels
 const sourceListeners = [];
@@ -108,8 +116,17 @@ export function initShell() {
   }
   document.getElementById('source-switch')?.addEventListener('click', (e) => {
     const btn = e.target.closest('.src-btn');
-    if (btn && btn.dataset.src !== source) setSource(btn.dataset.src);
+    if (!btn) return;
+    // First click on a side switches to it; clicking the phone again asks
+    // which phone — so one chip both switches and picks, with no second knob.
+    if (btn.dataset.src !== source) setSource(btn.dataset.src);
+    else if (btn.dataset.src === 'phone') openDeviceMenu(btn);
   });
+  try {
+    const saved = localStorage.getItem(DEVICE_KEY);
+    if (saved) phoneDevice = JSON.parse(saved);
+  } catch { /* private mode, or a shape we no longer understand */ }
+  loadDevices();
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.verb-menu, .verb-btn, .menu-anchor')) closeMenu();
   });
@@ -117,6 +134,66 @@ export function initShell() {
   setActiveTab(activeTab);
   renderSourceSwitch();
   renderBackupBadge();
+}
+
+const DEVICE_KEY = 'shifu:phone-device';
+
+/** The phone the app is talking about: the user's pick, else whichever phone
+    last connected, else the first paired. */
+export function getPhoneDevice() {
+  if (phoneDevice) return phoneDevice;
+  if (livePhone) return { id: livePhone.id, name: livePhone.name };
+  return pairedPhones[0] || null;
+}
+
+export function onPhoneDeviceChange(fn) { deviceListeners.push(fn); }
+
+function setPhoneDevice(dev) {
+  phoneDevice = dev;
+  try {
+    if (dev) localStorage.setItem(DEVICE_KEY, JSON.stringify(dev));
+    else localStorage.removeItem(DEVICE_KEY);
+  } catch { /* private mode */ }
+  renderSourceSwitch();
+  for (const fn of deviceListeners) fn(getPhoneDevice());
+}
+
+/** Paired phones, and which one last opened Linggen. Both are cheap local
+    reads; the topic is what the phone republishes on every connect. */
+async function loadDevices() {
+  try {
+    const info = await (await fetch('/api/pair/info')).json();
+    pairedPhones = (info.devices || []).map((d) => ({ id: d.id, name: d.name }));
+  } catch { /* daemon busy — keep what we had */ }
+  try {
+    const doc = await (await fetch('/api/topic/latest?topic=phone&op=tools')).json();
+    const at = Date.parse(doc?.payload?.published_at || doc?.retained_at || '');
+    const dev = doc?.payload?.device;
+    livePhone = dev?.name && Number.isFinite(at) ? { id: dev.id, name: dev.name, at } : null;
+  } catch { /* no topic — no live phone */ }
+  renderSourceSwitch();
+}
+
+const LIVE_MS = 5 * 60 * 1000;
+
+// The phone reports its own device id on the topic; the Mac's pairing row has
+// a different id for the same phone. The name is what both agree on, and what
+// the user reads.
+const samePhone = (a, b) => !!a && !!b && (a.id === b.id || a.name === b.name);
+
+/** The phone chip's own menu: every paired phone, the live one marked, and a
+    way back to "whichever is here". */
+function openDeviceMenu(anchor) {
+  const chosen = getPhoneDevice();
+  const items = pairedPhones.map((d) => ({
+    label: `${samePhone(d, chosen) ? '✓ ' : ''}${d.name}`,
+    hint: samePhone(d, livePhone)
+      ? (Date.now() - livePhone.at < LIVE_MS ? 'Linggen open' : 'last connected here')
+      : '',
+    run: () => setPhoneDevice(d),
+  }));
+  if (phoneDevice) items.push({ label: 'Whichever phone is here', run: () => setPhoneDevice(null) });
+  openMenu(anchor, items.length ? items : [{ label: 'No phone paired', blocked: 'Pair one in Settings → Phone' }]);
 }
 
 export function setSource(next) {
@@ -144,13 +221,25 @@ export function setActiveTab(name) {
 function renderSourceSwitch() {
   const el = document.getElementById('source-switch');
   if (!el) return;
+  const openFor = menuEl && el.contains(menuEl.anchor) ? menuEl.anchor.dataset.src : null;
   el.innerHTML = SOURCES.map((s) => {
     const info = sourceInfo[s.key];
-    const label = info?.label || s.fallback;
+    // The phone chip names the phone in play, not whatever was paired first.
+    const device = s.key === 'phone' ? getPhoneDevice() : null;
+    const label = device?.name || info?.label || s.fallback;
     const detail = info?.detail ? `<span class="src-detail">${info.detail}</span>` : '';
-    return `<button class="src-btn ${s.key === source ? 'on' : ''}" data-src="${s.key}"
-      title="${esc(info?.title || label)}">${s.icon} <span class="src-label">${esc(label)}</span>${detail}</button>`;
+    const pick = s.key === 'phone' && pairedPhones.length > 1 && s.key === source
+      ? '<span class="src-pick">▾</span>' : '';
+    const title = s.key === 'phone' && pairedPhones.length > 1
+      ? `${label} — click again to pick another phone` : (info?.title || label);
+    // `menu-anchor` keeps the document's close-on-click-outside from shutting
+    // the picker in the same click that opened it.
+    return `<button class="src-btn menu-anchor ${s.key === source ? 'on' : ''}" data-src="${s.key}"
+      title="${esc(title)}">${s.icon} <span class="src-label">${esc(label)}</span>${detail}${pick}</button>`;
   }).join('');
+  // The chip the open picker hangs off was just replaced; point the menu at
+  // the new one so it stays open instead of floating over a dead anchor.
+  if (openFor) menuEl.anchor = el.querySelector(`.src-btn[data-src="${openFor}"]`) || menuEl.anchor;
 }
 
 // ── backup badge ──
@@ -177,7 +266,10 @@ function renderBackupBadge() {
 function renderToolbar() {
   const el = document.getElementById('verbs-toolbar');
   if (!el) return;
-  closeMenu();
+  // Only a menu hanging off the toolbar being replaced. A tab that polls
+  // re-renders every few seconds, and that used to shut the phone picker — or
+  // a row's ⋯ — a moment after it opened.
+  if (menuEl && el.contains(menuEl.anchor)) closeMenu();
   const provider = providers.get(activeTab);
   const actions = provider?.verbs?.(source) || {};
   el.innerHTML = '';
