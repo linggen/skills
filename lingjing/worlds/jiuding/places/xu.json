@@ -258,6 +258,77 @@
         "zh": "徐州得名之山，山顶终年有云。",
         "en": "The mountain the province is named for; clouds sit on its top all year."
       }
+    },
+    {
+      "id": "daye",
+      "name": {
+        "zh": "大野泽",
+        "en": "Daye Marsh"
+      },
+      "tier": 1,
+      "roads": [
+        "leize",
+        "dingtao",
+        "fuli"
+      ],
+      "map": [
+        0.7492,
+        0.4472
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "大泽无边。西狩获麟的地方。",
+        "en": "A marsh without end. Where the unicorn was taken in the western hunt."
+      }
+    },
+    {
+      "id": "fuli",
+      "name": {
+        "zh": "凫丽山",
+        "en": "Mount Fuli"
+      },
+      "tier": 1,
+      "roads": [
+        "daye",
+        "kongsang",
+        "weishui"
+      ],
+      "map": [
+        0.7825,
+        0.4093
+      ],
+      "has": {
+        "creature": "longzhi",
+        "seeds": true
+      },
+      "line": {
+        "zh": "山里有婴儿的哭声，不是婴儿。",
+        "en": "In the hills a sound of infants crying. Not infants."
+      }
+    },
+    {
+      "id": "kongsang",
+      "name": {
+        "zh": "空桑",
+        "en": "Kongsang"
+      },
+      "tier": 2,
+      "roads": [
+        "fuli"
+      ],
+      "map": [
+        0.7964,
+        0.3846
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "一株空心的桑树。伊尹生在这儿。",
+        "en": "A hollow mulberry. Yi Yin was born here."
+      }
     }
   ]
 }

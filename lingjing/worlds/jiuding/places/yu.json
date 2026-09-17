@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "province": "豫",
+  "start": "dingtao",
+  "_about": "The places of 豫 — 定陶 alone for now, by the 菏泽 (导菏泽, the 禹贡's 豫州). No chapter opens 豫 yet, so its roads stay closed; it joins the world when its chapter is written.",
+  "places": [
+    {
+      "id": "dingtao",
+      "name": {
+        "zh": "定陶",
+        "en": "Dingtao"
+      },
+      "tier": 1,
+      "roads": [
+        "puyang",
+        "daye"
+      ],
+      "map": [
+        0.7242,
+        0.4481
+      ],
+      "has": {
+        "seeds": true
+      },
+      "line": {
+        "zh": "天下之中的商城。陶朱公在这儿三聚三散。",
+        "en": "The merchant city at the centre of the world. Here Lord Tao made three fortunes and gave three away."
+      }
+    }
+  ]
+}

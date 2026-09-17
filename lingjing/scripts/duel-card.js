@@ -5,7 +5,7 @@
 // page's duel state and is decided by the rules on settle.
 
 import { esc, spoken } from './cards.js';
-import { BEATS, offers } from './duel.js';
+import { BEATS, GENERATES, bout, offers } from './duel.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 
@@ -38,10 +38,15 @@ function pickHtml(exit, d, ctx) {
   const why = (o) => (o.ok ? '' : ` disabled title="${esc(w.why?.[o.why] ?? o.why)}"`);
   const id = esc(exit.game.id);
   const roots = [], extras = [];
+  // 借势 armed: the next root counts as the one it generates — each button
+  // says so before the pick (his ask, 2026-09-17: 木 went in as 火 unseen).
+  const armed = Boolean(bout(d.picks, d.moves, b.kit).pending);
+  const face = (el) => (armed ? `${GLYPH[el]}→${GLYPH[GENERATES[el]]}` : GLYPH[el]);
+  const elName = (el) => esc(ctx.content.traits.elements[armed ? GENERATES[el] : el]?.[ctx.lang] ?? el);
   for (const o of offers(d.picks, d.moves, b.kit)) {
     const attr = `data-duel-pick="${esc(o.token)}" data-duel="${id}"${why(o)}`;
-    if (o.kind === 'root') roots.push(`<button class="rootbtn" ${attr}>${GLYPH[o.token]}<small>${esc(ctx.content.traits.elements[o.token]?.[ctx.lang] ?? o.token)}</small></button>`);
-    else if (o.kind === 'sword') roots.push(`<button class="rootbtn sword" ${attr}>${GLYPH[o.token]}<small>${esc(b.sword?.name ?? '')}</small></button>`);
+    if (o.kind === 'root') roots.push(`<button class="rootbtn${armed ? ' armed' : ''}" ${attr}>${face(o.token)}<small>${elName(o.token)}</small></button>`);
+    else if (o.kind === 'sword') roots.push(`<button class="rootbtn sword${armed ? ' armed' : ''}" ${attr}>${face(o.token)}<small>${armed ? elName(o.token) : esc(b.sword?.name ?? '')}</small></button>`);
     else if (o.kind === 'charm') extras.push(`<button class="rootbtn charm" ${attr}>符<small>${esc(b.charm?.name ?? '')} ×${b.charm?.held ?? 0}</small></button>`);
     else if (o.kind === 'art') {
       const art = b.arts.find((a) => a.id === o.token.slice(4));
@@ -49,7 +54,8 @@ function pickHtml(exit, d, ctx) {
     }
   }
   const stand = d.status === 'rescue' ? `<button class="act" data-duel-stand="${id}">${w.stand}</button>` : '';
-  return `<div class="roots">${roots.join('')}</div>${extras.length ? `<div class="roots extras">${extras.join('')}</div>` : ''}${stand}`;
+  const hint = armed ? `<div class="small ling">${w.armedHint}</div>` : '';
+  return `${hint}<div class="roots">${roots.join('')}</div>${extras.length ? `<div class="roots extras">${extras.join('')}</div>` : ''}${stand}`;
 }
 
 /// `exit` is Look's exit brief (with `duel`), `d` the page's bout

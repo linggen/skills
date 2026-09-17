@@ -614,7 +614,7 @@ is a map of places, not a chain of scenes.
   where the peak of 结丹 forms the 元婴 (paid double into the new tier) and
   Yinyue's third memory (salt water — this sea; *等九鼎聚齐*; a name not
   hers), the end pointing south to 徐 where the player woke. `places/qing.json`
-  (nine, 潍水 the start; the road in is from 凫丽), `seeds/qing.json` (twenty),
+  (nine, 潍水 the start; the road in is from 凫丽 — 徐's since 2026-09-17, when the places were set to the 禹贡: 大野泽, 凫丽 and 空桑 to 徐, 定陶 to 豫, closed until its chapter), `seeds/qing.json` (twenty),
   夔 and 狪狪 from the 1597 蔣應鎬 plates (卷十四 p. 211, 卷四 p. 91; FLUX
   drew 夔 horned and four-legged four times — his ruling: 山海经 creatures
   are found, not drawn), two riddles, 齐盐 and 齐纨 (a wear for Yinyue)

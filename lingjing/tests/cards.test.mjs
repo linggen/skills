@@ -48,3 +48,23 @@ test('the 灵根 card takes the birthday for 命格 on the page, or shows the si
   assert.match(set, /属蛇 · 日主乙木 · 天生亲近木/);
   assert.doesNotMatch(set, /fate-birth/);
 });
+
+test('借势 armed: each root button says what it will count as', async () => {
+  const { WORDS } = await import('../scripts/cards.js');
+  const { duelHtml } = await import('../scripts/duel-card.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  const exit = { game: { id: 'subdue-kui' }, duel: {
+    creature: { name: '夔', root: 'water', root_name: '水' }, sword: null, charm: null,
+    arts: [{ id: 'jieshi', name: '借势', effect: 'generate', ready: true }],
+    kit: { roots: ['wood', 'water', 'fire', 'earth'], arts: { jieshi: { effect: 'generate', ready: true } } },
+  } };
+  const ctx = { lang: 'zh', words: WORDS.zh, content };
+  const moves = ['water', 'water', 'water', 'water', 'water'];
+  const plain = duelHtml(exit, { status: 'open', picks: [], moves, rounds: [] }, ctx);
+  assert.doesNotMatch(plain, /→/);
+  const armed = duelHtml(exit, { status: 'open', picks: ['art:jieshi'], moves, rounds: [] }, ctx);
+  assert.match(armed, /借势已起/);
+  assert.match(armed, /data-duel-pick="wood"[^>]*>木→火<small>火<\/small>/);
+  assert.match(armed, /data-duel-pick="earth"[^>]*>土→金<small>金<\/small>/);
+});

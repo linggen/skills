@@ -805,7 +805,7 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(look(toFuzhu(), content, ctx()).director.choice, null, 'a scene running has its own buttons');
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
-  assert.equal(l.place.places.length, 11);
+  assert.equal(l.place.places.length, 14, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐');
   assert.ok(l.place.places.find(p => p.id === 'sibei').here);
   // the same place is no move
   assert.equal(must(move, s, { place: 'sibei' }).result.here, true);
@@ -1551,10 +1551,12 @@ function afterYan() {
   return { ...afterJi(), chapter: '02-yan', place: 'leiyuan', ended: ['00-prologue', '01-ji', '02-yan'], tier: 'core', step: 0, progress: 0, stamina: 100, wealth: 400 };
 }
 
-test('in November the road from 兖 into 青 is closed', () => {
+test('in November the road from 凫丽 into 青 is closed', () => {
   const s = { ...afterYan(), place: 'fuli' };
   const r = refused(move, s, { place: 'weishui' }, 'road-closed', nctx());
   assert.ok(r.say.includes('青州'));
+  // 定陶 is 豫's by the 禹贡, and no chapter opens 豫 yet
+  assert.ok(refused(move, { ...s, place: 'puyang' }, { place: 'dingtao' }, 'road-closed', nctx()).say.includes('豫州'));
 });
 
 test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market, the shore, the seal, the Nascent Soul, the end', () => {
