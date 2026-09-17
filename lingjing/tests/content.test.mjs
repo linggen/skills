@@ -148,6 +148,21 @@ test('the catalog: a price below its sell, a missing picture, a pill over its ta
   assert.ok(has(problems, 'gives unknown item unicorn-horn'));
 });
 
+test('a shipped creature carries its pinyin, one syllable a character; the card reads it over the name', async () => {
+  const c = loadWorld('jiuding');
+  assert.equal(c.creatures.creatures.find(x => x.id === 'kui').pinyin, 'kuí');
+  const bad = structuredClone(c);
+  delete bad.creatures.creatures.find(x => x.id === 'kui').pinyin;
+  bad.creatures.creatures.find(x => x.id === 'longzhi').pinyin = 'lóngzhí';
+  const problems = lint(bad);
+  assert.ok(has(problems, 'creature kui: needs pinyin'));
+  assert.ok(has(problems, 'creature longzhi: pinyin "lóngzhí" needs one syllable for each of 2 characters'));
+  const { spoken } = await import('../scripts/cards.js');
+  assert.equal(spoken('蠪侄', 'lóng zhí'), '<ruby class="py">蠪<rt>lóng</rt>侄<rt>zhí</rt></ruby>');
+  assert.equal(spoken('Kui', 'kuí'), 'Kui');
+  assert.equal(spoken('雷神'), '雷神');
+});
+
 test('a creature needs a root; a duel needs a known creature, a kind and its withdrawn line', () => {
   const c = fresh();
   c.creatures.creatures[0].root = 'plasma';

@@ -255,6 +255,7 @@ export function lintNewCreature(c, content, taken, bad) {
   if (!content.traits.elements[c.root]) bad(at, `needs a root the traits know, not ${c.root}`);
   for (const k of ['name', 'quote', 'look']) if (!c[k]?.zh && !c[k]?.en) bad(at, `${k} needs zh or en`);
   if (c.art) bad(at, 'art is drawn later, never written');
+  if (c.name?.zh) lintPinyin(c, bad, false);
 }
 
 /* Words a model hands over bare — "Nixuan" for a name — are one language's
@@ -490,9 +491,18 @@ function lintLadder(ladder, bad) {
   }
 }
 
+/* A creature's name is read aloud from its pinyin, one syllable a character:
+   蠪侄 is lóng zhí. A shipped creature carries it; a made one may. */
+function lintPinyin(c, bad, required) {
+  if (c.pinyin == null) { if (required) bad(`creature ${c.id}`, 'needs pinyin, one syllable a character of its name'); return; }
+  const chars = [...(c.name?.zh ?? '')].filter(ch => /\p{Script=Han}/u.test(ch)).length;
+  if (typeof c.pinyin !== 'string' || c.pinyin.trim().split(/\s+/).length !== chars) bad(`creature ${c.id}`, `pinyin "${c.pinyin}" needs one syllable for each of ${chars} characters`);
+}
+
 function lintCreatures(content, bad) {
   for (const c of content.creatures.creatures) {
     if (!content.traits.elements[c.root]) bad(`creature ${c.id}`, `needs a root the traits know, not ${c.root}`);
+    if (!c.made) lintPinyin(c, bad, true);
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
   }

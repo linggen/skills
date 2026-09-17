@@ -352,7 +352,7 @@ function duelBrief(content, state, game, now) {
   const lang = state.lang, today = state.duels?.[game.creature];
   const open = today?.day === dayKey(now) ? today : null;
   return {
-    id: game.id, creature: { id: creature.id, name: pick(creature.name, lang), root: creature.root, root_name: pick(content.traits.elements[creature.root], lang) },
+    id: game.id, creature: { id: creature.id, name: pick(creature.name, lang), ...(lang === 'zh' && creature.pinyin ? { pinyin: creature.pinyin } : {}), root: creature.root, root_name: pick(content.traits.elements[creature.root], lang) },
     roots: (state.traits ?? []).map(e => ({ id: e, name: pick(content.traits.elements[e], lang) })),
     ...duelKitBrief(content, state),
     today: open ? { outcome: open.outcome, rounds: open.rounds ?? [] } : null,

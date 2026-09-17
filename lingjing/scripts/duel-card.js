@@ -4,7 +4,7 @@
 // come next — and the rounds as they fall. The bout itself lives in the
 // page's duel state and is decided by the rules on settle.
 
-import { esc } from './cards.js';
+import { esc, spoken } from './cards.js';
 import { BEATS, offers } from './duel.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
@@ -56,7 +56,7 @@ export function duelHtml(exit, d, ctx) {
   const w = ctx.words, b = exit.duel;
   // The root once: the glyph, and its English name only in an English game.
   const rootName = ctx.lang === 'en' ? ` ${esc(b.creature.root_name)}` : '';
-  const head = `<div class="duelhead"><b>${esc(b.creature.name)}</b> <span class="croot">${GLYPH[b.creature.root]}${rootName}</span></div>`;
+  const head = `<div class="duelhead"><b>${spoken(b.creature.name, b.creature.pinyin)}</b> <span class="croot">${GLYPH[b.creature.root]}${rootName}</span></div>`;
   const rounds = (d.rounds || []).map((r, i) => roundHtml(r, i, b, ctx)).join('');
   let body = '';
   // A haunt's win is paid by the rules at once; a scene's waits for its exit.

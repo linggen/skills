@@ -68,6 +68,16 @@ const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) =>
   `<button class="act say" ${sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`).join('')}</div>`;
 const MAP = [['雍', '冀', '兖'], ['梁', '豫', '青'], ['荆', '扬', '徐']];
 
+/// A Chinese name with its pinyin over each character (夔 → kuí), so a rare
+/// 山海经 name can be read aloud. Without one syllable a character, the
+/// name alone.
+export function spoken(name, pinyin) {
+  const chars = [...String(name ?? '')];
+  const syllables = String(pinyin ?? '').trim().split(/\s+/).filter(Boolean);
+  if (!syllables.length || syllables.length !== chars.length) return esc(name);
+  return `<ruby class="py">${chars.map((ch, i) => `${esc(ch)}<rt>${esc(syllables[i])}</rt>`).join('')}</ruby>`;
+}
+
 function creature(card, ctx) {
   const c = ctx.content.creatures.find((x) => x.id === card.id);
   if (!c) return '';
@@ -76,6 +86,7 @@ function creature(card, ctx) {
     ? `<img class="illus" src="${esc(worldPath(c.dir ?? ctx.look.world.dir, c.art))}" alt="${esc(pick(c.name, ctx.lang))}">`
     : `<div class="illus unpainted">${esc(pick(c.look, ctx.lang))}</div>`;
   const name = pick(c.name, ctx.lang);
+  const title = ctx.lang === 'zh' ? spoken(name, c.pinyin) : esc(name);
   const e = ctx.look.place?.encounter;
   const here = e && e.creature.id === c.id ? e : null;
   const feed = here && !here.tamed && here.likes
@@ -85,7 +96,7 @@ function creature(card, ctx) {
     ${art}
     ${c.art && c.art_caption ? `<div class="artcap">${esc(pick(c.art_caption, ctx.lang))}</div>` : ''}
     <div class="crow"><div class="seal">${esc(c.name.zh)}</div><div>
-      <div class="cardtitle">${esc(name)}</div>
+      <div class="cardtitle">${title}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
       <q>${esc(pick(c.quote, ctx.lang))}</q>
       <span class="chip">${ctx.words[tamed ? 'tamed' : 'untamed']}</span>
