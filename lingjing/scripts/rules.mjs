@@ -1866,7 +1866,9 @@ export function askOf(content, state, ctx, result = {}) {
     const unready = new Set(scene.exits.filter(e => e.breakthrough && !e.breakthrough.ready).map(e => e.id));
     let options = scene.buttons.filter(b => !gone.has(b.id) && !unready.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
     const back = unready.size ? wayBack(content, state, ctx.now) : null;
-    if (back) options.push({ label: zh ? '先回人间修炼' : 'Back to the world to cultivate', move: back.id });
+    // Named by the place it walks to — the story never spoke of leaving for
+    // any other world (his "why now return to 人间", 2026-09-17).
+    if (back) options.push({ label: zh ? `先回${pick(back.name, 'zh')}` : `Back to ${pick(back.name, 'en')} for now`, move: back.id });
     let asked = question;
     // A riddle on the table stays the question for every answer after it —
     // a word to Yinyue, a Look — so no screen offers the question the player

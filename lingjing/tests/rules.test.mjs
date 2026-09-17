@@ -1663,7 +1663,7 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   assert.deepEqual(take.breakthrough.need, { step: '结丹后期', progress: 1200, to: '元婴' });
   assert.ok(!l.ask.options.some(o => o.exit === 'take'), 'no breath to tap');
   const back = l.ask.options.find(o => o.move);
-  assert.equal(back?.label, '先回人间修炼');
+  assert.equal(back?.label, '先回蓬莱');
   // walked back, the open world does not lead straight back to the cauldron
   const away = move(s, content, c, { place: back.move });
   assert.equal(away.result.ok, true);
