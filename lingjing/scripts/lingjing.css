@@ -264,6 +264,11 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .hex.uncast .coins { display: flex; gap: 6px; flex: none; }
 .hex.uncast .coins i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--seal); background: radial-gradient(circle, transparent 28%, var(--seal-soft) 30% 100%); box-shadow: inset 0 0 0 3px var(--surface); }
 .hex.uncast .coins i::after { content: ''; display: block; width: 6px; height: 6px; margin: 6px auto; border: 1.5px solid var(--seal); }
+.hex.throwing .coins i { animation: coinSpin 0.9s linear infinite; }
+.hex.throwing .coins i:nth-child(2) { animation-delay: 0.15s; }
+.hex.throwing .coins i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes coinSpin { to { transform: rotateY(360deg); } }
+@media (prefers-reduced-motion: reduce) { .hex.throwing .coins i { animation: none; } }
 .yaos { display: grid; gap: 5px; flex: none; }
 .yao { display: grid; grid-template-columns: 40px 50px 12px; align-items: center; gap: 8px; }
 .yao i { height: 6px; border-radius: 1px; }

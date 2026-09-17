@@ -68,3 +68,15 @@ test('借势 armed: each root button says what it will count as', async () => {
   assert.match(armed, /data-duel-pick="wood"[^>]*>木→火<small>火<\/small>/);
   assert.match(armed, /data-duel-pick="earth"[^>]*>土→金<small>金<\/small>/);
 });
+
+test('the page knows the cast\'s own question by the rules\' words, so the coins stay in the air through it', async () => {
+  const { WORDS } = await import('../scripts/cards.js');
+  const { askOf } = await import('../scripts/rules.mjs');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const content = loadContent();
+  for (const lang of ['zh', 'en']) {
+    const s = newState(content, lang, new Date('2026-09-17T12:00:00Z'));
+    assert.equal(askOf(content, s, { now: new Date('2026-09-17T12:00:00Z'), quests: [] }, { refused: 'needs-ask' }).question, WORDS[lang].castAsk);
+  }
+});

@@ -381,7 +381,8 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
   if (exit.key) {
     const key = riddleOf(state, scene, exit, ctxNow);
     const riddle = content.riddles[state.lang].riddles[key], tried = triedToday(state, scene, exit, key, ctxNow);
-    Object.assign(brief, { riddle: riddle.q, choices: riddle.choices, tried, closed: tried.length >= RIDDLE_TRIES });
+    const closed = tried.length >= RIDDLE_TRIES;
+    Object.assign(brief, { riddle: riddle.q, choices: riddle.choices, tried, closed, ...(!closed && riddleOpen(state, scene, exit, key, ctxNow) ? { waiting: true } : {}) });
   }
   const game = gameOf(exit);
   if (game) {
@@ -611,13 +612,30 @@ const triedToday = (state, scene, exit, key, now) => {
 };
 /* The riddle asked is kept: seen for the play, and today's misses. A seen
    one asked on a new day means its pool was spent — the round begins again
-   with it. */
-function keepRiddle(s, scene, exit, key, now, tried) {
+   with it. `open`: the riddle is the question on the table until it is
+   answered, shut, or set aside. */
+function keepRiddle(s, scene, exit, key, now, tried, open = false) {
   const id = riddleSlot(scene, exit), slot = s.riddles?.[id], seen = s.riddles_seen ?? [];
   const today = slot?.day === dayKey(now) && slot.key === key;
   const pool = riddlePool(exit);
   s.riddles_seen = seen.includes(key) && !today ? [...seen.filter(k => !pool.includes(k)), key] : [...new Set([...seen, key])];
-  s.riddles = { ...s.riddles, [id]: { day: dayKey(now), key, tried } };
+  s.riddles = { ...s.riddles, [id]: { day: dayKey(now), key, tried, ...(open ? { open: true } : {}) } };
+}
+const riddleOpen = (state, scene, exit, key, now) => {
+  const slot = state.riddles?.[riddleSlot(scene, exit)];
+  return Boolean(slot?.open && slot.day === dayKey(now) && slot.key === key);
+};
+
+/* 先不答 on a riddle on the table sets it aside: the scene's own question
+   comes back. Null when there is nothing to set aside. */
+function setRiddleAside(content, state, ctx) {
+  if (!ctx.said || !atScene(content, state)) return null;
+  const ask = askOf(content, state, ctx);
+  const back = ask.options.some(o => o.answer != null) && ask.options.find(o => o.look && o.label === String(ctx.said).trim());
+  if (!back) return null;
+  const s = clone(state), prefix = `${sceneOf(content, s).id}/`;
+  s.riddles = Object.fromEntries(Object.entries(s.riddles).map(([id, slot]) => [id, id.startsWith(prefix) ? { ...slot, open: undefined } : slot]));
+  return s;
 }
 
 function judgeAnswer(content, key, answer) {
@@ -708,15 +726,17 @@ export function resolve(state, content, ctx, args) {
     if (tried.length >= RIDDLE_TRIES) return refuse('riddle-closed', null, { exit: exit.id });
     // Asked is seen: the question stays today's, and the play never asks it again.
     if (args.answer == null) {
-      keepRiddle(s, scene, exit, key, ctx.now, tried);
-      return { state: s, result: { ok: false, refused: 'needs-answer', say: riddle.q, exit: exit.id, choices: riddle.choices } };
+      keepRiddle(s, scene, exit, key, ctx.now, tried, true);
+      // The riddle is `ask`'s question, never a line to speak: spoken, the
+      // reply ended on it with no AskUser (2026-09-17, gpt-5.6-terra).
+      return { state: s, result: { ok: false, refused: 'needs-answer', say: null, exit: exit.id, choices: riddle.choices } };
     }
     if (!judgeAnswer(content, key, args.answer)) {
       // A miss is kept: the first brings the hint, the second closes the
       // riddle until tomorrow — guessing costs, and nothing blocks past a day.
       const missed = [...tried, String(args.answer).trim()];
-      keepRiddle(s, scene, exit, key, ctx.now, missed);
       const closed = missed.length >= RIDDLE_TRIES;
+      keepRiddle(s, scene, exit, key, ctx.now, missed, !closed);
       return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', say: null, ...(closed ? {} : { hint: riddle.hint }), exit: exit.id } };
     }
     keepRiddle(s, scene, exit, key, ctx.now, tried);
@@ -1700,7 +1720,8 @@ export const VERBS = {
     const woke = wake(s, c, x);
     // An art taught on waking (a companion from before the arts) is said once.
     const learned = woke ? (woke.arts ?? []).filter(id => !(s.arts ?? []).includes(id)).map(id => artBrief(c, woke, artOf(c, id))) : [];
-    return { state: woke, result: { ...look(woke ?? s, c, x), ...(learned.length ? { learned } : {}) } };
+    const next = setRiddleAside(c, woke ?? s, x) ?? woke;
+    return { state: next, result: { ...look(next ?? s, c, x), ...(learned.length ? { learned } : {}) } };
   },
   resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, atlas, divine, fate,
@@ -1807,10 +1828,15 @@ export function askOf(content, state, ctx, result = {}) {
     const gone = new Set(scene.exits.filter(e => (e.withdrawn && !e.won) || e.closed).map(e => e.id));
     let options = scene.buttons.filter(b => !gone.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
     let asked = question;
-    if (result.refused === 'needs-answer' || result.refused === 'wrong-answer') {
+    // A riddle on the table stays the question for every answer after it —
+    // a word to Yinyue, a Look — so no screen offers the question the player
+    // already answered (2026-09-17: 读封 tapped, Ling stopped on the riddle,
+    // the stage offered 读封 again).
+    const waiting = !result.refused && scene.exits.find(e => e.waiting);
+    if (result.refused === 'needs-answer' || result.refused === 'wrong-answer' || waiting) {
       // The riddle's own answers to pick from — a tap is the answer — and a
       // way back to the scene (his "options are not related to the question").
-      const riddle = scene.exits.find(e => e.riddle && (!result.exit || e.id === result.exit));
+      const riddle = waiting || scene.exits.find(e => e.riddle && (!result.exit || e.id === result.exit));
       if (riddle && !riddle.closed) {
         asked = riddle.riddle;
         const tried = new Set(riddle.tried.map(normalizeAnswer));
@@ -1844,8 +1870,15 @@ const TAPS = {
 };
 // A place chip on the map says 去X / Go to X (cards.js sayGo).
 const GO = /^(去|go to\s+)/i;
+// The day's cast asked for in words — the coins on the stage say 请银月起一卦
+// (cards.js sayCast); typed, 起一卦 / 算一卦 / 问卦. Look alone let the scene's
+// question win: 起一卦 tapped twice, 何去何从 asked twice (2026-09-17).
+const CAST_WORDS = /起一?卦|算一?卦|问卦|\bcast the coins\b|\bdivine\b/i;
 function tapThen(ask, said) {
   const words = String(said ?? '').trim();
+  if (CAST_WORDS.test(words) && !ask?.options?.some(o => o.label === words)) {
+    return 'The player asks for the day\'s cast — call Divine now, with no `ask`; this Look changed nothing. Then AskUser exactly the `ask` that tool returns. The reply ends only there.';
+  }
   const options = words ? ask?.options ?? [] : [];
   const option = options.find(o => o.label === words) ?? options.find(o => o.move && o.label === words.replace(GO, ''));
   const kind = option && Object.keys(TAPS).find(k => option[k]);

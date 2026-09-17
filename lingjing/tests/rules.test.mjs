@@ -218,10 +218,21 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.equal(r.refused, 'needs-answer');
   assert.deepEqual(asked.state.riddles_seen, [rid.key], 'asked is seen');
   const a = askOf(content, s, ctx(), r);
-  assert.equal(a.question, r.say);
+  assert.equal(r.say, null, 'the riddle is the question, not a line to speak');
+  assert.equal(a.question, content.riddles.zh.riddles[rid.key].q);
   assert.deepEqual(a.options.map(o => o.label), [...rid.choices, '先不答']);
   assert.ok(a.options.slice(0, -1).every(o => o.exit === 'riddle' && o.answer === o.label));
   assert.equal(a.options.at(-1).look, true);
+  // on the table, it stays the question after a Look or a word to Yinyue —
+  // never the scene's question the player already answered
+  const onTable = look(asked.state, content, ctx({ said: '问问银月' }));
+  assert.equal(onTable.scene.exits.find(e => e.id === 'riddle').waiting, true);
+  assert.deepEqual(onTable.ask, askOf(content, asked.state, ctx(), r));
+  // 先不答 sets it aside: the scene's own question comes back
+  const aside = VERBS.look(asked.state, content, ctx({ said: '先不答' }));
+  assert.ok(aside.state, 'set aside is kept');
+  assert.deepEqual(aside.result.ask.options.map(o => o.label), l.ask.options.map(o => o.label));
+  assert.equal(VERBS.look(asked.state, content, ctx({ said: '问问银月' })).state, null, 'any other word leaves it on the table');
   // a miss: the hint, and the answers left; a second miss shuts it for the day
   const wrongs = rid.choices.filter(x => x !== rid.wrong && !content.riddles.zh.riddles[rid.key].a.includes(x));
   const miss = resolve(asked.state, content, ctx(), { exit: 'riddle', answer: rid.wrong });
@@ -229,6 +240,8 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.deepEqual(askOf(content, miss.state, ctx(), miss.result).options.map(o => o.label), [...rid.choices.filter(x => x !== rid.wrong), '先不答']);
   const shut = resolve(miss.state, content, ctx(), { exit: 'riddle', answer: wrongs[0] });
   assert.equal(shut.result.refused, 'riddle-closed'); assert.equal(shut.result.hint, undefined);
+  assert.equal(look(miss.state, content, ctx()).ask.question, a.question, 'a miss leaves it on the table');
+  assert.equal(look(shut.state, content, ctx()).ask.question, '何去何从？', 'shut, it leaves the table');
   assert.equal(refused(resolve, shut.state, { exit: 'riddle', answer: rid.right }, 'riddle-closed').exit, 'riddle');
   assert.ok(!askOf(content, shut.state, ctx(), shut.result).options.some(o => o.exit === 'riddle'));
   assert.equal(look(shut.state, content, ctx()).scene.exits.find(e => e.id === 'riddle').closed, true);
@@ -1256,6 +1269,13 @@ test('a tapped option comes to Look as words, and Look names the tool it is', ()
   assert.match(cli('look', `--said=${road.label}`).then, new RegExp(`Move \\{place: ${road.move}\\}`));
   // …and so is its chip on the map, which says 去X.
   assert.match(cli('look', `--said=去${road.label}`).then, new RegExp(`Move \\{place: ${road.move}\\}`));
+  // The coins on the stage, or the cast asked for in words, are Divine —
+  // at a scene too, where 起一卦 is none of the scene's options.
+  fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(s));
+  for (const words of ['请银月起一卦', '帮我算一卦', 'Yinyue, cast the coins for me']) {
+    assert.match(cli('look', `--said=${words}`).then, /call Divine now/, words);
+  }
+  assert.match(cli('look', '--said=起一卦').then, /Divine/);
 });
 
 test('the command line keeps state on disk, logs it and undoes it', () => {

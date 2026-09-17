@@ -24,6 +24,9 @@ let focusScene = null; // the scene the focus was last reset for
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 let running = false; //   Ling is mid-reply
 let asked = false; //     Ling's own question is waiting in the chat
+let askSeq = 0; //        Ling's questions seen, so a slower read can't undo a newer one
+let tapped = null; //     the stage's words waiting on Ling: that button stays pressed
+let casting = false; //   起一卦 tapped: the coins are in the air until the cast lands
 let mapView = 'province'; // the map card: 'province' (the player's, up close), 'world', or another province's id
 let castSeen; //          the cast last drawn — a new one is drawn line by line, once
 let castFresh = false;
@@ -57,7 +60,7 @@ function duelFor(id) {
   return duels.get(id);
 }
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, castFresh, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, castFresh, casting, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -110,12 +113,16 @@ async function readCloud() {
 /// Whether Ling's own question is waiting in the chat — then the stage
 /// draws no choice of its own.
 async function readPending() {
+  const seq = askSeq;
   try {
     const pending = await (await fetch('/api/pending-ask-user')).json();
     asked = pending.some((p) => p.session_id === chat?.getSessionId());
   } catch {
     asked = false;
   }
+  // Ling asked while this read was on its way: the question stands — else
+  // the stage drew its own choice beside the chat's.
+  if (seq !== askSeq) asked = true;
   if (asked) waitingOnPlayer();
 }
 
@@ -126,12 +133,14 @@ function waitingOnPlayer() {
   asked = true;
   running = false;
   saying = false;
+  tapped = null;
   document.querySelectorAll('.busy').forEach((el) => el.classList.remove('busy'));
 }
 
 async function refresh() {
   try {
     [look] = await Promise.all([verb('look'), readCloud(), readPending()]);
+    if (look.divination) casting = false;
     await loadContent(look.world);
   } catch (e) {
     console.warn('[lingjing] look', e);
@@ -266,6 +275,9 @@ function render() {
   castFresh = false;
   $('trayTitle').textContent = w.tray;
   $('tray').innerHTML = trayHtml(ctx());
+  // Redrawn while Ling takes up a tap, the button stays pressed — never
+  // offered to be tapped again.
+  if (tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === tapped) el.classList.add('busy'); });
 }
 
 /* ── The board: the one thing the page reports ── */
@@ -355,9 +367,11 @@ document.addEventListener('click', (e) => {
   const spoken = e.target.closest('[data-say]');
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick],[data-duel-stand]')) {
     if (spoken.matches(':disabled')) return;
-    spoken.classList.add('busy');
+    tapped = spoken.dataset.say;
+    if (tapped === words().sayCast) casting = true;
     running = true;
-    say(spoken.dataset.say);
+    render();
+    say(tapped);
     return;
   }
   const play = e.target.closest('[data-play]');
@@ -450,8 +464,25 @@ async function recentSessionId() {
   }
 }
 
+function askedQuestion(args) {
+  try {
+    const a = typeof args === 'string' ? JSON.parse(args) : args;
+    return a?.questions?.[0]?.question ?? null;
+  } catch {
+    return null; // still streaming: the start of the call, before its args are whole
+  }
+}
+
 function onContentBlock(payload) {
-  if (payload?.tool === 'AskUser') { waitingOnPlayer(); render(); return; }
+  if (payload?.tool === 'AskUser') {
+    askSeq++;
+    // The cast's own question (所问何事) keeps the coins in the air; any
+    // other question means no cast is coming this turn.
+    if (casting && askedQuestion(payload.args) !== words().castAsk) casting = false;
+    waitingOnPlayer();
+    render();
+    return;
+  }
   if (payload?.tool === 'Show' && payload.args) {
     try {
       const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
@@ -491,7 +522,7 @@ async function mountChat() {
     onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
     onStreamToken: () => { alive = true; running = true; },
     onStreamEnd: (text) => {
-      saying = false; running = false;
+      saying = false; running = false; tapped = null; casting = false;
       const before = look;
       refresh().then(() => cheer(before, text));
     },

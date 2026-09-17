@@ -20,7 +20,7 @@ export const WORDS = {
     duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，两胜为降。', ring: '相克', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     rescueHint: '胜负已分——还有一手可出。', stand: '认了',
     artHint: { 'draw-wins': '平手化胜', 'undo-loss': '收回败局', generate: '借所生之行' },
-    uncast: '今日未卜', uncastHint: '心中默念一事，三钱六掷。', cast: '起一卦', sayCast: '请银月起一卦', changedTo: '之卦',
+    uncast: '今日未卜', uncastHint: '心中默念一事，三钱六掷。', cast: '起一卦', sayCast: '请银月起一卦', throwing: '起卦中……', castAsk: '所问何事？', changedTo: '之卦',
     effEven: '今日无增无减', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '每步之间静坐 {s} 秒',
     effDrawWin: '{root}：平手化胜 ×{n}', effWinDraw: '{root}：胜局化平 ×{n}', fortuneMark: '卦',
     fateTitle: '命格', fateLine: '属{zodiac} · 日主{stem}{element} · 天生亲近{element}', fateHint: '可选填。生辰只在本机推算命格：不入存档，不入对话。',
@@ -47,7 +47,7 @@ export const WORDS = {
     duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     rescueHint: 'Decided — but one art could still turn it.', stand: 'Let it stand',
     artHint: { 'draw-wins': 'a draw becomes a win', 'undo-loss': 'take back the loss', generate: 'borrow the root it generates' },
-    uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind: three coins, six throws.', cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', changedTo: 'Changing to',
+    uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind: three coins, six throws.', cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', throwing: 'Casting…', castAsk: 'What do you ask about?', changedTo: 'Changing to',
     effEven: 'No gain, no loss today', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '{s}s of stillness between steps',
     effDrawWin: '{root}: a draw wins ×{n}', effWinDraw: '{root}: a win only draws ×{n}', fortuneMark: 'cast',
     fateTitle: 'Birth sign', fateLine: 'Year of the {zodiac} · day master {stem} ({element}) · at home in {element}', fateHint: 'Optional. Your birthday is read on this Mac only — never saved, never sent to the chat.',
@@ -274,6 +274,11 @@ function hexagram(card, ctx) {
       <div class="hextext">${esc(pick(h.image, ctx.lang))}</div>${acts([{ label: w.about, say: say(w.sayItem, { name: pick(h.name, ctx.lang) }) }])}</div></div>`;
   }
   const d = ctx.look.divination;
+  // Tapped: the coins are in the air until the cast lands — nothing to tap twice.
+  if (!d && ctx.casting) {
+    return `<div class="card hex uncast throwing"><div class="coins">${'<i></i>'.repeat(3)}</div><div>
+      <div class="cardtitle">${w.throwing}</div><div class="hextext">${w.uncastHint}</div></div></div>`;
+  }
   // Before the day's cast: the coins wait, and the button is a word to Ling.
   if (!d) {
     return `<div class="card hex uncast"><div class="coins">${'<i></i>'.repeat(3)}</div><div>
