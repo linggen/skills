@@ -1144,7 +1144,7 @@ only their four roots and a starting weapon can win against every creature,
   base, element, level, exp}`). The material sets its element: 精金 金 · 雷击木 木
   · 寒玉 水 · 火精 火 · **息壤** 土 (the 山海经's own: 鲧窃帝之息壤以堙洪水). The
   player names it, as the 道号 is named. It is the weapon from then on:
-  **御器** hits with 器攻 = base + level, and the **施法** of its element gains
+  **物理攻击** hits with 器攻 = base + level, and the **法术** of its element gains
   + level (the treasure amplifies its own element).
 - **温养** — once a day, a tray task *温养本命* (no model, a tap): +1 exp.
   **强化** — Trade `use` a material on it: 妖丹 by 阶 (+3 / +6 / +10 exp), the
