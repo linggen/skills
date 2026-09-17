@@ -326,7 +326,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state), !castToday(state, ctx.now), questBrief(content, state, ctx.now)?.step === 'ring', filler(content, state, ctx.said)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, canWrite(content, state), filler(content, state, ctx.said)),
   };
 }
 
@@ -336,21 +336,17 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said, encounter = null, write = false, uncast = false, ring = false, alone = null) {
+function choiceOf(state, here, near, thread, seeded, said, write = false, alone = null) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
   const options = [];
-  if (encounter && !encounter.tamed) {
-    const n = encounter.creature.name;
-    if (!encounter.won && !encounter.withdrawn) options.push({ label: zh ? `降妖 · ${n}` : `Subdue ${n}`, duel: encounter.game.id });
-    if (encounter.likes?.held) options.push({ label: zh ? `喂${n}${encounter.likes.name}` : `Feed ${n} the ${encounter.likes.name}`, tame: encounter.creature.id });
-  }
+  // 降妖 and the feeding are on the creature's card, the cast on its coins, the
+  // bell on the quest's card: one clickable place each, never asked here too
+  // (his law, 2026-09-17 — "user will click twice"). 写符 has no card of its own.
   if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
-  if (ring) options.push({ label: zh ? '摇一摇铃' : 'Ring the bell', ring: true });
   options.push(...places.map(p => ({ label: p.name, move: p.id })));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
-  if (uncast) options.push({ label: zh ? '起一卦' : 'Cast the coins', divine: true });
   if (options.length < 2) options.push(alone ?? { label: zh ? '看看四周' : 'Look around', look: true });
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
 }
@@ -2025,7 +2021,11 @@ export function askOf(content, state, ctx, result = {}) {
     // the world is (his "way back until ready", 2026-09-17 — 化婴 offered at
     // 结丹初期, tapped, refused).
     const unready = new Set(scene.exits.filter(e => e.breakthrough && !e.breakthrough.ready).map(e => e.id));
-    let options = scene.buttons.filter(b => !gone.has(b.id) && !unready.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
+    // One clickable place for one thing (his law, 2026-09-17): an exit whose
+    // game is played on its own card — a bout, a board — is not asked here
+    // too; winning it moves the story by itself.
+    const played = new Set(scene.exits.filter(e => e.game && !e.won).map(e => e.id));
+    let options = scene.buttons.filter(b => !gone.has(b.id) && !unready.has(b.id) && !played.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
     const back = unready.size ? wayBack(content, state, ctx.now) : null;
     // Named by the place it walks to — the story never spoke of leaving for
     // any other world (his "why now return to 人间", 2026-09-17).

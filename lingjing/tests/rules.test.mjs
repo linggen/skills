@@ -159,8 +159,9 @@ test('a creature at its haunt: the bout on the stage pays once a day, and what i
   assert.equal(l.place.encounter.creature.id, 'jingwei');
   assert.equal(l.place.encounter.game.id, 'haunt:jingwei');
   assert.deepEqual(l.place.encounter.likes, { id: 'jade-fish', name: '玉鱼', held: 0 });
-  assert.equal(l.director.choice.options[0].label, '降妖 · 精卫', 'the bout leads the choice');
-  assert.ok(!l.director.choice.options.some(o => o.tame), 'nothing to feed it with');
+  // The bout and the feeding are on the creature's card: one clickable place
+  // each, so the choice never carries them (his law, 2026-09-17).
+  assert.ok(!l.director.choice.options.some(o => o.duel || o.tame), 'the card holds them');
   // the bout: started at the haunt, won by the rules' own replay, paid by the haunt table
   const started = must(duel, base, { id: 'haunt:jingwei' }, october());
   const moves = started.result.moves;
@@ -172,11 +173,11 @@ test('a creature at its haunt: the bout on the stage pays once a day, and what i
   assert.ok(settled.result.paid.progress > 0, 'the rules pay the haunt win');
   assert.equal(settled.result.haunt.id, 'jingwei');
   refused(duel, settled.state, { id: 'haunt:jingwei' }, 'subdued-today', october());
-  assert.ok(!look(settled.state, content, october()).director.choice.options.some(o => o.duel), 'won today: the bout leaves the choice');
+  assert.ok(!look(settled.state, content, october()).director.choice.options.some(o => o.duel));
   // taming: the thing it likes, from the bag, once
   refused(tame, base, { creature: 'jingwei' }, 'needs-item', october());
   const fed = { ...base, bag: { ...base.bag, 'jade-fish': 1 } };
-  assert.equal(look(fed, content, october()).director.choice.options[1].tame, 'jingwei', 'held: the feeding is offered');
+  assert.equal(look(fed, content, october()).place.encounter.likes.held, 1, 'held: the card offers the feeding');
   const out = must(tame, fed, { creature: '精卫' }, october());
   assert.ok(out.state.cast.includes('jingwei'));
   assert.equal(out.state.bag['jade-fish'], undefined);
@@ -205,8 +206,10 @@ test('the engine\'s empty-reply nudge is not the player\'s word: it sets no lang
 test('every answer carries the question ready: the scene\'s buttons, the riddle when one waits, the choice when the world is open', () => {
   const s = toFuzhu();
   const l = look(s, content, ctx());
-  assert.deepEqual(l.ask.options.map(o => o.label), l.scene.buttons.map(b => b.label));
-  assert.deepEqual(l.ask.options.map(o => o.exit), l.scene.buttons.map(b => b.id));
+  // Every button but the ones played on their own card (a bout, a board).
+  const inChat = l.scene.buttons.filter(b => !l.scene.exits.find(e => e.id === b.id)?.game);
+  assert.deepEqual(l.ask.options.map(o => o.label), inChat.map(b => b.label));
+  assert.deepEqual(l.ask.options.map(o => o.exit), inChat.map(b => b.id));
   assert.equal(l.ask.question, '何去何从？');
   assert.equal(l.ask.header, l.scene.place);
   assert.ok(l.then.includes('AskUser'));
@@ -349,9 +352,11 @@ test('a loss is free and the creature withdraws until tomorrow', () => {
   const tomorrow = ctx({ now: new Date('2026-09-12T12:00:00') });
   assert.equal(duel(lost.state, content, tomorrow, { id: 'subdue-fuzhu' }).result.ok, true);
   assert.equal(look(lost.state, content, tomorrow).scene.exits.find(e => e.id === 'subdue').withdrawn, false);
-  // The question leaves the bout out today, and offers it again tomorrow.
+  // The bout is never in the question — its card holds it — and the card is
+  // withdrawn today, open again tomorrow.
   assert.ok(!askOf(content, lost.state, ctx()).options.some(o => o.exit === 'subdue'));
-  assert.ok(askOf(content, lost.state, tomorrow).options.some(o => o.exit === 'subdue'));
+  assert.ok(!askOf(content, lost.state, tomorrow).options.some(o => o.exit === 'subdue'));
+  assert.equal(look(lost.state, content, ctx()).scene.exits.find(e => e.id === 'subdue').withdrawn, true);
 });
 
 test('a bout must be started, picks must be the player\'s roots, and the same day draws the same moves', () => {
@@ -1197,8 +1202,9 @@ test('起卦: once a day by three coins — asked what about, the same throws al
   assert.equal(look(cast.state, content, ctx({ now: new Date(NOW.getTime() + 864e5) })).divination, null);
   // the choice offers the cast until it is made
   const open = { ...cast.state, scene: null, chapter: '03-qing', place: 'linzi' };
+  // The coins are their own card: 起一卦 is tapped there, never asked here too.
   assert.ok(!look(open, content, c).director.choice.options.some(o => o.divine));
-  assert.ok(look({ ...open, divination: null }, content, c).director.choice.options.some(o => o.divine === true));
+  assert.ok(!look({ ...open, divination: null }, content, c).director.choice.options.some(o => o.divine));
 });
 
 test('命格 from a birthday: 生肖 turns at 立春 by the day, 日主 is the day\'s stem — as lunar-python reads them', () => {
