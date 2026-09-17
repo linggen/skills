@@ -453,6 +453,8 @@ async function renderPhoneCard(noTools = false) {
     <div class="media-dim">${link?.live
       ? 'Open <b>Photos</b> on the phone and tap <b>Back up to Mac</b> — over Wi-Fi, no cable.'
       : 'Open Linggen on the phone to sync what’s new — no cable needed.'}</div>
+    ${wireless.length ? '' : `<div class="media-dim">What the phone sends lands here to look through, keep a copy of on
+      this Mac, and then clear off the phone.</div>`}
     ${wireless.length && !noTools ? '<button class="media-cta" id="phone-review-btn">Review synced photos</button>' : ''}
     ${wireless.length && noTools ? '<div class="media-dim">Reviewing them needs the Media tools below.</div>' : ''}`;
   const btn = document.getElementById('phone-review-btn');
@@ -464,6 +466,20 @@ async function renderPhoneCard(noTools = false) {
       showReview();
     };
   }
+}
+
+/** This Mac, without the Media tools: the space a sync would land in. The
+    photo index is the tools' own work, so it says plainly that there isn't
+    one yet rather than leaving the card out. */
+async function renderMacSpaceCard(macCard) {
+  const res = await bash("df -k /System/Volumes/Data 2>/dev/null || df -k /");
+  const kb = Number((res.stdout || '').split('\n')[1]?.trim().split(/\s+/)[3]);
+  const free = Number.isFinite(kb) ? `${((kb * 1024) / 1e9).toFixed(0)} GB free` : 'free space unknown';
+  macCard.hidden = false;
+  macCard.className = 'media-card';
+  macCard.innerHTML = `
+    <h4>This Mac · ${esc(free)} <span class="media-chip">room for what the phone sends</span></h4>
+    <div class="media-dim">No photos synced here yet. Free space is re-checked right before anything copies.</div>`;
 }
 
 async function refreshDevice() {
@@ -487,7 +503,9 @@ async function refreshDevice() {
   await renderPhoneCard(info.error === 'setup_required');
 
   if (info.error === 'setup_required') {
-    if (macCard) macCard.hidden = true;
+    // Free space is a df away, so this card doesn't wait on the USB tools —
+    // hiding it was what left the tab with three cards and a lot of nothing.
+    if (macCard) await renderMacSpaceCard(macCard);
     card.hidden = false;
     card.className = 'media-card dashed';
     card.innerHTML = `
