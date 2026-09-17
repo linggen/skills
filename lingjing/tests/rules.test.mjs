@@ -1076,6 +1076,27 @@ test('--key=value is read whole, and an omitted arg (empty) is dropped', () => {
   assert.deepEqual(parseArgs(['--exit=riddle', '--value=', '--answer=一口 = 告', '--text=a\nb']), { exit: 'riddle', answer: '一口 = 告', text: 'a\nb' });
 });
 
+test('a tapped option comes to Look as words, and Look names the tool it is', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-'));
+  const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
+  const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
+  const opening = cli('init', '--lang', 'en');
+  const option = opening.ask.options.find(o => o.exit);
+  const tapped = cli('look', `--said=${option.label}`);
+  assert.match(tapped.then, new RegExp(`Resolve \\{exit: ${option.exit}\\}`));
+  assert.equal(Object.keys(tapped)[0], 'then');
+  assert.equal(tapped.scene.id, opening.scene.id); // Look itself moved nothing
+  assert.match(cli('look', '--said=where am I').then, /^Now AskUser exactly/);
+  // A place on the director's choice is a Move.
+  const s = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
+  const open = { ...s, lang: 'zh', chapter: '03-qing', scene: '03-shore', place: 'linzi', done_scenes: [...s.done_scenes, '03-arrive', '03-town'] };
+  fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(open));
+  const choice = cli('look').ask;
+  const road = choice.options.find(o => o.move);
+  assert.ok(road, JSON.stringify(choice));
+  assert.match(cli('look', `--said=${road.label}`).then, new RegExp(`Move \\{place: ${road.move}\\}`));
+});
+
 test('the command line keeps state on disk, logs it and undoes it', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-'));
   const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };

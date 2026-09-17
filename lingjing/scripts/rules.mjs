@@ -1588,6 +1588,25 @@ export function askOf(content, state, ctx, result = {}) {
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
 const withAsk = (result, content, state, ctx) => ({ then: THEN, ask: askOf(content, state, ctx, result), ...result });
 
+/* The player's words are an option of the question on screen — a tap on a
+   card arrives as words, and Look is where Ling takes them. Look names the
+   one tool that option is, so the tap is done now, not asked again (seen
+   2026-09-17: 蓬莱 tapped, Look, the same choice asked twice). */
+const TAPS = {
+  move: o => `Move {place: ${o.move}}`,
+  exit: o => `Resolve {exit: ${o.exit}}`,
+  write: () => 'Write',
+  tame: o => `Tame {creature: ${o.tame}}`,
+  linger: () => 'Branch {action: open}',
+};
+function tapThen(ask, said) {
+  const words = String(said ?? '').trim();
+  const option = words && ask?.options?.find(o => o.label === words);
+  const kind = option && Object.keys(TAPS).find(k => option[k]);
+  if (!kind) return null;
+  return `The player tapped "${option.label}" — call ${TAPS[kind](option)} now; this Look changed nothing. Then AskUser exactly the \`ask\` that tool returns. The reply ends only there.`;
+}
+
 function run(verb, args) {
   const stateFile = path.join(dataDir(), 'state.json');
   const logFile = path.join(dataDir(), 'log.jsonl');
@@ -1625,7 +1644,9 @@ function run(verb, args) {
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const result = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
-  return withAsk(result, content, next ?? state, { now, quests: readQuests(), said: args.said });
+  const answer = withAsk(result, content, next ?? state, { now, quests: readQuests(), said: args.said });
+  const tap = verb === 'look' && tapThen(answer.ask, args.said);
+  return tap ? { ...answer, then: tap } : answer;
 }
 
 /* Park the save in play under its world and take up the other world's —

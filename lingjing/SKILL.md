@@ -649,7 +649,9 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   `linger` (Branch open), `ask` (Yinyue answers what is before them),
   `look` (say what is around, from the scene's setup or the place's line;
   nothing moves), `duel` (the bout is before them on the scene — say so in
-  a line, no tool) or `tame` (Tame with its creature).
+  a line, no tool), `write` (Write) or `tame` (Tame with its creature).
+  A tap that reaches you as the player's words: Look's `then` names the
+  tool — call it before any AskUser.
 - **The question is one short line** — *何去何从？* / *What now?* Narration,
   the lines, and what was `paid` go in your reply before it, never inside
   the question: the card shows the question as plain text.
