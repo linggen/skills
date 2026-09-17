@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, askOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, askOf, riddleOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, offers, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -34,6 +34,14 @@ function refused(fn, state, args, code, c = ctx()) {
   assert.equal(out.result.refused, code);
   assert.equal(out.state, null, 'a refusal never changes state');
   return out.result;
+}
+/* The riddle a scene's exit asks today, its right answer and a wrong one. */
+function riddleAt(state, exitId, c = ctx()) {
+  const scene = look(state, content, c).scene;
+  const exit = content.chapters[state.chapter].scenes[scene.id].exits.find(e => e.id === exitId);
+  const key = riddleOf(state, { id: scene.id }, exit, c.now);
+  const r = content.riddles.zh.riddles[key];
+  return { key, right: r.a[0], wrong: r.choices.find(x => !r.a.includes(x)), choices: r.choices };
 }
 /* A wrong answer to a riddle: refused, and the miss is kept for the day. */
 function missed(fn, state, args, c = ctx()) {
@@ -72,8 +80,9 @@ test('a new game starts at the river, 练气一层, nothing in hand', () => {
 
 test('the prologue walks from the river to its end by exits alone', () => {
   let s = toFuzhu();
-  missed(resolve, s, { exit: 'riddle', answer: '吉' });
-  s = must(resolve, s, { exit: 'riddle', answer: '告' }).state;
+  const fz = riddleAt(s, 'riddle');
+  missed(resolve, s, { exit: 'riddle', answer: fz.wrong });
+  s = must(resolve, s, { exit: 'riddle', answer: fz.right }).state;
   assert.equal(s.scene, '00-north');
   const end = must(resolve, s, { exit: 'rest' });
   s = end.state;
@@ -135,7 +144,7 @@ test('staying exits narrate and keep the scene', () => {
 test('an unknown exit, a missing answer and an unfought duel are refused', () => {
   const s = toFuzhu();
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');
-  refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
+  assert.equal(resolve(s, content, ctx(), { exit: 'riddle' }).result.refused, 'needs-answer');
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
 });
 
@@ -201,23 +210,35 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.ok(l.then.includes('AskUser'));
   // a riddle waiting: the riddle is the question, its answers the options,
   // and a way back to the scene
-  const r = refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
+  const rid = riddleAt(s, 'riddle');
+  const asked = resolve(s, content, ctx(), { exit: 'riddle' });
+  const r = asked.result;
+  assert.equal(r.refused, 'needs-answer');
+  assert.deepEqual(asked.state.riddles_seen, [rid.key], 'asked is seen');
   const a = askOf(content, s, ctx(), r);
   assert.equal(a.question, r.say);
-  assert.deepEqual(a.options.map(o => o.label), ['吉', '告', '牢', '舌', '先不答']);
-  assert.ok(a.options.slice(0, 4).every(o => o.exit === 'riddle' && o.answer === o.label));
+  assert.deepEqual(a.options.map(o => o.label), [...rid.choices, '先不答']);
+  assert.ok(a.options.slice(0, -1).every(o => o.exit === 'riddle' && o.answer === o.label));
   assert.equal(a.options.at(-1).look, true);
   // a miss: the hint, and the answers left; a second miss shuts it for the day
-  const miss = resolve(s, content, ctx(), { exit: 'riddle', answer: '吉' });
+  const wrongs = rid.choices.filter(x => x !== rid.wrong && !content.riddles.zh.riddles[rid.key].a.includes(x));
+  const miss = resolve(asked.state, content, ctx(), { exit: 'riddle', answer: rid.wrong });
   assert.equal(miss.result.refused, 'wrong-answer'); assert.ok(miss.result.hint);
-  assert.deepEqual(askOf(content, miss.state, ctx(), miss.result).options.map(o => o.label), ['告', '牢', '舌', '先不答']);
-  const shut = resolve(miss.state, content, ctx(), { exit: 'riddle', answer: '牢' });
+  assert.deepEqual(askOf(content, miss.state, ctx(), miss.result).options.map(o => o.label), [...rid.choices.filter(x => x !== rid.wrong), '先不答']);
+  const shut = resolve(miss.state, content, ctx(), { exit: 'riddle', answer: wrongs[0] });
   assert.equal(shut.result.refused, 'riddle-closed'); assert.equal(shut.result.hint, undefined);
-  assert.equal(refused(resolve, shut.state, { exit: 'riddle', answer: '告' }, 'riddle-closed').exit, 'riddle');
+  assert.equal(refused(resolve, shut.state, { exit: 'riddle', answer: rid.right }, 'riddle-closed').exit, 'riddle');
   assert.ok(!askOf(content, shut.state, ctx(), shut.result).options.some(o => o.exit === 'riddle'));
   assert.equal(look(shut.state, content, ctx()).scene.exits.find(e => e.id === 'riddle').closed, true);
+  // tomorrow: the other riddle of the pool — this play never asks one twice
   const tomorrow = ctx({ now: new Date(NOW.getTime() + 864e5) });
-  assert.equal(resolve(shut.state, content, tomorrow, { exit: 'riddle', answer: '告' }).result.ok, true);
+  const next = riddleAt(shut.state, 'riddle', tomorrow);
+  assert.notEqual(next.key, rid.key);
+  assert.equal(resolve(shut.state, content, tomorrow, { exit: 'riddle', answer: next.right }).result.ok, true);
+  // …and once the pool is spent it begins again, never with the last one asked
+  const spent = resolve(shut.state, content, tomorrow, { exit: 'riddle' }).state;
+  const after = riddleAt({ ...spent, riddles: { ...spent.riddles } }, 'riddle', ctx({ now: new Date(NOW.getTime() + 2 * 864e5) }));
+  assert.notEqual(after.key, next.key);
   // the filler never repeats the player's last word: after Yinyue, a look around
   const one = { ...l.scene, buttons: l.scene.buttons.slice(0, 1) };
   assert.equal(askOf(content, s, { ...ctx(), said: '问问银月' }).options.at(-1)?.label !== '问问银月', true);
@@ -450,7 +471,7 @@ test('every line carries its speaker’s name; Ling narrates unnamed', () => {
   const scene = look(s, content, ctx()).scene;
   assert.deepEqual(scene.cast, [{ id: 'yinyue', name: '银月' }, { id: 'fuzhu', name: '夫诸' }]);
   assert.equal(scene.lines[0].name, '银月');
-  const out = must(resolve, s, { exit: 'riddle', answer: '告' });
+  const out = must(resolve, s, { exit: 'riddle', answer: riddleAt(s, 'riddle').right });
   assert.equal(out.result.beat[0].name, '夫诸');
   assert.equal(must(resolve, start('en'), { exit: 'leave' }).result.beat[0].name, null);
 });
@@ -1023,8 +1044,9 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   assert.ok(altar.exits.find(e => e.id === 'subdue').duel.creature.root === 'earth');
   assert.equal(answer(duel, s, { id: altar.exits.find(e => e.id === 'subdue').game.id }).state.stamina, s.stamina - 10, 'a bout here costs');
   // the riddle way through
-  missed(resolve, s, { exit: 'riddle', answer: '虾' }, octx());
-  r = answer(resolve, s, { exit: 'riddle', answer: '鱼' });
+  const wu = riddleAt(s, 'riddle', octx());
+  missed(resolve, s, { exit: 'riddle', answer: wu.wrong }, octx());
+  r = answer(resolve, s, { exit: 'riddle', answer: wu.right });
   assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 40);
   s = r.state; assert.equal(s.place, 'zhangyuan');
   r = answer(resolve, s, { exit: 'seal', answer: '5' });
@@ -1384,8 +1406,9 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   assert.equal(lake.id, '02-lake');
   assert.equal(lake.exits.find(e => e.id === 'subdue').duel.creature.root, 'wood');
   // the three ways: the riddle
-  missed(resolve, s, { exit: 'riddle', answer: '雨' }, nctx());
-  r = answerN(resolve, s, { exit: 'riddle', answer: '雷' });
+  const lei = riddleAt(s, 'riddle', nctx());
+  missed(resolve, s, { exit: 'riddle', answer: lei.wrong }, nctx());
+  r = answerN(resolve, s, { exit: 'riddle', answer: lei.right });
   assert.equal(r.state.scene, '02-deep'); assert.equal(r.result.paid.progress, 40);
   // and 舜's way, from the same shore
   const yielded = answerN(resolve, s, { exit: 'yield' });
@@ -1457,8 +1480,9 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   assert.equal(shore.id, '03-shore');
   assert.equal(shore.exits.find(e => e.id === 'subdue').duel.creature.root, 'water');
   // the three ways: the riddle
-  missed(resolve, s, { exit: 'riddle', answer: '日' }, dctx());
-  r = answerD(resolve, s, { exit: 'riddle', answer: '明' });
+  const kui = riddleAt(s, 'riddle', dctx());
+  missed(resolve, s, { exit: 'riddle', answer: kui.wrong }, dctx());
+  r = answerD(resolve, s, { exit: 'riddle', answer: kui.right });
   assert.equal(r.state.scene, '03-deep'); assert.equal(r.result.paid.progress, 40);
   // and 孔子's word, from the same shore
   const enough = answerD(resolve, s, { exit: 'enough' });

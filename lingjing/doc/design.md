@@ -348,7 +348,7 @@ The fields, as `scripts/content.mjs` checks them:
 | exit `means` | Plain words Ling matches the player's text against. |
 | exit `needs` / `take` | What must be in hand (`bag`) or done (`task`); what it uses up. A need carries a `refuse` line. |
 | exit `grant` | 修为, 灵石, a creature — never over its table's cap. |
-| exit `key` | A riddle; the rules check the answer, the model only extracts it. |
+| exit `key` | A riddle, or a pool of them (2026-09-17). The rules pick the day's — one this play has not seen, by the day and the 道号; asked is seen, and a play never asks one twice until its pool is spent. Each riddle offers `choices` (three or four, one right) as the question's options; a miss is kept — the first brings the `hint`, the second shuts the riddle until tomorrow (`riddle-closed`). The model only extracts the answer. |
 | exit `value` | A value the player gives — the 道号 — with offered choices. |
 | exit `set` | State the rules set, e.g. `root: v1`. |
 | exit `game` | A puzzle or duel whose win the page reports. |

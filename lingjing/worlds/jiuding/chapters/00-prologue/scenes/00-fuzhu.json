@@ -33,7 +33,7 @@
       "id": "riddle",
       "label": { "zh": "论道 · 猜一字", "en": "Debate · A riddle" },
       "means": "answers the riddle Fuzhu asks",
-      "key": "fuzhu-1",
+      "key": ["fuzhu-1", "fuzhu-2"],
       "grant": { "table": "scene", "progress": 50, "wealth": 10, "cast": "fuzhu" },
       "beat": [
         { "who": "fuzhu", "text": { "zh": "……人类，你倒有些意思。", "en": "…Human, you are more interesting than you look." } }

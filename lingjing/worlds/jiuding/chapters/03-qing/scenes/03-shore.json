@@ -89,7 +89,7 @@
         "en": "Answer Kui"
       },
       "means": "answers the creature's riddle",
-      "key": "kui-1",
+      "key": ["kui-1", "kui-2"],
       "grant": {
         "table": "scene",
         "progress": 40,

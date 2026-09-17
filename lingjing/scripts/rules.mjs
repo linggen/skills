@@ -341,7 +341,7 @@ function sceneBrief(content, state, now = new Date()) {
     show: withMap(content, scene.show ?? []),
     lines: spoken(content, state, scene.lines),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
-    exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow)),
+    exits: scene.exits.map(e => exitBrief(content, state, e, buttons.includes(e.id), ctxNow, scene)),
   };
 }
 
@@ -372,11 +372,12 @@ function duelKitBrief(content, state) {
   };
 }
 
-function exitBrief(content, state, exit, button, ctxNow = new Date()) {
+function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sceneOf(content, state)) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
   if (exit.key) {
-    const riddle = content.riddles[state.lang].riddles[exit.key], tried = triedToday(state, exit.key, ctxNow);
+    const key = riddleOf(state, scene, exit, ctxNow);
+    const riddle = content.riddles[state.lang].riddles[key], tried = triedToday(state, scene, exit, key, ctxNow);
     Object.assign(brief, { riddle: riddle.q, choices: riddle.choices, tried, closed: tried.length >= RIDDLE_TRIES });
   }
   const game = gameOf(exit);
@@ -585,7 +586,36 @@ function pay(content, state, ctx, grant) {
 
 /* A riddle is answered wrong at most this many times a day. */
 const RIDDLE_TRIES = 2;
-const triedToday = (state, key, now) => (state.riddles?.[key]?.day === dayKey(now) ? state.riddles[key].tried ?? [] : []);
+
+/* An exit's riddles: `key` is one riddle or a pool of them. */
+const riddlePool = exit => (Array.isArray(exit.key) ? exit.key : [exit.key]);
+const riddleSlot = (scene, exit) => `${scene.id}/${exit.id}`;
+
+/* The riddle an exit asks: today's, once asked; else one this play has not
+   seen, by the day and the 道号 — never twice in one play (his rule,
+   2026-09-17) until the pool is spent, and then never the last one again. */
+export function riddleOf(state, scene, exit, now) {
+  const pool = riddlePool(exit), slot = state.riddles?.[riddleSlot(scene, exit)];
+  if (slot?.day === dayKey(now) && pool.includes(slot.key)) return slot.key;
+  const seen = new Set(state.riddles_seen ?? []);
+  let fresh = pool.filter(k => !seen.has(k));
+  if (!fresh.length) fresh = pool.length > 1 ? pool.filter(k => k !== slot?.key) : pool;
+  return fresh[hashOf(`${dayKey(now)}|${state.name ?? ''}|${riddleSlot(scene, exit)}`) % fresh.length];
+}
+const triedToday = (state, scene, exit, key, now) => {
+  const slot = state.riddles?.[riddleSlot(scene, exit)];
+  return slot?.day === dayKey(now) && slot.key === key ? slot.tried ?? [] : [];
+};
+/* The riddle asked is kept: seen for the play, and today's misses. A seen
+   one asked on a new day means its pool was spent — the round begins again
+   with it. */
+function keepRiddle(s, scene, exit, key, now, tried) {
+  const id = riddleSlot(scene, exit), slot = s.riddles?.[id], seen = s.riddles_seen ?? [];
+  const today = slot?.day === dayKey(now) && slot.key === key;
+  const pool = riddlePool(exit);
+  s.riddles_seen = seen.includes(key) && !today ? [...seen.filter(k => !pool.includes(k)), key] : [...new Set([...seen, key])];
+  s.riddles = { ...s.riddles, [id]: { day: dayKey(now), key, tried } };
+}
 
 function judgeAnswer(content, key, answer) {
   const said = normalizeAnswer(answer);
@@ -665,18 +695,24 @@ export function resolve(state, content, ctx, args) {
     breakthrough = { from: stepName(content, s.tier, s.step, lang), to: stepName(content, next.id, 0, lang), tier: next.id };
   }
   if (exit.key) {
-    const riddle = content.riddles[lang].riddles[exit.key];
-    const tried = triedToday(s, exit.key, ctx.now);
+    const key = riddleOf(s, scene, exit, ctx.now);
+    const riddle = content.riddles[lang].riddles[key];
+    const tried = triedToday(s, scene, exit, key, ctx.now);
     if (tried.length >= RIDDLE_TRIES) return refuse('riddle-closed', null, { exit: exit.id });
-    if (args.answer == null) return refuse('needs-answer', riddle.q, { exit: exit.id, choices: riddle.choices });
-    if (!judgeAnswer(content, exit.key, args.answer)) {
+    // Asked is seen: the question stays today's, and the play never asks it again.
+    if (args.answer == null) {
+      keepRiddle(s, scene, exit, key, ctx.now, tried);
+      return { state: s, result: { ok: false, refused: 'needs-answer', say: riddle.q, exit: exit.id, choices: riddle.choices } };
+    }
+    if (!judgeAnswer(content, key, args.answer)) {
       // A miss is kept: the first brings the hint, the second closes the
       // riddle until tomorrow — guessing costs, and nothing blocks past a day.
-      const now = [...tried, String(args.answer).trim()];
-      s.riddles = { ...s.riddles, [exit.key]: { day: dayKey(ctx.now), tried: now } };
-      const closed = now.length >= RIDDLE_TRIES;
+      const missed = [...tried, String(args.answer).trim()];
+      keepRiddle(s, scene, exit, key, ctx.now, missed);
+      const closed = missed.length >= RIDDLE_TRIES;
       return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', say: null, ...(closed ? {} : { hint: riddle.hint }), exit: exit.id } };
     }
+    keepRiddle(s, scene, exit, key, ctx.now, tried);
   }
   const game = gameOf(exit);
   if (game && !s.wins?.[game.id]) {

@@ -89,7 +89,7 @@
         "en": "Answer the Thunder God"
       },
       "means": "answers the thunder god's riddle",
-      "key": "lei-1",
+      "key": ["lei-1", "lei-2"],
       "grant": {
         "table": "scene",
         "progress": 40,

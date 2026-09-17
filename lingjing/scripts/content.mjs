@@ -603,7 +603,11 @@ function lintExit(where, exit, chapter, content, ids, speakers, bad) {
     if (chapter.gate == null) bad(where, `a breakthrough in ${chapter.id}, which has no gate`);
     else if (!content.ladder.tiers.some(t => t.gate === chapter.gate)) bad(where, `no tier on the ladder has gate ${chapter.gate}`);
   }
-  if (exit.key && !content.riddles.zh.riddles[exit.key]) bad(where, `unknown riddle ${exit.key}`);
+  if (exit.key != null) {
+    const pool = Array.isArray(exit.key) ? exit.key : [exit.key];
+    if (!pool.length) bad(where, 'a riddle pool needs a riddle');
+    for (const key of pool) if (!content.riddles.zh.riddles[key]) bad(where, `unknown riddle ${key}`);
+  }
   const game = gameOf(exit);
   if (game) {
     if (typeof game.id !== 'string' || !game.id) bad(where, 'a game needs an id');

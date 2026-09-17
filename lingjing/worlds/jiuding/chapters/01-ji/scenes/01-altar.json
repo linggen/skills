@@ -33,7 +33,7 @@
       "id": "riddle",
       "label": { "zh": "答河伯的问", "en": "Answer the River Lord's question" },
       "means": "answers the sorceress's riddle",
-      "key": "wu-1",
+      "key": ["wu-1", "wu-2"],
       "grant": { "table": "scene", "progress": 40, "wealth": 10 },
       "beat": [
         { "who": "ling", "text": { "zh": "你答了。狍鸮的哭声停了一瞬——它听得懂。巫婆的脸白了：河伯从没让人答对过。", "en": "You answer. Paoxiao's crying stops for a breath — it understood. The sorceress goes white: the River Lord has never let anyone answer right." } },
