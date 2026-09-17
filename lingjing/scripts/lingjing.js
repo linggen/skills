@@ -15,16 +15,13 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
+const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
 let focus = []; //        cards on the scene
 let focusScene = null; // the scene the focus was last reset for
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
-let running = false; //   Ling is mid-reply
-let asked = false; //     Ling's own question is waiting in the chat
-let askSeq = 0; //        Ling's questions seen, so a slower read can't undo a newer one
 let tapped = null; //     the stage's words waiting on Ling: that button stays pressed
 let casting = false; //   起一卦 tapped: the coins are in the air until the cast lands
 let mapView = 'province'; // the map card: 'province' (the player's, up close), 'world', or another province's id
@@ -108,38 +105,20 @@ async function readCloud() {
   }
 }
 
-/// Re-read the game. Entering a new scene puts its own cards on the scene,
-/// so a creature is pictured even if Ling forgets to Show it.
-/// Whether Ling's own question is waiting in the chat — then the stage
-/// draws no choice of its own.
-async function readPending() {
-  const seq = askSeq;
-  try {
-    const pending = await (await fetch('/api/pending-ask-user')).json();
-    asked = pending.some((p) => p.session_id === chat?.getSessionId());
-  } catch {
-    asked = false;
-  }
-  // Ling asked while this read was on its way: the question stands — else
-  // the stage drew its own choice beside the chat's.
-  if (seq !== askSeq) asked = true;
-  if (asked) waitingOnPlayer();
-}
-
 /// Ling has asked and stands waiting: the turn is not over for the chat
-/// (no stream end comes until the answer), but for the player it is — taps
-/// must flow again, each one the answer to that question.
+/// (no stream end comes until the answer), but for the player it is — the
+/// stage's buttons unlock; a tap waits in the chat's queue behind the question.
 function waitingOnPlayer() {
-  asked = true;
-  running = false;
   saying = false;
   tapped = null;
   document.querySelectorAll('.busy').forEach((el) => el.classList.remove('busy'));
 }
 
+/// Re-read the game. Entering a new scene puts its own cards on the scene,
+/// so a creature is pictured even if Ling forgets to Show it.
 async function refresh() {
   try {
-    [look] = await Promise.all([verb('look'), readCloud(), readPending()]);
+    [look] = await Promise.all([verb('look'), readCloud()]);
     if (look.divination) casting = false;
     await loadContent(look.world);
   } catch (e) {
@@ -281,18 +260,7 @@ function focusHtml() {
   // A creature at its haunt, no scene running: its bout is on the scene too.
   const haunt = look.place?.encounter;
   if (haunt && !haunt.tamed && !cards.some((c) => c.card === 'duel' && c.id === haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
-  return buildingCard() + emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('') + choiceCard();
-}
-
-/// The way forward, from the rules' own `ask`, whenever Ling's reply has
-/// ended without a question of its own: the player is never left without
-/// a next step. A tapped label is the player's word, as Ling's own options
-/// are. Hidden while Ling is mid-reply or a question already waits.
-function choiceCard() {
-  const ask = look?.ask;
-  if (!ask?.options?.length || running || asked) return '';
-  const opts = ask.options.map((o) => `<button class="act say" data-say="${esc(o.label)}">${esc(o.label)}</button>`).join('');
-  return `<div class="card choice"><div class="cardtitle">${esc(ask.question)}</div><div class="choices">${opts}</div></div>`;
+  return buildingCard() + emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('');
 }
 
 /// A made world still being painted: the story waits for the brush, so the
@@ -359,31 +327,11 @@ async function say(text) {
   await deliver(text, false);
 }
 
-/// When Ling is waiting on a question, the text is its answer — a new
-/// message would queue behind that question; otherwise a message, hidden
-/// or the player's own.
-async function deliver(text, hidden) {
-  const sid = chat?.getSessionId();
-  try {
-    const pending = await (await fetch('/api/pending-ask-user')).json();
-    const open = pending.find((p) => p.session_id === sid);
-    if (open) {
-      const r = await fetch('/api/ask-user-response', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question_id: open.question_id,
-          answers: [{ question_index: 0, selected: [], custom_text: text }],
-        }),
-      });
-      // Answered through the page, the words never reach the chat as a
-      // line of the player's own — so the tap looked ignored for the ten
-      // seconds Ling took to reply. Show them.
-      if (r.ok) { if (!hidden) chat?.addMessage('user', text); return; }
-    }
-  } catch (e) {
-    console.warn('[lingjing] pending ask', e);
-  }
+/// A word from the stage is a message, never the answer to a question
+/// waiting in the chat: the question belongs to the chat alone, and the word
+/// waits its turn behind it (his "should it queue instead of hiding the ask
+/// user widget", 2026-09-17 — the skill declares the queue).
+function deliver(text, hidden) {
   if (hidden) chat?.sendHidden(text);
   else chat?.send(text);
 }
@@ -419,7 +367,6 @@ document.addEventListener('click', (e) => {
     if (spoken.matches(':disabled')) return;
     tapped = spoken.dataset.say;
     if (tapped === words().sayCast) casting = true;
-    running = true;
     render();
     say(tapped);
     return;
@@ -525,7 +472,6 @@ function askedQuestion(args) {
 
 function onContentBlock(payload) {
   if (payload?.tool === 'AskUser') {
-    askSeq++;
     // The cast's own question (所问何事) keeps the coins in the air; any
     // other question means no cast is coming this turn.
     if (casting && askedQuestion(payload.args) !== words().castAsk) casting = false;
@@ -570,13 +516,13 @@ async function mountChat() {
     title: 'Lingjing',
     sessionId: resume || undefined,
     onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
-    onStreamToken: () => { alive = true; running = true; },
+    onStreamToken: () => { alive = true; },
     onStreamEnd: (text) => {
-      saying = false; running = false; tapped = null; casting = false;
+      saying = false; tapped = null; casting = false;
       const before = look;
       refresh().then(() => cheer(before, text));
     },
-    onContentBlock: (payload) => { alive = true; running = true; onContentBlock(payload); },
+    onContentBlock: (payload) => { alive = true; onContentBlock(payload); },
   });
   if (!resume) {
     setTimeout(() => openWith(chat?.getSessionId()), 700);

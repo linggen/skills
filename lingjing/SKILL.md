@@ -18,6 +18,13 @@ app:
 # the rules' own stamina inside the save, not a token meter.
 cloud:
   save: data/state.json
+# The rules always know what the player must choose next, and the scene is
+# the question: every tool answer carries `ask`, and the engine asks it when
+# Ling ends a turn on words alone (2026-09-17 — Terra dropped it three times
+# in one sitting). A tap or a line sent while Ling is mid-turn waits for the
+# turn to finish, and never takes an open question's place.
+closing-ask: true
+queue: after-turn
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this
