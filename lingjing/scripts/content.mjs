@@ -386,6 +386,7 @@ export function lint(content) {
   lintLadder(content.ladder, bad);
   lintCreatures(content, bad);
   lintRiddles(content.riddles, bad);
+  lintBook(content, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
   for (const b of content.branches.templates) {
     if (!content.rewards.tables[b.table]) bad(`branch ${b.kind}`, `unknown reward table ${b.table}`);
@@ -523,6 +524,27 @@ function lintCreatures(content, bad) {
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
   }
+}
+
+/* The Book of Changes: all 64, each once, each graded, both languages; the
+   asks' effects graded in full; every trigram with its root. */
+function lintBook(content, bad) {
+  const book = content.hexagrams;
+  if (!book?.hexagrams) return;
+  const ids = new Set(book.hexagrams.map(h => h.id)), lines = new Set(book.hexagrams.map(h => (h.lines ?? []).join('')));
+  if (book.hexagrams.length !== 64 || ids.size !== 64 || lines.size !== 64) bad('hexagrams', 'needs all 64, each once, each with its own six lines');
+  const grades = Object.keys(book.grades ?? {});
+  for (const h of book.hexagrams) {
+    const at = `hexagram ${h.id}`;
+    if (!Array.isArray(h.lines) || h.lines.length !== 6 || h.lines.some(b => b !== 0 && b !== 1)) bad(at, 'needs six lines of 0 and 1');
+    if (!grades.includes(h.grade)) bad(at, `grade ${h.grade} is not one of ${grades.join(', ')}`);
+    for (const k of ['name', 'judgment', 'image']) if (!h[k]?.zh || !h[k]?.en) bad(at, `${k} needs zh and en`);
+  }
+  for (const [ask, byGrade] of Object.entries(book.effects ?? {})) {
+    if (!book.asks?.[ask]?.zh || !book.asks?.[ask]?.en) bad(`ask ${ask}`, 'needs its words in zh and en');
+    for (const g of grades) if (!byGrade[g]) bad(`ask ${ask}`, `no effect for ${g}`);
+  }
+  for (const t of ['qian', 'dui', 'li', 'zhen', 'xun', 'kan', 'gen', 'kun']) if (!ELEMENTS.includes(book.trigram_roots?.[t])) bad('trigram_roots', `${t} needs a root`);
 }
 
 function lintRiddles(riddles, bad) {

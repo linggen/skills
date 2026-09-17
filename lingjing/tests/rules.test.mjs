@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, askOf, riddleOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, askOf, riddleOf, divine, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, offers, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -35,6 +35,8 @@ function refused(fn, state, args, code, c = ctx()) {
   assert.equal(out.state, null, 'a refusal never changes state');
   return out.result;
 }
+const fortuneFor = (ask, grade) => content.hexagrams.effects[ask][grade];
+
 /* The riddle a scene's exit asks today, its right answer and a wrong one. */
 function riddleAt(state, exitId, c = ctx()) {
   const scene = look(state, content, c).scene;
@@ -1073,6 +1075,36 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   assert.equal(wake(r.state, content, octx()), null, 'chapter 2 has not opened');
 });
 
+test('the cast\'s grade speeds or slows what was asked, rests a dire day, and turns a bout for its root', () => {
+  const castOn = (st, ask, grade, hexagram = 1) => ({ ...st, divination: { day: '2026-10-02', ask, throws: [[3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2]], hexagram, changed: null, grade } });
+  const atShrine = () => answer(resolve, answer(resolve, toJi(), { exit: 'town' }).state, { exit: 'shrine' }).state;
+  const paidBy = st => must(resolve, st, { exit: 'send' }, octx()).result.paid;
+  const plain = paidBy(atShrine());
+  const great = paidBy(castOn(atShrine(), 'cultivation', 'great'));
+  const ill = paidBy(castOn(atShrine(), 'cultivation', 'ill'));
+  assert.ok(great.progress > plain.progress && ill.progress < plain.progress, JSON.stringify({ plain, great, ill }));
+  assert.equal(great.wealth, plain.wealth, 'asked about cultivation, wealth is untouched');
+  assert.deepEqual(great.fortune, { progress: 1.5, wealth: 1 });
+  assert.equal(plain.fortune, undefined);
+  const rich = paidBy(castOn(atShrine(), 'wealth', 'great'));
+  assert.ok(rich.wealth > plain.wealth && rich.progress === plain.progress);
+  // a dire cast on cultivation: each story step waits its minute
+  const d = castOn(atShrine(), 'cultivation', 'dire');
+  d.last_step_at = new Date(OCT.getTime() - 10_000).toISOString();
+  const r = refused(resolve, d, { exit: 'send' }, 'resting', octx());
+  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 50_000);
+  const rested = resolve(d, content, octx({ now: new Date(OCT.getTime() + 51_000) }), { exit: 'send' });
+  assert.equal(rested.result.ok, true);
+  assert.equal(rested.state.last_step_at, new Date(OCT.getTime() + 51_000).toISOString());
+  // a bout asked about: the lower trigram's root (乾 → 金) turns a draw to a win, or a win to a draw
+  assert.equal(bout(['metal'], ['metal'], { roots: ['metal'], fortune: { root: 'metal', draws_win: 1 } }).rounds[0].result, 'won');
+  assert.equal(bout(['metal', 'metal'], ['metal', 'metal'], { roots: ['metal'], fortune: { root: 'metal', draws_win: 1 } }).rounds[1].result, 'draw', 'once a bout');
+  assert.equal(bout(['metal'], ['wood'], { roots: ['metal'], fortune: { root: 'metal', wins_draw: 1 } }).rounds[0].result, 'draw');
+  const shrine = castOn(atShrine(), 'bout', 'good');
+  const kit = look(shrine, content, octx()).scene.exits.find(e => e.id === 'subdue').duel.kit;
+  assert.deepEqual(kit.fortune, { root: 'metal', draws_win: 1 });
+});
+
 test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
   let s = answer(resolve, toJi(), { exit: 'town' }).state; // walked to Ye by the exit
   s.stamina = 5; s.stamina_at = OCT.toISOString();
@@ -1113,12 +1145,44 @@ test('a closed road is refused in the world', () => {
   assert.equal(r.say, '冀州的路还没开。');
 });
 
-test('look carries the day’s omen and the offered tasks', () => {
+test('look carries today\'s cast (none yet) and the offered tasks', () => {
   let s = start();
   for (const [exit, extra] of [['reach'], ['name', { value: '青玄' }], ['touch']]) s = must(resolve, s, { exit, ...extra }).state;
   const seen = look(s, content, ctx());
-  assert.ok(seen.omen.name && seen.omen.lines.length === 6);
+  assert.equal(seen.divination, null);
   assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['alchemy-first', 'offered']]);
+});
+
+test('起卦: once a day by three coins — asked what about, the same throws all day, and what the grade does', () => {
+  let s = start();
+  s.name = '清玄';
+  const c = ctx();
+  // no question yet: the rules ask it
+  const asked = divine(s, content, c, {});
+  assert.equal(asked.result.refused, 'needs-ask');
+  const a = askOf(content, s, c, asked.result);
+  assert.equal(a.question, '所问何事？');
+  assert.deepEqual(a.options.map(o => o.label), ['问修行', '问斗法', '问财运', '先不问']);
+  assert.deepEqual(a.options.map(o => o.divine ?? null).slice(0, 3), ['cultivation', 'bout', 'wealth']);
+  // the cast: six lines of three coins, a hexagram that matches them, graded
+  const cast = must(divine, s, { ask: 'cultivation' }, c);
+  const d = cast.result.divination;
+  assert.equal(d.throws.length, 6); assert.ok(d.throws.every(t => t.length === 3 && t.every(x => x === 2 || x === 3)));
+  assert.deepEqual(d.hexagram.lines, d.values.map(v => v % 2));
+  assert.deepEqual(d.moving, d.values.flatMap((v, i) => (v === 6 || v === 9 ? [i] : [])));
+  assert.equal(Boolean(d.changed), d.moving.length > 0);
+  const h = content.hexagrams.hexagrams.find(x => x.id === d.hexagram.id);
+  assert.equal(d.grade.id, h.grade);
+  // the same day and name fall the same way, whatever is asked — no fishing
+  assert.deepEqual(must(divine, s, { ask: 'wealth' }, c).result.divination.throws, d.throws);
+  // once a day
+  assert.equal(refused(divine, cast.state, { ask: 'bout' }, 'cast-today').divination.hexagram.id, d.hexagram.id);
+  assert.equal(look(cast.state, content, c).divination.hexagram.id, d.hexagram.id);
+  assert.equal(look(cast.state, content, ctx({ now: new Date(NOW.getTime() + 864e5) })).divination, null);
+  // the choice offers the cast until it is made
+  const open = { ...cast.state, scene: null, chapter: '03-qing', place: 'linzi' };
+  assert.ok(!look(open, content, c).director.choice.options.some(o => o.divine));
+  assert.ok(look({ ...open, divination: null }, content, c).director.choice.options.some(o => o.divine === true));
 });
 
 test('placeholder arguments the agent left unfilled are dropped', () => {

@@ -218,7 +218,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state), !castToday(state, ctx.now)),
   };
 }
 
@@ -228,7 +228,7 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said, encounter = null, write = false) {
+function choiceOf(state, here, near, thread, seeded, said, encounter = null, write = false, uncast = false) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
@@ -241,6 +241,7 @@ function choiceOf(state, here, near, thread, seeded, said, encounter = null, wri
   if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
   options.push(...places.map(p => ({ label: p.name, move: p.id })));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
+  if (uncast) options.push({ label: zh ? '起一卦' : 'Cast the coins', divine: true });
   if (options.length < 2) options.push(filler(state, said));
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
 }
@@ -303,7 +304,7 @@ const teach = (content, state, cid) => learn(content, state, creatureOf(content,
 const teachAll = (content, state) => state.cast.map(cid => teach(content, state, cid)).filter(Boolean);
 
 /* What the player brings to a bout — duel.js reads it, the card too. */
-function kitOf(content, state) {
+function kitOf(content, state, now = null) {
   const weapon = state.wear?.weapon && state.bag[state.wear.weapon] ? itemOf(content, state.wear.weapon) : null;
   const charm = charmOf(content);
   const arts = {};
@@ -311,6 +312,7 @@ function kitOf(content, state) {
   return {
     roots: state.traits ?? [], sword: weapon?.effect?.root ?? null, weapon: weapon?.id ?? null,
     charm: charm ? { id: charm.id, held: state.bag[charm.id] ?? 0 } : null, arts,
+    ...(now && boutFortune(content, state, now) ? { fortune: boutFortune(content, state, now) } : {}),
   };
 }
 
@@ -354,15 +356,15 @@ function duelBrief(content, state, game, now) {
   return {
     id: game.id, creature: { id: creature.id, name: pick(creature.name, lang), ...(lang === 'zh' && creature.pinyin ? { pinyin: creature.pinyin } : {}), root: creature.root, root_name: pick(content.traits.elements[creature.root], lang) },
     roots: (state.traits ?? []).map(e => ({ id: e, name: pick(content.traits.elements[e], lang) })),
-    ...duelKitBrief(content, state),
+    ...duelKitBrief(content, state, now),
     today: open ? { outcome: open.outcome, rounds: open.rounds ?? [] } : null,
   };
 }
 
 /* The sword's root, the 符 in hand and the arts known, as the card draws
    them beside the player's own roots; `kit` is the same for duel.js. */
-function duelKitBrief(content, state) {
-  const lang = state.lang, kit = kitOf(content, state);
+function duelKitBrief(content, state, now = null) {
+  const lang = state.lang, kit = kitOf(content, state, now);
   const weapon = kit.weapon ? itemOf(content, kit.weapon) : null, charm = charmOf(content);
   return {
     sword: weapon ? { id: weapon.id, name: pick(weapon.name, lang), root: kit.sword, root_name: pick(content.traits.elements[kit.sword], lang) } : null,
@@ -393,12 +395,6 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
   return brief;
 }
 
-function omen(content, now, lang) {
-  const list = content.hexagrams.hexagrams;
-  const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 864e5);
-  const h = list[day % list.length];
-  return { id: h.id, lines: h.lines, name: pick(h.name, lang), image: pick(h.image, lang) };
-}
 
 function tasksBrief(content, state, ctx) {
   const lang = state.lang;
@@ -471,7 +467,7 @@ export function look(state, content, ctx) {
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
     ended: state.ended, branch: state.branch, story: state.story,
-    omen: omen(content, ctx.now, lang),
+    divination: divinationBrief(content, state, ctx.now),
     stamina: staminaBrief(content, state, ctx.now),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
@@ -569,10 +565,14 @@ function pay(content, state, ctx, grant) {
   rollDay(state, ctx.now);
   const table = content.rewards.tables[grant.table];
   const day = content.rewards.day;
-  const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state));
-  const base = Math.max(0, Math.min(want, day.progress - state.day.progress));
+  // The day's cast, when it was asked about this: its grade speeds or slows
+  // the gain, and a good one lifts the day's cap with it.
+  const pf = fortuneOf(content, state, ctx.now, 'cultivation')?.progress ?? 1;
+  const wf = fortuneOf(content, state, ctx.now, 'wealth')?.wealth ?? 1;
+  const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state) * pf);
+  const base = Math.max(0, Math.min(want, Math.round(day.progress * Math.max(1, pf)) - state.day.progress));
   const progress = base * payOf(content, state);
-  const wealth = Math.max(0, Math.min(grant.wealth ?? 0, table.wealth, day.wealth - state.day.wealth));
+  const wealth = Math.max(0, Math.min(Math.round(Math.min(grant.wealth ?? 0, table.wealth) * wf), Math.round(day.wealth * Math.max(1, wf)) - state.day.wealth));
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
@@ -581,7 +581,8 @@ function pay(content, state, ctx, grant) {
   const learned = (grant.cast ? teach(content, state, grant.cast) : null) ?? (grant.art ? learn(content, state, grant.art) : null);
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(learned ? { learned } : {}) };
+  const fortune = (pf !== 1 && grant.progress) || (wf !== 1 && grant.wealth) ? { progress: pf, wealth: wf } : null;
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */
@@ -636,9 +637,13 @@ const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
 
 function spendStamina(content, s, ctx, kind) {
   if (freeHere(content, s, kind)) return null;
+  // A dire cast asked about cultivation: each story step waits its rest.
+  const rest = kind === 'step' ? fortuneOf(content, s, ctx.now, 'cultivation')?.rest_seconds : null;
+  const since = rest && s.last_step_at ? new Date(new Date(s.last_step_at).getTime() + rest * 1000) : null;
+  if (since && since > ctx.now) return refuse('resting', null, { returns_at: since.toISOString() });
   settleStamina(content, s, ctx.now);
   const cost = content.rewards.stamina.cost[kind] ?? 0;
-  if (s.stamina >= cost) { s.stamina -= cost; return null; }
+  if (s.stamina >= cost) { s.stamina -= cost; if (kind === 'step') s.last_step_at = ctx.now.toISOString(); return null; }
   const at = staminaReturnsAt(content, s, cost);
   const w = wordsOf(content, s.lang);
   const say = s.lang === 'zh'
@@ -872,7 +877,7 @@ export function duel(state, content, ctx, args) {
   }
   if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
   const picks = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
-  const kit = kitOf(content, s);
+  const kit = kitOf(content, s, ctx.now);
   const played = bout(picks, moves, kit);
   if (played.refused) return refuse(played.refused.why, null, { token: played.refused.token, roots: kit.roots, sword: kit.sword, arts: Object.keys(kit.arts) });
   if (played.outcome === 'open') return refuse('unfinished', null, { rounds: played.rounds });
@@ -1539,6 +1544,88 @@ export function atlas(state, content) {
   return { state: null, result: { ok: true, provinces } };
 }
 
+/* ── 起卦 — the day's cast, by three coins ── */
+
+const TRIGRAM_OF = { 111: 'qian', 110: 'dui', 101: 'li', 100: 'zhen', '011': 'xun', '010': 'kan', '001': 'gen', '000': 'kun' };
+const castToday = (state, now) => (state.divination?.day === dayKey(now) ? state.divination : null);
+
+/* A seeded generator: the day's throws are the day's, however often asked. */
+function prng(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), a | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* 三钱法: three coins six times, the bottom line first. A face counts 3, the
+   other 2: 9 old yang, 8 young yin, 7 young yang, 6 old yin — the old lines move. */
+export function castThrows(seed) {
+  const rand = prng(hashOf(seed));
+  return Array.from({ length: 6 }, () => [0, 1, 2].map(() => (rand() < 0.5 ? 3 : 2)));
+}
+const hexagramOf = (content, lines) => content.hexagrams.hexagrams.find(h => h.lines.join('') === lines.join(''));
+
+/* What today's cast does to what it was asked about — null when it was
+   not cast, asked about something else, or is even. */
+function fortuneOf(content, state, now, ask) {
+  const cast = now && castToday(state, now);
+  if (!cast || cast.ask !== ask) return null;
+  const effect = content.hexagrams.effects[ask]?.[cast.grade] ?? {};
+  return Object.keys(effect).length ? effect : null;
+}
+
+/* A cast asked about bouts favours — or turns against — the lower trigram's root. */
+function boutFortune(content, state, now) {
+  const effect = fortuneOf(content, state, now, 'bout');
+  if (!effect) return null;
+  const h = content.hexagrams.hexagrams.find(x => x.id === castToday(state, now).hexagram);
+  return { root: content.hexagrams.trigram_roots[TRIGRAM_OF[h.lines.slice(0, 3).join('')]], ...effect };
+}
+
+/* Today's cast as Look and the card tell it, or null before it is made. */
+export function divinationBrief(content, state, now) {
+  const cast = castToday(state, now);
+  if (!cast) return null;
+  const lang = state.lang, book = content.hexagrams;
+  const h = book.hexagrams.find(x => x.id === cast.hexagram);
+  const to = cast.changed ? book.hexagrams.find(x => x.id === cast.changed) : null;
+  const values = cast.throws.map(t => t[0] + t[1] + t[2]);
+  const moving = values.flatMap((v, i) => (v === 6 || v === 9 ? [i] : []));
+  const bout = cast.ask === 'bout' ? boutFortune(content, state, now) : null;
+  return {
+    ask: { id: cast.ask, name: pick(book.asks[cast.ask], lang) },
+    throws: cast.throws, values, moving,
+    hexagram: {
+      id: h.id, name: pick(h.name, lang), lines: h.lines, judgment: pick(h.judgment, lang), image: pick(h.image, lang),
+      ...(moving.length && lang === 'zh' && h.yaoci ? { moving_lines: moving.map(i => h.yaoci[i]) } : {}),
+    },
+    changed: to ? { id: to.id, name: pick(to.name, lang) } : null,
+    grade: { id: cast.grade, name: pick(book.grades[cast.grade], lang) },
+    effect: { ...(book.effects[cast.ask]?.[cast.grade] ?? {}), ...(bout ? { root: { id: bout.root, name: pick(content.traits.elements[bout.root], lang) } } : {}) },
+  };
+}
+
+/* Divine: once a day. Without `ask` the rules ask what the cast is about;
+   with it, the coins fall — the same for the day and the 道号, so undo
+   cannot fish for another. */
+export function divine(state, content, ctx, args) {
+  if (castToday(state, ctx.now)) return refuse('cast-today', null, { divination: divinationBrief(content, state, ctx.now) });
+  const ask = String(args.ask ?? '').trim();
+  if (!content.hexagrams.effects[ask]) return refuse('needs-ask', null, { asks: Object.keys(content.hexagrams.effects) });
+  const s = clone(state);
+  const throws = castThrows(`${dayKey(ctx.now)}|${s.name ?? ''}|cast`);
+  const values = throws.map(t => t[0] + t[1] + t[2]);
+  const lines = values.map(v => v % 2);
+  const moved = lines.map((b, i) => (values[i] === 6 || values[i] === 9 ? 1 - b : b));
+  const h = hexagramOf(content, lines);
+  const to = moved.join('') === lines.join('') ? null : hexagramOf(content, moved);
+  s.divination = { day: dayKey(ctx.now), ask, throws, hexagram: h.id, changed: to?.id ?? null, grade: h.grade, at: ctx.now.toISOString() };
+  return { state: s, result: { ok: true, divination: divinationBrief(content, s, ctx.now) } };
+}
+
 export const VERBS = {
   look: (s, c, x) => {
     const woke = wake(s, c, x);
@@ -1547,7 +1634,7 @@ export const VERBS = {
     return { state: woke, result: { ...look(woke ?? s, c, x), ...(learned.length ? { learned } : {}) } };
   },
   resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas,
+  go, saves, save, load, forget, atlas, divine,
 };
 
 /* ── Files and the command line ── */
@@ -1634,6 +1721,15 @@ export function askOf(content, state, ctx, result = {}) {
   const yinyue = filler(state, ctx.said);
   const header = s => String(s ?? '');
   const question = zh ? '何去何从？' : 'What now?';
+  if (result.refused === 'needs-ask') {
+    // 所问何事: the cast is a question held in mind — what it does, it does to that.
+    const book = content.hexagrams;
+    const where = atScene(content, state) ? sceneBrief(content, state, ctx.now)?.place : placeBrief(content, state, ctx.now)?.name;
+    return {
+      header: header(where), question: zh ? '所问何事？' : 'What do you ask about?',
+      options: [...Object.keys(book.effects).map(id => ({ label: pick(book.asks[id], state.lang), divine: id })), { label: zh ? '先不问' : 'Not now', look: true }],
+    };
+  }
   if (atScene(content, state)) {
     const scene = sceneBrief(content, state, ctx.now);
     // A creature that withdrew today is not offered again until tomorrow — as
@@ -1675,6 +1771,7 @@ const TAPS = {
   write: () => 'Write',
   tame: o => `Tame {creature: ${o.tame}}`,
   linger: () => 'Branch {action: open}',
+  divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),
 };
 // A place chip on the map says 去X / Go to X (cards.js sayGo).
 const GO = /^(去|go to\s+)/i;

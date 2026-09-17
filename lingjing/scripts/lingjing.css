@@ -258,3 +258,27 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .atlas .pt.far { opacity: 0.55; }
 .atlas button.pt { cursor: pointer; }
 .atlas button.pt:hover span { background: #fff; }
+
+/* The day's cast: the coins waiting, then six lines as they fell — each with
+   its three coins, the moving ones marked — drawn from the bottom when new. */
+.hex.uncast .coins { display: flex; gap: 6px; flex: none; }
+.hex.uncast .coins i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--seal); background: radial-gradient(circle, transparent 28%, var(--seal-soft) 30% 100%); box-shadow: inset 0 0 0 3px var(--surface); }
+.hex.uncast .coins i::after { content: ''; display: block; width: 6px; height: 6px; margin: 6px auto; border: 1.5px solid var(--seal); }
+.yaos { display: grid; gap: 5px; flex: none; }
+.yao { display: grid; grid-template-columns: 40px 50px 12px; align-items: center; gap: 8px; }
+.yao i { height: 6px; border-radius: 1px; }
+.yao.yang i { background: var(--text); }
+.yao.yin i { background: linear-gradient(90deg, var(--text) 42%, transparent 42% 58%, var(--text) 58%); }
+.yao.moving i { box-shadow: 0 0 0 2px var(--seal-soft); }
+.yao em { font-style: normal; font-size: 11px; color: var(--seal); }
+.coins3 { display: flex; gap: 3px; }
+.coins3 b { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--faint); }
+.coins3 b.face { background: var(--faint); }
+.hex.casting .yao { animation: yaoIn 0.4s both; }
+.hex.casting .yao .coins3 b { animation: coinFlip 0.4s both; animation-delay: inherit; }
+@keyframes yaoIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes coinFlip { from { transform: rotateY(540deg); } to { transform: none; } }
+.hex.cast .grade { color: var(--seal); }
+.hex.cast.great .grade, .hex.cast.good .grade { color: var(--ling); }
+.hex.cast.even .grade { color: var(--faint); }
+.castfx { margin-top: 6px; }

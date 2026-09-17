@@ -403,8 +403,17 @@ province's 山海经 chapter — and Ling only fleshes it out.
 What a player does on an ordinary day — between chapters, which is most
 days — is the game's real shape:
 
-1. **The omen.** Look brings the day's hexagram; Ling shows it and says its
-   image in a line.
+1. **The day's cast (起卦, built 2026-09-17).** The 今日卦象 card waits with
+   three coins and 起一卦 until it is cast, and the director's choice offers
+   it too. 所问何事 — 问修行 · 问斗法 · 问财运 — then the rules throw three
+   coins six times (三钱法; seeded by the day and the 道号, so a day never
+   re-casts) and read the hexagram from `hexagrams.json` (all 64: 卦辞 and
+   大象 from Wikisource's 周易, graded 大吉 · 吉 · 平 · 凶 · 大凶). The grade
+   does the asked thing for the day: 修为 ×1.5/×1.2/×0.8 (大凶 also a
+   60-second rest between story steps), 灵石 ×1.5/×1.2/×0.8/×0.5, or a
+   bout's lower-trigram root turning draws to wins (吉 ×1, 大吉 ×2) or wins
+   to draws (凶 ×1, 大凶 ×2). Yinyue reads it aloud on the stage. The numbers
+   are his to set.
 2. **A due quest, if any** — the workout kept, the scan run — paid on sight.
 3. **One 奇遇 from a seed,** offered by Ling as the way forward when the spine
    has nothing new. Up to `per_day`.

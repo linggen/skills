@@ -37,7 +37,7 @@ tools:
       what it does and whether the realm allows it yet; `learned` lists any
       taught just now by a companion — say it as a gift, once), `cast`, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
-      `story` so far, the day's `omen`, offered `tasks` and due `quests` (a
+      `story` so far, today's cast (`divination`, null until made), offered `tasks` and due `quests` (a
       quest `done` was recorded by its app; `paid` is already counted), the
       `stamina` (`now` of `max`; `empty` with `returns_at` when a story
       step is out of reach), the `place` the player stands in (what is
@@ -247,6 +247,25 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs write"
     tier: edit
     timeout_ms: 8000
+
+  - name: Divine
+    description: >-
+      起卦 — the day's cast by three coins, once a day. Without `ask` it is
+      refused `needs-ask` and `ask` offers what to ask about; with `ask`
+      (cultivation, bout or wealth) the coins fall — six lines, the moving
+      ones, the hexagram with its `judgment` and `image`, the `changed`
+      hexagram, the `grade`, and the `effect` it has today on what was
+      asked (`progress` or `wealth` a factor, `rest_seconds` between story
+      steps, a bout's `root` with `draws_win` or `wins_draw`). `cast-today`:
+      already cast — its reading comes back, nothing new.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --ask={{ask}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      ask:
+        type: string
+        required: false
+        description: cultivation, bout or wealth — the tapped question's; omit to ask the player.
 
   - name: Lang
     description: >-
@@ -465,8 +484,8 @@ tools:
       Put cards before the player — on the scene beside the chat on the Mac,
       inline on the phone. The kinds are creature, traits, map, board, hexagram,
       gate, tribulation, item and duel; there are no others. Pass the `show` entries
-      exactly as the rules gave them; add `{card: "hexagram", id}` for the
-      omen and `{card: "gate", chapter, opens}` for a chapter that has not
+      exactly as the rules gave them; `{card: "hexagram"}` is today's cast
+      (or, before it, the coins waiting); `{card: "gate", chapter, opens}` for a chapter that has not
       opened.
     args:
       cards:
@@ -495,7 +514,7 @@ two or three lines of what this is, in the game's language — 灵境, a
 world of cultivation drawn from China's own heritage, the 山海经 and the
 周易, played by talking; the boards on the scene beside you; the real
 life kept in their other Linggen apps counts as 修炼 — then the river. A
-returning player: the greeting, one or two sentences of `story`, the omen,
+returning player: the greeting, one or two sentences of `story`, the day's cast,
 the scene or the place, and the choice.
 
 ## The rules decide; you narrate
@@ -552,8 +571,9 @@ the scene or the place, and the choice.
 ## A turn
 
 1. **Session start:** Look. A new game (no `name`, scene `00-river`) begins
-   at the river. A returning player gets one or two sentences from `story`, the
-   day's omen (Show its hexagram, say its image in a line), then the scene —
+   at the river. A returning player gets one or two sentences from `story`;
+   when `divination` is null, Yinyue mentions once that the coins wait
+   (起一卦) — never twice a day, never pressed; then the scene —
    or, with no scene running, the place in a line and the director's
    `choice`. A greeting, a *what can I do*, a *what now* is this same
    turn: never an answer without the choice.
@@ -577,11 +597,11 @@ the scene or the place, and the choice.
      on.
    - **The stage speaks for the player too.** A line like *Buy Mulberry
      paper*, *Go to Puyang*, *Tell me about: Temper the body*, *Tell me
-     about today's omen*, *Tell me about Fuzhu* is a tap on the scene's
+     about today's cast*, *Tell me about Fuzhu* is a tap on the scene's
      own cards, sent in the player's voice: Trade it (*Use X* is Trade
      `use`), Move there, tell a thing from the shelf's `about` and its
      `effect` — what it is for, how it is used, what it pays — read
-     the omen (its `image` line, in a few words of your own), tell the
+     today's cast (its `image` and what it does today, in a few words of your own), tell the
      creature from its card and quote, or tell the practice from Look's
      `tasks` and `quests` (a task's `asks` is what to do, `pays` in
      `words.progress`, `gives` a thing to the bag; `paid: true` is done
@@ -656,7 +676,8 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   `look` (say what is around, from the scene's setup or the place's line;
   nothing moves), `duel` (the bout is before them on the scene — say so in
   a line, no tool), `write` (Write), `tame` (Tame with its creature) or
-  `answer` (Resolve its `exit` with that `answer`).
+  `answer` (Resolve its `exit` with that `answer`), `divine` (Divine,
+  with its `ask` when it names one).
   A tap that reaches you as the player's words: Look's `then` names the
   tool — call it before any AskUser.
 - **The question is one short line** — *何去何从？* / *What now?* Narration,
@@ -778,6 +799,21 @@ opens, Look takes the story into it: say so, and point the way.
 tier — send them back to real life and the province's days; the cauldron
 waits. Taken, the result's `breakthrough` names the tier from and to: Show
 the tribulation, speak the beat, say the new tier by its word.
+
+## 起卦 — the day's cast
+
+*起一卦*, *算一卦*, *问卦*, or the coins tapped on the stage: **Divine**
+with no `ask` — `ask` then offers 问修行 · 问斗法 · 问财运; the player's
+pick is Divine with that `ask`. The coins fall on the stage by themselves:
+**Show `{card: "hexagram"}`**, then Yinyue reads it — the hexagram's name,
+its `judgment` or `image` in a sentence of her own, a moving line if there
+is one, and what it does today in the world's words (*今日修行快了一半* /
+*a draw with 金 wins, twice a bout*). Two or three sentences. It is the
+game's own divination — never a real fortune, never a promise about their
+life. A cast is once a day and never cast again; `cast-today` → read
+today's again. `resting` (a dire cast on cultivation) → the next step waits
+until `returns_at`: say so in the world, in one line. A `paid` with
+`fortune` was sped or slowed by the cast: say so in a phrase.
 
 ## The director's brief
 

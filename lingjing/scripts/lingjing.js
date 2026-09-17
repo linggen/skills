@@ -25,6 +25,8 @@ let cloud = null; //      the engine's view of the account: {signed_in, meter}; 
 let running = false; //   Ling is mid-reply
 let asked = false; //     Ling's own question is waiting in the chat
 let mapView = 'province'; // the map card: 'province' (the player's, up close), 'world', or another province's id
+let castSeen; //          the cast last drawn — a new one is drawn line by line, once
+let castFresh = false;
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
 const boards = new Map();
 const duels = new Map(); // game id → {status, moves, picks, rounds, outcome, say}
@@ -54,7 +56,7 @@ function duelFor(id) {
   return duels.get(id);
 }
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, castFresh, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -210,7 +212,7 @@ async function switchLang(to) {
 /// Ling's cards, else the day's omen — and an open board always beside them:
 /// Ling tells the player the board is before them, so it must be.
 function focusHtml() {
-  const cards = focus.length ? [...focus] : [{ card: 'hexagram', id: look.omen?.id }];
+  const cards = focus.length ? [...focus] : [{ card: 'hexagram' }];
   const open = (look.tasks ?? []).find((t) => t.kind === 'board' && t.status !== 'done' && !t.won);
   if (open && !cards.some((c) => c.card === 'board' && c.id === open.id)) cards.push({ card: 'board', id: open.id });
   // A fight the scene offers is always on the scene, like an open board.
@@ -256,7 +258,11 @@ function render() {
   $('stage').hidden = false;
   stageYinyue(true);
   $('stageName').textContent = w.yinyue;
+  const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
+  castFresh = castSeen !== undefined && cast !== null && cast !== castSeen;
+  castSeen = cast;
   $('focus').innerHTML = focusHtml();
+  castFresh = false;
   $('trayTitle').textContent = w.tray;
   $('tray').innerHTML = trayHtml(ctx());
 }
@@ -510,12 +516,15 @@ function cheer(before, text) {
   const rose = look.progress > before.progress
     || look.tier?.id !== before.tier?.id || (look.tier?.step ?? 0) > (before.tier?.step ?? 0)
     || (look.wealth > before.wealth && held(look) >= held(before));
-  const line = rose ? yinyueLine(text) : null;
+  // A cast just made: she reads it aloud too, her face as the grade falls.
+  const cast = !before.divination && look.divination;
+  const line = rose || cast ? yinyueLine(text) : null;
   if (!line) return;
+  const emotion = cast ? ({ great: 'happy', good: 'happy', even: 'relaxed', ill: 'sad', dire: 'sad' })[look.divination.grade.id] ?? 'neutral' : 'happy';
   fetch('/api/yinyue/say', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: line, emotion: 'happy' }),
+    body: JSON.stringify({ text: line, emotion }),
   }).catch((e) => console.warn('[lingjing] yinyue say', e));
 }
 

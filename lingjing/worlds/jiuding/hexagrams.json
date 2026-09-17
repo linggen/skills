@@ -1,22 +1,2150 @@
 {
-  "version": 1,
-  "_about": "The day's omen. Lines are bottom to top, 1 = yang. The eight doubled trigrams first; the rest of the 64 later. Each 象 line is the 周易's own.",
+  "version": 2,
+  "_about": "The Book of Changes, as the game casts it. All 64 in King Wen's order; lines bottom to top, 1 = yang. The judgment (卦辞), the image (大象) and the line texts (`yaoci`, 爻辞, Chinese only) are the 周易's own, from Wikisource's 周易 (public domain), in simplified characters; the English is the game's plain rendering. `grade` is read from each judgment's own words and the tradition's ranking. A day's cast asks about one thing (`asks`) and its grade does that thing's `effects` for the day; a bout favours the lower trigram's root.",
+  "asks": {
+    "cultivation": {
+      "zh": "问修行",
+      "en": "Ask about cultivation"
+    },
+    "bout": {
+      "zh": "问斗法",
+      "en": "Ask about bouts"
+    },
+    "wealth": {
+      "zh": "问财运",
+      "en": "Ask about fortune"
+    }
+  },
+  "grades": {
+    "great": {
+      "zh": "大吉",
+      "en": "Great fortune"
+    },
+    "good": {
+      "zh": "吉",
+      "en": "Good fortune"
+    },
+    "even": {
+      "zh": "平",
+      "en": "Even"
+    },
+    "ill": {
+      "zh": "凶",
+      "en": "Ill fortune"
+    },
+    "dire": {
+      "zh": "大凶",
+      "en": "Dire"
+    }
+  },
+  "effects": {
+    "cultivation": {
+      "great": {
+        "progress": 1.5
+      },
+      "good": {
+        "progress": 1.2
+      },
+      "even": {},
+      "ill": {
+        "progress": 0.8
+      },
+      "dire": {
+        "progress": 0.8,
+        "rest_seconds": 60
+      }
+    },
+    "bout": {
+      "great": {
+        "draws_win": 2
+      },
+      "good": {
+        "draws_win": 1
+      },
+      "even": {},
+      "ill": {
+        "wins_draw": 1
+      },
+      "dire": {
+        "wins_draw": 2
+      }
+    },
+    "wealth": {
+      "great": {
+        "wealth": 1.5
+      },
+      "good": {
+        "wealth": 1.2
+      },
+      "even": {},
+      "ill": {
+        "wealth": 0.8
+      },
+      "dire": {
+        "wealth": 0.5
+      }
+    }
+  },
+  "trigram_roots": {
+    "qian": "metal",
+    "dui": "metal",
+    "li": "fire",
+    "zhen": "wood",
+    "xun": "wood",
+    "kan": "water",
+    "gen": "earth",
+    "kun": "earth"
+  },
   "hexagrams": [
-    { "id": 1,  "lines": [1, 1, 1, 1, 1, 1], "name": { "zh": "乾", "en": "Qián — The Creative" },
-      "image": { "zh": "天行健，君子以自强不息。", "en": "Heaven moves without rest; so the noble one strengthens themself without end." } },
-    { "id": 2,  "lines": [0, 0, 0, 0, 0, 0], "name": { "zh": "坤", "en": "Kūn — The Receptive" },
-      "image": { "zh": "地势坤，君子以厚德载物。", "en": "The earth lies open; so the noble one carries all things with deep virtue." } },
-    { "id": 51, "lines": [1, 0, 0, 1, 0, 0], "name": { "zh": "震", "en": "Zhèn — The Arousing" },
-      "image": { "zh": "洊雷，震；君子以恐惧修省。", "en": "Thunder upon thunder; so the noble one, in awe, mends and examines their ways." } },
-    { "id": 57, "lines": [0, 1, 1, 0, 1, 1], "name": { "zh": "巽", "en": "Xùn — The Gentle" },
-      "image": { "zh": "随风，巽；君子以申命行事。", "en": "Wind following wind; so the noble one makes their word known and carries it out." } },
-    { "id": 29, "lines": [0, 1, 0, 0, 1, 0], "name": { "zh": "坎", "en": "Kǎn — The Abysmal" },
-      "image": { "zh": "水洊至，习坎；君子以常德行，习教事。", "en": "Water flows on and on; so the noble one keeps virtue constant and practises teaching." } },
-    { "id": 30, "lines": [1, 0, 1, 1, 0, 1], "name": { "zh": "离", "en": "Lí — The Clinging" },
-      "image": { "zh": "明两作，离；大人以继明照于四方。", "en": "Brightness rises twice; so the great one carries the light on to the four quarters." } },
-    { "id": 52, "lines": [0, 0, 1, 0, 0, 1], "name": { "zh": "艮", "en": "Gèn — Keeping Still" },
-      "image": { "zh": "兼山，艮；君子以思不出其位。", "en": "Mountain upon mountain; so the noble one's thoughts stay within their place." } },
-    { "id": 58, "lines": [1, 1, 0, 1, 1, 0], "name": { "zh": "兑", "en": "Duì — The Joyous" },
-      "image": { "zh": "丽泽，兑；君子以朋友讲习。", "en": "Lakes joined together; so the noble one studies and practises with friends." } }
+    {
+      "id": 1,
+      "lines": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "乾",
+        "en": "Qián — The Creative"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "元亨。利贞。",
+        "en": "Sublime success. Perseverance furthers."
+      },
+      "image": {
+        "zh": "天行健，君子以自强不息。",
+        "en": "Heaven moves without rest; so the noble one strengthens themself without end."
+      },
+      "yaoci": [
+        "初九：潜龙勿用。",
+        "九二：见龙在田，利见大人。",
+        "九三：君子终日乾乾，夕惕若；厉，无咎。",
+        "九四：或跃在渊，无咎。",
+        "九五：飞龙在天，利见大人。",
+        "上九：亢龙，有悔。",
+        "用九：见群龙无首，吉。"
+      ]
+    },
+    {
+      "id": 2,
+      "lines": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "坤",
+        "en": "Kūn — The Receptive"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "元亨。利牝马之贞。",
+        "en": "Sublime success, furthering through the perseverance of a mare."
+      },
+      "image": {
+        "zh": "地势坤，君子以厚德载物。",
+        "en": "The earth lies open; so the noble one carries all things with deep virtue."
+      },
+      "yaoci": [
+        "初六：履霜，坚冰至。",
+        "六二：直方大，不习无不利。",
+        "六三：含章，可贞。或从王事，无成有终。",
+        "六四：括囊，无咎无誉。",
+        "六五：黄裳，元吉。",
+        "上六：龙战于野，其血玄黄。",
+        "用六：利永贞。"
+      ]
+    },
+    {
+      "id": 3,
+      "lines": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "屯",
+        "en": "Zhūn — Difficulty at the Beginning"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "元亨，利贞。勿用有攸往，利建侯。",
+        "en": "Sublime success; perseverance furthers. Do not set out yet; it furthers to appoint helpers."
+      },
+      "image": {
+        "zh": "云雷，屯；君子以经纶。",
+        "en": "Clouds and thunder: the hard beginning; so the noble one brings order out of confusion."
+      },
+      "yaoci": [
+        "初九：磐桓，利居贞，利建侯。",
+        "六二：屯如邅如，乘马班如，匪寇婚媾，女子贞不字，十年乃字。",
+        "六三：即鹿无虞，惟入于林中，君子几不如舍，往吝。",
+        "六四：乘马班如，求婚媾，往，吉无不利。",
+        "九五：屯其膏；小贞吉，大贞凶。",
+        "上六：乘马班如，泣血涟如。"
+      ]
+    },
+    {
+      "id": 4,
+      "lines": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "蒙",
+        "en": "Méng — Youthful Folly"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "亨。匪我求童蒙，童蒙求我。初筮告，再三渎，渎则不告。利贞。",
+        "en": "Success. I do not seek the young fool; the young fool seeks me. The first asking I answer; asked again and again, I do not. Perseverance furthers."
+      },
+      "image": {
+        "zh": "山下出泉，蒙；君子以果行育德。",
+        "en": "A spring wells up at the foot of the mountain; so the noble one acts resolutely and nurtures virtue."
+      },
+      "yaoci": [
+        "初六：发蒙，利用刑人，用说桎梏，以往吝。",
+        "九二：包蒙吉，纳妇吉，子克家。",
+        "六三：勿用取女，见金夫，不有躬，无攸利。",
+        "六四：困蒙，吝。",
+        "六五：童蒙，吉。",
+        "上九：击蒙，不利为寇，利御寇。"
+      ]
+    },
+    {
+      "id": 5,
+      "lines": [
+        1,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "需",
+        "en": "Xū — Waiting"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "有孚，光亨。贞吉，利涉大川。",
+        "en": "With sincerity there is light and success. Perseverance brings good fortune; it furthers to cross the great water."
+      },
+      "image": {
+        "zh": "云上于天，需；君子以饮食宴乐。",
+        "en": "Clouds rise up to heaven: waiting; so the noble one eats, drinks and is at ease."
+      },
+      "yaoci": [
+        "初九：需于郊，利用恒，无咎。",
+        "九二：需于沙，小有言，终吉。",
+        "九三：需于泥，致寇至。",
+        "六四：需于血，出自穴。",
+        "九五：需于酒食，贞吉。",
+        "上六：入于穴，有不速之客三人来，敬之终吉。"
+      ]
+    },
+    {
+      "id": 6,
+      "lines": [
+        0,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "讼",
+        "en": "Sòng — Conflict"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "有孚，窒，惕，中吉，终凶。利见大人，不利涉大川。",
+        "en": "Sincere but blocked: be wary. Halfway brings good fortune; to the end brings misfortune. It furthers to see the great one; it does not further to cross the great water."
+      },
+      "image": {
+        "zh": "天与水违行，讼；君子以作事谋始。",
+        "en": "Heaven and water go opposite ways: conflict; so the noble one weighs the beginning of every undertaking."
+      },
+      "yaoci": [
+        "初六：不永所事，小有言，终吉。",
+        "九二：不克讼，归而逋，其邑人三百户无眚。",
+        "六三：食旧德，贞厉，终吉。或从王事，无成。",
+        "九四：不克讼，复即命渝，安贞吉。",
+        "九五：讼，元吉。",
+        "上九：或锡之鞶带，终朝三褫之。"
+      ]
+    },
+    {
+      "id": 7,
+      "lines": [
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "师",
+        "en": "Shī — The Army"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "贞丈人吉，无咎。",
+        "en": "The army needs perseverance and a strong leader: good fortune, no blame."
+      },
+      "image": {
+        "zh": "地中有水，师；君子以容民畜众。",
+        "en": "Water in the midst of the earth: the army; so the noble one shelters the people and gathers the many."
+      },
+      "yaoci": [
+        "初六：师出以律，否臧，凶。",
+        "九二：在师中吉，无咎；王三锡命。",
+        "六三：师或舆尸，凶。",
+        "六四：师左次，无咎。",
+        "六五：田有禽，利执言，无咎。长子帅师，弟子舆尸，贞凶。",
+        "上六：大君有命，开国承家，小人勿用。"
+      ]
+    },
+    {
+      "id": 8,
+      "lines": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "比",
+        "en": "Bǐ — Holding Together"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "吉。原筮元永贞，无咎。不宁方来，后夫凶。",
+        "en": "Good fortune. Ask again whether your worth is lasting; then no blame. The uncertain come in; the one who comes late meets misfortune."
+      },
+      "image": {
+        "zh": "地上有水，比；先王以建万国，亲诸侯。",
+        "en": "Water upon the earth: holding together; so the ancient kings founded the states and kept close to the lords."
+      },
+      "yaoci": [
+        "初六：有孚，比之，无咎。有孚盈缶，终来有它，吉。",
+        "六二：比之自内，贞吉。",
+        "六三：比之匪人。",
+        "六四：外比之，贞吉。",
+        "九五：显比。王用三驱，失前禽，邑人不诫，吉。",
+        "上六：比之无首，凶。"
+      ]
+    },
+    {
+      "id": 9,
+      "lines": [
+        1,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "小畜",
+        "en": "Xiǎo Chù — Small Taming"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。密云不雨，自我西郊。",
+        "en": "Success. Dense clouds, no rain, from our western lands."
+      },
+      "image": {
+        "zh": "风行天上，小畜，君子以懿文德。",
+        "en": "Wind moves across heaven: small taming; so the noble one refines the outward form of their virtue."
+      },
+      "yaoci": [
+        "初九：复自道，何其咎，吉。",
+        "九二：牵复，吉。",
+        "九三：舆说辐，夫妻反目。",
+        "六四：有孚，血去惕出，无咎。",
+        "九五：有孚挛如，富以其邻。",
+        "上九：既雨既处，尚德载，妇贞厉，月几望，君子征凶。"
+      ]
+    },
+    {
+      "id": 10,
+      "lines": [
+        1,
+        1,
+        0,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "履",
+        "en": "Lǚ — Treading"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "履虎尾，不咥人，亨。",
+        "en": "Treading on the tail of the tiger; it does not bite. Success."
+      },
+      "image": {
+        "zh": "上天下泽，履；君子以辨上下，定民志。",
+        "en": "Heaven above, the lake below: treading; so the noble one tells high from low and settles the people's minds."
+      },
+      "yaoci": [
+        "初九：素履，往无咎。",
+        "九二：履道坦坦，幽人贞吉。",
+        "六三：眇能视，跛能履，履虎尾，咥人，凶。武人为于大君。",
+        "九四：履虎尾，愬愬终吉。",
+        "九五：夬履，贞厉。",
+        "上九：视履考祥，其旋元吉。"
+      ]
+    },
+    {
+      "id": 11,
+      "lines": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "泰",
+        "en": "Tài — Peace"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "小往大来，吉亨。",
+        "en": "The small departs, the great approaches. Good fortune, success."
+      },
+      "image": {
+        "zh": "天地交，泰；后以财成天地之道，辅相天地之宜，以左右民。",
+        "en": "Heaven and earth unite: peace; so the ruler shapes the way of heaven and earth to aid the people."
+      },
+      "yaoci": [
+        "初九：拔茅茹以其汇，征吉。",
+        "九二：包荒。用冯河，不遐遗；朋亡。得尚于中行。",
+        "九三：无平不陂，无往不复，艰贞无咎。勿恤其孚，于食有福。",
+        "六四：翩翩，不富以其邻；不戒以孚。",
+        "六五：帝乙归妹，以祉，元吉。",
+        "上六：城复于隍，勿用师，自邑告命，贞吝。"
+      ]
+    },
+    {
+      "id": 12,
+      "lines": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "否",
+        "en": "Pǐ — Standstill"
+      },
+      "grade": "dire",
+      "judgment": {
+        "zh": "否之匪人，不利君子贞，大往小来。",
+        "en": "Standstill: the wrong people. It does not further the noble one's perseverance. The great departs; the small approaches."
+      },
+      "image": {
+        "zh": "天地不交，否；君子以俭德辟难，不可荣以禄。",
+        "en": "Heaven and earth do not unite: standstill; so the noble one withdraws into their worth to escape the trouble, and seeks no honour or wages."
+      },
+      "yaoci": [
+        "初六，拔茅茹以其汇，贞吉。亨。",
+        "六二，包承，小人吉，大人否。亨。",
+        "六三，包羞。",
+        "九四，有命，无咎，畴离祉。",
+        "九五，休否，大人吉。其亡其亡，系于苞桑。",
+        "上九，倾否，先否后喜。"
+      ]
+    },
+    {
+      "id": 13,
+      "lines": [
+        1,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "同人",
+        "en": "Tóng Rén — Fellowship"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "同人于野，亨。利涉大川，利君子贞。",
+        "en": "Fellowship in the open: success. It furthers to cross the great water; the noble one's perseverance furthers."
+      },
+      "image": {
+        "zh": "天与火，同人；君子以类族辨物。",
+        "en": "Heaven with fire: fellowship; so the noble one sorts the clans and tells things apart."
+      },
+      "yaoci": [
+        "初九：同人于门，无咎。",
+        "六二：同人于宗，吝。",
+        "九三：伏戎于莽，升其高陵，三岁不兴。",
+        "九四：乘其墉，弗克，攻吉。",
+        "九五：同人，先号啕而后笑。大师克相遇。",
+        "上九：同人于郊，无悔。"
+      ]
+    },
+    {
+      "id": 14,
+      "lines": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "大有",
+        "en": "Dà Yǒu — Great Possession"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "元亨。",
+        "en": "Supreme success."
+      },
+      "image": {
+        "zh": "火在天上，大有；君子以遏恶扬善，顺天休命。",
+        "en": "Fire high in heaven: great possession; so the noble one curbs evil, furthers good, and follows heaven's will."
+      },
+      "yaoci": [
+        "初九：无交害，匪咎，艰则无咎。",
+        "九二：大车以载，有攸往，无咎。",
+        "九三：公用亨于天子，小人弗克。",
+        "九四：匪其彭，无咎。",
+        "六五：厥孚交如，威如；吉。",
+        "上九：自天佑之，吉无不利。"
+      ]
+    },
+    {
+      "id": 15,
+      "lines": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "谦",
+        "en": "Qiān — Modesty"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "亨，君子有终。",
+        "en": "Success. The noble one carries things through."
+      },
+      "image": {
+        "zh": "地中有山，谦；君子以裒多益寡，称物平施。",
+        "en": "A mountain within the earth: modesty; so the noble one takes from the much, adds to the little, and weighs things to make them even."
+      },
+      "yaoci": [
+        "初六：谦谦君子，用涉大川，吉。",
+        "六二：鸣谦，贞吉。",
+        "九三：劳谦君子，有终吉。",
+        "六四：无不利，㧑谦。",
+        "六五：不富，以其邻，利用侵伐，无不利。",
+        "上六：鸣谦，利用行师，征邑国。"
+      ]
+    },
+    {
+      "id": 16,
+      "lines": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "豫",
+        "en": "Yù — Enthusiasm"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "利建侯行师。",
+        "en": "It furthers to install helpers and set the army marching."
+      },
+      "image": {
+        "zh": "雷出地奋，豫。先王以作乐崇德，殷荐之上帝，以配祖考。",
+        "en": "Thunder bursts from the earth: enthusiasm; so the ancient kings made music to honour virtue and offered it to the Lord on High."
+      },
+      "yaoci": [
+        "初六：鸣豫，凶。",
+        "六二：介于石，不终日，贞吉。",
+        "六三：盱豫，悔。迟有悔。",
+        "九四：由豫，大有得。勿疑。朋盍簪。",
+        "六五：贞疾，恒不死。",
+        "上六：冥豫，成有渝，无咎。"
+      ]
+    },
+    {
+      "id": 17,
+      "lines": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "随",
+        "en": "Suí — Following"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "元亨。利贞。无咎。",
+        "en": "Supreme success. Perseverance furthers. No blame."
+      },
+      "image": {
+        "zh": "泽中有雷，随；君子以向晦入宴息。",
+        "en": "Thunder in the midst of the lake: following; so at nightfall the noble one goes in to rest."
+      },
+      "yaoci": [
+        "初九：官有渝，贞吉。出门交有功。",
+        "六二：系小子，失丈夫。",
+        "六三：系丈夫，失小子。随，有求得利，居贞。",
+        "九四：随有获，贞凶。有孚在道，以明，何咎。",
+        "九五：孚于嘉，吉。",
+        "上六：拘系之，乃从维之。王用亨于西山。"
+      ]
+    },
+    {
+      "id": 18,
+      "lines": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "蛊",
+        "en": "Gǔ — Work on What Has Spoiled"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "元亨。利涉大川。先甲三日，后甲三日。",
+        "en": "Supreme success. It furthers to cross the great water. Three days before the start, three days after."
+      },
+      "image": {
+        "zh": "山下有风，蛊；君子以振民育德。",
+        "en": "Wind at the foot of the mountain: work on what has spoiled; so the noble one stirs the people and strengthens their virtue."
+      },
+      "yaoci": [
+        "初六：干父之蛊，有子考，无咎，厉终吉。",
+        "九二：干母之蛊，不可贞。",
+        "九三：干父之蛊，小有悔，无大咎。",
+        "六四：裕父之蛊，往见吝。",
+        "六五：干父之蛊，用誉。",
+        "上九：不事王侯，高尚其事。"
+      ]
+    },
+    {
+      "id": 19,
+      "lines": [
+        1,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "临",
+        "en": "Lín — Approach"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "元亨。利贞。至于八月有凶。",
+        "en": "Supreme success; perseverance furthers. In the eighth month there will be misfortune."
+      },
+      "image": {
+        "zh": "泽上有地，临；君子以教思无穷，容保民无疆。",
+        "en": "The earth above the lake: approach; so the noble one teaches without end and shelters the people without bounds."
+      },
+      "yaoci": [
+        "初九：咸临，贞吉。",
+        "九二：咸临，吉无不利。",
+        "六三：甘临，无攸利。既忧之，无咎。",
+        "六四：至临，无咎。",
+        "六五：知临，大君之宜，吉。",
+        "上六：敦临，吉无咎。"
+      ]
+    },
+    {
+      "id": 20,
+      "lines": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "观",
+        "en": "Guān — Contemplation"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "盥而不荐，有孚颙若。",
+        "en": "The hands are washed, the offering not yet made: full of trust, they look up."
+      },
+      "image": {
+        "zh": "风行地上，观；先王以省方，观民设教。",
+        "en": "Wind moves over the earth: contemplation; so the ancient kings toured the lands, watched the people, and gave instruction."
+      },
+      "yaoci": [
+        "初六：童观，小人无咎，君子吝。",
+        "六二：窥观，利女贞。",
+        "六三：观我生，进退。",
+        "六四：观国之光，利用宾于王。",
+        "九五：观我生，君子无咎。",
+        "上九：观其生，君子无咎。"
+      ]
+    },
+    {
+      "id": 21,
+      "lines": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "噬嗑",
+        "en": "Shì Kè — Biting Through"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。利用狱。",
+        "en": "Success. It furthers to administer justice."
+      },
+      "image": {
+        "zh": "雷电噬嗑；先王以明罚敕法。",
+        "en": "Thunder and lightning: biting through; so the ancient kings made the penalties clear and the laws firm."
+      },
+      "yaoci": [
+        "初九：屦校灭趾，无咎。",
+        "六二：噬肤灭鼻，无咎。",
+        "六三：噬腊肉，遇毒；小吝，无咎。",
+        "九四：噬乾胏，得金矢，利艰贞，吉。",
+        "六五：噬乾肉，得黄金，贞厉，无咎。",
+        "上九：何校灭耳，凶。"
+      ]
+    },
+    {
+      "id": 22,
+      "lines": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "贲",
+        "en": "Bì — Grace"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。小利有攸往。",
+        "en": "Success. In small matters it furthers to set out."
+      },
+      "image": {
+        "zh": "山下有火，贲；君子以明庶政，无敢折狱。",
+        "en": "Fire at the foot of the mountain: grace; so the noble one brings clarity to daily affairs, but dares not decide great lawsuits."
+      },
+      "yaoci": [
+        "初九：贲其趾，舍车而徒。",
+        "六二：贲其须。",
+        "九三：贲如濡如，永贞吉。",
+        "六四：贲如皤如，白马翰如，匪寇婚媾。",
+        "六五：贲于丘园，束帛戋戋，吝，终吉。",
+        "上九：白贲，无咎。"
+      ]
+    },
+    {
+      "id": 23,
+      "lines": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "剥",
+        "en": "Bō — Splitting Apart"
+      },
+      "grade": "dire",
+      "judgment": {
+        "zh": "不利有攸往。",
+        "en": "It does not further one to go anywhere."
+      },
+      "image": {
+        "zh": "山附地上，剥；上以厚下，安宅。",
+        "en": "The mountain rests on the earth: splitting apart; so those above make the foundation generous and the house secure."
+      },
+      "yaoci": [
+        "初六：剥床以足，蔑贞凶。",
+        "六二：剥床以辨，蔑贞凶。",
+        "六三：剥之，无咎。",
+        "六四：剥床以肤，凶。",
+        "六五：贯鱼，以宫人宠，无不利。",
+        "上九：硕果不食，君子得舆，小人剥庐。"
+      ]
+    },
+    {
+      "id": 24,
+      "lines": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "复",
+        "en": "Fù — Return"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "亨。出入无疾，朋来无咎。反复其道，七日来复，利有攸往。",
+        "en": "Success. Going out and coming in without harm; friends come without blame. The way turns back; on the seventh day comes return. It furthers to set out."
+      },
+      "image": {
+        "zh": "雷在地中，复；先王以至日闭关，商旅不行，后不省方。",
+        "en": "Thunder within the earth: return; so on the solstice the ancient kings closed the passes, and merchants did not travel."
+      },
+      "yaoci": [
+        "初九：不复远，无袛悔，元吉。",
+        "六二：休复，吉。",
+        "六三：频复，厉无咎。",
+        "六四：中行独复。",
+        "六五：敦复，无悔。",
+        "上六：迷复，凶，有灾眚。用行师，终有大败，以其国君，凶；至于十年，不克征。"
+      ]
+    },
+    {
+      "id": 25,
+      "lines": [
+        1,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "无妄",
+        "en": "Wú Wàng — Innocence"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "元亨。利贞。其匪正有眚，不利有攸往。",
+        "en": "Supreme success; perseverance furthers. One who is not as they should be meets misfortune; it does not further to set out."
+      },
+      "image": {
+        "zh": "天下雷行，物与无妄；先王以茂对时，育万物。",
+        "en": "Under heaven thunder rolls, and all things share its innocence; so the ancient kings, in step with the season, nourished all beings."
+      },
+      "yaoci": [
+        "初九：无妄，往吉。",
+        "六二：不耕获，不菑畬，则利有攸往。",
+        "六三：无妄之灾，或系之牛，行人之得，邑人之灾。",
+        "九四：可贞，无咎。",
+        "九五：无妄之疾，勿药有喜。",
+        "上九：无妄，行有眚，无攸利。"
+      ]
+    },
+    {
+      "id": 26,
+      "lines": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "大畜",
+        "en": "Dà Chù — Great Taming"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "利贞，不家食吉，利涉大川。",
+        "en": "Perseverance furthers. Not eating at home brings good fortune; it furthers to cross the great water."
+      },
+      "image": {
+        "zh": "天在山中，大畜；君子以多识前言往行，以畜其德。",
+        "en": "Heaven within the mountain: great taming; so the noble one learns the words and deeds of the past to build their virtue."
+      },
+      "yaoci": [
+        "初九：有厉利已。",
+        "九二：舆说輹。",
+        "九三：良马逐，利艰贞。曰闲舆卫，利有攸往。",
+        "六四：童牛之牿，元吉。",
+        "六五：豮豕之牙，吉。",
+        "上九：何天之衢，亨。"
+      ]
+    },
+    {
+      "id": 27,
+      "lines": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "颐",
+        "en": "Yí — Nourishment"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "贞吉。观颐，自求口实。",
+        "en": "Perseverance brings good fortune. Watch what nourishes, and what one seeks to fill one's own mouth."
+      },
+      "image": {
+        "zh": "山下有雷，颐；君子以慎言语，节饮食。",
+        "en": "Thunder at the foot of the mountain: nourishment; so the noble one is careful in speech and moderate in eating and drinking."
+      },
+      "yaoci": [
+        "初九：舍尔灵龟，观我朵颐，凶。",
+        "六二：颠颐，拂经，于丘颐，征凶。",
+        "六三：拂颐，贞凶，十年勿用，无攸利。",
+        "六四：颠颐吉，虎视眈眈，其欲逐逐，无咎。",
+        "六五：拂经，居贞吉，不可涉大川。",
+        "上九：由颐，厉吉，利涉大川。"
+      ]
+    },
+    {
+      "id": 28,
+      "lines": [
+        0,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "大过",
+        "en": "Dà Guò — Great Exceeding"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "栋桡，利有攸往，亨。",
+        "en": "The ridgepole sags. It furthers to set out. Success."
+      },
+      "image": {
+        "zh": "泽灭木，大过。君子以独立不惧，遁世无闷。",
+        "en": "The lake rises over the trees: great exceeding; so the noble one stands alone unafraid, and withdraws from the world without regret."
+      },
+      "yaoci": [
+        "初六：藉用白茅，无咎。",
+        "九二：枯杨生稊，老夫得其女妻，无不利。",
+        "九三：栋桡，凶。",
+        "九四：栋隆，吉。有它吝。",
+        "九五：枯杨生华，老妇得其士夫，无咎无誉。",
+        "上六：过涉灭顶，凶，无咎。"
+      ]
+    },
+    {
+      "id": 29,
+      "lines": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "坎",
+        "en": "Kǎn — The Abysmal"
+      },
+      "grade": "dire",
+      "judgment": {
+        "zh": "有孚，维心亨。行有尚。",
+        "en": "Sincere, the heart succeeds; action brings honour."
+      },
+      "image": {
+        "zh": "水洊至，习坎；君子以常德行，习教事。",
+        "en": "Water flows on and on; so the noble one keeps virtue constant and practises teaching."
+      },
+      "yaoci": [
+        "初六：习坎，入于坎窞，凶。",
+        "九二：坎有险，求小得。",
+        "六三：来之坎坎，险且枕，入于坎窞，勿用。",
+        "六四：樽酒簋贰，用缶，纳约自牖，终无咎。",
+        "九五：坎不盈，祗既平，无咎。",
+        "上六：系用徽𬙊，寘于丛棘，三岁不得，凶。"
+      ]
+    },
+    {
+      "id": 30,
+      "lines": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "离",
+        "en": "Lí — The Clinging"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "利贞。亨。畜牝牛，吉。",
+        "en": "Perseverance furthers; success. Tending the cow brings good fortune."
+      },
+      "image": {
+        "zh": "明两作离，大人以继明照于四方。",
+        "en": "Brightness rises twice; so the great one carries the light on to the four quarters."
+      },
+      "yaoci": [
+        "初九：履错然，敬之无咎。",
+        "六二：黄离，元吉。",
+        "九三：日昃之离，不鼓缶而歌，则大耋之嗟，凶。",
+        "九四：突如其来如，焚如，死如，弃如。",
+        "六五：出涕沱若，戚嗟若，吉。",
+        "上九：王用出征，有嘉折首，获匪其丑，无咎。"
+      ]
+    },
+    {
+      "id": 31,
+      "lines": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "咸",
+        "en": "Xián — Influence"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "亨。利贞。取女吉。",
+        "en": "Success; perseverance furthers. Taking a wife brings good fortune."
+      },
+      "image": {
+        "zh": "山上有泽，咸；君子以虚受人。",
+        "en": "A lake on the mountain: influence; so the noble one receives others with an open heart."
+      },
+      "yaoci": [
+        "初六：咸其拇。",
+        "六二：咸其腓，凶，居吉。",
+        "九三：咸其股，执其随，往吝。",
+        "九四：贞吉悔亡，憧憧往来，朋从尔思。",
+        "九五：咸其脢，无悔。",
+        "上六：咸其辅，颊，舌。"
+      ]
+    },
+    {
+      "id": 32,
+      "lines": [
+        0,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "恒",
+        "en": "Héng — Duration"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "亨，无咎。利贞，利有攸往。",
+        "en": "Success, no blame; perseverance furthers; it furthers to set out."
+      },
+      "image": {
+        "zh": "雷风，恒；君子以立不易方。",
+        "en": "Thunder and wind: duration; so the noble one stands firm and does not change direction."
+      },
+      "yaoci": [
+        "初六：浚恒，贞凶，无攸利。",
+        "九二：悔亡。",
+        "九三：不恒其德，或承之羞，贞吝。",
+        "九四：田无禽。",
+        "六五：恒其德，贞，妇人吉，夫子凶。",
+        "上六：振恒，凶。"
+      ]
+    },
+    {
+      "id": 33,
+      "lines": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "遁",
+        "en": "Dùn — Retreat"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "亨。小利贞。",
+        "en": "Success. In small matters perseverance furthers."
+      },
+      "image": {
+        "zh": "天下有山，遁；君子以远小人，不恶而严。",
+        "en": "A mountain under heaven: retreat; so the noble one keeps the petty at a distance, not angrily but with reserve."
+      },
+      "yaoci": [
+        "初六：遁尾，厉，勿用有攸往。",
+        "六二：执之用黄牛之革，莫之胜说。",
+        "九三：系遁，有疾厉，畜臣妾吉。",
+        "九四：好遁君子吉，小人否。",
+        "九五：嘉遁，贞吉。",
+        "上九：肥遁，无不利。"
+      ]
+    },
+    {
+      "id": 34,
+      "lines": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "大壮",
+        "en": "Dà Zhuàng — Great Power"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "利贞。",
+        "en": "Perseverance furthers."
+      },
+      "image": {
+        "zh": "雷在天上，大壮；君子以非礼弗履。",
+        "en": "Thunder high in heaven: great power; so the noble one treads no path that is not proper."
+      },
+      "yaoci": [
+        "初九：壮于趾，征凶，有孚。",
+        "九二：贞吉。",
+        "九三：小人用壮，君子用罔，贞厉。羝羊触藩，羸其角。",
+        "九四：贞吉悔亡，藩决不羸，壮于大舆之輹。",
+        "六五：丧羊于易，无悔。",
+        "上六：羝羊触藩，不能退，不能遂，无攸利，艰则吉。"
+      ]
+    },
+    {
+      "id": 35,
+      "lines": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "晋",
+        "en": "Jìn — Progress"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "康侯用锡马蕃庶，昼日三接。",
+        "en": "The prince is honoured with horses in great numbers, received three times in a single day."
+      },
+      "image": {
+        "zh": "明出地上，晋；君子以自昭明德。",
+        "en": "The sun rises over the earth: progress; so the noble one brightens their own bright virtue."
+      },
+      "yaoci": [
+        "初六：晋如，摧如，贞吉。罔孚，裕无咎。",
+        "六二：晋如，愁如，贞吉。受兹介福，于其王母。",
+        "六三：众允，悔亡。",
+        "九四：晋如鼫鼠，贞厉。",
+        "六五：悔亡，失得勿恤，往吉无不利。",
+        "上九：晋其角，维用伐邑，厉吉无咎，贞吝。"
+      ]
+    },
+    {
+      "id": 36,
+      "lines": [
+        1,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "明夷",
+        "en": "Míng Yí — Darkening of the Light"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "利艰贞。",
+        "en": "It furthers to persevere through hardship."
+      },
+      "image": {
+        "zh": "明入地中，明夷；君子以莅众，用晦而明。",
+        "en": "The light has sunk into the earth: darkening of the light; so the noble one, among the many, veils their light and yet stays clear."
+      },
+      "yaoci": [
+        "初九：明夷于飞，垂其翼。君子于行，三日不食，有攸往，主人有言。",
+        "六二：明夷，夷于左股，用拯马壮，吉。",
+        "九三：明夷于南狩，得其大首，不可疾贞。",
+        "六四：入于左腹，获明夷之心，于出门庭。",
+        "六五：箕子之明夷，利贞。",
+        "上六：不明晦，初登于天，后入于地。"
+      ]
+    },
+    {
+      "id": 37,
+      "lines": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "家人",
+        "en": "Jiā Rén — The Family"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "利女贞。",
+        "en": "The perseverance of the woman furthers."
+      },
+      "image": {
+        "zh": "风自火出，家人；君子以言有物，而行有恒。",
+        "en": "Wind comes forth from fire: the family; so the noble one's words have substance and their ways have constancy."
+      },
+      "yaoci": [
+        "初九：闲有家，悔亡。",
+        "六二：无攸遂，在中馈，贞吉。",
+        "九三：家人嗃嗃，悔厉吉；妇子嘻嘻，终吝。",
+        "六四：富家，大吉。",
+        "九五：王假有家，勿恤。吉。",
+        "上九：有孚威如，终吉。"
+      ]
+    },
+    {
+      "id": 38,
+      "lines": [
+        1,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "睽",
+        "en": "Kuí — Opposition"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "小事吉。",
+        "en": "In small matters, good fortune."
+      },
+      "image": {
+        "zh": "上火下泽，睽；君子以同而异。",
+        "en": "Fire above, the lake below: opposition; so the noble one keeps their difference within fellowship."
+      },
+      "yaoci": [
+        "初九：悔亡，丧马勿逐，自复；见恶人无咎。",
+        "九二：遇主于巷，无咎。",
+        "六三：见舆曳，其牛掣，其人天且劓，无初有终。",
+        "九四：睽孤，遇元夫，交孚，厉无咎。",
+        "六五：悔亡，厥宗噬肤，往何咎。",
+        "上九：睽孤， 见豕负涂，载鬼一车， 先张之弧，后说之弧，匪寇婚媾，往遇雨则吉。"
+      ]
+    },
+    {
+      "id": 39,
+      "lines": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "蹇",
+        "en": "Jiǎn — Obstruction"
+      },
+      "grade": "dire",
+      "judgment": {
+        "zh": "利西南，不利东北；利见大人，贞吉。",
+        "en": "The southwest furthers; the northeast does not. It furthers to see the great one; perseverance brings good fortune."
+      },
+      "image": {
+        "zh": "山上有水，蹇；君子以反身修德。",
+        "en": "Water on the mountain: obstruction; so the noble one turns inward and cultivates virtue."
+      },
+      "yaoci": [
+        "初六：往蹇，来誉。",
+        "六二：王臣蹇蹇，匪躬之故。",
+        "九三：往蹇来反。",
+        "六四：往蹇来连。",
+        "九五：大蹇朋来。",
+        "上六：往蹇来硕，吉；利见大人。"
+      ]
+    },
+    {
+      "id": 40,
+      "lines": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "解",
+        "en": "Xiè — Deliverance"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "利西南，无所往，其来复吉。有攸往，夙吉。",
+        "en": "The southwest furthers. With nowhere to go, return brings good fortune; with somewhere to go, haste brings good fortune."
+      },
+      "image": {
+        "zh": "雷雨作，解；君子以赦过宥罪。",
+        "en": "Thunder and rain break loose: deliverance; so the noble one pardons faults and forgives wrongs."
+      },
+      "yaoci": [
+        "初六：无咎。",
+        "九二：田获三狐，得黄矢，贞吉。",
+        "六三：负且乘，致寇至，贞吝。",
+        "九四：解而拇，朋至斯孚。",
+        "六五：君子维有解，吉；有孚于小人。",
+        "上六：公用射隼，于高墉之上，获之，无不利。"
+      ]
+    },
+    {
+      "id": 41,
+      "lines": [
+        1,
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "损",
+        "en": "Sǔn — Decrease"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "有孚，元吉。无咎，可贞，利有攸往。曷之用？二簋可用享。",
+        "en": "With sincerity, supreme good fortune, no blame; one may persevere; it furthers to set out. How to use it? Two small bowls suffice for the offering."
+      },
+      "image": {
+        "zh": "山下有泽，损；君子以惩忿窒欲。",
+        "en": "A lake at the foot of the mountain: decrease; so the noble one curbs anger and restrains desire."
+      },
+      "yaoci": [
+        "初九：已事遄往，无咎，酌损之。",
+        "九二：利贞，征凶，弗损益之。",
+        "六三：三人行，则损一人；一人行，则得其友。",
+        "六四：损其疾，使遄有喜，无咎。",
+        "六五：或益之，十朋之龟弗克违，元吉。",
+        "上九：弗损益之，无咎，贞吉，利有攸往，得臣无家。"
+      ]
+    },
+    {
+      "id": 42,
+      "lines": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "益",
+        "en": "Yì — Increase"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "利有攸往。利涉大川。",
+        "en": "It furthers to set out; it furthers to cross the great water."
+      },
+      "image": {
+        "zh": "风雷，益；君子以见善则迁，有过则改。",
+        "en": "Wind and thunder: increase; so the noble one, seeing good, follows it, and having faults, mends them."
+      },
+      "yaoci": [
+        "初九：利用为大作，元吉，无咎。",
+        "六二：或益之，十朋之龟弗克违，永贞吉。王用享于帝，吉。",
+        "六三：益之用凶事，无咎。有孚中行，告公用圭。",
+        "六四：中行，告公从。利用为依迁国。",
+        "九五：有孚惠心，勿问元吉。有孚惠我德。",
+        "上九：莫益之，或击之，立心勿恒，凶。"
+      ]
+    },
+    {
+      "id": 43,
+      "lines": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "夬",
+        "en": "Guài — Breakthrough"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "扬于王庭，孚号，有厉，告自邑，不利即戎，利有攸往。",
+        "en": "Proclaim it at the king's court; call out with sincerity — there is danger. Tell your own town; it does not further to take up arms. It furthers to set out."
+      },
+      "image": {
+        "zh": "泽上于天，夬；君子以施禄及下，居德则忌。",
+        "en": "The lake rises up to heaven: breakthrough; so the noble one bestows wealth on those below and will not rest on their own virtue."
+      },
+      "yaoci": [
+        "初九：壮于前趾，往不胜为咎。",
+        "九二：惕号，莫夜有戎，勿恤。",
+        "九三：壮于頄，有凶。君子夬夬，独行遇雨，若濡有愠，无咎。",
+        "九四：臀无肤，其行次且。牵羊悔亡，闻言不信。",
+        "九五：苋陆夬夬，中行无咎。",
+        "上六：无号，终有凶。"
+      ]
+    },
+    {
+      "id": 44,
+      "lines": [
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "姤",
+        "en": "Gòu — Coming to Meet"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "女壮，勿用取女。",
+        "en": "The maiden is powerful; do not marry such a maiden."
+      },
+      "image": {
+        "zh": "天下有风，姤；后以施命诰四方。",
+        "en": "Under heaven the wind blows: coming to meet; so the ruler issues commands and proclaims them to the four quarters."
+      },
+      "yaoci": [
+        "初六：系于金柅，贞吉，有攸往，见凶，羸豕孚踟躅。",
+        "九二：包有鱼，无咎，不利宾。",
+        "九三：臀无肤，其行次且，厉，无大咎。",
+        "九四：包无鱼，起凶。",
+        "九五：以杞包瓜，含章，有陨自天。",
+        "上九：姤其角，吝，无咎。"
+      ]
+    },
+    {
+      "id": 45,
+      "lines": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "萃",
+        "en": "Cuì — Gathering"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "亨。王假有庙，利见大人，亨。利贞。用大牲吉，利有攸往。",
+        "en": "Success. The king approaches his temple; it furthers to see the great one. Perseverance furthers. A great offering brings good fortune; it furthers to set out."
+      },
+      "image": {
+        "zh": "泽上于地，萃；君子以除戎器，戒不虞。",
+        "en": "The lake over the earth: gathering; so the noble one repairs their weapons against the unforeseen."
+      },
+      "yaoci": [
+        "初六：有孚不终，乃乱乃萃，若号一握为笑，勿恤，往无咎。",
+        "六二：引吉，无咎，孚乃利用禴。",
+        "六三：萃如，嗟如，无攸利，往无咎，小吝。",
+        "九四：大吉，无咎。",
+        "九五：萃有位，无咎。匪孚，元永贞，悔亡。",
+        "上六：赍咨涕洟，无咎。"
+      ]
+    },
+    {
+      "id": 46,
+      "lines": [
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "升",
+        "en": "Shēng — Pushing Upward"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "元亨，用见大人，勿恤，南征吉。",
+        "en": "Supreme success. Go to see the great one; do not fear. Setting out to the south brings good fortune."
+      },
+      "image": {
+        "zh": "地中生木，升；君子以顺德，积小以高大。",
+        "en": "Wood grows within the earth: pushing upward; so the noble one, devoted, heaps up small things to make them high and great."
+      },
+      "yaoci": [
+        "初六：允升，大吉。",
+        "九二：孚乃利用禴，无咎。",
+        "九三：升虚邑。",
+        "六四：王用亨于岐山，吉无咎。",
+        "六五：贞吉，升阶。",
+        "上六：冥升，利于不息之贞。"
+      ]
+    },
+    {
+      "id": 47,
+      "lines": [
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "困",
+        "en": "Kùn — Oppression"
+      },
+      "grade": "dire",
+      "judgment": {
+        "zh": "亨，贞大人吉，无咎，有言不信。",
+        "en": "Success. Perseverance: good fortune for the great one, no blame. When one speaks, one is not believed."
+      },
+      "image": {
+        "zh": "泽无水，困；君子以致命遂志。",
+        "en": "The lake without water: oppression; so the noble one stakes their life to follow their will."
+      },
+      "yaoci": [
+        "初六：臀困于株木，入于幽谷，三岁不觌。",
+        "九二：困于酒食，朱绂方来，利用亨祀，征凶，无咎。",
+        "六三：困于石，据于蒺藜，入于其宫，不见其妻，凶。",
+        "九四：来徐徐，困于金车，吝，有终。",
+        "九五：劓刖，困于赤绂，乃徐有说，利用祭祀。",
+        "上六：困于葛藟，于臲卼，曰动悔。有悔，征吉。"
+      ]
+    },
+    {
+      "id": 48,
+      "lines": [
+        0,
+        1,
+        1,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "井",
+        "en": "Jǐng — The Well"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "改邑不改井，无丧无得，往来井井。汔至亦未繘井。羸其瓶，凶。",
+        "en": "The town may be moved, but not the well; it neither loses nor gains, and all come and draw from it. If the rope falls short, or the jug breaks: misfortune."
+      },
+      "image": {
+        "zh": "木上有水，井；君子以劳民劝相。",
+        "en": "Water above wood: the well; so the noble one encourages the people at their work and urges them to help one another."
+      },
+      "yaoci": [
+        "初六：井泥不食，旧井无禽。",
+        "九二：井谷射鲋，瓮敝漏。",
+        "九三：井渫不食，为我心恻，可用汲，王明，并受其福。",
+        "六四：井甃，无咎。",
+        "九五：井冽，寒泉食。",
+        "上六：井收勿幕，有孚元吉。"
+      ]
+    },
+    {
+      "id": 49,
+      "lines": [
+        1,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "革",
+        "en": "Gé — Revolution"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "巳日乃孚，元亨。利贞。悔亡。",
+        "en": "On its own day one is believed. Supreme success; perseverance furthers; regret vanishes."
+      },
+      "image": {
+        "zh": "泽中有火，革；君子以治历明时。",
+        "en": "Fire in the lake: revolution; so the noble one sets the calendar in order and makes the seasons clear."
+      },
+      "yaoci": [
+        "初九：巩用黄牛之革。",
+        "六二：巳日乃革之，征吉，无咎。",
+        "九三：征凶，贞厉，革言三就，有孚。",
+        "九四：悔亡，有孚改命，吉。",
+        "九五：大人虎变，未占有孚。",
+        "上六：君子豹变，小人革面，征凶，居贞吉。"
+      ]
+    },
+    {
+      "id": 50,
+      "lines": [
+        0,
+        1,
+        1,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "鼎",
+        "en": "Dǐng — The Cauldron"
+      },
+      "grade": "great",
+      "judgment": {
+        "zh": "元吉，亨。",
+        "en": "Supreme good fortune. Success."
+      },
+      "image": {
+        "zh": "木上有火，鼎；君子以正位凝命。",
+        "en": "Fire over wood: the cauldron; so the noble one makes their place right and holds fast to their destiny."
+      },
+      "yaoci": [
+        "初六：鼎颠趾，利出否，得妾以其子，无咎。",
+        "九二：鼎有实，我仇有疾，不我能即，吉。",
+        "九三：鼎耳革，其行塞，雉膏不食，方雨亏悔，终吉。",
+        "九四：鼎折足，覆公𫗧，其形渥，凶。",
+        "六五：鼎黄耳金铉，利贞。",
+        "上九：鼎玉铉，大吉，无不利。"
+      ]
+    },
+    {
+      "id": 51,
+      "lines": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "震",
+        "en": "Zhèn — The Arousing"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。震来虩虩，笑言哑哑。震惊百里，不丧匕鬯。",
+        "en": "Success. Thunder comes — oh, oh! Laughter and words — ha, ha! Thunder terrifies for a hundred miles, yet the ladle and the sacrificial wine are not dropped."
+      },
+      "image": {
+        "zh": "洊雷，震；君子以恐惧修省。",
+        "en": "Thunder upon thunder; so the noble one, in awe, mends and examines their ways."
+      },
+      "yaoci": [
+        "初九：震来虩虩，后笑言哑哑，吉。",
+        "六二：震来厉，亿丧贝，跻于九陵，勿逐，七日得。",
+        "六三：震苏苏，震行无眚。",
+        "九四：震遂泥。",
+        "六五：震往来厉，亿无丧，有事。",
+        "上六：震索索，视矍矍，征凶。震不于其躬，于其邻，无咎。婚媾有言。"
+      ]
+    },
+    {
+      "id": 52,
+      "lines": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "艮",
+        "en": "Gèn — Keeping Still"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "艮其背，不获其身，行其庭，不见其人，无咎。",
+        "en": "Keeping the back still, the self is not felt; walking in the courtyard, the people there are not seen. No blame."
+      },
+      "image": {
+        "zh": "兼山，艮；君子以思不出其位。",
+        "en": "Mountain upon mountain; so the noble one's thoughts stay within their place."
+      },
+      "yaoci": [
+        "初六：艮其趾，无咎，利永贞。",
+        "六二：艮其腓，不拯其随，其心不快。",
+        "九三：艮其限，列其夤，厉熏心。",
+        "六四：艮其身，无咎。",
+        "六五：艮其辅，言有序，悔亡。",
+        "上九：敦艮，吉。"
+      ]
+    },
+    {
+      "id": 53,
+      "lines": [
+        0,
+        0,
+        1,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "渐",
+        "en": "Jiàn — Gradual Progress"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "女归吉，利贞。",
+        "en": "The maiden is given in marriage: good fortune; perseverance furthers."
+      },
+      "image": {
+        "zh": "山上有木，渐；君子以居贤德，善俗。",
+        "en": "A tree on the mountain: gradual progress; so the noble one abides in worth and virtue, and betters the customs."
+      },
+      "yaoci": [
+        "初六：鸿渐于干，小子厉，有言，无咎。",
+        "六二：鸿渐于磐，饮食衎衎，吉。",
+        "九三：鸿渐于陆，夫征不复，妇孕不育，凶；利御寇。",
+        "六四：鸿渐于木，或得其桷，无咎。",
+        "九五：鸿渐于陵，妇三岁不孕，终莫之胜，吉。",
+        "上九：鸿渐于陆，其羽可用为仪，吉。"
+      ]
+    },
+    {
+      "id": 54,
+      "lines": [
+        1,
+        1,
+        0,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "归妹",
+        "en": "Guī Mèi — The Marrying Maiden"
+      },
+      "grade": "dire",
+      "judgment": {
+        "zh": "征凶，无攸利。",
+        "en": "Setting out brings misfortune; nothing furthers."
+      },
+      "image": {
+        "zh": "泽上有雷，归妹；君子以永终知敝。",
+        "en": "Thunder over the lake: the marrying maiden; so the noble one sees the end through the long run, and knows what wears away."
+      },
+      "yaoci": [
+        "初九：归妹以娣，跛能履，征吉。",
+        "九二：眇能视，利幽人之贞。",
+        "六三：归妹以须，反归以娣。",
+        "九四：归妹愆期，迟归有时。",
+        "六五：帝乙归妹，其君之袂，不如其娣之袂良，月几望，吉。",
+        "上六：女承筐无实，士刲羊无血，无攸利。"
+      ]
+    },
+    {
+      "id": 55,
+      "lines": [
+        1,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "丰",
+        "en": "Fēng — Abundance"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "亨。王假之，勿忧，宜日中。",
+        "en": "Success. The king reaches it; be not sad; be like the sun at midday."
+      },
+      "image": {
+        "zh": "雷电皆至，丰；君子以折狱致刑。",
+        "en": "Thunder and lightning come together: abundance; so the noble one decides lawsuits and carries out penalties."
+      },
+      "yaoci": [
+        "初九：遇其配主，虽旬无咎，往有尚。",
+        "六二：丰其蔀，日中见斗，往得疑疾，有孚发若，吉。",
+        "九三：丰其沛，日中见沫，折其右肱，无咎。",
+        "九四：丰其蔀，日中见斗，遇其夷主，吉。",
+        "六五：来章，有庆誉，吉。",
+        "上六：丰其屋，蔀其家，窥其户，阒其无人，三岁不觌，凶。"
+      ]
+    },
+    {
+      "id": 56,
+      "lines": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "旅",
+        "en": "Lǚ — The Wanderer"
+      },
+      "grade": "ill",
+      "judgment": {
+        "zh": "小亨，旅贞吉。",
+        "en": "Small success. Perseverance brings the wanderer good fortune."
+      },
+      "image": {
+        "zh": "山上有火，旅；君子以明慎用刑，而不留狱。",
+        "en": "Fire on the mountain: the wanderer; so the noble one is clear and careful in punishment, and lets no lawsuit linger."
+      },
+      "yaoci": [
+        "初六：旅琐琐，斯其所取灾。",
+        "六二：旅即次，怀其资，得童仆贞。",
+        "九三：旅焚其次，丧其童仆，贞厉。",
+        "九四：旅于处，得其资斧，我心不快。",
+        "六五：射雉一矢亡，终以誉命。",
+        "上九：鸟焚其巢，旅人先笑后号咷。丧牛于易，凶。"
+      ]
+    },
+    {
+      "id": 57,
+      "lines": [
+        0,
+        1,
+        1,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "巽",
+        "en": "Xùn — The Gentle"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "小亨。利有攸往。利见大人。",
+        "en": "Small success. It furthers to set out; it furthers to see the great one."
+      },
+      "image": {
+        "zh": "随风，巽；君子以申命行事。",
+        "en": "Wind following wind; so the noble one makes their word known and carries it out."
+      },
+      "yaoci": [
+        "初六：进退，利武人之贞。",
+        "九二：巽在床下，用史巫纷若，吉无咎。",
+        "九三：频巽，吝。",
+        "六四：悔亡，田获三品。",
+        "九五：贞吉悔亡，无不利。无初有终，先庚三日，后庚三日，吉。",
+        "上九：巽在床下，丧其资斧，贞凶。"
+      ]
+    },
+    {
+      "id": 58,
+      "lines": [
+        1,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "兑",
+        "en": "Duì — The Joyous"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。利贞。",
+        "en": "Success; perseverance furthers."
+      },
+      "image": {
+        "zh": "丽泽，兑；君子以朋友讲习。",
+        "en": "Lakes joined together; so the noble one studies and practises with friends."
+      },
+      "yaoci": [
+        "初九：和兑，吉。",
+        "九二：孚兑，吉，悔亡。",
+        "六三：来兑，凶。",
+        "九四：商兑，未宁，介疾有喜。",
+        "九五：孚于剥，有厉。",
+        "上六：引兑。"
+      ]
+    },
+    {
+      "id": 59,
+      "lines": [
+        0,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "涣",
+        "en": "Huàn — Dispersion"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。王假有庙，利涉大川，利贞。",
+        "en": "Success. The king approaches his temple; it furthers to cross the great water; perseverance furthers."
+      },
+      "image": {
+        "zh": "风行水上，涣；先王以享于帝立庙。",
+        "en": "Wind moves over the water: dispersion; so the ancient kings made offerings to the Lord on High and built temples."
+      },
+      "yaoci": [
+        "初六：用拯马壮，吉。",
+        "九二：涣奔其机，悔亡。",
+        "六三：涣其躬，无悔。",
+        "六四：涣其群，元吉。涣有丘，匪夷所思。",
+        "九五：涣汗其大号，涣王居，无咎。",
+        "上九：涣其血，去逖出，无咎。"
+      ]
+    },
+    {
+      "id": 60,
+      "lines": [
+        1,
+        1,
+        0,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "节",
+        "en": "Jié — Limitation"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。苦节不可贞。",
+        "en": "Success. Bitter limitation must not be persevered in."
+      },
+      "image": {
+        "zh": "泽上有水，节；君子以制数度，议德行。",
+        "en": "Water above the lake: limitation; so the noble one sets number and measure, and weighs virtue and conduct."
+      },
+      "yaoci": [
+        "初九：不出户庭，无咎。",
+        "九二：不出门庭，凶。",
+        "六三：不节若，则嗟若，无咎。",
+        "六四：安节，亨。",
+        "九五：甘节，吉；往有尚。",
+        "上六：苦节，贞凶，悔亡。"
+      ]
+    },
+    {
+      "id": 61,
+      "lines": [
+        1,
+        1,
+        0,
+        0,
+        1,
+        1
+      ],
+      "name": {
+        "zh": "中孚",
+        "en": "Zhōng Fú — Inner Truth"
+      },
+      "grade": "good",
+      "judgment": {
+        "zh": "豚鱼吉，利涉大川，利贞。",
+        "en": "Pigs and fishes: good fortune. It furthers to cross the great water; perseverance furthers."
+      },
+      "image": {
+        "zh": "泽上有风，中孚；君子以议狱缓死。",
+        "en": "Wind over the lake: inner truth; so the noble one weighs lawsuits carefully and delays executions."
+      },
+      "yaoci": [
+        "初九：虞吉，有他不燕。",
+        "九二：鸣鹤在阴，其子和之，我有好爵，吾与尔靡之。",
+        "六三：得敌，或鼓或罢，或泣或歌。",
+        "六四：月几望，马匹亡，无咎。",
+        "九五：有孚挛如，无咎。",
+        "上九：翰音登于天，贞凶。"
+      ]
+    },
+    {
+      "id": 62,
+      "lines": [
+        0,
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "name": {
+        "zh": "小过",
+        "en": "Xiǎo Guò — Small Exceeding"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。利贞。可小事，不可大事。飞鸟遗之音，不宜上宜下，大吉。",
+        "en": "Success; perseverance furthers. Small things may be done, not great things. The flying bird leaves its song: not upward — downward is well. Great good fortune."
+      },
+      "image": {
+        "zh": "山上有雷，小过；君子以行过乎恭，丧过乎哀，用过乎俭。",
+        "en": "Thunder on the mountain: small exceeding; so the noble one exceeds in reverence of conduct, in grief at mourning, in thrift of spending."
+      },
+      "yaoci": [
+        "初六：飞鸟以凶。",
+        "六二：过其祖，遇其妣；不及其君，遇其臣；无咎。",
+        "九三：弗过防之，从或戕之，凶。",
+        "九四：无咎，弗过遇之。往厉必戒，勿用永贞。",
+        "六五：密云不雨，自我西郊，公弋取彼在穴。",
+        "上六：弗遇过之，飞鸟离之，凶，是谓灾眚。"
+      ]
+    },
+    {
+      "id": 63,
+      "lines": [
+        1,
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      "name": {
+        "zh": "既济",
+        "en": "Jì Jì — After Completion"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨小。利贞。初吉终乱。",
+        "en": "Small success; perseverance furthers. Good fortune at the start, disorder at the end."
+      },
+      "image": {
+        "zh": "水在火上，既济；君子以思患而豫防之。",
+        "en": "Water over fire: after completion; so the noble one thinks of misfortune and guards against it in advance."
+      },
+      "yaoci": [
+        "初九：曳其轮，濡其尾，无咎。",
+        "六二：妇丧其茀，勿逐，七日得。",
+        "九三：高宗伐鬼方，三年克之，小人勿用。",
+        "六四：𦈡有衣袽，终日戒。",
+        "九五：东邻杀牛，不如西邻之禴祭，实受其福。",
+        "上六：濡其首，厉。"
+      ]
+    },
+    {
+      "id": 64,
+      "lines": [
+        0,
+        1,
+        0,
+        1,
+        0,
+        1
+      ],
+      "name": {
+        "zh": "未济",
+        "en": "Wèi Jì — Before Completion"
+      },
+      "grade": "even",
+      "judgment": {
+        "zh": "亨。小狐汔济，濡其尾，无攸利。",
+        "en": "Success. The little fox, nearly across, wets its tail; nothing furthers."
+      },
+      "image": {
+        "zh": "火在水上，未济；君子以慎辨物居方。",
+        "en": "Fire over water: before completion; so the noble one carefully tells things apart and puts each in its place."
+      },
+      "yaoci": [
+        "初六：濡其尾，吝。",
+        "九二：曳其轮，贞吉。",
+        "六三：未济，征凶，利涉大川。",
+        "九四：贞吉，悔亡，震用伐鬼方，三年有赏于大国。",
+        "六五：贞吉，无悔，君子之光，有孚，吉。",
+        "上九：有孚于饮酒，无咎，濡其首，有孚失是。"
+      ]
+    }
   ]
 }

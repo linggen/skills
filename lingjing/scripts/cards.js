@@ -20,6 +20,9 @@ export const WORDS = {
     duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，两胜为降。', ring: '相克', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     rescueHint: '胜负已分——还有一手可出。', stand: '认了',
     artHint: { 'draw-wins': '平手化胜', 'undo-loss': '收回败局', generate: '借所生之行' },
+    uncast: '今日未卜', uncastHint: '心中默念一事，三钱六掷。', cast: '起一卦', sayCast: '请银月起一卦', changedTo: '之卦',
+    effEven: '今日无增无减', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '每步之间静坐 {s} 秒',
+    effDrawWin: '{root}：平手化胜 ×{n}', effWinDraw: '{root}：胜局化平 ×{n}', fortuneMark: '卦',
     why: { 'art-used': '一战一用', 'art-no-draw': '须是平手', 'art-no-loss': '须是败局', 'art-needs-tier': '境界未到', 'art-pending': '已在借势', 'sword-twice': '换口气再出', 'charm-used': '一战一符', 'no-charm': '囊中无符', 'bout-over': '已分胜负', 'not-your-root': '非你灵根' },
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
@@ -41,6 +44,9 @@ export const WORDS = {
     duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     rescueHint: 'Decided — but one art could still turn it.', stand: 'Let it stand',
     artHint: { 'draw-wins': 'a draw becomes a win', 'undo-loss': 'take back the loss', generate: 'borrow the root it generates' },
+    uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind: three coins, six throws.', cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', changedTo: 'Changing to',
+    effEven: 'No gain, no loss today', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '{s}s of stillness between steps',
+    effDrawWin: '{root}: a draw wins ×{n}', effWinDraw: '{root}: a win only draws ×{n}', fortuneMark: 'cast',
     why: { 'art-used': 'once a bout', 'art-no-draw': 'needs a draw', 'art-no-loss': 'needs a lost round', 'art-needs-tier': 'realm too low', 'art-pending': 'already borrowing', 'sword-twice': 'take a breath first', 'charm-used': 'one a bout', 'no-charm': 'none in the bag', 'bout-over': 'decided', 'not-your-root': 'not your root' },
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
@@ -235,13 +241,50 @@ function roadMap(ctx) {
 }
 
 function hexagram(card, ctx) {
-  const h = ctx.content.hexagrams.find((x) => String(x.id) === String(card.id)) || ctx.look.omen;
-  if (!h) return '';
-  // Lines are stored bottom to top; a hexagram is drawn top down.
-  const bars = [...h.lines].reverse().map((y) => `<i class="${y ? 'yang' : 'yin'}"></i>`).join('');
-  return `<div class="card hex"><div class="hexbars">${bars}</div><div>
-    <div class="cardtitle">${ctx.words.omen} · ${esc(pick(h.name, ctx.lang) || h.name)}</div>
-    <div class="hextext">${esc(pick(h.image, ctx.lang) || h.image)}</div>${acts([{ label: ctx.words.about, say: ctx.words.sayOmen }])}</div></div>`;
+  const w = ctx.words;
+  if (card.id != null) {
+    const h = ctx.content.hexagrams.find((x) => String(x.id) === String(card.id));
+    if (!h) return '';
+    const bars = [...h.lines].reverse().map((y) => `<i class="${y ? 'yang' : 'yin'}"></i>`).join('');
+    return `<div class="card hex"><div class="hexbars">${bars}</div><div>
+      <div class="cardtitle">${esc(pick(h.name, ctx.lang))}</div>
+      <div class="hextext">${esc(pick(h.image, ctx.lang))}</div>${acts([{ label: w.about, say: say(w.sayItem, { name: pick(h.name, ctx.lang) }) }])}</div></div>`;
+  }
+  const d = ctx.look.divination;
+  // Before the day's cast: the coins wait, and the button is a word to Ling.
+  if (!d) {
+    return `<div class="card hex uncast"><div class="coins">${'<i></i>'.repeat(3)}</div><div>
+      <div class="cardtitle">${w.uncast}</div><div class="hextext">${w.uncastHint}</div>${acts([{ label: w.cast, say: w.sayCast }])}</div></div>`;
+  }
+  return castHtml(d, ctx);
+}
+
+/// The cast as it fell: six lines top down, each with its three coins (a
+/// face that counts 3 is filled), the moving ones marked; drawn once in
+/// order from the bottom when it is new.
+function castHtml(d, ctx) {
+  const w = ctx.words;
+  const rows = [5, 4, 3, 2, 1, 0].map((i) => {
+    const v = d.values[i], moving = d.moving.includes(i);
+    const coins = d.throws[i].map((c) => `<b class="${c === 3 ? 'face' : ''}"></b>`).join('');
+    const delay = ctx.castFresh ? ` style="animation-delay:${(i * 0.45).toFixed(2)}s"` : '';
+    return `<div class="yao ${v % 2 ? 'yang' : 'yin'}${moving ? ' moving' : ''}"${delay}><span class="coins3">${coins}</span><i></i><em>${moving ? (v === 9 ? '○' : '×') : ''}</em></div>`;
+  }).join('');
+  const e = d.effect ?? {};
+  const lines = [];
+  if (e.progress) lines.push(say(w.effProgress, { xw: w.xw, n: e.progress }));
+  if (e.wealth) lines.push(say(w.effWealth, { ls: w.ls, n: e.wealth }));
+  if (e.rest_seconds) lines.push(say(w.effRest, { s: e.rest_seconds }));
+  if (e.draws_win) lines.push(say(w.effDrawWin, { root: e.root?.name ?? '', n: e.draws_win }));
+  if (e.wins_draw) lines.push(say(w.effWinDraw, { root: e.root?.name ?? '', n: e.wins_draw }));
+  const effect = lines.length ? lines.join(' · ') : w.effEven;
+  const changed = d.changed ? `<div class="small dim">${w.changedTo} · ${esc(d.changed.name)}</div>` : '';
+  return `<div class="card hex cast${ctx.castFresh ? ' casting' : ''} ${esc(d.grade.id)}"><div class="yaos">${rows}</div><div>
+    <div class="cardtitle">${w.omen} · ${esc(d.hexagram.name)} · <span class="grade">${esc(d.grade.name)}</span></div>
+    <div class="hextext">${esc(d.hexagram.judgment)}</div>
+    <div class="small dim">${esc(d.hexagram.image)}</div>${changed}
+    <div class="small castfx"><span class="chip">${esc(d.ask.name)}</span> ${esc(effect)}</div>
+    ${acts([{ label: w.about, say: w.sayOmen }])}</div></div>`;
 }
 
 /// The next cauldron: a word to Ling when the road is open; with a date,

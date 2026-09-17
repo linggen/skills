@@ -82,13 +82,16 @@ function outcomeOf(rounds) {
   return 'open';
 }
 
-const fresh = () => ({ rounds: [], charmUsed: false, artsUsed: [], pending: null, lastSword: false });
+const fresh = () => ({ rounds: [], charmUsed: false, artsUsed: [], pending: null, lastSword: false, fortuneUsed: 0 });
 
 /* The kit is what the player brings to the bout:
    roots       their own elements (absent = every element is theirs)
    sword       the worn weapon's root, or null
    charm       {id, held} — the 符 in the catalog and how many are held
    arts        {id: {effect, ready}} — the arts they know; `ready` when the tier allows
+   fortune     the day's cast asked about bouts: {root, draws_win?, wins_draw?} —
+               a draw with that root is won, or a win is only drawn, so many
+               times a bout; it turns by itself, never a pick
    Why a token may not come next, or null when it may. */
 export function legal(token, st, kit = {}) {
   const decided = outcomeOf(st.rounds) !== 'open';
@@ -132,6 +135,11 @@ function apply(token, st, kit, move) {
   const round = { pick: token, move, result: null };
   if (st.pending) { round.as = GENERATES[token]; round.art = st.pending; st.pending = null; }
   round.result = roundOf(round.as ?? token, move);
+  const f = kit.fortune;
+  if (f && (round.as ?? token) === f.root) {
+    if (round.result === 'draw' && st.fortuneUsed < (f.draws_win ?? 0)) { round.result = 'won'; round.fortune = true; st.fortuneUsed += 1; }
+    else if (round.result === 'won' && st.fortuneUsed < (f.wins_draw ?? 0)) { round.result = 'draw'; round.fortune = true; st.fortuneUsed += 1; }
+  }
   st.lastSword = Boolean(kit.roots) && !kit.roots.includes(token) && token === kit.sword;
   st.rounds.push(round);
 }
