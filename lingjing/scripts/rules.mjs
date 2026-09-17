@@ -1584,7 +1584,11 @@ export function askOf(content, state, ctx, result = {}) {
   const question = zh ? '何去何从？' : 'What now?';
   if (atScene(content, state)) {
     const scene = sceneBrief(content, state, ctx.now);
-    let options = scene.buttons.map(b => ({ label: b.label, exit: b.id }));
+    // A creature that withdrew today is not offered again until tomorrow — as
+    // at its haunt; asked anyway, the same refusal came back each time
+    // (2026-09-17: 降妖 · 五行 tapped three times at 蓬莱).
+    const gone = new Set(scene.exits.filter(e => e.withdrawn && !e.won).map(e => e.id));
+    let options = scene.buttons.filter(b => !gone.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
     let asked = question;
     if (result.refused === 'needs-answer' || result.refused === 'wrong-answer') {
       const riddle = scene.exits.find(e => e.riddle && (!result.exit || e.id === result.exit));

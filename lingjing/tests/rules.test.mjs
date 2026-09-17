@@ -292,6 +292,9 @@ test('a loss is free and the creature withdraws until tomorrow', () => {
   const tomorrow = ctx({ now: new Date('2026-09-12T12:00:00') });
   assert.equal(duel(lost.state, content, tomorrow, { id: 'subdue-fuzhu' }).result.ok, true);
   assert.equal(look(lost.state, content, tomorrow).scene.exits.find(e => e.id === 'subdue').withdrawn, false);
+  // The question leaves the bout out today, and offers it again tomorrow.
+  assert.ok(!askOf(content, lost.state, ctx()).options.some(o => o.exit === 'subdue'));
+  assert.ok(askOf(content, lost.state, tomorrow).options.some(o => o.exit === 'subdue'));
 });
 
 test('a bout must be started, picks must be the player\'s roots, and the same day draws the same moves', () => {
