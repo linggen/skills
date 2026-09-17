@@ -209,6 +209,8 @@ function questBrief(content, state, now) {
     bell: { id: bell.id, name: pick(bell.name, lang), buy: bell.buy, held },
     line: pick(step === 'bell' || step === 'water' ? c.call : c.water, lang),
     at_water: Boolean(here?.water),
+    // The call is heard once: until it has been said, every answer asks for it.
+    ...(state.companion.told ? {} : { say: true }),
   };
 }
 
@@ -1862,8 +1864,15 @@ export const VERBS = {
     const woke = wake(s, c, x);
     // An art taught on waking (a companion from before the arts) is said once.
     const learned = woke ? (woke.arts ?? []).filter(id => !(s.arts ?? []).includes(id)).map(id => artBrief(c, woke, artOf(c, id))) : [];
-    const next = setRiddleAside(c, woke ?? s, x) ?? woke;
-    return { state: next, result: { ...look(next ?? s, c, x), ...(learned.length ? { learned } : {}) } };
+    const aside = setRiddleAside(c, woke ?? s, x) ?? woke;
+    const result = { ...look(aside ?? s, c, x), ...(learned.length ? { learned } : {}) };
+    // Said once: the call is marked told the moment it is handed over.
+    let next = aside;
+    if (result.quest?.say) {
+      next = clone(aside ?? s);
+      next.companion = { ...next.companion, told: true };
+    }
+    return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, atlas, divine, fate, ring,
@@ -2028,7 +2037,8 @@ const won = r => {
   if (!r?.ok || r.sold || r.bought) return false;
   return Boolean(r.breakthrough || r.learned?.length || p?.cast || p?.item || p?.levels?.length || (p?.progress ?? 0) > 0 || (p?.wealth ?? 0) > 0);
 };
-export const thenFor = result => (won(result) ? THEN_CHEER : THEN);
+const THEN_CALL = 'The search has just opened: say `quest.line` in the world, in a line of its own, before the question. ';
+export const thenFor = result => (result?.quest?.say ? THEN_CALL : '') + (won(result) ? THEN_CHEER : THEN);
 const withAsk = (result, content, state, ctx) => ({ then: thenFor(result), ask: askOf(content, state, ctx, result), ...result });
 
 /* The player's words are an option of the question on screen — a tap on a
