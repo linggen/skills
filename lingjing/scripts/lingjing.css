@@ -182,7 +182,6 @@ button:disabled { cursor: default; }
    answers, so a slow model never invites a second tap. */
 button.pl { font: inherit; font-size: 12px; cursor: pointer; color: inherit; }
 button.pl:hover { background: var(--ling-soft); }
-.price .act { padding: 2px 8px; font-size: 11px; }
 .act:disabled { opacity: 0.4; cursor: default; }
 .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .taskfoot .act { margin-left: auto; }
@@ -222,7 +221,8 @@ button.pl:hover { background: var(--ling-soft); }
 .itemart { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; }
 .itemname { font-weight: 600; }
 .item .about { line-height: 1.35; }
-.price { display: flex; justify-content: space-between; font-family: var(--ui); font-size: 11px; opacity: 0.8; }
+/* Buy and sell look like every other button; only a disabled one is faded. */
+.price { display: flex; justify-content: space-between; font-family: var(--ui); }
 
 /* ── 降妖 ── */
 .duelhead { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; }
