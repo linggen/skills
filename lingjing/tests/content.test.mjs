@@ -163,6 +163,18 @@ test('a shipped creature carries its pinyin, one syllable a character; the card 
   assert.equal(spoken('雷神'), '雷神');
 });
 
+test('a riddle offers three or four answers to tap, exactly one of them right', () => {
+  const c = loadWorld('jiuding');
+  const bad = structuredClone(c);
+  delete bad.riddles.zh.riddles['kui-1'].choices;
+  bad.riddles.en.riddles['lei-1'].choices = ['wind', 'a river', 'a flood'];
+  bad.riddles.zh.riddles['wu-1'].choices = ['鱼', '鸟', '鸟'];
+  const problems = lint(bad);
+  assert.ok(has(problems, 'riddle kui-1 (zh): needs three or four different choices'));
+  assert.ok(has(problems, 'riddle lei-1 (en): choices need exactly one right answer'));
+  assert.ok(has(problems, 'riddle wu-1 (zh): needs three or four different choices'));
+});
+
 test('the world map is on disk, and every place of a world with one stands on it', () => {
   const c = loadWorld('jiuding');
   const bad = structuredClone(c);

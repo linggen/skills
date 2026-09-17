@@ -7,6 +7,12 @@
         "egg",
         "an egg"
       ],
+      "choices": [
+        "a promise",
+        "silence",
+        "an egg",
+        "bread"
+      ],
       "hint": "A hen could tell you."
     },
     "wu-1": {
@@ -14,6 +20,12 @@
       "a": [
         "fish",
         "a fish"
+      ],
+      "choices": [
+        "a bird",
+        "a boat",
+        "a fish",
+        "a snake"
       ],
       "hint": "It lives in the River Lord's water."
     },
@@ -23,12 +35,24 @@
         "five",
         "5"
       ],
+      "choices": [
+        "one",
+        "nine",
+        "fifteen",
+        "five"
+      ],
       "hint": "The Luo River square — every line makes fifteen."
     },
     "lei-1": {
       "q": "It roars without a mouth and runs without feet, and it comes with the rain. What is it?",
       "a": [
         "thunder"
+      ],
+      "choices": [
+        "wind",
+        "thunder",
+        "a river",
+        "a flood"
       ],
       "hint": "Listen to the lake."
     },
@@ -37,6 +61,12 @@
       "a": [
         "east",
         "the east"
+      ],
+      "choices": [
+        "west",
+        "south",
+        "east",
+        "north"
       ],
       "hint": "Where wood is born, and spring comes from."
     },
@@ -48,6 +78,12 @@
         "bright",
         "brightness"
       ],
+      "choices": [
+        "昌",
+        "朋",
+        "明",
+        "旦"
+      ],
       "hint": "Sun and moon together mean bright."
     },
     "seal-qing": {
@@ -57,6 +93,12 @@
         "离",
         "fire",
         "the fire trigram"
+      ],
+      "choices": [
+        "Zhen",
+        "Li",
+        "Dui",
+        "Xun"
       ],
       "hint": "Where the sun rises; fire comes from there."
     }

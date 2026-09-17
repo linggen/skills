@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ART_EFFECTS, ELEMENTS } from './duel.js';
+import { normalizeAnswer } from './state.mjs';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -531,6 +532,11 @@ function lintRiddles(riddles, bad) {
   for (const [lang, file] of Object.entries(riddles)) {
     for (const [key, r] of Object.entries(file.riddles)) {
       if (!r.q || !Array.isArray(r.a) || r.a.length === 0) bad(`riddle ${key} (${lang})`, 'needs q and at least one answer');
+      // Answers to tap: three or four, the right one among them, the rest wrong.
+      const choices = Array.isArray(r.choices) ? r.choices : [];
+      const right = choices.filter(c => (r.a ?? []).some(a => normalizeAnswer(a) === normalizeAnswer(c)));
+      if (choices.length < 3 || choices.length > 4 || new Set(choices.map(normalizeAnswer)).size !== choices.length) bad(`riddle ${key} (${lang})`, 'needs three or four different choices');
+      else if (right.length !== 1) bad(`riddle ${key} (${lang})`, 'choices need exactly one right answer');
     }
   }
 }

@@ -68,6 +68,14 @@ const sayAttr = (line) => `data-say="${esc(line)}"`;
 const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) =>
   `<button class="act say" ${sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`).join('')}</div>`;
 
+/// Her last line in a reply: `**银月：**…` / `**Yinyue:** …`, plain.
+export function yinyueLine(text) {
+  const names = [WORDS.zh.yinyue, WORDS.en.yinyue].join('|');
+  const said = [...String(text ?? '').matchAll(new RegExp(`\\*{0,2}(?:${names})\\s*[：:]\\s*\\*{0,2}\\s*(.+)`, 'g'))];
+  const line = said.at(-1)?.[1]?.replace(/[*_`]/g, '').trim();
+  return line || null;
+}
+
 /// A Chinese name with its pinyin over each character (夔 → kuí), so a rare
 /// 山海经 name can be read aloud. Without one syllable a character, the
 /// name alone.

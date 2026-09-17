@@ -516,7 +516,10 @@ the scene or the place, and the choice.
   tier's peak — the cauldron is the only way up, and `held` is what the
   peak could not take (never spoken as a gain). A zero is left out;
   nothing paid, nothing said. **Never add numbers up** — no running
-  totals of your own; the next Look carries the totals.
+  totals of your own; the next Look carries the totals. **Something
+  won** — a riddle, a bout, a task, a realm — **gives Yinyue one short line
+  of her own** (`**银月：**` / `**Yinyue:**`), glad for the player in her
+  voice, never the numbers: she speaks it aloud on the stage.
 - **When a result carries `summarize: true`, Summarize** before the reply
   ends (below).
 - **When a result carries `paint`, paint every entry before anything else**
@@ -595,8 +598,11 @@ the scene or the place, and the choice.
      means it has not opened. `waiting`: Show the gate, say in one line
      when the road opens, and let the story rest.
    - `needs` → speak `say`. `needs-answer` → the creature asks its riddle
-     (`say`); the player types. `wrong-answer` → not quite: one Resolve, then give `hint` in
-     its voice, offer the same choices again, and never suggest answers. `value-invalid` → Yinyue asks for a name of at most
+     (`say`); `ask` offers its answers — a tapped one, or words typed in
+     *Other*, is Resolve with `answer`. `wrong-answer` → not quite: give
+     `hint` in its voice, then `ask` (the answers left); never suggest one.
+     `riddle-closed` → a second miss: the riddle is shut until tomorrow — say
+     so in the world, in one line; the scene's other ways stay in `ask`. `value-invalid` → Yinyue asks for a name of at most
      `max_chars`. `unknown-exit` → your slip: choose again from `exits`,
      silently.
 
@@ -649,7 +655,8 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   `linger` (Branch open), `ask` (Yinyue answers what is before them),
   `look` (say what is around, from the scene's setup or the place's line;
   nothing moves), `duel` (the bout is before them on the scene — say so in
-  a line, no tool), `write` (Write) or `tame` (Tame with its creature).
+  a line, no tool), `write` (Write), `tame` (Tame with its creature) or
+  `answer` (Resolve its `exit` with that `answer`).
   A tap that reaches you as the player's words: Look's `then` names the
   tool — call it before any AskUser.
 - **The question is one short line** — *何去何从？* / *What now?* Narration,

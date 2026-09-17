@@ -9,7 +9,7 @@ import { listSkillSessions, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { bout } from './duel.js';
-import { WORDS, cardHtml, trayHtml, esc } from './cards.js';
+import { WORDS, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -467,7 +467,11 @@ async function mountChat() {
     sessionId: resume || undefined,
     onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
     onStreamToken: () => { alive = true; running = true; },
-    onStreamEnd: () => { saying = false; running = false; refresh(); },
+    onStreamEnd: (text) => {
+      saying = false; running = false;
+      const before = look;
+      refresh().then(() => cheer(before, text));
+    },
     onContentBlock: (payload) => { alive = true; running = true; onContentBlock(payload); },
   });
   if (!resume) {
@@ -496,6 +500,25 @@ const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('
 /// Signed out, nothing of the game is shown: the save lives with the
 /// account, and a turn would be refused anyway. One button; the daemon
 /// opens the browser, and the scene enters once the account reports in.
+/// Something won just now — 修为 or a realm gained, or 灵石 not from a sale —
+/// and Yinyue says her own line from Ling's reply aloud on the stage, glad.
+/// The words are the reply's; with no line of hers she stays quiet (his
+/// ask, 2026-09-17: "now yinyue is out of the game").
+function cheer(before, text) {
+  if (!before || !look || before.world?.id !== look.world?.id) return;
+  const held = (l) => (l.bag ?? []).reduce((n, b) => n + (b.n ?? 0), 0);
+  const rose = look.progress > before.progress
+    || look.tier?.id !== before.tier?.id || (look.tier?.step ?? 0) > (before.tier?.step ?? 0)
+    || (look.wealth > before.wealth && held(look) >= held(before));
+  const line = rose ? yinyueLine(text) : null;
+  if (!line) return;
+  fetch('/api/yinyue/say', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: line, emotion: 'happy' }),
+  }).catch((e) => console.warn('[lingjing] yinyue say', e));
+}
+
 /* Yinyue on the stage: the engine's pet view, loaded as a stage so it
    outranks the desktop corner. Loaded while the game is open — the gate
    unloads it, which releases her, and she goes back to wherever she was.

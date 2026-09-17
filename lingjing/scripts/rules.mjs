@@ -375,7 +375,10 @@ function duelKitBrief(content, state) {
 function exitBrief(content, state, exit, button, ctxNow = new Date()) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
-  if (exit.key) brief.riddle = content.riddles[state.lang].riddles[exit.key].q;
+  if (exit.key) {
+    const riddle = content.riddles[state.lang].riddles[exit.key], tried = triedToday(state, exit.key, ctxNow);
+    Object.assign(brief, { riddle: riddle.q, choices: riddle.choices, tried, closed: tried.length >= RIDDLE_TRIES });
+  }
   const game = gameOf(exit);
   if (game) {
     Object.assign(brief, { game, won: Boolean(state.wins?.[game.id]) });
@@ -580,6 +583,10 @@ function pay(content, state, ctx, grant) {
   return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(learned ? { learned } : {}) };
 }
 
+/* A riddle is answered wrong at most this many times a day. */
+const RIDDLE_TRIES = 2;
+const triedToday = (state, key, now) => (state.riddles?.[key]?.day === dayKey(now) ? state.riddles[key].tried ?? [] : []);
+
 function judgeAnswer(content, key, answer) {
   const said = normalizeAnswer(answer);
   if (!said) return false;
@@ -659,8 +666,17 @@ export function resolve(state, content, ctx, args) {
   }
   if (exit.key) {
     const riddle = content.riddles[lang].riddles[exit.key];
-    if (args.answer == null) return refuse('needs-answer', riddle.q, { exit: exit.id });
-    if (!judgeAnswer(content, exit.key, args.answer)) return refuse('wrong-answer', null, { hint: riddle.hint, exit: exit.id });
+    const tried = triedToday(s, exit.key, ctx.now);
+    if (tried.length >= RIDDLE_TRIES) return refuse('riddle-closed', null, { exit: exit.id });
+    if (args.answer == null) return refuse('needs-answer', riddle.q, { exit: exit.id, choices: riddle.choices });
+    if (!judgeAnswer(content, exit.key, args.answer)) {
+      // A miss is kept: the first brings the hint, the second closes the
+      // riddle until tomorrow — guessing costs, and nothing blocks past a day.
+      const now = [...tried, String(args.answer).trim()];
+      s.riddles = { ...s.riddles, [exit.key]: { day: dayKey(ctx.now), tried: now } };
+      const closed = now.length >= RIDDLE_TRIES;
+      return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', say: null, ...(closed ? {} : { hint: riddle.hint }), exit: exit.id } };
+    }
   }
   const game = gameOf(exit);
   if (game && !s.wins?.[game.id]) {
@@ -1587,12 +1603,21 @@ export function askOf(content, state, ctx, result = {}) {
     // A creature that withdrew today is not offered again until tomorrow — as
     // at its haunt; asked anyway, the same refusal came back each time
     // (2026-09-17: 降妖 · 五行 tapped three times at 蓬莱).
-    const gone = new Set(scene.exits.filter(e => e.withdrawn && !e.won).map(e => e.id));
+    const gone = new Set(scene.exits.filter(e => (e.withdrawn && !e.won) || e.closed).map(e => e.id));
     let options = scene.buttons.filter(b => !gone.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
     let asked = question;
     if (result.refused === 'needs-answer' || result.refused === 'wrong-answer') {
+      // The riddle's own answers to pick from — a tap is the answer — and a
+      // way back to the scene (his "options are not related to the question").
       const riddle = scene.exits.find(e => e.riddle && (!result.exit || e.id === result.exit));
-      if (riddle) { asked = riddle.riddle; options = options.filter(o => o.exit !== riddle.id); }
+      if (riddle && !riddle.closed) {
+        asked = riddle.riddle;
+        const tried = new Set(riddle.tried.map(normalizeAnswer));
+        options = [
+          ...riddle.choices.filter(c => !tried.has(normalizeAnswer(c))).map(c => ({ label: c, exit: riddle.id, answer: c })),
+          { label: zh ? '先不答' : 'Not yet', look: true },
+        ];
+      }
     }
     if (options.length < 2) options.push(yinyue);
     return { header: header(scene.place), question: asked, options };
@@ -1610,7 +1635,7 @@ const withAsk = (result, content, state, ctx) => ({ then: THEN, ask: askOf(conte
    2026-09-17: 蓬莱 tapped, Look, the same choice asked twice). */
 const TAPS = {
   move: o => `Move {place: ${o.move}}`,
-  exit: o => `Resolve {exit: ${o.exit}}`,
+  exit: o => `Resolve {exit: ${o.exit}${o.answer ? `, answer: ${o.answer}` : ''}}`,
   write: () => 'Write',
   tame: o => `Tame {creature: ${o.tame}}`,
   linger: () => 'Branch {action: open}',

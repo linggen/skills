@@ -35,6 +35,14 @@ function refused(fn, state, args, code, c = ctx()) {
   assert.equal(out.state, null, 'a refusal never changes state');
   return out.result;
 }
+/* A wrong answer to a riddle: refused, and the miss is kept for the day. */
+function missed(fn, state, args, c = ctx()) {
+  const out = fn(state, content, c, args);
+  assert.equal(out.result.ok, false);
+  assert.equal(out.result.refused, 'wrong-answer');
+  assert.ok(out.state.riddles, 'a miss is kept');
+  return out.result;
+}
 
 /* The first task offered, its board already won on the page. */
 function offerWon(s) {
@@ -64,7 +72,7 @@ test('a new game starts at the river, 练气一层, nothing in hand', () => {
 
 test('the prologue walks from the river to its end by exits alone', () => {
   let s = toFuzhu();
-  refused(resolve, s, { exit: 'riddle', answer: '吉' }, 'wrong-answer');
+  missed(resolve, s, { exit: 'riddle', answer: '吉' });
   s = must(resolve, s, { exit: 'riddle', answer: '告' }).state;
   assert.equal(s.scene, '00-north');
   const end = must(resolve, s, { exit: 'rest' });
@@ -191,12 +199,25 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.equal(l.ask.question, '何去何从？');
   assert.equal(l.ask.header, l.scene.place);
   assert.ok(l.then.includes('AskUser'));
-  // a riddle waiting: the riddle is the question, the other buttons the options
+  // a riddle waiting: the riddle is the question, its answers the options,
+  // and a way back to the scene
   const r = refused(resolve, s, { exit: 'riddle' }, 'needs-answer');
   const a = askOf(content, s, ctx(), r);
   assert.equal(a.question, r.say);
-  assert.ok(!a.options.some(o => o.exit === 'riddle'));
-  assert.ok(a.options.length >= 2);
+  assert.deepEqual(a.options.map(o => o.label), ['吉', '告', '牢', '舌', '先不答']);
+  assert.ok(a.options.slice(0, 4).every(o => o.exit === 'riddle' && o.answer === o.label));
+  assert.equal(a.options.at(-1).look, true);
+  // a miss: the hint, and the answers left; a second miss shuts it for the day
+  const miss = resolve(s, content, ctx(), { exit: 'riddle', answer: '吉' });
+  assert.equal(miss.result.refused, 'wrong-answer'); assert.ok(miss.result.hint);
+  assert.deepEqual(askOf(content, miss.state, ctx(), miss.result).options.map(o => o.label), ['告', '牢', '舌', '先不答']);
+  const shut = resolve(miss.state, content, ctx(), { exit: 'riddle', answer: '牢' });
+  assert.equal(shut.result.refused, 'riddle-closed'); assert.equal(shut.result.hint, undefined);
+  assert.equal(refused(resolve, shut.state, { exit: 'riddle', answer: '告' }, 'riddle-closed').exit, 'riddle');
+  assert.ok(!askOf(content, shut.state, ctx(), shut.result).options.some(o => o.exit === 'riddle'));
+  assert.equal(look(shut.state, content, ctx()).scene.exits.find(e => e.id === 'riddle').closed, true);
+  const tomorrow = ctx({ now: new Date(NOW.getTime() + 864e5) });
+  assert.equal(resolve(shut.state, content, tomorrow, { exit: 'riddle', answer: '告' }).result.ok, true);
   // the filler never repeats the player's last word: after Yinyue, a look around
   const one = { ...l.scene, buttons: l.scene.buttons.slice(0, 1) };
   assert.equal(askOf(content, s, { ...ctx(), said: '问问银月' }).options.at(-1)?.label !== '问问银月', true);
@@ -1002,7 +1023,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   assert.ok(altar.exits.find(e => e.id === 'subdue').duel.creature.root === 'earth');
   assert.equal(answer(duel, s, { id: altar.exits.find(e => e.id === 'subdue').game.id }).state.stamina, s.stamina - 10, 'a bout here costs');
   // the riddle way through
-  refused(resolve, s, { exit: 'riddle', answer: '虾' }, 'wrong-answer', octx());
+  missed(resolve, s, { exit: 'riddle', answer: '虾' }, octx());
   r = answer(resolve, s, { exit: 'riddle', answer: '鱼' });
   assert.equal(r.state.scene, '01-deep'); assert.equal(r.result.paid.progress, 40);
   s = r.state; assert.equal(s.place, 'zhangyuan');
@@ -1363,14 +1384,14 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   assert.equal(lake.id, '02-lake');
   assert.equal(lake.exits.find(e => e.id === 'subdue').duel.creature.root, 'wood');
   // the three ways: the riddle
-  refused(resolve, s, { exit: 'riddle', answer: '雨' }, 'wrong-answer', nctx());
+  missed(resolve, s, { exit: 'riddle', answer: '雨' }, nctx());
   r = answerN(resolve, s, { exit: 'riddle', answer: '雷' });
   assert.equal(r.state.scene, '02-deep'); assert.equal(r.result.paid.progress, 40);
   // and 舜's way, from the same shore
   const yielded = answerN(resolve, s, { exit: 'yield' });
   assert.equal(yielded.state.scene, '02-deep'); assert.equal(yielded.result.paid.progress, 40);
   s = r.state; assert.equal(s.place, 'leiyuan');
-  refused(resolve, s, { exit: 'seal', answer: '西' }, 'wrong-answer', nctx());
+  missed(resolve, s, { exit: 'seal', answer: '西' }, nctx());
   r = answerN(resolve, s, { exit: 'seal', answer: '东' });
   assert.equal(r.state.scene, '02-cauldron');
   s = r.state;
@@ -1436,14 +1457,14 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   assert.equal(shore.id, '03-shore');
   assert.equal(shore.exits.find(e => e.id === 'subdue').duel.creature.root, 'water');
   // the three ways: the riddle
-  refused(resolve, s, { exit: 'riddle', answer: '日' }, 'wrong-answer', dctx());
+  missed(resolve, s, { exit: 'riddle', answer: '日' }, dctx());
   r = answerD(resolve, s, { exit: 'riddle', answer: '明' });
   assert.equal(r.state.scene, '03-deep'); assert.equal(r.result.paid.progress, 40);
   // and 孔子's word, from the same shore
   const enough = answerD(resolve, s, { exit: 'enough' });
   assert.equal(enough.state.scene, '03-deep'); assert.equal(enough.result.paid.progress, 40);
   s = r.state; assert.equal(s.place, 'liubo');
-  refused(resolve, s, { exit: 'seal', answer: '震' }, 'wrong-answer', dctx());
+  missed(resolve, s, { exit: 'seal', answer: '震' }, dctx());
   r = answerD(resolve, s, { exit: 'seal', answer: '离' });
   assert.equal(r.state.scene, '03-cauldron');
   s = r.state;
