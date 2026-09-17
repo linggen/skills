@@ -119,7 +119,9 @@
            #inv-proposals for Apply. -->
       <section id="invest" hidden>
         <form id="inv-add" autocomplete="off">
-          <input id="inv-symbol" placeholder="Ticker — AAPL, or RY.TO for TSX" spellcheck="false">
+          <input id="inv-symbol" placeholder="Ticker or company — AAPL, RY.TO" spellcheck="false"
+            role="combobox" aria-autocomplete="list" aria-controls="inv-suggest">
+          <div id="inv-suggest" class="inv-suggest" role="listbox" hidden></div>
           <button class="btn" type="submit">Add</button>
           <span id="inv-add-msg" class="hint inline"></span>
         </form>

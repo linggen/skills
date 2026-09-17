@@ -451,13 +451,16 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
         'inv:RY.TO|avg_cost' => $cell->(140),
         'inv:VOO|watch'      => $cell->(JSON::PP::true),
         'inv:AAPL|watch'     => $cell->(undef),     # removed: a tombstone
+        'inv:AAPL|rank'      => $cell->(2),         # …its place in the list left behind
+        'inv:VOO|rank'       => $cell->(1),
         'bud:dining'         => $cell->(400),
     } });
     $write->('quotes.json', { symbols => {
         'RY.TO' => { name => 'Royal Bank of Canada', price => 150, currency => 'CAD' },
         'AAPL'  => { name => 'Apple Inc.', price => 330 },
     } });
-    t('watched symbols come from the register, tombstones gone', join(',', watched_symbols()) eq 'RY.TO,VOO',
+    t('watched symbols come from the register, tombstones gone, a leftover rank lists nothing',
+      join(',', watched_symbols()) eq 'RY.TO,VOO',
       join(',', watched_symbols()));
     my $out = JSON::PP->new->utf8->decode(scalar `perl $SCRIPT portfolio`);
     my $ry = $out->{investments}{holdings}[0];
@@ -466,6 +469,29 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
       JSON::PP->new->canonical->encode($out->{investments}));
     t('the watchlist and quotes cover only listed symbols',
       join(',', @{ $out->{investments}{watchlist} }) eq 'VOO' && !exists $out->{quotes}{AAPL});
+}
+
+# ── Search ─────────────────────────────────────────────────────────────────
+{
+    my $found = search_results([
+        { id => 'TSX-RY', s => 'tsx/RY', t => 'sy', n => 'Royal Bank of Canada', st => 's' },
+        { id => 'TSX-RYHI', s => 'tsx/RYHI', t => 'sy', n => 'Ninepoint Royal Bank HighShares ETF', st => 'e' },
+        { id => 'TSX-RY.PRS', s => 'tsx/RY.PRS', t => 'sy', n => 'Royal Bank of Canada', st => 'p' },
+        { id => 'RY', s => 'RY', t => 's', n => 'Royal Bank of Canada' },
+        { id => 'FRA-RYC', s => 'fra/RYC', t => 'sy', n => 'Royal Bank of Canada', st => 's' },
+        { id => 'OTC-GAPJ', s => 'otc/GAPJ', t => 'sy', n => 'Golden Apple Oil & Gas Inc.', st => 's' },
+        { id => 'AAPY', s => 'AAPY', t => 'e', n => 'Kurv Yield Premium Strategy Apple (AAPL) ETF' },
+        { id => 'RY', s => 'RY', t => 's', n => 'Royal Bank of Canada' },
+        { id => 'MUTF-X', s => 'mutf/RYDHX', t => 'sy', n => 'A fund', st => 'm' },
+    ]);
+    t('search keeps US stocks and ETFs and TSX stocks and ETFs, in order, once each',
+      join(',', map { "$_->{symbol}:$_->{exchange}:$_->{kind}" } @$found)
+        eq 'RY.TO:TSX:stock,RYHI.TO:TSX:etf,RY:US:stock,AAPY:US:etf',
+      join(',', map { $_->{symbol} } @$found));
+    t('a search row carries the company name', $found->[0]{name} eq 'Royal Bank of Canada');
+    my @many = map { { s => "A$_", t => 's', n => "Co $_" } } 'A' .. 'J';
+    t('search answers at most six', scalar @{ search_results(\@many) } == 6);
+    t('the search query escapes what the user typed', url_escape('AT&T bank/x') eq 'AT%26T%20bank%2Fx');
 }
 
 print "\n$pass passed, $fail failed\n";

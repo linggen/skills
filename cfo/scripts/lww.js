@@ -18,9 +18,8 @@
 //   com:<key>|<field>  a commitment term (balance, rate_pct, renewal_date, kind)
 //   acc:<id>|<field>   an account field (label, type)
 //   del:<txnId>        true = reverted out of the report (rows are grow-only)
-//   inv:<symbol>|<field>  an investment: watch (true), shares, avg_cost, account
-//                      — Mac-only so far; the phone keeps the cells untouched
-//                      until its Investments view lands (doc/investments.md)
+//   inv:<symbol>|<field>  an investment: watch (true), shares, avg_cost,
+//                      account, rank (its place in the list, lower = higher)
 
 /// One cell. `v === null` is a tombstone: the key is *known to be unset*, which
 /// is not the same as absent — a tombstone still competes in the merge, so a
@@ -157,8 +156,11 @@ export const commitmentsOf = (reg) => reg.grouped('com:');
 /// account id -> {label, type}
 export const accountsOf = (reg) => reg.grouped('acc:');
 
-/// symbol -> {watch, shares, avg_cost, account}
-export const investmentsOf = (reg) => reg.grouped('inv:');
+/// symbol -> {watch, shares, avg_cost, account, rank}. A symbol left with only
+/// its `rank` isn't listed: a removal that raced a move (or a build that didn't
+/// clear the rank) must not bring it back.
+export const investmentsOf = (reg) =>
+  Object.fromEntries(Object.entries(reg.grouped('inv:')).filter(([, cell]) => Object.keys(cell).some((f) => f !== 'rank')));
 
 /// The correction on one row: a category, or null when the register knows there
 /// is none. `undefined` means this row was never touched here — only then may a

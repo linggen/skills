@@ -8,6 +8,8 @@
 #                                        next earnings date (cached a day)
 #   perl market.pl stats --fresh AAPL    fetch again even when cached
 #   perl market.pl market AAPL           quotes + stats together
+#   perl market.pl search royal bank     tickers matching a ticker or a company
+#                                        name (US stocks and ETFs, the TSX)
 #   perl market.pl portfolio             holdings, watchlist, numbers, reports
 #                                        (holdings from the edit register)
 #   perl market.pl reports-check [SYM…]  reports out since we started watching
@@ -62,6 +64,7 @@ sub main {
         quotes           => sub { cmd_market(['quotes'], @_) },
         stats            => sub { cmd_market(['stats'], @_) },
         market           => sub { cmd_market(['quotes', 'stats'], @_) },
+        search           => \&cmd_search,
         portfolio        => \&cmd_portfolio,
         'reports-check'  => \&cmd_reports_check,
         'reports-latest' => \&cmd_reports_latest,
@@ -77,7 +80,7 @@ sub main {
 }
 
 sub usage {
-    print STDERR "usage: market.pl quotes|stats|market [--fresh] SYMBOL...\n"
+    print STDERR "usage: market.pl quotes|stats|market [--fresh] SYMBOL... | search TEXT\n"
                . "       market.pl portfolio | reports-check [SYMBOL...] | reports-latest SYMBOL\n"
                . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n"
                . "       market.pl watch-scan [--since=TIME] [SYMBOL...] | save-watch judgments=JSON\n"
@@ -130,9 +133,10 @@ sub base_entry {
 
 sub ticker { my ($e) = @_; (my $t = $e->{symbol}) =~ s/\.TO$//; return $t }
 
-# symbol -> {watch, shares, avg_cost, account}: the live `inv:` cells of the
-# edit register (data/edits.json) — what the Mac page and a paired phone both
-# write, so a symbol added on the phone counts before the page is opened.
+# symbol -> {watch, shares, avg_cost, account, rank}: the live `inv:` cells of
+# the edit register (data/edits.json) — what the Mac page and a paired phone
+# both write, so a symbol added on the phone counts before the page is opened.
+# A symbol left with only its `rank` (its place in the list) isn't listed.
 # Mirrors investmentsOf() in lww.js.
 sub register_investments {
     my $reg = (read_json(data_dir() . '/edits.json') || {})->{reg};
@@ -143,6 +147,9 @@ sub register_investments {
         my $cell = $reg->{$key};
         next unless ref $cell eq 'HASH' && defined $cell->{v};
         $out{$1}{$2} = $cell->{v};
+    }
+    for my $sym (keys %out) {
+        delete $out{$sym} unless grep { $_ ne 'rank' } keys %{ $out{$sym} };
     }
     return \%out;
 }
@@ -168,6 +175,55 @@ sub cmd_market {
         }
         return undef;
     }));
+}
+
+# ── Search ─────────────────────────────────────────────────────────────────
+
+my $SEARCH_MAX = 6;
+
+# What the user typed on the Add row — a ticker or part of a company name —
+# to the listings the quotes can price. "ry.to" asks as TSX:RY: the search
+# reads a bare "RY.TO" as text and finds other companies.
+sub cmd_search {
+    my $text = join ' ', grep { !/^\{\{.*\}\}$/ } @_;
+    $text =~ s/^\s+|\s+$//g;
+    return say_json({ query => $text, results => [] }) if $text eq '';
+    my $sym = canonical($text);
+    my $q = defined $sym && $sym =~ /^(.+)\.TO$/ ? "TSX:$1" : $text;
+    my $body = fetch_json("$BASE/api/search?q=" . url_escape($q));
+    return say_json({ query => $text, error => 'no answer from stockanalysis.com' })
+        unless $body && ref $body->{data} eq 'ARRAY';
+    say_json({ query => $text, results => search_results($body->{data}) });
+}
+
+# stockanalysis search rows {s, t, n, st} → [{symbol, name, kind, exchange}],
+# in its order: t "s" / "e" are US stocks / ETFs; t "sy" is another exchange,
+# kept only for the TSX ("tsx/RY") and only stocks and ETFs (st "s" / "e").
+# Mirrors CfoMarket.search in linggen-mobile.
+sub search_results {
+    my ($rows) = @_;
+    my (@out, %seen);
+    for my $r (@$rows) {
+        next unless ref $r eq 'HASH' && defined $r->{s} && defined $r->{t};
+        my ($symbol, $kind, $exchange);
+        if ($r->{t} eq 's' || $r->{t} eq 'e') {
+            ($symbol, $kind, $exchange) = (uc $r->{s}, $r->{t} eq 'e' ? 'etf' : 'stock', 'US');
+        } elsif ($r->{t} eq 'sy' && (my ($tsx) = $r->{s} =~ m{^tsx/(.+)$}) && ($r->{st} // '') =~ /^[se]$/) {
+            ($symbol, $kind, $exchange) = (uc($tsx) . '.TO', $r->{st} eq 'e' ? 'etf' : 'stock', 'TSX');
+        } else {
+            next;
+        }
+        next unless (canonical($symbol) // '') eq $symbol && !$seen{$symbol}++;
+        push @out, { symbol => $symbol, name => $r->{n} // '', kind => $kind, exchange => $exchange };
+        last if @out == $SEARCH_MAX;
+    }
+    return \@out;
+}
+
+sub url_escape {
+    my ($s) = @_;
+    $s =~ s/([^A-Za-z0-9\-._~])/sprintf('%%%02X', ord $1)/ge;
+    return $s;
 }
 
 # Price and today's move. A US symbol is tried as a stock, then as an ETF (the
@@ -1547,6 +1603,8 @@ sub update_quotes {
             delete $entry->{error};
             my $err = $step->($entry);
             $result{$sym} = $err ? { %$entry, error => $err } : $entry;
+            # A ticker that never existed (a typo checked on Add) leaves nothing behind.
+            delete $cache->{$sym} if $err && $err eq 'not found' && !defined $entry->{price};
         }
         return \%result;
     });

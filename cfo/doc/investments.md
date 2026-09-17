@@ -8,8 +8,11 @@ Mac; no Linggen Cloud, no data-provider key.
 ## Data (data/)
 
 - Holdings are register cells in `edits.json`: `inv:<symbol>|watch` (true),
-  `|shares`, `|avg_cost`, `|account` (free label: TFSA, RRSP, Margin…). Symbol
+  `|shares`, `|avg_cost`, `|account` (free label: TFSA, RRSP, Margin…), `|rank`
+  (the user's list order, lower = higher; absent until a row is moved). Symbol
   is `AAPL` (US) or `RY.TO` (TSX). One cell per field, so the phone merges them.
+  A symbol with nothing live but `rank` isn't listed (a removal that raced a
+  move stays removed).
 - `investments.json` — the page's snapshot, written after every edit and
   refresh (market.pl no longer reads it: `reports-check` and `portfolio` take
   holdings straight from the register, so a symbol added on the phone counts
@@ -36,7 +39,12 @@ Mac; no Linggen Cloud, no data-provider key.
   `a/tsx-<sym>`. `stats [--fresh] <symbols>` — name, kind, P/E, forward P/E,
   market cap, earnings date, ETF expense ratio, from the overview page's
   `__data.json` (SvelteKit devalue), cached 20 h. Merges into `quotes.json`
-  under a lock, prints JSON.
+  under a lock, prints JSON. A ticker that was never found leaves no entry.
+- `search <text>` — tickers matching a ticker or part of a company name, from
+  `stockanalysis.com/api/search?q=` (`ry.to` asks as `TSX:RY`): `{query,
+  results[{symbol, name, kind, exchange}]}`, at most 6, in the site's order,
+  only US stocks and ETFs and TSX stocks and ETFs; `{query, error}` when the
+  site doesn't answer.
 - A report is one period's results `{symbol, name, form, period, filed,
   url}`. US: SEC EDGAR submissions (CIK from the stats, else SEC's
   `company_tickers.json`, cached a week) — 10-Q, 10-K, 20-F, 40-F and the
@@ -65,9 +73,19 @@ Mac; no Linggen Cloud, no data-provider key.
 
 - New tab `data-view="invest"` **Investments**, same pattern as Commitments.
 - List: symbol, name, a P/E · Fwd P/E · Earnings line, price, day change;
-  holdings add value and gain, with totals per currency on top. Add by ticker;
-  edit shares / avg cost / account inline; remove from the row's ⋯ menu
-  (right-click opens the same menu). Page module `investments.js`.
+  holdings add value and gain, with totals per currency on top. Add by ticker
+  or company: suggestions under the box as you type (`search`, 250 ms; click
+  or ↑ ↓ Enter adds one). A typed ticker goes in when search lists it, or the
+  price check finds it or can't be reached; a check that says it doesn't
+  exist keeps it out — "No listing for SYM — pick one below." with the
+  suggestions. Edit shares / avg cost / account inline; remove from the row's
+  ⋯ menu (right-click opens the same menu). Page module `investments.js`.
+- Order: holdings by value, then the watchlist A→Z, until the user drags a row
+  (pointer events; a press that doesn't move is still a click). Then ranked
+  rows by rank, unranked after them in that order. A move ranks any unranked
+  rows after the highest, then writes one cell — the moved row halfway
+  between its neighbours — renumbering only when the gap is too narrow
+  (`rankMoves`, same cases in the phone's tests). The order syncs.
 - Refresh: quotes on open and every 5 min while the tab is visible; stats
   daily.
 - Company card (click a row): the numbers, next or last earnings date,
@@ -140,9 +158,11 @@ Mac; no Linggen Cloud, no data-provider key.
 ## Phone (release 2)
 
 - CFO's fifth section, **Investments** (`cfo_investments_screen.dart`): add a
-  ticker, totals per currency, rows with price · day move · holding value and
-  gain, ⋯ / long-press = one menu (Open company, Edit holding / Add shares,
-  Remove with a confirm). Tap → company page: numbers, earnings date, the
+  ticker (the Mac's suggestions and check: `CfoMarket.search`,
+  `CfoInvestments.check`), totals per currency, rows with price · day move ·
+  holding value and gain, ⋯ / long-press = one menu (Open company, Edit
+  holding / Add shares, Remove with a confirm); a ⠿ handle drags a row
+  (`rankMoves`, `repo.rankSymbols`). Tap → company page: numbers, earnings date, the
   holding, report summaries from the last sync with a Source link.
 - Holdings are `inv:` cells in the phone's CFO store (`setInvestmentField`,
   `investments` projection) and travel with the existing sync.

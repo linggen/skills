@@ -17,7 +17,8 @@ const MARKET = '"$HOME/.linggen/skills/cfo/scripts/market.pl"';
 const REFRESH_MS = 5 * 60 * 1000;
 const READ_WAIT_MS = 3 * 60 * 1000; // a read that saves nothing by then has stopped
 const NOTE_MS = 15 * 1000;
-const FIELDS = ['watch', 'shares', 'avg_cost', 'account'];
+const FIELDS = ['watch', 'shares', 'avg_cost', 'account', 'rank'];
+const SUGGEST_MS = 250;
 
 let deps = null;
 let quotes = {};     // symbol -> data/quotes.json entry
@@ -58,7 +59,16 @@ export function initInvestments(d) {
   root.addEventListener('contextmenu', onContextMenu);
   root.addEventListener('keydown', onKeydown);
   root.addEventListener('change', onChange);
+  root.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', endDrag);
   document.getElementById('inv-add').addEventListener('submit', onAdd);
+  const input = document.getElementById('inv-symbol');
+  input.addEventListener('input', onSymbolInput);
+  input.addEventListener('keydown', onSymbolKeydown);
+  input.addEventListener('blur', () => showSuggestions([]));
+  document.getElementById('inv-suggest').addEventListener('mousedown', onSuggestionDown);
 }
 
 /// Entering the tab: draw what's cached, then fetch fresh numbers, and keep
@@ -122,13 +132,53 @@ const num = (v) => (v === null || v === undefined || v === '' ? null : Number.is
 const currencyOf = (symbol, q = {}) => q.currency || (symbol.endsWith('.TO') ? 'CAD' : 'USD');
 
 /// One row per listed symbol: the holding joined with the latest numbers.
-/// Holdings first (largest value first), then the watchlist A→Z.
+/// Until the user moves a row: holdings first (largest value first), then the
+/// watchlist A→Z. After: ranked rows by rank, the rest after them in that
+/// order. Mirrors the phone's order.
 export function positionsOf(inv, quoteMap) {
   const rows = Object.entries(inv).map(([symbol, cell]) => positionOf(symbol, cell, quoteMap[symbol] || {}));
   const held = rows.filter((r) => r.shares > 0).sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
   const watched = rows.filter((r) => !(r.shares > 0)).sort((a, b) => a.symbol.localeCompare(b.symbol));
-  return [...held, ...watched];
+  const byDefault = [...held, ...watched];
+  const ranked = byDefault.filter((r) => r.rank !== null).sort((a, b) => a.rank - b.rank || a.symbol.localeCompare(b.symbol));
+  return [...ranked, ...byDefault.filter((r) => r.rank === null)];
 }
+
+/// The `rank` cells a move writes. `order` is the list as shown, [{symbol,
+/// rank|null}]; `to` is the row's index once moved. Rows without a rank get
+/// one after the highest first, then the moved row lands halfway between its
+/// new neighbours — one cell per move, so moves on two devices merge. A gap
+/// too narrow to halve renumbers the whole list. Mirrors the phone's rankMoves.
+export function rankMoves(order, from, to) {
+  if (from === to || !order[from] || to < 0 || to >= order.length) return {};
+  const writes = {};
+  let top = Math.max(0, ...order.map((r) => r.rank).filter((n) => Number.isFinite(n)));
+  const list = order.map((r) => {
+    if (Number.isFinite(r.rank)) return { symbol: r.symbol, rank: r.rank };
+    writes[r.symbol] = ++top;
+    return { symbol: r.symbol, rank: top };
+  });
+  const [moved] = list.splice(from, 1);
+  list.splice(to, 0, moved);
+  const before = list[to - 1]?.rank, after = list[to + 1]?.rank;
+  if (before !== undefined && after !== undefined && after - before < 1e-6) {
+    list.forEach((r, i) => { if (r.rank !== i + 1) writes[r.symbol] = i + 1; });
+    return writes;
+  }
+  writes[moved.symbol] = before === undefined && after === undefined ? 1
+    : before === undefined ? after - 1
+    : after === undefined ? before + 1
+    : (before + after) / 2;
+  return writes;
+}
+
+/// Add's answer when search doesn't list the typed ticker and the price check
+/// says it doesn't exist.
+export const missingNote = (sym, results) =>
+  results?.length ? `No listing for ${sym} — pick one below.` : `No listing for ${sym}.`;
+
+/// "US", "US · ETF", "TSX", "TSX · ETF" under a search suggestion.
+export const listingTag = (r) => (r.kind === 'etf' ? `${r.exchange} · ETF` : r.exchange);
 
 function positionOf(symbol, cell, q) {
   const shares = num(cell.shares) || 0;
@@ -140,6 +190,7 @@ function positionOf(symbol, cell, q) {
   const gain = value !== null && cost !== null ? value - cost : null;
   return {
     symbol,
+    rank: num(cell.rank),
     shares,
     avg_cost: avg,
     account: cell.account || '',
@@ -467,6 +518,7 @@ function rowHtml(r) {
        <div>${money(r.value, r.currency, 0)} ${moveHtml(r.gain, r.currency, r.gain_pct, 0)}</div>`
     : `<button class="chip" data-act="edit" data-sym="${sym}">Add shares</button>`;
   return `<div class="inv-row${open === r.symbol ? ' open' : ''}" data-sym="${sym}">
+    <span class="inv-grip" aria-hidden="true">⠿</span>
     <div class="inv-main" tabindex="0" aria-expanded="${open === r.symbol}">
       <div class="inv-id"><b>${sym}</b> <span class="inv-name">${esc(r.name)}</span>
         <div class="inv-sub">${esc(subline(r))}</div></div>
@@ -631,6 +683,7 @@ function formHtml(r) {
 // ── Actions ────────────────────────────────────────────────────────────────
 
 function onClick(e) {
+  if (dragEnded) return; // the click a drag ends on isn't a tap on the row
   const btn = e.target.closest('[data-act]');
   if (!btn) {
     if (menuFor && !e.target.closest('.inv-menu')) { menuFor = null; draw(); return; }
@@ -700,20 +753,203 @@ function focusForm(sym) {
   document.querySelector(`.inv-form[data-sym="${sym}"] input`)?.focus();
 }
 
+// ── Add: search as you type, check the ticker before it lands ──────────────
+
+let suggestions = []; // the newest search answer under the Add box
+let active = -1;      // the suggestion the arrow keys are on
+let suggestTimer = null;
+let suggestSeq = 0;   // only the newest search draws
+
+const sq = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
+
+/// Listings matching what was typed, or null when the search can't be reached.
+async function search(text) {
+  try {
+    const out = JSON.parse(await deps.runBash(`perl ${MARKET} search ${sq(text.slice(0, 80))}`));
+    return out.error ? null : out.results || [];
+  } catch (err) {
+    console.warn('[cfo] search failed', err);
+    return null;
+  }
+}
+
+function onSymbolInput(e) {
+  clearTimeout(suggestTimer);
+  document.getElementById('inv-add-msg').textContent = '';
+  const text = e.target.value.trim();
+  const seq = ++suggestSeq;
+  if (!text) { showSuggestions([]); return; }
+  suggestTimer = setTimeout(async () => {
+    const found = await search(text);
+    if (seq === suggestSeq) showSuggestions(found || []);
+  }, SUGGEST_MS);
+}
+
+function showSuggestions(list) {
+  suggestions = list;
+  active = -1;
+  drawSuggestions();
+}
+
+function drawSuggestions() {
+  const { esc } = deps;
+  const box = document.getElementById('inv-suggest');
+  box.hidden = !suggestions.length;
+  box.innerHTML = suggestions.map((r, i) => `
+    <div class="inv-sug${i === active ? ' active' : ''}" role="option" aria-selected="${i === active}" data-sym="${esc(r.symbol)}">
+      <b>${esc(r.symbol)}</b><span class="inv-name">${esc(r.name)}</span><span class="inv-sug-tag">${esc(listingTag(r))}</span>
+    </div>`).join('');
+}
+
+/// ↑ ↓ walk the suggestions, Enter on one adds it, Escape closes them. Enter
+/// with none picked submits the form, which checks what was typed.
+function onSymbolKeydown(e) {
+  if (e.key === 'Escape') { showSuggestions([]); return; }
+  if (!suggestions.length || !['ArrowDown', 'ArrowUp', 'Enter'].includes(e.key)) return;
+  if (e.key === 'Enter' && active < 0) return;
+  e.preventDefault();
+  if (e.key === 'Enter') { pickSuggestion(suggestions[active].symbol); return; }
+  const n = suggestions.length;
+  active = e.key === 'ArrowDown' ? (active + 1) % n : active <= 0 ? n - 1 : active - 1;
+  drawSuggestions();
+}
+
+/// mousedown, not click: the input keeps focus, so its blur doesn't close the
+/// list before the pick lands.
+function onSuggestionDown(e) {
+  const sug = e.target.closest('.inv-sug');
+  if (!sug) return;
+  e.preventDefault();
+  pickSuggestion(sug.dataset.sym);
+}
+
+function pickSuggestion(sym) {
+  clearTimeout(suggestTimer);
+  suggestSeq++;
+  document.getElementById('inv-symbol').value = '';
+  document.getElementById('inv-add-msg').textContent = '';
+  showSuggestions([]);
+  addSymbol(sym);
+}
+
+/// A typed ticker goes in when the search lists it, or when the price check
+/// finds it or can't be reached (offline never stops an add). Only a check
+/// that says it doesn't exist keeps it out, with the suggestions to pick from.
 async function onAdd(e) {
   e.preventDefault();
   const input = document.getElementById('inv-symbol');
   const msg = document.getElementById('inv-add-msg');
-  const sym = canonicalSymbol(input.value);
+  const typed = input.value;
+  const sym = canonicalSymbol(typed);
   if (!sym) { msg.textContent = 'Use a ticker like AAPL, or RY.TO for the TSX.'; return; }
-  msg.textContent = '';
-  input.value = '';
+  clearTimeout(suggestTimer);
+  const seq = ++suggestSeq;
+  msg.textContent = `Checking ${sym}…`;
+  const found = await search(typed);
+  if (!found?.some((r) => r.symbol === sym) && (await quoteMissing(sym))) {
+    if (seq !== suggestSeq) return; // typing moved on
+    msg.textContent = missingNote(sym, found);
+    showSuggestions(found || []);
+    return;
+  }
+  if (seq === suggestSeq) {
+    msg.textContent = '';
+    input.value = '';
+    showSuggestions([]);
+  }
+  await addSymbol(sym);
+}
+
+async function quoteMissing(sym) {
+  try {
+    return (await fetchInto('quotes', [sym]))[sym]?.error === 'not found';
+  } catch (err) {
+    console.warn('[cfo] ticker check failed', err);
+    return false;
+  }
+}
+
+async function addSymbol(sym) {
   if (!investmentsOf(deps.edits())[sym]) {
     deps.edits().set(`inv:${sym}|watch`, true);
     await persist();
   }
   draw();
   refresh([sym]);
+}
+
+// ── Reorder: drag a row ────────────────────────────────────────────────────
+// Pointer events, not HTML5 drag and drop: they behave the same in a browser
+// and the app's webview, and a press that doesn't move stays a click.
+
+const DRAG_START_PX = 5;
+let drag = null;        // {sym, y0, moving} from the press on a row
+let dragEnded = false;  // true for the click that follows a drag
+
+function onPointerDown(e) {
+  const main = e.button === 0 && !editing && e.target.closest('.inv-main');
+  if (!main || e.target.closest('button, a, input, select')) return;
+  drag = { sym: main.closest('.inv-row').dataset.sym, y0: e.clientY, moving: false };
+}
+
+function onPointerMove(e) {
+  if (!drag) return;
+  if (!drag.moving) {
+    if (Math.abs(e.clientY - drag.y0) < DRAG_START_PX) return;
+    drag.moving = true;
+    document.querySelector(`.inv-row[data-sym="${CSS.escape(drag.sym)}"]`)?.classList.add('dragging');
+    document.body.classList.add('inv-reordering');
+  }
+  e.preventDefault();
+  const target = dropTarget(e.clientY);
+  markDrop(target && target.row.dataset.sym !== drag.sym ? target.row : null, target?.after);
+}
+
+async function onPointerUp(e) {
+  if (!drag) return;
+  const { sym, moving } = drag;
+  const target = moving ? dropTarget(e.clientY) : null;
+  endDrag();
+  if (!moving) return;
+  dragEnded = true;
+  setTimeout(() => { dragEnded = false; }, 0);
+  if (!target) return;
+  const order = rowsNow();
+  const from = order.findIndex((r) => r.symbol === sym);
+  const at = order.findIndex((r) => r.symbol === target.row.dataset.sym) + (target.after ? 1 : 0);
+  const writes = rankMoves(order, from, at > from ? at - 1 : at);
+  if (!Object.keys(writes).length) return;
+  const reg = deps.edits();
+  for (const [symbol, rank] of Object.entries(writes)) reg.set(`inv:${symbol}|rank`, rank);
+  await persist();
+  draw();
+}
+
+/// The row a drop at height `y` lands beside: the first row whose bottom is
+/// below it (the gap between rows belongs to the row above), before it when in
+/// its top half; past the last row → after the last.
+function dropTarget(y) {
+  const rows = [...document.querySelectorAll('#inv-list .inv-row')];
+  if (!rows.length) return null;
+  for (const row of rows) {
+    const box = row.getBoundingClientRect();
+    if (y < box.bottom + 4) return { row, after: y >= box.top + box.height / 2 };
+  }
+  return { row: rows[rows.length - 1], after: true };
+}
+
+function markDrop(row, after) {
+  for (const el of document.querySelectorAll('.inv-row.drop-before, .inv-row.drop-after')) {
+    el.classList.remove('drop-before', 'drop-after');
+  }
+  row?.classList.add(after ? 'drop-after' : 'drop-before');
+}
+
+function endDrag() {
+  drag = null;
+  markDrop(null);
+  document.querySelector('.inv-row.dragging')?.classList.remove('dragging');
+  document.body.classList.remove('inv-reordering');
 }
 
 async function saveHolding(sym, form) {

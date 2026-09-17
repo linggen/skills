@@ -28,6 +28,9 @@ import {
   whoOf,
   stakeText,
   askText,
+  rankMoves,
+  missingNote,
+  listingTag,
 } from '../scripts/investments.js';
 
 let pass = 0, fail = 0;
@@ -72,6 +75,32 @@ t('a holding without a cost has no gain', ry.value === 5680 && ry.gain === null)
 const msft = rows.find((r) => r.symbol === 'MSFT');
 t('a symbol not fetched yet still lists, currency from its exchange', msft.price === null && msft.currency === 'USD');
 
+// ── Order ──────────────────────────────────────────────────────────────────
+{
+  const moved = positionsOf({ ...inv, VOO: { watch: true, rank: 1 }, AAPL: { ...inv.AAPL, rank: 0.5 } }, quotes);
+  t('moved rows come first by rank, the rest after them in the usual order',
+    eq(moved.map((r) => r.symbol), ['AAPL', 'VOO', 'RY.TO', 'MSFT']), moved.map((r) => r.symbol).join(','));
+  const sorted = (o) => JSON.stringify(Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b))));
+  const rows = (ranks) => Object.entries(ranks).map(([symbol, rank]) => ({ symbol, rank }));
+  // The same six cases are in linggen-mobile's tests.
+  t('a first move ranks every row, the moved one above the top',
+    sorted(rankMoves(rows({ A: null, B: null, C: null }), 2, 0)) === sorted({ A: 1, B: 2, C: 0 }));
+  t('moved to the bottom → one past the last', sorted(rankMoves(rows({ A: 1, B: 2, C: 3 }), 0, 2)) === sorted({ A: 4 }));
+  t('moved between two rows → halfway, one cell', sorted(rankMoves(rows({ A: 1, B: 2, C: 3 }), 0, 1)) === sorted({ A: 2.5 }));
+  t('a gap too narrow to halve renumbers the list',
+    sorted(rankMoves(rows({ A: 1, B: 1.0000001, C: 3 }), 2, 1)) === sorted({ C: 2, B: 3 }));
+  t('rows added after a move get ranks after the ranked ones',
+    sorted(rankMoves(rows({ A: 5, B: null, C: null }), 2, 1)) === sorted({ B: 6, C: 5.5 }));
+  t('dropped where it was → nothing to write', sorted(rankMoves(rows({ A: 1, B: 2 }), 1, 1)) === '{}');
+}
+
+// ── Add ────────────────────────────────────────────────────────────────────
+t('a missing ticker points at the suggestions only when there are some',
+  missingNote('XYZQ', [{ symbol: 'XYZ' }]) === 'No listing for XYZQ — pick one below.' && missingNote('XYZQ', []) === 'No listing for XYZQ.'
+  && missingNote('XYZQ', null) === 'No listing for XYZQ.');
+t('a suggestion names its exchange, and ETF when it is one',
+  listingTag({ exchange: 'TSX', kind: 'etf' }) === 'TSX · ETF' && listingTag({ exchange: 'US', kind: 'stock' }) === 'US');
+
 // ── Totals ─────────────────────────────────────────────────────────────────
 const totals = totalsByCurrency(rows);
 t('US and Canadian dollars never add', eq(Object.keys(totals).sort(), ['CAD', 'USD']));
@@ -100,6 +129,9 @@ t('snapshot keeps the account label', snap.holdings[1].account === 'TFSA' && sna
   for (const f of ['watch', 'shares', 'account']) mac.remove(`inv:AAPL|${f}`);
   phone.mergeState(mac.toState());
   t('a removal sticks across the merge', !('AAPL' in investmentsOf(phone)));
+  phone.set('inv:AAPL|rank', 2); // a move on the phone that raced the removal
+  mac.mergeState(phone.toState());
+  t('a symbol left with only its rank is not listed', !('AAPL' in investmentsOf(mac)));
 }
 
 // ── Holdings proposed in chat ──────────────────────────────────────────────
