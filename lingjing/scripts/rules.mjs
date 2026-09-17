@@ -169,6 +169,37 @@ const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) &&
 
 /* The thread — the pull: the scene while one runs, else the next chapter
    and when it opens; nothing when the spine has run out. */
+/* A cauldron's breath, as the rules would judge it now: `ready` at the peak
+   of the tier this chapter's cauldron lifts from; `need` names that peak and
+   the 修为 it asks, and the realm it opens. Resolve refuses on the same terms. */
+function breakthroughOf(content, state) {
+  const tiers = content.ladder.tiers, tier = tierOf(content, state.tier), next = tiers[tiers.indexOf(tier) + 1];
+  const gate = content.chapters[state.chapter]?.gate;
+  const peak = state.step === tier.thresholds.length - 1 && state.progress >= threshold(content, state);
+  const target = tiers.find(t => t.gate != null && t.gate === gate);
+  const source = target ? tiers[tiers.indexOf(target) - 1] : null;
+  const last = source ? source.thresholds.length - 1 : 0;
+  return {
+    ready: Boolean(peak && next && next.gate === gate),
+    need: source ? { step: stepName(content, source.id, last, state.lang), progress: source.thresholds[last], to: pick(target.name, state.lang) } : null,
+  };
+}
+
+/* A scene that waits only on a breath the player cannot take yet: the way
+   on is the world, not back to the cauldron. */
+function waitsOnPeak(content, state) {
+  const scene = inMade(state) ? null : sceneOf(content, state);
+  const exits = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id));
+  return exits.length > 0 && exits.every(e => e?.breakthrough) && !breakthroughOf(content, state).ready;
+}
+
+/* The nearest open road out of a scene's place the player can walk. */
+function wayBack(content, state, now) {
+  const scene = sceneOf(content, state);
+  const here = placeOf(content, scene?.at ?? state.place);
+  return (here?.roads ?? []).map(id => placeOf(content, id)).find(p => provinceOpen(content, p.province, now) && !tooHard(content, state, p)) ?? null;
+}
+
 function threadOf(content, state, now) {
   const lang = state.lang;
   const scene = inMade(state) ? null : sceneOf(content, state);
@@ -207,7 +238,9 @@ function directorBrief(content, state, ctx) {
   const thread = threadOf(content, state, ctx.now);
   // The first road on the way to the thread's place, when it is not a road
   // away itself — so the choice leads with the way on, not the way back.
-  const goal = thread?.place && placeOf(content, thread.place.id);
+  // A cauldron that waits on the peak is not led to: the player just left it.
+  const led = waitsOnPeak(content, state) ? null : thread;
+  const goal = led?.place && placeOf(content, led.place.id);
   const toward = goal && !near.some(p => p.id === goal.id) ? towardOf(content, state, place, goal, ctx.now) : null;
   return {
     here,
@@ -218,7 +251,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...thread, place: toward } : thread, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state), !castToday(state, ctx.now)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state), !castToday(state, ctx.now)),
   };
 }
 
@@ -378,6 +411,7 @@ function duelKitBrief(content, state, now = null) {
 function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sceneOf(content, state)) {
   const brief = { id: exit.id, means: exit.means, button };
   if (exit.needs) brief.needs = exit.needs;
+  if (exit.breakthrough) brief.breakthrough = breakthroughOf(content, state);
   if (exit.key) {
     const key = riddleOf(state, scene, exit, ctxNow);
     const riddle = content.riddles[state.lang].riddles[key], tried = triedToday(state, scene, exit, key, ctxNow);
@@ -1826,7 +1860,13 @@ export function askOf(content, state, ctx, result = {}) {
     // at its haunt; asked anyway, the same refusal came back each time
     // (2026-09-17: 降妖 · 五行 tapped three times at 蓬莱).
     const gone = new Set(scene.exits.filter(e => (e.withdrawn && !e.won) || e.closed).map(e => e.id));
-    let options = scene.buttons.filter(b => !gone.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
+    // A breath the player cannot take yet is not a button: the way back to
+    // the world is (his "way back until ready", 2026-09-17 — 化婴 offered at
+    // 结丹初期, tapped, refused).
+    const unready = new Set(scene.exits.filter(e => e.breakthrough && !e.breakthrough.ready).map(e => e.id));
+    let options = scene.buttons.filter(b => !gone.has(b.id) && !unready.has(b.id)).map(b => ({ label: b.label, exit: b.id }));
+    const back = unready.size ? wayBack(content, state, ctx.now) : null;
+    if (back) options.push({ label: zh ? '先回人间修炼' : 'Back to the world to cultivate', move: back.id });
     let asked = question;
     // A riddle on the table stays the question for every answer after it —
     // a word to Yinyue, a Look — so no screen offers the question the player

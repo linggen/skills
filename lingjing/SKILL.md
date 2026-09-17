@@ -686,6 +686,9 @@ Summarize, silence). The one silence: AskUser came back with no answer.
 - **The question is one short line** — *何去何从？* / *What now?* Narration,
   the lines, and what was `paid` go in your reply before it, never inside
   the question: the card shows the question as plain text.
+- A cauldron the player cannot take yet is not offered: `ask` holds the way
+  back to the world instead (`move`). Its exit's `breakthrough.need` says
+  what the breath asks — say it once, in the world, never as a lock.
 - AskUser needs two options at least. A scene with one button gets a second
   from the rules, in `ask`: a word to Yinyue, or a look around — never the
   one the player just took.

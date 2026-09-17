@@ -1653,3 +1653,26 @@ test('a win asks for Yinyue\'s glad line last; a trade or a refusal does not', (
   assert.doesNotMatch(thenFor({ ok: false, refused: 'needs-answer' }), glad);
   assert.doesNotMatch(thenFor({ ok: true, paid: { progress: 0, wealth: 0 } }), glad);
 });
+
+test('a cauldron the player cannot take yet offers the way back, and says what its breath asks', () => {
+  const c = ctx({ now: new Date('2026-12-02T12:00:00') }); // 青 open (the tests date its chapter)
+  const s = { ...start(), chapter: '03-qing', scene: '03-cauldron', place: 'liubo', tier: 'core', step: 0, progress: 222, name: '清玄' };
+  const l = look(s, content, c);
+  const take = l.scene.exits.find(e => e.id === 'take');
+  assert.equal(take.breakthrough.ready, false);
+  assert.deepEqual(take.breakthrough.need, { step: '结丹后期', progress: 1200, to: '元婴' });
+  assert.ok(!l.ask.options.some(o => o.exit === 'take'), 'no breath to tap');
+  const back = l.ask.options.find(o => o.move);
+  assert.equal(back?.label, '先回人间修炼');
+  // walked back, the open world does not lead straight back to the cauldron
+  const away = move(s, content, c, { place: back.move });
+  assert.equal(away.result.ok, true);
+  const choice = look(away.state, content, c).director.choice;
+  assert.notEqual(choice.options.find(o => o.move)?.move, 'liubo');
+  // at the peak, the breath is the button again
+  const peak = { ...s, step: 2, progress: 1200 };
+  const ready = look(peak, content, c);
+  assert.equal(ready.scene.exits.find(e => e.id === 'take').breakthrough.ready, true);
+  assert.ok(ready.ask.options.some(o => o.exit === 'take'));
+  assert.ok(!ready.ask.options.some(o => o.move));
+});

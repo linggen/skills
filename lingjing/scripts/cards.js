@@ -27,7 +27,7 @@ export const WORDS = {
     armedHint: '借势已起：所出之根，作其所生。',
     fateSet: '定命格', fateRandom: '随机', fateSkip: '不必了', fateBad: '这一天不在历中，再看看。', fateMark: '命', fated: '命格相合',
     why: { 'art-used': '一战一用', 'art-no-draw': '须是平手', 'art-no-loss': '须是败局', 'art-needs-tier': '境界未到', 'art-pending': '已在借势', 'sword-twice': '换口气再出', 'charm-used': '一战一符', 'no-charm': '囊中无符', 'bout-over': '已分胜负', 'not-your-root': '非你灵根' },
-    gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
+    gateTitle: '下一鼎', opens: '开启于', gateNeed: '入{to}，须{step} · {xw} {n}', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
     qi: '丹田', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空',
     emptyLine: '丹田已空，先去调息。灵气回满于 {t}。', emptySoon: '丹田已空，先去调息。灵气随时辰回满。',
@@ -41,7 +41,7 @@ export const WORDS = {
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
     tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
-    sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
+    gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
     effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: 'Recorded by {app} · done today at {t}', questWait: 'Recorded by {app} · not yet today',
     duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
@@ -319,9 +319,12 @@ function castHtml(d, ctx) {
 /// the road waits and the card only says when.
 function gate(card, ctx) {
   const opens = card.opens ? `<div class="small ling">${ctx.words.opens} ${esc(card.opens)}</div>` : '';
+  // A cauldron here the player cannot take yet: what its breath asks.
+  const bt = (ctx.look.scene?.exits ?? []).find((e) => e.breakthrough && !e.breakthrough.ready)?.breakthrough;
+  const need = bt?.need ? `<div class="small dim">${esc(say(ctx.words.gateNeed, { to: bt.need.to, step: bt.need.step, xw: ctx.words.xw, n: bt.need.progress }))}</div>` : '';
   // The road on is a word only when it is open and no scene runs here.
   const go = card.opens || ctx.look.scene ? null : { label: ctx.words.sayGate, say: ctx.words.sayGate };
-  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}${acts([{ label: ctx.words.about, say: ctx.words.sayGateAbout }, go])}</div></div>`;
+  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}${need}${acts([{ label: ctx.words.about, say: ctx.words.sayGateAbout }, go])}</div></div>`;
 }
 
 function tribulation(card, ctx) {
