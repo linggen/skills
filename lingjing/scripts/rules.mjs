@@ -196,6 +196,30 @@ const riddleWaiting = (state, now) => {
   const slot = state.companion?.riddle;
   return Boolean(slot?.open && slot.day === dayKey(now));
 };
+/* The nearest place the player could walk to that answers a test — a market
+   for the bell, water for the bell's sound — by the roads, never as the crow
+   flies, skipping closed provinces and what is beyond their tier. */
+function nearestPlace(content, state, now, test) {
+  const here = placeOf(content, state.place);
+  if (!here) return null;
+  const seen = new Set([here.id]);
+  let edge = [here];
+  for (let steps = 0; steps < 12 && edge.length; steps += 1) {
+    const next = [];
+    for (const p of edge) {
+      if (steps > 0 && test(p)) return { ...placeName(content, state, p), steps };
+      for (const id of p.roads ?? []) {
+        if (seen.has(id)) continue;
+        seen.add(id);
+        const q = placeOf(content, id);
+        if (q && provinceOpen(content, q.province, now) && !tooHard(content, state, q)) next.push(q);
+      }
+    }
+    edge = next;
+  }
+  return test(here) ? { ...placeName(content, state, here), steps: 0 } : null;
+}
+
 /* The quest as Look tells it: the step, what it asks, and the line for it. */
 function questBrief(content, state, now) {
   const c = companionOf(content);
@@ -209,6 +233,12 @@ function questBrief(content, state, now) {
     bell: { id: bell.id, name: pick(bell.name, lang), buy: bell.buy, held },
     line: pick(step === 'bell' || step === 'water' ? c.call : c.water, lang),
     at_water: Boolean(here?.water),
+    // Where the step can be taken: the market that sells her bell, the water
+    // that holds a moon — the nearest by road (his "not clickable", and no
+    // way to know where, 2026-09-17).
+    market: step === 'bell' ? nearestPlace(content, state, now, p => p.has?.shop) : null,
+    water: step === 'water' ? nearestPlace(content, state, now, p => p.water) : null,
+    shop_here: Boolean(here?.has?.shop),
     // The call is heard once: until it has been said, every answer asks for it.
     ...(state.companion.told ? {} : { say: true }),
   };

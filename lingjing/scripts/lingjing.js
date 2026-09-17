@@ -9,7 +9,7 @@ import { listSkillSessions, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { bout } from './duel.js';
-import { WORDS, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
+import { WORDS, cardHtml, trayHtml, esc, say as fill, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -269,10 +269,18 @@ function questCard() {
   const q = look?.quest;
   if (!q) return '';
   const w = words();
-  const step = w.questSteps?.[q.step] ?? '';
-  const act = q.step === 'ring' ? `<button class="act say" data-say="${esc(w.sayRing)}">${esc(w.ring)}</button>` : '';
+  const where = q.step === 'bell' && q.market ? fill(w.questAt, { name: q.market.name })
+    : q.step === 'water' && q.water ? fill(w.questWater, { name: q.water.name }) : '';
+  const acts = [{ label: w.about, say: w.sayQuest }];
+  // The step, as a word to Ling: buy it here, walk to where it can be taken, ring it.
+  if (q.step === 'ring') acts.unshift({ label: w.ringBell, say: w.sayRing });
+  else if (q.step === 'bell' && q.shop_here) acts.unshift({ label: fill(w.sayBuy, { name: q.bell.name }), say: fill(w.sayBuy, { name: q.bell.name }) });
+  else if (q.step === 'bell' && q.market) acts.unshift({ label: q.market.name, say: fill(w.sayGo, { name: q.market.name }) });
+  else if (q.step === 'water' && q.water) acts.unshift({ label: q.water.name, say: fill(w.sayGo, { name: q.water.name }) });
+  const row = acts.map((a) => `<button class="act say" data-say="${esc(a.say)}">${esc(a.label)}</button>`).join('');
   return `<div class="card quest"><div class="cardtitle">${esc(w.questTitle)}</div>
-    <div>${esc(q.line)}</div><div class="small dim">${esc(step)}</div>${act}</div>`;
+    <div>${esc(q.line)}</div><div class="small dim">${esc(w.questSteps?.[q.step] ?? '')}${where ? ` · ${esc(where)}` : ''}</div>
+    <div class="acts">${row}</div></div>`;
 }
 
 /// A made world still being painted: the story waits for the brush, so the
