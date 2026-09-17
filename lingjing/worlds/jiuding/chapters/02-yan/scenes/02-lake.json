@@ -1,161 +1,163 @@
 {
-  "version": 1,
-  "id": "02-lake",
-  "chapter": "02-yan",
-  "at": "leize",
-  "place": {
-    "zh": "雷泽 · 岸边",
-    "en": "Lake Lei · The shore"
+ "version": 1,
+ "id": "02-lake",
+ "chapter": "02-yan",
+ "at": "leize",
+ "place": {
+  "zh": "雷泽 · 岸边",
+  "en": "Lake Lei · The shore"
+ },
+ "setup": {
+  "zh": "雷泽白得晃眼。水中央立着一个东西——龙的身子，人的头，两只手不停地拍着自己的肚子。每拍一下，天上就炸一声雷。它脸上没有怒气，只有急。",
+  "en": "Lake Lei is a blinding white. In the middle of the water stands a thing with a dragon's body and a man's head, beating its own belly with both hands. Every beat is a crack of thunder. There is no anger in its face, only urgency."
+ },
+ "cast": [
+  "leishen"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "leishen"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "是雷神——龙身人头，拍腹成雷。它不是在发怒，是在叫：鼎在它底下醒了，鼓停不下来。",
+    "en": "The Thunder God — a dragon’s body, a human head, drumming its own belly. It is not angry; it is calling. The cauldron woke beneath it and the drum cannot stop."
+   }
   },
-  "setup": {
-    "zh": "雷泽白得晃眼。水中央立着一个东西——龙的身子，人的头，两只手不停地拍着自己的肚子。每拍一下，天上就炸一声雷。它脸上没有怒气，只有急。",
-    "en": "Lake Lei is a blinding white. In the middle of the water stands a thing with a dragon's body and a man's head, beating its own belly with both hands. Every beat is a crack of thunder. There is no anger in its face, only urgency."
+  {
+   "who": "ling",
+   "text": {
+    "zh": "雷神看见你了。它张了嘴，出来的不是话，是鼓点——你却听懂了：雨落田上，打一字。",
+    "en": "The Thunder God has seen you. It opens its mouth, and what comes out is not words but drumbeats — yet you understand: rain falling on a field; one character."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "yield"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the creature, drives it down, stops the drum by force",
+   "game": {
+    "id": "subdue-leishen",
+    "kind": "duel",
+    "creature": "leishen"
+   },
+   "withdrawn": {
+    "zh": "雷神沉进水里，雷声远了。明日它还会敲。",
+    "en": "The Thunder God sinks into the lake; the thunder fades. Tomorrow it will beat again."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "雷神的手停在半空。它慢慢沉下去，肚皮上最后一声雷散在水面上。",
+      "en": "The Thunder God's hands stop in the air. It sinks slowly, and the last thunder from its belly spreads out over the water."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "水往两边退。湖心露了出来。",
+      "en": "The water draws back to both sides. The middle of the lake shows."
+     }
+    }
+   ],
+   "next": "02-deep"
   },
-  "cast": [
-    "yinyue",
-    "leishen"
-  ],
-  "show": [
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答雷神的问",
+    "en": "Answer the Thunder God"
+   },
+   "means": "answers the thunder god's riddle",
+   "key": [
+    "lei-1",
+    "lei-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
     {
-      "card": "creature",
-      "id": "leishen"
+     "who": "ling",
+     "text": {
+      "zh": "你答了。雷神的手停了。它低下头，像是终于被人听见了。",
+      "en": "You answer. The Thunder God's hands stop. It lowers its head, as if someone had finally heard it."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "它退了。湖心，正是时候。",
+      "en": "It draws back. The middle of the lake — now."
+     }
     }
-  ],
-  "lines": [
+   ],
+   "next": "02-deep"
+  },
+  {
+   "id": "yield",
+   "label": {
+    "zh": "让 · 退到岸上",
+    "en": "Yield · Step back to the shore"
+   },
+   "means": "yields, steps back, sits down and waits in silence, does as Shun did at Lake Lei",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
     {
-      "who": "yinyue",
-      "text": {
-        "zh": "是雷神。它不是在发怒——它在叫。鼎在它底下醒了，它的鼓停不下来。",
-        "en": "That is the Thunder God. It isn't angry — it's calling. The cauldron woke beneath it, and its drum cannot stop."
-      }
+     "who": "ling",
+     "text": {
+      "zh": "你退到岸上，坐下，不动。雷神拍了三下，四下——没有人再往前挤。它的手慢了，雷声一声比一声轻。当年舜在雷泽打鱼，泽上的人都把好位置让给别人。",
+      "en": "You step back to the shore, sit, and do not move. The Thunder God beats three times, four — and no one presses forward. Its hands slow; each thunder is softer than the last. When Shun fished at Lake Lei, the people of the lake gave the good places to one another."
+     }
     },
     {
-      "who": "ling",
-      "text": {
-        "zh": "雷神看见你了。它张了嘴，出来的不是话，是鼓点——你却听懂了：雨落田上，打一字。",
-        "en": "The Thunder God has seen you. It opens its mouth, and what comes out is not words but drumbeats — yet you understand: rain falling on a field; one character."
-      }
+     "who": "ling",
+     "text": {
+      "zh": "它安静下来。湖心在等。",
+      "en": "It goes quiet. The middle of the lake waits."
+     }
     }
-  ],
-  "buttons": [
-    "subdue",
-    "riddle",
-    "yield"
-  ],
-  "exits": [
+   ],
+   "next": "02-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs away, leaves the lake, refuses to act",
+   "stay": true,
+   "beat": [
     {
-      "id": "subdue",
-      "label": {
-        "zh": "降妖 · 五行",
-        "en": "Subdue · The five elements"
-      },
-      "means": "fights the creature, drives it down, stops the drum by force",
-      "game": {
-        "id": "subdue-leishen",
-        "kind": "duel",
-        "creature": "leishen"
-      },
-      "withdrawn": {
-        "zh": "雷神沉进水里，雷声远了。明日它还会敲。",
-        "en": "The Thunder God sinks into the lake; the thunder fades. Tomorrow it will beat again."
-      },
-      "grant": {
-        "table": "scene",
-        "progress": 60,
-        "wealth": 20
-      },
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "雷神的手停在半空。它慢慢沉下去，肚皮上最后一声雷散在水面上。",
-            "en": "The Thunder God's hands stop in the air. It sinks slowly, and the last thunder from its belly spreads out over the water."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "水在往两边退。你看——湖心。",
-            "en": "The water is drawing back. Look — the middle of the lake."
-          }
-        }
-      ],
-      "next": "02-deep"
-    },
-    {
-      "id": "riddle",
-      "label": {
-        "zh": "答雷神的问",
-        "en": "Answer the Thunder God"
-      },
-      "means": "answers the thunder god's riddle",
-      "key": ["lei-1", "lei-2"],
-      "grant": {
-        "table": "scene",
-        "progress": 40,
-        "wealth": 10
-      },
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你答了。雷神的手停了。它低下头，像是终于被人听见了。",
-            "en": "You answer. The Thunder God's hands stop. It lowers its head, as if someone had finally heard it."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "它退了。趁现在，湖心。",
-            "en": "It's drawing back. Now — the middle of the lake."
-          }
-        }
-      ],
-      "next": "02-deep"
-    },
-    {
-      "id": "yield",
-      "label": {
-        "zh": "让 · 退到岸上",
-        "en": "Yield · Step back to the shore"
-      },
-      "means": "yields, steps back, sits down and waits in silence, does as Shun did at Lake Lei",
-      "grant": {
-        "table": "scene",
-        "progress": 40,
-        "wealth": 10
-      },
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你退到岸上，坐下，不动。雷神拍了三下，四下——没有人再往前挤。它的手慢了，雷声一声比一声轻。当年舜在雷泽打鱼，泽上的人都把好位置让给别人。",
-            "en": "You step back to the shore, sit, and do not move. The Thunder God beats three times, four — and no one presses forward. Its hands slow; each thunder is softer than the last. When Shun fished at Lake Lei, the people of the lake gave the good places to one another."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "它安静了。走，湖心。",
-            "en": "It's quiet. Come — the middle of the lake."
-          }
-        }
-      ],
-      "next": "02-deep"
-    },
-    {
-      "id": "flee",
-      "means": "runs away, leaves the lake, refuses to act",
-      "stay": true,
-      "beat": [
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "你往回走。雷声追着你。它不是冲你来的——它在求人。",
-            "en": "You turn back. The thunder follows you. It isn't after you — it's begging."
-          }
-        }
-      ]
+     "who": "ling",
+     "text": {
+      "zh": "你往回走，雷声追着你。它不是冲你来的——它在求人。",
+      "en": "You turn back, and the thunder follows. It is not after you: it is begging."
+     }
     }
-  ]
+   ]
+  }
+ ]
 }

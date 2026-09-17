@@ -1,133 +1,136 @@
 {
-  "version": 1,
-  "province": "兖",
-  "start": "pushui",
-  "_about": "The places of 兖 — as the 禹贡 draws it, the land between the 河 and the 济: the 濮水 and 濮阳, 桑间, 雷泽 (雷夏既泽) and its deep. 大野泽, 凫丽 and 空桑 lie in 徐 (大野既猪), 定陶 in 豫 (the 菏泽). The road in comes from 冀's 邺城; it opens with chapter 2.",
-  "places": [
-    {
-      "id": "pushui",
-      "name": {
-        "zh": "濮水",
-        "en": "The Pu"
-      },
-      "tier": 0,
-      "roads": [
-        "ye",
-        "puyang",
-        "sangjian",
-        "leize"
-      ],
-      "map": [
-        0.6915,
-        0.4036
-      ],
-      "has": {
-        "seeds": true,
-        "scene": "02-arrive"
-      },
-      "line": {
-        "zh": "濮水清，岸边桑树成行。东边晴天打雷。",
-        "en": "The Pu runs clear under a line of mulberries. Thunder from a clear eastern sky."
-      }
-    },
-    {
-      "id": "puyang",
-      "name": {
-        "zh": "濮阳",
-        "en": "Puyang"
-      },
-      "tier": 0,
-      "roads": [
-        "pushui",
-        "sangjian",
-        "dingtao",
-        "leize"
-      ],
-      "map": [
-        0.7054,
-        0.3941
-      ],
-      "has": {
-        "shop": true,
-        "scene": "02-town"
-      },
-      "line": {
-        "zh": "卫的旧都。桑门里有坊市，门口贴着告示。",
-        "en": "The old capital of Wei. A market inside the Mulberry Gate; a notice at the door."
-      }
-    },
-    {
-      "id": "sangjian",
-      "name": {
-        "zh": "桑间",
-        "en": "Sangjian"
-      },
-      "tier": 0,
-      "roads": [
-        "pushui",
-        "puyang",
-        "leize"
-      ],
-      "map": [
-        0.7165,
-        0.3846
-      ],
-      "has": {
-        "seeds": true
-      },
-      "line": {
-        "zh": "桑林深处，濮水拐弯。旧时的歌还有人唱。",
-        "en": "Deep in the mulberries where the Pu bends. The old songs are still sung."
-      }
-    },
-    {
-      "id": "leize",
-      "name": {
-        "zh": "雷泽",
-        "en": "Lake Lei"
-      },
-      "tier": 0,
-      "roads": [
-        "pushui",
-        "puyang",
-        "sangjian",
-        "leiyuan",
-        "daye"
-      ],
-      "map": [
-        0.7422,
-        0.396
-      ],
-      "has": {
-        "creature": "leishen",
-        "scene": "02-lake"
-      },
-      "line": {
-        "zh": "泽上白光，雷声不歇。舜曾在这儿打鱼。",
-        "en": "White light on the lake, thunder without pause. Shun once fished here."
-      }
-    },
-    {
-      "id": "leiyuan",
-      "name": {
-        "zh": "雷泽深处",
-        "en": "The deeps of Lake Lei"
-      },
-      "tier": 0,
-      "roads": [
-        "leize"
-      ],
-      "map": [
-        0.7568,
-        0.3846
-      ],
-      "has": {
-        "scene": "02-deep"
-      },
-      "line": {
-        "zh": "湖心。水底有什么在敲。",
-        "en": "The middle of the lake. Something under the water is beating."
-      }
-    }
-  ]
+ "version": 1,
+ "province": "兖",
+ "start": "pushui",
+ "_about": "The places of 兖 — as the 禹贡 draws it, the land between the 河 and the 济: the 濮水 and 濮阳, 桑间, 雷泽 (雷夏既泽) and its deep. 大野泽, 凫丽 and 空桑 lie in 徐 (大野既猪), 定陶 in 豫 (the 菏泽). The road in comes from 冀's 邺城; it opens with chapter 2.",
+ "places": [
+  {
+   "id": "pushui",
+   "name": {
+    "zh": "濮水",
+    "en": "The Pu"
+   },
+   "tier": 0,
+   "roads": [
+    "ye",
+    "puyang",
+    "sangjian",
+    "leize"
+   ],
+   "map": [
+    0.6915,
+    0.4036
+   ],
+   "has": {
+    "seeds": true,
+    "scene": "02-arrive"
+   },
+   "line": {
+    "zh": "濮水清，岸边桑树成行。东边晴天打雷。",
+    "en": "The Pu runs clear under a line of mulberries. Thunder from a clear eastern sky."
+   },
+   "water": true
+  },
+  {
+   "id": "puyang",
+   "name": {
+    "zh": "濮阳",
+    "en": "Puyang"
+   },
+   "tier": 0,
+   "roads": [
+    "pushui",
+    "sangjian",
+    "dingtao",
+    "leize"
+   ],
+   "map": [
+    0.7054,
+    0.3941
+   ],
+   "has": {
+    "shop": true,
+    "scene": "02-town"
+   },
+   "line": {
+    "zh": "卫的旧都。桑门里有坊市，门口贴着告示。",
+    "en": "The old capital of Wei. A market inside the Mulberry Gate; a notice at the door."
+   }
+  },
+  {
+   "id": "sangjian",
+   "name": {
+    "zh": "桑间",
+    "en": "Sangjian"
+   },
+   "tier": 0,
+   "roads": [
+    "pushui",
+    "puyang",
+    "leize"
+   ],
+   "map": [
+    0.7165,
+    0.3846
+   ],
+   "has": {
+    "seeds": true
+   },
+   "line": {
+    "zh": "桑林深处，濮水拐弯。旧时的歌还有人唱。",
+    "en": "Deep in the mulberries where the Pu bends. The old songs are still sung."
+   }
+  },
+  {
+   "id": "leize",
+   "name": {
+    "zh": "雷泽",
+    "en": "Lake Lei"
+   },
+   "tier": 0,
+   "roads": [
+    "pushui",
+    "puyang",
+    "sangjian",
+    "leiyuan",
+    "daye"
+   ],
+   "map": [
+    0.7422,
+    0.396
+   ],
+   "has": {
+    "creature": "leishen",
+    "scene": "02-lake"
+   },
+   "line": {
+    "zh": "泽上白光，雷声不歇。舜曾在这儿打鱼。",
+    "en": "White light on the lake, thunder without pause. Shun once fished here."
+   },
+   "water": true
+  },
+  {
+   "id": "leiyuan",
+   "name": {
+    "zh": "雷泽深处",
+    "en": "The deeps of Lake Lei"
+   },
+   "tier": 0,
+   "roads": [
+    "leize"
+   ],
+   "map": [
+    0.7568,
+    0.3846
+   ],
+   "has": {
+    "scene": "02-deep"
+   },
+   "line": {
+    "zh": "湖心。水底有什么在敲。",
+    "en": "The middle of the lake. Something under the water is beating."
+   },
+   "water": true
+  }
+ ]
 }

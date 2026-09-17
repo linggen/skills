@@ -1,103 +1,101 @@
 {
-  "version": 1,
-  "id": "02-arrive",
-  "chapter": "02-yan",
-  "at": "pushui",
-  "place": {
-    "zh": "濮水 · 桑岸",
-    "en": "The Pu · Mulberry bank"
+ "version": 1,
+ "id": "02-arrive",
+ "chapter": "02-yan",
+ "at": "pushui",
+ "place": {
+  "zh": "濮水 · 桑岸",
+  "en": "The Pu · Mulberry bank"
+ },
+ "setup": {
+  "zh": "从冀州往东南，路到濮水就平了。水清，岸边桑树成行。东边一片晴天，却一直在打雷。一个老人坐在岸边钓鱼，不回头。",
+  "en": "South-east from Ji the road flattens at the Pu. Clear water, a line of mulberries along the bank. The eastern sky is clear, and it will not stop thundering. An old man sits fishing on the bank and does not turn round."
+ },
+ "cast": [],
+ "show": [
+  {
+   "card": "map",
+   "goal": "兖",
+   "here": "兖"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "雷里头有东西。第二鼎在东边，水底下。",
+    "en": "There is something inside the thunder. The second cauldron lies east, under the water."
+   }
   },
-  "setup": {
-    "zh": "从冀州往东南，路到濮水就平了。水清，岸边桑树成行。东边一片晴天，却一直在打雷。一个老人坐在岸边钓鱼，不回头。",
-    "en": "South-east from Ji the road flattens at the Pu. Clear water, a line of mulberries along the bank. The eastern sky is clear, and it will not stop thundering. An old man sits fishing on the bank and does not turn round."
+  {
+   "who": "ling",
+   "text": {
+    "zh": "老人头也不回：雷泽的雷，四十天没停了。要问路，去濮阳。",
+    "en": "The old man does not look up: the thunder over Lake Lei has not stopped in forty days. If you want the road, ask in Puyang."
+   }
+  }
+ ],
+ "buttons": [
+  "town",
+  "east"
+ ],
+ "exits": [
+  {
+   "id": "town",
+   "label": {
+    "zh": "去濮阳",
+    "en": "Go to Puyang"
+   },
+   "means": "goes to the town, follows the river downstream, agrees to ask there",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你沿濮水往下游。濮阳的城门口围着一群人，都在看一张告示。",
+      "en": "You follow the Pu downstream. A crowd stands at the gate of Puyang, all reading one notice."
+     }
+    }
+   ],
+   "next": "02-town"
   },
-  "cast": [
-    "yinyue"
-  ],
-  "show": [
+  {
+   "id": "east",
+   "label": {
+    "zh": "跟着雷走",
+    "en": "Follow the thunder"
+   },
+   "means": "goes straight east toward the thunder now, tries to reach the lake directly",
+   "stay": true,
+   "beat": [
     {
-      "card": "map",
-      "goal": "兖",
-      "here": "兖"
-    }
-  ],
-  "lines": [
-    {
-      "who": "yinyue",
-      "text": {
-        "zh": "雷里头有它。第二鼎——在东边，水底下。",
-        "en": "It's inside the thunder. The second cauldron — east, under the water."
-      }
+     "who": "ling",
+     "text": {
+      "zh": "你往东走了半里，雷声震得胸口发闷，脚下的路淹在水里。",
+      "en": "Half a li east the thunder sits on your chest, and the road goes under water."
+     }
     },
     {
-      "who": "ling",
-      "text": {
-        "zh": "老人头也不回：雷泽的雷，四十天没停了。要问路，去濮阳。",
-        "en": "The old man does not look up: the thunder over Lake Lei has not stopped in forty days. If you want the road, ask in Puyang."
-      }
+     "who": "ling",
+     "text": {
+      "zh": "先去镇上。总有人知道路。",
+      "en": "Town first. Someone there knows the way."
+     }
     }
-  ],
-  "buttons": [
-    "town",
-    "east"
-  ],
-  "exits": [
+   ]
+  },
+  {
+   "id": "ask",
+   "means": "asks the fisherman who he is, about the envoys, or why he will not turn round",
+   "stay": true,
+   "beat": [
     {
-      "id": "town",
-      "label": {
-        "zh": "去濮阳",
-        "en": "Go to Puyang"
-      },
-      "means": "goes to the town, follows the river downstream, agrees to ask there",
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你沿濮水往下游。濮阳的城门口围着一群人，都在看一张告示。",
-            "en": "You follow the Pu downstream. A crowd stands at the gate of Puyang, all reading one notice."
-          }
-        }
-      ],
-      "next": "02-town"
-    },
-    {
-      "id": "east",
-      "label": {
-        "zh": "跟着雷走",
-        "en": "Follow the thunder"
-      },
-      "means": "goes straight east toward the thunder now, tries to reach the lake directly",
-      "stay": true,
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你往东走了半里，雷声震得胸口发闷，脚下的路淹在水里。",
-            "en": "Half a li east the thunder sits on your chest, and the road goes under water."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "先去镇上。总有人知道路。",
-            "en": "Town first. Someone there knows the way."
-          }
-        }
-      ]
-    },
-    {
-      "id": "ask",
-      "means": "asks the fisherman who he is, about the envoys, or why he will not turn round",
-      "stay": true,
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "老人说：楚国来的两个大夫在这儿站了三天，请他去做官。他说，他宁可做泥里的乌龟，拖着尾巴爬。你问雷泽，他抬了抬钓竿：往东，跟着雷走。",
-            "en": "The old man says: two envoys from Chu stood here three days to make him a minister. He would rather be a tortoise dragging its tail in the mud. You ask about Lake Lei; he lifts his rod: east, follow the thunder."
-          }
-        }
-      ]
+     "who": "ling",
+     "text": {
+      "zh": "老人说：楚国来的两个大夫在这儿站了三天，请他去做官。他说，他宁可做泥里的乌龟，拖着尾巴爬。你问雷泽，他抬了抬钓竿：往东，跟着雷走。",
+      "en": "The old man says: two envoys from Chu stood here three days to make him a minister. He would rather be a tortoise dragging its tail in the mud. You ask about Lake Lei; he lifts his rod: east, follow the thunder."
+     }
     }
-  ]
+   ]
+  }
+ ]
 }

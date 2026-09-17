@@ -1,68 +1,112 @@
 {
-  "version": 1,
-  "_about": "A world: a story laid over the harness's fixed systems. The id names the folder and the save's `world`; the title and style are what the world card says; the sources are the public heritage it draws on. The words for every id are in dictionary.json; the names it refuses are in names.json.",
-  "id": "jiuding",
-  "title": {
-    "zh": "九鼎",
-    "en": "The Nine Cauldrons"
-  },
-  "premise": {
-    "zh": "大禹铸九鼎，周亡而鼎失。九州为图，九境为梯，每寻回一鼎，便破一境。",
-    "en": "Yu the Great cast nine cauldrons; when Zhou fell, they were lost. Nine provinces for a map, nine realms for a ladder — each cauldron found is a breakthrough."
-  },
-  "style": {
-    "zh": "修仙 · 凡人流",
-    "en": "Cultivation · the mortal who climbs by diligence"
-  },
-  "sources": [
-    "山海经",
-    "周易",
-    "道教",
-    "尚书·禹贡",
-    "史记"
-  ],
-  "authored": true,
-  "atlas": {
-    "_about": "The world map: art/map/jiuzhou.svg, cleaned of every word by tools/clean_map.py. Each place's `map` and each province here are [x, y] as fractions of it; tools/pin.py starts a new place from its longitude and latitude.",
-    "file": "art/map/jiuzhou.svg",
-    "aspect": 1.3645,
-    "provinces": {
-      "冀": [
-        0.7154,
-        0.1409
-      ],
-      "兖": [
-        0.7835,
-        0.2602
-      ],
-      "青": [
-        0.9403,
-        0.2844
-      ],
-      "徐": [
-        0.8212,
-        0.4573
-      ],
-      "扬": [
-        0.8525,
-        0.7955
-      ],
-      "荆": [
-        0.5425,
-        0.7714
-      ],
-      "豫": [
-        0.6609,
-        0.524
-      ],
-      "梁": [
-        0.3528,
-        0.6127
-      ],
-      "雍": [
-        0.4349,
-        0.2129
-      ]
-    }
+ "version": 1,
+ "_about": "A world: a story laid over the harness's fixed systems. The id names the folder and the save's `world`; the title and style are what the world card says; the sources are the public heritage it draws on. The words for every id are in dictionary.json; the names it refuses are in names.json.",
+ "id": "jiuding",
+ "title": {
+  "zh": "九鼎",
+  "en": "The Nine Cauldrons"
+ },
+ "premise": {
+  "zh": "大禹铸九鼎，周亡而鼎失。九州为图，九境为梯，每寻回一鼎，便破一境。",
+  "en": "Yu the Great cast nine cauldrons; when Zhou fell, they were lost. Nine provinces for a map, nine realms for a ladder — each cauldron found is a breakthrough."
+ },
+ "style": {
+  "zh": "修仙 · 凡人流",
+  "en": "Cultivation · the mortal who climbs by diligence"
+ },
+ "sources": [
+  "山海经",
+  "周易",
+  "道教",
+  "尚书·禹贡",
+  "史记"
+ ],
+ "authored": true,
+ "atlas": {
+  "_about": "The world map: art/map/jiuzhou.svg, cleaned of every word by tools/clean_map.py. Each place's `map` and each province here are [x, y] as fractions of it; tools/pin.py starts a new place from its longitude and latitude.",
+  "file": "art/map/jiuzhou.svg",
+  "aspect": 1.3645,
+  "provinces": {
+   "冀": [
+    0.7154,
+    0.1409
+   ],
+   "兖": [
+    0.7835,
+    0.2602
+   ],
+   "青": [
+    0.9403,
+    0.2844
+   ],
+   "徐": [
+    0.8212,
+    0.4573
+   ],
+   "扬": [
+    0.8525,
+    0.7955
+   ],
+   "荆": [
+    0.5425,
+    0.7714
+   ],
+   "豫": [
+    0.6609,
+    0.524
+   ],
+   "梁": [
+    0.3528,
+    0.6127
+   ],
+   "雍": [
+    0.4349,
+    0.2129
+   ]
   }
+ },
+ "companion": {
+  "_about": "The one who walks with the player, and how she is found: the call comes at `from`, the `bell` is held, rung at a place with `water`, and one of `riddles` is answered. A world without this block has no companion.",
+  "id": "yinyue",
+  "from": "core",
+  "bell": "moon-bell",
+  "riddles": [
+   "yinyue-moon",
+   "yinyue-bell",
+   "yinyue-fox",
+   "yinyue-char"
+  ],
+  "call": {
+   "zh": "新结的丹在夜里自鸣，像在应什么。远处有声音答月。",
+   "en": "The new Core hums at night, as if answering something. Far off, a voice answers the moon."
+  },
+  "water": {
+   "zh": "水面上有月。摇一摇铃，看它应不应。",
+   "en": "There is a moon on the water. Ring the bell, and see whether it answers."
+  },
+  "meet": {
+   "zh": "铃声落进水里。水上的月碎了又合，合处站着一个人影，银的。",
+   "en": "The bell falls into the water. The moon on it breaks and closes again, and where it closes stands a figure, silver."
+  },
+  "join": [
+   {
+    "who": "yinyue",
+    "text": {
+     "zh": "答对了。等这一声等了很久——那铃是我的。",
+     "en": "Right. I waited a long while for that sound — the bell is mine."
+    }
+   },
+   {
+    "who": "ling",
+    "text": {
+     "zh": "她接过铃，系在颈上。从此她走在你身边。",
+     "en": "She takes the bell and ties it at her neck. From here she walks beside you."
+    }
+   }
+  ],
+  "grant": {
+   "table": "scene",
+   "progress": 40
+  }
+ }
 }

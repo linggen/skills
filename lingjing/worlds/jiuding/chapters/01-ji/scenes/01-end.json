@@ -1,28 +1,54 @@
 {
-  "version": 1,
-  "id": "01-end",
-  "chapter": "01-ji",
-  "at": "zhangyuan",
-  "place": { "zh": "漳水 · 天明", "en": "The Zhang · Daybreak" },
-  "setup": {
-    "zh": "水合上了。李家的姑娘回了家；巫婆没有再浮上来。邺城这一年不用再送新娘。",
-    "en": "The water closes. The Li girl has gone home; the sorceress did not come up again. Ye will send no bride this year."
-  },
-  "cast": ["yinyue"],
-  "show": [{ "card": "map", "goal": "兖", "here": "冀" }],
-  "lines": [
-    { "who": "ling", "text": { "zh": "第二鼎的气息在东边——兖州，济水与河之间。", "en": "The second cauldron's breath lies east — Yan, between the Ji River and the He." } }
-  ],
-  "buttons": ["rest"],
-  "exits": [
+ "version": 1,
+ "id": "01-end",
+ "chapter": "01-ji",
+ "at": "zhangyuan",
+ "place": {
+  "zh": "漳水 · 天明",
+  "en": "The Zhang · Daybreak"
+ },
+ "setup": {
+  "zh": "水合上了。李家的姑娘回了家；巫婆没有再浮上来。邺城这一年不用再送新娘。",
+  "en": "The water closes. The Li girl has gone home; the sorceress did not come up again. Ye will send no bride this year."
+ },
+ "cast": [],
+ "show": [
+  {
+   "card": "map",
+   "goal": "兖",
+   "here": "冀"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "第二鼎的气息在东边——兖州，济水与河之间。",
+    "en": "The second cauldron's breath lies east — Yan, between the Ji River and the He."
+   }
+  }
+ ],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the chapter, asks what comes next",
+   "beat": [
     {
-      "id": "rest",
-      "label": { "zh": "今日到此", "en": "Rest for today" },
-      "means": "rests, ends the chapter, asks what comes next",
-      "beat": [
-        { "who": "ling", "text": { "zh": "今日到此为止。兖州的路，开的时候我会告诉你。", "en": "That is all for today. When the road to Yan opens, I will tell you." } }
-      ],
-      "ends": "01-ji"
+     "who": "ling",
+     "text": {
+      "zh": "今日到此为止。兖州的路，开的时候我会告诉你。",
+      "en": "That is all for today. When the road to Yan opens, I will tell you."
+     }
     }
-  ]
+   ],
+   "ends": "01-ji"
+  }
+ ]
 }

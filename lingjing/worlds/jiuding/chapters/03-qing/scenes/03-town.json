@@ -1,96 +1,104 @@
 {
-  "version": 1,
-  "id": "03-town",
-  "chapter": "03-qing",
-  "at": "linzi",
-  "place": {
-    "zh": "临淄 · 稷门",
-    "en": "Linzi · The Ji Gate"
+ "version": 1,
+ "id": "03-town",
+ "chapter": "03-qing",
+ "at": "linzi",
+ "place": {
+  "zh": "临淄 · 稷门",
+  "en": "Linzi · The Ji Gate"
+ },
+ "setup": {
+  "zh": "稷门下贴着告示：东海潮止四十九日，渔船不得出；蓬莱海上每日天明有城，日高不散。有能复潮者，齐相重赏。门下的先生们各说各的：一个说是阴阳失序，一个说是海若发怒，一个说什么也不是。",
+  "en": "The notice under the Ji Gate: the tide of the East Sea has stood for forty-nine days and no boat can put out; every dawn a city stands on the sea off Penglai and does not fade with the sun. Whoever restores the tide, the minister of Qi will reward. Under the gate the masters each say their own: the order of yin and yang is lost; the sea god is angry; it is nothing at all."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "鼎在海底下吸气。潮在它肚子里。",
+    "en": "The cauldron is breathing in under the sea. The tide is in its belly."
+   },
+   "alone": {
+    "zh": "鼎在海底下吸气。潮在它肚子里。",
+    "en": "The cauldron breathes in beneath the sea. The tide is in its belly."
+   }
   },
-  "setup": {
-    "zh": "稷门下贴着告示：东海潮止四十九日，渔船不得出；蓬莱海上每日天明有城，日高不散。有能复潮者，齐相重赏。门下的先生们各说各的：一个说是阴阳失序，一个说是海若发怒，一个说什么也不是。",
-    "en": "The notice under the Ji Gate: the tide of the East Sea has stood for forty-nine days and no boat can put out; every dawn a city stands on the sea off Penglai and does not fade with the sun. Whoever restores the tide, the minister of Qi will reward. Under the gate the masters each say their own: the order of yin and yang is lost; the sea god is angry; it is nothing at all."
+  {
+   "who": "ling",
+   "text": {
+    "zh": "稷门内有坊市，齐地的盐和纨。要下海，先备好。",
+    "en": "There is a market inside the Ji Gate — Qi's salt and silk. Before the sea, get what you need."
+   }
+  }
+ ],
+ "buttons": [
+  "shore",
+  "market"
+ ],
+ "exits": [
+  {
+   "id": "shore",
+   "label": {
+    "zh": "去蓬莱",
+    "en": "To Penglai"
+   },
+   "means": "goes to the sea, to the shore, toward the city on the water",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你出稷门往东，走到蓬莱。海上那座城越来越亮，亮得不像日光。",
+      "en": "Out through the Ji Gate and east to Penglai. The city on the sea grows brighter — brighter than daylight."
+     }
+    }
+   ],
+   "next": "03-shore"
   },
-  "cast": [
-    "yinyue"
-  ],
-  "lines": [
+  {
+   "id": "market",
+   "label": {
+    "zh": "先逛坊市",
+    "en": "The market first"
+   },
+   "means": "goes shopping, asks about the market, wants to buy or sell",
+   "stay": true,
+   "beat": [
     {
-      "who": "yinyue",
-      "text": {
-        "zh": "鼎在海底下吸气。潮在它肚子里。",
-        "en": "The cauldron is breathing in under the sea. The tide is in its belly."
-      }
-    },
-    {
-      "who": "ling",
-      "text": {
-        "zh": "稷门内有坊市，齐地的盐和纨。要下海，先备好。",
-        "en": "There is a market inside the Ji Gate — Qi's salt and silk. Before the sea, get what you need."
-      }
+     "who": "ling",
+     "text": {
+      "zh": "稷门内的坊市里，盐堆得像雪，纨叠得像云。",
+      "en": "In the market inside the gate the salt is heaped like snow and the silk folded like cloud."
+     }
     }
-  ],
-  "buttons": [
-    "shore",
-    "market"
-  ],
-  "exits": [
+   ]
+  },
+  {
+   "id": "debate",
+   "means": "joins the debate, argues with the scholars, asks them what they think",
+   "stay": true,
+   "beat": [
     {
-      "id": "shore",
-      "label": {
-        "zh": "去蓬莱",
-        "en": "To Penglai"
-      },
-      "means": "goes to the sea, to the shore, toward the city on the water",
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你出稷门往东，走到蓬莱。海上那座城越来越亮，亮得不像日光。",
-            "en": "Out through the Ji Gate and east to Penglai. The city on the sea grows brighter — brighter than daylight."
-          }
-        }
-      ],
-      "next": "03-shore"
+     "who": "ling",
+     "text": {
+      "zh": "你插了一句，三个先生一起转过头来。争到日落，谁也没说服谁——稷下的规矩。",
+      "en": "You put in a word, and three masters turn round together. They argue till sunset and none is persuaded — the rule of Jixia."
+     }
     },
     {
-      "id": "market",
-      "label": {
-        "zh": "先逛坊市",
-        "en": "The market first"
-      },
-      "means": "goes shopping, asks about the market, wants to buy or sell",
-      "stay": true,
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "稷门内的坊市里，盐堆得像雪，纨叠得像云。",
-            "en": "In the market inside the gate the salt is heaped like snow and the silk folded like cloud."
-          }
-        }
-      ]
-    },
-    {
-      "id": "debate",
-      "means": "joins the debate, argues with the scholars, asks them what they think",
-      "stay": true,
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你插了一句，三个先生一起转过头来。争到日落，谁也没说服谁——稷下的规矩。",
-            "en": "You put in a word, and three masters turn round together. They argue till sunset and none is persuaded — the rule of Jixia."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "潮不会等他们吵完。",
-            "en": "The tide won't wait for them to finish."
-          }
-        }
-      ]
+     "who": "yinyue",
+     "text": {
+      "zh": "潮不会等他们吵完。",
+      "en": "The tide won't wait for them to finish."
+     },
+     "alone": {
+      "zh": "潮不会等他们吵完。",
+      "en": "The tide will not wait for them to finish arguing."
+     }
     }
-  ]
+   ]
+  }
+ ]
 }

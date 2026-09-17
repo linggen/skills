@@ -102,7 +102,7 @@ test('the prologue walks from the river to its end by exits alone', () => {
 test('the name fills the lines that follow', () => {
   let s = must(resolve, start(), { exit: 'reach' }).state;
   const named = must(resolve, s, { exit: 'name', value: '墨白' });
-  assert.equal(named.result.beat[0].text, '墨白。好名字，我记住了。');
+  assert.equal(named.result.beat[0].text, '墨白。从今日起，这是你的道号。');
   assert.match(named.result.scene.setup, /^墨白，入道之前/);
 });
 
@@ -484,8 +484,9 @@ test('an in-world task pays only after the page recorded its win', () => {
 test('every line carries its speaker’s name; Ling narrates unnamed', () => {
   const s = toFuzhu();
   const scene = look(s, content, ctx()).scene;
-  assert.deepEqual(scene.cast, [{ id: 'yinyue', name: '银月' }, { id: 'fuzhu', name: '夫诸' }]);
-  assert.equal(scene.lines[0].name, '银月');
+  // Before she is found, the scene has no companion and her line is narration.
+  assert.deepEqual(scene.cast, [{ id: 'fuzhu', name: '夫诸' }]);
+  assert.equal(scene.lines[0].name, null);
   const out = must(resolve, s, { exit: 'riddle', answer: riddleAt(s, 'riddle').right });
   assert.equal(out.result.beat[0].name, '夫诸');
   assert.equal(must(resolve, start('en'), { exit: 'leave' }).result.beat[0].name, null);
@@ -903,13 +904,13 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
-  assert.deepEqual(bought.state.bag, { 'qi-pill': 1 });
+  assert.deepEqual(bought.state.bag, { 'moon-bell': 1, 'qi-pill': 1 }); // the bell came from the river
   assert.equal(bought.state.stamina, 95, 'a visit costs five');
   assert.equal(bought.result.item.held, 1);
-  assert.deepEqual(look(bought.state, content, ctx()).bag, [{ id: 'qi-pill', name: '聚气丹', n: 1 }]);
+  assert.deepEqual(look(bought.state, content, ctx()).bag.map(b => b.id), ['moon-bell', 'qi-pill']);
   const sold = must(trade, bought.state, { action: 'sell', id: 'qi-pill' });
   assert.equal(sold.state.wealth, 40);
-  assert.deepEqual(sold.state.bag, {});
+  assert.deepEqual(sold.state.bag, { 'moon-bell': 1 });
   refused(trade, sold.state, { action: 'sell', id: 'qi-pill' }, 'not-in-bag');
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
@@ -919,14 +920,14 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   refused(trade, { ...s, stamina: 2 }, { action: 'buy', id: 'straw-cloak' }, 'no-stamina');
 });
 
-test('no market away from one; a pill is used anywhere; a wear goes on Yinyue', () => {
+test('no market away from one; a pill is used anywhere; a wear waits for her', () => {
   const s = toMarket();
   const away = must(move, s, { place: 'sishui' }).state;
   assert.equal(refused(trade, away, { action: 'buy', id: 'ginseng' }, 'no-market').say, '这里没有坊市。');
   const withPill = must(trade, s, { action: 'buy', id: 'qi-pill' }).state;
   const used = must(trade, must(move, withPill, { place: 'sishui' }).state, { action: 'use', id: 'qi-pill' });
   assert.equal(used.result.paid.progress, 20);
-  assert.deepEqual(used.state.bag, {});
+  assert.deepEqual(used.state.bag, { 'moon-bell': 1 }); // the river's bell is carried from the prologue
   refused(trade, s, { action: 'use', id: 'qi-pill' }, 'not-in-bag');
   const withSword = must(trade, s, { action: 'buy', id: 'bamboo-sword' }).state;
   // a weapon used is worn: the bout borrows its root (2026-09-16)
@@ -934,8 +935,10 @@ test('no market away from one; a pill is used anywhere; a wear goes on Yinyue', 
   assert.deepEqual(armed.state.wear, { weapon: 'bamboo-sword' });
   assert.deepEqual(armed.result.item.effect, { root: 'wood', root_name: '木' });
   refused(trade, must(trade, withSword, { action: 'buy', id: 'straw-cloak' }).state, { action: 'use', id: 'straw-cloak' }, 'not-usable');
+  // Her gift waits for her: worn only once she has been found.
   const withBell = { ...s, bag: { 'moon-bell': 1 } };
-  const worn = must(trade, withBell, { action: 'use', id: 'moon-bell' });
+  refused(trade, withBell, { action: 'use', id: 'moon-bell' }, 'no-companion');
+  const worn = must(trade, { ...withBell, companion: { joined: '2026-09-11' } }, { action: 'use', id: 'moon-bell' });
   assert.deepEqual(worn.state.wear, { yinyue: 'moon-bell' });
   assert.equal(worn.result.item.worn, true);
   const bellSold = must(trade, worn.state, { action: 'sell', id: 'moon-bell' }).state;
@@ -1559,7 +1562,10 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan']);
   const thread3 = look(r.state, content, nctx()).director.thread;
   assert.equal(thread3.chapter, '03-qing'); assert.equal(thread3.opens, '2026-12-01');
-  assert.equal(wake(r.state, content, nctx()), null, 'chapter 3 has not opened');
+  // The Core is formed: the call to find her opens, and chapter 3 has not.
+  const called = wake(r.state, content, nctx());
+  assert.deepEqual(called.companion, {});
+  assert.equal(called.scene, r.state.scene, 'chapter 3 has not opened');
 });
 
 const DEC = new Date('2026-12-02T12:00:00');
@@ -1581,7 +1587,9 @@ test('in November the road from 凫丽 into 青 is closed', () => {
 
 test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market, the shore, the seal, the Nascent Soul, the end', () => {
   let s = afterYan();
-  assert.equal(wake(s, content, nctx()), null, 'not in November');
+  // The Core is formed, so waking opens the search for her; the road waits for December.
+  assert.deepEqual(wake(s, content, nctx()).companion, {});
+  assert.equal(wake(s, content, nctx()).chapter, s.chapter, 'not in November');
   const woke = VERBS.look(s, content, dctx());
   assert.equal(woke.state.chapter, '03-qing'); assert.equal(woke.state.scene, '03-arrive');
   assert.equal(woke.state.place, 'leiyuan', 'no teleport');
@@ -1675,4 +1683,54 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   assert.equal(ready.scene.exits.find(e => e.id === 'take').breakthrough.ready, true);
   assert.ok(ready.ask.options.some(o => o.exit === 'take'));
   assert.ok(!ready.ask.options.some(o => o.move));
+});
+
+test('银月 is found, not given: the call at 结丹, the bell, water, her riddle — and until then she is not in the game', () => {
+  const core = { ...start(), scene: null, chapter: '02-yan', ended: ['00-prologue', '01-ji', '02-yan'],
+    tier: 'core', step: 0, progress: 100, name: '清玄', place: 'sishui', bag: { 'moon-bell': 1 } };
+  // Before the call she is nowhere: no companion, and her line is the narration's.
+  const before = look({ ...core, tier: 'qi' }, content, ctx());
+  assert.equal(before.companion, null);
+  assert.equal(before.quest, null);
+  // The call comes on waking at the realm the world names.
+  const called = wake(core, content, ctx());
+  assert.deepEqual(called.companion, {});
+  const l = look(called, content, ctx());
+  assert.equal(l.companion, null);
+  assert.equal(l.quest.step, 'ring', '泗水岸 holds a moon');
+  assert.ok(l.quest.line);
+  // The bell is hers to answer; without it the quest asks for it, and the market sells it.
+  const noBell = { ...called, bag: {} };
+  assert.equal(look(noBell, content, ctx()).quest.step, 'bell');
+  assert.ok(look({ ...noBell, place: 'pengcheng' }, content, ctx()).place.shelf.some(i => i.id === 'moon-bell'));
+  refused(VERBS.ring, noBell, {}, 'no-bell');
+  refused(VERBS.ring, { ...called, place: 'yunlong' }, {}, 'not-water');
+  refused(VERBS.ring, { ...core, companion: { joined: '2026-09-11' } }, {}, 'not-yet');
+  // Rung, she asks a riddle of her own — and it is the question until it is answered.
+  const rung = VERBS.ring(called, content, ctx(), {});
+  assert.equal(rung.result.refused, 'needs-answer');
+  assert.ok(rung.result.say && rung.result.choices.length);
+  const key = rung.state.companion.riddle.key;
+  const riddle = content.riddles.zh.riddles[key];
+  assert.equal(askOf(content, rung.state, ctx()).question, riddle.q);
+  const wrong = riddle.choices.find(c => !riddle.a.includes(c));
+  const missed = VERBS.ring(rung.state, content, ctx(), { answer: wrong });
+  assert.equal(missed.result.refused, 'wrong-answer'); assert.ok(missed.result.hint);
+  // Answered, she joins: the bell is hers to wear, and her lines are her own again.
+  const joined = VERBS.ring(missed.state, content, ctx(), { answer: riddle.a[0] });
+  assert.equal(joined.result.ok, true);
+  assert.equal(joined.result.joined.name, '银月');
+  assert.equal(joined.state.wear.yinyue, 'moon-bell');
+  assert.ok(joined.result.paid.progress > 0);
+  assert.ok(joined.result.beat.some(b => b.who === 'yinyue'));
+  const after = look(joined.state, content, ctx());
+  assert.equal(after.companion.id, 'yinyue');
+  assert.equal(after.quest, null);
+  // A scene with one button takes its second option from the rules: a look
+  // around while she is not found, a word to her once she is.
+  const lone = { chapter: '00-prologue', scene: '00-stone', place: 'sishui' };
+  assert.equal(askOf(content, { ...called, ...lone }, ctx()).options.at(-1).label, '看看四周');
+  assert.equal(askOf(content, { ...joined.state, ...lone }, ctx()).options.at(-1).label, '问问银月');
+  // A second bell is not sold once she has been found.
+  assert.ok(!look({ ...joined.state, place: 'pengcheng', bag: {} }, content, ctx()).place.shelf.some(i => i.id === 'moon-bell'));
 });

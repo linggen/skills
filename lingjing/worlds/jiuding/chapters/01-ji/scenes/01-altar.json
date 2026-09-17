@@ -1,64 +1,163 @@
 {
-  "version": 1,
-  "id": "01-altar",
-  "chapter": "01-ji",
-  "at": "hebo",
-  "place": { "zh": "河伯祠 · 水边", "en": "The River Lord's shrine · The water's edge" },
-  "setup": {
-    "zh": "鼓停了。红衣的姑娘站在水边，巫婆举着香。水里慢慢浮起一个东西——羊的身子，人的脸，眼睛长在腋下。它哭得像婴儿。",
-    "en": "The drums stop. The girl in red stands at the water; the sorceress raises the incense. Something rises slowly from the river — a sheep's body, a man's face, eyes under its arms. It cries like an infant."
+ "version": 1,
+ "id": "01-altar",
+ "chapter": "01-ji",
+ "at": "hebo",
+ "place": {
+  "zh": "河伯祠 · 水边",
+  "en": "The River Lord's shrine · The water's edge"
+ },
+ "setup": {
+  "zh": "鼓停了。红衣的姑娘站在水边，巫婆举着香。水里慢慢浮起一个东西——羊的身子，人的脸，眼睛长在腋下。它哭得像婴儿。",
+  "en": "The drums stop. The girl in red stands at the water; the sorceress raises the incense. Something rises slowly from the river — a sheep's body, a man's face, eyes under its arms. It cries like an infant."
+ },
+ "cast": [
+  "paoxiao"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "paoxiao"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "那不是河伯。是狍鸮——羊身人面，眼生腋下；传说它吃人，巫婆一年喂它一个。",
+    "en": "That is no River Lord. It is Paoxiao — a sheep’s body, a human face, eyes under its arms. They say it eats people, and the sorceress feeds it one a year."
+   }
   },
-  "cast": ["yinyue", "paoxiao"],
-  "show": [{ "card": "creature", "id": "paoxiao" }],
-  "lines": [
-    { "who": "yinyue", "text": { "zh": "那不是河伯。是狍鸮——它吃人。巫婆一年喂它一个。", "en": "That is no River Lord. It's Paoxiao — it eats people. The sorceress feeds it one a year." } },
-    { "who": "ling", "text": { "zh": "巫婆回头看你，笑了：外乡人，河伯问你一句话，答得上，就让你看。", "en": "The sorceress turns and smiles at you: stranger, the River Lord has a question for you. Answer it, and you may watch." } }
-  ],
-  "buttons": ["subdue", "riddle", "send"],
-  "exits": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "巫婆回头看你，笑了：外乡人，河伯问你一句话，答得上，就让你看。",
+    "en": "The sorceress turns and smiles at you: stranger, the River Lord has a question for you. Answer it, and you may watch."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "send"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the creature, drives it off, protects the girl by force",
+   "game": {
+    "id": "subdue-paoxiao",
+    "kind": "duel",
+    "creature": "paoxiao"
+   },
+   "withdrawn": {
+    "zh": "狍鸮沉回水里，哭声远了。明日它还会来。",
+    "en": "Paoxiao sinks back into the river; the crying fades. It will come again tomorrow."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
     {
-      "id": "subdue",
-      "label": { "zh": "降妖 · 五行", "en": "Subdue · The five elements" },
-      "means": "fights the creature, drives it off, protects the girl by force",
-      "game": { "id": "subdue-paoxiao", "kind": "duel", "creature": "paoxiao" },
-      "withdrawn": { "zh": "狍鸮沉回水里，哭声远了。明日它还会来。", "en": "Paoxiao sinks back into the river; the crying fades. It will come again tomorrow." },
-      "grant": { "table": "scene", "progress": 60, "wealth": 20 },
-      "beat": [
-        { "who": "ling", "text": { "zh": "狍鸮翻倒在浅水里，人脸朝天。巫婆的香掉在地上。姑娘跑了。", "en": "Paoxiao rolls over in the shallows, its man's face to the sky. The sorceress drops her incense. The girl runs." } },
-        { "who": "yinyue", "text": { "zh": "水退了。你看——祠后面。", "en": "The water is going down. Look — behind the shrine." } }
-      ],
-      "next": "01-deep"
+     "who": "ling",
+     "text": {
+      "zh": "狍鸮翻倒在浅水里，人脸朝天。巫婆的香掉在地上。姑娘跑了。",
+      "en": "Paoxiao rolls over in the shallows, its man's face to the sky. The sorceress drops her incense. The girl runs."
+     }
     },
     {
-      "id": "riddle",
-      "label": { "zh": "答河伯的问", "en": "Answer the River Lord's question" },
-      "means": "answers the sorceress's riddle",
-      "key": ["wu-1", "wu-2"],
-      "grant": { "table": "scene", "progress": 40, "wealth": 10 },
-      "beat": [
-        { "who": "ling", "text": { "zh": "你答了。狍鸮的哭声停了一瞬——它听得懂。巫婆的脸白了：河伯从没让人答对过。", "en": "You answer. Paoxiao's crying stops for a breath — it understood. The sorceress goes white: the River Lord has never let anyone answer right." } },
-        { "who": "yinyue", "text": { "zh": "它退了。趁现在，祠后面。", "en": "It's backing off. Now — behind the shrine." } }
-      ],
-      "next": "01-deep"
-    },
-    {
-      "id": "send",
-      "label": { "zh": "请巫婆先去问河伯", "en": "Ask the sorceress to go and ask the River Lord" },
-      "means": "calls the sorceress's bluff, tells her to go into the water herself, does what Ximen Bao did",
-      "grant": { "table": "scene", "progress": 40, "wealth": 10 },
-      "beat": [
-        { "who": "ling", "text": { "zh": "你说：新娘不美，烦巫婆先去回禀河伯，改日再送。你把她推进水里。狍鸮转向了她。", "en": "You say: the bride is not fair enough; would the sorceress kindly go and tell the River Lord, and send another day. You push her in. Paoxiao turns toward her." } },
-        { "who": "yinyue", "text": { "zh": "……西门豹当年也是这么办的。走，祠后面。", "en": "…That is how Ximen Bao did it, long ago. Come — behind the shrine." } }
-      ],
-      "next": "01-deep"
-    },
-    {
-      "id": "flee",
-      "means": "runs away, leaves the girl, refuses to act",
-      "stay": true,
-      "beat": [
-        { "who": "yinyue", "text": { "zh": "你走两步，又停下。姑娘在看你。", "en": "You take two steps, and stop. The girl is looking at you." } }
-      ]
+     "who": "ling",
+     "text": {
+      "zh": "水退了。祠后面露出河床。",
+      "en": "The water goes down, and the riverbed shows behind the shrine."
+     }
     }
-  ]
+   ],
+   "next": "01-deep"
+  },
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答河伯的问",
+    "en": "Answer the River Lord's question"
+   },
+   "means": "answers the sorceress's riddle",
+   "key": [
+    "wu-1",
+    "wu-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你答了。狍鸮的哭声停了一瞬——它听得懂。巫婆的脸白了：河伯从没让人答对过。",
+      "en": "You answer. Paoxiao's crying stops for a breath — it understood. The sorceress goes white: the River Lord has never let anyone answer right."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "它退开了。祠后面，正是时候。",
+      "en": "It backs off. Behind the shrine — now is the time."
+     }
+    }
+   ],
+   "next": "01-deep"
+  },
+  {
+   "id": "send",
+   "label": {
+    "zh": "请巫婆先去问河伯",
+    "en": "Ask the sorceress to go and ask the River Lord"
+   },
+   "means": "calls the sorceress's bluff, tells her to go into the water herself, does what Ximen Bao did",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你说：新娘不美，烦巫婆先去回禀河伯，改日再送。你把她推进水里。狍鸮转向了她。",
+      "en": "You say: the bride is not fair enough; would the sorceress kindly go and tell the River Lord, and send another day. You push her in. Paoxiao turns toward her."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "西门豹当年也是这么办的。祠后面。",
+      "en": "Ximen Bao did it this way long ago. Behind the shrine."
+     }
+    }
+   ],
+   "next": "01-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs away, leaves the girl, refuses to act",
+   "stay": true,
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你走出两步，又停下。姑娘在看你。",
+      "en": "You take two steps, and stop. The girl is looking at you."
+     }
+    }
+   ]
+  }
+ ]
 }

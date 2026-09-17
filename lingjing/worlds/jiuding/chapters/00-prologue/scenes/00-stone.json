@@ -1,27 +1,53 @@
 {
-  "version": 1,
-  "id": "00-stone",
-  "chapter": "00-prologue",
-  "at": "sishui",
-  "place": { "zh": "泗水之畔", "en": "The bank of the Si River" },
-  "setup": {
-    "zh": "{name}，入道之前，先测灵根。把手放在测灵石上。",
-    "en": "{name}, before you walk the Way, your spirit root must be tested. Place your hand on the stone."
-  },
-  "cast": ["yinyue"],
-  "buttons": ["touch"],
-  "exits": [
+ "version": 1,
+ "id": "00-stone",
+ "chapter": "00-prologue",
+ "at": "sishui",
+ "place": {
+  "zh": "泗水之畔",
+  "en": "The bank of the Si River"
+ },
+ "setup": {
+  "zh": "{name}，入道之前，先测灵根。把手放在测灵石上。",
+  "en": "{name}, before you walk the Way, your spirit root must be tested. Place your hand on the stone."
+ },
+ "cast": [],
+ "buttons": [
+  "touch"
+ ],
+ "exits": [
+  {
+   "id": "touch",
+   "label": {
+    "zh": "放上测灵石",
+    "en": "Place your hand on the stone"
+   },
+   "means": "puts a hand on the stone or agrees to the test",
+   "set": {
+    "traits": "v1"
+   },
+   "show": [
     {
-      "id": "touch",
-      "label": { "zh": "放上测灵石", "en": "Place your hand on the stone" },
-      "means": "puts a hand on the stone or agrees to the test",
-      "set": { "traits": "v1" },
-      "show": [{ "card": "traits" }],
-      "beat": [
-        { "who": "ling", "text": { "zh": "四灵根。修炼会比旁人慢上许多。", "en": "Four roots. You will cultivate far more slowly than most." } },
-        { "who": "yinyue", "text": { "zh": "慢又怎样。路是一步一步走的，我陪你走。", "en": "So what if it is slow? A road is walked one step at a time. I will walk it with you." } }
-      ],
-      "next": "00-practice"
+     "card": "traits"
     }
-  ]
+   ],
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "四灵根。修炼会比旁人慢上许多。",
+      "en": "Four roots. You will cultivate far more slowly than most."
+     }
+    },
+    {
+     "who": "ling",
+     "text": {
+      "zh": "慢又怎样。路是一步一步走出来的。",
+      "en": "Slow is still a road, and a road is walked one step at a time."
+     }
+    }
+   ],
+   "next": "00-practice"
+  }
+ ]
 }

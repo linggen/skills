@@ -1,161 +1,184 @@
 {
-  "version": 1,
-  "id": "03-shore",
-  "chapter": "03-qing",
-  "at": "penglai",
-  "place": {
-    "zh": "蓬莱 · 海上",
-    "en": "Penglai · The sea"
+ "version": 1,
+ "id": "03-shore",
+ "chapter": "03-qing",
+ "at": "penglai",
+ "place": {
+  "zh": "蓬莱 · 海上",
+  "en": "Penglai · The sea"
+ },
+ "setup": {
+  "zh": "海上的城近了，才看出不是城——是光。海中一座山，山脚下立着一头牛样的兽，青苍的身子，没有角，只有一条腿。它身上的光像太阳又像月亮，照得海面上楼台重重。它张口一叫，声如雷；叫一声，风雨就起一阵。",
+  "en": "Close to, the city on the sea is no city — it is light. A mountain stands in the sea, and at its foot a beast like an ox, blue-grey, hornless, on one leg. Its body shines like the sun and like the moon, and on the water the light builds towers upon towers. It opens its mouth and its cry is thunder; with every cry, a gust of wind and rain."
+ },
+ "cast": [
+  "yinyue",
+  "kui"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "kui"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是夔。它在叫——鼎在山底下吸气，它以为是另一头夔在应它。它等了两千年。",
+    "en": "It is Kui. It's calling — the cauldron breathes in under the mountain, and it thinks another Kui is answering. It has waited two thousand years."
+   },
+   "alone": {
+    "zh": "是夔。它在叫——鼎在山底下吸气，它以为是另一头夔在应它。它等了两千年。",
+    "en": "It is Kui, calling. The cauldron breathes in under the mountain and it takes the sound for another Kui answering. It has waited two thousand years."
+   }
   },
-  "setup": {
-    "zh": "海上的城近了，才看出不是城——是光。海中一座山，山脚下立着一头牛样的兽，青苍的身子，没有角，只有一条腿。它身上的光像太阳又像月亮，照得海面上楼台重重。它张口一叫，声如雷；叫一声，风雨就起一阵。",
-    "en": "Close to, the city on the sea is no city — it is light. A mountain stands in the sea, and at its foot a beast like an ox, blue-grey, hornless, on one leg. Its body shines like the sun and like the moon, and on the water the light builds towers upon towers. It opens its mouth and its cry is thunder; with every cry, a gust of wind and rain."
+  {
+   "who": "ling",
+   "text": {
+    "zh": "夔看见你了。它的叫声落进你耳朵里，成了一句话：一日一月，打一字。",
+    "en": "Kui has seen you. Its cry falls into your ear and becomes words: one sun and one moon — one character."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "enough"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the creature, drives it down, stops its cry by force",
+   "game": {
+    "id": "subdue-kui",
+    "kind": "duel",
+    "creature": "kui"
+   },
+   "withdrawn": {
+    "zh": "夔退进海里，光暗了。明日它还会叫。",
+    "en": "Kui draws back into the sea and the light dims. Tomorrow it will call again."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "夔的一条腿在水里站住了，不再叫。它的光收进身子里，海上的楼台一层一层灭了。",
+      "en": "Kui stands still on its one leg and calls no more. Its light draws back into its body, and the towers on the sea go out storey by storey."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "潮在动。看——山脚下的水在退。",
+      "en": "The tide is moving. Look — the water at the mountain's foot is drawing back."
+     },
+     "alone": {
+      "zh": "潮在动。山脚下的水在退。",
+      "en": "The tide moves. The water at the mountain’s foot is drawing back."
+     }
+    }
+   ],
+   "next": "03-deep"
   },
-  "cast": [
-    "yinyue",
-    "kui"
-  ],
-  "show": [
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答夔的问",
+    "en": "Answer Kui"
+   },
+   "means": "answers the creature's riddle",
+   "key": [
+    "kui-1",
+    "kui-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
     {
-      "card": "creature",
-      "id": "kui"
+     "who": "ling",
+     "text": {
+      "zh": "你答了。夔歪了歪头，像是听懂了。它的光柔下来，像月亮。",
+      "en": "You answer. Kui tilts its head, as if it understood. Its light softens, like the moon."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "它让路了。走，山脚。",
+      "en": "It gives way. Come — the mountain's foot."
+     },
+     "alone": {
+      "zh": "它让开了路。山脚就在下面。",
+      "en": "It gives way. The mountain’s foot lies below."
+     }
     }
-  ],
-  "lines": [
+   ],
+   "next": "03-deep"
+  },
+  {
+   "id": "enough",
+   "label": {
+    "zh": "一而足",
+    "en": "One is enough"
+   },
+   "means": "tells the creature that one of it is enough, that it needs no other, speaks Confucius's words to it, comforts it",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
     {
-      "who": "yinyue",
-      "text": {
-        "zh": "是夔。它在叫——鼎在山底下吸气，它以为是另一头夔在应它。它等了两千年。",
-        "en": "It is Kui. It's calling — the cauldron breathes in under the mountain, and it thinks another Kui is answering. It has waited two thousand years."
-      }
+     "who": "ling",
+     "text": {
+      "zh": "你对它说：夔，一而足矣。它愣住了。当年鲁哀公问孔子，夔真的只有一条腿吗？孔子说：不是一条腿——有一个夔，就够了。它的光慢慢暗下去，像一个人终于坐了下来。",
+      "en": "You say to it: Kui, one is enough. It goes still. When Duke Ai of Lu asked Confucius whether Kui truly had one foot, Confucius said: not one foot — one Kui was enough. Its light dims slowly, like someone at last sitting down."
+     }
     },
     {
-      "who": "ling",
-      "text": {
-        "zh": "夔看见你了。它的叫声落进你耳朵里，成了一句话：一日一月，打一字。",
-        "en": "Kui has seen you. Its cry falls into your ear and becomes words: one sun and one moon — one character."
-      }
+     "who": "yinyue",
+     "text": {
+      "zh": "它不叫了。海在退。",
+      "en": "It has stopped calling. The sea is going out."
+     },
+     "alone": {
+      "zh": "它不叫了。海在退。",
+      "en": "It stops calling. The sea goes out."
+     }
     }
-  ],
-  "buttons": [
-    "subdue",
-    "riddle",
-    "enough"
-  ],
-  "exits": [
+   ],
+   "next": "03-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs away, turns back from the shore, refuses to act",
+   "stay": true,
+   "beat": [
     {
-      "id": "subdue",
-      "label": {
-        "zh": "降妖 · 五行",
-        "en": "Subdue · The five elements"
-      },
-      "means": "fights the creature, drives it down, stops its cry by force",
-      "game": {
-        "id": "subdue-kui",
-        "kind": "duel",
-        "creature": "kui"
-      },
-      "withdrawn": {
-        "zh": "夔退进海里，光暗了。明日它还会叫。",
-        "en": "Kui draws back into the sea and the light dims. Tomorrow it will call again."
-      },
-      "grant": {
-        "table": "scene",
-        "progress": 60,
-        "wealth": 20
-      },
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "夔的一条腿在水里站住了，不再叫。它的光收进身子里，海上的楼台一层一层灭了。",
-            "en": "Kui stands still on its one leg and calls no more. Its light draws back into its body, and the towers on the sea go out storey by storey."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "潮在动。看——山脚下的水在退。",
-            "en": "The tide is moving. Look — the water at the mountain's foot is drawing back."
-          }
-        }
-      ],
-      "next": "03-deep"
-    },
-    {
-      "id": "riddle",
-      "label": {
-        "zh": "答夔的问",
-        "en": "Answer Kui"
-      },
-      "means": "answers the creature's riddle",
-      "key": ["kui-1", "kui-2"],
-      "grant": {
-        "table": "scene",
-        "progress": 40,
-        "wealth": 10
-      },
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你答了。夔歪了歪头，像是听懂了。它的光柔下来，像月亮。",
-            "en": "You answer. Kui tilts its head, as if it understood. Its light softens, like the moon."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "它让路了。走，山脚。",
-            "en": "It gives way. Come — the mountain's foot."
-          }
-        }
-      ],
-      "next": "03-deep"
-    },
-    {
-      "id": "enough",
-      "label": {
-        "zh": "一而足",
-        "en": "One is enough"
-      },
-      "means": "tells the creature that one of it is enough, that it needs no other, speaks Confucius's words to it, comforts it",
-      "grant": {
-        "table": "scene",
-        "progress": 40,
-        "wealth": 10
-      },
-      "beat": [
-        {
-          "who": "ling",
-          "text": {
-            "zh": "你对它说：夔，一而足矣。它愣住了。当年鲁哀公问孔子，夔真的只有一条腿吗？孔子说：不是一条腿——有一个夔，就够了。它的光慢慢暗下去，像一个人终于坐了下来。",
-            "en": "You say to it: Kui, one is enough. It goes still. When Duke Ai of Lu asked Confucius whether Kui truly had one foot, Confucius said: not one foot — one Kui was enough. Its light dims slowly, like someone at last sitting down."
-          }
-        },
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "它不叫了。海在退。",
-            "en": "It has stopped calling. The sea is going out."
-          }
-        }
-      ],
-      "next": "03-deep"
-    },
-    {
-      "id": "flee",
-      "means": "runs away, turns back from the shore, refuses to act",
-      "stay": true,
-      "beat": [
-        {
-          "who": "yinyue",
-          "text": {
-            "zh": "你往回走。夔的叫声跟着你，风雨也跟着你。它不是在赶你——它在找。",
-            "en": "You turn back. Kui's cry follows you, and the wind and rain with it. It isn't driving you off — it is searching."
-          }
-        }
-      ]
+     "who": "yinyue",
+     "text": {
+      "zh": "你往回走。夔的叫声跟着你，风雨也跟着你。它不是在赶你——它在找。",
+      "en": "You turn back. Kui's cry follows you, and the wind and rain with it. It isn't driving you off — it is searching."
+     },
+     "alone": {
+      "zh": "你往回走。夔的叫声跟着你，风雨也跟着。它不是在赶你——它在找。",
+      "en": "You turn back. Kui’s cry follows you, and the wind and rain with it. It is not driving you off: it is searching."
+     }
     }
-  ]
+   ]
+  }
+ ]
 }

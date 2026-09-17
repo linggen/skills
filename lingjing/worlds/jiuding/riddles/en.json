@@ -1,169 +1,228 @@
 {
-  "version": 1,
-  "riddles": {
-    "fuzhu-1": {
-      "q": "What must be broken before it can be used?",
-      "a": [
-        "egg",
-        "an egg"
-      ],
-      "choices": [
-        "a promise",
-        "silence",
-        "an egg",
-        "bread"
-      ],
-      "hint": "A hen could tell you."
-    },
-    "fuzhu-2": {
-      "q": "The Classic of Mountains and Seas says: where Fuzhu is seen, what comes to the town?",
-      "a": [
-        "a flood",
-        "flood",
-        "floods",
-        "great flood",
-        "water"
-      ],
-      "choices": [
-        "a drought",
-        "a flood",
-        "a fire",
-        "a good harvest"
-      ],
-      "hint": "Read its card: where it is seen, the town…"
-    },
-    "wu-1": {
-      "q": "A head and no neck, eyes and no brows; it walks without feet, and its wings cannot fly. What is it?",
-      "a": [
-        "fish",
-        "a fish"
-      ],
-      "choices": [
-        "a bird",
-        "a boat",
-        "a fish",
-        "a snake"
-      ],
-      "hint": "It lives in the River Lord's water."
-    },
-    "wu-2": {
-      "q": "The River Lord was once a man. What was his name?",
-      "a": [
-        "feng yi",
-        "fengyi",
-        "bing yi",
-        "冯夷"
-      ],
-      "choices": [
-        "Gonggong",
-        "Feng Yi",
-        "Xuanming",
-        "Yuqiang"
-      ],
-      "hint": "Zhuangzi: he found the Way, and swam the great rivers."
-    },
-    "seal-ji": {
-      "q": "Nine at the crown, one at the foot; three on the left, seven on the right; two and four for shoulders, six and eight for feet. What sits at the heart?",
-      "a": [
-        "five",
-        "5"
-      ],
-      "choices": [
-        "one",
-        "nine",
-        "fifteen",
-        "five"
-      ],
-      "hint": "The Luo River square — every line makes fifteen."
-    },
-    "lei-1": {
-      "q": "It roars without a mouth and runs without feet, and it comes with the rain. What is it?",
-      "a": [
-        "thunder"
-      ],
-      "choices": [
-        "wind",
-        "thunder",
-        "a river",
-        "a flood"
-      ],
-      "hint": "Listen to the lake."
-    },
-    "lei-2": {
-      "q": "Huaxu stepped into a giant's footprint at Lake Lei. Whom did she bear?",
-      "a": [
-        "fuxi",
-        "fu xi"
-      ],
-      "choices": [
-        "Shun",
-        "Fuxi",
-        "the Yellow Emperor",
-        "Yu the Great"
-      ],
-      "hint": "He later drew the eight trigrams."
-    },
-    "seal-yan": {
-      "q": "The River Chart: one and six in the north, two and seven in the south, four and nine in the west, five and ten at the heart. Where do three and eight sit?",
-      "a": [
-        "east",
-        "the east"
-      ],
-      "choices": [
-        "west",
-        "south",
-        "east",
-        "north"
-      ],
-      "hint": "Where wood is born, and spring comes from."
-    },
-    "kui-1": {
-      "q": "One sun and one moon, side by side. One character.",
-      "a": [
-        "明",
-        "ming",
-        "bright",
-        "brightness"
-      ],
-      "choices": [
-        "昌",
-        "朋",
-        "明",
-        "旦"
-      ],
-      "hint": "Sun and moon together mean bright."
-    },
-    "kui-2": {
-      "q": "The Yellow Emperor took Kui. What did he make of its hide?",
-      "a": [
-        "a drum",
-        "drum",
-        "a war drum",
-        "war drum"
-      ],
-      "choices": [
-        "armour",
-        "a banner",
-        "a drum",
-        "a robe"
-      ],
-      "hint": "Its voice is thunder — what else, struck, sounds like thunder?"
-    },
-    "seal-qing": {
-      "q": "The eight trigrams: Qian in the south, Kun in the north, Kan in the west. Which trigram belongs in the east?",
-      "a": [
-        "li",
-        "离",
-        "fire",
-        "the fire trigram"
-      ],
-      "choices": [
-        "Zhen",
-        "Li",
-        "Dui",
-        "Xun"
-      ],
-      "hint": "Where the sun rises; fire comes from there."
-    }
+ "version": 1,
+ "riddles": {
+  "fuzhu-1": {
+   "q": "What must be broken before it can be used?",
+   "a": [
+    "egg",
+    "an egg"
+   ],
+   "choices": [
+    "a promise",
+    "silence",
+    "an egg",
+    "bread"
+   ],
+   "hint": "A hen could tell you."
+  },
+  "fuzhu-2": {
+   "q": "The Classic of Mountains and Seas says: where Fuzhu is seen, what comes to the town?",
+   "a": [
+    "a flood",
+    "flood",
+    "floods",
+    "great flood",
+    "water"
+   ],
+   "choices": [
+    "a drought",
+    "a flood",
+    "a fire",
+    "a good harvest"
+   ],
+   "hint": "Read its card: where it is seen, the town…"
+  },
+  "wu-1": {
+   "q": "A head and no neck, eyes and no brows; it walks without feet, and its wings cannot fly. What is it?",
+   "a": [
+    "fish",
+    "a fish"
+   ],
+   "choices": [
+    "a bird",
+    "a boat",
+    "a fish",
+    "a snake"
+   ],
+   "hint": "It lives in the River Lord's water."
+  },
+  "wu-2": {
+   "q": "The River Lord was once a man. What was his name?",
+   "a": [
+    "feng yi",
+    "fengyi",
+    "bing yi",
+    "冯夷"
+   ],
+   "choices": [
+    "Gonggong",
+    "Feng Yi",
+    "Xuanming",
+    "Yuqiang"
+   ],
+   "hint": "Zhuangzi: he found the Way, and swam the great rivers."
+  },
+  "seal-ji": {
+   "q": "Nine at the crown, one at the foot; three on the left, seven on the right; two and four for shoulders, six and eight for feet. What sits at the heart?",
+   "a": [
+    "five",
+    "5"
+   ],
+   "choices": [
+    "one",
+    "nine",
+    "fifteen",
+    "five"
+   ],
+   "hint": "The Luo River square — every line makes fifteen."
+  },
+  "lei-1": {
+   "q": "It roars without a mouth and runs without feet, and it comes with the rain. What is it?",
+   "a": [
+    "thunder"
+   ],
+   "choices": [
+    "wind",
+    "thunder",
+    "a river",
+    "a flood"
+   ],
+   "hint": "Listen to the lake."
+  },
+  "lei-2": {
+   "q": "Huaxu stepped into a giant's footprint at Lake Lei. Whom did she bear?",
+   "a": [
+    "fuxi",
+    "fu xi"
+   ],
+   "choices": [
+    "Shun",
+    "Fuxi",
+    "the Yellow Emperor",
+    "Yu the Great"
+   ],
+   "hint": "He later drew the eight trigrams."
+  },
+  "seal-yan": {
+   "q": "The River Chart: one and six in the north, two and seven in the south, four and nine in the west, five and ten at the heart. Where do three and eight sit?",
+   "a": [
+    "east",
+    "the east"
+   ],
+   "choices": [
+    "west",
+    "south",
+    "east",
+    "north"
+   ],
+   "hint": "Where wood is born, and spring comes from."
+  },
+  "kui-1": {
+   "q": "One sun and one moon, side by side. One character.",
+   "a": [
+    "明",
+    "ming",
+    "bright",
+    "brightness"
+   ],
+   "choices": [
+    "昌",
+    "朋",
+    "明",
+    "旦"
+   ],
+   "hint": "Sun and moon together mean bright."
+  },
+  "kui-2": {
+   "q": "The Yellow Emperor took Kui. What did he make of its hide?",
+   "a": [
+    "a drum",
+    "drum",
+    "a war drum",
+    "war drum"
+   ],
+   "choices": [
+    "armour",
+    "a banner",
+    "a drum",
+    "a robe"
+   ],
+   "hint": "Its voice is thunder — what else, struck, sounds like thunder?"
+  },
+  "seal-qing": {
+   "q": "The eight trigrams: Qian in the south, Kun in the north, Kan in the west. Which trigram belongs in the east?",
+   "a": [
+    "li",
+    "离",
+    "fire",
+    "the fire trigram"
+   ],
+   "choices": [
+    "Zhen",
+    "Li",
+    "Dui",
+    "Xun"
+   ],
+   "hint": "Where the sun rises; fire comes from there."
+  },
+  "yinyue-moon": {
+   "q": "A thousand rivers, a thousand moons — how many moons are in the sky?",
+   "a": [
+    "one",
+    "a single one",
+    "1"
+   ],
+   "choices": [
+    "One",
+    "A thousand",
+    "Countless",
+    "None"
+   ],
+   "hint": "The ones in the rivers are reflections."
+  },
+  "yinyue-bell": {
+   "q": "Silent until it is tied on; it speaks when you walk and vanishes when you stop. What is it?",
+   "a": [
+    "a bell",
+    "bell"
+   ],
+   "choices": [
+    "A bell",
+    "A flute",
+    "A pendant",
+    "A mirror"
+   ],
+   "hint": "You are carrying one."
+  },
+  "yinyue-fox": {
+   "q": "The Classic of Mountains and Seas: on Qingqiu there is a beast shaped like a fox, with nine tails. What is it?",
+   "a": [
+    "nine-tailed fox",
+    "a nine-tailed fox",
+    "fox"
+   ],
+   "choices": [
+    "A nine-tailed fox",
+    "Xingxing",
+    "Huan",
+    "The heavenly dog"
+   ],
+   "hint": "It has more tails than body."
+  },
+  "yinyue-char": {
+   "q": "Sun and moon walk together — which character do they make?",
+   "a": [
+    "明",
+    "ming",
+    "bright"
+   ],
+   "choices": [
+    "明",
+    "昍",
+    "冥",
+    "朋"
+   ],
+   "hint": "Sun on one side, moon on the other."
   }
+ }
 }

@@ -1189,7 +1189,7 @@ creature levels, leans and patterns for the seven, the card, the gate; the arts,
 本命法宝 — 炼化, 温养, 强化, the core materials, 妖丹 drops. **His calls:** the
 numbers after the gate; what 战力 counts; 反噬; whether a tamed creature fights beside the player later.
 
-## 银月 joins at 结丹 (designed 2026-09-17, not built)
+## 银月 joins at 结丹 (designed and built 2026-09-17)
 
 **His rulings:** *Yinyue should be in the game after user 结丹, give user a
 task to get Yinyue. before that, don't show Yinyue.* Where the task lives —
@@ -1222,8 +1222,10 @@ told.
    sells it, not only 邺城's — the player may be anywhere.
 3. **The water.** At any place tagged `water` in `places/<p>.json` (漳水 ·
    漳渊 · 濮水 · 雷泽 · 潍水 · 蓬莱 · 流波山 · 成山头 · 泗水 · 淮水 · 泗口 ·
-   吕梁洪 · 沛泽 · 微山湖 · 大野泽), the choice offers *摇铃* — the `ring` verb:
-   a silver wolf rises from the moon on the water.
+   吕梁洪 · 沛泽 · 微山湖 · 大野泽), the choice offers *摇一摇铃* — the `ring`
+   verb: the moon on the water breaks and closes, and a figure stands where
+   it closes. Not a wolf and no clan: she carries the name and nothing else
+   (his standing rule).
 4. **Her riddle.** One of a small pool `yinyue` in `riddles/` (the moon, a wolf,
    a bell, water), with `choices` and a hint, the same rules as every riddle:
    a miss brings the hint, a second shuts it until tomorrow. Answered, she
@@ -1239,10 +1241,24 @@ The page draws Yinyue on the stage and speaks her line only with
 `companion.yinyue`; the tray shows the quest card. No engine change.
 
 **Saves:** a save already at 结丹 without her (his) gets the call on its
-next Look. **Build order:** (1) the gate — `companion`, the stage, voice,
-fillers, Trade, SKILL.md; (2) the quest — call, bell at every 坊市, `water`
-tags, `ring`, the riddle pool, the tray card; (3) the content — 00–02 lines
-to narration, `alone` on 03's, her memory thread moved after she joins.
+next Look.
+
+**Built 2026-09-17, all three pieces.** The world declares her in
+`world.json` → `companion` (id, the realm `from`, the `bell`, her `riddles`,
+the `call` / `water` / `meet` lines, the `join` beat, the `grant`); a world
+without that block has no companion. `state.companion` is absent before the
+call, `{}` while she is searched for, `{joined}` after — `wake` opens it at
+the realm. The prologue's silver light in the river is now the bell itself
+(00-river's `reach` grants it), so the player has carried it all along; a
+sold one is on every 坊市 shelf while the search is open. `ring` refuses
+`not-water`, `no-bell`, `not-yet`, asks her riddle from the pool (a miss →
+`hint`, a second → shut till tomorrow), and on the right answer joins her,
+ties the bell at her neck (`wear.yinyue`) and pays the grant. Until then:
+`spoken` turns her lines into narration (a line's own `alone`, or nothing),
+the cast drops her, the filler is a second look instead of a word to her,
+her gifts refuse with `no-companion`, the stage stands empty and speaks
+none of her lines. Chapters 00–02 are rewritten as narration and her memory
+thread starts when she joins; chapter 03's lines carry `alone`. 118 tests.
 
 ## At a creature's haunt — the world outside the spine
 

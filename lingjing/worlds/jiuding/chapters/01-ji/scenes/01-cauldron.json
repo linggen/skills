@@ -1,41 +1,82 @@
 {
-  "version": 1,
-  "id": "01-cauldron",
-  "chapter": "01-ji",
-  "at": "zhangyuan",
-  "place": { "zh": "漳渊 · 鼎前", "en": "The Zhang deeps · Before the cauldron" },
-  "setup": {
-    "zh": "冀鼎从河床里升起来，比你高。鼎身上铸着山川、走兽、飞鸟——冀州的一切。它在等一个装得下它的人。",
-    "en": "The Cauldron of Ji rises from the riverbed, taller than you. Cast on its body are mountains, rivers, beasts and birds — everything of Ji. It is waiting for someone who can hold it."
-  },
-  "cast": ["yinyue"],
-  "show": [{ "card": "gate", "chapter": "01-ji" }],
-  "lines": [
-    { "who": "yinyue", "text": { "zh": "我想起来一件事。有人把我放进水里，说：等一个人来。……就这一句。", "en": "I remember one thing. Someone laid me in the water and said: wait for one who comes. …Only that." } }
-  ],
-  "buttons": ["take"],
-  "exits": [
+ "version": 1,
+ "id": "01-cauldron",
+ "chapter": "01-ji",
+ "at": "zhangyuan",
+ "place": {
+  "zh": "漳渊 · 鼎前",
+  "en": "The Zhang deeps · Before the cauldron"
+ },
+ "setup": {
+  "zh": "冀鼎从河床里升起来，比你高。鼎身上铸着山川、走兽、飞鸟——冀州的一切。它在等一个装得下它的人。",
+  "en": "The Cauldron of Ji rises from the riverbed, taller than you. Cast on its body are mountains, rivers, beasts and birds — everything of Ji. It is waiting for someone who can hold it."
+ },
+ "cast": [],
+ "show": [
+  {
+   "card": "gate",
+   "chapter": "01-ji"
+  }
+ ],
+ "lines": [],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "受鼎气 · 筑基",
+    "en": "Take the cauldron's breath · Lay the Foundation"
+   },
+   "means": "touches the cauldron, takes its breath, attempts the breakthrough",
+   "breakthrough": true,
+   "refuse": {
+    "zh": "鼎气扑到你身上又退开。修为未到，装不下。先回人间，把功课做满。",
+    "en": "The breath surges over you and draws back. Your cultivation is not yet enough to hold it. Go back to the world and fill your practice first."
+   },
+   "show": [
     {
-      "id": "take",
-      "label": { "zh": "受鼎气 · 筑基", "en": "Take the cauldron's breath · Lay the Foundation" },
-      "means": "touches the cauldron, takes its breath, attempts the breakthrough",
-      "breakthrough": true,
-      "refuse": { "zh": "鼎气扑到你身上又退开。修为未到，装不下。先回人间，把功课做满。", "en": "The breath surges over you and draws back. Your cultivation is not yet enough to hold it. Go back to the world and fill your practice first." },
-      "show": [{ "card": "tribulation", "strikes": 3 }],
-      "grant": { "table": "scene", "progress": 60, "wealth": 20 },
-      "beat": [
-        { "who": "ling", "text": { "zh": "三道雷从无云的天上落下来，落在你身上，落进丹田。你站住了。鼎小了，小到能握在掌心。", "en": "Three bolts fall from a cloudless sky, into you, into your dantian. You stay standing. The cauldron shrinks until it sits in your palm." } },
-        { "who": "yinyue", "text": { "zh": "筑基了。……你的手在抖。", "en": "The Foundation is laid. …Your hand is shaking." } }
-      ],
-      "next": "01-end"
+     "card": "tribulation",
+     "strikes": 3
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "三道雷从无云的天上落下来，落在你身上，落进丹田。你站住了。鼎小了，小到能握在掌心。",
+      "en": "Three bolts fall from a cloudless sky, into you, into your dantian. You stay standing. The cauldron shrinks until it sits in your palm."
+     }
     },
     {
-      "id": "wait",
-      "means": "hesitates, asks what will happen, wants to prepare first",
-      "stay": true,
-      "beat": [
-        { "who": "yinyue", "text": { "zh": "它等了两千年。不差你几天。", "en": "It has waited two thousand years. A few more days will not matter." } }
-      ]
+     "who": "ling",
+     "text": {
+      "zh": "筑基了。你的手在抖。",
+      "en": "The Foundation is laid. Your hand is shaking."
+     }
     }
-  ]
+   ],
+   "next": "01-end"
+  },
+  {
+   "id": "wait",
+   "means": "hesitates, asks what will happen, wants to prepare first",
+   "stay": true,
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "它等了两千年，不差你这几天。",
+      "en": "It has waited two thousand years; a few days of yours are nothing."
+     }
+    }
+   ]
+  }
+ ]
 }

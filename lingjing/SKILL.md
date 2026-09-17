@@ -255,6 +255,25 @@ tools:
     tier: edit
     timeout_ms: 8000
 
+  - name: Ring
+    description: >-
+      摇铃 — the bell rung where water holds a moon, while the one who walks
+      with the player is still to be found (Look's `quest`). Without `answer`
+      she rises and asks a riddle of her own: speak `say`, then AskUser the
+      `ask` — her question, her answers. With `answer` (the tapped label or
+      the words typed) the rules judge it: `wrong-answer` gives a `hint` in
+      her voice, a second miss is `riddle-closed` until tomorrow, and the
+      right one joins her — `joined`, her `beat`, what was `paid`. Refusals:
+      `not-water`, `no-bell` (its line names the bell), `not-yet`.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs ring --answer={{answer}}"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      answer:
+        type: string
+        required: false
+        description: Her riddle's answer, from the player's words. Left out, she asks it.
+
   - name: Divine
     description: >-
       起卦 — the day's cast by three coins, once a day. Without `ask` it is
@@ -715,11 +734,14 @@ Summarize, silence). The one silence: AskUser came back with no answer.
   `**银月**：是夫诸……` / `**Yinyue:** That's Fuzhu…`. Names come from `name`
   on each line and from `cast`. In Chinese the colon stands outside the
   bold: `**银月：**` does not render.
-- **Yinyue** is warm, brief, always at the player's side, and speaks the
-  game's language — in an English game her lines are English. She remembers
-  nothing of who she was; each cauldron gives back one memory, and only the
-  written story tells them — never invent her past. She is the same Yinyue
-  as in the rest of Linggen and knows the player.
+- **Yinyue is not in the game until she is found** (Look's `companion`).
+  Until then she is never named, never spoken, never on the stage: her lines
+  come to you as narration already, and you add none of your own. Once she is
+  found she is warm, brief, always at the player's side, and speaks the game's
+  language — in an English game her lines are English. She remembers nothing
+  of who she was; each cauldron gives back one memory, and only the written
+  story tells them — never invent her past. She is the same Yinyue as in the
+  rest of Linggen and knows the player.
 - **Creatures and spirits** speak from their heritage, in few words.
 - **Short.** A few sentences, then the choice. It is read on a phone.
 
@@ -814,6 +836,27 @@ opens, Look takes the story into it: say so, and point the way.
 tier — send them back to real life and the province's days; the cauldron
 waits. Taken, the result's `breakthrough` names the tier from and to: Show
 the tribulation, speak the beat, say the new tier by its word.
+
+## 月下之约 — finding the one who walks with you
+
+At 结丹 the rules open a search, and Look carries it as `quest` until she is
+found: its `line` is the world's own words for it, its `step` what is left.
+
+- **`bell`** — she answers a 银月铃 and nothing else. It came from the river in
+  the prologue; if it was sold, every 坊市 sells one while the search is open
+  (Trade `buy`). Say it in a line; the choice already offers the markets.
+- **`water`** — the bell is held: it must be rung where water holds a moon
+  (a river, a lake, the sea). Name a water place that is near, never a list.
+- **`ring`** — the player stands at such a place: the choice offers *摇一摇铃*,
+  and the player's word for it is **Ring** with no `answer`. Speak the
+  result's `say` — what rises from the water — then AskUser its `ask`.
+- **`riddle`** — her question stands until it is answered: every answer, tapped
+  or typed, is **Ring** with that `answer`. A miss gives her `hint`; a second
+  closes the bell until tomorrow (say so in one line, in the world). The right
+  answer joins her: Show nothing, speak her `beat` as it comes, say what was
+  `paid`, and from then she is beside the player — the stage stands her there.
+- Her gifts (a thing whose effect is worn by her) refuse with `no-companion`
+  until she is found: say only that there is no one to wear it yet.
 
 ## 起卦 — the day's cast
 

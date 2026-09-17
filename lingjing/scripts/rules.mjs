@@ -114,7 +114,7 @@ function placeBrief(content, state, now = new Date()) {
   if (!place) return null;
   const lang = state.lang, doc = content.places[place.province];
   const has = place.has ?? {};
-  const shelf = has.shop ? shelfOf(content, place.province) : [];
+  const shelf = has.shop ? shelfOf(content, place.province, state) : [];
   const show = [
     ...(has.creature ? [{ card: 'creature', id: has.creature }] : []),
     ...(shelf.length ? [{ card: 'item', ids: shelf.map(i => i.id) }] : []),
@@ -169,6 +169,49 @@ const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) &&
 
 /* The thread — the pull: the scene while one runs, else the next chapter
    and when it opens; nothing when the spine has run out. */
+/* ── The companion — she is found, not given ──
+   A world declares one in `world.json`: who she is, the realm her call comes
+   at, the bell that calls her, her riddles and the beat when she joins. Until
+   she is found the game never shows her: her lines are the narration's (a
+   line may carry `alone` for that), she is not in the cast, her gifts cannot
+   be given, and the stage stands empty (his rule, 2026-09-17). */
+const companionOf = content => content.world.companion ?? null;
+export const hasCompanion = state => Boolean(state.companion?.joined);
+const callDue = (content, state) => {
+  const c = companionOf(content);
+  if (!c) return false;
+  const tiers = content.ladder.tiers;
+  return tiers.findIndex(t => t.id === state.tier) >= tiers.findIndex(t => t.id === c.from);
+};
+/* Her riddle, once asked today, stays today's; else one this play has not seen. */
+function companionRiddle(content, state, now) {
+  const c = companionOf(content), slot = state.companion?.riddle;
+  if (slot?.day === dayKey(now) && c.riddles.includes(slot.key)) return slot.key;
+  const seen = new Set(state.riddles_seen ?? []);
+  const fresh = c.riddles.filter(k => !seen.has(k));
+  const pool = fresh.length ? fresh : c.riddles;
+  return pool[hashOf(`${dayKey(now)}|${state.name ?? ''}|companion`) % pool.length];
+}
+const riddleWaiting = (state, now) => {
+  const slot = state.companion?.riddle;
+  return Boolean(slot?.open && slot.day === dayKey(now));
+};
+/* The quest as Look tells it: the step, what it asks, and the line for it. */
+function questBrief(content, state, now) {
+  const c = companionOf(content);
+  if (!c || !state.companion || state.companion.joined) return null;
+  const lang = state.lang, bell = itemOf(content, c.bell);
+  const here = placeOf(content, state.place);
+  const held = (state.bag[c.bell] ?? 0) > 0;
+  const step = riddleWaiting(state, now) ? 'riddle' : !held ? 'bell' : here?.water ? 'ring' : 'water';
+  return {
+    id: c.id, step,
+    bell: { id: bell.id, name: pick(bell.name, lang), buy: bell.buy, held },
+    line: pick(step === 'bell' || step === 'water' ? c.call : c.water, lang),
+    at_water: Boolean(here?.water),
+  };
+}
+
 /* A cauldron's breath, as the rules would judge it now: `ready` at the peak
    of the tier this chapter's cauldron lifts from; `need` names that peak and
    the 修为 it asks, and the realm it opens. Resolve refuses on the same terms. */
@@ -251,7 +294,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state), !castToday(state, ctx.now)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, encounterOf(content, state, ctx.now), canWrite(content, state), !castToday(state, ctx.now), questBrief(content, state, ctx.now)?.step === 'ring', filler(content, state, ctx.said)),
   };
 }
 
@@ -261,7 +304,7 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said, encounter = null, write = false, uncast = false) {
+function choiceOf(state, here, near, thread, seeded, said, encounter = null, write = false, uncast = false, ring = false, alone = null) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
@@ -272,10 +315,11 @@ function choiceOf(state, here, near, thread, seeded, said, encounter = null, wri
     if (encounter.likes?.held) options.push({ label: zh ? `喂${n}${encounter.likes.name}` : `Feed ${n} the ${encounter.likes.name}`, tame: encounter.creature.id });
   }
   if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
+  if (ring) options.push({ label: zh ? '摇一摇铃' : 'Ring the bell', ring: true });
   options.push(...places.map(p => ({ label: p.name, move: p.id })));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
   if (uncast) options.push({ label: zh ? '起一卦' : 'Cast the coins', divine: true });
-  if (options.length < 2) options.push(filler(state, said));
+  if (options.length < 2) options.push(alone ?? { label: zh ? '看看四周' : 'Look around', look: true });
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
 }
 
@@ -286,10 +330,15 @@ const FILLERS = {
   zh: [{ label: '问问银月', ask: true }, { label: '看看四周', look: true }],
   en: [{ label: 'Ask Yinyue', ask: true }, { label: 'Look around', look: true }],
 };
-function filler(state, said) {
-  const pair = FILLERS[state.lang === 'zh' ? 'zh' : 'en'];
+// Before she is found there is no one to ask: two ways of looking instead.
+const ALONE = {
+  zh: [{ label: '看看四周', look: true }, { label: '说说此地', look: true }],
+  en: [{ label: 'Look around', look: true }, { label: 'Tell me about this place', look: true }],
+};
+function filler(content, state, said) {
+  const pair = (hasCompanion(state) ? FILLERS : ALONE)[state.lang === 'zh' ? 'zh' : 'en'];
   const last = String(said ?? '').trim();
-  return pair.find(f => f.label !== last && !Object.values(FILLERS).flat().some(g => g.label === last && g.ask === f.ask && g.look === f.look)) ?? pair[0];
+  return pair.find(f => f.label !== last) ?? pair[0];
 }
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
@@ -350,14 +399,28 @@ function kitOf(content, state, now = null) {
   };
 }
 
-/* The market's shelf: the catalog sold in this province. */
-const shelfOf = (content, province) => content.items.items.filter(i => (i.sold ?? []).includes(province));
+/* The market's shelf: the catalog sold in this province — and, while the
+   companion is still to be found, her bell at every market, since the call
+   comes wherever the player stands. */
+const shelfOf = (content, province, state = null) => {
+  const sold = content.items.items.filter(i => (i.sold ?? []).includes(province));
+  const c = companionOf(content);
+  const searching = c && state && !state.companion?.joined && (state.companion || callDue(content, state)) && !(state.bag[c.bell] > 0);
+  return searching && !sold.some(i => i.id === c.bell) ? [...sold, itemOf(content, c.bell)] : sold;
+};
+const forSale = (content, state, item, province) => shelfOf(content, province, state).some(i => i.id === item.id);
 
 /* A speaker's name in the player's language; Ling narrates, unnamed. */
 const nameOf = (content, who, lang) => (who === 'ling' ? null : pick(CAST[who] ?? creatureOf(content, who)?.name, lang));
-const spoken = (content, state, lines) => (lines ?? []).map(l => ({
-  who: l.who, name: nameOf(content, l.who, state.lang), text: fill(pick(l.text, state.lang), state),
-}));
+/* Lines as the scene says them. Before the companion is found, her line is
+   the narration's `alone` text, or it is not said at all. */
+const spoken = (content, state, lines) => (lines ?? []).flatMap(l => {
+  const c = companionOf(content);
+  if (c && l.who === c.id && !hasCompanion(state)) {
+    return l.alone ? [{ who: 'ling', name: null, text: fill(pick(l.alone, state.lang), state) }] : [];
+  }
+  return [{ who: l.who, name: nameOf(content, l.who, state.lang), text: fill(pick(l.text, state.lang), state) }];
+});
 
 /* A made world is read by its map: its scenes stand at places, so their
    cards end with the province's map, as its places' do. */
@@ -373,7 +436,7 @@ function sceneBrief(content, state, now = new Date()) {
     id: scene.id,
     place: say(scene.place),
     setup: say(scene.setup),
-    cast: (scene.cast ?? []).map(id => ({ id, name: nameOf(content, id, lang) })),
+    cast: (scene.cast ?? []).filter(id => id !== companionOf(content)?.id || hasCompanion(state)).map(id => ({ id, name: nameOf(content, id, lang) })),
     show: withMap(content, scene.show ?? []),
     lines: spoken(content, state, scene.lines),
     buttons: buttons.map(id => ({ id, label: say(scene.exits.find(e => e.id === id).label) })),
@@ -502,6 +565,8 @@ export function look(state, content, ctx) {
     waypoint: !atScene(content, state) && sceneOf(content, state) && !inMade(state) ? threadOf(content, state, ctx.now) : null,
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined } : null,
+    quest: questBrief(content, state, ctx.now),
     ended: state.ended, branch: state.branch, story: state.story,
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
@@ -573,7 +638,10 @@ export function wake(state, content, ctx) {
   const s = clone(state);
   const learned = teachAll(content, s).length > 0;
   if (!state.scene && !inMade(state)) advanceChapter(content, s, ctx.now);
-  return learned || (s.scene && !state.scene) ? s : null;
+  // The call: at the realm the world names, the search for her opens.
+  const called = !s.companion && callDue(content, s);
+  if (called) s.companion = {};
+  return learned || called || (s.scene && !state.scene) ? s : null;
 }
 
 /* The pool as the scene draws it: what is there, the top, and — when a story
@@ -1172,7 +1240,7 @@ export function trade(state, content, ctx, args) {
       return refuse('no-market', pick({ zh: `这里没有${w.shop}。`, en: `There is no ${w.shop} here.` }, lang));
     }
     if (args.action === 'buy') {
-      if (!(item.sold ?? []).includes(here.province)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here.province).map(i => i.id) });
+      if (!forSale(content, s, item, here.province)) return refuse('not-for-sale-here', null, { shelf: shelfOf(content, here.province, s).map(i => i.id) });
       if (s.wealth < item.buy) {
         return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: item.buy, wealth: s.wealth });
       }
@@ -1203,6 +1271,9 @@ export function trade(state, content, ctx, args) {
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
       const paid = pay(content, s, ctx, { table: e.table, progress: e.progress });
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid } };
+    }
+    if (e.wear && e.wear === companionOf(content)?.id && !hasCompanion(s)) {
+      return refuse('no-companion', pick({ zh: '还没有人可以佩戴它。', en: 'There is no one to wear it yet.' }, lang));
     }
     if (e.wear || e.root) {
       s.wear ??= {};
@@ -1600,6 +1671,43 @@ export function atlas(state, content) {
   return { state: null, result: { ok: true, provinces } };
 }
 
+/* 摇铃 — the bell rung where water holds a moon: she answers with a riddle of
+   her own and joins when it is answered. A miss brings the hint, a second
+   shuts the bell until tomorrow, as every riddle does. */
+export function ring(state, content, ctx, args) {
+  const c = companionOf(content), lang = state.lang;
+  if (!c || !state.companion || state.companion.joined) return refuse('not-yet', null);
+  const s = clone(state);
+  settlePlace(content, s);
+  const here = placeOf(content, s.place);
+  if (!here?.water) return refuse('not-water', pick({ zh: '这里没有水照月。', en: 'No water here to hold a moon.' }, lang), { place: here ? placeName(content, s, here) : null });
+  const bell = itemOf(content, c.bell);
+  if (!(s.bag[c.bell] > 0)) return refuse('no-bell', pick({ zh: `手里没有${pick(bell.name, 'zh')}。`, en: `You have no ${pick(bell.name, 'en')}.` }, lang), { needs: bell.id, buy: bell.buy });
+  const key = companionRiddle(content, s, ctx.now);
+  const riddle = content.riddles[lang].riddles[key];
+  const slot = s.companion.riddle?.day === dayKey(ctx.now) && s.companion.riddle.key === key ? s.companion.riddle : null;
+  const tried = slot?.tried ?? [];
+  if (tried.length >= RIDDLE_TRIES) return refuse('riddle-closed', null);
+  const keep = (t, open) => {
+    s.companion = { ...s.companion, riddle: { day: dayKey(ctx.now), key, tried: t, ...(open ? { open: true } : {}) } };
+    s.riddles_seen = [...new Set([...(s.riddles_seen ?? []), key])];
+  };
+  if (args.answer == null) {
+    keep(tried, true);
+    return { state: s, result: { ok: false, refused: 'needs-answer', say: pick(c.meet, lang), choices: riddle.choices } };
+  }
+  if (!judgeAnswer(content, key, args.answer)) {
+    const missed = [...tried, String(args.answer).trim()];
+    const closed = missed.length >= RIDDLE_TRIES;
+    keep(missed, !closed);
+    return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', ...(closed ? {} : { hint: riddle.hint }) } };
+  }
+  s.companion = { joined: dayKey(ctx.now) };
+  s.wear = { ...(s.wear ?? {}), [c.id]: c.bell };
+  const paid = c.grant ? pay(content, s, ctx, c.grant) : null;
+  return { state: s, result: { ok: true, joined: { id: c.id, name: nameOf(content, c.id, lang) }, beat: spoken(content, s, c.join), ...(paid ? { paid } : {}), summarize: true } };
+}
+
 /* ── 起卦 — the day's cast, by three coins ── */
 
 const TRIGRAM_OF = { 111: 'qian', 110: 'dui', 101: 'li', 100: 'zhen', '011': 'xun', '010': 'kan', '001': 'gen', '000': 'kun' };
@@ -1758,7 +1866,7 @@ export const VERBS = {
     return { state: next, result: { ...look(next ?? s, c, x), ...(learned.length ? { learned } : {}) } };
   },
   resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate,
+  go, saves, save, load, forget, atlas, divine, fate, ring,
 };
 
 /* ── Files and the command line ── */
@@ -1842,7 +1950,21 @@ export function parseArgs(argv) {
    enough (2026-09-16, gpt-5.6-terra: Look, Show, narration, silence). */
 export function askOf(content, state, ctx, result = {}) {
   const zh = state.lang === 'zh';
-  const yinyue = filler(state, ctx.said);
+  const yinyue = filler(content, state, ctx.said);
+  // Her riddle, while it waits, is the question — wherever the player stands.
+  const her = companionOf(content);
+  if (her && riddleWaiting(state, ctx.now)) {
+    const key = state.companion.riddle.key, riddle = content.riddles[state.lang].riddles[key];
+    const tried = new Set((state.companion.riddle.tried ?? []).map(normalizeAnswer));
+    const where = atScene(content, state) ? sceneBrief(content, state, ctx.now)?.place : placeBrief(content, state, ctx.now)?.name;
+    return {
+      header: String(where ?? ''), question: riddle.q,
+      options: [
+        ...riddle.choices.filter(a => !tried.has(normalizeAnswer(a))).map(a => ({ label: a, ring: true, answer: a })),
+        { label: zh ? '先不答' : 'Not yet', look: true },
+      ],
+    };
+  }
   const header = s => String(s ?? '');
   const question = zh ? '何去何从？' : 'What now?';
   if (result.refused === 'needs-ask') {
@@ -1919,6 +2041,7 @@ const TAPS = {
   // Inscribe, not Write: the engine's own file tool is Write, and took the
   // call (2026-09-17: 写一道符 → "missing field `path`").
   write: () => 'Inscribe',
+  ring: o => (o.answer ? `Ring {answer: ${o.answer}}` : 'Ring'),
   tame: o => `Tame {creature: ${o.tame}}`,
   linger: () => 'Branch {action: open}',
   divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),

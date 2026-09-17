@@ -1,37 +1,67 @@
 {
-  "version": 1,
-  "id": "01-deep",
-  "chapter": "01-ji",
-  "at": "zhangyuan",
-  "place": { "zh": "漳渊", "en": "The Zhang deeps" },
-  "setup": {
-    "zh": "祠后的水向两边退开，露出河床。河床中央嵌着一只青铜鼎，鼎口封着一块石板，板上刻着九个格子，格里有数。",
-    "en": "Behind the shrine the water draws back to either side, baring the riverbed. Set in its centre is a bronze cauldron, its mouth sealed with a stone slab carved with nine squares, a number in each."
-  },
-  "cast": ["yinyue"],
-  "lines": [
-    { "who": "yinyue", "text": { "zh": "洛书。中间那格是空的。", "en": "The Luo River square. The middle square is empty." } }
-  ],
-  "buttons": ["seal"],
-  "exits": [
+ "version": 1,
+ "id": "01-deep",
+ "chapter": "01-ji",
+ "at": "zhangyuan",
+ "place": {
+  "zh": "漳渊",
+  "en": "The Zhang deeps"
+ },
+ "setup": {
+  "zh": "祠后的水向两边退开，露出河床。河床中央嵌着一只青铜鼎，鼎口封着一块石板，板上刻着九个格子，格里有数。",
+  "en": "Behind the shrine the water draws back to either side, baring the riverbed. Set in its centre is a bronze cauldron, its mouth sealed with a stone slab carved with nine squares, a number in each."
+ },
+ "cast": [],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "石板上刻的是洛书。中间那格是空的。",
+    "en": "The slab is carved with the Luo River square. The middle square is empty."
+   }
+  }
+ ],
+ "buttons": [
+  "seal"
+ ],
+ "exits": [
+  {
+   "id": "seal",
+   "label": {
+    "zh": "读封 · 填中格",
+    "en": "Read the seal · Fill the heart"
+   },
+   "means": "reads the seal, answers what belongs in the middle square",
+   "key": "seal-ji",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
     {
-      "id": "seal",
-      "label": { "zh": "读封 · 填中格", "en": "Read the seal · Fill the heart" },
-      "means": "reads the seal, answers what belongs in the middle square",
-      "key": "seal-ji",
-      "grant": { "table": "scene", "progress": 60, "wealth": 20 },
-      "beat": [
-        { "who": "ling", "text": { "zh": "你在中格写下答案。石板裂成九块，沉进泥里。鼎口的气息扑上来，带着铜味和雨味。", "en": "You write the answer in the heart. The slab cracks into nine and sinks into the mud. The cauldron's breath rushes up, bronze and rain." } }
-      ],
-      "next": "01-cauldron"
-    },
-    {
-      "id": "force",
-      "means": "tries to break, lift or pry the slab by force",
-      "stay": true,
-      "beat": [
-        { "who": "ling", "text": { "zh": "石板纹丝不动。九个数在你掌下微微发烫。", "en": "The slab does not move. The nine numbers grow warm under your palm." } }
-      ]
+     "who": "ling",
+     "text": {
+      "zh": "你在中格写下答案。石板裂成九块，沉进泥里。鼎口的气息扑上来，带着铜味和雨味。",
+      "en": "You write the answer in the heart. The slab cracks into nine and sinks into the mud. The cauldron's breath rushes up, bronze and rain."
+     }
     }
-  ]
+   ],
+   "next": "01-cauldron"
+  },
+  {
+   "id": "force",
+   "means": "tries to break, lift or pry the slab by force",
+   "stay": true,
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "石板纹丝不动。九个数在你掌下微微发烫。",
+      "en": "The slab does not move. The nine numbers grow warm under your palm."
+     }
+    }
+   ]
+  }
+ ]
 }

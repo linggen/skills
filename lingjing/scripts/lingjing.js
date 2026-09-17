@@ -260,7 +260,19 @@ function focusHtml() {
   // A creature at its haunt, no scene running: its bout is on the scene too.
   const haunt = look.place?.encounter;
   if (haunt && !haunt.tamed && !cards.some((c) => c.card === 'duel' && c.id === haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
-  return buildingCard() + emptyCard() + cards.map((c) => cardHtml(c, ctx())).join('');
+  return buildingCard() + emptyCard() + questCard() + cards.map((c) => cardHtml(c, ctx())).join('');
+}
+
+/// The search for the one who walks with you: the step the rules name, and
+/// the one word that takes it — 摇一摇铃 where water holds a moon.
+function questCard() {
+  const q = look?.quest;
+  if (!q) return '';
+  const w = words();
+  const step = w.questSteps?.[q.step] ?? '';
+  const act = q.step === 'ring' ? `<button class="act say" data-say="${esc(w.sayRing)}">${esc(w.ring)}</button>` : '';
+  return `<div class="card quest"><div class="cardtitle">${esc(w.questTitle)}</div>
+    <div>${esc(q.line)}</div><div class="small dim">${esc(step)}</div>${act}</div>`;
 }
 
 /// A made world still being painted: the story waits for the brush, so the
@@ -284,8 +296,10 @@ function render() {
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
-  stageYinyue(true);
-  $('stageName').textContent = w.yinyue;
+  // She stands there only once she has been found (his rule, 2026-09-17).
+  const her = Boolean(look.companion);
+  stageYinyue(her);
+  $('stageName').textContent = her ? look.companion.name : '';
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
   castFresh = castSeen !== undefined && cast !== null && cast !== castSeen;
   castSeen = cast;
@@ -555,7 +569,7 @@ const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('
 /// The words are the reply's; with no line of hers she stays quiet (his
 /// ask, 2026-09-17: "now yinyue is out of the game").
 function cheer(before, text) {
-  if (!before || !look || before.world?.id !== look.world?.id) return;
+  if (!before || !look || !look.companion || before.world?.id !== look.world?.id) return;
   const held = (l) => (l.bag ?? []).reduce((n, b) => n + (b.n ?? 0), 0);
   const rose = look.progress > before.progress
     || look.tier?.id !== before.tier?.id || (look.tier?.step ?? 0) > (before.tier?.step ?? 0)
