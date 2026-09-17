@@ -17,8 +17,8 @@ import {
   registerTab, getSource, getActiveTab, onSourceChange, onTabChange, refreshVerbs, openMenu,
 } from './shifu-shell.js';
 import {
-  bash, writeLines, fmtBytes, esc, abbrevPath, relAge, shellEsc,
-  confirmDialog, showToast,
+  bash, writeLines, fmtBytes, esc, abbrevPath, relAge, shellEsc, shellPath,
+  confirmDialog, showToast, copyText,
 } from './shifu-io.js';
 
 const FILES_SH = '$HOME/.linggen/skills/apple-shifu/scripts/files.sh';
@@ -557,15 +557,44 @@ function renderPane() {
   for (const el of pane.querySelectorAll('.file-row')) {
     const p = el.dataset.path;
     el.onclick = (e) => {
-      if (e.target.tagName === 'A' || e.target.closest('.file-more') || removing.has(p)) return;
+      if (e.target.tagName === 'A' || e.target.closest('.file-more, .file-copy') || removing.has(p)) return;
       if (selected.has(p)) selected.delete(p); else selected.add(p);
       renderPane();
       refreshVerbs();
     };
     const more = el.querySelector('.file-more');
     if (more) more.onclick = () => openRowMenu(more, p);
+    const copy = el.querySelector('.file-copy');
+    if (copy) copy.onclick = () => copyRemoveCommand(copy, p);
   }
   wireBar();
+}
+
+// ── the remove command, for a terminal ──
+
+const COPY_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">'
+  + '<rect x="5.2" y="2.2" width="8.6" height="10.6" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>'
+  + '<path d="M10.6 13.8v.4a1.6 1.6 0 0 1-1.6 1.6H3.8a1.6 1.6 0 0 1-1.6-1.6V5.4a1.6 1.6 0 0 1 1.6-1.6h.4"'
+  + ' fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+
+const copyTitle = () =>
+  (CATEGORIES.find((c) => c.key === activeCat)?.posture === 'purge'
+    ? 'Copy the delete command' : 'Copy the Trash command');
+
+/** The line this file would be removed by in a terminal — the same posture the
+    buttons use: your files go to the Trash, a cache is deleted outright. The
+    path is shell-quoted, so a space, a quote or a `$` in a name is safe. */
+export function removeCommand(path, posture) {
+  return posture === 'purge' ? `rm -rf ${shellPath(path)}` : `mv -i ${shellPath(path)} ~/.Trash/`;
+}
+
+async function copyRemoveCommand(btn, path) {
+  const cat = CATEGORIES.find((c) => c.key === activeCat);
+  const done = await copyText(removeCommand(path, cat?.posture));
+  if (!done) { showToast('Could not reach the clipboard').done('Could not reach the clipboard'); return; }
+  btn.innerHTML = '✓';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove('copied'); }, 1400);
 }
 
 /** A row's ⋯: look first, then remove — the destructive verb last. */
@@ -617,8 +646,9 @@ function rowHtml(key, path, size, meta, original = false) {
     <span class="file-path" title="${esc(path)}"><span class="file-dir">${esc(dir)}</span><span
       class="file-name">${esc(name)}</span></span>
     <span class="file-meta">${esc(meta)}</span>
-    ${going ? '<span class="file-more-slot"></span>'
-    : '<button class="file-more menu-anchor" type="button" title="More">⋯</button>'}</div>`;
+    ${going ? '<span class="file-more-slot"></span><span class="file-more-slot"></span>'
+    : `<button class="file-copy" type="button" title="${copyTitle()}">${COPY_ICON}</button>
+       <button class="file-more menu-anchor" type="button" title="More">⋯</button>`}</div>`;
 }
 
 function listHtml(key) {

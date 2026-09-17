@@ -366,12 +366,15 @@ async function watchInlineOp(op) {
 
 async function showConnect() {
   setScreen('connect', () => {
+    // Linggen on the phone comes first — it is the way in, and it needs
+    // nothing installed here. The cable and its tools sit below, as the
+    // fallback for a phone that isn't running Linggen.
     panel.innerHTML = `
-      <div class="media-card dashed" id="device-card">
-        <h4 class="media-dim">Looking for your iPhone…</h4>
-        <div class="media-dim">Wirelessly via Linggen Mobile, or over a cable for the USB workflow.</div>
+      <div class="media-card dashed" id="phone-card">
+        <h4 class="media-dim">Looking for Linggen on your iPhone…</h4>
+        <div class="media-dim">Over Wi-Fi, with Linggen Mobile open on the phone.</div>
       </div>
-      <div class="media-card" id="phone-card" hidden></div>
+      <div class="media-card" id="device-card" hidden></div>
       <div class="media-card" id="mac-card" hidden></div>
       <div class="media-card" id="setup-card" hidden></div>`;
   });
@@ -380,14 +383,48 @@ async function showConnect() {
   pollTimer = setInterval(poll, 5000);
 }
 
-/** The wireless half of "is a phone here?" — paired devices and what they
-    already sent. Without this the connect screen only knows about cables and
-    claims "no iPhone" while Linggen Mobile is paired and syncing. */
-async function renderPhoneCard() {
+/** How long a phone's last connect still counts as "it is here". The phone
+    republishes on every connect, so anything fresher than this means Linggen
+    was running on it a moment ago. */
+const LINK_FRESH_MS = 5 * 60 * 1000;
+
+/** Which phone last connected, and when — the retained `phone/tools` topic the
+    phone republishes every time Linggen opens a channel to this Mac — the
+    closest thing to "the wireless way in is open" that costs one local call.
+    It is a connect, not a heartbeat: a phone that connected an hour ago and is
+    still running reads as an hour old, so the card says when it connected
+    rather than claiming it is gone. */
+async function phoneLink() {
+  try {
+    const r = await fetch('/api/topic/latest?topic=phone&op=tools');
+    if (!r.ok) return null;
+    const doc = await r.json();
+    const at = Date.parse(doc?.payload?.published_at || doc?.retained_at || '');
+    if (!Number.isFinite(at)) return null;
+    return { at, name: doc?.payload?.device?.name || '', live: Date.now() - at < LINK_FRESH_MS };
+  } catch {
+    return null; // daemon unreachable — the card falls back to what is paired
+  }
+}
+
+function sinceText(at) {
+  const mins = Math.round((Date.now() - at) / 60000);
+  if (mins < 1) return 'a moment ago';
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  return hours < 24 ? `${hours} h ago` : new Date(at).toLocaleDateString();
+}
+
+/** The wireless way in, and the first thing this screen draws: is Linggen open
+    on a paired phone, and what has it sent. Needs none of the Media tools —
+    wireless items arrive through the daemon, not the USB pipeline — so this
+    card is drawn whether or not those tools are installed. */
+async function renderPhoneCard(noTools = false) {
   const el = document.getElementById('phone-card');
   if (!el) return;
   await loadPairedDevices();
   const paired = pairedDevices;
+  const link = await phoneLink();
   const rows = await loadJsonl('manifest.jsonl');
   const wireless = rows.filter((r) => (r.path || '').startsWith('wireless/'));
   const size = wireless.reduce((s, r) => s + (r.size || 0), 0);
@@ -401,14 +438,23 @@ async function renderPhoneCard() {
     return;
   }
   const names = paired.map((d) => esc(d.name)).join(', ');
+  const who = link?.name ? esc(link.name) : names;
+  const state = link?.live
+    ? '<span class="media-chip">Linggen open</span>'
+    : link
+      ? `<span class="media-chip">last connected ${esc(sinceText(link.at))}</span>`
+      : '<span class="media-chip">paired</span>';
   el.className = 'media-card';
   el.innerHTML = `
-    <h4>📱 ${names} <span class="media-chip">paired</span></h4>
+    <h4>📱 ${who} ${state}</h4>
     ${wireless.length
       ? `<div class="media-dim"><b>${wireless.length.toLocaleString()}</b> items synced wirelessly · ${fmtGb(size)}</div>`
       : ''}
-    <div class="media-dim">Open Linggen on the phone to sync what’s new — no cable needed.</div>
-    ${wireless.length ? '<button class="media-cta" id="phone-review-btn">Review synced photos</button>' : ''}`;
+    <div class="media-dim">${link?.live
+      ? 'Open <b>Photos</b> on the phone and tap <b>Back up to Mac</b> — over Wi-Fi, no cable.'
+      : 'Open Linggen on the phone to sync what’s new — no cable needed.'}</div>
+    ${wireless.length && !noTools ? '<button class="media-cta" id="phone-review-btn">Review synced photos</button>' : ''}
+    ${wireless.length && noTools ? '<div class="media-dim">Reviewing them needs the Media tools below.</div>' : ''}`;
   const btn = document.getElementById('phone-review-btn');
   if (btn) {
     btn.onclick = async () => {
@@ -435,11 +481,22 @@ async function refreshDevice() {
   const setupCard = document.getElementById('setup-card');
   if (!card) return;
 
+  // The phone comes first, and it is drawn even when the Media tools are
+  // missing: wireless photos arrive through the daemon, so a paired phone
+  // with Linggen open is never hidden behind a setup card again.
+  await renderPhoneCard(info.error === 'setup_required');
+
   if (info.error === 'setup_required') {
+    if (macCard) macCard.hidden = true;
+    card.hidden = false;
+    card.className = 'media-card dashed';
+    card.innerHTML = `
+      <h4 class="media-dim">🔌 Cable workflow</h4>
+      <div class="media-dim">Reading an iPhone over USB — and reviewing what it sent — needs the tools below.</div>`;
     setupCard.hidden = false;
     setupCard.innerHTML = `
-      <h4>One-time setup</h4>
-      <div class="media-dim">The Media tab needs its USB + imaging tools (pymobiledevice3, Pillow, numpy) in a private sandbox. ~2 minutes, nothing system-wide.</div>
+      <h4>One-time setup · only for the cable</h4>
+      <div class="media-dim">The USB + imaging tools (pymobiledevice3, Pillow, numpy) in a private sandbox. ~2 minutes, nothing system-wide. Wi-Fi sync from Linggen Mobile works without them.</div>
       <button class="media-cta" id="setup-btn">Install Media tools</button>
       <div class="media-dim" id="setup-note"></div>`;
     document.getElementById('setup-btn').onclick = async () => {
@@ -458,7 +515,7 @@ async function refreshDevice() {
     return;
   }
   setupCard.hidden = true;
-  await renderPhoneCard();
+  card.hidden = false;
 
   if (macCard) {
     const idx = st?.mac_index;

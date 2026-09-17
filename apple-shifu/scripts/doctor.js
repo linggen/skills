@@ -8,6 +8,7 @@ import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './
 import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, estimateDiskFillRate, estimateBatteryLife } from './health-score.js';
 import { initShell, registerTab, setActiveTab, getActiveTab, getSource, onSourceChange, onTabChange, onBackupChange, refreshVerbs, getBackupSummary } from './shifu-shell.js';
 import { renderPhoneSystem, phoneFacts } from './phone-system.js';
+import { setFileIndex } from './widget-renderers.js';
 
 const SKILL_NAME = 'apple-shifu';
 const params = new URLSearchParams(window.location.search);
@@ -267,7 +268,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ── Mount chat panel and start ──
 
+/** The last deep scan's real paths, from disk. A restored Large Files card
+    outlives the page that scanned, and its rows still have to name the file
+    they would remove. Silence when there is no scan yet — the rows simply
+    carry no copy button. */
+async function loadFileIndex() {
+  try {
+    const res = await fetch('/api/bash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_root: '/tmp',
+        command: 'cat "$HOME/.linggen/skills/apple-shifu/data/files/large-files.json" 2>/dev/null || true',
+      }),
+    });
+    const out = (await res.json()).stdout?.trim();
+    if (out) setFileIndex(JSON.parse(out));
+  } catch { /* no index — no buttons, nothing broken */ }
+}
+
 async function mountAndStart(sessionId, carryPage = null) {
+  loadFileIndex();
   const chatPanel = document.getElementById('chat-panel');
   const mountOpts = {
     skillName: SKILL_NAME,
@@ -640,9 +661,17 @@ function buildOpeningPrompt(results, prevSummary = null) {
     parts.push(`## Disk`);
     parts.push(`- Total: ${fmtGb(d.total_gb)}, Used: ${fmtGb(d.used_gb)}, Free: ${fmtGb(d.free_gb)} (${d.percent}% used)`);
     if (d.top_dirs?.length) {
-      parts.push('- Top directories:');
+      parts.push('- Home folders, biggest first:');
       for (const dir of d.top_dirs) {
         parts.push(`  - ${dir.path}: ${fmtGb(dir.size_gb)}`);
+      }
+    }
+    // Say what was not measured rather than letting the model read the list as
+    // the whole disk — a folder missing here is missing for a reason.
+    if (d.unmeasured_dirs?.length) {
+      parts.push('- Not measured (say so plainly; never guess a size for these):');
+      for (const dir of d.unmeasured_dirs) {
+        parts.push(`  - ${dir.path}: ${dir.why}`);
       }
     }
     parts.push('');
@@ -877,6 +906,10 @@ async function runClientDeepScan(userMessage) {
         });
       }
     });
+
+    // The card the model is about to write shortens its paths; the rows can
+    // still offer a remove command because the page keeps the scan's own list.
+    setFileIndex(deepResults.largeFiles);
 
     // Build prompt with deep scan data and send to model
     const prompt = buildDeepScanPrompt(deepResults, userMessage);

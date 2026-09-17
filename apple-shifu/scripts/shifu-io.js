@@ -12,6 +12,39 @@ export function shellEsc(s) {
   return "'" + String(s).replace(/'/g, "'\\''") + "'";
 }
 
+/** Text to the clipboard. The async API needs a secure context and a focused
+    document, and a skill page can be neither (an iframe without
+    `clipboard-write`, or a click that stole focus), so fall back to the old
+    execCommand path before admitting defeat. */
+export async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch { /* fall through */ }
+  try {
+    const box = document.createElement('textarea');
+    box.value = text;
+    box.setAttribute('readonly', '');
+    box.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(box);
+    box.select();
+    const ok = document.execCommand('copy');
+    box.remove();
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+/** A path as one safe shell word. A scanned path may be written `~/…`, and a
+    `~` inside quotes is a literal tilde, not the home directory — so the home
+    part becomes "$HOME" and the rest stays single-quoted, where a space, a
+    quote or a `$` in a name can do no harm. */
+export function shellPath(path) {
+  const p = String(path);
+  return p.startsWith('~/') ? `"$HOME"/${shellEsc(p.slice(2))}` : shellEsc(p);
+}
+
 let serverDownAt = 0;
 
 /** Every pipeline call goes through here. A rejected fetch (daemon restarting

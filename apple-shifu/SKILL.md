@@ -27,8 +27,10 @@ tools:
   - name: ScanDisk
     description: >-
       Run a fresh disk scan. Returns text sections: DISK (total/used/free/
-      capacity), HOME DIRS, CACHES, NODE_MODULES, RUST_TARGET,
-      OLD_DOWNLOADS_COUNT, APPLICATIONS. Every size is already in GB —
+      capacity), HOME DIRS (every folder in the home directory, biggest
+      first), UNMEASURED (folders skipped, with the reason — report them as
+      not measured and never guess a size for one), CACHES, NODE_MODULES,
+      RUST_TARGET, OLD_DOWNLOADS_COUNT, APPLICATIONS. Every size is already in GB —
       Apple's GB, the same figure Finder shows — so quote them as they come
       and never re-scale them.
       Call this when the user asks to rescan disk usage, find space consumers,
@@ -39,7 +41,9 @@ tools:
       Review widget on rescan, even if the dashboard already had one.
     cmd: "$SKILL_DIR/scripts/scan-disk.sh"
     tier: read
-    timeout_ms: 60000
+    # Every home folder is measured, a few at a time, each with its own
+    # budget; the script's own sweep deadline keeps it under this ceiling.
+    timeout_ms: 360000
   - name: ScanSecurity
     description: >-
       Run a fresh security check. Returns text sections: GATEKEEPER, SIP,

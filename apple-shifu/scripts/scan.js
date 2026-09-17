@@ -9,8 +9,13 @@ function shellEsc(s) {
   return "'" + s.replace(/'/g, "'\\''") + "'";
 }
 
-async function bash(command, sessionId) {
+/** One command through the daemon. `timeoutMs` raises the daemon's own 30 s
+    ceiling — a `du` over a big folder runs well past it, and a command that
+    hits the ceiling comes back `exit_code: -1` with "Command timed out" and
+    nothing on stdout, which is how a whole breakdown used to vanish. */
+async function bash(command, sessionId, timeoutMs) {
   const body = { project_root: '/tmp', command };
+  if (timeoutMs) body.timeout_ms = timeoutMs;
   if (sessionId) body.session_id = sessionId;
   const resp = await fetch('/api/bash', {
     method: 'POST',
@@ -166,6 +171,60 @@ function parseDiskUsage(dfOut) {
 
 /// `du -sk` emits `<kilobytes>\t<path>`, so a path containing whitespace
 /// survives — which `du -sh`'s column output did not guarantee.
+const DIR_BUDGET_MS = 240_000;      // one folder's own budget
+const DIR_TOTAL_MS = 8 * 60_000;    // the whole breakdown's budget
+const DIR_LANES = 4;                // folders measured at once
+
+const timedOut = (res) => res?.exit_code === -1 || /timed out/i.test(res?.stderr || '');
+
+/** Every folder directly in $HOME, each measured on its own.
+ *
+ * One `du` over a fixed list used to carry the whole breakdown, so a single
+ * slow tree (a full ~/Library takes ~40 s) timed out the call and the card
+ * showed nothing at all — and the list left out wherever the user actually
+ * keeps their files. Now each folder is its own command with its own budget,
+ * a few at a time, and whatever finished is the answer; the rest are named
+ * with the reason rather than quietly dropped.
+ */
+async function homeFolderSizes(sessionId, onCount) {
+  // Your own folders first, the tools' dot-folders after: when the clock runs
+  // out it should be a cache that went unmeasured, not where you keep work.
+  const listed = await bash('{ ls -1p ~ | grep "/$"; ls -1Ap ~ | grep "/$" | grep "^\\."; }', sessionId, 20_000);
+  const names = (listed.stdout || '').split('\n')
+    .map((n) => n.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  const dirs = [];
+  const unmeasured = [];
+  const deadline = Date.now() + DIR_TOTAL_MS;
+  let next = 0;
+  let done = 0;
+  const lane = async () => {
+    while (next < names.length) {
+      const name = names[next++];
+      // "$HOME"/'name' — never quote a path that still holds $HOME, or the
+      // shell writes to a literal '$HOME' directory instead of expanding it.
+      const path = `"$HOME"/${shellEsc(name)}`;
+      if (Date.now() > deadline) {
+        unmeasured.push({ path: `~/${name}`, why: 'the scan ran out of time' });
+        continue;
+      }
+      const res = await bash(`du -sk ${path}`, sessionId, DIR_BUDGET_MS);
+      const parsed = parseDirSizes(res.stdout || '');
+      if (parsed.length) dirs.push({ ...parsed[0], path: `~/${name}` });
+      else if (timedOut(res)) unmeasured.push({ path: `~/${name}`, why: 'still going after four minutes' });
+      // macOS guards ~/.Trash and a few others until the app is given Full
+      // Disk Access — a different answer from "this folder is empty".
+      else if (/not permitted|permission denied/i.test(res.stderr || '')) {
+        unmeasured.push({ path: `~/${name}`, why: 'macOS will not let this app read it' });
+      } else unmeasured.push({ path: `~/${name}`, why: 'could not be read' });
+      onCount?.(++done, names.length);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(DIR_LANES, names.length) }, lane));
+  dirs.sort((a, b) => b.size_gb - a.size_gb);
+  return { dirs, unmeasured };
+}
+
 function parseDirSizes(duOut) {
   return duOut.trim().split('\n').filter(Boolean).map(line => {
     const match = line.match(/^(\d+)\t(.+)$/);
@@ -272,11 +331,11 @@ export async function runScan(mode, sessionId, onProgress) {
 
   // ── Disk usage (all modes) ──
   onProgress('disk', 'start');
-  const [df, homeDirs, caches, apps] = await Promise.all([
+  const [df, home, caches, apps] = await Promise.all([
     // -k / -sk, never -h: the pretty output is 1024-based and rounded, and
     // this app reports Apple's decimal GB everywhere else. See kbToGb.
     bash('df -k /System/Volumes/Data 2>/dev/null || df -k /', sessionId),
-    bash('du -sk ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
+    homeFolderSizes(sessionId, (n, total) => onProgress('disk', { measuring: { done: n, total } })),
     bash([
       'du -sk ~/.Trash 2>/dev/null',
       'du -sk ~/Library/Caches 2>/dev/null',
@@ -291,15 +350,19 @@ export async function runScan(mode, sessionId, onProgress) {
   ]);
 
   const disk = parseDiskUsage(df.stdout);
-  const dirs = parseDirSizes(homeDirs.stdout);
   const cacheEntries = parseDirSizes(caches.stdout);
 
   if (disk) {
-    disk.top_dirs = dirs;
+    disk.top_dirs = home.dirs;
+    disk.unmeasured_dirs = home.unmeasured;
     results.disk = disk;
   }
   results.caches = cacheEntries;
-  rawOutputs.push(`=== Disk ===\n${df.stdout}\n=== Home Dirs ===\n${homeDirs.stdout}\n=== Caches ===\n${caches.stdout}`);
+  const homeText = [
+    ...home.dirs.map((d) => `${d.size_gb} GB\t${d.path}`),
+    ...home.unmeasured.map((d) => `not measured (${d.why})\t${d.path}`),
+  ].join('\n');
+  rawOutputs.push(`=== Disk ===\n${df.stdout}\n=== Home Dirs ===\n${homeText}\n=== Caches ===\n${caches.stdout}`);
   if (apps?.stdout?.trim()) {
     // The agent's opening prompt is built from results.* (see doctor.js
     // buildOpeningPrompt), not rawOutputs — so the apps text needs its own
@@ -365,11 +428,11 @@ export async function runScan(mode, sessionId, onProgress) {
 // ---------------------------------------------------------------------------
 
 export async function runDiskScan(sessionId) {
-  const [df, homeDirs, caches, nodeModules, targets, oldDownloads] = await Promise.all([
+  const [df, home, caches, nodeModules, targets, oldDownloads] = await Promise.all([
     // -k / -sk, never -h: the pretty output is 1024-based and rounded, and
     // this app reports Apple's decimal GB everywhere else. See kbToGb.
     bash('df -k /System/Volumes/Data 2>/dev/null || df -k /', sessionId),
-    bash('du -sk ~/Desktop ~/Documents ~/Downloads ~/Library ~/Pictures ~/Music ~/Movies 2>/dev/null', sessionId),
+    homeFolderSizes(sessionId),
     bash([
       'du -sk ~/.Trash 2>/dev/null',
       'du -sk ~/Library/Caches 2>/dev/null',
@@ -382,9 +445,11 @@ export async function runDiskScan(sessionId) {
   ]);
 
   const disk = parseDiskUsage(df.stdout);
-  const dirs = parseDirSizes(homeDirs.stdout);
   const cacheEntries = parseDirSizes(caches.stdout);
-  if (disk) disk.top_dirs = dirs;
+  if (disk) {
+    disk.top_dirs = home.dirs;
+    disk.unmeasured_dirs = home.unmeasured;
+  }
 
   const garbage = [
     ...parseDirSizes(nodeModules.stdout).map(d => ({ ...d, category: 'node_modules', risk: 'review' })),
@@ -606,6 +671,14 @@ export async function runDeepFileScan(sessionId, onProgress) {
     ext: f.ext,
   }));
   onProgress('large_files', results.largeFiles);
+  // Keep the real paths where the page can find them again. The Large Files
+  // card is written by the model, which shortens paths for reading ("…/…"),
+  // so a row's remove command can only be built from this list — never from
+  // what the card says. Survives a reload; the card does too.
+  await bash(
+    `mkdir -p "${DATA_DIR}" && printf '%s\n' ${shellEsc(JSON.stringify(results.largeFiles.map((f) => ({ path: f.path, size: f.size }))))} > "${DATA_DIR}/large-files.json"`,
+    sessionId,
+  ).catch(() => {});
 
   // Phase 3: Duplicate detection. Only checks among large files now —
   // most disk-eating duplicates (videos, installers, dataset copies) will

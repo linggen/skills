@@ -4,6 +4,7 @@
 
 import { drawDiskBars, drawDonut } from './charts.js';
 import { getScoreHistory } from './health-score.js';
+import { copyText, shellPath } from './shifu-io.js';
 
 // ── Helpers ──
 
@@ -297,6 +298,46 @@ function renderBars(w) {
 
 // ── table ──
 
+// ── the files this page scanned, and the command that removes one ──
+//
+// A table is written by the model, and it shortens a path to fit ("~/Library/
+// …/weights.bin"). A remove command built from that text would name the wrong
+// file, so the page keeps the scan's own list and matches a row back to it —
+// the same rule the Cleanup card follows: never a command from model text.
+
+let fileIndex = [];   // [{path, size}] from the last deep file scan
+
+export function setFileIndex(files) {
+  fileIndex = (files || []).filter((f) => typeof f?.path === 'string');
+}
+
+/** The real path a table cell stands for, or null when it can't be pinned
+    down. Exact text wins; otherwise the cell is a shortened path and only one
+    scanned file may match its head and tail. */
+export function resolveFilePath(text, files = fileIndex) {
+  const shown = String(text || '').trim();
+  if (!shown || !files.length) return null;
+  const exact = files.filter((f) => f.path === shown);
+  if (exact.length === 1) return exact[0].path;
+  const cut = shown.indexOf('/...');
+  if (cut < 0) return null;
+  const head = shown.slice(0, cut);
+  const tail = shown.slice(shown.lastIndexOf('/') + 1);
+  if (!head || !tail) return null;
+  const hits = files.filter((f) => f.path.startsWith(head) && f.path.endsWith(`/${tail}`));
+  return hits.length === 1 ? hits[0].path : null;
+}
+
+/** `mv -i <path> ~/.Trash/` — the Trash, so the file stays recoverable, and
+    the path shell-quoted with its `~` expanded. Mirrors removeCommand() in
+    files.js. */
+export const removeCommand = (path) => `mv -i ${shellPath(path)} ~/.Trash/`;
+
+const COPY_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">'
+  + '<rect x="5.2" y="2.2" width="8.6" height="10.6" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/>'
+  + '<path d="M10.6 13.8v.4a1.6 1.6 0 0 1-1.6 1.6H3.8a1.6 1.6 0 0 1-1.6-1.6V5.4a1.6 1.6 0 0 1 1.6-1.6h.4"'
+  + ' fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+
 function renderTable(w) {
   const panel = el('div', 'panel');
   const cols = (w.columns || []).map(c => `<th>${esc(c)}</th>`).join('');
@@ -305,7 +346,11 @@ function renderTable(w) {
       if (cell && typeof cell === 'object' && cell.badge) {
         return `<td><span class="label-badge ${esc(cell.color || '')}">${esc(cell.badge)}</span></td>`;
       }
-      return `<td>${esc(String(cell ?? ''))}</td>`;
+      const text = String(cell ?? '');
+      const path = resolveFilePath(text);
+      if (!path) return `<td>${esc(text)}</td>`;
+      return `<td class="tbl-file">${esc(text)}<button class="tbl-copy" type="button"
+        title="Copy the Trash command" data-path="${esc(path)}">${COPY_ICON}</button></td>`;
     }).join('');
     return `<tr>${cells}</tr>`;
   }).join('');
@@ -313,6 +358,14 @@ function renderTable(w) {
     ${panelHeaderHtml(w)}
     <table class="widget-table"><thead><tr>${cols}</tr></thead><tbody>${rows}</tbody></table>
   `;
+  for (const btn of panel.querySelectorAll('.tbl-copy')) {
+    btn.addEventListener('click', async () => {
+      if (!(await copyText(removeCommand(btn.dataset.path)))) return;
+      btn.innerHTML = '✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove('copied'); }, 1400);
+    });
+  }
   wireHeaderAction(panel, w);
   return panel;
 }

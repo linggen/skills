@@ -702,6 +702,42 @@ body {
 
 .file-more:hover { background: var(--bg-hover); color: var(--text); }
 
+/* Copy the remove command for this one file, to paste into a terminal. */
+.file-copy {
+  flex: 0 0 26px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.file-copy:hover { background: var(--bg-hover); color: var(--text); }
+.file-copy.copied { color: var(--success); }
+
+/* Same button on a model-written table row (Large Files). */
+.widget-table td.tbl-file { white-space: nowrap; }
+.tbl-copy {
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  vertical-align: middle;
+  opacity: 0;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.widget-table tr:hover .tbl-copy, .tbl-copy:focus-visible { opacity: 0.8; }
+.tbl-copy:hover { color: var(--text); opacity: 1; }
+.tbl-copy.copied { color: var(--success); opacity: 1; }
+
 .file-size {
   flex: 0 0 78px;
   font-weight: 700;
