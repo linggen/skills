@@ -730,11 +730,12 @@ body {
   background: transparent;
   color: var(--text-muted);
   vertical-align: middle;
-  opacity: 0;
+  opacity: 0.45;
   cursor: pointer;
   transition: opacity 0.12s;
 }
-.widget-table tr:hover .tbl-copy, .tbl-copy:focus-visible { opacity: 0.8; }
+/* Dim but always there — a button nobody can see is a button nobody uses. */
+.widget-table tr:hover .tbl-copy, .tbl-copy:focus-visible { opacity: 0.85; }
 .tbl-copy:hover { color: var(--text); opacity: 1; }
 .tbl-copy.copied { color: var(--success); opacity: 1; }
 

@@ -312,19 +312,28 @@ export function setFileIndex(files) {
 }
 
 /** The real path a table cell stands for, or null when it can't be pinned
-    down. Exact text wins; otherwise the cell is a shortened path and only one
-    scanned file may match its head and tail. */
+    down. Exact text wins. Otherwise the cell is a path the model shortened —
+    it drops middles, and sometimes both ends of a name ("…/…urp-sample….tgz")
+    — so the pieces it kept must appear, in order, in exactly one scanned file.
+    Two candidates means no button: a command has to name the right file. */
 export function resolveFilePath(text, files = fileIndex) {
   const shown = String(text || '').trim();
-  if (!shown || !files.length) return null;
+  if (!shown || !shown.includes('/') || !files.length) return null;
   const exact = files.filter((f) => f.path === shown);
   if (exact.length === 1) return exact[0].path;
-  const cut = shown.indexOf('/...');
-  if (cut < 0) return null;
-  const head = shown.slice(0, cut);
-  const tail = shown.slice(shown.lastIndexOf('/') + 1);
-  if (!head || !tail) return null;
-  const hits = files.filter((f) => f.path.startsWith(head) && f.path.endsWith(`/${tail}`));
+  if (!/\.{3}|…/.test(shown)) return null;
+  const parts = shown.split(/\.{3,}|…/).map((p) => p.trim()).filter(Boolean);
+  if (!parts.length) return null;
+  const hits = files.filter((f) => {
+    if (!f.path.startsWith(parts[0])) return false;
+    let at = parts[0].length;
+    for (const part of parts.slice(1)) {
+      const found = f.path.indexOf(part, at);
+      if (found < 0) return false;
+      at = found + part.length;
+    }
+    return true;
+  });
   return hits.length === 1 ? hits[0].path : null;
 }
 
