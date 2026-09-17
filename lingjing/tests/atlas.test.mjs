@@ -40,8 +40,23 @@ test('the map card draws the province up close as points, and all nine at a tap'
   assert.match(near, /<button class="pt road[^"]*" data-say="去流波山"/);
   assert.doesNotMatch(near, /<svg|<path|<line/);
   assert.match(near, /data-mapview="world">九州全图</);
-  const whole = cardHtml({ card: 'map' }, ctx('world'));
+  // The whole map: where the player is by the dot alone, and each province
+  // with places opens up close; one without (雍) is only a name.
+  const atlas = Object.fromEntries(Object.entries(content.places).map(([id, d]) => [id, { name: `${id}州`, places: d.places.map(p => ({ id: p.id, name: p.name.zh, map: p.map, too_hard: false })) }]));
+  const whole = cardHtml({ card: 'map' }, { ...ctx('world'), atlas });
   assert.equal((whole.match(/class="pt/g) ?? []).length, 1);
+  assert.match(whole, /<span class="pt here" style="[^"]*"><i><\/i><\/span>/);
+  assert.doesNotMatch(whole, /<span>蓬莱<\/span>/);
   assert.equal((whole.match(/class="pv/g) ?? []).length, 9);
-  assert.match(whole, /data-mapview="province">青州</);
+  assert.match(whole, /<button class="pv here" data-mapview="province"/);
+  assert.match(whole, /<button class="pv" data-mapview="冀"/);
+  assert.match(whole, /<span class="pv"[^>]*>雍<\/span>/);
+  assert.match(whole, /class="act" data-mapview="province">青州</);
+  // Another province up close: its places alike, a tap still a word to Ling.
+  const ji = cardHtml({ card: 'map' }, { ...ctx('冀'), atlas });
+  assert.match(ji, /<div class="cardtitle">冀州<\/div>/);
+  assert.equal((ji.match(/class="pt/g) ?? []).length, content.places['冀'].places.length);
+  assert.doesNotMatch(ji, /class="pt (here|road)/);
+  assert.match(ji, /data-say="去邺城"/);
+  assert.match(ji, /data-mapview="world">九州全图<\/button><button class="act" data-mapview="province">青州</);
 });

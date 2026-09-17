@@ -1476,6 +1476,17 @@ function insideSkill(raw) {
   return real.startsWith(fs.realpathSync(skillDir()) + path.sep) ? real : null;
 }
 
+/* The world map past the player's province — the page's alone, never a
+   tool: each province's places where the map puts them. Here and the roads
+   are Look's, for the province the player stands in. */
+export function atlas(state, content) {
+  const provinces = Object.fromEntries(Object.entries(content.places).map(([id, doc]) => [id, {
+    name: pick(content.dictionary.provinces[id], state.lang),
+    places: doc.places.filter(p => p.map).map(p => ({ ...placeName(content, state, p), map: p.map, too_hard: tooHard(content, state, p) })),
+  }]));
+  return { state: null, result: { ok: true, provinces } };
+}
+
 export const VERBS = {
   look: (s, c, x) => {
     const woke = wake(s, c, x);
@@ -1484,7 +1495,7 @@ export const VERBS = {
     return { state: woke, result: { ...look(woke ?? s, c, x), ...(learned.length ? { learned } : {}) } };
   },
   resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget,
+  go, saves, save, load, forget, atlas,
 };
 
 /* ── Files and the command line ── */

@@ -244,6 +244,8 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .atlas .pv { position: absolute; transform: translate(-50%, -50%); font-family: var(--serif); font-size: 26px; font-weight: 600; color: rgba(40, 34, 24, 0.22); pointer-events: none; white-space: nowrap; }
 .atlas.whole .pv { font-size: 17px; color: rgba(40, 34, 24, 0.5); }
 .atlas .pv.here { color: rgba(70, 112, 140, 0.55); }
+.atlas button.pv { pointer-events: auto; padding: 2px 6px; border: 0; border-radius: 6px; background: none; font-family: var(--serif); font-weight: 600; cursor: pointer; }
+.atlas button.pv:hover { background: rgba(255, 255, 255, 0.7); color: #1D1B17; }
 .atlas.whole .pv.here { color: #46708C; }
 .atlas .pt { position: absolute; display: flex; align-items: center; gap: 3px; transform: translate(-5px, -50%); padding: 0; border: 0; background: none; font: inherit; font-size: 12px; line-height: 1.2; color: #1D1B17; white-space: nowrap; }
 .atlas .pt.flip { flex-direction: row-reverse; transform: translate(calc(-100% + 5px), -50%); }

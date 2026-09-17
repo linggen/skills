@@ -24,7 +24,8 @@ let focusScene = null; // the scene the focus was last reset for
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 let running = false; //   Ling is mid-reply
 let asked = false; //     Ling's own question is waiting in the chat
-let mapView = 'province'; // the map card: the player's province up close, or 'world'
+let mapView = 'province'; // the map card: 'province' (the player's, up close), 'world', or another province's id
+let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
 const boards = new Map();
 const duels = new Map(); // game id → {status, moves, picks, rounds, outcome, say}
 let chat = null;
@@ -53,7 +54,20 @@ function duelFor(id) {
   return duels.get(id);
 }
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView });
+const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, atlas: atlasPlaces?.provinces ?? null });
+
+/// The other provinces' places, read once per world, language and realm —
+/// only when the player looks past their own province.
+async function loadAtlas() {
+  const key = `${look?.world?.id}:${lang()}:${look?.tier?.id}`;
+  if (atlasPlaces?.key === key) return;
+  try {
+    const r = await verb('atlas');
+    if (r.ok) atlasPlaces = { key, provinces: r.provinces };
+  } catch (e) {
+    console.warn('[lingjing] atlas', e);
+  }
+}
 
 /* ── Reading ── */
 
@@ -310,7 +324,11 @@ document.addEventListener('click', (e) => {
   if (sw) { switchLang(sw.dataset.lang); return; }
   // Near or whole: only how the map is looked at, so the page answers it.
   const view = e.target.closest('[data-mapview]');
-  if (view) { mapView = view.dataset.mapview; render(); return; }
+  if (view) {
+    const to = view.dataset.mapview;
+    (to === 'province' ? Promise.resolve() : loadAtlas()).then(() => { mapView = to; render(); });
+    return;
+  }
   const spoken = e.target.closest('[data-say]');
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick],[data-duel-stand]')) {
     if (spoken.matches(':disabled')) return;

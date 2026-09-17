@@ -535,8 +535,10 @@ is a map of places, not a chain of scenes.
   draws the province's places on the world map (2026-09-17: the 禹贡九州图
   plate, `world.atlas`; each place's authored `map` is its point — points
   only, never lines, a road is not straight; up close on the player's
-  province, 九州全图 at a tap; a made world's draws its roads instead — step
-  14b): here (Yinyue's
+  province, 九州全图 at a tap, where the player is a dot and a province with
+  places opens up close, its points alike — the page-only `atlas` verb reads
+  them, never Look; a made world's draws its roads instead — step 14b): here
+  (Yinyue's
   colour), a road away (Ling's), beyond the tier (dashed, faint). The lint:
   roads both ways within the province, tiers on the ladder, a creature with
   its card, a scene that exists, every place reached from the start, every

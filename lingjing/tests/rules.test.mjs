@@ -692,6 +692,10 @@ test('a new save says its world, and Look carries the world card', () => {
   assert.equal(look(start('en'), content, ctx()).world.title, 'The Nine Cauldrons');
   // Every place Look lists for the map says where it stands on the world map.
   assert.ok(look(s, content, ctx()).place.places.every(p => p.map?.length === 2));
+  // The page's atlas verb: every province's places on the map, never Look's here.
+  const all = VERBS.atlas(s, content, ctx(), {}).result.provinces;
+  assert.deepEqual(Object.keys(all).sort(), Object.keys(content.places).sort());
+  assert.ok(all['冀'].places.some(p => p.name === '邺城' && p.map.length === 2 && !('here' in p)));
 });
 
 test('a made scene with a novel\'s name is not playable', () => {

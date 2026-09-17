@@ -131,31 +131,46 @@ function map(card, ctx) {
 function atlasMap(ctx) {
   const { atlas, dir } = ctx.look.world;
   const place = ctx.look.place;
+  const own = place?.province?.id;
   const points = (place?.places ?? []).filter((p) => p.map);
-  const whole = ctx.mapView === 'world' || !points.length;
-  const frame = whole ? { x: 0, y: 0, w: 1, h: 1 } : frameOf(points.map((p) => p.map), atlas.aspect);
+  const view = ctx.mapView ?? 'province';
+  const whole = view === 'world' || !points.length;
+  // Another province up close: its places from the atlas verb, all alike —
+  // the player is not there, so none is here or a road away.
+  const other = !whole && view !== 'province' && view !== own ? ctx.atlas?.[view] : null;
+  const shown = other ? other.places : points;
+  const frame = whole ? { x: 0, y: 0, w: 1, h: 1 } : frameOf(shown.map((p) => p.map), atlas.aspect);
   const pos = (at) => { const { left, top } = within(frame, at); return `left:${left.toFixed(2)}%;top:${top.toFixed(2)}%`; };
   const img = `<img src="${esc(worldPath(dir, atlas.file))}" alt="" style="width:${(100 / frame.w).toFixed(2)}%;left:${(-frame.x / frame.w * 100).toFixed(2)}%;top:${(-frame.y / frame.h * 100).toFixed(2)}%">`;
   const provinceName = (id) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[id]?.en ?? id : id);
+  const hasPlaces = (id) => id === own || ctx.atlas?.[id]?.places?.length > 0;
   const provinces = Object.entries(atlas.provinces)
     .filter(([, at]) => inside(frame, at))
-    .map(([id, at]) => `<span class="pv${id === place?.province?.id ? ' here' : ''}" style="${pos(at)}">${esc(provinceName(id))}</span>`);
-  const shown = whole ? points.filter((p) => p.here) : points;
-  const dots = shown.map((p) => {
-    const kind = p.here ? 'here' : p.road ? 'road' : '';
+    .map(([id, at]) => {
+      const cls = `pv${id === own ? ' here' : ''}`;
+      // On the whole map a province with places opens up close.
+      return whole && hasPlaces(id)
+        ? `<button class="${cls}" data-mapview="${id === own ? 'province' : esc(id)}" style="${pos(at)}">${esc(provinceName(id))}</button>`
+        : `<span class="${cls}" style="${pos(at)}">${esc(provinceName(id))}</span>`;
+    });
+  const dots = (whole ? points.filter((p) => p.here) : shown).map((p) => {
+    // The whole map marks where the player is with the dot alone: a name
+    // there would sit on the province's own.
+    if (whole) return `<span class="pt here" style="${pos(p.map)}"><i></i></span>`;
+    const kind = other ? '' : p.here ? 'here' : p.road ? 'road' : '';
     const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard ? ' far' : ''}${within(frame, p.map).left > 78 ? ' flip' : ''}`;
     const label = `<i></i><span>${esc(p.name)}</span>`;
-    return p.here
+    return p.here && !other
       ? `<span class="${cls}" style="${pos(p.map)}">${label}</span>`
       : `<button class="${cls}" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))} style="${pos(p.map)}">${label}</button>`;
   });
-  const title = whole ? ctx.words.mapTitle : place.province.name;
-  const toggle = whole
-    ? (points.length ? `<button class="act" data-mapview="province">${esc(place.province.name)}</button>` : '')
-    : `<button class="act" data-mapview="world">${esc(ctx.words.mapWhole)}</button>`;
+  const title = whole ? ctx.words.mapTitle : other ? other.name : place.province.name;
+  const toWhole = `<button class="act" data-mapview="world">${esc(ctx.words.mapWhole)}</button>`;
+  const toOwn = points.length ? `<button class="act" data-mapview="province">${esc(place.province.name)}</button>` : '';
+  const views = whole ? toOwn : other ? toWhole + toOwn : toWhole;
   return `<div class="card"><div class="cardtitle">${esc(title)}</div>
     <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}</div>
-    <div class="acts">${toggle}<button class="act say" ${sayAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;
+    <div class="acts">${views}<button class="act say" ${sayAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;
 }
 
 /// The province's places as chips, for a world with no map: here, a road
