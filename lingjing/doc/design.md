@@ -532,8 +532,11 @@ is a map of places, not a chain of scenes.
   the next chapter, its province, its first place and `opens`; null when
   the spine is unwritten), `pool` (full/half/low/empty as the ring), `seed`
   (today's, only where seeds grow and a branch may still open). The map card
-  draws the province's places under the nine-province grid (a made world's
-  draws its roads instead — step 14b): here (Yinyue's
+  draws the province's places on the world map (2026-09-17: the 禹贡九州图
+  plate, `world.atlas`; each place's authored `map` is its point — points
+  only, never lines, a road is not straight; up close on the player's
+  province, 九州全图 at a tap; a made world's draws its roads instead — step
+  14b): here (Yinyue's
   colour), a road away (Ling's), beyond the tier (dashed, faint). The lint:
   roads both ways within the province, tiers on the ladder, a creature with
   its card, a scene that exists, every place reached from the start, every

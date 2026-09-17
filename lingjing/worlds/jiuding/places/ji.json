@@ -16,6 +16,10 @@
         "ye",
         "hebo"
       ],
+      "map": [
+        0.677,
+        0.3733
+      ],
       "has": {
         "seeds": true,
         "scene": "01-arrive"
@@ -38,6 +42,10 @@
         "taihang",
         "pushui"
       ],
+      "map": [
+        0.6804,
+        0.3278
+      ],
       "has": {
         "shop": true,
         "scene": "01-ye"
@@ -59,6 +67,10 @@
         "ye",
         "zhangyuan"
       ],
+      "map": [
+        0.6492,
+        0.3486
+      ],
       "has": {
         "creature": "paoxiao",
         "scene": "01-altar"
@@ -77,6 +89,10 @@
       "tier": 0,
       "roads": [
         "hebo"
+      ],
+      "map": [
+        0.6332,
+        0.3676
       ],
       "has": {
         "scene": "01-deep"
@@ -99,6 +115,10 @@
         "zhuolu",
         "hengshan"
       ],
+      "map": [
+        0.6492,
+        0.3051
+      ],
       "has": {
         "seeds": true
       },
@@ -117,6 +137,10 @@
       "roads": [
         "taihang",
         "jieshi"
+      ],
+      "map": [
+        0.6054,
+        0.3268
       ],
       "has": {
         "creature": "jingwei",
@@ -137,6 +161,10 @@
       "roads": [
         "taihang"
       ],
+      "map": [
+        0.7263,
+        0.0796
+      ],
       "has": {
         "seeds": true
       },
@@ -155,6 +183,10 @@
       "roads": [
         "fajiu"
       ],
+      "map": [
+        0.8853,
+        0.1355
+      ],
       "has": {
         "seeds": true
       },
@@ -172,6 +204,10 @@
       "tier": 2,
       "roads": [
         "taihang"
+      ],
+      "map": [
+        0.6631,
+        0.1184
       ],
       "has": {},
       "line": {

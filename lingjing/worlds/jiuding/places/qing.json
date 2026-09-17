@@ -17,6 +17,10 @@
         "jixia",
         "taishan"
       ],
+      "map": [
+        0.8901,
+        0.3411
+      ],
       "has": {
         "seeds": true,
         "scene": "03-arrive"
@@ -39,6 +43,10 @@
         "penglai",
         "langya"
       ],
+      "map": [
+        0.8485,
+        0.3193
+      ],
       "has": {
         "shop": true,
         "scene": "03-town"
@@ -58,6 +66,10 @@
       "roads": [
         "weishui",
         "linzi"
+      ],
+      "map": [
+        0.8596,
+        0.3088
       ],
       "has": {
         "seeds": true
@@ -80,6 +92,10 @@
         "chengshan",
         "laoshan"
       ],
+      "map": [
+        0.9512,
+        0.2653
+      ],
       "has": {
         "creature": "kui",
         "scene": "03-shore"
@@ -99,6 +115,10 @@
       "roads": [
         "penglai"
       ],
+      "map": [
+        0.9894,
+        0.3714
+      ],
       "has": {
         "scene": "03-deep"
       },
@@ -117,6 +137,10 @@
       "roads": [
         "weishui",
         "langya"
+      ],
+      "map": [
+        0.7985,
+        0.3505
       ],
       "has": {
         "creature": "tongtong",
@@ -139,6 +163,10 @@
         "taishan",
         "chengshan"
       ],
+      "map": [
+        0.9061,
+        0.3856
+      ],
       "has": {
         "seeds": true
       },
@@ -158,6 +186,10 @@
         "penglai",
         "langya"
       ],
+      "map": [
+        0.9943,
+        0.2842
+      ],
       "has": {
         "seeds": true
       },
@@ -175,6 +207,10 @@
       "tier": 2,
       "roads": [
         "penglai"
+      ],
+      "map": [
+        0.9595,
+        0.3411
       ],
       "has": {
         "seeds": true

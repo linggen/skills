@@ -21,5 +21,48 @@
     "尚书·禹贡",
     "史记"
   ],
-  "authored": true
+  "authored": true,
+  "atlas": {
+    "_about": "The world map: art/map/jiuzhou.svg, cleaned of every word by tools/clean_map.py. Each place's `map` and each province here are [x, y] as fractions of it; tools/pin.py starts a new place from its longitude and latitude.",
+    "file": "art/map/jiuzhou.svg",
+    "aspect": 1.3645,
+    "provinces": {
+      "冀": [
+        0.7154,
+        0.1409
+      ],
+      "兖": [
+        0.7835,
+        0.2602
+      ],
+      "青": [
+        0.9403,
+        0.2844
+      ],
+      "徐": [
+        0.8212,
+        0.4573
+      ],
+      "扬": [
+        0.8525,
+        0.7955
+      ],
+      "荆": [
+        0.5425,
+        0.7714
+      ],
+      "豫": [
+        0.6609,
+        0.524
+      ],
+      "梁": [
+        0.3528,
+        0.6127
+      ],
+      "雍": [
+        0.4349,
+        0.2129
+      ]
+    }
+  }
 }

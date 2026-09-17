@@ -25,6 +25,16 @@ paper, a warm paper ground with grain, the red seal).
 The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
 on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.
 
+## The world map
+
+`map/jiuzhou.svg` is *Yugong Nine Provinces Map 禹贡九州图.svg* by Philg88,
+Wikimedia Commons, **CC BY-SA 3.0** (https://creativecommons.org/licenses/by-sa/3.0/);
+the original is kept untouched as `plates/yugong-jiuzhou.svg`. Changed for the
+game by `tools/clean_map.py`: every label, the title, legend, scale, inset,
+mountain marks and frame removed. The adapted map is shared under the same
+licence. The names over it and every place's point are the game's own (his
+choice, 2026-09-17).
+
 ## Items — painted for Lingjing
 
 `items/*.webp` are painted for the game by the local picture model (FLUX.2

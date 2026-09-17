@@ -687,8 +687,11 @@ test('a new save says its world, and Look carries the world card', () => {
   assert.deepEqual(look(s, content, ctx()).world, {
     id: 'jiuding', title: '九鼎', style: '修仙 · 凡人流', premise: '大禹铸九鼎，周亡而鼎失。九州为图，九境为梯，每寻回一鼎，便破一境。',
     made: false, base: null, dir: 'worlds/jiuding',
+    atlas: { file: 'art/map/jiuzhou.svg', aspect: content.world.atlas.aspect, provinces: content.world.atlas.provinces },
   });
   assert.equal(look(start('en'), content, ctx()).world.title, 'The Nine Cauldrons');
+  // Every place Look lists for the map says where it stands on the world map.
+  assert.ok(look(s, content, ctx()).place.places.every(p => p.map?.length === 2));
 });
 
 test('a made scene with a novel\'s name is not playable', () => {

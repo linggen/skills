@@ -17,6 +17,10 @@
         "sangjian",
         "leize"
       ],
+      "map": [
+        0.6915,
+        0.4036
+      ],
       "has": {
         "seeds": true,
         "scene": "02-arrive"
@@ -39,6 +43,10 @@
         "dingtao",
         "leize"
       ],
+      "map": [
+        0.7054,
+        0.3941
+      ],
       "has": {
         "shop": true,
         "scene": "02-town"
@@ -59,6 +67,10 @@
         "pushui",
         "puyang",
         "leize"
+      ],
+      "map": [
+        0.7165,
+        0.3846
       ],
       "has": {
         "seeds": true
@@ -82,6 +94,10 @@
         "leiyuan",
         "daye"
       ],
+      "map": [
+        0.7422,
+        0.396
+      ],
       "has": {
         "creature": "leishen",
         "scene": "02-lake"
@@ -101,6 +117,10 @@
       "roads": [
         "leize"
       ],
+      "map": [
+        0.7568,
+        0.3846
+      ],
       "has": {
         "scene": "02-deep"
       },
@@ -119,6 +139,10 @@
       "roads": [
         "puyang",
         "daye"
+      ],
+      "map": [
+        0.7242,
+        0.4481
       ],
       "has": {
         "seeds": true
@@ -140,6 +164,10 @@
         "dingtao",
         "fuli"
       ],
+      "map": [
+        0.7492,
+        0.4472
+      ],
       "has": {
         "seeds": true
       },
@@ -160,6 +188,10 @@
         "kongsang",
         "weishui"
       ],
+      "map": [
+        0.7825,
+        0.4093
+      ],
       "has": {
         "creature": "longzhi",
         "seeds": true
@@ -178,6 +210,10 @@
       "tier": 2,
       "roads": [
         "fuli"
+      ],
+      "map": [
+        0.7964,
+        0.3846
       ],
       "has": {
         "seeds": true

@@ -163,6 +163,19 @@ test('a shipped creature carries its pinyin, one syllable a character; the card 
   assert.equal(spoken('雷神'), '雷神');
 });
 
+test('the world map is on disk, and every place of a world with one stands on it', () => {
+  const c = loadWorld('jiuding');
+  const bad = structuredClone(c);
+  delete bad.places['青'].places.find(p => p.id === 'penglai').map;
+  bad.places['徐'].places.find(p => p.id === 'pengcheng').map = [1.2, 0.5];
+  bad.world.atlas = { ...bad.world.atlas, file: 'art/map/nowhere.svg', provinces: { ...bad.world.atlas.provinces, 蜀: [0.1, 0.5] } };
+  const problems = lint(bad);
+  assert.ok(has(problems, 'place penglai: needs map [x, y]'));
+  assert.ok(has(problems, 'place pengcheng: needs map [x, y]'));
+  assert.ok(has(problems, 'atlas: map art/map/nowhere.svg is missing'));
+  assert.ok(has(problems, 'atlas: unknown province 蜀'));
+});
+
 test('a creature needs a root; a duel needs a known creature, a kind and its withdrawn line', () => {
   const c = fresh();
   c.creatures.creatures[0].root = 'plasma';

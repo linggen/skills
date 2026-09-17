@@ -393,6 +393,7 @@ export function lint(content) {
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   lintSeeds(content, ids, bad);
   lintPlaces(content, ids, bad);
+  lintAtlas(content, bad);
   return problems;
 }
 
@@ -400,6 +401,20 @@ export function lint(content) {
    road into another province opens with that province's chapter), a tier
    the ladder has, a creature with its card, a scene that exists, and every
    place reachable from the start. */
+const onMap = at => Array.isArray(at) && at.length === 2 && at.every(v => typeof v === 'number' && v >= 0 && v <= 1);
+
+/* The world map: its file on disk, and each province's name somewhere on it. */
+function lintAtlas(content, bad) {
+  const atlas = content.world?.atlas;
+  if (!atlas) return;
+  if (!atlas.file || !fs.existsSync(path.join(content.dir, atlas.file))) bad('atlas', `map ${atlas.file} is missing`);
+  if (!(atlas.aspect > 0)) bad('atlas', 'needs the map\'s aspect, width over height');
+  for (const [province, at] of Object.entries(atlas.provinces ?? {})) {
+    if (!content.dictionary.provinces[province]) bad('atlas', `unknown province ${province}`);
+    if (!onMap(at)) bad('atlas', `province ${province} needs [x, y], fractions 0–1`);
+  }
+}
+
 function lintPlaces(content, ids, bad) {
   const scenes = new Set(Object.values(content.chapters).flatMap(c => Object.keys(c.scenes)));
   const byId = Object.fromEntries(Object.values(content.places).flatMap(doc => doc.places.map(p => [p.id, p])));
@@ -420,6 +435,7 @@ function lintPlaces(content, ids, bad) {
       }
       if (place.has?.creature && !ids.creatures.has(place.has.creature)) bad(at, `has unknown creature ${place.has.creature}`);
       if (place.has?.scene && !scenes.has(place.has.scene)) bad(at, `has unknown scene ${place.has.scene}`);
+      if (content.world?.atlas && !onMap(place.map)) bad(at, 'needs map [x, y] on the world map, fractions 0–1 (tools/pin.py)');
     }
     const reached = new Set();
     const walk = id => { if (!byId[id] || reached.has(id)) return; reached.add(id); (byId[id].roads ?? []).forEach(walk); };

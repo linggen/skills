@@ -16,6 +16,10 @@
         "pengcheng",
         "huaidu"
       ],
+      "map": [
+        0.804,
+        0.433
+      ],
       "has": {
         "seeds": true
       },
@@ -36,6 +40,10 @@
         "yunlong",
         "lvliang",
         "zhangnan"
+      ],
+      "map": [
+        0.7957,
+        0.4216
       ],
       "has": {
         "creature": "fuzhu",
@@ -58,6 +66,10 @@
         "yunlong",
         "peize"
       ],
+      "map": [
+        0.795,
+        0.4898
+      ],
       "has": {
         "shop": true
       },
@@ -77,6 +89,10 @@
         "sibei",
         "pengcheng",
         "xushan"
+      ],
+      "map": [
+        0.7894,
+        0.4794
       ],
       "has": {
         "seeds": true
@@ -98,6 +114,10 @@
         "sikou",
         "yiqiao"
       ],
+      "map": [
+        0.8644,
+        0.5476
+      ],
       "has": {},
       "line": {
         "zh": "一条船，一个老船家。渡人，不渡心事。",
@@ -114,6 +134,10 @@
       "roads": [
         "huaidu",
         "sikou"
+      ],
+      "map": [
+        0.8186,
+        0.4917
       ],
       "has": {
         "seeds": true
@@ -135,6 +159,10 @@
         "yiqiao",
         "lvliang"
       ],
+      "map": [
+        0.8443,
+        0.5438
+      ],
       "has": {},
       "line": {
         "zh": "泗水入淮之处，两水相激，船家在此歇桨。",
@@ -152,6 +180,10 @@
         "sibei",
         "sikou",
         "weishan"
+      ],
+      "map": [
+        0.8061,
+        0.4661
       ],
       "has": {
         "seeds": true
@@ -172,6 +204,10 @@
         "pengcheng",
         "weishan"
       ],
+      "map": [
+        0.7832,
+        0.4642
+      ],
       "has": {},
       "line": {
         "zh": "大泽无边，芦苇里藏着走蛇的小路。",
@@ -189,6 +225,10 @@
         "lvliang",
         "peize",
         "xushan"
+      ],
+      "map": [
+        0.7964,
+        0.4529
       ],
       "has": {
         "seeds": true
@@ -208,6 +248,10 @@
       "roads": [
         "yunlong",
         "weishan"
+      ],
+      "map": [
+        0.8304,
+        0.5154
       ],
       "has": {},
       "line": {

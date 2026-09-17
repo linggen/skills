@@ -132,7 +132,7 @@ function placeBrief(content, state, now = new Date()) {
       province: p.province, closed: !provinceOpen(content, p.province, now),
     })),
     places: doc.places.map(p => ({
-      ...placeName(content, state, p), tier: p.tier, roads: p.roads,
+      ...placeName(content, state, p), tier: p.tier, roads: p.roads, ...(p.map ? { map: p.map } : {}),
       here: p.id === place.id, road: place.roads.includes(p.id), too_hard: tooHard(content, state, p),
     })),
     shelf: shelf.map(i => itemBrief(content, state, i)),
@@ -483,6 +483,7 @@ function worldBrief(content, lang) {
     id: w.id, title: pick(w.title, lang), style: pick(w.style, lang), premise: pick(w.premise, lang) ?? null,
     made: Boolean(w.made), base: w.base ?? null, dir: w.made ? `data/worlds/${w.id}` : `worlds/${w.id}`,
     ...(w.made ? { map: w.map ?? null } : {}),
+    ...(w.atlas ? { atlas: { file: w.atlas.file, aspect: w.atlas.aspect, provinces: w.atlas.provinces } } : {}),
   };
 }
 

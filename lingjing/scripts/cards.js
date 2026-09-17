@@ -6,13 +6,14 @@ import { boardHtml } from './board.js';
 import { worldPath } from './rules.js';
 import { duelHtml } from './duel-card.js';
 import { layoutRoads } from './roadmap.js';
+import { frameOf, inside, within } from './atlas.js';
 
 export const WORDS = {
   zh: {
     title: '灵境', xw: '修为', ls: '灵石', tray: '今日功课', trayEmpty: '今日无事，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
-    tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', goal: '鼎', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
+    tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     about: '说说', feed: '喂它{item}', subdue: '降妖',
     effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effCharm: '斗法时掷出，一回合必胜', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
@@ -33,7 +34,7 @@ export const WORDS = {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: "Today's practice", trayEmpty: 'Nothing waits today. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
-    tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', goal: 'Cauldron', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
+    tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
     effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: 'Recorded by {app} · done today at {t}', questWait: 'Recorded by {app} · not yet today',
@@ -66,7 +67,6 @@ const sayAttr = (line) => `data-say="${esc(line)}"`;
 /// a reason as its title.
 const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) =>
   `<button class="act say" ${sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`).join('')}</div>`;
-const MAP = [['雍', '冀', '兖'], ['梁', '豫', '青'], ['荆', '扬', '徐']];
 
 /// A Chinese name with its pinyin over each character (夔 → kuí), so a rare
 /// 山海经 name can be read aloud. Without one syllable a character, the
@@ -119,22 +119,47 @@ function traits(card, ctx) {
 
 function map(card, ctx) {
   if (ctx.look.world?.made) return roadMap(ctx);
-  const name = (c) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[c]?.en : c);
-  // Where the player stands is the rules' fact, never the model's: Ling once
-  // showed the map with `here` a province away (2026-09-16).
-  const here = ctx.look.place?.province?.id ?? card.here;
-  const cells = MAP.flat().map((c) => {
-    const kind = c === card.goal && c !== here ? 'goal' : c === here ? 'here' : '';
-    const tag = kind ? `<small>${ctx.words[kind]}</small>` : '';
-    // The next cauldron's province is a word to Ling; the rules say the road.
-    const tap = kind === 'goal' ? ` ${sayAttr(say(ctx.words.sayGo, { name: name(c) + (ctx.lang === 'zh' ? '州' : '') }))}` : '';
-    return `<div class="prov${kind ? ` ${kind}` : ''}"${tap}>${esc(name(c))}${tag}</div>`;
-  });
-  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div><div class="map">${cells.join('')}</div>${placesHtml(ctx)}${acts([{ label: ctx.words.about, say: ctx.words.sayMap }])}</div>`;
+  if (ctx.look.world?.atlas) return atlasMap(ctx);
+  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div>${placesHtml(ctx)}${acts([{ label: ctx.words.about, say: ctx.words.sayMap }])}</div>`;
 }
 
-/// The province's places under the grid: here, a road away, or beyond the
-/// player's tier — from Look, never decided here.
+/// The world map: the 禹贡 plate with the game's own names over it. Up close
+/// on the player's province by default, its places as points — no lines, a
+/// road is not straight (his rule, 2026-09-17) — or all nine provinces at a
+/// tap. Where a point stands is the place's authored `map`; here, a road
+/// away and beyond the tier are Look's.
+function atlasMap(ctx) {
+  const { atlas, dir } = ctx.look.world;
+  const place = ctx.look.place;
+  const points = (place?.places ?? []).filter((p) => p.map);
+  const whole = ctx.mapView === 'world' || !points.length;
+  const frame = whole ? { x: 0, y: 0, w: 1, h: 1 } : frameOf(points.map((p) => p.map), atlas.aspect);
+  const pos = (at) => { const { left, top } = within(frame, at); return `left:${left.toFixed(2)}%;top:${top.toFixed(2)}%`; };
+  const img = `<img src="${esc(worldPath(dir, atlas.file))}" alt="" style="width:${(100 / frame.w).toFixed(2)}%;left:${(-frame.x / frame.w * 100).toFixed(2)}%;top:${(-frame.y / frame.h * 100).toFixed(2)}%">`;
+  const provinceName = (id) => (ctx.lang === 'en' ? ctx.content.dictionary.provinces[id]?.en ?? id : id);
+  const provinces = Object.entries(atlas.provinces)
+    .filter(([, at]) => inside(frame, at))
+    .map(([id, at]) => `<span class="pv${id === place?.province?.id ? ' here' : ''}" style="${pos(at)}">${esc(provinceName(id))}</span>`);
+  const shown = whole ? points.filter((p) => p.here) : points;
+  const dots = shown.map((p) => {
+    const kind = p.here ? 'here' : p.road ? 'road' : '';
+    const cls = `pt${kind ? ` ${kind}` : ''}${p.too_hard ? ' far' : ''}${within(frame, p.map).left > 78 ? ' flip' : ''}`;
+    const label = `<i></i><span>${esc(p.name)}</span>`;
+    return p.here
+      ? `<span class="${cls}" style="${pos(p.map)}">${label}</span>`
+      : `<button class="${cls}" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))} style="${pos(p.map)}">${label}</button>`;
+  });
+  const title = whole ? ctx.words.mapTitle : place.province.name;
+  const toggle = whole
+    ? (points.length ? `<button class="act" data-mapview="province">${esc(place.province.name)}</button>` : '')
+    : `<button class="act" data-mapview="world">${esc(ctx.words.mapWhole)}</button>`;
+  return `<div class="card"><div class="cardtitle">${esc(title)}</div>
+    <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}</div>
+    <div class="acts">${toggle}<button class="act say" ${sayAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;
+}
+
+/// The province's places as chips, for a world with no map: here, a road
+/// away, or beyond the player's tier — from Look, never decided here.
 function placesHtml(ctx) {
   const place = ctx.look.place;
   if (!place?.places?.length) return '';

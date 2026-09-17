@@ -24,6 +24,7 @@ let focusScene = null; // the scene the focus was last reset for
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 let running = false; //   Ling is mid-reply
 let asked = false; //     Ling's own question is waiting in the chat
+let mapView = 'province'; // the map card: the player's province up close, or 'world'
 const boards = new Map();
 const duels = new Map(); // game id → {status, moves, picks, rounds, outcome, say}
 let chat = null;
@@ -52,7 +53,7 @@ function duelFor(id) {
   return duels.get(id);
 }
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor });
+const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView });
 
 /* ── Reading ── */
 
@@ -307,6 +308,9 @@ async function deliver(text, hidden) {
 document.addEventListener('click', (e) => {
   const sw = e.target.closest('[data-lang]');
   if (sw) { switchLang(sw.dataset.lang); return; }
+  // Near or whole: only how the map is looked at, so the page answers it.
+  const view = e.target.closest('[data-mapview]');
+  if (view) { mapView = view.dataset.mapview; render(); return; }
   const spoken = e.target.closest('[data-say]');
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick],[data-duel-stand]')) {
     if (spoken.matches(':disabled')) return;
@@ -413,6 +417,8 @@ function onContentBlock(payload) {
       const cards = (args.cards ?? []).filter((c) => c && c.card);
       if (cards.length) {
         focus = cards;
+        // A map Ling shows opens on the player's province.
+        if (cards.some((c) => c.card === 'map')) mapView = 'province';
         render();
       }
     } catch (e) {
