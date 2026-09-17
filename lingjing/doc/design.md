@@ -1077,60 +1077,59 @@ names stay our heritage's: no person, treasure, beast or art from the novel.
 
 ### The fight
 
-Two sides. **The player:** 气血 and **灵力** — the fight's own pool, full at
-the start of every fight (not 灵气: 灵气 stays the day's pace in the 丹田).
-**The creature:** 气血, 防 (physical), 抗 (per element), and a **pattern** of
-intents. **Win:** the creature's 气血 reaches 0. **Lose:** the player's 气血
-*or* 灵力 reaches 0 — his rule — and the creature withdraws until tomorrow,
-as today. A loss still costs nothing else.
+His rules, in his words: **所有攻击都消耗灵力。生命值耗尽，或者灵力耗尽，战斗失败。**
+· **fight is round by round, stronger side first; each creature has a level
+the same as the player; on the player's turn: 法术, 物理攻击, 符箓, or 辅助
+(增强进攻或者防守); the creature has 灵力, 生命值 too.**
 
-**The creature says what it will do.** Before each round the card shows its
-intent over its picture — read from its `pattern` in `creatures.json`,
-cycled, the start drawn by day · creature · 道号 (deterministic, replayable):
+- **Turns.** Round by round, one side then the other. The side with the higher
+  **战力** moves first for the whole fight; a tie goes to the player. 战力 is one
+  number on the card — realm step, weapon 攻, 法衣 防, 法术 — so arms and gear
+  can buy the first move.
+- **An even match by birth.** Every creature fights at the player's own level
+  (realm and step): its 气血, 灵力, 攻, 防 and 法术 come from the same realm
+  table as the player's, then its **lean** shapes them — *thick-hided* (防 and
+  气血 up, 法术 down), *warded* (抗 up), *quick* (战力 up, 攻 down), *fierce*
+  (攻 up, 防 down). What wins is what the player brings and how they read it:
+  the weapon and the 本命法宝, gear, arts, the 符 held, the day's cast.
+- **Both sides: 气血 and 灵力.** Every attack spends 灵力 — the creature's too.
+  A side at 0 气血 or 0 灵力 loses. 灵力 is the fight's own pool, full at the
+  start (not 灵气, which stays the day's pace). There is no free rest.
+- **The player's turn — one of four:**
 
-| intent | the card | what it does |
+| choice | 灵力 | effect |
 |---|---|---|
-| 击 · 金 6 | ⚔金6 | hits 6, element 金 |
-| 蓄 | ⚡ | hits nothing; its next is 重击 |
-| 重击 · 金 14 | ⚔⚔金14 | hits 14 |
-| 甲 | 🛡+6 | its 防 +6 this round — the blade glances off |
-| 灵光 | ◎ | reflects 法术 this round — the caster takes it |
+| **法术** · one of their roots | 4 | 法术 × 相克 (×2 if it overcomes the creature's root, ×½ if overcome) − 抗 of that element (at least 1) |
+| **物理攻击** — the worn weapon | 2 | 器攻 − 防 (at least 1); no 五行 |
+| **符箓** — a 符 held | 0 | 12, ignores 防 and 抗; spent; once a fight |
+| **辅助** — 聚势 or 护体 | 1 | 聚势: the next attack ×1.5 · 护体: the next blow taken is halved |
 
-**The player picks one action a round. Every attack spends 灵力:**
-
-| action | 灵力 | effect |
-|---|---|---|
-| **御器** — the worn weapon | 2 | 器攻 − 防 (at least 1); no 五行 |
-| **施法 · 木/水/火/土** — one of their roots | 4 | 法术 × 相克 (×2 if the root overcomes the creature's, ×½ if overcome) − 抗 of that element (at least 1) |
-| **护体** — 灵光 around the body | 2 | absorbs 5 + 法衣 防 of this round's hit |
-| **符** | 0 | 12, ignores 防 and 抗; spent; once a fight |
-| **服丹** — a pill in the bag | 0 | 回灵丹 +10 灵力 · 回春丹 +10 气血; takes the round |
-
-There is no free rest: 灵力 comes back only by pill or art. So the fight is a
-budget — the counter element is the strongest blow and the dearest; 灵光 punishes
-casting on the wrong round, 甲 punishes the blade, 重击 punishes not guarding.
-A hit landing: 护体 absorbs first, then 法衣 防 (physical) or 佩 抗 (its element).
+- **The creature's turn** comes from its **pattern** in `creatures.json`
+  (cycled, the start drawn by day · creature · 道号): 击 (物理), 法术 of its
+  root, 蓄 (its next attack doubled), 护体, 甲 (its 防 up for a round). Its
+  stance stays on the card after its turn — *蓄势*, *护体* — so the player reads
+  it before choosing: 护体 against a gathered blow, 法术 against 甲, 物理 when it
+  is warded. It spends 灵力 as the player does, and can run dry and lose.
+- A blow landing: 护体 halves first, then 防 (物理) or 抗 (法术 of that element).
 
 **Numbers — a start, tuned by the gate below, never shown as formulas:**
 
-| realm | 气血 | 灵力 | 法术 |
-|---|---|---|---|
-| 练气 | 20 | 18 | 4 |
-| 筑基 | 30 | 24 | 6 |
-| 结丹 | 44 | 30 | 8 |
-| 元婴 | 60 | 38 | 11 |
+| realm | 气血 | 灵力 | 法术 | 攻 base |
+|---|---|---|---|---|
+| 练气 | 20 | 18 | 4 | 2 |
+| 筑基 | 30 | 24 | 6 | 3 |
+| 结丹 | 44 | 30 | 8 | 4 |
+| 元婴 | 60 | 38 | 11 | 6 |
 
-A step within a realm adds 2 气血 and 1 灵力. Creatures by 阶 (一阶 ≈ 练气,
-二阶 ≈ 筑基, 三阶 ≈ 结丹): 气血 18 / 32 / 50, hits 3–5 / 5–8 / 6–14, 防 0–4,
-抗 on the element that overcomes them (it knows its weakness) 0–4. Each
-creature leans: thick hide (high 防 — cast), warded (high 抗 — the blade),
-quick (many 击), slow (蓄 → 重击).
+A step within a realm adds 2 气血, 1 灵力 and 1 战力. A creature's lean moves
+its numbers by about a quarter.
 
-**The gate (a build test, like today's simulation):** for every creature at
-its 阶, any single action repeated wins under 30%; an attentive line (guard
-before 重击, the blade on 灵光 rounds, the counter otherwise, a pill when low)
-wins over 75%; a player with only their four roots and a starting weapon
-can win against every creature, 木 ones included.
+**The gate (a build test by simulation, like today's):** for every creature
+at the player's level, any single choice repeated wins under 30%; an
+attentive line (护体 against 蓄, 法术 into 甲, 物理 into wards, the counter
+root otherwise, 聚势 before the finishing blow) wins over 75%; a player with
+only their four roots and a starting weapon can win against every creature,
+木 ones included; neither side can win by making the other spend 灵力 alone.
 
 ### Arms — 法器, 本命法宝, gear
 
@@ -1160,33 +1159,35 @@ can win against every creature, 木 ones included.
 
 - **Roots** — which 施法 the player can cast; the root test finally matters.
 - **符** — 12, ignores 防/抗, once a fight (was: a round won).
-- **Arts:** 借势 — one 施法 counts as the element its root generates, once ·
-  遁法 — a blow that would end the fight leaves 1 气血, once · 符水 — a 符 also
-  gives +6 灵力 · 五雷法 — a 木 施法 at double 法术 that ignores 抗, costs 6,
-  once · 御剑 — 御器 strikes twice for its cost. Teachers unchanged.
+- **Arts** join the four choices: 借势 — a 辅助: the next 法术 counts as the
+  element its root generates · 五雷法 — a 法术: 木 at double 法术, ignores 抗,
+  6 灵力, once · 御剑 — 物理攻击 strikes twice for its cost · 遁法 — passive: a
+  blow that would end the fight leaves 1 气血, once · 符水 — passive: a 符箓
+  also gives +6 灵力. Teachers unchanged.
 - **The day's cast (问斗法)** — 吉: its root's 施法 +2 法术 (大吉 +4); 凶: −2 (大凶 −4).
 - **命格 日主** — once a fight, a blow of that element taken is halved.
 
 ### The card, the rules, Ling
 
-- **Card:** both 气血 bars, the player's 灵力 as a bar beside, the creature's
-  intent above its picture; the actions as buttons (御器 · the 施法 roots and a
-  borrowed one · 护体 · 符 · each pill held · the arts), each greyed with its
-  why (not enough 灵力, none held, used); the rounds as a short log
-  (*施法·火 → 16* / *蠪侄 金击 → 护体吸 7，受 0*). Phone: the same card inline.
+- **Card:** both sides' 气血 and 灵力 bars, 战力 and who moves first, the
+  creature's stance above its picture; on the player's turn the four choices as
+  buttons (法术 with a root each and a borrowed one · 物理攻击 · 符箓 · 辅助,
+  and the arts under them), each greyed with its why (not enough 灵力, none
+  held, used); the turns as a short log (*法术·火 → 16* / *蠪侄 蓄势* /
+  *蠪侄 重击 → 护体减半，受 7*). Phone: the same card inline.
 - **Rules:** `duel.js` stays pure and shared — `fight(actions, creature, kit)`
-  replays and refuses by name; `duel --picks` carries action tokens (`blade`,
-  `cast:fire`, `guard`, `talisman`, `pill:<id>`, `art:<id>`). Look's duel brief
+  replays and refuses by name; `duel --picks` carries the player's choices (`cast:fire`, `strike`,
+  `talisman`, `assist:focus`, `assist:guard`, `art:<id>`); the creature's turns
+  are the rules' own. Look's duel brief
   adds both sides' numbers and the next intent. No engine change.
 - **Ling** narrates the outcome and the finishing blow from the result, in
   the world, never a formula; the fight itself is played on the card.
 
 **Build order:** (1) the fight — `fight()`, the realm and creature tables,
-patterns for the seven creatures, the card, the gate; the arts, 符, cast and
+creature levels, leans and patterns for the seven, the card, the gate; the arts, 符, cast and
 日主 as modifiers. (2) Gear — 攻 on weapons, 法衣 and 佩, the slots. (3) The
 本命法宝 — 炼化, 温养, 强化, the core materials, 妖丹 drops. **His calls:** the
-numbers after the gate; whether 护体 costs 灵力 (it does here, as 护体灵光 does
-in the novel); 反噬; whether a tamed creature fights beside the player later.
+numbers after the gate; what 战力 counts; 反噬; whether a tamed creature fights beside the player later.
 
 ## 银月 joins at 结丹 (designed 2026-09-17, not built)
 
