@@ -1095,6 +1095,8 @@ test('a tapped option comes to Look as words, and Look names the tool it is', ()
   const road = choice.options.find(o => o.move);
   assert.ok(road, JSON.stringify(choice));
   assert.match(cli('look', `--said=${road.label}`).then, new RegExp(`Move \\{place: ${road.move}\\}`));
+  // …and so is its chip on the map, which says 去X.
+  assert.match(cli('look', `--said=去${road.label}`).then, new RegExp(`Move \\{place: ${road.move}\\}`));
 });
 
 test('the command line keeps state on disk, logs it and undoes it', () => {

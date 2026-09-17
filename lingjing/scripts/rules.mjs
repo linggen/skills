@@ -1599,9 +1599,12 @@ const TAPS = {
   tame: o => `Tame {creature: ${o.tame}}`,
   linger: () => 'Branch {action: open}',
 };
+// A place chip on the map says 去X / Go to X (cards.js sayGo).
+const GO = /^(去|go to\s+)/i;
 function tapThen(ask, said) {
   const words = String(said ?? '').trim();
-  const option = words && ask?.options?.find(o => o.label === words);
+  const options = words ? ask?.options ?? [] : [];
+  const option = options.find(o => o.label === words) ?? options.find(o => o.move && o.label === words.replace(GO, ''));
   const kind = option && Object.keys(TAPS).find(k => option[k]);
   if (!kind) return null;
   return `The player tapped "${option.label}" — call ${TAPS[kind](option)} now; this Look changed nothing. Then AskUser exactly the \`ask\` that tool returns. The reply ends only there.`;
