@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks; `root` is a weapon's — worn, it lends that root in a bout; `charm` is a 符 — picked in a bout, the round is won outright, once. Never a number that fights. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only. Kinds are for the shelf and the card and carry no rules.",
+  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks; `charm` is a 符 — cast in a fight, it ignores 防 and 抗, once. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only.",
   "items": [
     {
       "id": "lingzhi",
@@ -81,26 +81,30 @@
         "徐"
       ],
       "effect": {
-        "root": "wood"
+        "root": "wood",
+        "atk": 2
       }
     },
     {
       "id": "straw-cloak",
-      "kind": "gear",
+      "kind": "robe",
       "name": {
         "zh": "蓑衣",
         "en": "Straw cloak"
       },
       "art": "art/items/straw-cloak.webp",
       "about": {
-        "zh": "泗水多雨。",
-        "en": "It rains often on the Si."
+        "zh": "泗水多雨。编得厚实，挡得住一拳。",
+        "en": "It rains often on the Si. Woven thick, it turns a blow."
       },
       "buy": 20,
       "sell": 5,
       "sold": [
         "徐"
-      ]
+      ],
+      "effect": {
+        "def": 1
+      }
     },
     {
       "id": "jade-fish",
@@ -180,7 +184,8 @@
         "冀"
       ],
       "effect": {
-        "root": "metal"
+        "root": "metal",
+        "atk": 3
       }
     },
     {

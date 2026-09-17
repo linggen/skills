@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "功法 — the learned arts. Each is one bout effect from duel.js (never a number), a source line from 道教 heritage, and the tier it asks for. Learned, never bought: a creature that walks with the player teaches its own (creatures.json `teaches`), a scene exit may `grant.art`. A made world may rename these words, never invent an effect.",
+  "_about": "功法 — the learned arts. Each is one effect in the fight from duel.js (never a number), a source line from 道教 heritage, and the tier it asks for. Learned, never bought: a creature that walks with the player teaches its own (creatures.json `teaches`), a scene exit may `grant.art`. A made world may rename these words, never invent an effect.",
   "arts": [
     {
       "id": "jieshi",
@@ -11,8 +11,8 @@
       "effect": "generate",
       "tier": "qi",
       "about": {
-        "zh": "一回合内，所出灵根作其所生之行：木生火，火生土，土生金，金生水，水生木。一战一用。",
-        "en": "For one round, the root you pick acts as the one it generates: 木→火, 火→土, 土→金, 金→水, 水→木. Once a bout."
+        "zh": "所出法术可作其所生之行：木生火，火生土，土生金，金生水，水生木。多费一分灵力。",
+        "en": "A 法术 may go out as the root it generates: 木→火, 火→土, 土→金, 金→水, 水→木. A breath more 灵力 each time."
       },
       "source": {
         "zh": "《黄帝内经》五行相生",
@@ -25,11 +25,11 @@
         "zh": "遁法",
         "en": "The Way Out"
       },
-      "effect": "undo-loss",
+      "effect": "survive",
       "tier": "foundation",
       "about": {
-        "zh": "败了的一回合收回，算作平手。一战一用。",
-        "en": "A lost round is taken back and stands as a draw. Once a bout."
+        "zh": "致命的一击留一线生机：气血不至归零。一战一用。",
+        "en": "A blow that would end the fight leaves one last breath: 气血 stops at 1. Once a fight."
       },
       "source": {
         "zh": "《抱朴子·登涉》遁甲之术",
@@ -45,8 +45,8 @@
       "effect": "charm-refills",
       "tier": "foundation",
       "about": {
-        "zh": "掷出的符化水入丹田：每用一符，灵气回十。",
-        "en": "A cast talisman turns to water for the dantian: each 符 spent refills ten qi."
+        "zh": "掎出的符化水入丹田：每用一符，灵力回一半法术。",
+        "en": "A cast talisman turns to water for the dantian: each 符 spent gives back 灵力."
       },
       "source": {
         "zh": "《后汉书》太平道以符水治病",
@@ -59,11 +59,11 @@
         "zh": "五雷法",
         "en": "Five Thunders"
       },
-      "effect": "draw-wins",
+      "effect": "thunder",
       "tier": "core",
       "about": {
-        "zh": "平手的一回合，雷落而胜。一战一用。",
-        "en": "A drawn round is struck by thunder and won. Once a bout."
+        "zh": "雷落为木，倍于法术，不计其抗。一战一用。",
+        "en": "Thunder falls as 木, at double 法术, and no 抗 blunts it. Once a fight."
       },
       "source": {
         "zh": "《道法会元》神霄五雷",
@@ -76,11 +76,11 @@
         "zh": "御剑",
         "en": "Sword Riding"
       },
-      "effect": "sword-twice",
+      "effect": "twice",
       "tier": "nascent",
       "about": {
-        "zh": "佩剑所借之根可连出两回合，不必换气。",
-        "en": "The worn sword's root may be picked two rounds running, no breath between."
+        "zh": "佩剑一气连击两下。一战一用。",
+        "en": "The worn sword strikes twice in one breath. Once a fight."
       },
       "source": {
         "zh": "《列仙传》剑解",

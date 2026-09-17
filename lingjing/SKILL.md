@@ -207,13 +207,14 @@ tools:
       Buy, sell or use a catalog item. `buy` and `sell` happen only at a
       place with a market (`place.has.shop`; its `shelf` carries every price —
       you never invent one) and cost a visit's stamina; `use` works anywhere:
-      a pill pays its progress, a wear goes on Yinyue or the abode, a weapon
-      is worn (`wear.weapon`) and lends its root in every bout while it is
-      in the bag. Refusals: `no-market`, `not-for-sale-here` (with the
-      shelf), `no-stones` (its line), `not-in-bag`, `not-for-sale` (a made
-      thing has no price), `key-in-use` (its line — the story still needs
-      it), `cast-in-a-bout` (a 符 is not used, it is cast on the scene),
-      `not-usable`.
+      a pill pays its progress, a wear goes on Yinyue or the abode, and arms
+      are worn — a weapon in hand (`wear.weapon`, its 器攻 for 物理攻击 and
+      its root lent to a 法术), a 法衣 (`wear.robe`, 防), a 佩
+      (`wear.pendant`, 抗). Refusals: `no-market`, `not-for-sale-here` (with
+      the shelf), `no-stones` (its line), `not-in-bag`, `not-for-sale` (a
+      made thing has no price), `key-in-use` (its line — the story still
+      needs it), `cast-in-a-bout` (a 符 is not used, it is cast in a fight on the
+      scene), `not-usable`.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs trade --action={{action}} --id={{id}}"
     tier: edit
     timeout_ms: 8000
@@ -248,7 +249,7 @@ tools:
       写符 — one 桑皮纸 from the bag becomes one 符: at a place with a market,
       or anywhere once the Core is formed (结丹); a visit's stamina; one a
       day. The result carries the 符 as an `item` and its card to `show`.
-      The 符 is cast on the scene, in a bout — never by you. Refusals:
+      The 符 is cast on the scene, in a fight — never by you. Refusals:
       `no-paper` (its line names the paper), `not-here` (its line), `written-today`
       (its line), `no-stamina`.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs write"
@@ -282,7 +283,8 @@ tools:
       ones, the hexagram with its `judgment` and `image`, the `changed`
       hexagram, the `grade`, and the `effect` it has today on what was
       asked (`progress` or `wealth` a factor, `rest_seconds` between story
-      steps, a bout's `root` with `draws_win` or `wins_draw`). `cast-today`:
+      steps, a fight's `root` with the `spell` it lifts or lowers).
+      `cast-today`:
       already cast — its reading comes back, nothing new.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --ask={{ask}}"
     tier: edit
@@ -562,7 +564,7 @@ the scene or the place, and the choice.
   peak could not take (never spoken as a gain). A zero is left out;
   nothing paid, nothing said. **Never add numbers up** — no running
   totals of your own; the next Look carries the totals. **Something
-  won** — a riddle, a bout, a task, a realm — **gives Yinyue one short line
+  won** — a riddle, a fight, a task, a realm — **gives Yinyue one short line
   of her own** (`**银月：**` / `**Yinyue:**`), glad for the player in her
   voice, never the numbers: **the last line before the question**, after
   any lines the new scene brings — the stage speaks her last line aloud.
@@ -585,8 +587,8 @@ the scene or the place, and the choice.
 - **`no-stamina`: the pool (`words.pool`) is empty.** Speak its `say` (it
   names the hour stamina returns), turn the player to the world in one line —
   rest, a walk, their other practice — and let the story wait. Never count,
-  spend or promise stamina yourself: a story step, a branch and a bout cost
-  it (the prologue's steps and bouts are free); talk, questions and the boards are free; a quest paid refills it
+  spend or promise stamina yourself: a story step, a branch and a fight cost
+  it (the prologue's steps and fights are free); talk, questions and the boards are free; a quest paid refills it
   (`stamina` on the result — say it in the world's word, as you say what was
   paid).
 - **Show is your only card.** The scene draws the status, the place and
@@ -765,10 +767,10 @@ Summarize, silence). The one silence: AskUser came back with no answer.
 ## At a creature's haunt
 
 A place with a creature and no scene running is not empty: Look's
-`place.encounter` names the creature, its bout (`game`, `duel`) and what
+`place.encounter` names the creature, its fight (`game`, `duel`) and what
 it `likes`, with how many the player holds. Two ways, both the rules':
 
-- **降妖 here** — the same 五行 bout, on the scene, once a day. The scene
+- **降妖 here** — the same fight, on the scene, once a day. The scene
   reports `[scene] won haunt:<creature>`: **Look**, say what the rules
   `paid` (a haunt pays like a branch), no Resolve — there is no exit. Lost:
   it withdraws until tomorrow, `[scene] lost …`, a kind line from Yinyue.
@@ -779,37 +781,62 @@ it `likes`, with how many the player holds. Two ways, both the rules':
 
 ## 降妖 — fighting a creature
 
-A fight is played on the scene, like a board — the 五行 bout: the player
-picks a root each round, 相克 wins (金克木 · 木克土 · 土克水 · 水克火 ·
-火克金), two rounds subdue it; the day's moves always hold two the
-player's own roots overcome, so no bout is lost by birth. **You never roll a
-round or call a fight.** An exit with `game.kind: "duel"` sits on the scene
-as its card; when the player wants to fight, say so in a line and let the
+A fight is played on the scene, like a board — 斗法, turn by turn. **You never
+take a turn or call a fight.** An exit with `game.kind: "duel"` sits on the
+scene as its card; when the player wants to fight, say so in a line and let the
 scene take it. The scene reports `[scene] won <id>` — Resolve that exit and
-speak its beat — or `[scene] lost <id>`: the creature withdraws into the
-mist until tomorrow; the exit refuses `withdrawn` with its line, and a loss
-costs nothing. Tomorrow the same exit fights again. Yinyue's line after a
-loss is kind and short.
+speak its beat — or `[scene] lost <id>`: the creature withdraws into the mist
+until tomorrow; the exit refuses `withdrawn` with its line, and a loss costs
+nothing. Tomorrow the same exit fights again. Yinyue's line after a loss is
+kind and short.
 
-**功法 — what the player brings to a bout.** All of it is the scene's
-buttons; you never play any of it, you only tell what is there (the exit's
-`duel` carries `sword`, `charm`, `arts`):
-- **A worn sword lends its root** — 铁剑 lends 金, 竹剑 lends 木. *Wear the
-  iron sword* / *佩上铁剑* is Trade `use`; from then on the bout offers that
-  root beside the player's own, one breath between two strokes (never two
-  rounds running, until 御剑). This is how a player without 金 beats a 木
-  creature: by craft, from the market.
-- **A 符 wins its round outright**, once a bout, and is spent. It is
-  written from 桑皮纸 (Inscribe, *写符*), never bought; the market of 濮阳 sells
-  the paper.
-- **The arts** (`arts`, learned never bought — a creature that walks with
-  the player teaches its own as it joins; the result's `paid.learned` says
-  so, speak it as a gift): 借势 borrows the root a pick generates (练气),
-  遁法 takes a lost round back to a draw (筑基), 符水 makes a cast 符 refill
-  the pool (筑基), 五雷法 turns a draw into a win (结丹), 御剑 lets the sword
-  strike twice running (元婴). Each once a bout; below its realm the scene
-  shows it greyed with the realm it waits for. A player asking what they can
-  do in a fight hears these, by name, with `arts[].about`.
+**How a fight goes**, so you can tell a player who asks — never as numbers,
+always in the world:
+
+- The creature stands at **the player's own realm and step**. What tells them
+  apart is its **lean** (`duel.foe.lean`): 厚皮 *hide* (more 气血 and 防, less
+  法术) · 避法 *ward* (抗 against every 法术) · 迅捷 *quick* (moves first, hits
+  lighter) · 凶猛 *fierce* (hits harder, thinner 防).
+- The side with the higher **战力** moves first, all fight long; a tie is the
+  player's. Arms and gear buy the first move.
+- Both sides hold **气血** and **灵力**. Every attack spends 灵力, and a side at
+  0 气血 **or** 0 灵力 has lost. 灵力 is the fight's own pool, full at the
+  start — it is not 灵气, which stays the day's pace.
+- The player's turn is one of four: **法术** (a root of their own — double into
+  what it overcomes, half into what overcomes it, less the creature's 抗) ·
+  **物理攻击** (the worn weapon's 器攻, less its 防; no 五行) · **符箓** (a 符
+  held: a great blow that no 防 or 抗 blunts, once a fight, and the 符 is
+  spent) · **辅助** (聚势 lifts the next blow, 护体 halves the next one taken).
+- The creature announces itself: after its turn its **stance** stays on the
+  card — *蓄势* (its next blow doubled), *护体*, *甲* (its 防 up for a round).
+  That is the thing to read: 护体 against a gathered blow, 法术 into 甲, the
+  blade into a warded hide, the counter root otherwise.
+
+**功法 — what the player brings.** All of it is the scene's buttons; you never
+play any of it, you only tell what is there (the exit's `duel` carries `sword`,
+`robe`, `pendant`, `charm`, `arts`):
+- **Arms from the market** — a weapon's 器攻 is most of a strike (竹剑, 铁剑),
+  a 法衣 blunts what lands, a 佩 wards one element. *Wear the iron sword* /
+  *佩上铁剑* is Trade `use`. A weapon also **lends its root**: a 法术 may go out
+  as 金 through a 铁剑, a little weaker for being borrowed — how a 木水火土
+  player reaches 金 by craft, from the market.
+- **A 符** is the one great blow anyone can carry, once a fight, and it is
+  spent. Written from 桑皮纸 (Inscribe, *写符*), never bought; the market of
+  濮阳 sells the paper.
+- **The arts** (`arts`, learned never bought — a creature that walks with the
+  player teaches its own as it joins; the result's `paid.learned` says so,
+  speak it as a gift): 借势 sends a 法术 out as the root it generates, for a
+  breath more 灵力 (练气) — this is how a player born without a creature's
+  counter reaches it, and it is never once only; 遁法 leaves the last breath
+  when a blow would end the fight (筑基); 符水 turns a cast 符 to water and
+  gives 灵力 back (筑基); 五雷法 falls as 木 at double 法术, past any 抗, once
+  (结丹); 御剑 strikes twice in one breath, once (元婴). Below its realm the
+  scene shows an art greyed with the realm it waits for. A player asking what
+  they can do in a fight hears these, by name, with `arts[].about`.
+
+**After a fight**, the result carries `log` — every turn as it fell — and both
+sides as they ended. Narrate the finish from it: the blow that landed, what it
+cost, how close it was. Never a formula, never a number the card already shows.
 
 ## The market
 
@@ -871,7 +898,7 @@ pick is Divine with that `ask`. The coins fall on the stage by themselves:
 **Show `{card: "hexagram"}`**, then Yinyue reads it — the hexagram's name,
 its `judgment` or `image` in a sentence of her own, a moving line if there
 is one, and what it does today in the world's words (*今日修行快了一半* /
-*a draw with 金 wins, twice a bout*). Two or three sentences. It is the
+*金法术今日更利*). Two or three sentences. It is the
 game's own divination — never a real fortune, never a promise about their
 life. A cast is once a day and never cast again; `cast-today` → read
 today's again. `resting` (a dire cast on cultivation) → the next step waits
@@ -888,7 +915,7 @@ private. At the stone, once the roots are set, Yinyue says once that the
 card can read their 命格 if they wish. *命格*, *生辰*, *属相*, *八字* →
 Show `{card: "traits"}`. `[scene] fate set` → Look, and Yinyue tells the
 生肖 and 日主 in a line of her own and what it gives: at home in that
-element — once a bout, a lost round with that root stands as a draw; a cast
+element — once a fight, a blow of that element is halved; a cast
 whose lower trigram is that element leans their way (`fated`). `[scene] fate
 declined` → one easy line, nothing more. It is the game's own sign, never a
 reading of their life.

@@ -660,6 +660,10 @@ authored content has; the same lint checks it; the same rules play it.
 
 ### 降妖 — fighting a creature
 
+> **Superseded 2026-09-17 by `## 斗法`** — the five-round 五行 bout became a
+> turn-by-turn fight. What still holds: the exit, the witness rule, one try a
+> day, the grant, and a loss costing nothing.
+
 **Decided 2026-09-14.** Fighting a creature is a game the scene runs, like
 the alchemy board: no model, no 灵气, no fighting numbers. Words: **斗法** is
 cultivator against cultivator (the table, *duel*); **降妖** is against a
@@ -967,6 +971,11 @@ and runs the same `rules.mjs` contract. Later.
 
 ## 功法 — swords, talismans and learned arts (designed and built 2026-09-16)
 
+> **Effects superseded 2026-09-17 by `## 斗法`** — the pieces are the same
+> (a worn sword, a 符 written from paper, arts learned from a companion), but
+> each does something in the fight now, not to a round. See 斗法's *What
+> today's pieces become*.
+
 His question after losing to 蠪侄 with no 金 root: "can user learn some
 功法, 法术, or attack by sword?" Today a player has roots, the 五行 bout,
 items with three effects (pill, wear, key) and the story; a sword in the
@@ -1055,7 +1064,7 @@ refused. Rulings made while building, his to flip:
   the engine; the sword in the bout and the teaching in the rules; 写符
   end to end with 符水; the linter on arts and made things).
 
-## 斗法 — 灵力、法器与本命法宝 (designed 2026-09-17, not built)
+## 斗法 — 灵力、法器与本命法宝 (designed 2026-09-17; the fight and gear BUILT 2026-09-17)
 
 **Why.** His question on the 五行 bout: *如果是金妖，用户一直出火就能赢，对吗？*
 — yes: run over 5,000 days, always countering the creature's root wins 92%
@@ -1112,17 +1121,53 @@ the same as the player; on the player's turn: 法术, 物理攻击, 符箓, or �
   is warded. It spends 灵力 as the player does, and can run dry and lose.
 - A blow landing: 护体 halves first, then 防 (物理) or 抗 (法术 of that element).
 
-**Numbers — a start, tuned by the gate below, never shown as formulas:**
+**Numbers — as the gate settled them (`duel.js`, never shown as formulas):**
 
-| realm | 气血 | 灵力 | 法术 | 攻 base |
-|---|---|---|---|---|
-| 练气 | 20 | 18 | 4 | 2 |
-| 筑基 | 30 | 24 | 6 | 3 |
-| 结丹 | 44 | 30 | 8 | 4 |
-| 元婴 | 60 | 38 | 11 | 6 |
+| realm | 气血 | 灵力 | 法术 | 攻 | 防 (a creature's hide) |
+|---|---|---|---|---|---|
+| 练气 | 22 | 22 | 4 | 3 | 3 |
+| 筑基 | 32 | 32 | 6 | 4 | 4 |
+| 结丹 | 46 | 46 | 8 | 6 | 6 |
+| 元婴 | 62 | 62 | 11 | 8 | 8 |
 
-A step within a realm adds 2 气血, 1 灵力 and 1 战力. A creature's lean moves
-its numbers by about a quarter.
+A step within a realm adds 2 气血 and 2 灵力. A creature's lean moves its
+numbers by about a quarter: 厚皮 (气血 ×1.25, 防 +1, 法术 ×0.75) · 避法
+(抗 = half its 法术, against every element) · 迅捷 (战力 ×1.25, 攻 ×0.75) ·
+凶猛 (攻 ×1.25, 防 −1).
+
+**What the gate changed, and why** (each was a hole it found, not a taste):
+
+- **A 法术 costs its own 法术** — 4 at 练气, 11 at 元婴; a strike half that, a
+  辅助 a quarter. With flat costs, 法术 outgrew the pool and rote casting won
+  48–85% at 结丹 and up. Costing what it is worth gives *one* economy at every
+  realm: a 法术 into nothing is 灵力 for 气血 one for one, into what it
+  overcomes it is two for one, and a pool is one fight long.
+- **灵力 = 气血 at every realm**, so that economy breaks even. (Design had the
+  pool below the body; that made 练气 exact and every realm after it loose.)
+- **A creature's pool is twice the table.** His rule — 灵力 out and you lose —
+  made *turtling* a winning line: 护体 costs 1, the creature's turns average
+  more, so a player who never attacked won ~100%. A beast's breath is longer;
+  now waiting one out loses.
+- **A 符 is 法术 ×3** (12 at 练气, as designed) so it stays a great blow at 元婴
+  instead of a rounding error. 符水 gives back 法术 ×1.5 in 灵力 — inside the
+  fight, not as the day's 灵气 (it used to refill 灵气 10; that is gone).
+- **聚势 and 护体 are held, not stacked** — you cannot raise a guard that is
+  already up. Without this, a cheap stance could be spammed forever.
+- **借势 rides the cast** instead of costing its own turn: one turn, one blow,
+  a breath more 灵力 — and it is *not* once a fight. This is the whole answer
+  to being born without a creature's counter: as its own turn it halved the
+  player's damage *rate*, and every such birth lost every fight. 五雷法 and
+  御剑 stay once a fight.
+- **防 and 抗 never negate** — a blow always lands at least 1 — but they do not
+  cap either; a half-floor made 物理 dominant (rote striking 84%).
+
+**Where it stands after tuning** (`node tools/duel-sim.mjs`, every creature ×
+every root set × 5 steps × 5 days, at all four realms): every rote line under
+30% · the attentive line 82–99% armed, 80% bare · 灵力 alone decides under 18%
+· no creature is unbeatable for any birth once 借势 is known. A player who
+never learned 借势 and carries no 符 cannot beat a creature they lack the
+counter for — 借势 is the prologue companion's own art, so that is the
+prologue's job, not a hole.
 
 **The gate (a build test by simulation, like today's):** for every creature
 at the player's level, any single choice repeated wins under 30%; an
@@ -1183,11 +1228,21 @@ only their four roots and a starting weapon can win against every creature,
 - **Ling** narrates the outcome and the finishing blow from the result, in
   the world, never a formula; the fight itself is played on the card.
 
-**Build order:** (1) the fight — `fight()`, the realm and creature tables,
-creature levels, leans and patterns for the seven, the card, the gate; the arts, 符, cast and
-日主 as modifiers. (2) Gear — 攻 on weapons, 法衣 and 佩, the slots. (3) The
-本命法宝 — 炼化, 温养, 强化, the core materials, 妖丹 drops. **His calls:** the
-numbers after the gate; what 战力 counts; 反噬; whether a tamed creature fights beside the player later.
+**Build order:** ~~(1) the fight~~ **BUILT** — `fight()` in `duel.js`, the realm
+table, leans and patterns for the seven, the card (both pools, the stance, the
+turns, the four choices), the gate as `tools/duel-sim.mjs` and
+`tests/duel.test.mjs`; the arts, 符, cast and 日主 as modifiers. ~~(2) Gear~~
+**BUILT** — 攻 on 竹剑 2 and 铁剑 3, 防 1 on the 蓑衣, `kind: robe` and
+`kind: pendant` with `wear.robe` / `wear.pendant`, and the lint that keeps arms
+to one number each. **No 佩 is in the catalog yet** — the kind, the slot and 抗
+all work; it wants one picture. (3) The 本命法宝 — 炼化, 温养, 强化, the core
+materials, 妖丹 drops: NOT built.
+
+**战力 counts** the realm and step, the weapon's 攻, the 法衣's 防 and the
+法术 — a 迅捷 creature adds a quarter. **Still his calls:** the numbers above,
+now that the gate holds them; 反噬; whether a tamed creature fights beside the
+player later; whether 御剑 should be once a fight (it is) or a standing way of
+striking.
 
 ## 银月 joins at 结丹 (designed and built 2026-09-17)
 

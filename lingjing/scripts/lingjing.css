@@ -224,22 +224,41 @@ button.pl:hover { background: var(--ling-soft); }
 /* Buy and sell look like every other button; only a disabled one is faded. */
 .price { display: flex; justify-content: space-between; font-family: var(--ui); }
 
-/* ── 降妖 ── */
-.duelhead { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; }
+/* ── 斗法 ── */
+.duelhead { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
 .duelhead .croot { font-family: var(--ui); font-size: 12px; opacity: 0.75; }
-.rounds { display: grid; gap: 4px; margin: 8px 0; font-family: var(--ui); font-size: 12px; }
-.rnd { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; padding: 4px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
-.rnd.won { border-color: var(--ling); color: var(--ling); }
-.rnd.lost { opacity: 0.6; }
-.roots { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-.rootbtn { display: grid; place-items: center; gap: 2px; min-width: 64px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-family: var(--serif); font-size: 22px; color: var(--wood); cursor: pointer; }
+.duelhead .lean { font-family: var(--ui); font-size: 11px; opacity: 0.6; }
+.duelhead .stance { font-family: var(--ui); font-size: 11px; color: var(--seal); border: 1px solid var(--seal); border-radius: 999px; padding: 1px 8px; }
+
+/* Both sides' pools: 气血 and 灵力, the creature's above the player's. */
+.fsides { display: grid; gap: 6px; margin: 8px 0; }
+.fside { display: grid; gap: 3px; }
+.fwho { font-family: var(--ui); font-size: 11px; opacity: 0.7; }
+.fpool { display: grid; grid-template-columns: 34px 1fr 28px; align-items: center; gap: 6px; font-family: var(--ui); font-size: 11px; }
+.fpool b { text-align: right; font-weight: 500; }
+.fbar { height: 6px; border-radius: 3px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+.fbar i { display: block; height: 100%; }
+.fbar.hp i { background: var(--seal); }
+.fbar.qi i { background: var(--ling); }
+
+/* The turns as they fell, newest last. */
+.fturns { display: grid; gap: 2px; margin: 8px 0; font-family: var(--ui); font-size: 11px; max-height: 168px; overflow-y: auto; }
+.fturn { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: 8px; padding: 3px 8px; border-radius: 6px; background: var(--surface); }
+.fturn.you { border-left: 2px solid var(--ling); }
+.fturn.foe { border-left: 2px solid var(--seal); opacity: 0.85; }
+.fturn .hit { color: var(--seal); }
+
+.roots { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+.rowlab { font-family: var(--ui); font-size: 10px; opacity: 0.55; min-width: 34px; }
+.rootbtn { display: grid; place-items: center; gap: 2px; min-width: 56px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-family: var(--serif); font-size: 20px; color: var(--wood); cursor: pointer; }
 .rootbtn small { font-family: var(--ui); font-size: 10px; opacity: 0.7; }
 .rootbtn:hover { border-color: var(--ling); transform: translateY(-1px); }
 .rootbtn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .rootbtn.sword { border-style: dashed; }
+.rootbtn.borrow { font-size: 15px; min-width: 66px; border-color: var(--ling); color: var(--ling); }
 .rootbtn.charm { color: #b3261e; }
-.rootbtn.art { font-size: 15px; min-width: 88px; }
-.roots.extras { margin-top: 4px; }
+.rootbtn.strike, .rootbtn.assist { font-size: 15px; min-width: 66px; }
+.rootbtn.art { font-size: 15px; min-width: 80px; }
 .artmark { margin-left: 6px; font-size: 10px; opacity: 0.7; }
 .artrow { padding: 4px 0; border-top: 1px solid var(--line); }
 .artrow.dim { opacity: 0.6; }
@@ -305,5 +324,3 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .fateform input[type=date] { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
 .small.seal { color: var(--seal); margin-top: 4px; }
 
-/* 借势 armed: a root button shows what it will count as. */
-.rootbtn.armed { border-color: var(--ling); color: var(--ling); }

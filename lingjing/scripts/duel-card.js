@@ -1,80 +1,98 @@
-// duel-card.js — the 降妖 card. Draws the creature and its root, the
-// player's roots as buttons — and beside them the worn sword's root, the 符
-// in hand and the learned arts, each greyed with its why when it may not
-// come next — and the rounds as they fall. The bout itself lives in the
-// page's duel state and is decided by the rules on settle.
+// duel-card.js — the 斗法 card. Both sides' 气血 and 灵力, the 战力 that says
+// who moves first, the creature's stance above its name, the turns as a short
+// log, and the player's four choices as buttons — 法术 (a root each, and a
+// borrowed face where 借势 is known), 物理攻击, 符箓, 辅助, with the arts under
+// them. Each button says what it spends and is greyed with its why.
+//
+// The fight lives in duel.js: the page replays it from the picks so far, and
+// the rules replay the same picks to decide. The page draws only what may
+// come; the rules refuse the rest.
 
 import { esc, spoken } from './cards.js';
-import { BEATS, GENERATES, bout, offers } from './duel.js';
+import { GENERATES, fight, offers } from './duel.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 
-/// The 相克 ring in one line, so the player knows what overcomes what before
-/// picking: 金 › 木 › 土 › 水 › 火 › 金. Names from the world's roots.
-function ringHtml(ctx) {
-  const name = (id) => (ctx.lang === 'zh' ? GLYPH[id] : ctx.content.traits.elements[id]?.en ?? id);
-  const chain = ['metal'];
-  while (chain.length < 6) chain.push(BEATS[chain[chain.length - 1]]);
-  return `<div class="small dim kering">${ctx.words.ring}: ${chain.map(name).map(esc).join(' › ')}</div>`;
-}
+const bar = (now, max, kind) => `<div class="fbar ${kind}"><i style="width:${Math.max(0, Math.min(100, (now / max) * 100))}%"></i></div>`;
 
-/// One round as it fell: the pick (a 符, or a root borrowed by 借势 shown as
-/// what it counted for), the creature's move, the result, and the art that
-/// turned it.
-function roundHtml(r, i, b, ctx) {
+/// One side's two pools, named and counted.
+function poolsHtml(who, side, ctx) {
   const w = ctx.words;
-  const pick = r.charm ? (b.charm?.name ?? '符') : r.as ? `${GLYPH[r.pick]}→${GLYPH[r.as]}` : GLYPH[r.pick];
-  const art = (r.art ? `<small class="artmark">${esc(b.arts.find((a) => a.id === r.art)?.name ?? r.art)}</small>` : '')
-    + (r.fortune ? `<small class="artmark">${esc(w.fortuneMark)}</small>` : '')
-    + (r.fate ? `<small class="artmark">${esc(w.fateMark)}</small>` : '');
-  return `<div class="rnd ${r.result}"><span>${w.round} ${i + 1}</span>
-    <span>${esc(pick)} · ${GLYPH[r.move]}${art}</span><span class="res">${w[{ won: 'rWon', lost: 'rLost', draw: 'rDraw' }[r.result]]}</span></div>`;
+  return `<div class="fside"><div class="fwho">${esc(who)}</div>
+    <div class="fpool"><span>${w.hp}</span>${bar(side.hp, side.hp_max, 'hp')}<b>${side.hp}</b></div>
+    <div class="fpool"><span>${w.mana}</span>${bar(side.qi, side.qi_max, 'qi')}<b>${side.qi}</b></div></div>`;
 }
 
-/// The buttons the bout offers next, from duel.js — the page draws only
-/// what may come; the rules refuse the rest.
-function pickHtml(exit, d, ctx) {
-  const w = ctx.words, b = exit.duel;
-  const why = (o) => (o.ok ? '' : ` disabled title="${esc(w.why?.[o.why] ?? o.why)}"`);
-  const id = esc(exit.game.id);
-  const roots = [], extras = [];
-  // 借势 armed: the next root counts as the one it generates — each button
-  // says so before the pick (his ask, 2026-09-17: 木 went in as 火 unseen).
-  const armed = Boolean(bout(d.picks, d.moves, b.kit).pending);
-  const face = (el) => (armed ? `${GLYPH[el]}→${GLYPH[GENERATES[el]]}` : GLYPH[el]);
-  const elName = (el) => esc(ctx.content.traits.elements[armed ? GENERATES[el] : el]?.[ctx.lang] ?? el);
-  for (const o of offers(d.picks, d.moves, b.kit)) {
-    const attr = `data-duel-pick="${esc(o.token)}" data-duel="${id}"${why(o)}`;
-    if (o.kind === 'root') roots.push(`<button class="rootbtn${armed ? ' armed' : ''}" ${attr}>${face(o.token)}<small>${elName(o.token)}</small></button>`);
-    else if (o.kind === 'sword') roots.push(`<button class="rootbtn sword${armed ? ' armed' : ''}" ${attr}>${face(o.token)}<small>${armed ? elName(o.token) : esc(b.sword?.name ?? '')}</small></button>`);
-    else if (o.kind === 'charm') extras.push(`<button class="rootbtn charm" ${attr}>符<small>${esc(b.charm?.name ?? '')} ×${b.charm?.held ?? 0}</small></button>`);
-    else if (o.kind === 'art') {
-      const art = b.arts.find((a) => a.id === o.token.slice(4));
-      extras.push(`<button class="rootbtn art" ${attr}>${esc(art?.name ?? o.token)}<small>${esc(w.artHint?.[art?.effect] ?? '')}</small></button>`);
-    }
+/// What the creature is holding after its turn — the thing to read before
+/// choosing: a gathered blow wants 护体, 甲 wants a 法术.
+function stanceHtml(f, ctx) {
+  const w = ctx.words;
+  const held = [f.foe.gather && w.stGather, f.foe.guard && w.stGuard, f.foe.armor && w.stArmor].filter(Boolean);
+  return held.length ? `<span class="stance">${held.map(esc).join(' · ')}</span>` : '';
+}
+
+/// One turn as it fell.
+function turnHtml(t, b, ctx) {
+  const w = ctx.words;
+  const art = id => b.arts.find(a => a.id === id)?.name ?? id;
+  const mine = {
+    cast: () => (t.as ? `${esc(art(t.art))} ${GLYPH[t.element]}→${GLYPH[t.as]}` : `${w.aCast}·${GLYPH[t.element]}`),
+    strike: () => (t.hits ? `${esc(art(t.art))} ×${t.hits}` : w.aStrike),
+    talisman: () => `${w.aCharm}${t.gave ? ` +${t.gave}${w.mana}` : ''}`,
+    assist: () => (t.how === 'focus' ? w.aFocus : w.aGuard),
+    art: () => esc(art(t.id)),
+  };
+  const theirs = { strike: w.fStrike, cast: `${GLYPH[t.element] ?? ''}${w.fCast}`, gather: w.stGather, guard: w.stGuard, armor: w.stArmor };
+  const who = t.side === 'you' ? w.you : b.creature.name;
+  const what = t.side === 'you' ? mine[t.act]() : theirs[t.act];
+  return `<div class="fturn ${t.side}"><span>${esc(who)}</span><span>${what}</span>
+    <span class="hit">${t.damage ? `−${t.damage}` : ''}</span></div>`;
+}
+
+/// A choice, with what it spends and why it may not come.
+function btn(o, label, hint, id, ctx) {
+  const w = ctx.words;
+  const why = o.ok ? '' : ` disabled title="${esc(w.why?.[o.why] ?? o.why)}"`;
+  return `<button class="rootbtn ${o.kind}" data-duel-pick="${esc(o.token)}" data-duel="${esc(id)}"${why}>${label}<small>${hint}</small></button>`;
+}
+
+/// The buttons the fight offers next, from duel.js — in rows the player reads
+/// as one thing: the 法术, what 借势 lends, the blade and the 符, the 辅助.
+function picksHtml(exit, d, ctx) {
+  const w = ctx.words, b = exit.duel, id = exit.game.id;
+  const rows = { cast: [], borrow: [], hit: [], assist: [], art: [] };
+  for (const o of offers(d.picks, b.foe, b.kit)) {
+    const cost = `${o.cost}${w.mana}`;
+    if (o.kind === 'root' || o.kind === 'sword') rows.cast.push(btn(o, GLYPH[o.element], `${o.kind === 'sword' ? `${esc(b.sword?.name ?? '')} ` : ''}${cost}`, id, ctx));
+    else if (o.kind === 'borrow') rows.borrow.push(btn(o, `${GLYPH[o.element]}→${GLYPH[GENERATES[o.element]]}`, cost, id, ctx));
+    else if (o.kind === 'strike') rows.hit.push(btn(o, w.aStrike, `${b.sword ? esc(b.sword.name) : w.barehand} ${cost}`, id, ctx));
+    else if (o.kind === 'charm') rows.hit.push(btn(o, w.aCharm, `×${b.charm?.held ?? 0}`, id, ctx));
+    else if (o.kind === 'assist') rows.assist.push(btn(o, o.how === 'focus' ? w.aFocus : w.aGuard, cost, id, ctx));
+    else if (o.kind === 'art') rows.art.push(btn(o, esc(b.arts.find(a => a.id === o.id)?.name ?? o.id), cost, id, ctx));
   }
-  const stand = d.status === 'rescue' ? `<button class="act" data-duel-stand="${id}">${w.stand}</button>` : '';
-  const hint = armed ? `<div class="small ling">${w.armedHint}</div>` : '';
-  return `${hint}<div class="roots">${roots.join('')}</div>${extras.length ? `<div class="roots extras">${extras.join('')}</div>` : ''}${stand}`;
+  const row = (label, cells) => (cells.length ? `<div class="roots"><span class="rowlab">${label}</span>${cells.join('')}</div>` : '');
+  return row(w.aCast, rows.cast) + row(w.lend, rows.borrow) + row('', rows.hit) + row(w.aAssist, rows.assist) + row(w.arts, rows.art);
 }
 
-/// `exit` is Look's exit brief (with `duel`), `d` the page's bout
-/// {status: idle|open|rescue|done, picks, rounds, outcome, say}.
+/// `exit` is Look's exit brief (with `duel`), `d` the page's fight
+/// {status: idle|open|done, picks, outcome, say}.
 export function duelHtml(exit, d, ctx) {
   const w = ctx.words, b = exit.duel;
-  // The root once: the glyph, and its English name only in an English game.
+  const f = fight(d.picks ?? [], b.foe, b.kit);
   const rootName = ctx.lang === 'en' ? ` ${esc(b.creature.root_name)}` : '';
-  const head = `<div class="duelhead"><b>${spoken(b.creature.name, b.creature.pinyin)}</b> <span class="croot">${GLYPH[b.creature.root]}${rootName}</span></div>`;
-  const rounds = (d.rounds || []).map((r, i) => roundHtml(r, i, b, ctx)).join('');
+  const head = `<div class="duelhead"><b>${spoken(b.creature.name, b.creature.pinyin)}</b>
+    <span class="croot">${GLYPH[b.creature.root]}${rootName}</span>
+    <span class="lean">${esc(w.lean?.[b.foe.lean] ?? '')}</span>${stanceHtml(f, ctx)}</div>`;
+  const live = d.status === 'open' || d.status === 'done';
+  const pools = live ? `<div class="fsides">${poolsHtml(b.creature.name, f.foe, ctx)}${poolsHtml(w.you, f.you, ctx)}</div>` : '';
+  const power = `<div class="small dim">${w.power} ${f.you.power} · ${esc(b.creature.name)} ${f.foe.power} — ${f.first === 'you' ? w.youFirst : w.foeFirst}</div>`;
+  const turns = live ? `<div class="fturns">${f.log.map(t => turnHtml(t, b, ctx)).join('')}</div>` : '';
   let body = '';
   // A haunt's win is paid by the rules at once; a scene's waits for its exit.
   if (exit.won) body = `<div class="small ling">${String(exit.game?.id ?? '').startsWith('haunt:') ? w.duelWon : w.wonWait}</div>`;
   else if (exit.withdrawn && d.status !== 'done') body = `<div class="small dim">${w.withdrawn}</div>`;
-  else if (d.status === 'idle') body = `<div class="small dim">${w.duelHint}</div>${ringHtml(ctx)}<button class="act" data-duel-start="${esc(exit.game.id)}">${w.begin}</button>`;
-  else if (d.status === 'open') body = `<div class="small dim">${w.duelHint}</div>${ringHtml(ctx)}${pickHtml(exit, d, ctx)}`;
-  else if (d.status === 'rescue') body = `<div class="small dim">${w.rescueHint}</div>${pickHtml(exit, d, ctx)}`;
-  else if (d.status === 'done') {
-    body = `<div class="small ${d.outcome === 'won' ? 'ling' : 'dim'}">${d.outcome === 'won' ? w.duelWon : esc(d.say || w.duelLost)}</div>`;
-  }
-  return `<div class="card duelcard"><div class="cardtitle">${w.duelTitle}</div>${head}<div class="rounds">${rounds}</div>${body}</div>`;
+  else if (d.status === 'idle') body = `<div class="small dim">${w.duelHint}</div>${power}<button class="act" data-duel-start="${esc(exit.game.id)}">${w.begin}</button>`;
+  else if (d.status === 'open') body = `${power}${picksHtml(exit, d, ctx)}`;
+  else if (d.status === 'done') body = `<div class="small ${d.outcome === 'won' ? 'ling' : 'dim'}">${d.outcome === 'won' ? w.duelWon : esc(d.say || w.duelLost)}</div>`;
+  return `<div class="card duelcard"><div class="cardtitle">${w.duelTitle}</div>${head}${pools}${turns}${body}</div>`;
 }

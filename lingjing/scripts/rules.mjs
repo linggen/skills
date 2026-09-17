@@ -17,10 +17,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  CAST, DEFAULT_WORLD, MADE, WORLD, allWorlds, cardOf, gameOf, hasWorld, knownWorld, lintAmendCreature, lintAmendPlace,
-  lintMade, lintMadeWorld, listWorlds, loadWorld, madeWorldDir, overlayOf, ownPlaces, pairsOf,
+  ARM_SLOTS, CAST, DEFAULT_WORLD, MADE, WORLD, allWorlds, cardOf, gameOf, hasWorld, knownWorld, lintAmendCreature,
+  lintAmendPlace, lintMade, lintMadeWorld, listWorlds, loadWorld, madeWorldDir, overlayOf, ownPlaces, pairsOf,
 } from './content.mjs';
-import { bout, creatureMoves } from './duel.js';
+import { fight, foeOf } from './duel.js';
 import { layoutRoads, placeWords } from './roadmap.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
@@ -371,15 +371,32 @@ function filler(content, state, said) {
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
 
+/* One effect, as the card tells it. Arms carry the fight's own numbers: 攻
+   with the root a weapon lends, 防, 抗 by element. */
+const ELEMENT_NAME = (content, lang, el) => pick(content.traits.elements[el], lang);
+const EFFECT_BRIEF = {
+  key: () => ({ key: true }),
+  progress: e => ({ progress: e.progress }),
+  wear: e => ({ wear: e.wear }),
+  charm: () => ({ charm: true }),
+  atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
+  def: e => ({ def: e.def }),
+  ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),
+};
+function effectBrief(content, lang, effect) {
+  const e = effect ?? {};
+  const key = Object.keys(EFFECT_BRIEF).find(k => e[k] != null);
+  return key ? EFFECT_BRIEF[key](e, content, lang) : null;
+}
+
 /* An item as Look and the card tell it: its words, its prices, its one
    effect, and how many the player holds. */
 function itemBrief(content, state, item) {
-  const lang = state.lang, e = item.effect ?? {};
+  const lang = state.lang;
   return {
     id: item.id, kind: item.kind, name: pick(item.name, lang), about: pick(item.about, lang), art: item.art,
     buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
-    effect: e.key ? { key: true } : e.progress ? { progress: e.progress } : e.wear ? { wear: e.wear }
-      : e.root ? { root: e.root, root_name: pick(content.traits.elements[e.root], lang) } : e.charm ? { charm: true } : null,
+    effect: effectBrief(content, lang, item.effect),
     worn: Object.values(state.wear ?? {}).includes(item.id),
     ...(item.made?.from ? { made_from: pick(itemOf(content, item.made.from)?.name, lang) } : {}),
   };
@@ -413,19 +430,31 @@ const teach = (content, state, cid) => learn(content, state, creatureOf(content,
 /* Every companion's art, for a save from before the arts (2026-09-16). */
 const teachAll = (content, state) => state.cast.map(cid => teach(content, state, cid)).filter(Boolean);
 
-/* What the player brings to a bout — duel.js reads it, the card too. */
+/* What the player stands in a fight with — duel.js reads it, the card too:
+   their roots and realm, the arms they wear, the 符 in the bag, the arts
+   they know, the day's cast and their 日主. */
+const wornOf = (content, state, slot) => (state.wear?.[slot] && state.bag[state.wear[slot]] ? itemOf(content, state.wear[slot]) : null);
+
 function kitOf(content, state, now = null) {
-  const weapon = state.wear?.weapon && state.bag[state.wear.weapon] ? itemOf(content, state.wear.weapon) : null;
+  const weapon = wornOf(content, state, 'weapon'), robe = wornOf(content, state, 'robe'), pendant = wornOf(content, state, 'pendant');
   const charm = charmOf(content);
   const arts = {};
   for (const id of state.arts ?? []) { const a = artOf(content, id); if (a) arts[id] = { effect: a.effect, ready: artReady(content, state, a) }; }
   return {
-    roots: state.traits ?? [], sword: weapon?.effect?.root ?? null, weapon: weapon?.id ?? null,
+    roots: state.traits ?? [], tier: state.tier, step: state.step ?? 0,
+    sword: weapon?.effect?.root ?? null,
+    weapon: weapon ? { id: weapon.id, atk: weapon.effect?.atk ?? 0 } : null,
+    robe: robe ? { id: robe.id, def: robe.effect.def } : null,
+    pendant: pendant ? { id: pendant.id, ward: pendant.effect.ward } : null,
     charm: charm ? { id: charm.id, held: state.bag[charm.id] ?? 0 } : null, arts,
     ...(now && boutFortune(content, state, now) ? { fortune: boutFortune(content, state, now) } : {}),
     ...(state.fate?.element ? { fate: { root: state.fate.element } } : {}),
   };
 }
+
+/* The same day, creature and 道号 draw the same creature — an undo cannot
+   fish for an easier one. */
+const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${state.name ?? ''}`;
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -472,27 +501,31 @@ function sceneBrief(content, state, now = new Date()) {
   };
 }
 
-/* The bout as the scene draws it: the creature and its root, the player's
-   roots, and today's bout if one is open or done. */
+/* The fight as the scene draws it: the creature at the player's own realm —
+   its numbers, its lean and the turns it takes — the player's roots and
+   arms, and today's fight if one is open or done. */
 function duelBrief(content, state, game, now) {
   const creature = creatureOf(content, game.creature);
   const lang = state.lang, today = state.duels?.[game.creature];
   const open = today?.day === dayKey(now) ? today : null;
   return {
     id: game.id, creature: { id: creature.id, name: pick(creature.name, lang), ...(lang === 'zh' && creature.pinyin ? { pinyin: creature.pinyin } : {}), root: creature.root, root_name: pick(content.traits.elements[creature.root], lang) },
+    foe: foeOf(creature, state.tier, state.step ?? 0, duelSeed(state, creature, now)),
     roots: (state.traits ?? []).map(e => ({ id: e, name: pick(content.traits.elements[e], lang) })),
     ...duelKitBrief(content, state, now),
-    today: open ? { outcome: open.outcome, rounds: open.rounds ?? [] } : null,
+    today: open ? { outcome: open.outcome, log: open.log ?? [] } : null,
   };
 }
 
-/* The sword's root, the 符 in hand and the arts known, as the card draws
-   them beside the player's own roots; `kit` is the same for duel.js. */
+/* The arms worn, the 符 in hand and the arts known, as the card draws them
+   beside the player's own roots; `kit` is the same duel.js reads. */
 function duelKitBrief(content, state, now = null) {
   const lang = state.lang, kit = kitOf(content, state, now);
-  const weapon = kit.weapon ? itemOf(content, kit.weapon) : null, charm = charmOf(content);
+  const named = arm => (arm ? { ...arm, name: pick(itemOf(content, arm.id)?.name, lang) } : null);
+  const weapon = kit.weapon ? itemOf(content, kit.weapon.id) : null, charm = charmOf(content);
   return {
-    sword: weapon ? { id: weapon.id, name: pick(weapon.name, lang), root: kit.sword, root_name: pick(content.traits.elements[kit.sword], lang) } : null,
+    sword: weapon ? { id: weapon.id, name: pick(weapon.name, lang), atk: kit.weapon.atk, ...(kit.sword ? { root: kit.sword, root_name: pick(content.traits.elements[kit.sword], lang) } : {}) } : null,
+    robe: named(kit.robe), pendant: named(kit.pendant),
     charm: charm ? { id: charm.id, name: pick(charm.name, lang), held: kit.charm.held } : null,
     arts: artsBrief(content, state),
     kit,
@@ -999,12 +1032,12 @@ export function win(state, content, ctx, args) {
   return { state: s, result: { ok: true, won: id } };
 }
 
-/* 降妖 — the scene plays the bout, the rules decide it. `start` checks the
-   creature has not withdrawn today, charges a bout's stamina and draws the
-   creature's moves for the day; then, with `picks`, the rules replay the
-   bout and record the outcome: a win the exit can take, or a loss that
+/* 降妖 — the scene plays the fight turn by turn, the rules decide it.
+   `start` checks the creature has not withdrawn today and charges a fight's
+   stamina; then, with `picks` — the player's own turns — the rules replay
+   the fight and record the outcome: a win the exit can take, or a loss that
    sends the creature into the mist until tomorrow. A loss costs nothing
-   else. After a win today a bout is practice: it costs, it pays nothing. */
+   else. After a win today a fight is practice: it costs, it pays nothing. */
 export function duel(state, content, ctx, args) {
   const id = String(args.id ?? '');
   const exit = sceneOf(content, state)?.exits.find(e => gameOf(e)?.id === id && gameOf(e).kind === 'duel');
@@ -1016,43 +1049,39 @@ export function duel(state, content, ctx, args) {
     : pick({ zh: `${pick(creature.name, 'zh')}退入林影，明日再来。`, en: `${pick(creature.name, 'en')} withdraws into the shadows; come back tomorrow.` }, state.lang);
   const s = clone(state);
   const day = dayKey(ctx.now), today = s.duels?.[creature.id];
-  const seed = `${day}|${creature.id}|${s.name ?? ''}`;
-  const moves = creatureMoves(creature.root, seed, s.traits ?? []);
+  const foe = foeOf(creature, s.tier, s.step ?? 0, duelSeed(s, creature, ctx.now));
   if (!args.picks) {
     if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
     if (haunt && today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
     if (!s.traits?.length) return refuse('no-traits', null);
     const empty = spendStamina(content, s, ctx, 'duel');
     if (empty) return empty;
-    s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open', rounds: [] } };
-    return { state: s, result: { ok: true, started: id, moves, duel: duelBrief(content, s, game, ctx.now) } };
+    s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open', log: [] } };
+    return { state: s, result: { ok: true, started: id, duel: duelBrief(content, s, game, ctx.now) } };
   }
   if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
   const picks = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
   const kit = kitOf(content, s, ctx.now);
-  const played = bout(picks, moves, kit);
+  const played = fight(picks, foe, kit);
   if (played.refused) return refuse(played.refused.why, null, { token: played.refused.token, roots: kit.roots, sword: kit.sword, arts: Object.keys(kit.arts) });
-  if (played.outcome === 'open') return refuse('unfinished', null, { rounds: played.rounds });
-  s.duels[creature.id] = { day, outcome: played.outcome, rounds: played.rounds };
+  if (played.outcome === 'open') return refuse('unfinished', null, { log: played.log });
+  s.duels[creature.id] = { day, outcome: played.outcome, log: played.log };
   if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
   const say = played.outcome === 'lost' ? withdrawnLine : null;
-  // A 符 cast is spent, win or lose; with 符水 known it refills the pool.
-  let refilled = 0;
+  // A 符 cast is spent, win or lose; 符水 gives its 灵力 back inside the fight.
   if (played.used.charm) {
     s.bag[kit.charm.id] -= 1;
     if (!s.bag[kit.charm.id]) delete s.bag[kit.charm.id];
-    if (Object.values(kit.arts).some(a => a.effect === 'charm-refills' && a.ready)) refilled = addStamina(content, s, CHARM_REFILL, ctx.now);
   }
   // At a haunt no exit will pay the win: the rules pay it here, once a day.
   const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 10 }) : null;
   const used = { ...(played.used.charm ? { charm: kit.charm.id } : {}), ...(played.used.arts.length ? { arts: played.used.arts } : {}) };
-  return { state: s, result: { ok: true, outcome: played.outcome, rounds: played.rounds, game: id, say, ...(Object.keys(used).length ? { used } : {}), ...(refilled ? { refilled } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, outcome: played.outcome, log: played.log, you: played.you, foe: played.foe, game: id, say, ...(Object.keys(used).length ? { used } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
    catalog's `made.anywhere_from` tier is reached; a visit's stamina; one a
-   day. The 符 is cast on the scene, in a bout; Ling never plays it. */
-const CHARM_REFILL = 10;
+   day. The 符 is cast on the scene, in a fight; Ling never plays it. */
 
 /* Whether 写符 would be allowed here today — the choice offers it then. */
 function canWrite(content, state) {
@@ -1253,8 +1282,8 @@ function keyInUse(content, state, id) {
 /* Buy, sell or use a catalog item. Buying and selling happen at a market
    (a place with a shop) and cost a visit's stamina; the prices are the
    catalog's, never Ling's. Using a pill pays its progress within its table;
-   using a wear puts it on Yinyue or the abode; using a weapon wears it
-   (`wear.weapon`), and a bout borrows its root. */
+   using a wear puts it on Yinyue or the abode; using arms wears them — a
+   weapon in hand (and a fight may borrow its root), a 法衣, a 佩. */
 export function trade(state, content, ctx, args) {
   const item = itemOf(content, String(args.id ?? ''));
   const s = clone(state);
@@ -1303,9 +1332,12 @@ export function trade(state, content, ctx, args) {
     if (e.wear && e.wear === companionOf(content)?.id && !hasCompanion(s)) {
       return refuse('no-companion', pick({ zh: '还没有人可以佩戴它。', en: 'There is no one to wear it yet.' }, lang));
     }
-    if (e.wear || e.root) {
+    // Arms go on the player, each kind in its own slot; a `wear` is Yinyue's
+    // or the abode's.
+    const slot = e.wear ?? ARM_SLOTS.get(item.kind);
+    if (slot) {
       s.wear ??= {};
-      s.wear[e.wear ?? 'weapon'] = item.id;
+      s.wear[slot] = item.id;
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear } };
     }
     if (e.charm) return refuse('cast-in-a-bout', pick({ zh: `${pick(item.name, lang)}在${w.contest}时掷出，不在此。`, en: `A ${pick(item.name, lang)} is cast in a bout, not here.` }, lang));
@@ -1769,7 +1801,8 @@ function fortuneOf(content, state, now, ask) {
   return Object.keys(effect).length ? effect : null;
 }
 
-/* A cast asked about bouts favours — or turns against — the lower trigram's root. */
+/* A cast asked about fights lifts — or lowers — the 法术 of the lower
+   trigram's root, for the whole day. */
 function boutFortune(content, state, now) {
   const effect = fortuneOf(content, state, now, 'bout');
   if (!effect) return null;

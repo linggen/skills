@@ -56,17 +56,17 @@
     },
     "bout": {
       "great": {
-        "draws_win": 2
+        "spell": 4
       },
       "good": {
-        "draws_win": 1
+        "spell": 2
       },
       "even": {},
       "ill": {
-        "wins_draw": 1
+        "spell": -2
       },
       "dire": {
-        "wins_draw": 2
+        "spell": -4
       }
     },
     "wealth": {

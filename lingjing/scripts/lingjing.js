@@ -8,7 +8,7 @@ import './chat-bridge.js';
 import { listSkillSessions, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
-import { bout } from './duel.js';
+import { fight } from './duel.js';
 import { WORDS, cardHtml, trayHtml, esc, say as fill, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
@@ -30,7 +30,7 @@ let castFresh = false;
 let fateOpen = false, fateDraft = '', fateError = false; // the 命格 form: shown again, the date typed, a date refused
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
 const boards = new Map();
-const duels = new Map(); // game id → {status, moves, picks, rounds, outcome, say}
+const duels = new Map(); // game id → {status, picks, outcome, say}
 let chat = null;
 
 const lang = () => (look?.lang === 'en' ? 'en' : 'zh');
@@ -53,7 +53,7 @@ function boardFor(taskId) {
 /// done once the rules have settled it. Reset when the day's bout in Look
 /// says nothing is open.
 function duelFor(id) {
-  if (!duels.has(id)) duels.set(id, { status: 'idle', moves: [], picks: [], rounds: [], outcome: null, say: null });
+  if (!duels.has(id)) duels.set(id, { status: 'idle', picks: [], outcome: null, say: null });
   return duels.get(id);
 }
 
@@ -229,7 +229,7 @@ function omenChip(kind) {
   const w = words();
   const label = kind === 'progress' ? (e.progress ? `×${e.progress}` : '')
     : kind === 'wealth' ? (e.wealth ? `×${e.wealth}` : '')
-    : e.root && (e.draws_win || e.wins_draw) ? `${e.root.name}${e.draws_win ? '↑' : '↓'}` : '';
+    : e.root && e.spell ? `${e.root.name}${e.spell > 0 ? '↑' : '↓'}` : '';
   if (!label) return '';
   const title = `${w.omen} · ${d.hexagram.name} · ${d.grade.name} · ${d.ask.name}`;
   return `<span class="omenchip ${esc(d.grade.id)}" title="${esc(title)}">${esc(d.hexagram.name)} ${esc(label)}</span>`;
@@ -385,7 +385,7 @@ document.addEventListener('click', (e) => {
     return;
   }
   const spoken = e.target.closest('[data-say]');
-  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick],[data-duel-stand]')) {
+  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick]')) {
     if (spoken.matches(':disabled')) return;
     tapped = spoken.dataset.say;
     if (tapped === words().sayCast) casting = true;
@@ -408,7 +408,7 @@ document.addEventListener('click', (e) => {
   if (cleared) onWin(board.taskId);
 });
 
-/* ── 降妖: the page plays the bout, the rules decide it ── */
+/* ── 降妖: the page plays the fight, the rules decide it ── */
 
 async function onDuelStart(id) {
   const d = duelFor(id);
@@ -418,11 +418,11 @@ async function onDuelStart(id) {
     render();
     return;
   }
-  Object.assign(d, { status: 'open', moves: r.moves, picks: [], rounds: [], outcome: null, say: null });
+  Object.assign(d, { status: 'open', picks: [], outcome: null, say: null });
   render();
 }
 
-/// The bout's brief from Look: the scene's exit, or the haunt's encounter.
+/// The fight's brief from Look: the scene's exit, or the haunt's encounter.
 function duelBriefFor(id) {
   const exit = (look?.scene?.exits || []).find((x) => x.game?.id === id && x.game.kind === 'duel');
   if (exit) return exit.duel;
@@ -430,20 +430,19 @@ function duelBriefFor(id) {
   return e && e.game?.id === id ? e.duel : null;
 }
 
-/// A pick: a root, the sword's root, the 符 or an art — duel.js says what may
-/// come, the rules settle it. A decided bout that an art could still turn
-/// waits (`rescue`) for the player's word: the art, or "let it stand".
+/// A turn: a 法术 (its own root, the sword's, or borrowed), 物理攻击, 符箓,
+/// 辅助 or an art — duel.js says what may come, the rules settle it. The
+/// creature's turns are the rules' own; the page only replays them.
 async function onDuelPick(id, token) {
   const d = duelFor(id);
-  if (d.status !== 'open' && d.status !== 'rescue') return;
-  const kit = duelBriefFor(id)?.kit ?? {};
-  const played = bout([...d.picks, token], d.moves, kit);
+  if (d.status !== 'open') return;
+  const brief = duelBriefFor(id);
+  if (!brief) return;
+  const played = fight([...d.picks, token], brief.foe, brief.kit ?? {});
   if (played.refused) return;
   d.picks.push(token);
-  d.rounds = played.rounds;
-  d.status = played.outcome === 'open' ? 'open' : played.rescue ? 'rescue' : d.status;
   render();
-  if (played.outcome === 'open' || played.rescue) return;
+  if (played.outcome === 'open') return;
   await settleDuel(id);
 }
 
@@ -463,9 +462,7 @@ document.addEventListener('click', (e) => {
   const start = e.target.closest('[data-duel-start]');
   if (start) { onDuelStart(start.dataset.duelStart); return; }
   const pick = e.target.closest('[data-duel-pick]');
-  if (pick) { onDuelPick(pick.dataset.duel, pick.dataset.duelPick); return; }
-  const stand = e.target.closest('[data-duel-stand]');
-  if (stand) settleDuel(stand.dataset.duelStand);
+  if (pick) onDuelPick(pick.dataset.duel, pick.dataset.duelPick);
 });
 
 /* ── The chat ── */

@@ -16,17 +16,18 @@ export const WORDS = {
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     about: '说说', feed: '喂它{item}', subdue: '降妖',
-    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effCharm: '斗法时掷出，一回合必胜', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
-    duelTitle: '降妖', duelHint: '每回合选一个灵根，相克者胜，两胜为降。', ring: '相克', begin: '出手', round: '回合', rWon: '胜', rLost: '败', rDraw: '平', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
-    rescueHint: '胜负已分——还有一手可出。', stand: '认了',
-    artHint: { 'draw-wins': '平手化胜', 'undo-loss': '收回败局', generate: '借所生之行' },
+    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
+    duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
+    you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
+    aCast: '法术', aStrike: '物理', aCharm: '符箓', aAssist: '辅助', aFocus: '聚势', aGuard: '护体', lend: '借势', arts: '功法',
+    fStrike: '击', fCast: '法', stGather: '蓄势', stGuard: '护体', stArmor: '甲',
+    lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
     uncast: '今日未卜', uncastHint: '心中默念一事，三钱六掷。', cast: '起一卦', sayCast: '请银月起一卦', throwing: '起卦中……', castAsk: '所问何事？', changedTo: '之卦',
     effEven: '今日无增无减', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '每步之间静坐 {s} 秒',
-    effDrawWin: '{root}：平手化胜 ×{n}', effWinDraw: '{root}：胜局化平 ×{n}', fortuneMark: '卦',
+    effSpell: '{root}法术 {n}', fortuneMark: '卦',
     fateTitle: '命格', fateLine: '属{zodiac} · 日主{stem}{element} · 天生亲近{element}', fateHint: '可选填。生辰只在本机推算命格：不入存档，不入对话。',
-    armedHint: '借势已起：所出之根，作其所生。',
     fateSet: '定命格', fateRandom: '随机', fateSkip: '不必了', fateBad: '这一天不在历中，再看看。', fateMark: '命', fated: '命格相合',
-    why: { 'art-used': '一战一用', 'art-no-draw': '须是平手', 'art-no-loss': '须是败局', 'art-needs-tier': '境界未到', 'art-pending': '已在借势', 'sword-twice': '换口气再出', 'charm-used': '一战一符', 'no-charm': '囊中无符', 'bout-over': '已分胜负', 'not-your-root': '非你灵根' },
+    why: { 'no-qi': '灵力不足', 'art-used': '一战一用', 'art-needs-tier': '境界未到', 'art-no-sword': '手中无剑', 'charm-used': '一战一符', 'no-charm': '囊中无符', 'fight-over': '已分胜负', 'not-your-root': '非你灵根', 'already-guard': '已然护体', 'already-focus': '已然聚势' },
     questTitle: '月下之约', questSteps: { bell: '先寻一只银月铃。', water: '带铃到有水照月处。', ring: '此处水面有月——摇铃。', riddle: '她在等你答。' },
     questAt: '坊市在{name}', questWater: '最近的水在{name}', ringBell: '摇一摇铃', sayRing: '摇一摇铃', sayQuest: '说说月下之约',
     gateTitle: '下一鼎', opens: '开启于', gateNeed: '入{to}，须{step} · {xw} {n}', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
@@ -48,16 +49,17 @@ export const WORDS = {
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
     effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: 'Recorded by {app} · done today at {t}', questWait: 'Recorded by {app} · not yet today',
-    duelTitle: 'Subdue', duelHint: 'Each round pick a root; the one that overcomes wins the round; two rounds subdue it.', ring: 'Overcomes', begin: 'Begin', round: 'Round', rWon: 'won', rLost: 'lost', rDraw: 'draw', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
-    rescueHint: 'Decided — but one art could still turn it.', stand: 'Let it stand',
-    artHint: { 'draw-wins': 'a draw becomes a win', 'undo-loss': 'take back the loss', generate: 'borrow the root it generates' },
+    duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
+    you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
+    aCast: 'Spell', aStrike: 'Strike', aCharm: 'Talisman', aAssist: 'Ready', aFocus: 'Gather', aGuard: 'Guard', lend: 'Borrow', arts: 'Arts',
+    fStrike: 'strikes', fCast: ' spell', stGather: 'gathering', stGuard: 'guarded', stArmor: 'armoured',
+    lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
     uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind: three coins, six throws.', cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', throwing: 'Casting…', castAsk: 'What do you ask about?', changedTo: 'Changing to',
     effEven: 'No gain, no loss today', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '{s}s of stillness between steps',
-    effDrawWin: '{root}: a draw wins ×{n}', effWinDraw: '{root}: a win only draws ×{n}', fortuneMark: 'cast',
+    effSpell: '{root} spells {n}', fortuneMark: 'cast',
     fateTitle: 'Birth sign', fateLine: 'Year of the {zodiac} · day master {stem} ({element}) · at home in {element}', fateHint: 'Optional. Your birthday is read on this Mac only — never saved, never sent to the chat.',
-    armedHint: 'Borrowed Force is ready: the root you pick counts as the one it generates.',
     fateSet: 'Set my birth sign', fateRandom: 'Random', fateSkip: 'Not now', fateBad: 'That day is not in the calendar — look again.', fateMark: 'sign', fated: 'your sign agrees',
-    why: { 'art-used': 'once a bout', 'art-no-draw': 'needs a draw', 'art-no-loss': 'needs a lost round', 'art-needs-tier': 'realm too low', 'art-pending': 'already borrowing', 'sword-twice': 'take a breath first', 'charm-used': 'one a bout', 'no-charm': 'none in the bag', 'bout-over': 'decided', 'not-your-root': 'not your root' },
+    why: { 'no-qi': 'not enough 灵力', 'art-used': 'once a fight', 'art-needs-tier': 'realm too low', 'art-no-sword': 'no weapon in hand', 'charm-used': 'one a fight', 'no-charm': 'none in the bag', 'fight-over': 'decided', 'not-your-root': 'not your root', 'already-guard': 'already guarding', 'already-focus': 'already gathered' },
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     qi: 'Dantian', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty',
@@ -307,8 +309,7 @@ function castHtml(d, ctx) {
   if (e.progress) lines.push(say(w.effProgress, { xw: w.xw, n: e.progress }));
   if (e.wealth) lines.push(say(w.effWealth, { ls: w.ls, n: e.wealth }));
   if (e.rest_seconds) lines.push(say(w.effRest, { s: e.rest_seconds }));
-  if (e.draws_win) lines.push(say(w.effDrawWin, { root: e.root?.name ?? '', n: e.draws_win }));
-  if (e.wins_draw) lines.push(say(w.effWinDraw, { root: e.root?.name ?? '', n: e.wins_draw }));
+  if (e.spell) lines.push(say(w.effSpell, { root: e.root?.name ?? '', n: e.spell > 0 ? `+${e.spell}` : e.spell }));
   const effect = lines.length ? lines.join(' · ') : w.effEven;
   const changed = d.changed ? `<div class="small dim">${w.changedTo} · ${esc(d.changed.name)}</div>` : '';
   return `<div class="card hex cast${ctx.castFresh ? ' casting' : ''} ${esc(d.grade.id)}"><div class="yaos">${rows}</div><div>
@@ -344,6 +345,22 @@ function board(card, ctx) {
   return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}${acts([{ label: ctx.words.about, say: ctx.words.sayBoard }])}</div>`;
 }
 
+/// What an item does, in one line — a pill's dose, arms' numbers, a 符.
+const DOES = {
+  progress: (e, w) => say(w.effProgress, { xw: w.xw, n: e.progress }),
+  wear: (e, w) => w.effWear,
+  atk: (e, w) => [say(w.effAtk, { n: e.atk }), e.root_name ? say(w.effRoot, { root: e.root_name }) : ''].filter(Boolean).join(' · '),
+  def: (e, w) => say(w.effDef, { n: e.def }),
+  ward: (e, w) => (e.wards ?? []).map((x) => say(w.effWard, { root: x.name, n: x.n })).join(' · '),
+  charm: (e, w) => w.effCharm,
+  key: (e, w) => w.effKey,
+};
+function itemDoes(effect, ctx) {
+  const e = effect ?? {}, w = ctx.words;
+  const key = Object.keys(DOES).find((k) => e[k] != null);
+  return key ? DOES[key](e, w) : w.effNone;
+}
+
 /// One item, or a shelf of them — words, prices and what is held come from
 /// Look's place.shelf or bag; the page prices nothing.
 function item(card, ctx) {
@@ -365,12 +382,12 @@ function item(card, ctx) {
     // a picture and a name are not enough to buy on (his 2026-09-16).
     const about = i.about ? `<div class="small about">${esc(i.about)}</div>` : '';
     const e = i.effect ?? {};
-    const does = e.progress ? say(ctx.words.effProgress, { xw: ctx.words.xw, n: e.progress })
-      : e.wear ? ctx.words.effWear : e.root ? say(ctx.words.effRoot, { root: e.root_name }) : e.charm ? ctx.words.effCharm : e.key ? ctx.words.effKey : ctx.words.effNone;
+    const does = itemDoes(e, ctx);
     const made = i.made_from ? `<div class="small dim">${esc(say(ctx.words.madeFrom, { item: i.made_from }))}</div>` : '';
     // A pill in the bag is taken by a word, a wear or a weapon put on by one; Trade decides.
+    const wearable = e.wear || e.atk || e.def || e.ward;
     const use = e.progress && i.held ? `<button class="act say" ${sayAttr(say(ctx.words.sayUse, { name: i.name }))}>${ctx.words.use}</button>`
-      : (e.wear || e.root) && i.held && !i.worn ? `<button class="act say" ${sayAttr(say(ctx.words.sayWear, { name: i.name }))}>${ctx.words.wear}</button>` : '';
+      : wearable && i.held && !i.worn ? `<button class="act say" ${sayAttr(say(ctx.words.sayWear, { name: i.name }))}>${ctx.words.wear}</button>` : '';
     const worn = i.worn ? `<span class="chip">${ctx.words.worn}</span>` : '';
     const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayItem, { name: i.name }))}>${ctx.words.about}</button>`;
     return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>

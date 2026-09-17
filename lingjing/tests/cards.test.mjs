@@ -23,13 +23,13 @@ test('the day\'s cast card: the coins wait with a word to Ling, then six lines a
     ask: { id: 'bout', name: '问斗法' }, throws: [[3, 3, 3], [2, 3, 3], [2, 2, 3], [2, 3, 3], [3, 3, 2], [2, 2, 2]],
     values: [9, 8, 7, 8, 8, 6], moving: [0, 5],
     hexagram: { id: 3, name: '屯', lines: [1, 0, 1, 0, 0, 0], judgment: '元亨，利贞。', image: '云雷，屯；君子以经纶。' },
-    changed: { id: 8, name: '比' }, grade: { id: 'ill', name: '凶' }, effect: { wins_draw: 1, root: { id: 'wood', name: '木' } },
+    changed: { id: 8, name: '比' }, grade: { id: 'ill', name: '凶' }, effect: { spell: -2, root: { id: 'wood', name: '木' } },
   }));
   assert.equal((cast.match(/class="yao /g) ?? []).length, 6);
   assert.equal((cast.match(/<em>[○×]<\/em>/g) ?? []).length, 2);
   assert.match(cast, /今日卦象 · 屯 · <span class="grade">凶<\/span>/);
   assert.match(cast, /之卦 · 比/);
-  assert.match(cast, /问斗法<\/span> 木：胜局化平 ×1/);
+  assert.match(cast, /问斗法<\/span> 木法术 -2/);
   assert.equal((cast.match(/<b class="face">/g) ?? []).length, 3 + 2 + 1 + 2 + 2);
 });
 
@@ -49,24 +49,36 @@ test('the 灵根 card takes the birthday for 命格 on the page, or shows the si
   assert.doesNotMatch(set, /fate-birth/);
 });
 
-test('借势 armed: each root button says what it will count as', async () => {
+test('the fight card draws both pools, the creature\'s stance and what 借势 lends', async () => {
   const { WORDS } = await import('../scripts/cards.js');
   const { duelHtml } = await import('../scripts/duel-card.js');
+  const { foeOf } = await import('../scripts/duel.js');
   const { loadWorld } = await import('../scripts/content.mjs');
   const content = loadWorld('jiuding');
+  const kui = content.creatures.creatures.find((c) => c.id === 'kui');
   const exit = { game: { id: 'subdue-kui' }, duel: {
     creature: { name: '夔', root: 'water', root_name: '水' }, sword: null, charm: null,
+    foe: foeOf(kui, 'qi', 0, 'seed'),
     arts: [{ id: 'jieshi', name: '借势', effect: 'generate', ready: true }],
-    kit: { roots: ['wood', 'water', 'fire', 'earth'], arts: { jieshi: { effect: 'generate', ready: true } } },
+    kit: { roots: ['wood', 'water', 'fire', 'earth'], tier: 'qi', step: 0, arts: { jieshi: { effect: 'generate', ready: true } } },
   } };
   const ctx = { lang: 'zh', words: WORDS.zh, content };
-  const moves = ['water', 'water', 'water', 'water', 'water'];
-  const plain = duelHtml(exit, { status: 'open', picks: [], moves, rounds: [] }, ctx);
-  assert.doesNotMatch(plain, /→/);
-  const armed = duelHtml(exit, { status: 'open', picks: ['art:jieshi'], moves, rounds: [] }, ctx);
-  assert.match(armed, /借势已起/);
-  assert.match(armed, /data-duel-pick="wood"[^>]*>木→火<small>火<\/small>/);
-  assert.match(armed, /data-duel-pick="earth"[^>]*>土→金<small>金<\/small>/);
+  const open = duelHtml(exit, { status: 'open', picks: [] }, ctx);
+  // Both sides' pools, the lean, and who moves first.
+  assert.match(open, /气血/);
+  assert.match(open, /灵力/);
+  assert.match(open, /厚皮/);
+  assert.match(open, /战力/);
+  // 借势 rides the cast: a row of borrowed faces beside the player's roots.
+  assert.match(open, /data-duel-pick="cast:fire"/);
+  assert.match(open, /data-duel-pick="borrow:fire"[^>]*>火→土/);
+  // 物理攻击 and 辅助 are always there; a 符 the player does not hold is not.
+  assert.match(open, /data-duel-pick="strike"/);
+  assert.match(open, /data-duel-pick="assist:guard"/);
+  assert.doesNotMatch(open, /data-duel-pick="talisman"/);
+  // Idle draws no pools, only the way in.
+  const idle = duelHtml(exit, { status: 'idle', picks: [] }, ctx);
+  assert.match(idle, /data-duel-start="subdue-kui"/);
 });
 
 test('the page knows the cast\'s own question by the rules\' words, so the coins stay in the air through it', async () => {

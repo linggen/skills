@@ -4,7 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ART_EFFECTS, ELEMENTS } from './duel.js';
+import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
 import { normalizeAnswer } from './state.mjs';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
@@ -111,7 +111,9 @@ const GAME_KINDS = new Set(['duel', 'board']);
 /* An exit's game, one shape: `{id, kind, creature?}`; a bare string is a
    board known by its id. */
 export const gameOf = exit => (exit?.game == null ? null : typeof exit.game === 'string' ? { id: exit.game, kind: 'board' } : exit.game);
-export const ITEM_KINDS = new Set(['pill', 'weapon', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm']);
+export const ITEM_KINDS = new Set(['pill', 'weapon', 'robe', 'pendant', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm']);
+/* What a player wears, each its own slot: a 法器 in hand, a 法衣, a 佩. */
+export const ARM_SLOTS = new Map([['weapon', 'weapon'], ['robe', 'robe'], ['pendant', 'pendant']]);
 export const WEAR_SLOTS = new Set(['yinyue', 'abode']);
 const VALUE_FIELDS = new Set(['name']);
 const SETTABLE = { traits: new Set(['v1']) };
@@ -521,6 +523,10 @@ function lintPinyin(c, bad, required) {
 function lintCreatures(content, bad) {
   for (const c of content.creatures.creatures) {
     if (!content.traits.elements[c.root]) bad(`creature ${c.id}`, `needs a root the traits know, not ${c.root}`);
+    // A made world writes neither lean nor pattern — its id draws them — but
+    // what is written must be one of the ways a creature fights.
+    if (c.lean != null && !LEAN_IDS.includes(c.lean)) bad(`creature ${c.id}`, `leans an unknown way: ${c.lean}`);
+    for (const i of c.pattern ?? []) if (!INTENTS.includes(i)) bad(`creature ${c.id}`, `fights an unknown way: ${i}`);
     if (!c.made) lintPinyin(c, bad, true);
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
@@ -698,9 +704,24 @@ function lintItems(content, bad) {
     for (const province of item.sold ?? []) if (!content.dictionary.provinces[province]) bad(where, `sold in unknown province ${province}`);
     const e = item.effect;
     if (!e) continue;
-    const kinds = ['key', 'progress', 'wear', 'root', 'charm'].filter(k => e[k] != null);
-    if (kinds.length !== 1) bad(where, 'an effect is one of key, progress, wear, root, charm');
+    // Arms are the fight's own numbers: 攻 on a weapon (with the root it
+    // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
+    const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
+    const kinds = ['key', 'progress', 'wear', 'charm'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, or arms (atk, def, ward)');
+    if (arms.length > 1) bad(where, 'arms are one of 攻, 防 or 抗');
+    for (const k of arms) {
+      if (k !== 'ward' && (!Number.isInteger(e[k]) || e[k] < 1)) bad(where, `${k} must be a whole number above zero`);
+      if (ARM_SLOTS.get(item.kind) !== { atk: 'weapon', def: 'robe', ward: 'pendant' }[k]) bad(where, `${k} belongs to a ${{ atk: 'weapon', def: 'robe', ward: 'pendant' }[k]}, not a ${item.kind}`);
+    }
+    if (e.ward != null) {
+      for (const [el, n] of Object.entries(e.ward)) {
+        if (!ELEMENTS.includes(el)) bad(where, `wards unknown element ${el}`);
+        if (!Number.isInteger(n) || n < 1) bad(where, `wards ${el} by ${n}, not a whole number above zero`);
+      }
+    }
     if (e.root != null && !ELEMENTS.includes(e.root)) bad(where, `lends unknown root ${e.root}`);
+    if (e.root != null && e.atk == null) bad(where, 'a root is lent by a weapon, which needs its 攻');
     if (e.charm != null && !item.made) bad(where, 'a charm is made, never sold');
     if (e.progress != null) {
       const table = content.rewards.tables[e.table];
