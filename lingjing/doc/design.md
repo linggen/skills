@@ -1188,6 +1188,61 @@ patterns for the seven creatures, the card, the gate; the arts, 符, cast and
 numbers after the gate; whether 护体 costs 灵力 (it does here, as 护体灵光 does
 in the novel); 反噬; whether a tamed creature fights beside the player later.
 
+## 银月 joins at 结丹 (designed 2026-09-17, not built)
+
+**His rulings:** *Yinyue should be in the game after user 结丹, give user a
+task to get Yinyue. before that, don't show Yinyue.* Where the task lives —
+**anywhere at 结丹**, not tied to a chapter. Her early lines — **Ling's
+narration**. The task — **the bell, the water, her riddle**.
+
+**Before she joins, the game never shows her.** No model on the stage (the
+moon stays as scenery), no voice (the stage speaks no cheer and no cast
+reading), no *问问银月* (the filler is *看看四周*, and a second word to Ling
+when two are needed), no gifts she wears (Trade `use` on a `wear: yinyue`
+item refuses `no-companion`). Ling narrates the cast, the hints and the wins.
+SKILL.md's Yinyue rules (her glad line, her riddle rule, her reading of the
+cast) apply only when Look's `companion.yinyue` is there. Linggen's own
+Yinyue outside the game is untouched.
+
+**Content.** Chapters 00–02 (her 32 lines): each becomes narration (`who:
+ling`) — *是夫诸……它出现的地方会发大水。小心。* → *雾里立着夫诸，传说它一出现，
+便有大水。* Her memory thread (the hand that laid her in the water, the nine
+counted, the salt sea) is held back and told after she joins. From chapter 03
+on, a line of hers carries `alone`: the narration for a player who has not
+freed her yet; the rules pick one. The story already told in a save stays as
+told.
+
+**The quest — 月下之约, anywhere, the moment the tier becomes 结丹:**
+1. **The call.** On the breakthrough into 结丹 (or the next Look of a save
+   already there) the rules open `state.story_quests.yinyue = {step: "bell"}`.
+   Ling tells it in the world: the new 丹 hums at night, and far off a wolf
+   answers the moon. The tray shows the quest card with its one next step.
+2. **The bell.** Hold 银月铃 (*系在银月颈上*). While the quest waits, every 坊市
+   sells it, not only 邺城's — the player may be anywhere.
+3. **The water.** At any place tagged `water` in `places/<p>.json` (漳水 ·
+   漳渊 · 濮水 · 雷泽 · 潍水 · 蓬莱 · 流波山 · 成山头 · 泗水 · 淮水 · 泗口 ·
+   吕梁洪 · 沛泽 · 微山湖 · 大野泽), the choice offers *摇铃* — the `ring` verb:
+   a silver wolf rises from the moon on the water.
+4. **Her riddle.** One of a small pool `yinyue` in `riddles/` (the moon, a wolf,
+   a bell, water), with `choices` and a hint, the same rules as every riddle:
+   a miss brings the hint, a second shuts it until tomorrow. Answered, she
+   joins: `state.companion.yinyue = {joined: <day>}`, the bell is worn by her
+   (`wear.yinyue`), and her first line is her name. From then the stage loads
+   her model, her voice is on, and her memory thread begins.
+
+**Rules and page.** `companionOf(state)`; Look carries `companion` and
+`story_quests` (step, where, what it needs); the `ring` verb (refuses
+`not-water`, `no-bell`, `not-yet`) returns the riddle as `ask`, answered by
+`ring --answer`; the fillers and Trade read `companion`; lines pick `alone`.
+The page draws Yinyue on the stage and speaks her line only with
+`companion.yinyue`; the tray shows the quest card. No engine change.
+
+**Saves:** a save already at 结丹 without her (his) gets the call on its
+next Look. **Build order:** (1) the gate — `companion`, the stage, voice,
+fillers, Trade, SKILL.md; (2) the quest — call, bell at every 坊市, `water`
+tags, `ring`, the riddle pool, the tray card; (3) the content — 00–02 lines
+to narration, `alone` on 03's, her memory thread moved after she joins.
+
 ## At a creature's haunt — the world outside the spine
 
 - **Built (2026-09-16).** His "it just lets the user move from a place to
