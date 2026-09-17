@@ -387,6 +387,7 @@ export function lint(content) {
   lintCreatures(content, bad);
   lintRiddles(content.riddles, bad);
   lintBook(content, bad);
+  lintFate(content, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
   for (const b of content.branches.templates) {
     if (!content.rewards.tables[b.table]) bad(`branch ${b.kind}`, `unknown reward table ${b.table}`);
@@ -545,6 +546,15 @@ function lintBook(content, bad) {
     for (const g of grades) if (!byGrade[g]) bad(`ask ${ask}`, `no effect for ${g}`);
   }
   for (const t of ['qian', 'dui', 'li', 'zhen', 'xun', 'kan', 'gen', 'kun']) if (!ELEMENTS.includes(book.trigram_roots?.[t])) bad('trigram_roots', `${t} needs a root`);
+}
+
+/* 命格: twelve signs, ten stems each with an element, a 立春 day for each year. */
+function lintFate(content, bad) {
+  const f = content.traits?.fate;
+  if (!f) return;
+  if (f.zodiac?.length !== 12 || f.zodiac.some(z => !z.id || !z.zh || !z.en)) bad('fate', 'needs twelve signs, each with id, zh and en');
+  if (f.stems?.length !== 10 || f.stems.some(s => !s.zh || !s.en || !ELEMENTS.includes(s.element))) bad('fate', 'needs ten stems, each with zh, en and an element');
+  if (!Number.isInteger(f.lichun?.from) || !/^[345]+$/.test(f.lichun?.days ?? '')) bad('fate', 'lichun needs a first year and a February day (3–5) for each year');
 }
 
 function lintRiddles(riddles, bad) {

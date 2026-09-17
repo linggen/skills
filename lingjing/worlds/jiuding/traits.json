@@ -57,5 +57,136 @@
     "water",
     "fire",
     "earth"
-  ]
+  ],
+  "_fate": "命格 — a lifelong base tone beside the 灵根, set once and only if the player wishes: 生肖 from the birth year, turning at 立春 (by the day — no hour is asked), and 日主, the day's heavenly stem, whose element the player is at home in. `zodiac` from 甲子 1984 (rat); `stems` in order, a day's stem is (JDN + 9) mod 10; `lichun` is the February day of 立春 for each year from `from` (checked against lunar-python). The birthday itself is never kept.",
+  "fate": {
+    "zodiac": [
+      {
+        "id": "rat",
+        "zh": "鼠",
+        "en": "Rat"
+      },
+      {
+        "id": "ox",
+        "zh": "牛",
+        "en": "Ox"
+      },
+      {
+        "id": "tiger",
+        "zh": "虎",
+        "en": "Tiger"
+      },
+      {
+        "id": "rabbit",
+        "zh": "兔",
+        "en": "Rabbit"
+      },
+      {
+        "id": "dragon",
+        "zh": "龙",
+        "en": "Dragon"
+      },
+      {
+        "id": "snake",
+        "zh": "蛇",
+        "en": "Snake"
+      },
+      {
+        "id": "horse",
+        "zh": "马",
+        "en": "Horse"
+      },
+      {
+        "id": "goat",
+        "zh": "羊",
+        "en": "Goat"
+      },
+      {
+        "id": "monkey",
+        "zh": "猴",
+        "en": "Monkey"
+      },
+      {
+        "id": "rooster",
+        "zh": "鸡",
+        "en": "Rooster"
+      },
+      {
+        "id": "dog",
+        "zh": "狗",
+        "en": "Dog"
+      },
+      {
+        "id": "pig",
+        "zh": "猪",
+        "en": "Pig"
+      }
+    ],
+    "stems": [
+      {
+        "id": "jia",
+        "zh": "甲",
+        "en": "Jia",
+        "element": "wood"
+      },
+      {
+        "id": "yi",
+        "zh": "乙",
+        "en": "Yi",
+        "element": "wood"
+      },
+      {
+        "id": "bing",
+        "zh": "丙",
+        "en": "Bing",
+        "element": "fire"
+      },
+      {
+        "id": "ding",
+        "zh": "丁",
+        "en": "Ding",
+        "element": "fire"
+      },
+      {
+        "id": "wu",
+        "zh": "戊",
+        "en": "Wu",
+        "element": "earth"
+      },
+      {
+        "id": "ji",
+        "zh": "己",
+        "en": "Ji",
+        "element": "earth"
+      },
+      {
+        "id": "geng",
+        "zh": "庚",
+        "en": "Geng",
+        "element": "metal"
+      },
+      {
+        "id": "xin",
+        "zh": "辛",
+        "en": "Xin",
+        "element": "metal"
+      },
+      {
+        "id": "ren",
+        "zh": "壬",
+        "en": "Ren",
+        "element": "water"
+      },
+      {
+        "id": "gui",
+        "zh": "癸",
+        "en": "Gui",
+        "element": "water"
+      }
+    ],
+    "lichun": {
+      "from": 1900,
+      "days": "445554555455544554455445544554455445544554455444544454445444544454445444544454445444444444444444444444444444444444444344434443444344434443444344434443344334433443344334433443344334433343334333433343334"
+    }
+  }
 }

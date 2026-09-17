@@ -27,6 +27,7 @@ let asked = false; //     Ling's own question is waiting in the chat
 let mapView = 'province'; // the map card: 'province' (the player's, up close), 'world', or another province's id
 let castSeen; //          the cast last drawn — a new one is drawn line by line, once
 let castFresh = false;
+let fateOpen = false, fateDraft = '', fateError = false; // the 命格 form: shown again, the date typed, a date refused
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
 const boards = new Map();
 const duels = new Map(); // game id → {status, moves, picks, rounds, outcome, say}
@@ -56,7 +57,7 @@ function duelFor(id) {
   return duels.get(id);
 }
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, castFresh, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, castFresh, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -325,9 +326,25 @@ async function deliver(text, hidden) {
   else chat?.send(text);
 }
 
+async function setFate(kind) {
+  const args = kind === 'birth' ? { birth: fateDraft } : { [kind]: 'true' };
+  if (kind === 'birth' && !fateDraft) { fateError = true; render(); return; }
+  const r = await verb('fate', args).catch((e) => ({ ok: false, error: String(e) }));
+  if (!r.ok) { fateError = r.refused === 'birth-invalid'; render(); return; }
+  fateOpen = false; fateDraft = ''; fateError = false;
+  await refresh();
+  await report(kind === 'decline' ? '[scene] fate declined' : '[scene] fate set');
+}
+document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') { fateDraft = e.target.value; fateError = false; } });
+
 document.addEventListener('click', (e) => {
   const sw = e.target.closest('[data-lang]');
   if (sw) { switchLang(sw.dataset.lang); return; }
+  // 命格: the birthday is read here, by the rules on this machine — never
+  // sent to the chat; Ling hears only that it was set.
+  if (e.target.closest('[data-fate-open]')) { fateOpen = true; render(); return; }
+  const fateBtn = e.target.closest('[data-fate]');
+  if (fateBtn) { setFate(fateBtn.dataset.fate); return; }
   // Near or whole: only how the map is looked at, so the page answers it.
   const view = e.target.closest('[data-mapview]');
   if (view) {

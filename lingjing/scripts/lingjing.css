@@ -282,3 +282,9 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .hex.cast.great .grade, .hex.cast.good .grade { color: var(--ling); }
 .hex.cast.even .grade { color: var(--faint); }
 .castfx { margin-top: 6px; }
+
+/* 命格 beside the roots: its line once set, or the birthday form. */
+.fate { margin-top: 10px; }
+.fateform { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.fateform input[type=date] { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
+.small.seal { color: var(--seal); margin-top: 4px; }

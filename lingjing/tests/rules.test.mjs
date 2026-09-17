@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, askOf, riddleOf, divine, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, offers, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -1183,6 +1183,48 @@ test('起卦: once a day by three coins — asked what about, the same throws al
   const open = { ...cast.state, scene: null, chapter: '03-qing', place: 'linzi' };
   assert.ok(!look(open, content, c).director.choice.options.some(o => o.divine));
   assert.ok(look({ ...open, divination: null }, content, c).director.choice.options.some(o => o.divine === true));
+});
+
+test('命格 from a birthday: 生肖 turns at 立春 by the day, 日主 is the day\'s stem — as lunar-python reads them', () => {
+  const sign = (d) => { const f = fateOf(content, d); return f && [f.zodiac, content.traits.fate.stems.find(x => x.id === f.stem).zh]; };
+  assert.deepEqual(sign('1984-02-03'), ['pig', '丁']);
+  assert.deepEqual(sign('1984-02-04'), ['rat', '戊']);
+  assert.deepEqual(sign('1990-01-20'), ['snake', '乙']);
+  assert.deepEqual(sign('2000-01-01'), ['rabbit', '戊']);
+  assert.deepEqual(sign('1972-02-05'), ['rat', '丙']);
+  assert.deepEqual(sign('2026-09-17'), ['horse', '甲']);
+  assert.deepEqual(sign('1900-01-31'), ['pig', '甲']);
+  assert.deepEqual(sign('2012-12-21'), ['dragon', '丙']);
+  assert.equal(fateOf(content, '2023-02-30'), null);
+  assert.equal(fateOf(content, '1850-05-01'), null);
+  assert.equal(fateOf(content, 'yesterday'), null);
+});
+
+test('命格 is set once, keeps no birthday, and leans a bout and the day\'s cast', () => {
+  const s = { ...start(), name: '清玄' };
+  const set = must(fate, s, { birth: '1990-01-20' });
+  assert.deepEqual(Object.keys(set.state.fate).sort(), ['at', 'element', 'source', 'stem', 'zodiac']);
+  assert.ok(!JSON.stringify(set.state).includes('1990'), 'the birthday is not kept');
+  assert.deepEqual(set.result.fate.element, { id: 'wood', name: '木' });
+  assert.equal(refused(fate, set.state, { birth: '2000-01-01' }, 'fate-set').fate.zodiac.id, 'snake');
+  refused(fate, s, { birth: '2999-01-01' }, 'birth-invalid');
+  refused(fate, s, { birth: '1990-02-30' }, 'birth-invalid');
+  const r1 = must(fate, s, { random: 'true' }).state.fate, r2 = must(fate, s, { random: 'true' }).state.fate;
+  assert.equal(r1.zodiac, r2.zodiac); assert.equal(r1.source, 'random');
+  const declined = must(fate, s, { decline: 'true' }).state;
+  assert.deepEqual(look(declined, content, ctx()).fate, { declined: true });
+  assert.equal(must(fate, declined, { birth: '1990-01-20' }).result.ok, true, 'a declined sign can still be set');
+  // bouts: once a bout, a lost round with one's own root is a draw
+  assert.equal(bout(['wood', 'wood'], ['metal', 'metal'], { roots: ['wood'], fate: { root: 'wood' } }).rounds.map(r => r.result).join(), 'draw,lost');
+  // the cast: a lower trigram of one's own element leans the grade
+  const day = ctx();
+  const plainCast = must(divine, s, { ask: 'wealth' }, day).result.divination;
+  const lower = content.hexagrams.trigram_roots[{ 111: 'qian', 110: 'dui', 101: 'li', 100: 'zhen', '011': 'xun', '010': 'kan', '001': 'gen', '000': 'kun' }[plainCast.hexagram.lines.slice(0, 3).join('')]];
+  const stem = content.traits.fate.stems.find(x => x.element === lower);
+  const leaned = must(divine, { ...s, fate: { zodiac: 'rat', stem: stem.id, element: lower, source: 'random' } }, { ask: 'wealth' }, day).result.divination;
+  const up = { great: 'great', good: 'great', even: 'even', ill: 'even', dire: 'ill' };
+  assert.equal(leaned.grade.id, up[plainCast.grade.id]);
+  assert.equal(leaned.fated, true); assert.equal(plainCast.fated, undefined);
 });
 
 test('placeholder arguments the agent left unfilled are dropped', () => {

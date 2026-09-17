@@ -313,6 +313,7 @@ function kitOf(content, state, now = null) {
     roots: state.traits ?? [], sword: weapon?.effect?.root ?? null, weapon: weapon?.id ?? null,
     charm: charm ? { id: charm.id, held: state.bag[charm.id] ?? 0 } : null, arts,
     ...(now && boutFortune(content, state, now) ? { fortune: boutFortune(content, state, now) } : {}),
+    ...(state.fate?.element ? { fate: { root: state.fate.element } } : {}),
   };
 }
 
@@ -468,6 +469,7 @@ export function look(state, content, ctx) {
     director: directorBrief(content, state, ctx),
     ended: state.ended, branch: state.branch, story: state.story,
     divination: divinationBrief(content, state, ctx.now),
+    fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
@@ -1604,6 +1606,7 @@ export function divinationBrief(content, state, now) {
     },
     changed: to ? { id: to.id, name: pick(to.name, lang) } : null,
     grade: { id: cast.grade, name: pick(book.grades[cast.grade], lang) },
+    ...(cast.fated ? { fated: true } : {}),
     effect: { ...(book.effects[cast.ask]?.[cast.grade] ?? {}), ...(bout ? { root: { id: bout.root, name: pick(content.traits.elements[bout.root], lang) } } : {}) },
   };
 }
@@ -1622,8 +1625,74 @@ export function divine(state, content, ctx, args) {
   const moved = lines.map((b, i) => (values[i] === 6 || values[i] === 9 ? 1 - b : b));
   const h = hexagramOf(content, lines);
   const to = moved.join('') === lines.join('') ? null : hexagramOf(content, moved);
-  s.divination = { day: dayKey(ctx.now), ask, throws, hexagram: h.id, changed: to?.id ?? null, grade: h.grade, at: ctx.now.toISOString() };
+  // A lower trigram of one's own 日主 element leans the grade one's way:
+  // a good one to great, an ill one softer; an even one stays even.
+  const fated = Boolean(s.fate?.element) && content.hexagrams.trigram_roots[TRIGRAM_OF[lines.slice(0, 3).join('')]] === s.fate.element;
+  const grade = fated ? { great: 'great', good: 'great', even: 'even', ill: 'even', dire: 'ill' }[h.grade] : h.grade;
+  s.divination = { day: dayKey(ctx.now), ask, throws, hexagram: h.id, changed: to?.id ?? null, grade, ...(fated ? { fated: true } : {}), at: ctx.now.toISOString() };
   return { state: s, result: { ok: true, divination: divinationBrief(content, s, ctx.now) } };
+}
+
+/* ── 命格 — the player's lifelong base tone ── */
+
+const jdn = (y, m, d) => {
+  const a = Math.floor((14 - m) / 12), yy = y + 4800 - a, mm = m + 12 * a - 3;
+  return d + Math.floor((153 * mm + 2) / 5) + 365 * yy + Math.floor(yy / 4) - Math.floor(yy / 100) + Math.floor(yy / 400) - 32045;
+};
+
+/* 生肖 and 日主 from a birth date (YYYY-MM-DD): the year turns at 立春, by
+   the day; the day's stem is its place in the sixty. Null for a date that
+   is not one, or outside the 立春 table. */
+export function fateOf(content, birth) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(birth ?? '').trim());
+  if (!m) return null;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const at = new Date(Date.UTC(y, mo - 1, d));
+  if (at.getUTCFullYear() !== y || at.getUTCMonth() !== mo - 1 || at.getUTCDate() !== d) return null;
+  const f = content.traits.fate, lichun = f.lichun.days[y - f.lichun.from];
+  if (!lichun) return null;
+  const pillar = mo > 2 || (mo === 2 && d >= Number(lichun)) ? y : y - 1;
+  const stem = f.stems[(jdn(y, mo, d) + 9) % 10];
+  return { zodiac: f.zodiac[(((pillar - 1984) % 12) + 12) % 12].id, stem: stem.id, element: stem.element };
+}
+
+/* The 命格 as Look and the card tell it; `{declined}` when the player let it be. */
+export function fateBrief(content, state) {
+  const f = state.fate;
+  if (!f) return null;
+  if (!f.zodiac) return { declined: true };
+  const book = content.traits.fate, lang = state.lang;
+  const stem = book.stems.find(s => s.id === f.stem);
+  return {
+    zodiac: { id: f.zodiac, name: pick(book.zodiac.find(z => z.id === f.zodiac), lang) },
+    stem: { id: f.stem, name: pick(stem, lang) },
+    element: { id: f.element, name: pick(content.traits.elements[f.element], lang) },
+    source: f.source,
+  };
+}
+
+/* The page's alone, never a tool: the birthday is typed on the card and
+   read here, on this machine; only what it gives is kept. Once set, it
+   stays for life; `random` draws one by the 道号; `decline` lets it be. */
+export function fate(state, content, ctx, args) {
+  if (state.fate?.zodiac) return refuse('fate-set', null, { fate: fateBrief(content, state) });
+  const s = clone(state);
+  if (args.decline) {
+    s.fate = { declined: true };
+    return { state: s, result: { ok: true, declined: true } };
+  }
+  let found;
+  if (args.random) {
+    const book = content.traits.fate, h = hashOf(`${s.name ?? ''}|${s.created ?? ''}|fate`);
+    const stem = book.stems[h % book.stems.length];
+    found = { zodiac: book.zodiac[Math.floor(h / book.stems.length) % book.zodiac.length].id, stem: stem.id, element: stem.element, source: 'random' };
+  } else {
+    const got = fateOf(content, args.birth);
+    if (!got || new Date(`${args.birth}T00:00:00`) > ctx.now) return refuse('birth-invalid', null);
+    found = { ...got, source: 'birth' };
+  }
+  s.fate = { ...found, at: ctx.now.toISOString() };
+  return { state: s, result: { ok: true, fate: fateBrief(content, s) } };
 }
 
 export const VERBS = {
@@ -1634,7 +1703,7 @@ export const VERBS = {
     return { state: woke, result: { ...look(woke ?? s, c, x), ...(learned.length ? { learned } : {}) } };
   },
   resolve, judge, task, win, duel, tame, write, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine,
+  go, saves, save, load, forget, atlas, divine, fate,
 };
 
 /* ── Files and the command line ── */

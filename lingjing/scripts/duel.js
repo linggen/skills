@@ -82,7 +82,7 @@ function outcomeOf(rounds) {
   return 'open';
 }
 
-const fresh = () => ({ rounds: [], charmUsed: false, artsUsed: [], pending: null, lastSword: false, fortuneUsed: 0 });
+const fresh = () => ({ rounds: [], charmUsed: false, artsUsed: [], pending: null, lastSword: false, fortuneUsed: 0, fateUsed: false });
 
 /* The kit is what the player brings to the bout:
    roots       their own elements (absent = every element is theirs)
@@ -92,6 +92,8 @@ const fresh = () => ({ rounds: [], charmUsed: false, artsUsed: [], pending: null
    fortune     the day's cast asked about bouts: {root, draws_win?, wins_draw?} —
                a draw with that root is won, or a win is only drawn, so many
                times a bout; it turns by itself, never a pick
+   fate        the 命格's 日主 root: {root} — once a bout a lost round with it
+               stands as a draw, by itself
    Why a token may not come next, or null when it may. */
 export function legal(token, st, kit = {}) {
   const decided = outcomeOf(st.rounds) !== 'open';
@@ -140,6 +142,7 @@ function apply(token, st, kit, move) {
     if (round.result === 'draw' && st.fortuneUsed < (f.draws_win ?? 0)) { round.result = 'won'; round.fortune = true; st.fortuneUsed += 1; }
     else if (round.result === 'won' && st.fortuneUsed < (f.wins_draw ?? 0)) { round.result = 'draw'; round.fortune = true; st.fortuneUsed += 1; }
   }
+  if (kit.fate && !st.fateUsed && round.result === 'lost' && (round.as ?? token) === kit.fate.root) { round.result = 'draw'; round.fate = true; st.fateUsed = true; }
   st.lastSword = Boolean(kit.roots) && !kit.roots.includes(token) && token === kit.sword;
   st.rounds.push(round);
 }

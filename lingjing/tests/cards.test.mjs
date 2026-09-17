@@ -32,3 +32,19 @@ test('the day\'s cast card: the coins wait with a word to Ling, then six lines a
   assert.match(cast, /问斗法<\/span> 木：胜局化平 ×1/);
   assert.equal((cast.match(/<b class="face">/g) ?? []).length, 3 + 2 + 1 + 2 + 2);
 });
+
+test('the 灵根 card takes the birthday for 命格 on the page, or shows the sign once set', async () => {
+  const { WORDS, cardHtml } = await import('../scripts/cards.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const w = loadWorld('jiuding');
+  const content = { ...w, traits: w.traits };
+  const ctx = (fate, extra = {}) => ({ look: { traits: { ids: ['wood', 'water', 'fire', 'earth'], name: '四灵根' }, fate }, lang: 'zh', words: WORDS.zh, content, ...extra });
+  const form = cardHtml({ card: 'traits' }, ctx(null));
+  assert.match(form, /<input type="date" id="fate-birth"/);
+  assert.match(form, /data-fate="birth">定命格</); assert.match(form, /data-fate="random">随机</); assert.match(form, /data-fate="decline">不必了</);
+  assert.match(form, /不入存档，不入对话/);
+  assert.match(cardHtml({ card: 'traits' }, ctx({ declined: true })), /data-fate-open>定命格</);
+  const set = cardHtml({ card: 'traits' }, ctx({ zodiac: { id: 'snake', name: '蛇' }, stem: { id: 'yi', name: '乙' }, element: { id: 'wood', name: '木' }, source: 'birth' }));
+  assert.match(set, /属蛇 · 日主乙木 · 天生亲近木/);
+  assert.doesNotMatch(set, /fate-birth/);
+});

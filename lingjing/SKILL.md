@@ -37,7 +37,7 @@ tools:
       what it does and whether the realm allows it yet; `learned` lists any
       taught just now by a companion — say it as a gift, once), `cast`, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
-      `story` so far, today's cast (`divination`, null until made), offered `tasks` and due `quests` (a
+      `story` so far, today's cast (`divination`, null until made), the `fate` (命格: 生肖 and 日主; `declined`; null when unset), offered `tasks` and due `quests` (a
       quest `done` was recorded by its app; `paid` is already counted), the
       `stamina` (`now` of `max`; `empty` with `returns_at` when a story
       step is out of reach), the `place` the player stands in (what is
@@ -814,6 +814,21 @@ life. A cast is once a day and never cast again; `cast-today` → read
 today's again. `resting` (a dire cast on cultivation) → the next step waits
 until `returns_at`: say so in the world, in one line. A `paid` with
 `fortune` was sped or slowed by the cast: say so in a phrase.
+
+## 命格 — the birth sign, set on the card
+
+命格 is set on the 灵根 card, **never in the chat**: the player may type
+their birthday there — the page reads it on this machine and keeps only the
+生肖 and 日主 — or take 随机, or 不必了. **Never ask for a birthday, never
+repeat one**; written in the chat anyway, say the card takes it and keeps it
+private. At the stone, once the roots are set, Yinyue says once that the
+card can read their 命格 if they wish. *命格*, *生辰*, *属相*, *八字* →
+Show `{card: "traits"}`. `[scene] fate set` → Look, and Yinyue tells the
+生肖 and 日主 in a line of her own and what it gives: at home in that
+element — once a bout, a lost round with that root stands as a draw; a cast
+whose lower trigram is that element leans their way (`fated`). `[scene] fate
+declined` → one easy line, nothing more. It is the game's own sign, never a
+reading of their life.
 
 ## The director's brief
 

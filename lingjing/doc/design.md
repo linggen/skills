@@ -414,6 +414,14 @@ days — is the game's real shape:
    bout's lower-trigram root turning draws to wins (吉 ×1, 大吉 ×2) or wins
    to draws (凶 ×1, 大凶 ×2). Yinyue reads it aloud on the stage. The numbers
    are his to set.
+   **命格 (built 2026-09-17, his design):** beside the roots, set once and only
+   if the player wishes — on the 灵根 card, never in the chat: a birthday typed
+   there is read by the page-only `fate` verb on the machine, and only the
+   生肖 (turning at 立春, by the day) and 日主 (the day's stem, its element)
+   are kept; or 随机, or 不必了 (still settable later). The four roots stay the
+   same for everyone. The 日主 element: once a bout a lost round with that
+   root stands as a draw; a cast whose lower trigram is that element leans
+   its grade one step the player's way (吉→大吉, 凶→平, 大凶→凶; `fated`).
 2. **A due quest, if any** — the workout kept, the scan run — paid on sight.
 3. **One 奇遇 from a seed,** offered by Ling as the way forward when the spine
    has nothing new. Up to `per_day`.

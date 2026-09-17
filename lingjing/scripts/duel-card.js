@@ -25,7 +25,8 @@ function roundHtml(r, i, b, ctx) {
   const w = ctx.words;
   const pick = r.charm ? (b.charm?.name ?? '符') : r.as ? `${GLYPH[r.pick]}→${GLYPH[r.as]}` : GLYPH[r.pick];
   const art = (r.art ? `<small class="artmark">${esc(b.arts.find((a) => a.id === r.art)?.name ?? r.art)}</small>` : '')
-    + (r.fortune ? `<small class="artmark">${esc(w.fortuneMark)}</small>` : '');
+    + (r.fortune ? `<small class="artmark">${esc(w.fortuneMark)}</small>` : '')
+    + (r.fate ? `<small class="artmark">${esc(w.fateMark)}</small>` : '');
   return `<div class="rnd ${r.result}"><span>${w.round} ${i + 1}</span>
     <span>${esc(pick)} · ${GLYPH[r.move]}${art}</span><span class="res">${w[{ won: 'rWon', lost: 'rLost', draw: 'rDraw' }[r.result]]}</span></div>`;
 }

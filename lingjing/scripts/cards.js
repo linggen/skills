@@ -23,6 +23,8 @@ export const WORDS = {
     uncast: '今日未卜', uncastHint: '心中默念一事，三钱六掷。', cast: '起一卦', sayCast: '请银月起一卦', changedTo: '之卦',
     effEven: '今日无增无减', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '每步之间静坐 {s} 秒',
     effDrawWin: '{root}：平手化胜 ×{n}', effWinDraw: '{root}：胜局化平 ×{n}', fortuneMark: '卦',
+    fateTitle: '命格', fateLine: '属{zodiac} · 日主{stem}{element} · 天生亲近{element}', fateHint: '可选填。生辰只在本机推算命格：不入存档，不入对话。',
+    fateSet: '定命格', fateRandom: '随机', fateSkip: '不必了', fateBad: '这一天不在历中，再看看。', fateMark: '命', fated: '命格相合',
     why: { 'art-used': '一战一用', 'art-no-draw': '须是平手', 'art-no-loss': '须是败局', 'art-needs-tier': '境界未到', 'art-pending': '已在借势', 'sword-twice': '换口气再出', 'charm-used': '一战一符', 'no-charm': '囊中无符', 'bout-over': '已分胜负', 'not-your-root': '非你灵根' },
     gateTitle: '下一鼎', opens: '开启于', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
@@ -47,6 +49,8 @@ export const WORDS = {
     uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind: three coins, six throws.', cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', changedTo: 'Changing to',
     effEven: 'No gain, no loss today', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '{s}s of stillness between steps',
     effDrawWin: '{root}: a draw wins ×{n}', effWinDraw: '{root}: a win only draws ×{n}', fortuneMark: 'cast',
+    fateTitle: 'Birth sign', fateLine: 'Year of the {zodiac} · day master {stem} ({element}) · at home in {element}', fateHint: 'Optional. Your birthday is read on this Mac only — never saved, never sent to the chat.',
+    fateSet: 'Set my birth sign', fateRandom: 'Random', fateSkip: 'Not now', fateBad: 'That day is not in the calendar — look again.', fateMark: 'sign', fated: 'your sign agrees',
     why: { 'art-used': 'once a bout', 'art-no-draw': 'needs a draw', 'art-no-loss': 'needs a lost round', 'art-needs-tier': 'realm too low', 'art-pending': 'already borrowing', 'sword-twice': 'take a breath first', 'charm-used': 'one a bout', 'no-charm': 'none in the bag', 'bout-over': 'decided', 'not-your-root': 'not your root' },
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
@@ -128,7 +132,24 @@ function traits(card, ctx) {
   // The arts learned, each with what it does; greyed until its realm.
   const arts = (ctx.look.arts || []).map((a) => `<div class="artrow${a.ready ? '' : ' dim'}"><b>${esc(a.name)}</b> <span class="small">${esc(a.about)}</span>${a.ready ? '' : ` <span class="chip">${esc(say(ctx.words.artFrom, { tier: a.tier.name }))}</span>`}</div>`);
   const artsHtml = arts.length ? `<div class="cardtitle arts">${esc(ctx.look.words?.arts ?? ctx.words.artsTitle)}</div>${arts.join('')}` : '';
-  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${artsHtml}${acts([{ label: ctx.words.about, say: ctx.words.sayRoots }])}</div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${fateHtml(ctx)}${artsHtml}${acts([{ label: ctx.words.about, say: ctx.words.sayRoots }])}</div>`;
+}
+
+/// 命格 beside the roots: what it is once set; before, the birthday typed
+/// here — read by the page on this machine, never said in the chat — or a
+/// random one, or none; a declined one can still be set.
+function fateHtml(ctx) {
+  const w = ctx.words, f = ctx.look.fate;
+  if (!ctx.look.traits) return '';
+  if (f?.zodiac) {
+    return `<div class="fate"><span class="chip">${w.fateTitle}</span> ${esc(say(w.fateLine, { zodiac: f.zodiac.name, stem: f.stem.name, element: f.element.name }))}</div>`;
+  }
+  if (f?.declined && !ctx.fateOpen) return `<div class="fate"><button class="act" data-fate-open>${w.fateSet}</button></div>`;
+  const today = (ctx.now ?? new Date()).toISOString().slice(0, 10);
+  return `<div class="fate form"><div class="cardtitle arts">${w.fateTitle}</div><div class="small dim">${w.fateHint}</div>
+    <div class="fateform"><input type="date" id="fate-birth" min="1900-01-31" max="${today}" value="${esc(ctx.fateDraft ?? '')}">
+    <button class="act" data-fate="birth">${w.fateSet}</button><button class="act" data-fate="random">${w.fateRandom}</button><button class="act" data-fate="decline">${w.fateSkip}</button></div>
+    ${ctx.fateError ? `<div class="small seal">${w.fateBad}</div>` : ''}</div>`;
 }
 
 function map(card, ctx) {
@@ -280,7 +301,7 @@ function castHtml(d, ctx) {
   const effect = lines.length ? lines.join(' · ') : w.effEven;
   const changed = d.changed ? `<div class="small dim">${w.changedTo} · ${esc(d.changed.name)}</div>` : '';
   return `<div class="card hex cast${ctx.castFresh ? ' casting' : ''} ${esc(d.grade.id)}"><div class="yaos">${rows}</div><div>
-    <div class="cardtitle">${w.omen} · ${esc(d.hexagram.name)} · <span class="grade">${esc(d.grade.name)}</span></div>
+    <div class="cardtitle">${w.omen} · ${esc(d.hexagram.name)} · <span class="grade">${esc(d.grade.name)}</span>${d.fated ? ` <span class="chip">${w.fated}</span>` : ''}</div>
     <div class="hextext">${esc(d.hexagram.judgment)}</div>
     <div class="small dim">${esc(d.hexagram.image)}</div>${changed}
     <div class="small castfx"><span class="chip">${esc(d.ask.name)}</span> ${esc(effect)}</div>
