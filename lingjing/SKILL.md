@@ -538,7 +538,8 @@ the scene or the place, and the choice.
   totals of your own; the next Look carries the totals. **Something
   won** — a riddle, a bout, a task, a realm — **gives Yinyue one short line
   of her own** (`**银月：**` / `**Yinyue:**`), glad for the player in her
-  voice, never the numbers: she speaks it aloud on the stage.
+  voice, never the numbers: **the last line before the question**, after
+  any lines the new scene brings — the stage speaks her last line aloud.
 - **When a result carries `summarize: true`, Summarize** before the reply
   ends (below).
 - **When a result carries `paint`, paint every entry before anything else**

@@ -66,6 +66,13 @@ button:disabled { cursor: default; }
 .xw .num, .ls b { font-family: var(--mono); font-size: 11.5px; font-variant-numeric: tabular-nums; }
 .xw .num { color: var(--dim); }
 .ls b { color: var(--ling); font-weight: 500; }
+/* A gain: the number glows while it counts up, and +N floats off it. */
+.xw .num, .ls { position: relative; }
+[data-count].rising { color: var(--ling); font-weight: 600; }
+.gain { position: absolute; left: 0; top: -2px; font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ling);
+        pointer-events: none; animation: gainFloat 1.6s ease-out forwards; }
+@keyframes gainFloat { 0% { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px); } }
+@media (prefers-reduced-motion: reduce) { .gain { animation-duration: 2.4s; transform: none; } }
 
 /* The 丹田 ring: the engine's latest reading of the 灵气 window — full, half,
    low, empty. Never a number. */

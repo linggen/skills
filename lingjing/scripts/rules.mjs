@@ -1854,7 +1854,18 @@ export function askOf(content, state, ctx, result = {}) {
   return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: FILLERS[zh ? 'zh' : 'en'] };
 }
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
-const withAsk = (result, content, state, ctx) => ({ then: THEN, ask: askOf(content, state, ctx, result), ...result });
+/* Something won: Yinyue's own glad line closes the narration. The stage
+   speaks the reply's last Yinyue line, and a scene entered on a win brings
+   lines of its own — so hers comes last, or the story is what she says
+   (2026-09-17: the 青鼎 rose, she spoke "我想起第三件事" and no one was glad). */
+const THEN_CHEER = 'Something was won: the last line before the AskUser is Yinyue\'s own, glad for the player in her voice — `**银月：**…` / `**Yinyue:** …` — after any scene lines, never the numbers. ' + THEN;
+const won = r => {
+  const p = r?.paid;
+  if (!r?.ok || r.sold || r.bought) return false;
+  return Boolean(r.breakthrough || r.learned?.length || p?.cast || p?.item || p?.levels?.length || (p?.progress ?? 0) > 0 || (p?.wealth ?? 0) > 0);
+};
+export const thenFor = result => (won(result) ? THEN_CHEER : THEN);
+const withAsk = (result, content, state, ctx) => ({ then: thenFor(result), ask: askOf(content, state, ctx, result), ...result });
 
 /* The player's words are an option of the question on screen — a tap on a
    card arrives as words, and Look is where Ling takes them. Look names the

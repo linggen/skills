@@ -201,10 +201,44 @@ function statusHtml() {
   const name = look.name ? `<span class="daohao">${esc(look.name)}</span>` : '';
   return `${name}<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${w.xw}</span><div class="bar"><i style="width:${pct}%"></i></div>
-      <span class="num">${look.progress}/${look.next}</span>${omenChip('progress')}</div>
+      <span class="num"><span data-count="progress">${look.progress}</span>/${look.next}</span>${omenChip('progress')}</div>
     ${qiHtml()}
-    <span class="ls"><span class="lbl">${w.ls}</span> <b>${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
+    <span class="ls"><span class="lbl">${w.ls}</span> <b data-count="wealth">${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
+}
+
+/// A gain on the strip is seen: the number counts up from where it stood
+/// and the gain floats off it (his ask, 2026-09-17). Only a rise within the
+/// same world and tier is counted — a breakthrough or a new world starts over.
+let shown = null; // {world, tier, progress, wealth} as last drawn
+function riseStats() {
+  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth };
+  const before = shown;
+  shown = now;
+  if (!before || before.world !== now.world) return;
+  for (const key of ['progress', 'wealth']) {
+    const from = before[key], to = now[key];
+    if (key === 'progress' && before.tier !== now.tier) continue;
+    if (!(to > from)) continue;
+    const el = document.querySelector(`[data-count="${key}"]`);
+    if (!el) continue;
+    const gain = document.createElement('span');
+    gain.className = 'gain';
+    gain.textContent = `+${to - from}`;
+    el.after(gain);
+    gain.addEventListener('animationend', () => gain.remove());
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
+    el.classList.add('rising');
+    const start = performance.now(), span = 900;
+    const step = (t) => {
+      const k = Math.min(1, (t - start) / span);
+      if (!el.isConnected) return;
+      el.textContent = String(Math.round(from + (to - from) * (1 - (1 - k) ** 3)));
+      if (k < 1) requestAnimationFrame(step);
+      else el.classList.remove('rising');
+    };
+    requestAnimationFrame(step);
+  }
 }
 
 /// Today's cast beside the number it changes — 修为 ×1.2 by the 修为 bar,
@@ -277,6 +311,7 @@ function render() {
   document.documentElement.lang = lang();
   document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
   $('status').innerHTML = statusHtml();
+  riseStats();
   $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.

@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, bout, creatureMoves, offers, roundOf } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -1641,4 +1641,15 @@ test('in October the road from Ye into 兖 is closed, and the brief says so', ()
   const r = refused(move, s, { place: 'pushui' }, 'road-closed', octx());
   assert.ok(r.say.includes('兖州'));
   assert.deepEqual(look(s, content, octx()).director.closed.map(c => c.id ?? c), look(s, content, octx()).director.closed.map(c => c.id ?? c));
+});
+
+test('a win asks for Yinyue\'s glad line last; a trade or a refusal does not', () => {
+  const glad = /Yinyue's own, glad/;
+  assert.match(thenFor({ ok: true, paid: { progress: 72, wealth: 20 } }), glad);
+  assert.match(thenFor({ ok: true, breakthrough: { from: 'a', to: 'b' } }), glad);
+  assert.match(thenFor({ ok: true, paid: { progress: 0, wealth: 0, cast: 'fuzhu' } }), glad);
+  assert.doesNotMatch(thenFor({ ok: true, sold: 'lingzhi', paid: { wealth: 12 } }), glad);
+  assert.doesNotMatch(thenFor({ ok: true, bought: 'lingzhi', paid: { wealth: -12 } }), glad);
+  assert.doesNotMatch(thenFor({ ok: false, refused: 'needs-answer' }), glad);
+  assert.doesNotMatch(thenFor({ ok: true, paid: { progress: 0, wealth: 0 } }), glad);
 });
