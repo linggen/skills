@@ -14,6 +14,7 @@ import {
 } from './shifu-io.js';
 
 const MEDIA_SH = '$HOME/.linggen/skills/apple-shifu/scripts/media/media.sh';
+const THUMBS_SH = '$HOME/.linggen/skills/apple-shifu/scripts/media/thumbs.sh';
 const DATA_DIR = '$HOME/.linggen/skills/apple-shifu/data/media';
 const RENDER_CAP = 200; // thumbs per category; selection still covers all items
 /** Categories rendered as the month-by-month roll view (whole roll subsets). */
@@ -40,7 +41,15 @@ let macFolderExpanded = new Set();  // folder indices shown in full (All-by-fold
 let screen = 'connect';
 let pollTimer = null;
 let device = null;
-let flags = null;          // parsed flags.json
+let flags = null;          // parsed flags.json (normalised by useFlags)
+let synced = { count: 0, bytes: 0 };  // what the phone has sent, from the manifest
+
+/** flags.json is the scan's work — with the Media tools missing it is simply
+    absent, and every reader wants an empty scan rather than a TypeError. */
+function useFlags(f) {
+  flags = { blur_default: 25, ...(f || {}), items: (f && f.items) || [] };
+  return flags;
+}
 let roll = [];             // EVERY camera-roll item (manifest, Live-MOVs folded)
 let archiveRows = [];         // archive.jsonl rows — every hash-verified backup copy
 let archiveShas = new Set();  // content hashes with a verified archive copy
@@ -113,6 +122,7 @@ function setupPending() {
     because the header badge always counts the whole roll and the two figures
     must not look like they disagree. */
 function backupVerb() {
+  if (setupPending()) return { blocked: NEEDS_SETUP };
   const targets = backupTargets();
   if (!targets.length) {
     return { blocked: selected.size ? 'Everything checked is already backed up' : 'Everything is backed up' };
@@ -330,7 +340,7 @@ async function resumeMedia() {
     // backup/remove run inline over the review grid — reattach the toast
     if (prog.op === 'backup' || prog.op === 'remove') {
       const f = await media('flags');
-      if (f.items?.length) { flags = f; showReview(); watchInlineOp(prog.op); return; }
+      if (f.items?.length) { useFlags(f); showReview(); watchInlineOp(prog.op); return; }
     }
     if (prog.op === 'setup') return showConnect();
     return showScanning();
@@ -338,7 +348,7 @@ async function resumeMedia() {
   const f = await media('flags');
   // any completed scan opens the review workspace — even a clean phone still
   // has the All/On-Mac/Removed views and the Mac archive browser to offer
-  if (f.generated || f.items?.length) { flags = f; return showReview(); }
+  if (f.generated || f.items?.length) { useFlags(f); return showReview(); }
   showConnect();
 }
 
@@ -358,7 +368,7 @@ async function watchInlineOp(op) {
     pollTimer = setInterval(poll, 1000);
   });
   const p = await media('progress');
-  flags = await media('flags');
+  useFlags(await media('flags'));
   await Promise.all([loadRoll(), loadRemovals(), loadArchive()]);
   refreshBackupBadge();
   pruneSelected();
@@ -433,6 +443,7 @@ async function renderPhoneCard(noTools = false) {
   const rows = await loadJsonl('manifest.jsonl');
   const wireless = rows.filter((r) => (r.path || '').startsWith('wireless/'));
   const size = wireless.reduce((s, r) => s + (r.size || 0), 0);
+  synced = { count: wireless.length, bytes: size };
   el.hidden = false;
   if (!paired.length) {
     el.className = 'media-card dashed';
@@ -466,12 +477,13 @@ async function renderPhoneCard(noTools = false) {
       : 'Open Linggen on the phone to sync what’s new — no cable needed.'}</div>
     ${wireless.length ? '' : `<div class="media-dim">What the phone sends lands here to look through, keep a copy of on
       this Mac, and then clear off the phone.</div>`}
-    ${wireless.length && !noTools ? '<button class="media-cta" id="phone-review-btn">Review synced photos</button>' : ''}
-    ${wireless.length && noTools ? '<div class="media-dim">Reviewing them needs the Media tools below.</div>' : ''}`;
+    ${wireless.length ? '<button class="media-cta" id="phone-review-btn">Review synced photos</button>' : ''}
+    ${wireless.length && noTools ? `<div class="media-dim">Sorting them by duplicate, blurry or already-on-Mac needs the
+      Media tools below — looking through them doesn't.</div>` : ''}`;
   const btn = document.getElementById('phone-review-btn');
   if (btn) {
     btn.onclick = async () => {
-      flags = await media('flags');
+      useFlags(await media('flags'));
       await Promise.all([loadRoll(), loadRemovals(), loadArchive(), loadPendingDeletes()]);
       refreshBackupBadge();
       showReview();
@@ -489,8 +501,11 @@ async function renderMacSpaceCard(macCard) {
   macCard.hidden = false;
   macCard.className = 'media-card';
   macCard.innerHTML = `
-    <h4>This Mac · ${esc(free)} <span class="media-chip">room for what the phone sends</span></h4>
-    <div class="media-dim">No photos synced here yet. Free space is re-checked right before anything copies.</div>`;
+    <h4>This Mac · ${esc(free)} <span class="media-chip">${synced.count
+      ? `holding ${fmtGb(synced.bytes)} from the phone` : 'room for what the phone sends'}</span></h4>
+    <div class="media-dim">${synced.count
+      ? `<b>${synced.count.toLocaleString()}</b> items are here, waiting for you to look through.`
+      : 'No photos synced here yet.'} Free space is re-checked right before anything copies.</div>`;
 }
 
 async function refreshDevice() {
@@ -629,7 +644,7 @@ function showScanning() {
     if (scanPolls++ % 5 === 0) refreshStatus(); // every ~10s; pull moves Mac free space
     renderScanProgress(p);
     if (p.op === 'scan' && p.status === 'done') {
-      flags = await media('flags');
+      useFlags(await media('flags'));
       notify(await scanReport());
       showReview();
     } else if (p.status === 'error') {
@@ -885,19 +900,49 @@ function allById() {
   return m;
 }
 
+/** Previews for what arrived over Wi-Fi. The USB pipeline draws thumbnails
+    during a scan, so anything synced since the last one has none — and with
+    the Media tools missing, nothing draws them at all, which is what left this
+    screen a grid of blanks. macOS ships sips and qlmanage; thumbs.sh uses
+    them, a batch at a time so no call outlives the daemon's ceiling. */
+let thumbsRunning = false;
+async function makeMissingThumbs() {
+  if (thumbsRunning) return;
+  thumbsRunning = true;
+  try {
+    for (let i = 0; i < 200; i += 1) {
+      const res = await bash(`bash ${THUMBS_SH} 16`);
+      let out = {};
+      try { out = JSON.parse(res.stdout || '{}'); } catch { return; }
+      if (out.made && screen === 'review') {
+        const top = document.scrollingElement?.scrollTop || 0;
+        renderCategoryPane();
+        if (document.scrollingElement) document.scrollingElement.scrollTop = top;
+      }
+      if (!out.remaining) return;
+    }
+  } finally { thumbsRunning = false; }
+}
+
 function showReview() {
   blurThreshold = flags.blur_default || 25;
   applyPrechecks();
   setScreen('review', renderReview);
   refreshStatus();
   Promise.all([loadRemovals(), loadMacIndex(), loadRoll(), loadArchive(), loadPendingDeletes()])
-    .then(() => { refreshBackupBadge(); if (screen === 'review') renderReview(); });
+    .then(() => { refreshBackupBadge(); if (screen === 'review') renderReview(); makeMissingThumbs(); });
   pollTimer = setInterval(refreshStatus, 15000);
 }
 
 function renderReview() {
   if (getSource() === 'mac') return renderMacReview();
-  let chips = CATEGORIES.map((c) => {
+  // Duplicates, blurry, dark and on-Mac are the scan's findings; with no scan
+  // (the Media tools aren't installed) eight zero chips said nothing. What the
+  // manifest alone can answer stays.
+  const scanned = flags.items.length > 0;
+  const fromManifest = (key) => key === 'all' || key === 'not_backed';
+  if (!scanned && !fromManifest(activeCat) && activeCat !== 'queued' && activeCat !== 'removed') activeCat = 'all';
+  let chips = CATEGORIES.filter((c) => scanned || fromManifest(c.key)).map((c) => {
     const items = itemsFor(c.key);
     const size = items.reduce((s, it) => s + it.size, 0);
     return `<button class="media-chip-f ${c.key === activeCat ? 'on' : ''}" data-cat="${c.key}">
@@ -918,7 +963,8 @@ function renderReview() {
     ${statusStripDiv()}
     <div class="media-actionbar">
       <span class="abar-meta">${wirelessSummary()}
-        <span class="media-dim">removals recoverable on this Mac for 30 days</span></span>
+        <span class="media-dim">${scanned ? 'removals recoverable on this Mac for 30 days'
+          : 'duplicates, blurry and already-on-Mac come from a scan — the Media tools do that'}</span></span>
     </div>
     <div class="media-chips">${chips}</div>
     <div id="cat-pane"></div>`;
@@ -1912,7 +1958,7 @@ async function syncNow() {
     pollTimer = setInterval(poll, 1000);
   });
   const p = await media('progress');
-  flags = await media('flags');
+  useFlags(await media('flags'));
   await Promise.all([loadRoll(), loadRemovals(), loadArchive(), loadPendingDeletes()]);
   refreshBackupBadge();
   pruneSelected();
@@ -1965,7 +2011,7 @@ async function deleteInLightbox(id) {
   // step to the next surviving photo; reload flags from disk (the remove leg
   // already pruned items+groups there) so the grid behind the lightbox updates
   const nextId = lbOrder[lbIdx + 1] ?? lbOrder[lbIdx - 1] ?? null;
-  flags = await media('flags');
+  useFlags(await media('flags'));
   await loadRoll();
   refreshBackupBadge();
   selected.delete(id);
@@ -2027,7 +2073,7 @@ async function removeInline(ids) {
     pollTimer = setInterval(poll, 1000);
   });
   const r = await media('remove-result');
-  flags = await media('flags');
+  useFlags(await media('flags'));
   await loadRoll();
   pruneSelected();
   refreshBackupBadge();

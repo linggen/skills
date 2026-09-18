@@ -32,6 +32,20 @@ export async function listSkillSessions(skill) {
   return data.sessions || [];
 }
 
+/// The day's chat to pick up, from the list the engine gives. `updated_at` is
+/// the transcript's own mtime, so a session that was created and never spoken
+/// in carries its creation time — which is what a lost kickoff leaves behind
+/// (2026-09-18: the app opened onto an empty panel, nobody to greet, no way
+/// in). That is not a reopened day. It is passed over, and the newest session
+/// that holds a conversation is the day's — if it began less than a day ago.
+export function pickResumable(sessions, nowSec = Date.now() / 1000, maxAgeHours = 24) {
+  const spoken = (sessions || []).filter(s => (s.updated_at || 0) > (s.created_at || 0));
+  if (!spoken.length) return null;
+  spoken.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+  const newest = spoken[0];
+  return (nowSec - (newest.created_at || 0)) / 3600 < maxAgeHours ? newest.id : null;
+}
+
 export async function removeSkillSession(skill, sessionId) {
   const res = await fetch(`${API_BASE}/api/skill-sessions`, {
     method: 'DELETE',

@@ -5,7 +5,7 @@
 // a word to Ling, sent as the player's own line; Ling and the rules do the rest.
 
 import './chat-bridge.js';
-import { listSkillSessions, fetchCloud, syncCloud, signIn } from './api.js';
+import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { fight } from './duel.js';
@@ -476,14 +476,11 @@ document.addEventListener('click', (e) => {
 
 /* ── The chat ── */
 
-/// The newest session, if it is from today's stretch — the app session rule.
+/// The day's chat to pick up: the newest one spoken in, within today's
+/// stretch — the app session rule. An empty session is no day.
 async function recentSessionId() {
   try {
-    const sessions = await listSkillSessions(SKILL);
-    if (!sessions.length) return null;
-    sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-    const ageHours = (Date.now() / 1000 - (sessions[0].created_at || 0)) / 3600;
-    return ageHours < 24 ? sessions[0].id : null;
+    return pickResumable(await listSkillSessions(SKILL));
   } catch {
     return null;
   }
