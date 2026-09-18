@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "_about": "斗法 v3 的牌 (design.md § 斗法 v3). 一张牌是一行数据：费用、五行、身体、以及一个来自封闭词表的效果 (battle.js EFFECTS)。牌不写代码 —— 这是一个人能平衡一百张牌的前提。数值由 tools/battle-sim.mjs 的闸调，不由手感调。",
+  "cards": [
+    {
+      "id": "xiaoyao",
+      "kind": "minion",
+      "name": {
+        "zh": "小妖",
+        "en": "Imp"
+      },
+      "cost": 1,
+      "element": "wood",
+      "atk": 1,
+      "hp": 2
+    },
+    {
+      "id": "shanjing",
+      "kind": "minion",
+      "name": {
+        "zh": "山精",
+        "en": "Hill Spirit"
+      },
+      "cost": 2,
+      "element": "earth",
+      "atk": 1,
+      "hp": 4,
+      "keywords": [
+        "taunt"
+      ]
+    },
+    {
+      "id": "jingwei",
+      "kind": "minion",
+      "name": {
+        "zh": "精卫",
+        "en": "Jingwei"
+      },
+      "cost": 3,
+      "element": "fire",
+      "atk": 2,
+      "hp": 3,
+      "keywords": [
+        "battlecry"
+      ],
+      "effect": {
+        "draw": 1
+      }
+    },
+    {
+      "id": "fuzhu",
+      "kind": "minion",
+      "name": {
+        "zh": "夫诸",
+        "en": "Fuzhu"
+      },
+      "cost": 3,
+      "element": "water",
+      "atk": 3,
+      "hp": 3
+    },
+    {
+      "id": "tongtong",
+      "kind": "minion",
+      "name": {
+        "zh": "狪狪",
+        "en": "Tongtong"
+      },
+      "cost": 3,
+      "element": "earth",
+      "atk": 1,
+      "hp": 6,
+      "keywords": [
+        "taunt"
+      ]
+    },
+    {
+      "id": "longzhi",
+      "kind": "minion",
+      "name": {
+        "zh": "蠪侄",
+        "en": "Longzhi"
+      },
+      "cost": 4,
+      "element": "metal",
+      "atk": 4,
+      "hp": 2
+    },
+    {
+      "id": "paoxiao",
+      "kind": "minion",
+      "name": {
+        "zh": "狍鸮",
+        "en": "Paoxiao"
+      },
+      "cost": 4,
+      "element": "earth",
+      "atk": 4,
+      "hp": 4
+    },
+    {
+      "id": "kui",
+      "kind": "minion",
+      "name": {
+        "zh": "夔",
+        "en": "Kui"
+      },
+      "cost": 5,
+      "element": "water",
+      "atk": 4,
+      "hp": 6,
+      "keywords": [
+        "taunt"
+      ]
+    },
+    {
+      "id": "leishen",
+      "kind": "minion",
+      "name": {
+        "zh": "雷神",
+        "en": "The Thunderer"
+      },
+      "cost": 6,
+      "element": "wood",
+      "atk": 5,
+      "hp": 6
+    },
+    {
+      "id": "yinyue",
+      "kind": "minion",
+      "name": {
+        "zh": "银月",
+        "en": "Yinyue"
+      },
+      "cost": 2,
+      "element": "metal",
+      "atk": 3,
+      "hp": 4,
+      "keywords": [
+        "battlecry"
+      ],
+      "effect": {
+        "heal": 2
+      },
+      "_about": "开局就在手上，不占牌库的十张。被打到 0 是退到一边，下一局照来 —— 这个世界没有死。"
+    },
+    {
+      "id": "qingteng",
+      "kind": "spell",
+      "name": {
+        "zh": "青藤缚",
+        "en": "Vine Bind"
+      },
+      "cost": 1,
+      "element": "wood",
+      "effect": {
+        "damage": 2
+      }
+    },
+    {
+      "id": "huodan",
+      "kind": "spell",
+      "name": {
+        "zh": "火弹术",
+        "en": "Fire Bolt"
+      },
+      "cost": 2,
+      "element": "fire",
+      "effect": {
+        "damage": 3
+      }
+    },
+    {
+      "id": "hantan",
+      "kind": "spell",
+      "name": {
+        "zh": "寒潭指",
+        "en": "Cold Pool"
+      },
+      "cost": 3,
+      "element": "water",
+      "effect": {
+        "damage": 5
+      }
+    },
+    {
+      "id": "luoshi",
+      "kind": "spell",
+      "name": {
+        "zh": "落石术",
+        "en": "Falling Stone"
+      },
+      "cost": 4,
+      "element": "earth",
+      "effect": {
+        "damage": 7
+      }
+    },
+    {
+      "id": "wulei",
+      "kind": "spell",
+      "name": {
+        "zh": "五雷法",
+        "en": "Five Thunders"
+      },
+      "cost": 5,
+      "element": "wood",
+      "effect": {
+        "damage": 9
+      }
+    },
+    {
+      "id": "jinzhen",
+      "kind": "spell",
+      "name": {
+        "zh": "金针雨",
+        "en": "Needle Rain"
+      },
+      "cost": 3,
+      "element": "metal",
+      "effect": {
+        "sweep": 2
+      }
+    },
+    {
+      "id": "fenghuo",
+      "kind": "spell",
+      "name": {
+        "zh": "燎原",
+        "en": "Wildfire"
+      },
+      "cost": 5,
+      "element": "fire",
+      "effect": {
+        "sweep": 4
+      }
+    },
+    {
+      "id": "wudao",
+      "kind": "spell",
+      "name": {
+        "zh": "悟道",
+        "en": "Insight"
+      },
+      "cost": 1,
+      "element": null,
+      "effect": {
+        "draw": 2
+      }
+    },
+    {
+      "id": "peiyuan",
+      "kind": "spell",
+      "name": {
+        "zh": "培元",
+        "en": "Nourish"
+      },
+      "cost": 1,
+      "element": "wood",
+      "effect": {
+        "buff": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    },
+    {
+      "id": "huiqi",
+      "kind": "spell",
+      "name": {
+        "zh": "回气丹",
+        "en": "Breath Pill"
+      },
+      "cost": 2,
+      "element": null,
+      "effect": {
+        "heal": 5
+      }
+    }
+  ]
+}
