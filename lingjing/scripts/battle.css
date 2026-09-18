@@ -261,3 +261,13 @@
   60% { opacity: 1; }
   to { transform: translate(var(--dx), var(--dy)) rotate(4deg) scale(1.05); opacity: 0; }
 }
+
+/* Every card wears its picture (his, 2026-09-18). It sits behind the words,
+   not beside them: the card is small, and a picture that pushes the rules off
+   the face is a picture that cost the player the game. */
+.bpic { width: 100%; height: 56px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line-d); filter: sepia(0.2) brightness(0.92) contrast(1.05); }
+.bpic.small { height: 34px; }
+.bcard .bpic { margin-bottom: 1px; }
+.bminion .bpic { margin-bottom: 1px; }
+.bcard:hover .bpic, .bcard.held .bpic { filter: sepia(0.05) brightness(1.02) contrast(1.05); }
+@media (max-width: 560px) { .bpic { height: 46px; } .bpic.small { height: 28px; } }

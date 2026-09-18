@@ -12,7 +12,9 @@
       "cost": 1,
       "element": "wood",
       "atk": 1,
-      "hp": 2
+      "hp": 2,
+      "art": "art/cards/xiaoyao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "shanjing",
@@ -27,7 +29,9 @@
       "hp": 4,
       "keywords": [
         "taunt"
-      ]
+      ],
+      "art": "art/cards/shanjing.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jingwei",
@@ -142,7 +146,9 @@
       "effect": {
         "heal": 2
       },
-      "_about": "开局就在手上，不占牌库的十张。被打到 0 是退到一边，下一局照来 —— 这个世界没有死。"
+      "_about": "开局就在手上，不占牌库的十张。被打到 0 是退到一边，下一局照来 —— 这个世界没有死。",
+      "art": "art/cards/yinyue.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "qingteng",
@@ -155,7 +161,9 @@
       "element": "wood",
       "effect": {
         "damage": 2
-      }
+      },
+      "art": "art/cards/qingteng.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "huodan",
@@ -168,7 +176,9 @@
       "element": "fire",
       "effect": {
         "damage": 3
-      }
+      },
+      "art": "art/cards/huodan.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "hantan",
@@ -181,7 +191,9 @@
       "element": "water",
       "effect": {
         "damage": 4
-      }
+      },
+      "art": "art/cards/hantan.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "luoshi",
@@ -194,7 +206,9 @@
       "element": "earth",
       "effect": {
         "damage": 5
-      }
+      },
+      "art": "art/cards/luoshi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "wulei",
@@ -207,7 +221,9 @@
       "element": "wood",
       "effect": {
         "damage": 6
-      }
+      },
+      "art": "art/cards/wulei.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jinzhen",
@@ -220,7 +236,9 @@
       "element": "metal",
       "effect": {
         "sweep": 2
-      }
+      },
+      "art": "art/cards/jinzhen.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "fenghuo",
@@ -233,7 +251,9 @@
       "element": "fire",
       "effect": {
         "sweep": 3
-      }
+      },
+      "art": "art/cards/fenghuo.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "wudao",
@@ -246,7 +266,9 @@
       "element": null,
       "effect": {
         "draw": 2
-      }
+      },
+      "art": "art/cards/wudao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "peiyuan",
@@ -262,7 +284,9 @@
           "atk": 1,
           "hp": 1
         }
-      }
+      },
+      "art": "art/cards/peiyuan.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "huiqi",

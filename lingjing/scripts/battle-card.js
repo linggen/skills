@@ -179,13 +179,21 @@ function minionHtml(m, side, index, ctx, picked) {
   ].filter(Boolean);
   const can = side === 'mine' && !why && m.ready;
   const aimed = side === 'theirs' ? ctx.aim?.theirs?.has(index) : ctx.aim?.mine?.has(index);
+  const pic = artOf(ctx.catalog?.[m.id], ctx);
   return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
+    ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : ''}
     <span class="bname">${name(m, ctx.lang)}</span>
     <span class="belem">${GLYPH[m.element] ?? ''}${ctx.lang === 'en' && m.element ? ` ${esc(ctx.elName?.(m.element) ?? '')}` : ''}</span>
     <span class="bstat"><b>${m.atk}</b> / <b>${m.hp}</b></span>
     ${marks.length ? `<small>${marks.map(esc).join(' · ')}</small>` : ''}
   </button>`;
 }
+
+/* A card's picture. The 山海经 creatures keep their classical plates; the rest
+   were painted for us (worlds/<id>/art/cards). A card without one still reads
+   — the name and the line under it carry it — so the picture is a gift, never
+   a requirement. */
+const artOf = (c, ctx) => (c?.art ? `${ctx.artBase ?? ''}${c.art}` : null);
 
 function handHtml(st, ctx, picked) {
   const w = ctx.words;
@@ -198,6 +206,7 @@ function handHtml(st, ctx, picked) {
     const body = c.kind === 'minion' ? `<span class="bstat"><b>${c.atk}</b> / <b>${c.hp}</b></span>` : '';
     return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
       <span class="bcost">${c.cost}</span>
+      ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
       <span class="bname">${name(c, ctx.lang)}</span>
       <span class="belem">${GLYPH[c.element] ?? ''}</span>
       <small class="btext">${esc(sayEffect(c, ctx))}</small>
