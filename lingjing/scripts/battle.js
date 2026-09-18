@@ -361,28 +361,49 @@ export function act(st, action, who = 'you') {
 
 /* ── The creature's side: a policy, never a die ── */
 
-/* It plays what it can afford, biggest first; then every minion strikes — a
-   护主 in the way, or the hero. Its deck order is its personality: the eight
-   cards it holds are what this beast IS. */
-export function foeTurn(st) {
+/* ONE move of the creature's, and then it hands the screen back. A whole turn
+   taken between two renders is a turn the player never sees — three seconds of
+   nothing, which reads as a hang (his, 2026-09-18: 对方不打呢, 卡住了). The page
+   loops on this, drawing and animating each move as it lands.
+   Order: play what it can afford, biggest first; then its 主灵根一击; then send
+   each body at whatever stands in the way. Its deck order is its personality —
+   the twelve cards it holds are what this beast IS. */
+export function foeStep(st) {
+  if (st.outcome !== 'open' || st.whose !== 'foe') return null;
   const side = st.foe;
-  for (let guard = 0; guard < 24 && st.outcome === 'open'; guard += 1) {
-    const playable = side.hand
-      .map((id, index) => ({ index, c: card(st, id) }))
-      .filter(({ c }) => c && c.cost <= side.mana)
-      .sort((a, b) => b.c.cost - a.c.cost);
-    const next = playable.find(({ index, c }) => !legal(st, { kind: 'play', index, target: aimFor(st, side, c) }, 'foe'));
-    if (!next) break;
-    act(st, { kind: 'play', index: next.index, target: aimFor(st, side, next.c) }, 'foe');
+  const playable = side.hand
+    .map((id, index) => ({ index, c: card(st, id) }))
+    .filter(({ c }) => c && c.cost <= side.mana)
+    .sort((a, b) => b.c.cost - a.c.cost);
+  const next = playable.find(({ index, c }) => !legal(st, { kind: 'play', index, target: aimFor(st, side, c) }, 'foe'));
+  if (next) {
+    const action = { kind: 'play', index: next.index, target: aimFor(st, side, next.c) };
+    act(st, action, 'foe');
+    return action;
   }
-  if (st.outcome === 'open' && !legal(st, { kind: 'power', target: aimPower(st, side) }, 'foe')) {
-    act(st, { kind: 'power', target: aimPower(st, side) }, 'foe');
+  if (!legal(st, { kind: 'power', target: aimPower(st, side) }, 'foe')) {
+    const action = { kind: 'power', target: aimPower(st, side) };
+    act(st, action, 'foe');
+    return action;
   }
-  for (let i = 0; i < side.board.length && st.outcome === 'open'; i += 1) {
+  for (let i = 0; i < side.board.length; i += 1) {
     const target = hasTaunt(st.you) ? { kind: 'minion', index: st.you.board.findIndex(m => m.taunt) } : bestAttack(st, side, i);
-    if (!legal(st, { kind: 'attack', index: i, target }, 'foe')) act(st, { kind: 'attack', index: i, target }, 'foe');
+    const action = { kind: 'attack', index: i, target };
+    if (!legal(st, action, 'foe')) {
+      act(st, action, 'foe');
+      return action;
+    }
   }
-  if (st.outcome === 'open') act(st, { kind: 'end' }, 'foe');
+  act(st, { kind: 'end' }, 'foe');
+  return { kind: 'end' };
+}
+
+/* Its whole turn at once — for the rules, the gate and anything with no screen
+   to draw on. The page uses `foeStep`. */
+export function foeTurn(st) {
+  for (let guard = 0; guard < 40 && st.outcome === 'open' && st.whose === 'foe'; guard += 1) {
+    if (foeStep(st)?.kind === 'end') return;
+  }
 }
 
 /* Where a creature points a card: a sweep needs no aim, a buff takes its own
@@ -441,6 +462,12 @@ export function view(st) {
   });
   return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: side(st.foe), log: st.log, scale: st.scale };
 }
+
+/* Nothing left but to end the turn — no card affordable, no body that may
+   strike, no 主灵根一击. The page shows it and, after a beat, ends the turn by
+   itself: a turn with an empty purse is not a decision, and he read one as the
+   fight having hung (2026-09-18). */
+export const idle = st => st.outcome === 'open' && st.whose === 'you' && !offers(st).some(o => o.ok && o.action.kind !== 'end');
 
 /* ── The buttons ── */
 

@@ -26,7 +26,16 @@ export const WORDS = {
       'already-struck': '这一回合出过手了', 'no-attack': '它不会攻击', 'no-target': '没有可指的',
       'no-friendly': '自己阵前没有人', 'fight-over': '打完了',
     },
-    pickCard: '点一个目标', pickTarget: '点它要打谁',
+    pickCard: '点一个目标 —— 妖，或它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
+    ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩',
+    howLines: [
+      '灵力每回合多一格，回合开始回满 —— 牌上左上角的数就是它的价钱。',
+      '点一张牌打出：随从落在你的阵前，功法当场生效。',
+      '随从落场那一回合不能动；下一回合起，点它、再点目标，就是出手。',
+      '五行相克：你的行克它的行，伤害多五成；被它克，少四分之一。',
+      '护主挡在前面 —— 它阵前有护主时，先打护主。',
+      '打光妖的气血就赢；它十二张牌抽完会力竭遁走，那一场不算赢。',
+    ],
   },
   en: {
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
@@ -39,7 +48,16 @@ export const WORDS = {
       'already-struck': 'has struck this turn', 'no-attack': 'it does not strike', 'no-target': 'nothing to point at',
       'no-friendly': 'no one of yours stands', 'fight-over': 'the fight is over',
     },
-    pickCard: 'choose a target', pickTarget: 'choose what it strikes',
+    pickCard: 'choose a target — the beast, or one of its rank', pickTarget: 'now choose what it strikes',
+    ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play',
+    howLines: [
+      'Force grows a crystal a round and refills — the number on a card is its price.',
+      'Click a card to play it: a minion joins your rank, an art takes effect at once.',
+      'A minion cannot strike the turn it arrives. After that, click it, then click what it strikes.',
+      'The five roots: yours over its root lands half again as hard; under it, a quarter lighter.',
+      'A Guard stands in the way — while one stands, strike the Guard first.',
+      'Take all its Life to win. Its twelve cards spent, it withdraws — and that is not a win.',
+    ],
   },
 };
 
@@ -116,7 +134,11 @@ function minionHtml(m, side, index, ctx, picked) {
   const w = ctx.words;
   const why = side === 'mine' ? ctx.reasons.get(`mine:${index}`)?.why : null;
   const held = picked?.from === 'board' && picked.index === index && side === 'mine';
-  const marks = [m.taunt ? w.taunt : null, side === 'mine' && why ? (w.why[why] ?? why) : null].filter(Boolean);
+  const marks = [
+    m.taunt ? w.taunt : null,
+    side === 'mine' && why ? (w.why[why] ?? why) : null,
+    side === 'mine' && !why && m.ready ? w.ready : null,
+  ].filter(Boolean);
   return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
     <span class="bname">${name(m, ctx.lang)}</span>
     <span class="belem">${GLYPH[m.element] ?? ''}${ctx.lang === 'en' && m.element ? ` ${esc(ctx.elName?.(m.element) ?? '')}` : ''}</span>
@@ -218,6 +240,12 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
     return cells.join('');
   };
   const powerWhy = ctx.reasons.get('power')?.why;
+  // What is there to do? If the only move left is to end the turn, SAY SO: he
+  // sat on a turn with an empty purse and read it as the beast being stuck
+  // (2026-09-18, "我打不了, 雷神不动").
+  const canDo = offers.filter(o => o.ok && o.action.kind !== 'end');
+  const stuck = st.outcome === 'open' && st.whose === 'you' && !canDo.length;
+  const advice = picked ? (picked.from === 'board' ? w.pickTarget : w.pickCard) : stuck ? w.nothing : null;
   const over = st.outcome !== 'open';
   const said = st.outcome === 'won' ? w.wonSay : st.outcome === 'lost' ? w.lostSay : st.outcome === 'withdrew' ? w.withdrewSay : '';
   const title = st.outcome === 'won' ? w.won : st.outcome === 'lost' ? w.lost : st.outcome === 'withdrew' ? w.withdrew : '';
@@ -259,11 +287,12 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
         ${w.power} <span class="belem">${GLYPH[st.you.root] ?? ''}</span>
         <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${2}${ctx.lang === 'en' ? ' ' : ''}${w.mana}`}</small>
       </button>
-      <button class="bact end" data-spot="end">${w.end}</button>
+      <button class="bact end${stuck ? ' urge' : ''}" data-spot="end">${w.end}</button>
     </div>
 
     ${note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : ''}
-    ${picked ? `<div class="bhint">${picked.from === 'board' ? w.pickTarget : w.pickCard}</div>` : ''}
+    ${advice ? `<div class="bhint${stuck ? ' burge' : ''}">${esc(advice)}</div>` : ''}
+    <details class="bhow"><summary>${w.how}</summary>${w.howLines.map(l => `<p>${esc(l)}</p>`).join('')}</details>
     ${over ? `<div class="bover"><b>${title}</b><span>${said}</span></div>` : ''}
   </div>`;
 }

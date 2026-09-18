@@ -200,3 +200,16 @@
 @media (prefers-reduced-motion: reduce) {
   .battle *, .battle *::before, .battle *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Teaching, on the screen. A turn where nothing is affordable reads as a hang
+   unless the screen says so out loud (2026-09-18). */
+.bhint.burge { color: var(--gold); font-size: 13px; }
+.bact.end.urge { animation: urge 1.4s ease-in-out infinite; }
+@keyframes urge { 0%, 100% { box-shadow: 0 0 20px rgba(201, 162, 39, 0.25); } 50% { box-shadow: 0 0 34px rgba(201, 162, 39, 0.75); transform: translateY(-2px); } }
+
+.bhow { margin: 2px auto 0; max-width: 560px; font-family: var(--ui); font-size: 11px; color: var(--faint-d); }
+.bhow summary { cursor: pointer; text-align: center; letter-spacing: 0.1em; color: #6b6055; list-style: none; }
+.bhow summary::-webkit-details-marker { display: none; }
+.bhow summary:hover { color: var(--gold); }
+.bhow p { margin: 7px 0 0; line-height: 1.6; }
+.bhow[open] { padding: 10px 14px; border: 1px solid var(--line-d); border-radius: 10px; background: rgba(0, 0, 0, 0.3); }
