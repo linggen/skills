@@ -22,6 +22,7 @@ import {
 } from './content.mjs';
 import { armOf, fight, foeOf } from './duel.js';
 import { MODES, REALMS as CARD_REALMS, battle, shuffle } from './battle.js';
+import { askMinusStage, stageCards, stageOwns } from './stage.mjs';
 import { layoutRoads, placeWords } from './roadmap.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
@@ -764,8 +765,7 @@ export function look(state, content, ctx) {
     speed: speedOf(content, state),
   };
   const chapter = content.chapters[state.chapter];
-  return {
-    ...thenAsk(content, state, ctx),
+  const brief = {
     ok: true, lang, name: state.name,
     world: worldBrief(content, lang),
     ...building(content),
@@ -795,7 +795,38 @@ export function look(state, content, ctx) {
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
   };
+  return { ...onStage(content, state, ctx, {}, brief), ...brief };
 }
+
+/* The stage and the question, decided together and never twice (his law,
+   2026-09-18: a widget may stand in the chat or on the stage, both sides are
+   told, and only one of them shows it).
+
+   `stage` is what Ling can SEE standing there — short strings, `kind` or
+   `kind:id`, because her context is not a place to put a card list in (his
+   「don't blow ling's context up」). She needs nothing more: the question she
+   is handed has already had the stage's own actions taken out of it, so she
+   cannot offer one by accident, and the page draws the same list from the same
+   reading. */
+function onStage(content, state, ctx, result = {}, brief = null) {
+  const view = brief ?? look(state, content, ctx);
+  const cards = stageCards(view, { focus: shownHere(content, state, view), fight: Boolean(state.fight) });
+  const ask = askMinusStage(askOf(content, state, ctx, result), stageOwns(view, cards));
+  return { then: thenFor(result, ask), ask, stage: cards };
+}
+
+/* What Ling last showed, while she is still in the place she showed it — else
+   the cards this scene or place was authored with, so a creature is pictured
+   even when she forgets to Show it. Walking away clears the stage by itself. */
+function shownHere(content, state, view) {
+  if (state.shown?.length && state.shown_at === stageAt(content, state)) return state.shown;
+  return view.scene?.show ?? view.place?.show ?? [];
+}
+
+/* Where the stage stands: the scene being played, else the place. One
+   expression, read by the Show that writes it and the Look that reads it —
+   two spellings of this is how the cards went missing the first time. */
+const stageAt = (content, state) => (atScene(content, state) ? sceneOf(content, state).id : state.place ? `place:${state.place}` : null);
 
 /* The world card as Look tells it — and where its files are, relative to
    the skill, so the page finds a made world's art beside a shipped one's. */
@@ -2117,8 +2148,28 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show,
 };
+
+/* Show — the cards Ling puts before the player, WRITTEN DOWN. It was a
+   declarative tool until 2026-09-18: the page read the call off the chat
+   stream and nobody else ever knew what stood on the stage, so the rules could
+   not keep the question off it and a reload wiped it. Now the save holds it,
+   which is what lets one reading serve both sides (his law: a widget stands in
+   the chat or on the stage, both are told, only one shows it).
+
+   Kept for the scene it was shown at, so walking away clears the stage by
+   itself. */
+export function show(state, content, ctx, args) {
+  let cards = args.cards ?? [];
+  if (typeof cards === 'string') { try { cards = JSON.parse(cards); } catch { return refuse('bad-cards', null); } }
+  cards = (Array.isArray(cards) ? cards : []).filter(c => c && typeof c.card === 'string').map(c => ({ ...c }));
+  if (!cards.length) return refuse('no-cards', null);
+  const s = clone(state);
+  s.shown = cards;
+  s.shown_at = stageAt(content, s);
+  return { state: s, result: { ok: true, shown: cards } };
+}
 
 /* ── Files and the command line ── */
 
@@ -2318,16 +2369,7 @@ const THEN_CALL = 'The search has just opened: say `quest.line` in the world, in
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
 export const thenFor = (result, ask = undefined) => (result?.quest?.say ? THEN_CALL : '')
   + (ask === null ? THEN_QUIET : won(result) ? THEN_CHEER : THEN);
-/* Look's own pair, by the same rule as every other result. */
-const thenAsk = (content, state, ctx) => {
-  const ask = askOf(content, state, ctx);
-  return { then: thenFor({}, ask), ask };
-};
-
-const withAsk = (result, content, state, ctx) => {
-  const ask = askOf(content, state, ctx, result);
-  return { then: thenFor(result, ask), ask, ...result };
-};
+const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, ctx, result), ...result });
 
 /* The player's words are an option of the question on screen — a tap on a
    card arrives as words, and Look is where Ling takes them. Look names the

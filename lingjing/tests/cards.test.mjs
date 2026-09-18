@@ -199,3 +199,27 @@ test('a wear is hers: no 佩戴 until she walks with him', async () => {
   const armCtx = { ...ctx(null), look: { ...look(null), bag: [{ id: 'iron-sword', n: 1 }], place: { shelf: [{ ...sword, name: sword.name.zh, about: sword.about.zh, held: 1, worn: false }] } } };
   assert.match(cardHtml({ card: 'item', id: 'iron-sword' }, armCtx), /佩上铁剑/);
 });
+
+test('every card kind draws — the sweep no surface had until 2026-09-18', async () => {
+  // A missing import killed the whole stage at 正在展开… that morning, and the
+  // fight room drew an empty hand that afternoon. Both were kinds no test had
+  // ever rendered. This one renders all of them.
+  const { WORDS, cardHtml } = await import('../scripts/cards.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const { look } = await import('../scripts/rules.mjs');
+  const content = loadWorld('jiuding');
+  const now = new Date('2026-09-18T12:00:00Z');
+  const state = { ...newState(content, 'zh', now), name: 'Qingxuan', tier: 'core', traits: ['wood', 'water'], place: 'fuli', scene: null, bag: { 'moon-bell': 1 } };
+  const view = look(state, content, { now, quests: [] });
+  const ctx = { look: view, lang: 'zh', words: WORDS.zh, content: { ...content, herbs: content.herbs.herbs, hexagrams: content.hexagrams.hexagrams, creatures: content.creatures.creatures.map(c => ({ ...c, dir: 'worlds/jiuding' })), dir: 'worlds/jiuding' }, artBase: '../worlds/jiuding/', mapView: 'province', boardFor: () => ({ tiles: [], taskId: 't' }), duelFor: () => null };
+  for (const card of [
+    { card: 'creature', id: 'longzhi' }, { card: 'traits' }, { card: 'map' }, { card: 'hexagram' },
+    { card: 'item', ids: ['moon-bell', 'iron-sword'] }, { card: 'item', id: 'moon-bell' },
+    { card: 'gate', chapter: '01-ji', opens: '2026-10-01' }, { card: 'tribulation' }, { card: 'treasure' },
+  ]) {
+    const html = cardHtml(card, ctx);
+    assert.equal(typeof html, 'string', `${card.card} draws`);
+    assert.ok(!/undefined|\[object Object\]/.test(html), `${card.card} draws no holes: ${html.slice(0, 120)}`);
+  }
+});

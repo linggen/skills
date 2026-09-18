@@ -1646,8 +1646,9 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.equal(run('art', '--creature=fuzhu', `--file=${png}`).refused, 'not-a-made-creature');
     assert.deepEqual(run('art', '--creature=lushu').paint, paint[0]);
     const servedAt = rel => `/apps/lingjing/${path.relative(skill, path.join(dir, 'worlds/the-yunmeng-marsh', rel))}`; // the url the page serves it by
-    // every command answer also carries the ready question (`ask`, `then`); these compare the verb's own answer
-    const own = ({ ask, then, ...r }) => r;
+    // every command answer also carries the ready question (`ask`, `then`) and
+    // what stands on the stage (`stage`); these compare the verb's own answer
+    const own = ({ ask, then, stage, ...r }) => r;
     assert.deepEqual(own(run('art', '--creature=lushu', '--file=/apps/lingjing/data/pictures/test-lushu.png')), { ok: true, creature: 'lushu', art: 'art/lushu.png', url: servedAt('art/lushu.png'), paint: [paint[1]] });
     assert.ok(fs.existsSync(path.join(dir, 'worlds/the-yunmeng-marsh/art/lushu.png')));
     assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'worlds/the-yunmeng-marsh/creatures.json'), 'utf8')).creatures[0].art, 'art/lushu.png');

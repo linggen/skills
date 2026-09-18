@@ -8,8 +8,8 @@ import './chat-bridge.js';
 import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
-import { fight } from './duel.js';
 import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf, view } from './battle.js';
+import { stageCards } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { WORDS, cardHtml, trayHtml, esc, say as fill, yinyueLine } from './cards.js';
@@ -32,8 +32,10 @@ let asked = null;
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
-let focus = []; //        cards on the scene
-let focusScene = null; // the scene the focus was last reset for
+/// What Ling just showed, drawn before the rules have written it down — the
+/// save is the truth (`look.stage`), this is only the half-second before the
+/// next Look catches up.
+let focus = [];
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
 let tapped = null; //     the stage's words waiting on Ling: that button stays pressed
 let casting = false; //   起一卦 tapped: the coins are in the air until the cast lands
@@ -43,7 +45,6 @@ let castFresh = false;
 let fateOpen = false, fateDraft = '', fateError = false; // the 命格 form: shown again, the date typed, a date refused
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
 const boards = new Map();
-const duels = new Map(); // game id → {status, picks, outcome, say}
 let chat = null;
 
 const lang = () => (look?.lang === 'en' ? 'en' : 'zh');
@@ -62,13 +63,12 @@ function boardFor(taskId) {
   return boards.get(taskId);
 }
 
-/// The page's side of a bout: idle until begun; open while roots are picked;
-/// done once the rules have settled it. Reset when the day's bout in Look
-/// says nothing is open.
-function duelFor(id) {
-  if (!duels.has(id)) duels.set(id, { status: 'idle', picks: [], outcome: null, say: null });
-  return duels.get(id);
-}
+/// Why the last 出手 did not open, for the card that offered it — the rules'
+/// own words (no 体力, the beast already spent, the page's cards out of date).
+/// Everything else about a fight is in the save: `duels` here was a second
+/// copy of it that only ever drifted.
+let duelSay = { id: null, text: null };
+const duelFor = (id) => (duelSay.id === id ? duelSay : { say: null });
 
 const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView, castFresh, casting, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
 
@@ -129,7 +129,29 @@ function waitingOnPlayer() {
 
 /// Re-read the game. Entering a new scene puts its own cards on the scene,
 /// so a creature is pictured even if Ling forgets to Show it.
-async function refresh() {
+/* One re-read at a time, and one more after it if something asked while it was
+   in flight. A turn can run four writers in a row; that used to be four
+   overlapping Looks racing to set `look`, each 1.5s after its tool began —
+   a guess at when the rules had finished writing. A verb costs about 45ms, so
+   there is nothing to save by waiting; what matters is not to stampede. */
+let reading = null;
+let readAgain = false;
+function refreshSoon(ms = 400) {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => { refreshTimer = null; refresh(); }, ms);
+}
+let refreshTimer = null;
+
+function refresh() {
+  if (reading) { readAgain = true; return reading; }
+  reading = readOnce().finally(() => {
+    reading = null;
+    if (readAgain) { readAgain = false; refresh(); }
+  });
+  return reading;
+}
+
+async function readOnce() {
   try {
     [look] = await Promise.all([verb('look'), readCloud()]);
     if (look.divination) casting = false;
@@ -139,14 +161,10 @@ async function refresh() {
     if (!authored) $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
     return;
   }
-  // A scene's cards while one runs; a place's (its creature) when the
-  // world is open and the player stands somewhere.
-  const sceneId = look.scene?.id ?? (look.place ? `place:${look.place.id}` : null);
-  if (sceneId !== focusScene) {
-    focusScene = sceneId;
-    focus = look.scene?.show ?? look.place?.show ?? [];
-    duels.clear();
-  }
+  // The stage came back with Look — what Ling showed, what the scene was
+  // authored with, what the place holds. The optimistic copy has served its
+  // purpose.
+  focus = [];
   // A fight the save still holds open comes back: without this the page shows
   // the world while Ling waits for a fight nobody can see, and she holds still
   // for ever. The rules do not charge the day's 灵气 twice for it.
@@ -278,29 +296,16 @@ function focusHtml() {
   // beside it offered him the day's coins, which belong to no part of this.
   // So while the step is his to take HERE, the page adds nothing of its own:
   // Ling's cards are hers to choose, and the quest's card is the line.
-  const online = onALine();
-  const cards = focus.length ? [...focus] : online ? [] : [{ card: 'hexagram' }];
-  const open = !online && (look.tasks ?? []).find((t) => t.kind === 'board' && t.status !== 'done' && !t.won);
-  if (open && !cards.some((c) => c.card === 'board' && c.id === open.id)) cards.push({ card: 'board', id: open.id });
-  // A fight the scene offers is always on the scene, like an open board.
-  for (const e of look.scene?.exits ?? []) {
-    if (e.game?.kind === 'duel' && !cards.some((c) => c.card === 'duel' && c.id === e.game.id)) cards.push({ card: 'duel', id: e.game.id });
-  }
-  // A creature at its haunt, no scene running: its bout is on the scene too.
-  const haunt = !online && look.place?.encounter;
-  if (haunt && !haunt.tamed && !cards.some((c) => c.card === 'duel' && c.id === haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
-  return buildingCard() + emptyCard() + questCard() + cards.map((c) => cardHtml(c, ctx())).join('');
+  // ONE list, and the rules made it (stage.mjs) — the same one they measured
+  // the chat's question against, so nothing stands in both places. Only while
+  // Ling's Show is still in flight does the page work it out for itself.
+  const cards = focus.length ? stageCards(look, { focus }) : (look.stage ?? []);
+  return cards.map((c) => drawCard(c)).join('');
 }
 
-/// True while the step of a line can be taken on this very spot: the bell is
-/// for sale in the market he stands in, the water before him holds a moon, her
-/// riddle waits. The same reading the rules use to keep the chat quiet
-/// (`stageWaiting`) — one thing at a time, on both sides of the screen.
-function onALine() {
-  const q = look?.quest;
-  if (!q) return false;
-  return q.step === 'riddle' || (q.step === 'bell' && q.shop_here) || (q.step === 'ring' && q.at_water);
-}
+/// Three kinds are the page's own — the rest are cards.js's.
+const PAGE_CARDS = { building: () => buildingCard(), empty: () => emptyCard(), quest: () => questCard() };
+const drawCard = (c) => (PAGE_CARDS[c.card] ? PAGE_CARDS[c.card]() : cardHtml(c, ctx()));
 
 /// The search for the one who walks with you: the step the rules name, and
 /// the one word that takes it — 摇一摇铃 where water holds a moon.
@@ -335,7 +340,25 @@ function buildingCard() {
     <div>${esc(w.buildingLine.replace('{n}', left))}</div></div>`;
 }
 
+/* Every writer calls `render()`; the drawing happens once, on the next frame.
+   Twenty-six call sites used to mean twenty-six repaints, and a handler that
+   forgot one left the screen behind the state. Now a burst — a tap, a Look, a
+   Show, a stream token — costs one draw. */
+let frame = null;
 function render() {
+  if (frame) return;
+  frame = requestAnimationFrame(() => { frame = null; draw(); });
+}
+
+/* Drawn this instant. The fight hands the freshly drawn room to the animator
+   (`playLog` reaches into `.battle` right after), so there the next frame is
+   already too late — it would animate the node that is about to be replaced. */
+function drawNow() {
+  if (frame) { cancelAnimationFrame(frame); frame = null; }
+  draw();
+}
+
+function draw() {
   if (!look || !authored) return;
   const w = words();
   document.documentElement.lang = lang();
@@ -418,8 +441,24 @@ async function say(text) {
   if (text === lastSaid.text && Date.now() - lastSaid.at < 2500) return;
   lastSaid = { text, at: Date.now() };
   saying = true;
-  setTimeout(() => { saying = false; }, 90000);
-  await deliver(text, false);
+  setTimeout(() => { if (saying) turnEnded(); }, 90000);
+  try {
+    await deliver(text, false);
+  } catch (e) {
+    console.warn('[lingjing] say', e);
+    turnEnded();
+  }
+}
+
+/// The turn is over, whatever became of it: the stage stops waiting. Called on
+/// a reply, and on an error or a timeout too — before this, only a clean end
+/// cleared them, so a failed turn left buttons pressed for ever.
+function turnEnded() {
+  saying = false;
+  tapped = null;
+  casting = false;
+  asked = null;
+  render();
 }
 
 /// A word from the stage is a message, never the answer to a question
@@ -489,8 +528,7 @@ async function onDuelStart(id) {
     // Its own words, never the refusal's id: 「no-qi」 on the stage is the page
     // talking to itself. The states without words (won today, tamed) are
     // already written on the card by Look.
-    const d = duelFor(id);
-    d.status = 'done'; d.outcome = 'lost'; d.say = r.say ?? null;
+    duelSay = { id, text: r.say ?? null };
     render();
     return;
   }
@@ -509,11 +547,11 @@ async function onDuelStart(id) {
   const unknown = missingCards(brief.setup, boutCatalog());
   if (unknown.length) {
     console.error('[lingjing] no card row for', unknown.join(', '));
-    duelFor(id).say = (BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh).stale;
+    duelSay = { id, text: (BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh).stale };
     render();
     return;
   }
-  duelFor(id).say = null;
+  duelSay = { id: null, text: null };
   bout = { id, brief, setup: brief.setup, st: begin(brief.setup, boutCatalog()), actions: [], picked: null, openLog: false, help: false, note: null };
   render();
 }
@@ -525,24 +563,24 @@ const boutCatalog = () => Object.fromEntries((authored?.cards?.cards ?? []).map(
    replay them and settle — win, loss, or the beast walking away. */
 async function onBoutTap(spot) {
   if (!bout) return;
-  if (spot.kind === 'help' || spot.kind === 'help-bg') { bout.help = !bout.help; return render(); }
-  if (spot.kind === 'more') { bout.openLog = !bout.openLog; return render(); }
+  if (spot.kind === 'help' || spot.kind === 'help-bg') { bout.help = !bout.help; return drawNow(); }
+  if (spot.kind === 'more') { bout.openLog = !bout.openLog; return drawNow(); }
   if (bout.st.outcome !== 'open') return;
   bout.note = null;
   const out = pickOf(bout.picked, spot, view(bout.st), boutCatalog());
   if (out.quit) return settleBout('lost');
-  if (out.clear) { bout.picked = null; return render(); }
-  if (out.pick) { bout.picked = out.pick; return render(); }
+  if (out.clear) { bout.picked = null; return drawNow(); }
+  if (out.pick) { bout.picked = out.pick; return drawNow(); }
   if (out.action.kind === 'end') return endBoutTurn();
   const mark = bout.st.log.length;
   const res = act(bout.st, out.action, 'you');
   bout.picked = null;
-  if (!res.ok) { bout.note = res.why; return render(); }
+  if (!res.ok) { bout.note = res.why; return drawNow(); }
   bout.actions.push(tokenOf(out.action));
-  render();
+  drawNow();
   await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
   if (bout.st.outcome !== 'open') return settleBout(bout.st.outcome);
-  render();
+  drawNow();
 }
 
 /* The creature answers a move at a time, drawn as each lands. */
@@ -550,20 +588,20 @@ async function endBoutTurn() {
   const mark = bout.st.log.length;
   if (!act(bout.st, { kind: 'end' }, 'you').ok) return;
   bout.actions.push('end');
-  render();
+  drawNow();
   await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
   if (bout.st.whose === 'foe' && bout.st.outcome === 'open') {
     await banner(document.querySelector('.battle'), `${bout.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe');
     for (let guard = 0; guard < 40 && bout.st.whose === 'foe' && bout.st.outcome === 'open'; guard += 1) {
       const step = bout.st.log.length;
       const did = foeStep(bout.st);
-      render();
+      drawNow();
       await playLog(document.querySelector('.battle'), since(bout.st.log, step), { words: boutCtx().words });
       if (!did || did.kind === 'end') break;
     }
   }
   if (bout.st.outcome !== 'open') return settleBout(bout.st.outcome);
-  render();
+  drawNow();
 }
 
 /* The rules settle it, and the scene reports it — the scene is still the only
@@ -579,41 +617,6 @@ async function settleBout(outcome) {
 }
 
 /// The fight's brief from Look: the scene's exit, or the haunt's encounter.
-function duelBriefFor(id) {
-  const exit = (look?.scene?.exits || []).find((x) => x.game?.id === id && x.game.kind === 'duel');
-  if (exit) return exit.duel;
-  const e = look?.place?.encounter;
-  return e && e.game?.id === id ? e.duel : null;
-}
-
-/// A turn: a 法术 (its own root, or the sword's), 物理攻击, 符箓,
-/// 辅助 or an art — duel.js says what may come, the rules settle it. The
-/// creature's turns are the rules' own; the page only replays them.
-async function onDuelPick(id, token) {
-  const d = duelFor(id);
-  if (d.status !== 'open') return;
-  const brief = duelBriefFor(id);
-  if (!brief) return;
-  const played = fight([...d.picks, token], brief.foe, brief.kit ?? {});
-  if (played.refused) return;
-  d.picks.push(token);
-  render();
-  if (played.outcome === 'open') return;
-  await settleDuel(id);
-}
-
-async function settleDuel(id) {
-  const d = duelFor(id);
-  const r = await verb('duel', { id, picks: d.picks.join(',') });
-  d.status = 'done';
-  d.outcome = r.ok ? r.outcome : 'lost';
-  d.say = r.say || null;
-  render();
-  await report(`[scene] ${d.outcome} ${id}`);
-  if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
-  await refresh();
-}
-
 /// 温养 — once a day, a tap. No model decides it, so the page asks the rules
 /// and re-reads; Ling hears about it on the next Look.
 async function onNourish() {
@@ -692,7 +695,7 @@ function onContentBlock(payload) {
     }
   }
   if (payload?.tool === 'Art') authored = null; // a creature was just painted: read the cards again
-  if (WRITERS.has(payload?.tool)) setTimeout(refresh, 1500);
+  if (WRITERS.has(payload?.tool)) refreshSoon();
 }
 
 /// Ling speaks first. A fresh day's chat, and a new chat begun from the
@@ -716,8 +719,7 @@ async function mountChat() {
     onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
     onStreamToken: () => { alive = true; },
     onStreamEnd: (text) => {
-      saying = false; tapped = null; casting = false;
-      asked = null;
+      turnEnded();
       const before = look;
       refresh().then(() => cheer(before, text));
     },

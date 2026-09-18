@@ -51,8 +51,11 @@ tools:
       here you advance NOTHING; see § 降妖), the `place` the player stands in (what is
       there, its roads, the province's places for the map) and the
       `director` brief (`near`, `too_hard`, the `thread`, the `pool`,
-      today's `seed`, `choice`), `ask` — the question that ends your reply,
-      ready as it is — and `words`: this world's name for every one
+      today's `seed`, `choice`), `stage` — the cards standing before the player
+      right now, so you can speak of what they are looking at and never offer it
+      twice — `ask` — the question that ends your reply,
+      ready as it is, with everything the stage already offers taken out of it
+      — and `words`: this world's name for every one
       of those ids, in the player's language. Every number you speak wears
       the word from `words`. Call it first in every session and whenever you
       are unsure.
@@ -544,7 +547,12 @@ tools:
       gate, tribulation, item, duel and treasure; there are no others. Pass the `show` entries
       exactly as the rules gave them; `{card: "hexagram"}` is today's cast
       (or, before it, the coins waiting); `{card: "gate", chapter, opens}` for a chapter that has not
-      opened.
+      opened. The cards are WRITTEN DOWN, so they stand until the player walks
+      away and come back after a reload — and so the question you are handed
+      never repeats what one of them already offers. `stage` in every answer
+      says what stands there now.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs show --cards={{cards}}"
+    tier: edit
     args:
       cards:
         type: array
@@ -750,11 +758,15 @@ same widget back one turn after he pressed Skip).
   `look` (say what is around, from the scene's setup or the place's line;
   nothing moves), `write` (Inscribe), `ring` (Ring — with its `answer` when
   it carries one) or `answer` (Resolve its `exit` with that `answer`).
-- **One clickable place for one thing** (his law, 2026-09-17). What a card on
-  the scene already offers is never in the question too: 降妖 and the feeding
-  are on the creature's card, 起一卦 on the coins, 摇一摇铃 and the bell on the
-  quest's card, buying and wearing on an item's, a board on its own. The rules
-  keep them out of `ask`; you never add them back in words. Say in a line that
+- **One clickable place for one thing** (his law, 2026-09-17, sharpened
+  2026-09-18: 一个 widget 可以出现在 chat 或者 webUI，但要通知到双方，确保只显示
+  一个). Both sides are decided from ONE reading: `stage` says what stands
+  before the player, and `ask` is what is left after the stage's own actions
+  are taken out of it. So 降妖 and the feeding are on the creature's card,
+  起一卦 on the coins, 摇一摇铃 and the bell on the quest's card, buying and
+  wearing on an item's, a board on its own, and the roads on the map when one
+  is up. You never add them back in words —— and `Show` is yours: what you put
+  on the stage, the question stops offering, at once. Say in a line that
   the thing is before them — *雷神立在泽中，出手便是* — and let the card be
   tapped. Typed words still work for all of it: the rules take them.
   A tap that reaches you as the player's words: Look's `then` names the
