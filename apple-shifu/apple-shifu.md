@@ -185,6 +185,11 @@ time, instead of working a checkbox list.
 **Mac only.** Shipped 2026-07-30 — `~/Downloads`, large files, duplicate files,
 caches. See "Mac Files tab — built".
 
+Since 2026-09-18 the tab and the iPhone chip grey each other out: choosing an
+iPhone dims Files, opening Files dims the iPhone, each carrying the reason in
+its tooltip. The empty phone screen is gone — a tab declares the sides it
+serves (`sources: ['mac']`) and the shell does the rest.
+
 **The phone half was cancelled 2026-07-30**, and with it the phone → Mac file
 archive: the `~/Documents/iPhone Files/` tree, the `data/files/archive.jsonl`
 ledger, the two-direction restore, and the granted-folder picker flow. That

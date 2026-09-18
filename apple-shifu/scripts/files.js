@@ -14,7 +14,7 @@
 // is enforced where it cannot be argued with rather than in this file.
 
 import {
-  registerTab, getSource, getActiveTab, onSourceChange, onTabChange, refreshVerbs, openMenu,
+  registerTab, getActiveTab, onSourceChange, onTabChange, refreshVerbs, openMenu,
 } from './shifu-shell.js';
 import {
   bash, writeLines, fmtBytes, esc, abbrevPath, relAge, shellEsc, shellPath,
@@ -64,30 +64,26 @@ export function initFilesTab() {
   if (getActiveTab() === 'files') render();
 }
 
+/** This Mac only. iOS shows no app another app's files, and the folders a
+    person could grant can't be sized before they grant them — which is why
+    the phone has System and Media and no Files (2026-07-30). The shell greys
+    the pair against each other rather than opening an empty screen here. */
 const filesProvider = {
   panel: 'files-panel',
-  verbs: (source) => {
-    if (source === 'phone') return phoneVerbs();
+  sources: ['mac'],
+  verbs: () => {
     const actions = macVerbs();
     const busy = busyLabel();
     if (busy) for (const k of Object.keys(actions)) actions[k] = { blocked: busy };
     return actions;
   },
-  meta: (source) => {
+  meta: () => {
     const busy = busyLabel();
     if (busy) return `<span class="verb-busy">${esc(busy)}</span>`;
-    if (source === 'phone' || !selected.size) return '';
+    if (!selected.size) return '';
     return `<b>${selected.size.toLocaleString()} selected · ${fmtBytes(selectedBytes())}</b>`;
   },
 };
-
-/** Under an iPhone this tab has nothing to act on — sending files off the
-    phone needs the Files section in Linggen Mobile, which is not built. Every
-    verb says so rather than pretending to be armed. */
-function phoneVerbs() {
-  const why = 'Files on the iPhone need the Files section in Linggen Mobile, which is not built yet';
-  return { scan: { blocked: why }, report: { blocked: why }, backup: { blocked: why }, clean: { blocked: why } };
-}
 
 function macVerbs() {
   const cat = CATEGORIES.find((c) => c.key === activeCat);
@@ -465,7 +461,9 @@ function bytesFor(key) {
 }
 
 function render() {
-  if (!panel || getSource() !== 'mac') return renderPhone();
+  // The shell keeps this tab and an iPhone from being chosen together, so the
+  // side in play here is always this Mac.
+  if (!panel) return;
   const scanning = [...ops.values()].some((op) => op.kind === 'scan');
   // A scan fills the piles one at a time and redraws after each. Gate the
   // empty state on there being nothing to show, not on the scan having
@@ -514,18 +512,6 @@ function render() {
     };
   }
   renderPane();
-  refreshVerbs();
-}
-
-function renderPhone() {
-  panel.innerHTML = `<div class="media-card dashed">
-    <h4 class="media-dim">📱 Nothing here yet</h4>
-    <div class="media-dim">Files on the iPhone need the Files section in Linggen Mobile, and
-      that isn't built yet. Most documents on an iPhone live inside other apps' sandboxes,
-      where iOS grants no access at all — when this lands it will cover the folders you
-      explicitly grant, plus Linggen's own storage.</div>
-    <div class="media-dim">Switch to 💻 This Mac for Downloads, large files, duplicates and caches.</div>
-  </div>`;
   refreshVerbs();
 }
 

@@ -27,6 +27,16 @@
   border-bottom-color: var(--accent);
 }
 
+/* A tab the device in play can't serve keeps its place and carries the reason
+   in its tooltip — the same bargain .verb-btn:disabled makes. */
+.atab.off,
+.src-btn.off {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.src-btn.off:hover { color: var(--text-muted); }
+
 /* ── Media panel ── */
 
 .media-panel {

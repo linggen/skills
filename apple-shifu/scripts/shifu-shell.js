@@ -62,7 +62,12 @@ let backup = null;                    // { count, bytes } — null until known
  */
 export function registerTab(name, provider) {
   providers.set(name, provider);
+  // Tabs register after initShell, so a restored tab + side that don't go
+  // together are only knowable now. The tab showing wins; the side moves.
+  if (name === activeTab && !tabServes(name, source)) setSource(tabSources(name)[0]);
   applyPanels();
+  renderTabs();
+  renderSourceSwitch();
   if (name === activeTab) renderToolbar();
 }
 
@@ -71,6 +76,41 @@ function applyPanels() {
   for (const [name, provider] of providers) {
     const el = provider.panel && document.getElementById(provider.panel);
     if (el) el.hidden = name !== activeTab;
+  }
+}
+
+/** A tab may serve only one side of the switch — `sources: ['mac']` on its
+    provider. The two controls then grey each other: the Files tab dims while
+    an iPhone is the side in play, and the iPhone chip dims while Files is
+    open. Neither is dropped and each carries the reason, the same bargain the
+    toolbar's blocked verbs make. iOS shows no app another app's files, so a
+    Files tab under a phone could only ever draw an empty screen. */
+function tabSources(name) {
+  const declared = providers.get(name)?.sources;
+  return Array.isArray(declared) && declared.length ? declared : SOURCES.map((s) => s.key);
+}
+
+function tabServes(name, key) {
+  return tabSources(name).includes(key);
+}
+
+const OFF_REASON = {
+  files: 'Files is this Mac — iOS shows no app another app’s files',
+  phone: 'Files is this Mac — iOS shows no app another app’s files',
+};
+
+/** Grey the tabs the side in play can't serve. */
+function renderTabs() {
+  for (const tab of document.querySelectorAll('.atab')) {
+    const name = tab.dataset.tab;
+    if (tab.dataset.title == null) tab.dataset.title = tab.getAttribute('title') || '';
+    const off = providers.has(name) && !tabServes(name, source);
+    tab.classList.toggle('off', off);
+    tab.setAttribute('aria-disabled', off ? 'true' : 'false');
+    const why = OFF_REASON[name] || 'Not available for this device';
+    if (off) tab.title = why;
+    else if (tab.dataset.title) tab.title = tab.dataset.title;
+    else tab.removeAttribute('title');
   }
 }
 
@@ -112,11 +152,14 @@ export function initShell() {
   try { activeTab = localStorage.getItem(TAB_KEY) || 'system'; } catch { /* private mode */ }
 
   for (const tab of document.querySelectorAll('.atab')) {
-    tab.addEventListener('click', () => setActiveTab(tab.dataset.tab));
+    tab.addEventListener('click', () => {
+      if (tab.classList.contains('off')) return;
+      setActiveTab(tab.dataset.tab);
+    });
   }
   document.getElementById('source-switch')?.addEventListener('click', (e) => {
     const btn = e.target.closest('.src-btn');
-    if (!btn) return;
+    if (!btn || btn.classList.contains('off')) return;
     // First click on a side switches to it; clicking the phone again asks
     // which phone — so one chip both switches and picks, with no second knob.
     if (btn.dataset.src !== source) setSource(btn.dataset.src);
@@ -201,17 +244,22 @@ export function setSource(next) {
   source = next;
   try { localStorage.setItem(SOURCE_KEY, next); } catch { /* quota */ }
   renderSourceSwitch();
+  renderTabs();
   renderToolbar();
   for (const fn of sourceListeners) fn(next);
 }
 
 export function setActiveTab(name) {
   activeTab = name;
+  // Opening a one-sided tab moves the switch to the side it serves.
+  if (!tabServes(name, source)) setSource(tabSources(name)[0]);
   try { localStorage.setItem(TAB_KEY, name); } catch { /* quota */ }
   for (const tab of document.querySelectorAll('.atab')) {
     tab.classList.toggle('active', tab.dataset.tab === name);
   }
   applyPanels();
+  renderTabs();
+  renderSourceSwitch();
   renderToolbar();
   for (const fn of tabListeners) fn(name);
 }
@@ -230,11 +278,13 @@ function renderSourceSwitch() {
     const detail = info?.detail ? `<span class="src-detail">${info.detail}</span>` : '';
     const pick = s.key === 'phone' && pairedPhones.length > 1 && s.key === source
       ? '<span class="src-pick">▾</span>' : '';
-    const title = s.key === 'phone' && pairedPhones.length > 1
-      ? `${label} — click again to pick another phone` : (info?.title || label);
+    const off = !tabServes(activeTab, s.key);
+    const title = off ? (OFF_REASON[s.key] || 'Not available on this tab')
+      : s.key === 'phone' && pairedPhones.length > 1
+        ? `${label} — click again to pick another phone` : (info?.title || label);
     // `menu-anchor` keeps the document's close-on-click-outside from shutting
     // the picker in the same click that opened it.
-    return `<button class="src-btn menu-anchor ${s.key === source ? 'on' : ''}" data-src="${s.key}"
+    return `<button class="src-btn menu-anchor ${s.key === source ? 'on' : ''}${off ? ' off' : ''}" data-src="${s.key}"
       title="${esc(title)}">${s.icon} <span class="src-label">${esc(label)}</span>${detail}${pick}</button>`;
   }).join('');
   // The chip the open picker hangs off was just replaced; point the menu at
