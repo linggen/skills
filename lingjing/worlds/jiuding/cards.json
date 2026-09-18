@@ -49,7 +49,9 @@
       ],
       "effect": {
         "draw": 1
-      }
+      },
+      "art": "art/jingwei.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
     {
       "id": "fuzhu",
@@ -61,7 +63,9 @@
       "cost": 3,
       "element": "water",
       "atk": 3,
-      "hp": 3
+      "hp": 3,
+      "art": "art/fuzhu.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
     {
       "id": "tongtong",
@@ -76,7 +80,9 @@
       "hp": 6,
       "keywords": [
         "taunt"
-      ]
+      ],
+      "art": "art/tongtong.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
     {
       "id": "longzhi",
@@ -88,7 +94,9 @@
       "cost": 4,
       "element": "metal",
       "atk": 4,
-      "hp": 2
+      "hp": 2,
+      "art": "art/longzhi.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
     {
       "id": "paoxiao",
@@ -100,7 +108,9 @@
       "cost": 4,
       "element": "earth",
       "atk": 4,
-      "hp": 4
+      "hp": 4,
+      "art": "art/paoxiao.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
     {
       "id": "kui",
@@ -115,7 +125,9 @@
       "hp": 6,
       "keywords": [
         "taunt"
-      ]
+      ],
+      "art": "art/kui.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
     {
       "id": "leishen",
@@ -127,7 +139,9 @@
       "cost": 6,
       "element": "wood",
       "atk": 5,
-      "hp": 6
+      "hp": 6,
+      "art": "art/leishen.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
     {
       "id": "yinyue",
@@ -299,7 +313,9 @@
       "element": null,
       "effect": {
         "heal": 5
-      }
+      },
+      "art": "art/cards/huiqi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "luying",
@@ -311,7 +327,9 @@
       "cost": 2,
       "element": "water",
       "atk": 3,
-      "hp": 2
+      "hp": 2,
+      "art": "art/cards/luying.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "chaoqi",
@@ -324,7 +342,9 @@
       "element": "water",
       "effect": {
         "sweep": 2
-      }
+      },
+      "art": "art/cards/chaoqi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "tunshi",
@@ -337,7 +357,9 @@
       "element": "earth",
       "effect": {
         "damage": 5
-      }
+      },
+      "art": "art/cards/tunshi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jixiao",
@@ -353,7 +375,9 @@
           "atk": 2,
           "hp": 0
         }
-      }
+      },
+      "art": "art/cards/jixiao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "xianshi",
@@ -365,7 +389,9 @@
       "cost": 1,
       "element": "fire",
       "atk": 1,
-      "hp": 2
+      "hp": 2,
+      "art": "art/cards/xianshi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "leipu",
@@ -377,7 +403,9 @@
       "cost": 2,
       "element": "wood",
       "atk": 2,
-      "hp": 2
+      "hp": 2,
+      "art": "art/cards/leipu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "leiming",
@@ -390,7 +418,9 @@
       "element": "wood",
       "effect": {
         "damage": 4
-      }
+      },
+      "art": "art/cards/leiming.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "zhennu",
@@ -403,7 +433,9 @@
       "element": "wood",
       "effect": {
         "sweep": 3
-      }
+      },
+      "art": "art/cards/zhennu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jiushou",
@@ -415,7 +447,9 @@
       "cost": 3,
       "element": "metal",
       "atk": 3,
-      "hp": 1
+      "hp": 1,
+      "art": "art/cards/jiushou.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jinzhua",
@@ -428,7 +462,9 @@
       "element": "metal",
       "effect": {
         "damage": 3
-      }
+      },
+      "art": "art/cards/jinzhua.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "gupi",
@@ -443,7 +479,9 @@
       "hp": 5,
       "keywords": [
         "taunt"
-      ]
+      ],
+      "art": "art/cards/gupi.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "zhuguang",
@@ -456,7 +494,9 @@
       "element": "earth",
       "effect": {
         "heal": 4
-      }
+      },
+      "art": "art/cards/zhuguang.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jinsuo",
@@ -468,7 +508,9 @@
       "cost": 1,
       "element": "metal",
       "atk": 2,
-      "hp": 1
+      "hp": 1,
+      "art": "art/cards/jinsuo.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jianying",
@@ -480,7 +522,9 @@
       "cost": 4,
       "element": "metal",
       "atk": 5,
-      "hp": 3
+      "hp": 3,
+      "art": "art/cards/jianying.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "suijin",
@@ -493,7 +537,9 @@
       "element": "metal",
       "effect": {
         "damage": 5
-      }
+      },
+      "art": "art/cards/suijin.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "jingang",
@@ -508,7 +554,9 @@
       "hp": 7,
       "keywords": [
         "taunt"
-      ]
+      ],
+      "art": "art/cards/jingang.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "tengmiao",
@@ -529,7 +577,9 @@
           "id": "tengmiao_token",
           "n": 1
         }
-      }
+      },
+      "art": "art/cards/tengmiao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "tengmiao_token",
@@ -542,7 +592,9 @@
       "element": "wood",
       "atk": 1,
       "hp": 1,
-      "_token": true
+      "_token": true,
+      "art": "art/cards/tengmiao_token.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "chunsheng",
@@ -558,7 +610,9 @@
           "id": "tengmiao_token",
           "n": 3
         }
-      }
+      },
+      "art": "art/cards/chunsheng.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "fengmao",
@@ -574,7 +628,9 @@
           "atk": 1,
           "hp": 1
         }
-      }
+      },
+      "art": "art/cards/fengmao.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "linmu",
@@ -595,7 +651,9 @@
           "atk": 1,
           "hp": 1
         }
-      }
+      },
+      "art": "art/cards/linmu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "shuiwu",
@@ -608,7 +666,9 @@
       "element": "water",
       "effect": {
         "damage": 2
-      }
+      },
+      "art": "art/cards/shuiwu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "hanquan",
@@ -626,7 +686,9 @@
       ],
       "effect": {
         "heal": 3
-      }
+      },
+      "art": "art/cards/hanquan.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "tingbo",
@@ -639,7 +701,9 @@
       "element": "water",
       "effect": {
         "sweep": 3
-      }
+      },
+      "art": "art/cards/tingbo.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "huoya",
@@ -651,7 +715,9 @@
       "cost": 2,
       "element": "fire",
       "atk": 3,
-      "hp": 1
+      "hp": 1,
+      "art": "art/cards/huoya.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "yanxin",
@@ -667,7 +733,9 @@
           "atk": 3,
           "hp": 0
         }
-      }
+      },
+      "art": "art/cards/yanxin.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "liaotian",
@@ -680,7 +748,9 @@
       "element": "fire",
       "effect": {
         "damage": 8
-      }
+      },
+      "art": "art/cards/liaotian.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "tuou",
@@ -695,7 +765,9 @@
       "hp": 3,
       "keywords": [
         "taunt"
-      ]
+      ],
+      "art": "art/cards/tuou.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "shishou",
@@ -710,7 +782,9 @@
       "hp": 6,
       "keywords": [
         "taunt"
-      ]
+      ],
+      "art": "art/cards/shishou.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "houtu",
@@ -726,7 +800,9 @@
           "atk": 0,
           "hp": 2
         }
-      }
+      },
+      "art": "art/cards/houtu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "canwu",
@@ -739,7 +815,9 @@
       "element": null,
       "effect": {
         "draw": 3
-      }
+      },
+      "art": "art/cards/canwu.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     },
     {
       "id": "tongling",
@@ -757,7 +835,9 @@
       ],
       "effect": {
         "draw": 1
-      }
+      },
+      "art": "art/cards/tongling.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
     }
   ],
   "_curve": "单体伤害约 1.2 点/费，群伤约 0.7 点/费每个 —— 因为克制会翻倍，曲线要按翻倍之后算 (2026-09-18 闸: 五雷法 5费9点 打在克的行上是 18 点，一张牌打掉练气英雄九成气血，影响力 +33.8%)。"

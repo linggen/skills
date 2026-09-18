@@ -21,10 +21,10 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
   max-width: 760px;
   margin: 0 auto;
-  padding: 16px 16px 20px;
+  padding: 12px 14px 14px;
   border-radius: 14px;
   overflow: hidden;
   font-family: var(--serif);
@@ -51,7 +51,7 @@
   display: grid;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 7px 12px;
   border: 1px solid var(--line-d);
   border-radius: 12px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.2));
@@ -62,7 +62,7 @@
 .bside.foe { grid-template-columns: auto 1fr auto; width: 100%; cursor: default; }
 .bside.you { grid-template-columns: 1fr auto; }
 .bside.foe .bface {
-  width: 92px; height: 92px; object-fit: cover; border-radius: 10px;
+  width: 74px; height: 74px; object-fit: cover; border-radius: 10px;
   border: 1px solid var(--gold-soft); background: #f2ece0;
   filter: sepia(0.25) contrast(1.05);
   animation: breathe 5.5s ease-in-out infinite;
@@ -90,7 +90,7 @@
 
 /* ── 上一手 ── */
 
-.blast { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 15px 12px 9px; border-radius: 10px; background: rgba(0, 0, 0, 0.25); font-family: var(--ui); font-size: 11px; color: var(--faint-d); }
+.blast { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 3px 12px; padding: 13px 12px 7px; border-radius: 10px; background: rgba(0, 0, 0, 0.25); font-family: var(--ui); font-size: 11px; color: var(--faint-d); }
 .blast .bline { white-space: nowrap; }
 .blast .bline + .bline::before { content: '·'; margin-right: 12px; color: var(--line-d); }
 .blab { position: absolute; top: 3px; left: 12px; font-family: var(--ui); font-size: 9px; letter-spacing: 0.12em; color: #6b6055; }
@@ -99,13 +99,13 @@
 
 /* ── 阵前 ── */
 
-.brank { position: relative; display: flex; gap: 10px; min-height: 96px; padding: 16px 10px 10px; border-radius: 12px; background: rgba(0, 0, 0, 0.18); }
+.brank { position: relative; display: flex; gap: 8px; min-height: 74px; padding: 14px 8px 8px; border-radius: 12px; background: rgba(0, 0, 0, 0.18); }
 .brank.theirs { border-bottom: 1px solid var(--line-d); }
 .brank.lost-one { animation: dust 0.4s ease-out; }
 @keyframes dust { 0% { background: rgba(163, 59, 46, 0.18); } 100% { background: rgba(0, 0, 0, 0.18); } }
 
 .bminion {
-  flex: 1; display: grid; place-items: center; gap: 2px; padding: 9px 6px;
+  flex: 1; display: grid; place-items: center; gap: 1px; padding: 7px 5px;
   border: 1px solid var(--line-d); border-radius: 10px;
   background: linear-gradient(180deg, #241f1a, #1a1613);
   font-family: var(--serif); color: var(--parchment); cursor: pointer;
@@ -129,9 +129,9 @@
 
 /* ── 手牌 ── */
 
-.bhand { display: flex; gap: 10px; justify-content: center; padding: 10px 2px 4px; perspective: 900px; }
+.bhand { display: flex; gap: 8px; justify-content: center; padding: 6px 2px 2px; perspective: 900px; }
 .bcard {
-  position: relative; flex: 0 0 112px; display: grid; gap: 3px; padding: 12px 9px 10px;
+  position: relative; flex: 0 0 104px; display: grid; gap: 2px; padding: 10px 8px 8px;
   border: 1px solid var(--line-d); border-radius: 12px;
   background: linear-gradient(180deg, #2a241d, #191512);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
@@ -156,7 +156,10 @@
 
 /* ── The two buttons that end a turn ── */
 
-.bacts { display: flex; gap: 10px; justify-content: flex-end; align-items: stretch; }
+/* They stay on screen. A hand grown tall with pictures pushed 结束回合 below the
+   fold, and a button you have to scroll to find is a button that is not there
+   (2026-09-18). */
+.bacts { position: sticky; bottom: 0; z-index: 3; display: flex; gap: 10px; justify-content: flex-end; align-items: stretch; padding: 6px 0 2px; background: linear-gradient(180deg, transparent, var(--ink) 40%); }
 .bact { display: grid; gap: 2px; place-items: center; padding: 9px 16px; border: 1px solid var(--line-d); border-radius: 10px; background: linear-gradient(180deg, #2a241d, #191512); font-family: var(--serif); font-size: 15px; color: var(--parchment); cursor: pointer; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
 .bact small { font-family: var(--ui); font-size: 10px; color: var(--faint-d); }
 .bact:hover { transform: translateY(-2px); border-color: var(--gold); }
@@ -265,8 +268,8 @@
 /* Every card wears its picture (his, 2026-09-18). It sits behind the words,
    not beside them: the card is small, and a picture that pushes the rules off
    the face is a picture that cost the player the game. */
-.bpic { width: 100%; height: 56px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line-d); filter: sepia(0.2) brightness(0.92) contrast(1.05); }
-.bpic.small { height: 34px; }
+.bpic { width: 100%; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line-d); filter: sepia(0.2) brightness(0.92) contrast(1.05); }
+.bpic.small { height: 22px; }
 .bcard .bpic { margin-bottom: 1px; }
 .bminion .bpic { margin-bottom: 1px; }
 .bcard:hover .bpic, .bcard.held .bpic { filter: sepia(0.05) brightness(1.02) contrast(1.05); }
