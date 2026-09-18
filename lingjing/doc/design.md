@@ -1584,6 +1584,109 @@ from its name.
 - **Shown on both screens:** large in the scene's focus card on the Mac,
   inline in the creature card on the phone.
 
+## 差事 — the task system, 照《魔兽世界》(designed 2026-09-18)
+
+His ask, after walking four places with nothing to do: *should we let user take
+tasks, use task to guide user, 参考魔兽世界的任务系统*. The pieces were all
+here — a spine, 功课, 奇遇, a waypoint — and none of them was a thing the
+player **takes**. That is the whole difference: WoW's log is a list the player
+chose, each line with a counter, so there is never a moment of "what now".
+
+**接 · 记 · 追 · 交** — accept, log, track, turn in. Everything below serves
+that loop and nothing else.
+
+### 一件差事 — data, never invention
+
+`worlds/<id>/quests/<province>.json`. Ling writes the giver's WORDS; the terms
+and the reward are authored (his law 2026-09-15: skills ship missions, the
+engine runs them — she never generates one).
+
+```json
+{ "id": "xu-longzhi-hunt",
+  "title": { "zh": "沛泽的蠪侄", "en": "The Longzhi of Pei" },
+  "from": { "place": "pengcheng", "who": "market-elder" },
+  "say": { "zh": "沛泽边上有三只蠪侄，商队不敢走夜路了。", "en": "…" },
+  "need": [{ "kind": "subdue", "creature": "longzhi", "n": 3 }],
+  "turn_in": { "place": "pengcheng" },
+  "grant": { "table": "quest", "progress": 40, "wealth": 20 },
+  "opens": { "tier": "foundation", "after": "xu-first-errand" },
+  "then": "xu-longzhi-hunt-2" }
+```
+
+`need.kind` may only be something **the rules already see**, because the rules
+are the only writer and a counter nobody can verify is a lie:
+
+| kind | ticks on |
+|---|---|
+| `subdue` | a 降妖 WON against that creature (the scene reports it) |
+| `tame` | a creature joined the cast |
+| `carry` | N of an item in the bag, checked at 交差 |
+| `visit` | Move reaching a place |
+| `board` | a 炼丹 board won |
+| `answer` | a riddle answered |
+| `chore` | a real-life 功课 marked done by its own app |
+
+### The loop
+
+1. **接下** — standing where the giver is, Look carries `offers`; the stage
+   draws the 差事 card: the ask in the giver's line, what it pays, one button.
+   Not tapping is declining — a decline needs no button.
+2. **记** — `Quest take --id` writes `state.quests[id] = { took, need: [{…, have: 0}] }`.
+3. **追** — one `advance(state, event)` in the rules, called by every verb that
+   could move a counter. Nothing ticks anywhere else.
+4. **交差** — at the turn-in place the card offers it; the rules check, pay from
+   the capped table, and offer `then` — the next link. A chain walks the player
+   across a province exactly the way WoW walks them across a zone.
+5. **撂下** — `Quest drop --id`, WoW's abandon, no penalty.
+
+### 事簿 — three lines, not twenty-five
+
+The goal card is the log: the spine's waypoint first, then the open 差事, each
+one line — `沛泽的蠪侄 2/3 · 沛泽` — with the road toward it.
+
+**At most three open.** A chat game cannot show a log of twenty-five, and the
+one-thing-at-a-time law says it should not try. Taking a fourth asks which to
+put down. In Ling's context the whole book is three lines, about 40 tokens.
+
+### What we do NOT copy
+
+- **No grind.** The day caps (修为 240 · 灵石 60) already hold; a 差事 pays
+  inside them, so "kill thirty boars" pays for three.
+- **No exclamation marks over the world.** A place holding one says so in one
+  line of the director's brief, and Ling mentions it in her own words.
+- **No quest text nobody reads.** The ask is one or two lines, in the giver's
+  voice.
+- **No invented errands.** Improvisation stays 奇遇, which already has its own
+  capped table and its turn count.
+
+### Where they come from — three sources, one card
+
+1. **Authored** — the province's own, as above.
+2. **Templated** — the 奇遇 seed mechanism with a counter: a template plus
+   today's place and creature, so a province is never empty.
+3. **Real life** — the `~/.linggen/quests/<app>.json` 功课 become 差事 on the
+   same card, with `kind: "chore"`. This is the hook no other game has: 扫一次
+   洞府 is a quest in a cultivation world, and Shifu says when it is done.
+
+### The word collision, and the migration
+
+Three things are called tasks today. They separate:
+
+| now | becomes |
+|---|---|
+| `state.quests` (the apps' 功课) | `state.chores` |
+| `tasks` (boards, 炼丹) | 功课 stays the word for a board task |
+| — | `state.quests` = 差事, the new book |
+
+Save version 4, with a migration that moves the old key.
+
+### Build order
+
+① the schema, the lint, and four authored 差事 for 徐州 · ② `Quest`
+(take/turn/drop) + `state.quests` + the book in Look · ③ `advance()` at every
+verb that can tick one · ④ the cards (offer + the book inside the goal card) +
+SKILL.md · ⑤ templated 差事 · ⑥ the 功课 move onto the same card.
+
 ## Real-life tasks — quests
 
 Each app publishes its quest facts; the game only reads them.
