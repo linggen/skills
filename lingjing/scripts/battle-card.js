@@ -117,7 +117,7 @@ function minionHtml(m, side, index, ctx, picked) {
   const why = side === 'mine' ? ctx.reasons.get(`mine:${index}`)?.why : null;
   const held = picked?.from === 'board' && picked.index === index && side === 'mine';
   const marks = [m.taunt ? w.taunt : null, side === 'mine' && why ? (w.why[why] ?? why) : null].filter(Boolean);
-  return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}">
+  return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
     <span class="bname">${name(m, ctx.lang)}</span>
     <span class="belem">${GLYPH[m.element] ?? ''}${ctx.lang === 'en' && m.element ? ` ${esc(ctx.elName?.(m.element) ?? '')}` : ''}</span>
     <span class="bstat"><b>${m.atk}</b> / <b>${m.hp}</b></span>
@@ -134,7 +134,7 @@ function handHtml(st, ctx, picked) {
     const why = o?.why;
     const held = picked?.from === 'hand' && picked.index === index;
     const body = c.kind === 'minion' ? `<span class="bstat"><b>${c.atk}</b> / <b>${c.hp}</b></span>` : '';
-    return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}" data-spot="hand" data-index="${index}">
+    return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
       <span class="bcost">${c.cost}</span>
       <span class="bname">${name(c, ctx.lang)}</span>
       <span class="belem">${GLYPH[c.element] ?? ''}</span>
@@ -207,7 +207,7 @@ export function lastHtml(log, ctx, open = false) {
 
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the
    catalog, the language and the words. `picked` is what the player is holding. */
-export function battleHtml(st, offers, ctx, picked = null, openLog = false) {
+export function battleHtml(st, offers, ctx, picked = null, openLog = false, note = null) {
   const w = ctx.words;
   ctx.reasons = reasons(st, offers);
   const rank = (side, board, n) => {
@@ -224,15 +224,19 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false) {
   return `<div class="battle${over ? ' over' : ''}">
     <div class="btop">
       <button class="bquit" data-spot="quit">${w.quit}</button>
+      <span class="bturn ${st.whose}">${st.whose === 'you' ? (ctx.lang === 'en' ? 'Your turn' : '你的回合') : `${esc(ctx.foeName ?? '')}${ctx.lang === 'en' ? "'s turn" : '的回合'}`}</span>
       <span class="bwhere">${esc(ctx.title ?? '')}</span>
     </div>
 
-    <div class="bside foe" data-spot="hero">
+    <button class="bside foe${picked ? ' aiming' : ''}" data-spot="hero">
+      ${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : ''}
       <div class="bwho">${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></div>
-      ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp')}
-      ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}
-      <div class="bcount">${w.deck} ${st.foe.deck}</div>
-    </div>
+      <div class="bnums">
+        ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp')}
+        ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}
+        <div class="bcount">${w.deck} ${st.foe.deck}</div>
+      </div>
+    </button>
 
     ${lastHtml(st.log, ctx, openLog)}
 
@@ -241,9 +245,11 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false) {
 
     <div class="bside you">
       <div class="bwho">${esc(ctx.youName ?? '')} <span class="belem">${GLYPH[st.you.root] ?? ''}</span></div>
-      ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
-      ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}
-      <div class="bcount">${w.deck} ${st.you.deck}</div>
+      <div class="bnums">
+        ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
+        ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}
+        <div class="bcount">${w.deck} ${st.you.deck}</div>
+      </div>
     </div>
 
     <div class="bhand">${handHtml(st, ctx, picked)}</div>
@@ -256,6 +262,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false) {
       <button class="bact end" data-spot="end">${w.end}</button>
     </div>
 
+    ${note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : ''}
     ${picked ? `<div class="bhint">${picked.from === 'board' ? w.pickTarget : w.pickCard}</div>` : ''}
     ${over ? `<div class="bover"><b>${title}</b><span>${said}</span></div>` : ''}
   </div>`;

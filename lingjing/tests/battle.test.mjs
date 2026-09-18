@@ -11,6 +11,7 @@ const CARDS = {
   guard: { id: 'guard', kind: 'minion', name: '山鬼', cost: 2, element: 'earth', atk: 1, hp: 4, keywords: ['taunt'] },
   crier: { id: 'crier', kind: 'minion', name: '银月', cost: 2, element: 'metal', atk: 3, hp: 4, keywords: ['battlecry'], effect: { heal: 2 } },
   cub: { id: 'cub', kind: 'minion', name: '小妖', cost: 1, element: 'wood', atk: 1, hp: 1 },
+  kui5: { id: 'kui5', kind: 'minion', name: '夔', cost: 5, element: 'water', atk: 4, hp: 6, keywords: ['taunt'] },
   // 功法
   bolt: { id: 'bolt', kind: 'spell', name: '火弹术', cost: 2, element: 'fire', effect: { damage: 3 } },
   rain: { id: 'rain', kind: 'spell', name: '金针雨', cost: 3, element: 'metal', effect: { sweep: 2 } },
@@ -58,20 +59,22 @@ test('the opening: a hand each, you one card richer, and the first mana crystal'
   assert.equal(st.you.hand.length, MODES.pve.hand + MODES.pve.headStart, 'you are the protagonist: one card more');
   assert.equal(st.foe.hand.length, MODES.pve.foeHand);
   assert.equal(st.whose, 'you');
-  assert.equal(st.you.manaMax, 1, 'one crystal on the first turn');
-  assert.equal(st.you.mana, 1);
+  // Two crystals on the first turn, not one: six turns is too short to spend
+  // the first one passing (2026-09-18).
+  assert.equal(st.you.manaMax, MODES.pve.startMana);
+  assert.equal(st.you.mana, MODES.pve.startMana);
   assert.equal(MODES.pve.foeDeck, 12, 'twelve: at eight it ran dry before it could be beaten');
 });
 
 test('灵力 grows a crystal a round and refills, and a card that costs more waits', () => {
-  const st = opened({}, ['deer', 'cub']);
-  assert.equal(legal(st, { kind: 'play', index: 0 }), 'no-mana', '夫诸 costs 3, the first round has 1');
+  const st = opened({}, ['kui5', 'cub']);
+  assert.equal(legal(st, { kind: 'play', index: 0 }), 'no-mana', '夔 costs 5, the first round has 2');
   assert.equal(legal(st, { kind: 'play', index: 1 }), null);
   act(st, { kind: 'play', index: 1 });
-  assert.equal(st.you.mana, 0);
+  assert.equal(st.you.mana, 1);
   act(st, { kind: 'end' });
   while (st.whose === 'foe') { /* the creature's policy runs in battle(); here we just hand the turn back */ st.whose = 'you'; st.you.manaMax = Math.min(st.you.manaCap, st.you.manaMax + 1); st.you.mana = st.you.manaMax; }
-  assert.equal(st.you.mana, 2, 'refilled, one crystal richer');
+  assert.equal(st.you.mana, MODES.pve.startMana + 1, 'refilled, one crystal richer');
 });
 
 test('a minion arrives winded, strikes once a round, and both sides take the blow', () => {

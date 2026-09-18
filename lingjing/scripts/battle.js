@@ -61,6 +61,10 @@ export function suppression(mine, theirs) {
 /* ── The knobs, one set per mode ── */
 
 export const MODES = {
+  // 灵力 opens at TWO, not one. Hearthstone starts at one because it plays ten
+  // turns; ours plays six, and a first turn where the only honest move is to
+  // pass is a sixth of the fight spent watching (his first play, 2026-09-18:
+  // "我只能放一个牌上去").
   // A daily 降妖. The creature holds eight cards, and when they run out it
   // WITHDRAWS — the fight ends in neither a win nor a loss, the day is spent
   // and there is no prize. That is the difference between a bounded fight and
@@ -70,10 +74,10 @@ export const MODES = {
   // its own realm: the SHORTNESS of a daily fight comes from 境界压制, not from
   // a weak beast (the gate, 2026-09-18: at 0.7 even playing cards blindly won
   // 81% — a fight nobody can lose is not a fight).
-  pve: { deck: 10, hand: 3, foeDeck: 12, foeHand: 3, board: 4, suppress: true, youFirst: true, headStart: 0, foeHp: 0.7, foeDry: 'withdraw' },
+  pve: { deck: 10, hand: 3, foeDeck: 12, foeHand: 3, board: 4, suppress: true, youFirst: true, headStart: 0, foeHp: 0.7, foeDry: 'withdraw', startMana: 2 },
   // 斗法 at the table: both sides level. Fairness can only come from one mana
   // curve and ten cards each — never from the realm.
-  pvp: { deck: 10, hand: 3, foeDeck: 10, foeHand: 4, board: 4, suppress: false, youFirst: true, headStart: 0, foeHp: 1 },
+  pvp: { deck: 10, hand: 3, foeDeck: 10, foeHand: 4, board: 4, suppress: false, youFirst: true, headStart: 0, foeHp: 1, startMana: 2 },
 };
 
 export const POWER_COST = 2; // 主灵根一击
@@ -129,7 +133,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
   const deck = shuffle(cfg.deck ?? [], `${seed}|${who}`);
   return {
     who, tier: cfg.tier, root: cfg.root ?? null,
-    hp, hpMax: hp, mana: 0, manaMax: 0, manaCap: realm.mana, powerHit: realm.power,
+    hp, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
   };
 }
