@@ -79,10 +79,19 @@ function fightOut(state, id, { line = null, c = ctx() } = {}) {
     const can = line === 'pass' ? [] : offers(st).filter(o => o.ok && o.action.kind !== 'end');
     // The most 气血 taken off the beast for the least 灵力, bodies first when
     // they may strike — enough to win most fixed seeds, and deterministic.
+    // Worth what it takes off the beast, what it leaves standing, and what it
+    // clears — a line that counts damage alone leaves its bodies in hand and
+    // loses fights a board would have won.
+    const body = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6, 0);
+    const before = { hp: st.foe.hp, mine: body(st.you), theirs: body(st.foe) };
     const best = can
       .map(o => {
         const after = battle([...actions, tokenOf(o.action)], setup, catalog);
-        return { o, worth: (st.foe.hp - after.foe.hp) * 2 + (o.action.kind === 'attack' ? 1 : 0) - (o.cost ?? 0) * 0.1 };
+        const worth = (before.hp - after.foe.hp) * 2
+          + (body(after.you) - before.mine) * 1.2
+          + (before.theirs - body(after.foe))
+          - (o.cost ?? 0) * 0.1;
+        return { o, worth };
       })
       .sort((a, b) => b.worth - a.worth)[0]?.o;
     if (!best) { act(st, { kind: 'end' }, 'you'); actions.push('end'); continue; }

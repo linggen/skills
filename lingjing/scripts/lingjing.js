@@ -150,14 +150,16 @@ async function refresh() {
 
 /* ── 灵气: the 丹田 ring ── */
 
-/// The 丹田 as a state, never a number: full, half, low, empty — from the
-/// rules' Look, which settles the clock's refill on every read.
+/// The 丹田: how much is left, as a state AND as the count. It is the one
+/// throttle in the game (design.md § 体力) — a countdown would push, points do
+/// not (his, 2026-09-18: 倒计时会带来心里压力), and a number you can see is how
+/// a player decides whether there is another fight in the day.
 function qi() {
   const q = look?.stamina;
   if (!q || !q.max) return null;
   const p = Math.max(0, Math.min(100, Math.round((q.now / q.max) * 100)));
   const st = q.empty ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full';
-  return { st, p, refillAt: q.returns_at ? Math.floor(new Date(q.returns_at).getTime() / 1000) : null };
+  return { st, p, now: q.now, max: q.max, refillAt: q.returns_at ? Math.floor(new Date(q.returns_at).getTime() / 1000) : null };
 }
 
 const clock = (unixSecs) =>
@@ -169,7 +171,7 @@ function qiHtml() {
   const w = words();
   const state = { full: w.qiFull, half: w.qiHalf, low: w.qiLow, empty: w.qiEmpty, unknown: '' }[q.st];
   return `<span class="qi" data-st="${q.st}" title="${w.qi}"><span class="lbl">${w.qi}</span>
-    <i class="ring" style="--p:${q.p}"></i><span class="st">${esc(state)}</span></span>`;
+    <i class="ring" style="--p:${q.p}"></i><span class="st">${esc(state)}</span><span class="cnt">${q.now}/${q.max}</span></span>`;
 }
 
 /// One line in the world while the window is spent — and the boards stay:

@@ -337,3 +337,7 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 .card.challenge .cdone { font-family: var(--ui); font-size: 11px; color: var(--faint); margin-top: 10px; }
 .card.challenge .bact { margin-top: 12px; justify-self: start; padding: 8px 22px; border-radius: 8px; border: 1px solid var(--ling); background: var(--ling); color: #fff; font-family: var(--serif); font-size: 16px; letter-spacing: 0.2em; cursor: pointer; }
 .card.challenge .bact:hover { filter: brightness(1.06); }
+
+/* The 丹田 says how much is left, not only how it feels: the one throttle in
+   the game is a number you can plan a day around (2026-09-18). */
+.qi .cnt { margin-left: 6px; font-family: var(--ui); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }

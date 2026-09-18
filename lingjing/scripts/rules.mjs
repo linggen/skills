@@ -555,9 +555,34 @@ const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${stat
 export function deckFor(content, state) {
   const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue');
   const roots = new Set(state.traits ?? []);
-  const mine = pool.filter(c => c.element && roots.has(c.element)).map(c => c.id);
-  const plain = pool.filter(c => !c.element).map(c => c.id);
-  const deck = [...shuffle(mine, `deck|${state.name ?? ''}`), ...plain];
+  // Born without 金 you take no 金 card in; what no root claims, anyone may.
+  const mine = pool.filter(c => (!c.element || roots.has(c.element)));
+  // A DECK, not a pile. The gate measured the difference and it is the whole
+  // game: a curve deck won 84% where ten cards drawn at random won 47%
+  // (2026-09-18). So the ten are dealt along a curve, and the curve BENDS WITH
+  // THE REALM: 练气 caps at six 灵力 and a fight lasts about six rounds, so a
+  // five-cost card there is a card that never gets played — the first curve
+  // written (Hearthstone's, for a ten-turn game) lost fights the pile had won.
+  const CURVES = {
+    qi: [1, 1, 1, 2, 2, 2, 3, 3, 4, 4],
+    foundation: [1, 1, 2, 2, 2, 3, 3, 4, 4, 5],
+    core: [1, 2, 2, 2, 3, 3, 4, 4, 5, 5],
+    nascent: [1, 2, 2, 3, 3, 4, 4, 5, 5, 6],
+  };
+  const CURVE = CURVES[state.tier] ?? CURVES.qi;
+  const byCost = new Map();
+  for (const c of shuffle(mine.map(x => x.id), `deck|${state.name ?? ''}`)) {
+    const cost = Math.min(6, Math.max(1, pool.find(x => x.id === c).cost));
+    byCost.set(cost, [...(byCost.get(cost) ?? []), c]);
+  }
+  const deck = [];
+  for (const rung of CURVE) {
+    // the rung asked for, else the nearest one that still has a card left
+    for (const cost of [rung, rung - 1, rung + 1, rung - 2, rung + 2, 1, 2, 3, 4, 5, 6]) {
+      const row = byCost.get(cost);
+      if (row?.length) { deck.push(row.shift()); break; }
+    }
+  }
   return deck.slice(0, MODES.pve.deck);
 }
 
