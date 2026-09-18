@@ -70,8 +70,11 @@ test('the fight card draws both pools, the creature\'s stance and what 借势 le
   assert.match(open, /厚皮/);
   assert.match(open, /战力/);
   // 借势 rides the cast: a row of borrowed faces beside the player's roots.
+  // It lends what the root GENERATES, and the button says 生 — an arrow alone
+  // reads as 克 to anyone who half-knows the 五行 (2026-09-18).
   assert.match(open, /data-duel-pick="cast:fire"/);
-  assert.match(open, /data-duel-pick="borrow:fire"[^>]*>火→土/);
+  assert.match(open, /data-duel-pick="borrow:fire"[^>]*>火生土/);
+  assert.doesNotMatch(open, /火→土/);
   // 物理攻击 and 辅助 are always there; a 符 the player does not hold is not.
   assert.match(open, /data-duel-pick="strike"/);
   assert.match(open, /data-duel-pick="assist:guard"/);
@@ -79,6 +82,10 @@ test('the fight card draws both pools, the creature\'s stance and what 借势 le
   // Idle draws no pools, only the way in.
   const idle = duelHtml(exit, { status: 'idle', picks: [] }, ctx);
   assert.match(idle, /data-duel-start="subdue-kui"/);
+  // In English a bare 火 says nothing: the words stand in, and both languages
+  // say what the borrowed cast costs.
+  const en = duelHtml(exit, { status: 'open', picks: [] }, { lang: 'en', words: WORDS.en, content });
+  assert.match(en, /data-duel-pick="borrow:fire"[^>]*>Fire→Earth<small>5\u00a0Force<\/small>/);
 });
 
 test('the page knows the cast\'s own question by the rules\' words, so the coins stay in the air through it', async () => {
