@@ -29,6 +29,16 @@ export function parseLrc(text) {
   return out.sort((a, b) => a.t - b.t);
 }
 
+/** Some sources only ever have the words. A file with no timings parses to
+    nothing above, and an empty screen is a worse answer than unsynced lyrics,
+    so the player shows them as a block — no highlight, no click-to-seek. */
+export function plainLines(text) {
+  return String(text || '')
+    .split('\n')
+    .map((l) => l.replace(/^\[[^\]]*\]\s*/, '').trim())
+    .filter(Boolean);
+}
+
 // Stop any player in OTHER tabs when this one starts — only one plays at a time.
 const PAGE = `${Date.now()}-${Math.round(performance.now())}`;
 // Per-page served audio file, so two tabs never clobber each other's playback.
@@ -127,8 +137,10 @@ export async function openPlayer(startTrack, opts = {}) {
   ov.querySelector('.pl-close').onclick = close;
   ov.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
-  // Lyrics — (re)loaded per track by load()
+  // Lyrics — (re)loaded per track by load(). `words` holds an untimed file's
+  // lines, which is all some songs ever have.
   let lines = [];
+  let words = [];
 
   async function findLyrics(btn) {
     if (!opts.fetchLyrics) return;
@@ -137,12 +149,18 @@ export async function openPlayer(startTrack, opts = {}) {
     if (track.lrc) {
       const text = await runBash(`cat ${sq(track.lrc)} 2>/dev/null || true`).catch(() => '');
       lines = parseLrc(text);
+      words = lines.length ? [] : plainLines(text);
     }
     renderLyrics();
     if (!lines.length) opts.toast?.('No lyrics found for this track.');
   }
 
   function renderLyrics() {
+    if (!lines.length && words.length) {
+      lyricsEl.innerHTML = `<div class="pl-untimed">Words only — no timings for this one.</div>`
+        + words.map((w) => `<div class="pl-line"><div class="pl-o">${esc(w)}</div></div>`).join('');
+      return;
+    }
     if (!lines.length) {
       lyricsEl.innerHTML = `<div class="pl-empty">No lyrics loaded for this track.${opts.fetchLyrics ? '<br><button class="pl-fetch">Find lyrics</button>' : ''}</div>`;
       const fb = lyricsEl.querySelector('.pl-fetch');
@@ -214,7 +232,12 @@ export async function openPlayer(startTrack, opts = {}) {
     track = t;
     $('.pl-title').innerHTML = `<b>${esc(t.title)}</b> <span>${esc(t.artist)}</span>`;
     lines = [];
-    if (t.lrc) { const text = await runBash(`cat ${sq(t.lrc)} 2>/dev/null || true`).catch(() => ''); lines = parseLrc(text); }
+    words = [];
+    if (t.lrc) {
+      const text = await runBash(`cat ${sq(t.lrc)} 2>/dev/null || true`).catch(() => '');
+      lines = parseLrc(text);
+      words = lines.length ? [] : plainLines(text);
+    }
     activeIdx = -1;
     renderLyrics();
     try {
@@ -236,6 +259,7 @@ export async function openPlayer(startTrack, opts = {}) {
       const text = await runBash(`cat ${sq(t.lrc)} 2>/dev/null || true`).catch(() => '');
       if (track !== t) return;
       lines = parseLrc(text);
+      words = lines.length ? [] : plainLines(text);
       activeIdx = -1;
     }
     renderLyrics();

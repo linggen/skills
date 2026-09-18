@@ -39,7 +39,12 @@ or system-installed.
 - **System tools** (macOS built-ins): `curl`, `openssl`, `unzip`, `bash`.
 - **Browser:** Web Audio, `getUserMedia`, `setSinkId`, `enumerateDevices`,
   `Blob`/`createObjectURL` (karaoke). No JS libraries.
-- **Services:** YouTube (via yt-dlp); LRCLIB (lyrics, free/no-key).
+- **Services:** YouTube (via yt-dlp); LRCLIB (lyrics, free/no-key). Asked in a
+  ladder — `artist title`, the same simplified (macOS converts it), then the
+  title alone and its simplified form — stopping at the first answer with
+  timings, and choosing among those by the file's own length. Words with no
+  timings are still saved and still shown, marked as untimed; a track found
+  nowhere is stamped and left alone for a month.
 - **Optional:** VLC for iOS — only for the phone-sync target.
 
 ## Sync targets

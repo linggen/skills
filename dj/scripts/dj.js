@@ -147,7 +147,16 @@ async function reindex(announce) {
         if (r.pruned) bits.push(`unfiled ${r.pruned} name${r.pruned === 1 ? '' : 's'} pointing at nothing`);
         toast(`Library: ${bits.join(', ')}.`);
       }
-      backfillLyrics(state.library.tracks.filter((t) => !t.lrc && t.file).map(trackKey));
+    }
+    // Lyrics are chased on every pass, not only when the folder changed. They
+    // used to ride inside that `if`, so a track that arrived without them was
+    // never asked about again unless a file moved (2026-09-18: three songs had
+    // sat lyric-less since August). Ones searched for and found nowhere sit
+    // out a month; ones whose sidecar has no timings count as still missing.
+    const missing = state.library.tracks.filter((t) => !t.lrc && t.file && !searchedLately(t));
+    const bare = await untimedLrcTracks(state.library.tracks);
+    if (missing.length || bare.length) {
+      backfillLyrics([...missing, ...bare].map(trackKey), new Set(bare.map(trackKey)));
     }
   } catch { /* next visibility pass retries */ } finally {
     reindexing = false;
@@ -1172,15 +1181,44 @@ async function getAll() {
   backfillLyrics(downloadedIds);
 }
 
+/** A month is long enough for LRCLIB to have gained a song, and short enough
+    that a page load doesn't re-ask for every hopeless one. */
+const LYRICS_RETRY_MS = 30 * 24 * 3600 * 1000;
+const searchedLately = (t) =>
+  !!t.lrc_missing && Date.now() - Date.parse(t.lrc_missing) < LYRICS_RETRY_MS;
+
+/** Sidecars that carry no timings. They look done — the ♪ badge is on — but
+    every player drops a line without a stamp, so the screen comes up empty
+    (2026-09-18: 難念的經 had 66 lines of words and not one timing). One grep
+    over the lot puts them back on the work list. */
+async function untimedLrcTracks(tracks) {
+  const withLrc = tracks.filter((t) => t.lrc && t.file);
+  if (!withLrc.length) return [];
+  const cmd = `grep -LE '^\\[[0-9]{1,2}:[0-9]{2}' ${withLrc.map((t) => sq(t.lrc)).join(' ')} 2>/dev/null || true`;
+  const out = await runBash(cmd).catch(() => '');
+  const bare = new Set(String(out || '').split('\n').map((l) => l.trim()).filter(Boolean));
+  return withLrc.filter((t) => bare.has(t.lrc));
+}
+
 // Fetch + attach lyrics for the given tracks, one at a time, in the background.
 // Updates the badge as each resolves. Best-effort — no lyrics is fine.
-async function backfillLyrics(ids) {
+// `redo` names tracks whose sidecar is there but useless, so having one is no
+// longer a reason to skip them.
+async function backfillLyrics(ids, redo = new Set()) {
   for (const id of ids) {
     const t = state.library.tracks.find((x) => trackKey(x) === id);
-    if (!t || t.lrc || !t.file) continue;
+    if (!t || !t.file || (t.lrc && !redo.has(id))) continue;
     try {
       const lrc = await attachLyrics(t, t.file);
-      if (lrc) { await action('track-set-lrc', t.file, lrc); t.lrc = lrc; renderLibrary(); }
+      if (lrc) {
+        await action('track-set-lrc', t.file, lrc);
+        t.lrc = lrc;
+        delete t.lrc_missing;
+        renderLibrary();
+      } else {
+        await action('track-no-lyrics', t.file);
+        t.lrc_missing = new Date().toISOString();
+      }
     } catch { /* lyrics are optional */ }
   }
 }

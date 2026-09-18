@@ -560,6 +560,19 @@ const VERBS = {
     const lib = loadStore();
     const [t] = resolveTracks(lib, [file]);
     t.lrc = lrc;
+    delete t.lrc_missing;
+    persist(lib);
+    return { ok: true };
+  },
+
+  // Searched, and the words were nowhere. Stamped so the background backfill
+  // stops asking LRCLIB for this one on every page load — and asks again in a
+  // month, because the catalogue does grow.
+  'track-no-lyrics': (a) => {
+    const file = arg(a[0], 'file');
+    const lib = loadStore();
+    const [t] = resolveTracks(lib, [file]);
+    t.lrc_missing = new Date().toISOString();
     persist(lib);
     return { ok: true };
   },
