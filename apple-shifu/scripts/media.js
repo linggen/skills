@@ -51,7 +51,15 @@ let synced = { count: 0, bytes: 0 };  // what the phone has sent, from the manif
 /** flags.json is the scan's work — with the Media tools missing it is simply
     absent, and every reader wants an empty scan rather than a TypeError. */
 function useFlags(f) {
-  flags = { blur_default: 25, ...(f || {}), items: (f && f.items) || [] };
+  // `groups` matters as much as `items`: isKeep() reads it on every lightbox
+  // open, so a missing one threw before the picture could be drawn — which is
+  // what made a thumbnail look unclickable with the tools absent.
+  flags = {
+    blur_default: 25,
+    ...(f || {}),
+    items: (f && f.items) || [],
+    groups: (f && f.groups) || [],
+  };
   return flags;
 }
 let roll = [];             // EVERY camera-roll item (manifest, Live-MOVs folded)
