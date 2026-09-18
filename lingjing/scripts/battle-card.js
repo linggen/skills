@@ -10,7 +10,7 @@
 // pointed at something. `pickOf` turns a click into an action or into that
 // waiting state; it never touches the fight.
 
-import { esc } from './cards.js';
+import { esc, spoken } from './cards.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 

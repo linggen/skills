@@ -95,3 +95,28 @@ test('the page knows the cast\'s own question by the rules\' words, so the coins
     assert.equal(askOf(content, s, { now: new Date('2026-09-17T12:00:00Z'), quests: [] }, { refused: 'needs-ask' }).question, WORDS[lang].castAsk);
   }
 });
+
+test('the challenge card on the scene: who you are about to fight, and the one way in', async () => {
+  // It renders. That sounds like nothing, and it is exactly the bug that broke
+  // the whole stage on 2026-09-18 — `spoken` was used and never imported, and
+  // no test had ever drawn this card (the page died at "正在展开…").
+  const { WORDS, challengeHtml } = await import('../scripts/battle-card.js');
+  const brief = {
+    id: 'subdue-leishen',
+    creature: { id: 'leishen', name: '雷神', pinyin: 'léi shén', root: 'wood', root_name: '木', lean: 'ward', art: 'art/leishen.webp', about: '雷泽中有雷神。' },
+    setup: { mode: 'pve', you: { tier: 'qi', root: 'fire', deck: [] }, foe: { tier: 'qi', root: 'wood', deck: [] } },
+    today: null,
+  };
+  const ctx = { lang: 'zh', words: WORDS.zh, title: '降妖', artBase: '../worlds/jiuding/' };
+  const html = challengeHtml(brief, ctx);
+  assert.match(html, /雷 ?神|雷神/);
+  assert.match(html, /data-duel-start="subdue-leishen"/);
+  assert.match(html, /避法/, 'its lean is on the card');
+  assert.match(html, /art\/leishen\.webp/, 'and its plate');
+  // won today: no way in, and it says why
+  const done = challengeHtml({ ...brief, today: { outcome: 'won' } }, ctx);
+  assert.doesNotMatch(done, /data-duel-start/);
+  assert.match(done, /今日已降/);
+  // and it draws in English too
+  assert.match(challengeHtml(brief, { ...ctx, lang: 'en', words: WORDS.en }), /Begin/);
+});
