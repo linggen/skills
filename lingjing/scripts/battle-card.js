@@ -180,11 +180,17 @@ function minionHtml(m, side, index, ctx, picked) {
   const can = side === 'mine' && !why && m.ready;
   const aimed = side === 'theirs' ? ctx.aim?.theirs?.has(index) : ctx.aim?.mine?.has(index);
   const pic = artOf(ctx.catalog?.[m.id], ctx);
+  // A body on the rank is a little card of its own: its picture on top, its
+  // name under it, and 攻 / 血 in the two bottom corners where a card player's
+  // eye already looks. A 22px strip of a painting is a smudge, not a picture
+  // (his, 2026-09-18: 放到阵前, 图片看不到了).
   return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
-    ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : ''}
+    <span class="bface-wrap">
+      ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic small none"></span>'}
+      <span class="bglyph">${GLYPH[m.element] ?? ''}</span>
+    </span>
     <span class="bname">${name(m, ctx.lang)}</span>
-    <span class="belem">${GLYPH[m.element] ?? ''}${ctx.lang === 'en' && m.element ? ` ${esc(ctx.elName?.(m.element) ?? '')}` : ''}</span>
-    <span class="bstat"><b>${m.atk}</b> / <b>${m.hp}</b></span>
+    <span class="batk">${m.atk}</span><span class="bhp">${m.hp}</span>
     ${marks.length ? `<small>${marks.map(esc).join(' · ')}</small>` : ''}
   </button>`;
 }

@@ -99,13 +99,13 @@
 
 /* ── 阵前 ── */
 
-.brank { position: relative; display: flex; gap: 8px; min-height: 74px; padding: 14px 8px 8px; border-radius: 12px; background: rgba(0, 0, 0, 0.18); }
+.brank { position: relative; display: flex; gap: 8px; min-height: 96px; padding: 14px 8px 8px; border-radius: 12px; background: rgba(0, 0, 0, 0.18); }
 .brank.theirs { border-bottom: 1px solid var(--line-d); }
 .brank.lost-one { animation: dust 0.4s ease-out; }
 @keyframes dust { 0% { background: rgba(163, 59, 46, 0.18); } 100% { background: rgba(0, 0, 0, 0.18); } }
 
 .bminion {
-  flex: 1; display: grid; place-items: center; gap: 1px; padding: 7px 5px;
+  position: relative; flex: 1; display: grid; place-items: center; gap: 1px; padding: 6px 5px 14px;
   border: 1px solid var(--line-d); border-radius: 10px;
   background: linear-gradient(180deg, #241f1a, #1a1613);
   font-family: var(--serif); color: var(--parchment); cursor: pointer;
@@ -116,8 +116,15 @@
 .bminion:not(.empty):hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }
 .bminion.held { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 22px rgba(201, 162, 39, 0.3); transform: translateY(-3px); }
 .bminion .bname { font-size: 16px; }
+.bface-wrap { position: relative; width: 100%; }
+.bglyph { position: absolute; top: 2px; right: 3px; font-size: 11px; color: var(--gold); text-shadow: 0 1px 4px #000; }
+.bpic.small.none { display: block; height: 46px; border-radius: 6px; border: 1px dashed var(--line-d); }
+/* 攻 and 血 in the corners, where a card player's eye already goes. */
+.bminion .batk, .bminion .bhp { position: absolute; bottom: 2px; font-family: var(--ui); font-size: 13px; line-height: 1; }
+.bminion .batk { left: 6px; color: var(--gold); }
+.bminion .bhp { right: 6px; color: #e0705c; }
 .bminion .bstat { font-family: var(--ui); font-size: 12px; color: var(--gold); }
-.bminion small { font-family: var(--ui); font-size: 9px; color: var(--faint-d); }
+.bminion small { font-family: var(--ui); font-size: 9px; color: var(--faint-d); line-height: 1.1; }
 .bminion.arriving { animation: arrive 0.32s cubic-bezier(0.2, 1.2, 0.3, 1); }
 @keyframes arrive { from { transform: translateY(14px) scale(0.86); opacity: 0; } to { transform: none; opacity: 1; } }
 .bminion.shaken, .bside.shaken { animation: shake 0.3s ease-in-out; }
@@ -269,8 +276,8 @@
    not beside them: the card is small, and a picture that pushes the rules off
    the face is a picture that cost the player the game. */
 .bpic { width: 100%; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line-d); filter: sepia(0.2) brightness(0.92) contrast(1.05); }
-.bpic.small { height: 22px; }
+.bpic.small { height: 46px; }
 .bcard .bpic { margin-bottom: 1px; }
 .bminion .bpic { margin-bottom: 1px; }
 .bcard:hover .bpic, .bcard.held .bpic { filter: sepia(0.05) brightness(1.02) contrast(1.05); }
-@media (max-width: 560px) { .bpic { height: 46px; } .bpic.small { height: 28px; } }
+@media (max-width: 560px) { .bpic { height: 34px; } .bpic.small { height: 36px; } .brank { min-height: 84px; } }
