@@ -28,11 +28,16 @@ export const clash = (element, root) => (!element || !root ? 1 : BEATS[element] 
 
 /* ── The realms ── */
 
+/* `power` is what 主灵根一击 hits for — and it is deliberately BELOW a spell of
+   the same cost, because it costs nothing to hold and 五行 can double it. The
+   gate caught this one: at 2/3/4/5 the free hit was the strongest card in the
+   game (4–10 damage for two 灵力 against the root it overcomes, while a 2-cost
+   spell deals 3), and the player won nine fights in ten. */
 export const REALMS = {
-  qi: { hp: 20, mana: 6, power: 2 },
-  foundation: { hp: 26, mana: 8, power: 3 },
-  core: { hp: 32, mana: 10, power: 4 },
-  nascent: { hp: 40, mana: 10, power: 5 },
+  qi: { hp: 20, mana: 6, power: 1 },
+  foundation: { hp: 26, mana: 8, power: 2 },
+  core: { hp: 32, mana: 10, power: 2 },
+  nascent: { hp: 40, mana: 10, power: 3 },
 };
 export const TIERS = ['qi', 'foundation', 'core', 'nascent'];
 
@@ -49,13 +54,16 @@ export function suppression(mine, theirs) {
 /* ── The knobs, one set per mode ── */
 
 export const MODES = {
-  // A daily 降妖: you are the protagonist — first, and one card richer. The
-  // creature holds eight cards and withdraws when they run out, so no fight
-  // outlasts eight rounds however badly it is played. It stands at full 气血 at
+  // A daily 降妖. The creature holds eight cards, and when they run out it
+  // WITHDRAWS — the fight ends in neither a win nor a loss, the day is spent
+  // and there is no prize. That is the difference between a bounded fight and
+  // a farmable one: the gate found that letting its empty deck bleed it meant
+  // a player who did nothing at all won one fight in eight (2026-09-18), which
+  // is the turtling hole the old 斗法 had. A fight must be WON to pay. It stands at full 气血 at
   // its own realm: the SHORTNESS of a daily fight comes from 境界压制, not from
   // a weak beast (the gate, 2026-09-18: at 0.7 even playing cards blindly won
   // 81% — a fight nobody can lose is not a fight).
-  pve: { deck: 10, hand: 3, foeDeck: 8, foeHand: 3, board: 3, suppress: true, youFirst: true, headStart: 1, foeHp: 1 },
+  pve: { deck: 10, hand: 3, foeDeck: 8, foeHand: 3, board: 3, suppress: true, youFirst: true, headStart: 0, foeHp: 1, foeDry: 'withdraw' },
   // 斗法 at the table: both sides level. Fairness can only come from one mana
   // curve and ten cards each — never from the realm.
   pvp: { deck: 10, hand: 3, foeDeck: 10, foeHand: 4, board: 3, suppress: false, youFirst: true, headStart: 0, foeHp: 1 },
@@ -141,14 +149,22 @@ function startTurn(st) {
   st.turn += 1;
 }
 
-/* 反噬 — a deck run dry costs 1, then 2, then 3. In PvE the creature's eight
-   cards make it a hard ceiling: it withdraws rather than fight on. */
+/* 反噬 — a deck run dry costs 1, then 2, then 3. The creature does not bleed
+   that way in PvE: its eight cards spent, it withdraws into the mist, and the
+   fight is over with nothing paid (see MODES.pve). */
 function draw(st, side) {
   if (side.deck.length) {
     side.hand.push(side.deck.shift());
     return;
   }
   side.fatigue += 1;
+  if (side.who === 'foe' && st.mode.foeDry === 'withdraw') {
+    if (st.outcome === 'open') {
+      st.outcome = 'withdrew';
+      st.log.push({ act: 'foe-withdrew' });
+    }
+    return;
+  }
   hurt(st, side, side.fatigue, { kind: 'fatigue' });
 }
 

@@ -36,7 +36,22 @@
         "strike",
         "cast",
         "gather"
-      ]
+      ],
+      "deck": [
+        "luying",
+        "luying",
+        "luying",
+        "fuzhu",
+        "fuzhu",
+        "hantan",
+        "chaoqi",
+        "huiqi",
+        "luying",
+        "fuzhu",
+        "hantan",
+        "chaoqi"
+      ],
+      "_deck": "见则大水 —— 轻快成群的鹿影压上来，潮水收尾。"
     },
     {
       "id": "paoxiao",
@@ -73,7 +88,22 @@
         "strike",
         "cast",
         "strike"
-      ]
+      ],
+      "deck": [
+        "shanjing",
+        "shanjing",
+        "paoxiao",
+        "paoxiao",
+        "jixiao",
+        "jixiao",
+        "tunshi",
+        "luoshi",
+        "paoxiao",
+        "tunshi",
+        "jixiao",
+        "shanjing"
+      ],
+      "_deck": "饕餮 —— 先立一堵，再一口吞下；饥啸之下爪牙更利。"
     },
     {
       "id": "jingwei",
@@ -111,7 +141,22 @@
         "guard",
         "gather"
       ],
-      "drops": "huojing"
+      "drops": "huojing",
+      "deck": [
+        "xianshi",
+        "xianshi",
+        "xianshi",
+        "jingwei",
+        "jingwei",
+        "huodan",
+        "huodan",
+        "wudao",
+        "xianshi",
+        "jingwei",
+        "huodan",
+        "xianshi"
+      ],
+      "_deck": "衔石填海 —— 小鸟一只接一只，不断，不息。"
     },
     {
       "id": "leishen",
@@ -149,7 +194,22 @@
         "armor",
         "strike"
       ],
-      "drops": "leijimu"
+      "drops": "leijimu",
+      "deck": [
+        "leipu",
+        "leipu",
+        "qingteng",
+        "leiming",
+        "leiming",
+        "zhennu",
+        "leishen",
+        "wulei",
+        "leiming",
+        "leipu",
+        "zhennu",
+        "qingteng"
+      ],
+      "_deck": "鼓其腹 —— 雷落连绵，一场下来全是法术。"
     },
     {
       "id": "longzhi",
@@ -187,7 +247,22 @@
         "cast",
         "guard"
       ],
-      "drops": "jingjin"
+      "drops": "jingjin",
+      "deck": [
+        "jiushou",
+        "jiushou",
+        "jiushou",
+        "longzhi",
+        "longzhi",
+        "jinzhua",
+        "jinzhua",
+        "jinzhen",
+        "jiushou",
+        "longzhi",
+        "jinzhua",
+        "jinzhen"
+      ],
+      "_deck": "九首九尾 —— 爪快身薄，抢在你立稳之前。"
     },
     {
       "id": "kui",
@@ -225,7 +300,22 @@
         "strike",
         "cast"
       ],
-      "drops": "hanyu"
+      "drops": "hanyu",
+      "deck": [
+        "gupi",
+        "gupi",
+        "gupi",
+        "kui",
+        "kui",
+        "hantan",
+        "chaoqi",
+        "huiqi",
+        "kui",
+        "gupi",
+        "hantan",
+        "huiqi"
+      ],
+      "_deck": "其皮为鼓 —— 挡在前面，耗到你无牌可抽。"
     },
     {
       "id": "tongtong",
@@ -263,10 +353,26 @@
         "guard",
         "strike"
       ],
-      "drops": "xirang"
+      "drops": "xirang",
+      "deck": [
+        "shanjing",
+        "shanjing",
+        "tongtong",
+        "tongtong",
+        "tongtong",
+        "zhuguang",
+        "zhuguang",
+        "luoshi",
+        "tongtong",
+        "shanjing",
+        "zhuguang",
+        "luoshi"
+      ],
+      "_deck": "腹中有珠 —— 守得住，也养得回。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",
   "_lean": "How it fights, at the player's own realm and step: `lean` moves its numbers about a quarter — hide (厚皮), ward (避法), quick (迅), fierce (猛) — and `pattern` is what it does, turn after turn, cycled from a start the day draws: strike 击 · cast 法术 · gather 蓄 · guard 护体 · armor 甲. A made world writes neither: its id draws them.",
-  "_drops": "What a subdued creature leaves besides its 妖丹 (which every win gives, by the realm it was met at): one catalog item, the 天材地宝 this creature carries. A made world may leave it out."
+  "_drops": "What a subdued creature leaves besides its 妖丹 (which every win gives, by the realm it was met at): one catalog item, the 天材地宝 this creature carries. A made world may leave it out.",
+  "_decks": "每只妖的十二张牌就是它的人格 (design.md § 斗法 v3)。十二张是 PvE 的硬顶：抽空即力竭遁走 —— 一场绝不会拖过十回合。八张是第一版，闸发现那样它在被打退之前就先抽空了（2026-09-18：55–66% 的仗打成了平局）。"
 }

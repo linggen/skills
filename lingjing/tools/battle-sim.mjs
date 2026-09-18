@@ -123,31 +123,31 @@ const pick = (arr, seed, n) => {
   return out;
 };
 
-/* A creature's eight cards ARE its personality — this is a stand-in until they
-   are authored: its own body twice, two imps, and spells of its own root. */
-function foeDeck(element, seed) {
-  const bodies = world.cards.filter(c => c.kind === 'minion' && c.element === element && c.cost <= 5).map(c => c.id);
-  const spells = world.cards.filter(c => c.kind === 'spell' && c.element === element).map(c => c.id);
-  // Its own kind twice over, its own two spells, and two imps to hold the line.
-  const body = bodies[bodies.length - 1] ?? 'xiaoyao';
-  const small = bodies[0] ?? 'xiaoyao';
-  const deck = [small, body, body, small, 'xiaoyao', ...spells.slice(0, 2)];
-  while (deck.length < MODES.pve.foeDeck) deck.push(pick(ALL, seed + deck.length, 1)[0]);
-  return deck.slice(0, MODES.pve.foeDeck);
+/* A creature's eight cards ARE its personality, and they are authored —
+   `deck` in creatures.json. 夫诸 runs deer shades and closes with the tide;
+   狍鸮 walls up then devours; 精卫 never stops coming; 雷神 is all thunder;
+   蠪侄 is claws before you stand; 夔 holds the line until your deck is dry;
+   狪狪 defends and heals. */
+const CREATURES = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/creatures.json'), 'utf8')).creatures;
+const byRoot = new Map(CREATURES.filter(c => c.deck).map(c => [c.root, c]));
+function foeOf(root) {
+  const c = byRoot.get(root) ?? CREATURES.find(x => x.deck);
+  return { id: c.id, name: c.name.zh, deck: c.deck };
 }
 
 function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot = 'wood', deck, seed = 'd1', mode = 'pve' }) {
+  const foe = foeOf(foeRoot);
   return {
     mode, seed,
     you: { tier, root, deck, extra: ['yinyue'] },
-    foe: { tier: foeTier, root: foeRoot, deck: foeDeck(foeRoot, 7) },
+    foe: { tier: foeTier, root: foeRoot, deck: foe.deck },
   };
 }
 
 /* ── The run ── */
 
 function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode = 'pve' } = {}) {
-  let wins = 0, games = 0, turns = 0;
+  let wins = 0, games = 0, turns = 0, drew = 0;
   const played = new Map();
   const perDeck = new Map();
   for (const deck of decks) {
@@ -160,6 +160,7 @@ function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode
           turns += st.turn;
           const won = st.outcome === 'won';
           if (won) wins += 1;
+          if (st.outcome === 'withdrew') drew += 1;
           perDeck.set(deck.id, (perDeck.get(deck.id) ?? { w: 0, n: 0 }));
           const row = perDeck.get(deck.id);
           row.n += 1; if (won) row.w += 1;
@@ -168,7 +169,7 @@ function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode
       }
     }
   }
-  return { rate: wins / games, games, turns: turns / games, played, perDeck };
+  return { rate: wins / games, drew: drew / games, games, turns: turns / games, played, perDeck };
 }
 
 /* Decision entropy: how far apart are the best choice and the third best? */
@@ -189,11 +190,21 @@ function entropy(decks) {
 
 /* ── The decks under test ── */
 
-function fieldDecks(n = 8) {
-  const out = [];
+/* Four built decks and four random piles. The difference between them IS the
+   game: a curve deck won 84% where a random ten won 47% (2026-09-18). A gate
+   judged only on random piles would be measuring someone who cannot play. */
+const ARCHETYPES = [
+  { id: '火攻', root: 'fire', cards: ['xiaoyao', 'luying', 'huodan', 'jingwei', 'fuzhu', 'hantan', 'jinzhen', 'paoxiao', 'luoshi', 'wulei'] },
+  { id: '水控', root: 'water', cards: ['luying', 'gupi', 'huodan', 'fuzhu', 'hantan', 'chaoqi', 'jinzhen', 'kui', 'huiqi', 'luoshi'] },
+  { id: '土守', root: 'earth', cards: ['shanjing', 'shanjing', 'tongtong', 'zhuguang', 'jixiao', 'paoxiao', 'luoshi', 'tunshi', 'huiqi', 'kui'] },
+  { id: '金锐', root: 'metal', cards: ['xiaoyao', 'jiushou', 'jinzhua', 'longzhi', 'jinzhen', 'luying', 'huodan', 'hantan', 'paoxiao', 'wulei'] },
+];
+
+function fieldDecks(n = 4) {
+  const out = ARCHETYPES.map(a => ({ ...a, built: true }));
   for (let i = 0; i < n; i += 1) {
     const root = ELEMENTS[i % ELEMENTS.length];
-    out.push({ id: `deck${i}`, root, cards: pick(ALL, 1000 + i * 37, MODES.pve.deck) });
+    out.push({ id: `随手${i}`, root, cards: pick(ALL, 1000 + i * 37, MODES.pve.deck) });
   }
   return out;
 }
@@ -202,7 +213,8 @@ async function main() {
   const { foeTurn } = await import('../scripts/battle.js');
   globalThis.__battle = { foeTurn };
   const gate = process.argv.includes('--gate');
-  const decks = fieldDecks(8);
+  const decks = fieldDecks(4);
+  const built = decks.filter(d => d.built);
   const problems = [];
 
   const lines = {
@@ -213,20 +225,28 @@ async function main() {
   };
   console.log('斗法 v3 — 平衡报告');
   console.log(`牌 ${world.cards.length} 张 · 牌组 ${decks.length} 副 · 每副 ${MODES.pve.deck} 张\n`);
-  console.log('打法              胜率    平均局长(半回合)');
+  console.log('打法              胜率   它退走   平均局长(半回合)');
   const results = {};
   for (const [name, line] of Object.entries(lines)) {
     const r = run(line, { decks });
     results[name] = r;
-    console.log(`${name.padEnd(14)}  ${(r.rate * 100).toFixed(1).padStart(5)}%   ${r.turns.toFixed(1)}   (${r.games} 局)`);
+    console.log(`${name.padEnd(14)}  ${(r.rate * 100).toFixed(1).padStart(5)}%  ${(r.drew * 100).toFixed(1).padStart(5)}%   ${r.turns.toFixed(1)}   (${r.games} 局)`);
   }
 
   const smartRun = results['会读场的'];
+  const builtRun = run(smart, { decks: built });
+  const pileRun = run(smart, { decks: decks.filter(d => !d.built) });
+  console.log(`\n会搭牌的（四副原型）  ${(builtRun.rate * 100).toFixed(1)}%  它退走 ${(builtRun.drew * 100).toFixed(1)}%  ${builtRun.turns.toFixed(1)} 个半回合`);
+  console.log(`随手抓十张          ${(pileRun.rate * 100).toFixed(1)}%  它退走 ${(pileRun.drew * 100).toFixed(1)}%  ${pileRun.turns.toFixed(1)} 个半回合`);
+  console.log(`构筑值多少：${((builtRun.rate - pileRun.rate) * 100).toFixed(1)} 个百分点`);
   for (const [name, r] of Object.entries(results)) {
-    if (name === '会读场的' && r.rate < 0.6) problems.push(`会读场的只赢 ${(r.rate * 100).toFixed(1)}% — 读懂它没有回报`);
     if (name !== '会读场的' && r.rate > 0.35) problems.push(`${name} 赢了 ${(r.rate * 100).toFixed(1)}% — 一条无脑路线不该赢`);
   }
-  if (smartRun.turns > 16) problems.push(`PvE 平均 ${smartRun.turns.toFixed(1)} 个半回合，太长`);
+  if (builtRun.rate < 0.6) problems.push(`会搭牌的人只赢 ${(builtRun.rate * 100).toFixed(1)}% — 读懂它、搭好牌没有回报`);
+  if (builtRun.rate > 0.9) problems.push(`会搭牌的人赢 ${(builtRun.rate * 100).toFixed(1)}% — 一场必胜的仗不是仗`);
+  if (builtRun.drew > 0.25) problems.push(`${(builtRun.drew * 100).toFixed(1)}% 的仗它先力竭遁走 — 平局太多`);
+  if (builtRun.rate - pileRun.rate < 0.1) problems.push(`会搭牌只比随手抓高 ${((builtRun.rate - pileRun.rate) * 100).toFixed(1)} 点 — 构筑不值钱`);
+  if (smartRun.turns > 18) problems.push(`PvE 平均 ${smartRun.turns.toFixed(1)} 个半回合，太长`);
 
   console.log('\n每张牌（会读场的打法）');
   console.log('牌            出场率   影响力');

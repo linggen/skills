@@ -276,6 +276,163 @@
       "effect": {
         "heal": 5
       }
+    },
+    {
+      "id": "luying",
+      "kind": "minion",
+      "name": {
+        "zh": "鹿影",
+        "en": "Deer Shade"
+      },
+      "cost": 2,
+      "element": "water",
+      "atk": 3,
+      "hp": 2
+    },
+    {
+      "id": "chaoqi",
+      "kind": "spell",
+      "name": {
+        "zh": "潮起",
+        "en": "Rising Tide"
+      },
+      "cost": 3,
+      "element": "water",
+      "effect": {
+        "sweep": 3
+      }
+    },
+    {
+      "id": "tunshi",
+      "kind": "spell",
+      "name": {
+        "zh": "吞噬",
+        "en": "Devour"
+      },
+      "cost": 3,
+      "element": "earth",
+      "effect": {
+        "damage": 6
+      }
+    },
+    {
+      "id": "jixiao",
+      "kind": "spell",
+      "name": {
+        "zh": "饥啸",
+        "en": "Hunger Cry"
+      },
+      "cost": 1,
+      "element": "earth",
+      "effect": {
+        "buff": {
+          "atk": 2,
+          "hp": 0
+        }
+      }
+    },
+    {
+      "id": "xianshi",
+      "kind": "minion",
+      "name": {
+        "zh": "衔石",
+        "en": "Stone Bearer"
+      },
+      "cost": 1,
+      "element": "fire",
+      "atk": 1,
+      "hp": 2
+    },
+    {
+      "id": "leipu",
+      "kind": "minion",
+      "name": {
+        "zh": "雷仆",
+        "en": "Thunder Servant"
+      },
+      "cost": 2,
+      "element": "wood",
+      "atk": 2,
+      "hp": 2
+    },
+    {
+      "id": "leiming",
+      "kind": "spell",
+      "name": {
+        "zh": "雷鸣",
+        "en": "Thunderclap"
+      },
+      "cost": 3,
+      "element": "wood",
+      "effect": {
+        "damage": 5
+      }
+    },
+    {
+      "id": "zhennu",
+      "kind": "spell",
+      "name": {
+        "zh": "震怒",
+        "en": "Wrath"
+      },
+      "cost": 4,
+      "element": "wood",
+      "effect": {
+        "sweep": 3
+      }
+    },
+    {
+      "id": "jiushou",
+      "kind": "minion",
+      "name": {
+        "zh": "九首",
+        "en": "Nine Heads"
+      },
+      "cost": 3,
+      "element": "metal",
+      "atk": 3,
+      "hp": 1
+    },
+    {
+      "id": "jinzhua",
+      "kind": "spell",
+      "name": {
+        "zh": "金爪",
+        "en": "Gold Claw"
+      },
+      "cost": 2,
+      "element": "metal",
+      "effect": {
+        "damage": 3
+      }
+    },
+    {
+      "id": "gupi",
+      "kind": "minion",
+      "name": {
+        "zh": "鼓皮",
+        "en": "Drumhide"
+      },
+      "cost": 2,
+      "element": "water",
+      "atk": 0,
+      "hp": 5,
+      "keywords": [
+        "taunt"
+      ]
+    },
+    {
+      "id": "zhuguang",
+      "kind": "spell",
+      "name": {
+        "zh": "珠光",
+        "en": "Pearl Light"
+      },
+      "cost": 2,
+      "element": "earth",
+      "effect": {
+        "heal": 4
+      }
     }
   ]
 }
