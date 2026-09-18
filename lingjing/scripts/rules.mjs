@@ -2326,12 +2326,22 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   // the map, in the director's brief for Ling's own line, and in anything he
   // types.
   //
-  // And the question rides an ARRIVAL, never a plain Look: asked once where he
-  // lands, and if he passes on it nothing asks again until he walks somewhere.
-  // Before this, every Look handed the same question back, so a Skip was
-  // answered by the same widget one turn later (2026-09-18, his "I clicked
-  // skip in askuser widget in chat, it shows again").
-  if (!ungated && (!result.director || stageWaiting(content, state, ctx))) return null;
+  // Asked ONCE where he stands. The rules write down that they asked here
+  // (`asked_at`), so a question he passed on is not put back a turn later —
+  // his "I clicked skip in askuser widget in chat, it shows again". Anything
+  // that MOVES the world re-arms it: a road walked, a cast thrown, a thing
+  // bought. Only a bare Look, at a spot already asked, says nothing — which is
+  // the difference between quiet and stuck (he cast the coins, the turn ended
+  // with no way on, 2026-09-18: 「起卦完成, 任务卡住了」).
+  if (!ungated) {
+    if (state.fight) return null; // a fight is running: Ling advances nothing
+    if (stageWaiting(content, state, ctx)) return null;
+    // Something moved the world — a road walked, a cast thrown, a thing
+    // bought — so the question is worth putting again. Otherwise it is asked
+    // only where it has not been asked yet.
+    const moved = Boolean(result.director) || (ctx.verb && ctx.verb !== 'look');
+    if (!moved && state.asked_at === stageAt(content, state)) return null;
+  }
   const choice = directorBrief(content, state, ctx)?.choice;
   if (choice) return choice;
   return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: FILLERS[zh ? 'zh' : 'en'] };
@@ -2441,7 +2451,15 @@ function run(verb, args) {
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const result = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
-  const answer = withAsk(result, content, next ?? state, { now, quests: readQuests(), said: args.said });
+  const asking = next ?? state;
+  const answer = withAsk(result, content, asking, { now, quests: readQuests(), said: args.said, verb });
+  // Written down, so the next bare Look does not ask it again. Cleared by
+  // walking somewhere, because `asked_at` is the place it was asked at.
+  const here = stageAt(content, asking);
+  if (answer.ask && !atScene(content, asking) && asking.asked_at !== here) {
+    asking.asked_at = here;
+    writeAtomic(stateFile, JSON.stringify(asking));
+  }
   // A tapped label is matched against the question whether or not it was
   // asked: the roads are on the map card even when the chat holds its tongue,
   // and a tap on one must still become a Move.

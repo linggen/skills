@@ -304,11 +304,17 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   // later, because every Look handed it back).
   const o = toOpenWorld();
   const lo = look(o, content, ctx());
-  assert.equal(lo.ask, null, 'a plain Look asks nothing — a question passed on stays passed on');
-  assert.ok(lo.director.choice, 'the roads are still in the brief, for Ling to name in her own line');
+  assert.deepEqual(lo.ask, lo.director.choice, 'where he has not been asked, it is asked');
+  // …once. The rules write down that they asked here, so a question he passed
+  // on is not put back a turn later (his Skip, answered by the same widget).
+  const again = { ...o, asked_at: `place:${o.place}` };
+  assert.equal(look(again, content, { ...ctx(), verb: 'look' }).ask, null, 'a bare Look at a spot already asked says nothing');
+  // but anything that moves the world re-arms it — he cast the coins and the
+  // turn ended with no way on (2026-09-18: 起卦完成, 任务卡住了)
+  assert.ok(look(again, content, { ...ctx(), verb: 'divine' }).ask, 'a cast, a trade, a road: asked again');
   const road = lo.director.choice.options.find(x => x.move);
   const arrived = move(o, content, ctx(), { place: road.move });
-  assert.deepEqual(askOf(content, arrived.state, ctx(), arrived.result), arrived.result.director.choice, 'where he lands, it is asked once');
+  assert.deepEqual(askOf(content, arrived.state, ctx(), arrived.result), arrived.result.director.choice, 'and where he lands, always');
   // …but not onto a stage holding something out: a shelf, a beast at its haunt
   const shop = { ...arrived.state, place: 'pengcheng' };
   assert.equal(askOf(content, shop, ctx(), { director: true }), null, 'a 坊市 is on the stage — the chat keeps quiet');
