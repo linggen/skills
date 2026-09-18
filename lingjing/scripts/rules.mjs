@@ -208,7 +208,10 @@ function nearestPlace(content, state, now, test) {
   for (let steps = 0; steps < 12 && edge.length; steps += 1) {
     const next = [];
     for (const p of edge) {
-      if (steps > 0 && test(p)) return { ...placeName(content, state, p), steps };
+      // Where he STANDS counts first. It did not until 2026-09-18, and the
+      // quest card sent him two days down the road to 濮阳 for a bell that was
+      // on the shelf in front of him at 邺城 (his "坊市在濮阳, 但我在邺城").
+      if (test(p)) return { ...placeName(content, state, p), steps };
       for (const id of p.roads ?? []) {
         if (seen.has(id)) continue;
         seen.add(id);

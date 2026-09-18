@@ -291,8 +291,11 @@ function questCard() {
   const q = look?.quest;
   if (!q) return '';
   const w = words();
-  const where = q.step === 'bell' && q.market ? fill(w.questAt, { name: q.market.name })
-    : q.step === 'water' && q.water ? fill(w.questWater, { name: q.water.name }) : '';
+  // Where to take the step — never when it can be taken right here: the card
+  // already carries 买银月铃, and a second line naming another town is the card
+  // arguing with the shelf beside it (2026-09-18).
+  const where = q.step === 'bell' && q.market && !q.shop_here ? fill(w.questAt, { name: q.market.name })
+    : q.step === 'water' && q.water && !q.at_water ? fill(w.questWater, { name: q.water.name }) : '';
   const acts = [{ label: w.about, say: w.sayQuest }];
   // The step, as a word to Ling: buy it here, walk to where it can be taken, ring it.
   if (q.step === 'ring') acts.unshift({ label: w.ringBell, say: w.sayRing });
