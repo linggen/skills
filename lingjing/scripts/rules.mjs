@@ -765,7 +765,7 @@ export function look(state, content, ctx) {
   };
   const chapter = content.chapters[state.chapter];
   return {
-    then: THEN, ask: askOf(content, state, ctx),
+    ...thenAsk(content, state, ctx),
     ok: true, lang, name: state.name,
     world: worldBrief(content, lang),
     ...building(content),
@@ -2199,7 +2199,7 @@ export function parseArgs(argv) {
    buttons the options), the director's choice when the world is open. The
    model copies it and composes nothing — a rule in the prompt alone was not
    enough (2026-09-16, gpt-5.6-terra: Look, Show, narration, silence). */
-export function askOf(content, state, ctx, result = {}) {
+export function askOf(content, state, ctx, result = {}, ungated = false) {
   const zh = state.lang === 'zh';
   const yinyue = filler(content, state, ctx.said);
   // Her riddle, while it waits, is the question — wherever the player stands.
@@ -2268,9 +2268,37 @@ export function askOf(content, state, ctx, result = {}) {
     if (options.length < 2) options.push(yinyue);
     return { header: header(scene.place), question: asked, options };
   }
+  // 台上有事，聊天不问去处 (his ruling, 2026-09-18). The stage was holding out a
+  // 坊市 with 银月铃 on the shelf while the chat asked 何去何从 — two places
+  // pulling at once, and the one he had not chosen won. So while something
+  // here waits to be taken, the question stays away; the roads are still on
+  // the map, in the director's brief for Ling's own line, and in anything he
+  // types.
+  //
+  // And the question rides an ARRIVAL, never a plain Look: asked once where he
+  // lands, and if he passes on it nothing asks again until he walks somewhere.
+  // Before this, every Look handed the same question back, so a Skip was
+  // answered by the same widget one turn later (2026-09-18, his "I clicked
+  // skip in askuser widget in chat, it shows again").
+  if (!ungated && (!result.director || stageWaiting(content, state, ctx))) return null;
   const choice = directorBrief(content, state, ctx)?.choice;
   if (choice) return choice;
   return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: FILLERS[zh ? 'zh' : 'en'] };
+}
+
+/* What the stage is holding out to him where he stands: a shelf to buy from,
+   a beast at its haunt, the step of the search that can be taken on this very
+   spot. One clickable place for one thing (his law, 2026-09-17) — and when the
+   stage has the thing, the stage wins. */
+function stageWaiting(content, state, ctx) {
+  if (atScene(content, state)) return false;
+  const here = placeOf(content, state.place);
+  if (!here) return false;
+  if (here.has?.shop) return true;
+  const beast = encounterOf(content, state, ctx.now);
+  if (beast && !beast.tamed) return true;
+  const quest = questBrief(content, state, ctx.now);
+  return Boolean(quest && (quest.shop_here || (quest.step === 'ring' && quest.at_water)));
 }
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
 /* Something won: Yinyue's own glad line closes the narration. The stage
@@ -2284,8 +2312,22 @@ const won = r => {
   return Boolean(r.breakthrough || r.learned?.length || p?.cast || p?.item || p?.levels?.length || (p?.progress ?? 0) > 0 || (p?.wealth ?? 0) > 0);
 };
 const THEN_CALL = 'The search has just opened: say `quest.line` in the world, in a line of its own, before the question. ';
-export const thenFor = result => (result?.quest?.say ? THEN_CALL : '') + (won(result) ? THEN_CHEER : THEN);
-const withAsk = (result, content, state, ctx) => ({ then: thenFor(result), ask: askOf(content, state, ctx, result), ...result });
+/* No question this time: the stage has the thing in front of him, or nothing
+   has changed since the last one. End on words — never invent a question the
+   rules withheld (his law, 2026-09-18). */
+const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
+export const thenFor = (result, ask = undefined) => (result?.quest?.say ? THEN_CALL : '')
+  + (ask === null ? THEN_QUIET : won(result) ? THEN_CHEER : THEN);
+/* Look's own pair, by the same rule as every other result. */
+const thenAsk = (content, state, ctx) => {
+  const ask = askOf(content, state, ctx);
+  return { then: thenFor({}, ask), ask };
+};
+
+const withAsk = (result, content, state, ctx) => {
+  const ask = askOf(content, state, ctx, result);
+  return { then: thenFor(result, ask), ask, ...result };
+};
 
 /* The player's words are an option of the question on screen — a tap on a
    card arrives as words, and Look is where Ling takes them. Look names the
@@ -2317,7 +2359,7 @@ function tapThen(ask, said) {
   const option = options.find(o => o.label === words) ?? options.find(o => o.move && o.label === words.replace(GO, ''));
   const kind = option && Object.keys(TAPS).find(k => option[k]);
   if (!kind) return null;
-  return `The player tapped "${option.label}" — call ${TAPS[kind](option)} now; this Look changed nothing. Then AskUser exactly the \`ask\` that tool returns. The reply ends only there.`;
+  return `The player tapped "${option.label}" — call ${TAPS[kind](option)} now; this Look changed nothing. Then follow that tool's own \`then\`: AskUser its \`ask\` when it carries one, and end on your words when it is null.`;
 }
 
 function run(verb, args) {
@@ -2358,7 +2400,11 @@ function run(verb, args) {
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const result = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
   const answer = withAsk(result, content, next ?? state, { now, quests: readQuests(), said: args.said });
-  const tap = verb === 'look' && tapThen(answer.ask, args.said);
+  // A tapped label is matched against the question whether or not it was
+  // asked: the roads are on the map card even when the chat holds its tongue,
+  // and a tap on one must still become a Move.
+  const tapCtx = { now, quests: readQuests(), said: args.said };
+  const tap = verb === 'look' && tapThen(answer.ask ?? askOf(content, next ?? state, tapCtx, {}, true), args.said);
   return tap ? { ...answer, then: tap } : answer;
 }
 

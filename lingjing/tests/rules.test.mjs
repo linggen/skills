@@ -298,10 +298,24 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.equal(askOf(content, s, { ...ctx(), said: '问问银月' }).options.at(-1)?.label !== '问问银月', true);
   assert.equal(askOf(content, s, { ...ctx(), said: '看看四周' }).options.at(-1)?.label !== '看看四周', true);
   void one;
-  // the world open: the director's choice
+  // The world open: the question rides an ARRIVAL, and only onto a stage with
+  // nothing waiting on it (his ruling, 2026-09-18 — 何去何从 was asked over a
+  // 坊市 holding 银月铃, and a Skip was answered by the same widget one turn
+  // later, because every Look handed it back).
   const o = toOpenWorld();
   const lo = look(o, content, ctx());
-  assert.deepEqual(lo.ask, lo.director.choice);
+  assert.equal(lo.ask, null, 'a plain Look asks nothing — a question passed on stays passed on');
+  assert.ok(lo.director.choice, 'the roads are still in the brief, for Ling to name in her own line');
+  const road = lo.director.choice.options.find(x => x.move);
+  const arrived = move(o, content, ctx(), { place: road.move });
+  assert.deepEqual(askOf(content, arrived.state, ctx(), arrived.result), arrived.result.director.choice, 'where he lands, it is asked once');
+  // …but not onto a stage holding something out: a shelf, a beast at its haunt
+  const shop = { ...arrived.state, place: 'pengcheng' };
+  assert.equal(askOf(content, shop, ctx(), { director: true }), null, 'a 坊市 is on the stage — the chat keeps quiet');
+  const haunt = { ...arrived.state, place: 'fuli', tier: 'qi' };
+  assert.equal(askOf(content, haunt, ctx(), { director: true }), null, 'a beast stands here — its card is the one clickable place');
+  const plain = { ...arrived.state, place: 'yunlong' };
+  assert.ok(askOf(content, plain, ctx(), { director: true })?.options.some(x => x.move), 'and where nothing waits, it asks');
 });
 
 test('only the rules decide a fight: a win the exit takes, and pays once', () => {
@@ -1495,7 +1509,11 @@ test('a tapped option comes to Look as words, and Look names the tool it is', ()
   const s = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
   const open = { ...s, lang: 'zh', chapter: '03-qing', scene: '03-shore', place: 'linzi', done_scenes: [...s.done_scenes, '03-arrive', '03-town'] };
   fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(open));
-  const choice = cli('look').ask;
+  // The chat may hold its tongue (nothing waits, but this was no arrival) and
+  // the map card still shows the roads — so a tap on one is still a Move.
+  const opened = cli('look');
+  assert.equal(opened.ask, null);
+  const choice = opened.director.choice;
   const road = choice.options.find(o => o.move);
   assert.ok(road, JSON.stringify(choice));
   assert.match(cli('look', `--said=${road.label}`).then, new RegExp(`Move \\{place: ${road.move}\\}`));

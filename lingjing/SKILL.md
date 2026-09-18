@@ -718,17 +718,30 @@ not for a slip of the story. A refusal (`not-open`, `unknown-save`,
 
 ## The choice — AskUser
 
-**Every reply ends with one AskUser.** Not nearly always: always. A Move, a
-Show, a Trade or a Summarize never ends a turn — the question does. A
-player left without one is a player stuck (seen 2026-09-16: a Move, a
-Summarize, silence). The one silence: AskUser came back with no answer.
+**A reply ends with one AskUser whenever the result carries `ask`.** A Move,
+a Show, a Trade or a Summarize never ends a turn by itself — the question
+does, and a player left without one is a player stuck (seen 2026-09-16: a
+Move, a Summarize, silence).
+
+**`ask: null` is the rules saying: not now.** The stage is holding something
+out to him — a 坊市 with its shelf, a beast at its haunt, the step of the
+search he can take on this very spot — or nothing has changed since the last
+question. Then end on your words: name the ways on in the line if they are
+worth naming (*东出便是濮水*), and call no AskUser. The roads are on the map
+card, and anything he types still reaches the rules. Asking anyway is the very
+thing his law forbids — two places pulling at once, and the one he did not
+choose wins (2026-09-18: 何去何从 asked over a shelf holding 银月铃, and the
+same widget back one turn after he pressed Skip).
 
 - **Options are the scene's `buttons` labels, character for character and in
   order** — never reworded, never a new exit of your making. Offer a button
   even when its exit will be refused: the refusal is part of the story. For
   a `value` exit, its `offers` (the player may type their own). The header
   is the place.
-- **Every result carries `ask`, the question ready** — `header`,
+- **The director's `choice` is asked where he ARRIVES, not every breath.** It
+  rides a Move; a plain Look hands back no question, so a question he passed
+  on is not asked again until he walks somewhere.
+- **A result's `ask` is the question ready** — `header`,
   `question`, `options` labels in order: the scene's buttons while one
   runs, the riddle when one waits, the director's `choice` when the world
   is open. AskUser it exactly as it is; you compose nothing. A tapped
