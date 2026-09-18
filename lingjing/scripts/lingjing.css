@@ -364,3 +364,8 @@ body.fighting .bpic { height: 62px; }
 body.fighting .bcard .bname { font-size: 19px; }
 body.fighting .bside.foe .bface { width: 104px; height: 104px; }
 body.fighting .bside .bwho { font-size: 30px; }
+
+/* The chat owns the question. While one is open, the stage puts away its own
+   copies of the same answers — one clickable place for one thing (his law
+   2026-09-17, and his call 2026-09-18 that the chat is the one that keeps it). */
+.answered-in-chat { display: none !important; }

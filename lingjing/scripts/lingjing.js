@@ -26,6 +26,9 @@ const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summa
    fight, it only plays one out (design.md § 斗法 v3). */
 let bout = null;
 let idleTimer = null;
+/// The labels the chat's open question offers; the stage hides its own copies
+/// of them while it stands (his, 2026-09-18: 只显示一个).
+let asked = null;
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
@@ -345,6 +348,14 @@ function render() {
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
   if (tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === tapped) el.classList.add('busy'); });
+  // One clickable place for one thing: while the chat holds the question, the
+  // stage puts away every button that repeats one of its answers.
+  if (asked?.size) {
+    document.querySelectorAll('[data-say]').forEach((el) => {
+      const label = (el.dataset.say ?? '').trim();
+      if (asked.has(label) || asked.has(el.textContent.trim())) el.classList.add('answered-in-chat');
+    });
+  }
 }
 
 /* What the fight's card draws itself from: this world's cards, this world's
@@ -599,11 +610,27 @@ function askedQuestion(args) {
   }
 }
 
+/// What the open question offers, by label. The chat owns the question (his
+/// law, 2026-09-17), so while one is open the stage does not offer the same
+/// choices a second time — one clickable place for one thing. Anything the
+/// question does NOT name (说说, 起一卦, a card's own action) stays.
+function askedOptions(args) {
+  try {
+    const a = typeof args === 'string' ? JSON.parse(args) : args;
+    const opts = a?.questions?.[0]?.options ?? [];
+    return new Set(opts.map(o => String(o?.label ?? o ?? '').trim()).filter(Boolean));
+  } catch {
+    return null; // still streaming
+  }
+}
+
 function onContentBlock(payload) {
   if (payload?.tool === 'AskUser') {
     // The cast's own question (所问何事) keeps the coins in the air; any
     // other question means no cast is coming this turn.
     if (casting && askedQuestion(payload.args) !== words().castAsk) casting = false;
+    const offered = askedOptions(payload.args);
+    if (offered?.size) asked = offered;
     waitingOnPlayer();
     render();
     return;
@@ -648,6 +675,7 @@ async function mountChat() {
     onStreamToken: () => { alive = true; },
     onStreamEnd: (text) => {
       saying = false; tapped = null; casting = false;
+      asked = null;
       const before = look;
       refresh().then(() => cheer(before, text));
     },
