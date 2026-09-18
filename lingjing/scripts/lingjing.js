@@ -9,6 +9,9 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { fight } from './duel.js';
+import { act, begin, foeStep, idle, offers as boutOffers, tokenOf, view } from './battle.js';
+import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
+import { banner, playLog, since } from './battle-anim.js';
 import { WORDS, cardHtml, trayHtml, esc, say as fill, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
@@ -16,6 +19,12 @@ const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
 const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
+
+/* A 斗法 in play, held by the page: the setup the rules handed over at the
+   door, the fight itself, and every action taken so far. When it ends the page
+   sends the actions back and the RULES settle it — the page never decides a
+   fight, it only plays one out (design.md § 斗法 v3). */
+let bout = null;
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
@@ -57,7 +66,7 @@ function duelFor(id) {
   return duels.get(id);
 }
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, mapView, castFresh, casting, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView, castFresh, casting, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -250,6 +259,9 @@ async function switchLang(to) {
 /// Ling's cards, else the day's omen — and an open board always beside them:
 /// Ling tells the player the board is before them, so it must be.
 function focusHtml() {
+  // A fight takes the stage: while one is open, nothing else is on it, and the
+  // chat beside it keeps talking (design.md § 斗法在主界面里).
+  if (bout) return battleHtml(view(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
   const cards = focus.length ? [...focus] : [{ card: 'hexagram' }];
   const open = (look.tasks ?? []).find((t) => t.kind === 'board' && t.status !== 'done' && !t.won);
   if (open && !cards.some((c) => c.card === 'board' && c.id === open.id)) cards.push({ card: 'board', id: open.id });
@@ -320,6 +332,21 @@ function render() {
   if (tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === tapped) el.classList.add('busy'); });
 }
 
+/* What the fight's card draws itself from: this world's cards, this world's
+   pictures, and the words of the language in play. */
+function boutCtx() {
+  const c = bout.brief.creature;
+  return {
+    catalog: Object.fromEntries((authored?.cards?.cards ?? []).map(x => [x.id, { ...x, name: x.name?.[lang()] ?? x.name?.zh ?? x.id }])),
+    artBase: `../worlds/${look.world?.id ?? 'jiuding'}/`,
+    lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
+    board: bout.st.mode.board,
+    title: words().subdue ?? '降妖',
+    foeName: c.name, foeArt: c.art ? `../worlds/${look.world?.id ?? 'jiuding'}/${c.art}` : null,
+    youName: look.name ?? '',
+  };
+}
+
 /* ── The board: the one thing the page reports ── */
 
 async function onWin(taskId) {
@@ -385,7 +412,7 @@ document.addEventListener('click', (e) => {
     return;
   }
   const spoken = e.target.closest('[data-say]');
-  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-duel-pick]')) {
+  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-spot]')) {
     if (spoken.matches(':disabled')) return;
     tapped = spoken.dataset.say;
     if (tapped === words().sayCast) casting = true;
@@ -411,15 +438,76 @@ document.addEventListener('click', (e) => {
 /* ── 降妖: the page plays the fight, the rules decide it ── */
 
 async function onDuelStart(id) {
-  const d = duelFor(id);
   const r = await verb('duel', { id });
   if (!r.ok) {
+    const d = duelFor(id);
     d.status = 'done'; d.outcome = 'lost'; d.say = r.say || r.refused;
     render();
     return;
   }
-  Object.assign(d, { status: 'open', picks: [], outcome: null, say: null });
+  const brief = r.duel;
+  bout = { id, brief, setup: brief.setup, st: begin(brief.setup, boutCatalog()), actions: [], picked: null, openLog: false, help: false, note: null };
   render();
+}
+
+const boutCatalog = () => Object.fromEntries((authored?.cards?.cards ?? []).map(x => [x.id, { ...x, name: x.name?.[lang()] ?? x.name?.zh ?? x.id }]));
+
+/* One tap inside the fight. The page plays it out and draws it; only when the
+   fight is over does it hand the whole list of actions to the rules, which
+   replay them and settle — win, loss, or the beast walking away. */
+async function onBoutTap(spot) {
+  if (!bout) return;
+  if (spot.kind === 'help' || spot.kind === 'help-bg') { bout.help = !bout.help; return render(); }
+  if (spot.kind === 'more') { bout.openLog = !bout.openLog; return render(); }
+  if (bout.st.outcome !== 'open') return;
+  bout.note = null;
+  const out = pickOf(bout.picked, spot, view(bout.st), boutCatalog());
+  if (out.quit) return settleBout('lost');
+  if (out.clear) { bout.picked = null; return render(); }
+  if (out.pick) { bout.picked = out.pick; return render(); }
+  if (out.action.kind === 'end') return endBoutTurn();
+  const mark = bout.st.log.length;
+  const res = act(bout.st, out.action, 'you');
+  bout.picked = null;
+  if (!res.ok) { bout.note = res.why; return render(); }
+  bout.actions.push(tokenOf(out.action));
+  render();
+  await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
+  if (bout.st.outcome !== 'open') return settleBout(bout.st.outcome);
+  render();
+}
+
+/* The creature answers a move at a time, drawn as each lands. */
+async function endBoutTurn() {
+  const mark = bout.st.log.length;
+  if (!act(bout.st, { kind: 'end' }, 'you').ok) return;
+  bout.actions.push('end');
+  render();
+  await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
+  if (bout.st.whose === 'foe' && bout.st.outcome === 'open') {
+    await banner(document.querySelector('.battle'), `${bout.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe');
+    for (let guard = 0; guard < 40 && bout.st.whose === 'foe' && bout.st.outcome === 'open'; guard += 1) {
+      const step = bout.st.log.length;
+      const did = foeStep(bout.st);
+      render();
+      await playLog(document.querySelector('.battle'), since(bout.st.log, step), { words: boutCtx().words });
+      if (!did || did.kind === 'end') break;
+    }
+  }
+  if (bout.st.outcome !== 'open') return settleBout(bout.st.outcome);
+  render();
+}
+
+/* The rules settle it, and the scene reports it — the scene is still the only
+   witness to a fight (design.md § 降妖). */
+async function settleBout(outcome) {
+  const { id, actions } = bout;
+  const r = await verb('duel', { id, picks: actions.join(',') });
+  bout = null;
+  if (!r.ok) console.warn('[lingjing] the rules refused the fight', r);
+  await report(`[scene] ${r.outcome ?? outcome} ${id}`);
+  if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
+  await refresh();
 }
 
 /// The fight's brief from Look: the scene's exit, or the haunt's encounter.
@@ -468,10 +556,11 @@ async function onNourish() {
 
 document.addEventListener('click', (e) => {
   if (e.target.closest('[data-nourish]')) { onNourish(); return; }
+  // Inside a fight the stage belongs to the fight: a click is a place on it.
+  const spot = e.target.closest('[data-spot]');
+  if (bout && spot) { onBoutTap({ kind: spot.dataset.spot, index: Number(spot.dataset.index ?? -1) }); return; }
   const start = e.target.closest('[data-duel-start]');
   if (start) { onDuelStart(start.dataset.duelStart); return; }
-  const pick = e.target.closest('[data-duel-pick]');
-  if (pick) onDuelPick(pick.dataset.duel, pick.dataset.duelPick);
 });
 
 /* ── The chat ── */

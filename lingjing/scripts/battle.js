@@ -438,6 +438,30 @@ function bestAttack(st, side, index) {
   return kills.length && kills[0].back < m.hp ? { kind: 'minion', index: kills[0].i } : undefined;
 }
 
+/* ── Actions as text — the wire between the page and the rules ──
+   The page sends what the player did as a list of small strings, and the rules
+   replay the same list to settle it. Same shape as the old bout's picks, so
+   `duel --picks=…` did not have to change its skin:
+     play:2        play:2@e0      play:2@m1
+     attack:0      attack:0@e1    power     power@e0     end               */
+
+export function tokenOf(a) {
+  const at = a.target ? `@${a.target.side === 'mine' ? 'm' : 'e'}${a.target.index}` : '';
+  if (a.kind === 'play') return `play:${a.index}${at}`;
+  if (a.kind === 'attack') return `attack:${a.index}${at}`;
+  if (a.kind === 'power') return `power${at}`;
+  return 'end';
+}
+
+export function actionOf(token) {
+  const [head, aim] = String(token).split('@');
+  const [kind, index] = head.split(':');
+  const target = aim ? { kind: 'minion', index: Number(aim.slice(1)), side: aim[0] === 'm' ? 'mine' : 'theirs' } : undefined;
+  if (kind === 'play' || kind === 'attack') return { kind, index: Number(index), target };
+  if (kind === 'power') return { kind: 'power', target };
+  return { kind: 'end' };
+}
+
 /* ── Replay: the one truth both readers share ── */
 
 /* `actions` are the player's, in order; the creature's turns are played by the
@@ -445,7 +469,8 @@ function bestAttack(st, side, index) {
    and it lands in the same place, every time, on either side of the wire. */
 export function battle(actions, setup, catalog) {
   const st = begin(setup, catalog);
-  for (const action of actions) {
+  for (const raw of actions) {
+    const action = typeof raw === 'string' ? actionOf(raw) : raw;
     while (st.whose === 'foe' && st.outcome === 'open') foeTurn(st);
     if (st.outcome !== 'open') break;
     const out = act(st, action, 'you');

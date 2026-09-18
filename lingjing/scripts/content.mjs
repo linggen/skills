@@ -132,6 +132,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     creatures: at('creatures.json'),
     herbs: at('herbs.json'),
     items: at('items.json'),
+    cards: at('cards.json'),
     arts: at('arts.json'),
     hexagrams: at('hexagrams.json'),
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },

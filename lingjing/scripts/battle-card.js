@@ -27,6 +27,8 @@ export const WORDS = {
       'no-friendly': '自己阵前没有人', 'fight-over': '打完了',
     },
     pickCard: '点一个目标 —— 妖，或它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
+    begin: '出 手', wonToday: '今日已降', lostToday: '它退入雾中，明日再来', spentToday: '它今日力竭遁走了',
+    lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
     ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩', close: '知道了',
     help: [
       ['目标', '把妖的气血打到 0。'],
@@ -53,6 +55,8 @@ export const WORDS = {
       'no-friendly': 'no one of yours stands', 'fight-over': 'the fight is over',
     },
     pickCard: 'choose a target — the beast, or one of its rank', pickTarget: 'now choose what it strikes',
+    begin: 'Begin', wonToday: 'subdued today', lostToday: 'it withdrew — come back tomorrow', spentToday: 'it walked away spent today',
+    lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
     ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play', close: 'Got it',
     help: [
       ['The point', "Take the beast's Life to zero."],
@@ -277,6 +281,27 @@ export function lastHtml(log, ctx, open = false) {
     <span class="blab">${ctx.lang === 'en' ? 'Just now' : '上一手'}</span>
     ${shown.map(l => `<span class="bline">${esc(l)}</span>`).join('')}
     ${more > 0 ? `<button class="bmore" data-spot="more">${ctx.lang === 'en' ? `all ${lines.length}` : `展开 ${lines.length} 手`}</button>` : ''}
+  </div>`;
+}
+
+/* Before the fight: the beast on the scene, and the one way in. The duel card
+   the v2 bout drew is gone with it — what a player needs here is who they are
+   about to fight, not the arithmetic of it. */
+export function challengeHtml(brief, ctx) {
+  const w = ctx.words, c = brief.creature;
+  const today = brief.today?.outcome;
+  const done = today === 'won' ? w.wonToday : today === 'lost' ? w.lostToday : today === 'withdrew' ? w.spentToday : null;
+  return `<div class="card challenge">
+    <div class="cardtitle">${esc(ctx.title ?? '')}</div>
+    <div class="chead">
+      ${c.art ? `<img class="cface" src="${esc(ctx.artBase ?? '')}${esc(c.art)}" alt="">` : ''}
+      <div>
+        <div class="cname">${spoken(c.name, c.pinyin)} <span class="belem">${GLYPH[c.root] ?? ''}${ctx.lang === 'en' ? ` ${esc(c.root_name ?? '')}` : ''}</span></div>
+        ${c.lean ? `<div class="clean">${esc(w.lean?.[c.lean] ?? c.lean)}</div>` : ''}
+        ${c.about ? `<p class="cabout">${esc(c.about)}</p>` : ''}
+      </div>
+    </div>
+    ${done ? `<div class="cdone">${esc(done)}</div>` : `<button class="bact end" data-duel-start="${esc(brief.id)}">${w.begin}</button>`}
   </div>`;
 }
 

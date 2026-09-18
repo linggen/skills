@@ -6,10 +6,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { VERBS, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
-import { BEATS, REALMS, costsOf, fight, foeOf, offers, realmStats } from '../scripts/duel.js';
+import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
 // The shipped chapters carry no `opens` while the game is being built and
@@ -63,20 +64,32 @@ function offerWon(s) {
 /* Play a fight to its end through the rules: start it, then take the blow
    that costs least for what it takes, the way the gate's attentive line
    does (tools/duel-sim.mjs). `line` may name a rote line instead. */
+/* Play a whole 斗法 v3 fight and hand the rules what was played. The page does
+   exactly this: it replays the fight in the browser and sends the actions back
+   as text, and `duel --picks` replays the same list to settle it — one truth,
+   two readers. `line: 'pass'` does nothing at all, which is how a test loses. */
 function fightOut(state, id, { line = null, c = ctx() } = {}) {
   const started = must(duel, state, { id }, c);
-  const { foe, kit } = started.result.duel;
-  const picks = [];
-  for (let guard = 0; guard < 60; guard += 1) {
-    if (fight(picks, foe, kit).outcome !== 'open') break;
-    const can = offers(picks, foe, kit).filter(o => o.ok);
-    const rote = line && can.find(o => o.token === line);
-    const best = rote ?? can.filter(o => o.kind !== 'assist')
-      .map(o => ({ o, worth: (fight(picks, foe, kit).foe.hp - fight([...picks, o.token], foe, kit).foe.hp) / (o.cost + 1) }))
+  const { setup } = started.result.duel;
+  const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
+  const st = begin(setup, catalog);
+  const actions = [];
+  for (let guard = 0; guard < 160 && st.outcome === 'open'; guard += 1) {
+    if (st.whose === 'foe') { foeTurn(st); continue; }
+    const can = line === 'pass' ? [] : offers(st).filter(o => o.ok && o.action.kind !== 'end');
+    // The most 气血 taken off the beast for the least 灵力, bodies first when
+    // they may strike — enough to win most fixed seeds, and deterministic.
+    const best = can
+      .map(o => {
+        const after = battle([...actions, tokenOf(o.action)], setup, catalog);
+        return { o, worth: (st.foe.hp - after.foe.hp) * 2 + (o.action.kind === 'attack' ? 1 : 0) - (o.cost ?? 0) * 0.1 };
+      })
       .sort((a, b) => b.worth - a.worth)[0]?.o;
-    picks.push((best ?? can[0]).token);
+    if (!best) { act(st, { kind: 'end' }, 'you'); actions.push('end'); continue; }
+    act(st, best.action, 'you');
+    actions.push(tokenOf(best.action));
   }
-  return { ...must(duel, started.state, { id, picks: picks.join(',') }, c), picks, started };
+  return { ...must(duel, started.state, { id, picks: actions.join(',') }, c), actions, picks: actions, started };
 }
 
 /* Walk to 夫诸 the ordinary way. */
@@ -290,21 +303,31 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
   const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue');
   assert.deepEqual(brief.game, { id: 'subdue-fuzhu', kind: 'duel', creature: 'fuzhu' });
   assert.equal(brief.duel.creature.root, 'water');
-  assert.deepEqual(brief.duel.roots.map(r => r.id), ['wood', 'water', 'fire', 'earth']);
+  assert.equal(brief.duel.creature.lean, 'quick');
   assert.equal(brief.duel.today, null);
-  // 夫诸 stands at the player's own realm and step, leaning its own way
-  assert.equal(brief.duel.foe.lean, 'quick');
-  assert.equal(brief.duel.foe.hp, realmStats('qi', 0).hp);
+  // Everything that goes through the door, and nothing else (§ 副本契约):
+  // the realm, the main root, ten cards of the player's own roots, and the
+  // beast's own twelve.
+  const { setup } = brief.duel;
+  assert.equal(setup.mode, 'pve');
+  assert.equal(setup.you.tier, 'qi');
+  assert.equal(setup.you.deck.length, 10);
+  assert.equal(setup.foe.deck.length, 12);
+  assert.equal(setup.foe.root, 'water');
   // start: a fight in the prologue is free
   const started = must(duel, s, { id: 'subdue-fuzhu' });
   assert.equal(started.state.stamina, s.stamina);
   assert.equal(started.result.moves, undefined, 'the creature\'s turns are the rules\' own');
   assert.equal(started.state.duels.fuzhu.outcome, 'open');
+  // While a fight is open Ling advances NOTHING, and she knows it from the save
+  assert.equal(started.state.fight.game, 'subdue-fuzhu');
+  assert.deepEqual(look(started.state, content, ctx()).fight, { open: true, game: 'subdue-fuzhu', creature: '夫诸' });
   // the winning turns, replayed by the rules
   const settled = fightOut(s, 'subdue-fuzhu');
-  assert.equal(settled.result.outcome, 'won', JSON.stringify(settled.result.log));
+  assert.equal(settled.result.outcome, 'won', JSON.stringify(settled.actions));
   assert.equal(settled.result.foe.hp, 0);
   assert.ok(settled.result.you.hp > 0);
+  assert.equal(settled.state.fight, undefined, 'the fight closed, and the world may move again');
   assert.ok(settled.state.wins['subdue-fuzhu']);
   assert.equal(look(settled.state, content, ctx()).scene.exits.find(e => e.id === 'subdue').won, true);
   const out = must(resolve, settled.state, { exit: 'subdue' });
@@ -313,26 +336,24 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
   assert.deepEqual(out.state.wins, {});
 });
 
-test('the arms worn stand in the kit; sold, the sword is no longer theirs; a companion teaches nothing', () => {
+test('the ten cards are the player\'s own roots, and a companion teaches nothing', () => {
   const s = { ...toFuzhu(), bag: { 'iron-sword': 1, 'straw-cloak': 1 }, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } };
   const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel;
-  assert.deepEqual(brief.sword, { id: 'iron-sword', name: '铁剑', atk: 3, root: 'metal', root_name: '金' });
-  assert.deepEqual(brief.robe, { id: 'straw-cloak', def: 1, name: '蓑衣' });
-  assert.deepEqual(brief.charm, { id: 'talisman', name: '符', held: 0 });
-  assert.deepEqual(brief.arts, []);
-  assert.deepEqual(brief.kit, {
-    roots: ['wood', 'water', 'fire', 'earth'], tier: 'qi', step: 0, sword: 'metal',
-    weapon: { id: 'iron-sword', atk: 3 }, robe: { id: 'straw-cloak', def: 1 }, pendant: null,
-    charm: { id: 'talisman', held: 0 }, arts: {},
-  });
-  // 器攻 is the realm's 攻 and the weapon's; the 法衣's 防 blunts what lands
-  assert.equal(fight([], brief.foe, brief.kit).you.power > fight([], brief.foe, { ...brief.kit, weapon: null, robe: null }).you.power, true);
+  const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
+  const roots = new Set(s.traits);
+  // Every card in the deck is of a root they have, or of none at all — born
+  // without 金, you take no 金 card in (design.md § 斗法 v3).
+  for (const id of brief.setup.you.deck) {
+    const el = byId[id].element;
+    assert.ok(!el || roots.has(el), `${id} is ${el}, which is not theirs`);
+  }
+  assert.equal(brief.setup.you.deck.length, new Set(brief.setup.you.deck).size, 'ten different cards');
+  assert.deepEqual(brief.setup.you.extra, [], '银月 rides along only once she walks with the player');
+  // The same player takes the same deck into the same fight, every time
+  assert.deepEqual(look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck, brief.setup.you.deck);
   const won = fightOut(s, 'subdue-fuzhu');
   assert.equal(won.result.outcome, 'won');
-  // not in the bag any more: not worn, not theirs
-  const bare = { ...won.started.state, bag: {} };
-  assert.equal(look(bare, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.sword, null);
-  refused(duel, bare, { id: 'subdue-fuzhu', picks: 'cast:metal' }, 'not-your-root');
+  refused(duel, won.started.state, { id: 'subdue-fuzhu', picks: 'attack:3' }, 'not-on-board');
   // A beast walks beside the player; it does not teach (2026-09-18 — his
   // "不要pet教主角功法"). An art comes from a person, in a scene: `grant.art`.
   const out = must(resolve, won.state, { exit: 'subdue' });
@@ -348,7 +369,7 @@ test('a loss is free and the creature withdraws until tomorrow', () => {
   const s = toFuzhu();
   // 空手 against a 迅捷 hide: every strike is blunted to one, and the pool
   // runs dry long before the creature does.
-  const lost = fightOut(s, 'subdue-fuzhu', { line: 'strike' });
+  const lost = fightOut(s, 'subdue-fuzhu', { line: 'pass' });
   assert.equal(lost.result.outcome, 'lost', JSON.stringify(lost.result.log));
   assert.equal(lost.result.say, '夫诸隐入雾中。明日再来。');
   assert.equal(lost.state.wealth, s.wealth); assert.equal(lost.state.progress, s.progress);
@@ -372,10 +393,12 @@ test('a fight must be started, a turn must be one the player has, and the same d
   refused(duel, s, { id: 'nothing' }, 'not-here');
   must(duel, { ...s, stamina: 3 }, { id: 'subdue-fuzhu' }); // free in the prologue
   const a = must(duel, s, { id: 'subdue-fuzhu' }), b = must(duel, s, { id: 'subdue-fuzhu' });
-  assert.deepEqual(a.result.duel.foe, b.result.duel.foe, 'the same day draws the same creature');
-  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'cast:metal' }, 'not-your-root');
-  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'cast:wood' }, 'unfinished');
-  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'dance' }, 'bad-token');
+  assert.deepEqual(a.result.duel.setup, b.result.duel.setup, 'the same day deals the same fight');
+  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'play:9' }, 'not-in-hand');
+  // A turn that never finished the fight is no answer at all, and a word the
+  // rules do not know reads as ending the turn — it settles nothing either.
+  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'play:0' }, 'unfinished');
+  refused(duel, a.state, { id: 'subdue-fuzhu', picks: 'dance' }, 'unfinished');
 });
 
 /* ── 斗法: the fight on the shared engine ── */
@@ -547,13 +570,13 @@ test('聚势 and 护体 are held, not stacked, and the arts a realm has not reac
   const lifted = fight(['assist:focus', 'cast:wood'], dummy({ def: 0 }), kit);
   assert.equal(lifted.log.find(t => t.act === 'cast').damage, Math.round(REALMS.qi.spell * 2 * 1.5));
   // the card's buttons carry every why
-  const can = offers([], beast, kit);
+  const can = boutOffers([], beast, kit);
   assert.equal(can.find(o => o.token === 'art:wulei').why, 'art-needs-tier');
   assert.equal(can.find(o => o.token === 'talisman').why, 'no-charm', 'the button shows with its why');
   assert.ok(can.find(o => o.token === 'strike').ok);
   assert.equal(can.find(o => o.token === 'cast:metal'), undefined, 'not a root of theirs');
   // out of 灵力: the button says so
-  const empty = offers(Array(5).fill('cast:fire'), dummy({ hp: 200, atk: 1 }), kitOf());
+  const empty = boutOffers(Array(5).fill('cast:fire'), dummy({ hp: 200, atk: 1 }), kitOf());
   assert.equal(empty.find(o => o.token === 'cast:fire').why, 'no-qi');
   assert.ok(empty.find(o => o.token === 'strike').ok, 'two 灵力 left is still a strike');
 });
@@ -664,7 +687,7 @@ test('a subdued creature leaves its 妖丹, by the realm it was met at, and what
     if (got.result.outcome === 'won') assert.ok(got.result.dropped.some(d => d.id === 'huojing'));
   }
   // a loss leaves nothing
-  const lost = fightOut(toFuzhu(), 'subdue-fuzhu', { line: 'strike' });
+  const lost = fightOut(toFuzhu(), 'subdue-fuzhu', { line: 'pass' });
   assert.equal(lost.result.dropped, undefined);
 });
 
@@ -1166,24 +1189,15 @@ test('写符: at a market from 桑皮纸, one a day; anywhere at 结丹; the cho
   // a 符 is not "used"; it has no market price
   assert.equal(refused(trade, w.state, { action: 'use', id: 'talisman' }, 'cast-in-a-bout').say, '符在降妖时掷出，不在此。');
   refused(trade, w.state, { action: 'sell', id: 'talisman' }, 'not-for-sale');
-  // cast in a bout at a haunt: the round is won, the 符 spent; with 符水 known at 筑基 the pool refills
+  // The 符 written here stays a thing in the bag. 斗法 v3 takes no consumables
+  // through the door yet (design.md § 斗法 v3 — v2 的符/丹入局待接回), so a fight
+  // neither spends it nor asks for it.
   const october = () => ctx({ now: new Date('2026-10-05T10:00:00') });
-  const base = { ...w.state, chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, stamina: 50, arts: ['fushui'] };
-  const started = must(duel, base, { id: 'haunt:jingwei' }, october());
-  const kit = look(started.state, content, october()).place.encounter.duel.kit;
-  assert.equal(kit.charm.held, 1); assert.deepEqual(kit.arts, { fushui: { effect: 'charm-refills', ready: true } });
+  const base = { ...w.state, chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, stamina: 50 };
   const settled = fightOut(base, 'haunt:jingwei', { c: october() });
-  assert.ok(settled.picks.includes('talisman'), 'a 符 in the bag is the best blow it has');
-  assert.equal(settled.result.used.charm, 'talisman');
-  assert.equal(settled.state.bag.talisman, undefined, 'spent');
-  // 符水 gives its 灵力 back inside the fight, never as the day's 灵气
-  assert.ok(settled.result.log.some(t => t.act === 'talisman'));
+  assert.ok(['won', 'lost', 'withdrew'].includes(settled.result.outcome));
+  assert.equal(settled.state.bag.talisman, 1, 'the 符 is still in the bag');
   assert.equal(settled.result.refilled, undefined);
-  assert.equal(settled.state.stamina, started.state.stamina, "the day's 灵气 is untouched");
-  // an art out of its realm, or unknown, is refused by name
-  const thunder = { ...started.state, arts: ['wulei'] };
-  assert.equal(refused(duel, thunder, { id: 'haunt:jingwei', picks: 'strike,art:wulei' }, 'art-needs-tier', october()).token, 'art:wulei');
-  refused(duel, started.state, { id: 'haunt:jingwei', picks: 'strike,art:wulei' }, 'art-unknown', october());
 });
 
 test('a key the story still needs cannot be sold', () => {
@@ -1320,9 +1334,8 @@ test('the cast\'s grade speeds or slows what was asked, rests a dire day, and tu
   const plainSpell = fight(['cast:metal'], woodling, { roots: ['metal'], tier: 'qi', step: 0 }).log[0].damage;
   assert.equal(fight(['cast:metal'], woodling, lift).log[0].damage, plainSpell + 4, '金克木, so the two are doubled too');
   assert.equal(fight(['cast:metal'], woodling, { ...lift, fortune: { root: 'metal', spell: -2 } }).log[0].damage, plainSpell - 4);
-  const shrine = castOn(atShrine(), 'bout', 'good');
-  const kit = look(shrine, content, octx()).scene.exits.find(e => e.id === 'subdue').duel.kit;
-  assert.deepEqual(kit.fortune, { root: 'metal', spell: 2 });
+  // The day's cast still lifts the old bout's numbers (above). Carrying it into
+  // 斗法 v3 is not wired yet — design.md § 斗法 v3 keeps it as an open item.
 });
 
 test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {

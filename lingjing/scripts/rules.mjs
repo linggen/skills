@@ -21,6 +21,7 @@ import {
   lintAmendPlace, lintMade, lintMadeWorld, listWorlds, loadWorld, madeWorldDir, overlayOf, ownPlaces, pairsOf,
 } from './content.mjs';
 import { armOf, fight, foeOf } from './duel.js';
+import { MODES, REALMS as CARD_REALMS, battle, shuffle } from './battle.js';
 import { layoutRoads, placeWords } from './roadmap.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
@@ -546,6 +547,36 @@ function kitOf(content, state, now = null) {
    fish for an easier one. */
 const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${state.name ?? ''}`;
 
+/* ── 斗法 v3: the ten cards a player takes in ──
+   Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
+   their own roots, and the ones no root claims, ten of them in a stable order.
+   Deterministic, so the same player takes the same deck into the same fight —
+   and so the rules and the page never disagree about what was held. */
+export function deckFor(content, state) {
+  const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue');
+  const roots = new Set(state.traits ?? []);
+  const mine = pool.filter(c => c.element && roots.has(c.element)).map(c => c.id);
+  const plain = pool.filter(c => !c.element).map(c => c.id);
+  const deck = [...shuffle(mine, `deck|${state.name ?? ''}`), ...plain];
+  return deck.slice(0, MODES.pve.deck);
+}
+
+/* What goes through the door of a fight, and nothing else (design.md § 副本契约):
+   the realm, the main root, the ten cards, the beast's own twelve. 银月 rides
+   along in hand when she walks with the player. */
+export function fightSetup(content, state, creature, now) {
+  const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
+  const withHer = state.companion?.found || (state.cast ?? []).includes('yinyue');
+  return {
+    mode: 'pve',
+    seed: duelSeed(state, creature, now),
+    you: { tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: withHer ? ['yinyue'] : [] },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [] },
+  };
+}
+
+const cardCatalog = content => Object.fromEntries((content.cards?.cards ?? []).map(c => [c.id, c]));
+
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
    comes wherever the player stands. */
@@ -599,11 +630,16 @@ function duelBrief(content, state, game, now) {
   const lang = state.lang, today = state.duels?.[game.creature];
   const open = today?.day === dayKey(now) ? today : null;
   return {
-    id: game.id, creature: { id: creature.id, name: pick(creature.name, lang), ...(lang === 'zh' && creature.pinyin ? { pinyin: creature.pinyin } : {}), root: creature.root, root_name: pick(content.traits.elements[creature.root], lang) },
-    foe: foeOf(creature, state.tier, state.step ?? 0, duelSeed(state, creature, now)),
-    roots: (state.traits ?? []).map(e => ({ id: e, name: pick(content.traits.elements[e], lang) })),
-    ...duelKitBrief(content, state, now),
-    today: open ? { outcome: open.outcome, log: open.log ?? [] } : null,
+    id: game.id,
+    creature: {
+      id: creature.id, name: pick(creature.name, lang),
+      ...(lang === 'zh' && creature.pinyin ? { pinyin: creature.pinyin } : {}),
+      root: creature.root, root_name: pick(content.traits.elements[creature.root], lang),
+      lean: creature.lean, art: creature.art ?? null, about: pick(creature.about, lang),
+    },
+    // Everything the fight is given at the door, and nothing else.
+    setup: fightSetup(content, state, creature, now),
+    today: open ? { outcome: open.outcome } : null,
   };
 }
 
@@ -713,6 +749,8 @@ export function look(state, content, ctx) {
     arts: artsBrief(content, state),
     treasure: treasureBrief(content, state, ctx.now),
     ...(state.treasure || !canRefine(content, state) ? {} : { can_refine: true }),
+    // A fight open on the scene: while this is here Ling advances nothing.
+    ...(state.fight ? { fight: { open: true, game: state.fight.game, creature: pick(creatureOf(content, state.fight.creature)?.name, state.lang) } } : {}),
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
@@ -1141,37 +1179,46 @@ export function duel(state, content, ctx, args) {
     : pick({ zh: `${pick(creature.name, 'zh')}退入林影，明日再来。`, en: `${pick(creature.name, 'en')} withdraws into the shadows; come back tomorrow.` }, state.lang);
   const s = clone(state);
   const day = dayKey(ctx.now), today = s.duels?.[creature.id];
-  const foe = foeOf(creature, s.tier, s.step ?? 0, duelSeed(s, creature, ctx.now));
+
+  // ── 出手: the door of the instance ──
   if (!args.picks) {
     if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
+    if (today?.day === day && today.outcome === 'withdrew') return refuse('spent-today', null, { game: id });
     if (haunt && today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
     if (!s.traits?.length) return refuse('no-traits', null);
-    const empty = spendStamina(content, s, ctx, 'duel');
-    if (empty) return empty;
-    s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open', log: [] } };
-    return { state: s, result: { ok: true, started: id, duel: duelBrief(content, s, game, ctx.now) } };
+    // A page reloaded mid-fight asks again: the same fight comes back, and the
+    // day's 灵气 is not taken twice. The seed is the day's, so the cards deal
+    // the same way they did.
+    const resuming = s.fight?.game === id && today?.day === day && today.outcome === 'open';
+    if (!resuming) {
+      const empty = spendStamina(content, s, ctx, 'duel');
+      if (empty) return empty;
+    }
+    s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open' } };
+    // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
+    // from the save, not from a message, because a message can be lost.
+    s.fight = { game: id, creature: creature.id, at: ctx.now.toISOString() };
+    return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now) } };
   }
+
+  // ── 收场: the page hands back what was played, the rules replay it ──
   if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
-  const picks = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
-  const kit = kitOf(content, s, ctx.now);
-  const played = fight(picks, foe, kit);
-  if (played.refused) return refuse(played.refused.why, null, { token: played.refused.token, roots: kit.roots, sword: kit.sword, arts: Object.keys(kit.arts) });
-  if (played.outcome === 'open') return refuse('unfinished', null, { log: played.log });
-  s.duels[creature.id] = { day, outcome: played.outcome, log: played.log };
+  const setup = fightSetup(content, s, creature, ctx.now);
+  const actions = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
+  const played = battle(actions, setup, cardCatalog(content));
+  if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });
+  if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
+  delete s.fight;
+  s.duels[creature.id] = { day, outcome: played.outcome };
   if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
-  const say = played.outcome === 'lost' ? withdrawnLine : null;
-  // A 符 cast is spent, win or lose; 符水 gives its 灵力 back inside the fight.
-  if (played.used.charm) {
-    s.bag[kit.charm.id] -= 1;
-    if (!s.bag[kit.charm.id]) delete s.bag[kit.charm.id];
-  }
-  // What a subdued creature leaves: its 妖丹, by the realm it was met at,
-  // and whatever else this one carries.
+  const say = played.outcome === 'lost' ? withdrawnLine
+    : played.outcome === 'withdrew' ? pick({ zh: `${pick(creature.name, 'zh')}一口气用尽，转身走了 —— 这一场不算你赢。`, en: `${pick(creature.name, 'en')} runs out of breath and turns away — this one is not a win.` }, state.lang)
+      : null;
+  // What a subdued creature leaves, and what a haunt pays for it. A fight that
+  // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3).
   const dropped = played.outcome === 'won' ? drop(content, s, creature) : [];
-  // At a haunt no exit will pay the win: the rules pay it here, once a day.
   const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 10 }) : null;
-  const used = { ...(played.used.charm ? { charm: kit.charm.id } : {}), ...(played.used.arts.length ? { arts: played.used.arts } : {}) };
-  return { state: s, result: { ok: true, outcome: played.outcome, log: played.log, you: played.you, foe: played.foe, game: id, say, ...(Object.keys(used).length ? { used } : {}), ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
