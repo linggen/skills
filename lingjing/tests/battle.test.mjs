@@ -3,7 +3,7 @@
 // that a card is a row of data with one effect from the closed vocabulary.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BEATS, EFFECTS, MODES, POWER_COST, REALMS, act, battle, begin, clash, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
+import { BEATS, EFFECTS, MODES, OVER, POWER_COST, REALMS, UNDER, act, battle, begin, clash, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
 
 const CARDS = {
   // 随从
@@ -41,12 +41,16 @@ test('the shuffle is the seed: two runs of the same fight deal the same cards', 
   assert.deepEqual([...a].sort(), ['a', 'b', 'c', 'd', 'e', 'f'], 'every card is still in there');
 });
 
-test('五行: a blow doubles into what it overcomes and halves into what overcomes it', () => {
-  assert.equal(clash('metal', 'wood'), 2, '金克木');
-  assert.equal(clash('wood', 'metal'), 0.5);
+test('五行: a blow lands heavier into what it overcomes and lighter into what overcomes it', () => {
+  // ×1.5 / ×0.75, not double and half: at double, the deck of the countering
+  // root won 92.9% and the countered one 18.3% — choosing the root played the
+  // game for you (the gate, 2026-09-18).
+  assert.deepEqual([OVER, UNDER], [1.5, 0.75]);
+  assert.equal(clash('metal', 'wood'), OVER, '金克木');
+  assert.equal(clash('wood', 'metal'), UNDER);
   assert.equal(clash('water', 'metal'), 1, 'neither way: 金生水, but 生 is not 克');
-  assert.equal(clash('water', 'earth'), 0.5, '土克水, so water into earth is halved');
-  for (const [element, beaten] of Object.entries(BEATS)) assert.equal(clash(element, beaten), 2, element);
+  assert.equal(clash('water', 'earth'), UNDER, '土克水, so water into earth lands lighter');
+  for (const [element, beaten] of Object.entries(BEATS)) assert.equal(clash(element, beaten), OVER, element);
 });
 
 test('the opening: a hand each, you one card richer, and the first mana crystal', () => {
@@ -56,7 +60,7 @@ test('the opening: a hand each, you one card richer, and the first mana crystal'
   assert.equal(st.whose, 'you');
   assert.equal(st.you.manaMax, 1, 'one crystal on the first turn');
   assert.equal(st.you.mana, 1);
-  assert.equal(st.foe.deck.length + st.foe.hand.length, MODES.pve.foeDeck, 'the creature holds eight cards, all told');
+  assert.equal(MODES.pve.foeDeck, 12, 'twelve: at eight it ran dry before it could be beaten');
 });
 
 test('灵力 grows a crystal a round and refills, and a card that costs more waits', () => {
@@ -79,7 +83,7 @@ test('a minion arrives winded, strikes once a round, and both sides take the blo
   st.foe.board.push({ id: 'guard', name: '山鬼', element: 'earth', atk: 1, hp: 4, hpMax: 4, taunt: true, sick: false, struck: false });
   act(st, { kind: 'attack', index: 0, target: { kind: 'minion', index: 0 } });
   assert.equal(st.foe.board[0].hp, 2, '水 3 into 土 is halved — 土克水');
-  assert.equal(st.you.board[0].hp, 2, 'and the answer, 土 1 into 水, is doubled');
+  assert.equal(st.you.board[0].hp, 2, 'and the answer, 土 1 into 水, lands heavier');
   assert.equal(legal(st, { kind: 'attack', index: 0 }), 'already-struck');
 });
 
@@ -125,7 +129,27 @@ test('the closed vocabulary: sweep, draw and buff each do one thing', () => {
   const grow = st.you.hand.indexOf('grow');
   act(st, { kind: 'play', index: grow, target: { kind: 'minion', index: 0 } });
   assert.deepEqual([st.you.board[0].atk, st.you.board[0].hp], [2, 2]);
-  assert.deepEqual(Object.keys(EFFECTS).sort(), ['buff', 'damage', 'draw', 'heal', 'sweep'], 'the vocabulary stays closed');
+  assert.deepEqual(Object.keys(EFFECTS).sort(), ['buff', 'damage', 'draw', 'heal', 'rally', 'summon', 'sweep'], 'the vocabulary stays closed');
+});
+
+test('召唤 fills the bench to its limit; 齐心 lifts everyone standing', () => {
+  const CARDS2 = {
+    ...CARDS,
+    sprout: { id: 'sprout', kind: 'spell', name: '春生', cost: 3, element: 'wood', effect: { summon: { id: 'cub', n: 3 } } },
+    rally: { id: 'rally', kind: 'spell', name: '风茂', cost: 3, element: 'wood', effect: { rally: { atk: 1, hp: 1 } } },
+  };
+  const st = begin({ ...setupOf(), you: { ...setupOf().you, deck: ['sprout'] } }, CARDS2);
+  st.you.hand = ['sprout', 'rally'];
+  st.you.mana = 9;
+  act(st, { kind: 'play', index: 0 });
+  assert.equal(st.you.board.length, 3, 'three arrived');
+  assert.ok(st.you.board.every(m => m.sick), 'and every one of them is winded');
+  act(st, { kind: 'play', index: 0 });
+  assert.deepEqual(st.you.board.map(m => [m.atk, m.hp]), [[2, 2], [2, 2], [2, 2]]);
+  // the bench holds three, no more
+  st.you.hand = ['sprout'];
+  act(st, { kind: 'play', index: 0 });
+  assert.equal(st.you.board.length, MODES.pve.board, 'the bench holds what the mode says, no more');
 });
 
 test('主灵根一击: once a round, two 灵力, and it wears the player\'s own root', () => {

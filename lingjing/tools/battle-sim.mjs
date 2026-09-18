@@ -21,12 +21,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODES, TIERS, act, begin, legal, offers } from '../scripts/battle.js';
+import { BEATS, MODES, TIERS, act, begin, legal, offers } from '../scripts/battle.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const world = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/cards.json'), 'utf8'));
 const CATALOG = Object.fromEntries(world.cards.map(c => [c.id, { ...c, name: c.name.zh }]));
-const ALL = world.cards.map(c => c.id).filter(id => id !== 'yinyue');
+// 银月 is not drafted (she comes in hand), and a token is summoned, never held.
+const ALL = world.cards.filter(c => !c._token && c.id !== 'yinyue').map(c => c.id);
 const ELEMENTS = ['metal', 'wood', 'water', 'fire', 'earth'];
 
 /* ── Lines of play ── */
@@ -172,6 +173,34 @@ function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode
   return { rate: wins / games, drew: drew / games, games, turns: turns / games, played, perDeck };
 }
 
+/* 对位 — the axis that actually carries deck-building here. You walk to the
+   beast's haunt, so you know what you will fight: bring the root that overcomes
+   it, or bring the one it overcomes, or bring a bit of everything. The spread
+   between those three IS what choosing a deck is worth, and it is our own 五行
+   rather than a borrowed mechanic. */
+function matchup() {
+  const pool = world.cards.filter(c => !c._token && c.id !== 'yinyue');
+  const deckOf = el => [...pool.filter(c => c.element === el).map(c => c.id), ...pool.filter(c => !c.element).map(c => c.id)].slice(0, MODES.pve.deck);
+  const mixed = ['huodan', 'hantan', 'luoshi', 'jinzhen', 'xiaoyao', 'luying', 'jiushou', 'shanjing', 'canwu', 'huiqi'];
+  const counterOf = root => Object.keys(BEATS).find(e => BEATS[e] === root);
+  const score = kind => {
+    let w = 0, n = 0;
+    for (const c of CREATURES.filter(x => x.deck)) {
+      for (const tier of ['qi', 'foundation', 'core']) {
+        for (let day = 0; day < 4; day += 1) {
+          const el = kind === 'counter' ? counterOf(c.root) : kind === 'wrong' ? BEATS[c.root] : 'fire';
+          const deck = kind === 'mixed' ? mixed : deckOf(el);
+          const setup = { mode: 'pve', seed: `m|${c.id}|${day}`, you: { tier, root: el, deck, extra: ['yinyue'] }, foe: { tier, root: c.root, deck: c.deck } };
+          n += 1;
+          if (play(setup, smart).outcome === 'won') w += 1;
+        }
+      }
+    }
+    return w / n;
+  };
+  return { counter: score('counter'), mixed: score('mixed'), wrong: score('wrong') };
+}
+
 /* Decision entropy: how far apart are the best choice and the third best? */
 function entropy(decks) {
   const gaps = [];
@@ -180,7 +209,10 @@ function entropy(decks) {
     play(setup, smart, (st, can) => {
       if (can.length < 3) return;
       const vals = can.map(o => score(st, o)).sort((a, b) => b - a);
-      const span = Math.max(1, Math.abs(vals[0]) + 1);
+      // Normalised by the whole spread of what is on offer this turn, not by
+      // the best value alone: what matters is whether the top choices are
+      // close to EACH OTHER, not how big the numbers happen to be.
+      const span = Math.max(1, vals[0] - vals[vals.length - 1]);
       gaps.push(Math.min(1, (vals[0] - vals[2]) / span));
     });
   }
@@ -194,10 +226,16 @@ function entropy(decks) {
    game: a curve deck won 84% where a random ten won 47% (2026-09-18). A gate
    judged only on random piles would be measuring someone who cannot play. */
 const ARCHETYPES = [
-  { id: '火攻', root: 'fire', cards: ['xiaoyao', 'luying', 'huodan', 'jingwei', 'fuzhu', 'hantan', 'jinzhen', 'paoxiao', 'luoshi', 'wulei'] },
-  { id: '水控', root: 'water', cards: ['luying', 'gupi', 'huodan', 'fuzhu', 'hantan', 'chaoqi', 'jinzhen', 'kui', 'huiqi', 'luoshi'] },
-  { id: '土守', root: 'earth', cards: ['shanjing', 'shanjing', 'tongtong', 'zhuguang', 'jixiao', 'paoxiao', 'luoshi', 'tunshi', 'huiqi', 'kui'] },
-  { id: '金锐', root: 'metal', cards: ['xiaoyao', 'jiushou', 'jinzhua', 'longzhi', 'jinzhen', 'luying', 'huodan', 'hantan', 'paoxiao', 'wulei'] },
+  // 火烈 — 一口气打穿：便宜的身体，全部的伤害都朝脸去
+  { id: '火烈', root: 'fire', cards: ['huoya', 'huoya', 'huodan', 'yanxin', 'xianshi', 'jingwei', 'hantan', 'luoshi', 'wulei', 'liaotian'] },
+  // 木众 — 铺场：小东西堆满，再一起长高
+  { id: '木众', root: 'wood', cards: ['tengmiao', 'tengmiao', 'leipu', 'chunsheng', 'fengmao', 'linmu', 'xiaoyao', 'qingteng', 'fengmao', 'zhennu'] },
+  // 水缓 — 挡住，养回，拖到它抽空
+  { id: '水缓', root: 'water', cards: ['tuou', 'gupi', 'hanquan', 'shuiwu', 'hantan', 'tingbo', 'kui', 'huiqi', 'zhuguang', 'chaoqi'] },
+  // 金锐 — 抢在你立稳之前
+  { id: '金锐', root: 'metal', cards: ['jinsuo', 'jinsuo', 'jiushou', 'jinzhua', 'jianying', 'longzhi', 'suijin', 'jinzhen', 'jingang', 'huodan'] },
+  // 土厚 — 站得住，换得起
+  { id: '土厚', root: 'earth', cards: ['tuou', 'shanjing', 'houtu', 'tongtong', 'shishou', 'jixiao', 'paoxiao', 'tunshi', 'luoshi', 'zhuguang'] },
 ];
 
 function fieldDecks(n = 4) {
@@ -213,7 +251,7 @@ async function main() {
   const { foeTurn } = await import('../scripts/battle.js');
   globalThis.__battle = { foeTurn };
   const gate = process.argv.includes('--gate');
-  const decks = fieldDecks(4);
+  const decks = fieldDecks(5);
   const built = decks.filter(d => d.built);
   const problems = [];
 
@@ -245,7 +283,12 @@ async function main() {
   if (builtRun.rate < 0.6) problems.push(`会搭牌的人只赢 ${(builtRun.rate * 100).toFixed(1)}% — 读懂它、搭好牌没有回报`);
   if (builtRun.rate > 0.9) problems.push(`会搭牌的人赢 ${(builtRun.rate * 100).toFixed(1)}% — 一场必胜的仗不是仗`);
   if (builtRun.drew > 0.25) problems.push(`${(builtRun.drew * 100).toFixed(1)}% 的仗它先力竭遁走 — 平局太多`);
-  if (builtRun.rate - pileRun.rate < 0.1) problems.push(`会搭牌只比随手抓高 ${((builtRun.rate - pileRun.rate) * 100).toFixed(1)} 点 — 构筑不值钱`);
+  const m = matchup();
+  console.log(`\n对位（你知道今天打谁）  带克它那一行 ${(m.counter * 100).toFixed(1)}%  ·  什么都带一点 ${(m.mixed * 100).toFixed(1)}%  ·  带被它克的行 ${(m.wrong * 100).toFixed(1)}%`);
+  console.log(`选对行值多少：${((m.counter - m.wrong) * 100).toFixed(1)} 个百分点`);
+  if (m.counter - m.wrong < 0.15) problems.push('选对五行几乎不值钱 — 世界的规矩没有进到牌桌上');
+  if (m.counter - m.wrong > 0.55) problems.push(`选对五行值 ${((m.counter - m.wrong) * 100).toFixed(1)} 点 — 选行等于替玩家把仗打完了`);
+  if (m.wrong < 0.25) problems.push(`带错行只赢 ${(m.wrong * 100).toFixed(1)}% — 一手烂牌不该是死刑`);
   if (smartRun.turns > 18) problems.push(`PvE 平均 ${smartRun.turns.toFixed(1)} 个半回合，太长`);
 
   console.log('\n每张牌（会读场的打法）');

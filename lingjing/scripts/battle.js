@@ -22,9 +22,16 @@
 export const ELEMENTS = ['metal', 'wood', 'water', 'fire', 'earth'];
 // 相克: 木克土 · 土克水 · 水克火 · 火克金 · 金克木
 export const BEATS = { wood: 'earth', earth: 'water', water: 'fire', fire: 'metal', metal: 'wood' };
-/* What a blow is worth into a root: double into what it overcomes, half into
-   what overcomes it. The only 五行 rule in v1 — 相生 (the 势) waits. */
-export const clash = (element, root) => (!element || !root ? 1 : BEATS[element] === root ? 2 : BEATS[root] === element ? 0.5 : 1);
+/* What a blow is worth into a root. The only 五行 rule in v1 — 相生 (the 势)
+   waits.
+   ×1.5 and ×0.75, not ×2 and ×0.5. You walk to the beast's haunt, so you know
+   what you will fight and you bring the root that overcomes it — and at double
+   that choice DECIDED the fight: a deck of the countering element won 92.9%
+   where the countered one won 18.3% (the gate, 2026-09-18). A choice worth
+   making is not a choice that plays the game for you. */
+export const OVER = 1.5;
+export const UNDER = 0.75;
+export const clash = (element, root) => (!element || !root ? 1 : BEATS[element] === root ? OVER : BEATS[root] === element ? UNDER : 1);
 
 /* ── The realms ── */
 
@@ -63,10 +70,10 @@ export const MODES = {
   // its own realm: the SHORTNESS of a daily fight comes from 境界压制, not from
   // a weak beast (the gate, 2026-09-18: at 0.7 even playing cards blindly won
   // 81% — a fight nobody can lose is not a fight).
-  pve: { deck: 10, hand: 3, foeDeck: 8, foeHand: 3, board: 3, suppress: true, youFirst: true, headStart: 0, foeHp: 1, foeDry: 'withdraw' },
+  pve: { deck: 10, hand: 3, foeDeck: 12, foeHand: 3, board: 4, suppress: true, youFirst: true, headStart: 0, foeHp: 0.7, foeDry: 'withdraw' },
   // 斗法 at the table: both sides level. Fairness can only come from one mana
   // curve and ten cards each — never from the realm.
-  pvp: { deck: 10, hand: 3, foeDeck: 10, foeHand: 4, board: 3, suppress: false, youFirst: true, headStart: 0, foeHp: 1 },
+  pvp: { deck: 10, hand: 3, foeDeck: 10, foeHand: 4, board: 4, suppress: false, youFirst: true, headStart: 0, foeHp: 1 },
 };
 
 export const POWER_COST = 2; // 主灵根一击
@@ -81,6 +88,12 @@ export const EFFECTS = {
   heal: { at: 'none' }, //      回自己 N 点气血
   draw: { at: 'none' }, //      抽 N 张
   buff: { at: 'friendly' }, //  给自己一个随从 +攻/+血
+  // Two verbs added 2026-09-18, and only two: the gate said deck-building was
+  // worth 4.4 points, which is another way of saying every deck played the
+  // same. A verb that pays off a SHAPE of deck is what makes a choice — these
+  // two pay off the swarm, so a wide deck and a tall deck are different games.
+  summon: { at: 'none' }, //    召来 {id, n}：阵前多几个小东西
+  rally: { at: 'none' }, //     己方阵前全体 +攻/+血
 };
 
 /* ── A small stable hash: the same day, creature and 道号 shuffle the same ── */
@@ -224,6 +237,22 @@ function resolve(st, side, effect, target) {
     st.log.push({ act: 'heal', who: side.who, amount: effect.heal, hp: side.hp });
   }
   if (effect.draw != null) for (let i = 0; i < effect.draw; i += 1) draw(st, side);
+  if (effect.summon) {
+    const { id, n = 1 } = effect.summon;
+    const c = st.catalog[id];
+    for (let i = 0; i < n && c && side.board.length < st.mode.board; i += 1) {
+      side.board.push({ id, name: c.name, element: c.element, atk: c.atk, hp: c.hp, hpMax: c.hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false });
+      st.log.push({ act: 'summoned', who: side.who, id });
+    }
+  }
+  if (effect.rally) {
+    for (const m of side.board) {
+      m.atk += effect.rally.atk ?? 0;
+      m.hp += effect.rally.hp ?? 0;
+      m.hpMax += effect.rally.hp ?? 0;
+    }
+    if (side.board.length) st.log.push({ act: 'rally', who: side.who, ...effect.rally, on: side.board.length });
+  }
   if (effect.buff) {
     const m = side.board[target?.index ?? 0];
     if (m) {
