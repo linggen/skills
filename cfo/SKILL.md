@@ -73,7 +73,7 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/latest.sh"
     tier: read
     timeout_ms: 8000
-  # Investments. Every tool is tier: read so the reports mission (a
+  # Investments. Every tool is tier: read so the nightly Watch (a
   # non-interactive run) can call them; SaveReport only writes this skill's
   # own data/reports.json.
   - name: Investments
@@ -469,8 +469,10 @@ numbers on any symbol.
 
 #### The Watch
 
-Every night the Watch mission finds what happened to the user's money and
-ranks it into a morning brief. In chat, "anything I should know?" or "what
+Every night the Watch mission reads any new results from the companies the
+user holds, finds what else happened to their money, and ranks it into a
+morning brief. It is one mission and one switch: turning the Watch on is what
+saves new quarters to the company cards too. In chat, "anything I should know?" or "what
 happened overnight?" → `WatchScan` and tell them what matters, with your view
 when they ask for it. Never call `SaveWatch` from chat — the nightly run owns
 the brief, and saving would mark those events as told.

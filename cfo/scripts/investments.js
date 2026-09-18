@@ -592,7 +592,7 @@ function watchHtml() {
         <button class="chip ghost" data-act="watch-off">Turn off</button>`
       : `<button class="btn" data-act="watch-on">Turn on</button>`;
   const intro = !brief && !running
-    ? `<p class="hint">${on ? 'Your first brief comes after tonight’s check.' : 'Every night, what happened to your money — up to three lines by morning, or nothing.'}</p>`
+    ? `<p class="hint">${on ? 'Your first brief comes after tonight’s check.' : 'Every night: new results from what you hold, and whatever else moved your money — or nothing.'}</p>`
     : '';
   const day = brief ? `<div class="inv-watch-day">${esc(briefDayLabel(brief.day, today))}${brief.quiet ? ' · a quiet night' : ''}</div>${brief.items.map(watchLineHtml).join('')}` : '';
   const rest = week.length

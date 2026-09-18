@@ -96,8 +96,8 @@ Mac; no Linggen Cloud, no data-provider key.
   new since <time>", no model call. Otherwise a hidden prompt hands the new
   items to the CFO agent. A `SaveReport` in the chat stream reloads the
   card.
-- Settings: **Tell me when a report comes out** → turns mission `cfo:reports`
-  on/off through the missions API.
+- New results are saved by the nightly Watch (below) — one mission, one
+  switch, on the Watch card. Settings has no second switch for them.
 
 ## Agent layer (SKILL.md)
 
@@ -121,24 +121,26 @@ Mac; no Linggen Cloud, no data-provider key.
   Apply all / Dismiss. Only Apply writes `inv:` cells. A ticker with no
   listing can't be applied. Proposals live in the page, not on disk.
 
-## Report mission (missions/reports/mission.md)
+## Reports ride the Watch (2026-09-18)
 
-- A skill mission (`linggen/doc/mission-spec.md`, "Skill missions"), id
-  `cfo:reports`: `schedule: "0 9,18 * * 1-5"`, `catchup_hours: 12`,
-  `enabled: false`, `kickoff-stop: [DONE]`.
-- `cwd: ~/.linggen/skills/cfo` — the skill's own `edit` grant covers it, so
-  the run's tools (all `tier: read`) never stop to ask. CFO's tools come with
-  the skill; `allowed-tools` adds `WebSearch`, `WebFetch`.
-- Runbook: `CheckReports` → empty → reply `DONE`. Otherwise `Investments`
-  once (who holds what), then each item: `ReadReport` (`WebSearch` first for
-  a TSX release) → `SaveReport`; not out yet → skip, the next run retries.
-  Final reply: `SYMBOL: saved` / `SYMBOL: not out yet` lines, then `DONE`. No
-  `AskUser`, no `PageUpdate`.
-- **Settings → Company reports → Tell me when a report comes out** reads
-  `GET /api/missions` and flips it with `PUT /api/missions/cfo:reports
-  {enabled}`; the engine keeps the choice in
-  `~/.linggen/missions/cfo:reports/user.json`, so the Missions page shows the
-  same setting. The row shows the last run's time.
+Reports used to be their own mission (`cfo:reports`, weekdays 9:00 and 18:00).
+It was merged into `cfo:watch`: the two overlapped — the Watch already read
+reports to judge an earnings night, hit the same tickers, and on a Mac that
+sleeps 17:00–09:00 the weekday pair was one catch-up a day anyway. One
+mission, one switch, one budget.
+
+- Pass 1 of the nightly run is the old runbook: `CheckReports` → empty → on to
+  pass 2. Otherwise `Investments` once (who holds what), then each item:
+  `ReadReport` (`WebSearch` first for a TSX release) → `SaveReport`; not out
+  yet → skip, the next run retries. These reads don't count against pass 2's
+  3-read budget.
+- Pass 2 is the Watch proper (scan → judge → `SaveWatch`), and a release read
+  in pass 1 is judged from what was read, not from the headline.
+- `allowed-tools` on the merged mission carries `WebSearch` + `WebFetch` for a
+  TSX release with no filing to read.
+- The cost of merging: a summary lands the morning after the release rather
+  than the same evening. **Check reports** and **Latest report** on the tab are
+  still the by-hand path, any time, Watch or no Watch.
 - On the Mac, Yinyue's watch hears only the mission's name and status when a
   run ends, so she stays silent; telling the user what a company reported is
   the phone's job (below).
@@ -182,7 +184,8 @@ Mac; no Linggen Cloud, no data-provider key.
    — built
 4. ~~SKILL.md tools; advice rule removed; holdings proposals from chat~~
    — built
-5. ~~`missions/reports` + the settings switch~~ — built
+5. ~~`missions/reports` + the settings switch~~ — built, then merged
+   into `cfo:watch` 2026-09-18 (one mission, one switch)
 6. ~~Phone: pull `reports.json` + the `report` line~~ — built
 7. ~~Release 2: native phone Investments view~~ — built
 
