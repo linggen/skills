@@ -176,3 +176,26 @@ test('the challenge card says what stopped the last 出手 — and stands aside 
   assert.doesNotMatch(challengeHtml({ ...brief, today: { outcome: 'won' } }, { ...ctx, say: '丹田已空，先去调息。' }), /丹田已空/);
   assert.doesNotMatch(challengeHtml(brief, ctx), /undefined|null/);
 });
+
+test('a wear is hers: no 佩戴 until she walks with him', async () => {
+  // He bought 银月铃 before he had ever found 银月, and the card offered 佩戴 —
+  // a button whose only possible answer is the rules' `no-companion` refusal
+  // (2026-09-18). The line under it still says whose it is.
+  const { WORDS, cardHtml } = await import('../scripts/cards.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  const bell = content.items.items.find(i => i.id === 'moon-bell');
+  const shelf = [{ ...bell, name: bell.name.zh, about: bell.about.zh, held: 1, worn: false }];
+  const look = companion => ({ lang: 'zh', wealth: 500, bag: [{ id: 'moon-bell', n: 1 }], world: { id: 'jiuding', dir: 'worlds/jiuding' }, place: { shelf }, companion });
+  const ctx = companion => ({ look: look(companion), lang: 'zh', words: WORDS.zh, content, artBase: '../worlds/jiuding/' });
+
+  const alone = cardHtml({ card: 'item', id: 'moon-bell' }, ctx(null));
+  assert.doesNotMatch(alone, /佩上银月铃/, 'no one to wear it yet');
+  assert.match(alone, /可赠银月佩戴/, 'but the card still says whose it is');
+  const together = cardHtml({ card: 'item', id: 'moon-bell' }, ctx({ id: 'yinyue', name: '银月', joined: true }));
+  assert.match(together, /佩上银月铃/, 'once she walks with him, it can go on');
+  // his own arms never waited on her
+  const sword = content.items.items.find(i => i.id === 'iron-sword');
+  const armCtx = { ...ctx(null), look: { ...look(null), bag: [{ id: 'iron-sword', n: 1 }], place: { shelf: [{ ...sword, name: sword.name.zh, about: sword.about.zh, held: 1, worn: false }] } } };
+  assert.match(cardHtml({ card: 'item', id: 'iron-sword' }, armCtx), /佩上铁剑/);
+});

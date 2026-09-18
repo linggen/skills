@@ -394,7 +394,13 @@ function item(card, ctx) {
     const does = itemDoes(e, ctx);
     const made = i.made_from ? `<div class="small dim">${esc(say(ctx.words.madeFrom, { item: i.made_from }))}</div>` : '';
     // A pill in the bag is taken by a word, a wear or a weapon put on by one; Trade decides.
-    const wearable = e.wear || e.atk || e.def || e.ward;
+    // A `wear` is hers, not his: 银月铃 and 齐纨 go on the one who walks with
+    // him, so until she does there is no one to put them on and the button is
+    // not drawn (2026-09-18, his "我还没得到银月, 银月铃下有佩戴按钮"). The
+    // rules have always refused it — `no-companion` — but a button that only
+    // ever earns a refusal is the stage lying about what can be done.
+    const forHer = Boolean(e.wear) && !ctx.look?.companion;
+    const wearable = !forHer && (e.wear || e.atk || e.def || e.ward);
     const use = e.progress && i.held ? `<button class="act say" ${sayAttr(say(ctx.words.sayUse, { name: i.name }))}>${ctx.words.use}</button>`
       : wearable && i.held && !i.worn ? `<button class="act say" ${sayAttr(say(ctx.words.sayWear, { name: i.name }))}>${ctx.words.wear}</button>` : '';
     const worn = i.worn ? `<span class="chip">${ctx.words.worn}</span>` : '';

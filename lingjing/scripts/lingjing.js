@@ -272,17 +272,34 @@ function focusHtml() {
   // A fight takes the stage: while one is open, nothing else is on it, and the
   // chat beside it keeps talking (design.md § 斗法在主界面里).
   if (bout) return battleHtml(view(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
-  const cards = focus.length ? [...focus] : [{ card: 'hexagram' }];
-  const open = (look.tasks ?? []).find((t) => t.kind === 'board' && t.status !== 'done' && !t.won);
+  // A line running under his feet takes the stage (his law, 2026-09-18:
+  // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
+  // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
+  // beside it offered him the day's coins, which belong to no part of this.
+  // So while the step is his to take HERE, the page adds nothing of its own:
+  // Ling's cards are hers to choose, and the quest's card is the line.
+  const online = onALine();
+  const cards = focus.length ? [...focus] : online ? [] : [{ card: 'hexagram' }];
+  const open = !online && (look.tasks ?? []).find((t) => t.kind === 'board' && t.status !== 'done' && !t.won);
   if (open && !cards.some((c) => c.card === 'board' && c.id === open.id)) cards.push({ card: 'board', id: open.id });
   // A fight the scene offers is always on the scene, like an open board.
   for (const e of look.scene?.exits ?? []) {
     if (e.game?.kind === 'duel' && !cards.some((c) => c.card === 'duel' && c.id === e.game.id)) cards.push({ card: 'duel', id: e.game.id });
   }
   // A creature at its haunt, no scene running: its bout is on the scene too.
-  const haunt = look.place?.encounter;
+  const haunt = !online && look.place?.encounter;
   if (haunt && !haunt.tamed && !cards.some((c) => c.card === 'duel' && c.id === haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
   return buildingCard() + emptyCard() + questCard() + cards.map((c) => cardHtml(c, ctx())).join('');
+}
+
+/// True while the step of a line can be taken on this very spot: the bell is
+/// for sale in the market he stands in, the water before him holds a moon, her
+/// riddle waits. The same reading the rules use to keep the chat quiet
+/// (`stageWaiting`) — one thing at a time, on both sides of the screen.
+function onALine() {
+  const q = look?.quest;
+  if (!q) return false;
+  return q.step === 'riddle' || (q.step === 'bell' && q.shop_here) || (q.step === 'ring' && q.at_water);
 }
 
 /// The search for the one who walks with you: the step the rules name, and
