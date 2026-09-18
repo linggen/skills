@@ -213,3 +213,20 @@
 .bhow summary:hover { color: var(--gold); }
 .bhow p { margin: 7px 0 0; line-height: 1.6; }
 .bhow[open] { padding: 10px 14px; border: 1px solid var(--line-d); border-radius: 10px; background: rgba(0, 0, 0, 0.3); }
+
+/* What you CAN do, shown without being asked (his, 2026-09-18: 有能做的, 高亮或者
+   动画提示一下用户). A card you can afford and a body that may strike breathe
+   in gold; whatever the held thing may be pointed at pulses harder. Both come
+   straight from `offers`, so the glow can never promise what the rules refuse. */
+.bcard.can { border-color: rgba(201, 162, 39, 0.55); animation: canbreathe 2.6s ease-in-out infinite; }
+.bminion.can { border-color: rgba(201, 162, 39, 0.5); animation: canbreathe 2.6s ease-in-out infinite; }
+.bact.can { border-color: rgba(201, 162, 39, 0.5); }
+@keyframes canbreathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 162, 39, 0); }
+  50% { box-shadow: 0 0 16px 1px rgba(201, 162, 39, 0.28); }
+}
+.bminion.aimed, .bside.foe.aimed { border-color: #e06a55; animation: aimed 0.9s ease-in-out infinite; }
+@keyframes aimed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 106, 85, 0.1); }
+  50% { box-shadow: 0 0 0 2px rgba(224, 106, 85, 0.65), 0 0 26px rgba(224, 106, 85, 0.35); }
+}

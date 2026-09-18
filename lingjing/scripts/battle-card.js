@@ -106,6 +106,25 @@ export function pickOf(picked, spot, st, catalog = null) {
   return { clear: true };
 }
 
+/* Where the held thing may land: the beast, or these of its rank. Straight
+   from `offers`, so the glow can never disagree with the rules. */
+function aimable(offers, picked) {
+  const out = { hero: false, theirs: new Set(), mine: new Set() };
+  if (!picked) return out;
+  for (const o of offers) {
+    if (!o.ok) continue;
+    const a = o.action;
+    const matches = (picked.from === 'hand' && a.kind === 'play' && a.index === picked.index)
+      || (picked.from === 'board' && a.kind === 'attack' && a.index === picked.index)
+      || (picked.from === 'power' && a.kind === 'power');
+    if (!matches) continue;
+    if (!a.target) out.hero = true;
+    else if (picked.from === 'hand' && !a.target.enemy && o.card?.effect?.buff) out.mine.add(a.target.index);
+    else out.theirs.add(a.target.index);
+  }
+  return out;
+}
+
 /* Every offer the rules allow, keyed by what it is, so the card can grey a
    thing WITH ITS REASON instead of hiding it. */
 function reasons(st, offers) {
@@ -139,7 +158,9 @@ function minionHtml(m, side, index, ctx, picked) {
     side === 'mine' && why ? (w.why[why] ?? why) : null,
     side === 'mine' && !why && m.ready ? w.ready : null,
   ].filter(Boolean);
-  return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
+  const can = side === 'mine' && !why && m.ready;
+  const aimed = side === 'theirs' ? ctx.aim?.theirs?.has(index) : ctx.aim?.mine?.has(index);
+  return `<button class="bminion ${side}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}">
     <span class="bname">${name(m, ctx.lang)}</span>
     <span class="belem">${GLYPH[m.element] ?? ''}${ctx.lang === 'en' && m.element ? ` ${esc(ctx.elName?.(m.element) ?? '')}` : ''}</span>
     <span class="bstat"><b>${m.atk}</b> / <b>${m.hp}</b></span>
@@ -156,7 +177,7 @@ function handHtml(st, ctx, picked) {
     const why = o?.why;
     const held = picked?.from === 'hand' && picked.index === index;
     const body = c.kind === 'minion' ? `<span class="bstat"><b>${c.atk}</b> / <b>${c.hp}</b></span>` : '';
-    return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
+    return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
       <span class="bcost">${c.cost}</span>
       <span class="bname">${name(c, ctx.lang)}</span>
       <span class="belem">${GLYPH[c.element] ?? ''}</span>
@@ -232,6 +253,8 @@ export function lastHtml(log, ctx, open = false) {
 export function battleHtml(st, offers, ctx, picked = null, openLog = false, note = null) {
   const w = ctx.words;
   ctx.reasons = reasons(st, offers);
+  const aim = aimable(offers, picked);
+  ctx.aim = aim;
   const rank = (side, board, n) => {
     const cells = [];
     for (let i = 0; i < n; i += 1) {
@@ -256,7 +279,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <span class="bwhere">${esc(ctx.title ?? '')}</span>
     </div>
 
-    <button class="bside foe${picked ? ' aiming' : ''}" data-spot="hero">
+    <button class="bside foe${picked ? ' aiming' : ''}${aim.hero ? ' aimed' : ''}" data-spot="hero">
       ${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : ''}
       <div class="bwho">${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></div>
       <div class="bnums">
@@ -283,7 +306,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
     <div class="bhand">${handHtml(st, ctx, picked)}</div>
 
     <div class="bacts">
-      <button class="bact${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}" data-spot="power">
+      <button class="bact${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}${!powerWhy && picked?.from !== 'power' ? ' can' : ''}" data-spot="power">
         ${w.power} <span class="belem">${GLYPH[st.you.root] ?? ''}</span>
         <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${2}${ctx.lang === 'en' ? ' ' : ''}${w.mana}`}</small>
       </button>
