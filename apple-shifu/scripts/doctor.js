@@ -243,10 +243,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // URL, so a tab left open across days — or a bookmark of one — used to pin
   // that session for ever and never roll over (2026-09-18: a two-day-old chat
   // on a tab that had simply stayed open). A session named in the URL is
-  // honoured while it is inside the window, and let go when it isn't.
+  // honoured while it is a day to pick up, and let go when it isn't.
   if (existingSession && listed) {
     const pinned = sessions.find((sn) => sn.id === existingSession);
-    if (!pinned || sessionAgeMs(pinned) >= RESUME_WINDOW_MS) {
+    if (!pinned || !spokenIn(pinned) || sessionAgeMs(pinned) >= RESUME_WINDOW_MS) {
       existingSession = '';
       const url = new URL(window.location);
       url.searchParams.delete('session');
@@ -255,7 +255,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   if (!existingSession) {
-    const latest = sessions[0];
+    // The newest session SPOKEN IN, not merely the newest: see spokenIn.
+    const latest = sessions.find(spokenIn);
     const cached = sessions.find((s) => hasCachedPage(s.id));
     if (latest && sessionAgeMs(latest) < RESUME_WINDOW_MS) {
       seedLastScanAt((cached || latest).created_at);
@@ -498,6 +499,16 @@ async function startHardwareProbe(rescan = false) {
 // Resume window: within it, reopening reattaches to the same chat; past it
 // the dashboard carries forward into a fresh session (bounded context).
 const RESUME_WINDOW_MS = 24 * 3600 * 1000;
+
+/** A session created and never spoken in is not a day to pick up. The engine
+    takes `updated_at` from the transcript's own mtime, so an unused session
+    carries its creation time — which is what a lost kickoff, or a tab closed
+    in the same breath, leaves behind. Three of this skill's own sessions are
+    exactly that. Resuming one is silent by the rule, and silence over nothing
+    is a page that opens onto a dead panel (Lingjing hit it 2026-09-18). */
+function spokenIn(s) {
+  return (s?.updated_at || 0) > (s?.created_at || 0);
+}
 
 function sessionAgeMs(session) {
   try {
