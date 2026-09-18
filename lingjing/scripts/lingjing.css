@@ -211,6 +211,16 @@ button.pl:hover { background: var(--ling-soft); }
    walks in circles (2026-09-18). */
 .card.goal { border-left: 3px solid var(--ling); }
 .card.goal .cardtitle { color: var(--ling); }
+/* 手上的事 — the book, under the goal. One line each, and the one that is done
+   wears the seal's colour, because that line is a button worth pressing. */
+.book { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 6px; }
+.bookrow { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.bookrow b { font-weight: 500; }
+.bookrow.ready b { color: var(--seal); }
+.bookrow .act { flex: none; }
+/* A 差事 offered where he stands: the giver speaks, and one button takes it. */
+.card.offer .say { margin: 6px 0 8px; line-height: 1.7; }
+.card.offer { border-left: 3px solid var(--seal); }
 .gate { display: flex; gap: 12px; align-items: center; }
 .gate .ding { font-family: var(--serif); font-size: 38px; color: var(--ling); line-height: 1; }
 

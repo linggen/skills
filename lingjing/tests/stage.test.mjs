@@ -67,3 +67,12 @@ test('the goal stands on the stage, and the question does not repeat its road', 
   // no thread left: no card
   assert.deepEqual(stageCards({ ...look, waypoint: null }).map(c => c.card), ['hexagram']);
 });
+
+test('差事: an offer stands where the giver is, and the book rides the goal card', async () => {
+  const { stageCards, stageOwns, askMinusStage } = await import('../scripts/stage.mjs');
+  const look = { place: { id: 'pengcheng' }, tasks: [], offers: [{ id: 'xu-elder-herb', title: '彭城的药钱' }], book: [{ id: 'xu-lvliang-look', title: '吕梁洪的水声', need: [{ kind: 'visit', have: 0, n: 1 }], ready: false }] };
+  assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'offer', 'hexagram'], 'the book brings the goal card even with no thread');
+  assert.ok(stageOwns(look, stageCards(look)).has('quest:xu-elder-herb'), '接下 is on its own card');
+  // nothing offered, nothing in hand: no goal card at all
+  assert.deepEqual(stageCards({ place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
+});

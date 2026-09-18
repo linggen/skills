@@ -21,6 +21,10 @@
     "haunt": {
       "progress": 20,
       "wealth": 10
+    },
+    "quest": {
+      "progress": 60,
+      "wealth": 20
     }
   },
   "day": {

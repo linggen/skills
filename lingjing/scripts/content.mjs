@@ -139,6 +139,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     tasks: at('tasks/world.json'),
     branches: at('branches.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
+    quests: loadQuests(path.join(dir, 'quests')),
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -163,6 +164,18 @@ function loadChapters(root) {
 }
 
 /* 奇遇 seeds, one file per province: { 徐: { province, seeds } }. */
+/* 差事, one file per province (design.md § 差事). They are DATA: Ling writes
+   the giver's words around them and never invents the terms or the reward. */
+function loadQuests(root) {
+  const out = [];
+  if (!fs.existsSync(root)) return out;
+  for (const file of fs.readdirSync(root).filter(f => f.endsWith('.json')).sort()) {
+    const doc = readJson(path.join(root, file));
+    for (const q of doc.quests ?? []) out.push({ ...q, province: doc.province });
+  }
+  return out;
+}
+
 function loadSeeds(root) {
   const seeds = {};
   if (!fs.existsSync(root)) return seeds;
@@ -398,6 +411,7 @@ export function lint(content) {
   }
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   lintSeeds(content, ids, bad);
+  lintQuests(content, ids, bad);
   lintPlaces(content, ids, bad);
   lintAtlas(content, bad);
   return problems;
@@ -490,6 +504,43 @@ function bilingual(node, where, bad) {
 
 /* A seed names a kind the templates know, a province the terms know, and a
    creature only when the creature has its card. */
+/* 差事: taken from a place that exists, needing something the rules can SEE
+   tick (a counter nobody can verify is a lie), paying from a table that
+   exists, and chaining only to a quest that is there. */
+export const NEED_KINDS = new Set(['subdue', 'tame', 'carry', 'visit', 'board', 'answer', 'chore']);
+
+function lintQuests(content, ids, bad) {
+  const quests = content.quests ?? [];
+  const byId = new Set(quests.map(q => q.id));
+  const places = new Set(Object.values(content.places).flatMap(d => d.places.map(p => p.id)));
+  const seen = new Set();
+  for (const q of quests) {
+    const where = `quest ${q.id}`;
+    if (!ID.test(q.id ?? '')) bad(where, 'id must be lowercase letters, digits and dashes');
+    if (seen.has(q.id)) bad(where, 'duplicate id');
+    seen.add(q.id);
+    if (!pair(q.title)) bad(where, 'title needs zh and en');
+    if (!pair(q.say)) bad(where, 'the giver\'s line needs zh and en');
+    if (!places.has(q.from?.place)) bad(where, `taken at unknown place ${q.from?.place}`);
+    if (q.from?.who && !pair(q.from.who)) bad(where, 'the giver needs a name in both languages');
+    if (!content.rewards.tables[q.grant?.table]) bad(where, `unknown reward table ${q.grant?.table}`);
+    if (q.grant?.item && !ids.items.has(q.grant.item)) bad(where, `gives unknown item ${q.grant.item}`);
+    if (q.then && !byId.has(q.then)) bad(where, `chains to unknown quest ${q.then}`);
+    if (q.opens?.after && !byId.has(q.opens.after)) bad(where, `opens after unknown quest ${q.opens.after}`);
+    if (q.opens?.tier && !content.ladder.tiers.some(t => t.id === q.opens.tier)) bad(where, `unknown tier ${q.opens.tier}`);
+    const needs = Array.isArray(q.need) ? q.need : [];
+    if (!needs.length) bad(where, 'needs at least one thing to do');
+    for (const n of needs) {
+      if (!NEED_KINDS.has(n?.kind)) bad(where, `unknown need ${n?.kind}`);
+      if (!(n?.n > 0)) bad(where, `${n?.kind} needs a count`);
+      if (n?.creature && !ids.creatures.has(n.creature)) bad(where, `names unknown creature ${n.creature}`);
+      if (n?.item && !ids.items.has(n.item)) bad(where, `names unknown item ${n.item}`);
+      if (n?.place && !places.has(n.place)) bad(where, `names unknown place ${n.place}`);
+      if (n?.task && !content.tasks.tasks.some(t => t.id === n.task)) bad(where, `names unknown task ${n.task}`);
+    }
+  }
+}
+
 function lintSeeds(content, ids, bad) {
   const kinds = new Set(content.branches.templates.map(b => b.kind));
   const seen = new Set();

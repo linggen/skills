@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -18,7 +18,7 @@ export function newState(content, lang, now) {
     bag: {}, cast: [], wear: {}, duels: {}, arts: [],
     chapter: first.id, scene: first.first_scene, done_scenes: [], ended: [],
     place: first.scenes[first.first_scene]?.at ?? content.places[first.province]?.start ?? null,
-    tasks: {}, quests: {}, wins: {}, branch: null, story: '', seeds_used: [],
+    tasks: {}, chores: {}, quests: {}, wins: {}, branch: null, story: '', seeds_used: [],
     made: { scenes: {}, at: null },
     day: { key: dayKey(now), progress: 0, wealth: 0, branches: 0 },
     stamina: content.rewards.stamina.max, stamina_at: at,
@@ -187,5 +187,10 @@ export function migrate(state) {
   m.wear ??= {};
   m.duels ??= {};
   m.arts ??= [];
+  // v4: 'quests' was the record of the apps' 功课 being paid; the word now
+  // belongs to 差事, the errands the player takes (design.md § 差事).
+  move('quests', 'chores');
+  m.chores ??= {};
+  m.quests ??= {};
   return m;
 }

@@ -42,7 +42,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // Where the story waits, and the road to it. A player who cannot see the
   // goal walks in circles asking for one (2026-09-18: four places, a map, and
   // 「where to go, what should do」) — the rules always knew, nothing said it.
-  if (look.waypoint) head.push({ card: 'goal' });
+  if (look.waypoint || look.book?.length) head.push({ card: 'goal' });
+  // 差事 offered where he stands: one card each, the giver's own words on it.
+  for (const o of look.offers ?? []) head.push({ card: 'offer', id: o.id });
 
   const line = lineHere(look);
   // Ling's own cards stand whatever else is true — she chose them. With none,
@@ -92,6 +94,8 @@ export function stageOwns(look, cards) {
     // The goal card walks the next road itself, so the question does not
     // offer that same place a second time.
     if (c.card === 'goal' && look?.waypoint?.toward) owns.add(`move:${look.waypoint.toward.id}`);
+    // 接下 is on its own card, and so is 交差 — never in the question too.
+    if (c.card === 'offer') owns.add(`quest:${c.id}`);
     // The map draws every place as a chip that walks there, so the roads are
     // already clickable and the question does not repeat them.
     if (c.card === 'map') for (const p of look?.place?.places ?? []) if (!p.here) owns.add(`move:${p.id}`);

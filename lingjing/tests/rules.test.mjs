@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, advance, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -893,7 +893,7 @@ test('a quest pays when its app says it was done this period, once', () => {
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
   assert.equal(paid.result.paid.progress, 30);
-  assert.equal(paid.state.quests['shifu-scan'].period, weekKey(NOW));
+  assert.equal(paid.state.chores['shifu-scan'].period, weekKey(NOW), 'the apps\' 功课 are the chores book; `quests` is 差事 now');
   assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);
   const lastWeek = ctx({ quests: [{ ...quest, done_at: '2026-09-02T09:00:00' }] });
@@ -983,7 +983,7 @@ test('a save from before the dictionary migrates to the ids', () => {
   const old = { version: 1, lang: 'zh', daohao: '青玄', root: ['wood'], realm: 'qi', stage: 2, xw: 30, ls: 5, beasts: ['fuzhu'], qi: 40, qi_at: NOW.toISOString(),
     bag: {}, chapter: '00-prologue', scene: '00-practice', done_scenes: [], ended: [], tasks: {}, quests: {}, wins: {}, branch: null, story: '', day: { key: '2026-09-11', xw: 30, ls: 5, branches: 0 } };
   const m = migrate(old);
-  assert.equal(m.version, 3);
+  assert.equal(m.version, 4);
   assert.equal(m.world, 'jiuding', 'a save from before worlds was playing 《九鼎》');
   assert.equal(m.name, '青玄'); assert.deepEqual(m.traits, ['wood']); assert.equal(m.tier, 'qi'); assert.equal(m.step, 2);
   assert.equal(m.progress, 30); assert.equal(m.wealth, 5); assert.deepEqual(m.cast, ['fuzhu']); assert.equal(m.stamina, 40);
@@ -1987,4 +1987,58 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.equal(askOf(content, { ...joined.state, ...lone }, ctx()).options.at(-1).label, '问问银月');
   // A second bell is not sold once she has been found.
   assert.ok(!look({ ...joined.state, place: 'pengcheng', bag: {} }, content, ctx()).place.shelf.some(i => i.id === 'moon-bell'));
+});
+
+test('差事: taken at the giver, counted by the rules, handed in where he stands', () => {
+  // 接 · 记 · 追 · 交 (design.md § 差事). His ruling 2026-09-18: 交差 never
+  // sends the player back across the map.
+  const base = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', bag: {} };
+  const at = ctx();
+  // nothing may be taken that is not offered here
+  assert.equal(quest(base, content, at, { action: 'take', id: 'xu-fuli-longzhi' }).result.refused, 'not-yet', 'a chained errand waits for its first');
+  assert.equal(quest({ ...base, place: 'sibei' }, content, at, { action: 'take', id: 'xu-elder-herb' }).result.refused, 'not-here');
+  assert.equal(quest(base, content, at, { action: 'take', id: 'nope' }).result.refused, 'no-such-quest');
+
+  const took = must(quest, base, { action: 'take', id: 'xu-elder-herb' }, at);
+  assert.equal(took.result.book[0].id, 'xu-elder-herb');
+  assert.deepEqual(took.result.book[0].need, [{ kind: 'carry', have: 0, n: 1 }], 'nothing carried yet');
+  assert.equal(quest(took.state, content, at, { action: 'take', id: 'xu-elder-herb' }).result.refused, 'already-taken');
+  // not done: the rules refuse and say what is left
+  assert.equal(quest(took.state, content, at, { action: 'turn', id: 'xu-elder-herb' }).result.refused, 'not-done');
+
+  // the count IS the bag for a carry — buy it and the line is ready
+  const withHerb = { ...took.state, bag: { ...took.state.bag, lingzhi: 1 } };
+  assert.equal(look(withHerb, content, at).book[0].ready, true);
+  // …and it is handed in far from 彭城, which is the whole point
+  const turned = must(quest, { ...withHerb, place: 'weishan' }, { action: 'turn', id: 'xu-elder-herb' }, at);
+  assert.ok(turned.result.paid.progress > 0);
+  assert.equal(turned.state.bag.lingzhi, undefined, 'the herb changed hands');
+  assert.equal(turned.state.bag['bamboo-sword'], 1, 'and the sword came back');
+  assert.equal(turned.result.then.id, 'xu-fuli-longzhi', 'the chain names the next');
+  assert.deepEqual(turned.result.book, [], 'a finished errand leaves the book');
+  assert.equal(quest(turned.state, content, at, { action: 'turn', id: 'xu-elder-herb' }).result.refused, 'already-done');
+
+  // the chain is open now, and only at its giver's place
+  assert.ok(look({ ...turned.state, place: 'pengcheng' }, content, at).offers.some(o => o.id === 'xu-fuli-longzhi'));
+
+  // a beast subdued ticks its count, and nothing else does
+  const hunting = must(quest, { ...turned.state, place: 'pengcheng' }, { action: 'take', id: 'xu-fuli-longzhi' }, at).state;
+  advance(content, hunting, { kind: 'subdue', creature: 'fuzhu' });
+  assert.equal(look(hunting, content, at).book[0].need[0].have, 0, 'the wrong beast moves nothing');
+  advance(content, hunting, { kind: 'subdue', creature: 'longzhi' });
+  assert.equal(look(hunting, content, at).book[0].ready, true);
+
+  // three at a time
+  let full = { ...turned.state, place: 'sibei' };
+  full = must(quest, full, { action: 'take', id: 'xu-lvliang-look' }, at).state;
+  full = must(quest, { ...full, place: 'yunlong' }, { action: 'take', id: 'xu-yunlong-herbs' }, at).state;
+  full = must(quest, { ...full, place: 'pengcheng' }, { action: 'take', id: 'xu-fuli-longzhi' }, at).state;
+  assert.equal(look(full, content, at).offers, undefined, 'a full book is offered nothing');
+  // and one put down makes room
+  const lighter = must(quest, full, { action: 'drop', id: 'xu-lvliang-look' }, at).state;
+  assert.equal(look(lighter, content, at).book.length, 2);
+  // a visit ticks by walking, not by saying so
+  const walking = must(quest, { ...lighter, place: 'sibei' }, { action: 'take', id: 'xu-lvliang-look' }, at).state;
+  const arrived = must(move, walking, { place: 'lvliang' }, at).state;
+  assert.equal(look(arrived, content, at).book.find(b => b.id === 'xu-lvliang-look').ready, true);
 });

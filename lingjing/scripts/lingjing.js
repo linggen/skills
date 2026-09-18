@@ -304,7 +304,24 @@ function focusHtml() {
 }
 
 /// Four kinds are the page's own — the rest are cards.js's.
-const PAGE_CARDS = { building: () => buildingCard(), empty: () => emptyCard(), quest: () => questCard(), goal: () => goalCard() };
+const PAGE_CARDS = { building: () => buildingCard(), empty: () => emptyCard(), quest: () => questCard(), goal: () => goalCard(), offer: (c) => offerCard(c.id) };
+
+/// 差事 offered where he stands: the giver's own words, what it pays, and one
+/// button. Not tapping is declining — a decline needs no button of its own.
+function offerCard(id) {
+  const o = (look?.offers ?? []).find((x) => x.id === id);
+  if (!o) return '';
+  const w = words();
+  const pays = [o.grant?.progress ? `${w.xw} +${o.grant.progress}` : '', o.grant?.wealth ? `${w.ls} +${o.grant.wealth}` : ''].filter(Boolean).join(' · ');
+  return `<div class="card offer"><div class="cardtitle">${esc(o.title)}</div>
+    ${o.who ? `<div class="small dim">${esc(o.who)}</div>` : ''}
+    <div class="say">${esc(o.say)}</div>
+    ${pays ? `<div class="small dim">${esc(pays)}</div>` : ''}
+    <div class="acts">
+      <button class="act say" data-say="${esc(fill(w.sayTake, { title: o.title }))}">${esc(w.take)}</button>
+      <button class="act say" data-say="${esc(fill(w.sayQuestAbout, { title: o.title }))}">${esc(w.about)}</button>
+    </div></div>`;
+}
 
 /// Where the story waits, and one tap that walks the road to it. The rules
 /// have always known (`waypoint`); until 2026-09-18 nothing on screen said it,
@@ -321,7 +338,27 @@ function goalCard() {
   return `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>
     <div>${esc(g.text ?? shut)}</div>
     ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
-    <div class="acts">${go}<button class="act say" data-say="${esc(w.sayGoal)}">${esc(w.about)}</button></div></div>`;
+    <div class="acts">${go}<button class="act say" data-say="${esc(w.sayGoal)}">${esc(w.about)}</button></div>
+    ${bookHtml()}</div>`;
+}
+
+/// 手上的事 — one line each, with its count and where the next one is met.
+/// 交差 the moment it is done, wherever he stands: he never walks back to the
+/// giver (his ruling, 2026-09-18).
+function bookHtml() {
+  const book = look?.book ?? [];
+  if (!book.length) return '';
+  const w = words();
+  const rows = book.map((q) => {
+    const counts = q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind} ${n.have}/${n.n}`).join(' · ');
+    const at = q.where ? (q.where.here ? w.needHere : fill(w.needAt, { name: q.where.name })) : '';
+    const act = q.ready
+      ? `<button class="act say" data-say="${esc(fill(w.sayTurn, { title: q.title }))}">${esc(w.turnIn)}</button>`
+      : `<button class="act say" data-say="${esc(fill(w.sayQuestAbout, { title: q.title }))}">${esc(w.about)}</button>`;
+    return `<div class="bookrow${q.ready ? ' ready' : ''}"><div><b>${esc(q.title)}</b>
+      <span class="small dim">${esc(counts)}${at ? ` · ${esc(at)}` : ''}</span></div>${act}</div>`;
+  }).join('');
+  return `<div class="book"><div class="small dim">${esc(w.book)}</div>${rows}</div>`;
 }
 const drawCard = (c) => (PAGE_CARDS[c.card] ? PAGE_CARDS[c.card]() : cardHtml(c, ctx()));
 

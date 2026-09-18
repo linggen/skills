@@ -249,6 +249,87 @@ function questBrief(content, state, now) {
   };
 }
 
+/* ── 差事 — the errands the player takes (design.md § 差事) ──
+   接 · 记 · 追 · 交. The world offers, the player takes, the rules count, and
+   交差 happens where he stands the moment the count is met — he never walks
+   back to the giver (his ruling, 2026-09-18: 不要让用户跑地图). */
+
+export const BOOK_MAX = 3; // a chat game cannot show a log of twenty-five
+
+const questOf = (content, id) => (content.quests ?? []).find(q => q.id === id) ?? null;
+const questDoneBefore = (state, id) => Boolean(state.quests?.[id]?.done_at);
+
+/* The counts, as they stand. `carry` is not ticked by anything: what is in the
+   bag now IS the count, so buying and using it again both show at once. */
+function countsOf(content, state, quest) {
+  const held = state.quests?.[quest.id];
+  return quest.need.map((need, i) => {
+    const have = need.kind === 'carry' ? (state.bag[need.item] ?? 0) : (held?.have?.[i] ?? 0);
+    return { ...need, have: Math.min(have, need.n), done: have >= need.n };
+  });
+}
+
+const questReady = (content, state, quest) => countsOf(content, state, quest).every(n => n.done);
+
+/* Open, in the order taken. */
+function bookOf(content, state, lang) {
+  return Object.keys(state.quests ?? {})
+    .filter(id => !questDoneBefore(state, id))
+    .map(id => {
+      const q = questOf(content, id);
+      if (!q) return null;
+      const need = countsOf(content, state, q);
+      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n })), ready: need.every(x => x.done), where: whereFor(content, state, q, need, lang) };
+    })
+    .filter(Boolean);
+}
+
+/* Where the next count is met — a creature's haunt, a place to reach, the
+   market that sells it. One line, so the player is never left guessing. */
+function whereFor(content, state, quest, need, lang) {
+  const open = need.find(n => !n.done);
+  if (!open) return null;
+  const at = open.kind === 'visit' ? placeOf(content, open.place)
+    : open.kind === 'subdue' || open.kind === 'tame' ? Object.values(content.places).flatMap(d => d.places).find(p => p.has?.creature === open.creature)
+      : open.kind === 'carry' ? nearestPlace(content, state, new Date(), p => p.has?.shop)
+        : null;
+  if (!at) return null;
+  return at.id === state.place ? { id: at.id, name: pick(at.name, lang) ?? at.name, here: true } : (at.name ? placeName(content, state, at) : at);
+}
+
+/* What may be taken where he stands: the giver is here, it is not in the book
+   already, it has not been done, and its gate is open. */
+function offersOf(content, state, lang) {
+  if (state.quests && Object.keys(state.quests).filter(id => !questDoneBefore(state, id)).length >= BOOK_MAX) return [];
+  return (content.quests ?? [])
+    .filter(q => q.from?.place === state.place && !state.quests?.[q.id]
+      && (!q.opens?.after || questDoneBefore(state, q.opens.after))
+      && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
+    .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant }));
+}
+
+const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
+
+/* One counter, moved by something that actually happened. Every verb that can
+   move one calls this and nothing else does — the rules are the only writer,
+   and a count nobody can verify is a lie. */
+export function advance(content, state, event) {
+  for (const id of Object.keys(state.quests ?? {})) {
+    if (questDoneBefore(state, id)) continue;
+    const q = questOf(content, id);
+    if (!q) continue;
+    q.need.forEach((need, i) => {
+      if (need.kind !== event.kind) return;
+      if (need.creature && need.creature !== event.creature) return;
+      if (need.place && need.place !== event.place) return;
+      if (need.task && need.task !== event.task) return;
+      if (need.item && need.item !== event.item) return;
+      const held = state.quests[id];
+      held.have = { ...held.have, [i]: Math.min(need.n, (held.have?.[i] ?? 0) + 1) };
+    });
+  }
+}
+
 /* Where the story waits, and the first road toward it — the goal, as the stage
    shows it. It had no card until 2026-09-18: the rules always knew (`thread`),
    Ling said it only when she thought of it, and he walked four places asking
@@ -749,7 +830,7 @@ function tasksBrief(content, state, ctx) {
     });
   const quests = (ctx.quests ?? []).filter(q => q.due || questDone(q, ctx.now)).map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang),
-    done: questDone(q, ctx.now), paid: state.quests[q.id]?.period === periodKey(q.period, ctx.now),
+    done: questDone(q, ctx.now), paid: state.chores[q.id]?.period === periodKey(q.period, ctx.now),
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
     period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null, // what it pays, so Ling can tell the practice
   }));
@@ -802,6 +883,9 @@ export function look(state, content, ctx) {
     director: directorBrief(content, state, ctx),
     companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined } : null,
     quest: questBrief(content, state, ctx.now),
+    // 差事: what is in hand, and what may be taken where he stands.
+    book: bookOf(content, state, lang),
+    ...(offersOf(content, state, lang).length ? { offers: offersOf(content, state, lang) } : {}),
     ended: state.ended, branch: state.branch, story: state.story,
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
@@ -1205,6 +1289,7 @@ function taskDone(state, content, ctx, id) {
   const s = clone(state);
   delete s.wins[id];
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
+  advance(content, s, { kind: 'board', task: id });
   if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
   const paid = pay(content, s, ctx, t.grant);
   return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang) } };
@@ -1214,10 +1299,10 @@ function questCheck(state, content, ctx, id) {
   const q = (ctx.quests ?? []).find(x => x.id === id);
   if (!q) return refuse('unknown-quest', null);
   const period = periodKey(q.period, ctx.now);
-  if (state.quests[id]?.period === period) return refuse('already-paid', null);
+  if (state.chores[id]?.period === period) return refuse('already-paid', null);
   if (!questDone(q, ctx.now)) return refuse('not-done', null, { app: q.app });
   const s = clone(state);
-  s.quests[id] = { period, paid_at: ctx.now.toISOString() };
+  s.chores[id] = { period, paid_at: ctx.now.toISOString() };
   const paid = pay(content, s, ctx, { table: 'task', progress: q.reward ?? 0 });
   settleStamina(content, s, ctx.now);
   const stamina = addStamina(content, s, q.stamina ?? content.rewards.stamina.refill.quest, ctx.now);
@@ -1284,6 +1369,7 @@ export function duel(state, content, ctx, args) {
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
   s.duels[creature.id] = { day, outcome: played.outcome };
+  if (played.outcome === 'won') advance(content, s, { kind: 'subdue', creature: creature.id });
   if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
   const say = played.outcome === 'lost' ? withdrawnLine
     : played.outcome === 'withdrew' ? pick({ zh: `${pick(creature.name, 'zh')}一口气用尽，转身走了 —— 这一场不算你赢。`, en: `${pick(creature.name, 'en')} runs out of breath and turns away — this one is not a win.` }, state.lang)
@@ -1472,6 +1558,7 @@ export function move(state, content, ctx, args) {
   }
   const from = here;
   s.place = target.id;
+  advance(content, s, { kind: 'visit', place: target.id });
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
   const place = placeBrief(content, s, ctx.now);
@@ -1646,6 +1733,7 @@ export function tame(state, content, ctx, args) {
   s.bag[e.likes.id] -= 1;
   if (!s.bag[e.likes.id]) delete s.bag[e.likes.id];
   const paid = pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 0, cast: e.creature.id });
+  advance(content, s, { kind: 'tame', creature: e.creature.id });
   const beat = pick({ zh: `${name}低头衔了${e.likes.name}，随你走了。`, en: `${name} takes the ${e.likes.name} and falls in beside you.` }, lang);
   return { state: s, result: { ok: true, tamed: e.creature, fed: e.likes, beat, paid, show: [{ card: 'creature', id: e.creature.id }] } };
 }
@@ -2163,8 +2251,53 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest,
 };
+
+/* Quest — 接下 · 交差 · 撂下 (design.md § 差事). The world's errands, taken by
+   the player and counted by the rules. `take` at the giver; `turn` wherever he
+   stands, the moment the counts are met; `drop` is WoW's abandon, no penalty. */
+export function quest(state, content, ctx, args) {
+  const id = String(args.id ?? ''), lang = state.lang;
+  const action = String(args.action ?? 'take');
+  const q = questOf(content, id);
+  if (!q) return refuse('no-such-quest', null, { book: bookOf(content, state, lang) });
+  const s = clone(state);
+  s.quests ??= {};
+
+  if (action === 'drop') {
+    if (!s.quests[id] || questDoneBefore(s, id)) return refuse('not-taken', null);
+    delete s.quests[id];
+    return { state: s, result: { ok: true, dropped: id, book: bookOf(content, s, lang) } };
+  }
+
+  if (action === 'take') {
+    if (s.quests[id]) return refuse(questDoneBefore(s, id) ? 'already-done' : 'already-taken', null);
+    if (q.from?.place !== s.place) return refuse('not-here', null, { at: placeName(content, s, placeOf(content, q.from.place)) });
+    if (q.opens?.after && !questDoneBefore(s, q.opens.after)) return refuse('not-yet', null);
+    if (Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length >= BOOK_MAX) {
+      return refuse('book-full', pick({ zh: `手上已有${BOOK_MAX}件事，先了一件。`, en: `Three things are already in hand — finish one first.` }, lang), { book: bookOf(content, s, lang) });
+    }
+    s.quests[id] = { took: dayKey(ctx.now), have: {} };
+    return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang) } };
+  }
+
+  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop'] });
+  if (!s.quests[id]) return refuse('not-taken', null);
+  if (questDoneBefore(s, id)) return refuse('already-done', null);
+  if (!questReady(content, s, q)) return refuse('not-done', null, { need: countsOf(content, s, q).map(n => ({ kind: n.kind, have: n.have, n: n.n })) });
+  // What the need consumed: a `carry` hands the thing over.
+  for (const need of q.need) {
+    if (need.kind !== 'carry') continue;
+    s.bag[need.item] = Math.max(0, (s.bag[need.item] ?? 0) - need.n);
+    if (!s.bag[need.item]) delete s.bag[need.item]; // the bag lists nothing it does not hold
+  }
+  s.quests[id] = { ...s.quests[id], done_at: ctx.now.toISOString() };
+  const paid = pay(content, s, ctx, q.grant);
+  const next = q.then ? questOf(content, q.then) : null;
+  return { state: s, result: { ok: true, turned: id, title: pick(q.title, lang), paid, book: bookOf(content, s, lang),
+    ...(next ? { then: { id: next.id, title: pick(next.title, lang), at: placeName(content, s, placeOf(content, next.from.place)) } } : {}) } };
+}
 
 /* Show — the cards Ling puts before the player, WRITTEN DOWN. It was a
    declarative tool until 2026-09-18: the page read the call off the chat

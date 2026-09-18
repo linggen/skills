@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "province": "徐",
+  "_about": "徐州的差事 (design.md § 差事). 接下 at the giver; 交差 wherever the player stands, the moment the count is met — they never walk back.",
+  "quests": [
+    {
+      "id": "xu-elder-herb",
+      "title": {
+        "zh": "彭城的药钱",
+        "en": "The elder's medicine"
+      },
+      "from": {
+        "place": "pengcheng",
+        "who": {
+          "zh": "坊市的老丈",
+          "en": "the old man at the market"
+        }
+      },
+      "say": {
+        "zh": "小友且慢。老朽咳了半月，市上灵芝三十灵石一株，买不起。你若带一株来，这柄竹剑归你。",
+        "en": "A moment, friend. I have coughed for half a month, and lingzhi costs thirty stones here. Bring me one and this bamboo sword is yours."
+      },
+      "need": [
+        {
+          "kind": "carry",
+          "item": "lingzhi",
+          "n": 1
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 30,
+        "wealth": 10,
+        "item": "bamboo-sword"
+      },
+      "then": "xu-fuli-longzhi"
+    },
+    {
+      "id": "xu-fuli-longzhi",
+      "title": {
+        "zh": "凫丽山的蠪侄",
+        "en": "The Longzhi of Fuli"
+      },
+      "from": {
+        "place": "pengcheng",
+        "who": {
+          "zh": "坊市的老丈",
+          "en": "the old man at the market"
+        }
+      },
+      "say": {
+        "zh": "药是好了。可采药的路断了——凫丽山有蠪侄，九尾九首，见人就扑。你降了它，我再谢你。",
+        "en": "The cough is mended, but the herb road is shut: a Longzhi haunts Mount Fuli, nine tails and nine heads, and it leaps at anyone. Subdue it and I will thank you properly."
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "longzhi",
+          "n": 1
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 60,
+        "wealth": 20
+      },
+      "opens": {
+        "after": "xu-elder-herb"
+      }
+    },
+    {
+      "id": "xu-lvliang-look",
+      "title": {
+        "zh": "吕梁洪的水声",
+        "en": "The roar at Lvliang"
+      },
+      "from": {
+        "place": "sibei",
+        "who": {
+          "zh": "泗水北岸的渔人",
+          "en": "a fisherman on the north bank"
+        }
+      },
+      "say": {
+        "zh": "上游吕梁洪，水悬三十仞，流沫四十里。孔夫子在那儿见过一个泅水的老丈，说他懂道。你去看一眼，回来讲给我听。",
+        "en": "Upstream at Lvliang the water falls thirty fathoms and foams for forty li. Confucius saw an old man swim it there and said he knew the Way. Go look, and tell me."
+      },
+      "need": [
+        {
+          "kind": "visit",
+          "place": "lvliang",
+          "n": 1
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 20,
+        "wealth": 10
+      }
+    },
+    {
+      "id": "xu-yunlong-herbs",
+      "title": {
+        "zh": "云龙山的八味",
+        "en": "Eight herbs on Yunlong"
+      },
+      "from": {
+        "place": "yunlong",
+        "who": {
+          "zh": "云龙山的采药人",
+          "en": "a herb-gatherer on Mount Yunlong"
+        }
+      },
+      "say": {
+        "zh": "这山上八味灵草，配得齐才成丹。我年纪大了，眼花认不全。你替我配一炉。",
+        "en": "Eight spirit herbs grow on this hill, and only the full eight make a pill. My eyes are old. Pair a set for me."
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "alchemy-first",
+          "n": 1
+        }
+      ],
+      "grant": {
+        "table": "quest",
+        "progress": 40,
+        "wealth": 15,
+        "item": "qi-pill"
+      }
+    }
+  ]
+}

@@ -1607,8 +1607,7 @@ engine runs them — she never generates one).
   "from": { "place": "pengcheng", "who": "market-elder" },
   "say": { "zh": "沛泽边上有三只蠪侄，商队不敢走夜路了。", "en": "…" },
   "need": [{ "kind": "subdue", "creature": "longzhi", "n": 3 }],
-  "turn_in": { "place": "pengcheng" },
-  "grant": { "table": "quest", "progress": 40, "wealth": 20 },
+  "grant": { "table": "quest", "progress": 40, "wealth": 20, "item": "bamboo-sword" },
   "opens": { "tier": "foundation", "after": "xu-first-errand" },
   "then": "xu-longzhi-hunt-2" }
 ```
@@ -1634,9 +1633,12 @@ are the only writer and a counter nobody can verify is a lie:
 2. **记** — `Quest take --id` writes `state.quests[id] = { took, need: [{…, have: 0}] }`.
 3. **追** — one `advance(state, event)` in the rules, called by every verb that
    could move a counter. Nothing ticks anywhere else.
-4. **交差** — at the turn-in place the card offers it; the rules check, pay from
-   the capped table, and offer `then` — the next link. A chain walks the player
-   across a province exactly the way WoW walks them across a zone.
+4. **交差 — where he stands, the moment it is done** (his ruling, 2026-09-18:
+   交差任务时, 不要让用户跑地图, 直接当前页面交). This is the one place we do
+   NOT copy WoW: no walking back to the giver. The line in the book turns into
+   a 交差 button the instant the count is met, anywhere; the rules pay from the
+   capped table and offer `then`, the next link. A chain still walks the player
+   across a province — it just never walks them backwards.
 5. **撂下** — `Quest drop --id`, WoW's abandon, no penalty.
 
 ### 事簿 — three lines, not twenty-five

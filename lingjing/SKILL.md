@@ -51,7 +51,9 @@ tools:
       here you advance NOTHING; see § 降妖), the `place` the player stands in (what is
       there, its roads, the province's places for the map) and the
       `director` brief (`near`, `too_hard`, the `thread`, the `pool`,
-      today's `seed`, `choice`), `stage` — the cards standing before the player
+      today's `seed`, `choice`), `book` (the 差事 in hand: each with its counts
+      and where the next one is met) and `offers` (what may be taken right
+      here), `stage` — the cards standing before the player
       right now, so you can speak of what they are looking at and never offer it
       twice — `ask` — the question that ends your reply,
       ready as it is, with everything the stage already offers taken out of it
@@ -540,6 +542,29 @@ tools:
         required: false
         description: The path or url GenerateImage returned.
 
+  - name: Quest
+    description: >-
+      差事 — the errands the world gives and the player TAKES. `take` at the
+      giver (Look's `offers` says what may be taken where they stand — speak
+      the giver's `say` in their own voice, never your own terms, never your
+      own reward); `turn` the moment Look's `book` says a line is `ready`,
+      WHEREVER they stand — they never walk back to the giver; `drop` puts one
+      down, no penalty. Three at a time at most. A turn-in that carries `then`
+      names the next errand: say where it waits. You never invent one — an
+      errand that is not in `offers` does not exist; improvisation is 奇遇
+      (Branch).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs quest --action={{action}} --id={{id}}"
+    tier: edit
+    args:
+      action:
+        type: string
+        required: true
+        description: take, turn or drop.
+      id:
+        type: string
+        required: true
+        description: The errand's id, from `offers` or `book`.
+
   - name: Show
     description: >-
       Put cards before the player — on the scene beside the chat on the Mac,
@@ -1015,6 +1040,30 @@ next, say the thread.
   paid — the player need not ask. When the player says one is done and Look
   does not, `check` anyway: `not-done` → the app has not seen it yet; say so
   in the world.
+
+## 差事 — the errands the player takes
+
+**接 · 记 · 追 · 交.** The world gives work, the player chooses it, the rules
+count it, and it is handed in where they stand. This is what fills the days
+between the spine's scenes.
+
+- **接下** — Look's `offers` says what may be taken at this very place. Speak
+  the giver's `say` in their voice, one or two lines, then let the card be
+  tapped — the errand is on its own card, so it is never an option in the
+  question too. Not taking it is declining; no button for that.
+- **You never invent one.** The terms and the reward are authored; an errand
+  not in `offers` does not exist. What you improvise is 奇遇 (Branch), which
+  has its own table. Saying "go kill three wolves" when the rules hold no such
+  errand is a promise the game cannot keep.
+- **追** — `book` carries the counts. Only the rules move them: a beast
+  subdued, a place reached, a board finished, a thing in the bag. Do not say a
+  count has moved unless the book says so.
+- **交差 — wherever they stand, the moment it is `ready`.** Never send them
+  back to the giver (his ruling, 2026-09-18: 不要让用户跑地图). Say what the
+  giver would say, then Quest `turn`; speak what was `paid`, and if a `then`
+  came back, name where the next one waits.
+- **Three at a time.** `book-full` is not an error to apologise for: say which
+  three are in hand and let them put one down (Quest `drop`).
 
 ## Branches — 奇遇
 
