@@ -20,6 +20,10 @@ const RENDER_CAP = 200; // thumbs per category; selection still covers all items
 /** Categories rendered as the month-by-month roll view (whole roll subsets). */
 const ROLL_CATS = new Set(['all', 'not_backed']);
 const FOLDER_PREVIEW = 30; // Mac "All by folder" tiles before a "+N more" expander
+/** Months open themselves until this many thumbs are drawn — a roll worth
+    scrolling shouldn't need a click per month, and a huge one shouldn't
+    render itself to a standstill. Past it, months keep their preview. */
+const AUTO_OPEN_THUMBS = 400;
 
 const CATEGORIES = [
   { key: 'all', label: 'All media', precheck: false },
@@ -268,7 +272,9 @@ function statusStripHtml() {
     : pairedDevices.length
       ? '<span class="media-chip">Wi-Fi paired</span>'
       : '<span class="media-chip warn">not connected</span>';
-  const wirelessName = pairedDevices.map((d) => d.name).find(Boolean);
+  // The phone in play, like the header chip and the card — taking the first
+  // paired row is what made this strip say "(sim)" beside a real iPhone.
+  const wirelessName = getPhoneDevice()?.name || pairedDevices.map((d) => d.name).find(Boolean);
   const phone = dev
     ? `📱 <b>${esc(dev.name || 'iPhone')}</b> · ${dev.free_gb ?? '?'} GB free of ${dev.total_gb ?? '?'} GB${photos != null ? ` · camera roll ${photos} GB` : ''} ${conn}`
     : wirelessName
@@ -305,11 +311,24 @@ function publishSourceInfo() {
   });
 }
 
+/** This Mac's free space without the Media tools: the pipeline reports it,
+    but df knows it too, and a strip reading "? GB free" on a Mac that has
+    169 GB is just the tools being absent. Asked once per page. */
+let macFreeGbCache = null;
+async function macFreeGb() {
+  if (macFreeGbCache != null) return macFreeGbCache;
+  const res = await bash('df -k /System/Volumes/Data 2>/dev/null || df -k /');
+  const kb = Number((res.stdout || '').split('\n')[1]?.trim().split(/\s+/)[3]);
+  macFreeGbCache = Number.isFinite(kb) ? Math.round((kb * 1024) / 1e9) : null;
+  return macFreeGbCache;
+}
+
 async function refreshStatus() {
   const queuedBefore = [...pendingDeletes].sort().join();
   const [info, st] = await Promise.all([
     media('info'), media('state'), loadPendingDeletes(), loadPairedDevices(),
   ]);
+  if (info && info.mac_free_gb == null) info.mac_free_gb = await macFreeGb();
   statusCache = { info, st };
   const el = document.getElementById('media-status');
   if (el) el.innerHTML = statusStripHtml();
@@ -349,6 +368,12 @@ async function resumeMedia() {
   // any completed scan opens the review workspace — even a clean phone still
   // has the All/On-Mac/Removed views and the Mac archive browser to offer
   if (f.generated || f.items?.length) { useFlags(f); return showReview(); }
+  // A Wi-Fi sync leaves no scan behind, so the manifest is the only sign that
+  // something is waiting. Photos that have already arrived are the point of
+  // this tab: open them instead of a card with a button on it.
+  useFlags(f);
+  const synced = (await loadJsonl('manifest.jsonl')).some((r) => (r.path || '').startsWith('wireless/'));
+  if (synced) return showReview();
   showConnect();
 }
 
@@ -510,6 +535,7 @@ async function renderMacSpaceCard(macCard) {
 
 async function refreshDevice() {
   const [info, st] = await Promise.all([media('info'), media('state')]);
+  if (info && info.mac_free_gb == null) info.mac_free_gb = await macFreeGb();
   // The connect screen is the only poller before a scan exists, so it feeds
   // the header switch and the toolbar too — otherwise both sit blank until the
   // review screen is reached.
@@ -962,6 +988,7 @@ function renderReview() {
   panel.innerHTML = `
     ${statusStripDiv()}
     <div class="media-actionbar">
+      <button class="media-cta ghost sm" id="to-connect" title="The phone, this Mac's free space, and the one-time tools setup">‹ Devices</button>
       <span class="abar-meta">${wirelessSummary()}
         <span class="media-dim">${scanned ? 'removals recoverable on this Mac for 30 days'
           : 'duplicates, blurry and already-on-Mac come from a scan — the Media tools do that'}</span></span>
@@ -971,6 +998,8 @@ function renderReview() {
   for (const chip of panel.querySelectorAll('.media-chip-f')) {
     chip.onclick = () => { activeCat = chip.dataset.cat; renderReview(); };
   }
+  const toConnect = document.getElementById('to-connect');
+  if (toConnect) toConnect.onclick = () => showConnect();
   renderCategoryPane();
   updateSelbar();
 }
@@ -1581,8 +1610,10 @@ function renderCategoryPane() {
         if (!months.has(key)) months.set(key, []);
         months.get(key).push(it);
       }
+      let drawn = 0;
       html += [...months.entries()].map(([month, mItems]) => {
-        const open = allExpanded.has(month);
+        const open = allExpanded.has(month) || drawn + mItems.length <= AUTO_OPEN_THUMBS;
+        drawn += open ? mItems.length : Math.min(mItems.length, FOLDER_PREVIEW);
         const shown = open ? mItems : mItems.slice(0, FOLDER_PREVIEW);
         const more = mItems.length - shown.length;
         const allSel = mItems.every((it) => selected.has(it.id));

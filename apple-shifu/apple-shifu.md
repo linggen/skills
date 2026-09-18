@@ -175,6 +175,12 @@ there invites the wrong conclusion.
 Already shipped on both ends. The `📱 iPhone | 💻 Mac` source switch started
 here and moved to the header in the 2026-07-30 reshape.
 
+Since 2026-09-18 the tab opens on the photos themselves whenever the phone has
+sent any — no card with a button in front of them — and the months come open,
+up to 400 thumbs, past which they keep their `+N more` preview. **‹ Devices**
+in the action bar goes back to the phone card, this Mac's free space and the
+one-time tools setup.
+
 Two piles worth adding, both inside PhotoKit: **heaviest** (assets by size,
 descending — the honest answer to "find my large files" on a phone, since the
 photo library is where the gigabytes are) and **swipe triage**, a month at a
