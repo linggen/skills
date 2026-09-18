@@ -134,7 +134,6 @@ function setupPending() {
     because the header badge always counts the whole roll and the two figures
     must not look like they disagree. */
 function backupVerb() {
-  if (setupPending()) return { blocked: NEEDS_SETUP };
   const targets = backupTargets();
   if (!targets.length) {
     return { blocked: selected.size ? 'Everything checked is already backed up' : 'Everything is backed up' };

@@ -22,6 +22,22 @@ require_venv() {
   fi
 }
 
+# Only the imaging and the USB walk need the sandbox. Copying a file, moving it
+# to the restore area and rewriting a ledger is plain stdlib, and macOS ships a
+# python that runs it — so a one-time setup nobody has done yet must not stand
+# between a person and a backup of their own photos (2026-09-18: Back up sat
+# greyed out over 219 synced items).
+PY_ANY="$PY"
+[ -x "$PY_ANY" ] || PY_ANY=/usr/bin/python3
+[ -x "$PY_ANY" ] || PY_ANY="$(command -v python3 2>/dev/null || true)"
+
+require_py() {
+  if [ -z "$PY_ANY" ] || [ ! -x "$PY_ANY" ]; then
+    echo '{"error":"no_python"}'
+    exit 0
+  fi
+}
+
 case "$cmd" in
   info)
     require_venv
@@ -34,19 +50,19 @@ case "$cmd" in
   removals)      cat "$DATA/removals.jsonl" 2>/dev/null || true ;;
   mac-index)     cat "$DATA/mac-index.jsonl" 2>/dev/null || true ;;
   trash)
-    require_venv
+    require_py
     sel="${1:-$DATA/trash-selection.json}"
-    "$PY" "$PIPELINE" trash --selection "$sel" 2>/dev/null || echo '{"error":"trash_failed"}'
+    "$PY_ANY" "$PIPELINE" trash --selection "$sel" 2>/dev/null || echo '{"error":"trash_failed"}'
     ;;
   remove-result) cat "$DATA/remove-result.json" 2>/dev/null || echo '{}' ;;
   backup-sources)
-    require_venv
-    "$PY" "$PIPELINE" backup-sources 2>/dev/null || echo '{"groups":[]}'
+    require_py
+    "$PY_ANY" "$PIPELINE" backup-sources 2>/dev/null || echo '{"groups":[]}'
     ;;
   backup-log)    cat "$DATA/backup-log.jsonl" 2>/dev/null || true ;;
   clean-plan)
-    require_venv
-    "$PY" "$PIPELINE" clean-local --dest "${1:-}" --plan 2>/dev/null || echo '{"error":"plan_failed"}'
+    require_py
+    "$PY_ANY" "$PIPELINE" clean-local --dest "${1:-}" --plan 2>/dev/null || echo '{"error":"plan_failed"}'
     ;;
   volumes)
     # writable external volumes usable as a backup destination (JSON array)
@@ -58,22 +74,22 @@ case "$cmd" in
     printf '[%s]\n' "$list"
     ;;
   purge)
-    require_venv
+    require_py
     if [ "${1:-}" = "all" ]; then
-      "$PY" "$PIPELINE" purge --all 2>/dev/null || echo '{"error":"purge_failed"}'
+      "$PY_ANY" "$PIPELINE" purge --all 2>/dev/null || echo '{"error":"purge_failed"}'
     else
-      "$PY" "$PIPELINE" purge 2>/dev/null || echo '{"error":"purge_failed"}'
+      "$PY_ANY" "$PIPELINE" purge 2>/dev/null || echo '{"error":"purge_failed"}'
     fi
     ;;
   restore)
-    require_venv
-    "$PY" "$PIPELINE" restore --sha "${1:?sha required}" 2>/dev/null || echo '{"error":"restore_failed"}'
+    require_py
+    "$PY_ANY" "$PIPELINE" restore --sha "${1:?sha required}" 2>/dev/null || echo '{"error":"restore_failed"}'
     ;;
   get-dest)
     # remembered backup destination ('' = This Mac default)
-    require_venv
+    require_py
     d=$(cat "$DATA/backup-dest" 2>/dev/null || true)
-    "$PY" -c "import json,sys; print(json.dumps({'dest': sys.argv[1]}))" "$d" 2>/dev/null || echo '{"dest":""}'
+    "$PY_ANY" -c "import json,sys; print(json.dumps({'dest': sys.argv[1]}))" "$d" 2>/dev/null || echo '{"dest":""}'
     ;;
   set-dest)
     printf '%s' "${1:-}" > "$DATA/backup-dest"
@@ -81,25 +97,25 @@ case "$cmd" in
     ;;
   choose-dest)
     # native macOS folder picker → POSIX path (blocks until the user picks)
-    require_venv
+    require_py
     p=$(osascript -e 'POSIX path of (choose folder with prompt "Choose a backup destination for your iPhone photos")' 2>/dev/null)
     if [ -n "$p" ]; then
       p="${p%/}"
-      "$PY" -c "import json,sys; print(json.dumps({'path': sys.argv[1]}))" "$p"
+      "$PY_ANY" -c "import json,sys; print(json.dumps({'path': sys.argv[1]}))" "$p"
     else
       echo '{"canceled":true}'
     fi
     ;;
   remove-one)
     # synchronous single-item trash-delete for the lightbox (blocks ~1-2s)
-    require_venv
+    require_py
     id="${1:?id required}"
     printf '{"ids":["%s"]}' "$id" > "$DATA/selection.json"
-    if "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1; then
+    if "$PY_ANY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1; then
       cat "$DATA/remove-result.json" 2>/dev/null || echo '{"error":"no result"}'
     else
       # connect/AFC failure — surface the reason the pipeline wrote to progress
-      "$PY" -c "import json,sys; p=json.load(open('$DATA/progress.json')); print(json.dumps({'error': p.get('error','remove failed')}))" 2>/dev/null || echo '{"error":"remove failed"}'
+      "$PY_ANY" -c "import json,sys; p=json.load(open('$DATA/progress.json')); print(json.dumps({'error': p.get('error','remove failed')}))" 2>/dev/null || echo '{"error":"remove failed"}'
     fi
     ;;
   setup)
@@ -108,8 +124,11 @@ case "$cmd" in
     ;;
   start)
     # start scan-all | index | scan | backup <dest|-> | remove-trash
-    require_venv
+    require_py
     op="${1:-scan-all}"; shift || true
+    case "$op" in
+      scan-all|index|scan) require_venv ;;
+    esac
     case "$op" in
       scan-all)
         nohup bash -c "'$PY' '$PIPELINE' index && '$PY' '$PIPELINE' pull && '$PY' '$PIPELINE' scan" \
@@ -128,27 +147,27 @@ case "$cmd" in
         # cleanup delete: staged copies move to the 30-day restore area.
         # reset progress first so a poller can't latch onto a prior op's 'done'
         printf '%s\n' '{"op":"remove","status":"running","phase":"starting"}' >"$DATA/progress.json"
-        nohup "$PY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1 &
+        nohup "$PY_ANY" "$PIPELINE" remove --confirm --trash >"$DATA/op.log" 2>&1 &
         ;;
       backup-external)
         # copy the checked sources (backup-scope.json) to the external disk —
         # incremental and resumable, the ledger on the disk is what's "done"
         dest="${1:-}"
         printf '%s\n' '{"op":"backup-external","status":"running","phase":"starting"}' >"$DATA/progress.json"
-        nohup "$PY" "$PIPELINE" backup-external --dest "$dest" >"$DATA/op.log" 2>&1 &
+        nohup "$PY_ANY" "$PIPELINE" backup-external --dest "$dest" >"$DATA/op.log" 2>&1 &
         ;;
       clean-local)
         # trash local copies verified on the disk — the explicit second step
         dest="${1:-}"
         printf '%s\n' '{"op":"clean-local","status":"running","phase":"starting"}' >"$DATA/progress.json"
-        nohup "$PY" "$PIPELINE" clean-local --dest "$dest" --confirm >"$DATA/op.log" 2>&1 &
+        nohup "$PY_ANY" "$PIPELINE" clean-local --dest "$dest" --confirm >"$DATA/op.log" 2>&1 &
         ;;
       backup)
         # archive selection.json to dest — copy-only, never deletes. The UI
         # writes the work-list (checked items, else everything unarchived).
         dest="${1:--}"
         printf '%s\n' '{"op":"backup","status":"running","phase":"starting"}' >"$DATA/progress.json"
-        cmd="'$PY' '$PIPELINE' backup --selection '$DATA/backup-selection.json'"
+        cmd="'$PY_ANY' '$PIPELINE' backup --selection '$DATA/backup-selection.json'"
         if [ "$dest" != "-" ]; then
           dest_esc=$(printf %s "$dest" | sed "s/'/'\\\\''/g")  # volume names can hold apostrophes
           cmd="$cmd --dest '$dest_esc'"
