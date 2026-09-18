@@ -28,6 +28,7 @@ export const WORDS = {
     },
     pickCard: '点一个目标 —— 妖，或它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
     begin: '出 手', wonToday: '今日已降', lostToday: '它退入雾中，明日再来', spentToday: '它今日力竭遁走了',
+    stale: '牌面没读全 —— 刷新页面再出手。',
     lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
     ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩', close: '知道了',
     help: [
@@ -56,6 +57,7 @@ export const WORDS = {
     },
     pickCard: 'choose a target — the beast, or one of its rank', pickTarget: 'now choose what it strikes',
     begin: 'Begin', wonToday: 'subdued today', lostToday: 'it withdrew — come back tomorrow', spentToday: 'it walked away spent today',
+    stale: 'The cards did not load — refresh, then begin.',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
     ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play', close: 'Got it',
     help: [
@@ -286,7 +288,11 @@ export function lastHtml(log, ctx, open = false) {
 
 /* Before the fight: the beast on the scene, and the one way in. The duel card
    the v2 bout drew is gone with it — what a player needs here is who they are
-   about to fight, not the arithmetic of it. */
+   about to fight, not the arithmetic of it. Under the way in stands whatever
+   stopped the last 出手: that line had nowhere to be drawn until 2026-09-18,
+   so a refused start (no 体力, the beast already spent) set words the page
+   never showed and the button simply did nothing. Once the day's outcome is on
+   the card it says it all, so the line steps aside (台上不重复). */
 export function challengeHtml(brief, ctx) {
   const w = ctx.words, c = brief.creature;
   const today = brief.today?.outcome;
@@ -302,6 +308,7 @@ export function challengeHtml(brief, ctx) {
       </div>
     </div>
     ${done ? `<div class="cdone">${esc(done)}</div>` : `<button class="bact end" data-duel-start="${esc(brief.id)}">${w.begin}</button>`}
+    ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;
 }
 

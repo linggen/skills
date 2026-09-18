@@ -120,3 +120,59 @@ test('the challenge card on the scene: who you are about to fight, and the one w
   // and it draws in English too
   assert.match(challengeHtml(brief, { ...ctx, lang: 'en', words: WORDS.en }), /Begin/);
 });
+
+test('the fight room draws itself: a hand you can read, both ranks, and the two buttons', async () => {
+  // Nothing had ever drawn `battleHtml` in a test, and on 2026-09-18 he played
+  // a whole fight in a room where the hand could not be played — twenty taps,
+  // nine cards still held. A surface no test renders is a surface that breaks
+  // in his face; this one renders here now.
+  const { WORDS, battleHtml } = await import('../scripts/battle-card.js');
+  const { begin, offers, view } = await import('../scripts/battle.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, { ...c, name: c.name.zh }]));
+  const setup = {
+    mode: 'pve', seed: 'a-day|leishen|Qingxuan',
+    you: { tier: 'core', step: 0, root: 'wood', deck: ['jixiao', 'huoya', 'houtu', 'luying', 'leiming', 'jingwei', 'zhennu', 'luoshi', 'fenghuo', 'linmu'], extra: ['yinyue'] },
+    foe: { tier: 'core', root: 'wood', deck: content.creatures.creatures.find(c => c.id === 'leishen').deck },
+  };
+  const st = begin(setup, catalog);
+  const ctx = { lang: 'zh', words: WORDS.zh, catalog, board: st.mode.board, artBase: '../worlds/jiuding/', title: '降妖', foeName: '雷神', youName: '清玄' };
+  const html = battleHtml(view(st), offers(st), ctx);
+  for (const id of st.you.hand) assert.match(html, new RegExp(catalog[id].name), `${id} is in hand and on screen`);
+  assert.match(html, /银月/, 'she rides along in hand, out of the ten');
+  assert.match(html, /class="bhand"/);
+  assert.match(html, /data-spot="power"/, '主灵根一击');
+  assert.match(html, /data-spot="end"/, '结束回合');
+  assert.match(html, /雷神/, 'and who is across the table');
+  // and at least one card in that hand may actually be played
+  assert.ok(offers(st).some(o => o.ok && o.action.kind === 'play'), 'a fight that opens is a fight that can be played');
+});
+
+test('a fight whose cards the page cannot name is refused, not opened', async () => {
+  // The empty catalog of 2026-09-18: the hand is dealt, nothing may be played,
+  // and the only buttons that answer are 主灵根一击 and 结束回合. Silence there
+  // cost a fight, a day's 体力 and the day's beast.
+  const { begin, missingCards } = await import('../scripts/battle.js');
+  const setup = { mode: 'pve', seed: 's', you: { tier: 'qi', root: 'wood', deck: ['xiaoyao'], extra: ['yinyue'] }, foe: { tier: 'qi', root: 'earth', deck: ['shanjing'] } };
+  assert.deepEqual(missingCards(setup, {}), ['xiaoyao', 'yinyue', 'shanjing']);
+  assert.throws(() => begin(setup, {}), /no card row for xiaoyao, yinyue, shanjing/);
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const catalog = Object.fromEntries(loadWorld('jiuding').cards.cards.map(c => [c.id, c]));
+  assert.deepEqual(missingCards(setup, catalog), []);
+});
+
+test('the challenge card says what stopped the last 出手 — and stands aside once the day is written', async () => {
+  const { WORDS, challengeHtml } = await import('../scripts/battle-card.js');
+  const brief = {
+    id: 'haunt:leishen',
+    creature: { id: 'leishen', name: '雷神', pinyin: 'léi shén', root: 'wood', root_name: '木', lean: 'ward', art: 'art/leishen.webp', about: null },
+    setup: { mode: 'pve', you: { tier: 'qi', root: 'fire', deck: [] }, foe: { tier: 'qi', root: 'wood', deck: [] } },
+    today: null,
+  };
+  const ctx = { lang: 'zh', words: WORDS.zh, artBase: '../worlds/jiuding/', title: '降妖' };
+  assert.match(challengeHtml(brief, { ...ctx, say: '丹田已空，先去调息。' }), /丹田已空/);
+  // the day's own outcome already says it: one line, not two (台上不重复)
+  assert.doesNotMatch(challengeHtml({ ...brief, today: { outcome: 'won' } }, { ...ctx, say: '丹田已空，先去调息。' }), /丹田已空/);
+  assert.doesNotMatch(challengeHtml(brief, ctx), /undefined|null/);
+});

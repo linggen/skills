@@ -412,7 +412,7 @@ function duel(card, ctx) {
   const exit = (ctx.look.scene?.exits || []).find((x) => x.game?.id === card.id && x.game.kind === 'duel')
     ?? (e && e.game.id === card.id && !e.tamed ? e : null);
   if (!exit) return '';
-  return challengeHtml(exit.duel, { ...ctx, words: BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, title: ctx.words.subdue ?? '降妖', artBase: ctx.artBase ?? '' });
+  return challengeHtml(exit.duel, { ...ctx, words: BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, title: ctx.words.subdue ?? '降妖', artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.say ?? null });
 }
 
 /// 本命法宝 — the treasure bound at 结丹: its name and 重, what it strikes and

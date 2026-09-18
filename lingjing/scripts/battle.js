@@ -65,7 +65,7 @@ export const MODES = {
   // turns; ours plays six, and a first turn where the only honest move is to
   // pass is a sixth of the fight spent watching (his first play, 2026-09-18:
   // "我只能放一个牌上去").
-  // A daily 降妖. The creature holds eight cards, and when they run out it
+  // A daily 降妖. The creature holds twelve cards, and when they run out it
   // WITHDRAWS — the fight ends in neither a win nor a loss, the day is spent
   // and there is no prize. That is the difference between a bounded fight and
   // a farmable one: the gate found that letting its empty deck bleed it meant
@@ -138,9 +138,22 @@ function sideOf(who, cfg, catalog, mode, seed) {
   };
 }
 
+/* Every card the door locked in that this catalog cannot name. A fight begun
+   without its cards is not a hard fight, it is a DEAD one: the hand is dealt,
+   nothing in it may be played, and the only two buttons that still answer are
+   主灵根一击 and 结束回合. That is the exact fight he lost on 2026-09-18 —
+   twenty taps, nine cards still in hand — because the page he was playing on
+   was built before it read cards.json. It cost a fight, a day's 体力 and the
+   day's encounter, and nothing anywhere said a word. So it is loud here. */
+export const missingCards = (setup, catalog) =>
+  [...(setup?.you?.deck ?? []), ...(setup?.you?.extra ?? []), ...(setup?.foe?.deck ?? [])]
+    .filter((id, i, all) => all.indexOf(id) === i && !catalog?.[id]);
+
 export function begin(setup, catalog) {
   const mode = MODES[setup.mode] ?? MODES.pve;
   const seed = setup.seed ?? 'x';
+  const unknown = missingCards(setup, catalog);
+  if (unknown.length) throw new Error(`no card row for ${unknown.join(', ')}`);
   const you = sideOf('you', setup.you, catalog, mode, seed);
   const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp }, catalog, mode, seed);
   const st = { mode, catalog, seed, you, foe, turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [] };
@@ -167,7 +180,7 @@ function startTurn(st) {
 }
 
 /* 反噬 — a deck run dry costs 1, then 2, then 3. The creature does not bleed
-   that way in PvE: its eight cards spent, it withdraws into the mist, and the
+   that way in PvE: its twelve cards spent, it withdraws into the mist, and the
    fight is over with nothing paid (see MODES.pve). */
 function draw(st, side) {
   if (side.deck.length) {

@@ -9,7 +9,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { fight } from './duel.js';
-import { act, begin, foeStep, idle, offers as boutOffers, tokenOf, view } from './battle.js';
+import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf, view } from './battle.js';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { WORDS, cardHtml, trayHtml, esc, say as fill, yinyueLine } from './cards.js';
@@ -466,12 +466,34 @@ document.addEventListener('click', (e) => {
 async function onDuelStart(id) {
   const r = await verb('duel', { id });
   if (!r.ok) {
+    // Its own words, never the refusal's id: 「no-qi」 on the stage is the page
+    // talking to itself. The states without words (won today, tamed) are
+    // already written on the card by Look.
     const d = duelFor(id);
-    d.status = 'done'; d.outcome = 'lost'; d.say = r.say || r.refused;
+    d.status = 'done'; d.outcome = 'lost'; d.say = r.say ?? null;
     render();
     return;
   }
   const brief = r.duel;
+  // The page has to be able to NAME every card the door locked in. If it
+  // cannot, its content is older than the fight — read the world again, and if
+  // they are still strangers say so on the card rather than open a room where
+  // the hand is dealt and nothing in it can be played (2026-09-18: that fight
+  // cost him twenty taps, a day's 体力 and the day's beast, in silence). The
+  // fight stays open in the save, so coming back after a refresh spends no
+  // second 体力.
+  if (missingCards(brief.setup, boutCatalog()).length) {
+    authored = null;
+    await loadContent(look.world);
+  }
+  const unknown = missingCards(brief.setup, boutCatalog());
+  if (unknown.length) {
+    console.error('[lingjing] no card row for', unknown.join(', '));
+    duelFor(id).say = (BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh).stale;
+    render();
+    return;
+  }
+  duelFor(id).say = null;
   bout = { id, brief, setup: brief.setup, st: begin(brief.setup, boutCatalog()), actions: [], picked: null, openLog: false, help: false, note: null };
   render();
 }
