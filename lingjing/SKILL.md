@@ -271,10 +271,19 @@ tools:
     tier: edit
     timeout_ms: 8000
     args:
-      - name: material
-        description: the 天材地宝 to bind it with, by catalog id (精金 jingjin · 雷击木 leijimu · 寒玉 hanyu · 火精 huojing · 息壤 xirang).
-      - name: name
-        description: what the player calls their treasure, in their own words — at most 12 characters.
+      material:
+        type: string
+        required: false
+        description: >-
+          The 天材地宝 to bind it with, by catalog id (精金 jingjin · 雷击木
+          leijimu · 寒玉 hanyu · 火精 huojing · 息壤 xirang). Left out, the
+          refusal names the five and how many are held.
+      name:
+        type: string
+        required: false
+        description: >-
+          What the player calls their treasure, in their own words — at most
+          12 characters. Left out, the refusal asks for it.
 
   - name: Ring
     description: >-
