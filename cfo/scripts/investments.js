@@ -599,17 +599,24 @@ function watchHtml() {
     ? `<button class="link inv-watch-more" data-act="watch-more">${more ? 'Hide the week' : `${week.length} more this week`}</button>${more ? week.map(watchLineHtml).join('') : ''}`
     : '';
   return `<div class="inv-watch">
-    <div class="inv-watch-h"><b>✦ Watch</b><span class="hint inline">${esc(note || watchStatus())}</span><span class="spacer"></span>${controls}</div>
+    <div class="inv-watch-h"><b>✦ Watch</b><span class="hint inline">· ${esc(headline(note))}</span><span class="spacer"></span>${controls}</div>
     ${intro}${day}${rest}
   </div>`;
 }
 
+/// The header says the state first — On or Off — then what it last did, so
+/// the buttons are the action and never the only clue.
+function headline(note) {
+  const { mission } = watch;
+  if (!mission) return 'Unavailable — restart Linggen';
+  return [mission.enabled ? 'On' : 'Off', note || watchStatus()].filter(Boolean).join(' · ');
+}
+
 function watchStatus() {
   const { mission, running, lastRun } = watch;
-  if (!mission) return 'Unavailable — restart Linggen';
   if (running) return 'Checking now…';
-  if (!mission.enabled) return 'Off';
-  if (!lastRun) return 'On — every night at 1:00';
+  if (!mission.enabled) return '';
+  if (!lastRun) return 'Every night at 1:00';
   const when = new Date(lastRun.triggered_at * 1000).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
   return lastRun.status === 'completed' ? `Checked ${when}` : `The check ${when} didn’t finish`;
 }

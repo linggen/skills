@@ -550,6 +550,7 @@ button.link:hover { text-decoration: underline; }
   padding: 10px 12px; margin-bottom: 14px; font-size: 13px; }
 .inv-watch-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .inv-watch-h b { color: var(--accent); }
+.inv-watch-h .hint.inline { margin-left: 0; }
 .inv-watch-h select { padding: 3px 8px; border: 1px solid var(--line); border-radius: 99px;
   background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; }
 .inv-watch > .hint { margin: 8px 0 0; }
