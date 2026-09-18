@@ -303,8 +303,26 @@ function focusHtml() {
   return cards.map((c) => drawCard(c)).join('');
 }
 
-/// Three kinds are the page's own — the rest are cards.js's.
-const PAGE_CARDS = { building: () => buildingCard(), empty: () => emptyCard(), quest: () => questCard() };
+/// Four kinds are the page's own — the rest are cards.js's.
+const PAGE_CARDS = { building: () => buildingCard(), empty: () => emptyCard(), quest: () => questCard(), goal: () => goalCard() };
+
+/// Where the story waits, and one tap that walks the road to it. The rules
+/// have always known (`waypoint`); until 2026-09-18 nothing on screen said it,
+/// and he walked four places asking 「where to go, what should do」. One road
+/// at a time, because that is how the world is walked.
+function goalCard() {
+  const g = look?.waypoint;
+  if (!g) return '';
+  const w = words();
+  const where = g.place ? `${g.place.name}${g.province ? ` · ${g.province}` : ''}` : g.province ?? '';
+  // A chapter that has not opened yet says so instead of offering a road.
+  const shut = g.chapter ? fill(g.opens ? w.goalWait : w.goalOpen, { title: g.title ?? '', opens: g.opens ? new Date(g.opens).toLocaleDateString(lang() === 'zh' ? 'zh-CN' : 'en') : '' }) : '';
+  const go = g.toward ? `<button class="act say" data-say="${esc(fill(w.sayGo, { name: g.toward.name }))}">${esc(fill(w.sayGo, { name: g.toward.name }))}</button>` : '';
+  return `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>
+    <div>${esc(g.text ?? shut)}</div>
+    ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
+    <div class="acts">${go}<button class="act say" data-say="${esc(w.sayGoal)}">${esc(w.about)}</button></div></div>`;
+}
 const drawCard = (c) => (PAGE_CARDS[c.card] ? PAGE_CARDS[c.card]() : cardHtml(c, ctx()));
 
 /// The search for the one who walks with you: the step the rules name, and

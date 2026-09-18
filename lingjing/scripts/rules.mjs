@@ -249,6 +249,21 @@ function questBrief(content, state, now) {
   };
 }
 
+/* Where the story waits, and the first road toward it — the goal, as the stage
+   shows it. It had no card until 2026-09-18: the rules always knew (`thread`),
+   Ling said it only when she thought of it, and he walked four places asking
+   「where to go, what should do」. `toward` is one road at a time; at the door
+   it is the place itself. */
+function waypointOf(content, state, ctx) {
+  if (atScene(content, state) || inMade(state) || !sceneOf(content, state)) return null;
+  const thread = threadOf(content, state, ctx.now);
+  if (!thread?.place) return thread;
+  const here = placeOf(content, state.place), goal = placeOf(content, thread.place.id);
+  if (!here || !goal || here.id === goal.id) return thread;
+  const toward = here.roads.includes(goal.id) ? placeName(content, state, goal) : towardOf(content, state, here, goal, ctx.now);
+  return toward ? { ...thread, toward } : thread;
+}
+
 /* A cauldron's breath, as the rules would judge it now: `ready` at the peak
    of the tier this chapter's cauldron lifts from; `need` names that peak and
    the 修为 it asks, and the realm it opens. Resolve refuses on the same terms. */
@@ -782,7 +797,7 @@ export function look(state, content, ctx) {
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
     chapter: { id: chapter.id, title: pick(chapter.title, lang) },
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
-    waypoint: !atScene(content, state) && sceneOf(content, state) && !inMade(state) ? threadOf(content, state, ctx.now) : null,
+    waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
     companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined } : null,

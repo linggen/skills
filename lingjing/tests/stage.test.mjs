@@ -53,3 +53,17 @@ test('what the stage owns, the question does not offer — whichever side it cam
   // an answer to a riddle is not the card's 摇一摇铃 — it stays
   assert.equal(askMinusStage({ ...ask, options: [{ label: '甲', ring: true, answer: '甲' }, { label: '乙', ring: true, answer: '乙' }] }, owns).options.length, 2);
 });
+
+test('the goal stands on the stage, and the question does not repeat its road', async () => {
+  // 2026-09-18: he walked 彭城 → 泗水岸 → asked for a map → tried a place with
+  // no road → 「where to go, what should do」. The rules knew the whole time.
+  const { stageCards, stageOwns, askMinusStage } = await import('../scripts/stage.mjs');
+  const look = { place: { id: 'sibei' }, tasks: [], waypoint: { scene: '03-cauldron', place: { id: 'liubo', name: '流波山' }, province: '青州', text: '路通向流波山。', toward: { id: 'lvliang', name: '吕梁洪' } } };
+  assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'hexagram']);
+  const owns = stageOwns(look, stageCards(look));
+  assert.ok(owns.has('move:lvliang'), 'the card walks that road itself');
+  const ask = { header: '泗水北岸', question: '何去何从？', options: [{ label: '吕梁洪', move: 'lvliang' }, { label: '云龙山', move: 'yunlong' }, { label: '漳水南岸', move: 'zhangnan' }] };
+  assert.deepEqual(askMinusStage(ask, owns).options.map(o => o.label), ['云龙山', '漳水南岸']);
+  // no thread left: no card
+  assert.deepEqual(stageCards({ ...look, waypoint: null }).map(c => c.card), ['hexagram']);
+});

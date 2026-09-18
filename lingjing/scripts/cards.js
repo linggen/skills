@@ -42,6 +42,7 @@ export const WORDS = {
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
+    goalTitle: '眼下要做的', sayGoal: '说说眼下要做的', goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开',
   },
   en: {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: "Today's practice", trayEmpty: 'Nothing waits today. Wander a while.',
@@ -76,6 +77,7 @@ export const WORDS = {
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
+    goalTitle: 'What waits', sayGoal: 'Tell me what waits', goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet',
   },
 };
 

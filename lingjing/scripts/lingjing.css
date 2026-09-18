@@ -207,6 +207,10 @@ button.pl:hover { background: var(--ling-soft); }
 .roadmap.painted .pl.far { color: #6A6458; border-style: dashed; }
 
 .building { border-color: var(--ling); background: var(--ling-soft); }
+/* The goal: where the story waits. Marked, because a player who cannot find it
+   walks in circles (2026-09-18). */
+.card.goal { border-left: 3px solid var(--ling); }
+.card.goal .cardtitle { color: var(--ling); }
 .gate { display: flex; gap: 12px; align-items: center; }
 .gate .ding { font-family: var(--serif); font-size: 38px; color: var(--ling); line-height: 1; }
 
