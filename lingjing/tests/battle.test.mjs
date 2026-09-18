@@ -207,8 +207,12 @@ test('the creature plays its own eight cards and the fight ends inside eight rou
 });
 
 test('offers draws every choice with its why, and refuses nothing silently', () => {
-  const st = opened({}, ['deer', 'bolt']);
+  const st = opened({}, ['deer', 'bolt', 'grow']);
   const all = offers(st);
+  // 培元 wants a friendly minion and the rank is empty: it still gets a row,
+  // or the card face would have no refusal to draw and would look playable.
+  const grow = all.find(o => o.id === 'grow');
+  assert.equal(grow.why, 'no-friendly');
   assert.ok(all.some(o => o.action.kind === 'end' && o.ok), 'ending the turn is always there');
   const deer = all.find(o => o.id === 'deer');
   assert.equal(deer.why, 'no-mana', 'a card out of reach says why, on the card');

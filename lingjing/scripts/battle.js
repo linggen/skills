@@ -445,10 +445,13 @@ export function view(st) {
 export function offers(st) {
   const out = [];
   const them = st.foe;
+  // A card ALWAYS gets at least one row, even when it has nowhere to point:
+  // otherwise the card face has no refusal to show and a card nobody can play
+  // looks playable (seen in the browser, 2026-09-18 — 焰心 with an empty rank).
   const targets = c => {
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
     if (at === 'enemy') return [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
-    if (at === 'friendly') return st.you.board.map((m, index) => ({ kind: 'minion', index }));
+    if (at === 'friendly') return st.you.board.length ? st.you.board.map((m, index) => ({ kind: 'minion', index })) : [undefined];
     return [undefined];
   };
   st.you.hand.forEach((id, index) => {
