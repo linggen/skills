@@ -430,7 +430,7 @@ function duelBriefFor(id) {
   return e && e.game?.id === id ? e.duel : null;
 }
 
-/// A turn: a 法术 (its own root, the sword's, or borrowed), 物理攻击, 符箓,
+/// A turn: a 法术 (its own root, or the sword's), 物理攻击, 符箓,
 /// 辅助 or an art — duel.js says what may come, the rules settle it. The
 /// creature's turns are the rules' own; the page only replays them.
 async function onDuelPick(id, token) {

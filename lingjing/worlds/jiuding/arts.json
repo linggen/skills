@@ -1,41 +1,7 @@
 {
   "version": 1,
-  "_about": "功法 — the learned arts. Each is one effect in the fight from duel.js (never a number), a source line from 道教 heritage, and the tier it asks for. Learned, never bought: a creature that walks with the player teaches its own (creatures.json `teaches`), a scene exit may `grant.art`. A made world may rename these words, never invent an effect.",
+  "_about": "功法 — the learned arts. Each is one effect in the fight from duel.js (never a number), a source line from 道教 heritage, and the tier it asks for. Learned, never bought and never taught by a beast: a scene exit grants one (`grant.art`) — a person teaches it, or a task earns it. A made world may rename these words, never invent an effect.",
   "arts": [
-    {
-      "id": "jieshi",
-      "name": {
-        "zh": "借势",
-        "en": "Borrowed Force"
-      },
-      "effect": "generate",
-      "tier": "qi",
-      "about": {
-        "zh": "所出法术可作其所生之行：木生火，火生土，土生金，金生水，水生木。多费一分灵力。",
-        "en": "A 法术 may go out as the root it generates: 木→火, 火→土, 土→金, 金→水, 水→木. A breath more 灵力 each time."
-      },
-      "source": {
-        "zh": "《黄帝内经》五行相生",
-        "en": "The Yellow Emperor's Inner Canon — the generating cycle"
-      }
-    },
-    {
-      "id": "dunfa",
-      "name": {
-        "zh": "遁法",
-        "en": "The Way Out"
-      },
-      "effect": "survive",
-      "tier": "foundation",
-      "about": {
-        "zh": "致命的一击留一线生机：气血不至归零。一战一用。",
-        "en": "A blow that would end the fight leaves one last breath: 气血 stops at 1. Once a fight."
-      },
-      "source": {
-        "zh": "《抱朴子·登涉》遁甲之术",
-        "en": "Baopuzi — the arts of concealment"
-      }
-    },
     {
       "id": "fushui",
       "name": {

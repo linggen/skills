@@ -673,7 +673,7 @@ function lintCard(where, card, ids, bad) {
    sell price, provinces the world knows, and one effect of the three —
    a key, a pill within its table, a wear on a slot the game has. */
 /* The arts: one effect duel.js knows, a tier on the ladder, and every
-   creature's `teaches` names one of them. */
+   a scene's `grant.art` names one of them. */
 function lintArts(content, bad) {
   const seen = new Set();
   for (const art of content.arts?.arts ?? []) {
@@ -683,7 +683,6 @@ function lintArts(content, bad) {
     if (!ART_EFFECTS.includes(art.effect)) bad(where, `unknown effect ${art.effect}`);
     if (!content.ladder.tiers.some(t => t.id === art.tier)) bad(where, `unknown tier ${art.tier}`);
   }
-  for (const c of content.creatures.creatures) if (c.teaches && !seen.has(c.teaches)) bad(`creature ${c.id}`, `teaches unknown art ${c.teaches}`);
 }
 
 function lintItems(content, bad) {

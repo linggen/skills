@@ -1,7 +1,7 @@
 // duel-card.js — the 斗法 card. Both sides' 气血 and 灵力, the 战力 that says
 // who moves first, the creature's stance above its name, the turns as a short
 // log, and the player's four choices as buttons — 法术 (a root each, and a
-// borrowed face where 借势 is known), 物理攻击, 符箓, 辅助, with the arts under
+// the sword's root where it lends one), 物理攻击, 符箓, 辅助, with the arts under
 // them. Each button says what it spends and is greyed with its why.
 //
 // The fight lives in duel.js: the page replays it from the picks so far, and
@@ -9,7 +9,7 @@
 // come; the rules refuse the rest.
 
 import { esc, spoken } from './cards.js';
-import { GENERATES, fight, offers } from './duel.js';
+import { fight, offers } from './duel.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 
@@ -31,15 +31,6 @@ function stanceHtml(f, ctx) {
   return held.length ? `<span class="stance">${held.map(esc).join(' · ')}</span>` : '';
 }
 
-/// What 借势 lends, written so it cannot be read backwards. The cast goes out
-/// as the element its root GENERATES — 木生火 — but an arrow between two
-/// glyphs reads as 克 to anyone who half-knows the 五行, and the whole fight
-/// is about 克 (2026-09-18, his first look at the row). Chinese writes the 生;
-/// English writes the words, since a bare 木 says nothing there.
-const lendPair = (from, to, ctx) => (ctx.lang === 'en'
-  ? `${elName(from, ctx)}→${elName(to, ctx)}`
-  : `${GLYPH[from]}生${GLYPH[to]}`);
-
 /// A root's name in the player's language.
 const elName = (el, ctx) => esc(ctx.content.traits.elements[el]?.[ctx.lang] ?? el);
 
@@ -48,7 +39,7 @@ function turnHtml(t, b, ctx) {
   const w = ctx.words;
   const art = id => b.arts.find(a => a.id === id)?.name ?? id;
   const mine = {
-    cast: () => (t.as ? `${esc(art(t.art))} ${lendPair(t.element, t.as, ctx)}` : `${w.aCast}·${GLYPH[t.element]}`),
+    cast: () => `${w.aCast}·${GLYPH[t.element]}`,
     strike: () => (t.hits ? `${esc(art(t.art))} ×${t.hits}` : w.aStrike),
     talisman: () => `${w.aCharm}${t.gave ? ` +${t.gave}${w.mana}` : ''}`,
     assist: () => (t.how === 'focus' ? w.aFocus : w.aGuard),
@@ -70,10 +61,10 @@ function btn(o, label, hint, id, ctx) {
 }
 
 /// The buttons the fight offers next, from duel.js — in rows the player reads
-/// as one thing: the 法术, what 借势 lends, the blade and the 符, the 辅助.
+/// as one thing: the 法术, the blade and the 符, the 辅助.
 function picksHtml(exit, d, ctx) {
   const w = ctx.words, b = exit.duel, id = exit.game.id;
-  const rows = { cast: [], borrow: [], hit: [], assist: [], art: [] };
+  const rows = { cast: [], hit: [], assist: [], art: [] };
   // The 五行 glyph is the world's own word for a root; in English it needs its
   // name beside the cost, or 木 says nothing.
   const en = ctx.lang === 'en';
@@ -84,14 +75,13 @@ function picksHtml(exit, d, ctx) {
       const from = o.kind === 'sword' ? `${esc(b.sword?.name ?? '')} ` : '';
       rows.cast.push(btn(o, GLYPH[o.element], en ? `${elName(o.element, ctx)} · ${cost}` : `${from}${cost}`, id, ctx));
     }
-    else if (o.kind === 'borrow') rows.borrow.push(btn(o, lendPair(o.element, GENERATES[o.element], ctx), cost, id, ctx));
     else if (o.kind === 'strike') rows.hit.push(btn(o, w.aStrike, `${b.sword ? esc(b.sword.name) : w.barehand} ${cost}`, id, ctx));
     else if (o.kind === 'charm') rows.hit.push(btn(o, w.aCharm, `×${b.charm?.held ?? 0}`, id, ctx));
     else if (o.kind === 'assist') rows.assist.push(btn(o, o.how === 'focus' ? w.aFocus : w.aGuard, cost, id, ctx));
     else if (o.kind === 'art') rows.art.push(btn(o, esc(b.arts.find(a => a.id === o.id)?.name ?? o.id), cost, id, ctx));
   }
   const row = (label, cells) => (cells.length ? `<div class="roots"><span class="rowlab">${label}</span>${cells.join('')}</div>` : '');
-  return row(w.aCast, rows.cast) + row(w.lend, rows.borrow) + row('', rows.hit) + row(w.aAssist, rows.assist) + row(w.arts, rows.art);
+  return row(w.aCast, rows.cast) + row('', rows.hit) + row(w.aAssist, rows.assist) + row(w.arts, rows.art);
 }
 
 /// `exit` is Look's exit brief (with `duel`), `d` the page's fight

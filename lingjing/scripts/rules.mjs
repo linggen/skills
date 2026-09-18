@@ -515,10 +515,6 @@ function learn(content, state, id) {
   state.arts = [...(state.arts ?? []), id];
   return artBrief(content, state, art);
 }
-/* A creature that walks with the player teaches its own. */
-const teach = (content, state, cid) => learn(content, state, creatureOf(content, cid)?.teaches);
-/* Every companion's art, for a save from before the arts (2026-09-16). */
-const teachAll = (content, state) => state.cast.map(cid => teach(content, state, cid)).filter(Boolean);
 
 /* What the player stands in a fight with — duel.js reads it, the card too:
    their roots and realm, the arms they wear, the 符 in the bag, the arts
@@ -794,12 +790,11 @@ function mapPaint(content) {
    Look takes the player into it — the one change Look makes. */
 export function wake(state, content, ctx) {
   const s = clone(state);
-  const learned = teachAll(content, s).length > 0;
   if (!state.scene && !inMade(state)) advanceChapter(content, s, ctx.now);
   // The call: at the realm the world names, the search for her opens.
   const called = !s.companion && callDue(content, s);
   if (called) s.companion = {};
-  return learned || called || (s.scene && !state.scene) ? s : null;
+  return called || (s.scene && !state.scene) ? s : null;
 }
 
 /* The pool as the scene draws it: what is there, the top, and — when a story
@@ -840,8 +835,8 @@ function pay(content, state, ctx, grant) {
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   if (grant.item) state.bag[grant.item] = (state.bag[grant.item] ?? 0) + 1;
-  // A companion teaches its art as it joins; an exit may grant one outright.
-  const learned = (grant.cast ? teach(content, state, grant.cast) : null) ?? (grant.art ? learn(content, state, grant.art) : null);
+  // An art is taught by a person, in a scene — never by the beast itself.
+  const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
   const fortune = (pf !== 1 && grant.progress) || (wf !== 1 && grant.wealth) ? { progress: pf, wealth: wf } : null;

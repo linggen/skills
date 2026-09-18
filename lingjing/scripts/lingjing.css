@@ -259,7 +259,6 @@ button.pl:hover { background: var(--ling-soft); }
 .rootbtn:hover { border-color: var(--ling); transform: translateY(-1px); }
 .rootbtn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .rootbtn.sword { border-style: dashed; }
-.rootbtn.borrow { font-size: 15px; min-width: 66px; border-color: var(--ling); color: var(--ling); }
 .rootbtn.charm { color: #b3261e; }
 .rootbtn.strike, .rootbtn.assist { font-size: 15px; min-width: 66px; }
 .rootbtn.art { font-size: 15px; min-width: 80px; }

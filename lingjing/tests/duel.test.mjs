@@ -4,7 +4,8 @@
 //
 //   · one choice repeated does not win
 //   · reading the creature does
-//   · no fight is lost by birth — roots, a sword and 借势 beat every creature
+//   · a birth without the counter root is at a disadvantage, not doomed:
+//     the sword lends the root it lacks, and the 符 ends what the roots cannot
 //   · neither side wins by making the other spend 灵力 alone
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -43,7 +44,7 @@ const always = token => (f, foe, kit, can) => (can.find(o => o.token === token) 
 
 /* 护体 against a gathered blow, 聚势 before the finishing one, and otherwise
    the blow that takes the most 气血 for the least 灵力 — which is the counter
-   root where it is theirs, a borrowed one where 借势 is known, the blade into
+   root where it is theirs, the sword's where it lends one, the blade into
    a warded hide, the 符 to finish. It asks duel.js what each choice would do,
    so the gate can never drift from the rules. */
 function attentive(f, foe, kit, can, actions) {
@@ -89,14 +90,16 @@ test('斗法 is not a rolling game: one choice repeated does not win', () => {
   assert.ok(rate(always('assist:guard')).rate < 0.3, 'waiting a creature out is not a way to win');
 });
 
-test('斗法 rewards reading the creature, and no fight is lost by birth', () => {
+test('斗法 rewards reading the creature, and tools answer for the root you lack', () => {
   const smart = rate(attentive);
   assert.ok(smart.rate > 0.75, `the attentive line wins ${(smart.rate * 100).toFixed(1)}%`);
   assert.ok(smart.dry < 0.25, '灵力 alone does not decide it');
-  // 借势 is the prologue's own art: with it, every creature can be beaten by
-  // every birth — the root they lack is reached through the one that makes it.
-  const born = rate(attentive, { arts: { jieshi: { effect: 'generate', ready: true } } });
-  assert.deepEqual(born.never, [], 'a root, a sword and 借势 beat every creature');
+  // 2026-09-18, his ruling: born without 金 you SHOULD be worse at 法术 — the
+  // answer is the tool, not an art everyone carries (借势 was cut that day).
+  // The blade lends the root you lack; a 符 in the bag ends what it cannot.
+  const armed = rate(attentive, { charm: { id: 'talisman', held: 1 } });
+  assert.deepEqual(armed.never, [], 'with the sword it lends and one 符, no pairing is hopeless');
+  assert.ok(armed.rate >= smart.rate, 'the 符 is worth carrying');
 });
 
 test('every creature the world ships fights a way the rules know', () => {

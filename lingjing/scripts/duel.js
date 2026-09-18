@@ -17,8 +17,6 @@
 
 export const ELEMENTS = ['metal', 'wood', 'water', 'fire', 'earth'];
 export const BEATS = { wood: 'earth', earth: 'water', water: 'fire', fire: 'metal', metal: 'wood' };
-// 相生: 木生火 · 火生土 · 土生金 · 金生水 · 水生木 — what 借势 borrows.
-export const GENERATES = { wood: 'fire', fire: 'earth', earth: 'metal', metal: 'water', water: 'wood' };
 
 /* The realm table — both sides read it, so a fight is an even match by birth
    and what wins is what the player brings. `def` is a creature's own hide:
@@ -46,7 +44,6 @@ export const costsOf = spell => ({
   strike: Math.max(1, Math.round(spell / 2)),
   talisman: 0,
   assist: Math.max(1, Math.round(spell / 4)),
-  generate: Math.max(1, Math.round(spell / 4)),
   thunder: Math.round(spell * 1.5),
   twice: Math.round(spell * 0.75),
 });
@@ -74,18 +71,13 @@ const intentCost = (intent, c) => ({ strike: c.strike, cast: c.cast, gather: c.a
 const PATTERN = ['strike', 'cast', 'gather', 'strike', 'guard'];
 
 /* An art is one effect in the fight, never a number in the catalog.
-   generate      a 法术 may go out as the element its root generates (借势)
    thunder       a 法术 of 木 at double, ignoring 抗                  (五雷法)
    twice         物理攻击 strikes twice for one cost                  (御剑)
-   survive       a blow that would end the fight leaves 1 气血, once  (遁法)
    charm-refills a 符 cast also gives back 灵力                       (符水) */
-export const ART_EFFECTS = ['generate', 'thunder', 'twice', 'survive', 'charm-refills'];
-const ACTION_ARTS = new Set(['thunder', 'twice']); // 借势 rides a cast, so it is not one
-/* Once a fight. 借势 is not an art you play but a face a 法术 can wear, and
-   it pays its own 灵力 every time — it is what a player born without a
-   creature's counter reaches the counter with. */
+export const ART_EFFECTS = ['thunder', 'twice', 'charm-refills'];
+const ACTION_ARTS = new Set(['thunder', 'twice']);
+/* Once a fight. */
 const ONCE = new Set(['thunder', 'twice']);
-const BORROWS = kit => Object.entries(kit.arts ?? {}).find(([, a]) => a.effect === 'generate' && a.ready)?.[0] ?? null;
 
 /* A small stable hash: the same day, creature and 道号 draw the same start. */
 export function hashOf(text) {
@@ -152,7 +144,6 @@ const castable = (element, kit) => (kit.roots ?? ELEMENTS).includes(element) || 
 function costOf(token, kit, c) {
   const { head, arg } = parse(token);
   if (head === 'art') return ACTION_ARTS.has(kit.arts?.[arg]?.effect) ? c[kit.arts[arg].effect] : null;
-  if (head === 'borrow') return c.cast + c.generate;
   return c[head] ?? null;
 }
 
@@ -166,8 +157,6 @@ export function legal(token, st, kit = {}) {
   if (cost == null) return 'bad-token';
   const why = {
     cast: () => (!ELEMENTS.includes(arg) ? 'bad-token' : castable(arg, kit) ? null : 'not-your-root'),
-    // 借势 — the same 法术, sent out as the element its root generates.
-    borrow: () => (!ELEMENTS.includes(arg) ? 'bad-token' : !BORROWS(kit) ? 'art-unknown' : castable(arg, kit) ? null : 'not-your-root'),
     strike: () => null,
     talisman: () => (!(kit.charm?.held > 0) ? 'no-charm' : st.you.charmed ? 'charm-used' : null),
     // 聚势 and 护体 are held, not stacked: already gathered, you must act.
@@ -213,28 +202,24 @@ function strikeYou(st, kit, raw, { element = null } = {}) {
   if (element && kit.fate?.root === element && !st.you.fated) { d = half(d); st.you.fated = true; }
   d = Math.max(1, d - (element ? wardOf(st.you.stats, element) : st.you.stats.def));
   st.you.hp = Math.max(0, st.you.hp - d);
-  if (st.you.hp <= 0 && !st.you.saved && hasArt(kit, 'survive')) { st.you.hp = 1; st.you.saved = true; }
   return d;
 }
 
 /* ── The player's turn ── */
 
 /* 法术 — a root of their own, or the sword's at 借器施法. The day's cast
-   lifts or lowers its element; 借势 sends it out as the one it generates. */
-function castTurn(st, el, foe, kit, borrow = null) {
+   lifts or lowers its element. */
+function castTurn(st, el, foe, kit) {
   const c = costsOf(st.you.stats.spell);
-  st.you.qi -= borrow ? c.cast + c.generate : c.cast;
-  const as = borrow ? GENERATES[el] : el;
-  const art = borrow;
-  if (borrow && !st.you.arts.includes(borrow)) st.you.arts.push(borrow);
+  st.you.qi -= c.cast;
   let spell = st.you.stats.spell;
   if (kit.fortune?.root === el) spell += kit.fortune.spell ?? 0;
   // A 本命法宝 amplifies its own element, 重 by 重.
   if (kit.treasure?.element === el) spell += kit.treasure.level;
   if (!(kit.roots ?? ELEMENTS).includes(el)) spell -= BORROW;
-  const raw = Math.max(1, Math.round(Math.max(1, spell) * clash(as, foe.root)));
-  const damage = strikeFoe(st, foe, raw, { element: as });
-  st.log.push({ side: 'you', act: 'cast', element: el, ...(as !== el ? { as, art } : {}), damage, hp: st.foe.hp, qi: st.you.qi });
+  const raw = Math.max(1, Math.round(Math.max(1, spell) * clash(el, foe.root)));
+  const damage = strikeFoe(st, foe, raw, { element: el });
+  st.log.push({ side: 'you', act: 'cast', element: el, damage, hp: st.foe.hp, qi: st.you.qi });
 }
 
 /* 物理攻击 — the worn weapon, or bare hands. 御剑 strikes twice for one cost. */
@@ -275,7 +260,6 @@ function yourTurn(st, token, foe, kit) {
   const { head, arg } = parse(token);
   const turn = {
     cast: () => castTurn(st, arg, foe, kit),
-    borrow: () => castTurn(st, arg, foe, kit, BORROWS(kit)),
     strike: () => strikeTurn(st, foe, kit),
     talisman: () => charmTurn(st, foe, kit),
     assist: () => assistTurn(st, arg),
@@ -320,7 +304,7 @@ function foeTurn(st, foe, kit) {
 function start(foe, kit) {
   const stats = youOf(kit);
   return {
-    you: { hp: stats.hp, qi: stats.qi, stats, guard: false, focus: false, charmed: false, arts: [], fated: false, saved: false },
+    you: { hp: stats.hp, qi: stats.qi, stats, guard: false, focus: false, charmed: false, arts: [], fated: false },
     foe: { hp: foe.hp, qi: foe.qi, guard: false, gather: false, armor: 0, turn: 0 },
     log: [], outcome: 'open',
   };
@@ -348,7 +332,7 @@ export function fight(actions, foe, kit = {}) {
   const stats = st.you.stats;
   return {
     outcome: st.outcome, log: st.log, first: st.first, refused: st.refused ?? null,
-    you: { hp: st.you.hp, qi: st.you.qi, hp_max: stats.hp, qi_max: stats.qi, power: stats.power, guard: st.you.guard, focus: st.you.focus, saved: st.you.saved },
+    you: { hp: st.you.hp, qi: st.you.qi, hp_max: stats.hp, qi_max: stats.qi, power: stats.power, guard: st.you.guard, focus: st.you.focus },
     foe: { hp: st.foe.hp, qi: st.foe.qi, hp_max: foe.hp, qi_max: foe.qi, power: foe.power, guard: st.foe.guard, gather: st.foe.gather, armor: st.foe.armor },
     used: { charm: st.you.charmed, arts: st.you.arts },
   };
@@ -361,8 +345,6 @@ export function offers(actions, foe, kit = {}) {
   const mine = [...(kit.roots ?? ELEMENTS)];
   if (kit.sword && !mine.includes(kit.sword)) mine.push(kit.sword);
   const out = mine.map(el => ({ token: `cast:${el}`, kind: el === kit.sword && !(kit.roots ?? ELEMENTS).includes(el) ? 'sword' : 'root', element: el }));
-  const borrows = BORROWS(kit);
-  if (borrows) out.push(...mine.map(el => ({ token: `borrow:${el}`, kind: 'borrow', element: el, as: GENERATES[el], art: borrows })));
   out.push({ token: 'strike', kind: 'strike' });
   if (kit.charm) out.push({ token: 'talisman', kind: 'charm' });
   out.push({ token: 'assist:focus', kind: 'assist', how: 'focus' }, { token: 'assist:guard', kind: 'assist', how: 'guard' });

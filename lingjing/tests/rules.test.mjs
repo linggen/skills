@@ -313,7 +313,7 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
   assert.deepEqual(out.state.wins, {});
 });
 
-test('the arms worn stand in the kit; sold, the sword is no longer theirs; 夫诸 teaches 借势 as it joins', () => {
+test('the arms worn stand in the kit; sold, the sword is no longer theirs; a companion teaches nothing', () => {
   const s = { ...toFuzhu(), bag: { 'iron-sword': 1, 'straw-cloak': 1 }, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } };
   const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel;
   assert.deepEqual(brief.sword, { id: 'iron-sword', name: '铁剑', atk: 3, root: 'metal', root_name: '金' });
@@ -333,23 +333,15 @@ test('the arms worn stand in the kit; sold, the sword is no longer theirs; 夫�
   const bare = { ...won.started.state, bag: {} };
   assert.equal(look(bare, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.sword, null);
   refused(duel, bare, { id: 'subdue-fuzhu', picks: 'cast:metal' }, 'not-your-root');
-  // the companion teaches its art as it joins
+  // A beast walks beside the player; it does not teach (2026-09-18 — his
+  // "不要pet教主角功法"). An art comes from a person, in a scene: `grant.art`.
   const out = must(resolve, won.state, { exit: 'subdue' });
-  assert.deepEqual(out.state.arts, ['jieshi']);
-  assert.equal(out.result.paid.learned.name, '借势');
-  assert.equal(out.result.paid.learned.ready, true, '练气 may borrow');
-  // an old save with 夫诸 already walking learns on the next Look
+  assert.deepEqual(out.state.arts ?? [], []);
+  assert.equal(out.result.paid.learned, undefined);
   const old = { ...toOpenWorld(), arts: undefined };
   assert.ok(old.cast.includes('fuzhu'));
   const woke = VERBS.look(old, content, ctx());
-  assert.deepEqual(woke.state.arts, ['jieshi']);
-  assert.equal(woke.result.arts[0].id, 'jieshi');
-  assert.equal(woke.result.learned[0].name, '借势', 'said once');
-  const again = VERBS.look(woke.state, content, ctx());
-  assert.equal(again.state, null, 'learned once'); assert.equal(again.result.learned, undefined);
-  // the art learned is in the kit of the next fight, ready at 练气
-  const kit = look(woke.state, content, ctx()).place.encounter.duel.kit;
-  assert.deepEqual(kit.arts, { jieshi: { effect: 'generate', ready: true } });
+  assert.equal(woke.state, null, 'a companion in an old save teaches nothing either');
 });
 
 test('a loss is free and the creature withdraws until tomorrow', () => {
@@ -528,30 +520,21 @@ test('a 符 is 法术 ×3, no 防 or 抗 blunts it, once a fight and only when h
   assert.equal(spent.log.find(t => t.act === 'talisman').gave, Math.round(REALMS.qi.spell * 1.5));
 });
 
-test('the arts: 借势 rides a cast for a breath more 灵力, 五雷法 once, 遁法 leaves the last breath', () => {
+test('the arts: 五雷法 falls as 木 at double, past any 抗, once a fight', () => {
   const metal = dummy({ root: 'metal', def: 0 });
   const c = costsOf(REALMS.qi.spell);
-  // 借势: 木 goes out as 火, and 火克金
-  const borrower = kitOf({ arts: { jieshi: { effect: 'generate', ready: true } } });
-  const lent = fight(['borrow:wood'], metal, borrower);
-  assert.equal(lent.log[0].as, 'fire');
-  assert.equal(lent.log[0].damage, REALMS.qi.spell * 2);
-  assert.equal(lent.you.qi, REALMS.qi.qi - c.cast - c.generate, 'a breath more each time');
-  assert.equal(fight(['borrow:wood', 'borrow:wood'], metal, borrower).log.filter(t => t.act === 'cast' && t.as).length, 2, 'not once a fight');
-  assert.equal(fight(['borrow:wood'], metal, kitOf()).refused.why, 'art-unknown');
-  assert.equal(fight(['borrow:metal'], metal, borrower).refused.why, 'not-your-root');
+  // 借势 was cut on 2026-09-18: a root the player lacks is reached through
+  // the sword that lends it, or the 符 — never through an art everyone has.
+  assert.equal(fight(['borrow:wood'], metal, kitOf()).refused.why, 'bad-token');
   // 五雷法: 木 at double 法术, no 抗 blunts it, once
   const thunder = kitOf({ arts: { wulei: { effect: 'thunder', ready: true } } });
   const struck = fight(['art:wulei'], dummy({ root: 'earth', ward: 99 }), thunder);
   assert.equal(struck.log[0].damage, REALMS.qi.spell * 2 * 2, '木克土, and no 抗');
   assert.equal(fight(['art:wulei', 'art:wulei'], dummy({ root: 'earth' }), thunder).refused.why, 'art-used');
   assert.equal(fight(['art:wulei'], metal, kitOf({ arts: { wulei: { effect: 'thunder', ready: false } } })).refused.why, 'art-needs-tier');
-  // 遁法: the blow that would end it leaves one breath, once
-  const runner = kitOf({ arts: { dunfa: { effect: 'survive', ready: true } } });
+  // 遁法 was cut the same day: it named a way of moving, and this system has
+  // no movement — it will come back with the 身法 branch of the skill tree.
   const killer = dummy({ pattern: ['strike'], atk: 99 });
-  const saved = fight(['assist:focus'], killer, runner);
-  assert.equal(saved.outcome, 'open'); assert.equal(saved.you.hp, 1); assert.equal(saved.you.saved, true);
-  assert.equal(fight(['assist:focus', 'assist:guard'], killer, runner).outcome, 'lost', 'once');
   assert.equal(fight(['assist:focus'], killer, kitOf()).outcome, 'lost');
 });
 

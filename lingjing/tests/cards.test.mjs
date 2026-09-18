@@ -49,7 +49,7 @@ test('the 灵根 card takes the birthday for 命格 on the page, or shows the si
   assert.doesNotMatch(set, /fate-birth/);
 });
 
-test('the fight card draws both pools, the creature\'s stance and what 借势 lends', async () => {
+test('the fight card draws both pools, the creature\'s stance and every choice with its cost', async () => {
   const { WORDS } = await import('../scripts/cards.js');
   const { duelHtml } = await import('../scripts/duel-card.js');
   const { foeOf } = await import('../scripts/duel.js');
@@ -59,8 +59,8 @@ test('the fight card draws both pools, the creature\'s stance and what 借势 le
   const exit = { game: { id: 'subdue-kui' }, duel: {
     creature: { name: '夔', root: 'water', root_name: '水' }, sword: null, charm: null,
     foe: foeOf(kui, 'qi', 0, 'seed'),
-    arts: [{ id: 'jieshi', name: '借势', effect: 'generate', ready: true }],
-    kit: { roots: ['wood', 'water', 'fire', 'earth'], tier: 'qi', step: 0, arts: { jieshi: { effect: 'generate', ready: true } } },
+    arts: [],
+    kit: { roots: ['wood', 'water', 'fire', 'earth'], tier: 'qi', step: 0, arts: {} },
   } };
   const ctx = { lang: 'zh', words: WORDS.zh, content };
   const open = duelHtml(exit, { status: 'open', picks: [] }, ctx);
@@ -69,12 +69,9 @@ test('the fight card draws both pools, the creature\'s stance and what 借势 le
   assert.match(open, /灵力/);
   assert.match(open, /厚皮/);
   assert.match(open, /战力/);
-  // 借势 rides the cast: a row of borrowed faces beside the player's roots.
-  // It lends what the root GENERATES, and the button says 生 — an arrow alone
-  // reads as 克 to anyone who half-knows the 五行 (2026-09-18).
+  // A root of one's own, and nothing borrowed: 借势 was cut on 2026-09-18.
   assert.match(open, /data-duel-pick="cast:fire"/);
-  assert.match(open, /data-duel-pick="borrow:fire"[^>]*>火生土/);
-  assert.doesNotMatch(open, /火→土/);
+  assert.doesNotMatch(open, /data-duel-pick="borrow/);
   // 物理攻击 and 辅助 are always there; a 符 the player does not hold is not.
   assert.match(open, /data-duel-pick="strike"/);
   assert.match(open, /data-duel-pick="assist:guard"/);
@@ -82,10 +79,9 @@ test('the fight card draws both pools, the creature\'s stance and what 借势 le
   // Idle draws no pools, only the way in.
   const idle = duelHtml(exit, { status: 'idle', picks: [] }, ctx);
   assert.match(idle, /data-duel-start="subdue-kui"/);
-  // In English a bare 火 says nothing: the words stand in, and both languages
-  // say what the borrowed cast costs.
+  // In English a bare 火 says nothing: the root's name stands beside the cost.
   const en = duelHtml(exit, { status: 'open', picks: [] }, { lang: 'en', words: WORDS.en, content });
-  assert.match(en, /data-duel-pick="borrow:fire"[^>]*>Fire→Earth<small>5\u00a0Force<\/small>/);
+  assert.match(en, /data-duel-pick="cast:fire"[^>]*>火<small>Fire · 4\u00a0Force<\/small>/);
 });
 
 test('the page knows the cast\'s own question by the rules\' words, so the coins stay in the air through it', async () => {
