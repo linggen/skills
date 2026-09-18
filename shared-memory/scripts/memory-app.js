@@ -84,7 +84,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Opening from the skill card has no `?session=`. Resume the most recent
   // ling-mem session by default instead of spawning a fresh one each time.
   // Sessions are app-managed (CFO-style) — no session list UI.
-  const existingSession = params.get('session') || '';
+  // The rule decides, not the address bar. Resuming stamps ?session= into the
+  // URL, so a tab left open across days — or a bookmark of one — used to pin
+  // that session for ever and never roll over. A session named in the URL is
+  // honoured while it is inside the window, and let go when it isn't.
+  let existingSession = params.get('session') || '';
+  if (existingSession && !(await sessionFresh(existingSession))) {
+    existingSession = '';
+    const url = new URL(window.location);
+    url.searchParams.delete('session');
+    history.replaceState(null, '', url);
+  }
   const initialSession = existingSession || (await latestSkillSession());
   // Reflect a resumed session in the URL so reload/refresh stays put.
   if (!existingSession && initialSession) {
@@ -98,6 +108,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Most recent ling-mem skill session id, or '' if none exists yet or the
 // latest is older than 24h (all apps share this rule: latest if < 24h,
 // else auto-fresh — CFO/DJ/Apple Shifu/Pulse do the same).
+/** Is the session named in the URL still inside the window? Unknown (the list
+    didn't answer) counts as fresh — never drop a session over a failed fetch. */
+async function sessionFresh(id) {
+  try {
+    const sessions = await listSkillSessions(SKILL_NAME);
+    const found = sessions.find((s) => s.id === id);
+    if (!found) return false;
+    return (Date.now() / 1000 - (found.created_at || 0)) / 3600 < 24;
+  } catch {
+    return true;
+  }
+}
+
 async function latestSkillSession() {
   try {
     const sessions = await listSkillSessions(SKILL_NAME);

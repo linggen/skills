@@ -9,6 +9,22 @@ status: 2026-09-16 — 功法 built (swords lend a root, 符 from 桑皮纸, fiv
 
 # Lingjing — design
 
+## 设计原则 (2026-09-18 — his, and they outrank anything below)
+
+- **走已有的套路，不发明新词。** 开放世界 RPG 的模式是现成的 —— 技能树、加点、
+  装备与功法随人成长 —— 我们照着走，参考《魔兽世界》(World of Warcraft)。
+  一句话的定位是他写的：**AI 驱动、卡牌策略、动态故事、聊天框版的魔兽世界，
+  但世界是凡人的世界。**
+- **斗法照《炉石传说》(Hearthstone)。** 一场战斗是一局卡牌对战：灵力每回合
+  长一格、手里有牌、场上有灵兽、法术与符是一次性的。机制取炉石，名字与世界
+  取我们自己的heritage。见 `## 斗法 v3`；2026-09-17 那套回合制五行对拼作废。
+
+*In English, for the agent reading this: follow the patterns open-world RPGs
+already have (skill tree, points, gear and arts that grow with the player —
+World of Warcraft as the reference), and build the fight as a card game in the
+shape of Hearthstone. Invent no new vocabulary; the invention goes into the
+world, which is 凡人's, not into the mechanics.*
+
 ## The shape in one diagram
 
 ```
@@ -1064,7 +1080,48 @@ refused. Rulings made while building, his to flip:
   the engine; the sword in the bout and the teaching in the rules; 写符
   end to end with 符水; the linter on arts and made things).
 
-## 斗法 — 灵力、法器与本命法宝 (designed 2026-09-17; BUILT 2026-09-17 — all three steps)
+## 斗法 v3 — 一局卡牌 (designed 2026-09-18, 照《炉石传说》; NOT BUILT)
+
+His direction, in order: *开放世界RPG都是一个套路, 我们按照已有的套路和模式走,
+技能树, 加点, 可以参考魔兽世界的游戏模式* · *我们可以做成一个AI驱动, 卡牌策略,
+动态故事, 聊天框版魔兽世界, 但世界是凡人的世界* · *战斗系统参考炉石传说* ·
+*OK, let's build our fighting system base on 炉石传说*.
+
+**What replaces what.** The turn-by-turn 五行 bout below (`## 斗法 — 灵力、
+法器与本命法宝`, built 2026-09-17) becomes this. What survives it: the exit
+and the witness rule (the scene is the only witness to a win), one try a day,
+a loss costs nothing, 五行相克, the creature's lean, 本命法宝, and the arms.
+What goes: 回合里四选一 (法术/物理/符箓/辅助) as the whole of a turn.
+
+**The shape.**
+
+- **两位英雄.** 你与妖各有气血；妖的气血归零，这一局你赢。没有灵力耗尽即败
+  这条了 —— 灵力回到炉石的位置：它是每回合的预算，不是第二条命。
+- **灵力每回合长一格**，开局 1，上限随境界（练气 6 · 筑基 8 · 结丹 10 ·
+  元婴 10），每回合回满。一张牌费几点写在牌上。
+- **牌库 ≈ 12 张**：你学过的功法，加身上的符、丹、法宝。开局抽 3，每回合抽 1。
+  抽空了是**反噬**：每回合掉气血，一回合比一回合重。
+- **四类牌**：
+  - **法术** — 一次性，带五行，克对方的根 ×2、被克 ×0.5、无关 ×1。
+  - **灵兽** — 你驯过的妖，落场留着，下一回合起每回合打一次。**今天设计的
+    「同行」并入此处**：快慢不再是蓄力轮数，而是它的攻/血与"落场那回合不能动"。
+  - **器物** — 符（不吃防抗）、丹（回气血或灵力）、法宝（装备，带耐久）。
+  - **身法与防御** — 技能树后面的两支，先留位。
+- **英雄技能**：你的**主灵根**（命格的日主定的那一行），每回合一次，费 2 灵力，
+  打出该行的一记基础伤害。这是"没有金就吃亏"的落点：主根决定你每回合白拿的那一下。
+- **妖也有一副牌**：它今天的 pattern 变成一副小牌组（它的爪、它的法、它招的小妖），
+  按牌序出，不掷骰。它的 lean 仍在：厚皮=高血、避法=抗、迅捷=先手、凶猛=高攻。
+- **灵根管牌库**：无金根 → 金牌进不了牌库；铁剑（法宝牌）仍能借出金。
+
+**Build order.** ① duel.js v3：牌、牌库、抽牌、灵力、场、英雄技能、相克 —— 纯规则
+加新的 gate。② 卡面：手牌、场、灵力水晶（先出 wireframe）。③ 内容：起手牌组
+（每根几张基础法术 + 符 + 驯过的妖成卡）。④ 技能树与加点：牌从树上来，任务教牌。
+⑤ 迁移：现存存档（灵根、功法、袋中物）变成一副牌。
+
+**Open.** 一局多少回合算好（目标 5–8，一场斗法不该超过手机上的两屏）；败了除了
+今日不能再战之外要不要留下点什么；法宝耐久与 温养/强化 怎样并进牌里。
+
+## 斗法 v2 — 灵力、法器与本命法宝 (designed 2026-09-17; BUILT 2026-09-17; SUPERSEDED 2026-09-18 by 斗法 v3)
 
 **Why.** His question on the 五行 bout: *如果是金妖，用户一直出火就能赢，对吗？*
 — yes: run over 5,000 days, always countering the creature's root wins 92%

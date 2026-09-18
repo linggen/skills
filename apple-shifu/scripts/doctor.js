@@ -18,7 +18,7 @@ const params = new URLSearchParams(window.location.search);
 const APP_MODE = params.get('app_mode') === '1';
 let modelId = params.get('model') || '';
 // Check for session in URL — used when resuming or opened from session list
-const existingSession = params.get('session') || '';
+let existingSession = params.get('session') || '';
 
 /** @type {ReturnType<typeof LinggenUI.mount> | null} */
 let chat = null;
@@ -231,12 +231,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   // dashboard restores independently of chat: the newest session with a
   // locally cached page supplies the widget tree when the resumed session
   // has none.
+  let sessions = [];
+  let listed = false;
+  try {
+    sessions = await listSkillSessions(SKILL_NAME);
+    sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+    listed = true;
+  } catch { /* ignore */ }
+
+  // The rule decides, not the address bar. A resume stamps ?session= into the
+  // URL, so a tab left open across days — or a bookmark of one — used to pin
+  // that session for ever and never roll over (2026-09-18: a two-day-old chat
+  // on a tab that had simply stayed open). A session named in the URL is
+  // honoured while it is inside the window, and let go when it isn't.
+  if (existingSession && listed) {
+    const pinned = sessions.find((sn) => sn.id === existingSession);
+    if (!pinned || sessionAgeMs(pinned) >= RESUME_WINDOW_MS) {
+      existingSession = '';
+      const url = new URL(window.location);
+      url.searchParams.delete('session');
+      history.replaceState(null, '', url);
+    }
+  }
+
   if (!existingSession) {
-    let sessions = [];
-    try {
-      sessions = await listSkillSessions(SKILL_NAME);
-      sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-    } catch { /* ignore */ }
     const latest = sessions[0];
     const cached = sessions.find((s) => hasCachedPage(s.id));
     if (latest && sessionAgeMs(latest) < RESUME_WINDOW_MS) {
