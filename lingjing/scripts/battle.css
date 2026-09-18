@@ -230,3 +230,34 @@
   0%, 100% { box-shadow: 0 0 0 0 rgba(224, 106, 85, 0.1); }
   50% { box-shadow: 0 0 0 2px rgba(224, 106, 85, 0.65), 0 0 26px rgba(224, 106, 85, 0.35); }
 }
+
+/* The help, behind one mark. A card game has to be teachable in one sitting or
+   it is not a game anyone finishes learning (his, 2026-09-18). */
+.bhelpbtn { width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--line-d); border-radius: 50%; background: transparent; color: var(--faint-d); font-family: var(--ui); font-size: 13px; cursor: pointer; transition: color 0.2s, border-color 0.2s, box-shadow 0.2s; }
+.bhelpbtn:hover, .bhelpbtn.on { color: var(--gold); border-color: var(--gold-soft); box-shadow: 0 0 12px rgba(201, 162, 39, 0.25); }
+
+.bhelp { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; padding: 16px; background: rgba(8, 7, 6, 0.82); backdrop-filter: blur(2px); animation: fade 0.18s ease-out; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.bsheet { max-width: 520px; max-height: 100%; overflow-y: auto; display: grid; gap: 9px; padding: 20px 22px; border: 1px solid var(--gold-soft); border-radius: 12px; background: linear-gradient(180deg, #221d17, #16120f); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); animation: arrive 0.24s ease-out; }
+.bsheet h3 { margin: 0 0 2px; font-size: 20px; letter-spacing: 0.2em; color: var(--gold); font-weight: 400; text-align: center; }
+.bsheet p { margin: 0; font-family: var(--ui); font-size: 12px; line-height: 1.65; color: var(--parchment); }
+.bsheet p b { display: inline-block; min-width: 82px; margin-right: 8px; font-family: var(--serif); font-size: 14px; font-weight: 400; color: var(--gold); }
+.bsheet .bact { justify-self: center; margin-top: 6px; }
+@media (max-width: 560px) { .bsheet p b { display: block; min-width: 0; margin: 0 0 2px; } }
+
+/* The deck as a stack you can see, and a card that leaves it when one is drawn
+   (his, 2026-09-18: 显示一个卡牌的stack在一边, 抽牌加个动画). The thickness is what
+   is left, so the 反噬 that ends a long fight is visible coming. */
+.bdeck { position: relative; width: 34px; height: 46px; display: grid; place-items: center; border: 1px solid var(--line-d); border-radius: 5px; background: linear-gradient(145deg, #2c2419, #191410); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); }
+.bdeck i { position: absolute; inset: 0; border: 1px solid var(--line-d); border-radius: 5px; background: linear-gradient(145deg, #2c2419, #191410); }
+.bdeck b { position: relative; z-index: 2; font-family: var(--ui); font-size: 13px; color: var(--gold); }
+.bdeck small { position: relative; z-index: 2; font-family: var(--ui); font-size: 8px; letter-spacing: 0.1em; color: #6b6055; }
+.bdeck.dry { border-style: dashed; opacity: 0.6; }
+.bdeck.dry b { color: var(--blood); }
+
+.bflier { position: absolute; width: 32px; height: 44px; border-radius: 5px; border: 1px solid var(--gold-soft); background: linear-gradient(145deg, #3a2f20, #1d1713); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6); pointer-events: none; z-index: 4; animation: fly 0.28s cubic-bezier(0.3, 0.7, 0.3, 1) forwards; }
+@keyframes fly {
+  from { transform: translate(0, 0) rotate(-6deg) scale(0.9); opacity: 0.2; }
+  60% { opacity: 1; }
+  to { transform: translate(var(--dx), var(--dy)) rotate(4deg) scale(1.05); opacity: 0; }
+}

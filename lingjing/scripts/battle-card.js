@@ -27,14 +27,18 @@ export const WORDS = {
       'no-friendly': '自己阵前没有人', 'fight-over': '打完了',
     },
     pickCard: '点一个目标 —— 妖，或它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
-    ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩',
-    howLines: [
-      '灵力每回合多一格，回合开始回满 —— 牌上左上角的数就是它的价钱。',
-      '点一张牌打出：随从落在你的阵前，功法当场生效。',
-      '随从落场那一回合不能动；下一回合起，点它、再点目标，就是出手。',
-      '五行相克：你的行克它的行，伤害多五成；被它克，少四分之一。',
-      '护主挡在前面 —— 它阵前有护主时，先打护主。',
-      '打光妖的气血就赢；它十二张牌抽完会力竭遁走，那一场不算赢。',
+    ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩', close: '知道了',
+    help: [
+      ['目标', '把妖的气血打到 0。'],
+      ['灵力', '每回合长一格，回合开始回满。牌左上角那个数就是它的价钱。开局 2 格，上限随境界（练气 6 · 筑基 8 · 结丹 10）。'],
+      ['手牌', '开局 3 张，外加银月（她不占牌库）。每回合开始自动抽 1 张。牌库 10 张 —— 抽空之后每抽一次反噬掉 1、2、3… 点气血。'],
+      ['打牌', '点一张牌就打出：随从落到你的阵前（最多 4 位），功法当场生效。需要目标的牌，点完牌再点目标 —— 妖，或它阵前的一个。'],
+      ['随从', '落场那一回合不能动。下一回合起，点它、再点它要打的，就是出手；互殴两边都受伤。'],
+      ['护主', '它阵前站着护主时，先打护主 —— 打不到它本人。'],
+      ['主灵根一击', '每回合一次，费 2 灵力，打出你主灵根那一行。手里没牌时它是你的底。'],
+      ['五行', '你的行克它 → 伤害多五成；被它克 → 少四分之一。金克木 · 木克土 · 土克水 · 水克火 · 火克金。'],
+      ['怎么算赢', '打光它的气血就赢。它十二张牌抽完会力竭遁走 —— 不胜不败，也没有奖励，所以拖着不打没用。'],
+      ['没有死', '随从被打到 0 是退下，不是死。这个世界里没有死。'],
     ],
   },
   en: {
@@ -49,14 +53,18 @@ export const WORDS = {
       'no-friendly': 'no one of yours stands', 'fight-over': 'the fight is over',
     },
     pickCard: 'choose a target — the beast, or one of its rank', pickTarget: 'now choose what it strikes',
-    ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play',
-    howLines: [
-      'Force grows a crystal a round and refills — the number on a card is its price.',
-      'Click a card to play it: a minion joins your rank, an art takes effect at once.',
-      'A minion cannot strike the turn it arrives. After that, click it, then click what it strikes.',
-      'The five roots: yours over its root lands half again as hard; under it, a quarter lighter.',
-      'A Guard stands in the way — while one stands, strike the Guard first.',
-      'Take all its Life to win. Its twelve cards spent, it withdraws — and that is not a win.',
+    ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play', close: 'Got it',
+    help: [
+      ['The point', "Take the beast's Life to zero."],
+      ['Force', 'One more crystal each round, refilled at the start of it. The number on a card is its price. Two to begin with; the cap rises with your realm (6 · 8 · 10).'],
+      ['Your hand', 'Three cards to start, plus Yinyue, who is not one of your ten. One card drawn at the start of every round. Ten in the deck — once it is dry, each draw costs 1, then 2, then 3 Life.'],
+      ['Playing', 'Click a card to play it: a minion joins your rank (four stand at most), an art takes effect at once. A card that wants a target: click it, then click the beast or one of its rank.'],
+      ['Minions', 'A minion cannot strike the turn it arrives. After that, click it, then click what it strikes — and both take the blow.'],
+      ['Guard', 'While a Guard stands in its rank, strike the Guard: the beast itself is out of reach.'],
+      ['Root Strike', "Once a round, two Force, in your own root. It is what you have when your hand has nothing."],
+      ['The five roots', 'Your root over its root lands half again as hard; under it, a quarter lighter. Metal over Wood · Wood over Earth · Earth over Water · Water over Fire · Fire over Metal.'],
+      ['Winning', 'Take all its Life. If its twelve cards run out first it withdraws — neither won nor lost, and nothing is paid, so waiting it out gains nothing.'],
+      ['No death', 'A body at zero is driven off, not killed. Nothing dies in this world.'],
     ],
   },
 };
@@ -140,6 +148,17 @@ function reasons(st, offers) {
 }
 
 /* ── The pieces ── */
+
+/* The deck as a thing you can see: a stack whose thickness is what is left in
+   it, with the count on top. Without it "牌库 7" is a number nobody reads, and
+   the fatigue that ends a fight arrives out of nowhere. */
+function deckHtml(n, side, w) {
+  const layers = Math.max(0, Math.min(5, Math.ceil(n / 2)));
+  return `<div class="bdeck ${side}${n ? '' : ' dry'}" data-deck="${side}">
+    ${Array.from({ length: layers }, (_, i) => `<i style="transform: translate(${i * -1.4}px, ${i * -1.6}px)"></i>`).join('')}
+    <b>${n}</b><small>${w.deck}</small>
+  </div>`;
+}
 
 const pool = (label, now, max, cls) => `<div class="bpool"><span>${label}</span><div class="bbar ${cls}"><i style="width:${Math.max(0, Math.round((now / Math.max(1, max)) * 100))}%"></i></div><b>${now}</b></div>`;
 
@@ -250,7 +269,7 @@ export function lastHtml(log, ctx, open = false) {
 
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the
    catalog, the language and the words. `picked` is what the player is holding. */
-export function battleHtml(st, offers, ctx, picked = null, openLog = false, note = null) {
+export function battleHtml(st, offers, ctx, picked = null, openLog = false, note = null, help = false) {
   const w = ctx.words;
   ctx.reasons = reasons(st, offers);
   const aim = aimable(offers, picked);
@@ -275,6 +294,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   return `<div class="battle${over ? ' over' : ''}">
     <div class="btop">
       <button class="bquit" data-spot="quit">${w.quit}</button>
+      <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${w.how}" aria-label="${w.how}">?</button>
       <span class="bturn ${st.whose}">${st.whose === 'you' ? (ctx.lang === 'en' ? 'Your turn' : '你的回合') : `${esc(ctx.foeName ?? '')}${ctx.lang === 'en' ? "'s turn" : '的回合'}`}</span>
       <span class="bwhere">${esc(ctx.title ?? '')}</span>
     </div>
@@ -285,8 +305,8 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <div class="bnums">
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp')}
         ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}
-        <div class="bcount">${w.deck} ${st.foe.deck}</div>
       </div>
+      ${deckHtml(st.foe.deck, 'theirs', w)}
     </button>
 
     ${lastHtml(st.log, ctx, openLog)}
@@ -299,8 +319,8 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <div class="bnums">
         ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
         ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}
-        <div class="bcount">${w.deck} ${st.you.deck}</div>
       </div>
+      ${deckHtml(st.you.deck, 'mine', w)}
     </div>
 
     <div class="bhand">${handHtml(st, ctx, picked)}</div>
@@ -315,7 +335,11 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
 
     ${note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : ''}
     ${advice ? `<div class="bhint${stuck ? ' burge' : ''}">${esc(advice)}</div>` : ''}
-    <details class="bhow"><summary>${w.how}</summary>${w.howLines.map(l => `<p>${esc(l)}</p>`).join('')}</details>
+    ${help ? `<div class="bhelp" data-spot="help-bg"><div class="bsheet">
+      <h3>${w.how}</h3>
+      ${w.help.map(([k, v]) => `<p><b>${esc(k)}</b>${esc(v)}</p>`).join('')}
+      <button class="bact" data-spot="help">${w.close}</button>
+    </div></div>` : ''}
     ${over ? `<div class="bover"><b>${title}</b><span>${said}</span></div>` : ''}
   </div>`;
 }

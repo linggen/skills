@@ -13,7 +13,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /* How long each beat takes. Tuned so a whole exchange lands in about a second:
    this is a game you open for six minutes, not an epic. */
-export const BEATS = { card: 260, hit: 340, withdraw: 380, banner: 620, gap: 90 };
+export const BEATS = { card: 260, hit: 340, withdraw: 380, banner: 620, draw: 280, gap: 90 };
 
 const q = (root, sel) => root.querySelector(sel);
 
@@ -48,6 +48,26 @@ const pulse = (el, cls, ms = 400) => {
   setTimeout(() => el.classList.remove(cls), ms);
 };
 
+/* A card leaving the pile for the hand. It is a card BACK — what was drawn is
+   the player's business, and the creature's is nobody's. */
+async function flyCard(root, side) {
+  const from = root.querySelector(`.bdeck.${side}`);
+  const to = side === 'mine' ? root.querySelector('.bhand') : root.querySelector('.bside.foe .bwho');
+  if (!from || !to) return;
+  const a = from.getBoundingClientRect();
+  const b = to.getBoundingClientRect();
+  const host = root.getBoundingClientRect();
+  const n = document.createElement('i');
+  n.className = 'bflier';
+  n.style.left = `${a.left - host.left}px`;
+  n.style.top = `${a.top - host.top}px`;
+  n.style.setProperty('--dx', `${b.left + b.width / 2 - a.left - 16}px`);
+  n.style.setProperty('--dy', `${b.top + 10 - a.top}px`);
+  root.appendChild(n);
+  await sleep(BEATS.draw);
+  n.remove();
+}
+
 /* The banner that says whose turn it is. Without it the creature's whole turn
    happens in the blink between two renders and the player never sees it. */
 export async function banner(root, text, side) {
@@ -65,6 +85,10 @@ export async function playLog(root, entries, ctx = {}) {
   if (ctx.skip) return;
   for (const t of entries) {
     switch (t.act) {
+      case 'drew': {
+        await flyCard(root, t.who === 'foe' ? 'theirs' : 'mine');
+        break;
+      }
       case 'played':
       case 'summoned': {
         const el = spotOf(root, t);

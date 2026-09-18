@@ -172,6 +172,9 @@ function startTurn(st) {
 function draw(st, side) {
   if (side.deck.length) {
     side.hand.push(side.deck.shift());
+    // Written down so the screen can fly a card off the pile: the animator
+    // only ever replays what the rules recorded.
+    st.log.push({ act: 'drew', who: side.who, left: side.deck.length });
     return;
   }
   side.fatigue += 1;
