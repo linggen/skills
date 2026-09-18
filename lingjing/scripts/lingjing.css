@@ -341,3 +341,26 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 /* The 丹田 says how much is left, not only how it feels: the one throttle in
    the game is a number you can plan a day around (2026-09-18). */
 .qi .cnt { margin-left: 6px; font-family: var(--ui); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+
+/* ── While a fight runs, the fight IS the stage ───────────────────────────
+   The backdrop, the day's tray and Yinyue's own body step aside: she is in the
+   fight as a card, and a card game needs every inch it can get (2026-09-18).
+   Everything returns the moment the fight ends. */
+body.fighting .backdrop,
+body.fighting .place,
+body.fighting .stage,
+body.fighting .tray { display: none; }
+body.fighting .view { background: #0d0b0a; }
+/* The focus sits pinned inside the view; in a fight it takes the whole of it. */
+body.fighting .focus { inset: 0; padding: 0; overflow: hidden; }
+body.fighting .scene { overflow: hidden; }
+body.fighting .battle { max-width: none; height: 100%; border-radius: 0; padding: 14px 18px 16px; }
+/* With the room, the fight grows into it: bigger bodies, bigger hand. */
+body.fighting .brank { min-height: 128px; }
+body.fighting .bpic.small { height: 68px; }
+body.fighting .bminion .bname { font-size: 18px; }
+body.fighting .bcard { flex: 0 0 132px; }
+body.fighting .bpic { height: 62px; }
+body.fighting .bcard .bname { font-size: 19px; }
+body.fighting .bside.foe .bface { width: 104px; height: 104px; }
+body.fighting .bside .bwho { font-size: 30px; }

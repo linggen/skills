@@ -25,6 +25,7 @@ const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summa
    sends the actions back and the RULES settle it — the page never decides a
    fight, it only plays one out (design.md § 斗法 v3). */
 let bout = null;
+let idleTimer = null;
 
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
@@ -90,8 +91,8 @@ async function loadAtlas() {
 async function loadContent(world) {
   if (authored?.world === world.id) return;
   const baseDir = world.made ? `worlds/${world.base}` : world.dir;
-  const [creatures, herbs, hexagrams, roots, terms] = await Promise.all(
-    ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json'].map((f) => content(baseDir, f)),
+  const [creatures, herbs, hexagrams, roots, terms, cards] = await Promise.all(
+    ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json', 'cards.json'].map((f) => content(baseDir, f)),
   );
   let all = creatures.creatures.map((c) => ({ ...c, dir: baseDir }));
   let dictionary = terms;
@@ -100,7 +101,7 @@ async function loadContent(world) {
     all = [...all, ...mine.creatures.map((c) => ({ ...c, dir: world.dir }))];
     dictionary = { ...terms, words: { ...terms.words, ...(words.words ?? {}) }, provinces: { ...terms.provinces, ...(words.provinces ?? {}) } };
   }
-  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary };
+  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards };
   boards.clear();
 }
 
@@ -143,6 +144,10 @@ async function refresh() {
     focus = look.scene?.show ?? look.place?.show ?? [];
     duels.clear();
   }
+  // A fight the save still holds open comes back: without this the page shows
+  // the world while Ling waits for a fight nobody can see, and she holds still
+  // for ever. The rules do not charge the day's 灵气 twice for it.
+  if (look.fight?.open && !bout) await onDuelStart(look.fight.game);
   render();
 }
 
@@ -314,12 +319,16 @@ function render() {
   document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
   $('status').innerHTML = statusHtml();
   riseStats();
+  // A fight takes the whole column: the backdrop, the tray and Yinyue's own
+  // body give way, because she is IN the fight as a card and the cards need
+  // the room (his, 2026-09-18). It all comes back when the fight ends.
+  document.body.classList.toggle('fighting', Boolean(bout));
   $('place').textContent = look.scene?.place ?? look.place?.name ?? look.chapter?.title ?? '';
   // She is always at the player's side: on the stage whenever the game is
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
   // She stands there only once she has been found (his rule, 2026-09-17).
-  const her = Boolean(look.companion);
+  const her = Boolean(look.companion) && !bout;
   stageYinyue(her);
   $('stageName').textContent = her ? look.companion.name : '';
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
@@ -329,6 +338,10 @@ function render() {
   castFresh = false;
   $('trayTitle').textContent = w.tray;
   $('tray').innerHTML = trayHtml(ctx());
+  // A turn with nothing left in it ends itself after a beat long enough to
+  // read the board — pressing the button is always faster (his, 2026-09-18).
+  clearTimeout(idleTimer);
+  if (bout && idle(bout.st) && !bout.picked && !bout.help) idleTimer = setTimeout(() => endBoutTurn(), 1400);
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
   if (tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === tapped) el.classList.add('busy'); });
