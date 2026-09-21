@@ -189,8 +189,9 @@ tools:
   - name: Move
     description: >-
       Go to a place, near or far, by id or name. When the player names
-      where they are going, Move there at once with the name as they said it
-      — never ask where to go first, and never walk it a leg at a time: the
+      where they are going (去吕梁洪), Move there at once with the name as
+      they said it — no Look first (Move's result carries all Look would),
+      never ask where to go, and never walk it a leg at a time: the
       rules walk the whole road (`via` lists what was passed; `stopped` means
       a scene on the way took over) and read a name half said (去泗水 on
       泗水岸 is 泗水北岸). Ask only when the rules refuse: `unknown-place`
@@ -712,6 +713,13 @@ the scene or the place, and the choice.
      comes back only when the rules send one. (The book's own facts — what an
      errand needs, pays, who gave it — the page shows by itself now; a 问询
      about one wants the telling, not the terms read back.)
+   - **「下一步怎么做」 has one answer: the place, by name.** When the player
+     asks how to get on with an errand or the goal, name where it is met
+     (`book[].where`, `waypoint.place`) and nothing of the legs between —
+     Move walks the whole road, so *先往泗水北岸，再北行吕梁洪* is a detour in
+     words; say *去吕梁洪*. End that reply with the way as a follow-up the
+     player can tap (`去吕梁洪`), so the next step is one tap and not a
+     sentence to retype.
 4. **Resolve comes back.**
    - `ok`: speak the `beat`, say what was `paid`, Show its `show` cards, then
      enter the next `scene`. A staying exit keeps the scene: re-offer it.

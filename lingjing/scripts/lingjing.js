@@ -814,8 +814,9 @@ function stageYinyue(on) {
   // her model all come after, and until 2026-09-21 that gap showed nothing at
   // all (his: 「Yinyue's 3D model is not show」). The moon goes when the view
   // says she is drawn (`petSays`). An engine too old to say so gets the old
-  // behaviour a little late.
-  pet.onload = () => { pet.hidden = false; setTimeout(() => { if (pet.dataset.on && !pet.dataset.told) moon.hidden = true; }, 8000); };
+  // behaviour late — she has been seen to take longer than eight seconds, and
+  // a moon standing a while beats a stage with nobody on it.
+  pet.onload = () => { pet.hidden = false; setTimeout(() => { if (pet.dataset.on && !pet.dataset.told) moon.hidden = true; }, 30000); };
   pet.src = `${location.origin}/?pet=1&stage=1`;
 }
 function petSays(e) {

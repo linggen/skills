@@ -84,6 +84,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   // a chain names its next link as `next` — `then` is the wrapper's word to Ling on every result
   const chained = quest({ ...open, place: 'pengcheng' }, content, at, { action: 'info', id: 'xu-elder-herb' }).result;
   assert.deepEqual([chained.next, chained.then, chained.taken, chained.gives], ['凫丽山的蠪侄', undefined, false, '竹剑']);
+  assert.match(opened, /data-say="去吕梁洪">去吕梁洪</, 'where the count is met is one tap from the opened row');
   const chore = quest(took.state, content, at, { action: 'info', id: 'health-workout' }).result;
   assert.deepEqual([chore.kind, chore.app, chore.grant.progress], ['chore', 'health', 20]);
   assert.doesNotMatch(bookPopHtml({ ...page, bookRow: 'health-workout', bookInfo: chore }), /data-drop/, 'life\'s own cannot be put down');

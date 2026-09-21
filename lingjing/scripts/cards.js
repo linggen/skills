@@ -551,7 +551,9 @@ function bookHtml(ctx) {
 }
 
 /// One line of the book, opened: the giver's words, what it pays, what comes
-/// after — read from the rules by the page (`Quest info`), no model turn.
+/// after — read from the rules by the page (`Quest info`), no model turn. Where
+/// the next count is met is one tap away: 「下一步怎么做」 has its answer here
+/// (his, 2026-09-21), and Move walks the whole road.
 function bookDetail(q, ctx) {
   const i = ctx.bookInfo?.id === q.id ? ctx.bookInfo : null, w = ctx.words;
   if (!i) return `<div class="bookdetail small dim">…</div>`;
@@ -561,7 +563,7 @@ function bookDetail(q, ctx) {
     ${i.say ? `<div class="say">${esc(i.say)}</div>` : ''}
     ${pays ? `<div class="small"><span class="dim">${esc(w.paysWord)}</span> ${esc(pays)}</div>` : ''}
     ${i.next ? `<div class="small dim">${esc(w.nextWord)} · ${esc(i.next)}</div>` : ''}
-    <div class="acts">${askBtn(w.about, say(w.sayQuestAbout, { title: q.title }))}${i.kind === 'errand' ? `<button class="act quiet" data-drop="${esc(q.id)}">${esc(w.drop)}</button>` : ''}</div></div>`;
+    <div class="acts">${q.where && !q.where.here ? sayBtn(say(w.sayGo, { name: q.where.name }), say(w.sayGo, { name: q.where.name })) : ''}${askBtn(w.about, say(w.sayQuestAbout, { title: q.title }))}${i.kind === 'errand' ? `<button class="act quiet" data-drop="${esc(q.id)}">${esc(w.drop)}</button>` : ''}</div></div>`;
 }
 
 /// The ask bar: one field for every 问询 on the page. It lives outside the
