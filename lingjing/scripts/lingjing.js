@@ -8,7 +8,7 @@ import './chat-bridge.js';
 import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
-import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf, view } from './battle.js';
+import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { stageCards } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
@@ -26,23 +26,9 @@ const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summa
    fight, it only plays one out (design.md § 斗法 v3). */
 let bout = null;
 let idleTimer = null;
-/// The labels the chat's open question offers; the stage hides its own copies
-/// of them while it stands (his, 2026-09-18: 只显示一个).
-let asked = null;
-
 let look = null; //       the rules' view of the game — the only source of numbers
 let authored = null; //   the world's content files, for the world Look names
-/// What Ling just showed, drawn before the rules have written it down — the
-/// save is the truth (`look.stage`), this is only the half-second before the
-/// next Look catches up.
-let focus = [];
 let cloud = null; //      the engine's view of the account: {signed_in, meter}; null = no cloud
-let tapped = null; //     the stage's words waiting on Ling: that button stays pressed
-let casting = false; //   起一卦 tapped: the coins are in the air until the cast lands
-let mapView = 'province'; // the map card: 'province' (the player's, up close), 'world', or another province's id
-let castSeen; //          the cast last drawn — a new one is drawn line by line, once
-let castFresh = false;
-let fateOpen = false, fateDraft = '', fateError = false; // the 命格 form: shown again, the date typed, a date refused
 let atlasPlaces = null; // every province's places for the map, read by the atlas verb: {key, provinces}
 const boards = new Map();
 let chat = null;
@@ -63,14 +49,38 @@ function boardFor(taskId) {
   return boards.get(taskId);
 }
 
-/// Why the last 出手 did not open, for the card that offered it — the rules'
-/// own words (no 体力, the beast already spent, the page's cards out of date).
-/// Everything else about a fight is in the save: `duels` here was a second
-/// copy of it that only ever drifted.
-let duelSay = { id: null, text: null };
-const duelFor = (id) => (duelSay.id === id ? duelSay : { say: null });
+/* What the page itself holds: everything the player did HERE that the save
+   does not know — and nothing the save does. Until 2026-09-21 these were
+   eleven loose `let`s, each written from wherever and each write followed (or
+   not) by a hand-placed `render()`; a handler that forgot one left the screen
+   behind the state. One object now, and one writer: `show(patch)` changes it
+   and repaints. `keep(patch)` is the same without the repaint, for the two
+   places where a repaint is wrong — a keystroke in a field the repaint would
+   replace, and the draw itself. */
+const view = {
+  /// What Ling just showed, drawn before the rules have written it down — the
+  /// save is the truth (`look.stage`), this is only the half-second before the
+  /// next Look catches up.
+  focus: [],
+  tapped: null, //       the stage's words waiting on Ling: that button stays pressed
+  /// The labels the chat's open question offers; the stage hides its own copies
+  /// of them while it stands (his, 2026-09-18: 只显示一个).
+  asked: null,
+  casting: false, //     起一卦 tapped: the coins are in the air until the cast lands
+  castSeen: undefined, // the cast last drawn — a new one is drawn line by line, once
+  castFresh: false,
+  mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
+  fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
+  /// Why the last 出手 did not open, for the card that offered it — the rules'
+  /// own words (no 体力, the beast already spent, the page's cards out of date).
+  /// Everything else about a fight is in the save.
+  duelSay: { id: null, text: null },
+};
+const keep = (patch) => Object.assign(view, patch);
+function show(patch) { keep(patch); render(); }
+const duelFor = (id) => (view.duelSay.id === id ? view.duelSay : { text: null });
 
-const ctx = () => ({ look, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView, castFresh, casting, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -123,7 +133,7 @@ async function readCloud() {
 /// stage's buttons unlock; a tap waits in the chat's queue behind the question.
 function waitingOnPlayer() {
   saying = false;
-  tapped = null;
+  keep({ tapped: null });
   document.querySelectorAll('.busy').forEach((el) => el.classList.remove('busy'));
 }
 
@@ -154,7 +164,7 @@ function refresh() {
 async function readOnce() {
   try {
     [look] = await Promise.all([verb('look'), readCloud()]);
-    if (look.divination) casting = false;
+    if (look.divination) keep({ casting: false });
     await loadContent(look.world);
   } catch (e) {
     console.warn('[lingjing] look', e);
@@ -164,7 +174,7 @@ async function readOnce() {
   // The stage came back with Look — what Ling showed, what the scene was
   // authored with, what the place holds. The optimistic copy has served its
   // purpose.
-  focus = [];
+  keep({ focus: [] });
   // A fight the save still holds open comes back: without this the page shows
   // the world while Ling waits for a fight nobody can see, and she holds still
   // for ever. The rules do not charge the day's 灵气 twice for it.
@@ -277,7 +287,7 @@ async function switchLang(to) {
 function focusHtml() {
   // A fight takes the stage: while one is open, nothing else is on it, and the
   // chat beside it keeps talking (design.md § 斗法在主界面里).
-  if (bout) return battleHtml(view(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
+  if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
   // A line running under his feet takes the stage (his law, 2026-09-18:
   // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
   // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
@@ -287,7 +297,7 @@ function focusHtml() {
   // ONE list, and the rules made it (stage.mjs) — the same one they measured
   // the chat's question against, so nothing stands in both places. Only while
   // Ling's Show is still in flight does the page work it out for itself.
-  const cards = focus.length ? stageCards(look, { focus }) : (look.stage ?? []);
+  const cards = view.focus.length ? stageCards(look, { focus: view.focus }) : (look.stage ?? []);
   return cards.map((c) => drawCard(c)).join('');
 }
 
@@ -331,10 +341,9 @@ function draw() {
   stageYinyue(her);
   $('stageName').textContent = her ? look.companion.name : '';
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
-  castFresh = castSeen !== undefined && cast !== null && cast !== castSeen;
-  castSeen = cast;
+  keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
   $('focus').innerHTML = focusHtml();
-  castFresh = false;
+  keep({ castFresh: false });
   // The tray holds the world's boards; with none today it is not there at all
   // — 「今日无事」 under a book with things in it was a contradiction.
   $('trayTitle').textContent = w.tray;
@@ -346,13 +355,13 @@ function draw() {
   if (bout && idle(bout.st) && !bout.picked && !bout.help) idleTimer = setTimeout(() => endBoutTurn(), 1400);
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
-  if (tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === tapped) el.classList.add('busy'); });
+  if (view.tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === view.tapped) el.classList.add('busy'); });
   // One clickable place for one thing: while the chat holds the question, the
   // stage puts away every button that repeats one of its answers.
-  if (asked?.size) {
+  if (view.asked?.size) {
     document.querySelectorAll('[data-say]').forEach((el) => {
       const label = (el.dataset.say ?? '').trim();
-      if (asked.has(label) || asked.has(el.textContent.trim())) el.classList.add('answered-in-chat');
+      if (view.asked.has(label) || view.asked.has(el.textContent.trim())) el.classList.add('answered-in-chat');
     });
   }
 }
@@ -411,10 +420,7 @@ async function say(text) {
 /// cleared them, so a failed turn left buttons pressed for ever.
 function turnEnded() {
   saying = false;
-  tapped = null;
-  casting = false;
-  asked = null;
-  render();
+  show({ tapped: null, casting: false, asked: null });
 }
 
 /// A word from the stage is a message, never the answer to a question
@@ -427,44 +433,42 @@ function deliver(text, hidden) {
 }
 
 async function setFate(kind) {
-  const args = kind === 'birth' ? { birth: fateDraft } : { [kind]: 'true' };
-  if (kind === 'birth' && !fateDraft) { fateError = true; render(); return; }
+  const args = kind === 'birth' ? { birth: view.fateDraft } : { [kind]: 'true' };
+  if (kind === 'birth' && !view.fateDraft) { show({ fateError: true }); return; }
   const r = await verb('fate', args).catch((e) => ({ ok: false, error: String(e) }));
-  if (!r.ok) { fateError = r.refused === 'birth-invalid'; render(); return; }
-  fateOpen = false; fateDraft = ''; fateError = false;
+  if (!r.ok) { show({ fateError: r.refused === 'birth-invalid' }); return; }
+  keep({ fateOpen: false, fateDraft: '', fateError: false });
   await refresh();
   await report(kind === 'decline' ? '[scene] fate declined' : '[scene] fate set');
 }
-document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') { fateDraft = e.target.value; fateError = false; } });
+document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false }); });
 
 document.addEventListener('click', (e) => {
   const sw = e.target.closest('[data-lang]');
   if (sw) { switchLang(sw.dataset.lang); return; }
   // 命格: the birthday is read here, by the rules on this machine — never
   // sent to the chat; Ling hears only that it was set.
-  if (e.target.closest('[data-fate-open]')) { fateOpen = true; render(); return; }
+  if (e.target.closest('[data-fate-open]')) { show({ fateOpen: true }); return; }
   const fateBtn = e.target.closest('[data-fate]');
   if (fateBtn) { setFate(fateBtn.dataset.fate); return; }
   // Near or whole: only how the map is looked at, so the page answers it.
-  const view = e.target.closest('[data-mapview]');
-  if (view) {
-    const to = view.dataset.mapview;
-    (to === 'province' ? Promise.resolve() : loadAtlas()).then(() => { mapView = to; render(); });
+  const lens = e.target.closest('[data-mapview]');
+  if (lens) {
+    const to = lens.dataset.mapview;
+    (to === 'province' ? Promise.resolve() : loadAtlas()).then(() => show({ mapView: to }));
     return;
   }
   const spoken = e.target.closest('[data-say]');
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-spot]')) {
     if (spoken.matches(':disabled')) return;
-    tapped = spoken.dataset.say;
-    if (tapped === words().sayCast) casting = true;
-    render();
-    say(tapped);
+    const line = spoken.dataset.say;
+    show({ tapped: line, ...(line === words().sayCast ? { casting: true } : {}) });
+    say(line);
     return;
   }
   const play = e.target.closest('[data-play]');
   if (play) {
-    focus = [{ card: 'board', id: play.dataset.play }];
-    render();
+    show({ focus: [{ card: 'board', id: play.dataset.play }] });
     return;
   }
   const tile = e.target.closest('[data-tile]');
@@ -484,8 +488,7 @@ async function onDuelStart(id) {
     // Its own words, never the refusal's id: 「no-qi」 on the stage is the page
     // talking to itself. The states without words (won today, tamed) are
     // already written on the card by Look.
-    duelSay = { id, text: r.say ?? null };
-    render();
+    show({ duelSay: { id, text: r.say ?? null } });
     return;
   }
   const brief = r.duel;
@@ -503,11 +506,10 @@ async function onDuelStart(id) {
   const unknown = missingCards(brief.setup, boutCatalog());
   if (unknown.length) {
     console.error('[lingjing] no card row for', unknown.join(', '));
-    duelSay = { id, text: (BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh).stale };
-    render();
+    show({ duelSay: { id, text: (BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh).stale } });
     return;
   }
-  duelSay = { id: null, text: null };
+  keep({ duelSay: { id: null, text: null } });
   bout = { id, brief, setup: brief.setup, st: begin(brief.setup, boutCatalog()), actions: [], picked: null, openLog: false, help: false, note: null };
   render();
 }
@@ -523,7 +525,7 @@ async function onBoutTap(spot) {
   if (spot.kind === 'more') { bout.openLog = !bout.openLog; return drawNow(); }
   if (bout.st.outcome !== 'open') return;
   bout.note = null;
-  const out = pickOf(bout.picked, spot, view(bout.st), boutCatalog());
+  const out = pickOf(bout.picked, spot, boutView(bout.st), boutCatalog());
   if (out.quit) return settleBout('lost');
   if (out.clear) { bout.picked = null; return drawNow(); }
   if (out.pick) { bout.picked = out.pick; return drawNow(); }
@@ -629,9 +631,9 @@ function onContentBlock(payload) {
   if (payload?.tool === 'AskUser') {
     // The cast's own question (所问何事) keeps the coins in the air; any
     // other question means no cast is coming this turn.
-    if (casting && askedQuestion(payload.args) !== words().castAsk) casting = false;
+    if (view.casting && askedQuestion(payload.args) !== words().castAsk) keep({ casting: false });
     const offered = askedOptions(payload.args);
-    if (offered?.size) asked = offered;
+    if (offered?.size) keep({ asked: offered });
     waitingOnPlayer();
     render();
     return;
@@ -641,10 +643,8 @@ function onContentBlock(payload) {
       const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
       const cards = (args.cards ?? []).filter((c) => c && c.card);
       if (cards.length) {
-        focus = cards;
         // A map Ling shows opens on the player's province.
-        if (cards.some((c) => c.card === 'map')) mapView = 'province';
-        render();
+        show({ focus: cards, ...(cards.some((c) => c.card === 'map') ? { mapView: 'province' } : {}) });
       }
     } catch (e) {
       console.warn('[lingjing] Show parse', e);
