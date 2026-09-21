@@ -363,13 +363,14 @@ function bookHtml() {
 }
 /// A 功课's witness: which app keeps the record, and when it saw it done.
 function witness(chore, w) {
-  const app = chore.app ? chore.app[0].toUpperCase() + chore.app.slice(1) : '';
+  // `apple-shifu` reads as Shifu: the last word is the app's name.
+  const name = String(chore.app ?? '').split('-').pop(), app = name ? name[0].toUpperCase() + name.slice(1) : '';
   // The hour when it was today; the day when the period is longer than one.
   const at = chore.done_at ? new Date(chore.done_at) : null, loc = lang() === 'zh' ? 'zh-CN' : 'en';
   const t = !at ? '' : at.toDateString() === new Date().toDateString() ? at.toLocaleTimeString(loc, { hour: 'numeric', minute: '2-digit' }) : at.toLocaleDateString(loc, { month: 'short', day: 'numeric' });
   return fill(chore.done_at ? w.questBy : w.questWait, { app, t, when: w.periods?.[chore.period] ?? '' });
 }
-const drawCard = (c) => (PAGE_CARDS[c.card] ? PAGE_CARDS[c.card]() : cardHtml(c, ctx()));
+const drawCard = (c) => (PAGE_CARDS[c.card] ? PAGE_CARDS[c.card](c) : cardHtml(c, ctx()));
 
 /// The search for the one who walks with you: the step the rules name, and
 /// the one word that takes it — 摇一摇铃 where water holds a moon.
@@ -446,8 +447,11 @@ function draw() {
   castSeen = cast;
   $('focus').innerHTML = focusHtml();
   castFresh = false;
+  // The tray holds the world's boards; with none today it is not there at all
+  // — 「今日无事」 under a book with things in it was a contradiction.
   $('trayTitle').textContent = w.tray;
   $('tray').innerHTML = trayHtml(ctx());
+  $('tray').parentElement.hidden = !$('tray').innerHTML;
   // A turn with nothing left in it ends itself after a beat long enough to
   // read the board — pressing the button is always faster (his, 2026-09-18).
   clearTimeout(idleTimer);
