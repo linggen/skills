@@ -747,12 +747,25 @@ function cheer(before, text) {
 function stageYinyue(on) {
   const pet = $('pet');
   const moon = document.querySelector('.stage .moon');
-  if (!on) { pet.hidden = true; moon.hidden = false; if (pet.dataset.on) { delete pet.dataset.on; pet.src = 'about:blank'; } return; }
+  if (!on) { pet.hidden = true; moon.hidden = false; if (pet.dataset.on) { delete pet.dataset.on; delete pet.dataset.told; pet.src = 'about:blank'; } return; }
   if (pet.dataset.on) return;
   pet.dataset.on = '1';
-  pet.onload = () => { pet.hidden = false; moon.hidden = true; };
+  // The view is transparent, so it can lie over the moon while she is on her
+  // way: the frame's load is only its HTML — the peer, the presenter lock and
+  // her model all come after, and until 2026-09-21 that gap showed nothing at
+  // all (his: 「Yinyue's 3D model is not show」). The moon goes when the view
+  // says she is drawn (`petSays`). An engine too old to say so gets the old
+  // behaviour a little late.
+  pet.onload = () => { pet.hidden = false; setTimeout(() => { if (pet.dataset.on && !pet.dataset.told) moon.hidden = true; }, 8000); };
   pet.src = `${location.origin}/?pet=1&stage=1`;
 }
+function petSays(e) {
+  const pet = $('pet');
+  if (e.source !== pet.contentWindow || e.data?.type !== 'linggen-pet') return;
+  pet.dataset.told = '1';
+  document.querySelector('.stage .moon').hidden = e.data.event === 'ready';
+}
+window.addEventListener('message', petSays);
 function gate(note = '') {
   const w = WORDS[machineLang()];
   document.documentElement.lang = machineLang();
