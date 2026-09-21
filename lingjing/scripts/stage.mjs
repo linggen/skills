@@ -26,6 +26,43 @@ export function lineHere(look) {
   return null;
 }
 
+/* EVERY card kind says whether it HOLDS the stage: whether it is asking the
+   player to do something, here, now. While any card holds, the chat keeps its
+   question to itself and the roads stand on the stage under the cards; the
+   moment nothing holds, the question comes. One at a time, and the tap on the
+   first is what brings the second (his, 2026-09-21).
+
+   Why a table: until that day this lived in the rules as `stageWaiting`, a
+   hand-written list of "what the stage holds out" — a THIRD description of
+   the stage beside the two in this file. Nobody updated it: the offer card
+   shipped the evening the law was written and was not on it; nor was 拾遗.
+   Each fix patched one case, and the next card reopened it ("we fixed it
+   several times, still exists"). A kind with no entry here fails the tests,
+   so a new card cannot be added without deciding. */
+export const CARD_KINDS = {
+  fight: { holds: true }, //       the fight IS the stage
+  offer: { holds: true }, //       接下 — an errand held out where he stands
+  find: { holds: true }, //        收下 — something by the road
+  item: { holds: true }, //        a shelf to buy from
+  quest: { holds: look => Boolean(lineHere(look)) }, // the search's step, only when it can be taken on this spot
+  // A beast that can still be met today. Won, withdrawn or tamed, its card is a record, not an ask.
+  duel: { holds: (look, card) => { const e = look?.place?.encounter; return !e || e.game?.id !== card.id || !(e.won || e.withdrawn || e.tamed); } },
+  hexagram: { holds: false }, //   the day's coins: optional, never what an arrival is about
+  board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
+  goal: { holds: false }, building: { holds: false }, empty: { holds: false },
+  creature: { holds: false }, map: { holds: false }, traits: { holds: false },
+  gate: { holds: false }, tribulation: { holds: false }, treasure: { holds: false },
+};
+
+/* Does anything on the stage hold it? Decided from the list that is drawn —
+   never from a second reading of the place. */
+export function stageHolds(look, cards) {
+  return (cards ?? []).some((c) => {
+    const holds = CARD_KINDS[c.card]?.holds;
+    return typeof holds === 'function' ? holds(look, c) : Boolean(holds);
+  });
+}
+
 /* The stage, in order, as one list. `focus` is what Ling last showed (the save
    holds it, so a reload puts the same cards back); `fight` is a 斗法 the page
    is playing out. The page draws `building`, `empty` and `quest` itself; every

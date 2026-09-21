@@ -9,7 +9,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { stageCards } from './stage.mjs';
+import { stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { WORDS, askBarHtml, bookChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
@@ -327,10 +327,23 @@ function focusHtml() {
   // the chat's question against, so nothing stands in both places. Only while
   // Ling's Show is still in flight does the page work it out for itself.
   const cards = view.focus.length ? stageCards(look, { focus: view.focus }) : (look.stage ?? []);
-  return cards.map((c) => drawCard(c)).join('');
+  return cards.map((c) => drawCard(c)).join('') + (stageHolds(look, cards) ? roadsHtml() : '');
 }
 
 const drawCard = (c) => cardHtml(c, ctx());
+
+/// While a card holds the stage the chat keeps its question, so the roads stand
+/// here instead — quiet must never be stuck (2026-09-18: 「起卦完成, 任务卡住了」;
+/// a market had no way out but the map). A tap is the same one Move the chat's
+/// option would have been. Drawn ONLY while something holds: the moment nothing
+/// does, the question is the chat's and this row is gone — never both.
+function roadsHtml() {
+  const near = look?.director?.near ?? [];
+  if (!near.length) return '';
+  const w = words();
+  const chips = near.map((p) => `<button class="act say" data-say="${esc(w.sayGo.replace('{name}', p.name))}">${esc(p.name)}</button>`).join('');
+  return `<div class="roadsrow"><span class="lbl">${esc(w.roads)}</span>${chips}</div>`;
+}
 
 /* Every writer calls `render()`; the drawing happens once, on the next frame.
    Twenty-six call sites used to mean twenty-six repaints, and a handler that
@@ -480,8 +493,12 @@ async function openRow(id) {
 
 /* 拾遗: taken or left by the rules at once — the bag and the strip show it. */
 async function takeMeet(action) {
-  await verb('meet', { action }).catch((e) => console.warn('[lingjing] meet', e));
+  const r = await verb('meet', { action }).catch((e) => ({ ok: false, error: String(e) }));
   await refresh();
+  // The 遇 is finished, so the turn goes to Ling: a line for what happened,
+  // and — nothing holding the stage now — her question where next (his,
+  // 2026-09-21: finish the meet first; the last step asks where to go).
+  if (r.ok) await report(action === 'take' ? '[scene] meet taken' : '[scene] meet passed');
 }
 
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */

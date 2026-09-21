@@ -1659,6 +1659,20 @@ and the question leads with 交差. A 奇遇 does not keep overnight: a tale
 opened on an earlier day counts as closed, because one left open on 09-14
 had shut every seed out of every place for a week.
 
+**One thing to tap at a time — and why it kept coming back** (his, 2026-09-21:
+an offer card on the stage and 何去何从 in the chat at once; "we fixed it several
+times, still exists"). The stage had THREE hand-written descriptions: what is
+drawn (`stageCards`), what each card owns (`stageOwns`), and — in the rules, by
+itself — what counts as the stage holding something out (`stageWaiting`: a
+shop, a beast, the bell). 09-18 merged the first two; the third was never
+updated, so every new card reopened the bug (offers, the same evening; 拾遗,
+today). Now each card kind DECLARES `holds` in `stage.mjs` `CARD_KINDS`, the
+rules ask the drawn list (`stageHolds`), `stageWaiting` is gone, and a test
+fails any kind that is drawn without saying. While something holds: no `ask`,
+and the roads stand on the stage under the cards (quiet is never stuck). What
+finishes it — 接下, 收下/不取 (`[scene] meet taken|passed`), a fight won —
+brings the question in that same turn. The day's coins do not hold.
+
 **What the page knows it shows; the model is for telling** (his, 2026-09-21:
 five 说说 buttons, each a 12k-token turn for facts the page already held). A
 row of the book opens where it lies — the giver's words, what it pays, the

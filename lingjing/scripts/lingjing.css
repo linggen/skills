@@ -420,3 +420,8 @@ body.fighting .askbar { display: none; }
 .card.find .cardtitle { color: var(--seal); }
 
 .bookwork { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+
+/* The roads, on the stage while a card holds it (the chat is quiet then). */
+.roadsrow { width: 100%; max-width: 540px; margin: 0 auto; flex: none; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 2px 4px; }
+.roadsrow .lbl { color: var(--faint); font-size: 12.5px; margin-right: 2px; }
+.roadsrow .act { background: transparent; }

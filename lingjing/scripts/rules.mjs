@@ -22,7 +22,7 @@ import {
 } from './content.mjs';
 import { armOf, fight, foeOf } from './duel.js';
 import { MODES, REALMS as CARD_REALMS, battle, shuffle } from './battle.js';
-import { askMinusStage, stageCards, stageOwns } from './stage.mjs';
+import { askMinusStage, stageCards, stageHolds, stageOwns } from './stage.mjs';
 import { layoutRoads, placeWords } from './roadmap.js';
 import {
   addProgress, dayKey, fill, langOf, migrate, newState, normalizeAnswer, periodKey, periodStart, pick, rollDay,
@@ -2792,7 +2792,7 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   // with no way on, 2026-09-18: 「起卦完成, 任务卡住了」).
   if (!ungated) {
     if (state.fight) return null; // a fight is running: Ling advances nothing
-    if (stageWaiting(content, state, ctx)) return null;
+    if (stageHeld(content, state, ctx)) return null;
     // Something moved the world — a road walked, a cast thrown, a thing
     // bought — so the question is worth putting again. Otherwise it is asked
     // only where it has not been asked yet.
@@ -2804,19 +2804,15 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   return { header: header(placeBrief(content, state, ctx.now)?.name), question, options: FILLERS[zh ? 'zh' : 'en'] };
 }
 
-/* What the stage is holding out to him where he stands: a shelf to buy from,
-   a beast at its haunt, the step of the search that can be taken on this very
-   spot. One clickable place for one thing (his law, 2026-09-17) — and when the
-   stage has the thing, the stage wins. */
-function stageWaiting(content, state, ctx) {
+/* Is the stage holding something out to him? Asked of the very list that is
+   drawn (stage.mjs CARD_KINDS) — this was `stageWaiting`, a list of its own,
+   and every card it forgot put two things to tap on screen at once. */
+function stageHeld(content, state, ctx) {
   if (atScene(content, state)) return false;
-  const here = placeOf(content, state.place);
-  if (!here) return false;
-  if (here.has?.shop) return true;
-  const beast = encounterOf(content, state, ctx.now);
-  if (beast && !beast.tamed) return true;
-  const quest = questBrief(content, state, ctx.now);
-  return Boolean(quest && (quest.shop_here || (quest.step === 'ring' && quest.at_water)));
+  // Only what a holding card reads — the whole Look computes the question
+  // itself, and asking it here is a loop.
+  const view = { quest: questBrief(content, state, ctx.now), offers: offersOf(content, state, state.lang, ctx.now), place: placeBrief(content, state, ctx.now), tasks: [] };
+  return stageHolds(view, stageCards(view, { focus: shownHere(content, state, view), fight: Boolean(state.fight) }));
 }
 const THEN = 'Now AskUser exactly `ask` — header, question, options as they are. The reply ends only there.';
 /* Something won: Yinyue's own glad line closes the narration. The stage

@@ -740,6 +740,13 @@ the scene or the place, and the choice.
      `seed` a tale to begin here; `waypoint.gate` what the cauldron still
      asks. Answer with the nearest concrete thing — *彭城坊市有两桩差事，去彭城
      么？* — never with "go cultivate" and a list of roads.
+   - **One thing to tap at a time.** When the stage holds something out — an
+     errand to take, a thing to pick up, a shelf, a beast — the rules send no
+     `ask`: end on your words and let the card be tapped. The question comes
+     back by itself in the answer to whatever finishes it (`[scene] meet
+     taken` / `meet passed`, a Quest `take`, a fight's `[scene] won`): Look,
+     one line for what happened, then AskUser exactly that `ask`. Never raise
+     a question of your own while `ask` is null.
    - **No arrival is empty.** Where a place holds nothing of its own the
      rules deal a 遇 (`place.meet`): speak it as what happens on arriving —
      the thing in the grass, the traveller's hail, the beast across the road

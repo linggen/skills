@@ -302,7 +302,16 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   // nothing waiting on it (his ruling, 2026-09-18 — 何去何从 was asked over a
   // 坊市 holding 银月铃, and a Skip was answered by the same widget one turn
   // later, because every Look handed it back).
-  const o = toOpenWorld();
+  // 泗水北岸 holds the fisherman's errand out: the offer card is the one thing to
+  // tap and the chat keeps its question (2026-09-21 — 云龙山 put 接下 on the stage
+  // and 何去何从 in the chat at once, because offers were on nobody's list).
+  const held = look(toOpenWorld(), content, ctx());
+  assert.ok(held.stage.some(c => c.card === 'offer'));
+  assert.equal(held.ask, null, 'an errand held out: the chat waits for it');
+  // Taken, nothing holds — and the question comes in that same answer.
+  const took = quest(toOpenWorld(), content, ctx(), { action: 'take', id: held.stage.find(c => c.card === 'offer').id });
+  assert.ok(askOf(content, took.state, ctx({ verb: 'quest' }), took.result)?.options.some(x => x.move), 'the tap on the first brings the second');
+  const o = took.state;
   const lo = look(o, content, ctx());
   assert.deepEqual(lo.ask, lo.director.choice, 'where he has not been asked, it is asked');
   // …once. The rules write down that they asked here, so a question he passed
@@ -316,14 +325,16 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   const arrived = move(o, content, ctx(), { place: road.move });
   // where he lands, always: the roads — or the traveller's riddle, when that is what the arrival dealt
   const landed = askOf(content, arrived.state, ctx(), arrived.result), dealt = arrived.result.place.meet;
+  const holding = look(arrived.state, content, ctx()).stage.some(c => ['offer', 'find', 'item', 'duel'].includes(c.card));
   if (dealt?.kind === 'riddle') assert.equal(landed.question, dealt.riddle);
+  else if (holding) assert.equal(landed, null, 'what the arrival holds out comes first');
   else assert.deepEqual(landed, arrived.result.director.choice, 'and where he lands, always');
   // …but not onto a stage holding something out: a shelf, a beast at its haunt
   const shop = { ...arrived.state, place: 'pengcheng' };
   assert.equal(askOf(content, shop, ctx(), { director: true }), null, 'a 坊市 is on the stage — the chat keeps quiet');
   const haunt = { ...arrived.state, place: 'fuli', tier: 'qi' };
   assert.equal(askOf(content, haunt, ctx(), { director: true }), null, 'a beast stands here — its card is the one clickable place');
-  const plain = { ...arrived.state, place: 'yunlong' };
+  const plain = { ...arrived.state, place: 'sishui', meets: null }; // nothing offered, nothing dealt
   assert.ok(askOf(content, plain, ctx(), { director: true })?.options.some(x => x.move), 'and where nothing waits, it asks');
 });
 

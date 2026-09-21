@@ -81,3 +81,26 @@ test('差事: an offer is what the stage is about — the book is behind the chi
   assert.ok(stageOwns(look, stageCards(look)).has('quest:xu-lvliang-look'), '接下 is on its own card');
   assert.deepEqual(stageCards({ place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
 });
+
+test('every card kind says whether it holds the stage — a new card cannot skip the decision', async () => {
+  // 2026-09-21: "we fixed it several times, still exists". The chat's silence was decided by a hand-written
+  // list in the rules that no new card was ever added to. Now the kinds declare it, and this sweep is the lock.
+  const { CARD_KINDS, stageHolds, stageCards } = await import('../scripts/stage.mjs');
+  const cards = await import('../scripts/cards.js');
+  const fs = await import('node:fs');
+  const drawn = [...fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8').match(/const RENDER = \{([^}]+)\}/)[1].matchAll(/\w+/g)].map(m => m[0]);
+  for (const kind of [...drawn, 'fight']) assert.ok(kind in CARD_KINDS, `card kind "${kind}" is drawn but never says whether it holds the stage`);
+  for (const [kind, k] of Object.entries(CARD_KINDS)) assert.ok(['boolean', 'function'].includes(typeof k.holds), `${kind}.holds`);
+  void cards;
+  // an offer, a find, a shelf hold; the coins and a creature's picture do not
+  const at = { place: { id: 'p' }, tasks: [] };
+  assert.equal(stageHolds(at, stageCards({ ...at, offers: [{ id: 'x' }] })), true);
+  assert.equal(stageHolds(at, stageCards({ ...at, place: { id: 'p', meet: { kind: 'find' } } })), true);
+  assert.equal(stageHolds(at, [{ card: 'item', ids: ['a'] }]), true);
+  assert.equal(stageHolds(at, stageCards(at)), false, 'the day\'s coins never silence the chat');
+  assert.equal(stageHolds(at, [{ card: 'creature', id: 'fuzhu' }, { card: 'goal' }]), false);
+  // a beast holds until it has been met today
+  const beast = won => ({ place: { id: 'p', encounter: { game: { id: 'haunt:kui' }, won } } });
+  assert.equal(stageHolds(beast(false), [{ card: 'duel', id: 'haunt:kui' }]), true);
+  assert.equal(stageHolds(beast(true), [{ card: 'duel', id: 'haunt:kui' }]), false);
+});
