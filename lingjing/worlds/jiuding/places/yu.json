@@ -25,7 +25,11 @@
    "line": {
     "zh": "天下之中的商城。陶朱公在这儿三聚三散。",
     "en": "The merchant city at the centre of the world. Here Lord Tao made three fortunes and gave three away."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
   }
  ]
 }

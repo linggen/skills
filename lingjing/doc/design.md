@@ -1761,8 +1761,10 @@ place per day**, so to-and-fro is no farm; a second arrival is just the place.
 **Only where he stops**: a place walked through on a long Move deals nothing
 (his pick). The day's coins already fill an otherwise empty stage, so 问卦 is
 not in the deck; they step aside while a 遇 stands. `state.meets = {day,
-places}`; finds are authored per province (`*` serves one with none — 冀 兖 青
-still want their own).
+places}`; finds are authored per province — 徐 冀 兖 青 written, `*` serves one
+with none — and a find may say `at`, the places it belongs to (上党的参 on
+太行, never at 碣石). A seed does NOT make a place its own: 在此逗留 is an
+option, and a place offering only that was the empty arrival he complained of.
 
 ## Real-life tasks — quests
 

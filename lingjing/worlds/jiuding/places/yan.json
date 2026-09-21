@@ -29,7 +29,11 @@
     "zh": "濮水清，岸边桑树成行。东边晴天打雷。",
     "en": "The Pu runs clear under a line of mulberries. Thunder from a clear eastern sky."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "puyang",
@@ -79,7 +83,11 @@
    "line": {
     "zh": "桑林深处，濮水拐弯。旧时的歌还有人唱。",
     "en": "Deep in the mulberries where the Pu bends. The old songs are still sung."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "leize",
@@ -107,7 +115,11 @@
     "zh": "泽上白光，雷声不歇。舜曾在这儿打鱼。",
     "en": "White light on the lake, thunder without pause. Shun once fished here."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find",
+    "beast"
+   ]
   },
   {
    "id": "leiyuan",
@@ -130,7 +142,10 @@
     "zh": "湖心。水底有什么在敲。",
     "en": "The middle of the lake. Something under the water is beating."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find"
+   ]
   }
  ]
 }

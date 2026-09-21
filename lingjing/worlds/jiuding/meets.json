@@ -1,6 +1,6 @@
 {
  "version": 1,
- "_about": "遇 — what an arrival deals when the place holds nothing of its own (design.md § 遇). The rules draw one by the day, the place and the 道号; once per place per day. Finds are authored per province ('*' serves a province with none); the road's riddles are never the story's own.",
+ "_about": "遇 — what an arrival deals when the place holds nothing of its own (design.md § 遇). The rules draw one by the day, the place and the 道号; once per place per day. Finds are authored per province ('*' serves a province with none); the road's riddles are never the story's own. A find may say `at` — the places it belongs to; unsaid, anywhere in its province.",
  "weights": {
   "find": 40,
   "riddle": 30,
@@ -58,6 +58,239 @@
     "line": {
      "zh": "浅水里有东西一闪——是两块灵石。",
      "en": "Something glints in the shallows — two spirit stones."
+    }
+   }
+  ],
+  "冀": [
+   {
+    "item": "ginseng",
+    "at": [
+     "taihang",
+     "fajiu",
+     "hengshan"
+    ],
+    "line": {
+     "zh": "背阴的坡上一簇红籽——上党的参，就长在这样的土里。",
+     "en": "A cluster of red seeds on the shaded slope — Shangdang ginseng grows in just such soil."
+    }
+   },
+   {
+    "item": "lingzhi",
+    "at": [
+     "fajiu",
+     "hengshan",
+     "taihang"
+    ],
+    "line": {
+     "zh": "柘木的朽根上生着一朵灵芝，伞盖还是软的。",
+     "en": "A lingzhi on the rotten root of a zhe tree, its cap still soft."
+    }
+   },
+   {
+    "item": "straw-cloak",
+    "at": [
+     "zhangnan",
+     "hebo",
+     "zhangyuan"
+    ],
+    "line": {
+     "zh": "岸边石上搭着一件蓑衣，主人不知去了哪里，漳水只管流。",
+     "en": "A straw cloak left on a rock by the bank; its owner is nowhere, and the Zhang runs on."
+    }
+   },
+   {
+    "item": "ferry-token",
+    "at": [
+     "zhangnan",
+     "hebo"
+    ],
+    "line": {
+     "zh": "祠前的香灰里埋着一枚渡牌，许是哪个还愿的人落下的。",
+     "en": "A ferry token buried in the incense ash before the shrine — dropped, perhaps, by someone paying a vow."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "zhuolu"
+    ],
+    "line": {
+     "zh": "古战场的土一翻，滚出几块灵石，沾着铜绿。",
+     "en": "The old battlefield's soil turns over and a few spirit stones roll out, green with bronze rust."
+    }
+   },
+   {
+    "wealth": 6,
+    "at": [
+     "jieshi"
+    ],
+    "line": {
+     "zh": "潮退之后，礁石缝里卡着两块灵石，被海水磨得发亮。",
+     "en": "After the tide, two spirit stones wedged in the reef, polished bright by the sea."
+    }
+   },
+   {
+    "wealth": 5,
+    "line": {
+     "zh": "道旁一座小石堆，是过路人垒的。最上面压着几块灵石。",
+     "en": "A small cairn by the road, stacked by travellers. A few spirit stones weigh down the top."
+    }
+   }
+  ],
+  "兖": [
+   {
+    "item": "sang-paper",
+    "at": [
+     "sangjian",
+     "pushui"
+    ],
+    "line": {
+     "zh": "桑林里晾着一架桑皮纸，收纸的人没有回来。你只取了一刀。",
+     "en": "A rack of mulberry paper drying among the trees; whoever hung it has not come back. You take one ream only."
+    }
+   },
+   {
+    "item": "lingzhi",
+    "at": [
+     "sangjian",
+     "leize",
+     "leiyuan"
+    ],
+    "line": {
+     "zh": "雷劈过的老桑，焦黑的树心里竟生出一朵灵芝。",
+     "en": "An old mulberry split by lightning — and in its charred heart, a lingzhi."
+    }
+   },
+   {
+    "item": "straw-cloak",
+    "at": [
+     "leize",
+     "leiyuan",
+     "pushui"
+    ],
+    "line": {
+     "zh": "泽边搁着一件旧蓑衣。舜在这儿打过鱼，让过地方；这一件不知是谁让下的。",
+     "en": "An old straw cloak left at the lake's edge. Shun fished here and yielded his place; who yielded this, no one knows."
+    }
+   },
+   {
+    "item": "ferry-token",
+    "at": [
+     "pushui",
+     "sangjian"
+    ],
+    "line": {
+     "zh": "濮水的浅滩上，一枚渡牌半露在沙里。",
+     "en": "On the shallows of the Pu, a ferry token half out of the sand."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "leize",
+     "leiyuan"
+    ],
+    "line": {
+     "zh": "一声雷后，泽边的泥里亮了一下——是几块灵石。",
+     "en": "After a clap of thunder something gleams in the lakeside mud — a few spirit stones."
+    }
+   },
+   {
+    "wealth": 5,
+    "line": {
+     "zh": "田埂上一只瓦罐，罐底躺着几块灵石，像是谁藏了又忘了。",
+     "en": "A clay jar on the field bank, a few spirit stones at the bottom, hidden by someone and forgotten."
+    }
+   }
+  ],
+  "青": [
+   {
+    "item": "qi-salt",
+    "at": [
+     "penglai",
+     "chengshan",
+     "langya",
+     "liubo"
+    ],
+    "line": {
+     "zh": "煮盐的灶早冷了，锅沿上还结着一层白——是上好的齐盐。",
+     "en": "The salt-boilers' stove is long cold, but a white crust rings the pan — good salt of Qi."
+    }
+   },
+   {
+    "item": "lingzhi",
+    "at": [
+     "taishan",
+     "laoshan"
+    ],
+    "line": {
+     "zh": "石阶旁的松根下，一朵灵芝顶开了落叶。",
+     "en": "Beside the stone steps, under a pine root, a lingzhi has pushed up through the fallen needles."
+    }
+   },
+   {
+    "item": "ginseng",
+    "at": [
+     "laoshan",
+     "taishan"
+    ],
+    "line": {
+     "zh": "道士的药圃早荒了，篱笆里却还有一支参，自己长了许多年。",
+     "en": "The Daoist's herb garden has gone wild, yet inside the fence one ginseng has kept growing for years."
+    }
+   },
+   {
+    "item": "ferry-token",
+    "at": [
+     "weishui",
+     "penglai",
+     "chengshan"
+    ],
+    "line": {
+     "zh": "渡口的木桩上挂着一枚渡牌，绳结是水手的结法。",
+     "en": "A ferry token hangs from a mooring post, tied in a sailor's knot."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "langya"
+    ],
+    "line": {
+     "zh": "秦碑的基座裂了一道缝，缝里塞着几块灵石——当年的祭品。",
+     "en": "The base of the Qin stele has split, and in the crack sit a few spirit stones — an offering from that day."
+    }
+   },
+   {
+    "wealth": 6,
+    "at": [
+     "jixia",
+     "weishui"
+    ],
+    "line": {
+     "zh": "辩输的先生拂袖而去，案上落下一只钱袋。里头是几块灵石。",
+     "en": "A scholar who lost the argument swept out and left a purse on the table. A few spirit stones inside."
+    }
+   },
+   {
+    "wealth": 5,
+    "line": {
+     "zh": "沙里有东西硌脚。挖出来，是两块灵石。",
+     "en": "Something hard underfoot in the sand. Dug out: two spirit stones."
+    },
+    "at": [
+     "weishui",
+     "penglai",
+     "chengshan",
+     "langya",
+     "liubo"
+    ]
+   },
+   {
+    "wealth": 5,
+    "line": {
+     "zh": "路边的老槐树下，树根拱起一块石板。板下压着几块灵石。",
+     "en": "Under an old scholar tree by the road a root has lifted a flagstone. A few spirit stones lie beneath it."
     }
    }
   ],

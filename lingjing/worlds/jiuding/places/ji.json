@@ -28,7 +28,11 @@
     "zh": "漳水浑黄，北去是邺城。水底有什么在呼吸。",
     "en": "The Zhang runs yellow; north of it lies Ye. Something under the water is breathing."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "ye",
@@ -79,7 +83,11 @@
    "line": {
     "zh": "祠在水边，香灰堆得很高。年年有新娘从这里下水。",
     "en": "A shrine at the water's edge, ash piled high. Every year a bride walks in from here."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "zhangyuan",
@@ -102,7 +110,11 @@
     "zh": "祠后的水最深，船家不肯去。鼎的气息从这里升上来。",
     "en": "The deepest water lies behind the shrine; no boatman will go. The cauldron's breath rises from here."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find",
+    "beast"
+   ]
   },
   {
    "id": "taihang",
@@ -127,7 +139,12 @@
    "line": {
     "zh": "太行八陉之一。山那边是并州，山这边是冀。",
     "en": "One of the eight passes of the Taihang. Bing lies beyond the mountains; Ji on this side."
-   }
+   },
+   "meets": [
+    "riddle",
+    "beast",
+    "find"
+   ]
   },
   {
    "id": "fajiu",
@@ -151,7 +168,11 @@
    "line": {
     "zh": "山上多柘木。一只花头白喙的鸟，衔着石子往东飞。",
     "en": "Cudrania trees cover the hill. A bird with a patterned head and white beak flies east with a pebble in its beak."
-   }
+   },
+   "meets": [
+    "beast",
+    "find"
+   ]
   },
   {
    "id": "zhuolu",
@@ -173,7 +194,11 @@
    "line": {
     "zh": "黄帝与蚩尤战过的地方。风里还有铜味。",
     "en": "Where the Yellow Emperor fought Chiyou. The wind still smells of bronze."
-   }
+   },
+   "meets": [
+    "find",
+    "beast"
+   ]
   },
   {
    "id": "jieshi",
@@ -195,7 +220,11 @@
    "line": {
     "zh": "东临碣石，以观沧海。海在山下翻白。",
     "en": "Stand on Jieshi and look upon the sea. It turns white below the rock."
-   }
+   },
+   "meets": [
+    "find",
+    "riddle"
+   ]
   },
   {
    "id": "hengshan",
@@ -215,7 +244,11 @@
    "line": {
     "zh": "北岳。云在半山，庙在云里。",
     "en": "The Northern Peak. Clouds at the waist; a temple inside the clouds."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
   }
  ]
 }

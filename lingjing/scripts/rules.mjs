@@ -489,18 +489,24 @@ const meetsToday = (state, now) => (state.meets?.day === dayKey(now) ? state.mee
 const meetHere = (state, now) => meetsToday(state, now)[state.place] ?? null;
 
 /* What the place holds by itself: a scene, an errand offered, a shelf, a
-   beast still to be met, a tale to begin. Any of these IS the arrival. */
+   beast still to be met. Any of these IS the arrival. A seed is not: 在此逗留
+   is one more option in the question, and a place that offered only that was
+   the empty arrival he complained of (吕梁洪, 2026-09-21) — it is dealt a 遇
+   like any other, and the tale is still there to begin. */
 function ownHere(content, state, ctx) {
   const place = placeOf(content, state.place), has = place?.has ?? {};
   if (atScene(content, state) || has.shop) return true;
   if (offersOf(content, state, state.lang, ctx.now).length) return true;
-  if (has.creature && !state.cast.includes(has.creature) && state.duels?.[has.creature]?.day !== dayKey(ctx.now)) return true;
-  return Boolean(has.seeds && state.day?.key === dayKey(ctx.now) ? state.day.branches < content.branches.per_day && !liveBranch(state, ctx.now) : has.seeds && !liveBranch(state, ctx.now));
+  return Boolean(has.creature && !state.cast.includes(has.creature) && state.duels?.[has.creature]?.day !== dayKey(ctx.now));
 }
 
 function meetPool(content, state, ctx) {
   const m = content.meets, place = placeOf(content, state.place);
-  const finds = m.finds?.[place.province] ?? m.finds?.['*'] ?? [];
+  // A find may say where it belongs (`at`); one that names no place lies
+  // anywhere in its province. A province with none written uses `*`.
+  const here = list => (list ?? []).map((f, n) => ({ f, n })).filter(({ f }) => !f.at || f.at.includes(place.id));
+  const own = here(m.finds?.[place.province]);
+  const finds = own.length ? own.map(x => ({ book: place.province, n: x.n })) : here(m.finds?.['*']).map(x => ({ book: '*', n: x.n }));
   const seen = new Set(state.riddles_seen ?? []);
   const riddles = (m.riddles ?? []).filter(k => !seen.has(k));
   // Creatures move (his, 2026-09-21) — but not across the world: a wandering
@@ -528,7 +534,7 @@ function dealMeet(content, state, ctx) {
   // Its own hash: bits of `roll` picked 夔 fifteen times out of fifteen.
   const nth = list => hashOf(`${dayKey(ctx.now)}|${state.place}|${state.name ?? ''}|which`) % list.length;
   const pickOf = list => list[nth(list)];
-  if (kind === 'find') return { kind, find: (content.meets.finds[placeOf(content, state.place).province] ? placeOf(content, state.place).province : '*'), n: nth(pool.find) };
+  if (kind === 'find') { const f = pickOf(pool.find); return { kind, find: f.book, n: f.n }; }
   if (kind === 'riddle') return { kind, key: pickOf(pool.riddle), tried: [] };
   return { kind, creature: pickOf(pool.beast) };
 }

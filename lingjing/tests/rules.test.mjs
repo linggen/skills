@@ -314,7 +314,10 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.ok(look(again, content, { ...ctx(), verb: 'divine' }).ask, 'a cast, a trade, a road: asked again');
   const road = lo.director.choice.options.find(x => x.move);
   const arrived = move(o, content, ctx(), { place: road.move });
-  assert.deepEqual(askOf(content, arrived.state, ctx(), arrived.result), arrived.result.director.choice, 'and where he lands, always');
+  // where he lands, always: the roads — or the traveller's riddle, when that is what the arrival dealt
+  const landed = askOf(content, arrived.state, ctx(), arrived.result), dealt = arrived.result.place.meet;
+  if (dealt?.kind === 'riddle') assert.equal(landed.question, dealt.riddle);
+  else assert.deepEqual(landed, arrived.result.director.choice, 'and where he lands, always');
   // …but not onto a stage holding something out: a shelf, a beast at its haunt
   const shop = { ...arrived.state, place: 'pengcheng' };
   assert.equal(askOf(content, shop, ctx(), { director: true }), null, 'a 坊市 is on the stage — the chat keeps quiet');
@@ -2023,8 +2026,13 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   // a reload rerolls nothing, and to-and-fro is no farm
   const first = deals[0];
   assert.deepEqual(look(first.state, content, day(0)).place.meet, first.result.place.meet);
-  // where the place has its own — a market, a haunt not yet met, a tale to begin — nothing is dealt
-  for (const own of ['pengcheng', 'lvliang']) assert.equal(must(move, base, { place: own }, day(0)).result.place.meet, undefined, own);
+  // where the place has its own — a market, a haunt's beast not yet met — nothing is dealt on top
+  assert.equal(must(move, base, { place: 'pengcheng' }, day(0)).result.place.meet, undefined);
+  assert.equal(must(move, { ...base, cast: [] }, { place: 'sibei' }, day(0)).result.place.meet, undefined, '夫诸 is what is met at 泗水北岸');
+  // a seed is an option, not an event: 吕梁洪 is dealt one, and 在此逗留 is still offered once it is done
+  const seeded = must(move, { ...base, place: 'sibei' }, { place: 'lvliang' }, day(0));
+  assert.ok(seeded.result.place.meet, 'a place with only a tale to begin is not an arrival by itself');
+  assert.ok(seeded.result.director.seed);
   // a place walked THROUGH is not an arrival: 泗水岸 → 泗口 passes 淮水渡口
   const through = must(move, base, { place: 'sikou' }, day(0));
   assert.deepEqual(through.result.via.map(p => p.id), ['huaidu']);

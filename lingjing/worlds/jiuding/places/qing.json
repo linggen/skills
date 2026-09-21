@@ -29,7 +29,11 @@
     "zh": "潍水东流，岸上有人直钩垂钓。",
     "en": "The Wei runs east; on the bank a man fishes with a straight hook."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "linzi",
@@ -78,7 +82,11 @@
    "line": {
     "zh": "稷门之下，先生们还在争。",
     "en": "Under the Ji Gate the masters are still arguing."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "penglai",
@@ -105,7 +113,11 @@
     "zh": "海上有城，天亮不散。",
     "en": "A city on the sea that does not fade at dawn."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find",
+    "beast"
+   ]
   },
   {
    "id": "liubo",
@@ -128,7 +140,10 @@
     "zh": "海中七千里的山。潮退了，才见得到山根。",
     "en": "A mountain seven thousand li out in the sea. Only at low tide is its root seen."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find"
+   ]
   },
   {
    "id": "taishan",
@@ -152,7 +167,12 @@
    "line": {
     "zh": "岱宗。日观峰上看得见海。",
     "en": "The first of mountains. From the Sunrise Peak you can see the sea."
-   }
+   },
+   "meets": [
+    "beast",
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "langya",
@@ -176,7 +196,11 @@
    "line": {
     "zh": "秦始皇在这儿望过海。碑上的字磨平了一半。",
     "en": "The First Emperor looked out to sea from here. Half the stone's characters are worn away."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "chengshan",
@@ -200,7 +224,11 @@
     "zh": "天尽头。太阳从这儿出来。",
     "en": "The end of the land. The sun rises here first."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find",
+    "beast"
+   ]
   },
   {
    "id": "laoshan",
@@ -222,7 +250,12 @@
    "line": {
     "zh": "海上第一名山。道士在山里。",
     "en": "The first mountain on the sea. Daoists live in its hills."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find",
+    "beast"
+   ]
   }
  ]
 }

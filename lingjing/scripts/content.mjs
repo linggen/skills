@@ -591,6 +591,12 @@ function lintMeets(content, ids, bad) {
       const where = `meets find (${province})`;
       if (!pair(f.line)) bad(where, 'the line needs zh and en');
       if (f.item ? !ids.items.has(f.item) : !(f.wealth > 0)) bad(where, 'names an item that exists, or a few stones');
+      if (f.wealth > content.rewards.tables.meet.wealth) bad(where, `pays ${f.wealth}, over the meet table's ${content.rewards.tables.meet.wealth}`);
+      for (const id of f.at ?? []) {
+        const at = Object.values(content.places).flatMap(d => d.places.map(p => ({ ...p, province: d.province }))).find(p => p.id === id);
+        if (!at) bad(where, `lies at unknown place ${id}`);
+        else if (province !== '*' && at.province !== province) bad(where, `lies at ${id}, which is not in ${province}`);
+      }
     }
   }
 }
