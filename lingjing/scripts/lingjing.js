@@ -478,6 +478,12 @@ async function openRow(id) {
   if (info?.ok && view.bookRow === id) show({ bookInfo: info });
 }
 
+/* 拾遗: taken or left by the rules at once — the bag and the strip show it. */
+async function takeMeet(action) {
+  await verb('meet', { action }).catch((e) => console.warn('[lingjing] meet', e));
+  await refresh();
+}
+
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 async function dropErrand(id) {
   await verb('quest', { action: 'drop', id }).catch((e) => console.warn('[lingjing] drop', e));
@@ -537,6 +543,8 @@ document.addEventListener('click', (e) => {
   if (asking) { openAsk(asking.dataset.ask); return; }
   if (e.target.closest('[data-ask-send]')) { sendAsk(); return; }
   if (e.target.closest('[data-ask-close]')) { closeAsk(); return; }
+  const found = e.target.closest('[data-meet]');
+  if (found) { takeMeet(found.dataset.meet); return; }
   const dropped = e.target.closest('[data-drop]');
   if (dropped) { dropErrand(dropped.dataset.drop); return; }
   // A line of the book opens where it lies — the page reads it from the rules.

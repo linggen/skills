@@ -223,6 +223,123 @@
     "朋"
    ],
    "hint": "Sun on one side, moon on the other."
+  },
+  "road-1": {
+   "q": "A thousand threads, ten thousand threads; they fall on the water and are gone. What is it?",
+   "a": [
+    "rain",
+    "the rain"
+   ],
+   "choices": [
+    "snow",
+    "rain",
+    "silk",
+    "mist"
+   ],
+   "hint": "Look up."
+  },
+  "road-2": {
+   "q": "It is born wearing three hundred coats and sheds one a day; by year's end only the skin is left. What is it?",
+   "a": [
+    "a calendar",
+    "calendar",
+    "an almanac"
+   ],
+   "choices": [
+    "a silkworm",
+    "a calendar",
+    "a bamboo shoot",
+    "a snake"
+   ],
+   "hint": "One day, one page."
+  },
+  "road-3": {
+   "q": "When Yu tamed the flood, into how many provinces did he divide the world?",
+   "a": [
+    "nine",
+    "9"
+   ],
+   "choices": [
+    "five",
+    "seven",
+    "nine",
+    "twelve"
+   ],
+   "hint": "The one under your feet is one of them."
+  },
+  "road-4": {
+   "q": "It stands in the middle of the water with a door and no window, goes a thousand li a day, and has no feet. What is it?",
+   "a": [
+    "a boat",
+    "boat",
+    "a ship"
+   ],
+   "choices": [
+    "a fish",
+    "a bridge",
+    "a boat",
+    "a cloud"
+   ],
+   "hint": "There is one at the ferry."
+  },
+  "road-5": {
+   "q": "Jingwei carries twigs and stones in her beak. Which sea does she mean to fill?",
+   "a": [
+    "the eastern sea",
+    "eastern sea",
+    "east sea"
+   ],
+   "choices": [
+    "the Eastern Sea",
+    "the Southern Sea",
+    "the Northern Sea",
+    "the Bohai"
+   ],
+   "hint": "She drowned on the side where the sun rises."
+  },
+  "road-6": {
+   "q": "When there is wind it rests, and when there is none it moves; resting, no wind — moving, wind. What is it?",
+   "a": [
+    "a fan",
+    "fan"
+   ],
+   "choices": [
+    "a flag",
+    "a fan",
+    "a sail",
+    "a willow"
+   ],
+   "hint": "In summer everyone holds one."
+  },
+  "road-7": {
+   "q": "Of the five phases, which one brings forth water?",
+   "a": [
+    "metal"
+   ],
+   "choices": [
+    "wood",
+    "fire",
+    "earth",
+    "metal"
+   ],
+   "hint": "Dew gathers on cold metal."
+  },
+  "road-8": {
+   "q": "Four legs when small, two when grown, three when old. What is it?",
+   "a": [
+    "man",
+    "a man",
+    "a person",
+    "human",
+    "a human"
+   ],
+   "choices": [
+    "a frog",
+    "a person",
+    "a crane",
+    "a tortoise"
+   ],
+   "hint": "It asks about you and me."
   }
  }
 }

@@ -141,6 +141,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     seeds: loadSeeds(path.join(dir, 'seeds')),
     quests: loadQuests(path.join(dir, 'quests')),
     notices: loadNotices(path.join(dir, 'quests', 'templates.json')),
+    meets: fs.existsSync(path.join(dir, 'meets.json')) ? readJson(path.join(dir, 'meets.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -420,6 +421,7 @@ export function lint(content) {
   lintSeeds(content, ids, bad);
   lintQuests(content, ids, bad);
   lintNotices(content, bad);
+  lintMeets(content, ids, bad);
   lintPlaces(content, ids, bad);
   lintAtlas(content, bad);
   return problems;
@@ -565,6 +567,28 @@ function lintNotices(content, bad) {
     if (!(t.n > 0)) bad(where, 'needs a count');
     for (const key of ['title', 'who', 'say']) if (!pair(t[key])) bad(where, `${key} needs zh and en`);
     if (!content.rewards.tables[t.grant?.table]) bad(where, `unknown reward table ${t.grant?.table}`);
+  }
+}
+
+/* 遇: the road's riddles exist and are never a scene's own; a find names an
+   item that exists or a few stones, and says its line in both languages. */
+export const MEET_KINDS = ['find', 'riddle', 'beast'];
+
+function lintMeets(content, ids, bad) {
+  const m = content.meets;
+  if (!m) return;
+  for (const k of Object.keys(m.weights ?? {})) if (!MEET_KINDS.includes(k)) bad('meets', `unknown kind ${k}`);
+  const story = new Set(Object.values(content.chapters).flatMap(c => Object.values(c.scenes)).flatMap(sc => sc.exits ?? []).flatMap(e => (e.key == null ? [] : [].concat(e.key))));
+  for (const key of m.riddles ?? []) {
+    if (!content.riddles.zh.riddles[key]) bad('meets', `unknown riddle ${key}`);
+    if (story.has(key)) bad('meets', `riddle ${key} belongs to a scene — the road would spoil it`);
+  }
+  for (const [province, finds] of Object.entries(m.finds ?? {})) {
+    for (const f of finds) {
+      const where = `meets find (${province})`;
+      if (!pair(f.line)) bad(where, 'the line needs zh and en');
+      if (f.item ? !ids.items.has(f.item) : !(f.wealth > 0)) bad(where, 'names an item that exists, or a few stones');
+    }
   }
 }
 

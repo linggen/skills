@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, advance, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -2003,6 +2003,58 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.equal(askOf(content, { ...joined.state, ...lone }, ctx()).options.at(-1).label, '问问银月');
   // A second bell is not sold once she has been found.
   assert.ok(!look({ ...joined.state, place: 'pengcheng', bag: {} }, content, ctx()).place.shelf.some(i => i.id === 'moon-bell'));
+});
+
+test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on the road; once per place per day, never where the place has its own', () => {
+  const base = { ...toOpenWorld(), place: 'sishui', tier: 'core', bag: {}, cast: ['fuzhu'], name: '清玄' };
+  const day = i => ctx({ now: new Date(2026, 9, 1 + i, 12) });
+  const deals = Array.from({ length: 30 }, (_, i) => must(move, base, { place: 'huaidu' }, day(i)));
+  const kinds = deals.map(d => d.result.place.meet?.kind);
+  assert.ok(kinds.every(Boolean), 'every arrival at an empty place is dealt one');
+  assert.deepEqual([...new Set(kinds)].sort(), ['beast', 'find', 'riddle'], 'and the deck is all three');
+  assert.ok(new Set(deals.filter(d => d.result.place.meet.kind === 'beast').map(d => d.result.place.meet.creature.id)).size > 1, 'not the same beast every time');
+  // a reload rerolls nothing, and to-and-fro is no farm
+  const first = deals[0];
+  assert.deepEqual(look(first.state, content, day(0)).place.meet, first.result.place.meet);
+  // where the place has its own — a market, a haunt not yet met, a tale to begin — nothing is dealt
+  for (const own of ['pengcheng', 'lvliang']) assert.equal(must(move, base, { place: own }, day(0)).result.place.meet, undefined, own);
+  // a place walked THROUGH is not an arrival: 泗水岸 → 泗口 passes 淮水渡口
+  const through = must(move, base, { place: 'sikou' }, day(0));
+  assert.deepEqual(through.result.via.map(p => p.id), ['huaidu']);
+  assert.deepEqual(Object.keys(through.state.meets.places), ['sikou']);
+
+  // 拾遗: taken once, and gone
+  const found = deals.find(d => d.result.place.meet.kind === 'find'), fd = day(deals.indexOf(found));
+  const took = must(meet, found.state, { action: 'take' }, fd);
+  assert.ok(took.result.took ? took.state.bag[took.result.took.id] === 1 : took.result.paid.wealth > 0);
+  assert.equal(look(took.state, content, fd).place.meet, undefined);
+  refused(meet, took.state, { action: 'take' }, 'nothing-here', fd);
+  const back = must(move, must(move, took.state, { place: 'sishui' }, fd).state, { place: 'huaidu' }, fd);
+  assert.equal(back.result.place.meet, undefined, 'the same place, the same day: just the place');
+
+  // 路人问: the riddle is the question; wrong gives the hint and asks again; right pays and is never asked again
+  const asked = deals.find(d => d.result.place.meet.kind === 'riddle'), rd = day(deals.indexOf(asked));
+  const q = askOf(content, asked.state, rd, asked.result);
+  assert.equal(q.question, asked.result.place.meet.riddle);
+  assert.deepEqual(q.options.at(-1), { label: '不答，赶路', meet: 'pass' });
+  assert.match(tapThen(q, q.options[0].label), /Meet \{action: answer, answer: /);
+  const key = asked.state.meets.places.huaidu.key, right = content.riddles.zh.riddles[key].a[0];
+  const wrongChoice = content.riddles.zh.riddles[key].choices.find(c => !content.riddles.zh.riddles[key].a.includes(c));
+  const wrong = meet(asked.state, content, rd, { action: 'answer', answer: wrongChoice });
+  assert.equal(wrong.result.refused, 'wrong-answer');
+  assert.ok(wrong.result.hint && !wrong.result.choices.includes(wrongChoice));
+  const answered = must(meet, wrong.state, { action: 'answer', answer: right }, rd);
+  assert.equal(answered.result.paid.progress, 20);
+  assert.ok(answered.state.riddles_seen.includes(key));
+  assert.ok(!askOf(content, answered.state, rd, answered.result).options.some(o => o.meet), 'answered, the roads are the question again');
+
+  // 拦路: the beast stands like a haunt's own — the same card, the same fight
+  const blocked = deals.find(d => d.result.place.meet.kind === 'beast'), bd = day(deals.indexOf(blocked));
+  const cid = blocked.result.place.meet.creature.id;
+  assert.equal(blocked.result.place.encounter.game.id, `haunt:${cid}`);
+  assert.notEqual(cid, 'fuzhu', 'never one that walks with him');
+  assert.ok(look(blocked.state, content, bd).stage.some(c => c.card === 'duel' && c.id === `haunt:${cid}`));
+  assert.equal(duel(blocked.state, content, bd, { id: `haunt:${cid}` }).result.ok, true, 'and the door opens');
 });
 
 test('arriving is an event: the errand met there is told with what is seen, 交差 leads the question, and a tale a week old shuts nothing out', () => {

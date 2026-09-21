@@ -48,13 +48,18 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // 差事 offered where he stands: one card each, the giver's own words on it.
   for (const o of look.offers ?? []) head.push({ card: 'offer', id: o.id });
 
+  // 遇: something found on the road is on the stage until it is taken or left
+  // (a traveller's riddle is the chat's question; a road beast is a duel card).
+  if (look.place?.meet?.kind === 'find') head.push({ card: 'find' });
+
   const line = lineHere(look);
   // Ling's own cards stand whatever else is true — she chose them. With none,
   // the day's coins fill the stage, unless a line is waiting on this spot.
   // An errand offered here is what the stage is about: the place's creature
   // card gives way to it, and comes back once it is taken (his, 2026-09-21).
   const shown = look.offers?.length ? focus.filter(c => c.card !== 'creature') : focus;
-  const cards = shown.length ? [...shown] : line || look.offers?.length ? [] : [{ card: 'hexagram' }];
+  // The day's coins fill an empty stage; a 遇 standing here is not empty.
+  const cards = shown.length ? [...shown] : line || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));
 
   if (!line) {

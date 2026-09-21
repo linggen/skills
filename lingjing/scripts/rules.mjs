@@ -93,7 +93,8 @@ const placeName = (content, state, place) => ({ id: place.id, name: pick(place.n
 const hauntId = creature => `haunt:${creature}`;
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
-  const cid = place?.has?.creature;
+  // The haunt's own beast, else the one today's 遇 put on this road.
+  const cid = place?.has?.creature ?? (meetHere(state, now)?.kind === 'beast' ? meetHere(state, now).creature : null);
   if (!cid || atScene(content, state)) return null;
   const creature = creatureOf(content, cid);
   if (!creature) return null;
@@ -140,6 +141,7 @@ function placeBrief(content, state, now = new Date()) {
     shelf: shelf.map(i => itemBrief(content, state, i)),
     show: withMap(content, show),
     encounter: encounterOf(content, state, now),
+    ...(meetBrief(content, state, now) ? { meet: meetBrief(content, state, now) } : {}),
   };
 }
 
@@ -475,6 +477,100 @@ function waitsOnPeak(content, state) {
   const scene = inMade(state) ? null : sceneOf(content, state);
   const exits = (scene?.buttons ?? []).map(id => scene.exits.find(e => e.id === id));
   return exits.length > 0 && exits.every(e => e?.breakthrough) && !breakthroughOf(content, state).ready;
+}
+
+/* ── 遇 — an arrival is never empty (design.md § 遇; his, 2026-09-21: 「can we
+   make sure a place triggers an event … instead of just go from a place to
+   another」). Where the place holds nothing of its own, the rules deal ONE:
+   something found, a traveller's riddle, a beast on the road. Drawn by the
+   day, the place and the 道号 — a reload rerolls nothing — and once per place
+   per day, so walking to and fro is not a farm. */
+const meetsToday = (state, now) => (state.meets?.day === dayKey(now) ? state.meets.places ?? {} : {});
+const meetHere = (state, now) => meetsToday(state, now)[state.place] ?? null;
+
+/* What the place holds by itself: a scene, an errand offered, a shelf, a
+   beast still to be met, a tale to begin. Any of these IS the arrival. */
+function ownHere(content, state, ctx) {
+  const place = placeOf(content, state.place), has = place?.has ?? {};
+  if (atScene(content, state) || has.shop) return true;
+  if (offersOf(content, state, state.lang, ctx.now).length) return true;
+  if (has.creature && !state.cast.includes(has.creature) && state.duels?.[has.creature]?.day !== dayKey(ctx.now)) return true;
+  return Boolean(has.seeds && state.day?.key === dayKey(ctx.now) ? state.day.branches < content.branches.per_day && !liveBranch(state, ctx.now) : has.seeds && !liveBranch(state, ctx.now));
+}
+
+function meetPool(content, state, ctx) {
+  const m = content.meets, place = placeOf(content, state.place);
+  const finds = m.finds?.[place.province] ?? m.finds?.['*'] ?? [];
+  const seen = new Set(state.riddles_seen ?? []);
+  const riddles = (m.riddles ?? []).filter(k => !seen.has(k));
+  // A beast of a haunt he may enter, not one that walks with him or was met today.
+  const beasts = allPlaces(content).filter(p => p.has?.creature && p.id !== place.id && !tooHard(content, state, p) && provinceOpen(content, p.province, ctx.now))
+    .map(p => p.has.creature).filter(c => !state.cast.includes(c) && state.duels?.[c]?.day !== dayKey(ctx.now));
+  return { find: finds, riddle: riddles.length ? riddles : m.riddles ?? [], beast: [...new Set(beasts)] };
+}
+
+function dealMeet(content, state, ctx) {
+  if (!content.meets || inMade(state) || meetHere(state, ctx.now) || ownHere(content, state, ctx)) return null;
+  const pool = meetPool(content, state, ctx);
+  const kinds = Object.entries(content.meets.weights).filter(([k, w]) => w > 0 && pool[k]?.length);
+  if (!kinds.length) return null;
+  const roll = hashOf(`${dayKey(ctx.now)}|${state.name ?? ''}|${state.place}|meet`);
+  let at = roll % kinds.reduce((n, [, w]) => n + w, 0);
+  const [kind] = kinds.find(([, w]) => (at -= w) < 0);
+  // Its own hash: bits of `roll` picked 夔 fifteen times out of fifteen.
+  const nth = list => hashOf(`${dayKey(ctx.now)}|${state.place}|${state.name ?? ''}|which`) % list.length;
+  const pickOf = list => list[nth(list)];
+  if (kind === 'find') return { kind, find: (content.meets.finds[placeOf(content, state.place).province] ? placeOf(content, state.place).province : '*'), n: nth(pool.find) };
+  if (kind === 'riddle') return { kind, key: pickOf(pool.riddle), tried: [] };
+  return { kind, creature: pickOf(pool.beast) };
+}
+
+const findOf = (content, meet) => content.meets.finds[meet.find][meet.n];
+
+/* The 遇 as Look and Move tell it — what Ling speaks, what the stage draws. */
+function meetBrief(content, state, now) {
+  const meet = meetHere(state, now), lang = state.lang;
+  if (!meet || meet.done) return null;
+  if (meet.kind === 'find') {
+    const f = findOf(content, meet), item = f.item ? itemOf(content, f.item) : null;
+    return { kind: 'find', line: pick(f.line, lang), ...(item ? { item: { id: item.id, name: pick(item.name, lang) } } : { wealth: f.wealth }) };
+  }
+  if (meet.kind === 'riddle') {
+    const r = content.riddles[lang].riddles[meet.key], tried = new Set((meet.tried ?? []).map(normalizeAnswer));
+    return { kind: 'riddle', riddle: r.q, choices: r.choices.filter(c => !tried.has(normalizeAnswer(c))), ...(meet.tried?.length ? { hint: r.hint } : {}) };
+  }
+  return { kind: 'beast', creature: { id: meet.creature, name: pick(creatureOf(content, meet.creature).name, lang) } };
+}
+
+/* Meet — 收下 what was found, answer the traveller, or walk on. */
+export function meet(state, content, ctx, args) {
+  const s = clone(state), here = meetHere(s, ctx.now), lang = s.lang;
+  const action = String(args.action ?? '');
+  if (!here || here.done) return refuse('nothing-here', null);
+  const close = () => { s.meets.places[s.place] = { ...here, done: true }; };
+  if (action === 'pass') { close(); return { state: s, result: { ok: true, passed: here.kind } }; }
+  if (here.kind === 'find' && action === 'take') {
+    const f = findOf(content, here);
+    if (f.item) s.bag[f.item] = (s.bag[f.item] ?? 0) + 1;
+    const paid = f.item ? null : pay(content, s, ctx, { table: 'meet', wealth: f.wealth });
+    close();
+    return { state: s, result: { ok: true, took: f.item ? { id: f.item, name: pick(itemOf(content, f.item).name, lang) } : null, paid } };
+  }
+  if (here.kind === 'riddle' && action === 'answer') {
+    const said = normalizeAnswer(args.answer ?? '');
+    if (!said) return refuse('needs-answer', null, { choices: meetBrief(content, s, ctx.now).choices });
+    const right = ['zh', 'en'].some(l => content.riddles[l].riddles[here.key].a.some(a => normalizeAnswer(a) === said));
+    if (!right) {
+      s.meets.places[s.place] = { ...here, tried: [...(here.tried ?? []), String(args.answer)] };
+      const left = meetBrief(content, s, ctx.now);
+      return { state: s, result: { ok: false, refused: 'wrong-answer', hint: left.hint, choices: left.choices } };
+    }
+    s.riddles_seen = [...new Set([...(s.riddles_seen ?? []), here.key])];
+    const paid = pay(content, s, ctx, { table: 'meet', progress: content.rewards.tables.meet.progress });
+    close();
+    return { state: s, result: { ok: true, answered: true, paid } };
+  }
+  return refuse('unknown-action', null, { actions: here.kind === 'find' ? ['take', 'pass'] : here.kind === 'riddle' ? ['answer', 'pass'] : ['pass'] });
 }
 
 /* A 奇遇 does not keep overnight. His save held one opened 2026-09-14 with no
@@ -1693,6 +1789,10 @@ export function move(state, content, ctx, args) {
   const met = bookOf(content, s, lang, ctx).filter(q => q.ready && !wasReady.has(q.id))
     .map(q => ({ id: q.id, title: q.title, ...(questOf(content, q.id)?.seen ? { seen: fill(pick(questOf(content, q.id).seen, lang), s) } : {}) }));
   const via = way.slice(0, way.findIndex(p => p.id === reached.id)).map(p => placeName(content, s, p));
+  // Where he STOPS — never a place walked through (his pick, 2026-09-21) — and
+  // only when the arrival finished nothing: an errand met is the event.
+  const dealt = met.length ? null : dealMeet(content, s, ctx);
+  if (dealt) s.meets = { day: dayKey(ctx.now), places: { ...meetsToday(s, ctx.now), [s.place]: dealt } };
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
   const place = placeBrief(content, s, ctx.now);
@@ -2385,7 +2485,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet,
 };
 
 /* Quest — 接下 · 交差 · 撂下 (design.md § 差事). The world's errands, taken by
@@ -2580,6 +2680,13 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
       ],
     };
   }
+  const road = meetBrief(content, state, ctx.now);
+  if (road?.kind === 'riddle' && !atScene(content, state)) {
+    return {
+      header: String(placeBrief(content, state, ctx.now)?.name ?? ''), question: road.riddle,
+      options: [...road.choices.map(c => ({ label: c, meet: 'answer', answer: c })), { label: zh ? '不答，赶路' : 'Walk on', meet: 'pass' }],
+    };
+  }
   const header = s => String(s ?? '');
   const question = zh ? '何去何从？' : 'What now?';
   if (result.refused === 'needs-ask') {
@@ -2708,6 +2815,7 @@ const TAPS = {
   tame: o => `Tame {creature: ${o.tame}}`,
   linger: () => 'Branch {action: open}',
   turn: o => `Quest {action: turn, id: ${o.turn}}`,
+  meet: o => `Meet {action: ${o.meet}${o.answer ? `, answer: ${o.answer}` : ''}}`,
   divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),
 };
 // A place chip on the map says 去X / Go to X (cards.js sayGo).

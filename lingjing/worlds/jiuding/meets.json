@@ -1,0 +1,88 @@
+{
+ "version": 1,
+ "_about": "遇 — what an arrival deals when the place holds nothing of its own (design.md § 遇). The rules draw one by the day, the place and the 道号; once per place per day. Finds are authored per province ('*' serves a province with none); the road's riddles are never the story's own.",
+ "weights": {
+  "find": 40,
+  "riddle": 30,
+  "beast": 30
+ },
+ "riddles": [
+  "road-1",
+  "road-2",
+  "road-3",
+  "road-4",
+  "road-5",
+  "road-6",
+  "road-7",
+  "road-8"
+ ],
+ "finds": {
+  "徐": [
+   {
+    "item": "lingzhi",
+    "line": {
+     "zh": "石缝里一株灵芝，露水未干。",
+     "en": "A lingzhi in a cleft of the rock, the dew still on it."
+    }
+   },
+   {
+    "item": "ginseng",
+    "line": {
+     "zh": "坡上红籽一簇，拨开土，是一支老参。",
+     "en": "A cluster of red seeds on the slope; under the soil, an old ginseng root."
+    }
+   },
+   {
+    "item": "sang-paper",
+    "line": {
+     "zh": "废亭的梁上压着一刀桑皮纸，竟没受潮。",
+     "en": "A ream of mulberry paper wedged on a beam of the ruined pavilion, somehow dry."
+    }
+   },
+   {
+    "item": "ferry-token",
+    "line": {
+     "zh": "泥里半埋着一枚渡牌，绳子早烂了。",
+     "en": "A ferry token half buried in the mud, its cord long rotted."
+    }
+   },
+   {
+    "wealth": 8,
+    "line": {
+     "zh": "路边一只破褡裢，里头滚出几块灵石。",
+     "en": "A torn saddlebag by the road; a few spirit stones roll out."
+    }
+   },
+   {
+    "wealth": 5,
+    "line": {
+     "zh": "浅水里有东西一闪——是两块灵石。",
+     "en": "Something glints in the shallows — two spirit stones."
+    }
+   }
+  ],
+  "*": [
+   {
+    "item": "ginseng",
+    "line": {
+     "zh": "草丛里一支野参，须子完好。",
+     "en": "A wild ginseng in the grass, its roots whole."
+    }
+   },
+   {
+    "item": "sang-paper",
+    "line": {
+     "zh": "树洞里塞着一卷桑皮纸，不知是谁留的。",
+     "en": "A roll of mulberry paper tucked in a hollow tree; who left it, no one knows."
+    }
+   },
+   {
+    "wealth": 6,
+    "line": {
+     "zh": "道旁石下压着几块灵石，像是谁的买路钱。",
+     "en": "A few spirit stones under a roadside stone, like someone's toll."
+    }
+   }
+  ]
+ }
+}

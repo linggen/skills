@@ -414,3 +414,7 @@ body.fighting .bside .bwho { font-size: 30px; }
 .askbar .asktopic { flex: none; font-family: var(--serif); color: var(--ling); font-size: 13px; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .askbar input { flex: 1; min-width: 0; font: inherit; font-size: 13.5px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
 body.fighting .askbar { display: none; }
+
+/* 拾遗 */
+.card.find { border-left: 3px solid var(--seal); }
+.card.find .cardtitle { color: var(--seal); }

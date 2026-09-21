@@ -1731,6 +1731,31 @@ Save version 4, with a migration that moves the old key.
 verb that can tick one · ④ the cards (offer + the book inside the goal card) +
 SKILL.md · ⑤ templated 差事 · ⑥ the 功课 move onto the same card.
 
+## 遇 — no arrival is empty (built 2026-09-21)
+
+His, after an afternoon of walking 泗水北岸 ↔ 吕梁洪: *can we make sure a place
+triggers an event — a fight, a question, a cast, anything — instead of just go
+from a place to another.* An arrival is dealt, in this order:
+
+1. **What it finished** — an errand met there: its `seen`, and 交差 leads.
+2. **What the place holds** — a scene, an errand offered, a haunt's beast not
+   yet met today, a market, a tale to begin. Any of these IS the arrival.
+3. **Otherwise one 遇** from `worlds/<id>/meets.json`, by weight: **拾遗** (a
+   thing or a few 灵石 by the road; 收下 on its own card, the page takes it —
+   no model turn), **路人问** (a riddle from the ROAD's pool, never a scene's —
+   the lint refuses one that is; it is the chat's question, `meet` table 20
+   修为, wrong gives the hint and asks again), **拦路** (a beast of a haunt he
+   may enter stands on this road exactly as at its own haunt: the same duel
+   card, the same fight, the same once-a-day).
+
+Drawn by the day, the place and the 道号 — a reload rerolls nothing. **Once per
+place per day**, so to-and-fro is no farm; a second arrival is just the place.
+**Only where he stops**: a place walked through on a long Move deals nothing
+(his pick). The day's coins already fill an otherwise empty stage, so 问卦 is
+not in the deck; they step aside while a 遇 stands. `state.meets = {day,
+places}`; finds are authored per province (`*` serves one with none — 冀 兖 青
+still want their own).
+
 ## Real-life tasks — quests
 
 Each app publishes its quest facts; the game only reads them.

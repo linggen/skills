@@ -546,6 +546,28 @@ tools:
         required: false
         description: The path or url GenerateImage returned.
 
+  - name: Meet
+    description: >-
+      遇 — what an arrival dealt where the place held nothing of its own
+      (`place.meet` in Move and Look). `find`: speak its `line`; the stage
+      carries 收下, so do nothing more. `riddle`: a traveller asks — one line
+      to set them on the road, then the rules' `ask` IS the riddle; an option
+      tapped is Meet `answer` with it, *不答，赶路* is Meet `pass`; on
+      `wrong-answer` say the `hint` and ask again. `beast`: it blocks the
+      road — say so in one line; the fight is the card on the stage. You never
+      deal one yourself and never promise one.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}}"
+    tier: edit
+    args:
+      action:
+        type: string
+        required: true
+        description: answer, pass or take.
+      answer:
+        type: string
+        required: false
+        description: The player's answer to the traveller's riddle.
+
   - name: Quest
     description: >-
       差事 — the errands the world gives and the player TAKES. `take` at the
@@ -713,6 +735,11 @@ the scene or the place, and the choice.
      comes back only when the rules send one. (The book's own facts — what an
      errand needs, pays, who gave it — the page shows by itself now; a 问询
      about one wants the telling, not the terms read back.)
+   - **No arrival is empty.** Where a place holds nothing of its own the
+     rules deal a 遇 (`place.meet`): speak it as what happens on arriving —
+     the thing in the grass, the traveller's hail, the beast across the road
+     — in one or two lines, and let its card or its question carry the rest
+     (see Meet). Once per place per day; a second arrival is just the place.
    - **Arriving is an event.** A Move that comes back with `met` reached
      what an errand sent them for: speak its `seen` as the sight before them
      — it is the moment the errand was about — say the errand is done, and

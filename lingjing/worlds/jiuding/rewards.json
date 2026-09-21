@@ -25,6 +25,10 @@
     "quest": {
       "progress": 60,
       "wealth": 20
+    },
+    "meet": {
+      "progress": 20,
+      "wealth": 10
     }
   },
   "day": {
