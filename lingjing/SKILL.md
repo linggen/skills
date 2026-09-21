@@ -713,6 +713,15 @@ the scene or the place, and the choice.
      comes back only when the rules send one. (The book's own facts — what an
      errand needs, pays, who gave it — the page shows by itself now; a 问询
      about one wants the telling, not the terms read back.)
+   - **Arriving is an event.** A Move that comes back with `met` reached
+     what an errand sent them for: speak its `seen` as the sight before them
+     — it is the moment the errand was about — say the errand is done, and
+     let the question lead with 交差 (it does: the `turn` option). With no
+     `met`, a place still has what Look's director gives it: a `seed` is a
+     tale to begin (*在此逗留*), a haunt is a beast on the stage, a market is
+     a shelf. Say in one line what is HERE before the roads are asked. And
+     never write 何去何从 yourself — the question is the AskUser's; typed
+     into the reply as well, the player reads it twice.
    - **「下一步怎么做」 has one answer: the place, by name.** When the player
      asks how to get on with an errand or the goal, name where it is met
      (`book[].where`, `waypoint.place`) and nothing of the legs between —

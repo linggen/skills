@@ -85,6 +85,10 @@
         "zh": "上游吕梁洪，水悬三十仞，流沫四十里。孔夫子在那儿见过一个泅水的老丈，说他懂道。你去看一眼，回来讲给我听。",
         "en": "Upstream at Lvliang the water falls thirty fathoms and foams for forty li. Confucius saw an old man swim it there and said he knew the Way. Go look, and tell me."
       },
+      "seen": {
+        "zh": "洪口水悬三十仞，白沫奔出四十里。浪心里竟有个老丈，披发而泅，出没如常，上岸时还哼着歌。问他可有道，他只说：从水之道，不为私焉。",
+        "en": "The water falls thirty fathoms and foams for forty li. In the heart of it an old man swims, hair loose, in and out of the flood as if it were a pond, and climbs out singing. Asked if he has a Way, he says only: I follow the water's way and add nothing of my own."
+      },
       "need": [
         {
           "kind": "visit",

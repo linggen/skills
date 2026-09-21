@@ -529,6 +529,7 @@ function lintQuests(content, ids, bad) {
     seen.add(q.id);
     if (!pair(q.title)) bad(where, 'title needs zh and en');
     if (!pair(q.say)) bad(where, 'the giver\'s line needs zh and en');
+    if (q.seen && !pair(q.seen)) bad(where, 'what is seen there needs zh and en');
     if (!places.has(q.from?.place)) bad(where, `taken at unknown place ${q.from?.place}`);
     if (q.from?.who && !pair(q.from.who)) bad(where, 'the giver needs a name in both languages');
     if (!content.rewards.tables[q.grant?.table]) bad(where, `unknown reward table ${q.grant?.table}`);

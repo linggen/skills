@@ -68,10 +68,11 @@ button:disabled { cursor: default; }
 .ls b { color: var(--ling); font-weight: 500; }
 /* A gain: the number glows while it counts up, and +N floats off it. */
 .xw .num, .ls { position: relative; }
-[data-count].rising { color: var(--ling); font-weight: 600; }
-.gain { position: absolute; left: 0; top: -2px; font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ling);
-        pointer-events: none; animation: gainFloat 1.6s ease-out forwards; }
-@keyframes gainFloat { 0% { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-16px); } }
+[data-count] { display: inline-block; transition: transform .25s ease-out, color .25s; }
+[data-count].rising { color: var(--ling); font-weight: 600; transform: scale(1.22); }
+.gain { position: absolute; left: 0; top: -4px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ling);
+        pointer-events: none; animation: gainFloat 2.2s ease-out forwards; }
+@keyframes gainFloat { 0% { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px); } }
 @media (prefers-reduced-motion: reduce) { .gain { animation-duration: 2.4s; transform: none; } }
 
 /* The 丹田 ring: the engine's latest reading of the 灵气 window — full, half,

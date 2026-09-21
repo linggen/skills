@@ -1651,6 +1651,14 @@ as **one slim line with nothing to tap**; its road is the chat question's to
 offer. An errand offered where he stands takes the place's creature card's
 place, which returns once it is taken. A shelf stays: it is something to do.
 
+**Arriving is an event** (his, 2026-09-21: 「when arrived a place, can we
+trigger something, instead of let user go to another place without doing
+anything」). Move's result carries `met` — the errands this arrival finished,
+each with its authored `seen` (what is there: the old man swimming 吕梁洪) —
+and the question leads with 交差. A 奇遇 does not keep overnight: a tale
+opened on an earlier day counts as closed, because one left open on 09-14
+had shut every seed out of every place for a week.
+
 **What the page knows it shows; the model is for telling** (his, 2026-09-21:
 five 说说 buttons, each a 12k-token turn for facts the page already held). A
 row of the book opens where it lies — the giver's words, what it pays, the

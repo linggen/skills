@@ -231,35 +231,57 @@ function statusHtml() {
 /// A gain on the strip is seen: the number counts up from where it stood
 /// and the gain floats off it (his ask, 2026-09-17). Only a rise within the
 /// same world and tier is counted — a breakthrough or a new world starts over.
+let drawnStrip = '';
+let freshUntil = 0;
 let shown = null; // {world, tier, progress, wealth} as last drawn
+/* The numbers rising right now: {key: {from, to, start}}. They live out here,
+   not on the element — the strip is redrawn whenever anything on it changes,
+   and until 2026-09-21 every redraw (a stream token is one) replaced the very
+   element the count was running on, so the rise died in its first frame and
+   he never saw one (「show animation, when number change on topbar」). Each
+   frame finds the element that is there NOW. */
+const rising = new Map();
+const RISE_MS = 1100, GAIN_MS = 2400;
 function riseStats() {
-  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth };
+  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next };
   const before = shown;
   shown = now;
-  if (!before || before.world !== now.world) return;
-  for (const key of ['progress', 'wealth']) {
-    const from = before[key], to = now[key];
-    if (key === 'progress' && before.tier !== now.tier) continue;
-    if (!(to > from)) continue;
-    const el = document.querySelector(`[data-count="${key}"]`);
-    if (!el) continue;
-    const gain = document.createElement('span');
-    gain.className = 'gain';
-    gain.textContent = `+${to - from}`;
-    el.after(gain);
-    gain.addEventListener('animationend', () => gain.remove());
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
-    el.classList.add('rising');
-    const start = performance.now(), span = 900;
-    const step = (t) => {
-      const k = Math.min(1, (t - start) / span);
-      if (!el.isConnected) return;
-      el.textContent = String(Math.round(from + (to - from) * (1 - (1 - k) ** 3)));
-      if (k < 1) requestAnimationFrame(step);
-      else el.classList.remove('rising');
-    };
-    requestAnimationFrame(step);
+  if (before && before.world === now.world) {
+    for (const key of ['progress', 'wealth']) {
+      if (key === 'progress' && before.tier !== now.tier) continue;
+      if (now[key] > before[key]) rising.set(key, { from: before[key], to: now[key], start: performance.now(), next: now.next });
+    }
   }
+  if (rising.size) paintRise();
+}
+let riseFrame = null;
+function paintRise() {
+  if (riseFrame) cancelAnimationFrame(riseFrame);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const t = performance.now();
+  for (const [key, r] of rising) {
+    const el = document.querySelector(`[data-count="${key}"]`), age = t - r.start;
+    if (age > GAIN_MS) { rising.delete(key); el?.classList.remove('rising'); continue; }
+    if (!el) continue;
+    const k = still ? 1 : Math.min(1, age / RISE_MS), eased = 1 - (1 - k) ** 3;
+    const value = Math.round(r.from + (r.to - r.from) * eased);
+    el.textContent = String(value);
+    el.classList.toggle('rising', k < 1);
+    // The bar fills with the number, not ahead of it.
+    const bar = key === 'progress' && r.next ? document.querySelector('.status .xw .bar i') : null;
+    if (bar) bar.style.width = `${Math.min(100, (value / r.next) * 100)}%`;
+    // The gain floats off the number; redrawn, it picks up where it was.
+    if (!el.parentElement.querySelector(`.gain[data-for="${key}"]`)) {
+      const gain = document.createElement('span');
+      gain.className = 'gain';
+      gain.dataset.for = key;
+      gain.textContent = `+${r.to - r.from}`;
+      gain.style.animationDelay = `-${Math.round(age)}ms`;
+      el.after(gain);
+    }
+  }
+  riseFrame = rising.size ? requestAnimationFrame(paintRise) : null;
+  if (!rising.size) document.querySelectorAll('.gain').forEach((g) => g.remove());
 }
 
 /// Today's cast beside the number it changes — 修为 ×1.2 by the 修为 bar,
@@ -335,8 +357,14 @@ function draw() {
   document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
   // An errand just taken went somewhere: the chip shows where, once.
   const lines = look.book?.length ?? 0;
-  keep({ bookFresh: view.bookSeen !== null && lines > view.bookSeen, bookSeen: lines });
-  $('status').innerHTML = statusHtml();
+  // The pulse lasts as long as its animation — a flag dropped on the very next
+  // draw redrew the strip and cut the pulse off in its first frame.
+  if (view.bookSeen !== null && lines > view.bookSeen) { freshUntil = performance.now() + 1300; setTimeout(render, 1350); }
+  keep({ bookFresh: performance.now() < freshUntil, bookSeen: lines });
+  // Redrawn only when something on it changed: a strip rebuilt on every
+  // stream token restarts every animation on it.
+  const strip = statusHtml();
+  if (strip !== drawnStrip) { $('status').innerHTML = strip; drawnStrip = strip; }
   riseStats();
   // A fight takes the whole column: the backdrop, the tray and Yinyue's own
   // body give way, because she is IN the fight as a card and the cards need
@@ -831,6 +859,7 @@ function gate(note = '') {
   document.documentElement.lang = machineLang();
   document.title = w.title;
   $('status').innerHTML = '';
+  drawnStrip = '';
   $('place').textContent = '';
   $('stage').hidden = true;
   stageYinyue(false);

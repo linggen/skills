@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, advance, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, advance, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -2003,6 +2003,33 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.equal(askOf(content, { ...joined.state, ...lone }, ctx()).options.at(-1).label, '问问银月');
   // A second bell is not sold once she has been found.
   assert.ok(!look({ ...joined.state, place: 'pengcheng', bag: {} }, content, ctx()).place.shelf.some(i => i.id === 'moon-bell'));
+});
+
+test('arriving is an event: the errand met there is told with what is seen, 交差 leads the question, and a tale a week old shuts nothing out', () => {
+  // 2026-09-21: he reached 吕梁洪 for the fisherman's errand; the chat said a line and asked 何去何从.
+  const at = ctx({ now: new Date('2026-09-21T12:00:00') });
+  const base = { ...toOpenWorld(), place: 'sibei', tier: 'core', bag: {} };
+  const took = must(quest, base, { action: 'take', id: 'xu-lvliang-look' }, at).state;
+  const arrived = must(move, { ...took, place: 'sishui' }, { place: '吕梁洪' }, at);
+  assert.deepEqual(arrived.result.met.map(m => m.id), ['xu-lvliang-look']);
+  assert.match(arrived.result.met[0].seen, /披发而泅/, 'what the author put there is spoken on arrival');
+  const ask = askOf(content, arrived.state, at, arrived.result);
+  assert.deepEqual(ask.options[0], { label: '交差：吕梁洪的水声', turn: 'xu-lvliang-look' }, 'done is handed in before anything else is asked');
+  assert.match(tapThen(ask, '交差：吕梁洪的水声'), /Quest \{action: turn, id: xu-lvliang-look\}/, 'the tap is its tool, named');
+  // walking on and back meets nothing new
+  const again = must(move, must(move, arrived.state, { place: 'sibei' }, at).state, { place: 'lvliang' }, at);
+  assert.equal(again.result.met, undefined);
+  // handed in, the question is the roads again
+  const turned = must(quest, arrived.state, { action: 'turn', id: 'xu-lvliang-look' }, at);
+  assert.ok(!askOf(content, turned.state, at, turned.result).options.some(o => o.turn));
+
+  // a 奇遇 opened a week ago and never played: the place still has its seed, and Look calls no tale open
+  const stale = { ...arrived.state, branch: { kind: 'province-tale', turns: 0, opened: '2026-09-14T14:07:21.338Z', seed: 'xu-13' } };
+  const seen = look(stale, content, at);
+  assert.ok(seen.director.seed, 'a stale tale shuts no seed out');
+  assert.equal(seen.branch, null);
+  assert.ok(seen.director.choice.options.some(o => o.linger), '在此逗留 is offered');
+  assert.ok(look({ ...stale, branch: { ...stale.branch, opened: '2026-09-21T09:00:00' } }, content, at).branch, 'today\'s is still open');
 });
 
 test('榜文: a market posts one templated 差事 a day — near, winnable, rebuilt from its id', () => {

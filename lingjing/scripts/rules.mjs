@@ -477,6 +477,11 @@ function waitsOnPeak(content, state) {
   return exits.length > 0 && exits.every(e => e?.breakthrough) && !breakthroughOf(content, state).ready;
 }
 
+/* A 奇遇 does not keep overnight. His save held one opened 2026-09-14 with no
+   turn taken, and for a week it shut every seed out of every place: he
+   arrived, nothing was there, and the chat asked where next (2026-09-21). */
+const liveBranch = (state, now) => (state.branch && dayKey(new Date(state.branch.opened)) === dayKey(now) ? state.branch : null);
+
 /* The nearest open road out of a scene's place the player can walk. */
 function wayBack(content, state, now) {
   const scene = sceneOf(content, state);
@@ -515,7 +520,7 @@ function directorBrief(content, state, ctx) {
   if (!place) return null;
   const roads = place.roads.map(id => placeOf(content, id)).filter(p => provinceOpen(content, p.province, ctx.now));
   const closed = place.roads.map(id => placeOf(content, id)).filter(p => !provinceOpen(content, p.province, ctx.now));
-  const seed = place.has?.seeds && state.day.branches < content.branches.per_day && !state.branch
+  const seed = place.has?.seeds && state.day.branches < content.branches.per_day && !liveBranch(state, ctx.now)
     ? pickSeed(content, state, content.branches.templates[0].kind, ctx.now) : null;
   const here = placeName(content, state, place);
   const near = roads.filter(p => !tooHard(content, state, p)).map(p => placeName(content, state, p));
@@ -535,7 +540,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, canWrite(content, state), filler(content, state, ctx.said)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, canWrite(content, state), filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready)),
   };
 }
 
@@ -545,7 +550,7 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said, write = false, alone = null) {
+function choiceOf(state, here, near, thread, seeded, said, write = false, alone = null, ready = []) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
@@ -553,6 +558,9 @@ function choiceOf(state, here, near, thread, seeded, said, write = false, alone 
   // 降妖 and the feeding are on the creature's card, the cast on its coins, the
   // bell on the quest's card: one clickable place each, never asked here too
   // (his law, 2026-09-17 — "user will click twice"). 写符 has no card of its own.
+  // Something done is handed in before anything else is asked: 交差 where he
+  // stands, the moment it is met — and the chat says so, not only a chip.
+  options.push(...ready.map(q => ({ label: zh ? `交差：${q.title}` : `Hand in: ${q.title}`, turn: q.id })));
   if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
   options.push(...places.map(p => ({ label: p.name, move: p.id })));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
@@ -994,7 +1002,7 @@ export function look(state, content, ctx) {
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
-    ended: state.ended, branch: state.branch, story: state.story,
+    ended: state.ended, branch: liveBranch(state, ctx.now), story: state.story,
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
@@ -1555,6 +1563,7 @@ function pickSeed(content, state, kind, now) {
 export function branch(state, content, ctx, args) {
   const s = clone(state);
   rollDay(s, ctx.now);
+  if (!liveBranch(s, ctx.now)) s.branch = null;
   if (args.action === 'open') {
     const template = content.branches.templates.find(b => b.kind === args.kind);
     if (!template) return refuse('unknown-branch', null, { kinds: content.branches.templates.map(b => b.kind) });
@@ -1677,6 +1686,12 @@ export function move(state, content, ctx, args) {
     if (atScene(content, s) && sceneOf(content, s)?.at === step.id) break;
   }
   const reached = placeOf(content, s.place);
+  // What this arrival finished: the errands not ready before and ready now,
+  // each with what is SEEN there when its author wrote it — so reaching the
+  // place an errand sent him to is an event, not an empty ford.
+  const wasReady = new Set(bookOf(content, state, lang, ctx).filter(q => q.ready).map(q => q.id));
+  const met = bookOf(content, s, lang, ctx).filter(q => q.ready && !wasReady.has(q.id))
+    .map(q => ({ id: q.id, title: q.title, ...(questOf(content, q.id)?.seen ? { seen: fill(pick(questOf(content, q.id).seen, lang), s) } : {}) }));
   const via = way.slice(0, way.findIndex(p => p.id === reached.id)).map(p => placeName(content, s, p));
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
@@ -1688,7 +1703,7 @@ export function move(state, content, ctx, args) {
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
   const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not
@@ -2692,6 +2707,7 @@ const TAPS = {
   ring: o => (o.answer ? `Ring {answer: ${o.answer}}` : 'Ring'),
   tame: o => `Tame {creature: ${o.tame}}`,
   linger: () => 'Branch {action: open}',
+  turn: o => `Quest {action: turn, id: ${o.turn}}`,
   divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),
 };
 // A place chip on the map says 去X / Go to X (cards.js sayGo).
@@ -2700,7 +2716,7 @@ const GO = /^(去|go to\s+)/i;
 // (cards.js sayCast); typed, 起一卦 / 算一卦 / 问卦. Look alone let the scene's
 // question win: 起一卦 tapped twice, 何去何从 asked twice (2026-09-17).
 const CAST_WORDS = /起一?卦|算一?卦|问卦|\bcast the coins\b|\bdivine\b/i;
-function tapThen(ask, said) {
+export function tapThen(ask, said) {
   const words = String(said ?? '').trim();
   if (CAST_WORDS.test(words) && !ask?.options?.some(o => o.label === words)) {
     return 'The player asks for the day\'s cast — call Divine now, with no `ask`; this Look changed nothing. Then AskUser exactly the `ask` that tool returns. The reply ends only there.';
