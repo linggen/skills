@@ -15,7 +15,7 @@ export const WORDS = {
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
-    about: '说说', feed: '喂它{item}', subdue: '降妖',
+    about: '问询', askHint: '想问什么？留空，便请她说说', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', subdue: '降妖',
     effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
@@ -53,7 +53,7 @@ export const WORDS = {
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
-    about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
+    about: 'Ask', askHint: 'What do you want to know? Leave it empty and she simply tells', askSend: 'Ask', drop: 'Put it down', paysWord: 'Pays', nextWord: 'Then', feed: 'Feed it {item}', subdue: 'Subdue',
     effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effTemper: 'Tempers your treasure +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
     duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
@@ -95,8 +95,13 @@ const sayAttr = (line) => `data-say="${esc(line)}"`;
 /// The card's own buttons: every card on the stage has at least one — a
 /// word to Ling about what it is (his rule, 2026-09-16). `disabled` carries
 /// a reason as its title.
+/* 问询 is the one word that costs a model turn. It never speaks at once: it
+   opens the ask bar with its line (「说说夫诸」), the player adds a question or
+   leaves it empty, and only then is anything sent (his, 2026-09-21: what the
+   page knows it shows; the model is for telling). */
+const askAttr = (line) => `data-ask="${esc(line)}"`;
 const acts = (items) => `<div class="acts">${items.filter(Boolean).map((a) =>
-  `<button class="act say" ${sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`).join('')}</div>`;
+  `<button class="act ${a.ask ? 'ask' : 'say'}" ${a.ask ? askAttr(a.say) : sayAttr(a.say)}${a.disabled ? ` disabled title="${esc(a.disabled)}"` : ''}>${esc(a.label)}</button>`).join('')}</div>`;
 
 /// Her last line in a reply: `**银月：**…` / `**Yinyue:** …`, plain.
 export function yinyueLine(text) {
@@ -138,7 +143,7 @@ function creature(card, ctx) {
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
       <q>${esc(pick(c.quote, ctx.lang))}</q>
       <span class="chip">${ctx.words[tamed ? 'tamed' : 'untamed']}</span>
-    </div></div>${acts([{ label: ctx.words.about, say: say(ctx.words.sayCreature, { name }) }, feed])}</div>`;
+    </div></div>${acts([{ label: ctx.words.about, ask: true, say: say(ctx.words.sayCreature, { name }) }, feed])}</div>`;
 }
 
 function traits(card, ctx) {
@@ -152,7 +157,7 @@ function traits(card, ctx) {
   // The arts learned, each with what it does; greyed until its realm.
   const arts = (ctx.look.arts || []).map((a) => `<div class="artrow${a.ready ? '' : ' dim'}"><b>${esc(a.name)}</b> <span class="small">${esc(a.about)}</span>${a.ready ? '' : ` <span class="chip">${esc(say(ctx.words.artFrom, { tier: a.tier.name }))}</span>`}</div>`);
   const artsHtml = arts.length ? `<div class="cardtitle arts">${esc(ctx.look.words?.arts ?? ctx.words.artsTitle)}</div>${arts.join('')}` : '';
-  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${fateHtml(ctx)}${artsHtml}${acts([{ label: ctx.words.about, say: ctx.words.sayRoots }])}</div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${fateHtml(ctx)}${artsHtml}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayRoots }])}</div>`;
 }
 
 /// 命格 beside the roots: what it is once set; before, the birthday typed
@@ -175,7 +180,7 @@ function fateHtml(ctx) {
 function map(card, ctx) {
   if (ctx.look.world?.made) return roadMap(ctx);
   if (ctx.look.world?.atlas) return atlasMap(ctx);
-  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div>${placesHtml(ctx)}${acts([{ label: ctx.words.about, say: ctx.words.sayMap }])}</div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div>${placesHtml(ctx)}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayMap }])}</div>`;
 }
 
 /// The world map: the 禹贡 plate with the game's own names over it. Up close
@@ -225,7 +230,7 @@ function atlasMap(ctx) {
   const views = whole ? toOwn : other ? toWhole + toOwn : toWhole;
   return `<div class="card"><div class="cardtitle">${esc(title)}</div>
     <div class="atlas${whole ? ' whole' : ''}" style="aspect-ratio:${(frame.w * atlas.aspect).toFixed(4)} / ${frame.h.toFixed(4)}">${img}${provinces.join('')}${dots.join('')}</div>
-    <div class="acts">${views}<button class="act say" ${sayAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;
+    <div class="acts">${views}<button class="act ask" ${askAttr(ctx.words.sayMap)}>${esc(ctx.words.about)}</button></div></div>`;
 }
 
 /// The province's places as chips, for a world with no map: here, a road
@@ -278,7 +283,7 @@ function roadMap(ctx) {
     ? `class="roadmap painted" style="background-image:url('${esc(worldPath(ctx.look.world.dir, painted.file))}')"`
     : `class="roadmap" style="height:${rows * 62}px"`;
   return `<div class="card"><div class="cardtitle">${esc(place.province.name)}</div>
-    <div ${frame}><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines.join('')}</svg>${chips.join('')}</div>${acts([{ label: ctx.words.about, say: ctx.words.sayMap }])}</div>`;
+    <div ${frame}><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${lines.join('')}</svg>${chips.join('')}</div>${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayMap }])}</div>`;
 }
 
 function hexagram(card, ctx) {
@@ -289,7 +294,7 @@ function hexagram(card, ctx) {
     const bars = [...h.lines].reverse().map((y) => `<i class="${y ? 'yang' : 'yin'}"></i>`).join('');
     return `<div class="card hex"><div class="hexbars">${bars}</div><div>
       <div class="cardtitle">${esc(pick(h.name, ctx.lang))}</div>
-      <div class="hextext">${esc(pick(h.image, ctx.lang))}</div>${acts([{ label: w.about, say: say(w.sayItem, { name: pick(h.name, ctx.lang) }) }])}</div></div>`;
+      <div class="hextext">${esc(pick(h.image, ctx.lang))}</div>${acts([{ label: w.about, ask: true, say: say(w.sayItem, { name: pick(h.name, ctx.lang) }) }])}</div></div>`;
   }
   const d = ctx.look.divination;
   // Tapped: the coins are in the air until the cast lands — nothing to tap twice.
@@ -329,7 +334,7 @@ function castHtml(d, ctx) {
     <div class="hextext">${esc(d.hexagram.judgment)}</div>
     <div class="small dim">${esc(d.hexagram.image)}</div>${changed}
     <div class="small castfx"><span class="chip">${esc(d.ask.name)}</span> ${esc(effect)}</div>
-    ${acts([{ label: w.about, say: w.sayOmen }])}</div></div>`;
+    ${acts([{ label: w.about, ask: true, say: w.sayOmen }])}</div></div>`;
 }
 
 /// The next cauldron: a word to Ling when the road is open; with a date,
@@ -341,12 +346,12 @@ function gate(card, ctx) {
   const need = bt?.need ? `<div class="small dim">${esc(say(ctx.words.gateNeed, { to: bt.need.to, step: bt.need.step, xw: ctx.words.xw, n: bt.need.progress }))}</div>` : '';
   // The road on is a word only when it is open and no scene runs here.
   const go = card.opens || ctx.look.scene ? null : { label: ctx.words.sayGate, say: ctx.words.sayGate };
-  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}${need}${acts([{ label: ctx.words.about, say: ctx.words.sayGateAbout }, go])}</div></div>`;
+  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}${need}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayGateAbout }, go])}</div></div>`;
 }
 
 function tribulation(card, ctx) {
   const bolts = [1, 2, 3].map((k) => `<i class="${k <= (card.strikes || 0) ? 'hit' : ''}"></i>`).join('');
-  return `<div class="card trib"><div class="cardtitle">${ctx.words.tribTitle}</div><div class="bolts">${bolts}</div>${acts([{ label: ctx.words.about, say: ctx.words.sayTrib }])}</div>`;
+  return `<div class="card trib"><div class="cardtitle">${ctx.words.tribTitle}</div><div class="bolts">${bolts}</div>${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayTrib }])}</div>`;
 }
 
 /// A board for a task already won or done is a made pill, never a fresh deal.
@@ -354,7 +359,7 @@ function board(card, ctx) {
   const task = (ctx.look.tasks || []).find((t) => t.id === card.id);
   const made = task && (task.status === 'done' || task.won);
   const body = made ? `<div class="dim small">${ctx.words.boardDone}</div>` : boardHtml(ctx.boardFor(card.id), ctx.words);
-  return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}${acts([{ label: ctx.words.about, say: ctx.words.sayBoard }])}</div>`;
+  return `<div class="card"><div class="cardtitle">${ctx.words.play}</div>${body}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayBoard }])}</div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
@@ -408,7 +413,7 @@ function item(card, ctx) {
     const use = e.progress && i.held ? `<button class="act say" ${sayAttr(say(ctx.words.sayUse, { name: i.name }))}>${ctx.words.use}</button>`
       : wearable && i.held && !i.worn ? `<button class="act say" ${sayAttr(say(ctx.words.sayWear, { name: i.name }))}>${ctx.words.wear}</button>` : '';
     const worn = i.worn ? `<span class="chip">${ctx.words.worn}</span>` : '';
-    const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayItem, { name: i.name }))}>${ctx.words.about}</button>`;
+    const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayItem, { name: i.name }))}>${ctx.words.about}</button>`;
     return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
       <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${made}${price}${held}${worn}<div class="acts">${tell}${use}</div></div>`;
   });
@@ -450,7 +455,7 @@ function treasure(card, ctx) {
       <span class="lean">${esc(t.element_name)}</span></div>
     <div class="small dim">${say(w.treasureDoes, { atk: t.atk, root: t.element_name, n: t.level })}</div>
     ${full ? `<div class="small ling">${w.treasureTop}</div>` : `<div class="fpool"><span>${w.temper}</span>${bar}<b>${t.exp}/${t.needs}</b></div>`}
-    <div class="acts">${grow}<button class="act say" ${sayAttr(say(ctx.words.sayTreasure, { name: t.name }))}>${w.about}</button></div></div>`;
+    <div class="acts">${grow}<button class="act ask" ${askAttr(say(ctx.words.sayTreasure, { name: t.name }))}>${w.about}</button></div></div>`;
 }
 
 /* ── The stage's own cards ── goal · offer · quest · building · empty.
@@ -459,6 +464,7 @@ function treasure(card, ctx) {
    差事 was offered, for three days, with 167 tests green. One dispatcher now,
    and tests/stage-cards.test.mjs draws every card the rules can put up. */
 const sayBtn = (label, words) => `<button class="act say" ${sayAttr(words)}>${esc(label)}</button>`;
+const askBtn = (label, line) => `<button class="act ask" ${askAttr(line)}>${esc(label)}</button>`;
 const clockOf = (date, lang) => date.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' });
 
 /// 丹田 empty: when it returns, and that the boards stay.
@@ -480,7 +486,7 @@ function offer(card, ctx) {
     ${o.who ? `<div class="small dim">${esc(o.who)}</div>` : ''}
     <div class="say">${esc(o.say)}</div>
     ${pays ? `<div class="small dim">${esc(pays)}</div>` : ''}
-    <div class="acts">${sayBtn(w.take, say(w.sayTake, { title: o.title }))}${sayBtn(w.about, say(w.sayQuestAbout, { title: o.title }))}</div></div>`;
+    <div class="acts">${sayBtn(w.take, say(w.sayTake, { title: o.title }))}${askBtn(w.about, say(w.sayQuestAbout, { title: o.title }))}</div></div>`;
 }
 
 /// What the goal says, in one line: what the cauldron asks, or the road, or
@@ -521,8 +527,7 @@ export function bookPopHtml(ctx) {
   const where = g?.place ? `${g.place.name}${g.province ? ` · ${g.province}` : ''}` : g?.province ?? '';
   const head = g ? `<div class="cardtitle">${esc(w.goalTitle)}</div><div>${esc(goalText(ctx))}</div>
     ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
-    ${g.gate ? `<div class="small">${esc(say(w.goalNow, g.gate.now))}</div><div class="small dim">${esc(w.goalGrow)}</div>` : ''}
-    <div class="acts">${sayBtn(w.about, w.sayGoal)}</div>` : '';
+    ${g.gate ? `<div class="small">${esc(say(w.goalNow, g.gate.now))}</div><div class="small dim">${esc(w.goalGrow)}</div>` : ''}` : '';
   return `<div class="bookpop" role="dialog">${head}${bookHtml(ctx) || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
 }
 
@@ -535,11 +540,35 @@ function bookHtml(ctx) {
   const rows = book.map((q) => {
     const counts = q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind} ${n.have}/${n.n}`).join(' · ');
     const at = q.chore ? witness(q.chore, ctx) : q.where ? (q.where.here ? w.needHere : say(w.needAt, { name: q.where.name })) : '';
-    const act = q.ready ? sayBtn(w.turnIn, say(w.sayTurn, { title: q.title })) : sayBtn(w.about, say(w.sayQuestAbout, { title: q.title }));
-    return `<div class="bookrow${q.ready ? ' ready' : ''}"><div><b>${esc(q.title)}</b>
-      <span class="small dim">${esc(counts)}${at ? ` · ${esc(at)}` : ''}</span></div>${act}</div>`;
+    const open = ctx.bookRow === q.id;
+    // The row is the tap: what it holds is shown here, by the page. Only 交差
+    // is a button of its own, because it is the one thing to DO from a row.
+    const act = q.ready ? sayBtn(w.turnIn, say(w.sayTurn, { title: q.title })) : `<span class="chev" aria-hidden="true">${open ? '▾' : '▸'}</span>`;
+    return `<div class="bookrow${q.ready ? ' ready' : ''}${open ? ' open' : ''}" data-bookrow="${esc(q.id)}" role="button" tabindex="0" aria-expanded="${open}"><div><b>${esc(q.title)}</b>
+      <span class="small dim">${esc(counts)}${at ? ` · ${esc(at)}` : ''}</span></div>${act}</div>${open ? bookDetail(q, ctx) : ''}`;
   }).join('');
   return `<div class="book"><div class="small dim">${esc(w.book)}</div>${rows}</div>`;
+}
+
+/// One line of the book, opened: the giver's words, what it pays, what comes
+/// after — read from the rules by the page (`Quest info`), no model turn.
+function bookDetail(q, ctx) {
+  const i = ctx.bookInfo?.id === q.id ? ctx.bookInfo : null, w = ctx.words;
+  if (!i) return `<div class="bookdetail small dim">…</div>`;
+  const pays = [i.grant?.progress ? `${w.xw} +${i.grant.progress}` : '', i.grant?.wealth ? `${w.ls} +${i.grant.wealth}` : '', i.grant?.stamina ? `${w.qi} +${i.grant.stamina}` : '', i.gives ?? ''].filter(Boolean).join(' · ');
+  return `<div class="bookdetail">
+    ${i.who ? `<div class="small dim">${esc(i.who)}${i.from ? ` · ${esc(i.from.name)}` : ''}</div>` : ''}
+    ${i.say ? `<div class="say">${esc(i.say)}</div>` : ''}
+    ${pays ? `<div class="small"><span class="dim">${esc(w.paysWord)}</span> ${esc(pays)}</div>` : ''}
+    ${i.next ? `<div class="small dim">${esc(w.nextWord)} · ${esc(i.next)}</div>` : ''}
+    <div class="acts">${askBtn(w.about, say(w.sayQuestAbout, { title: q.title }))}${i.kind === 'errand' ? `<button class="act quiet" data-drop="${esc(q.id)}">${esc(w.drop)}</button>` : ''}</div></div>`;
+}
+
+/// The ask bar: one field for every 问询 on the page. It lives outside the
+/// stage's repaint, so typing in it is never interrupted.
+export function askBarHtml(line, words) {
+  return `<span class="asktopic">${esc(line)}</span><input id="askField" type="text" autocomplete="off" placeholder="${esc(words.askHint)}">
+    <button class="act" data-ask-send>${esc(words.askSend)}</button><button class="act quiet" data-ask-close aria-label="close">×</button>`;
 }
 
 /// A 功课's witness: which app keeps the record, and when it saw it done.
@@ -562,7 +591,7 @@ function quest(card, ctx) {
   // arguing with the shelf beside it (2026-09-18).
   const where = q.step === 'bell' && q.market && !q.shop_here ? say(w.questAt, { name: q.market.name })
     : q.step === 'water' && q.water && !q.at_water ? say(w.questWater, { name: q.water.name }) : '';
-  const acts = [{ label: w.about, say: w.sayQuest }];
+  const acts = [{ label: w.about, ask: true, say: w.sayQuest }];
   // The step, as a word to Ling: buy it here, walk to where it can be taken, ring it.
   if (q.step === 'ring') acts.unshift({ label: w.ringBell, say: w.sayRing });
   else if (q.step === 'bell' && q.shop_here) acts.unshift({ label: say(w.sayBuy, { name: q.bell.name }), say: say(w.sayBuy, { name: q.bell.name }) });
@@ -570,7 +599,7 @@ function quest(card, ctx) {
   else if (q.step === 'water' && q.water) acts.unshift({ label: q.water.name, say: say(w.sayGo, { name: q.water.name }) });
   return `<div class="card quest"><div class="cardtitle">${esc(w.questTitle)}</div>
     <div>${esc(q.line)}</div><div class="small dim">${esc(w.questSteps?.[q.step] ?? '')}${where ? ` · ${esc(where)}` : ''}</div>
-    <div class="acts">${acts.map((a) => sayBtn(a.label, a.say)).join('')}</div></div>`;
+    <div class="acts">${acts.map((a) => (a.ask ? askBtn : sayBtn)(a.label, a.say)).join('')}</div></div>`;
 }
 
 /// A made world still being painted: the story waits for the brush, so the
@@ -596,7 +625,7 @@ export function trayHtml(ctx) {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const act = state === 'offered' && t.kind === 'board'
       ? `<button class="act" data-play="${esc(t.id)}">${ctx.words.play}</button>` : '';
-    const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayTask, { title: t.title }))}>${ctx.words.about}</button>`;
+    const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${ctx.words.about}</button>`;
     return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
       <div class="taskfoot"><span class="chip">${ctx.words[state]}</span>${act}${tell}</div></div>`;
   });

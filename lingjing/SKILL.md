@@ -704,7 +704,14 @@ the scene or the place, and the choice.
      asks, what it pays (`reward` in `words.progress`, `stamina` in
      `words.pool`), where it stands (`done`, `paid`, `done_at`); a
      real-life quest is done by living, its `app` the only witness — say
-     the app by name, it is the player's own. Then the choice, as always.
+     the app by name, it is the player's own. **A 问询 may carry a question
+     after a colon** — *说说夫诸：它为什么四角？* — the line before the colon
+     is what it is about, the words after it are what to answer: answer that,
+     briefly, in the world, and nothing else. A 问询 is a question, not a
+     move: change nothing, and ask nothing of your own after it — `ask`
+     comes back only when the rules send one. (The book's own facts — what an
+     errand needs, pays, who gave it — the page shows by itself now; a 问询
+     about one wants the telling, not the terms read back.)
 4. **Resolve comes back.**
    - `ok`: speak the `beat`, say what was `paid`, Show its `show` cards, then
      enter the next `scene`. A staying exit keeps the scene: re-offer it.

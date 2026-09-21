@@ -1651,6 +1651,15 @@ as **one slim line with nothing to tap**; its road is the chat question's to
 offer. An errand offered where he stands takes the place's creature card's
 place, which returns once it is taken. A shelf stays: it is something to do.
 
+**What the page knows it shows; the model is for telling** (his, 2026-09-21:
+five 说说 buttons, each a 12k-token turn for facts the page already held). A
+row of the book opens where it lies — the giver's words, what it pays, the
+next link, 撂下 — read by the page from `Quest info`, which never rides Look.
+Every button that does want Ling is **问询**, and it never speaks at once: it
+opens the one ask bar with its line (「说说夫诸」); left empty that line is
+sent, with a question it goes as `说说夫诸：…`. The bar stands outside the
+stage's repaint, so streaming never takes the field from under his hands.
+
 **He names a place, he is walked there** (2026-09-21: 「去泗水」 and the chat
 asked 何去何从 again). Move walks the whole road (`via`), stops only where a
 scene stands, reads a name half said (not counting where he stands), and

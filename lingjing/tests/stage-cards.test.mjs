@@ -75,6 +75,19 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   assert.match(html, /class="bookrow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
   assert.match(html, /炼体.*Health · 今日待做/s);
   assert.doesNotMatch(html, /undefined|\{\w+\}/);
+  assert.doesNotMatch(html, /说说|bookdetail/, 'closed rows: nothing opened, and no row asks the model for what the page knows');
+  // a row opened: the page reads the line from the rules and shows it — no model turn
+  const info = quest(took.state, content, at, { action: 'info', id: 'xu-lvliang-look' }).result;
+  assert.deepEqual([info.who, info.taken, info.grant.progress, info.where.id], ['泗水北岸的渔人', true, 20, 'lvliang']);
+  const opened = bookPopHtml({ ...page, bookRow: 'xu-lvliang-look', bookInfo: info });
+  assert.match(opened, /bookdetail.*孔夫子.*酬<\/span> 修为 \+20 · 灵石 \+10.*data-ask="说说吕梁洪的水声".*data-drop="xu-lvliang-look"/s);
+  // a chain names its next link as `next` — `then` is the wrapper's word to Ling on every result
+  const chained = quest({ ...open, place: 'pengcheng' }, content, at, { action: 'info', id: 'xu-elder-herb' }).result;
+  assert.deepEqual([chained.next, chained.then, chained.taken, chained.gives], ['凫丽山的蠪侄', undefined, false, '竹剑']);
+  const chore = quest(took.state, content, at, { action: 'info', id: 'health-workout' }).result;
+  assert.deepEqual([chore.kind, chore.app, chore.grant.progress], ['chore', 'health', 20]);
+  assert.doesNotMatch(bookPopHtml({ ...page, bookRow: 'health-workout', bookInfo: chore }), /data-drop/, 'life\'s own cannot be put down');
+  assert.equal(quest(took.state, content, at, { action: 'info', id: 'nope' }).result.refused, 'no-such-quest');
   // nothing in hand and no thread: no chip
   assert.equal(bookChipHtml(pageCtx({ ...l, book: [], waypoint: null }), false, false), '');
   // the stage keeps one slim line of it, with nothing to tap
@@ -88,4 +101,14 @@ test('every word the page has in one language it has in the other', () => {
   const keys = (o, at = '') => Object.entries(o).flatMap(([k, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? keys(v, `${at}${k}.`) : [`${at}${k}`]));
   assert.deepEqual(keys(WORDS.zh).filter(k => !keys(WORDS.en).includes(k)), [], 'en lacks');
   assert.deepEqual(keys(WORDS.en).filter(k => !keys(WORDS.zh).includes(k)), [], 'zh lacks');
+});
+
+test('问询 never speaks at once: every about-button opens the ask bar, none sends on its own', () => {
+  for (const [state, c] of Object.values(SITUATIONS)) {
+    const l = look(state, content, c);
+    for (const card of l.stage) {
+      const html = cardHtml(card, pageCtx(l));
+      for (const label of [WORDS.zh.about, WORDS.en.about]) assert.doesNotMatch(html, new RegExp(`data-say="[^"]*"[^>]*>${label}<`), `${card.card}: ${label} would cost a model turn on one tap`);
+    }
+  }
 });

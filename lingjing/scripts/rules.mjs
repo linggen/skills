@@ -2379,6 +2379,10 @@ export const VERBS = {
 export function quest(state, content, ctx, args) {
   const id = String(args.id ?? ''), lang = state.lang;
   const action = String(args.action ?? 'take');
+  // The page's own reading of one line: everything a row expands to. It is
+  // asked for on a tap and never rides Look, so it costs Ling nothing (his,
+  // 2026-09-21: what the page knows it shows — the model is for telling).
+  if (action === 'info') return { state: null, result: questInfo(state, content, ctx, id) };
   // A 功课 is handed in with the same word as any errand; its app is the witness.
   if (action === 'turn' && (ctx.quests ?? []).some(x => x.id === id)) return choreTurn(state, content, ctx, id);
   const q = questOf(content, id);
@@ -2406,7 +2410,7 @@ export function quest(state, content, ctx, args) {
     return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang, ctx) } };
   }
 
-  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop'] });
+  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop', 'info'] });
   if (!s.quests[id]) return refuse('not-taken', null);
   if (questDoneBefore(s, id)) return refuse('already-done', null);
   if (!questReady(content, s, q)) return refuse('not-done', null, { need: countsOf(content, s, q).map(n => ({ kind: n.kind, have: n.have, n: n.n })) });
@@ -2421,6 +2425,21 @@ export function quest(state, content, ctx, args) {
   const next = q.then ? questOf(content, q.then) : null;
   return { state: s, result: { ok: true, turned: id, title: pick(q.title, lang), paid, book: bookOf(content, s, lang, ctx),
     ...(next ? { then: { id: next.id, title: pick(next.title, lang), at: placeName(content, s, placeOf(content, next.from.place)) } } : {}) } };
+}
+
+function questInfo(state, content, ctx, id) {
+  const lang = state.lang, row = bookOf(content, state, lang, ctx).find(b => b.id === id);
+  const chore = (ctx.quests ?? []).find(x => x.id === id);
+  if (chore) return { ok: true, id, kind: 'chore', title: pick(chore.title, lang), app: chore.app, period: chore.period, grant: { progress: chore.reward ?? 0, stamina: chore.stamina ?? content.rewards.stamina.refill.quest }, ...(row ? { need: row.need, ready: row.ready } : {}) };
+  const q = questOf(content, id);
+  if (!q) return { ok: false, refused: 'no-such-quest' };
+  const next = q.then ? questOf(content, q.then) : null;
+  return { ok: true, id, kind: 'errand', title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state),
+    from: placeName(content, state, placeOf(content, q.from.place)), grant: q.grant, taken: Boolean(row),
+    ...(row ? { need: row.need, where: row.where, ready: row.ready } : { need: q.need.map(n => ({ kind: n.kind, have: 0, n: n.n })) }),
+    ...(q.grant?.item ? { gives: pick(itemOf(content, q.grant.item)?.name, lang) } : {}),
+    // `then` is the wrapper's word to Ling on every result; the next link is `next`.
+    ...(next ? { next: pick(next.title, lang) } : {}) };
 }
 
 function choreTurn(state, content, ctx, id) {

@@ -398,3 +398,18 @@ body.fighting .bside .bwho { font-size: 30px; }
    copies of the same answers — one clickable place for one thing (his law
    2026-09-17, and his call 2026-09-18 that the chat is the one that keeps it). */
 .answered-in-chat { display: none !important; }
+
+/* 手上的事, a line opened where it lies. */
+.bookrow[data-bookrow] { cursor: pointer; border-radius: 6px; padding: 3px 4px; margin: 0 -4px; }
+.bookrow[data-bookrow]:hover { background: color-mix(in srgb, var(--ling) 8%, transparent); }
+.bookrow .chev { color: var(--faint); font-size: 12px; flex: none; }
+.bookdetail { margin: 2px 0 6px; padding: 8px 10px; border-left: 2px solid var(--line); display: grid; gap: 5px; }
+.bookdetail .say { font-family: var(--serif); }
+.act.quiet { background: transparent; border-color: var(--line); color: var(--dim); }
+/* The ask bar: one field for every 问询, outside the stage's repaint. */
+.askbar { position: absolute; left: 290px; right: 24px; bottom: 20px; z-index: 40; display: flex; align-items: center; gap: 8px; max-width: 640px; margin: 0 auto;
+          padding: 8px 10px; background: var(--surface); border: 1px solid var(--ling); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / 16%); }
+.askbar[hidden] { display: none; }
+.askbar .asktopic { flex: none; font-family: var(--serif); color: var(--ling); font-size: 13px; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.askbar input { flex: 1; min-width: 0; font: inherit; font-size: 13.5px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: inherit; }
+body.fighting .askbar { display: none; }

@@ -12,7 +12,7 @@ import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf,
 import { stageCards } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
-import { WORDS, bookChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
+import { WORDS, askBarHtml, bookChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -78,12 +78,15 @@ const view = {
   bookOpen: false, //    the 事 chip's popover
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
   bookFresh: false,
+  bookRow: null, //      the line of the book that is open
+  bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
+  ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
 };
 const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
 const duelFor = (id) => (view.duelSay.id === id ? view.duelSay : { text: null });
 
-const ctx = () => ({ look, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, bookRow: view.bookRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -439,6 +442,51 @@ function deliver(text, hidden) {
   else chat?.send(text);
 }
 
+/* A line of the book, opened: `Quest info` is a read (45 ms, no model). */
+async function openRow(id) {
+  if (view.bookRow === id) { show({ bookRow: null }); return; }
+  show({ bookRow: id, bookInfo: view.bookInfo?.id === id ? view.bookInfo : null });
+  const info = await verb('quest', { action: 'info', id }).catch(() => null);
+  if (info?.ok && view.bookRow === id) show({ bookInfo: info });
+}
+
+/* 撂下 is the rules' to do; Ling reads the book in her next Look. */
+async function dropErrand(id) {
+  await verb('quest', { action: 'drop', id }).catch((e) => console.warn('[lingjing] drop', e));
+  keep({ bookRow: null, bookInfo: null });
+  await refresh();
+}
+
+/* The ask bar stands outside the stage's repaint, so a stream of tokens never
+   takes the field from under the player's hands. Empty, it sends the line as
+   it is (「说说夫诸」); with a question, the line quotes what is asked about. */
+function openAsk(line) {
+  keep({ ask: line });
+  const bar = $('askbar');
+  bar.innerHTML = askBarHtml(line, words());
+  bar.hidden = false;
+  $('askField').focus();
+}
+function closeAsk() {
+  keep({ ask: null });
+  $('askbar').hidden = true;
+  $('askbar').innerHTML = '';
+}
+function sendAsk() {
+  if (!view.ask) return;
+  const q = $('askField').value.trim();
+  const line = q ? `${view.ask}${lang() === 'zh' ? '：' : ': '}${q}` : view.ask;
+  closeAsk();
+  show({ bookOpen: false });
+  say(line);
+}
+document.addEventListener('keydown', (e) => {
+  if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
+  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.bookOpen) show({ bookOpen: false }); }
+  const row = e.target.closest?.('[data-bookrow]');
+  if (row && (e.key === 'Enter' || e.key === ' ') && e.target === row) { e.preventDefault(); openRow(row.dataset.bookrow); }
+});
+
 async function setFate(kind) {
   const args = kind === 'birth' ? { birth: view.fateDraft } : { [kind]: 'true' };
   if (kind === 'birth' && !view.fateDraft) { show({ fateError: true }); return; }
@@ -454,7 +502,18 @@ document.addEventListener('click', (e) => {
   // The 事 chip opens its popover; a tap anywhere else puts it away, and then
   // does whatever it was for.
   if (e.target.closest('[data-book]')) { show({ bookOpen: !view.bookOpen }); return; }
-  if (view.bookOpen && !e.target.closest('.bookpop')) show({ bookOpen: false });
+  if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
+  // 问询: the one word that costs a model turn opens the ask bar; nothing is
+  // sent until the player says so.
+  const asking = e.target.closest('[data-ask]');
+  if (asking) { openAsk(asking.dataset.ask); return; }
+  if (e.target.closest('[data-ask-send]')) { sendAsk(); return; }
+  if (e.target.closest('[data-ask-close]')) { closeAsk(); return; }
+  const dropped = e.target.closest('[data-drop]');
+  if (dropped) { dropErrand(dropped.dataset.drop); return; }
+  // A line of the book opens where it lies — the page reads it from the rules.
+  const row = e.target.closest('[data-bookrow]');
+  if (row && !e.target.closest('button')) { openRow(row.dataset.bookrow); return; }
   const sw = e.target.closest('[data-lang]');
   if (sw) { switchLang(sw.dataset.lang); return; }
   // 命格: the birthday is read here, by the rules on this machine — never
