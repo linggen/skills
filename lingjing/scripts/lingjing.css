@@ -212,10 +212,20 @@ button.pl:hover { background: var(--ling-soft); }
 .roadmap.painted .pl.far { color: #6A6458; border-style: dashed; }
 
 .building { border-color: var(--ling); background: var(--ling-soft); }
-/* The goal: where the story waits. Marked, because a player who cannot find it
-   walks in circles (2026-09-18). */
-.card.goal { border-left: 3px solid var(--ling); }
-.card.goal .cardtitle { color: var(--ling); }
+/* The goal on the stage: one slim line, no card. The card and the book open
+   from the 事 chip on the top bar. */
+.goalline { width: 100%; max-width: 540px; margin: 0 auto; flex: none; padding: 6px 12px; font-size: 13px; color: var(--dim);
+            border-left: 3px solid var(--ling); background: color-mix(in srgb, var(--surface) 70%, transparent); border-radius: 0 8px 8px 0; }
+.goalline .lbl { color: var(--ling); font-family: var(--serif); font-weight: 600; margin-right: 6px; }
+.bookwrap { position: relative; }
+.bookchip { font: inherit; font-size: 12.5px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--ling); background: var(--surface); color: var(--ling); cursor: pointer; }
+.bookchip.ready { border-color: var(--seal); color: var(--seal); font-weight: 600; }
+.bookchip.fresh { animation: bookfresh 1.2s ease-out 1; }
+@keyframes bookfresh { 0% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, var(--ling) 60%, transparent); } 30% { transform: scale(1.18); } 100% { transform: scale(1); box-shadow: 0 0 0 12px transparent; } }
+.bookpop { position: absolute; top: calc(100% + 10px); left: 0; z-index: 30; width: min(460px, 80vw); padding: 14px 16px; text-align: left;
+           background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--ling); border-radius: 10px; box-shadow: 0 10px 30px rgb(0 0 0 / 18%); }
+.bookpop .cardtitle { color: var(--ling); }
+.bookpop .book:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
 /* 手上的事 — the book, under the goal. One line each, and the one that is done
    wears the seal's colour, because that line is a button worth pressing. */
 .book { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 6px; }

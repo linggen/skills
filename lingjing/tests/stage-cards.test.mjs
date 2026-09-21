@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { WORDS, cardHtml } from '../scripts/cards.js';
+import { WORDS, bookChipHtml, bookPopHtml, cardHtml } from '../scripts/cards.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, quest } from '../scripts/rules.mjs';
@@ -62,15 +62,25 @@ test('the situations cover the stage\'s own cards', () => {
   for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
 });
 
-test('a taken errand and a ready 功课 are rows of the goal card, with 交差 where it is due', () => {
+test('the 事 chip: how many in hand, what can be handed in — and its popover holds the goal and the rows', () => {
   const at = ctx({ quests: chores });
   const took = quest({ ...open, place: 'sibei' }, content, at, { action: 'take', id: 'xu-lvliang-look' });
-  const l = look(took.state, content, at);
-  const html = cardHtml({ card: 'goal' }, pageCtx(l));
+  const l = look(took.state, content, at), page = pageCtx(l);
+  assert.match(bookChipHtml(page, false, false), /class="bookchip ready"[^>]*>事 3 · 可交 1</, 'a line ready to hand in is never behind a click');
+  assert.doesNotMatch(bookChipHtml(page, false, false), /bookpop/);
+  assert.match(bookChipHtml(page, true, true), /bookchip ready fresh.*bookpop/s);
+  const html = bookPopHtml(page);
   assert.match(html, /吕梁洪的水声/);
   assert.match(html, /到 0\/1 · 在吕梁洪/);
   assert.match(html, /class="bookrow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
   assert.match(html, /炼体.*Health · 今日待做/s);
+  assert.doesNotMatch(html, /undefined|\{\w+\}/);
+  // nothing in hand and no thread: no chip
+  assert.equal(bookChipHtml(pageCtx({ ...l, book: [], waypoint: null }), false, false), '');
+  // the stage keeps one slim line of it, with nothing to tap
+  const line = cardHtml({ card: 'goal' }, pageCtx(look({ ...open, chapter: '03-qing', scene: '03-cauldron', place: 'penglai' }, content, at)));
+  assert.match(line, /class="goalline".*鼎气要结丹后期 · 1200 修为才受得住 — 如今 结丹初期 · 306\/800/s);
+  assert.doesNotMatch(line, /<button/);
 });
 
 test('every word the page has in one language it has in the other', () => {

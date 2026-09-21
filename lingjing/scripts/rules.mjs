@@ -143,20 +143,45 @@ function placeBrief(content, state, now = new Date()) {
   };
 }
 
-/* The first road on the shortest way from one place to another, walking
-   only places the player may enter — or null when no such way runs. */
-function towardOf(content, state, from, to, now) {
+/* The shortest way from one place to another, walking only places the player
+   may enter — every place on it after `from`, or null when no such way runs. */
+function pathOf(content, state, from, to, now) {
   const walkable = p => p && !tooHard(content, state, p) && provinceOpen(content, p.province, now);
   if (!walkable(to)) return null;
-  const first = new Map(from.roads.map(id => [id, id]));
-  const queue = [...from.roads], seen = new Set([from.id, ...from.roads]);
+  const back = new Map([[from.id, null]]), queue = [from];
   while (queue.length) {
-    const p = placeOf(content, queue.shift());
-    if (!walkable(p)) continue;
-    if (p.id === to.id) return placeName(content, state, placeOf(content, first.get(p.id)));
-    for (const id of p.roads) if (!seen.has(id)) { seen.add(id); first.set(id, first.get(p.id)); queue.push(id); }
+    const p = queue.shift();
+    if (p.id === to.id) {
+      const way = [];
+      for (let at = p; at.id !== from.id; at = back.get(at.id)) way.unshift(at);
+      return way;
+    }
+    for (const id of p.roads) {
+      const next = placeOf(content, id);
+      if (!back.has(id) && walkable(next)) { back.set(id, p); queue.push(next); }
+    }
   }
   return null;
+}
+
+/* Where a tap may take him: the place itself when a way runs to it — Move
+   walks the whole road — else nothing. It was the first road on the way while
+   Move went one road at a time. */
+function towardOf(content, state, from, to, now) {
+  return pathOf(content, state, from, to, now) ? placeName(content, state, to) : null;
+}
+
+/* A place as the player said it. Exact first — id, name, English. Else the one
+   place whose name holds what was said, not counting where he stands: 「去泗水」
+   on 泗水岸 means 泗水北岸 (2026-09-21). Two that fit is no answer. */
+function placeSaid(content, raw, here) {
+  const exact = findPlace(content, raw);
+  if (exact) return exact;
+  const said = String(raw ?? '').trim().toLowerCase().replace(/^the /, '');
+  // A province's name is the province, never a place that happens to hold it (徐 is not 徐山).
+  if (said.length < 2 || provinceOf(content, raw)) return null;
+  const fits = allPlaces(content).filter(p => p.id !== here?.id && (p.name.zh.includes(said) || p.name.en.toLowerCase().includes(said)));
+  return fits.length === 1 ? fits[0] : null;
 }
 
 /* The nearest place the player's tier allows: here, else a road out. */
@@ -418,7 +443,7 @@ function waypointOf(content, state, ctx) {
   if (waitsOnPeak(content, state)) return { ...thread, gate: gateOf(content, state) };
   const here = placeOf(content, state.place), goal = placeOf(content, thread.place.id);
   if (!here || !goal || here.id === goal.id) return thread;
-  const toward = here.roads.includes(goal.id) ? placeName(content, state, goal) : towardOf(content, state, here, goal, ctx.now);
+  const toward = towardOf(content, state, here, goal, ctx.now);
   return toward ? { ...thread, toward } : thread;
 }
 
@@ -1607,7 +1632,7 @@ export function move(state, content, ctx, args) {
   settlePlace(content, s);
   const here = placeOf(content, s.place);
   const raw = args.place ?? args.province;
-  const target = findPlace(content, raw);
+  const target = placeSaid(content, raw, here);
   const lang = s.lang;
   const stay = (code, say, extra = {}) => refuse(code, say, { here: here ? placeName(content, s, here) : null, ...extra });
   const near = () => here.roads.map(id => placeName(content, s, placeOf(content, id)));
@@ -1625,10 +1650,6 @@ export function move(state, content, ctx, args) {
   if (inCorridor(content, { ...s, made: null })) {
     return stay('corridor', pick({ zh: '先把眼前的事做完。', en: 'Finish what is before you first.' }, lang), { scene: s.scene });
   }
-  if (!here.roads.includes(target.id)) {
-    const say = { zh: `从${pick(here.name, 'zh')}没有路通向${pick(target.name, 'zh')}。`, en: `No road runs from ${pick(here.name, 'en')} to ${pick(target.name, 'en')}.` };
-    return stay('no-road', pick(say, lang), { near: near(), toward: towardOf(content, s, here, target, ctx.now) });
-  }
   if (!provinceOpen(content, target.province, ctx.now)) {
     const say = { zh: `${target.province}州的路还没开。`, en: 'That road has not opened yet.' };
     return stay('road-closed', pick(say, lang), { province: target.province });
@@ -1639,9 +1660,24 @@ export function move(state, content, ctx, args) {
     const yinyue = { zh: `还不是时候。先回${pick(fitting.name, 'zh')}吧。`, en: `Not yet. Let's go back to ${pick(fitting.name, 'en')}.` };
     return stay('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
   }
+  // He named where he is going, so he is walked there — the whole road, not
+  // one leg and a question at every ford (his, 2026-09-21: 「去泗水」 and the
+  // chat asked 何去何从 again). Walking costs nothing. Only a place no open
+  // road reaches is refused.
+  const way = pathOf(content, s, here, target, ctx.now);
+  if (!way) {
+    const say = { zh: `从${pick(here.name, 'zh')}没有路通向${pick(target.name, 'zh')}。`, en: `No road runs from ${pick(here.name, 'en')} to ${pick(target.name, 'en')}.` };
+    return stay('no-road', pick(say, lang), { near: near() });
+  }
   const from = here;
-  s.place = target.id;
-  advance(content, s, { kind: 'visit', place: target.id });
+  // The road stops where the story stands: a scene met on the way is not walked past.
+  for (const step of way) {
+    s.place = step.id;
+    advance(content, s, { kind: 'visit', place: step.id });
+    if (atScene(content, s) && sceneOf(content, s)?.at === step.id) break;
+  }
+  const reached = placeOf(content, s.place);
+  const via = way.slice(0, way.findIndex(p => p.id === reached.id)).map(p => placeName(content, s, p));
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
   const place = placeBrief(content, s, ctx.now);
@@ -1651,8 +1687,8 @@ export function move(state, content, ctx, args) {
   // The story is rewritten when something of it happened: a scene entered,
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
-  const summarize = Boolean(scene) || target.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
+  const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not

@@ -12,7 +12,7 @@ import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf,
 import { stageCards } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
-import { WORDS, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
+import { WORDS, bookChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -75,6 +75,9 @@ const view = {
   /// own words (no 体力, the beast already spent, the page's cards out of date).
   /// Everything else about a fight is in the save.
   duelSay: { id: null, text: null },
+  bookOpen: false, //    the 事 chip's popover
+  bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
+  bookFresh: false,
 };
 const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
@@ -218,6 +221,7 @@ function statusHtml() {
       <span class="num"><span data-count="progress">${look.progress}</span>/${look.next}</span>${omenChip('progress')}</div>
     ${qiHtml()}
     <span class="ls"><span class="lbl">${w.ls}</span> <b data-count="wealth">${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
+    ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -326,6 +330,9 @@ function draw() {
   const w = words();
   document.documentElement.lang = lang();
   document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
+  // An errand just taken went somewhere: the chip shows where, once.
+  const lines = look.book?.length ?? 0;
+  keep({ bookFresh: view.bookSeen !== null && lines > view.bookSeen, bookSeen: lines });
   $('status').innerHTML = statusHtml();
   riseStats();
   // A fight takes the whole column: the backdrop, the tray and Yinyue's own
@@ -444,6 +451,10 @@ async function setFate(kind) {
 document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false }); });
 
 document.addEventListener('click', (e) => {
+  // The 事 chip opens its popover; a tap anywhere else puts it away, and then
+  // does whatever it was for.
+  if (e.target.closest('[data-book]')) { show({ bookOpen: !view.bookOpen }); return; }
+  if (view.bookOpen && !e.target.closest('.bookpop')) show({ bookOpen: false });
   const sw = e.target.closest('[data-lang]');
   if (sw) { switchLang(sw.dataset.lang); return; }
   // 命格: the birthday is read here, by the rules on this machine — never
@@ -462,7 +473,7 @@ document.addEventListener('click', (e) => {
   if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-spot]')) {
     if (spoken.matches(':disabled')) return;
     const line = spoken.dataset.say;
-    show({ tapped: line, ...(line === words().sayCast ? { casting: true } : {}) });
+    show({ tapped: line, bookOpen: false, ...(line === words().sayCast ? { casting: true } : {}) });
     say(line);
     return;
   }

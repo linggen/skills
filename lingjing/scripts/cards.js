@@ -42,7 +42,7 @@ export const WORDS = {
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
-    goalTitle: '眼下要做的', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    goalTitle: '眼下要做的', bookChip: '事', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、功课、奇遇，都长修为',
   },
   en: {
@@ -78,7 +78,7 @@ export const WORDS = {
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
-    goalTitle: 'What waits', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    goalTitle: 'What waits', bookChip: 'Tasks', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, practice and encounters all raise it',
   },
 };
@@ -483,24 +483,47 @@ function offer(card, ctx) {
     <div class="acts">${sayBtn(w.take, say(w.sayTake, { title: o.title }))}${sayBtn(w.about, say(w.sayQuestAbout, { title: o.title }))}</div></div>`;
 }
 
-/// Where the story waits, and one tap that walks the road to it. The rules
-/// have always known (`waypoint`); until 2026-09-18 nothing on screen said it,
-/// and he walked four places asking 「where to go, what should do」. One road
-/// at a time, because that is how the world is walked. A cauldron that waits
-/// on cultivation says what it asks and where he stands, and offers no road.
-function goal(card, ctx) {
+/// What the goal says, in one line: what the cauldron asks, or the road, or
+/// the chapter that has not opened.
+function goalText(ctx) {
   const g = ctx.look?.waypoint, w = ctx.words;
-  if (!g) return ctx.look?.book?.length ? `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>${bookHtml(ctx)}</div>` : '';
-  const where = g.place ? `${g.place.name}${g.province ? ` · ${g.province}` : ''}` : g.province ?? '';
-  // A chapter that has not opened yet says so instead of offering a road.
-  const shut = g.chapter ? say(g.opens ? w.goalWait : w.goalOpen, { title: g.title ?? '', opens: g.opens ? new Date(g.opens).toLocaleDateString(ctx.lang === 'zh' ? 'zh-CN' : 'en') : '' }) : '';
-  const go = g.toward ? sayBtn(say(w.sayGo, { name: g.toward.name }), say(w.sayGo, { name: g.toward.name })) : '';
-  return `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>
-    <div>${esc(g.gate ? say(w.goalGate, g.gate) : g.text ?? shut)}</div>
+  if (!g) return '';
+  if (g.gate) return say(w.goalGate, g.gate);
+  return g.text ?? (g.chapter ? say(g.opens ? w.goalWait : w.goalOpen, { title: g.title ?? '', opens: g.opens ? new Date(g.opens).toLocaleDateString(ctx.lang === 'zh' ? 'zh-CN' : 'en') : '' }) : '');
+}
+
+/// The goal on the stage: one slim line, nothing to tap. The rest is behind
+/// the 事 chip (`bookPopHtml`). A cauldron that waits on cultivation says
+/// what it asks and where he stands.
+function goal(card, ctx) {
+  const g = ctx.look?.waypoint, text = goalText(ctx);
+  if (!text) return '';
+  const now = g.gate ? ` — ${say(ctx.words.goalNow, g.gate.now)}` : '';
+  return `<div class="goalline"><span class="lbl">${esc(ctx.words.goalTitle)}</span> ${esc(text)}${esc(now)}</div>`;
+}
+
+/// The 事 chip on the top bar: how many things are in hand, and — never
+/// behind a click — that one of them can be handed in (his rule, 2026-08-05:
+/// progress and result are always visible). Nothing to show, no chip.
+export function bookChipHtml(ctx, open, fresh) {
+  const book = ctx.look?.book ?? [], w = ctx.words;
+  if (!book.length && !ctx.look?.waypoint) return '';
+  const ready = book.filter((q) => q.ready).length;
+  const label = `${w.bookChip}${book.length ? ` ${book.length}` : ''}${ready ? ` · ${say(w.bookReady, { n: ready })}` : ''}`;
+  return `<span class="bookwrap"><button class="bookchip${ready ? ' ready' : ''}${fresh ? ' fresh' : ''}" data-book aria-expanded="${open ? 'true' : 'false'}">${esc(label)}</button>${open ? bookPopHtml(ctx) : ''}</span>`;
+}
+
+/// What the chip opens: where the story waits, then 手上的事. No road button
+/// here — the chat's question leads with that road, and one thing is tapped
+/// in one place.
+export function bookPopHtml(ctx) {
+  const g = ctx.look?.waypoint, w = ctx.words;
+  const where = g?.place ? `${g.place.name}${g.province ? ` · ${g.province}` : ''}` : g?.province ?? '';
+  const head = g ? `<div class="cardtitle">${esc(w.goalTitle)}</div><div>${esc(goalText(ctx))}</div>
     ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
     ${g.gate ? `<div class="small">${esc(say(w.goalNow, g.gate.now))}</div><div class="small dim">${esc(w.goalGrow)}</div>` : ''}
-    <div class="acts">${go}${sayBtn(w.about, w.sayGoal)}</div>
-    ${bookHtml(ctx)}</div>`;
+    <div class="acts">${sayBtn(w.about, w.sayGoal)}</div>` : '';
+  return `<div class="bookpop" role="dialog">${head}${bookHtml(ctx) || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
 }
 
 /// 手上的事 — one line each, with its count and where the next one is met.

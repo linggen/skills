@@ -1090,15 +1090,18 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(out.result.director.here.id, 'yunlong');
   assert.equal(must(move, s, { place: 'The Si River bank' }).state.place, 'sishui');
   assert.equal(must(move, s, { place: 'yunlong' }).state.place, 'yunlong');
-  // no road
-  const nr = refused(move, s, { place: 'pengcheng' }, 'no-road');
-  assert.equal(nr.say, '从泗水北岸没有路通向彭城。');
-  assert.deepEqual(nr.near.map(p => p.id), ['sishui', 'yunlong', 'lvliang', 'zhangnan']);
-  assert.equal(nr.here.id, 'sibei', 'a refused move says where the player still stands');
-  assert.equal(nr.toward.id, 'sishui', 'and the first road on the way');
+  // named, he is walked there — the whole road, never one leg and a question (his, 2026-09-21)
+  const far = must(move, s, { place: 'pengcheng' });
+  assert.equal(far.state.place, 'pengcheng');
+  assert.deepEqual(far.result.via.map(p => p.id), ['sishui'], 'and the result says what was passed');
+  assert.equal(must(move, s, { place: 'huaidu' }).state.place, 'huaidu');
+  assert.equal(must(move, s, { place: '云龙山' }).result.via, undefined, 'one road is just a road');
+  // a name half said is the one place it can mean — not counting where he stands
+  assert.equal(must(move, { ...s, place: 'sishui' }, { place: '泗水' }).state.place, 'sibei', '「去泗水」 on 泗水岸 is 泗水北岸');
+  refused(move, s, { place: '彭' }, 'unknown-place'); // one character is not a name
+  refused(move, { ...s, place: 'pengcheng' }, { place: '泗水' }, 'unknown-place');
   // the way walks only places the player may enter: 微山 waits behind the rapids and 沛泽
-  assert.equal(refused(move, s, { place: 'huaidu' }, 'no-road').toward.id, 'sishui');
-  assert.equal(refused(move, s, { place: 'weishan' }, 'no-road').toward, null, 'beyond the tier: no way to offer');
+  assert.equal(refused(move, s, { place: 'weishan' }, 'too-hard').here.id, 'sibei');
   assert.deepEqual(l.place.places.find(p => p.id === 'sibei').roads, ['sishui', 'yunlong', 'lvliang', 'zhangnan']);
   assert.equal(l.place.province.start, 'sishui');
   // too hard: the mist, and Yinyue's fitting place
@@ -1684,10 +1687,9 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.deepEqual(moved.show, [{ card: 'creature', id: 'jingwei' }, { card: 'map' }], 'a made world draws its own map with every place');
     assert.equal(moved.place.province.start, 'reeds');
     assert.deepEqual(moved.place.places.find(p => p.id === 'isle').roads, ['reeds', 'bell']);
-    const lost = run('move', '--place=shrine');
-    assert.equal(lost.refused, 'no-road');
-    assert.equal(lost.here.id, 'isle', 'refused: still where they stood');
-    assert.equal(lost.toward.id, 'reeds', 'by the ford, not the pool beyond the tier');
+    const walked = run('move', '--place=shrine');
+    assert.equal(walked.place.id, 'shrine', 'a place named is walked to, the whole road');
+    assert.deepEqual(walked.via.map(p => p.id), ['reeds'], 'by the ford, not the pool beyond the tier');
     // worlds and travel
     assert.deepEqual(run('worlds').worlds.map(w => [w.id, w.playing, w.saved]), [['jiuding', false, true], ['the-yunmeng-marsh', true, true]]);
     const home = run('travel', '--world=jiuding');
@@ -1695,7 +1697,7 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.equal(home.scene.id, '00-river');
     assert.equal(home.building, undefined, 'a shipped world never builds');
     assert.equal(home.stamina.now, 90, 'building cost the save it was built from');
-    assert.equal(run('travel', '--world=the-yunmeng-marsh').place.id, 'isle', 'restored where it stood');
+    assert.equal(run('travel', '--world=the-yunmeng-marsh').place.id, 'shrine', 'restored where it stood');
     assert.equal(run('travel', '--world=nowhere').refused, 'unknown-world');
     assert.equal(run('build', `--world=${JSON.stringify(bare)}`).refused, 'world-in-play');
     // undo steps back across the last travel

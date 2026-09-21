@@ -54,25 +54,30 @@ test('what the stage owns, the question does not offer — whichever side it cam
   assert.equal(askMinusStage({ ...ask, options: [{ label: '甲', ring: true, answer: '甲' }, { label: '乙', ring: true, answer: '乙' }] }, owns).options.length, 2);
 });
 
-test('the goal stands on the stage, and the question does not repeat its road', async () => {
+test('the goal is one slim line on the stage; its road is the question\'s to offer', async () => {
   // 2026-09-18: he walked 彭城 → 泗水岸 → asked for a map → tried a place with
   // no road → 「where to go, what should do」. The rules knew the whole time.
+  // 2026-09-21: the card and the book moved behind the 事 chip (「current UI is
+  // crowded」); the line stays, with nothing to tap, so the chat keeps the road.
   const { stageCards, stageOwns, askMinusStage } = await import('../scripts/stage.mjs');
-  const look = { place: { id: 'sibei' }, tasks: [], waypoint: { scene: '03-cauldron', place: { id: 'liubo', name: '流波山' }, province: '青州', text: '路通向流波山。', toward: { id: 'lvliang', name: '吕梁洪' } } };
+  const look = { place: { id: 'sibei' }, tasks: [], waypoint: { scene: '03-cauldron', place: { id: 'liubo', name: '流波山' }, province: '青州', text: '路通向流波山。', toward: { id: 'liubo', name: '流波山' } } };
   assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'hexagram']);
   const owns = stageOwns(look, stageCards(look));
-  assert.ok(owns.has('move:lvliang'), 'the card walks that road itself');
-  const ask = { header: '泗水北岸', question: '何去何从？', options: [{ label: '吕梁洪', move: 'lvliang' }, { label: '云龙山', move: 'yunlong' }, { label: '漳水南岸', move: 'zhangnan' }] };
-  assert.deepEqual(askMinusStage(ask, owns).options.map(o => o.label), ['云龙山', '漳水南岸']);
-  // no thread left: no card
+  assert.ok(!owns.has('move:liubo'), 'a line with no button owns no road');
+  const ask = { header: '泗水北岸', question: '何去何从？', options: [{ label: '流波山', move: 'liubo' }, { label: '云龙山', move: 'yunlong' }] };
+  assert.deepEqual(askMinusStage(ask, owns).options.map(o => o.label), ['流波山', '云龙山']);
+  // no thread left: no line
   assert.deepEqual(stageCards({ ...look, waypoint: null }).map(c => c.card), ['hexagram']);
 });
 
-test('差事: an offer stands where the giver is, and the book rides the goal card', async () => {
-  const { stageCards, stageOwns, askMinusStage } = await import('../scripts/stage.mjs');
-  const look = { place: { id: 'pengcheng' }, tasks: [], offers: [{ id: 'xu-elder-herb', title: '彭城的药钱' }], book: [{ id: 'xu-lvliang-look', title: '吕梁洪的水声', need: [{ kind: 'visit', have: 0, n: 1 }], ready: false }] };
-  assert.deepEqual(stageCards(look).map(c => c.card), ['goal', 'offer', 'hexagram'], 'the book brings the goal card even with no thread');
-  assert.ok(stageOwns(look, stageCards(look)).has('quest:xu-elder-herb'), '接下 is on its own card');
-  // nothing offered, nothing in hand: no goal card at all
+test('差事: an offer is what the stage is about — the book is behind the chip, the creature card gives way', async () => {
+  const { stageCards, stageOwns } = await import('../scripts/stage.mjs');
+  const look = { place: { id: 'sibei' }, tasks: [], offers: [{ id: 'xu-lvliang-look', title: '吕梁洪的水声' }], book: [{ id: 'x', title: 'x', need: [], ready: false }] };
+  const focus = [{ card: 'creature', id: 'fuzhu' }];
+  assert.deepEqual(stageCards(look, { focus }).map(c => c.card), ['offer'], 'no book on the stage, no beast beside the errand, no coins either');
+  assert.deepEqual(stageCards({ ...look, offers: [] }, { focus }).map(c => c.card), ['creature'], 'taken, the place has its card back');
+  // a shelf is something to DO, so it stays beside an offer
+  assert.deepEqual(stageCards(look, { focus: [{ card: 'item', ids: ['lingzhi'] }, ...focus] }).map(c => c.card), ['offer', 'item']);
+  assert.ok(stageOwns(look, stageCards(look)).has('quest:xu-lvliang-look'), '接下 is on its own card');
   assert.deepEqual(stageCards({ place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
 });

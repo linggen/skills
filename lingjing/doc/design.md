@@ -1643,6 +1643,20 @@ are the only writer and a counter nobody can verify is a lie:
 
 ### 事簿 — three lines, not twenty-five
 
+**Where it stands (his, 2026-09-21: 「current UI is crowded」).** The book is
+not on the stage. A **事 chip on the top bar** — `事 3`, turning seal-red with
+`可交 1` the moment a line can be handed in, so a result is never behind a
+click — opens a popover with the goal and the rows. The stage keeps the goal
+as **one slim line with nothing to tap**; its road is the chat question's to
+offer. An errand offered where he stands takes the place's creature card's
+place, which returns once it is taken. A shelf stays: it is something to do.
+
+**He names a place, he is walked there** (2026-09-21: 「去泗水」 and the chat
+asked 何去何从 again). Move walks the whole road (`via`), stops only where a
+scene stands, reads a name half said (not counting where he stands), and
+refuses only a wrong target. Ling never asks where to go when she was told.
+
+
 The goal card is the log: the spine's waypoint first, then the open 差事, each
 one line — `沛泽的蠪侄 2/3 · 沛泽` — with the road toward it.
 

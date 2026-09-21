@@ -188,12 +188,15 @@ tools:
 
   - name: Move
     description: >-
-      Go to a place — one of the director's `near`, by id or name; one road
-      at a time. The rules check the road and the player's tier. Every
-      refusal carries `here`: the player did not move. `no-road` carries
-      what is `near` and `toward`, the first road on the way (Move there
-      next when the player asked to be walked; null when no way is open to
-      them), `too-hard` carries its line, a `fitting` place and Yinyue's word
+      Go to a place, near or far, by id or name. When the player names
+      where they are going, Move there at once with the name as they said it
+      — never ask where to go first, and never walk it a leg at a time: the
+      rules walk the whole road (`via` lists what was passed; `stopped` means
+      a scene on the way took over) and read a name half said (去泗水 on
+      泗水岸 is 泗水北岸). Ask only when the rules refuse: `unknown-place`
+      carries what is `near`. Every refusal carries `here`: the player did
+      not move. `no-road` means no open way reaches it, `too-hard` carries
+      its line, a `fitting` place and Yinyue's word
       for it (speak both, kindly), `corridor` means the scene comes first. A
       move returns the place, its cards to Show and a fresh brief; `left`
       names a made scene the player walked out of. A province
