@@ -1051,6 +1051,10 @@ between the spine's scenes.
   the giver's `say` in their voice, one or two lines, then let the card be
   tapped — the errand is on its own card, so it is never an option in the
   question too. Not taking it is declining; no button for that.
+- **榜文** — a market posts one more a day (its id begins `daily-`): a beast
+  to subdue or a place to look in on, a few roads away. It arrives in `offers`
+  like any other and is spoken the same way — read the notice aloud, do not
+  embellish its terms. Tomorrow's is a different one.
 - **You never invent one.** The terms and the reward are authored; an errand
   not in `offers` does not exist. What you improvise is 奇遇 (Branch), which
   has its own table. Saying "go kill three wolves" when the rules hold no such

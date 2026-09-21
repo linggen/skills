@@ -1664,8 +1664,15 @@ put down. In Ling's context the whole book is three lines, about 40 tokens.
 ### Where they come from — three sources, one card
 
 1. **Authored** — the province's own, as above.
-2. **Templated** — the 奇遇 seed mechanism with a counter: a template plus
-   today's place and creature, so a province is never empty.
+2. **Templated — 榜文** (built 2026-09-21) — the 奇遇 seed mechanism with a
+   counter: a template plus today's place or creature, so a province is never
+   empty. `quests/templates.json` holds the terms; each **market** posts one a
+   day, its target within three walkable roads, of the market's own province,
+   and winnable (never a beast in the cast or already met today — the first
+   sample posted a bounty on his own 夫诸, and 凫丽山 eight roads off). The id
+   is the whole errand, `daily-<day>-<template>-<target>`, so the save holds
+   nothing new; taken, it stays until done or put down — only the posting
+   turns with the day.
 3. **Real life** — the `~/.linggen/quests/<app>.json` 功课 become 差事 on the
    same card, with `kind: "chore"`. This is the hook no other game has: 扫一次
    洞府 is a quest in a cultivation world, and Shifu says when it is done.

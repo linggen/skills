@@ -256,7 +256,7 @@ function questBrief(content, state, now) {
 
 export const BOOK_MAX = 3; // a chat game cannot show a log of twenty-five
 
-const questOf = (content, id) => (content.quests ?? []).find(q => q.id === id) ?? null;
+const questOf = (content, id) => (content.quests ?? []).find(q => q.id === id) ?? noticeOf(content, id);
 const questDoneBefore = (state, id) => Boolean(state.quests?.[id]?.done_at);
 
 /* The counts, as they stand. `carry` is not ticked by anything: what is in the
@@ -297,11 +297,68 @@ function whereFor(content, state, quest, need, lang) {
   return at.id === state.place ? { id: at.id, name: pick(at.name, lang) ?? at.name, here: true } : (at.name ? placeName(content, state, at) : at);
 }
 
+/* 榜文 — templated 差事 (design.md § 差事 ⑤). A market posts one a day: a
+   template and a target of its own province. The id says it all —
+   `daily-<day>-<template>-<target>` — so the 差事 is rebuilt from its id and
+   the save holds nothing more than it does for an authored one. Taken, it
+   stays in the book until done or put down; only the posting turns with the day. */
+const swap = (pair, words) => Object.fromEntries(['zh', 'en'].map(l => [l, pair[l].replace(/\{(target|place)\}/g, (_, k) => words[k][l])]));
+
+function noticeOf(content, id) {
+  const [, day, tid, target] = /^daily-(\d{8})-([a-z]+)-([a-z0-9]+)$/.exec(id ?? '') ?? [];
+  const t = (content.notices ?? []).find(x => x.id === tid);
+  if (!t) return null;
+  const at = allPlaces(content).find(p => (t.kind === 'visit' ? p.id : p.has?.creature) === target);
+  const market = at && allPlaces(content).find(p => p.province === at.province && p.has?.shop);
+  if (!market) return null;
+  const name = t.kind === 'visit' ? at.name : creatureOf(content, target)?.name;
+  if (!name) return null;
+  const words = { target: name, place: at.name };
+  return { id, day, notice: t.id, province: at.province, title: swap(t.title, words), say: swap(t.say, words), from: { place: market.id, who: t.who },
+    need: [{ kind: t.kind, n: t.n, ...(t.kind === 'visit' ? { place: target } : { creature: target }) }], grant: t.grant };
+}
+
+/* What a market's notice may name today: a haunt not yet fought today, or a
+   place to reach — of this province, a few walkable roads from the market. */
+const NOTICE_REACH = 3; // roads from the market: an errand, not a pilgrimage
+
+/* The places within so many walkable roads of one. */
+function withinRoads(content, state, from, now, max) {
+  const walkable = p => p && !tooHard(content, state, p) && provinceOpen(content, p.province, now);
+  const seen = new Set([from.id]);
+  let edge = [from];
+  for (let i = 0; i < max; i += 1) {
+    edge = edge.flatMap(p => p.roads).filter(id => !seen.has(id)).map(id => placeOf(content, id)).filter(walkable);
+    edge = edge.filter(p => !seen.has(p.id) && seen.add(p.id));
+  }
+  seen.delete(from.id);
+  return seen;
+}
+
+function noticeTargets(content, state, market, t, now) {
+  const reach = withinRoads(content, state, market, now, NOTICE_REACH);
+  const near = allPlaces(content).filter(p => p.province === market.province && reach.has(p.id));
+  if (t.kind === 'visit') return near.map(p => p.id);
+  // A bounty that cannot be won is a lie: not a beast that walks with him, nor one already met today.
+  return near.filter(p => p.has?.creature && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
+}
+
+function noticeAt(content, state, now) {
+  const market = placeOf(content, state.place);
+  if (!market?.has?.shop || inMade(state)) return null;
+  const day = dayKey(now), stamp = day.replaceAll('-', '');
+  // One a day at each market: today's, taken or done, is the only one it posts.
+  if (Object.keys(state.quests ?? {}).some(id => noticeOf(content, id)?.from.place === market.id && id.startsWith(`daily-${stamp}-`))) return null;
+  const pool = (content.notices ?? []).flatMap(t => noticeTargets(content, state, market, t, now).map(target => `daily-${stamp}-${t.id}-${target}`));
+  return pool.length ? noticeOf(content, pool[hashOf(`${day}|${state.name ?? ''}|${market.id}|notice`) % pool.length]) : null;
+}
+
 /* What may be taken where he stands: the giver is here, it is not in the book
    already, it has not been done, and its gate is open. */
-function offersOf(content, state, lang) {
+function offersOf(content, state, lang, now) {
   if (state.quests && Object.keys(state.quests).filter(id => !questDoneBefore(state, id)).length >= BOOK_MAX) return [];
-  return (content.quests ?? [])
+  const notice = noticeAt(content, state, now);
+  return [...(content.quests ?? []), ...(notice ? [notice] : [])]
     .filter(q => q.from?.place === state.place && !state.quests?.[q.id]
       && (!q.opens?.after || questDoneBefore(state, q.opens.after))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
@@ -894,7 +951,7 @@ export function look(state, content, ctx) {
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang),
-    ...(offersOf(content, state, lang).length ? { offers: offersOf(content, state, lang) } : {}),
+    ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
     ended: state.ended, branch: state.branch, story: state.story,
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
@@ -2287,6 +2344,9 @@ export function quest(state, content, ctx, args) {
     if (Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length >= BOOK_MAX) {
       return refuse('book-full', pick({ zh: `手上已有${BOOK_MAX}件事，先了一件。`, en: `Three things are already in hand — finish one first.` }, lang), { book: bookOf(content, s, lang) });
     }
+    if (q.notice && noticeAt(content, s, ctx.now)?.id !== id) return refuse('not-posted', null);
+    // A notice done on an earlier day has nothing left to say: the save keeps today's only.
+    for (const old of Object.keys(s.quests)) if (noticeOf(content, old) && questDoneBefore(s, old) && noticeOf(content, old).day !== q.day) delete s.quests[old];
     s.quests[id] = { took: dayKey(ctx.now), have: {} };
     return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang) } };
   }

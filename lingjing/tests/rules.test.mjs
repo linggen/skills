@@ -1993,6 +1993,35 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.ok(!look({ ...joined.state, place: 'pengcheng', bag: {} }, content, ctx()).place.shelf.some(i => i.id === 'moon-bell'));
 });
 
+test('榜文: a market posts one templated 差事 a day — near, winnable, rebuilt from its id', () => {
+  const base = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', bag: {}, cast: ['fuzhu'] };
+  const days = Array.from({ length: 14 }, (_, i) => ctx({ now: new Date(2026, 8, 11 + i, 12) }));
+  const posted = days.map(at => look(base, content, at).offers.filter(o => o.id.startsWith('daily-')));
+  assert.ok(posted.every(p => p.length === 1), 'one a day, every day');
+  assert.ok(new Set(posted.map(p => p[0].id.split('-').slice(2).join('-'))).size > 2, 'and the posting turns with the day');
+  const NEAR = new Set(['sishui', 'sibei', 'yunlong', 'huaidu', 'peize', 'weishan', 'xushan', 'lvliang', 'sikou', 'yiqiao']);
+  for (const [o] of posted) {
+    assert.doesNotMatch(o.id, /fuzhu|fuli|longzhi|pengcheng/, 'never a beast that walks with him, a place eight roads off, or the market itself');
+    if (o.need[0].kind === 'visit') assert.ok(NEAR.has(o.id.split('-').pop()), o.id);
+  }
+  // away from a market there is no notice
+  assert.ok(!(look({ ...base, place: 'sishui' }, content, days[0]).offers ?? []).some(o => o.id.startsWith('daily-')));
+
+  // taken, it is gone from the board; the rules count it; it is handed in where he stands
+  const [today] = posted[0], target = today.id.split('-').pop();
+  assert.equal(quest(base, content, days[0], { action: 'take', id: today.id.replace(/\d{8}/, '20260101') }).result.refused, 'not-posted', 'only today\'s posting may be taken');
+  const took = must(quest, base, { action: 'take', id: today.id }, days[0]);
+  assert.ok(!(look(took.state, content, days[0]).offers ?? []).some(o => o.id.startsWith('daily-')), 'one a day at a market');
+  advance(content, took.state, today.need[0].kind === 'visit' ? { kind: 'visit', place: target } : { kind: 'subdue', creature: target });
+  const turned = must(quest, { ...took.state, place: 'sishui' }, { action: 'turn', id: today.id }, days[0]);
+  assert.ok(turned.result.paid.progress > 0);
+  assert.ok(!(look({ ...turned.state, place: 'pengcheng' }, content, days[0]).offers ?? []).some(o => o.id.startsWith('daily-')), 'done today, nothing more today');
+  // tomorrow a new one — and taking it lets yesterday's leave the save
+  const next = look({ ...turned.state, place: 'pengcheng' }, content, days[1]).offers.find(o => o.id.startsWith('daily-'));
+  const again = must(quest, { ...turned.state, place: 'pengcheng' }, { action: 'take', id: next.id }, days[1]);
+  assert.deepEqual(Object.keys(again.state.quests).filter(id => id.startsWith('daily-')), [next.id]);
+});
+
 test('差事: taken at the giver, counted by the rules, handed in where he stands', () => {
   // 接 · 记 · 追 · 交 (design.md § 差事). His ruling 2026-09-18: 交差 never
   // sends the player back across the map.

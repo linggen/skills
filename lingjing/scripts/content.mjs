@@ -140,6 +140,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     branches: at('branches.json'),
     seeds: loadSeeds(path.join(dir, 'seeds')),
     quests: loadQuests(path.join(dir, 'quests')),
+    notices: loadNotices(path.join(dir, 'quests', 'templates.json')),
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -174,6 +175,12 @@ function loadQuests(root) {
     for (const q of doc.quests ?? []) out.push({ ...q, province: doc.province });
   }
   return out;
+}
+
+/* 榜文: the templates a market's daily 差事 is made from. A world without
+   the file posts none. */
+function loadNotices(file) {
+  return fs.existsSync(file) ? readJson(file).templates ?? [] : [];
 }
 
 function loadSeeds(root) {
@@ -412,6 +419,7 @@ export function lint(content) {
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
   lintSeeds(content, ids, bad);
   lintQuests(content, ids, bad);
+  lintNotices(content, bad);
   lintPlaces(content, ids, bad);
   lintAtlas(content, bad);
   return problems;
@@ -538,6 +546,24 @@ function lintQuests(content, ids, bad) {
       if (n?.place && !places.has(n.place)) bad(where, `names unknown place ${n.place}`);
       if (n?.task && !content.tasks.tasks.some(t => t.id === n.task)) bad(where, `names unknown task ${n.task}`);
     }
+  }
+}
+
+/* 榜文: a template's id rides inside a 差事 id, so it is letters only; its
+   kind is one whose target the rules can choose from the map. */
+export const NOTICE_KINDS = new Set(['subdue', 'visit']);
+
+function lintNotices(content, bad) {
+  const seen = new Set();
+  for (const t of content.notices ?? []) {
+    const where = `notice ${t.id}`;
+    if (!/^[a-z]+$/.test(t.id ?? '')) bad(where, 'id must be lowercase letters only');
+    if (seen.has(t.id)) bad(where, 'duplicate id');
+    seen.add(t.id);
+    if (!NOTICE_KINDS.has(t.kind)) bad(where, `unknown kind ${t.kind}`);
+    if (!(t.n > 0)) bad(where, 'needs a count');
+    for (const key of ['title', 'who', 'say']) if (!pair(t[key])) bad(where, `${key} needs zh and en`);
+    if (!content.rewards.tables[t.grant?.table]) bad(where, `unknown reward table ${t.grant?.table}`);
   }
 }
 
