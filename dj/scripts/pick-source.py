@@ -20,52 +20,48 @@
 # which is what stops a .lrc timed to the studio master landing next to a live
 # recording it will never line up with.
 #
+# The album track itself comes first when it can be found. YouTube Music's
+# Songs shelf lists the label's own uploads with their album, so the CD take
+# is named outright instead of inferred — and its length beats the lyrics
+# consensus, which a popular TV performance can outvote (像我这样的人: seven
+# sets at the 172 s 明日之子 take against six at the 207 s album track).
+# Each video is then scored WITH the lyrics that fit it (lyrics_match.py), so
+# the pick is a pair. The album track wins over a better lyrics fit: the
+# recording is kept for its sound, and words without timings are still shown.
+#
 # Reads one JSON object (argv[1] or stdin), writes one JSON line:
 #   in : {artist, title, year?, version?, query_hints?, yt_dlp, results?}
-#   out: {ok, url, id, duration, video_title, channel, anchor, lyrics,
-#         runners_up[], notes[]}   — or {ok:false, error}
+#   out: {ok, urls[], url, id, duration, video_title, channel, album, anchor,
+#         lyrics: {synced, duration, gap}, runners_up[], notes[]}
+#         — or {ok:false, error}
 #
 # Callers: scripts/get.sh (agent path) and scripts/download.js (page path).
 # It exists so those two stop reimplementing the same search by hand.
 
 import concurrent.futures
 import json
-import re
+import os
 import subprocess
 import sys
-import unicodedata
 import urllib.parse
-import urllib.request
 
-UA = "DJ (Linggen music app) https://linggen.dev"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import lyrics_match as lm  # noqa: E402  (a sibling script, not a package)
+from lyrics_match import TITLE_TERMS, cluster, fold, is_cjk  # noqa: E402
 
 # ---------------------------------------------------------------- declarations
 #
 # Everything the scorer knows lives in these tables. Adding a signal means
 # adding a row, never a branch — the scoring loop below never names a term.
 
-# Words in a video title that mark a DIFFERENT RECORDING than the studio
-# master. Each row is tagged with the version it describes: when the caller
-# asks for that version the penalty becomes a bonus of the same size, so
-# "the live one" is one field on the order rather than a second code path.
-TITLE_TERMS = [
-    (45, "live", ["live", "现场", "現場", "演唱会", "演唱會", "concert",
-                  "tour", "unplugged", "巡回", "巡迴", "live版"]),
-    (45, "cover", ["cover", "翻唱", "cover版", "reaction", "reacts", "解说", "解說"]),
-    (45, "instrumental", ["instrumental", "伴奏", "纯音乐", "純音樂", "karaoke",
-                          "卡拉ok", "off vocal", "无人声", "無人聲"]),
-    (40, "remix", ["remix", "混音", "dj版", "sped up", "slowed", "nightcore",
-                   "8d", "bass boosted", "抖音版", "摇滚版", "搖滾版", "钢琴版",
-                   "鋼琴版", "acoustic", "acoustic version"]),
-    # Never wanted, under any `version`: these are not the song at all. The
-    # tag is None so no request can turn them into a bonus.
-    (90, None, ["medley", "串烧", "串燒", "合集", "全集", "精选集", "精選集",
-                "mix", "megamix", "1 hour", "一小时", "一小時", "loop"]),
-]
+# The words that mark a different recording (TITLE_TERMS) live in
+# lyrics_match.py: a lyrics entry's track and album names are judged by them
+# too.
 
 # Marks of the upload we want: the label's or the artist's own copy.
+# ("official music video" is gone: an MV is the take with the intro.)
 OFFICIAL_TERMS = ["official", "官方", "topic", "vevo", "original", "原版",
-                  "official music video", "official audio", "官方版"]
+                  "official audio", "官方版"]
 
 # Search phrasings worth trying beyond the bare "artist title", per requested
 # version and per script. CJK studio searches lean on the 歌词版 family because
@@ -81,6 +77,9 @@ QUERY_VARIANTS = {
 }
 
 SCORE = {
+    "album_track": 60,         # YouTube Music's own album upload — the CD take
+    "lyrics_exact": 25,        # a timed lyrics set fits within 2s
+    "lyrics_close": 12,        # ... within lyrics_match.FIT_SECONDS
     "channel_is_artist": 45,   # channel name carries the artist's name
     "official_term": 20,
     "duration_exact": 60,      # within 1s of the anchor
@@ -89,22 +88,12 @@ SCORE = {
 }
 
 MAX_QUERIES = 3               # each costs a network round trip (~12s, parallel)
+ALBUM_LOOKUPS = 3             # album tracks whose details are fetched (~3s, parallel)
 ANCHOR_TOLERANCE = 12         # seconds; beyond this a candidate is not the song
 POOL_TOLERANCE_PCT = 0.20     # looser when the anchor is only the pool's guess
 
 
 # ------------------------------------------------------------------- utilities
-
-def fold(s):
-    """Lowercase + strip punctuation so term matching survives 【】 and dashes."""
-    s = unicodedata.normalize("NFKC", str(s or "")).lower()
-    return re.sub(r"[\s\-_/|·・,，.。:：!！?？'\"“”‘’()（）\[\]【】]+", " ", s).strip()
-
-
-def is_cjk(s):
-    return any("一" <= c <= "鿿" or "぀" <= c <= "ヿ"
-               for c in str(s or ""))
-
 
 def name_overlap(a, b, minimum):
     """Do two names share a run of `minimum` characters?
@@ -119,68 +108,6 @@ def name_overlap(a, b, minimum):
     if not a or not b or minimum <= 0:
         return False
     return any(a[i:i + minimum] in b for i in range(len(a) - minimum + 1))
-
-
-def cluster(values, width):
-    """Largest group of numbers within `width` of each other, and its median.
-
-    LRCLIB durations come from user submissions and candidate durations come
-    from different uploads of the same song, so neither agrees exactly. The
-    number several sources cluster around is the one to trust — not the first
-    one, which is the mistake this whole file exists to stop making.
-    """
-    vals = sorted(v for v in values if isinstance(v, (int, float)) and v > 0)
-    if not vals:
-        return None
-    best = []
-    for v in vals:
-        group = [w for w in vals if abs(w - v) <= width]
-        if len(group) > len(best):
-            best = group
-    return best[len(best) // 2]
-
-
-# ---------------------------------------------------------------------- lrclib
-
-def lrclib_search(artist, title, timeout=12):
-    """Free-text LRCLIB search. The exact artist/track fields miss
-    original-language titles; `q=` is far more forgiving (same call
-    lyrics.js and get.sh already make, just made earlier)."""
-    q = f"{artist} {title}".strip()
-    if not q:
-        return []
-    url = "https://lrclib.net/api/search?q=" + urllib.parse.quote(q)
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA})
-        arr = json.loads(urllib.request.urlopen(req, timeout=timeout).read().decode())
-    except Exception:
-        return []
-    return arr if isinstance(arr, list) else []
-
-
-def anchor_from_lyrics(entries):
-    """Studio duration + the lyric body to reuse, from LRCLIB's results.
-
-    Never the first hit — that is the known failure. Synced entries vote on
-    the duration, the winning cluster defines the length, and the lyrics come
-    from an entry that actually sits at that length.
-    """
-    synced = [e for e in entries if e.get("syncedLyrics") and not e.get("instrumental")]
-    pool = synced or [e for e in entries if e.get("plainLyrics")]
-    if not pool:
-        return None, None
-    seconds = cluster([e.get("duration") for e in pool], 2)
-    if not seconds:
-        return None, None
-    at_length = [e for e in pool if abs((e.get("duration") or 0) - seconds) <= 2]
-    pick = at_length[0] if at_length else pool[0]
-    body = pick.get("syncedLyrics") or pick.get("plainLyrics") or ""
-    lyrics = {
-        "body": body,
-        "synced": bool(pick.get("syncedLyrics")),
-        "duration": round(pick.get("duration") or seconds),
-    } if body.strip() else None
-    return round(seconds), lyrics
 
 
 # ----------------------------------------------------------------------- probe
@@ -225,6 +152,93 @@ def probe(yt_dlp, queries, results):
     return list(pooled.values())
 
 
+def ytmusic_songs(yt_dlp, query, timeout=60):
+    """YouTube Music's Songs shelf for a query — the label's own album tracks.
+    Flat entries carry an id and a title and nothing else."""
+    url = ("https://music.youtube.com/search?q=" + urllib.parse.quote(query)
+           + "#songs")
+    cmd = [yt_dlp, "--flat-playlist", "-J", "--no-warnings",
+           "--socket-timeout", "15", "--playlist-end", "8", url]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        data = json.loads(r.stdout or "{}")
+    except Exception:
+        return []
+    return [e for e in (data.get("entries") or []) if isinstance(e, dict)]
+
+
+def video_details(yt_dlp, video_id, timeout=60):
+    """One video's own metadata: length, channel, and for an album track its
+    artist and album."""
+    cmd = [yt_dlp, "-J", "--skip-download", "--no-warnings",
+           "--socket-timeout", "15", f"https://www.youtube.com/watch?v={video_id}"]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        data = json.loads(r.stdout or "{}")
+    except Exception:
+        return None
+    return data if isinstance(data, dict) and data.get("id") else None
+
+
+def album_tracks(yt_dlp, artist, title):
+    """The album take, named outright: Songs-shelf entries whose title is this
+    song and carries no version tag, by this artist, with their lengths.
+    Another singer's song of the same name (姜育恒 also sang 像我这样的人) is
+    dropped by the artist check."""
+    found = ytmusic_songs(yt_dlp, f"{artist} {title}".strip())
+    if not found:
+        return []
+    names = lm.simplified([title, artist] + [e.get("title") or "" for e in found])
+    simp_title, simp_artist = names[0], names[1]
+    picks = [e for e, name in zip(found, names[2:])
+             if e.get("id") and lm.same_title(name, simp_title)
+             and not lm.other_take(e.get("title"))][:ALBUM_LOOKUPS]
+    if not picks:
+        return []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(picks)) as pool:
+        details = [d for d in pool.map(lambda e: video_details(yt_dlp, e["id"]), picks)
+                   if d and d.get("duration")]
+    singers = lm.simplified([f"{d.get('artist') or ''} {d.get('channel') or ''}"
+                             for d in details])
+    return [{
+        "id": d["id"],
+        "url": f"https://www.youtube.com/watch?v={d['id']}",
+        "title": d.get("title"),
+        "channel": d.get("channel") or d.get("uploader"),
+        "duration": d["duration"],
+        "view_count": d.get("view_count"),
+        "album": d.get("album"),
+        "_album": True,
+    } for d, who in zip(details, singers)
+        if not simp_artist or lm.same_artist(simp_artist, who)]
+
+
+def corroborated(albums, entries, candidates):
+    """Album tracks whose length a second source agrees with — a lyrics entry
+    or another upload within FIT_SECONDS. A title match allows one differing
+    character (講你知 / 講妳知), so a lone album track of a different song
+    could otherwise pass; two sources agreeing on its length is the guard."""
+    def agrees(a):
+        others = [e.get("duration") for e in entries]
+        others += [c.get("duration") for c in candidates if c.get("id") != a["id"]]
+        return any(isinstance(x, (int, float))
+                   and abs(x - a["duration"]) <= lm.FIT_SECONDS for x in others)
+    return [a for a in albums if agrees(a)]
+
+
+def lyrics_anchor(entries):
+    """The length the right singer's timed lyrics agree on, when no album
+    track was found. Entries marked as another take sit out the vote."""
+    for pool in ([e for e in entries if e.get("syncedLyrics")
+                  and e.get("_artist") and not e.get("_other")],
+                 [e for e in entries if e.get("syncedLyrics")],
+                 [e for e in entries if e.get("plainLyrics")]):
+        seconds = cluster([e.get("duration") for e in pool], 2)
+        if seconds:
+            return round(seconds)
+    return None
+
+
 # ---------------------------------------------------------------------- scoring
 
 def title_score(folded_title, version):
@@ -240,7 +254,7 @@ def title_score(folded_title, version):
     return total, hits
 
 
-def score_candidate(entry, artist, anchor, tolerance, version):
+def score_candidate(entry, artist, anchor, tolerance, version, lyric_entries=()):
     """Rank one candidate. Returns (score, reasons) or (None, reasons) when the
     duration gate rejects it outright."""
     folded = fold(entry.get("title"))
@@ -258,6 +272,18 @@ def score_candidate(entry, artist, anchor, tolerance, version):
 
     total, hits = title_score(folded, version)
     reasons += hits
+
+    if entry.get("_album") and version == "studio":
+        total += SCORE["album_track"]
+        reasons.append("+album")
+
+    # The pair: this video with the lyrics that fit IT. Worth less than the
+    # album track by design — the recording is chosen for its sound.
+    fitted = lm.timed_fit(lyric_entries, duration)
+    if fitted:
+        gap = abs((fitted.get("duration") or 0) - duration)
+        total += SCORE["lyrics_exact"] if gap <= 2 else SCORE["lyrics_close"]
+        reasons.append("+lyrics" if gap <= 2 else "+lyrics~")
 
     # Only the studio request rewards matching the anchor. For any other
     # version, running exactly as long as the master is evidence AGAINST being
@@ -317,26 +343,41 @@ def main():
     results = int(req.get("results") or 5)
     notes = []
 
-    # Lyrics first: they carry the length the audio has to match, and the
-    # caller reuses the body for the .lrc so nothing fetches it twice.
-    anchor, lyrics = anchor_from_lyrics(lrclib_search(artist, title))
-    anchor_source = "lrclib" if anchor else None
-
     queries = build_queries(artist, title, req.get("query_hints"), version)
     if not queries:
         fail("nothing to search for")
-    candidates = probe(yt_dlp, queries, results)
+
+    # Three lists at once: every lyrics set on offer, the album track, and the
+    # uploads. Each is its own network round trip; together they cost the
+    # slowest one (~12s), not the sum.
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+        f_lyrics = pool.submit(lm.lyric_sets, artist, title, version)
+        # Album tracks are the studio takes, so only a studio order asks.
+        f_album = (pool.submit(album_tracks, yt_dlp, artist, title)
+                   if version == "studio" else None)
+        f_probe = pool.submit(probe, yt_dlp, queries, results)
+        lyric_entries = f_lyrics.result()
+        candidates = f_probe.result()
+        albums = f_album.result() if f_album else []
+    albums = corroborated(albums, lyric_entries, candidates)
+    album_ids = {a["id"] for a in albums}
+    candidates = albums + [c for c in candidates if c.get("id") not in album_ids]
     if not candidates:
         fail("no candidates found")
 
-    # No lyrics on file: let the uploads vote. Several of them agreeing on a
-    # length is weaker than LRCLIB but much better than trusting position 1.
+    # The length to hold uploads to: the album track's own when there is one,
+    # else what the lyrics agree on, else what the uploads agree on.
+    if albums:
+        anchor, anchor_source = round(albums[0]["duration"]), "album"
+    else:
+        anchor = lyrics_anchor(lyric_entries)
+        anchor_source = "lrclib" if anchor else None
     if not anchor:
         anchor = cluster([c.get("duration") for c in candidates], 3)
         anchor_source = "pool" if anchor else "none"
-        notes.append("no LRCLIB entry — using the candidates' own consensus")
+        notes.append("no album track or lyrics — using the candidates' own consensus")
 
-    tolerance = (ANCHOR_TOLERANCE if anchor_source == "lrclib"
+    tolerance = (ANCHOR_TOLERANCE if anchor_source in ("album", "lrclib")
                  else (anchor or 0) * POOL_TOLERANCE_PCT)
     if version != "studio" and anchor:
         # The anchor is the STUDIO length, so it cannot gate a request for
@@ -348,7 +389,8 @@ def main():
 
     ranked = []
     for c in candidates:
-        s, reasons = score_candidate(c, artist, anchor, tolerance, version)
+        s, reasons = score_candidate(c, artist, anchor, tolerance, version,
+                                     lyric_entries)
         if s is None:
             continue
         ranked.append({
@@ -357,6 +399,7 @@ def main():
             "duration": round(c.get("duration") or 0),
             "video_title": c.get("title"),
             "channel": c.get("channel") or c.get("uploader"),
+            "album": c.get("album"),
             "score": s,
             "why": reasons,
         })
@@ -367,7 +410,8 @@ def main():
     if not ranked:
         notes.append("nothing matched the expected length — picking on title alone")
         for c in candidates:
-            s, reasons = score_candidate(c, artist, None, 0, version)
+            s, reasons = score_candidate(c, artist, None, 0, version,
+                                         lyric_entries)
             if s is not None:
                 ranked.append({
                     "id": c["id"],
@@ -375,6 +419,7 @@ def main():
                     "duration": round(c.get("duration") or 0),
                     "video_title": c.get("title"),
                     "channel": c.get("channel") or c.get("uploader"),
+                    "album": c.get("album"),
                     "score": s,
                     "why": reasons,
                 })
@@ -383,6 +428,11 @@ def main():
 
     ranked.sort(key=lambda r: r["score"], reverse=True)
     win = ranked[0]
+    # What the winner's lyrics are expected to be. Callers fit again against
+    # the file that actually lands (lyrics_match.for_file): yt-dlp walks down
+    # `urls` when a video is dead, and the one that downloads is the one the
+    # lyrics must match.
+    plan = lm.fit(lyric_entries, win["duration"])
     print(json.dumps({
         "ok": True,
         # Ordered, best first. Callers hand the WHOLE list to yt-dlp with
@@ -398,7 +448,9 @@ def main():
         "score": win["score"],
         "why": win["why"],
         "anchor": {"seconds": anchor, "source": anchor_source},
-        "lyrics": lyrics,
+        "album": win["album"],
+        "lyrics": ({k: plan[k] for k in ("synced", "duration", "gap")}
+                   if plan else None),
         "runners_up": ranked[1:4],
         "considered": len(candidates),
         "queries": queries,

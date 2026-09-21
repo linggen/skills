@@ -3,7 +3,7 @@
 // The agent never calls this; it only proposes the list.
 
 import { runBash, sq, resolvePath } from './bash.js';
-import { writeLrc } from './lyrics.js';
+import { attachLyrics } from './lyrics.js';
 
 const DJ_DIR = '$HOME/.linggen/skills/dj';
 
@@ -134,12 +134,12 @@ export async function downloadTrack(bins, cfg, track) {
     const lines = out.trim().split('\n').filter(Boolean);
     const file = [...lines].reverse().find((l) => l.endsWith('.mp3')) || '';
     if (!file) return { ok: false, error: 'no playable source found' };
-    // The picker already asked LRCLIB for the lyrics — that is where the
-    // duration it matched against came from — so write the sidecar here
-    // rather than paying for the same request again in the backfill.
+    // Lyrics are fitted to the file that actually landed, not to the pick:
+    // yt-dlp walks down the list past a dead video, and the lyrics have to
+    // run on this file's clock (lyrics_match.py, the one chooser).
     let lrc = null;
     try {
-      if (picked?.lyrics?.body) lrc = await writeLrc(picked.lyrics.body, file);
+      lrc = await attachLyrics(track, file);
     } catch { /* lyrics are optional */ }
     return { ok: true, file, lrc, picked };
   } catch (e) {

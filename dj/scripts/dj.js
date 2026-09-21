@@ -1148,9 +1148,8 @@ async function getAll() {
           playlist: state.set ? cleanPlaylistName(state.set.name) : undefined,
         }));
       } catch (e) { toast(String(e.message || e)); }
-      // The download already wrote a sidecar when the source picker had the
-      // lyrics in hand. Record it now so backfillLyrics skips this track
-      // instead of asking LRCLIB for what is already on disk.
+      // The download already fitted and wrote a sidecar. Record it now so
+      // backfillLyrics skips this track instead of asking LRCLIB again.
       if (r.lrc) {
         try { await action('track-set-lrc', r.file, r.lrc); } catch { /* optional */ }
       }
