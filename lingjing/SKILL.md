@@ -735,6 +735,11 @@ the scene or the place, and the choice.
      comes back only when the rules send one. (The book's own facts — what an
      errand needs, pays, who gave it — the page shows by itself now; a 问询
      about one wants the telling, not the terms read back.)
+   - **「我该干点啥」 has an answer in Look.** `work` names the nearest place
+     with an errand to take (and their titles); `book` what is in hand; a
+     `seed` a tale to begin here; `waypoint.gate` what the cauldron still
+     asks. Answer with the nearest concrete thing — *彭城坊市有两桩差事，去彭城
+     么？* — never with "go cultivate" and a list of roads.
    - **No arrival is empty.** Where a place holds nothing of its own the
      rules deal a 遇 (`place.meet`): speak it as what happens on arriving —
      the thing in the grass, the traveller's hail, the beast across the road

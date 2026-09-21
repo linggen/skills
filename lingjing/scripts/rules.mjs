@@ -411,6 +411,25 @@ function offersOf(content, state, lang, now) {
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
 
+/* Where work is to be had — the nearest place, by road, that offers an errand
+   he may take. The rules always knew; nothing said it, and with the spine
+   gated and the book empty he stood at 吕梁洪 asking 「我该干点啥？」 (2026-
+   09-21). Null while the book is full, or when nothing is on offer anywhere he
+   can walk. */
+function workOf(content, state, ctx) {
+  if (inMade(state) || atScene(content, state)) return null;
+  const here = placeOf(content, state.place);
+  if (!here || errandsOf(content, state, state.lang).length >= BOOK_MAX) return null;
+  const at = allPlaces(content)
+    .map(p => ({ p, offers: offersOf(content, { ...state, place: p.id }, state.lang, ctx.now) }))
+    .filter(x => x.offers.length)
+    .map(x => ({ ...x, way: x.p.id === here.id ? [] : pathOf(content, state, here, x.p, ctx.now) }))
+    .filter(x => x.way)
+    .sort((a, b) => a.way.length - b.way.length)[0];
+  if (!at) return null;
+  return { place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: at.offers.map(o => o.title) };
+}
+
 /* One counter, moved by something that actually happened. Every verb that can
    move one calls this and nothing else does — the rules are the only writer,
    and a count nobody can verify is a lie. */
@@ -650,7 +669,7 @@ function directorBrief(content, state, ctx) {
     thread,
     pool: poolOf(content, state),
     seed: seed ? { id: seed.id, line: seed.line } : null,
-    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, canWrite(content, state), filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready)),
+    choice: atScene(content, state) ? null : choiceOf(state, here, near, toward ? { ...led, place: toward } : led, Boolean(seed), ctx.said, canWrite(content, state), filler(content, state, ctx.said), bookOf(content, state, state.lang, ctx).filter(q => q.ready), workOf(content, state, ctx)),
   };
 }
 
@@ -660,7 +679,7 @@ function directorBrief(content, state, ctx) {
    verbatim; a tapped label is its `move` (Move there at once), `linger`
    (Branch open) or `ask` (Yinyue answers). A scene's own buttons take its
    place while one runs. */
-function choiceOf(state, here, near, thread, seeded, said, write = false, alone = null, ready = []) {
+function choiceOf(state, here, near, thread, seeded, said, write = false, alone = null, ready = [], work = null) {
   const zh = state.lang === 'zh';
   const first = thread?.place && near.find(p => p.id === thread.place.id);
   const places = first ? [first, ...near.filter(p => p.id !== first.id)] : near;
@@ -671,8 +690,10 @@ function choiceOf(state, here, near, thread, seeded, said, write = false, alone 
   // Something done is handed in before anything else is asked: 交差 where he
   // stands, the moment it is met — and the chat says so, not only a chip.
   options.push(...ready.map(q => ({ label: zh ? `交差：${q.title}` : `Hand in: ${q.title}`, turn: q.id })));
+  // Work to be had, a walk away: the way on when the story is waiting.
+  if (work && !work.here) options.push({ label: zh ? `${work.place.name} · 有差事` : `${work.place.name} · work to be had`, move: work.place.id });
   if (write) options.push({ label: zh ? '写一道符' : 'Write a talisman', write: true });
-  options.push(...places.map(p => ({ label: p.name, move: p.id })));
+  options.push(...places.filter(p => !(work && !work.here && p.id === work.place.id)).map(p => ({ label: p.name, move: p.id })));
   if (seeded) options.push({ label: zh ? '在此逗留' : 'Linger here', linger: true });
   if (options.length < 2) options.push(alone ?? { label: zh ? '看看四周' : 'Look around', look: true });
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
@@ -1111,6 +1132,8 @@ export function look(state, content, ctx) {
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
+    // Where an errand may be taken, when the book has room — so 「what now」 has an answer.
+    ...(workOf(content, state, ctx) ? { work: workOf(content, state, ctx) } : {}),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
     ended: state.ended, branch: liveBranch(state, ctx.now), story: state.story,
     divination: divinationBrief(content, state, ctx.now),

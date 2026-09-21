@@ -418,3 +418,5 @@ body.fighting .askbar { display: none; }
 /* 拾遗 */
 .card.find { border-left: 3px solid var(--seal); }
 .card.find .cardtitle { color: var(--seal); }
+
+.bookwork { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--line); display: flex; gap: 10px; align-items: center; justify-content: space-between; }

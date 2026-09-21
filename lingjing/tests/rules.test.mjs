@@ -2072,6 +2072,25 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   assert.equal(duel(blocked.state, content, bd, { id: `haunt:${cid}` }).result.ok, true, 'and the door opens');
 });
 
+test('「我该干点啥」: the rules name the nearest place with work, and the question leads with it', () => {
+  // 2026-09-21: the errand handed in, the spine gated, the book holding only life's own — and nothing said where work was.
+  const at = ctx({ now: new Date('2026-09-21T12:00:00') });
+  const idle = { ...toOpenWorld(), place: 'lvliang', tier: 'core', bag: {}, quests: { 'xu-lvliang-look': { took: '2026-09-21', have: { 0: 1 }, done_at: '2026-09-21T13:27:00Z' } } };
+  const seen = look(idle, content, at);
+  assert.ok(seen.work && !seen.work.here && seen.work.roads >= 1 && seen.work.titles.length, 'work is somewhere he can walk');
+  assert.deepEqual(seen.director.choice.options[0], { label: `${seen.work.place.name} · 有差事`, move: seen.work.place.id });
+  assert.equal(seen.director.choice.options.filter(o => o.move === seen.work.place.id).length, 1, 'offered once, not twice');
+  // standing where the work is, the offer card is the answer — no lead option
+  const there = look({ ...idle, place: seen.work.place.id }, content, at);
+  assert.equal(there.work.here, true);
+  assert.ok(!there.director.choice?.options.some(o => /有差事/.test(o.label)));
+  // a full book wants no more
+  const full = { ...idle, quests: { ...idle.quests, a: { took: 'x', have: {} } } };
+  for (const id of ['xu-elder-herb', 'xu-yunlong-herbs', 'xu-fuli-longzhi']) full.quests[id] = { took: '2026-09-21', have: {} };
+  delete full.quests.a;
+  assert.equal(look(full, content, at).work, undefined);
+});
+
 test('arriving is an event: the errand met there is told with what is seen, 交差 leads the question, and a tale a week old shuts nothing out', () => {
   // 2026-09-21: he reached 吕梁洪 for the fisherman's errand; the chat said a line and asked 何去何从.
   const at = ctx({ now: new Date('2026-09-21T12:00:00') });

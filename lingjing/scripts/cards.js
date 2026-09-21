@@ -42,7 +42,7 @@ export const WORDS = {
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
-    goalTitle: '眼下要做的', bookChip: '事', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    goalTitle: '眼下要做的', bookChip: '事', workAt: '{name}有差事', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、功课、奇遇，都长修为',
   },
   en: {
@@ -78,7 +78,7 @@ export const WORDS = {
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
-    goalTitle: 'What waits', bookChip: 'Tasks', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    goalTitle: 'What waits', bookChip: 'Tasks', workAt: 'Work to be had at {name}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, practice and encounters all raise it',
   },
 };
@@ -528,7 +528,10 @@ export function bookPopHtml(ctx) {
   const head = g ? `<div class="cardtitle">${esc(w.goalTitle)}</div><div>${esc(goalText(ctx))}</div>
     ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
     ${g.gate ? `<div class="small">${esc(say(w.goalNow, g.gate.now))}</div><div class="small dim">${esc(w.goalGrow)}</div>` : ''}` : '';
-  return `<div class="bookpop" role="dialog">${head}${bookHtml(ctx) || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
+  // Work to be had: the next errand is a walk away, and one tap takes it.
+  const k = ctx.look?.work;
+  const work = k && !k.here ? `<div class="bookwork"><div><b>${esc(say(w.workAt, { name: k.place.name }))}</b> <span class="small dim">${esc(k.titles.join(' · '))}</span></div>${sayBtn(say(w.sayGo, { name: k.place.name }), say(w.sayGo, { name: k.place.name }))}</div>` : '';
+  return `<div class="bookpop" role="dialog">${head}${bookHtml(ctx) || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}${work}</div>`;
 }
 
 /// 手上的事 — one line each, with its count and where the next one is met.
