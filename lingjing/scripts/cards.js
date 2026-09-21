@@ -54,7 +54,7 @@ export const WORDS = {
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
-    effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
+    effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effTemper: 'Tempers your treasure +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
     duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
     aCast: 'Spell', aStrike: 'Strike', aCharm: 'Talisman', aAssist: 'Ready', aFocus: 'Gather', aGuard: 'Guard', arts: 'Arts',
@@ -453,7 +453,113 @@ function treasure(card, ctx) {
     <div class="acts">${grow}<button class="act say" ${sayAttr(say(ctx.words.sayTreasure, { name: t.name }))}>${w.about}</button></div></div>`;
 }
 
-const RENDER = { creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure };
+/* ── The stage's own cards ── goal · offer · quest · building · empty.
+   They lived in the page until 2026-09-21, called a second way, and the one
+   that took its card was called without it: the stage stayed blank wherever a
+   差事 was offered, for three days, with 167 tests green. One dispatcher now,
+   and tests/stage-cards.test.mjs draws every card the rules can put up. */
+const sayBtn = (label, words) => `<button class="act say" ${sayAttr(words)}>${esc(label)}</button>`;
+const clockOf = (date, lang) => date.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' });
+
+/// 丹田 empty: when it returns, and that the boards stay.
+function empty(card, ctx) {
+  const q = ctx.qi, w = ctx.words;
+  if (q?.st !== 'empty') return '';
+  const line = q.refillAt ? w.emptyLine.replace('{t}', clockOf(new Date(q.refillAt * 1000), ctx.lang)) : w.emptySoon;
+  return `<div class="card empty"><div class="cardtitle">${w.qi} · ${w.qiEmpty}</div>
+    <div>${esc(line)}</div><div class="small dim">${w.boardsStay}</div></div>`;
+}
+
+/// 差事 offered where he stands: the giver's own words, what it pays, and one
+/// button. Not tapping is declining — a decline needs no button of its own.
+function offer(card, ctx) {
+  const o = (ctx.look?.offers ?? []).find((x) => x.id === card.id), w = ctx.words;
+  if (!o) return '';
+  const pays = [o.grant?.progress ? `${w.xw} +${o.grant.progress}` : '', o.grant?.wealth ? `${w.ls} +${o.grant.wealth}` : ''].filter(Boolean).join(' · ');
+  return `<div class="card offer"><div class="cardtitle">${esc(o.title)}</div>
+    ${o.who ? `<div class="small dim">${esc(o.who)}</div>` : ''}
+    <div class="say">${esc(o.say)}</div>
+    ${pays ? `<div class="small dim">${esc(pays)}</div>` : ''}
+    <div class="acts">${sayBtn(w.take, say(w.sayTake, { title: o.title }))}${sayBtn(w.about, say(w.sayQuestAbout, { title: o.title }))}</div></div>`;
+}
+
+/// Where the story waits, and one tap that walks the road to it. The rules
+/// have always known (`waypoint`); until 2026-09-18 nothing on screen said it,
+/// and he walked four places asking 「where to go, what should do」. One road
+/// at a time, because that is how the world is walked. A cauldron that waits
+/// on cultivation says what it asks and where he stands, and offers no road.
+function goal(card, ctx) {
+  const g = ctx.look?.waypoint, w = ctx.words;
+  if (!g) return ctx.look?.book?.length ? `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>${bookHtml(ctx)}</div>` : '';
+  const where = g.place ? `${g.place.name}${g.province ? ` · ${g.province}` : ''}` : g.province ?? '';
+  // A chapter that has not opened yet says so instead of offering a road.
+  const shut = g.chapter ? say(g.opens ? w.goalWait : w.goalOpen, { title: g.title ?? '', opens: g.opens ? new Date(g.opens).toLocaleDateString(ctx.lang === 'zh' ? 'zh-CN' : 'en') : '' }) : '';
+  const go = g.toward ? sayBtn(say(w.sayGo, { name: g.toward.name }), say(w.sayGo, { name: g.toward.name })) : '';
+  return `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>
+    <div>${esc(g.gate ? say(w.goalGate, g.gate) : g.text ?? shut)}</div>
+    ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
+    ${g.gate ? `<div class="small">${esc(say(w.goalNow, g.gate.now))}</div><div class="small dim">${esc(w.goalGrow)}</div>` : ''}
+    <div class="acts">${go}${sayBtn(w.about, w.sayGoal)}</div>
+    ${bookHtml(ctx)}</div>`;
+}
+
+/// 手上的事 — one line each, with its count and where the next one is met.
+/// 交差 the moment it is done, wherever he stands: he never walks back to the
+/// giver (his ruling, 2026-09-18).
+function bookHtml(ctx) {
+  const book = ctx.look?.book ?? [], w = ctx.words;
+  if (!book.length) return '';
+  const rows = book.map((q) => {
+    const counts = q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind} ${n.have}/${n.n}`).join(' · ');
+    const at = q.chore ? witness(q.chore, ctx) : q.where ? (q.where.here ? w.needHere : say(w.needAt, { name: q.where.name })) : '';
+    const act = q.ready ? sayBtn(w.turnIn, say(w.sayTurn, { title: q.title })) : sayBtn(w.about, say(w.sayQuestAbout, { title: q.title }));
+    return `<div class="bookrow${q.ready ? ' ready' : ''}"><div><b>${esc(q.title)}</b>
+      <span class="small dim">${esc(counts)}${at ? ` · ${esc(at)}` : ''}</span></div>${act}</div>`;
+  }).join('');
+  return `<div class="book"><div class="small dim">${esc(w.book)}</div>${rows}</div>`;
+}
+
+/// A 功课's witness: which app keeps the record, and when it saw it done.
+function witness(chore, ctx) {
+  // `apple-shifu` reads as Shifu: the last word is the app's name.
+  const name = String(chore.app ?? '').split('-').pop(), app = name ? name[0].toUpperCase() + name.slice(1) : '';
+  // The hour when it was today; the day when the period is longer than one.
+  const at = chore.done_at ? new Date(chore.done_at) : null, loc = ctx.lang === 'zh' ? 'zh-CN' : 'en';
+  const t = !at ? '' : at.toDateString() === new Date().toDateString() ? clockOf(at, ctx.lang) : at.toLocaleDateString(loc, { month: 'short', day: 'numeric' });
+  return say(chore.done_at ? ctx.words.questBy : ctx.words.questWait, { app, t, when: ctx.words.periods?.[chore.period] ?? '' });
+}
+
+/// The search for the one who walks with you: the step the rules name, and
+/// the one word that takes it — 摇一摇铃 where water holds a moon.
+function quest(card, ctx) {
+  const q = ctx.look?.quest, w = ctx.words;
+  if (!q) return '';
+  // Where to take the step — never when it can be taken right here: the card
+  // already carries 买银月铃, and a second line naming another town is the card
+  // arguing with the shelf beside it (2026-09-18).
+  const where = q.step === 'bell' && q.market && !q.shop_here ? say(w.questAt, { name: q.market.name })
+    : q.step === 'water' && q.water && !q.at_water ? say(w.questWater, { name: q.water.name }) : '';
+  const acts = [{ label: w.about, say: w.sayQuest }];
+  // The step, as a word to Ling: buy it here, walk to where it can be taken, ring it.
+  if (q.step === 'ring') acts.unshift({ label: w.ringBell, say: w.sayRing });
+  else if (q.step === 'bell' && q.shop_here) acts.unshift({ label: say(w.sayBuy, { name: q.bell.name }), say: say(w.sayBuy, { name: q.bell.name }) });
+  else if (q.step === 'bell' && q.market) acts.unshift({ label: q.market.name, say: say(w.sayGo, { name: q.market.name }) });
+  else if (q.step === 'water' && q.water) acts.unshift({ label: q.water.name, say: say(w.sayGo, { name: q.water.name }) });
+  return `<div class="card quest"><div class="cardtitle">${esc(w.questTitle)}</div>
+    <div>${esc(q.line)}</div><div class="small dim">${esc(w.questSteps?.[q.step] ?? '')}${where ? ` · ${esc(where)}` : ''}</div>
+    <div class="acts">${acts.map((a) => sayBtn(a.label, a.say)).join('')}</div></div>`;
+}
+
+/// A made world still being painted: the story waits for the brush, so the
+/// scene says how many pictures are left — from Look, never counted here.
+function building(card, ctx) {
+  const left = ctx.look?.building?.paint?.length;
+  if (!left) return '';
+  return `<div class="card building"><div class="cardtitle">${ctx.words.building}</div>
+    <div>${esc(ctx.words.buildingLine.replace('{n}', left))}</div></div>`;
+}
+
+const RENDER = { creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

@@ -12,7 +12,7 @@ import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf,
 import { stageCards } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
-import { WORDS, cardHtml, trayHtml, esc, say as fill, yinyueLine } from './cards.js';
+import { WORDS, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -70,7 +70,7 @@ function boardFor(taskId) {
 let duelSay = { id: null, text: null };
 const duelFor = (id) => (duelSay.id === id ? duelSay : { say: null });
 
-const ctx = () => ({ look, lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView, castFresh, casting, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView, castFresh, casting, fateOpen, fateDraft, fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -188,9 +188,6 @@ function qi() {
   return { st, p, now: q.now, max: q.max, refillAt: q.returns_at ? Math.floor(new Date(q.returns_at).getTime() / 1000) : null };
 }
 
-const clock = (unixSecs) =>
-  new Date(unixSecs * 1000).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' });
-
 function qiHtml() {
   const q = qi();
   if (!q) return '';
@@ -202,15 +199,6 @@ function qiHtml() {
 
 /// One line in the world while the window is spent — and the boards stay:
 /// they use no model.
-function emptyCard() {
-  const q = qi();
-  if (q?.st !== 'empty') return '';
-  const w = words();
-  const line = q.refillAt ? w.emptyLine.replace('{t}', clock(q.refillAt)) : w.emptySoon;
-  return `<div class="card empty"><div class="cardtitle">${w.qi} · ${w.qiEmpty}</div>
-    <div>${esc(line)}</div><div class="small dim">${w.boardsStay}</div></div>`;
-}
-
 function statusHtml() {
   const w = words();
   const pct = look.next ? Math.min(100, Math.round((look.progress / look.next) * 100)) : 0;
@@ -303,107 +291,7 @@ function focusHtml() {
   return cards.map((c) => drawCard(c)).join('');
 }
 
-/// Four kinds are the page's own — the rest are cards.js's.
-const PAGE_CARDS = { building: () => buildingCard(), empty: () => emptyCard(), quest: () => questCard(), goal: () => goalCard(), offer: (c) => offerCard(c.id) };
-
-/// 差事 offered where he stands: the giver's own words, what it pays, and one
-/// button. Not tapping is declining — a decline needs no button of its own.
-function offerCard(id) {
-  const o = (look?.offers ?? []).find((x) => x.id === id);
-  if (!o) return '';
-  const w = words();
-  const pays = [o.grant?.progress ? `${w.xw} +${o.grant.progress}` : '', o.grant?.wealth ? `${w.ls} +${o.grant.wealth}` : ''].filter(Boolean).join(' · ');
-  return `<div class="card offer"><div class="cardtitle">${esc(o.title)}</div>
-    ${o.who ? `<div class="small dim">${esc(o.who)}</div>` : ''}
-    <div class="say">${esc(o.say)}</div>
-    ${pays ? `<div class="small dim">${esc(pays)}</div>` : ''}
-    <div class="acts">
-      <button class="act say" data-say="${esc(fill(w.sayTake, { title: o.title }))}">${esc(w.take)}</button>
-      <button class="act say" data-say="${esc(fill(w.sayQuestAbout, { title: o.title }))}">${esc(w.about)}</button>
-    </div></div>`;
-}
-
-/// Where the story waits, and one tap that walks the road to it. The rules
-/// have always known (`waypoint`); until 2026-09-18 nothing on screen said it,
-/// and he walked four places asking 「where to go, what should do」. One road
-/// at a time, because that is how the world is walked.
-function goalCard() {
-  const g = look?.waypoint;
-  if (!g) return '';
-  const w = words();
-  const where = g.place ? `${g.place.name}${g.province ? ` · ${g.province}` : ''}` : g.province ?? '';
-  // A chapter that has not opened yet says so instead of offering a road.
-  const shut = g.chapter ? fill(g.opens ? w.goalWait : w.goalOpen, { title: g.title ?? '', opens: g.opens ? new Date(g.opens).toLocaleDateString(lang() === 'zh' ? 'zh-CN' : 'en') : '' }) : '';
-  const go = g.toward ? `<button class="act say" data-say="${esc(fill(w.sayGo, { name: g.toward.name }))}">${esc(fill(w.sayGo, { name: g.toward.name }))}</button>` : '';
-  return `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>
-    <div>${esc(g.gate ? fill(w.goalGate, g.gate) : g.text ?? shut)}</div>
-    ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
-    ${g.gate ? `<div class="small">${esc(fill(w.goalNow, g.gate.now))}</div><div class="small dim">${esc(w.goalGrow)}</div>` : ''}
-    <div class="acts">${go}<button class="act say" data-say="${esc(w.sayGoal)}">${esc(w.about)}</button></div>
-    ${bookHtml()}</div>`;
-}
-
-/// 手上的事 — one line each, with its count and where the next one is met.
-/// 交差 the moment it is done, wherever he stands: he never walks back to the
-/// giver (his ruling, 2026-09-18).
-function bookHtml() {
-  const book = look?.book ?? [];
-  if (!book.length) return '';
-  const w = words();
-  const rows = book.map((q) => {
-    const counts = q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind} ${n.have}/${n.n}`).join(' · ');
-    const at = q.chore ? witness(q.chore, w) : q.where ? (q.where.here ? w.needHere : fill(w.needAt, { name: q.where.name })) : '';
-    const act = q.ready
-      ? `<button class="act say" data-say="${esc(fill(w.sayTurn, { title: q.title }))}">${esc(w.turnIn)}</button>`
-      : `<button class="act say" data-say="${esc(fill(w.sayQuestAbout, { title: q.title }))}">${esc(w.about)}</button>`;
-    return `<div class="bookrow${q.ready ? ' ready' : ''}"><div><b>${esc(q.title)}</b>
-      <span class="small dim">${esc(counts)}${at ? ` · ${esc(at)}` : ''}</span></div>${act}</div>`;
-  }).join('');
-  return `<div class="book"><div class="small dim">${esc(w.book)}</div>${rows}</div>`;
-}
-/// A 功课's witness: which app keeps the record, and when it saw it done.
-function witness(chore, w) {
-  // `apple-shifu` reads as Shifu: the last word is the app's name.
-  const name = String(chore.app ?? '').split('-').pop(), app = name ? name[0].toUpperCase() + name.slice(1) : '';
-  // The hour when it was today; the day when the period is longer than one.
-  const at = chore.done_at ? new Date(chore.done_at) : null, loc = lang() === 'zh' ? 'zh-CN' : 'en';
-  const t = !at ? '' : at.toDateString() === new Date().toDateString() ? at.toLocaleTimeString(loc, { hour: 'numeric', minute: '2-digit' }) : at.toLocaleDateString(loc, { month: 'short', day: 'numeric' });
-  return fill(chore.done_at ? w.questBy : w.questWait, { app, t, when: w.periods?.[chore.period] ?? '' });
-}
-const drawCard = (c) => (PAGE_CARDS[c.card] ? PAGE_CARDS[c.card](c) : cardHtml(c, ctx()));
-
-/// The search for the one who walks with you: the step the rules name, and
-/// the one word that takes it — 摇一摇铃 where water holds a moon.
-function questCard() {
-  const q = look?.quest;
-  if (!q) return '';
-  const w = words();
-  // Where to take the step — never when it can be taken right here: the card
-  // already carries 买银月铃, and a second line naming another town is the card
-  // arguing with the shelf beside it (2026-09-18).
-  const where = q.step === 'bell' && q.market && !q.shop_here ? fill(w.questAt, { name: q.market.name })
-    : q.step === 'water' && q.water && !q.at_water ? fill(w.questWater, { name: q.water.name }) : '';
-  const acts = [{ label: w.about, say: w.sayQuest }];
-  // The step, as a word to Ling: buy it here, walk to where it can be taken, ring it.
-  if (q.step === 'ring') acts.unshift({ label: w.ringBell, say: w.sayRing });
-  else if (q.step === 'bell' && q.shop_here) acts.unshift({ label: fill(w.sayBuy, { name: q.bell.name }), say: fill(w.sayBuy, { name: q.bell.name }) });
-  else if (q.step === 'bell' && q.market) acts.unshift({ label: q.market.name, say: fill(w.sayGo, { name: q.market.name }) });
-  else if (q.step === 'water' && q.water) acts.unshift({ label: q.water.name, say: fill(w.sayGo, { name: q.water.name }) });
-  const row = acts.map((a) => `<button class="act say" data-say="${esc(a.say)}">${esc(a.label)}</button>`).join('');
-  return `<div class="card quest"><div class="cardtitle">${esc(w.questTitle)}</div>
-    <div>${esc(q.line)}</div><div class="small dim">${esc(w.questSteps?.[q.step] ?? '')}${where ? ` · ${esc(where)}` : ''}</div>
-    <div class="acts">${row}</div></div>`;
-}
-
-/// A made world still being painted: the story waits for the brush, so the
-/// scene says how many pictures are left — from Look, never counted here.
-function buildingCard() {
-  const left = look.building?.paint?.length;
-  if (!left) return '';
-  const w = words();
-  return `<div class="card building"><div class="cardtitle">${w.building}</div>
-    <div>${esc(w.buildingLine.replace('{n}', left))}</div></div>`;
-}
+const drawCard = (c) => cardHtml(c, ctx());
 
 /* Every writer calls `render()`; the drawing happens once, on the next frame.
    Twenty-six call sites used to mean twenty-six repaints, and a handler that
