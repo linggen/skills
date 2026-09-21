@@ -2011,8 +2011,15 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   const deals = Array.from({ length: 30 }, (_, i) => must(move, base, { place: 'huaidu' }, day(i)));
   const kinds = deals.map(d => d.result.place.meet?.kind);
   assert.ok(kinds.every(Boolean), 'every arrival at an empty place is dealt one');
-  assert.deepEqual([...new Set(kinds)].sort(), ['beast', 'find', 'riddle'], 'and the deck is all three');
-  assert.ok(new Set(deals.filter(d => d.result.place.meet.kind === 'beast').map(d => d.result.place.meet.creature.id)).size > 1, 'not the same beast every time');
+  // a place says which it may deal: a ferry has travellers and things dropped, never a beast…
+  assert.deepEqual([...new Set(kinds)].sort(), ['find', 'riddle'], 'the ferry deals what a ferry has');
+  // …a marsh has beasts, and a wandering beast is of this province: 蠪侄 of 凫丽山, never 夔 of 蓬莱
+  const marsh = Array.from({ length: 30 }, (_, i) => must(move, { ...base, place: 'pengcheng' }, { place: 'peize' }, day(i)));
+  assert.deepEqual([...new Set(marsh.map(d => d.result.place.meet.kind))].sort(), ['beast', 'find']);
+  assert.deepEqual([...new Set(marsh.filter(d => d.result.place.meet.kind === 'beast').map(d => d.result.place.meet.creature.id))], ['longzhi']);
+  // with every beast of the province walking beside him, the next province's come over the road
+  const tamedAll = marsh.map((_, i) => must(move, { ...base, place: 'pengcheng', cast: ['fuzhu', 'longzhi'] }, { place: 'peize' }, day(i)).result.place.meet);
+  assert.ok(tamedAll.filter(m => m.kind === 'beast').every(m => ['paoxiao', 'jingwei', 'leishen', 'kui', 'tongtong'].includes(m.creature.id)));
   // a reload rerolls nothing, and to-and-fro is no farm
   const first = deals[0];
   assert.deepEqual(look(first.state, content, day(0)).place.meet, first.result.place.meet);
@@ -2049,7 +2056,7 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   assert.ok(!askOf(content, answered.state, rd, answered.result).options.some(o => o.meet), 'answered, the roads are the question again');
 
   // 拦路: the beast stands like a haunt's own — the same card, the same fight
-  const blocked = deals.find(d => d.result.place.meet.kind === 'beast'), bd = day(deals.indexOf(blocked));
+  const blocked = marsh.find(d => d.result.place.meet.kind === 'beast'), bd = day(marsh.indexOf(blocked));
   const cid = blocked.result.place.meet.creature.id;
   assert.equal(blocked.result.place.encounter.game.id, `haunt:${cid}`);
   assert.notEqual(cid, 'fuzhu', 'never one that walks with him');

@@ -583,6 +583,9 @@ function lintMeets(content, ids, bad) {
     if (!content.riddles.zh.riddles[key]) bad('meets', `unknown riddle ${key}`);
     if (story.has(key)) bad('meets', `riddle ${key} belongs to a scene — the road would spoil it`);
   }
+  for (const p of Object.values(content.places).flatMap(d => d.places)) {
+    for (const k of p.meets ?? []) if (!MEET_KINDS.includes(k)) bad(`place ${p.id}`, `may deal unknown 遇 ${k}`);
+  }
   for (const [province, finds] of Object.entries(m.finds ?? {})) {
     for (const f of finds) {
       const where = `meets find (${province})`;

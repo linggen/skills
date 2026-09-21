@@ -1748,6 +1748,14 @@ from a place to another.* An arrival is dealt, in this order:
    may enter stands on this road exactly as at its own haunt: the same duel
    card, the same fight, the same once-a-day).
 
+**What is fixed stays fixed; what roams is authored to roam** (his, 2026-09-21:
+a creature at 泗水 is always met at 泗水, a market is found where it is — *and*
+creatures move, so some places may deal a wandering one). A place says which
+遇 it may deal — `"meets": ["riddle", "find"]` on a ferry, `["beast", "find"]`
+on a marsh; unsaid, any. A wandering beast is one of THIS province's haunts,
+else of a province a road away: 蠪侄 of 凫丽山 on the road at 沛泽, never 夔
+of 蓬莱.
+
 Drawn by the day, the place and the 道号 — a reload rerolls nothing. **Once per
 place per day**, so to-and-fro is no farm; a second arrival is just the place.
 **Only where he stops**: a place walked through on a long Move deals nothing

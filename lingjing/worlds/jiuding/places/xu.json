@@ -27,7 +27,11 @@
     "zh": "泗水南岸，芦苇齐人高，你醒来的地方。",
     "en": "The south bank of the Si, reeds as tall as you — where you woke."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find",
+    "riddle"
+   ]
   },
   {
    "id": "sibei",
@@ -102,7 +106,11 @@
    "line": {
     "zh": "山形如卧龙，山上有石床，传说仙人在此醉卧。",
     "en": "A hill shaped like a sleeping dragon, a stone bed on top where an immortal is said to have slept off his wine."
-   }
+   },
+   "meets": [
+    "find",
+    "beast"
+   ]
   },
   {
    "id": "huaidu",
@@ -125,7 +133,11 @@
     "zh": "一条船，一个老船家。渡人，不渡心事。",
     "en": "One boat, one old boatman. He carries people, not their troubles."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "yiqiao",
@@ -148,7 +160,11 @@
    "line": {
     "zh": "下邳的老桥。当年一位老人在桥上掉了鞋，一个少年替他拾了三次。",
     "en": "The old bridge at Xiapi. An old man once dropped his shoe here; a young man picked it up three times."
-   }
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "sikou",
@@ -171,7 +187,11 @@
     "zh": "泗水入淮之处，两水相激，船家在此歇桨。",
     "en": "Where the Si meets the Huai; two waters collide, and boatmen rest their oars."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
   },
   {
    "id": "lvliang",
@@ -196,7 +216,11 @@
     "zh": "泗水最险的一段，石齿如林，水声如雷。",
     "en": "The wildest stretch of the Si: rocks like teeth, water like thunder."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "find",
+    "riddle"
+   ]
   },
   {
    "id": "peize",
@@ -218,7 +242,11 @@
     "zh": "大泽无边，芦苇里藏着走蛇的小路。",
     "en": "A marsh without edges; snake-paths hide in the reeds."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "beast",
+    "find"
+   ]
   },
   {
    "id": "weishan",
@@ -243,7 +271,11 @@
     "zh": "湖上千顷荷，湖心有岛，岛上有古墓。",
     "en": "A thousand acres of lotus; an island at the heart, and an old tomb on the island."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "beast",
+    "find"
+   ]
   },
   {
    "id": "xushan",
@@ -264,7 +296,11 @@
    "line": {
     "zh": "徐州得名之山，山顶终年有云。",
     "en": "The mountain the province is named for; clouds sit on its top all year."
-   }
+   },
+   "meets": [
+    "beast",
+    "find"
+   ]
   },
   {
    "id": "daye",
@@ -289,7 +325,11 @@
     "zh": "大泽无边。西狩获麟的地方。",
     "en": "A marsh without end. Where the unicorn was taken in the western hunt."
    },
-   "water": true
+   "water": true,
+   "meets": [
+    "beast",
+    "find"
+   ]
   },
   {
    "id": "fuli",
@@ -336,7 +376,11 @@
    "line": {
     "zh": "一株空心的桑树。伊尹生在这儿。",
     "en": "A hollow mulberry. Yi Yin was born here."
-   }
+   },
+   "meets": [
+    "beast",
+    "find"
+   ]
   }
  ]
 }

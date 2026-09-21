@@ -503,16 +503,24 @@ function meetPool(content, state, ctx) {
   const finds = m.finds?.[place.province] ?? m.finds?.['*'] ?? [];
   const seen = new Set(state.riddles_seen ?? []);
   const riddles = (m.riddles ?? []).filter(k => !seen.has(k));
-  // A beast of a haunt he may enter, not one that walks with him or was met today.
-  const beasts = allPlaces(content).filter(p => p.has?.creature && p.id !== place.id && !tooHard(content, state, p) && provinceOpen(content, p.province, ctx.now))
-    .map(p => p.has.creature).filter(c => !state.cast.includes(c) && state.duels?.[c]?.day !== dayKey(ctx.now));
+  // Creatures move (his, 2026-09-21) — but not across the world: a wandering
+  // beast is one of THIS province's haunts, else of a province a road away.
+  // Never one that walks with him, was met today, or lives beyond his tier.
+  const roams = p => p.has?.creature && p.id !== place.id && !tooHard(content, state, p) && provinceOpen(content, p.province, ctx.now)
+    && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(ctx.now);
+  const every = allPlaces(content), home = every.filter(p => p.province === place.province && roams(p));
+  const nextDoor = new Set(every.filter(p => p.province === place.province).flatMap(p => p.roads).map(id => placeOf(content, id)?.province));
+  const beasts = (home.length ? home : every.filter(p => nextDoor.has(p.province) && roams(p))).map(p => p.has.creature);
   return { find: finds, riddle: riddles.length ? riddles : m.riddles ?? [], beast: [...new Set(beasts)] };
 }
 
 function dealMeet(content, state, ctx) {
   if (!content.meets || inMade(state) || meetHere(state, ctx.now) || ownHere(content, state, ctx)) return null;
   const pool = meetPool(content, state, ctx);
-  const kinds = Object.entries(content.meets.weights).filter(([k, w]) => w > 0 && pool[k]?.length);
+  // A place says which it may deal — a ferry has travellers, a marsh has
+  // beasts (`meets` on the place; unsaid, any).
+  const allowed = placeOf(content, state.place).meets;
+  const kinds = Object.entries(content.meets.weights).filter(([k, w]) => w > 0 && pool[k]?.length && (!allowed || allowed.includes(k)));
   if (!kinds.length) return null;
   const roll = hashOf(`${dayKey(ctx.now)}|${state.name ?? ''}|${state.place}|meet`);
   let at = roll % kinds.reduce((n, [, w]) => n + w, 0);
