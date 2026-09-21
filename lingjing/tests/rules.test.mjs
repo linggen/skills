@@ -886,8 +886,8 @@ test('a task pays once; one never offered cannot be claimed', () => {
 });
 
 test('a quest pays when its app says it was done this period, once', () => {
-  const quest = { id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: true, reward: 30, title: { zh: '扫描', en: 'Scan' } };
-  const done = ctx({ quests: [{ ...quest, done_at: '2026-09-10T09:00:00' }] });
+  const chore = { id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: true, reward: 30, title: { zh: '扫描', en: 'Scan' } };
+  const done = ctx({ quests: [{ ...chore, done_at: '2026-09-10T09:00:00' }] });
   const s = start();
   const seen = look(s, content, done).quests[0];
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
@@ -896,8 +896,18 @@ test('a quest pays when its app says it was done this period, once', () => {
   assert.equal(paid.state.chores['shifu-scan'].period, weekKey(NOW), 'the apps\' 功课 are the chores book; `quests` is 差事 now');
   assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);
-  const lastWeek = ctx({ quests: [{ ...quest, done_at: '2026-09-02T09:00:00' }] });
+  const lastWeek = ctx({ quests: [{ ...chore, done_at: '2026-09-02T09:00:00' }] });
   refused(task, s, { action: 'check', id: 'shifu-scan' }, 'not-done', lastWeek);
+
+  // 差事 ⑥: the 功课 ride the book — a line of its own, no slot taken, handed in with the same word
+  const line = look(s, content, done).book.find(b => b.id === 'shifu-scan');
+  assert.deepEqual([line.need, line.ready, line.chore.app], [[{ kind: 'chore', have: 1, n: 1 }], true, 'apple-shifu']);
+  assert.equal(look(s, content, lastWeek).book.find(b => b.id === 'shifu-scan').ready, false, 'due, not done: it waits in the book');
+  refused(quest, s, { action: 'turn', id: 'shifu-scan' }, 'not-done', lastWeek);
+  const turned = must(quest, s, { action: 'turn', id: 'shifu-scan' }, done);
+  assert.equal(turned.result.paid.progress, 30);
+  assert.deepEqual(turned.result.book, [], 'paid for its period, it leaves the book');
+  refused(quest, turned.state, { action: 'turn', id: 'shifu-scan' }, 'already-paid', done);
 });
 
 test('a branch opens alone, counts its turns and pays within its cap', () => {

@@ -271,8 +271,25 @@ function countsOf(content, state, quest) {
 
 const questReady = (content, state, quest) => countsOf(content, state, quest).every(n => n.done);
 
-/* Open, in the order taken. */
-function bookOf(content, state, lang) {
+/* 功课 on the same card (design.md § 差事 ⑥): what the player's apps report,
+   as lines of the book. They take no slot — nobody took them, life gave them
+   — and one paid for its period leaves, like any errand handed in. */
+function choresOf(state, ctx, lang) {
+  return (ctx?.quests ?? [])
+    .filter(q => (q.due || questDone(q, ctx.now)) && state.chores?.[q.id]?.period !== periodKey(q.period, ctx.now))
+    .map(q => {
+      const done = questDone(q, ctx.now);
+      return { id: q.id, title: pick(q.title, lang), need: [{ kind: 'chore', have: done ? 1 : 0, n: 1 }], ready: done, where: null,
+        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null } };
+    });
+}
+
+/* Open, in the order taken; then life's own. */
+function bookOf(content, state, lang, ctx) {
+  return [...errandsOf(content, state, lang), ...choresOf(state, ctx, lang)];
+}
+
+function errandsOf(content, state, lang) {
   return Object.keys(state.quests ?? {})
     .filter(id => !questDoneBefore(state, id))
     .map(id => {
@@ -950,7 +967,7 @@ export function look(state, content, ctx) {
     companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined } : null,
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
-    book: bookOf(content, state, lang),
+    book: bookOf(content, state, lang, ctx),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
     ended: state.ended, branch: state.branch, story: state.story,
     divination: divinationBrief(content, state, ctx.now),
@@ -2326,15 +2343,17 @@ export const VERBS = {
 export function quest(state, content, ctx, args) {
   const id = String(args.id ?? ''), lang = state.lang;
   const action = String(args.action ?? 'take');
+  // A 功课 is handed in with the same word as any errand; its app is the witness.
+  if (action === 'turn' && (ctx.quests ?? []).some(x => x.id === id)) return choreTurn(state, content, ctx, id);
   const q = questOf(content, id);
-  if (!q) return refuse('no-such-quest', null, { book: bookOf(content, state, lang) });
+  if (!q) return refuse('no-such-quest', null, { book: bookOf(content, state, lang, ctx) });
   const s = clone(state);
   s.quests ??= {};
 
   if (action === 'drop') {
     if (!s.quests[id] || questDoneBefore(s, id)) return refuse('not-taken', null);
     delete s.quests[id];
-    return { state: s, result: { ok: true, dropped: id, book: bookOf(content, s, lang) } };
+    return { state: s, result: { ok: true, dropped: id, book: bookOf(content, s, lang, ctx) } };
   }
 
   if (action === 'take') {
@@ -2342,13 +2361,13 @@ export function quest(state, content, ctx, args) {
     if (q.from?.place !== s.place) return refuse('not-here', null, { at: placeName(content, s, placeOf(content, q.from.place)) });
     if (q.opens?.after && !questDoneBefore(s, q.opens.after)) return refuse('not-yet', null);
     if (Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length >= BOOK_MAX) {
-      return refuse('book-full', pick({ zh: `手上已有${BOOK_MAX}件事，先了一件。`, en: `Three things are already in hand — finish one first.` }, lang), { book: bookOf(content, s, lang) });
+      return refuse('book-full', pick({ zh: `手上已有${BOOK_MAX}件事，先了一件。`, en: `Three things are already in hand — finish one first.` }, lang), { book: bookOf(content, s, lang, ctx) });
     }
     if (q.notice && noticeAt(content, s, ctx.now)?.id !== id) return refuse('not-posted', null);
     // A notice done on an earlier day has nothing left to say: the save keeps today's only.
     for (const old of Object.keys(s.quests)) if (noticeOf(content, old) && questDoneBefore(s, old) && noticeOf(content, old).day !== q.day) delete s.quests[old];
     s.quests[id] = { took: dayKey(ctx.now), have: {} };
-    return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang) } };
+    return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang, ctx) } };
   }
 
   if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop'] });
@@ -2364,8 +2383,15 @@ export function quest(state, content, ctx, args) {
   s.quests[id] = { ...s.quests[id], done_at: ctx.now.toISOString() };
   const paid = pay(content, s, ctx, q.grant);
   const next = q.then ? questOf(content, q.then) : null;
-  return { state: s, result: { ok: true, turned: id, title: pick(q.title, lang), paid, book: bookOf(content, s, lang),
+  return { state: s, result: { ok: true, turned: id, title: pick(q.title, lang), paid, book: bookOf(content, s, lang, ctx),
     ...(next ? { then: { id: next.id, title: pick(next.title, lang), at: placeName(content, s, placeOf(content, next.from.place)) } } : {}) } };
+}
+
+function choreTurn(state, content, ctx, id) {
+  const checked = questCheck(state, content, ctx, id);
+  if (!checked.state) return checked;
+  const q = ctx.quests.find(x => x.id === id);
+  return { state: checked.state, result: { ...checked.result, turned: id, title: pick(q.title, state.lang), book: bookOf(content, checked.state, state.lang, ctx) } };
 }
 
 /* Show — the cards Ling puts before the player, WRITTEN DOWN. It was a

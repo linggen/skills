@@ -352,7 +352,7 @@ function bookHtml() {
   const w = words();
   const rows = book.map((q) => {
     const counts = q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind} ${n.have}/${n.n}`).join(' · ');
-    const at = q.where ? (q.where.here ? w.needHere : fill(w.needAt, { name: q.where.name })) : '';
+    const at = q.chore ? witness(q.chore, w) : q.where ? (q.where.here ? w.needHere : fill(w.needAt, { name: q.where.name })) : '';
     const act = q.ready
       ? `<button class="act say" data-say="${esc(fill(w.sayTurn, { title: q.title }))}">${esc(w.turnIn)}</button>`
       : `<button class="act say" data-say="${esc(fill(w.sayQuestAbout, { title: q.title }))}">${esc(w.about)}</button>`;
@@ -360,6 +360,14 @@ function bookHtml() {
       <span class="small dim">${esc(counts)}${at ? ` · ${esc(at)}` : ''}</span></div>${act}</div>`;
   }).join('');
   return `<div class="book"><div class="small dim">${esc(w.book)}</div>${rows}</div>`;
+}
+/// A 功课's witness: which app keeps the record, and when it saw it done.
+function witness(chore, w) {
+  const app = chore.app ? chore.app[0].toUpperCase() + chore.app.slice(1) : '';
+  // The hour when it was today; the day when the period is longer than one.
+  const at = chore.done_at ? new Date(chore.done_at) : null, loc = lang() === 'zh' ? 'zh-CN' : 'en';
+  const t = !at ? '' : at.toDateString() === new Date().toDateString() ? at.toLocaleTimeString(loc, { hour: 'numeric', minute: '2-digit' }) : at.toLocaleDateString(loc, { month: 'short', day: 'numeric' });
+  return fill(chore.done_at ? w.questBy : w.questWait, { app, t, when: w.periods?.[chore.period] ?? '' });
 }
 const drawCard = (c) => (PAGE_CARDS[c.card] ? PAGE_CARDS[c.card]() : cardHtml(c, ctx()));
 

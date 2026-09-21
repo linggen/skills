@@ -16,7 +16,7 @@ export const WORDS = {
     tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     about: '说说', feed: '喂它{item}', subdue: '降妖',
-    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · 今日 {t} 完成', questWait: '由 {app} 记下 · 今日待做',
+    effProgress: '服下：{xw} +{n}', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '由 {app} 记下 · {t} 完成', questWait: '由 {app} 记下 · {when}待做', periods: { day: '今日', week: '本周', once: '' },
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
     aCast: '法术', aStrike: '物理', aCharm: '符箓', aAssist: '辅助', aFocus: '聚势', aGuard: '护体', arts: '功法',
@@ -54,7 +54,7 @@ export const WORDS = {
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     about: 'About', feed: 'Feed it {item}', subdue: 'Subdue',
-    effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: 'Recorded by {app} · done today at {t}', questWait: 'Recorded by {app} · not yet today',
+    effProgress: 'Taken: {xw} +{n}', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: 'Recorded by {app} · done {t}', questWait: 'Recorded by {app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
     duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
     aCast: 'Spell', aStrike: 'Strike', aCharm: 'Talisman', aAssist: 'Ready', aFocus: 'Gather', aGuard: 'Guard', arts: 'Arts',
@@ -461,7 +461,7 @@ export function cardHtml(card, ctx) {
   return draw ? draw(card, ctx) : '';
 }
 
-/// Today's practice: the world's tasks, then what the player's apps report.
+/// Today's practice: the world's tasks.
 export function trayHtml(ctx) {
   const tasks = (ctx.look.tasks || []).map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
@@ -471,18 +471,6 @@ export function trayHtml(ctx) {
     return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
       <div class="taskfoot"><span class="chip">${ctx.words[state]}</span>${act}${tell}</div></div>`;
   });
-  const quests = (ctx.look.quests || []).map((q) => {
-    const state = q.paid ? 'paid' : q.done ? 'seen' : 'due';
-    // Which app is the witness, and when it saw the practice done — a
-    // tooltip on the chip, so the link to real life is one hover away.
-    const app = q.app ? q.app[0].toUpperCase() + q.app.slice(1) : '';
-    const t = q.done_at ? new Date(q.done_at).toLocaleTimeString(ctx.lang === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' }) : '';
-    const by = say(q.done_at ? ctx.words.questBy : ctx.words.questWait, { app, t });
-    const tell = `<button class="act say" ${sayAttr(say(ctx.words.sayTask, { title: q.title }))}>${ctx.words.about}</button>`;
-    return `<div class="card task ${{ paid: 'done', seen: 'won', due: '' }[state]}">
-      <div class="tasktitle">${esc(q.title)}</div>
-      <div class="taskfoot"><span class="chip real" title="${esc(by)}">${ctx.words.quest}</span><span class="chip">${ctx.words[state]}</span>${tell}</div></div>`;
-  });
-  const all = [...tasks, ...quests];
-  return all.length ? all.join('') : `<div class="dimline">${ctx.words.trayEmpty}</div>`;
+  // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥).
+  return tasks.length ? tasks.join('') : `<div class="dimline">${ctx.words.trayEmpty}</div>`;
 }

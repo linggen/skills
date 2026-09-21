@@ -1673,8 +1673,12 @@ put down. In Ling's context the whole book is three lines, about 40 tokens.
    is the whole errand, `daily-<day>-<template>-<target>`, so the save holds
    nothing new; taken, it stays until done or put down — only the posting
    turns with the day.
-3. **Real life** — the `~/.linggen/quests/<app>.json` 功课 become 差事 on the
-   same card, with `kind: "chore"`. This is the hook no other game has: 扫一次
+3. **Real life** (built 2026-09-21) — the `~/.linggen/quests/<app>.json` 功课
+   ride the book on the goal card, with `kind: "chore"` and their witness (the
+   app, and when it saw the thing done). They take **no slot** — nobody took
+   them, life gave them — and `Quest turn` pays one exactly as `Practice
+   check` does, so 交差 is one word. Paid for its period, the line leaves; the
+   practice tray keeps only the world's boards. This is the hook no other game has: 扫一次
    洞府 is a quest in a cultivation world, and Shifu says when it is done.
 
 ### The word collision, and the migration

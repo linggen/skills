@@ -1040,6 +1040,10 @@ next, say the thread.
   paid — the player need not ask. When the player says one is done and Look
   does not, `check` anyway: `not-done` → the app has not seen it yet; say so
   in the world.
+  They ride the `book` too, as lines with a `chore` (its app, and when it was
+  seen done), so the goal card shows them beside the 差事 and takes no slot
+  for them. 交差 on such a line is Quest `turn` with its id — it pays exactly
+  as `check` does.
 
 ## 差事 — the errands the player takes
 
