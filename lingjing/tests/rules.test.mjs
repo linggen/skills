@@ -1931,6 +1931,10 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   assert.equal(away.result.ok, true);
   const choice = look(away.state, content, c).director.choice;
   assert.notEqual(choice.options.find(o => o.move)?.move, 'liubo');
+  // and the goal says why the story waits: what the breath asks, where he stands, no road to it
+  const waits = look(away.state, content, c).waypoint;
+  assert.deepEqual(waits.gate, { step: '结丹后期', progress: 1200, to: '元婴', now: { step: '结丹初期', progress: 222, of: 800 } });
+  assert.equal(waits.toward, undefined);
   // at the peak, the breath is the button again
   const peak = { ...s, step: 2, progress: 1200 };
   const ready = look(peak, content, c);

@@ -336,8 +336,9 @@ function goalCard() {
   const shut = g.chapter ? fill(g.opens ? w.goalWait : w.goalOpen, { title: g.title ?? '', opens: g.opens ? new Date(g.opens).toLocaleDateString(lang() === 'zh' ? 'zh-CN' : 'en') : '' }) : '';
   const go = g.toward ? `<button class="act say" data-say="${esc(fill(w.sayGo, { name: g.toward.name }))}">${esc(fill(w.sayGo, { name: g.toward.name }))}</button>` : '';
   return `<div class="card goal"><div class="cardtitle">${esc(w.goalTitle)}</div>
-    <div>${esc(g.text ?? shut)}</div>
+    <div>${esc(g.gate ? fill(w.goalGate, g.gate) : g.text ?? shut)}</div>
     ${where ? `<div class="small dim">${esc(where)}</div>` : ''}
+    ${g.gate ? `<div class="small">${esc(fill(w.goalNow, g.gate.now))}</div><div class="small dim">${esc(w.goalGrow)}</div>` : ''}
     <div class="acts">${go}<button class="act say" data-say="${esc(w.sayGoal)}">${esc(w.about)}</button></div>
     ${bookHtml()}</div>`;
 }

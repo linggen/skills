@@ -339,6 +339,9 @@ function waypointOf(content, state, ctx) {
   if (atScene(content, state) || inMade(state) || !sceneOf(content, state)) return null;
   const thread = threadOf(content, state, ctx.now);
   if (!thread?.place) return thread;
+  // A cauldron that waits on the peak is not a road to walk: the card says
+  // what it asks and where he stands, so a blocked spine reads as blocked.
+  if (waitsOnPeak(content, state)) return { ...thread, gate: gateOf(content, state) };
   const here = placeOf(content, state.place), goal = placeOf(content, thread.place.id);
   if (!here || !goal || here.id === goal.id) return thread;
   const toward = here.roads.includes(goal.id) ? placeName(content, state, goal) : towardOf(content, state, here, goal, ctx.now);
@@ -359,6 +362,12 @@ function breakthroughOf(content, state) {
     ready: Boolean(peak && next && next.gate === gate),
     need: source ? { step: stepName(content, source.id, last, state.lang), progress: source.thresholds[last], to: pick(target.name, state.lang) } : null,
   };
+}
+
+/* What a waiting cauldron asks, beside where the player stands now. */
+function gateOf(content, state) {
+  const need = breakthroughOf(content, state).need;
+  return need && { ...need, now: { step: stepName(content, state.tier, state.step, state.lang), progress: state.progress, of: threshold(content, state) } };
 }
 
 /* A scene that waits only on a breath the player cannot take yet: the way
