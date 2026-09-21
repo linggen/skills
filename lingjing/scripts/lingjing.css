@@ -111,8 +111,13 @@ button:disabled { cursor: default; }
 @keyframes breathe { 50% { transform: scale(.97); box-shadow: 0 0 30px 8px rgba(190, 210, 225, .7); } }
 .stage b { font-family: var(--serif); font-weight: 600; font-size: 15px; color: var(--yinyue); }
 .focus { position: absolute; top: 48px; right: 24px; bottom: 20px; left: 290px; overflow-y: auto;
-         display: flex; flex-direction: column; justify-content: center; gap: 12px; }
-.focus .card { background: color-mix(in srgb, var(--surface) 94%, transparent); width: 100%; max-width: 540px; margin: 0 auto; padding: 14px 16px; }
+         display: flex; flex-direction: column; gap: 12px; }
+.focus .card { background: color-mix(in srgb, var(--surface) 94%, transparent); width: 100%; max-width: 540px; margin: 0 auto; padding: 14px 16px; flex: none; }
+/* Centred when the cards fit, scrolled from the top when they do not. `justify-content:
+   center` centred the overflow too: with three cards up, the first one's top lay above
+   the scroll's start and no scrolling reached it (2026-09-21). Auto margins give way. */
+.focus > :first-child { margin-top: auto; }
+.focus > :last-child { margin-bottom: auto; }
 .focus .loading { margin: auto; color: var(--faint); font-family: var(--serif); }
 
 /* ── today's practice ── */
