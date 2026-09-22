@@ -64,6 +64,8 @@ const dir = parseStatementText([
   'Jul 13 MYSTERY CO 10.00 CR',
   'Jul 14 SOMETHING ELSE 11.00+',
   'Jul 15 DIRECT DEPOSIT FEE 2.00 DR',
+  'Jul 16 STATEMENT CREDIT ADJUSTMENT 25.00',
+  'Jul 17 CASH BACK REWARD 12.00',
 ]);
 const sign = (re) => Math.sign(byMerchant(dir, re)?.amount ?? 0);
 t('D1 "BILL PAYMENT HYDRO ONE" is spend', sign(/HYDRO/) === -1);
@@ -80,6 +82,8 @@ t('D11 plain merchant is spend', sign(/STARBUCKS/) === -1);
 t('D12 explicit CR marker is income', sign(/MYSTERY/) === 1);
 t('D13 explicit trailing + is income', sign(/SOMETHING ELSE/) === 1);
 t('D14 explicit DR beats a deposit word', sign(/DEPOSIT FEE/) === -1);
+t('D15 a statement credit is money back', sign(/STATEMENT CREDIT/) === 1);
+t('D16 cash back is money back', sign(/CASH BACK/) === 1);
 
 // Column position: a Withdrawals | Deposits layout with no words to go on.
 const cell = (x, s) => ({ x, s });

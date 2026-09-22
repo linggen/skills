@@ -26,7 +26,7 @@ const MONEY_RE = /[-+]?\$?\d{1,3}(?:,?\d{3})*\.\d{2}[-+]?(?:\s?(?:cr|dr))?/ig;
 // only then the description. Words credit a row only for unambiguous inbound
 // phrases; an outbound word anywhere ("sent", "bill payment", "to") keeps it
 // spend — "BILL PAYMENT HYDRO ONE" and "E-TRANSFER SENT" are money leaving.
-const INBOUND_RE = /\b(deposit|refund|reversal|payment received|payment\s*-?\s*thank you|thank you for your payment|transfer in|e-?transfer\s+(received|deposit))\b/i;
+const INBOUND_RE = /\b(deposit|refund|reversal|statement credit|credit adjustment|cash\s*back|rebate|payment received|payment\s*-?\s*thank you|thank you for your payment|transfer in|e-?transfer\s+(received|deposit))\b/i;
 const OUTBOUND_RE = /\b(sent|bill\s*pay(ment)?|to|withdrawal|withdraw)\b/i;
 // Column headers of a two-column bank layout.
 const DEBIT_COL_RE = /\b(withdrawals?|debits?|paid out|charges?)\b/i;
