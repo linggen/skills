@@ -136,18 +136,18 @@ function foeOf(root) {
   return { id: c.id, name: c.name.zh, deck: c.deck };
 }
 
-function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot = 'wood', deck, seed = 'd1', mode = 'pve' }) {
+function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot = 'wood', deck, seed = 'd1', mode = 'pve', you = {} }) {
   const foe = foeOf(foeRoot);
   return {
     mode, seed,
-    you: { tier, root, deck, extra: ['yinyue'] },
+    you: { tier, root, deck, extra: ['yinyue'], ...(typeof you === 'function' ? you(root) : you) },
     foe: { tier: foeTier, root: foeRoot, deck: foe.deck },
   };
 }
 
 /* ── The run ── */
 
-function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode = 'pve' } = {}) {
+function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode = 'pve', you = {} } = {}) {
   let wins = 0, games = 0, turns = 0, drew = 0;
   const played = new Map();
   const perDeck = new Map();
@@ -155,7 +155,7 @@ function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode
     for (const tier of tiers) {
       for (const foeRoot of ELEMENTS) {
         for (let d = 0; d < days; d += 1) {
-          const setup = setupOf({ tier, root: deck.root, deck: deck.cards, foeRoot, seed: `day${d}|${foeRoot}|${deck.id}`, mode });
+          const setup = setupOf({ tier, root: deck.root, deck: deck.cards, foeRoot, seed: `day${d}|${foeRoot}|${deck.id}`, mode, you });
           const st = play(setup, line);
           games += 1;
           turns += st.turn;
@@ -321,6 +321,24 @@ async function main() {
     const rates = ['qi', 'foundation', 'core'].map(tier => run(smart, { decks: [{ id: label, root: 'wood', cards }], tiers: [tier], days: 12 }));
     console.log(`${label.padEnd(12)}  练气 ${(rates[0].rate * 100).toFixed(1)}% · 筑基 ${(rates[1].rate * 100).toFixed(1)}% · 结丹 ${(rates[2].rate * 100).toFixed(1)}%  （它退走 ${rates.map(r => (r.drew * 100).toFixed(0) + '%').join(' / ')}）`);
     if (label === '起手' && rates[0].rate < 0.5) problems.push(`起手十张在练气只赢 ${(rates[0].rate * 100).toFixed(1)}% — 新人进不了门`);
+  }
+
+  // 带进门的 — the sword (+1 on 主灵根一击) and 问斗法 (its element's 功法 ±n).
+  // Each should lift or lower the attentive line a few points, never decide it.
+  const base = smartRun.rate;
+  console.log('\n带进门的（会读场的，对全部牌组）');
+  const kit = [
+    ['带剑 · 一击 +1', { power: 1 }],
+    ['问斗法 大吉 · 本行功法 +2', root => ({ boost: { element: root, n: 2 } })],
+    ['问斗法 吉 · +1', root => ({ boost: { element: root, n: 1 } })],
+    ['问斗法 凶 · −1', root => ({ boost: { element: root, n: -1 } })],
+    ['问斗法 大凶 · −2', root => ({ boost: { element: root, n: -2 } })],
+  ];
+  for (const [label, you] of kit) {
+    const r = run(smart, { decks, you });
+    const d = (r.rate - base) * 100;
+    console.log(`${label.padEnd(20)}  ${(r.rate * 100).toFixed(1)}%  (${d >= 0 ? '+' : ''}${d.toFixed(1)})`);
+    if (Math.abs(d) > 15) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
   }
 
   const ent = entropy(decks);

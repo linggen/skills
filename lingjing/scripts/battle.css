@@ -281,3 +281,7 @@
 .bminion .bpic { margin-bottom: 1px; }
 .bcard:hover .bpic, .bcard.held .bpic { filter: sepia(0.05) brightness(1.02) contrast(1.05); }
 @media (max-width: 560px) { .bpic { height: 34px; } .bpic.small { height: 36px; } .brank { min-height: 84px; } }
+
+/* The day's cast on a card it lifts (or lowers) — 问斗法. */
+.blift { color: var(--jade, #4a8a6a); font-weight: 600; }
+.blift.down { color: var(--seal, #b0413e); }

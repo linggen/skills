@@ -938,13 +938,24 @@ export function deckFor(content, state) {
 /* What goes through the door of a fight, and nothing else (design.md § 副本契约):
    the realm, the main root, the ten cards, the beast's own twelve. 银月 rides
    along in hand when she walks with the player. */
+const WEAPON_POWER = 1;
+
 export function fightSetup(content, state, creature, now) {
+  const fortune = now ? boutFortune(content, state, now) : null;
+  const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
   const withHer = ownedCards(content, state).includes('yinyue');
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),
-    you: { tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: withHer ? ['yinyue'] : [] },
+    you: {
+      tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: withHer ? ['yinyue'] : [],
+      // 法器 stay in the world as gear and give 主灵根一击 +1 (design.md § 斗法
+      // v3 牌型) — the sword on the belt, or the 本命法宝 it became.
+      ...(wornOf(content, state, 'weapon') || state.treasure ? { power: WEAPON_POWER } : {}),
+      // 问斗法: the lower trigram's element, its 功法 lifted or lowered today.
+      ...(boost ? { boost } : {}),
+    },
     foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [] },
   };
 }

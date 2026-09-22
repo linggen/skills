@@ -56,17 +56,21 @@
     },
     "bout": {
       "great": {
-        "spell": 4
+        "spell": 4,
+        "card": 2
       },
       "good": {
-        "spell": 2
+        "spell": 2,
+        "card": 1
       },
       "even": {},
       "ill": {
-        "spell": -2
+        "spell": -2,
+        "card": -1
       },
       "dire": {
-        "spell": -4
+        "spell": -4,
+        "card": -2
       }
     },
     "wealth": {

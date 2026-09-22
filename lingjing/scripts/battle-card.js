@@ -11,6 +11,7 @@
 // waiting state; it never touches the fight.
 
 import { esc, spoken } from './cards.js';
+import { effectOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 
@@ -221,11 +222,20 @@ function handHtml(st, ctx, picked) {
       ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
       <span class="bname">${name(c, ctx.lang)}</span>
       <span class="belem">${GLYPH[c.element] ?? ''}</span>
-      <small class="btext">${esc(sayEffect(c, ctx))}</small>
+      <small class="btext">${esc(sayEffect({ ...c, effect: effectOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}</small>
       ${body}
       ${why ? `<small class="bwhy">${esc(w.why[why] ?? why)}</small>` : ''}
     </button>`;
   }).join('');
+}
+
+/* The day's cast on a card it touches — so a number that differs from the
+   printed one says why. */
+function liftOf(side, c, ctx) {
+  const b = side.boost;
+  if (effectOf(side, c) === c.effect) return '';
+  const n = b.n > 0 ? `+${b.n}` : `${b.n}`;
+  return ` <b class="blift${b.n < 0 ? ' down' : ''}">${ctx.lang === 'en' ? `cast ${n}` : `卦 ${n}`}</b>`;
 }
 
 /* What a card does, in words, on the card — never in a tooltip. */

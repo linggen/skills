@@ -125,7 +125,10 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra }, foe: { tier, root, deck, hp? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, boost? }, foe: { tier, root, deck, hp? } }
+   `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
+   asked about fights — { element, n }: that element's 功法 hit n harder
+   (or softer, n < 0). Both are locked at the door like the rest.
    `catalog` is the card rows by id. Nothing else reaches the fight. */
 function sideOf(who, cfg, catalog, mode, seed) {
   const realm = REALMS[cfg.tier] ?? REALMS.qi;
@@ -133,7 +136,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
   const deck = shuffle(cfg.deck ?? [], `${seed}|${who}`);
   return {
     who, tier: cfg.tier, root: cfg.root ?? null,
-    hp, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power,
+    hp, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
   };
 }
@@ -329,6 +332,17 @@ export function legal(st, action, who = 'you') {
   return 'bad-action';
 }
 
+/* What a card does in this side's hands: a 功法 of the day's element hits
+   `boost.n` harder (never below 1). The page draws the card from this too, so
+   the number on the card is the number that lands. */
+export function effectOf(side, c) {
+  const e = c?.effect;
+  const b = side?.boost;
+  if (!e || c.kind !== 'spell' || !b?.n || b.element !== c.element) return e;
+  const lift = n => (n == null ? n : Math.max(1, n + b.n));
+  return { ...e, ...(e.damage != null ? { damage: lift(e.damage) } : {}), ...(e.sweep != null ? { sweep: lift(e.sweep) } : {}) };
+}
+
 /* ── Doing it ── */
 
 export function act(st, action, who = 'you') {
@@ -357,7 +371,7 @@ export function act(st, action, who = 'you') {
       if (c.keywords?.includes('battlecry')) resolve(st, side, { ...c.effect, element: c.element }, action.target);
     } else {
       st.log.push({ act: 'played', who: side.who, id, kind: 'spell' });
-      resolve(st, side, { ...c.effect, element: c.element }, action.target);
+      resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
     }
     return { ok: true };
   }
@@ -498,7 +512,7 @@ export function view(st) {
   const side = s => ({
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
-    powerUsed: s.powerUsed, powerHit: s.powerHit,
+    powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost,
     board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck })),
   });
   return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: side(st.foe), log: st.log, scale: st.scale };

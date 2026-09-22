@@ -147,6 +147,11 @@ test('the fight room draws itself: a hand you can read, both ranks, and the two 
   assert.match(html, /雷神/, 'and who is across the table');
   // and at least one card in that hand may actually be played
   assert.ok(offers(st).some(o => o.ok && o.action.kind === 'play'), 'a fight that opens is a fight that can be played');
+  // 问斗法 on the card: the lifted number, and why it differs from the print
+  const cast = begin({ ...setup, you: { ...setup.you, extra: ['yinyue', 'qingteng'], boost: { element: 'wood', n: 2 } } }, catalog);
+  const lifted = battleHtml(view(cast), offers(cast), ctx);
+  assert.match(lifted, new RegExp(`打 ${catalog.qingteng.effect.damage + 2} 点 <b class="blift">卦 \\+2</b>`));
+  assert.doesNotMatch(html, /blift/, 'no cast, no mark');
 });
 
 test('a fight whose cards the page cannot name is refused, not opened', async () => {

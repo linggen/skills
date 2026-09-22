@@ -961,6 +961,10 @@ always in the world:
   root test, 银月 once she walks with him, each beast he has tamed, and a card
   from every win. A 山海经 beast he has not tamed is never in his ten. Look
   does not list his cards; the fight's own card shows the hand.
+- **What else comes through the door:** a worn 法器 (or the 本命法宝) gives
+  主灵根一击 +1 — a sword in the bag but not worn gives nothing. A cast asked
+  about fights (问斗法) lifts or lowers that day's element's 功法 (大吉 +2 · 吉 +1
+  · 凶 −1 · 大凶 −2); the card prints the number that lands.
 - A body cannot strike the round it arrives. After that it strikes once a round,
   and both sides take the blow. **护主** stands in the way of the one behind it.
 - **主灵根一击** — once a round, two 灵力, in the player's own root.

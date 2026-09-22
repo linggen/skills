@@ -6,10 +6,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.js';
+import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -405,7 +405,15 @@ test('the ten cards are the player\'s own roots, and a companion teaches nothing
   assert.deepEqual(look(withHer, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.extra, ['yinyue']);
   // The same player takes the same deck into the same fight, every time
   assert.deepEqual(look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck, brief.setup.you.deck);
-  const won = fightOut(s, 'subdue-fuzhu');
+  // 法器 stay gear: the worn sword gives 主灵根一击 +1, and nothing else
+  assert.equal(brief.setup.you.power, 1);
+  const bare = { ...s, wear: {} };
+  const bareSetup = look(bare, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup;
+  assert.equal(bareSetup.you.power, undefined);
+  const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
+  assert.equal(begin(brief.setup, catalog).you.powerHit, begin(bareSetup, catalog).you.powerHit + 1);
+  assert.deepEqual(brief.setup.you.deck, bareSetup.you.deck, 'a sword is not a card');
+  const won = fightOut(bare, 'subdue-fuzhu');
   assert.equal(won.result.outcome, 'won');
   refused(duel, won.started.state, { id: 'subdue-fuzhu', picks: 'attack:3' }, 'not-on-board');
   // A beast walks beside the player; it does not teach (2026-09-18 — his
@@ -1432,8 +1440,25 @@ test('the cast\'s grade speeds or slows what was asked, rests a dire day, and tu
   const plainSpell = fight(['cast:metal'], woodling, { roots: ['metal'], tier: 'qi', step: 0 }).log[0].damage;
   assert.equal(fight(['cast:metal'], woodling, lift).log[0].damage, plainSpell + 4, '金克木, so the two are doubled too');
   assert.equal(fight(['cast:metal'], woodling, { ...lift, fortune: { root: 'metal', spell: -2 } }).log[0].damage, plainSpell - 4);
-  // The day's cast still lifts the old bout's numbers (above). Carrying it into
-  // 斗法 v3 is not wired yet — design.md § 斗法 v3 keeps it as an open item.
+  // …and into 斗法 v3: the same root's 功法 hit harder by the grade's `card`
+  // (乾 → 金: 大吉 +2 · 吉 +1 · 凶 −1 · 大凶 −2), printed on the card as it lands
+  const fuzhu = content.creatures.creatures.find(c => c.id === 'fuzhu');
+  const day = new Date('2026-10-02T12:00:00');
+  const boostOf = (ask, grade) => fightSetup(content, castOn(toFuzhu(), ask, grade), fuzhu, day).you.boost;
+  assert.deepEqual(boostOf('bout', 'great'), { element: 'metal', n: 2 });
+  assert.deepEqual(boostOf('bout', 'dire'), { element: 'metal', n: -2 });
+  assert.equal(boostOf('bout', 'even'), undefined);
+  assert.equal(boostOf('cultivation', 'great'), undefined, 'asked about something else, a fight is untouched');
+  const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
+  const side = n => ({ boost: { element: 'metal', n } });
+  assert.equal(effectOf(side(2), byId.jinzhua).damage, byId.jinzhua.effect.damage + 2);
+  assert.equal(effectOf(side(2), byId.jinzhen).sweep, byId.jinzhen.effect.sweep + 2);
+  assert.equal(effectOf(side(-2), byId.jinzhua).damage, 1, 'never below one');
+  assert.equal(effectOf(side(2), byId.huodan), byId.huodan.effect, 'another element is untouched');
+  assert.equal(effectOf(side(2), byId.jinsuo), byId.jinsuo.effect, 'a body is not a 功法');
+  const played = battle(['end', 'play:0'], { mode: 'pve', seed: 's', you: { tier: 'qi', root: 'metal', deck: ['xiaoyao', 'qingteng', 'leipu', 'huoya'], extra: ['jinzhua'], boost: { element: 'metal', n: 2 } }, foe: { tier: 'qi', root: 'earth', deck: fuzhu.deck } }, byId);
+  const plainHit = battle(['end', 'play:0'], { mode: 'pve', seed: 's', you: { tier: 'qi', root: 'metal', deck: ['xiaoyao', 'qingteng', 'leipu', 'huoya'], extra: ['jinzhua'] }, foe: { tier: 'qi', root: 'earth', deck: fuzhu.deck } }, byId);
+  assert.equal(plainHit.foe.hp - played.foe.hp, 2, JSON.stringify(played.log.slice(0, 4)));
 });
 
 test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {

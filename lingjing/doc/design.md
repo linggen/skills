@@ -1102,7 +1102,7 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 | 随从 | **灵兽 · 同道** | ✓ 攻/血、五行、两个关键词：**护主**（嘲讽）· **入阵**（战吼） |
 | 法术 | **功法** | ✓ 一次性，有五行：伤害、群伤、回气血、抽牌、加成 |
 | 英雄技能 | **主灵根一击** | ✓ 每回合一次，费 2 |
-| 武器 | 法器 | ✗ 剑留在世界里当装备，只给英雄技能 +1；不进牌桌 |
+| 武器 | 法器 | ✗ 剑留在世界里当装备，只给英雄技能 +1；不进牌桌 (+1 BUILT 2026-09-22: 戴着的剑或本命法宝) |
 | 亡语 | 遗蜕 | ✗ 交互爆炸的源头，v2 |
 | 冲锋 | 疾行 | ✗ 爆发数学，v2 |
 | 换牌 | — | ✗ 开局就让人做看不懂的决定 |
@@ -1251,6 +1251,8 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 - **赏** — 任何 grant 可写 `card`（差事、场景），lint 查牌存在。
 - **法器** 仍是戴着的装备，不进牌桌。
 - **旧存档** 没有 `cards`：按"应有的"读（起手 + 银月 + 随行的妖），得第一张新牌时写下。
+
+闸 § 带进门的（会读场的 82.9% 为基）：带剑 +3.6 · 大吉 +4.8 · 吉 +2.0 · 凶 −2.1 · 大凶 −2.7；任一样超过 15 点报越界。
 
 闸（`tools/battle-sim.mjs` § 起手）：只有起手十张 + 银月，练气 76.7% · 筑基 76.7% · 结丹 70.0%；
 带上夫诸、狍鸮多 5–7 点。低于 50%（练气）闸报越界。
@@ -1410,6 +1412,9 @@ only their four roots and a starting weapon can win against every creature,
   blow that would end the fight leaves 1 气血, once · 符水 — passive: a 符箓
   also gives +6 灵力. Teachers unchanged.
 - **The day's cast (问斗法)** — 吉: its root's 施法 +2 法术 (大吉 +4); 凶: −2 (大凶 −4).
+  **In v3 (BUILT 2026-09-22):** the lower trigram's element, its 功法' damage and
+  sweep `card` ±: 大吉 +2 · 吉 +1 · 凶 −1 · 大凶 −2 (never below 1), printed on the
+  card as 卦 +n. The v2 `spell` numbers stay for the old bout.
 - **命格 日主** — once a fight, a blow of that element taken is halved.
 
 ### The card, the rules, Ling
