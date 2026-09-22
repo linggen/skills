@@ -338,7 +338,13 @@ function whereFor(content, state, quest, need, lang) {
       : open.kind === 'carry' ? nearestPlace(content, state, new Date(), p => p.has?.shop)
         : null;
   if (!at) return null;
-  return at.id === state.place ? { id: at.id, name: pick(at.name, lang) ?? at.name, here: true } : (at.name ? placeName(content, state, at) : at);
+  if (at.id === state.place) return { id: at.id, name: pick(at.name, lang) ?? at.name, here: true };
+  const named = at.name ? placeName(content, state, at) : at;
+  // The first place on the road there, when it is more than one road away —
+  // what Ling used to say after a 接下 (「先去大野泽，再往凫丽山」); the page says it
+  // now that 接下 is the page's own tap (his, 2026-09-22).
+  const from = placeOf(content, state.place), way = from && at.roads ? pathOf(content, state, from, at, new Date(state.updated ?? Date.now())) : null;
+  return way && way.length > 1 ? { ...named, via: placeName(content, state, way[0]).name, roads: way.length } : named;
 }
 
 /* 榜文 — templated 差事 (design.md § 差事 ⑤). A market posts one a day: a

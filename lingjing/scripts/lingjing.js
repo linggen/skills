@@ -83,6 +83,7 @@ const view = {
   bookFresh: false,
   bookRow: null, //      the line of the book that is open
   offerRow: null, //     the errand on the stage's offer card that is open
+  doNote: null, //       a page tap the rules refused, in their words, until the next tap
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
   ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
 };
@@ -324,7 +325,7 @@ function focusHtml() {
   if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
   // Walked on, the spoils are put away by themselves.
   if (view.spoils && view.spoils.place !== (look?.place?.id ?? null)) keep({ spoils: null });
-  const spoils = view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '';
+  const spoils = (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
   // A line running under his feet takes the stage (his law, 2026-09-18:
   // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
   // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
@@ -517,6 +518,24 @@ async function takeMeet(action) {
 }
 
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
+/* 接下 · 交差 · 买 · 卖 · 服用 · 佩戴 — taps that only change the save. The page
+   calls the rules and redraws; nothing goes to the chat, and Ling reads the
+   save on her next Look (his, 2026-09-22: 只有必要的时候, 让agent说话). A
+   refusal is said on the stage in the rules' own words. */
+const DOES = {
+  take: (id) => verb('quest', { action: 'take', id }),
+  turn: (id) => verb('quest', { action: 'turn', id }),
+  buy: (id) => verb('trade', { action: 'buy', id }),
+  sell: (id) => verb('trade', { action: 'sell', id }),
+  use: (id) => verb('trade', { action: 'use', id }),
+};
+async function doTap(action, id) {
+  const r = await DOES[action]?.(id).catch((e) => { console.warn('[lingjing]', action, e); return null; });
+  keep({ doNote: r && !r.ok ? (r.say || words().refused?.[r.refused] || null) : null });
+  if (r?.ok && action === 'take') keep({ offerRow: null });
+  await refresh();
+}
+
 /* 装备 · 背包: putting a thing on, or taking a pill, is his own tap — the page
    calls Trade itself and redraws from the rules; no model turn. */
 async function useItem(id, action = 'use') {
@@ -583,6 +602,8 @@ document.addEventListener('click', (e) => {
   // does whatever it was for.
   if (e.target.closest('[data-book]')) { show({ bookOpen: !view.bookOpen, gearOpen: false }); return; }
   if (e.target.closest('[data-gear]')) { if (view.gearOpen) show({ gearOpen: false }); else openGear(); return; }
+  const does = e.target.closest('[data-do]');
+  if (does) { if (!does.matches(':disabled')) doTap(does.dataset.do, does.dataset.id); return; }
   const worn = e.target.closest('[data-wear],[data-use],[data-remove]');
   if (worn) { useItem(worn.dataset.wear ?? worn.dataset.use ?? worn.dataset.remove, worn.dataset.remove ? 'remove' : 'use'); return; }
   if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });

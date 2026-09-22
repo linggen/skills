@@ -447,3 +447,6 @@ body.fighting .askbar { display: none; }
 .card.offer .offerrow .acts { display: flex; align-items: center; gap: 8px; margin: 0; flex: none; }
 .card.offer .offerdetail { padding: 0 0 10px; }
 .card.offer .offerdetail .acts { margin-top: 6px; }
+
+/* A page tap the rules refused, in their words. */
+.donote { margin: 0 auto 10px; max-width: 640px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--seal, #b0413e); color: var(--seal, #b0413e); background: var(--surface); font-size: 13.5px; }

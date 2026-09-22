@@ -195,14 +195,14 @@ test('a wear is hers: no 佩戴 until she walks with him', async () => {
   const ctx = companion => ({ look: look(companion), lang: 'zh', words: WORDS.zh, content, artBase: '../worlds/jiuding/' });
 
   const alone = cardHtml({ card: 'item', id: 'moon-bell' }, ctx(null));
-  assert.doesNotMatch(alone, /佩上银月铃/, 'no one to wear it yet');
+  assert.doesNotMatch(alone, /data-do="use" data-id="moon-bell"/, 'no one to wear it yet');
   assert.match(alone, /可赠银月佩戴/, 'but the card still says whose it is');
   const together = cardHtml({ card: 'item', id: 'moon-bell' }, ctx({ id: 'yinyue', name: '银月', joined: true }));
-  assert.match(together, /佩上银月铃/, 'once she walks with him, it can go on');
+  assert.match(together, /data-do="use" data-id="moon-bell">佩戴</, 'once she walks with him, it can go on (a page tap, nothing to the chat)');
   // his own arms never waited on her
   const sword = content.items.items.find(i => i.id === 'iron-sword');
   const armCtx = { ...ctx(null), look: { ...look(null), bag: [{ id: 'iron-sword', n: 1 }], place: { shelf: [{ ...sword, name: sword.name.zh, about: sword.about.zh, held: 1, worn: false }] } } };
-  assert.match(cardHtml({ card: 'item', id: 'iron-sword' }, armCtx), /佩上铁剑/);
+  assert.match(cardHtml({ card: 'item', id: 'iron-sword' }, armCtx), /data-do="use" data-id="iron-sword">佩戴</);
 });
 
 test('every card kind draws — the sweep no surface had until 2026-09-18', async () => {

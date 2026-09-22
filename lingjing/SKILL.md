@@ -1138,10 +1138,15 @@ next, say the thread.
 count it, and it is handed in where they stand. This is what fills the days
 between the spine's scenes.
 
-- **接下** — Look's `offers` says what may be taken at this very place. Speak
-  the giver's `say` in their voice, one or two lines, then let the card be
-  tapped — the errand is on its own card, so it is never an option in the
-  question too. Not taking it is declining; no button for that.
+- **The page's own taps (his, 2026-09-22: 只有必要的时候, 让agent说话).** 接下,
+  交差, 买, 卖, 服用 and 佩戴 are tapped on the page, which calls the rules
+  itself — nothing reaches you. You learn of them from the save on your next
+  Look (`book`, `bag`, `wear`, the numbers). Do not narrate them after the
+  fact, do not repeat what a card shows (the giver's words are on the offer
+  card), and never offer them as options. Only when the player TYPES one
+  ("我接了", "交差") do you act on it with the tool.
+- **接下** — Look's `offers` says what may be taken at this very place; the
+  offer card shows each with the giver's words. Not taking it is declining.
 - **榜文** — a market posts one more a day (its id begins `daily-`): a beast
   to subdue or a place to look in on, a few roads away. It arrives in `offers`
   like any other and is spoken the same way — read the notice aloud, do not
@@ -1154,9 +1159,9 @@ between the spine's scenes.
   subdued, a place reached, a board finished, a thing in the bag. Do not say a
   count has moved unless the book says so.
 - **交差 — wherever they stand, the moment it is `ready`.** Never send them
-  back to the giver (his ruling, 2026-09-18: 不要让用户跑地图). Say what the
-  giver would say, then Quest `turn`; speak what was `paid`, and if a `then`
-  came back, name where the next one waits.
+  back to the giver (his ruling, 2026-09-18: 不要让用户跑地图). The 事 chip
+  holds the button; if they type it, Quest `turn`, and a `then` that came back
+  is the one thing worth a line: where the next one waits.
 - **Three at a time.** `book-full` is not an error to apologise for: say which
   three are in hand and let them put one down (Quest `drop`).
 
