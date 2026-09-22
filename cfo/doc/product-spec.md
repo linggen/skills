@@ -16,7 +16,8 @@ statements; it builds the full picture, finds the leaks, and answers
 
 - **Drag & drop statements** — CSV or PDF, from any bank. Multiple
   accounts merge into one ledger; re-imports and overlaps deduplicate
-  themselves; any import can be undone with one click.
+  themselves; any import can be undone with one click. The AI reviews an
+  import when you press Review, or every time if you turn on auto-review.
 - **The report builds itself** — spend, income, net, monthly trend,
   category breakdown, top merchants. Click any month or category to see
   the transactions behind it.

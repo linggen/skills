@@ -13,8 +13,9 @@
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { analyzeCsv, orientTransactions, cleanMerchant } from '../scripts/analyze.js';
-import { toLedgerRows, mergeLedger, detectTransfers, reportFromLedger, isStatementArtifact } from '../scripts/ledger.js';
+import { analyzeCsv, orientTransactions, cleanMerchant, categorize } from '../scripts/analyze.js';
+import { toLedgerRows, mergeLedger, mergeImport, idsToRevert, detectTransfers, detectPaymentSchedule, reportFromLedger, isStatementArtifact, ruleKey } from '../scripts/ledger.js';
+import { loadLive } from './lib/live-data.mjs';
 
 let pass = 0, fail = 0;
 const t = (name, ok, detail = '') => {
@@ -134,22 +135,76 @@ t('A19 no over-strip: 2-token name ending province-like word', cm('GAME ON') ===
 t('A20 keeps digit-led brand (not a ref)', cm('1PASSWORD') === '1PASSWORD', cm('1PASSWORD'));
 t('A21 idempotent', cm(cm('[CW]095 ROGERS BK MC TORONTO ON')) === cm('[CW]095 ROGERS BK MC TORONTO ON'));
 
+// ── Part A4: merchant rules key on the cleaned name ──
+console.log('\n— Part A4: rule key —');
+const rawM = '095 HRM REC ONLINE XP DARTMOUTH NS';
+const ruleOv = { [ruleKey(rawM)]: 'fitness' };
+t('A22 a rule written from a raw row categorizes that row (cleaned, as the page reads it)',
+  categorize(cleanMerchant(rawM), ruleOv) === 'fitness', ruleKey(rawM));
+t('A23 the same rule covers another raw variant of the merchant',
+  categorize(cleanMerchant('112 HRM REC ONLINE XP HALIFAX NS'), ruleOv) === 'fitness');
+t('A24 control: the old raw-string key never matched the cleaned name',
+  categorize(cleanMerchant(rawM), { [rawM.toLowerCase()]: 'fitness' }) !== 'fitness');
+
+// ── Part A5: undo — re-import after revert, overlapping imports ──
+console.log('\n— Part A5: undo —');
+const rowsA = toLedgerRows(fileA, 'chk');
+const rowsB = toLedgerRows(fileB, 'chk'); // shares GROCER + GAS with fileA
+const mA = mergeImport([], rowsA);
+const mB = mergeImport(mA.merged, rowsB);
+const log = [
+  { id: 'impA', added_ids: mA.fresh.map((r) => r.id), row_ids: rowsA.map((r) => r.id) },
+  { id: 'impB', added_ids: mB.fresh.map((r) => r.id), row_ids: rowsB.map((r) => r.id) },
+];
+const undoA = idsToRevert(log, 'impA');
+const shared = rowsA.filter((r) => rowsB.some((b) => b.id === r.id)).map((r) => r.id);
+t('A25 undoing A keeps the rows overlapping B still holds', shared.every((id) => !undoA.includes(id)) && undoA.length === 1,
+  `${undoA.length} of ${mA.fresh.length} reverted`);
+log[0].reverted = true;
+const undoB = idsToRevert(log, 'impB');
+t('A26 then undoing B takes its own rows AND the shared ones A left behind',
+  undoB.length === mB.fresh.length + shared.length, `${undoB.length}`);
+t('A27 legacy entry without row_ids still holds its added_ids',
+  idsToRevert([{ id: 'x', added_ids: ['r1', 'r2'] }, { id: 'y', added_ids: ['r2'] }], 'x').join() === 'r1');
+
+// Revert A, then re-import the same file: nothing new on disk, but its rows
+// come back — and are recorded as this import's additions.
+const deleted = new Set(mA.fresh.map((r) => r.id));
+const again = mergeImport(mA.merged, toLedgerRows(fileA, 'chk'), (id) => deleted.has(id));
+t('A28 re-importing a reverted file adds nothing to the ledger file', again.added.length === 0);
+t('A29 …but lifts every tombstone and reports the rows as new', again.restored.length === 3 && again.fresh.length === 3,
+  `restored ${again.restored.length}, fresh ${again.fresh.length}`);
+const onceMore = mergeImport(again.merged, toLedgerRows(fileA, 'chk'), () => false);
+t('A30 a plain re-import of a live file is still 0 new', onceMore.fresh.length === 0);
+
+// ── Part A6: a card is judged against its OWN data ──
+console.log('\n— Part A6: missed payment per account —');
+const schedRows = [
+  ...['2026-03-10', '2026-04-10', '2026-05-10', '2026-06-10'].map((d, i) => ({ id: `v${i}`, account: 'visa', date: d, merchant: 'PAYMENT THANK YOU', amount: 300, transfer: true })),
+  { id: 'v9', account: 'visa', date: '2026-06-28', merchant: 'CAFE', amount: -5 },
+  ...['2026-07-01', '2026-08-01', '2026-08-30'].map((d, i) => ({ id: `c${i}`, account: 'chk', date: d, merchant: 'PAYROLL', amount: 3000 })),
+];
+const sched = detectPaymentSchedule(schedRows, { visa: { type: 'credit' }, chk: { type: 'checking' } })[0];
+t('A31 card imported through June beside chequing through August is NOT "missed"', sched && !sched.missed_in_data,
+  `next ${sched?.next_expected}, data through ${sched?.data_through}`);
+t('A32 its data_through is the card\'s own last row', sched?.data_through === '2026-06-28');
+const later = [...schedRows, { id: 'v10', account: 'visa', date: '2026-08-20', merchant: 'CAFE', amount: -5 }];
+t('A33 card data past the expected date with no payment IS missed',
+  detectPaymentSchedule(later, { visa: { type: 'credit' } })[0].missed_in_data);
+
 // ── Part B: live ledger audit ──
-const DATA = join(process.env.HOME, '.linggen/skills/cfo/data');
-if (!existsSync(join(DATA, 'ledger'))) {
+// Accounts / rules / reverts come from the edit register (tests/lib/live-data.mjs);
+// the retired accounts.json is only a legacy seed.
+const live = loadLive();
+if (!live) {
   console.log('\n(no live ledger found — Part B skipped)');
 } else {
   console.log('\n— Part B: LIVE ledger audit —');
-  const rows = [];
-  for (const f of readdirSync(join(DATA, 'ledger'))) {
-    for (const l of readFileSync(join(DATA, 'ledger', f), 'utf8').split('\n')) if (l.trim()) rows.push(JSON.parse(l));
-  }
-  const accounts = JSON.parse(readFileSync(join(DATA, 'accounts.json'), 'utf8'));
-
-  const ids = rows.map((r) => r.id);
+  const { rows, accounts, opts } = live;
+  const ids = live.fileIds;
   t('B1 all ledger row ids unique (THE dedup invariant)', new Set(ids).size === ids.length, `${ids.length} rows`);
 
-  const rep = reportFromLedger(rows, accounts); // recomputes transfer flags in place
+  const rep = reportFromLedger(rows, accounts, opts); // recomputes transfer flags in place
   const byId = Object.fromEntries(rows.map((r) => [r.id, r]));
   const transfers = rows.filter((r) => r.transfer);
   // Single-row signals (card payment to an un-imported card, "TF" tokens) now
@@ -181,11 +236,11 @@ if (!existsSync(join(DATA, 'ledger'))) {
   // Source fidelity: re-parse each demo CSV and require every transaction id
   // to exist in the ledger (and B1 already proves nothing exists twice).
   const demo = join(process.env.HOME, 'Downloads/cfo-bank-tests');
-  if (existsSync(demo) && existsSync(join(DATA, 'imports.json'))) {
-    const log = JSON.parse(readFileSync(join(DATA, 'imports.json'), 'utf8'));
+  if (existsSync(demo) && live.imports.length) {
+    const log = live.imports;
     const fileAcct = {};
     for (const e of log) fileAcct[e.file] = e.account;
-    const idSet = new Set(ids);
+    const idSet = new Set(live.rawRows.map((r) => r.id));
     for (const f of readdirSync(demo).filter((x) => x.endsWith('.csv'))) {
       const acct = fileAcct[f];
       if (!acct) { console.log(`   (skip ${f} — never imported)`); continue; }

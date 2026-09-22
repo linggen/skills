@@ -210,16 +210,31 @@ function positionOf(symbol, cell, q) {
     earnings_date: q.earnings_date || null,
     expense_ratio: q.expense_ratio || null,
     price_time: q.price_time || '',
+    stale: q.stale ? staleNote(q) : '',
     error: q.error || '',
   };
 }
 
-/// Holdings summed per currency — US and Canadian dollars never add up.
+/// A price market.pl marked stale (no quote in 5 days — delisted, or the
+/// source gone quiet), as the fact the row shows: "Last price Sep 3 — no
+/// quote since". The day is the source's own, else when it was fetched.
+export function staleNote(q) {
+  const own = String(q.price_time || '').match(/^([A-Z][a-z]{2}) (\d{1,2}),/);
+  const at = num(q.quote_at);
+  const day = own ? `${own[1]} ${own[2]}`
+    : at ? new Date(at * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+  return day ? `Last price ${day} — no quote since` : 'No quote lately';
+}
+
+/// Holdings summed per currency — US and Canadian dollars never add up. A
+/// stale price is left out of the total (its row shows the last one) and
+/// named in `left_out`, so the total never passes an old value off as live.
 export function totalsByCurrency(rows) {
   const out = {};
   for (const r of rows) {
     if (!(r.shares > 0) || r.value === null) continue;
-    const t = (out[r.currency] ||= { value: 0, day: 0, cost: 0, gain: 0 });
+    const t = (out[r.currency] ||= { value: 0, day: 0, cost: 0, gain: 0, left_out: [] });
+    if (r.stale) { t.left_out.push(r.symbol); continue; }
     t.value += r.value;
     t.day += r.day || 0;
     if (r.cost !== null) { t.cost += r.cost; t.gain += r.gain; }
@@ -233,6 +248,7 @@ export function snapshotOf(rows, now = new Date()) {
   const held = rows.filter((r) => r.shares > 0).map((r) => ({
     symbol: r.symbol, name: r.name, shares: r.shares, avg_cost: r.avg_cost, account: r.account || null,
     currency: r.currency, price: r.price, value: r.value, gain: r.gain, gain_pct: r.gain_pct,
+    ...(r.stale ? { stale: r.stale } : {}),
   }));
   return {
     updated_at: now.toISOString(),
@@ -451,6 +467,16 @@ export function stakeText(item) {
   return item.stake > 0 && item.currency ? `${money(item.stake, item.currency, 0)} at stake` : '';
 }
 
+/// The line Check now asks before it starts a run: the rough cost, from the
+/// tokens the last finished run used (its `usage` in the missions API).
+export function checkCostText(runs) {
+  const used = (runs || []).find((r) => r.status === 'completed' && r.usage);
+  const n = used ? (num(used.usage.prompt) || 0) + (num(used.usage.output) || 0) : 0;
+  return n > 0
+    ? `Check now? The last check used about ${Math.max(1, Math.round(n / 1000))}k tokens.`
+    : 'Check now? It runs the full nightly check with the model.';
+}
+
 /// What Ask CFO says in the chat, in the user's voice.
 export function askText(item) {
   return `What does this mean for my holdings? "${item.line}"${/^https:\/\//.test(item.url || '') ? ` (${item.url})` : ''}`;
@@ -491,7 +517,8 @@ function moveHtml(n, currency, pct, digits = 2) {
 function summaryHtml(rows) {
   const totals = Object.entries(totalsByCurrency(rows)).map(([cur, t]) => `
     <span class="inv-total"><b>${money(t.value, cur, 0)}</b>
-      ${moveHtml(t.day, cur, null, 0)} today${t.cost ? ` · ${moveHtml(t.gain, cur, (t.gain / t.cost) * 100, 0)} overall` : ''}</span>`);
+      ${moveHtml(t.day, cur, null, 0)} today${t.cost ? ` · ${moveHtml(t.gain, cur, (t.gain / t.cost) * 100, 0)} overall` : ''}${t.left_out.length
+        ? `<span class="hint inline">Leaves out ${deps.esc(t.left_out.join(', '))} — no recent price</span>` : ''}</span>`);
   const stamp = rows.map((r) => r.price_time).find(Boolean);
   const state = checking ? 'Checking reports…' : checkNote || (loading ? 'Updating…' : failure || (stamp ? `Prices ${stamp}` : ''));
   return `<div class="inv-summary">${totals.join('')}<span class="spacer"></span>
@@ -512,7 +539,9 @@ function rowHtml(r) {
   const sym = esc(r.symbol);
   const price = r.price === null
     ? `<span class="hint inline">${esc(r.error || '…')}</span>`
-    : `${money(r.price, r.currency)} ${moveHtml(r.change, r.currency, r.change_pct)}`;
+    : r.stale
+      ? `${money(r.price, r.currency)} <span class="hint inline">${esc(r.stale)}</span>`
+      : `${money(r.price, r.currency)} ${moveHtml(r.change, r.currency, r.change_pct)}`;
   const hold = r.shares > 0
     ? `<div>${r.shares} sh${r.account ? ` · ${esc(r.account)}` : ''}</div>
        <div>${money(r.value, r.currency, 0)} ${moveHtml(r.gain, r.currency, r.gain_pct, 0)}</div>`
@@ -577,7 +606,7 @@ function reportsHtml(symbol) {
 /// The Watch card: the switch and level, the latest brief, the week behind it.
 function watchHtml() {
   const { esc } = deps;
-  const { mission, running, doc, more, note } = watch;
+  const { mission, running, doc, more, note, confirming } = watch;
   const on = !!mission?.enabled;
   const brief = latestBrief(doc);
   const week = weekItems(doc, brief);
@@ -588,7 +617,7 @@ function watchHtml() {
     : on
       ? `<select data-act="watch-level" aria-label="How much the Watch tells you">${[['quiet', 'Quiet'], ['normal', 'Normal'], ['everything', 'Everything']]
         .map(([v, label]) => `<option value="${v}"${v === level ? ' selected' : ''}>${label}</option>`).join('')}</select>
-        <button class="chip" data-act="watch-run" ${running ? 'disabled' : ''}>Check now</button>
+        <button class="chip" data-act="watch-run" ${running || confirming ? 'disabled' : ''}>Check now</button>
         <button class="chip ghost" data-act="watch-off">Turn off</button>`
       : `<button class="btn" data-act="watch-on">Turn on</button>`;
   const intro = !brief && !running
@@ -598,9 +627,14 @@ function watchHtml() {
   const rest = week.length
     ? `<button class="link inv-watch-more" data-act="watch-more">${more ? 'Hide the week' : `${week.length} more this week`}</button>${more ? week.map(watchLineHtml).join('') : ''}`
     : '';
+  const ask = confirming && !running
+    ? `<div class="inv-prop"><span>${esc(checkCostText(watch.runs))}</span><span class="spacer"></span>
+        <button class="btn" data-act="watch-run-go">Check</button>
+        <button class="chip ghost" data-act="watch-run-cancel">Cancel</button></div>`
+    : '';
   return `<div class="inv-watch">
     <div class="inv-watch-h"><b>✦ Watch</b><span class="hint inline">· ${esc(headline(note))}</span><span class="spacer"></span>${controls}</div>
-    ${intro}${day}${rest}
+    ${ask}${intro}${day}${rest}
   </div>`;
 }
 
@@ -715,7 +749,9 @@ function onClick(e) {
     'prop-drop-all': () => { proposed = []; draw(); },
     'watch-on': () => switchWatch(true),
     'watch-off': () => switchWatch(false),
-    'watch-run': () => runWatch(),
+    'watch-run': () => { watch.confirming = true; draw(); },
+    'watch-run-go': () => { watch.confirming = false; runWatch(); },
+    'watch-run-cancel': () => { watch.confirming = false; draw(); },
     'watch-more': () => { watch.more = !watch.more; draw(); },
     'watch-ask': () => askAbout(btn.dataset.id),
   };
@@ -1061,14 +1097,15 @@ async function fetchInto(verb, symbols) {
 const WATCH_MISSION = 'cfo:watch';
 const WATCH_POLL_MS = 5000;
 const WATCH_RUN_MAX_MS = 5 * 60 * 1000;
-const watch = { doc: {}, mission: null, lastRun: null, running: false, more: false, note: '' };
+const watch = { doc: {}, mission: null, lastRun: null, runs: [], running: false, more: false, note: '', confirming: false };
 let watchPoll = null;
 
 const missionUrl = (tail = '') => `/api/missions/${encodeURIComponent(WATCH_MISSION)}${tail}`;
 
 async function lastWatchRun() {
-  const runs = (await (await fetch(missionUrl('/runs'))).json()).runs || [];
-  return runs.find((r) => !r.skipped) || null;
+  const runs = ((await (await fetch(missionUrl('/runs'))).json()).runs || []).filter((r) => !r.skipped);
+  watch.runs = runs;
+  return runs[0] || null;
 }
 
 /// The brief from data/watch.json, the switch from the missions API.
@@ -1087,8 +1124,8 @@ async function loadWatch() {
   if (watch.running && !watchPoll) followRun(Date.now());
 }
 
-/// Turning it on checks at once when there's no brief yet — the first
-/// morning shouldn't be a day away.
+/// Turning it on offers a check at once when there's no brief yet — the first
+/// morning shouldn't be a day away — asked first, like Check now.
 async function switchWatch(on) {
   try {
     const res = await fetch(missionUrl(), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }) });
@@ -1098,7 +1135,8 @@ async function switchWatch(on) {
     noteWatch("Couldn't reach Linggen");
   }
   await loadWatch();
-  if (on && !latestBrief(watch.doc)) runWatch();
+  watch.confirming = on && !!watch.mission?.enabled && !watch.running && !latestBrief(watch.doc);
+  if (watch.confirming) draw();
 }
 
 async function runWatch() {

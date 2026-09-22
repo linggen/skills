@@ -7,9 +7,9 @@
 import './chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from './api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
-import { toLedgerRows, mergeLedger, reportFromLedger, viewFromLedger, detectTransfers } from './ledger.js';
+import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, ruleKey } from './ledger.js';
 import { hashId } from './hash.js';
-import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy } from './lww.js';
+import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile } from './lww.js';
 import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings } from './investments.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
@@ -150,6 +150,12 @@ async function runBash(command) {
   const body = await res.json();
   if (body.exit_code && body.exit_code !== 0) throw new Error(body.stderr || `bash exit ${body.exit_code}`);
   return body.stdout || '';
+}
+
+// Today as the person's calendar has it. toISOString is UTC: an evening in
+// the Americas would already read as tomorrow.
+function localToday(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -318,10 +324,11 @@ async function loadEdits(rows) {
 /// idempotent, so it can never lose a cell, and it drags `lastTs` past
 /// everything the phone stamped, so this machine's next edit sorts after what
 /// it has just seen.
+///
+/// The re-read, merge and atomic write happen under the file lock Settings
+/// takes too (saveRegisterFile, lww.js), with a checksum guard for the phone.
 async function saveEdits(reg = EDITS) {
-  const disk = await readJson(`${DATA}/edits.json`, null);
-  const took = disk ? reg.mergeState(disk) : 0;
-  await writeB64(`${DATA}/edits.json`, `${JSON.stringify(reg.toState(), null, 2)}\n`);
+  const took = await saveRegisterFile(runBash, `${DATA}/edits.json`, reg);
   // A merged cell may have moved something the page is rendering off — re-derive
   // so the page can never show a value the file doesn't hold.
   if (took && reg === EDITS) applyEdits();
@@ -746,11 +753,10 @@ async function applyRule(row, val) { return applyRuleByMerchant(row.merchant, va
 
 // Write a merchant -> classification rule (a category, or 'transfer'/'income')
 // and recompute. `recompute=false` lets a batch apply many then recompute once.
+// Keyed by ruleKey (ledger.js): the cleaned, lowercased name the categorizer
+// matches. EVERY path that writes an `ov:` rule goes through here.
 async function applyRuleByMerchant(merchant, val, recompute = true) {
-  // Key on the cleaned name so one rule covers all raw variants (store numbers,
-  // city suffixes) — and it still word-matches the raw ledger strings.
-  const key = (cleanMerchant(merchant) || String(merchant)).toLowerCase();
-  await setEdit(`ov:${key}`, val);
+  await setEdit(`ov:${ruleKey(merchant)}`, val);
   if (recompute) await afterCategoriesChanged();
 }
 
@@ -803,7 +809,9 @@ function askScope(anchor, row, cat) {
     const scope = pop.querySelector('input[name=scope]:checked').value;
     close();
     if (scope === 'rule') {
-      await setEdit(`ov:${row.merchant.toLowerCase()}`, cat);
+      // Same key every rule path writes (cleaned + lowercased) — the one the
+      // categorizer matches.
+      await applyRuleByMerchant(row.merchant, cat, false);
     } else {
       // The row keeps its imported category on disk; the correction is a cell,
       // so it merges with the phone's and can be cleared without a rewrite.
@@ -814,18 +822,13 @@ function askScope(anchor, row, cat) {
 }
 
 // Serialize every config.json read-modify-write so concurrent savers (a
-// background agent rule-apply, a budget edit, a currency switch) can't each
-// read the same file and clobber the other's field. Each mutator runs to
-// completion — read → mutate one key → write — before the next starts.
-let CONFIG_LOCK = Promise.resolve();
+// currency switch here, a folder-watch toggle in Settings) can't each read the
+// same file and clobber the other's field. updateJsonFile (lww.js) orders
+// writers on this page AND takes the file lock the Settings page takes, then
+// writes atomically.
 function updateConfig(mutate) {
-  const CONF = `$HOME/.linggen/skills/${SKILL}/config.json`;
-  const run = CONFIG_LOCK.then(async () => {
-    const cfg = await readJson(CONF, {});
-    mutate(cfg);
-    await writeB64(CONF, JSON.stringify(cfg, null, 2));
-  });
-  CONFIG_LOCK = run.catch((e) => { console.warn('[cfo] config write', e); });
+  const run = updateJsonFile(runBash, `$HOME/.linggen/skills/${SKILL}/config.json`, mutate);
+  run.catch((e) => { console.warn('[cfo] config write', e); });
   return run;
 }
 
@@ -873,21 +876,21 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   // double-appending. LEDGER is set here too, inside the serialized section.
   const added = await withImportLock(async () => {
     const existing = await loadLedger();
-    const merge = mergeLedger(existing, incoming);
+    // Re-importing a file you reverted brings it back: the rows dedup by id, so
+    // the tombstone has to lift — and the lifted rows count as this import's
+    // additions, so it reads "N new" and can be undone again.
+    const merge = mergeImport(existing, incoming, (id) => EDITS.get(`del:${id}`) === true);
     if (merge.added.length) await appendLedgerRows(merge.added);
     RAW_LEDGER = merge.merged;
-    // Re-importing a file you reverted brings it back: the rows dedup by id, so
-    // the tombstone has to lift or the import would look like a no-op.
-    const restored = incoming.filter((r) => EDITS.get(`del:${r.id}`) === true);
-    for (const r of restored) EDITS.remove(`del:${r.id}`);
+    for (const r of merge.restored) EDITS.remove(`del:${r.id}`);
     applyEdits();
-    if (restored.length) await saveEdits();
-    return merge.added;
+    if (merge.restored.length) await saveEdits();
+    return merge.fresh;
   });
   // Record the exact ids this import added so it can be reverted later. id is a
   // local timestamp-ish token (Date.now is fine in the browser; this is UI state).
   const importId = `imp_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
-  await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), at: new Date().toISOString() });
+  await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), row_ids: incoming.map((r) => r.id), at: new Date().toISOString() });
 
   await rebuildReport(); // agent's full-history copy
   refreshView();
@@ -903,7 +906,10 @@ async function undoImport(importId) {
   const log = await readJson(`${DATA}/imports.json`, []);
   const entry = log.find((e) => e.id === importId);
   if (!entry || entry.reverted || !Array.isArray(entry.added_ids) || !entry.added_ids.length) return false;
-  for (const id of entry.added_ids) EDITS.set(`del:${id}`, true);
+  // Only rows no other live import still holds — an overlapping statement's
+  // rows stay in the report.
+  const ids = idsToRevert(log, importId);
+  for (const id of ids) EDITS.set(`del:${id}`, true);
   applyEdits();
   // Drop the account if this import created it and nothing else uses it.
   if (entry.account && !LEDGER.some((r) => r.account === entry.account)) {
@@ -917,7 +923,8 @@ async function undoImport(importId) {
   await rebuildReport();
   refreshView();
   if (VIEW_MODE === 'txn') renderTxnView();
-  try { chat?.addMessage?.('assistant', `Reverted the import of ${entry.file} — removed ${entry.added_ids.length} transaction${entry.added_ids.length === 1 ? '' : 's'}. Your report is back to where it was.`); } catch { /* ignore */ }
+  const kept = entry.added_ids.length - ids.length;
+  try { chat?.addMessage?.('assistant', `Reverted the import of ${entry.file} — removed ${ids.length} transaction${ids.length === 1 ? '' : 's'}.${kept > 0 ? ` ${kept} stay — another import holds them.` : ' Your report is back to where it was.'}`); } catch { /* ignore */ }
   return true;
 }
 
@@ -1137,7 +1144,7 @@ function renderBillCal() {
   const y = +CAL_MONTH.slice(0, 4), m = +CAL_MONTH.slice(5, 7);
   const firstDow = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
   const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   const byDay = {};
   for (const e of events) if (e.date.startsWith(CAL_MONTH)) (byDay[+e.date.slice(8)] ||= []).push(e);
 
@@ -1523,7 +1530,7 @@ function renderPayments(v) {
   const sched = v.payment_schedule || [];
   sec.hidden = !sched.length;
   if (!sched.length) { wrap.innerHTML = ''; return; }
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   const rows = sched.map((p) => {
     let badge, cls;
     if (p.missed_in_data) {
@@ -1683,7 +1690,7 @@ function renderCommitView() {
       ${c.pct_of_income != null ? `<span class="cm-pct">${Math.round(c.pct_of_income)}% of income</span>` : ''}
       ${GROUP_META.filter(([g]) => c.split && c.split[g] > 0).map(([g, label]) => `<span class="chip cm-chip">${label} ${money(c.split[g])}/mo</span>`).join('')}
     </div>
-    <p class="hint">Every fixed monthly obligation, detected from your statements. Add a balance, rate, or renewal date to unlock the payoff math — computed on this Mac, never by the AI. Want a rate-match or shop-around letter? Ask the assistant.</p>`;
+    <p class="hint">Fixed monthly obligations from your statements. Add balance, rate or renewal for payoff math, computed on this Mac.</p>`;
   // Loans with full terms power the cross-loan strategy panel (≥2 — a single
   // loan already has its own prepayment slider on the row).
   const loans = items.filter((it) => it.group === 'debt' && it.active && it.balance > 0 && it.monthly > 0 && !it.payment_below_interest)
@@ -1745,7 +1752,7 @@ function renderAnomalies(list) {
   const items = (list || []).filter((a) => !ANOM_DISMISSED.has(a.id));
   if (!items.length) { el.innerHTML = ''; return; }
   el.innerHTML = `
-    <h2>⚠ Worth checking <span class="hint inline">found by local checks — dismiss what's fine, or ask the assistant to draft a dispute</span></h2>
+    <h2>⚠ Worth checking <span class="hint inline">found by local checks — dismiss what's fine, or ask for a dispute draft</span></h2>
     <div class="anoms">${items.map((a) => `
       <div class="anom-row ${esc(a.type)}">
         <span class="anom-ic">${ANOM_ICON[a.type] || '•'}</span>
@@ -1787,7 +1794,7 @@ let DS_LAST = null; // latest panel computation — the ✦ Explain button quote
 function renderDebtStrategy(loans, extra) {
   const out = document.getElementById('ds-out');
   if (!out) return;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   const ind = loans.map((l) => amortize(l.balance, l.rate_pct, l.payment)).filter((a) => a && !a.underwater);
   const asIsInterest = ind.reduce((s, a) => s + a.total_interest, 0);
   const asIsMonths = Math.max(...ind.map((a) => a.months));
@@ -2203,26 +2210,45 @@ function announceImport(results) {
     if (hike) msg += `\n\nHeads-up: ${hike.merchant} went up ${moneyExact(hike.prior_amount)} → ${moneyExact(hike.last_amount)} (+${moneyExact(hike.increase_amount)}/mo).`;
     else if (missed) msg += `\n\n⚠ ${missed.label}: I'd expect a payment around ${missed.next_expected}, but it isn't in your data yet.`;
   }
+  // The undo affordance shows whichever way the review goes.
+  offerUndo(ok);
   // Proactive tier 2: new data is the one moment insights actually change.
-  // If the import left transactions CFO couldn't categorize, the agent-teacher
-  // goes first — it proposes rules for the residual, which the user approves in
-  // the Review card. A clean import skips straight to the full review.
+  // A review is a model turn — it costs — so it runs unasked ONLY when the
+  // person turned auto-review on (default off; the folder watch lands here
+  // too, unattended). Otherwise the status line offers a Review button.
+  // Uncategorized merchants go first: the agent-teacher proposes rules for the
+  // residual, which the user approves in the Review card.
+  const residual = computeResidual();
   if (autoReviewOn()) {
-    const residual = computeResidual();
-    if (residual.length) {
-      msg += `\n\nCharts are updated. I spotted ${plural(residual.length, 'merchant')} I couldn't categorize — sorting them now for your review…`;
-      try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
-      setTimeout(() => { try { chat?.send?.(CLASSIFY_PROMPT); } catch { /* ignore */ } }, 600);
-      return;
-    }
-    msg += `\n\nCharts are updated — running your full review now…`;
+    msg += residual.length
+      ? `\n\nCharts are updated. I spotted ${plural(residual.length, 'merchant')} I couldn't categorize — sorting them now for your review…`
+      : `\n\nCharts are updated — running your full review now…`;
     try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
-    setTimeout(() => startReview(), 600);
+    setTimeout(() => runImportReview(residual.length), 600);
     return;
   }
-  msg += `\n\nCharts are updated — take a look. Want a financial review? Hit ✦ Run review or just ask.`;
+  msg += residual.length
+    ? `\n\nCharts are updated. ${plural(residual.length, 'merchant')} still need a category — press Review to sort them.`
+    : `\n\nCharts are updated — press Review for a financial review, or just ask.`;
   try { chat?.addMessage?.('assistant', msg); } catch { /* chat not mounted */ }
-  offerUndo(ok);
+  offerReview(residual.length);
+}
+
+// The model turn an import can lead to: sort the uncategorized residual first,
+// else the full review.
+function runImportReview(residualCount) {
+  if (residualCount) { try { chat?.send?.(CLASSIFY_PROMPT); } catch { /* ignore */ } }
+  else startReview();
+}
+
+// Auto-review off: the person starts the (costly) turn themselves.
+function offerReview(residualCount) {
+  const el = document.getElementById('status');
+  const b = document.createElement('button');
+  b.className = 'chip review-link'; b.textContent = 'Review';
+  b.title = residualCount ? 'Sort the uncategorized merchants (uses the AI)' : 'Run the financial review (uses the AI)';
+  b.onclick = () => { b.remove(); runImportReview(computeResidual().length); };
+  el.appendChild(b);
 }
 
 // Inline undo affordance in the status line for the just-completed import(s) —
@@ -2241,14 +2267,16 @@ function offerUndo(ok) {
   el.appendChild(a);
 }
 
-const autoReviewOn = () => { try { return localStorage.getItem('cfo:auto-review') !== '0'; } catch { return true; } };
+// Default OFF: a review is a model turn, and it only runs unasked when the
+// person switched this on (the folder watch imports unattended).
+const autoReviewOn = () => { try { return localStorage.getItem('cfo:auto-review') === '1'; } catch { return false; } };
 
 // ── On-open reminders (deterministic, no LLM, no mission needed) ──
 // Checks run against the freshly computed view when the page opens; each
 // distinct reminder fires ONCE per expected date / stale state (localStorage).
 function openReminders() {
   if (!LAST_VIEW || !LEDGER.length) return;
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localToday();
   const daysUntil = (iso) => Math.round((new Date(iso) - new Date(today)) / 86400000);
   const once = (key) => {
     try {
@@ -2281,12 +2309,15 @@ function openReminders() {
 
 // Resume a recent chat: if the latest cfo session had activity within 24h,
 // reattach to it; otherwise mint a fresh one. The report is independent of this.
+// Activity = `updated_at` (the engine sets it from the transcript's mtime); a
+// chat begun two days ago and spoken in an hour ago is still today's.
+const lastActive = (s) => s.updated_at || s.created_at || 0;
 async function recentSessionId() {
   try {
     const sessions = await listSkillSessions(SKILL);
     if (!sessions.length) return null;
-    sessions.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-    const ageHours = (Date.now() / 1000 - (sessions[0].created_at || 0)) / 3600;
+    sessions.sort((a, b) => lastActive(b) - lastActive(a));
+    const ageHours = (Date.now() / 1000 - lastActive(sessions[0])) / 3600;
     return ageHours < 24 ? sessions[0].id : null;
   } catch { return null; }
 }
@@ -2344,7 +2375,7 @@ function showHelp() {
         <li><b>Import</b> it here — drag &amp; drop anywhere on the page, or click <b>Import statement</b>.</li>
         <li><b>View &amp; ask</b> — the report builds itself; ask the assistant <i>"why was spend higher last month?"</i> or <i>"run my financial review"</i>.</li>
       </ol>
-      <p class="hint">🔒 All your data is local-only — statements never leave this Mac, and account numbers are stripped before the AI sees even the redacted totals.</p>
+      <p class="hint">🔒 Statements never leave this Mac. Account numbers are stripped; the AI sees only redacted totals.</p>
       <div class="modal-actions"><button id="intro-ok" class="btn">Got it</button></div>
     </div>`;
   root.querySelector('#intro-ok').onclick = () => { root.hidden = true; root.innerHTML = ''; };
@@ -2416,7 +2447,7 @@ async function pollWatchFolder() {
     if (changed) await saveWatchSeen().catch(() => {});
     if (results.length) announceImport(results);      // ack + auto-review/classify, same as a drag
     else if (unknown) {
-      try { chat?.addMessage?.('assistant', `Found ${unknown} statement${unknown === 1 ? '' : 's'} in your watch folder from an account I don't recognize yet — drag one in once to set it up, then I'll auto-import it from here on.`); } catch { /* ignore */ }
+      try { chat?.addMessage?.('assistant', `Found ${unknown} statement${unknown === 1 ? '' : 's'} from a new account in your watch folder. Drag one in once; then it auto-imports.`); } catch { /* ignore */ }
     }
   } catch (e) { console.warn('[cfo] watch poll', e); }
   finally { WATCH_BUSY = false; }

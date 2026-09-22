@@ -125,7 +125,7 @@
   <div class="wrap">
     <header>
       <h1>CFO Settings</h1>
-      <p class="lead">Your account, the model CFO runs on, and report preferences. Statements stay on this Mac — only redacted aggregates ever reach the model.</p>
+      <p class="lead">Account, model and report preferences. Statements stay on this Mac; the model sees only redacted aggregates.</p>
     </header>
 
     <!-- Account -->
@@ -145,7 +145,7 @@
     <!-- Model -->
     <div class="section">
       <h2 class="section-title">Model</h2>
-      <p class="section-desc">The model CFO runs on. Defaults to the built-in Linggen Cloud model (<code>deepseek-flash</code>) — no key needed. This sets <strong>CFO's model only</strong> — it never changes other apps or the engine-wide default. Manage providers and keys in the main Linggen app.</p>
+      <p class="section-desc">Sets <strong>CFO's model only</strong>. Default: Linggen Cloud (<code>deepseek-flash</code>), no key needed. Providers live in Linggen.</p>
       <div class="field-card">
         <div class="field-label">CFO runs on</div>
         <div class="field-row">
@@ -157,7 +157,7 @@
 
     <div class="section">
       <h2 class="section-title">Memory</h2>
-      <p class="section-desc">What CFO remembers — goals and notes, scoped to CFO alone (never your other apps). CFO recalls these automatically as you chat. Forget any item anytime.</p>
+      <p class="section-desc">Goals and notes CFO remembers, scoped to CFO alone and recalled as you chat. Forget any anytime.</p>
       <div class="field-card">
         <div id="mem-list" class="acct-meta">Loading…</div>
       </div>
@@ -166,7 +166,7 @@
     <!-- Rules CFO learned -->
     <div class="section">
       <h2 class="section-title">Rules CFO learned</h2>
-      <p class="section-desc">How CFO classifies your transactions. Each rule maps a merchant keyword to a category, or marks it a <strong>Transfer</strong> (excluded from spend &amp; income) or <strong>Income</strong>. CFO writes these as you correct rows and approve suggestions — add, edit, or remove any here. Keywords are whole-word matched, so a short token like <code>tf</code> only matches the word "tf", never inside "netflix". Changes apply next time the report recomputes.</p>
+      <p class="section-desc">Merchant keyword → category, <strong>Transfer</strong> (not spend or income) or <strong>Income</strong>. Whole-word match; applies on the next recompute.</p>
       <div class="field-card">
         <div class="rule-add">
           <input id="rule-kw" type="text" placeholder="merchant keyword (e.g. amex cards, or a word like virement)" />
@@ -180,7 +180,7 @@
     <!-- Auto-import folder (folder-watch) -->
     <div class="section">
       <h2 class="section-title">Auto-import folder</h2>
-      <p class="section-desc">Watch a folder and import bank statements the moment they land — no drag, no file picker. Files are parsed and redacted on this Mac exactly like a manual import; nothing leaves your machine. Only statements from accounts CFO already knows import automatically — a new account, you drag in once. Takes effect when you reopen the report.</p>
+      <p class="section-desc">Imports new statements from known accounts, on this Mac. A new account: drag it in once. Applies on reopen.</p>
       <div class="field-card">
         <div class="pet-row" id="watch-enabled-row" onclick="watchToggle()">
           <span class="pet-check"></span>
@@ -421,9 +421,12 @@
       try { return JSON.parse((await runBash(`cat "${CONFIG}" 2>/dev/null || echo '{}'`)) || "{}"); }
       catch { return {}; }
     }
-    async function writeConfig(cfg) {
-      const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(cfg, null, 2) + "\n")));
-      await runBash(`printf '%s' "${b64}" | base64 --decode > "${CONFIG}"`);
+    // Read-modify-write under the file lock the report page takes, written
+    // atomically (temp + mv) — see updateJsonFile in lww.js. `mutate` sees the
+    // file as it is at write time, not as this page last read it.
+    async function updateConfig(mutate) {
+      const { updateJsonFile } = await import("./lww.js");
+      await updateJsonFile(runBash, CONFIG, mutate);
     }
 
     // ── Auto-import folder (folder-watch) ─────────────────────────────────
@@ -439,16 +442,13 @@
       watchStatus.textContent = on ? `Watching ${watchFolder.value} — reopen the report to apply` : 'Off';
     }
     async function watchToggle() {
-      const cfg = await readConfig();
-      cfg.watch_enabled = !cfg.watch_enabled;
-      cfg.watch_folder = (watchFolder.value || '~/Downloads').trim();
-      await writeConfig(cfg);
+      const folder = (watchFolder.value || '~/Downloads').trim();
+      await updateConfig((cfg) => { cfg.watch_enabled = !cfg.watch_enabled; cfg.watch_folder = folder; });
       loadWatch();
     }
     document.getElementById('watch-save').addEventListener('click', async () => {
-      const cfg = await readConfig();
-      cfg.watch_folder = (watchFolder.value || '~/Downloads').trim();
-      await writeConfig(cfg);
+      const folder = (watchFolder.value || '~/Downloads').trim();
+      await updateConfig((cfg) => { cfg.watch_folder = folder; });
       loadWatch();
     });
 
@@ -505,7 +505,7 @@
     // and the same one the phone merges into — so a rule added here reaches every
     // paired device, and one removed here stays removed (a tombstone competes in
     // the merge; deleting a key would just let the phone's copy win).
-    import { Register, overridesOf } from './lww.js';
+    import { Register, overridesOf, saveRegisterFile } from './lww.js';
 
     const RULES_DATA = `$HOME/.linggen/skills/cfo/data`;
     const rEsc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -526,9 +526,11 @@
       return new Register(device, state);
     }
 
+    // Same save the report page runs: under the shared file lock, re-read and
+    // merge what is on disk NOW (a phone commit since readEdits survives), then
+    // write atomically — a torn edits.json would fail-close phone sync.
     async function writeEdits(reg) {
-      const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(reg.toState(), null, 2) + '\n')));
-      await runBash(`mkdir -p "${RULES_DATA}" && printf '%s' "${b64}" | base64 --decode > "${RULES_DATA}/edits.json"`);
+      await saveRegisterFile(runBash, `${RULES_DATA}/edits.json`, reg);
     }
 
     function fillRuleTypes(extra) {

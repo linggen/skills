@@ -56,6 +56,7 @@ my $STATS_TTL = 20 * 3600;
 my $TICKERS_TTL = 7 * 86400;
 my $READ_LIMIT = 60_000;   # characters of a filing handed to the agent
 my $SAME_PERIOD_DAYS = 10; # a release and its 10-Q name slightly different days
+my $STALE_DAYS = 5;        # a price no refresh has renewed this long is stale
 my $JSON = JSON::PP->new->utf8->canonical->pretty;
 
 sub main {
@@ -235,9 +236,10 @@ sub quote_of {
               : $e->{kind} && $e->{kind} eq 'etf' ? ("e/$t")
               : ("s/$t", "e/$t");
     for my $path (@paths) {
-        my $body = fetch_json("$BASE/api/quotes/$path") or return 'no answer from stockanalysis.com';
+        my $body = fetch_json("$BASE/api/quotes/$path") or return quote_failed($e, 'no answer from stockanalysis.com');
         my $q = $body->{data};
         next unless ($body->{status} // 0) == 200 && ref $q eq 'HASH' && defined $q->{p};
+        delete $e->{stale};
         $e->{price} = $q->{p};
         $e->{change} = $q->{c};
         $e->{change_pct} = $q->{cp};
@@ -247,9 +249,27 @@ sub quote_of {
         $e->{market} = $q->{ms};
         $e->{price_time} = $q->{u};
         $e->{quote_at} = time;
+        $e->{stale} = JSON::PP::true if quote_stale($e, time);
         return undef;
     }
-    return 'not found';
+    return quote_failed($e, 'not found');
+}
+
+sub quote_failed {
+    my ($e, $err) = @_;
+    $e->{stale} = JSON::PP::true if defined $e->{price} && quote_stale($e, time);
+    return $err;
+}
+
+# A price nothing has renewed in 5 days — a delisted ticker, a source gone
+# quiet — is the last known price, never a live one: the source priced it
+# (price_time) or we last fetched it (quote_at) too long ago.
+sub quote_stale {
+    my ($e, $now) = @_;
+    my $at = $e->{quote_at} // 0;
+    my $priced = time_of($e->{price_time} // '');
+    $at = $priced if defined $priced && $priced < $at;
+    return $now - $at > $STALE_DAYS * 86400;
 }
 
 # Map from our field to the overview page's.
@@ -367,6 +387,7 @@ sub holdings_of {
             account  => $c->{account},
             currency => $q->{currency} // ($sym =~ /\.TO$/ ? 'CAD' : 'USD'),
             price    => $price,
+            ($q->{stale} ? (stale => JSON::PP::true, price_time => $q->{price_time}) : ()),
             value    => $value,
             gain     => $gain,
             gain_pct => defined $gain && $cost ? $gain / $cost * 100 : undef,
@@ -763,7 +784,7 @@ sub cmd_watch_scan {
         scanned_at => iso_time($now),
         home       => home_currency(),
         positions  => weigh_positions(\%positions),
-        events     => fresh_events(\@events, $watch->{seen} || {}),
+        events     => fresh_events(\@events, $watch->{seen} || {}, $cells),
         failed     => \@failed,
         checked    => \@symbols,
     };
@@ -777,19 +798,18 @@ sub scan_symbol {
     my ($sym, $since, $snapshots, $cell) = @_;
     my %out = (events => [], errors => []);
     my $e = quote_entry($sym);
-    if ($e->{error} && !$e->{kind}) { push @{ $out{errors} }, $e->{error}; return \%out }
+    my $shares = $cell->{shares} // 0;
+    if ($e->{error} && !$e->{kind}) {
+        push @{ $out{errors} }, $e->{error};
+        $out{position} = position_of($e, $shares, undef, time) if $shares > 0; # held: never dropped
+        return \%out;
+    }
     my $rows = history_of($e);
     my $page = overview($e);
     my $data = $page ? $page->[1] : {};
     push @{ $out{errors} }, 'no price history from stockanalysis.com' unless $rows;
     push @{ $out{errors} }, 'no news from stockanalysis.com' unless $page;
-    my $shares = $cell->{shares} // 0;
-    my $price = $rows && @$rows ? $rows->[0]{c} : $e->{price};
-    $out{position} = {
-        name => $e->{name}, kind => $e->{kind}, currency => $e->{currency},
-        shares => $shares + 0, price => $price,
-        value => $shares > 0 && defined $price ? round_to($shares * $price, 2) : 0,
-    };
+    $out{position} = position_of($e, $shares, $rows, time);
     my @found;
     push @found, move_events($sym, $rows, $since, $shares), break_events($sym, $rows, $since) if $rows;
     push @found, news_events($sym, $data->{news}, $since);
@@ -810,6 +830,30 @@ sub scan_symbol {
     return \%out;
 }
 
+# A symbol's position: the newest close, else the cached price. `stale` = the
+# price is the last known one (no session or quote in 5 days); a holding
+# with no price at all has `value` null — weigh_positions won't guess.
+sub position_of {
+    my ($e, $shares, $rows, $now) = @_;
+    my $close = $rows && @$rows ? $rows->[0] : undef;
+    my $price = $close ? $close->{c} : $e->{price};
+    my $stale = $close ? $now - session_end($close->{t}) > $STALE_DAYS * 86400
+              : defined $price && ($e->{stale} || quote_stale($e, $now));
+    return {
+        name => $e->{name}, kind => $e->{kind}, currency => $e->{currency} // ($e->{symbol} =~ /\.TO$/ ? 'CAD' : 'USD'),
+        shares => $shares + 0, price => $price,
+        value => !($shares > 0) ? 0 : defined $price ? round_to($shares * $price, 2) : undef,
+        ($stale ? (stale => JSON::PP::true, price_on => $close ? $close->{t} : quote_day($e)) : ()),
+    };
+}
+
+# The day a cached price is from: the source's own time, else when we fetched it.
+sub quote_day {
+    my ($e) = @_;
+    my ($at) = sort { $a <=> $b } grep { $_ } time_of($e->{price_time} // ''), $e->{quote_at};
+    return $at ? strftime('%Y-%m-%d', gmtime($at)) : undef;
+}
+
 # The currency CFO reports in (config.json), for weighing a currency move.
 sub home_currency {
     my $cfg = read_json(dirname(data_dir()) . '/config.json') || {};
@@ -819,14 +863,17 @@ sub home_currency {
 sub clean_stat { my ($v) = @_; return defined $v && $v ne '' && $v ne 'n/a' ? $v : undef }
 
 # Newest first, one per id (a headline tagged with two holdings comes once,
-# naming both), minus those Ling has already judged.
+# naming both), minus those Ling has already judged. `also` names only the
+# user's own symbols (`listed`: held or watched) — a ticker scanned on
+# request never rides along on theirs.
 sub fresh_events {
-    my ($events, $seen) = @_;
+    my ($events, $seen, $listed) = @_;
     my (%by_id, @out);
     for my $ev (@$events) {
         next if $seen->{ $ev->{id} };
         if (my $had = $by_id{ $ev->{id} }) {
-            push @{ $had->{also} ||= [] }, $ev->{symbol} if $ev->{symbol} && ($had->{symbol} // '') ne $ev->{symbol};
+            push @{ $had->{also} ||= [] }, $ev->{symbol}
+                if $ev->{symbol} && ($had->{symbol} // '') ne $ev->{symbol} && $listed->{ $ev->{symbol} };
             next;
         }
         $by_id{ $ev->{id} } = $ev;
@@ -836,14 +883,21 @@ sub fresh_events {
 }
 
 # Each position's share of its currency's holdings — US and Canadian dollars
-# never add up.
+# never add up. A stale price counts at its last known value (flagged on the
+# position). A holding with no price at all leaves its currency's weights
+# null: a total that silently shrank would push the others past the 10% bar.
 sub weigh_positions {
     my ($positions) = @_;
-    my %total;
-    $total{ $_->{currency} // 'USD' } += $_->{value} // 0 for values %$positions;
+    my (%total, %unknown);
     for my $p (values %$positions) {
-        my $t = $total{ $p->{currency} // 'USD' };
-        $p->{weight_pct} = $t && $p->{value} ? round_to($p->{value} / $t * 100, 1) : 0;
+        my $cur = $p->{currency} // 'USD';
+        if (($p->{shares} // 0) > 0 && !defined $p->{value}) { $unknown{$cur} = 1; next }
+        $total{$cur} += $p->{value} // 0;
+    }
+    for my $p (values %$positions) {
+        my $cur = $p->{currency} // 'USD';
+        my $t = $total{$cur};
+        $p->{weight_pct} = $unknown{$cur} ? undef : $t && $p->{value} ? round_to($p->{value} / $t * 100, 1) : 0;
     }
     return $positions;
 }
@@ -864,20 +918,38 @@ sub history_of {
     return undef;
 }
 
-# A US session closes 16:00 New York time — 20:00 UTC in summer; the hour's
-# difference in winter doesn't move a nightly window.
-sub session_end { return epoch_of($_[0]) + 8 * 3600 }
+# A session closes 16:00 New York (and Toronto) time: 20:00 UTC under daylight
+# time, 21:00 UTC in winter. US/Canada daylight time runs from the second
+# Sunday of March to the first Sunday of November; no session falls on
+# either Sunday, so the date alone decides.
+sub session_end {
+    my ($y, $m, $d) = split /-/, $_[0];
+    return timegm(0, 0, 16 + (daylight_time($y, $m, $d) ? 4 : 5), $d, $m - 1, $y);
+}
+
+sub daylight_time {
+    my ($y, $m, $d) = @_;
+    my $sunday = sub { my ($month, $nth) = @_; my $dow = (gmtime(timegm(0, 0, 12, 1, $month - 1, $y)))[6]; 1 + (7 - $dow) % 7 + 7 * ($nth - 1) };
+    return 0 if $m < 3 || $m > 11;
+    return $d >= $sunday->(3, 2) if $m == 3;
+    return $d < $sunday->(11, 1) if $m == 11;
+    return 1;
+}
+
+# A session still open at `now` is left for the next window: the next scan's
+# window starts at this one, before the close, so it looks at it then.
+sub session_closed { my ($day, $now) = @_; return session_end($day) <= ($now // time) }
 
 # Sessions since the window whose move was far past the stock's usual day: at
 # least 2.5 times the standard deviation of the 60 sessions before it, and 2%.
 # The position's real dollar change rides along.
 sub move_events {
-    my ($sym, $rows, $since, $shares) = @_;
+    my ($sym, $rows, $since, $shares, $now) = @_;
     my @out;
     for my $i (0 .. $#$rows) {
         my $r = $rows->[$i];
         last if session_end($r->{t}) < $since;
-        next unless defined $r->{ch} && $i < $#$rows;
+        next unless defined $r->{ch} && $i < $#$rows && session_closed($r->{t}, $now);
         my @usual = grep { defined } map { $_->{ch} } @$rows[$i + 1 .. min($i + $MOVE_TYPICAL_DAYS, $#$rows)];
         next unless @usual >= 20;
         my $spread = spread(@usual);
@@ -902,11 +974,12 @@ sub spread {
 # A close past the 52-week range since the window, when the last close past
 # it that way was 20+ sessions back: a fresh high or low, not every day of a run.
 sub break_events {
-    my ($sym, $rows, $since) = @_;
+    my ($sym, $rows, $since, $now) = @_;
     my @out;
     for my $i (0 .. $#$rows) {
         my $r = $rows->[$i];
         last if session_end($r->{t}) < $since;
+        next unless session_closed($r->{t}, $now);
         for my $way (['high_52w', 1], ['low_52w', -1]) {
             my ($kind, $dir) = @$way;
             next unless breaks_year($rows, $i, $dir);
@@ -1070,6 +1143,11 @@ my @POLICY_AGENCIES = qw(industry-and-security-bureau trade-representative-offic
 my $CEREMONIAL = qr/\b(?:Day|Week|Month)(?:,? \d{4})?$|Anniversary|Honoring|Memory of|^Continuation of the National Emergency/i;
 my %BLS = (cpi_sa => 'CUSR0000SA0', cpi => 'CUUR0000SA0', payrolls => 'CES0000000001', unemployment => 'LNS14000000');
 
+# The snapshot (data/watch-scan.json `economy`) carries what each daily
+# series had published at the last scan — `effr`, `boc_rate`, `fx`: the newest
+# observation's date — and the BLS months. A rate is published the day after
+# the one it's for, after the nightly run, so a window on the observation's
+# own date would never see it; "newer than what the last scan saw" does.
 sub economy_scan {
     my ($since, $snapshots, $today) = @_;
     my %out = (events => [], errors => []);
@@ -1078,38 +1156,67 @@ sub economy_scan {
         return push @{ $out{errors} }, "no answer from $source" unless defined $events[0];
         push @{ $out{events} }, grep { ref } @events;
     };
+    my @by_time = sort { ($b->{at} // 0) <=> ($a->{at} // 0) } @{ $snapshots || [] };
+    my ($before) = grep { ($_->{at} // 0) <= $since } @by_time;
+    my %snap = %{ $by_time[0] || {} };   # a source that doesn't answer keeps what it had
+    delete $snap{at};
     my $effr = fetch_json('https://markets.newyorkfed.org/api/rates/unsecured/effr/last/10.json', $SEC_UA);
-    $add->('the New York Fed', $effr ? ('ok', fed_rate_events($effr->{refRates}, $since)) : undef);
+    $add->('the New York Fed', $effr ? ('ok', fed_rate_events($effr->{refRates}, $since, $before->{effr})) : undef);
+    $snap{effr} = newest_day([ map { $_->{effectiveDate} } grep { ref eq 'HASH' } @{ $effr->{refRates} || [] } ]) // $snap{effr} if $effr;
     my $feed = fetch('https://www.federalreserve.gov/feeds/press_monetary.xml');
     $add->('the Federal Reserve', $feed ? ('ok', fed_release_events(decode('UTF-8', $feed), $since)) : undef);
     my $calendar = fetch('https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm');
     $add->('the FOMC calendar', $calendar ? ('ok', fomc_meeting_events($calendar, $today)) : undef);
     my $boc = fetch_json('https://www.bankofcanada.ca/valet/observations/V39079,FXUSDCAD/json?recent=80', $SEC_UA);
-    $add->('the Bank of Canada', $boc ? ('ok', boc_events($boc->{observations}, $since)) : undef);
+    $add->('the Bank of Canada', $boc ? ('ok', boc_events($boc->{observations}, $since, $before)) : undef);
+    if ($boc) {
+        for my $series (['boc_rate', 'V39079'], ['fx', 'FXUSDCAD']) {
+            my ($key, $id) = @$series;
+            my @days = map { $_->{d} } grep { ref eq 'HASH' && $_->{d} && ref $_->{$id} eq 'HASH' && ($_->{$id}{v} // '') ne '' } @{ $boc->{observations} || [] };
+            $snap{$key} = newest_day(\@days) // $snap{$key};
+        }
+    }
     my $bls = bls_series();
     if ($bls) {
-        my $periods = bls_periods($bls);
-        my ($before) = sort { $b->{at} <=> $a->{at} } grep { ($_->{at} // 0) <= $since } @{ $snapshots || [] };
         $add->('the BLS', 'ok', bls_events($bls, $before));
-        $out{snapshot} = $periods;
+        %snap = (%snap, %{ bls_periods($bls) });
     } else {
         $add->('the BLS', undef);
     }
     my $docs = policy_documents($since);
     $add->('the Federal Register', $docs ? ('ok', policy_events($docs, $since)) : undef);
     $_->{scope} = 'economy' for @{ $out{events} };
+    $out{snapshot} = \%snap if grep { defined } values %snap;
     return \%out;
 }
 
-# The Fed's target range changed on a day inside the window (the New York
-# Fed's daily effective rate carries the range in force).
+sub newest_day { my ($days) = @_; my ($d) = sort { $b cmp $a } grep { defined && /^\d{4}-\d\d-\d\d$/ } @$days; return $d }
+
+# A daily observation the last scan hadn't seen: newer than the newest one it
+# saw (`through`). With no earlier scan, one published inside the window —
+# the next weekday, 13:00 UTC, at the earliest.
+sub unseen_day {
+    my ($day, $since, $through) = @_;
+    return $day gt $through if defined $through;
+    return published_at($day) >= $since;
+}
+
+sub published_at {
+    my ($day) = @_;
+    my $next = shift_date($day, 1);
+    $next = shift_date($next, 1) while (gmtime(epoch_of($next)))[6] =~ /^[06]$/;
+    return epoch_of($next) + 3600;
+}
+
+# The Fed's target range changed on a day the last scan hadn't seen (the New
+# York Fed's daily effective rate carries the range in force).
 sub fed_rate_events {
-    my ($rates, $since) = @_;
+    my ($rates, $since, $through) = @_;
     my @days = sort { $b->{effectiveDate} cmp $a->{effectiveDate} } grep { ref eq 'HASH' && $_->{effectiveDate} } @{ $rates || [] };
     my @out;
     for my $i (0 .. $#days - 1) {
         my ($day, $prev) = @days[$i, $i + 1];
-        last if session_end($day->{effectiveDate}) < $since;
+        last unless unseen_day($day->{effectiveDate}, $since, $through);
         next if $day->{targetRateFrom} == $prev->{targetRateFrom} && $day->{targetRateTo} == $prev->{targetRateTo};
         push @out, rate_event('Fed', $day->{effectiveDate}, range_of($prev), range_of($day),
                               ($day->{targetRateTo} - $prev->{targetRateTo}) * 100);
@@ -1171,22 +1278,23 @@ sub fomc_meeting_events {
 }
 
 # The Bank of Canada's rate changed, or USD/CAD had a day far past its usual
-# one (2.5 usual days wide and 0.5%), inside the window.
+# one (2.5 usual days wide and 0.5%), on a day the last scan hadn't seen
+# (`before`: its snapshot's `boc_rate` and `fx`).
 sub boc_events {
-    my ($observations, $since) = @_;
+    my ($observations, $since, $before) = @_;
     my @days = sort { $b->{d} cmp $a->{d} } grep { ref eq 'HASH' && $_->{d} } @{ $observations || [] };
     my $value = sub { my ($day, $series) = @_; my $v = ($day->{$series} || {})->{v}; defined $v && $v ne '' ? $v : undef };
     my @out;
     my @rates = grep { defined $value->($_, 'V39079') } @days;   # holidays carry no value
     for my $i (0 .. $#rates - 1) {
         my ($rate, $was) = map { $value->($_, 'V39079') } @rates[$i, $i + 1];
-        last if session_end($rates[$i]{d}) < $since;
+        last unless unseen_day($rates[$i]{d}, $since, $before->{boc_rate});
         next if $rate == $was;
         push @out, rate_event('Bank of Canada', $rates[$i]{d}, sprintf('%.2f%%', $was), sprintf('%.2f%%', $rate), ($rate - $was) * 100);
     }
     my @fx = grep { defined $value->($_, 'FXUSDCAD') } @days;
     for my $i (0 .. $#fx - 1) {
-        last if session_end($fx[$i]{d}) < $since;
+        last unless unseen_day($fx[$i]{d}, $since, $before->{fx});
         my @v = map { $value->($_, 'FXUSDCAD') } @fx[$i .. min($i + 61, $#fx)];
         my @usual = map { ($v[$_] / $v[$_ + 1] - 1) * 100 } 1 .. $#v - 1;
         next unless @usual >= 20;
@@ -1388,7 +1496,8 @@ sub judged_item {
 # is in: a move's real change; a currency day's real change on the holdings
 # priced in the other currency; otherwise a share of the positions' value by
 # materiality. `weight_pct` = the touched holdings' share of that currency's
-# total, `stake_pct` = the stake's.
+# total (null when a holding there couldn't be priced), `stake_pct` = the
+# stake's.
 sub stake_of {
     my ($ev, $held, $positions, $home, $materiality) = @_;
     return { stake => 0, stake_pct => 0, weight_pct => 0, currency => undef, held => JSON::PP::false } unless @$held;
@@ -1402,7 +1511,7 @@ sub stake_of {
         my $g = $by{ $p->{currency} // 'USD' } ||= { value => 0, stake => 0, weight_pct => 0 };
         $g->{value} += $p->{value} // 0;
         $g->{stake} += $stake;
-        $g->{weight_pct} += $p->{weight_pct} // 0;
+        $g->{weight_pct} = defined $p->{weight_pct} && defined $g->{weight_pct} ? $g->{weight_pct} + $p->{weight_pct} : undef;
     }
     my ($currency) = sort { $by{$b}{value} <=> $by{$a}{value} || $a cmp $b } keys %by;
     return { stake => 0, stake_pct => 0, weight_pct => 0, currency => undef, held => JSON::PP::false } unless $currency;
@@ -1412,7 +1521,7 @@ sub stake_of {
         currency   => $currency,
         stake      => round_to($by{$currency}{stake}, 0),
         stake_pct  => $total ? round_to($by{$currency}{stake} / $total * 100, 2) : 0,
-        weight_pct => round_to($by{$currency}{weight_pct}, 1),
+        weight_pct => defined $by{$currency}{weight_pct} ? round_to($by{$currency}{weight_pct}, 1) : undef, # a holding unpriced: no weight bar
     };
 }
 

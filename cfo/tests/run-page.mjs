@@ -9,9 +9,9 @@
 // Skips gracefully (exit 0 with a notice) when Chrome or the server is absent.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync } from 'node:fs';
 import { reportFromLedger, viewFromLedger } from '../scripts/ledger.js';
+import { loadLive } from './lib/live-data.mjs';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 // 9527 since the 2026-07 port migration. This default was left on 9898, where a
@@ -20,10 +20,12 @@ const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 // hangs"; it was a dead port. Hence the reachability probe below: an
 // unreachable daemon has to SKIP in a second, not block for three minutes.
 const URL = process.env.CFO_URL || 'http://localhost:9527/apps/cfo/scripts/cfo.html';
-const DATA = join(process.env.HOME, '.linggen/skills/cfo/data');
 
 if (!existsSync(CHROME)) { console.log('SKIP — Chrome not found at', CHROME); process.exit(0); }
-if (!existsSync(join(DATA, 'ledger'))) { console.log('SKIP — no live ledger to compare against'); process.exit(0); }
+// Accounts, rules and reverts come from the edit register, as the page reads
+// them (accounts.json is retired) — see tests/lib/live-data.mjs.
+const live = loadLive();
+if (!live || !live.rows.length) { console.log('SKIP — no live ledger to compare against'); process.exit(0); }
 
 // Ask before committing Chrome to it: a listening-but-wedged daemon is exactly
 // the case a plain connect can't distinguish from a healthy one.
@@ -55,19 +57,15 @@ const cards = Object.fromEntries(
 );
 const subsLine = (dom.match(/(\d+ active(?: · \d+ stopped)?)/) || [])[1] || '';
 
-const rows = [];
-for (const f of readdirSync(join(DATA, 'ledger'))) {
-  for (const l of readFileSync(join(DATA, 'ledger', f), 'utf8').split('\n')) if (l.trim()) rows.push(JSON.parse(l));
-}
-const accounts = JSON.parse(readFileSync(join(DATA, 'accounts.json'), 'utf8'));
+const { rows, accounts, opts } = live;
 // The head cards cover the SELECTED range, so recompute for the range the page
 // actually resolved — it publishes it on #range-bar for exactly this reason.
 // Rates (subscriptions, commitments) stay full-history on the page, so they
 // still compare against the unranged report.
 const m = dom.match(/id="range-bar"[^>]*data-range="([^"]+)"/);
 const shown = m && m[1] !== 'all' ? { from: m[1].split('..')[0], to: m[1].split('..')[1] } : null;
-const view = viewFromLedger(rows, accounts, {}, shown);
-const rep = reportFromLedger(rows, accounts);
+const view = viewFromLedger(rows, accounts, opts, shown);
+const rep = reportFromLedger(rows, accounts, opts);
 console.log(`page range: ${m ? m[1] : '(none published)'}`);
 const money = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const expect = {

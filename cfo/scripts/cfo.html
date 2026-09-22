@@ -42,7 +42,7 @@
 
       <section id="empty-state">
         <p class="lead">Drop a bank or credit-card export (CSV or PDF) to see where your money goes.</p>
-        <p class="hint">Your statements never leave this Mac — parsing and redaction happen locally, and the AI only ever sees redacted totals. CSV is most accurate; PDF works too (best-effort).</p>
+        <p class="hint">Statements stay on this Mac; the AI sees only redacted totals. CSV is most accurate; PDF is best-effort.</p>
       </section>
 
       <section id="report" hidden>
@@ -57,10 +57,10 @@
              Sits under the deterministic state summary — numbers first, voice second. -->
         <section id="insights-wrap" hidden>
           <h2>✦ Insights <button id="insights-clear" class="chip" title="Remove all insight cards">clear</button>
-            <label class="auto-chip" title="Run the financial review automatically whenever an import adds new transactions"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
+            <label class="auto-chip" title="Off: imports offer a Review button. On: the AI reviews every import, including the watch folder"><input type="checkbox" id="auto-review-toggle"> auto-review on import</label></h2>
           <div id="insights"></div>
         </section>
-        <p class="hint" id="privacy-foot">🔒 All data stays on this Mac. Statements are parsed and redacted locally — the AI model only ever sees redacted totals (no account numbers, no balances, no raw files).</p>
+        <p class="hint" id="privacy-foot">🔒 All data stays on this Mac. The AI sees only redacted totals — no account numbers, balances or raw files.</p>
       </section>
 
       <!-- Trends: all historical charts, range-scoped. Page-owned, deterministic;

@@ -11,7 +11,12 @@
 //      transfer pair and exclude both from spend/income.
 
 import { txnId } from './hash.js';
-import { analyzeTransactions, keywordRe } from './analyze.js';
+import { analyzeTransactions, keywordRe, cleanMerchant } from './analyze.js';
+
+// The key a merchant rule (`ov:<key>`) is stored under: the cleaned, lowercased
+// name — one rule covers every raw variant (store numbers, city suffixes), and
+// it is what categorization matches. Every rule-writing path uses this.
+export const ruleKey = (merchant) => (cleanMerchant(merchant) || String(merchant)).toLowerCase();
 
 const daysBetween = (a, b) => Math.abs((new Date(a) - new Date(b)) / 86400000);
 const PAYMENT_RE = /\b(payment|autopay|auto pay|bill ?pay|e-?transfer|transfer|thank you|pymt)\b/i;
@@ -108,6 +113,36 @@ export function mergeLedger(existing, incoming) {
   return { merged: (existing || []).concat(added), added };
 }
 
+// An import against a ledger that may hold reverted rows. Rows dedup by id,
+// so re-importing a file you reverted adds nothing to the file — its rows come
+// back by lifting their tombstones. `fresh` is what this import brought into
+// the report either way: it is what the import log records as `added_ids`, so
+// the import reports "N new" and can be undone again.
+export function mergeImport(existing, incoming, isDeleted = () => false) {
+  const { merged, added } = mergeLedger(existing, incoming);
+  const restored = (incoming || []).filter((r) => isDeleted(r.id));
+  const seen = new Set(), fresh = [];
+  for (const r of [...added, ...restored]) if (!seen.has(r.id)) { seen.add(r.id); fresh.push(r); }
+  return { merged, added, restored, fresh };
+}
+
+// Which rows undoing one import may take out of the report. Its own additions,
+// plus rows it also carried whose adding import was already undone — minus any
+// row another LIVE import still holds (overlapping statements share rows: the
+// later one's copy deduped, so it never recorded them as added). `row_ids` is
+// every row a statement carried; entries without it (older, or the phone's)
+// hold their `added_ids`.
+export function idsToRevert(log, importId) {
+  const entry = (log || []).find((e) => e.id === importId);
+  if (!entry || entry.reverted) return [];
+  const others = log.filter((e) => e.id !== importId);
+  const held = new Set(others.filter((e) => !e.reverted).flatMap((e) => e.row_ids || e.added_ids || []));
+  const orphaned = new Set(others.filter((e) => e.reverted).flatMap((e) => e.added_ids || []));
+  const mine = new Set(entry.added_ids || []);
+  for (const id of entry.row_ids || []) if (orphaned.has(id)) mine.add(id);
+  return [...mine].filter((id) => !held.has(id));
+}
+
 // Detect transfers (problem 2), in three passes of decreasing certainty:
 //   1. USER RULES win, both ways. 'transfer' excludes; a category/'income'
 //      LOCKS the row as real money so the heuristics can't re-flag it.
@@ -194,13 +229,19 @@ export function detectTransfers(rows, accountsById = {}, windowDays = 5, overrid
 // pattern: payments to a card recur ~monthly, so last_paid + cadence predicts
 // the next one. `missed_in_data` only fires when the ledger has data PAST the
 // expected date + grace and still no payment — stale data must not alarm.
+// "Data" is the CARD's own rows: a card imported through June beside chequing
+// through August has no evidence about July, so it must not read as missed.
 const addDays = (iso, days) => new Date(new Date(iso).getTime() + days * 86400000).toISOString().slice(0, 10);
 
 export function detectPaymentSchedule(rows, accountsById = {}) {
-  const dataThrough = rows.reduce((m, r) => (r.date && r.date > m ? r.date : m), '');
+  const lastByAccount = {};
+  for (const r of rows) {
+    if (r.date && r.date > (lastByAccount[r.account] || '')) lastByAccount[r.account] = r.date;
+  }
   const out = [];
   for (const [id, acc] of Object.entries(accountsById)) {
     if ((acc.type || '').toLowerCase() !== 'credit') continue;
+    const dataThrough = lastByAccount[id] || '';
     const pays = rows
       .filter((r) => r.account === id && r.amount > 0 && r.date && (r.transfer || PAYMENT_RE.test(r.merchant)))
       .sort((a, b) => a.date.localeCompare(b.date));

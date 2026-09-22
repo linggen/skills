@@ -21,9 +21,10 @@ attached — same detection, richer per-kind actions.
 - Commitments tab: rows grouped by kind. Each row shows detected merchant,
   monthly amount, cadence — plus **editable fields**: balance, rate %,
   term/renewal date. Kind-override dropdown (same UX as category corrections).
-- Inputs persist to `data/commitments.json` keyed by merchant_key (written via
-  /api/bash, same as corrections). `saveReport()` merges them into the report
-  so the agent sees them through LatestAnalysis.
+- Inputs persist as `com:<merchant_key>|<field>` cells in the edit register
+  (`data/edits.json`, lww.js; `commitments.json` is a legacy seed only).
+  `saveReport()` merges them into the report so the agent sees them through
+  LatestAnalysis.
 - Page-side deterministic math (zero LLM):
   - loans → remaining interest, payoff date, prepayment slider
     ("+$200/mo → save $X interest, done Y years early")

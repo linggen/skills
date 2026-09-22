@@ -31,6 +31,8 @@ import {
   rankMoves,
   missingNote,
   listingTag,
+  staleNote,
+  checkCostText,
 } from '../scripts/investments.js';
 
 let pass = 0, fail = 0;
@@ -246,6 +248,34 @@ t('the read prompt names the button and carries the item whole',
     stakeText(doc.items[0]) === `${usd0(2173)} at stake` && stakeText(doc.items[2]) === 'Watching' && stakeText({ held: false, scope: 'economy' }) === '');
   t('Ask CFO quotes the line and its source', askText(doc.items[0]) === 'What does this mean for my holdings? "Tesla fell 14.5%." (https://x/1)'
     && askText(doc.items[1]) === 'What does this mean for my holdings? "Tariffs."');
+}
+
+// ── Stale prices ───────────────────────────────────────────────────────────
+{
+  const q = {
+    NVDA: { price: 200, change: 1, currency: 'USD' },
+    GONE: { price: 12, change: 0, currency: 'USD', stale: true, price_time: 'Sep 3, 2026, 4:00 PM EDT', error: 'not found' },
+  };
+  const rows = positionsOf({ NVDA: { watch: true, shares: 10 }, GONE: { watch: true, shares: 50 } }, q);
+  const gone = rows.find((r) => r.symbol === 'GONE');
+  t('a stale price shows as a fact on its row', gone.stale === 'Last price Sep 3 — no quote since' && gone.value === 600);
+  const totals = totalsByCurrency(rows);
+  t('a stale value is left out of its total, and named', totals.USD.value === 2000 && eq(totals.USD.left_out, ['GONE']));
+  t('a live row is not stale', rows.find((r) => r.symbol === 'NVDA').stale === '');
+  t('with no source time, the stale day is when it was fetched', /^Last price \w+ \d+ — no quote since$/.test(staleNote({ quote_at: 1788000000 })));
+  t('the agent\'s snapshot carries the stale fact', snapshotOf(rows).holdings.find((h) => h.symbol === 'GONE').stale === gone.stale);
+}
+
+// ── Check now asks first ───────────────────────────────────────────────────
+{
+  const runs = [
+    { status: 'running' },
+    { status: 'completed', usage: { calls: 4, prompt: 56500, cached: 39400, output: 400 } },
+  ];
+  const text = checkCostText(runs);
+  t('Check now asks with the last finished run\'s tokens', text === 'Check now? The last check used about 57k tokens.', text);
+  t('no run measured yet: it still asks, without a number', checkCostText([]).startsWith('Check now?') && checkCostText(undefined).startsWith('Check now?'));
+  t('the ask is 20 words or fewer', [text, checkCostText([])].every((s) => s.split(/\s+/).length <= 20));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

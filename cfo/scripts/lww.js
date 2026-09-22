@@ -208,3 +208,81 @@ export function seedFromLegacy(reg, { overrides, budgets, commitments, accounts,
   for (const r of rows || []) if (r && r.id != null && r.category) fill(`cat:${r.id}`, r.category);
   return reg;
 }
+
+// ── Persistence: one locked, atomic read-merge-write for the shared files ────
+//
+// `edits.json` and `config.json` are rewritten whole by more than one writer:
+// the report page, the Settings page (a separate webview) and the paired phone.
+// A plain `>` truncates before the new bytes land, and a torn `edits.json`
+// fail-closes the phone's sync. So every whole-file write here:
+//   1. takes a cross-page lock (`<file>.lock`, a mkdir — atomic; a holder spans
+//      two shell calls, so one older than ~5s is a crashed page and is taken),
+//   2. re-reads the file and hands its text to `update`, which merges into it,
+//   3. writes a temp file and `mv`s it over (atomic rename), but only if the
+//      file's checksum still matches what step 2 read — the phone doesn't take
+//      the lock, it runs its own compare-and-swap; a conflict re-reads and retries.
+// I/O is injected (`runBash`), so this module stays pure for the node tests.
+const PATH_CHAINS = new Map(); // in-page ordering per file
+const CAS_CONFLICT = '__CFO_CAS_CONFLICT__';
+const toB64 = (text) => btoa(unescape(encodeURIComponent(text)));
+const cksumCmd = (f) => `if [ -f "${f}" ]; then cksum < "${f}"; else echo none; fi`;
+
+/**
+ * @param {(cmd: string) => Promise<string>} runBash
+ * @param {string} path  file path ($HOME may stay literal)
+ * @param {(text: string) => string|null} update  current text -> new text (null = leave it)
+ */
+export function lockedUpdate(runBash, path, update, attempts = 4) {
+  const prev = PATH_CHAINS.get(path) || Promise.resolve();
+  const run = prev.then(() => lockedUpdateNow(runBash, path, update, attempts));
+  PATH_CHAINS.set(path, run.catch(() => {}));
+  return run;
+}
+
+async function lockedUpdateNow(runBash, path, update, attempts) {
+  const lock = `${path}.lock`;
+  for (let i = 0; i < attempts; i++) {
+    const out = await runBash(`mkdir -p "$(dirname "${path}")"; n=0; until mkdir "${lock}" 2>/dev/null; do n=$((n+1)); `
+      + `if [ $n -ge 100 ]; then rm -rf "${lock}"; mkdir "${lock}" 2>/dev/null; break; fi; sleep 0.05; done; `
+      + `${cksumCmd(path)}; cat "${path}" 2>/dev/null || true`);
+    let wrote = false;
+    try {
+      const nl = out.indexOf('\n');
+      const token = (nl < 0 ? out : out.slice(0, nl)).trim();
+      const text = nl < 0 ? '' : out.slice(nl + 1);
+      const next = update(text);
+      if (next == null) return;
+      const tmp = `${path}.tmp.$$`;
+      const res = await runBash(`if [ "$(${cksumCmd(path)})" != "${token}" ]; then rmdir "${lock}" 2>/dev/null; echo ${CAS_CONFLICT}; exit 0; fi; `
+        + `printf '%s' "${toB64(next)}" | base64 --decode > "${tmp}" && mv -f "${tmp}" "${path}"; rc=$?; rmdir "${lock}" 2>/dev/null; exit $rc`);
+      wrote = true;
+      if (!res.includes(CAS_CONFLICT)) return;
+    } finally {
+      if (!wrote) await runBash(`rmdir "${lock}" 2>/dev/null || true`).catch(() => {});
+    }
+  }
+  throw new Error(`${path}: changed underneath on every attempt`);
+}
+
+/// Save a register: merge whatever the file holds now into `reg`, then write
+/// the union. Returns how many cells the file won (see mergeState).
+export async function saveRegisterFile(runBash, path, reg) {
+  let took = 0;
+  await lockedUpdate(runBash, path, (text) => {
+    let disk = null;
+    try { disk = text.trim() ? JSON.parse(text) : null; } catch { disk = null; }
+    took = disk ? reg.mergeState(disk) : 0;
+    return `${JSON.stringify(reg.toState(), null, 2)}\n`;
+  });
+  return took;
+}
+
+/// Read-modify-write a JSON object file (config.json) under the same lock.
+export function updateJsonFile(runBash, path, mutate) {
+  return lockedUpdate(runBash, path, (text) => {
+    let obj = {};
+    try { obj = text.trim() ? JSON.parse(text) : {}; } catch { obj = {}; }
+    mutate(obj);
+    return `${JSON.stringify(obj, null, 2)}\n`;
+  });
+}

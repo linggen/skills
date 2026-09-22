@@ -1,6 +1,7 @@
 ---
 name: apple-shifu
 model: deepseek-flash
+product: apple-shifu
 description: >-
   Apple Shifu — keeps your Mac and iPhone healthy and tidy. System health
   (disk, apps, caches, dashboard) plus iPhone/Mac photo-video cleanup.

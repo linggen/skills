@@ -709,10 +709,21 @@ function buildBudgets(txns, subs, budgets, lastDate, catOf) {
 
   // Fixed charges still expected this month, bucketed to the committed
   // merchant's category — a cap on recreation should see Netflix coming.
+  // The category is the one its newest charge reads as, per-row correction
+  // included: bucketing by merchant alone put a corrected Netflix's next bill
+  // back under "subscriptions" while its paid ones sat in the user's category.
+  // `>=` keeps the last of a same-day tie, the row detectSubscriptions' stable
+  // sort ends on.
+  const lastCharge = {};
+  for (const t of txns) {
+    if (t.amount >= 0 || !t.date) continue;
+    const k = merchantKey(t.merchant);
+    if (!lastCharge[k] || t.date >= lastCharge[k].date) lastCharge[k] = t;
+  }
   const upcoming = {};
   for (const s of subs) {
     if (!s.active || !s.last_date || !s.cadence_days) continue;
-    const cat = catOf({ merchant: s.merchant, category: null });
+    const cat = catOf(lastCharge[merchantKey(s.merchant)] || { merchant: s.merchant, category: null });
     let next = addDaysIso(s.last_date, s.cadence_days);
     for (let i = 0; i < 3 && next <= monthEndIso; i++) {
       if (next > lastDate) upcoming[cat] = (upcoming[cat] || 0) + s.monthly;

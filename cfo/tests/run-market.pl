@@ -249,12 +249,69 @@ my $fresh = fresh_events([
     { id => 'move:TSLA:2026-09-15', symbol => 'TSLA', at => '2026-09-15T20:00:00Z' },
     { id => 'news:1', symbol => 'META', at => '2026-09-15T10:00:00Z' },
     { id => 'news:2', symbol => 'NVDA', at => '2026-09-15T11:00:00Z' },
-], { 'news:2' => '2026-09-15' });
+    { id => 'news:1', symbol => 'AMD', at => '2026-09-15T10:00:00Z' },
+], { 'news:2' => '2026-09-15' }, { NVDA => {}, META => { watch => 1 }, TSLA => {} });
 t('events newest first, one per id naming every holding, judged ones gone',
   join(',', map { $_->{id} } @$fresh) eq 'move:TSLA:2026-09-15,news:1' && $fresh->[1]{also}[0] eq 'META');
+t('a symbol that isn\'t held or watched never rides along in also', join(',', @{ $fresh->[1]{also} }) eq 'META',
+  join(',', @{ $fresh->[1]{also} }));
 my $weighed = weigh_positions({ NVDA => { currency => 'USD', value => 4319 }, TSLA => { currency => 'USD', value => 14484 },
                                 'RY.TO' => { currency => 'CAD', value => 2842 }, VOO => { currency => 'USD', value => 0 } });
 t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'RY.TO'}{weight_pct} == 100 && $weighed->{VOO}{weight_pct} == 0);
+my $unpriced = weigh_positions({ NVDA => { currency => 'USD', shares => 20, value => 4319 }, GONE => { currency => 'USD', shares => 50, value => undef },
+                                 'RY.TO' => { currency => 'CAD', shares => 10, value => 2842 }, 'TD.TO' => { currency => 'CAD', shares => 10, value => 900, stale => 1 } });
+t('a holding with no price leaves its currency unweighed, not the rest inflated',
+  !defined $unpriced->{NVDA}{weight_pct} && !defined $unpriced->{GONE}{weight_pct} && $unpriced->{'RY.TO'}{weight_pct} == 75.9,
+  JSON::PP->new->canonical->encode($unpriced));
+t('a stale price counts at its last known value', $unpriced->{'TD.TO'}{weight_pct} == 24.1);
+
+# ── Stale quotes and positions ────────────────────────────────────────────
+{
+    my $now = timegm_of(2026, 9, 22, 1, 0, 0);
+    my $fresh_q = { price => 100, quote_at => $now - 3600, price_time => 'Sep 21, 2026, 4:00 PM EDT' };
+    my $frozen = { price => 12, quote_at => $now - 3600, price_time => 'Sep 3, 2026, 4:00 PM EDT' };
+    my $old = { price => 12, quote_at => $now - 8 * 86400 };
+    t('a quote renewed last session is live; one the source priced weeks ago is stale; so is one unfetched for a week',
+      !quote_stale($fresh_q, $now) && quote_stale($frozen, $now) && quote_stale($old, $now));
+    t('a long weekend is not stale', !quote_stale({ price => 1, quote_at => $now, price_time => 'Sep 18, 2026, 4:00 PM EDT' }, $now));
+    my $e = { symbol => 'GONE', currency => 'USD', price => 12, quote_at => $now - 8 * 86400, price_time => 'Sep 3, 2026, 4:00 PM EDT' };
+    my $p = position_of($e, 50, undef, $now);
+    t('a held ticker the scan can\'t price keeps its last value, flagged with its day',
+      $p->{value} == 600 && $p->{stale} && $p->{price_on} eq '2026-09-03', JSON::PP->new->canonical->encode($p));
+    my $none = position_of({ symbol => 'X', currency => 'USD' }, 50, undef, $now);
+    t('a held ticker with no price at all has no value, not zero', !defined $none->{value});
+    t('a watched ticker with no price is worth nothing', position_of({ symbol => 'X' }, 0, undef, $now)->{value} == 0);
+    my $rows = [ { t => '2026-09-03', c => 11 } ];
+    t('history that ended days ago is a stale position', position_of($e, 50, $rows, $now)->{price_on} eq '2026-09-03');
+    t('a last-session close is live', !position_of($e, 50, [ { t => '2026-09-21', c => 11 } ], $now)->{stale});
+}
+
+# ── Session close: New York time, daylight-aware ──────────────────────────
+t('a summer session closes 20:00 UTC', session_end('2026-07-15') == timegm_of(2026, 7, 15, 20, 0, 0));
+t('a winter session closes 21:00 UTC', session_end('2026-01-15') == timegm_of(2026, 1, 15, 21, 0, 0));
+t('daylight time starts the second Sunday of March, ends the first of November',
+  session_end('2026-03-06') == timegm_of(2026, 3, 6, 21, 0, 0) && session_end('2026-03-09') == timegm_of(2026, 3, 9, 20, 0, 0)
+  && session_end('2026-10-30') == timegm_of(2026, 10, 30, 20, 0, 0) && session_end('2026-11-02') == timegm_of(2026, 11, 2, 21, 0, 0));
+{
+    # A winter "Check now" at 20:30 UTC, before the 21:00 close: the session is
+    # left for the night's run, whose window starts at that check.
+    my $rows = [ map { { t => shift_date('2026-01-15', -$_), c => 100, ch => $_ % 2 ? 1 : -1 } } 0 .. 259 ];
+    $rows->[0] = { t => '2026-01-15', c => 95, ch => -5 };
+    my $check = timegm_of(2026, 1, 15, 20, 30, 0);
+    my $prior = timegm_of(2026, 1, 15, 1, 0, 0);
+    t('winter: a session still open at the check is not judged then',
+      !move_events('NVDA', $rows, $prior, 10, $check));
+    t('winter: the next run, its window starting at the check, judges it',
+      (move_events('NVDA', $rows, $check, 10, timegm_of(2026, 1, 16, 1, 0, 0)))[0]{id} eq 'move:NVDA:2026-01-15');
+    my $summer = [ map { { %$_, t => shift_date('2026-07-15', -($_->{i} // 0)) } } map { { %{ $rows->[$_] }, i => $_ } } 0 .. $#$rows ];
+    t('summer: open at 19:30 UTC, judged by the run after the 20:00 close',
+      !move_events('NVDA', $summer, $prior, 10, timegm_of(2026, 7, 15, 19, 30, 0))
+      && (move_events('NVDA', $summer, timegm_of(2026, 7, 15, 19, 30, 0), 10, timegm_of(2026, 7, 16, 1, 0, 0)))[0]{session} eq '2026-07-15');
+    my $high = [ @$rows ];
+    $high->[0] = { t => '2026-01-15', c => 120, ch => 1 };
+    t('a 52-week break waits for the close too',
+      !break_events('NVDA', $high, $prior, $check) && (break_events('NVDA', $high, $check, $check + 3 * 3600))[0]{kind} eq 'high_52w');
+}
 
 # ── Watch: economy and policy ─────────────────────────────────────────────
 {
@@ -265,6 +322,20 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
     t('a Fed range change inside the window is a rate event',
       @cut == 1 && $cut[0]{id} eq 'rate:Fed:2026-09-17' && $cut[0]{change_bp} == -25 && $cut[0]{from} eq '3.50–3.75%',
       JSON::PP->new->canonical->encode(\@cut));
+    # The Fed cuts on Wed 09-16. The NY Fed posts 09-16's rate Thu 09-17 ~13:00
+    # UTC: the 01:00 run on the 17th has only through 09-15; the run on the
+    # 18th (window from the 17th, 01:00) must still report it.
+    my @posted = map { { effectiveDate => $_->[0], targetRateFrom => $_->[1], targetRateTo => $_->[2] } }
+        ['2026-09-17', 3.25, 3.50], ['2026-09-16', 3.25, 3.50], ['2026-09-15', 3.50, 3.75], ['2026-09-14', 3.50, 3.75];
+    my @night1 = fed_rate_events([ @posted[2, 3] ], timegm_of(2026, 9, 16, 1, 0, 0), '2026-09-14');
+    my @night2 = fed_rate_events(\@posted, timegm_of(2026, 9, 17, 1, 0, 0), '2026-09-15');
+    t('a rate posted the day after is reported the next night, though its day is before the window',
+      !@night1 && @night2 == 1 && $night2[0]{id} eq 'rate:Fed:2026-09-16', JSON::PP->new->canonical->encode(\@night2));
+    t('a rate day the last scan already saw is not reported again',
+      !fed_rate_events(\@posted, timegm_of(2026, 9, 18, 1, 0, 0), '2026-09-17'));
+    t('with no earlier scan, the window is on the posting day',
+      (fed_rate_events(\@posted, timegm_of(2026, 9, 17, 1, 0, 0)))[0]{on} eq '2026-09-16'
+      && !fed_rate_events(\@posted, timegm_of(2026, 9, 18, 14, 0, 0)));
 
     my $item = sub { "<item><title>$_[0]</title><link><![CDATA[$_[1]]]></link><pubDate><![CDATA[$_[2]]]></pubDate></item>" };
     my $feed = '<rss><channel>'
@@ -296,6 +367,31 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
     t('a Bank of Canada cut and a big USD/CAD day are events',
       join(',', map { $_->{id} } @boc) eq 'rate:Bank of Canada:2026-09-17,fx:USDCAD:2026-09-17'
       && $boc[0]{change_bp} == -25 && $boc[1]{change_pct} == 1.09, JSON::PP->new->canonical->encode(\@boc));
+    my $late = timegm_of(2026, 9, 19, 1, 0, 0); # two nights on: the 17th is long before the window
+    t('a BoC rate and USD/CAD day the last scan hadn\'t seen are reported however late they posted',
+      join(',', map { $_->{id} } boc_events(\@obs, $late, { boc_rate => '2026-09-16', fx => '2026-09-16' }))
+        eq 'rate:Bank of Canada:2026-09-17,fx:USDCAD:2026-09-17');
+    t('…and not once it has seen them', !boc_events(\@obs, $window, { boc_rate => '2026-09-17', fx => '2026-09-17' }));
+
+    # The scan's snapshot remembers each series' newest day; the next scan
+    # compares with it. Network stubbed: EFFR and Valet answer, the BLS doesn't.
+    no warnings qw(redefine once);
+    local *main::fetch_json = sub {
+        my ($url) = @_;
+        return { refRates => \@posted } if $url =~ /newyorkfed/;
+        return { observations => \@obs } if $url =~ /bankofcanada/;
+        return undef;
+    };
+    local *main::fetch = sub { undef };
+    local *main::post_json = sub { undef };
+    my $scanned = economy_scan(timegm_of(2026, 9, 18, 1, 0, 0),
+                               [ { at => timegm_of(2026, 9, 17, 1, 0, 0), cpi => '2026-08', jobs => '2026-08', effr => '2026-09-15' } ], '2026-09-18');
+    t('the economy snapshot keeps each series\' newest day, and the BLS months when it doesn\'t answer',
+      $scanned->{snapshot}{effr} eq '2026-09-17' && $scanned->{snapshot}{boc_rate} eq '2026-09-17' && $scanned->{snapshot}{fx} eq '2026-09-17'
+      && $scanned->{snapshot}{cpi} eq '2026-08' && !exists $scanned->{snapshot}{at},
+      JSON::PP->new->canonical->encode($scanned->{snapshot}));
+    t('…and reports the Fed cut the last scan hadn\'t seen',
+      grep { $_->{id} eq 'rate:Fed:2026-09-16' } @{ $scanned->{events} });
 
     my $row = sub { my ($y, $m, $v) = @_; { year => $y, period => sprintf('M%02d', $m), value => $v } };
     my $series = {
@@ -374,6 +470,13 @@ t('weights are per currency', $weighed->{NVDA}{weight_pct} == 23 && $weighed->{'
       !$item{'news:c'} && !$item{'invented'} && !$item{'news:d'} && $doc->{seen}{'news:c'} && $doc->{seen}{'news:d'} && !$doc->{seen}{'invented'}
       && $out->{judged} == 7 && $out->{candidates} == 9);
     t('the last run is the scan\'s time', $doc->{last_run} eq '2026-09-17T05:00:00Z');
+
+    my $blind = { %$scan, positions => { %$positions, NVDA => { %{ $positions->{NVDA} }, weight_pct => undef },
+                                         TSLA => { %{ $positions->{TSLA} }, weight_pct => undef } } };
+    my $unweighed = {};
+    record_watch($unweighed, $blind, [ { id => 'news:a', materiality => 'medium', line => 'A chip deal.' } ], '2026-09-17', 'normal', 0);
+    t('an unpriced holding in the currency: no weight, so medium doesn\'t clear the 10% bar',
+      !defined $unweighed->{items}[0]{weight_pct} && $unweighed->{briefs}{'2026-09-17'}{quiet});
 
     my $quiet = {};
     record_watch($quiet, $scan, \@judged, '2026-09-17', 'quiet', 0);

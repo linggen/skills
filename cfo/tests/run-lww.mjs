@@ -253,8 +253,12 @@ const sameReg = (a, b) => canon(a) === canon(b);
   t('merging the same state again takes nothing', atLoad.mergeState(onDisk.toState()) === 0);
 
   const src = readFileSync(new URL('../scripts/cfo.js', import.meta.url), 'utf8');
+  // saveEdits goes through lww.js saveRegisterFile, which re-reads and merges
+  // under the file lock (behaviour: tests/run-store.mjs).
+  const lwwSrc = readFileSync(new URL('../scripts/lww.js', import.meta.url), 'utf8');
   t('saveEdits reads the file back and merges before writing it',
-    /async function saveEdits[\s\S]{0,300}?readJson\(`\$\{DATA\}\/edits\.json`[\s\S]{0,120}?mergeState/.test(src));
+    /async function saveEdits[\s\S]{0,400}?saveRegisterFile\(runBash, `\$\{DATA\}\/edits\.json`/.test(src)
+    && /export async function saveRegisterFile[\s\S]{0,300}?lockedUpdate[\s\S]{0,200}?mergeState/.test(lwwSrc));
   // report.json is derived from the ledger, which the phone also appends to.
   // Every rebuild goes through rebuildReport(), which re-reads first. Exactly
   // two literal call sites are allowed: rebuildReport's own, and resumeState —

@@ -17,14 +17,23 @@ const DATE_RE = new RegExp(
   + `|\\b\\d{1,2}[/-]\\d{1,2}(?:[/-]\\d{2,4})?\\b`
   + `|\\b${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s*\\d{2,4})?\\b` // "Jul 02" or "Jul 02, 2026"
   + `|\\b\\d{1,2}\\s+${MONTH_RE}[a-z]*(?:,?\\s*\\d{2,4})?\\b`, 'i');
-// A money token: 1,234.56 / 2500.00 / $12.00 / -8.99 / 12.00- / 12.00 CR.
+// A money token: 1,234.56 / 2500.00 / $12.00 / -8.99 / +8.99 / 12.00- / 12.00 CR.
 // The thousands comma is OPTIONAL (`,?`) — some statements render "$2500.00"
 // with no separator; requiring the comma matched "500.00" out of "2500.00".
-const MONEY_RE = /-?\$?\d{1,3}(?:,?\d{3})*\.\d{2}-?(?:\s?(?:cr|dr))?/ig;
-const CREDIT_HINT = /\b(payment|deposit|refund|credit|reversal|transfer in|e-?transfer)\b/i;
+const MONEY_RE = /[-+]?\$?\d{1,3}(?:,?\d{3})*\.\d{2}[-+]?(?:\s?(?:cr|dr))?/ig;
+// Direction, strongest evidence first: an explicit CR/DR/+/- marker on the
+// amount, then which column the amount sits in (Withdrawals vs Deposits), and
+// only then the description. Words credit a row only for unambiguous inbound
+// phrases; an outbound word anywhere ("sent", "bill payment", "to") keeps it
+// spend — "BILL PAYMENT HYDRO ONE" and "E-TRANSFER SENT" are money leaving.
+const INBOUND_RE = /\b(deposit|refund|reversal|payment received|payment\s*-?\s*thank you|thank you for your payment|transfer in|e-?transfer\s+(received|deposit))\b/i;
+const OUTBOUND_RE = /\b(sent|bill\s*pay(ment)?|to|withdrawal|withdraw)\b/i;
+// Column headers of a two-column bank layout.
+const DEBIT_COL_RE = /\b(withdrawals?|debits?|paid out|charges?)\b/i;
+const CREDIT_COL_RE = /\b(deposits?|credits?|paid in)\b/i;
 
 // Reconstruct text lines from a PDF's positioned text items via the vendored
-// pdf.js. Returns a flat array of line strings (all pages).
+// pdf.js. Returns a flat array of {text, cells:[{x, s}]} lines (all pages).
 async function extractPdfText(data) {
   const pdfjsLib = await import('./vendor/pdf.min.mjs');
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('./vendor/pdf.worker.min.mjs', import.meta.url).href;
@@ -40,8 +49,9 @@ async function extractPdfText(data) {
       (byY.get(y) || byY.set(y, []).get(y)).push({ x: it.transform[4], s: it.str });
     }
     for (const y of [...byY.keys()].sort((a, b) => b - a)) {
-      const line = byY.get(y).sort((a, b) => a.x - b.x).map((i) => i.s).join(' ').replace(/\s+/g, ' ').trim();
-      if (line) lines.push(line);
+      const cells = byY.get(y).sort((a, b) => a.x - b.x);
+      const text = cells.map((i) => i.s).join(' ').replace(/\s+/g, ' ').trim();
+      if (text) lines.push({ text, cells }); // cells keep x for column reading
     }
   }
   await doc.destroy?.();
@@ -57,14 +67,85 @@ function normalizeDate(token, year) {
   return parseDate(`${t} ${year}`) || parseDate(`${t}, ${year}`);
 }
 
+const hasYear = (t) => /\b\d{4}\b/.test(t) || /[/-]\d{1,2}[/-]\d{2,4}$/.test(t.trim());
+const PERIOD_RE = /\b(statement|closing|billing|period|cycle|through|ending)\b/i;
+const DATE_RE_G = new RegExp(DATE_RE.source, 'ig');
+
+// The statement's closing {year, month}. Rows print "Dec 15" with no year, so
+// a Dec–Jan statement closing in January must book December in the PRIOR
+// year. Evidence, best first: a dated period/closing line, any full date in
+// the text, a bare year (month unknown → whole year), then today.
+export function statementClose(lines) {
+  const fullDates = (ls) => ls.flatMap((l) => [...l.matchAll(DATE_RE_G)]
+    .map((m) => m[0]).filter(hasYear).map((t) => parseDate(t.trim())).filter(Boolean));
+  const labeled = lines.filter((l) => PERIOD_RE.test(l));
+  const dates = fullDates(labeled).length ? fullDates(labeled) : fullDates(lines);
+  if (dates.length) {
+    const last = dates.sort().pop();
+    return { year: +last.slice(0, 4), month: +last.slice(5, 7) };
+  }
+  const ym = lines.join('\n').match(/\b(20\d{2})\b/);
+  if (ym) {
+    // "Statement period Dec 15 - Jan 14" + a bare "2026": the last month named
+    // on the period line is the closing month.
+    const named = labeled.flatMap((l) => [...l.matchAll(DATE_RE_G)].map((m) => m[0]));
+    const probe = named.length ? normalizeDate(named[named.length - 1], ym[1]) : null;
+    return { year: +ym[1], month: probe ? +probe.slice(5, 7) : 12 };
+  }
+  const now = new Date();
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
+
+// A yearless row date, placed in the statement: a month after the closing
+// month belongs to the year before.
+function rowDate(token, close) {
+  if (hasYear(token)) return normalizeDate(token, close.year);
+  const d = normalizeDate(token, close.year);
+  if (d && +d.slice(5, 7) > close.month) return normalizeDate(token, close.year - 1);
+  return d;
+}
+
+// A two-column layout's header ("Withdrawals … Deposits"): the x of each
+// column, so an amount's position says which way the money moved.
+function findColumns(line) {
+  if (!line.cells) return null;
+  const debit = line.cells.find((c) => DEBIT_COL_RE.test(c.s));
+  const credit = line.cells.find((c) => CREDIT_COL_RE.test(c.s));
+  return debit && credit && debit !== credit ? { debit: debit.x, credit: credit.x } : null;
+}
+
+function columnSide(line, amtTok, cols) {
+  if (!cols || !line.cells) return null;
+  const core = amtTok.replace(/\s?(cr|dr)$/i, '').trim();
+  const cell = line.cells.find((c) => c.s.includes(core));
+  if (!cell) return null;
+  return Math.abs(cell.x - cols.credit) < Math.abs(cell.x - cols.debit) ? 'credit' : 'debit';
+}
+
+// true = money in, false = money out.
+export function isInbound(line, amtTok, cols = null) {
+  const tok = amtTok.trim();
+  if (/cr$/i.test(tok) || /^\+|\+$/.test(tok)) return true;
+  if (/dr$/i.test(tok) || /\d\s*-$/.test(tok)) return false;
+  const side = columnSide(line, tok, cols);
+  if (side) return side === 'credit';
+  const text = line.text ?? line;
+  return INBOUND_RE.test(text) && !OUTBOUND_RE.test(text);
+}
+
 // Pure, testable: statement lines -> [{date, merchant, amount}]. Spend negative.
-export function parseStatementText(lines) {
-  const text = lines.join('\n');
-  const ym = text.match(/\b(20\d{2})\b/);
-  const year = ym ? ym[1] : String(new Date().getFullYear());
+// A line is a string or {text, cells} (cells carry x for column reading).
+export function parseStatementText(input) {
+  const lines = input.map((l) => (typeof l === 'string' ? { text: l } : l));
+  const close = statementClose(lines.map((l) => l.text));
 
   const txns = [];
-  for (const line of lines) {
+  let cols = null;
+  for (const l of lines) {
+    const line = l.text;
+    const header = MONEY_RE.test(line) ? null : findColumns(l);
+    MONEY_RE.lastIndex = 0;
+    if (header) { cols = header; continue; }
     const dateMatch = line.match(DATE_RE);
     if (!dateMatch) continue;
     const money = [...line.matchAll(MONEY_RE)].map((m) => m[0]);
@@ -73,15 +154,12 @@ export function parseStatementText(lines) {
     // Bank rows are `… AMOUNT BALANCE`; take the second-to-last money token as
     // the amount when a trailing balance is present, else the only token.
     const amtTok = money[money.length >= 2 ? money.length - 2 : money.length - 1];
-    let amount = parseAmount(amtTok.replace(/(cr|dr)/i, '').trim());
+    let amount = parseAmount(amtTok.replace(/(cr|dr)/i, '').trim().replace(/[-+]$/, ''));
     if (amount == null) continue;
     amount = Math.abs(amount);
+    amount = isInbound(l, amtTok, cols) ? amount : -amount;
 
-    const isCredit = /cr\b/i.test(amtTok) || CREDIT_HINT.test(line) || /\+\s*$/.test(amtTok);
-    const isExplicitDebit = /dr\b/i.test(amtTok) || /\d\s*-$/.test(amtTok.trim());
-    amount = (isCredit && !isExplicitDebit) ? amount : -amount;
-
-    const date = normalizeDate(dateMatch[0], year);
+    const date = rowDate(dateMatch[0], close);
     // description = line minus the date and every money token, then redacted
     let desc = line.replace(dateMatch[0], ' ');
     for (const m of money) desc = desc.replace(m, ' ');
@@ -97,11 +175,9 @@ export function parseStatementText(lines) {
 export async function pdfToTransactions(arrayBuffer) {
   const lines = await extractPdfText(arrayBuffer);
   const txns = parseStatementText(lines);
-  const notes = ['PDF import is best-effort — layouts vary; verify the figures, '
-    + 'and prefer the CSV export when your bank offers one.'];
+  const notes = ['PDF import is best-effort — verify the figures, and prefer CSV when your bank offers it.'];
   if (!txns.length) {
-    notes.push('No transaction rows recognized. This PDF may be scanned (no text '
-      + 'layer) or use an unusual layout — try the CSV export instead.');
+    notes.push('No transaction rows found. The PDF may be scanned or unusual — try the CSV export.');
   }
   return { transactions: txns, notes };
 }

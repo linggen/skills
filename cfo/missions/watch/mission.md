@@ -1,10 +1,8 @@
 ---
 name: watch
 description: >-
-  The Watch: every night, reads any new results from the companies you hold,
-  finds what else happened to them, to the economy and to US policy, and ranks
-  it by what's at stake for your money into the morning brief — at most three
-  lines, or nothing. Daily at 1:00. Off until you turn on the Watch.
+  Nightly at 1:00: new results and anything else that moved your money,
+  ranked into a morning brief of three lines or none.
 # Before the phone's 02:00 wake, so the morning line has tonight's brief.
 schedule: "0 1 * * *"
 # Missed while the Mac slept: run once it's back.
@@ -75,7 +73,9 @@ reading budget.
 
 1. Call `WatchScan`. `positions` is what the user holds (`shares` > 0) and
    watches (`shares` 0), with each holding's `weight_pct` of its currency.
-   `events` is the work list; `failed` names sources that didn't answer.
+   `stale` + `price_on` = a last known price, not a live one (say so if it
+   matters); `value` null = no price at all, and its currency's weights are
+   null. `events` is the work list; `failed` names sources that didn't answer.
 2. `events` is empty → call `SaveWatch` with `judgments` `[]`, then go to
    "Finally".
 3. Judge every event:

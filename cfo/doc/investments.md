@@ -21,7 +21,9 @@ Mac; no Linggen Cloud, no data-provider key.
 - `quotes.json` — `{symbols: {SYM: {price, change, change_pct, prev_close,
   high_52w, low_52w, market, price_time, name, kind, pe, forward_pe,
   market_cap, earnings_date, earnings_on, dividend, dividend_yield, aum,
-  expense_ratio, cik, quote_at, stats_at}}}`.
+  expense_ratio, cik, quote_at, stats_at, stale?}}}`. `stale` = no quote in
+  5 days (a delisted ticker, a quiet source): the row shows "Last price Sep 3
+  — no quote since" and the tab's total leaves it out, naming it.
 - `reports.json` — `{last_checked, symbols: {SYM: {since, name, reports:
   [{period, form, filed, url, summary, saved_at}]}}}`, newest first.
   `summary` is short markdown, one fact per line: a bold period headline
@@ -225,10 +227,15 @@ lawyer's read before charging for it.
    - `insider` — a Form 4 open-market sale ≥ $1M or purchase ≥ $100K, with
      who, and whether it was a pre-planned (10b5-1) sale.
    - `news` — headlines from the stock's page since the window.
+   A session counts once closed — 16:00 New York time, 20:00 UTC in summer,
+   21:00 in winter; a Check now before the close leaves it to the next run.
    ETFs: moves and news only. Economy and US policy, no symbol (`scope:
    economy`), all public and keyless:
    - `rate` — the Fed's target range (New York Fed daily EFFR) or the Bank
-     of Canada's rate (Valet `V39079`) changed inside the window.
+     of Canada's rate (Valet `V39079`) changed on a day newer than the last
+     scan saw (`watch-scan.json` economy snapshot `effr` / `boc_rate` / `fx`).
+     A day's rate posts the next day, after the 01:00 run, so a window on
+     its own date never saw it.
    - `fed` — an FOMC statement or minutes (the Fed's monetary press feed).
    - `fomc` — a decision today or tomorrow (the Fed's calendar page; `*` =
      new projections).
@@ -256,9 +263,13 @@ lawyer's read before charging for it.
 1. ~~`market.pl watch-scan`: company finders (moves, 52-week, earnings,
    analysts, filings, insiders, news) + tests~~ — built. `watch-scan
    [--since=TIME] [SYM…]` → `{since, scanned_at, positions{SYM: {name, kind,
-   currency, shares, price, value, weight_pct}}, events[{id, symbol, kind,
-   at, …}], failed, checked}`; `since` defaults to `watch.json` `last_run`,
-   else 36 h back; events in `watch.json` `seen` are left out.
+   currency, shares, price, value, weight_pct, stale?, price_on?}}, events[{id,
+   symbol, kind, at, also?, …}], failed, checked}`; `since` defaults to
+   `watch.json` `last_run`, else 36 h back; events in `watch.json` `seen` are
+   left out; `also` names only held or watched symbols. A held symbol the scan
+   can't price stays in: at its last price (`stale`), or `value` null — then
+   its currency's `weight_pct` is null, so the 10% bar is never met on a
+   total that shrank.
 2. ~~Economy and policy finders~~ — built.
 3. ~~`cfo:watch` mission: scan → Ling judges → `SaveWatch` → `data/watch.json`;
    ranking in code~~ — built. `missions/watch` (`0 1 * * *`, catch-up 20 h,
@@ -279,7 +290,9 @@ lawyer's read before charging for it.
    the Investments tab: Off → Turn on (enables `cfo:watch`; checks at once
    when there's no brief yet). On → level select (Quiet / Normal /
    Everything → `watch-level`, which remakes the latest brief), Check now
-   (triggers the mission, follows the run), Turn off; status = the last run.
+   (asks first in the card — "Check now? The last check used about 57k
+   tokens." — then triggers the mission and follows the run; Turn on's first
+   check asks the same), Turn off; status = the last run.
    Body: the latest brief ("This morning" / "Yesterday" / date, "a quiet
    night"), each line with who (ticker, holdings, or Economy), the stake,
    materiality, Source ↗ and **Ask CFO** — a chat message in the user's
