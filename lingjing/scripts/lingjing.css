@@ -433,3 +433,9 @@ body.fighting .askbar { display: none; }
 .gearpop .gearrow > .chip { flex: none; }
 .gearpop .bagtitle { margin-top: 12px; }
 .gearpop .act { flex: none; }
+.gearpop .gcards { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 6px; }
+.gearpop .gcard { font-size: 12.5px; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--line); opacity: .55; }
+.gearpop .gcard b { color: var(--ling, inherit); }
+.gearpop .gcard.in { opacity: 1; background: var(--raised); }
+.gearpop .gcard.off { text-decoration: line-through; }
+.gearpop { max-height: min(80vh, 720px); overflow: auto; }

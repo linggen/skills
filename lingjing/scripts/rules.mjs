@@ -774,6 +774,16 @@ function gearBrief(content, state) {
     ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]) } } : {}),
     fight: { power: wornOf(content, state, 'weapon') || state.treasure ? WEAPON_POWER : 0 },
     bag,
+    // 牌 — every card he holds, cheapest first, and which ten a fight deals
+    // today (deckFor), 银月 always in hand. Roots he lacks are marked, not hid.
+    cards: (() => {
+      const catalog = cardCatalog(content), ten = new Set(deckFor(content, state)), roots = new Set(state.traits ?? []);
+      return ownedCards(content, state).map(id => catalog[id]).filter(Boolean)
+        .sort((a, b) => a.cost - b.cost || String(a.element ?? '').localeCompare(String(b.element ?? '')))
+        .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,
+          ...(c.id === 'yinyue' ? { hand: true } : ten.has(c.id) ? { deck: true } : {}),
+          ...(c.id !== 'yinyue' && c.element && !roots.has(c.element) ? { off_root: true } : {}) }));
+    })(),
   };
 }
 
