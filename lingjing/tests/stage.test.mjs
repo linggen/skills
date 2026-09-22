@@ -80,6 +80,11 @@ test('差事: an offer is what the stage is about — the book is behind the chi
   assert.deepEqual(stageCards(look, { focus: [{ card: 'item', ids: ['lingzhi'] }, ...focus] }).map(c => c.card), ['offer', 'item']);
   assert.ok(stageOwns(look, stageCards(look)).has('quest:xu-lvliang-look'), '接下 is on its own card');
   assert.deepEqual(stageCards({ place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
+  // two errands at one place: ONE card, and both 接下 are on it (彭城, 2026-09-22)
+  const two = { ...look, offers: [...look.offers, { id: 'daily-20260922-patrol-sishui', title: '榜文' }] };
+  assert.deepEqual(stageCards(two).map(c => c.card), ['offer']);
+  const owns = stageOwns(two, stageCards(two));
+  assert.ok(owns.has('quest:xu-lvliang-look') && owns.has('quest:daily-20260922-patrol-sishui'));
 });
 
 test('every card kind says whether it holds the stage — a new card cannot skip the decision', async () => {

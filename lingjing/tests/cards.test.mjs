@@ -327,3 +327,29 @@ test('every card has a 五行 — only a 丹药 has none', async () => {
   assert.deepEqual(bare.map((c) => c.id), [], 'give it an element, or mark it a pill');
   for (const c of loadWorld('jiuding').cards.cards.filter((x) => x.pill)) assert.ok(!c.element, `${c.id}: a pill takes no element`);
 });
+
+test('可接的差事: one card, a row each; a row opens to the giver; taken, only the other is left', async () => {
+  const { WORDS, cardHtml } = await import('../scripts/cards.js');
+  const { look, quest } = await import('../scripts/rules.mjs');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const content = loadContent();
+  const now = new Date('2026-09-22T12:00:00');
+  // his save's morning: 彭城, the elder's errand done before, so 蠪侄 and the day's notice are up
+  const s = { ...newState(content, 'zh', now), traits: ['wood', 'water', 'fire', 'earth'], tier: 'core', chapter: '03-qing', scene: null, place: 'pengcheng',
+    quests: { 'xu-elder-herb': { took: '2026-09-21', have: {}, done_at: '2026-09-21T19:48:20Z' } } };
+  const seen = look(s, content, { now, quests: [] });
+  assert.ok(seen.offers.length >= 2, JSON.stringify(seen.offers.map((o) => o.id)));
+  const ctx = (l, offerRow = null) => ({ look: l, offerRow, lang: 'zh', words: WORDS.zh, content });
+  const html = cardHtml({ card: 'offer' }, ctx(seen));
+  assert.equal((html.match(/class="card offer"/g) ?? []).length, 1, 'one card');
+  assert.equal((html.match(/data-offerrow=/g) ?? []).length, seen.offers.length, 'a row each');
+  assert.equal(html.split(`>${WORDS.zh.take}</button>`).length - 1, seen.offers.length, 'one 接下 button each');
+  assert.doesNotMatch(html, /class="offerdetail"/, 'two or more: closed until tapped');
+  assert.match(cardHtml({ card: 'offer' }, ctx(seen, seen.offers[0].id)), new RegExp(`offerdetail[\\s\\S]*${seen.offers[0].say.slice(0, 6)}`));
+  // taken, the card holds only the other
+  const took = quest(s, content, { now, quests: [] }, { action: 'take', id: seen.offers[0].id });
+  const after = look(took.state, content, { now, quests: [] });
+  assert.deepEqual(after.offers.map((o) => o.id), seen.offers.slice(1).map((o) => o.id));
+  if (after.offers.length === 1) assert.match(cardHtml({ card: 'offer' }, ctx(after)), /class="offerdetail"/, 'a lone errand stands open');
+});

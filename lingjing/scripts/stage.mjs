@@ -41,7 +41,7 @@ export function lineHere(look) {
    so a new card cannot be added without deciding. */
 export const CARD_KINDS = {
   fight: { holds: true }, //       the fight IS the stage
-  offer: { holds: true }, //       接下 — an errand held out where he stands
+  offer: { holds: true }, //       接下 — the errands held out where he stands, one card
   find: { holds: true }, //        收下 — something by the road
   item: { holds: true }, //        a shelf to buy from
   quest: { holds: look => Boolean(lineHere(look)) }, // the search's step, only when it can be taken on this spot
@@ -82,8 +82,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // a chip on the top bar, and this line keeps the 09-18 promise that the goal
   // is never out of sight.
   if (look.waypoint) head.push({ card: 'goal' });
-  // 差事 offered where he stands: one card each, the giver's own words on it.
-  for (const o of look.offers ?? []) head.push({ card: 'offer', id: o.id });
+  // 差事 offered where he stands: ONE card, a row each (his, 2026-09-22 — two
+  // tall errand cards and a shelf crowded 彭城; WoW's list of what an NPC has).
+  if (look.offers?.length) head.push({ card: 'offer' });
 
   // 遇: something found on the road is on the stage until it is taken or left
   // (a traveller's riddle is the chat's question; a road beast is a duel card).
@@ -139,7 +140,7 @@ export function stageOwns(look, cards) {
     }
     if (c.card === 'board') owns.add(`exit:${c.id}`);
     // 接下 is on its own card, and so is 交差 — never in the question too.
-    if (c.card === 'offer') owns.add(`quest:${c.id}`);
+    if (c.card === 'offer') for (const o of look?.offers ?? []) owns.add(`quest:${o.id}`);
     // The map draws every place as a chip that walks there, so the roads are
     // already clickable and the question does not repeat them.
     if (c.card === 'map') for (const p of look?.place?.places ?? []) if (!p.here) owns.add(`move:${p.id}`);

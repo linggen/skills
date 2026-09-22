@@ -314,7 +314,7 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.ok(held.stage.some(c => c.card === 'offer'));
   assert.equal(held.ask, null, 'an errand held out: the chat waits for it');
   // Taken, nothing holds — and the question comes in that same answer.
-  const took = quest(toOpenWorld(), content, ctx(), { action: 'take', id: held.stage.find(c => c.card === 'offer').id });
+  const took = quest(toOpenWorld(), content, ctx(), { action: 'take', id: held.offers[0].id });
   assert.ok(askOf(content, took.state, ctx({ verb: 'quest' }), took.result)?.options.some(x => x.move), 'the tap on the first brings the second');
   const o = took.state;
   const lo = look(o, content, ctx());

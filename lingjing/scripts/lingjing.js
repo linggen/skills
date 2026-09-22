@@ -82,6 +82,7 @@ const view = {
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
   bookFresh: false,
   bookRow: null, //      the line of the book that is open
+  offerRow: null, //     the errand on the stage's offer card that is open
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
   ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
 };
@@ -89,7 +90,7 @@ const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
 const duelFor = (id) => (view.duelSay.id === id ? view.duelSay : { text: null });
 
-const ctx = () => ({ look, bookRow: view.bookRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, bookRow: view.bookRow, offerRow: view.offerRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -596,6 +597,8 @@ document.addEventListener('click', (e) => {
   const dropped = e.target.closest('[data-drop]');
   if (dropped) { dropErrand(dropped.dataset.drop); return; }
   // A line of the book opens where it lies — the page reads it from the rules.
+  const offered = e.target.closest('[data-offerrow]');
+  if (offered && !e.target.closest('button')) { show({ offerRow: view.offerRow === offered.dataset.offerrow ? null : offered.dataset.offerrow }); return; }
   const row = e.target.closest('[data-bookrow]');
   if (row && !e.target.closest('button')) { openRow(row.dataset.bookrow); return; }
   const sw = e.target.closest('[data-lang]');
