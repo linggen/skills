@@ -2156,6 +2156,15 @@ test('榜文: a market posts one templated 差事 a day — near, winnable, rebu
   const next = look({ ...turned.state, place: 'pengcheng' }, content, days[1]).offers.find(o => o.id.startsWith('daily-'));
   const again = must(quest, { ...turned.state, place: 'pengcheng' }, { action: 'take', id: next.id }, days[1]);
   assert.deepEqual(Object.keys(again.state.quests).filter(id => id.startsWith('daily-')), [next.id]);
+
+  // taken one day, done the next: it rides the book overnight, the board posts
+  // today's beside it, and it is still handed in (his save, 2026-09-21 → 22)
+  const overnight = look(took.state, content, days[1]);
+  assert.ok(overnight.book.some(b => b.id === today.id), 'yesterday\'s stays in the book');
+  assert.ok(overnight.offers.some(o => o.id.startsWith('daily-') && o.id !== today.id), 'and today\'s is posted');
+  const late = structuredClone(took.state);
+  advance(content, late, today.need[0].kind === 'visit' ? { kind: 'visit', place: target } : { kind: 'subdue', creature: target });
+  assert.ok(must(quest, late, { action: 'turn', id: today.id }, days[1]).result.paid.progress > 0, 'and paid a day late');
 });
 
 test('差事: taken at the giver, counted by the rules, handed in where he stands', () => {
