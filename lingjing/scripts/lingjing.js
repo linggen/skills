@@ -12,7 +12,7 @@ import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf,
 import { stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
-import { WORDS, askBarHtml, bookChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
+import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -76,6 +76,8 @@ const view = {
   /// Everything else about a fight is in the save.
   duelSay: { id: null, text: null },
   bookOpen: false, //    the 事 chip's popover
+  gearOpen: false, //    the 装备 chip's popover: what he wears and his bag, together
+  gear: null, //         the rules' `gear` read behind it, fetched when it opens
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
   bookFresh: false,
   bookRow: null, //      the line of the book that is open
@@ -225,6 +227,7 @@ function statusHtml() {
     ${qiHtml()}
     <span class="ls"><span class="lbl">${w.ls}</span> <b data-count="wealth">${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
+    ${gearChipHtml({ ...ctx(), gear: view.gear }, view.gearOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -502,6 +505,20 @@ async function takeMeet(action) {
 }
 
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
+/* 装备 · 背包: putting a thing on, or taking a pill, is his own tap — the page
+   calls Trade itself and redraws from the rules; no model turn. */
+async function useItem(id) {
+  const r = await verb('trade', { action: 'use', id }).catch((e) => { console.warn('[lingjing] use', e); return null; });
+  if (r && !r.ok) console.warn('[lingjing] use refused', r.refused);
+  await openGear();
+  await refresh();
+}
+
+async function openGear() {
+  const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
+  show({ gearOpen: true, bookOpen: false, gear: r?.gear ?? null });
+}
+
 async function dropErrand(id) {
   await verb('quest', { action: 'drop', id }).catch((e) => console.warn('[lingjing] drop', e));
   keep({ bookRow: null, bookInfo: null });
@@ -533,7 +550,7 @@ function sendAsk() {
 }
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
-  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.bookOpen) show({ bookOpen: false }); }
+  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
   const row = e.target.closest?.('[data-bookrow]');
   if (row && (e.key === 'Enter' || e.key === ' ') && e.target === row) { e.preventDefault(); openRow(row.dataset.bookrow); }
 });
@@ -552,8 +569,11 @@ document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') ke
 document.addEventListener('click', (e) => {
   // The 事 chip opens its popover; a tap anywhere else puts it away, and then
   // does whatever it was for.
-  if (e.target.closest('[data-book]')) { show({ bookOpen: !view.bookOpen }); return; }
-  if (view.bookOpen && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false });
+  if (e.target.closest('[data-book]')) { show({ bookOpen: !view.bookOpen, gearOpen: false }); return; }
+  if (e.target.closest('[data-gear]')) { if (view.gearOpen) show({ gearOpen: false }); else openGear(); return; }
+  const worn = e.target.closest('[data-wear],[data-use]');
+  if (worn) { useItem(worn.dataset.wear ?? worn.dataset.use); return; }
+  if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
   const asking = e.target.closest('[data-ask]');

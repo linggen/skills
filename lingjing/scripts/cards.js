@@ -42,7 +42,7 @@ export const WORDS = {
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
-    goalTitle: '眼下要做的', bookChip: '事', roads: '或往', workAt: '{name}有差事', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    goalTitle: '眼下要做的', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', gearFight: '斗法里：主灵根一击 +{n}', gearTo: '戴上 · {slot}', bookChip: '事', roads: '或往', workAt: '{name}有差事', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、功课、奇遇，都长修为',
   },
   en: {
@@ -78,7 +78,7 @@ export const WORDS = {
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
-    goalTitle: 'What waits', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    goalTitle: 'What waits', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', gearFight: 'In a fight: Root Strike +{n}', gearTo: 'Wear · {slot}', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, practice and encounters all raise it',
   },
 };
@@ -532,6 +532,37 @@ export function bookPopHtml(ctx) {
   const k = ctx.look?.work;
   const work = k && !k.here ? `<div class="bookwork"><div><b>${esc(say(w.workAt, { name: k.place.name }))}</b> <span class="small dim">${esc(k.titles.join(' · '))}</span></div>${sayBtn(say(w.sayGo, { name: k.place.name }), say(w.sayGo, { name: k.place.name }))}</div>` : '';
   return `<div class="bookpop" role="dialog">${head}${bookHtml(ctx) || (g ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}${work}</div>`;
+}
+
+/// 装备 · 背包 — the 装 chip and what it opens: what he wears above, what he
+/// carries below, open together (his, 2026-09-22). Wearing and taking a pill
+/// are his own taps on the page: the page calls Trade itself, no model turn.
+/// The chip counts from Look's `wear`; what it opens is the rules' `gear`
+/// read (ctx.gear), fetched on the tap — it never rides Look.
+export function gearChipHtml(ctx, open) {
+  if (!ctx.look?.traits) return '';
+  const wear = ctx.look.wear ?? {};
+  const worn = ['weapon', 'robe', 'pendant'].filter((k) => wear[k]).length + (ctx.look.treasure ? 1 : 0);
+  return `<span class="bookwrap"><button class="bookchip gearchip" data-gear aria-expanded="${open ? 'true' : 'false'}">${esc(ctx.words.gearChip)}${worn ? ` ${worn}` : ''}</button>${open && ctx.gear ? gearPopHtml(ctx) : ''}</span>`;
+}
+
+export function gearPopHtml(ctx) {
+  const g = ctx.gear, w = ctx.words, t = ctx.look.treasure;
+  // On her, a thing's line ("Yinyue can wear it") says nothing: the name is enough.
+  const row = (label, it, plain = false) => `<div class="gearrow"><span class="lbl">${esc(label)}</span>
+    ${it ? `<span><b>${esc(it.name)}</b>${plain ? '' : ` <span class="small dim">${esc(itemDoes(it.effect, ctx))}</span>`}</span>` : `<span class="dim">${esc(w.gearEmpty)}</span>`}</div>`;
+  const slots = g.slots.map((s) => row(w.gearSlots[s.slot] ?? s.slot, s.item)).join('');
+  const treasure = t ? `<div class="gearrow"><span class="lbl">${esc(w.gearSlots.treasure)}</span><span><b>${esc(t.name)}</b> <span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span></span></div>` : '';
+  const her = g.her ? row(say(w.gearHer, { name: g.her.name }), g.her.item, true) : '';
+  const fight = g.fight?.power ? `<div class="small dim">${esc(say(w.gearFight, { n: g.fight.power }))}</div>` : '';
+  const bag = g.bag.length ? g.bag.map((i) => {
+    const act = i.slot && !i.worn ? `<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`
+      : i.usable ? `<button class="act" data-use="${esc(i.id)}">${esc(w.use)}</button>`
+        : i.worn ? `<span class="chip">${esc(w.worn)}</span>` : '';
+    return `<div class="gearrow"><span><b>${esc(i.name)}</b> ×${i.n} <span class="small dim">${esc(itemDoes(i.effect, ctx))}</span></span>${act}</div>`;
+  }).join('') : `<div class="small dim">${esc(w.bagNone)}</div>`;
+  return `<div class="bookpop gearpop" role="dialog"><div class="cardtitle">${esc(w.gearTitle)}</div>${slots}${treasure}${her}${fight}
+    <div class="cardtitle bagtitle">${esc(w.bagTitle)}</div>${bag}</div>`;
 }
 
 /// 手上的事 — one line each, with its count and where the next one is met.

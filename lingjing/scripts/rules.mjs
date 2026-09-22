@@ -751,6 +751,32 @@ function itemBrief(content, state, item) {
   };
 }
 
+/* 装备 · 背包 — what he wears and what he carries, as the top bar's 装 chip
+   opens it (his ask, 2026-09-22: 需要有个装备的card … 需要同时打开装备和背包).
+   The three arms' slots, the 本命法宝, what Yinyue wears, what the fight takes
+   from them; then the bag, each thing with where it would go or how it is
+   used, so the page draws buttons it can press without guessing. A read the
+   page asks for when the chip opens — never in Look: 1.5k characters a turn
+   is what Ling would pay for a panel only the player looks at. */
+const GEAR_SLOTS = ['weapon', 'robe', 'pendant'];
+function gearBrief(content, state) {
+  const her = hasCompanion(state) ? companionOf(content) : null;
+  const worn = id => (id && state.bag[id] ? itemBrief(content, state, itemOf(content, id)) : null);
+  const bag = Object.entries(state.bag).map(([id, n]) => {
+    const item = itemOf(content, id);
+    if (!item) return { id, name: id, n };
+    const e = item.effect ?? {};
+    const slot = e.wear ? (e.wear === her?.id ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
+    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress ? { usable: true } : {}) };
+  });
+  return {
+    slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
+    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]) } } : {}),
+    fight: { power: wornOf(content, state, 'weapon') || state.treasure ? WEAPON_POWER : 0 },
+    bag,
+  };
+}
+
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
 
 /* What a subdued creature leaves behind: the 妖丹 of the realm it was met at,
@@ -2594,6 +2620,7 @@ export const VERBS = {
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
   go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet,
+  gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 
 /* Quest — 接下 · 交差 · 撂下 (design.md § 差事). The world's errands, taken by

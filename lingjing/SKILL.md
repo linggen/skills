@@ -1000,6 +1000,14 @@ A tamed beast's card comes with it (`paid.cards`). The later markets sell the fi
 sides as they ended. Narrate the finish from it: the blow that landed, what it
 cost, how close it was. Never a formula, never a number the card already shows.
 
+## 装备 · 背包
+
+The page's top bar has a **装备** chip: it opens what he wears (法器 · 法衣 · 佩 ·
+本命法宝 · what Yinyue wears) and his bag together, and wearing a thing or
+taking a pill there is his own tap — the page calls Trade itself. Asked
+"what am I wearing" or "what's in my bag", point him to it in a line; do not
+list it back.
+
 ## The market
 
 At a place with a shop, Look's `place.show` carries the shelf as one `item`

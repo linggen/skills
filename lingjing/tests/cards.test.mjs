@@ -228,3 +228,43 @@ test('every card kind draws — the sweep no surface had until 2026-09-18', asyn
     assert.ok(!/undefined|\[object Object\]/.test(html), `${card.card} draws no holes: ${html.slice(0, 120)}`);
   }
 });
+
+test('装备 · 背包 open together: what he wears, what he carries, and the one tap each thing takes', async () => {
+  // His ask, 2026-09-22: 需要有个装备的card, show what is equipped · 需要同时打开装备和背包.
+  const { WORDS, gearChipHtml, gearPopHtml } = await import('../scripts/cards.js');
+  const { VERBS, look } = await import('../scripts/rules.mjs');
+  const { loadContent } = await import('../scripts/content.mjs');
+  const content = loadContent();
+  const s = {
+    ...(await import('../scripts/state.mjs')).newState(content, 'zh', new Date('2026-09-22T12:00:00')),
+    traits: ['wood', 'water', 'fire', 'earth'], tier: 'core', companion: { joined: '2026-09-18' },
+    bag: { 'bamboo-sword': 1, 'moon-bell': 1, 'qi-silk': 1, 'qi-pill': 1, talisman: 1 }, wear: { yinyue: 'moon-bell' },
+  };
+  const seen = look(s, content, { now: new Date('2026-09-22T12:00:00'), quests: [] });
+  assert.equal(seen.gear, undefined, 'never in Look: Ling pays for every character of it');
+  const g = VERBS.gear(s, content).result.gear;
+  assert.deepEqual(g.slots.map((x) => [x.slot, x.item?.id ?? null]), [['weapon', null], ['robe', null], ['pendant', null]]);
+  assert.equal(g.her.item.id, 'moon-bell');
+  assert.equal(g.fight.power, 0, 'a sword in the bag is not worn');
+  const ctx = { look: seen, gear: g, lang: 'zh', words: WORDS.zh };
+  const pop = gearPopHtml(ctx);
+  assert.match(pop, /装备[\s\S]*背包/, 'both, worn above, carried below');
+  assert.match(pop, /data-wear="bamboo-sword"[^>]*>戴上 · 法器/);
+  assert.match(pop, /data-wear="qi-silk"/, 'hers, now she walks with him');
+  assert.doesNotMatch(pop, /data-wear="moon-bell"/, 'already on her');
+  assert.match(pop, /data-use="qi-pill"/);
+  assert.doesNotMatch(pop, /data-wear="talisman"|data-use="talisman"/, 'a 符 is for a fight');
+  assert.doesNotMatch(pop, /undefined|\{[a-z]+\}/);
+  assert.match(gearChipHtml(ctx, false), /data-gear/);
+  // worn: the slot shows it, the fight line says what it gives, the button is gone
+  const worn = { ...s, wear: { ...s.wear, weapon: 'bamboo-sword' } };
+  const armed = look(worn, content, { now: new Date('2026-09-22T12:00:00'), quests: [] });
+  const armedGear = VERBS.gear(worn, content).result.gear;
+  const pop2 = gearPopHtml({ ...ctx, look: armed, gear: armedGear });
+  assert.match(pop2, /法器<\/span>\s*<span><b>竹剑/);
+  assert.match(pop2, /主灵根一击 \+1/);
+  assert.doesNotMatch(pop2, /data-wear="bamboo-sword"/);
+  assert.match(gearChipHtml({ ...ctx, look: armed }, false), /装备 1/);
+  // English stands up too
+  assert.doesNotMatch(gearPopHtml({ look: armed, gear: armedGear, lang: 'en', words: WORDS.en }), /undefined|\{[a-z]+\}/);
+});

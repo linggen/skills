@@ -425,3 +425,11 @@ body.fighting .askbar { display: none; }
 .roadsrow { width: 100%; max-width: 540px; margin: 0 auto; flex: none; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 2px 4px; }
 .roadsrow .lbl { color: var(--faint); font-size: 12.5px; margin-right: 2px; }
 .roadsrow .act { background: transparent; }
+
+/* 装备 · 背包 — the 装备 chip's popover: worn above, carried below. */
+.gearpop .gearrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 0; border-bottom: 1px solid var(--line, rgba(0,0,0,.08)); }
+.gearpop .gearrow .lbl { min-width: 4.5em; color: var(--ink-soft, inherit); opacity: .75; font-size: 12.5px; }
+.gearpop .gearrow > span:not(.lbl):not(.chip) { flex: 1; }
+.gearpop .gearrow > .chip { flex: none; }
+.gearpop .bagtitle { margin-top: 12px; }
+.gearpop .act { flex: none; }
