@@ -313,6 +313,7 @@
       },
       "cost": 2,
       "element": null,
+      "pill": true,
       "effect": {
         "heal": 5
       },
