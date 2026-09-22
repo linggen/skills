@@ -938,7 +938,7 @@ export function deckFor(content, state) {
    along in hand when she walks with the player. */
 export function fightSetup(content, state, creature, now) {
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
-  const withHer = state.companion?.found || (state.cast ?? []).includes('yinyue');
+  const withHer = hasCompanion(state) || (state.cast ?? []).includes('yinyue');
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),

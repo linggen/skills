@@ -392,6 +392,11 @@ test('the ten cards are the player\'s own roots, and a companion teaches nothing
   }
   assert.equal(brief.setup.you.deck.length, new Set(brief.setup.you.deck).size, 'ten different cards');
   assert.deepEqual(brief.setup.you.extra, [], '银月 rides along only once she walks with the player');
+  // …and once she does, she is in the hand at the door. The fight read a
+  // `companion.found` nothing ever wrote, so from 2026-09-18 she never came
+  // (his save: companion { joined } — the one mark hasCompanion reads).
+  const withHer = { ...s, companion: { joined: '2026-09-18' } };
+  assert.deepEqual(look(withHer, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.extra, ['yinyue']);
   // The same player takes the same deck into the same fight, every time
   assert.deepEqual(look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck, brief.setup.you.deck);
   const won = fightOut(s, 'subdue-fuzhu');
