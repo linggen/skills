@@ -311,6 +311,18 @@ async function main() {
     if (r.decks >= 3 && r.seen < 0.05) problems.push(`${r.name} 几乎从不被打出 — 废牌`);
   }
 
+  // 起手 — a new player owns only the starter (design.md § 得牌): the ten
+  // cards of the four v1 roots, 银月 in hand. What that wins, realm by realm,
+  // and what each tamed beast adds to it.
+  const V1 = ['wood', 'water', 'fire', 'earth'];
+  const starter = (world.starter ?? []).filter(id => !CATALOG[id].element || V1.includes(CATALOG[id].element));
+  console.log('\n起手（只有起手十张 + 银月，会读场的）');
+  for (const [label, cards] of [['起手', starter], ['起手 + 夫诸 + 狍鸮', [...starter.slice(0, 8), 'fuzhu', 'paoxiao']]]) {
+    const rates = ['qi', 'foundation', 'core'].map(tier => run(smart, { decks: [{ id: label, root: 'wood', cards }], tiers: [tier], days: 12 }));
+    console.log(`${label.padEnd(12)}  练气 ${(rates[0].rate * 100).toFixed(1)}% · 筑基 ${(rates[1].rate * 100).toFixed(1)}% · 结丹 ${(rates[2].rate * 100).toFixed(1)}%  （它退走 ${rates.map(r => (r.drew * 100).toFixed(0) + '%').join(' / ')}）`);
+    if (label === '起手' && rates[0].rate < 0.5) problems.push(`起手十张在练气只赢 ${(rates[0].rate * 100).toFixed(1)}% — 新人进不了门`);
+  }
+
   const ent = entropy(decks);
   console.log(`\n决策熵（中位）：${(ent * 100).toFixed(1)}%  —  健康区间 5–15%`);
   if (ent > 0.25) problems.push(`决策熵 ${(ent * 100).toFixed(1)}% — 多数回合只有一条路`);

@@ -536,6 +536,7 @@ function lintQuests(content, ids, bad) {
     if (q.from?.who && !pair(q.from.who)) bad(where, 'the giver needs a name in both languages');
     if (!content.rewards.tables[q.grant?.table]) bad(where, `unknown reward table ${q.grant?.table}`);
     if (q.grant?.item && !ids.items.has(q.grant.item)) bad(where, `gives unknown item ${q.grant.item}`);
+    if (q.grant?.card && !(content.cards?.cards ?? []).some(c => c.id === q.grant.card && !c._token)) bad(where, `gives unknown card ${q.grant.card}`);
     if (q.then && !byId.has(q.then)) bad(where, `chains to unknown quest ${q.then}`);
     if (q.opens?.after && !byId.has(q.opens.after)) bad(where, `opens after unknown quest ${q.opens.after}`);
     if (q.opens?.tier && !content.ladder.tiers.some(t => t.id === q.opens.tier)) bad(where, `unknown tier ${q.opens.tier}`);
@@ -707,6 +708,7 @@ function lintGrant(where, grant, content, ids, bad) {
   }
   if (grant.cast && !ids.creatures.has(grant.cast)) bad(where, `grants unknown creature ${grant.cast}`);
   if (grant.item && !ids.items.has(grant.item)) bad(where, `grants unknown item ${grant.item}`);
+  if (grant.card && !(content.cards?.cards ?? []).some(c => c.id === grant.card && !c._token)) bad(where, `grants unknown card ${grant.card}`);
 }
 
 function lintChapter(chapter, content, ids, bad) {

@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { act, battle, begin, foeTurn, offers, tokenOf } from '../scripts/battle.js';
-import { loadContent } from '../scripts/content.mjs';
+import { lint, loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { VERBS, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
@@ -220,6 +220,11 @@ test('a creature at its haunt: the bout on the stage pays once a day, and what i
   assert.equal(out.result.fed.id, 'jade-fish');
   assert.ok(out.result.paid.progress > 0);
   refused(tame, out.state, { creature: 'jingwei' }, 'already-tamed', october());
+  // 得牌: before, 精卫 was nowhere in his ten; tamed, its card is his to take in
+  assert.ok(!look(fed, content, october()).place.encounter.game.setup?.you?.deck?.includes('jingwei'));
+  assert.ok(!(fed.cards ?? []).includes('jingwei'));
+  assert.ok(out.state.cards.includes('jingwei'));
+  assert.deepEqual(out.result.paid.cards.map(c => c.id), ['jingwei']);
   refused(duel, out.state, { id: 'haunt:jingwei' }, 'tamed', october());
   assert.equal(look(out.state, content, october()).place.encounter.tamed, true);
   // elsewhere: nothing to tame
@@ -395,7 +400,8 @@ test('the ten cards are the player\'s own roots, and a companion teaches nothing
   // …and once she does, she is in the hand at the door. The fight read a
   // `companion.found` nothing ever wrote, so from 2026-09-18 she never came
   // (his save: companion { joined } — the one mark hasCompanion reads).
-  const withHer = { ...s, companion: { joined: '2026-09-18' } };
+  // (a save from before 得牌 holds no `cards`: it is read as what it would hold)
+  const withHer = { ...s, companion: { joined: '2026-09-18' }, cards: undefined };
   assert.deepEqual(look(withHer, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.extra, ['yinyue']);
   // The same player takes the same deck into the same fight, every time
   assert.deepEqual(look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck, brief.setup.you.deck);
@@ -717,16 +723,47 @@ test('a bound treasure is the weapon from then on: it strikes, it lends its elem
   assert.equal(fight(['art:yujian'], wood, { ...rider, treasure: null, weapon: null }).refused.why, 'art-no-sword');
 });
 
+test('得牌: he fights only with the cards he has obtained — the starter at the root test, then what the world gives', () => {
+  // His rule, 2026-09-22: 用户只能使用已经获得的牌, 包括银月, 法术, 武器等.
+  const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
+  const beasts = new Set(content.creatures.creatures.map(c => c.id));
+  const s = toFuzhu();
+  // the root test hands over the starter of his roots, and nothing else
+  const starter = content.cards.starter.filter(id => !byId[id].element || s.traits.includes(byId[id].element));
+  assert.deepEqual([...s.cards].sort(), [...starter].sort());
+  assert.equal(starter.length, 10, 'four roots, ten cards');
+  const deck = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
+  assert.ok(deck.every(id => s.cards.includes(id)), 'the ten are all his');
+  assert.ok(!deck.some(id => beasts.has(id)), 'no 山海经 beast he has not tamed');
+  // a save from before 得牌 is read as what it would hold: starter, 银月, its cast
+  const old = { ...s, cards: undefined, cast: ['fuzhu', 'paoxiao'], companion: { joined: '2026-09-18' } };
+  const setup = look(old, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you;
+  assert.deepEqual(setup.extra, ['yinyue']);
+  assert.ok(setup.deck.includes('fuzhu') && setup.deck.includes('paoxiao'), 'the beasts that walk with him come in');
+  assert.ok(!setup.deck.includes('jingwei'));
+  // content may only grant a card that exists
+  const bent = { ...content, quests: [{ ...content.quests[0], grant: { ...content.quests[0].grant, card: 'nope' } }, ...content.quests.slice(1)] };
+  assert.ok(lint(bent).some(p => /unknown card nope/.test(p)));
+  assert.ok(!lint(content).some(p => /unknown card/.test(p)));
+});
+
 test('a subdued creature leaves its 妖丹, by the realm it was met at, and what it carries', () => {
-  const s = { ...toFuzhu(), tier: 'core', step: 0 };
+  // a 结丹 player holds more than the starter by then
+  const s = { ...toFuzhu(), tier: 'core', step: 0, cards: [...toFuzhu().cards, 'leiming', 'hantan', 'tunshi', 'luoshi', 'chaoqi'] };
   const won = fightOut(s, 'subdue-fuzhu');
   assert.equal(won.result.outcome, 'won');
+  const things = r => r.result.dropped.filter(d => !d.card).map(d => d.id);
   // 夫诸 carries nothing of its own: the 妖丹 of 结丹 alone
-  assert.deepEqual(won.result.dropped.map(d => d.id), ['yaodan-2']);
+  assert.deepEqual(things(won), ['yaodan-2']);
   assert.equal(won.state.bag['yaodan-2'], 1);
+  // and a card he did not hold, of his roots, never a 山海经 beast (得牌)
+  const [card] = won.result.dropped.filter(d => d.card);
+  assert.ok(card && !s.cards.includes(card.id) && won.state.cards.includes(card.id));
+  assert.ok(!content.creatures.creatures.some(c => c.id === card.id));
+  assert.ok(s.traits.includes(content.cards.cards.find(c => c.id === card.id).element ?? s.traits[0]));
   // at 练气 the same creature leaves a lesser core
   const young = fightOut(toFuzhu(), 'subdue-fuzhu');
-  assert.deepEqual(young.result.dropped.map(d => d.id), ['yaodan-1']);
+  assert.deepEqual(things(young), ['yaodan-1']);
   // 精卫 carries 火精 besides
   const haunt = { ...toOpenWorld(), place: 'fajiu', traits: ['metal', 'wood', 'water', 'earth'] };
   const there = look(haunt, content, octx()).place.encounter;

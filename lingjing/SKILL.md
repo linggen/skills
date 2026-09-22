@@ -957,6 +957,10 @@ always in the world:
 - The player holds a **hand of cards**: 灵兽 to stand in their 阵前, 功法 to cast
   at once. One card is drawn at the start of every round; when the deck runs
   dry each draw costs 气血, more each time.
+- **Only cards he has obtained** (his rule): the starter his roots gave at the
+  root test, 银月 once she walks with him, each beast he has tamed, and a card
+  from every win. A 山海经 beast he has not tamed is never in his ten. Look
+  does not list his cards; the fight's own card shows the hand.
 - A body cannot strike the round it arrives. After that it strikes once a round,
   and both sides take the blow. **护主** stands in the way of the one behind it.
 - **主灵根一击** — once a round, two 灵力, in the player's own root.
@@ -983,7 +987,10 @@ and `can_refine` when the realm allows one and none is bound.
 **What a fight leaves.** Every win drops the 妖丹 of the realm it was met at,
 and some creatures carry a 天材地宝 besides — 蠪侄 精金 · 雷神 雷击木 · 夔 寒玉 ·
 精卫 火精 · 狪狪 息壤. The result's `dropped` says what went into the bag; speak
-it as a find, not a reward. The later markets sell the five as well, dearly.
+it as a find, not a reward. A win also leaves **one card** he did not hold
+(`dropped` row with `card: true`) — a 功法 or a 灵兽 now his to take into a
+fight; say it as something learned or someone met on the way, in one line.
+A tamed beast's card comes with it (`paid.cards`). The later markets sell the five as well, dearly.
 
 **After a fight**, the result carries `log` — every turn as it fell — and both
 sides as they ended. Narrate the finish from it: the blow that landed, what it

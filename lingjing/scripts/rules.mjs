@@ -900,7 +900,9 @@ const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${stat
    Deterministic, so the same player takes the same deck into the same fight —
    and so the rules and the page never disagree about what was held. */
 export function deckFor(content, state) {
-  const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue');
+  // Only what has been obtained (his, 2026-09-22) — 得牌 below.
+  const owned = new Set(ownedCards(content, state));
+  const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && owned.has(c.id));
   const roots = new Set(state.traits ?? []);
   // Born without 金 you take no 金 card in; what no root claims, anyone may.
   const mine = pool.filter(c => (!c.element || roots.has(c.element)));
@@ -938,7 +940,7 @@ export function deckFor(content, state) {
    along in hand when she walks with the player. */
 export function fightSetup(content, state, creature, now) {
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
-  const withHer = hasCompanion(state) || (state.cast ?? []).includes('yinyue');
+  const withHer = ownedCards(content, state).includes('yinyue');
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),
@@ -948,6 +950,55 @@ export function fightSetup(content, state, creature, now) {
 }
 
 const cardCatalog = content => Object.fromEntries((content.cards?.cards ?? []).map(c => [c.id, c]));
+
+/* ── 得牌: a player fights only with the cards they have obtained ──
+   His rule, 2026-09-22: 用户只能使用已经获得的牌, 包括银月, 法术, 武器等. Roots
+   used to hand out every card of their element — so 精卫, never met, sat in
+   his ten while the 夫诸 and 狍鸮 that walk with him did not. Now `state.cards`
+   is what he holds: the starter at the root test, 银月 when she joins, a beast
+   when it joins, a card from each win, and whatever a grant names. A save
+   from before is read as what it would hold (`ownedAtStart`) until the first
+   card is gained, and then that is written down. 法器 are worn, not held —
+   the sword was always the one on the belt. */
+const isBeastCard = (content, id) => Boolean(creatureOf(content, id));
+const starterOf = (content, traits) => {
+  const catalog = cardCatalog(content), roots = new Set(traits ?? []);
+  return (content.cards?.starter ?? []).filter(id => catalog[id] && (!catalog[id].element || roots.has(catalog[id].element)));
+};
+function ownedAtStart(content, state) {
+  const catalog = cardCatalog(content);
+  if (!state.traits?.length) return [];
+  return [...new Set([
+    ...starterOf(content, state.traits),
+    ...(hasCompanion(state) && catalog.yinyue ? ['yinyue'] : []),
+    ...(state.cast ?? []).filter(id => catalog[id]),
+  ])];
+}
+export const ownedCards = (content, state) => state.cards ?? ownedAtStart(content, state);
+
+/* One card into the hand he keeps; null when it is unknown or already his. */
+function gainCard(content, state, id) {
+  const card = cardCatalog(content)[id];
+  if (!card || card._token) return null;
+  const owned = ownedCards(content, state);
+  if (owned.includes(id)) { state.cards = owned; return null; }
+  state.cards = [...owned, id];
+  return { id, name: pick(card.name, state.lang), card: true };
+}
+
+/* What a win leaves in the hand: one card not yet his, of a root he has (a
+   card he could never take in is no gift), the beast's own element first.
+   Never a 山海经 beast — those come only by taming. Stable by the day, the
+   beast and the 道号, like everything else a fight deals. */
+function winCard(content, state, creature, now) {
+  const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
+  const open = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && !isBeastCard(content, c.id)
+    && !owned.has(c.id) && (!c.element || roots.has(c.element)));
+  const own = open.filter(c => c.element === creature.root);
+  const pool = own.length ? own : open;
+  if (!pool.length) return null;
+  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card`) % pool.length].id);
+}
 
 /* The market's shelf: the catalog sold in this province — and, while the
    companion is still to be found, her bell at every market, since the call
@@ -1279,13 +1330,15 @@ function pay(content, state, ctx, grant) {
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
+  // A beast that joins brings its card; a grant may name one outright.
+  const cards = [grant.cast, grant.card].map(id => (id ? gainCard(content, state, id) : null)).filter(Boolean);
   if (grant.item) state.bag[grant.item] = (state.bag[grant.item] ?? 0) + 1;
   // An art is taught by a person, in a scene — never by the beast itself.
   const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
   const fortune = (pf !== 1 && grant.progress) || (wf !== 1 && grant.wealth) ? { progress: pf, wealth: wf } : null;
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}) };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */
@@ -1461,7 +1514,11 @@ export function resolve(state, content, ctx, args) {
     s.bag[exit.take.bag] -= 1;
     if (s.bag[exit.take.bag] <= 0) delete s.bag[exit.take.bag];
   }
-  if (exit.set?.traits === 'v1') s.traits = [...content.traits.v1];
+  if (exit.set?.traits === 'v1') {
+    s.traits = [...content.traits.v1];
+    // The root test hands over the starter — the first cards he holds.
+    s.cards = [...new Set([...(s.cards ?? []), ...starterOf(content, s.traits)])];
+  }
   if (breakthrough) { s.tier = breakthrough.tier; s.step = 0; s.progress = 0; }
   const paid = exit.grant ? pay(content, s, ctx, exit.grant) : null;
   const beat = spoken(content, s, exit.beat);
@@ -1626,6 +1683,8 @@ export function duel(state, content, ctx, args) {
   // What a subdued creature leaves, and what a haunt pays for it. A fight that
   // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3).
   const dropped = played.outcome === 'won' ? drop(content, s, creature) : [];
+  const card = played.outcome === 'won' ? winCard(content, s, creature, ctx.now) : null;
+  if (card) dropped.push(card);
   const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 10 }) : null;
   return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
@@ -2351,6 +2410,7 @@ export function ring(state, content, ctx, args) {
     return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', ...(closed ? {} : { hint: riddle.hint }) } };
   }
   s.companion = { joined: dayKey(ctx.now) };
+  gainCard(content, s, c.id); // 银月 is a card he holds from now on
   s.wear = { ...(s.wear ?? {}), [c.id]: c.bell };
   const paid = c.grant ? pay(content, s, ctx, c.grant) : null;
   return { state: s, result: { ok: true, joined: { id: c.id, name: nameOf(content, c.id, lang) }, beat: spoken(content, s, c.join), ...(paid ? { paid } : {}), summarize: true } };
