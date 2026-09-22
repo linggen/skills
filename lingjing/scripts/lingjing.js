@@ -163,6 +163,22 @@ function refreshSoon(ms = 400) {
 }
 let refreshTimer = null;
 
+/* 遇 in the mist (his, 2026-09-22): Ling sets the moment and calls Meet
+   reveal. If her turn ends first, or the page is opened on the mist with no
+   turn running, the page lifts it itself — the stage is never stuck in fog. */
+let streaming = false;
+let veilTimer = null;
+async function liftVeil() {
+  clearTimeout(veilTimer); veilTimer = null;
+  await verb('meet', { action: 'reveal' }).catch((e) => console.warn('[lingjing] reveal', e));
+  await refresh();
+}
+function watchVeil() {
+  if (!look?.place?.meet?.veiled) { clearTimeout(veilTimer); veilTimer = null; return; }
+  if (veilTimer || streaming) return;
+  veilTimer = setTimeout(() => { veilTimer = null; if (look?.place?.meet?.veiled && !streaming) liftVeil(); }, 20000);
+}
+
 function refresh() {
   if (reading) { readAgain = true; return reading; }
   reading = readOnce().finally(() => {
@@ -190,6 +206,7 @@ async function readOnce() {
   // the world while Ling waits for a fight nobody can see, and she holds still
   // for ever. The rules do not charge the day's 灵气 twice for it.
   if (look.fight?.open && !bout) await onDuelStart(look.fight.game);
+  watchVeil();
   render();
 }
 
@@ -856,13 +873,16 @@ async function mountChat() {
     title: 'Lingjing',
     sessionId: resume || undefined,
     onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
-    onStreamToken: () => { alive = true; },
+    onStreamToken: () => { alive = true; streaming = true; },
     onStreamEnd: (text) => {
       turnEnded();
+      streaming = false;
       const before = look;
-      refresh().then(() => cheer(before, text));
+      // Her turn is over: a 遇 still in the mist is lifted by the page — she
+      // set the moment and forgot the reveal, or never got to it.
+      refresh().then(() => cheer(before, text)).then(() => { if (look?.place?.meet?.veiled) liftVeil(); });
     },
-    onContentBlock: (payload) => { alive = true; onContentBlock(payload); },
+    onContentBlock: (payload) => { alive = true; streaming = true; onContentBlock(payload); },
   });
   if (!resume) {
     setTimeout(() => openWith(chat?.getSessionId()), 700);

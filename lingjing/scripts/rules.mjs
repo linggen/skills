@@ -94,7 +94,8 @@ const hauntId = creature => `haunt:${creature}`;
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
   // The haunt's own beast, else the one today's 遇 put on this road.
-  const cid = place?.has?.creature ?? (meetHere(state, now)?.kind === 'beast' ? meetHere(state, now).creature : null);
+  const road = meetHere(state, now);
+  const cid = place?.has?.creature ?? (road?.kind === 'beast' && !road.veiled ? road.creature : null);
   if (!cid || atScene(content, state)) return null;
   const creature = creatureOf(content, cid);
   if (!creature) return null;
@@ -559,9 +560,11 @@ function dealMeet(content, state, ctx) {
   // Its own hash: bits of `roll` picked 夔 fifteen times out of fifteen.
   const nth = list => hashOf(`${dayKey(ctx.now)}|${state.place}|${state.name ?? ''}|which`) % list.length;
   const pickOf = list => list[nth(list)];
-  if (kind === 'find') { const f = pickOf(pool.find); return { kind, find: f.book, n: f.n }; }
-  if (kind === 'riddle') return { kind, key: pickOf(pool.riddle), tried: [] };
-  return { kind, creature: pickOf(pool.beast) };
+  // Veiled: the stage shows mist until Ling has set the moment and calls
+  // Meet reveal (his, 2026-09-22: 月黑风高…突然…然后webUI出现怪物卡).
+  if (kind === 'find') { const f = pickOf(pool.find); return { kind, find: f.book, n: f.n, veiled: true }; }
+  if (kind === 'riddle') return { kind, key: pickOf(pool.riddle), tried: [], veiled: true };
+  return { kind, creature: pickOf(pool.beast), veiled: true };
 }
 
 const findOf = (content, meet) => content.meets.finds[meet.find][meet.n];
@@ -570,6 +573,10 @@ const findOf = (content, meet) => content.meets.finds[meet.find][meet.n];
 function meetBrief(content, state, now) {
   const meet = meetHere(state, now), lang = state.lang;
   if (!meet || meet.done) return null;
+  const brief = meetBriefOf(content, meet, lang);
+  return meet.veiled ? { ...brief, veiled: true } : brief;
+}
+function meetBriefOf(content, meet, lang) {
   if (meet.kind === 'find') {
     const f = findOf(content, meet), item = f.item ? itemOf(content, f.item) : null;
     return { kind: 'find', line: pick(f.line, lang), ...(item ? { item: { id: item.id, name: pick(item.name, lang) } } : { wealth: f.wealth }) };
@@ -587,6 +594,15 @@ export function meet(state, content, ctx, args) {
   const action = String(args.action ?? '');
   if (!here || here.done) return refuse('nothing-here', null);
   const close = () => { s.meets.places[s.place] = { ...here, done: true }; };
+  // 揭 — the moment has been set; the card comes up and the question with it.
+  if (action === 'reveal') {
+    if (!here.veiled) return refuse('not-veiled', null);
+    const { veiled, ...open } = here;
+    s.meets.places[s.place] = open;
+    return { state: s, result: { ok: true, revealed: here.kind, meet: meetBrief(content, s, ctx.now) } };
+  }
+  // Taken, answered or passed by his own word: the mist is gone either way.
+  delete here.veiled;
   if (action === 'pass') { close(); return { state: s, result: { ok: true, passed: here.kind } }; }
   if (here.kind === 'find' && action === 'take') {
     const f = findOf(content, here);
@@ -609,7 +625,7 @@ export function meet(state, content, ctx, args) {
     close();
     return { state: s, result: { ok: true, answered: true, paid } };
   }
-  return refuse('unknown-action', null, { actions: here.kind === 'find' ? ['take', 'pass'] : here.kind === 'riddle' ? ['answer', 'pass'] : ['pass'] });
+  return refuse('unknown-action', null, { actions: here.kind === 'find' ? ['take', 'pass', 'reveal'] : here.kind === 'riddle' ? ['answer', 'pass', 'reveal'] : ['pass', 'reveal'] });
 }
 
 /* A 奇遇 does not keep overnight. His save held one opened 2026-09-14 with no
@@ -2845,7 +2861,7 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
     };
   }
   const road = meetBrief(content, state, ctx.now);
-  if (road?.kind === 'riddle' && !atScene(content, state)) {
+  if (road?.kind === 'riddle' && !road.veiled && !atScene(content, state)) {
     return {
       header: String(placeBrief(content, state, ctx.now)?.name ?? ''), question: road.riddle,
       options: [...road.choices.map(c => ({ label: c, meet: 'answer', answer: c })), { label: zh ? '不答，赶路' : 'Walk on', meet: 'pass' }],
@@ -2956,9 +2972,10 @@ const THEN_CALL = 'The search has just opened: say `quest.line` in the world, in
 /* No question this time: the stage has the thing in front of him, or nothing
    has changed since the last one. End on words — never invent a question the
    rules withheld (his law, 2026-09-18). */
+const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled — the stage shows only mist). Set the moment first: two or three short lines in the world that build toward it — the light, the air, a sound — and stop at the edge ("突然——"), never naming what it is. Then call Meet {action: reveal}: its answer puts the card on the stage and carries the question; follow its own `then`.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
-export const thenFor = (result, ask = undefined) => (result?.quest?.say ? THEN_CALL : '')
-  + (ask === null ? THEN_QUIET : won(result) ? THEN_CHEER : THEN);
+export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? THEN_VEIL : (result?.quest?.say ? THEN_CALL : '')
+  + (ask === null ? THEN_QUIET : won(result) ? THEN_CHEER : THEN));
 const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, ctx, result), ...result });
 
 /* The player's words are an option of the question on screen — a tap on a

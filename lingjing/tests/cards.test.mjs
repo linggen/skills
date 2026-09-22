@@ -353,3 +353,15 @@ test('可接的差事: one card, a row each; a row opens to the giver; taken, on
   assert.deepEqual(after.offers.map((o) => o.id), seen.offers.slice(1).map((o) => o.id));
   if (after.offers.length === 1) assert.match(cardHtml({ card: 'offer' }, ctx(after)), /class="offerdetail"/, 'a lone errand stands open');
 });
+
+test('遇 in the mist: the veil card says nothing of what waits', async () => {
+  const { WORDS, cardHtml } = await import('../scripts/cards.js');
+  for (const lang of ['zh', 'en']) {
+    const look = { place: { meet: { kind: 'beast', creature: { id: 'longzhi', name: '蠪侄' }, veiled: true } } };
+    const html = cardHtml({ card: 'veil' }, { look, lang, words: WORDS[lang] });
+    assert.match(html, /class="card veil"/);
+    assert.match(html, new RegExp(WORDS[lang].veilLine));
+    assert.doesNotMatch(html, /蠪侄|longzhi|<button/, 'no name, nothing to tap');
+    assert.equal(cardHtml({ card: 'veil' }, { look: { place: { meet: { kind: 'beast' } } }, lang, words: WORDS[lang] }), '', 'revealed, no mist');
+  }
+});

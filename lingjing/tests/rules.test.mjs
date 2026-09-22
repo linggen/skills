@@ -2131,9 +2131,20 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   assert.equal(back.result.place.meet, undefined, 'the same place, the same day: just the place');
 
   // 路人问: the riddle is the question; wrong gives the hint and asks again; right pays and is never asked again
-  const asked = deals.find(d => d.result.place.meet.kind === 'riddle'), rd = day(deals.indexOf(asked));
+  const veiled = deals.find(d => d.result.place.meet.kind === 'riddle'), rd = day(deals.indexOf(veiled));
+  // …but first the mist (his, 2026-09-22: 月黑风高…突然…然后webUI出现怪物卡): the
+  // stage holds a veil, nothing is asked, and Ling is told to set the moment
+  assert.equal(veiled.result.place.meet.veiled, true);
+  const misty = look(veiled.state, content, rd);
+  assert.deepEqual(misty.stage.map(c => c.card).filter(k => k === 'veil'), ['veil']);
+  assert.equal(misty.ask, null, 'nothing asked in the mist');
+  assert.match(thenFor(veiled.result, null), /Meet \{action: reveal\}/);
+  const asked = must(meet, veiled.state, { action: 'reveal' }, rd);
+  assert.equal(asked.result.revealed, 'riddle');
+  refused(meet, asked.state, { action: 'reveal' }, 'not-veiled', rd);
+  assert.ok(!look(asked.state, content, rd).stage.some(c => c.card === 'veil'));
   const q = askOf(content, asked.state, rd, asked.result);
-  assert.equal(q.question, asked.result.place.meet.riddle);
+  assert.equal(q.question, asked.result.meet.riddle);
   assert.deepEqual(q.options.at(-1), { label: '不答，赶路', meet: 'pass' });
   assert.match(tapThen(q, q.options[0].label), /Meet \{action: answer, answer: /);
   const key = asked.state.meets.places.huaidu.key, right = content.riddles.zh.riddles[key].a[0];
@@ -2147,9 +2158,12 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   assert.ok(!askOf(content, answered.state, rd, answered.result).options.some(o => o.meet), 'answered, the roads are the question again');
 
   // 拦路: the beast stands like a haunt's own — the same card, the same fight
-  const blocked = marsh.find(d => d.result.place.meet.kind === 'beast'), bd = day(marsh.indexOf(blocked));
-  const cid = blocked.result.place.meet.creature.id;
-  assert.equal(blocked.result.place.encounter.game.id, `haunt:${cid}`);
+  const hidden = marsh.find(d => d.result.place.meet.kind === 'beast'), bd = day(marsh.indexOf(hidden));
+  const cid = hidden.result.place.meet.creature.id;
+  assert.equal(hidden.result.place.encounter, null, 'in the mist no beast stands yet');
+  assert.ok(!look(hidden.state, content, bd).stage.some(c => c.card === 'duel'));
+  const blocked = { state: must(meet, hidden.state, { action: 'reveal' }, bd).state };
+  assert.equal(look(blocked.state, content, bd).place.encounter.game.id, `haunt:${cid}`);
   assert.notEqual(cid, 'fuzhu', 'never one that walks with him');
   assert.ok(look(blocked.state, content, bd).stage.some(c => c.card === 'duel' && c.id === `haunt:${cid}`));
   assert.equal(duel(blocked.state, content, bd, { id: `haunt:${cid}` }).result.ok, true, 'and the door opens');

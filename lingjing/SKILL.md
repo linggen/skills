@@ -549,7 +549,11 @@ tools:
   - name: Meet
     description: >-
       遇 — what an arrival dealt where the place held nothing of its own
-      (`place.meet` in Move and Look). `find`: speak its `line`; the stage
+      (`place.meet` in Move and Look). It arrives VEILED (`meet.veiled`): the
+      stage shows only mist. Set the moment first — two or three short lines
+      in the world that build toward it (the dark, the wind, a sound) and stop
+      at the edge, never naming it — then Meet `reveal`, and follow that
+      answer's `then`. Revealed: `find`: speak its `line`; the stage
       carries 收下, so do nothing more. `riddle`: a traveller asks — one line
       to set them on the road, then the rules' `ask` IS the riddle; an option
       tapped is Meet `answer` with it, *不答，赶路* is Meet `pass`; on
@@ -562,7 +566,7 @@ tools:
       action:
         type: string
         required: true
-        description: answer, pass or take.
+        description: reveal, answer, pass or take.
       answer:
         type: string
         required: false

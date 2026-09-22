@@ -450,3 +450,15 @@ body.fighting .askbar { display: none; }
 
 /* A page tap the rules refused, in their words. */
 .donote { margin: 0 auto 10px; max-width: 640px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--seal, #b0413e); color: var(--seal, #b0413e); background: var(--surface); font-size: 13.5px; }
+
+/* 遇, before it is told — mist, until Ling has set the moment. */
+.card.veil { position: relative; min-height: 180px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(180deg, #d9d3c6, #ebe6db); }
+.card.veil .mist { position: absolute; inset: -40%; background:
+  radial-gradient(40% 30% at 30% 40%, rgba(255,255,255,.55), transparent 70%),
+  radial-gradient(35% 25% at 70% 60%, rgba(255,255,255,.45), transparent 70%),
+  radial-gradient(50% 35% at 50% 80%, rgba(255,255,255,.35), transparent 70%);
+  animation: drift 9s ease-in-out infinite alternate; }
+.card.veil .veilline { position: relative; font-family: var(--serif, serif); font-size: 18px; letter-spacing: .12em; color: #6b6356; }
+@keyframes drift { from { transform: translateX(-6%) translateY(2%); } to { transform: translateX(6%) translateY(-2%); } }
+@media (prefers-reduced-motion: reduce) { .card.veil .mist { animation: none; } }
+@media (prefers-color-scheme: dark) { .card.veil { background: linear-gradient(180deg, #1f1d19, #29261f); } .card.veil .veilline { color: #b8ad99; } }
