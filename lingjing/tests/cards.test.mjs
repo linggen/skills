@@ -265,6 +265,31 @@ test('装备 · 背包 open together: what he wears, what he carries, and the on
   assert.match(pop2, /主灵根一击 \+1/);
   assert.doesNotMatch(pop2, /data-wear="bamboo-sword"/);
   assert.match(gearChipHtml({ ...ctx, look: armed }, false), /装备 1/);
+  // 卸下: the slot's own button, and the rules put it back in the bag
+  assert.match(pop2, /data-remove="bamboo-sword"[^>]*>卸下/);
+  const { trade } = await import('../scripts/rules.mjs');
+  const off = trade(worn, content, { now: new Date('2026-09-22T12:00:00'), quests: [] }, { action: 'remove', id: 'bamboo-sword' });
+  assert.equal(off.result.ok, true);
+  assert.equal(off.state.wear.weapon, undefined);
+  assert.equal(off.state.bag['bamboo-sword'], 1);
+  assert.equal(off.state.wear.yinyue, 'moon-bell', 'hers stays on her');
+  assert.equal(trade(worn, content, { now: new Date(), quests: [] }, { action: 'remove', id: 'moon-bell' }).result.refused, 'not-worn', 'what she wears is hers');
   // English stands up too
   assert.doesNotMatch(gearPopHtml({ look: armed, gear: armedGear, lang: 'en', words: WORDS.en }), /undefined|\{[a-z]+\}/);
+});
+
+test('所得: a won fight leaves its new card on the stage, drawn as it will be in the hand', async () => {
+  const { WORDS, spoilsHtml } = await import('../scripts/battle-card.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  for (const lang of ['zh', 'en']) {
+    const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, { ...c, name: c.name[lang] }]));
+    const spoils = { place: 'sibei', cards: [{ id: 'hantan', name: '寒潭指', card: true }], items: [{ id: 'yaodan-2', name: '二阶妖丹', n: 1 }] };
+    const html = spoilsHtml(spoils, { catalog, lang, words: WORDS[lang], artBase: '../worlds/jiuding/' });
+    assert.match(html, new RegExp(catalog.hantan.name));
+    assert.match(html, /class="bcost">3</);
+    assert.match(html, /data-spoils-close/);
+    assert.match(html, /二阶妖丹/);
+    assert.doesNotMatch(html, /undefined|\{[a-z]+\}/);
+  }
 });

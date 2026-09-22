@@ -10,7 +10,7 @@ import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { stageCards, stageHolds } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, battleHtml, pickOf } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
 
@@ -78,6 +78,7 @@ const view = {
   bookOpen: false, //    the 事 chip's popover
   gearOpen: false, //    the 装备 chip's popover: what he wears and his bag, together
   gear: null, //         the rules' `gear` read behind it, fetched when it opens
+  spoils: null, //       what a won fight left: { place, cards, items }, until put away or walked on
   bookSeen: null, //     how many lines the book held when last drawn: one more and the chip says so
   bookFresh: false,
   bookRow: null, //      the line of the book that is open
@@ -320,6 +321,9 @@ function focusHtml() {
   // A fight takes the stage: while one is open, nothing else is on it, and the
   // chat beside it keeps talking (design.md § 斗法在主界面里).
   if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
+  // Walked on, the spoils are put away by themselves.
+  if (view.spoils && view.spoils.place !== (look?.place?.id ?? null)) keep({ spoils: null });
+  const spoils = view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '';
   // A line running under his feet takes the stage (his law, 2026-09-18:
   // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
   // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
@@ -330,7 +334,14 @@ function focusHtml() {
   // the chat's question against, so nothing stands in both places. Only while
   // Ling's Show is still in flight does the page work it out for itself.
   const cards = view.focus.length ? stageCards(look, { focus: view.focus }) : (look.stage ?? []);
-  return cards.map((c) => drawCard(c)).join('') + (stageHolds(look, cards) ? roadsHtml() : '');
+  return spoils + cards.map((c) => drawCard(c)).join('') + (stageHolds(look, cards) ? roadsHtml() : '');
+}
+
+function spoilsCtx() {
+  return {
+    catalog: Object.fromEntries((authored?.cards?.cards ?? []).map(x => [x.id, { ...x, name: x.name?.[lang()] ?? x.name?.zh ?? x.id }])),
+    artBase: `../worlds/${look.world?.id ?? 'jiuding'}/`, lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
+  };
 }
 
 const drawCard = (c) => cardHtml(c, ctx());
@@ -507,8 +518,8 @@ async function takeMeet(action) {
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 /* 装备 · 背包: putting a thing on, or taking a pill, is his own tap — the page
    calls Trade itself and redraws from the rules; no model turn. */
-async function useItem(id) {
-  const r = await verb('trade', { action: 'use', id }).catch((e) => { console.warn('[lingjing] use', e); return null; });
+async function useItem(id, action = 'use') {
+  const r = await verb('trade', { action, id }).catch((e) => { console.warn('[lingjing] use', e); return null; });
   if (r && !r.ok) console.warn('[lingjing] use refused', r.refused);
   await openGear();
   await refresh();
@@ -571,8 +582,8 @@ document.addEventListener('click', (e) => {
   // does whatever it was for.
   if (e.target.closest('[data-book]')) { show({ bookOpen: !view.bookOpen, gearOpen: false }); return; }
   if (e.target.closest('[data-gear]')) { if (view.gearOpen) show({ gearOpen: false }); else openGear(); return; }
-  const worn = e.target.closest('[data-wear],[data-use]');
-  if (worn) { useItem(worn.dataset.wear ?? worn.dataset.use); return; }
+  const worn = e.target.closest('[data-wear],[data-use],[data-remove]');
+  if (worn) { useItem(worn.dataset.wear ?? worn.dataset.use ?? worn.dataset.remove, worn.dataset.remove ? 'remove' : 'use'); return; }
   if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });
   // 问询: the one word that costs a model turn opens the ask bar; nothing is
   // sent until the player says so.
@@ -712,6 +723,10 @@ async function settleBout(outcome) {
   const r = await verb('duel', { id, picks: actions.join(',') });
   bout = null;
   if (!r.ok) console.warn('[lingjing] the rules refused the fight', r);
+  // 所得: the room closes, and what it left stands on the stage — the card he
+  // now holds is seen, not only told.
+  const got = r.ok && r.outcome === 'won' ? r.dropped ?? [] : [];
+  if (got.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card) } });
   await report(`[scene] ${r.outcome ?? outcome} ${id}`);
   if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
   await refresh();
@@ -728,6 +743,7 @@ async function onNourish() {
 
 document.addEventListener('click', (e) => {
   if (e.target.closest('[data-nourish]')) { onNourish(); return; }
+  if (e.target.closest('[data-spoils-close]')) { show({ spoils: null }); return; }
   // Inside a fight the stage belongs to the fight: a click is a place on it.
   const spot = e.target.closest('[data-spot]');
   if (bout && spot) { onBoutTap({ kind: spot.dataset.spot, index: Number(spot.dataset.index ?? -1) }); return; }

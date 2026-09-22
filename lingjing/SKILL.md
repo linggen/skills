@@ -994,6 +994,7 @@ and some creatures carry a 天材地宝 besides — 蠪侄 精金 · 雷神 雷�
 it as a find, not a reward. A win also leaves **one card** he did not hold
 (`dropped` row with `card: true`) — a 功法 or a 灵兽 now his to take into a
 fight; say it as something learned or someone met on the way, in one line.
+The stage shows the card itself (所得) — never read its numbers back.
 A tamed beast's card comes with it (`paid.cards`). The later markets sell the five as well, dearly.
 
 **After a fight**, the result carries `log` — every turn as it fell — and both

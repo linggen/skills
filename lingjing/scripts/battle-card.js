@@ -19,7 +19,7 @@ export const WORDS = {
   zh: {
     hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
-    struck: '已出手', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
+    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进背包：', spoilsClose: '收起', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
     wonSay: '它退入雾中。', lostSay: '你退了半里地，它没有追。', withdrewSay: '它一口气用尽，转身走了 —— 这一场不算你赢。',
     why: {
       'no-mana': '灵力不够', 'board-full': '阵前满了', 'not-your-turn': '还没轮到你',
@@ -48,7 +48,7 @@ export const WORDS = {
   en: {
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
-    struck: 'has struck', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
+    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the bag: ', spoilsClose: 'Put away', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
     wonSay: 'It backs into the mist.', lostSay: 'You give ground; it does not follow.', withdrewSay: 'Its breath runs out and it turns away — this one does not count as a win.',
     why: {
       'no-mana': 'not enough Force', 'board-full': 'the rank is full', 'not-your-turn': 'not your turn',
@@ -227,6 +227,30 @@ function handHtml(st, ctx, picked) {
       ${why ? `<small class="bwhy">${esc(w.why[why] ?? why)}</small>` : ''}
     </button>`;
   }).join('');
+}
+
+/* 所得 — what a won fight left, on the stage after the room closes: the card
+   he now holds, drawn as it will be in his hand, and what went into the bag.
+   Until he puts it away or walks on; the rules already wrote it down. */
+export function spoilsHtml(spoils, ctx) {
+  const w = ctx.words;
+  const faces = spoils.cards.map((row) => {
+    const c = ctx.catalog[row.id];
+    if (!c) return '';
+    const body = c.kind === 'minion' ? `<span class="bstat"><b>${c.atk}</b> / <b>${c.hp}</b></span>` : '';
+    return `<div class="bcard face">
+      <span class="bcost">${c.cost}</span>
+      ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
+      <span class="bname">${name(c, ctx.lang)}</span>
+      <span class="belem">${GLYPH[c.element] ?? ''}</span>
+      <small class="btext">${esc(sayEffect(c, ctx))}</small>${body}
+    </div>`;
+  }).join('');
+  const things = spoils.items.map((i) => `${esc(i.name)}${i.n > 1 ? ` ×${i.n}` : ''}`).join(' · ');
+  return `<div class="card spoils"><div class="cardtitle">${esc(w.spoils)}</div>
+    ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
+    ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
+    <div class="acts"><button class="act" data-spoils-close>${esc(w.spoilsClose)}</button></div></div>`;
 }
 
 /* The day's cast on a card it touches — so a number that differs from the

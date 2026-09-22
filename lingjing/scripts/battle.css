@@ -8,7 +8,7 @@
    leans in when it strikes. All of it decorative — battle-anim.js replays a
    log the rules already wrote, and `skip` turns every bit of it off. */
 
-.battle {
+.battle, .spoils {
   --ink: #12100e;
   --ink-2: #1b1714;
   --line-d: #3a322a;
@@ -285,3 +285,12 @@
 /* The day's cast on a card it lifts (or lowers) — 问斗法. */
 .blift { color: var(--jade, #4a8a6a); font-weight: 600; }
 .blift.down { color: var(--seal, #b0413e); }
+
+/* 所得 — what a won fight left, on the stage after the room closes. */
+.spoils .cardtitle { color: var(--gold); }
+.spoils .small { color: var(--faint-d); }
+.spoilfaces { display: flex; gap: 10px; justify-content: center; padding: 6px 0 4px; }
+.bcard.face { cursor: default; animation: spoilin 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 1; }
+.bcard.face:hover { transform: none; }
+@keyframes spoilin { from { transform: translateY(18px) scale(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bcard.face { animation: none; } }

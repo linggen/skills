@@ -2026,7 +2026,15 @@ export function trade(state, content, ctx, args) {
     if (e.charm) return refuse('cast-in-a-bout', pick({ zh: `${pick(item.name, lang)}在${w.contest}时掷出，不在此。`, en: `A ${pick(item.name, lang)} is cast in a bout, not here.` }, lang));
     return refuse('not-usable', null);
   }
-  return refuse('unknown-action', null, { actions: ['buy', 'sell', 'use'] });
+  // 卸下 — an arm taken off, back to the bag. Only his three slots: what
+  // Yinyue wears is hers, and the 本命法宝 is bound, not worn.
+  if (args.action === 'remove') {
+    const slot = GEAR_SLOTS.find(k => s.wear?.[k] === item.id);
+    if (!slot) return refuse('not-worn', null);
+    delete s.wear[slot];
+    return { state: s, result: { ok: true, removed: item.id, slot, wear: s.wear } };
+  }
+  return refuse('unknown-action', null, { actions: ['buy', 'sell', 'use', 'remove'] });
 }
 
 /* The player's words set the language. The result carries the scene in it,
