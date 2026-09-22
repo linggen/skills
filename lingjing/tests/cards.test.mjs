@@ -297,3 +297,25 @@ test('所得: a won fight leaves its new card on the stage, drawn as it will be 
     assert.doesNotMatch(html, /undefined|\{[a-z]+\}/);
   }
 });
+
+test('让页面算: the hand and the aimed-at say what a blow really takes off, and why when 五行 bites', async () => {
+  const { WORDS, battleHtml } = await import('../scripts/battle-card.js');
+  const { begin, offers, view } = await import('../scripts/battle.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, { ...c, name: c.name.zh }]));
+  // wood against an earth beast: 木克土, ×1.5
+  const setup = { mode: 'pve', seed: 's', you: { tier: 'core', root: 'wood', deck: ['xiaoyao', 'leipu', 'tuou'], extra: ['qingteng', 'huodan'] }, foe: { tier: 'core', root: 'earth', deck: content.creatures.creatures.find(c => c.id === 'paoxiao').deck } };
+  const st = begin(setup, catalog);
+  const ctx = { lang: 'zh', words: WORDS.zh, catalog, board: st.mode.board };
+  const html = battleHtml(view(st), offers(st), ctx);
+  assert.match(html, /打 2 点[\s\S]*?→ 对它 3 · 木克土/, 'the hand says it');
+  assert.doesNotMatch(html, /class="bdmg/, 'nothing aimed, no badge');
+  // 主灵根一击 held: the beast shows the number (2 at 结丹 → 3)
+  const aimed = battleHtml(view(st), offers(st), ctx, { from: 'power' });
+  assert.match(aimed, /class="bdmg up">−3 · 木克土/);
+  // fire against earth changes nothing: no word, no mark
+  assert.doesNotMatch(html, /火弹术[\s\S]{0,300}对它/);
+  // English too
+  assert.match(battleHtml(view(st), offers(st), { ...ctx, lang: 'en', words: WORDS.en }, { from: 'power' }), /−3 · wood over earth/);
+});

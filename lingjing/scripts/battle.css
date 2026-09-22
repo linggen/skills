@@ -294,3 +294,12 @@
 .bcard.face:hover { transform: none; }
 @keyframes spoilin { from { transform: translateY(18px) scale(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .bcard.face { animation: none; } }
+
+/* 让页面算 — the real number on what is aimed at, and why when 五行 bites. */
+.bdmg { position: absolute; top: 6px; right: 6px; z-index: 3; padding: 2px 7px; border-radius: 99px; font-family: var(--ui); font-size: 12px; font-weight: 700;
+  background: rgba(18, 16, 14, 0.85); color: var(--parchment); border: 1px solid var(--line-d); pointer-events: none; }
+.bdmg.up { color: var(--jade); border-color: var(--jade); }
+.bdmg.down { color: var(--blood); border-color: var(--blood); }
+.bon { color: var(--jade); font-weight: 600; }
+.bon.down { color: var(--blood); }
+.bside.foe { position: relative; }

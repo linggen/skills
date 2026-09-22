@@ -279,7 +279,7 @@
         "en": "Insight"
       },
       "cost": 1,
-      "element": null,
+      "element": "water",
       "effect": {
         "draw": 2
       },
@@ -814,7 +814,7 @@
         "en": "Contemplate"
       },
       "cost": 3,
-      "element": null,
+      "element": "earth",
       "effect": {
         "draw": 3
       },
@@ -829,7 +829,7 @@
         "en": "Page Spirit"
       },
       "cost": 2,
-      "element": null,
+      "element": "fire",
       "atk": 2,
       "hp": 2,
       "keywords": [

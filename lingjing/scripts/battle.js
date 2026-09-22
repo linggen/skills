@@ -33,6 +33,12 @@ export const OVER = 1.5;
 export const UNDER = 0.75;
 export const clash = (element, root) => (!element || !root ? 1 : BEATS[element] === root ? OVER : BEATS[root] === element ? UNDER : 1);
 
+/* What a blow of n, of this element, takes off a target of that one — THE
+   one formula: the fight settles with it and the page prints it, so the
+   number on the screen is the number that lands (his, 2026-09-22: 五行 is
+   too much to reckon with four roots — 让页面算). `who` is the striker. */
+export const dealt = (st, who, n, element, target) => Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1)));
+
 /* ── The realms ── */
 
 /* `power` is what 主灵根一击 hits for — and it is deliberately BELOW a spell of
@@ -242,8 +248,7 @@ const other = (st, side) => (side.who === 'you' ? st.foe : st.you);
 function resolve(st, side, effect, target) {
   if (!effect) return;
   const them = other(st, side);
-  const scale = st.scale?.[side.who] ?? 1;
-  const hit = (n, element, root) => Math.max(1, Math.round(n * clash(element, root) * scale));
+  const hit = (n, element, root) => dealt(st, side.who, n, element, root);
   if (effect.damage != null) {
     if (target?.kind === 'minion') {
       const m = them.board[target.index];
@@ -378,13 +383,12 @@ export function act(st, action, who = 'you') {
   // 攻击 — both sides take the other's 攻, which is the whole of the exchange.
   const m = side.board[action.index];
   m.struck = true;
-  const scale = st.scale?.[side.who] ?? 1;
   if (action.target?.kind === 'minion') {
     const t = them.board[action.target.index];
-    hurtMinion(st, them, t, Math.max(1, Math.round(m.atk * clash(m.element, t.element) * scale)), { from: 'attack' });
+    hurtMinion(st, them, t, dealt(st, side.who, m.atk, m.element, t.element), { from: 'attack' });
     if (t.atk > 0) hurtMinion(st, side, m, Math.max(1, Math.round(t.atk * clash(t.element, m.element))), { from: 'return' });
   } else {
-    hurt(st, them, Math.max(1, Math.round(m.atk * clash(m.element, them.root) * scale)), { from: 'attack' });
+    hurt(st, them, dealt(st, side.who, m.atk, m.element, them.root), { from: 'attack' });
   }
   return { ok: true };
 }

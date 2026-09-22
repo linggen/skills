@@ -11,9 +11,38 @@
 // waiting state; it never touches the fight.
 
 import { esc, spoken } from './cards.js';
-import { effectOf } from './battle.js';
+import { clash, dealt, effectOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
+const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
+
+/* 相克 in words, only when it bites: 「木克土」 when the blow overcomes, the
+   other way round when it is overcome. The page does the 五行 so the player
+   never has to (his, 2026-09-22: 让页面算). */
+function clashWord(element, target, lang) {
+  const c = clash(element, target);
+  if (c === 1) return '';
+  const [a, b] = c > 1 ? [element, target] : [target, element];
+  return lang === 'en' ? `${EN_EL[a]} over ${EN_EL[b]}` : `${GLYPH[a]}克${GLYPH[b]}`;
+}
+
+/* What the held thing would take off a target, as a badge on it. */
+function dmgBadge(st, n, element, target, lang) {
+  if (n == null) return '';
+  const word = clashWord(element, target, lang);
+  const down = clash(element, target) < 1;
+  return `<span class="bdmg${down ? ' down' : word ? ' up' : ''}">−${dealt(st, 'you', n, element, target)}${word ? ` · ${word}` : ''}</span>`;
+}
+
+/* The striker the player holds: its blow and its element, or null. */
+function strikerOf(st, picked, ctx) {
+  if (!picked) return null;
+  if (picked.from === 'power') return { n: st.you.powerHit, element: st.you.root };
+  if (picked.from === 'board') { const m = st.you.board[picked.index]; return m ? { n: m.atk, element: m.element } : null; }
+  const c = ctx.catalog?.[st.you.hand[picked.index]];
+  const e = c ? effectOf(st.you, c) : null;
+  return e?.damage != null ? { n: e.damage, element: c.element } : null;
+}
 
 export const WORDS = {
   zh: {
@@ -40,7 +69,7 @@ export const WORDS = {
       ['随从', '落场那一回合不能动。下一回合起，点它、再点它要打的，就是出手；互殴两边都受伤。'],
       ['护主', '它阵前站着护主时，先打护主 —— 打不到它本人。'],
       ['主灵根一击', '每回合一次，费 2 灵力，打出你主灵根那一行。手里没牌时它是你的底。'],
-      ['五行', '你的行克它 → 伤害多五成；被它克 → 少四分之一。金克木 · 木克土 · 土克水 · 水克火 · 火克金。'],
+      ['五行', '你的行克它 → 伤害多五成；被它克 → 少四分之一。金克木 · 木克土 · 土克水 · 水克火 · 火克金。不用自己算：牌上和瞄准处写的就是实打的点数。'],
       ['怎么算赢', '打光它的气血就赢。它十二张牌抽完会力竭遁走 —— 不胜不败，也没有奖励，所以拖着不打没用。'],
       ['没有死', '随从被打到 0 是退下，不是死。这个世界里没有死。'],
     ],
@@ -69,7 +98,7 @@ export const WORDS = {
       ['Minions', 'A minion cannot strike the turn it arrives. After that, click it, then click what it strikes — and both take the blow.'],
       ['Guard', 'While a Guard stands in its rank, strike the Guard: the beast itself is out of reach.'],
       ['Root Strike', "Once a round, two Force, in your own root. It is what you have when your hand has nothing."],
-      ['The five roots', 'Your root over its root lands half again as hard; under it, a quarter lighter. Metal over Wood · Wood over Earth · Earth over Water · Water over Fire · Fire over Metal.'],
+      ['The five roots', 'Your root over its root lands half again as hard; under it, a quarter lighter. Metal over Wood · Wood over Earth · Earth over Water · Water over Fire · Fire over Metal. No need to reckon it: the card and whatever you aim at show the number that lands.'],
       ['Winning', 'Take all its Life. If its twelve cards run out first it withdraws — neither won nor lost, and nothing is paid, so waiting it out gains nothing.'],
       ['No death', 'A body at zero is driven off, not killed. Nothing dies in this world.'],
     ],
@@ -186,6 +215,7 @@ function minionHtml(m, side, index, ctx, picked) {
   ].filter(Boolean);
   const can = side === 'mine' && !why && m.ready;
   const aimed = side === 'theirs' ? ctx.aim?.theirs?.has(index) : ctx.aim?.mine?.has(index);
+  const badge = side === 'theirs' && aimed && ctx.striker ? dmgBadge(ctx.st, ctx.striker.n, ctx.striker.element, m.element, ctx.lang) : '';
   const pic = artOf(ctx.catalog?.[m.id], ctx);
   // A body on the rank is a little card of its own: its picture on top, its
   // name under it, and 攻 / 血 in the two bottom corners where a card player's
@@ -198,7 +228,7 @@ function minionHtml(m, side, index, ctx, picked) {
     </span>
     <span class="bname">${name(m, ctx.lang)}</span>
     <span class="batk">${m.atk}</span><span class="bhp">${m.hp}</span>
-    ${marks.length ? `<small>${marks.map(esc).join(' · ')}</small>` : ''}
+    ${marks.length ? `<small>${marks.map(esc).join(' · ')}</small>` : ''}${badge}
   </button>`;
 }
 
@@ -222,7 +252,7 @@ function handHtml(st, ctx, picked) {
       ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
       <span class="bname">${name(c, ctx.lang)}</span>
       <span class="belem">${GLYPH[c.element] ?? ''}</span>
-      <small class="btext">${esc(sayEffect({ ...c, effect: effectOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}</small>
+      <small class="btext">${esc(sayEffect({ ...c, effect: effectOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}</small>
       ${body}
       ${why ? `<small class="bwhy">${esc(w.why[why] ?? why)}</small>` : ''}
     </button>`;
@@ -251,6 +281,16 @@ export function spoilsHtml(spoils, ctx) {
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
     <div class="acts"><button class="act" data-spoils-close>${esc(w.spoilsClose)}</button></div></div>`;
+}
+
+/* A 功法 that hits: what it would take off the beast, when 五行 changes it. */
+function onBeast(st, c, ctx) {
+  const e = effectOf(st.you, c);
+  if (c.kind !== 'spell' || e?.damage == null) return '';
+  const word = clashWord(c.element, st.foe.root, ctx.lang);
+  if (!word) return '';
+  const n = dealt(st, 'you', e.damage, c.element, st.foe.root);
+  return ` <b class="bon${clash(c.element, st.foe.root) < 1 ? ' down' : ''}">${ctx.lang === 'en' ? `→ ${n} on it · ${word}` : `→ 对它 ${n} · ${word}`}</b>`;
 }
 
 /* The day's cast on a card it touches — so a number that differs from the
@@ -355,6 +395,8 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   ctx.reasons = reasons(st, offers);
   const aim = aimable(offers, picked);
   ctx.aim = aim;
+  ctx.st = st;
+  ctx.striker = strikerOf(st, picked, ctx);
   const rank = (side, board, n) => {
     const cells = [];
     for (let i = 0; i < n; i += 1) {
@@ -388,6 +430,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
         ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}
       </div>
       ${deckHtml(st.foe.deck, 'theirs', w)}
+      ${aim.hero && ctx.striker ? dmgBadge(st, ctx.striker.n, ctx.striker.element, st.foe.root, ctx.lang) : ''}
     </button>
 
     ${lastHtml(st.log, ctx, openLog)}
