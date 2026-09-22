@@ -959,7 +959,8 @@ always in the world:
   dry each draw costs 气血, more each time.
 - **Only cards he has obtained** (his rule): the starter his roots gave at the
   root test, 银月 once she walks with him, each beast he has tamed, and a card
-  from every win. A 山海经 beast he has not tamed is never in his ten. Look
+  from every win. A 山海经 beast he has not tamed is never in his ten. His
+  roots decide which 功法 he can cast; a 灵兽 of any element may follow him. Look
   does not list his cards; the fight's own card shows the hand.
 - **What else comes through the door:** a worn 法器 (or the 本命法宝) gives
   主灵根一击 +1 — a sword in the bag but not worn gives nothing. A cast asked

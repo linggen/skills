@@ -782,7 +782,7 @@ function gearBrief(content, state) {
         .sort((a, b) => a.cost - b.cost || String(a.element ?? '').localeCompare(String(b.element ?? '')))
         .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,
           ...(c.id === 'yinyue' ? { hand: true } : ten.has(c.id) ? { deck: true } : {}),
-          ...(c.id !== 'yinyue' && c.element && !roots.has(c.element) ? { off_root: true } : {}) }));
+          ...(!usable(c, roots) ? { off_root: true } : {}) }));
     })(),
   };
 }
@@ -940,8 +940,10 @@ export function deckFor(content, state) {
   const owned = new Set(ownedCards(content, state));
   const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && owned.has(c.id));
   const roots = new Set(state.traits ?? []);
-  // Born without 金 you take no 金 card in; what no root claims, anyone may.
-  const mine = pool.filter(c => (!c.element || roots.has(c.element)));
+  // A root decides which 功法 he can cast, not which beast will follow him:
+  // 韩立 had no 金 root and raised 噬金虫 all the same (his, 2026-09-22). So a
+  // spell of a root he lacks stays out; a 灵兽 of any element comes in.
+  const mine = pool.filter(c => usable(c, roots));
   // A DECK, not a pile. The gate measured the difference and it is the whole
   // game: a curve deck won 84% where ten cards drawn at random won 47%
   // (2026-09-18). So the ten are dealt along a curve, and the curve BENDS WITH
@@ -1008,6 +1010,8 @@ const cardCatalog = content => Object.fromEntries((content.cards?.cards ?? []).m
    card is gained, and then that is written down. 法器 are worn, not held —
    the sword was always the one on the belt. */
 const isBeastCard = (content, id) => Boolean(creatureOf(content, id));
+/* A 功法 wants its root; a 灵兽 of any element answers anyone who holds it. */
+const usable = (c, roots) => c.kind !== 'spell' || !c.element || roots.has(c.element);
 const starterOf = (content, traits) => {
   const catalog = cardCatalog(content), roots = new Set(traits ?? []);
   return (content.cards?.starter ?? []).filter(id => catalog[id] && (!catalog[id].element || roots.has(catalog[id].element)));
@@ -1033,14 +1037,15 @@ function gainCard(content, state, id) {
   return { id, name: pick(card.name, state.lang), card: true };
 }
 
-/* What a win leaves in the hand: one card not yet his, of a root he has (a
-   card he could never take in is no gift), the beast's own element first.
+/* What a win leaves in the hand: one card not yet his that he can use — a
+   灵兽 of any element, a 功法 only of his roots (one he could never cast is no
+   gift) — the beast's own element first.
    Never a 山海经 beast — those come only by taming. Stable by the day, the
    beast and the 道号, like everything else a fight deals. */
 function winCard(content, state, creature, now) {
   const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
   const open = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && !isBeastCard(content, c.id)
-    && !owned.has(c.id) && (!c.element || roots.has(c.element)));
+    && !owned.has(c.id) && usable(c, roots));
   const own = open.filter(c => c.element === creature.root);
   const pool = own.length ? own : open;
   if (!pool.length) return null;

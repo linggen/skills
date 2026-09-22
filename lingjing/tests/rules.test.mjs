@@ -389,12 +389,16 @@ test('the ten cards are the player\'s own roots, and a companion teaches nothing
   const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel;
   const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
   const roots = new Set(s.traits);
-  // Every card in the deck is of a root they have, or of none at all — born
-  // without 金, you take no 金 card in (design.md § 斗法 v3).
+  // Every 功法 in the deck is of a root they have — born without 金, you cast
+  // no 金 spell. A 灵兽 of any element may follow (韩立's 噬金虫, 2026-09-22).
   for (const id of brief.setup.you.deck) {
-    const el = byId[id].element;
-    assert.ok(!el || roots.has(el), `${id} is ${el}, which is not theirs`);
+    const { element: el, kind } = byId[id];
+    assert.ok(kind !== 'spell' || !el || roots.has(el), `${id} is a ${el} spell, which is not theirs`);
   }
+  const metal = { ...s, cards: [...s.cards, 'jianying', 'suijin'] }; // a 金 beast and a 金 spell
+  const metalDeck = look(metal, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
+  assert.ok(metalDeck.includes('jianying'), 'the 金 beast comes in');
+  assert.ok(!metalDeck.includes('suijin'), 'the 金 spell does not');
   assert.equal(brief.setup.you.deck.length, new Set(brief.setup.you.deck).size, 'ten different cards');
   assert.deepEqual(brief.setup.you.extra, [], '银月 rides along only once she walks with the player');
   // …and once she does, she is in the hand at the door. The fight read a
@@ -768,7 +772,8 @@ test('a subdued creature leaves its 妖丹, by the realm it was met at, and what
   const [card] = won.result.dropped.filter(d => d.card);
   assert.ok(card && !s.cards.includes(card.id) && won.state.cards.includes(card.id));
   assert.ok(!content.creatures.creatures.some(c => c.id === card.id));
-  assert.ok(s.traits.includes(content.cards.cards.find(c => c.id === card.id).element ?? s.traits[0]));
+  const won_ = content.cards.cards.find(c => c.id === card.id);
+  assert.ok(won_.kind !== 'spell' || s.traits.includes(won_.element), 'a spell he can cast, or a beast of any element');
   // at 练气 the same creature leaves a lesser core
   const young = fightOut(toFuzhu(), 'subdue-fuzhu');
   assert.deepEqual(things(young), ['yaodan-1']);
