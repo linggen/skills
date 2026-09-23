@@ -289,6 +289,9 @@ export function loadSession(sessionData) {
       // article — they were persisted before the finder stopped emitting them.
       sec.cards = dropUnsubmittableCards(sec.cards);
     }
+    if (session.sections.discovery) {
+      session.sections.discovery.cards = capPerSub(session.sections.discovery.cards || []);
+    }
     rerouteMisfiledCards(session.sections);
   }
   renderAll();
@@ -448,6 +451,24 @@ function dropContradictoryEmpties(cards) {
   });
 }
 
+// One subreddit must not fill the Reddit tab. Observed 2026-09-23: Reddit
+// 429'd 14 of 16 feeds, the pool was mostly r/AI_Agents, and all four
+// discovery cards came from it. Spread is a mechanical rule, not the
+// model's call: keep the first MAX_PER_SUB cards per sub in emitted order
+// (the model emits best-first), drop the rest.
+const MAX_PER_SUB = 2;
+
+function capPerSub(cards) {
+  const seen = new Map();
+  return cards.filter(c => {
+    if (c.type === 'empty' || cardSource(c) !== 'reddit') return true;
+    const sub = String(c.sub || c.source || '').toLowerCase().replace(/^r\//, '');
+    const n = (seen.get(sub) || 0) + 1;
+    seen.set(sub, n);
+    return n <= MAX_PER_SUB;
+  });
+}
+
 function applyBodyPatch(patch) {
   if (!patch || typeof patch !== 'object' || !patch.section) return;
   const sectionId = patch.section;
@@ -499,6 +520,9 @@ function applyBodyPatch(patch) {
     } else {
       session.sections[sectionId].cards = incoming;
     }
+  }
+  if (sectionId === 'discovery') {
+    session.sections[sectionId].cards = capPerSub(session.sections[sectionId].cards);
   }
   const ts = patch.last_updated || new Date().toISOString();
   session.sections[sectionId].last_updated = ts;

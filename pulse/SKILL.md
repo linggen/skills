@@ -693,7 +693,8 @@ first (the growth lane), then `FetchX` only if targets came back thin.
 Never fire X tools in the same parallel block as each other.
 
 **Process**:
-1. Call `FetchReddit` (configured subs), `FetchHackerNews`,
+1. Call `FetchReddit` (configured subs — emit **at most 2 discovery
+   cards per subreddit**, best first; the page drops the rest), `FetchHackerNews`,
    `FetchLobsters`, `FetchBlueskyKeywords` (if enabled — Bluesky has
    no subreddit-style communities, so keyword search is the primary
    discovery path there). **For X (if enabled), first build/refresh the
