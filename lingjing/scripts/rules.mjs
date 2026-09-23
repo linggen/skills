@@ -1545,7 +1545,7 @@ export function look(state, content, ctx) {
   };
   const chapter = content.chapters[state.chapter];
   const brief = {
-    ok: true, lang, name: state.name,
+    ok: true, lang, name: state.name, ...(state.lang_set ? { lang_set: true } : {}),
     world: worldBrief(content, lang),
     ...building(content),
     tier: { id: state.tier, step: state.step + 1, name: stepName(content, state.tier, state.step, lang) },
@@ -2654,10 +2654,14 @@ export function trade(state, content, ctx, args) {
    use changes nothing. */
 export function lang(state, content, ctx, args) {
   if (!['zh', 'en'].includes(args.lang)) return refuse('unknown-lang', null, { langs: ['zh', 'en'] });
-  const s = args.lang === state.lang ? state : { ...clone(state), lang: args.lang };
+  // A language chosen — the page's 中/En, or the player asking Ling — is
+  // kept: words never turn it again (his, 2026-09-23: 每次刷新不要重置).
+  // A new game's guess from the machine (`auto`) is not a choice.
+  const set = args.auto ? Boolean(state.lang_set) : true;
+  const s = args.lang === state.lang && Boolean(state.lang_set) === set ? state : { ...clone(state), lang: args.lang, lang_set: set };
   // The scene only where the player stands — Lang once handed Ling chapter
   // 3's opening lines a province early (2026-09-16), and Ling recited them.
-  const result = { ok: true, lang: s.lang, changed: s !== state, scene: atScene(content, s) ? sceneBrief(content, s, ctx?.now) : null };
+  const result = { ok: true, lang: s.lang, changed: args.lang !== state.lang, scene: atScene(content, s) ? sceneBrief(content, s, ctx?.now) : null };
   return { state: s === state ? null : s, result };
 }
 
@@ -2670,7 +2674,7 @@ export function lang(state, content, ctx, args) {
 const ENGINE_WORDS = /^\s*your response was empty/i;
 
 export function heed(state, said) {
-  if (ENGINE_WORDS.test(String(said ?? ''))) return state;
+  if (state.lang_set || ENGINE_WORDS.test(String(said ?? ''))) return state;
   const lang = langOf(said);
   return lang && lang !== state.lang ? { ...clone(state), lang } : state;
 }

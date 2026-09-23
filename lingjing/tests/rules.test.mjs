@@ -1039,7 +1039,7 @@ test('switching language returns the scene in it; the same language writes nothi
   assert.equal(out.state.lang, 'en');
   assert.equal(out.result.changed, true);
   assert.equal(out.result.scene.place, 'The bank of the Si River');
-  const same = must(lang, start('zh'), { lang: 'zh' });
+  const same = must(lang, { ...start('zh'), lang_set: true }, { lang: 'zh' });
   assert.equal(same.state, null);
   assert.equal(same.result.changed, false);
   assert.equal(same.result.scene.place, '泗水之畔');
@@ -2762,4 +2762,19 @@ test('an errand reopens a board already done, and pays only the errand', () => {
   assert.equal(done.state.bag['qi-pill'], (s.bag['qi-pill'] ?? 0) + 1);
   assert.equal(must(task, done.state, { action: 'list' }).result.tasks.some(t => t.id === 'alchemy-first'), false, 'met, the board is shut');
   refused(win, done.state, { id: 'alchemy-first' }, 'not-here');
+});
+
+// His Chinese game turned English three times on 2026-09-23, each right after
+// a page report (`[HIDDEN] [scene] won …`): a machine's line is never the
+// player's language, and a language he chose stays chosen.
+test('language: machine lines never turn it, and a chosen one holds against words', () => {
+  for (const line of ['[HIDDEN] [scene] won alchemy-first', '[scene] meet taken', '[HIDDEN] [scene] opened']) assert.equal(langOf(line), null, line);
+  const s = { ...start('zh') };
+  assert.equal(heed(s, 'ok go north').lang, 'en', 'unchosen, his words still lead');
+  const chosen = must(lang, s, { lang: 'zh' }).state;
+  assert.equal(chosen.lang_set, true);
+  assert.equal(heed(chosen, 'ok go north').lang, 'zh', 'chosen, words never turn it');
+  assert.equal(must(lang, chosen, { lang: 'en' }).state.lang, 'en', 'the toggle still does');
+  const guessed = must(lang, s, { lang: 'en', auto: true }).state;
+  assert.equal(guessed.lang_set, false, 'a new game\'s guess from the machine is not a choice');
 });

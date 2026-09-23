@@ -338,7 +338,8 @@ function omenChip(kind) {
 /// The game's language, at a tap — the rules' Lang, the same word Ling
 /// would use; the page redraws in it and Ling's next reply follows Look.
 async function switchLang(to) {
-  if (to === lang()) return;
+  // The lit one tapped still counts: it pins the game to it (lang_set).
+  if (to === lang() && look?.lang_set) return;
   try {
     await verb('lang', { lang: to });
   } catch (e) {
@@ -1082,7 +1083,7 @@ async function firstLanguage() {
   if (!fresh) return;
   const want = (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
   if (want !== look.lang) {
-    await verb('lang', { lang: want });
+    await verb('lang', { lang: want, auto: true });
     await refresh();
   }
 }

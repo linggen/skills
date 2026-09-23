@@ -45,7 +45,10 @@ export function normalizeAnswer(answer) {
    `[scene]` report) → null, which changes nothing. */
 export function langOf(said) {
   const text = String(said ?? '').trim();
-  if (!text || text.startsWith('[scene]')) return null;
+  // A bracketed tag opens a machine's line, never the player's: the page's
+  // reports reach Ling as `[HIDDEN] [scene] won …`, and each one read as
+  // English flipped his Chinese game three times in a day (2026-09-23).
+  if (!text || text.startsWith('[')) return null;
   if (/\p{Script=Han}/u.test(text)) return 'zh';
   if (/[A-Za-z]{2,}/.test(text)) return 'en';
   return null;
