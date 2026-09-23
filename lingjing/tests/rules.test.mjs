@@ -2725,7 +2725,7 @@ test('组牌: a tap puts a card in or takes it out, ten at most, the rest filled
 
 // 云龙山的八味 asks a pill of alchemy-first, done once in the story: the
 // errand reopens the furnace, the win pays the errand and not the task again,
-// and once met the board is shut (his, 2026-09-24: 没触发差事).
+// and once met the board is shut (his, 2026-09-23: 没触发差事).
 test('an errand reopens a board already done, and pays only the errand', () => {
   const s = { ...start(), place: 'yunlong',
     tasks: { 'alchemy-first': { status: 'done', period: 'once', done_at: '2026-09-01T10:00:00Z' } },

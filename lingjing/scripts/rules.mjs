@@ -2089,7 +2089,7 @@ export function task(state, content, ctx, args) {
 /* An errand held and not yet met that asks for a win on this board. It
    reopens a board already done: 云龙山的八味 asks a pill of alchemy-first,
    done once in the story, so the furnace never came back and the errand
-   could not be met (his, 2026-09-24: 我已经到这里了, 没触发差事). */
+   could not be met (his, 2026-09-23: 我已经到这里了, 没触发差事). */
 function errandWants(content, state, id) {
   return Object.keys(state.quests ?? {}).some(qid => {
     if (questDoneBefore(state, qid)) return false;
