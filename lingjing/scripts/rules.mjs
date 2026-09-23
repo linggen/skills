@@ -302,7 +302,20 @@ const questReady = (content, state, quest) => countsOf(content, state, quest).ev
 /* 功课 on the same card (design.md § 差事 ⑥): what the player's apps report,
    as lines of the book. They take no slot — nobody took them, life gave them
    — and one paid for its period leaves, like any errand handed in. */
-const choreOpen = q => (typeof q.open === 'string' && q.open.startsWith('/apps/') ? q.open : q.app ? `/apps/${encodeURIComponent(q.app)}/` : null);
+/* Where a 功课 is done: the page the app declares (`open`, a path under
+   /apps/), else the app's own entry as its SKILL.md names it (`app.entry`) —
+   `/apps/<app>/` alone is the Linggen shell, not the app (his, 2026-09-23:
+   去 Shifu 做 opened the agent UI). No entry found, no link. */
+const SKILLS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+function appEntry(app) {
+  if (!/^[a-z0-9-]+$/.test(app ?? '')) return null;
+  try {
+    const head = fs.readFileSync(path.join(SKILLS_ROOT, app, 'SKILL.md'), 'utf8').split(/^---$/m)[1] ?? '';
+    const entry = /^\s+entry:\s*(\S+)\s*$/m.exec(head)?.[1];
+    return entry && !entry.includes('..') ? `/apps/${app}/${entry}` : null;
+  } catch { return null; }
+}
+const choreOpen = q => (typeof q.open === 'string' && q.open.startsWith('/apps/') ? q.open : appEntry(q.app));
 function choresOf(state, ctx, lang) {
   return (ctx?.quests ?? [])
     .filter(q => (q.due || questDone(q, ctx.now)) && state.chores?.[q.id]?.period !== periodKey(q.period, ctx.now))

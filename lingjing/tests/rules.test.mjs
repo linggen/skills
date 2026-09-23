@@ -973,11 +973,13 @@ test('a quest pays when its app says it was done this period, once', () => {
   assert.deepEqual([line.need, line.ready, line.chore.app], [[{ kind: 'chore', have: 1, n: 1 }], true, 'apple-shifu']);
   assert.equal(look(s, content, lastWeek).book.find(b => b.id === 'shifu-scan').ready, false, 'due, not done: it waits in the book');
   // Where to do it: the app's door by default, the page it declares when it does — and never a link out.
-  assert.equal(line.chore.open, '/apps/apple-shifu/');
-  const declared = ctx({ quests: [{ ...chore, open: '/apps/apple-shifu/?tab=system', done_at: '2026-09-02T09:00:00' }] });
-  assert.equal(look(s, content, declared).book.find(b => b.id === 'shifu-scan').chore.open, '/apps/apple-shifu/?tab=system');
+  assert.equal(line.chore.open, '/apps/apple-shifu/scripts/index.html', 'the app\'s own entry, read from its SKILL.md — /apps/<app>/ alone is the Linggen shell');
+  const declared = ctx({ quests: [{ ...chore, open: '/apps/apple-shifu/scripts/index.html?tab=system', done_at: '2026-09-02T09:00:00' }] });
+  assert.equal(look(s, content, declared).book.find(b => b.id === 'shifu-scan').chore.open, '/apps/apple-shifu/scripts/index.html?tab=system');
   const outward = ctx({ quests: [{ ...chore, open: 'https://example.com/', done_at: '2026-09-02T09:00:00' }] });
-  assert.equal(look(s, content, outward).book.find(b => b.id === 'shifu-scan').chore.open, '/apps/apple-shifu/');
+  assert.equal(look(s, content, outward).book.find(b => b.id === 'shifu-scan').chore.open, '/apps/apple-shifu/scripts/index.html');
+  const nobody = ctx({ quests: [{ ...chore, app: 'no-such-app', done_at: '2026-09-02T09:00:00' }] });
+  assert.equal(look(s, content, nobody).book.find(b => b.id === 'shifu-scan').chore.open, null, 'no entry, no link');
   refused(quest, s, { action: 'turn', id: 'shifu-scan' }, 'not-done', lastWeek);
   const turned = must(quest, s, { action: 'turn', id: 'shifu-scan' }, done);
   assert.equal(turned.result.paid.progress, 30);
