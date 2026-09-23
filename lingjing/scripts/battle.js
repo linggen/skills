@@ -80,7 +80,7 @@ export const MODES = {
   // its own realm: the SHORTNESS of a daily fight comes from 境界压制, not from
   // a weak beast (the gate, 2026-09-18: at 0.7 even playing cards blindly won
   // 81% — a fight nobody can lose is not a fight).
-  pve: { deck: 10, hand: 3, foeDeck: 12, foeHand: 3, board: 4, suppress: true, youFirst: true, headStart: 0, foeHp: 0.7, foeDry: 'withdraw', startMana: 2 },
+  pve: { deck: 10, hand: 3, foeDeck: 12, foeHand: 3, board: 4, suppress: true, youFirst: true, headStart: 0, foeHp: 0.7, foeDry: 'withdraw', startMana: 2, sigAt: 0.5 },
   // 斗法 at the table: both sides level. Fairness can only come from one mana
   // curve and ten cards each — never from the realm.
   pvp: { deck: 10, hand: 3, foeDeck: 10, foeHand: 4, board: 4, suppress: false, youFirst: true, headStart: 0, foeHp: 1, startMana: 2 },
@@ -131,10 +131,11 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, boost? }, foe: { tier, root, deck, hp? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, boost? }, foe: { tier, root, deck, hp?, signature? } }
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
    (or softer, n < 0). Both are locked at the door like the rest.
+   `signature` is the beast's 杀招 (creatures.json): { id, name, effect }.
    `catalog` is the card rows by id. Nothing else reaches the fight. */
 function sideOf(who, cfg, catalog, mode, seed) {
   const realm = REALMS[cfg.tier] ?? REALMS.qi;
@@ -144,6 +145,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     who, tier: cfg.tier, root: cfg.root ?? null,
     hp, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
+    signature: cfg.signature ?? null, charge: null,
   };
 }
 
@@ -155,7 +157,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
    was built before it read cards.json. It cost a fight, a day's 体力 and the
    day's encounter, and nothing anywhere said a word. So it is loud here. */
 export const missingCards = (setup, catalog) =>
-  [...(setup?.you?.deck ?? []), ...(setup?.you?.extra ?? []), ...(setup?.foe?.deck ?? [])]
+  [...(setup?.you?.deck ?? []), ...(setup?.you?.extra ?? []), ...(setup?.foe?.deck ?? []), ...(setup?.foe?.signature?.effect?.summon ? [setup.foe.signature.effect.summon.id] : [])]
     .filter((id, i, all) => all.indexOf(id) === i && !catalog?.[id]);
 
 export function begin(setup, catalog) {
@@ -184,8 +186,34 @@ function startTurn(st) {
   side.powerUsed = false;
   for (const m of side.board) m.sick = false;
   for (const m of side.board) m.struck = false;
+  if (side.charge?.phase === 'ready') unleash(st, side);
+  if (st.outcome !== 'open') return;
   if (st.turn > 0 || st.whose === 'foe') draw(st, side);
   st.turn += 1;
+}
+
+/* ── 杀招 — the one turn in every fight that decides it ──
+   The gate, 2026-09-23: at 筑基 the player lost 0.7% of fights and bled a
+   median 12% — the beast never threatened, so no turn mattered (even doing
+   nothing on turn one still won). His call: every fight has a key turn, and
+   it comes when the beast falls to half its 气血 (so every fight that is won
+   meets it, midway). Then it GATHERS: its next turn it plays nothing — its
+   rank still strikes — and the page shows what is coming, in the numbers
+   that will land. The turn after is yours, whole, to answer it: finish it
+   first, stand a 护主 (the blow takes the guard first), heal, or hold your
+   bodies back from a sweep. Then it lets go, once a fight. */
+function gather(st, side) {
+  if (!side.signature || side.charge || side.hp <= 0 || side.hp > side.hpMax * (st.mode.sigAt ?? 0)) return;
+  side.charge = { phase: 'gathering' };
+  st.log.push({ act: 'charge', who: side.who, id: side.signature.id });
+}
+
+function unleash(st, side) {
+  side.charge = { phase: 'spent' };
+  st.log.push({ act: 'unleash', who: side.who, id: side.signature.id });
+  const them = other(st, side);
+  const guard = them.board.findIndex(m => m.taunt);
+  resolve(st, side, { ...side.signature.effect, element: side.root }, guard >= 0 ? { kind: 'minion', index: guard } : undefined);
 }
 
 /* 反噬 — a deck run dry costs 1, then 2, then 3. The creature does not bleed
@@ -211,6 +239,8 @@ function draw(st, side) {
 }
 
 export function endTurn(st) {
+  const done = st[st.whose];
+  if (done.charge?.phase === 'gathering') done.charge = { phase: 'ready' };
   st.whose = st.whose === 'you' ? 'foe' : 'you';
   startTurn(st);
 }
@@ -221,6 +251,7 @@ function hurt(st, side, amount, why = {}) {
   side.hp = Math.max(0, side.hp - amount);
   st.log.push({ act: 'hurt', who: side.who, amount, hp: side.hp, ...why });
   settle(st);
+  if (st.outcome === 'open') gather(st, side);
 }
 
 function hurtMinion(st, side, minion, amount, why = {}) {
@@ -405,7 +436,8 @@ export function act(st, action, who = 'you') {
 export function foeStep(st) {
   if (st.outcome !== 'open' || st.whose !== 'foe') return null;
   const side = st.foe;
-  const playable = side.hand
+  const gathering = side.charge?.phase === 'gathering';
+  const playable = gathering ? [] : side.hand
     .map((id, index) => ({ index, c: card(st, id) }))
     .filter(({ c }) => c && c.cost <= side.mana)
     .sort((a, b) => b.c.cost - a.c.cost);
@@ -415,7 +447,7 @@ export function foeStep(st) {
     act(st, action, 'foe');
     return action;
   }
-  if (!legal(st, { kind: 'power', target: aimPower(st, side) }, 'foe')) {
+  if (!gathering && !legal(st, { kind: 'power', target: aimPower(st, side) }, 'foe')) {
     const action = { kind: 'power', target: aimPower(st, side) };
     act(st, action, 'foe');
     return action;
@@ -517,6 +549,7 @@ export function view(st) {
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost,
+    signature: s.signature, charge: s.charge?.phase ?? null,
     board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck })),
   });
   return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: side(st.foe), log: st.log, scale: st.scale };

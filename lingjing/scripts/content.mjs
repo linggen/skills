@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
 import { normalizeAnswer } from './state.mjs';
+import { EFFECTS } from './battle.js';
 
 /* The worlds ship with the skill, one folder each under `worlds/`; the
    folder's name is the world's id and the save's `world`. */
@@ -633,6 +634,18 @@ function lintPinyin(c, bad, required) {
   if (typeof c.pinyin !== 'string' || c.pinyin.trim().split(/\s+/).length !== chars) bad(`creature ${c.id}`, `pinyin "${c.pinyin}" needs one syllable for each of ${chars} characters`);
 }
 
+/* 杀招 (battle.js § 杀招): named in both languages, and only verbs from the
+   closed vocabulary — a signature that needs a new verb is a rules change. */
+function lintSignature(content, c, bad) {
+  const at = `creature ${c.id}`, sig = c.signature;
+  if (!sig.id || !sig.name?.zh || !sig.name?.en) bad(at, 'signature needs an id and a name in both languages');
+  const verbs = Object.keys(sig.effect ?? {});
+  if (!verbs.length) bad(at, 'signature does nothing');
+  for (const v of verbs) if (!EFFECTS[v]) bad(at, `signature uses an unknown verb: ${v}`);
+  const summon = sig.effect?.summon?.id;
+  if (summon && !(content.cards?.cards ?? []).some(x => x.id === summon)) bad(at, `signature summons unknown card ${summon}`);
+}
+
 function lintCreatures(content, bad) {
   for (const c of content.creatures.creatures) {
     if (!content.traits.elements[c.root]) bad(`creature ${c.id}`, `needs a root the traits know, not ${c.root}`);
@@ -642,6 +655,7 @@ function lintCreatures(content, bad) {
     for (const i of c.pattern ?? []) if (!INTENTS.includes(i)) bad(`creature ${c.id}`, `fights an unknown way: ${i}`);
     if (c.drops && !content.items.items.some(i => i.id === c.drops)) bad(`creature ${c.id}`, `drops unknown item ${c.drops}`);
     if (!c.made) lintPinyin(c, bad, true);
+    if (c.signature) lintSignature(content, c, bad);
     if (!c.art || !c.art_source) { bad(`creature ${c.id}`, 'needs art and art_source'); continue; }
     if (!fs.existsSync(path.join(content.dir, c.art))) bad(`creature ${c.id}`, `art ${c.art} is missing`);
   }

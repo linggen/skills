@@ -134,7 +134,7 @@ const CREATURES = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/
 const byRoot = new Map(CREATURES.filter(c => c.deck).map(c => [c.root, c]));
 function foeOf(root) {
   const c = byRoot.get(root) ?? CREATURES.find(x => x.deck);
-  return { id: c.id, name: c.name.zh, deck: c.deck };
+  return { id: c.id, name: c.name.zh, deck: c.deck, signature: c.signature };
 }
 
 function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot = 'wood', deck, seed = 'd1', mode = 'pve', you = {} }) {
@@ -142,7 +142,7 @@ function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot = 'wood',
   return {
     mode, seed,
     you: { tier, root, deck, extra: ['yinyue'], ...(typeof you === 'function' ? you(root) : you) },
-    foe: { tier: foeTier, root: foeRoot, deck: foe.deck },
+    foe: { tier: foeTier, root: foeRoot, deck: foe.deck, ...(process.env.NO_SIG ? {} : { signature: foe.signature }) },
   };
 }
 
@@ -191,7 +191,7 @@ function matchup() {
         for (let day = 0; day < 4; day += 1) {
           const el = kind === 'counter' ? counterOf(c.root) : kind === 'wrong' ? BEATS[c.root] : 'fire';
           const deck = kind === 'mixed' ? mixed : deckOf(el);
-          const setup = { mode: 'pve', seed: `m|${c.id}|${day}`, you: { tier, root: el, deck, extra: ['yinyue'] }, foe: { tier, root: c.root, deck: c.deck } };
+          const setup = { mode: 'pve', seed: `m|${c.id}|${day}`, you: { tier, root: el, deck, extra: ['yinyue'] }, foe: { tier, root: c.root, deck: c.deck, ...(process.env.NO_SIG ? {} : { signature: c.signature }) } };
           n += 1;
           if (play(setup, smart).outcome === 'won') w += 1;
         }
@@ -427,6 +427,18 @@ async function main() {
     console.log(`${label.padEnd(20)}  ${(r.rate * 100).toFixed(1)}%  (${d >= 0 ? '+' : ''}${d.toFixed(1)})`);
     if (Math.abs(d) > 15) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
   }
+
+  // 杀招 — the key turn (battle.js § 杀招). A climax, not a wall: most won
+  // fights meet it, and it should cost a careless player, not end the day.
+  let met = 0, metLost = 0, n = 0;
+  for (const deck of decks) for (const tier of ['qi', 'foundation', 'core']) for (const foeRoot of ELEMENTS) {
+    const st = play(setupOf({ tier, root: deck.root, deck: deck.cards, foeRoot, seed: `sig|${deck.id}|${tier}|${foeRoot}` }), smart);
+    n += 1;
+    if (st.log.some(t => t.act === 'charge')) { met += 1; if (st.outcome === 'lost') metLost += 1; }
+  }
+  console.log(`\n杀招  碰到它的仗 ${(met / n * 100).toFixed(0)}% · 其中输的 ${(metLost / Math.max(1, met) * 100).toFixed(1)}%`);
+  if (!process.env.NO_SIG && met / n < 0.6) problems.push(`只有 ${(met / n * 100).toFixed(0)}% 的仗碰到杀招 — 关键回合不在多数仗里`);
+  if (metLost / Math.max(1, met) > 0.25) problems.push(`碰到杀招的仗输了 ${(metLost / met * 100).toFixed(1)}% — 杀招成了墙`);
 
   const ent = entropy(decks);
   const pct = x => `${(x * 100).toFixed(0)}%`;

@@ -97,6 +97,19 @@ test('a creature without its picture is caught', () => {
   assert.ok(has(lint(c), 'needs art and art_source'));
 });
 
+test('a 杀招 speaks both languages and only the closed vocabulary; every shipped beast has one', () => {
+  const c = fresh();
+  assert.ok(c.creatures.creatures.filter(x => x.deck).every(x => x.signature));
+  const sig = c.creatures.creatures.find(x => x.id === 'leishen').signature;
+  sig.effect = { smite: 3 };
+  delete sig.name.en;
+  c.creatures.creatures.find(x => x.id === 'jingwei').signature.effect.summon.id = 'nobody';
+  const problems = lint(c);
+  assert.ok(has(problems, 'signature uses an unknown verb: smite'));
+  assert.ok(has(problems, 'signature needs an id and a name in both languages'));
+  assert.ok(has(problems, 'signature summons unknown card nobody'));
+});
+
 test('a scene nobody can reach is caught', () => {
   const c = fresh();
   prologue(c).scenes['00-stray'] = { id: '00-stray', chapter: '00-prologue', buttons: [], exits: [{ id: 'x', means: 'x', stay: true }] };

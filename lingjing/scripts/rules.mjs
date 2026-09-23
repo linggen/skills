@@ -1016,7 +1016,7 @@ export function fightSetup(content, state, creature, now) {
       // 问斗法: the lower trigram's element, its 功法 lifted or lowered today.
       ...(boost ? { boost } : {}),
     },
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [] },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.signature ? { signature: creature.signature } : {}) },
   };
 }
 

@@ -51,7 +51,19 @@
         "hantan",
         "chaoqi"
       ],
-      "_deck": "见则大水 —— 轻快成群的鹿影压上来，潮水收尾。"
+      "signature": {
+        "id": "dashui",
+        "name": {
+          "zh": "大水",
+          "en": "The Flood"
+        },
+        "effect": {
+          "sweep": 5,
+          "damage": 8
+        }
+      },
+      "_deck": "见则大水 —— 轻快成群的鹿影压上来，潮水收尾。",
+      "_signature": "见则其邑大水 —— 潮头先扫阵前，再打到你身上。"
     },
     {
       "id": "paoxiao",
@@ -103,7 +115,19 @@
         "jixiao",
         "shanjing"
       ],
-      "_deck": "饕餮 —— 先立一堵，再一口吞下；饥啸之下爪牙更利。"
+      "signature": {
+        "id": "tun",
+        "name": {
+          "zh": "一吞",
+          "en": "The Devouring"
+        },
+        "effect": {
+          "damage": 14,
+          "heal": 8
+        }
+      },
+      "_deck": "饕餮 —— 先立一堵，再一口吞下；饥啸之下爪牙更利。",
+      "_signature": "食人 —— 一口咬下去，吃到的就长回它自己身上。"
     },
     {
       "id": "jingwei",
@@ -156,7 +180,22 @@
         "jingwei",
         "yanxin"
       ],
-      "_deck": "衔石填海 —— 小鸟一只接一只，不断，不息。（它自带的抽牌只留两张：闸发现三张抽牌会让它五回合就把自己抽空、力竭遁走，一场必胜的仗因此打成平局 2026-09-18。）"
+      "signature": {
+        "id": "tianhai",
+        "name": {
+          "zh": "填海",
+          "en": "Filling the Sea"
+        },
+        "effect": {
+          "summon": {
+            "id": "xianshi",
+            "n": 4
+          },
+          "damage": 4
+        }
+      },
+      "_deck": "衔石填海 —— 小鸟一只接一只，不断，不息。（它自带的抽牌只留两张：闸发现三张抽牌会让它五回合就把自己抽空、力竭遁走，一场必胜的仗因此打成平局 2026-09-18。）",
+      "_signature": "衔西山之木石，以堙于东海 —— 一次衔来一群。"
     },
     {
       "id": "leishen",
@@ -209,7 +248,18 @@
         "zhennu",
         "qingteng"
       ],
-      "_deck": "鼓其腹 —— 雷落连绵，一场下来全是法术。"
+      "signature": {
+        "id": "leiting",
+        "name": {
+          "zh": "雷霆",
+          "en": "Thunderclap"
+        },
+        "effect": {
+          "damage": 18
+        }
+      },
+      "_deck": "鼓其腹 —— 雷落连绵，一场下来全是法术。",
+      "_signature": "鼓其腹则雷 —— 一记，只一记。"
     },
     {
       "id": "longzhi",
@@ -262,7 +312,22 @@
         "jinzhua",
         "jinzhen"
       ],
-      "_deck": "九首九尾 —— 爪快身薄，抢在你立稳之前。"
+      "signature": {
+        "id": "qichu",
+        "name": {
+          "zh": "九首齐出",
+          "en": "Nine Heads"
+        },
+        "effect": {
+          "summon": {
+            "id": "jiushou",
+            "n": 3
+          },
+          "damage": 6
+        }
+      },
+      "_deck": "九首九尾 —— 爪快身薄，抢在你立稳之前。",
+      "_signature": "九首九尾 —— 爪子还没收回，头又来了。"
     },
     {
       "id": "kui",
@@ -315,7 +380,19 @@
         "hantan",
         "huiqi"
       ],
-      "_deck": "其皮为鼓 —— 挡在前面，耗到你无牌可抽。"
+      "signature": {
+        "id": "yizu",
+        "name": {
+          "zh": "一足震",
+          "en": "One Foot"
+        },
+        "effect": {
+          "sweep": 8,
+          "damage": 6
+        }
+      },
+      "_deck": "其皮为鼓 —— 挡在前面，耗到你无牌可抽。",
+      "_signature": "其声如雷 —— 一足落地，整片阵前都在抖。"
     },
     {
       "id": "tongtong",
@@ -368,11 +445,27 @@
         "zhuguang",
         "luoshi"
       ],
-      "_deck": "腹中有珠 —— 守得住，也养得回。"
+      "signature": {
+        "id": "zhuguang",
+        "name": {
+          "zh": "珠光大盛",
+          "en": "Pearl Light"
+        },
+        "effect": {
+          "heal": 16,
+          "rally": {
+            "atk": 0,
+            "hp": 4
+          }
+        }
+      },
+      "_deck": "腹中有珠 —— 守得住，也养得回。",
+      "_signature": "其中多珠 —— 珠光一亮，它和它的都缓过来了。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",
   "_lean": "How it fights, at the player's own realm and step: `lean` moves its numbers about a quarter — hide (厚皮), ward (避法), quick (迅), fierce (猛) — and `pattern` is what it does, turn after turn, cycled from a start the day draws: strike 击 · cast 法术 · gather 蓄 · guard 护体 · armor 甲. A made world writes neither: its id draws them.",
   "_drops": "What a subdued creature leaves besides its 妖丹 (which every win gives, by the realm it was met at): one catalog item, the 天材地宝 this creature carries. A made world may leave it out.",
-  "_decks": "每只妖的十二张牌就是它的人格 (design.md § 斗法 v3)。十二张是 PvE 的硬顶：抽空即力竭遁走 —— 一场绝不会拖过十回合。八张是第一版，闸发现那样它在被打退之前就先抽空了（2026-09-18：55–66% 的仗打成了平局）。"
+  "_decks": "每只妖的十二张牌就是它的人格 (design.md § 斗法 v3)。十二张是 PvE 的硬顶：抽空即力竭遁走 —— 一场绝不会拖过十回合。八张是第一版，闸发现那样它在被打退之前就先抽空了（2026-09-18：55–66% 的仗打成了平局）。",
+  "_signatures": "杀招 (battle.js § 杀招)：它掉到一半气血时蓄力 —— 下一回合不出牌（它阵前的照样出手），页面写明将落下的点数 —— 再下一回合放出，一场一次。伤害先打护主。效果只用封闭词表。数值是闸量过的（2026-09-23）：会读场的赢约 84%、输约 2% —— 它是一场仗的高潮，不是一堵墙。量出来的另一件事：五回合、照剧本出牌的妖，打到杀招时胜负多半已定，所以真正的取舍在仗外（带什么牌、克哪一行、碰不碰它）。"
 }

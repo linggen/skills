@@ -303,3 +303,11 @@
 .bon { color: var(--jade); font-weight: 600; }
 .bon.down { color: var(--blood); }
 .bside.foe { position: relative; }
+
+/* 杀招 — the beast gathering: what will land, written where the eye already is. */
+.bcharge { display: grid; gap: 3px; padding: 8px 12px; border: 1px solid var(--blood); border-radius: 10px; background: rgba(163, 59, 46, 0.12); font-family: var(--ui); font-size: 12px; color: var(--parchment); }
+.bcharge b { font-family: var(--serif); font-size: 14px; letter-spacing: 0.08em; color: #e0806f; }
+.bcharge small { font-size: 11px; color: var(--faint-d); }
+.bcharge.ready { box-shadow: 0 0 18px rgba(163, 59, 46, 0.35); animation: bgather 1.6s ease-in-out infinite; }
+@keyframes bgather { 50% { box-shadow: 0 0 28px rgba(163, 59, 46, 0.55); } }
+@media (prefers-reduced-motion: reduce) { .bcharge.ready { animation: none; } }

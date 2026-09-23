@@ -3,7 +3,7 @@
 // that a card is a row of data with one effect from the closed vocabulary.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BEATS, EFFECTS, MODES, OVER, POWER_COST, REALMS, UNDER, act, battle, begin, clash, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
+import { BEATS, EFFECTS, MODES, OVER, POWER_COST, REALMS, UNDER, act, battle, begin, clash, foeTurn, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
 
 const CARDS = {
   // 随从
@@ -233,4 +233,61 @@ test('view hands the page what it draws, and never the deck itself', () => {
   assert.equal(typeof v.foe.deck, 'number', 'the creature\'s deck is a count, not a list');
   assert.ok(Array.isArray(v.you.hand), 'your own hand is yours to see');
   assert.deepEqual(Object.keys(v).sort(), ['foe', 'log', 'outcome', 'scale', 'turn', 'whose', 'you']);
+});
+
+/* 杀招 (battle.js § 杀招): at half its 气血 the beast gathers, spends its next
+   turn playing nothing, and lets go the turn after — once, the blow taking a
+   护主 first. The page draws the numbers from the same rules. */
+const SIG = { id: 'thunder', name: { zh: '雷霆', en: 'Thunderclap' }, effect: { damage: 6 } };
+const sigFight = (over = {}) => opened({ foe: { tier: 'qi', root: 'wood', deck: deck('cub', 'cub', 'deer', 'cub', 'guard', 'cub', 'cub', 'deer'), signature: SIG, ...over } });
+
+test('杀招: the beast gathers at half its 气血, plays nothing that turn, and lets go the turn after — once', () => {
+  const st = sigFight();
+  st.you.mana = 9;
+  st.you.hand = ['bolt', 'bolt', 'bolt'];
+  const half = st.foe.hpMax / 2;
+  while (st.foe.hp > half) assert.ok(act(st, { kind: 'play', index: 0 }, 'you').ok);
+  assert.equal(view(st).foe.charge, 'gathering');
+  assert.ok(st.log.some(t => t.act === 'charge' && t.id === 'thunder'));
+  const handBefore = st.foe.hand.length;
+  const hpBefore = st.you.hp;
+  act(st, { kind: 'end' }, 'you');
+  {
+    foeTurn(st);
+    assert.equal(st.foe.hand.length, handBefore + 1, 'it drew and played nothing while gathering');
+    assert.equal(st.foe.played.length, 0);
+    assert.equal(st.you.hp, hpBefore, 'nothing has landed yet');
+    assert.equal(view(st).foe.charge, 'ready');
+    act(st, { kind: 'end' }, 'you'); // the key turn, spent doing nothing
+    assert.equal(st.you.hp, hpBefore - 6, 'it let go at the start of its turn');
+    assert.equal(view(st).foe.charge, 'spent');
+    foeTurn(st);
+    act(st, { kind: 'end' }, 'you');
+    assert.equal(st.log.filter(t => t.act === 'unleash').length, 1, 'once a fight');
+  }
+});
+
+test('杀招: a 护主 standing when it lets go takes the blow', () => {
+  const st = sigFight();
+  st.you.mana = 9;
+  st.you.hand = ['bolt', 'bolt', 'bolt', 'guard'];
+  while (st.foe.hp > st.foe.hpMax / 2) act(st, { kind: 'play', index: 0 }, 'you');
+  act(st, { kind: 'end' }, 'you');
+  foeTurn(st);
+  const i = st.you.hand.indexOf('guard');
+  st.you.mana = 9;
+  assert.ok(act(st, { kind: 'play', index: i }, 'you').ok);
+  const hp = st.you.hp;
+  act(st, { kind: 'end' }, 'you');
+  assert.equal(st.you.hp, hp, 'the hero untouched');
+  assert.ok(st.log.some(t => t.act === 'withdrew' && t.id === 'guard'), 'the guard took 6 and went down');
+});
+
+test('杀招: a fight locked without one never gathers — old setups replay as they were', () => {
+  const st = opened();
+  st.you.mana = 9;
+  st.you.hand = ['bolt', 'bolt', 'bolt'];
+  for (let i = 0; i < 3; i += 1) act(st, { kind: 'play', index: 0 }, 'you');
+  assert.equal(view(st).foe.charge, null);
+  assert.ok(!st.log.some(t => t.act === 'charge'));
 });

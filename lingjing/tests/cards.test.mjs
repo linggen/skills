@@ -154,6 +154,26 @@ test('the fight room draws itself: a hand you can read, both ranks, and the two 
   assert.doesNotMatch(html, /blift/, 'no cast, no mark');
 });
 
+test('杀招 on the page: the beast gathering says what will land, and on whom, in the fight\'s own numbers', async () => {
+  const { battleHtml, WORDS } = await import('../scripts/battle-card.js');
+  const { act, begin, offers, view } = await import('../scripts/battle.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, { ...c, name: c.name.zh }]));
+  const leishen = content.creatures.creatures.find(c => c.id === 'leishen');
+  const st = begin({ mode: 'pve', seed: 's', you: { tier: 'qi', root: 'metal', deck: ['xiaoyao'] }, foe: { tier: 'qi', root: 'wood', deck: leishen.deck, signature: leishen.signature } }, catalog);
+  const ctx = { lang: 'zh', words: WORDS.zh, catalog, board: st.mode.board, foeName: '雷神', youName: '清玄' };
+  assert.doesNotMatch(battleHtml(view(st), offers(st), ctx), /bcharge/, 'nothing gathers at full 气血');
+  st.you.mana = 9;
+  st.you.hand = ['jinzhua', 'jinzhua', 'jinzhua', 'jinzhua'];
+  while (st.foe.hp > st.foe.hpMax / 2) act(st, { kind: 'play', index: 0 }, 'you');
+  const html = battleHtml(view(st), offers(st), ctx);
+  assert.match(html, /杀招 · 雷霆/);
+  assert.match(html, /你 −\d+（护主可挡）/);
+  assert.match(html, /它在蓄力/);
+  assert.match(html, /雷神 开始蓄力：雷霆/, 'and the last-move line says so');
+});
+
 test('a fight whose cards the page cannot name is refused, not opened', async () => {
   // The empty catalog of 2026-09-18: the hand is dealt, nothing may be played,
   // and the only buttons that answer are 主灵根一击 and 结束回合. Silence there
