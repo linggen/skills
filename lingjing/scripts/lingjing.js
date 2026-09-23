@@ -686,6 +686,45 @@ document.addEventListener('click', (e) => {
   if (cleared) onWin(board.taskId);
 });
 
+/* ── 银月 hears what happened (engine: POST /api/yinyue/event) ──
+   Facts only, in the player's language; she is not woken now. The engine keeps
+   them until the player has gone quiet — or, `big`, until the screen settles —
+   and then she decides whether a word fits (his, 2026-09-23: 不要每条都回复,
+   只在安静了许久的时候出来说一些). Only once she walks with the player. */
+function tellYinyue(zh, en, { big = false, mood = null } = {}) {
+  if (!look?.companion) return;
+  fetch('/api/yinyue/event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ app: 'lingjing', text: lang() === 'en' ? en : zh, big, ...(mood ? { mood } : {}) }),
+  }).catch((e) => console.warn('[lingjing] yinyue event', e));
+}
+
+/* The turns of a fight worth her knowing: the beast letting its 杀招 go, and
+   the player's 气血 falling to a quarter — each once a fight. */
+function fightMoments() {
+  const st = bout?.st, foe = bout?.brief?.creature?.name ?? '';
+  if (!st) return;
+  if (st.foe.charge?.phase === 'spent' && !bout.told?.unleash) {
+    bout.told = { ...bout.told, unleash: true };
+    const sig = st.foe.signature?.name ?? {};
+    tellYinyue(`${foe}放出了杀招「${sig.zh ?? ''}」`, `${foe} let its ${sig.en ?? 'signature'} go`);
+  }
+  if (st.outcome === 'open' && st.you.hp * 4 <= st.you.hpMax && !bout.told?.low) {
+    bout.told = { ...bout.told, low: true };
+    tellYinyue(`斗${foe}，气血只剩一成多了`, `Fighting ${foe}, down to the last of their Life`);
+  }
+}
+
+/* How it ended, for her: a loss and an elite won are the big ones. */
+function toldOutcome(brief, outcome) {
+  const c = brief?.creature ?? {}, foe = c.name ?? '';
+  if (outcome === 'won' && c.elite) return tellYinyue(`打赢了精英${foe}`, `Beat ${foe}, an elite`, { big: true, mood: 'happy' });
+  if (outcome === 'won') return tellYinyue(`降服了${foe}`, `Beat ${foe}`, { mood: 'happy' });
+  if (outcome === 'lost') return tellYinyue(`输给了${foe}，气血耗尽，只能回去养伤`, `Lost to ${foe}, no Life left — rest before the next`, { big: true, mood: 'sad' });
+  if (outcome === 'withdrew') tellYinyue(`${foe}力竭遁走，这一仗不算赢`, `${foe} ran out of breath and left — not a win`);
+}
+
 /* ── 降妖: the page plays the fight, the rules decide it ── */
 
 async function onDuelStart(id) {
@@ -695,6 +734,7 @@ async function onDuelStart(id) {
     // talking to itself. The states without words (won today, tamed) are
     // already written on the card by Look.
     show({ duelSay: { id, text: r.say ?? null } });
+    if (r.refused === 'wounded') tellYinyue('伤太重，没能出手', 'Too hurt to fight', { mood: 'sad' });
     return;
   }
   const brief = r.duel;
@@ -743,6 +783,7 @@ async function onBoutTap(spot) {
   bout.actions.push(tokenOf(out.action));
   drawNow();
   await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
+  fightMoments();
   if (bout.st.outcome !== 'open') return settleBout(bout.st.outcome);
   drawNow();
 }
@@ -754,6 +795,7 @@ async function endBoutTurn() {
   bout.actions.push('end');
   drawNow();
   await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
+  fightMoments();
   if (bout.st.whose === 'foe' && bout.st.outcome === 'open') {
     await banner(document.querySelector('.battle'), `${bout.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe');
     for (let guard = 0; guard < 40 && bout.st.whose === 'foe' && bout.st.outcome === 'open'; guard += 1) {
@@ -761,6 +803,7 @@ async function endBoutTurn() {
       const did = foeStep(bout.st);
       drawNow();
       await playLog(document.querySelector('.battle'), since(bout.st.log, step), { words: boutCtx().words });
+      fightMoments();
       if (!did || did.kind === 'end') break;
     }
   }
@@ -771,9 +814,10 @@ async function endBoutTurn() {
 /* The rules settle it, and the scene reports it — the scene is still the only
    witness to a fight (design.md § 降妖). */
 async function settleBout(outcome) {
-  const { id, actions } = bout;
+  const { id, actions, brief } = bout;
   const r = await verb('duel', { id, picks: actions.join(',') });
   bout = null;
+  if (r.ok) toldOutcome(brief, r.outcome);
   if (!r.ok) console.warn('[lingjing] the rules refused the fight', r);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.

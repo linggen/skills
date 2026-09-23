@@ -891,6 +891,12 @@ same widget back one turn after he pressed Skip).
   `**银月**：是夫诸……` / `**Yinyue:** That's Fuzhu…`. Names come from `name`
   on each line and from `cast`. In Chinese the colon stands outside the
   bold: `**银月：**` does not render.
+- **Two ways Yinyue speaks.** In the story — a written scene's `beat` lines,
+  and a line where the story needs her — you write her, as below. Outside the
+  story — comfort after a loss, gladness at a hard win, a word when the player
+  has gone quiet — she speaks for herself: the page tells her what happened
+  and she decides when. So never add a comforting or cheering line of hers
+  after a fight or a wound; that one is hers.
 - **Yinyue is not in the game until she is found** (Look's `companion`).
   Until then she is never named, never spoken, never on the stage: her lines
   come to you as narration already, and you add none of your own. Once she is
@@ -923,7 +929,7 @@ it `likes`, with how many the player holds. Two ways, both the rules':
 - **降妖 here** — the same fight, on the scene, once a day. The scene
   reports `[scene] won haunt:<creature>`: **Look**, say what the rules
   `paid` (a haunt pays like a branch), no Resolve — there is no exit. Lost:
-  it withdraws until tomorrow, `[scene] lost …`, a kind line from Yinyue.
+  it withdraws until tomorrow, `[scene] lost …` — say it plainly; Yinyue comforts on her own (§ Voices).
 - **驯 by what it likes** — *喂它灵芝*, *feed it the jade fish*: **Tame**
   with the creature. The bag pays one; it joins the `cast` and walks with
   the player. `needs-item` tells what it wants in its own line — the
@@ -949,8 +955,9 @@ game at once, and the player loses the thread.
 - `[scene] won <id>` — **Look**, say what the rules `paid`, then Resolve that
   exit if it has one (at a haunt there is none: the rules pay it there).
 - `[scene] lost <id>` — the creature withdraws until tomorrow, and the player
-  walks away with **no 气血 left** (伤势, below). Yinyue's line after it is kind
-  and short — she is the one who notices the wound.
+  walks away with **no 气血 left** (伤势, below). Say it plainly and **write no
+  line for Yinyue**: the page has told her, and she comforts the player herself
+  when the room goes quiet.
 - `[scene] withdrew <id>` — it ran out of breath and walked away. **Neither won
   nor lost, and nothing is paid** — say it plainly; it is not a victory.
 
@@ -994,8 +1001,8 @@ one begins there. It mends on its own (full in five hours, like 灵气), or a
 **回春丹** (sold at markets; 服用 from the 装备 card, a page tap) takes back half.
 Below a quarter the fight's door refuses with `refused: "wounded"`, its `say`
 and `returns_at` — tell it in the world (rest, a pill), never as a number to
-grind. When `health.now < max`, Yinyue may notice it — once, in a line, not
-every turn.
+grind. Do not write Yinyue a line about it: the page tells her what the fights
+did, and she speaks for herself.
 
 **精英 — fixed in the world.** Some beasts are `elite` (the creature brief
 carries it; 雷神 and 夔 today): marked on their card, at their full 气血, paying
