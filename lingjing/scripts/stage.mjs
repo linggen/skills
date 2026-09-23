@@ -52,6 +52,7 @@ export const CARD_KINDS = {
   // A beast that can still be met today. Won, withdrawn or tamed, its card is a record, not an ask.
   duel: { holds: (look, card) => { const e = look?.place?.encounter; return !e || e.game?.id !== card.id || !(e.won || e.withdrawn || e.tamed); } },
   hexagram: { holds: false }, //   the day's coins: optional, never what an arrival is about
+  handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
   creature: { holds: false }, map: { holds: false }, traits: { holds: false },
@@ -89,6 +90,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // 差事 offered where he stands: ONE card, a row each (his, 2026-09-22 — two
   // tall errand cards and a shelf crowded 彭城; WoW's list of what an NPC has).
   if (look.offers?.length) head.push({ card: 'offer' });
+  // 所得: an errand met handed itself in (his pick, 2026-09-23) — what it paid
+  // and the next step, already in hand, until he walks on.
+  if (look.handed?.length) head.unshift({ card: 'handed' });
 
   // 遇: something found on the road is on the stage until it is taken or left
   // (a traveller's riddle is the chat's question; a road beast is a duel card).

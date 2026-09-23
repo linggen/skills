@@ -2208,15 +2208,17 @@ test('arriving is an event: the errand met there is told with what is seen, 交�
   const arrived = must(move, { ...took, place: 'sishui' }, { place: '吕梁洪' }, at);
   assert.deepEqual(arrived.result.met.map(m => m.id), ['xu-lvliang-look']);
   assert.match(arrived.result.met[0].seen, /披发而泅/, 'what the author put there is spoken on arrival');
-  const ask = askOf(content, arrived.state, at, arrived.result);
-  assert.deepEqual(ask.options[0], { label: '交差：吕梁洪的水声', turn: 'xu-lvliang-look' }, 'done is handed in before anything else is asked');
-  assert.match(tapThen(ask, '交差：吕梁洪的水声'), /Quest \{action: turn, id: xu-lvliang-look\}/, 'the tap is its tool, named');
-  // walking on and back meets nothing new
-  const again = must(move, must(move, arrived.state, { place: 'sibei' }, at).state, { place: 'lvliang' }, at);
+  // met, it hands itself in (his pick, 2026-09-23): no 交差 is asked, the roads are
+  assert.deepEqual(arrived.result.handed.map(h => h.id), ['xu-lvliang-look']);
+  assert.ok(arrived.state.quests['xu-lvliang-look'].done_at);
+  assert.ok(arrived.result.handed[0].paid.progress > 0);
+  assert.ok(!askOf(content, arrived.state, at, arrived.result).options.some(o => o.turn));
+  assert.deepEqual(look(arrived.state, content, at).handed.map(h => h.id), ['xu-lvliang-look'], 'the stage shows what it paid');
+  // walking on puts the 所得 away, and coming back meets nothing new
+  const away = must(move, arrived.state, { place: 'sibei' }, at);
+  assert.equal(look(away.state, content, at).handed, undefined);
+  const again = must(move, away.state, { place: 'lvliang' }, at);
   assert.equal(again.result.met, undefined);
-  // handed in, the question is the roads again
-  const turned = must(quest, arrived.state, { action: 'turn', id: 'xu-lvliang-look' }, at);
-  assert.ok(!askOf(content, turned.state, at, turned.result).options.some(o => o.turn));
 
   // a 奇遇 opened a week ago and never played: the place still has its seed, and Look calls no tale open
   const stale = { ...arrived.state, branch: { kind: 'province-tale', turns: 0, opened: '2026-09-14T14:07:21.338Z', seed: 'xu-13' } };
@@ -2290,15 +2292,14 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   assert.ok(turned.result.paid.progress > 0);
   assert.equal(turned.state.bag.lingzhi, undefined, 'the herb changed hands');
   assert.equal(turned.state.bag['bamboo-sword'], 1, 'and the sword came back');
-  assert.equal(turned.result.then.id, 'xu-fuli-longzhi', 'the chain names the next');
-  assert.deepEqual(turned.result.book, [], 'a finished errand leaves the book');
+  // the giver hands the next step over with it (his pick A, 2026-09-23)
+  assert.deepEqual(turned.result.then, { id: 'xu-fuli-longzhi', title: '凫丽山的蠪侄', took: true, at: { id: 'pengcheng', name: '彭城' } });
+  assert.deepEqual(turned.result.book.map(b => b.id), ['xu-fuli-longzhi'], 'the finished one leaves, the next is in hand');
   assert.equal(quest(turned.state, content, at, { action: 'turn', id: 'xu-elder-herb' }).result.refused, 'already-done');
-
-  // the chain is open now, and only at its giver's place
-  assert.ok(look({ ...turned.state, place: 'pengcheng' }, content, at).offers.some(o => o.id === 'xu-fuli-longzhi'));
+  assert.ok(!(look({ ...turned.state, place: 'pengcheng' }, content, at).offers ?? []).some(o => o.id === 'xu-fuli-longzhi'), 'nothing left to take at the giver');
 
   // a beast subdued ticks its count, and nothing else does
-  const hunting = must(quest, { ...turned.state, place: 'pengcheng' }, { action: 'take', id: 'xu-fuli-longzhi' }, at).state;
+  const hunting = structuredClone(turned.state);
   advance(content, hunting, { kind: 'subdue', creature: 'fuzhu' });
   assert.equal(look(hunting, content, at).book[0].need[0].have, 0, 'the wrong beast moves nothing');
   advance(content, hunting, { kind: 'subdue', creature: 'longzhi' });
@@ -2308,7 +2309,6 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   let full = { ...turned.state, place: 'sibei' };
   full = must(quest, full, { action: 'take', id: 'xu-lvliang-look' }, at).state;
   full = must(quest, { ...full, place: 'yunlong' }, { action: 'take', id: 'xu-yunlong-herbs' }, at).state;
-  full = must(quest, { ...full, place: 'pengcheng' }, { action: 'take', id: 'xu-fuli-longzhi' }, at).state;
   assert.equal(look(full, content, at).offers, undefined, 'a full book is offered nothing');
   // and one put down makes room
   const lighter = must(quest, full, { action: 'drop', id: 'xu-lvliang-look' }, at).state;
@@ -2316,7 +2316,7 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   // a visit ticks by walking, not by saying so
   const walking = must(quest, { ...lighter, place: 'sibei' }, { action: 'take', id: 'xu-lvliang-look' }, at).state;
   const arrived = must(move, walking, { place: 'lvliang' }, at).state;
-  assert.equal(look(arrived, content, at).book.find(b => b.id === 'xu-lvliang-look').ready, true);
+  assert.ok(arrived.quests['xu-lvliang-look'].done_at, 'and, met, hands itself in');
 });
 
 /* 伤势 (rules § 伤势): what a fight takes stays taken, mends on the 灵气 clock
@@ -2737,9 +2737,13 @@ test('an errand reopens a board already done, and pays only the errand', () => {
   const won = must(win, s, { id: 'alchemy-first' });
   const done = must(task, won.state, { action: 'done', id: 'alchemy-first' });
   assert.equal(done.result.for, 'errand');
-  assert.equal(done.state.progress, s.progress, 'no second task grant');
-  assert.equal(done.state.bag.lingzhi ?? 0, s.bag.lingzhi ?? 0);
+  assert.equal(done.result.line, undefined, 'no 「还剩一株灵芝」 — none is given');
+  assert.equal(done.state.bag.lingzhi ?? 0, s.bag.lingzhi ?? 0, 'no second task grant');
   assert.equal(done.state.quests['xu-yunlong-herbs'].have[0], 1);
+  // met, the errand hands itself in: its own pay, and the pill
+  assert.ok(done.state.quests['xu-yunlong-herbs'].done_at);
+  assert.deepEqual(done.result.handed.map(h => h.id), ['xu-yunlong-herbs']);
+  assert.equal(done.state.bag['qi-pill'], (s.bag['qi-pill'] ?? 0) + 1);
   assert.equal(must(task, done.state, { action: 'list' }).result.tasks.some(t => t.id === 'alchemy-first'), false, 'met, the board is shut');
   refused(win, done.state, { id: 'alchemy-first' }, 'not-here');
 });

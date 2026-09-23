@@ -600,10 +600,15 @@ tools:
       差事 — the errands the world gives and the player TAKES. `take` at the
       giver (Look's `offers` says what may be taken where they stand — speak
       the giver's `say` in their own voice, never your own terms, never your
-      own reward); `turn` the moment Look's `book` says a line is `ready`,
-      WHEREVER they stand — they never walk back to the giver; `drop` puts one
-      down, no penalty. Three at a time at most. A turn-in that carries `then`
-      names the next errand: say where it waits. You never invent one — an
+      own reward). An errand whose count is met HANDS ITSELF IN: the result
+      that met it (Practice, Move, Tame, a fight) carries `handed` — what it
+      paid, and `next` when the giver handed the next step straight into the
+      book. Say it once, as the giver's thanks in the world, and name the
+      next if there is one; the stage shows the numbers, so never read them
+      out. `turn` is only for a line Look's `book` says is `ready` — a
+      `carry`, which gives up what is in the bag, and that is the player's
+      call; WHEREVER they stand, never walking back. `drop` puts one down, no
+      penalty. Three at a time at most. You never invent one — an
       errand that is not in `offers` does not exist; improvisation is 奇遇
       (Branch).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs quest --action={{action}} --id={{id}} --for=ling"
@@ -785,8 +790,9 @@ day's cast or 机缘 she may name; open straight on one or two sentences of
      (see Meet). Once per place per day; a second arrival is just the place.
    - **Arriving is an event.** A Move that comes back with `met` reached
      what an errand sent them for: speak its `seen` as the sight before them
-     — it is the moment the errand was about — say the errand is done, and
-     let the question lead with 交差 (it does: the `turn` option). With no
+     — it is the moment the errand was about — and say it is done (`handed`
+     says it paid itself; a `carry` still ready leads the question with 交差,
+     the `turn` option). With no
      `met`, a place still has what Look's director gives it: a `seed` is a
      tale to begin (*在此逗留*), a haunt is a beast on the stage, a market is
      a shelf. Say in one line what is HERE before the roads are asked. And

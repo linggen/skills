@@ -456,7 +456,7 @@ function workOf(content, state, ctx) {
 /* One counter, moved by something that actually happened. Every verb that can
    move one calls this and nothing else does — the rules are the only writer,
    and a count nobody can verify is a lie. */
-export function advance(content, state, event) {
+export function advance(content, state, event, ctx = null) {
   for (const id of Object.keys(state.quests ?? {})) {
     if (questDoneBefore(state, id)) continue;
     const q = questOf(content, id);
@@ -471,6 +471,54 @@ export function advance(content, state, event) {
       held.have = { ...held.have, [i]: Math.min(need.n, (held.have?.[i] ?? 0) + 1) };
     });
   }
+  return ctx ? settleErrands(content, state, ctx) : [];
+}
+
+/* 交差 by itself (his pick, 2026-09-23): a tap that asks no choice is only a
+   tap. An errand met pays the moment it is met, and its `then` goes straight
+   into the book — the giver hands the next step over, as WoW's NPC does. A
+   `carry` waits for his 交差: it spends what is in his bag, and that is his
+   to decide. With the book full the next step waits at its giver. */
+const HANDED_KEEP = 3;
+
+function complete(content, s, ctx, id, q) {
+  for (const need of q.need) {
+    if (need.kind !== 'carry') continue;
+    s.bag[need.item] = Math.max(0, (s.bag[need.item] ?? 0) - need.n);
+    if (!s.bag[need.item]) delete s.bag[need.item]; // the bag lists nothing it does not hold
+  }
+  s.quests[id] = { ...s.quests[id], done_at: ctx.now.toISOString() };
+  const paid = pay(content, s, ctx, q.grant);
+  const next = q.then ? questOf(content, q.then) : null;
+  const open = Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length;
+  const took = Boolean(next) && !s.quests[next.id] && open < BOOK_MAX;
+  if (took) s.quests[next.id] = { took: dayKey(ctx.now), have: {} };
+  return { id, place: s.place, at: ctx.now.toISOString(), paid, next: next?.id ?? null, took };
+}
+
+function settleErrands(content, s, ctx) {
+  const out = [];
+  for (const id of Object.keys(s.quests ?? {})) {
+    if (questDoneBefore(s, id)) continue;
+    const q = questOf(content, id);
+    if (!q || q.need.some(n => n.kind === 'carry') || !questReady(content, s, q)) continue;
+    out.push(complete(content, s, ctx, id, q));
+  }
+  if (out.length) s.handed = [...(s.handed ?? []), ...out].slice(-HANDED_KEEP);
+  return out.map(h => handedOne(content, s, h));
+}
+
+/* One errand handed in, as the stage and Ling tell it. */
+function handedOne(content, state, h) {
+  const lang = state.lang, q = questOf(content, h.id), next = h.next ? questOf(content, h.next) : null;
+  return { id: h.id, title: pick(q?.title, lang), who: q?.from?.who ? pick(q.from.who, lang) : null, paid: h.paid,
+    ...(q?.grant?.item ? { gives: pick(itemOf(content, q.grant.item)?.name, lang) } : {}),
+    ...(next ? { next: { id: next.id, title: pick(next.title, lang), took: h.took, at: placeName(content, state, placeOf(content, next.from.place)) } } : {}) };
+}
+
+/* What was handed in where he stands — the stage's 所得 until he walks on. */
+function handedHere(content, state) {
+  return (state.handed ?? []).filter(h => h.place === state.place).map(h => handedOne(content, state, h));
 }
 
 /* Where the story waits, and the first road toward it — the goal, as the stage
@@ -1520,6 +1568,8 @@ export function look(state, content, ctx) {
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
+    // 所得: errands that handed themselves in here, until he walks on.
+    ...(handedHere(content, state).length ? { handed: handedHere(content, state) } : {}),
     // 机缘: where, and how long it lasts — the page counts it down.
     ...(chanceBrief(content, state, ctx.now) ? { chance: chanceBrief(content, state, ctx.now) } : {}),
     // Where an errand may be taken, when the book has room — so 「what now」 has an answer.
@@ -2125,14 +2175,14 @@ function taskDone(state, content, ctx, id) {
   const s = clone(state);
   delete s.wins[id];
   if (again) {
-    advance(content, s, { kind: 'board', task: id });
-    return { state: s, result: { ok: true, done: id, paid: null, gives: null, line: pick(t.done_line, s.lang), for: 'errand' } };
+    const handed = advance(content, s, { kind: 'board', task: id }, ctx);
+    return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
   }
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
-  advance(content, s, { kind: 'board', task: id });
   if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
   const paid = pay(content, s, ctx, t.grant);
-  return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang) } };
+  const handed = advance(content, s, { kind: 'board', task: id }, ctx);
+  return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(handed.length ? { handed } : {}) } };
 }
 
 function questCheck(state, content, ctx, id) {
@@ -2220,7 +2270,7 @@ export function duel(state, content, ctx, args) {
   const left = played.outcome === 'lost' ? 0 : played.you.hp;
   s.wounds = left < played.you.hpMax ? { n: played.you.hpMax - left, at: ctx.now.toISOString() } : undefined;
   if (!s.wounds) delete s.wounds;
-  if (played.outcome === 'won') advance(content, s, { kind: 'subdue', creature: creature.id });
+  const handed = played.outcome === 'won' ? advance(content, s, { kind: 'subdue', creature: creature.id }, ctx) : [];
   if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
   const say = played.outcome === 'lost' ? withdrawnLine
     : played.outcome === 'withdrew' ? pick({ zh: `${pick(creature.name, 'zh')}一口气用尽，转身走了 —— 这一场不算你赢。`, en: `${pick(creature.name, 'en')} runs out of breath and turns away — this one is not a win.` }, state.lang)
@@ -2240,7 +2290,7 @@ export function duel(state, content, ctx, args) {
     if (card) dropped.push(card);
   }
   const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
@@ -2425,6 +2475,7 @@ export function move(state, content, ctx, args) {
     return stay('no-road', pick(say, lang), { near: near() });
   }
   const from = here;
+  s.handed = []; // walked on, the last place's 所得 is put away
   // The road stops where the story stands: a scene met on the way is not walked past.
   for (const step of way) {
     s.place = step.id;
@@ -2438,6 +2489,7 @@ export function move(state, content, ctx, args) {
   const wasReady = new Set(bookOf(content, state, lang, ctx).filter(q => q.ready).map(q => q.id));
   const met = bookOf(content, s, lang, ctx).filter(q => q.ready && !wasReady.has(q.id))
     .map(q => ({ id: q.id, title: q.title, ...(questOf(content, q.id)?.seen ? { seen: fill(pick(questOf(content, q.id).seen, lang), s) } : {}) }));
+  const handed = settleErrands(content, s, ctx);
   const via = way.slice(0, way.findIndex(p => p.id === reached.id)).map(p => placeName(content, s, p));
   // Where he STOPS — never a place walked through (his pick, 2026-09-21) — and
   // only when the arrival finished nothing: an errand met is the event.
@@ -2455,7 +2507,7 @@ export function move(state, content, ctx, args) {
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
   const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(lucky ? { chance: chanceBrief(content, s, ctx.now) } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(lucky ? { chance: chanceBrief(content, s, ctx.now) } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not
@@ -2651,9 +2703,9 @@ export function tame(state, content, ctx, args) {
   s.bag[e.likes.id] -= 1;
   if (!s.bag[e.likes.id]) delete s.bag[e.likes.id];
   const paid = pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 0, cast: e.creature.id });
-  advance(content, s, { kind: 'tame', creature: e.creature.id });
+  const handed = advance(content, s, { kind: 'tame', creature: e.creature.id }, ctx);
   const beat = pick({ zh: `${name}低头衔了${e.likes.name}，随你走了。`, en: `${name} takes the ${e.likes.name} and falls in beside you.` }, lang);
-  return { state: s, result: { ok: true, tamed: e.creature, fed: e.likes, beat, paid, show: [{ card: 'creature', id: e.creature.id }] } };
+  return { state: s, result: { ok: true, tamed: e.creature, fed: e.likes, beat, paid, ...(handed.length ? { handed } : {}), show: [{ card: 'creature', id: e.creature.id }] } };
 }
 
 /* Step into a made scene; the spine keeps its place for the return. */
@@ -3216,16 +3268,11 @@ export function quest(state, content, ctx, args) {
   if (questDoneBefore(s, id)) return refuse('already-done', null);
   if (!questReady(content, s, q)) return refuse('not-done', null, { need: countsOf(content, s, q).map(n => ({ kind: n.kind, have: n.have, n: n.n })) });
   // What the need consumed: a `carry` hands the thing over.
-  for (const need of q.need) {
-    if (need.kind !== 'carry') continue;
-    s.bag[need.item] = Math.max(0, (s.bag[need.item] ?? 0) - need.n);
-    if (!s.bag[need.item]) delete s.bag[need.item]; // the bag lists nothing it does not hold
-  }
-  s.quests[id] = { ...s.quests[id], done_at: ctx.now.toISOString() };
-  const paid = pay(content, s, ctx, q.grant);
-  const next = q.then ? questOf(content, q.then) : null;
-  return { state: s, result: { ok: true, turned: id, title: pick(q.title, lang), paid, book: bookOf(content, s, lang, ctx),
-    ...(next ? { then: { id: next.id, title: pick(next.title, lang), at: placeName(content, s, placeOf(content, next.from.place)) } } : {}) } };
+  const h = complete(content, s, ctx, id, q);
+  s.handed = [...(s.handed ?? []), h].slice(-HANDED_KEEP);
+  const told = handedOne(content, s, h);
+  return { state: s, result: { ok: true, turned: id, title: told.title, paid: h.paid, book: bookOf(content, s, lang, ctx),
+    ...(told.next ? { then: told.next } : {}) } };
 }
 
 function questInfo(state, content, ctx, id) {

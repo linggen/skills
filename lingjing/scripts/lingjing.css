@@ -447,6 +447,8 @@ body.fighting .askbar { display: none; }
 .card.offer .offerrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
 .card.offer .offerrow:first-of-type { border-top: 0; }
 .card.offer .offerrow[data-offerrow] { cursor: pointer; }
+.card.handed .handedrow + .handedrow { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 8px; }
+.card.handed .handedrow > div + div { margin-top: 3px; }
 .card.offer .offerrow .acts { display: flex; align-items: center; gap: 8px; margin: 0; flex: none; }
 .card.offer .offerdetail { padding: 0 0 10px; }
 .card.offer .offerdetail .acts { margin-top: 6px; }
