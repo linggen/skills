@@ -320,7 +320,7 @@ t('daylight time starts the second Sunday of March, ends the first of November',
         ['2026-09-17', 3.25, 3.50], ['2026-09-16', 3.50, 3.75], ['2026-09-15', 3.50, 3.75], ['2026-07-30', 3.75, 4.00];
     my @cut = fed_rate_events(\@rates, $window);
     t('a Fed range change inside the window is a rate event',
-      @cut == 1 && $cut[0]{id} eq 'rate:Fed:2026-09-17' && $cut[0]{change_bp} == -25 && $cut[0]{from} eq '3.50–3.75%',
+      @cut == 1 && $cut[0]{id} eq 'rate:Fed:2026-09-17' && $cut[0]{change_bp} == -25 && $cut[0]{from} eq "3.50\x{2013}3.75%",
       JSON::PP->new->canonical->encode(\@cut));
     # The Fed cuts on Wed 09-16. The NY Fed posts 09-16's rate Thu 09-17 ~13:00
     # UTC: the 01:00 run on the 17th has only through 09-15; the run on the
@@ -595,6 +595,78 @@ t('daylight time starts the second Sunday of March, ends the first of November',
     my @many = map { { s => "A$_", t => 's', n => "Co $_" } } 'A' .. 'J';
     t('search answers at most six', scalar @{ search_results(\@many) } == 6);
     t('the search query escapes what the user typed', url_escape('AT&T bank/x') eq 'AT%26T%20bank%2Fx');
+}
+
+# ── Watch alerts ───────────────────────────────────────────────────────────
+{
+    t('a Fed hike is read from the statement',
+      do { my $d = fed_decision('<p>the Committee decided to raise the target range for the federal funds rate by 1/4 percentage point to 3-3/4 to 4 percent, in support</p>');
+           $d->{decision} eq 'raised' && $d->{change_bp} == 25 && $d->{to} eq "3.75\x{2013}4.00%" });
+    t('a Fed cut of half a point',
+      do { my $d = fed_decision('decided to lower the target range for the federal funds rate by 1/2 percentage point to 4 to 4-1/4 percent');
+           $d->{decision} eq 'cut' && $d->{change_bp} == -50 && $d->{to} eq "4.00\x{2013}4.25%" });
+    t('a Fed hold names the range it held',
+      do { my $d = fed_decision('decided to maintain the target range for the federal funds rate at 4-1/4 to 4-1/2 percent.');
+           $d->{decision} eq 'held' && $d->{change_bp} == 0 && $d->{to} eq "4.25\x{2013}4.50%" });
+    t('a statement without a decision sentence is no decision', !defined fed_decision('<p>Recent indicators suggest</p>'));
+    t('fractions as the Fed writes them', fraction('3-3/4') == 3.75 && fraction('1/4') == 0.25 && fraction('4') == 4 && !defined fraction(''));
+
+    my $ics = join "\r\n", 'BEGIN:VCALENDAR',
+        'BEGIN:VEVENT', 'DTSTART;TZID=US-Eastern:20261014T083000', 'SUMMARY:Consumer Price Index', 'END:VEVENT',
+        'BEGIN:VEVENT', 'DTSTART;TZID=US-Eastern:20261106T083000', 'SUMMARY:Employment Situation', 'END:VEVENT',
+        'BEGIN:VEVENT', 'DTSTART;TZID=US-Eastern:20261015T100000', 'SUMMARY:Real Earnings', 'END:VEVENT', 'END:VCALENDAR';
+    my $bls = bls_releases($ics);
+    t('the BLS calendar gives CPI and the jobs report, in New York time',
+      join(',', map { "$_->{id}\@$_->{at}" } @$bls) eq 'cal:cpi:2026-10-14@2026-10-14T12:30:00Z,cal:jobs:2026-11-06@2026-11-06T13:30:00Z',
+      join(',', map { "$_->{id}\@$_->{at}" } @$bls));
+
+    my $article = sub { qq{<article class="media"><div class="media-body"><span class='media-date pull-right'>$_[0]</span><h3 class="media-heading">\n<a href="x">$_[1]</a>\n</h3><div class='media-excerpt'><p>$_[2] (ET)<br />text</p></div></article>} };
+    my $boc = boc_announcements(join '', $article->('October 19, 2026', 'Release: Business Outlook Survey', '11:30'),
+                                         $article->('October 28, 2026', 'Interest Rate Announcement and Monetary Policy Report', '09:45'));
+    t('the Bank of Canada page gives its rate announcements only',
+      @$boc == 1 && $boc->[0]{id} eq 'cal:boc:2026-10-28' && $boc->[0]{at} eq '2026-10-28T13:45:00Z');
+
+    my $feed = '<item><title>Bank of Canada maintains the policy rate at 2¼%</title><link>https://www.bankofcanada.ca/2026/09/fad-press-release-2026-09-02/</link>'
+             . '<description>The Bank of Canada today held its target for the overnight rate at 2.25%, with the Bank Rate at 2.5%.</description><dc:date>2026-09-02T09:47:53+00:00</dc:date></item>'
+             . '<item><title>Bank of Canada unveils new vertical $20 bank note</title><link>https://x/</link><description>A note.</description><dc:date>2026-09-01T10:00:00+00:00</dc:date></item>'
+             . '<item><title>Bank of Canada reduces policy rate by 25 basis points</title><link>https://x/cut</link><description>The Bank of Canada today reduced its target for the overnight rate by 25 basis points to 2.50%.</description><dc:date>2026-06-04T09:45:00+00:00</dc:date></item>';
+    my @rel = boc_rate_releases($feed);
+    t('the Bank\'s press feed gives rate decisions: a hold and a cut',
+      @rel == 2 && $rel[0]{decision}{decision} eq 'held' && $rel[0]{decision}{to} eq '2.25%' && $rel[0]{on} eq '2026-09-02'
+        && $rel[1]{decision}{decision} eq 'cut' && $rel[1]{decision}{change_bp} == -25 && $rel[1]{decision}{to} eq '2.50%');
+
+    t('the market is open at 10:00 in New York', (market_day(timegm_of(2026, 9, 23, 14, 0, 0)) // '') eq '2026-09-23');
+    t('and not at 9:00, nor on a Saturday',
+      !defined market_day(timegm_of(2026, 9, 23, 13, 0, 0)) && !defined market_day(timegm_of(2026, 9, 26, 15, 0, 0)));
+
+    my $now = timegm_of(2026, 9, 16, 18, 30, 0);
+    my @cal = ({ id => 'cal:fomc:2026-09-16', kind => 'fomc', at => '2026-09-16T18:00:00Z', label => 'FOMC rate decision' },
+               { id => 'cal:cpi:2026-09-16', kind => 'cpi', at => '2026-09-16T13:30:00Z', label => 'Consumer Price Index' },
+               { id => 'cal:cpi:2026-09-10', kind => 'cpi', at => '2026-09-10T12:30:00Z', label => 'Consumer Price Index' },
+               { id => 'cal:jobs:2026-09-25', kind => 'jobs', at => '2026-09-25T12:30:00Z', label => 'Employment Situation' });
+    my %asked;
+    no warnings qw(redefine once);
+    local *main::fetch = sub {
+        $asked{ $_[0] }++;
+        return '<item><title>Federal Reserve issues FOMC statement</title><link><![CDATA[https://fed/monetary20260916a.htm]]></link><pubDate><![CDATA[Wed, 16 Sep 2026 18:00:00 GMT]]></pubDate></item>' if $_[0] =~ /press_monetary/;
+        return 'decided to raise the target range for the federal funds rate by 1/4 percentage point to 3-3/4 to 4 percent' if $_[0] =~ /monetary20260916a/;
+        return undef;
+    };
+    local *main::bls_series = sub { $asked{bls}++; undef };
+    my $r = release_alerts(\@cal, { alert_tries => {} }, $now);
+    t('a passed decision is asked of its source and found',
+      @{ $r->{found} } == 1 && $r->{found}[0]{id} eq 'alert:cal:fomc:2026-09-16' && $r->{found}[0]{change_bp} == 25);
+    t('a release not out yet is tried; one past its wait or still ahead is not asked',
+      join(',', @{ $r->{tried} }) eq 'cal:cpi:2026-09-16' && $asked{bls} == 1);
+    my $again = release_alerts(\@cal, { alerts => $r->{found}, alert_tries => { 'cal:cpi:2026-09-16' => '2026-09-16T18:25:00Z' } }, $now);
+    t('a found release and one tried minutes ago are left alone', !@{ $again->{found} } && !@{ $again->{tried} } && $asked{bls} == 1);
+
+    my $doc = {};
+    my $new = record_alerts($doc, $r->{found}, $r->{tried}, \@cal, $now);
+    my $twice = record_alerts($doc, $r->{found}, [], \@cal, $now + 600);
+    t('an alert is kept once; upcoming holds only the next two weeks',
+      @$new == 1 && !@$twice && @{ $doc->{alerts} } == 1 && join(',', map { $_->{id} } @{ $doc->{upcoming} }) eq 'cal:jobs:2026-09-25'
+        && $doc->{alert_tries}{'cal:cpi:2026-09-16'});
 }
 
 print "\n$pass passed, $fail failed\n";

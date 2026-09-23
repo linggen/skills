@@ -28,6 +28,9 @@
 #                                        into the morning brief (data/watch.json)
 #   perl market.pl watch-level quiet|normal|everything
 #                                        how much the brief says; remakes the latest
+#   perl market.pl watch-alerts          what can't wait for the morning: rate
+#                                        decisions, CPI, jobs, a holding's 5% day;
+#                                        and the releases of the next two weeks
 #
 # Symbols: AAPL (US) or RY.TO (TSX; TSX:RY is accepted too). Prices and stats
 # come from stockanalysis.com's public pages and merge into data/quotes.json.
@@ -74,6 +77,7 @@ sub main {
         'watch-scan'     => \&cmd_watch_scan,
         'save-watch'     => \&cmd_save_watch,
         'watch-level'    => \&cmd_watch_level,
+        'watch-alerts'   => \&cmd_watch_alerts,
     );
     my $run = $commands{ $verb // '' }
         or usage();
@@ -85,7 +89,8 @@ sub usage {
                . "       market.pl portfolio | reports-check [SYMBOL...] | reports-latest SYMBOL\n"
                . "       market.pl read URL | save-report symbol=… period=… form=… filed=… url=… summary=…\n"
                . "       market.pl watch-scan [--since=TIME] [SYMBOL...] | save-watch judgments=JSON\n"
-               . "       market.pl watch-level quiet|normal|everything\n";
+               . "       market.pl watch-level quiet|normal|everything\n"
+               . "       market.pl watch-alerts [--force] [--now=TIME]\n";
     exit 2;
 }
 
@@ -1224,7 +1229,7 @@ sub fed_rate_events {
     return @out;
 }
 
-sub range_of { sprintf '%.2f–%.2f%%', $_[0]{targetRateFrom}, $_[0]{targetRateTo} }
+sub range_of { sprintf "%.2f\x{2013}%.2f%%", $_[0]{targetRateFrom}, $_[0]{targetRateTo} }
 
 sub rate_event {
     my ($bank, $on, $from, $to, $bp) = @_;
@@ -1254,11 +1259,20 @@ sub strip_cdata { my ($s) = @_; $s =~ s/^\s*<!\[CDATA\[|\]\]>\s*$//g; $s =~ s/^\
 
 sub decode_html_entities { my ($s) = @_; $s =~ s/&#(\d+);/chr($1)/ge; return decode_xml($s) }
 
-# An FOMC decision today or tomorrow, from the Fed's calendar ("September
-# 15-16*": the decision comes on the last day; * = new economic projections).
+# An FOMC decision today or tomorrow, from the Fed's calendar.
 sub fomc_meeting_events {
     my ($html, $today) = @_;
     my $tomorrow = shift_date($today, 1);
+    return map {
+        { id => "fomc:$_->{on}", kind => 'fomc', at => iso_time(epoch_of($_->{on})), on => $_->{on},
+          when => $_->{on} eq $today ? 'today' : 'tomorrow', projections => $_->{projections} }
+    } grep { $_->{on} eq $today || $_->{on} eq $tomorrow } fomc_decisions($html);
+}
+
+# Every decision day on the Fed's calendar page ("September 15-16*": the
+# decision comes on the last day; * = new economic projections).
+sub fomc_decisions {
+    my ($html) = @_;
     my @out;
     while ($html =~ m{>(\d{4}) FOMC Meetings<(.*?)(?=>\d{4} FOMC Meetings<|\z)}gs) {
         my ($year, $block) = ($1, $2);
@@ -1267,10 +1281,8 @@ sub fomc_meeting_events {
             my ($last_month) = ($months =~ m{([A-Za-z]+)\s*$});
             my ($last_day) = ($days =~ m{(\d+)\D*$});
             my $m = month_number($last_month) or next;
-            my $on = sprintf '%04d-%02d-%02d', $year, $m, $last_day // next;
-            next unless $on eq $today || $on eq $tomorrow;
-            push @out, { id => "fomc:$on", kind => 'fomc', at => iso_time(epoch_of($on)), on => $on,
-                         when => $on eq $today ? 'today' : 'tomorrow',
+            next unless defined $last_day;
+            push @out, { on => sprintf('%04d-%02d-%02d', $year, $m, $last_day),
                          projections => $days =~ /\*/ ? JSON::PP::true : JSON::PP::false };
         }
     }
@@ -1559,6 +1571,326 @@ sub brief_lines {
     my @lines = (@held, @watched);
     splice @lines, $BRIEF_LINES if @lines > $BRIEF_LINES;
     return @lines;
+}
+
+# ── Watch alerts: what can't wait for the morning ──────────────────────────
+#
+# `watch-alerts` runs on every phone sync, zero LLM, at most every ten
+# minutes. It keeps a calendar of the releases that move markets — FOMC
+# decisions (the Fed's calendar page), CPI and the jobs report (the BLS
+# release calendar), Bank of Canada rate announcements (its upcoming-events
+# page) — and asks a source only once its release time has passed: the Fed's
+# statement, the BLS numbers, the Bank's press release. While the market is
+# open, a holding 5% or more up or down on the day. What it finds goes to
+# watch.json `alerts` (7 days), beside `upcoming` — the releases in the next
+# two weeks. The phone says both. Nothing runs while the Watch is off.
+
+my $ALERT_EVERY = 10 * 60;
+my $ALERT_BUDGET = 15;             # seconds; the phone's short wake has about thirty
+my $CALENDAR_TTL = 20 * 3600;
+my $UPCOMING_DAYS = 14;
+my $ALERT_MOVE_PCT = 5;
+my $ALERTS_DAYS = 7;
+my $RETRY_AFTER = 20 * 60;         # the same release, asked again
+# A release not out this long after its time is let go. The BLS answers 25
+# questions a day, so its numbers are asked for a shorter while.
+my %RESULT_WAIT = (fomc => 36 * 3600, boc => 36 * 3600, cpi => 6 * 3600, jobs => 6 * 3600);
+my %BLS_RELEASES = ('Consumer Price Index' => 'cpi', 'Employment Situation' => 'jobs');
+my @RESULT_FINDERS = ([ ['fomc'], \&fed_decision_alerts ], [ ['cpi', 'jobs'], \&bls_alerts ], [ ['boc'], \&boc_decision_alerts ]);
+
+sub cmd_watch_alerts {
+    my ($now_arg) = map { /^--now=(.+)$/ ? $1 : () } @_;
+    my $force = grep { $_ eq '--force' } @_;
+    my $now = defined $now_arg ? time_of($now_arg) : time;
+    fail('--now: a time like 2026-09-16T18:30:00Z') unless defined $now;
+    return say_json({ off => JSON::PP::true }) unless watch_on();
+    my $watch = read_json(data_dir() . '/watch.json') || {};
+    my $last = time_of($watch->{alerts_checked_at} // '');
+    return say_json(alerts_view($watch, [], $now))
+        if !$force && defined $last && $now >= $last && $now - $last < $ALERT_EVERY;
+    my ($calendar, $found, $tried) = ([], [], []);
+    eval {
+        local $SIG{ALRM} = sub { die "budget\n" };
+        alarm $ALERT_BUDGET;
+        $calendar = watch_calendar($now);
+        my $releases = release_alerts($calendar, $watch, $now);
+        ($found, $tried) = ([ @{ $releases->{found} }, move_alerts($now) ], $releases->{tried});
+        alarm 0;
+        1;
+    } or alarm 0;
+    my $new = update_json('watch.json', sub { record_alerts($_[0], $found, $tried, $calendar, $now) });
+    say_json(alerts_view(read_json(data_dir() . '/watch.json') || {}, $new, $now));
+}
+
+# The Watch's switch is the engine's: its mission's user state.
+sub watch_on {
+    my $state = read_json("$ENV{HOME}/.linggen/missions/cfo:watch/user.json") || {};
+    return $state->{enabled} ? 1 : 0;
+}
+
+sub alerts_view {
+    my ($doc, $new, $now) = @_;
+    my $recent = iso_time($now - 2 * 86400);
+    return {
+        checked_at => $doc->{alerts_checked_at},
+        new        => $new,
+        alerts     => [ grep { ($_->{at} // '') gt $recent } @{ $doc->{alerts} || [] } ],
+        upcoming   => $doc->{upcoming} || [],
+    };
+}
+
+# Fold one check into watch.json: new alerts once each, the releases asked
+# about and not out yet, and the next two weeks.
+sub record_alerts {
+    my ($doc, $found, $tried, $calendar, $now) = @_;
+    my %have = map { $_->{id} => 1 } @{ $doc->{alerts} || [] };
+    my @new = grep { !$have{ $_->{id} }++ } @$found;
+    my $keep = iso_time($now - $ALERTS_DAYS * 86400);
+    $doc->{alerts} = [ (grep { ($_->{at} // '') gt $keep } @{ $doc->{alerts} || [] }), @new ];
+    my $tries = $doc->{alert_tries} ||= {};
+    $tries->{$_} = iso_time($now) for @$tried;
+    delete @$tries{ grep { $tries->{$_} lt $keep } keys %$tries };
+    if (@$calendar) {
+        $doc->{upcoming} = [ grep { my $at = time_of($_->{at}) // 0; $at > $now && $at - $now <= $UPCOMING_DAYS * 86400 } @$calendar ];
+    }
+    $doc->{alerts_checked_at} = iso_time($now);
+    return \@new;
+}
+
+# The release calendar (data/watch-calendar.json), fetched again once a day.
+# A source that doesn't answer keeps what it had; a release that has passed
+# stays three days, for its result to be found — the Bank's page drops it.
+sub watch_calendar {
+    my ($now) = @_;
+    my $file = data_dir() . '/watch-calendar.json';
+    my $cal = read_json($file) || {};
+    my $fetched = time_of($cal->{fetched_at} // '');
+    return $cal->{events} || [] if defined $fetched && $now >= $fetched && $now - $fetched < $CALENDAR_TTL;
+    my $window = sub { my $at = time_of($_[0]{at}) // 0; $at > $now - 3 * 86400 && $at < $now + 60 * 86400 };
+    my %by_id = map { $_->{id} => $_ } grep { $window->($_) } @{ $cal->{events} || [] };
+    for my $read (\&fomc_calendar, \&bls_calendar, \&boc_calendar) {
+        my $got = $read->() or next;
+        $by_id{ $_->{id} } = $_ for grep { $window->($_) } @$got;
+    }
+    my @events = sort { $a->{at} cmp $b->{at} } values %by_id;
+    write_json($file, { fetched_at => iso_time($now), events => \@events });
+    return \@events;
+}
+
+sub fomc_calendar {
+    my $html = fetch('https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm') or return undef;
+    return [ map {
+        my ($y, $m, $d) = split /-/, $_->{on};
+        { id => "cal:fomc:$_->{on}", kind => 'fomc', on => $_->{on}, label => 'FOMC rate decision',
+          at => iso_time(eastern_epoch($y, $m, $d, 14, 0)), projections => $_->{projections} }
+    } fomc_decisions($html) ];
+}
+
+sub bls_calendar {
+    my $ics = fetch('https://www.bls.gov/schedule/news_release/bls.ics', $SEC_UA) or return undef;
+    return bls_releases($ics);
+}
+
+# CPI and Employment Situation releases in the BLS calendar (iCalendar).
+sub bls_releases {
+    my ($ics) = @_;
+    my @out;
+    while ($ics =~ m{BEGIN:VEVENT(.*?)END:VEVENT}gs) {
+        my $ev = $1;
+        my ($summary) = $ev =~ m{^SUMMARY:([^\r\n]*)}m;
+        my $kind = $BLS_RELEASES{ $summary // '' } or next;
+        my ($y, $m, $d, $h, $mi) = $ev =~ m{^DTSTART;TZID=US-Eastern:(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)}m or next;
+        my $on = "$y-$m-$d";
+        push @out, { id => "cal:$kind:$on", kind => $kind, on => $on, label => $summary,
+                     at => iso_time(eastern_epoch($y, $m, $d, $h, $mi)) };
+    }
+    return \@out;
+}
+
+sub boc_calendar {
+    my $html = fetch('https://www.bankofcanada.ca/press/upcoming-events/', $SEC_UA) or return undef;
+    return boc_announcements($html);
+}
+
+# Rate announcements on the Bank of Canada's upcoming-events page: a date,
+# a title, and "09:45 (ET)".
+sub boc_announcements {
+    my ($html) = @_;
+    my @out;
+    for my $article (split /<article\b/, $html) {
+        my ($date) = $article =~ m{media-date[^>]*>\s*([A-Z][a-z]+ \d{1,2}, \d{4})\s*<};
+        my ($title) = $article =~ m{media-heading"[^>]*>\s*<a[^>]*>([^<]+)</a>};
+        next unless $date && $title && $title =~ /^Interest Rate Announcement/;
+        my ($month, $d, $y) = $date =~ /^([A-Z][a-z]+) (\d{1,2}), (\d{4})$/;
+        my $m = month_number($month) or next;
+        my ($h, $mi) = $article =~ m{(\d\d):(\d\d) \(ET\)};
+        my $on = sprintf '%04d-%02d-%02d', $y, $m, $d;
+        push @out, { id => "cal:boc:$on", kind => 'boc', on => $on, label => 'Bank of Canada rate decision',
+                     at => iso_time(eastern_epoch($y, $m, $d, $h // 9, $mi // 45)) };
+    }
+    return \@out;
+}
+
+# New York time → epoch seconds.
+sub eastern_epoch {
+    my ($y, $m, $d, $h, $mi) = @_;
+    return timegm(0, $mi, $h + (daylight_time($y, $m, $d) ? 4 : 5), $d, $m - 1, $y);
+}
+
+# Releases whose time has passed and whose result isn't known yet, asked of
+# their source — each source once per check, a release at most every twenty
+# minutes. {found: alerts, tried: calendar ids asked and not out yet}.
+sub release_alerts {
+    my ($calendar, $watch, $now) = @_;
+    my %done = map { ($_->{release} // '') => 1 } @{ $watch->{alerts} || [] };
+    my $tries = $watch->{alert_tries} || {};
+    my @due = grep {
+        my $at = time_of($_->{at});
+        my $tried = time_of($tries->{ $_->{id} } // '');
+        defined $at && $at <= $now && $now - $at < ($RESULT_WAIT{ $_->{kind} } // 0)
+            && !$done{ $_->{id} } && !(defined $tried && $now - $tried < $RETRY_AFTER)
+    } @$calendar;
+    my @found;
+    for my $finder (@RESULT_FINDERS) {
+        my ($kinds, $find) = @$finder;
+        my %mine = map { $_ => 1 } @$kinds;
+        my @asked = grep { $mine{ $_->{kind} } } @due or next;
+        push @found, $find->(\@asked);
+    }
+    my %out = map { $_->{release} => 1 } @found;
+    return { found => \@found, tried => [ map { $_->{id} } grep { !$out{ $_->{id} } } @due ] };
+}
+
+sub alert_of {
+    my ($cal, %fields) = @_;
+    return { at => $cal->{at}, %fields, id => "alert:$cal->{id}", release => $cal->{id}, label => $cal->{label} };
+}
+
+# The FOMC statement issued at the decision, and what it decided.
+sub fed_decision_alerts {
+    my ($due) = @_;
+    my $feed = fetch('https://www.federalreserve.gov/feeds/press_monetary.xml') or return;
+    my @releases = grep { $_->{title} =~ /FOMC statement/i } fed_release_events(decode('UTF-8', $feed), 0);
+    my @out;
+    for my $cal (@$due) {
+        my $from = (time_of($cal->{at}) // next) - 3600;
+        my ($release) = grep { (time_of($_->{at}) // 0) >= $from } @releases or next;
+        my $page = fetch($release->{url});
+        push @out, alert_of($cal, kind => 'rate', bank => 'Fed', at => $release->{at}, url => $release->{url},
+                            %{ ($page && fed_decision($page)) || { decision => 'statement' } });
+    }
+    return @out;
+}
+
+# "decided to raise the target range for the federal funds rate by 1/4
+# percentage point to 3-3/4 to 4 percent" → {decision, to, change_bp}.
+sub fed_decision {
+    my ($html) = @_;
+    (my $text = $html) =~ s/<[^>]+>/ /g;
+    $text =~ s/\s+/ /g;
+    return undef unless $text =~ m{decided to (raise|lower|maintain) the target range for the federal funds rate(?: by ([\d/-]+) percentage points?)? (?:at|to) ([\d/-]+) to ([\d/-]+) percent};
+    my ($verb, $by, $lo, $hi) = ($1, $2, $3, $4);
+    my %sign = (raise => 1, lower => -1, maintain => 0);
+    my %word = (raise => 'raised', lower => 'cut', maintain => 'held');
+    return undef unless defined fraction($lo) && defined fraction($hi);
+    return { decision => $word{$verb}, to => sprintf("%.2f\x{2013}%.2f%%", fraction($lo), fraction($hi)),
+             change_bp => round_to($sign{$verb} * (fraction($by // '0') // 0) * 100, 0) };
+}
+
+# "3-3/4" → 3.75, "1/4" → 0.25, "4" → 4.
+sub fraction {
+    my ($s) = @_;
+    return undef unless defined $s && $s =~ m{^(?:(\d+)(?:-|$))?(?:(\d+)/(\d+))?$} && length $s;
+    return ($1 // 0) + ($3 ? $2 / $3 : 0);
+}
+
+# CPI or the jobs report: the month the numbers now cover, newer than what
+# the Watch's scan knew before the release.
+sub bls_alerts {
+    my ($due) = @_;
+    my $series = bls_series() or return;
+    my $snaps = (read_json(data_dir() . '/watch-scan.json') || {})->{economy} || [];
+    my %release = (cpi => 'CPI', jobs => 'jobs report');
+    my @out;
+    for my $cal (@$due) {
+        my $at = time_of($cal->{at}) // next;
+        my ($before) = sort { ($b->{at} // 0) <=> ($a->{at} // 0) } grep { ($_->{at} // 0) < $at } @$snaps;
+        my ($ev) = grep { $_->{release} eq $release{ $cal->{kind} } } bls_events($series, $before) or next;
+        my %fields = %$ev;
+        delete @fields{qw(id at)};
+        push @out, alert_of($cal, %fields);
+    }
+    return @out;
+}
+
+# The Bank of Canada's press release on the day of the decision.
+sub boc_decision_alerts {
+    my ($due) = @_;
+    my $feed = fetch('https://www.bankofcanada.ca/content_type/press-releases/feed/', $SEC_UA) or return;
+    my @items = boc_rate_releases(decode('UTF-8', $feed));
+    my @out;
+    for my $cal (@$due) {
+        my ($item) = grep { $_->{on} eq $cal->{on} } @items or next;
+        push @out, alert_of($cal, kind => 'rate', bank => 'Bank of Canada', url => $item->{url},
+                            title => $item->{title}, %{ $item->{decision} || {} });
+    }
+    return @out;
+}
+
+# Rate releases in the Bank's press feed: {on, title, url, decision}. The
+# description says it plainly: "held its target for the overnight rate at
+# 2.25%", "reduced its target … by 25 basis points to 2.50%".
+sub boc_rate_releases {
+    my ($xml) = @_;
+    my %word = (held => 'held', maintained => 'held', reduced => 'cut', lowered => 'cut', raised => 'raised', increased => 'raised');
+    my @out;
+    while ($xml =~ m{<item>(.*?)</item>}gs) {
+        my $item = $1;
+        my ($title) = map { decode_html_entities(strip_cdata($_)) } $item =~ m{<title>(.*?)</title>}s;
+        my ($link) = map { strip_cdata($_) } $item =~ m{<link>(.*?)</link>}s;
+        my ($desc) = map { decode_html_entities(strip_cdata($_)) } $item =~ m{<description>(.*?)</description>}s;
+        my ($on) = $item =~ m{<dc:date>\s*(\d{4}-\d\d-\d\d)};
+        next unless $title && $link && $on && "$title $desc" =~ /policy rate|overnight rate/i;
+        my %decision;
+        if (($desc // '') =~ m{(held|maintained|reduced|lowered|raised|increased) its target for the overnight rate(?: by (\d+) basis points?)? (?:at|to) ([\d.]+)%}) {
+            my $sign = { held => 0, cut => -1, raised => 1 }->{ $word{$1} };
+            %decision = (decision => $word{$1}, to => sprintf('%.2f%%', $3), change_bp => $sign * ($2 // 0));
+        }
+        push @out, { on => $on, title => $title, url => $link, (%decision ? (decision => \%decision) : ()) };
+    }
+    return @out;
+}
+
+# While the market is open: holdings 5% or more up or down on the day, once
+# a day each.
+sub move_alerts {
+    my ($now) = @_;
+    my $day = market_day($now) or return;
+    my $cells = register_investments();
+    my @held = grep { ($cells->{$_}{shares} // 0) > 0 } symbols_of(sort keys %$cells) or return;
+    my $quotes = update_quotes(\@held, \&quote_of);
+    my @out;
+    for my $sym (@held) {
+        my $q = $quotes->{$sym};
+        next if $q->{error} || !defined $q->{change_pct} || abs($q->{change_pct}) < $ALERT_MOVE_PCT;
+        my $shares = $cells->{$sym}{shares} + 0;
+        push @out, { id => "alert:move:$sym:$day", kind => 'move', symbol => $sym, name => $q->{name},
+                     at => iso_time($now), change_pct => round_to($q->{change_pct}, 1), price => $q->{price},
+                     currency => $q->{currency} // ($sym =~ /\.TO$/ ? 'CAD' : 'USD'), shares => $shares,
+                     stake => round_to($shares * ($q->{change} // 0), 0) };
+    }
+    return @out;
+}
+
+# New York's date while its market is open (weekdays 9:30–16:00), else undef.
+sub market_day {
+    my ($now) = @_;
+    my @utc = gmtime($now);
+    my @ny = gmtime($now - (daylight_time($utc[5] + 1900, $utc[4] + 1, $utc[3]) ? 4 : 5) * 3600);
+    return undef if $ny[6] == 0 || $ny[6] == 6;
+    my $minute = $ny[2] * 60 + $ny[1];
+    return undef if $minute < 9 * 60 + 30 || $minute > 16 * 60;
+    return strftime('%Y-%m-%d', @ny);
 }
 
 # ── Dates ──────────────────────────────────────────────────────────────────

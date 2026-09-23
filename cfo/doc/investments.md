@@ -202,7 +202,8 @@ A broker's AI digest (Robinhood Cortex) sees one account and sells trades;
 the Watch sees every holding and the bank ledger, stays private, and has
 nothing to sell. The tab stays free; the Watch is the subscription.
 
-**His calls:** morning brief only in v1 (no intraday alerts); a line is what
+**His calls:** morning brief, plus market moments (below; Hanli, 2026-09-23 —
+this replaces "no intraday alerts" in v1); a line is what
 happened + the user's stake — Ling's view is one tap away in chat, never in
 the line; a watched-only ticker gets a line only for its own big event, and
 only in a slot holdings left free.
@@ -307,7 +308,31 @@ lawyer's read before charging for it.
    prediction; it goes to her thread and, with the phone closed, to the
    morning line with no route, so a tap lands in her thread, where she can
    ask CFO on the Mac. Her model out of reach → nothing marked.
-6. A week on real holdings: measure tokens, then set the price. Each run's
+6. ~~Market moments~~ — built (Hanli, 2026-09-23: "go A+B+C"). What can't
+   wait for the morning, zero LLM on the Mac:
+   - `market.pl watch-alerts` runs from the phone's CFO sync read, right
+     before `cat watch.json`, at most every 10 min and within a 15 s budget;
+     nothing while `cfo:watch` is off (`~/.linggen/missions/cfo:watch/user.json`).
+   - A release calendar (`data/watch-calendar.json`, daily): FOMC decisions
+     (the Fed's calendar page, 14:00 New York), CPI and the jobs report (BLS
+     `bls.ics`), Bank of Canada rate announcements (its upcoming-events page).
+     Kept 3 days past, so a passed release can still be answered.
+   - After a release's time, its source only: the FOMC statement (decision
+     parsed: raised / cut / held, bp, range), BLS numbers against the scan's
+     snapshot from before, the Bank's press feed. Retried every 20 min; let
+     go after 36 h (BLS 6 h — its API answers 25 a day).
+   - While New York trades: a holding ±5% on the day, once a day.
+   - `watch.json` gains `alerts` (7 days, `release` = the calendar id),
+     `upcoming` (14 days), `alert_tries`, `alerts_checked_at`.
+   - Phone: CFO line `moment` ("Market moments", tier: hand). Each new alert
+     → Yinyue's words → her thread, and with the phone closed a notice keyed
+     by the release (the result replaces its heads-up). Each release within
+     36 h → a heads-up set with iOS (`at`) an hour before, not before 08:00,
+     worded for the moment it lands. First look only learns; her model out
+     of reach marks nothing. Facts only, like the brief.
+   - The phone's short wake (`dev.linggen.refresh`, BGAppRefreshTask, asked
+     for every 30 min) syncs CFO through the day, beside the nightly pass.
+7. A week on real holdings: measure tokens, then set the price. Each run's
    `usage` (calls, prompt, cached, output, models) is on its line in
    `GET /api/missions/cfo%3Awatch/runs` (engine `45bdf3a`). First measure,
    2026-09-16, a quiet check on gpt-5.6-terra: 4 calls, 56.5k prompt (39.4k
