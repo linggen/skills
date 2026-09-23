@@ -1410,9 +1410,8 @@ async function mountChat() {
     pendingGrant = replayRuntimeGrants(sid).catch(e =>
       console.warn('[pulse] replay grants failed', e)
     );
-    // Lower the auto-compact trigger from 95% → 50% for Pulse sessions,
-    // and tell the summarizer what to preserve. Runtime-only on the engine
-    // side, so we re-apply on every iframe mount.
+    // Tell the summarizer what to preserve (the threshold is the global
+    // one). Runtime-only on the engine side, so re-applied every mount.
     applyCompactConfig(sid).catch(e => console.warn('[pulse] applyCompactConfig failed', e));
   };
   state.grantsReady = () => pendingGrant || Promise.resolve();

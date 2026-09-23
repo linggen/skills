@@ -99,41 +99,25 @@ export async function replayRuntimeGrants(sessionId) {
   console.log('[pulse] replayRuntimeGrants ✓ granted', workspacePath, 'on', sessionId);
 }
 
-// Pulse trades off context retention against cost more aggressively than the
-// default 95% trigger: Gather Web pulls full Reddit threads (untruncated OP +
-// every comment + every nested reply), which spikes context fast but most of
-// it is no longer needed after the agent emits its body_patch cards. Setting
-// threshold=0.7 + a focus that names what to preserve makes the engine's
-// existing auto-compaction shed the heavy tool-result turns while keeping
-// the card ids and draft strategy intact.
-//
-// Don't push this much lower: a single Gather Web pass reads several full
-// threads BEFORE it drafts the cards, so a low threshold makes compaction
-// fire mid-gather and summarize those reads away before the agent can use
-// them — Discovery/Mentions then come back empty. 0.7 leaves room for the
-// gather to finish first; the engine still compacts before the 128k limit.
+// What the summary must keep when a Pulse session compacts — card ids, the
+// reddit handle, skip/dismissed URLs, draft strategy. WHEN it compacts is the
+// global threshold (Linggen Settings → General), never Pulse's own: a skill
+// copy silently overrode the user's choice (removed 2026-09-23). Tier-1
+// eviction drops old tool results for free first, which is what used to
+// make a low threshold eat a gather mid-pass.
 //
 // Runtime-only on the engine side per the runtime-grants pattern — Pulse
-// calls this on every iframe load so a fresh engine session inherits the
-// same config.
+// calls this on every iframe load so a fresh engine session inherits it.
 export async function applyCompactConfig(sessionId, opts = {}) {
   if (!sessionId) return;
   const cfg = await readPulseConfig();
-  // User-tunable threshold from settings.html (compact_threshold field in
-  // config.json). Falls back to 0.7 — Pulse's default, lower than the
-  // engine's global 0.95 but high enough that a Gather Web pass finishes
-  // before compaction fires. Applied whether or not workspace_path is set —
-  // the setting is per-session, not per-workspace.
-  const cfgThreshold = typeof cfg?.compact_threshold === 'number'
-    ? cfg.compact_threshold
-    : null;
   const body = {
     // Current engines key compact config by session only; project_root is
     // kept for engines predating that, which 400 without it ('/tmp' is the
     // same root every /api/bash call in this skill already uses).
     project_root: (cfg?.workspace_path || '').trim() || '/tmp',
     session_id: sessionId,
-    threshold: opts.threshold ?? cfgThreshold ?? 0.7,
+    // No threshold: the session follows the global one.
     focus: opts.focus ?? [
       'preserve card ids emitted to body_patch (mentions, trend, discovery, replies_due, progress)',
       'preserve the user reddit handle and any skip URLs / dismissed URLs in effect',

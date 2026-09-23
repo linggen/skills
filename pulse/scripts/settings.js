@@ -235,6 +235,9 @@ async function loadAll() {
     // Product repos are worked out from the workspace now; a saved list is
     // dropped on the next save rather than kept as a setting nobody can see.
     delete state.config.product_repos;
+    // The compaction threshold is the global one (Linggen Settings →
+    // General); a Pulse copy would silently override it.
+    delete state.config.compact_threshold;
     if (typeof state.config.brief !== 'string') state.config.brief = '';
     if (!state.config.sites) state.config.sites = {};
     if (!state.config.targets) state.config.targets = {};
@@ -265,14 +268,6 @@ function render() {
   const wsInput = document.getElementById('workspace-path');
   if (wsInput) wsInput.value = state.config.workspace_path || '';
   renderMention();
-  const ctInput = document.getElementById('compact-threshold');
-  if (ctInput) {
-    // Stored as fraction 0.10–0.99; UI shows as integer percent.
-    const t = typeof state.config.compact_threshold === 'number'
-      ? Math.round(state.config.compact_threshold * 100)
-      : 70;
-    ctInput.value = String(t);
-  }
   renderWebsites();
 }
 
@@ -607,13 +602,6 @@ async function save() {
     const wsInput = document.getElementById('workspace-path');
     if (wsInput) state.config.workspace_path = wsInput.value.trim();
     state.config.mention = readMention();
-    const ctInput = document.getElementById('compact-threshold');
-    if (ctInput && ctInput.value.trim()) {
-      const pct = parseInt(ctInput.value, 10);
-      if (Number.isFinite(pct) && pct >= 10 && pct <= 99) {
-        state.config.compact_threshold = pct / 100;
-      }
-    }
     await writeFile(CONFIG_PATH, JSON.stringify(state.config, null, 2) + '\n');
     saveBtn.textContent = 'Saved ✓';
     saveBtn.classList.add('saved');

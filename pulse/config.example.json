@@ -13,7 +13,6 @@
     }
   },
   "default_goal": "Daily X-post if I shipped or learned something yesterday. Skip if nothing meaningful.",
-  "compact_threshold": 0.7,
   "sites": {
     "hackernews": {
       "enabled": true,
