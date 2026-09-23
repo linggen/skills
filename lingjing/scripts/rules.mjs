@@ -1633,6 +1633,46 @@ function journeyBrief(content, state, now) {
   if (herBack(state, now)) return { place, hours: j.hours, back: true };
   return { place, hours: j.hours, until: j.until, minutes_left: Math.ceil((new Date(j.until) - now) / 60000) };
 }
+/* ── 问候 — the day's first opening is hers ──
+   His pick, 2026-09-23: 银月 greets the player the first time the game is
+   opened each day, from what the save knows of yesterday and today; the page
+   hands her these facts and she speaks. Marked once a day (state.greeted);
+   never before she walks with him. Facts, in the player's language — never
+   sentences for the player: she writes the words. */
+export function greet(state, content, ctx) {
+  if (!hasCompanion(state)) return refuse('no-companion', null);
+  const day = dayKey(ctx.now);
+  if (state.greeted === day) return { state: null, result: { ok: true, first: false } };
+  const s = clone(state), zh = state.lang !== 'en', facts = [];
+  const yesterday = dayKey(new Date(ctx.now.getTime() - 86400000));
+  // How long since she last saw him, so she never says 许久不见 to yesterday's
+  // player (her first reading on his save, 2026-09-23). The last day greeted,
+  // else the save's last write.
+  const last = state.greeted ?? (state.updated ? dayKey(new Date(state.updated)) : null);
+  if (last) {
+    const days = Math.round((new Date(`${day}T12:00:00`) - new Date(`${last}T12:00:00`)) / 86400000);
+    if (days >= 1) facts.push(zh ? `他上次来是${days === 1 ? '昨天' : `${days} 天前`}` : `he was last here ${days === 1 ? 'yesterday' : `${days} days ago`}`);
+  }
+  for (const [id, d] of Object.entries(state.duels ?? {})) {
+    if (d.day !== yesterday || d.outcome === 'open') continue;
+    const name = pick(creatureOf(content, id)?.name, state.lang);
+    const how = { won: zh ? '赢了' : 'won against', lost: zh ? '输给了' : 'lost to', withdrew: zh ? '没打完，它遁走了：' : 'was left unfinished by' }[d.outcome];
+    facts.push(zh ? `昨天${how}${name}` : `yesterday he ${how} ${name}`);
+  }
+  const h = healthBrief(content, state, ctx.now);
+  if (h.now < h.max) facts.push(zh ? `身上还带着伤，气血 ${h.now}/${h.max}` : `still hurt, Life ${h.now}/${h.max}`);
+  const c = chanceBrief(content, state, ctx.now);
+  if (c && !c.taken && !c.missed) facts.push(zh ? `今天${c.place.name}有一份机缘` : `a chance waits at ${c.place.name} today`);
+  const j = journeyBrief(content, state, ctx.now);
+  if (j?.back) facts.push(zh ? `你（银月）从${j.place.name}历练回来了，东西还没交给他` : `you are back from ${j.place.name}, with things not yet handed over`);
+  else if (j) facts.push(zh ? `你（银月）还在${j.place.name}历练` : `you are still out at ${j.place.name}`);
+  const b = bondBrief(content, state);
+  facts.push(zh ? `你们的羁绊：${b.name}` : `your bond: ${b.name}`);
+  facts.push(zh ? `他如今是${stepName(content, state.tier, state.step, state.lang)}` : `he stands at ${stepName(content, state.tier, state.step, state.lang)}`);
+  s.greeted = day;
+  return { state: s, result: { ok: true, first: true, name: state.name ?? null, facts } };
+}
+
 export function journey(state, content, ctx, args) {
   const lang = state.lang, action = String(args.action ?? '');
   if (!hasCompanion(state)) return refuse('no-companion', null);
@@ -3052,7 +3092,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

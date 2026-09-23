@@ -1182,6 +1182,18 @@ async function enter() {
   await refresh();
   await firstLanguage();
   await mountChat();
+  greetByHer();
+}
+
+/// 问候 — the day's first opening is hers (rules § 问候): the rules say
+/// whether she has greeted today and hand over what they know; she speaks.
+async function greetByHer() {
+  if (!look?.companion) return;
+  const r = await verb('greet', {}).catch(() => null);
+  if (!r?.ok || !r.first) return;
+  const who = r.name ?? '';
+  askHer(`${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到他那样，打个招呼 —— 挑一两件说，不必都提。`,
+    `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet him as you would on seeing him — pick one or two, not all.`, 'happy');
 }
 
 async function boot() {
