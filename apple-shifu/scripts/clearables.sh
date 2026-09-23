@@ -614,6 +614,14 @@ run_tool() {
   dir=$(expand "$r_cwd"); dir=${dir//\{project\}/$project}
   [ -d "$dir" ] || dir="$HOME"
   (cd "$dir" && limited "$TOOL_BUDGET" bash -c "$c") >/dev/null 2>&1
+  local rc=$?
+  # Out of time (the alarm kills it: rc > 128) — a huge `cargo clean` walks
+  # hundreds of thousands of files. Finish the job the fallback's way rather
+  # than leave a half-cleared folder reported as failed.
+  if [ "$rc" -gt 128 ] && [ -n "$r_fallback" ]; then
+    method_run "$r_fallback" "$p" "$project"; return
+  fi
+  return "$rc"
 }
 
 method_run() {

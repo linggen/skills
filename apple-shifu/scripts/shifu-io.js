@@ -49,13 +49,20 @@ let serverDownAt = 0;
 
 /** Every pipeline call goes through here. A rejected fetch (daemon restarting
     or stopped) used to unwind the click handler with no trace — the button
-    simply did nothing. Say so instead, and hand callers an empty result. */
-export async function bash(command) {
+    simply did nothing. Say so instead, and hand callers an empty result
+    marked `unreachable`, so a poller can tell "no answer" from "empty answer".
+    A request the daemon never answers is cut at `timeoutMs`: a fetch has no
+    deadline of its own, and one that hangs held a Clear row spinning forever
+    (2026-09-23). Long work runs detached and is polled — see files.js. */
+export async function bash(command, timeoutMs = 30 * 60 * 1000) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     const resp = await fetch('/api/bash', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ project_root: '/tmp', command }),
+      signal: ctl.signal,
     });
     return await resp.json();
   } catch {
@@ -63,7 +70,9 @@ export async function bash(command) {
       serverDownAt = Date.now();
       flashToast('Linggen server unreachable — try again in a moment');
     }
-    return {};
+    return { unreachable: true };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

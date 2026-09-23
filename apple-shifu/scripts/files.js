@@ -20,7 +20,7 @@ import {
   registerTab, getActiveTab, onSourceChange, onTabChange, refreshVerbs, openMenu,
 } from './shifu-shell.js';
 import {
-  bash, writeLines, fmtBytes, esc, abbrevPath, relAge, shellEsc, shellPath,
+  bash, writeLines, writeJsonFile, fmtBytes, esc, abbrevPath, relAge, shellEsc, shellPath,
   confirmDialog, showToast, copyText,
 } from './shifu-io.js';
 import {
@@ -76,13 +76,13 @@ const clear = {
 export function initFilesTab() {
   panel = document.getElementById('files-panel');
   registerTab('files', filesProvider);
-  onTabChange((name) => { if (name === 'files') { loadClearables(); render(); } });
+  onTabChange((name) => { if (name === 'files') { loadClearables().then(resumeClearJob); render(); } });
   // Ling proposed or dropped a row — re-read her finds.
   window.addEventListener('shifu:found', () => readFound());
   onSourceChange(() => render());
   // A page reopened on this tab switched to it before this module listened,
   // which left the panel blank. Draw now if it is already the one showing.
-  if (getActiveTab() === 'files') { loadClearables(); render(); }
+  if (getActiveTab() === 'files') { loadClearables().then(resumeClearJob); render(); }
 }
 
 /** This Mac only. iOS shows no app another app's files, and the folders a
@@ -391,71 +391,156 @@ async function removePaths(paths) {
  * `<list>.result`.
  */
 async function runListJob(paths, lines, verb, sizes, command, background = false) {
-  for (const p of paths) { removing.add(p); selected.delete(p); }
-  const op = beginOp('remove', `${verb}…`);
-  renderPane();
-  const note = showToast(`${verb}…`, true);
   const list = `${WORK_DIR}/remove-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`;
-  const gone = new Set();
-  const n = paths.length;
-  const collect = async () => {
-    const res = await bash(`cat "${list}.done" 2>/dev/null || true`);
-    let moved = false;
-    for (const p of (res.stdout || '').split('\n')) {
-      if (!p || gone.has(p) || !sizes.has(p)) continue;
-      gone.add(p);
-      dropPath(p);
-      moved = true;
-    }
-    if (moved) {
-      render();
-      if (n > 1) note.update(`${verb}… ${gone.size.toLocaleString()} of ${n.toLocaleString()}`);
-    }
-  };
+  const job = startListJob(paths, verb);
   let result = {};
+  let lost = false;
   try {
     await writeLines(WORK_DIR, list.split('/').pop(), lines);
-    const timer = setInterval(collect, 800);
-    try {
-      const res = background ? await runInBackground(command(list), list) : await bash(command(list));
+    if (background) {
+      const pid = await launchBackground(command(list));
+      if (pid) {
+        // On disk, so a reloaded page picks the job up (resumeClearJob).
+        await writeJsonFile(WORK_DIR, JOB_FILE, {
+          list, pid, verb, started: Date.now(), sizes: [...sizes],
+          trashed: background.trashed || [],
+        });
+        const res = await waitForJob(pid, list, job, sizes);
+        lost = !!res.lost;
+        try { result = JSON.parse(res.stdout || '{}'); } catch { /* counted from .done below */ }
+      }
+    } else {
+      const res = await watchWhile(bash(command(list), 30 * 60 * 1000), job, list, sizes);
       try { result = JSON.parse(res.stdout || '{}'); } catch { /* counted from .done below */ }
-    } finally {
-      clearInterval(timer);
     }
-    await collect();
+    await collectDone(job, list, sizes);
     // No answer from the job at all: what did not go failed — never "✓ Cleared 0".
-    if (!Object.keys(result).length) result.failed = n - gone.size;
+    if (!lost && !Object.keys(result).length) result.failed = paths.length - job.gone.size;
   } finally {
-    for (const p of paths) removing.delete(p);
-    bash(`rm -f "${list}" "${list}.done" "${list}.result"`);
-    endOp(op);
-    render();
+    endListJob(job, list, lost);
   }
-  return { gone, result, note };
+  return { gone: job.gone, result, note: job.note, lost };
+}
+
+/** The page side of a list job: its rows marked going, the verb row held, and
+    a toast that counts what went and how long it has been running. */
+function startListJob(paths, verb) {
+  for (const p of paths) { removing.add(p); selected.delete(p); }
+  const job = {
+    paths, verb, n: paths.length, gone: new Set(), started: Date.now(),
+    op: beginOp('remove', `${verb}…`), note: showToast(`${verb}…`, true),
+  };
+  renderPane();
+  return job;
+}
+
+function endListJob(job, list, lost) {
+  for (const p of job.paths) removing.delete(p);
+  // A lost job is still running — its list and record stay for the resume.
+  if (!lost) bash(`rm -f "${list}" "${list}.done" "${list}.result" "${WORK_DIR}/${JOB_FILE}"`);
+  endOp(job.op);
+  render();
+}
+
+/** Drop each path the moment it shows up in the job's `.done` list. */
+async function collectDone(job, list, sizes) {
+  const res = await bash(`cat "${list}.done" 2>/dev/null || true`, POLL_TIMEOUT_MS);
+  let moved = false;
+  for (const p of (res.stdout || '').split('\n')) {
+    if (!p || job.gone.has(p) || !sizes.has(p)) continue;
+    job.gone.add(p);
+    dropPath(p);
+    moved = true;
+  }
+  if (moved) render();
+  const count = job.n > 1 ? ` ${job.gone.size.toLocaleString()} of ${job.n.toLocaleString()}` : '';
+  job.note.update(`${job.verb}…${count} · ${elapsed(job.started)}`);
+}
+
+function elapsed(since) {
+  const s = Math.round((Date.now() - since) / 1000);
+  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, '0')}s`;
+}
+
+/** Keep the toast and rows moving while a foreground call runs. */
+async function watchWhile(promise, job, list, sizes) {
+  const timer = setInterval(() => collectDone(job, list, sizes), 800);
+  try { return await promise; } finally { clearInterval(timer); }
 }
 
 const BACKGROUND_CAP_MS = 3 * 3600 * 1000;   // a job this long has died, not stalled
+const POLL_TIMEOUT_MS = 20 * 1000;            // one status read; the job runs on without it
+const LOST_AFTER_MS = 3 * 60 * 1000;          // this long with no answer: stop waiting here
+const JOB_FILE = 'clear-job.json';
+let resuming = false;
 
-/** Start `command` detached and wait for it to write `<list>.result`. */
-async function runInBackground(command, list) {
+/** Start `command` detached; its pid, or 0 when it did not start. */
+async function launchBackground(command) {
   // In a subshell: /api/bash appends `; …` to every command, and a bare
   // trailing `&` turned that into `& ;` — a syntax error, so nothing ran.
-  const start = await bash(`( nohup ${command} >/dev/null 2>&1 & echo $! )`);
-  const pid = parseInt((start.stdout || '').trim(), 10);
-  if (!pid) return {};
-  const until = Date.now() + BACKGROUND_CAP_MS;
+  const start = await bash(`( nohup ${command} >/dev/null 2>&1 & echo $! )`, POLL_TIMEOUT_MS);
+  return parseInt((start.stdout || '').trim(), 10) || 0;
+}
+
+/** Wait for a detached job to write `<list>.result`. Only an ANSWERED
+    liveness check may call it dead: an unanswered one (daemon restarting,
+    request timed out) means "don't know", and waiting goes on — until the
+    daemon has been silent for LOST_AFTER_MS, when the page lets go and says
+    so. The job keeps running; reopening Files picks it back up. */
+async function waitForJob(pid, list, job, sizes) {
+  const until = job.started + BACKGROUND_CAP_MS;
+  let silentSince = 0;
   while (Date.now() < until) {
     await new Promise((r) => setTimeout(r, 1000));
-    const res = await bash(`cat "${list}.result" 2>/dev/null || true`);
+    await collectDone(job, list, sizes);
+    const res = await bash(`cat "${list}.result" 2>/dev/null || true`, POLL_TIMEOUT_MS);
     if ((res.stdout || '').trim()) return res;
-    // Gone without a result: stop waiting now, not in three hours.
-    const alive = await bash(`kill -0 ${pid} 2>/dev/null && echo up || true`);
-    if ((alive.stdout || '').trim() !== 'up') {
-      const last = await bash(`cat "${list}.result" 2>/dev/null || true`);
+    const alive = await bash(`kill -0 ${pid} 2>/dev/null && echo up || echo gone`, POLL_TIMEOUT_MS);
+    const said = (alive.stdout || '').trim();
+    if (!said) {
+      silentSince = silentSince || Date.now();
+      if (Date.now() - silentSince > LOST_AFTER_MS) return { lost: true };
+      job.note.update(`${job.verb}… · ${elapsed(job.started)} · reconnecting to Linggen`);
+      continue;
+    }
+    silentSince = 0;
+    if (said === 'gone') {
+      // Gone without a result: stop waiting now, not in three hours.
+      const last = await bash(`cat "${list}.result" 2>/dev/null || true`, POLL_TIMEOUT_MS);
       return (last.stdout || '').trim() ? last : {};
     }
   }
   return {};
+}
+
+/** A clear still running from before a reload (or after the page lost touch
+    with the daemon): hold its rows, re-attach to the job and finish its toast. */
+async function resumeClearJob() {
+  // Already attached (this page started it, or a resume is under way).
+  if (resuming || [...ops.values()].some((op) => op.kind === 'remove')) return;
+  resuming = true;
+  let rec;
+  try {
+    const res = await bash(`cat "${WORK_DIR}/${JOB_FILE}" 2>/dev/null || true`, POLL_TIMEOUT_MS);
+    rec = JSON.parse(res.stdout || '');
+  } catch { rec = null; }
+  if (!rec || !rec.list || !rec.pid) { resuming = false; return; }
+  const sizes = new Map(rec.sizes || []);
+  const job = startListJob([...sizes.keys()].filter((p) => !removing.has(p)), rec.verb || 'Clearing');
+  job.started = rec.started || Date.now();
+  let result = {};
+  let lost = false;
+  try {
+    const r = await waitForJob(rec.pid, rec.list, job, sizes);
+    lost = !!r.lost;
+    try { result = JSON.parse(r.stdout || '{}'); } catch { /* counted from .done */ }
+    await collectDone(job, rec.list, sizes);
+    if (!lost && !Object.keys(result).length) result.failed = job.n - job.gone.size;
+  } finally {
+    endListJob(job, rec.list, lost);
+    resuming = false;
+  }
+  finishClear(job, result, sizes, new Set(rec.trashed || []), lost);
 }
 
 // ── the Clearable pile ──
@@ -571,16 +656,25 @@ async function clearPaths(paths) {
     n === 1 ? 'Clear' : `Clear ${n.toLocaleString()}`,
     true);
   if (!ok || removalBlocked()) return;
-  const { gone, result, note } = await runListJob(
+  const trashed = by('trash').map((r) => r.path);
+  const { gone, result, note, lost } = await runListJob(
     rowsGoing.map((r) => r.path), rowsGoing.map((r) => `${r.rule}\t${r.path}`), 'Clearing', sizes,
-    (list) => `bash ${CLEAR_SH} clear "${list}"`, true);
+    (list) => `bash ${CLEAR_SH} clear "${list}"`, { trashed });
+  finishClear({ gone, note }, result, sizes, new Set(trashed), lost);
+}
+
+function finishClear({ gone, note }, result, sizes, trashedPaths, lost) {
   writeSummary();
   const freed = [...gone].reduce((s, p) => s + (sizes.get(p) || 0), 0);
+  if (lost) {
+    note.done(`Lost touch with Linggen after ${fmtBytes(freed)} — the clear keeps going. Reopen Files to pick it up.`);
+    return;
+  }
   const notes = [];
   if (result.failed) notes.push(`${result.failed} could not be cleared`);
   // The shell's guard said no — say so out loud, with its first reason.
   if (result.refused) notes.push(`${result.refused} refused (${(result.reasons || [])[0] || 'outside its rule'})`);
-  const trashed = [...gone].some((p) => by('trash').some((r) => r.path === p));
+  const trashed = [...gone].some((p) => trashedPaths.has(p));
   note.done(`✓ Cleared ${gone.size.toLocaleString()} · ${fmtBytes(freed)}${
     notes.length ? ` · ${notes.join(' · ')}` : ''}${trashed ? ' — empty the Trash for the Trash part' : ''}`);
 }
