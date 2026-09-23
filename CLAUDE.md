@@ -12,6 +12,8 @@ Edit HERE first, then copy changed files to the other two surfaces (keep all thr
 
 Never edit `~/.linggen` or `vendor/skills` directly.
 
+Never `rsync --delete` (or rm-and-copy) into `~/.linggen/skills/<name>/` — the install holds user state git never has (`config.json`, `data/`, `state/`). One such sync on 2026-09-10 wiped Pulse's config and six skills' data. Copy the changed files by name.
+
 ## Conventions
 
 - Syntax-check JS with `node --check` before syncing; there is no build step — files are served as-is.
