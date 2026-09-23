@@ -326,3 +326,4 @@
 /* 出手 and 喂它 side by side: two ways to win a beast over. */
 .cacts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .bact:disabled { opacity: 0.45; cursor: default; transform: none; }
+.cacts .feedhint { align-self: center; font-family: var(--ui); font-size: 11px; color: var(--faint-d); max-width: 180px; }

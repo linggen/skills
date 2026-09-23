@@ -212,9 +212,11 @@ test('a creature at its haunt: the bout on the stage pays once a day, and what i
   assert.equal(settled.result.haunt.id, 'jingwei');
   refused(duel, settled.state, { id: 'haunt:jingwei' }, 'subdued-today', october());
   assert.ok(!look(settled.state, content, october()).director.choice.options.some(o => o.duel));
-  // taming: the thing it likes, from the bag, once
-  refused(tame, base, { creature: 'jingwei' }, 'needs-item', october());
-  const fed = { ...base, bag: { ...base.bag, 'jade-fish': 1 } };
+  // taming: 先降后收 — never before it is beaten, then the thing it likes, once
+  refused(tame, { ...base, bag: { ...base.bag, 'jade-fish': 1 } }, { creature: 'jingwei' }, 'not-beaten', october());
+  const beaten = settled.state;
+  refused(tame, beaten, { creature: 'jingwei' }, 'needs-item', october());
+  const fed = { ...beaten, bag: { ...beaten.bag, 'jade-fish': 1 } };
   assert.equal(look(fed, content, october()).place.encounter.likes.held, 1, 'held: the card offers the feeding');
   const out = must(tame, fed, { creature: '精卫' }, october());
   assert.ok(out.state.cast.includes('jingwei'));
@@ -2804,7 +2806,7 @@ test('a beast tamed meets an errand that asked for it subdued', () => {
   assert.equal(look(s, content, at).book[0].ready, false);
   assert.equal(look({ ...s, cast: [...s.cast, 'longzhi'] }, content, at).book[0].ready, true, 'a save tamed before this counts too');
   const likes = look(s, content, at).place.encounter.likes.id;
-  const fed = must(tame, { ...s, bag: { ...s.bag, [likes]: 1 } }, { creature: 'longzhi' }, at);
+  const fed = must(tame, { ...s, wins: { 'haunt:longzhi': at.now.toISOString() }, bag: { ...s.bag, [likes]: 1 } }, { creature: 'longzhi' }, at);
   assert.deepEqual(fed.result.handed.map(h => h.id), ['xu-fuli-longzhi'], 'and hands itself in');
 });
 

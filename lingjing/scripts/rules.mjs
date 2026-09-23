@@ -109,6 +109,8 @@ function encounterOf(content, state, now) {
     won: Boolean(state.wins?.[game.id]) && today?.day === day && today.outcome === 'won',
     withdrawn: today?.day === day && today.outcome === 'lost',
     tamed: state.cast.includes(cid),
+    // Beaten once, on any day: only a beast beaten can be won over.
+    beaten: Boolean(state.wins?.[game.id]),
     // `fed`: food is fed; a thing (雷神's bell, 狪狪's silk) is offered (his, 2026-09-23: 雷神吃装备吗?)
     likes: item ? { id: item.id, name: pick(item.name, lang), held: state.bag[item.id] ?? 0, fed: item.kind === 'material' } : null,
   };
@@ -2753,6 +2755,9 @@ export function tame(state, content, ctx, args) {
   const lang = state.lang, name = e.creature.name;
   if (e.tamed) return refuse('already-tamed', pick({ zh: `${name}已随你同行。`, en: `${name} already walks with you.` }, lang));
   if (!e.likes) return refuse('untameable', pick({ zh: `${name}不为任何东西所动。`, en: `${name} is moved by nothing you could carry.` }, lang));
+  // 先降后收 (his, 2026-09-23: 要先能打败, 才能收服): a beast yields only to
+  // one who has beaten it; then what it likes seals it.
+  if (!e.beaten) return refuse('not-beaten', pick({ zh: `${name}还不服你。先降了它，再献上${e.likes.name}。`, en: `${name} does not yield to you yet. Beat it first, then offer the ${e.likes.name}.` }, lang), { likes: e.likes });
   if (!e.likes.held) return refuse('needs-item', pick({ zh: `${name}闻了闻，退开了。它要的是${e.likes.name}。`, en: `${name} sniffs and draws back. It wants ${e.likes.name}.` }, lang), { likes: e.likes });
   const s = clone(state);
   s.bag[e.likes.id] -= 1;
