@@ -46,7 +46,7 @@
   "_stamina": "stamina is the pace — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest).",
   "stamina": {
     "max": 100,
-    "refill_hours": 5,
+    "refill_hours": 5, "rest": 20,
     "cost": {
       "move": { "base": 3, "per_road": 1, "max": 6 },
       "step": 3,
