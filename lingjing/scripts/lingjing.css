@@ -503,3 +503,12 @@ button.gcard { cursor: pointer; font: inherit; }
 .bookwrap { position: relative; }
 .cardgain { left: auto; right: -6px; top: -8px; }
 @media (prefers-reduced-motion: reduce) { .wonseal { animation-name: none; opacity: 1; transform: translate(-50%, -50%) rotate(-8deg); } }
+/* 所得 arriving: the row rises in on a gold flash, each pay pops after the last. */
+.handedrow.fresh { animation: handedIn 2.6s cubic-bezier(.2, .8, .2, 1) both; border-radius: 8px; }
+@keyframes handedIn { 0% { opacity: 0; transform: translateY(10px) scale(.97); box-shadow: 0 0 0 0 rgba(201, 162, 39, 0); }
+  18% { opacity: 1; transform: none; box-shadow: 0 0 0 6px rgba(201, 162, 39, .35); background: rgba(201, 162, 39, .12); }
+  100% { box-shadow: 0 0 0 14px rgba(201, 162, 39, 0); background: transparent; } }
+.handedrow .pays { margin-top: 4px; }
+.handedrow.fresh .pay { display: inline-block; animation: payPop .55s cubic-bezier(.2, 1.4, .4, 1) both; color: var(--ling); font-weight: 600; }
+@keyframes payPop { 0% { opacity: 0; transform: translateY(6px) scale(.6); } 60% { opacity: 1; transform: scale(1.25); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .handedrow.fresh, .handedrow.fresh .pay { animation: none; } }

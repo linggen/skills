@@ -476,7 +476,9 @@ test('所得: an errand handed in shows what it paid and the next step in hand',
     next: { id: 'xu-fuli-longzhi', title: '凫丽山的蠪侄', took: true, at: { id: 'pengcheng', name: '彭城' } } }];
   const html = cardHtml({ card: 'handed' }, { look: { handed }, lang: 'zh', words: WORDS.zh });
   assert.match(html, /交差 · 彭城老人的灵芝/);
-  assert.match(html, /修为 \+40 · 灵石 \+15 · 聚气丹/);
+  assert.match(html.replace(/<[^>]+>/g, ''), /修为 \+40 · 灵石 \+15 · 聚气丹/);
+  assert.doesNotMatch(html, /fresh/, 'no clock given: shown, not animated');
+  assert.match(cardHtml({ card: 'handed' }, { look: { handed }, lang: 'zh', words: WORDS.zh, handedAge: () => 100 }), /handedrow fresh" style="animation-delay:-100ms"/, 'fresh: it plays, picked up by its age');
   assert.match(html, /接下来 · 凫丽山的蠪侄/);
   const full = cardHtml({ card: 'handed' }, { look: { handed: [{ ...handed[0], next: { ...handed[0].next, took: false } }] }, lang: 'zh', words: WORDS.zh });
   assert.match(full, /手上已满，了一件再去彭城接/);

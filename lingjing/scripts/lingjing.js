@@ -91,7 +91,13 @@ const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
 const duelFor = (id) => (view.duelSay.id === id ? view.duelSay : { text: null });
 
-const ctx = () => ({ look, bookRow: view.bookRow, offerRow: view.offerRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
+/* When each 所得 first stood on the stage — its animation's clock. */
+const handedAt = new Map();
+function handedAge(id) {
+  if (!handedAt.has(id)) handedAt.set(id, performance.now());
+  return performance.now() - handedAt.get(id);
+}
+const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -277,7 +283,9 @@ let shown = null; // {world, tier, progress, wealth} as last drawn
    he never saw one (「show animation, when number change on topbar」). Each
    frame finds the element that is there NOW. */
 const rising = new Map();
-const RISE_MS = 1100, GAIN_MS = 2400;
+// Slow enough to be seen: at 1.1 s / 2.4 s it ran while the fight room closed and he missed it (2026-09-23).
+const RISE_MS = 1600, GAIN_MS = 3600;
+let riseAfter = 0; // a rise waits for this moment (the fight room closing)
 function riseStats() {
   const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id) };
   const before = shown;
@@ -292,7 +300,7 @@ function riseStats() {
   if (before && before.world === now.world) {
     for (const key of ['progress', 'wealth']) {
       if (key === 'progress' && before.tier !== now.tier) continue;
-      if (now[key] > before[key]) rising.set(key, { from: before[key], to: now[key], start: performance.now(), next: now.next });
+      if (now[key] > before[key]) rising.set(key, { from: before[key], to: now[key], start: Math.max(performance.now(), riseAfter), next: now.next });
     }
   }
   if (rising.size) paintRise();
@@ -970,7 +978,10 @@ async function settleBout(outcome) {
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
   const got = r.ok && r.outcome === 'won' ? r.dropped ?? [] : [];
-  if (got.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card) } });
+  const paid = r.ok && r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
+  if (got.length || paid) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid } });
+  // The strip counts up once the room has closed and the eye is back on it.
+  riseAfter = performance.now() + 600;
   await report(`[scene] ${r.outcome ?? outcome} ${id}`);
   if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
   await refresh();

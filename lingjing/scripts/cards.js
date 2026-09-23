@@ -515,15 +515,22 @@ function offer(card, ctx) {
 }
 
 /// 所得 — the errands met here, each with what it paid and the next step.
+export const HANDED_MS = 2600;
 function handed(card, ctx) {
   const all = ctx.look?.handed ?? [], w = ctx.words;
   if (!all.length) return '';
   const rows = all.map((h) => {
     const p = h.paid ?? {};
-    const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', h.gives ?? ''].filter(Boolean).join(' · ');
+    const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', h.gives ?? ''].filter(Boolean);
     const next = h.next ? `<div class="small">${esc(say(h.next.took ? w.handedNext : w.handedWait, { title: h.next.title, at: h.next.at?.name ?? h.next.at ?? '' }))}</div>` : '';
-    return `<div class="handedrow"><div class="cardtitle">${esc(say(w.handedTitle, { title: h.title }))}</div>
-      ${h.who ? `<div class="small dim">${esc(h.who)}</div>` : ''}${pays ? `<div>${esc(pays)}</div>` : ''}${next}</div>`;
+    // Fresh, it plays once: in with a gold flash, each pay popping after the
+    // last (his, 2026-09-23: 给这个卡片加点动画). A redraw picks the animation
+    // up where it was (a negative delay by its age), never restarts it.
+    const age = ctx.handedAge?.(h.id) ?? Infinity, fresh = age < HANDED_MS;
+    const at = (ms) => (fresh ? ` style="animation-delay:${Math.round(ms - age)}ms"` : '');
+    const payHtml = pays.map((x, i) => `<span class="pay"${at(350 + i * 220)}>${esc(x)}</span>`).join('<span class="dot"> · </span>');
+    return `<div class="handedrow${fresh ? ' fresh' : ''}"${at(0)}><div class="cardtitle">${esc(say(w.handedTitle, { title: h.title }))}</div>
+      ${h.who ? `<div class="small dim">${esc(h.who)}</div>` : ''}${pays.length ? `<div class="pays">${payHtml}</div>` : ''}${next}</div>`;
   }).join('');
   return `<div class="card handed">${rows}</div>`;
 }

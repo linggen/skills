@@ -48,7 +48,7 @@ export const WORDS = {
   zh: {
     hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
-    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进背包：', spoilsClose: '收起', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
+    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进背包：', spoilsClose: '收起', xw: '修为', ls: '灵石', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
     wonSay: '它退入雾中。', lostSay: '你退了半里地，它没有追。', withdrewSay: '它一口气用尽，转身走了 —— 这一场不算你赢。',
     why: {
       'no-mana': '灵力不够', 'board-full': '阵前满了', 'not-your-turn': '还没轮到你',
@@ -79,7 +79,7 @@ export const WORDS = {
   en: {
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
-    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the bag: ', spoilsClose: 'Put away', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
+    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the bag: ', spoilsClose: 'Put away', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
     wonSay: 'It backs into the mist.', lostSay: 'You give ground; it does not follow.', withdrewSay: 'Its breath runs out and it turns away — this one does not count as a win.',
     why: {
       'no-mana': 'not enough Force', 'board-full': 'the rank is full', 'not-your-turn': 'not your turn',
@@ -282,7 +282,11 @@ export function spoilsHtml(spoils, ctx) {
     </div>`;
   }).join('');
   const things = spoils.items.map((i) => `${esc(i.name)}${i.n > 1 ? ` ×${i.n}` : ''}`).join(' · ');
+  // What the win paid, in the card's own words — not only a float on the strip.
+  const p = spoils.paid ?? {};
+  const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : ''].filter(Boolean).join(' · ');
   return `<div class="card spoils"><div class="cardtitle">${esc(w.spoils)}</div>
+    ${pays ? `<div class="spoilpays">${esc(pays)}</div>` : ''}
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
     <div class="acts"><button class="act" data-spoils-close>${esc(w.spoilsClose)}</button></div></div>`;
