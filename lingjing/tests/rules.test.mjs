@@ -2918,3 +2918,13 @@ test('a notice for a place\'s game opens it only at that place', () => {
   const done = must(task, must(win, there, { id: 'luoshu' }, at).state, { action: 'done', id: 'luoshu' }, at);
   assert.ok(done.state.quests['daily-20260911-trial-jieshi'].done_at, 'the win there meets the notice');
 });
+
+// His 五子棋, 2026-09-23: won at 桑间, handed in by Ling after a queued move to 彭城.
+test('a hosted game won is paid even if he has walked on before Ling hands it in', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'sangjian', tier: 'core' };
+  const won = must(win, s, { id: 'wuziqi' }, at);
+  const paid = must(task, { ...won.state, place: 'pengcheng' }, { action: 'done', id: 'wuziqi' }, at);
+  assert.ok(paid.result.paid.progress > 0);
+  refused(task, { ...paid.state }, { action: 'done', id: 'wuziqi' }, 'already-done', at);
+});

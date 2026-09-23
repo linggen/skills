@@ -2260,8 +2260,12 @@ function taskDone(state, content, ctx, id) {
   const t = taskOf(content, id);
   if (!t) return refuse('unknown-task', null);
   const again = reopened(content, state, id, ctx.now);
-  if (!state.tasks[id] && !again && !hostedHere(content, state, id)) return refuse('not-offered', null);
-  if (!taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
+  // A hosted game won today is paid wherever he stands when Ling hands it in:
+  // the win was at the place (his 五子棋, 2026-09-23: a queued "go to 彭城" ran
+  // before the win's turn, and the pay was refused at 彭城).
+  const wonHere = Boolean(t.hosted && state.wins?.[id] && dayKey(new Date(state.wins[id])) === dayKey(ctx.now) && !doneThisPeriod(content, state, id, ctx.now));
+  if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !wonHere) return refuse('not-offered', null);
+  if (!wonHere && !taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
   delete s.wins[id];
