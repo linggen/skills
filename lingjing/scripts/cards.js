@@ -13,7 +13,7 @@ export const WORDS = {
     title: '灵境', xw: '修为', ls: '灵石', tray: '今日功课', trayEmpty: '今日无事，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
-    tamed: '已收服', untamed: '未收服', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
+    tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', sayOffer: '向{name}献上{item}', feedNone: '囊中没有{item}', wonOver: '收服', subdue: '降妖',
     effProgress: '服下：{xw} +{n}', effMend: '服下：斗法落下的伤去 {n}%', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}', tend: '她疗伤多回 {pct}%' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
@@ -50,7 +50,7 @@ export const WORDS = {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: "Today's practice", trayEmpty: 'Nothing waits today. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
-    tamed: 'Won over', untamed: 'Not won over', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
+    tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
@@ -129,6 +129,9 @@ export function spoken(name, pinyin) {
   return `<ruby class="py">${chars.map((ch, i) => `${esc(ch)}<rt>${esc(syllables[i])}</rt>`).join('')}</ruby>`;
 }
 
+/// Beaten in a fight today at its haunt: 降 but not 收 — it withdrew, it did not join.
+const beatenToday = (ctx, id) => { const e = ctx.look.place?.encounter; return Boolean(e && e.creature.id === id && e.won); };
+
 function creature(card, ctx) {
   const c = ctx.content.creatures.find((x) => x.id === card.id);
   if (!c) return '';
@@ -145,7 +148,7 @@ function creature(card, ctx) {
       <div class="cardtitle">${title}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
       <q>${esc(pick(c.quote, ctx.lang))}</q>
-      <span class="chip">${ctx.words[tamed ? 'tamed' : 'untamed']}</span>
+      <span class="chip">${ctx.words[tamed ? 'tamed' : beatenToday(ctx, c.id) ? 'beatenToday' : 'untamed']}</span>
     </div></div>${acts([{ label: ctx.words.about, ask: true, say: say(ctx.words.sayCreature, { name }) }])}</div>`;
 }
 
