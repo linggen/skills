@@ -376,15 +376,30 @@ function siteToggle(site, onChange) {
   wrap.className = 'role-toggle';
   const cb = document.createElement('input');
   cb.type = 'checkbox';
-  cb.checked = isAnyEnabled(site);
+  // Checked only when every role the site has is on. A site with one role
+  // on and one off shows the partly-on dash, not "Enabled": X read as
+  // enabled while only its draft lane was on, so no X tab ever appeared
+  // (2026-09-23). A click sets every role.
+  const roles = siteRoles(site);
+  cb.checked = roles.length > 0 && roles.every(Boolean);
+  cb.indeterminate = roles.some(Boolean) && !cb.checked;
   cb.addEventListener('change', () => {
     setSiteEnabled(site, cb.checked);
     onChange?.();
   });
   const txt = document.createElement('span');
-  txt.textContent = 'Enabled';
+  txt.textContent = cb.indeterminate ? 'Partly on' : 'Enabled';
+  cb.addEventListener('change', () => { txt.textContent = 'Enabled'; });
   wrap.append(cb, txt);
   return wrap;
+}
+
+// Each role the site has — fetch (source) and draft lane (target) — as on/off.
+function siteRoles(site) {
+  return [
+    ...(site.source_id ? [!!state.config.sites?.[site.source_id]?.enabled] : []),
+    ...(site.target_id ? [!!state.config.targets?.[site.target_id]?.enabled] : []),
+  ];
 }
 
 function setSiteEnabled(site, on) {
