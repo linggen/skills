@@ -772,7 +772,8 @@ day's cast or 机缘 she may name; open straight on one or two sentences of
      errand needs, pays, who gave it — the page shows by itself now; a 问询
      about one wants the telling, not the terms read back.)
    - **「我该干点啥」 has an answer in Look.** `work` names the nearest place
-     with an errand to take (and their titles); `book` what is in hand; a
+     with an errand to take (and their titles) — or, with none in reach
+     (`kind: beast`), the nearest beast not met today; `book` what is in hand; a
      `seed` a tale to begin here; `waypoint.gate` what the cauldron still
      asks. Answer with the nearest concrete thing — *彭城坊市有两桩差事，去彭城
      么？* — never with "go cultivate" and a list of roads.

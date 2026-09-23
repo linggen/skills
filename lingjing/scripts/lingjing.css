@@ -512,3 +512,4 @@ button.gcard { cursor: pointer; font: inherit; }
 .handedrow.fresh .pay { display: inline-block; animation: payPop .55s cubic-bezier(.2, 1.4, .4, 1) both; color: var(--ling); font-weight: 600; }
 @keyframes payPop { 0% { opacity: 0; transform: translateY(6px) scale(.6); } 60% { opacity: 1; transform: scale(1.25); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .handedrow.fresh, .handedrow.fresh .pay { animation: none; } }
+.goalline .goalnext { margin-top: 3px; font-size: 13px; color: var(--ling); }

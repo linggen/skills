@@ -2246,11 +2246,19 @@ test('榜文: a market posts one templated 差事 a day — near, winnable, rebu
   const [today] = posted[0], target = today.id.split('-').pop();
   assert.equal(quest(base, content, days[0], { action: 'take', id: today.id.replace(/\d{8}/, '20260101') }).result.refused, 'not-posted', 'only today\'s posting may be taken');
   const took = must(quest, base, { action: 'take', id: today.id }, days[0]);
-  assert.ok(!(look(took.state, content, days[0]).offers ?? []).some(o => o.id.startsWith('daily-')), 'one a day at a market');
+  // taking one puts up the next, up to three a day at a market (2026-09-23)
+  const second = (look(took.state, content, days[0]).offers ?? []).find(o => o.id.startsWith('daily-'));
+  assert.ok(second && second.id !== today.id, 'the board posts the next');
   advance(content, took.state, today.need[0].kind === 'visit' ? { kind: 'visit', place: target } : { kind: 'subdue', creature: target });
   const turned = must(quest, { ...took.state, place: 'sishui' }, { action: 'turn', id: today.id }, days[0]);
   assert.ok(turned.result.paid.progress > 0);
-  assert.ok(!(look({ ...turned.state, place: 'pengcheng' }, content, days[0]).offers ?? []).some(o => o.id.startsWith('daily-')), 'done today, nothing more today');
+  let board = { ...turned.state, place: 'pengcheng' };
+  for (let i = 0; i < 2; i += 1) {
+    const o = (look(board, content, days[0]).offers ?? []).find(x => x.id.startsWith('daily-'));
+    if (!o) break;
+    board = must(quest, board, { action: 'take', id: o.id }, days[0]).state;
+  }
+  assert.ok(!(look(board, content, days[0]).offers ?? []).some(o => o.id.startsWith('daily-')), 'three today, nothing more today');
   // tomorrow a new one — and taking it lets yesterday's leave the save
   const next = look({ ...turned.state, place: 'pengcheng' }, content, days[1]).offers.find(o => o.id.startsWith('daily-'));
   const again = must(quest, { ...turned.state, place: 'pengcheng' }, { action: 'take', id: next.id }, days[1]);

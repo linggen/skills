@@ -414,14 +414,20 @@ function noticeTargets(content, state, market, t, now) {
   return near.filter(p => p.has?.creature && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
 }
 
+const NOTICES_A_DAY = 3;
+
 function noticeAt(content, state, now) {
   const market = placeOf(content, state.place);
   if (!market?.has?.shop || inMade(state)) return null;
   const day = dayKey(now), stamp = day.replaceAll('-', '');
-  // One a day at each market: today's, taken or done, is the only one it posts.
-  if (Object.keys(state.quests ?? {}).some(id => noticeOf(content, id)?.from.place === market.id && id.startsWith(`daily-${stamp}-`))) return null;
-  const pool = (content.notices ?? []).flatMap(t => noticeTargets(content, state, market, t, now).map(target => `daily-${stamp}-${t.id}-${target}`));
-  return pool.length ? noticeOf(content, pool[hashOf(`${day}|${state.name ?? ''}|${market.id}|notice`) % pool.length]) : null;
+  // Up to NOTICES_A_DAY at each market, one posted at a time: taking one puts
+  // up the next (his, 2026-09-23 — one a day left his book empty 484 修为 short
+  // of a cauldron; 体力 is the only limit on a day's play now).
+  const today = Object.keys(state.quests ?? {}).filter(id => noticeOf(content, id)?.from.place === market.id && id.startsWith(`daily-${stamp}-`));
+  if (today.length >= NOTICES_A_DAY) return null;
+  const pool = (content.notices ?? []).flatMap(t => noticeTargets(content, state, market, t, now).map(target => `daily-${stamp}-${t.id}-${target}`))
+    .filter(id => !state.quests?.[id]);
+  return pool.length ? noticeOf(content, pool[hashOf(`${day}|${state.name ?? ''}|${market.id}|notice|${today.length}`) % pool.length]) : null;
 }
 
 /* What may be taken where he stands: the giver is here, it is not in the book
@@ -443,6 +449,20 @@ const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
    gated and the book empty he stood at 吕梁洪 asking 「我该干点啥？」 (2026-
    09-21). Null while the book is full, or when nothing is on offer anywhere he
    can walk. */
+/* No errand anywhere in reach: the nearest beast not yet met today is work
+   too (his, 2026-09-23: 剧情卡这里了, 没人给提示, 也没有下一个差事 — 484 修为
+   short of a cauldron with an empty book and a goal line that named nothing). */
+function beastWork(content, state, ctx, here) {
+  const day = dayKey(ctx.now);
+  const at = allPlaces(content)
+    .filter(p => p.has?.creature && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== day && !tooHard(content, state, p))
+    .map(p => ({ p, way: p.id === here.id ? [] : pathOf(content, state, here, p, ctx.now) }))
+    .filter(x => x.way)
+    .sort((a, b) => a.way.length - b.way.length)[0];
+  if (!at) return null;
+  return { kind: 'beast', place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: [pick(creatureOf(content, at.p.has.creature)?.name, state.lang)] };
+}
+
 function workOf(content, state, ctx) {
   if (inMade(state) || atScene(content, state)) return null;
   const here = placeOf(content, state.place);
@@ -453,8 +473,8 @@ function workOf(content, state, ctx) {
     .map(x => ({ ...x, way: x.p.id === here.id ? [] : pathOf(content, state, here, x.p, ctx.now) }))
     .filter(x => x.way)
     .sort((a, b) => a.way.length - b.way.length)[0];
-  if (!at) return null;
-  return { place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: at.offers.map(o => o.title) };
+  if (!at) return beastWork(content, state, ctx, here);
+  return { kind: 'errand', place: placeName(content, state, at.p), here: at.p.id === here.id, roads: at.way.length, titles: at.offers.map(o => o.title) };
 }
 
 /* One counter, moved by something that actually happened. Every verb that can
