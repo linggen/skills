@@ -258,6 +258,54 @@
       }
     },
     {
+      "id": "wangqi-1",
+      "kind": "scroll",
+      "name": {
+        "zh": "望气术·上卷",
+        "en": "Reading the Qi, Part One"
+      },
+      "art": "art/items/wangqi-1.webp",
+      "about": {
+        "zh": "观妖之气，知其将攻将守。筑基可习。",
+        "en": "Read a beast's qi: whether it means to strike or to hold. From the Foundation."
+      },
+      "buy": 120,
+      "sell": 30,
+      "sold": [
+        "徐",
+        "冀"
+      ],
+      "effect": {
+        "learn": "wangqi",
+        "level": 1,
+        "tier": "foundation"
+      }
+    },
+    {
+      "id": "wangqi-2",
+      "kind": "scroll",
+      "name": {
+        "zh": "望气术·下卷",
+        "en": "Reading the Qi, Part Two"
+      },
+      "art": "art/items/wangqi-2.webp",
+      "about": {
+        "zh": "气之所向，一招一式皆可见。结丹可习，须先通上卷。",
+        "en": "Where its qi goes, every move is seen. From the Core, after Part One."
+      },
+      "buy": 300,
+      "sell": 75,
+      "sold": [
+        "兖",
+        "青"
+      ],
+      "effect": {
+        "learn": "wangqi",
+        "level": 2,
+        "tier": "core"
+      }
+    },
+    {
       "id": "sang-paper",
       "kind": "material",
       "name": {

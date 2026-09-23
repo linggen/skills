@@ -209,6 +209,24 @@ test('抉择 on the stage: each way a button with how hard, the odds and the sta
   assert.match(told, /气血 −12/);
 });
 
+test('望气 on the page: 上卷 reads the shape, 下卷 every move with the number — and nothing without it', async () => {
+  const { battleHtml, WORDS } = await import('../scripts/battle-card.js');
+  const { begin, offers, view } = await import('../scripts/battle.js');
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const content = loadWorld('jiuding');
+  const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, { ...c, name: c.name.zh }]));
+  const leishen = content.creatures.creatures.find(c => c.id === 'leishen');
+  const at = insight => {
+    const st = begin({ mode: 'pve', seed: 'w', you: { tier: 'core', root: 'metal', deck: ['xiaoyao'], insight }, foe: { tier: 'core', root: 'wood', deck: leishen.deck } }, catalog);
+    return battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog, board: st.mode.board, foeName: '雷神', youName: '清玄' });
+  };
+  assert.doesNotMatch(at(0), /bintent/);
+  const shape = at(1);
+  assert.match(shape, /望气<\/b><span>它下回合：/);
+  assert.doesNotMatch(shape.match(/bintent[\s\S]*?<\/div>/)[0], /\d/, '上卷: no numbers');
+  assert.match(at(2).match(/bintent[\s\S]*?<\/div>/)[0], /\d/, '下卷: the numbers that land');
+});
+
 test('a fight whose cards the page cannot name is refused, not opened', async () => {
   // The empty catalog of 2026-09-18: the hand is dealt, nothing may be played,
   // and the only buttons that answer are 主灵根一击 and 结束回合. Silence there

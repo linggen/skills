@@ -71,6 +71,7 @@ export const WORDS = {
       ['主灵根一击', '每回合一次，费 2 灵力，打出你主灵根那一行。手里没牌时它是你的底。'],
       ['五行', '你的行克它 → 伤害多五成；被它克 → 少四分之一。金克木 · 木克土 · 土克水 · 水克火 · 火克金。不用自己算：牌上和瞄准处写的就是实打的点数。'],
       ['怎么算赢', '打光它的气血就赢。它十二张牌抽完会力竭遁走 —— 不胜不败，也没有奖励，所以拖着不打没用。'],
+      ['望气', '学了望气术（坊市有卷），你的回合开始时，它头像下写着它下回合要做什么 —— 上卷只看出攻、召、守、养，下卷连点数都看得清。它定下的，就一定照做。'],
       ['杀招', '妖掉到一半气血时开始蓄力：下一回合它不出牌，再下一回合放出它的杀招，一场一次。它会打多少、打谁，写在它头像下面。趁它蓄力打完它，立护主去挡，回血，或者别把随从都摆上去挨群伤。'],
       ['没有死', '随从被打到 0 是退下，不是死。这个世界里没有死。'],
     ],
@@ -101,6 +102,7 @@ export const WORDS = {
       ['Root Strike', "Once a round, two Force, in your own root. It is what you have when your hand has nothing."],
       ['The five roots', 'Your root over its root lands half again as hard; under it, a quarter lighter. Metal over Wood · Wood over Earth · Earth over Water · Water over Fire · Fire over Metal. No need to reckon it: the card and whatever you aim at show the number that lands.'],
       ['Winning', 'Take all its Life. If its twelve cards run out first it withdraws — neither won nor lost, and nothing is paid, so waiting it out gains nothing.'],
+      ['Reading the qi', 'With Reading the Qi learned (a scroll at the market), the start of your turn shows what the beast will do next — Part One its shape (strike, summon, guard, heal), Part Two every move and its number. What it plans, it does.'],
       ['Signature', "At half its Life the beast gathers: it plays nothing next turn and lets its signature go the turn after, once a fight. What it will do, and to whom, is written under it. Finish it while it gathers, stand a Guard, heal, or keep your rank back from a sweep."],
       ['No death', 'A body at zero is driven off, not killed. Nothing dies in this world.'],
     ],
@@ -354,6 +356,42 @@ export function chargeHtml(st, ctx) {
   return `<div class="bcharge ${phase}"><b>${zh ? '杀招' : 'Signature'} · ${sig}</b><span>${sigWords(st, ctx)}</span><small>${when}</small></div>`;
 }
 
+/* ── 望气 — the beast's plan, as far as the player can read it ──
+   The plan is made for everyone at the start of your turn (battle.js § 意图);
+   the view carries it only when 望气术 is learned. 上卷 reads the shape of it
+   (攻 · 召 · 守 · 养), 下卷 reads every move with the number that lands. */
+function intentBits(st, ctx) {
+  const it = st.foe.intent, zh = ctx.lang !== 'en', root = st.foe.root;
+  const exact = it.sight >= 2;
+  const bits = it.cards.map((id) => {
+    const c = ctx.catalog?.[id];
+    if (!c) return null;
+    const e = c.effect ?? {};
+    if (!exact) {
+      if (c.kind === 'minion') return zh ? '召' : 'summon';
+      if (e.damage != null || e.sweep != null) return zh ? '攻' : 'strike';
+      if (e.heal != null) return zh ? '养' : 'heal';
+      return zh ? '助' : 'bolster';
+    }
+    const nm = name(c, ctx.lang);
+    if (c.kind === 'minion') return zh ? `召 ${nm} ${c.atk}/${c.hp}` : `${nm} ${c.atk}/${c.hp}`;
+    if (e.damage != null) return zh ? `${nm} 打 ${dealt(st, 'foe', e.damage, c.element, st.you.root)}` : `${nm}: ${dealt(st, 'foe', e.damage, c.element, st.you.root)}`;
+    if (e.sweep != null) return zh ? `${nm} 你阵前各 −${dealt(st, 'foe', e.sweep, c.element, null)}` : `${nm}: each of yours −${dealt(st, 'foe', e.sweep, c.element, null)}`;
+    if (e.heal != null) return zh ? `${nm} 回 ${e.heal}` : `${nm}: heals ${e.heal}`;
+    return nm;
+  }).filter(Boolean);
+  if (it.power) bits.push(exact ? (zh ? `主灵根一击 ${dealt(st, 'foe', st.foe.powerHit, root, st.you.root)}` : `root strike ${dealt(st, 'foe', st.foe.powerHit, root, st.you.root)}`) : (zh ? '一击' : 'strike'));
+  return bits;
+}
+
+export function intentHtml(st, ctx) {
+  const it = st.foe.intent;
+  if (!it || st.outcome !== 'open' || st.whose !== 'you') return '';
+  const zh = ctx.lang !== 'en', bits = intentBits(st, ctx);
+  const what = it.gathering ? (zh ? '蓄力，不出手' : 'gathers — nothing else') : bits.length ? bits.join(' · ') : (zh ? '只让阵前的出手' : 'only its rank strikes');
+  return `<div class="bintent${it.sight >= 2 ? ' exact' : ''}"><b>${zh ? '望气' : 'Its qi'}</b><span>${zh ? '它下回合：' : 'Next turn: '}${esc(what)}</span></div>`;
+}
+
 /* ── 上一手 — what just happened, in words ──
    The creature answers the moment you end your turn, so without this the
    player watches their own minion vanish with no account of it (seen in the
@@ -472,6 +510,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
     </button>
 
     ${chargeHtml(st, ctx)}
+    ${intentHtml(st, ctx)}
 
     ${lastHtml(st.log, ctx, openLog)}
 

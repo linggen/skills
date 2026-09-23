@@ -840,6 +840,7 @@ const EFFECT_BRIEF = {
   key: () => ({ key: true }),
   progress: e => ({ progress: e.progress }),
   mend: e => ({ mend: e.mend }),
+  learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear }),
   charm: () => ({ charm: true }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
@@ -882,7 +883,7 @@ function gearBrief(content, state) {
     if (!item) return { id, name: id, n };
     const e = item.effect ?? {};
     const slot = e.wear ? (e.wear === her?.id ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
-    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.mend ? { usable: true } : {}) };
+    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.mend || e.learn ? { usable: true } : {}) };
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
@@ -1200,6 +1201,8 @@ export function fightSetup(content, state, creature, now) {
       // same fight even if an hour of mending passes between them.
       wounds: state.fight?.wounds ?? (now ? woundsNow(content, state, now) : 0),
       ...(withHer && bondLifts(content, state) ? { lifts: bondLifts(content, state) } : {}),
+      // 望气术: how much of the beast's plan he can read (items `learn`).
+      ...(state.insight ? { insight: state.insight } : {}),
       // 法器 stay in the world as gear and give 主灵根一击 +1 (design.md § 斗法
       // v3 牌型) — the sword on the belt, or the 本命法宝 it became.
       ...(wornOf(content, state, 'weapon') || state.treasure ? { power: WEAPON_POWER } : {}),
@@ -2251,6 +2254,18 @@ export function trade(state, content, ctx, args) {
       s.wounds = rest ? { n: rest, at: ctx.now.toISOString() } : undefined;
       if (!s.wounds) delete s.wounds;
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), health: healthBrief(content, s, ctx.now) } };
+    }
+    // 功法卷 — read once, learned for good: 望气术 (§ 意图) by its 卷, in order,
+    // at the realm it asks.
+    if (e.learn) {
+      const known = s.insight ?? 0;
+      if (known >= e.level) return refuse('already-known', pick({ zh: '这一卷你已经通了。', en: 'You already know this part.' }, lang));
+      if (known < e.level - 1) return refuse('needs-before', pick({ zh: '须先通上卷。', en: 'Learn the first part first.' }, lang));
+      if (tierRank(content, e.tier) > tierIndex(content, s)) return refuse('needs-tier', pick({ zh: `此卷须${pick(content.ladder.tiers.find(t => t.id === e.tier)?.name, lang)}方可习。`, en: `This part wants ${pick(content.ladder.tiers.find(t => t.id === e.tier)?.name, lang)}.` }, lang));
+      s.bag[item.id] = held - 1;
+      if (s.bag[item.id] <= 0) delete s.bag[item.id];
+      s.insight = e.level;
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), learned: { id: e.learn, level: e.level } } };
     }
     if (e.progress) {
       s.bag[item.id] = held - 1;

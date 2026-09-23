@@ -302,3 +302,18 @@ test('lifts: a body stands taller for one side — on the board and on the hand\
   assert.deepEqual(view(st).you.lifts, { deer: { atk: 1, hp: 2 } });
   assert.deepEqual(bodyOf(st.foe, CARDS.deer), { atk: 3, hp: 4 }, 'the other side untouched');
 });
+
+/* 意图 (battle.js § 意图): the beast decides its next turn at the start of
+   yours, and then does it; 望气术 only decides whether you can see it. */
+test('意图: planned at the start of your turn, kept on its turn, and shown only to one who can read it', () => {
+  const st = opened({ foe: { tier: 'qi', root: 'wood', deck: deck('bolt', 'deer', 'cub', 'cub', 'guard', 'cub', 'cub', 'deer') } });
+  assert.ok(st.foe.intent, 'a plan exists from the first turn');
+  const planned = [...st.foe.intent.cards];
+  assert.equal(view(st).foe.intent, undefined, 'unread without 望气术');
+  act(st, { kind: 'end' }, 'you');
+  foeTurn(st);
+  assert.deepEqual(st.foe.played.slice(0, planned.length), planned, 'what it planned, it played, in order');
+  const seen = opened({ you: { tier: 'qi', step: 0, root: 'fire', deck: deck('bolt'), insight: 1 } });
+  assert.equal(view(seen).foe.intent.sight, 1);
+  assert.deepEqual(view(seen).foe.intent.cards, seen.foe.intent.cards);
+});

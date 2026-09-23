@@ -1239,9 +1239,9 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const s = toMarket();
   const l = look(s, content, ctx());
   assert.equal(l.place.has.shop, true);
-  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'jade-ring']);
+  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'wangqi-1', 'jade-ring']);
   assert.equal(l.place.shelf[1].buy, 80);
-  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'jade-ring'] }]);
+  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'wangqi-1', 'jade-ring'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
   assert.deepEqual(bought.state.bag, { 'moon-bell': 1, 'qi-pill': 1 }); // the bell came from the river
@@ -1255,7 +1255,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
   assert.equal(poor.price, 80);
-  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 9);
+  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 10);
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
   refused(trade, { ...s, stamina: 2 }, { action: 'buy', id: 'straw-cloak' }, 'no-stamina');
 });
@@ -1385,7 +1385,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   s = r.state;
   const ye = look(s, content, octx());
   assert.equal(ye.scene.id, '01-ye');
-  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill', 'mend-pill', 'huojing']);
+  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill', 'mend-pill', 'wangqi-1', 'huojing']);
   s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
   assert.equal(s.wealth, 180);
   s = answer(resolve, s, { exit: 'market' }).state; // stays
@@ -1886,7 +1886,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   s = r.state;
   const town = look(s, content, nctx());
   assert.equal(town.scene.id, '02-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'mend-pill', 'sang-paper', 'leijimu', 'xirang']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'mend-pill', 'wangqi-2', 'sang-paper', 'leijimu', 'xirang']);
   s = answerN(trade, s, { action: 'buy', id: 'sang-paper' }).state;
   assert.equal(s.wealth, 370);
   s = answerN(resolve, s, { exit: 'lake' }).state;
@@ -1967,7 +1967,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   s = r.state;
   const town = look(s, content, dctx());
   assert.equal(town.scene.id, '03-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['mend-pill', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['mend-pill', 'wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu']);
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
   assert.equal(s.wealth, 380);
   s = answerD(resolve, s, { exit: 'shore' }).state;
@@ -2493,4 +2493,22 @@ test('抉择: the roll settles it — what was won or lost is the rules\', the w
   const lifted = must(meet, bare, { action: 'reveal' }, c);
   assert.equal(lifted.result.revealed, 'nothing');
   assert.equal(look(lifted.state, content, c).place.meet, undefined);
+});
+
+test('望气术: two scrolls, learned in order at their realms; the fight knows how far you read', () => {
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'qi', step: 0, progress: 0 };
+  const bag = ids => ({ ...base.bag, ...Object.fromEntries(ids.map(id => [id, 1])) });
+  assert.match(refused(trade, { ...base, bag: bag(['wangqi-1']) }, { action: 'use', id: 'wangqi-1' }, 'needs-tier', c).say, /筑基/);
+  refused(trade, { ...base, tier: 'core', bag: bag(['wangqi-2']) }, { action: 'use', id: 'wangqi-2' }, 'needs-before', c);
+  const one = must(trade, { ...base, tier: 'foundation', bag: bag(['wangqi-1']) }, { action: 'use', id: 'wangqi-1' }, c);
+  assert.equal(one.state.insight, 1);
+  assert.equal(one.state.bag['wangqi-1'], undefined);
+  refused(trade, { ...one.state, bag: bag(['wangqi-1']) }, { action: 'use', id: 'wangqi-1' }, 'already-known', c);
+  const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
+  assert.equal(fightSetup(content, base, jingwei, c.now).you.insight, undefined);
+  assert.equal(fightSetup(content, one.state, jingwei, c.now).you.insight, 1);
+  const two = must(trade, { ...one.state, tier: 'core', bag: bag(['wangqi-2']) }, { action: 'use', id: 'wangqi-2' }, c);
+  assert.equal(two.state.insight, 2);
+  assert.deepEqual(two.result.learned, { id: 'wangqi', level: 2 });
 });

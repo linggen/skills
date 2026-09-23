@@ -1016,6 +1016,13 @@ always in the world:
   — then lets its signature go the round after, once. The scene writes what
   will land; you may name the move (雷神's 雷霆, 夫诸's 大水) as the world's.
 
+- **望气术**: the beast decides its next turn at the start of the player's,
+  and keeps to it. A player who has read 《望气术·上卷》 (筑基, sold at 徐 and
+  冀's markets) sees its shape — 攻 · 召 · 守 · 养; 《下卷》 (结丹, 兖 and 青,
+  after the first) sees every move with its number. It is learned by 服用 the
+  scroll from the 装备 card. A player asking how to know what a beast will do
+  is asking for it — say where the scroll is sold, once.
+
 **One fight a day with the same creature**, and the day's 灵气 pays for it.
 
 **伤势 — the fight's cost is carried.** Look's `health: { now, max, full_at? }`

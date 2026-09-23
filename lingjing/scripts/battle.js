@@ -131,7 +131,7 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, boost?, wounds?, lifts? }, foe: { tier, root, deck, hp?, signature?, elite? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature?, elite? } }
    `lifts` is { cardId: { atk, hp } } — a body that stands taller for this
    side (银月 by the bond, rules.mjs § 羁绊); `bodyOf` is the one reading.
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
@@ -149,7 +149,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     who, tier: cfg.tier, root: cfg.root ?? null,
     hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
-    signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null,
+    signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
   };
 }
 
@@ -195,6 +195,32 @@ function startTurn(st) {
   if (st.outcome !== 'open') return;
   if (st.turn > 0 || st.whose === 'foe') draw(st, side);
   st.turn += 1;
+  if (st.whose === 'you') plan(st);
+}
+
+/* ── 意图 — what the beast will do, decided at the start of your turn ──
+   His call, 2026-09-23: the beast commits to its next turn before you move
+   (Slay the Spire's intent), and 望气术 is what lets a player SEE it — the
+   plan is made for everyone, so a player who can read it reads something
+   true. It is the cards it will play, in order, and whether it strikes with
+   its root; its turn then does exactly that where it still may (a target gone
+   is re-aimed, a card that can no longer be played is let go — never
+   replaced by another). Its rank still strikes as it always did. */
+function plan(st) {
+  if (st.planning || st.outcome !== 'open') return;
+  const { catalog, origin, history, ...rest } = st;
+  const sim = Object.assign(structuredClone(rest), { catalog, planning: true });
+  sim.foe.intent = null;
+  endTurn(sim);
+  const cards = [];
+  let power = false;
+  for (let guard = 0; guard < 20 && sim.outcome === 'open' && sim.whose === 'foe'; guard += 1) {
+    const did = foeStep(sim);
+    if (did?.kind === 'play') cards.push(sim.foe.played[sim.foe.played.length - 1]);
+    else if (did?.kind === 'power') power = true;
+    else break;
+  }
+  st.foe.intent = { cards, power, gathering: sim.foe.charge?.phase === 'gathering' && st.foe.charge?.phase === 'gathering' };
 }
 
 /* ── 杀招 — the one turn in every fight that decides it ──
@@ -451,7 +477,23 @@ export function foeStep(st) {
   if (st.outcome !== 'open' || st.whose !== 'foe') return null;
   const side = st.foe;
   const gathering = side.charge?.phase === 'gathering';
-  const playable = gathering ? [] : side.hand
+  // A plan made at the start of your turn is kept (§ 意图); with none (the
+  // plan being drawn up, or a fight begun before plans) it chooses as it goes.
+  const intent = st.planning ? null : side.intent;
+  // Gathering, it plays nothing — whatever it meant to (§ 杀招).
+  if (intent && !gathering) {
+    while (intent.cards.length) {
+      const id = intent.cards.shift();
+      const index = side.hand.indexOf(id);
+      const c = card(st, id);
+      if (index < 0 || !c) continue;
+      const action = { kind: 'play', index, target: aimFor(st, side, c) };
+      if (legal(st, action, 'foe')) continue;
+      act(st, action, 'foe');
+      return action;
+    }
+  }
+  const playable = gathering || intent ? [] : side.hand
     .map((id, index) => ({ index, c: card(st, id) }))
     .filter(({ c }) => c && c.cost <= side.mana)
     .sort((a, b) => b.c.cost - a.c.cost);
@@ -461,7 +503,9 @@ export function foeStep(st) {
     act(st, action, 'foe');
     return action;
   }
-  if (!gathering && !legal(st, { kind: 'power', target: aimPower(st, side) }, 'foe')) {
+  const strikes = intent ? intent.power && !gathering : !gathering;
+  if (intent) intent.power = false;
+  if (strikes && !legal(st, { kind: 'power', target: aimPower(st, side) }, 'foe')) {
     const action = { kind: 'power', target: aimPower(st, side) };
     act(st, action, 'foe');
     return action;
@@ -474,6 +518,7 @@ export function foeStep(st) {
       return action;
     }
   }
+  side.intent = null;
   act(st, { kind: 'end' }, 'foe');
   return { kind: 'end' };
 }
@@ -566,7 +611,10 @@ export function view(st) {
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts,
     board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck })),
   });
-  return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: side(st.foe), log: st.log, scale: st.scale };
+  // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
+  const sight = st.you.insight ?? 0;
+  const intent = sight && st.foe.intent ? { sight, cards: [...st.foe.intent.cards], power: st.foe.intent.power, gathering: st.foe.intent.gathering } : null;
+  return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: { ...side(st.foe), ...(intent ? { intent } : {}) }, log: st.log, scale: st.scale };
 }
 
 /* Nothing left but to end the turn — no card affordable, no body that may
