@@ -755,6 +755,8 @@ export function meet(state, content, ctx, args) {
     const n = Number(args.n);
     if (!here.options) return refuse('not-offered', null);
     if (!Number.isInteger(n) || !here.options[n]) return refuse('no-such-way', null, { ways: here.options.length });
+    const empty = spendStamina(content, s, ctx, 'trial');
+    if (empty) return empty;
     const out = settleTrial(content, s, ctx, here, n);
     s.meets.places[s.place] = { ...here, done: true, chose: n, success: out.success };
     return { state: s, result: { ok: true, chose: n, ...out } };
@@ -2014,18 +2016,22 @@ const hourOf = (at, lang) => at.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en
    untouched. */
 /* A chapter marked `free` (the prologue) asks no 灵气 for its own steps
    and bouts: a new player finishes the opening in one sitting. */
-const CHAPTER_COSTS = new Set(['step', 'duel']);
+const CHAPTER_COSTS = new Set(['step', 'duel', 'elite', 'move']);
 const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
   && Boolean(content.chapters[s.chapter]?.free) && !s.ended.includes(s.chapter);
 
-function spendStamina(content, s, ctx, kind) {
+/* 体力 is the only limit on a day's play (his, 2026-09-23): moving costs by
+   the road, a fight, a 奇遇, a story step, a choice and a taming cost; taps
+   that take no time — the market, errands, 炼丹, 起卦, 疗伤, 历练 — cost
+   nothing. rewards.json § stamina.cost holds the numbers. `n` is how many. */
+function spendStamina(content, s, ctx, kind, n = 1) {
   if (freeHere(content, s, kind)) return null;
   // A dire cast asked about cultivation: each story step waits its rest.
   const rest = kind === 'step' ? fortuneOf(content, s, ctx.now, 'cultivation')?.rest_seconds : null;
   const since = rest && s.last_step_at ? new Date(new Date(s.last_step_at).getTime() + rest * 1000) : null;
   if (since && since > ctx.now) return refuse('resting', null, { returns_at: since.toISOString() });
   settleStamina(content, s, ctx.now);
-  const cost = content.rewards.stamina.cost[kind] ?? 0;
+  const cost = (content.rewards.stamina.cost[kind] ?? 0) * n;
   if (s.stamina >= cost) { s.stamina -= cost; if (kind === 'step') s.last_step_at = ctx.now.toISOString(); return null; }
   const at = staminaReturnsAt(content, s, cost);
   const w = wordsOf(content, s.lang);
@@ -2297,7 +2303,7 @@ export function duel(state, content, ctx, args) {
       return refuse('wounded', pick({ zh: `伤还重，${hourOf(at, 'zh')} 再来 —— 或者服一粒丹。`, en: `Too hurt to fight. Come back at ${hourOf(at, 'en')} — or take a pill.` }, state.lang), { health: healthBrief(content, s, ctx.now), returns_at: at.toISOString(), game: id });
     }
     if (!resuming) {
-      const empty = spendStamina(content, s, ctx, 'duel');
+      const empty = spendStamina(content, s, ctx, creature.elite ? 'elite' : 'duel');
       if (empty) return empty;
     }
     s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open' } };
@@ -2528,6 +2534,12 @@ export function move(state, content, ctx, args) {
     return stay('no-road', pick(say, lang), { near: near() });
   }
   const from = here;
+  // The road is paid for before it is walked: 体力 by the road, the whole way
+  // (a scene met on the way stops the walk, and the rest is not charged).
+  const stopAt = way.findIndex(p => sceneOf(content, s)?.at === p.id && !s.done_scenes.includes(s.scene));
+  const roads = stopAt >= 0 ? stopAt + 1 : way.length;
+  const tired = spendStamina(content, s, ctx, 'move', roads);
+  if (tired) return tired;
   s.handed = []; // walked on, the last place's 所得 is put away
   // The road stops where the story stands: a scene met on the way is not walked past.
   for (const step of way) {
@@ -2760,6 +2772,8 @@ export function tame(state, content, ctx, args) {
   if (!e.beaten) return refuse('not-beaten', pick({ zh: `${name}还不服你。先降了它，再献上${e.likes.name}。`, en: `${name} does not yield to you yet. Beat it first, then offer the ${e.likes.name}.` }, lang), { likes: e.likes });
   if (!e.likes.held) return refuse('needs-item', pick({ zh: `${name}闻了闻，退开了。它要的是${e.likes.name}。`, en: `${name} sniffs and draws back. It wants ${e.likes.name}.` }, lang), { likes: e.likes });
   const s = clone(state);
+  const empty = spendStamina(content, s, ctx, 'tame');
+  if (empty) return empty;
   s.bag[e.likes.id] -= 1;
   if (!s.bag[e.likes.id]) delete s.bag[e.likes.id];
   const paid = pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 0, cast: e.creature.id });

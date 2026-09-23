@@ -1222,7 +1222,7 @@ test('the director names today\'s seed only where seeds grow, and the pool', () 
   const moved = must(move, s, { place: 'sishui' }).state;
   const t = must(move, moved, { place: 'huaidu' }).state;
   assert.equal(look(t, content, ctx()).director.seed, null, 'the ferry has no seeds');
-  assert.equal(look({ ...s, stamina: 5 }, content, ctx()).director.pool, 'empty');
+  assert.equal(look({ ...s, stamina: 2 }, content, ctx()).director.pool, 'empty');
 });
 
 test('a save from before places starts where its province starts', () => {
@@ -1248,7 +1248,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
   assert.deepEqual(bought.state.bag, { 'moon-bell': 1, 'qi-pill': 1 }); // the bell came from the river
-  assert.equal(bought.state.stamina, 95, 'a visit costs five');
+  assert.equal(bought.state.stamina, 100, 'the market costs nothing — a tap, no time (2026-09-23)');
   assert.equal(bought.result.item.held, 1);
   assert.deepEqual(look(bought.state, content, ctx()).bag.map(b => b.id), ['moon-bell', 'qi-pill']);
   const sold = must(trade, bought.state, { action: 'sell', id: 'qi-pill' });
@@ -1260,7 +1260,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   assert.equal(poor.price, 80);
   assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 10);
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
-  refused(trade, { ...s, stamina: 2 }, { action: 'buy', id: 'straw-cloak' }, 'no-stamina');
+  assert.equal(must(trade, { ...s, stamina: 0 }, { action: 'buy', id: 'straw-cloak' }).result.ok, true, 'spent 体力 still shops');
 });
 
 test('no market away from one; a pill is used anywhere; a wear waits for her', () => {
@@ -1298,7 +1298,7 @@ test('写符: at a market from 桑皮纸, one a day; anywhere at 结丹; the cho
   assert.ok(look(papered, content, ctx()).director.choice.options.some(o => o.write), 'the choice offers it');
   const w = must(write, papered, {});
   assert.deepEqual(w.state.bag, { 'sang-paper': 1, talisman: 1 });
-  assert.equal(w.state.stamina, 95, 'a visit\'s stamina');
+  assert.equal(w.state.stamina, 100, 'writing at the market takes no 体力');
   assert.equal(w.result.item.effect.charm, true); assert.equal(w.result.item.made_from, '桑皮纸');
   assert.deepEqual(w.result.show, [{ card: 'item', id: 'talisman' }]);
   assert.equal(refused(write, w.state, {}, 'written-today').say, '今日已写过一符，朱砂要歇。');
@@ -1375,7 +1375,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   let s = toJi();
   // arrive → Ye: the scene moves, and the exit walks the player the one road there
   let r = answer(resolve, s, { exit: 'town' });
-  assert.equal(r.state.stamina, 90, 'chapter 1 is not free');
+  assert.equal(r.state.stamina, 95, 'chapter 1 is not free: a step costs five');
   assert.equal(r.state.scene, '01-ye'); assert.equal(r.state.place, 'ye');
   assert.deepEqual(r.result.walked.to.id, 'ye'); assert.equal(r.result.waypoint, null); assert.equal(r.result.scene.id, '01-ye');
   // farther off, the road waits: with no road from Zhangnan to Ye the scene is a waypoint
@@ -1479,11 +1479,11 @@ test('the cast\'s grade speeds or slows what was asked, rests a dire day, and tu
 
 test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
   let s = answer(resolve, toJi(), { exit: 'town' }).state; // walked to Ye by the exit
-  s.stamina = 5; s.stamina_at = OCT.toISOString();
+  s.stamina = 2; s.stamina_at = OCT.toISOString();
   const r = refused(resolve, s, { exit: 'shrine' }, 'no-stamina', octx());
-  assert.equal(r.cost, 10);
-  // 5 points short at 20 an hour = 15 minutes
-  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 15 * 60_000);
+  assert.equal(r.cost, 5);
+  // 3 points short at 20 an hour = 9 minutes
+  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 9 * 60_000);
   assert.match(r.say, /体力已空/);
   const seen = look(s, content, octx());
   assert.equal(seen.stamina.empty, true);
@@ -2817,4 +2817,21 @@ test('a pill pays whatever the day has already paid', () => {
   const took = must(trade, s, { action: 'use', id: 'qi-pill' }, at);
   assert.ok(took.result.paid.progress > 0);
   assert.equal(took.state.bag['qi-pill'], undefined);
+});
+
+// 体力 is the only limit (2026-09-23): the road costs by the road, a fight, an
+// elite more, a choice and a taming; a spent pool stops walking.
+test('体力: walking costs by the road, an elite more; empty, the road waits', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
+  const one = must(move, s, { place: 'sishui' }, at);
+  const cost = content.rewards.stamina.cost;
+  const roads = (r) => 1 + (r.result.via ?? []).length;
+  assert.equal(one.state.stamina, 100 - cost.move * roads(one), 'a road costs its 体力');
+  const far = must(move, s, { place: 'lvliang' }, at);
+  assert.equal(far.state.stamina, 100 - cost.move * roads(far));
+  assert.ok(roads(far) > roads(one), 'further is dearer');
+  refused(move, { ...s, stamina: 1 }, { place: 'sishui' }, 'no-stamina', at);
+  assert.equal(cost.elite > cost.duel, true);
+  assert.equal(cost.shop, 0);
 });

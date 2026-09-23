@@ -288,9 +288,16 @@ const rising = new Map();
 const RISE_MS = 1600, GAIN_MS = 3600;
 let riseAfter = 0; // a rise waits for this moment (the fight room closing)
 function riseStats() {
-  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id) };
+  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
+    rank: look.tier?.name, chapter: look.chapter?.id };
   const before = shown;
   shown = now;
+  // 大成就: a realm risen, a chapter opened — the stage marks it and 银月 speaks
+  // at once (his, 2026-09-23: 境界突破等大成就达成时, 显示一个动画, 并让银月说点什么).
+  if (before && before.world === now.world) {
+    if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank);
+    else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title);
+  }
   // A beast won over — fed or fought — is a moment of its own: a 收服 seal on
   // the stage and +1 off the 装备 chip, where its card now lives (his ask,
   // 2026-09-23: 收服后应该有个动画, top bar 上显示个 +1).
@@ -362,6 +369,20 @@ function gainBurst(g) {
   setTimeout(() => el.remove(), 3400 + Math.max(0, riseAfter - performance.now()));
 }
 
+/// A great moment on the stage: a gold seal, light behind it, held long
+/// enough to read — then 银月 speaks, asked, at once.
+function feat(kind, name, from = '') {
+  const w = words();
+  const el = document.createElement('div');
+  el.className = 'feat';
+  el.innerHTML = `<i class="rays"></i><div class="featbox"><b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span></div>`;
+  el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
+  $('view')?.appendChild(el);
+  setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
+  if (kind === 'rise') askHer(`他刚刚突破了，从${from}到了${name}。这是件大事，你就在他身边，说几句。`, `He has just broken through, from ${from} to ${name}. It is a great moment and you are beside him; say a few words.`, 'happy');
+  else askHer(`新的一章开了：${name}。你陪他一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with him to here; say a few words.`, 'happy');
+}
+
 function wonOver(beasts) {
   const w = words(), view$ = $('view');
   for (const [i, b] of beasts.entries()) {
@@ -372,6 +393,7 @@ function wonOver(beasts) {
     view$?.appendChild(seal);
     setTimeout(() => seal.remove(), 2600 + i * 600);
   }
+  tellYinyue(`收服了${beasts.map((b) => b.name).join('、')}，它从此随行`, `Won over ${beasts.map((b) => b.name).join(', ')} — it walks with us now`, { big: true, mood: 'happy' });
   const chip = document.querySelector('.gearchip');
   if (!chip) return;
   const gain = document.createElement('span');

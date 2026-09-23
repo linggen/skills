@@ -48,10 +48,14 @@
     "max": 100,
     "refill_hours": 5,
     "cost": {
-      "step": 10,
-      "branch": 15,
+      "move": 3,
+      "step": 5,
+      "branch": 10,
       "duel": 10,
-      "shop": 5,
+      "elite": 15,
+      "trial": 5,
+      "tame": 5,
+      "shop": 0,
       "make": 5,
       "build": 10,
       "amend": 5

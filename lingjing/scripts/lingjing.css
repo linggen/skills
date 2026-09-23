@@ -535,3 +535,17 @@ button.gcard { cursor: pointer; font: inherit; }
 @keyframes gainBurst { 0% { opacity: 0; transform: translate(-50%, 18px) scale(.9); } 12% { opacity: 1; transform: translate(-50%, 0) scale(1.06); }
   20% { transform: translate(-50%, 0) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -26px); } }
 @media (prefers-reduced-motion: reduce) { .gainburst { animation-name: gainFade; } @keyframes gainFade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } } }
+/* 大成就 — a breakthrough, a new chapter: a gold seal with light behind it. */
+.feat { position: absolute; left: 50%; top: 40%; z-index: 32; display: grid; place-items: center;
+  font-family: var(--serif); pointer-events: none; transform: translate(-50%, -50%); opacity: 0; animation: featIn 4s cubic-bezier(.2, .9, .2, 1) both; }
+.feat .featbox { position: relative; display: grid; place-items: center; gap: 6px; padding: 26px 46px; border: 3px double #b8892a; border-radius: 10px;
+  background: radial-gradient(circle, #fffaf0 55%, #f6e6c0); color: #7a5412; box-shadow: 0 0 60px 10px rgba(214, 170, 60, .45); }
+.feat b { font-size: 44px; letter-spacing: .4em; margin-right: -.4em; color: #9a6a12; text-shadow: 0 2px 12px rgba(214, 170, 60, .6); }
+.feat span { font-size: 20px; letter-spacing: .2em; }
+.feat .rays { position: absolute; inset: -120px; border-radius: 50%;
+  background: repeating-conic-gradient(rgba(230, 190, 90, .28) 0 8deg, transparent 8deg 20deg);
+  mask: radial-gradient(circle, #000 25%, transparent 68%); animation: featSpin 4s linear both; }
+@keyframes featIn { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.6); } 12% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+  20% { transform: translate(-50%, -50%) scale(1); } 82% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -54%) scale(1); } }
+@keyframes featSpin { from { transform: rotate(0); } to { transform: rotate(60deg); } }
+@media (prefers-reduced-motion: reduce) { .feat, .feat .rays { animation-name: gainFade; } }
