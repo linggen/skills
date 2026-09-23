@@ -359,7 +359,16 @@ function whereFor(content, state, quest, need, lang) {
   const at = open.kind === 'visit' ? placeOf(content, open.place)
     : open.kind === 'subdue' || open.kind === 'tame' ? Object.values(content.places).flatMap(d => d.places).find(p => p.has?.creature === open.creature)
       : open.kind === 'carry' ? nearestPlace(content, state, new Date(), p => p.has?.shop)
-        : null;
+        // a game: the nearest place that hosts it (his, 2026-09-23: 没有去碣石的按钮)
+        : open.kind === 'board' ? (open.at ? placeOf(content, open.at) : nearestPlace(content, state, new Date(), p => (p.has?.games ?? []).includes(open.task)))
+          : null;
+  if (!at) return null;
+  // nearestPlace hands back a name already said; the rest wants the place itself.
+  if (at.steps !== undefined) return whereAt(content, state, placeOf(content, at.id), lang);
+  return whereAt(content, state, at, lang);
+}
+
+function whereAt(content, state, at, lang) {
   if (!at) return null;
   if (at.id === state.place) return { id: at.id, name: pick(at.name, lang) ?? at.name, here: true };
   const named = at.name ? placeName(content, state, at) : at;
@@ -392,7 +401,7 @@ function noticeOf(content, id) {
   const words = { target: name, place: at.name, game: game ? taskOf(content, game)?.title : null };
   const worded = x => swap(x, { ...words, game: words.game ?? { zh: '', en: '' } });
   return { id, day, notice: t.id, province: at.province, title: worded(t.title), say: worded(t.say), from: { place: market.id, who: t.who },
-    need: [{ kind: t.kind, n: t.n, ...(t.kind === 'visit' ? { place: target } : t.kind === 'board' ? { task: game } : { creature: target }) }], grant: t.grant };
+    need: [{ kind: t.kind, n: t.n, ...(t.kind === 'visit' ? { place: target } : t.kind === 'board' ? { task: game, at: target } : { creature: target }) }], grant: t.grant };
 }
 
 /* What a market's notice may name today: a haunt not yet fought today, or a
@@ -835,6 +844,7 @@ function threadOf(content, state, now) {
 
 const poolOf = (content, state) => {
   const q = content.rewards.stamina, r = state.stamina / q.max;
+  if (state.resting && state.stamina < (q.rest ?? 0)) return 'empty';
   return r >= 0.6 ? 'full' : r >= 0.25 ? 'half' : state.stamina > 0 ? 'low' : 'empty';
 };
 
@@ -1917,9 +1927,11 @@ export function chance(state, content, ctx, args) {
    step is out of reach — the hour it returns. */
 function staminaBrief(content, state, now) {
   const q = content.rewards.stamina;
-  // Empty is 0: the last point still buys any one thing (his, 2026-09-23).
-  const empty = state.stamina <= 0;
-  return { now: state.stamina, max: q.max, step: q.cost.step, empty, returns_at: empty ? staminaReturnsAt(content, state, 1).toISOString() : null };
+  // Empty is 0, or resting after 0 until the pool is back to `rest`: the last
+  // point buys one thing once a pool (his, 2026-09-23).
+  const resting = Boolean(state.resting) && state.stamina < (q.rest ?? 0);
+  const empty = state.stamina <= 0 || resting;
+  return { now: state.stamina, max: q.max, step: q.cost.step, empty, ...(resting ? { resting: true } : {}), returns_at: empty ? staminaReturnsAt(content, state, resting ? q.rest : 1).toISOString() : null };
 }
 
 /* ── Changing it ── */
@@ -2051,8 +2063,18 @@ function spendStamina(content, s, ctx, kind, n = 1) {
   // The last point still buys any one thing, and takes him to 0 (his rule,
   // 2026-09-23: 最后的体力即使只有1, 也允许…然后提示用户返回现实世界休息);
   // only at 0 is he refused, and the empty pool sends him to real life.
-  if (!cost || s.stamina > 0) { s.stamina = Math.max(0, s.stamina - cost); if (kind === 'step') s.last_step_at = ctx.now.toISOString(); return null; }
-  const at = staminaReturnsAt(content, s, 1);
+  // Run to 0, he rests until the pool is back to `rest` — the last point is
+  // once a pool, not every refill (his screen, 2026-09-23: 体力都空了, 还能
+  // 开始战斗 — one point back in 3 minutes started a 12-point elite fight).
+  const restAt = content.rewards.stamina.rest ?? 0;
+  if (s.resting && s.stamina >= restAt) delete s.resting;
+  if (!cost || (s.stamina > 0 && !s.resting)) {
+    s.stamina = Math.max(0, s.stamina - cost);
+    if (cost && s.stamina === 0) s.resting = true;
+    if (kind === 'step') s.last_step_at = ctx.now.toISOString();
+    return null;
+  }
+  const at = staminaReturnsAt(content, s, s.resting ? restAt : 1);
   const w = wordsOf(content, s.lang);
   const say = s.lang === 'zh'
     ? `${w.pool}耗尽了。回到现实里歇一歇，${hourOf(at, 'zh')} 再来。`

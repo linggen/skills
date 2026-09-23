@@ -2935,3 +2935,33 @@ test('a hosted game won is paid even if he has walked on before Ling hands it in
   assert.ok(paid.result.paid.progress > 0);
   refused(task, { ...paid.state }, { action: 'done', id: 'wuziqi' }, 'already-done', at);
 });
+
+// His screen 2026-09-23: at 0, one point back 3 minutes later started a 12-point
+// elite fight. Run to 0, he rests until 20; the last point is once a pool.
+test('体力: run to 0, he rests until the pool is back to 20 (when rewards.stamina.rest is set)', () => {
+  const at = ctx();
+  const saved = content.rewards.stamina.rest;
+  content.rewards.stamina.rest = 20;
+  try {
+  const s = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', stamina: 1, stamina_at: NOW.toISOString() };
+  const spent = must(move, s, { place: 'sishui' }, at).state;
+  assert.equal(spent.stamina, 0);
+  assert.equal(spent.resting, true);
+  const later = (m) => ctx({ now: new Date(NOW.getTime() + m * 60_000) });
+  refused(move, spent, { place: 'pengcheng' }, 'no-stamina', later(3));
+  assert.equal(look(spent, content, later(3)).stamina.empty, true, 'one point back is still resting');
+  const back = must(move, spent, { place: 'pengcheng' }, later(61));
+  assert.equal(back.state.resting, undefined, 'back to 20, he plays again');
+  } finally { content.rewards.stamina.rest = saved; }
+});
+
+// His book 2026-09-23: a notice for 碣石's 洛书 had no 去碣石.
+test('a game errand in the book names the place that hosts the game', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', quests: { 'daily-20260911-trial-huaidu': { took: '2026-09-11', have: {} } } };
+  const row = look(s, content, at).book.find(b => b.id === 'daily-20260911-trial-huaidu');
+  assert.equal(row?.where?.name, '淮水渡口', 'the place the notice named, by name');
+  // a carry names its market by name too
+  const carry = { ...toOpenWorld(), place: 'sishui', tier: 'core', bag: {}, quests: { 'xu-elder-herb': { took: '2026-09-11', have: {} } } };
+  assert.ok(look(carry, content, at).book.find(b => b.id === 'xu-elder-herb').where.name);
+});
