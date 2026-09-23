@@ -12,6 +12,7 @@
 // and holds its switch (the cfo:watch mission) and level.
 
 import { investmentsOf } from './lww.js';
+import { investChips } from './chips.js';
 
 const MARKET = '"$HOME/.linggen/skills/cfo/scripts/market.pl"';
 const REFRESH_MS = 5 * 60 * 1000;
@@ -34,6 +35,7 @@ let checking = false;
 let checkNote = '';  // what the last Check reports found
 const reading = new Map(); // symbol -> {note, at, busy} for its report line
 let proposed = [];   // holdings proposed in chat, waiting for Apply
+let reviewAsk = false; // Review was tapped — its cost shown, waiting for a yes
 const unlisted = new Set(); // proposed symbols the lookup found no listing for
 
 /**
@@ -50,6 +52,8 @@ const unlisted = new Set(); // proposed symbols the lookup found no listing for
  *   false when the chat isn't up
  * @param {(text: string) => boolean} d.say a message in the user's own words,
  *   shown in the chat; false when the chat isn't up
+ * @param {() => void} [d.drawn] the tab redrew — its chips above the chat
+ *   may have changed
  * @param {string} d.data data dir, `$HOME` left literal for bash
  */
 export function initInvestments(d) {
@@ -208,6 +212,7 @@ function positionOf(symbol, cell, q) {
     pe: q.pe || null,
     forward_pe: q.forward_pe || null,
     earnings_date: q.earnings_date || null,
+    earnings_on: q.earnings_on || null,
     expense_ratio: q.expense_ratio || null,
     price_time: q.price_time || '',
     stale: q.stale ? staleNote(q) : '',
@@ -486,11 +491,18 @@ export function askText(item) {
 
 const rowsNow = () => positionsOf(investmentsOf(deps.edits()), quotes);
 
+/// The questions above the chat for what the tab shows right now.
+export function chipsNow() {
+  if (!deps) return [];
+  return investChips({ rows: rowsNow(), brief: latestBrief(watch.doc), today: new Date().toLocaleDateString('en-CA') });
+}
+
 function draw() {
   const rows = rowsNow();
   document.getElementById('inv-watch').innerHTML = watchHtml();
   document.getElementById('inv-proposals').innerHTML = proposalsHtml();
-  document.getElementById('inv-summary').innerHTML = summaryHtml(rows);
+  document.getElementById('inv-summary').innerHTML = summaryHtml(rows) + reviewAskHtml();
+  deps.drawn?.();
   if (editing) return; // never wipe a form mid-typing
   document.getElementById('inv-list').innerHTML = rows.length
     ? rows.map(rowHtml).join('')
@@ -524,7 +536,23 @@ function summaryHtml(rows) {
   return `<div class="inv-summary">${totals.join('')}<span class="spacer"></span>
     <span class="hint inline">${deps.esc(state)}</span>
     ${rows.length ? `<button class="chip" data-act="refresh" ${loading ? 'disabled' : ''}>Refresh</button>
-      <button class="chip" data-act="check" ${checking ? 'disabled' : ''}>Check reports</button>` : ''}</div>`;
+      <button class="chip" data-act="check" ${checking ? 'disabled' : ''}>Check reports</button>
+      <button class="chip" data-act="review" ${reviewAsk ? 'disabled' : ''}>Review</button>` : ''}</div>`;
+}
+
+/// Review is a chat turn with the model, so it says so and waits for a yes.
+function reviewAskHtml() {
+  return reviewAsk
+    ? `<div class="inv-prop"><span>Review your portfolio? CFO answers in the chat — one turn with the model.</span><span class="spacer"></span>
+        <button class="btn" data-act="review-go">Review</button>
+        <button class="chip ghost" data-act="review-cancel">Cancel</button></div>`
+    : '';
+}
+
+function startPortfolioReview() {
+  reviewAsk = false;
+  if (!deps.say('Review my portfolio')) checkNote = 'The chat isn’t ready yet — try again in a moment';
+  draw();
 }
 
 function subline(r) {
@@ -736,6 +764,9 @@ function onClick(e) {
   const acts = {
     refresh: () => refresh(),
     check: () => checkReports(),
+    review: () => { reviewAsk = true; draw(); },
+    'review-go': () => startPortfolioReview(),
+    'review-cancel': () => { reviewAsk = false; draw(); },
     latest: () => latestReport(sym),
     link: () => openLink(btn.dataset.url),
     menu: () => { menuFor = menuFor === sym ? null : sym; draw(); },

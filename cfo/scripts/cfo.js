@@ -7,10 +7,11 @@
 import './chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from './api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
-import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, ruleKey } from './ledger.js';
+import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile } from './lww.js';
-import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings } from './investments.js';
+import { initInvestments, renderInvestView, leaveInvestView, reportSaved, holdingsIn, proposeHoldings, chipsNow as investChipsNow } from './investments.js';
+import { reportChips, spendChips, txnChips, commitChips } from './chips.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -1072,17 +1073,31 @@ function applyVisibility() {
   renderSuggestions(); // Review card (Report tab only) — self-hides when empty
 }
 
-// The buttons above the chat for each tab. A tab without its own shows the
-// starters from SKILL.md. The words are the person's, so they stay short.
-const TAB_SUGGESTIONS = {
-  trends: ['Why did I spend more this month?', 'Where can I cut back?', 'How does this month compare?'],
-  txn: ['Find anything unusual', 'Which of these are subscriptions?'],
-  commit: ['Which subscriptions can I cancel?', 'Any price hikes lately?'],
-  invest: ['Review my portfolio', 'How are my investments doing?', 'What changed this week?', 'Any new company reports?'],
+// The buttons above the chat: questions the page writes from what the tab
+// shows right now (chips.js), rewritten on every tab switch and redraw.
+// Actions — a review, a report check — are buttons on the page, not chips.
+const flagged = () => FULL_VIEW && filterAnomalies(FULL_VIEW).anomalies;
+const TAB_CHIPS = {
+  report: () => reportChips({ view: FULL_VIEW, anomalies: flagged(), money }),
+  trends: () => spendChips({ view: FULL_VIEW, money }),
+  txn: () => txnChips({
+    anomalies: flagged(),
+    // What the rollups count: no transfers, no "Closing totals" lines.
+    rows: LEDGER.filter((r) => effCategory(r) !== 'transfer' && !isStatementArtifact(r.merchant)),
+    recurring: FULL_VIEW?.subscriptions,
+    money,
+  }),
+  commit: () => commitChips({ subs: FULL_VIEW?.subscriptions, commitments: FULL_VIEW?.commitments, money: moneyExact }),
+  invest: investChipsNow,
 };
 
+let SHOWN_CHIPS = '';
 function showTabSuggestions() {
-  chat?.setSuggestions?.(TAB_SUGGESTIONS[VIEW_MODE] || []);
+  const items = TAB_CHIPS[VIEW_MODE]?.() || [];
+  const key = JSON.stringify(items);
+  if (key === SHOWN_CHIPS || !chat?.setSuggestions) return; // unchanged — don't repaint the row
+  SHOWN_CHIPS = key;
+  chat.setSuggestions(items);
 }
 
 function switchView(mode) {
@@ -1122,6 +1137,7 @@ function refreshView() {
   renderSubs(view);
   renderPayments(view);
   renderBillCal();
+  showTabSuggestions();
   const cats = view.by_category || [];
   setSecSum('breakdown', [
     cats.length ? `${cats[0].category} leads ${money(cats[0].spend)}` : '',
@@ -1763,6 +1779,7 @@ function renderAnomalies(list) {
     ANOM_DISMISSED.add(b.dataset.id);
     await writeB64(`${DATA}/anomalies-dismissed.json`, JSON.stringify([...ANOM_DISMISSED]));
     renderAnomalies(FULL_VIEW && FULL_VIEW.anomalies);
+    showTabSuggestions();
     await rebuildReport(); // agent stops seeing it too
   }));
 }
@@ -2494,6 +2511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       chat.send(text);
       return true;
     },
+    drawn: () => { if (VIEW_MODE === 'invest') showTabSuggestions(); },
     data: DATA,
   });
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
