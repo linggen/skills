@@ -675,7 +675,8 @@ export function gearPopHtml(ctx) {
   const cards = held.length ? `<div class="cardtitle bagtitle">${esc(say(w.cardsTitle, { n: held.length }))}</div>
     <div class="gcards">${held.map(chip).join('')}</div>
     <div class="small dim">${esc(note)}${g.picking ? ` <button class="act quiet" data-deck-auto>${esc(w.cardsAuto)}</button>` : ''}</div>` : '';
-  return `<div class="bookpop gearpop" role="dialog"><div class="cardtitle">${esc(w.gearTitle)}</div>${slots}${treasure}${her}${fight}
+  const said = ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '';
+  return `<div class="bookpop gearpop" role="dialog">${said}<div class="cardtitle">${esc(w.gearTitle)}</div>${slots}${treasure}${her}${fight}
     <div class="cardtitle bagtitle">${esc(w.bagTitle)}</div>${bag}${cards}</div>`;
 }
 

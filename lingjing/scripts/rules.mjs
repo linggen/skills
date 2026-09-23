@@ -2617,6 +2617,10 @@ export function trade(state, content, ctx, args) {
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), learned: { id: e.learn, level: e.level } } };
     }
     if (e.progress) {
+      // A day already full takes nothing from a pill: keep it, never eat it
+      // for +0 (his 聚气丹, 2026-09-23 — gone from the bag, 修为 unmoved).
+      const trial = pay(content, clone(s), ctx, { table: e.table, progress: e.progress });
+      if (!trial.progress && trial.capped && !trial.hold) return refuse('day-full', pick({ zh: '今日修为已满，丹药留到明日再服。', en: 'Today\'s cultivation is full — keep the pill for tomorrow.' }, lang));
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
       const paid = pay(content, s, ctx, { table: e.table, progress: e.progress });

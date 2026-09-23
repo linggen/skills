@@ -260,7 +260,7 @@ function statusHtml() {
     ${hpHtml()}
     <span class="ls"><span class="lbl">${w.ls}</span> <b data-count="wealth">${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
-    ${gearChipHtml({ ...ctx(), gear: view.gear }, view.gearOpen)}
+    ${gearChipHtml({ ...ctx(), gear: view.gear, gearNote: view.gearOpen ? view.gearNote : null }, view.gearOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
 }
 
@@ -702,14 +702,16 @@ async function doTap(action, id) {
    calls Trade itself and redraws from the rules; no model turn. */
 async function useItem(id, action = 'use') {
   const r = await verb('trade', { action, id }).catch((e) => { console.warn('[lingjing] use', e); return null; });
-  if (r && !r.ok) console.warn('[lingjing] use refused', r.refused);
+  // A refusal is said where he tapped — a pill kept on a full day said
+  // nothing, and looked like a button that did not work.
   await openGear();
+  keep({ gearNote: r && !r.ok ? (r.say || words().refused?.[r.refused] || null) : null });
   await refresh();
 }
 
 async function openGear() {
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
-  show({ gearOpen: true, bookOpen: false, gear: r?.gear ?? null });
+  show({ gearOpen: true, bookOpen: false, gear: r?.gear ?? null, gearNote: null });
 }
 
 async function dropErrand(id) {

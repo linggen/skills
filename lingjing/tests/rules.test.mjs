@@ -2800,3 +2800,13 @@ test('a beast tamed meets an errand that asked for it subdued', () => {
   const fed = must(tame, { ...s, bag: { ...s.bag, [likes]: 1 } }, { creature: 'longzhi' }, at);
   assert.deepEqual(fed.result.handed.map(h => h.id), ['xu-fuli-longzhi'], 'and hands itself in');
 });
+
+// His 聚气丹 on 2026-09-23 went for +0 on a full day. A full day keeps the pill.
+test('a pill on a day already full is kept, not eaten for nothing', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), bag: { 'qi-pill': 1 }, day: { key: dayKey(NOW), progress: content.rewards.day.progress, wealth: 0, branches: 0 } };
+  refused(trade, s, { action: 'use', id: 'qi-pill' }, 'day-full', at);
+  const fresh = must(trade, { ...s, day: { ...s.day, progress: 0 } }, { action: 'use', id: 'qi-pill' }, at);
+  assert.ok(fresh.result.paid.progress > 0);
+  assert.equal(fresh.state.bag['qi-pill'], undefined);
+});
