@@ -255,7 +255,7 @@ test('历练 on the page: send her from 装备, out she shows where and how long
   assert.match(pop({ name: '银月', journeyed: true }), /今日已出过门/);
   const back = { companion: { name: '银月', journey: { place: { name: '微山湖' }, back: true } } };
   assert.ok(stageCards(back, []).some(c => c.card === 'journey'));
-  assert.match(cardHtml({ card: 'journey' }, { look: back, lang: 'zh', words: WORDS.zh }), /银月回来了[\s\S]*自微山湖回来了[\s\S]*data-journey-receive/);
+  assert.match(cardHtml({ card: 'journey' }, { look: back, lang: 'zh', words: WORDS.zh }), /银月回来了[\s\S]*她从微山湖回来，带了些东西。[\s\S]*data-journey-receive/);
 });
 
 test('a fight whose cards the page cannot name is refused, not opened', async () => {
