@@ -488,3 +488,18 @@ button.gcard { cursor: pointer; font: inherit; }
 .gearpop .gcard.fill { border-style: dashed; opacity: .8; }
 .gearpop .gcard.picked { border-style: solid; }
 .gearpop button.gcard { background: transparent; color: inherit; }
+/* 收服 — a beast won over, fed or fought: a red seal stamps onto the stage and
+   fades; +1 floats off the 装备 chip, where its card now lives. */
+.view { position: relative; }
+.wonseal { position: absolute; left: 50%; top: 38%; z-index: 30; display: grid; place-items: center; gap: 2px;
+  padding: 14px 22px; border: 3px solid #b0392b; border-radius: 6px; color: #b0392b; background: rgba(253, 248, 236, .85);
+  font-family: var(--serif); pointer-events: none; opacity: 0; transform: translate(-50%, -50%) scale(2.2) rotate(-8deg);
+  animation: sealStamp 2.4s ease-out forwards; box-shadow: 0 0 0 6px rgba(176, 57, 43, .08); }
+.wonseal b { font-size: 34px; letter-spacing: .3em; margin-right: -.3em; }
+.wonseal span { font-size: 15px; letter-spacing: .15em; }
+@keyframes sealStamp { 0% { opacity: 0; transform: translate(-50%, -50%) scale(2.2) rotate(-8deg); }
+  14% { opacity: 1; transform: translate(-50%, -50%) scale(.94) rotate(-8deg); } 22% { transform: translate(-50%, -50%) scale(1) rotate(-8deg); }
+  78% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1) rotate(-8deg); } }
+.bookwrap { position: relative; }
+.cardgain { left: auto; right: -6px; top: -8px; }
+@media (prefers-reduced-motion: reduce) { .wonseal { animation-name: none; opacity: 1; transform: translate(-50%, -50%) rotate(-8deg); } }

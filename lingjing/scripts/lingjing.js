@@ -279,9 +279,16 @@ let shown = null; // {world, tier, progress, wealth} as last drawn
 const rising = new Map();
 const RISE_MS = 1100, GAIN_MS = 2400;
 function riseStats() {
-  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next };
+  const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id) };
   const before = shown;
   shown = now;
+  // A beast won over — fed or fought — is a moment of its own: a 收服 seal on
+  // the stage and +1 off the 装备 chip, where its card now lives (his ask,
+  // 2026-09-23: 收服后应该有个动画, top bar 上显示个 +1).
+  if (before && before.world === now.world) {
+    const joined = (look.cast ?? []).filter((b) => !before.cast.includes(b.id));
+    if (joined.length) wonOver(joined);
+  }
   if (before && before.world === now.world) {
     for (const key of ['progress', 'wealth']) {
       if (key === 'progress' && before.tier !== now.tier) continue;
@@ -289,6 +296,24 @@ function riseStats() {
     }
   }
   if (rising.size) paintRise();
+}
+function wonOver(beasts) {
+  const w = words(), view$ = $('view');
+  for (const [i, b] of beasts.entries()) {
+    const seal = document.createElement('div');
+    seal.className = 'wonseal';
+    seal.innerHTML = `<b>${esc(w.wonOver)}</b><span>${esc(b.name)}</span>`;
+    seal.style.animationDelay = `${i * 600}ms`;
+    view$?.appendChild(seal);
+    setTimeout(() => seal.remove(), 2600 + i * 600);
+  }
+  const chip = document.querySelector('.gearchip');
+  if (!chip) return;
+  const gain = document.createElement('span');
+  gain.className = 'gain cardgain';
+  gain.textContent = `+${beasts.length}`;
+  chip.parentElement.appendChild(gain);
+  setTimeout(() => gain.remove(), 2400);
 }
 let riseFrame = null;
 function paintRise() {
