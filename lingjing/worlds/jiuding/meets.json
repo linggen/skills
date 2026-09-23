@@ -2,9 +2,19 @@
  "version": 1,
  "_about": "遇 — what an arrival deals when the place holds nothing of its own (design.md § 遇). The rules draw one by the day, the place and the 道号; once per place per day. Finds are authored per province ('*' serves a province with none); the road's riddles are never the story's own. A find may say `at` — the places it belongs to; unsaid, anywhere in its province.",
  "weights": {
-  "find": 40,
-  "riddle": 30,
-  "beast": 30
+  "find": 25,
+  "riddle": 20,
+  "beast": 20,
+  "trial": 35
+ },
+ "trial": {
+  "_about": "抉择 (rules.mjs § 抉择): Ling writes the moment and 2–3 ways through it, each with a difficulty, a stake and its two outcomes, BEFORE the player chooses (Intra's lesson: commit to outcomes before prose). The rules rolled a d20 per option when the 遇 was dealt and never show it; a choice succeeds when the roll (+2 while 银月 walks with him) reaches the difficulty's mark. What is won or lost is the rules', by difficulty. His call, 2026-09-23: Ling writes them live.",
+  "die": 20,
+  "companion": 2,
+  "marks": { "easy": 6, "fair": 11, "hard": 15 },
+  "win": { "easy": { "progress": 10 }, "fair": { "progress": 20, "wealth": 10 }, "hard": { "progress": 30, "wealth": 20 } },
+  "lose": { "wound": { "easy": 0.1, "fair": 0.2, "hard": 0.35 }, "coin": { "easy": 5, "fair": 10, "hard": 20 } },
+  "options": { "min": 2, "max": 3, "label": 16, "line": 120 }
  },
  "riddles": [
   "road-1",

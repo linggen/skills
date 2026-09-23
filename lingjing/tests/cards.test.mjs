@@ -187,6 +187,25 @@ test('the way in says 精英 and the wound you carry — the two facts that make
   assert.doesNotMatch(whole, /celite|churt/);
 });
 
+test('抉择 on the stage: each way a button with how hard, the odds and the stake — then the line of the way taken', async () => {
+  const { cardHtml, trialToldHtml, WORDS } = await import('../scripts/cards.js');
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const look = { place: { id: 'huaidu', meet: { kind: 'trial', options: [
+    { n: 0, label: '涉水而过', difficulty: 'hard', stake: 'wound', chance: 30 },
+    { n: 1, label: '等船家', difficulty: 'easy', stake: 'coin', chance: 75 },
+  ] } } };
+  assert.ok(stageCards(look, []).some(c => c.card === 'trial'), 'the ways stand on the stage');
+  assert.ok(!stageCards({ place: { meet: { kind: 'trial', waiting: true } } }, []).some(c => c.card === 'trial'), 'not before Ling has written them');
+  const html = cardHtml({ card: 'trial' }, { look, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /data-trial="0"><b>涉水而过<\/b>/);
+  assert.match(html, /难 · 30% 把握 · 失手伤身/);
+  assert.match(html, /易 · 75% 把握 · 失手破财/);
+  const told = trialToldHtml({ success: false, line: '一脚踩空，被急流卷出三丈。', cost: '气血 −12' }, { lang: 'zh', words: WORDS.zh });
+  assert.match(told, /抉择 · 失手/);
+  assert.match(told, /一脚踩空，被急流卷出三丈。/);
+  assert.match(told, /气血 −12/);
+});
+
 test('a fight whose cards the page cannot name is refused, not opened', async () => {
   // The empty catalog of 2026-09-18: the hand is dealt, nothing may be played,
   // and the only buttons that answer are 主灵根一击 and 结束回合. Silence there

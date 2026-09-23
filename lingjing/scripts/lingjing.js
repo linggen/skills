@@ -12,7 +12,7 @@ import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf,
 import { stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
-import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, esc, yinyueLine } from './cards.js';
+import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, esc, yinyueLine, trialToldHtml } from './cards.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -355,7 +355,8 @@ function focusHtml() {
   if (bout) return battleHtml(boutView(bout.st), boutOffers(bout.st), boutCtx(), bout.picked, bout.openLog, bout.note, bout.help);
   // Walked on, the spoils are put away by themselves.
   if (view.spoils && view.spoils.place !== (look?.place?.id ?? null)) keep({ spoils: null });
-  const spoils = (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
+  if (view.trialTold && view.trialTold.place !== (look?.place?.id ?? null)) keep({ trialTold: null });
+  const spoils = (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
   // A line running under his feet takes the stage (his law, 2026-09-18:
   // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
   // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
@@ -547,6 +548,24 @@ async function takeMeet(action) {
   if (r.ok) await report(action === 'take' ? '[scene] meet taken' : '[scene] meet passed');
 }
 
+/* 抉择 — the tap is the choice; the rules roll, the stage shows Ling's line
+   for the way taken, and the turn goes to her to go on from it. 银月 hears
+   how it went. */
+async function chooseWay(n) {
+  if (view.choosing) return;
+  keep({ choosing: true });
+  const r = await verb('meet', { action: 'choose', n }).catch((e) => ({ ok: false, error: String(e) }));
+  keep({ choosing: false });
+  if (!r.ok) { keep({ doNote: r.say || null }); await refresh(); return; }
+  const w = words();
+  const cost = r.lost?.hp ? w.trialHurt.replace('{n}', r.lost.hp) : r.lost?.wealth ? w.trialPoorer.replace('{n}', r.lost.wealth) : '';
+  keep({ trialTold: { place: look?.place?.id ?? null, success: r.success, line: r.line, cost } });
+  await refresh();
+  if (r.success) tellYinyue(`路上的抉择成了：${r.line}`, `A choice on the road went well: ${r.line}`, { mood: 'happy' });
+  else tellYinyue(`路上的抉择失手了：${r.line}`, `A choice on the road went wrong: ${r.line}`, { mood: 'sad' });
+  await report(`[scene] trial ${n} ${r.success ? 'won' : 'lost'}`);
+}
+
 /* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 /* 接下 · 交差 · 买 · 卖 · 服用 · 佩戴 — taps that only change the save. The page
    calls the rules and redraws; nothing goes to the chat, and Ling reads the
@@ -645,6 +664,8 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-ask-close]')) { closeAsk(); return; }
   const found = e.target.closest('[data-meet]');
   if (found) { takeMeet(found.dataset.meet); return; }
+  const way = e.target.closest('[data-trial]');
+  if (way) { chooseWay(Number(way.dataset.trial)); return; }
   const dropped = e.target.closest('[data-drop]');
   if (dropped) { dropErrand(dropped.dataset.drop); return; }
   // A line of the book opens where it lies — the page reads it from the rules.

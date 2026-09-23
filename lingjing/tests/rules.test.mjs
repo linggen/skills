@@ -8,7 +8,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
-import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
+import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
 import { VERBS, fightSetup, hpMaxOf, bond, tend, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
@@ -2104,10 +2104,10 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   const kinds = deals.map(d => d.result.place.meet?.kind);
   assert.ok(kinds.every(Boolean), 'every arrival at an empty place is dealt one');
   // a place says which it may deal: a ferry has travellers and things dropped, never a beast…
-  assert.deepEqual([...new Set(kinds)].sort(), ['find', 'riddle'], 'the ferry deals what a ferry has');
+  assert.deepEqual([...new Set(kinds)].sort(), ['find', 'riddle', 'trial'], 'the ferry deals what a ferry has — and a 抉择, which fits anywhere');
   // …a marsh has beasts, and a wandering beast is of this province: 蠪侄 of 凫丽山, never 夔 of 蓬莱
   const marsh = Array.from({ length: 30 }, (_, i) => must(move, { ...base, place: 'pengcheng' }, { place: 'peize' }, day(i)));
-  assert.deepEqual([...new Set(marsh.map(d => d.result.place.meet.kind))].sort(), ['beast', 'find']);
+  assert.deepEqual([...new Set(marsh.map(d => d.result.place.meet.kind))].sort(), ['beast', 'find', 'trial']);
   assert.deepEqual([...new Set(marsh.filter(d => d.result.place.meet.kind === 'beast').map(d => d.result.place.meet.creature.id))], ['longzhi']);
   // with every beast of the province walking beside him, the next province's come over the road
   const tamedAll = marsh.map((_, i) => must(move, { ...base, place: 'pengcheng', cast: ['fuzhu', 'longzhi'] }, { place: 'peize' }, day(i)).result.place.meet);
@@ -2434,4 +2434,61 @@ test('疗伤: she tends the wound once a day, more as the bond grows', () => {
   const close = must(tend, { ...hurt, bond: { n: 100 } }, {}, c);
   assert.equal(close.result.mended, Math.ceil(max * 0.5), '同心 mends half');
   refused(tend, { ...hurt, companion: null }, {}, 'no-companion', c);
+});
+
+/* 抉择 (rules § 抉择): Ling writes the ways, the rules threw the dice first. */
+test('抉择: the dice are thrown when it is dealt and never shown; Ling\'s ways are held to the shape', () => {
+  const base = { ...toOpenWorld(), place: 'sishui', tier: 'core', bag: {}, cast: ['fuzhu'], name: '清玄', wealth: 50 };
+  const day = i => ctx({ now: new Date(2026, 9, 1 + i, 12) });
+  const dealt = Array.from({ length: 30 }, (_, i) => ({ i, d: must(move, base, { place: 'huaidu' }, day(i)) })).find(x => x.d.result.place.meet?.kind === 'trial');
+  assert.ok(dealt, 'a 抉择 is dealt within a month of arrivals');
+  const c = day(dealt.i), s = dealt.d.state;
+  const held = s.meets.places.huaidu;
+  assert.equal(held.rolls.length, content.meets.trial.options.max);
+  assert.ok(held.rolls.every(r => r >= 1 && r <= 20));
+  assert.ok(!JSON.stringify(look(s, content, c).place.meet).includes('rolls'), 'Look never carries the dice');
+  const ways = [
+    { label: '涉水而过', difficulty: 'hard', stake: 'wound', win: '水冷刺骨，你还是过来了。', lose: '一脚踩空，被急流卷出三丈。' },
+    { label: '等船家', difficulty: 'easy', stake: 'coin', win: '船家收了你两个铜板。', lose: '船家趁机多要了价。' },
+  ];
+  refused(meet, s, { action: 'choose', n: 0 }, 'not-offered', c);
+  assert.match(refused(meet, s, { action: 'offer', options: JSON.stringify([ways[0]]) }, 'not-playable', c).why, /2–3/);
+  assert.match(refused(meet, s, { action: 'offer', options: JSON.stringify([ways[0], { ...ways[0], label: '再涉' }]) }, 'not-playable', c).why, /same difficulty/);
+  assert.match(refused(meet, s, { action: 'offer', options: JSON.stringify([ways[0], { ...ways[1], stake: 'soul' }]) }, 'not-playable', c).why, /stake/);
+  assert.match(refused(meet, s, { action: 'offer', options: 'not json' }, 'not-playable', c).why, /JSON/);
+  const offered = must(meet, s, { action: 'offer', options: JSON.stringify(ways) }, c);
+  const shown = offered.result.meet.options;
+  assert.deepEqual(shown.map(o => [o.label, o.difficulty, o.stake]), [['涉水而过', 'hard', 'wound'], ['等船家', 'easy', 'coin']]);
+  assert.ok(shown.every(o => o.chance > 0 && o.chance <= 100 && o.win === undefined && o.lose === undefined), 'the odds, never the outcomes');
+  assert.equal(look(offered.state, content, c).place.meet.veiled, undefined, 'offering lifts the mist');
+  refused(meet, offered.state, { action: 'offer', options: JSON.stringify(ways) }, 'already-offered', c);
+  refused(meet, offered.state, { action: 'choose', n: 5 }, 'no-such-way', c);
+});
+
+test('抉择: the roll settles it — what was won or lost is the rules\', the words are Ling\'s', () => {
+  const c = ctx({ now: new Date(2026, 9, 3, 12) });
+  const day = dayKey(c.now);
+  const base = { ...toOpenWorld(), place: 'huaidu', tier: 'core', bag: {}, name: '清玄', wealth: 50 };
+  const ways = [
+    { label: '涉水', difficulty: 'hard', stake: 'wound', win: '过来了。', lose: '被卷走了。' },
+    { label: '等船', difficulty: 'easy', stake: 'coin', win: '上了船。', lose: '多给了钱。' },
+  ];
+  const at = (rolls, extra = {}) => ({ ...base, ...extra, meets: { day, places: { huaidu: { kind: 'trial', rolls, options: ways, companion: Boolean(extra.companion) } } } });
+  const won = must(meet, at([15, 1, 1]), { action: 'choose', n: 0 }, c);
+  assert.deepEqual([won.result.success, won.result.line], [true, '过来了。']);
+  assert.ok(won.result.paid.progress > 0);
+  const hurt = must(meet, at([14, 1, 1]), { action: 'choose', n: 0 }, c);
+  assert.deepEqual([hurt.result.success, hurt.result.line], [false, '被卷走了。']);
+  assert.equal(hurt.state.wounds.n, Math.ceil(hpMaxOf(base) * 0.35));
+  const poorer = must(meet, at([1, 5, 1]), { action: 'choose', n: 1 }, c);
+  assert.deepEqual([poorer.result.success, poorer.result.lost.wealth, poorer.state.wealth], [false, 5, 45]);
+  // 银月 at his side: +2 — a 13 now reaches the hard mark of 15
+  const beside = must(meet, at([13, 1, 1], { companion: { joined: '2026-10-01' } }), { action: 'choose', n: 0 }, c);
+  assert.equal(beside.result.success, true);
+  refused(meet, beside.state, { action: 'choose', n: 0 }, 'nothing-here', c);
+  // mist lifted with no ways written: it passes, nothing is owed
+  const bare = { ...base, meets: { day, places: { huaidu: { kind: 'trial', rolls: [1, 1, 1], veiled: true } } } };
+  const lifted = must(meet, bare, { action: 'reveal' }, c);
+  assert.equal(lifted.result.revealed, 'nothing');
+  assert.equal(look(lifted.state, content, c).place.meet, undefined);
 });

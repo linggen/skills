@@ -43,6 +43,7 @@ export const CARD_KINDS = {
   fight: { holds: true }, //       the fight IS the stage
   offer: { holds: true }, //       接下 — the errands held out where he stands, one card
   find: { holds: true }, //        收下 — something by the road
+  trial: { holds: true }, //       抉择 — the ways Ling wrote, until one is taken
   veil: { holds: true }, //        a 遇 not yet revealed: mist, until Ling has set the moment
   item: { holds: true }, //        a shelf to buy from
   quest: { holds: look => Boolean(lineHere(look)) }, // the search's step, only when it can be taken on this spot
@@ -91,6 +92,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // (a traveller's riddle is the chat's question; a road beast is a duel card).
   if (look.place?.meet?.veiled) head.push({ card: 'veil' });
   else if (look.place?.meet?.kind === 'find') head.push({ card: 'find' });
+  else if (look.place?.meet?.kind === 'trial' && look.place.meet.options) head.push({ card: 'trial' });
 
   const line = lineHere(look);
   // Ling's own cards stand whatever else is true — she chose them. With none,

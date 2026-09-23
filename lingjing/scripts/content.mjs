@@ -574,12 +574,23 @@ function lintNotices(content, bad) {
 
 /* 遇: the road's riddles exist and are never a scene's own; a find names an
    item that exists or a few stones, and says its line in both languages. */
-export const MEET_KINDS = ['find', 'riddle', 'beast'];
+export const MEET_KINDS = ['find', 'riddle', 'beast', 'trial'];
 
 function lintMeets(content, ids, bad) {
   const m = content.meets;
   if (!m) return;
   for (const k of Object.keys(m.weights ?? {})) if (!MEET_KINDS.includes(k)) bad('meets', `unknown kind ${k}`);
+  // 抉择: the rules' half of it — marks on the die, and a win and a loss for each.
+  if (m.weights?.trial) {
+    const t = m.trial;
+    if (!t?.die || !t.marks || !t.win || !t.lose || !t.options) bad('meets', 'trial needs die, marks, win, lose and options');
+    else for (const d of Object.keys(t.marks)) {
+      if (!(t.marks[d] >= 1 && t.marks[d] <= t.die)) bad('meets', `trial mark ${d} is off the die`);
+      if (!t.win[d]) bad('meets', `trial ${d} wins nothing`);
+      for (const [stake, by] of Object.entries(t.lose)) if (by[d] == null) bad('meets', `trial ${d} has no ${stake} loss`);
+      if ((t.win[d]?.progress ?? 0) > content.rewards.tables.trial?.progress || (t.win[d]?.wealth ?? 0) > content.rewards.tables.trial?.wealth) bad('meets', `trial ${d} pays over the trial table`);
+    }
+  }
   const story = new Set(Object.values(content.chapters).flatMap(c => Object.values(c.scenes)).flatMap(sc => sc.exits ?? []).flatMap(e => (e.key == null ? [] : [].concat(e.key))));
   for (const key of m.riddles ?? []) {
     if (!content.riddles.zh.riddles[key]) bad('meets', `unknown riddle ${key}`);

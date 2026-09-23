@@ -43,7 +43,7 @@ export const WORDS = {
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
-    needVia: '先去{name}', veilLine: '前路起了雾……', refused: { 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它' }, goalTitle: '眼下要做的', offersTitle: '可接的差事 · {place}', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', gearFight: '斗法里：主灵根一击 +{n}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '亮的是今日出战的十张；银月开局就在手上。', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    needVia: '先去{name}', veilLine: '前路起了雾……', refused: { 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它' }, goalTitle: '眼下要做的', offersTitle: '可接的差事 · {place}', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', gearFight: '斗法里：主灵根一击 +{n}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '亮的是今日出战的十张；银月开局就在手上。', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手伤身', coin: '失手破财' }, trialHurt: '气血 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、功课、奇遇，都长修为',
   },
   en: {
@@ -80,7 +80,7 @@ export const WORDS = {
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
-    needVia: 'by way of {name}', veilLine: 'Mist on the road ahead…', refused: { 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet' }, goalTitle: 'What waits', offersTitle: 'Errands to take · {place}', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', gearFight: 'In a fight: Root Strike +{n}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'Lit: the ten a fight deals today; Yinyue starts in hand.', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    needVia: 'by way of {name}', veilLine: 'Mist on the road ahead…', refused: { 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet' }, goalTitle: 'What waits', offersTitle: 'Errands to take · {place}', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', gearFight: 'In a fight: Root Strike +{n}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'Lit: the ten a fight deals today; Yinyue starts in hand.', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing hurts', coin: 'failing costs coin' }, trialHurt: 'Life −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, practice and encounters all raise it',
   },
 };
@@ -686,6 +686,24 @@ function find(card, ctx) {
     <div class="acts"><button class="act" data-meet="take">${esc(say(w.findTake, { what }))}</button><button class="act quiet" data-meet="pass">${esc(w.findPass)}</button></div></div>`;
 }
 
+/// 抉择 — the ways Ling wrote, each a button with how hard it is, what it
+/// risks and the odds the rules give (never the roll). After the tap the
+/// stage holds the line of the way taken, Ling's own words, until she goes on.
+function trial(card, ctx) {
+  const m = ctx.look?.place?.meet, w = ctx.words, told = ctx.trialTold;
+  if (told) {
+    return `<div class="card trial ${told.success ? 'won' : 'lost'}"><div class="cardtitle">${esc(w.trialTitle)} · ${esc(told.success ? w.trialWon : w.trialLost)}</div>
+      <div class="say">${esc(told.line)}</div>${told.cost ? `<div class="small dim">${esc(told.cost)}</div>` : ''}</div>`;
+  }
+  if (m?.kind !== 'trial' || !m.options) return '';
+  const ways = m.options.map((o) => `<button class="act way" data-trial="${o.n}"><b>${esc(o.label)}</b>
+    <small>${esc(w.trialHard?.[o.difficulty] ?? o.difficulty)} · ${esc(say(w.trialChance, { n: o.chance }))} · ${esc(w.trialStake?.[o.stake] ?? o.stake)}</small></button>`).join('');
+  return `<div class="card trial"><div class="cardtitle">${esc(w.trialTitle)}</div><div class="acts ways">${ways}</div></div>`;
+}
+
+/// The way taken, on the stage after the tap — the same card, told.
+export const trialToldHtml = (told, ctx) => trial({}, { ...ctx, trialTold: told });
+
 /// A made world still being painted: the story waits for the brush, so the
 /// scene says how many pictures are left — from Look, never counted here.
 function building(card, ctx) {
@@ -695,7 +713,7 @@ function building(card, ctx) {
     <div>${esc(ctx.words.buildingLine.replace('{n}', left))}</div></div>`;
 }
 
-const RENDER = { creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, find, veil };
+const RENDER = { creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, find, veil, trial };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

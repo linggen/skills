@@ -546,7 +546,8 @@ function meetPool(content, state, ctx) {
   const every = allPlaces(content), home = every.filter(p => p.province === place.province && roams(p));
   const nextDoor = new Set(every.filter(p => p.province === place.province).flatMap(p => p.roads).map(id => placeOf(content, id)?.province));
   const beasts = (home.length ? home : every.filter(p => nextDoor.has(p.province) && roams(p))).map(p => p.has.creature);
-  return { find: finds, riddle: riddles.length ? riddles : m.riddles ?? [], beast: [...new Set(beasts)] };
+  // 抉择 needs nothing authored: Ling writes it on the spot.
+  return { find: finds, riddle: riddles.length ? riddles : m.riddles ?? [], beast: [...new Set(beasts)], trial: m.trial ? ['live'] : [] };
 }
 
 function dealMeet(content, state, ctx) {
@@ -555,7 +556,8 @@ function dealMeet(content, state, ctx) {
   // A place says which it may deal — a ferry has travellers, a marsh has
   // beasts (`meets` on the place; unsaid, any).
   const allowed = placeOf(content, state.place).meets;
-  const kinds = Object.entries(content.meets.weights).filter(([k, w]) => w > 0 && pool[k]?.length && (!allowed || allowed.includes(k)));
+  // 抉择 fits anywhere: Ling writes it to the place.
+  const kinds = Object.entries(content.meets.weights).filter(([k, w]) => w > 0 && pool[k]?.length && (!allowed || allowed.includes(k) || k === 'trial'));
   if (!kinds.length) return null;
   const roll = hashOf(`${dayKey(ctx.now)}|${state.name ?? ''}|${state.place}|meet`);
   let at = roll % kinds.reduce((n, [, w]) => n + w, 0);
@@ -567,6 +569,12 @@ function dealMeet(content, state, ctx) {
   // Meet reveal (his, 2026-09-22: 月黑风高…突然…然后webUI出现怪物卡).
   if (kind === 'find') { const f = pickOf(pool.find); return { kind, find: f.book, n: f.n, veiled: true }; }
   if (kind === 'riddle') return { kind, key: pickOf(pool.riddle), tried: [], veiled: true };
+  // The dice are thrown now, one per way through, and kept: Ling writes the
+  // ways without knowing them, so she cannot set a mark to fit a roll.
+  if (kind === 'trial') {
+    const die = content.meets.trial.die, max = content.meets.trial.options.max;
+    return { kind, rolls: Array.from({ length: max }, (_, i) => (hashOf(`${dayKey(ctx.now)}|${state.place}|${state.name ?? ''}|trial|${i}`) % die) + 1), veiled: true };
+  }
   return { kind, creature: pickOf(pool.beast), veiled: true };
 }
 
@@ -588,7 +596,55 @@ function meetBriefOf(content, meet, lang) {
     const r = content.riddles[lang].riddles[meet.key], tried = new Set((meet.tried ?? []).map(normalizeAnswer));
     return { kind: 'riddle', riddle: r.q, choices: r.choices.filter(c => !tried.has(normalizeAnswer(c))), ...(meet.tried?.length ? { hint: r.hint } : {}) };
   }
+  if (meet.kind === 'trial') return { kind: 'trial', ...(meet.options ? { options: trialOptions(content, meet) } : { waiting: true }) };
   return { kind: 'beast', creature: { id: meet.creature, name: pick(creatureOf(content, meet.creature).name, lang) } };
+}
+
+/* ── 抉择 — Ling writes the ways through, the rules threw the dice ──
+   What the page and Ling see of each way: its words, how hard, what it
+   risks, and the odds — never the roll, never the outcome lines before the
+   choice (those are committed, and shown only for the way taken). */
+const TRIAL_BONUS = (content, meet) => (meet.companion ? content.meets.trial.companion : 0);
+function trialOptions(content, meet) {
+  const t = content.meets.trial;
+  return meet.options.map((o, n) => {
+    const need = Math.max(1, t.marks[o.difficulty] - TRIAL_BONUS(content, meet));
+    return { n, label: o.label, difficulty: o.difficulty, stake: o.stake, chance: Math.round(((t.die - need + 1) / t.die) * 100) };
+  });
+}
+/* What Ling offered, held to the rules' shape — or why not. */
+function lintTrial(content, raw) {
+  const t = content.meets.trial, lim = t.options;
+  let list;
+  try { list = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return { why: 'options must be JSON' }; }
+  if (!Array.isArray(list) || list.length < lim.min || list.length > lim.max) return { why: `${lim.min}–${lim.max} ways through` };
+  const text = (v, n) => typeof v === 'string' && v.trim() && [...v.trim()].length <= n;
+  for (const o of list) {
+    if (!text(o?.label, lim.label)) return { why: `each label: words, at most ${lim.label} characters` };
+    if (!t.marks[o.difficulty]) return { why: `difficulty is one of ${Object.keys(t.marks).join(', ')}` };
+    if (!t.lose[o.stake]) return { why: `stake is one of ${Object.keys(t.lose).join(', ')}` };
+    if (!text(o.win, lim.line) || !text(o.lose, lim.line)) return { why: `win and lose: one line each, at most ${lim.line} characters` };
+  }
+  if (new Set(list.map(o => o.difficulty)).size < 2) return { why: 'not all the same difficulty — then there is no choice' };
+  return { options: list.map(o => ({ label: o.label.trim(), difficulty: o.difficulty, stake: o.stake, win: o.win.trim(), lose: o.lose.trim() })) };
+}
+function settleTrial(content, s, ctx, here, n) {
+  const t = content.meets.trial, o = here.options[n];
+  const success = here.rolls[n] + TRIAL_BONUS(content, here) >= t.marks[o.difficulty];
+  const lang = s.lang;
+  if (success) {
+    const win = t.win[o.difficulty];
+    const paid = pay(content, s, ctx, { table: 'trial', progress: win.progress ?? 0, wealth: win.wealth ?? 0 });
+    return { success, line: o.win, paid };
+  }
+  if (o.stake === 'coin') {
+    const lost = Math.min(s.wealth, t.lose.coin[o.difficulty]);
+    s.wealth -= lost;
+    return { success, line: o.lose, lost: { wealth: lost } };
+  }
+  const now = woundsNow(content, s, ctx.now), add = Math.ceil(hpMaxOf(s) * t.lose.wound[o.difficulty]);
+  s.wounds = { n: Math.min(hpMaxOf(s), now + add), at: ctx.now.toISOString() };
+  return { success, line: o.lose, lost: { hp: add }, health: healthBrief(content, s, ctx.now) };
 }
 
 /* Meet — 收下 what was found, answer the traveller, or walk on. */
@@ -597,9 +653,28 @@ export function meet(state, content, ctx, args) {
   const action = String(args.action ?? '');
   if (!here || here.done) return refuse('nothing-here', null);
   const close = () => { s.meets.places[s.place] = { ...here, done: true }; };
+  // 抉择: Ling's ways through, checked, and the card comes up with them.
+  if (here.kind === 'trial' && action === 'offer') {
+    if (here.options) return refuse('already-offered', null, { meet: meetBrief(content, s, ctx.now) });
+    const linted = lintTrial(content, args.options);
+    if (!linted.options) return refuse('not-playable', null, { why: linted.why });
+    const { veiled, ...open } = here;
+    s.meets.places[s.place] = { ...open, options: linted.options, companion: hasCompanion(s) };
+    return { state: s, result: { ok: true, offered: linted.options.length, meet: meetBrief(content, s, ctx.now) } };
+  }
+  if (here.kind === 'trial' && action === 'choose') {
+    const n = Number(args.n);
+    if (!here.options) return refuse('not-offered', null);
+    if (!Number.isInteger(n) || !here.options[n]) return refuse('no-such-way', null, { ways: here.options.length });
+    const out = settleTrial(content, s, ctx, here, n);
+    s.meets.places[s.place] = { ...here, done: true, chose: n, success: out.success };
+    return { state: s, result: { ok: true, chose: n, ...out } };
+  }
   // 揭 — the moment has been set; the card comes up and the question with it.
   if (action === 'reveal') {
     if (!here.veiled) return refuse('not-veiled', null);
+    // A 抉择 whose ways were never written has nothing to show: it passes.
+    if (here.kind === 'trial') { const { veiled, ...open } = here; s.meets.places[s.place] = { ...open, done: true }; return { state: s, result: { ok: true, revealed: 'nothing' } }; }
     const { veiled, ...open } = here;
     s.meets.places[s.place] = open;
     return { state: s, result: { ok: true, revealed: here.kind, meet: meetBrief(content, s, ctx.now) } };
@@ -628,7 +703,8 @@ export function meet(state, content, ctx, args) {
     close();
     return { state: s, result: { ok: true, answered: true, paid } };
   }
-  return refuse('unknown-action', null, { actions: here.kind === 'find' ? ['take', 'pass', 'reveal'] : here.kind === 'riddle' ? ['answer', 'pass', 'reveal'] : ['pass', 'reveal'] });
+  const actions = { find: ['take', 'pass', 'reveal'], riddle: ['answer', 'pass', 'reveal'], trial: ['offer', 'choose', 'pass'] }[here.kind] ?? ['pass', 'reveal'];
+  return refuse('unknown-action', null, { actions });
 }
 
 /* A 奇遇 does not keep overnight. His save held one opened 2026-09-14 with no

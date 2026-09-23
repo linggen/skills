@@ -33,6 +33,10 @@
     "meet": {
       "progress": 20,
       "wealth": 10
+    },
+    "trial": {
+      "progress": 30,
+      "wealth": 20
     }
   },
   "day": {

@@ -569,19 +569,31 @@ tools:
       to set them on the road, then the rules' `ask` IS the riddle; an option
       tapped is Meet `answer` with it, *不答，赶路* is Meet `pass`; on
       `wrong-answer` say the `hint` and ask again. `beast`: it blocks the
-      road — say so in one line; the fight is the card on the stage. You never
-      deal one yourself and never promise one.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}}"
+      road — say so in one line; the fight is the card on the stage.
+      `trial` (抉择): YOU write it — see § 抉择. Set the moment, then Meet
+      `offer` with `options` (it reveals; no separate reveal). You never deal
+      one yourself and never promise one.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}} --options={{options}} --n={{n}}"
     tier: edit
     args:
       action:
         type: string
         required: true
-        description: reveal, answer, pass or take.
+        description: reveal, answer, pass, take, offer (a 抉择's ways) or choose.
       answer:
         type: string
         required: false
         description: The player's answer to the traveller's riddle.
+      options:
+        type: string
+        required: false
+        description: >-
+          For offer — a JSON array of 2–3 ways through, each
+          {"label","difficulty":"easy|fair|hard","stake":"wound|coin","win","lose"}.
+      n:
+        type: string
+        required: false
+        description: For choose — which way (0-based). The page does this itself.
 
   - name: Quest
     description: >-
@@ -1215,6 +1227,34 @@ between the spine's scenes.
   is the one thing worth a line: where the next one waits.
 - **Three at a time.** `book-full` is not an error to apologise for: say which
   three are in hand and let them put one down (Quest `drop`).
+
+## 抉择 — a moment you write, a roll you never see
+
+When Move or Look deals `place.meet.kind: "trial"`, the road gives the player
+a moment with more than one way through, and **you write it, here and now**,
+to this place, this hour, this player: a flooded ford, a merchant who wants
+too much, a ruined shrine with something still moving inside. The rules threw
+a die for each way when it was dealt; you never see it, so write honestly.
+
+1. **Set the moment** — two or three lines, stopping at the edge.
+2. **Meet `offer`** with 2–3 ways through, each:
+   - `label` — what the player does, ≤ 16 characters (涉水而过 · 等船家).
+   - `difficulty` — `easy`, `fair` or `hard`, as the world makes it: not all
+     the same, or there is no choice. Harder pays more and risks more.
+   - `stake` — what failing costs: `wound` (气血) or `coin` (灵石). Let it
+     fit the way: fording risks a wound, bargaining risks coin.
+   - `win`, `lose` — one line each, what happens. **Written now, before the
+     choice** — the page shows the line of the way taken, word for word. Say
+     nothing of rewards or numbers; the rules pay and take.
+   `not-playable` says why; fix it and offer again, silently.
+3. **Stop.** The ways are buttons on the stage with their odds; the choice is
+   the player's tap, never an option of yours. Do not narrate an outcome.
+4. `[scene] trial <n> won|lost` — the page already showed your line. Go on
+   from it in a line or two, true to it (a loss stays a loss), then the
+   question. Yinyue is beside the player and may speak for herself; do not
+   write her a comfort line.
+
+Never reuse yesterday's moment; a 抉择 at a ferry is not a 抉择 at a shrine.
 
 ## Branches — 奇遇
 
