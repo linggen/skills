@@ -1898,20 +1898,22 @@ function meets(state, needs) {
 }
 
 /* Pay a grant: the table capped it when it was authored, the traits speed
-   progress, the day caps both — all in base progress — and the tier's `pay`
-   scales what is finally added, so a task high on the ladder pays like one. */
+   progress, and the tier's `pay` scales what is finally added, so a task high
+   on the ladder pays like one. No day cap: 灵气 alone limits a day's play (his,
+   2026-09-23: 去掉吧，只用体力限制). The 240/60 caps came 2026-09-11, before
+   灵气 existed, and after it was kept as a safety net nobody re-decided —
+   invisible, it turned his last errand and a pill into +0 with 灵气 to spare.
+   `state.day` still counts what the day paid. */
 function pay(content, state, ctx, grant) {
   rollDay(state, ctx.now);
   const table = content.rewards.tables[grant.table];
-  const day = content.rewards.day;
-  // The day's cast, when it was asked about this: its grade speeds or slows
-  // the gain, and a good one lifts the day's cap with it.
+  // The day's cast, when it was asked about this: its grade speeds or slows the gain.
   const pf = fortuneOf(content, state, ctx.now, 'cultivation')?.progress ?? 1;
   const wf = fortuneOf(content, state, ctx.now, 'wealth')?.wealth ?? 1;
   const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state) * pf);
-  const base = Math.max(0, Math.min(want, Math.round(day.progress * Math.max(1, pf)) - state.day.progress));
+  const base = Math.max(0, want);
   const progress = base * payOf(content, state);
-  const wealth = Math.max(0, Math.min(Math.round(Math.min(grant.wealth ?? 0, table.wealth) * wf), Math.round(day.wealth * Math.max(1, wf)) - state.day.wealth));
+  const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth) * wf));
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
   const risen = levels.length ? gainBond(content, state, 'rise', ctx.now) : null;
@@ -1924,7 +1926,7 @@ function pay(content, state, ctx, grant) {
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
   const fortune = (pf !== 1 && grant.progress) || (wf !== 1 && grant.wealth) ? { progress: pf, wealth: wf } : null;
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}), ...(risen ? { bond: risen } : {}) };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}), ...(risen ? { bond: risen } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */
@@ -2006,8 +2008,8 @@ function spendStamina(content, s, ctx, kind) {
   const at = staminaReturnsAt(content, s, cost);
   const w = wordsOf(content, s.lang);
   const say = s.lang === 'zh'
-    ? `${w.pool}已空，先去调息。${hourOf(at, 'zh')} 再来。`
-    : `Your ${w.pool} is empty — go and rest. Come back at ${hourOf(at, 'en')}.`;
+    ? `${w.pool}已空，先歇一歇。${hourOf(at, 'zh')} 再来。`
+    : `Your ${w.pool.toLowerCase()} is spent — go and rest. Come back at ${hourOf(at, 'en')}.`;
   return refuse('no-stamina', say, { stamina: s.stamina, cost, returns_at: at.toISOString() });
 }
 
@@ -2617,10 +2619,6 @@ export function trade(state, content, ctx, args) {
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), learned: { id: e.learn, level: e.level } } };
     }
     if (e.progress) {
-      // A day already full takes nothing from a pill: keep it, never eat it
-      // for +0 (his 聚气丹, 2026-09-23 — gone from the bag, 修为 unmoved).
-      const trial = pay(content, clone(s), ctx, { table: e.table, progress: e.progress });
-      if (!trial.progress && trial.capped && !trial.hold) return refuse('day-full', pick({ zh: '今日修为已满，丹药留到明日再服。', en: 'Today\'s cultivation is full — keep the pill for tomorrow.' }, lang));
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
       const paid = pay(content, s, ctx, { table: e.table, progress: e.progress });

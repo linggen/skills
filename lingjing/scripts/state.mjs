@@ -143,7 +143,7 @@ export function speedOf(content, state) {
 }
 
 /* The tier's reward multiplier: tables and caps are base progress; a task
-   high on the ladder pays like one. Applied last, after the day cap. */
+   high on the ladder pays like one. Applied last. */
 export function payOf(content, state) {
   return tierOf(content, state.tier).pay ?? 1;
 }

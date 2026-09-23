@@ -840,16 +840,16 @@ test('at the realm peak the player holds until the chapter opens', () => {
   assert.equal(out.result.paid.progress, 10, 'only what the peak took is paid');
 });
 
-test('the day caps what can be earned', () => {
+test('no day cap: a day full of play pays every time — 灵气 is the only limit', () => {
   const s = start();
-  s.day.progress = 230; // cap 240
+  s.day.progress = 10000; s.day.wealth = 10000;
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  assert.equal(out.result.paid.progress, 10);
-  assert.equal(out.result.paid.capped, true);
+  assert.equal(out.result.paid.progress, 20);
+  assert.equal(out.result.paid.capped, undefined);
 });
 
-test('a later realm pays more for the same task; the day cap counts base', () => {
+test('a later realm pays more for the same task; the day counts base', () => {
   const s = start();
   s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神, pay ×3
   offerWon(s);
@@ -857,7 +857,6 @@ test('a later realm pays more for the same task; the day cap counts base', () =>
   assert.equal(out.result.paid.progress, 60); // 20 base × 3
   assert.equal(out.state.progress, 60);
   assert.equal(out.state.day.progress, 20);
-  assert.equal(out.result.paid.capped, false);
 });
 
 test('the prologue is free: its steps and bouts cost no 灵气, with the 丹田 empty or full', () => {
@@ -1061,7 +1060,7 @@ test('Look carries the world’s words for the harness’s ids, in the player’
   const en = look(start('en'), content, ctx());
   assert.equal(en.words.progress, 'cultivation');
   assert.equal(en.words.wealth, 'spirit stones');
-  assert.equal(en.words.pool, 'dantian');
+  assert.equal(en.words.pool, 'Stamina');
   assert.deepEqual(en.words.tiers.slice(0, 3), ['Qi Condensation', 'Foundation Establishment', 'Core Formation']);
   const zh = look(start('zh'), content, ctx());
   assert.equal(zh.words.progress, '修为');
@@ -1483,7 +1482,7 @@ test('past the prologue a story step costs 灵气; an empty 丹田 refuses with 
   assert.equal(r.cost, 10);
   // 5 points short at 20 an hour = 15 minutes
   assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 15 * 60_000);
-  assert.match(r.say, /丹田已空/);
+  assert.match(r.say, /体力已空/);
   const seen = look(s, content, octx());
   assert.equal(seen.stamina.empty, true);
   assert.equal(seen.stamina.returns_at, r.returns_at);
@@ -2801,12 +2800,11 @@ test('a beast tamed meets an errand that asked for it subdued', () => {
   assert.deepEqual(fed.result.handed.map(h => h.id), ['xu-fuli-longzhi'], 'and hands itself in');
 });
 
-// His 聚气丹 on 2026-09-23 went for +0 on a full day. A full day keeps the pill.
-test('a pill on a day already full is kept, not eaten for nothing', () => {
+// His 聚气丹 on 2026-09-23 went for +0 on a "full" day — no day is full now.
+test('a pill pays whatever the day has already paid', () => {
   const at = ctx();
-  const s = { ...toOpenWorld(), bag: { 'qi-pill': 1 }, day: { key: dayKey(NOW), progress: content.rewards.day.progress, wealth: 0, branches: 0 } };
-  refused(trade, s, { action: 'use', id: 'qi-pill' }, 'day-full', at);
-  const fresh = must(trade, { ...s, day: { ...s.day, progress: 0 } }, { action: 'use', id: 'qi-pill' }, at);
-  assert.ok(fresh.result.paid.progress > 0);
-  assert.equal(fresh.state.bag['qi-pill'], undefined);
+  const s = { ...toOpenWorld(), bag: { 'qi-pill': 1 }, day: { key: dayKey(NOW), progress: 240, wealth: 60, branches: 0 } };
+  const took = must(trade, s, { action: 'use', id: 'qi-pill' }, at);
+  assert.ok(took.result.paid.progress > 0);
+  assert.equal(took.state.bag['qi-pill'], undefined);
 });

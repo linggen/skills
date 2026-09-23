@@ -1225,7 +1225,7 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 - **次数不限**：一天能打好几只妖，只要体力够。但**同一只妖一天只应一次** —— 它退进雾里。
 - **现实里的事回体力**：一件任务按它自己的分量回（默认 20）—— Shifu 扫盘、Health 走够步数。
   这是别的游戏抄不走的钩子。
-- **收益本来就有日上限**（修为 240 · 灵石 60），所以放开次数不会失控。
+- ~~收益本来就有日上限（修为 240 · 灵石 60）~~ — 2026-09-23 去掉：只用体力限制（his）。日上限看不见，把他最后一件差事和一颗丹都变成了 +0。
 - 空了只说一句"什么时候回来"，不滚秒。
 
 ### 牌库：一副牌，不是一把牌 (BUILT 2026-09-18)
@@ -1732,8 +1732,8 @@ put down. In Ling's context the whole book is three lines, about 40 tokens.
 
 ### What we do NOT copy
 
-- **No grind.** The day caps (修为 240 · 灵石 60) already hold; a 差事 pays
-  inside them, so "kill thirty boars" pays for three.
+- **No grind.** 体力 is the only limit (the day caps went 2026-09-23); a 差事
+  costs its walking, so "kill thirty boars" costs thirty fights of 体力.
 - **No exclamation marks over the world.** A place holding one says so in one
   line of the director's brief, and Ling mentions it in her own words.
 - **No quest text nobody reads.** The ask is one or two lines, in the giver's
