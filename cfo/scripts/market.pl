@@ -1241,7 +1241,7 @@ sub rate_event {
 sub fed_release_events {
     my ($xml, $since) = @_;
     my @out;
-    while ($xml =~ m{<item>(.*?)</item>}gs) {
+    while ($xml =~ m{<item\b[^>]*>(.*?)</item>}gs) {
         my $item = $1;
         my ($title) = map { decode_html_entities(strip_cdata($_)) } $item =~ m{<title>(.*?)</title>}s;
         my ($link) = map { strip_cdata($_) } $item =~ m{<link>(.*?)</link>}s;
@@ -1658,7 +1658,8 @@ sub record_alerts {
 }
 
 # The release calendar (data/watch-calendar.json), fetched again once a day.
-# A source that doesn't answer keeps what it had; a release that has passed
+# A source that doesn't answer keeps what it had — and when none does, it
+# is asked again on the next check; a release that has passed
 # stays three days, for its result to be found — the Bank's page drops it.
 sub watch_calendar {
     my ($now) = @_;
@@ -1668,11 +1669,16 @@ sub watch_calendar {
     return $cal->{events} || [] if defined $fetched && $now >= $fetched && $now - $fetched < $CALENDAR_TTL;
     my $window = sub { my $at = time_of($_[0]{at}) // 0; $at > $now - 3 * 86400 && $at < $now + 60 * 86400 };
     my %by_id = map { $_->{id} => $_ } grep { $window->($_) } @{ $cal->{events} || [] };
+    my $answered = 0;
     for my $read (\&fomc_calendar, \&bls_calendar, \&boc_calendar) {
         my $got = $read->() or next;
+        $answered++;
         $by_id{ $_->{id} } = $_ for grep { $window->($_) } @$got;
     }
     my @events = sort { $a->{at} cmp $b->{at} } values %by_id;
+    # No source answered (offline, a wake too short): keep the file unstamped
+    # so the next check asks again, rather than an empty calendar for a day.
+    return \@events unless $answered;
     write_json($file, { fetched_at => iso_time($now), events => \@events });
     return \@events;
 }
@@ -1775,9 +1781,11 @@ sub fed_decision_alerts {
     for my $cal (@$due) {
         my $from = (time_of($cal->{at}) // next) - 3600;
         my ($release) = grep { (time_of($_->{at}) // 0) >= $from } @releases or next;
-        my $page = fetch($release->{url});
+        # A statement page that doesn't answer is no result yet: the release
+        # is asked again on a later check, until its wait runs out.
+        my $page = fetch($release->{url}) or next;
         push @out, alert_of($cal, kind => 'rate', bank => 'Fed', at => $release->{at}, url => $release->{url},
-                            %{ ($page && fed_decision($page)) || { decision => 'statement' } });
+                            %{ fed_decision($page) || { decision => 'statement' } });
     }
     return @out;
 }
@@ -1837,14 +1845,15 @@ sub boc_decision_alerts {
     return @out;
 }
 
-# Rate releases in the Bank's press feed: {on, title, url, decision}. The
+# Rate releases in the Bank's press feed (RSS 1.0: `<item rdf:about="…">`):
+# {on, title, url, decision}. The
 # description says it plainly: "held its target for the overnight rate at
 # 2.25%", "reduced its target … by 25 basis points to 2.50%".
 sub boc_rate_releases {
     my ($xml) = @_;
     my %word = (held => 'held', maintained => 'held', reduced => 'cut', lowered => 'cut', raised => 'raised', increased => 'raised');
     my @out;
-    while ($xml =~ m{<item>(.*?)</item>}gs) {
+    while ($xml =~ m{<item\b[^>]*>(.*?)</item>}gs) {
         my $item = $1;
         my ($title) = map { decode_html_entities(strip_cdata($_)) } $item =~ m{<title>(.*?)</title>}s;
         my ($link) = map { strip_cdata($_) } $item =~ m{<link>(.*?)</link>}s;
@@ -1862,7 +1871,9 @@ sub boc_rate_releases {
 }
 
 # While the market is open: holdings 5% or more up or down on the day, once
-# a day each.
+# a day each. The day is the quote's own trading day, and only today's
+# counts: on a holiday (Good Friday; a Canada-only one for .TO) the quote
+# still carries the last session's move, which was said then.
 sub move_alerts {
     my ($now) = @_;
     my $day = market_day($now) or return;
@@ -1873,6 +1884,7 @@ sub move_alerts {
     for my $sym (@held) {
         my $q = $quotes->{$sym};
         next if $q->{error} || !defined $q->{change_pct} || abs($q->{change_pct}) < $ALERT_MOVE_PCT;
+        next unless (quote_trading_day($q) // '') eq $day;
         my $shares = $cells->{$sym}{shares} + 0;
         push @out, { id => "alert:move:$sym:$day", kind => 'move', symbol => $sym, name => $q->{name},
                      at => iso_time($now), change_pct => round_to($q->{change_pct}, 1), price => $q->{price},
@@ -1880,6 +1892,14 @@ sub move_alerts {
                      stake => round_to($shares * ($q->{change} // 0), 0) };
     }
     return @out;
+}
+
+# The exchange's date on the source's price time ("Sep 23, 2026, 11:00 AM
+# EDT" → "2026-09-23"), else undef.
+sub quote_trading_day {
+    my ($q) = @_;
+    my ($date) = ($q->{price_time} // '') =~ /^([A-Z][a-z]{2} \d{1,2}, \d{4})/ or return undef;
+    return iso_date($date);
 }
 
 # New York's date while its market is open (weekdays 9:30–16:00), else undef.

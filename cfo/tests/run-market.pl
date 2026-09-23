@@ -346,6 +346,9 @@ t('daylight time starts the second Sunday of March, ends the first of November',
     my @fed = fed_release_events($feed, $window);
     t('an FOMC statement in the window is an event; board minutes and old releases are not',
       @fed == 1 && $fed[0]{id} eq 'fed:monetary20260916a.htm', JSON::PP->new->canonical->encode(\@fed));
+    (my $rdf = $feed) =~ s{<item>}{<item rdf:about="x">}g;
+    my @fed_rdf = fed_release_events($rdf, $window);
+    t('an <item> with attributes reads the same', @fed_rdf == 1 && $fed_rdf[0]{id} eq 'fed:monetary20260916a.htm');
 
     my $meeting = sub { qq{<div class="row fomc-meeting"><div class="fomc-meeting__month col"><strong>$_[0]</strong></div><div class="fomc-meeting__date col">$_[1]</div></div>} };
     my $calendar = '<h4><a id="1">2026 FOMC Meetings</a></h4>' . $meeting->('September', '15-16*') . $meeting->('Apr/May', '30-1')
@@ -626,12 +629,14 @@ t('daylight time starts the second Sunday of March, ends the first of November',
     t('the Bank of Canada page gives its rate announcements only',
       @$boc == 1 && $boc->[0]{id} eq 'cal:boc:2026-10-28' && $boc->[0]{at} eq '2026-10-28T13:45:00Z');
 
-    my $feed = '<item><title>Bank of Canada maintains the policy rate at 2¼%</title><link>https://www.bankofcanada.ca/2026/09/fad-press-release-2026-09-02/</link>'
+    # RSS 1.0, as the Bank writes it: `<items>` lists them, each `<item rdf:about>`.
+    my $feed = '<channel><items><rdf:Seq><rdf:li rdf:resource="https://www.bankofcanada.ca/2026/09/fad-press-release-2026-09-02/" /></rdf:Seq></items></channel>'
+             . '<item rdf:about="https://www.bankofcanada.ca/2026/09/fad-press-release-2026-09-02/"><title>Bank of Canada maintains the policy rate at 2¼%</title><link>https://www.bankofcanada.ca/2026/09/fad-press-release-2026-09-02/</link>'
              . '<description>The Bank of Canada today held its target for the overnight rate at 2.25%, with the Bank Rate at 2.5%.</description><dc:date>2026-09-02T09:47:53+00:00</dc:date></item>'
-             . '<item><title>Bank of Canada unveils new vertical $20 bank note</title><link>https://x/</link><description>A note.</description><dc:date>2026-09-01T10:00:00+00:00</dc:date></item>'
+             . '<item rdf:about="https://x/"><title>Bank of Canada unveils new vertical $20 bank note</title><link>https://x/</link><description>A note.</description><dc:date>2026-09-01T10:00:00+00:00</dc:date></item>'
              . '<item><title>Bank of Canada reduces policy rate by 25 basis points</title><link>https://x/cut</link><description>The Bank of Canada today reduced its target for the overnight rate by 25 basis points to 2.50%.</description><dc:date>2026-06-04T09:45:00+00:00</dc:date></item>';
     my @rel = boc_rate_releases($feed);
-    t('the Bank\'s press feed gives rate decisions: a hold and a cut',
+    t('the Bank\'s press feed gives rate decisions, `<item rdf:about>` or bare: a hold and a cut',
       @rel == 2 && $rel[0]{decision}{decision} eq 'held' && $rel[0]{decision}{to} eq '2.25%' && $rel[0]{on} eq '2026-09-02'
         && $rel[1]{decision}{decision} eq 'cut' && $rel[1]{decision}{change_bp} == -25 && $rel[1]{decision}{to} eq '2.50%');
 
@@ -667,6 +672,60 @@ t('daylight time starts the second Sunday of March, ends the first of November',
     t('an alert is kept once; upcoming holds only the next two weeks',
       @$new == 1 && !@$twice && @{ $doc->{alerts} } == 1 && join(',', map { $_->{id} } @{ $doc->{upcoming} }) eq 'cal:jobs:2026-09-25'
         && $doc->{alert_tries}{'cal:cpi:2026-09-16'});
+
+    local *main::fetch = sub {
+        return '<item><title>Federal Reserve issues FOMC statement</title><link><![CDATA[https://fed/monetary20260916a.htm]]></link><pubDate><![CDATA[Wed, 16 Sep 2026 18:00:00 GMT]]></pubDate></item>' if $_[0] =~ /press_monetary/;
+        return undef;
+    };
+    my $down = release_alerts(\@cal, { alert_tries => {} }, $now);
+    t('a statement page that doesn\'t answer is no result: the decision is tried again, not saved as done',
+      !@{ $down->{found} } && join(',', @{ $down->{tried} }) eq 'cal:fomc:2026-09-16,cal:cpi:2026-09-16',
+      JSON::PP->new->canonical->encode($down));
+}
+
+# ── Watch calendar: a check where nothing answers ─────────────────────────
+{
+    local $ENV{SKILL_DIR} = tempdir(CLEANUP => 1);
+    mkdir "$ENV{SKILL_DIR}/data";
+    my $file = "$ENV{SKILL_DIR}/data/watch-calendar.json";
+    my $now = timegm_of(2026, 9, 16, 18, 30, 0);
+    my $ev = { id => 'cal:cpi:2026-10-14', kind => 'cpi', at => '2026-10-14T12:30:00Z' };
+    my $bls;
+    no warnings qw(redefine once);
+    local *main::fomc_calendar = sub { undef };
+    local *main::boc_calendar = sub { undef };
+    local *main::bls_calendar = sub { $bls };
+    my $got = watch_calendar($now);
+    t('no source answering leaves the calendar unstamped, to be asked again', !@$got && !-e $file);
+    $bls = [$ev];
+    $got = watch_calendar($now + 600);
+    my $saved = read_json($file) || {};
+    t('one source answering stamps it', @$got == 1 && ($saved->{fetched_at} // '') eq '2026-09-16T18:40:00Z');
+    $bls = undef;
+    unlink $file;
+    write_json($file, { fetched_at => '2026-09-15T00:00:00Z', events => [$ev] });
+    $got = watch_calendar($now);
+    t('a stale calendar whose sources are all down keeps its events and its old stamp',
+      @$got == 1 && (read_json($file) || {})->{fetched_at} eq '2026-09-15T00:00:00Z');
+}
+
+# ── Move alerts: today's session only ─────────────────────────────────────
+{
+    t('a quote\'s trading day is the date on its price time',
+      (quote_trading_day({ price_time => 'Sep 23, 2026, 11:00 AM EDT' }) // '') eq '2026-09-23'
+        && !defined quote_trading_day({}) && !defined quote_trading_day({ price_time => 'soon' }));
+    my %quotes = (
+        AAPL    => { price => 200, change => -12, change_pct => -5.7, price_time => 'Apr 2, 2026, 4:00 PM EDT' },
+        'RY.TO' => { price => 150, change => 9, change_pct => 6.4, price_time => 'Apr 3, 2026, 10:30 AM EST' },
+    );
+    no warnings qw(redefine once);
+    local *main::register_investments = sub { { AAPL => { shares => 10 }, 'RY.TO' => { shares => 5 } } };
+    local *main::update_quotes = sub { +{ map { $_ => $quotes{$_} } @{ $_[0] } } };
+    # Good Friday, 2026-04-03, 11:00 New York: NYSE is shut and AAPL's quote
+    # still carries Thursday's drop; the TSX quote (made up) is today's.
+    my @moves = move_alerts(timegm_of(2026, 4, 3, 15, 0, 0));
+    t('a holiday\'s stale move is not said again; a move from today\'s session is',
+      join(',', map { $_->{id} } @moves) eq 'alert:move:RY.TO:2026-04-03', JSON::PP->new->canonical->encode(\@moves));
 }
 
 print "\n$pass passed, $fail failed\n";
