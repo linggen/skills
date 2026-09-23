@@ -329,6 +329,14 @@ async function loadStatusStrip() {
 // signal (web / draft) firing within a CHIP_TIMEOUT_MS window.
 
 const CHIP_TIMEOUT_MS = 180_000;  // 3 min — agent steps (10+ fetches, many drafts) can be slow
+// Silence alone never ends a run while Ling's turn is still open: a model can
+// think for minutes between tools, and the chat relays no event while it does
+// (2026-09-23: a healthy gather painted red at 180s mid-think). The turn's
+// end (stream_end) is the real signal — after it, a chip still waiting gets
+// END_GRACE_MS for a late PageUpdate before it is called. CHIP_MAX_MS is the
+// backstop for a turn that never ends.
+const END_GRACE_MS = 90_000;
+const CHIP_MAX_MS = 20 * 60_000;
 
 const PIPELINE_CHIPS = {
   'gather-local': {
@@ -364,15 +372,25 @@ function startChip(chipId, expects) {
     const armTimer = () => setTimeout(() => {
       const rec = runningChips.get(chipId);
       if (rec) {
+        // Still inside Ling's turn and we can hear it: thinking, not stuck.
+        if (!rec.turnEnded && transportStatus === 'connected'
+            && Date.now() - rec.startedAt < CHIP_MAX_MS) {
+          rec.timer = rec.armTimer();
+          return;
+        }
         runningChips.delete(chipId);
         const err = new Error(`chip "${chipId}" idle for ${CHIP_TIMEOUT_MS}ms`);
         // The goal was already sent — this is the PAGE losing track, not the
         // agent stopping. The two need different words on screen.
         err.code = 'chip_idle';
+        err.turnEnded = rec.turnEnded;
         rec.reject(err);
       }
-    }, CHIP_TIMEOUT_MS);
-    runningChips.set(chipId, { resolve, reject, timer: armTimer(), expects, armTimer });
+    }, runningChips.get(chipId)?.turnEnded ? END_GRACE_MS : CHIP_TIMEOUT_MS);
+    runningChips.set(chipId, {
+      resolve, reject, timer: armTimer(), expects, armTimer,
+      startedAt: Date.now(), turnEnded: false,
+    });
   });
 }
 
@@ -408,6 +426,20 @@ function setTransportStatus(status) {
 
 function pingRunningChips() {
   for (const rec of runningChips.values()) {
+    // Activity means a turn is running — a goal queued behind another turn
+    // has started.
+    rec.turnEnded = false;
+    clearTimeout(rec.timer);
+    rec.timer = rec.armTimer();
+  }
+}
+
+// Ling's turn ended. A chip still waiting now gets END_GRACE_MS for a late
+// PageUpdate (or for its own queued turn to start) instead of waiting out
+// silence that no longer means anything.
+function turnEndedForRunningChips() {
+  for (const rec of runningChips.values()) {
+    rec.turnEnded = true;
     clearTimeout(rec.timer);
     rec.timer = rec.armTimer();
   }
@@ -944,7 +976,9 @@ function failCascadeToast(what, err) {
     return;
   }
   label.textContent = err && err.code === 'chip_idle'
-    ? `${what}: no update for ${Math.round(CHIP_TIMEOUT_MS / 1000)}s — the page stopped tracking it. The agent may still be working; cards will land if it finishes.`
+    ? (err.turnEnded
+        ? `${what}: Ling finished without updating this section.`
+        : `${what}: no update in ${Math.round(CHIP_MAX_MS / 60_000)} min — the page stopped tracking it; cards will land if it finishes.`)
     : `${what} failed before it started — ${(err && err.message) || err}`;
   toast.classList.add('is-error');
   toast.hidden = false;
@@ -1453,6 +1487,8 @@ async function mountChat() {
     modelId,
     onSessionCreated: grantOnce,
     onConnectionChange: setTransportStatus,
+    onStreamToken: () => pingRunningChips(),
+    onStreamEnd: () => turnEndedForRunningChips(),
     onContentBlock: (payload) => {
       // Any content block (tool call, text streaming, PageUpdate, …) is
       // fresh evidence the agent is still working — bump the running
