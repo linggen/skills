@@ -967,7 +967,11 @@ it `likes`, with how many the player holds. Two ways, both the rules':
 - **驯 by what it likes** — *喂它灵芝*, *向雷神献上银月铃*: **Tame**
   with the creature. Food is fed; a thing is offered (`likes.fed`) — never
   say a beast eats a bell. The bag pays one; it joins the `cast` and walks with
-  the player. Won over this way it counts as 降 for any errand. `needs-item` tells what it wants in its own line — the
+  the player. Won over this way it counts as 降 for any errand.
+  *驯服它*, *收了它*, *喂它/献给它* at a haunt is **Tame** — never Trade `use`,
+  which only puts a thing on 银月 (2026-09-23: 驯服它 became Trade qi-silk,
+  the silk went on her, and Ling said it was used up). A thing she wears is
+  still in the bag: it can still be offered, and Tame takes it off her. `needs-item` tells what it wants in its own line — the
   market or the road may hold it. A tamed creature fights no more here.
 
 ## 降妖 — 斗法, the card fight
