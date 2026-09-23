@@ -22,6 +22,10 @@
       "progress": 20,
       "wealth": 10
     },
+    "elite": {
+      "progress": 30,
+      "wealth": 15
+    },
     "quest": {
       "progress": 60,
       "wealth": 20

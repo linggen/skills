@@ -412,11 +412,12 @@ export function challengeHtml(brief, ctx) {
     <div class="chead">
       ${c.art ? `<img class="cface" src="${esc(ctx.artBase ?? '')}${esc(c.art)}" alt="">` : ''}
       <div>
-        <div class="cname">${spoken(c.name, c.pinyin)} <span class="belem">${GLYPH[c.root] ?? ''}${ctx.lang === 'en' ? ` ${esc(c.root_name ?? '')}` : ''}</span></div>
+        <div class="cname">${spoken(c.name, c.pinyin)} <span class="belem">${GLYPH[c.root] ?? ''}${ctx.lang === 'en' ? ` ${esc(c.root_name ?? '')}` : ''}</span>${c.elite ? ` <span class="celite">${ctx.lang === 'en' ? 'Elite' : '精英'}</span>` : ''}</div>
         ${c.lean ? `<div class="clean">${esc(w.lean?.[c.lean] ?? c.lean)}</div>` : ''}
         ${c.about ? `<p class="cabout">${esc(c.about)}</p>` : ''}
       </div>
     </div>
+    ${!done && brief.health && brief.health.now < brief.health.max ? `<div class="churt">${ctx.lang === 'en' ? `You go in hurt: Life ${brief.health.now}/${brief.health.max}` : `带伤上阵：气血 ${brief.health.now}/${brief.health.max}`}</div>` : ''}
     ${done ? `<div class="cdone">${esc(done)}</div>` : `<button class="bact end" data-duel-start="${esc(brief.id)}">${w.begin}</button>`}
     ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;

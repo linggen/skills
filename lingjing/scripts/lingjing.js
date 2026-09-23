@@ -235,6 +235,16 @@ function qiHtml() {
     <i class="ring" style="--p:${q.p}"></i><span class="st">${esc(state)}</span><span class="cnt">${q.now}/${q.max}</span></span>`;
 }
 
+/// 气血 on the strip only while a fight's wounds are carried (rules § 伤势):
+/// at full it is noise, hurt it is the fact that decides the next fight.
+function hpHtml() {
+  const h = look?.health;
+  if (!h || h.now >= h.max) return '';
+  const w = words();
+  const t = h.full_at ? new Date(h.full_at).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' }) : '';
+  return `<span class="hp" title="${esc(t ? w.mendsAt.replace('{t}', t) : '')}"><span class="lbl">${w.hp}</span> <b>${h.now}/${h.max}</b></span>`;
+}
+
 /// One line in the world while the window is spent — and the boards stay:
 /// they use no model.
 function statusHtml() {
@@ -245,6 +255,7 @@ function statusHtml() {
     <div class="xw"><span class="lbl">${w.xw}</span><div class="bar"><i style="width:${pct}%"></i></div>
       <span class="num"><span data-count="progress">${look.progress}</span>/${look.next}</span>${omenChip('progress')}</div>
     ${qiHtml()}
+    ${hpHtml()}
     <span class="ls"><span class="lbl">${w.ls}</span> <b data-count="wealth">${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml({ ...ctx(), gear: view.gear }, view.gearOpen)}

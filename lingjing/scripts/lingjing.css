@@ -68,6 +68,7 @@ button:disabled { cursor: default; }
 .ls b { color: var(--ling); font-weight: 500; }
 /* A gain: the number glows while it counts up, and +N floats off it. */
 .xw .num, .ls { position: relative; }
+.hp b { color: #c0584a; font-weight: 500; }
 [data-count] { display: inline-block; transition: transform .25s ease-out, color .25s; }
 [data-count].rising { color: var(--ling); font-weight: 600; transform: scale(1.22); }
 .gain { position: absolute; left: 0; top: -4px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ling);
@@ -462,3 +463,6 @@ body.fighting .askbar { display: none; }
 @keyframes drift { from { transform: translateX(-6%) translateY(2%); } to { transform: translateX(6%) translateY(-2%); } }
 @media (prefers-reduced-motion: reduce) { .card.veil .mist { animation: none; } }
 @media (prefers-color-scheme: dark) { .card.veil { background: linear-gradient(180deg, #1f1d19, #29261f); } .card.veil .veilline { color: #b8ad99; } }
+/* 精英 and 伤势 on the way in: the two facts that make going a choice. */
+.celite { font-family: inherit; font-size: 11px; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 999px; border: 1px solid #a33b2e; color: #e0806f; vertical-align: middle; }
+.churt { font-family: inherit; font-size: 12px; color: #e0806f; margin: 6px 0; }

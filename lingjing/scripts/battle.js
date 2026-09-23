@@ -131,7 +131,7 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, boost? }, foe: { tier, root, deck, hp?, signature? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, boost?, wounds? }, foe: { tier, root, deck, hp?, signature?, elite? } }
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
    (or softer, n < 0). Both are locked at the door like the rest.
@@ -140,10 +140,12 @@ export function shuffle(ids, seed) {
 function sideOf(who, cfg, catalog, mode, seed) {
   const realm = REALMS[cfg.tier] ?? REALMS.qi;
   const hp = Math.max(1, Math.round((realm.hp + (cfg.step ?? 0) * 0.5) * (cfg.hpScale ?? 1)));
+  // 伤势: the player walks in carrying yesterday's fight (rules.mjs § 伤势).
+  const now = Math.max(1, hp - Math.max(0, cfg.wounds ?? 0));
   const deck = shuffle(cfg.deck ?? [], `${seed}|${who}`);
   return {
     who, tier: cfg.tier, root: cfg.root ?? null,
-    hp, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
+    hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null,
   };
@@ -166,7 +168,8 @@ export function begin(setup, catalog) {
   const unknown = missingCards(setup, catalog);
   if (unknown.length) throw new Error(`no card row for ${unknown.join(', ')}`);
   const you = sideOf('you', setup.you, catalog, mode, seed);
-  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp }, catalog, mode, seed);
+  // 精英 stand at their full 气血 (creatures.json `elite`); the rest at the mode's share.
+  const foe = sideOf('foe', { ...setup.foe, hpScale: setup.foe.elite ? 1 : mode.foeHp }, catalog, mode, seed);
   const st = { mode, catalog, seed, you, foe, turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [] };
   for (let i = 0; i < mode.hand; i += 1) draw(st, you);
   for (let i = 0; i < mode.foeHand; i += 1) draw(st, foe);

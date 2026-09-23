@@ -174,6 +174,19 @@ test('杀招 on the page: the beast gathering says what will land, and on whom, 
   assert.match(html, /雷神 开始蓄力：雷霆/, 'and the last-move line says so');
 });
 
+test('the way in says 精英 and the wound you carry — the two facts that make going a choice', async () => {
+  const { challengeHtml, WORDS } = await import('../scripts/battle-card.js');
+  const brief = {
+    id: 'haunt:leishen', today: null, health: { now: 14, max: 26 },
+    creature: { id: 'leishen', name: '雷神', pinyin: 'léi shén', root: 'wood', root_name: '木', elite: true, art: 'art/leishen.webp', about: null },
+  };
+  const html = challengeHtml(brief, { lang: 'zh', words: WORDS.zh });
+  assert.match(html, /class="celite">精英/);
+  assert.match(html, /带伤上阵：气血 14\/26/);
+  const whole = challengeHtml({ ...brief, health: { now: 26, max: 26 }, creature: { ...brief.creature, elite: false } }, { lang: 'zh', words: WORDS.zh });
+  assert.doesNotMatch(whole, /celite|churt/);
+});
+
 test('a fight whose cards the page cannot name is refused, not opened', async () => {
   // The empty catalog of 2026-09-18: the hand is dealt, nothing may be played,
   // and the only buttons that answer are 主灵根一击 and 结束回合. Silence there

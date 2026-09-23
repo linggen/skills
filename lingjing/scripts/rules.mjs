@@ -789,7 +789,7 @@ function gearBrief(content, state) {
     if (!item) return { id, name: id, n };
     const e = item.effect ?? {};
     const slot = e.wear ? (e.wear === her?.id ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
-    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress ? { usable: true } : {}) };
+    return { ...itemBrief(content, state, item), n, ...(slot ? { slot } : {}), ...(e.progress || e.mend ? { usable: true } : {}) };
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
@@ -1000,6 +1000,35 @@ export function deckFor(content, state) {
    along in hand when she walks with the player. */
 const WEAPON_POWER = 1;
 
+/* ── 伤势 — a fight's cost carried out of it ──
+   His call, 2026-09-23, from what the gate measured: a fight begun at full
+   气血 every time is a fight no turn of which matters, so the real choices were
+   never made. Now what a fight takes stays taken: the next one begins where
+   this one ended. It mends on the 灵气 clock (full in `refill_hours`), or at
+   once with a mending pill; below a quarter nobody walks into a fight. A loss
+   leaves nothing — that is its cost now, where before it had none. */
+const FIT_TO_FIGHT = 0.25;
+export const hpMaxOf = state => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (state.step ?? 0) * 0.5);
+function woundsNow(content, state, now) {
+  const w = state.wounds;
+  if (!w?.n) return 0;
+  const hours = Math.max(0, (now - new Date(w.at)) / 3600000);
+  const mended = Math.floor((hpMaxOf(state) * hours) / content.rewards.stamina.refill_hours);
+  return Math.max(0, w.n - mended);
+}
+/* When the wounds will have mended to `left` or fewer. */
+function mendsBy(content, state, now, left) {
+  const n = woundsNow(content, state, now);
+  if (n <= left) return now;
+  const perHour = hpMaxOf(state) / content.rewards.stamina.refill_hours;
+  return new Date(now.getTime() + Math.ceil(((n - left) / perHour) * 3600000));
+}
+function healthBrief(content, state, now) {
+  const max = hpMaxOf(state), n = woundsNow(content, state, now);
+  return { now: max - n, max, ...(n ? { full_at: mendsBy(content, state, now, 0).toISOString() } : {}) };
+}
+const fitToFight = (content, state, now) => hpMaxOf(state) - woundsNow(content, state, now) >= Math.ceil(hpMaxOf(state) * FIT_TO_FIGHT);
+
 export function fightSetup(content, state, creature, now) {
   const fortune = now ? boutFortune(content, state, now) : null;
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
@@ -1010,13 +1039,16 @@ export function fightSetup(content, state, creature, now) {
     seed: duelSeed(state, creature, now),
     you: {
       tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: withHer ? ['yinyue'] : [],
+      // Locked at the door with the rest: the page and the settle replay the
+      // same fight even if an hour of mending passes between them.
+      wounds: state.fight?.wounds ?? (now ? woundsNow(content, state, now) : 0),
       // 法器 stay in the world as gear and give 主灵根一击 +1 (design.md § 斗法
       // v3 牌型) — the sword on the belt, or the 本命法宝 it became.
       ...(wornOf(content, state, 'weapon') || state.treasure ? { power: WEAPON_POWER } : {}),
       // 问斗法: the lower trigram's element, its 功法 lifted or lowered today.
       ...(boost ? { boost } : {}),
     },
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.signature ? { signature: creature.signature } : {}) },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.elite ? { elite: true } : {}) },
   };
 }
 
@@ -1064,14 +1096,14 @@ function gainCard(content, state, id) {
    gift) — the beast's own element first.
    Never a 山海经 beast — those come only by taming. Stable by the day, the
    beast and the 道号, like everything else a fight deals. */
-function winCard(content, state, creature, now) {
+function winCard(content, state, creature, now, nth = 0) {
   const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []);
   const open = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && !isBeastCard(content, c.id)
     && !owned.has(c.id) && usable(c, roots));
   const own = open.filter(c => c.element === creature.root);
   const pool = own.length ? own : open;
   if (!pool.length) return null;
-  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card`) % pool.length].id);
+  return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card${nth ? `|${nth}` : ''}`) % pool.length].id);
 }
 
 /* The market's shelf: the catalog sold in this province — and, while the
@@ -1133,7 +1165,9 @@ function duelBrief(content, state, game, now) {
       ...(lang === 'zh' && creature.pinyin ? { pinyin: creature.pinyin } : {}),
       root: creature.root, root_name: pick(content.traits.elements[creature.root], lang),
       lean: creature.lean, art: creature.art ?? null, about: pick(creature.about, lang),
+      ...(creature.elite ? { elite: true } : {}),
     },
+    health: healthBrief(content, state, now),
     // Everything the fight is given at the door, and nothing else.
     setup: fightSetup(content, state, creature, now),
     today: open ? { outcome: open.outcome } : null,
@@ -1264,6 +1298,7 @@ export function look(state, content, ctx) {
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
+    health: healthBrief(content, state, ctx.now),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),
@@ -1729,6 +1764,10 @@ export function duel(state, content, ctx, args) {
     // day's 灵气 is not taken twice. The seed is the day's, so the cards deal
     // the same way they did.
     const resuming = s.fight?.game === id && today?.day === day && today.outcome === 'open';
+    if (!resuming && !fitToFight(content, s, ctx.now)) {
+      const at = mendsBy(content, s, ctx.now, hpMaxOf(s) - Math.ceil(hpMaxOf(s) * FIT_TO_FIGHT));
+      return refuse('wounded', pick({ zh: `伤还重，${hourOf(at, 'zh')} 再来 —— 或者服一粒丹。`, en: `Too hurt to fight. Come back at ${hourOf(at, 'en')} — or take a pill.` }, state.lang), { health: healthBrief(content, s, ctx.now), returns_at: at.toISOString(), game: id });
+    }
     if (!resuming) {
       const empty = spendStamina(content, s, ctx, 'duel');
       if (empty) return empty;
@@ -1736,7 +1775,7 @@ export function duel(state, content, ctx, args) {
     s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open' } };
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
-    s.fight = { game: id, creature: creature.id, at: ctx.now.toISOString() };
+    s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString(), wounds: woundsNow(content, s, ctx.now) };
     return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now) } };
   }
 
@@ -1749,6 +1788,10 @@ export function duel(state, content, ctx, args) {
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
   s.duels[creature.id] = { day, outcome: played.outcome };
+  // What the fight took stays taken (§ 伤势); a loss leaves nothing.
+  const left = played.outcome === 'lost' ? 0 : played.you.hp;
+  s.wounds = left < played.you.hpMax ? { n: played.you.hpMax - left, at: ctx.now.toISOString() } : undefined;
+  if (!s.wounds) delete s.wounds;
   if (played.outcome === 'won') advance(content, s, { kind: 'subdue', creature: creature.id });
   if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
   const say = played.outcome === 'lost' ? withdrawnLine
@@ -1757,10 +1800,18 @@ export function duel(state, content, ctx, args) {
   // What a subdued creature leaves, and what a haunt pays for it. A fight that
   // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3).
   const dropped = played.outcome === 'won' ? drop(content, s, creature) : [];
-  const card = played.outcome === 'won' ? winCard(content, s, creature, ctx.now) : null;
-  if (card) dropped.push(card);
-  const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: 'haunt', progress: 20, wealth: 10 }) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  // 精英 pay half again what a plain beast does and leave two cards (his,
+  // 2026-09-23: fixed in the world, marked where you can see them — the choice
+  // is whether to go, and in what shape). Half again, not twice: at twice the
+  // gate found always-elite the best day whatever the wounds, so there was no
+  // choice; at 1.5× an elite is worth it whole and a coin toss hurt.
+  const elite = Boolean(creature.elite);
+  for (let i = 0; played.outcome === 'won' && i < (elite ? 2 : 1); i += 1) {
+    const card = winCard(content, s, creature, ctx.now, i);
+    if (card) dropped.push(card);
+  }
+  const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
@@ -2030,6 +2081,17 @@ export function trade(state, content, ctx, args) {
   if (args.action === 'use') {
     if (held < 1) return refuse('not-in-bag', null);
     const e = item.effect ?? {};
+    // 疗伤: a mending pill takes back a share of what the fights took (§ 伤势).
+    if (e.mend) {
+      const n = woundsNow(content, s, ctx.now);
+      if (!n) return refuse('not-hurt', pick({ zh: '身上没伤，留着吧。', en: 'You are not hurt — keep it.' }, lang));
+      s.bag[item.id] = held - 1;
+      if (s.bag[item.id] <= 0) delete s.bag[item.id];
+      const rest = Math.max(0, n - Math.ceil(hpMaxOf(s) * e.mend));
+      s.wounds = rest ? { n: rest, at: ctx.now.toISOString() } : undefined;
+      if (!s.wounds) delete s.wounds;
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), health: healthBrief(content, s, ctx.now) } };
+    }
     if (e.progress) {
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];

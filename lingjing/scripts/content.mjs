@@ -835,8 +835,9 @@ function lintItems(content, bad) {
     // Arms are the fight's own numbers: 攻 on a weapon (with the root it
     // lends), 防 on a 法衣, 抗 on a 佩. Everything else is one plain effect.
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
-    const kinds = ['key', 'progress', 'wear', 'charm', 'temper'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, temper, or arms (atk, def, ward)');
+    const kinds = ['key', 'progress', 'wear', 'charm', 'temper', 'mend'].filter(k => e[k] != null);
+    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, progress, wear, charm, temper, mend, or arms (atk, def, ward)');
+    if (e.mend != null && !(e.mend > 0 && e.mend <= 1)) bad(where, 'mend is a share of 气血, above 0 and at most 1');
     if (arms.length > 1) bad(where, 'arms are one of 攻, 防 or 抗');
     for (const k of arms) {
       if (k !== 'ward' && (!Number.isInteger(e[k]) || e[k] < 1)) bad(where, `${k} must be a whole number above zero`);

@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, hpMaxOf, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -1231,9 +1231,9 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const s = toMarket();
   const l = look(s, content, ctx());
   assert.equal(l.place.has.shop, true);
-  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'jade-ring']);
+  assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'jade-ring']);
   assert.equal(l.place.shelf[1].buy, 80);
-  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'jade-ring'] }]);
+  assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'jade-ring'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
   assert.equal(bought.state.wealth, 20);
   assert.deepEqual(bought.state.bag, { 'moon-bell': 1, 'qi-pill': 1 }); // the bell came from the river
@@ -1247,7 +1247,7 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
   assert.equal(poor.price, 80);
-  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 8);
+  assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 9);
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
   refused(trade, { ...s, stamina: 2 }, { action: 'buy', id: 'straw-cloak' }, 'no-stamina');
 });
@@ -1377,7 +1377,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   s = r.state;
   const ye = look(s, content, octx());
   assert.equal(ye.scene.id, '01-ye');
-  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill', 'huojing']);
+  assert.deepEqual(ye.place.shelf.map(i => i.id), ['moon-bell', 'iron-sword', 'foundation-pill', 'mend-pill', 'huojing']);
   s = answer(trade, s, { action: 'buy', id: 'iron-sword' }).state;
   assert.equal(s.wealth, 180);
   s = answer(resolve, s, { exit: 'market' }).state; // stays
@@ -1878,7 +1878,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   s = r.state;
   const town = look(s, content, nctx());
   assert.equal(town.scene.id, '02-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'sang-paper', 'leijimu', 'xirang']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'mend-pill', 'sang-paper', 'leijimu', 'xirang']);
   s = answerN(trade, s, { action: 'buy', id: 'sang-paper' }).state;
   assert.equal(s.wealth, 370);
   s = answerN(resolve, s, { exit: 'lake' }).state;
@@ -1959,7 +1959,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   s = r.state;
   const town = look(s, content, dctx());
   assert.equal(town.scene.id, '03-town');
-  assert.deepEqual(town.place.shelf.map(i => i.id), ['qi-salt', 'qi-silk', 'jingjin', 'hanyu']);
+  assert.deepEqual(town.place.shelf.map(i => i.id), ['mend-pill', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu']);
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
   assert.equal(s.wealth, 380);
   s = answerD(resolve, s, { exit: 'shore' }).state;
@@ -2305,4 +2305,79 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
   const walking = must(quest, { ...lighter, place: 'sibei' }, { action: 'take', id: 'xu-lvliang-look' }, at).state;
   const arrived = must(move, walking, { place: 'lvliang' }, at).state;
   assert.equal(look(arrived, content, at).book.find(b => b.id === 'xu-lvliang-look').ready, true);
+});
+
+/* 伤势 (rules § 伤势): what a fight takes stays taken, mends on the 灵气 clock
+   or with a pill, and below a quarter nobody walks in. */
+test('伤势: a fight\'s wounds are carried into the next, mend with the hours, and a pill takes half', () => {
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const at = h => ctx({ now: new Date(new Date('2026-10-05T10:00:00').getTime() + h * 3600000) });
+  const max = hpMaxOf(base);
+  assert.deepEqual(look(base, content, at(0)).health, { now: max, max }, 'fresh: whole');
+  const settled = fightOut(base, 'haunt:jingwei', { c: at(0) });
+  const left = settled.result.you.hp;
+  assert.deepEqual(settled.state.wounds, left < max ? { n: max - left, at: at(0).now.toISOString() } : undefined, 'what it took, or nothing');
+  // The next fight begins where this one ended — locked at the door.
+  const hurt = { ...base, wounds: { n: 15, at: at(0).now.toISOString() } };
+  const door = must(duel, hurt, { id: 'haunt:jingwei' }, at(0));
+  assert.equal(door.state.fight.wounds, 15);
+  assert.equal(door.result.duel.setup.you.wounds, 15);
+  assert.equal(begin(door.result.duel.setup, Object.fromEntries(content.cards.cards.map(x => [x.id, x]))).you.hp, max - 15);
+  // An hour on, the fight still replays as it was begun: the door holds it.
+  assert.equal(fightSetup(content, door.state, content.creatures.creatures.find(c => c.id === 'jingwei'), at(1).now).you.wounds, 15);
+  // Mending: full in refill_hours.
+  const hours = content.rewards.stamina.refill_hours;
+  assert.equal(look(hurt, content, at(hours)).health.now, max);
+  assert.ok(look(hurt, content, at(hours / 2)).health.now > max - 15);
+  assert.ok(look(hurt, content, at(0)).health.full_at, 'and says when');
+});
+
+test('伤势: below a quarter the door refuses and says when — a mending pill opens it', () => {
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const max = hpMaxOf(base);
+  const beaten = { ...base, wounds: { n: max, at: c.now.toISOString() } };
+  const no = refused(duel, beaten, { id: 'haunt:jingwei' }, 'wounded', c);
+  assert.ok(no.returns_at > c.now.toISOString());
+  assert.match(no.say, /伤还重/);
+  refused(trade, base, { action: 'use', id: 'mend-pill' }, 'not-in-bag', c);
+  refused(trade, { ...base, bag: { ...base.bag, 'mend-pill': 1 } }, { action: 'use', id: 'mend-pill' }, 'not-hurt', c);
+  const took = must(trade, { ...beaten, bag: { ...beaten.bag, 'mend-pill': 1 } }, { action: 'use', id: 'mend-pill' }, c);
+  assert.equal(took.state.wounds.n, max - Math.ceil(max / 2));
+  assert.equal(took.state.bag['mend-pill'], undefined);
+  assert.equal(took.result.health.now, Math.ceil(max / 2));
+  assert.equal(must(duel, took.state, { id: 'haunt:jingwei' }, c).result.ok, true);
+});
+
+test('伤势: a lost fight leaves nothing; a won one leaves what it took', () => {
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const lost = fightOut(base, 'haunt:jingwei', { line: 'pass', c });
+  if (lost.result.outcome === 'lost') assert.equal(lost.state.wounds.n, hpMaxOf(base));
+  else assert.equal(lost.result.outcome, 'withdrew');
+});
+
+test('精英: fixed in the world, marked on its card, at full 气血 — and it pays half again, with two cards', () => {
+  const nov = ctx({ now: new Date('2026-11-05T10:00:00') });
+  const base = { ...toOpenWorld(), chapter: '02-yan', scene: null, place: 'leize', tier: 'foundation', step: 0, progress: 0 };
+  const l = look(base, content, nov);
+  assert.equal(l.place.encounter.creature.id, 'leishen');
+  assert.equal(l.place.encounter.duel.creature.elite, true);
+  const setup = l.place.encounter.duel.setup;
+  assert.equal(setup.foe.elite, true);
+  const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
+  const full = begin(setup, catalog).foe.hp, plain = begin({ ...setup, foe: { ...setup.foe, elite: false } }, catalog).foe.hp;
+  assert.equal(plain, Math.round(full * 0.7), 'full 气血 where a plain beast stands at seven tenths');
+  // A strong hand, so the win path runs: every card his five roots may hold.
+  // Its wood cards held back, so a win has cards left to give.
+  const all = content.cards.cards.filter(x => !x._token && x.element !== 'wood').map(x => x.id);
+  const won = fightOut({ ...base, tier: 'core', traits: ['metal', 'wood', 'water', 'fire', 'earth'], cards: all }, 'haunt:leishen', { c: nov });
+  assert.equal(won.result.outcome, 'won', JSON.stringify({ o: won.result.outcome, you: won.result.you?.hp, foe: won.result.foe?.hp, turns: won.result.turns }));
+  {
+    assert.equal(won.result.elite, true);
+    assert.equal(won.result.paid.wealth, 15, 'half again a plain haunt\'s ten');
+    assert.ok(won.result.paid.progress > 20 * 0.8, JSON.stringify(won.result.paid));
+    assert.equal(won.result.dropped.filter(d => d.card).length, 2, JSON.stringify(won.result.dropped));
+  }
+  assert.ok(!content.creatures.creatures.find(c => c.id === 'jingwei').elite, 'the rest are plain');
 });

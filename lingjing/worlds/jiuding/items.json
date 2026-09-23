@@ -234,6 +234,30 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the description."
     },
     {
+      "id": "mend-pill",
+      "kind": "pill",
+      "name": {
+        "zh": "回春丹",
+        "en": "Mending pill"
+      },
+      "art": "art/items/mend-pill.webp",
+      "about": {
+        "zh": "斗法落下的伤，一粒去其一半。",
+        "en": "Takes half of what the fights took, in one pill."
+      },
+      "buy": 30,
+      "sell": 8,
+      "sold": [
+        "兖",
+        "冀",
+        "徐",
+        "青"
+      ],
+      "effect": {
+        "mend": 0.5
+      }
+    },
+    {
       "id": "sang-paper",
       "kind": "material",
       "name": {

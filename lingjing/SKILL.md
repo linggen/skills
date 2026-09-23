@@ -948,8 +948,9 @@ game at once, and the player loses the thread.
 **When it ends the scene says so**, and only then do you move again:
 - `[scene] won <id>` — **Look**, say what the rules `paid`, then Resolve that
   exit if it has one (at a haunt there is none: the rules pay it there).
-- `[scene] lost <id>` — the creature withdraws until tomorrow. A loss costs
-  nothing but the day's 灵气; Yinyue's line after it is kind and short.
+- `[scene] lost <id>` — the creature withdraws until tomorrow, and the player
+  walks away with **no 气血 left** (伤势, below). Yinyue's line after it is kind
+  and short — she is the one who notices the wound.
 - `[scene] withdrew <id>` — it ran out of breath and walked away. **Neither won
   nor lost, and nothing is paid** — say it plainly; it is not a victory.
 
@@ -981,7 +982,26 @@ always in the world:
 - Its **lean** tells it apart: 厚皮 *hide* · 避法 *ward* · 迅捷 *quick* ·
   凶猛 *fierce*.
 
+- **杀招**: at half its 气血 a beast gathers — it plays nothing its next round
+  — then lets its signature go the round after, once. The scene writes what
+  will land; you may name the move (雷神's 雷霆, 夫诸's 大水) as the world's.
+
 **One fight a day with the same creature**, and the day's 灵气 pays for it.
+
+**伤势 — the fight's cost is carried.** Look's `health: { now, max, full_at? }`
+is the player's 气血 outside a fight. What a fight takes stays taken: the next
+one begins there. It mends on its own (full in five hours, like 灵气), or a
+**回春丹** (sold at markets; 服用 from the 装备 card, a page tap) takes back half.
+Below a quarter the fight's door refuses with `refused: "wounded"`, its `say`
+and `returns_at` — tell it in the world (rest, a pill), never as a number to
+grind. When `health.now < max`, Yinyue may notice it — once, in a line, not
+every turn.
+
+**精英 — fixed in the world.** Some beasts are `elite` (the creature brief
+carries it; 雷神 and 夔 today): marked on their card, at their full 气血, paying
+half again and two cards. The choice is the player's — whether to go, and in
+what shape. You may warn once, in the world ("雷泽那位，不是寻常山精"); never
+decide for them.
 
 **本命法宝 — the treasure bound at 结丹.** Past the Core a cultivator may bind
 the weapon in hand and one 天材地宝 into a treasure of their own (Refine). From

@@ -311,3 +311,4 @@
 .bcharge.ready { box-shadow: 0 0 18px rgba(163, 59, 46, 0.35); animation: bgather 1.6s ease-in-out infinite; }
 @keyframes bgather { 50% { box-shadow: 0 0 28px rgba(163, 59, 46, 0.55); } }
 @media (prefers-reduced-motion: reduce) { .bcharge.ready { animation: none; } }
+
