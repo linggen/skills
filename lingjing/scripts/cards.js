@@ -13,10 +13,10 @@ export const WORDS = {
     title: '灵境', xw: '修为', ls: '灵石', tray: '今日功课', trayEmpty: '今日无事，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
-    tamed: '随行', untamed: '未驯', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
+    tamed: '已收服', untamed: '未收服', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
-    choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', feedNone: '囊中没有{item}', wonOver: '收服', subdue: '降妖',
-    effProgress: '服下：{xw} +{n}', effMend: '服下：斗法落下的伤去 {n}%', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effWear: '可赠银月佩戴', effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
+    choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', sayOffer: '向{name}献上{item}', feedNone: '囊中没有{item}', wonOver: '收服', subdue: '降妖',
+    effProgress: '服下：{xw} +{n}', effMend: '服下：斗法落下的伤去 {n}%', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}', tend: '她疗伤多回 {pct}%' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
     aCast: '法术', aStrike: '物理', aCharm: '符箓', aAssist: '辅助', aFocus: '聚势', aGuard: '护体', arts: '功法',
@@ -50,12 +50,12 @@ export const WORDS = {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: "Today's practice", trayEmpty: 'Nothing waits today. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
-    tamed: 'Travels with you', untamed: 'Untamed', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
+    tamed: 'Won over', untamed: 'Not won over', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
-    choreOpen: 'Do it in {app}', about: 'Ask', askHint: 'What do you want to know? Leave it empty and she simply tells', askSend: 'Ask', drop: 'Put it down', paysWord: 'Pays', nextWord: 'Then', feed: 'Feed it {item}', feedNone: 'No {item} in the bag', wonOver: 'Won over', subdue: 'Subdue',
-    effProgress: 'Taken: {xw} +{n}', effMend: 'Taken: {n}% of what the fights took, back', effLearn1: 'Learned: see the shape of the beast\'s next turn', effLearn2: 'Learned: see every move of its next turn, with numbers', effWear: 'Yinyue can wear it', effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effTemper: 'Tempers your treasure +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
+    choreOpen: 'Do it in {app}', about: 'Ask', askHint: 'What do you want to know? Leave it empty and she simply tells', askSend: 'Ask', drop: 'Put it down', paysWord: 'Pays', nextWord: 'Then', feed: 'Feed it {item}', offer: 'Offer the {item}', sayOffer: 'Offer {name} the {item}', feedNone: 'No {item} in the bag', wonOver: 'Won over', subdue: 'Subdue',
+    effProgress: 'Taken: {xw} +{n}', effMend: 'Taken: {n}% of what the fights took, back', effLearn1: 'Learned: see the shape of the beast\'s next turn', effLearn2: 'Learned: see every move of its next turn, with numbers', effWear: 'Yinyue can wear it', effLift: { atk: 'her card +{n} attack', hp: 'her card +{n} Life', tend: 'her tending mends {pct}% more' }, effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effTemper: 'Tempers your treasure +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
     duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
     aCast: 'Spell', aStrike: 'Strike', aCharm: 'Talisman', aAssist: 'Ready', aFocus: 'Gather', aGuard: 'Guard', arts: 'Arts',
@@ -369,11 +369,14 @@ function board(card, ctx) {
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
+/// What a thing she wears does for her card, in one line.
+const liftSaid = (e, w) => Object.entries(e?.lift ?? {}).map(([k, n]) => say(w.effLift?.[k] ?? '', { n, pct: Math.round(n * 100) })).join(' · ');
+
 const DOES = {
   progress: (e, w) => say(w.effProgress, { xw: w.xw, n: e.progress }),
   mend: (e, w) => say(w.effMend, { hp: w.hp, n: Math.round(e.mend * 100) }),
   learn: (e, w) => say(e.level >= 2 ? w.effLearn2 : w.effLearn1, {}),
-  wear: (e, w) => w.effWear,
+  wear: (e, w) => [w.effWear, liftSaid(e, w)].filter(Boolean).join(' · '),
   atk: (e, w) => [say(w.effAtk, { n: e.atk }), e.root_name ? say(w.effRoot, { root: e.root_name }) : ''].filter(Boolean).join(' · '),
   def: (e, w) => say(w.effDef, { n: e.def }),
   ward: (e, w) => (e.wards ?? []).map((x) => say(w.effWard, { root: x.name, n: x.n })).join(' · '),
@@ -439,7 +442,8 @@ function duel(card, ctx) {
   // 都是收服的方式): 出手, or feed it what it likes — a word to Ling, who tames.
   const here = e && e.game.id === card.id && !e.tamed && e.likes ? e : null;
   const name = here ? e.creature.name ?? '' : '';
-  const feed = here ? `<button class="bact feed" ${sayAttr(say(ctx.words.sayFeed, { name, item: here.likes.name }))}${here.likes.held ? '' : ` disabled title="${esc(here.likes.name)}"`}>${esc(say(ctx.words.feed, { item: here.likes.name }))}${here.likes.held ? '' : `<small>${esc(say(ctx.words.feedNone, { item: here.likes.name }))}</small>`}</button>` : '';
+  const fed = here?.likes.fed !== false; // food is fed; a thing is offered
+  const feed = here ? `<button class="bact feed" ${sayAttr(say(fed ? ctx.words.sayFeed : ctx.words.sayOffer, { name, item: here.likes.name }))}${here.likes.held ? '' : ` disabled title="${esc(here.likes.name)}"`}>${esc(say(fed ? ctx.words.feed : ctx.words.offer, { item: here.likes.name }))}${here.likes.held ? '' : `<small>${esc(say(ctx.words.feedNone, { item: here.likes.name }))}</small>`}</button>` : '';
   return challengeHtml(exit.duel, { ...ctx, words: BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, title: ctx.words.subdue ?? '降妖', artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, feed });
 }
 
@@ -641,7 +645,10 @@ export function gearPopHtml(ctx) {
     ${it ? `<span><b>${esc(it.name)}</b>${plain ? '' : ` <span class="small dim">${esc(itemDoes(it.effect, ctx))}</span>`}</span>` : `<span class="dim">${esc(w.gearEmpty)}</span>`}${it && off ? `<button class="act" data-remove="${esc(it.id)}">${esc(w.gearOff)}</button>` : ''}</div>`;
   const slots = g.slots.map((s) => row(w.gearSlots[s.slot] ?? s.slot, s.item, false, true)).join('');
   const treasure = t ? `<div class="gearrow"><span class="lbl">${esc(w.gearSlots.treasure)}</span><span><b>${esc(t.name)}</b> <span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span></span></div>` : '';
-  const her = g.her ? row(say(w.gearHer, { name: g.her.name }), g.her.item, true) + bondRow(g.her.bond, w) + journeyRow(ctx.look?.companion, w) : '';
+  const herLift = g.her?.item ? liftSaid(g.her.item.effect, w) : '';
+  const herRow = g.her ? `<div class="gearrow"><span class="lbl">${esc(say(w.gearHer, { name: g.her.name }))}</span>
+    ${g.her.item ? `<span><b>${esc(g.her.item.name)}</b>${herLift ? ` <span class="small dim">${esc(herLift)}</span>` : ''}</span>` : `<span class="dim">${esc(w.gearEmpty)}</span>`}</div>` : '';
+  const her = g.her ? herRow + bondRow(g.her.bond, w) + journeyRow(ctx.look?.companion, w) : '';
   const fight = g.fight?.power ? `<div class="small dim">${esc(say(w.gearFight, { n: g.fight.power }))}</div>` : '';
   const bag = g.bag.length ? g.bag.map((i) => {
     const act = i.slot && !i.worn ? `<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`

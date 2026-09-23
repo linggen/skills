@@ -423,6 +423,9 @@ async function main() {
     // 羁绊 lifts her card (rewards.json bond.levels): 相知 +0/+1, 相惜 +0/+2, 同心 +1/+1.
     ['羁绊 相知 · 银月 +0/+1', { lifts: { yinyue: { atk: 0, hp: 1 } } }],
     ['羁绊 同心 · 银月 +1/+1', { lifts: { yinyue: { atk: 1, hp: 1 } } }],
+    // What she wears (items.json lift): 齐纨 +0/+1 on top of 同心 (+1.6). Tried and dropped 2026-09-23:
+    // 银月铃 as heal +1 (0.0 — the heal never decides a fight) and +1 攻 (+4.4, over the gate).
+    ['羁绊 同心 + 齐纨 · +1/+2', { lifts: { yinyue: { atk: 1, hp: 2 } } }],
   ];
   for (const [label, you] of kit) {
     const r = run(smart, { decks, you });

@@ -11,7 +11,7 @@
 // waiting state; it never touches the fight.
 
 import { esc, spoken } from './cards.js';
-import { bodyOf, clash, dealt, effectOf } from './battle.js';
+import { bodyOf, boostedOf, clash, dealt, effectOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -302,7 +302,7 @@ function onBeast(st, c, ctx) {
    printed one says why. */
 function liftOf(side, c, ctx) {
   const b = side.boost;
-  if (effectOf(side, c) === c.effect) return '';
+  if (boostedOf(side, c) === c.effect) return '';
   const n = b.n > 0 ? `+${b.n}` : `${b.n}`;
   return ` <b class="blift${b.n < 0 ? ' down' : ''}">${ctx.lang === 'en' ? `cast ${n}` : `卦 ${n}`}</b>`;
 }

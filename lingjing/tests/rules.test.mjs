@@ -201,7 +201,7 @@ test('a creature at its haunt: the bout on the stage pays once a day, and what i
   assert.equal(l.scene, null);
   assert.equal(l.place.encounter.creature.id, 'jingwei');
   assert.equal(l.place.encounter.game.id, 'haunt:jingwei');
-  assert.deepEqual(l.place.encounter.likes, { id: 'jade-fish', name: '玉鱼', held: 0 });
+  assert.deepEqual(l.place.encounter.likes, { id: 'jade-fish', name: '玉鱼', held: 0, fed: false });
   // The bout and the feeding are on the creature's card: one clickable place
   // each, so the choice never carries them (his law, 2026-09-17).
   assert.ok(!l.director.choice.options.some(o => o.duel || o.tame), 'the card holds them');
@@ -2424,6 +2424,16 @@ test('羁绊: grows from what is shared, a day at a time, and not before she wal
   assert.equal(fightSetup(content, her, jingwei, c.now).you.lifts, undefined);
   assert.deepEqual(fightSetup(content, { ...her, bond: { n: 20 } }, jingwei, c.now).you.lifts, { yinyue: { atk: 0, hp: 1 } });
   assert.deepEqual(fightSetup(content, { ...her, bond: { n: 100 } }, jingwei, c.now).you.lifts, { yinyue: { atk: 1, hp: 1 } });
+  // what she wears lifts her card too (his, 2026-09-23): 齐纨 +1 气血, 银月铃 +1 heal
+  const silk = { ...her, bond: { n: 100 }, bag: { ...her.bag, 'qi-silk': 1 }, wear: { ...her.wear, yinyue: 'qi-silk' } };
+  assert.deepEqual(fightSetup(content, silk, jingwei, c.now).you.lifts, { yinyue: { atk: 1, hp: 2 } });
+  const { 'qi-silk': _gone, ...sold } = silk.bag;
+  assert.deepEqual(fightSetup(content, { ...silk, bag: sold }, jingwei, c.now).you.lifts, { yinyue: { atk: 1, hp: 1 } }, 'sold, it lifts nothing');
+  // 银月铃 lifts her 疗伤 by a tenth of 气血 (in the fight a heal +1 measured nothing)
+  const hurt = { ...her, wounds: { n: 60, at: c.now.toISOString() } };
+  const plain = must(tend, hurt, {}, c).result.mended;
+  const rung = must(tend, { ...hurt, bag: { ...hurt.bag, 'moon-bell': 1 }, wear: { ...hurt.wear, yinyue: 'moon-bell' } }, {}, c).result.mended;
+  assert.equal(rung - plain, Math.ceil(hpMaxOf(hurt) * 0.3) - Math.ceil(hpMaxOf(hurt) * 0.2));
 });
 
 test('疗伤: she tends the wound once a day, more as the bond grows', () => {

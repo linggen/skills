@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` changes how Yinyue or the abode looks; `charm` is a 符 — cast in a fight, it ignores 防 and 抗, once. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot. `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only.",
+  "_about": "The catalog: every thing the player can own, with its picture, its price and at most one effect. `key` is needed by an exit; a pill pays `progress` on use from a capped table; `wear` puts it on Yinyue (with a `lift`: her card's atk or hp by 1, or her 疗伤 by 0.1) or the abode; `charm` is a 符 — cast in a fight, it ignores 防 and 抗, once. Arms are the fight's own: a weapon's `atk` (器攻) with the `root` it lends, a 法衣's `def` (防), a 佩's `ward` (抗, by element) — each worn in its own slot. `temper` feeds a 本命法宝 that many points of growth, and `core` on such a material names the element it would lend if the treasure were bound with it. `sold` names the provinces whose market shelves it; an item sold nowhere is a gift or a drop only.",
   "items": [
     {
       "id": "lingzhi",
@@ -163,7 +163,8 @@
         "冀"
       ],
       "effect": {
-        "wear": "yinyue"
+        "wear": "yinyue",
+        "lift": { "tend": 0.1 }
       }
     },
     {
@@ -361,7 +362,8 @@
         "青"
       ],
       "effect": {
-        "wear": "yinyue"
+        "wear": "yinyue",
+        "lift": { "hp": 1 }
       },
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     },

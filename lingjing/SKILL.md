@@ -963,9 +963,10 @@ it `likes`, with how many the player holds. Two ways, both the rules':
   reports `[scene] won haunt:<creature>`: **Look**, say what the rules
   `paid` (a haunt pays like a branch), no Resolve — there is no exit. Lost:
   it withdraws until tomorrow, `[scene] lost …` — say it plainly; Yinyue comforts on her own (§ Voices).
-- **驯 by what it likes** — *喂它灵芝*, *feed it the jade fish*: **Tame**
-  with the creature. The bag pays one; it joins the `cast` and walks with
-  the player. `needs-item` tells what it wants in its own line — the
+- **驯 by what it likes** — *喂它灵芝*, *向雷神献上银月铃*: **Tame**
+  with the creature. Food is fed; a thing is offered (`likes.fed`) — never
+  say a beast eats a bell. The bag pays one; it joins the `cast` and walks with
+  the player. Won over this way it counts as 降 for any errand. `needs-item` tells what it wants in its own line — the
   market or the road may hold it. A tamed creature fights no more here.
 
 ## 降妖 — 斗法, the card fight

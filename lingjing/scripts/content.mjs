@@ -875,6 +875,14 @@ function lintItems(content, bad) {
       else if (e.progress > table.progress) bad(where, `progress ${e.progress} is over the ${e.table} cap of ${table.progress}`);
     }
     if (e.wear != null && !WEAR_SLOTS.has(e.wear)) bad(where, `cannot wear on ${e.wear}`);
+    // What a thing worn by a companion lifts: one point on her card (攻 or
+    // 气血 — the bond's +2/+2 won 97%, so kept small), or a tenth more to her
+    // 疗伤 (tend, a share of 气血).
+    if (e.lift != null) {
+      if (e.wear == null) bad(where, 'a lift is worn by a companion — it needs wear');
+      const keys = Object.keys(e.lift), k = keys[0];
+      if (keys.length !== 1 || !(((k === 'atk' || k === 'hp') && e.lift[k] === 1) || (k === 'tend' && e.lift[k] === 0.1))) bad(where, 'a lift is atk or hp by 1, or tend by 0.1');
+    }
   }
 }
 

@@ -132,7 +132,7 @@ export function shuffle(ids, seed) {
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
    { mode, seed, you: { tier, step, root, deck, extra, power?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature?, elite? } }
-   `lifts` is { cardId: { atk, hp } } — a body that stands taller for this
+   `lifts` is { cardId: { atk, hp, heal } } — a body that stands taller for this
    side (银月 by the bond, rules.mjs § 羁绊); `bodyOf` is the one reading.
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
@@ -403,6 +403,13 @@ export function legal(st, action, who = 'you') {
    `boost.n` harder (never below 1). The page draws the card from this too, so
    the number on the card is the number that lands. */
 export function effectOf(side, c) {
+  // A lift on the card's own number (银月铃: her battlecry heals one more).
+  const e = boostedOf(side, c), h = side?.lifts?.[c?.id]?.heal;
+  return h && e?.heal != null ? { ...e, heal: e.heal + h } : e;
+}
+
+/* The day's cast alone — the card says why its number moved. */
+export function boostedOf(side, c) {
   const e = c?.effect;
   const b = side?.boost;
   if (!e || c.kind !== 'spell' || !b?.n || b.element !== c.element) return e;
@@ -444,7 +451,7 @@ export function act(st, action, who = 'you') {
       const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false };
       side.board.push(m);
       st.log.push({ act: 'played', who: side.who, id, kind: 'minion' });
-      if (c.keywords?.includes('battlecry')) resolve(st, side, { ...c.effect, element: c.element }, action.target);
+      if (c.keywords?.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
     } else {
       st.log.push({ act: 'played', who: side.who, id, kind: 'spell' });
       resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);

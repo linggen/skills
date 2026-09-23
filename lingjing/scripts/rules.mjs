@@ -109,7 +109,8 @@ function encounterOf(content, state, now) {
     won: Boolean(state.wins?.[game.id]) && today?.day === day && today.outcome === 'won',
     withdrawn: today?.day === day && today.outcome === 'lost',
     tamed: state.cast.includes(cid),
-    likes: item ? { id: item.id, name: pick(item.name, lang), held: state.bag[item.id] ?? 0 } : null,
+    // `fed`: food is fed; a thing (雷神's bell, 狪狪's silk) is offered (his, 2026-09-23: 雷神吃装备吗?)
+    likes: item ? { id: item.id, name: pick(item.name, lang), held: state.bag[item.id] ?? 0, fed: item.kind === 'material' } : null,
   };
 }
 
@@ -894,7 +895,7 @@ const EFFECT_BRIEF = {
   progress: e => ({ progress: e.progress }),
   mend: e => ({ mend: e.mend }),
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
-  wear: e => ({ wear: e.wear }),
+  wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
@@ -1232,10 +1233,16 @@ function gainBond(content, s, kind, now, key = null) {
   const after = bondLevel(content, s.bond.n);
   return { kind, gained: add, ...bondBrief(content, s), ...(after.id !== before.id ? { rose: pick(after.name, s.lang) } : {}) };
 }
-/* Her card, as the bond lifts it — locked at the door with the rest. */
+/* Her card, as the bond and what she wears lift it — locked at the door
+   with the rest. 齐纨 +1 气血 (his, 2026-09-23: 银月的佩戴都没啥用 — we cannot
+   change how she looks, so a number). 银月铃 lifts her 疗伤 instead: a heal
+   +1 in the fight measured nothing, and +1 攻 over 同心 failed the gate. */
 const bondLifts = (content, state) => {
-  const lift = hasCompanion(state) ? bondLevel(content, state.bond?.n ?? 0).lift : null;
-  return lift && (lift.atk || lift.hp) ? { yinyue: { atk: lift.atk ?? 0, hp: lift.hp ?? 0 } } : null;
+  if (!hasCompanion(state)) return null;
+  const lift = bondLevel(content, state.bond?.n ?? 0).lift ?? {};
+  const her = companionOf(content)?.id, worn = her ? wornOf(content, state, her)?.effect?.lift ?? {} : {};
+  const sum = { atk: (lift.atk ?? 0) + (worn.atk ?? 0), hp: (lift.hp ?? 0) + (worn.hp ?? 0) };
+  return sum.atk || sum.hp ? { yinyue: sum } : null;
 };
 
 /* 疗伤 — she tends the wound, once a day, by the bond. A page tap. */
@@ -1248,7 +1255,9 @@ export function tend(state, content, ctx) {
   const day = dayKey(ctx.now);
   if (state.tended === day) return refuse('tended-today', pick({ zh: '今日她已替你调理过了。', en: 'She has already tended you today.' }, lang));
   const s = clone(state);
-  const share = bondLevel(content, s.bond?.n ?? 0).tend;
+  // 银月铃 on her: its sound settles the breath, and she mends a tenth more.
+  const her = companionOf(content)?.id;
+  const share = bondLevel(content, s.bond?.n ?? 0).tend + (her ? wornOf(content, s, her)?.effect?.lift?.tend ?? 0 : 0);
   const mended = Math.min(n, Math.ceil(hpMaxOf(s) * share));
   s.wounds = n - mended ? { n: n - mended, at: ctx.now.toISOString() } : undefined;
   if (!s.wounds) delete s.wounds;
