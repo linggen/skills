@@ -216,7 +216,7 @@ tools:
     description: >-
       Buy, sell or use a catalog item. `buy` and `sell` happen only at a
       place with a market (`place.has.shop`; its `shelf` carries every price —
-      you never invent one) and cost a visit's stamina; `use` works anywhere:
+      you never invent one) and cost no stamina; `use` works anywhere:
       a pill pays its progress, a wear goes on Yinyue or the abode, and arms
       are worn — a weapon in hand (`wear.weapon`, its 器攻 for 物理攻击 and
       its root lent to a 法术), a 法衣 (`wear.robe`, 防), a 佩
@@ -257,7 +257,7 @@ tools:
   - name: Inscribe
     description: >-
       写符 — one 桑皮纸 from the bag becomes one 符: at a place with a market,
-      or anywhere once the Core is formed (结丹); a visit's stamina; one a
+      or anywhere once the Core is formed (结丹); no stamina; one a
       day. The result carries the 符 as an `item` and its card to `show`.
       The 符 is cast on the scene, in a fight — never by you. Refusals:
       `no-paper` (its line names the paper), `not-here` (its line), `written-today`
@@ -712,8 +712,10 @@ day's cast or 机缘 she may name; open straight on one or two sentences of
 - **`no-stamina`: the pool (`words.pool`) is empty.** Speak its `say` (it
   names the hour stamina returns), turn the player to the world in one line —
   rest, a walk, their other practice — and let the story wait. Never count,
-  spend or promise stamina yourself: a story step, a branch and a fight cost
-  it (the prologue's steps and fights are free); talk, questions and the boards are free; a quest paid refills it
+  spend or promise stamina yourself: walking costs it by the road, and a fight,
+  a branch, a story step, a 抉择 and a taming cost it (the prologue's steps,
+  walks and fights are free); talk, the market, errands, the boards and her
+  tending are free — so an empty pool still shops and hands in; a quest paid refills it
   (`stamina` on the result — say it in the world's word, as you say what was
   paid).
 - **Show is your only card.** The scene draws the status, the place and
