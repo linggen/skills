@@ -283,7 +283,8 @@ export function loadSession(sessionData) {
     // Heal persisted sessions whose cards were ingested before ensureCardId
     // existed (or were saved id-less) — otherwise their buttons stay dead.
     for (const sec of Object.values(session.sections)) {
-      (sec.cards || []).forEach(ensureCardId);
+      sec.cards = normalizeNoticeCards(sec.cards || []);
+      sec.cards.forEach(ensureCardId);
       // Heal sessions holding submit cards that point at an image, not an
       // article — they were persisted before the finder stopped emitting them.
       sec.cards = dropUnsubmittableCards(sec.cards);
@@ -411,6 +412,30 @@ function dropUnsubmittableCards(cards) {
 // { type:"empty", reason:"No fresh Reddit thread cleared the grounded-reply
 // check this scan." } with no source. Resolve it at ingest instead of
 // trusting every prompt to hold the rule.
+// Models invent text-only card types for a one-line note — observed
+// 2026-09-23: { type:"note", text:"For Reddit comment replies, add a private
+// RSS token…" } rendered as "[unknown card type: note]" beside the Reddit
+// `empty` card that already said the same thing. A text-only card IS an
+// `empty` state line: fold it into one, then drop any state line whose text
+// another line in the same patch already carries.
+const NOTICE_TYPES = ['note', 'notice', 'info', 'status', 'message'];
+
+function normalizeNoticeCards(cards) {
+  const folded = cards.map(c => {
+    if (!c || !NOTICE_TYPES.includes(String(c.type || '').toLowerCase())) return c;
+    const { type, text, ...rest } = c;
+    return { ...rest, type: 'empty', reason: c.reason || c.message || text };
+  });
+  const lineOf = c => String(c.reason || c.message || '').trim();
+  return folded.filter((c, i) => {
+    if (!c || c.type !== 'empty') return true;
+    const line = lineOf(c);
+    if (!line) return true;
+    return !folded.some((o, j) => j !== i && o && o.type === 'empty'
+      && lineOf(o).includes(line) && (lineOf(o) !== line || j < i));
+  });
+}
+
 function dropContradictoryEmpties(cards) {
   const realLanes = new Set(
     cards.filter(c => c.type !== 'empty').map(cardSource));
@@ -437,7 +462,8 @@ function applyBodyPatch(patch) {
     // gather — see init() — so dismissedUrls is populated by the time a
     // body_patch arrives.)
     const incoming = dropUnsubmittableCards(dropContradictoryEmpties(
-      patch.cards.filter(c => !isDismissed(c)))).map(ensureCardId);
+      normalizeNoticeCards(patch.cards.filter(c => !isDismissed(c)))))
+      .map(ensureCardId);
     // Two modes:
     //   default (replace) — cards in patch fully replace existing cards.
     //                       Used by Gather web's mentions/trend/discovery

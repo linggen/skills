@@ -523,8 +523,10 @@ partner.
   comes from RSS. If `FetchRedditMentions` returns an `errors` entry
   mentioning `no private_rss_feed_token`, only public username mentions
   were available (not comment replies). Surface what you got, and if
-  the `mentions` section is thin, add a one-line note: "For Reddit
-  comment replies, add a private RSS token in Settings → Reddit." Don't
+  the `mentions` section is thin, put this line in the Reddit `empty`
+  card's `reason` (`{ type:"empty", source:"reddit", reason }`): "For
+  Reddit comment replies, add a private RSS token in Settings → Reddit."
+  There is no `note` card type — never emit a second card for it. Don't
   treat a token-less run as "no activity."
 
 ## What NOT to do
