@@ -61,7 +61,7 @@ tools:
       of those ids, in the player's language. Every number you speak wears
       the word from `words`. Call it first in every session and whenever you
       are unsure.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs look --said={{said}} --for=ling"
     tier: read
     timeout_ms: 8000
     args:
@@ -78,7 +78,7 @@ tools:
       a riddle's answer, pay its reward and move the story; the result carries
       the `beat` to speak, what was `paid`, cards to `show` and the next
       `scene`. A refusal `{ok:false, refused, say}` changed nothing.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}} --said={{said}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs resolve --exit={{exit}} --value={{value}} --answer={{answer}} --said={{said}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -105,7 +105,7 @@ tools:
     description: >-
       Check an answer against a riddle key outside an exit, e.g. a 论道 inside
       a branch. Resolve already judges an exit's riddle.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs judge --key={{key}} --answer={{answer}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs judge --key={{key}} --answer={{answer}} --for=ling"
     tier: read
     timeout_ms: 8000
     args:
@@ -124,7 +124,7 @@ tools:
       records every win; you cannot); `check` pays a real-life quest its app
       has recorded done this period; `list` re-reads both. Each pays once per
       period.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs task --action={{action}} --id={{id}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs task --action={{action}} --id={{id}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -147,7 +147,7 @@ tools:
       you judge it earned —
       the rules cap both, and pay nothing before the player has taken
       `min_turns` turns (`unpaid: too-soon`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs branch --action={{action}} --kind={{kind}} --said={{said}} --progress={{progress}} --wealth={{wealth}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs branch --action={{action}} --kind={{kind}} --said={{said}} --progress={{progress}} --wealth={{wealth}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -177,7 +177,7 @@ tools:
       Replace the story so far — the whole of it, ≤300 words (≤600 characters
       in Chinese), in the player's language. Tomorrow's session remembers only
       this.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs summarize --text={{text}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs summarize --text={{text}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -203,7 +203,7 @@ tools:
       names a made scene the player walked out of. A province
       (冀 兖 青 徐 扬 荆 豫 梁 雍) named instead of a place answers here, or a
       road not yet open.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs move --place={{place}} --for=ling"
     tier: read
     timeout_ms: 8000
     args:
@@ -225,7 +225,7 @@ tools:
       made thing has no price), `key-in-use` (its line — the story still
       needs it), `cast-in-a-bout` (a 符 is not used, it is cast in a fight on the
       scene), `not-usable`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs trade --action={{action}} --id={{id}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs trade --action={{action}} --id={{id}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -245,7 +245,7 @@ tools:
       from then on, once. The bag pays one; the result carries the `beat`,
       what was `paid` and its card to `show`. Refusals: `needs-item` (its
       line names what it wants), `already-tamed`, `untameable`, `not-here`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tame --creature={{creature}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tame --creature={{creature}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -262,7 +262,7 @@ tools:
       The 符 is cast on the scene, in a fight — never by you. Refusals:
       `no-paper` (its line names the paper), `not-here` (its line), `written-today`
       (its line), `no-stamina`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs write"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs write --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -277,7 +277,7 @@ tools:
       (its line), `needs-material` (with `materials` — what the five are and
       how many are held), `not-in-bag`, `needs-name`, `already-bound` (its
       line names the one they have).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs refine --material={{material}} --name={{name}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs refine --material={{material}} --name={{name}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -305,7 +305,7 @@ tools:
       her voice, a second miss is `riddle-closed` until tomorrow, and the
       right one joins her — `joined`, her `beat`, what was `paid`. Refusals:
       `not-water`, `no-bell` (its line names the bell), `not-yet`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs ring --answer={{answer}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs ring --answer={{answer}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -321,7 +321,7 @@ tools:
       asked about. Once a day; it grows the 羁绊 (Look's `companion.bond`).
       Never for a greeting, never because the story mentioned her. Refusals:
       `no-companion`, `talked-today`. `capped` means the day's bond is full.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs bond"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs bond --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -336,7 +336,7 @@ tools:
       steps, a fight's `root` with the `spell` it lifts or lowers).
       `cast-today`:
       already cast — its reading comes back, nothing new.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --ask={{ask}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --ask={{ask}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -350,7 +350,7 @@ tools:
       Set the game's language to the player's. Returns the scene in that
       language — continue from it, no Look needed. The language already in use
       changes nothing.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lang --lang={{lang}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lang --lang={{lang}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -366,7 +366,7 @@ tools:
       with `scene` (the JSON of one scene in that exact shape) the rules
       check it and keep it, refusing `not-playable` with the `problems` to
       fix. Costs stamina.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs make --scene={{scene}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs make --scene={{scene}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -377,7 +377,7 @@ tools:
 
   - name: Enter
     description: Step into a made scene by id; the main story keeps its place. Play it with Resolve like any scene; an exit that `ends` returns to the story.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs enter --scene={{scene}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs enter --scene={{scene}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -388,7 +388,7 @@ tools:
 
   - name: Leave
     description: Back to the main story from a made scene, wherever it stood. A Move away does the same.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs leave"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs leave --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -401,7 +401,7 @@ tools:
       world, its opening scene already entered. Refuses `not-playable` with
       the `problems` to fix, and `world-in-play` for an id whose save
       exists. Costs stamina.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs build --world={{world}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs build --world={{world}} --for=ling"
     tier: edit
     timeout_ms: 15000
     args:
@@ -416,7 +416,7 @@ tools:
       story all gone; the other worlds' saves untouched. Only after the
       player has said so and answered one AskUser confirming it. Answers
       with the fresh Look.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs init"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs init --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -426,7 +426,7 @@ tools:
       chapter that has opened (Look's chapter and scene ids, e.g. 01-cauldron),
       or one of the player's made scenes. The road is not walked. Refuses
       `not-open` (with when) and `unknown-scene` (with the scenes there are).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs go --scene={{scene}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs go --scene={{scene}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -440,7 +440,7 @@ tools:
       Take back the last change of the game — a move, an exit, a load, a
       restart — on the player's word, after one AskUser confirming it.
       Answers with what was undone; Look after it.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs undo"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs undo --for=ling"
     tier: edit
     timeout_ms: 8000
 
@@ -451,13 +451,13 @@ tools:
       the player asked for, and `world` saves parked by Travel. Each with
       its world, chapter, `where` and `at`. "Continue from yesterday" is the
       `day` save of that date.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs saves"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs saves --for=ling"
     tier: read
     timeout_ms: 8000
 
   - name: Save
     description: Keep the game as it stands under a title in the player's words, on the player's word.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs save --title={{title}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs save --title={{title}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -471,7 +471,7 @@ tools:
       Take up a kept save by id from Saves: it becomes the game in play (a
       save of another world parks this one first). Only after one AskUser
       confirming it. Answers with its Look and `loaded`.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs load --id={{id}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs load --id={{id}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -482,7 +482,7 @@ tools:
 
   - name: Forget
     description: Let a named save go, after one AskUser confirming it. Day and world saves are the rules' own and stay.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs forget --id={{id}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs forget --id={{id}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -493,7 +493,7 @@ tools:
 
   - name: Worlds
     description: Every world there is — the built-in ones and the player's — with which one this save plays and which have a save waiting.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs worlds"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs worlds --for=ling"
     tier: read
     timeout_ms: 8000
 
@@ -502,7 +502,7 @@ tools:
       Go to another world by id. This save is kept where it stands; the
       other world's is taken up where it stood, or begun. Answers with the
       new world's Look.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs travel --world={{world}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs travel --world={{world}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -518,7 +518,7 @@ tools:
       place it haunts; or a `place` (JSON, the shape of a place in the
       template) with roads to places that exist — the rules lay the roads
       back. Refuses `not-playable` with the `problems`. Costs stamina.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs amend --creature={{creature}} --at={{at}} --place={{place}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs amend --creature={{creature}} --at={{at}} --place={{place}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -544,7 +544,7 @@ tools:
       Answers the picture's `url` — show it as a markdown image by that
       url, exactly as given, never a path of your own — and what is still
       to `paint`, or `ready` when the world can play.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs art --creature={{creature}} --file={{file}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
@@ -573,7 +573,7 @@ tools:
       `trial` (抉择): YOU write it — see § 抉择. Set the moment, then Meet
       `offer` with `options` (it reveals; no separate reveal). You never deal
       one yourself and never promise one.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}} --options={{options}} --n={{n}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}} --options={{options}} --n={{n}} --for=ling"
     tier: edit
     args:
       action:
@@ -606,7 +606,7 @@ tools:
       names the next errand: say where it waits. You never invent one — an
       errand that is not in `offers` does not exist; improvisation is 奇遇
       (Branch).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs quest --action={{action}} --id={{id}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs quest --action={{action}} --id={{id}} --for=ling"
     tier: edit
     args:
       action:
@@ -629,7 +629,7 @@ tools:
       away and come back after a reload — and so the question you are handed
       never repeats what one of them already offers. `stage` in every answer
       says what stands there now.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs show --cards={{cards}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs show --cards={{cards}} --for=ling"
     tier: edit
     args:
       cards:

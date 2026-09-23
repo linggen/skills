@@ -3343,10 +3343,31 @@ function undo(stateFile, logFile) {
   return { ok: true, undid: last.verb, at: last.at };
 }
 
+/* What Ling is handed is not what the page draws (his, 2026-09-18: 「don't
+   blow ling's context up」). Ling's tools ask with --for=ling (SKILL.md) and
+   get the result with the page's own drawing data taken out; the page, and
+   anything else, gets it all (an open page on old code never loses its map): every place of the province for the map, and a
+   shelf's pictures and blurbs (she keeps what is sold and for how much).
+   Measured 2026-09-23 on his save at 彭城: Look 10.3k chars, 4.2k of them
+   those two. The rules never read it back, so it cannot change a decision. */
+export function forLing(value) {
+  if (Array.isArray(value)) return value.map(forLing);
+  if (!value || typeof value !== 'object') return value;
+  const out = {};
+  for (const [k, v] of Object.entries(value)) {
+    if (k === 'places' && Array.isArray(v) && 'roads' in value) continue;
+    if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(i => (i && typeof i === 'object' ? { id: i.id, name: i.name, buy: i.buy, ...(i.held ? { held: i.held } : {}) } : i)); continue; }
+    out[k] = forLing(v);
+  }
+  return out;
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [verb, ...rest] = process.argv.slice(2);
   try {
-    console.log(JSON.stringify(run(verb ?? 'look', parseArgs(rest))));
+    const { for: reader, ...args } = parseArgs(rest);
+    const result = run(verb ?? 'look', args);
+    console.log(JSON.stringify(reader === 'ling' ? forLing(result) : result));
   } catch (err) {
     console.log(JSON.stringify({ ok: false, refused: 'error', error: String(err?.message ?? err) }));
     process.exit(1);

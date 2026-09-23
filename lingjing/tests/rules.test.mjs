@@ -1776,8 +1776,10 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.equal(seen.building, undefined, 'painted: the world plays');
     // play: the opening ends, the province is open, a road leads on
     assert.equal(run('resolve', '--exit=wade').paid.progress, 10);
-    const moved = run('move', '--place=isle');
+    const moved = run('move', '--place=isle'); // the map is the page's
     assert.equal(moved.ok, true);
+    assert.equal(run('look', '--for=ling').place.places, undefined, 'Ling is handed no map to draw');
+    assert.ok(run('look').place.places.length, 'anyone else — the page — gets it all');
     assert.deepEqual(moved.show, [{ card: 'creature', id: 'jingwei' }, { card: 'map' }], 'a made world draws its own map with every place');
     assert.equal(moved.place.province.start, 'reeds');
     assert.deepEqual(moved.place.places.find(p => p.id === 'isle').roads, ['reeds', 'bell']);
@@ -2511,4 +2513,18 @@ test('望气术: two scrolls, learned in order at their realms; the fight knows 
   const two = must(trade, { ...one.state, tier: 'core', bag: bag(['wangqi-2']) }, { action: 'use', id: 'wangqi-2' }, c);
   assert.equal(two.state.insight, 2);
   assert.deepEqual(two.result.learned, { id: 'wangqi', level: 2 });
+});
+
+test('forLing: Ling gets the reading without the page\'s drawing data — the map\'s places and a shelf\'s pictures', async () => {
+  const { forLing } = await import('../scripts/rules.mjs');
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const s = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'pengcheng', tier: 'core' };
+  const full = look(s, content, c);
+  assert.ok(full.place.places.length && full.place.shelf[0].art, 'the page gets it all');
+  const slim = forLing(full);
+  assert.equal(slim.place.places, undefined);
+  assert.deepEqual(Object.keys(slim.place.shelf[0]).sort(), ['buy', 'id', 'name']);
+  assert.deepEqual(slim.place.roads, full.place.roads, 'the roads stay — they are how she walks');
+  assert.equal(slim.book?.length, full.book?.length);
+  assert.ok(JSON.stringify(slim).length < JSON.stringify(full).length * 0.75);
 });
