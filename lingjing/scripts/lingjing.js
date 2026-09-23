@@ -579,6 +579,15 @@ async function sendHer(hours) {
   const r = await journeyVerb('send', { hours });
   if (r.ok) askHer(`他让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `He is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
 }
+/* Called back early: she comes home with nothing, and says so her way. */
+async function recallHer() {
+  const r = await journeyVerb('recall');
+  if (!r.ok) return;
+  const t = r.out_min >= 60 ? `${Math.floor(r.out_min / 60)} 个时辰${r.out_min % 60 ? `${r.out_min % 60} 分` : ''}` : `${r.out_min} 分`;
+  const te = r.out_min >= 60 ? `${Math.floor(r.out_min / 60)}h${r.out_min % 60 ? ` ${r.out_min % 60}m` : ''}` : `${r.out_min}m`;
+  askHer(`他提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。这趟没带回东西，今日也不能再出门。你回到他身边，跟他说几句。`,
+    `He called you back early from ${r.place.name}: ${r.hours} hours planned, ${te} gone. You bring nothing back this time, and cannot go out again today. You are beside him again; say a few words to him.`);
+}
 async function receiveHer() {
   const r = await journeyVerb('receive');
   if (!r.ok) return;
@@ -744,7 +753,7 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-chance]')) { takeChance(); return; }
   const out = e.target.closest('[data-journey]');
   if (out) { sendHer(Number(out.dataset.journey)); return; }
-  if (e.target.closest('[data-journey-recall]')) { journeyVerb('recall'); return; }
+  if (e.target.closest('[data-journey-recall]')) { recallHer(); return; }
   if (e.target.closest('[data-journey-receive]')) { receiveHer(); return; }
   const way = e.target.closest('[data-trial]');
   if (way) { chooseWay(Number(way.dataset.trial)); return; }

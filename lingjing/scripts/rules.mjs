@@ -1794,7 +1794,12 @@ export function journey(state, content, ctx, args) {
   if (action === 'recall') {
     if (!herAway(state, ctx.now)) return refuse('already-back', null);
     s.journey = { ...s.journey, received: ctx.now.toISOString(), recalled: true };
-    return { state: s, result: { ok: true, recalled: true } };
+    // What she comes back to tell: where, how long of how long, empty-handed.
+    // Facts only — she writes the words (called back, she said nothing; his
+    // 2026-09-23: 需要一个互动).
+    const at = placeOf(content, state.journey.place);
+    const out = Math.max(0, Math.round((ctx.now - new Date(state.journey.from)) / 60000));
+    return { state: s, result: { ok: true, recalled: true, place: { id: at?.id ?? state.journey.place, name: pick(at?.name, lang) }, hours: state.journey.hours, out_min: out } };
   }
   if (action === 'receive') {
     if (!herBack(state, ctx.now)) return refuse('still-out', null, { journey: journeyBrief(content, state, ctx.now) });

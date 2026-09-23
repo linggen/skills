@@ -2661,6 +2661,10 @@ test('历练: sent for real hours, away she is not beside him, back she brings t
   // called back early: nothing brought
   const early = must(journey, sent.state, { action: 'recall' }, at(1));
   assert.equal(early.result.recalled, true);
+  // …and what she tells on the way home: where, how long of how long (his, 2026-09-23: 召回后银月啥也没说)
+  assert.equal(early.result.place.name, sent.result.sent.place.name);
+  assert.equal(early.result.hours, sent.result.sent.hours);
+  assert.equal(early.result.out_min, 60);
   refused(journey, early.state, { action: 'receive' }, 'not-out', at(9));
   assert.equal(look(early.state, content, at(1)).companion.journey, undefined);
 });
