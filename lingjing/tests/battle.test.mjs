@@ -3,7 +3,7 @@
 // that a card is a row of data with one effect from the closed vocabulary.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BEATS, EFFECTS, MODES, OVER, POWER_COST, REALMS, UNDER, act, battle, begin, clash, foeTurn, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
+import { BEATS, EFFECTS, MODES, OVER, POWER_COST, REALMS, UNDER, act, battle, begin, bodyOf, clash, foeTurn, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
 
 const CARDS = {
   // 随从
@@ -290,4 +290,15 @@ test('杀招: a fight locked without one never gathers — old setups replay as 
   for (let i = 0; i < 3; i += 1) act(st, { kind: 'play', index: 0 }, 'you');
   assert.equal(view(st).foe.charge, null);
   assert.ok(!st.log.some(t => t.act === 'charge'));
+});
+
+test('lifts: a body stands taller for one side — on the board and on the hand\'s face alike', () => {
+  const st = opened({ you: { tier: 'qi', step: 0, root: 'fire', deck: deck('bolt'), lifts: { deer: { atk: 1, hp: 2 } } } }, ['deer', 'cub']);
+  st.you.mana = 9;
+  assert.deepEqual(bodyOf(st.you, CARDS.deer), { atk: 4, hp: 6 });
+  assert.deepEqual(bodyOf(st.you, CARDS.cub), { atk: 1, hp: 1 }, 'only the card it names');
+  act(st, { kind: 'play', index: 0 }, 'you');
+  assert.deepEqual([st.you.board[0].atk, st.you.board[0].hp, st.you.board[0].hpMax], [4, 6, 6]);
+  assert.deepEqual(view(st).you.lifts, { deer: { atk: 1, hp: 2 } });
+  assert.deepEqual(bodyOf(st.foe, CARDS.deer), { atk: 3, hp: 4 }, 'the other side untouched');
 });

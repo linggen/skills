@@ -36,7 +36,7 @@ export const WORDS = {
     questAt: '坊市在{name}', questWater: '最近的水在{name}', ringBell: '摇一摇铃', sayRing: '摇一摇铃', sayQuest: '说说月下之约',
     gateTitle: '下一鼎', opens: '开启于', gateNeed: '入{to}，须{step} · {xw} {n}', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
-    hp: '气血', hurt: '带伤', elite: '精英', mendsAt: '{t} 养好',
+    hp: '气血', hurt: '带伤', bond: '羁绊', bondNext: '{n}/{next} 至{name}', tend: '让银月看看', elite: '精英', mendsAt: '{t} 养好',
     qi: '丹田', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空',
     emptyLine: '丹田已空，先去调息。灵气回满于 {t}。', emptySoon: '丹田已空，先去调息。灵气随时辰回满。',
     boardsStay: '炼丹不耗灵气。',
@@ -73,7 +73,7 @@ export const WORDS = {
     why: { 'no-qi': 'not enough 灵力', 'art-used': 'once a fight', 'art-needs-tier': 'realm too low', 'art-no-sword': 'no weapon in hand', 'charm-used': 'one a fight', 'no-charm': 'none in the bag', 'fight-over': 'decided', 'not-your-root': 'not your root', 'already-guard': 'already guarding', 'already-focus': 'already gathered' },
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
-    hp: 'Life', hurt: 'hurt', elite: 'Elite', mendsAt: 'mended by {t}',
+    hp: 'Life', hurt: 'hurt', bond: 'Bond', bondNext: '{n}/{next} to {name}', tend: 'Let Yinyue look', elite: 'Elite', mendsAt: 'mended by {t}',
     qi: 'Dantian', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty',
     emptyLine: 'Your dantian is empty — go and rest. Qi returns at {t}.', emptySoon: 'Your dantian is empty — go and rest. Qi returns with the hours.',
     boardsStay: 'Alchemy costs no qi.',
@@ -559,6 +559,13 @@ export function gearChipHtml(ctx, open) {
   return `<span class="bookwrap"><button class="bookchip gearchip" data-gear aria-expanded="${open ? 'true' : 'false'}">${esc(ctx.words.gearChip)}${worn ? ` ${worn}` : ''}</button>${open && ctx.gear ? gearPopHtml(ctx) : ''}</span>`;
 }
 
+/* 羁绊 — the level by name, and how far to the next; never a bare number. */
+function bondRow(b, w) {
+  if (!b) return '';
+  const to = b.next ? ` <span class="small dim">${esc(say(w.bondNext, { n: b.n, next: b.next, name: b.next_name }))}</span>` : '';
+  return `<div class="gearrow"><span class="lbl">${esc(w.bond)}</span><span><b>${esc(b.name)}</b>${to}</span></div>`;
+}
+
 export function gearPopHtml(ctx) {
   const g = ctx.gear, w = ctx.words, t = ctx.look.treasure;
   // On her, a thing's line ("Yinyue can wear it") says nothing: the name is enough.
@@ -566,7 +573,7 @@ export function gearPopHtml(ctx) {
     ${it ? `<span><b>${esc(it.name)}</b>${plain ? '' : ` <span class="small dim">${esc(itemDoes(it.effect, ctx))}</span>`}</span>` : `<span class="dim">${esc(w.gearEmpty)}</span>`}${it && off ? `<button class="act" data-remove="${esc(it.id)}">${esc(w.gearOff)}</button>` : ''}</div>`;
   const slots = g.slots.map((s) => row(w.gearSlots[s.slot] ?? s.slot, s.item, false, true)).join('');
   const treasure = t ? `<div class="gearrow"><span class="lbl">${esc(w.gearSlots.treasure)}</span><span><b>${esc(t.name)}</b> <span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span></span></div>` : '';
-  const her = g.her ? row(say(w.gearHer, { name: g.her.name }), g.her.item, true) : '';
+  const her = g.her ? row(say(w.gearHer, { name: g.her.name }), g.her.item, true) + bondRow(g.her.bond, w) : '';
   const fight = g.fight?.power ? `<div class="small dim">${esc(say(w.gearFight, { n: g.fight.power }))}</div>` : '';
   const bag = g.bag.length ? g.bag.map((i) => {
     const act = i.slot && !i.worn ? `<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`

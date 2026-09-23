@@ -11,7 +11,7 @@
 // waiting state; it never touches the fight.
 
 import { esc, spoken } from './cards.js';
-import { clash, dealt, effectOf } from './battle.js';
+import { bodyOf, clash, dealt, effectOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -248,7 +248,8 @@ function handHtml(st, ctx, picked) {
     const o = ctx.reasons.get(`hand:${index}`);
     const why = o?.why;
     const held = picked?.from === 'hand' && picked.index === index;
-    const body = c.kind === 'minion' ? `<span class="bstat"><b>${c.atk}</b> / <b>${c.hp}</b></span>` : '';
+    const b = bodyOf(st.you, c);
+    const body = c.kind === 'minion' ? `<span class="bstat"><b>${b.atk}</b> / <b>${b.hp}</b></span>` : '';
     return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
       <span class="bcost">${c.cost}</span>
       ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}

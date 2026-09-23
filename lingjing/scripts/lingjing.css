@@ -69,6 +69,7 @@ button:disabled { cursor: default; }
 /* A gain: the number glows while it counts up, and +N floats off it. */
 .xw .num, .ls { position: relative; }
 .hp b { color: #c0584a; font-weight: 500; }
+.hp .tend { margin-left: 6px; padding: 1px 8px; font-size: 11px; }
 [data-count] { display: inline-block; transition: transform .25s ease-out, color .25s; }
 [data-count].rising { color: var(--ling); font-weight: 600; transform: scale(1.22); }
 .gain { position: absolute; left: 0; top: -4px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ling);

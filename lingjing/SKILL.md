@@ -314,6 +314,17 @@ tools:
         required: false
         description: Her riddle's answer, from the player's words. Left out, she asks it.
 
+  - name: Bond
+    description: >-
+      谈心 — mark a real exchange between the player and Yinyue: they talked
+      with her, not past her — a worry shared, a thanks, something of hers
+      asked about. Once a day; it grows the 羁绊 (Look's `companion.bond`).
+      Never for a greeting, never because the story mentioned her. Refusals:
+      `no-companion`, `talked-today`. `capped` means the day's bond is full.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs bond"
+    tier: edit
+    timeout_ms: 8000
+
   - name: Divine
     description: >-
       起卦 — the day's cast by three coins, once a day. Without `ask` it is
@@ -1003,6 +1014,15 @@ Below a quarter the fight's door refuses with `refused: "wounded"`, its `say`
 and `returns_at` — tell it in the world (rest, a pill), never as a number to
 grind. Do not write Yinyue a line about it: the page tells her what the fights
 did, and she speaks for herself.
+
+**羁绊 — walking with her.** Look's `companion.bond: { n, name, next? }` —
+相识 → 相知 → 相惜 → 同心. The rules grow it: a win beside her, an elite
+beaten, a realm broken, a wound she tended (the page's 让银月看看, once a day),
+a gift she wears, and **Bond** — your one mark a day for a real exchange. As it
+grows her card stands taller in a fight and her tending mends more. Let it show
+in how she is written in the story: at 相识 she is kind and a little formal;
+by 同心 she teases, worries aloud, remembers. Never say the number; a `rose`
+in any result is a moment — one line of hers, in the story's voice.
 
 **精英 — fixed in the world.** Some beasts are `elite` (the creature brief
 carries it; 雷神 and 夔 today): marked on their card, at their full 气血, paying

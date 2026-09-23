@@ -55,5 +55,71 @@
     "refill": {
       "quest": 20
     }
+  },
+  "bond": {
+    "_about": "羁绊 (rules.mjs § 羁绊)：和银月一起走过的事慢慢长起来。规则记，Ling 只能提议一次谈心。每天至多长 day_cap。等级到了，她那张牌站得更高（lift），疗伤回得更多（tend，占气血上限的份）。 数值由闸量过（2026-09-23）：同心 +1/+1 让会读场的多赢 6.7 点，与带剑、问斗法大吉同一量级；+2/+2 是 +12.3 点、赢到 97%，那就不是仗了。",
+    "day_cap": 5,
+    "gains": {
+      "win": 1,
+      "elite": 2,
+      "rise": 3,
+      "tend": 1,
+      "talk": 1,
+      "gift": 2
+    },
+    "levels": [
+      {
+        "id": "met",
+        "at": 0,
+        "name": {
+          "zh": "相识",
+          "en": "Acquainted"
+        },
+        "tend": 0.2,
+        "lift": {
+          "atk": 0,
+          "hp": 0
+        }
+      },
+      {
+        "id": "known",
+        "at": 20,
+        "name": {
+          "zh": "相知",
+          "en": "Close"
+        },
+        "tend": 0.3,
+        "lift": {
+          "atk": 0,
+          "hp": 1
+        }
+      },
+      {
+        "id": "cherished",
+        "at": 50,
+        "name": {
+          "zh": "相惜",
+          "en": "Cherished"
+        },
+        "tend": 0.4,
+        "lift": {
+          "atk": 0,
+          "hp": 2
+        }
+      },
+      {
+        "id": "one",
+        "at": 100,
+        "name": {
+          "zh": "同心",
+          "en": "One heart"
+        },
+        "tend": 0.5,
+        "lift": {
+          "atk": 1,
+          "hp": 1
+        }
+      }
+    ]
   }
 }

@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, hpMaxOf, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, hpMaxOf, bond, tend, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -2386,4 +2386,51 @@ test('精英: fixed in the world, marked on its card, at full 气血 — and it 
     assert.equal(won.result.dropped.filter(d => d.card).length, 2, JSON.stringify(won.result.dropped));
   }
   assert.ok(!content.creatures.creatures.find(c => c.id === 'jingwei').elite, 'the rest are plain');
+});
+
+/* 羁绊 + 疗伤 (rules § 羁绊): walked together, capped a day; her tending by it. */
+test('羁绊: grows from what is shared, a day at a time, and not before she walks with him', () => {
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const alone = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  assert.equal(look(alone, content, c).companion, null);
+  refused(bond, alone, {}, 'no-companion', c);
+  const her = { ...alone, companion: { joined: '2026-10-01' }, cards: [...(alone.cards ?? []), 'yinyue'] };
+  assert.deepEqual(look(her, content, c).companion.bond, { n: 0, level: 'met', name: '相识', next: 20, next_name: '相知' });
+  const talked = must(bond, her, {}, c);
+  assert.equal(talked.state.bond.n, 1);
+  refused(bond, talked.state, {}, 'talked-today', c);
+  // a gift she wears counts once, however often it is put on
+  const gifted = must(trade, { ...talked.state, bag: { ...talked.state.bag, 'moon-bell': 1 } }, { action: 'use', id: 'moon-bell' }, c);
+  assert.equal(gifted.result.bond.gained, 2);
+  const again = must(trade, gifted.state, { action: 'use', id: 'moon-bell' }, c);
+  assert.equal(again.result.bond, undefined);
+  // capped a day: five, whatever else happens
+  const full = { ...her, bond: { n: 18, day: '2026-10-05', today: 5 } };
+  assert.equal(must(bond, full, {}, c).result.capped, true);
+  const tomorrow = ctx({ now: new Date('2026-10-06T10:00:00') });
+  const rose = must(bond, full, {}, tomorrow);
+  assert.equal(rose.state.bond.n, 19);
+  const over = must(bond, { ...her, bond: { n: 19 } }, {}, tomorrow);
+  assert.equal(over.result.bond.rose, '相知', 'a level crossed is said');
+  // her card stands taller from 相知, locked at the door
+  const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
+  assert.equal(fightSetup(content, her, jingwei, c.now).you.lifts, undefined);
+  assert.deepEqual(fightSetup(content, { ...her, bond: { n: 20 } }, jingwei, c.now).you.lifts, { yinyue: { atk: 0, hp: 1 } });
+  assert.deepEqual(fightSetup(content, { ...her, bond: { n: 100 } }, jingwei, c.now).you.lifts, { yinyue: { atk: 1, hp: 1 } });
+});
+
+test('疗伤: she tends the wound once a day, more as the bond grows', () => {
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, companion: { joined: '2026-10-01' } };
+  const max = hpMaxOf(base);
+  refused(tend, base, {}, 'not-hurt', c);
+  const hurt = { ...base, wounds: { n: 20, at: c.now.toISOString() } };
+  const t = must(tend, hurt, {}, c);
+  assert.equal(t.result.mended, Math.ceil(max * 0.2));
+  assert.equal(t.result.bond.gained, 1);
+  refused(tend, t.state, {}, 'tended-today', c);
+  assert.equal(look(t.state, content, c).companion.tended, true);
+  const close = must(tend, { ...hurt, bond: { n: 100 } }, {}, c);
+  assert.equal(close.result.mended, Math.ceil(max * 0.5), '同心 mends half');
+  refused(tend, { ...hurt, companion: null }, {}, 'no-companion', c);
 });

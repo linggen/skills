@@ -796,7 +796,7 @@ function gearBrief(content, state) {
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
-    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]) } } : {}),
+    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]), bond: bondBrief(content, state) } } : {}),
     fight: { power: wornOf(content, state, 'weapon') || state.treasure ? WEAPON_POWER : 0 },
     bag,
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
@@ -1011,6 +1011,70 @@ const WEAPON_POWER = 1;
    once with a mending pill; below a quarter nobody walks into a fight. A loss
    leaves nothing — that is its cost now, where before it had none. */
 const FIT_TO_FIGHT = 0.25;
+
+/* ── 羁绊 — what walking together grows ──
+   His call, 2026-09-23: the player should feel they play WITH her. The bond
+   is the rules' record of it: a win beside her, an elite beaten, a realm
+   broken, a wound she tended, a gift she wears, a heart-to-heart Ling marks
+   once a day. Capped a day, so it is walked, not farmed. Its level makes her
+   card stand taller and her tending mend more (rewards.json `bond`). */
+const bondOf = content => content.rewards.bond;
+function bondLevel(content, n) {
+  const levels = bondOf(content).levels;
+  return [...levels].reverse().find(l => n >= l.at) ?? levels[0];
+}
+function bondBrief(content, state) {
+  const n = state.bond?.n ?? 0, lang = state.lang, levels = bondOf(content).levels;
+  const level = bondLevel(content, n), next = levels.find(l => l.at > n);
+  return { n, level: level.id, name: pick(level.name, lang), ...(next ? { next: next.at, next_name: pick(next.name, lang) } : {}) };
+}
+/* Grow it by a kind of shared moment; returns what changed, or null. */
+function gainBond(content, s, kind, now, key = null) {
+  if (!hasCompanion(s)) return null;
+  const cfg = bondOf(content), day = dayKey(now);
+  s.bond ??= { n: 0 };
+  if (key && (s.bond.keys ?? []).includes(key)) return null;
+  const today = s.bond.day === day ? s.bond.today ?? 0 : 0;
+  const add = Math.min(cfg.gains[kind] ?? 0, cfg.day_cap - today);
+  if (add <= 0) return null;
+  const before = bondLevel(content, s.bond.n);
+  s.bond = { ...s.bond, n: s.bond.n + add, day, today: today + add, ...(key ? { keys: [...(s.bond.keys ?? []), key] } : {}) };
+  const after = bondLevel(content, s.bond.n);
+  return { kind, gained: add, ...bondBrief(content, s), ...(after.id !== before.id ? { rose: pick(after.name, s.lang) } : {}) };
+}
+/* Her card, as the bond lifts it — locked at the door with the rest. */
+const bondLifts = (content, state) => {
+  const lift = hasCompanion(state) ? bondLevel(content, state.bond?.n ?? 0).lift : null;
+  return lift && (lift.atk || lift.hp) ? { yinyue: { atk: lift.atk ?? 0, hp: lift.hp ?? 0 } } : null;
+};
+
+/* 疗伤 — she tends the wound, once a day, by the bond. A page tap. */
+export function tend(state, content, ctx) {
+  const lang = state.lang;
+  if (!hasCompanion(state)) return refuse('no-companion', null);
+  const n = woundsNow(content, state, ctx.now);
+  if (!n) return refuse('not-hurt', pick({ zh: '身上没伤。', en: 'You are not hurt.' }, lang));
+  const day = dayKey(ctx.now);
+  if (state.tended === day) return refuse('tended-today', pick({ zh: '今日她已替你调理过了。', en: 'She has already tended you today.' }, lang));
+  const s = clone(state);
+  const share = bondLevel(content, s.bond?.n ?? 0).tend;
+  const mended = Math.min(n, Math.ceil(hpMaxOf(s) * share));
+  s.wounds = n - mended ? { n: n - mended, at: ctx.now.toISOString() } : undefined;
+  if (!s.wounds) delete s.wounds;
+  s.tended = day;
+  const bond = gainBond(content, s, 'tend', ctx.now);
+  return { state: s, result: { ok: true, mended, health: healthBrief(content, s, ctx.now), ...(bond ? { bond } : {}) } };
+}
+
+/* 谈心 — Ling marks a real exchange with her, once a day (the talk gain). */
+export function bond(state, content, ctx) {
+  if (!hasCompanion(state)) return refuse('no-companion', null);
+  if (state.bond?.talked === dayKey(ctx.now)) return refuse('talked-today', null);
+  const s = clone(state);
+  const got = gainBond(content, s, 'talk', ctx.now);
+  s.bond = { ...(s.bond ?? { n: 0 }), talked: dayKey(ctx.now) };
+  return { state: s, result: { ok: true, bond: got ?? bondBrief(content, s), ...(got ? {} : { capped: true }) } };
+}
 export const hpMaxOf = state => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (state.step ?? 0) * 0.5);
 function woundsNow(content, state, now) {
   const w = state.wounds;
@@ -1045,6 +1109,7 @@ export function fightSetup(content, state, creature, now) {
       // Locked at the door with the rest: the page and the settle replay the
       // same fight even if an hour of mending passes between them.
       wounds: state.fight?.wounds ?? (now ? woundsNow(content, state, now) : 0),
+      ...(withHer && bondLifts(content, state) ? { lifts: bondLifts(content, state) } : {}),
       // 法器 stay in the world as gear and give 主灵根一击 +1 (design.md § 斗法
       // v3 牌型) — the sword on the belt, or the 本命法宝 it became.
       ...(wornOf(content, state, 'weapon') || state.treasure ? { power: WEAPON_POWER } : {}),
@@ -1290,7 +1355,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, bond: bondBrief(content, state), ...(state.tended === dayKey(ctx.now) ? { tended: true } : {}) } : null,
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
@@ -1441,6 +1506,7 @@ function pay(content, state, ctx, grant) {
   const wealth = Math.max(0, Math.min(Math.round(Math.min(grant.wealth ?? 0, table.wealth) * wf), Math.round(day.wealth * Math.max(1, wf)) - state.day.wealth));
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
+  const risen = levels.length ? gainBond(content, state, 'rise', ctx.now) : null;
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   // A beast that joins brings its card; a grant may name one outright.
   const cards = [grant.cast, grant.card].map(id => (id ? gainCard(content, state, id) : null)).filter(Boolean);
@@ -1450,7 +1516,7 @@ function pay(content, state, ctx, grant) {
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
   const fortune = (pf !== 1 && grant.progress) || (wf !== 1 && grant.wealth) ? { progress: pf, wealth: wf } : null;
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}) };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, capped: base < want, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}), ...(risen ? { bond: risen } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */
@@ -1809,12 +1875,13 @@ export function duel(state, content, ctx, args) {
   // gate found always-elite the best day whatever the wounds, so there was no
   // choice; at 1.5× an elite is worth it whole and a coin toss hurt.
   const elite = Boolean(creature.elite);
+  const bonded = played.outcome === 'won' ? gainBond(content, s, elite ? 'elite' : 'win', ctx.now) : null;
   for (let i = 0; played.outcome === 'won' && i < (elite ? 2 : 1); i += 1) {
     const card = winCard(content, s, creature, ctx.now, i);
     if (card) dropped.push(card);
   }
   const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
 
 /* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
@@ -2110,7 +2177,8 @@ export function trade(state, content, ctx, args) {
     if (slot) {
       s.wear ??= {};
       s.wear[slot] = item.id;
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear } };
+      const gift = e.wear && e.wear === companionOf(content)?.id ? gainBond(content, s, 'gift', ctx.now, `gift:${item.id}`) : null;
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear, ...(gift ? { bond: gift } : {}) } };
     }
     // 强化 — a 妖丹 or a天材地宝 fed to the 本命法宝. A core material with no
     // treasure yet is kept for the 炼化, not burned.
@@ -2729,7 +2797,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

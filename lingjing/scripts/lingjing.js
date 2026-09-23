@@ -242,7 +242,9 @@ function hpHtml() {
   if (!h || h.now >= h.max) return '';
   const w = words();
   const t = h.full_at ? new Date(h.full_at).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' }) : '';
-  return `<span class="hp" title="${esc(t ? w.mendsAt.replace('{t}', t) : '')}"><span class="lbl">${w.hp}</span> <b>${h.now}/${h.max}</b></span>`;
+  // 疗伤: she tends it, once a day, when she walks with him (rules § 羁绊).
+  const tend = look.companion && !look.companion.tended ? ` <button class="act tend" data-tend>${esc(w.tend)}</button>` : '';
+  return `<span class="hp" title="${esc(t ? w.mendsAt.replace('{t}', t) : '')}"><span class="lbl">${w.hp}</span> <b>${h.now}/${h.max}</b>${tend}</span>`;
 }
 
 /// One line in the world while the window is spent — and the boards stay:
@@ -829,6 +831,15 @@ async function settleBout(outcome) {
 }
 
 /// The fight's brief from Look: the scene's exit, or the haunt's encounter.
+/// 疗伤 — she looks at the wound and mends some of it; then she says what she
+/// will, in her own time (a big moment: the screen settles, she speaks).
+async function onTend() {
+  const r = await verb('tend', {});
+  if (r.ok) tellYinyue(`让她看了看伤，她替你调理了一番，气血回了 ${r.mended}`, `Let her look at the wound; she tended it, ${r.mended} Life back`, { big: true, mood: 'relaxed' });
+  else if (r.say) keep({ doNote: r.say });
+  await refresh();
+}
+
 /// 温养 — once a day, a tap. No model decides it, so the page asks the rules
 /// and re-reads; Ling hears about it on the next Look.
 async function onNourish() {
@@ -839,6 +850,7 @@ async function onNourish() {
 
 document.addEventListener('click', (e) => {
   if (e.target.closest('[data-nourish]')) { onNourish(); return; }
+  if (e.target.closest('[data-tend]')) { onTend(); return; }
   if (e.target.closest('[data-spoils-close]')) { show({ spoils: null }); return; }
   // Inside a fight the stage belongs to the fight: a click is a place on it.
   const spot = e.target.closest('[data-spot]');

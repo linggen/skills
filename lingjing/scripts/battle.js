@@ -131,7 +131,9 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, boost?, wounds? }, foe: { tier, root, deck, hp?, signature?, elite? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, boost?, wounds?, lifts? }, foe: { tier, root, deck, hp?, signature?, elite? } }
+   `lifts` is { cardId: { atk, hp } } — a body that stands taller for this
+   side (银月 by the bond, rules.mjs § 羁绊); `bodyOf` is the one reading.
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
    (or softer, n < 0). Both are locked at the door like the rest.
@@ -147,7 +149,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     who, tier: cfg.tier, root: cfg.root ?? null,
     hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
-    signature: cfg.signature ?? null, charge: null,
+    signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null,
   };
 }
 
@@ -382,6 +384,14 @@ export function effectOf(side, c) {
   return { ...e, ...(e.damage != null ? { damage: lift(e.damage) } : {}), ...(e.sweep != null ? { sweep: lift(e.sweep) } : {}) };
 }
 
+/* A minion's body in this side's hands: the card's, lifted by `lifts`. The
+   page draws the hand from this too, so the numbers on the card are the ones
+   that stand. */
+export function bodyOf(side, c) {
+  const l = side?.lifts?.[c?.id];
+  return { atk: (c?.atk ?? 0) + (l?.atk ?? 0), hp: (c?.hp ?? 0) + (l?.hp ?? 0) };
+}
+
 /* ── Doing it ── */
 
 export function act(st, action, who = 'you') {
@@ -404,7 +414,8 @@ export function act(st, action, who = 'you') {
     side.mana -= c.cost;
     side.played.push(id);
     if (c.kind === 'minion') {
-      const m = { id, name: c.name, element: c.element, atk: c.atk, hp: c.hp, hpMax: c.hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false };
+      const { atk, hp } = bodyOf(side, c);
+      const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false };
       side.board.push(m);
       st.log.push({ act: 'played', who: side.who, id, kind: 'minion' });
       if (c.keywords?.includes('battlecry')) resolve(st, side, { ...c.effect, element: c.element }, action.target);
@@ -552,7 +563,7 @@ export function view(st) {
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost,
-    signature: s.signature, charge: s.charge?.phase ?? null,
+    signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts,
     board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck })),
   });
   return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: side(st.foe), log: st.log, scale: st.scale };

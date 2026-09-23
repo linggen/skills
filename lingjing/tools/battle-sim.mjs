@@ -420,12 +420,15 @@ async function main() {
     ['问斗法 吉 · +1', root => ({ boost: { element: root, n: 1 } })],
     ['问斗法 凶 · −1', root => ({ boost: { element: root, n: -1 } })],
     ['问斗法 大凶 · −2', root => ({ boost: { element: root, n: -2 } })],
+    // 羁绊 lifts her card (rewards.json bond.levels): 相知 +0/+1, 相惜 +0/+2, 同心 +1/+1.
+    ['羁绊 相知 · 银月 +0/+1', { lifts: { yinyue: { atk: 0, hp: 1 } } }],
+    ['羁绊 同心 · 银月 +1/+1', { lifts: { yinyue: { atk: 1, hp: 1 } } }],
   ];
   for (const [label, you] of kit) {
     const r = run(smart, { decks, you });
     const d = (r.rate - base) * 100;
     console.log(`${label.padEnd(20)}  ${(r.rate * 100).toFixed(1)}%  (${d >= 0 ? '+' : ''}${d.toFixed(1)})`);
-    if (Math.abs(d) > 15) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
+    if (Math.abs(d) > (label.startsWith('羁绊') ? 8 : 15)) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
   }
 
   // 杀招 — the key turn (battle.js § 杀招). A climax, not a wall: most won
