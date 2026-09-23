@@ -2223,7 +2223,9 @@ function errandWants(content, state, id) {
 function reopened(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   const spent = held?.status === 'done' && (t?.period === 'once' || held.period === periodKey(t?.period, now));
-  return Boolean(t) && (!held || spent) && errandWants(content, state, id);
+  // A game a place hosts is played at that place: the errand sends him there
+  // (his screen, 2026-09-23: 碣石's 洛书 stood on the stage at 邺城).
+  return Boolean(t) && !t.hosted && (!held || spent) && errandWants(content, state, id);
 }
 
 /* A game the place hosts (places' has.games): open here once a period,

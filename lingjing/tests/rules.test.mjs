@@ -2906,3 +2906,15 @@ test('论道: dealt at 稷下, the form checked by the rules, three good answers
   assert.equal(judged.result.good, false);
   assert.equal(judged.result.judged, false);
 });
+
+// His screen 2026-09-23: a notice for 碣石's 洛书 put the board on the stage at 邺城.
+test('a notice for a place\'s game opens it only at that place', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'ye', tier: 'core', quests: { 'daily-20260911-trial-jieshi': { took: '2026-09-11', have: {} } } };
+  assert.ok(!look(s, content, at).tasks.some(t => t.id === 'luoshu'), 'not at 邺城');
+  refused(win, s, { id: 'luoshu' }, 'not-here', at);
+  const there = { ...s, place: 'jieshi' };
+  assert.equal(look(there, content, at).tasks.find(t => t.id === 'luoshu')?.status, 'offered');
+  const done = must(task, must(win, there, { id: 'luoshu' }, at).state, { action: 'done', id: 'luoshu' }, at);
+  assert.ok(done.state.quests['daily-20260911-trial-jieshi'].done_at, 'the win there meets the notice');
+});
