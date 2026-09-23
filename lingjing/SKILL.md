@@ -1239,6 +1239,18 @@ between the spine's scenes.
 - **Three at a time.** `book-full` is not an error to apologise for: say which
   three are in hand and let them put one down (Quest `drop`).
 
+## 机缘 — near, today, for a few hours
+
+Look's `chance: { place, until, minutes_left, here? }` is today's 机缘: the
+rules set one the first time the game is opened each day, somewhere within
+two roads, for three real hours. The page counts it down in the book and
+puts 收下 on the stage when he stands there. **Say it once**, early, in the
+world — a rumour, a light on the hills — naming the place, never the minutes
+or what it holds. When a Move's result carries `chance` he has reached it:
+two lines to set the moment, and stop; 收下 is his tap. `missed` → it is gone;
+say nothing unless he asks. `taken` → it is his; the page showed what. Never
+promise one, never move one, never deal one.
+
 ## 抉择 — a moment you write, a roll you never see
 
 When Move or Look deals `place.meet.kind: "trial"`, the road gives the player

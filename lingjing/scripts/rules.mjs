@@ -1452,6 +1452,8 @@ export function look(state, content, ctx) {
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
+    // 机缘: where, and how long it lasts — the page counts it down.
+    ...(chanceBrief(content, state, ctx.now) ? { chance: chanceBrief(content, state, ctx.now) } : {}),
     // Where an errand may be taken, when the book has room — so 「what now」 has an answer.
     ...(workOf(content, state, ctx) ? { work: workOf(content, state, ctx) } : {}),
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
@@ -1560,7 +1562,60 @@ export function wake(state, content, ctx) {
   // The call: at the realm the world names, the search for her opens.
   const called = !s.companion && callDue(content, s);
   if (called) s.companion = {};
-  return called || (s.scene && !state.scene) ? s : null;
+  const chance = dealChance(content, s, ctx);
+  if (chance) s.chance = chance;
+  return called || chance || (s.scene && !state.scene) ? s : null;
+}
+
+/* ── 机缘 — something good, somewhere near, for a few hours of the real day ──
+   His pick, 2026-09-23 (觅长生's 过时不候, Lifeline's real clock): once a day,
+   the first time the game is opened, the rules set a 机缘 at a place within
+   two roads — open, within his realm, not where he stands — for `hours` of
+   real time. Reach it in time and it is his: a card he does not hold and the
+   chance table's pay. Miss it and it is gone. Never in a made world or before
+   the roots are set. */
+const CHANCE = { hours: 3, reach: 2 };
+function dealChance(content, s, ctx) {
+  const day = dayKey(ctx.now);
+  if (s.chance?.day === day || !s.traits?.length || inMade(s) || !content.rewards.tables.chance) return null;
+  const here = placeOf(content, s.place);
+  if (!here) return null;
+  const seen = new Set([here.id]);
+  let ring = [here];
+  const near = [];
+  for (let step = 0; step < CHANCE.reach; step += 1) {
+    ring = ring.flatMap(p => p.roads ?? []).map(id => placeOf(content, id)).filter(p => p && !seen.has(p.id));
+    for (const p of ring) seen.add(p.id);
+    near.push(...ring.filter(p => !tooHard(content, s, p) && provinceOpen(content, p.province, ctx.now)));
+  }
+  if (!near.length) return null;
+  const at = near[hashOf(`${day}|${s.name ?? ''}|chance`) % near.length];
+  return { day, place: at.id, until: new Date(ctx.now.getTime() + CHANCE.hours * 3600000).toISOString() };
+}
+const chanceLive = (state, now) => state.chance && !state.chance.taken && dayKey(now) === state.chance.day && now < new Date(state.chance.until);
+function chanceBrief(content, state, now) {
+  const c = state.chance;
+  if (!c || c.day !== dayKey(now)) return null;
+  const at = placeOf(content, c.place);
+  if (c.taken) return { place: { id: c.place, name: pick(at?.name, state.lang) }, taken: true };
+  if (now >= new Date(c.until)) return { place: { id: c.place, name: pick(at?.name, state.lang) }, missed: true };
+  return { place: { id: c.place, name: pick(at?.name, state.lang) }, until: c.until, minutes_left: Math.ceil((new Date(c.until) - now) / 60000), ...(state.place === c.place ? { here: true } : {}) };
+}
+
+/* 收下 the 机缘 — a page tap, where it lies, while it lasts. */
+export function chance(state, content, ctx, args) {
+  const lang = state.lang;
+  if (String(args.action ?? 'take') !== 'take') return refuse('unknown-action', null, { actions: ['take'] });
+  if (!state.chance || state.chance.day !== dayKey(ctx.now)) return refuse('no-chance', null);
+  if (state.chance.taken) return refuse('taken', null);
+  if (!chanceLive(state, ctx.now)) return refuse('missed', pick({ zh: '来迟了，机缘已散。', en: 'Too late — it is gone.' }, lang));
+  if (state.place !== state.chance.place) return refuse('not-here', null, { chance: chanceBrief(content, state, ctx.now) });
+  const s = clone(state);
+  s.chance = { ...s.chance, taken: ctx.now.toISOString() };
+  const t = content.rewards.tables.chance;
+  const card = winCard(content, s, { id: `chance:${s.chance.place}`, root: (s.traits ?? [])[0] }, ctx.now, 'chance');
+  const paid = pay(content, s, ctx, { table: 'chance', progress: t.progress, wealth: t.wealth });
+  return { state: s, result: { ok: true, took: true, ...(card ? { card } : {}), paid } };
 }
 
 /* The pool as the scene draws it: what is there, the top, and — when a story
@@ -2175,7 +2230,9 @@ export function move(state, content, ctx, args) {
   const via = way.slice(0, way.findIndex(p => p.id === reached.id)).map(p => placeName(content, s, p));
   // Where he STOPS — never a place walked through (his pick, 2026-09-21) — and
   // only when the arrival finished nothing: an errand met is the event.
-  const dealt = met.length ? null : dealMeet(content, s, ctx);
+  // A 机缘 waiting here is the arrival's event, like an errand met.
+  const lucky = chanceLive(s, ctx.now) && s.place === s.chance.place;
+  const dealt = met.length || lucky ? null : dealMeet(content, s, ctx);
   if (dealt) s.meets = { day: dayKey(ctx.now), places: { ...meetsToday(s, ctx.now), [s.place]: dealt } };
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
@@ -2187,7 +2244,7 @@ export function move(state, content, ctx, args) {
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
   const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(lucky ? { chance: chanceBrief(content, s, ctx.now) } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not
@@ -2902,7 +2959,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

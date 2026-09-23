@@ -549,6 +549,33 @@ async function takeMeet(action) {
   if (r.ok) await report(action === 'take' ? '[scene] meet taken' : '[scene] meet passed');
 }
 
+/* 机缘 — 收下 is a page tap; what it left stands on the stage, and 银月
+   hears it (a big moment: she was there for the run to reach it). */
+async function takeChance() {
+  const r = await verb('chance', { action: 'take' }).catch((e) => ({ ok: false, error: String(e) }));
+  if (!r.ok) { keep({ doNote: r.say || null }); await refresh(); return; }
+  if (r.card) keep({ spoils: { place: look?.place?.id ?? null, cards: [r.card], items: [] } });
+  const where = look?.chance?.place?.name ?? '';
+  tellYinyue(`赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { big: true, mood: 'happy' });
+  await refresh();
+}
+
+/* 机缘's clock: the row counts down by the minute, and once — with half an
+   hour left and him somewhere else — 银月 hears it; she decides whether to
+   say so. */
+let chanceTold = null;
+setInterval(() => {
+  const c = look?.chance;
+  if (!c || c.taken || c.missed || !c.until) return;
+  const left = Math.ceil((new Date(c.until) - Date.now()) / 60000);
+  if (left <= 30 && left > 0 && !c.here && chanceTold !== c.until) {
+    chanceTold = c.until;
+    tellYinyue(`${c.place.name}的机缘只剩半个时辰了`, `The chance at ${c.place.name} has half an hour left`, { mood: 'neutral' });
+  }
+  if (left <= 0) { refresh(); return; }
+  render();
+}, 60000);
+
 /* 抉择 — the tap is the choice; the rules roll, the stage shows Ling's line
    for the way taken, and the turn goes to her to go on from it. 银月 hears
    how it went. */
@@ -667,6 +694,7 @@ document.addEventListener('click', (e) => {
   if (found) { takeMeet(found.dataset.meet); return; }
   const asked = e.target.closest('[data-divine]');
   if (asked) { castByPage(asked.dataset.divine); return; }
+  if (e.target.closest('[data-chance]')) { takeChance(); return; }
   const way = e.target.closest('[data-trial]');
   if (way) { chooseWay(Number(way.dataset.trial)); return; }
   const dropped = e.target.closest('[data-drop]');

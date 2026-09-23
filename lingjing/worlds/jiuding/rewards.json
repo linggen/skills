@@ -37,6 +37,10 @@
     "trial": {
       "progress": 30,
       "wealth": 20
+    },
+    "chance": {
+      "progress": 20,
+      "wealth": 20
     }
   },
   "day": {

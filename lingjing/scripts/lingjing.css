@@ -475,3 +475,8 @@ body.fighting .askbar { display: none; }
 .card.trial .way small { color: var(--faint, #8a7f70); font-size: 11px; white-space: nowrap; }
 .card.trial.won .cardtitle { color: var(--ling, #6b8f5a); }
 .card.trial.lost .cardtitle { color: #a33b2e; }
+
+/* 机缘 — the one row that counts down; the chip says there is one. */
+.bookrow.chance b { color: var(--ling, #6b8f5a); }
+.bookrow.chance.soon .small { color: #a33b2e; }
+.bookchip.lucky { border-color: var(--ling, #6b8f5a); }

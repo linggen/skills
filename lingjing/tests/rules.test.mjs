@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, hpMaxOf, bond, tend, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, hpMaxOf, bond, tend, chance, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -21,6 +21,8 @@ content.chapters['02-yan'].opens = '2026-11-01';
 content.chapters['03-qing'].opens = '2026-12-01';
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
+// Today's 机缘 already dealt: for tests that mean "a Look that changes nothing else".
+const DEALT = { day: dayKey(NOW), place: 'none', until: NOW.toISOString(), taken: NOW.toISOString() };
 const start = (lang = 'zh') => newState(content, lang, NOW);
 
 /* Apply a verb and insist it was allowed. */
@@ -276,7 +278,7 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   const aside = VERBS.look(asked.state, content, ctx({ said: '先不答' }));
   assert.ok(aside.state, 'set aside is kept');
   assert.deepEqual(aside.result.ask.options.map(o => o.label), l.ask.options.map(o => o.label));
-  assert.equal(VERBS.look(asked.state, content, ctx({ said: '问问银月' })).state, null, 'any other word leaves it on the table');
+  assert.equal(VERBS.look({ ...asked.state, chance: DEALT }, content, ctx({ said: '问问银月' })).state, null, 'any other word leaves it on the table');
   // a miss: the hint, and the answers left; a second miss shuts it for the day
   const wrongs = rid.choices.filter(x => x !== rid.wrong && !content.riddles.zh.riddles[rid.key].a.includes(x));
   const miss = resolve(asked.state, content, ctx(), { exit: 'riddle', answer: rid.wrong });
@@ -425,7 +427,7 @@ test('the ten cards are the player\'s own roots, and a companion teaches nothing
   const out = must(resolve, won.state, { exit: 'subdue' });
   assert.deepEqual(out.state.arts ?? [], []);
   assert.equal(out.result.paid.learned, undefined);
-  const old = { ...toOpenWorld(), arts: undefined };
+  const old = { ...toOpenWorld(), arts: undefined, chance: DEALT };
   assert.ok(old.cast.includes('fuzhu'));
   const woke = VERBS.look(old, content, ctx());
   assert.equal(woke.state, null, 'a companion in an old save teaches nothing either');
@@ -1344,7 +1346,7 @@ const octx = (extra = {}) => ({ now: OCT, quests: [], ...extra });
 const answer = (fn, st, args) => must(fn, st, args, octx());
 
 test('the chapter opens on its day: Look wakes the story, the road north opens, the scene waits at its place', () => {
-  const rested = toOpenWorld();
+  const rested = { ...toOpenWorld(), chance: DEALT };
   assert.equal(wake(rested, content, ctx()), null, 'not before October');
   assert.equal(VERBS.look(rested, content, ctx()).state, null);
   const woke = VERBS.look(rested, content, octx());
@@ -2527,4 +2529,40 @@ test('forLing: Ling gets the reading without the page\'s drawing data — the ma
   assert.deepEqual(slim.place.roads, full.place.roads, 'the roads stay — they are how she walks');
   assert.equal(slim.book?.length, full.book?.length);
   assert.ok(JSON.stringify(slim).length < JSON.stringify(full).length * 0.75);
+});
+
+/* 机缘 (rules § 机缘): once a day, near, for a few real hours; reached in
+   time it is his, missed it is gone. */
+test('机缘: dealt once a day within two roads, reached in time it pays, missed it is gone', () => {
+  const at = h => ctx({ now: new Date(new Date('2026-10-05T09:00:00').getTime() + h * 3600000) });
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'pengcheng', tier: 'core', wealth: 0 };
+  const woke = VERBS.look(base, content, at(0));
+  const c = woke.state.chance;
+  assert.ok(c && c.place !== 'pengcheng', 'a 机缘 somewhere else');
+  const near = new Set(content.places ? Object.values(content.places).flatMap(d => d.places).filter(p => p.id === 'pengcheng').flatMap(p => p.roads) : []);
+  const two = new Set([...near, ...Object.values(content.places).flatMap(d => d.places).filter(p => near.has(p.id)).flatMap(p => p.roads)]);
+  assert.ok(two.has(c.place), 'within two roads');
+  assert.equal(new Date(c.until) - at(0).now, 3 * 3600000);
+  assert.equal(VERBS.look(woke.state, content, at(1)).state, null, 'once a day');
+  const brief = look(woke.state, content, at(1)).chance;
+  assert.deepEqual([brief.place.id, brief.minutes_left, brief.here], [c.place, 120, undefined]);
+  refused(chance, woke.state, {}, 'not-here', at(1));
+  // there in time: the arrival is the 机缘, nothing else dealt on top
+  const there = { ...woke.state, place: c.place };
+  assert.equal(look(there, content, at(1)).chance.here, true);
+  const took = must(chance, there, {}, at(1));
+  assert.ok(took.result.paid.wealth > 0);
+  assert.ok(took.result.card?.card, 'a card he did not hold');
+  assert.equal(look(took.state, content, at(1)).chance.taken, true);
+  refused(chance, took.state, {}, 'taken', at(1));
+  // late: gone, whatever the road
+  assert.equal(look(woke.state, content, at(4)).chance.missed, true);
+  assert.match(refused(chance, there, {}, 'missed', at(4)).say, /来迟了/);
+  // tomorrow: a new one
+  assert.ok(VERBS.look(took.state, content, at(24)).state.chance.day !== c.day);
+});
+
+test('机缘: not before the roots, and never in a made world', () => {
+  const c = ctx({ now: new Date('2026-10-05T09:00:00') });
+  assert.equal(wake({ ...toOpenWorld(), traits: [], chance: undefined }, content, c)?.chance, undefined);
 });

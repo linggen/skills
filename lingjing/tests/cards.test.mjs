@@ -227,6 +227,22 @@ test('望气 on the page: 上卷 reads the shape, 下卷 every move with the num
   assert.match(at(2).match(/bintent[\s\S]*?<\/div>/)[0], /\d/, '下卷: the numbers that land');
 });
 
+test('机缘 on the page: the book counts it down, the stage holds 收下 where it lies, and it is gone once missed', async () => {
+  const { cardHtml, bookChipHtml, chanceLeft, WORDS } = await import('../scripts/cards.js');
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const until = new Date(Date.now() + 100 * 60000).toISOString();
+  const away = { chance: { place: { id: 'weishan', name: '微山湖' }, until, minutes_left: 100 }, book: [] };
+  const chip = bookChipHtml({ look: away, words: WORDS.zh, lang: 'zh' }, true, false);
+  assert.match(chip, /事 1 · 有机缘/);
+  assert.match(chip, /机缘 · 微山湖[\s\S]*还剩 1 时 40 分/);
+  assert.ok(!stageCards(away, []).some(c => c.card === 'chance'), 'not on the stage from afar');
+  const there = { ...away, chance: { ...away.chance, here: true } };
+  assert.ok(stageCards(there, []).some(c => c.card === 'chance'));
+  assert.match(cardHtml({ card: 'chance' }, { look: there, lang: 'zh', words: WORDS.zh }), /data-chance>收 下</);
+  assert.equal(chanceLeft({ ...away.chance, missed: true }), null);
+  assert.equal(bookChipHtml({ look: { chance: { ...away.chance, until: new Date(Date.now() - 1000).toISOString() }, book: [] }, words: WORDS.zh, lang: 'zh' }, false, false), '', 'run out: gone');
+});
+
 test('a fight whose cards the page cannot name is refused, not opened', async () => {
   // The empty catalog of 2026-09-18: the hand is dealt, nothing may be played,
   // and the only buttons that answer are 主灵根一击 and 结束回合. Silence there
