@@ -61,7 +61,10 @@ function boardFor(taskId) {
     if (!boards.has(taskId) || boards.get(taskId).day !== day) {
       boards.set(taskId, { taskId, mod, day, state: mod.newGame(`${day}|${look.name ?? ''}|${taskId}`, task.level ?? 1) });
     }
-    return boards.get(taskId);
+    const g = boards.get(taskId);
+    // Solved but not yet counted (refused elsewhere): count it now that it is open here.
+    if (g.state.won && !g.sent && task.status === 'offered' && !task.won) { g.sent = true; queueMicrotask(() => onWin(taskId)); }
+    return g;
   }
   if (!boards.has(taskId)) {
     const herbs = authored.herbs.map((h) => ({ id: h.id, tile: h.tile, label: h.name[lang()] }));
@@ -619,8 +622,11 @@ function boutCtx() {
 /* ── The board: the one thing the page reports ── */
 
 async function onWin(taskId) {
-  const r = await verb('win', { id: taskId });
-  if (!r.ok) console.warn('[lingjing] win refused', r);
+  const r = await verb('win', { id: taskId }).catch((e) => ({ ok: false, error: String(e) }));
+  // Refused (not here, not open), the win is kept on the board and sent again
+  // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
+  // 洛书 solved at 邺城 showed solved at 碣石 and was never paid).
+  if (!r.ok) { console.warn('[lingjing] win refused', r); const g = boards.get(taskId); if (g) g.sent = false; return false; }
   await report(`[scene] won ${taskId}`);
   // A change the page made itself: keep the account's copy in step now,
   // rather than at the next turn's edge.
@@ -943,7 +949,7 @@ document.addEventListener('click', (e) => {
     const r = g.mod.act(g.state, { ...gmove.dataset });
     g.state = r.state;
     render();
-    if (r.won) onWin(g.taskId);
+    if (r.won) { g.sent = true; onWin(g.taskId); }
     return;
   }
   const tile = e.target.closest('[data-tile]');
