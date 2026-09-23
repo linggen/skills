@@ -73,12 +73,26 @@ try:
 except Exception:
     pass
 
+def fetch(url):
+    # One retry on 429: the page loads this beside reddit-mentions.sh, which
+    # reads the same user feed a moment earlier, and the anonymous pool
+    # refuses the second hit in the burst — a short wait usually clears it.
+    # Kept to one wait so the whole script stays inside /api/bash's budget.
+    import time, urllib.error
+    for attempt in (0, 1):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                return r.read()
+        except urllib.error.HTTPError as e:
+            if e.code != 429 or attempt:
+                raise
+            time.sleep(4)
+
 def feed(kind):
     url = f"https://www.reddit.com/user/{username}/{kind}.rss?limit=25{AUTH}"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=12) as r:
-            body = r.read()
+        body = fetch(url)
         if not body.strip():
             errors.append(f"{kind}.rss returned empty (likely rate-limited)")
             return []
