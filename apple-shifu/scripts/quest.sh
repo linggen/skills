@@ -16,6 +16,7 @@ tmp="$file.$$.tmp"
 cat > "$tmp" <<EOF || exit 0
 { "app": "apple-shifu", "quests": [
   { "id": "shifu-scan", "period": "week", "due": true, "done_at": "$at", "reward": 30, "stamina": 20,
+    "open": "/apps/apple-shifu/?tab=system",
     "title": { "zh": "清扫洞府 · 用 Shifu 扫描一次磁盘", "en": "Tidy your cave abode · scan your disk in Shifu" } } ] }
 EOF
 mv -f "$tmp" "$file" 2>/dev/null || rm -f "$tmp"

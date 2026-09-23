@@ -302,13 +302,16 @@ const questReady = (content, state, quest) => countsOf(content, state, quest).ev
 /* 功课 on the same card (design.md § 差事 ⑥): what the player's apps report,
    as lines of the book. They take no slot — nobody took them, life gave them
    — and one paid for its period leaves, like any errand handed in. */
+const choreOpen = q => (typeof q.open === 'string' && q.open.startsWith('/apps/') ? q.open : q.app ? `/apps/${encodeURIComponent(q.app)}/` : null);
 function choresOf(state, ctx, lang) {
   return (ctx?.quests ?? [])
     .filter(q => (q.due || questDone(q, ctx.now)) && state.chores?.[q.id]?.period !== periodKey(q.period, ctx.now))
     .map(q => {
       const done = questDone(q, ctx.now);
       return { id: q.id, title: pick(q.title, lang), need: [{ kind: 'chore', have: done ? 1 : 0, n: 1 }], ready: done, where: null,
-        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null } };
+        // Where to do it: the app's own page, as the app declares it (`open`),
+        // else its door. Only a path on this host — never a link out.
+        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null, open: choreOpen(q) } };
     });
 }
 
