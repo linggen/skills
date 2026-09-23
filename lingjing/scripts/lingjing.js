@@ -435,9 +435,11 @@ function draw() {
   // open, scene or road, not only where a scene casts her.
   $('stage').hidden = false;
   // She stands there only once she has been found (his rule, 2026-09-17).
-  const her = Boolean(look.companion) && !bout;
+  // Out on a 历练 she is not on the stage; her name says where she went.
+  const away = look.companion?.journey && !look.companion.journey.back;
+  const her = Boolean(look.companion) && !bout && !away;
   stageYinyue(her);
-  $('stageName').textContent = her ? look.companion.name : '';
+  $('stageName').textContent = her ? look.companion.name : away ? `${look.companion.name} · ${words().journeyAway}` : '';
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
   keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
   if (view.castFresh) readingByHer(look.divination);
@@ -549,6 +551,37 @@ async function takeMeet(action) {
   if (r.ok) await report(action === 'take' ? '[scene] meet taken' : '[scene] meet passed');
 }
 
+/* 历练 — send her, call her back, take what she brought. She says her own
+   goodbye and tells her own journey (asked moments: she answers at once). */
+function askHer(zh, en, mood) {
+  fetch('/api/yinyue/event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ app: 'lingjing', text: lang() === 'en' ? en : zh, asked: true, mood }),
+  }).catch((e) => console.warn('[lingjing] yinyue', e));
+}
+async function journeyVerb(action, extra = {}) {
+  const r = await verb('journey', { action, ...extra }).catch((e) => ({ ok: false, error: String(e) }));
+  if (!r.ok) keep({ doNote: r.say || null });
+  if (view.gearOpen) { const g = await verb('gear', {}).catch(() => null); keep({ gear: g?.gear ?? view.gear }); }
+  await refresh();
+  return r;
+}
+async function sendHer(hours) {
+  const r = await journeyVerb('send', { hours });
+  if (r.ok) askHer(`他让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `He is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
+}
+async function receiveHer() {
+  const r = await journeyVerb('receive');
+  if (!r.ok) return;
+  const cards = r.card ? [r.card] : [], items = r.brought.filter((b) => b.id).map((b) => ({ id: b.id, name: b.name }));
+  keep({ spoils: { place: look?.place?.id ?? null, cards, items } });
+  const seen = r.brought.map((b) => b.line).join(' ');
+  askHer(`你从${r.place.name}历练回来（${r.hours} 个时辰）。路上所见：${seen} 带回：${[...items.map((i) => i.name), r.card?.name, `${r.wealth} 灵石`].filter(Boolean).join('、')}。讲给他听。`,
+    `You are back from ${r.place.name} (${r.hours} hours). On the road: ${seen} Brought: ${[...items.map((i) => i.name), r.card?.name, `${r.wealth} stones`].filter(Boolean).join(', ')}. Tell him.`, 'happy');
+  render();
+}
+
 /* 机缘 — 收下 is a page tap; what it left stands on the stage, and 银月
    hears it (a big moment: she was there for the run to reach it). */
 async function takeChance() {
@@ -565,6 +598,9 @@ async function takeChance() {
    say so. */
 let chanceTold = null;
 setInterval(() => {
+  // She comes back while the page is open: redraw, and the stage shows it.
+  const j = look?.companion?.journey;
+  if (j?.until && !j.back && new Date(j.until) <= Date.now()) { refresh(); return; }
   const c = look?.chance;
   if (!c || c.taken || c.missed || !c.until) return;
   const left = Math.ceil((new Date(c.until) - Date.now()) / 60000);
@@ -695,6 +731,10 @@ document.addEventListener('click', (e) => {
   const asked = e.target.closest('[data-divine]');
   if (asked) { castByPage(asked.dataset.divine); return; }
   if (e.target.closest('[data-chance]')) { takeChance(); return; }
+  const out = e.target.closest('[data-journey]');
+  if (out) { sendHer(Number(out.dataset.journey)); return; }
+  if (e.target.closest('[data-journey-recall]')) { journeyVerb('recall'); return; }
+  if (e.target.closest('[data-journey-receive]')) { receiveHer(); return; }
   const way = e.target.closest('[data-trial]');
   if (way) { chooseWay(Number(way.dataset.trial)); return; }
   const dropped = e.target.closest('[data-drop]');

@@ -243,6 +243,21 @@ test('机缘 on the page: the book counts it down, the stage holds 收下 where 
   assert.equal(bookChipHtml({ look: { chance: { ...away.chance, until: new Date(Date.now() - 1000).toISOString() }, book: [] }, words: WORDS.zh, lang: 'zh' }, false, false), '', 'run out: gone');
 });
 
+test('历练 on the page: send her from 装备, out she shows where and how long, back she stands on the stage', async () => {
+  const { gearPopHtml, cardHtml, WORDS } = await import('../scripts/cards.js');
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const gear = { slots: [], her: { name: '银月', item: null, bond: null }, bag: [], cards: [], fight: {} };
+  const pop = c => gearPopHtml({ gear, words: WORDS.zh, lang: 'zh', look: { treasure: null, companion: c } });
+  assert.match(pop({ name: '银月' }), /data-journey="2">2 时[\s\S]*data-journey="8">8 时/);
+  const out = pop({ name: '银月', journey: { place: { name: '微山湖' }, minutes_left: 130 } });
+  assert.match(out, /在微山湖 · 还剩 2 时 10 分/);
+  assert.match(out, /data-journey-recall/);
+  assert.match(pop({ name: '银月', journeyed: true }), /今日已出过门/);
+  const back = { companion: { name: '银月', journey: { place: { name: '微山湖' }, back: true } } };
+  assert.ok(stageCards(back, []).some(c => c.card === 'journey'));
+  assert.match(cardHtml({ card: 'journey' }, { look: back, lang: 'zh', words: WORDS.zh }), /银月回来了[\s\S]*自微山湖回来了[\s\S]*data-journey-receive/);
+});
+
 test('a fight whose cards the page cannot name is refused, not opened', async () => {
   // The empty catalog of 2026-09-18: the hand is dealt, nothing may be played,
   // and the only buttons that answer are 主灵根一击 and 结束回合. Silence there

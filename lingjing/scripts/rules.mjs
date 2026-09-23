@@ -672,7 +672,7 @@ export function meet(state, content, ctx, args) {
     const linted = lintTrial(content, args.options);
     if (!linted.options) return refuse('not-playable', null, { why: linted.why });
     const { veiled, ...open } = here;
-    s.meets.places[s.place] = { ...open, options: linted.options, companion: hasCompanion(s) };
+    s.meets.places[s.place] = { ...open, options: linted.options, companion: hasCompanion(s) && !herAway(s, ctx.now) };
     return { state: s, result: { ok: true, offered: linted.options.length, meet: meetBrief(content, s, ctx.now) } };
   }
   if (here.kind === 'trial' && action === 'choose') {
@@ -1143,6 +1143,7 @@ const bondLifts = (content, state) => {
 export function tend(state, content, ctx) {
   const lang = state.lang;
   if (!hasCompanion(state)) return refuse('no-companion', null);
+  if (herAway(state, ctx.now)) return refuse('away', pick({ zh: '她出门历练去了。', en: 'She is out on her journey.' }, state.lang));
   const n = woundsNow(content, state, ctx.now);
   if (!n) return refuse('not-hurt', pick({ zh: '身上没伤。', en: 'You are not hurt.' }, lang));
   const day = dayKey(ctx.now);
@@ -1191,7 +1192,8 @@ export function fightSetup(content, state, creature, now) {
   const fortune = now ? boutFortune(content, state, now) : null;
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
-  const withHer = ownedCards(content, state).includes('yinyue');
+  // Out on a 历练, she is not at his side (§ 历练).
+  const withHer = ownedCards(content, state).includes('yinyue') && !herAway(state, now ?? new Date());
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),
@@ -1448,7 +1450,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, bond: bondBrief(content, state), ...(state.tended === dayKey(ctx.now) ? { tended: true } : {}) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, bond: bondBrief(content, state), ...(state.tended === dayKey(ctx.now) ? { tended: true } : {}), ...(journeyBrief(content, state, ctx.now) ? { journey: journeyBrief(content, state, ctx.now) } : {}), ...(state.journey?.day === dayKey(ctx.now) ? { journeyed: true } : {}) } : null,
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
@@ -1490,7 +1492,13 @@ function onStage(content, state, ctx, result = {}, brief = null) {
    the cards this scene or place was authored with, so a creature is pictured
    even when she forgets to Show it. Walking away clears the stage by itself. */
 function shownHere(content, state, view) {
-  if (state.shown?.length && state.shown_at === stageAt(content, state)) return state.shown;
+  if (state.shown?.length && state.shown_at === stageAt(content, state)) {
+    // A shelf Ling showed is the shelf as it is NOW — a list kept in the save
+    // missed every ware added since (seen 2026-09-23: 回春丹 and 望气术 absent
+    // from 彭城's card on his save while the shelf itself held them).
+    const live = (view.place?.show ?? []).find(c => c.card === 'item');
+    return live ? state.shown.map(c => (c.card === 'item' ? live : c)) : state.shown;
+  }
   return view.scene?.show ?? view.place?.show ?? [];
 }
 
@@ -1575,19 +1583,86 @@ export function wake(state, content, ctx) {
    chance table's pay. Miss it and it is gone. Never in a made world or before
    the roots are set. */
 const CHANCE = { hours: 3, reach: 2 };
-function dealChance(content, s, ctx) {
-  const day = dayKey(ctx.now);
-  if (s.chance?.day === day || !s.traits?.length || inMade(s) || !content.rewards.tables.chance) return null;
+/* The places within `reach` roads of where he stands that he may go: open,
+   within his realm, never here. */
+function nearPlaces(content, s, now, reach) {
   const here = placeOf(content, s.place);
-  if (!here) return null;
+  if (!here) return [];
   const seen = new Set([here.id]);
   let ring = [here];
   const near = [];
-  for (let step = 0; step < CHANCE.reach; step += 1) {
+  for (let step = 0; step < reach; step += 1) {
     ring = ring.flatMap(p => p.roads ?? []).map(id => placeOf(content, id)).filter(p => p && !seen.has(p.id));
     for (const p of ring) seen.add(p.id);
-    near.push(...ring.filter(p => !tooHard(content, s, p) && provinceOpen(content, p.province, ctx.now)));
+    near.push(...ring.filter(p => !tooHard(content, s, p) && provinceOpen(content, p.province, now)));
   }
+  return near;
+}
+
+/* ── 历练 — 银月 goes out on her own, for real hours ──
+   His call, 2026-09-23 (Lifeline's clock, the companion's own life): sent
+   from the 装备 card for 2, 4 or 8 hours to a place the rules pick within
+   three roads, once a day. While she is out she does not fight beside him,
+   tend him, or steady his hand in a 抉择 — that is the price. Back, she
+   brings what that province's roads give (its finds; more the longer) and,
+   after eight hours, a card; the page hands her the journey and she tells it
+   herself. Called back early, she brings nothing. */
+const JOURNEY = { hours: [2, 4, 8], reach: 3, finds: { 2: 1, 4: 2, 8: 3 }, wealth: { 2: 5, 4: 10, 8: 20 } };
+const herAway = (state, now) => Boolean(state.journey && !state.journey.received && now < new Date(state.journey.until));
+const herBack = (state, now) => Boolean(state.journey && !state.journey.received && now >= new Date(state.journey.until));
+function journeyBrief(content, state, now) {
+  const j = state.journey;
+  if (!j || j.received) return null;
+  const at = placeOf(content, j.place), lang = state.lang;
+  const place = { id: j.place, name: pick(at?.name, lang) };
+  if (herBack(state, now)) return { place, hours: j.hours, back: true };
+  return { place, hours: j.hours, until: j.until, minutes_left: Math.ceil((new Date(j.until) - now) / 60000) };
+}
+export function journey(state, content, ctx, args) {
+  const lang = state.lang, action = String(args.action ?? '');
+  if (!hasCompanion(state)) return refuse('no-companion', null);
+  const s = clone(state), day = dayKey(ctx.now);
+  if (action === 'send') {
+    const hours = Number(args.hours);
+    if (!JOURNEY.hours.includes(hours)) return refuse('bad-hours', null, { hours: JOURNEY.hours });
+    if (state.journey && !state.journey.received) return refuse('already-out', null, { journey: journeyBrief(content, state, ctx.now) });
+    if (state.journey?.day === day) return refuse('once-a-day', pick({ zh: '她今日已出过门了。', en: 'She has been out once today.' }, lang));
+    if (state.fight) return refuse('in-a-fight', null);
+    const near = nearPlaces(content, s, ctx.now, JOURNEY.reach);
+    if (!near.length) return refuse('nowhere', null);
+    const to = near[hashOf(`${day}|${s.name ?? ''}|journey|${hours}`) % near.length];
+    s.journey = { day, place: to.id, hours, from: ctx.now.toISOString(), until: new Date(ctx.now.getTime() + hours * 3600000).toISOString() };
+    return { state: s, result: { ok: true, sent: journeyBrief(content, s, ctx.now) } };
+  }
+  if (!state.journey || state.journey.received) return refuse('not-out', null);
+  if (action === 'recall') {
+    if (!herAway(state, ctx.now)) return refuse('already-back', null);
+    s.journey = { ...s.journey, received: ctx.now.toISOString(), recalled: true };
+    return { state: s, result: { ok: true, recalled: true } };
+  }
+  if (action === 'receive') {
+    if (!herBack(state, ctx.now)) return refuse('still-out', null, { journey: journeyBrief(content, state, ctx.now) });
+    const j = state.journey, at = placeOf(content, j.place);
+    const book = content.meets?.finds?.[at?.province]?.length ? content.meets.finds[at.province] : content.meets?.finds?.['*'] ?? [];
+    const brought = [];
+    for (let i = 0; i < (JOURNEY.finds[j.hours] ?? 1) && book.length; i += 1) {
+      const f = book[hashOf(`${j.day}|${j.place}|${s.name ?? ''}|brought|${i}`) % book.length];
+      if (f.item && itemOf(content, f.item)) { s.bag[f.item] = (s.bag[f.item] ?? 0) + 1; brought.push({ id: f.item, name: pick(itemOf(content, f.item).name, lang), line: pick(f.line, lang) }); }
+      else if (f.wealth) brought.push({ wealth: f.wealth, line: pick(f.line, lang) });
+    }
+    const wealth = (JOURNEY.wealth[j.hours] ?? 0) + brought.reduce((n, b) => n + (b.wealth ?? 0), 0);
+    s.wealth += wealth;
+    const card = j.hours >= 8 ? winCard(content, s, { id: `journey:${j.place}`, root: at?.province ? (s.traits ?? [])[0] : null }, ctx.now, 'journey') : null;
+    s.journey = { ...s.journey, received: ctx.now.toISOString() };
+    const bond = gainBond(content, s, 'journey', ctx.now);
+    return { state: s, result: { ok: true, place: { id: j.place, name: pick(at?.name, lang) }, hours: j.hours, brought, wealth, ...(card ? { card } : {}), ...(bond ? { bond } : {}) } };
+  }
+  return refuse('unknown-action', null, { actions: ['send', 'recall', 'receive'] });
+}
+function dealChance(content, s, ctx) {
+  const day = dayKey(ctx.now);
+  if (s.chance?.day === day || !s.traits?.length || inMade(s) || !content.rewards.tables.chance) return null;
+  const near = nearPlaces(content, s, ctx.now, CHANCE.reach);
   if (!near.length) return null;
   const at = near[hashOf(`${day}|${s.name ?? ''}|chance`) % near.length];
   return { day, place: at.id, until: new Date(ctx.now.getTime() + CHANCE.hours * 3600000).toISOString() };
@@ -2959,7 +3034,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

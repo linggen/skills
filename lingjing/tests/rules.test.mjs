@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, hpMaxOf, bond, tend, chance, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, hpMaxOf, bond, tend, chance, journey, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -2565,4 +2565,42 @@ test('机缘: dealt once a day within two roads, reached in time it pays, missed
 test('机缘: not before the roots, and never in a made world', () => {
   const c = ctx({ now: new Date('2026-10-05T09:00:00') });
   assert.equal(wake({ ...toOpenWorld(), traits: [], chance: undefined }, content, c)?.chance, undefined);
+});
+
+/* 历练 (rules § 历练): she goes out for real hours; away, she is not at his
+   side; back, she brings what those roads give. */
+test('历练: sent for real hours, away she is not beside him, back she brings the roads\' finds', () => {
+  const at = h => ctx({ now: new Date(new Date('2026-10-05T09:00:00').getTime() + h * 3600000) });
+  const open = toOpenWorld();
+  const base = { ...open, chapter: '01-ji', scene: null, place: 'pengcheng', tier: 'core', wealth: 0, companion: { joined: '2026-10-01' }, chance: DEALT, cards: [...(open.cards ?? []), 'yinyue'] };
+  const jingwei0 = content.creatures.creatures.find(x => x.id === 'jingwei');
+  assert.deepEqual(fightSetup(content, base, jingwei0, at(0).now).you.extra, ['yinyue'], 'at home, she is in his hand');
+  refused(journey, { ...base, companion: null }, { action: 'send', hours: 2 }, 'no-companion', at(0));
+  refused(journey, base, { action: 'send', hours: 3 }, 'bad-hours', at(0));
+  const sent = must(journey, base, { action: 'send', hours: 8 }, at(0));
+  assert.ok(sent.result.sent.place.id && sent.result.sent.place.id !== 'pengcheng');
+  assert.equal(sent.result.sent.minutes_left, 480);
+  refused(journey, sent.state, { action: 'send', hours: 2 }, 'already-out', at(1));
+  refused(journey, sent.state, { action: 'receive' }, 'still-out', at(1));
+  // away: not in the fight, no tending, no +2 in a 抉择
+  const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
+  assert.deepEqual(fightSetup(content, sent.state, jingwei, at(1).now).you.extra, [], 'she is not in his hand');
+  assert.deepEqual(fightSetup(content, sent.state, jingwei, at(9).now).you.extra, ['yinyue'], 'back, she is');
+  refused(tend, { ...sent.state, wounds: { n: 10, at: at(1).now.toISOString() } }, {}, 'away', at(1));
+  assert.equal(look(sent.state, content, at(1)).companion.journey.minutes_left, 420);
+  // back: what those roads give, stones, and after eight hours a card
+  assert.equal(look(sent.state, content, at(8)).companion.journey.back, true);
+  const home = must(journey, sent.state, { action: 'receive' }, at(8));
+  assert.equal(home.result.brought.length, 3);
+  assert.ok(home.result.wealth >= 20);
+  assert.ok(home.result.card?.card);
+  assert.equal(home.result.bond.gained, 1);
+  refused(journey, home.state, { action: 'receive' }, 'not-out', at(8));
+  refused(journey, home.state, { action: 'send', hours: 2 }, 'once-a-day', at(9));
+  assert.ok(must(journey, home.state, { action: 'send', hours: 2 }, at(24)).result.sent, 'tomorrow, again');
+  // called back early: nothing brought
+  const early = must(journey, sent.state, { action: 'recall' }, at(1));
+  assert.equal(early.result.recalled, true);
+  refused(journey, early.state, { action: 'receive' }, 'not-out', at(9));
+  assert.equal(look(early.state, content, at(1)).companion.journey, undefined);
 });

@@ -1239,6 +1239,17 @@ between the spine's scenes.
 - **Three at a time.** `book-full` is not an error to apologise for: say which
   three are in hand and let them put one down (Quest `drop`).
 
+## 历练 — Yinyue out on her own
+
+Look's `companion.journey` — `{ place, until, minutes_left }` while she is
+out, `{ place, back: true }` once she is home. The player sends her from the
+装备 card (2, 4 or 8 real hours, once a day, a place the rules pick); you
+never send her and never call her back. While she is out she is **not** in
+the scene: do not write her lines, do not have her fight or tend; if the
+story needs her, she is away and will be back. When she returns the page
+hands her the journey and **she tells it herself** — say nothing of what she
+brought.
+
 ## 机缘 — near, today, for a few hours
 
 Look's `chance: { place, until, minutes_left, here? }` is today's 机缘: the
