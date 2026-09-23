@@ -166,7 +166,11 @@
 /* They stay on screen. A hand grown tall with pictures pushed 结束回合 below the
    fold, and a button you have to scroll to find is a button that is not there
    (2026-09-18). */
-.bacts { position: sticky; bottom: 0; z-index: 3; display: flex; gap: 10px; justify-content: flex-end; align-items: stretch; padding: 6px 0 2px; background: linear-gradient(180deg, transparent, var(--ink) 40%); }
+/* The hand and the two buttons share one pinned row — the buttons beside the
+   hand, never over its last card (his, 2026-09-23: 卡牌被按钮挡住了). */
+.bdock { position: sticky; bottom: 0; z-index: 3; display: flex; gap: 12px; align-items: flex-end; padding: 6px 0 2px; background: linear-gradient(180deg, transparent, var(--ink) 30%); }
+.bdock .bhand { flex: 1; min-width: 0; flex-wrap: wrap; }
+.bacts { display: flex; flex-direction: column; gap: 8px; flex: none; }
 .bact { display: grid; gap: 2px; place-items: center; padding: 9px 16px; border: 1px solid var(--line-d); border-radius: 10px; background: linear-gradient(180deg, #2a241d, #191512); font-family: var(--serif); font-size: 15px; color: var(--parchment); cursor: pointer; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; }
 .bact small { font-family: var(--ui); font-size: 10px; color: var(--faint-d); }
 .bact:hover { transform: translateY(-2px); border-color: var(--gold); }
@@ -202,6 +206,8 @@
   .bside .bwho { font-size: 19px; }
   .bnums { grid-column: 1 / -1; justify-items: start; }
   .bhand { justify-content: flex-start; overflow-x: auto; }
+  .bdock { flex-direction: column; align-items: stretch; }
+  .bacts { flex-direction: row; justify-content: flex-end; }
   .bcard { flex-basis: 96px; }
   .brank { gap: 6px; min-height: 84px; }
 }

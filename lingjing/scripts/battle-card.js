@@ -526,6 +526,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${deckHtml(st.you.deck, 'mine', w)}
     </div>
 
+    <div class="bdock">
     <div class="bhand">${handHtml(st, ctx, picked)}</div>
 
     <div class="bacts">
@@ -534,6 +535,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
         <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${2}${ctx.lang === 'en' ? ' ' : ''}${w.mana}`}</small>
       </button>
       <button class="bact end${stuck ? ' urge' : ''}" data-spot="end">${w.end}</button>
+    </div>
     </div>
 
     ${note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : ''}
