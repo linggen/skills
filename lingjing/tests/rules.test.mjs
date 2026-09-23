@@ -2352,6 +2352,7 @@ test('伤势: below a quarter the door refuses and says when — a mending pill 
   assert.equal(took.state.wounds.n, max - Math.ceil(max / 2));
   assert.equal(took.state.bag['mend-pill'], undefined);
   assert.equal(took.result.health.now, Math.ceil(max / 2));
+  assert.deepEqual(took.result.item.effect, { mend: 0.5 }, 'the page is told what it does');
   assert.equal(must(duel, took.state, { id: 'haunt:jingwei' }, c).result.ok, true);
 });
 

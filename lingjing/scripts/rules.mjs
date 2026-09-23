@@ -750,6 +750,7 @@ const ELEMENT_NAME = (content, lang, el) => pick(content.traits.elements[el], la
 const EFFECT_BRIEF = {
   key: () => ({ key: true }),
   progress: e => ({ progress: e.progress }),
+  mend: e => ({ mend: e.mend }),
   wear: e => ({ wear: e.wear }),
   charm: () => ({ charm: true }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
