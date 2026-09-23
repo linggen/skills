@@ -1,0 +1,387 @@
+{
+  "_doc": [
+    "What can be cleared on a Mac, as data. clearables.sh finds and removes by these rules; files.js draws them.",
+    "Nothing outside this file knows a rule by name: the shell knows a few finder kinds, the page knows verdict fields.",
+    "find.kind: marker (a project file beside a regenerable folder, any depth under ~), path (globs, each match one row),",
+    "children (each child of a globbed folder is one row), ext (files by extension under ~), big (one huge log-like file),",
+    "series (a folder of many dated files nothing prunes), cmd (a read-only shell snippet printing 'path<TAB>k=v;k=v').",
+    "remove.method: tool (cmd run in cwd, placeholders {project} {name} {parent}), purge (rm -rf), trash (recoverable),",
+    "report (never removed here; the row offers remove.cmd to copy). fallback applies when the tool is not installed.",
+    "safety is the base verdict; active_days demotes a SAFE row to REVIEW when it was used that recently;",
+    "min_age_days does the same for young files. The page never promotes a verdict, only demotes.",
+    "Order matters: the first rule to reach a folder claims it, so specific rules come before general ones.",
+    "subject is the why line's first part: {label} {name} {parent} and any key the finder emits ({project}, {model}, …).",
+    "age_label names the row's last-used time (\"last built 71 days ago\"); rules without it show no age."
+  ],
+  "groups": [
+    { "id": "build", "label": "Developer build output" },
+    { "id": "devtools", "label": "Developer tool caches" },
+    { "id": "appcache", "label": "App caches" },
+    { "id": "installers", "label": "Leftover installers & backups" },
+    { "id": "logs", "label": "Runaway logs" },
+    { "id": "system", "label": "System & simulators" },
+    { "id": "found", "label": "Found by Shifu" }
+  ],
+  "walk": {
+    "_doc": "One find over ~ serves every marker, ext, big and series rule. Pruned trees are never walked.",
+    "prune_names": [
+      "node_modules", "target", ".git", ".hg", ".svn", "build", ".build", ".dart_tool", ".gradle",
+      ".venv", "venv", "__pycache__", "DerivedData", "Pods", "*.app", "*.photoslibrary",
+      "*.musiclibrary", "*.tvlibrary", "*.xcarchive", "site-packages", "Library"
+    ],
+    "prune_paths": [
+      "~/Library", "~/.Trash", "~/.cargo", "~/.rustup", "~/.pub-cache", "~/.npm", "~/.bun",
+      "~/.gradle", "~/.m2", "~/.cocoapods", "~/.vscode", "~/.cursor", "~/.antigravity",
+      "~/.windsurf", "~/go/pkg", "~/miniconda3", "~/anaconda3", "~/miniforge3", "~/.conda",
+      "~/.pyenv", "~/.nvm", "~/.rbenv", "~/.ollama", "~/.docker", "~/.local/share/uv", "~/dev/flutter",
+      "~/flutter", "~/.linggen/models"
+    ]
+  },
+  "rules": [
+    {
+      "id": "cargo-target", "group": "build", "label": "Rust build output",
+      "find": { "kind": "marker", "markers": ["Cargo.toml"], "outputs": ["target"] },
+      "probes": ["debug/.fingerprint", "release/.fingerprint", ".rustc_info.json", "debug", "release"],
+      "git": true, "regen": "`cargo build` rebuilds it — minutes",
+      "remove": { "method": "tool", "cmd": "cargo clean", "cwd": "{project}", "fallback": "purge" },
+      "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+    {
+      "id": "node-modules", "group": "build", "label": "Node packages",
+      "find": { "kind": "marker", "markers": ["package.json"], "outputs": ["node_modules"] },
+      "probes": [".package-lock.json", ".modules.yaml", ".yarn-integrity"],
+      "git": true, "regen": "`npm install` brings them back — a minute or two",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+    {
+      "id": "flutter-build", "group": "build", "label": "Flutter build output",
+      "find": { "kind": "marker", "markers": ["pubspec.yaml"], "outputs": ["build", ".dart_tool"] },
+      "probes": ["package_config.json", "flutter_build"],
+      "git": true, "regen": "`flutter build` rebuilds it — minutes",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+    {
+      "id": "gradle-build", "group": "build", "label": "Gradle build output",
+      "find": { "kind": "marker", "markers": ["build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts"],
+        "outputs": ["build", ".gradle"] },
+      "git": true, "regen": "`gradle build` rebuilds it — minutes",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+    {
+      "id": "maven-target", "group": "build", "label": "Maven build output",
+      "find": { "kind": "marker", "markers": ["pom.xml"], "outputs": ["target"] },
+      "git": true, "regen": "`mvn package` rebuilds it — minutes",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+    {
+      "id": "cmake-build", "group": "build", "label": "CMake build output",
+      "find": { "kind": "marker", "markers": ["CMakeLists.txt"], "outputs": ["build", "cmake-build-*"],
+        "require_ignored": true },
+      "probes": ["CMakeCache.txt"],
+      "git": true, "regen": "`cmake --build` rebuilds it — minutes",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+    {
+      "id": "node-build", "group": "build", "label": "Web build output",
+      "find": { "kind": "marker", "markers": ["package.json"],
+        "outputs": [".next", ".nuxt", ".turbo", ".parcel-cache", ".svelte-kit", ".angular", "dist", "build"],
+        "require_ignored": true },
+      "git": true, "regen": "the next build writes it again",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+    {
+      "id": "python-caches", "group": "build", "label": "Python caches",
+      "find": { "kind": "marker", "markers": ["pyproject.toml", "requirements.txt", "setup.py"],
+        "outputs": ["__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox", ".nox"] },
+      "git": true, "regen": "Python writes them again on the next run",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "python-venv", "group": "build", "label": "Python environment",
+      "find": { "kind": "marker", "markers": ["pyproject.toml", "requirements.txt", "setup.py"],
+        "outputs": [".venv", "venv"] },
+      "probes": ["bin/python", "pyvenv.cfg"],
+      "git": true, "regen": "`pip install` rebuilds it, if the requirements are complete",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "review"
+    },
+    {
+      "id": "unity-library", "group": "build", "label": "Unity import cache",
+      "find": { "kind": "marker", "markers": ["ProjectSettings"], "outputs": ["Library", "Temp", "obj", "Logs"] },
+      "probes": ["ArtifactDB", "SourceAssetDB"],
+      "git": true, "regen": "Unity reimports it on open — can take an hour",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 60
+    },
+    {
+      "id": "swift-build", "group": "build", "label": "Swift package build output",
+      "find": { "kind": "marker", "markers": ["Package.swift"], "outputs": [".build"] },
+      "git": true, "regen": "`swift build` rebuilds it — minutes",
+      "remove": { "method": "purge" }, "age_label": "last built", "safety": "safe", "active_days": 30
+    },
+
+    {
+      "id": "xcode-deriveddata", "group": "devtools", "label": "Xcode build cache",
+      "find": { "kind": "path", "paths": ["~/Library/Developer/Xcode/DerivedData"] },
+      "regen": "Xcode rebuilds it on the next build",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "xcode-archives", "group": "devtools", "label": "Xcode archives",
+      "find": { "kind": "path", "paths": ["~/Library/Developer/Xcode/Archives"] },
+      "regen": "not rebuilt — holds the symbols for crash reports of shipped builds",
+      "remove": { "method": "trash" }, "safety": "review"
+    },
+    {
+      "id": "xcode-devicesupport", "group": "devtools", "label": "Device support files",
+      "find": { "kind": "children", "paths": ["~/Library/Developer/Xcode/*DeviceSupport"] },
+      "regen": "Xcode copies them again when that device connects",
+      "remove": { "method": "purge" }, "age_label": "last used", "safety": "safe", "active_days": 90
+    },
+    {
+      "id": "xcode-doc-cache", "group": "devtools", "label": "Xcode documentation cache",
+      "find": { "kind": "path", "paths": ["~/Library/Developer/Xcode/DocumentationCache"] },
+      "regen": "Xcode downloads it again when you open the docs",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "cargo-registry", "group": "devtools", "label": "Cargo download cache",
+      "find": { "kind": "path", "paths": ["~/.cargo/registry/cache", "~/.cargo/registry/src", "~/.cargo/git/checkouts"] },
+      "regen": "cargo downloads crates again when a build needs them",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "gradle-caches", "group": "devtools", "label": "Gradle cache",
+      "find": { "kind": "path", "paths": ["~/.gradle/caches", "~/.gradle/wrapper/dists", "~/.gradle/daemon", "~/.android/build-cache", "~/.android/cache"] },
+      "regen": "Gradle downloads it again on the next build — slow once",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "android-avd", "group": "devtools", "label": "Android emulators",
+      "find": { "kind": "children", "paths": ["~/.android/avd"] },
+      "regen": "not rebuilt — the emulator and the apps inside it go",
+      "remove": { "method": "trash" }, "safety": "review"
+    },
+    {
+      "id": "android-images", "group": "devtools", "label": "Android system images",
+      "find": { "kind": "children", "paths": ["~/Library/Android/sdk/system-images"] },
+      "regen": "Android Studio downloads it again — a few GB",
+      "remove": { "method": "purge" }, "safety": "review"
+    },
+    {
+      "id": "npm-cache", "group": "devtools", "label": "npm download cache",
+      "find": { "kind": "path", "paths": ["~/.npm/_cacache", "~/.npm/_npx"] },
+      "regen": "npm downloads packages again when needed",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "pnpm-store", "group": "devtools", "label": "pnpm store",
+      "find": { "kind": "path", "paths": ["~/Library/pnpm/store", "~/.local/share/pnpm/store", "~/.pnpm-store"] },
+      "regen": "pnpm downloads packages again when needed",
+      "remove": { "method": "tool", "cmd": "pnpm store prune", "cwd": "~", "fallback": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "bun-cache", "group": "devtools", "label": "Bun download cache",
+      "find": { "kind": "path", "paths": ["~/.bun/install/cache"] },
+      "regen": "bun downloads packages again when needed",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "yarn-cache", "group": "devtools", "label": "Yarn download cache",
+      "find": { "kind": "path", "paths": ["~/Library/Caches/Yarn", "~/.yarn/berry/cache"] },
+      "regen": "yarn downloads packages again when needed",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "pip-cache", "group": "devtools", "label": "pip download cache",
+      "find": { "kind": "path", "paths": ["~/Library/Caches/pip", "~/.cache/pip"] },
+      "regen": "pip downloads packages again when needed",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "uv-cache", "group": "devtools", "label": "uv download cache",
+      "find": { "kind": "path", "paths": ["~/.cache/uv", "~/Library/Caches/uv"] },
+      "regen": "uv downloads packages again when needed",
+      "remove": { "method": "tool", "cmd": "uv cache clean", "cwd": "~", "fallback": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "conda-pkgs", "group": "devtools", "label": "Conda package cache",
+      "find": { "kind": "path", "paths": ["~/miniconda3/pkgs", "~/anaconda3/pkgs", "~/miniforge3/pkgs", "~/.conda/pkgs"] },
+      "regen": "conda downloads packages again when needed",
+      "remove": { "method": "tool", "cmd": "conda clean --all --yes", "cwd": "~" }, "safety": "safe"
+    },
+    {
+      "id": "homebrew-cache", "group": "devtools", "label": "Homebrew download cache",
+      "find": { "kind": "path", "paths": ["~/Library/Caches/Homebrew"] },
+      "regen": "Homebrew downloads again on the next install",
+      "remove": { "method": "tool", "cmd": "brew cleanup -s", "cwd": "~", "fallback": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "go-cache", "group": "devtools", "label": "Go build cache",
+      "find": { "kind": "path", "paths": ["~/Library/Caches/go-build"] },
+      "regen": "`go build` rebuilds it",
+      "remove": { "method": "tool", "cmd": "go clean -cache", "cwd": "~", "fallback": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "go-modcache", "group": "devtools", "label": "Go module cache",
+      "find": { "kind": "path", "paths": ["~/go/pkg/mod"] },
+      "regen": "go downloads modules again when a build needs them",
+      "remove": { "method": "tool", "cmd": "go clean -modcache", "cwd": "~" }, "safety": "safe"
+    },
+    {
+      "id": "cocoapods-cache", "group": "devtools", "label": "CocoaPods cache",
+      "find": { "kind": "path", "paths": ["~/Library/Caches/CocoaPods"] },
+      "regen": "`pod install` downloads again",
+      "remove": { "method": "tool", "cmd": "pod cache clean --all", "cwd": "~", "fallback": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "pub-cache", "group": "devtools", "label": "Dart package cache",
+      "find": { "kind": "path", "paths": ["~/.pub-cache/hosted", "~/.pub-cache/git"] },
+      "regen": "`flutter pub get` downloads again",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "huggingface-models", "group": "devtools", "label": "Downloaded AI models",
+      "find": { "kind": "path", "paths": ["~/.cache/huggingface/hub", "~/.cache/lm-studio/models", "~/.lmstudio/models"] },
+      "regen": "downloaded again on next use — can be many GB",
+      "remove": { "method": "purge" }, "safety": "review"
+    },
+    {
+      "id": "ollama-models", "group": "devtools", "label": "Ollama model",
+      "find": { "kind": "cmd", "paths": ["~/.ollama/models/manifests/*/*/*/*"],
+        "sh": "find \"$HOME/.ollama/models/manifests\" -type f 2>/dev/null | while IFS= read -r m; do t=${m##*/}; n=${m%/*}; n=${n##*/}; b=$(grep -oE '\"size\":[0-9]+' \"$m\" | awk -F: '{s+=$2} END {print s+0}'); printf '%s\\tmodel=%s:%s;bytes=%s\\n' \"$m\" \"$n\" \"$t\" \"$b\"; done" },
+      "regen": "`ollama pull` downloads it again — many GB",
+      "remove": { "method": "tool", "cmd": "ollama rm {parent}:{name}", "cwd": "~" }, "subject": "{label} {model}", "safety": "review"
+    },
+    {
+      "id": "cachedir-tag", "group": "devtools", "label": "Tagged cache",
+      "find": { "kind": "marker", "markers": ["CACHEDIR.TAG"], "outputs": ["."] },
+      "regen": "the tool that tagged it writes it again",
+      "remove": { "method": "purge" }, "safety": "review"
+    },
+
+    {
+      "id": "electron-cache", "group": "appcache", "label": "App web cache",
+      "find": { "kind": "path", "paths": [
+        "~/Library/Application Support/*/Cache", "~/Library/Application Support/*/Code Cache",
+        "~/Library/Application Support/*/GPUCache", "~/Library/Application Support/*/Service Worker/CacheStorage",
+        "~/Library/Application Support/*/CachedData", "~/Library/Application Support/*/*/Service Worker/CacheStorage",
+        "~/Library/Application Support/*/*/Cache", "~/Library/Application Support/*/*/Code Cache",
+        "~/Library/Application Support/*/*/*/Service Worker/CacheStorage", "~/Library/Application Support/*/*/*/Code Cache",
+        "~/Library/Application Support/*/*/*/GPUCache"] },
+      "regen": "the app rebuilds it — quit the app first",
+      "remove": { "method": "purge" }, "subject": "{label} of {parent}", "safety": "safe"
+    },
+    {
+      "id": "vscode-vsix", "group": "appcache", "label": "Editor extension downloads",
+      "find": { "kind": "path", "paths": ["~/Library/Application Support/*/CachedExtensionVSIXs"] },
+      "regen": "the editor downloads extensions again when needed",
+      "remove": { "method": "purge" }, "subject": "{label} of {parent}", "safety": "safe"
+    },
+    {
+      "id": "media-downloads", "group": "appcache", "label": "Downloaded music & podcasts",
+      "find": { "kind": "path", "paths": [
+        "~/Library/Application Support/Spotify/PersistentCache",
+        "~/Library/Group Containers/*.groups.com.apple.podcasts/Library/Cache",
+        "~/Library/Containers/com.apple.podcasts/Data/Library/Caches"] },
+      "regen": "downloaded again when you play it",
+      "remove": { "method": "purge" }, "safety": "review"
+    },
+    {
+      "id": "mail-downloads", "group": "appcache", "label": "Mail attachments opened",
+      "find": { "kind": "path", "paths": ["~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads"] },
+      "regen": "Mail saves an attachment again when you open it",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "home-cache", "group": "appcache", "label": "Tool cache",
+      "find": { "kind": "children", "paths": ["~/.cache"] },
+      "regen": "the tool rebuilds it on next run",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "library-caches", "group": "appcache", "label": "App cache",
+      "find": { "kind": "children", "paths": ["~/Library/Caches"] },
+      "regen": "the app rebuilds it on next launch",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+
+    {
+      "id": "installers", "group": "installers", "label": "Installer",
+      "find": { "kind": "ext", "ext": ["dmg", "pkg", "ipsw", "xip", "mpkg"] },
+      "regen": "the app is installed; the installer is a spare copy",
+      "remove": { "method": "trash" }, "age_label": "saved", "safety": "safe", "min_age_days": 14
+    },
+    {
+      "id": "ipsw-updates", "group": "installers", "label": "iPhone software update",
+      "find": { "kind": "path", "paths": ["~/Library/iTunes/*Software Updates/*.ipsw"] },
+      "regen": "Finder downloads it again for the next restore",
+      "remove": { "method": "trash" }, "safety": "safe"
+    },
+    {
+      "id": "macos-installer", "group": "installers", "label": "macOS installer",
+      "find": { "kind": "path", "paths": ["/Applications/Install macOS*.app"], "outside_home": true },
+      "regen": "the App Store downloads it again when you need it",
+      "remove": { "method": "trash" }, "safety": "safe"
+    },
+    {
+      "id": "ios-backups", "group": "installers", "label": "iPhone backup",
+      "find": { "kind": "cmd", "paths": ["~/Library/Application Support/MobileSync/Backup/*"],
+        "sh": "for d in \"$HOME/Library/Application Support/MobileSync/Backup\"/*; do [ -f \"$d/Info.plist\" ] || continue; n=$(plutil -extract 'Device Name' raw -o - \"$d/Info.plist\" 2>/dev/null | tr ';|' '  '); t=$(plutil -extract 'Last Backup Date' raw -o - \"$d/Info.plist\" 2>/dev/null); printf '%s\\tdevice=%s;date=%s\\n' \"$d\" \"$n\" \"$t\"; done" },
+      "regen": "not rebuilt — make sure a newer backup exists first",
+      "remove": { "method": "trash" }, "subject": "{label} of {device} · last backed up {date}", "safety": "review"
+    },
+
+    {
+      "id": "log-series", "group": "logs", "label": "Dated logs nothing prunes",
+      "find": { "kind": "series", "within": ["~/.*", "~/Library/Logs/*"], "min_count": 30, "keep_days": 14 },
+      "regen": "not rebuilt — the app keeps writing new ones",
+      "remove": { "method": "trash" }, "subject": "{n} dated logs since {first}, {total_bytes} in all · biggest {biggest}, {biggest_bytes} · {old} older than {keep} days go", "safety": "review", "partial": true
+    },
+    {
+      "id": "big-log", "group": "logs", "label": "Huge log file",
+      "find": { "kind": "big", "within": ["~/.*", "~/Library/Logs/*"], "min_gb": 2,
+        "names": ["*.log", "*.jsonl", "*.out", "*.txt", "*_all.*", "*[._-]20[0-9][0-9]-[01][0-9]-[0-3][0-9]*"] },
+      "regen": "not rebuilt — the app starts a new one",
+      "remove": { "method": "trash" }, "safety": "review"
+    },
+    {
+      "id": "library-logs", "group": "logs", "label": "App logs",
+      "find": { "kind": "children", "paths": ["~/Library/Logs"] },
+      "regen": "apps write new logs as they run",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+
+    {
+      "id": "sim-unavailable", "group": "system", "label": "Simulator for a removed Xcode",
+      "find": { "kind": "cmd", "paths": ["~/Library/Developer/CoreSimulator/Devices/*"],
+        "sh": "xcrun simctl list devices unavailable 2>/dev/null | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | while read -r u; do printf '%s\\tname=%s\\n' \"$HOME/Library/Developer/CoreSimulator/Devices/$u\" \"$u\"; done" },
+      "regen": "not needed — its runtime is gone",
+      "remove": { "method": "tool", "cmd": "xcrun simctl delete {name}", "cwd": "~" }, "safety": "safe"
+    },
+    {
+      "id": "sim-caches", "group": "system", "label": "Simulator cache",
+      "find": { "kind": "path", "paths": ["~/Library/Developer/CoreSimulator/Caches"] },
+      "regen": "the Simulator rebuilds it",
+      "remove": { "method": "purge" }, "safety": "safe"
+    },
+    {
+      "id": "docker-disk", "group": "system", "label": "Docker disk image",
+      "find": { "kind": "path", "paths": ["~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw"] },
+      "regen": "holds your images and volumes — prune inside Docker",
+      "remove": { "method": "report", "cmd": "docker system prune -a" }, "safety": "review"
+    },
+    {
+      "id": "tm-snapshots", "group": "system", "label": "Time Machine local snapshots",
+      "find": { "kind": "cmd", "paths": ["/"], "outside_home": true,
+        "sh": "n=$(tmutil listlocalsnapshotdates / 2>/dev/null | grep -cE '^[0-9]{4}-'); [ \"${n:-0}\" -gt 0 ] && printf '/\\tcount=%s;bytes=0\\n' \"$n\"; true" },
+      "regen": "macOS frees them itself when space runs low",
+      "remove": { "method": "report", "cmd": "sudo tmutil thinlocalsnapshots / 999999999999 4" }, "subject": "{count} {label}", "safety": "review"
+    },
+    {
+      "id": "trash", "group": "system", "label": "Trash",
+      "find": { "kind": "path", "paths": ["~/.Trash"] },
+      "regen": "not rebuilt — emptying is permanent",
+      "remove": { "method": "tool", "cmd": "osascript -e 'tell application \"Finder\" to empty trash'", "cwd": "~" },
+      "safety": "review"
+    }
+  ]
+}

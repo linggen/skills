@@ -16,6 +16,9 @@
 #   trash <list-file>     JSON counts             — to the macOS Trash (recoverable)
 #   purge <list-file>     JSON counts             — outright rm, CACHE ROOTS ONLY
 #
+# The Clearable pile and Ling's disk tools live in clearables.sh; these pass
+# straight through: clear, tree, look, hotspots, propose, unpropose.
+#
 # trash and purge also write <list-file>.done: exactly the paths that went.
 # The caller reports reclaimed bytes from that list using the sizes it already
 # displayed, so the figure in the toast and the figure in the row agree.
@@ -70,6 +73,10 @@ emit_stat() {
 }
 
 case "$cmd" in
+
+  clear|tree|look|hotspots|propose|unpropose)
+    exec bash "$(dirname "$0")/clearables.sh" "$cmd" "$@"
+    ;;
 
   large)
     # Tiered Spotlight query: ask at shrinking size thresholds and stop once
@@ -198,7 +205,7 @@ case "$cmd" in
     ;;
 
   *)
-    echo "usage: files.sh {large|downloads|caches|sha|trash|purge} [args]" >&2
+    echo "usage: files.sh {large|downloads|caches|sha|trash|purge|clear|tree|look|hotspots|propose|unpropose} [args]" >&2
     exit 2
     ;;
 esac
