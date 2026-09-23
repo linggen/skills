@@ -49,7 +49,7 @@ tools:
       `stamina` (`now` of `max`; `empty` with `returns_at` when a story
       step is out of reach), `fight` (a 斗法 running on the scene — while it is
       here you advance NOTHING; see § 降妖), the `place` the player stands in (what is
-      there, its roads, the province's places for the map) and the
+      there and its roads — the province's map is the page's, not yours) and the
       `director` brief (`near`, `too_hard`, the `thread`, the `pool`,
       today's `seed`, `choice`), `book` (the 差事 in hand: each with its counts
       and where the next one is met) and `offers` (what may be taken right

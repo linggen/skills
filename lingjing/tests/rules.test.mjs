@@ -2525,7 +2525,12 @@ test('forLing: Ling gets the reading without the page\'s drawing data — the ma
   assert.ok(full.place.places.length && full.place.shelf[0].art, 'the page gets it all');
   const slim = forLing(full);
   assert.equal(slim.place.places, undefined);
-  assert.deepEqual(Object.keys(slim.place.shelf[0]).sort(), ['buy', 'id', 'name']);
+  // SKILL.md tells a thing from the shelf's `about` and `effect` (its root) and
+  // speaks only the shelf's prices — all of that stays; only the picture goes
+  const { art, ...kept } = full.place.shelf[0];
+  assert.deepEqual(slim.place.shelf[0], kept);
+  for (const k of ['about', 'effect', 'buy', 'sell', 'kind', 'held']) assert.ok(k in slim.place.shelf[0], k);
+  assert.equal(slim.place.shelf[0].art, undefined);
   assert.deepEqual(slim.place.roads, full.place.roads, 'the roads stay — they are how she walks');
   assert.equal(slim.book?.length, full.book?.length);
   assert.ok(JSON.stringify(slim).length < JSON.stringify(full).length * 0.75);

@@ -3479,16 +3479,26 @@ function undo(stateFile, logFile) {
    blow ling's context up」). Ling's tools ask with --for=ling (SKILL.md) and
    get the result with the page's own drawing data taken out; the page, and
    anything else, gets it all (an open page on old code never loses its map): every place of the province for the map, and a
-   shelf's pictures and blurbs (she keeps what is sold and for how much).
+   shelf's pictures. The rest of the shelf she keeps — what a thing is
+   (`kind`, `about`), what it does (`effect`, its root), both prices, how
+   many are held and whether one is worn: SKILL.md has her tell a thing from
+   its `about` and `effect` and speak prices only as the shelf gives them.
    Measured 2026-09-23 on his save at 彭城: Look 10.3k chars, 4.2k of them
-   those two. The rules never read it back, so it cannot change a decision. */
+   places, pictures and blurbs. The rules never read it back, so it cannot
+   change a decision. */
+const shelfForLing = i => {
+  if (!i || typeof i !== 'object') return i;
+  const { art, ...kept } = i; // the picture is the page's; the words and prices are hers
+  return kept;
+};
+
 export function forLing(value) {
   if (Array.isArray(value)) return value.map(forLing);
   if (!value || typeof value !== 'object') return value;
   const out = {};
   for (const [k, v] of Object.entries(value)) {
     if (k === 'places' && Array.isArray(v) && 'roads' in value) continue;
-    if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(i => (i && typeof i === 'object' ? { id: i.id, name: i.name, buy: i.buy, ...(i.held ? { held: i.held } : {}) } : i)); continue; }
+    if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(shelfForLing); continue; }
     out[k] = forLing(v);
   }
   return out;
