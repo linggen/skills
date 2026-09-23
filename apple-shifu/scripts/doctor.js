@@ -9,6 +9,7 @@ import { calculateHealthScore, saveScoreHistory, getLastScore, getScoreHistory, 
 import { initShell, registerTab, setActiveTab, getActiveTab, getSource, onSourceChange, onTabChange, onBackupChange, refreshVerbs, getBackupSummary } from './shifu-shell.js';
 import { renderPhoneSystem, phoneFacts } from './phone-system.js';
 import { setFileIndex } from './widget-renderers.js';
+import { startLiveTopBar } from './live.js';
 
 const SKILL_NAME = 'apple-shifu';
 const params = new URLSearchParams(window.location.search);
@@ -378,6 +379,8 @@ async function mountAndStart(sessionId, carryPage = null) {
 
   refreshVerbs();
   setInterval(refreshVerbs, 60_000);   // keeps "Last scan 3m ago" honest
+  // The top row's numbers refresh while the Mac's System tab is in view.
+  startLiveTopBar({ getActiveTab, getSource, onTabChange, onSourceChange, isScanning: () => scanning });
 
   if (sessionId && hasCachedPage(sessionId)) {
     // Restore dashboard from cache — no re-scan, no tokens, no greeting.

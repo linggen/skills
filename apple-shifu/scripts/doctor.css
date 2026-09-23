@@ -187,7 +187,24 @@ body {
 }
 
 .top-bar-card {
+  position: relative;
   padding: 12px 14px;
+}
+
+/* Live top row (live.js): a dot in the corner, out of the flow. Dim = the
+   last refresh failed and the numbers shown are the previous ones. */
+.live-dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.live-dot.stale {
+  opacity: 0.3;
 }
 
 /* ── Body ── */

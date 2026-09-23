@@ -102,7 +102,14 @@ export function renderTopBarWidget(w) {
     custom: renderCustomWidget,
   };
   const fn = renderers[w.widget] || renderCustomWidget;
-  return fn(w.data || {});
+  const card = fn(w.data || {});
+  // The live top row (live.js) finds its cards by widget and keeps the parts
+  // that stay the scan's — cycles, the CPU label — from the scan data.
+  if (card && renderers[w.widget]) {
+    card.dataset.widget = w.widget;
+    card._scan = w.data || {};
+  }
+  return card;
 }
 
 function metricCard(label, value, sub, barPct, barClr) {

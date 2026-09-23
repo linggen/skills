@@ -13,7 +13,7 @@ function shellEsc(s) {
     ceiling — a `du` over a big folder runs well past it, and a command that
     hits the ceiling comes back `exit_code: -1` with "Command timed out" and
     nothing on stdout, which is how a whole breakdown used to vanish. */
-async function bash(command, sessionId, timeoutMs) {
+export async function bash(command, sessionId, timeoutMs) {
   const body = { project_root: '/tmp', command };
   if (timeoutMs) body.timeout_ms = timeoutMs;
   if (sessionId) body.session_id = sessionId;
@@ -63,25 +63,10 @@ function parseSystemInfo(swVersOut, cpuBrandOut, cpuCountOut, memOut, vmOut, upt
   const osVersion = extractLine(swVersOut, 'ProductVersion:') || '';
   const cpuBrand = cpuBrandOut.trim() || 'Unknown';
   const cpuCores = parseInt(cpuCountOut.trim()) || 0;
-  const memBytes = parseInt(memOut.trim()) || 0;
-  const memTotalGb = +(memBytes / (1024 ** 3)).toFixed(1);
-
-  // Parse vm_stat for memory usage
-  const pageSize = 16384;
-  const active = parseInt(extractLine(vmOut, 'Pages active:')?.replace(/\D/g, '') || '0');
-  const wired = parseInt(extractLine(vmOut, 'Pages wired')?.replace(/\D/g, '') || '0');
-  const compressed = parseInt(extractLine(vmOut, 'Pages occupied by compressor:')?.replace(/\D/g, '') || '0');
-  const memUsedGb = +((active + wired + compressed) * pageSize / (1024 ** 3)).toFixed(1);
-  const memPercent = memTotalGb > 0 ? Math.round((memUsedGb / memTotalGb) * 100) : 0;
 
   // Parse uptime
   const uptimeMatch = uptimeOut.match(/up\s+(.+?),\s+\d+\s+user/);
   const uptime = uptimeMatch ? uptimeMatch[1].trim() : uptimeOut.trim().split(',')[0];
-
-  // Parse CPU usage from top output: "CPU usage: 23.0% user, 9.0% sys, 68.0% idle"
-  let cpuUsage = 0;
-  const usageMatch = cpuUsageOut.match(/(\d+\.\d+)%\s+user.*?(\d+\.\d+)%\s+sys/);
-  if (usageMatch) cpuUsage = Math.round(parseFloat(usageMatch[1]) + parseFloat(usageMatch[2]));
 
   // Parse load averages from uptime
   const loadMatch = uptimeOut.match(/load averages?:\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
@@ -91,13 +76,36 @@ function parseSystemInfo(swVersOut, cpuBrandOut, cpuCountOut, memOut, vmOut, upt
     os: `${os} ${osVersion}`.trim(),
     cpuBrand,
     cpuCores,
-    cpuUsage,
+    cpuUsage: parseCpuUsage(cpuUsageOut),
     loadAvg,
-    memory: { total_gb: memTotalGb, used_gb: memUsedGb, percent: memPercent },
+    memory: parseMemory(memOut, vmOut),
     uptime,
     hostname: hostOut.trim(),
     arch: archOut.trim(),
   };
+}
+
+/** CPU % (user + sys) from top's "CPU usage: 23.0% user, 9.0% sys, 68.0% idle".
+    With two samples, the last line is the one that means now — the first is
+    an average since boot. Shared with the live top row (live.js). */
+export function parseCpuUsage(topOut) {
+  const lines = (topOut || '').split('\n').filter((l) => l.includes('CPU usage'));
+  const m = (lines.pop() || '').match(/(\d+(?:\.\d+)?)%\s+user.*?(\d+(?:\.\d+)?)%\s+sys/);
+  return m ? Math.round(parseFloat(m[1]) + parseFloat(m[2])) : 0;
+}
+
+/** Memory used = active + wired + compressed pages, total = hw.memsize, both
+    in GiB as the scan has always shown them. The page size comes from
+    vm_stat's own header (4096 on Intel), 16384 when it is missing. */
+export function parseMemory(memOut, vmOut) {
+  const memBytes = parseInt((memOut || '').trim()) || 0;
+  const totalGb = +(memBytes / (1024 ** 3)).toFixed(1);
+  const pageSize = parseInt((vmOut || '').match(/page size of (\d+) bytes/)?.[1] || '16384', 10);
+  const pages = (prefix) => parseInt(extractLine(vmOut || '', prefix)?.replace(/\D/g, '') || '0', 10);
+  const used = pages('Pages active:') + pages('Pages wired') + pages('Pages occupied by compressor:');
+  const usedGb = +(used * pageSize / (1024 ** 3)).toFixed(1);
+  const percent = totalGb > 0 ? Math.round((usedGb / totalGb) * 100) : 0;
+  return { total_gb: totalGb, used_gb: usedGb, percent };
 }
 
 function parseGpuInfo(profilerOut) {
@@ -111,7 +119,7 @@ function parseGpuInfo(profilerOut) {
   };
 }
 
-function parseBatteryInfo(pmsetOut) {
+export function parseBatteryInfo(pmsetOut) {
   // "Now drawing from 'AC Power'"
   // " -InternalBattery-0 (id=...)	100%; charged; 0:00 remaining present: true"
   const sourceMatch = pmsetOut.match(/drawing from '(.+?)'/);
@@ -141,7 +149,7 @@ function parseNetworkInfo(ipOut, wifiOut, ifconfigOut) {
   return { ip, wifi, iface };
 }
 
-function parseIoStats(iostatOut) {
+export function parseIoStats(iostatOut) {
   // "              disk0       cpu    load average"
   // "    KB/t  tps  MB/s  us sy id   1m   5m   15m"
   // "   10.67  948  9.88  23  9 68  6.02 6.22 6.05"
@@ -155,7 +163,7 @@ function parseIoStats(iostatOut) {
   };
 }
 
-function parseDiskUsage(dfOut) {
+export function parseDiskUsage(dfOut) {
   const lines = dfOut.trim().split('\n');
   if (lines.length < 2) return null;
   const parts = lines[1].split(/\s+/);
@@ -288,11 +296,13 @@ export async function runScan(mode, sessionId, onProgress) {
       bash('sysctl -n machdep.cpu.brand_string 2>/dev/null || lscpu 2>/dev/null | grep "Model name" | sed "s/.*: //"', sessionId),
       bash('sysctl -n hw.ncpu 2>/dev/null || nproc 2>/dev/null', sessionId),
       bash('sysctl -n hw.memsize 2>/dev/null || grep MemTotal /proc/meminfo 2>/dev/null', sessionId),
-      bash('vm_stat 2>/dev/null | head -10', sessionId),
+      // Whole output: the compressor line sits past line 10.
+      bash('vm_stat 2>/dev/null', sessionId),
       bash('uptime', sessionId),
       bash('uname -m', sessionId),
       bash('hostname', sessionId),
-      bash('top -l 1 -n 0 -s 0 2>/dev/null | grep "CPU usage"', sessionId),
+      // Two samples, one second apart: the first is a since-boot average.
+      bash('top -l 2 -n 0 -s 1 2>/dev/null | grep "CPU usage" | tail -1', sessionId),
       bash('system_profiler SPDisplaysDataType 2>/dev/null | grep -E "Chipset|Total Number of Cores|Metal Support"', sessionId),
       bash('pmset -g batt 2>/dev/null', sessionId),
       bash('ioreg -r -c AppleSmartBattery 2>/dev/null | grep CycleCount', sessionId),
