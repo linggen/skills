@@ -48,6 +48,14 @@
         </button>
       </div>
 
+      <!-- Setup — shown instead of the cards while config.json has neither a
+           brief nor a workspace, so a first open never looks blank. -->
+      <div class="setup" id="setup-screen" hidden>
+        <div class="setup-title">Set up Pulse</div>
+        <p class="setup-sub">Tell Pulse what you're building and where your code lives.</p>
+        <button class="setup-btn" id="setup-open-settings">Open Settings</button>
+      </div>
+
       <!-- Cascade toast — shown when the auto-cascade fires on first open of
            the day. Non-blocking; user can stop it. -->
       <div class="cascade-toast" id="cascade-toast" hidden>

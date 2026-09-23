@@ -935,6 +935,31 @@ body.chat-resizing iframe {
 }
 .state-msg.error { color: var(--red); }
 
+/* Setup — replaces the cards until config.json has a brief or workspace. */
+.setup {
+  margin: 3rem auto;
+  max-width: 360px;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.setup[hidden] { display: none; }
+.setup-title { font-size: 16px; font-weight: 600; color: var(--text); }
+.setup-sub { margin: 0.5rem 0 1.1rem; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.setup-btn {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.setup-btn:hover { filter: brightness(1.08); }
+
 /* Settings modal — in-page overlay so pulse.html and chat iframe persist. */
 .settings-modal {
   position: fixed;

@@ -119,9 +119,32 @@ async function resolveBootSession() {
     history.replaceState(null, '', url);
     return;
   }
+  // The engine's list is the authority: a session nobody chatted in never
+  // writes data/<sid>/session.json, so the file scan alone missed it and
+  // every open minted another empty session (2026-09-23).
+  const engine = await findLatestEngineSession().catch(() => null);
+  if (engine) {
+    state.resumeSid = engine.id;
+    // Never spoken in → greet into it rather than mint a sibling.
+    state.isNewSession = !(engine.updated_at > engine.created_at);
+    return;
+  }
   const latest = await findLatestSessionId();
   state.resumeSid = latest;            // null on first-ever or >24h-stale open
   state.isNewSession = !latest;        // nothing to resume → behave like New
+}
+
+// Newest Pulse session the engine knows, if touched in the last 24h.
+async function findLatestEngineSession() {
+  const res = await fetch('/api/skill-sessions?skill=pulse');
+  if (!res.ok) return null;
+  const { sessions = [] } = await res.json();
+  const cutoff = Date.now() / 1000 - 24 * 3600;
+  const touched = (s) => Math.max(s.updated_at || 0, s.created_at || 0);
+  const newest = sessions
+    .filter(s => s.id?.startsWith('sess-') && touched(s) >= cutoff)
+    .sort((a, b) => touched(b) - touched(a))[0];
+  return newest || null;
 }
 
 async function writeJson(path, value) {
@@ -1626,14 +1649,6 @@ function wireSettingsModal() {
   const closeBtn = document.getElementById('settings-close');
   if (!link || !modal || !iframe || !closeBtn) return;
 
-  // Inside the unified Linggen launcher, settings live in the launcher's shared
-  // settings — hide Pulse's own link so there aren't two settings entry points.
-  // Standalone Pulse.app (app_mode but not in_launcher) keeps its own link.
-  if (new URLSearchParams(location.search).get('in_launcher') === '1') {
-    link.style.display = 'none';
-    return;
-  }
-
   const open = (e) => {
     e?.preventDefault();
     // Reload src each open so any concurrent edits show fresh state.
@@ -1643,9 +1658,13 @@ function wireSettingsModal() {
   const close = () => {
     modal.hidden = true;
     iframe.src = 'about:blank';  // unload to release any pending fetches
+    // Setup screen up → a saved config means the page can boot for real.
+    if (!document.getElementById('setup-screen')?.hidden) reloadIfConfigured();
   };
 
-  link.addEventListener('click', open);
+  // The setup screen opens the same modal, launcher or not — it is the only
+  // way in before a config exists.
+  document.getElementById('setup-open-settings')?.addEventListener('click', open);
   closeBtn.addEventListener('click', close);
   modal.addEventListener('click', (e) => {
     if (e.target.dataset.close) close();
@@ -1653,6 +1672,36 @@ function wireSettingsModal() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !modal.hidden) close();
   });
+
+  // Inside the unified Linggen launcher, settings live in the launcher's shared
+  // settings — hide Pulse's own link so there aren't two settings entry points.
+  // Standalone Pulse.app (app_mode but not in_launcher) keeps its own link.
+  if (new URLSearchParams(location.search).get('in_launcher') === '1') {
+    link.style.display = 'none';
+    return;
+  }
+  link.addEventListener('click', open);
+}
+
+// ---- Setup ---------------------------------------------------------------
+
+// Pulse drafts from the brief and the workspace; with neither there is
+// nothing to show, so the page asks for them instead of sitting empty.
+function isConfigured(cfg) {
+  return !!((cfg?.brief || '').trim() || (cfg?.workspace_path || '').trim());
+}
+
+function showSetup(on) {
+  document.getElementById('setup-screen').hidden = !on;
+  for (const id of ['session-header', 'sections-container']) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = on ? 'none' : '';
+  }
+}
+
+async function reloadIfConfigured() {
+  const cfg = await readPulseConfig().catch(() => null);
+  if (isConfigured(cfg)) location.reload();
 }
 
 // ---- Helpers -------------------------------------------------------------
@@ -1671,6 +1720,7 @@ async function init() {
     // Hand the config to the renderer so it knows which source tabs to show
     // even before any cards arrive (the X dashboard lives on an empty tab).
     setConfig(cfg);
+    showSetup(!isConfigured(cfg));
     // The X + HN tabs mount their dashboards through this hook.
     setOnTabRender(renderTabExtras);
     // Per-tab Rescan buttons run a source-scoped gather in the CURRENT session.
