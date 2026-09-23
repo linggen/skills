@@ -891,15 +891,17 @@ function gearBrief(content, state) {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
     ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]), bond: bondBrief(content, state) } } : {}),
     fight: { power: wornOf(content, state, 'weapon') || state.treasure ? WEAPON_POWER : 0 },
+    ...(Array.isArray(state.deck) ? { picking: true } : {}),
     bag,
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
     // today (deckFor), 银月 always in hand. Roots he lacks are marked, not hid.
     cards: (() => {
-      const catalog = cardCatalog(content), ten = new Set(deckFor(content, state)), roots = new Set(state.traits ?? []);
+      const catalog = cardCatalog(content), ten = new Set(deckFor(content, state)), roots = new Set(state.traits ?? []), picked = new Set(pickedCards(content, state));
       return ownedCards(content, state).map(id => catalog[id]).filter(Boolean)
         .sort((a, b) => a.cost - b.cost || String(a.element ?? '').localeCompare(String(b.element ?? '')))
         .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,
-          ...(c.id === 'yinyue' ? { hand: true } : ten.has(c.id) ? { deck: true } : {}),
+          // Picking, lit is his and a filled card is only marked; else the ten dealt.
+          ...(c.id === 'yinyue' ? { hand: true } : Array.isArray(state.deck) ? (picked.has(c.id) ? { deck: true, picked: true } : ten.has(c.id) ? { fill: true } : {}) : ten.has(c.id) ? { deck: true } : {}),
           ...(!usable(c, roots) ? { off_root: true } : {}) }));
     })(),
   };
@@ -1053,7 +1055,51 @@ const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${stat
    their own roots, and the ones no root claims, ten of them in a stable order.
    Deterministic, so the same player takes the same deck into the same fight —
    and so the rules and the page never disagree about what was held. */
+/* 组牌 — the ten he picks himself (his, 2026-09-23). state.deck is his pick,
+   kept in the order picked; a card no longer usable drops out, and under ten
+   the rules fill the rest along the realm's curve as before. */
 export function deckFor(content, state) {
+  const auto = autoDeck(content, state);
+  if (!Array.isArray(state.deck)) return auto;
+  const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []), catalog = cardCatalog(content);
+  const picked = [...new Set(state.deck)].filter(id => owned.has(id) && catalog[id] && id !== 'yinyue' && usable(catalog[id], roots)).slice(0, MODES.pve.deck);
+  // A card he took out stays out — the fill never puts it back (seen on a
+  // copy of his save, 2026-09-23: 土偶 taken out, filled straight back in).
+  const out = new Set(state.deck_out ?? []);
+  // The fill is dealt along the curve from what is left: not his picks, not
+  // what he took out.
+  const left = ownedCards(content, state).filter(id => !out.has(id) && !picked.includes(id));
+  const fill = autoDeck(content, { ...state, cards: [...left, ...(ownedCards(content, state).includes('yinyue') ? ['yinyue'] : [])] });
+  return [...picked, ...fill].slice(0, MODES.pve.deck);
+}
+const pickedCards = (content, state) => (Array.isArray(state.deck) ? deckFor(content, state).filter(id => state.deck.includes(id)) : []);
+
+export function deck(state, content, ctx, args) {
+  const lang = state.lang, action = String(args.action ?? 'toggle');
+  const s = clone(state);
+  if (action === 'auto') { delete s.deck; delete s.deck_out; return { state: s, result: { ok: true, gear: gearBrief(content, s) } }; }
+  if (action !== 'toggle') return refuse('unknown-action', null, { actions: ['toggle', 'auto'] });
+  const id = String(args.id ?? ''), c = cardCatalog(content)[id];
+  if (!c || !ownedCards(content, state).includes(id)) return refuse('not-held', null);
+  if (id === 'yinyue') return refuse('always-in-hand', pick({ zh: '银月开局就在手上，不占这十张。', en: 'Yinyue starts in hand; she is not one of the ten.' }, lang));
+  if (!usable(c, new Set(state.traits ?? []))) return refuse('off-root', pick({ zh: '灵根不合，修不得这门功法。', en: 'A spell of a root you lack.' }, lang));
+  // The first pick starts from the ten he has been dealt, not from nothing.
+  const now = Array.isArray(s.deck) ? pickedCards(content, s) : deckFor(content, s);
+  // Lit is his: a lit card taken out stays out (the fill never puts it
+  // back); any other card tapped becomes his, room allowing. (A first cut
+  // treated a filled card as lit, and a tap meant to keep it threw it out.)
+  if (now.includes(id)) {
+    s.deck = now.filter(x => x !== id);
+    s.deck_out = [...new Set([...(s.deck_out ?? []), id])];
+  } else if (now.length >= MODES.pve.deck) return refuse('deck-full', pick({ zh: '十张已满，先取下一张。', en: 'Ten already — take one out first.' }, lang));
+  else {
+    s.deck = [...now, id];
+    s.deck_out = (s.deck_out ?? []).filter(x => x !== id);
+  }
+  return { state: s, result: { ok: true, gear: gearBrief(content, s) } };
+}
+
+function autoDeck(content, state) {
   // Only what has been obtained (his, 2026-09-22) — 得牌 below.
   const owned = new Set(ownedCards(content, state));
   const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && owned.has(c.id));
@@ -3092,7 +3138,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet, deck,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

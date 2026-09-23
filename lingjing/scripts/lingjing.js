@@ -551,6 +551,14 @@ async function takeMeet(action) {
   if (r.ok) await report(action === 'take' ? '[scene] meet taken' : '[scene] meet passed');
 }
 
+/* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws
+   from the rules' own answer. */
+async function deckTap(args) {
+  const r = await verb('deck', args).catch((e) => ({ ok: false, error: String(e) }));
+  keep({ gear: r.ok ? r.gear : view.gear, doNote: r.ok ? null : r.say || null });
+  render();
+}
+
 /* 历练 — send her, call her back, take what she brought. She says her own
    goodbye and tells her own journey (asked moments: she answers at once). */
 function askHer(zh, en, mood) {
@@ -717,6 +725,9 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-gear]')) { if (view.gearOpen) show({ gearOpen: false }); else openGear(); return; }
   const does = e.target.closest('[data-do]');
   if (does) { if (!does.matches(':disabled')) doTap(does.dataset.do, does.dataset.id); return; }
+  const pickCard = e.target.closest('[data-deck]');
+  if (pickCard) { deckTap({ action: 'toggle', id: pickCard.dataset.deck }); return; }
+  if (e.target.closest('[data-deck-auto]')) { deckTap({ action: 'auto' }); return; }
   const worn = e.target.closest('[data-wear],[data-use],[data-remove]');
   if (worn) { useItem(worn.dataset.wear ?? worn.dataset.use ?? worn.dataset.remove, worn.dataset.remove ? 'remove' : 'use'); return; }
   if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });

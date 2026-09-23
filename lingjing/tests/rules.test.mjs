@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, hpMaxOf, bond, tend, chance, journey, greet, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, hpMaxOf, bond, tend, chance, journey, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, branch, duel, enter, go, heed, judge, lang, leave, look, make, move, nourish, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win, write } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -2681,4 +2681,44 @@ test('问候: once a day, hers — the facts of yesterday and today, in his lang
   assert.equal(g.state.greeted, '2026-10-06');
   const again = VERBS.greet(g.state, content, c);
   assert.deepEqual([again.state, again.result.first], [null, false], 'once a day');
+});
+
+/* 组牌 (rules § 组牌): he picks the ten; the rules fill what he leaves. */
+test('组牌: a tap puts a card in or takes it out, ten at most, the rest filled by the roots — and 自动 gives it back', () => {
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const open = toOpenWorld();
+  const all = content.cards.cards.filter(x => !x._token && x.id !== 'yinyue').map(x => x.id);
+  const base = { ...open, tier: 'core', traits: ['wood', 'water', 'fire', 'earth'], cards: all };
+  const dealt = deckFor(content, base);
+  assert.equal(dealt.length, 10);
+  const out = must(deck, base, { action: 'toggle', id: dealt[0] }, c);
+  assert.equal(out.state.deck.length, 9, 'the first tap starts from the ten he was dealt');
+  assert.ok(!out.state.deck.includes(dealt[0]));
+  const now = deckFor(content, out.state);
+  assert.equal(now.length, 10, 'under ten, the roots fill the rest');
+  assert.ok(!now.includes(dealt[0]), 'but never with a card he took out');
+  assert.ok(now.slice(0, 9).every(id => out.state.deck.includes(id)), 'his picks first');
+  refused(deck, base, { action: 'toggle', id: all.find(id => !dealt.includes(id) && content.cards.cards.find(x => x.id === id).kind !== 'spell') }, 'deck-full', c);
+  refused(deck, base, { action: 'toggle', id: 'yinyue' }, 'not-held', c);
+  const metal = content.cards.cards.find(x => x.kind === 'spell' && x.element === 'metal').id;
+  refused(deck, base, { action: 'toggle', id: metal }, 'off-root', c);
+  const outsider = all.find(id => !now.includes(id) && content.cards.cards.find(x => x.id === id).element !== 'metal');
+  const back = must(deck, out.state, { action: 'toggle', id: outsider }, c);
+  assert.ok(deckFor(content, back.state).includes(outsider));
+  assert.ok(back.result.gear.cards.find(x => x.id === outsider).picked);
+  // a filled card tapped becomes his, it is not thrown out
+  const two = must(deck, out.state, { action: 'toggle', id: dealt[1] }, c);
+  const filled = two.result.gear.cards.filter(x => x.fill);
+  assert.equal(filled.length, 2, 'eight picked: two dashed, filled by the roots');
+  assert.ok(!filled.some(x => x.id === dealt[0] || x.id === dealt[1]), 'never what he took out');
+  const kept = must(deck, two.state, { action: 'toggle', id: filled[0].id }, c);
+  assert.ok(kept.result.gear.cards.find(x => x.id === filled[0].id).picked, 'a tap on a dashed card keeps it');
+  assert.equal(kept.state.deck.length, 9);
+  assert.equal(back.result.gear.picking, true);
+  const auto = must(deck, back.state, { action: 'auto' }, c);
+  assert.equal(auto.state.deck, undefined);
+  assert.deepEqual(deckFor(content, auto.state), dealt);
+  // the fight deals what he picked
+  const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
+  assert.ok(fightSetup(content, back.state, jingwei, c.now).you.deck.includes(outsider));
 });

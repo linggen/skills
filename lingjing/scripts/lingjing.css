@@ -480,3 +480,9 @@ body.fighting .askbar { display: none; }
 .bookrow.chance b { color: var(--ling, #6b8f5a); }
 .bookrow.chance.soon .small { color: #a33b2e; }
 .bookchip.lucky { border-color: var(--ling, #6b8f5a); }
+
+/* 组牌 — lit cards are the ten; his own picks solid, the rules' fill dashed. */
+button.gcard { cursor: pointer; font: inherit; }
+.gearpop .gcard.fill { border-style: dashed; opacity: .8; }
+.gearpop .gcard.picked { border-style: solid; }
+.gearpop button.gcard { background: transparent; color: inherit; }
