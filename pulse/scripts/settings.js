@@ -484,6 +484,10 @@ document.getElementById('add-website-url')?.addEventListener('keydown', (e) => {
   }
 });
 
+// A list is one plain box: "agent, agent memory, native AI". What is typed
+// is what saves — no chips, no + Add to forget before Save (2026-09-23: a
+// typed list was lost because it was never "added"). Commas or new lines
+// separate; blanks and repeats drop.
 function renderChipField(cfg, field) {
   if (!Array.isArray(cfg[field.key])) cfg[field.key] = [];
   const wrap = document.createElement('div');
@@ -492,54 +496,25 @@ function renderChipField(cfg, field) {
   label.textContent = field.label;
   wrap.appendChild(label);
 
-  const chipRow = document.createElement('div');
-  chipRow.className = 'chip-row';
-  const renderChips = () => {
-    chipRow.innerHTML = '';
-    cfg[field.key].forEach((value, idx) => {
-      const chip = document.createElement('span');
-      chip.className = 'chip';
-      const text = document.createElement('span');
-      text.textContent = value;
-      const remove = document.createElement('button');
-      remove.textContent = '×';
-      remove.title = 'Remove';
-      remove.addEventListener('click', () => {
-        cfg[field.key].splice(idx, 1);
-        renderChips();
-      });
-      chip.appendChild(text);
-      chip.appendChild(remove);
-      chipRow.appendChild(chip);
-    });
-  };
-  renderChips();
-  wrap.appendChild(chipRow);
-
-  const addRow = document.createElement('div');
-  addRow.className = 'add-row';
   const input = document.createElement('input');
   input.type = 'text';
+  input.className = 'list-input';
+  input.value = cfg[field.key].join(', ');
   input.placeholder = field.placeholder
-    || (field.key === 'feeds' ? 'https://example.com/rss.xml'
-        : field.key === 'subs' ? 'subreddit-name'
-        : field.key === 'keywords' ? 'e.g. local LLM'
-        : '');
-  const addBtn = document.createElement('button');
-  addBtn.textContent = '+ Add';
-  const doAdd = () => {
-    const v = input.value.trim();
-    if (!v) return;
-    cfg[field.key].push(v);
-    input.value = '';
-    renderChips();
-  };
-  addBtn.addEventListener('click', doAdd);
-  input.addEventListener('keypress', (e) => { if (e.key === 'Enter') doAdd(); });
-  addRow.appendChild(input);
-  addRow.appendChild(addBtn);
-  wrap.appendChild(addRow);
-
+    || (field.key === 'feeds' ? 'https://example.com/rss.xml, https://…'
+        : field.key === 'subs' ? 'LocalLLaMA, selfhosted'
+        : field.key === 'keywords' ? 'local LLM, agent memory'
+        : 'comma, separated');
+  input.spellcheck = false;
+  input.addEventListener('input', () => {
+    const seen = [];
+    for (const part of input.value.split(/[,\n]/)) {
+      const v = part.trim();
+      if (v && !seen.includes(v)) seen.push(v);
+    }
+    cfg[field.key] = seen;
+  });
+  wrap.appendChild(input);
   return wrap;
 }
 

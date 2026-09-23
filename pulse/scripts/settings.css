@@ -200,51 +200,8 @@
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
-.website-config .chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.website-config .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  font-size: 12px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--text);
-  border: 1px solid var(--accent-soft);
-}
-
-.website-config .chip button {
-  background: none;
-  border: 0;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0;
-  line-height: 1;
-}
-.website-config .chip button:hover { color: var(--red); }
-
-.website-config .add-row {
-  display: flex;
-  gap: 6px;
-}
-.website-config .add-row input { flex: 1; max-width: none; }
-.website-config .add-row button {
-  font-size: 12px;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: border-color 0.12s;
-}
-.website-config .add-row button:hover { border-color: var(--accent); }
+/* A list is one comma-separated box, as wide as the card. */
+.website-config input.list-input { max-width: none; }
 
 .range-row {
   display: flex;
