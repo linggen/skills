@@ -2722,3 +2722,24 @@ test('组牌: a tap puts a card in or takes it out, ten at most, the rest filled
   const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
   assert.ok(fightSetup(content, back.state, jingwei, c.now).you.deck.includes(outsider));
 });
+
+// 云龙山的八味 asks a pill of alchemy-first, done once in the story: the
+// errand reopens the furnace, the win pays the errand and not the task again,
+// and once met the board is shut (his, 2026-09-24: 没触发差事).
+test('an errand reopens a board already done, and pays only the errand', () => {
+  const s = { ...start(), place: 'yunlong',
+    tasks: { 'alchemy-first': { status: 'done', period: 'once', done_at: '2026-09-01T10:00:00Z' } },
+    quests: { 'xu-yunlong-herbs': { took: '2026-09-10', have: {} } } };
+  const listed = must(task, s, { action: 'list' }).result.tasks.find(t => t.id === 'alchemy-first');
+  assert.equal(listed?.status, 'offered');
+  assert.equal(listed.for_errand, true);
+  assert.equal(listed.pays, null, 'the errand pays, not the task');
+  const won = must(win, s, { id: 'alchemy-first' });
+  const done = must(task, won.state, { action: 'done', id: 'alchemy-first' });
+  assert.equal(done.result.for, 'errand');
+  assert.equal(done.state.progress, s.progress, 'no second task grant');
+  assert.equal(done.state.bag.lingzhi ?? 0, s.bag.lingzhi ?? 0);
+  assert.equal(done.state.quests['xu-yunlong-herbs'].have[0], 1);
+  assert.equal(must(task, done.state, { action: 'list' }).result.tasks.some(t => t.id === 'alchemy-first'), false, 'met, the board is shut');
+  refused(win, done.state, { id: 'alchemy-first' }, 'not-here');
+});

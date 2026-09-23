@@ -1444,7 +1444,10 @@ function tasksBrief(content, state, ctx) {
   // task done once on an earlier day is history, not today's (his "what is
   // this task for today?", 2026-09-16, the prologue's alchemy five days on).
   const today = dayKey(ctx.now);
-  const tasks = Object.entries(state.tasks)
+  // A board an errand reopened stands offered again, whatever it was.
+  const again = new Set((content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)));
+  const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
+  const tasks = Object.entries({ ...state.tasks, ...held })
     .filter(([, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false))
     .map(([id, t]) => {
       const task = taskOf(content, id);
@@ -1452,10 +1455,12 @@ function tasksBrief(content, state, ctx) {
         id, title: pick(task.title, lang), kind: task.kind, status: t.status,
         won: Boolean(state.wins?.[id]),
         paid: t.status === 'done', period: t.period ?? task.period ?? null, // done = paid, once or per period
+        ...(again.has(id) ? { for_errand: true } : {}),
         done_at: t.done_at ?? null,
         // what it asks and what it pays, so Ling can tell the practice
         asks: task.kind === 'board' ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : null,
-        pays: task.grant?.progress ?? null, gives: task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
+        // reopened for an errand, the errand pays — not the task again
+        pays: again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
       };
     });
   const quests = (ctx.quests ?? []).filter(q => q.due || questDone(q, ctx.now)).map(q => ({
@@ -2081,21 +2086,48 @@ export function task(state, content, ctx, args) {
   return refuse('unknown-action', null, { actions: ['list', 'done', 'check'] });
 }
 
-/* Offered, and not yet done this period. */
+/* An errand held and not yet met that asks for a win on this board. It
+   reopens a board already done: 云龙山的八味 asks a pill of alchemy-first,
+   done once in the story, so the furnace never came back and the errand
+   could not be met (his, 2026-09-24: 我已经到这里了, 没触发差事). */
+function errandWants(content, state, id) {
+  return Object.keys(state.quests ?? {}).some(qid => {
+    if (questDoneBefore(state, qid)) return false;
+    const q = questOf(content, qid);
+    return q ? countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done) : false;
+  });
+}
+
+/* Done before, and open now only for an errand — it pays the errand, not
+   the task a second time. */
+function reopened(content, state, id, now) {
+  const t = taskOf(content, id), held = state.tasks[id];
+  const spent = held?.status === 'done' && (t?.period === 'once' || held.period === periodKey(t?.period, now));
+  return Boolean(t) && (!held || spent) && errandWants(content, state, id);
+}
+
+/* Offered, and not yet done this period — or wanted by an errand. */
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
-  if (!t || !held) return false;
+  if (!t) return false;
+  if (reopened(content, state, id, now)) return true;
+  if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
 
 function taskDone(state, content, ctx, id) {
   const t = taskOf(content, id);
   if (!t) return refuse('unknown-task', null);
-  if (!state.tasks[id]) return refuse('not-offered', null);
+  const again = reopened(content, state, id, ctx.now);
+  if (!state.tasks[id] && !again) return refuse('not-offered', null);
   if (!taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
   delete s.wins[id];
+  if (again) {
+    advance(content, s, { kind: 'board', task: id });
+    return { state: s, result: { ok: true, done: id, paid: null, gives: null, line: pick(t.done_line, s.lang), for: 'errand' } };
+  }
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
   advance(content, s, { kind: 'board', task: id });
   if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
