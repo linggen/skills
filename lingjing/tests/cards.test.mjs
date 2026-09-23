@@ -11,14 +11,17 @@ test('Yinyue\'s line is read from the reply as she said it — the last one, pla
   assert.equal(yinyueLine(''), null);
 });
 
-test('the day\'s cast card: the coins wait with a word to Ling, then six lines as they fell with the grade and what it does', async () => {
+test('the day\'s cast card: the coins wait with what to ask, a tap each, then six lines as they fell with the grade and what it does', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   const { loadWorld } = await import('../scripts/content.mjs');
   const content = { ...loadWorld('jiuding'), hexagrams: loadWorld('jiuding').hexagrams.hexagrams };
   const ctx = (divination) => ({ look: { divination }, lang: 'zh', words: WORDS.zh, content });
   const waiting = cardHtml({ card: 'hexagram' }, ctx(null));
   assert.match(waiting, /今日未卜/);
-  assert.match(waiting, /data-say="请银月起一卦">起一卦</);
+  assert.match(waiting, /data-divine="cultivation">问修行</);
+  assert.match(waiting, /data-divine="bout">问斗法</);
+  assert.match(waiting, /data-divine="wealth">问财运</);
+  assert.doesNotMatch(waiting, /data-say/, 'a tap, not a word to Ling');
   const cast = cardHtml({ card: 'hexagram' }, ctx({
     ask: { id: 'bout', name: '问斗法' }, throws: [[3, 3, 3], [2, 3, 3], [2, 2, 3], [2, 3, 3], [3, 3, 2], [2, 2, 2]],
     values: [9, 8, 7, 8, 8, 6], moving: [0, 5],

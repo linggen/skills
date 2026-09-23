@@ -1127,17 +1127,21 @@ found: its `line` is the world's own words for it, its `step` what is left.
 
 ## 起卦 — the day's cast
 
-*起一卦*, *算一卦*, *问卦*, or the coins tapped on the stage: **Divine**
-with no `ask` — `ask` then offers 问修行 · 问斗法 · 问财运; the player's
-pick is Divine with that `ask`. The coins fall on the stage by themselves:
-**Show `{card: "hexagram"}`**, then Yinyue reads it — the hexagram's name,
-its `judgment` or `image` in a sentence of her own, a moving line if there
-is one, and what it does today in the world's words (*今日修行快了一半* /
-*金法术今日更利*). Two or three sentences. It is the
-game's own divination — never a real fortune, never a promise about their
-life. A cast is once a day and never cast again; `cast-today` → read
-today's again. `resting` (a dire cast on cultivation) → the next step waits
-until `returns_at`: say so in the world, in one line. A `paid` with
+The coins wait on the stage with what to ask — 问修行 · 问斗法 · 问财运 — and
+**a tap there casts it by itself**: the page asks the rules, the card shows the
+lines, and **Yinyue gives the reading in her own voice** (the page hands her
+the cast; his, 2026-09-23: 既然是请银月, 需要银月给结果). You hear nothing of
+it and say nothing of it.
+
+Asked in the chat instead (*起一卦*, *请银月起一卦*, *问卦*): **Divine** with
+no `ask` — `ask` offers the three; the player's pick is Divine with that
+`ask`. Then **stop**: the card shows the cast the moment the rules return,
+and Yinyue reads it herself. **Do not read the hexagram, do not write a line
+for her**, and do not ask where next in the same turn — let the reading be
+heard. It is the game's own divination — never a real fortune, never a
+promise about their life. A cast is once a day; `cast-today` → the card
+already holds it. `resting` (a dire cast on cultivation) → the next step
+waits until `returns_at`: say so in the world, in one line. A `paid` with
 `fortune` was sped or slowed by the cast: say so in a phrase.
 
 ## 命格 — the birth sign, set on the card

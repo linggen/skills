@@ -26,7 +26,7 @@ export const WORDS = {
     temper: '温养', nourish: '温养一番', nourishedToday: '今日已养',
     refine: '炼化本命', sayRefine: '我要炼化本命法宝', sayTreasure: '说说{name}',
     refineHint: '结丹之后，可将随身法器与一味天材地宝炼作本命。',
-    uncast: '今日未卜', uncastHint: '心中默念一事，三钱六掷。', cast: '起一卦', sayCast: '请银月起一卦', throwing: '起卦中……', castAsk: '所问何事？', changedTo: '之卦',
+    uncast: '今日未卜', uncastHint: '心中默念一事，请银月三钱六掷。', castAsks: { cultivation: '问修行', bout: '问斗法', wealth: '问财运' }, cast: '起一卦', sayCast: '请银月起一卦', throwing: '起卦中……', castAsk: '所问何事？', changedTo: '之卦',
     effEven: '今日无增无减', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '每步之间静坐 {s} 秒',
     effSpell: '{root}法术 {n}', fortuneMark: '卦',
     fateTitle: '命格', fateLine: '属{zodiac} · 日主{stem}{element} · 天生亲近{element}', fateHint: '可选填。生辰只在本机推算命格：不入存档，不入对话。',
@@ -65,7 +65,7 @@ export const WORDS = {
     temper: 'Tempering', nourish: 'Tend it', nourishedToday: 'tended today',
     refine: 'Bind a treasure', sayRefine: 'I want to bind my treasure', sayTreasure: 'Tell me about {name}',
     refineHint: 'Past the Core, a carried weapon and one material of the five can be bound into a treasure of your own.',
-    uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind: three coins, six throws.', cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', throwing: 'Casting…', castAsk: 'What do you ask about?', changedTo: 'Changing to',
+    uncast: 'Not yet cast today', uncastHint: 'Hold one question in mind; Yinyue throws three coins, six times.', castAsks: { cultivation: 'Ask about cultivation', bout: 'Ask about bouts', wealth: 'Ask about fortune' }, cast: 'Cast the coins', sayCast: 'Yinyue, cast the coins for me', throwing: 'Casting…', castAsk: 'What do you ask about?', changedTo: 'Changing to',
     effEven: 'No gain, no loss today', effProgress: '{xw} ×{n}', effWealth: '{ls} ×{n}', effRest: '{s}s of stillness between steps',
     effSpell: '{root} spells {n}', fortuneMark: 'cast',
     fateTitle: 'Birth sign', fateLine: 'Year of the {zodiac} · day master {stem} ({element}) · at home in {element}', fateHint: 'Optional. Your birthday is read on this Mac only — never saved, never sent to the chat.',
@@ -310,10 +310,13 @@ function hexagram(card, ctx) {
     return `<div class="card hex uncast throwing"><div class="coins">${'<i></i>'.repeat(3)}</div><div>
       <div class="cardtitle">${w.throwing}</div><div class="hextext">${w.uncastHint}</div></div></div>`;
   }
-  // Before the day's cast: the coins wait, and the button is a word to Ling.
+  // Before the day's cast: the coins wait, and what is asked is a tap — the
+  // page casts with the rules and 银月 reads it (his, 2026-09-23: 既然是请
+  // 银月, 需要银月给结果). No word to Ling, no waiting on her turn.
   if (!d) {
+    const asks = Object.entries(w.castAsks).map(([id, label]) => `<button class="act" data-divine="${id}">${esc(label)}</button>`).join('');
     return `<div class="card hex uncast"><div class="coins">${'<i></i>'.repeat(3)}</div><div>
-      <div class="cardtitle">${w.uncast}</div><div class="hextext">${w.uncastHint}</div>${acts([{ label: w.cast, say: w.sayCast }])}</div></div>`;
+      <div class="cardtitle">${w.uncast}</div><div class="hextext">${w.uncastHint}</div><div class="acts">${asks}</div></div></div>`;
   }
   return castHtml(d, ctx);
 }

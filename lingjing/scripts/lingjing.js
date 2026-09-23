@@ -18,7 +18,7 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Look', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
+const WRITERS = new Set(['Look', 'Divine', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -440,6 +440,7 @@ function draw() {
   $('stageName').textContent = her ? look.companion.name : '';
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
   keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
+  if (view.castFresh) readingByHer(look.divination);
   $('focus').innerHTML = focusHtml();
   keep({ castFresh: false });
   // The tray holds the world's boards; with none today it is not there at all
@@ -664,6 +665,8 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('[data-ask-close]')) { closeAsk(); return; }
   const found = e.target.closest('[data-meet]');
   if (found) { takeMeet(found.dataset.meet); return; }
+  const asked = e.target.closest('[data-divine]');
+  if (asked) { castByPage(asked.dataset.divine); return; }
   const way = e.target.closest('[data-trial]');
   if (way) { chooseWay(Number(way.dataset.trial)); return; }
   const dropped = e.target.closest('[data-drop]');
@@ -998,6 +1001,35 @@ const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('
 /// Signed out, nothing of the game is shown: the save lives with the
 /// account, and a turn would be refused anyway. One button; the daemon
 /// opens the browser, and the scene enters once the account reports in.
+/// 起卦 from the card: the rules cast, the card shows it, 银月 reads it.
+async function castByPage(ask) {
+  if (view.casting) return;
+  show({ casting: true, bookOpen: false });
+  const r = await verb('divine', { ask }).catch((e) => ({ ok: false, error: String(e) }));
+  if (!r.ok) console.warn('[lingjing] divine', r);
+  await refresh();
+  keep({ casting: false });
+}
+
+/// A cast just landed (the page's or Ling's): 银月 gives the reading — she
+/// was asked, so she answers at once (engine: `asked`). The facts go to her;
+/// the words are hers (his rule: Yinyue writes every message).
+function readingByHer(d) {
+  if (!d || !look?.companion) return;
+  const h = d.hexagram, zh = lang() !== 'en';
+  const moving = h.moving_lines?.length ? (zh ? `；动爻：${h.moving_lines.join(' ')}` : '') : '';
+  const to = d.changed ? (zh ? `，之卦《${d.changed.name}》` : `, changing to ${d.changed.name}`) : '';
+  const text = zh
+    ? `为「${d.ask.name}」起了一卦：得《${h.name}》${to}，${d.grade.name}。卦辞：${h.judgment}${moving}。`
+    : `A cast for "${d.ask.name}": ${h.name}${to}, ${d.grade.name}. The judgment: ${h.judgment}.`;
+  const mood = { great: 'happy', good: 'happy', even: 'relaxed', ill: 'sad', dire: 'sad' }[d.grade.id] ?? 'neutral';
+  fetch('/api/yinyue/event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ app: 'lingjing', text, asked: true, mood }),
+  }).catch((e) => console.warn('[lingjing] yinyue reading', e));
+}
+
 /// Something won just now — 修为 or a realm gained, or 灵石 not from a sale —
 /// and Yinyue says her own line from Ling's reply aloud on the stage, glad.
 /// The words are the reply's; with no line of hers she stays quiet (his
@@ -1008,11 +1040,10 @@ function cheer(before, text) {
   const rose = look.progress > before.progress
     || look.tier?.id !== before.tier?.id || (look.tier?.step ?? 0) > (before.tier?.step ?? 0)
     || (look.wealth > before.wealth && held(look) >= held(before));
-  // A cast just made: she reads it aloud too, her face as the grade falls.
-  const cast = !before.divination && look.divination;
-  const line = rose || cast ? yinyueLine(text) : null;
+  // A cast is hers to read (readingByHer), never a line Ling wrote for her.
+  const line = rose ? yinyueLine(text) : null;
   if (!line) return;
-  const emotion = cast ? ({ great: 'happy', good: 'happy', even: 'relaxed', ill: 'sad', dire: 'sad' })[look.divination.grade.id] ?? 'neutral' : 'happy';
+  const emotion = 'happy';
   fetch('/api/yinyue/say', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
