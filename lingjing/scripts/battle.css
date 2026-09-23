@@ -317,3 +317,6 @@
 .bintent { display: flex; gap: 10px; align-items: baseline; padding: 6px 12px; border: 1px dashed var(--gold-soft); border-radius: 10px; font-family: var(--ui); font-size: 12px; color: var(--parchment); }
 .bintent b { font-family: var(--serif); font-size: 13px; letter-spacing: 0.1em; color: var(--gold); }
 .bintent.exact { border-style: solid; }
+/* 出手 and 喂它 side by side: two ways to win a beast over. */
+.cacts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.bact:disabled { opacity: 0.45; cursor: default; transform: none; }

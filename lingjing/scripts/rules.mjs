@@ -292,7 +292,10 @@ const questDoneBefore = (state, id) => Boolean(state.quests?.[id]?.done_at);
 function countsOf(content, state, quest) {
   const held = state.quests?.[quest.id];
   return quest.need.map((need, i) => {
-    const have = need.kind === 'carry' ? (state.bag[need.item] ?? 0) : (held?.have?.[i] ?? 0);
+    // 降 or 驯, the beast is won over either way (his, 2026-09-23: 喂人参和战斗
+    // 都是收服的方式): one that walks with him meets a 降 as well as a 驯.
+    const won = (need.kind === 'subdue' || need.kind === 'tame') && (state.cast ?? []).includes(need.creature);
+    const have = need.kind === 'carry' ? (state.bag[need.item] ?? 0) : won ? need.n : (held?.have?.[i] ?? 0);
     return { ...need, have: Math.min(have, need.n), done: have >= need.n };
   });
 }
