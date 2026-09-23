@@ -2486,6 +2486,10 @@ test('抉择: the roll settles it — what was won or lost is the rules\', the w
   const hurt = must(meet, at([14, 1, 1]), { action: 'choose', n: 0 }, c);
   assert.deepEqual([hurt.result.success, hurt.result.line], [false, '被卷走了。']);
   assert.equal(hurt.state.wounds.n, Math.ceil(hpMaxOf(base) * 0.35));
+  assert.equal(hurt.result.lost.hp, Math.ceil(hpMaxOf(base) * 0.35));
+  // near empty already: it takes only what was left, and says so
+  const worn = must(meet, at([14, 1, 1], { wounds: { n: hpMaxOf(base) - 3, at: c.now.toISOString() } }), { action: 'choose', n: 0 }, c);
+  assert.deepEqual([worn.state.wounds.n, worn.result.lost.hp, worn.result.health.now], [hpMaxOf(base), 3, 0]);
   const poorer = must(meet, at([1, 5, 1]), { action: 'choose', n: 1 }, c);
   assert.deepEqual([poorer.result.success, poorer.result.lost.wealth, poorer.state.wealth], [false, 5, 45]);
   // 银月 at his side: +2 — a 13 now reaches the hard mark of 15
@@ -2575,6 +2579,16 @@ test('降妖: a fight open on another creature lends nothing to this one', () =>
   assert.equal(mine.you.wounds, 0, 'not the other fight\'s wounds');
   assert.ok(mine.foe, 'nor its setup');
   assert.equal(fightSetup(content, other, jingwei, c.now).you.wounds, 0, 'no game named, no door read');
+});
+
+/* What the page tells her of a fight says what the page measured: the low
+   moment fires at a quarter of 气血, so it cannot say 一成多. */
+test('降妖: the low-气血 word to 银月 matches the quarter it fires at', () => {
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const low = src.match(/st\.you\.hp \* 4 <= st\.you\.hpMax[\s\S]{0,200}?tellYinyue\(`([^`]*)`, `([^`]*)`\)/);
+  assert.ok(low, 'the low moment is a quarter');
+  assert.match(low[1], /不到三成/);
+  assert.match(low[2], /quarter/);
 });
 
 /* 机缘 (rules § 机缘): once a day, near, for a few real hours; reached in

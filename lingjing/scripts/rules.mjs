@@ -656,8 +656,10 @@ function settleTrial(content, s, ctx, here, n) {
     return { success, line: o.lose, lost: { wealth: lost } };
   }
   const now = woundsNow(content, s, ctx.now), add = Math.ceil(hpMaxOf(s) * t.lose.wound[o.difficulty]);
-  s.wounds = { n: Math.min(hpMaxOf(s), now + add), at: ctx.now.toISOString() };
-  return { success, line: o.lose, lost: { hp: add }, health: healthBrief(content, s, ctx.now) };
+  const after = Math.min(hpMaxOf(s), now + add);
+  s.wounds = { n: after, at: ctx.now.toISOString() };
+  // What it truly took: a wound on a body already near empty takes only what was left.
+  return { success, line: o.lose, lost: { hp: after - now }, health: healthBrief(content, s, ctx.now) };
 }
 
 /* Meet — 收下 what was found, answer the traveller, or walk on. */

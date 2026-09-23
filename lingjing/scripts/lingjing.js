@@ -806,7 +806,7 @@ function fightMoments() {
   }
   if (st.outcome === 'open' && st.you.hp * 4 <= st.you.hpMax && !bout.told?.low) {
     bout.told = { ...bout.told, low: true };
-    tellYinyue(`斗${foe}，气血只剩一成多了`, `Fighting ${foe}, down to the last of their Life`);
+    tellYinyue(`斗${foe}，气血只剩不到三成了`, `Fighting ${foe}, down to a quarter of their Life or less`);
   }
 }
 
