@@ -558,11 +558,10 @@ Read these files with `Read` for additional context as needed:
    constraints per output lane (x-post, reddit-comment, blog,
    medium, linkedin, substack).
 2. `~/.linggen/skills/pulse/config.json` — `sites` (enabled source
-   tools), `targets` (enabled output lanes), `workspace_path` +
-   `product_repos`, `brief`, and `mention` (the product's name, its
+   tools), `targets` (enabled output lanes), `workspace_path`, `brief`, and `mention` (the product's name, its
    site as plain text, the default register, per-lane overrides). Only
    call enabled tools; only draft for enabled lanes. You never read
-   `mention` or `product_repos` yourself: the page turns them into the
+   `mention` or the workspace's repos yourself: the page turns them into the
    hidden **MENTION POLICY** and **PRODUCT DIGEST** blocks that prefix
    every drafting goal. There is no self-promotion quota — relevance
    alone decides each draft, by the test the policy block states: name
@@ -581,8 +580,9 @@ habits, vocabulary, register — when drafting. No separate voice
 samples file; the brief is the user's actual prose.
 
 **Product knowledge** — every drafting goal is prefixed with a
-**PRODUCT DIGEST** block: the README and latest CHANGELOG entry of each
-repo in `config.product_repos`, read off disk by the page (the same way
+**PRODUCT DIGEST** block: the README and latest CHANGELOG entry of the
+workspace — the root if it is a repo, else the repos inside it, newest
+commit first, up to 6 — read off disk by the page (the same way
 it hands you the mention policy — you never fetch either yourself).
 That block is your grounded product knowledge. Ground every product
 sentence in it; never state a capability that is not written there.

@@ -11,13 +11,14 @@
 //   workspace_path — the workspace ROOT. Also the permission grant and the
 //                    git-scan root, so it may well be a parent dir holding
 //                    several repos and no README of its own.
-//   product_repos  — the repos whose README/CHANGELOG describe the product
-//                    being launched. Absolute, "~/…", or relative to
-//                    workspace_path. Empty → workspace_path itself.
 //
-// A launch is usually more than one repo (the app, the CLI, the site), and
-// the sentence that answers a thread may live in any of them — so the
-// digest carries all of them, each labelled.
+// The repos are worked out from the root, never listed by hand (the
+// product_repos setting was removed 2026-09-23 — the workspace already says
+// where the work is): the root itself when it is a repo, else the repos
+// directly inside it, most recently committed first, up to maxRepos. A
+// launch is usually more than one repo (the app, the CLI, the site), and the
+// sentence that answers a thread may live in any of them — so the digest
+// carries all of them, each labelled.
 
 export const DIGEST_LIMITS = Object.freeze({
   maxRepos: 6,        // a digest, not a library dump
@@ -33,28 +34,10 @@ export const CHANGELOG_MARK = '<<<CHANGELOG>>>';
 
 // ---- Which repos ---------------------------------------------------------
 
-// Relative entries hang off workspace_path; "~/…" is left for the shell.
-export function resolveRepoPath(entry, workspacePath) {
-  const e = String(entry || '').trim().replace(/\/+$/, '');
-  if (!e) return '';
-  if (e.startsWith('/') || e.startsWith('~')) return e;
-  const ws = String(workspacePath || '').trim().replace(/\/+$/, '');
-  return ws ? `${ws}/${e}` : '';
-}
-
+// The workspace root, the one place the repos are found from.
 export function normalizeRepoPaths(cfg) {
   const ws = String(cfg?.workspace_path || '').trim().replace(/\/+$/, '');
-  const raw = Array.isArray(cfg?.product_repos) ? cfg.product_repos : [];
-  const out = [];
-  for (const entry of raw) {
-    const p = resolveRepoPath(entry, ws);
-    if (p && !out.includes(p)) out.push(p);
-    if (out.length >= DIGEST_LIMITS.maxRepos) break;
-  }
-  // No list configured → the workspace root itself, which is what Pulse did
-  // before product_repos existed.
-  if (!out.length && ws) out.push(ws);
-  return out;
+  return ws ? [ws] : [];
 }
 
 // ---- Reading them --------------------------------------------------------
@@ -66,15 +49,16 @@ function quotePath(p) {
   return `"${esc(p)}"`;
 }
 
-// One /api/bash call for every repo. Never ends with a newline — /api/bash
+// One /api/bash call. A root that is a repo (a .git or a README) is read
+// itself; any other root is read through the repos directly inside it,
+// newest commit first, up to maxRepos. Never ends with a newline — /api/bash
 // rejects a command that does. The first `## ` block of CHANGELOG.md is the
 // latest entry; `# Changelog` (one hash) does not match.
 export function buildDigestCommand(paths, limits = DIGEST_LIMITS) {
   const list = paths.map(quotePath).join(' ');
   if (!list) return '';
   return [
-    `for d in ${list}; do`,
-    ' [ -d "$d" ] || continue;',
+    'emit() { d="$1";',
     ` printf '${REPO_MARK}%s>>>\\n' "$(basename "$d")";`,
     ' if [ -f "$d/README.md" ]; then',
     ` printf '${README_MARK}\\n'; head -c ${limits.rawReadmeBytes} "$d/README.md"; printf '\\n';`,
@@ -82,8 +66,15 @@ export function buildDigestCommand(paths, limits = DIGEST_LIMITS) {
     ' if [ -f "$d/CHANGELOG.md" ]; then',
     ` printf '${CHANGELOG_MARK}\\n';`,
     ` awk '/^## /{n++} n==1{print} n==2{exit}' "$d/CHANGELOG.md" | head -c ${limits.rawChangelogBytes}; printf '\\n';`,
-    ' fi;',
-    'done',
+    ' fi; };',
+    ` for r in ${list}; do`,
+    ' [ -d "$r" ] || continue;',
+    ' if [ -e "$r/.git" ] || [ -f "$r/README.md" ]; then emit "$r"; continue; fi;',
+    ' for c in "$r"/*/; do c="${c%/}"; [ -e "$c/.git" ] || continue;',
+    ' printf \'%s\\t%s\\n\' "$(git -C "$c" log -1 --format=%ct 2>/dev/null || echo 0)" "$c"; done',
+    ` | sort -rn | head -n ${limits.maxRepos} | cut -f2-`,
+    ' | while IFS= read -r c; do emit "$c"; done;',
+    ' done',
   ].join('');
 }
 

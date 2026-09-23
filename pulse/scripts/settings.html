@@ -67,24 +67,10 @@
         Root. Saved as <code>workspace_path</code> — also the read grant
         and the dir scanned for commits.
       </p>
-      <p class="card-sub" style="margin-top: 14px;">
-        <strong>Product repos</strong> — one path per line, up to 6. The
-        repos that describe what you're launching; each one's README and
-        latest CHANGELOG entry goes into the digest. Absolute,
-        <code>~/…</code>, or relative to the root above. A launch is often
-        several repos (app, CLI, site) and the sentence that answers a
-        thread may be in any of them. Leave empty to read the root itself.
-      </p>
-      <textarea
-        id="product-repos"
-        class="brief-textarea"
-        rows="4"
-        spellcheck="false"
-        placeholder="my-app&#10;my-app-cli&#10;~/workspace/my-site"
-      ></textarea>
       <p class="card-meta">
-        Read-only access. Pulse never writes to the workspace.
-        Saved to <code>config.json</code> as <code>product_repos</code>.
+        Read-only access. Pulse never writes to the workspace. The product
+        digest reads the root if it is a repo, else the repos inside it —
+        the most recently committed first, up to 6.
       </p>
     </section>
 

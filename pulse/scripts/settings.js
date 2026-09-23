@@ -232,7 +232,9 @@ async function loadAll() {
     if (!cfgText) cfgText = await readFile(CONFIG_EXAMPLE);
     state.config = cfgText ? JSON.parse(cfgText) : { workspace_path: '', brief: '', sites: {}, targets: {} };
     if (typeof state.config.workspace_path !== 'string') state.config.workspace_path = '';
-    if (!Array.isArray(state.config.product_repos)) state.config.product_repos = [];
+    // Product repos are worked out from the workspace now; a saved list is
+    // dropped on the next save rather than kept as a setting nobody can see.
+    delete state.config.product_repos;
     if (typeof state.config.brief !== 'string') state.config.brief = '';
     if (!state.config.sites) state.config.sites = {};
     if (!state.config.targets) state.config.targets = {};
@@ -262,11 +264,6 @@ function render() {
   document.getElementById('brief-text').value = state.config.brief || '';
   const wsInput = document.getElementById('workspace-path');
   if (wsInput) wsInput.value = state.config.workspace_path || '';
-  const reposInput = document.getElementById('product-repos');
-  if (reposInput) {
-    const repos = Array.isArray(state.config.product_repos) ? state.config.product_repos : [];
-    reposInput.value = repos.join('\n');
-  }
   renderMention();
   const ctInput = document.getElementById('compact-threshold');
   if (ctInput) {
@@ -287,8 +284,6 @@ function render() {
 // this into the MENTION POLICY block that prefixes every drafting goal.
 
 const REGISTERS = ['disclosed', 'implicit'];
-// Keep in step with DIGEST_LIMITS.maxRepos in scripts/product-digest.js.
-const MAX_PRODUCT_REPOS = 6;
 
 function renderMention() {
   const m = state.config.mention && typeof state.config.mention === 'object' ? state.config.mention : {};
@@ -636,19 +631,6 @@ async function save() {
     state.config.brief = document.getElementById('brief-text').value;
     const wsInput = document.getElementById('workspace-path');
     if (wsInput) state.config.workspace_path = wsInput.value.trim();
-    const reposInput = document.getElementById('product-repos');
-    if (reposInput) {
-      // One path per line; blanks and duplicates dropped. MAX_PRODUCT_REPOS
-      // mirrors DIGEST_LIMITS.maxRepos — the digest reads no more than that,
-      // so saving more would be a setting that does nothing.
-      const seen = [];
-      for (const line of reposInput.value.split('\n')) {
-        const v = line.trim().replace(/\/+$/, '');
-        if (v && !seen.includes(v)) seen.push(v);
-        if (seen.length >= MAX_PRODUCT_REPOS) break;
-      }
-      state.config.product_repos = seen;
-    }
     state.config.mention = readMention();
     const ctInput = document.getElementById('compact-threshold');
     if (ctInput && ctInput.value.trim()) {

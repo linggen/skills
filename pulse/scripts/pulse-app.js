@@ -722,8 +722,8 @@ function buildSkipBlock() {
 // policy block says how a draft may name the product; WHETHER it does is
 // decided per thread by the relevance test, not by any count the page
 // keeps (the 1-per-10 quota was deleted 2026-09-08 — see mention-policy.js
-// for why). The digest is the README + latest CHANGELOG entry of every
-// repo in config.product_repos: the agent was told to Read the workspace
+// for why). The digest is the README + latest CHANGELOG entry of the
+// workspace's repos (product-digest.js works them out from the root): the agent was told to Read the workspace
 // itself and never did (every Pulse session on disk through 2026-09-01 —
 // zero workspace reads), so the page hands it over, the way it already
 // hands over the brief. The two work as a pair — a disclosed register with
@@ -742,8 +742,8 @@ async function buildMentionBlockLive(cfg) {
 }
 
 async function buildProductDigest(cfg) {
-  // The repos to read come from config (product_repos, falling back to
-  // workspace_path) — Pulse knows nothing about any particular product.
+  // The repos to read are worked out from workspace_path — Pulse knows
+  // nothing about any particular product.
   const paths = normalizeRepoPaths(cfg);
   const cmd = buildDigestCommand(paths);
   if (!cmd) return '';
