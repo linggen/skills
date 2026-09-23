@@ -70,7 +70,7 @@ function offerWon(s) {
    exactly this: it replays the fight in the browser and sends the actions back
    as text, and `duel --picks` replays the same list to settle it — one truth,
    two readers. `line: 'pass'` does nothing at all, which is how a test loses. */
-function fightOut(state, id, { line = null, c = ctx() } = {}) {
+function fightOut(state, id, { line = null, c = ctx(), between = s => s } = {}) {
   const started = must(duel, state, { id }, c);
   const { setup } = started.result.duel;
   const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
@@ -100,7 +100,7 @@ function fightOut(state, id, { line = null, c = ctx() } = {}) {
     act(st, best.action, 'you');
     actions.push(tokenOf(best.action));
   }
-  return { ...must(duel, started.state, { id, picks: actions.join(',') }, c), actions, picks: actions, started };
+  return { ...must(duel, between(started.state), { id, picks: actions.join(',') }, c), actions, picks: actions, started };
 }
 
 /* Walk to 夫诸 the ordinary way. */
@@ -2336,7 +2336,7 @@ test('伤势: a fight\'s wounds are carried into the next, mend with the hours, 
   assert.equal(door.result.duel.setup.you.wounds, 15);
   assert.equal(begin(door.result.duel.setup, Object.fromEntries(content.cards.cards.map(x => [x.id, x]))).you.hp, max - 15);
   // An hour on, the fight still replays as it was begun: the door holds it.
-  assert.equal(fightSetup(content, door.state, content.creatures.creatures.find(c => c.id === 'jingwei'), at(1).now).you.wounds, 15);
+  assert.equal(fightSetup(content, door.state, content.creatures.creatures.find(c => c.id === 'jingwei'), at(1).now, 'haunt:jingwei').you.wounds, 15);
   // Mending: full in refill_hours.
   const hours = content.rewards.stamina.refill_hours;
   assert.equal(look(hurt, content, at(hours)).health.now, max);
@@ -2534,6 +2534,47 @@ test('forLing: Ling gets the reading without the page\'s drawing data — the ma
   assert.deepEqual(slim.place.roads, full.place.roads, 'the roads stay — they are how she walks');
   assert.equal(slim.book?.length, full.book?.length);
   assert.ok(JSON.stringify(slim).length < JSON.stringify(full).length * 0.75);
+});
+
+/* The door holds the whole setup (rules § 降妖): what changes on the save
+   while a fight is open — a bond threshold crossed, a scroll learned, a
+   问斗法 cast, an hour of mending — does not reach the settle. */
+test('降妖: the settle replays the fight the door set up, whatever changed on the save meanwhile', () => {
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
+  const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
+  const her = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, companion: { joined: '2026-10-01' }, cards: [...(toOpenWorld().cards ?? []), 'yinyue'] };
+  const meanwhile = st => ({ ...st, bond: { n: 100 }, insight: 2, wounds: { n: 20, at: c.now.toISOString() } });
+  const out = fightOut(her, 'haunt:jingwei', { c, between: meanwhile });
+  const door = out.started.result.duel.setup;
+  assert.deepEqual(out.started.state.fight.setup, door, 'kept on the save at the door');
+  assert.equal(door.you.lifts, undefined);
+  assert.equal(door.you.insight, undefined);
+  const live = fightSetup(content, meanwhile(out.started.state), jingwei, c.now);
+  assert.ok(live.you.lifts && live.you.insight === 2, 'the save did change');
+  assert.deepEqual(fightSetup(content, meanwhile(out.started.state), jingwei, c.now, 'haunt:jingwei'), door, 'the open fight reads the door');
+  const replay = battle(out.actions, door, catalog);
+  assert.equal(out.result.outcome ?? out.state.duels.jingwei.outcome, replay.outcome);
+  assert.equal(out.state.duels.jingwei.outcome, replay.outcome);
+  // an older save's open fight, kept before the setup was: the live reading, its wounds the door's
+  const old = { ...out.started.state, fight: { ...out.started.state.fight, setup: undefined } };
+  delete old.fight.setup;
+  const settled = must(duel, old, { id: 'haunt:jingwei', picks: out.actions.join(',') }, c);
+  assert.equal(settled.state.duels.jingwei.outcome, replay.outcome);
+  assert.equal(settled.state.fight, undefined);
+  // and it takes the setup on resume
+  assert.deepEqual(must(duel, old, { id: 'haunt:jingwei' }, c).state.fight.setup, door);
+});
+
+test('降妖: a fight open on another creature lends nothing to this one', () => {
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const other = { ...base, fight: { game: 'haunt:other', creature: 'other', at: c.now.toISOString(), wounds: 30, setup: { mode: 'pve', you: { wounds: 30 } } } };
+  const mine = fightSetup(content, other, jingwei, c.now, 'haunt:jingwei');
+  assert.equal(mine.you.wounds, 0, 'not the other fight\'s wounds');
+  assert.ok(mine.foe, 'nor its setup');
+  assert.equal(fightSetup(content, other, jingwei, c.now).you.wounds, 0, 'no game named, no door read');
 });
 
 /* 机缘 (rules § 机缘): once a day, near, for a few real hours; reached in

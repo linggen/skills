@@ -1188,7 +1188,20 @@ function healthBrief(content, state, now) {
 }
 const fitToFight = (content, state, now) => hpMaxOf(state) - woundsNow(content, state, now) >= Math.ceil(hpMaxOf(state) * FIT_TO_FIGHT);
 
-export function fightSetup(content, state, creature, now) {
+/* The fight open on the save, when it is THIS one (`game` its id) — a door
+   left open on another creature holds nothing for this fight. */
+const openFight = (state, game) => (game && state.fight?.game === game ? state.fight : null);
+
+/* Everything a fight is given at the door. Once the door is open it is the
+   save's (`state.fight.setup`), not the hour's: a 谈心 that crosses a bond
+   threshold, a 问斗法 cast, a scroll learned or an hour of mending between
+   the page's play and the settle must not replay the fight against other
+   numbers — a different result, or a legal turn refused. A save whose fight
+   was opened before the setup was kept falls back to the live reading, with
+   its wounds still the door's. */
+export function fightSetup(content, state, creature, now, game = null) {
+  const open = openFight(state, game);
+  if (open?.setup) return open.setup;
   const fortune = now ? boutFortune(content, state, now) : null;
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
@@ -1201,7 +1214,7 @@ export function fightSetup(content, state, creature, now) {
       tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: withHer ? ['yinyue'] : [],
       // Locked at the door with the rest: the page and the settle replay the
       // same fight even if an hour of mending passes between them.
-      wounds: state.fight?.wounds ?? (now ? woundsNow(content, state, now) : 0),
+      wounds: open?.wounds ?? (now ? woundsNow(content, state, now) : 0),
       ...(withHer && bondLifts(content, state) ? { lifts: bondLifts(content, state) } : {}),
       // 望气术: how much of the beast's plan he can read (items `learn`).
       ...(state.insight ? { insight: state.insight } : {}),
@@ -1332,7 +1345,7 @@ function duelBrief(content, state, game, now) {
     },
     health: healthBrief(content, state, now),
     // Everything the fight is given at the door, and nothing else.
-    setup: fightSetup(content, state, creature, now),
+    setup: fightSetup(content, state, creature, now, game.id),
     today: open ? { outcome: open.outcome } : null,
   };
 }
@@ -2068,12 +2081,15 @@ export function duel(state, content, ctx, args) {
     // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
     // from the save, not from a message, because a message can be lost.
     s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString(), wounds: woundsNow(content, s, ctx.now) };
+    // The whole setup is kept with it, so the settle replays what the page
+    // is handed now (an older save's open fight takes it on resume).
+    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, creature, ctx.now, id);
     return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now) } };
   }
 
   // ── 收场: the page hands back what was played, the rules replay it ──
   if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
-  const setup = fightSetup(content, s, creature, ctx.now);
+  const setup = fightSetup(content, s, creature, ctx.now, id);
   const actions = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
   const played = battle(actions, setup, cardCatalog(content));
   if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });
