@@ -15,13 +15,14 @@
 //              A card far above the pack is the one to cost more.
 //   出场率   — how often the smart line plays it when it could. 0% is a dead
 //              card, 100% is an auto-include; both are failures of design.
-//   决策熵   — the spread between the best choice and the third best. Above
-//              20% there is only one line (no decision); below 3% nothing
-//              matters (no decision either). 5–15% is a game.
+//   决策熵   — at the start of a turn, the WIN RATE of the best plan minus
+//              the third best. Above 20 points there is only one line (no
+//              decision); below 3 nothing matters (no decision either). 5–15
+//              is a game.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BEATS, MODES, TIERS, act, begin, legal, offers } from '../scripts/battle.js';
+import { BEATS, MODES, TIERS, act, begin, legal, offers, shuffle } from '../scripts/battle.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const world = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/cards.json'), 'utf8'));
@@ -48,7 +49,7 @@ const rote = kind => st => {
    it leaves behind, which is what a player sees. */
 function score(st, o) {
   const before = snapshot(st);
-  const copy = replay(st);
+  const copy = clone(st);
   const out = act(copy, o.action, 'you');
   if (!out.ok) return -1;
   const after = snapshot(copy);
@@ -201,23 +202,109 @@ function matchup() {
   return { counter: score('counter'), mixed: score('mixed'), wrong: score('wrong') };
 }
 
-/* Decision entropy: how far apart are the best choice and the third best? */
-function entropy(decks) {
-  const gaps = [];
-  for (const deck of decks.slice(0, 4)) {
-    const setup = setupOf({ tier: 'foundation', root: deck.root, deck: deck.cards, seed: `ent|${deck.id}` });
-    play(setup, smart, (st, can) => {
-      if (can.length < 3) return;
-      const vals = can.map(o => score(st, o)).sort((a, b) => b - a);
-      // Normalised by the whole spread of what is on offer this turn, not by
-      // the best value alone: what matters is whether the top choices are
-      // close to EACH OTHER, not how big the numbers happen to be.
-      const span = Math.max(1, vals[0] - vals[vals.length - 1]);
-      gaps.push(Math.min(1, (vals[0] - vals[2]) / span));
-    });
+/* 决策熵 — does a turn hold a real choice?
+   The first version ranked single ACTIONS by the one-step score and divided
+   best-minus-third by the whole spread. That number mostly counted the
+   options: n choices spread evenly read 2/(n−1), so this game's 5–13 a turn
+   read 17–50% whatever the cards did (2026-09-23, measured 32.5% against an
+   even-spread 33%). It also ranked "which 火鸦 first" when both get played.
+   Now the unit is the turn and the measure is winning. Every distinct way to
+   spend the turn (states reached, not orders taken) is played out to the end
+   by the attentive line over the same ROLLOUTS futures — the rest of both
+   decks reshuffled, one seed per future, shared by every plan so the plans
+   differ only by the plan. The gap is win-rate points, as design.md says. */
+const ROLLOUTS = 20;
+const PLAN_CAP = 12;
+
+// A copy that shares the card book: the state is plain data (checked against
+// replay() on 5,515 positions, 2026-09-23), the book is the heavy part.
+function clone(st) {
+  const { catalog, origin, history, ...rest } = st;
+  const c = structuredClone(rest);
+  return Object.assign(c, { catalog, origin, history: [...(history ?? [])] });
+}
+
+const sideKey = side => JSON.stringify({ ...side, hand: [...side.hand].sort(), board: side.board.map(m => JSON.stringify(m)).sort(), deck: side.deck.length });
+const keyOf = st => `${st.outcome}|${st.whose}|${sideKey(st.you)}|${sideKey(st.foe)}`;
+
+/* Every end state this turn can reach. Orders that land in the same place
+   are one plan; a plan the one-step score ranks far down is dropped only
+   when there are more than PLAN_CAP. */
+function plansOf(st) {
+  const seen = new Set();
+  const ends = [];
+  const walk = s => {
+    const k = keyOf(s);
+    if (seen.has(k)) return;
+    seen.add(k);
+    if (s.outcome !== 'open' || s.whose !== 'you') { ends.push(s); return; }
+    ends.push(s);
+    for (const o of offers(s).filter(x => x.ok && x.action.kind !== 'end')) {
+      const c = clone(s);
+      if (act(c, o.action, 'you').ok) walk(c);
+    }
+  };
+  walk(clone(st));
+  const before = snapshot(st);
+  const worth = s => {
+    const a = snapshot(s);
+    return (before.foeHp - a.foeHp) * 2 + (before.foeBoard - a.foeBoard) * 2 + (a.mineAtk - before.mineAtk) * 1.5 + (a.mineHp - before.mineHp) * 0.9 - (before.youBoard - a.youBoard) * 2 + (s.outcome === 'won' ? 99 : 0);
+  };
+  return ends.map(s => ({ s, v: worth(s) })).sort((x, y) => y.v - x.v).slice(0, PLAN_CAP).map(x => x.s);
+}
+
+function finish(st) {
+  for (let guard = 0; guard < 120 && st.outcome === 'open'; guard += 1) {
+    if (st.whose === 'foe') { foeAll(st); continue; }
+    const pick = smart(st);
+    if (!pick) break;
+    act(st, pick.action, 'you');
   }
-  gaps.sort((a, b) => a - b);
-  return gaps.length ? gaps[Math.floor(gaps.length / 2)] : 0;
+  return st.outcome === 'won';
+}
+
+function winRate(plan) {
+  let won = 0;
+  for (let k = 0; k < ROLLOUTS; k += 1) {
+    const s = clone(plan);
+    s.you.deck = shuffle(s.you.deck, `future${k}|you`);
+    s.foe.deck = shuffle(s.foe.deck, `future${k}|foe`);
+    if (s.outcome === 'open' && s.whose === 'you') act(s, { kind: 'end' }, 'you');
+    if (finish(s)) won += 1;
+  }
+  return won / ROLLOUTS;
+}
+
+function entropy(decks) {
+  const turns = [];
+  for (const deck of decks) {
+    for (const foeRoot of ['wood', 'metal']) {
+      const setup = setupOf({ tier: 'foundation', root: deck.root, deck: deck.cards, foeRoot, seed: `ent|${deck.id}|${foeRoot}` });
+      let last = 0;
+      play(setup, smart, st => {
+        if (st.turn === last) return; // once a turn, at its start
+        last = st.turn;
+        const plans = plansOf(st);
+        if (plans.length < 2) { turns.push({ forced: true }); return; }
+        const w = plans.map(winRate).sort((a, b) => b - a);
+        turns.push({ gap: w[0] - w[Math.min(2, w.length - 1)], best: w[0] });
+      });
+    }
+  }
+  const open = turns.filter(t => !t.forced);
+  const gaps = open.map(t => t.gap).sort((a, b) => a - b);
+  const share = f => open.length ? open.filter(f).length / open.length : 0;
+  return {
+    median: gaps.length ? gaps[Math.floor(gaps.length / 2)] : 0,
+    turns: turns.length,
+    forced: turns.length - open.length,
+    oneLine: share(t => t.gap > 0.2),
+    game: share(t => t.gap >= 0.03 && t.gap <= 0.2),
+    flat: share(t => t.gap < 0.03),
+    // A flat turn in a fight already won (or lost) whatever you do is not a
+    // design failure — it is the end of the fight.
+    settled: share(t => t.gap < 0.03 && (t.best === 1 || t.best === 0)),
+  };
 }
 
 /* ── The decks under test ── */
@@ -342,9 +429,12 @@ async function main() {
   }
 
   const ent = entropy(decks);
-  console.log(`\n决策熵（中位）：${(ent * 100).toFixed(1)}%  —  健康区间 5–15%`);
-  if (ent > 0.25) problems.push(`决策熵 ${(ent * 100).toFixed(1)}% — 多数回合只有一条路`);
-  if (ent < 0.02) problems.push(`决策熵 ${(ent * 100).toFixed(1)}% — 怎么打都一样`);
+  const pct = x => `${(x * 100).toFixed(0)}%`;
+  console.log(`\n决策熵（每回合：最好的打法与第三好的，胜率差几个点；${ROLLOUTS} 个未来）`);
+  console.log(`中位 ${(ent.median * 100).toFixed(1)} 点  —  健康区间 5–15`);
+  console.log(`${ent.turns} 个回合：只有一种打法 ${ent.forced} · 一条路(>20) ${pct(ent.oneLine)} · 有得选(3–20) ${pct(ent.game)} · 怎么打都一样(<3) ${pct(ent.flat)}，其中胜负已定 ${pct(ent.settled)}`);
+  if (ent.median > 0.2) problems.push(`决策熵 ${(ent.median * 100).toFixed(1)} 点 — 多数回合只有一条路`);
+  if (ent.flat - ent.settled > 0.5) problems.push(`过半回合怎么打都一样 — 没有决策`);
 
   console.log(problems.length ? `\n闸：${problems.length} 处越界\n · ${problems.join('\n · ')}` : '\n闸：全部在带内');
   if (gate && problems.length) process.exit(1);
