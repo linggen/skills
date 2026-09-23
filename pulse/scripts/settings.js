@@ -1,6 +1,7 @@
 // Pulse Settings — load/save config.json + brief.md via /api/bash.
 // Same iframe pattern as pulse-app.js (ungated, no permission prompt).
 
+import { splitList } from './list-text.js';
 
 // In-page confirm — window.confirm is a silent no-op inside the app shell
 // (its WKWebView implements no confirm panel: returns false, no dialog),
@@ -497,7 +498,8 @@ document.getElementById('add-website-url')?.addEventListener('keydown', (e) => {
 // A list is one plain box: "agent, agent memory, native AI". What is typed
 // is what saves — no chips, no + Add to forget before Save (2026-09-23: a
 // typed list was lost because it was never "added"). Commas or new lines
-// separate; blanks and repeats drop.
+// separate — a feed URL keeps its own commas (list-text.js); blanks and
+// repeats drop.
 function renderChipField(cfg, field) {
   if (!Array.isArray(cfg[field.key])) cfg[field.key] = [];
   const wrap = document.createElement('div');
@@ -516,14 +518,7 @@ function renderChipField(cfg, field) {
         : field.key === 'keywords' ? 'local LLM, agent memory'
         : 'comma, separated');
   input.spellcheck = false;
-  input.addEventListener('input', () => {
-    const seen = [];
-    for (const part of input.value.split(/[,\n]/)) {
-      const v = part.trim();
-      if (v && !seen.includes(v)) seen.push(v);
-    }
-    cfg[field.key] = seen;
-  });
+  input.addEventListener('input', () => { cfg[field.key] = splitList(input.value); });
   wrap.appendChild(input);
   return wrap;
 }

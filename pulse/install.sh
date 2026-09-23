@@ -63,7 +63,7 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
   install -m 0644 "$SOURCE_DIR/product-spec.md" "$SKILL_DIR/product-spec.md"
   for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js \
            pulse.css style.css \
-           settings.html settings.js settings.css; do
+           settings.html settings.js settings.css list-text.js mention-policy.js product-digest.js; do
     install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
   done
   install -m 0755 "$SOURCE_DIR/scripts/gather-local.sh" "$SKILL_DIR/scripts/gather-local.sh"

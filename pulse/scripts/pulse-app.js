@@ -390,6 +390,9 @@ function startChip(chipId, expects) {
     runningChips.set(chipId, {
       resolve, reject, timer: armTimer(), expects, armTimer,
       startedAt: Date.now(), turnEnded: false,
+      // The rounds ahead of this chip's goal, and its own: a round's end
+      // before then is not the end of the chip's work.
+      endsLeft: openRounds + 1,
     });
   });
 }
@@ -419,30 +422,69 @@ function setTransportStatus(status) {
     for (const rec of runningChips.values()) clearTimeout(rec.timer);
     if (runningChips.size) showConnectionToast();
   } else {
-    pingRunningChips();
+    // Hearing again is not activity: the clocks restart, the turn state
+    // stays what it was.
+    rearmRunningChips();
     if (wasDown) hideCascadeToast();
   }
 }
 
-function pingRunningChips() {
+function rearmRunningChips() {
   for (const rec of runningChips.values()) {
-    // Activity means a turn is running — a goal queued behind another turn
-    // has started.
-    rec.turnEnded = false;
     clearTimeout(rec.timer);
     rec.timer = rec.armTimer();
   }
 }
 
-// Ling's turn ended. A chip still waiting now gets END_GRACE_MS for a late
-// PageUpdate (or for its own queued turn to start) instead of waiting out
-// silence that no longer means anything.
-function turnEndedForRunningChips() {
-  for (const rec of runningChips.values()) {
-    rec.turnEnded = true;
-    clearTimeout(rec.timer);
-    rec.timer = rec.armTimer();
+// Chat rounds, as the page can follow them. Every message the page sends is
+// one round with one stream_end — a goal sent mid-turn breaks that turn off
+// and runs as a round of its own — so a chip waits out the ends of the
+// rounds ahead of it before its own. The chat relays nothing while a round
+// thinks silently, so after a round ends the next one can be quiet for
+// minutes (2026-09-23: gather-web queued behind gather-local's closing words
+// was painted red 90 s after that turn ended).
+let openRounds = 0;           // sent or seen running, not yet ended
+let roundLive = false;        // activity seen since the last stream_end
+let roundBlocks = new Set();  // block ids of the round now running
+let endedBlocks = new Set();  // …and of the round that just ended
+
+function roundSent() {
+  openRounds++;
+}
+
+// A token or a content block. Late updates of the round that just ended are
+// not a new round; anything else after an end is — a round the page did not
+// count (typed in the chat) may take up a chip's work, so a chip whose own
+// round has ended waits for that one too.
+function chatActivity(payload) {
+  const blockId = payload?.blockId;
+  const stray = !roundLive && payload && (blockId ? endedBlocks.has(blockId) : payload.phase !== 'start');
+  if (!stray) {
+    if (blockId) roundBlocks.add(blockId);
+    if (!roundLive) {
+      roundLive = true;
+      if (openRounds === 0) openRounds = 1;
+      for (const rec of runningChips.values()) {
+        if (rec.turnEnded) { rec.turnEnded = false; rec.endsLeft = 1; }
+      }
+    }
   }
+  rearmRunningChips();
+}
+
+// A round ended. A chip whose own round it was now gets END_GRACE_MS for a
+// late PageUpdate instead of waiting out silence that no longer means
+// anything; a chip still behind another round keeps waiting.
+function turnEndedForRunningChips() {
+  openRounds = Math.max(0, openRounds - 1);
+  roundLive = false;
+  endedBlocks = roundBlocks;
+  roundBlocks = new Set();
+  for (const rec of runningChips.values()) {
+    if (rec.endsLeft > 0) rec.endsLeft--;
+    if (rec.endsLeft === 0) rec.turnEnded = true;
+  }
+  rearmRunningChips();
 }
 
 function completeChipFromSectionUpdate(sectionId) {
@@ -1487,7 +1529,7 @@ async function mountChat() {
     modelId,
     onSessionCreated: grantOnce,
     onConnectionChange: setTransportStatus,
-    onStreamToken: () => pingRunningChips(),
+    onStreamToken: () => chatActivity(null),
     onStreamEnd: () => turnEndedForRunningChips(),
     onContentBlock: (payload) => {
       // Any content block (tool call, text streaming, PageUpdate, …) is
@@ -1497,7 +1539,7 @@ async function mountChat() {
       // PageUpdate, so gating the ping on PageUpdate alone let the chip
       // time out during the fetch phase. Pinging on every block keeps
       // the chip alive as long as the agent is doing anything.
-      pingRunningChips();
+      chatActivity(payload);
       // A lane's "last scan" moves when its Fetch tool actually runs —
       // the only evidence the source was checked (cards in a patch prove
       // nothing; models re-emit whole sections).
@@ -1578,6 +1620,7 @@ function sendChatMessage(text) {
     return;
   }
   state.chat.send(text);
+  roundSent();
 }
 
 // sendChatHidden — for chip-fired goals and card-action prompts that
@@ -1599,6 +1642,7 @@ function sendChatHidden(text) {
     return;
   }
   state.chat.sendHidden(sanitizeHomePaths(text));
+  roundSent();
 }
 
 let cachedHomeDir = null;
