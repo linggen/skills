@@ -451,7 +451,13 @@ async function startHardwareProbe(rescan = false) {
     body: [{ type: 'progress', title: 'Checking your system...', steps: [...steps] }],
   });
 
+  // Redraw only when a step actually moves: every redraw rebuilds the card and
+  // replays its entry fade, so a repeat of the same state reads as a flash.
+  let shown = '';
   function updateSteps(doneIdx, activeIdx) {
+    const key = `${doneIdx}:${activeIdx}`;
+    if (key === shown) return;
+    shown = key;
     const updated = steps.map((s, i) => ({
       ...s,
       status: i < doneIdx ? 'done' : i === activeIdx ? 'active' : 'pending',
@@ -464,7 +470,9 @@ async function startHardwareProbe(rescan = false) {
 
     // Run full scan (system + disk + garbage + security + performance)
     const results = await runScan('full', sessionId, (step, data) => {
-      if (data === 'start') return;
+      // 'start' and the disk's per-folder `measuring` ticks are not a step
+      // finishing — only a step's result moves the card on.
+      if (data === 'start' || data?.measuring) return;
       if (step === 'system') updateSteps(1, 1);
       if (step === 'disk') updateSteps(2, 2);
       if (step === 'security') updateSteps(3, 3);
