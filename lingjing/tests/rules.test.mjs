@@ -1222,7 +1222,8 @@ test('the director names today\'s seed only where seeds grow, and the pool', () 
   const moved = must(move, s, { place: 'sishui' }).state;
   const t = must(move, moved, { place: 'huaidu' }).state;
   assert.equal(look(t, content, ctx()).director.seed, null, 'the ferry has no seeds');
-  assert.equal(look({ ...s, stamina: 2 }, content, ctx()).director.pool, 'empty');
+  assert.equal(look({ ...s, stamina: 0 }, content, ctx()).director.pool, 'empty');
+  assert.equal(look({ ...s, stamina: 1 }, content, ctx()).director.pool, 'low', 'the last point is not empty');
 });
 
 test('a save from before places starts where its province starts', () => {
@@ -1375,7 +1376,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   let s = toJi();
   // arrive → Ye: the scene moves, and the exit walks the player the one road there
   let r = answer(resolve, s, { exit: 'town' });
-  assert.equal(r.state.stamina, 95, 'chapter 1 is not free: a step costs five');
+  assert.equal(r.state.stamina, 97, 'chapter 1 is not free: a step costs three');
   assert.equal(r.state.scene, '01-ye'); assert.equal(r.state.place, 'ye');
   assert.deepEqual(r.result.walked.to.id, 'ye'); assert.equal(r.result.waypoint, null); assert.equal(r.result.scene.id, '01-ye');
   // farther off, the road waits: with no road from Zhangnan to Ye the scene is a waypoint
@@ -1397,7 +1398,7 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   const altar = look(s, content, octx()).scene;
   assert.equal(altar.id, '01-altar');
   assert.ok(altar.exits.find(e => e.id === 'subdue').duel.creature.root === 'earth');
-  assert.equal(answer(duel, s, { id: altar.exits.find(e => e.id === 'subdue').game.id }).state.stamina, s.stamina - 10, 'a bout here costs');
+  assert.equal(answer(duel, s, { id: altar.exits.find(e => e.id === 'subdue').game.id }).state.stamina, s.stamina - content.rewards.stamina.cost.duel, 'a bout here costs');
   // the riddle way through
   const wu = riddleAt(s, 'riddle', octx());
   missed(resolve, s, { exit: 'riddle', answer: wu.wrong }, octx());
@@ -1479,12 +1480,15 @@ test('the cast\'s grade speeds or slows what was asked, rests a dire day, and tu
 
 test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
   let s = answer(resolve, toJi(), { exit: 'town' }).state; // walked to Ye by the exit
-  s.stamina = 2; s.stamina_at = OCT.toISOString();
+  // the last point buys one more step, and takes him to 0
+  const last = answer(resolve, { ...s, stamina: 1, stamina_at: OCT.toISOString() }, { exit: 'shrine' }, octx());
+  assert.equal(last.state.stamina, 0);
+  s.stamina = 0; s.stamina_at = OCT.toISOString();
   const r = refused(resolve, s, { exit: 'shrine' }, 'no-stamina', octx());
-  assert.equal(r.cost, 5);
-  // 3 points short at 20 an hour = 9 minutes
-  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 9 * 60_000);
-  assert.match(r.say, /体力已空/);
+  assert.equal(r.cost, 3);
+  // one point back at 20 an hour = 3 minutes
+  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 3 * 60_000);
+  assert.match(r.say, /体力耗尽了。回到现实里歇一歇/);
   const seen = look(s, content, octx());
   assert.equal(seen.stamina.empty, true);
   assert.equal(seen.stamina.returns_at, r.returns_at);
@@ -2827,11 +2831,14 @@ test('体力: walking costs by the road, an elite more; empty, the road waits', 
   const one = must(move, s, { place: 'sishui' }, at);
   const cost = content.rewards.stamina.cost;
   const roads = (r) => 1 + (r.result.via ?? []).length;
-  assert.equal(one.state.stamina, 100 - cost.move * roads(one), 'a road costs its 体力');
+  const trip = (n) => Math.min(cost.move.max, cost.move.base + (n - 1) * cost.move.per_road);
+  assert.equal(one.state.stamina, 100 - trip(roads(one)), 'a trip costs its 体力');
   const far = must(move, s, { place: 'lvliang' }, at);
-  assert.equal(far.state.stamina, 100 - cost.move * roads(far));
+  assert.equal(far.state.stamina, 100 - trip(roads(far)));
   assert.ok(roads(far) > roads(one), 'further is dearer');
-  refused(move, { ...s, stamina: 1 }, { place: 'sishui' }, 'no-stamina', at);
+  assert.equal(trip(7), cost.move.max, 'seven roads cost no more than the cap');
+  assert.equal(must(move, { ...s, stamina: 1 }, { place: 'sishui' }, at).state.stamina, 0, 'the last point walks him there');
+  refused(move, { ...s, stamina: 0 }, { place: 'sishui' }, 'no-stamina', at);
   assert.equal(cost.elite > cost.duel, true);
   assert.equal(cost.shop, 0);
 });

@@ -312,12 +312,18 @@ const RISE_MS = 1600, GAIN_MS = 3600;
 let riseAfter = 0; // a rise waits for this moment (the fight room closing)
 function riseStats() {
   const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
-    rank: look.tier?.name, chapter: look.chapter?.id };
+    rank: look.tier?.name, chapter: look.chapter?.id, stamina: look.stamina?.now };
   const before = shown;
   shown = now;
   // 大成就: a realm risen, a chapter opened — the stage marks it and 银月 speaks
   // at once (his, 2026-09-23: 境界突破等大成就达成时, 显示一个动画, 并让银月说点什么).
   if (before && before.world === now.world) {
+    // The last point spent: 银月 sends him back to the real world to rest —
+    // real life is hers, not Ling's (his rule, 2026-09-23).
+    if (before.stamina > 0 && now.stamina === 0) {
+      const at = look.stamina?.returns_at ? new Date(look.stamina.returns_at).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' }) : '';
+      askHer(`他的体力刚刚耗尽了（${at} 回满）。游戏先放一放：请他回到现实里歇一歇，起身走走、喝口水。说一两句。`, `His stamina just ran out (full again at ${at}). The game waits: send him back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
+    }
     if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank);
     else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title);
   }

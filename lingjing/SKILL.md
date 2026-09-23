@@ -744,7 +744,9 @@ day's cast or 机缘 she may name; open straight on one or two sentences of
 - **`no-stamina`: the pool (`words.pool`) is empty.** Speak its `say` (it
   names the hour stamina returns), turn the player to the world in one line —
   rest, a walk, their other practice — and let the story wait. Never count,
-  spend or promise stamina yourself: walking costs it by the road, and a fight,
+  spend or promise stamina yourself (the last point still buys any one thing
+  and takes the pool to 0; only at 0 is he refused, and 银月 — not you —
+  sends him to rest in the real world): a trip costs it, capped, and a fight,
   a branch, a story step, a 抉择 and a taming cost it (the prologue's steps,
   walks and fights are free); talk, the market, errands, the boards and her
   tending are free — so an empty pool still shops and hands in; a quest paid refills it

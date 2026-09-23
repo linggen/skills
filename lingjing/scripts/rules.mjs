@@ -835,7 +835,7 @@ function threadOf(content, state, now) {
 
 const poolOf = (content, state) => {
   const q = content.rewards.stamina, r = state.stamina / q.max;
-  return r >= 0.6 ? 'full' : r >= 0.25 ? 'half' : state.stamina >= q.cost.step ? 'low' : 'empty';
+  return r >= 0.6 ? 'full' : r >= 0.25 ? 'half' : state.stamina > 0 ? 'low' : 'empty';
 };
 
 /* The director's brief: what Ling improvises inside this turn — what is
@@ -1917,8 +1917,9 @@ export function chance(state, content, ctx, args) {
    step is out of reach — the hour it returns. */
 function staminaBrief(content, state, now) {
   const q = content.rewards.stamina;
-  const empty = state.stamina < q.cost.step;
-  return { now: state.stamina, max: q.max, step: q.cost.step, empty, returns_at: empty ? staminaReturnsAt(content, state, q.cost.step).toISOString() : null };
+  // Empty is 0: the last point still buys any one thing (his, 2026-09-23).
+  const empty = state.stamina <= 0;
+  return { now: state.stamina, max: q.max, step: q.cost.step, empty, returns_at: empty ? staminaReturnsAt(content, state, 1).toISOString() : null };
 }
 
 /* ── Changing it ── */
@@ -2042,13 +2043,20 @@ function spendStamina(content, s, ctx, kind, n = 1) {
   const since = rest && s.last_step_at ? new Date(new Date(s.last_step_at).getTime() + rest * 1000) : null;
   if (since && since > ctx.now) return refuse('resting', null, { returns_at: since.toISOString() });
   settleStamina(content, s, ctx.now);
-  const cost = (content.rewards.stamina.cost[kind] ?? 0) * n;
-  if (s.stamina >= cost) { s.stamina -= cost; if (kind === 'step') s.last_step_at = ctx.now.toISOString(); return null; }
-  const at = staminaReturnsAt(content, s, cost);
+  // A trip is paid as one (his, 2026-09-23: 几分钟消耗光 — seven roads at 3
+  // each emptied a fifth of the pool in one tap): a base, a little per road
+  // beyond the first, capped. The pool lasts about an hour of his pace.
+  const c = content.rewards.stamina.cost[kind] ?? 0;
+  const cost = typeof c === 'object' ? Math.min(c.max, c.base + Math.max(0, n - 1) * c.per_road) : c * n;
+  // The last point still buys any one thing, and takes him to 0 (his rule,
+  // 2026-09-23: 最后的体力即使只有1, 也允许…然后提示用户返回现实世界休息);
+  // only at 0 is he refused, and the empty pool sends him to real life.
+  if (!cost || s.stamina > 0) { s.stamina = Math.max(0, s.stamina - cost); if (kind === 'step') s.last_step_at = ctx.now.toISOString(); return null; }
+  const at = staminaReturnsAt(content, s, 1);
   const w = wordsOf(content, s.lang);
   const say = s.lang === 'zh'
-    ? `${w.pool}已空，先歇一歇。${hourOf(at, 'zh')} 再来。`
-    : `Your ${w.pool.toLowerCase()} is spent — go and rest. Come back at ${hourOf(at, 'en')}.`;
+    ? `${w.pool}耗尽了。回到现实里歇一歇，${hourOf(at, 'zh')} 再来。`
+    : `Your ${w.pool.toLowerCase()} is spent. Rest in the real world a while; come back at ${hourOf(at, 'en')}.`;
   return refuse('no-stamina', say, { stamina: s.stamina, cost, returns_at: at.toISOString() });
 }
 
