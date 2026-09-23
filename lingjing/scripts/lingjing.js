@@ -579,14 +579,20 @@ async function sendHer(hours) {
   const r = await journeyVerb('send', { hours });
   if (r.ok) askHer(`他让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `He is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
 }
-/* Called back early: she comes home with nothing, and says so her way. */
+/* Called back early: she comes home with a little, and tells it her way. */
 async function recallHer() {
   const r = await journeyVerb('recall');
   if (!r.ok) return;
+  const items = r.brought.filter((b) => b.id).map((b) => ({ id: b.id, name: b.name }));
+  if (items.length) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items } });
   const t = r.out_min >= 60 ? `${Math.floor(r.out_min / 60)} 个时辰${r.out_min % 60 ? `${r.out_min % 60} 分` : ''}` : `${r.out_min} 分`;
   const te = r.out_min >= 60 ? `${Math.floor(r.out_min / 60)}h${r.out_min % 60 ? ` ${r.out_min % 60}m` : ''}` : `${r.out_min}m`;
-  askHer(`他提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。这趟没带回东西，今日也不能再出门。你回到他身边，跟他说几句。`,
-    `He called you back early from ${r.place.name}: ${r.hours} hours planned, ${te} gone. You bring nothing back this time, and cannot go out again today. You are beside him again; say a few words to him.`);
+  const seen = r.brought.map((b) => b.line).join(' ');
+  const got = [...items.map((i) => i.name), r.wealth ? `${r.wealth} 灵石` : ''].filter(Boolean).join('、');
+  const gotEn = [...items.map((i) => i.name), r.wealth ? `${r.wealth} stones` : ''].filter(Boolean).join(', ');
+  askHer(`他提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。${seen ? `路上所见：${seen} ` : ''}${got ? `只带回：${got}。` : '这趟什么也没带回。'}今日不能再出门。你回到他身边，跟他说几句。`,
+    `He called you back early from ${r.place.name}: ${r.hours} hours planned, ${te} gone. ${seen ? `On the road: ${seen} ` : ''}${gotEn ? `You bring only: ${gotEn}.` : 'You bring nothing back.'} No second trip today. You are beside him again; say a few words to him.`);
+  render();
 }
 async function receiveHer() {
   const r = await journeyVerb('receive');

@@ -1774,6 +1774,19 @@ export function greet(state, content, ctx) {
   return { state: s, result: { ok: true, first: true, name: state.name ?? null, facts } };
 }
 
+/* What she picked up on the road, `n` of them, into the bag (stones are
+   counted by the caller). */
+function journeyFinds(content, s, j, at, n) {
+  const book = content.meets?.finds?.[at?.province]?.length ? content.meets.finds[at.province] : content.meets?.finds?.['*'] ?? [];
+  const brought = [];
+  for (let i = 0; i < n && book.length; i += 1) {
+    const f = book[hashOf(`${j.day}|${j.place}|${s.name ?? ''}|brought|${i}`) % book.length];
+    if (f.item && itemOf(content, f.item)) { s.bag[f.item] = (s.bag[f.item] ?? 0) + 1; brought.push({ id: f.item, name: pick(itemOf(content, f.item).name, s.lang), line: pick(f.line, s.lang) }); }
+    else if (f.wealth) brought.push({ wealth: f.wealth, line: pick(f.line, s.lang) });
+  }
+  return brought;
+}
+
 export function journey(state, content, ctx, args) {
   const lang = state.lang, action = String(args.action ?? '');
   if (!hasCompanion(state)) return refuse('no-companion', null);
@@ -1794,23 +1807,22 @@ export function journey(state, content, ctx, args) {
   if (action === 'recall') {
     if (!herAway(state, ctx.now)) return refuse('already-back', null);
     s.journey = { ...s.journey, received: ctx.now.toISOString(), recalled: true };
-    // What she comes back to tell: where, how long of how long, empty-handed.
-    // Facts only — she writes the words (called back, she said nothing; his
-    // 2026-09-23: 需要一个互动).
-    const at = placeOf(content, state.journey.place);
-    const out = Math.max(0, Math.round((ctx.now - new Date(state.journey.from)) / 60000));
-    return { state: s, result: { ok: true, recalled: true, place: { id: at?.id ?? state.journey.place, name: pick(at?.name, lang) }, hours: state.journey.hours, out_min: out } };
+    // Called back, she brings a small part of it (his, 2026-09-23: small
+    // portion): stones at half the rate for the time she was out, one find
+    // once she was out half the way, never the card or the bond — waiting
+    // always pays better. And she tells it (facts; she writes the words).
+    const j = state.journey, at = placeOf(content, j.place);
+    const out = Math.max(0, Math.round((ctx.now - new Date(j.from)) / 60000));
+    const share = Math.min(1, out / (j.hours * 60));
+    const brought = share >= 0.5 ? journeyFinds(content, s, j, at, 1) : [];
+    const wealth = Math.floor((JOURNEY.wealth[j.hours] ?? 0) * share / 2) + brought.reduce((n, b) => n + (b.wealth ?? 0), 0);
+    s.wealth += wealth;
+    return { state: s, result: { ok: true, recalled: true, place: { id: j.place, name: pick(at?.name, lang) }, hours: j.hours, out_min: out, brought, wealth } };
   }
   if (action === 'receive') {
     if (!herBack(state, ctx.now)) return refuse('still-out', null, { journey: journeyBrief(content, state, ctx.now) });
     const j = state.journey, at = placeOf(content, j.place);
-    const book = content.meets?.finds?.[at?.province]?.length ? content.meets.finds[at.province] : content.meets?.finds?.['*'] ?? [];
-    const brought = [];
-    for (let i = 0; i < (JOURNEY.finds[j.hours] ?? 1) && book.length; i += 1) {
-      const f = book[hashOf(`${j.day}|${j.place}|${s.name ?? ''}|brought|${i}`) % book.length];
-      if (f.item && itemOf(content, f.item)) { s.bag[f.item] = (s.bag[f.item] ?? 0) + 1; brought.push({ id: f.item, name: pick(itemOf(content, f.item).name, lang), line: pick(f.line, lang) }); }
-      else if (f.wealth) brought.push({ wealth: f.wealth, line: pick(f.line, lang) });
-    }
+    const brought = journeyFinds(content, s, j, at, JOURNEY.finds[j.hours] ?? 1);
     const wealth = (JOURNEY.wealth[j.hours] ?? 0) + brought.reduce((n, b) => n + (b.wealth ?? 0), 0);
     s.wealth += wealth;
     const card = j.hours >= 8 ? winCard(content, s, { id: `journey:${j.place}`, root: at?.province ? (s.traits ?? [])[0] : null }, ctx.now, 'journey') : null;

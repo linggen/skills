@@ -2665,6 +2665,18 @@ test('历练: sent for real hours, away she is not beside him, back she brings t
   assert.equal(early.result.place.name, sent.result.sent.place.name);
   assert.equal(early.result.hours, sent.result.sent.hours);
   assert.equal(early.result.out_min, 60);
+  // a small portion (his, 2026-09-23): an hour of eight is a stone, and no find
+  assert.deepEqual(early.result.brought, []);
+  assert.equal(early.result.wealth, 1);
+  assert.equal(early.state.wealth, sent.state.wealth + 1);
+  // past half the way, one find and stones for the time; never the card or the bond
+  const half = must(journey, sent.state, { action: 'recall' }, at(5));
+  assert.equal(half.result.brought.length, 1);
+  assert.ok(half.result.wealth >= 6);
+  assert.equal(half.result.card, undefined);
+  assert.equal(half.result.bond, undefined);
+  assert.equal(half.state.bond?.n ?? 0, sent.state.bond?.n ?? 0);
+  assert.ok(half.result.wealth < home.result.wealth, 'waiting always pays better');
   refused(journey, early.state, { action: 'receive' }, 'not-out', at(9));
   assert.equal(look(early.state, content, at(1)).companion.journey, undefined);
 });
