@@ -783,6 +783,34 @@ body {
   color: var(--text-muted);
 }
 
+/* A Clearable row: the path, and under it the one line that says why. */
+.file-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.file-why {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ling's own words on a row she found. */
+.file-why.ling { font-style: italic; }
+
+/* A report-only row (Docker, snapshots): its command is copied, never run. */
+.file-row.fixed { cursor: default; }
+
+.clear-head {
+  margin: 2px 0 10px;
+  font-size: 13px;
+}
+
 .verb-icon {
   font-size: 14px;
   line-height: 1;

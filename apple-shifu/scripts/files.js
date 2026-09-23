@@ -1,17 +1,20 @@
-// Files tab — the Mac's own files: Downloads, large files, duplicates, caches.
+// Files tab — the Mac's own files: what can be cleared, Downloads, large
+// files, duplicates.
 //
 // Everything here is the iframe's own work through `files.sh`; the agent
 // narrates but never gates. No venv, so this tab works on a fresh install
 // before the Media tools are ever set up.
 //
-// Two removal postures, and the difference is the point:
+// Removal postures, and the difference is the point:
 //   • Downloads, large files, duplicates -> the macOS Trash. Your data, so it
 //     stays recoverable.
-//   • Caches -> deleted outright, because a cache in the Trash frees nothing
-//     until the Trash is emptied, and reporting "freed 12 GB" at that moment
-//     would be false. Caches regenerate, so nothing is lost.
-// files.sh refuses to purge anything outside a cache root, so that boundary
-// is enforced where it cannot be argued with rather than in this file.
+//   • Clearable -> each row the way its catalog rule says (clearables.json):
+//     build output and caches deleted outright or by their own tool (`cargo
+//     clean`), because a cache in the Trash frees nothing until the Trash is
+//     emptied; logs, backups and Ling's finds to the Trash.
+// clearables.sh re-verifies every path against the catalog before it touches
+// it, so that boundary is enforced where it cannot be argued with rather
+// than in this file.
 
 import {
   registerTab, getActiveTab, onSourceChange, onTabChange, refreshVerbs, openMenu,
@@ -20,24 +23,32 @@ import {
   bash, writeLines, fmtBytes, esc, abbrevPath, relAge, shellEsc, shellPath,
   confirmDialog, showToast, copyText,
 } from './shifu-io.js';
+import {
+  parseScan, parseFound, ruleMap, groupRows, headline, summaryText, commandFor,
+  notMeasured,
+} from './clearables.js';
 
 const FILES_SH = '$HOME/.linggen/skills/apple-shifu/scripts/files.sh';
 const WORK_DIR = '$HOME/.linggen/skills/apple-shifu/data/files';
 const LARGE_TARGET = 300;   // candidates to pull before the tiering stops
 const RENDER_CAP = 200;     // rows drawn per category; selection covers all
 const DUPE_HASH_CAP = 60;   // files hashed per pass — full SHA-256 is not free
+const CLEAR_SH = '$HOME/.linggen/skills/apple-shifu/scripts/clearables.sh';
+const CLEAR_DIR = `${WORK_DIR}/clearables`;
+const CLEAR_POLL_MS = 1500;
+const GROUP_RENDER_CAP = 60; // rows drawn per Clearable group
 
-/** The four piles, in the order they are shown. `trash` says which removal
-    posture the pile gets; nothing else in this file branches on category. */
+/** The piles, in the order they are shown. `posture` says how the pile's
+    rows go: `trash`, or `rule` — each row the way its catalog rule says. */
 const CATEGORIES = [
+  { key: 'clear', label: 'Clearable', posture: 'rule' },
   { key: 'downloads', label: 'Downloads', posture: 'trash' },
   { key: 'large', label: 'Large files', posture: 'trash' },
   { key: 'dupe', label: 'Duplicates', posture: 'trash' },
-  { key: 'cache', label: 'Caches', posture: 'purge' },
 ];
 
 let panel = null;
-let activeCat = 'downloads';
+let activeCat = 'clear';
 let selected = new Set();          // absolute paths
 let scanned = false;
 /** Jobs running now, token -> { kind: 'scan' | 'hash' | 'remove', label }.
@@ -45,23 +56,33 @@ let scanned = false;
     cannot run beside anything, or it would redraw rows that are going. */
 const ops = new Map();
 const removing = new Set();        // paths whose removal is in flight
-const rows = { downloads: [], large: [], cache: [] };
+const rows = { downloads: [], large: [] };
 let dupeGroups = [];               // [{ sha, size, paths: [] }]
 let dupesHashed = false;
 /** Piles actually measured this pass. A chip reading "0" before its pile has
     been read would claim the pile is empty when nothing has looked yet. */
 const measured = new Set();
 
+/** The Clearable pile: the catalog, the last scan as clearables.sh streamed
+    it, and Ling's finds. `groups` is derived — verdicts and why lines — and
+    rebuilt whenever a source changes. */
+const clear = {
+  catalog: null, rules: new Map(), scan: parseScan(''), found: [], groups: [],
+  byPath: new Map(), running: false, timer: null, loaded: false,
+};
+
 // ── registration ──
 
 export function initFilesTab() {
   panel = document.getElementById('files-panel');
   registerTab('files', filesProvider);
-  onTabChange((name) => { if (name === 'files') render(); });
+  onTabChange((name) => { if (name === 'files') { loadClearables(); render(); } });
+  // Ling proposed or dropped a row — re-read her finds.
+  window.addEventListener('shifu:found', () => readFound());
   onSourceChange(() => render());
   // A page reopened on this tab switched to it before this module listened,
   // which left the panel blank. Draw now if it is already the one showing.
-  if (getActiveTab() === 'files') render();
+  if (getActiveTab() === 'files') { loadClearables(); render(); }
 }
 
 /** This Mac only. iOS shows no app another app's files, and the folders a
@@ -87,9 +108,9 @@ const filesProvider = {
 
 function macVerbs() {
   const cat = CATEGORIES.find((c) => c.key === activeCat);
-  const purging = cat?.posture === 'purge';
+  if (cat?.posture === 'rule') return clearVerbs();
   return {
-    scan: { hint: 'Re-read Downloads, large files and caches', run: () => scan(true) },
+    scan: { hint: 'Find what can be cleared, and re-read Downloads and large files', run: () => scan(true) },
     report: scanned
       ? { hint: 'Ask Ling what is safe to clear', run: reportFiles }
       : { blocked: 'Run a scan first — there is nothing to report on yet' },
@@ -99,13 +120,28 @@ function macVerbs() {
     backup: { blocked: 'Back up archives the iPhone roll — Mac files are not archived, they go to the Trash' },
     clean: selected.size
       ? {
-        label: purging ? 'Delete' : 'Trash',
-        hint: purging
-          ? `Delete ${selected.size.toLocaleString()} cache${selected.size === 1 ? '' : 's'} (${fmtBytes(selectedBytes())}) outright — caches regenerate`
-          : `Move ${selected.size.toLocaleString()} item${selected.size === 1 ? '' : 's'} (${fmtBytes(selectedBytes())}) to the macOS Trash`,
+        label: 'Trash',
+        hint: `Move ${selected.size.toLocaleString()} item${selected.size === 1 ? '' : 's'} (${fmtBytes(selectedBytes())}) to the macOS Trash`,
         run: () => removePaths([...selected], cat),
       }
-      : { label: purging ? 'Delete' : 'Trash', blocked: 'Check items to remove them' },
+      : { label: 'Trash', blocked: 'Check items to remove them' },
+  };
+}
+
+function clearVerbs() {
+  return {
+    scan: { hint: 'Find what can be cleared, and re-read Downloads and large files', run: () => scan(true) },
+    report: clear.scan.finished || clear.found.length
+      ? { hint: 'Ask Ling to walk through what is safe to clear', run: reportFiles }
+      : { blocked: 'Run a scan first — there is nothing to report on yet' },
+    backup: { blocked: 'Back up archives the iPhone roll — Mac files are not archived' },
+    clean: selected.size
+      ? {
+        label: 'Clear',
+        hint: `Clear ${selected.size.toLocaleString()} item${selected.size === 1 ? '' : 's'} (${fmtBytes(selectedBytes())}), each the way its row says`,
+        run: () => clearPaths([...selected]),
+      }
+      : { label: 'Clear', blocked: 'Check items to clear them' },
   };
 }
 
@@ -157,19 +193,11 @@ function parseFileLine(line) {
   return { path: rest, size, atime: parseInt(p[1], 10) || 0, mtime: parseInt(p[2], 10) || 0 };
 }
 
-/** `size|label|path` */
-function parseCacheLine(line) {
-  const a = line.indexOf('|');
-  const b = line.indexOf('|', a + 1);
-  if (a < 0 || b < 0) return null;
-  const size = parseInt(line.slice(0, a), 10);
-  const path = line.slice(b + 1);
-  if (!path || isNaN(size)) return null;
-  return { path, size, label: line.slice(a + 1, b), atime: 0, mtime: 0 };
-}
-
 async function scan(force = false) {
   if (scanned && !force) return;
+  // The Clearable walk runs in the background and streams; it takes minutes
+  // on a big disk, so it never holds the verb row the way the quick piles do.
+  startClearScan();
   const op = beginOp('scan', 'Scanning…');
   measured.clear();
   dupesHashed = false;
@@ -185,17 +213,11 @@ async function scan(force = false) {
     const lg = await lines(`large ${LARGE_TARGET}`);
     rows.large = lg.map(parseFileLine).filter(Boolean).sort((a, b) => b.size - a.size);
     measured.add('large');
-    render();
-
-    toast.update('Measuring caches…');
-    const ch = await lines('caches');
-    rows.cache = ch.map(parseCacheLine).filter(Boolean).sort((a, b) => b.size - a.size);
-    measured.add('cache');
 
     scanned = true;
     pruneSelected();
     render();
-    toast.done(`✓ ${rows.downloads.length + rows.large.length} files · ${rows.cache.length} caches`);
+    toast.done(`✓ ${rows.downloads.length + rows.large.length} files · Clearable keeps measuring`);
   } finally {
     endOp(op);
   }
@@ -269,10 +291,12 @@ function fileByPath(p) {
 }
 
 function allRows() {
-  return [...rows.downloads, ...rows.large, ...rows.cache];
+  return [...rows.downloads, ...rows.large];
 }
 
 function sizeOf(path) {
+  const row = clear.byPath.get(path);
+  if (row) return row.size;
   const hit = allRows().find((f) => f.path === path);
   if (hit) return hit.size;
   for (const g of dupeGroups) if (g.paths.includes(path)) return g.size;
@@ -286,7 +310,7 @@ function selectedBytes() {
 }
 
 function pruneSelected() {
-  const live = new Set(allRows().map((f) => f.path));
+  const live = new Set([...allRows().map((f) => f.path), ...clear.byPath.keys()]);
   for (const g of dupeGroups) for (const p of g.paths) live.add(p);
   for (const p of [...selected]) if (!live.has(p)) selected.delete(p);
 }
@@ -314,7 +338,6 @@ const CAREFUL_PLACES = [
 /** `{ risk: 'safe' | 'review' | 'careful', why }` for a row in pile `key`.
     `original` marks the oldest copy in a duplicate group. */
 function tagFor(key, path, original = false) {
-  if (key === 'cache') return { risk: 'safe', why: 'A cache. Apps rebuild it on next launch.' };
   const shown = abbrevPath(path);
   const place = CAREFUL_PLACES.find((c) => c.re.test(shown));
   if (place) return { risk: 'careful', why: place.why };
@@ -329,46 +352,54 @@ function tagFor(key, path, original = false) {
 // ── remove ──
 
 /**
- * Remove `paths` from pile `cat` — the bulk verb and each row's ⋯ both land
- * here. Rows show a spinner while they go and drop the moment files.sh
- * reports them gone, read from its `.done` list as it grows; nothing waits on
- * a rescan. Each call gets its own list file, so removals started from
- * different rows can overlap.
+ * Move `paths` to the Trash — the bulk verb and each row's ⋯ both land here
+ * for Downloads, Large files and Duplicates. Rows show a spinner while they go
+ * and drop the moment files.sh reports them gone; nothing waits on a rescan.
  */
-async function removePaths(paths, cat) {
+async function removePaths(paths) {
   const blocked = removalBlocked();
   paths = paths.filter((p) => !removing.has(p));
   if (blocked || !paths.length) return;
-  const purge = cat.posture === 'purge';
   // Sizes as drawn now — the rows are gone by the time the toast adds them up.
   const sizes = new Map(paths.map((p) => [p, sizeOf(p)]));
   const bytes = [...sizes.values()].reduce((s, b) => s + b, 0);
   const n = paths.length;
   const what = n === 1
     ? `<b>${esc(abbrevPath(paths[0]).split('/').pop())} (${fmtBytes(bytes)})</b>`
-    : `<b>${n.toLocaleString()} ${purge ? 'caches' : 'items'} (${fmtBytes(bytes)})</b>`;
+    : `<b>${n.toLocaleString()} items (${fmtBytes(bytes)})</b>`;
   const ok = await confirmDialog(
-    purge
-      ? `${what} will be <b>deleted outright</b>, not moved to the Trash — a cache sitting in the
-         Trash frees no space until you empty it. Apps rebuild caches on next launch, so nothing
-         of yours is lost, but this cannot be undone.`
-      : `${what} will be moved to the macOS Trash. You can restore ${n === 1 ? 'it' : 'them'}
-         from the Trash anytime — the space frees when you empty it.`,
-    purge ? (n === 1 ? 'Delete' : `Delete ${n.toLocaleString()}`)
-      : (n === 1 ? 'Move to Trash' : `Move ${n.toLocaleString()} to Trash`),
-    purge);
+    `${what} will be moved to the macOS Trash. You can restore ${n === 1 ? 'it' : 'them'}
+     from the Trash anytime — the space frees when you empty it.`,
+    n === 1 ? 'Move to Trash' : `Move ${n.toLocaleString()} to Trash`,
+    false);
   if (!ok || removalBlocked()) return;
+  const { gone, result, note } = await runListJob(paths, paths, 'Moving to Trash', sizes,
+    (list) => `bash ${FILES_SH} trash "${list}"`);
+  const freed = [...gone].reduce((s, p) => s + (sizes.get(p) || 0), 0);
+  const notes = result.failed ? ` · ${result.failed} could not be moved` : '';
+  note.done(`✓ Trashed ${gone.size.toLocaleString()} · ${fmtBytes(freed)}${notes}${
+    gone.size ? ' — empty the Trash to reclaim it' : ''}`);
+}
 
-  const verb = purge ? 'Deleting' : 'Moving to Trash';
+/**
+ * Run one list job through the shell: write `lines` to a list file, start
+ * `command(list)`, and drop each path the moment it shows up in the job's
+ * `.done` list. Reclaimed bytes are then the sizes this pane showed, summed
+ * over exactly the paths that went — not a second measurement, which would let
+ * the toast and the row disagree about the same file. `background` jobs (a
+ * `cargo clean` can outlast any HTTP call) are polled until they write
+ * `<list>.result`.
+ */
+async function runListJob(paths, lines, verb, sizes, command, background = false) {
   for (const p of paths) { removing.add(p); selected.delete(p); }
   const op = beginOp('remove', `${verb}…`);
   renderPane();
-  const toast = showToast(`${verb}…`, true);
-  const list = `remove-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`;
-  const listPath = `${WORK_DIR}/${list}`;
+  const note = showToast(`${verb}…`, true);
+  const list = `${WORK_DIR}/remove-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`;
   const gone = new Set();
+  const n = paths.length;
   const collect = async () => {
-    const res = await bash(`cat "${listPath}.done" 2>/dev/null || true`);
+    const res = await bash(`cat "${list}.done" 2>/dev/null || true`);
     let moved = false;
     for (const p of (res.stdout || '').split('\n')) {
       if (!p || gone.has(p) || !sizes.has(p)) continue;
@@ -378,39 +409,173 @@ async function removePaths(paths, cat) {
     }
     if (moved) {
       render();
-      if (n > 1) toast.update(`${verb}… ${gone.size.toLocaleString()} of ${n.toLocaleString()}`);
+      if (n > 1) note.update(`${verb}… ${gone.size.toLocaleString()} of ${n.toLocaleString()}`);
     }
   };
-  let r = {};
+  let result = {};
   try {
-    await writeLines(WORK_DIR, list, paths);
+    await writeLines(WORK_DIR, list.split('/').pop(), lines);
     const timer = setInterval(collect, 800);
-    let res;
     try {
-      res = await bash(`bash ${FILES_SH} ${purge ? 'purge' : 'trash'} "${listPath}"`);
+      const res = background ? await runInBackground(command(list), list) : await bash(command(list));
+      try { result = JSON.parse(res.stdout || '{}'); } catch { /* counted from .done below */ }
     } finally {
       clearInterval(timer);
     }
-    try { r = JSON.parse(res.stdout || '{}'); } catch { /* counted from .done below */ }
     await collect();
   } finally {
     for (const p of paths) removing.delete(p);
-    bash(`rm -f "${listPath}" "${listPath}.done"`);
+    bash(`rm -f "${list}" "${list}.done" "${list}.result"`);
     endOp(op);
     render();
   }
+  return { gone, result, note };
+}
 
-  // Reclaimed bytes are the sizes this pane showed, summed over exactly the
-  // paths that went — not a second measurement, which would let the toast and
-  // the row disagree about the same file.
+const BACKGROUND_CAP_MS = 3 * 3600 * 1000;   // a job this long has died, not stalled
+
+/** Start `command` detached and wait for it to write `<list>.result`. */
+async function runInBackground(command, list) {
+  await bash(`nohup ${command} >/dev/null 2>&1 &`);
+  const until = Date.now() + BACKGROUND_CAP_MS;
+  while (Date.now() < until) {
+    await new Promise((r) => setTimeout(r, 1000));
+    const res = await bash(`cat "${list}.result" 2>/dev/null || true`);
+    if ((res.stdout || '').trim()) return res;
+  }
+  return {};
+}
+
+// ── the Clearable pile ──
+
+/** Load the catalog, the last scan and Ling's finds — once per page; a scan
+    still streaming from before a reload is picked up where it is. */
+async function loadClearables() {
+  if (clear.loaded) return;
+  clear.loaded = true;
+  try {
+    const res = await fetch(new URL('./clearables.json', import.meta.url));
+    clear.catalog = await res.json();
+    clear.rules = ruleMap(clear.catalog);
+  } catch {
+    clear.catalog = { groups: [], rules: [] };
+  }
+  await Promise.all([readScan(), readFound()]);
+  // A scan that finished while no page was open still owes Ling her summary.
+  if (clear.scan.finished) writeSummary();
+  if (!clear.scan.finished && clear.scan.started) {
+    const alive = await bash(`kill -0 "$(cat "${CLEAR_DIR}/pid" 2>/dev/null)" 2>/dev/null && echo alive`);
+    if ((alive.stdout || '').includes('alive')) pollClear();
+  }
+}
+
+async function startClearScan() {
+  if (clear.running) return;
+  if (!clear.loaded) await loadClearables();
+  clear.running = true;
+  clear.scan = parseScan('');
+  regroup();
+  render();
+  await bash(`bash ${CLEAR_SH} start "${CLEAR_DIR}"`);
+  pollClear();
+}
+
+function pollClear() {
+  clear.running = true;
+  clearTimeout(clear.timer);
+  const tick = async () => {
+    await readScan();
+    if (clear.scan.finished) {
+      clear.running = false;
+      writeSummary();
+      refreshVerbs();
+      return;
+    }
+    clear.timer = setTimeout(tick, CLEAR_POLL_MS);
+  };
+  clear.timer = setTimeout(tick, CLEAR_POLL_MS);
+}
+
+async function readScan() {
+  const res = await bash(`cat "${CLEAR_DIR}/rows.txt" 2>/dev/null || true`);
+  clear.scan = parseScan(res.stdout || '');
+  regroup();
+  if (getActiveTab() === 'files') render();
+}
+
+async function readFound() {
+  const res = await bash(`cat "${WORK_DIR}/found.txt" 2>/dev/null || true`);
+  clear.found = parseFound(res.stdout || '');
+  regroup();
+  if (clear.scan.finished) writeSummary();
+  if (getActiveTab() === 'files') render();
+}
+
+/** Rebuild verdicts and why lines from the three sources. A find of Ling's
+    that the scan also lists shows once, as the scan's row. */
+function regroup() {
+  const scanned = new Set(clear.scan.rows.map((r) => r.path));
+  const rowsNow = [...clear.scan.rows, ...clear.found.filter((r) => !scanned.has(r.path))];
+  clear.groups = groupRows(clear.catalog, rowsNow);
+  clear.byPath = new Map(clear.groups.flatMap((g) => g.rows).map((r) => [r.path, r]));
+}
+
+/** The facts Ling's Clearables tool reads. The page writes them because the
+    verdicts are the page's. */
+function writeSummary() {
+  if (!clear.catalog) return;
+  writeLines(CLEAR_DIR, 'summary.txt', summaryText(clear.catalog, clear.scan, clear.found));
+}
+
+const METHOD_WORDS = {
+  purge: (n) => `${n} deleted outright — they regenerate`,
+  tool: (n, tools) => `${n} cleared by their own tool (${tools})`,
+  trash: (n) => `${n} moved to the Trash — recoverable until you empty it`,
+};
+
+/** Clear Clearable rows — every one the way its rule says. clearables.sh
+    re-verifies each path against the catalog and refuses what does not fit. */
+async function clearPaths(paths) {
+  const blocked = removalBlocked();
+  const rowsGoing = paths.map((p) => clear.byPath.get(p))
+    .filter((r) => r && r.method !== 'report' && !removing.has(r.path));
+  if (blocked || !rowsGoing.length) return;
+  const sizes = new Map(rowsGoing.map((r) => [r.path, r.size]));
+  const bytes = rowsGoing.reduce((s, r) => s + r.size, 0);
+  const by = (m) => rowsGoing.filter((r) => r.method === m);
+  const tools = [...new Set(by('tool').map((r) => clear.rules.get(r.rule)?.remove?.cmd?.split(' ').slice(0, 2).join(' ')))]
+    .filter(Boolean).join(', ');
+  const parts = Object.keys(METHOD_WORDS)
+    .filter((m) => by(m).length)
+    .map((m) => METHOD_WORDS[m](by(m).length.toLocaleString(), tools));
+  const reviews = rowsGoing.filter((r) => r.risk !== 'safe').length;
+  const n = rowsGoing.length;
+  const what = n === 1
+    ? `<b>${esc(abbrevPath(rowsGoing[0].path))} (${fmtBytes(bytes)})</b>`
+    : `<b>${n.toLocaleString()} items (${fmtBytes(bytes)})</b>`;
+  const ok = await confirmDialog(
+    `${what}: ${parts.join('; ')}.${reviews
+      ? ` <b>${reviews} marked REVIEW</b> — clearing costs a rebuild, a download, or your data.` : ''}`,
+    n === 1 ? 'Clear' : `Clear ${n.toLocaleString()}`,
+    true);
+  if (!ok || removalBlocked()) return;
+  const { gone, result, note } = await runListJob(
+    rowsGoing.map((r) => r.path), rowsGoing.map((r) => `${r.rule}\t${r.path}`), 'Clearing', sizes,
+    (list) => `bash ${CLEAR_SH} clear "${list}"`, true);
+  writeSummary();
   const freed = [...gone].reduce((s, p) => s + (sizes.get(p) || 0), 0);
   const notes = [];
-  if (r.failed) notes.push(`${r.failed} could not be removed`);
-  // files.sh refuses non-cache paths; if that ever fires, say so out loud
-  // rather than quietly reporting a smaller number.
-  if (r.refused) notes.push(`${r.refused} refused — not inside a cache root`);
-  toast.done(`✓ ${purge ? 'Deleted' : 'Trashed'} ${gone.size.toLocaleString()} · ${fmtBytes(freed)}${
-    notes.length ? ` · ${notes.join(' · ')}` : ''}${purge || !gone.size ? '' : ' — empty the Trash to reclaim it'}`);
+  if (result.failed) notes.push(`${result.failed} could not be cleared`);
+  // The shell's guard said no — say so out loud, with its first reason.
+  if (result.refused) notes.push(`${result.refused} refused (${(result.reasons || [])[0] || 'outside its rule'})`);
+  const trashed = [...gone].some((p) => by('trash').some((r) => r.path === p));
+  note.done(`✓ Cleared ${gone.size.toLocaleString()} · ${fmtBytes(freed)}${
+    notes.length ? ` · ${notes.join(' · ')}` : ''}${trashed ? ' — empty the Trash for the Trash part' : ''}`);
+}
+
+async function dismissFound(path) {
+  await bash(`bash ${CLEAR_SH} unpropose ${shellEsc(path)}`);
+  await readFound();
 }
 
 /** Take a removed path out of every pile — Downloads and Large files overlap,
@@ -418,6 +583,9 @@ async function removePaths(paths, cat) {
 function dropPath(p) {
   const hit = (q) => q === p || q.startsWith(`${p}/`);
   for (const key of Object.keys(rows)) rows[key] = rows[key].filter((f) => !hit(f.path));
+  clear.scan.rows = clear.scan.rows.filter((r) => !hit(r.path));
+  clear.found = clear.found.filter((r) => !hit(r.path));
+  regroup();
   dupeGroups = dupeGroups
     .map((g) => ({ ...g, paths: g.paths.filter((q) => !hit(q)) }))
     .filter((g) => g.paths.length > 1);
@@ -430,80 +598,101 @@ function revealInFinder(path) {
 
 function reportFiles() {
   const line = (c) => {
+    if (c.key === 'clear') return `Clearable: ${headline(clear.groups)}`;
     const items = c.key === 'dupe' ? dupeGroups : rows[c.key] || [];
-    const bytes = c.key === 'dupe'
-      ? dupeGroups.reduce((s, g) => s + g.size * (g.paths.length - 1), 0)
-      : items.reduce((s, f) => s + f.size, 0);
-    return `${c.label}: ${items.length} ${c.key === 'dupe' ? 'groups' : 'items'}, ${fmtBytes(bytes)}`;
+    return `${c.label}: ${items.length} ${c.key === 'dupe' ? 'groups' : 'items'}, ${fmtBytes(bytesFor(c.key))}`;
   };
-  const msg = `Write a short report on the files on this Mac — ${CATEGORIES.map(line).join('; ')}. `
-    + 'Sort your advice by reclaimable bytes. Caches are deleted outright because they regenerate; '
-    + 'everything else goes to the Trash and only frees space once it is emptied. Say that plainly.';
+  const msg = `Write a short report on what can be cleared on this Mac — ${CATEGORIES.map(line).join('; ')}. `
+    + 'Read the Clearables tool first. Lead with the biggest SAFE win in plain words; the verdicts are the page\'s. '
+    + 'Downloads, large files and duplicates go to the Trash and free space only once it is emptied. Say that plainly.';
   if (window._chatSend) window._chatSend(msg);
 }
 
 // ── render ──
 
+function clearRows() {
+  return clear.groups.flatMap((g) => g.rows);
+}
+
 function itemsFor(key) {
+  if (key === 'clear') return clearRows().map((r) => r.path);
   if (key === 'dupe') return dupeGroups.flatMap((g) => g.paths.slice(1));
   return (rows[key] || []).map((f) => f.path);
 }
 
 /** What Select all takes: the pile minus CAREFUL rows and rows already going.
-    A careful row is still one click to check by hand. */
+    A careful row is still one click to check by hand. On Clearable it takes
+    SAFE rows only — a REVIEW row is a decision, never a bulk default. */
 function selectableFor(key) {
+  if (key === 'clear') {
+    return clearRows().filter((r) => r.risk === 'safe' && r.method !== 'report' && !removing.has(r.path))
+      .map((r) => r.path);
+  }
   return itemsFor(key).filter((p) => !removing.has(p) && tagFor(key, p).risk !== 'careful');
 }
 
 function bytesFor(key) {
+  if (key === 'clear') return clear.groups.reduce((s, g) => s + g.bytes, 0);
   if (key === 'dupe') return dupeGroups.reduce((s, g) => s + g.size * (g.paths.length - 1), 0);
   return (rows[key] || []).reduce((s, f) => s + f.size, 0);
 }
+
+/** Has the pile been read at all? A chip reading "0" before its pile has been
+    read would claim the pile is empty when nothing has looked yet. */
+const PILE_DONE = {
+  clear: () => !!clear.scan.finished,
+  dupe: () => dupesHashed,
+};
+const pileDone = (key) => (PILE_DONE[key] ? PILE_DONE[key]() : measured.has(key));
+const pileCount = (key) => (key === 'dupe' ? dupeGroups.length : itemsFor(key).length);
+
+const POSTURE = {
+  rule: 'each row clears its own way: caches deleted, build output by its tool, your data to the Trash',
+  trash: 'checked items go to the macOS Trash — the space frees when you empty it',
+};
 
 function render() {
   // The shell keeps this tab and an iPhone from being chosen together, so the
   // side in play here is always this Mac.
   if (!panel) return;
-  const scanning = [...ops.values()].some((op) => op.kind === 'scan');
+  const scanning = [...ops.values()].some((op) => op.kind === 'scan') || clear.running;
   // A scan fills the piles one at a time and redraws after each. Gate the
   // empty state on there being nothing to show, not on the scan having
   // finished — otherwise the panel reads "nothing scanned yet" while rows it
   // already has sit undrawn behind it.
-  if (!allRows().length && (scanning || !scanned)) {
+  if (!allRows().length && !clearRows().length && !clear.scan.started && (scanning || !scanned)) {
     panel.innerHTML = `<div class="media-card dashed">
       <h4 class="media-dim">${scanning ? 'Scanning…' : 'Nothing scanned yet'}</h4>
       <div class="media-dim">${scanning
-        ? 'Reading Downloads, the biggest files under your home folder, and app caches.'
-        : 'Hit ↻ Scan above to read Downloads, the biggest files under your home folder, and the caches apps have left behind.'}</div></div>`;
+        ? 'Finding build output, caches, installers and logs that can go.'
+        : 'Hit ↻ Scan above to find what can be cleared — build output, caches, installers, old logs.'}</div></div>`;
     refreshVerbs();
     return;
   }
 
   const chips = CATEGORIES.map((c) => {
-    // Unmeasured piles show a count of "…" rather than 0 — Duplicates until
-    // they are hashed, the rest until the scan reaches them.
-    const done = c.key === 'dupe' ? dupesHashed : measured.has(c.key);
-    const n = c.key === 'dupe' ? dupeGroups.length : (rows[c.key] || []).length;
+    // Unmeasured piles show "…" — Duplicates until hashed, Clearable until its
+    // scan ends, the rest until the scan reaches them.
+    const done = pileDone(c.key);
+    const n = pileCount(c.key);
     const size = bytesFor(c.key);
+    const shown = done || (c.key === 'clear' && n);
     return `<button class="media-chip-f ${c.key === activeCat ? 'on' : ''}" data-cat="${c.key}">
-      <b>${done ? n.toLocaleString() : '…'}</b>${c.label}${done && size ? ` · ${fmtBytes(size)}` : ''}</button>`;
+      <b>${shown ? n.toLocaleString() : '…'}</b>${c.label}${shown && size ? ` · ${fmtBytes(size)}` : ''}${
+  done ? '' : shown ? '…' : ''}</button>`;
   }).join('');
 
   const cat = CATEGORIES.find((c) => c.key === activeCat);
-  const posture = cat.posture === 'purge'
-    ? 'caches are deleted outright — they regenerate, and one sitting in the Trash frees nothing'
-    : 'checked items go to the macOS Trash — the space frees when you empty it';
-
   panel.innerHTML = `
     <div class="media-actionbar">
-      <span class="abar-meta"><span class="media-dim">${posture}</span></span>
+      <span class="abar-meta"><span class="media-dim">${POSTURE[cat.posture]}</span></span>
     </div>
     <div class="media-chips">${chips}</div>
     <div id="files-pane"></div>`;
 
   for (const chip of panel.querySelectorAll('.media-chip-f')) {
     chip.onclick = () => {
-      // Checks belong to the pile they were made in. Trash and Delete differ
+      // Checks belong to the pile they were made in. Trash and Clear differ
       // by pile, so a check carried across would be removed the other way.
       if (chip.dataset.cat !== activeCat) selected.clear();
       activeCat = chip.dataset.cat;
@@ -515,35 +704,31 @@ function render() {
   refreshVerbs();
 }
 
+const EMPTY = {
+  clear: () => (clear.running ? 'Looking for what can be cleared…' : 'Nothing clearable found. Hit ↻ Scan to look again.'),
+  dupe: () => (dupesHashed
+    ? 'No duplicates among the files scanned — every same-size pair differed once hashed in full.'
+    : 'Duplicates are checked once the current job finishes — pick Duplicates again then.'),
+};
+
 function renderPane() {
   const pane = document.getElementById('files-pane');
   if (!pane) return;
   const pool = itemsFor(activeCat);
-  const skipsCareful = pool.some((p) => tagFor(activeCat, p).risk === 'careful');
-  const hint = activeCat === 'dupe'
-    ? 'oldest copy of each group is left unchecked — it is the likely original'
-    : 'sorted by size, biggest first';
-  const bar = `<div class="catbar">
-      <button class="media-cta ghost sm" id="files-select-btn">Select all</button>
-      <button class="media-cta ghost sm" id="files-unselect-btn">Unselect</button>
-      <span class="media-dim">${hint}${skipsCareful ? ' · Select all leaves CAREFUL rows out' : ''}</span></div>`;
-
+  const bar = barHtml(pool);
   if (!pool.length) {
-    const empty = activeCat === 'dupe' && !dupesHashed
-      ? 'Duplicates are checked once the current job finishes — pick Duplicates again then.'
-      : activeCat === 'dupe'
-        ? 'No duplicates among the files scanned — every same-size pair differed once hashed in full.'
-        : 'Nothing in this pile.';
-    pane.innerHTML = `${bar}<div class="media-dim">${empty}</div>`;
+    pane.innerHTML = `${bar}${activeCat === 'clear' ? clearHeadHtml() : ''}<div class="media-dim">${
+      (EMPTY[activeCat] || (() => 'Nothing in this pile.'))()}</div>`;
     wireBar();
     return;
   }
-
-  pane.innerHTML = bar + (activeCat === 'dupe' ? dupeHtml() : listHtml(activeCat));
+  const body = { clear: clearHtml, dupe: dupeHtml }[activeCat] || (() => listHtml(activeCat));
+  pane.innerHTML = bar + body();
   for (const el of pane.querySelectorAll('.file-row')) {
     const p = el.dataset.path;
     el.onclick = (e) => {
       if (e.target.tagName === 'A' || e.target.closest('.file-more, .file-copy') || removing.has(p)) return;
+      if (el.classList.contains('fixed')) return;
       if (selected.has(p)) selected.delete(p); else selected.add(p);
       renderPane();
       refreshVerbs();
@@ -556,6 +741,20 @@ function renderPane() {
   wireBar();
 }
 
+const HINTS = {
+  clear: 'biggest first · Select all takes SAFE rows only',
+  dupe: 'oldest copy of each group is left unchecked — it is the likely original',
+};
+
+function barHtml(pool) {
+  const skipsCareful = activeCat !== 'clear' && pool.some((p) => tagFor(activeCat, p).risk === 'careful');
+  return `<div class="catbar">
+      <button class="media-cta ghost sm" id="files-select-btn">Select all</button>
+      <button class="media-cta ghost sm" id="files-unselect-btn">Unselect</button>
+      <span class="media-dim">${HINTS[activeCat] || 'sorted by size, biggest first'}${
+  skipsCareful ? ' · Select all leaves CAREFUL rows out' : ''}</span></div>`;
+}
+
 // ── the remove command, for a terminal ──
 
 const COPY_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">'
@@ -563,40 +762,46 @@ const COPY_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="
   + '<path d="M10.6 13.8v.4a1.6 1.6 0 0 1-1.6 1.6H3.8a1.6 1.6 0 0 1-1.6-1.6V5.4a1.6 1.6 0 0 1 1.6-1.6h.4"'
   + ' fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
 
-const copyTitle = () =>
-  (CATEGORIES.find((c) => c.key === activeCat)?.posture === 'purge'
-    ? 'Copy the delete command' : 'Copy the Trash command');
-
-/** The line this file would be removed by in a terminal — the same posture the
-    buttons use: your files go to the Trash, a cache is deleted outright. The
-    path is shell-quoted, so a space, a quote or a `$` in a name is safe. */
-export function removeCommand(path, posture) {
-  return posture === 'purge' ? `rm -rf ${shellPath(path)}` : `mv -i ${shellPath(path)} ~/.Trash/`;
+/** The line a row would be removed by in a terminal. A Clearable row's comes
+    from its catalog rule; anything else goes to the Trash. The path is
+    shell-quoted, so a space, a quote or a `$` in a name is safe. */
+export function removeCommand(path) {
+  const row = clear.byPath.get(path);
+  if (row) return commandFor(clear.rules.get(row.rule), row);
+  return `mv -i ${shellPath(path)} ~/.Trash/`;
 }
 
 async function copyRemoveCommand(btn, path) {
-  const cat = CATEGORIES.find((c) => c.key === activeCat);
-  const done = await copyText(removeCommand(path, cat?.posture));
+  const done = await copyText(removeCommand(path));
   if (!done) { showToast('Could not reach the clipboard').done('Could not reach the clipboard'); return; }
   btn.innerHTML = '✓';
   btn.classList.add('copied');
   setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove('copied'); }, 1400);
 }
 
+const CLEAR_HINT = { purge: 'deleted outright', trash: 'to the Trash', tool: 'by its own tool' };
+
 /** A row's ⋯: look first, then remove — the destructive verb last. */
 function openRowMenu(anchor, path) {
-  const cat = CATEGORIES.find((c) => c.key === activeCat);
-  const purge = cat.posture === 'purge';
   const blocked = removalBlocked();
-  openMenu(anchor, [
+  const row = clear.byPath.get(path);
+  const items = [
     { label: 'Show in Finder', run: () => revealInFinder(path) },
-    {
-      label: purge ? 'Delete' : 'Move to Trash',
-      hint: purge ? 'caches regenerate' : 'recoverable',
-      danger: true,
-      ...(blocked ? { blocked } : { run: () => removePaths([path], cat) }),
-    },
-  ]);
+    { label: 'Copy command', run: () => copyText(removeCommand(path)) },
+  ];
+  if (row?.found) items.push({ label: 'Dismiss', hint: 'drop Ling’s find', run: () => dismissFound(path) });
+  if (row && row.method !== 'report') {
+    items.push({
+      label: 'Clear', hint: CLEAR_HINT[row.method], danger: true,
+      ...(blocked ? { blocked } : { run: () => clearPaths([path]) }),
+    });
+  } else if (!row) {
+    items.push({
+      label: 'Move to Trash', hint: 'recoverable', danger: true,
+      ...(blocked ? { blocked } : { run: () => removePaths([path]) }),
+    });
+  }
+  openMenu(anchor, items);
 }
 
 function wireBar() {
@@ -617,31 +822,43 @@ function wireBar() {
 /** Directory dimmed and truncatable, name always whole. Truncating the tail
     would cut the very part that identifies the file, and a right-to-left
     ellipsis reorders the leading `~` ("~/.cache" drawn as "cache./~"). */
-function rowHtml(key, path, size, meta, original = false) {
+function pathHtml(path) {
   const shown = abbrevPath(path);
   const cut = shown.lastIndexOf('/');
   const dir = cut >= 0 ? shown.slice(0, cut + 1) : '';
   const name = cut >= 0 ? shown.slice(cut + 1) : shown;
+  return `<span class="file-path" title="${esc(path)}"><span class="file-dir">${esc(dir)}</span><span
+      class="file-name">${esc(name)}</span></span>`;
+}
+
+function buttonsHtml(going) {
+  return going ? '<span class="file-more-slot"></span><span class="file-more-slot"></span>'
+    : `<button class="file-copy" type="button" title="Copy the command">${COPY_ICON}</button>
+       <button class="file-more menu-anchor" type="button" title="More">⋯</button>`;
+}
+
+function checkHtml(path, fixed = false) {
+  if (removing.has(path)) return '<span class="media-spin"></span>';
+  if (fixed) return '·';
+  return selected.has(path) ? '☑' : '☐';
+}
+
+function rowHtml(key, path, size, meta, original = false) {
   const going = removing.has(path);
-  const on = selected.has(path);
   const tag = tagFor(key, path, original);
-  return `<div class="file-row ${on ? 'on' : ''} ${going ? 'removing' : ''}" data-path="${esc(path)}">
-    <span class="file-check">${going ? '<span class="media-spin"></span>' : on ? '☑' : '☐'}</span>
+  return `<div class="file-row ${selected.has(path) ? 'on' : ''} ${going ? 'removing' : ''}" data-path="${esc(path)}">
+    <span class="file-check">${checkHtml(path)}</span>
     <span class="rec-risk ${tag.risk} file-tag" title="${esc(tag.why)}">${tag.risk}</span>
     <span class="file-size">${fmtBytes(size)}</span>
-    <span class="file-path" title="${esc(path)}"><span class="file-dir">${esc(dir)}</span><span
-      class="file-name">${esc(name)}</span></span>
+    ${pathHtml(path)}
     <span class="file-meta">${esc(meta)}</span>
-    ${going ? '<span class="file-more-slot"></span><span class="file-more-slot"></span>'
-    : `<button class="file-copy" type="button" title="${copyTitle()}">${COPY_ICON}</button>
-       <button class="file-more menu-anchor" type="button" title="More">⋯</button>`}</div>`;
+    ${buttonsHtml(going)}</div>`;
 }
 
 function listHtml(key) {
   const list = (rows[key] || []).slice(0, RENDER_CAP);
   const more = (rows[key] || []).length - list.length;
-  const meta = (f) => (key === 'cache' ? f.label : `last opened ${relAge(f.atime) || '?'} ago`);
-  return list.map((f) => rowHtml(key, f.path, f.size, meta(f))).join('')
+  return list.map((f) => rowHtml(key, f.path, f.size, `last opened ${relAge(f.atime) || '?'} ago`)).join('')
     + (more > 0 ? `<div class="media-dim">+${more.toLocaleString()} more not drawn — Select all still covers them.</div>` : '');
 }
 
@@ -653,6 +870,61 @@ function dupeHtml() {
       ${g.paths.map((p, i) => rowHtml('dupe', p, g.size, i === 0 ? 'oldest — likely the original' : '', i === 0))
     .join('')}
     </div>`).join('');
+}
+
+// ── Clearable rows ──
+
+function clearHeadHtml() {
+  const s = clear.scan;
+  const measuredNow = s.rows.length;
+  const status = clear.running ? progressText(s, measuredNow)
+    : s.finished ? `scanned ${ago(s.finished)} in ${minutes(s.seconds)}` : '';
+  return `<div class="clear-head"><b>${esc(headline(clear.groups))}</b>${
+    status ? ` <span class="media-dim">· ${esc(status)}</span>` : ''}</div>`;
+}
+
+function progressText(s, n) {
+  if (s.tree) return 'Mapping the rest of the disk for Ling…';
+  if (!s.total) return 'Finding folders by what they are…';
+  return `Measuring ${n.toLocaleString()}${s.total ? ` of ${s.total.toLocaleString()}` : ''}…`;
+}
+
+function ago(sec) {
+  const m = Math.round((Date.now() / 1000 - sec) / 60);
+  if (m < 2) return 'just now';
+  if (m < 90) return `${m} min ago`;
+  if (m < 2880) return `${Math.round(m / 60)} h ago`;
+  return `${relAge(sec)} ago`;
+}
+
+function minutes(sec) {
+  return sec < 90 ? `${sec}s` : `${Math.round(sec / 60)} min`;
+}
+
+function clearRowHtml(r) {
+  const going = removing.has(r.path);
+  const fixed = r.method === 'report';
+  const size = r.state === 'ok' ? fmtBytes(r.size) : '—';
+  return `<div class="file-row clear-row ${selected.has(r.path) ? 'on' : ''} ${going ? 'removing' : ''} ${
+    fixed ? 'fixed' : ''}" data-path="${esc(r.path)}">
+    <span class="file-check">${checkHtml(r.path, fixed)}</span>
+    <span class="rec-risk ${r.risk} file-tag">${r.risk}</span>
+    <span class="file-size" title="${r.state === 'ok' ? '' : esc(notMeasured(r.state))}">${size}</span>
+    <span class="file-body">${pathHtml(r.path)}<span class="file-why${r.found ? ' ling' : ''}">${esc(r.why)}</span></span>
+    ${buttonsHtml(going)}</div>`;
+}
+
+function clearHtml() {
+  return clearHeadHtml() + clear.groups.map((g) => {
+    const list = g.rows.slice(0, GROUP_RENDER_CAP);
+    const more = g.rows.length - list.length;
+    return `<div class="media-group">
+      <div class="glabel"><b>${esc(g.label)}</b> · ${fmtBytes(g.bytes)} · ${g.rows.length.toLocaleString()} ${
+  g.rows.length === 1 ? 'item' : 'items'}</div>
+      ${list.map(clearRowHtml).join('')}
+      ${more > 0 ? `<div class="media-dim">+${more.toLocaleString()} smaller not drawn — Select all still covers them.</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 document.addEventListener('DOMContentLoaded', initFilesTab);

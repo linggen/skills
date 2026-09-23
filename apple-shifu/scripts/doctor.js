@@ -95,9 +95,11 @@ const SYSTEM_VERBS = {
       ],
     },
     backup: backupVerb(),
+    // What can be cleared lives in one place — the Files tab's Clearable pile,
+    // with a verdict per row — so Clean opens it rather than asking for a list.
     clean: {
-      hint: 'Review what is safe to delete',
-      run: () => send('Show me what is safe to clean on this Mac and how much space each item frees.'),
+      hint: 'What can be cleared, and whether it is safe — opens the Files tab',
+      run: () => setActiveTab('files'),
     },
   }),
   phone: () => ({
@@ -327,6 +329,12 @@ async function mountAndStart(sessionId, carryPage = null) {
       handleModelResponse(text);
     },
     onContentBlock: (payload) => {
+      // Ling added or dropped a "Found by Shifu" row: the Files tab re-reads
+      // her finds now, and once more after the tool has surely written them.
+      if (payload?.tool === 'ProposeClearable') {
+        window.dispatchEvent(new Event('shifu:found'));
+        setTimeout(() => window.dispatchEvent(new Event('shifu:found')), 2500);
+      }
       // Modern path: agent calls the auto-injected `PageUpdate` data tool
       // (recommended by skill-spec.md and prompted by the engine for app skills).
       // The page fields (top_bar/body/footer) come through as the tool args.
@@ -713,6 +721,13 @@ function buildOpeningPrompt(results, prevSummary = null) {
     }
     parts.push('');
   }
+
+  // One truth for "what can be cleared": the Files tab's Clearable pile.
+  parts.push('## Clearable (Files tab — the one list of what can be cleared)');
+  parts.push(results.clearable
+    ? results.clearable
+    : 'Not scanned yet. Point the user at Files → Clearable; never list build folders yourself.');
+  parts.push('');
 
   if (results.garbage?.length) {
     parts.push(`## Garbage Candidates`);
