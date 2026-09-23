@@ -423,6 +423,8 @@ async function runListJob(paths, lines, verb, sizes, command, background = false
       clearInterval(timer);
     }
     await collect();
+    // No answer from the job at all: what did not go failed — never "✓ Cleared 0".
+    if (!Object.keys(result).length) result.failed = n - gone.size;
   } finally {
     for (const p of paths) removing.delete(p);
     bash(`rm -f "${list}" "${list}.done" "${list}.result"`);
@@ -436,12 +438,22 @@ const BACKGROUND_CAP_MS = 3 * 3600 * 1000;   // a job this long has died, not st
 
 /** Start `command` detached and wait for it to write `<list>.result`. */
 async function runInBackground(command, list) {
-  await bash(`nohup ${command} >/dev/null 2>&1 &`);
+  // In a subshell: /api/bash appends `; …` to every command, and a bare
+  // trailing `&` turned that into `& ;` — a syntax error, so nothing ran.
+  const start = await bash(`( nohup ${command} >/dev/null 2>&1 & echo $! )`);
+  const pid = parseInt((start.stdout || '').trim(), 10);
+  if (!pid) return {};
   const until = Date.now() + BACKGROUND_CAP_MS;
   while (Date.now() < until) {
     await new Promise((r) => setTimeout(r, 1000));
     const res = await bash(`cat "${list}.result" 2>/dev/null || true`);
     if ((res.stdout || '').trim()) return res;
+    // Gone without a result: stop waiting now, not in three hours.
+    const alive = await bash(`kill -0 ${pid} 2>/dev/null && echo up || true`);
+    if ((alive.stdout || '').trim() !== 'up') {
+      const last = await bash(`cat "${list}.result" 2>/dev/null || true`);
+      return (last.stdout || '').trim() ? last : {};
+    }
   }
   return {};
 }
