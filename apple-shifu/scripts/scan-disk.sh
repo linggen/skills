@@ -94,14 +94,13 @@ echo "=== CACHES ==="
 } | gb_lines
 
 echo ""
-echo "=== NODE_MODULES (top 10) ==="
-limited 40 bash -c 'find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null \
-  | while read -r d; do du -sk "$d" 2>/dev/null; done' 2>/dev/null | gb_lines | head -10
-
-echo ""
-echo "=== RUST_TARGET (top 5) ==="
-limited 30 bash -c 'find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null \
-  | while read -r d; do du -sk "$d" 2>/dev/null; done' 2>/dev/null | gb_lines | head -5
+echo "=== CLEARABLE ==="
+# Build output, dev caches, installers and runaway logs are the Files tab's
+# Clearable pile — found at any depth, one verdict per row. This scan keeps no
+# list of its own, so there is one truth; it prints that pile's summary.
+summary="$HOME/.linggen/skills/apple-shifu/data/files/clearables/summary.txt"
+if [ -s "$summary" ]; then sed -n '1,2p' "$summary"
+else echo "not scanned yet — Files tab → Clearable → ↻ Scan"; fi
 
 echo ""
 echo "=== OLD_DOWNLOADS_COUNT ==="

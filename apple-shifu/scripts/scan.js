@@ -375,21 +375,20 @@ export async function runScan(mode, sessionId, onProgress) {
   // ── Garbage scan (full + deep) ──
   if (mode === 'full' || mode === 'deep') {
     onProgress('garbage', 'start');
-    const [nodeModules, targets, oldDownloads] = await Promise.all([
-      bash('find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -10', sessionId),
-      bash('find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -5', sessionId),
+    // Build output and dev caches are the Files tab's Clearable pile — found
+    // at any depth, with a verdict per row. This scan no longer keeps its own
+    // shallow node_modules/target list; it carries that pile's summary.
+    const [clearable, oldDownloads] = await Promise.all([
+      readClearableSummary(sessionId),
       bash('find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l', sessionId),
     ]);
-    results.garbage = [
-      ...parseDirSizes(nodeModules.stdout).map(d => ({ ...d, category: 'node_modules', risk: 'review' })),
-      ...parseDirSizes(targets.stdout).map(d => ({ ...d, category: 'rust_target', risk: 'review' })),
-      ...cacheEntries.map(d => ({ ...d, category: 'cache', risk: 'safe' })),
-    ];
+    results.clearable = clearable;
+    results.garbage = cacheEntries.map(d => ({ ...d, category: 'cache', risk: 'safe' }));
     const oldCount = parseInt(oldDownloads.stdout.trim()) || 0;
     if (oldCount > 0) {
       results.garbage.push({ path: '~/Downloads (>6mo)', size_gb: 0, category: 'old_downloads', risk: 'review', count: oldCount });
     }
-    rawOutputs.push(`=== Garbage ===\n${nodeModules.stdout}\n${targets.stdout}\nOld downloads: ${oldDownloads.stdout}`);
+    rawOutputs.push(`=== Garbage ===\n${clearable || 'Clearable: not scanned yet'}\nOld downloads: ${oldDownloads.stdout}`);
     onProgress('garbage', results.garbage);
   }
 
@@ -423,12 +422,19 @@ export async function runScan(mode, sessionId, onProgress) {
   return results;
 }
 
+/** The first lines of the Files tab's Clearable summary (the page writes it
+    after each scan), or '' before the first one. */
+async function readClearableSummary(sessionId) {
+  const res = await bash('sed -n 1,2p ~/.linggen/skills/apple-shifu/data/files/clearables/summary.txt 2>/dev/null', sessionId);
+  return (res.stdout || '').trim();
+}
+
 // ---------------------------------------------------------------------------
 // Disk + garbage scan (standalone — used by Rescan button)
 // ---------------------------------------------------------------------------
 
 export async function runDiskScan(sessionId) {
-  const [df, home, caches, nodeModules, targets, oldDownloads] = await Promise.all([
+  const [df, home, caches, clearable, oldDownloads] = await Promise.all([
     // -k / -sk, never -h: the pretty output is 1024-based and rounded, and
     // this app reports Apple's decimal GB everywhere else. See kbToGb.
     bash('df -k /System/Volumes/Data 2>/dev/null || df -k /', sessionId),
@@ -439,8 +445,7 @@ export async function runDiskScan(sessionId) {
       'du -sk ~/Library/Developer/Xcode/DerivedData 2>/dev/null',
       'du -sk ~/Library/Developer/CoreSimulator 2>/dev/null',
     ].join('; '), sessionId),
-    bash('find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -10', sessionId),
-    bash('find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sk "$d" 2>/dev/null; done | sort -rn | head -5', sessionId),
+    readClearableSummary(sessionId),
     bash('find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l', sessionId),
   ]);
 
@@ -451,17 +456,13 @@ export async function runDiskScan(sessionId) {
     disk.unmeasured_dirs = home.unmeasured;
   }
 
-  const garbage = [
-    ...parseDirSizes(nodeModules.stdout).map(d => ({ ...d, category: 'node_modules', risk: 'review' })),
-    ...parseDirSizes(targets.stdout).map(d => ({ ...d, category: 'rust_target', risk: 'review' })),
-    ...cacheEntries.map(d => ({ ...d, category: 'cache', risk: 'safe' })),
-  ];
+  const garbage = cacheEntries.map(d => ({ ...d, category: 'cache', risk: 'safe' }));
   const oldCount = parseInt(oldDownloads.stdout.trim()) || 0;
   if (oldCount > 0) {
     garbage.push({ path: '~/Downloads (>6mo)', size_gb: 0, category: 'old_downloads', risk: 'review', count: oldCount });
   }
 
-  return { disk, caches: cacheEntries, garbage };
+  return { disk, caches: cacheEntries, garbage, clearable };
 }
 
 // ---------------------------------------------------------------------------

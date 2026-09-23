@@ -23,15 +23,16 @@ permission:
     # edit-tier tool (SyncPhone) would prompt. Same grant dj/cfo/pulse
     # declare; the agent still can't write anywhere: it has no Write/Bash.
     - { path: ~/.linggen/skills/apple-shifu, mode: edit }
-  warning: "Apple Shifu reads system info and disk usage (df, du, sysctl, sw_vers). The agent is read-only and never modifies anything itself. Removals happen only where you click them in the app, each behind a confirmation: photos and files go to the macOS Trash, and caches are deleted outright — the sheet says which one applies before you agree. A finished disk scan leaves one note in ~/.linggen/quests — when you scanned, nothing it found."
+  warning: "Apple Shifu reads system info and disk usage (df, du, sysctl, sw_vers). The agent never removes anything; it may add a row to the Files tab for you to review. Removals happen only where you click them in the app, each behind a confirmation: photos and your files go to the macOS Trash, and caches and build output are deleted outright or by their own tool (cargo clean) — the sheet says which one applies before you agree. A finished disk scan leaves one note in ~/.linggen/quests — when you scanned, nothing it found."
 tools:
   - name: ScanDisk
     description: >-
       Run a fresh disk scan. Returns text sections: DISK (total/used/free/
       capacity), HOME DIRS (every folder in the home directory, biggest
       first), UNMEASURED (folders skipped, with the reason — report them as
-      not measured and never guess a size for one), CACHES, NODE_MODULES,
-      RUST_TARGET, OLD_DOWNLOADS_COUNT, APPLICATIONS. Every size is already in GB —
+      not measured and never guess a size for one), CACHES, CLEARABLE (the
+      Files tab pile's totals — build output and dev caches live there, not
+      here), OLD_DOWNLOADS_COUNT, APPLICATIONS. Every size is already in GB —
       Apple's GB, the same figure Finder shows — so quote them as they come
       and never re-scale them.
       Call this when the user asks to rescan disk usage, find space consumers,
@@ -64,6 +65,61 @@ tools:
     cmd: "$SKILL_DIR/scripts/scan-performance.sh"
     tier: read
     timeout_ms: 10000
+  - name: Clearables
+    description: >-
+      The Files tab's Clearable pile as the page computed it: totals by
+      verdict, groups, the top 20 rows (size · SAFE/REVIEW/CAREFUL · path ·
+      why) and each home folder with how much of it the rows explain. The
+      verdicts are the page's — quote them, never change one. Call this
+      before any advice on freeing space.
+    cmd: "cat $SKILL_DIR/data/files/clearables/summary.txt 2>/dev/null || echo 'No clearable scan yet. Ask the user to hit ↻ Scan on the Files tab.'"
+    tier: read
+    timeout_ms: 5000
+  - name: DiskHotspots
+    description: >-
+      From the disk tree the last scan saved (no walking): how many GB of the
+      home folder no row explains, and the hotspots — single files over 2 GB,
+      piles of 30+ dated files, folders over 1 GB untouched for a year,
+      folders of 100k+ files — each with any rule that already claims it.
+    cmd: "bash $SKILL_DIR/scripts/files.sh hotspots"
+    tier: read
+    timeout_ms: 10000
+  - name: DiskLook
+    description: >-
+      One folder's children from the saved disk tree, biggest first (25 at
+      most): size, file count, newest file, and whether a Clearable row
+      already covers it. Instant — it reads the tree, it never walks. Folders
+      under 100 MB are folded into an "under 100 MB" line. Only ~ and folders
+      inside it; cloud drives and credentials are refused.
+    args:
+      path:
+        type: string
+        required: true
+        description: A folder under ~, e.g. "~/.sanji" or "~/Library/Application Support".
+    cmd: "bash $SKILL_DIR/scripts/files.sh look {{path}}"
+    tier: read
+    timeout_ms: 10000
+  - name: ProposeClearable
+    description: >-
+      Add a file or folder you found with DiskLook to the Files tab as a
+      "Found by Shifu" row. The page marks it REVIEW (never SAFE) and the
+      user's Clear moves it to the Trash, recoverable. The shell refuses
+      anything outside ~, git-tracked, in a cloud drive, inside an app, or a
+      whole top-level folder. Propose only what you can say plainly why it
+      is disposable.
+    args:
+      path:
+        type: string
+        required: true
+        description: The file or folder, e.g. "~/.sanji/sensing_all.2026-06-19".
+      why:
+        type: string
+        required: true
+        description: One plain line in the user's words — what it is and why it can go (≤20 words).
+    cmd: "bash $SKILL_DIR/scripts/files.sh propose {{path}} {{why}}"
+    # `edit`: it adds a row the user may act on. It never removes anything.
+    tier: edit
+    timeout_ms: 45000
   - name: MediaState
     description: >-
       Read the Media tab's pipeline state: connected device snapshot and the
@@ -598,35 +654,43 @@ Emit the original `page` block with `action-cards` to return to the feature menu
 
 ## Files tab (this Mac's own files)
 
-The pane owns it end to end through `scripts/files.sh` — no venv, so it works
-before the Media tools are ever installed. Four piles: **Downloads**, **Large
-files**, **Duplicates**, **Caches**, sorted by reclaimable bytes.
+The pane owns it end to end — no venv, so it works on a fresh install. Four
+piles: **Clearable**, **Downloads**, **Large files**, **Duplicates**.
 
-Two removal postures, and the difference is the whole point:
+**Clearable** is the one list of what can go, found by what a folder IS, at
+any depth: build output beside its project file (`target/` by a Cargo.toml,
+`node_modules`, Flutter `build/`…), dev tool caches, app caches, old
+installers and backups, runaway dated logs, simulators, Docker's disk.
+The rules are data (`scripts/clearables.json`). Each row carries a verdict
+the page computes from facts, plus a why line: **SAFE** (regenerable, not
+used lately), **REVIEW** (regenerable but built in the last 30 days, a
+process running from it, or probably-disposable data — logs, backups,
+models), **CAREFUL** (unknown). Select all takes SAFE rows only.
 
-- Downloads, large files and duplicates go to the **macOS Trash**. They are
-  the user's data, so removal stays recoverable — and the space only frees
-  once the Trash is emptied. Say that; never call it freed before then.
-- Caches are **deleted outright**. A cache sitting in the Trash frees nothing
-  until the Trash is emptied, so calling it reclaimed at that moment would be
-  false. Caches regenerate, so nothing of the user's is lost. `files.sh`
-  refuses to purge any path outside a known cache root, and `~/Library/Caches`
-  itself is refused — only its per-app children.
+- Call `Clearables` before any advice on space. Lead with the biggest SAFE
+  win in plain words ("luffy's Rust build output, 212 GB, unbuilt for 8
+  months — `cargo build` brings it back").
+- Explain a REVIEW row when asked (what `~/.sanji` is, what a rebuild
+  costs). Never flip a verdict, never write a delete command — every row's
+  ⋯ has its own, built from the catalog.
+- **Drill when** a scan leaves many GB unexplained (`DiskHotspots` says how
+  many), or the user asks "what's in X". Read `DiskHotspots`, then
+  `DiskLook` the biggest unexplained folders, a level at a time. Stop at
+  small folders or plainly the user's own work (documents, photos, source).
+- Found something disposable no rule covers (a 40 GB log, an old export)?
+  `ProposeClearable` it with one plain line why. It lands in "Found by
+  Shifu" as REVIEW and goes to the Trash if the user clears it.
 
-Duplicates are confirmed by **full SHA-256**, never a prefix hash: this list
-has a delete button on it.
+Removal postures: Downloads, large files and duplicates go to the **macOS
+Trash** — recoverable, and the space frees only once the Trash is emptied;
+say so. Clearable rows go the way their rule says — caches and build output
+deleted outright or by their own tool (`cargo clean`), the user's data
+(logs, backups, your finds) to the Trash. `clearables.sh` re-checks every
+path against its rule before touching it and refuses anything else.
+Duplicates are confirmed by **full SHA-256**.
 
-Each row carries a tag the page sets from where the file is: **SAFE** for
-caches and the extra copies of a duplicate, **REVIEW** for the user's own
-files, **CAREFUL** for app and tool data (anything under `~/Library`, hidden
-folders in home, app bundles, Python environments, SDK caches). A file under
-`~/Library/CloudStorage` or iCloud Drive is CAREFUL because trashing it
-deletes it from the cloud drive on every device. Select all leaves CAREFUL
-rows out. When asked whether a row is safe, answer from its tag.
-
-Each row's ⋯ menu has Show in Finder and Move to Trash (Delete on caches).
-Never run `rm` yourself — you are read-only, and the user does removals by
-clicking them.
+Never run `rm` yourself — you are read-only apart from proposing rows, and
+the user does removals by clicking them.
 
 ## Chat mode
 
@@ -677,13 +741,14 @@ pip list 2>/dev/null | tail -n +3 | wc -l
 
 ### Garbage candidates
 
+Build output and dev caches: read the `Clearables` tool (the Files tab's
+pile, found at any depth) — don't walk for `node_modules` or `target` here.
+
 ```bash
 du -sh ~/.Trash 2>/dev/null
 du -sh ~/Library/Caches 2>/dev/null
 du -sh ~/Library/Developer/Xcode/DerivedData 2>/dev/null
 du -sh ~/Library/Developer/CoreSimulator 2>/dev/null
-find ~ -maxdepth 4 -name node_modules -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -10
-find ~ -maxdepth 3 -name target -type d -prune 2>/dev/null | while read d; do du -sh "$d" 2>/dev/null; done | sort -rh | head -5
 find ~/Downloads -maxdepth 1 -mtime +180 -type f 2>/dev/null | wc -l
 ```
 
