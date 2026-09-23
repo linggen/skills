@@ -513,3 +513,16 @@ button.gcard { cursor: pointer; font: inherit; }
 @keyframes payPop { 0% { opacity: 0; transform: translateY(6px) scale(.6); } 60% { opacity: 1; transform: scale(1.25); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .handedrow.fresh, .handedrow.fresh .pay { animation: none; } }
 .goalline .goalnext { margin-top: 3px; font-size: 13px; color: var(--ling); }
+/* 行路 — the way walked, over the stage for a breath, then gone. */
+.travel { position: absolute; left: 50%; top: 46%; z-index: 25; width: min(560px, calc(100% - 32px)); transform: translate(-50%, -50%);
+  padding: 10px; border-radius: 12px; background: rgba(253, 248, 236, .96); box-shadow: 0 18px 50px rgba(40, 30, 10, .25);
+  pointer-events: none; animation: travelIn .35s ease-out both; transition: opacity .6s; }
+.travel.gone { opacity: 0; }
+.travel .atlas { margin: 0; max-width: none; }
+.travel svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.travel polyline { fill: none; stroke: #8a5a14; stroke-width: 0.8; stroke-dasharray: 100; stroke-dashoffset: 100; stroke-linecap: round; stroke-linejoin: round; }
+.travel .pt.via i { width: 6px; height: 6px; }
+.travel .walker { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--ling);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 0 14px 4px color-mix(in srgb, var(--ling) 60%, transparent); }
+@keyframes travelIn { from { opacity: 0; transform: translate(-50%, -46%) scale(.97); } }
+@media (prefers-reduced-motion: reduce) { .travel { animation: none; } }

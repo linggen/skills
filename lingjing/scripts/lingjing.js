@@ -12,6 +12,7 @@ import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf,
 import { stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
+import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, esc, yinyueLine, trialToldHtml } from './cards.js';
 
 const SKILL = 'lingjing';
@@ -305,6 +306,39 @@ function riseStats() {
   }
   if (rising.size) paintRise();
 }
+/* 行路: the place changed between two Looks — show the way walked on the map,
+   a dot going road by road, then give the stage back (his ask, 2026-09-23). */
+let lastPlace = null;
+function watchTravel() {
+  const p = look?.place;
+  if (!p?.id || !look.world?.atlas) return;
+  const points = new Map((p.places ?? []).filter((x) => x.map).map((x) => [x.id, x]));
+  const prev = lastPlace;
+  lastPlace = { id: p.id, points };
+  if (!prev || prev.id === p.id || bout) return;
+  const all = new Map([...prev.points, ...points]);
+  const way = wayOf(all, prev.id, p.id) ?? [prev.id, p.id].filter((id) => all.has(id));
+  if (way.length < 2) return;
+  playTravel(way.map((id) => all.get(id)));
+}
+function playTravel(stops) {
+  document.querySelector('.travel')?.remove();
+  const holder = document.createElement('div');
+  holder.innerHTML = travelHtml(stops, look.world);
+  const box = holder.firstElementChild;
+  $('view')?.appendChild(box);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const legs = stops.length - 1, walk = still ? 0 : Math.min(3200, 900 + legs * 550);
+  const pts = wayPoints(stops, look.world);
+  const walker = box.querySelector('.walker');
+  if (walker && !still) {
+    walker.animate(pts.map((q) => ({ left: `${q.left}%`, top: `${q.top}%` })), { duration: walk, easing: 'ease-in-out', fill: 'forwards' });
+  } else if (walker) { const q = pts.at(-1); walker.style.left = `${q.left}%`; walker.style.top = `${q.top}%`; }
+  box.querySelector('polyline')?.animate([{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration: walk, easing: 'ease-in-out', fill: 'forwards' });
+  setTimeout(() => box.classList.add('gone'), walk + 900);
+  setTimeout(() => box.remove(), walk + 1500);
+}
+
 function wonOver(beasts) {
   const w = words(), view$ = $('view');
   for (const [i, b] of beasts.entries()) {
@@ -460,6 +494,7 @@ function draw() {
   const strip = statusHtml();
   if (strip !== drawnStrip) { $('status').innerHTML = strip; drawnStrip = strip; }
   riseStats();
+  watchTravel();
   // A fight takes the whole column: the backdrop, the tray and Yinyue's own
   // body give way, because she is IN the fight as a card and the cards need
   // the room (his, 2026-09-18). It all comes back when the fight ends.

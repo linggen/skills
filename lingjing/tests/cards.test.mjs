@@ -493,3 +493,19 @@ test('short of the gate, the goal line names the next thing to do', async () => 
   const beast = cardHtml({ card: 'goal' }, { look: { waypoint, work: { kind: 'beast', place: { name: '空桑' }, here: false, titles: ['夔'] } }, lang: 'zh', words: WORDS.zh });
   assert.match(beast, /可做：空桑的夔今日还未降/);
 });
+
+test('行路: the way walked is found over the roads, and drawn stop to stop', async () => {
+  const { wayOf, travelHtml } = await import('../scripts/travel.js');
+  const pts = new Map([
+    ['taishan', { id: 'taishan', name: '泰山', map: [0.86, 0.34], roads: ['weishui'] }],
+    ['weishui', { id: 'weishui', name: '潍水', map: [0.89, 0.34], roads: ['taishan', 'linzi'] }],
+    ['linzi', { id: 'linzi', name: '临淄', map: [0.85, 0.32], roads: ['weishui'] }],
+  ]);
+  assert.deepEqual(wayOf(pts, 'taishan', 'linzi'), ['taishan', 'weishui', 'linzi']);
+  assert.equal(wayOf(pts, 'taishan', 'nowhere'), null);
+  const world = { dir: 'worlds/jiuding', atlas: { file: 'art/map/jiuzhou.svg', aspect: 1.3645 } };
+  const html = travelHtml(['taishan', 'weishui', 'linzi'].map((id) => pts.get(id)), world);
+  assert.match(html, /<polyline points="[\d.]+,[\d.]+ [\d.]+,[\d.]+ [\d.]+,[\d.]+"/, 'three stops, one line');
+  assert.match(html, /泰山/); assert.match(html, /临淄/);
+  assert.doesNotMatch(html, /潍水<\/span>/, 'a place walked through is a dot, not a name');
+});
