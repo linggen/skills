@@ -1,0 +1,55 @@
+/* 洛书九宫 — all selectors prefixed .g-luoshu */
+.g-luoshu { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.g-luoshu-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(44px, 1fr)) minmax(24px, 0.45fr);
+  gap: 6px;
+  width: 100%;
+  max-width: 340px;
+}
+.g-luoshu-cell {
+  aspect-ratio: 1;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: var(--serif);
+  font-size: clamp(22px, 6vw, 32px);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.g-luoshu-cell.is-empty:hover { border-color: var(--ling); background: var(--ling-soft); }
+.g-luoshu-cell.is-placed { color: var(--ling); }
+.g-luoshu-cell.is-placed:hover { background: var(--ling-soft); }
+.g-luoshu-cell.is-given {
+  font-weight: 700;
+  background: var(--ling-soft);
+  border-color: var(--ling);
+  cursor: default;
+  opacity: 1;
+}
+.g-luoshu-cell:disabled { cursor: default; }
+.g-luoshu-sum {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--ui); font-size: 12px; color: var(--faint);
+}
+.g-luoshu-sum.is-ok { color: var(--ling); }
+.g-luoshu-sum.is-off { text-decoration: line-through; }
+.g-luoshu-anti { font-family: var(--ui); font-size: 12px; color: var(--faint); display: flex; gap: 6px; align-items: center; }
+.g-luoshu-tray {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
+  width: 100%; max-width: 340px;
+}
+.g-luoshu-num {
+  flex: 1 0 44px; max-width: 56px; min-height: 44px;
+  border: 1px solid var(--line); border-radius: 8px;
+  background: var(--surface); color: inherit;
+  font-family: var(--serif); font-size: 20px; cursor: pointer;
+}
+.g-luoshu-num:hover:not(:disabled) { border-color: var(--ling); }
+.g-luoshu-num.is-picked { background: var(--ling); border-color: var(--ling); color: var(--surface); }
+.g-luoshu-num:disabled { opacity: 0.3; cursor: default; }
+.g-luoshu-note { font-family: var(--ui); font-size: 12px; color: var(--faint); }
+.g-luoshu-solved { font-family: var(--serif); font-size: 18px; color: var(--ling); letter-spacing: 0.2em; padding: 6px 0; }
+.g-luoshu.is-won .g-luoshu-cell { border-color: var(--ling); }

@@ -143,6 +143,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     quests: loadQuests(path.join(dir, 'quests')),
     notices: loadNotices(path.join(dir, 'quests', 'templates.json')),
     meets: fs.existsSync(path.join(dir, 'meets.json')) ? readJson(path.join(dir, 'meets.json')) : null,
+    lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -465,6 +466,12 @@ function lintPlaces(content, ids, bad) {
         else if (!byId[road].roads?.includes(place.id)) bad(at, `road to ${road} does not come back`);
       }
       if (place.has?.creature && !ids.creatures.has(place.has.creature)) bad(at, `has unknown creature ${place.has.creature}`);
+      // A game a place hosts is a hosted board task with a module to play it.
+      for (const g of place.has?.games ?? []) {
+        const t = (content.tasks?.tasks ?? []).find(x => x.id === g);
+        if (!t) bad(at, `hosts unknown game ${g}`);
+        else if (!t.hosted || !['board', 'word'].includes(t.kind)) bad(at, `hosts ${g}, which is not a hosted game`);
+      }
       if (place.has?.scene && !scenes.has(place.has.scene)) bad(at, `has unknown scene ${place.has.scene}`);
       if (content.world?.atlas && !onMap(place.map)) bad(at, 'needs map [x, y] on the world map, fractions 0–1 (tools/pin.py)');
     }
@@ -508,7 +515,7 @@ function bilingual(node, where, bad) {
     else if (Array.isArray(node.zh) && node.zh.length !== node.en.length) bad(where, 'zh and en differ in length');
   }
   for (const [key, value] of Object.entries(node)) {
-    if (key.startsWith('_') || key === 'riddles') continue;
+    if (key.startsWith('_') || key === 'riddles' || key === 'lundao') continue; // per-language lists, not pairs
     bilingual(value, `${where}.${key}`, bad);
   }
 }
@@ -556,7 +563,7 @@ function lintQuests(content, ids, bad) {
 
 /* 榜文: a template's id rides inside a 差事 id, so it is letters only; its
    kind is one whose target the rules can choose from the map. */
-export const NOTICE_KINDS = new Set(['subdue', 'visit']);
+export const NOTICE_KINDS = new Set(['subdue', 'visit', 'board']);
 
 function lintNotices(content, bad) {
   const seen = new Set();

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "_about": "论道 — word games with the scholar at 稷下 (design § 小游戏). The rules deal the prompt and check the form (the keyword is in the line, the idiom chains, the couplet is as long as its upper line); Ling judges the meaning (a real verse line, a real idiom, a fitting couplet) and speaks for the scholar. Three good answers win; three misses and he rises for the day.",
+  "need": 3,
+  "misses": 3,
+  "feihua": {
+    "zh": ["月", "花", "春", "风", "山", "水", "雪", "酒", "云", "江", "夜", "秋"],
+    "en": ["moon", "flower", "spring", "wind", "river", "snow", "night", "rain"]
+  },
+  "chengyu": {
+    "zh": ["一心一意", "画龙点睛", "水落石出", "山高水长", "天长地久", "学无止境", "风和日丽", "海阔天空", "千军万马", "日积月累", "春华秋实", "明镜高悬"],
+    "en": ["river", "mountain", "lantern", "harvest", "silver", "thunder", "garden", "window"]
+  },
+  "duilian": {
+    "zh": [
+      { "up": "海阔凭鱼跃", "down": "天高任鸟飞" },
+      { "up": "明月松间照", "down": "清泉石上流" },
+      { "up": "白日依山尽", "down": "黄河入海流" },
+      { "up": "春风得意马蹄疾", "down": "一日看尽长安花" },
+      { "up": "天增岁月人增寿", "down": "春满乾坤福满门" },
+      { "up": "书山有路勤为径", "down": "学海无涯苦作舟" },
+      { "up": "大漠孤烟直", "down": "长河落日圆" },
+      { "up": "两岸猿声啼不住", "down": "轻舟已过万重山" },
+      { "up": "风声雨声读书声", "down": "家事国事天下事" },
+      { "up": "千山鸟飞绝", "down": "万径人踪灭" },
+      { "up": "野火烧不尽", "down": "春风吹又生" },
+      { "up": "会当凌绝顶", "down": "一览众山小" }
+    ]
+  }
+}

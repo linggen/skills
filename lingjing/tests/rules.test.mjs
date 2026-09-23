@@ -2835,3 +2835,74 @@ test('体力: walking costs by the road, an elite more; empty, the road waits', 
   assert.equal(cost.elite > cost.duel, true);
   assert.equal(cost.shop, 0);
 });
+
+// The mini-games had no way in (2026-09-23): a place hosts its game, open there
+// once a day, won through the same `win` as 炼丹, paid by the task; a market's
+// notice may ask for a nearby place's game.
+test('a place hosts its game: open once a day there, won and paid like a board', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'yunlong', tier: 'core' };
+  const seen = look(s, content, at).tasks.find(t => t.id === 'luoshu');
+  assert.equal(seen?.status, 'offered');
+  assert.equal(seen.game, 'luoshu');
+  assert.equal(seen.level, 2, '结丹 plays level 2');
+  refused(win, { ...s, place: 'sishui' }, { id: 'luoshu' }, 'not-here', at);
+  const won = must(win, s, { id: 'luoshu' }, at);
+  const done = must(task, won.state, { action: 'done', id: 'luoshu' }, at);
+  assert.ok(done.result.paid.progress > 0);
+  assert.ok(!look(done.state, content, at).tasks.some(t => t.id === 'luoshu' && t.status === 'offered'), 'once a day');
+  refused(win, done.state, { id: 'luoshu' }, 'not-here', at);
+  const tomorrow = ctx({ now: new Date(NOW.getTime() + 86400000) });
+  assert.equal(look(done.state, content, tomorrow).tasks.find(t => t.id === 'luoshu')?.status, 'offered', 'and again tomorrow');
+});
+
+test('a market notice can ask for a nearby place\'s game, and a win there meets it', () => {
+  const base = { ...toOpenWorld(), place: 'pengcheng', tier: 'core', bag: {}, cast: ['fuzhu', 'paoxiao', 'longzhi'] };
+  const days = Array.from({ length: 30 }, (_, i) => ctx({ now: new Date(2026, 8, 1 + i, 12) }));
+  let found = null;
+  for (const d of days) {
+    let s = base;
+    for (let k = 0; k < 3 && !found; k += 1) {
+      const o = (look(s, content, d).offers ?? []).find(x => x.id.startsWith('daily-'));
+      if (!o) break;
+      if (o.id.includes('-trial-')) found = { o, d, s };
+      else s = must(quest, s, { action: 'take', id: o.id }, d).state;
+    }
+    if (found) break;
+  }
+  assert.ok(found, 'within a month a market posts a game notice');
+  assert.match(found.o.title, /榜文 · 去.+：.+/);
+  assert.equal(found.o.need[0].kind, 'board');
+});
+
+// 论道 at 稷下: the rules deal and check the form, Ling judges the meaning.
+test('论道: dealt at 稷下, the form checked by the rules, three good answers win', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'jixia', tier: 'core' };
+  refused(VERBS.lundao, { ...s, place: 'linzi' }, { action: 'open' }, 'not-here', at);
+  const open = must(VERBS.lundao, s, { action: 'open' }, at);
+  const l = open.state.lundao;
+  assert.ok(['feihua', 'chengyu', 'duilian'].includes(l.game));
+  assert.deepEqual(look(open.state, content, at).lundao.game, l.game, 'Look carries it');
+  // a good answer by form, for whichever game was dealt
+  const goodFor = (st) => {
+    const x = st.lundao;
+    if (x.game === 'feihua') return `${x.prompt}落乌啼霜满天`.slice(0, 7);
+    if (x.game === 'duilian') return '甲'.repeat([...x.prompt].length);
+    return [...x.last].at(-1) + '天动地';
+  };
+  const bad = must(VERBS.lundao, open.state, { action: 'turn', answer: 'xyz', ok: 'true' }, at);
+  assert.equal(bad.result.good, false);
+  assert.ok(bad.result.form, 'the rules name the form it broke');
+  let st = bad.state;
+  for (let i = 0; i < 3; i += 1) {
+    const r = must(VERBS.lundao, st, { action: 'turn', answer: goodFor(st) + (i ? String(i) : ''), ok: 'true' }, at);
+    st = r.state;
+    if (i === 2) { assert.equal(r.result.lundao.outcome, 'won'); assert.ok(r.result.paid.progress > 0); }
+  }
+  refused(VERBS.lundao, st, { action: 'open' }, 'done-today', at);
+  // Ling's judgement counts: form right, meaning wrong, is a miss
+  const judged = must(VERBS.lundao, open.state, { action: 'turn', answer: goodFor(open.state), ok: 'false' }, at);
+  assert.equal(judged.result.good, false);
+  assert.equal(judged.result.judged, false);
+});

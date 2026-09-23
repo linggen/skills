@@ -42,7 +42,27 @@ const words = () => {
   return { ...WORDS[lang()], xw: w.progress ?? WORDS[lang()].xw, ls: w.wealth ?? WORDS[lang()].ls, qi: w.pool ?? WORDS[lang()].qi, yinyue: WORDS[lang()].yinyue };
 };
 
+/* The mini-games, one module each (scripts/games/<id>.js — meta, newGame,
+   html, act), loaded the first time a place shows one. */
+const GAMES = {};
+function gameMod(id) {
+  if (GAMES[id] !== undefined) return GAMES[id];
+  GAMES[id] = null;
+  import(`./games/${id}.js`).then((m) => { GAMES[id] = m; render(); })
+    .catch((e) => { console.warn('[lingjing] game', id, e); });
+  return null;
+}
 function boardFor(taskId) {
+  const task = look?.tasks?.find((t) => t.id === taskId);
+  if (task?.game && task.game !== 'lianliankan') {
+    const mod = gameMod(task.game);
+    if (!mod) return null;
+    const day = new Date().toDateString();
+    if (!boards.has(taskId) || boards.get(taskId).day !== day) {
+      boards.set(taskId, { taskId, mod, day, state: mod.newGame(`${day}|${look.name ?? ''}|${taskId}`, task.level ?? 1) });
+    }
+    return boards.get(taskId);
+  }
   if (!boards.has(taskId)) {
     const herbs = authored.herbs.map((h) => ({ id: h.id, tile: h.tile, label: h.name[lang()] }));
     boards.set(taskId, newBoard(herbs, taskId));
@@ -901,7 +921,7 @@ document.addEventListener('click', (e) => {
     return;
   }
   const spoken = e.target.closest('[data-say]');
-  if (spoken && !e.target.closest('[data-play],[data-tile],[data-duel-start],[data-spot]')) {
+  if (spoken && !e.target.closest('[data-play],[data-tile],[data-g],[data-duel-start],[data-spot]')) {
     if (spoken.matches(':disabled')) return;
     const line = spoken.dataset.say;
     show({ tapped: line, bookOpen: false, ...(line === words().sayCast ? { casting: true } : {}) });
@@ -911,6 +931,19 @@ document.addEventListener('click', (e) => {
   const play = e.target.closest('[data-play]');
   if (play) {
     show({ focus: [{ card: 'board', id: play.dataset.play }] });
+    return;
+  }
+  // A game module's move: the rules of the game are the module's; the win is
+  // the rules' (`win`, then Ling hears `[scene] won`), as for 炼丹.
+  const gmove = e.target.closest('[data-g]');
+  const ghost = gmove?.closest('[data-game]');
+  if (gmove && ghost && !gmove.disabled) {
+    const g = boardFor(ghost.dataset.game);
+    if (!g) return;
+    const r = g.mod.act(g.state, { ...gmove.dataset });
+    g.state = r.state;
+    render();
+    if (r.won) onWin(g.taskId);
     return;
   }
   const tile = e.target.closest('[data-tile]');

@@ -10,6 +10,48 @@
       "grant": { "table": "task", "progress": 20 },
       "gives": { "bag": "lingzhi" },
       "done_line": { "zh": "八味灵草配齐，丹成。还剩一株灵芝。", "en": "All eight herbs paired. The pill is made — one lingzhi left over." }
+    },
+    {
+      "id": "alchemy-daily", "kind": "board", "game": "lianliankan", "period": "day", "hosted": true,
+      "title": { "zh": "炼丹 · 配一炉丹", "en": "Alchemy · A furnace of pills" },
+      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "done_line": { "zh": "成了。", "en": "Done." }
+    },
+    {
+      "id": "luoshu", "kind": "board", "game": "luoshu", "period": "day", "hosted": true,
+      "title": { "zh": "洛书 · 破一道鼎封", "en": "Luo Shu · Break a cauldron seal" },
+      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "done_line": { "zh": "成了。", "en": "Done." }
+    },
+    {
+      "id": "huarong", "kind": "board", "game": "huarong", "period": "day", "hosted": true,
+      "title": { "zh": "华容道 · 走出秘境", "en": "Huarong · Out of the hidden realm" },
+      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "done_line": { "zh": "成了。", "en": "Done." }
+    },
+    {
+      "id": "qiqiao", "kind": "board", "game": "qiqiao", "period": "day", "hosted": true,
+      "title": { "zh": "七巧 · 布一座阵", "en": "Tangram · Lay out a formation" },
+      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "done_line": { "zh": "成了。", "en": "Done." }
+    },
+    {
+      "id": "wuziqi", "kind": "board", "game": "wuziqi", "period": "day", "hosted": true,
+      "title": { "zh": "五子 · 与人对弈", "en": "Five in a row · A game with a rival" },
+      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "done_line": { "zh": "成了。", "en": "Done." }
+    },
+    {
+      "id": "xiangqi", "kind": "board", "game": "xiangqi", "period": "day", "hosted": true,
+      "title": { "zh": "残局 · 解一局象棋", "en": "Endgame · Solve a xiangqi endgame" },
+      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "done_line": { "zh": "成了。", "en": "Done." }
+    },
+    {
+      "id": "lundao", "kind": "word", "period": "day", "hosted": true,
+      "title": { "zh": "论道 · 与稷下先生", "en": "Debate · With the scholar of Jixia" },
+      "grant": { "table": "task", "progress": 40, "wealth": 10 },
+      "done_line": { "zh": "先生拱手：「受教。」", "en": "The scholar bows: \"I have learned from you.\"" }
     }
   ]
 }

@@ -21,10 +21,8 @@
     0.6915,
     0.4036
    ],
-   "has": {
-    "seeds": true,
-    "scene": "02-arrive"
-   },
+   "has": { "seeds": true,
+    "scene": "02-arrive", "games": ["luoshu"] },
    "line": {
     "zh": "濮水清，岸边桑树成行。东边晴天打雷。",
     "en": "The Pu runs clear under a line of mulberries. Thunder from a clear eastern sky."
@@ -52,10 +50,8 @@
     0.7054,
     0.3941
    ],
-   "has": {
-    "shop": true,
-    "scene": "02-town"
-   },
+   "has": { "shop": true,
+    "scene": "02-town", "games": ["alchemy-daily"] },
    "line": {
     "zh": "卫的旧都。桑门里有坊市，门口贴着告示。",
     "en": "The old capital of Wei. A market inside the Mulberry Gate; a notice at the door."
@@ -77,9 +73,7 @@
     0.7165,
     0.3846
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["wuziqi"] },
    "line": {
     "zh": "桑林深处，濮水拐弯。旧时的歌还有人唱。",
     "en": "Deep in the mulberries where the Pu bends. The old songs are still sung."

@@ -549,3 +549,9 @@ button.gcard { cursor: pointer; font: inherit; }
   20% { transform: translate(-50%, -50%) scale(1); } 82% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -54%) scale(1); } }
 @keyframes featSpin { from { transform: rotate(0); } to { transform: rotate(60deg); } }
 @media (prefers-reduced-motion: reduce) { .feat, .feat .rays { animation-name: gainFade; } }
+/* 论道 */
+.card.lundao .lundaoprompt { margin: 8px 0 6px; font-family: var(--serif); font-size: 20px; color: var(--ling); }
+.card.lundao .lundaodots { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.card.lundao .lundaodots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ling); }
+.card.lundao .lundaodots i.on { background: var(--ling); }
+.card.lundao .lundaodots span { margin-left: 6px; }

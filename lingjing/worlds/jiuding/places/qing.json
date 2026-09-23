@@ -52,10 +52,8 @@
     0.8485,
     0.3193
    ],
-   "has": {
-    "shop": true,
-    "scene": "03-town"
-   },
+   "has": { "shop": true,
+    "scene": "03-town", "games": ["alchemy-daily"] },
    "line": {
     "zh": "齐的旧都。稷门外有学宫，门内有坊市。",
     "en": "The old capital of Qi. The academy outside the Ji Gate, the market within."
@@ -76,9 +74,7 @@
     0.8596,
     0.3088
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["xiangqi", "lundao"] },
    "line": {
     "zh": "稷门之下，先生们还在争。",
     "en": "Under the Ji Gate the masters are still arguing."
@@ -190,9 +186,7 @@
     0.9061,
     0.3856
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["qiqiao"] },
    "line": {
     "zh": "秦始皇在这儿望过海。碑上的字磨平了一半。",
     "en": "The First Emperor looked out to sea from here. Half the stone's characters are worn away."
@@ -217,9 +211,7 @@
     0.9943,
     0.2842
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["huarong"] },
    "line": {
     "zh": "天尽头。太阳从这儿出来。",
     "en": "The end of the land. The sun rises here first."
@@ -244,9 +236,7 @@
     0.9595,
     0.3411
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["luoshu"] },
    "line": {
     "zh": "海上第一名山。道士在山里。",
     "en": "The first mountain on the sea. Daoists live in its hills."

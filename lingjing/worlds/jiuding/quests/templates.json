@@ -19,6 +19,15 @@
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{target}多日没有消息。谁去看一眼，凭此榜领赏。", "en": "No word from {target} in days. Whoever goes to look is paid on this notice." },
    "grant": { "table": "quest", "progress": 30, "wealth": 10 }
+  },
+  {
+   "id": "trial",
+   "kind": "board",
+   "n": 1,
+   "title": { "zh": "榜文 · 去{target}：{game}", "en": "Notice · At {target}: {game}" },
+   "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
+   "say": { "zh": "{target}那边摆着一局，等人去解。解得开的，凭此榜领赏。", "en": "There is a game laid out at {target}, waiting for someone to solve it. Whoever does is paid on this notice." },
+   "grant": { "table": "quest", "progress": 40, "wealth": 15 }
   }
  ]
 }

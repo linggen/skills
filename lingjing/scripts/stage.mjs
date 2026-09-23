@@ -52,6 +52,7 @@ export const CARD_KINDS = {
   // A beast that can still be met today. Won, withdrawn or tamed, its card is a record, not an ask.
   duel: { holds: (look, card) => { const e = look?.place?.encounter; return !e || e.game?.id !== card.id || !(e.won || e.withdrawn || e.tamed); } },
   hexagram: { holds: false }, //   the day's coins: optional, never what an arrival is about
+  lundao: { holds: false }, //     论道 at 稷下: offered, or a game under way — never holds the roads
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
@@ -117,8 +118,13 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   if (!line) {
     // An open board is always before the player: Ling tells them it is, so it
     // must be.
-    const board = (look.tasks ?? []).find(t => t.kind === 'board' && t.status !== 'done' && !t.won);
-    if (board && !has('board', board.id)) cards.push({ card: 'board', id: board.id });
+    // 论道: the scholar is here (offered), or a game is under way today.
+    const word = (look.tasks ?? []).find(t => t.kind === 'word' && t.status !== 'done');
+    if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
+    // Every board open here: the story's, an errand's, and the games this place hosts.
+    for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won)) {
+      if (!has('board', board.id)) cards.push({ card: 'board', id: board.id });
+    }
     // A fight the scene offers, and a creature at its haunt with no scene
     // running: both are on the stage, like a board.
     for (const e of look.scene?.exits ?? []) {

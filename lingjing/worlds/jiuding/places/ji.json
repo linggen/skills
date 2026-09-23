@@ -20,10 +20,8 @@
     0.677,
     0.3733
    ],
-   "has": {
-    "seeds": true,
-    "scene": "01-arrive"
-   },
+   "has": { "seeds": true,
+    "scene": "01-arrive", "games": ["wuziqi"] },
    "line": {
     "zh": "漳水浑黄，北去是邺城。水底有什么在呼吸。",
     "en": "The Zhang runs yellow; north of it lies Ye. Something under the water is breathing."
@@ -51,10 +49,8 @@
     0.6804,
     0.3278
    ],
-   "has": {
-    "shop": true,
-    "scene": "01-ye"
-   },
+   "has": { "shop": true,
+    "scene": "01-ye", "games": ["alchemy-daily"] },
    "line": {
     "zh": "漳水边的城。城门贴着告示，坊市在东街。",
     "en": "The city on the Zhang. A notice on the gate; the market on East Street."
@@ -133,9 +129,7 @@
     0.6492,
     0.3051
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["huarong"] },
    "line": {
     "zh": "太行八陉之一。山那边是并州，山这边是冀。",
     "en": "One of the eight passes of the Taihang. Bing lies beyond the mountains; Ji on this side."
@@ -188,9 +182,7 @@
     0.7263,
     0.0796
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["qiqiao"] },
    "line": {
     "zh": "黄帝与蚩尤战过的地方。风里还有铜味。",
     "en": "Where the Yellow Emperor fought Chiyou. The wind still smells of bronze."
@@ -214,9 +206,7 @@
     0.8853,
     0.1355
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["luoshu"] },
    "line": {
     "zh": "东临碣石，以观沧海。海在山下翻白。",
     "en": "Stand on Jieshi and look upon the sea. It turns white below the rock."

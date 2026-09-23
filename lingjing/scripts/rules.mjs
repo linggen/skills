@@ -375,20 +375,24 @@ function whereFor(content, state, quest, need, lang) {
    `daily-<day>-<template>-<target>` — so the 差事 is rebuilt from its id and
    the save holds nothing more than it does for an authored one. Taken, it
    stays in the book until done or put down; only the posting turns with the day. */
-const swap = (pair, words) => Object.fromEntries(['zh', 'en'].map(l => [l, pair[l].replace(/\{(target|place)\}/g, (_, k) => words[k][l])]));
+const swap = (pair, words) => Object.fromEntries(['zh', 'en'].map(l => [l, pair[l].replace(/\{(target|place|game)\}/g, (_, k) => words[k]?.[l] ?? '')]));
 
 function noticeOf(content, id) {
   const [, day, tid, target] = /^daily-(\d{8})-([a-z]+)-([a-z0-9]+)$/.exec(id ?? '') ?? [];
   const t = (content.notices ?? []).find(x => x.id === tid);
   if (!t) return null;
-  const at = allPlaces(content).find(p => (t.kind === 'visit' ? p.id : p.has?.creature) === target);
+  const at = allPlaces(content).find(p => (t.kind === 'visit' || t.kind === 'board' ? p.id : p.has?.creature) === target);
   const market = at && allPlaces(content).find(p => p.province === at.province && p.has?.shop);
   if (!market) return null;
-  const name = t.kind === 'visit' ? at.name : creatureOf(content, target)?.name;
+  // A game notice: the place's own game (not the market's 炼丹), won anywhere.
+  const game = t.kind === 'board' ? (at.has?.games ?? []).find(g => g !== 'alchemy-daily') : null;
+  if (t.kind === 'board' && !game) return null;
+  const name = t.kind === 'visit' || t.kind === 'board' ? at.name : creatureOf(content, target)?.name;
   if (!name) return null;
-  const words = { target: name, place: at.name };
-  return { id, day, notice: t.id, province: at.province, title: swap(t.title, words), say: swap(t.say, words), from: { place: market.id, who: t.who },
-    need: [{ kind: t.kind, n: t.n, ...(t.kind === 'visit' ? { place: target } : { creature: target }) }], grant: t.grant };
+  const words = { target: name, place: at.name, game: game ? taskOf(content, game)?.title : null };
+  const worded = x => swap(x, { ...words, game: words.game ?? { zh: '', en: '' } });
+  return { id, day, notice: t.id, province: at.province, title: worded(t.title), say: worded(t.say), from: { place: market.id, who: t.who },
+    need: [{ kind: t.kind, n: t.n, ...(t.kind === 'visit' ? { place: target } : t.kind === 'board' ? { task: game } : { creature: target }) }], grant: t.grant };
 }
 
 /* What a market's notice may name today: a haunt not yet fought today, or a
@@ -412,6 +416,7 @@ function noticeTargets(content, state, market, t, now) {
   const reach = withinRoads(content, state, market, now, NOTICE_REACH);
   const near = allPlaces(content).filter(p => p.province === market.province && reach.has(p.id));
   if (t.kind === 'visit') return near.map(p => p.id);
+  if (t.kind === 'board') return near.filter(p => (p.has?.games ?? []).some(g => g !== 'alchemy-daily')).map(p => p.id);
   // A bounty that cannot be won is a lie: not a beast that walks with him, nor one already met today.
   return near.filter(p => p.has?.creature && !state.cast.includes(p.has.creature) && state.duels?.[p.has.creature]?.day !== dayKey(now)).map(p => p.has.creature);
 }
@@ -1531,7 +1536,10 @@ function tasksBrief(content, state, ctx) {
   // A board an errand reopened stands offered again, whatever it was.
   const again = new Set((content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)));
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
-  const tasks = Object.entries({ ...state.tasks, ...held })
+  // The games this place hosts, open today — beside the story's own boards.
+  const hosted = Object.fromEntries((placeOf(content, state.place)?.has?.games ?? [])
+    .filter(id => taskOf(content, id)?.hosted && !doneThisPeriod(content, state, id, ctx.now)).map(id => [id, { status: 'offered' }]));
+  const tasks = Object.entries({ ...state.tasks, ...held, ...hosted })
     .filter(([, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false))
     .map(([id, t]) => {
       const task = taskOf(content, id);
@@ -1542,7 +1550,9 @@ function tasksBrief(content, state, ctx) {
         ...(again.has(id) ? { for_errand: true } : {}),
         done_at: t.done_at ?? null,
         // what it asks and what it pays, so Ling can tell the practice
-        asks: task.kind === 'board' ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : null,
+        ...(task.game ? { game: task.game, level: gameLevel(content, state) } : {}),
+        ...(hosted[id] ? { hosted: true } : {}),
+        asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
         pays: again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
       };
@@ -1604,6 +1614,7 @@ export function look(state, content, ctx) {
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),
+    ...(lundaoBrief(content, state, ctx.now) ? { lundao: lundaoBrief(content, state, ctx.now) } : {}),
     // 所得: errands that handed themselves in here, until he walks on.
     ...(handedHere(content, state).length ? { handed: handedHere(content, state) } : {}),
     // 机缘: where, and how long it lasts — the page counts it down.
@@ -2215,11 +2226,30 @@ function reopened(content, state, id, now) {
   return Boolean(t) && (!held || spent) && errandWants(content, state, id);
 }
 
-/* Offered, and not yet done this period — or wanted by an errand. */
+/* A game the place hosts (places' has.games): open here once a period,
+   whether or not a scene ever offered it (his, 2026-09-23 — the mini-games
+   had no way in). */
+function hostedHere(content, state, id) {
+  const t = taskOf(content, id);
+  return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id);
+}
+const doneThisPeriod = (content, state, id, now) => {
+  const t = taskOf(content, id), held = state.tasks[id];
+  return held?.status === 'done' && (t?.period === 'once' || held.period === periodKey(t?.period, now));
+};
+
+/* A game's level by the player's realm: 练气/筑基 1, 结丹/元婴 2, beyond 3. */
+function gameLevel(content, state) {
+  const i = TIERS_ORDER(content).indexOf(state.tier);
+  return i < 2 ? 1 : i < 4 ? 2 : 3;
+}
+
+/* Offered, and not yet done this period — or wanted by an errand, or hosted here. */
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
   if (reopened(content, state, id, now)) return true;
+  if (hostedHere(content, state, id)) return !doneThisPeriod(content, state, id, now);
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
@@ -2228,7 +2258,7 @@ function taskDone(state, content, ctx, id) {
   const t = taskOf(content, id);
   if (!t) return refuse('unknown-task', null);
   const again = reopened(content, state, id, ctx.now);
-  if (!state.tasks[id] && !again) return refuse('not-offered', null);
+  if (!state.tasks[id] && !again && !hostedHere(content, state, id)) return refuse('not-offered', null);
   if (!taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
@@ -3280,6 +3310,87 @@ export function fate(state, content, ctx, args) {
   return { state: s, result: { ok: true, fate: fateBrief(content, s) } };
 }
 
+/* 论道 — word games with the scholar at 稷下 (his, 2026-09-23: build the
+   mini-games). The rules deal the prompt and check the form: the keyword is
+   in the line (飞花令), the idiom chains from the last character (成语接龙),
+   the lower line is as long as the upper (对对联). Ling judges the meaning —
+   a real verse, a real idiom, a fitting couplet — and says it as `ok`, and
+   speaks for the scholar. Three good answers win; three misses and he rises
+   for the day. Words, so they cost no 体力. */
+const hanOf = s => [...String(s ?? '')].filter(c => /\p{Script=Han}/u.test(c));
+const lundaoToday = (state, now) => (state.lundao?.day === dayKey(now) ? state.lundao : null);
+
+function lundaoBrief(content, state, now) {
+  const l = lundaoToday(state, now);
+  if (!l) return null;
+  const cfg = content.lundao, lang = state.lang;
+  const name = { feihua: { zh: '飞花令', en: 'Flying-flower verses' }, chengyu: { zh: '成语接龙', en: 'Word chain' }, duilian: { zh: '对对联', en: 'Matching couplets' } }[l.game];
+  return { game: l.game, name: pick(name, lang), prompt: l.prompt, last: l.last, good: l.good, misses: l.misses, need: cfg.need, max_misses: cfg.misses, outcome: l.outcome ?? 'open' };
+}
+
+function lundaoForm(game, lang, l, answer) {
+  const a = String(answer ?? '').trim();
+  if (!a) return 'empty';
+  if (l.used.includes(a)) return 'used';
+  if (game === 'feihua') {
+    if (lang === 'zh') { const n = hanOf(a).length; return !a.includes(l.prompt) ? 'no-keyword' : n < 4 || n > 10 ? 'not-a-line' : null; }
+    return !new RegExp(`\\b${l.prompt}`, 'i').test(a) ? 'no-keyword' : a.split(/\s+/).length < 3 ? 'not-a-line' : null;
+  }
+  if (game === 'chengyu') {
+    if (lang === 'zh') { const h = hanOf(a); return h.length !== 4 ? 'not-four' : h[0] !== hanOf(l.last).at(-1) ? 'no-chain' : null; }
+    const w = a.toLowerCase().replace(/[^a-z]/g, '');
+    return w.length < 3 ? 'not-a-word' : w[0] !== l.last.toLowerCase().replace(/[^a-z]/g, '').at(-1) ? 'no-chain' : null;
+  }
+  if (game === 'duilian') return hanOf(a).length !== hanOf(l.prompt).length ? 'not-matched' : a === l.prompt ? 'used' : null;
+  return 'unknown-game';
+}
+
+export function lundao(state, content, ctx, args) {
+  const cfg = content.lundao, lang = state.lang, action = String(args.action ?? 'open');
+  if (!cfg || !hostedHere(content, state, 'lundao')) return refuse('not-here', pick({ zh: '这里没有可论道的人。', en: 'There is no one here to debate.' }, lang));
+  const s = clone(state), today = lundaoToday(s, ctx.now);
+  if (action === 'open') {
+    if (today?.outcome === 'lost') return refuse('lost-today', pick({ zh: '先生已起身，明日再来。', en: 'The scholar has risen for the day. Come back tomorrow.' }, lang));
+    if (today && !today.outcome) return { state: null, result: { ok: true, lundao: lundaoBrief(content, s, ctx.now) } };
+    if (doneThisPeriod(content, s, 'lundao', ctx.now)) return refuse('done-today', pick({ zh: '今日已论过道了。', en: 'You have debated today already.' }, lang));
+    const day = dayKey(ctx.now);
+    const games = lang === 'zh' ? ['feihua', 'chengyu', 'duilian'] : ['feihua', 'chengyu'];
+    const game = games[hashOf(`${day}|${s.name ?? ''}|lundao`) % games.length];
+    const list = game === 'duilian' ? cfg.duilian.zh : cfg[game][lang === 'zh' ? 'zh' : 'en'];
+    const dealt = list[hashOf(`${day}|${s.name ?? ''}|lundao|${game}`) % list.length];
+    const prompt = game === 'duilian' ? dealt.up : dealt;
+    s.lundao = { day, game, prompt, last: prompt, good: 0, misses: 0, used: [prompt], ...(game === 'duilian' ? { model: dealt.down } : {}) };
+    return { state: s, result: { ok: true, opened: true, lundao: lundaoBrief(content, s, ctx.now), ...(game === 'duilian' ? { model: dealt.down } : {}) } };
+  }
+  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['open', 'turn'] });
+  if (!today || today.outcome) return refuse('not-open', null);
+  const l = s.lundao, form = lundaoForm(l.game, lang, l, args.answer);
+  const judged = String(args.ok ?? '') === 'true';
+  const good = !form && judged;
+  const answer = String(args.answer ?? '').trim();
+  if (good) {
+    l.good += 1; l.used.push(answer);
+    // The chain goes on from the scholar's reply when it chains, else from the answer.
+    const reply = String(args.reply ?? '').trim();
+    l.last = l.game === 'chengyu' && reply && !lundaoForm('chengyu', lang, { ...l, last: answer }, reply) ? reply : answer;
+    if (l.game === 'chengyu' && reply) l.used.push(reply);
+    // 对对联: a fresh upper line each round; 飞花令 keeps its keyword.
+    if (l.game === 'duilian' && l.good < cfg.need) {
+      const next = cfg.duilian.zh[hashOf(`${l.day}|${s.name ?? ''}|lundao|duilian|${l.good}`) % cfg.duilian.zh.length];
+      l.prompt = next.up; l.model = next.down;
+    }
+  } else l.misses += 1;
+  let paid = null;
+  if (l.good >= cfg.need) {
+    l.outcome = 'won';
+    const t = taskOf(content, 'lundao');
+    s.tasks.lundao = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
+    paid = pay(content, s, ctx, t.grant);
+    advance(content, s, { kind: 'board', task: 'lundao' }, ctx);
+  } else if (l.misses >= cfg.misses) l.outcome = 'lost';
+  return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(l.model && !l.outcome ? { model: l.model } : {}), ...(paid ? { paid, line: pick(taskOf(content, 'lundao').done_line, lang) } : {}) } };
+}
+
 export const VERBS = {
   look: (s, c, x) => {
     const woke = wake(s, c, x);
@@ -3296,7 +3407,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet, deck,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet, deck, lundao,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

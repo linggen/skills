@@ -1,0 +1,112 @@
+/* 七巧板 — 布阵. All rules scoped under .g-qiqiao. */
+.g-qiqiao {
+  --qq-c0: #5d7384; /* 黛青 */
+  --qq-c1: #8a6c55; /* 赭石 */
+  --qq-c2: #5f7b64; /* 石绿 */
+  --qq-c3: #9a6868; /* 胭脂 */
+  --qq-c4: #74708f; /* 藕紫 */
+  --qq-c5: #a38a52; /* 藤黄 */
+  --qq-c6: #4f6f73; /* 苍松 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 560px;
+  min-width: 0;
+  margin: 0 auto;
+  font-family: var(--ui);
+  color: inherit;
+}
+.g-qiqiao .qq-title { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0.2em; }
+.g-qiqiao .qq-board {
+  width: 100%;
+  max-width: 360px;
+  max-height: 300px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.g-qiqiao .qq-slot {
+  fill: var(--ling-soft);
+  fill-opacity: 0.35;
+  stroke: var(--line);
+  stroke-width: 0.03;
+  stroke-dasharray: 0.08 0.06;
+  stroke-linejoin: round;
+}
+.g-qiqiao .qq-fill { stroke: var(--surface); stroke-width: 0.03; stroke-linejoin: round; }
+.g-qiqiao .qq-num {
+  font-family: var(--ui);
+  font-size: 0.32px;
+  fill: var(--faint);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.g-qiqiao .qq-c0 { fill: var(--qq-c0); }
+.g-qiqiao .qq-c1 { fill: var(--qq-c1); }
+.g-qiqiao .qq-c2 { fill: var(--qq-c2); }
+.g-qiqiao .qq-c3 { fill: var(--qq-c3); }
+.g-qiqiao .qq-c4 { fill: var(--qq-c4); }
+.g-qiqiao .qq-c5 { fill: var(--qq-c5); }
+.g-qiqiao .qq-c6 { fill: var(--qq-c6); }
+
+.g-qiqiao .qq-slots,
+.g-qiqiao .qq-tray,
+.g-qiqiao .qq-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+}
+.g-qiqiao button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.g-qiqiao button:disabled { cursor: default; opacity: 0.5; }
+.g-qiqiao button:focus-visible { outline: 2px solid var(--ling); outline-offset: 2px; }
+.g-qiqiao .qq-mini { width: 100%; height: 100%; display: block; }
+
+.g-qiqiao .qq-sbtn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 3px;
+}
+.g-qiqiao .qq-sbtn span {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  font-size: 0.7rem;
+  color: var(--faint);
+}
+.g-qiqiao .qq-sbtn.is-full { border-color: var(--ling); }
+
+.g-qiqiao .qq-pbtn {
+  width: 56px;
+  height: 56px;
+  padding: 4px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.g-qiqiao .qq-pbtn.is-sel { border: 2px solid var(--ling); background: var(--ling-soft); }
+
+.g-qiqiao .qq-tool { min-width: 72px; min-height: 44px; padding: 0 14px; }
+.g-qiqiao .qq-msg { margin: 0; min-height: 1.3em; font-size: 0.85rem; color: var(--faint); text-align: center; }
+.g-qiqiao .qq-msg.is-refused { color: var(--ling); }
+.g-qiqiao .qq-won {
+  margin: 4px 0 0;
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  letter-spacing: 0.3em;
+  color: var(--ling);
+}
+
+@media (max-width: 360px) {
+  .g-qiqiao .qq-pbtn { width: 48px; height: 48px; }
+}

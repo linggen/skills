@@ -1,0 +1,111 @@
+/* 五子棋 — board on wood-paper, stones as ink and paper. */
+.g-wuziqi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--ui);
+}
+
+.g-wuziqi-board {
+  --n: 11;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  grid-template-rows: repeat(var(--n), 1fr);
+  width: min(100%, 360px);
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--ling-soft) 55%, transparent), transparent 70%),
+    color-mix(in srgb, var(--ling-soft) 70%, var(--raised));
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--ling) 12%, transparent);
+}
+
+/* Grid lines run through cell centres: inset half a cell, 10 tiles each side. */
+.g-wuziqi-board::before {
+  content: '';
+  position: absolute;
+  inset: calc(100% / (var(--n) * 2));
+  border: 1px solid color-mix(in srgb, var(--ling) 55%, transparent);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--ling) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--ling) 45%, transparent) 1px, transparent 1px);
+  background-size: calc(100% / (var(--n) - 1)) calc(100% / (var(--n) - 1));
+  pointer-events: none;
+}
+
+.g-wuziqi-cell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+button.g-wuziqi-cell { cursor: pointer; border-radius: 50%; }
+button.g-wuziqi-cell:hover,
+button.g-wuziqi-cell:focus-visible {
+  background: radial-gradient(circle, color-mix(in srgb, var(--ling) 35%, transparent) 0 22%, transparent 24%);
+  outline: none;
+}
+
+.g-wuziqi-stone {
+  width: 84%;
+  height: 84%;
+  border-radius: 50%;
+  position: relative;
+}
+.g-wuziqi-stone.is-b {
+  background: radial-gradient(circle at 35% 30%, #5a5652, #141210 70%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.g-wuziqi-stone.is-w {
+  background: radial-gradient(circle at 35% 30%, #ffffff, #ece6d8 75%);
+  border: 1px solid var(--faint);
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.g-wuziqi-stone.is-last::after {
+  content: '';
+  position: absolute;
+  inset: 36%;
+  border-radius: 50%;
+  background: var(--ling);
+}
+
+.g-wuziqi-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 32px;
+}
+.g-wuziqi-status {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--faint);
+}
+.g-wuziqi.is-won .g-wuziqi-status { color: var(--ling); font-weight: 600; }
+.g-wuziqi.is-lost .g-wuziqi-status,
+.g-wuziqi.is-draw .g-wuziqi-status { color: inherit; }
+
+.g-wuziqi-again {
+  font-family: var(--ui);
+  font-size: 14px;
+  padding: 6px 14px;
+  border: 1px solid var(--ling);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ling);
+  cursor: pointer;
+}
+.g-wuziqi-again:hover { background: var(--ling-soft); }

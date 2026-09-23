@@ -1,0 +1,101 @@
+/* 象棋残局 — all selectors prefixed .g-xiangqi */
+.g-xiangqi { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; font-family: var(--ui); }
+.g-xiangqi-goal { margin: 0; font-family: var(--serif); font-size: 15px; letter-spacing: 0.04em; }
+.g-xiangqi-board {
+  position: relative;
+  width: min(100%, 360px);
+  aspect-ratio: 9 / 10;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.g-xiangqi-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.g-xiangqi-lines path { fill: none; stroke: var(--faint); stroke-width: 0.03; stroke-linecap: square; }
+.g-xiangqi-lines text {
+  font-family: var(--serif);
+  font-size: 0.42px;
+  fill: var(--faint);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.g-xiangqi-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+}
+.g-xiangqi-pt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+button.g-xiangqi-pt { cursor: pointer; }
+.g-xiangqi-piece {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 86%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid currentColor;
+  font-family: var(--serif);
+  font-size: clamp(14px, 4.6vw, 22px);
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.12s;
+}
+.g-xiangqi-piece.is-red { color: #a33a2c; }
+.g-xiangqi-piece.is-black { color: #222; }
+button.g-xiangqi-pt:hover .g-xiangqi-piece { transform: scale(1.06); }
+.g-xiangqi-pt.is-sel .g-xiangqi-piece { box-shadow: 0 0 0 3px var(--ling); }
+.g-xiangqi-pt.is-last::before {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border: 1.5px dashed var(--ling);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.g-xiangqi-pt.is-dest::after {
+  content: '';
+  position: absolute;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--ling-soft);
+  border: 2px solid var(--ling);
+  pointer-events: none;
+}
+.g-xiangqi-pt.is-dest:has(.g-xiangqi-piece)::after { width: 92%; background: transparent; }
+.g-xiangqi-foot { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.g-xiangqi-status { font-size: 14px; }
+.g-xiangqi.is-won .g-xiangqi-status { color: var(--ling); font-weight: 600; }
+.g-xiangqi.is-lost .g-xiangqi-status { color: var(--faint); }
+.g-xiangqi-again {
+  padding: 6px 14px;
+  border: 1px solid var(--ling);
+  border-radius: 999px;
+  background: var(--ling-soft);
+  color: var(--ling);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}

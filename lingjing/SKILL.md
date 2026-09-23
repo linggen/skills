@@ -238,6 +238,38 @@ tools:
         required: true
         description: The item id from the shelf or the bag.
 
+  - name: Lundao
+    description: >-
+      论道 — the word games with the scholar at 稷下 (a place whose `tasks`
+      hold `lundao`). `open` deals today's game — 飞花令 (a line holding the
+      keyword), 成语接龙 (an idiom from the last character) or 对对联 (a lower
+      line as long as the upper) — speak the prompt as the scholar, in his
+      voice. Each answer the player gives is `turn` with their `answer`
+      verbatim and your judgement `ok` (true only for a real verse line, a
+      real idiom, a fitting couplet — never be generous); for 成语接龙 add
+      your own next idiom as `reply`, which must chain. The rules check the
+      form and count: `form` names what broke, `good` says whether it
+      counted, `paid` comes on the third good answer; three misses and he
+      rises for the day. The card on the stage shows the prompt and the
+      count, so never read the count out. One game a day. No 体力.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lundao --action={{action}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --for=ling"
+    tier: edit
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: open or turn.
+      answer:
+        type: string
+        description: For turn — the player's answer, verbatim.
+      ok:
+        type: string
+        description: For turn — true when the answer is genuinely right in meaning; else false.
+      reply:
+        type: string
+        description: For turn in 成语接龙 — the scholar's next idiom, chaining from the player's.
+
   - name: Tame
     description: >-
       At a creature's haunt (Look's `place.encounter`), feed it the thing it
@@ -1207,6 +1239,12 @@ next, say the thread.
 
 ## Tasks
 
+- **Games a place hosts** — 炼丹 at a market, 洛书 · 华容道 · 七巧 · 五子 ·
+  残局 where Look's `tasks` carry them (`hosted`, `game`) — stand on the
+  stage as cards, played by the player alone, once a day, no 体力. The win
+  comes as `[scene] won <id>` like any board: Practice `done` with that id,
+  and say what it paid in a line. A 榜文 may ask for one (`need` kind
+  board). 论道 at 稷下 is yours to host: see Lundao.
 - **In-world tasks** — the boards, 炼丹 — are played on the scene, with no
   model. Point to the board as a thing before them — *丹炉就在你面前，八味
   灵草都在。* The scene reports a win as `[scene] won <id>` — a message of its

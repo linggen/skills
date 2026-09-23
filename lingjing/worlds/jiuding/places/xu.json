@@ -76,9 +76,7 @@
     0.795,
     0.4898
    ],
-   "has": {
-    "shop": true
-   },
+   "has": { "shop": true, "games": ["alchemy-daily"] },
    "line": {
     "zh": "徐州的城，坊市在南门里。",
     "en": "The city of Xu; the market lies inside the south gate."
@@ -100,9 +98,7 @@
     0.7894,
     0.4794
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["luoshu"] },
    "line": {
     "zh": "山形如卧龙，山上有石床，传说仙人在此醉卧。",
     "en": "A hill shaped like a sleeping dragon, a stone bed on top where an immortal is said to have slept off his wine."
@@ -128,7 +124,7 @@
     0.8644,
     0.5476
    ],
-   "has": {},
+   "has": { "games": ["qiqiao"] },
    "line": {
     "zh": "一条船，一个老船家。渡人，不渡心事。",
     "en": "One boat, one old boatman. He carries people, not their troubles."
@@ -154,9 +150,7 @@
     0.8186,
     0.4917
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["xiangqi"] },
    "line": {
     "zh": "下邳的老桥。当年一位老人在桥上掉了鞋，一个少年替他拾了三次。",
     "en": "The old bridge at Xiapi. An old man once dropped his shoe here; a young man picked it up three times."
@@ -182,7 +176,7 @@
     0.8443,
     0.5438
    ],
-   "has": {},
+   "has": { "games": ["wuziqi"] },
    "line": {
     "zh": "泗水入淮之处，两水相激，船家在此歇桨。",
     "en": "Where the Si meets the Huai; two waters collide, and boatmen rest their oars."
@@ -264,9 +258,7 @@
     0.7964,
     0.4529
    ],
-   "has": {
-    "seeds": true
-   },
+   "has": { "seeds": true, "games": ["huarong"] },
    "line": {
     "zh": "湖上千顷荷，湖心有岛，岛上有古墓。",
     "en": "A thousand acres of lotus; an island at the heart, and an old tomb on the island."
