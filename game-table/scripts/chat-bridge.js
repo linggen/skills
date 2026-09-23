@@ -106,6 +106,11 @@ async function mount(el, options) {
         if (onStreamEnd) onStreamEnd(payload?.text || streamBuffer);
         streamBuffer = '';
         break;
+      case 'activity':
+        // The agent is working though nothing streams — { sessionId, kind:
+        // 'turn_start' | 'thinking' | 'tool' }, at most one per ~5 s.
+        if (options.onActivity) options.onActivity(payload);
+        break;
       case 'session_created':
         if (payload?.sessionId) {
           sessionId = payload.sessionId;

@@ -472,6 +472,16 @@ function chatActivity(payload) {
   rearmRunningChips();
 }
 
+// The chat's heartbeat while nothing streams ({ kind }, at most one per
+// ~5 s). A turn starting or the model thinking is a round running — after
+// an end, a genuinely new one, counted like a token. A tool is work inside
+// the round already running (or a subagent's): life, never a new round.
+function chatLife(payload) {
+  const kind = payload?.kind;
+  if (kind === 'turn_start' || kind === 'thinking') chatActivity(null);
+  else rearmRunningChips();
+}
+
 // A round ended. A chip whose own round it was now gets END_GRACE_MS for a
 // late PageUpdate instead of waiting out silence that no longer means
 // anything; a chip still behind another round keeps waiting.
@@ -1531,6 +1541,7 @@ async function mountChat() {
     onConnectionChange: setTransportStatus,
     onStreamToken: () => chatActivity(null),
     onStreamEnd: () => turnEndedForRunningChips(),
+    onActivity: chatLife,
     onContentBlock: (payload) => {
       // Any content block (tool call, text streaming, PageUpdate, …) is
       // fresh evidence the agent is still working — bump the running
