@@ -312,7 +312,7 @@ const RISE_MS = 1600, GAIN_MS = 3600;
 let riseAfter = 0; // a rise waits for this moment (the fight room closing)
 function riseStats() {
   const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
-    rank: look.tier?.name, chapter: look.chapter?.id, stamina: look.stamina?.now };
+    rank: look.tier?.name, chapter: look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting) };
   const before = shown;
   shown = now;
   // 大成就: a realm risen, a chapter opened — the stage marks it and 银月 speaks
@@ -320,7 +320,7 @@ function riseStats() {
   if (before && before.world === now.world) {
     // The last point spent: 银月 sends him back to the real world to rest —
     // real life is hers, not Ling's (his rule, 2026-09-23).
-    if (before.stamina > 0 && now.stamina === 0) {
+    if (before.stamina > 0 && now.stamina === 0 && !before.resting) {
       const at = look.stamina?.returns_at ? new Date(look.stamina.returns_at).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' }) : '';
       askHer(`他的体力刚刚耗尽了（${at} 回满）。游戏先放一放：请他回到现实里歇一歇，起身走走、喝口水。说一两句。`, `His stamina just ran out (full again at ${at}). The game waits: send him back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
@@ -581,7 +581,7 @@ function draw() {
   // Out on a 历练 she is not on the stage; her name says where she went.
   const away = look.companion?.journey && !look.companion.journey.back;
   const her = Boolean(look.companion) && !bout && !away;
-  stageYinyue(her);
+  stageYinyue(her, Boolean(bout) && Boolean(look.companion) && !away);
   $('stageName').textContent = her ? look.companion.name : away ? `${look.companion.name} · ${words().journeyAway}` : '';
   const cast = look.divination ? JSON.stringify(look.divination.throws) : null;
   keep({ castFresh: view.castSeen !== undefined && cast !== null && cast !== view.castSeen, castSeen: cast });
@@ -1313,9 +1313,14 @@ function cheer(before, text) {
    outranks the desktop corner. Loaded while the game is open — the gate
    unloads it, which releases her, and she goes back to wherever she was.
    The moon stands in until the view has loaded. */
-function stageYinyue(on) {
+function stageYinyue(on, keep = false) {
   const pet = $('pet');
   const moon = document.querySelector('.stage .moon');
+  // In a fight she is a card, so her body steps aside — but her view stays
+  // loaded: unloaded, it gave up the presenter and she walked into the other
+  // Linggen tab mid-fight (his screen, 2026-09-23: 进战斗后, 银月跑回主页面了).
+  if (!on && keep && pet.dataset.on) { pet.style.visibility = 'hidden'; return; }
+  pet.style.visibility = '';
   if (!on) { pet.hidden = true; moon.hidden = false; if (pet.dataset.on) { delete pet.dataset.on; delete pet.dataset.told; pet.src = 'about:blank'; } return; }
   if (pet.dataset.on) return;
   pet.dataset.on = '1';
