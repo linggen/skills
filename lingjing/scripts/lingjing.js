@@ -299,9 +299,17 @@ function riseStats() {
     if (joined.length) wonOver(joined);
   }
   if (before && before.world === now.world) {
+    const gained = {};
     for (const key of ['progress', 'wealth']) {
       if (key === 'progress' && before.tier !== now.tier) continue;
-      if (now[key] > before[key]) rising.set(key, { from: before[key], to: now[key], start: Math.max(performance.now(), riseAfter), next: now.next });
+      if (now[key] > before[key]) {
+        rising.set(key, { from: before[key], to: now[key], start: Math.max(performance.now(), riseAfter), next: now.next });
+        gained[key] = now[key] - before[key];
+      }
+    }
+    if (gained.progress || gained.wealth) {
+      console.info('[lingjing] gain', gained);
+      gainBurst(gained);
     }
   }
   if (rising.size) paintRise();
@@ -337,6 +345,21 @@ function playTravel(stops) {
   box.querySelector('polyline')?.animate([{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration: walk, easing: 'ease-in-out', fill: 'forwards' });
   setTimeout(() => box.classList.add('gone'), walk + 900);
   setTimeout(() => box.remove(), walk + 1500);
+}
+
+/* A gain, where the eye is: 修为 +30 · 灵石 +10 rises in the middle of the
+   stage — the strip's count-up alone ran while he read the chat and he never
+   saw one (2026-09-23: 还是没看到动画). */
+function gainBurst(g) {
+  const w = words(), bits = [];
+  if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${g.progress}</b></span>`);
+  if (g.wealth) bits.push(`<span>${esc(w.ls)} <b>+${g.wealth}</b></span>`);
+  const el = document.createElement('div');
+  el.className = 'gainburst';
+  el.innerHTML = bits.join('');
+  el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
+  $('view')?.appendChild(el);
+  setTimeout(() => el.remove(), 3400 + Math.max(0, riseAfter - performance.now()));
 }
 
 function wonOver(beasts) {

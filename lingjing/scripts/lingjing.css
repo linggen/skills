@@ -526,3 +526,12 @@ button.gcard { cursor: pointer; font: inherit; }
   box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 0 14px 4px color-mix(in srgb, var(--ling) 60%, transparent); }
 @keyframes travelIn { from { opacity: 0; transform: translate(-50%, -46%) scale(.97); } }
 @media (prefers-reduced-motion: reduce) { .travel { animation: none; } }
+/* A gain in the middle of the stage: rises, holds, fades. */
+.gainburst { position: absolute; left: 50%; top: 30%; z-index: 28; display: flex; gap: 18px; padding: 10px 22px; border-radius: 999px;
+  background: rgba(253, 248, 236, .92); box-shadow: 0 10px 30px rgba(120, 90, 20, .25); border: 1px solid rgba(201, 162, 39, .5);
+  font-family: var(--serif); font-size: 20px; color: #5a4520; pointer-events: none; transform: translate(-50%, 0); opacity: 0;
+  animation: gainBurst 3.2s ease-out both; }
+.gainburst b { color: #a8741a; font-size: 26px; }
+@keyframes gainBurst { 0% { opacity: 0; transform: translate(-50%, 18px) scale(.9); } 12% { opacity: 1; transform: translate(-50%, 0) scale(1.06); }
+  20% { transform: translate(-50%, 0) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -26px); } }
+@media (prefers-reduced-motion: reduce) { .gainburst { animation-name: gainFade; } @keyframes gainFade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } } }
