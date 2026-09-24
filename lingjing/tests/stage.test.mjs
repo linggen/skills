@@ -45,9 +45,9 @@ test('what the stage owns, the question does not offer — whichever side it cam
   assert.ok(owns.has('divine'), 'the coins, until they are cast');
   assert.ok(!stageOwns({ divination: { day: 'today' } }, [{ card: 'hexagram' }]).has('divine'), 'cast already: the card is only telling');
 
-  const ask = { header: '此处', question: '何去何从？', options: [{ label: '摇一摇铃', ring: true }, { label: '邺城', move: 'ye' }, { label: '濮水', move: 'pushui' }, { label: '问问银月', ask: true }] };
+  const ask = { header: '此处', question: '何去何从？', options: [{ label: '摇一摇铃', ring: true }, { label: '邺城', move: 'ye' }, { label: '濮水', move: 'pushui' }, { label: '看看四周', look: true }] };
   const left = askMinusStage(ask, owns);
-  assert.deepEqual(left.options.map(o => o.label), ['濮水', '问问银月'], 'only what no card shows');
+  assert.deepEqual(left.options.map(o => o.label), ['濮水', '看看四周'], 'only what no card shows');
   // nothing left worth asking: the chat says nothing and the stage has it all
   assert.equal(askMinusStage({ ...ask, options: ask.options.slice(0, 2) }, owns), null);
   assert.equal(askMinusStage(null, owns), null);

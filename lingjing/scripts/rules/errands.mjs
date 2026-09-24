@@ -424,20 +424,17 @@ function choiceOf(state, here, near, thread, rumor, said, alone = null, ready = 
   return { header: here.name, question: zh ? '何去何从？' : 'What now?', options };
 }
 
-/* The second option when the world offers only one: a word to Yinyue, or a
-   look around — never the one the player just took, so the same choice is
-   not offered twice running (his "that is duplicated", 2026-09-16). */
+/* The second option when the world offers only one: two ways of looking —
+   never the one the player just took, so the same choice is not offered
+   twice running (his "that is duplicated", 2026-09-16). Never a word to
+   Yinyue: Ling cannot answer for her, and the stage has her own ask box
+   (`@银月 …`) under her name (2026-09-24 — Ling wrote "**银月：**…"). */
 const FILLERS = {
-  zh: [{ label: '问问银月', ask: true }, { label: '看看四周', look: true }],
-  en: [{ label: 'Ask Yinyue', ask: true }, { label: 'Look around', look: true }],
-};
-// Before she is found there is no one to ask: two ways of looking instead.
-const ALONE = {
   zh: [{ label: '看看四周', look: true }, { label: '说说此地', look: true }],
   en: [{ label: 'Look around', look: true }, { label: 'Tell me about this place', look: true }],
 };
 function filler(content, state, said) {
-  const pair = (hasCompanion(state) ? FILLERS : ALONE)[state.lang === 'zh' ? 'zh' : 'en'];
+  const pair = FILLERS[state.lang === 'zh' ? 'zh' : 'en'];
   const last = String(said ?? '').trim();
   return pair.find(f => f.label !== last) ?? pair[0];
 }

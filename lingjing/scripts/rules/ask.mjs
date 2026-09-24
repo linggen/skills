@@ -16,7 +16,7 @@ import { atScene, placeBrief } from './world.mjs';
    enough (2026-09-16, gpt-5.6-terra: Look, Show, narration, silence). */
 export function askOf(content, state, ctx, result = {}, ungated = false) {
   const zh = state.lang === 'zh';
-  const yinyue = filler(content, state, ctx.said);
+  const second = filler(content, state, ctx.said);
   // Her riddle, while it waits, is the question — wherever the player stands.
   const her = companionOf(content);
   if (her && riddleWaiting(state, ctx.now)) {
@@ -78,7 +78,7 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
         ];
       }
     }
-    if (options.length < 2) options.push(yinyue);
+    if (options.length < 2) options.push(second);
     return { header: header(scene.place), question: asked, options };
   }
   // 台上有事，聊天不问去处 (his ruling, 2026-09-18). The stage was holding out a

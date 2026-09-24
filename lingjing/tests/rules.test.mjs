@@ -282,16 +282,16 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.deepEqual(a.options.map(o => o.label), [...rid.choices, '先不答']);
   assert.ok(a.options.slice(0, -1).every(o => o.exit === 'riddle' && o.answer === o.label));
   assert.equal(a.options.at(-1).look, true);
-  // on the table, it stays the question after a Look or a word to Yinyue —
+  // on the table, it stays the question after a Look or any other word —
   // never the scene's question the player already answered
-  const onTable = look(asked.state, content, ctx({ said: '问问银月' }));
+  const onTable = look(asked.state, content, ctx({ said: '你好' }));
   assert.equal(onTable.scene.exits.find(e => e.id === 'riddle').waiting, true);
   assert.deepEqual(onTable.ask, askOf(content, asked.state, ctx(), r));
   // 先不答 sets it aside: the scene's own question comes back
   const aside = VERBS.look(asked.state, content, ctx({ said: '先不答' }));
   assert.ok(aside.state, 'set aside is kept');
   assert.deepEqual(aside.result.ask.options.map(o => o.label), l.ask.options.map(o => o.label));
-  assert.equal(VERBS.look({ ...asked.state, chance: DEALT }, content, ctx({ said: '问问银月' })).state, null, 'any other word leaves it on the table');
+  assert.equal(VERBS.look({ ...asked.state, chance: DEALT }, content, ctx({ said: '你好' })).state, null, 'any other word leaves it on the table');
   // a miss: the hint, and the answers left; a second miss shuts it for the day
   const wrongs = rid.choices.filter(x => x !== rid.wrong && !content.riddles.zh.riddles[rid.key].a.includes(x));
   const miss = resolve(asked.state, content, ctx(), { exit: 'riddle', answer: rid.wrong });
@@ -313,9 +313,9 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   const spent = resolve(shut.state, content, tomorrow, { exit: 'riddle' }).state;
   const after = riddleAt({ ...spent, riddles: { ...spent.riddles } }, 'riddle', ctx({ now: new Date(NOW.getTime() + 2 * 864e5) }));
   assert.notEqual(after.key, next.key);
-  // the filler never repeats the player's last word: after Yinyue, a look around
+  // the filler never repeats the player's last word, and never offers Yinyue
   const one = { ...l.scene, buttons: l.scene.buttons.slice(0, 1) };
-  assert.equal(askOf(content, s, { ...ctx(), said: '问问银月' }).options.at(-1)?.label !== '问问银月', true);
+  assert.equal(askOf(content, s, { ...ctx(), said: '说说此地' }).options.at(-1)?.label !== '说说此地', true);
   assert.equal(askOf(content, s, { ...ctx(), said: '看看四周' }).options.at(-1)?.label !== '看看四周', true);
   void one;
   // The world open: the question rides an ARRIVAL, and only onto a stage with
@@ -2045,10 +2045,12 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.equal(after.companion.id, 'yinyue');
   assert.equal(after.quest, null);
   // A scene with one button takes its second option from the rules: a look
-  // around while she is not found, a word to her once she is.
+  // around, found or not — never a word to her, which Ling cannot answer for
+  // (she has her own ask box on the stage).
   const lone = { chapter: '00-prologue', scene: '00-stone', place: 'sishui' };
   assert.equal(askOf(content, { ...called, ...lone }, ctx()).options.at(-1).label, '看看四周');
-  assert.equal(askOf(content, { ...joined.state, ...lone }, ctx()).options.at(-1).label, '问问银月');
+  assert.equal(askOf(content, { ...joined.state, ...lone }, ctx()).options.at(-1).label, '看看四周');
+  assert.ok(!askOf(content, { ...joined.state, ...lone }, ctx()).options.some(o => o.ask || /银月|Yinyue/.test(o.label)));
   // A second bell is not sold once she has been found.
   assert.ok(!look({ ...joined.state, place: 'pengcheng', bag: {} }, content, ctx()).place.shelf.some(i => i.id === 'moon-bell'));
 });
