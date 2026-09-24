@@ -1,10 +1,20 @@
-// rules/fortune.mjs — 起卦 and 命格: the day's cast by three coins, the lifelong base tone.
+// rules/fortune.mjs — 问卦: the day's one reading by three coins, and the 命格 it leans by.
 // Part of the rules engine; rules.mjs is its one door.
+//
+// 起卦 · 望气 · 命格 are one thing now (redesign-v2 § 四, 2026-09-24): once a
+// day, one card, and what it says is the day's fight luck — never 修为 or
+// 灵石. Its effects, all in the fight, all locked at the door:
+//   卦力 — the lower trigram's element: its 功法 hit harder or softer by the
+//          grade (hexagrams.json effects.bout `card`: 大吉 +2 … 大凶 −2);
+//   命格 — a lower trigram of one's own 日主 element leans the grade one's way
+//          (吉 → 大吉, 凶 → 平, 大凶 → 凶);
+//   望气 — at 吉 and 大吉 the day's fights read the beast's next move, as the
+//          scroll's 上卷 does (`sight`); the 下卷 still reads the numbers.
 import { dayKey, pick } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { hashOf } from './travel.mjs';
 
-/* ── 起卦 — the day's cast, by three coins ── */
+/* ── 问卦 — the day's cast, by three coins ── */
 
 const TRIGRAM_OF = { 111: 'qian', 110: 'dui', 101: 'li', 100: 'zhen', '011': 'xun', '010': 'kan', '001': 'gen', '000': 'kun' };
 const castToday = (state, now) => (state.divination?.day === dayKey(now) ? state.divination : null);
@@ -28,21 +38,15 @@ export function castThrows(seed) {
 }
 const hexagramOf = (content, lines) => content.hexagrams.hexagrams.find(h => h.lines.join('') === lines.join(''));
 
-/* What today's cast does to what it was asked about — null when it was
-   not cast, asked about something else, or is even. */
-function fortuneOf(content, state, now, ask) {
-  const cast = now && castToday(state, now);
-  if (!cast || cast.ask !== ask) return null;
-  const effect = content.hexagrams.effects[ask]?.[cast.grade] ?? {};
-  return Object.keys(effect).length ? effect : null;
-}
-
-/* A cast asked about fights lifts — or lowers — the 法术 of the lower
-   trigram's root, for the whole day. */
+/* What today's reading does to the day's fights — null before it is cast, or
+   when it is even. A cast made before the merge that asked about cultivation
+   or wealth reads as today's fight luck too: the coins fell as they fell. */
 function boutFortune(content, state, now) {
-  const effect = fortuneOf(content, state, now, 'bout');
-  if (!effect) return null;
-  const h = content.hexagrams.hexagrams.find(x => x.id === castToday(state, now).hexagram);
+  const cast = now && castToday(state, now);
+  if (!cast) return null;
+  const effect = content.hexagrams.effects.bout?.[cast.grade] ?? {};
+  if (!Object.keys(effect).length) return null;
+  const h = content.hexagrams.hexagrams.find(x => x.id === cast.hexagram);
   return { root: content.hexagrams.trigram_roots[TRIGRAM_OF[h.lines.slice(0, 3).join('')]], ...effect };
 }
 
@@ -55,9 +59,8 @@ export function divinationBrief(content, state, now) {
   const to = cast.changed ? book.hexagrams.find(x => x.id === cast.changed) : null;
   const values = cast.throws.map(t => t[0] + t[1] + t[2]);
   const moving = values.flatMap((v, i) => (v === 6 || v === 9 ? [i] : []));
-  const bout = cast.ask === 'bout' ? boutFortune(content, state, now) : null;
+  const bout = boutFortune(content, state, now);
   return {
-    ask: { id: cast.ask, name: pick(book.asks[cast.ask], lang) },
     throws: cast.throws, values, moving,
     hexagram: {
       id: h.id, name: pick(h.name, lang), lines: h.lines, judgment: pick(h.judgment, lang), image: pick(h.image, lang),
@@ -66,17 +69,17 @@ export function divinationBrief(content, state, now) {
     changed: to ? { id: to.id, name: pick(to.name, lang) } : null,
     grade: { id: cast.grade, name: pick(book.grades[cast.grade], lang) },
     ...(cast.fated ? { fated: true } : {}),
-    effect: { ...(book.effects[cast.ask]?.[cast.grade] ?? {}), ...(bout ? { root: { id: bout.root, name: pick(content.traits.elements[bout.root], lang) } } : {}) },
+    // One effect set, all of it the day's fights: the element's 功法 ±`card`,
+    // and `sight` — the beast's next move read — at 吉 and 大吉.
+    effect: bout ? { card: bout.card, ...(bout.sight ? { sight: bout.sight } : {}), root: { id: bout.root, name: pick(content.traits.elements[bout.root], lang) } } : {},
   };
 }
 
-/* Divine: once a day. Without `ask` the rules ask what the cast is about;
-   with it, the coins fall — the same for the day and the 道号, so undo
-   cannot fish for another. */
-export function divine(state, content, ctx, args) {
+/* 问卦: once a day, and the coins fall at once — nothing is asked first, it
+   is always the day's fight luck. The same throws for the day and the 道号,
+   so undo cannot fish for another. `ask` from an older caller is ignored. */
+export function divine(state, content, ctx) {
   if (castToday(state, ctx.now)) return refuse('cast-today', null, { divination: divinationBrief(content, state, ctx.now) });
-  const ask = String(args.ask ?? '').trim();
-  if (!content.hexagrams.effects[ask]) return refuse('needs-ask', null, { asks: Object.keys(content.hexagrams.effects) });
   const s = clone(state);
   const throws = castThrows(`${dayKey(ctx.now)}|${s.name ?? ''}|cast`);
   const values = throws.map(t => t[0] + t[1] + t[2]);
@@ -88,7 +91,7 @@ export function divine(state, content, ctx, args) {
   // a good one to great, an ill one softer; an even one stays even.
   const fated = Boolean(s.fate?.element) && content.hexagrams.trigram_roots[TRIGRAM_OF[lines.slice(0, 3).join('')]] === s.fate.element;
   const grade = fated ? { great: 'great', good: 'great', even: 'even', ill: 'even', dire: 'ill' }[h.grade] : h.grade;
-  s.divination = { day: dayKey(ctx.now), ask, throws, hexagram: h.id, changed: to?.id ?? null, grade, ...(fated ? { fated: true } : {}), at: ctx.now.toISOString() };
+  s.divination = { day: dayKey(ctx.now), throws, hexagram: h.id, changed: to?.id ?? null, grade, ...(fated ? { fated: true } : {}), at: ctx.now.toISOString() };
   return { state: s, result: { ok: true, divination: divinationBrief(content, s, ctx.now) } };
 }
 
@@ -154,4 +157,4 @@ export function fate(state, content, ctx, args) {
   return { state: s, result: { ok: true, fate: fateBrief(content, s) } };
 }
 
-export { boutFortune, fortuneOf };
+export { boutFortune };

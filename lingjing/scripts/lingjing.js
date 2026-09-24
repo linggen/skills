@@ -377,9 +377,9 @@ function statusHtml() {
   const name = look.name ? `<span class="daohao">${esc(look.name)}</span>` : '';
   return `${name}<span class="realm">${esc(look.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
-      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span>${omenChip('progress')}</div>
+      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>
     ${qiHtml()}
-    <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b>${omenChip('wealth')}</span>${omenChip('bout')}
+    <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>${omenChip()}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml({ ...ctx(), gear: view.gear, gearNote: view.gearOpen ? view.gearNote : null }, view.gearOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
@@ -552,19 +552,15 @@ function paintRise() {
   if (!rising.size) document.querySelectorAll('.gain').forEach((g) => g.remove());
 }
 
-/// Today's cast beside the number it changes — 修为 ×1.2 by the 修为 bar,
-/// 灵石 ×1.5 by the 灵石, a bout's lean on its own — so the day's omen is
-/// read where it counts, not only on its card (his ask, 2026-09-17).
-function omenChip(kind) {
+/// Today's reading on the strip — its element's lean in a fight — so the
+/// day's omen is read where it counts, not only on its card (his ask,
+/// 2026-09-17). 问卦 is the day's fight luck alone: nothing by 修为 or 灵石.
+function omenChip() {
   const d = look?.divination, e = d?.effect;
-  if (!e) return '';
+  if (!e?.root || !e.card) return '';
   const w = words();
-  const label = kind === 'progress' ? (e.progress ? `×${e.progress}` : '')
-    : kind === 'wealth' ? (e.wealth ? `×${e.wealth}` : '')
-    : e.root && e.spell ? `${e.root.name}${e.spell > 0 ? '↑' : '↓'}` : '';
-  if (!label) return '';
-  const title = `${w.omen} · ${d.hexagram.name} · ${d.grade.name} · ${d.ask.name}`;
-  return `<span class="omenchip ${esc(d.grade.id)}" title="${esc(title)}">${esc(d.hexagram.name)} ${esc(label)}</span>`;
+  const title = `${w.omen} · ${d.hexagram.name} · ${d.grade.name}`;
+  return `<span class="omenchip ${esc(d.grade.id)}" title="${esc(title)}">${esc(d.hexagram.name)} ${esc(`${e.root.name}${e.card > 0 ? '↑' : '↓'}`)}</span>`;
 }
 
 /// The game's language, at a tap — the rules' Lang, the same word Ling
@@ -1179,7 +1175,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-/* 命格 — set on the card, never in the chat. No turn for Ling: she reads it on
+/* 命格 — set on the 问卦 card, never in the chat. No turn for Ling: she reads it on
    her next Look. 银月 tells him what his sign is, in her own words. */
 async function setFate(kind) {
   const args = kind === 'birth' ? { birth: view.fateDraft } : { [kind]: 'true' };
@@ -1190,8 +1186,8 @@ async function setFate(kind) {
   await refresh();
   const f = look?.fate;
   if (kind === 'decline' || !f?.zodiac) return;
-  askHer('fate', `玩家刚在灵根卡上定了命格：属${f.zodiac.name}，日主${f.stem.name}${f.element.name}，天生亲近${f.element.name}。它给的：斗法时同属${f.element.name}的一击，每场减半一次；起卦时下卦属${f.element.name}，卦象偏向玩家。用你自己的话告诉玩家，一两句。`,
-    `The player has just set their birth sign on the roots card: year of the ${f.zodiac.name}, day master ${f.stem.name} (${f.element.name}), at home in ${f.element.name}. What it gives: once a fight, a blow of ${f.element.name} is halved; a cast whose lower trigram is ${f.element.name} leans their way. Tell them in your own words, a line or two.`, 'happy');
+  askHer('fate', `玩家刚在问卦的卡上定了命格：属${f.zodiac.name}，日主${f.stem.name}${f.element.name}，天生亲近${f.element.name}。它给的：斗法时主灵根一击属${f.element.name}；问卦时下卦属${f.element.name}，卦象偏向玩家。用你自己的话告诉玩家，一两句。`,
+    `The player has just set their birth sign on the day's reading: year of the ${f.zodiac.name}, day master ${f.stem.name} (${f.element.name}), at home in ${f.element.name}. What it gives: their root strike in a fight is ${f.element.name}; a reading whose lower trigram is ${f.element.name} leans their way. Tell them in your own words, a line or two.`, 'happy');
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false }); });
 
@@ -1267,7 +1263,7 @@ const CLICKS = [
   ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
-  ['[data-divine]', (el) => run('divine', () => castByPage(el.dataset.divine))],
+  ['[data-divine]', () => run('divine', () => castByPage())],
   ['[data-chance]', busy('chance', () => takeChance())],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
   ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],
@@ -1515,15 +1511,6 @@ async function recentSessionId() {
   }
 }
 
-function askedQuestion(args) {
-  try {
-    const a = typeof args === 'string' ? JSON.parse(args) : args;
-    return a?.questions?.[0]?.question ?? null;
-  } catch {
-    return null; // still streaming: the start of the call, before its args are whole
-  }
-}
-
 /// What the open question offers, by label. The chat owns the question (his
 /// law, 2026-09-17), so while one is open the stage does not offer the same
 /// choices a second time — one clickable place for one thing. Anything the
@@ -1540,9 +1527,8 @@ function askedOptions(args) {
 
 function onContentBlock(payload) {
   if (payload?.tool === 'AskUser') {
-    // The cast's own question (所问何事) keeps the coins in the air; any
-    // other question means no cast is coming this turn.
-    if (view.casting && askedQuestion(payload.args) !== words().castAsk) keep({ casting: false });
+    // A question means no cast is coming this turn: the coins land.
+    if (view.casting) keep({ casting: false });
     const offered = askedOptions(payload.args);
     if (offered?.size) keep({ asked: offered });
     waitingOnPlayer();
@@ -1647,11 +1633,11 @@ async function firstLanguage() {
 
 /* ── 银月 on the stage: the cast, the rise, her body ── */
 
-/// 起卦 from the card: the rules cast, the card shows it, 银月 reads it.
-async function castByPage(ask) {
+/// 问卦 from the card: the rules cast, the card shows it, 银月 reads it.
+async function castByPage() {
   if (view.casting) return;
   show({ casting: true, bookOpen: false });
-  const r = await write('divine', { ask }).catch(failed);
+  const r = await write('divine', {}).catch(failed);
   if (!r.ok) { console.warn('[lingjing] divine', r); keep({ doNote: refusal(r) }); }
   await refresh();
   show({ casting: false });
@@ -1665,9 +1651,13 @@ function readingByHer(d) {
   const h = d.hexagram, zh = lang() !== 'en';
   const moving = h.moving_lines?.length ? (zh ? `；动爻：${h.moving_lines.join(' ')}` : '') : '';
   const to = d.changed ? (zh ? `，之卦《${d.changed.name}》` : `, changing to ${d.changed.name}`) : '';
+  const e = d.effect ?? {};
+  const does = zh
+    ? [e.card ? `今日斗法${e.root?.name ?? ''}法术${e.card > 0 ? `+${e.card}` : e.card}` : '今日斗法无增无减', e.sight ? '看得出妖下回合的架势' : ''].filter(Boolean).join('，')
+    : [e.card ? `in fights today ${e.root?.name ?? ''} spells ${e.card > 0 ? `+${e.card}` : e.card}` : 'no gain, no loss in fights today', e.sight ? "the beast's next move can be read" : ''].filter(Boolean).join('; ');
   const text = zh
-    ? `为「${d.ask.name}」起了一卦：得《${h.name}》${to}，${d.grade.name}。卦辞：${h.judgment}${moving}。`
-    : `A cast for "${d.ask.name}": ${h.name}${to}, ${d.grade.name}. The judgment: ${h.judgment}.`;
+    ? `为玩家问了今日一卦：得《${h.name}》${to}，${d.grade.name}。卦辞：${h.judgment}${moving}。它给的：${does}。`
+    : `The day's reading: ${h.name}${to}, ${d.grade.name}. The judgment: ${h.judgment}. What it gives: ${does}.`;
   const mood = { great: 'happy', good: 'happy', even: 'relaxed', ill: 'sad', dire: 'sad' }[d.grade.id] ?? 'neutral';
   askHer('reading', text, text, mood);
 }

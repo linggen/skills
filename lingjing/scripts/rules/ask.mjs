@@ -39,15 +39,6 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   }
   const header = s => String(s ?? '');
   const question = zh ? '何去何从？' : 'What now?';
-  if (result.refused === 'needs-ask') {
-    // 所问何事: the cast is a question held in mind — what it does, it does to that.
-    const book = content.hexagrams;
-    const where = atScene(content, state) ? sceneBrief(content, state, ctx.now)?.place : placeBrief(content, state, ctx.now)?.name;
-    return {
-      header: header(where), question: zh ? '所问何事？' : 'What do you ask about?',
-      options: [...Object.keys(book.effects).map(id => ({ label: pick(book.asks[id], state.lang), divine: id })), { label: zh ? '先不问' : 'Not now', look: true }],
-    };
-  }
   if (atScene(content, state)) {
     const scene = sceneBrief(content, state, ctx.now);
     // A creature that withdrew today is not offered again until tomorrow — as
@@ -160,18 +151,18 @@ const TAPS = {
   tale: () => 'Tale {action: seed}, write today\'s rumor from what it hands you, then Tale {action: make}',
   turn: o => `Quest {action: turn, id: ${o.turn}}`,
   meet: o => `Meet {action: ${o.meet}${o.answer ? `, answer: ${o.answer}` : ''}}`,
-  divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),
+  divine: () => 'Divine',
 };
 // 去X / Go to X typed — a place asked for in words (a chip on the map is the page's own Move now).
 const GO = /^(去|go to\s+)/i;
-// The day's cast asked for in words — the coins on the stage say 请银月起一卦
-// (cards.js sayCast); typed, 起一卦 / 算一卦 / 问卦. Look alone let the scene's
-// question win: 起一卦 tapped twice, 何去何从 asked twice (2026-09-17).
+// The day's reading asked for in words — typed, 起一卦 / 算一卦 / 问卦. Look
+// alone let the scene's question win: 起一卦 tapped twice, 何去何从 asked twice
+// (2026-09-17).
 const CAST_WORDS = /起一?卦|算一?卦|问卦|\bcast the coins\b|\bdivine\b/i;
 export function tapThen(ask, said) {
   const words = String(said ?? '').trim();
   if (CAST_WORDS.test(words) && !ask?.options?.some(o => o.label === words)) {
-    return 'The player asks for the day\'s cast — call Divine now, with no `ask`; this Look changed nothing. Then AskUser exactly the `ask` that tool returns. The reply ends only there.';
+    return 'The player asks for the day\'s reading (问卦) — call Divine now; this Look changed nothing. The card shows the cast and Yinyue reads it: end on a line of your own, and ask nothing.';
   }
   const options = words ? ask?.options ?? [] : [];
   const option = options.find(o => o.label === words) ?? options.find(o => o.move && o.label === words.replace(GO, ''));

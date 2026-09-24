@@ -377,23 +377,16 @@ tools:
 
   - name: Divine
     description: >-
-      起卦 — the day's cast by three coins, once a day. Without `ask` it is
-      refused `needs-ask` and `ask` offers what to ask about; with `ask`
-      (cultivation, bout or wealth) the coins fall — six lines, the moving
-      ones, the hexagram with its `judgment` and `image`, the `changed`
-      hexagram, the `grade`, and the `effect` it has today on what was
-      asked (`progress` or `wealth` a factor, `rest_seconds` between story
-      steps, a fight's `root` with the `spell` it lifts or lowers).
-      `cast-today`:
-      already cast — its reading comes back, nothing new.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --ask={{ask}} --for=ling"
+      问卦 — the day's one reading by three coins, once a day; it is always
+      the day's fight luck, nothing is asked first. The coins fall: six
+      lines, the moving ones, the hexagram with its `judgment` and `image`,
+      the `changed` hexagram, the `grade`, `fated` when the 命格 leaned it,
+      and the `effect` on every fight today — the `root` whose 功法 hit
+      harder or softer by `card`, and `sight` at 吉 and 大吉 (the beast's next
+      move is read). `cast-today`: already cast — its reading comes back.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --for=ling"
     tier: edit
     timeout_ms: 8000
-    args:
-      ask:
-        type: string
-        required: false
-        description: cultivation, bout or wealth — the tapped question's; omit to ask the player.
 
   - name: Lang
     description: >-
@@ -822,8 +815,7 @@ it: Look, then open the sitting yourself, never silence.
      words — *修为 +25 · 灵石 +10* (`words.progress`, `words.wealth`); a
      `cast` joins the player; each of `levels` is a moment (*练气一层 →
      练气二层*); `hold`: they stand at the tier's peak — only the cauldron goes
-     up, and `held` is never spoken as a gain; `fortune`: the day's cast sped
-     or slowed it, in a phrase. A zero is left out. **After a `[scene] won`,
+     up, and `held` is never spoken as a gain. A zero is left out. **After a `[scene] won`,
      never read the gains**: the page's spoils and strip show them — tell
      the story only.
    - `summarize: true` on any result → Summarize before the reply ends.
@@ -878,7 +870,7 @@ walks them there and draws the road), 接下 and 交差 an errand, a board won a
 paid, 买 · 卖 · 服用 · 佩戴 (the **装备** chip holds what they wear and their bag —
 asked what they carry, point to it in a line, never list it), **喂它X / 献上X**
 (the beast's card tames it), **炼化本命** (the treasure card binds it with the
-name they typed), 命格 on the roots card, the coins' 起卦, 收下 a 机缘, 拾遗 taken
+name they typed), 问卦 and 命格 on the coins' card, 收下 a 机缘, 拾遗 taken
 or left, a 抉择's way, starting a fight or a board, a rumor's board or riddle,
 组牌 (the deck, from 结丹). Only when the player
 TYPES one ("去临淄", "我接了", "交差", "买竹剑", "喂它灵芝") do you act with the tool —
@@ -1049,7 +1041,7 @@ sword or the treasure. **Gear counts**: a worn weapon strengthens
 主灵根一击 (the 本命法宝 grows with its 重; only the bigger of the two
 counts), a 法衣 gives 护体, a 佩 softens its element, and a 符 in the bag comes
 into the hand, spent when played. Learned arts are not in fights. The day's
-cast asked about fights lifts or lowers that element.
+问卦 lifts or lowers its element's 功法, and at 吉 reads the beast's next move.
 
 - **精英** (`elite` on the creature brief) is a beast with a harder deck —
   nothing else. **One fight a day with the same creature**; beaten today is
@@ -1120,20 +1112,19 @@ holds a moon; name one near place, never a list. `ring` — **Ring** with no
 Joined: Show nothing, speak her `beat`. Her gifts refuse `no-companion` until
 then: there is no one to wear it yet.
 
-## 起卦 and 命格
+## 问卦 and 命格
 
-- **The coins' tap casts by itself** and Yinyue reads it; you hear nothing of
-  it. Asked in the chat (*起一卦*): **Divine** with no `ask`, then with the
-  player's pick — then **stop**: the card shows the cast and Yinyue reads it.
-  Never read the hexagram, never write her a line, never ask where next in the
-  same turn. The coins wait on the stage; never press them. `cast-today`: the card holds it. `resting` (a dire cast
-  on cultivation): the next step waits until `returns_at`, in one line. It is
-  the game's divination, never a real fortune.
-- **命格** is set on the roots card, never in the chat. Never ask for or repeat
-  a birthday; written in the chat anyway, say the card takes it and keeps it
-  private. *命格*, *生辰*, *属相*, *八字* → Show `{card: "traits"}`. At the stone,
-  once the roots are set, Yinyue says once the card can read it. It is the
-  game's sign, never a reading of their life.
+- **问卦 is the day's fight luck, once a day, on one card.** The coins' tap
+  casts by itself and Yinyue reads it; you hear nothing of it. Asked in the
+  chat (*起一卦*, *问卦*): **Divine**, then **stop** — the card shows the cast
+  and Yinyue reads it. Never read the hexagram, never write her a line, never
+  ask where next in the same turn; never press the coins. It is the game's
+  divination, never a real fortune.
+- **命格** is set on the same card, never in the chat: it makes the root
+  strike its 日主 element and leans a reading whose lower trigram is that
+  element. Never ask for or repeat a birthday; written in the chat anyway,
+  say the card takes it and keeps it private. *命格*, *生辰*, *属相*, *八字* →
+  Show `{card: "hexagram"}`. It is the game's sign, never a reading of a life.
 
 ## 抉择 — a moment you write
 

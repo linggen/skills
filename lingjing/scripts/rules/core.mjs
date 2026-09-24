@@ -6,7 +6,6 @@ import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
 import { threadOf } from './errands.mjs';
-import { fortuneOf } from './fortune.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
@@ -24,20 +23,18 @@ function meets(state, needs) {
 
 /* Pay a grant: the table capped it when it was authored, the traits speed
    progress, and the tier's `pay` scales what is finally added, so a task high
-   on the ladder pays like one. No day cap: 灵气 alone limits a day's play (his,
+   on the ladder pays like one. The day's reading never touches pay: 问卦 is
+   the day's fight luck alone (redesign-v2 § 四). No day cap: 灵气 alone limits a day's play (his,
    2026-09-23: 去掉吧，只用体力限制). The 240/60 caps came 2026-09-11, before
    灵气 existed, and after it was kept as a safety net nobody re-decided —
    invisible, it turned his last errand and a pill into +0 with 灵气 to spare.
    `state.day` still counts what the day paid. */
 function amountsOf(content, state, now, grant) {
   const table = content.rewards.tables[grant.table];
-  // The day's cast, when it was asked about this: its grade speeds or slows the gain.
-  const pf = fortuneOf(content, state, now, 'cultivation')?.progress ?? 1;
-  const wf = fortuneOf(content, state, now, 'wealth')?.wealth ?? 1;
-  const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state) * pf);
+  const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state));
   const base = Math.max(0, want);
-  const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth) * wf));
-  return { base, progress: base * payOf(content, state), wealth, pf, wf };
+  const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth)));
+  return { base, progress: base * payOf(content, state), wealth };
 }
 
 /* What a grant would pay him now — the table's cap, his roots, the day's
@@ -52,7 +49,7 @@ const paysOf = (content, state, now, grant) => {
 
 function pay(content, state, ctx, grant) {
   rollDay(state, ctx.now);
-  const { base, progress, wealth, pf, wf } = amountsOf(content, state, ctx.now, grant);
+  const { base, progress, wealth } = amountsOf(content, state, ctx.now, grant);
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
@@ -63,8 +60,7 @@ function pay(content, state, ctx, grant) {
   const learned = grant.art ? learn(content, state, grant.art) : null;
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
   // `progress` is what the realm really took; at the peak the rest is held.
-  const fortune = (pf !== 1 && grant.progress) || (wf !== 1 && grant.wealth) ? { progress: pf, wealth: wf } : null;
-  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}), ...(fortune ? { fortune } : {}) };
+  return { progress: progress - (hold?.held ?? 0), wealth, cast: grant.cast ?? null, item: grant.item ?? null, levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* A riddle is answered wrong at most this many times a day. */
@@ -142,10 +138,6 @@ const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
    `n` is how many. */
 function spendStamina(content, s, ctx, kind, n = 1) {
   if (freeHere(content, s, kind)) return null;
-  // A dire cast asked about cultivation: each story step waits its rest.
-  const rest = kind === 'step' ? fortuneOf(content, s, ctx.now, 'cultivation')?.rest_seconds : null;
-  const since = rest && s.last_step_at ? new Date(new Date(s.last_step_at).getTime() + rest * 1000) : null;
-  if (since && since > ctx.now) return refuse('resting', null, { returns_at: since.toISOString() });
   settleStamina(content, s, ctx.now);
   // A trip is paid as one (his, 2026-09-23: 几分钟消耗光 — seven roads at 3
   // each emptied a fifth of the pool in one tap): a base, a little per road
@@ -163,7 +155,6 @@ function spendStamina(content, s, ctx, kind, n = 1) {
   if (!cost || (s.stamina > 0 && !s.resting)) {
     s.stamina = Math.max(0, s.stamina - cost);
     if (cost && s.stamina === 0) s.resting = true;
-    if (kind === 'step') s.last_step_at = ctx.now.toISOString();
     return null;
   }
   const at = staminaReturnsAt(content, s, s.resting ? restAt : 1);

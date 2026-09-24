@@ -1,18 +1,10 @@
 {
   "version": 2,
-  "_about": "The Book of Changes, as the game casts it. All 64 in King Wen's order; lines bottom to top, 1 = yang. The judgment (卦辞), the image (大象) and the line texts (`yaoci`, 爻辞, Chinese only) are the 周易's own, from Wikisource's 周易 (public domain), in simplified characters; the English is the game's plain rendering. `grade` is read from each judgment's own words and the tradition's ranking. A day's cast asks about one thing (`asks`) and its grade does that thing's `effects` for the day; a bout favours the lower trigram's root.",
+  "_about": "The Book of Changes, as the game casts it. All 64 in King Wen's order; lines bottom to top, 1 = yang. The judgment (卦辞), the image (大象) and the line texts (`yaoci`, 爻辞, Chinese only) are the 周易's own, from Wikisource's 周易 (public domain), in simplified characters; the English is the game's plain rendering. `grade` is read from each judgment's own words and the tradition's ranking. 问卦 (redesign-v2): once a day, always the day's fight luck — the grade's `effects.bout`: the lower trigram's element, its 功法 ±`card` in every fight that day, and at 吉/大吉 `sight`, the beast's next move read as the 望气术 上卷 reads it.",
   "asks": {
-    "cultivation": {
-      "zh": "问修行",
-      "en": "Ask about cultivation"
-    },
     "bout": {
-      "zh": "问斗法",
-      "en": "Ask about bouts"
-    },
-    "wealth": {
-      "zh": "问财运",
-      "en": "Ask about fortune"
+      "zh": "问卦",
+      "en": "The day's reading"
     }
   },
   "grades": {
@@ -38,54 +30,21 @@
     }
   },
   "effects": {
-    "cultivation": {
-      "great": {
-        "progress": 1.5
-      },
-      "good": {
-        "progress": 1.2
-      },
-      "even": {},
-      "ill": {
-        "progress": 0.8
-      },
-      "dire": {
-        "progress": 0.8,
-        "rest_seconds": 60
-      }
-    },
     "bout": {
       "great": {
-        "spell": 4,
-        "card": 2
+        "card": 2,
+        "sight": 1
       },
       "good": {
-        "spell": 2,
-        "card": 1
+        "card": 1,
+        "sight": 1
       },
       "even": {},
       "ill": {
-        "spell": -2,
         "card": -1
       },
       "dire": {
-        "spell": -4,
         "card": -2
-      }
-    },
-    "wealth": {
-      "great": {
-        "wealth": 1.5
-      },
-      "good": {
-        "wealth": 1.2
-      },
-      "even": {},
-      "ill": {
-        "wealth": 0.8
-      },
-      "dire": {
-        "wealth": 0.5
       }
     }
   },

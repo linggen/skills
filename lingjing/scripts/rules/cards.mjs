@@ -156,8 +156,11 @@ const openFight = (state, game) => (game && state.fight?.game === game ? state.f
 export function fightSetup(content, state, creature, now, game = null) {
   const open = openFight(state, game);
   if (open?.setup) return open.setup;
+  // 问卦 (fortune.mjs): the day's reading — its element's 功法 ±n, and at 吉
+  // and 大吉 the beast's next move read (望气), as the scroll's 上卷 reads it.
   const fortune = now ? boutFortune(content, state, now) : null;
   const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
+  const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0);
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
   const withHer = ownedCards(content, state).includes('yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
@@ -167,13 +170,14 @@ export function fightSetup(content, state, creature, now, game = null) {
     you: {
       tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: [...(withHer ? ['yinyue'] : []), ...(gear.charm ? [gear.charm] : [])],
       ...(lifts ? { lifts } : {}),
-      // 望气术: how much of the beast's plan he can read (items `learn`).
-      ...(state.insight ? { insight: state.insight } : {}),
+      // 望气: how much of the beast's plan he can read — the scroll (items
+      // `learn`), or the day's reading at 吉/大吉.
+      ...(insight ? { insight } : {}),
       // What he wears, as numbers (§ 装备入局).
       ...(gear.power ? { power: gear.power } : {}),
       ...(gear.armor ? { armor: gear.armor } : {}),
       ...(gear.ward ? { ward: gear.ward } : {}),
-      // 问斗法: the lower trigram's element, its 功法 lifted or lowered today.
+      // 问卦: the lower trigram's element, its 功法 lifted or lowered today.
       ...(boost ? { boost } : {}),
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).

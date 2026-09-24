@@ -11,43 +11,45 @@ test('Yinyue\'s line is read from the reply as she said it — the last one, pla
   assert.equal(yinyueLine(''), null);
 });
 
-test('the day\'s cast card: the coins wait with what to ask, a tap each, then six lines as they fell with the grade and what it does', async () => {
+test('问卦 on one card: the coins wait for one tap, then six lines as they fell, the grade and what it does to the day\'s fights', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   const { loadWorld } = await import('../scripts/content.mjs');
   const content = { ...loadWorld('jiuding'), hexagrams: loadWorld('jiuding').hexagrams.hexagrams };
   const ctx = (divination) => ({ look: { divination }, lang: 'zh', words: WORDS.zh, content });
   const waiting = cardHtml({ card: 'hexagram' }, ctx(null));
   assert.match(waiting, /今日未卜/);
-  assert.match(waiting, /data-divine="cultivation">问修行</);
-  assert.match(waiting, /data-divine="bout">问斗法</);
-  assert.match(waiting, /data-divine="wealth">问财运</);
+  assert.match(waiting, /data-divine>起一卦</, 'one tap, nothing to choose');
+  assert.doesNotMatch(waiting, /问修行|问财运|问斗法/);
   assert.doesNotMatch(waiting, /data-say/, 'a tap, not a word to Ling');
   const cast = cardHtml({ card: 'hexagram' }, ctx({
-    ask: { id: 'bout', name: '问斗法' }, throws: [[3, 3, 3], [2, 3, 3], [2, 2, 3], [2, 3, 3], [3, 3, 2], [2, 2, 2]],
+    throws: [[3, 3, 3], [2, 3, 3], [2, 2, 3], [2, 3, 3], [3, 3, 2], [2, 2, 2]],
     values: [9, 8, 7, 8, 8, 6], moving: [0, 5],
     hexagram: { id: 3, name: '屯', lines: [1, 0, 1, 0, 0, 0], judgment: '元亨，利贞。', image: '云雷，屯；君子以经纶。' },
-    changed: { id: 8, name: '比' }, grade: { id: 'ill', name: '凶' }, effect: { spell: -2, root: { id: 'wood', name: '木' } },
+    changed: { id: 8, name: '比' }, grade: { id: 'ill', name: '凶' }, effect: { card: -1, root: { id: 'wood', name: '木' } },
   }));
   assert.equal((cast.match(/class="yao /g) ?? []).length, 6);
   assert.equal((cast.match(/<em>[○×]<\/em>/g) ?? []).length, 2);
   assert.match(cast, /今日卦象 · 屯 · <span class="grade">凶<\/span>/);
   assert.match(cast, /之卦 · 比/);
-  assert.match(cast, /问斗法<\/span> 木法术 -2/);
+  assert.match(cast, /今日斗法，木法术 -1/);
   assert.equal((cast.match(/<b class="face">/g) ?? []).length, 3 + 2 + 1 + 2 + 2);
+  const good = cardHtml({ card: 'hexagram' }, ctx({ throws: Array(6).fill([2, 2, 3]), values: [7, 7, 7, 7, 7, 7], moving: [], hexagram: { id: 1, name: '乾', lines: [1, 1, 1, 1, 1, 1], judgment: '元亨利贞。', image: '天行健' }, changed: null, grade: { id: 'good', name: '吉' }, effect: { card: 1, sight: 1, root: { id: 'metal', name: '金' } } }));
+  assert.match(good, /今日斗法，金法术 \+1 · 看得出妖下回合的架势/, '望气 at 吉');
 });
 
-test('the 灵根 card takes the birthday for 命格 on the page, or shows the sign once set', async () => {
+test('命格 is set on the 问卦 card — the birthday typed there, or the sign once set; the 灵根 card holds the roots alone', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   const { loadWorld } = await import('../scripts/content.mjs');
   const w = loadWorld('jiuding');
-  const content = { ...w, traits: w.traits };
-  const ctx = (fate, extra = {}) => ({ look: { traits: { ids: ['wood', 'water', 'fire', 'earth'], name: '四灵根' }, fate }, lang: 'zh', words: WORDS.zh, content, ...extra });
-  const form = cardHtml({ card: 'traits' }, ctx(null));
+  const content = { ...w, traits: w.traits, hexagrams: w.hexagrams.hexagrams };
+  const ctx = (fate, extra = {}) => ({ look: { traits: { ids: ['wood', 'water', 'fire', 'earth'], name: '四灵根' }, fate, divination: null }, lang: 'zh', words: WORDS.zh, content, ...extra });
+  assert.doesNotMatch(cardHtml({ card: 'traits' }, ctx(null)), /fate-birth|命格/, 'not on the roots card');
+  const form = cardHtml({ card: 'hexagram' }, ctx(null));
   assert.match(form, /<input type="date" id="fate-birth"/);
   assert.match(form, /data-fate="birth">定命格</); assert.match(form, /data-fate="random">随机</); assert.match(form, /data-fate="decline">不必了</);
   assert.match(form, /不入存档，不入对话/);
-  assert.match(cardHtml({ card: 'traits' }, ctx({ declined: true })), /data-fate-open>定命格</);
-  const set = cardHtml({ card: 'traits' }, ctx({ zodiac: { id: 'snake', name: '蛇' }, stem: { id: 'yi', name: '乙' }, element: { id: 'wood', name: '木' }, source: 'birth' }));
+  assert.match(cardHtml({ card: 'hexagram' }, ctx({ declined: true })), /data-fate-open>定命格</);
+  const set = cardHtml({ card: 'hexagram' }, ctx({ zodiac: { id: 'snake', name: '蛇' }, stem: { id: 'yi', name: '乙' }, element: { id: 'wood', name: '木' }, source: 'birth' }));
   assert.match(set, /属蛇 · 日主乙木 · 天生亲近木/);
   assert.doesNotMatch(set, /fate-birth/);
 });
@@ -87,15 +89,17 @@ test('the fight card draws both pools, the creature\'s stance and every choice w
   assert.match(en, /data-duel-pick="cast:fire"[^>]*>火<small>Fire · 4\u00a0Force<\/small>/);
 });
 
-test('the page knows the cast\'s own question by the rules\' words, so the coins stay in the air through it', async () => {
-  const { WORDS } = await import('../scripts/cards.js');
-  const { askOf } = await import('../scripts/rules.mjs');
+test('问卦 asks nothing: Divine with no question casts, and no answer asks 所问何事', async () => {
+  const { askOf, VERBS } = await import('../scripts/rules.mjs');
   const { loadContent } = await import('../scripts/content.mjs');
   const { newState } = await import('../scripts/state.mjs');
   const content = loadContent();
+  const now = new Date('2026-09-17T12:00:00Z');
   for (const lang of ['zh', 'en']) {
-    const s = newState(content, lang, new Date('2026-09-17T12:00:00Z'));
-    assert.equal(askOf(content, s, { now: new Date('2026-09-17T12:00:00Z'), quests: [] }, { refused: 'needs-ask' }).question, WORDS[lang].castAsk);
+    const s = { ...newState(content, lang, now), name: 'Alex' };
+    const r = VERBS.divine(s, content, { now, quests: [] }, {});
+    assert.equal(r.result.ok, true);
+    assert.notEqual(askOf(content, s, { now, quests: [] }, { refused: 'needs-ask' })?.question, lang === 'zh' ? '所问何事？' : 'What do you ask about?');
   }
 });
 

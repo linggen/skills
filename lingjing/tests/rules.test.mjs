@@ -1369,27 +1369,17 @@ test('chapter 1: waypoints, the market of Ye, the shrine, the seal, the cauldron
   assert.equal(wake(r.state, content, octx()), null, 'chapter 2 has not opened');
 });
 
-test('the cast\'s grade speeds or slows what was asked, rests a dire day, and turns a bout for its root', () => {
+test('问卦 is the day\'s fight luck alone: its grade turns the lower trigram\'s 功法, reads the beast at 吉 — and never touches pay or a step', () => {
   const castOn = (st, ask, grade, hexagram = 1) => ({ ...st, divination: { day: '2026-10-02', ask, throws: [[3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2]], hexagram, changed: null, grade } });
   const atShrine = () => answer(resolve, answer(resolve, toJi(), { exit: 'town' }).state, { exit: 'shrine' }).state;
   const paidBy = st => must(resolve, st, { exit: 'send' }, octx()).result.paid;
   const plain = paidBy(atShrine());
-  const great = paidBy(castOn(atShrine(), 'cultivation', 'great'));
-  const ill = paidBy(castOn(atShrine(), 'cultivation', 'ill'));
-  assert.ok(great.progress > plain.progress && ill.progress < plain.progress, JSON.stringify({ plain, great, ill }));
-  assert.equal(great.wealth, plain.wealth, 'asked about cultivation, wealth is untouched');
-  assert.deepEqual(great.fortune, { progress: 1.5, wealth: 1 });
-  assert.equal(plain.fortune, undefined);
-  const rich = paidBy(castOn(atShrine(), 'wealth', 'great'));
-  assert.ok(rich.wealth > plain.wealth && rich.progress === plain.progress);
-  // a dire cast on cultivation: each story step waits its minute
-  const d = castOn(atShrine(), 'cultivation', 'dire');
-  d.last_step_at = new Date(OCT.getTime() - 10_000).toISOString();
-  const r = refused(resolve, d, { exit: 'send' }, 'resting', octx());
-  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + 50_000);
-  const rested = resolve(d, content, octx({ now: new Date(OCT.getTime() + 51_000) }), { exit: 'send' });
-  assert.equal(rested.result.ok, true);
-  assert.equal(rested.state.last_step_at, new Date(OCT.getTime() + 51_000).toISOString());
+  // A cast made before the merge that asked about cultivation or wealth, and a
+  // dire one: pay and the story's steps are untouched (redesign-v2 § 四).
+  for (const [ask, grade] of [['cultivation', 'great'], ['wealth', 'great'], ['cultivation', 'dire'], [undefined, 'great']]) {
+    const paid = paidBy({ ...castOn(atShrine(), ask, grade), last_step_at: new Date(OCT.getTime() - 10_000).toISOString() });
+    assert.deepEqual([paid.progress, paid.wealth, paid.fortune], [plain.progress, plain.wealth, undefined], `${ask} ${grade}`);
+  }
   // a fight asked about: the lower trigram's root (乾 → 金) lifts or lowers
   // its 法术, all day
   const lift = { roots: ['metal'], tier: 'qi', step: 0, fortune: { root: 'metal', spell: 2 } };
@@ -1401,11 +1391,16 @@ test('the cast\'s grade speeds or slows what was asked, rests a dire day, and tu
   // (乾 → 金: 大吉 +2 · 吉 +1 · 凶 −1 · 大凶 −2), printed on the card as it lands
   const fuzhu = content.creatures.creatures.find(c => c.id === 'fuzhu');
   const day = new Date('2026-10-02T12:00:00');
-  const boostOf = (ask, grade) => fightSetup(content, castOn(toFuzhu(), ask, grade), fuzhu, day).you.boost;
-  assert.deepEqual(boostOf('bout', 'great'), { element: 'metal', n: 2 });
-  assert.deepEqual(boostOf('bout', 'dire'), { element: 'metal', n: -2 });
-  assert.equal(boostOf('bout', 'even'), undefined);
-  assert.equal(boostOf('cultivation', 'great'), undefined, 'asked about something else, a fight is untouched');
+  const youOf = (ask, grade) => fightSetup(content, castOn(toFuzhu(), ask, grade), fuzhu, day).you;
+  assert.deepEqual(youOf(undefined, 'great').boost, { element: 'metal', n: 2 });
+  assert.deepEqual(youOf(undefined, 'dire').boost, { element: 'metal', n: -2 });
+  assert.equal(youOf(undefined, 'even').boost, undefined);
+  assert.deepEqual(youOf('cultivation', 'good').boost, { element: 'metal', n: 1 }, 'an older cast reads as the day\'s fight luck too');
+  // 望气 at 吉 and 大吉: the beast's next move read for the day, as the scroll's 上卷
+  assert.equal(youOf(undefined, 'great').insight, 1);
+  assert.equal(youOf(undefined, 'good').insight, 1);
+  assert.equal(youOf(undefined, 'ill').insight, undefined);
+  assert.equal(fightSetup(content, { ...castOn(toFuzhu(), undefined, 'great'), insight: 2 }, fuzhu, day).you.insight, 2, 'the 下卷 still reads more');
   const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
   const side = n => ({ boost: { element: 'metal', n } });
   assert.equal(effectOf(side(2), byId.jinzhua).damage, byId.jinzhua.effect.damage + 2);
@@ -1466,35 +1461,33 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   assert.deepEqual(seen.tasks.map(t => [t.id, t.status]), [['alchemy-first', 'offered']]);
 });
 
-test('起卦: once a day by three coins — asked what about, the same throws all day, and what the grade does', () => {
+test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {
   let s = start();
   s.name = '清玄';
   const c = ctx();
-  // no question yet: the rules ask it
-  const asked = divine(s, content, c, {});
-  assert.equal(asked.result.refused, 'needs-ask');
-  const a = askOf(content, s, c, asked.result);
-  assert.equal(a.question, '所问何事？');
-  assert.deepEqual(a.options.map(o => o.label), ['问修行', '问斗法', '问财运', '先不问']);
-  assert.deepEqual(a.options.map(o => o.divine ?? null).slice(0, 3), ['cultivation', 'bout', 'wealth']);
-  // the cast: six lines of three coins, a hexagram that matches them, graded
-  const cast = must(divine, s, { ask: 'cultivation' }, c);
+  // no question: the coins fall at once (an `ask` from an older caller is ignored)
+  const cast = must(divine, s, {}, c);
   const d = cast.result.divination;
+  assert.equal(d.ask, undefined);
+  assert.equal(cast.state.divination.ask, undefined);
   assert.equal(d.throws.length, 6); assert.ok(d.throws.every(t => t.length === 3 && t.every(x => x === 2 || x === 3)));
   assert.deepEqual(d.hexagram.lines, d.values.map(v => v % 2));
   assert.deepEqual(d.moving, d.values.flatMap((v, i) => (v === 6 || v === 9 ? [i] : [])));
   assert.equal(Boolean(d.changed), d.moving.length > 0);
   const h = content.hexagrams.hexagrams.find(x => x.id === d.hexagram.id);
   assert.equal(d.grade.id, h.grade);
-  // the same day and name fall the same way, whatever is asked — no fishing
+  // its effect is the day's fights only: the element's 功法 ±card, and 望气 at 吉/大吉
+  const e = content.hexagrams.effects.bout[d.grade.id];
+  assert.deepEqual(Object.keys(d.effect).filter(k => k !== 'root').sort(), Object.keys(e).sort());
+  assert.deepEqual(Object.keys(content.hexagrams.effects), ['bout'], 'no 修为 or 灵石 factor any more');
+  // the same day and name fall the same way — no fishing
   assert.deepEqual(must(divine, s, { ask: 'wealth' }, c).result.divination.throws, d.throws);
   // once a day
-  assert.equal(refused(divine, cast.state, { ask: 'bout' }, 'cast-today').divination.hexagram.id, d.hexagram.id);
+  assert.equal(refused(divine, cast.state, {}, 'cast-today').divination.hexagram.id, d.hexagram.id);
   assert.equal(look(cast.state, content, c).divination.hexagram.id, d.hexagram.id);
   assert.equal(look(cast.state, content, ctx({ now: new Date(NOW.getTime() + 864e5) })).divination, null);
-  // the choice offers the cast until it is made
-  const open = { ...cast.state, scene: null, chapter: '03-qing', place: 'linzi' };
   // The coins are their own card: 起一卦 is tapped there, never asked here too.
+  const open = { ...cast.state, scene: null, chapter: '03-qing', place: 'linzi' };
   assert.ok(!look(open, content, c).director.choice.options.some(o => o.divine));
   assert.ok(!look({ ...open, divination: null }, content, c).director.choice.options.some(o => o.divine));
 });
@@ -1537,10 +1530,10 @@ test('命格 is set once, keeps no birthday, and leans a bout and the day\'s cas
   assert.equal(fight(['assist:guard'], caster, { ...kit, fate: { root: 'wood' } }).log[2].damage, Math.round(bare / 2), 'the 护体 halves the second, the sign is spent');
   // the cast: a lower trigram of one's own element leans the grade
   const day = ctx();
-  const plainCast = must(divine, s, { ask: 'wealth' }, day).result.divination;
+  const plainCast = must(divine, s, {}, day).result.divination;
   const lower = content.hexagrams.trigram_roots[{ 111: 'qian', 110: 'dui', 101: 'li', 100: 'zhen', '011': 'xun', '010': 'kan', '001': 'gen', '000': 'kun' }[plainCast.hexagram.lines.slice(0, 3).join('')]];
   const stem = content.traits.fate.stems.find(x => x.element === lower);
-  const leaned = must(divine, { ...s, fate: { zodiac: 'rat', stem: stem.id, element: lower, source: 'random' } }, { ask: 'wealth' }, day).result.divination;
+  const leaned = must(divine, { ...s, fate: { zodiac: 'rat', stem: stem.id, element: lower, source: 'random' } }, {}, day).result.divination;
   const up = { great: 'great', good: 'great', even: 'even', ill: 'even', dire: 'ill' };
   assert.equal(leaned.grade.id, up[plainCast.grade.id]);
   assert.equal(leaned.fated, true); assert.equal(plainCast.fated, undefined);
@@ -2282,7 +2275,6 @@ test('差事: taken at the giver, counted by the rules, handed in where he stand
 test('伤势 is gone: every fight begins whole, and a loss costs only the beast, gone for the day', () => {
   const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
   const c = ctx({ now: new Date('2026-10-05T10:00:00') });
-  const lost = fightOut(base, 'haunt:jingwei', { line: 'pass', c });
   const l = look(base, content, c);
   assert.equal(l.health, undefined, 'no 气血 carried between fights');
   assert.equal(l.place.encounter.duel.health, undefined);
@@ -2291,6 +2283,7 @@ test('伤势 is gone: every fight begins whole, and a loss costs only the beast,
   assert.equal(door.state.fight.wounds, undefined);
   const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
   assert.equal(begin(door.result.duel.setup, catalog).you.hp, hpMaxOf(base), 'whole at the door');
+  const lost = fightOut(base, 'haunt:jingwei', { line: 'pass', c });
   assert.ok(['lost', 'withdrew'].includes(lost.result.outcome));
   assert.equal(lost.state.wounds, undefined, 'nothing carried out');
   assert.equal(lost.result.health, undefined);
