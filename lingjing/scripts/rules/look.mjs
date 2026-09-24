@@ -33,10 +33,13 @@ const forSale = (content, state, item, province) => shelfOf(content, province, s
 /* A speaker's name in the player's language; Ling narrates, unnamed. */
 const nameOf = (content, who, lang) => (who === 'ling' ? null : pick(CAST[who] ?? creatureOf(content, who)?.name, lang));
 /* Lines as the scene says them. Before the companion is found, her line is
-   the narration's `alone` text, or it is not said at all. */
+   the narration's `alone` text, or it is not said at all. Once she walks
+   with the player it is not here either: it is hers to say, in her own words
+   (Hanli, 2026-09-24) — the move hands it to her as `her_beat` (story.mjs). */
 const spoken = (content, state, lines) => (lines ?? []).flatMap(l => {
   const c = companionOf(content);
-  if (c && l.who === c.id && !hasCompanion(state)) {
+  if (c && l.who === c.id) {
+    if (hasCompanion(state)) return [];
     return l.alone ? [{ who: 'ling', name: null, text: fill(pick(l.alone, state.lang), state) }] : [];
   }
   return [{ who: l.who, name: nameOf(content, l.who, state.lang), text: fill(pick(l.text, state.lang), state) }];

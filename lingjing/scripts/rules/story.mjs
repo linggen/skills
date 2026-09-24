@@ -213,6 +213,36 @@ export function joinNode(content, s, now) {
   return memory.length ? { kind: 'memory', at: now.toISOString(), memory } : null;
 }
 
+/* ── Her beat — a line the story wrote for her, said by her ──
+   Hanli, 2026-09-24: 银月 writes her own words; Ling writes the scene only.
+   A move that plays a line of hers — an exit's beat, or the scene it walks
+   into — once she walks with the player hands it over as facts: what
+   happened, what she recalls, and the authored line as her reference (she
+   says it her way, same meaning). Before she is found the line is its
+   `alone` narration, Ling's as ever (look.mjs `spoken`). */
+export function herBeat(content, s, { id, lines, happened = [], scenes = [] }) {
+  const c = companionOf(content);
+  if (!c || !hasCompanion(s)) return null;
+  const lang = s.lang, sep = lang === 'zh' ? '' : ' ';
+  const said = (lines ?? []).filter(l => l.who === c.id).map(l => fill(pick(l.text, lang), s));
+  if (!said.length) return null;
+  const lore = content.lore?.id === c.id ? content.lore : null;
+  const memory = lore?.thread?.find(e => e.memory?.scene && scenes.some(sc => sc?.id === e.memory.scene));
+  const what = happened.filter(Boolean).join(sep);
+  return { id, facts: { ...(what ? { happened: what } : {}), ...(memory ? { recalls: pick(memory.knows, lang) } : {}), line: said.join(sep) } };
+}
+/* The page hears her beat on its next Look, with the move's story node when
+   there is one (one moment, one line from her), else as a node of its own. */
+export const withHerBeat = (node, her, now) => (!her ? node : node ? { ...node, her_beat: her } : { kind: 'beat', at: now.toISOString(), her_beat: her });
+
+/* A scene walked into (Move, Go) with a line of hers in it: her beat, kept
+   on the save for the page. Null when she has none there. */
+export function enteredBeat(content, s, scene, now) {
+  const her = scene && herBeat(content, s, { id: scene.id, lines: scene.lines, happened: [fill(pick(scene.setup, s.lang), s)], scenes: [scene] });
+  if (her) s.node = withHerBeat(null, her, now);
+  return her;
+}
+
 /* Look's `story_node`: the last node while it is fresh (the page's; Ling has it in the result). */
 const NODE_FRESH = 30 * 60000;
 export const nodeLook = (state, now) => (state.node && now - new Date(state.node.at) < NODE_FRESH ? { story_node: state.node } : {});

@@ -9,6 +9,7 @@ import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, questOf,
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
 import { atScene, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
+import { enteredBeat } from './story.mjs';
 import { enter } from './worlds.mjs';
 
 /* ── Story, travel, language ── */
@@ -93,6 +94,7 @@ export function move(state, content, ctx, args) {
   const roads = stopAt >= 0 ? stopAt + 1 : way.length;
   const tired = spendStamina(content, s, ctx, 'move', roads);
   if (tired) return tired;
+  const wasAtScene = atScene(content, s);
   s.handed = []; // walked on, the last place's 所得 is put away
   // The road stops where the story stands: a scene met on the way is not walked past.
   for (const step of way) {
@@ -117,13 +119,15 @@ export function move(state, content, ctx, args) {
   if (left) s.made.at = null;
   const place = placeBrief(content, s, ctx.now);
   const scene = atScene(content, s) ? sceneBrief(content, s, ctx.now) : null;
+  // A scene walked into with a line of hers: hers to say (story.mjs).
+  const her = scene && !wasAtScene ? enteredBeat(content, s, sceneOf(content, s), ctx.now) : null;
   const cards = [...place.show, ...(scene?.show ?? [])];
   const show = cards.filter((c, i) => cards.findIndex(d => JSON.stringify(d) === JSON.stringify(c)) === i);
   // The story is rewritten when something of it happened: a scene entered,
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
   const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), ...(her ? { her_beat: her } : {}), director: directorBrief(content, s, ctx), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not
@@ -278,7 +282,8 @@ export function go(state, content, ctx, args) {
   if (scene.at) s.place = scene.at;
   settlePlace(content, s);
   offerTasks(content, s);
-  return { state: s, result: { ok: true, scene: sceneBrief(content, s, ctx.now), summarize: true } };
+  const her = enteredBeat(content, s, scene, ctx.now);
+  return { state: s, result: { ok: true, scene: sceneBrief(content, s, ctx.now), ...(her ? { her_beat: her } : {}), summarize: true } };
 }
 
 export { hashOf, provinceOf };

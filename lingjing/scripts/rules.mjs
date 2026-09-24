@@ -234,6 +234,9 @@ export function forLing(value) {
   for (const [k, v] of Object.entries(value)) {
     if (k === 'places' && Array.isArray(v) && 'roads' in value) continue;
     if (k === 'story_node') continue; // the page's moment; Ling has the node on the move's own result
+    // Her beat is hers: Ling learns only that she speaks here and what happened —
+    // never her line or her memory, which she says herself (Hanli, 2026-09-24).
+    if (k === 'her_beat' && v && typeof v === 'object') { out.her_beat = { id: v.id, facts: { happened: v.facts?.happened ?? null } }; continue; }
     if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(shelfForLing); continue; }
     out[k] = forLing(v);
   }

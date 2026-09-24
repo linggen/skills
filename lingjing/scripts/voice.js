@@ -42,6 +42,8 @@ export const MOMENTS = {
   scene_end: { who: 'both', priority: 'big' },
   cauldron: { who: 'both', priority: 'big' },
   memory: { who: 'both', priority: 'big' },
+  // A line the story wrote for her, said by her (a node's moment carries it when there is one).
+  her_beat: { who: 'yinyue', priority: 'big' },
   greet: { who: 'yinyue', priority: 'asked' },
   reading: { who: 'yinyue', priority: 'asked' },
   fate: { who: 'yinyue', priority: 'asked' },
@@ -162,4 +164,43 @@ export function createVoice({ now = () => Date.now(), post, sees = () => ({}), t
       return ['idle'];
     },
   };
+}
+
+/* ── Story nodes as she hears them (九鼎录, story.mjs) ──
+   A scene passed, a cauldron found, a memory come back: the facts, so she
+   and Ling talk over what it means — never a line to recite. One node is
+   one moment: `{id, zh, en, mood}`, or null for a kind she is not told. */
+const quote = (zh, t) => (zh ? `「${t}」` : `“${t}”`);
+/* Her beat — a line the story wrote for her (Hanli, 2026-09-24: she says
+   her own words; Ling writes the scene only). The authored line is her
+   reference; she says it her way. With a story node it rides in the node's
+   moment — one beat, one line from her — else it is a moment of its own. */
+export function herBeatFacts(h, zh) {
+  const f = h?.facts ?? {};
+  const bits = [];
+  if (f.happened) bits.push(zh ? `刚才：${f.happened}` : `Just now: ${f.happened}`);
+  if (f.recalls) bits.push(zh ? `你想起的：${f.recalls}` : `What you recall: ${f.recalls}`);
+  bits.push(zh ? `故事在这里给你写了一句：${quote(zh, f.line ?? '')}。这句是你的参考；用你自己的话说出来，意思不变，一两句，别复述发生了什么。`
+    : `The story gives you a line here: ${quote(zh, f.line ?? '')}. The authored line is your reference; say it your way, same meaning — a line or two, without retelling what happened.`);
+  return bits.join(zh ? '' : ' ');
+}
+export function nodeMoment(n) {
+  if (!n) return null;
+  const facts = (zh) => {
+    if (n.kind === 'beat') return herBeatFacts(n.her_beat, zh);
+    const ask = n.her_beat ? herBeatFacts({ facts: { line: n.her_beat.facts?.line, recalls: n.her_beat.facts?.recalls } }, zh)
+      : zh ? '你就在玩家身边——说说你觉得这意味着什么，一两句；别复述发生了什么，也别替故事给出答案。' : 'You are beside the player — say what you make of it, a line or two; do not retell what happened or answer ahead of the story.';
+    const bits = [];
+    if (n.kind === 'scene') bits.push(zh ? `一幕刚过去：${n.recap ?? ''}` : `A scene has just passed: ${n.recap ?? ''}`);
+    if (n.kind === 'cauldron') bits.push(zh ? `第${n.found}口鼎寻回了（${n.chapter?.title}）。${n.recap ?? ''}` : `Cauldron ${n.found} is found (${n.chapter?.title}). ${n.recap ?? ''}`);
+    if (n.kind === 'chapter') bits.push(zh ? `${n.chapter?.title}走完了。${n.recap ?? ''}` : `${n.chapter?.title} is over. ${n.recap ?? ''}`);
+    if (n.mystery) bits.push(n.kind === 'scene' ? (zh ? `这一章还悬着的谜：${quote(zh, n.mystery)}。` : `The riddle still open: ${quote(zh, n.mystery)}.`) : (zh ? `这一章的谜${quote(zh, n.mystery)}有了着落。` : `The chapter's riddle, ${quote(zh, n.mystery)}, has its answer.`));
+    if (n.memory?.length) bits.push(zh ? `你记起了：${n.memory.map((m) => quote(zh, m)).join('')}。` : `A memory came back to you: ${n.memory.map((m) => quote(zh, m)).join(' ')}.`);
+    if (n.ending) bits.push(zh ? `九鼎聚齐，故事到了终局：${n.ending}。` : `The nine are gathered; the story has reached its end: ${n.ending}.`);
+    if (n.next) bits.push(zh ? `前面是${n.next.title}，新的谜：${quote(zh, n.next.mystery)}。` : `Ahead lies ${n.next.title}, and a new riddle: ${quote(zh, n.next.mystery)}.`);
+    return `${bits.join(zh ? '' : ' ')}${zh ? '' : ' '}${ask}`;
+  };
+  const id = { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory', beat: 'her_beat' }[n.kind];
+  if (!id) return null;
+  return { id, zh: facts(true), en: facts(false), mood: n.kind === 'scene' || n.kind === 'beat' ? 'neutral' : n.memory?.length ? 'relaxed' : 'happy' };
 }

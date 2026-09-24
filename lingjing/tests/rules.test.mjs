@@ -2040,7 +2040,10 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.equal(joined.result.joined.name, '银月');
   assert.equal(joined.state.wear.yinyue, 'moon-bell');
   assert.ok(joined.result.paid.progress > 0);
-  assert.ok(joined.result.beat.some(b => b.who === 'yinyue'));
+  // Her first words are hers to say (her_beat), never a line in Ling's beat.
+  assert.ok(!joined.result.beat.some(b => b.who === 'yinyue'));
+  assert.ok(joined.result.her_beat.facts.line.includes('铃是我的'));
+  assert.equal(joined.state.node.her_beat.id, 'join/yinyue');
   const after = look(joined.state, content, ctx());
   assert.equal(after.companion.id, 'yinyue');
   assert.equal(after.quest, null);

@@ -10,7 +10,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { forLing, look, owesRecap, resolve, story } from '../scripts/rules.mjs';
+import { forLing, look, owesRecap, resolve, story, VERBS } from '../scripts/rules.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-11T12:00:00');
@@ -202,4 +202,98 @@ test('the page\'s book draws the read as it is — every word escaped, a dark ca
   const card = titleCardHtml(look(at('02-yan'), content, ctx()).chapter, 'zh');
   assert.ok(card.includes(pz(content.chapters['02-yan'].intro)) && card.includes('data-titlecard="02-yan"'));
   assert.equal(titleCardHtml(look(s, content, ctx()).chapter, 'zh'), '', 'one scene in, no card');
+});
+
+/* ── Her beat (Hanli, 2026-09-24): 银月 says her own words; Ling writes the scene only ── */
+
+const xu = (extra = {}) => {
+  const tiers = content.ladder.tiers, below = tiers[tiers.findIndex(t => t.gate === content.chapters['04-xu'].gate) - 1];
+  return at('04-xu', ['04-arrive', '04-town'], { tier: below.id, step: 0, progress: 0, stamina: 100, name: '清玄', ...extra });
+};
+const JOINED = { companion: { joined: '2026-09-11' } };
+const hersIn = lines => (lines ?? []).filter(l => l.who === 'yinyue');
+
+test('her beat: a scene line of hers, once she walks along, is hers to say — facts with the line as reference, nothing of hers for Ling to read', () => {
+  const s = xu(JOINED);
+  assert.equal(s.scene, '04-mouth');
+  const r = resolve(s, content, ctx(), { exit: 'swim' });
+  assert.equal(r.result.ok, true);
+  // Nothing of hers in what Ling reads out: not the exit's beat, not the scene walked into.
+  assert.deepEqual(hersIn(r.result.beat), []);
+  assert.equal(r.result.scene?.id, '04-deep', 'swam through to 泗渊');
+  assert.deepEqual(hersIn(r.result.scene.lines), []);
+  // Hers: the exit's line and the deep's, as her reference, with what happened.
+  const swim = content.chapters['04-xu'].scenes['04-mouth'].exits.find(e => e.id === 'swim');
+  const h = r.result.her_beat;
+  assert.equal(h.id, '04-mouth/swim');
+  assert.ok(h.facts.line.includes(pz(hersIn(swim.beat)[0].text)));
+  assert.ok(h.facts.line.includes(pz(hersIn(content.chapters['04-xu'].scenes['04-deep'].lines)[0].text)));
+  assert.ok(h.facts.happened);
+  // Ling's copy says she speaks here and what happened — never her line.
+  const ling = forLing(r.result);
+  assert.deepEqual(Object.keys(ling.her_beat.facts), ['happened']);
+  const deep = content.chapters['04-xu'].scenes['04-deep'];
+  for (const l of [...hersIn(swim.beat), ...hersIn(deep.lines)]) assert.ok(!JSON.stringify(ling).includes(pz(l.text)), pz(l.text));
+  // One node for the page: the scene passed carries her beat — one moment, one line from her.
+  assert.equal(r.state.node.kind, 'scene');
+  assert.equal(r.state.node.her_beat.id, '04-mouth/swim');
+  assert.equal(r.result.node.her_beat, undefined, 'Ling\'s node carries no line of hers');
+  const l = look(r.state, content, ctx());
+  assert.equal(l.story_node.her_beat.facts.line, h.facts.line);
+  assert.equal(forLing(l).story_node, undefined);
+  // Look reads the scene without her line too.
+  assert.deepEqual(hersIn(l.scene.lines), []);
+});
+
+test('her beat: before she is found, her line is the `alone` narration — Ling\'s, as ever — and no beat of hers', () => {
+  const s = xu();
+  const r = resolve(s, content, ctx(), { exit: 'swim' });
+  assert.equal(r.result.ok, true);
+  assert.equal(r.result.her_beat, undefined);
+  assert.equal(r.state.node.her_beat, undefined);
+  const swim = content.chapters['04-xu'].scenes['04-mouth'].exits.find(e => e.id === 'swim');
+  const alone = pz(hersIn(swim.beat)[0].alone);
+  assert.ok(r.result.beat.some(b => b.who === 'ling' && b.text === alone));
+  assert.ok(r.result.scene.lines.some(b => b.who === 'ling' && b.text === pz(hersIn(content.chapters['04-xu'].scenes['04-deep'].lines)[0].alone)));
+});
+
+test('her beat: a staying exit gives a node of its own; walking into a scene with her line gives hers; a scene without, nothing', () => {
+  // 逃: the scene stays, no story node — her beat is the page's moment by itself.
+  const fled = resolve(xu(JOINED), content, ctx(), { exit: 'flee' });
+  assert.equal(fled.result.ok, true);
+  assert.equal(fled.result.node, undefined);
+  assert.equal(fled.state.node.kind, 'beat');
+  assert.ok(fled.result.her_beat.facts.line);
+  // Move into 泗口 — the mouth's opening line is hers.
+  const town = { ...xu(JOINED), scene: '04-mouth', place: 'pengcheng' };
+  const moved = VERBS.move(town, content, ctx(), { place: 'sikou' });
+  assert.equal(moved.result.ok, true);
+  assert.equal(moved.result.scene?.id, '04-mouth');
+  assert.equal(moved.result.her_beat.id, '04-mouth');
+  assert.deepEqual(hersIn(moved.result.scene.lines), []);
+  assert.equal(moved.state.node.kind, 'beat');
+  // Unjoined, the same walk is Ling's narration only.
+  const alone = VERBS.move({ ...town, companion: undefined }, content, ctx(), { place: 'sikou' });
+  assert.equal(alone.result.her_beat, undefined);
+});
+
+test('her beat on the page: its own moment is hers alone (big, no converse); with a node it rides in the node\'s moment — one beat, one line', async () => {
+  const { flagsOf, nodeMoment } = await import('../scripts/voice.js');
+  assert.deepEqual(flagsOf('her_beat'), { big: true });
+  const her = { id: '04-mouth/swim', facts: { happened: '你潜下去。', line: '离在南。' } };
+  // A beat without a node: her own moment, the line her reference.
+  const alone = nodeMoment({ kind: 'beat', at: NOW.toISOString(), her_beat: her });
+  assert.equal(alone.id, 'her_beat');
+  assert.match(alone.zh, /「离在南。」/); assert.match(alone.zh, /参考/); assert.match(alone.en, /say it your way, same meaning/);
+  // With a scene passed: the node's one moment carries it (converse, as ever) — not a second one.
+  const plain = nodeMoment({ kind: 'scene', at: NOW.toISOString(), recap: '过了泗口。' });
+  const both = nodeMoment({ kind: 'scene', at: NOW.toISOString(), recap: '过了泗口。', her_beat: her });
+  assert.equal(both.id, plain.id);
+  assert.equal(flagsOf(both.id).converse, true);
+  assert.match(both.zh, /过了泗口/); assert.match(both.zh, /「离在南。」/);
+  assert.doesNotMatch(plain.zh, /离在南/);
+  assert.doesNotMatch(both.zh, /说说你觉得这意味着什么/, 'one line from her: her beat, not a second ask');
+  // The page raises a node through nodeMoment only.
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(src, /const m = nodeMoment\(n\);/);
 });

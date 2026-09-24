@@ -15,7 +15,7 @@ import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { esc } from './esc.js';
-import { createVoice } from './voice.js';
+import { createVoice, nodeMoment } from './voice.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 
 const SKILL = 'lingjing';
@@ -1738,22 +1738,9 @@ function watchNode() {
   storyMoment(n);
 }
 const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.story_node.kind) && Date.now() - Date.parse(look.story_node.at) < 60000);
-const quote = (zh, t) => (zh ? `「${t}」` : `“${t}”`);
 function storyMoment(n) {
-  const facts = (zh) => {
-    const ask = zh ? '你就在玩家身边——说说你觉得这意味着什么，一两句；别复述发生了什么，也别替故事给出答案。' : 'You are beside the player — say what you make of it, a line or two; do not retell what happened or answer ahead of the story.';
-    const bits = [];
-    if (n.kind === 'scene') bits.push(zh ? `一幕刚过去：${n.recap ?? ''}` : `A scene has just passed: ${n.recap ?? ''}`);
-    if (n.kind === 'cauldron') bits.push(zh ? `第${n.found}口鼎寻回了（${n.chapter?.title}）。${n.recap ?? ''}` : `Cauldron ${n.found} is found (${n.chapter?.title}). ${n.recap ?? ''}`);
-    if (n.kind === 'chapter') bits.push(zh ? `${n.chapter?.title}走完了。${n.recap ?? ''}` : `${n.chapter?.title} is over. ${n.recap ?? ''}`);
-    if (n.mystery) bits.push(n.kind === 'scene' ? (zh ? `这一章还悬着的谜：${quote(zh, n.mystery)}。` : `The riddle still open: ${quote(zh, n.mystery)}.`) : (zh ? `这一章的谜${quote(zh, n.mystery)}有了着落。` : `The chapter's riddle, ${quote(zh, n.mystery)}, has its answer.`));
-    if (n.memory?.length) bits.push(zh ? `你记起了：${n.memory.map((m) => quote(zh, m)).join('')}。` : `A memory came back to you: ${n.memory.map((m) => quote(zh, m)).join(' ')}.`);
-    if (n.ending) bits.push(zh ? `九鼎聚齐，故事到了终局：${n.ending}。` : `The nine are gathered; the story has reached its end: ${n.ending}.`);
-    if (n.next) bits.push(zh ? `前面是${n.next.title}，新的谜：${quote(zh, n.next.mystery)}。` : `Ahead lies ${n.next.title}, and a new riddle: ${quote(zh, n.next.mystery)}.`);
-    return `${bits.join(zh ? '' : ' ')}${zh ? '' : ' '}${ask}`;
-  };
-  const id = { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory' }[n.kind];
-  if (id) tellYinyue(id, facts(true), facts(false), { mood: n.kind === 'scene' ? 'neutral' : n.memory?.length ? 'relaxed' : 'happy' });
+  const m = nodeMoment(n);
+  if (m) tellYinyue(m.id, m.zh, m.en, { mood: m.mood });
 }
 
 /* 前情提要 — back after a while (Look's `recap_due`), Ling tells what came

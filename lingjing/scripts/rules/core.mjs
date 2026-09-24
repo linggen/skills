@@ -1,14 +1,14 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, dayKey, normalizeAnswer, payOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
+import { addProgress, dayKey, fill, normalizeAnswer, payOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, starterOf } from './cards.mjs';
 import { threadOf } from './errands.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
-import { storyNode } from './story.mjs';
+import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -288,12 +288,21 @@ export function resolve(state, content, ctx, args) {
     if ((exit.next || exit.ends) && !replay) node = s.node = storyNode(content, state, s, scene, exit, ctx.now);
   }
   const walked = exit.next ? walkOn(content, s, ctx.now) : null;
+  // Her lines in this move — the exit's beat, and the scene it walks into —
+  // are hers to say: facts for her, never a line for Ling (story.mjs herBeat).
+  const into = exit.next && atScene(content, s) ? sceneOf(content, s) : null;
+  const her = herBeat(content, s, {
+    id: `${scene.id}/${exit.id}`, lines: [...(exit.beat ?? []), ...(into?.lines ?? [])],
+    happened: [...beat.map(b => b.text), into && fill(pick(into.setup, lang), s)], scenes: [scene, into],
+  });
+  if (her) s.node = withHerBeat(node, her, ctx.now);
   return {
     state: s,
     result: {
       ok: true, took: exit.id, beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
       ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
+      ...(her ? { her_beat: her } : {}),
       summarize: Boolean(exit.next || exit.ends),
     },
   };
