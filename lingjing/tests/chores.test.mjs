@@ -90,9 +90,11 @@ test('a flood of menu entries: the book holds the workout and the one pick — t
 
 test('only the pick and the fixed pay; another pool chore done anyway is shown nowhere and pays nothing', () => {
   const s = start();
-  const pickId = dailyPick(s, MENU, NOW).pick.id;
-  const other = MENU.find(q => q.id !== pickId && q.device !== 'phone');
   const allDone = [...MENU, workout()].map(q => ({ ...q, done_at: new Date(NOW - 60e3).toISOString() }));
+  // The pick is read off the same menu Look sees: a phone chore done makes the
+  // phone known, which can move the day's device — and with it the pick.
+  const pickId = dailyPick(s, allDone, NOW).pick.id;
+  const other = MENU.find(q => q.id !== pickId && q.device !== 'phone');
   const b = look(s, content, ctx(allDone)).book;
   assert.deepEqual(chores(b).map(x => x.id).sort(), [pickId, 'health-workout'].sort());
   const r = quest(s, content, ctx(allDone), { action: 'turn', id: other.id }).result;
