@@ -559,6 +559,14 @@ button.gcard { cursor: pointer; font: inherit; }
 .card.lundao .lundaodots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ling); }
 .card.lundao .lundaodots i.on { background: var(--ling); }
 .card.lundao .lundaodots span { margin-left: 6px; }
+/* 传闻 — today's rumor: its step, with the 论道 look where it is words */
+.card.tale { border-left: 3px solid var(--ling); }
+.card.tale .say { margin: 8px 0 6px; line-height: 1.7; }
+.card.tale .lundaoprompt { margin: 8px 0 6px; font-family: var(--serif); font-size: 20px; color: var(--ling); }
+.card.tale .lundaodots { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.card.tale .lundaodots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ling); }
+.card.tale .lundaodots i.on { background: var(--ling); }
+.card.tale .lundaodots span { margin-left: 6px; }
 
 /* ── Narrow scenes ── measured on the scene itself, not the window: the chat
    beside it takes 440px. Narrower, she stands smaller; narrower still, the

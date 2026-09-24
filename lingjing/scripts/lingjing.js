@@ -20,7 +20,7 @@ const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
+const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Tale', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -53,7 +53,25 @@ function gameMod(id) {
     .catch((e) => { console.warn('[lingjing] game', id, e); });
   return null;
 }
+/* 传闻's step board: its own instance, dealt from the step's id and the level
+   the rules set — never the day's practice board, never re-dealt by the day. */
+function taleBoard(taskId) {
+  const b = look?.tale?.step?.board;
+  if (!b || b.id !== taskId) return boards.get(taskId) ?? null;
+  if (boards.has(taskId)) return boards.get(taskId);
+  if (b.page === 'lianliankan') {
+    boards.set(taskId, newBoard(authored.herbs.map((h) => ({ id: h.id, tile: h.tile, label: h.name[lang()] })), taskId));
+    return boards.get(taskId);
+  }
+  const mod = gameMod(b.page);
+  if (!mod) return null;
+  boards.set(taskId, { taskId, mod, day: taskId, state: mod.newGame(`${taskId}|${look.name ?? ''}`, b.level ?? 1) });
+  return boards.get(taskId);
+}
+const isTale = (id) => String(id ?? '').startsWith('tale:');
+
 function boardFor(taskId) {
+  if (isTale(taskId)) return taleBoard(taskId);
   const task = look?.tasks?.find((t) => t.id === taskId);
   if (task?.game && task.game !== 'lianliankan') {
     const mod = gameMod(task.game);
@@ -80,7 +98,8 @@ function sendHeldWins() {
     const won = g.state ? g.state.won : g.won;
     if (!won || g.sent) continue;
     const task = look?.tasks?.find((t) => t.id === g.taskId);
-    if (!task || task.status !== 'offered' || task.won) continue;
+    const tale = isTale(g.taskId) && look?.tale?.step?.board?.id === g.taskId && !look.tale.step.won;
+    if (!tale && (!task || task.status !== 'offered' || task.won)) continue;
     if (g.refusedAt && g.refusedAt === (look?.place?.id ?? null)) continue;
     // Only a board on the stage now: it counts where it is open.
     const id = CSS.escape(g.taskId);
@@ -585,7 +604,7 @@ function focusHtml() {
    in this order; the first stands on the stage, 下一件 › puts it off to the end
    of the line, and walking on starts the line again. The goal line, an empty
    pool and what Ling showed of the place stay where they are. */
-const QUEUE = ['handed', 'quest', 'veil', 'find', 'trial', 'chance', 'journey', 'offer', 'duel', 'lundao', 'board'];
+const QUEUE = ['handed', 'quest', 'tale', 'veil', 'find', 'trial', 'chance', 'journey', 'offer', 'duel', 'lundao', 'board'];
 const HEAD = new Set(['building', 'empty', 'goal']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
@@ -622,6 +641,7 @@ function queueHtml(queue) {
 function queueLabel(c) {
   const w = words();
   if (c.card === 'board') return look?.tasks?.find((t) => t.id === c.id)?.title ?? w.queueKinds.board;
+  if (c.card === 'tale') return look?.tale?.label ?? w.queueKinds.tale;
   return w.queueKinds[c.card] ?? c.card;
 }
 
@@ -803,6 +823,7 @@ const refusal = (r) => r?.say || words().refused?.[r?.refused] || words().notDon
 /* ── The board: the one thing the page reports ── */
 
 async function onWin(taskId) {
+  if (isTale(taskId)) return taleWon(taskId);
   const r = await write('win', { id: taskId }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
   // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
@@ -828,6 +849,23 @@ async function onWin(taskId) {
 
 const isTask = (id) => Boolean(look?.tasks?.some((t) => t.id === id));
 
+/* 传闻: a step's board won, its riddle answered, a kept win counted — the
+   rules pay it and open the next step at once, page-side; the story beat is
+   Ling's, one hidden line: `[scene] tale step` (the next step opened) or
+   `[scene] tale end`. A win kept on an empty pool tells her nothing yet. */
+async function taleDone(r) {
+  keep({ doNote: r.ok ? null : refusal(r) });
+  await refresh();
+  if (r.ok && !r.kept && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
+  return r.ok;
+}
+async function taleWon(id) {
+  const r = await write('tale', { action: 'win', board: id }).catch(failed);
+  if (!r.ok) { const g = boards.get(id); if (g) { g.sent = false; g.refusedAt = look?.place?.id ?? null; } }
+  return taleDone(r);
+}
+const taleAnswer = async (answer) => taleDone(await write('tale', { action: 'answer', answer }).catch(failed));
+
 /// Practice `done`, from the page. An empty pool keeps the win: it is paid
 /// once 体力 is back (payKeptWins, on the next Look that has it).
 async function payWin(id) {
@@ -843,10 +881,12 @@ let payingKept = false;
 async function payKeptWins() {
   if (payingKept || !look || look.stamina?.empty || look.fight) return;
   const kept = (look.tasks ?? []).filter((t) => t.won && t.status !== 'done');
-  if (!kept.length) return;
+  const tale = Boolean(look.tale?.step?.won);
+  if (!kept.length && !tale) return;
   payingKept = true;
   try {
     for (const t of kept) await payWin(t.id);
+    if (tale) await taleDone(await write('tale', { action: 'turn' }).catch(failed));
   } finally {
     payingKept = false;
   }
@@ -1078,6 +1118,8 @@ async function doTap(action, id) {
   keep({ doNote: r.ok ? null : refusal(r) });
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
+  // 交差 on 传闻's line counts a kept win: the next step is the story's.
+  if (r.ok && id === 'tale' && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
 }
 
 /* 接下 seen: the row takes a 已接下 seal and fades, so a second errand rising
@@ -1245,6 +1287,7 @@ const CLICKS = [
   ['[data-journey-recall]', busy('journey', () => recallHer())],
   ['[data-journey-receive]', busy('journey', () => receiveHer())],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
+  ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],
   ['[data-drop]', (el) => run(`drop:${el.dataset.drop}`, () => dropErrand(el.dataset.drop))],
   // A line of the book opens where it lies — the page reads it from the rules.
   ['[data-offerrow]', (el, e) => { if (e.target.closest('button')) return false; toggleOffer(el.dataset.offerrow); }],
@@ -1475,7 +1518,9 @@ async function settleBout(b = bout) {
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;
   keep({ walkedOut: null });
-  await report(`[scene] ${r.outcome} ${id}`);
+  // A fight that ended today's rumor is its ending: one beat, the tale's.
+  const ended = (r.handed ?? []).some((h) => h.tale && h.ended);
+  await report(ended ? '[scene] tale end' : `[scene] ${r.outcome} ${id}`);
   await refresh();
 }
 

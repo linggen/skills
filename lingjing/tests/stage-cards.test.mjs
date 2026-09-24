@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { WORDS, bookChipHtml, bookPopHtml, cardHtml } from '../scripts/cards.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { look, quest } from '../scripts/rules.mjs';
+import { look, quest, tale } from '../scripts/rules.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const read = f => JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding', f), 'utf8'));
@@ -35,7 +35,14 @@ const chores = [{ id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: tru
   { id: 'health-workout', app: 'health', period: 'day', due: true, reward: 20, title: { zh: '炼体', en: 'Workout' } }];
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 
+/* 今日传闻 made from the shipped example: at its first step's board, and a step on (the riddle). */
+const told = (lang) => tale({ ...open, lang, place: 'sishui' }, content, ctx(), { action: 'make', tale: JSON.stringify(content.tale.example[lang]) }).state;
+const riddled = { ...tale(told('zh'), content, ctx(), { action: 'win', board: `tale:${NOW.toISOString().slice(0, 10).replaceAll('-', '')}:0` }).state, place: 'sibei' };
+
 const SITUATIONS = {
+  '今日传闻: its first step\'s board, where it is played': [told('zh'), ctx()],
+  '今日传闻: the riddle step': [riddled, ctx()],
+  '今日传闻, in English': [told('en'), ctx()],
   'an errand offered at a beast\'s haunt': [{ ...open, place: 'sibei' }, ctx()],
   'a market: the shelf, an authored errand, the day\'s notice': [{ ...open, place: 'pengcheng' }, ctx()],
   'the cauldron waiting on cultivation, the 功课 in the book': [{ ...open, chapter: '03-qing', scene: '03-cauldron', place: 'penglai', ended: ['00-prologue', '01-ji', '02-yan'] }, ctx({ quests: chores })],
@@ -60,7 +67,7 @@ for (const [name, [state, c]] of Object.entries(SITUATIONS)) {
 
 test('the situations cover the stage\'s own cards', () => {
   const seen = new Set(Object.values(SITUATIONS).flatMap(([s, c]) => look(s, content, c).stage.map(x => x.card)));
-  for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram', 'find']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
+  for (const kind of ['goal', 'offer', 'item', 'creature', 'hexagram', 'find', 'tale']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
 });
 
 test('the 事 chip: how many in hand, what can be handed in — and its popover holds the goal and the rows', () => {
