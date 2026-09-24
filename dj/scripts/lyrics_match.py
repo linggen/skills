@@ -31,7 +31,7 @@ import unicodedata
 import urllib.parse
 import urllib.request
 
-UA = "DJ (Linggen music app) https://linggen.dev"
+UA = "DJ/1.0 (music library; lyrics lookup)"
 
 FIT_SECONDS = 5  # a set timed within this of the file is timed for the file
 TITLE_OVERLAP = 2 / 3  # share of a title's characters another must carry

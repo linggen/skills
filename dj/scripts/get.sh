@@ -79,12 +79,14 @@ TASK_ID = int(time.time())
 def publish(done, total, current, finished=False):
     # Progress rides the retained `tasks` topic — the phone's relay card and
     # the DJ page both read it. Telemetry must never break a download, so
-    # every failure here is swallowed.
+    # every failure here is swallowed. Facts only: `label` names the errand
+    # (a card title, no count), the counts ride as numbers, and whoever tells
+    # the person — Yinyue, the card — words them.
     try:
         body = json.dumps({
             "topic": "tasks", "op": "dj", "retain": True,
             "payload": {"app": "dj", "task_id": TASK_ID,
-                        "label": f"Downloading {total} songs",
+                        "kind": "download", "label": "Downloads",
                         "done": done, "total": total, "current": current,
                         "finished": finished, "at": int(time.time())},
         }).encode()
