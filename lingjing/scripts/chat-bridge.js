@@ -187,6 +187,7 @@ window.LinggenUI = { mount };
 // erase it.
 (function () {
   const BEAT_MS = 4000;
+  const APP = (location.pathname.match(/^\/apps\/([a-z0-9-]+)\//) || [])[1] || null;
   const TYPING_WINDOW_MS = 1500;
   let lastInputAt = Date.now();
   let lastKeyAt = 0;
@@ -200,6 +201,9 @@ window.LinggenUI = { mount };
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        // Which app is in front, so a moment waits for its own app (the engine
+        // falls back to any surface when a beat names none).
+        ...(APP ? { app: APP } : {}),
         focused,
         typing: focused && now - lastKeyAt < TYPING_WINDOW_MS,
         idle_ms: now - lastInputAt,
