@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "08-town",
+ "chapter": "08-yong",
+ "at": "yongcheng",
+ "place": {
+  "zh": "雍城 · 城门",
+  "en": "Yongcheng · The city gate"
+ },
+ "setup": {
+  "zh": "告示上写：天旱三年，泾渭俱竭；太华山上有蛇六足四翼，饮水不止。有能致雨者，雍令重赏。城里的老人说，他们的曾祖见过：周亡那年，东边来了九辆车，车上盖着布，赶车的说是鼎；进了城，布一掀，车上什么也没有。坊市里摆着球琳琅玕，没人买——井都干了。",
+  "en": "The notice says: three years of drought, the Jing and the Wei both dry; on Mount Taihua a snake with six legs and four wings drinks without end. Whoever brings rain, the magistrate of Yong will reward. The old men of the city say their great-grandfathers saw it: the year Zhou fell, nine carts came from the east, their loads under cloth — cauldrons, the drivers said. Inside the walls the cloth came off, and the carts were empty. The market has jade and langgan laid out, and no one buying — the wells are dry."
+ },
+ "recap": {
+  "zh": "雍城的老人说，周亡那年九辆车运鼎进城，掀开布，车上是空的。",
+  "en": "The old men of Yongcheng said that the year Zhou fell nine carts brought the cauldrons in — and when the cloth came off, the carts were empty."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "……空的。她赶在他们前头了。",
+    "en": "…Empty. She got there ahead of them."
+   },
+   "alone": {
+    "zh": "车是空的——有人赶在了秦人前头。",
+    "en": "The carts were empty: someone had got ahead of the men of Qin."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "太华山在东边。那条蛇就盘在山崖上。",
+    "en": "Mount Taihua lies east. The snake is coiled on its cliffs."
+   }
+  }
+ ],
+ "buttons": [
+  "cliff",
+  "market"
+ ],
+ "exits": [
+  {
+   "id": "cliff",
+   "label": {
+    "zh": "去太华山",
+    "en": "To Mount Taihua"
+   },
+   "means": "goes east to Mount Taihua, to the snake",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你往东走。太华山削成四方，高五千仞，崖上连一只鸟也没有。",
+      "en": "East. Mount Taihua stands cut square, five thousand ren high; not a bird on its cliffs."
+     }
+    }
+   ],
+   "next": "08-cliff"
+  },
+  {
+   "id": "market",
+   "label": {
+    "zh": "先逛坊市",
+    "en": "The market first"
+   },
+   "means": "goes shopping, asks about the market, wants to buy or sell",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "卖玉的人把球、琳、琅玕摆了一地，说：拿一块玉换一桶水，也换不来。",
+      "en": "The jade-seller has spread his qiu, lin and langgan across the ground: a piece of jade for a bucket of water, he says, and still no taker."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "shrine",
+   "means": "joins the old men praying for rain at the shrine",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你跪在老人们中间。天上一丝云也没有。一个老人说：从前旱的时候，人们用泥做一条龙，雨就来了。",
+      "en": "You kneel among the old men. Not a wisp of cloud. One of them says: in the old days, in a drought, people made a dragon of mud, and the rain came."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "应龙的样子。……记住这个。",
+      "en": "The shape of Yinglong. …Remember that."
+     },
+     "alone": {
+      "zh": "旱而为应龙之状，乃得大雨。",
+      "en": "In drought make the shape of Yinglong, and great rain comes."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

@@ -927,6 +927,137 @@
       },
       "_deck": "赤身 —— 火鸦一群一群扑下来，快，身薄。",
       "_signature": "状如鸮 —— 一扑，再衔一张在嘴里。"
+    },
+    {
+      "id": "feiyi",
+      "name": {
+        "zh": "肥遗",
+        "en": "Feiyi"
+      },
+      "pinyin": "féi yí",
+      "source": {
+        "zh": "《山海经 · 西山经》",
+        "en": "Classic of Mountains and Seas — Western Mountains"
+      },
+      "quote": {
+        "zh": "又西六十里，曰太华之山，削成而四方，其高五千仞，其广十里，鸟兽莫居。有蛇焉，名曰肥遗，六足四翼，见则天下大旱。",
+        "en": "Sixty li further west is Mount Taihua, cut square on four sides, five thousand ren high and ten li broad; neither bird nor beast lives there. There is a snake on it called Feiyi, with six legs and four wings; where it is seen, the world suffers great drought."
+      },
+      "look": {
+        "zh": "一条蛇，六只脚，四只翅膀。",
+        "en": "A snake with six legs and four wings."
+      },
+      "province": "雍",
+      "root": "fire",
+      "art": "art/feiyi.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》肥遺圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic506 - 肥遺圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/feiyi.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "hanyu",
+      "lean": "ward",
+      "pattern": [
+        "cast",
+        "gather",
+        "cast",
+        "armor",
+        "strike"
+      ],
+      "drops": "huojing",
+      "deck": [
+        "huoya",
+        "huoya",
+        "feiyi",
+        "feiyi",
+        "huodan",
+        "huodan",
+        "fenghuo",
+        "liaotian",
+        "yanxin",
+        "feiyi",
+        "huodan",
+        "fenghuo"
+      ],
+      "signature": {
+        "id": "dahan",
+        "name": {
+          "zh": "大旱",
+          "en": "The Great Drought"
+        },
+        "effect": {
+          "damage": 16,
+          "sweep": 4
+        }
+      },
+      "elite": true,
+      "_deck": "见则天下大旱 —— 火一阵一阵烧过来，烧到你没有水可喝。",
+      "_signature": "六足四翼 —— 翅膀一扇，阵前的都焦了，火落到你身上。"
+    },
+    {
+      "id": "qianyang",
+      "name": {
+        "zh": "羬羊",
+        "en": "Qianyang"
+      },
+      "pinyin": "qián yáng",
+      "source": {
+        "zh": "《山海经 · 西山经》",
+        "en": "Classic of Mountains and Seas — Western Mountains"
+      },
+      "quote": {
+        "zh": "西山经华山之首，曰钱来之山，其上多松，其下多洗石。有兽焉，其状如羊而马尾，名曰羬羊，其脂可以已腊。",
+        "en": "The first of the Western Mountains, at the head of the Hua range, is Mount Qianlai, with many pines above and many scouring-stones below. There is a beast on it like a goat with a horse's tail, called Qianyang; its fat heals chapped skin."
+      },
+      "look": {
+        "zh": "羊的样子，长着马的尾巴。",
+        "en": "A goat's shape with a horse's tail."
+      },
+      "province": "雍",
+      "root": "metal",
+      "art": "art/qianyang.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》羬羊圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic229 - 羬羊圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/qianyang.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "langgan",
+      "lean": "hide",
+      "pattern": [
+        "armor",
+        "strike",
+        "guard",
+        "cast",
+        "strike"
+      ],
+      "drops": "jingjin",
+      "deck": [
+        "jinsuo",
+        "jinsuo",
+        "jingang",
+        "qianyang",
+        "qianyang",
+        "jinzhua",
+        "jinzhen",
+        "huiqi",
+        "qianyang",
+        "jinsuo",
+        "jinzhua",
+        "suijin"
+      ],
+      "signature": {
+        "id": "yila",
+        "name": {
+          "zh": "其脂已腊",
+          "en": "Salve for Chapped Skin"
+        },
+        "effect": {
+          "heal": 12,
+          "damage": 4
+        }
+      },
+      "_deck": "其状如羊而马尾 —— 皮厚，站得住，慢慢磨。",
+      "_signature": "其脂可以已腊 —— 它把伤口一抹，又站直了。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

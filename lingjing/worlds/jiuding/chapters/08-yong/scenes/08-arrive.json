@@ -1,0 +1,126 @@
+{
+ "version": 1,
+ "id": "08-arrive",
+ "chapter": "08-yong",
+ "at": "weihe",
+ "place": {
+  "zh": "渭水 · 旱",
+  "en": "The Wei · Drought"
+ },
+ "setup": {
+  "zh": "翻过秦岭，出了斜谷，是渭水——可渭水没有水。河床裂成一块一块，泾水那边也是干的。旱了三年，分不出哪条清，哪条浊。",
+  "en": "Over the Qinling and out of the Xie valley lies the Wei — but the Wei has no water. The riverbed is cracked into plates, and the Jing beyond it is dry too. Three years of drought: there is no telling which river runs clear and which muddy."
+ },
+ "recap": {
+  "zh": "出了斜谷，渭水与泾水都干了；旱了三年，分不出清浊。",
+  "en": "Out of the Xie valley, the Wei and the Jing were both dry after three years of drought; there was no telling clear from muddy."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "雍",
+   "here": "雍"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "泾以渭浊……现在两条都没有水了。鼎的气在这一带，被什么喝干了。",
+    "en": "The Jing is muddied by the Wei, the old song says… Now neither has water. The cauldron's breath is somewhere here, and something has drunk it dry."
+   },
+   "alone": {
+    "zh": "泾以渭浊——如今两条都没有水。鼎的气在这一带，被什么喝干了。",
+    "en": "The Jing muddied by the Wei, says the song; now neither has water. The cauldron's breath is somewhere here, drunk dry by something."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "路边的老农说：雍城在求雨，城里的老人天天在祠前跪着。",
+    "en": "An old farmer by the road says: Yongcheng is praying for rain; the old men kneel before the shrine every day."
+   }
+  }
+ ],
+ "buttons": [
+  "town",
+  "bed"
+ ],
+ "exits": [
+  {
+   "id": "town",
+   "label": {
+    "zh": "去雍城",
+    "en": "Go to Yongcheng"
+   },
+   "means": "goes to the city, to Yongcheng, to read the notice",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你沿着干河床往西走。雍城的城墙是夯土的，城门上挂着一张告示，风一吹，沙沙地响。",
+      "en": "West along the dry bed. Yongcheng's walls are rammed earth, and a notice rustles on the gate in the wind."
+     }
+    }
+   ],
+   "next": "08-town"
+  },
+  {
+   "id": "bed",
+   "label": {
+    "zh": "看河床",
+    "en": "Look at the riverbed"
+   },
+   "means": "looks at the dry riverbed, searches it",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "河床的裂缝里卡着一片青铜，上面铸着半个\"雍\"字。",
+      "en": "Wedged in a crack of the riverbed is a shard of bronze, half the character for Yong cast on it."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "是从鼎上掉下来的？……不，是从拉鼎的车上。",
+      "en": "From the cauldron? …No — from the cart that hauled it."
+     },
+     "alone": {
+      "zh": "像是从一辆运重物的铜车上掉下来的。",
+      "en": "It looks to have come off a bronze-fitted cart that carried something heavy."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "dig",
+   "means": "digs in the riverbed for water",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你挖了三尺，全是干沙。",
+      "en": "You dig three feet: dry sand all the way."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "水不在地下。去雍城问问。",
+      "en": "The water isn't underground. Ask in Yongcheng."
+     },
+     "alone": {
+      "zh": "水不在地下。雍城在西边。",
+      "en": "The water is not underground. Yongcheng lies west."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

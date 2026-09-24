@@ -528,6 +528,53 @@
     "twelve"
    ],
    "hint": "Baopuzi: thus three paces… and behind them, nine traces."
+  },
+  "feiyi-1": {
+   "q": "The sun above 干, \"dry\" — one character. It is what this land has had for three years.",
+   "a": [
+    "旱",
+    "han",
+    "drought"
+   ],
+   "choices": [
+    "旱",
+    "早",
+    "旦",
+    "杲"
+   ],
+   "hint": "日 above, 干 below."
+  },
+  "feiyi-2": {
+   "q": "The Classic of Mountains and Seas: where Feiyi is seen, what comes to the world?",
+   "a": [
+    "great drought",
+    "drought",
+    "a great drought"
+   ],
+   "choices": [
+    "a great flood",
+    "a great drought",
+    "a great plague",
+    "a great war"
+   ],
+   "hint": "The riverbed under your feet is the answer."
+  },
+  "seal-yong": {
+   "q": "Of the twelve pitch-pipes, which is the first?",
+   "a": [
+    "yellow bell",
+    "the yellow bell",
+    "huangzhong",
+    "huang zhong",
+    "黄钟"
+   ],
+   "choices": [
+    "the Yellow Bell",
+    "the Great Lü",
+    "the Great Cluster",
+    "the Forest Bell"
+   ],
+   "hint": "All twelve are reckoned from it."
   }
  }
 }

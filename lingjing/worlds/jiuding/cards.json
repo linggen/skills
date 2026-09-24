@@ -963,6 +963,37 @@
       "hp": 2,
       "art": "art/qiezhi.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+    },
+    {
+      "id": "feiyi",
+      "kind": "minion",
+      "name": {
+        "zh": "肥遗",
+        "en": "Feiyi"
+      },
+      "cost": 6,
+      "element": "fire",
+      "atk": 6,
+      "hp": 4,
+      "art": "art/feiyi.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
+    },
+    {
+      "id": "qianyang",
+      "kind": "minion",
+      "name": {
+        "zh": "羬羊",
+        "en": "Qianyang"
+      },
+      "cost": 3,
+      "element": "metal",
+      "atk": 2,
+      "hp": 4,
+      "keywords": [
+        "taunt"
+      ],
+      "art": "art/qianyang.webp",
+      "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     }
   ],
   "_curve": "单体伤害约 1.2 点/费，群伤约 0.7 点/费每个 —— 因为克制会翻倍，曲线要按翻倍之后算 (2026-09-18 闸: 五雷法 5费9点 打在克的行上是 18 点，一张牌打掉练气英雄九成气血，影响力 +33.8%)。",

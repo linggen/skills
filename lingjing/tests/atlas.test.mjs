@@ -44,6 +44,7 @@ test('the map card draws the province up close as points, and all nine at a tap'
   // The whole map: where the player is by the dot alone, and each province
   // with places opens up close; one without (雍) is only a name.
   const atlas = Object.fromEntries(Object.entries(content.places).map(([id, d]) => [id, { name: `${id}州`, places: d.places.map(p => ({ id: p.id, name: p.name.zh, map: p.map, too_hard: false })) }]));
+  delete atlas['雍']; // every province has places now (chapters 4–9); one the atlas lacks is still only a name
   const whole = cardHtml({ card: 'map' }, { ...ctx('world'), atlas });
   assert.equal((whole.match(/class="pt/g) ?? []).length, 1);
   assert.match(whole, /<span class="pt here" style="[^"]*"><i><\/i><\/span>/);

@@ -1,0 +1,188 @@
+{
+ "version": 1,
+ "id": "08-cliff",
+ "chapter": "08-yong",
+ "at": "taihua",
+ "place": {
+  "zh": "太华山 · 崖上",
+  "en": "Mount Taihua · The cliff"
+ },
+ "setup": {
+  "zh": "崖上盘着一条蛇，六只脚，四只翅膀，头垂到崖下，对着西边渭水的上游喝——那边飘过来的是鼎的气，它一口一口地喝，喝进去的都是水。它每喝一口，天下就更旱一分。",
+  "en": "On the cliff coils a snake with six legs and four wings, its head hanging over the edge, drinking toward the upper Wei in the west — what drifts from there is the cauldron's breath, and it drinks it mouthful by mouthful, and what it drinks is water. With every mouthful the world grows drier."
+ },
+ "recap": {
+  "zh": "太华山崖上，六足四翼的肥遗在喝鼎的气——它喝的是天下的水。",
+  "en": "On the cliff of Mount Taihua, Feiyi, six-legged and four-winged, was drinking the cauldron's breath — it was drinking the world's water."
+ },
+ "cast": [
+  "yinyue",
+  "feiyi"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "feiyi"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是肥遗。见则天下大旱——它不是来旱天下的，是渴。鼎的气里有九州的水。",
+    "en": "It's Feiyi. Where it is seen the world goes dry — it didn't come to parch the world; it's thirsty. The cauldron's breath holds the water of nine provinces."
+   },
+   "alone": {
+    "zh": "是肥遗，见则天下大旱。它渴，鼎的气里有九州的水。",
+    "en": "It is Feiyi: where it is seen, great drought. It is thirsty, and the cauldron's breath holds the water of nine provinces."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "肥遗抬起头，四只翅膀张开。它先要问你一句。",
+    "en": "Feiyi lifts its head and spreads its four wings. First it has a question."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "dragon"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the snake, drives it off the cliff by force",
+   "game": {
+    "id": "subdue-feiyi",
+    "kind": "duel",
+    "creature": "feiyi"
+   },
+   "withdrawn": {
+    "zh": "肥遗飞上更高的崖，又低头喝了起来。明日它还在。",
+    "en": "Feiyi flies to a higher ledge and bends to drink again. Tomorrow it will still be there."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "肥遗收起翅膀，从崖上滑下去，滑进一道石缝，不见了。它没喝完的气散开，化成了云。",
+      "en": "Feiyi folds its wings, slides down the cliff into a cleft, and is gone. The breath it had not drunk spreads out and becomes cloud."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "云来了。鼎在西边——陈仓。",
+      "en": "Clouds are coming. The cauldron is west — at Chencang."
+     },
+     "alone": {
+      "zh": "云来了。鼎在西边的陈仓。",
+      "en": "The clouds come. The cauldron lies west, at Chencang."
+     }
+    }
+   ],
+   "next": "08-deep"
+  },
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答它的问",
+    "en": "Answer it"
+   },
+   "means": "answers the snake's riddle",
+   "key": [
+    "feiyi-1",
+    "feiyi-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你答了。肥遗歪着头想了想，把头从崖边收了回去，不喝了。",
+      "en": "You answer. Feiyi tilts its head, thinks, draws its head back from the edge, and stops drinking."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "它不喝了。走，陈仓。",
+      "en": "It's stopped drinking. Come — Chencang."
+     },
+     "alone": {
+      "zh": "它不喝了。陈仓在西边。",
+      "en": "It has stopped drinking. Chencang lies west."
+     }
+    }
+   ],
+   "next": "08-deep"
+  },
+  {
+   "id": "dragon",
+   "label": {
+    "zh": "作应龙之状",
+    "en": "Make the shape of Yinglong"
+   },
+   "means": "makes a dragon of mud in the shape of Yinglong, the old rain rite, to bring rain",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你在崖下和了泥，照着老人说的，塑了一条有翅膀的龙。旱而为应龙之状，乃得大雨——风从南边来了，云跟着来了。第一滴雨落在肥遗的背上，它抖了抖翅膀，往西飞走了。",
+      "en": "Below the cliff you work mud and, as the old man said, shape a winged dragon. In drought make the shape of Yinglong, and great rain comes — the wind rises from the south, and the clouds with it. The first drop falls on Feiyi's back; it shakes its wings and flies away west."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "雨来了。……跟着它往西，陈仓。",
+      "en": "Rain. …Follow it west — Chencang."
+     },
+     "alone": {
+      "zh": "雨来了。肥遗往西飞去；陈仓在西边。",
+      "en": "The rain comes. Feiyi flies west; Chencang lies west."
+     }
+    }
+   ],
+   "next": "08-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs from the snake, turns back, refuses to act",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你往回走。身后的崖上，又传来喝水的声音。",
+      "en": "You turn back. Behind you, from the cliff, the sound of drinking again."
+     },
+     "alone": {
+      "zh": "你往回走。身后的崖上，又传来喝水的声音。",
+      "en": "You turn back. From the cliff behind you, the sound of drinking again."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

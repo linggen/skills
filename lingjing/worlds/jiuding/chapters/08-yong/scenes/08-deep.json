@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "08-deep",
+ "chapter": "08-yong",
+ "at": "chencang",
+ "place": {
+  "zh": "陈仓 · 陈宝祠",
+  "en": "Chencang · The Chenbao shrine"
+ },
+ "setup": {
+  "zh": "雨下了一夜。陈仓北坂的祠下有一个池，池里头一回有了水。夜里祠里的石头叫了一声，像雄鸡，野鸡都跟着叫。池底卧着一口鼎，鼎口插着一排律管，十二根，第一根空着。",
+  "en": "It rains all night. Under the shrine on Chencang's north slope is a pool, and for the first time it holds water. At night the stone in the shrine cries out once, like a cock, and the wild pheasants answer. At the bottom of the pool lies a cauldron, its mouth set with a row of pitch-pipes — twelve, the first one missing."
+ },
+ "recap": {
+  "zh": "雨落进陈宝祠下的池里；池底的鼎口插着十二根律管，第一根空着。",
+  "en": "Rain filled the pool under the Chenbao shrine; the cauldron at its bottom was set with twelve pitch-pipes, the first missing."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "秦人把天下的尺、斗、秤都定成了一个。律也是——十二律，头一根定了，其余的才跟着定。",
+    "en": "The men of Qin made every rule, measure and scale under heaven one. Pitch too — of the twelve pipes, the first is fixed and the rest follow from it."
+   },
+   "alone": {
+    "zh": "十二律，头一根定了，其余的才跟着定。",
+    "en": "Of the twelve pitch-pipes, the first is fixed and the rest follow from it."
+   }
+  }
+ ],
+ "buttons": [
+  "seal"
+ ],
+ "exits": [
+  {
+   "id": "seal",
+   "label": {
+    "zh": "读封 · 补第一管",
+    "en": "Read the seal · The first pipe"
+   },
+   "means": "reads the seal, names the first of the twelve pitch-pipes",
+   "key": "seal-yong",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你说出它的名字。空着的地方长出一根竹管，风从池上吹过，十二根一齐响了。鼎口的气冲上来——是雨的味道，和雄鸡叫的味道。",
+      "en": "You say its name. A bamboo pipe grows in the empty place; wind passes over the pool and all twelve sound together. The cauldron's breath rushes up — rain, and a cock's crow."
+     }
+    }
+   ],
+   "next": "08-cauldron"
+  },
+  {
+   "id": "force",
+   "means": "tries to pull the pipes or pry the cauldron out by force",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "律管一根也拔不动。风一吹，只有十一个音。",
+      "en": "Not one pipe will come loose. When the wind blows there are only eleven notes."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

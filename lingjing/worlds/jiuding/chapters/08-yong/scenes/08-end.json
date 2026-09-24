@@ -1,0 +1,60 @@
+{
+ "version": 1,
+ "id": "08-end",
+ "chapter": "08-yong",
+ "at": "chencang",
+ "place": {
+  "zh": "雍 · 雨",
+  "en": "Yong · Rain"
+ },
+ "setup": {
+  "zh": "雨下了三天。泾水清了，渭水浊了，两条河又分得出来了。雍城的井满了，卖玉的人收了摊，去井边打水。",
+  "en": "It rains for three days. The Jing runs clear and the Wei muddy — the two rivers can be told apart again. The wells of Yongcheng are full; the jade-seller packs up his stall and goes to draw water."
+ },
+ "recap": {
+  "zh": "雨下了三天，泾清渭浊，雍城的井满了。第九鼎的气息在东边，天下的中间。",
+  "en": "It rained for three days; the Jing ran clear and the Wei muddy, and Yongcheng's wells filled. The ninth cauldron's breath lay east, at the centre of the world."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "豫",
+   "here": "雍"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "第九鼎的气息在东边——出函谷关，到洛水，天下的中间。九鼎当年，就立在那里。",
+    "en": "The ninth cauldron's breath lies east — out through the Hangu Pass to the Luo, the centre of the world. The nine cauldrons once stood there."
+   }
+  }
+ ],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the chapter, asks what comes next",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "今日到此为止。豫州的路，开的时候我会告诉你。",
+      "en": "That is all for today. When the road to Yu opens, I will tell you."
+     }
+    }
+   ],
+   "ends": "08-yong"
+  }
+ ]
+}

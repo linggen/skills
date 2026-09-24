@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "08-yong",
+  "opens": null,
+  "province": "雍",
+  "corridor": false,
+  "first_scene": "08-arrive",
+  "gate": 8,
+  "title": {
+    "zh": "第八章 · 雍州之鼎",
+    "en": "Chapter 8 · The Cauldron of Yong"
+  },
+  "summary": {
+    "zh": "翻过秦岭入雍。旱了三年，泾水渭水都干了，分不出清浊。雍城的老人说，周亡那年九辆车运鼎进城，掀开布，车上是空的。太华山崖上，六足四翼的肥遗在喝鼎的气。求来一场雨，补上十二律的第一管，第八鼎归来——大乘圆满者，在此渡劫。",
+    "en": "Over the Qinling into Yong. Three years of drought: the Jing and the Wei are both dry, and no one can tell clear from muddy. The old men of Yongcheng say that the year Zhou fell nine carts brought the cauldrons in — and when the cloth came off, the carts were empty. On the cliffs of Mount Taihua, Feiyi, six-legged and four-winged, is drinking the cauldron's breath. Bring rain, restore the first of the twelve pitch-pipes, and the eighth cauldron returns — one at the peak of the Mahayana meets the Tribulation here."
+  },
+  "intro": {
+    "zh": "周民东亡，其器九鼎入秦——史书上是这么写的。雍是秦的旧都。可雍城的老人记得另一件事：九辆车进了城，车上是空的。如今这里旱了三年，太华山上有一条不该出来的蛇。",
+    "en": "The people of Zhou fled east, and their vessels, the nine cauldrons, went into Qin — so the histories say. Yong was Qin's old seat. But the old men of Yongcheng remember something else: nine carts came through the gate, and the carts were empty. Now there has been drought here for three years, and on Mount Taihua is a snake that should never have come out."
+  },
+  "mystery": {
+    "zh": "周亡那年运进雍城的九辆车，为什么是空的？",
+    "en": "Why were the nine carts that came into Yongcheng the year Zhou fell empty?"
+  }
+}

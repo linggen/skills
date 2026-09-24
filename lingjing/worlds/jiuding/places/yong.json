@@ -1,0 +1,217 @@
+{
+ "version": 1,
+ "province": "雍",
+ "start": "weihe",
+ "_about": "The places of 雍 — a map, not a chain; the same shape as 徐's (see places/xu.json _about). Chapter 8's spine runs 渭水 → 雍城 → 太华山 → 陈仓; the 褒斜 plank road (梁) comes in over the Qinling to the Wei, and 太华山 looks east to the Hangu Pass (豫).",
+ "places": [
+  {
+   "id": "weihe",
+   "name": {
+    "zh": "渭水",
+    "en": "The Wei"
+   },
+   "tier": 0,
+   "roads": [
+    "yongcheng",
+    "chencang",
+    "qishan",
+    "baoxie"
+   ],
+   "map": [
+    0.4389,
+    0.4306
+   ],
+   "has": {
+    "seeds": true,
+    "scene": "08-arrive",
+    "games": [
+     "huarong"
+    ]
+   },
+   "line": {
+    "zh": "泾以渭浊——如今两条河都干了。",
+    "en": "The Jing is muddied by the Wei, says the song; now both are dry."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "yongcheng",
+   "name": {
+    "zh": "雍城",
+    "en": "Yongcheng"
+   },
+   "tier": 0,
+   "roads": [
+    "weihe",
+    "chencang",
+    "taihua",
+    "qishan",
+    "longshan"
+   ],
+   "map": [
+    0.4079,
+    0.413
+   ],
+   "has": {
+    "shop": true,
+    "scene": "08-town",
+    "games": [
+     "alchemy-daily"
+    ]
+   },
+   "line": {
+    "zh": "秦的旧都，夯土的城墙，坊市里摆着球琳琅玕。",
+    "en": "Qin's old seat, walls of rammed earth; jade and langgan in the market."
+   }
+  },
+  {
+   "id": "taihua",
+   "name": {
+    "zh": "太华山",
+    "en": "Mount Taihua"
+   },
+   "tier": 0,
+   "roads": [
+    "yongcheng",
+    "chencang",
+    "qianlai"
+   ],
+   "map": [
+    0.5033,
+    0.4383
+   ],
+   "has": {
+    "creature": "feiyi",
+    "scene": "08-cliff"
+   },
+   "line": {
+    "zh": "削成而四方，其高五千仞，鸟兽莫居。",
+    "en": "Cut square on four sides, five thousand ren high; neither bird nor beast lives there."
+   },
+   "meets": [
+    "find",
+    "beast"
+   ]
+  },
+  {
+   "id": "chencang",
+   "name": {
+    "zh": "陈仓",
+    "en": "Chencang"
+   },
+   "tier": 0,
+   "roads": [
+    "weihe",
+    "yongcheng",
+    "taihua"
+   ],
+   "map": [
+    0.392,
+    0.432
+   ],
+   "has": {
+    "scene": "08-deep"
+   },
+   "line": {
+    "zh": "北坂上有陈宝祠，祠里的石头夜里会叫。",
+    "en": "The Chenbao shrine stands on the north slope; its stone cries out at night."
+   },
+   "water": true,
+   "meets": [
+    "find"
+   ]
+  },
+  {
+   "id": "qianlai",
+   "name": {
+    "zh": "钱来山",
+    "en": "Mount Qianlai"
+   },
+   "tier": 1,
+   "roads": [
+    "taihua"
+   ],
+   "map": [
+    0.512,
+    0.456
+   ],
+   "has": {
+    "creature": "qianyang",
+    "seeds": true
+   },
+   "line": {
+    "zh": "华山之首，上多松，下多洗石。",
+    "en": "The head of the Hua range: pines above, scouring-stones below."
+   },
+   "meets": [
+    "beast",
+    "find"
+   ]
+  },
+  {
+   "id": "qishan",
+   "name": {
+    "zh": "岐山",
+    "en": "Mount Qi"
+   },
+   "tier": 1,
+   "roads": [
+    "weihe",
+    "yongcheng"
+   ],
+   "map": [
+    0.421,
+    0.402
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "qiqiao"
+    ]
+   },
+   "line": {
+    "zh": "周兴的时候，这山上有凤凰叫。",
+    "en": "When Zhou rose, a phoenix cried on this mountain."
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "longshan",
+   "name": {
+    "zh": "陇山",
+    "en": "Mount Long"
+   },
+   "tier": 2,
+   "roads": [
+    "yongcheng"
+   ],
+   "map": [
+    0.3677,
+    0.3933
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "luoshu"
+    ]
+   },
+   "line": {
+    "zh": "陇头的水往两边流，过路的人听了都想家。",
+    "en": "The water at the top of Long runs off both ways; travellers who hear it think of home."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find",
+    "beast"
+   ]
+  }
+ ]
+}

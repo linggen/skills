@@ -292,7 +292,8 @@
         "青",
         "扬",
         "荆",
-        "梁"
+        "梁",
+        "雍"
       ],
       "effect": {
         "learn": "wangqi",
@@ -400,7 +401,8 @@
       "sell": 90,
       "sold": [
         "青",
-        "梁"
+        "梁",
+        "雍"
       ],
       "effect": {
         "core": "metal"
@@ -617,6 +619,25 @@
       "sell": 25,
       "sold": [
         "梁"
+      ],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
+    },
+    {
+      "id": "langgan",
+      "kind": "material",
+      "name": {
+        "zh": "琅玕",
+        "en": "Langgan"
+      },
+      "art": "art/items/langgan.webp",
+      "about": {
+        "zh": "雍州厥贡球、琳、琅玕。琅玕是青绿色的美石，圆得像珠子。",
+        "en": "Yong's tribute was qiu and lin jade and langgan — a blue-green stone, round as pearls."
+      },
+      "buy": 120,
+      "sell": 35,
+      "sold": [
+        "雍"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     }

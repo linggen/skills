@@ -1,0 +1,119 @@
+{
+ "version": 1,
+ "id": "08-cauldron",
+ "chapter": "08-yong",
+ "at": "chencang",
+ "place": {
+  "zh": "陈仓 · 鼎前",
+  "en": "Chencang · Before the cauldron"
+ },
+ "setup": {
+  "zh": "雍鼎从池里升起来。鼎身上铸着泾、渭、弱水和黑水——雍州的一切。天边滚过第一声雷，不是雨的雷。",
+  "en": "The Cauldron of Yong rises from the pool. Cast on its body are the Jing, the Wei, the Weak Water and the Black Water — everything of Yong. At the sky's edge rolls the first thunder — not the thunder of rain."
+ },
+ "recap": {
+  "zh": "雍鼎升起，天边滚过第一声雷——渡劫的雷。",
+  "en": "The Cauldron of Yong rose, and the first thunder rolled at the sky's edge — the thunder of the Tribulation."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "gate",
+   "chapter": "08-yong"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "周亡那年，秦人来搬鼎。她不肯让一只手握住九鼎，一口一口数着，把它们送回各州的水里——从一数到九。……守它们，是我自己要的。",
+    "en": "The year Zhou fell, the men of Qin came for the cauldrons. She would not let one hand hold all nine. She counted them one by one and sent each back into its province's water — from one to nine. …Keeping watch over them was my own asking."
+   },
+   "alone": {
+    "zh": "鼎腹上映出一夜的火光：一只手背上有鼎纹的手，把鼎一口一口推进水里，嘴里数着数。",
+    "en": "The cauldron's belly shows a night of firelight: a hand with a cauldron's pattern on its back pushing the cauldrons one by one into the water, counting as it goes."
+   }
+  },
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "有件事我没说。每起一口鼎，水上就少一个我。九鼎聚齐那天，就再没有一处水盛得住我了。……我怕你知道了，会走慢。",
+    "en": "There's something I haven't said. Every cauldron raised, there's one fewer of me on the water. The day the nine are gathered there will be no water left that can hold me. …I was afraid that if you knew, you'd slow down."
+   },
+   "alone": {
+    "zh": "陈仓的池里，天上明明有月，水里却没有。",
+    "en": "In the pool at Chencang there is a moon in the sky, and none in the water."
+   }
+  }
+ ],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "受鼎气 · 渡劫",
+    "en": "Take the cauldron's breath · Tribulation"
+   },
+   "means": "touches the cauldron, takes its breath, attempts the breakthrough",
+   "breakthrough": true,
+   "refuse": {
+    "zh": "鼎气涌上来又退开，雷声远了。大乘未满，渡不了劫。先回人间，把功课做满。",
+    "en": "The breath surges over you and draws back, and the thunder recedes. Your Mahayana is not yet full; you cannot meet the Tribulation. Go back to the world and fill your practice first."
+   },
+   "show": [
+    {
+     "card": "tribulation",
+     "strikes": 3
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "第一道雷落下来，落在你身上。你站住了。天上的雷没有停，远远地滚着——这是渡劫的开始，不是结束。鼎小了，小到握在掌心，和前七口并排。",
+      "en": "The first bolt falls on you. You stay standing. The thunder in the sky does not stop; it rolls far off — this is where the Tribulation begins, not where it ends. The cauldron shrinks until it sits in your palm beside the other seven."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "渡劫了。……八口。别为我停。",
+      "en": "The Tribulation. …Eight. Don't stop for me."
+     },
+     "alone": {
+      "zh": "渡劫了。八口鼎。",
+      "en": "The Tribulation. Eight cauldrons."
+     }
+    }
+   ],
+   "next": "08-end"
+  },
+  {
+   "id": "wait",
+   "means": "hesitates, asks what will happen, wants to prepare first",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "雷还远。它等得起——我也等得起。",
+      "en": "The thunder is far off. It can wait — so can I."
+     },
+     "alone": {
+      "zh": "雷还远。它等得起。",
+      "en": "The thunder is far off. It can wait."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "province": "雍",
+  "_about": "奇遇 seeds for 雍 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "yong-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "雍城的老人说，周亡那年，东边来了九辆车。",
+        "en": "The old men of Yongcheng say that the year Zhou fell, nine carts came from the east."
+      },
+      "source": {
+        "zh": "《史记·秦本纪》：（昭襄王五十二年）周民东亡，其器九鼎入秦。",
+        "en": "Records of the Grand Historian, Qin: the people of Zhou fled east, and their vessels, the nine cauldrons, went into Qin."
+      }
+    },
+    {
+      "id": "yong-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "陈仓北坂的祠里供着一块石头，夜里会像雄鸡一样叫。",
+        "en": "In the shrine on Chencang's north slope is a stone that crows at night like a cock."
+      },
+      "source": {
+        "zh": "《史记·封禅书》：来也常以夜，光辉若流星……则若雄鸡，其声殷云，野鸡夜雊……命曰陈宝。",
+        "en": "Records of the Grand Historian, the Feng and Shan: it comes by night, shining like a falling star… like a cock, its voice rumbling, and the pheasants cry at night… it was called the Treasure of Chen."
+      }
+    },
+    {
+      "id": "yong-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "雍城的市上，老人说有个大夫是用五张黑羊皮换来的。",
+        "en": "In Yongcheng's market an old man says a minister was once bought for five black ram-skins."
+      },
+      "source": {
+        "zh": "《史记·秦本纪》：（缪公）乃使人谓楚曰：吾媵臣百里傒在焉，请以五羖羊皮赎之。",
+        "en": "Records of the Grand Historian, Qin: Duke Mu sent word to Chu — my bride's servant Baili Xi is with you; I ransom him for five black ram-skins."
+      }
+    },
+    {
+      "id": "yong-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "凤台上有人吹箫，老人说，从前国君的女儿跟一个吹箫的人，乘着凤凰飞走了。",
+        "en": "Someone plays the flute on the Phoenix Terrace; the old men say a duke's daughter once flew away on a phoenix with a flute-player."
+      },
+      "source": {
+        "zh": "《列仙传·萧史》：萧史者，秦穆公时人也，善吹箫……穆公有女字弄玉，好之……一旦，皆随凤凰飞去。",
+        "en": "Liexian Zhuan: Xiao Shi, in Duke Mu's time, played the flute; the Duke's daughter Nongyu loved it… one day both flew away with the phoenixes."
+      }
+    },
+    {
+      "id": "yong-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "城南门立着一根三丈长的木头，告示说，谁搬到北门，给十金。",
+        "en": "A three-zhang log stands at the south gate; the notice says whoever carries it to the north gate gets ten gold."
+      },
+      "source": {
+        "zh": "《史记·商君列传》：乃立三丈之木于国都市南门，募民有能徙置北门者予十金。",
+        "en": "Records of the Grand Historian, Lord Shang: he set a three-zhang log at the capital's south gate and offered ten gold to whoever moved it to the north gate."
+      }
+    },
+    {
+      "id": "yong-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个老相马人说，好马不看毛色，看它的神。",
+        "en": "An old judge of horses says a good horse is not in its colour but in its spirit."
+      },
+      "source": {
+        "zh": "《列子·说符》：若皋之所观，天机也，得其精而忘其粗。",
+        "en": "Liezi: what Gao looks at is the working of heaven — he grasps the essence and forgets the coarse."
+      }
+    },
+    {
+      "id": "yong-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "岐山下的人说，周兴起的时候，山上有凤凰叫。",
+        "en": "The people below Mount Qi say that when Zhou rose, a phoenix cried on the mountain."
+      },
+      "source": {
+        "zh": "《国语·周语上》：周之兴也，鸑鷟鸣于岐山。",
+        "en": "Discourses of the States: when Zhou rose, the phoenix cried on Mount Qi."
+      }
+    },
+    {
+      "id": "yong-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "岐山下有一块田，说是周的祖先在这里第一次种下了庄稼，连苦菜都是甜的。",
+        "en": "Below Mount Qi is a field where, they say, the ancestors of Zhou first sowed grain — where even the bitter herbs were sweet."
+      },
+      "source": {
+        "zh": "《诗·大雅·緜》：周原膴膴，堇荼如饴。",
+        "en": "Book of Songs: the plain of Zhou was rich; its violets and sow-thistles sweet as malt."
+      }
+    },
+    {
+      "id": "yong-09",
+      "kind": "province-tale",
+      "creature": "qianyang",
+      "line": {
+        "zh": "钱来山上的羊长着马尾巴，山民熬它的油，搽冻裂的手。",
+        "en": "The goats of Mount Qianlai have horses' tails; the hill people render their fat to rub on chapped hands."
+      },
+      "source": {
+        "zh": "《山海经·西山经》：有兽焉，其状如羊而马尾，名曰羬羊，其脂可以已腊。",
+        "en": "Classic of Mountains and Seas: a beast like a goat with a horse's tail, called Qianyang; its fat heals chapped skin."
+      }
+    },
+    {
+      "id": "yong-10",
+      "kind": "province-tale",
+      "creature": "feiyi",
+      "line": {
+        "zh": "太华山上有一条六只脚四只翅膀的蛇，它一出来，天下就旱。",
+        "en": "On Mount Taihua is a snake with six legs and four wings; when it comes out, the world goes dry."
+      },
+      "source": {
+        "zh": "《山海经·西山经》：有蛇焉，名曰肥遗，六足四翼，见则天下大旱。",
+        "en": "Classic of Mountains and Seas: there is a snake called Feiyi, with six legs and four wings; where it is seen, great drought."
+      }
+    },
+    {
+      "id": "yong-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "华山的崖上有一只巨大的手印，樵夫说，是河神把山掰开时留下的。",
+        "en": "On the cliff of Mount Hua is a huge handprint; the woodcutters say the river god left it when he split the mountain."
+      },
+      "source": {
+        "zh": "《水经注·河水》：华岳本一山当河，河水过而曲行，河神巨灵手荡脚蹋，开而为两。",
+        "en": "Commentary on the Water Classic: Hua was one mountain across the river; the river god Juling pushed with his hands and kicked with his feet, and split it in two."
+      }
+    },
+    {
+      "id": "yong-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "两条河交汇的地方，一边清，一边浊，分得清清楚楚。",
+        "en": "Where the two rivers meet, one side runs clear and the other muddy, plain to see."
+      },
+      "source": {
+        "zh": "《诗·邶风·谷风》：泾以渭浊。",
+        "en": "Book of Songs: the Jing is muddied by the Wei."
+      }
+    },
+    {
+      "id": "yong-13",
+      "kind": "province-tale",
+      "line": {
+        "zh": "城外有几座土台，是秦人祭白帝的畤。",
+        "en": "Outside the city stand earthen terraces — the altars where Qin sacrificed to the White Lord."
+      },
+      "source": {
+        "zh": "《史记·封禅书》：秦襄公……自以为主少皞之神，作西畤，祠白帝。",
+        "en": "Records of the Grand Historian: Duke Xiang of Qin, holding himself heir to Shaohao, built the Western Altar and sacrificed to the White Lord."
+      }
+    },
+    {
+      "id": "yong-14",
+      "kind": "province-tale",
+      "line": {
+        "zh": "岐山下三百个野人吃了国君丢的马，国君不但不罚，还送了他们酒。",
+        "en": "Three hundred wild men below Mount Qi ate the duke's lost horse; the duke did not punish them — he sent them wine."
+      },
+      "source": {
+        "zh": "《史记·秦本纪》：缪公亡善马，岐下野人共得而食之者三百余人……乃皆赐酒而赦之。",
+        "en": "Records of the Grand Historian: Duke Mu lost a fine horse; three hundred wild men below Qi caught and ate it… he gave them all wine and pardoned them."
+      }
+    },
+    {
+      "id": "yong-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "陈仓的野地里有十块鼓一样的石头，上面刻着打猎的诗。",
+        "en": "In the fields of Chencang lie ten drum-shaped stones carved with hunting poems."
+      },
+      "source": {
+        "zh": "石鼓文：秦刻石，唐初出土于陈仓（今宝鸡）野中。",
+        "en": "The Stone Drums: Qin inscriptions, found in the fields of Chencang early in the Tang."
+      }
+    },
+    {
+      "id": "yong-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "市上的秤都换成了一样的，卖粮的说，以前每个地方的斗都不一样大。",
+        "en": "Every scale in the market is the same now; the grain-seller says every place used to have a different-sized peck."
+      },
+      "source": {
+        "zh": "《史记·秦始皇本纪》：一法度衡石丈尺，车同轨，书同文字。",
+        "en": "Records of the Grand Historian: he made one the laws and the measures of weight and length; carts with the same axle, writing with the same script."
+      }
+    },
+    {
+      "id": "yong-17",
+      "kind": "province-tale",
+      "line": {
+        "zh": "陇山上的水往两边流，过路的人听着水声，都想家。",
+        "en": "On Mount Long the water runs off both ways, and travellers who hear it think of home."
+      },
+      "source": {
+        "zh": "北朝乐府《陇头歌辞》：陇头流水，流离山下。念吾一身，飘然旷野。",
+        "en": "Northern Dynasties ballad, \"Song at the Top of Long\": the water at the top of Long runs scattering down the hill; I think of myself, drifting in the wilds."
+      }
+    },
+    {
+      "id": "yong-18",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个赶车的说，他祖上给一位天子赶过八匹骏马，一直赶到西王母那里。",
+        "en": "A carter says his ancestor drove eight fine horses for a Son of Heaven, all the way to the Queen Mother of the West."
+      },
+      "source": {
+        "zh": "《穆天子传》：天子觞西王母于瑶池之上。",
+        "en": "The Travels of King Mu: the Son of Heaven feasted the Queen Mother of the West by the Jasper Pool."
+      }
+    },
+    {
+      "id": "yong-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "雍南山的一棵大梓树，砍倒的那夜，从树里跑出一头青牛，钻进了水里。",
+        "en": "The night the great catalpa on Yong's southern hill was felled, a grey ox ran out of the trunk and into the river."
+      },
+      "source": {
+        "zh": "《搜神记·卷十八》：秦文公时，雍南山有大梓树，文公伐之……化为牛……入丰水中。",
+        "en": "In Search of the Supernatural: in Duke Wen of Qin's time there was a great catalpa on Yong's southern hill; the Duke felled it… it became an ox and went into the Feng."
+      }
+    },
+    {
+      "id": "yong-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "长安城外有一座坟，夜里有个人在坟前哭，坟里的女子应了他一声。",
+        "en": "Outside Chang'an is a grave; at night a man weeps before it, and the woman inside answers him."
+      },
+      "source": {
+        "zh": "《搜神记·卷十五》：秦始皇时，有王道平……女死三年，道平……悲号……其女魂自墓出。",
+        "en": "In Search of the Supernatural: in the First Emperor's time Wang Daoping wept at his betrothed's grave three years after her death, and her spirit came out of the tomb."
+      }
+    }
+  ]
+}

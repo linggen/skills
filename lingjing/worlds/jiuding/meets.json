@@ -454,6 +454,52 @@
     }
    }
   ],
+  "雍": [
+   {
+    "item": "langgan",
+    "at": [
+     "longshan",
+     "qianlai"
+    ],
+    "line": {
+     "zh": "溪边的碎石里，有一颗青绿色的圆石子——是琅玕。",
+     "en": "Among the pebbles by a stream, a round blue-green stone — langgan."
+    }
+   },
+   {
+    "item": "lingzhi",
+    "at": [
+     "taihua",
+     "qishan"
+    ],
+    "line": {
+     "zh": "崖缝里长出一朵灵芝，旱了三年，它还活着。",
+     "en": "A lingzhi grows from a crack in the cliff; three years of drought, and it still lives."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "weihe",
+     "chencang"
+    ],
+    "line": {
+     "zh": "干河床里半埋着一只陶罐，罐里有几块灵石。",
+     "en": "A pot half-buried in the dry riverbed, a few spirit stones inside."
+    }
+   },
+   {
+    "wealth": 6,
+    "at": [
+     "yongcheng",
+     "qishan"
+    ],
+    "line": {
+     "zh": "畤台下的草里，有人落下了一小袋灵石。",
+     "en": "In the grass below the altar someone has dropped a small purse of spirit stones."
+    }
+   }
+  ],
   "*": [
    {
     "item": "ginseng",

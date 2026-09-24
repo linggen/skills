@@ -193,7 +193,8 @@
    },
    "tier": 2,
    "roads": [
-    "chengdu"
+    "chengdu",
+    "weihe"
    ],
    "map": [
     0.4006,
