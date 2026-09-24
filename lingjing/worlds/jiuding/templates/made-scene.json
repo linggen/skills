@@ -109,7 +109,7 @@
     "place, setup and every text are {zh, en} — the player's language at least.",
     "1 to 4 exits; each has means (plain words) and exactly one of next (another made scene id), stay (true) or ends (\"made\", back to the spine).",
     "buttons name exits that have a label; at most 3.",
-    "grant only from the branch table (xw up to 20, ls up to 5); needs/take only items in the bag list Look gives; a need has a refuse line.",
+    "grant only from the branch table (xw up to 20, ls up to 5), progress and wealth and nothing else — no item, cast, card or art; each exit pays once; needs/take only items in the bag list Look gives; a need has a refuse line.",
     "cast and show only creatures with a card (Look's creatures) and yinyue; no set, value, key, game or offers.",
     "The world's heritage only; never the spine, a cauldron, Yinyue's memory or a realm."
   ]

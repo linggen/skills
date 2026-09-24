@@ -62,7 +62,7 @@
     "province: an id of its own and a {zh, en} name. places: 4 to 8, ids of their own, a tier the ladder has (0 to start), roads both ways, a {zh, en} line each; start names one of them; has.creature names a creature of the cast.",
     "cast: creature ids from the bestiary (Look's creatures). creatures: up to 4 new ones — id, {zh, en} name, quote, look, and a root (metal, wood, water, fire, earth); no art: it is drawn on first appearance.",
     "words: only ids the base has (progress, wealth, stamina, tier, cast, contest…), each {zh, en} — rename what the story needs and nothing else.",
-    "scene: the opening, in the made-scene shape (id starts with made-, chapter is made, 1 to 4 exits with means, buttons at most 3, grants from the branch table only). It is entered the moment the world begins.",
+    "scene: the opening, in the made-scene shape (id starts with made-, chapter is made, 1 to 4 exits with means, buttons at most 3, grants from the branch table only — progress and wealth, each exit once). It is entered the moment the world begins.",
     "The world's heritage only; never a living author's names; nothing of 九鼎's spine."
   ]
 }

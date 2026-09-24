@@ -3,7 +3,7 @@
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
-import { artsBrief, canRefine, charmOf, kitOf, treasureBrief } from './arms.mjs';
+import { artsBrief, canRefine, treasureBrief } from './arms.mjs';
 import { askOf, thenFor } from './ask.mjs';
 import { fightSetup, healthBrief } from './cards.mjs';
 import { bondBrief, callDue, companionOf, hasCompanion, questBrief } from './companion.mjs';
@@ -80,22 +80,6 @@ function duelBrief(content, state, game, now) {
     // Everything the fight is given at the door, and nothing else.
     setup: fightSetup(content, state, creature, now, game.id),
     today: open ? { outcome: open.outcome } : null,
-  };
-}
-
-/* The arms worn, the 符 in hand and the arts known, as the card draws them
-   beside the player's own roots; `kit` is the same duel.js reads. */
-function duelKitBrief(content, state, now = null) {
-  const lang = state.lang, kit = kitOf(content, state, now);
-  const named = arm => (arm ? { ...arm, name: pick(itemOf(content, arm.id)?.name, lang) } : null);
-  const weapon = kit.weapon ? itemOf(content, kit.weapon.id) : null, charm = charmOf(content);
-  return {
-    sword: weapon ? { id: weapon.id, name: pick(weapon.name, lang), atk: kit.weapon.atk, ...(weapon.effect?.root ? { root: weapon.effect.root, root_name: pick(content.traits.elements[weapon.effect.root], lang) } : {}) } : null,
-    ...(kit.treasure ? { treasure: treasureBrief(content, state) } : {}),
-    robe: named(kit.robe), pendant: named(kit.pendant),
-    charm: charm ? { id: charm.id, name: pick(charm.name, lang), held: kit.charm.held } : null,
-    arts: artsBrief(content, state),
-    kit,
   };
 }
 

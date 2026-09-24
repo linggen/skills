@@ -358,6 +358,10 @@ function lintWorldWords(o, base, bad) {
 
 export const MADE = { chapter: 'made', max_scenes: 10, max_bytes: 3000, max_exits: 4, max_buttons: 3, tables: ['branch'] };
 const MADE_FORBIDDEN = ['set', 'value', 'key', 'game'];
+/* A made grant is progress and wealth from an allowed table, nothing more:
+   an item, a beast, a card or an art named by the model would be a gift the
+   model gave itself (review, 2026-09-24 — a well that handed out 息壤 and 应龙). */
+export const MADE_GRANT = new Set(['table', 'progress', 'wealth']);
 
 /* A scene Ling wrote, checked the way authored ones are — against the
    player's other made scenes as its chapter — plus what a made scene may
@@ -378,6 +382,7 @@ export function lintMade(scene, madeScenes, content) {
   for (const exit of scene.exits ?? []) {
     for (const f of MADE_FORBIDDEN) if (exit[f] != null) bad(`${where} exit ${exit.id}`, `may not use ${f}`);
     if (exit.grant && !MADE.tables.includes(exit.grant.table)) bad(`${where} exit ${exit.id}`, `grant only from ${MADE.tables.join(', ')}`);
+    for (const k of Object.keys(exit.grant ?? {})) if (!MADE_GRANT.has(k)) bad(`${where} exit ${exit.id}`, `a grant may not give ${k} — progress and wealth only`);
     if (exit.ends != null && exit.ends !== MADE.chapter) bad(`${where} exit ${exit.id}`, 'ends must be "made"');
   }
   refusedNames(scene, content, where, bad);

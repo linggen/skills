@@ -68,9 +68,11 @@ const placeName = (content, state, place) => ({ id: place.id, name: pick(place.n
 const hauntId = creature => `haunt:${creature}`;
 function encounterOf(content, state, now) {
   const place = placeOf(content, state.place);
-  // The haunt's own beast, else the one today's 遇 put on this road.
+  // The haunt's own beast, else the one today's 遇 put on this road — until
+  // it is passed by or beaten, when it has left the road (review, 2026-09-24).
   const road = meetHere(state, now);
-  const cid = place?.has?.creature ?? (road?.kind === 'beast' && !road.veiled ? road.creature : null);
+  const onRoad = !place?.has?.creature && road?.kind === 'beast' && !road.veiled && !road.done;
+  const cid = place?.has?.creature ?? (onRoad ? road.creature : null);
   if (!cid || atScene(content, state)) return null;
   const creature = creatureOf(content, cid);
   if (!creature) return null;
@@ -79,7 +81,7 @@ function encounterOf(content, state, now) {
   const item = creature.likes ? itemOf(content, creature.likes) : null;
   return {
     creature: { id: cid, name: pick(creature.name, lang) },
-    game,
+    game, ...(onRoad ? { road: true } : {}),
     duel: duelBrief(content, state, game, now),
     won: Boolean(state.wins?.[game.id]) && today?.day === day && today.outcome === 'won',
     withdrawn: today?.day === day && today.outcome === 'lost',

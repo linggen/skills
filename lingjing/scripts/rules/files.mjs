@@ -54,6 +54,42 @@ function writeAtomic(file, text) {
   fs.renameSync(tmp, file);
 }
 
+/* ── One writer at a time ──
+   Every call reads the save, changes it and writes it back; two at once (the
+   page's tap and Ling's tool, a second tab) lost one of the two changes. So
+   a call holds `<state.json>.lock` from its read to its last write — for
+   every verb, Look's `asked_at` too. The engine keeps the same convention:
+   an exclusive create (`wx`) holding the pid; older than 10 s is a crashed
+   holder's, removed and tried again; tried every 25 ms for up to 5 s, then
+   `busy`. Released in `finally`, whatever the call did. */
+const LOCK = { stale_ms: 10_000, retry_ms: 25, wait_ms: 5_000 };
+const nap = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+const lockAge = file => { try { return Date.now() - fs.statSync(file).mtimeMs; } catch { return 0; } };
+
+function takeLock(lock) {
+  const until = Date.now() + LOCK.wait_ms;
+  for (;;) {
+    try {
+      const fd = fs.openSync(lock, 'wx');
+      try { fs.writeSync(fd, String(process.pid)); } finally { fs.closeSync(fd); }
+      return true;
+    } catch (err) {
+      if (err.code !== 'EEXIST') throw err;
+    }
+    if (lockAge(lock) > LOCK.stale_ms) { fs.rmSync(lock, { force: true }); continue; }
+    if (Date.now() >= until) return false;
+    nap(LOCK.retry_ms);
+  }
+}
+
+/* Run `fn` holding the lock on `file`; `busy()` answers when it cannot be had. */
+function withLock(file, fn, busy) {
+  const lock = `${file}.lock`;
+  fs.mkdirSync(path.dirname(lock), { recursive: true });
+  if (!takeLock(lock)) return busy();
+  try { return fn(); } finally { fs.rmSync(lock, { force: true }); }
+}
+
 function readQuests() {
   const dir = questsDir();
   if (!fs.existsSync(dir)) return [];
@@ -82,4 +118,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { clock, dataDir, freshState, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, writeAtomic, writeMadeWorld };
+export { clock, dataDir, freshState, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, withLock, writeAtomic, writeMadeWorld };

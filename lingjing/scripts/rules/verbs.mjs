@@ -4,7 +4,7 @@ import { dayKey, fill, pick } from '../state.mjs';
 import { artBrief, artOf, nourish, refine } from './arms.mjs';
 import { deck } from './cards.mjs';
 import { bond, tend } from './companion.mjs';
-import { clone, judge, refuse, resolve, setRiddleAside } from './core.mjs';
+import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
 import { chance, greet, journey } from './daily.mjs';
 import { BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, meet, noticeAt, noticeOf, questDoneBefore, questOf, questReady } from './errands.mjs';
 import { divine, fate } from './fortune.mjs';
@@ -86,12 +86,18 @@ export function quest(state, content, ctx, args) {
 function questInfo(state, content, ctx, id) {
   const lang = state.lang, row = bookOf(content, state, lang, ctx).find(b => b.id === id);
   const chore = (ctx.quests ?? []).find(x => x.id === id);
-  if (chore) return { ok: true, id, kind: 'chore', title: pick(chore.title, lang), app: chore.app, period: chore.period, grant: { progress: chore.reward ?? 0, stamina: chore.stamina ?? content.rewards.stamina.refill.quest }, ...(row ? { need: row.need, ready: row.ready } : {}) };
+  // `grant` is what was authored; `pays` is what lands — caps, roots, the
+  // day's cast and the tier counted (the card shows `pays`).
+  if (chore) {
+    const grant = { progress: chore.reward ?? 0, stamina: chore.stamina ?? content.rewards.stamina.refill.quest };
+    return { ok: true, id, kind: 'chore', title: pick(chore.title, lang), app: chore.app, period: chore.period, grant,
+      pays: { ...paysOf(content, state, ctx.now, { table: 'task', progress: grant.progress }), stamina: grant.stamina }, ...(row ? { need: row.need, ready: row.ready } : {}) };
+  }
   const q = questOf(content, id);
   if (!q) return { ok: false, refused: 'no-such-quest' };
   const next = q.then ? questOf(content, q.then) : null;
   return { ok: true, id, kind: 'errand', title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state),
-    from: placeName(content, state, placeOf(content, q.from.place)), grant: q.grant, taken: Boolean(row),
+    from: placeName(content, state, placeOf(content, q.from.place)), grant: q.grant, pays: paysOf(content, state, ctx.now, q.grant), taken: Boolean(row),
     ...(row ? { need: row.need, where: row.where, ready: row.ready } : { need: q.need.map(n => ({ kind: n.kind, have: 0, n: n.n })) }),
     ...(q.grant?.item ? { gives: pick(itemOf(content, q.grant.item)?.name, lang) } : {}),
     // `then` is the wrapper's word to Ling on every result; the next link is `next`.

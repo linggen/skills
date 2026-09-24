@@ -184,14 +184,25 @@ export function chance(state, content, ctx, args) {
 }
 
 /* The pool as the scene draws it: what is there, the top, and — when a story
-   step is out of reach — the hour it returns. */
+   step is out of reach — the hour it returns.
+   Three hours, each with its own name, so the page labels the one it shows:
+   `rest_at` — back to `rest` (20), when an empty pool plays again (null
+     unless empty);
+   `full_at` — back to the top (100) (null when full);
+   `returns_at` — kept for older pages: when he may play again, which is
+     `rest_at` while resting and the first point back otherwise (null unless
+     empty). It read as "full" on the page and was not (review, 2026-09-24). */
 function staminaBrief(content, state, now) {
   const q = content.rewards.stamina;
   // Empty is 0, or resting after 0 until the pool is back to `rest`: the last
   // point buys one thing once a pool (his, 2026-09-23).
   const resting = Boolean(state.resting) && state.stamina < (q.rest ?? 0);
   const empty = state.stamina <= 0 || resting;
-  return { now: state.stamina, max: q.max, step: q.cost.step, empty, ...(resting ? { resting: true } : {}), returns_at: empty ? staminaReturnsAt(content, state, resting ? q.rest : 1).toISOString() : null };
+  const at = n => staminaReturnsAt(content, state, n).toISOString();
+  return { now: state.stamina, max: q.max, step: q.cost.step, empty, ...(resting ? { resting: true } : {}),
+    returns_at: empty ? at(resting ? q.rest : 1) : null,
+    rest_at: empty ? at(Math.max(1, q.rest ?? 0)) : null,
+    full_at: state.stamina < q.max ? at(q.max) : null };
 }
 
 export { chanceBrief, chanceLive, dealChance, herAway, journeyBrief, staminaBrief };

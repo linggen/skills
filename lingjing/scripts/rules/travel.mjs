@@ -350,8 +350,9 @@ export function heed(state, said) {
 
 /* Straight to a scene of the spine, in a chapter that has opened — the
    player asked for it, so the road is not walked. A made scene goes through
-   Enter. The chapter's earlier end is forgotten so the story runs from
-   here again. */
+   Enter. A chapter already ended stays ended: its scenes play again as
+   story, pay nothing (core.mjs `replaying`), and a free prologue is not
+   free a second time (review, 2026-09-24). */
 export function go(state, content, ctx, args) {
   const id = String(args.scene ?? '');
   const chapter = Object.values(content.chapters).find(c => c.scenes[id]);
@@ -363,7 +364,6 @@ export function go(state, content, ctx, args) {
   if (chapter.opens && new Date(chapter.opens) > ctx.now) return refuse('not-open', null, { chapter: chapter.id, opens: chapter.opens });
   const s = clone(state);
   s.chapter = chapter.id; s.scene = id;
-  s.ended = s.ended.filter(c => c !== chapter.id);
   if (s.made) s.made.at = null;
   const scene = chapter.scenes[id];
   if (scene.at) s.place = scene.at;

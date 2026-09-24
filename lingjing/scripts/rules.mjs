@@ -22,8 +22,9 @@ import { fileURLToPath } from 'node:url';
 import { allWorlds, DEFAULT_WORLD, knownWorld, loadWorld } from './content.mjs';
 import { migrate } from './state.mjs';
 import { askOf, tapThen, withAsk } from './rules/ask.mjs';
-import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, writeAtomic } from './rules/files.mjs';
+import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
+import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { heed } from './rules/travel.mjs';
 import { VERBS } from './rules/verbs.mjs';
 import { atScene } from './rules/world.mjs';
@@ -39,23 +40,32 @@ export { advance, BOOK_MAX, meet } from './rules/errands.mjs';
 export { parseArgs } from './rules/files.mjs';
 export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './rules/fortune.mjs';
 export { look } from './rules/look.mjs';
-export { duel, lundao, task, win, write } from './rules/tasks.mjs';
+export { closeStaleFight, duel, fightHold, lundao, task, win, write } from './rules/tasks.mjs';
 export { branch, go, heed, lang, move, summarize, trade } from './rules/travel.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
 
+/* One call, start to end, under the save's lock (files.mjs withLock): the
+   read, the verb and every write it makes — Look's `asked_at` too. */
 function run(verb, args) {
   const stateFile = path.join(dataDir(), 'state.json');
+  return withLock(stateFile, () => runLocked(verb, args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
+}
+
+function runLocked(verb, args, stateFile) {
   const logFile = path.join(dataDir(), 'log.jsonl');
   const now = clock();
-  const saved = fs.existsSync(stateFile) ? migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8'))) : null;
+  const raw = fs.existsSync(stateFile) ? migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8'))) : null;
 
   if (verb === 'undo') return undo(stateFile, logFile);
   // `init` begins the world in play again (or the one named), in the
   // language in use; the save it replaces is logged so `undo` brings it back.
-  const worldId = verb === 'init' ? args.world ?? saved?.world ?? DEFAULT_WORLD : saved?.world ?? DEFAULT_WORLD;
+  const worldId = verb === 'init' ? args.world ?? raw?.world ?? DEFAULT_WORLD : raw?.world ?? DEFAULT_WORLD;
   if (!knownWorld(worldId)) return { ok: false, refused: 'unknown-world', world: worldId, worlds: allWorlds() };
   const content = loadWorld(worldId);
+  // Fitted to its world (ids renamed since), and a fight left open on an
+  // earlier day closed — both written with whatever this call writes.
+  const saved = raw && raw.world === worldId ? closeStaleFight(migrate(raw, content), now) : raw;
   const state = verb === 'init' || !saved ? freshState(content, args.lang ?? saved?.lang, now) : saved;
   if (verb === 'init' || !saved) writeAtomic(stateFile, JSON.stringify(state));
   if (verb === 'init') {
@@ -69,15 +79,19 @@ function run(verb, args) {
     const paint = paintList(content);
     if (paint.length) return { ok: false, refused: 'still-building', say: null, paint };
   }
-  if (saved) keepDay(saved, now);
+  // While a fight is open, what would change the world waits (tasks.mjs fightHold).
+  const held = fightHold(state, verb, args);
+  if (held) return held.result;
+  if (raw) keepDay(raw, now);
   const heard = heed(state, args.said);
   const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
-  const next = out.state ?? (heard !== state ? heard : null);
+  // A save fitted, a stale fight closed or a language heard is a change too.
+  const next = out.state ?? (heard !== (raw ?? state) ? heard : null);
   if (next) {
     next.updated = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(next));
-    fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: state }) + '\n');
+    fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: raw ?? state }) + '\n');
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const result = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
@@ -102,6 +116,7 @@ function run(verb, args) {
    restored where it stood, or begun. The answer is the new world's Look,
    with `travelled` saying where from and whether the save is fresh. */
 function travelTo(id, current, { stateFile, logFile, now, verb }) {
+  const parkedBefore = parkedFiles([current.world, id]);
   keepSave('world', current.world, current, now.toISOString());
   const content = loadWorld(id);
   const parked = savedFor(id) ? readSave(savedFile(id)).state : null;
@@ -109,7 +124,7 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
   const state = parked ?? freshState(content, current.lang, now);
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
-  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: current }) + '\n');
+  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: current, parked: parkedBefore }) + '\n');
   return { ...look(state, content, { now, quests: readQuests() }), travelled: { from: current.world, to: id, fresh: !parked } };
 }
 
@@ -117,20 +132,33 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
    is parked under its world first, and that world's parked copy — now in
    play — is let go. The answer is its Look, with `loaded` saying which. */
 function loadSave(found, current, { stateFile, logFile, now }) {
-  const state = found.state;
+  const parkedBefore = parkedFiles([current.world, ...(found.kind === 'world' ? [found.id] : [])]);
+  const state = migrate(found.state, loadWorld(found.state.world));
   if (state.world !== current.world) keepSave('world', current.world, current, now.toISOString());
   if (found.kind === 'world') fs.rmSync(savedFile(found.id), { force: true });
   state.updated = now.toISOString();
   writeAtomic(stateFile, JSON.stringify(state));
-  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'load', args: { id: found.id }, before: current }) + '\n');
+  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'load', args: { id: found.id }, before: current, parked: parkedBefore }) + '\n');
   const content = loadWorld(state.world);
   return { ...look(state, content, { now, quests: readQuests() }), loaded: { id: found.id, kind: found.kind, title: found.title, at: found.at } };
+}
+
+/* The parked saves a Travel or a Load is about to touch, as they were —
+   the text of each, or null for none — so Undo puts them back too. Travel
+   let the other world's parked save go, and Undo restored only the save in
+   play: that world began again from nothing (review, 2026-09-24). */
+function parkedFiles(ids) {
+  return Object.fromEntries([...new Set(ids)].map(id => [id, savedFor(id) ? fs.readFileSync(savedFile(id), 'utf8') : null]));
 }
 
 function undo(stateFile, logFile) {
   const lines = fs.existsSync(logFile) ? fs.readFileSync(logFile, 'utf8').trim().split('\n').filter(Boolean) : [];
   if (!lines.length) return { ok: false, refused: 'nothing-to-undo' };
   const last = JSON.parse(lines.pop());
+  for (const [id, text] of Object.entries(last.parked ?? {})) {
+    if (text == null) fs.rmSync(savedFile(id), { force: true });
+    else writeAtomic(savedFile(id), text);
+  }
   writeAtomic(stateFile, JSON.stringify(last.before));
   writeAtomic(logFile, lines.length ? lines.join('\n') + '\n' : '');
   return { ok: true, undid: last.verb, at: last.at };

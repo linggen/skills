@@ -1805,6 +1805,14 @@ test('Build takes the player to a fresh save in their world, which plays once it
     assert.equal(run('build', `--world=${JSON.stringify(bare)}`).refused, 'world-in-play');
     // undo steps back across the last travel
     assert.equal(run('undo').undid, 'travel');
+    // …and puts back the parked save that travel took up, so the world he
+    // left is where he left it (review, 2026-09-24: it began again from nothing)
+    assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'state.json'), 'utf8')).world, 'jiuding');
+    assert.ok(fs.existsSync(path.join(dir, 'saves/the-yunmeng-marsh.json')), 'the marsh is parked again');
+    assert.ok(!fs.existsSync(path.join(dir, 'saves/jiuding.json')), 'the world in play is not also parked');
+    const again = run('travel', '--world=the-yunmeng-marsh');
+    assert.deepEqual(again.travelled, { from: 'jiuding', to: 'the-yunmeng-marsh', fresh: false });
+    assert.equal(again.place.id, 'shrine', 'where he stood');
   } finally {
     fs.rmSync(png, { force: true });
     if (!fs.readdirSync(pictures).length) fs.rmdirSync(pictures);
@@ -2964,4 +2972,237 @@ test('a game errand in the book names the place that hosts the game', () => {
   // a carry names its market by name too
   const carry = { ...toOpenWorld(), place: 'sishui', tier: 'core', bag: {}, quests: { 'xu-elder-herb': { took: '2026-09-11', have: {} } } };
   assert.ok(look(carry, content, at).book.find(b => b.id === 'xu-elder-herb').where.name);
+});
+
+// ── The review of 2026-09-24: each hole it found, locked ──
+
+test('a made scene grants progress and wealth only, and each of its exits pays once', () => {
+  const pricey = [...content.items.items].sort((a, b) => (b.buy ?? 0) - (a.buy ?? 0))[0];
+  const well = grant => ({ id: 'made-well', place: { zh: '古井', en: 'Old well' }, setup: { zh: '井边。', en: 'A well.' }, cast: [], lines: [], buttons: ['draw'],
+    exits: [{ id: 'draw', label: { zh: '打水', en: 'Draw water' }, means: 'draws water', next: 'made-well', grant }] });
+  // the lint refuses a gift the model would give itself
+  for (const k of ['item', 'cast', 'card', 'art']) {
+    const out = make(toOpenWorld(), content, ctx(), { scene: JSON.stringify(well({ table: 'branch', progress: 20, [k]: k === 'item' ? pricey.id : 'longzhi' })) });
+    assert.equal(out.result.refused, 'not-playable', k);
+    assert.ok(out.result.problems.some(p => p.includes(`may not give ${k}`)), k);
+  }
+  // a loop pays its first pass only
+  let s = must(make, toOpenWorld(), { scene: JSON.stringify(well({ table: 'branch', progress: 20, wealth: 5 })) }).state;
+  s = must(enter, s, { scene: 'made-well' }).state;
+  const first = must(resolve, s, { exit: 'draw' });
+  assert.ok(first.result.paid.progress > 0);
+  const again = must(resolve, first.state, { exit: 'draw' });
+  assert.equal(again.result.paid, null, 'the same exit a second time pays nothing');
+  // a scene kept from before the lint grants its numbers, never the thing
+  const old = structuredClone(s);
+  old.made.scenes['made-well'].exits[0].grant = { table: 'branch', progress: 20, item: pricey.id, cast: 'longzhi' };
+  const paid = must(resolve, old, { exit: 'draw' });
+  assert.equal(paid.state.bag[pricey.id], undefined);
+  assert.ok(!paid.state.cast.includes('longzhi'));
+});
+
+test('Go back into a chapter already ended plays it for the story: nothing pays, and the prologue is not free again', () => {
+  let s = toOpenWorld();
+  const bells = s.bag['moon-bell'], stamina = s.stamina;
+  s = must(go, s, { scene: '00-river' }).state;
+  assert.ok(s.ended.includes('00-prologue'), 'the chapter stays ended');
+  const replay = must(resolve, s, { exit: 'reach' });
+  assert.equal(replay.result.paid, null, 'the river\'s bell is not handed over twice');
+  assert.equal(replay.state.bag['moon-bell'], bells);
+  assert.ok(replay.state.stamina < stamina, 'a step costs, as outside the prologue');
+  assert.equal(replay.state.done_scenes.filter(id => id === '00-river').length, 1, 'passed once is kept once');
+});
+
+test('a creature beaten today is not fought again today — a scene\'s as much as a haunt\'s — and a waiting exit is not re-won', () => {
+  const s = toFuzhu();
+  const won = fightOut(s, 'subdue-fuzhu');
+  assert.equal(won.result.outcome, 'won');
+  refused(duel, won.state, { id: 'subdue-fuzhu' }, 'subdued-today');
+  // the next day, the exit still waiting: the win stands, no second one
+  refused(duel, won.state, { id: 'subdue-fuzhu' }, 'won-already', ctx({ now: new Date(NOW.getTime() + 86_400_000) }));
+  // replaying the scene after the exit was taken: the fight is story, it pays nothing
+  let t = must(resolve, won.state, { exit: 'subdue' }).state;
+  t = must(go, t, { scene: '00-fuzhu' }).state;
+  const tomorrow = ctx({ now: new Date(NOW.getTime() + 86_400_000) });
+  const replay = fightOut({ ...t, wounds: undefined }, 'subdue-fuzhu', { c: tomorrow });
+  assert.equal(replay.result.outcome, 'won');
+  assert.equal(replay.result.dropped, undefined, 'no drop, no card');
+  assert.equal(replay.result.bond, undefined);
+});
+
+test('one fight at a time: another will not start, another\'s picks do not settle it, the world holds still until it ends', async () => {
+  const { fightHold, closeStaleFight } = await import('../scripts/rules.mjs');
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const open = must(duel, base, { id: 'haunt:jingwei' }, c).state;
+  refused(duel, open, { id: 'haunt:other', picks: 'end' }, 'not-here', c);
+  refused(duel, { ...open, fight: { ...open.fight, game: 'haunt:other' } }, { id: 'haunt:jingwei', picks: 'end' }, 'not-started', c);
+  refused(duel, { ...open, fight: { ...open.fight, game: 'haunt:other' } }, { id: 'haunt:jingwei' }, 'in-a-fight', c);
+  // the guard: what changes the world waits; the fight's own verbs and the readers do not
+  for (const [verb, args] of [['move', {}], ['go', {}], ['resolve', {}], ['trade', { action: 'use' }], ['journey', {}], ['branch', {}], ['meet', {}], ['quest', { action: 'take' }], ['deck', {}]]) {
+    assert.equal(fightHold(open, verb, args)?.result.refused, 'in-a-fight', verb);
+  }
+  for (const [verb, args] of [['look', {}], ['duel', { picks: 'end' }], ['show', {}], ['gear', {}], ['quest', { action: 'info' }], ['task', { action: 'list' }], ['lang', {}]]) {
+    assert.equal(fightHold(open, verb, args), null, verb);
+  }
+  assert.equal(fightHold(base, 'move', {}), null, 'no fight, no hold');
+  // left open overnight: withdrawn, nothing paid
+  assert.equal(closeStaleFight(open, c.now), open, 'today\'s fight stands');
+  const next = closeStaleFight(open, new Date('2026-10-06T00:01:00'));
+  assert.equal(next.fight, undefined);
+  assert.equal(next.duels.jingwei.outcome, 'withdrew');
+  assert.equal(next.wins?.['haunt:jingwei'], undefined);
+});
+
+test('the command line holds the world still while a fight is open, and closes one left overnight', () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-fight-'));
+  const cli = (iso, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: iso }, encoding: 'utf8' }).stdout);
+  try {
+    const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+    const open = must(duel, { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, updated: c.now.toISOString() }, { id: 'haunt:jingwei' }, c).state;
+    fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(open));
+    const day = '2026-10-05T10:05:00', night = '2026-10-06T08:00:00';
+    assert.equal(cli(day, 'move', '--place=taihang').refused, 'in-a-fight');
+    assert.equal(cli(day, 'look').fight?.open, true, 'Look still reads');
+    assert.equal(cli(night, 'look').fight, undefined, 'the next day the fight is over');
+    const saved = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
+    assert.equal(saved.fight, undefined, 'and written so');
+    assert.equal(saved.duels.jingwei.outcome, 'withdrew');
+    assert.notEqual(cli(night, 'move', '--place=taihang').refused, 'in-a-fight');
+  } finally { fs.rmSync(data, { recursive: true, force: true }); }
+});
+
+test('温养 rolls the day first, and the treasure says nourished by the clock asked', () => {
+  const y = ctx({ now: new Date('2026-10-05T20:00:00') }), t = ctx({ now: new Date('2026-10-06T09:00:00') });
+  const s = { ...toOpenWorld(), place: 'pengcheng', treasure: { name: '青', base: 1, element: 'wood', level: 1, exp: 0 }, bag: { 'sang-paper': 2 },
+    day: { key: '2026-10-05', progress: 0, wealth: 0, branches: 3, written: 1 }, updated: y.now.toISOString() };
+  const n = must(nourish, s, {}, t);
+  assert.deepEqual(n.state.day, { key: '2026-10-06', progress: 0, wealth: 0, branches: 0, nourished: '2026-10-06' }, 'yesterday\'s counts stay yesterday\'s');
+  assert.equal(n.result.treasure.nourished, true);
+  assert.equal(must(write, n.state, {}, t).result.written, 'talisman', 'today\'s 符 is still to write');
+  assert.equal(look(n.state, content, t).treasure.nourished, true, 'a save last written yesterday: today\'s clock decides');
+});
+
+test('抉择: a difficulty or a stake the rules do not know is refused, never read as a wound', () => {
+  const c = ctx();
+  const s = { ...toOpenWorld() };
+  s.meets = { day: dayKey(c.now), places: { [s.place]: { kind: 'trial', rolls: [3, 3, 3] } } };
+  const way = (difficulty, stake) => ({ label: '甲', difficulty, stake, win: '赢', lose: '输' });
+  for (const bad of [[way('constructor', 'coin'), way('easy', 'coin')], [way('hard', 'toString'), way('easy', 'coin')], [way('hard', '__proto__'), way('easy', 'coin')]]) {
+    const out = meet(s, content, c, { action: 'offer', options: JSON.stringify(bad) });
+    assert.equal(out.result.refused, 'not-playable', JSON.stringify(bad[0]));
+  }
+});
+
+test('a traveller\'s riddle is missed at most RIDDLE_TRIES times; a beast passed or beaten on the road has left it', () => {
+  const c = ctx();
+  const s = toOpenWorld();
+  const key = content.meets.riddles[0], r = content.riddles.zh.riddles[key];
+  const wrong = r.choices.filter(x => !r.a.includes(x));
+  s.meets = { day: dayKey(c.now), places: { [s.place]: { kind: 'riddle', key, tried: [] } } };
+  const once = meet(s, content, c, { action: 'answer', answer: wrong[0] });
+  assert.equal(once.result.refused, 'wrong-answer');
+  const twice = meet(once.state, content, c, { action: 'answer', answer: wrong[1] ?? wrong[0] });
+  assert.equal(twice.result.refused, 'riddle-closed');
+  refused(meet, twice.state, { action: 'answer', answer: r.a[0] }, 'nothing-here');
+  // a beast on the road: passed, it is gone; beaten, the same
+  const road = { ...toOpenWorld(), place: 'sishui', meets: { day: dayKey(c.now), places: { sishui: { kind: 'beast', creature: 'paoxiao' } } } };
+  assert.equal(look(road, content, c).place.encounter?.game.id, 'haunt:paoxiao');
+  const passed = must(meet, road, { action: 'pass' }).state;
+  assert.equal(look(passed, content, c).place.encounter, null);
+  refused(duel, passed, { id: 'haunt:paoxiao' }, 'not-here');
+  const beaten = fightOut(road, 'haunt:paoxiao');
+  assert.equal(beaten.result.outcome, 'won');
+  assert.equal(beaten.state.meets.places.sishui.done, true);
+  assert.equal(look(beaten.state, content, c).place.encounter, null);
+});
+
+test('where an errand leads is read by the clock asked, not the save\'s last write', () => {
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const q = { id: 'test-far-ye', title: { zh: '远', en: 'Far' }, say: { zh: '去', en: 'Go' }, from: { place: 'sibei' }, need: [{ kind: 'visit', place: 'ye', n: 1 }], grant: { table: 'quest', progress: 10 } };
+  content.quests.push(q);
+  try {
+    // written before 冀州 opened; asked after — the road through it is open
+    const s = { ...toOpenWorld(), tier: 'core', updated: '2026-09-01T00:00:00Z', quests: { [q.id]: { took: '2026-10-05', have: {} } } };
+    const where = look(s, content, c).book.find(b => b.id === q.id).where;
+    assert.equal(where.id, 'ye');
+    assert.ok(where.via && where.roads >= 2, JSON.stringify(where));
+  } finally { content.quests.pop(); }
+});
+
+test('体力 says three hours by name: back to rest (rest_at), full (full_at), and returns_at as before', () => {
+  const q = content.rewards.stamina, c = ctx();
+  const at = n => new Date(NOW.getTime() + n * (q.refill_hours * 3600_000 / q.max)).toISOString();
+  const empty = look({ ...toOpenWorld(), stamina: 0, stamina_at: NOW.toISOString(), resting: true }, content, c).stamina;
+  assert.equal(empty.rest_at, at(q.rest ?? 1));
+  assert.equal(empty.full_at, at(q.max));
+  assert.equal(empty.returns_at, empty.rest_at, 'resting: the old field is the rest hour');
+  const half = look({ ...toOpenWorld(), stamina: 50, stamina_at: NOW.toISOString() }, content, c).stamina;
+  assert.deepEqual([half.rest_at, half.returns_at, half.full_at], [null, null, at(50)]);
+  assert.equal(look({ ...toOpenWorld(), stamina: q.max, stamina_at: NOW.toISOString() }, content, c).stamina.full_at, null);
+});
+
+test('an errand shows what it pays (`pays`), the tier and the roots counted — the number that lands', () => {
+  const c = ctx();
+  // 元婴 pays twice what 练气 does: the card said +20, the rules paid 40
+  const s = { ...toOpenWorld(), tier: 'nascent', step: 0, progress: 0 };
+  const offer = look(s, content, c).offers.find(o => o.id === 'xu-lvliang-look');
+  assert.equal(offer.grant.progress, 20);
+  const info = quest(s, content, c, { action: 'info', id: 'xu-lvliang-look' }).result;
+  assert.deepEqual(info.pays, offer.pays);
+  const taken = must(quest, s, { action: 'take', id: 'xu-lvliang-look' }).state;
+  taken.quests['xu-lvliang-look'].have = { 0: 1 };
+  const turned = must(quest, taken, { action: 'turn', id: 'xu-lvliang-look' });
+  assert.equal(offer.pays.progress, turned.result.paid.progress + (turned.result.paid.hold?.held ?? 0));
+  assert.equal(offer.pays.wealth, turned.result.paid.wealth);
+  assert.equal(offer.pays.progress, 40);
+});
+
+test('a save the world no longer fits comes back fitted, and a bad 体力 clock never becomes NaN', async () => {
+  const { settleStamina, fitWorld } = await import('../scripts/state.mjs');
+  const s = { ...toOpenWorld(), stamina: 40, stamina_at: 'not a date' };
+  settleStamina(content, s, NOW);
+  assert.equal(s.stamina, 40);
+  assert.equal(s.stamina_at, NOW.toISOString());
+  const t = { ...toOpenWorld(), stamina: 'x' };
+  settleStamina(content, t, NOW);
+  assert.ok(Number.isFinite(t.stamina));
+  // renamed ids: tier, chapter, place, a beast — the world's defaults stand in
+  const odd = { ...toOpenWorld(), tier: 'renamed', step: 7, chapter: 'gone', scene: 'nowhere', place: 'lost', cast: ['fuzhu', 'ghost'] };
+  const fit = migrate(odd, content);
+  assert.equal(fit.tier, content.ladder.tiers[0].id);
+  assert.equal(fit.step, 0);
+  assert.ok(content.chapters[fit.chapter]);
+  assert.equal(fit.place, null);
+  assert.deepEqual(fit.cast, ['fuzhu']);
+  assert.ok(look(fit, content, ctx()).ok, 'Look reads it');
+  const scene = migrate({ ...toOpenWorld(), chapter: '00-prologue', scene: 'renamed-scene' }, content);
+  assert.equal(scene.scene, null, 'an ended chapter\'s lost scene is no scene');
+  const fine = toOpenWorld();
+  assert.equal(fitWorld(fine, content), fine, 'a save that fits is untouched');
+});
+
+test('two callers at once: the save is locked from read to write, and no change is lost', async () => {
+  const { spawn } = await import('node:child_process');
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-lock-'));
+  const rules = path.resolve(import.meta.dirname, '../scripts/rules.mjs');
+  try {
+    // at a market with money enough: every buy adds one to the bag
+    const market = Object.values(content.places).flatMap(d => d.places.map(p => ({ ...p, province: d.province }))).find(p => p.has?.shop && p.tier === 0);
+    const ware = content.items.items.filter(i => (i.sold ?? []).includes(market.province)).sort((a, b) => a.buy - b.buy)[0];
+    fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify({ ...toOpenWorld(), place: market.id, wealth: 1e6, bag: {}, updated: NOW.toISOString() }));
+    const N = 8;
+    const loop = `const { spawnSync } = require('node:child_process'); for (let i = 0; i < ${N}; i++) spawnSync(process.execPath, [${JSON.stringify(rules)}, 'trade', '--action=buy', '--id=${ware.id}'], { stdio: 'ignore' });`;
+    const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
+    await Promise.all([0, 1, 2].map(() => new Promise(done => spawn(process.execPath, ['-e', loop], { env, stdio: 'ignore' }).on('exit', done))));
+    const saved = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
+    assert.equal(saved.bag[ware.id], 3 * N, 'every buy counted');
+    assert.ok(!fs.existsSync(path.join(data, 'state.json.lock')), 'the lock is let go');
+    // a crashed holder's lock goes stale and is taken over
+    fs.writeFileSync(path.join(data, 'state.json.lock'), '99999');
+    const old = new Date(Date.now() - 60_000);
+    fs.utimesSync(path.join(data, 'state.json.lock'), old, old);
+    const out = JSON.parse(spawnSync(process.execPath, [rules, 'look'], { env, encoding: 'utf8' }).stdout);
+    assert.equal(out.ok, true);
+  } finally { fs.rmSync(data, { recursive: true, force: true }); }
 });

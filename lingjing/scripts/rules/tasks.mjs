@@ -6,7 +6,7 @@ import { addStamina, dayKey, periodKey, periodStart, pick, rollDay, settleStamin
 import { charmOf, drop, tierRank } from './arms.mjs';
 import { cardCatalog, fightSetup, fitToFight, healthBrief, hpMaxOf, mendsBy, winCard, woundsNow } from './cards.mjs';
 import { FIT_TO_FIGHT, gainBond } from './companion.mjs';
-import { clone, hourOf, pay, refuse, spendStamina } from './core.mjs';
+import { clone, hourOf, pay, refuse, replaying, spendStamina } from './core.mjs';
 import { advance, countsOf, itemBrief, itemOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
@@ -132,7 +132,13 @@ export function win(state, content, ctx, args) {
    stamina; then, with `picks` — the player's own turns — the rules replay
    the fight and record the outcome: a win the exit can take, or a loss that
    sends the creature into the mist until tomorrow. A loss costs nothing
-   else. After a win today a fight is practice: it costs, it pays nothing. */
+   else. A creature beaten today is subdued until tomorrow — a scene's as
+   much as a haunt's, and one whose exit waits to be taken is not fought
+   again at all: every win drops, deals a card and grows the bond, so a
+   second win was a farm (review, 2026-09-24). A scene played again (Go
+   back into a chapter done) is fought for the story and pays nothing.
+   One fight at a time: while one is open no other starts, and only its
+   own picks settle it. */
 export function duel(state, content, ctx, args) {
   const id = String(args.id ?? '');
   const exit = sceneOf(content, state)?.exits.find(e => gameOf(e)?.id === id && gameOf(e).kind === 'duel');
@@ -149,7 +155,9 @@ export function duel(state, content, ctx, args) {
   if (!args.picks) {
     if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
     if (today?.day === day && today.outcome === 'withdrew') return refuse('spent-today', null, { game: id });
-    if (haunt && today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
+    if (today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
+    if (exit && s.wins?.[id]) return refuse('won-already', null, { game: id, exit: exit.id });
+    if (s.fight && s.fight.game !== id) return refuse('in-a-fight', null, { game: s.fight.game });
     if (!s.traits?.length) return refuse('no-traits', null);
     // A page reloaded mid-fight asks again: the same fight comes back, and the
     // day's 灵气 is not taken twice. The seed is the day's, so the cards deal
@@ -174,8 +182,9 @@ export function duel(state, content, ctx, args) {
   }
 
   // ── 收场: the page hands back what was played, the rules replay it ──
-  if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
-  const setup = fightSetup(content, s, creature, ctx.now, id);
+  if (today?.day !== day || today.outcome !== 'open' || s.fight?.game !== id) return refuse('not-started', null, { game: id });
+  // The setup the page was handed at the door, not one made again now.
+  const setup = s.fight.setup ?? fightSetup(content, s, creature, ctx.now, id);
   const actions = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
   const played = battle(actions, setup, cardCatalog(content));
   if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });
@@ -186,27 +195,65 @@ export function duel(state, content, ctx, args) {
   const left = played.outcome === 'lost' ? 0 : played.you.hp;
   s.wounds = left < played.you.hpMax ? { n: played.you.hpMax - left, at: ctx.now.toISOString() } : undefined;
   if (!s.wounds) delete s.wounds;
-  const handed = played.outcome === 'won' ? advance(content, s, { kind: 'subdue', creature: creature.id }, ctx) : [];
-  if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  const won = played.outcome === 'won';
+  // A scene played again is fought for the story: the exit opens, nothing else pays.
+  const pays = won && !(exit && replaying(content, s, sceneOf(content, s)));
+  const handed = pays ? advance(content, s, { kind: 'subdue', creature: creature.id }, ctx) : [];
+  if (won) s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  // A beast met on the road, beaten, has been met: it leaves the road.
+  if (won && haunt?.road) s.meets.places[s.place] = { ...s.meets.places[s.place], done: true };
   const say = played.outcome === 'lost' ? withdrawnLine
     : played.outcome === 'withdrew' ? pick({ zh: `${pick(creature.name, 'zh')}一口气用尽，转身走了 —— 这一场不算你赢。`, en: `${pick(creature.name, 'en')} runs out of breath and turns away — this one is not a win.` }, state.lang)
       : null;
   // What a subdued creature leaves, and what a haunt pays for it. A fight that
   // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3).
-  const dropped = played.outcome === 'won' ? drop(content, s, creature) : [];
+  const dropped = pays ? drop(content, s, creature) : [];
   // 精英 pay half again what a plain beast does and leave two cards (his,
   // 2026-09-23: fixed in the world, marked where you can see them — the choice
   // is whether to go, and in what shape). Half again, not twice: at twice the
   // gate found always-elite the best day whatever the wounds, so there was no
   // choice; at 1.5× an elite is worth it whole and a coin toss hurt.
   const elite = Boolean(creature.elite);
-  const bonded = played.outcome === 'won' ? gainBond(content, s, elite ? 'elite' : 'win', ctx.now) : null;
-  for (let i = 0; played.outcome === 'won' && i < (elite ? 2 : 1); i += 1) {
+  const bonded = pays ? gainBond(content, s, elite ? 'elite' : 'win', ctx.now) : null;
+  for (let i = 0; pays && i < (elite ? 2 : 1); i += 1) {
     const card = winCard(content, s, creature, ctx.now, i);
     if (card) dropped.push(card);
   }
-  const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
+  const paid = haunt && pays ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
   return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+}
+
+/* ── A fight open: the world holds still ──
+   While a fight is open (state.fight) the verbs that change the world are
+   refused `in-a-fight` — Ling was told so in SKILL.md, the rules never were,
+   and a Move mid-fight left the fight unsettleable (review, 2026-09-24). The
+   fight's own verbs stand: Duel settles it (or resumes it), Look, Show and the
+   readers work. `true` holds the verb; a function holds only the calls it
+   says. Anything not named is left alone. */
+const FIGHT_HOLDS = {
+  resolve: true, move: true, go: true, enter: true, leave: true, trade: true, journey: true, branch: true,
+  meet: true, tame: true, write: true, refine: true, nourish: true, chance: true, task: a => a.action !== 'list',
+  win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, tend: true, bond: true,
+  divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => a.action !== 'info',
+};
+export function fightHold(state, verb, args = {}) {
+  const hold = state?.fight ? FIGHT_HOLDS[verb] : null;
+  if (!hold || (typeof hold === 'function' && !hold(args))) return null;
+  return refuse('in-a-fight', null, { game: state.fight.game });
+}
+
+/* A fight left open on an earlier day is over: the creature went, nobody
+   won, nothing is paid (a withdrawal). Closed on the next call, whatever it
+   is, so a page closed mid-fight never holds the world still overnight.
+   Returns the state to go on with, a copy when anything was closed. */
+export function closeStaleFight(state, now) {
+  const f = state?.fight;
+  if (!f || dayKey(new Date(f.at)) === dayKey(now)) return state;
+  const s = clone(state);
+  delete s.fight;
+  const was = s.duels?.[f.creature];
+  if (was?.outcome === 'open') s.duels[f.creature] = { ...was, outcome: 'withdrew' };
+  return s;
 }
 
 /* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the

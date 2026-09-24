@@ -8,7 +8,7 @@ import { dayKey, fill, normalizeAnswer, periodKey, pick, stepName, threshold, ti
 import { wornOf } from './arms.mjs';
 import { cardCatalog, deckFor, healthBrief, hpMaxOf, ownedCards, pickedCards, usable, WEAPON_POWER, woundsNow } from './cards.mjs';
 import { bondBrief, companionOf, hasCompanion, nearestPlace } from './companion.mjs';
-import { clone, pay, refuse, spendStamina } from './core.mjs';
+import { clone, pay, paysOf, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { herAway } from './daily.mjs';
 import { nameOf } from './look.mjs';
 import { canWrite, questDone } from './tasks.mjs';
@@ -71,46 +71,48 @@ function choresOf(state, ctx, lang) {
 
 /* Open, in the order taken; then life's own. */
 function bookOf(content, state, lang, ctx) {
-  return [...errandsOf(content, state, lang), ...choresOf(state, ctx, lang)];
+  return [...errandsOf(content, state, lang, ctx?.now ?? new Date()), ...choresOf(state, ctx, lang)];
 }
 
-function errandsOf(content, state, lang) {
+function errandsOf(content, state, lang, now) {
   return Object.keys(state.quests ?? {})
     .filter(id => !questDoneBefore(state, id))
     .map(id => {
       const q = questOf(content, id);
       if (!q) return null;
       const need = countsOf(content, state, q);
-      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n })), ready: need.every(x => x.done), where: whereFor(content, state, q, need, lang) };
+      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n })), ready: need.every(x => x.done), where: whereFor(content, state, q, need, lang, now) };
     })
     .filter(Boolean);
 }
 
 /* Where the next count is met — a creature's haunt, a place to reach, the
-   market that sells it. One line, so the player is never left guessing. */
-function whereFor(content, state, quest, need, lang) {
+   market that sells it. One line, so the player is never left guessing.
+   `now` is the caller's clock, never the wall's: a test's or a replay's day
+   decides which provinces are open (review, 2026-09-24). */
+function whereFor(content, state, quest, need, lang, now) {
   const open = need.find(n => !n.done);
   if (!open) return null;
   const at = open.kind === 'visit' ? placeOf(content, open.place)
     : open.kind === 'subdue' || open.kind === 'tame' ? Object.values(content.places).flatMap(d => d.places).find(p => p.has?.creature === open.creature)
-      : open.kind === 'carry' ? nearestPlace(content, state, new Date(), p => p.has?.shop)
+      : open.kind === 'carry' ? nearestPlace(content, state, now, p => p.has?.shop)
         // a game: the nearest place that hosts it (his, 2026-09-23: 没有去碣石的按钮)
-        : open.kind === 'board' ? (open.at ? placeOf(content, open.at) : nearestPlace(content, state, new Date(), p => (p.has?.games ?? []).includes(open.task)))
+        : open.kind === 'board' ? (open.at ? placeOf(content, open.at) : nearestPlace(content, state, now, p => (p.has?.games ?? []).includes(open.task)))
           : null;
   if (!at) return null;
   // nearestPlace hands back a name already said; the rest wants the place itself.
-  if (at.steps !== undefined) return whereAt(content, state, placeOf(content, at.id), lang);
-  return whereAt(content, state, at, lang);
+  if (at.steps !== undefined) return whereAt(content, state, placeOf(content, at.id), lang, now);
+  return whereAt(content, state, at, lang, now);
 }
 
-function whereAt(content, state, at, lang) {
+function whereAt(content, state, at, lang, now) {
   if (!at) return null;
   if (at.id === state.place) return { id: at.id, name: pick(at.name, lang) ?? at.name, here: true };
   const named = at.name ? placeName(content, state, at) : at;
   // The first place on the road there, when it is more than one road away —
   // what Ling used to say after a 接下 (「先去大野泽，再往凫丽山」); the page says it
   // now that 接下 is the page's own tap (his, 2026-09-22).
-  const from = placeOf(content, state.place), way = from && at.roads ? pathOf(content, state, from, at, new Date(state.updated ?? Date.now())) : null;
+  const from = placeOf(content, state.place), way = from && at.roads ? pathOf(content, state, from, at, now) : null;
   return way && way.length > 1 ? { ...named, via: placeName(content, state, way[0]).name, roads: way.length } : named;
 }
 
@@ -190,7 +192,7 @@ function offersOf(content, state, lang, now) {
     .filter(q => q.from?.place === state.place && !state.quests?.[q.id]
       && (!q.opens?.after || questDoneBefore(state, q.opens.after))
       && (!q.opens?.tier || TIERS_ORDER(content).indexOf(state.tier) >= TIERS_ORDER(content).indexOf(q.opens.tier)))
-    .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant }));
+    .map(q => ({ id: q.id, title: pick(q.title, lang), who: q.from.who ? pick(q.from.who, lang) : null, say: fill(pick(q.say, lang), state), need: q.need.map(n => ({ kind: n.kind, n: n.n })), grant: q.grant, pays: paysOf(content, state, now, q.grant) }));
 }
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
@@ -217,7 +219,7 @@ function beastWork(content, state, ctx, here) {
 function workOf(content, state, ctx) {
   if (inMade(state) || atScene(content, state)) return null;
   const here = placeOf(content, state.place);
-  if (!here || errandsOf(content, state, state.lang).length >= BOOK_MAX) return null;
+  if (!here || errandsOf(content, state, state.lang, ctx.now).length >= BOOK_MAX) return null;
   const at = allPlaces(content)
     .map(p => ({ p, offers: offersOf(content, { ...state, place: p.id }, state.lang, ctx.now) }))
     .filter(x => x.offers.length)
@@ -448,6 +450,25 @@ function trialOptions(content, meet) {
     return { n, label: o.label, difficulty: o.difficulty, stake: o.stake, chance: Math.round(((t.die - need + 1) / t.die) * 100) };
   });
 }
+/* What a way through risks, and what losing it takes. Only a stake named
+   here is ever accepted: an unknown one was once read as a wound (review,
+   2026-09-24: `toString` passed the lint and took nothing, then NaN). */
+const STAKES = {
+  coin: (content, s, ctx, n) => {
+    const lost = Math.min(s.wealth, n);
+    s.wealth -= lost;
+    return { lost: { wealth: lost } };
+  },
+  wound: (content, s, ctx, share) => {
+    const now = woundsNow(content, s, ctx.now), add = Math.ceil(hpMaxOf(s) * share);
+    const after = Math.min(hpMaxOf(s), now + add);
+    s.wounds = { n: after, at: ctx.now.toISOString() };
+    // What it truly took: a wound on a body already near empty takes only what was left.
+    return { lost: { hp: after - now }, health: healthBrief(content, s, ctx.now) };
+  },
+};
+const stakesOf = t => Object.keys(t.lose).filter(k => Object.hasOwn(STAKES, k));
+
 /* What Ling offered, held to the rules' shape — or why not. */
 function lintTrial(content, raw) {
   const t = content.meets.trial, lim = t.options;
@@ -457,8 +478,8 @@ function lintTrial(content, raw) {
   const text = (v, n) => typeof v === 'string' && v.trim() && [...v.trim()].length <= n;
   for (const o of list) {
     if (!text(o?.label, lim.label)) return { why: `each label: words, at most ${lim.label} characters` };
-    if (!t.marks[o.difficulty]) return { why: `difficulty is one of ${Object.keys(t.marks).join(', ')}` };
-    if (!t.lose[o.stake]) return { why: `stake is one of ${Object.keys(t.lose).join(', ')}` };
+    if (!Object.hasOwn(t.marks, o?.difficulty)) return { why: `difficulty is one of ${Object.keys(t.marks).join(', ')}` };
+    if (!Object.hasOwn(STAKES, o?.stake) || !Object.hasOwn(t.lose, o.stake)) return { why: `stake is one of ${stakesOf(t).join(', ')}` };
     if (!text(o.win, lim.line) || !text(o.lose, lim.line)) return { why: `win and lose: one line each, at most ${lim.line} characters` };
   }
   if (new Set(list.map(o => o.difficulty)).size < 2) return { why: 'not all the same difficulty — then there is no choice' };
@@ -473,16 +494,7 @@ function settleTrial(content, s, ctx, here, n) {
     const paid = pay(content, s, ctx, { table: 'trial', progress: win.progress ?? 0, wealth: win.wealth ?? 0 });
     return { success, line: o.win, paid };
   }
-  if (o.stake === 'coin') {
-    const lost = Math.min(s.wealth, t.lose.coin[o.difficulty]);
-    s.wealth -= lost;
-    return { success, line: o.lose, lost: { wealth: lost } };
-  }
-  const now = woundsNow(content, s, ctx.now), add = Math.ceil(hpMaxOf(s) * t.lose.wound[o.difficulty]);
-  const after = Math.min(hpMaxOf(s), now + add);
-  s.wounds = { n: after, at: ctx.now.toISOString() };
-  // What it truly took: a wound on a body already near empty takes only what was left.
-  return { success, line: o.lose, lost: { hp: after - now }, health: healthBrief(content, s, ctx.now) };
+  return { success, line: o.lose, ...STAKES[o.stake](content, s, ctx, t.lose[o.stake][o.difficulty]) };
 }
 
 /* Meet — 收下 what was found, answer the traveller, or walk on. */
@@ -534,7 +546,14 @@ export function meet(state, content, ctx, args) {
     if (!said) return refuse('needs-answer', null, { choices: meetBrief(content, s, ctx.now).choices });
     const right = ['zh', 'en'].some(l => content.riddles[l].riddles[here.key].a.some(a => normalizeAnswer(a) === said));
     if (!right) {
-      s.meets.places[s.place] = { ...here, tried: [...(here.tried ?? []), String(args.answer)] };
+      const tried = [...(here.tried ?? []), String(args.answer)];
+      // A traveller's riddle is missed as often as any other (RIDDLE_TRIES):
+      // then he walks on, and the road is quiet (review, 2026-09-24).
+      if (tried.length >= RIDDLE_TRIES) {
+        s.meets.places[s.place] = { ...here, tried, done: true };
+        return { state: s, result: { ok: false, refused: 'riddle-closed', say: null } };
+      }
+      s.meets.places[s.place] = { ...here, tried };
       const left = meetBrief(content, s, ctx.now);
       return { state: s, result: { ok: false, refused: 'wrong-answer', hint: left.hint, choices: left.choices } };
     }

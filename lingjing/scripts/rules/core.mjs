@@ -1,6 +1,6 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
-import { gameOf } from '../content.mjs';
+import { gameOf, MADE_GRANT } from '../content.mjs';
 import { addProgress, dayKey, normalizeAnswer, payOf, pick, rollDay, settleStamina, speedOf, staminaReturnsAt, stepName, threshold, tierOf } from '../state.mjs';
 import { learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
@@ -30,16 +30,30 @@ function meets(state, needs) {
    灵气 existed, and after it was kept as a safety net nobody re-decided —
    invisible, it turned his last errand and a pill into +0 with 灵气 to spare.
    `state.day` still counts what the day paid. */
-function pay(content, state, ctx, grant) {
-  rollDay(state, ctx.now);
+function amountsOf(content, state, now, grant) {
   const table = content.rewards.tables[grant.table];
   // The day's cast, when it was asked about this: its grade speeds or slows the gain.
-  const pf = fortuneOf(content, state, ctx.now, 'cultivation')?.progress ?? 1;
-  const wf = fortuneOf(content, state, ctx.now, 'wealth')?.wealth ?? 1;
+  const pf = fortuneOf(content, state, now, 'cultivation')?.progress ?? 1;
+  const wf = fortuneOf(content, state, now, 'wealth')?.wealth ?? 1;
   const want = Math.round(Math.min(grant.progress ?? 0, table.progress) * speedOf(content, state) * pf);
   const base = Math.max(0, want);
-  const progress = base * payOf(content, state);
   const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth) * wf));
+  return { base, progress: base * payOf(content, state), wealth, pf, wf };
+}
+
+/* What a grant would pay him now — the table's cap, his roots, the day's
+   cast and his tier all counted — so a card shows the number that lands,
+   not the authored one (review, 2026-09-24). A realm at its peak may hold
+   some of it back; that is told when it is paid. */
+const paysOf = (content, state, now, grant) => {
+  if (!grant || !content.rewards.tables[grant.table]) return null;
+  const { progress, wealth } = amountsOf(content, state, now, grant);
+  return { progress, wealth };
+};
+
+function pay(content, state, ctx, grant) {
+  rollDay(state, ctx.now);
+  const { base, progress, wealth, pf, wf } = amountsOf(content, state, ctx.now, grant);
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
   const { levels, hold } = addProgress(content, state, progress);
   const risen = levels.length ? gainBond(content, state, 'rise', ctx.now) : null;
@@ -255,18 +269,20 @@ export function resolve(state, content, ctx, args) {
     s.cards = [...new Set([...(s.cards ?? []), ...starterOf(content, s.traits)])];
   }
   if (breakthrough) { s.tier = breakthrough.tier; s.step = 0; s.progress = 0; }
-  const paid = exit.grant ? pay(content, s, ctx, exit.grant) : null;
+  const grant = grantOf(s, scene, exit);
+  const paid = grant ? pay(content, s, ctx, grant) : null;
   const beat = spoken(content, s, exit.beat);
 
   let waiting = null;
+  const replay = replaying(content, s, scene);
   if (inMade(s)) {
     // A made scene leads only to another made scene or back to the spine.
     if (exit.next) s.made.at = exit.next;
     if (exit.ends) s.made.at = null;
   } else {
-    if (exit.next || exit.ends) s.done_scenes.push(scene.id);
+    if ((exit.next || exit.ends) && !replay) s.done_scenes.push(scene.id);
     if (exit.next) { s.scene = exit.next; settlePlace(content, s); offerTasks(content, s); }
-    if (exit.ends) { s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
+    if (exit.ends) { if (!s.ended.includes(exit.ends)) s.ended.push(exit.ends); s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now)); }
   }
   const walked = exit.next ? walkOn(content, s, ctx.now) : null;
   return {
@@ -278,6 +294,24 @@ export function resolve(state, content, ctx, args) {
       summarize: Boolean(exit.next || exit.ends),
     },
   };
+}
+
+/* A scene played again — one already passed, or any of a chapter already
+   ended, walked back to by Go — is story only: it pays nothing (review,
+   2026-09-24: the river's 月铃 came again with every replay). */
+const replaying = (content, s, scene) => !inMade(s) && (s.ended.includes(s.chapter) || s.done_scenes.includes(scene.id));
+
+/* What an exit pays, if anything. A spine scene played again pays nothing. A
+   made scene is the model's: its grant is progress and wealth only, whatever
+   an older save's scene says, and each of its exits pays once (review,
+   2026-09-24 — a well that looped on itself paid 息壤 five times). */
+function grantOf(s, scene, exit) {
+  if (!exit.grant) return null;
+  if (!inMade(s)) return replaying(null, s, scene) ? null : exit.grant;
+  const key = `${scene.id}/${exit.id}`;
+  if ((s.made.paid ?? []).includes(key)) return null;
+  s.made.paid = [...(s.made.paid ?? []), key];
+  return Object.fromEntries(Object.entries(exit.grant).filter(([k]) => MADE_GRANT.has(k)));
 }
 
 /* An exit taken toward the next scene walks the player there when it stands
@@ -299,4 +333,4 @@ export function judge(state, content, ctx, args) {
   return { state: null, result: { ok: true, right: judgeAnswer(content, args.key, args.answer) } };
 }
 
-export { advanceChapter, clone, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };
+export { advanceChapter, clone, paysOf, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };

@@ -1,9 +1,8 @@
 // rules/arms.mjs — 本命法宝 and 功法: the bound treasure, the sword, the 符 and the learned arts.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick, tierOf } from '../state.mjs';
+import { dayKey, pick, rollDay, tierOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
-import { boutFortune } from './fortune.mjs';
 import { tierIndex } from './world.mjs';
 
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
@@ -32,8 +31,10 @@ const REFINE_TIER = 'core';
 const coreOf = (content, id) => content.items.items.find(i => i.id === id && i.effect?.core);
 const canRefine = (content, state) => tierRank(content, REFINE_TIER) <= tierIndex(content, state);
 
-/* The treasure as the card and Look tell it. */
-function treasureBrief(content, state) {
+/* The treasure as the card and Look tell it — `nourished` by the caller's
+   clock, not the save's last write (review, 2026-09-24: a save last touched
+   yesterday said 温养 was still to do after it was done today). */
+function treasureBrief(content, state, now) {
   const t = state.treasure;
   if (!t) return null;
   const lang = state.lang, steps = content.ladder.treasure_steps ?? null;
@@ -41,7 +42,7 @@ function treasureBrief(content, state) {
     name: t.name, level: t.level, step: steps ? pick(steps, lang)?.[t.level - 1] ?? String(t.level) : String(t.level),
     element: t.element, element_name: pick(content.traits.elements[t.element], lang),
     atk: t.base + t.level, exp: t.exp, needs: t.level >= TREASURE_TOP ? null : expFor(t.level),
-    nourished: state.day?.nourished === dayKey(new Date(state.updated ?? Date.now())) ? true : undefined,
+    nourished: state.day?.nourished === dayKey(now) ? true : undefined,
   };
 }
 
@@ -59,7 +60,7 @@ function grow(treasure, exp) {
    The weapon and the material are spent; a treasure is never lost. */
 export function refine(state, content, ctx, args) {
   const lang = state.lang;
-  if (state.treasure) return refuse('already-bound', pick({ zh: `你已有本命法宝${state.treasure.name}。`, en: `${state.treasure.name} is already yours.` }, lang), { treasure: treasureBrief(content, state) });
+  if (state.treasure) return refuse('already-bound', pick({ zh: `你已有本命法宝${state.treasure.name}。`, en: `${state.treasure.name} is already yours.` }, lang), { treasure: treasureBrief(content, state, ctx.now) });
   if (!canRefine(content, state)) {
     const tier = pick(tierOf(content, REFINE_TIER)?.name, lang);
     return refuse('needs-tier', pick({ zh: `炼化本命须结丹之后。`, en: `A treasure is bound at ${tier}, not before.` }, lang), { tier: REFINE_TIER });
@@ -78,21 +79,24 @@ export function refine(state, content, ctx, args) {
   if (!s.bag[weapon.id]) delete s.bag[weapon.id];
   if (s.wear?.weapon === weapon.id) delete s.wear.weapon;
   s.treasure = { name, base: weapon.effect?.atk ?? 0, element: material.effect.core, level: 1, exp: 0 };
-  return { state: s, result: { ok: true, refined: { from: pick(weapon.name, lang), with: pick(material.name, lang) }, treasure: treasureBrief(content, s), show: [{ card: 'treasure' }] } };
+  return { state: s, result: { ok: true, refined: { from: pick(weapon.name, lang), with: pick(material.name, lang) }, treasure: treasureBrief(content, s, ctx.now), show: [{ card: 'treasure' }] } };
 }
 
 /* 温养 — once a day, a quiet hour with it: one breath of growth. The page
-   taps it; no model decides it. */
+   taps it; no model decides it. The day is rolled first, so the mark is
+   today's alone and never carries yesterday's counts into it (review,
+   2026-09-24: a morning 温养 kept last night's 写符 and refused today's). */
 export function nourish(state, content, ctx, args) {
   if (!state.treasure) return refuse('no-treasure', null);
   const day = dayKey(ctx.now);
-  if (state.day?.nourished === day) return refuse('nourished-today', null, { treasure: treasureBrief(content, state) });
-  if (state.treasure.level >= TREASURE_TOP) return refuse('at-top', null, { treasure: treasureBrief(content, state) });
+  if (state.day?.nourished === day) return refuse('nourished-today', null, { treasure: treasureBrief(content, state, ctx.now) });
+  if (state.treasure.level >= TREASURE_TOP) return refuse('at-top', null, { treasure: treasureBrief(content, state, ctx.now) });
   const s = clone(state);
+  rollDay(s, ctx.now);
   const { treasure, gained } = grow(s.treasure, NOURISH);
   s.treasure = treasure;
-  s.day = { ...(s.day ?? {}), key: day, nourished: day };
-  return { state: s, result: { ok: true, nourished: NOURISH, ...(gained.length ? { rose: gained } : {}), treasure: treasureBrief(content, s) } };
+  s.day.nourished = day;
+  return { state: s, result: { ok: true, nourished: NOURISH, ...(gained.length ? { rose: gained } : {}), treasure: treasureBrief(content, s, ctx.now) } };
 }
 
 /* ── 功法: the sword, the 符 and the learned arts ── */
@@ -119,34 +123,11 @@ function learn(content, state, id) {
   return artBrief(content, state, art);
 }
 
-/* What the player stands in a fight with — duel.js reads it, the card too:
-   their roots and realm, the arms they wear, the 符 in the bag, the arts
-   they know, the day's cast and their 日主. */
+/* What the player wears in a slot, while it is still in the bag. */
 const wornOf = (content, state, slot) => (state.wear?.[slot] && state.bag[state.wear[slot]] ? itemOf(content, state.wear[slot]) : null);
-
-function kitOf(content, state, now = null) {
-  const weapon = wornOf(content, state, 'weapon'), robe = wornOf(content, state, 'robe'), pendant = wornOf(content, state, 'pendant');
-  const charm = charmOf(content);
-  const arts = {};
-  for (const id of state.arts ?? []) { const a = artOf(content, id); if (a) arts[id] = { effect: a.effect, ready: artReady(content, state, a) }; }
-  // A 本命法宝 is the weapon from the day it is refined, and lends its own
-  // element the way a 法器 lends its root.
-  const treasure = state.treasure ? { ...state.treasure } : null;
-  return {
-    roots: state.traits ?? [], tier: state.tier, step: state.step ?? 0,
-    sword: treasure?.element ?? weapon?.effect?.root ?? null,
-    weapon: weapon ? { id: weapon.id, atk: weapon.effect?.atk ?? 0 } : null,
-    ...(treasure ? { treasure } : {}),
-    robe: robe ? { id: robe.id, def: robe.effect.def } : null,
-    pendant: pendant ? { id: pendant.id, ward: pendant.effect.ward } : null,
-    charm: charm ? { id: charm.id, held: state.bag[charm.id] ?? 0 } : null, arts,
-    ...(now && boutFortune(content, state, now) ? { fortune: boutFortune(content, state, now) } : {}),
-    ...(state.fate?.element ? { fate: { root: state.fate.element } } : {}),
-  };
-}
 
 /* The same day, creature and 道号 draw the same creature — an undo cannot
    fish for an easier one. */
 const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${state.name ?? ''}`;
 
-export { artBrief, artOf, artsBrief, canRefine, charmOf, drop, duelSeed, grow, kitOf, learn, tierRank, treasureBrief, wornOf };
+export { artBrief, artOf, artsBrief, canRefine, charmOf, drop, duelSeed, grow, learn, tierRank, treasureBrief, wornOf };
