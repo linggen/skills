@@ -381,7 +381,7 @@ test('装备 · 背包 open together: what he wears, what he carries, and the on
   assert.match(gearChipHtml({ ...ctx, look: armed }, false), /装备 1/);
   // 牌: every card he holds, the day's ten lit, 银月 in hand
   assert.match(pop, /牌 · \d+/);
-  assert.match(pop, /class="gcard in"[^>]*><b>2<\/b> 银月 · 在手/);
+  assert.match(pop, /class="gcard in"[^>]*><b class="cost"[^>]*>2<\/b> 银月 · 在手/);
   assert.ok(g.cards.filter((c) => c.deck).length === 10);
   // 卸下: the slot's own button, and the rules put it back in the bag
   assert.match(pop2, /data-remove="bamboo-sword"[^>]*>卸下/);

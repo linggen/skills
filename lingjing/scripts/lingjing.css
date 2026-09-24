@@ -665,3 +665,5 @@ body.reading .view, body.reading .tray { display: none; }
 .kaifufold > summary::-webkit-details-marker { display: none; }
 .kaifufold > summary::after { content: ' ▸'; }
 .kaifufold[open] > summary::after { content: ' ▾'; }
+/* A card's price in 灵力 — a round badge, as on the fight's cards. */
+.gearpop .gcard b.cost { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; border-radius: 50%; font-size: 11px; background: var(--ling, #3b6ea5); color: #fff; margin-right: 2px; }
