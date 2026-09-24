@@ -1615,6 +1615,9 @@ async function mountChat() {
         if (payload?.conflicts?.length) keep({ doNote: words().saveConflicts });
         refreshSoon(200);
       }
+      // An app wrote its quest facts (a workout mirrored from the phone):
+      // the 功课 card reads them again — a Look, no turn.
+      if (event === 'quests_changed') refreshSoon(300);
       // An asked moment nobody will answer (the pet is off).
       if (event === 'device_topic' && payload?.topic === 'yinyue' && payload?.op === 'unanswered' && payload?.payload?.app === SKILL) greetUnanswered(payload.payload.text);
     },
