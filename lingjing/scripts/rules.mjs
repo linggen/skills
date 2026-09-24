@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look progress resolve judge task win duel tame refine tale summarize move trade lang make enter leave
+//   verbs: init look progress story resolve judge task win duel tame refine tale summarize move trade lang make enter leave
 //          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -28,6 +28,7 @@ import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { heed } from './rules/travel.mjs';
 import { VERBS } from './rules/verbs.mjs';
+import { owesRecap } from './rules/story.mjs';
 import { atScene } from './rules/world.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 
@@ -44,14 +45,15 @@ export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './
 export { look } from './rules/look.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tasks.mjs';
 export { go, heed, lang, move, summarize, trade } from './rules/travel.mjs';
+export { chapterLook, owesRecap, recapLook, story, storyNode } from './rules/story.mjs';
 export { lintTale, tale } from './rules/tale.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
 
 /* Answers handed over as they are — no question, no stage: Progress is for
-   a pet that only wants to know how the game stands. */
-const PLAIN = new Set(['progress']);
+   a pet that only wants to know how the game stands; Story is a book to read. */
+const PLAIN = new Set(['progress', 'story']);
 /* The verbs that are story when they land: a scene step, something met on the road, a made scene entered. */
 const STORY_VERBS = new Set(['resolve', 'meet', 'enter']);
 
@@ -79,6 +81,9 @@ function runLocked(verb, args, stateFile, reader) {
   // earlier day closed — both written with whatever this call writes.
   const saved = raw && raw.world === worldId ? closeStaleFight(migrate(raw, content), now) : raw;
   const state = verb === 'init' || !saved ? freshState(content, args.lang ?? saved?.lang, now) : saved;
+  // 前情提要 owed after a while away (story.mjs): marked in place, and kept
+  // below without a log line — Undo takes back moves, not the clock.
+  const owed = verb !== 'init' && saved === state && owesRecap(state, now);
   if (verb === 'init' || !saved) writeAtomic(stateFile, JSON.stringify(state));
   if (verb === 'init') {
     if (saved) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: saved }) + '\n');
@@ -118,6 +123,11 @@ function runLocked(verb, args, stateFile, reader) {
     asking.story_told = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(asking));
   }
+  // 前情提要 is handed to Ling once: told the moment her Look carries it.
+  if (reader === 'ling' && verb === 'look' && out.result?.recap_due) {
+    asking.recap = { told: now.toISOString() };
+    writeAtomic(stateFile, JSON.stringify(asking));
+  } else if (owed && !next) writeAtomic(stateFile, JSON.stringify(asking));
   const said = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
   const result = told ? { ...said, page_did: told } : said;
   if (PLAIN.has(verb)) return result;
@@ -223,6 +233,7 @@ export function forLing(value) {
   const out = {};
   for (const [k, v] of Object.entries(value)) {
     if (k === 'places' && Array.isArray(v) && 'roads' in value) continue;
+    if (k === 'story_node') continue; // the page's moment; Ling has the node on the move's own result
     if (k === 'shelf' && Array.isArray(v)) { out.shelf = v.map(shelfForLing); continue; }
     out[k] = forLing(v);
   }

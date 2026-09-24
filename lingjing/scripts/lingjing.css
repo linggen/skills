@@ -607,3 +607,51 @@ button.gcard { cursor: pointer; font: inherit; }
 .queueslot { display: flex; flex-direction: column; }
 .queuebar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 6px; font-size: 13px; }
 .queuebar .act { font-size: 13px; }
+
+/* ── 九鼎录 — the 录 chip's book, in the stage's place while open ──
+   Ink on rice paper: a scroll per chapter, the nine as seals (lit, glowing,
+   dark), her memories in silver-blue. Read-only. */
+.luchip { font: inherit; font-family: var(--serif); font-weight: 600; font-size: 13px; padding: 2px 10px; border-radius: 6px;
+          border: 1px solid var(--seal); background: var(--surface); color: var(--seal); cursor: pointer; }
+.luchip[aria-expanded="true"] { background: var(--seal-soft); }
+body.reading .view, body.reading .tray { display: none; }
+.lubook { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; background: var(--ground); }
+.lubook[hidden] { display: none; }
+.lu { max-width: 720px; margin: 0 auto; padding: 18px 20px 40px; font-family: var(--serif); }
+.luhead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 2px solid var(--line); padding-bottom: 10px; }
+.luhead > b { font-size: 22px; letter-spacing: .2em; color: var(--ling); }
+.luhead .act { margin-left: auto; }
+.luend { font-size: 13px; padding: 1px 10px; border: 2px double var(--seal); color: var(--seal); border-radius: 4px; letter-spacing: .1em; }
+.lumap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 16px auto; max-width: 360px; }
+.ding { display: grid; justify-items: center; gap: 2px; padding: 8px 4px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+.ding i { width: 26px; height: 22px; border-radius: 4px 4px 11px 11px; border: 2px solid currentColor; opacity: .35; }
+.ding b { font-size: 17px; }
+.ding span { font-family: var(--ui); font-size: 11px; color: var(--faint); }
+.ding.found { color: var(--ling); border-color: var(--ling); background: var(--ling-soft); }
+.ding.found i { opacity: 1; background: color-mix(in srgb, var(--ling) 35%, transparent); }
+.ding.current { color: var(--seal); border-color: var(--seal); }
+.ding.current i { opacity: 1; animation: dingglow 2.4s ease-in-out infinite; }
+.ding.dark { color: var(--faint); opacity: .6; }
+@keyframes dingglow { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 10px 3px color-mix(in srgb, var(--seal) 45%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .ding.current i { animation: none; } }
+.lusec { margin-top: 18px; }
+.lusec h3 { font-size: 14px; letter-spacing: .15em; color: var(--dim); margin: 0 0 8px; font-weight: 600; }
+.luch { margin: 8px 0; padding: 10px 14px; border: 1px solid var(--line); border-left: 3px solid var(--ling); border-radius: 8px; background: var(--surface); }
+.luch.current { border-left-color: var(--seal); }
+.luch summary { cursor: pointer; font-weight: 600; font-size: 15.5px; }
+.luch p { margin: 8px 0 0; line-height: 1.8; overflow-wrap: anywhere; }
+.luintro { color: var(--dim); font-style: italic; }
+.lunow { color: var(--seal); }
+.luq { color: var(--ling); }
+.lupeople { display: flex; flex-wrap: wrap; gap: 6px; }
+.luperson { display: inline-flex; gap: 6px; align-items: baseline; padding: 2px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); }
+.luperson i { font-style: normal; font-family: var(--ui); font-size: 11px; color: var(--faint); }
+.luperson.tamed { border-color: var(--jade); }
+.luher blockquote { margin: 6px 0; padding: 6px 12px; border-left: 3px solid var(--yinyue); background: var(--yinyue-soft); color: var(--yinyue); border-radius: 0 8px 8px 0; }
+@media (max-width: 560px) { .lu { padding: 12px 14px 32px; } .luhead > b { font-size: 19px; } }
+
+/* A chapter's title card: on the stage when it has just begun, until tapped away. */
+.titlecard { margin: 0 auto 12px; max-width: 520px; padding: 20px 22px; text-align: center; font-family: var(--serif);
+             background: var(--surface); border: 3px double var(--ling); border-radius: 10px; }
+.titlecard b { display: block; font-size: 21px; letter-spacing: .15em; color: var(--ling); }
+.titlecard p { margin: 10px 0 12px; line-height: 1.8; color: var(--dim); }

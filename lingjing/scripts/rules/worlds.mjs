@@ -12,6 +12,7 @@ import { advance, itemOf } from './errands.mjs';
 import { savedFile, savedFor, savesDir, skillDir, writeAtomic, writeMadeWorld } from './files.mjs';
 import { nameOf, sceneBrief, spoken } from './look.mjs';
 import { arriveOnRoad, chanceLive, dealChance, meetHere } from './road.mjs';
+import { joinNode } from './story.mjs';
 import { hashOf } from './travel.mjs';
 import { creatureOf, encounterOf, inMade, placeName, placeOf, settlePlace, tooHard } from './world.mjs';
 
@@ -448,7 +449,10 @@ export function ring(state, content, ctx, args) {
   gainCard(content, s, c.id); // 银月 is a card he holds from now on
   s.wear = { ...(s.wear ?? {}), [c.id]: c.bell };
   const paid = c.grant ? pay(content, s, ctx, c.grant) : null;
-  return { state: s, result: { ok: true, joined: { id: c.id, name: nameOf(content, c.id, lang) }, beat: spoken(content, s, c.join), ...(paid ? { paid } : {}), summarize: true } };
+  // What the cauldrons already gave back comes to her at once: a story node (story.mjs).
+  const node = joinNode(content, s, ctx.now);
+  if (node) s.node = node;
+  return { state: s, result: { ok: true, joined: { id: c.id, name: nameOf(content, c.id, lang) }, beat: spoken(content, s, c.join), ...(paid ? { paid } : {}), ...(node ? { node } : {}), summarize: true } };
 }
 
 export { building, keepDay, keepSave, readSave };

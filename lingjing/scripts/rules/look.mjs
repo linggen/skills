@@ -12,6 +12,7 @@ import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief } from './fortune.mjs';
 import { chanceBrief } from './road.mjs';
+import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
@@ -176,7 +177,6 @@ export function look(state, content, ctx) {
     name: pick(content.traits.names[String(state.traits.length)], lang),
     speed: speedOf(content, state),
   };
-  const chapter = content.chapters[state.chapter];
   const brief = {
     ok: true, lang, name: state.name, ...(state.lang_set ? { lang_set: true } : {}),
     world: worldBrief(content, lang),
@@ -193,7 +193,8 @@ export function look(state, content, ctx) {
     // A fight open on the scene: while this is here Ling advances nothing.
     ...(state.fight ? { fight: { open: true, game: state.fight.game, creature: pick(creatureOf(content, state.fight.creature)?.name, state.lang) } } : {}),
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),
-    chapter: { id: chapter.id, title: pick(chapter.title, lang) },
+    // The chapter (its intro while just begun), the ending once reached (story.mjs).
+    ...chapterLook(content, state),
     scene: atScene(content, state) ? sceneBrief(content, state, ctx.now) : null,
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
@@ -213,6 +214,8 @@ export function look(state, content, ctx) {
     // 今日传闻 (tale.mjs): the step open now and its people; `story_due` when nothing story-like happened for a while.
     ...taleLook(content, state, ctx),
     ended: state.ended, story: state.story,
+    // 前情提要 while owed, and the last story node while fresh (story.mjs).
+    ...recapLook(content, state), ...nodeLook(state, ctx.now),
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),

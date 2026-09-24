@@ -6,7 +6,7 @@
 //
 // - Ling and Yinyue together: at most one unprompted line per QUIET_MS,
 //   except big moments (a realm broken, a chapter opened, a beast won over,
-//   a rumor's finale won, 今日传闻 finished, 体力 spent) — those
+//   a rumor's finale won, 今日传闻 finished, 体力 spent, a story node) — those
 //   are always told, and carry `converse` (Ling may answer her once).
 // - Asked moments (the player turned to her: the cast, the 命格, the day's
 //   greeting) are the player's own doing: always told.
@@ -38,9 +38,15 @@ export const MOMENTS = {
   finale: { who: 'both', priority: 'big' },
   tale_end: { who: 'both', priority: 'big' },
   spent: { who: 'both', priority: 'big' },
+  // 九鼎录's story nodes (redesign-v2 § 六): she and Ling talk over what it means.
+  scene_end: { who: 'both', priority: 'big' },
+  cauldron: { who: 'both', priority: 'big' },
+  memory: { who: 'both', priority: 'big' },
   greet: { who: 'yinyue', priority: 'asked' },
   reading: { who: 'yinyue', priority: 'asked' },
   fate: { who: 'yinyue', priority: 'asked' },
+  // After Ling's 前情提要, one feeling of hers — part of the opening he came back to.
+  recap: { who: 'yinyue', priority: 'asked' },
   lost: { who: 'yinyue', priority: 'high', cooldown: 0 },
   chance: { who: 'yinyue', priority: 'high', cooldown: 0 },
   won: { who: 'yinyue', priority: 'low', cooldown: 10 * 60_000 },

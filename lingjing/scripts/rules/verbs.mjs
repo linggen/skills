@@ -12,6 +12,7 @@ import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
 import { look, stageAt } from './look.mjs';
 import { duel, lundao, questCheck, task, win } from './tasks.mjs';
+import { story } from './story.mjs';
 import { tale, taleInfo } from './tale.mjs';
 import { go, lang, move, summarize, trade } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
@@ -33,7 +34,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, refine, tale, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, story,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

@@ -8,6 +8,7 @@ import { gainCard, starterOf } from './cards.mjs';
 import { threadOf } from './errands.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
+import { storyNode } from './story.mjs';
 import { atScene, inMade, placeName, placeOf, provinceOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 
 /* ── Changing it ── */
@@ -264,7 +265,7 @@ export function resolve(state, content, ctx, args) {
   const paid = grant ? pay(content, s, ctx, grant) : null;
   const beat = spoken(content, s, exit.beat);
 
-  let waiting = null, grew = null;
+  let waiting = null, grew = null, node = null;
   const replay = replaying(content, s, scene);
   if (inMade(s)) {
     // A made scene leads only to another made scene or back to the spine.
@@ -275,9 +276,16 @@ export function resolve(state, content, ctx, args) {
     if (exit.next) { s.scene = exit.next; settlePlace(content, s); offerTasks(content, s); }
     if (exit.ends) {
       // A chapter ended for the first time raises the 本命法宝 one 重 (rewards.json `growth`).
-      if (!s.ended.includes(exit.ends)) { s.ended.push(exit.ends); grew = growTreasure(content, s, 'chapter'); }
+      if (!s.ended.includes(exit.ends)) {
+        s.ended.push(exit.ends); grew = growTreasure(content, s, 'chapter');
+        // The chapter that carries the ending (九 · 定鼎) marks the save once.
+        const end = content.chapters[exit.ends]?.ending;
+        if (end && !s.ending) s.ending = { id: end.id, at: ctx.now.toISOString() };
+      }
       s.scene = null; ({ waiting } = advanceChapter(content, s, ctx.now));
     }
+    // A scene passed, a cauldron found, a memory come back: the page's moment (story.mjs).
+    if ((exit.next || exit.ends) && !replay) node = s.node = storyNode(content, state, s, scene, exit, ctx.now);
   }
   const walked = exit.next ? walkOn(content, s, ctx.now) : null;
   return {
@@ -285,7 +293,7 @@ export function resolve(state, content, ctx, args) {
     result: {
       ok: true, took: exit.id, beat, paid, breakthrough, show: exit.show ?? [], scene: atScene(content, s) ? sceneBrief(content, s, ctx.now) : null,
       waypoint: !atScene(content, s) && sceneOf(content, s) ? threadOf(content, s, ctx.now) : null, ended: exit.ends ?? null, waiting,
-      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}),
+      ...(walked ? { walked } : {}), ...(grew ? { treasure_grew: grew } : {}), ...(node ? { node } : {}),
       summarize: Boolean(exit.next || exit.ends),
     },
   };

@@ -16,6 +16,7 @@ import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { esc } from './esc.js';
 import { createVoice } from './voice.js';
+import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -177,6 +178,8 @@ const view = {
   gearNote: null, //     a 装备 tap the rules refused, in their words, inside the popover
   opened: null, //       a board he opened from the tray: { id, place } — it stays until he walks on
   walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
+  luOpen: false, //      the 录 chip's book (九鼎录), over the stage
+  lu: null, //           the rules' `story` read behind it, fetched when it opens
 };
 const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
@@ -334,6 +337,7 @@ async function readOnce() {
     try { await onDuelStart(look.fight.game); } catch (e) { console.warn('[lingjing] fight resume', e); }
   }
   watchVeil();
+  watchNode();
   render();
 }
 
@@ -380,6 +384,7 @@ function statusHtml() {
       <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span></div>
     ${qiHtml()}
     <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b></span>${omenChip()}
+    ${bout ? '' : luChipHtml(lang(), view.luOpen)}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml({ ...ctx(), gear: view.gear, gearNote: view.gearOpen ? view.gearNote : null }, view.gearOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
@@ -416,7 +421,8 @@ function riseStats() {
       askHer('spent', `玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
     if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank);
-    else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title);
+    // A cauldron found tells her on its own (the story node, with its facts); the seal still shows.
+    else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title, '', nodeFresh(['cauldron', 'chapter']));
   }
   // A beast won over — fed or fought — is a moment of its own: a 收服 seal on
   // the stage and +1 off the 装备 chip, where its card now lives (his ask,
@@ -491,7 +497,7 @@ function gainBurst(g) {
 
 /// A great moment on the stage: a gold seal, light behind it, held long
 /// enough to read — then 银月 speaks, asked, at once.
-function feat(kind, name, from = '') {
+function feat(kind, name, from = '', quiet = false) {
   const w = words();
   const el = document.createElement('div');
   el.className = 'feat';
@@ -499,6 +505,7 @@ function feat(kind, name, from = '') {
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
   setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
+  if (quiet) return;
   if (kind === 'rise') askHer('rise', `玩家刚刚突破了，从${from}到了${name}。这是件大事，你就在玩家身边，说几句。`, `The player has just broken through, from ${from} to ${name}. It is a great moment and you are beside them; say a few words.`, 'happy');
   else askHer('chapter', `新的一章开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
 }
@@ -585,7 +592,7 @@ function focusHtml() {
   // Walked on, the spoils are put away by themselves.
   if (view.spoils && view.spoils.place !== (look?.place?.id ?? null)) keep({ spoils: null });
   if (view.trialTold && view.trialTold.place !== (look?.place?.id ?? null)) keep({ trialTold: null });
-  const spoils = (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
+  const spoils = titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
   // A line running under his feet takes the stage (his law, 2026-09-18:
   // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
   // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
@@ -746,6 +753,7 @@ function draw() {
   if (view.castFresh) readingByHer(look.divination);
   $('focus').innerHTML = focusHtml();
   keep({ castFresh: false });
+  drawLu();
   // The tray holds the world's boards; with none today it is not there at all
   // — 「今日无事」 under a book with things in it was a contradiction.
   $('trayTitle').textContent = w.tray;
@@ -1161,7 +1169,7 @@ const KEY_ROWS = [
 ];
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
-  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
+  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
     const row = e.target.closest?.(sel);
@@ -1226,6 +1234,9 @@ function sayTap(spoken, e) {
 const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
   ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false }); if (view.bookOpen) loadKaifu(); }],
+  ['[data-lu]', () => (view.luOpen ? show({ luOpen: false }) : openLu())],
+  ['[data-lu-close]', () => show({ luOpen: false })],
+  ['[data-titlecard]', (el) => { dismissedTitles.add(el.dataset.titlecard); titleSeen(el.dataset.titlecard, true); render(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
@@ -1588,6 +1599,7 @@ async function mountChat() {
       turnEnded();
       voice.heard();
       streaming = false;
+      if (recapSent !== null) recapTold();
       const before = look;
       // Her turn is over: a 遇 still in the mist is lifted by the page — she
       // set the moment and forgot the reveal, or never got to it.
@@ -1671,6 +1683,103 @@ function cheer(before) {
   tellYinyue('gain', `刚才这一段，玩家得了${zh}`, `Just now the player gained ${zh.replace('，', ', ')}`, { mood: 'happy' });
 }
 
+/* ── 九鼎录 — the story as a book (redesign-v2 § 六) ──
+   The 录 chip opens it over the stage: the rules' `story` read (45 ms, no
+   model), drawn by lu.js. Read-only: nothing in it writes or asks Ling. */
+async function openLu() {
+  show({ luOpen: true, bookOpen: false, gearOpen: false });
+  const r = await verb('story').catch((e) => { console.warn('[lingjing] story', e); return null; });
+  if (view.luOpen) show({ lu: r });
+}
+let drawnLu = null;
+function drawLu() {
+  const el = $('lubook');
+  const open = view.luOpen && !bout;
+  document.body.classList.toggle('reading', open);
+  el.hidden = !open;
+  if (!open) { drawnLu = null; return; }
+  // Redrawn only when it changed: a stream token must not reset the scroll.
+  const html = view.lu ? luHtml(view.lu, { lang: lang(), her: look?.companion?.name ?? null }) : `<div class="lu"><div class="loading">${esc(WORDS[lang()].loading)}</div></div>`;
+  if (html !== drawnLu) { el.innerHTML = html; drawnLu = html; }
+}
+
+/* The chapter's title card: on the stage when a chapter has just begun
+   (Look's `chapter.fresh`), until tapped away — once per chapter. */
+const titleKey = (id) => `lingjing:title:${look?.world?.id ?? ''}:${look?.name ?? ''}:${id}`;
+function titleSeen(id, mark = false) {
+  try {
+    if (mark) localStorage.setItem(titleKey(id), '1');
+    return Boolean(localStorage.getItem(titleKey(id)));
+  } catch {
+    return mark;
+  }
+}
+const dismissedTitles = new Set();
+function titleCard() {
+  const ch = look?.chapter;
+  if (!ch?.fresh || bout || dismissedTitles.has(ch.id) || titleSeen(ch.id)) return '';
+  return titleCardHtml(ch, lang());
+}
+
+/* Story nodes — a scene passed, a cauldron found, a memory come back. The
+   rules keep the last one on the save (Look's `story_node`), whoever moved;
+   the page raises it once, as facts for 银月, and Ling may answer her once
+   (`converse`): they talk over what it means. Never a line to recite. The
+   first read only notes where things stand — nothing old is raised. */
+let nodeSeen;
+function watchNode() {
+  const n = look?.story_node, at = n?.at ?? null;
+  if (nodeSeen === undefined) { nodeSeen = at; return; }
+  if (!n || at === nodeSeen) return;
+  nodeSeen = at;
+  storyMoment(n);
+}
+const nodeFresh = (kinds) => Boolean(look?.story_node && kinds.includes(look.story_node.kind) && Date.now() - Date.parse(look.story_node.at) < 60000);
+const quote = (zh, t) => (zh ? `「${t}」` : `“${t}”`);
+function storyMoment(n) {
+  const facts = (zh) => {
+    const ask = zh ? '你就在玩家身边——说说你觉得这意味着什么，一两句；别复述发生了什么，也别替故事给出答案。' : 'You are beside the player — say what you make of it, a line or two; do not retell what happened or answer ahead of the story.';
+    const bits = [];
+    if (n.kind === 'scene') bits.push(zh ? `一幕刚过去：${n.recap ?? ''}` : `A scene has just passed: ${n.recap ?? ''}`);
+    if (n.kind === 'cauldron') bits.push(zh ? `第${n.found}口鼎寻回了（${n.chapter?.title}）。${n.recap ?? ''}` : `Cauldron ${n.found} is found (${n.chapter?.title}). ${n.recap ?? ''}`);
+    if (n.kind === 'chapter') bits.push(zh ? `${n.chapter?.title}走完了。${n.recap ?? ''}` : `${n.chapter?.title} is over. ${n.recap ?? ''}`);
+    if (n.mystery) bits.push(n.kind === 'scene' ? (zh ? `这一章还悬着的谜：${quote(zh, n.mystery)}。` : `The riddle still open: ${quote(zh, n.mystery)}.`) : (zh ? `这一章的谜${quote(zh, n.mystery)}有了着落。` : `The chapter's riddle, ${quote(zh, n.mystery)}, has its answer.`));
+    if (n.memory?.length) bits.push(zh ? `你记起了：${n.memory.map((m) => quote(zh, m)).join('')}。` : `A memory came back to you: ${n.memory.map((m) => quote(zh, m)).join(' ')}.`);
+    if (n.ending) bits.push(zh ? `九鼎聚齐，故事到了终局：${n.ending}。` : `The nine are gathered; the story has reached its end: ${n.ending}.`);
+    if (n.next) bits.push(zh ? `前面是${n.next.title}，新的谜：${quote(zh, n.next.mystery)}。` : `Ahead lies ${n.next.title}, and a new riddle: ${quote(zh, n.next.mystery)}.`);
+    return `${bits.join(zh ? '' : ' ')}${zh ? '' : ' '}${ask}`;
+  };
+  const id = { scene: 'scene_end', cauldron: 'cauldron', chapter: 'cauldron', memory: 'memory' }[n.kind];
+  if (id) tellYinyue(id, facts(true), facts(false), { mood: n.kind === 'scene' ? 'neutral' : n.memory?.length ? 'relaxed' : 'happy' });
+}
+
+/* 前情提要 — back after a while (Look's `recap_due`), Ling tells what came
+   before in two or three lines. One sequence with her greeting, never two
+   greetings: she greets (told Ling tells the story next), the page sends Ling
+   one hidden `[scene] recap` once the greeting has settled, and after his
+   telling she may add one feeling. A chat Ling opens herself needs none of
+   this — her opening Look carries the recap (SKILL.md § 九鼎录). */
+const pause = (ms) => new Promise((ok) => setTimeout(ok, ms));
+let recapSent = null; // the riddle the recap ended on, while Ling tells it
+async function recapWhenSettled(greeted) {
+  if (!look?.recap_due || !chat) return;
+  const until = Date.now() + 45000;
+  await pause(greeted ? 7000 : 1500);
+  while ((streaming || saying) && Date.now() < until) await pause(1000);
+  await refresh();
+  if (!look?.recap_due || streaming || saying) return;
+  recapSent = look.recap?.mystery ?? '';
+  chat.sendHidden('[scene] recap');
+}
+function recapTold() {
+  const q = recapSent;
+  recapSent = null;
+  if (q === null || !look?.companion) return;
+  const zh = `Ling 刚讲完前情提要${q ? `，眼下悬着的谜：「${q}」` : ''}。你已经打过招呼了，别再问候；若有感触，说一句，没有就不说。`;
+  const en = `Ling has just told what came before${q ? `; the riddle still open: “${q}”` : ''}. You have greeted already — no second greeting; one feeling if you have one, else nothing.`;
+  voice.moment('recap', { zh, en }, { mood: 'relaxed' });
+}
+
 /* Yinyue on the stage: the engine's pet view, loaded as a stage so it
    outranks the desktop corner. Loaded while the game is open — the gate
    unloads it, which releases her, and she goes back to wherever she was.
@@ -1751,6 +1860,8 @@ async function enter() {
   // Her greeting first: when she gives it, it is the opening; Ling waits.
   const greeted = await greetByHer();
   if (fresh) openWith(chat?.getSessionId(), greeted);
+  // Ling opening a fresh chat herself tells the 前情提要 in her opening.
+  if (!fresh || greeted) recapWhenSettled(greeted);
 }
 
 /// 问候 — the day's first opening is hers (rules § 问候): the rules say
@@ -1762,8 +1873,10 @@ async function greetByHer() {
   const who = r.name ?? '';
   const zh = `${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到对方那样，打个招呼 —— 挑一两件说，不必都提。`;
   const en = `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet the player as you would on seeing them — pick one or two, not all.`;
+  // Back after a while: Ling tells the story next — she only greets (one sequence, not two greetings).
+  const recap = look?.recap_due ? { zh: '接着 Ling 会讲前情提要，故事留给 Ling，你只打招呼。', en: ' Ling tells what came before right after you: leave the story to Ling and only greet.' } : { zh: '', en: '' };
   // Nobody to say it (pet off): Ling opens instead.
-  if (!(await askHer('greet', zh, en, 'happy'))) return false;
+  if (!(await askHer('greet', zh + recap.zh, en + recap.en, 'happy'))) return false;
   greetText = [...(lang() === 'en' ? en : zh).trim()].slice(0, 300).join('');
   return true;
 }
