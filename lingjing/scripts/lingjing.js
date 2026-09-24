@@ -8,13 +8,13 @@ import '/shared/chat-bridge.js';
 import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from '/shared/api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
-import { act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
+import { REALMS, act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { boardDoneToday, stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { WORDS, say as fill, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { esc } from './esc.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
@@ -474,7 +474,7 @@ function watchDrain() {
 }
 function riseStats() {
   const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
-    rank: look.tier?.name, chapter: look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting) };
+    rank: look.tier?.name, step: look.tier?.step, chapter: look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting) };
   const before = shown;
   shown = now;
   // 大成就: a realm risen, a chapter opened — the stage marks it and 银月 speaks
@@ -486,7 +486,7 @@ function riseStats() {
       const at = clock(look.stamina?.rest_at ?? look.stamina?.returns_at);
       askHer('spent', `玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
-    if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank);
+    if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank, false, riseGains(before, now));
     // A cauldron found tells her on its own (the story node, with its facts); the seal still shows.
     else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title, '', nodeFresh(['cauldron', 'chapter']));
   }
@@ -563,13 +563,27 @@ function gainBurst(g) {
   setTimeout(() => el.remove(), 3400 + Math.max(0, riseAfter - performance.now()));
 }
 
+/* What a breakthrough grew in a fight, from the fight's own realm table
+   (battle.js REALMS: 气血 by realm + half a point a step, 灵力上限, 一击) —
+   only what changed (his, 2026-09-24: 境界提升时, 属性增加吗? → show it on the seal). */
+function riseGains(before, now) {
+  const stats = (t, step) => { const r = REALMS[t]; return r && { hp: Math.round(r.hp + ((step ?? 1) - 1) * 0.5), mana: r.mana, power: r.power }; };
+  const a = stats(before.tier, before.step), b = stats(now.tier, now.step), w = words();
+  if (!a || !b) return '';
+  return [
+    b.hp !== a.hp ? fill(w.featHp, { a: a.hp, b: b.hp }) : '',
+    b.mana !== a.mana ? fill(w.featMana, { a: a.mana, b: b.mana }) : '',
+    b.power !== a.power ? fill(w.featPower, { n: b.power - a.power }) : '',
+  ].filter(Boolean).join(' · ');
+}
+
 /// A great moment on the stage: a gold seal, light behind it, held long
 /// enough to read — then 银月 speaks, asked, at once.
-function feat(kind, name, from = '', quiet = false) {
+function feat(kind, name, from = '', quiet = false, gains = '') {
   const w = words();
   const el = document.createElement('div');
   el.className = 'feat';
-  el.innerHTML = `<i class="rays"></i><div class="featbox"><b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span></div>`;
+  el.innerHTML = `<i class="rays"></i><div class="featbox"><b>${esc(kind === 'rise' ? w.featRise : w.featChapter)}</b><span>${esc(name)}</span>${gains ? `<small class="featgain">${esc(gains)}</small>` : ''}</div>`;
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
   setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
