@@ -123,3 +123,25 @@ test('the cut verbs are gone from the rules and from Ling\'s tools', () => {
   for (const tool of ['Inscribe', 'Bond']) assert.ok(!new RegExp(`- name: ${tool}\\b`).test(fm), tool);
   for (const verb of ['write', 'bond', 'tend', 'journey', 'nourish']) assert.ok(!new RegExp(`rules\\.mjs ${verb}\\b`).test(fm), verb);
 });
+
+test('the day resets three things: 今日传闻, the day\'s 人间功课 pick, 问卦 — a place\'s game is not one of them', () => {
+  const s = { ...migrate(oldSave(), content), chapter: '04-xu', scene: null, place: 'yunlong', tier: 'core', ended: ['00-prologue', '01-ji', '02-yan', '03-qing'] };
+  const l = look(s, content, ctx());
+  assert.deepEqual(l.tasks, [], 'no board stands for the day by itself');
+  assert.equal(l.divination, null, 'the day\'s reading, still to cast');
+  assert.equal(VERBS.lundao({ ...s, place: 'jixia' }, content, ctx(), { action: 'open' }).result.refused, 'not-here', '论道 is not a daily chore either');
+  // What a market posts is an errand like any other: the board is its giver.
+  const notice = look({ ...s, place: 'pengcheng' }, content, ctx()).offers?.find(o => o.id.startsWith('daily-'));
+  if (notice) assert.ok(notice.who && notice.say && notice.pays, 'a giver, its words, what it pays');
+});
+
+test('the economy after the cuts: a fight still pays best per 体力, and a normal day lands near the day before', () => {
+  const { tables: t, stamina: { cost }, tale } = content.rewards;
+  const fight = t.haunt.progress / cost.duel, step = t.tale.progress / (cost.game + cost.move.base);
+  assert.ok(fight > step, `a fight ${fight.toFixed(2)} a point, a rumor's step ${step.toFixed(2)}`);
+  assert.ok(0.85 * fight > step, 'even at the gate\'s win rate');
+  // _economy's normal 练气 day: ~2.5 fights won, story and errands ~20, a 4-step rumor.
+  const before = 64 + 30 + 20 + 65;
+  const after = 2.5 * t.haunt.progress + 20 + Math.min(tale.cap.progress, 3 * t.tale.progress + t.tale_end.progress);
+  assert.ok(Math.abs(after - before) / before < 0.1, `after ${after}, before ${before}`);
+});

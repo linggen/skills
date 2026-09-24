@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_caps": "A grant never exceeds its table's cap (no day cap since 2026-09-23 — 体力 alone limits a day).",
-  "_economy": "2026-09-24 (his: games cost a little 体力, the card fight is the best 修为 per 体力). 修为 per 体力 at 练气: haunt 25/8 = 3.1 (2.7 expected at the gate's ~85% win) · elite 38/12 = 3.2 (2.1 expected at ~65%) · a hosted game 5/3 = 1.7 · 论道 6/3 = 2.0 — every one below a fight even at the fight's odds. A normal 练气 day in 徐 — two haunts and a road beast (3 fights, ~2.5 won ≈ 64), the six games (30), story and errands (~20) — is ~115, so 练气's 810 takes about a week. 开府 (a setup milestone, paid once ever, table `once`) 40 修为 + 20 灵石 — twelve of them are ~480, four ordinary days, once in a life. Before: the games alone paid 180 for no 体力, and 练气 took about three days.",
+  "_economy": "2026-09-24, redesign-v2 (the daily boards, 历练, 伤势 and the elite's own pay cut; 问卦 no longer multiplies 修为). A normal 练气 day in 徐 BEFORE: three fights (~2.5 won, one an elite at 38) ≈ 64, the six hosted games 30, story and errands ≈ 20, today's rumor (4 steps at 10 + a finale at 25) 65 — ≈ 179. With the cuts and the old numbers it would be 62 + 0 + 20 + 65 ≈ 147 (−18%). AFTER, with a fight at 30 and the rumor at 15 a step, 30 its finale, 90 its cap: fights 2.5 × 30 = 75, story and errands ≈ 20, the rumor 3 × 15 + 30 = 75 — ≈ 170 (−5%), so 练气's 810 still takes about five days of play. 修为 per 体力 at 练气: a fight 30/8 = 3.75 (3.2 at the gate's ~85% win) — still the best; a rumor's step 15 for a game's 3 and the walk (~6) ≈ 2.5. A hosted game pays only the errand that asked for it (a notice's 40), for 3 体力. 开府 (a setup milestone, paid once ever, table `once`) 40 修为 + 20 灵石.",
   "tables": {
     "scene": {
       "progress": 60,
@@ -20,7 +20,7 @@
       "wealth": 5
     },
     "tale": {
-      "progress": 10,
+      "progress": 15,
       "wealth": 3
     },
     "once": {
@@ -28,11 +28,11 @@
       "wealth": 20
     },
     "tale_end": {
-      "progress": 25,
+      "progress": 30,
       "wealth": 10
     },
     "haunt": {
-      "progress": 25,
+      "progress": 30,
       "wealth": 10
     },
     "game": {
@@ -56,10 +56,10 @@
       "wealth": 20
     }
   },
-  "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots, the day's cast and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id. Economy: a step costs its board's 体力 (stamina.cost.game, 3) plus the walk; a 4-step tale with an elite finale is ~36 体力 for 40 + 25 修为 here plus the elite's own 38 — ~2.9 per 体力, just under a fight's 3.1, the walking being the difference.",
+  "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id — and the finale also leaves a 符 and raises the 本命法宝 one 重 (`growth`). Raised 2026-09-24 (redesign-v2: the rumor is the day's main dish, the daily boards are gone): 15 a step, 30 the finale, 90 the cap — see `_economy`.",
   "tale": {
     "cap": {
-      "progress": 65,
+      "progress": 90,
       "wealth": 22
     },
     "drops": [

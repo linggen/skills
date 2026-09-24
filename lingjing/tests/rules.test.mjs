@@ -344,7 +344,7 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   const arrived = move(o, content, ctx(), { place: road.move });
   // where he lands, always: the roads — or the traveller's riddle, when that is what the arrival dealt
   const landed = askOf(content, arrived.state, ctx(), arrived.result), dealt = arrived.result.place.meet;
-  const holding = look(arrived.state, content, ctx()).stage.some(c => ['offer', 'find', 'item', 'duel'].includes(c.card));
+  const holding = look(arrived.state, content, ctx()).stage.some(c => ['offer', 'road', 'item', 'duel'].includes(c.card));
   if (dealt?.kind === 'riddle') assert.equal(landed.question, dealt.riddle);
   else if (holding) assert.equal(landed, null, 'what the arrival holds out comes first');
   else assert.deepEqual(landed, arrived.result.director.choice, 'and where he lands, always');
@@ -2708,21 +2708,27 @@ test('体力: walking costs by the road, an elite no more than a fight; empty, t
 // The mini-games had no way in (2026-09-23): a place hosts its game, open there
 // once a day, won through the same `win` as 炼丹, paid by the task; a market's
 // notice may ask for a nearby place's game.
-test('a place hosts its game: open once a day there, won and paid like a board', () => {
+test('a place\'s game is no daily chore: it opens there only for an errand that asks for it, and the errand pays', () => {
   const at = ctx();
-  const s = { ...toOpenWorld(), place: 'yunlong', tier: 'core' };
-  const seen = look(s, content, at).tasks.find(t => t.id === 'luoshu');
+  const s = { ...toOpenWorld(), place: 'yunlong', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
+  // No errand asks: the game is not on offer, not even once a day (redesign-v2 § 四).
+  assert.equal(look(s, content, at).tasks.find(t => t.id === 'luoshu'), undefined);
+  refused(win, s, { id: 'luoshu' }, 'not-here', at);
+  // A market's notice asks for it here: now it stands, for the errand.
+  const asked = { ...s, quests: { 'daily-20260911-trial-yunlong': { took: '2026-09-11', have: {} } } };
+  const seen = look(asked, content, at).tasks.find(t => t.id === 'luoshu');
   assert.equal(seen?.status, 'offered');
-  assert.equal(seen.game, 'luoshu');
-  assert.equal(seen.level, 2, '结丹 plays level 2');
-  refused(win, { ...s, place: 'sishui' }, { id: 'luoshu' }, 'not-here', at);
-  const won = must(win, s, { id: 'luoshu' }, at);
+  assert.deepEqual([seen.game, seen.level, seen.for_errand, seen.pays], ['luoshu', 2, true, null], '结丹 plays level 2; the errand pays');
+  refused(win, { ...asked, place: 'sishui' }, { id: 'luoshu' }, 'not-here', at);
+  const won = must(win, asked, { id: 'luoshu' }, at);
   const done = must(task, won.state, { action: 'done', id: 'luoshu' }, at);
-  assert.ok(done.result.paid.progress > 0);
-  assert.ok(!look(done.state, content, at).tasks.some(t => t.id === 'luoshu' && t.status === 'offered'), 'once a day');
-  refused(win, done.state, { id: 'luoshu' }, 'not-here', at);
+  assert.equal(done.result.paid, null, 'the game pays nothing of its own');
+  assert.deepEqual(done.result.handed.map(h => h.id), ['daily-20260911-trial-yunlong']);
+  assert.ok(done.result.handed[0].paid.progress > 0, 'the notice pays');
+  assert.equal(done.state.stamina, 100 - content.rewards.stamina.cost.game, 'a game\'s 体力');
+  assert.equal(look(done.state, content, at).tasks.find(t => t.id === 'luoshu'), undefined, 'met, it is gone');
   const tomorrow = ctx({ now: new Date(NOW.getTime() + 86400000) });
-  assert.equal(look(done.state, content, tomorrow).tasks.find(t => t.id === 'luoshu')?.status, 'offered', 'and again tomorrow');
+  assert.equal(look(done.state, content, tomorrow).tasks.find(t => t.id === 'luoshu'), undefined, 'and not back tomorrow by itself');
 });
 
 test('a market notice can ask for a nearby place\'s game, and a win there meets it', () => {
@@ -2745,9 +2751,10 @@ test('a market notice can ask for a nearby place\'s game, and a win there meets 
 });
 
 // 论道 at 稷下: the rules deal and check the form, Ling judges the meaning.
-test('论道: dealt at 稷下, the form checked by the rules, three good answers win', () => {
+test('论道: dealt at 稷下 when a notice asks for it, the form checked by the rules, three good answers win — and the notice pays', () => {
   const at = ctx();
-  const s = { ...toOpenWorld(), place: 'jixia', tier: 'core' };
+  const s = { ...toOpenWorld(), place: 'jixia', tier: 'core', quests: { 'daily-20260911-trial-jixia': { took: '2026-09-11', have: {} } } };
+  refused(VERBS.lundao, { ...s, quests: {} }, { action: 'open' }, 'not-here', at);
   refused(VERBS.lundao, { ...s, place: 'linzi' }, { action: 'open' }, 'not-here', at);
   const open = must(VERBS.lundao, s, { action: 'open' }, at);
   const l = open.state.lundao;
@@ -2767,9 +2774,13 @@ test('论道: dealt at 稷下, the form checked by the rules, three good answers
   for (let i = 0; i < 3; i += 1) {
     const r = must(VERBS.lundao, st, { action: 'turn', answer: goodFor(st) + (i ? String(i) : ''), ok: 'true' }, at);
     st = r.state;
-    if (i === 2) { assert.equal(r.result.lundao.outcome, 'won'); assert.ok(r.result.paid.progress > 0); }
+    if (i === 2) {
+      assert.equal(r.result.lundao.outcome, 'won');
+      assert.ok(r.result.paid.progress > 0, 'the notice\'s pay');
+      assert.deepEqual(r.result.handed.map(h => h.id), ['daily-20260911-trial-jixia']);
+    }
   }
-  refused(VERBS.lundao, st, { action: 'open' }, 'done-today', at);
+  refused(VERBS.lundao, st, { action: 'open' }, 'not-here', at);
   // Ling's judgement counts: form right, meaning wrong, is a miss
   const judged = must(VERBS.lundao, open.state, { action: 'turn', answer: goodFor(open.state), ok: 'false' }, at);
   assert.equal(judged.result.good, false);
@@ -2789,13 +2800,13 @@ test('a notice for a place\'s game opens it only at that place', () => {
 });
 
 // His 五子棋, 2026-09-23: won at 桑间, handed in by Ling after a queued move to 彭城.
-test('a hosted game won is paid even if he has walked on before Ling hands it in', () => {
+test('a hosted game won is counted even if he has walked on before it is handed in', () => {
   const at = ctx();
-  const s = { ...toOpenWorld(), place: 'sangjian', tier: 'core' };
+  const s = { ...toOpenWorld(), place: 'sangjian', tier: 'core', quests: { 'daily-20260911-trial-sangjian': { took: '2026-09-11', have: {} } } };
   const won = must(win, s, { id: 'wuziqi' }, at);
   const paid = must(task, { ...won.state, place: 'pengcheng' }, { action: 'done', id: 'wuziqi' }, at);
-  assert.ok(paid.result.paid.progress > 0);
-  refused(task, { ...paid.state }, { action: 'done', id: 'wuziqi' }, 'already-done', at);
+  assert.ok(paid.result.handed[0].paid.progress > 0);
+  refused(task, { ...paid.state }, { action: 'done', id: 'wuziqi' }, 'not-offered', at);
 });
 
 // His screen 2026-09-23: at 0, one point back 3 minutes later started a 12-point
@@ -3106,22 +3117,22 @@ test('装备入局: a 符 in the bag is in hand at the door, and a 符 played is
 
 // ── The economy (2026-09-24, his): games cost a little 体力; the card fight pays best per 体力 ──
 
-test('a hosted game costs a step\'s 体力 when it is paid; with the pool empty the win waits, and is paid once it refills', () => {
+test('a hosted game costs a step\'s 体力 when it is counted; with the pool empty the win waits, and is counted once it refills', () => {
   const at = ctx();
   const cost = content.rewards.stamina.cost.game;
   assert.equal(cost, content.rewards.stamina.cost.step, 'a little: what a step costs');
-  const s = { ...toOpenWorld(), place: 'sangjian', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
+  const s = { ...toOpenWorld(), place: 'sangjian', tier: 'core', stamina: 100, stamina_at: NOW.toISOString(), quests: { 'daily-20260911-trial-sangjian': { took: '2026-09-11', have: {} } } };
   const won = must(win, s, { id: 'wuziqi' }, at);
   assert.equal(won.state.stamina, 100, 'the win itself is only witnessed');
   const paid = must(task, won.state, { action: 'done', id: 'wuziqi' }, at);
   assert.equal(paid.state.stamina, 100 - cost);
-  assert.ok(paid.result.paid.progress > 0);
-  // Empty: refused, the win kept; an hour later it is paid.
+  assert.ok(paid.result.handed[0].paid.progress > 0);
+  // Empty: refused, the win kept; an hour later it is counted.
   const empty = { ...won.state, stamina: 0, resting: true, stamina_at: NOW.toISOString() };
   const r = refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', at);
   assert.ok(r.say);
   const later = ctx({ now: new Date(NOW.getTime() + 90 * 60_000) });
-  assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.paid.progress > 0);
+  assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.handed[0].paid.progress > 0);
   // A task that is not a hosted game (the story's first furnace) stays free.
   let story = must(resolve, must(resolve, start(), { exit: 'reach' }).state, { exit: 'name', value: '青玄' }).state;
   story = { ...must(resolve, story, { exit: 'touch' }).state, stamina: 100, stamina_at: NOW.toISOString() };
@@ -3129,9 +3140,9 @@ test('a hosted game costs a step\'s 体力 when it is paid; with the pool empty 
   assert.equal(first.state.stamina, 100);
 });
 
-test('论道 costs a hosted game\'s 体力 at the door, once a day', () => {
+test('论道 costs a hosted game\'s 体力 at the door, and a game under way is not charged twice', () => {
   const at = ctx();
-  const s = { ...toOpenWorld(), place: 'jixia', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
+  const s = { ...toOpenWorld(), place: 'jixia', tier: 'core', stamina: 100, stamina_at: NOW.toISOString(), quests: { 'daily-20260911-trial-jixia': { took: '2026-09-11', have: {} } } };
   const open = must(VERBS.lundao, s, { action: 'open' }, at);
   assert.equal(open.state.stamina, 100 - content.rewards.stamina.cost.game);
   const again = must(VERBS.lundao, open.state, { action: 'open' }, at);

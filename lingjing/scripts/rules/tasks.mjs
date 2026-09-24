@@ -25,11 +25,11 @@ export function task(state, content, ctx, args) {
    reopens a board already done: 云龙山的八味 asks a pill of alchemy-first,
    done once in the story, so the furnace never came back and the errand
    could not be met (his, 2026-09-23: 我已经到这里了, 没触发差事). */
-function errandWants(content, state, id) {
+function errandWants(content, state, id, place = null) {
   return Object.keys(state.quests ?? {}).some(qid => {
     if (questDoneBefore(state, qid)) return false;
     const q = questOf(content, qid);
-    return q ? countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done) : false;
+    return q ? countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done && (!place || !n.at || n.at === place)) : false;
   });
 }
 
@@ -43,12 +43,14 @@ function reopened(content, state, id, now) {
   return Boolean(t) && !t.hosted && (!held || spent) && errandWants(content, state, id);
 }
 
-/* A game the place hosts (places' has.games): open here once a period,
-   whether or not a scene ever offered it (his, 2026-09-23 — the mini-games
-   had no way in). */
+/* A game the place hosts (places' has.games) is played there when an errand
+   in the book asks for it — a market's notice, 「去碣石：洛书」 — never as a
+   daily chore (redesign-v2 § 四, 2026-09-24: the practice boards are not
+   功课 any more; the mini-games live on as 今日传闻's steps, a scene's
+   boards, and the errands that ask for them). */
 function hostedHere(content, state, id) {
   const t = taskOf(content, id);
-  return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id);
+  return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id) && errandWants(content, state, id, state.place);
 }
 const doneThisPeriod = (content, state, id, now) => {
   const t = taskOf(content, id), held = state.tasks[id];
@@ -61,12 +63,12 @@ function gameLevel(content, state) {
   return i < 2 ? 1 : i < 4 ? 2 : 3;
 }
 
-/* Offered, and not yet done this period — or wanted by an errand, or hosted here. */
+/* Offered, and not yet done this period — or wanted by an errand (reopened,
+   or hosted here for one). */
 function taskOpen(content, state, id, now) {
   const t = taskOf(content, id), held = state.tasks[id];
   if (!t) return false;
-  if (reopened(content, state, id, now)) return true;
-  if (hostedHere(content, state, id)) return !doneThisPeriod(content, state, id, now);
+  if (reopened(content, state, id, now) || hostedHere(content, state, id)) return true;
   if (!held) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
@@ -75,27 +77,26 @@ function taskDone(state, content, ctx, id) {
   const t = taskOf(content, id);
   if (!t) return refuse('unknown-task', null);
   const again = reopened(content, state, id, ctx.now);
-  // A hosted game won today is paid wherever he stands when Ling hands it in:
-  // the win was at the place (his 五子棋, 2026-09-23: a queued "go to 彭城" ran
-  // before the win's turn, and the pay was refused at 彭城).
-  const wonHere = Boolean(t.hosted && state.wins?.[id] && dayKey(new Date(state.wins[id])) === dayKey(ctx.now) && !doneThisPeriod(content, state, id, ctx.now));
+  // A hosted game won today is counted wherever he stands when it is handed
+  // in: the win was at the place (his 五子棋, 2026-09-23: a queued "go to 彭城"
+  // ran before the win's turn, and the pay was refused at 彭城).
+  const wonHere = Boolean(t.hosted && state.wins?.[id] && dayKey(new Date(state.wins[id])) === dayKey(ctx.now) && errandWants(content, state, id));
   if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !wonHere) return refuse('not-offered', null);
   if (!wonHere && !taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state);
   delete s.wins[id];
-  if (again) {
+  // For an errand, the errand pays — not the game or the task a second time.
+  // A hosted game costs a little 体力, as a step does (rewards.json
+  // stamina.cost.game — his, 2026-09-24): taken as it is counted, and a win
+  // kept while the pool is empty is counted once it refills, the same day.
+  if (again || t.hosted) {
+    if (t.hosted) {
+      const empty = spendStamina(content, s, ctx, 'game');
+      if (empty) return empty;
+    }
     const handed = advance(content, s, { kind: 'board', task: id }, ctx);
     return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
-  }
-  // A hosted game costs a little 体力, as a step does (rewards.json
-  // stamina.cost.game — his, 2026-09-24: free games out-paid the fight). It
-  // is taken as the game is paid: the page records the win without a door of
-  // its own, and a win kept while the pool is empty is paid once it refills
-  // (the same day — tomorrow the game is played again).
-  if (t.hosted) {
-    const empty = spendStamina(content, s, ctx, 'game');
-    if (empty) return empty;
   }
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
   if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
@@ -263,7 +264,8 @@ export function closeStaleFight(state, now) {
 }
 
 /* 论道 — word games with the scholar at 稷下 (his, 2026-09-23: build the
-   mini-games). The rules deal the prompt and check the form: the keyword is
+   mini-games), played when an errand asks for them there (a notice's game,
+   never a daily chore — redesign-v2) or as a step of 今日传闻 (tale.mjs). The rules deal the prompt and check the form: the keyword is
    in the line (飞花令), the idiom chains from the last character (成语接龙),
    the lower line is as long as the upper (对对联). Ling judges the meaning —
    a real verse, a real idiom, a fitting couplet — and says it as `ok`, and
@@ -305,7 +307,6 @@ export function lundao(state, content, ctx, args) {
   if (action === 'open') {
     if (today?.outcome === 'lost') return refuse('lost-today', pick({ zh: '先生已起身，明日再来。', en: 'The scholar has risen for the day. Come back tomorrow.' }, lang));
     if (today && !today.outcome) return { state: null, result: { ok: true, lundao: lundaoBrief(content, s, ctx.now) } };
-    if (doneThisPeriod(content, s, 'lundao', ctx.now)) return refuse('done-today', pick({ zh: '今日已论过道了。', en: 'You have debated today already.' }, lang));
     const empty = spendStamina(content, s, ctx, 'game');
     if (empty) return empty;
     const day = dayKey(ctx.now);
@@ -336,14 +337,14 @@ export function lundao(state, content, ctx, args) {
     }
   } else l.misses += 1;
   let paid = null;
+  let handed = [];
   if (l.good >= cfg.need) {
+    // Won: the errand that asked for it is counted, and it pays its own grant.
     l.outcome = 'won';
-    const t = taskOf(content, 'lundao');
-    s.tasks.lundao = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
-    paid = pay(content, s, ctx, t.grant);
-    advance(content, s, { kind: 'board', task: 'lundao' }, ctx);
+    handed = advance(content, s, { kind: 'board', task: 'lundao' }, ctx);
+    paid = handed.find(h => h.paid)?.paid ?? null;
   } else if (l.misses >= cfg.misses) l.outcome = 'lost';
-  return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(l.model && !l.outcome ? { model: l.model } : {}), ...(paid ? { paid, line: pick(taskOf(content, 'lundao').done_line, lang) } : {}) } };
+  return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(l.model && !l.outcome ? { model: l.model } : {}), ...(l.outcome === 'won' ? { line: pick(taskOf(content, 'lundao').done_line, lang), ...(paid ? { paid } : {}), ...(handed.length ? { handed } : {}) } : {}) } };
 }
 
-export { doneThisPeriod, gameLevel, lundaoBrief, lundaoForm, questCheck, questDone, reopened };
+export { doneThisPeriod, gameLevel, hostedHere, lundaoBrief, lundaoForm, questCheck, questDone, reopened };

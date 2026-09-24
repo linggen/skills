@@ -14,7 +14,7 @@ import { divinationBrief, fateBrief } from './fortune.mjs';
 import { chanceBrief } from './road.mjs';
 import { knownBrief, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
-import { doneThisPeriod, gameLevel, lundaoBrief, reopened } from './tasks.mjs';
+import { gameLevel, hostedHere, lundaoBrief, reopened } from './tasks.mjs';
 import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { building } from './worlds.mjs';
 
@@ -111,16 +111,16 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
 
 function tasksBrief(content, state, ctx) {
   const lang = state.lang;
-  // Today's practice: what is offered or won, and what was done today. A
-  // task done once on an earlier day is history, not today's (his "what is
-  // this task for today?", 2026-09-16, the prologue's alchemy five days on).
+  // The boards before him: the story's (a scene offers them), and a game an
+  // errand in the book asks for — reopened, or hosted here. None is a daily
+  // chore (redesign-v2 § 四). A task done once on an earlier day is history,
+  // not today's (his "what is this task for today?", 2026-09-16).
   const today = dayKey(ctx.now);
-  // A board an errand reopened stands offered again, whatever it was.
-  const again = new Set((content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)));
-  const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
-  // The games this place hosts, open today — beside the story's own boards.
+  // A board an errand wants stands offered, whatever it was: the errand pays.
   const hosted = Object.fromEntries((placeOf(content, state.place)?.has?.games ?? [])
-    .filter(id => taskOf(content, id)?.hosted && !doneThisPeriod(content, state, id, ctx.now)).map(id => [id, { status: 'offered' }]));
+    .filter(id => hostedHere(content, state, id)).map(id => [id, { status: 'offered' }]));
+  const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
+  const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
   const tasks = Object.entries({ ...state.tasks, ...held, ...hosted })
     .filter(([, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false))
     .map(([id, t]) => {

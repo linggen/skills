@@ -277,8 +277,8 @@ tools:
 
   - name: Lundao
     description: >-
-      论道 — the word games with the scholar at 稷下 (a place whose `tasks`
-      hold `lundao`). `open` deals today's game — 飞花令 (a line holding the
+      论道 — the word games with the scholar at 稷下, when an errand asks for
+      them there (Look's `tasks` hold `lundao`). `open` deals the game — 飞花令 (a line holding the
       keyword), 成语接龙 (an idiom from the last character) or 对对联 (a lower
       line as long as the upper) — speak the prompt as the scholar, in his
       voice. Each answer the player gives is `turn` with their `answer`
@@ -288,7 +288,8 @@ tools:
       form and count: `form` names what broke, `good` says whether it
       counted, `paid` comes on the third good answer; three misses and he
       rises for the day. The card on the stage shows the prompt and the
-      count, so never read the count out. One game a day; `open` costs 3 体力.
+      count, so never read the count out. `open` costs 3 体力; the errand
+      that asked for it pays.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lundao --action={{action}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --for=ling"
     tier: edit
     timeout_ms: 8000
@@ -1069,17 +1070,16 @@ materials held).
 
 ## Tasks, boards and 差事
 
-- **Boards and hosted games** (炼丹 at a market; 洛书 · 华容道 · 七巧 · 五子 ·
-  残局 where Look's `tasks` carry them) stand on the stage and are played by
-  the player alone, once a day. Point to the board as a thing before them —
-  *丹炉就在你面前。* The page pays a won board itself (Practice `done`, its
-  体力 too) and the strip shows it — you hear nothing and say nothing of it.
-  Only a board a scene holds reaches you as `[scene] won <id>`: Resolve the
-  exit whose `game` it is. With 体力 empty the win is kept and the page pays
-  it once 体力 is back. A player *saying* they won is not a win; never ask to
-  be told of one; Practice `done` is yours only when they ask and Look shows
-  a board `won` but unpaid.
-- **论道** at 稷下 is yours to host: see Lundao.
+- **Boards** stand on the stage when the story or an errand asks for one —
+  a scene's board, or a place's game (洛书 · 华容道 · 七巧 · 五子 · 残局 · 论道)
+  that a notice sent them to; none is a daily chore, and 今日传闻's steps are
+  boards of their own. They are played by the player alone. Point to the
+  board as a thing before them — *丹炉就在你面前。* The page counts a won board
+  itself (Practice `done`; the errand pays) — you hear nothing and say nothing
+  of it. Only a board a scene holds reaches you as `[scene] won <id>`:
+  Resolve the exit whose `game` it is. With 体力 empty the win is kept and
+  counted once 体力 is back. A player *saying* they won is not a win; never
+  ask to be told of one. **论道** is yours to host: see Lundao.
 - **Real-life quests (人间功课)** come from the player's other apps. **One a
   day**: the rules pick one chore from the apps' menus (Mac and phone days
   alternate) beside the fixed workout — only those two show and pay; any
@@ -1092,10 +1092,11 @@ materials held).
   list them, never remind** — when the player asks what to do, you may offer
   `kaifu.next`, one, once. You never list the apps' chores either: today's
   one is in the book.
-- **差事** — the errands the world gives and the player takes. `offers` holds
-  what may be taken here (each with the giver's words and its `pays`); a
-  market's 榜文 (`daily-…`) is one more a day, spoken like any other — read
-  the notice, never embellish. **You never invent one**: an errand not in
+- **差事** — the errands the world gives and the player takes, one kind:
+  a person's, or a market's 榜文 (`daily-…` — an errand the board gives, up
+  to three a day there). `offers` holds what may be taken here (each with the
+  giver's words and its `pays`); speak it as the giver's — read the notice,
+  never embellish. **You never invent one**: an errand not in
   `offers` does not exist; your own story is 今日传闻. Only the rules move the
   counts. An errand met hands itself in (`handed`): say it once as the
   giver's thanks, and name the `next` if any. 交差 is wherever they stand —

@@ -116,8 +116,10 @@ function noticeOf(content, id) {
   const at = allPlaces(content).find(p => (t.kind === 'visit' || t.kind === 'board' ? p.id : p.has?.creature) === target);
   const market = at && allPlaces(content).find(p => p.province === at.province && p.has?.shop);
   if (!market) return null;
-  // A game notice: the place's own game (not the market's 炼丹), won anywhere.
-  const game = t.kind === 'board' ? (at.has?.games ?? []).find(g => g !== 'alchemy-daily') : null;
+  // A game notice: one of the place's own games (never the market's 炼丹),
+  // by the notice's id — so 稷下's 论道 is asked for as often as its 象棋.
+  const games = t.kind === 'board' ? (at.has?.games ?? []).filter(g => g !== 'alchemy-daily') : [];
+  const game = games.length ? games[hashOf(id) % games.length] : null;
   if (t.kind === 'board' && !game) return null;
   const name = t.kind === 'visit' || t.kind === 'board' ? at.name : creatureOf(content, target)?.name;
   if (!name) return null;
