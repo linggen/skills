@@ -297,3 +297,30 @@ test('her beat on the page: its own moment is hers alone (big, no converse); wit
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(src, /const m = nodeMoment\(n\);/);
 });
+
+/* Her gifts (Hanli, 2026-09-24: 银月 grows by the story too): the ③ ⑥ ⑨
+   cauldron gives her an ability, and takes one of her reflections — the
+   node carries it as facts, with what she knows of the price, and the
+   moment she hears says it; no line is written for her. */
+test('the third, sixth and ninth cauldron: the node names her new ability and its price as she knows it', async () => {
+  const { nodeMoment } = await import('../scripts/voice.js');
+  const endOf = (chapter, her = true) => {
+    const road = roadOf(chapter);
+    const s = at(chapter, road.slice(0, -1), { tier: 'nascent', stamina: 100, ...(her ? { companion: { joined: '2026-09-01' } } : {}) });
+    const end = content.chapters[chapter].scenes[road.at(-1)];
+    const out = resolve(s, content, ctx(), { exit: end.exits.find(e => e.ends).id });
+    assert.equal(out.result.ok, true, JSON.stringify(out.result));
+    return out.result.node;
+  };
+  const gifts = content.rewards.her_card.gifts;
+  for (const [chapter, found, cost] of [['03-qing', 3, 'unknown'], ['06-jing', 6, 'kept'], ['09-yu', 9, 'told']]) {
+    const n = endOf(chapter), g = gifts.find(x => x.found === found);
+    assert.equal(n.found, found);
+    assert.deepEqual(n.gift, { name: pz(g.name), does: pz(g.does), cost }, chapter);
+    const m = nodeMoment(n);
+    assert.ok(m.zh.includes(pz(g.name)) && m.zh.includes(pz(g.does)), m.zh);
+    assert.ok(m.en.includes(n.gift.name) && m.en.includes('reflection'), m.en);
+  }
+  assert.equal(endOf('02-yan').gift, undefined, 'a cauldron without a gift');
+  assert.equal(endOf('03-qing', false).gift, undefined, 'before she walks with him, nothing is hers to hear');
+});

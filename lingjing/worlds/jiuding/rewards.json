@@ -130,24 +130,17 @@
       "quest": 20
     }
   },
-  "bond": {
-    "_about": "银月 beside the player (redesign-v2 § 四: no relationship score). What walking together gives her card comes from the story alone: the chapters ended. 相知/相惜/同心 are no longer counted or shown; the lifts are the ones the gate measured (2026-09-23): +1/+1 at most — +2/+2 won 97%, which is not a fight.",
-    "lifts": [
-      {
-        "ended": 4,
-        "atk": 0,
-        "hp": 1
-      },
-      {
-        "ended": 5,
-        "atk": 0,
-        "hp": 2
-      },
-      {
-        "ended": 7,
-        "atk": 1,
-        "hp": 1
-      }
+  "_her_card": "银月's card grows both ways (Hanli, 2026-09-24: 两个都做). `realm`: with the player's realm, as the player's 气血/灵力 grow — the lift at the highest realm listed at or below theirs (the fight's own realm table, battle.js REALMS, ends at 元婴, so hers does too). `gifts`: the story gives her an ability at the 3rd, 6th and 9th cauldron found, each costing one of her reflections (companion.json secret); `lift` is what it adds to her card in a fight. No relationship score (redesign-v2 § 四). Numbers weighed by the gate (tools/battle-sim.mjs § 银月).",
+  "her_card": {
+    "realm": {
+      "foundation": { "atk": 0, "hp": 1 },
+      "core": { "atk": 1, "hp": 1 },
+      "nascent": { "atk": 1, "hp": 2 }
+    },
+    "gifts": [
+      { "found": 3, "id": "moonlight", "lift": { "heal": 2, "rally": { "hp": 1 } }, "name": { "zh": "月华", "en": "Moonlight" }, "does": { "zh": "入阵多回 2 气血，你阵前每个 +1 血", "en": "On arrival: heals 2 more, and your rank +1 life" } },
+      { "found": 6, "id": "moonshield", "lift": { "taunt": true, "hp": 1 }, "name": { "zh": "月障", "en": "Moon Screen" }, "does": { "zh": "护主：她挡在你身前，+1 血", "en": "Guard: she stands before you, +1 life" } },
+      { "found": 9, "id": "moonfall", "lift": { "damage": 4 }, "name": { "zh": "月落", "en": "Moonfall" }, "does": { "zh": "入阵直击妖身 4 点", "en": "On arrival: strikes the beast itself for 4" } }
     ]
   },
   "_seclusion": "闭关修炼 (his, 2026-09-24: one pick per seclusion; rules/seclusion.mjs). Real hours from the save's own stamp, at most `cap_hours`; under `min_hours` nothing but the clock's refill. One focus: a 功法 gains a ★ per `star_hours` (to `star_top`; the hours left over wait for the next seclusion on that card), 修为 `progress_per_hour` (the `seclusion` table caps it, scaled by roots and realm like any grant — 60 a 12-hour night at 练气, against ~170 for a day of play: playing stays better), or the 本命法宝 one 重 per `treasure_hours` (left over kept). Any focus: `rest_hours` or more fills 体力. A pill in `pills` taken going in multiplies the hours counted (not the cap on real hours).",

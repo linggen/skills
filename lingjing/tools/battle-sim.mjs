@@ -351,6 +351,57 @@ const CHARM = world.cards.find(c => c.charm)?.id;
 const SPELLS = world.cards.filter(c => c.kind === 'spell' && !c.charm && !c._token).map(c => c.id);
 const starsAll = n => Object.fromEntries(SPELLS.map(id => [id, n]));
 
+/* ── 银月 — her card grows both ways (rewards.json `her_card`, Hanli 2026-09-24) ──
+   With the player's realm, and by the story: an ability at the ③ ⑥ ⑨
+   cauldron. Each row against the same realm with her card as printed. A
+   realm's lift is what she has there; a gift stacks on the realm it comes
+   at (③ ≈ 元婴, the fight's last realm — ⑥ and ⑨ come later still, so they
+   are weighed on 元婴 too). One step may move the fight at most 8 points;
+   everything at once must not make it a sure thing (the 全副 rule). What
+   she wears (齐纨 +0/+1) rides on top. */
+const HER = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/rewards.json'), 'utf8')).her_card ?? {};
+const addLift = (a, b) => ({ ...a, ...Object.fromEntries(Object.entries(b).map(([k, v]) => [k, typeof v === 'number' ? (a[k] ?? 0) + v : v])) });
+function herRows(decks, problems) {
+  const zh = { foundation: '筑基', core: '结丹', nascent: '元婴' };
+  const at = (tier, lift) => run(smart, { decks, tiers: [tier], you: { lifts: { yinyue: lift } } }).rate;
+  const bare = {};
+  const row = (label, tier, lift, prev) => {
+    bare[tier] ??= at(tier, {});
+    const r = at(tier, lift), d = (r - bare[tier]) * 100, step = (r - prev) * 100;
+    console.log(`${label.padEnd(26)}  ${(r * 100).toFixed(1)}%  (比印的 ${d >= 0 ? '+' : ''}${d.toFixed(1)}，这一步 ${step >= 0 ? '+' : ''}${step.toFixed(1)}，印的 ${(bare[tier] * 100).toFixed(1)}%)`);
+    if (Math.abs(step) > 8) problems.push(`${label} 这一步改了 ${step.toFixed(1)} 个百分点 — 她长一步不该替人打仗`);
+    if (r > 0.97 || d > 20) problems.push(`${label} 赢 ${(r * 100).toFixed(1)}%（+${d.toFixed(1)}）— 她一人把仗打完了`);
+    return r;
+  };
+  // The yardstick: 练气, her card as printed. Each realm's lift should keep
+  // the fight near it — the beast grows with the realm too (battle.js REALMS),
+  // and printed she falls behind (元婴 79% against 练气 89%, 2026-09-24).
+  const ref = at('qi', {});
+  console.log(`\n银月（会读场的，对全部牌组；练气印的样子 ${(ref * 100).toFixed(1)}% 是准绳）`);
+  let lift = {};
+  for (const [tier, l] of Object.entries(HER.realm ?? {})) {
+    bare[tier] ??= at(tier, {});
+    lift = { ...l };
+    row(`${zh[tier] ?? tier} · +${l.atk ?? 0}/+${l.hp ?? 0}`, tier, lift, ref);
+  }
+  const top = Object.keys(HER.realm ?? {}).pop() ?? 'core';
+  let prev = at(top, lift);
+  for (const g of HER.gifts ?? []) {
+    lift = addLift(lift, g.lift);
+    prev = row(`${zh[top] ?? top} + 第${g.found}鼎 ${g.name?.zh ?? g.id}`, top, lift, prev);
+  }
+  row(`${zh[top] ?? top} 全 + 齐纨 +0/+1`, top, addLift(lift, { hp: 1 }), prev);
+}
+
+async function herOnly() {
+  const { foeTurn } = await import('../scripts/battle.js');
+  globalThis.__battle = { foeTurn };
+  const problems = [];
+  herRows(fieldDecks(5), problems);
+  console.log(problems.length ? `\n闸：${problems.length} 处越界\n · ${problems.join('\n · ')}` : '\n闸：全部在带内');
+  if (process.argv.includes('--gate') && problems.length) process.exit(1);
+}
+
 async function kitOnly() {
   const { foeTurn } = await import('../scripts/battle.js');
   globalThis.__battle = { foeTurn };
@@ -406,6 +457,7 @@ function gearRows(decks, problems) {
 
 async function main() {
   if (process.argv.includes('--kit')) return kitOnly();
+  if (process.argv.includes('--her')) return herOnly();
   const { foeTurn } = await import('../scripts/battle.js');
   globalThis.__battle = { foeTurn };
   const gate = process.argv.includes('--gate');
@@ -490,12 +542,6 @@ async function main() {
     ['问斗法 吉 · +1', root => ({ boost: { element: root, n: 1 } })],
     ['问斗法 凶 · −1', root => ({ boost: { element: root, n: -1 } })],
     ['问斗法 大凶 · −2', root => ({ boost: { element: root, n: -2 } })],
-    // Her card by the chapters ended (rewards.json bond.lifts): four +0/+1, five +0/+2, seven +1/+1.
-    ['银月 四章 · +0/+1', { lifts: { yinyue: { atk: 0, hp: 1 } } }],
-    ['银月 七章 · +1/+1', { lifts: { yinyue: { atk: 1, hp: 1 } } }],
-    // What she wears (items.json lift): 齐纨 +0/+1 on top (+1.6). Tried and dropped 2026-09-23:
-    // 银月铃 as heal +1 (0.0 — the heal never decides a fight) and +1 攻 (+4.4, over the gate).
-    ['银月 七章 + 齐纨 · +1/+2', { lifts: { yinyue: { atk: 1, hp: 2 } } }],
   ];
   for (const [label, you] of kit) {
     const r = run(smart, { decks, you });
@@ -505,6 +551,7 @@ async function main() {
   }
 
   gearRows(decks, problems);
+  herRows(decks, problems);
 
   // 杀招 — the key turn (battle.js § 杀招). A climax, not a wall: most won
   // fights meet it, and it should cost a careless player, not end the day.

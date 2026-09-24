@@ -12,7 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
-import { bodyOf, boostedOf, clash, costOf, dealt, effectOf, landed, starsOf } from './battle.js';
+import { bodyOf, boostedOf, clash, costOf, dealt, effectOf, keywordsOf, landed, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -265,7 +265,7 @@ function handHtml(st, ctx, picked) {
       ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
       <span class="bname">${name(c, ctx.lang)}${stars ? ` <span class="stars">${'★'.repeat(stars)}</span>` : ''}</span>
       <span class="belem">${GLYPH[c.element] ?? ''}</span>
-      <small class="btext">${esc(sayEffect({ ...c, effect: effectOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}</small>
+      <small class="btext">${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}</small>
       ${body}
       ${why ? `<small class="bwhy">${esc(w.why[why] ?? why)}</small>` : ''}
     </button>`;

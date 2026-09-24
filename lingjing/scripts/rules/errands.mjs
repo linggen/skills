@@ -4,7 +4,7 @@ import { ARM_SLOTS } from '../content.mjs';
 import { costOf } from '../battle.js';
 import { dayKey, fill, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
-import { companionOf, hasCompanion, nearestPlace } from './companion.mjs';
+import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { pay, paysOf } from './core.mjs';
 import { nameOf } from './look.mjs';
 import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
@@ -507,7 +507,8 @@ function gearBrief(content, state) {
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
-    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]) } } : {}),
+    // Her card as it stands (companion.mjs herCard): 攻/血, the realm it grew with, her abilities.
+    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]), card: herCard(content, state) } } : {}),
     // What the fight takes from them (cards.mjs § 装备入局): 主灵根一击 +power,
     // 护体 armor, 抗 by element, the 符 in hand, and the roots they lend.
     fight: (() => {

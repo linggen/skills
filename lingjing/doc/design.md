@@ -92,7 +92,7 @@ skills/lingjing/
     dictionary.json        the harness's ids → this world's words, zh + en; the provinces
     ladder.json            the tiers: 练气 1–9, 筑基 … with progress thresholds, pay, gate
     traits.json            灵根 kinds and their progress multiplier
-    rewards.json           reward tables, 体力 (max, refill, costs), her lift by chapters (`bond.lifts`), story growth (`growth`); `_economy` has the math
+    rewards.json           reward tables, 体力 (max, refill, costs), her card's growth by realm and cauldron (`her_card`), story growth (`growth`); `_economy` has the math
     creatures.json         山海经 entries: name, source, quote, root, deck, signature, elite, likes
     cards.json             the fight's cards, starters, modes, `gear` rates
     herbs.json, arts.json, lundao.json, meets.json   alchemy tiles · learned arts · 论道 · 路上's finds, riddles, 抉择
@@ -1658,9 +1658,18 @@ Each a few lines of code truth; the numbers live in the named data file.
   (`deck_out`); the rest is filled along the realm's curve. 银月 is in hand,
   never in the ten.
 - **伤势 · 羁绊 · 历练** — cut 2026-09-24 (redesign-v2 § 四); what they were
-  is in archive.md. Every fight begins whole; her card stands taller by the
-  chapters ended (`rewards.json → bond.lifts`: +0/+1 at four, +0/+2 at five,
-  +1/+1 at seven); the save migrates at v5.
+  is in archive.md. Every fight begins whole; the save migrates at v5.
+- **银月's card grows both ways** (Hanli, 2026-09-24; `rewards.json →
+  her_card`, rules/companion.mjs). With the player's realm: 筑基 +0/+1, 结丹
+  +1/+1, 元婴 +1/+2 (the fight's realm table ends at 元婴, so hers does) —
+  printed she fell behind the beast (元婴 79% against 练气 89%), grown she
+  keeps the fight level (88.7 / 89.7 / 87.7%). By the story, the ③ ⑥ ⑨
+  cauldron each gives an ability and takes a reflection: 月华 (入阵 heals 2
+  more, the rank +1 血), 月障 (护主, +1 血), 月落 (入阵 strikes the beast
+  itself for 4). She hears it in the cauldron's node, as facts, with the price
+  as far as she knows it (unknown before 04, kept until 08, told after). The
+  gate weighs each step (tools/battle-sim.mjs `--her`): ≤ 8 points a step,
+  everything at 元婴 95.0% with 齐纨.
 - **机缘** — a kind of 路上 since 2026-09-24 (§ 路上).
 - **遇 and 抉择** (rules/road.mjs since 2026-09-24 — § 路上; meets.json). An arrival where the place
   holds nothing deals a 遇, veiled until Ling sets the moment: a find, a

@@ -9,7 +9,7 @@
 // chapter ahead is a dark cauldron with its province and nothing more.
 import { CAST } from '../content.mjs';
 import { dayKey, fill, pick } from '../state.mjs';
-import { companionOf, hasCompanion, recalledOf } from './companion.mjs';
+import { cauldronsFound, companionOf, giftAt, hasCompanion, recalledOf } from './companion.mjs';
 import { threadOf } from './errands.mjs';
 import { atScene, creatureOf, inMade, sceneOf } from './world.mjs';
 
@@ -194,17 +194,30 @@ export function storyNode(content, before, s, scene, exit, now) {
   const next = s.chapter !== before.chapter && content.chapters[s.chapter] && !(s.ended ?? []).includes(s.chapter) ? content.chapters[s.chapter] : null;
   const ended = exit.ends && !(before.ended ?? []).includes(exit.ends);
   const kind = !ended ? 'scene' : holdsCauldron(ch) ? 'cauldron' : 'chapter';
+  const found = kind === 'cauldron' ? cauldronsFound(content, s) : 0;
+  // The ③ ⑥ ⑨ cauldron gives her an ability and takes a reflection
+  // (rules/companion.mjs § Beside her): she hears it as facts, once she walks with him.
+  const gift = found && hasCompanion(s) ? giftAt(content, found) : null;
   const node = {
     kind, at: now.toISOString(),
     chapter: { id: ch.id, title: pick(ch.title, lang) },
     ...(scene.recap ? { recap: fill(pick(scene.recap, lang), s) } : {}),
     ...(ch.mystery ? { mystery: pick(ch.mystery, lang) } : {}),
-    ...(kind === 'cauldron' ? { found: (s.ended ?? []).filter(id => content.chapters[id] && holdsCauldron(content.chapters[id])).length } : {}),
+    ...(kind === 'cauldron' ? { found } : {}),
+    ...(gift ? { gift: { name: pick(gift.name, lang), does: pick(gift.does, lang), cost: costKnown(content, s) } } : {}),
     ...(memory.length ? { memory } : {}),
     ...(ended && ch.ending ? { ending: pick(ch.ending.title, lang) } : {}),
     ...(next ? { next: { id: next.id, title: pick(next.title, lang), mystery: pick(next.mystery, lang) } } : {}),
   };
   return node;
+}
+
+/* What she knows of a gift's price — a reflection of hers, taken with the
+   cauldron (companion.json `secret`): not yet ('unknown'), known and kept
+   from the player ('kept'), or told ('told'). */
+function costKnown(content, s) {
+  const sec = content.lore?.id === companionOf(content)?.id ? content.lore.secret : null, ended = new Set(s.ended ?? []);
+  return !sec || !ended.has(sec.realized) ? 'unknown' : ended.has(sec.told) ? 'told' : 'kept';
 }
 
 /* She joins, and what the cauldrons already gave back comes to her at once. */

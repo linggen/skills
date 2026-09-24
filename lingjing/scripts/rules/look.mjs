@@ -6,7 +6,7 @@ import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepNam
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, thenFor } from './ask.mjs';
 import { fightSetup } from './cards.mjs';
-import { callDue, companionOf, hasCompanion, questBrief, recalledOf } from './companion.mjs';
+import { callDue, companionOf, hasCompanion, herCard, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
@@ -203,7 +203,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, recalled: recalledOf(content, state) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, recalled: recalledOf(content, state), card: herCard(content, state) } : null,
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),

@@ -132,9 +132,11 @@ export function shuffle(ids, seed) {
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
    { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature? } }
-   `lifts` is { cardId: { atk, hp, heal } } — a body that stands taller for this
-   side (银月 by the chapters ended, rules/companion.mjs herLifts); `bodyOf`
-   is the one reading.
+   `lifts` is { cardId: { atk, hp, heal, damage, taunt } } — a card that stands
+   taller for this side (银月 by the realm and the cauldrons found,
+   rules/companion.mjs herLifts): its body (`bodyOf`), a number added to what
+   it does (`effectOf`; a `damage` it lacked is a blow at the beast itself, no
+   aim asked), and 护主 (`keywordsOf`).
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
    (or softer, n < 0). Both are locked at the door like the rest.
@@ -430,10 +432,23 @@ export function legal(st, action, who = 'you') {
    `boost.n` harder (never below 1). The page draws the card from this too, so
    the number on the card is the number that lands. */
 export function effectOf(side, c) {
-  // A lift on the card's own number (银月铃: her battlecry heals one more).
-  const e = boostedOf(side, c), h = side?.lifts?.[c?.id]?.heal;
-  return starred(h && e?.heal != null ? { ...e, heal: e.heal + h } : e, starLift(side, c));
+  return starred(lifted(boostedOf(side, c), side?.lifts?.[c?.id]), starLift(side, c));
 }
+/* A lift on what the card does: each number it names added on, a 齐心 it
+   lacked given (her ③ heals more and mends the rank, her ⑨ strikes the beast
+   — rewards.json `her_card`). */
+const LIFTED = ['heal', 'damage', 'rally'];
+const addOn = (v, n) => (typeof n === 'number' ? (v ?? 0) + n : Object.fromEntries([...new Set([...Object.keys(v ?? {}), ...Object.keys(n)])].map(k => [k, (v?.[k] ?? 0) + (n[k] ?? 0)])));
+function lifted(e, l) {
+  const on = LIFTED.filter(k => l?.[k]);
+  if (!e || !on.length) return e;
+  return { ...e, ...Object.fromEntries(on.map(k => [k, addOn(e[k], l[k])])) };
+}
+/* A card's keywords in this side's hands: its own, and 护主 when a lift gives it (her ⑥). */
+export const keywordsOf = (side, c) => {
+  const own = c?.keywords ?? [];
+  return side?.lifts?.[c?.id]?.taunt && !own.includes('taunt') ? [...own, 'taunt'] : own;
+};
 
 /* ── ★ — a 功法 tempered in 闭关 (his, 2026-09-24: 闭关修炼, one pick) ──
    Each star takes 1 off the card's 灵力 while it costs more than 1; a star
@@ -494,11 +509,11 @@ export function act(st, action, who = 'you') {
     side.mana -= costOf(side, c);
     side.played.push(id);
     if (c.kind === 'minion') {
-      const { atk, hp } = bodyOf(side, c);
-      const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false };
+      const { atk, hp } = bodyOf(side, c), keys = keywordsOf(side, c);
+      const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: keys.includes('taunt'), sick: true, struck: false };
       side.board.push(m);
       st.log.push({ act: 'played', who: side.who, id, kind: 'minion' });
-      if (c.keywords?.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
+      if (keys.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
     } else {
       st.log.push({ act: 'played', who: side.who, id, kind: 'spell' });
       resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);

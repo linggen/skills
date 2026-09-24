@@ -379,3 +379,21 @@ test('符: a card from the bag, in hand at the door — no element, so 五行 ne
   assert.ok(!st.you.hand.includes('talisman'), 'one use');
   assert.ok(st.log.some(e => e.act === 'played' && e.id === 'talisman'), 'the settle reads it off the log');
 });
+
+/* Her card by the realm and the cauldrons (rules/companion.mjs § Beside
+   her): a lift adds to what the card does and may give it 护主 — the engine
+   reads numbers, never her name. */
+test('lifts on what a card does: heal and 齐心 added, a blow at the beast it lacked, and 护主 given', () => {
+  const lift = { atk: 1, hp: 2, heal: 2, rally: { hp: 1 }, damage: 4, taunt: true };
+  const st = opened({ you: { tier: 'qi', step: 0, root: 'fire', deck: deck('bolt'), lifts: { crier: lift } } }, ['cub', 'crier']);
+  st.you.mana = 9;
+  st.you.hp = 10;
+  act(st, { kind: 'play', index: 0 }, 'you');
+  const foeHp = st.foe.hp;
+  act(st, { kind: 'play', index: 0 }, 'you');
+  const [cub, her] = st.you.board;
+  assert.deepEqual([her.atk, her.hp, her.taunt], [4, 7, true], 'body lifted (and her own 齐心 on herself), 护主 given');
+  assert.equal(st.you.hp, 14, 'heals 2 + 2');
+  assert.equal(cub.hp, 2, '齐心 +1 on the rank');
+  assert.ok(st.foe.hp < foeHp, 'her blow lands on the beast itself');
+});

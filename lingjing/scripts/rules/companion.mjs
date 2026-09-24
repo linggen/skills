@@ -134,19 +134,57 @@ export function herPast(content, state) {
   };
 }
 
-/* ── Beside her — what walking together gives, from the story alone ──
+/* ── Beside her — her card grows both ways (Hanli, 2026-09-24: 两个都做) ──
    The 羁绊 count, 谈心 and 疗伤 were cut (redesign-v2 § 四, 2026-09-24): no
-   relationship score, nothing to tap for her. How close she is shows in her
-   words (her `recalled` and `stance`), and her card stands taller as the
-   story goes on — by the chapters ended (rewards.json `bond.lifts`), plus
-   whatever she wears (齐纨 +1 气血). */
+   relationship score, nothing to tap for her. Her card grows WITH the player
+   — each realm reached lifts her 攻/血 as theirs grow ("when you are
+   stronger, so is she") — and BY the story: the ③ ⑥ ⑨ cauldron found each
+   gives her an ability, and each takes one of her reflections (rewards.json
+   `her_card`). Plus whatever she wears (齐纨 +1 气血). */
+const herCardOf = content => content.rewards.her_card ?? {};
+/* Cauldrons found: the chapters ended that hold one (every chapter but a corridor). */
+export const cauldronsFound = (content, state) => (state.ended ?? []).filter(id => content.chapters[id] && !content.chapters[id].corridor).length;
+/* Her lift at the player's realm: the highest realm listed at or below theirs. */
+function realmLift(content, state) {
+  const tiers = content.ladder.tiers.map(t => t.id), at = tiers.indexOf(state.tier);
+  const hit = Object.entries(herCardOf(content).realm ?? {}).filter(([id]) => tiers.indexOf(id) <= at && tiers.indexOf(id) >= 0)
+    .sort(([a], [b]) => tiers.indexOf(b) - tiers.indexOf(a))[0];
+  return hit ? { tier: hit[0], ...hit[1] } : null;
+}
+/* The gifts the story has given her so far, in order found. */
+export const herGifts = (content, state) => (herCardOf(content).gifts ?? []).filter(g => cauldronsFound(content, state) >= g.found);
+/* The gift a cauldron just found gives her — the facts for her moment (story.mjs). */
+export const giftAt = (content, found) => (herCardOf(content).gifts ?? []).find(g => g.found === found) ?? null;
+/* One lift from many: numbers add, an object's fields add, a flag holds. */
+const sumLift = (a, b) => Object.fromEntries([...new Set([...Object.keys(a), ...Object.keys(b)])].map(k => {
+  const x = a[k], y = b[k];
+  if (typeof x === 'number' || typeof y === 'number') return [k, (x ?? 0) + (y ?? 0)];
+  if (x && typeof x === 'object' || y && typeof y === 'object') return [k, sumLift(x ?? {}, y ?? {})];
+  return [k, Boolean(x || y)];
+}));
+function herLift(content, state) {
+  const { tier, ...realm } = realmLift(content, state) ?? {};
+  const her = companionOf(content)?.id, worn = her ? wornOf(content, state, her)?.effect?.lift ?? {} : {};
+  return [realm, ...herGifts(content, state).map(g => g.lift ?? {}), worn].reduce(sumLift, {});
+}
+const liftsAny = l => Object.values(l).some(v => (typeof v === 'object' ? liftsAny(v) : Boolean(v)));
+/* What her card takes into a fight: { yinyue: lift }, or null. */
 function herLifts(content, state) {
   if (!hasCompanion(state)) return null;
-  const ended = (state.ended ?? []).length;
-  const lift = [...(content.rewards.bond?.lifts ?? [])].reverse().find(l => ended >= l.ended) ?? {};
-  const her = companionOf(content)?.id, worn = her ? wornOf(content, state, her)?.effect?.lift ?? {} : {};
-  const sum = { atk: (lift.atk ?? 0) + (worn.atk ?? 0), hp: (lift.hp ?? 0) + (worn.hp ?? 0) };
-  return sum.atk || sum.hp ? { yinyue: sum } : null;
+  const lift = herLift(content, state), her = companionOf(content)?.id;
+  return her && liftsAny(lift) ? { [her]: lift } : null;
+}
+/* Her card as the page shows it (装备, the rise): 攻/血 now, the realm it
+   grew with, and each ability the story gave her in a line. */
+export function herCard(content, state) {
+  const her = companionOf(content)?.id, row = (content.cards?.cards ?? []).find(c => c.id === her);
+  if (!row || !hasCompanion(state)) return null;
+  const lift = herLift(content, state), realm = realmLift(content, state), lang = state.lang;
+  return {
+    atk: row.atk + (lift.atk ?? 0), hp: row.hp + (lift.hp ?? 0),
+    ...(realm ? { realm: { tier: realm.tier, name: pick(content.ladder.tiers.find(t => t.id === realm.tier)?.name, lang), atk: realm.atk ?? 0, hp: realm.hp ?? 0 } } : {}),
+    gifts: herGifts(content, state).map(g => ({ id: g.id, found: g.found, name: pick(g.name, lang), does: pick(g.does, lang) })),
+  };
 }
 
 export { callDue, companionOf, companionRiddle, herLifts, nearestPlace, questBrief, riddleWaiting };

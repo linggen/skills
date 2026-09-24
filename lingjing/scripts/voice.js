@@ -192,6 +192,18 @@ export function herBeatFacts(h, zh) {
     : `The story gives you a line here: ${quote(zh, f.line ?? '')}. The authored line is your reference; say it your way, same meaning — a line or two, without retelling what happened.`);
   return bits.join(zh ? '' : ' ');
 }
+/* A gift the ③ ⑥ ⑨ cauldron gave her (rules/companion.mjs § Beside her):
+   the ability as facts, and its price — one of her reflections — as far as
+   she knows it (story.mjs costKnown). She says what she makes of it. */
+const GIFT_COST = {
+  unknown: { zh: '水上你的倒影淡了一些，你还不知道为什么。', en: 'Your reflection on the water has grown fainter; you do not yet know why.' },
+  kept: { zh: '你知道换它的是什么：那处水上你的一个倒影被收走了。这件事你还没告诉玩家。', en: 'You know what it cost: one of your reflections on that water, taken. You have not told the player.' },
+  told: { zh: '换它的是你的一个倒影，玩家已经知道。', en: 'It cost one of your reflections; the player knows.' },
+};
+export function giftFacts(g, zh) {
+  const cost = GIFT_COST[g.cost] ?? GIFT_COST.unknown;
+  return zh ? `这口鼎给了你一样新本事：${g.name}（${g.does}）。${cost.zh}` : `This cauldron gave you something new: ${g.name} (${g.does}). ${cost.en}`;
+}
 export function nodeMoment(n) {
   if (!n) return null;
   const facts = (zh) => {
@@ -203,6 +215,7 @@ export function nodeMoment(n) {
     if (n.kind === 'cauldron') bits.push(zh ? `第${n.found}口鼎寻回了（${n.chapter?.title}）。${n.recap ?? ''}` : `Cauldron ${n.found} is found (${n.chapter?.title}). ${n.recap ?? ''}`);
     if (n.kind === 'chapter') bits.push(zh ? `${n.chapter?.title}走完了。${n.recap ?? ''}` : `${n.chapter?.title} is over. ${n.recap ?? ''}`);
     if (n.mystery) bits.push(n.kind === 'scene' ? (zh ? `这一章还悬着的谜：${quote(zh, n.mystery)}。` : `The riddle still open: ${quote(zh, n.mystery)}.`) : (zh ? `这一章的谜${quote(zh, n.mystery)}有了着落。` : `The chapter's riddle, ${quote(zh, n.mystery)}, has its answer.`));
+    if (n.gift) bits.push(giftFacts(n.gift, zh));
     if (n.memory?.length) bits.push(zh ? `你记起了：${n.memory.map((m) => quote(zh, m)).join('')}。` : `A memory came back to you: ${n.memory.map((m) => quote(zh, m)).join(' ')}.`);
     if (n.ending) bits.push(zh ? `九鼎聚齐，故事到了终局：${n.ending}。` : `The nine are gathered; the story has reached its end: ${n.ending}.`);
     if (n.next) bits.push(zh ? `前面是${n.next.title}，新的谜：${quote(zh, n.next.mystery)}。` : `Ahead lies ${n.next.title}, and a new riddle: ${quote(zh, n.next.mystery)}.`);

@@ -2384,7 +2384,7 @@ test('精英 is its harder deck and nothing more: the same share of 气血, the 
   assert.equal(won.result.dropped.filter(d => d.card).length, 1, JSON.stringify(won.result.dropped));
 });
 
-test('银月 beside him: no score, no 谈心 or 疗伤 — her card stands taller as the chapters end', () => {
+test('银月 beside him: no score, no 谈心 or 疗伤 — her card grows with his realm and by the cauldrons', () => {
   const c = ctx({ now: new Date('2026-10-05T10:00:00') });
   const alone = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
   assert.equal(look(alone, content, c).companion, null);
@@ -2396,20 +2396,36 @@ test('银月 beside him: no score, no 谈心 or 疗伤 — her card stands talle
   // a gift she wears grows nothing but her card
   const gifted = must(trade, { ...her, bag: { ...her.bag, 'moon-bell': 1 } }, { action: 'use', id: 'moon-bell' }, c);
   assert.equal(gifted.result.bond, undefined);
-  // her card by the story: the chapters ended (rewards.json bond.lifts), locked at the door
+  // her card WITH his realm (rewards.json her_card.realm), locked at the door
   const jingwei = content.creatures.creatures.find(x => x.id === 'jingwei');
-  const at = n => fightSetup(content, { ...her, ended: Array.from({ length: n }, (_, i) => `c${i}`) }, jingwei, c.now).you.lifts;
-  assert.equal(at(3), undefined);
-  assert.deepEqual(at(4), { yinyue: { atk: 0, hp: 1 } });
-  assert.deepEqual(at(5), { yinyue: { atk: 0, hp: 2 } });
-  assert.deepEqual(at(7), { yinyue: { atk: 1, hp: 1 } });
+  const lifts = st => fightSetup(content, st, jingwei, c.now).you.lifts;
+  const realm = content.rewards.her_card.realm;
+  assert.equal(lifts({ ...her, tier: 'qi' }), undefined, '练气: as printed');
+  assert.deepEqual(lifts(her), { yinyue: realm.foundation });
+  assert.deepEqual(lifts({ ...her, tier: 'core' }), { yinyue: realm.core });
+  assert.deepEqual(lifts({ ...her, tier: 'deity' }), { yinyue: realm.nascent }, 'past the fight\'s last realm she holds its lift');
+  // and BY the story: the ③ ⑥ ⑨ cauldron found each gives an ability
+  const found = n => ['00-prologue', ...Object.keys(content.chapters).filter(id => !content.chapters[id].corridor).slice(0, n)];
+  assert.deepEqual(lifts({ ...her, tier: 'nascent', ended: found(2) }), { yinyue: realm.nascent }, 'two found: nothing yet');
+  const three = lifts({ ...her, tier: 'nascent', ended: found(3) }).yinyue;
+  assert.equal(three.heal, 2); assert.deepEqual(three.rally, { hp: 1 });
+  const six = lifts({ ...her, tier: 'nascent', ended: found(6) }).yinyue;
+  assert.equal(six.taunt, true); assert.equal(six.hp, realm.nascent.hp + 1);
+  const nine = lifts({ ...her, tier: 'nascent', ended: found(9) }).yinyue;
+  assert.equal(nine.damage, 4); assert.equal(nine.heal, 2); assert.equal(nine.taunt, true);
+  // the page's reading: 攻/血 now, the realm, each ability in a line
+  const card = look({ ...her, tier: 'nascent', ended: found(6) }, content, c).companion.card;
+  assert.equal(card.atk, 3 + realm.nascent.atk); assert.equal(card.hp, 4 + realm.nascent.hp + 1);
+  assert.equal(card.realm.tier, 'nascent');
+  assert.deepEqual(card.gifts.map(g => g.found), [3, 6]);
+  for (const g of card.gifts) assert.ok(g.name && g.does && g.does.length <= 20, g.does);
   // what she wears lifts her card too: 齐纨 +1 气血
-  const silk = { ...her, ended: Array.from({ length: 7 }, (_, i) => `c${i}`), bag: { ...her.bag, 'qi-silk': 1 }, wear: { ...her.wear, yinyue: 'qi-silk' } };
-  assert.deepEqual(fightSetup(content, silk, jingwei, c.now).you.lifts, { yinyue: { atk: 1, hp: 2 } });
+  const silk = { ...her, tier: 'core', bag: { ...her.bag, 'qi-silk': 1 }, wear: { ...her.wear, yinyue: 'qi-silk' } };
+  assert.deepEqual(lifts(silk), { yinyue: { atk: realm.core.atk, hp: realm.core.hp + 1 } });
   const { 'qi-silk': _gone, ...sold } = silk.bag;
-  assert.deepEqual(fightSetup(content, { ...silk, bag: sold }, jingwei, c.now).you.lifts, { yinyue: { atk: 1, hp: 1 } }, 'sold, it lifts nothing');
+  assert.deepEqual(lifts({ ...silk, bag: sold }), { yinyue: realm.core }, 'sold, it lifts nothing');
   // before she walks with him, nothing lifts
-  assert.equal(fightSetup(content, { ...alone, ended: silk.ended }, jingwei, c.now).you.lifts, undefined);
+  assert.equal(lifts({ ...alone, tier: 'nascent', ended: found(9) }), undefined);
 });
 
 /* 抉择 (rules § 抉择): Ling writes the ways, the rules threw the dice first. */
@@ -2526,10 +2542,10 @@ test('降妖: the settle replays the fight the door set up, whatever changed on 
   const out = fightOut(her, 'haunt:jingwei', { c, between: meanwhile });
   const door = out.started.result.duel.setup;
   assert.deepEqual(out.started.state.fight.setup, door, 'kept on the save at the door');
-  assert.equal(door.you.lifts, undefined);
+  assert.deepEqual(door.you.lifts, { yinyue: content.rewards.her_card.realm.foundation }, 'her realm lift, at the door');
   assert.equal(door.you.insight, undefined);
   const live = fightSetup(content, meanwhile(out.started.state), jingwei, c.now);
-  assert.ok(live.you.lifts && live.you.insight === 2, 'the save did change');
+  assert.ok(live.you.lifts.yinyue.heal && live.you.insight === 2, 'the save did change (the third cauldron: her 月华)');
   assert.deepEqual(fightSetup(content, meanwhile(out.started.state), jingwei, c.now, 'haunt:jingwei'), door, 'the open fight reads the door');
   const replay = battle(out.actions, door, catalog);
   assert.equal(out.result.outcome ?? out.state.duels.jingwei.outcome, replay.outcome);
