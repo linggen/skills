@@ -12,7 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
-import { bodyOf, boostedOf, clash, dealt, effectOf } from './battle.js';
+import { bodyOf, boostedOf, clash, dealt, effectOf, landed } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -28,11 +28,12 @@ function clashWord(element, target, lang) {
 }
 
 /* What the held thing would take off a target, as a badge on it. */
-function dmgBadge(st, n, element, target, lang) {
+function dmgBadge(st, n, element, target, lang, hero = false) {
   if (n == null) return '';
   const word = clashWord(element, target, lang);
   const down = clash(element, target) < 1;
-  return `<span class="bdmg${down ? ' down' : word ? ' up' : ''}">−${dealt(st, 'you', n, element, target)}${word ? ` · ${word}` : ''}</span>`;
+  const hits = hero ? landed(st, 'you', n, element) : dealt(st, 'you', n, element, target);
+  return `<span class="bdmg${down ? ' down' : word ? ' up' : ''}">−${hits}${word ? ` · ${word}` : ''}</span>`;
 }
 
 /* The striker the player holds: its blow and its element, or null. */
@@ -49,7 +50,7 @@ export const WORDS = {
   zh: {
     hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
-    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进背包：', spoilsClose: '收起', xw: '修为', ls: '灵石', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
+    struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进背包：', spoilsClose: '收起', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', lost: '败', withdrew: '它力竭遁走',
     wonSay: '它退入雾中。', lostSay: '你退了半里地，它没有追。', withdrewSay: '它一口气用尽，转身走了 —— 这一场不算你赢。',
     why: {
       'no-mana': '灵力不够', 'board-full': '阵前满了', 'not-your-turn': '还没轮到你',
@@ -62,6 +63,7 @@ export const WORDS = {
     stale: '牌面没读全 —— 刷新页面再出手。',
     lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
     ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩', close: '知道了',
+    armor: '护体', ward: '抗{el} {n}', absorbed: '护体挡 {n}',
     help: [
       ['目标', '把妖的气血打到 0。'],
       ['灵力', '每回合长一格，回合开始回满。牌左上角那个数就是它的价钱。开局 2 格，上限随境界（练气 6 · 筑基 8 · 结丹 10）。'],
@@ -74,13 +76,14 @@ export const WORDS = {
       ['怎么算赢', '打光它的气血就赢。它十二张牌抽完会力竭遁走 —— 不胜不败，也没有奖励，所以拖着不打没用。'],
       ['望气', '学了望气术（坊市有卷），你的回合开始时，它头像下写着它下回合要做什么 —— 上卷只看出攻、召、守、养，下卷连点数都看得清。它定下的，就一定照做。'],
       ['杀招', '妖掉到一半气血时开始蓄力：下一回合它不出牌，再下一回合放出它的杀招，一场一次。它会打多少、打谁，写在它头像下面。趁它蓄力打完它，立护主去挡，回血，或者别把随从都摆上去挨群伤。'],
+      ['装备', '法衣给护体：打你先扣护体，扣完才伤气血，不留伤。佩给抗：那一行打你轻几点（至少 1）。符开局在手，打出后背包里少一道。'],
       ['没有死', '随从被打到 0 是退下，不是死。这个世界里没有死。'],
     ],
   },
   en: {
     hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
-    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the bag: ', spoilsClose: 'Put away', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
+    struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the bag: ', spoilsClose: 'Put away', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', lost: 'Lost', withdrew: 'It withdrew',
     wonSay: 'It backs into the mist.', lostSay: 'You give ground; it does not follow.', withdrewSay: 'Its breath runs out and it turns away — this one does not count as a win.',
     why: {
       'no-mana': 'not enough Force', 'board-full': 'the rank is full', 'not-your-turn': 'not your turn',
@@ -93,6 +96,7 @@ export const WORDS = {
     stale: 'The cards did not load — refresh, then begin.',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
     ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play', close: 'Got it',
+    armor: 'Shield', ward: '{el} −{n}', absorbed: 'shield took {n}',
     help: [
       ['The point', "Take the beast's Life to zero."],
       ['Force', 'One more crystal each round, refilled at the start of it. The number on a card is its price. Two to begin with; the cap rises with your realm (6 · 8 · 10).'],
@@ -105,6 +109,7 @@ export const WORDS = {
       ['Winning', 'Take all its Life. If its twelve cards run out first it withdraws — neither won nor lost, and nothing is paid, so waiting it out gains nothing.'],
       ['Reading the qi', 'With Reading the Qi learned (a scroll at the market), the start of your turn shows what the beast will do next — Part One its shape (strike, summon, guard, heal), Part Two every move and its number. What it plans, it does.'],
       ['Signature', "At half its Life the beast gathers: it plays nothing next turn and lets its signature go the turn after, once a fight. What it will do, and to whom, is written under it. Finish it while it gathers, stand a Guard, heal, or keep your rank back from a sweep."],
+      ['Gear', 'A robe gives Shield: blows at you take it first, then Life, and it leaves no wound. A pendant wards one root: its blows land lighter on you (at least 1). A talisman starts in hand; played, it leaves the bag.'],
       ['No death', 'A body at zero is driven off, not killed. Nothing dies in this world.'],
     ],
   },
@@ -270,7 +275,7 @@ function handHtml(st, ctx, picked) {
    Until he puts it away or walks on; the rules already wrote it down. */
 export function spoilsHtml(spoils, ctx) {
   const w = ctx.words;
-  const faces = spoils.cards.map((row) => {
+  const faces = (spoils.cards ?? []).map((row) => {
     const c = ctx.catalog[row.id];
     if (!c) return '';
     const body = c.kind === 'minion' ? `<span class="bstat"><b>${c.atk}</b> / <b>${c.hp}</b></span>` : '';
@@ -282,14 +287,18 @@ export function spoilsHtml(spoils, ctx) {
       <small class="btext">${esc(sayEffect(c, ctx))}</small>${body}
     </div>`;
   }).join('');
-  const things = spoils.items.map((i) => `${esc(i.name)}${i.n > 1 ? ` ×${i.n}` : ''}`).join(' · ');
+  const things = (spoils.items ?? []).map((i) => `${esc(i.name)}${i.n > 1 ? ` ×${i.n}` : ''}`).join(' · ');
+  // A 符 played is gone from the bag (result.spent), won or lost.
+  const spent = (spoils.spent ?? []).map((id) => name(ctx.catalog[id], ctx.lang) || esc(id)).join(' · ');
   // What the win paid, in the card's own words — not only a float on the strip.
   const p = spoils.paid ?? {};
   const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : ''].filter(Boolean).join(' · ');
-  return `<div class="card spoils"><div class="cardtitle">${esc(w.spoils)}</div>
+  const gained = faces || things || pays;
+  return `<div class="card spoils"><div class="cardtitle">${esc(gained ? w.spoils : w.spentTitle)}</div>
     ${pays ? `<div class="spoilpays">${esc(pays)}</div>` : ''}
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
+    ${spent ? `<div class="small dim">${esc(w.spoilsSpent)}${spent}</div>` : ''}
     <div class="acts"><button class="act" data-spoils-close>${esc(w.spoilsClose)}</button></div></div>`;
 }
 
@@ -342,7 +351,7 @@ function sigWords(st, ctx) {
   if (e.damage != null) {
     out.push(guard
       ? (zh ? `${name(guard, ctx.lang)} 替你挡 −${hit(e.damage, guard.element)}` : `${name(guard, ctx.lang)} takes it −${hit(e.damage, guard.element)}`)
-      : (zh ? `你 −${hit(e.damage, st.you.root)}（护主可挡）` : `you −${hit(e.damage, st.you.root)} (a Guard takes it)`));
+      : (zh ? `你 −${landed(st, 'foe', e.damage, root)}（护主可挡）` : `you −${landed(st, 'foe', e.damage, root)} (a Guard takes it)`));
   }
   if (e.heal != null) out.push(zh ? `它回 ${e.heal}` : `it heals ${e.heal}`);
   if (e.summon) out.push(zh ? `召来 ${name(ctx.catalog?.[e.summon.id], ctx.lang)} ×${e.summon.n ?? 1}` : `summons ${name(ctx.catalog?.[e.summon.id], ctx.lang)} ×${e.summon.n ?? 1}`);
@@ -380,12 +389,12 @@ function intentBits(st, ctx) {
     }
     const nm = name(c, ctx.lang);
     if (c.kind === 'minion') return zh ? `召 ${nm} ${c.atk}/${c.hp}` : `${nm} ${c.atk}/${c.hp}`;
-    if (e.damage != null) return zh ? `${nm} 打 ${dealt(st, 'foe', e.damage, c.element, st.you.root)}` : `${nm}: ${dealt(st, 'foe', e.damage, c.element, st.you.root)}`;
+    if (e.damage != null) return zh ? `${nm} 打 ${landed(st, 'foe', e.damage, c.element)}` : `${nm}: ${landed(st, 'foe', e.damage, c.element)}`;
     if (e.sweep != null) return zh ? `${nm} 你阵前各 −${dealt(st, 'foe', e.sweep, c.element, null)}` : `${nm}: each of yours −${dealt(st, 'foe', e.sweep, c.element, null)}`;
     if (e.heal != null) return zh ? `${nm} 回 ${e.heal}` : `${nm}: heals ${e.heal}`;
     return nm;
   }).filter(Boolean);
-  if (it.power) bits.push(exact ? (zh ? `主灵根一击 ${dealt(st, 'foe', st.foe.powerHit, root, st.you.root)}` : `root strike ${dealt(st, 'foe', st.foe.powerHit, root, st.you.root)}`) : (zh ? '一击' : 'strike'));
+  if (it.power) bits.push(exact ? (zh ? `主灵根一击 ${landed(st, 'foe', st.foe.powerHit, root)}` : `root strike ${landed(st, 'foe', st.foe.powerHit, root)}`) : (zh ? '一击' : 'strike'));
   return bits;
 }
 
@@ -414,7 +423,8 @@ function sayTurn(t, ctx) {
     case 'power': return `${who} ${w.power}`;
     case 'hurt': return t.kind === 'fatigue'
       ? `${who} ${zh ? `反噬 −${t.amount}` : `fatigue −${t.amount}`}`
-      : `${who} −${t.amount}`;
+      : t.absorbed && !t.amount ? `${who} ${fill(w.absorbed, { n: t.absorbed })}`
+        : `${who} −${t.amount}${t.absorbed ? `（${fill(w.absorbed, { n: t.absorbed })}）` : ''}`;
     case 'hurt-minion': return `${card(t.id)} −${t.amount}`;
     case 'withdrew': return `${card(t.id)} ${zh ? '退下' : 'withdraws'}`;
     case 'heal': return `${who} +${t.amount}`;
@@ -467,6 +477,19 @@ export function challengeHtml(brief, ctx) {
   </div>`;
 }
 
+/* 护体 and 抗 on a hero (the worn 法衣 and 佩, locked at the door): what is
+   left of the shield, and each root that lands lighter. The shield stays
+   drawn at 0 once it has taken a blow, so the player sees where it went. */
+const fill = (tpl, v) => tpl.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
+function gearHtml(side, who, st, ctx) {
+  const w = ctx.words;
+  const hit = (st.log ?? []).some(t => t.act === 'hurt' && t.who === who && t.absorbed);
+  const armor = side.armor > 0 || hit ? `<span class="barmor${side.armor ? '' : ' gone'}">${esc(w.armor)} <b>${side.armor ?? 0}</b></span>` : '';
+  const ward = Object.entries(side.ward ?? {}).filter(([, n]) => n > 0)
+    .map(([el, n]) => `<span class="bward">${esc(fill(w.ward, { el: ctx.lang === 'en' ? EN_EL[el] ?? el : GLYPH[el] ?? el, n }))}</span>`).join('');
+  return armor || ward ? `<div class="bgear">${armor}${ward}</div>` : '';
+}
+
 /* ── The whole screen ── */
 
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the
@@ -508,10 +531,11 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <div class="bwho">${esc(ctx.foeName ?? '')} <span class="belem">${GLYPH[st.foe.root] ?? ''}</span></div>
       <div class="bnums">
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp')}
+        ${gearHtml(st.foe, 'foe', st, ctx)}
         ${crystals(st.foe.mana, st.foe.manaMax, st.foe.manaCap)}
       </div>
       ${deckHtml(st.foe.deck, 'theirs', w)}
-      ${aim.hero && ctx.striker ? dmgBadge(st, ctx.striker.n, ctx.striker.element, st.foe.root, ctx.lang) : ''}
+      ${aim.hero && ctx.striker ? dmgBadge(st, ctx.striker.n, ctx.striker.element, st.foe.root, ctx.lang, true) : ''}
     </button>
 
     ${chargeHtml(st, ctx)}
@@ -526,6 +550,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <div class="bwho">${esc(ctx.youName ?? '')} <span class="belem">${GLYPH[st.you.root] ?? ''}</span></div>
       <div class="bnums">
         ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
+        ${gearHtml(st.you, 'you', st, ctx)}
         ${crystals(st.you.mana, st.you.manaMax, st.you.manaCap)}
       </div>
       ${deckHtml(st.you.deck, 'mine', w)}

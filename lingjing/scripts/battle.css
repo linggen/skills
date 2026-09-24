@@ -327,3 +327,14 @@
 .cacts { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .bact:disabled { opacity: 0.45; cursor: default; transform: none; }
 .cacts .feedhint { align-self: center; font-family: var(--ui); font-size: 11px; color: var(--faint-d); max-width: 180px; }
+
+/* 护体 · 抗 — the worn 法衣 and 佩 on a hero, under its 气血. */
+.bgear { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 8px; font-family: var(--ui); font-size: 10px; color: var(--faint-d); }
+.barmor, .bward { padding: 1px 7px; border: 1px solid var(--line-d); border-radius: 999px; }
+.barmor { color: #9fc1d8; border-color: rgba(159, 193, 216, 0.4); }
+.barmor b { font-size: 12px; color: var(--parchment); }
+.barmor.gone { opacity: 0.45; }
+.barmor.struck { animation: shieldhit 0.34s ease-out; }
+@keyframes shieldhit { 0% { box-shadow: 0 0 0 0 rgba(159, 193, 216, 0.7); } 100% { box-shadow: 0 0 0 8px rgba(159, 193, 216, 0); } }
+.bfloat.armor { color: #9fc1d8; font-size: 18px; }
+@media (prefers-reduced-motion: reduce) { .barmor.struck { animation: none; } }

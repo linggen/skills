@@ -103,7 +103,15 @@ export async function playLog(root, entries, ctx = {}) {
       }
       case 'hurt': {
         const el = spotOf(root, t);
-        float(root, el, `−${t.amount}`, 'hurt');
+        // 护体 took some of it (a worn 法衣): the shield flashes with its own
+        // number, and only what reached 气血 leaps off the hero.
+        if (t.absorbed) {
+          const shield = el?.querySelector('.barmor') ?? el;
+          float(root, shield, `${ctx.words?.armor ?? ''} −${t.absorbed}`, 'armor');
+          pulse(shield, 'struck', BEATS.hit);
+          if (t.amount) await sleep(BEATS.gap);
+        }
+        if (t.amount || !t.absorbed) float(root, el, `−${t.amount}`, 'hurt');
         pulse(el, 'shaken', BEATS.hit);
         await sleep(BEATS.hit);
         break;

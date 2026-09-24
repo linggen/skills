@@ -837,12 +837,14 @@ async function deckTap(args) {
 
 /* 历练 — send her, call her back, take what she brought. She says her own
    goodbye and tells her own journey (asked moments: she answers at once). */
+/// Resolves true when she will hear it; false when nobody will (the pet off
+/// answers 503 at once) — a page that waits on her must not wait then.
 function askHer(zh, en, mood) {
-  fetch('/api/yinyue/event', {
+  return fetch('/api/yinyue/event', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ app: 'lingjing', text: lang() === 'en' ? en : zh, asked: true, mood }),
-  }).catch((e) => console.warn('[lingjing] yinyue', e));
+  }).then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
 }
 async function journeyVerb(action, extra = {}) {
   const r = await write('journey', { action, ...extra }).catch(failed);
@@ -1321,7 +1323,9 @@ async function settleBout(b = bout) {
   // now holds is seen, not only told.
   const got = r.outcome === 'won' ? r.dropped ?? [] : [];
   const paid = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
-  if (got.length || paid) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid } });
+  // A 符 played is spent from the bag, won or lost: the card says so (page fact).
+  const spent = r.spent ?? [];
+  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent } });
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;
   keep({ walkedOut: null });
@@ -1422,6 +1426,19 @@ function openWith(sid, greeted = false) {
   if (!sid || openedFor === sid || !chat) return;
   openedFor = sid;
   if (!greeted) chat.sendHidden('[scene] opened');
+  else greetWaits = { sid, text: greetText };
+}
+
+/* Her greeting stands in for Ling's opening. If nobody will say it (the pet
+   is off: `device_topic` yinyue/unanswered, or the event refused at once),
+   Ling opens after all — the chat never waits on a silence. */
+let greetWaits = null; // { sid, text } while the opening is hers
+let greetText = null; //  her greeting as the engine holds it (trimmed, 300 chars)
+function greetUnanswered(text = null) {
+  const g = greetWaits;
+  if (!g || (text && g.text && text !== g.text)) return;
+  greetWaits = null;
+  if (chat && chat.getSessionId?.() === g.sid) chat.sendHidden('[scene] opened');
 }
 
 /// Mounts the chat; answers whether it is a fresh session (not a day picked up).
@@ -1448,7 +1465,13 @@ async function mountChat() {
     // account's copy was pulled over it): read it again. It is global, so
     // only this skill's.
     onSkillEvent: (event, payload) => {
-      if (/save/i.test(String(event)) && (!payload?.skill || payload.skill === SKILL)) refreshSoon(200);
+      if (event === 'save_changed' && (!payload?.skill || payload.skill === SKILL)) {
+        // Changes made here that the pull replaced are kept as copies: say so.
+        if (payload?.conflicts?.length) keep({ doNote: words().saveConflicts });
+        refreshSoon(200);
+      }
+      // An asked moment nobody will answer (the pet is off).
+      if (event === 'device_topic' && payload?.topic === 'yinyue' && payload?.op === 'unanswered' && payload?.payload?.app === SKILL) greetUnanswered(payload.payload.text);
     },
   });
   mounted = true;
@@ -1604,8 +1627,11 @@ async function greetByHer() {
   const r = await write('greet', {}).catch(() => null);
   if (!r?.ok || !r.first) return false;
   const who = r.name ?? '';
-  askHer(`${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到他那样，打个招呼 —— 挑一两件说，不必都提。`,
-    `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet him as you would on seeing him — pick one or two, not all.`, 'happy');
+  const zh = `${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到他那样，打个招呼 —— 挑一两件说，不必都提。`;
+  const en = `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet him as you would on seeing him — pick one or two, not all.`;
+  // Nobody to say it (pet off): Ling opens instead.
+  if (!(await askHer(zh, en, 'happy'))) return false;
+  greetText = [...(lang() === 'en' ? en : zh).trim()].slice(0, 300).join('');
   return true;
 }
 
