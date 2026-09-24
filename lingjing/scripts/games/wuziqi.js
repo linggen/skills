@@ -1,5 +1,5 @@
 // 五子棋 — 斗法 with a rival cultivator. Pure ES module: newGame / html / act.
-// Board 11×11, player black (1) moves first, rival white (2) answers inside act().
+// Board 15×15, player black (1) moves first, rival white (2) answers inside act().
 // Deterministic: every AI tie-break comes from a PRNG seeded by (seed, move count).
 
 export const meta = {
@@ -11,7 +11,7 @@ export const meta = {
   },
 };
 
-const N = 11;
+const N = 15;
 const EMPTY = 0, BLACK = 1, WHITE = 2;
 const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1]];
 

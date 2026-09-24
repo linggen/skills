@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { meta, newGame, html, act, isFive } from '../scripts/games/wuziqi.js';
 
-const N = 11;
+const N = 15;
 const idx = (r, c) => r * N + c;
 
 function deepFreeze(o) {
@@ -24,7 +24,7 @@ function withStones(level, black, white, seed = 's') {
 test('meta and fresh state', () => {
   assert.equal(meta.id, 'wuziqi');
   const st = newGame('x', 2);
-  assert.equal(st.board.length, 121);
+  assert.equal(st.board.length, N * N);
   assert.equal(st.outcome, 'open');
   assert.equal(st.level, 2);
   assert.deepEqual(JSON.parse(JSON.stringify(st)), st);
@@ -39,7 +39,7 @@ test('five detection in all four directions, and six counts', () => {
     six: [[9, 0], [9, 1], [9, 2], [9, 3], [9, 4], [9, 5]],
   };
   for (const [name, cells] of Object.entries(lines)) {
-    const b = new Array(121).fill(0);
+    const b = new Array(N * N).fill(0);
     for (const [r, c] of cells) b[idx(r, c)] = 1;
     for (const [r, c] of cells) assert.ok(isFive(b, idx(r, c), 1), name);
     b[idx(...cells[2])] = 0;
@@ -166,7 +166,7 @@ test('html: every empty cell is a play button; last move marked', () => {
   let st = newGame('h', 1);
   st = act(st, { g: 'play', i: 60 }).state;
   const out = html(st);
-  assert.equal((out.match(/data-g="play"/g) || []).length, 119);
+  assert.equal((out.match(/data-g="play"/g) || []).length, N * N - 2);
   assert.equal((out.match(/is-last/g) || []).length, 1);
   assert.match(out, /执黑落子/);
   assert.doesNotMatch(out, /data-g="again"/);

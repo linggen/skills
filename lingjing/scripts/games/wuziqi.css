@@ -8,12 +8,12 @@
 }
 
 .g-wuziqi-board {
-  --n: 11;
+  --n: 15;
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--n), 1fr);
   grid-template-rows: repeat(var(--n), 1fr);
-  width: min(100%, 360px);
+  width: min(100%, 560px);
   aspect-ratio: 1 / 1;
   box-sizing: border-box;
   border: 1px solid var(--line);
@@ -24,7 +24,7 @@
   box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--ling) 12%, transparent);
 }
 
-/* Grid lines run through cell centres: inset half a cell, 10 tiles each side. */
+/* Grid lines run through cell centres: inset half a cell, N-1 tiles each side. */
 .g-wuziqi-board::before {
   content: '';
   position: absolute;
