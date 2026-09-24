@@ -141,7 +141,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
    on a card is never also an option in the chat, whichever side it came from.
 
    The keys match an `ask` option's own fields: `divine`, `ring`, `write`,
-   `linger`, `move:<place>`, `exit:<id>`, `tame:<creature>`. */
+   `linger`, `move:<place>`, `exit:<id>`, `tame:<creature>` — and only
+   those: a key no option can carry owns nothing (the `quest:` and `duel:`
+   keys went, review 2026-09-24 — the question never offers 接下 or 出手). */
 export function stageOwns(look, cards) {
   const owns = new Set();
   for (const c of cards ?? []) {
@@ -154,13 +156,10 @@ export function stageOwns(look, cards) {
     // A duel card carries 出手 and, when the creature can be tamed, the feeding.
     if (c.card === 'duel') {
       owns.add(`exit:${c.id}`);
-      owns.add(`duel:${c.id}`);
       const beast = look?.place?.encounter?.game?.id === c.id ? look.place.encounter : null;
       if (beast?.creature?.id) owns.add(`tame:${beast.creature.id}`);
     }
     if (c.card === 'board') owns.add(`exit:${c.id}`);
-    // 接下 is on its own card, and so is 交差 — never in the question too.
-    if (c.card === 'offer') for (const o of look?.offers ?? []) owns.add(`quest:${o.id}`);
     // The map draws every place as a chip that walks there, so the roads are
     // already clickable and the question does not repeat them.
     if (c.card === 'map') for (const p of look?.place?.places ?? []) if (!p.here) owns.add(`move:${p.id}`);

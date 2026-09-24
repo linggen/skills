@@ -40,6 +40,7 @@ test('what the stage owns, the question does not offer — whichever side it cam
   const owns = stageOwns(look, [{ card: 'quest' }, { card: 'duel', id: 'haunt:longzhi' }, { card: 'map' }, { card: 'hexagram' }]);
   assert.ok(owns.has('ring'), '摇一摇铃 is on the quest card');
   assert.ok(owns.has('exit:haunt:longzhi') && owns.has('tame:longzhi'), '出手 and the feeding are on the beast\'s card');
+  assert.ok(!owns.has('duel:haunt:longzhi'), 'no key the question cannot carry');
   assert.ok(owns.has('move:ye'), 'a place on the map walks there');
   assert.ok(owns.has('divine'), 'the coins, until they are cast');
   assert.ok(!stageOwns({ divination: { day: 'today' } }, [{ card: 'hexagram' }]).has('divine'), 'cast already: the card is only telling');
@@ -78,13 +79,15 @@ test('差事: an offer is what the stage is about — the book is behind the chi
   assert.deepEqual(stageCards({ ...look, offers: [] }, { focus }).map(c => c.card), ['creature'], 'taken, the place has its card back');
   // a shelf is something to DO, so it stays beside an offer
   assert.deepEqual(stageCards(look, { focus: [{ card: 'item', ids: ['lingzhi'] }, ...focus] }).map(c => c.card), ['offer', 'item']);
-  assert.ok(stageOwns(look, stageCards(look)).has('quest:xu-lvliang-look'), '接下 is on its own card');
+  // 接下 is on its own card, and the question never offers it: the card owns no key
+  assert.ok(![...stageOwns(look, stageCards(look))].some(k => k.startsWith('quest:')), 'no key the question cannot carry');
   assert.deepEqual(stageCards({ place: { id: 'p' }, tasks: [] }).map(c => c.card), ['hexagram']);
   // two errands at one place: ONE card, and both 接下 are on it (彭城, 2026-09-22)
   const two = { ...look, offers: [...look.offers, { id: 'daily-20260922-patrol-sishui', title: '榜文' }] };
   assert.deepEqual(stageCards(two).map(c => c.card), ['offer']);
+  // and every key it owns is one askMinusStage can match
   const owns = stageOwns(two, stageCards(two));
-  assert.ok(owns.has('quest:xu-lvliang-look') && owns.has('quest:daily-20260922-patrol-sishui'));
+  assert.ok([...owns].every(k => /^(divine|ring|write|linger|(move|exit|tame):.+)$/.test(k)), [...owns].join(' '));
 });
 
 test('every card kind says whether it holds the stage — a new card cannot skip the decision', async () => {
