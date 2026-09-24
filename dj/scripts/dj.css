@@ -141,6 +141,11 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .trackrow .state { font-size: 11px; color: var(--muted); white-space: nowrap; }
 .trackrow.done .state { color: var(--pos); }
 .trackrow.err .state { color: var(--warn); }
+.q-btn {
+  margin-left: 6px; padding: 1px 7px; font-size: 11px; border-radius: 99px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+}
+.q-btn:hover { background: var(--panel-2); }
 .trackrow.owned { opacity: .7; }
 .set-play {
   background: none; border: 1px solid var(--line); border-radius: 6px;
@@ -223,6 +228,8 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
   display: grid; grid-template-columns: 18px 44px 1fr auto; align-items: center; gap: 10px;
   padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px;
   background: var(--panel); cursor: pointer;
+  /* Off-screen cards skip layout and paint: a big library stays cheap. */
+  content-visibility: auto; contain-intrinsic-size: auto 62px;
 }
 .lib-row:hover { background: var(--panel-2); }
 .lib-row.sel {

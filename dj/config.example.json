@@ -3,6 +3,5 @@
   "bitrate": "320",
   "naming_template": "%(artist)s - %(title)s",
   "loudnorm": true,
-  "loudnorm_lufs": -14,
-  "sync_targets": []
+  "loudnorm_lufs": -14
 }

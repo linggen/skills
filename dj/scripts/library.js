@@ -1,24 +1,19 @@
-// library.js — READ side of the DJ library, plus config. All library writes
-// live in actions.mjs (the one writer — agent tools and page buttons both call
-// it via bash.js runAction); this module only loads what it wrote. config.json
-// keeps its single writer here: the settings page.
+// library.js — READ side of the DJ library and its queue, plus config. All
+// library writes live in actions.mjs (the one writer, via bash.js runAction);
+// this module only loads what it wrote. config.json's single writer is the
+// settings page.
 
-import { runBash, writeFile } from './bash.js';
-
-const DJ_DIR = '$HOME/.linggen/skills/dj';
+import { runBash, writeFile, DJ_DIR } from './bash.js';
 
 const DEFAULT_CONFIG = {
   library_dir: '~/Music/DJ',
   bitrate: '320',
   naming_template: '%(artist)s - %(title)s',
-  sync_targets: [],
 };
 
 export async function loadConfig() {
   try {
-    const out = await runBash(
-      `cat "${DJ_DIR}/config.json" 2>/dev/null || cat "${DJ_DIR}/config.example.json"`,
-    );
+    const out = await runBash(`cat "${DJ_DIR}/config.json" 2>/dev/null || cat "${DJ_DIR}/config.example.json"`);
     return { ...DEFAULT_CONFIG, ...JSON.parse(out) };
   } catch {
     return { ...DEFAULT_CONFIG };
@@ -26,32 +21,43 @@ export async function loadConfig() {
 }
 
 export async function saveConfig(cfg) {
-  await writeFile(`${DJ_DIR}/config.json`, JSON.stringify(cfg, null, 2));
+  await writeFile(`${DJ_DIR}/config.json`, `${JSON.stringify(cfg, null, 2)}\n`);
 }
+
+const EMPTY = () => ({ tracks: [], playlists: [], phone: { files: [], playlists: [] } });
 
 export async function loadLibrary() {
   try {
-    const out = await runBash(
-      `cat "${DJ_DIR}/library.json" 2>/dev/null || echo '{"tracks":[],"playlists":[]}'`,
-    );
-    const lib = JSON.parse(out);
-    lib.tracks ||= [];
-    lib.playlists ||= [];
-    return lib;
+    const lib = JSON.parse(await runBash(`cat "${DJ_DIR}/library.json" 2>/dev/null || echo '{}'`));
+    return { ...EMPTY(), ...lib, phone: { ...EMPTY().phone, ...(lib.phone || {}) } };
   } catch {
-    return { tracks: [], playlists: [] };
+    return EMPTY();
   }
 }
 
-// Stable id for a track so dupes collapse and sync state sticks.
+/// data/queue.json as the worker and actions.mjs left it.
+export async function loadQueue() {
+  try {
+    const q = JSON.parse(await runBash(`cat "${DJ_DIR}/data/queue.json" 2>/dev/null || echo '{}'`));
+    return Array.isArray(q.items) ? q.items : [];
+  } catch {
+    return [];
+  }
+}
+
+// A song's identity before it has a file: artist|title, case- and
+// space-insensitive. The same key actions.mjs and the queue use.
 export const trackId = (t) =>
   `${(t.artist || '').toLowerCase().trim()}|${(t.title || '').toLowerCase().trim()}`;
 
-export const isOwned = (lib, t) => {
+export const trackKey = (t) => t.id || trackId(t);
+
+/// The library row for a proposed song — by the title it was asked for too,
+/// since a download may have named it by the catalogue's.
+export const ownedRow = (lib, t) => {
   const id = trackId(t);
-  return lib.tracks.some((x) => x.id === id || trackId(x) === id);
+  return (lib.tracks || []).find((x) => x.file && (x.id === id || trackId(x) === id ||
+    (x.requested_title && trackId({ artist: x.artist, title: x.requested_title }) === id))) || null;
 };
 
-// The folder ⇄ index reconcile moved to actions.mjs (`reconcile`) — the one
-// writer — so the agent's downloads register without a page open. The page
-// calls the same verb.
+export const isOwned = (lib, t) => !!ownedRow(lib, t);

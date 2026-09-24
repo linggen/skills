@@ -4,8 +4,8 @@
 // pair registry) and what each has already fetched (the engine's dj-sync
 // ledger) — so the UI can say "Alex's iPhone — 12/14 tracks • 2 waiting".
 
-// Basenames NFC-normalized on both sides, same as sync.js: macOS paths and
-// the phone's fetch log can disagree on Unicode composition.
+// Basenames NFC-normalized on both sides: macOS paths and the phone's fetch
+// log can disagree on Unicode composition.
 const basename = (p) => String(p).split('/').pop().toLowerCase().normalize('NFC');
 
 /// Paired devices with their fetch ledgers: [{ id, name, files, last_fetch,
@@ -33,13 +33,6 @@ export function coverage(tracks, device) {
   const withFile = tracks.filter((t) => t.file);
   const synced = withFile.filter((t) => have.has(basename(t.file))).length;
   return { total: withFile.length, synced, waiting: withFile.length - synced };
-}
-
-/// Is this track's audio file on ANY paired phone?
-export function onAnyPhone(track, devices) {
-  if (!track.file) return false;
-  const name = basename(track.file);
-  return devices.some((d) => (d.files || []).some((f) => basename(f) === name));
 }
 
 /// Fresh pairing QR ({ svg, url, host }) for the not-yet-paired promo card.

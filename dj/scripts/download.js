@@ -1,245 +1,38 @@
-// download.js — the yt-dlp pipeline. A user action (they tapped Get): finds the
-// top match for "Artist Title", extracts a tagged MP3 into the library dir.
-// The agent never calls this; it only proposes the list.
+// download.js — the page's doors into scripts/fetch.py. The page never builds a
+// yt-dlp command or names a file itself: fetch.py (with naming.py) does, for
+// every door, so the page, GetTracks, GetKaraoke and the queue worker agree on
+// what a song is called.
 
-import { runBash, sq, resolvePath } from './bash.js';
-import { attachLyrics } from './lyrics.js';
+import { runAction, runPy } from './bash.js';
 
-const DJ_DIR = '$HOME/.linggen/skills/dj';
-
-// Choose WHICH video this track comes from, rather than taking whatever the
-// search ranked first. scripts/pick-source.py anchors on the studio duration
-// LRCLIB reports and scores the candidates against it; see that file for why.
-// Returns null on any failure, and the caller falls back to a plain search —
-// a picker that cannot reach the network must not stop a download.
-async function pickSource(bins, track) {
-  const req = JSON.stringify({
-    artist: track.artist || '',
-    title: track.title || '',
-    version: track.version || 'studio',
-    query_hints: track.query_hints || [],
-    yt_dlp: bins.yt_dlp,
-  });
-  try {
-    // Double quotes on the path, single on the payload: DJ_DIR carries a
-    // literal $HOME that the shell has to expand, and sq() would freeze it.
-    const out = await runBash(
-      `"\${LINGGEN_PY:-python3}" "${DJ_DIR}/scripts/pick-source.py" ${sq(req)}`,
-      { timeoutMs: 120_000 }, // several searches in parallel, ~12s each
-    );
-    const picked = JSON.parse(out.trim().split('\n').filter(Boolean).pop() || '{}');
-    return picked.ok ? picked : null;
-  } catch {
-    return null;
-  }
+/// Queue songs for the Mac's download worker and make sure it is running. The
+/// worker lives in its own session, so closing the page does not stop it.
+export async function enqueue(tracks) {
+  const r = await runAction('queue-add', JSON.stringify(tracks));
+  if (r.added) await startWorker();
+  return r;
 }
 
-// Ensure yt-dlp + ffmpeg exist (fetch yt-dlp on first use, self-update on
-// demand). Returns { yt_dlp, ffmpeg, ok, note }.
-export async function ensureBins(update = false) {
-  const out = await runBash(
-    `bash "${DJ_DIR}/scripts/bin-setup.sh" ${update ? 'update' : 'ensure'}`,
-    { timeoutMs: 300_000 }, // first run fetches yt-dlp (+ maybe ffmpeg ~60MB)
-  );
-  const line = out.trim().split('\n').filter(Boolean).pop() || '{}';
-  try {
-    return JSON.parse(line);
-  } catch {
-    return { ok: false, note: 'bin-setup: unreadable output' };
-  }
+/// Start the worker if it isn't running. A second one exits at once.
+export const startWorker = () => runPy('fetch.py', ['start-worker'], 30_000);
+
+export async function queueVerb(verb, ids) {
+  const r = await runAction(verb, ids === 'all' ? 'all' : JSON.stringify(ids));
+  if (verb === 'queue-retry' && r.retried) await startWorker();
+  return r;
 }
 
-// Filesystem-safe filename component, and a tag value safe inside dq-quoting.
-const safe = (s) => String(s ?? '').replace(/[\/\\:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
-const meta = (s) => String(s ?? '').replace(/"/g, '');
-
-// Download one track. Returns { ok, file } or { ok:false, error }.
-//
-// YouTube's own artist/title metadata is unreliable (artist resolves to the
-// uploading channel, title carries "Official MV" junk). The agent already
-// curated the CLEAN artist + title, so we name the file and force the ID3 tags
-// from those — never from yt-dlp's `%(artist)s`/`%(title)s`.
-export async function downloadTrack(bins, cfg, track) {
-  const libDir = await resolvePath(cfg.library_dir || '~/Music/DJ');
-  const tmpl = cfg.naming_template || '%(artist)s - %(title)s';
-  const br = cfg.bitrate || '320';
-  const quality = br === 'best' ? '0' : `${br}K`;
-  const query = `${track.artist} ${track.title}`.trim();
-
-  // Render the naming template with the KNOWN clean values (not yt-dlp fields).
-  const name =
-    tmpl
-      .replace(/%\(artist\)s/g, safe(track.artist))
-      .replace(/%\(title\)s/g, safe(track.title))
-      .replace(/%\(year\)s/g, safe(track.year))
-      .trim() || `${safe(track.artist)} - ${safe(track.title)}`;
-  const outTmpl = `${libDir}/${name}.%(ext)s`;
-
-  // Loudness-normalize so quiet tracks are pulled up to a consistent level —
-  // fixes "too quiet in CarPlay", where the cause is source tracks sitting well
-  // below the ~-14 LUFS streaming standard. Single-pass EBU R128 loudnorm, on
-  // by default; TP=-1.5 keeps a true-peak ceiling so the boost never clips.
-  // Disable with cfg.loudnorm:false; retarget with cfg.loudnorm_lufs.
-  const lufs = Number(cfg.loudnorm_lufs);
-  const target = Number.isFinite(lufs) ? lufs : -14;
-  const loudnorm = cfg.loudnorm === false ? '' : `-af loudnorm=I=${target}:TP=-1.5:LRA=11`;
-
-  // Force ID3 tags to the curated values via the ffmpeg postprocessor.
-  const metaArgs =
-    `-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)}"` +
-    (track.year ? ` -metadata date="${meta(track.year)}"` : '');
-
-  // Scope loudnorm to the AUDIO EXTRACTION step only (`ExtractAudio+ffmpeg`), not
-  // the bare `ffmpeg` key — that key applies to every ffmpeg invocation yt-dlp
-  // makes, including --embed-thumbnail's image conversion, which has no audio
-  // stream to filter. A bare `-af loudnorm=...` there silently broke thumbnail
-  // embedding (caught 2026-06-30: every track downloaded after loudnorm shipped
-  // came out with no cover art and an orphaned .webp/.png left in the library
-  // dir, vs. every track before it). Metadata tags stay on the generic key —
-  // that was never the problem.
-  const ppas = [
-    loudnorm && `--postprocessor-args ${sq(`ExtractAudio+ffmpeg:${loudnorm}`)}`,
-    `--postprocessor-args ${sq(`ffmpeg:${metaArgs}`)}`,
-  ].filter(Boolean);
-
-  // Pick the source deliberately. With a winner we hand yt-dlp that one URL;
-  // without one we fall back to the old behaviour — search several results and
-  // grab the FIRST that actually downloads, since the top hit is often
-  // region/label-blocked ("video not available", common for Disney/Vevo).
-  // --ignore-errors skips the dead ones; --max-downloads 1 stops at the first
-  // success. `|| true` because both of those exit non-zero; we judge success by
-  // whether a filepath was printed.
-  const picked = await pickSource(bins, track);
-  const sources = picked?.urls?.length ? picked.urls : [`ytsearch5:${query}`];
-
-  const cmd = [
-    `mkdir -p ${sq(libDir)} &&`,
-    sq(bins.yt_dlp),
-    `--no-warnings --ignore-errors --max-downloads 1`,
-    // Fail fast on a stalled source (default is effectively no timeout, which
-    // let one dead candidate hang for 30+ min) and pull fragments in parallel.
-    `--socket-timeout 15 --retries 3 --fragment-retries 3 --concurrent-fragments 4`,
-    `-x --audio-format mp3 --audio-quality ${sq(quality)}`,
-    `--embed-thumbnail`,
-    ...ppas,
-    `--ffmpeg-location ${sq(bins.ffmpeg)}`,
-    `--print after_move:filepath`,
-    `-o ${sq(outTmpl)}`,
-    sources.map(sq).join(' '),
-    `|| true`,
-  ].join(' ');
-
-  try {
-    const out = await runBash(cmd, { timeoutMs: 300_000 }); // search + extract can be slow
-    const lines = out.trim().split('\n').filter(Boolean);
-    const file = [...lines].reverse().find((l) => l.endsWith('.mp3')) || '';
-    if (!file) return { ok: false, error: 'no playable source found' };
-    // Lyrics are fitted to the file that actually landed, not to the pick:
-    // yt-dlp walks down the list past a dead video, and the lyrics have to
-    // run on this file's clock (lyrics_match.py, the one chooser).
-    let lrc = null;
-    try {
-      lrc = await attachLyrics(track, file);
-    } catch { /* lyrics are optional */ }
-    return { ok: true, file, lrc, picked };
-  } catch (e) {
-    return { ok: false, error: String(e.message || e) };
-  }
+/// Queue "find another source" for one song; the worker replaces the file in
+/// place.
+export async function redownload(file) {
+  const r = await runAction('track-redownload', file);
+  if (r.added) await startWorker();
+  return r;
 }
 
-// Download a KARAOKE VIDEO for a track — lyrics burned into the picture and the
-// lead vocal already removed (the "<song> karaoke" uploads on YouTube). This is
-// the preferred karaoke source: it sidesteps both lyric-fetch and vocal removal.
-// Returns { ok, file } (an .mp4) or { ok:false, error }.
-export async function downloadKaraokeVideo(bins, cfg, track) {
-  const libDir = await resolvePath(cfg.library_dir || '~/Music/DJ');
-  const name = `${safe(track.artist)} - ${safe(track.title)} (Karaoke)`;
-  // Karaoke sources live in a hidden .karaoke/ subdir. reconcileLibrary globs the
-  // library's top level only, so it never adopts these as first-class tracks
-  // (which caused "(Karaoke)" and even "(Karaoke) (Karaoke)" duplicate songs).
-  const kdir = `${libDir}/.karaoke`;
-  const outTmpl = `${kdir}/${name}.%(ext)s`;
-  const query = `${track.artist} ${track.title} karaoke`.trim();
+/// One song, now: { ok, file, lrc, lrc_timed, source_id } or { ok:false, error }.
+export const downloadTrack = (track) => runPy('fetch.py', ['track', JSON.stringify(track)], 900_000);
 
-  // Cap at 720p so files stay reasonable; merge to a single .mp4. Same
-  // search-several-grab-first-playable approach as the audio path.
-  // Pin H.264 (avc1) video + AAC (m4a) audio: yt-dlp's "best" otherwise picks
-  // AV1/Opus, which the app's WKWebView can't decode (black screen / no sound)
-  // on Macs without AV1 hardware (pre-M3).
-  const cmd = [
-    `mkdir -p ${sq(kdir)} &&`,
-    sq(bins.yt_dlp),
-    `--no-warnings --ignore-errors --max-downloads 1`,
-    // Fail fast on a stalled source (default is effectively no timeout, which
-    // let one dead candidate hang for 30+ min) and pull fragments in parallel.
-    `--socket-timeout 15 --retries 3 --fragment-retries 3 --concurrent-fragments 4`,
-    `-f ${sq('bv*[vcodec^=avc1][height<=720]+ba[ext=m4a]/bv*[vcodec^=avc1][height<=720]+ba/bv*[height<=720]+ba/b[height<=720]/b')}`,
-    `--merge-output-format mp4`,
-    `--ffmpeg-location ${sq(bins.ffmpeg)}`,
-    `--print after_move:filepath`,
-    `-o ${sq(outTmpl)}`,
-    sq(`ytsearch5:${query}`),
-    `|| true`,
-  ].join(' ');
-
-  try {
-    const out = await runBash(cmd, { timeoutMs: 600_000 }); // video is bigger + a merge step
-    const lines = out.trim().split('\n').filter(Boolean);
-    const file = [...lines].reverse().find((l) => /\.(mp4|mkv|webm)$/.test(l)) || '';
-    return file ? { ok: true, file } : { ok: false, error: 'no karaoke video found' };
-  } catch (e) {
-    return { ok: false, error: String(e.message || e) };
-  }
-}
-
-// Download a KARAOKE INSTRUMENTAL — the AUDIO of a "<song> karaoke" upload (lead
-// vocal already removed), extracted straight to mp3. No video stream is fetched,
-// so it is a fraction of the size of the .mp4 and syncs to the phone as plain
-// audio; the on-screen lyrics come from the fetched .lrc instead of being burned
-// into a picture. Returns { ok, file } (an .mp3) or { ok:false, error }.
-export async function downloadKaraokeAudio(bins, cfg, track) {
-  const libDir = await resolvePath(cfg.library_dir || '~/Music/DJ');
-  const br = cfg.bitrate || '320';
-  const quality = br === 'best' ? '0' : `${br}K`;
-  const name = `${safe(track.artist)} - ${safe(track.title)} (Karaoke)`;
-  // Karaoke sources live in a hidden .karaoke/ subdir. reconcileLibrary globs the
-  // library's top level only, so it never adopts these as first-class tracks
-  // (which caused "(Karaoke)" and even "(Karaoke) (Karaoke)" duplicate songs).
-  const kdir = `${libDir}/.karaoke`;
-  const outTmpl = `${kdir}/${name}.%(ext)s`;
-  const query = `${track.artist} ${track.title} karaoke`.trim();
-
-  // Tag it as the karaoke cut so the library never confuses it with the original.
-  const metaArgs =
-    `-metadata artist="${meta(track.artist)}" -metadata title="${meta(track.title)} (Karaoke)"`;
-
-  // Same audio-only pipeline as downloadTrack, but the query targets karaoke
-  // uploads. No loudnorm here — a karaoke instrumental is already mastered, and
-  // scoping loudnorm to ExtractAudio again would only re-introduce the
-  // thumbnail-embed footgun for no gain.
-  const cmd = [
-    `mkdir -p ${sq(kdir)} &&`,
-    sq(bins.yt_dlp),
-    `--no-warnings --ignore-errors --max-downloads 1`,
-    // Fail fast on a stalled source (default is effectively no timeout, which
-    // let one dead candidate hang for 30+ min) and pull fragments in parallel.
-    `--socket-timeout 15 --retries 3 --fragment-retries 3 --concurrent-fragments 4`,
-    `-x --audio-format mp3 --audio-quality ${sq(quality)}`,
-    `--embed-thumbnail`,
-    `--postprocessor-args ${sq(`ffmpeg:${metaArgs}`)}`,
-    `--ffmpeg-location ${sq(bins.ffmpeg)}`,
-    `--print after_move:filepath`,
-    `-o ${sq(outTmpl)}`,
-    sq(`ytsearch5:${query}`),
-    `|| true`,
-  ].join(' ');
-
-  try {
-    const out = await runBash(cmd, { timeoutMs: 300_000 });
-    const lines = out.trim().split('\n').filter(Boolean);
-    const file = [...lines].reverse().find((l) => l.endsWith('.mp3')) || '';
-    return file ? { ok: true, file } : { ok: false, error: 'no karaoke audio found' };
-  } catch (e) {
-    return { ok: false, error: String(e.message || e) };
-  }
-}
+/// One karaoke render, now: kind 'audio' (instrumental mp3) or 'video'.
+export const downloadKaraoke = (track, kind) =>
+  runPy('fetch.py', ['karaoke', JSON.stringify({ ...track, kind })], 900_000);

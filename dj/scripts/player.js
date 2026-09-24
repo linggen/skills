@@ -6,11 +6,11 @@
 //   lyrics — parse the .lrc sidecar, highlight + auto-scroll the active line
 
 import { runBash, sq } from './bash.js';
+import { esc } from './ui.js';
 
 // The one live player in THIS page. Closing it hides to a mini-bar (keeps
 // playing); opening a new one stops the previous.
 let active = null;
-const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const fmt = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00');
 
 // ── parse an .lrc into [{ t, text }] sorted by time ──────────────────────────

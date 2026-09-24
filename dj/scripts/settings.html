@@ -18,8 +18,6 @@
     .hint { color: var(--muted); font-size: 11px; margin-top: 5px; }
     fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin: 0 0 18px; }
     legend { color: var(--accent); font-size: 12px; padding: 0 6px; text-transform: uppercase; letter-spacing: .06em; }
-    .row { display: flex; gap: 10px; align-items: flex-end; }
-    .row .field { flex: 1; margin-bottom: 0; }
     .bar { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
     .status { font-size: 12px; }
     .status.ok { color: var(--pos); }
@@ -37,7 +35,6 @@
     .lm-qr { display: flex; gap: 14px; align-items: center; margin-top: 10px; }
     .lm-qr svg { width: 108px; height: 108px; border-radius: 8px; background: #fff; padding: 5px; flex: none; }
     .lm-steps { font-size: 12px; color: var(--muted); line-height: 1.9; }
-    #other-players summary { cursor: pointer; color: var(--muted); font-size: 12px; }
   </style>
 </head>
 <body>
@@ -71,68 +68,19 @@
   <div class="field">
     <label for="naming_template">File naming</label>
     <input id="naming_template" type="text" placeholder="%(artist)s - %(title)s" />
-    <div class="hint">yt-dlp template. Default: <code>%(artist)s - %(title)s</code></div>
+    <div class="hint">Fields: <code>%(artist)s</code>, <code>%(title)s</code>, <code>%(year)s</code>.</div>
   </div>
 
   <fieldset>
-    <legend>Phone sync</legend>
+    <legend>Phone</legend>
 
-    <!-- Linggen Mobile — the recommended path. The phone pulls the library
-         itself over the paired channel; nothing to configure here. Renders a
-         device card when paired, a QR promo when not. -->
+    <!-- Linggen Mobile pulls the library itself over the paired channel;
+         nothing to configure here. A device card when paired, the pairing QR
+         when not. -->
     <div id="lm-card" class="lm-card">
       <div class="hint">Checking for paired phones…</div>
     </div>
 
-    <details id="other-players">
-      <summary>Other players (VLC, WebDAV, cloud folder)…</summary>
-    <div class="field" style="margin-top:12px">
-      <label for="sync_type">Method</label>
-      <select id="sync_type">
-        <option value="vlc">VLC — Sharing via WiFi</option>
-        <option value="webdav">WebDAV server</option>
-        <option value="folder">Cloud folder (Evermusic / Dropbox / iCloud)</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="sync_name">Name</label>
-      <input id="sync_name" type="text" placeholder="My iPhone" />
-    </div>
-
-    <div data-for="vlc">
-      <div class="hint" style="margin-bottom:10px">
-        In VLC on your iPhone: <b>Network → Sharing via WiFi → on</b>; paste the address it shows
-        (e.g. <code>my-iphone.local</code>). Both devices on the same WiFi; keep VLC open while syncing.
-      </div>
-      <div class="field"><label for="vlc_host">Address</label><input id="vlc_host" type="text" placeholder="my-iphone.local" /></div>
-    </div>
-
-    <div data-for="webdav" hidden>
-      <div class="hint" style="margin-bottom:10px">
-        A WebDAV URL your player (Evermusic, etc.) also connects to. DJ uploads songs here; lyrics
-        (<code>.lrc</code>) ride along, and the player downloads them for offline play.
-      </div>
-      <div class="field"><label for="dav_url">WebDAV URL</label><input id="dav_url" type="text" placeholder="https://dav.example.com/music" /></div>
-      <div class="row">
-        <div class="field"><label for="dav_user">Username</label><input id="dav_user" type="text" autocomplete="off" /></div>
-        <div class="field"><label for="dav_pass">Password</label><input id="dav_pass" type="password" autocomplete="off" /></div>
-      </div>
-      <div class="hint">Stored locally in DJ's config on this Mac only.</div>
-    </div>
-
-    <div data-for="folder" hidden>
-      <div class="hint" style="margin-bottom:10px">
-        A local folder that syncs to the cloud (iCloud Drive, Dropbox…). DJ copies songs + lyrics here;
-        your phone player (Evermusic) pulls them down.
-      </div>
-      <div class="field"><label for="folder_path">Folder</label><input id="folder_path" type="text" placeholder="~/Dropbox/DJ" /></div>
-    </div>
-
-    <div class="bar">
-      <button class="btn ghost small" id="test-btn">Test connection</button>
-      <span class="status" id="test-status"></span>
-    </div>
-    </details>
   </fieldset>
 
   <div class="bar">
@@ -142,12 +90,9 @@
 
   <script type="module">
     import { loadConfig, saveConfig, loadLibrary } from './library.js';
-    import { testTarget } from './sync.js';
     import { phoneDevices, coverage, pairQr, agoLabel } from './phone.js';
-
-    const $ = (id) => document.getElementById(id);
-    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    let cfg = { sync_targets: [] };
+    import { $, esc } from './ui.js';
+    let cfg = {};
 
     // The Linggen Mobile card: paired → per-device coverage; not paired → the
     // pairing QR right here (same single-use mint as Settings → Phone).
@@ -156,18 +101,19 @@
       const [devices, lib] = await Promise.all([phoneDevices(), loadLibrary()]);
       if (devices.length) {
         const rows = devices.map((d) => {
-          const c = coverage(lib.tracks || [], d);
+          // Measured against what the phone should carry, not the whole library.
+          const c = coverage((lib.tracks || []).filter((t) => t.on_phone), d);
           const pct = c.total ? Math.round((c.synced / c.total) * 100) : 0;
           const waiting = c.waiting
-            ? `${c.waiting} new track${c.waiting === 1 ? '' : 's'} waiting — open DJ on your phone`
+            ? `${c.waiting} waiting`
             : `up to date • ${agoLabel(d.last_fetch)}`;
           return `<div class="lm-device">
-            <div class="who"><b>📱 ${esc(d.name)}</b><div class="hint">${c.synced}/${c.total} tracks • ${waiting}</div></div>
+            <div class="who"><b>📱 ${esc(d.name)}</b><div class="hint">${c.synced}/${c.total} songs • ${waiting}</div></div>
             <div class="lm-cover"><i style="width:${pct}%"></i></div>
           </div>`;
         }).join('');
         card.innerHTML = `<div class="lm-title">Linggen Mobile <span class="lm-badge">wireless</span></div>
-          <div class="hint">Your phone syncs itself over WiFi — new downloads appear next time you open DJ on it.</div>${rows}`;
+          <div class="hint">Your phone carries the songs you add to it and fetches them itself.</div>${rows}`;
         return;
       }
       const qr = await pairQr();
@@ -179,71 +125,20 @@
     }
     renderPhoneCard();
 
-    function showType(type) {
-      document.querySelectorAll('[data-for]').forEach((el) => { el.hidden = el.dataset.for !== type; });
-    }
-
-    function targetFromForm() {
-      const type = $('sync_type').value;
-      const name = $('sync_name').value.trim();
-      if (type === 'vlc') {
-        const host = $('vlc_host').value.trim();
-        return host ? { id: 'iphone', type: 'vlc', name: name || 'My iPhone', host } : null;
-      }
-      if (type === 'webdav') {
-        const url = $('dav_url').value.trim();
-        return url
-          ? { id: 'iphone', type: 'webdav', name: name || 'WebDAV', url, username: $('dav_user').value.trim(), password: $('dav_pass').value }
-          : null;
-      }
-      if (type === 'folder') {
-        const path = $('folder_path').value.trim();
-        return path ? { id: 'iphone', type: 'folder', name: name || 'Cloud folder', path } : null;
-      }
-      return null;
-    }
-
     (async function load() {
       cfg = await loadConfig();
       $('library_dir').value = cfg.library_dir || '~/Music/DJ';
       $('bitrate').value = cfg.bitrate || '320';
       $('karaoke_source').value = cfg.karaoke_source || 'audio';
       $('naming_template').value = cfg.naming_template || '%(artist)s - %(title)s';
-      const t = (cfg.sync_targets || [])[0];
-      if (t) {
-        $('other-players').open = true;
-        $('sync_type').value = t.type || 'vlc';
-        $('sync_name').value = t.name || '';
-        if (t.type === 'vlc') $('vlc_host').value = t.host || '';
-        if (t.type === 'webdav') { $('dav_url').value = t.url || ''; $('dav_user').value = t.username || ''; $('dav_pass').value = t.password || ''; }
-        if (t.type === 'folder') $('folder_path').value = t.path || '';
-      }
-      showType($('sync_type').value);
     })();
-
-    $('sync_type').onchange = () => showType($('sync_type').value);
-
-    $('test-btn').onclick = async () => {
-      const t = targetFromForm();
-      const s = $('test-status');
-      if (!t) { s.textContent = 'Fill in the details first.'; s.className = 'status bad'; return; }
-      s.textContent = 'Testing…'; s.className = 'status';
-      try {
-        const ok = await testTarget(t);
-        s.textContent = ok ? 'Connected ✓' : 'No response — check the details and that the target is reachable.';
-        s.className = `status ${ok ? 'ok' : 'bad'}`;
-      } catch (e) {
-        s.textContent = String(e.message || e); s.className = 'status bad';
-      }
-    };
 
     $('save-btn').onclick = async () => {
       cfg.library_dir = $('library_dir').value.trim() || '~/Music/DJ';
       cfg.bitrate = $('bitrate').value;
       cfg.karaoke_source = $('karaoke_source').value;
       cfg.naming_template = $('naming_template').value.trim() || '%(artist)s - %(title)s';
-      const t = targetFromForm();
-      cfg.sync_targets = t ? [t] : [];
+      delete cfg.sync_targets; // the VLC/WebDAV push is gone
       const s = $('save-status');
       try {
         await saveConfig(cfg);
