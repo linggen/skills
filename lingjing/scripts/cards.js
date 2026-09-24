@@ -44,7 +44,7 @@ export const WORDS = {
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；满{rest}小时体力回满。',
     secludeSpells: '法术 · 每 {h} 小时一星，至多三星', secludeProgress: '修为 · 每小时 +{n}', secludeTreasure: '本命法宝 · 每 {h} 小时长一重',
-    secludePill: '服一粒{name}：时辰 ×{m}', secludeGo: '入关', secludeLater: '作罢', secludePick: '先选一样。',
+    secludePill: '服一粒{name}：时辰 ×{m}', secludeStarRule: '圆圈里是灵力。一星：灵力 −1；已是 1 的，改为威力 +1。', secludeNext: '{name} ★{from}→★{to} 还要 {h} 小时 · {what}', secludeNextCost: '灵力 {was}→{cost}', secludeNextPower: '威力 +1', secludeGo: '入关', secludeLater: '作罢', secludePick: '先选一样。',
     secludeFoci: { card: '法术', progress: '修为', treasure: '本命法宝' },
     secludingTitle: '闭关中 · {what}', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
     secludeStar: '{name} ★{from} → ★{to} · 灵力 {was}→{cost}', secludeStarLeft: '{name} 离下一星还差 {h} 小时',
@@ -94,7 +94,7 @@ export const WORDS = {
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
     secludeSpells: 'Spells · a star every {h} h, up to three', secludeProgress: 'Cultivation · +{n} an hour', secludeTreasure: 'Treasure · a layer every {h} h',
-    secludePill: 'Take a {name}: hours ×{m}', secludeGo: 'Go in', secludeLater: 'Not now', secludePick: 'Pick one first.',
+    secludePill: 'Take a {name}: hours ×{m}', secludeStarRule: 'The circle is Force. A star: Force −1; at 1 already, power +1.', secludeNext: '{name} ★{from}→★{to} in {h} h · {what}', secludeNextCost: 'Force {was}→{cost}', secludeNextPower: 'power +1', secludeGo: 'Go in', secludeLater: 'Not now', secludePick: 'Pick one first.',
     secludeFoci: { card: 'a spell', progress: 'cultivation', treasure: 'the treasure' },
     secludingTitle: 'In seclusion · {what}', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
     secludeStar: '{name} ★{from} → ★{to} · Force {was}→{cost}', secludeStarLeft: '{name}: {h} h to the next star',
@@ -579,12 +579,16 @@ function seclude(card, ctx) {
   const ch = ctx.seclude, w = ctx.words, pickd = ctx.secludeFocus ?? {};
   if (!ch) return '';
   const r = ch.rule, on = (focus, id) => (pickd.focus === focus && (id == null || pickd.id === id) ? ' on' : '');
-  const star = (n) => (n ? ` ${'★'.repeat(n)}` : '');
-  const spells = ch.spells.map((s) => `<button class="gcard pick${on('card', s.id)}" data-seclude-focus="card" data-id="${esc(s.id)}"><b class="cost">${esc(s.cost)}</b> ${esc(s.name)}${star(s.star)}</button>`).join('');
+  // Every spell wears its stars, lit and not (★☆☆), and its 灵力 in the round
+  // badge; the one picked says what its next star does and how long it takes.
+  const stars = (s) => `<span class="stars">${'★'.repeat(s.star)}${'☆'.repeat(Math.max(0, (s.top ?? 3) - s.star))}</span>`;
+  const spells = ch.spells.map((s) => `<button class="gcard pick${on('card', s.id)}" data-seclude-focus="card" data-id="${esc(s.id)}"><b class="cost" title="${esc(w.mana)} ${esc(s.cost)}">${esc(s.cost)}</b> ${esc(s.name)} ${stars(s)}</button>`).join('');
+  const chosen = pickd.focus === 'card' ? ch.spells.find((s) => s.id === pickd.id) : null;
+  const next = chosen ? say(w.secludeNext, { name: chosen.name, from: chosen.star, to: chosen.star + 1, h: chosen.left, what: chosen.next === 'cost' ? say(w.secludeNextCost, { was: chosen.cost, cost: chosen.cost - 1 }) : w.secludeNextPower }) : w.secludeStarRule;
   const pills = (ch.pills ?? []).map((p) => `<button class="act quiet${ctx.secludePill === p.id ? ' on' : ''}" data-seclude-pill="${esc(p.id)}">${esc(say(w.secludePill, { name: p.name, m: p.mult }))} · ×${esc(p.n)}</button>`).join('');
   return `<div class="card seclude"><div class="cardtitle">${esc(w.secludeTitle)}</div>
     <div class="small dim">${esc(w.secludeHint)}</div>
-    ${spells ? `<div class="small">${esc(say(w.secludeSpells, { h: r.star_hours }))}</div><div class="gcards">${spells}</div>` : ''}
+    ${spells ? `<div class="small">${esc(say(w.secludeSpells, { h: r.star_hours }))}</div><div class="gcards">${spells}</div><div class="small dim secludenext">${esc(next)}</div>` : ''}
     <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: r.progress_per_hour }))}</button>
     ${ch.treasure ? `<button class="act${on('treasure')}" data-seclude-focus="treasure">${esc(say(w.secludeTreasure, { h: r.treasure_hours }))} · ${esc(ch.treasure.name)} ${esc(ch.treasure.step)}</button>` : ''}</div>
     ${pills ? `<div class="acts">${pills}</div>` : ''}

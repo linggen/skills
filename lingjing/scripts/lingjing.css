@@ -682,3 +682,6 @@ body.reading .view, body.reading .tray { display: none; }
 @media (prefers-reduced-motion: reduce) { .card.emerged, .card.emerged .starpop { animation: none; } }
 .item .tames, .gearrow .tames { color: var(--jade); }
 .gamecard .kept { color: var(--jade); }
+.card.seclude .gcard b.cost { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; border-radius: 50%; font-size: 11px; background: var(--ling, #3b6ea5); color: #fff; margin-right: 2px; }
+.card.seclude .gcard .stars { color: var(--seal, #b8862b); font-size: 11px; letter-spacing: -1px; }
+.card.seclude .secludenext { padding-bottom: 4px; }

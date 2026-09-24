@@ -31,10 +31,16 @@ function spellsOf(content, state) {
     .map(c => ({ c, star: state.card_stars?.[c.id] ?? 0 }))
     .filter(x => x.star < top);
 }
-const spellBrief = (content, state, { c, star }) => ({
-  id: c.id, name: pick(c.name, state.lang), star, cost: c.cost, element: c.element ?? null,
-  study: round1(state.card_study?.[c.id] ?? 0),
-});
+/* A spell as the chooser shows it: its 灵力 now (stars counted), what the
+   next star does — `cost` (灵力 −1) or `power` (+1, once it costs 1) — and
+   the hours still owed for it (his, 2026-09-24: the chips read as levels). */
+const spellBrief = (content, state, { c, star }) => {
+  const study = round1(state.card_study?.[c.id] ?? 0), cost = costOf({ stars: { [c.id]: star } }, c);
+  return {
+    id: c.id, name: pick(c.name, state.lang), star, top: RULE(content).star_top, cost, element: c.element ?? null,
+    study, left: round1(Math.max(0, RULE(content).star_hours - study)), next: cost > 1 ? 'cost' : 'power',
+  };
+};
 const treasureOpen = (content, state) => Boolean(state.treasure) && state.treasure.level < TREASURE_TOP;
 
 /* The pills that quicken it, held now. */
