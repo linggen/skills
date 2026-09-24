@@ -511,3 +511,25 @@ test('行路: the way walked is found over the roads, and drawn stop to stop', a
   assert.match(html, /泰山/); assert.match(html, /临淄/);
   assert.doesNotMatch(html, /潍水<\/span>/, 'a place walked through is a dot, not a name');
 });
+
+test('炼化本命 on the card: the materials held, a name the player types, and 炼化 — the page\'s own Refine', async () => {
+  const { WORDS, cardHtml } = await import('../scripts/cards.js');
+  const card = (refine_with, extra = {}) => cardHtml({ card: 'treasure' }, { look: { treasure: null, can_refine: true, refine_with }, lang: 'zh', words: WORDS.zh, ...extra });
+  const held = { weapon: '铁剑', materials: [{ id: 'jingjin', name: '精金<b>', element: 'metal', n: 2 }, { id: 'hanyu', name: '寒玉', element: 'water', n: 1 }] };
+  const html = card(held);
+  assert.match(html, /data-refine-mat="jingjin" aria-pressed="true">精金&lt;b&gt; ×2</);
+  assert.match(html, /data-refine-mat="hanyu" aria-pressed="false">寒玉</);
+  assert.match(html, /<input type="text" id="refine-name" maxlength="12"/);
+  assert.match(html, /data-refine="jingjin">炼化本命</);
+  assert.match(html, /铁剑/);
+  assert.doesNotMatch(html, /data-say/, 'no word to Ling');
+  // The pick and the typed name stay across a redraw, escaped.
+  const picked = card(held, { refineMat: 'hanyu', refineName: '青"锋', refineNote: '它还没有名字。' });
+  assert.match(picked, /data-refine="hanyu"/);
+  assert.match(picked, /value="青&quot;锋"/);
+  assert.match(picked, /class="donote">它还没有名字。</);
+  // Nothing to bind with: the card says what is missing, and offers no 炼化.
+  assert.doesNotMatch(card({ weapon: null, materials: held.materials }), /data-refine=/);
+  assert.match(card({ weapon: null, materials: held.materials }), /先佩一件兵器/);
+  assert.match(card({ weapon: '铁剑', materials: [] }), /囊中没有天材地宝/);
+});

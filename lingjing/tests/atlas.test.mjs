@@ -37,7 +37,8 @@ test('the map card draws the province up close as points, and all nine at a tap'
   assert.match(near, /<img src="\.\.\/worlds\/jiuding\/art\/map\/jiuzhou\.svg"/);
   assert.equal((near.match(/class="pt/g) ?? []).length, 9);
   assert.match(near, /<span class="pt here[^"]*"[^>]*><i><\/i><span>蓬莱<\/span>/);
-  assert.match(near, /<button class="pt road[^"]*" data-say="去流波山"/);
+  assert.match(near, /<button class="pt road[^"]*" data-go="liubo"/);
+  assert.doesNotMatch(near, /data-say/, '去X is the page\'s own Move, never a word to Ling');
   assert.doesNotMatch(near, /<svg|<path|<line/);
   assert.match(near, /data-mapview="world">九州全图</);
   // The whole map: where the player is by the dot alone, and each province
@@ -52,11 +53,11 @@ test('the map card draws the province up close as points, and all nine at a tap'
   assert.match(whole, /<button class="pv" data-mapview="冀"/);
   assert.match(whole, /<span class="pv"[^>]*>雍<\/span>/);
   assert.match(whole, /class="act" data-mapview="province">青州</);
-  // Another province up close: its places alike, a tap still a word to Ling.
+  // Another province up close: its places alike, a tap the page's own Move.
   const ji = cardHtml({ card: 'map' }, { ...ctx('冀'), atlas });
   assert.match(ji, /<div class="cardtitle">冀州<\/div>/);
   assert.equal((ji.match(/class="pt/g) ?? []).length, content.places['冀'].places.length);
   assert.doesNotMatch(ji, /class="pt (here|road)/);
-  assert.match(ji, /data-say="去邺城"/);
+  assert.match(ji, /data-go="ye"[^>]*><i><\/i><span>邺城/);
   assert.match(ji, /data-mapview="world">九州全图<\/button><button class="act" data-mapview="province">青州</);
 });

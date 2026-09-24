@@ -7,6 +7,7 @@ import { bond, tend } from './companion.mjs';
 import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
 import { chance, greet, journey } from './daily.mjs';
 import { BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, meet, noticeAt, noticeOf, questDoneBefore, questOf, questReady } from './errands.mjs';
+import { progress } from './did.mjs';
 import { divine, fate } from './fortune.mjs';
 import { look, stageAt } from './look.mjs';
 import { duel, lundao, questCheck, task, win, write } from './tasks.mjs';
@@ -30,7 +31,7 @@ export const VERBS = {
     return { state: next, result };
   },
   resolve, judge, task, win, duel, tame, write, refine, nourish, branch, summarize, move, trade, lang, make, enter, leave, build, worlds, travel, amend, art,
-  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet, deck, lundao,
+  go, saves, save, load, forget, atlas, divine, fate, ring, show, quest, meet, tend, bond, chance, journey, greet, deck, lundao, progress,
   gear: (s, c) => ({ state: null, result: { ok: true, gear: gearBrief(c, s) } }),
 };
 

@@ -3,7 +3,7 @@
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepName, threshold } from '../state.mjs';
-import { artsBrief, canRefine, treasureBrief } from './arms.mjs';
+import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, thenFor } from './ask.mjs';
 import { fightSetup, healthBrief } from './cards.mjs';
 import { bondBrief, callDue, companionOf, hasCompanion, questBrief } from './companion.mjs';
@@ -181,7 +181,8 @@ export function look(state, content, ctx) {
     wear: state.wear ?? {},
     arts: artsBrief(content, state),
     treasure: treasureBrief(content, state, ctx.now),
-    ...(state.treasure || !canRefine(content, state) ? {} : { can_refine: true }),
+    // At 结丹 with none bound: what a binding would take, held now.
+    ...(state.treasure || !canRefine(content, state) ? {} : { can_refine: true, refine_with: refineWith(content, state) }),
     // A fight open on the scene: while this is here Ling advances nothing.
     ...(state.fight ? { fight: { open: true, game: state.fight.game, creature: pick(creatureOf(content, state.fight.creature)?.name, state.lang) } } : {}),
     cast: state.cast.map(id => ({ id, name: pick(creatureOf(content, id).name, lang) })),

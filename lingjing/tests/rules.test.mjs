@@ -193,7 +193,7 @@ test('an unknown exit, a missing answer and an unfought duel are refused', () =>
   refused(resolve, s, { exit: 'subdue' }, 'game-not-won');
 });
 
-test('a creature at its haunt: the bout on the stage pays once a day, and what it likes tames it', () => {
+test('a creature at its haunt: the bout on the stage pays once a day, and what it likes tames it', async () => {
   // 精卫 at 发鸠山 in 冀, no scene there: the world open, chapter 1 in play
   const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
   const october = () => ctx({ now: new Date('2026-10-05T10:00:00') });
@@ -218,6 +218,11 @@ test('a creature at its haunt: the bout on the stage pays once a day, and what i
   refused(tame, beaten, { creature: 'jingwei' }, 'needs-item', october());
   const fed = { ...beaten, bag: { ...beaten.bag, 'jade-fish': 1 } };
   assert.equal(look(fed, content, october()).place.encounter.likes.held, 1, 'held: the card offers the feeding');
+  // …and the offering is the page's own Tame, never a word to Ling (his, 2026-09-24).
+  const { cardHtml, WORDS } = await import('../scripts/cards.js');
+  const card = cardHtml({ card: 'duel', id: 'haunt:jingwei' }, { look: look(fed, content, october()), lang: 'zh', words: WORDS.zh, content });
+  assert.match(card, /<button class="bact feed" data-tame="jingwei">献上玉鱼</);
+  assert.doesNotMatch(card, /data-say/);
   const out = must(tame, fed, { creature: '精卫' }, october());
   assert.ok(out.state.cast.includes('jingwei'));
   assert.equal(out.state.bag['jade-fish'], undefined);
@@ -670,6 +675,8 @@ test('炼化本命: once, at 结丹, from the weapon in hand and one 天材地�
   assert.equal(refused(refine, early, { material: 'jingjin', name: '青锋' }, 'needs-tier').tier, 'core');
   const s = atCore();
   assert.equal(look(s, content, ctx()).can_refine, true);
+  // What a binding would take, held now — the card offers it (his, 2026-09-24).
+  assert.deepEqual(look(s, content, ctx()).refine_with, { weapon: '铁剑', materials: [{ id: 'jingjin', name: '精金', element: 'metal', n: 1 }] });
   assert.equal(look(s, content, ctx()).treasure, null);
   refused(refine, { ...s, wear: {} }, { material: 'jingjin', name: '青锋' }, 'no-weapon');
   assert.ok(refused(refine, s, { name: '青锋' }, 'needs-material').materials.some(m => m.id === 'jingjin' && m.element === 'metal'));

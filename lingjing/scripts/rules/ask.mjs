@@ -164,7 +164,7 @@ const TAPS = {
   meet: o => `Meet {action: ${o.meet}${o.answer ? `, answer: ${o.answer}` : ''}}`,
   divine: o => (o.divine === true ? 'Divine' : `Divine {ask: ${o.divine}}`),
 };
-// A place chip on the map says 去X / Go to X (cards.js sayGo).
+// 去X / Go to X typed — a place asked for in words (a chip on the map is the page's own Move now).
 const GO = /^(去|go to\s+)/i;
 // The day's cast asked for in words — the coins on the stage say 请银月起一卦
 // (cards.js sayCast); typed, 起一卦 / 算一卦 / 问卦. Look alone let the scene's

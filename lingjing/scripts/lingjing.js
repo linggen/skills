@@ -112,6 +112,7 @@ const view = {
   castFresh: false,
   mapView: 'province', // the map card: 'province' (the player's, up close), 'world', or another province's id
   fateOpen: false, fateDraft: '', fateError: false, // the 命格 form: shown again, the date typed, a date refused
+  refineMat: null, refineName: '', refineNote: null, // 炼化本命 on the card: the material picked, the name typed, a refusal
   /// Why the last 出手 did not open, for the card that offered it — the rules'
   /// own words (no 体力, the beast already spent, the page's cards out of date).
   /// Everything else about a fight is in the save.
@@ -159,7 +160,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -645,7 +646,7 @@ function roadsHtml() {
   const near = look?.director?.near ?? [];
   if (!near.length) return '';
   const w = words();
-  const chips = near.map((p) => `<button class="act say" data-say="${esc(w.sayGo.replace('{name}', p.name))}">${esc(p.name)}</button>`).join('');
+  const chips = near.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}</button>`).join('');
   return `<div class="roadsrow"><span class="lbl">${esc(w.roads)}</span>${chips}</div>`;
 }
 
@@ -739,7 +740,7 @@ function draw() {
   // One clickable place for one thing: while the chat holds the question, the
   // stage puts away every button that repeats one of its answers.
   if (view.asked?.size) {
-    document.querySelectorAll('[data-say]').forEach((el) => {
+    document.querySelectorAll('[data-say],[data-go]').forEach((el) => {
       const label = (el.dataset.say ?? '').trim();
       if (view.asked.has(label) || view.asked.has(el.textContent.trim())) el.classList.add('answered-in-chat');
     });
@@ -905,16 +906,57 @@ async function openRow(id) {
   if (info?.ok && view.bookRow === id) show({ bookInfo: info });
 }
 
-/* 拾遗: taken or left by the rules at once — the bag and the strip show it. */
+/* 拾遗: taken or left by the rules at once — the bag and the strip show it,
+   and the roads row stands where the find was. Nothing goes to Ling (his,
+   2026-09-24): the save's `page_did` tells her on her next Look. */
 async function takeMeet(action) {
   const r = await write('meet', { action }).catch(failed);
   if (!r.ok) keep({ doNote: refusal(r) });
   await refresh();
-  // The 遇 is finished, so the turn goes to Ling: a line for what happened,
-  // and — nothing holding the stage now — her question where next (his,
-  // 2026-09-21: finish the meet first; the last step asks where to go).
-  if (r.ok) await report(action === 'take' ? '[scene] meet taken' : '[scene] meet passed');
 }
+
+/* 去X — the page walks him itself (his, 2026-09-24): Move, then the walk
+   drawn on the map (watchTravel sees the place change). An ordinary arrival
+   says nothing to Ling; one where the story takes over — a scene, a veiled
+   遇, her call, an errand's sight — goes to her once, unseen, to tell it. A
+   refusal is said a moment on the stage. */
+const STORY_AT = [(r) => r.stopped, (r) => r.scene, (r) => r.place?.meet?.veiled, (r) => r.quest?.say, (r) => r.met?.some((m) => m.seen)];
+const NOTE_MS = 4000;
+async function goTo(place) {
+  const before = look;
+  show({ bookOpen: false });
+  const r = await write('move', { place }).catch(failed);
+  if (!r.ok) { noteAWhile(refusal(r)); return; }
+  keep({ doNote: null });
+  await refresh();
+  cheer(before);
+  if (!r.here && STORY_AT.some((f) => f(r))) await report(`[scene] arrived ${r.place?.id ?? place}`);
+}
+function noteAWhile(text) {
+  show({ doNote: text });
+  setTimeout(() => { if (view.doNote === text) show({ doNote: null }); }, NOTE_MS);
+}
+
+/* 喂它X / 献上X — the page's own Tame (his, 2026-09-24). The cast grows, and
+   the 收服 seal comes up by itself (riseStats); 银月 hears the gain. */
+async function tameTap(id) {
+  const before = look;
+  const r = await write('tame', { creature: id }).catch(failed);
+  keep({ doNote: r.ok ? null : refusal(r) });
+  await refresh();
+  if (r.ok) cheer(before);
+}
+
+/* 炼化本命 on the card: the material picked there, the name the player typed
+   — required, never made up for them — and Refine, from the page. */
+async function refineTap(material) {
+  const name = (view.refineName ?? '').trim();
+  if (!name) { show({ refineNote: words().refineName }); document.getElementById('refine-name')?.focus(); return; }
+  const r = await write('refine', { material, name }).catch(failed);
+  keep(r.ok ? { refineMat: null, refineName: '', refineNote: null } : { refineNote: refusal(r) });
+  await refresh();
+}
+document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
 
 /* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws
    from the rules' own answer, and a refusal is said inside it. */
@@ -1192,6 +1234,11 @@ const CLICKS = [
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
+  // 去X, 喂它X, 炼化: the page's own verbs — no word to Ling.
+  ['[data-go]', (el) => { if (!el.matches(':disabled')) run(`go:${el.dataset.go}`, () => goTo(el.dataset.go)); }],
+  ['[data-tame]', (el) => { if (!el.matches(':disabled')) run(`tame:${el.dataset.tame}`, () => tameTap(el.dataset.tame)); }],
+  ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
+  ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
   ['[data-divine]', (el) => run('divine', () => castByPage(el.dataset.divine))],
   ['[data-chance]', busy('chance', () => takeChance())],
   ['[data-journey]', (el) => run('journey', () => sendHer(Number(el.dataset.journey)))],

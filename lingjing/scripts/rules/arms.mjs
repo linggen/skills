@@ -55,6 +55,16 @@ function grow(treasure, exp) {
   return { treasure: t, gained };
 }
 
+/* What a binding would take, held now: the weapon in hand and the 天材地宝 in
+   the bag — so the treasure card can offer them, and the player picks one and
+   names it on the card (his, 2026-09-24: no model turn for a tap). */
+function refineWith(content, state) {
+  const weapon = wornOf(content, state, 'weapon'), lang = state.lang;
+  const materials = content.items.items.filter(i => i.effect?.core && state.bag[i.id] > 0)
+    .map(i => ({ id: i.id, name: pick(i.name, lang), element: i.effect.core, n: state.bag[i.id] }));
+  return { weapon: weapon ? pick(weapon.name, lang) : null, materials };
+}
+
 /* 炼化本命 — once, at 结丹: the worn weapon and one core material become the
    player's own treasure, and the player names it as they named their 道号.
    The weapon and the material are spent; a treasure is never lost. */
@@ -130,4 +140,4 @@ const wornOf = (content, state, slot) => (state.wear?.[slot] && state.bag[state.
    fish for an easier one. */
 const duelSeed = (state, creature, now) => `${dayKey(now)}|${creature.id}|${state.name ?? ''}`;
 
-export { artBrief, artOf, artsBrief, canRefine, charmOf, drop, duelSeed, grow, learn, tierRank, treasureBrief, wornOf };
+export { artBrief, artOf, artsBrief, canRefine, refineWith, charmOf, drop, duelSeed, grow, learn, tierRank, treasureBrief, wornOf };

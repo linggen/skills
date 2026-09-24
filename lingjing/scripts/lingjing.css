@@ -359,6 +359,8 @@ ruby.py rt { font-family: var(--ui); font-size: 0.62em; font-weight: 400; letter
 /* 命格 beside the roots: its line once set, or the birthday form. */
 .fate { margin-top: 10px; }
 .fateform { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.act.on { background: var(--ling); color: var(--surface); }
+.fateform input[type=text] { flex: 1 1 10em; min-width: 0; font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
 .fateform input[type=date] { font: inherit; font-size: 13px; padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); }
 .small.seal { color: var(--seal); margin-top: 4px; }
 

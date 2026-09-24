@@ -3,7 +3,7 @@
 // either apply it or refuse with a reason Ling can narrate.
 //
 //   node rules.mjs <verb> [--key value …]
-//   verbs: init look resolve judge task win duel tame write refine nourish branch summarize move trade lang make enter leave
+//   verbs: init look progress resolve judge task win duel tame write refine nourish branch summarize move trade lang make enter leave
 //          build worlds travel amend art go saves save load forget undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { allWorlds, DEFAULT_WORLD, knownWorld, loadWorld } from './content.mjs';
 import { migrate } from './state.mjs';
 import { askOf, tapThen, withAsk } from './rules/ask.mjs';
+import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
@@ -43,16 +44,23 @@ export { look } from './rules/look.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win, write } from './rules/tasks.mjs';
 export { branch, go, heed, lang, move, summarize, trade } from './rules/travel.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
+export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
 
+/* Answers handed over as they are — no question, no stage: Progress is for
+   a pet that only wants to know how the game stands. */
+const PLAIN = new Set(['progress']);
+
 /* One call, start to end, under the save's lock (files.mjs withLock): the
-   read, the verb and every write it makes — Look's `asked_at` too. */
-function run(verb, args) {
+   read, the verb and every write it makes — Look's `asked_at` too, and a
+   reader's place in what the page did. `reader` is who asked (`--for`):
+   none is the page, whose every change is written down (rules/did.mjs). */
+function run(verb, args, reader = null) {
   const stateFile = path.join(dataDir(), 'state.json');
-  return withLock(stateFile, () => runLocked(verb, args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
+  return withLock(stateFile, () => runLocked(verb, args, stateFile, reader), () => ({ ok: false, refused: 'busy', say: null }));
 }
 
-function runLocked(verb, args, stateFile) {
+function runLocked(verb, args, stateFile, reader) {
   const logFile = path.join(dataDir(), 'log.jsonl');
   const now = clock();
   const raw = fs.existsSync(stateFile) ? migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8'))) : null;
@@ -87,15 +95,20 @@ function runLocked(verb, args, stateFile) {
   const out = fn(heard, content, { now, quests: readQuests(), turn: userTurn(), said: args.said }, args);
   if (out.result?.load) return loadSave(out.result.load, state, { stateFile, logFile, now });
   // A save fitted, a stale fight closed or a language heard is a change too.
-  const next = out.state ?? (heard !== (raw ?? state) ? heard : null);
+  const changed = out.state ?? (heard !== (raw ?? state) ? heard : null);
+  // What the page did, written down with it, so Ling and Yinyue can read it.
+  const next = (!reader && notePage(verb, args, out.result, changed, content, now)) || changed;
   if (next) {
     next.updated = now.toISOString();
     writeAtomic(stateFile, JSON.stringify(next));
     fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: raw ?? state }) + '\n');
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
-  const result = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
   const asking = next ?? state;
+  const told = pageTold(verb, reader, asking, stateFile);
+  const said = heard !== state ? { ...out.result, lang_set: heard.lang } : out.result;
+  const result = told ? { ...said, page_did: told } : said;
+  if (PLAIN.has(verb)) return result;
   const answer = withAsk(result, content, asking, { now, quests: readQuests(), said: args.said, verb });
   // Written down, so the next bare Look does not ask it again. Cleared by
   // walking somewhere, because `asked_at` is the place it was asked at.
@@ -110,6 +123,17 @@ function runLocked(verb, args, stateFile) {
   const tapCtx = { now, quests: readQuests(), said: args.said };
   const tap = verb === 'look' && tapThen(answer.ask ?? askOf(content, next ?? state, tapCtx, {}, true), args.said);
   return tap ? { ...answer, then: tap } : answer;
+}
+
+/* What the page did since this reader last read, when this verb is one of
+   theirs; their place moves to the newest. Never logged: the reader's place
+   is not a move Undo takes back — a Look before Undo would eat it. */
+function pageTold(verb, reader, state, stateFile) {
+  const reads = READS_PAGE[verb];
+  if (!reader || !reads?.who(reader)) return null;
+  const told = unseen(state, reader, reads.keep);
+  if (markSeen(state, reader)) writeAtomic(stateFile, JSON.stringify(state));
+  return verb === 'look' && !told.length ? null : told;
 }
 
 /* Park the save in play under its world and take up the other world's —
@@ -197,7 +221,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const [verb, ...rest] = process.argv.slice(2);
   try {
     const { for: reader, ...args } = parseArgs(rest);
-    const result = run(verb ?? 'look', args);
+    const result = run(verb ?? 'look', args, reader ?? null);
     console.log(JSON.stringify(reader === 'ling' ? forLing(result) : result));
   } catch (err) {
     console.log(JSON.stringify({ ok: false, refused: 'error', error: String(err?.message ?? err) }));
