@@ -17,7 +17,7 @@ Never `rsync --delete` (or rm-and-copy) into `~/.linggen/skills/<name>/` — the
 ## Conventions
 
 - Syntax-check JS with `node --check` before syncing; there is no build step — files are served as-is.
-- Before committing: `node --test tests/` at the repo root (every SKILL.md frontmatter in the engine's shape; every script parses, every `.sh` passes `bash -n`, every page's local assets exist), plus the skill's own `node --test <skill>/tests/*.test.mjs`.
+- Before committing: `./scripts/check.sh` (CI runs the same on every push) — or piecemeal, `node --test tests/*.test.mjs` at the repo root (every SKILL.md frontmatter in the engine's shape; every script parses, every `.sh` passes `bash -n`, every page's local assets exist), plus the skill's own `node --test <skill>/tests/*.test.mjs`.
 - Skill JS runs in a sandboxed iframe: no `window.confirm/prompt` (silent no-ops in the app shell) — use the shared dialog helpers.
 - Files written via `/api/bash` must end with a trailing newline (sentinel-strip gotcha).
 - Chat panels mount through the engine's `/shared/chat-bridge.js` (`LinggenUI.mount`); sessions, models and cloud calls come from `/shared/api.js`, and `/shared/app-mode.js` drives the shell's Settings overlay. Don't copy these into a skill — keep only calls that are the skill's own in a local module (`pulse-api.js`, `memory-api.js`). App pages get `?app_mode=1`, and `&in_launcher=1` when hosted inside the unified launcher.
