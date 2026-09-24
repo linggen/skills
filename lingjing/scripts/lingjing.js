@@ -279,6 +279,7 @@ async function readOnce() {
   // purpose; a board he opened himself stays until he walks on.
   const here = look.place?.id ?? null;
   if (view.opened && view.opened.place !== here) keep({ opened: null });
+  queueMicrotask(payKeptWins);
   if (view.qPlace !== here) keep({ qSkip: [], qPlace: here });
   keep({ focus: [] });
   // A fight the save still holds open comes back: without this the page shows
@@ -814,9 +815,41 @@ async function onWin(taskId) {
     await refresh();
     return false;
   }
-  await report(`[scene] won ${taskId}`);
+  // A day's practice is the page's to pay, at once — the strip counts up as
+  // the board closes (his, 2026-09-24: 「页面自己结算」; waiting on Ling's turn
+  // held the pay back). Only a board the story's scene holds goes to Ling,
+  // whose Resolve moves the story on.
+  if (isTask(taskId)) await payWin(taskId);
+  else await report(`[scene] won ${taskId}`);
   await refresh();
   return true;
+}
+
+const isTask = (id) => Boolean(look?.tasks?.some((t) => t.id === id));
+
+/// Practice `done`, from the page. An empty pool keeps the win: it is paid
+/// once 体力 is back (payKeptWins, on the next Look that has it).
+async function payWin(id) {
+  const r = await write('task', { action: 'done', id }).catch(failed);
+  if (!r.ok && r.refused !== 'no-stamina') console.warn('[lingjing] practice done refused', r);
+  keep({ doNote: r.ok ? null : refusal(r) });
+  return r;
+}
+
+/// A board won while 体力 was empty, paid now it is back — the same day,
+/// as the rules keep it. Once per Look, one at a time.
+let payingKept = false;
+async function payKeptWins() {
+  if (payingKept || !look || look.stamina?.empty || look.fight) return;
+  const kept = (look.tasks ?? []).filter((t) => t.won && t.status !== 'done');
+  if (!kept.length) return;
+  payingKept = true;
+  try {
+    for (const t of kept) await payWin(t.id);
+  } finally {
+    payingKept = false;
+  }
+  await refresh();
 }
 
 /// Tell Ling, unseen: a board or a bout the page played.
