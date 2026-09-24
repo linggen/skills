@@ -394,3 +394,88 @@ refills by the clock.
   only `cloud.save`. The scene stops reading `/api/skill-cloud` for the
   ring.
 
+## A day, and 起卦 · 命格, as they were (2026-09-17 → 09-24)
+
+> **Superseded 2026-09-24 by redesign-v2 (§ 四: 起卦 · 望气 · 命格 → 问卦; the day's practice boards stop being 功课).** design.md § A day is the current one.
+
+
+What a player does on an ordinary day — between chapters, which is most
+days — is the game's real shape:
+
+1. **The day's cast (起卦, built 2026-09-17).** The 今日卦象 card waits with
+   three coins and 起一卦 until it is cast, and the director's choice offers
+   it too. 所问何事 — 问修行 · 问斗法 · 问财运 — then the rules throw three
+   coins six times (三钱法; seeded by the day and the 道号, so a day never
+   re-casts) and read the hexagram from `hexagrams.json` (all 64: 卦辞 and
+   大象 from Wikisource's 周易, graded 大吉 · 吉 · 平 · 凶 · 大凶). The grade
+   does the asked thing for the day: 修为 ×1.5/×1.2/×0.8 (大凶 also a
+   60-second rest between story steps), 灵石 ×1.5/×1.2/×0.8/×0.5, or a
+   bout's lower-trigram root turning draws to wins (吉 ×1, 大吉 ×2) or wins
+   to draws (凶 ×1, 大凶 ×2). Yinyue reads it aloud on the stage. The numbers
+   are his to set.
+   **命格 (built 2026-09-17, his design):** beside the roots, set once and only
+   if the player wishes — on the 灵根 card, never in the chat: a birthday typed
+   there is read by the page-only `fate` verb on the machine, and only the
+   生肖 (turning at 立春, by the day) and 日主 (the day's stem, its element)
+   are kept; or 随机, or 不必了 (still settable later). The four roots stay the
+   same for everyone. The 日主 element: once a bout a lost round with that
+   root stands as a draw; a cast whose lower trigram is that element leans
+   its grade one step the player's way (吉→大吉, 凶→平, 大凶→凶; `fated`).
+2. **A due quest, if any** — the workout kept, the scan run — paid on sight.
+3. **今日传闻** — Ling's one side story of the day, grown from a seed.
+4. **Practice** — a board on the scene, no model; a hosted game costs 3 体力 when paid.
+5. **The story waits** at its gate when a chapter is not yet open — said in
+   one line, never nagged.
+
+A few minutes. The spine moves on the days a chapter opens; the seeds and
+the quests carry every other day.
+
+
+## 伤势 · 羁绊 · 历练 · 机缘 as built (2026-09-23)
+
+> **Cut or merged 2026-09-24 by redesign-v2 (§ 四, § 十 step 4).** 伤势: every fight begins whole, a loss only sends the beast away for the day. 羁绊 · 谈心 · 疗伤: no score; her card's lift comes from the chapters ended (`rewards.json → bond.lifts`). 历练: cut — a journey still out migrated to her being back at the player's side. 机缘: a kind of 路上 (design.md § 路上). Saves migrate at v5 (state.mjs).
+
+- **伤势** (rules/companion.mjs). 气血 lost in a fight stays lost; it mends by
+  the stamina clock (full in five hours) or a 回春丹; below a quarter the
+  fight's door refuses `wounded`. A loss leaves the player at nothing.
+- **羁绊** (rules/companion.mjs, `rewards.json → bond`). 相识 → 相知 → 相惜 →
+  同心 at 0/20/50/100, capped 5 a day; grown by a win beside her, an elite
+  beaten, a realm risen, her tending, a gift she wears, 历练, and Ling's one
+  `Bond` a day. Each level lifts her card and her tending.
+- **历练** (rules/daily.mjs). The player sends 银月 out from the 装备 card for
+  2, 4 or 8 real hours, once a day, to a place within three roads; she brings
+  finds, stones and (after eight hours) a card; called back early she brings
+  a small share. She tells it herself.
+- **机缘** (rules/daily.mjs). Once a day, somewhere within two roads, for three
+  real hours; 收下 on the stage when the player stands there; pays the
+  `chance` table and a card. Missed, it is gone.
+
+
+## 精英's own rules (2026-09-23)
+
+> **Cut 2026-09-24 by redesign-v2 (§ 四): an elite is its harder deck and nothing else** — the mode's share of 气血, a fight's 体力 (8), a haunt's pay, one card. The gate (tools/battle-sim.mjs) now asks only that an elite be harder than a plain beast by its deck, and flagged on 2026-09-24 that it is not yet (elite decks 86% vs plain 83% on the attentive line): the decks in creatures.json want retuning.
+
+- **精英 and 杀招** (battle.js, creatures.json). An `elite` beast stands at its
+  full 气血 and pays the `elite` table (half again, two cards). Every beast
+  has a `signature`: at half 气血 it gathers a round, then lets it go once.
+
+
+## The day's practice boards (2026-09-23 → 24)
+
+> **Superseded 2026-09-24 by redesign-v2 (§ 四: 差事 · 榜文 · 功课棋局 → 差事).** A place's game opens only for an errand that asks for it; the errand pays.
+
+- **Mini-games, 炼丹 and 论道** (rules/tasks.mjs, scripts/games/, lundao.json).
+  炼丹 at a market and 洛书 · 华容道 · 七巧 · 五子 · 象棋残局 where a place
+  hosts them: played on the stage, once a day, level by realm; the win is the
+  page's `win`, paid at Practice `done` from the `game` table (5 修为, 10 灵石)
+  for 3 体力 — an empty pool keeps the win until it refills that day. 论道 at
+  稷下: 飞花令 · 成语接龙 · 对对联, three good answers pay 6 修为, three misses
+  end it; 3 体力 at `open`.
+
+
+## Economy as it stood before redesign-v2 (2026-09-24 morning)
+
+- **Economy** (`rewards.json → _economy`). 修为 per 体力 at 练气: haunt 25/8 ≈
+  3.1, elite 38/12 ≈ 3.2, a hosted game 5/3 ≈ 1.7, 论道 6/3 = 2.0 — the fight
+  pays best even at its odds (a test locks it). A normal 练气 day ≈ 115, so
+  练气's 810 takes about a week.

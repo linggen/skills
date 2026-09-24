@@ -5,7 +5,7 @@ guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
   and plays is the live page (scripts/index.html); prototype.html is the
   archived first mock. This file is the build.
-status: 2026-09-24 — rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
+status: 2026-09-24 — redesign v2 steps 2–4 (redesign-v2.md § 四, § 十): 路上 (遇 · 拾遗 · 抉择 · 机缘 · 拦路 as one on-arrival system, rules/road.mjs), 差事 (errands and 榜文 one kind; no daily boards), 问卦 (起卦 · 望气 · 命格 one card) merged; 伤势 · 羁绊/谈心/疗伤 · 历练 · 温养/强化/写符 · the elite's own rules cut, 组牌 from 结丹 — save v5 migrates; the day resets 今日传闻, the 人间功课 pick and 问卦. Also 2026-09-24: rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
 ---
 
 # Lingjing — design
@@ -78,9 +78,10 @@ skills/lingjing/
     chat-bridge.js, api.js the shared bridge copies
     rules.mjs              the rules CLI and its one door: lock, fight hold, dispatch
     rules/*.mjs            the rules by part: core (pay, riddles, stamina) · look · travel ·
-                           tasks (boards, fights, 论道) · cards (decks, 得牌, gear, 伤势) ·
-                           companion (银月, 羁绊, tending) · daily (机缘, 历练, greeting, 体力) ·
-                           errands (差事, 遇, 抉择) · arms · fortune · worlds · world · verbs · files · ask
+                           tasks (boards, fights, 论道) · cards (decks, 得牌, gear) ·
+                           companion (银月, her past, her lift by the story) · daily (greeting, 体力) ·
+                           road (路上: 遇 · 拾遗 · 抉择 · 机缘 · 拦路) · errands (差事) · arms · fortune (问卦) ·
+                           worlds · world · verbs · files · ask · chores · tale · did
     stage.mjs              what stands on the stage and what `ask` leaves to the chat
     state.mjs              the save: load, migrate, fitWorld
     run-js.sh              runs it under the bundled bun, else node
@@ -91,12 +92,12 @@ skills/lingjing/
     dictionary.json        the harness's ids → this world's words, zh + en; the provinces
     ladder.json            the tiers: 练气 1–9, 筑基 … with progress thresholds, pay, gate
     traits.json            灵根 kinds and their progress multiplier
-    rewards.json           reward tables, 体力 (max, refill, costs), 羁绊; `_economy` has the math
+    rewards.json           reward tables, 体力 (max, refill, costs), her lift by chapters (`bond.lifts`), story growth (`growth`); `_economy` has the math
     creatures.json         山海经 entries: name, source, quote, root, deck, signature, elite, likes
     cards.json             the fight's cards, starters, modes, `gear` rates
-    herbs.json, arts.json, lundao.json, meets.json   alchemy tiles · learned arts · 论道 · 遇 and finds
+    herbs.json, arts.json, lundao.json, meets.json   alchemy tiles · learned arts · 论道 · 路上's finds, riddles, 抉择
     items.json             the catalog: kinds, prices, one effect each; art/items/<id>.webp
-    hexagrams.json         the day's cast
+    hexagrams.json         问卦: the 64 hexagrams and what a grade does to the day's fights
     art/                   creatures, items, cards (art/cards/<id>.webp); plates/ the originals; CREDITS.md
     riddles/, tasks/, seeds/, places/, quests/   answer keys · in-world tasks · 传闻 seeds · places · 差事
     tale.json              今日传闻: the shape Ling writes to, its limits, each game's story uses
@@ -417,35 +418,29 @@ replaced Branch (three open-and-close tales a day, paid what Ling proposed).
 ### A day
 
 What a player does on an ordinary day — between chapters, which is most
-days — is the game's real shape:
+days — is the game's real shape. The day resets three things and no more
+(redesign-v2 § 四, 2026-09-24):
 
-1. **The day's cast (起卦, built 2026-09-17).** The 今日卦象 card waits with
-   three coins and 起一卦 until it is cast, and the director's choice offers
-   it too. 所问何事 — 问修行 · 问斗法 · 问财运 — then the rules throw three
+1. **问卦** (rules/fortune.mjs) — the day's one reading, on one card: three
    coins six times (三钱法; seeded by the day and the 道号, so a day never
-   re-casts) and read the hexagram from `hexagrams.json` (all 64: 卦辞 and
-   大象 from Wikisource's 周易, graded 大吉 · 吉 · 平 · 凶 · 大凶). The grade
-   does the asked thing for the day: 修为 ×1.5/×1.2/×0.8 (大凶 also a
-   60-second rest between story steps), 灵石 ×1.5/×1.2/×0.8/×0.5, or a
-   bout's lower-trigram root turning draws to wins (吉 ×1, 大吉 ×2) or wins
-   to draws (凶 ×1, 大凶 ×2). Yinyue reads it aloud on the stage. The numbers
-   are his to set.
-   **命格 (built 2026-09-17, his design):** beside the roots, set once and only
-   if the player wishes — on the 灵根 card, never in the chat: a birthday typed
-   there is read by the page-only `fate` verb on the machine, and only the
-   生肖 (turning at 立春, by the day) and 日主 (the day's stem, its element)
-   are kept; or 随机, or 不必了 (still settable later). The four roots stay the
-   same for everyone. The 日主 element: once a bout a lost round with that
-   root stands as a draw; a cast whose lower trigram is that element leans
-   its grade one step the player's way (吉→大吉, 凶→平, 大凶→凶; `fated`).
-2. **A due quest, if any** — the workout kept, the scan run — paid on sight.
-3. **今日传闻** — Ling's one side story of the day, grown from a seed.
-4. **Practice** — a board on the scene, no model; a hosted game costs 3 体力 when paid.
-5. **The story waits** at its gate when a chapter is not yet open — said in
-   one line, never nagged.
+   re-casts), the hexagram from `hexagrams.json` (all 64, graded 大吉 · 吉 ·
+   平 · 凶 · 大凶). Nothing is asked first: it is always the day's fight
+   luck. One effect set, locked at every fight's door that day — **卦力**,
+   the lower trigram's element, its 功法 ±1/±2 by the grade; **望气**, at 吉
+   and 大吉 the beast's next move read, as the scroll's 上卷 does; and **命格**
+   (set once, on the same card, only if the player wishes: 生肖 and 日主 from a
+   birthday read on this machine, or 随机) leans a reading whose lower trigram
+   is the 日主's element one step the player's way and makes the root strike
+   that element. It touches no 修为 and no 灵石. Yinyue reads it aloud.
+2. **The day's 人间功课** — the workout and the one pick from the apps'
+   menus, paid on sight (§ 人间功课).
+3. **今日传闻** — Ling's one side story of the day, grown from a seed: the
+   day's main dish.
 
-A few minutes. The spine moves on the days a chapter opens; the seeds and
-the quests carry every other day.
+Beside them, as much as 体力 allows: the spine when a chapter is open, the
+errands in the book (a market's 榜文 among them), fights, and whatever the
+road meets (§ 路上). No board stands for the day by itself — the mini-games
+are 传闻's steps, a scene's boards, or a game a notice asks for.
 
 ### Items — the catalog
 
@@ -701,6 +696,12 @@ Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `
 - `day` — the day's totals for the caps; it rolls over at local midnight.
 - `log.jsonl` — every change `{at, verb, args, before}`: the audit, and what
   `undo` restores.
+- **Save version 5** (2026-09-24, redesign-v2): older saves migrate by a table
+  of steps (state.mjs `MIGRATIONS`). v5 keeps everything held — the bag, the
+  cards, the treasure and its 重 — and drops what only the cut systems read:
+  `wounds`, `bond`, `tended`, `journey` (a journey still out ends with her
+  simply back at the player's side, nothing invented), the day's 温养/写符
+  marks and the treasure's `exp`.
 
 ## A turn — what the context holds
 
@@ -1054,8 +1055,8 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 ### 副本契约 — 战斗与每个小游戏共用
 
 1. **入口**在世界里：妖的巢、路上的妖、一个任务、一段奇遇。
-2. **进门**扣体力（斗法 8，精英 12；小游戏 3 在交差时扣，论道 3 在开局扣），**锁定一份
-   出战配置**（境界、主灵根、牌库、装备折算、今日卦、银月与羁绊、伤势）；锁定之后世界里
+2. **进门**扣体力（斗法 8，精英同价；小游戏 3 在交差时扣，论道 3 在开局扣），**锁定一份
+   出战配置**（境界、主灵根、牌库、装备折算、今日问卦、银月）；锁定之后世界里
    发生什么都不改这一局 —— 可重放、可判定、可对战的前提。
 3. **门内**画在主界面的场景位上，**聊天留着**（人可以边打边说）；世界停住：规则拒绝
    一切改世界的动作（`in-a-fight`，FIGHT_HOLDS），Ling 不推进任何东西。
@@ -1063,10 +1064,11 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
    所得由台上的战利品卡显示，Ling 只讲故事。开着过夜的一场，下次调用时按力竭退走结。
 5. **中途退出 = 认输**：体力照扣，奖励没有。
 
-**带进门的**：境界+主灵根 · 牌库 10（组牌挑的，余下按曲线补）· 装备（每件一个数，
-§ 装备入局）· 今日卦（问斗法）· 银月（羁绊抬她）· 伤势（气血从上一场留下的开始）。
+**带进门的**：境界+主灵根 · 牌库 10（结丹之后组牌挑的，余下按曲线补）· 装备（每件一个数，
+§ 装备入局）· 今日问卦（卦力、望气）· 银月（随已了结的章数抬她）。每一场都满血进门
+（伤势 2026-09-24 砍掉，redesign-v2 § 四）。
 **留在门外**：体力（进门时扣）· 灵石 · 修为 · 背包杂物（符除外）· 故事进度。
-**文戏（灯谜、飞花令、下棋、起卦）什么都不带** —— 只带这个人和他的语言，
+**文戏（灯谜、飞花令、下棋、问卦）什么都不带** —— 只带这个人和他的语言，
 所以新玩家能赢老玩家。武戏带属性，文戏不带 (2026-09-18)。
 
 ### 体力，唯一的节流阀 (BUILT 2026-09-18; numbers 2026-09-24)
@@ -1076,10 +1078,10 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 
 - **满 100，五小时回满**；用到 0 之后要歇到 **20**（`rest_at`）才再动 —— 最后一点仍能买
   一件事。银月（不是 Ling）叫人去歇。
-- **价**：一趟路 3，每多一条路 +1，最多 6 · 一步故事 3 · 斗法 8 · 精英 12 ·
+- **价**：一趟路 3，每多一条路 +1，最多 6 · 一步故事 3 · 斗法 8（精英同价）·
   抉择 3 · 驯 3 · 小游戏 3（交差时扣；体力空了赢局照留，回满当天再付）· 论道 3（开局扣）·
   造景 5 · 造世界 10 · 增改 5 · 坊市 0。序章自己的步、路、仗不扣。
-- **不扣**：说话、坊市、差事、银月的调理、写符。
+- **不扣**：说话、坊市、差事、问卦。
 - **现实里的事回体力**：一件任务按它自己的分量回（默认 20）。
 - **没有日上限** —— 2026-09-23 去掉修为/灵石日上限：只用体力限制（his）。
 - 空了只说一句什么时候回来，不滚秒。
@@ -1410,7 +1412,10 @@ put down. In Ling's context the whole book is three lines, about 40 tokens.
 ### Where they come from — three sources, one card
 
 1. **Authored** — the province's own, as above.
-2. **Templated — 榜文** (built 2026-09-21) — the 奇遇 seed mechanism with a
+2. **Templated — 榜文** (built 2026-09-21; since redesign-v2 simply *an
+   errand the market board gives*, one kind with the authored ones, spoken
+   the same way; a game notice picks one of the place's games by its id, and
+   is the one way a place's game is played outside 传闻 and the story) — the 奇遇 seed mechanism with a
    counter: a template plus today's place or creature, so a province is never
    empty. `quests/templates.json` holds the terms; each **market** posts one a
    day, its target within three walkable roads, of the market's own province,
@@ -1446,7 +1451,23 @@ Save version 4, with a migration that moves the old key.
 verb that can tick one · ④ the cards (offer + the book inside the goal card) +
 SKILL.md · ⑤ templated 差事 · ⑥ the 功课 move onto the same card.
 
-## 遇 — no arrival is empty (built 2026-09-21)
+## 路上 — no arrival is empty (遇 built 2026-09-21; one system since 2026-09-24)
+
+**redesign-v2 § 四: 遇 · 拾遗 · 抉择 · 机缘 · 拦路 are one thing — something
+met on the road — in one book of rules, rules/road.mjs.** An arrival meets
+AT MOST ONE, veiled until Ling has set the moment (Meet `reveal`), answered
+by the one verb Meet with one refusal vocabulary (`nothing-here` · `gone` ·
+`not-veiled` · `unknown-action`, and each kind's own), and drawn on the stage
+as ONE card kind, `road` (mist, a find, the 机缘, a 抉择's ways; a
+traveller's riddle is the chat's question, a road beast the duel card). The
+**机缘** is a kind of it: still set once a day within two roads for three
+real hours (the chance config and rewards `chance`), and arriving there while
+it lasts it is that arrival's one thing, before anything the place holds;
+`take` 收下 it (the Chance verb is gone). A 抉择's `wound` stake takes that
+share of 体力 now (伤势 was cut). The sources stay as they were and are read
+as they are: meets.json, a place's `meets`, the chance config.
+
+The rest of this section is 遇 as built on 2026-09-21, still true:
 
 His, after an afternoon of walking 泗水北岸 ↔ 吕梁洪: *can we make sure a place
 triggers an event — a fight, a question, a cast, anything — instead of just go
@@ -1602,46 +1623,47 @@ Each a few lines of code truth; the numbers live in the named data file.
   a 佩's 抗 ×2 off each blow of its element (at least 1 lands); a 符 in the bag
   → one talisman card in hand, spent from the bag when played. Learned arts
   (arts.json) are not in fights.
-- **组牌 — the deck** (rules/cards.mjs `deckFor`). The player picks up to ten
+- **组牌 — the deck** (rules/cards.mjs `deckFor`). From 结丹 on (before, the
+  roots deal the ten; a pick kept from before waits — redesign-v2) the player picks up to ten
   from the cards they own (`state.deck`); a card taken out stays out
   (`deck_out`); the rest is filled along the realm's curve. 银月 is in hand,
   never in the ten.
-- **伤势** (rules/companion.mjs). 气血 lost in a fight stays lost; it mends by
-  the stamina clock (full in five hours) or a 回春丹; below a quarter the
-  fight's door refuses `wounded`. A loss leaves the player at nothing.
-- **羁绊** (rules/companion.mjs, `rewards.json → bond`). 相识 → 相知 → 相惜 →
-  同心 at 0/20/50/100, capped 5 a day; grown by a win beside her, an elite
-  beaten, a realm risen, her tending, a gift she wears, 历练, and Ling's one
-  `Bond` a day. Each level lifts her card and her tending.
-- **历练** (rules/daily.mjs). The player sends 银月 out from the 装备 card for
-  2, 4 or 8 real hours, once a day, to a place within three roads; she brings
-  finds, stones and (after eight hours) a card; called back early she brings
-  a small share. She tells it herself.
-- **机缘** (rules/daily.mjs). Once a day, somewhere within two roads, for three
-  real hours; 收下 on the stage when the player stands there; pays the
-  `chance` table and a card. Missed, it is gone.
-- **遇 and 抉择** (rules/errands.mjs, meets.json). An arrival where the place
+- **伤势 · 羁绊 · 历练** — cut 2026-09-24 (redesign-v2 § 四); what they were
+  is in archive.md. Every fight begins whole; her card stands taller by the
+  chapters ended (`rewards.json → bond.lifts`: +0/+1 at four, +0/+2 at five,
+  +1/+1 at seven); the save migrates at v5.
+- **机缘** — a kind of 路上 since 2026-09-24 (§ 路上).
+- **遇 and 抉择** (rules/road.mjs since 2026-09-24 — § 路上; meets.json). An arrival where the place
   holds nothing deals a 遇, veiled until Ling sets the moment: a find, a
   traveller's riddle, a road beast, or a 抉择 — Ling writes 2–3 ways
   (difficulty, stake wound|coin, win/lose lines), the rules rolled each way
-  when dealt, the player taps one (3 体力), the `trial` table pays a win.
-- **精英 and 杀招** (battle.js, creatures.json). An `elite` beast stands at its
-  full 气血 and pays the `elite` table (half again, two cards). Every beast
+  when dealt, the player taps one (3 体力), the `trial` table pays a win; a
+  `wound` stake loses that share of 体力.
+- **精英 and 杀招** (battle.js, creatures.json). An `elite` beast is its
+  harder deck and nothing else since 2026-09-24 (redesign-v2 § 四; its full
+  气血, 12 体力, half-again pay and second card are in archive.md). Every beast
   has a `signature`: at half 气血 it gathers a round, then lets it go once.
 - **望气** (battle.js `insight`). The beast decides its next turn at the start
   of the player's; a player who has read 《望气术》 (上卷 at 筑基: its shape;
-  下卷 at 结丹: every move and number) sees it on the fight's card.
+  下卷 at 结丹: every move and number) sees it on the fight's card — and on a
+  day whose 问卦 is 吉 or 大吉, the shape of it without the scroll.
 - **Mini-games, 炼丹 and 论道** (rules/tasks.mjs, scripts/games/, lundao.json).
-  炼丹 at a market and 洛书 · 华容道 · 七巧 · 五子 · 象棋残局 where a place
-  hosts them: played on the stage, once a day, level by realm; the win is the
-  page's `win`, paid at Practice `done` from the `game` table (5 修为, 10 灵石)
-  for 3 体力 — an empty pool keeps the win until it refills that day. 论道 at
-  稷下: 飞花令 · 成语接龙 · 对对联, three good answers pay 6 修为, three misses
-  end it; 3 体力 at `open`.
-- **Economy** (`rewards.json → _economy`). 修为 per 体力 at 练气: haunt 25/8 ≈
-  3.1, elite 38/12 ≈ 3.2, a hosted game 5/3 ≈ 1.7, 论道 6/3 = 2.0 — the fight
-  pays best even at its odds (a test locks it). A normal 练气 day ≈ 115, so
-  练气's 810 takes about a week.
+  炼丹 and 洛书 · 华容道 · 七巧 · 五子 · 象棋残局 · 论道 are played on the stage,
+  level by realm — as 今日传闻's steps, as a scene's boards, and at a place
+  that hosts one when an errand in the book asks for it there (a market's
+  notice); never as a daily chore (redesign-v2, 2026-09-24). A hosted game
+  costs 3 体力 when counted and pays only the errand; 论道 (飞花令 · 成语接龙
+  · 对对联) takes its 3 体力 at `open`, three good answers count, three misses
+  end it.
+- **Economy** (`rewards.json → _economy`, 2026-09-24 after redesign-v2). A
+  normal 练气 day was ≈179 修为 (fights 64, six games 30, story and errands
+  20, the rumor 65); the cuts alone made it ≈147. Now a fight pays 30 and the
+  rumor 15 a step, 30 its finale, 90 its cap: ≈170. A fight is still the best
+  修为 per 体力 (3.75; a rumor's step ≈2.5); tests lock both.
+- **本命法宝 and 符 grow with the story** (rules/arms.mjs `growTreasure`,
+  `giveCharm`; `rewards.json → growth`). One 重 per chapter ended and per
+  rumor finale (九重 the top); a 符 from each rumor finale and from one won
+  fight in three. 温养 · 强化 · 写符 were cut (archive.md).
 - **Rules integrity** (rules.mjs, rules/tasks.mjs). One writer at a time
   (`state.json.lock`, retried up to 5 s, then `busy`); while a fight is open
   the world-changing verbs refuse `in-a-fight`; a beast beaten today is
@@ -1654,8 +1676,8 @@ Each a few lines of code truth; the numbers live in the named data file.
 - **One opening, facts to Yinyue.** When 银月 walks with the player the day's
   greeting is hers (the `greet` facts) and Ling gets nothing until the player
   speaks; else the page sends `[scene] opened` once. Gains, wins, losses, the
-  cast, 命格 and 历练 are handed to her as facts; she writes the words. 温养
-  and 命格 take no hidden model turn.
+  reading and 命格 are handed to her as facts; she writes the words. 命格
+  takes no hidden model turn.
 
 ## Online — the save in the cloud, the rules at home
 
