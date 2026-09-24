@@ -125,6 +125,7 @@ const view = {
   bookRow: null, //      the line of the book that is open
   offerRow: null, //     the errand on the stage's offer card that is open
   tookOffer: null, //    an errand just taken: its row is stamped 已接下, then goes
+  qSkip: [], //          queue keys he put off here with 下一件 ›, oldest first
   doNote: null, //       a page tap the rules refused, in their words, until the next tap
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
   ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
@@ -278,6 +279,7 @@ async function readOnce() {
   // purpose; a board he opened himself stays until he walks on.
   const here = look.place?.id ?? null;
   if (view.opened && view.opened.place !== here) keep({ opened: null });
+  if (view.qPlace !== here) keep({ qSkip: [], qPlace: here });
   keep({ focus: [] });
   // A fight the save still holds open comes back: without this the page shows
   // the world while Ling waits for a fight nobody can see, and she holds still
@@ -570,7 +572,59 @@ function focusHtml() {
   // A board he opened from the tray stays before him through the next Look
   // and whatever Ling shows, until he walks on.
   if (view.opened && !cards.some((c) => c.card === 'board' && c.id === view.opened.id)) cards = [...cards, { card: 'board', id: view.opened.id }];
-  return spoils + cards.map((c) => drawCard(c)).join('') + (stageHolds(look, cards) ? roadsHtml() : '');
+  // The errand just taken keeps its card a moment, sealed 已接下.
+  if (view.tookOffer && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
+  const { head, queue, tail } = splitStage(cards);
+  return spoils + head.map(drawCard).join('') + queueHtml(queue) + tail.map(drawCard).join('') + (stageHolds(look, cards) ? roadsHtml() : '');
+}
+
+/* 眼前 — one thing to do at a time (his, 2026-09-24: 「用一个队列，一个完成，
+   再从队列取出下一个显示，不要都堆放在UI上」). The things that ask a tap wait
+   in this order; the first stands on the stage, 下一件 › puts it off to the end
+   of the line, and walking on starts the line again. The goal line, an empty
+   pool and what Ling showed of the place stay where they are. */
+const QUEUE = ['handed', 'quest', 'veil', 'find', 'trial', 'chance', 'journey', 'offer', 'duel', 'lundao', 'board'];
+const HEAD = new Set(['building', 'empty', 'goal']);
+const qKey = (c) => `${c.card}:${c.id ?? ''}`;
+
+function splitStage(cards) {
+  const head = cards.filter((c) => HEAD.has(c.card));
+  const queued = cards.filter((c) => QUEUE.includes(c.card) && inQueue(c));
+  const tail = cards.filter((c) => !HEAD.has(c.card) && !QUEUE.includes(c.card));
+  const rank = (c) => {
+    const put = view.qSkip.indexOf(qKey(c));
+    return put < 0 ? QUEUE.indexOf(c.card) : QUEUE.length + put;
+  };
+  return { head, queue: [...queued].sort((a, b) => rank(a) - rank(b)), tail };
+}
+
+/* The day's practice waits in the tray: a board comes into the line when he
+   opens it there, when Ling shows it, or when this place hosts it or an errand
+   asks for it here. */
+function inQueue(c) {
+  if (c.card !== 'board') return true;
+  if (view.opened?.id === c.id || view.focus.some((f) => f.card === 'board' && f.id === c.id)) return true;
+  const task = look?.tasks?.find((t) => t.id === c.id);
+  return !task || Boolean(task.hosted || task.for_errand);
+}
+
+function queueHtml(queue) {
+  if (!queue.length) return '';
+  const [now, next] = queue;
+  const w = words();
+  const bar = next ? `<div class="queuebar"><span class="dim">${esc(w.queueCount.replace('{n}', queue.length))}</span>
+    <button class="act" data-qnext="${esc(qKey(now))}">${esc(w.queueNext.replace('{what}', queueLabel(next)))} ›</button></div>` : '';
+  return `<div class="queueslot">${bar}${drawCard(now)}</div>`;
+}
+
+function queueLabel(c) {
+  const w = words();
+  if (c.card === 'board') return look?.tasks?.find((t) => t.id === c.id)?.title ?? w.queueKinds.board;
+  return w.queueKinds[c.card] ?? c.card;
+}
+
+function putOff(key) {
+  show({ qSkip: [...view.qSkip.filter((k) => k !== key), key] });
 }
 
 function spoilsCtx() {
@@ -1127,7 +1181,9 @@ const CLICKS = [
   }],
   ['[data-say]', (el, e) => sayTap(el, e)],
   // A board opened from the tray stays on the stage until he walks on.
-  ['[data-play]', (el) => show({ focus: [{ card: 'board', id: el.dataset.play }], opened: { id: el.dataset.play, place: look?.place?.id ?? null } })],
+  // 开局 from the tray puts the board in the line, behind an errand not yet taken.
+  ['[data-play]', (el) => show({ opened: { id: el.dataset.play, place: look?.place?.id ?? null }, qSkip: view.qSkip.filter((k) => k !== `board:${el.dataset.play}`) })],
+  ['[data-qnext]', (el) => putOff(el.dataset.qnext)],
   ['[data-g]', (el) => gameMove(el)],
   ['[data-tile]', (el) => tileTap(el)],
 ];
