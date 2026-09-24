@@ -11,7 +11,8 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import http from 'node:http';
+import { execFile, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -258,5 +259,68 @@ ok('deleting a phone list keeps the songs on the phone', () => {
   assert.deepEqual(lists(r.view), []);
   assert.deepEqual(r.view.files, ['a.mp3'], 'a song in no playlist is still a song');
 });
+
+
+// ── play history ────────────────────────────────────────────────────────────
+
+ok('a play counts on the song, and the latest play time is kept', () => {
+  const dir = freshDir(['a.mp3']);
+  const r = send(dir, [
+    { id: 'p1', op: 'track-played', file: 'a.mp3', at: '2026-09-24T10:00:00Z' },
+    { id: 'p2', op: 'track-played', file: 'a.mp3', at: '2026-09-24T09:00:00Z' }, // arrived late
+  ]);
+  assert.deepEqual(r.results.map((x) => x.ok), [true, true]);
+  const [t] = JSON.parse(fs.readFileSync(path.join(dir, 'library.json'), 'utf8')).tracks;
+  assert.equal(t.plays, 2);
+  assert.equal(t.last_played, '2026-09-24T10:00:00.000Z', 'never moved backwards');
+});
+
+ok('a play is counted once, however often it is re-sent', () => {
+  const dir = freshDir(['a.mp3']);
+  const op = { id: 'p1', op: 'track-played', file: 'a.mp3', at: '2026-09-24T10:00:00Z' };
+  send(dir, [op]);
+  const r = send(dir, [op]);
+  assert.equal(r.results[0].duplicate, true);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'library.json'), 'utf8')).tracks[0].plays, 1);
+});
+
+ok('a play of a song this Mac no longer has is spent, not skipped', () => {
+  const dir = freshDir(['a.mp3']);
+  const r = send(dir, [{ id: 'p1', op: 'track-played', file: 'gone.mp3', at: '2026-09-24T10:00:00Z' }]);
+  assert.equal(r.results[0].ok, true);
+  assert.deepEqual(r.skipped, [], 'nothing to tell the person');
+});
+
+
+// ── ringing the phone ───────────────────────────────────────────────────────
+// A fake daemon counts publishes. A play must not ring dj/library-changed: it
+// changes no phone view, and a ring makes every connected phone re-sync.
+
+const published = [];
+const server = http.createServer((req, res) => {
+  let body = '';
+  req.on('data', (c) => { body += c; });
+  req.on('end', () => { published.push(JSON.parse(body || '{}')); res.end('{}'); });
+});
+await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+const port = String(server.address().port);
+
+const sendVia = (dir, ops) => new Promise((resolve, reject) => {
+  const b64 = Buffer.from(JSON.stringify(ops), 'utf8').toString('base64');
+  execFile(process.execPath, [ACTIONS, 'phone-ops', b64], { env: { ...process.env, DJ_DIR: dir, LINGGEN_PORT: port } },
+    (err, out) => (err ? reject(err) : resolve(JSON.parse(out.trim().split('\n').pop()))));
+});
+
+{
+  const dir = freshDir(['a.mp3']);
+  await sendVia(dir, [{ id: 'p1', op: 'track-played', file: 'a.mp3', at: '2026-09-24T10:00:00Z' }]);
+  assert.equal(published.length, 0, 'a play rang the phone');
+  await sendVia(dir, [{ id: 'r1', op: 'ref-add', files: ['a.mp3'] }]);
+  assert.equal(published.length, 1, 'a view edit rings it');
+  assert.equal(published[0].op, 'library-changed');
+  pass += 2;
+  console.log('  ok  a play rings no phone; a view edit does');
+}
+server.close();
 
 console.log(`\n${pass} checks passed`);

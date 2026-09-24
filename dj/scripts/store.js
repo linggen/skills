@@ -52,7 +52,9 @@ const asLists = (v) =>
 /// older build — or by hand — may be missing any of them, and a `reconcile` on
 /// a fresh install starts from `{tracks:[],playlists:[]}`.
 export function normalize(lib) {
-  lib.tracks ||= [];
+  lib.tracks = Array.isArray(lib.tracks) ? lib.tracks : [];
+  // The VLC/WebDAV push ledger is gone with the push; old rows shed it.
+  for (const t of lib.tracks) delete t.synced_to;
   lib.playlists = asLists(lib.playlists);
   lib.phone ||= {};
   lib.phone.files = uniq(lib.phone.files || []);
@@ -202,6 +204,41 @@ export function pruneMissing(lib, has) {
   return pruned + (before - lib.phone.files.length);
 }
 
+/// A song's file changed name (renamed in Finder, re-tagged by a tool) but it
+/// is the same song: every list and the phone keep it where it was.
+export function renameFile(lib, oldFile, newFile) {
+  const from = base(oldFile);
+  const to = base(newFile);
+  if (!from || !to || from === to) return;
+  const swap = (files) => uniq(files.map((f) => (f === from ? to : f)));
+  for (const p of [...lib.playlists, ...lib.phone.playlists]) p.files = swap(p.files);
+  lib.phone.files = swap(lib.phone.files).sort((a, b) => a.localeCompare(b));
+}
+
+// ── Naming a song ───────────────────────────────────────────────────────────
+// Callers name songs by the `file` value ListLibrary returns — full path or
+// basename — or by "artist|title". Comparison is NFC-lowercase (macOS stores
+// decomposed Unicode); the stored names stay byte-identical with the phone's.
+
+export const norm = (s) => base(s).normalize('NFC').toLowerCase();
+export const idOf = (t) => `${(t.artist || '').toLowerCase().trim()}|${(t.title || '').toLowerCase().trim()}`;
+
+/// The rows these names resolve to, and the names that resolve to nothing.
+export function resolveTracks(lib, wanted) {
+  const rows = lib.tracks.filter((t) => t.file);
+  const byBase = new Map(rows.map((t) => [norm(t.file), t]));
+  const byId = new Map(rows.map((t) => [t.id || idOf(t), t]));
+  const hits = [];
+  const missing = [];
+  for (const w of wanted) {
+    const key = String(w || '').trim();
+    const t = byBase.get(norm(key)) || byId.get(key.toLowerCase());
+    if (t) hits.push(t);
+    else missing.push(key);
+  }
+  return { hits, missing };
+}
+
 // ── What goes out ───────────────────────────────────────────────────────────
 
 /// The phone view as it goes down the wire on a sync: the songs a phone
@@ -217,13 +254,25 @@ export const phoneView = (lib) => ({
 /// same facts, kept because the page and the agent have always read them there.
 /// Recomputed on every save, which is the only way two shapes of one fact can
 /// never disagree.
+///
+/// One pass over the lists and one set for the phone, then a lookup per track
+/// — not every track against every list's every file.
 export function project(lib) {
   normalize(lib);
   lib.playlists.sort(byName);
   lib.phone.playlists.sort(byName);
+  const listsBy = new Map();
+  for (const p of lib.playlists) {
+    for (const f of p.files) {
+      if (!listsBy.has(f)) listsBy.set(f, []);
+      listsBy.get(f).push(p.name);
+    }
+  }
+  const carried = new Set(lib.phone.files);
   for (const t of lib.tracks) {
-    t.playlists = t.file ? listsForFile(lib, t.file) : [];
-    t.on_phone = t.file ? inPhoneView(lib, t.file) : false;
+    const f = t.file ? base(t.file) : '';
+    t.playlists = f ? (listsBy.get(f) || []).slice() : [];
+    t.on_phone = f ? carried.has(f) : false;
   }
   return lib;
 }

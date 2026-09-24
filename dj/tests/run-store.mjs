@@ -1,5 +1,5 @@
-// run-store.mjs — library.json as the store: the two views, the cascade, and
-// the one-shot lift of the register that used to hold all of this.
+// run-store.mjs — library.json as the store: the two views, the cascade, the
+// folder as ground truth, and the disk under it (lock, corrupt file, backups).
 // Run: node tests/run-store.mjs
 
 import assert from 'node:assert';
@@ -25,13 +25,38 @@ import {
   project,
   pruneMissing,
   removeFromList,
+  renameFile,
   removeFromPhone,
   renameList,
   setOrder,
 } from '../scripts/store.js';
-import { migrateRegister } from '../scripts/migrate-register.js';
 
 const ACTIONS = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'actions.mjs');
+
+/// One `actions.mjs` verb in a throwaway DJ dir. Port 1 is nothing, so no
+/// real phone is rung.
+function actions(dir, verb, ...rest) {
+  const opts = typeof rest.at(-1) === 'object' ? rest.pop() : {};
+  try {
+    const out = execFileSync(process.execPath, [ACTIONS, verb, ...rest], {
+      env: { ...process.env, DJ_DIR: dir, LINGGEN_PORT: '1', ...(opts.env || {}) },
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return JSON.parse(out.trim().split('\n').pop());
+  } catch (e) {
+    if (!opts.fail) throw e;
+    return JSON.parse(String(e.stdout).trim().split('\n').pop());
+  }
+}
+
+const readLib = (dir) => JSON.parse(fs.readFileSync(path.join(dir, 'library.json'), 'utf8'));
+
+function freshLib() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dj-io-'));
+  fs.writeFileSync(path.join(dir, 'library.json'), JSON.stringify({ tracks: [], playlists: [] }));
+  return dir;
+}
 
 let pass = 0;
 const ok = (name, fn) => { fn(); pass += 1; console.log(`  ok  ${name}`); };
@@ -264,69 +289,130 @@ ok('a karaoke render deleted by hand stops being advertised', () => {
   assert.equal(t.karaoke_audio, kept, 'and the one that is really there survives the sweep');
 });
 
-// ── the register that used to be the store ──────────────────────────────────
 
-const withRegister = (reg) => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dj-mig-'));
-  const file = path.join(dir, 'playlist-edits.json');
-  fs.writeFileSync(file, JSON.stringify({ device: 'mac-1', lastTs: 9, reg }));
-  return file;
+ok('a render that appears in .karaoke/ lights the song', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dj-kar-'));
+  const music = path.join(dir, 'music');
+  fs.mkdirSync(path.join(music, '.karaoke'), { recursive: true });
+  fs.writeFileSync(path.join(music, 'Beyond - 海闊天空.mp3'), 'ID3');
+  fs.writeFileSync(path.join(music, '.karaoke', 'Beyond - 海闊天空 (Karaoke).mp3'), 'ID3');
+  fs.writeFileSync(path.join(music, '.karaoke', 'Beyond - 海闊天空 (Karaoke).mp4'), 'mp4');
+  fs.writeFileSync(path.join(dir, 'config.json'), JSON.stringify({ library_dir: music }));
+  fs.writeFileSync(path.join(dir, 'library.json'), JSON.stringify({
+    tracks: [{ id: 'beyond|海闊天空', artist: 'Beyond', title: '海闊天空', file: path.join(music, 'Beyond - 海闊天空.mp3') }],
+  }));
+  actions(dir, 'reconcile');
+  const [t] = readLib(dir).tracks;
+  assert.equal(t.karaoke_audio, path.join(music, '.karaoke', 'Beyond - 海闊天空 (Karaoke).mp3'));
+  assert.equal(t.karaoke_video, path.join(music, '.karaoke', 'Beyond - 海闊天空 (Karaoke).mp4'));
+});
+
+ok('a renamed file keeps its song, its playlists and its place on the phone', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dj-ren-'));
+  const music = path.join(dir, 'music');
+  fs.mkdirSync(music, { recursive: true });
+  fs.writeFileSync(path.join(music, 'Beyond - 海闊天空.mp3'), 'ID3'); // renamed in Finder
+  fs.writeFileSync(path.join(music, 'other.mp3'), 'ID3');
+  fs.writeFileSync(path.join(dir, 'config.json'), JSON.stringify({ library_dir: music }));
+  fs.writeFileSync(path.join(dir, 'library.json'), JSON.stringify({
+    tracks: [
+      { id: 'beyond|海闊天空', artist: 'ＢＥＹＯＮＤ', title: '海闊天空', plays: 4, file: path.join(music, 'old name.mp3') },
+      { id: 'other', artist: '', title: 'other', file: path.join(music, 'other.mp3') },
+    ],
+    playlists: [{ name: 'HK', files: ['other.mp3', 'old name.mp3'] }],
+    phone: { files: ['old name.mp3'], playlists: [{ name: 'Car', files: ['old name.mp3'] }] },
+  }));
+  const r = actions(dir, 'reconcile');
+  assert.equal(r.renamed, 1);
+  assert.equal(r.adopted, 0, 'not a stranger');
+  const lib = readLib(dir);
+  assert.equal(lib.tracks.length, 2);
+  const t = lib.tracks.find((x) => x.title === '海闊天空');
+  assert.equal(t.file, path.join(music, 'Beyond - 海闊天空.mp3'));
+  assert.equal(t.plays, 4, 'the row itself carried over');
+  assert.deepEqual(lib.playlists[0].files, ['other.mp3', 'Beyond - 海闊天空.mp3'], 'same place in the list');
+  assert.deepEqual(lib.phone.files, ['Beyond - 海闊天空.mp3']);
+  assert.deepEqual(lib.phone.playlists[0].files, ['Beyond - 海闊天空.mp3']);
+});
+
+ok('renameFile swaps a name everywhere, in place', () => {
+  const l = lib('a.mp3', 'b.mp3');
+  addToList(l, ['a.mp3', 'b.mp3'], 'Set');
+  addToPhone(l, ['a.mp3']);
+  renameFile(l, '/Music/DJ/a.mp3', '/Music/DJ/z.mp3');
+  assert.deepEqual(filesInList(l, 'Set'), ['z.mp3', 'b.mp3']);
+  assert.deepEqual(l.phone.files, ['z.mp3']);
+});
+
+ok('the old push ledger is shed on load', () => {
+  const l = normalize({ tracks: [{ file: 'a.mp3', synced_to: ['iphone'] }] });
+  assert.equal('synced_to' in l.tracks[0], false);
+});
+
+// ── the disk under the writer ───────────────────────────────────────────────
+
+ok('a truncated library.json is never overwritten', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dj-bad-'));
+  const broken = '{"tracks":[{"title":"a","file":"/m/a.mp3"}],"playl';
+  fs.writeFileSync(path.join(dir, 'library.json'), broken);
+  const r = actions(dir, 'playlist-create', 'New', { fail: true });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /unreadable/);
+  assert.equal(fs.readFileSync(path.join(dir, 'library.json'), 'utf8'), broken, 'the damage is left for a person');
+  const copies = fs.readdirSync(dir).filter((n) => n.startsWith('library.json.corrupt-'));
+  assert.equal(copies.length, 1, 'and a copy is kept aside');
+  actions(dir, 'playlist-create', 'New', { fail: true });
+  assert.equal(fs.readdirSync(dir).filter((n) => n.startsWith('library.json.corrupt-')).length, 1, 'one copy per damage');
+});
+
+const holdLock = (dir, pid, ageMs = 0) => {
+  const lockDir = path.join(dir, 'data', '.actions-lock');
+  fs.mkdirSync(lockDir, { recursive: true });
+  fs.writeFileSync(path.join(lockDir, 'owner'), String(pid));
+  if (ageMs) {
+    const t = new Date(Date.now() - ageMs);
+    fs.utimesSync(lockDir, t, t);
+  }
+  return lockDir;
 };
 
-const cell = (v) => ({ v, ts: 1, d: 'mac-1' });
-
-ok('the register lifts into the library, both views, in order', () => {
-  const file = withRegister({
-    'pln:HK 90s': cell(true),
-    'pl:a.mp3|HK 90s': cell(true),
-    'pl:b.mp3|HK 90s': cell(true),
-    'plo:HK 90s': cell(['b.mp3', 'a.mp3']),
-    'ppn:Drive': cell(true),
-    'ppl:a.mp3|Drive': cell(true),
-    'ref:a.mp3': cell(true),
-  });
-  const l = lib('a.mp3', 'b.mp3');
-  assert.equal(migrateRegister(l, file), true);
-  assert.deepEqual(l.playlists, [{ name: 'HK 90s', files: ['b.mp3', 'a.mp3'] }]);
-  assert.deepEqual(l.phone.playlists, [{ name: 'Drive', files: ['a.mp3'] }]);
-  assert.deepEqual(l.phone.files, ['a.mp3']);
+ok('a lock whose holder died is taken over', () => {
+  const dir = freshLib();
+  const dead = execFileSync(process.execPath, ['-e', 'console.log(process.pid)'], { encoding: 'utf8' }).trim();
+  holdLock(dir, dead);
+  const r = actions(dir, 'playlist-create', 'X');
+  assert.equal(r.ok, true);
+  assert.equal(fs.existsSync(path.join(dir, 'data', '.actions-lock')), false, 'and released after');
 });
 
-ok('a tombstone stays dead — it never becomes a live entry', () => {
-  const file = withRegister({
-    'pln:Gone': cell(null),
-    'pln:Here': cell(true),
-    'pl:a.mp3|Here': cell(true),
-    'pl:b.mp3|Here': cell(null),
-    'ref:a.mp3': cell(true),
-    'ref:b.mp3': cell(null),
-  });
-  const l = lib('a.mp3', 'b.mp3');
-  migrateRegister(l, file);
-  assert.deepEqual(listsOf(l), ['Here']);
-  assert.deepEqual(filesInList(l, 'Here'), ['a.mp3']);
-  assert.deepEqual(l.phone.files, ['a.mp3']);
+ok('a live holder keeps its lock — the waiter gives up, it does not steal', () => {
+  const dir = freshLib();
+  const lockDir = holdLock(dir, process.pid);
+  const r = actions(dir, 'playlist-create', 'X', { fail: true, env: { DJ_LOCK_WAIT_MS: '300' } });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /busy/);
+  assert.equal(fs.readFileSync(path.join(lockDir, 'owner'), 'utf8'), String(process.pid), 'still ours');
+  fs.rmSync(lockDir, { recursive: true });
 });
 
-ok('an empty playlist survives the lift', () => {
-  const file = withRegister({ 'ppn:Empty': cell(true) });
-  const l = lib();
-  migrateRegister(l, file);
-  assert.deepEqual(l.phone.playlists, [{ name: 'Empty', files: [] }]);
+ok('a lock held past any verb’s run time is stale even with a live pid', () => {
+  const dir = freshLib();
+  holdLock(dir, process.pid, 60_000);
+  assert.equal(actions(dir, 'playlist-create', 'X').ok, true);
 });
 
-ok('a row that outlived its tombstone leaves with it', () => {
-  const file = withRegister({ 'del:a.mp3': cell(true) });
-  const l = lib('a.mp3', 'b.mp3');
-  migrateRegister(l, file);
-  assert.deepEqual(l.tracks.map((t) => t.file), ['/Music/DJ/b.mp3']);
-});
-
-ok('no register is not an error — it is every run after the first', () => {
-  const l = lib('a.mp3');
-  addToList(l, ['a.mp3'], 'Mine');
-  assert.equal(migrateRegister(l, '/nowhere/playlist-edits.json'), false);
-  assert.deepEqual(listsOf(l), ['Mine'], 'and it touched nothing');
+ok('a write keeps an hourly backup, ten deep', () => {
+  const dir = freshLib();
+  const backups = path.join(dir, 'data', 'backups');
+  actions(dir, 'playlist-create', 'A');
+  assert.equal(fs.readdirSync(backups).length, 1, 'the first write keeps a copy');
+  actions(dir, 'playlist-create', 'B');
+  assert.equal(fs.readdirSync(backups).length, 1, 'within the hour, no second copy');
+  for (let i = 0; i < 12; i += 1) actions(dir, 'playlist-create', `C${i}`, { env: { DJ_BACKUP_EVERY_MS: '0' } });
+  const kept = fs.readdirSync(backups);
+  assert.equal(kept.length, 10, 'the oldest roll off');
+  const newest = JSON.parse(fs.readFileSync(path.join(backups, kept.sort().at(-1)), 'utf8'));
+  assert.ok(newest.playlists.some((p) => p.name === 'C10'), 'the copy is the library before the write');
 });
 
 console.log(`\n${pass} checks passed`);
