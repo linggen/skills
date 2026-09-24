@@ -1,0 +1,215 @@
+{
+ "version": 1,
+ "province": "扬",
+ "start": "zhenze",
+ "_about": "The places of 扬 — a map, not a chain; the same shape as 徐's (see places/xu.json _about). Chapter 5's spine runs 震泽 → 姑苏 → 会稽山 → 禹穴; 广陵 is the road in from the Huai ferry, 彭蠡 the road on up the Jiang to 荆.",
+ "places": [
+  {
+   "id": "zhenze",
+   "name": {
+    "zh": "震泽",
+    "en": "Zhenze"
+   },
+   "tier": 0,
+   "roads": [
+    "gusu",
+    "pengli",
+    "qiantang"
+   ],
+   "map": [
+    0.9234,
+    0.6802
+   ],
+   "has": {
+    "seeds": true,
+    "scene": "05-arrive",
+    "games": [
+     "luoshu"
+    ]
+   },
+   "line": {
+    "zh": "三江既入，震泽底定——如今湖水涨了三年。",
+    "en": "The three rivers entered and Zhenze was stilled, says the Yu Gong. The lake has been rising for three years."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "gusu",
+   "name": {
+    "zh": "姑苏",
+    "en": "Gusu"
+   },
+   "tier": 0,
+   "roads": [
+    "zhenze",
+    "kuaiji",
+    "guangling"
+   ],
+   "map": [
+    0.9404,
+    0.6757
+   ],
+   "has": {
+    "shop": true,
+    "scene": "05-town",
+    "games": [
+     "alchemy-daily"
+    ]
+   },
+   "line": {
+    "zh": "吴的旧都，阊门外船挤着船，坊市在门里。",
+    "en": "The old capital of Wu; outside the Chang Gate the boats jostle, and the market lies within."
+   }
+  },
+  {
+   "id": "kuaiji",
+   "name": {
+    "zh": "会稽山",
+    "en": "Mount Kuaiji"
+   },
+   "tier": 0,
+   "roads": [
+    "gusu",
+    "yuxue",
+    "qiantang"
+   ],
+   "map": [
+    0.934,
+    0.7658
+   ],
+   "has": {
+    "creature": "fangfeng",
+    "scene": "05-hill"
+   },
+   "line": {
+    "zh": "禹会诸侯的山，也是他葬身的地方。",
+    "en": "The mountain where Yu gathered the lords, and where he was buried."
+   },
+   "meets": [
+    "find",
+    "beast"
+   ]
+  },
+  {
+   "id": "yuxue",
+   "name": {
+    "zh": "禹穴",
+    "en": "Yu's Cave"
+   },
+   "tier": 0,
+   "roads": [
+    "kuaiji"
+   ],
+   "map": [
+    0.944,
+    0.756
+   ],
+   "has": {
+    "scene": "05-deep"
+   },
+   "line": {
+    "zh": "会稽山上的洞，太史公年轻时爬进去过。",
+    "en": "The cave on Mount Kuaiji the Grand Historian climbed into as a young man."
+   },
+   "water": true,
+   "meets": [
+    "find"
+   ]
+  },
+  {
+   "id": "guangling",
+   "name": {
+    "zh": "广陵",
+    "en": "Guangling"
+   },
+   "tier": 1,
+   "roads": [
+    "huaidu",
+    "gusu"
+   ],
+   "map": [
+    0.8904,
+    0.6058
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "qiqiao"
+    ]
+   },
+   "line": {
+    "zh": "吴王在这里筑邗城、挖沟，把江和淮连在一起。",
+    "en": "Here the King of Wu walled the city of Han and dug a canal to join the Jiang to the Huai."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "pengli",
+   "name": {
+    "zh": "彭蠡",
+    "en": "Lake Pengli"
+   },
+   "tier": 1,
+   "roads": [
+    "zhenze"
+   ],
+   "map": [
+    0.7453,
+    0.8193
+   ],
+   "has": {
+    "creature": "changyou",
+    "seeds": true
+   },
+   "line": {
+    "zh": "彭蠡既猪，阳鸟攸居——大雁在这里过冬。",
+    "en": "Pengli was pooled, and the sun-birds settled there — the wild geese winter on it."
+   },
+   "water": true,
+   "meets": [
+    "beast",
+    "find"
+   ]
+  },
+  {
+   "id": "qiantang",
+   "name": {
+    "zh": "钱塘",
+    "en": "Qiantang"
+   },
+   "tier": 2,
+   "roads": [
+    "zhenze",
+    "kuaiji"
+   ],
+   "map": [
+    0.9183,
+    0.7438
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "wuziqi"
+    ]
+   },
+   "line": {
+    "zh": "江口的潮一日两回，白得像一道墙。",
+    "en": "The tide at the river mouth comes twice a day, white as a wall."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find",
+    "beast"
+   ]
+  }
+ ]
+}

@@ -529,6 +529,140 @@
       "elite": true,
       "_deck": "力逾九象 —— 金梭先扑，剑影在后，抢在你立稳之前。",
       "_signature": "颈伸百尺 —— 脖子一伸，先扫阵前，再落到你身上。"
+    },
+    {
+      "id": "fangfeng",
+      "name": {
+        "zh": "防风氏",
+        "en": "Fangfeng"
+      },
+      "pinyin": "fáng fēng shì",
+      "source": {
+        "zh": "《国语 · 鲁语下》",
+        "en": "Discourses of the States — Lu, part two"
+      },
+      "quote": {
+        "zh": "吴伐越，堕会稽，获骨焉，节专车。吴子使来好聘，且问之仲尼……仲尼曰：丘闻之：昔禹致群神于会稽之山，防风氏后至，禹杀而戮之，其骨节专车。此为大矣。",
+        "en": "Wu attacked Yue, razed Kuaiji and found a bone there, one joint of which filled a cart. The lord of Wu sent an envoy, who asked Confucius. Confucius said: I have heard that of old Yu called the spirits together on Mount Kuaiji; Fangfeng came late, and Yu put him to death. One joint of his bones filled a cart. That is the greatest of bones."
+      },
+      "look": {
+        "zh": "巨人，一节骨头就要一辆车来装；夜夜往会稽走，总也走不到。",
+        "en": "A giant, one joint of whose bones would fill a cart; every night he walks toward Kuaiji and never arrives."
+      },
+      "province": "扬",
+      "root": "wood",
+      "art": "art/fangfeng.webp",
+      "art_source": "Drawn for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《国语·鲁语下》 text — 防风氏 is not drawn in the 山海经 editions and no classical plate of him is known; laid on paper by tools/frame.py. See art/CREDITS.md.",
+      "art_caption": {
+        "zh": "据《国语》新绘",
+        "en": "Newly drawn after the Discourses of the States"
+      },
+      "likes": "ginseng",
+      "lean": "hide",
+      "pattern": [
+        "armor",
+        "strike",
+        "cast",
+        "gather",
+        "strike"
+      ],
+      "drops": "leijimu",
+      "deck": [
+        "leipu",
+        "leipu",
+        "tengmiao",
+        "fangfeng",
+        "linmu",
+        "fengmao",
+        "qingteng",
+        "leiming",
+        "fangfeng",
+        "leipu",
+        "zhennu",
+        "shanjing"
+      ],
+      "signature": {
+        "id": "houzhi",
+        "name": {
+          "zh": "后至",
+          "en": "Late to the Assembly"
+        },
+        "effect": {
+          "damage": 10,
+          "rally": {
+            "atk": 1,
+            "hp": 2
+          }
+        }
+      },
+      "elite": true,
+      "_deck": "骨节专车 —— 身子大，阵前一排排站住，再一起长高。",
+      "_signature": "防风氏后至 —— 他终于赶到，阵前的都挺直了腰，他一步踩下来。"
+    },
+    {
+      "id": "changyou",
+      "name": {
+        "zh": "长右",
+        "en": "Changyou"
+      },
+      "pinyin": "cháng yòu",
+      "source": {
+        "zh": "《山海经 · 南次二经》",
+        "en": "Classic of Mountains and Seas — Southern Mountains II"
+      },
+      "quote": {
+        "zh": "长右之山，无草木，多水。有兽焉，其状如禺而四耳，其名长右，其音如吟，见则郡县大水。",
+        "en": "Mount Changyou has no grass or trees, and much water. There is a beast on it like a long-tailed ape with four ears, called Changyou; its cry is a moan, and where it is seen the commanderies and counties flood."
+      },
+      "look": {
+        "zh": "长尾猿的样子，四只耳朵；叫声像人在低吟。",
+        "en": "A long-tailed ape with four ears; its cry is like someone moaning low."
+      },
+      "province": "扬",
+      "root": "water",
+      "art": "art/changyou.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》長右圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic239 - 長右圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/changyou.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "juyou",
+      "lean": "quick",
+      "pattern": [
+        "cast",
+        "strike",
+        "guard",
+        "strike",
+        "gather"
+      ],
+      "drops": "hanyu",
+      "deck": [
+        "luying",
+        "luying",
+        "shuiwu",
+        "changyou",
+        "changyou",
+        "hanquan",
+        "chaoqi",
+        "huiqi",
+        "luying",
+        "changyou",
+        "shuiwu",
+        "hantan"
+      ],
+      "signature": {
+        "id": "yinhou",
+        "name": {
+          "zh": "其音如吟",
+          "en": "The Moan"
+        },
+        "effect": {
+          "sweep": 4,
+          "damage": 6
+        }
+      },
+      "_deck": "见则郡县大水 —— 小鹿影一群一群，水跟着涨。",
+      "_signature": "其音如吟 —— 一声低吟，水漫过阵前，再漫到你脚下。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "05-yang",
+  "opens": null,
+  "province": "扬",
+  "corridor": false,
+  "first_scene": "05-arrive",
+  "gate": 5,
+  "title": {
+    "zh": "第五章 · 扬州之鼎",
+    "en": "Chapter 5 · The Cauldron of Yang"
+  },
+  "summary": {
+    "zh": "过淮入扬。震泽涨了三年，三江倒流，浅滩上尽是大骨头。每夜有个巨人从湖里走向会稽，天明走不到——防风氏还在赶两千年前那场会。让迟到的人到了，破开《洪范》五行之封，第五鼎归来——化神圆满者，在此炼虚。",
+    "en": "Across the Huai into Yang. Zhenze has been rising for three years, the three rivers run backward, and the shallows are full of great bones. Every night a giant walks out of the lake toward Kuaiji and by dawn has not arrived — Fangfeng is still hurrying to an assembly two thousand years gone. Let the late one arrive, break the seal of the Great Plan's five phases, and the fifth cauldron returns — one at the peak of Deity Transformation refines the Void here."
+  },
+  "intro": {
+    "zh": "禹在会稽大会诸侯，死后也葬在那里。三江既入，震泽底定——这是禹留下的扬州。如今湖水涨了三年，三条江都往回流，浅滩里的骨头一节比一辆车还长。",
+    "en": "Yu gathered the lords at Kuaiji, and was buried there. The three rivers entered, and Zhenze was stilled — that was the Yang that Yu left. Now the lake has been rising for three years, all three rivers run backward, and a single joint of bone in the shallows is longer than a cart."
+  },
+  "mystery": {
+    "zh": "那个夜夜走向会稽的巨人，要赶去哪里？",
+    "en": "Where is the giant who walks toward Kuaiji every night trying to go?"
+  }
+}

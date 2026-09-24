@@ -1,0 +1,60 @@
+{
+ "version": 1,
+ "id": "05-end",
+ "chapter": "05-yang",
+ "at": "yuxue",
+ "place": {
+  "zh": "会稽 · 江入海",
+  "en": "Kuaiji · The rivers reach the sea"
+ },
+ "setup": {
+  "zh": "三条江掉过头，往海里流了。震泽的水一夜退下去三尺，浅滩上的骨头又被泥盖住。会稽山上，有人在禹陵前放了一捧橘子。",
+  "en": "The three rivers turn and run to the sea. Overnight Zhenze drops three feet, and the bones in the shallows are covered by mud again. On Mount Kuaiji someone has left a handful of oranges before Yu's tomb."
+ },
+ "recap": {
+  "zh": "三江掉头入海，震泽退了三尺。第六鼎的气息在西边，江的上游。",
+  "en": "The three rivers turned to the sea and Zhenze fell three feet. The sixth cauldron's breath lay west, up the Jiang."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "荆",
+   "here": "扬"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "第六鼎的气息在西边——溯江而上，是荆州。有人在那里问过鼎有多重。",
+    "en": "The sixth cauldron's breath lies west — up the Jiang, in Jing. Someone there once asked how heavy a cauldron is."
+   }
+  }
+ ],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the chapter, asks what comes next",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "今日到此为止。荆州的路，开的时候我会告诉你。",
+      "en": "That is all for today. When the road to Jing opens, I will tell you."
+     }
+    }
+   ],
+   "ends": "05-yang"
+  }
+ ]
+}

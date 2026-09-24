@@ -48,7 +48,7 @@ for (const id of later) {
       let s = arrive(id, lang);
       const ch = content.chapters[id];
       const walked = [];
-      for (let guard = 0; guard < 12 && s.scene; guard += 1) {
+      for (let guard = 0; guard < 12 && s.scene && s.chapter === id; guard += 1) {
         const scene = ch.scenes[s.scene];
         walked.push(`${scene.id}@${s.place}`);
         assert.equal(s.place, scene.at, `${scene.id} is played where it stands`);

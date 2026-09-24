@@ -1,0 +1,126 @@
+{
+ "version": 1,
+ "id": "05-arrive",
+ "chapter": "05-yang",
+ "at": "zhenze",
+ "place": {
+  "zh": "震泽 · 湖岸",
+  "en": "Zhenze · The lakeshore"
+ },
+ "setup": {
+  "zh": "从淮水往南，过了江，是震泽。《禹贡》说三江既入，震泽底定——如今湖水涨了三年，三条江都倒着流。一个打鱼的女人在浅滩上拣东西，拣起来的不是鱼，是骨头，一节比她的船还长。",
+  "en": "South from the Huai and over the Jiang lies Zhenze. The Yu Gong says: the three rivers entered, and Zhenze was stilled. Now the lake has been rising for three years, and all three rivers run backward. A fisherwoman is picking things out of the shallows — not fish but bones, one joint longer than her boat."
+ },
+ "recap": {
+  "zh": "过江到了震泽：湖水涨了三年，三江倒流，浅滩里尽是大骨头。",
+  "en": "Over the Jiang to Zhenze: the lake had risen for three years, the three rivers ran backward, and the shallows were full of great bones."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "扬",
+   "here": "扬"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "水往回走。第五鼎在南边，它在往自己那儿收水。",
+    "en": "The water is running back. The fifth cauldron is to the south, drawing the water to itself."
+   },
+   "alone": {
+    "zh": "水往回走。第五鼎在南边，正把水往自己那儿收。",
+    "en": "The water runs back. The fifth cauldron lies south and is drawing the water to itself."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "打鱼的女人说：夜里有个大个子从湖里走过去，一步一个浪。要问，去姑苏。",
+    "en": "The fisherwoman says: at night a giant wades across the lake, a wave at every step. Ask in Gusu."
+   }
+  }
+ ],
+ "buttons": [
+  "town",
+  "bones"
+ ],
+ "exits": [
+  {
+   "id": "town",
+   "label": {
+    "zh": "去姑苏",
+    "en": "Go to Gusu"
+   },
+   "means": "goes to the town, to Gusu, to ask about the giant",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你沿着湖往东走。姑苏的阊门外船挤着船，门上贴着告示。",
+      "en": "East along the lake. Outside Gusu's Chang Gate the boats jostle, and a notice hangs on the gate."
+     }
+    }
+   ],
+   "next": "05-town"
+  },
+  {
+   "id": "bones",
+   "label": {
+    "zh": "看那骨头",
+    "en": "Look at the bones"
+   },
+   "means": "looks at the bones, asks the fisherwoman about them",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "骨头一节就有一辆车长。女人说，吴兵当年拆会稽城，也挖出过这样一节，没人认得，派人去问了孔子。",
+      "en": "One joint of it is as long as a cart. The woman says that when Wu's soldiers razed Kuaiji long ago they dug up a joint like this; no one knew it, and they sent to ask Confucius."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "孔子认得。……走吧，别让他等太久。",
+      "en": "Confucius knew. …Come, let's not keep him waiting too long."
+     },
+     "alone": {
+      "zh": "孔子认得它是谁的。",
+      "en": "Confucius knew whose it was."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "wade",
+   "means": "wades into the lake, tries to go straight south across the water",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你往湖里走了十步，水就涨到了胸口，一个浪把你推了回来。",
+      "en": "Ten steps into the lake the water is at your chest, and a wave pushes you back."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "水在涨。先去姑苏。",
+      "en": "The water is rising. Gusu first."
+     },
+     "alone": {
+      "zh": "水在涨。姑苏在东边。",
+      "en": "The water is rising. Gusu lies east."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

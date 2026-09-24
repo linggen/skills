@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "05-cauldron",
+ "chapter": "05-yang",
+ "at": "yuxue",
+ "place": {
+  "zh": "禹穴 · 鼎前",
+  "en": "Yu's Cave · Before the cauldron"
+ },
+ "setup": {
+  "zh": "扬鼎从洞底的水里升起来。鼎身上铸着三江、震泽和一片橘林——扬州的一切。鼎腹上映着一张脸，不是你的：一个老妇人的脸，手背上有鼎的花纹。",
+  "en": "The Cauldron of Yang rises from the water at the cave's bottom. Cast on its body are the three rivers, Zhenze and an orange grove — everything of Yang. On its belly a face is reflected, not yours: an old woman's face, with the pattern of a cauldron on the back of her hand."
+ },
+ "recap": {
+  "zh": "扬鼎升起，鼎腹上映出一张老妇人的脸，她的手背上有鼎纹。",
+  "en": "The Cauldron of Yang rose, and on its belly was reflected an old woman's face, a cauldron's pattern on the back of her hand."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "gate",
+   "chapter": "05-yang"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是她。……她不是我娘。我没有人，她也没有人，就凑成了两个。",
+    "en": "It's her. …She wasn't my mother. I had no one, and she had no one, so we made two."
+   },
+   "alone": {
+    "zh": "鼎腹上的老妇人看着你，像在认一个人。",
+    "en": "The old woman on the cauldron's belly looks at you as if trying to know someone."
+   }
+  }
+ ],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "受鼎气 · 炼虚",
+    "en": "Take the cauldron's breath · Void Refinement"
+   },
+   "means": "touches the cauldron, takes its breath, attempts the breakthrough",
+   "breakthrough": true,
+   "refuse": {
+    "zh": "鼎气涌上来又退开。化神未满，炼不了虚。先回人间，把功课做满。",
+    "en": "The breath surges over you and draws back. Your Deity Transformation is not yet full; you cannot refine the Void. Go back to the world and fill your practice first."
+   },
+   "show": [
+    {
+     "card": "tribulation",
+     "strikes": 3
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "三条江从三面流进丹田，流过元神，又流出去，什么也没留下——只留下空。空里什么都装得下。鼎小了，小到握在掌心，和前四口并排。",
+      "en": "Three rivers flow into your dantian from three sides, through the spirit and out again, leaving nothing — nothing but emptiness, and emptiness holds everything. The cauldron shrinks until it sits in your palm beside the other four."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "炼虚了。……五口。",
+      "en": "Void Refinement. …Five."
+     },
+     "alone": {
+      "zh": "炼虚了。五口鼎。",
+      "en": "Void Refinement. Five cauldrons."
+     }
+    }
+   ],
+   "next": "05-end"
+  },
+  {
+   "id": "wait",
+   "means": "hesitates, asks what will happen, wants to prepare first",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "防风氏等了两千年。它不差这一会儿。",
+      "en": "Fangfeng waited two thousand years. It can spare a little while."
+     },
+     "alone": {
+      "zh": "防风氏等了两千年。这鼎也等得起。",
+      "en": "Fangfeng waited two thousand years. This cauldron can wait too."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

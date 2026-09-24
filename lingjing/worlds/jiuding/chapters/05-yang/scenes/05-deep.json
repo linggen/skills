@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "05-deep",
+ "chapter": "05-yang",
+ "at": "yuxue",
+ "place": {
+  "zh": "禹穴 · 会稽山中",
+  "en": "Yu's Cave · Inside Mount Kuaiji"
+ },
+ "setup": {
+  "zh": "山腰上一个洞，洞口的石头被人摸得发亮——太史公二十岁时爬进来过。洞底的水里卧着一口鼎，鼎口盖着石板，板上刻着五行：二曰火，三曰木，四曰金，五曰土——第一个空着。",
+  "en": "A cave in the mountainside, the stones at its mouth rubbed smooth by hands — the Grand Historian climbed in here at twenty. In the water at the bottom lies a cauldron, its mouth covered by a slab cut with the five phases: second fire, third wood, fourth metal, fifth earth — the first left blank."
+ },
+ "recap": {
+  "zh": "禹穴底下卧着一口鼎，石板上刻着《洪范》五行，第一个空着。",
+  "en": "At the bottom of Yu's Cave lay a cauldron, its slab cut with the five phases of the Great Plan, the first left blank."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "《洪范》——禹从天那里得来的九条大法，头一条就是五行。",
+    "en": "The Great Plan — the nine great laws Yu received from Heaven. The first of them is the five phases."
+   },
+   "alone": {
+    "zh": "《洪范》九畴，禹得之于天，初一曰五行。",
+    "en": "The Great Plan's nine divisions, which Yu received from Heaven; the first is the five phases."
+   }
+  }
+ ],
+ "buttons": [
+  "seal"
+ ],
+ "exits": [
+  {
+   "id": "seal",
+   "label": {
+    "zh": "读封 · 填第一",
+    "en": "Read the seal · Fill the first"
+   },
+   "means": "reads the seal, answers which phase comes first",
+   "key": "seal-yang",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你在第一个空处写下那个字。石板化开了，像冰落进水里。鼎口的气冲上来——是湖水的味道，和橘子花的味道。",
+      "en": "You write the character in the first place. The slab dissolves like ice dropped into water. The cauldron's breath rushes up — lake water, and orange blossom."
+     }
+    }
+   ],
+   "next": "05-cauldron"
+  },
+  {
+   "id": "force",
+   "means": "tries to break, lift or pry the slab by force",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "石板不动。五行的字在你掌下轮着亮，一个接一个。",
+      "en": "The slab does not move. Under your palm the five characters light up in turn, one after another."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

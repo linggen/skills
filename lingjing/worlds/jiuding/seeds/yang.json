@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "province": "扬",
+  "_about": "奇遇 seeds for 扬 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "yang-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "会稽的老人说，从前有个国君把一只苦胆挂在座前，吃饭前先尝一口。",
+        "en": "An old man of Kuaiji says a king once hung a gall bladder before his seat and tasted it before every meal."
+      },
+      "source": {
+        "zh": "《史记·越王勾践世家》：置胆于坐，坐卧即仰胆，饮食亦尝胆也。",
+        "en": "Records of the Grand Historian, Goujian of Yue: he set a gall bladder by his seat, looked up at it sitting or lying, and tasted it at meals."
+      }
+    },
+    {
+      "id": "yang-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "若耶溪边有个姑娘捂着心口皱眉，邻家的姑娘学她，村里的人都关了门。",
+        "en": "By the Ruoye stream a girl frowns with a hand on her heart; the girl next door copies her, and the whole village shuts its doors."
+      },
+      "source": {
+        "zh": "《庄子·天运》：西施病心而矉其里，其里之丑人见而美之，归亦捧心而矉其里。",
+        "en": "Zhuangzi, \"The Turning of Heaven\": Xishi, sick at heart, frowned; an ugly neighbour thought it beautiful and went home clutching her heart and frowning."
+      }
+    },
+    {
+      "id": "yang-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "姑苏东门上，老人说曾挂过一双眼睛，要看越兵进城。",
+        "en": "Over Gusu's East Gate, the old men say, a pair of eyes once hung, to watch the Yue army march in."
+      },
+      "source": {
+        "zh": "《史记·伍子胥列传》：抉吾眼县吴东门之上，以观越寇之入灭吴也。",
+        "en": "Records of the Grand Historian, Wu Zixu: gouge out my eyes and hang them over Wu's East Gate, that I may see the Yue raiders come in and destroy Wu."
+      }
+    },
+    {
+      "id": "yang-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个吴地的读书人说，他的先人把一口剑挂在一座坟前的树上，因为坟里的人生前喜欢它。",
+        "en": "A scholar of Wu says his forebear hung a sword on the tree by a grave, because the man in it had liked the sword in life."
+      },
+      "source": {
+        "zh": "《史记·吴太伯世家》：季札之初使，北过徐君。徐君好季札剑……还至徐，徐君已死，于是乃解其宝剑，系之徐君冢树而去。",
+        "en": "Records of the Grand Historian, Taibo of Wu: the lord of Xu admired Jizha's sword; returning, Jizha found him dead, untied the sword and hung it on the tree by his grave."
+      }
+    },
+    {
+      "id": "yang-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "厨子说，他烤的鱼肚子里，从前藏过一把匕首。",
+        "en": "A cook says that once a dagger was hidden in the belly of a fish like the one he is grilling."
+      },
+      "source": {
+        "zh": "《史记·刺客列传》：专诸置匕首鱼炙之腹中而进之。",
+        "en": "Records of the Grand Historian, the Assassins: Zhuan Zhu hid a dagger in the belly of a grilled fish and served it."
+      }
+    },
+    {
+      "id": "yang-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "铸剑铺的师傅说，好剑的炉里，要投进铸剑人妻子的头发和指甲。",
+        "en": "A swordsmith says the furnace of a great sword wants the hair and nail-clippings of the smith's wife."
+      },
+      "source": {
+        "zh": "《吴越春秋·阖闾内传》：干将作剑……莫耶乃断发剪爪，投于炉中……剑成。",
+        "en": "Spring and Autumn of Wu and Yue: Ganjiang forged swords; Moye cut her hair and nails and threw them into the furnace, and the swords were made."
+      }
+    },
+    {
+      "id": "yang-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个老人说，吴人的祖先本是周王的长子，把王位让给弟弟，跑到这里剪了头发，刺了身子。",
+        "en": "An old man says the forefather of Wu was a Zhou king's eldest son, who gave the throne to his brother, came here, cut his hair and tattooed his body."
+      },
+      "source": {
+        "zh": "《史记·吴太伯世家》：太伯、仲雍二人乃奔荆蛮，文身断发，示不可用。",
+        "en": "Records of the Grand Historian: Taibo and Zhongyong fled to the southern tribes, tattooed themselves and cut their hair, to show they could not be used."
+      }
+    },
+    {
+      "id": "yang-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "震泽上一条小船，船上的人说，从前有个大夫打完了仗，就驾着这样的船走了，再没回来。",
+        "en": "A small boat on Zhenze; the man in it says a minister once finished his war and sailed off in a boat like this, and never came back."
+      },
+      "source": {
+        "zh": "《史记·货殖列传》：范蠡既雪会稽之耻……乃乘扁舟浮于江湖。",
+        "en": "Records of the Grand Historian: when Fan Li had wiped out the shame of Kuaiji, he took a small boat and drifted off on the rivers and lakes."
+      }
+    },
+    {
+      "id": "yang-09",
+      "kind": "province-tale",
+      "creature": "fangfeng",
+      "line": {
+        "zh": "吴兵拆会稽城时挖出过一节骨头，一辆车才装得下。",
+        "en": "When the soldiers of Wu razed Kuaiji they dug up a single joint of bone that filled a cart."
+      },
+      "source": {
+        "zh": "《国语·鲁语下》：吴伐越，堕会稽，获骨焉，节专车。",
+        "en": "Discourses of the States: Wu attacked Yue, razed Kuaiji and found a bone, one joint of which filled a cart."
+      }
+    },
+    {
+      "id": "yang-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个年轻人背着书箱往会稽走，说要去看禹穴。",
+        "en": "A young man with a book-box on his back is walking to Kuaiji; he says he means to see Yu's Cave."
+      },
+      "source": {
+        "zh": "《史记·太史公自序》：二十而南游江、淮，上会稽，探禹穴。",
+        "en": "Records of the Grand Historian, the Author's Preface: at twenty I travelled south to the Jiang and Huai, climbed Kuaiji and explored Yu's Cave."
+      }
+    },
+    {
+      "id": "yang-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "会稽的守陵人说，禹下葬只用了三寸厚的桐木棺。",
+        "en": "The keeper of the tomb at Kuaiji says Yu was buried in a coffin of paulownia three inches thick."
+      },
+      "source": {
+        "zh": "《墨子·节葬下》：禹东教乎九夷，道死，葬会稽之山，衣衾三领，桐棺三寸。",
+        "en": "Mozi, \"Moderation in Burials\": Yu died on the road teaching the Nine Yi and was buried on Mount Kuaiji in three layers of shroud and a paulownia coffin three inches thick."
+      }
+    },
+    {
+      "id": "yang-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "卖橘的人说，同一棵树，种到淮北结的就是枳。",
+        "en": "An orange-seller says the same tree, planted north of the Huai, bears bitter trifoliates."
+      },
+      "source": {
+        "zh": "《晏子春秋·内篇杂下》：橘生淮南则为橘，生于淮北则为枳。",
+        "en": "Yanzi Chunqiu: an orange grown south of the Huai is an orange; grown north of it, a trifoliate."
+      }
+    },
+    {
+      "id": "yang-13",
+      "kind": "province-tale",
+      "creature": "changyou",
+      "line": {
+        "zh": "彭蠡边的渔人说，湖边有只四只耳朵的猴子，它一叫，郡县就发大水。",
+        "en": "The fishermen of Pengli say there is a four-eared ape by the lake, and when it cries the counties flood."
+      },
+      "source": {
+        "zh": "《山海经·南次二经》：有兽焉，其状如禺而四耳，其名长右，其音如吟，见则郡县大水。",
+        "en": "Classic of Mountains and Seas: a beast like an ape with four ears, called Changyou; its cry is a moan, and where it is seen the counties flood."
+      }
+    },
+    {
+      "id": "yang-14",
+      "kind": "province-tale",
+      "line": {
+        "zh": "江口的潮一年比一年高，渔人说，是一个被装进皮袋扔进江里的人在发怒。",
+        "en": "The tide at the river mouth rises higher every year; the fishermen say it is the anger of a man who was sewn in a leather bag and thrown into the river."
+      },
+      "source": {
+        "zh": "《论衡·书虚》：吴王夫差杀伍子胥，煮之于镬，乃以鸱夷橐投之于江。子胥恚恨，驱水为涛。",
+        "en": "Lunheng: King Fuchai killed Wu Zixu and threw him into the river in a leather bag; in his fury Zixu drove the water into a bore."
+      }
+    },
+    {
+      "id": "yang-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "太湖西岸的人说，从前水里有蛟，山上有虎，还有一个恶少——除了两害，第三害自己改了。",
+        "en": "On the west shore of the lake they say there were once a flood-dragon in the water, a tiger on the hill and a young bully — two were killed, and the third mended his ways."
+      },
+      "source": {
+        "zh": "《世说新语·自新》：周处年少时，凶强侠气，为乡里所患。又义兴水中有蛟，山中有邅迹虎……",
+        "en": "A New Account of Tales of the World: Zhou Chu, violent in youth, was the bane of his village, as were the flood-dragon in the water and the tiger in the hills of Yixing."
+      }
+    },
+    {
+      "id": "yang-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个在北方做官的人辞了官回来，说秋风一起，他就想家乡的莼菜和鲈鱼。",
+        "en": "A man who held office in the north has resigned and come home; he says when the autumn wind rose he longed for the water-shield soup and perch of home."
+      },
+      "source": {
+        "zh": "《晋书·张翰传》：翰因见秋风起，乃思吴中菰菜、莼羹、鲈鱼脍。",
+        "en": "Book of Jin, Zhang Han: seeing the autumn wind rise, he longed for the wild rice, water-shield soup and perch of Wu."
+      }
+    },
+    {
+      "id": "yang-17",
+      "kind": "province-tale",
+      "line": {
+        "zh": "南林来的一个姑娘说，剑道不在书上。她折一根竹子，和剑客对了几招。",
+        "en": "A girl from the southern woods says the way of the sword is not in books; she breaks a bamboo cane and crosses it with a swordsman."
+      },
+      "source": {
+        "zh": "《吴越春秋·勾践阴谋外传》：越有处女，出于南林……（越女论剑）",
+        "en": "Spring and Autumn of Wu and Yue: there was a maiden of Yue from the southern woods, who spoke of the sword."
+      }
+    },
+    {
+      "id": "yang-18",
+      "kind": "province-tale",
+      "line": {
+        "zh": "富春江上一个钓鱼的老人，皇帝请他做官，他不去。",
+        "en": "An old man fishing on the Fuchun: the emperor asked him to take office, and he would not go."
+      },
+      "source": {
+        "zh": "《后汉书·逸民列传·严光》：（光）耕于富春山，后人名其钓处为严陵濑焉。",
+        "en": "Book of the Later Han, Yan Guang: he farmed on Mount Fuchun, and later men named the place he fished Yanling Rapids."
+      }
+    },
+    {
+      "id": "yang-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "一个穷后生说，每天回家饭菜都做好了，水缸里养着一只大螺。",
+        "en": "A poor young man says that every day he comes home to find the meal already cooked, and a great river snail living in his water jar."
+      },
+      "source": {
+        "zh": "《搜神后记·卷五》：谢端……得一大螺……（白水素女）",
+        "en": "Sequel to In Search of the Supernatural: Xie Duan found a great snail — the White-Water Maiden."
+      }
+    },
+    {
+      "id": "yang-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "庸岭的大蛇每年要吃一个姑娘；今年一个姑娘带着剑和狗，自己去了。",
+        "en": "The great snake of Mount Yong eats a girl every year; this year a girl has gone of her own accord, with a sword and a dog."
+      },
+      "source": {
+        "zh": "《搜神记·卷十九》：东越闽中有庸岭……其下北隰中有大蛇……（李寄斩蛇）",
+        "en": "In Search of the Supernatural: in Min of Eastern Yue was Mount Yong, and a great snake in the marsh below — Li Ji killed it."
+      }
+    }
+  ]
+}

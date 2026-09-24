@@ -127,13 +127,18 @@
    "roads": [
     "sishui",
     "sikou",
-    "yiqiao"
+    "yiqiao",
+    "guangling"
    ],
    "map": [
     0.8644,
     0.5476
    ],
-   "has": { "games": ["qiqiao"] },
+   "has": {
+    "games": [
+     "qiqiao"
+    ]
+   },
    "line": {
     "zh": "一条船，一个老船家。渡人，不渡心事。",
     "en": "One boat, one old boatman. He carries people, not their troubles."

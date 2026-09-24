@@ -22,6 +22,8 @@ paper, a warm paper ground with grain, the red seal).
 | kui | 夔 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷十四 大荒東經 plate 64 — same PDF, page 211 (the whole spread); also 吳任臣《山海經廣注》 1786 print, Commons *Shan Hai Jing Kui.jpg*, kept as reference |
 | tongtong | 狪狪 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷四 東山經 plate 26, lower left — same PDF, page 91 |
 | wuzhiqi | 无支祁 | **Drawn for Lingjing** by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《古岳渎经》 text (李公佐, in 《太平广记》卷四百六十七) — 无支祁 is not a 山海经 creature and no classical plate of it is known |
+| fangfeng | 防风氏 | **Drawn for Lingjing** by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after 《国语·鲁语下》 — no classical plate of 防风氏 is known |
+| changyou | 長右 | 《古今圖書集成·禽蟲典》長右圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic239 - 長右圖.svg* |
 
 The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
 on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.
@@ -41,3 +43,4 @@ choice, 2026-09-17).
 `items/*.webp` are painted for the game by the local picture model (FLUX.2
 klein 4B), 2026-09-15 (齐盐, 齐纨 and 符 2026-09-16; the five 天材地宝, the three
 妖丹 and 玉珏 2026-09-17), from each item's description. No outside source.
+橘柚 (juyou), 丹砂 (dansha), 蜀锦 (shujin) and 琅玕 (langgan) were painted the same way, 2026-09-24.

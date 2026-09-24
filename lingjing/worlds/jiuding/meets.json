@@ -304,6 +304,64 @@
     }
    }
   ],
+  "扬": [
+   {
+    "item": "juyou",
+    "at": [
+     "guangling",
+     "qiantang",
+     "zhenze"
+    ],
+    "line": {
+     "zh": "路边一棵没人管的橘树，熟透的果子掉了一地。",
+     "en": "An orange tree no one tends by the road, its ripe fruit fallen all around."
+    }
+   },
+   {
+    "item": "lingzhi",
+    "at": [
+     "kuaiji",
+     "yuxue"
+    ],
+    "line": {
+     "zh": "竹林下的石缝里，一朵灵芝顶着露水。",
+     "en": "In a cleft of rock under the bamboo, a lingzhi wearing the dew."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "zhenze",
+     "pengli"
+    ],
+    "line": {
+     "zh": "浅滩上一只翻倒的船，船板缝里卡着几块灵石。",
+     "en": "An upturned boat in the shallows, a few spirit stones wedged between its planks."
+    }
+   },
+   {
+    "item": "ginseng",
+    "at": [
+     "qiantang",
+     "kuaiji"
+    ],
+    "line": {
+     "zh": "采药人的背篓落在山道上，里面还剩一支参。",
+     "en": "A herb-gatherer's basket dropped on the hill path, one ginseng still inside."
+    }
+   },
+   {
+    "wealth": 6,
+    "at": [
+     "guangling",
+     "gusu"
+    ],
+    "line": {
+     "zh": "邗沟边的石阶上，有人落下了一小袋灵石。",
+     "en": "On the stone steps by the Han canal someone has dropped a small purse of spirit stones."
+    }
+   }
+  ],
   "*": [
    {
     "item": "ginseng",

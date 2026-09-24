@@ -389,6 +389,53 @@
     "Gen"
    ],
    "hint": "Li is fire; opposite fire is water."
+  },
+  "fangfeng-1": {
+   "q": "A person over a cloud — one character. It is where he is going.",
+   "a": [
+    "会",
+    "hui",
+    "meet",
+    "assembly",
+    "gathering"
+   ],
+   "choices": [
+    "会",
+    "伞",
+    "众",
+    "动"
+   ],
+   "hint": "The roof of 人 above, 云 below."
+  },
+  "fangfeng-2": {
+   "q": "Razing Kuaiji, the soldiers of Wu dug up one joint of bone that filled a cart. Whose did Confucius say it was?",
+   "a": [
+    "fangfeng",
+    "fang feng",
+    "fangfeng's",
+    "防风氏"
+   ],
+   "choices": [
+    "Gonggong",
+    "Fangfeng",
+    "Chiyou",
+    "Kuafu"
+   ],
+   "hint": "When Yu called the spirits together, he came late."
+  },
+  "seal-yang": {
+   "q": "The Great Plan: of the five phases, the first is —? The second is fire, the third wood, the fourth metal, the fifth earth.",
+   "a": [
+    "water",
+    "水"
+   ],
+   "choices": [
+    "water",
+    "metal",
+    "wood",
+    "earth"
+   ],
+   "hint": "It was Yu's whole life's work."
   }
  }
 }

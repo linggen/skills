@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "05-town",
+ "chapter": "05-yang",
+ "at": "gusu",
+ "place": {
+  "zh": "姑苏 · 阊门",
+  "en": "Gusu · The Chang Gate"
+ },
+ "setup": {
+  "zh": "告示上写：每夜有巨人自湖中南行，望会稽而去，天明不至；步步起浪，震泽日高，三江逆流。有能止之者，吴县重赏。阊门里的坊市照常开着：橘柚堆成了山，竹篠一捆一捆，三品之金在炉前闪着三种颜色。",
+  "en": "The notice says: every night a giant walks south out of the lake toward Kuaiji and by dawn has not arrived; each step raises a wave, Zhenze rises by the day, and the three rivers run backward. Whoever can stop him, the county of Wu will reward. Inside the Chang Gate the market is open as ever: oranges and pomelos heaped like hills, bamboo in bundles, and the three grades of metal shining three colours before the furnace."
+ },
+ "recap": {
+  "zh": "姑苏阊门的告示说，每夜有巨人往会稽走，天明不至，步步起浪。",
+  "en": "Gusu's Chang Gate notice said a giant walked toward Kuaiji every night and never arrived by dawn, raising a wave at every step."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "往会稽走的巨人……会稽是禹会诸侯的地方。他是去赴会的。",
+    "en": "A giant walking to Kuaiji… Kuaiji is where Yu gathered the lords. He is going to the assembly."
+   },
+   "alone": {
+    "zh": "会稽是禹会诸侯的地方。那巨人是去赴会的。",
+    "en": "Kuaiji is where Yu gathered the lords. The giant is going to the assembly."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "阊门里有坊市。往会稽去，出南门，一路是山。",
+    "en": "There is a market inside the Chang Gate. For Kuaiji, go out by the south gate; it is hills all the way."
+   }
+  }
+ ],
+ "buttons": [
+  "hill",
+  "market"
+ ],
+ "exits": [
+  {
+   "id": "hill",
+   "label": {
+    "zh": "去会稽山",
+    "en": "To Mount Kuaiji"
+   },
+   "means": "goes to Mount Kuaiji, follows the giant",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你出南门往会稽走。天黑下来，身后的湖里响起一声浪，又一声。",
+      "en": "Out by the south gate toward Kuaiji. Night falls, and behind you in the lake a wave booms, then another."
+     }
+    }
+   ],
+   "next": "05-hill"
+  },
+  {
+   "id": "market",
+   "label": {
+    "zh": "先逛坊市",
+    "en": "The market first"
+   },
+   "means": "goes shopping, asks about the market, wants to buy or sell",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "卖橘的人说，橘树种在淮南结的是橘，种到淮北就成了枳。他的橘子是淮南的。",
+      "en": "The orange-seller says an orange tree planted south of the Huai bears oranges, and north of it bears bitter trifoliates. His are from the south."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "ask",
+   "means": "asks the townspeople and boatmen about the giant",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "船家说：他走得不快，可一夜也走不到。有人听见他在念一个名字，像在等人点卯。",
+      "en": "A boatman says: he doesn't walk fast, but he never gets there in a night. Someone heard him saying a name, like a man waiting for the roll to be called."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "他念的是他自己的名字。",
+      "en": "The name he's saying is his own."
+     },
+     "alone": {
+      "zh": "他念的是他自己的名字。",
+      "en": "The name he says is his own."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

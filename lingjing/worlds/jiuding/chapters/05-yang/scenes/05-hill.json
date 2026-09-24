@@ -1,0 +1,188 @@
+{
+ "version": 1,
+ "id": "05-hill",
+ "chapter": "05-yang",
+ "at": "kuaiji",
+ "place": {
+  "zh": "会稽山 · 夜",
+  "en": "Mount Kuaiji · Night"
+ },
+ "setup": {
+  "zh": "月下，一个巨人从湖里走上来，骨节大得像车轴。他一步一步往山顶走，山顶却总在前面。他身上挂着湖草，脸上没有怒气，只有急——像一个迟到的人，怕点名时自己不在。",
+  "en": "Under the moon a giant comes up out of the lake, his joints as big as cart-axles. Step by step he climbs toward the summit, and the summit is always ahead. Lake-weed hangs from him; his face is not angry, only anxious — like someone who is late and afraid of not being there when his name is called."
+ },
+ "recap": {
+  "zh": "会稽山下，防风氏还在赶两千年前那场会——他迟到了，一直没到。",
+  "en": "Below Mount Kuaiji, Fangfeng was still hurrying to an assembly two thousand years gone — he had come late, and never arrived."
+ },
+ "cast": [
+  "yinyue",
+  "fangfeng"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "fangfeng"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是防风氏。禹在会稽会群神，他来晚了，禹杀了他。……他以为那场会还没散。",
+    "en": "It's Fangfeng. Yu called the spirits together at Kuaiji; he came late, and Yu killed him. …He thinks the assembly hasn't broken up yet."
+   },
+   "alone": {
+    "zh": "是防风氏——禹致群神于会稽，他后至，禹杀而戮之。他以为那场会还没散。",
+    "en": "It is Fangfeng. Yu called the spirits together at Kuaiji; he came late, and Yu put him to death. He thinks the assembly has not yet broken up."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "防风氏低头看你，像看一个守门的：你是来点名的吗？他先要问你一句。",
+    "en": "Fangfeng looks down at you as at a gatekeeper: are you here to call the roll? First he has a question."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "rollcall"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the giant, stops his walking by force",
+   "game": {
+    "id": "subdue-fangfeng",
+    "kind": "duel",
+    "creature": "fangfeng"
+   },
+   "withdrawn": {
+    "zh": "防风氏退回湖里去了。明夜他还会走。",
+    "en": "Fangfeng wades back into the lake. Tomorrow night he will walk again."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "防风氏跪了下来，膝盖压进山土里。他不再往上走了。",
+      "en": "Fangfeng goes down on his knees, pressing them into the hillside. He climbs no more."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "湖水在退。……鼎在山里。",
+      "en": "The lake is going down. …The cauldron is in the mountain."
+     },
+     "alone": {
+      "zh": "湖水在退。鼎在山里。",
+      "en": "The lake falls. The cauldron is in the mountain."
+     }
+    }
+   ],
+   "next": "05-deep"
+  },
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答他的问",
+    "en": "Answer him"
+   },
+   "means": "answers the giant's riddle",
+   "key": [
+    "fangfeng-1",
+    "fangfeng-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你答了。防风氏想了很久，点点头：对，是那个字。他在山坡上坐了下来。",
+      "en": "You answer. Fangfeng thinks a long while, then nods: yes, that is the word. He sits down on the hillside."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "他不走了。山里，走。",
+      "en": "He's stopped. Into the mountain — come."
+     },
+     "alone": {
+      "zh": "他不走了。鼎在山里。",
+      "en": "He has stopped. The cauldron is in the mountain."
+     }
+    }
+   ],
+   "next": "05-deep"
+  },
+  {
+   "id": "rollcall",
+   "label": {
+    "zh": "点名 · 防风氏到",
+    "en": "Call the roll · Fangfeng, present"
+   },
+   "means": "calls his name like a roll-call, tells him he has arrived and the assembly has counted him",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你站到山坡上，像一个司仪，高声唱：防风氏——到。巨人愣住了。他看了看四周：没有禹，没有群神，只有月亮。可他听见了自己的名字。他慢慢坐下来，像一个终于赶到的人。",
+      "en": "You stand on the slope like a herald and call out: Fangfeng — present. The giant stops still. He looks around: no Yu, no gathered spirits, only the moon. But he heard his name. Slowly he sits down, like someone who has made it at last."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "晚到也是到了。",
+      "en": "Late is still arrived."
+     },
+     "alone": {
+      "zh": "月亮底下，晚到也算到了。",
+      "en": "Under the moon, late still counts as arrived."
+     }
+    }
+   ],
+   "next": "05-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs away from the giant, turns back, refuses to act",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你往回走。身后的脚步声又响起来，一步一个浪——他还在赶路。",
+      "en": "You turn back. Behind you the footsteps start again, a wave at every one — he is still on his way."
+     },
+     "alone": {
+      "zh": "你往回走。身后的脚步声又响起来，一步一个浪；他还在赶路。",
+      "en": "You turn back. Behind you the footsteps start again, a wave at every one: he is still on his way."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

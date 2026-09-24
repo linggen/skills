@@ -298,7 +298,8 @@
       "sell": 75,
       "sold": [
         "兖",
-        "青"
+        "青",
+        "扬"
       ],
       "effect": {
         "learn": "wangqi",
@@ -427,7 +428,8 @@
       "buy": 300,
       "sell": 85,
       "sold": [
-        "兖"
+        "兖",
+        "扬"
       ],
       "effect": {
         "temper": 5,
@@ -579,6 +581,25 @@
           "earth": 2
         }
       }
+    },
+    {
+      "id": "juyou",
+      "kind": "material",
+      "name": {
+        "zh": "橘柚",
+        "en": "Oranges and pomelos"
+      },
+      "art": "art/items/juyou.webp",
+      "about": {
+        "zh": "扬州厥包橘柚。淮南的橘，过了淮就成了枳。",
+        "en": "Yang sent oranges and pomelos in baskets as tribute. An orange of the south turns bitter north of the Huai."
+      },
+      "buy": 24,
+      "sell": 7,
+      "sold": [
+        "扬"
+      ],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     }
   ]
 }
