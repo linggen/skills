@@ -82,23 +82,17 @@ tools:
 
   - name: Progress
     description: >-
-      How the game stands, in a few lines: the realm (`tier`, `progress` of
-      `next`), 体力, where the player is, the errands in hand and whether
-      each is ready, today's practice done and left, and `page_did` — the
-      last few things the player did on the page since this reader asked.
-      A read that changes nothing else. Look carries all of it and more:
-      call this only when a short answer is enough.
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --for={{reader}}"
+      Yinyue's read of how the game stands, in a few lines: the realm
+      (`tier`, `progress` of `next`), 体力, where the player is, the errands
+      in hand and whether each is ready, today's practice done and left,
+      and `page_did` — the last few things the player did on the page since
+      she last asked. Changes nothing else. (Ling reads all of it, and
+      more, in Look.)
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --for=yinyue"
     tier: read
     pet: true
+    page_only: true
     timeout_ms: 8000
-    args:
-      reader:
-        type: string
-        required: true
-        description: >-
-          Who is asking — `ling` or `yinyue` — so each is handed only what
-          they have not seen.
 
   - name: Resolve
     description: >-
