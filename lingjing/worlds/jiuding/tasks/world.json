@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "_about": "In-world tasks. Real-life ones are never here — each app writes its own to ~/.linggen/quests/<app>.json.",
+  "_about": "In-world tasks. Real-life ones are never here — each app writes its own to ~/.linggen/quests/<app>.json. A hosted game costs rewards.json stamina.cost.game when it is paid (论道 when it opens) and pays from the `game` table: a little, every day — the card fight is where 修为 is earned.",
   "tasks": [
     {
       "id": "alchemy-first",
@@ -14,43 +14,43 @@
     {
       "id": "alchemy-daily", "kind": "board", "game": "lianliankan", "period": "day", "hosted": true,
       "title": { "zh": "炼丹 · 配一炉丹", "en": "Alchemy · A furnace of pills" },
-      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "grant": { "table": "game", "progress": 5, "wealth": 10 },
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
       "id": "luoshu", "kind": "board", "game": "luoshu", "period": "day", "hosted": true,
       "title": { "zh": "洛书 · 破一道鼎封", "en": "Luo Shu · Break a cauldron seal" },
-      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "grant": { "table": "game", "progress": 5, "wealth": 10 },
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
       "id": "huarong", "kind": "board", "game": "huarong", "period": "day", "hosted": true,
       "title": { "zh": "华容道 · 走出秘境", "en": "Huarong · Out of the hidden realm" },
-      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "grant": { "table": "game", "progress": 5, "wealth": 10 },
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
       "id": "qiqiao", "kind": "board", "game": "qiqiao", "period": "day", "hosted": true,
       "title": { "zh": "七巧 · 布一座阵", "en": "Tangram · Lay out a formation" },
-      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "grant": { "table": "game", "progress": 5, "wealth": 10 },
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
       "id": "wuziqi", "kind": "board", "game": "wuziqi", "period": "day", "hosted": true,
       "title": { "zh": "五子 · 与人对弈", "en": "Five in a row · A game with a rival" },
-      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "grant": { "table": "game", "progress": 5, "wealth": 10 },
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
       "id": "xiangqi", "kind": "board", "game": "xiangqi", "period": "day", "hosted": true,
       "title": { "zh": "残局 · 解一局象棋", "en": "Endgame · Solve a xiangqi endgame" },
-      "grant": { "table": "task", "progress": 30, "wealth": 10 },
+      "grant": { "table": "game", "progress": 5, "wealth": 10 },
       "done_line": { "zh": "成了。", "en": "Done." }
     },
     {
       "id": "lundao", "kind": "word", "period": "day", "hosted": true,
       "title": { "zh": "论道 · 与稷下先生", "en": "Debate · With the scholar of Jixia" },
-      "grant": { "table": "task", "progress": 40, "wealth": 10 },
+      "grant": { "table": "game", "progress": 6, "wealth": 10 },
       "done_line": { "zh": "先生拱手：「受教。」", "en": "The scholar bows: \"I have learned from you.\"" }
     }
   ]

@@ -137,9 +137,11 @@ const freeHere = (content, s, kind) => CHAPTER_COSTS.has(kind) && !inMade(s)
   && Boolean(content.chapters[s.chapter]?.free) && !s.ended.includes(s.chapter);
 
 /* 体力 is the only limit on a day's play (his, 2026-09-23): moving costs by
-   the road, a fight, a 奇遇, a story step, a choice and a taming cost; taps
-   that take no time — the market, errands, 炼丹, 起卦, 疗伤, 历练 — cost
-   nothing. rewards.json § stamina.cost holds the numbers. `n` is how many. */
+   the road, a fight, a 奇遇, a story step, a choice and a taming cost, and a
+   hosted game (the six boards, 炼丹 among them, and 论道) costs what a step
+   does (2026-09-24); taps that take no time — the market, errands, 起卦,
+   疗伤, 历练 — cost nothing. rewards.json § stamina.cost holds the numbers.
+   `n` is how many. */
 function spendStamina(content, s, ctx, kind, n = 1) {
   if (freeHere(content, s, kind)) return null;
   // A dire cast asked about cultivation: each story step waits its rest.

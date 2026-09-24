@@ -5,8 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ARM_SLOTS } from '../content.mjs';
 import { dayKey, fill, normalizeAnswer, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
-import { wornOf } from './arms.mjs';
-import { cardCatalog, deckFor, healthBrief, hpMaxOf, ownedCards, pickedCards, usable, WEAPON_POWER, woundsNow } from './cards.mjs';
+import { cardCatalog, deckFor, gearFight, healthBrief, hpMaxOf, ownedCards, pickedCards, rootsOf, usable, woundsNow } from './cards.mjs';
 import { bondBrief, companionOf, hasCompanion, nearestPlace } from './companion.mjs';
 import { clone, pay, paysOf, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { herAway } from './daily.mjs';
@@ -735,13 +734,18 @@ function gearBrief(content, state) {
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
     ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]), bond: bondBrief(content, state) } } : {}),
-    fight: { power: wornOf(content, state, 'weapon') || state.treasure ? WEAPON_POWER : 0 },
+    // What the fight takes from them (cards.mjs § 装备入局): 主灵根一击 +power,
+    // 护体 armor, 抗 by element, the 符 in hand, and the roots they lend.
+    fight: (() => {
+      const g = gearFight(content, state), lent = [...rootsOf(content, state)].filter(r => !(state.traits ?? []).includes(r));
+      return { power: g.power, armor: g.armor, ...(g.ward ? { ward: g.ward } : {}), ...(g.charm ? { charm: g.charm } : {}), ...(lent.length ? { lends: lent } : {}) };
+    })(),
     ...(Array.isArray(state.deck) ? { picking: true } : {}),
     bag,
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
     // today (deckFor), 银月 always in hand. Roots he lacks are marked, not hid.
     cards: (() => {
-      const catalog = cardCatalog(content), ten = new Set(deckFor(content, state)), roots = new Set(state.traits ?? []), picked = new Set(pickedCards(content, state));
+      const catalog = cardCatalog(content), ten = new Set(deckFor(content, state)), roots = rootsOf(content, state), picked = new Set(pickedCards(content, state));
       return ownedCards(content, state).map(id => catalog[id]).filter(Boolean)
         .sort((a, b) => a.cost - b.cost || String(a.element ?? '').localeCompare(String(b.element ?? '')))
         .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,

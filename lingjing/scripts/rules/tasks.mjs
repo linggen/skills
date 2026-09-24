@@ -94,6 +94,15 @@ function taskDone(state, content, ctx, id) {
     const handed = advance(content, s, { kind: 'board', task: id }, ctx);
     return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
   }
+  // A hosted game costs a little 体力, as a step does (rewards.json
+  // stamina.cost.game — his, 2026-09-24: free games out-paid the fight). It
+  // is taken as the game is paid: the page records the win without a door of
+  // its own, and a win kept while the pool is empty is paid once it refills
+  // (the same day — tomorrow the game is played again).
+  if (t.hosted) {
+    const empty = spendStamina(content, s, ctx, 'game');
+    if (empty) return empty;
+  }
   s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
   if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
   const paid = pay(content, s, ctx, t.grant);
@@ -195,6 +204,9 @@ export function duel(state, content, ctx, args) {
   const left = played.outcome === 'lost' ? 0 : played.you.hp;
   s.wounds = left < played.you.hpMax ? { n: played.you.hpMax - left, at: ctx.now.toISOString() } : undefined;
   if (!s.wounds) delete s.wounds;
+  // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
+  const spent = spentCharms(content, setup, played);
+  for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
   const won = played.outcome === 'won';
   // A scene played again is fought for the story: the exit opens, nothing else pays.
   const pays = won && !(exit && replaying(content, s, sceneOf(content, s)));
@@ -220,8 +232,16 @@ export function duel(state, content, ctx, args) {
     if (card) dropped.push(card);
   }
   const paid = haunt && pays ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
-  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
 }
+
+/* The 符 the door put in his hand that the fight saw him play — each is
+   taken from the bag at the settle. Read off the log the replay wrote, so the
+   page and the rules agree on it as they agree on the rest. */
+const spentCharms = (content, setup, played) => {
+  const catalog = cardCatalog(content), held = new Set((setup.you?.extra ?? []).filter(id => catalog[id]?.charm));
+  return [...new Set(played.log.filter(e => e.act === 'played' && e.who === 'you' && held.has(e.id)).map(e => e.id))];
+};
 
 /* ── A fight open: the world holds still ──
    While a fight is open (state.fight) the verbs that change the world are
@@ -303,7 +323,8 @@ export function write(state, content, ctx, args) {
    the lower line is as long as the upper (对对联). Ling judges the meaning —
    a real verse, a real idiom, a fitting couplet — and says it as `ok`, and
    speaks for the scholar. Three good answers win; three misses and he rises
-   for the day. Words, so they cost no 体力. */
+   for the day. It costs a hosted game's 体力 at the door (`open`), as the
+   boards do (rewards.json stamina.cost.game). */
 const hanOf = s => [...String(s ?? '')].filter(c => /\p{Script=Han}/u.test(c));
 const lundaoToday = (state, now) => (state.lundao?.day === dayKey(now) ? state.lundao : null);
 
@@ -340,6 +361,8 @@ export function lundao(state, content, ctx, args) {
     if (today?.outcome === 'lost') return refuse('lost-today', pick({ zh: '先生已起身，明日再来。', en: 'The scholar has risen for the day. Come back tomorrow.' }, lang));
     if (today && !today.outcome) return { state: null, result: { ok: true, lundao: lundaoBrief(content, s, ctx.now) } };
     if (doneThisPeriod(content, s, 'lundao', ctx.now)) return refuse('done-today', pick({ zh: '今日已论过道了。', en: 'You have debated today already.' }, lang));
+    const empty = spendStamina(content, s, ctx, 'game');
+    if (empty) return empty;
     const day = dayKey(ctx.now);
     const games = lang === 'zh' ? ['feihua', 'chengyu', 'duilian'] : ['feihua', 'chengyu'];
     const game = games[hashOf(`${day}|${s.name ?? ''}|lundao`) % games.length];

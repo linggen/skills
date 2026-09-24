@@ -388,7 +388,7 @@ test('only the rules decide a fight: a win the exit takes, and pays once', () =>
   assert.deepEqual(out.state.wins, {});
 });
 
-test('the ten cards are the player\'s own roots, and a companion teaches nothing', () => {
+test('the ten cards are the player\'s own roots (and the ones their arms lend), and a companion teaches nothing', () => {
   const s = { ...toFuzhu(), bag: { 'iron-sword': 1, 'straw-cloak': 1 }, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } };
   const brief = look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel;
   const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
@@ -399,10 +399,13 @@ test('the ten cards are the player\'s own roots, and a companion teaches nothing
     const { element: el, kind } = byId[id];
     assert.ok(kind !== 'spell' || !el || roots.has(el), `${id} is a ${el} spell, which is not theirs`);
   }
-  const metal = { ...s, cards: [...s.cards, 'jianying', 'suijin'] }; // a 金 beast and a 金 spell
+  const metal = { ...s, wear: { robe: 'straw-cloak' }, cards: [...s.cards, 'jianying', 'suijin'] }; // a 金 beast and a 金 spell
   const metalDeck = look(metal, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
   assert.ok(metalDeck.includes('jianying'), 'the 金 beast comes in');
   assert.ok(!metalDeck.includes('suijin'), 'the 金 spell does not');
+  // …until the 铁剑 is worn: 佩之借金, and a 金 功法 may be cast (§ 装备入局).
+  const lent = look({ ...metal, wear: { weapon: 'iron-sword', robe: 'straw-cloak' } }, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck;
+  assert.ok(lent.includes('suijin'), 'the sword lends its root');
   assert.equal(brief.setup.you.deck.length, new Set(brief.setup.you.deck).size, 'ten different cards');
   assert.deepEqual(brief.setup.you.extra, [], '银月 rides along only once she walks with the player');
   // …and once she does, she is in the hand at the door. The fight read a
@@ -413,14 +416,16 @@ test('the ten cards are the player\'s own roots, and a companion teaches nothing
   assert.deepEqual(look(withHer, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.extra, ['yinyue']);
   // The same player takes the same deck into the same fight, every time
   assert.deepEqual(look(s, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup.you.deck, brief.setup.you.deck);
-  // 法器 stay gear: the worn sword gives 主灵根一击 +1, and nothing else
-  assert.equal(brief.setup.you.power, 1);
+  // 法器 stay gear: the 铁剑 (器攻 3) gives 主灵根一击 +2, the 蓑衣 (防 1) 4 护体
+  assert.equal(brief.setup.you.power, 2);
+  assert.equal(brief.setup.you.armor, 4);
   const bare = { ...s, wear: {} };
   const bareSetup = look(bare, content, ctx()).scene.exits.find(e => e.id === 'subdue').duel.setup;
   assert.equal(bareSetup.you.power, undefined);
+  assert.equal(bareSetup.you.armor, undefined);
   const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
-  assert.equal(begin(brief.setup, catalog).you.powerHit, begin(bareSetup, catalog).you.powerHit + 1);
-  assert.deepEqual(brief.setup.you.deck, bareSetup.you.deck, 'a sword is not a card');
+  assert.equal(begin(brief.setup, catalog).you.powerHit, begin(bareSetup, catalog).you.powerHit + 2);
+  assert.ok(!brief.setup.you.deck.some(id => id === 'iron-sword'), 'a sword is not a card');
   const won = fightOut(bare, 'subdue-fuzhu');
   assert.equal(won.result.outcome, 'won');
   refused(duel, won.started.state, { id: 'subdue-fuzhu', picks: 'attack:3' }, 'not-on-board');
@@ -1312,14 +1317,20 @@ test('写符: at a market from 桑皮纸, one a day; anywhere at 结丹; the cho
   // a 符 is not "used"; it has no market price
   assert.equal(refused(trade, w.state, { action: 'use', id: 'talisman' }, 'cast-in-a-bout').say, '符在降妖时掷出，不在此。');
   refused(trade, w.state, { action: 'sell', id: 'talisman' }, 'not-for-sale');
-  // The 符 written here stays a thing in the bag. 斗法 v3 takes no consumables
-  // through the door yet (design.md § 斗法 v3 — v2 的符/丹入局待接回), so a fight
-  // neither spends it nor asks for it.
+  // A 符 in the bag is a card in hand at the door (§ 装备入局): one a fight
+  // however many are held, spent only when it is played.
   const october = () => ctx({ now: new Date('2026-10-05T10:00:00') });
-  const base = { ...w.state, chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, stamina: 50 };
+  const base = { ...w.state, bag: { ...w.state.bag, talisman: 2 }, chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, stamina: 50 };
+  const opened = must(duel, base, { id: 'haunt:jingwei' }, october());
+  assert.equal(opened.result.duel.setup.you.extra.filter(id => id === 'talisman').length, 1, 'one 符 a fight');
   const settled = fightOut(base, 'haunt:jingwei', { c: october() });
   assert.ok(['won', 'lost', 'withdrew'].includes(settled.result.outcome));
-  assert.equal(settled.state.bag.talisman, 1, 'the 符 is still in the bag');
+  const cast = settled.result.spent?.includes('talisman');
+  assert.equal(settled.state.bag.talisman, cast ? 1 : 2, 'a 符 played is a 符 spent');
+  // Held and never played, it stays in the bag.
+  const kept = fightOut(base, 'haunt:jingwei', { c: october(), line: 'pass' });
+  assert.equal(kept.state.bag.talisman, 2, 'a 符 not played is kept');
+  assert.equal(kept.result.spent, undefined);
   assert.equal(settled.result.refilled, undefined);
 });
 
@@ -3205,4 +3216,107 @@ test('two callers at once: the save is locked from read to write, and no change 
     const out = JSON.parse(spawnSync(process.execPath, [rules, 'look'], { env, encoding: 'utf8' }).stdout);
     assert.equal(out.ok, true);
   } finally { fs.rmSync(data, { recursive: true, force: true }); }
+});
+
+// ── 装备入局 (2026-09-24, his: make gear count) — each worn thing, one number at the door ──
+
+const fuzhuOf = () => content.creatures.creatures.find(c => c.id === 'fuzhu');
+const doorOf = s => fightSetup(content, s, fuzhuOf(), NOW).you;
+const wearing = (wear, extra = {}) => ({ ...toFuzhu(), bag: Object.fromEntries(Object.values(wear).map(id => [id, 1])), wear, ...extra });
+
+test('装备入局: the sword by its grade, the robe as 护体, the 佩 as 抗 — nothing worn, nothing added', () => {
+  assert.equal(doorOf(wearing({ weapon: 'bamboo-sword' })).power, 1, '竹剑 (器攻 2) → 主灵根一击 +1');
+  assert.equal(doorOf(wearing({ weapon: 'iron-sword' })).power, 2, '铁剑 (器攻 3) → +2: the better sword is the better fight');
+  assert.equal(doorOf(wearing({ robe: 'straw-cloak' })).armor, 4, '蓑衣 (防 1) → 护体 4');
+  assert.deepEqual(doorOf(wearing({ pendant: 'jade-ring' })).ward, { earth: 4 }, '玉珏 (抗土 2) → 土 lands 4 lighter');
+  const bare = doorOf(wearing({}));
+  for (const k of ['power', 'armor', 'ward']) assert.equal(bare[k], undefined, `${k}: an old setup's shape, untouched`);
+  // In the bag but not worn counts for nothing.
+  assert.equal(doorOf({ ...toFuzhu(), bag: { 'iron-sword': 1 }, wear: {} }).power, undefined);
+});
+
+test('装备入局: the 本命法宝 is the sword it was made of, +1 every four 重 — and one hand holds the bigger', () => {
+  const bound = level => ({ ...toFuzhu(), treasure: { name: '青萍', base: 3, element: 'metal', level, exp: 0 } });
+  assert.equal(doorOf(bound(1)).power, 2, 'bound from the 铁剑: never weaker than the sword it was');
+  assert.equal(doorOf(bound(5)).power, 3, '温养 and 强化 now reach the fight');
+  assert.equal(doorOf(bound(9)).power, 4, '九重');
+  assert.equal(doorOf({ ...bound(9), bag: { 'bamboo-sword': 1 }, wear: { weapon: 'bamboo-sword' } }).power, 4, 'a sword beside it does not add');
+  // Its element is lent like a sword's root: a 金 功法 may be dealt.
+  const s = { ...bound(1), cards: [...toFuzhu().cards ?? [], 'suijin'] };
+  assert.ok(doorOf({ ...s, cards: [...(s.cards ?? []), 'suijin'] }).deck.includes('suijin'));
+  assert.ok(!doorOf({ ...toFuzhu(), cards: [...(toFuzhu().cards ?? []), 'suijin'] }).deck.includes('suijin'), 'without it, no 金 spell');
+});
+
+test('装备入局: the gear panel says what the fight takes from each thing', async () => {
+  const { gearBrief } = await import('../scripts/rules/errands.mjs');
+  const s = wearing({ weapon: 'iron-sword', robe: 'straw-cloak', pendant: 'jade-ring' });
+  const fight = gearBrief(content, { ...s, bag: { ...s.bag, talisman: 1 } }).fight;
+  assert.deepEqual(fight, { power: 2, armor: 4, ward: { earth: 4 }, charm: 'talisman', lends: ['metal'] });
+  assert.deepEqual(gearBrief(content, wearing({})).fight, { power: 0, armor: 0 });
+});
+
+test('装备入局: a 符 in the bag is in hand at the door, and a 符 played is taken from the bag at the settle', () => {
+  const at = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, stamina: 50, bag: { talisman: 1 } };
+  const started = must(duel, base, { id: 'haunt:jingwei' }, at);
+  const { setup } = started.result.duel;
+  const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
+  const hand = begin(setup, catalog).you.hand;
+  const actions = [`play:${hand.indexOf('talisman')}`];
+  while (battle(actions, setup, catalog).outcome === 'open' && actions.length < 60) actions.push('end');
+  const settled = must(duel, started.state, { id: 'haunt:jingwei', picks: actions.join(',') }, at);
+  assert.deepEqual(settled.result.spent, ['talisman']);
+  assert.equal(settled.state.bag.talisman, undefined, 'the last one gone from the bag');
+  // No 符 in the bag, none in hand.
+  const none = must(duel, { ...base, bag: {} }, { id: 'haunt:jingwei' }, at);
+  assert.ok(!none.result.duel.setup.you.extra.includes('talisman'));
+});
+
+// ── The economy (2026-09-24, his): games cost a little 体力; the card fight pays best per 体力 ──
+
+test('a hosted game costs a step\'s 体力 when it is paid; with the pool empty the win waits, and is paid once it refills', () => {
+  const at = ctx();
+  const cost = content.rewards.stamina.cost.game;
+  assert.equal(cost, content.rewards.stamina.cost.step, 'a little: what a step costs');
+  const s = { ...toOpenWorld(), place: 'sangjian', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
+  const won = must(win, s, { id: 'wuziqi' }, at);
+  assert.equal(won.state.stamina, 100, 'the win itself is only witnessed');
+  const paid = must(task, won.state, { action: 'done', id: 'wuziqi' }, at);
+  assert.equal(paid.state.stamina, 100 - cost);
+  assert.ok(paid.result.paid.progress > 0);
+  // Empty: refused, the win kept; an hour later it is paid.
+  const empty = { ...won.state, stamina: 0, resting: true, stamina_at: NOW.toISOString() };
+  const r = refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', at);
+  assert.ok(r.say);
+  const later = ctx({ now: new Date(NOW.getTime() + 90 * 60_000) });
+  assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.paid.progress > 0);
+  // A task that is not a hosted game (the story's first furnace) stays free.
+  let story = must(resolve, must(resolve, start(), { exit: 'reach' }).state, { exit: 'name', value: '青玄' }).state;
+  story = { ...must(resolve, story, { exit: 'touch' }).state, stamina: 100, stamina_at: NOW.toISOString() };
+  const first = must(task, must(win, story, { id: 'alchemy-first' }).state, { action: 'done', id: 'alchemy-first' });
+  assert.equal(first.state.stamina, 100);
+});
+
+test('论道 costs a hosted game\'s 体力 at the door, once a day', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'jixia', tier: 'core', stamina: 100, stamina_at: NOW.toISOString() };
+  const open = must(VERBS.lundao, s, { action: 'open' }, at);
+  assert.equal(open.state.stamina, 100 - content.rewards.stamina.cost.game);
+  const again = must(VERBS.lundao, open.state, { action: 'open' }, at);
+  assert.equal(again.state, null, 'coming back to it takes nothing');
+  refused(VERBS.lundao, { ...s, stamina: 0, resting: true }, { action: 'open' }, 'no-stamina', at);
+});
+
+test('the card fight pays the most 修为 per 体力 — every hosted game pays less for what it costs', () => {
+  const { tables, stamina } = content.rewards;
+  const fight = Math.min(tables.haunt.progress / stamina.cost.duel, tables.elite.progress / stamina.cost.elite);
+  const hosted = content.tasks.tasks.filter(x => x.hosted);
+  for (const t of hosted) {
+    const perPoint = Math.min(t.grant.progress, tables[t.grant.table].progress) / stamina.cost.game;
+    assert.ok(perPoint < fight, `${t.id} pays ${perPoint.toFixed(2)} a point, the fight ${fight.toFixed(2)}`);
+  }
+  // …and even at the gate's win rates (a plain beast ~85%, an elite ~65%) a fight still out-earns any game.
+  const board = Math.max(...hosted.map(t => t.grant.progress)) / stamina.cost.game;
+  assert.ok(0.85 * tables.haunt.progress / stamina.cost.duel > board);
+  assert.ok(0.65 * tables.elite.progress / stamina.cost.elite > board);
 });

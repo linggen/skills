@@ -131,12 +131,18 @@ export function shuffle(ids, seed) {
 /* ── Setup ── */
 
 /* `setup` is the configuration locked at the door (design.md § 副本契约):
-   { mode, seed, you: { tier, step, root, deck, extra, power?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature?, elite? } }
+   { mode, seed, you: { tier, step, root, deck, extra, power?, armor?, ward?, boost?, wounds?, lifts?, insight? }, foe: { tier, root, deck, hp?, signature?, elite? } }
    `lifts` is { cardId: { atk, hp, heal } } — a body that stands taller for this
    side (银月 by the bond, rules.mjs § 羁绊); `bodyOf` is the one reading.
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
    (or softer, n < 0). Both are locked at the door like the rest.
+   `armor` is 护体 from a worn 法衣 (its 防): a pool that takes a blow on the
+   hero before 气血 does, spent as it goes, never mended in the fight — and
+   never carried out of it, so 伤势 stays 气血 alone. `ward` is a 佩's 抗,
+   { element: n }: a blow of that element lands n lighter on the hero (at
+   least 1 — 抗 never negates). All of it from the world's gear (rules.mjs
+   § 装备入局); the fight only reads the numbers.
    `signature` is the beast's 杀招 (creatures.json): { id, name, effect }.
    `catalog` is the card rows by id. Nothing else reaches the fight. */
 function sideOf(who, cfg, catalog, mode, seed) {
@@ -148,6 +154,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
   return {
     who, tier: cfg.tier, root: cfg.root ?? null,
     hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
+    armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
   };
@@ -278,9 +285,22 @@ export function endTurn(st) {
 
 /* ── Damage ── */
 
+/* What a blow of n, of this element, takes off the OTHER side's hero once
+   its 佩 has turned it: `dealt`, less the 抗 of that element, at least 1.
+   The page prints this for a blow at the hero, the rules land it. */
+export const wardOf = (side, element) => (element && side?.ward?.[element]) || 0;
+export const landed = (st, who, n, element) => {
+  const them = who === 'you' ? st.foe : st.you;
+  const d = dealt(st, who, n, element, them.root);
+  return Math.max(1, d - wardOf(them, element));
+};
+
 function hurt(st, side, amount, why = {}) {
-  side.hp = Math.max(0, side.hp - amount);
-  st.log.push({ act: 'hurt', who: side.who, amount, hp: side.hp, ...why });
+  // 护体 takes it first (the 法衣): what it holds never reaches 气血.
+  const absorbed = Math.min(side.armor ?? 0, amount);
+  if (absorbed) side.armor -= absorbed;
+  side.hp = Math.max(0, side.hp - (amount - absorbed));
+  st.log.push({ act: 'hurt', who: side.who, amount: amount - absorbed, hp: side.hp, ...(absorbed ? { absorbed, armor: side.armor } : {}), ...why });
   settle(st);
   if (st.outcome === 'open') gather(st, side);
 }
@@ -316,7 +336,7 @@ function resolve(st, side, effect, target) {
       const m = them.board[target.index];
       if (m) hurtMinion(st, them, m, hit(effect.damage, effect.element, m.element), { from: 'spell' });
     } else {
-      hurt(st, them, hit(effect.damage, effect.element, them.root), { from: 'spell' });
+      hurt(st, them, landed(st, side.who, effect.damage, effect.element), { from: 'spell' });
     }
   }
   if (effect.sweep != null) {
@@ -466,7 +486,7 @@ export function act(st, action, who = 'you') {
     hurtMinion(st, them, t, dealt(st, side.who, m.atk, m.element, t.element), { from: 'attack' });
     if (t.atk > 0) hurtMinion(st, side, m, Math.max(1, Math.round(t.atk * clash(t.element, m.element))), { from: 'return' });
   } else {
-    hurt(st, them, dealt(st, side.who, m.atk, m.element, them.root), { from: 'attack' });
+    hurt(st, them, landed(st, side.who, m.atk, m.element), { from: 'attack' });
   }
   return { ok: true };
 }
@@ -614,7 +634,7 @@ export function view(st) {
   const side = s => ({
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
-    powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost,
+    powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts,
     board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck })),
   });

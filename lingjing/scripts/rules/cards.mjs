@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { MODES, REALMS as CARD_REALMS, shuffle } from '../battle.js';
 import { dayKey, pick } from '../state.mjs';
-import { duelSeed, wornOf } from './arms.mjs';
+import { charmOf, duelSeed, wornOf } from './arms.mjs';
 import { bondLifts, FIT_TO_FIGHT, hasCompanion } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { herAway } from './daily.mjs';
@@ -22,7 +22,7 @@ import { creatureOf } from './world.mjs';
 export function deckFor(content, state) {
   const auto = autoDeck(content, state);
   if (!Array.isArray(state.deck)) return auto;
-  const owned = new Set(ownedCards(content, state)), roots = new Set(state.traits ?? []), catalog = cardCatalog(content);
+  const owned = new Set(ownedCards(content, state)), roots = rootsOf(content, state), catalog = cardCatalog(content);
   const picked = [...new Set(state.deck)].filter(id => owned.has(id) && catalog[id] && id !== 'yinyue' && usable(catalog[id], roots)).slice(0, MODES.pve.deck);
   // A card he took out stays out — the fill never puts it back (seen on a
   // copy of his save, 2026-09-23: 土偶 taken out, filled straight back in).
@@ -43,7 +43,7 @@ export function deck(state, content, ctx, args) {
   const id = String(args.id ?? ''), c = cardCatalog(content)[id];
   if (!c || !ownedCards(content, state).includes(id)) return refuse('not-held', null);
   if (id === 'yinyue') return refuse('always-in-hand', pick({ zh: '银月开局就在手上，不占这十张。', en: 'Yinyue starts in hand; she is not one of the ten.' }, lang));
-  if (!usable(c, new Set(state.traits ?? []))) return refuse('off-root', pick({ zh: '灵根不合，修不得这门功法。', en: 'A spell of a root you lack.' }, lang));
+  if (!usable(c, rootsOf(content, state))) return refuse('off-root', pick({ zh: '灵根不合，修不得这门功法。', en: 'A spell of a root you lack.' }, lang));
   // The first pick starts from the ten he has been dealt, not from nothing.
   const now = Array.isArray(s.deck) ? pickedCards(content, s) : deckFor(content, s);
   // Lit is his: a lit card taken out stays out (the fill never puts it
@@ -64,7 +64,7 @@ function autoDeck(content, state) {
   // Only what has been obtained (his, 2026-09-22) — 得牌 below.
   const owned = new Set(ownedCards(content, state));
   const pool = (content.cards?.cards ?? []).filter(c => !c._token && c.id !== 'yinyue' && owned.has(c.id));
-  const roots = new Set(state.traits ?? []);
+  const roots = rootsOf(content, state);
   // A root decides which 功法 he can cast, not which beast will follow him:
   // 韩立 had no 金 root and raised 噬金虫 all the same (his, 2026-09-22). So a
   // spell of a root he lacks stays out; a 灵兽 of any element comes in.
@@ -101,7 +101,41 @@ function autoDeck(content, state) {
 /* What goes through the door of a fight, and nothing else (design.md § 副本契约):
    the realm, the main root, the ten cards, the beast's own twelve. 银月 rides
    along in hand when she walks with the player. */
-const WEAPON_POWER = 1;
+
+/* ── 装备入局: what he wears, as the fight reads it ──
+   His call, 2026-09-24 (a review found it): the sword on the belt gave +1
+   whatever it was — 铁剑 the same as 竹剑 — and the robe, the 佩, the 符 and
+   every 温养 counted for nothing in a fight. Now each is one number at the
+   door, by the rates in cards.json `gear`, so a better thing on the body is a
+   better fight and the gate can weigh each of them:
+     法器   器攻 × weapon_power → 主灵根一击 (竹剑 +1 · 铁剑 +2)
+     本命法宝 the sword it was made of, +1 each treasure_levels 重
+     法衣   防 × armor_per_def → 护体 at the start (battle.js § armor)
+     佩     抗 × ward_per_point → that element lands lighter on him
+     符     one in the bag → a card in hand, spent when it is played
+   A sword and a treasure are one hand: the bigger counts. The roots they
+   lend are rootsOf's, for the deck — not the fight's. */
+const RATES = content => content.cards?.gear ?? {};
+const weaponPower = (content, atk) => Math.round((atk ?? 0) * (RATES(content).weapon_power ?? 0));
+const treasurePower = (content, t) => weaponPower(content, t.base) + Math.floor((t.level - 1) / Math.max(1, RATES(content).treasure_levels ?? 99));
+function gearFight(content, state) {
+  const weapon = wornOf(content, state, 'weapon'), robe = wornOf(content, state, 'robe'), pendant = wornOf(content, state, 'pendant');
+  const power = Math.max(weapon ? weaponPower(content, weapon.effect?.atk) : 0, state.treasure ? treasurePower(content, state.treasure) : 0);
+  const armor = Math.round((robe?.effect?.def ?? 0) * (RATES(content).armor_per_def ?? 0));
+  const ward = Object.fromEntries(Object.entries(pendant?.effect?.ward ?? {})
+    .map(([el, n]) => [el, Math.round(n * (RATES(content).ward_per_point ?? 0))]).filter(([, n]) => n > 0));
+  const charm = charmOf(content), card = charm && (state.bag?.[charm.id] ?? 0) > 0 && cardCatalog(content)[charm.id]?.charm ? charm.id : null;
+  return { power, armor, ward: Object.keys(ward).length ? ward : null, charm: card };
+}
+
+/* His roots, and the ones his arms lend: a sword's `root` (佩之借木) and the
+   element a 本命法宝 was bound with. A 功法 of a lent root may go in the
+   deck while the thing is worn; taken off, the card drops out (deckFor). A
+   gift is chosen by his own roots only — a card he could lose is no gift. */
+function rootsOf(content, state) {
+  const lent = [wornOf(content, state, 'weapon')?.effect?.root, state.treasure?.element].filter(Boolean);
+  return new Set([...(state.traits ?? []), ...lent]);
+}
 export const hpMaxOf = state => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (state.step ?? 0) * 0.5);
 function woundsNow(content, state, now) {
   const w = state.wounds;
@@ -142,20 +176,22 @@ export function fightSetup(content, state, creature, now, game = null) {
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
   // Out on a 历练, she is not at his side (§ 历练).
   const withHer = ownedCards(content, state).includes('yinyue') && !herAway(state, now ?? new Date());
+  const gear = gearFight(content, state);
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: withHer ? ['yinyue'] : [],
+      tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: [...(withHer ? ['yinyue'] : []), ...(gear.charm ? [gear.charm] : [])],
       // Locked at the door with the rest: the page and the settle replay the
       // same fight even if an hour of mending passes between them.
       wounds: open?.wounds ?? (now ? woundsNow(content, state, now) : 0),
       ...(withHer && bondLifts(content, state) ? { lifts: bondLifts(content, state) } : {}),
       // 望气术: how much of the beast's plan he can read (items `learn`).
       ...(state.insight ? { insight: state.insight } : {}),
-      // 法器 stay in the world as gear and give 主灵根一击 +1 (design.md § 斗法
-      // v3 牌型) — the sword on the belt, or the 本命法宝 it became.
-      ...(wornOf(content, state, 'weapon') || state.treasure ? { power: WEAPON_POWER } : {}),
+      // What he wears, as numbers (§ 装备入局).
+      ...(gear.power ? { power: gear.power } : {}),
+      ...(gear.armor ? { armor: gear.armor } : {}),
+      ...(gear.ward ? { ward: gear.ward } : {}),
       // 问斗法: the lower trigram's element, its 功法 lifted or lowered today.
       ...(boost ? { boost } : {}),
     },
@@ -217,4 +253,4 @@ function winCard(content, state, creature, now, nth = 0) {
   return gainCard(content, state, pool[hashOf(`${dayKey(now)}|${creature.id}|${state.name ?? ''}|card${nth ? `|${nth}` : ''}`) % pool.length].id);
 }
 
-export { cardCatalog, fitToFight, gainCard, healthBrief, mendsBy, pickedCards, starterOf, usable, WEAPON_POWER, winCard, woundsNow };
+export { cardCatalog, fitToFight, gainCard, gearFight, healthBrief, mendsBy, pickedCards, rootsOf, starterOf, usable, winCard, woundsNow };

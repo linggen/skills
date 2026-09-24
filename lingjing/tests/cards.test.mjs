@@ -424,11 +424,13 @@ test('让页面算: the hand and the aimed-at say what a blow really takes off, 
   assert.match(battleHtml(view(st), offers(st), { ...ctx, lang: 'en', words: WORDS.en }, { from: 'power' }), /−3 · wood over earth/);
 });
 
-test('every card has a 五行 — only a 丹药 has none', async () => {
+test('every card has a 五行 — only a 丹药 and a 符 have none', async () => {
   // His rulings, 2026-09-22: 这个要align with 凡人, 都有五行属性 · 丹药不配五行.
+  // A 符 from the bag (charm) is cinnabar, not a root: 不论五行 (2026-09-24).
   const { loadWorld } = await import('../scripts/content.mjs');
-  const bare = loadWorld('jiuding').cards.cards.filter((c) => !c.element && !c.pill);
+  const bare = loadWorld('jiuding').cards.cards.filter((c) => !c.element && !c.pill && !c.charm);
   assert.deepEqual(bare.map((c) => c.id), [], 'give it an element, or mark it a pill');
+  for (const c of loadWorld('jiuding').cards.cards.filter((x) => x.charm)) assert.ok(!c.element && c._token, `${c.id}: a 符 takes no element and is never dealt`);
   for (const c of loadWorld('jiuding').cards.cards.filter((x) => x.pill)) assert.ok(!c.element, `${c.id}: a pill takes no element`);
 });
 

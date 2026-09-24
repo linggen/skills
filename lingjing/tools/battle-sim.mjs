@@ -132,13 +132,15 @@ const pick = (arr, seed, n) => {
    狪狪 defends and heals. */
 const CREATURES = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/creatures.json'), 'utf8')).creatures;
 const byRoot = new Map(CREATURES.filter(c => c.deck).map(c => [c.root, c]));
-function foeOf(root) {
-  const c = byRoot.get(root) ?? CREATURES.find(x => x.deck);
-  return { id: c.id, name: c.name.zh, deck: c.deck, signature: c.signature };
+// A foe is named by its root (the one beast of that root the field uses) or,
+// where one piece of gear is weighed against every beast of a root, by its id.
+function foeOf(key) {
+  const c = CREATURES.find(x => x.id === key && x.deck) ?? byRoot.get(key) ?? CREATURES.find(x => x.deck);
+  return { id: c.id, name: c.name.zh, root: c.root, deck: c.deck, signature: c.signature };
 }
 
-function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot = 'wood', deck, seed = 'd1', mode = 'pve', you = {} }) {
-  const foe = foeOf(foeRoot);
+function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot: key = 'wood', deck, seed = 'd1', mode = 'pve', you = {} }) {
+  const foe = foeOf(key), foeRoot = foe.root;
   return {
     mode, seed,
     you: { tier, root, deck, extra: ['yinyue'], ...(typeof you === 'function' ? you(root) : you) },
@@ -148,13 +150,13 @@ function setupOf({ tier = 'qi', foeTier = tier, root = 'fire', foeRoot = 'wood',
 
 /* ── The run ── */
 
-function run(line, { decks, tiers = ['qi', 'foundation', 'core'], days = 6, mode = 'pve', you = {} } = {}) {
+function run(line, { decks, tiers = ['qi', 'foundation', 'core'], foes = ELEMENTS, days = 6, mode = 'pve', you = {} } = {}) {
   let wins = 0, games = 0, turns = 0, drew = 0;
   const played = new Map();
   const perDeck = new Map();
   for (const deck of decks) {
     for (const tier of tiers) {
-      for (const foeRoot of ELEMENTS) {
+      for (const foeRoot of foes) {
         for (let d = 0; d < days; d += 1) {
           const setup = setupOf({ tier, root: deck.root, deck: deck.cards, foeRoot, seed: `day${d}|${foeRoot}|${deck.id}`, mode, you });
           const st = play(setup, line);
@@ -334,7 +336,68 @@ function fieldDecks(n = 4) {
   return out;
 }
 
+/* ── 装备入局 — what the world's gear turns into at the door ──
+   The same rates the rules use (cards.json `gear`, rules/cards.mjs
+   § 装备入局), read from the same files, so the gate weighs the numbers a
+   player will really carry in. */
+const ITEMS = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/items.json'), 'utf8')).items;
+const GEAR = world.gear ?? {};
+const itemEffect = id => ITEMS.find(i => i.id === id)?.effect ?? {};
+const weaponPower = atk => Math.round((atk ?? 0) * (GEAR.weapon_power ?? 0));
+const treasurePower = (base, level) => weaponPower(base) + Math.floor((level - 1) / Math.max(1, GEAR.treasure_levels ?? 99));
+const armorOf = id => Math.round((itemEffect(id).def ?? 0) * (GEAR.armor_per_def ?? 0));
+const wardOf = id => Object.fromEntries(Object.entries(itemEffect(id).ward ?? {}).map(([el, n]) => [el, Math.round(n * (GEAR.ward_per_point ?? 0))]));
+const CHARM = world.cards.find(c => c.charm)?.id;
+
+async function kitOnly() {
+  const { foeTurn } = await import('../scripts/battle.js');
+  globalThis.__battle = { foeTurn };
+  const decks = fieldDecks(5);
+  const problems = [];
+  gearRows(decks, problems);
+  console.log(problems.length ? `\n闸：${problems.length} 处越界\n · ${problems.join('\n · ')}` : '\n闸：全部在带内');
+  if (process.argv.includes('--gate') && problems.length) process.exit(1);
+}
+
+/* Each piece of gear alone, then everything a player could wear at once, each
+   against the line that reads the table with nothing on. A piece is weighed
+   where it can matter: the 佩 against the element it wards (玉珏 — 土), the
+   本命法宝 at 结丹, where it is bound. Alone, none may move the win rate more
+   than 15 points; all of it together must not make the fight a sure thing. */
+const rootBeasts = root => CREATURES.filter(c => c.deck && c.root === root && !c.elite).map(c => c.id);
+function gearRows(decks, problems) {
+  const iron = itemEffect('iron-sword'), bamboo = itemEffect('bamboo-sword');
+  const ring = wardOf('jade-ring'), ringRoot = Object.keys(ring)[0], zh = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
+  const rows = [
+    ['竹剑 · 一击 +' + weaponPower(bamboo.atk), { power: weaponPower(bamboo.atk) }],
+    ['铁剑 · 一击 +' + weaponPower(iron.atk), { power: weaponPower(iron.atk) }],
+    ['蓑衣 · 护体 ' + armorOf('straw-cloak'), { armor: armorOf('straw-cloak') }],
+    [`玉珏 · 抗${zh[ringRoot]} ${ring[ringRoot]}（只对${zh[ringRoot]}）`, { ward: ring }, { foes: rootBeasts(ringRoot) }],
+    ['符 · 一道在手', { extra: ['yinyue', CHARM] }],
+    [`本命法宝 一重（铁剑炼）· +${treasurePower(iron.atk, 1)}`, { power: treasurePower(iron.atk, 1) }, { tiers: ['core'] }],
+    [`本命法宝 九重（铁剑炼）· +${treasurePower(iron.atk, 9)}`, { power: treasurePower(iron.atk, 9) }, { tiers: ['core'] }],
+    ['全副（铁剑·蓑衣·符）', { power: weaponPower(iron.atk), armor: armorOf('straw-cloak'), extra: ['yinyue', CHARM] }],
+    [`全副 + 玉珏（对${zh[ringRoot]}）`, { power: weaponPower(iron.atk), armor: armorOf('straw-cloak'), ward: ring, extra: ['yinyue', CHARM] }, { foes: rootBeasts(ringRoot) }],
+    ['全副 结丹（本命九重·蓑衣·符）', { power: treasurePower(iron.atk, 9), armor: armorOf('straw-cloak'), extra: ['yinyue', CHARM] }, { tiers: ['core'] }],
+  ];
+  const bases = new Map();
+  const baseOf = opts => {
+    const k = JSON.stringify(opts);
+    if (!bases.has(k)) bases.set(k, run(smart, { decks, ...opts }).rate);
+    return bases.get(k);
+  };
+  console.log('\n装备入局（会读场的，对全部牌组；各比同样条件下什么都不带）');
+  for (const [label, you, opts = {}] of rows) {
+    const base = baseOf(opts), r = run(smart, { decks, you, ...opts });
+    const d = (r.rate - base) * 100;
+    console.log(`${label.padEnd(24)}  ${(r.rate * 100).toFixed(1)}%  (${d >= 0 ? '+' : ''}${d.toFixed(1)}，不带 ${(base * 100).toFixed(1)}%)`);
+    if (!label.startsWith('全副') && Math.abs(d) > 15) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
+    if (label.startsWith('全副') && (r.rate > 0.97 || d > 20)) problems.push(`${label} 赢 ${(r.rate * 100).toFixed(1)}%（+${d.toFixed(1)}）— 穿戴齐了，仗就不是仗了`);
+  }
+}
+
 async function main() {
+  if (process.argv.includes('--kit')) return kitOnly();
   const { foeTurn } = await import('../scripts/battle.js');
   globalThis.__battle = { foeTurn };
   const gate = process.argv.includes('--gate');
@@ -410,12 +473,11 @@ async function main() {
     if (label === '起手' && rates[0].rate < 0.5) problems.push(`起手十张在练气只赢 ${(rates[0].rate * 100).toFixed(1)}% — 新人进不了门`);
   }
 
-  // 带进门的 — the sword (+1 on 主灵根一击) and 问斗法 (its element's 功法 ±n).
+  // 带进门的 — 问斗法 (its element's 功法 ±n) and the bond; the gear is below.
   // Each should lift or lower the attentive line a few points, never decide it.
   const base = smartRun.rate;
   console.log('\n带进门的（会读场的，对全部牌组）');
   const kit = [
-    ['带剑 · 一击 +1', { power: 1 }],
     ['问斗法 大吉 · 本行功法 +2', root => ({ boost: { element: root, n: 2 } })],
     ['问斗法 吉 · +1', root => ({ boost: { element: root, n: 1 } })],
     ['问斗法 凶 · −1', root => ({ boost: { element: root, n: -1 } })],
@@ -433,6 +495,8 @@ async function main() {
     console.log(`${label.padEnd(20)}  ${(r.rate * 100).toFixed(1)}%  (${d >= 0 ? '+' : ''}${d.toFixed(1)})`);
     if (Math.abs(d) > (label.startsWith('羁绊') ? 8 : 15)) problems.push(`${label} 改了 ${d.toFixed(1)} 个百分点 — 带进门的东西不该替人打仗`);
   }
+
+  gearRows(decks, problems);
 
   // 杀招 — the key turn (battle.js § 杀招). A climax, not a wall: most won
   // fights meet it, and it should cost a careless player, not end the day.

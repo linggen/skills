@@ -881,6 +881,9 @@ function lintItems(content, bad) {
     if (e.core != null && !ELEMENTS.includes(e.core)) bad(where, `binds unknown element ${e.core}`);
     if (e.core != null && e.temper == null) bad(where, 'a core element belongs to a material that tempers');
     if (e.charm != null && !item.made) bad(where, 'a charm is made, never sold');
+    // A 符 goes into a fight as the card of its own id (rules/cards.mjs § 装备入局).
+    const charmCard = e.charm != null ? (content.cards?.cards ?? []).find(c => c.id === item.id) : null;
+    if (e.charm != null && !(charmCard?.charm && charmCard._token)) bad(where, 'a charm needs a card of its id, marked charm and _token, to be cast in a fight');
     if (e.progress != null) {
       const table = content.rewards.tables[e.table];
       if (!table) bad(where, `unknown reward table ${e.table}`);

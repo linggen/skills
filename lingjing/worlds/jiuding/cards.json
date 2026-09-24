@@ -841,7 +841,32 @@
       },
       "art": "art/cards/tongling.webp",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-18, from the description."
+    },
+    {
+      "id": "talisman",
+      "kind": "spell",
+      "name": {
+        "zh": "符",
+        "en": "Talisman"
+      },
+      "cost": 1,
+      "element": null,
+      "charm": true,
+      "_token": true,
+      "effect": {
+        "damage": 3
+      },
+      "_about": "背包里的符（items.json talisman，写符所得）。有一道在囊中，一局开局就在手上，不占十张；打出去，收场时从背包里扣掉一道 —— 一局至多一道。不属五行：相克不加不减。永不入牌库、不作赏。",
+      "art": "art/items/talisman.webp",
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     }
   ],
-  "_curve": "单体伤害约 1.2 点/费，群伤约 0.7 点/费每个 —— 因为克制会翻倍，曲线要按翻倍之后算 (2026-09-18 闸: 五雷法 5费9点 打在克的行上是 18 点，一张牌打掉练气英雄九成气血，影响力 +33.8%)。"
+  "_curve": "单体伤害约 1.2 点/费，群伤约 0.7 点/费每个 —— 因为克制会翻倍，曲线要按翻倍之后算 (2026-09-18 闸: 五雷法 5费9点 打在克的行上是 18 点，一张牌打掉练气英雄九成气血，影响力 +33.8%)。",
+  "_gear": "装备入局 (rules.mjs § 装备入局，2026-09-24 his: 让装备算数)。穿戴的东西在门口折成这几个数，锁进出战配置：法器的器攻 × weapon_power（四舍五入）加到主灵根一击（竹剑 2 → +1，铁剑 3 → +2）；本命法宝是炼它的那把剑的数，每 treasure_levels 重再 +1（温养、强化长的就是这个）；法器与本命法宝取大的一样，一只手；法衣的防 × armor_per_def 是开局的护体，先挨打，不算伤势；佩的抗 × ward_per_point 是那一行打在你身上每下少几点（至少 1）。剑借的行、本命法宝的行，算你的灵根：那一行的功法能进牌组。数值由 tools/battle-sim.mjs 的闸量过：每一样不超过 15 个百分点。",
+  "gear": {
+    "weapon_power": 0.5,
+    "treasure_levels": 4,
+    "armor_per_def": 4,
+    "ward_per_point": 2
+  }
 }

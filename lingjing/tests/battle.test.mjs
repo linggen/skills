@@ -3,7 +3,7 @@
 // that a card is a row of data with one effect from the closed vocabulary.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BEATS, EFFECTS, MODES, OVER, POWER_COST, REALMS, UNDER, act, battle, begin, bodyOf, clash, foeTurn, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
+import { BEATS, EFFECTS, MODES, OVER, POWER_COST, REALMS, UNDER, act, battle, begin, bodyOf, clash, dealt, foeTurn, landed, legal, offers, shuffle, suppression, view } from '../scripts/battle.js';
 
 const CARDS = {
   // 随从
@@ -316,4 +316,66 @@ test('意图: planned at the start of your turn, kept on its turn, and shown onl
   const seen = opened({ you: { tier: 'qi', step: 0, root: 'fire', deck: deck('bolt'), insight: 1 } });
   assert.equal(view(seen).foe.intent.sight, 1);
   assert.deepEqual(view(seen).foe.intent.cards, seen.foe.intent.cards);
+});
+
+/* ── 装备入局 (rules/cards.mjs): the fight reads the world's gear as numbers ── */
+
+/* The beast's 主灵根一击 at the hero, played by hand. */
+function foeStrikes(st, times = 1) {
+  for (let i = 0; i < times; i += 1) {
+    st.whose = 'foe'; st.foe.mana = POWER_COST; st.foe.powerUsed = false;
+    assert.equal(act(st, { kind: 'power' }, 'foe').ok, true);
+  }
+}
+
+test('护体 (a 法衣\'s 防): takes the blows on the hero before 气血 does, and is spent as it goes', () => {
+  const st = opened({ you: { ...setupOf().you, armor: 3 }, foe: { ...setupOf().foe, tier: 'foundation' } });
+  const hp = st.you.hp, hit = st.foe.powerHit;
+  assert.equal(view(st).you.armor, 3, 'the page draws it');
+  foeStrikes(st);
+  const blow = dealt(st, 'foe', hit, 'wood', 'fire');
+  assert.equal(st.you.hp, hp - Math.max(0, blow - 3));
+  assert.equal(st.you.armor, Math.max(0, 3 - blow));
+  const logged = st.log.filter(e => e.act === 'hurt' && e.who === 'you').at(-1);
+  assert.equal(logged.absorbed, Math.min(3, blow), 'the log says what the robe took');
+  foeStrikes(st, 3);
+  assert.equal(st.you.armor, 0, 'spent, never mended in the fight');
+  assert.equal(st.you.hp, hp - (blow * 4 - 3));
+  // None on, none drawn — and an old setup replays as it was.
+  assert.equal(view(opened()).you.armor, 0);
+});
+
+test('抗 (a 佩): a blow of the warded element lands lighter on the hero — never below 1 — and no other', () => {
+  const plain = opened({ foe: { ...setupOf().foe, tier: 'nascent' } });
+  const warded = opened({ you: { ...setupOf().you, ward: { wood: 2 } }, foe: { ...setupOf().foe, tier: 'nascent' } });
+  const full = dealt(plain, 'foe', plain.foe.powerHit, 'wood', 'fire');
+  assert.equal(landed(warded, 'foe', warded.foe.powerHit, 'wood'), Math.max(1, full - 2), 'what the page prints');
+  foeStrikes(plain); foeStrikes(warded);
+  assert.equal(plain.you.hpMax - plain.you.hp, full);
+  assert.equal(warded.you.hpMax - warded.you.hp, Math.max(1, full - 2));
+  assert.equal(landed(warded, 'foe', 1, 'wood'), 1, '抗 never negates');
+  assert.equal(landed(warded, 'foe', 5, 'water'), dealt(warded, 'foe', 5, 'water', 'fire'), 'another element is not warded');
+  // It guards the hero, not the bodies on the board.
+  assert.equal(landed(warded, 'you', 5, 'wood'), dealt(warded, 'you', 5, 'wood', 'wood'), 'nor does it touch the blows he deals');
+});
+
+test('法器 power: what the door locks is added to 主灵根一击, and the replay lands the same', () => {
+  const bare = opened(), armed = opened({ you: { ...setupOf().you, power: 2 } });
+  assert.equal(armed.you.powerHit, bare.you.powerHit + 2);
+  const setup = setupOf({ you: { ...setupOf().you, power: 2 } });
+  const a = battle(['power', 'end', 'power'], setup, CARDS), b = battle(['power', 'end', 'power'], setup, CARDS);
+  assert.deepEqual(a, b, 'one truth, two readers');
+});
+
+test('符: a card from the bag, in hand at the door — no element, so 五行 neither lifts nor lowers it', () => {
+  const cards = { ...CARDS, talisman: { id: 'talisman', kind: 'spell', name: '符', cost: 1, element: null, charm: true, _token: true, effect: { damage: 3 } } };
+  const setup = setupOf({ you: { ...setupOf().you, extra: ['talisman'] }, foe: { ...setupOf().foe, root: 'metal' } });
+  const st = begin(setup, cards);
+  const at = st.you.hand.indexOf('talisman');
+  assert.ok(at >= 0, 'in hand from the first turn');
+  const before = st.foe.hp;
+  assert.equal(act(st, { kind: 'play', index: at }, 'you').ok, true);
+  assert.equal(before - st.foe.hp, 3, 'the same 3 against any root');
+  assert.ok(!st.you.hand.includes('talisman'), 'one use');
+  assert.ok(st.log.some(e => e.act === 'played' && e.id === 'talisman'), 'the settle reads it off the log');
 });
