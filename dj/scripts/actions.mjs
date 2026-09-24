@@ -20,7 +20,7 @@ import path from 'node:path';
 import {
   project, normalize, base, norm, idOf, resolveTracks,
   createList, deleteList, renameList, addToList, removeFromList, setOrder,
-  deleteTrack, listsOf, filesInList,
+  deleteTrack, listsOf, filesInList, renameFile,
   MAC, PHONE, addToPhone, removeFromPhone, phoneView,
 } from './store.js';
 import { die, readJson, writeJson, lock, unlock, backupLibrary, LIB, DJ_DIR } from './io.mjs';
@@ -137,6 +137,30 @@ function replacedTake(lib, item, r) {
   if (r.source_id) row.source_id = String(r.source_id);
   if (r.lrc) setLrc(row, r.lrc, r.lrc_timed !== false);
   dropThumbs(row.file);
+}
+
+/// What a song is called on disk — naming.py's track_stem, which every
+/// download door uses, so a renamed song is named the way a fetched one is.
+function songStem(artist, title) {
+  const safe = (v) => String(v ?? '').replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
+  const cfg = readJson(path.join(DJ_DIR, 'config.json'), {}) || {};
+  const tpl = cfg.naming_template || '%(artist)s - %(title)s';
+  const stem = tpl.replace('%(artist)s', safe(artist)).replace('%(title)s', safe(title)).replace('%(year)s', '').trim();
+  return stem || `${safe(artist)} - ${safe(title)}`;
+}
+
+/// Move one of a song's files to its new stem, keeping the folder and the
+/// part after the stem (".lrc", " (Karaoke).mp4").
+function moveTo(file, oldStem, newStem) {
+  if (!file) return file;
+  const dir = path.dirname(file);
+  const name = base(file);
+  if (!name.startsWith(oldStem)) return file;
+  const next = path.join(dir, newStem + name.slice(oldStem.length));
+  if (next === file) return file;
+  if (fs.existsSync(next) && norm(next) !== norm(file)) die(`${base(next)} already exists`);
+  fs.renameSync(file, next);
+  return next;
 }
 
 // ── telling the phone ────────────────────────────────────────────────────────
@@ -290,6 +314,40 @@ const VERBS = {
     persist(lib);
     rows.forEach(unlinkTrack);
     return { ok: true, deleted: rows.length, files: rows.map((t) => norm(t.file)) };
+  },
+
+  // A song gets its real name: the row keeps its plays, lists and phone place
+  // (renameFile carries both views), and the file moves with every sidecar.
+  // Args: file, title [, artist].
+  'track-rename': (a) => {
+    const file = arg(a[0], 'file');
+    const title = arg(a[1], 'title');
+    const lib = loadStore();
+    const [row] = tracksNamed(lib, [file]);
+    const artist = String(a[2] ?? '').trim() && !/^\{\{.*\}\}$/.test(String(a[2]).trim()) ? String(a[2]).trim() : row.artist;
+    const oldStem = base(row.file).replace(/\.[^.]+$/, '');
+    const newStem = songStem(artist, title);
+    const was = { file: row.file, title: row.title };
+    const clash = lib.tracks.find((t) => t !== row && t.id === idOf({ artist, title }));
+    if (clash) die(`the library already holds ${base(clash.file)} under that name`);
+    if (newStem !== oldStem) {
+      const target = path.join(path.dirname(row.file), newStem + path.extname(row.file));
+      if (fs.existsSync(target) && norm(target) !== norm(row.file)) die(`${base(target)} already exists`);
+      const newFile = moveTo(row.file, oldStem, newStem);
+      row.lrc = moveTo(row.lrc, oldStem, newStem) || row.lrc;
+      if (row.karaoke_audio) row.karaoke_audio = moveTo(row.karaoke_audio, oldStem, newStem);
+      if (row.karaoke_video) row.karaoke_video = moveTo(row.karaoke_video, oldStem, newStem);
+      renameFile(lib, row.file, newFile);
+      dropThumbs(row.file);
+      row.file = newFile;
+      markPhone();
+    }
+    row.title = title;
+    row.artist = artist;
+    row.id = idOf({ artist, title });
+    if (was.title !== title) row.requested_title = was.title;
+    persist(lib);
+    return { ok: true, file: base(row.file), path: row.file, was: base(was.file), title, artist, lrc: row.lrc ? base(row.lrc) : null };
   },
 
   'track-add': (a) => {

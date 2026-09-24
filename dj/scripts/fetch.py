@@ -40,6 +40,9 @@ QUEUE = os.path.join(DATA, "queue.json")
 WORKER_LOCK = os.path.join(DATA, ".worker-lock")
 WORKER_LOG = os.path.join(DATA, "worker.log")
 FAKE = os.environ.get("DJ_FAKE_FETCH") == "1"
+# pick-source.py's answer when every upload is named some other song: that is
+# a fact to report, not a reason to fall back to a blind search.
+NO_TITLE_MATCH = "no source matched the title"
 WORKERS = max(1, int(os.environ.get("DJ_WORKERS") or 2))
 
 
@@ -179,6 +182,8 @@ def pick_source(bins, track, exclude):
         picked = json.loads(r.stdout.strip().splitlines()[-1])
     except Exception:
         return None
+    if not picked.get("ok") and picked.get("error") == NO_TITLE_MATCH:
+        return {"no_match": True}
     return picked if picked.get("ok") else None
 
 
@@ -214,6 +219,8 @@ def fetch_track(bins, cfg, track, exclude=(), skip_first=False, dest=None, cance
     if not naming.tag(track.get("title")):
         return {"ok": False, "error": "no title"}
     picked = pick_source(bins, track, exclude)
+    if (picked or {}).get("no_match"):
+        return {"ok": False, "error": NO_TITLE_MATCH}
     track = canonical(track, picked, dest)
     if guard and track.get("requested_title"):
         # Asked for under one name, known to the catalogue by another — which
@@ -523,6 +530,50 @@ def cli_track():
     return fetch_track(bins, load_config(), t)
 
 
+def retag(bins, path, track):
+    """The mp3's own title tag follows a rename (players and the phone read
+    it). Stream copy, no re-encode; a failure leaves the file as it was."""
+    if FAKE or not bins.get("ffmpeg") or not str(path).endswith(".mp3"):
+        return False
+    tmp = f"{path}.retag.mp3"
+    cmd = [bins["ffmpeg"], "-y", "-v", "error", "-i", path, "-map", "0", "-c", "copy",
+           "-id3v2_version", "3", "-metadata", "title=" + naming.tag(track.get("title")),
+           "-metadata", "artist=" + naming.tag(track.get("artist")), tmp]
+    try:
+        r = subprocess.run(cmd, capture_output=True, timeout=120)
+        if r.returncode == 0 and os.path.getsize(tmp) > 0:
+            os.replace(tmp, path)
+            return True
+    except Exception:
+        pass
+    try:
+        os.remove(tmp)
+    except OSError:
+        pass
+    return False
+
+
+def cli_rename():
+    """RenameTrack: the song takes its real name — file, sidecars, tags, row,
+    lists and phone place — and its lyrics are looked up again under it."""
+    t = one(arg(2))
+    if not t or not t.get("file") or not naming.tag(t.get("title")):
+        return {"ok": False, "error": "give { file, title }"}
+    args = [t["file"], naming.tag(t["title"])] + ([naming.tag(t["artist"])] if t.get("artist") else [])
+    r = action("track-rename", *args)
+    if not r.get("ok"):
+        return r
+    path = r["path"]
+    bins = load_bins()
+    row = {"artist": r["artist"], "title": r["title"]}
+    tagged = retag(bins, path, row) if bins.get("ok") else False
+    lrc, timed = write_lyrics(row, path)
+    if lrc:
+        action("track-set-lrc", r["file"], lrc, "timed" if timed else "untimed")
+    return {"ok": True, "file": r["file"], "was": r["was"], "tagged": tagged,
+            "lyrics": bool(lrc), "lyrics_timed": bool(timed)}
+
+
 def cli_karaoke():
     t = one(arg(2))
     if not t:
@@ -545,6 +596,7 @@ def cli_batch(kind):
 
 VERBS = {
     "track": cli_track,
+    "rename": cli_rename,
     "karaoke": cli_karaoke,
     "batch": lambda: cli_batch("download"),
     "karaoke-batch": lambda: cli_batch("karaoke"),

@@ -46,6 +46,7 @@ import sys
 import urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cjk_fold  # noqa: E402
 import lyrics_match as lm  # noqa: E402  (a sibling script, not a package)
 from lyrics_match import TITLE_TERMS, cluster, fold, is_cjk  # noqa: E402
 
@@ -278,6 +279,30 @@ def lyrics_anchor(entries):
     return None
 
 
+def title_matches(entry, names):
+    """Is this upload the song asked for? Its title (or the catalogue's track
+    name) must carry one of `names` — folded across case, width and script,
+    decorations such as (歌词版), Live, MV or Official around it allowed, one
+    slipped character tolerated. 「听风的歌 郭富城 (歌词版)」 carries no 风中密码
+    and was fetched in its place (2026-09-24)."""
+    hay = cjk_fold.key(f"{entry.get('title') or ''} {entry.get('track') or ''}")
+    for name in names:
+        k = cjk_fold.key(name)
+        if not k:
+            continue
+        if k in hay:
+            return True
+        allow = cjk_fold.slips(name)
+        if allow and len(hay) >= len(k) - allow:
+            for size in {len(k) - 1, len(k), len(k) + 1}:
+                if size <= 0:
+                    continue
+                for i in range(0, max(1, len(hay) - size + 1)):
+                    if cjk_fold.distance(k, hay[i:i + size], allow) <= allow:
+                        return True
+    return False
+
+
 # ---------------------------------------------------------------------- scoring
 
 def title_score(folded_title, version):
@@ -406,6 +431,15 @@ def main():
     candidates = [c for c in candidates if str(c.get("id")) not in exclude]
     if not candidates:
         fail("no candidates found")
+    # Only the song asked for: its title, or the catalogue's name for it (the
+    # album track that was corroborated), must be in the upload's title.
+    names = [title] + [a.get("track") or a.get("title") or "" for a in albums]
+    off_title = [c.get("title") for c in candidates if not title_matches(c, names)]
+    candidates = [c for c in candidates if title_matches(c, names)]
+    if off_title:
+        notes.append(f"{len(off_title)} upload(s) named another song were left out")
+    if not candidates:
+        fail("no source matched the title")
 
     # The length to hold uploads to: the album track's own when there is one,
     # else what the lyrics agree on, else what the uploads agree on.

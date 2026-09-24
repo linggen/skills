@@ -71,13 +71,14 @@ def distance(a, b, cap=3):
 
 def slips(title):
     """How many slips a title may carry and still be the same song: one
-    character for a CJK title of two or more, a little more for a long Latin
-    one. A one-character title allows none."""
+    character for a CJK title of three or more, a little more for a long
+    Latin one. A title of one or two characters allows none — 愛你 and 愛我
+    are two songs."""
     k = key(title)
     if len(k) < 2:
         return 0
     if is_cjk(k):
-        return 1
+        return 1 if len(k) >= 3 else 0
     return 1 if len(k) <= 12 else 2
 
 

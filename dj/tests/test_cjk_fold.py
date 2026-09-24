@@ -86,6 +86,89 @@ class Guard(unittest.TestCase):
         self.assertEqual((r["got"], r["failed"]), (1, 0))
 
 
+class TwoCharacterTitles(unittest.TestCase):
+    def test_no_slip_allowed(self):
+        self.assertFalse(cf.near({"artist": "A", "title": "愛我"}, {"artist": "A", "title": "愛你", "file": "x"}))
+
+
+def picker():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("pick_source_t", os.path.join(SCRIPTS, "pick-source.py"))
+    ps = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ps)
+    return ps
+
+
+class TitleGate(unittest.TestCase):
+    """The case: asked for 郭富城 风中密码, the picker chose 「听风的歌 郭富城
+    (歌词版)」 — another song — and it landed as 风中密码."""
+    ps = picker()
+
+    def test_another_song_is_refused(self):
+        self.assertFalse(self.ps.title_matches({"title": "听风的歌 郭富城 (歌词版)"}, ["风中密码"]))
+        self.assertFalse(self.ps.title_matches({"title": "郭富城 對你愛不完"}, ["风中密码"]))
+
+    def test_decorations_and_scripts_pass(self):
+        for t in ["郭富城 Aaron Kwok - 風中密碼 (Official MV)", "风中密码 Live",
+                  "郭富城 - 風中密碼【歌詞版】", "風中密碼"]:
+            self.assertTrue(self.ps.title_matches({"title": t}, ["风中密码"]), t)
+
+    def test_the_catalogue_name_passes(self):
+        self.assertTrue(self.ps.title_matches({"title": "Aaron Kwok", "track": "風裡密碼"}, ["风中密码", "风里密码"]))
+        self.assertTrue(self.ps.title_matches({"title": "郭富城 風裡密碼"}, ["风中密码"]))  # one slip
+
+    def test_latin(self):
+        self.assertTrue(self.ps.title_matches({"title": "Beyond - Amani (Live 1991)"}, ["Amani"]))
+        self.assertFalse(self.ps.title_matches({"title": "Beyond - 海闊天空"}, ["Amani"]))
+
+
+class NoMatchIsReported(unittest.TestCase):
+    def test_fetch_reports_it_instead_of_searching(self):
+        sys.path.insert(0, SCRIPTS)
+        import fetch
+        orig = fetch.pick_source
+        fetch.pick_source = lambda *a, **k: {"no_match": True}
+        try:
+            r = fetch.fetch_track({"ok": True, "yt_dlp": "x", "ffmpeg": "y"}, {"lib_dir": tempfile.mkdtemp()},
+                                  {"artist": "郭富城", "title": "风中密码"})
+        finally:
+            fetch.pick_source = orig
+        self.assertEqual(r, {"ok": False, "error": "no source matched the title"})
+
+
+class Rename(unittest.TestCase):
+    def test_rename_moves_file_sidecar_lists_and_phone(self):
+        d = tempfile.mkdtemp()
+        music = os.path.join(d, "music")
+        os.makedirs(music)
+        mp3 = os.path.join(music, "郭富城 - 風中密碼.mp3")
+        lrc = os.path.join(music, "郭富城 - 風中密碼.lrc")
+        for p in (mp3, lrc):
+            open(p, "w").write("x")
+        lib = {"tracks": [{"id": "郭富城|風中密碼", "artist": "郭富城", "title": "風中密碼", "file": mp3,
+                           "lrc": lrc, "plays": 4}],
+               "playlists": [{"name": "江湖", "files": ["郭富城 - 風中密碼.mp3"]}],
+               "phone": {"files": ["郭富城 - 風中密碼.mp3"], "playlists": []}}
+        with open(os.path.join(d, "library.json"), "w", encoding="utf-8") as f:
+            json.dump(lib, f, ensure_ascii=False)
+        env = {**os.environ, "DJ_DIR": d, "LINGGEN_PORT": "1"}
+        out = subprocess.run(["bash", os.path.join(SCRIPTS, "run-js.sh"), os.path.join(SCRIPTS, "actions.mjs"),
+                              "track-rename", "郭富城 - 風中密碼.mp3", "風裡密碼"],
+                             capture_output=True, text=True, env=env).stdout
+        r = json.loads(out.strip().splitlines()[-1])
+        self.assertEqual((r["ok"], r["file"], r["was"]), (True, "郭富城 - 風裡密碼.mp3", "郭富城 - 風中密碼.mp3"))
+        got = json.load(open(os.path.join(d, "library.json"), encoding="utf-8"))
+        row = got["tracks"][0]
+        self.assertEqual((row["title"], row["id"], row["plays"], row["requested_title"]),
+                         ("風裡密碼", "郭富城|風裡密碼", 4, "風中密碼"))
+        self.assertTrue(os.path.exists(os.path.join(music, "郭富城 - 風裡密碼.mp3")))
+        self.assertTrue(os.path.exists(os.path.join(music, "郭富城 - 風裡密碼.lrc")))
+        self.assertFalse(os.path.exists(mp3))
+        self.assertEqual(got["playlists"][0]["files"], ["郭富城 - 風裡密碼.mp3"])
+        self.assertEqual(got["phone"]["files"], ["郭富城 - 風裡密碼.mp3"])
+        self.assertTrue(row["on_phone"])
+
+
 class ConcertAlbum(unittest.TestCase):
     def test_a_concert_album_is_another_take(self):
         import lyrics_match as lm

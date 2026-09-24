@@ -317,6 +317,27 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs tracks-delete {{files}}"
     tier: edit
     timeout_ms: 20000
+  - name: RenameTrack
+    description: >-
+      Give a song its real name when it was filed under a wrong one. The file,
+      its lyrics and karaoke files, its tags, playlists and phone place all
+      follow, plays are kept, and its lyrics are looked up again under the new
+      name. Returns { file, was, tagged, lyrics, lyrics_timed }.
+    args:
+      track:
+        type: object
+        required: true
+        description: >-
+          { file, title, artist? } — file as ListLibrary names it, title the
+          correct one. Example: {"file": "郭富城 - 風中密碼.mp3", "title": "風裡密碼"}.
+        properties:
+          file:   { type: string }
+          title:  { type: string }
+          artist: { type: string }
+        required: [file, title]
+    cmd: "bash $SKILL_DIR/scripts/rename.sh {{track}}"
+    tier: edit
+    timeout_ms: 120000
 ---
 
 # DJ — your personal Disc Jockey
@@ -516,6 +537,8 @@ the page is open. The examples below are the Mac unless they say otherwise:
 - **Untag songs**: `RemoveFromPlaylist` — the songs stay in the library.
 - **Delete a playlist / delete songs**: `DeletePlaylist` / `DeleteTracks` —
   destructive; confirm with the user first (see Hard rails).
+- **A song under the wrong name**: `RenameTrack` with the correct title —
+  never delete it and fetch it again. Plays, playlists and the phone follow.
 - **Put music on the phone / take it off**: `AddToPhone` / `RemoveFromPhone`.
   For a playlist the user wants *on* the phone, `AddToPlaylist` with
   `view: "phone"` does both at once — a phone list can only name songs the
