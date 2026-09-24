@@ -2830,10 +2830,80 @@ test('论道: dealt at 稷下 when a notice asks for it, the form checked by the
     }
   }
   refused(VERBS.lundao, st, { action: 'open' }, 'not-here', at);
+  // the tray says it is done today, not 待做 (his screen, 2026-09-24)
+  const row = look(st, content, at).tasks.find(t => t.id === 'lundao');
+  assert.equal(row?.status, 'done');
+  assert.ok(!look(st, content, ctx({ now: new Date('2026-09-12T12:00:00') })).tasks.some(t => t.id === 'lundao'), 'tomorrow it is history');
   // Ling's judgement counts: form right, meaning wrong, is a miss
   const judged = must(VERBS.lundao, open.state, { action: 'turn', answer: goodFor(open.state), ok: 'false' }, at);
   assert.equal(judged.result.good, false);
   assert.equal(judged.result.judged, false);
+});
+
+// Live 2026-09-24: Ling read the reference 下联 out as the next 上联 — the answer, spoken.
+test('论道 results: `say` is the card\'s prompt; the reference lower line lives only in `judge`, never at the top', () => {
+  const at = ctx();
+  const base = { ...toOpenWorld(), place: 'jixia', tier: 'core', quests: { 'daily-20260911-trial-jixia': { took: '2026-09-11', have: {} } } };
+  // Deal each game: the dealt game follows the name, so try names until all three come up.
+  const seen = {};
+  for (let i = 0; i < 60 && Object.keys(seen).length < 3; i += 1) {
+    const r = must(VERBS.lundao, { ...base, name: `P${i}` }, { action: 'open' }, at);
+    seen[r.state.lundao.game] ??= r;
+  }
+  assert.deepEqual(Object.keys(seen).sort(), ['chengyu', 'duilian', 'feihua']);
+  for (const [game, r] of Object.entries(seen)) {
+    assert.equal(r.result.say, r.result.lundao.prompt, `${game}: say is the card's prompt`);
+    assert.ok(!('model' in r.result), `${game}: no top-level model`);
+    if (game === 'duilian') {
+      assert.equal(r.result.judge.reference_down, r.state.lundao.model);
+      assert.match(r.result.judge.note, /never say it/);
+      assert.notEqual(r.result.say, r.result.judge.reference_down);
+    } else assert.equal(r.result.judge, undefined, `${game} carries no answer`);
+    // asked again while open: the same line to say
+    const again = must(VERBS.lundao, r.state, { action: 'open' }, at);
+    assert.equal(again.result.say, r.state.lundao.game === 'chengyu' ? r.state.lundao.last : r.state.lundao.prompt);
+  }
+  // a good 对联 turn deals a fresh upper line: say it, judge it by its own reference
+  const d = seen.duilian;
+  const t = must(VERBS.lundao, d.state, { action: 'turn', answer: '甲'.repeat([...d.state.lundao.prompt].length), ok: 'true' }, at);
+  assert.equal(t.result.good, true);
+  assert.equal(t.result.say, t.result.lundao.prompt);
+  assert.equal(t.result.judge.reference_down, t.state.lundao.model);
+  assert.ok(!('model' in t.result));
+  const miss = must(VERBS.lundao, d.state, { action: 'turn', answer: 'x', ok: 'true' }, at);
+  assert.equal(miss.result.say, undefined, 'a miss keeps the line on the card');
+  assert.ok(!('model' in miss.result));
+});
+
+// Play WITH AI (2026-09-24): Yinyue's Progress carries the open round so she can
+// help — the form, the prompt, the misses — never the rules' model line.
+test('论道 in Progress: open, Yinyue sees the prompt and her help rule; closed or won, nothing; no answer key', () => {
+  const at = ctx();
+  const s = { ...toOpenWorld(), place: 'jixia', tier: 'core', quests: { 'daily-20260911-trial-jixia': { took: '2026-09-11', have: {} } } };
+  const prog = st => VERBS.progress(st, content, at).result;
+  assert.equal(prog(s).lundao, undefined, 'not open, not carried');
+  const open = must(VERBS.lundao, s, { action: 'open' }, at);
+  const l = open.state.lundao;
+  const p = prog(open.state).lundao;
+  assert.ok(p, 'open, carried');
+  assert.deepEqual(Object.keys(p).sort(), ['form', 'help', 'misses', 'prompt']);
+  assert.equal(p.prompt, l.game === 'chengyu' ? l.last : l.prompt);
+  assert.equal(p.misses, `0/${content.lundao.misses}`);
+  assert.match(p.help, /never answer for them/);
+  if (l.model) assert.ok(!JSON.stringify(prog(open.state)).includes(l.model), 'the reference line never reaches her');
+  assert.ok(!('judge' in prog(open.state)) && !('judge' in p) && !('reference_down' in p));
+  // every game's key stays out, whichever is dealt
+  for (const game of ['feihua', 'chengyu', 'duilian']) {
+    const d = { ...open.state, lundao: { ...l, game, prompt: '风', last: '风', model: '秘密下联答案' } };
+    const q = prog(d);
+    assert.ok(!JSON.stringify(q).includes('秘密下联答案'), game);
+    assert.ok(!('used' in q.lundao) && !('model' in q.lundao), game);
+  }
+  const miss = must(VERBS.lundao, open.state, { action: 'turn', answer: 'xyz', ok: 'true' }, at);
+  assert.equal(prog(miss.state).lundao.misses, `1/${content.lundao.misses}`);
+  assert.equal(prog({ ...open.state, place: 'linzi' }).lundao, undefined, 'walked away, not carried');
+  assert.equal(prog({ ...open.state, lundao: { ...l, outcome: 'lost' } }).lundao, undefined, 'lost, closed');
+  assert.equal(prog({ ...open.state, lundao: { ...l, outcome: 'won' } }).lundao, undefined, 'won, closed');
 });
 
 // His screen 2026-09-23: a notice for 碣石's 洛书 put the board on the stage at 邺城.

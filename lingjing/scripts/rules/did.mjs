@@ -13,7 +13,8 @@ import { pick, stepName, threshold } from '../state.mjs';
 import { herPast } from './companion.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, questOf } from './errands.mjs';
-import { taleLine } from './tale.mjs';
+import { taleLine, taleLundao } from './tale.mjs';
+import { hostedHere, lundaoBrief, lundaoName } from './tasks.mjs';
 import { tasksBrief, wordsOf } from './look.mjs';
 import { placeOf } from './world.mjs';
 
@@ -97,6 +98,18 @@ export const READS_PAGE = {
   progress: { who: (reader) => Boolean(reader), keep: 5 },
 };
 
+/* 论道 open where the player stands, for Yinyue to help with (his, 2026-09-24:
+   play WITH AI — she helps, never answers): the form, what the player must
+   answer to (飞花令's keyword, 成语接龙's last idiom, 对联's upper line) and the
+   misses — only what the player has been shown; never the rules' model line. */
+const LUNDAO_HELP = 'If the player asks your help: give a hint or one or two candidate lines in your own words; never answer for them — they give their answer to the host themselves.';
+function lundaoHelp(content, state, now) {
+  const board = hostedHere(content, state, 'lundao') ? lundaoBrief(content, state, now) : null;
+  const open = board?.outcome === 'open' ? { game: board.game, prompt: board.prompt, last: board.last, misses: board.misses, max_misses: board.max_misses } : taleLundao(content, state);
+  if (!open) return null;
+  return { form: lundaoName(open.game, state.lang), prompt: open.game === 'chengyu' ? open.last : open.prompt, misses: `${open.misses}/${open.max_misses}`, help: LUNDAO_HELP };
+}
+
 /* Progress — the game in a few lines, for Yinyue (or Ling): the realm, the
    pool, where the player stands, the errands in hand, today's practice, and
    what the page did since the reader last asked (rules.mjs adds `page_did`).
@@ -105,6 +118,7 @@ export function progress(state, content, ctx) {
   const lang = state.lang, here = placeOf(content, state.place);
   const st = staminaBrief(content, state, ctx.now);
   const { tasks, quests, kaifu } = tasksBrief(content, state, ctx);
+  const lundao = lundaoHelp(content, state, ctx.now);
   return {
     state: null,
     result: {
@@ -119,6 +133,7 @@ export function progress(state, content, ctx) {
       chores: { today: quests.map(q => ({ title: q.title, device: q.device, done: q.done, paid: q.paid })), ...(kaifu ? { kaifu: `${kaifu.done}/${kaifu.of}` } : {}) },
       // Her own past as far as the cauldrons have given it back, and where she stands (companion.mjs § 她的来处).
       her: herPast(content, state),
+      ...(lundao ? { lundao } : {}),
     },
   };
 }

@@ -498,6 +498,15 @@ function taleLine(content, state, now) {
   return madeToday(state, now) && !state.tale.dropped ? `${pick(content.dictionary.words.tale, state.lang)} · ${state.tale.title} · ✓` : null;
 }
 
+/* A tale's 论道 step open where the player stands — what the player has
+   been shown of it (the prompt, the line to chain from, the misses). */
+function taleLundao(content, state) {
+  const t = liveTale(state), link = t && linkOf(t);
+  if (!link || link.game !== 'lundao' || t.won || link.at !== state.place) return null;
+  const l = t.lundao;
+  return { game: link.lundao.form, prompt: link.lundao.prompt, last: l?.last ?? link.lundao.prompt, misses: l?.misses ?? 0, max_misses: cfgOf(content).lundao.misses };
+}
+
 /* The people met in finished tales, newest first — who Ling may bring back. */
 function knownBrief(content, state, max = 5) {
   return (state.known ?? []).slice(0, max).map(k => ({ id: k.id, name: k.name, role: k.role, where: pick(placeOf(content, k.where)?.name, state.lang) ?? null, from: k.from }));
@@ -516,4 +525,4 @@ function storyDue(content, state, ctx) {
   return t && since >= n ? { why: `quiet for ${Math.round(since / 60000)} minutes — the rumor's next step waits` } : null;
 }
 
-export { boardId, canMakeTale, knownBrief, lintTale, liveTale, pickSeed, storyDue, taleBrief, taleEvent, taleHanded, taleInfo, taleLine, taleRow };
+export { boardId, canMakeTale, knownBrief, lintTale, liveTale, pickSeed, storyDue, taleBrief, taleEvent, taleHanded, taleInfo, taleLine, taleLundao, taleRow };

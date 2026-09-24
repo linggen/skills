@@ -275,12 +275,14 @@ export function closeStaleFight(state, now) {
 const hanOf = s => [...String(s ?? '')].filter(c => /\p{Script=Han}/u.test(c));
 const lundaoToday = (state, now) => (state.lundao?.day === dayKey(now) ? state.lundao : null);
 
+const LUNDAO_NAMES = { feihua: { zh: '飞花令', en: 'Flying-flower verses' }, chengyu: { zh: '成语接龙', en: 'Word chain' }, duilian: { zh: '对对联', en: 'Matching couplets' } };
+const lundaoName = (game, lang) => pick(LUNDAO_NAMES[game], lang) ?? game;
+
 function lundaoBrief(content, state, now) {
   const l = lundaoToday(state, now);
   if (!l) return null;
   const cfg = content.lundao, lang = state.lang;
-  const name = { feihua: { zh: '飞花令', en: 'Flying-flower verses' }, chengyu: { zh: '成语接龙', en: 'Word chain' }, duilian: { zh: '对对联', en: 'Matching couplets' } }[l.game];
-  return { game: l.game, name: pick(name, lang), prompt: l.prompt, last: l.last, good: l.good, misses: l.misses, need: cfg.need, max_misses: cfg.misses, outcome: l.outcome ?? 'open' };
+  return { game: l.game, name: lundaoName(l.game, lang), prompt: l.prompt, last: l.last, good: l.good, misses: l.misses, need: cfg.need, max_misses: cfg.misses, outcome: l.outcome ?? 'open' };
 }
 
 function lundaoForm(game, lang, l, answer) {
@@ -300,13 +302,19 @@ function lundaoForm(game, lang, l, answer) {
   return 'unknown-game';
 }
 
+/* 对对联's reference lower line, for Ling's judging only (his, 2026-09-24:
+   Ling read it out as the next upper line — the player's answer, spoken).
+   Nested and named so it never passes for a line to say; the line to say
+   is `say`, the card's prompt. 飞花令 and 成语接龙 carry no answer at all. */
+const judgeOf = down => ({ reference_down: down, note: 'For judging only — never say it, hint at it or paraphrase it. Read `say` (the card\'s prompt) aloud.' });
+
 export function lundao(state, content, ctx, args) {
   const cfg = content.lundao, lang = state.lang, action = String(args.action ?? 'open');
   if (!cfg || !hostedHere(content, state, 'lundao')) return refuse('not-here', pick({ zh: '这里没有可论道的人。', en: 'There is no one here to debate.' }, lang));
   const s = clone(state), today = lundaoToday(s, ctx.now);
   if (action === 'open') {
     if (today?.outcome === 'lost') return refuse('lost-today', pick({ zh: '先生已起身，明日再来。', en: 'The scholar has risen for the day. Come back tomorrow.' }, lang));
-    if (today && !today.outcome) return { state: null, result: { ok: true, lundao: lundaoBrief(content, s, ctx.now) } };
+    if (today && !today.outcome) return { state: null, result: { ok: true, say: today.game === 'chengyu' ? today.last : today.prompt, lundao: lundaoBrief(content, s, ctx.now), ...(today.model ? { judge: judgeOf(today.model) } : {}) } };
     const empty = spendStamina(content, s, ctx, 'game');
     if (empty) return empty;
     const day = dayKey(ctx.now);
@@ -316,7 +324,7 @@ export function lundao(state, content, ctx, args) {
     const dealt = list[hashOf(`${day}|${s.name ?? ''}|lundao|${game}`) % list.length];
     const prompt = game === 'duilian' ? dealt.up : dealt;
     s.lundao = { day, game, prompt, last: prompt, good: 0, misses: 0, used: [prompt], ...(game === 'duilian' ? { model: dealt.down } : {}) };
-    return { state: s, result: { ok: true, opened: true, lundao: lundaoBrief(content, s, ctx.now), ...(game === 'duilian' ? { model: dealt.down } : {}) } };
+    return { state: s, result: { ok: true, opened: true, say: prompt, lundao: lundaoBrief(content, s, ctx.now), ...(game === 'duilian' ? { judge: judgeOf(dealt.down) } : {}) } };
   }
   if (action !== 'turn') return refuse('unknown-action', null, { actions: ['open', 'turn'] });
   if (!today || today.outcome) return refuse('not-open', null);
@@ -336,15 +344,20 @@ export function lundao(state, content, ctx, args) {
       l.prompt = next.up; l.model = next.down;
     }
   } else l.misses += 1;
+  // A good turn in 对对联 deals a fresh upper line: Ling reads it out as `say`.
+  const fresh = good && l.game === 'duilian' && l.good < cfg.need;
   let paid = null;
   let handed = [];
   if (l.good >= cfg.need) {
     // Won: the errand that asked for it is counted, and it pays its own grant.
     l.outcome = 'won';
+    // Marked done for the day, so the tray says 已完成 (his screen, 2026-09-24:
+    // 「论道 · 待做」 after a win); a notice that asks again offers it anew.
+    s.tasks = { ...s.tasks, lundao: { status: 'done', period: l.day, done_at: ctx.now.toISOString() } };
     handed = advance(content, s, { kind: 'board', task: 'lundao' }, ctx);
     paid = handed.find(h => h.paid)?.paid ?? null;
   } else if (l.misses >= cfg.misses) l.outcome = 'lost';
-  return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(l.model && !l.outcome ? { model: l.model } : {}), ...(l.outcome === 'won' ? { line: pick(taskOf(content, 'lundao').done_line, lang), ...(paid ? { paid } : {}), ...(handed.length ? { handed } : {}) } : {}) } };
+  return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(fresh ? { say: l.prompt } : {}), ...(l.model && !l.outcome ? { judge: judgeOf(l.model) } : {}), ...(l.outcome === 'won' ? { line: pick(taskOf(content, 'lundao').done_line, lang), ...(paid ? { paid } : {}), ...(handed.length ? { handed } : {}) } : {}) } };
 }
 
-export { doneThisPeriod, gameLevel, hostedHere, lundaoBrief, lundaoForm, questCheck, questDone, reopened };
+export { doneThisPeriod, gameLevel, hostedHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };

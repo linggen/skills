@@ -196,10 +196,15 @@ test('论道 in a tale: the rules check the form, Ling the meaning; misses begin
   const off = must(s, { action: 'answer', answer: '春风又绿江南岸', ok: 'true' });
   assert.equal(off.result.good, false);
   assert.equal(off.result.form, 'no-keyword');
+  // Yinyue's Progress holds the open step, to help with — never an answer
+  const help = progress(off.state, content, ctx()).result.lundao;
+  assert.equal(help.prompt, '月');
+  assert.equal(help.misses, `1/${content.tale.lundao.misses}`);
   s = must(off.state, { action: 'answer', answer: '明月松间照', ok: 'true' }).state;
   assert.equal(s.tale.lundao.good, 1);
   s = must(s, { action: 'answer', answer: '月落乌啼霜满天', ok: 'true' }).state;
   assert.equal(s.tale.n, 2);
+  assert.equal(progress(s, content, ctx()).result.lundao, undefined, 'the step done, nothing to help with');
   // a prompt the rules cannot judge is refused
   t.steps[1].lundao.prompt = '明月几时有';
   assert.ok(problems(t).some(p => /not a feihua prompt/.test(p)));

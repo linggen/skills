@@ -96,7 +96,10 @@ tools:
       and `page_did` — the last few things the player did on the page since
       she last asked — and `her`, once she walks with the player: the
       memories the cauldrons have given back (`recalled`), where she stands
-      now (`stance`), her `fear` and how many `cauldrons`. Speak of your
+      now (`stance`), her `fear` and how many `cauldrons`; and `lundao`
+      while a 论道 round is open where the player stands — its `form`, the
+      `prompt` they must answer to, the `misses` — with its `help` rule.
+      Speak of your
       past only from `recalled` and `stance`; never ask the player to slow
       down, and ask nothing for yourself. Changes nothing else. (Ling reads all of it, and more, in Look.)
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --for=yinyue"
@@ -297,7 +300,12 @@ tools:
       them there (Look's `tasks` hold `lundao`). `open` deals the game — 飞花令 (a line holding the
       keyword), 成语接龙 (an idiom from the last character) or 对对联 (a lower
       line as long as the upper) — speak the prompt as the scholar, in his
-      voice. Each answer the player gives is `turn` with their `answer`
+      voice: the answer's `say` is the line to read, exactly the card's
+      `lundao.prompt`, word for word (on open, and on each good 对联 turn,
+      which deals a fresh upper line). For 对对联 the answer also holds
+      `judge.reference_down`, a reference lower line for judging only: it
+      is the player's answer — NEVER speak it, hint at it or paraphrase it,
+      and never read it as the next line. Each answer the player gives is `turn` with their `answer`
       verbatim and your judgement `ok` (true only for a real verse line, a
       real idiom, a fitting couplet — never be generous); for 成语接龙 add
       your own next idiom as `reply`, which must chain. The rules check the
@@ -305,7 +313,10 @@ tools:
       counted, `paid` comes on the third good answer; three misses and he
       rises for the day. The card on the stage shows the prompt and the
       count, so never read the count out. `open` costs 3 体力; the errand
-      that asked for it pays.
+      that asked for it pays. The player may ask Yinyue for help
+      (`@银月 …`): her `[Yinyue]` line may hint or offer a candidate. That
+      is not an answer — wait for the PLAYER's own; a line she suggested
+      counts only when the player sends it to you.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs lundao --action={{action}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --for=ling"
     tier: edit
     timeout_ms: 8000
