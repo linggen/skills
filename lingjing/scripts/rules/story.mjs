@@ -235,6 +235,17 @@ export function herBeat(content, s, { id, lines, happened = [], scenes = [] }) {
    there is one (one moment, one line from her), else as a node of its own. */
 export const withHerBeat = (node, her, now) => (!her ? node : node ? { ...node, her_beat: her } : { kind: 'beat', at: now.toISOString(), her_beat: her });
 
+/* A refusal of hers — the rules turn the player back with a word the story
+   wrote for her (Move's `too-hard`): once she walks with the player it is her
+   beat, facts only — what happened, where fits, her line as reference. A
+   refusal writes nothing, so the command line keeps it on the save as a
+   `beat` node, unlogged (rules.mjs), for the page to raise. Before she is
+   found: null, and the refusal's own words are Ling's. */
+export function refusalBeat(content, s, { id, happened, fitting, line }) {
+  if (!companionOf(content) || !hasCompanion(s)) return null;
+  return { id, facts: { ...(happened ? { happened } : {}), ...(fitting ? { fitting } : {}), line } };
+}
+
 /* A scene walked into (Move, Go) with a line of hers in it: her beat, kept
    on the save for the page. Null when she has none there. */
 export function enteredBeat(content, s, scene, now) {

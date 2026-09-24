@@ -1084,6 +1084,38 @@ test('the corridor walks the player from place to place, and Move waits', () => 
   assert.equal(look(s, content, ctx()).director.thread.scene, '00-fuzhu');
 });
 
+test('too-hard with her beside him: her word is her beat — kept on the save unlogged, stripped for Ling, raised by the page', async () => {
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-toohard-'));
+  try {
+    const file = path.join(data, 'state.json');
+    fs.writeFileSync(file, JSON.stringify({ ...toOpenWorld(), companion: { joined: '2026-09-01' }, updated: NOW.toISOString() }));
+    const env = { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: NOW.toISOString() };
+    const cli = (...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env, encoding: 'utf8' }).stdout);
+    const ling = cli('move', '--place=lvliang', '--for=ling');
+    assert.equal(ling.refused, 'too-hard');
+    assert.equal(ling.yinyue, undefined);
+    assert.deepEqual(Object.keys(ling.her_beat.facts), ['happened'], 'Ling learns what happened, never her line');
+    assert.doesNotMatch(JSON.stringify(ling), /还不是时候/);
+    const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
+    assert.equal(saved.place, 'sibei', 'he did not move');
+    assert.equal(saved.node.kind, 'beat');
+    assert.equal(saved.node.her_beat.facts.line, '还不是时候。先回泗水北岸吧。');
+    const log = path.join(data, 'log.jsonl');
+    assert.equal(fs.existsSync(log) ? fs.readFileSync(log, 'utf8').includes('"verb":"move"') : false, false, 'no log line: Undo is for moves');
+    // The page's Look raises it as her own moment, the fitting place in her facts.
+    const { nodeMoment } = await import('../scripts/voice.js');
+    const m = nodeMoment(cli('look').story_node);
+    assert.equal(m.id, 'her_beat');
+    assert.match(m.zh, /「还不是时候。先回泗水北岸吧。」/);
+    assert.match(m.zh, /泗水北岸/);
+    // The page's own Move refreshes on such a refusal, so watchNode raises it.
+    const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+    assert.match(src, /if \(!r\.ok\) \{ noteAWhile\(refusal\(r\)\); if \(r\.her_beat\) await refresh\(\); return; \}/);
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
+});
+
 test('Move for real: roads, tiers, a fitting place, the names', () => {
   let s = toOpenWorld();
   assert.equal(s.place, 'sibei');
@@ -1135,7 +1167,14 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   const th = refused(move, s, { place: 'lvliang' }, 'too-hard');
   assert.equal(th.say, '雾更浓了，看不见路。');
   assert.equal(th.fitting.id, 'sibei');
-  assert.equal(th.yinyue, '还不是时候。先回泗水北岸吧。');
+  assert.equal(th.yinyue, undefined, 'never a line of hers for Ling');
+  assert.equal(th.her_beat, undefined, 'before she is found the refusal is Ling\'s alone');
+  const thHer = refused(move, { ...s, companion: { joined: '2026-09-01' } }, { place: 'lvliang' }, 'too-hard');
+  assert.equal(thHer.yinyue, undefined);
+  assert.equal(thHer.her_beat.id, 'too-hard/lvliang');
+  assert.equal(thHer.her_beat.facts.line, '还不是时候。先回泗水北岸吧。', 'her word, as her reference');
+  assert.equal(thHer.her_beat.facts.fitting, '泗水北岸');
+  assert.ok(thHer.her_beat.facts.happened);
   assert.equal(th.here.id, 'sibei');
   // unknown
   assert.deepEqual(refused(move, s, { place: 'nowhere' }, 'unknown-place').near.map(p => p.id), ['sishui', 'yunlong', 'lvliang', 'zhangnan']);

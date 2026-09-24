@@ -9,7 +9,7 @@ import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, questOf,
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
 import { atScene, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
-import { enteredBeat } from './story.mjs';
+import { enteredBeat, refusalBeat } from './story.mjs';
 import { enter } from './worlds.mjs';
 
 /* ── Story, travel, language ── */
@@ -75,8 +75,12 @@ export function move(state, content, ctx, args) {
   if (tooHard(content, s, target)) {
     const fitting = fittingPlace(content, s, here);
     const say = { zh: '雾更浓了，看不见路。', en: 'The mist thickens; the road is lost.' };
-    const yinyue = { zh: `还不是时候。先回${pick(fitting.name, 'zh')}吧。`, en: `Not yet. Let's go back to ${pick(fitting.name, 'en')}.` };
-    return stay('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), yinyue: pick(yinyue, lang) });
+    // Her word turning him back is hers to say (Hanli, 2026-09-24): facts for
+    // her moment, never a line for Ling. Before she is found there is none.
+    const line = { zh: `还不是时候。先回${pick(fitting.name, 'zh')}吧。`, en: `Not yet. Let's go back to ${pick(fitting.name, 'en')}.` };
+    const happened = { zh: `${pick(target.name, 'zh')}超出了玩家的境界，去不了。`, en: `${pick(target.name, 'en')} is beyond the player's realm; the road is lost.` };
+    const her = refusalBeat(content, s, { id: `too-hard/${target.id}`, happened: pick(happened, lang), fitting: pick(fitting.name, lang), line: pick(line, lang) });
+    return stay('too-hard', pick(say, lang), { tier: target.tier, fitting: placeName(content, s, fitting), ...(her ? { her_beat: her } : {}) });
   }
   // He named where he is going, so he is walked there — the whole road, not
   // one leg and a question at every ford (his, 2026-09-21: 「去泗水」 and the

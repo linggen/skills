@@ -179,6 +179,7 @@ export function herBeatFacts(h, zh) {
   const f = h?.facts ?? {};
   const bits = [];
   if (f.happened) bits.push(zh ? `刚才：${f.happened}` : `Just now: ${f.happened}`);
+  if (f.fitting) bits.push(zh ? `该去的地方：${f.fitting}。` : `Where fits: ${f.fitting}.`);
   if (f.recalls) bits.push(zh ? `你想起的：${f.recalls}` : `What you recall: ${f.recalls}`);
   bits.push(zh ? `故事在这里给你写了一句：${quote(zh, f.line ?? '')}。这句是你的参考；用你自己的话说出来，意思不变，一两句，别复述发生了什么。`
     : `The story gives you a line here: ${quote(zh, f.line ?? '')}. The authored line is your reference; say it your way, same meaning — a line or two, without retelling what happened.`);

@@ -28,7 +28,7 @@ import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { heed } from './rules/travel.mjs';
 import { VERBS } from './rules/verbs.mjs';
-import { owesRecap } from './rules/story.mjs';
+import { owesRecap, withHerBeat } from './rules/story.mjs';
 import { atScene } from './rules/world.mjs';
 import { BUILDING_WAITS, keepDay, keepSave, paintList, readSave } from './rules/worlds.mjs';
 
@@ -117,6 +117,13 @@ function runLocked(verb, args, stateFile, reader) {
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const asking = next ?? state;
   const told = pageTold(verb, reader, asking, stateFile);
+  // A refusal with her word in it (Move's `too-hard`) writes nothing, but her
+  // beat is kept on the save as a node for the page to raise — never logged,
+  // so Undo still takes back the last real move (story.mjs refusalBeat).
+  if (!next && out.result?.ok === false && out.result.her_beat) {
+    asking.node = withHerBeat(null, out.result.her_beat, now);
+    writeAtomic(stateFile, JSON.stringify(asking));
+  }
   // 传闻's nudge is handed to Ling once a span: written down like her place in
   // page_did — never logged, so Undo still takes back the last real move.
   if (reader === 'ling' && verb === 'look' && out.result?.story_due) {

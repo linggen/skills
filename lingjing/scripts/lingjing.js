@@ -992,7 +992,9 @@ async function goTo(place) {
   const before = look;
   show({ bookOpen: false });
   const r = await write('move', { place }).catch(failed);
-  if (!r.ok) { noteAWhile(refusal(r)); return; }
+  // A refusal with her word in it (too-hard) is kept on the save as her beat:
+  // the next Look raises her moment (watchNode) — the one way she hears it.
+  if (!r.ok) { noteAWhile(refusal(r)); if (r.her_beat) await refresh(); return; }
   keep({ doNote: null });
   await refresh();
   cheer(before);
