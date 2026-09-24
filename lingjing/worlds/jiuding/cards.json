@@ -859,6 +859,20 @@
       "_about": "背包里的符（items.json talisman，写符所得）。有一道在囊中，一局开局就在手上，不占十张；打出去，收场时从背包里扣掉一道 —— 一局至多一道。不属五行：相克不加不减。永不入牌库、不作赏。",
       "art": "art/items/talisman.webp",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
+    },
+    {
+      "id": "wuzhiqi",
+      "kind": "minion",
+      "name": {
+        "zh": "无支祁",
+        "en": "Wuzhiqi"
+      },
+      "cost": 5,
+      "element": "metal",
+      "atk": 5,
+      "hp": 5,
+      "art": "art/wuzhiqi.webp",
+      "art_source": "据《古岳渎经》新绘 — 见 art/CREDITS.md（无支祁不在山海经里，没有古本图）。"
     }
   ],
   "_curve": "单体伤害约 1.2 点/费，群伤约 0.7 点/费每个 —— 因为克制会翻倍，曲线要按翻倍之后算 (2026-09-18 闸: 五雷法 5费9点 打在克的行上是 18 点，一张牌打掉练气英雄九成气血，影响力 +33.8%)。",

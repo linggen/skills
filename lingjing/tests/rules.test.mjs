@@ -19,6 +19,7 @@ const content = loadContent();
 content.chapters['01-ji'].opens = '2026-10-01';
 content.chapters['02-yan'].opens = '2026-11-01';
 content.chapters['03-qing'].opens = '2026-12-01';
+content.chapters['04-xu'].opens = '2027-01-01';
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 // Today's 机缘 already dealt: for tests that mean "a Look that changes nothing else".
@@ -1110,7 +1111,7 @@ test('Move for real: roads, tiers, a fitting place, the names', () => {
   assert.equal(look(toFuzhu(), content, ctx()).director.choice, null, 'a scene running has its own buttons');
   assert.equal(l.place.has.creature.name, '夫诸');
   assert.deepEqual(l.place.show, [{ card: 'creature', id: 'fuzhu' }]);
-  assert.equal(l.place.places.length, 14, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐');
+  assert.equal(l.place.places.length, 15, '徐 with 大野泽, 凫丽 and 空桑 — the 禹贡\'s 徐 — and 泗渊 under 彭城');
   assert.ok(l.place.places.find(p => p.id === 'sibei').here);
   // the same place is no move
   assert.equal(must(move, s, { place: 'sibei' }).result.here, true);
@@ -1975,7 +1976,8 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   assert.equal(r.state.scene, '03-end');
   r = answerD(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan', '03-qing']);
-  assert.equal(look(r.state, content, dctx()).director.thread, null, 'no chapter 4 yet');
+  const thread4 = look(r.state, content, dctx()).director.thread;
+  assert.equal(thread4.chapter, '04-xu'); assert.equal(thread4.opens, '2027-01-01', 'chapter 4 waits for its month');
 });
 
 test('in October the road from Ye into 兖 is closed, and the brief says so', () => {
@@ -2084,9 +2086,9 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   // …a marsh has beasts, and a wandering beast is of this province: 蠪侄 of 凫丽山, never 夔 of 蓬莱
   const marsh = Array.from({ length: 30 }, (_, i) => must(move, { ...base, place: 'pengcheng' }, { place: 'peize' }, day(i)));
   assert.deepEqual([...new Set(marsh.map(d => d.result.place.meet.kind))].sort(), ['beast', 'find', 'trial']);
-  assert.deepEqual([...new Set(marsh.filter(d => d.result.place.meet.kind === 'beast').map(d => d.result.place.meet.creature.id))], ['longzhi']);
+  assert.deepEqual([...new Set(marsh.filter(d => d.result.place.meet.kind === 'beast').map(d => d.result.place.meet.creature.id))].sort(), ['longzhi', 'wuzhiqi']);
   // with every beast of the province walking beside him, the next province's come over the road
-  const tamedAll = marsh.map((_, i) => must(move, { ...base, place: 'pengcheng', cast: ['fuzhu', 'longzhi'] }, { place: 'peize' }, day(i)).result.place.meet);
+  const tamedAll = marsh.map((_, i) => must(move, { ...base, place: 'pengcheng', cast: ['fuzhu', 'longzhi', 'wuzhiqi'] }, { place: 'peize' }, day(i)).result.place.meet);
   assert.ok(tamedAll.filter(m => m.kind === 'beast').every(m => ['paoxiao', 'jingwei', 'leishen', 'kui', 'tongtong'].includes(m.creature.id)));
   // a reload rerolls nothing, and to-and-fro is no farm
   const first = deals[0];
@@ -2098,10 +2100,10 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   const seeded = must(move, { ...base, place: 'sibei' }, { place: 'lvliang' }, day(0));
   assert.ok(seeded.result.place.meet, 'a place with only a tale to begin is not an arrival by itself');
   assert.ok(seeded.result.director.choice.options.some(o => o.tale));
-  // a place walked THROUGH is not an arrival: 泗水岸 → 泗口 passes 淮水渡口
-  const through = must(move, base, { place: 'sikou' }, day(0));
+  // a place walked THROUGH is not an arrival: 泗水岸 → 圯桥 passes 淮水渡口
+  const through = must(move, base, { place: 'yiqiao' }, day(0));
   assert.deepEqual(through.result.via.map(p => p.id), ['huaidu']);
-  assert.deepEqual(Object.keys(through.state.meets.places), ['sikou']);
+  assert.deepEqual(Object.keys(through.state.meets.places), ['yiqiao']);
 
   // 拾遗: taken once, and gone
   const found = deals.find(d => d.result.place.meet.kind === 'find'), fd = day(deals.indexOf(found));
@@ -2200,7 +2202,7 @@ test('榜文: a market posts one templated 差事 a day — near, winnable, rebu
   const posted = days.map(at => look(base, content, at).offers.filter(o => o.id.startsWith('daily-')));
   assert.ok(posted.every(p => p.length === 1), 'one a day, every day');
   assert.ok(new Set(posted.map(p => p[0].id.split('-').slice(2).join('-'))).size > 2, 'and the posting turns with the day');
-  const NEAR = new Set(['sishui', 'sibei', 'yunlong', 'huaidu', 'peize', 'weishan', 'xushan', 'lvliang', 'sikou', 'yiqiao']);
+  const NEAR = new Set(['sishui', 'sibei', 'yunlong', 'huaidu', 'peize', 'weishan', 'xushan', 'lvliang', 'sikou', 'yiqiao', 'siyuan']);
   for (const [o] of posted) {
     assert.doesNotMatch(o.id, /fuzhu|fuli|longzhi|pengcheng/, 'never a beast that walks with him, a place eight roads off, or the market itself');
     if (o.need[0].kind === 'visit') assert.ok(NEAR.has(o.id.split('-').pop()), o.id);

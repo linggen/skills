@@ -11,6 +11,10 @@
   "zh": "{name}，入道之前，先测灵根。把手放在测灵石上。",
   "en": "{name}, before you walk the Way, your spirit root must be tested. Place your hand on the stone."
  },
+ "recap": {
+  "zh": "测灵石上测出四灵根：修炼比旁人慢，路却是一步一步走出来的。",
+  "en": "The spirit stone read four roots: a slower cultivation than most — but a road is walked one step at a time."
+ },
  "cast": [],
  "buttons": [
   "touch"

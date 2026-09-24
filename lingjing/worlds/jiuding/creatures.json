@@ -463,6 +463,72 @@
       },
       "_deck": "腹中有珠 —— 守得住，也养得回。",
       "_signature": "其中多珠 —— 珠光一亮，它和它的都缓过来了。"
+    },
+    {
+      "id": "wuzhiqi",
+      "name": {
+        "zh": "无支祁",
+        "en": "Wuzhiqi"
+      },
+      "pinyin": "wú zhī qí",
+      "source": {
+        "zh": "《古岳渎经》（李公佐录，《太平广记》卷四百六十七引）",
+        "en": "The Old Classic of Mountains and Rivers (as recorded by Li Gongzuo; Taiping Guangji, juan 467)"
+      },
+      "quote": {
+        "zh": "禹理水……获淮涡水神，名无支祁……形若猿猴，缩鼻高额，青躯白首，金目雪牙，颈伸百尺，力逾九象……颈锁大索，鼻穿金铃，徙淮阴之龟山之足下，俾淮水永安流注海也。",
+        "en": "When Yu was taming the waters he took the water god of the Huai and the Guo, named Wuzhiqi — shaped like an ape, snub-nosed and high-browed, with a blue-green body and a white head, golden eyes and snow-white teeth; its neck stretched a hundred feet and its strength was more than nine elephants'. Its neck was bound with a great rope, a golden bell hung through its nose, and it was moved to the foot of Mount Gui at Huaiyin, so that the Huai might flow at peace into the sea for ever."
+      },
+      "look": {
+        "zh": "猿猴的样子，青身白头，金眼雪牙；脖子能伸出百尺。",
+        "en": "An ape's shape, a blue-green body and a white head, golden eyes and snow-white teeth; its neck can stretch a hundred feet."
+      },
+      "province": "徐",
+      "root": "metal",
+      "art": "art/wuzhiqi.webp",
+      "art_source": "Drawn for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《古岳渎经》 text — 无支祁 is not a 山海经 creature and no classical plate of it is known; laid on paper by tools/frame.py. See art/CREDITS.md.",
+      "art_caption": {
+        "zh": "据《古岳渎经》新绘",
+        "en": "Newly drawn after the Old Classic of Mountains and Rivers"
+      },
+      "likes": "jade-fish",
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "gather",
+        "strike",
+        "armor",
+        "cast"
+      ],
+      "drops": "jingjin",
+      "deck": [
+        "jinsuo",
+        "jinsuo",
+        "jinsuo",
+        "wuzhiqi",
+        "jianying",
+        "jinzhua",
+        "jinzhua",
+        "suijin",
+        "wuzhiqi",
+        "jinsuo",
+        "jingang",
+        "jinzhua"
+      ],
+      "signature": {
+        "id": "baichi",
+        "name": {
+          "zh": "颈伸百尺",
+          "en": "A Hundred-Foot Neck"
+        },
+        "effect": {
+          "sweep": 4,
+          "damage": 12
+        }
+      },
+      "elite": true,
+      "_deck": "力逾九象 —— 金梭先扑，剑影在后，抢在你立稳之前。",
+      "_signature": "颈伸百尺 —— 脖子一伸，先扫阵前，再落到你身上。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

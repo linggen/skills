@@ -1,0 +1,126 @@
+{
+ "version": 1,
+ "id": "04-arrive",
+ "chapter": "04-xu",
+ "at": "sishui",
+ "place": {
+  "zh": "泗水岸 · 芦苇",
+  "en": "The Si River bank · The reeds"
+ },
+ "setup": {
+  "zh": "回到泗水。你醒来的那片芦苇被割平了，岸上摆着上千根绳子，一头系着石头，一头系着木桩。潜水的人围着火堆烤身子。河水不往下游走，往下沉。",
+  "en": "Back to the Si. The reeds where you woke have been cut flat, and a thousand ropes lie along the bank, a stone at one end, a stake at the other. Divers warm themselves round the fires. The water does not run downstream — it sinks."
+ },
+ "recap": {
+  "zh": "回到泗水岸，你醒来的芦苇已被割平；上千根绳子沿岸摆开，河水在往下沉。",
+  "en": "Back on the Si, the reeds where you woke had been cut flat; a thousand ropes lay along the bank, and the water was sinking."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "徐",
+   "here": "徐"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "你醒来的地方。……第四鼎就在这水底下。它在往下拉。",
+    "en": "Where you woke. …The fourth cauldron is under this water. It is pulling down."
+   },
+   "alone": {
+    "zh": "你醒来的地方。第四鼎就在这水底下，水在往下沉。",
+    "en": "Where you woke. The fourth cauldron lies under this water, and the water sinks toward it."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "一个潜水的人说：彭城太守要捞周鼎，吕梁已经淹死了三个。要问，去彭城南门看告示。",
+    "en": "A diver says: the governor of Pengcheng means to raise the Zhou cauldron, and three have drowned at Lüliang already. Ask at Pengcheng — the notice is on the South Gate."
+   }
+  }
+ ],
+ "buttons": [
+  "town",
+  "divers"
+ ],
+ "exits": [
+  {
+   "id": "town",
+   "label": {
+    "zh": "去彭城",
+    "en": "Go to Pengcheng"
+   },
+   "means": "goes to the town, to Pengcheng, to read the notice",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你沿泗水往南走。彭城南门下挤满了人，告示的墨还没干。",
+      "en": "South along the Si. The South Gate of Pengcheng is crowded, and the notice's ink is not yet dry."
+     }
+    }
+   ],
+   "next": "04-town"
+  },
+  {
+   "id": "divers",
+   "label": {
+    "zh": "问潜水的人",
+    "en": "Ask the divers"
+   },
+   "means": "talks to the divers by the fire, asks what they saw under the water",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "他说：底下不是泥，是链子，粗得像房梁。绳子一碰上，就有东西往回拽。上一个下去的人，再没上来。",
+      "en": "He says: down there it isn't mud, it's chain, thick as a roof-beam. When a rope touches it, something pulls back. The last man who went down never came up."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "链子。……那不是锁鼎的。",
+      "en": "A chain. …That is not what holds the cauldron."
+     },
+     "alone": {
+      "zh": "那条链子，锁的不是鼎。",
+      "en": "Whatever that chain holds, it is not the cauldron."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "dive",
+   "means": "dives into the river now, tries to go down alone",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你没入水里三尺，水就把你往下拖，比石头沉得还快。你抓住一根绳子爬了回来。",
+      "en": "Three feet under, the water drags you down faster than a stone sinks. You catch a rope and climb back."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "别一个人下去。先弄清楚底下是什么。",
+      "en": "Don't go down alone. Find out what is down there first."
+     },
+     "alone": {
+      "zh": "一个人下不去。先弄清楚底下是什么。",
+      "en": "No one goes down alone. Find out first what lies below."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

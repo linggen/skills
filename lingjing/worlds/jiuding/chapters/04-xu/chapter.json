@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "04-xu",
+  "opens": null,
+  "province": "徐",
+  "corridor": false,
+  "first_scene": "04-arrive",
+  "gate": 4,
+  "title": {
+    "zh": "第四章 · 徐州之鼎",
+    "en": "Chapter 4 · The Cauldron of Xu"
+  },
+  "summary": {
+    "zh": "南回徐州，回到你醒来的泗水。彭城太守要学始皇，使千人没水求周鼎；吕梁已经淹死了三个潜水的人。绳子缠住了龟山脚下的锁链，锁着的东西醒了一半。安抚无支祁，破开文王八卦之封，第四鼎归来——元婴圆满者，在此化神。",
+    "en": "South again into Xu, back to the Si where you woke. The governor of Pengcheng means to do what the First Emperor did — send a thousand men into the water after the Zhou cauldron; three divers have drowned at Lüliang already. Their ropes have fouled the chain at the foot of Mount Gui, and what the chain holds is half awake. Quiet Wuzhiqi, break the seal of King Wen's trigrams, and the fourth cauldron returns — one at the peak of the Nascent Soul becomes a Deity here."
+  },
+  "intro": {
+    "zh": "你醒来的那条河，如今拉满了绳子。两千多年前，始皇过彭城，斋戒祷祠，使千人没水求周鼎，弗得。如今又有人来捞了。泗水在往下拽——底下有一口鼎，还有一样比鼎更老的东西。",
+    "en": "The river you woke by is strung with ropes now. Over two thousand years ago the First Emperor passed Pengcheng, fasted and prayed, and sent a thousand men into the Si after the Zhou cauldron; they did not find it. Now someone is dragging for it again. The Si pulls downward — below lies a cauldron, and something older than the cauldron."
+  },
+  "mystery": {
+    "zh": "始皇使千人没水，为何捞不起泗水之鼎？",
+    "en": "Why could a thousand divers never raise the cauldron from the Si?"
+  }
+}

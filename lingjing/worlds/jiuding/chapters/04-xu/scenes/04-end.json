@@ -1,0 +1,60 @@
+{
+ "version": 1,
+ "id": "04-end",
+ "chapter": "04-xu",
+ "at": "siyuan",
+ "place": {
+  "zh": "彭城 · 告示撤下",
+  "en": "Pengcheng · The notice comes down"
+ },
+ "setup": {
+  "zh": "水又往下游流了。彭城南门的告示撤了下来，潜水的人收了绳子回家。泗水岸割平的芦苇根上冒出了新芽。",
+  "en": "The water runs downstream again. The notice on Pengcheng's South Gate comes down, and the divers coil their ropes and go home. New shoots push up from the cut reeds on the Si bank."
+ },
+ "recap": {
+  "zh": "泗水又往下游流了，告示撤下，潜水的人收绳回家。第五鼎的气息在淮水以南。",
+  "en": "The Si ran downstream again, the notice came down, and the divers went home. The fifth cauldron's breath lay south of the Huai."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "扬",
+   "here": "徐"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "第五鼎的气息在南边——过了淮水，是扬州。禹在那里会过诸侯。",
+    "en": "The fifth cauldron's breath lies south — across the Huai, in Yang. Yu gathered the lords there once."
+   }
+  }
+ ],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the chapter, asks what comes next",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "今日到此为止。扬州的路，开的时候我会告诉你。",
+      "en": "That is all for today. When the road to Yang opens, I will tell you."
+     }
+    }
+   ],
+   "ends": "04-xu"
+  }
+ ]
+}

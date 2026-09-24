@@ -1,0 +1,119 @@
+{
+ "version": 1,
+ "id": "04-cauldron",
+ "chapter": "04-xu",
+ "at": "siyuan",
+ "place": {
+  "zh": "泗渊 · 鼎前",
+  "en": "The Si Deeps · Before the cauldron"
+ },
+ "setup": {
+  "zh": "徐鼎自己升了起来，没有一根绳子。鼎身上铸着淮、泗、峄阳的孤桐和泗滨的浮磬——徐州的一切。水里有一道细细的银痕跟着它往上浮，像一只铃曾经系在它耳上。",
+  "en": "The Cauldron of Xu rises by itself, without a single rope. Cast on its body are the Huai, the Si, the lone paulownia of Mount Yi and the sounding stones of the Si bank — everything of Xu. A thin silver trace rises through the water with it, as if a bell had once hung from its ear."
+ },
+ "recap": {
+  "zh": "徐鼎自己升起来，没有一根绳子；水里一道银痕跟着它上浮，像曾有一只铃系在鼎耳上。",
+  "en": "The Cauldron of Xu rose by itself, with no rope at all; a silver trace rose with it, as if a bell had once hung from its ear."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "gate",
+   "chapter": "04-xu"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "那铃是陪着这口鼎的。我摇过它——我那时有手。",
+    "en": "That bell kept this cauldron company. I rang it — I had hands then."
+   },
+   "alone": {
+    "zh": "鼎耳上有一道铃痕，和你那只银铃一般大小。",
+    "en": "On the cauldron's ear is the mark of a bell, the same size as your silver one."
+   }
+  },
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "……水上少了一个。没什么。",
+    "en": "…One fewer on the water. It's nothing."
+   },
+   "alone": {
+    "zh": "水上的月晃了一下，像少了一个影子。",
+    "en": "The moon on the water trembles, as if one reflection had gone."
+   }
+  }
+ ],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "受鼎气 · 化神",
+    "en": "Take the cauldron's breath · Deity Transformation"
+   },
+   "means": "touches the cauldron, takes its breath, attempts the breakthrough",
+   "breakthrough": true,
+   "refuse": {
+    "zh": "鼎气涌上来又退开。元婴未满，托不住它。先回人间，把功课做满。",
+    "en": "The breath surges over you and draws back. Your Nascent Soul is not yet full enough to bear it. Go back to the world and fill your practice first."
+   },
+   "show": [
+    {
+     "card": "tribulation",
+     "strikes": 3
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "淮水和泗水从两边涌进丹田，在元婴身上合成一股。元婴睁开眼，站起来，走出你的身子，又走回来——神已化成。鼎小了，小到握在掌心，和冀、兖、青三鼎并排。",
+      "en": "The Huai and the Si pour into your dantian from both sides and join into one stream over the Nascent Soul. The infant opens its eyes, stands, walks out of your body and back in — the spirit is transformed. The cauldron shrinks until it sits in your palm, beside the Cauldrons of Ji, Yan and Qing."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "化神了。……四口鼎了。",
+      "en": "Deity Transformation. …Four cauldrons now."
+     },
+     "alone": {
+      "zh": "化神了。四口鼎。",
+      "en": "Deity Transformation. Four cauldrons."
+     }
+    }
+   ],
+   "next": "04-end"
+  },
+  {
+   "id": "wait",
+   "means": "hesitates, asks what will happen, wants to prepare first",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "两千年它都没让人捞上去。等你一会儿，它肯。",
+      "en": "For two thousand years it would not be dragged up. It will wait a while for you."
+     },
+     "alone": {
+      "zh": "两千年它都没让人捞上去。它肯等你。",
+      "en": "For two thousand years it would not be dragged up. It will wait for you."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

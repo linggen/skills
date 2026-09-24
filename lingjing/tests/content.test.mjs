@@ -245,6 +245,35 @@ test('chapter 3 walks from the Wei to the cauldron under the sea and ends', () =
   assert.deepEqual(ch.scenes['03-shore'].buttons, ['subdue', 'riddle', 'enough']);
 });
 
+test('every scene carries its recap, every chapter an intro and a mystery — the 九鼎录\'s lines, both languages', () => {
+  const c = fresh();
+  for (const ch of Object.values(c.chapters)) {
+    for (const k of ['intro', 'mystery']) assert.ok(ch[k]?.zh && ch[k]?.en, `${ch.id} ${k}`);
+    for (const s of Object.values(ch.scenes)) assert.ok(s.recap?.zh && s.recap?.en, `${s.id} recap`);
+  }
+});
+
+test('chapter 4 walks from the Si to the cauldron under Pengcheng and ends', () => {
+  const ch = fresh().chapters['04-xu'];
+  assert.equal(ch.opens, null); assert.equal(ch.gate, 4); assert.equal(ch.province, '徐');
+  const at = Object.values(ch.scenes).map(s => `${s.id}@${s.at}`);
+  assert.deepEqual(at, ['04-arrive@sishui', '04-cauldron@siyuan', '04-deep@siyuan', '04-end@siyuan', '04-mouth@sikou', '04-town@pengcheng']);
+  assert.ok(ch.scenes['04-end'].exits.some(e => e.ends === '04-xu'));
+  assert.ok(ch.scenes['04-cauldron'].exits.find(e => e.id === 'take').breakthrough);
+  assert.deepEqual(ch.scenes['04-mouth'].buttons, ['subdue', 'riddle', 'swim']);
+});
+
+// Every line of Yinyue's from chapter 3 on has its narration for the player who never rang the bell.
+test('from chapter 3 on, every line of Yinyue\'s carries its alone', () => {
+  const c = fresh();
+  for (const ch of Object.values(c.chapters).filter(x => x.id >= '03')) {
+    for (const s of Object.values(ch.scenes)) {
+      const lines = [...(s.lines ?? []), ...s.exits.flatMap(e => e.beat ?? [])].filter(l => l.who === 'yinyue');
+      for (const l of lines) assert.ok(l.alone?.zh && l.alone?.en, `${s.id}: ${l.text.zh}`);
+    }
+  }
+});
+
 // ── Made worlds ──
 import { WORLD, lintMadeWorld, overlayWorld, madeWorldsDir } from '../scripts/content.mjs';
 

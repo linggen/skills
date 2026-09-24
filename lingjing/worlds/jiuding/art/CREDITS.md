@@ -21,6 +21,7 @@ paper, a warm paper ground with grain, the red seal).
 | longzhi | 蠪侄 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷四 東次二經 plate — same PDF, page 94 |
 | kui | 夔 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷十四 大荒東經 plate 64 — same PDF, page 211 (the whole spread); also 吳任臣《山海經廣注》 1786 print, Commons *Shan Hai Jing Kui.jpg*, kept as reference |
 | tongtong | 狪狪 | 《山海經》蔣應鎬繪圖本, c. 1597, 卷四 東山經 plate 26, lower left — same PDF, page 91 |
+| wuzhiqi | 无支祁 | **Drawn for Lingjing** by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《古岳渎经》 text (李公佐, in 《太平广记》卷四百六十七) — 无支祁 is not a 山海经 creature and no classical plate of it is known |
 
 The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
 on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.

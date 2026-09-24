@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "04-town",
+ "chapter": "04-xu",
+ "at": "pengcheng",
+ "place": {
+  "zh": "彭城 · 南门",
+  "en": "Pengcheng · The South Gate"
+ },
+ "setup": {
+  "zh": "告示上写：太守效始皇故事，择日于泗水出周鼎；募善没者千人，人赏钱五百。吕梁已溺三人，太守不许停。南门里的坊市照常开着：泗滨的浮磬敲起来清得像水，淮夷的蠙珠一粒一粒装在匣子里。",
+  "en": "The notice says: following the First Emperor's example, the governor will raise the Zhou cauldron from the Si on a chosen day; wanted, a thousand good divers, five hundred coins each. Three have drowned at Lüliang; the governor will not stop. Inside the South Gate the market is open as ever — sounding stones from the Si bank ring clear as water, and pearls of the Huai Yi lie in boxes one by one."
+ },
+ "recap": {
+  "zh": "彭城南门的告示说，太守要效始皇，使千人没水出周鼎；吕梁已溺三人。",
+  "en": "At Pengcheng's South Gate a notice said the governor, like the First Emperor, would send a thousand divers after the Zhou cauldron; three had drowned at Lüliang."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "始皇来过这儿，也捞过。绳子拉上来一半，断了。……不是鼎不肯上来，是底下有别的东西咬着。",
+    "en": "The First Emperor came here and dragged for it too. The rope came halfway and broke. …It isn't that the cauldron won't come. Something down there is biting."
+   },
+   "alone": {
+    "zh": "当年始皇在这儿捞过，绳子拉到一半断了。不是鼎不肯上来——底下有别的东西咬着。",
+    "en": "The First Emperor dragged for it here once; the rope broke halfway. It is not that the cauldron will not rise: something below is biting."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "绳子都往泗口去——泗水入淮的地方，龟山脚下。",
+    "en": "The ropes all run to the mouth of the Si — where it meets the Huai, at the foot of Mount Gui."
+   }
+  }
+ ],
+ "buttons": [
+  "mouth",
+  "market"
+ ],
+ "exits": [
+  {
+   "id": "mouth",
+   "label": {
+    "zh": "去泗口",
+    "en": "To the mouth of the Si"
+   },
+   "means": "goes to the mouth of the Si, follows the ropes to Mount Gui",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你顺着绳子往东南走。水声越来越响，两条水在泗口撞在一起，撞出一个漩涡。",
+      "en": "You follow the ropes south-east. The water grows louder; at the mouth two rivers collide and spin a whirlpool."
+     }
+    }
+   ],
+   "next": "04-mouth"
+  },
+  {
+   "id": "market",
+   "label": {
+    "zh": "先逛坊市",
+    "en": "The market first"
+   },
+   "means": "goes shopping, asks about the market, wants to buy or sell",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "浮磬挂在架上，风一过就响一声。卖珠的淮夷人说，珠子是蚌里养的，蚌是淮水养的。",
+      "en": "The sounding stones hang on a frame and ring when the wind passes. The Huai Yi pearl-seller says the pearls grow in mussels, and the mussels grow in the Huai."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "governor",
+   "means": "goes to the governor, tells him to stop the diving, argues with the officials",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "太守的门吏把你挡在外面：太守说了，始皇没捞起来的，他来捞。",
+      "en": "The governor's doorkeeper keeps you out: the governor says what the First Emperor could not raise, he will."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "他捞不起来的。先去泗口。",
+      "en": "He won't raise it. The mouth of the Si first."
+     },
+     "alone": {
+      "zh": "他捞不起来。泗口在东南。",
+      "en": "He will not raise it. The mouth of the Si lies south-east."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

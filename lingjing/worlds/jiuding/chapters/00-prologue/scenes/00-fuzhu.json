@@ -11,6 +11,10 @@
   "zh": "你沿泗水北行。雾里立着一只白鹿，头生四角。",
   "en": "You follow the river north. In the mist stands a white deer with four antlers."
  },
+ "recap": {
+  "zh": "泗水北岸的雾里，四角白鹿夫诸拦在路上，最后跟你走了。",
+  "en": "In the mist on the Si's north bank Fuzhu, the white deer with four antlers, stood in the road — and in the end walked on with you."
+ },
  "cast": [
   "fuzhu"
  ],

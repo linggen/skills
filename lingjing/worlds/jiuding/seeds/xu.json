@@ -483,6 +483,19 @@
         "zh": "《山海经·中山经》夫诸；聊斋之风。",
         "en": "The Fuzhu of the Central Mountains; in the manner of Liaozhai."
       }
+    },
+    {
+      "id": "xu-41",
+      "kind": "province-tale",
+      "creature": "wuzhiqi",
+      "line": {
+        "zh": "淮阴的老船工说，龟山脚下有一根链子，五十头牛才拉得动；链子那头有东西在打呼噜。",
+        "en": "An old boatman at Huaiyin says there is a chain at the foot of Mount Gui that takes fifty oxen to pull, and something at its end is snoring."
+      },
+      "source": {
+        "zh": "《太平广记·李汤》：以五十余牛曳锁，锁末见一兽，状有如猿，白首长鬐，雪牙金爪。",
+        "en": "Taiping Guangji, \"Li Tang\": fifty oxen dragged the chain, and at its end was a beast like an ape, white-headed and long-maned, with snow-white teeth and golden claws."
+      }
     }
   ]
 }

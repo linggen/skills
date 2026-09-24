@@ -21,7 +21,8 @@
     0.433
    ],
    "has": {
-    "seeds": true
+    "seeds": true,
+    "scene": "04-arrive"
    },
    "line": {
     "zh": "泗水南岸，芦苇齐人高，你醒来的地方。",
@@ -70,13 +71,21 @@
    "roads": [
     "sishui",
     "yunlong",
-    "peize"
+    "peize",
+    "siyuan",
+    "sikou"
    ],
    "map": [
     0.795,
     0.4898
    ],
-   "has": { "shop": true, "games": ["alchemy-daily"] },
+   "has": {
+    "shop": true,
+    "games": [
+     "alchemy-daily"
+    ],
+    "scene": "04-town"
+   },
    "line": {
     "zh": "徐州的城，坊市在南门里。",
     "en": "The city of Xu; the market lies inside the south gate."
@@ -170,13 +179,21 @@
    "roads": [
     "huaidu",
     "yiqiao",
-    "lvliang"
+    "lvliang",
+    "siyuan",
+    "pengcheng"
    ],
    "map": [
     0.8443,
     0.5438
    ],
-   "has": { "games": ["wuziqi"] },
+   "has": {
+    "creature": "wuzhiqi",
+    "games": [
+     "wuziqi"
+    ],
+    "scene": "04-mouth"
+   },
    "line": {
     "zh": "泗水入淮之处，两水相激，船家在此歇桨。",
     "en": "Where the Si meets the Huai; two waters collide, and boatmen rest their oars."
@@ -371,6 +388,33 @@
    },
    "meets": [
     "beast",
+    "find"
+   ]
+  },
+  {
+   "id": "siyuan",
+   "name": {
+    "zh": "泗渊",
+    "en": "The Si Deeps"
+   },
+   "tier": 0,
+   "roads": [
+    "pengcheng",
+    "sikou"
+   ],
+   "map": [
+    0.8035,
+    0.4985
+   ],
+   "has": {
+    "scene": "04-deep"
+   },
+   "line": {
+    "zh": "彭城下的深水，始皇的绳子在这里断过。",
+    "en": "The deep water under Pengcheng, where the First Emperor's rope once broke."
+   },
+   "water": true,
+   "meets": [
     "find"
    ]
   }

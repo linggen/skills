@@ -1,0 +1,188 @@
+{
+ "version": 1,
+ "id": "04-mouth",
+ "chapter": "04-xu",
+ "at": "sikou",
+ "place": {
+  "zh": "泗口 · 龟山之足",
+  "en": "The mouth of the Si · The foot of Mount Gui"
+ },
+ "setup": {
+  "zh": "泗水和淮水在这儿撞在一起。漩涡当中，一根铁链从水底直伸上来，锁在龟山脚下，链上缠满了潜水人的绳子。绳子一紧，链子那头就冒出一个头——像猿，青的身子，白的头，金色的眼，雪一样的牙。它的脖子伸出水面，越伸越长。",
+  "en": "Here the Si and the Huai collide. In the middle of the whirlpool an iron chain rises from the bottom and is locked to the foot of Mount Gui, and the divers' ropes are wound all round it. When the ropes pull tight, a head comes up at the chain's other end — like an ape, a blue-green body, a white head, golden eyes, teeth like snow. Its neck stretches out of the water, longer and longer."
+ },
+ "recap": {
+  "zh": "泗口的漩涡里，潜水人的绳子缠住了龟山脚下的锁链，被禹锁住的无支祁醒了一半。",
+  "en": "In the whirlpool at the Si's mouth the divers' ropes had fouled the chain at Mount Gui's foot, and Wuzhiqi, whom Yu had chained there, was half awake."
+ },
+ "cast": [
+  "yinyue",
+  "wuzhiqi"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "wuzhiqi"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是无支祁。禹治水的时候锁住的淮涡水神——链子是禹的，不是鼎的。绳子扯着链子，它以为又有人来锁它。",
+    "en": "It is Wuzhiqi — the water god of the Huai and the Guo that Yu chained when he tamed the flood. The chain is Yu's, not the cauldron's. The ropes drag at it, and it thinks someone has come to chain it again."
+   },
+   "alone": {
+    "zh": "是无支祁——禹治水时锁在龟山脚下的淮涡水神。绳子扯着禹的链子，它以为又有人来锁它。",
+    "en": "It is Wuzhiqi, the Huai water god Yu chained at the foot of Mount Gui. The ropes drag at Yu's chain, and it thinks someone has come to chain it again."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "无支祁的金眼睛转向你。它咧开雪牙：它有一句话要问你。",
+    "en": "Wuzhiqi's golden eyes turn to you. It bares its snow-white teeth: it has a question for you."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "swim"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the creature, drives it back into the water by force",
+   "game": {
+    "id": "subdue-wuzhiqi",
+    "kind": "duel",
+    "creature": "wuzhiqi"
+   },
+   "withdrawn": {
+    "zh": "无支祁缩回漩涡里，链子哗哗地响。明日它还会探出头来。",
+    "en": "Wuzhiqi draws back into the whirlpool, the chain clattering. Tomorrow it will put its head out again."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "无支祁的脖子一节一节缩回水里，金眼闭上了。你趁它松劲，把缠在链上的绳子一根根割断。",
+      "en": "Wuzhiqi's neck draws back into the water joint by joint, and its golden eyes close. While it slackens you cut the ropes from the chain one by one."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "链子还在，它睡了。水不往下拽了——鼎在上游的深处。",
+      "en": "The chain holds, and it sleeps. The water has stopped pulling — the cauldron is upstream, in the deeps."
+     },
+     "alone": {
+      "zh": "链子还在，它睡了。水不再往下拽；鼎在上游的深处。",
+      "en": "The chain holds; it sleeps. The water no longer pulls down. The cauldron lies upstream, in the deeps."
+     }
+    }
+   ],
+   "next": "04-deep"
+  },
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答它的问",
+    "en": "Answer it"
+   },
+   "means": "answers the creature's riddle",
+   "key": [
+    "wuzhiqi-1",
+    "wuzhiqi-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你答了。无支祁眨了眨金眼，脖子慢慢缩短。两千年来，头一回有人跟它说话，而不是往它身上套绳子。",
+      "en": "You answer. Wuzhiqi blinks its golden eyes, and its neck slowly shortens. In two thousand years this is the first time anyone has spoken to it instead of roping it."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "它沉下去了。走，鼎在上游。",
+      "en": "It is sinking back. Come — the cauldron is upstream."
+     },
+     "alone": {
+      "zh": "它沉下去了。鼎在上游。",
+      "en": "It sinks back. The cauldron lies upstream."
+     }
+    }
+   ],
+   "next": "04-deep"
+  },
+  {
+   "id": "swim",
+   "label": {
+    "zh": "蹈水 · 吕梁丈夫",
+    "en": "Tread the water · The swimmer of Lüliang"
+   },
+   "means": "goes down with the whirlpool the way the swimmer of Lüliang did, follows the water instead of fighting it, cuts the ropes but not the chain",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你想起吕梁那个蹈水的人。孔子问他有什么道，他说：与齐俱入，与汩偕出，从水之道而不为私焉。你不挣，跟着漩涡下去，在链子旁边把绳子一根根割断，又随涌上来的水出来。链子一松，无支祁的头就沉了下去。",
+      "en": "You remember the man who swam the Lüliang rapids. Confucius asked him his way, and he said: I go in with the whirl and come out with the surge; I follow the water's way and put nothing of my own into it. You do not struggle. You go down with the whirlpool, cut the ropes one by one beside the chain, and rise again with the water. The chain slackens, and Wuzhiqi's head sinks away."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你割的是绳子，不是链子。……对。",
+      "en": "You cut the ropes, not the chain. …Right."
+     },
+     "alone": {
+      "zh": "你割的是绳子，不是链子。它睡回去了。",
+      "en": "You cut the ropes, not the chain. It sleeps again."
+     }
+    }
+   ],
+   "next": "04-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs away from the mouth, turns back, refuses to act",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你往回走。链子在身后越绷越紧——绳子还缠着，它睡不回去。",
+      "en": "You turn back. Behind you the chain pulls tighter — with the ropes still on it, it cannot go back to sleep."
+     },
+     "alone": {
+      "zh": "你往回走。链子在身后越绷越紧；绳子还缠着，它睡不回去。",
+      "en": "You turn back. Behind you the chain pulls tighter: with the ropes still on it, it cannot sleep again."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "04-deep",
+ "chapter": "04-xu",
+ "at": "siyuan",
+ "place": {
+  "zh": "泗渊 · 彭城之下",
+  "en": "The Si Deeps · Under Pengcheng"
+ },
+ "setup": {
+  "zh": "绳子一断，泗水就不再下沉。彭城底下的深水里卧着一口鼎，一只鼎耳上有一道绳子磨出的疤——当年始皇的绳子就在这儿断的。鼎口盖着石板，板上刻着八卦：离在南，震在东，兑在西——北边空着。",
+  "en": "With the ropes cut, the Si stops sinking. In the deep water under Pengcheng lies a cauldron, and on one of its ears is a scar worn by a rope — the First Emperor's rope broke here. Its mouth is covered by a slab cut with the eight trigrams: Li in the south, Zhen in the east, Dui in the west — and the north left blank."
+ },
+ "recap": {
+  "zh": "彭城下的泗渊里，鼎耳上留着始皇绳子的疤；鼎口的石板刻着文王八卦，北方空着。",
+  "en": "In the deeps under Pengcheng the cauldron's ear still bore the scar of the First Emperor's rope; the slab over it carried King Wen's trigrams, the north left blank."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "这回不是伏羲那一张了——离在南，是文王排的。周人自己的八卦。",
+    "en": "Not Fuxi's chart this time — Li in the south: that is King Wen's order. Zhou's own trigrams."
+   },
+   "alone": {
+    "zh": "离在南——这不是伏羲那一张，是文王排的，周人自己的八卦。",
+    "en": "Li in the south: not Fuxi's chart but King Wen's order, Zhou's own trigrams."
+   }
+  }
+ ],
+ "buttons": [
+  "seal"
+ ],
+ "exits": [
+  {
+   "id": "seal",
+   "label": {
+    "zh": "读封 · 填北方",
+    "en": "Read the seal · Fill the north"
+   },
+   "means": "reads the seal, answers which trigram belongs in the north",
+   "key": "seal-xu",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你在北边画下那一卦。石板裂开，沉进泥里。鼎口的气冲上来——是河泥的味道，还有一点铜锈味，像一只旧铃。",
+      "en": "You draw the trigram in the north. The slab splits and sinks into the mud. The cauldron's breath rushes up — river mud, and a little verdigris, like an old bell."
+     }
+    }
+   ],
+   "next": "04-cauldron"
+  },
+  {
+   "id": "force",
+   "means": "tries to break, lift or pry the slab by force",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "石板不动。八卦的线在你掌下一明一暗，像水在流。",
+      "en": "The slab does not move. Under your palm the lines brighten and dim, like running water."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

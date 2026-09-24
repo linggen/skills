@@ -340,6 +340,55 @@
     "a tortoise"
    ],
    "hint": "It asks about you and me."
+  },
+  "wuzhiqi-1": {
+   "q": "Water beside four — one character. It is a river you know.",
+   "a": [
+    "泗",
+    "si",
+    "the si"
+   ],
+   "choices": [
+    "泗",
+    "洒",
+    "淮",
+    "沔"
+   ],
+   "hint": "Water on the left, four on the right."
+  },
+  "wuzhiqi-2": {
+   "q": "When Yu tamed the flood, at the foot of which mountain did he chain Wuzhiqi?",
+   "a": [
+    "mount gui",
+    "gui",
+    "guishan",
+    "gui mountain",
+    "turtle mountain",
+    "tortoise mountain"
+   ],
+   "choices": [
+    "Mount Gui",
+    "Mount Tongbai",
+    "Mount Tu",
+    "Mount Kuaiji"
+   ],
+   "hint": "The mountain is named for a creature that carries its shell."
+  },
+  "seal-xu": {
+   "q": "King Wen's trigrams: Li in the south, Zhen in the east, Dui in the west. Which trigram belongs in the north?",
+   "a": [
+    "kan",
+    "坎",
+    "water",
+    "the water trigram"
+   ],
+   "choices": [
+    "Qian",
+    "Kan",
+    "Kun",
+    "Gen"
+   ],
+   "hint": "Li is fire; opposite fire is water."
   }
  }
 }
