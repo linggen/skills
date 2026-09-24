@@ -38,6 +38,19 @@ export const WORDS = {
     gateTitle: '下一鼎', opens: '开启于', gateNeed: '入{to}，须{step} · {xw} {n}', tribTitle: '雷劫', omen: '今日卦象', yinyue: '银月',
     loading: '正在展开……', offline: '灵境还没醒来。',
     elite: '精英',
+    // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
+    tamesFor: '收服{names}所需',
+    keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽',
+    secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
+    secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；满{rest}小时体力回满。',
+    secludeSpells: '法术 · 每 {h} 小时一星，至多三星', secludeProgress: '修为 · 每小时 +{n}', secludeTreasure: '本命法宝 · 每 {h} 小时长一重',
+    secludePill: '服一粒{name}：时辰 ×{m}', secludeGo: '入关', secludeLater: '作罢', secludePick: '先选一样。',
+    secludeFoci: { card: '法术', progress: '修为', treasure: '本命法宝' },
+    secludingTitle: '闭关中 · {what}', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
+    secludeStar: '{name} ★{from} → ★{to} · 灵力 {was}→{cost}', secludeStarLeft: '{name} 离下一星还差 {h} 小时',
+    secludeGrowXw: '修为 +{n}', secludeGrowTreasure: '{name} {from}重 → {to}重', secludeTreasureLeft: '{name} 离下一重还差 {h} 小时',
+    secludeHeld: '修为已到本境顶上，余下的留待突破。', secludeRested: '体力回满', secludePillTaken: '服了{name}，时辰 ×{m}',
+    emergeBtn: '出关 · 领取', emergedTitle: '出关', emergedHours: '闭关 {h} 小时', emergedNone: '这一回没长什么，歇够了。', emergedClose: '收起',
     qi: '体力', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空',
     emptyLine: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。{t} 可以再出发。', emptySoon: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。随时辰恢复。',
     boardsStay: '坊市与交差照常。',
@@ -76,6 +89,18 @@ export const WORDS = {
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     elite: 'Elite',
+    tamesFor: 'Wins over {names}',
+    keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent',
+    secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
+    secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
+    secludeSpells: 'Spells · a star every {h} h, up to three', secludeProgress: 'Cultivation · +{n} an hour', secludeTreasure: 'Treasure · a layer every {h} h',
+    secludePill: 'Take a {name}: hours ×{m}', secludeGo: 'Go in', secludeLater: 'Not now', secludePick: 'Pick one first.',
+    secludeFoci: { card: 'a spell', progress: 'cultivation', treasure: 'the treasure' },
+    secludingTitle: 'In seclusion · {what}', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
+    secludeStar: '{name} ★{from} → ★{to} · Force {was}→{cost}', secludeStarLeft: '{name}: {h} h to the next star',
+    secludeGrowXw: 'Cultivation +{n}', secludeGrowTreasure: '{name} layer {from} → {to}', secludeTreasureLeft: '{name}: {h} h to the next layer',
+    secludeHeld: 'Your realm is at its peak; the rest waits for the breakthrough.', secludeRested: 'Stamina full', secludePillTaken: 'Took a {name}: hours ×{m}',
+    emergeBtn: 'Come out · Collect', emergedTitle: 'Out of seclusion', emergedHours: '{h} h in seclusion', emergedNone: 'Nothing grew this time; you are rested.', emergedClose: 'Put away',
     qi: 'Stamina', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty',
     emptyLine: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. Ready to go again at {t}.', emptySoon: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. It comes back with the hours.',
     boardsStay: 'The market and handing in still work.',
@@ -389,11 +414,18 @@ function board(card, ctx) {
   const id = task?.id ?? card.id;
   const today = boardDoneToday(ctx.look, id);
   const made = task && (task.status === 'done' || task.won);
-  const g = made ? null : ctx.boardFor?.(id);
+  // Won and kept (the pool was empty): say it waits for 体力, not that nothing happened.
+  const kept = task?.won && task.status !== 'done';
+  // A board that costs 体力 when counted (hosted, or an errand's) is not dealt
+  // on an empty pool — a win there could not count; 闭关 is offered instead.
+  const shut = !made && !today && boardShut(task, ctx);
+  const g = made || shut ? null : ctx.boardFor?.(id);
   const doneWord = task?.game && task.game !== 'lianliankan' ? ctx.words.gameDoneToday : ctx.words.boardDoneToday;
   // A game module (scripts/games/<id>.js) draws itself inside [data-game]; the
   // 炼丹 herbs keep their own board. Loading, the card waits a beat.
   const body = today ? `<div class="boarddone">${esc(doneWord)}</div>`
+    : kept ? `<div class="small kept">${esc(ctx.words.keptWin)}</div>`
+    : shut ? `<div class="small dim">${esc(ctx.words.emptyNoPlay)}</div><div class="acts"><button class="act" data-seclude-open>${esc(ctx.words.secludeOpen)}</button></div>`
     : made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
     : g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>`
       : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
@@ -425,6 +457,13 @@ function itemDoes(effect, ctx) {
 
 /// One item, or a shelf of them — words, prices and what is held come from
 /// Look's place.shelf or bag; the page prices nothing.
+/// The beasts it wins over, not yet tamed (the rules' `tames`): 「收服夫诸、蛫所需」.
+function tamesLine(i, ctx) {
+  if (!i.tames?.length) return '';
+  const names = i.tames.map((t) => t.name).join(ctx.lang === 'en' ? ', ' : '、');
+  return `<div class="small tames">${esc(say(ctx.words.tamesFor, { names }))}</div>`;
+}
+
 function item(card, ctx) {
   const ids = card.ids ?? [card.id];
   const known = new Map((ctx.look.place?.shelf || []).map((i) => [i.id, i]));
@@ -446,6 +485,7 @@ function item(card, ctx) {
     const e = i.effect ?? {};
     const does = itemDoes(e, ctx);
     const made = i.made_from ? `<div class="small dim">${esc(say(ctx.words.madeFrom, { item: i.made_from }))}</div>` : '';
+    const tames = tamesLine(i, ctx);
     // A pill in the bag is taken by a word, a wear or a weapon put on by one; Trade decides.
     // A `wear` is hers, not his: 银月铃 and 齐纨 go on the one who walks with
     // him, so until she does there is no one to put them on and the button is
@@ -459,7 +499,7 @@ function item(card, ctx) {
     const worn = i.worn ? `<span class="chip">${esc(ctx.words.worn)}</span>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayItem, { name: i.name }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
-      <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${made}${price}${held}${worn}<div class="acts">${tell}${use}</div></div>`;
+      <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${made}${tames}${price}${held}${worn}<div class="acts">${tell}${use}</div></div>`;
   });
   const title = ids.length > 1 ? ctx.look.words?.shop ?? ctx.words.shelf : ctx.look.words?.item ?? ctx.words.shelf;
   return `<div class="card"><div class="cardtitle">${esc(title)}</div><div class="shelf">${cells.join('')}</div></div>`;
@@ -525,8 +565,72 @@ function empty(card, ctx) {
   const q = ctx.qi, w = ctx.words;
   if (q?.st !== 'empty') return '';
   const line = q.refillAt ? w.emptyLine.replace('{t}', clockOf(new Date(q.refillAt * 1000), ctx.lang)) : w.emptySoon;
+  // 闭关 is offered here: the pool spent is when sitting down makes sense (his, 2026-09-24).
   return `<div class="card empty"><div class="cardtitle">${esc(w.qi)} · ${esc(w.qiEmpty)}</div>
-    <div>${esc(line)}</div><div class="small dim">${esc(w.boardsStay)}</div></div>`;
+    <div>${esc(line)}</div><div class="small dim">${esc(w.boardsStay)}</div>
+    <div class="acts"><button class="act" data-seclude-open>${esc(w.secludeOpen)}</button></div></div>`;
+}
+
+/* ── 闭关 (rules/seclusion.mjs) ──
+   `seclude`: the chooser — one focus, an optional pill, 入关. `seclusion`: the
+   one running, the whole stage until 出关; every number is the rules' own
+   reckoning at Look's `now`, never the page's clock. */
+function seclude(card, ctx) {
+  const ch = ctx.seclude, w = ctx.words, pickd = ctx.secludeFocus ?? {};
+  if (!ch) return '';
+  const r = ch.rule, on = (focus, id) => (pickd.focus === focus && (id == null || pickd.id === id) ? ' on' : '');
+  const star = (n) => (n ? ` ${'★'.repeat(n)}` : '');
+  const spells = ch.spells.map((s) => `<button class="gcard pick${on('card', s.id)}" data-seclude-focus="card" data-id="${esc(s.id)}"><b class="cost">${esc(s.cost)}</b> ${esc(s.name)}${star(s.star)}</button>`).join('');
+  const pills = (ch.pills ?? []).map((p) => `<button class="act quiet${ctx.secludePill === p.id ? ' on' : ''}" data-seclude-pill="${esc(p.id)}">${esc(say(w.secludePill, { name: p.name, m: p.mult }))} · ×${esc(p.n)}</button>`).join('');
+  return `<div class="card seclude"><div class="cardtitle">${esc(w.secludeTitle)}</div>
+    <div class="small dim">${esc(w.secludeHint)}</div>
+    ${spells ? `<div class="small">${esc(say(w.secludeSpells, { h: r.star_hours }))}</div><div class="gcards">${spells}</div>` : ''}
+    <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: r.progress_per_hour }))}</button>
+    ${ch.treasure ? `<button class="act${on('treasure')}" data-seclude-focus="treasure">${esc(say(w.secludeTreasure, { h: r.treasure_hours }))} · ${esc(ch.treasure.name)} ${esc(ch.treasure.step)}</button>` : ''}</div>
+    ${pills ? `<div class="acts">${pills}</div>` : ''}
+    <div class="small dim">${esc(say(w.secludeRule, { cap: r.cap_hours, min: r.min_hours, rest: r.rest_hours }))}</div>
+    ${ctx.secludeNote ? `<div class="donote">${esc(ctx.secludeNote)}</div>` : ''}
+    <div class="acts"><button class="act" data-seclude-go>${esc(w.secludeGo)}</button><button class="act quiet" data-seclude-close>${esc(w.secludeLater)}</button></div></div>`;
+}
+
+/* What 出关 grows, one line each — the running card and the 出关 card both
+   say it. `count` wraps a number the 出关 card counts up. */
+const GROWN_LINE = {
+  card: (e, w, count) => (e.card.to > e.card.from
+    ? `<span class="starpop">${esc(say(w.secludeStar, { name: e.card.name, from: e.card.from, to: e.card.to, was: e.card.was, cost: e.card.cost }))}</span>`
+    : e.card.study ? esc(say(w.secludeStarLeft, { name: e.card.name, h: round1(e.card.need - e.card.study) })) : ''),
+  progress: (e, w, count) => (e.progress?.paid ? `${esc(w.xw)} +${count(e.progress.paid)}${e.progress.hold ? ` <span class="small dim">${esc(w.secludeHeld)}</span>` : ''}` : ''),
+  treasure: (e, w) => (!e.treasure ? '' : e.treasure.to > e.treasure.from
+    ? `<span class="starpop">${esc(say(w.secludeGrowTreasure, { name: e.treasure.name, from: e.treasure.from, to: e.treasure.to }))}</span>`
+    : e.treasure.tempered ? esc(say(w.secludeTreasureLeft, { name: e.treasure.name, h: round1(e.treasure.need - e.treasure.tempered) })) : ''),
+};
+const round1 = (n) => Math.round(n * 10) / 10;
+export function grownLines(e, w, count = (n) => esc(n)) {
+  const lines = [e.grows ? GROWN_LINE[e.focus]?.(e, w, count) : '', e.rested ? esc(w.secludeRested) : ''].filter(Boolean);
+  return lines.map((l) => `<div>${l}</div>`).join('');
+}
+
+function seclusion(card, ctx) {
+  const e = ctx.look?.seclusion, w = ctx.words;
+  if (!e) return '';
+  const what = e.focus === 'card' ? e.card?.name : w.secludeFoci[e.focus];
+  const pill = e.pill ? `<div class="small dim">${esc(say(w.secludePillTaken, { name: e.pill.name, m: e.pill.mult }))}</div>` : '';
+  const grows = e.grows ? grownLines(e, w) : `<div class="small dim">${esc(say(w.secludeTooShort, { min: e.min }))}</div>${e.rested ? `<div>${esc(w.secludeRested)}</div>` : ''}`;
+  return `<div class="card seclusion"><div class="cardtitle">${esc(say(w.secludingTitle, { what }))}</div>
+    <div>${esc(say(w.secludeHours, { h: e.hours, cap: e.cap }))}</div>${pill}${grows}
+    <div class="acts"><button class="act" data-emerge>${esc(w.emergeBtn)}</button></div></div>`;
+}
+
+/// 出关's card, after the tap: the hours and what grew, counted up from 0
+/// (`[data-countup]`, run by the page) — until put away or walked on.
+export function emergedHtml(e, ctx) {
+  const w = ctx.words, count = (n) => `<b data-countup="${esc(n)}">${esc(n)}</b>`;
+  const lines = grownLines(e, w, count);
+  // `age`: how long it has stood — a redraw picks its animation up where it was.
+  return `<div class="card emerged" style="--age:${-Math.round(e.age ?? 0)}ms"><div class="cardtitle">${esc(w.emergedTitle)}</div>
+    <div>${esc(say(w.emergedHours, { h: '@H@' })).replace('@H@', count(e.hours))}</div>
+    ${lines || `<div class="small dim">${esc(w.emergedNone)}</div>`}
+    <div class="acts"><button class="act" data-emerged-close>${esc(w.emergedClose)}</button></div></div>`;
 }
 
 /// 差事 offered where he stands — ONE card, a row each: the title, who gives
@@ -737,7 +841,7 @@ export function gearPopHtml(ctx) {
     const act = i.slot && !i.worn ? `<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`
       : i.usable ? `<button class="act" data-use="${esc(i.id)}">${esc(w.use)}</button>`
         : i.worn ? `<span class="chip">${esc(w.worn)}</span>` : '';
-    return `<div class="gearrow"><span><b>${esc(i.name)}</b> ×${esc(i.n)} <span class="small dim">${esc(itemDoes(i.effect, ctx))}</span></span>${act}</div>`;
+    return `<div class="gearrow"><span><b>${esc(i.name)}</b> ×${esc(i.n)} <span class="small dim">${esc(itemDoes(i.effect, ctx))}</span>${tamesLine(i, ctx)}</span>${act}</div>`;
   }).join('') : `<div class="small dim">${esc(w.bagNone)}</div>`;
   // 牌 — what he holds to fight with (得牌), the day's ten lit.
   const held = g.cards ?? [];
@@ -749,7 +853,8 @@ export function gearPopHtml(ctx) {
   const chip = (c) => {
     const cls = `gcard${c.deck || c.hand ? ' in' : ''}${c.picked ? ' picked' : ''}${c.fill ? ' fill' : ''}${c.off_root ? ' off' : ''}`;
     const tip = esc(c.hand ? w.cardsHand : c.off_root ? w.cardsOff : '');
-    const face = `<b class="cost" title="${esc(w.mana)} ${esc(c.cost)}">${esc(c.cost)}</b> ${esc(c.name)}${c.hand ? ` · ${esc(w.cardsHand)}` : ''}`;
+    // 闭关's ★ beside the name; `cost` is already what it costs with them.
+    const face = `<b class="cost" title="${esc(w.mana)} ${esc(c.cost)}">${esc(c.cost)}</b> ${esc(c.name)}${c.stars ? ` <span class="stars">${'★'.repeat(c.stars)}</span>` : ''}${c.hand ? ` · ${esc(w.cardsHand)}` : ''}`;
     return c.hand || c.off_root || !g.can_pick ? `<span class="${cls}" title="${tip}">${face}</span>` : `<button class="${cls}" data-deck="${esc(c.id)}">${face}</button>`;
   };
   const short = 10 - mine;
@@ -769,7 +874,7 @@ function bookHtml(ctx) {
   const book = ctx.look?.book ?? [], w = ctx.words, lucky = chanceRow(ctx);
   if (!book.length && !lucky) return '';
   const rows = book.map((q) => {
-    const counts = q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind} ${n.have}/${n.n}`).join(' · ');
+    const counts = q.need.map((n) => `${w.needKinds?.[n.kind] ?? n.kind} ${n.have}/${n.n}${n.kept ? ` · ${w.keptWin}` : ''}`).join(' · ');
     const at = q.chore ? witness(q.chore, ctx) : q.where ? (q.where.here ? w.needHere : `${say(w.needAt, { name: q.where.name })}${q.where.via ? ` · ${say(w.needVia, { name: q.where.via })}` : ''}`) : '';
     const open = ctx.bookRow === q.id;
     // The row is the tap: what it holds is shown here, by the page. Only 交差
@@ -909,7 +1014,7 @@ function building(card, ctx) {
     <div>${esc(ctx.words.buildingLine.replace('{n}', left))}</div></div>`;
 }
 
-const RENDER = { handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road };
+const RENDER = { handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {
@@ -917,15 +1022,20 @@ export function cardHtml(card, ctx) {
   return draw ? draw(card, ctx) : '';
 }
 
+/* A board whose win is counted against 体力 (a hosted game, an errand's) is
+   shut while the pool is empty (his 五子 at 桑间, 2026-09-24). */
+const boardShut = (t, ctx) => Boolean(t && (t.hosted || t.for_errand) && ctx.qi?.st === 'empty');
+
 /// The boards at hand: a scene's, or a game an errand asks for here — never a daily chore.
 export function trayHtml(ctx) {
   const tasks = (ctx.look.tasks || []).map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
+    const shut = state === 'offered' && boardShut(t, ctx);
     const act = state === 'offered' && t.kind === 'board'
-      ? `<button class="act" data-play="${esc(t.id)}">${t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
+      ? `<button class="act" data-play="${esc(t.id)}"${shut ? ` disabled title="${esc(ctx.words.emptyNoPlay)}"` : ''}>${t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
-      <div class="taskfoot"><span class="chip">${esc(ctx.words[state])}</span>${act}${tell}</div></div>`;
+      <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>${act}${tell}</div></div>`;
   });
   // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥).
   return tasks.join('');

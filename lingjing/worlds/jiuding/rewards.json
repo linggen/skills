@@ -54,6 +54,10 @@
     "chance": {
       "progress": 20,
       "wealth": 20
+    },
+    "seclusion": {
+      "progress": 90,
+      "wealth": 0
     }
   },
   "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id — and the finale also leaves a 符 and raises the 本命法宝 one 重 (`growth`). Raised 2026-09-24 (redesign-v2: the rumor is the day's main dish, the daily boards are gone): 15 a step, 30 the finale, 90 the cap — see `_economy`.",
@@ -146,11 +150,25 @@
       }
     ]
   },
+  "_seclusion": "闭关修炼 (his, 2026-09-24: one pick per seclusion; rules/seclusion.mjs). Real hours from the save's own stamp, at most `cap_hours`; under `min_hours` nothing but the clock's refill. One focus: a 功法 gains a ★ per `star_hours` (to `star_top`; the hours left over wait for the next seclusion on that card), 修为 `progress_per_hour` (the `seclusion` table caps it, scaled by roots and realm like any grant — 60 a 12-hour night at 练气, against ~170 for a day of play: playing stays better), or the 本命法宝 one 重 per `treasure_hours` (left over kept). Any focus: `rest_hours` or more fills 体力. A pill in `pills` taken going in multiplies the hours counted (not the cap on real hours).",
+  "seclusion": {
+    "cap_hours": 12,
+    "min_hours": 1,
+    "rest_hours": 8,
+    "progress_per_hour": 5,
+    "star_hours": 6,
+    "star_top": 3,
+    "treasure_hours": 8,
+    "pills": {
+      "qi-pill": 1.5
+    }
+  },
   "_growth": "本命法宝 and 符 grow from the story, never from a daily tap (redesign-v2 § 四: 温养 · 强化 · 写符 cut). The treasure rises one 重 each time a chapter ends and each time 今日传闻's finale is won, up to 九重. A rumor's finale leaves one 符; a fight won leaves one on one win in `fight_one_in` (by the day, the beast and the 道号).",
   "growth": {
     "treasure": {
       "chapter": 1,
-      "tale_end": 1
+      "tale_end": 1,
+      "seclusion": 1
     },
     "charm": {
       "tale_end": 1,

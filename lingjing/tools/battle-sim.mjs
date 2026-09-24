@@ -348,6 +348,8 @@ const treasurePower = (base, level) => weaponPower(base) + Math.floor((level - 1
 const armorOf = id => Math.round((itemEffect(id).def ?? 0) * (GEAR.armor_per_def ?? 0));
 const wardOf = id => Object.fromEntries(Object.entries(itemEffect(id).ward ?? {}).map(([el, n]) => [el, Math.round(n * (GEAR.ward_per_point ?? 0))]));
 const CHARM = world.cards.find(c => c.charm)?.id;
+const SPELLS = world.cards.filter(c => c.kind === 'spell' && !c.charm && !c._token).map(c => c.id);
+const starsAll = n => Object.fromEntries(SPELLS.map(id => [id, n]));
 
 async function kitOnly() {
   const { foeTurn } = await import('../scripts/battle.js');
@@ -379,6 +381,12 @@ function gearRows(decks, problems) {
     ['全副（铁剑·蓑衣·符）', { power: weaponPower(iron.atk), armor: armorOf('straw-cloak'), extra: ['yinyue', CHARM] }],
     [`全副 + 玉珏（对${zh[ringRoot]}）`, { power: weaponPower(iron.atk), armor: armorOf('straw-cloak'), ward: ring, extra: ['yinyue', CHARM] }, { foes: rootBeasts(ringRoot) }],
     ['全副 结丹（本命九重·蓑衣·符）', { power: treasurePower(iron.atk, 9), armor: armorOf('straw-cloak'), extra: ['yinyue', CHARM] }, { tiers: ['core'] }],
+    // 闭关 (rules/seclusion.mjs): a 功法 tempered to ★n — −1 灵力 a star down
+    // to 1, then +1 to its number. One card a seclusion; over weeks every
+    // spell in the deck can reach ★3, so that is weighed as the ceiling.
+    ['闭关 每张功法 ★1', { stars: starsAll(1) }],
+    ['闭关 每张功法 ★2', { stars: starsAll(2) }],
+    ['全副 闭关 每张功法 ★3（封顶）', { stars: starsAll(3) }],
   ];
   const bases = new Map();
   const baseOf = opts => {

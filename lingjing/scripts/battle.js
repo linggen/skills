@@ -144,6 +144,9 @@ export function shuffle(ids, seed) {
    { element: n }: a blow of that element lands n lighter on the hero (at
    least 1 — 抗 never negates). All of it from the world's gear (rules.mjs
    § 装备入局); the fight only reads the numbers.
+   `stars` is { cardId: n } — a 功法 tempered in 闭关 (rules/seclusion.mjs):
+   each ★ takes 1 off its 灵力 while it costs more than 1, and past that adds
+   1 to its number (`costOf`, `effectOf`). Locked at the door like the rest.
    `signature` is the beast's 杀招 (creatures.json): { id, name, effect }.
    `catalog` is the card rows by id. Nothing else reaches the fight. */
 function sideOf(who, cfg, catalog, mode, seed) {
@@ -159,6 +162,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
+    stars: cfg.stars ?? null,
   };
 }
 
@@ -400,7 +404,7 @@ export function legal(st, action, who = 'you') {
     const id = side.hand[action.index];
     const c = id && card(st, id);
     if (!c) return 'not-in-hand';
-    if (side.mana < c.cost) return 'no-mana';
+    if (side.mana < costOf(side, c)) return 'no-mana';
     if (c.kind === 'minion' && side.board.length >= st.mode.board) return 'board-full';
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
     if (at === 'enemy' && action.target?.kind === 'minion' && !them.board[action.target.index]) return 'no-target';
@@ -428,7 +432,27 @@ export function legal(st, action, who = 'you') {
 export function effectOf(side, c) {
   // A lift on the card's own number (银月铃: her battlecry heals one more).
   const e = boostedOf(side, c), h = side?.lifts?.[c?.id]?.heal;
-  return h && e?.heal != null ? { ...e, heal: e.heal + h } : e;
+  return starred(h && e?.heal != null ? { ...e, heal: e.heal + h } : e, starLift(side, c));
+}
+
+/* ── ★ — a 功法 tempered in 闭关 (his, 2026-09-24: 闭关修炼, one pick) ──
+   Each star takes 1 off the card's 灵力 while it costs more than 1; a star
+   past that adds 1 to what it does. Only this side's, only a 功法 — the
+   beast's cards are its own. The gate weighs it (tools/battle-sim.mjs). */
+export const starsOf = (side, c) => (c?.kind === 'spell' ? side?.stars?.[c.id] ?? 0 : 0);
+const starCut = (side, c) => Math.min(starsOf(side, c), Math.max(0, (c?.cost ?? 0) - 1));
+export const costOf = (side, c) => (c?.cost ?? 0) - starCut(side, c);
+const starLift = (side, c) => starsOf(side, c) - starCut(side, c);
+/* One number per effect, lifted by n: the effect's own count. */
+const STAR_LIFT = {
+  damage: (v, n) => v + n, sweep: (v, n) => v + n, heal: (v, n) => v + n, draw: (v, n) => v + n,
+  buff: (v, n) => ({ ...v, atk: (v.atk ?? 0) + n }), rally: (v, n) => ({ ...v, atk: (v.atk ?? 0) + n }),
+  summon: (v, n) => ({ ...v, n: (v.n ?? 1) + n }),
+};
+function starred(e, n) {
+  if (!e || !n) return e;
+  const key = Object.keys(STAR_LIFT).find(k => e[k] != null);
+  return key ? { ...e, [key]: STAR_LIFT[key](e[key], n) } : e;
 }
 
 /* The day's cast alone — the card says why its number moved. */
@@ -467,7 +491,7 @@ export function act(st, action, who = 'you') {
     const id = side.hand[action.index];
     const c = card(st, id);
     side.hand.splice(action.index, 1);
-    side.mana -= c.cost;
+    side.mana -= costOf(side, c);
     side.played.push(id);
     if (c.kind === 'minion') {
       const { atk, hp } = bodyOf(side, c);
@@ -525,8 +549,8 @@ export function foeStep(st) {
   }
   const playable = gathering || intent ? [] : side.hand
     .map((id, index) => ({ index, c: card(st, id) }))
-    .filter(({ c }) => c && c.cost <= side.mana)
-    .sort((a, b) => b.c.cost - a.c.cost);
+    .filter(({ c }) => c && costOf(side, c) <= side.mana)
+    .sort((a, b) => costOf(side, b.c) - costOf(side, a.c));
   const next = playable.find(({ index, c }) => !legal(st, { kind: 'play', index, target: aimFor(st, side, c) }, 'foe'));
   if (next) {
     const action = { kind: 'play', index: next.index, target: aimFor(st, side, next.c) };
@@ -638,7 +662,7 @@ export function view(st) {
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
-    signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts,
+    signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null,
     board: s.board.map(m => ({ id: m.id, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
@@ -675,7 +699,7 @@ export function offers(st) {
     for (const target of targets(c)) {
       const action = { kind: 'play', index, target };
       const why = legal(st, action, 'you');
-      out.push({ action, card: c, id, cost: c.cost, why, ok: why === null });
+      out.push({ action, card: c, id, cost: costOf(st.you, c), why, ok: why === null });
     }
   });
   for (const target of [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))]) {

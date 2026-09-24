@@ -1612,6 +1612,33 @@ model, refilled by the clock. It is the **only** limit on a day's play — the
 - The engine's token meter is not the game's: Lingjing declares only
   `cloud.save` (and `cloud.skip: [art]`).
 
+### 闭关修炼 — offline seclusion (his, 2026-09-24: one pick; BUILT)
+
+Time away from the game, spent on ONE thing. `rules/seclusion.mjs`, verb
+`seclude` (page only, via `Verb`): `info` · `enter {focus: card|progress|treasure, id?, pill?}` · `leave`.
+
+- **Hours are real**, from `state.seclusion.since` (the rules' clock, never
+  the page's) to ctx.now, capped at 12; under 1 nothing grows (the clock's
+  refill goes on as ever). A 聚气丹 taken going in counts the hours ×1.5.
+- **One focus.** 法术: one ★ per 6 h counted, to ★3, the hours over kept per
+  card (`state.card_stars`, `state.card_study`). 修为: 5 an hour through the
+  `seclusion` table (60 a 12-hour night at 练气 — a day of play is ~170, an
+  hour of fights ~375: playing stays better), held at the realm's peak.
+  本命法宝: one 重 per 8 h, the hours over kept (`treasure.tempered`) — what
+  the cut 温养 clicks did. Any focus: 8 h or more fills 体力.
+- **★ in the fight** (battle.js `costOf` / `effectOf`, locked at the door as
+  `setup.you.stars`): each star −1 灵力 while the card costs more than 1, then
+  +1 to its number. The gate: every spell ★1 +1.9, ★2 +3.0, ★3 (the ceiling)
+  +6.2 points — inside the gear band.
+- **The world holds still** while one runs (`in-seclusion`, like a fight):
+  nothing ends it but 出关. Look's `seclusion` is what 出关 would grow now;
+  the stage is its card alone; nothing is asked.
+- **The page:** 闭关 on the empty card and on a tap of the 体力 ring; the
+  chooser; 出关 · 领取 first on opening — her greeting and Ling's 前情提要
+  wait for the tap — then the count-up. 银月 hears `seclude` and `emerge` as
+  facts (voice.js, asked); Ling reads `page_did`. No version bump: the fields
+  are new and default absent.
+
 ## Systems built 2026-09-21 → 24
 
 Each a few lines of code truth; the numbers live in the named data file.

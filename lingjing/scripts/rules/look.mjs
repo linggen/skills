@@ -12,6 +12,7 @@ import { staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief } from './fortune.mjs';
 import { chanceBrief } from './road.mjs';
+import { seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, storyDue, taleBrief } from './tale.mjs';
 import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
@@ -222,6 +223,8 @@ export function look(state, content, ctx) {
     divination: divinationBrief(content, state, ctx.now),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
+    // 闭关 running: the hours in and what 出关 would grow now (rules/seclusion.mjs).
+    ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : {}),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
     ...tasksBrief(content, state, ctx),

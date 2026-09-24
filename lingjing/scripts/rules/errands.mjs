@@ -1,6 +1,7 @@
 // rules/errands.mjs — 差事: the errands taken and handed in, the book, the director's brief, the gear panel.
 // Part of the rules engine; rules.mjs is its one door.
 import { ARM_SLOTS } from '../content.mjs';
+import { costOf } from '../battle.js';
 import { dayKey, fill, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, nearestPlace } from './companion.mjs';
@@ -67,7 +68,11 @@ function errandsOf(content, state, lang, now) {
       const q = questOf(content, id);
       if (!q) return null;
       const need = countsOf(content, state, q);
-      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n })), ready: need.every(x => x.done), where: whereFor(content, state, q, need, lang, now) };
+      // A board won while the pool was empty is kept, not yet counted (tasks.mjs
+      // taskDone): the row says so, or it reads 0/1 as if nothing happened (his
+      // 五子 at 桑间, 2026-09-24 — it looked broken).
+      const kept = n => n.kind === 'board' && !n.done && Boolean(state.wins?.[n.task]);
+      return { id, title: pick(q.title, lang), need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready: need.every(x => x.done), where: whereFor(content, state, q, need, lang, now) };
     })
     .filter(Boolean);
 }
@@ -471,8 +476,16 @@ function itemBrief(content, state, item) {
     effect: effectBrief(content, lang, item.effect),
     worn: Object.values(state.wear ?? {}).includes(item.id),
     ...(item.made?.from ? { made_from: pick(itemOf(content, item.made.from)?.name, lang) } : {}),
+    ...(tamesOf(content, state, item).length ? { tames: tamesOf(content, state, item) } : {}),
   };
 }
+
+/* The beasts not yet won over that this thing wins over — what each `likes`
+   (creatures.json; Tame takes it). On the shelf and in the bag, so a player
+   buying 灵芝 knows it is for 夫诸 (his, 2026-09-24: 坊市里如果某个物品是收服妖用到的, 显示一下). */
+const tamesOf = (content, state, item) => content.creatures.creatures
+  .filter(c => c.likes === item.id && !(state.cast ?? []).includes(c.id))
+  .map(c => ({ id: c.id, name: pick(c.name, state.lang) }));
 
 /* 装备 · 背包 — what he wears and what he carries, as the top bar's 装 chip
    opens it (his ask, 2026-09-22: 需要有个装备的card … 需要同时打开装备和背包).
@@ -514,7 +527,9 @@ function gearBrief(content, state) {
         .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,
           // Picking, lit is his and a filled card is only marked; else the ten dealt.
           ...(c.id === 'yinyue' ? { hand: true } : Array.isArray(state.deck) && canPick(content, state) ? (picked.has(c.id) ? { deck: true, picked: true } : ten.has(c.id) ? { fill: true } : {}) : ten.has(c.id) ? { deck: true } : {}),
-          ...(!usable(c, roots) ? { off_root: true } : {}) }));
+          ...(!usable(c, roots) ? { off_root: true } : {}),
+          // 闭关's ★ (rules/seclusion.mjs), and the 灵力 it costs with them.
+          ...(state.card_stars?.[c.id] ? { stars: state.card_stars[c.id], cost: costOf({ stars: state.card_stars }, c) } : {}) }));
     })(),
   };
 }

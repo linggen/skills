@@ -667,3 +667,18 @@ body.reading .view, body.reading .tray { display: none; }
 .kaifufold[open] > summary::after { content: ' ▾'; }
 /* A card's price in 灵力 — a round badge, as on the fight's cards. */
 .gearpop .gcard b.cost { display: inline-grid; place-items: center; min-width: 1.35em; height: 1.35em; border-radius: 50%; font-size: 11px; background: var(--ling, #3b6ea5); color: #fff; margin-right: 2px; }
+
+/* 闭关 (rules/seclusion.mjs): the chooser, the running card, 出关's count-up. */
+.qi[data-seclude-open] { cursor: pointer; }
+.qi[data-seclude-open]:hover .ring { outline: 2px solid color-mix(in srgb, var(--ling) 40%, transparent); outline-offset: 1px; }
+.card.seclude .gcards { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 6px; }
+.card.seclude .gcard { font-size: 12.5px; padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: inherit; }
+.card.seclude .gcard.on { border-color: var(--ling); background: var(--raised); }
+.card.seclusion { border-color: var(--jade); background: color-mix(in srgb, var(--jade-soft) 60%, var(--surface)); }
+.card.emerged { border-color: var(--jade); animation: handedIn .7s var(--age, 0ms) ease-out both; }
+.card.emerged [data-countup] { font-variant-numeric: tabular-nums; }
+.starpop, .gcard .stars { color: #C9A227; }
+.card.emerged .starpop { display: inline-block; animation: payPop .9s calc(.5s + var(--age, 0ms)) ease-out both; }
+@media (prefers-reduced-motion: reduce) { .card.emerged, .card.emerged .starpop { animation: none; } }
+.item .tames, .gearrow .tames { color: var(--jade); }
+.gamecard .kept { color: var(--jade); }

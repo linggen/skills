@@ -12,7 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
-import { bodyOf, boostedOf, clash, dealt, effectOf, landed } from './battle.js';
+import { bodyOf, boostedOf, clash, costOf, dealt, effectOf, landed, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -258,10 +258,12 @@ function handHtml(st, ctx, picked) {
     const held = picked?.from === 'hand' && picked.index === index;
     const b = bodyOf(st.you, c);
     const body = c.kind === 'minion' ? `<span class="bstat"><b>${b.atk}</b> / <b>${b.hp}</b></span>` : '';
+    // 闭关's ★: the cost it has now, and the stars by its name.
+    const stars = starsOf(st.you, c);
     return `<button class="bcard${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}">
-      <span class="bcost">${c.cost}</span>
+      <span class="bcost">${costOf(st.you, c)}</span>
       ${artOf(c, ctx) ? `<img class="bpic" src="${esc(artOf(c, ctx))}" alt="" loading="lazy">` : ''}
-      <span class="bname">${name(c, ctx.lang)}</span>
+      <span class="bname">${name(c, ctx.lang)}${stars ? ` <span class="stars">${'★'.repeat(stars)}</span>` : ''}</span>
       <span class="belem">${GLYPH[c.element] ?? ''}</span>
       <small class="btext">${esc(sayEffect({ ...c, effect: effectOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}</small>
       ${body}

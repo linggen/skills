@@ -13,6 +13,7 @@ import { pick, stepName, threshold } from '../state.mjs';
 import { herPast } from './companion.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, questOf } from './errands.mjs';
+import { seclusionBrief } from './seclusion.mjs';
 import { taleLine, taleLundao } from './tale.mjs';
 import { hostedHere, lundaoBrief, lundaoName } from './tasks.mjs';
 import { tasksBrief, wordsOf } from './look.mjs';
@@ -50,6 +51,20 @@ const MEET_DID = {
 const taleDid = (r, x) => (r.ended ? `ended today's rumor${paidLine(r.handed?.[0]?.paid, x.w)}${r.handed?.[0]?.gives ? `, got ${r.handed[0].gives}` : ''}`
   : r.kept ? "solved the rumor's step; counted when 体力 is back" : r.step ? `the rumor's step done${paidLine(r.handed?.[0]?.paid, x.w)}; next: ${r.step.game_name} at ${r.step.at?.name}` : null);
 const TALE_DID = { win: (r, a, x) => taleDid(r, x), answer: (r, a, x) => taleDid(r, x), turn: (r, a, x) => taleDid(r, x), drop: () => "put today's rumor down" };
+/* 闭关: going in, and 出关 with what grew. */
+const SECLUDE_DID = {
+  enter: (r) => `went into seclusion (闭关) on ${r.entered?.focus}${r.entered?.pill ? `, took ${r.entered.pill.name}` : ''}`,
+  leave: (r) => `came out of seclusion after ${r.emerged?.hours} h${grownLine(r.emerged)}`,
+};
+const GROWN = {
+  card: (e) => (e.card && e.card.to > e.card.from ? `${e.card.name} ★${e.card.from}→★${e.card.to}` : ''),
+  progress: (e) => (e.progress?.paid ? `+${e.progress.paid} 修为` : ''),
+  treasure: (e) => (e.treasure && e.treasure.to > e.treasure.from ? `${e.treasure.name} ${e.treasure.from}→${e.treasure.to} 重` : ''),
+};
+function grownLine(e) {
+  const bits = [e ? GROWN[e.focus]?.(e) : '', e?.rested ? '体力 full' : ''].filter(Boolean);
+  return bits.length ? `: ${bits.join(', ')}` : '';
+}
 const byAction = (table) => (r, a, x) => table[a.action ?? 'take']?.(r, a, x) ?? null;
 
 const PAGE_DID = {
@@ -61,6 +76,7 @@ const PAGE_DID = {
   trade: byAction(TRADE_DID),
   meet: byAction(MEET_DID),
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
+  seclude: (r, a) => SECLUDE_DID[a.action]?.(r) ?? null,
 };
 
 /* The page's change, written down on the state it wrote: a fresh copy with
@@ -134,6 +150,8 @@ export function progress(state, content, ctx) {
       // Her own past as far as the cauldrons have given it back, and where she stands (companion.mjs § 她的来处).
       her: herPast(content, state),
       ...(lundao ? { lundao } : {}),
+      // 闭关 running: its focus and the hours in (rules/seclusion.mjs).
+      ...(state.seclusion ? { seclusion: (({ focus, hours, card }) => ({ focus, hours, ...(card ? { card: card.name } : {}) }))(seclusionBrief(content, state, ctx.now)) } : {}),
     },
   };
 }

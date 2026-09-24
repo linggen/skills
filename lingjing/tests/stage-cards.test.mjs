@@ -48,6 +48,7 @@ const SITUATIONS = {
   'the cauldron waiting on cultivation, the 功课 in the book': [{ ...open, chapter: '03-qing', scene: '03-cauldron', place: 'penglai', ended: ['00-prologue', '01-ji', '02-yan'] }, ctx({ quests: chores })],
   'the search for her: the bell not bought': [{ ...open, place: 'sishui', companion: { called: true } }, ctx()],
   '丹田 empty': [{ ...open, place: 'sishui', stamina: 0, stamina_at: NOW.toISOString() }, ctx()],
+  '闭关 running: its 出关 card is the stage': [{ ...open, place: 'sishui', seclusion: { focus: 'progress', since: new Date(NOW.getTime() - 3 * 3600_000).toISOString() } }, ctx()],
   '拾遗 by the road': [{ ...open, place: 'huaidu', meets: { day: '2026-09-21', places: { huaidu: { kind: 'find', find: '徐', n: 0 } } } }, ctx()],
   'the first scene of a new save': [newState(content, 'zh', NOW), ctx()],
   'the same, in English': [{ ...open, place: 'pengcheng', lang: 'en' }, ctx({ quests: chores })],

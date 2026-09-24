@@ -242,6 +242,7 @@ const FIGHT_HOLDS = {
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true,
   divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => !['info', 'kaifu'].includes(a.action),
+  seclude: a => a.action === 'enter',
 };
 export function fightHold(state, verb, args = {}) {
   const hold = state?.fight ? FIGHT_HOLDS[verb] : null;

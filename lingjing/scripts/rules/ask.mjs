@@ -16,6 +16,8 @@ import { atScene, placeBrief } from './world.mjs';
    enough (2026-09-16, gpt-5.6-terra: Look, Show, narration, silence). */
 export function askOf(content, state, ctx, result = {}, ungated = false) {
   const zh = state.lang === 'zh';
+  // In 闭关 the world holds still: the one way on is 出关, on the stage's card.
+  if (state.seclusion) return null;
   const second = filler(content, state, ctx.said);
   // Her riddle, while it waits, is the question — wherever the player stands.
   const her = companionOf(content);

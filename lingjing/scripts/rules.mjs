@@ -4,7 +4,7 @@
 //
 //   node rules.mjs <verb> [--key value …]
 //   verbs: init look progress story resolve judge task win duel tame refine tale summarize move trade lang make enter leave
-//          build worlds travel amend art go saves save load forget undo
+//          build worlds travel amend art go saves save load forget seclude undo
 //
 // Every verb prints one JSON object. A refusal is {ok:false, refused, say}
 // and never changes state. The save says which world it plays; `init` begins
@@ -26,6 +26,7 @@ import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { clock, dataDir, freshState, parseArgs, readQuests, savedFile, savedFor, userTurn, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
+import { seclusionHold } from './rules/seclusion.mjs';
 import { heed } from './rules/travel.mjs';
 import { VERBS } from './rules/verbs.mjs';
 import { owesRecap, withHerBeat } from './rules/story.mjs';
@@ -47,6 +48,7 @@ export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tas
 export { go, heed, lang, move, summarize, trade } from './rules/travel.mjs';
 export { chapterLook, owesRecap, recapLook, story, storyNode } from './rules/story.mjs';
 export { lintTale, tale } from './rules/tale.mjs';
+export { seclude, seclusionBrief, seclusionHold } from './rules/seclusion.mjs';
 export { quest, show, VERBS } from './rules/verbs.mjs';
 export { PAGE_KEEP, progress } from './rules/did.mjs';
 export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, make, paintList, ring, save, saves, tame, travel, wake, worlds } from './rules/worlds.mjs';
@@ -97,7 +99,8 @@ function runLocked(verb, args, stateFile, reader) {
     if (paint.length) return { ok: false, refused: 'still-building', say: null, paint };
   }
   // While a fight is open, what would change the world waits (tasks.mjs fightHold).
-  const held = fightHold(state, verb, args);
+  // While in 闭关, likewise: 出关 first (rules/seclusion.mjs seclusionHold).
+  const held = fightHold(state, verb, args) ?? seclusionHold(state, verb, args);
   if (held) return held.result;
   if (raw) keepDay(raw, now);
   const heard = heed(state, args.said);

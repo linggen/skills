@@ -14,7 +14,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, emergedHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { esc } from './esc.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { LU_WORDS, luChipHtml, luHtml, titleCardHtml } from './lu.js';
@@ -186,6 +186,12 @@ const view = {
   walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
   luOpen: false, //      the 录 chip's book (九鼎录), over the stage
   lu: null, //           the rules' `story` read behind it, fetched when it opens
+  // 闭关 (rules/seclusion.mjs): the chooser open, what it may choose (`seclude
+  // info`), the pick and pill, a refusal; `emerged` — 出关's result, counted up
+  // on its card until put away; `afterEmerge` — the opening (her greeting,
+  // Ling's recap) held until 出关 is tapped (his, 2026-09-24: 出关 first).
+  secludeOpen: false, seclude: null, secludeFocus: null, secludePill: null, secludeNote: null,
+  emerged: null, afterEmerge: null,
 };
 const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
@@ -211,7 +217,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -413,7 +419,9 @@ function qiHtml() {
   if (!q) return '';
   const w = words();
   const d = draining && !draining.landed ? { now: draining.from, ...qiState(draining.from, q.max) } : q;
-  return `<span class="qi" data-st="${esc(d.st)}" title="${esc(w.qi)}"><span class="lbl">${esc(w.qi)}</span>
+  // A tap on the pool opens 闭关 (his, 2026-09-24: any time the player chooses).
+  const open = look.seclusion ? '' : ` data-seclude-open role="button" tabindex="0"`;
+  return `<span class="qi" data-st="${esc(d.st)}" title="${esc(w.qi)} · ${esc(w.secludeOpen)}"${open}><span class="lbl">${esc(w.qi)}</span>
     <i class="ring" style="--p:${Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span><span class="cnt"><span data-qi>${esc(d.now)}</span>/${esc(q.max)}</span></span>`;
 }
 
@@ -688,7 +696,8 @@ function focusHtml() {
   // Walked on, the spoils are put away by themselves.
   if (view.spoils && view.spoils.place !== (look?.place?.id ?? null)) keep({ spoils: null });
   if (view.trialTold && view.trialTold.place !== (look?.place?.id ?? null)) keep({ trialTold: null });
-  const spoils = titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
+  if (view.emerged && view.emerged.place !== (look?.place?.id ?? null)) keep({ emerged: null });
+  const spoils = titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '') + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '') + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (view.spoils ? spoilsHtml(view.spoils, spoilsCtx()) : '');
   // A line running under his feet takes the stage (his law, 2026-09-18:
   // 「最好左面 webview 显示一个 card，或者在一个故事线或任务中走，显示相关内容」).
   // Standing at the water with the bell in hand, the stage said 摇一摇铃 — and
@@ -704,8 +713,12 @@ function focusHtml() {
   if (view.opened && !cards.some((c) => c.card === 'board' && c.id === view.opened.id)) cards = [...cards, { card: 'board', id: view.opened.id }];
   // The errand just taken keeps its card a moment, sealed 已接下.
   if (view.tookOffer && !cards.some((c) => c.card === 'offer')) cards = [...cards, { card: 'offer' }];
+  // 闭关's chooser, opened from the pool or the empty card, stands first.
+  if (view.secludeOpen && view.seclude && !look.seclusion) cards = [{ card: 'seclude' }, ...cards];
   const { head, queue, tail } = splitStage(cards);
-  return spoils + head.map(drawCard).join('') + queueHtml(queue) + tail.map(drawCard).join('') + (stageHolds(look, cards) ? roadsHtml() : '');
+  // In 闭关 the world holds still: no roads under its card.
+  const roads = stageHolds(look, cards) && !look.seclusion ? roadsHtml() : '';
+  return spoils + head.map(drawCard).join('') + queueHtml(queue) + tail.map(drawCard).join('') + roads;
 }
 
 /* 眼前 — one thing to do at a time (his, 2026-09-24: 「用一个队列，一个完成，
@@ -714,7 +727,7 @@ function focusHtml() {
    of the line, and walking on starts the line again. The goal line, an empty
    pool and what Ling showed of the place stay where they are. */
 const QUEUE = ['handed', 'quest', 'tale', 'road', 'offer', 'duel', 'lundao', 'board'];
-const HEAD = new Set(['building', 'empty', 'goal']);
+const HEAD = new Set(['seclude', 'building', 'empty', 'goal']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
 function splitStage(cards) {
@@ -1128,6 +1141,80 @@ async function refineTap(material) {
   keep(r.ok ? { refineMat: null, refineName: '', refineNote: null } : { refineNote: refusal(r) });
   await refresh();
 }
+
+/* ── 闭关 — the page's own taps (rules/seclusion.mjs) ──
+   Choosing, going in and 出关 are the page's: the rules count the hours from
+   the save's stamp and settle it; no model turn (his law: the page shows
+   facts). 银月 hears the facts once she walks with the player and says her
+   own words; Ling reads it off `page_did` at her next Look. */
+async function openSeclude() {
+  const r = await write('seclude', { action: 'info' }).catch(failed);
+  if (!r.ok) return show({ doNote: refusal(r) });
+  if (r.seclusion) return refresh(); // one is running: its card is the stage
+  show({ secludeOpen: true, seclude: r.choices, secludeFocus: null, secludePill: null, secludeNote: null, bookOpen: false, gearOpen: false });
+}
+
+const focusFacts = (e, zh) => (e.focus === 'card' ? e.card?.name : WORDS[zh ? 'zh' : 'en'].secludeFoci[e.focus]);
+async function goSeclude() {
+  const f = view.secludeFocus;
+  if (!f) return show({ secludeNote: words().secludePick });
+  const r = await write('seclude', { action: 'enter', focus: f.focus, ...(f.id ? { id: f.id } : {}), ...(view.secludePill ? { pill: view.secludePill } : {}) }).catch(failed);
+  if (!r.ok) return show({ secludeNote: refusal(r) });
+  keep({ secludeOpen: false, seclude: null, secludeFocus: null, secludePill: null, secludeNote: null });
+  await refresh();
+  // 银月 sits by the player as they go in — the facts; her words are hers.
+  const e = r.entered, pill = e.pill ? { zh: `，服了一粒${e.pill.name}`, en: `, having taken a ${e.pill.name}` } : { zh: '', en: '' };
+  if (look?.companion) askHer('seclude', `玩家刚入关闭关，专心修${focusFacts(e, true)}${pill.zh}。时辰按真实时间算，至多 ${e.cap} 小时。你在一旁护关。`,
+    `The player has just gone into seclusion to work on ${focusFacts(e, false)}${pill.en}. Real hours count, up to ${e.cap}. You keep watch beside them.`, 'relaxed');
+}
+
+/* 出关 · 领取: the rules settle it; the card counts up what grew, and the
+   strip's own rise runs (riseStats). Then the opening held back for it —
+   her greeting, Ling's 前情提要 — goes on as it would have (enter()). */
+async function emerge() {
+  const r = await write('seclude', { action: 'leave' }).catch(failed);
+  if (!r.ok) { keep({ doNote: refusal(r) }); return refresh(); }
+  const e = r.emerged;
+  keep({ emerged: { ...e, at: performance.now(), place: look?.place?.id ?? null } });
+  await refresh();
+  countUp();
+  const facts = emergeFacts(e);
+  const opening = view.afterEmerge;
+  keep({ afterEmerge: null });
+  if (opening) return opening(facts);
+  if (look?.companion) askHer('emerge', facts.zh, facts.en, 'happy');
+}
+
+/* What 出关 grew, as facts for her — the rules' numbers, never a line. */
+function emergeFacts(e) {
+  const zh = [`玩家刚出关：闭关 ${e.hours} 小时，专心修${focusFacts(e, true)}`], en = [`The player has just come out of seclusion: ${e.hours} h, working on ${focusFacts(e, false)}`];
+  const star = e.grows && e.card && e.card.to > e.card.from, layer = e.grows && e.treasure && e.treasure.to > e.treasure.from;
+  if (star) { zh.push(`${e.card.name}练到了${e.card.to}星`); en.push(`${e.card.name} reached ${e.card.to} star${e.card.to > 1 ? 's' : ''}`); }
+  if (e.grows && e.progress?.paid) { zh.push(`修为 +${e.progress.paid}`); en.push(`cultivation +${e.progress.paid}`); }
+  if (layer) { zh.push(`${e.treasure.name}长到了${e.treasure.to}重`); en.push(`${e.treasure.name} grew to layer ${e.treasure.to}`); }
+  if (!e.grows) { zh.push('时辰太短，没长什么'); en.push('too short for anything to grow'); }
+  if (e.rested) { zh.push('体力回满'); en.push('stamina full'); }
+  return { zh: `${zh.join('，')}。`, en: `${en.join('; ')}.` };
+}
+
+/* 出关's numbers count up from 0 once (`[data-countup]`): each frame finds
+   the elements there NOW, as the strip's rise does, so a redraw mid-count
+   never kills it. */
+const COUNT_MS = 1400;
+function countUp() {
+  const start = view.emerged?.at;
+  if (start == null) return;
+  const step = () => {
+    const t = Math.min(1, (performance.now() - start) / (stillMotion() ? 1 : COUNT_MS));
+    const ease = 1 - (1 - t) ** 3;
+    for (const el of document.querySelectorAll('[data-countup]')) {
+      const to = Number(el.dataset.countup);
+      el.textContent = Number.isInteger(to) ? String(Math.round(to * ease)) : (to * ease).toFixed(1);
+    }
+    if (t < 1 && view.emerged?.at === start) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 document.addEventListener('input', (e) => { if (e.target.id === 'refine-name') keep({ refineName: e.target.value, refineNote: null }); });
 
 /* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws
@@ -1356,6 +1443,13 @@ const CLICKS = [
     return false;
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],
+  ['[data-seclude-open]', () => run('seclude', () => openSeclude())],
+  ['[data-seclude-close]', () => show({ secludeOpen: false, secludeNote: null })],
+  ['[data-seclude-focus]', (el) => show({ secludeFocus: { focus: el.dataset.secludeFocus, id: el.dataset.id ?? null }, secludeNote: null })],
+  ['[data-seclude-pill]', (el) => show({ secludePill: view.secludePill === el.dataset.secludePill ? null : el.dataset.secludePill })],
+  ['[data-seclude-go]', () => run('seclude', () => goSeclude())],
+  ['[data-emerge]', () => run('emerge', () => emerge())],
+  ['[data-emerged-close]', () => show({ emerged: null })],
   // Inside a fight the stage belongs to the fight: a click is a place on it.
   ['[data-spot]', (el) => {
     if (!bout) return false;
@@ -1394,7 +1488,7 @@ const CLICKS = [
   ['[data-say]', (el, e) => sayTap(el, e)],
   // A board opened from the tray stays on the stage until he walks on.
   // 开局 from the tray puts the board in the line, behind an errand not yet taken.
-  ['[data-play]', (el) => show({ opened: { id: el.dataset.play, place: look?.place?.id ?? null }, qSkip: view.qSkip.filter((k) => k !== `board:${el.dataset.play}`) })],
+  ['[data-play]', (el) => !el.matches(':disabled') && show({ opened: { id: el.dataset.play, place: look?.place?.id ?? null }, qSkip: view.qSkip.filter((k) => k !== `board:${el.dataset.play}`) })],
   ['[data-qnext]', (el) => putOff(el.dataset.qnext)],
   ['[data-g]', (el) => gameMove(el)],
   ['[data-tile]', (el) => tileTap(el)],
@@ -1952,8 +2046,17 @@ async function enter() {
   await refresh();
   await firstLanguage();
   const fresh = await mountChat();
-  // Her greeting first: when she gives it, it is the opening; Ling waits.
-  const greeted = await greetByHer();
+  // In 闭关: 出关 is the first thing on the stage, and the opening waits for
+  // its tap (his, 2026-09-24) — then goes on with what grew in it.
+  if (look?.seclusion) { keep({ afterEmerge: (grew) => openSitting(fresh, grew) }); return; }
+  await openSitting(fresh, null);
+}
+
+/// The sitting's opening: her greeting first — when she gives it, it is the
+/// opening and Ling waits; else, back from 闭关, she hears what grew.
+async function openSitting(fresh, grew) {
+  const greeted = await greetByHer(grew);
+  if (!greeted && grew && look?.companion) await askHer('emerge', grew.zh, grew.en, 'happy');
   if (fresh) openWith(chat?.getSessionId(), greeted);
   // Ling opening a fresh chat herself tells the 前情提要 in her opening.
   if (!fresh || greeted) recapWhenSettled(greeted);
@@ -1961,13 +2064,15 @@ async function enter() {
 
 /// 问候 — the day's first opening is hers (rules § 问候): the rules say
 /// whether she has greeted today and hand over what they know; she speaks.
-async function greetByHer() {
+/// `grew`: 出关's facts, when the sitting opened on one — one greeting, not two.
+async function greetByHer(grew = null) {
   if (!look?.companion) return false;
   const r = await write('greet', {}).catch(() => null);
   if (!r?.ok || !r.first) return false;
   const who = r.name ?? '';
-  const zh = `${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到对方那样，打个招呼 —— 挑一两件说，不必都提。`;
-  const en = `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet the player as you would on seeing them — pick one or two, not all.`;
+  const facts = grew ? [...r.facts, grew.zh.replace(/。$/, '')] : r.facts, factsEn = grew ? [...r.facts, grew.en.replace(/\.$/, '')] : r.facts;
+  const zh = `${who}今天第一次打开灵境。你知道的：${facts.join('；')}。像见到对方那样，打个招呼 —— 挑一两件说，不必都提。`;
+  const en = `${who} has just opened Lingjing for the first time today. What you know: ${factsEn.join('; ')}. Greet the player as you would on seeing them — pick one or two, not all.`;
   // Back after a while: Ling tells the story next — she only greets (one sequence, not two greetings).
   const recap = look?.recap_due ? { zh: '接着 Ling 会讲前情提要，故事留给 Ling，你只打招呼。', en: ' Ling tells what came before right after you: leave the story to Ling and only greet.' } : { zh: '', en: '' };
   // Nobody to say it (pet off): Ling opens instead.

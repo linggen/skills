@@ -164,15 +164,18 @@ export function fightSetup(content, state, creature, now, game = null) {
   const main = state.fate?.element?.id ?? state.fate?.element ?? (state.traits ?? [])[0] ?? 'wood';
   const withHer = ownedCards(content, state).includes('yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
+  const deck = deckFor(content, state), stars = starsIn(state, deck);
   return {
     mode: 'pve',
     seed: duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: state.step ?? 0, root: main, deck: deckFor(content, state), extra: [...(withHer ? ['yinyue'] : []), ...(gear.charm ? [gear.charm] : [])],
+      tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(withHer ? ['yinyue'] : []), ...(gear.charm ? [gear.charm] : [])],
       ...(lifts ? { lifts } : {}),
       // 望气: how much of the beast's plan he can read — the scroll (items
       // `learn`), or the day's reading at 吉/大吉.
       ...(insight ? { insight } : {}),
+      // 闭关's ★ on the 功法 in the ten (rules/seclusion.mjs; battle.js costOf).
+      ...(stars ? { stars } : {}),
       // What he wears, as numbers (§ 装备入局).
       ...(gear.power ? { power: gear.power } : {}),
       ...(gear.armor ? { armor: gear.armor } : {}),
@@ -183,6 +186,12 @@ export function fightSetup(content, state, creature, now, game = null) {
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
     foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...(creature.signature ? { signature: creature.signature } : {}) },
   };
+}
+
+/* The ★ 闭关 gave the cards in this deck — null when none has any. */
+function starsIn(state, deck) {
+  const got = Object.entries(state.card_stars ?? {}).filter(([id, n]) => n > 0 && deck.includes(id));
+  return got.length ? Object.fromEntries(got) : null;
 }
 
 const cardCatalog = content => Object.fromEntries((content.cards?.cards ?? []).map(c => [c.id, c]));

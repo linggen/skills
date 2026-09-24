@@ -52,6 +52,8 @@ export function taleHere(look) {
    so a new card cannot be added without deciding. */
 export const CARD_KINDS = {
   fight: { holds: true }, //       the fight IS the stage
+  seclusion: { holds: true }, //   闭关 running: 出关 is the one way on (rules/seclusion.mjs)
+  seclude: { holds: false }, //    闭关's choices, offered on an empty pool or a tap on 体力 — never an ask
   offer: { holds: true }, //       接下 — the errands held out where he stands, one card
   road: { holds: true }, //        路上 — what this arrival met: mist until told, then 收下 a find or the
   //                               day's 机缘, or the ways of a 抉择, until it is answered
@@ -104,6 +106,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // A fight takes the whole column: she is in it as a card, and the cards need
   // the room (design.md § 斗法在主界面里).
   if (fight) return [{ card: 'fight' }];
+  // 闭关 running: its 出关 card is the whole stage — the world holds still
+  // until it is settled (his, 2026-09-24: the first thing on opening).
+  if (look.seclusion) return [{ card: 'seclusion' }];
   const head = [];
   if (look.building?.paint?.length) head.push({ card: 'building' });
   if (look.stamina?.empty) head.push({ card: 'empty' });
