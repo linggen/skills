@@ -32,9 +32,11 @@ const ACTIVE_MS = 60_000;
    priority: big (always, converse) · asked (always) · high (the budget, then
    the engine's screen-settle) · low (the budget and its cooldown). */
 export const MOMENTS = {
-  rise: { who: 'both', priority: 'big' },
-  chapter: { who: 'both', priority: 'big' },
-  tamed: { who: 'both', priority: 'big' },
+  // now: the stage is showing it (a seal) — she is woken at once, so her
+  // word meets the picture (his, 2026-09-24: 突破了, 银月反应有点平淡, 还有点晚).
+  rise: { who: 'both', priority: 'big', now: true },
+  chapter: { who: 'both', priority: 'big', now: true },
+  tamed: { who: 'both', priority: 'big', now: true },
   finale: { who: 'both', priority: 'big' },
   tale_end: { who: 'both', priority: 'big' },
   spent: { who: 'both', priority: 'big' },
@@ -69,6 +71,7 @@ export function flagsOf(id, table = MOMENTS) {
     ...(m.priority === 'big' || m.priority === 'high' ? { big: true } : {}),
     ...(m.priority === 'asked' ? { asked: true } : {}),
     ...(m.who === 'both' ? { converse: true } : {}),
+    ...(m.now ? { now: true } : {}),
   };
 }
 

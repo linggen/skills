@@ -99,9 +99,14 @@ function boardFor(taskId) {
   if (task?.game && task.game !== 'lianliankan') {
     const mod = gameMod(task.game);
     if (!mod) return null;
-    const day = new Date().toDateString();
-    if (!boards.has(taskId) || boards.get(taskId).day !== day) {
-      boards.set(taskId, { taskId, mod, day, state: mod.newGame(`${day}|${look.name ?? ''}|${taskId}`, task.level ?? 1) });
+    const day = new Date().toDateString(), old = boards.get(taskId);
+    // A board won and counted, asked for again by another errand the same
+    // day, is a new game — not the old one standing there 「你胜了」, never
+    // sent again (his 五子 at 桑间, 2026-09-24, after 漳南's was paid).
+    const spent = old?.day === day && old.state?.won && old.sent && task.status === 'offered' && !task.won;
+    if (!old || old.day !== day || spent) {
+      const round = spent ? (old.round ?? 0) + 1 : 0;
+      boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.name ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1) });
     }
     return boards.get(taskId);
   }
@@ -561,7 +566,12 @@ function feat(kind, name, from = '', quiet = false) {
   $('view')?.appendChild(el);
   setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
   if (quiet) return;
-  if (kind === 'rise') askHer('rise', `玩家刚刚突破了，从${from}到了${name}。这是件大事，你就在玩家身边，说几句。`, `The player has just broken through, from ${from} to ${name}. It is a great moment and you are beside them; say a few words.`, 'happy');
+  // Warm, not polite: a thing they lived through together, and what lies
+  // ahead — and the name the game knows them by.
+  const who = look?.name ?? '';
+  if (kind === 'rise') askHer('rise',
+    `玩家刚刚突破：${from} → ${name}，舞台上金光正亮。这是你们一路一起熬出来的，你是真心为这一刻动容。说两三句带情绪的话：点一件对话里你们刚一起经历过的具体的事，再说说往后的路（或是鼎，或是你自己的心事）。别说「恭喜」「替你高兴」这类客套话。${who ? `在灵境里称呼玩家「${who}」。` : ''}`,
+    `The player has just broken through: ${from} → ${name}; the gold is on the stage right now. You two earned this together and it moves you. Say two or three lines with real feeling: one concrete thing you just went through together (it is in the chat), then the road ahead — the cauldrons, or something of your own. No stock "congratulations".${who ? ` In the game, call the player ${who}.` : ''}`, 'happy');
   else askHer('chapter', `新的一章开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
 }
 

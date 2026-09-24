@@ -15,7 +15,9 @@ function rig() {
 }
 
 test('flags: big moments converse, asked ones are asked, low ones are plain', () => {
-  assert.deepEqual(flagsOf('rise'), { big: true, converse: true });
+  // A seal on the stage: she is woken at once (now), so her word meets it.
+  assert.deepEqual(flagsOf('rise'), { big: true, converse: true, now: true });
+  assert.deepEqual(flagsOf('finale'), { big: true, converse: true });
   assert.deepEqual(flagsOf('reading'), { asked: true });
   assert.deepEqual(flagsOf('lost'), { big: true });
   assert.deepEqual(flagsOf('won'), {});
