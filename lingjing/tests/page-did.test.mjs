@@ -64,7 +64,7 @@ test("Ling's Look hands over what she has not seen, and never clears it for Yiny
 test('Progress is small: the realm, the pool, the place, the book, the day — no stage, no question', () => {
   const g = game();
   const p = g.cli('progress', '--for=yinyue');
-  assert.deepEqual(Object.keys(p).sort(), ['book', 'her', 'name', 'next', 'ok', 'page_did', 'place', 'practice', 'progress', 'stamina', 'tale', 'tier'].sort());
+  assert.deepEqual(Object.keys(p).sort(), ['book', 'chores', 'her', 'name', 'next', 'ok', 'page_did', 'place', 'practice', 'progress', 'stamina', 'tale', 'tier'].sort());
   assert.deepEqual(p.place, { id: 'linzi', name: '临淄' });
   assert.equal(typeof p.tier, 'string');
   assert.ok(p.stamina.max > 0);

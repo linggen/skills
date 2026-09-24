@@ -169,6 +169,7 @@ const view = {
   qSkip: [], //          queue keys he put off here with 下一件 ›, oldest first
   doNote: null, //       a page tap the rules refused, in their words, until the next tap
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
+  kaifu: null, //        开府 in full (`Quest kaifu`), read when the 事 chip opens
   ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
   askHer: false, //      the ask bar speaks to 银月 (`@银月 …`), not to Ling
   choosing: false, //    a 抉择 tapped: its roll is in flight
@@ -201,7 +202,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, kaifu: view.kaifu, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -963,6 +964,12 @@ function deliver(text, hidden) {
   else chat?.send(text);
 }
 
+/* 开府 — the setup milestones, read (no model) when the 事 chip opens. */
+async function loadKaifu() {
+  const r = await verb('quest', { action: 'kaifu' }).catch(() => null);
+  if (r?.ok) show({ kaifu: r.kaifu });
+}
+
 /* A line of the book, opened: `Quest info` is a read (45 ms, no model). */
 async function openRow(id) {
   if (view.bookRow === id) { show({ bookRow: null }); return; }
@@ -1139,6 +1146,7 @@ async function doTap(action, id) {
   keep({ doNote: r.ok ? null : refusal(r) });
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
+  if (r.ok && action === 'turn' && view.bookOpen) await loadKaifu();
   // 交差 on 传闻's line counts a kept win: the next step is the story's.
   if (r.ok && id === 'tale' && r.ended) taleEnded(r.handed?.[0]?.title ?? r.title);
   if (r.ok && id === 'tale' && (r.ended || r.step)) await report(`[scene] tale ${r.ended ? 'end' : 'step'}`);
@@ -1283,7 +1291,7 @@ function sayTap(spoken, e) {
    it was for. */
 const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
-  ['[data-book]', () => show({ bookOpen: !view.bookOpen, gearOpen: false })],
+  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, gearOpen: false }); if (view.bookOpen) loadKaifu(); }],
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
@@ -1327,7 +1335,7 @@ const CLICKS = [
   ['[data-drop]', (el) => run(`drop:${el.dataset.drop}`, () => dropErrand(el.dataset.drop))],
   // A line of the book opens where it lies — the page reads it from the rules.
   ['[data-offerrow]', (el, e) => { if (e.target.closest('button')) return false; toggleOffer(el.dataset.offerrow); }],
-  ['[data-bookrow]', (el, e) => { if (e.target.closest('button')) return false; openRow(el.dataset.bookrow); }],
+  ['[data-bookrow]', (el, e) => { if (e.target.closest('button, a')) return false; openRow(el.dataset.bookrow); }],
   ['[data-lang]', (el) => run('lang', () => switchLang(el.dataset.lang))],
   // 命格: the birthday is read here, by the rules on this machine — never
   // sent to the chat; Ling hears nothing of it.

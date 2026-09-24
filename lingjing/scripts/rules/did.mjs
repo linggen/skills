@@ -112,7 +112,7 @@ export const READS_PAGE = {
 export function progress(state, content, ctx) {
   const lang = state.lang, here = placeOf(content, state.place);
   const st = staminaBrief(content, state, ctx.now);
-  const { tasks } = tasksBrief(content, state, ctx);
+  const { tasks, quests, kaifu } = tasksBrief(content, state, ctx);
   return {
     state: null,
     result: {
@@ -123,6 +123,8 @@ export function progress(state, content, ctx) {
       book: bookOf(content, state, lang, ctx).map(b => ({ title: b.title, ready: b.ready })),
       tale: taleLine(content, state, ctx.now),
       practice: { done: tasks.filter(t => t.paid).map(t => t.title), left: tasks.filter(t => !t.paid).map(t => t.title) },
+      // 人间功课: today's (the workout and the day's one pick), and 开府 as n/of.
+      chores: { today: quests.map(q => ({ title: q.title, device: q.device, done: q.done, paid: q.paid })), ...(kaifu ? { kaifu: `${kaifu.done}/${kaifu.of}` } : {}) },
       // Her own past as far as the cauldrons have given it back, and where she stands (companion.mjs § 她的来处).
       her: herPast(content, state),
     },

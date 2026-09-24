@@ -5,6 +5,7 @@ import { artBrief, artOf, nourish, refine } from './arms.mjs';
 import { deck } from './cards.mjs';
 import { bond, tend } from './companion.mjs';
 import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
+import { choreGrant, kaifuList } from './chores.mjs';
 import { chance, greet, journey } from './daily.mjs';
 import { BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, meet, noticeAt, noticeOf, questDoneBefore, questOf, questReady } from './errands.mjs';
 import { progress } from './did.mjs';
@@ -48,6 +49,8 @@ export function quest(state, content, ctx, args) {
   // asked for on a tap and never rides Look, so it costs Ling nothing (his,
   // 2026-09-21: what the page knows it shows — the model is for telling).
   if (action === 'info') return { state: null, result: questInfo(state, content, ctx, id) };
+  // 开府 in full, for the page's own section — a read, never on Look.
+  if (action === 'kaifu') return { state: null, result: { ok: true, kaifu: kaifuList(state, ctx.quests ?? [], ctx.now, lang) } };
   // A 功课 is handed in with the same word as any errand; its app is the witness.
   if (action === 'turn' && (ctx.quests ?? []).some(x => x.id === id)) return choreTurn(state, content, ctx, id);
   const q = questOf(content, id);
@@ -75,7 +78,7 @@ export function quest(state, content, ctx, args) {
     return { state: s, result: { ok: true, took: id, title: pick(q.title, lang), book: bookOf(content, s, lang, ctx) } };
   }
 
-  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop', 'info'] });
+  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['take', 'turn', 'drop', 'info', 'kaifu'] });
   if (!s.quests[id]) return refuse('not-taken', null);
   if (questDoneBefore(s, id)) return refuse('already-done', null);
   if (!questReady(content, s, q)) return refuse('not-done', null, { need: countsOf(content, s, q).map(n => ({ kind: n.kind, have: n.have, n: n.n })) });
@@ -98,9 +101,9 @@ function questInfo(state, content, ctx, id) {
   // `grant` is what was authored; `pays` is what lands — caps, roots, the
   // day's cast and the tier counted (the card shows `pays`).
   if (chore) {
-    const grant = { progress: chore.reward ?? 0, stamina: chore.stamina ?? content.rewards.stamina.refill.quest };
-    return { ok: true, id, kind: 'chore', title: pick(chore.title, lang), app: chore.app, period: chore.period, grant,
-      pays: { ...paysOf(content, state, ctx.now, { table: 'task', progress: grant.progress }), stamina: grant.stamina }, ...(row ? { need: row.need, ready: row.ready } : {}) };
+    const { table, ...grant } = choreGrant(content, chore);
+    return { ok: true, id, kind: 'chore', title: pick(chore.title, lang), app: chore.app, period: chore.period, device: chore.device ?? null, grant,
+      pays: { ...paysOf(content, state, ctx.now, { table, ...grant }), stamina: grant.stamina }, ...(row ? { need: row.need, ready: row.ready } : {}) };
   }
   const q = questOf(content, id);
   if (!q) return { ok: false, refused: 'no-such-quest' };

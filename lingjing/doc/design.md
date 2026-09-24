@@ -1534,6 +1534,32 @@ Never faked: a phone action the Mac never sees has no entry.
 | Shifu (`apple-shifu/scripts/quest.sh`) | `shifu-scan` · `shifu-security` · `shifu-clear` · `shifu-backup` (both), all week |
 | Health (`health/scripts/quest.mjs`) | `health-workout` day (fixed) · `health-report` week (phone: the week's letter read) |
 
+### 人间功课 — one a day, and 开府 (built 2026-09-24, rules/chores.mjs)
+
+Listing every menu entry flooded the book. The rules read the menus thus:
+
+- **Fixed** (no `pool`, not `once` — the workout): a book line every day.
+- **The day's pick**: ONE `pool` entry, highest hash of day + save
+  (`state.created`) + id — the same on every device and reload; an entry
+  appearing mid-day moves it only if it outranks it. Days alternate 💻/📱
+  (parity of the day + the save); a `both` fits either; a day whose device
+  has none falls to the other. Skipped: done or paid this period *before
+  today* (so doing the pick never re-rolls the day), and phone entries while
+  no phone is known — Linggen's `linggen-pair` milestone done, or a
+  phone-only entry ever seen done (a `both` done proves nothing: it may have
+  been the Mac).
+- **Only the pick and the fixed show and pay.** Another pool chore done
+  anyway is shown nowhere and refused `not-today` — one a day is the design,
+  not a gate on living.
+- **开府** (`period: "once"`, Linggen's twelve setup milestones and any app's):
+  never a book line — its own section in the 事 popover (Quest `kaifu`, a
+  page read), ✓ when `done_at` is set, 交差 once, then 已记. Pays on the
+  `once` table (40 修为 + 20 灵石 at most, the entry's 体力) **once ever**:
+  `state.chores[id].period === 'once'` in the synced save. Look carries one
+  line (`kaifu: {done, of, ready, next}`); an undone one never nags — Ling
+  may offer `next` when asked what to do.
+- Look's `quests` and Progress's `chores` carry today's lines and 开府 as n/of.
+
 ## Access and pay
 
 - **Sign in to play.** A signed-in player gets Linggen's free tier, then the

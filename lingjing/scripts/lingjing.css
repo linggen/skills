@@ -241,6 +241,12 @@ button.pl:hover { background: var(--ling-soft); }
 .bookrow b { font-weight: 500; }
 .bookrow.ready b { color: var(--seal); }
 .bookrow .act { flex: none; }
+/* 人间功课 — where it is done (💻/📱); 开府 — ✓ once its app saw it, dimmed once counted. */
+.bookrow .device { font-size: 12px; }
+.bookrow a.act { text-decoration: none; }
+.bookrow.kaifu .tick { display: inline-block; width: 1em; color: var(--dim, inherit); }
+.bookrow.kaifu.done .tick { color: var(--seal); }
+.bookrow.kaifu.done:not(.ready) b { opacity: .6; }
 /* A 差事 offered where he stands: the giver speaks, and one button takes it. */
 .card.offer .say { margin: 6px 0 8px; line-height: 1.7; }
 .card.offer { border-left: 3px solid var(--seal); }

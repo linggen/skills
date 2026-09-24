@@ -1,8 +1,5 @@
 // rules/errands.mjs — 差事, 遇 and 抉择: the errands taken, what an arrival meets, the ways through.
 // Part of the rules engine; rules.mjs is its one door.
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { ARM_SLOTS } from '../content.mjs';
 import { dayKey, fill, normalizeAnswer, periodKey, pick, stepName, threshold, tierOf } from '../state.mjs';
 import { cardCatalog, deckFor, gearFight, healthBrief, hpMaxOf, ownedCards, pickedCards, rootsOf, usable, woundsNow } from './cards.mjs';
@@ -10,7 +7,8 @@ import { bondBrief, companionOf, hasCompanion, nearestPlace } from './companion.
 import { clone, pay, paysOf, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { herAway } from './daily.mjs';
 import { nameOf } from './look.mjs';
-import { canWrite, questDone } from './tasks.mjs';
+import { canWrite } from './tasks.mjs';
+import { choreOpen, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
 import { allPlaces, atScene, creatureOf, inCorridor, inMade, pathOf, placeName, placeOf, provinceOpen, sceneOf, tooHard, towardOf } from './world.mjs';
@@ -41,31 +39,20 @@ function countsOf(content, state, quest) {
 const questReady = (content, state, quest) => countsOf(content, state, quest).every(n => n.done);
 
 /* 功课 on the same card (design.md § 差事 ⑥): what the player's apps report,
-   as lines of the book. They take no slot — nobody took them, life gave them
-   — and one paid for its period leaves, like any errand handed in. */
-/* Where a 功课 is done: the page the app declares (`open`, a path under
-   /apps/), else the app's own entry as its SKILL.md names it (`app.entry`) —
-   `/apps/<app>/` alone is the Linggen shell, not the app (his, 2026-09-23:
-   去 Shifu 做 opened the agent UI). No entry found, no link. */
-const SKILLS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-function appEntry(app) {
-  if (!/^[a-z0-9-]+$/.test(app ?? '')) return null;
-  try {
-    const head = fs.readFileSync(path.join(SKILLS_ROOT, app, 'SKILL.md'), 'utf8').split(/^---$/m)[1] ?? '';
-    const entry = /^\s+entry:\s*(\S+)\s*$/m.exec(head)?.[1];
-    return entry && !entry.includes('..') ? `/apps/${app}/${entry}` : null;
-  } catch { return null; }
-}
-const choreOpen = q => (typeof q.open === 'string' && q.open.startsWith('/apps/') ? q.open : appEntry(q.app));
+   as lines of the book — only today's (chores.mjs: the fixed ones and the
+   day's one pick; 开府 has its own section). They take no slot — nobody took
+   them, life gave them — and one paid for its period leaves, like any errand
+   handed in. */
 function choresOf(state, ctx, lang) {
-  return (ctx?.quests ?? [])
-    .filter(q => (q.due || questDone(q, ctx.now)) && state.chores?.[q.id]?.period !== periodKey(q.period, ctx.now))
+  const now = ctx?.now ?? new Date(), quests = ctx?.quests ?? [];
+  return todayChores(state, quests, now)
+    .filter(q => state.chores?.[q.id]?.period !== periodKey(q.period, now))
     .map(q => {
-      const done = questDone(q, ctx.now);
+      const done = questDone(q, now);
       return { id: q.id, title: pick(q.title, lang), need: [{ kind: 'chore', have: done ? 1 : 0, n: 1 }], ready: done, where: null,
         // Where to do it: the app's own page, as the app declares it (`open`),
         // else its door. Only a path on this host — never a link out.
-        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null, open: choreOpen(q) } };
+        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null, open: choreOpen(q), device: q.device ?? null, kind: isPool(q) ? 'pick' : 'fixed' } };
     });
 }
 

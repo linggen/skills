@@ -12,7 +12,8 @@ import { chanceBrief, journeyBrief, staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
 import { divinationBrief, fateBrief } from './fortune.mjs';
 import { knownBrief, storyDue, taleBrief } from './tale.mjs';
-import { doneThisPeriod, gameLevel, lundaoBrief, questDone, reopened } from './tasks.mjs';
+import { kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
+import { doneThisPeriod, gameLevel, lundaoBrief, reopened } from './tasks.mjs';
 import { atScene, creatureOf, placeBrief, placeOf, sceneOf, settlePlace } from './world.mjs';
 import { building } from './worlds.mjs';
 
@@ -138,13 +139,18 @@ function tasksBrief(content, state, ctx) {
         pays: again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
       };
     });
-  const quests = (ctx.quests ?? []).filter(q => q.due || questDone(q, ctx.now)).map(q => ({
-    id: q.id, app: q.app, title: pick(q.title, lang),
+  // Today's 人间功课 only — the fixed ones and the day's pick — and a 开府
+  // milestone done but unpaid; the rest of every app's menu never reaches
+  // Ling (chores.mjs). 开府 rides as one compact line.
+  const menu = ctx.quests ?? [];
+  const quests = [...todayChores(state, menu, ctx.now), ...kaifuReady(state, menu, ctx.now)].map(q => ({
+    id: q.id, app: q.app, title: pick(q.title, lang), device: q.device ?? null,
     done: questDone(q, ctx.now), paid: state.chores[q.id]?.period === periodKey(q.period, ctx.now),
     done_at: questDone(q, ctx.now) ? q.done_at : null, // when its app saw it done — the scene says so
     period: q.period, reward: q.reward ?? null, stamina: q.stamina ?? null, // what it pays, so Ling can tell the practice
   }));
-  return { tasks, quests };
+  const kaifu = kaifuBrief(state, menu, ctx.now, lang);
+  return { tasks, quests, ...(kaifu ? { kaifu } : {}) };
 }
 
 /* The world's words for the harness's ids, in the player's language — the

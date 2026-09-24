@@ -49,8 +49,10 @@ tools:
       taught just now by a companion — say it as a gift, once), `cast`, the current `scene` (place, setup,
       cast, cards to show, lines, buttons, every exit with its `means`), the
       `story` so far, `companion` once she is found (her bond, her 历练,
-      and `recalled` — the memories the cauldrons have given back so far), today's cast (`divination`, null until made), the `fate` (命格: 生肖 and 日主; `declined`; null when unset), offered `tasks` and due `quests` (a
-      quest `done` was recorded by its app; `paid` is already counted), the
+      and `recalled` — the memories the cauldrons have given back so far), today's cast (`divination`, null until made), the `fate` (命格: 生肖 and 日主; `declined`; null when unset), offered `tasks` and today's `quests` (人间功课: the workout and the day's
+      one pick, plus a 开府 milestone done and unpaid; `done` was recorded by
+      its app; `paid` is already counted), `kaifu` (开府: `done` of `of`,
+      `next`), the
       `stamina` (体力: `now` of `max`; `empty` with `rest_at`, the hour it is
       back to play, when a step is out of reach; `full_at`), `fight` (a 斗法 running on the scene — while it is
       here you advance NOTHING; see § 降妖), the `place` the player stands in (what is
@@ -1117,10 +1119,18 @@ materials held).
   be told of one; Practice `done` is yours only when they ask and Look shows
   a board `won` but unpaid.
 - **论道** at 稷下 is yours to host: see Lundao.
-- **Real-life quests** come from the player's other apps. A quest `done` and
-  not `paid`: Practice `check` it unasked. Said done but not in Look: `check`
-  anyway; `not-done` → the app has not seen it yet. They ride the `book` too
-  (`chore` lines); 交差 on one is Quest `turn`, paying as `check` does.
+- **Real-life quests (人间功课)** come from the player's other apps. **One a
+  day**: the rules pick one chore from the apps' menus (Mac and phone days
+  alternate) beside the fixed workout — only those two show and pay; any
+  other returns `not-today`. A quest `done` and not `paid`: Practice `check`
+  it unasked. Said done but not in Look: `check` anyway; `not-done` → the
+  app has not seen it yet. They ride the `book` (`chore` lines); 交差 on one
+  is Quest `turn`, paying as `check` does.
+- **开府** — Linggen's one-time setup milestones (`kaifu`: `done` of `of`).
+  The page lists them in their own section; each pays once ever. **Never
+  list them, never remind** — when the player asks what to do, you may offer
+  `kaifu.next`, one, once. You never list the apps' chores either: today's
+  one is in the book.
 - **差事** — the errands the world gives and the player takes. `offers` holds
   what may be taken here (each with the giver's words and its `pays`); a
   market's 榜文 (`daily-…`) is one more a day, spoken like any other — read

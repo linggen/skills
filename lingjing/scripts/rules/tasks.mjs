@@ -2,23 +2,18 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
-import { addStamina, dayKey, periodKey, periodStart, pick, rollDay, settleStamina, tierOf } from '../state.mjs';
+import { addStamina, dayKey, periodKey, pick, rollDay, settleStamina, tierOf } from '../state.mjs';
 import { charmOf, drop, tierRank } from './arms.mjs';
 import { cardCatalog, fightSetup, fitToFight, healthBrief, hpMaxOf, mendsBy, winCard, woundsNow } from './cards.mjs';
 import { FIT_TO_FIGHT, gainBond } from './companion.mjs';
 import { clone, hourOf, pay, refuse, replaying, spendStamina } from './core.mjs';
+import { choreCounts, choreGrant, questDone } from './chores.mjs';
 import { advance, countsOf, itemBrief, itemOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { creatureOf, encounterOf, placeOf, sceneOf, settlePlace, tierIndex } from './world.mjs';
 
 /* ── Tasks and quests ── */
-
-function questDone(q, now) {
-  if (!q.done_at) return false;
-  const at = new Date(q.done_at);
-  return at >= periodStart(q.period, now) && at <= now;
-}
 
 export function task(state, content, ctx, args) {
   if (args.action === 'list') return { state: null, result: { ok: true, ...tasksBrief(content, state, ctx) } };
@@ -110,17 +105,23 @@ function taskDone(state, content, ctx, id) {
   return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(handed.length ? { handed } : {}) } };
 }
 
+/* A real-life chore handed in: today's pick, a fixed one, or a 开府
+   milestone (chores.mjs). A pool chore that is not today's pick pays nothing,
+   done or not — one a day (redesign-v2). A milestone's period is 'once', so
+   its record in the synced save pays it once ever, on any device. */
 function questCheck(state, content, ctx, id) {
-  const q = (ctx.quests ?? []).find(x => x.id === id);
+  const quests = ctx.quests ?? [], q = quests.find(x => x.id === id);
   if (!q) return refuse('unknown-quest', null);
   const period = periodKey(q.period, ctx.now);
   if (state.chores[id]?.period === period) return refuse('already-paid', null);
+  if (!choreCounts(state, quests, q, ctx.now)) return refuse('not-today', null, { app: q.app });
   if (!questDone(q, ctx.now)) return refuse('not-done', null, { app: q.app });
   const s = clone(state);
   s.chores[id] = { period, paid_at: ctx.now.toISOString() };
-  const paid = pay(content, s, ctx, { table: 'task', progress: q.reward ?? 0 });
+  const grant = choreGrant(content, q);
+  const paid = pay(content, s, ctx, grant);
   settleStamina(content, s, ctx.now);
-  const stamina = addStamina(content, s, q.stamina ?? content.rewards.stamina.refill.quest, ctx.now);
+  const stamina = addStamina(content, s, grant.stamina, ctx.now);
   return { state: s, result: { ok: true, quest: id, app: q.app, paid, stamina } };
 }
 
@@ -254,7 +255,7 @@ const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, journey: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, write: true, refine: true, nourish: true, chance: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, tend: true, bond: true,
-  divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => a.action !== 'info',
+  divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => !['info', 'kaifu'].includes(a.action),
 };
 export function fightHold(state, verb, args = {}) {
   const hold = state?.fight ? FIGHT_HOLDS[verb] : null;
