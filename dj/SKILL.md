@@ -61,14 +61,17 @@ tools:
     description: >-
       The user's library. Returns { track_count, playlist_count, match_count,
       has_more, tracks: [{ artist, title, year?, file, lyrics, karaoke,
-      on_phone, plays?, last_played? }], playlists: [{ name, count }],
-      phone: { track_count, playlists: [{ name, count }] } }. Call it before
-      curating, fetching or filing, and to answer "do I have X". Quote
-      track_count for the library's size, match_count for a search.
+      on_phone, plays?, last_played? }], near?: [rows], playlists: [{ name,
+      count }], phone: { track_count, playlists: [{ name, count }] } }. Call it
+      before curating, fetching or filing, and to answer "do I have X". Search
+      ignores case, width and script (风中密码 finds 風中密碼). `near` lists
+      songs one character off the query (风里密码 → 風中密碼): ask the user
+      whether they meant that one before fetching. Quote track_count for the
+      library's size, match_count for a search.
     args:
       query:
         type: string
-        description: Optional. Only songs whose artist or title contains this (any case or width).
+        description: Optional. Only songs whose artist or title contains this (any case, width or script).
       limit:
         type: integer
         description: Optional. Rows per page, default 100.
@@ -89,8 +92,13 @@ tools:
     description: >-
       Download songs into the Mac's library — tagged, loudness-normalized,
       with lyrics — and add them to it. Returns { got, failed, files[],
-      errors[] }. A song may land under its catalogue title when the one you
-      gave was off; ListLibrary shows the name it has.
+      errors[], skipped?: [{ artist, title, reason, file }] }. A song the
+      library already holds, in any script, is skipped ("already in library");
+      one a character off a held song is skipped as "near match" unless the
+      track has force: true — tell the user which song they already have and
+      fetch with force only if they say it is a different one. A song may land
+      under its catalogue title when the one you gave was off; ListLibrary
+      shows the name it has.
     # The engine builds both the tool schema AND the {{...}} substitution from
     # these args — an undeclared parameter is invisible to the model.
     args:
@@ -114,6 +122,9 @@ tools:
               type: array
               items: { type: string }
               description: Rarely needed extra search phrasings, e.g. ["歌词版"].
+            force:
+              type: boolean
+              description: Fetch even though the library holds a song one character off. Only after the user said it is a different song.
           required: [artist, title]
       for_phone:
         type: boolean

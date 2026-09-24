@@ -10,8 +10,11 @@ library, stamped from the data: the model quotes it instead of tallying rows
 (an agent once listed all 55 songs and still wrote "50").
 """
 import json
+import os
 import sys
-import unicodedata
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cjk_fold  # noqa: E402
 
 DEFAULT_LIMIT = 100
 
@@ -29,8 +32,23 @@ def number(v, fallback, lo, hi):
 
 
 def fold(s):
-    """Case- and width-insensitive: ＢＥＹＯＮＤ matches beyond."""
-    return unicodedata.normalize("NFKC", str(s or "")).casefold()
+    """Case-, width- and script-insensitive: ＢＥＹＯＮＤ matches beyond, and
+    风中密码 matches 風中密碼."""
+    return cjk_fold.fold(s)
+
+
+NEAR_LIMIT = 5
+
+
+def near_query(query, t):
+    """A row one slip from the query — 风里密码 for 風中密碼 — the artist
+    named in the query or not. Worth asking about before fetching."""
+    qk, tk, ak = cjk_fold.key(query), cjk_fold.key(t.get("title")), cjk_fold.key(t.get("artist"))
+    rest = qk.replace(ak, "", 1) if ak and ak in qk else qk
+    if not rest or rest == tk:
+        return False
+    allow = cjk_fold.slips(rest)
+    return bool(allow) and cjk_fold.distance(rest, tk, allow) <= allow
 
 
 def base(p):
@@ -84,8 +102,11 @@ def main():
     offset = number(given(4), 0, 0, 10**6)
 
     rows = scope(lib, playlist, view)
+    near = []
     if query:
-        rows = [t for t in rows if query in fold(f"{t.get('artist', '')} {t.get('title', '')}")]
+        every = rows
+        rows = [t for t in every if query in fold(f"{t.get('artist', '')} {t.get('title', '')}")]
+        near = [t for t in every if t not in rows and near_query(query, t)][:NEAR_LIMIT]
     page = rows[offset:offset + limit]
     phone = lib.get("phone") or {}
     print(json.dumps({
@@ -95,6 +116,7 @@ def main():
         "offset": offset,
         "has_more": offset + len(page) < len(rows),
         "tracks": [row(t) for t in page],
+        **({"near": [row(t) for t in near]} if near else {}),
         "playlists": lists(lib.get("playlists")),
         "phone": {"track_count": len(phone.get("files") or []), "playlists": lists(phone.get("playlists"))},
     }, ensure_ascii=False))

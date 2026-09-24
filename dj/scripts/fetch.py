@@ -31,6 +31,7 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import cjk_fold  # noqa: E402
 import naming  # noqa: E402
 
 SKILL_DIR = os.environ.get("DJ_DIR") or os.path.dirname(HERE)
@@ -203,7 +204,7 @@ def write_lyrics(track, path):
     return lrc, bool(got.get("synced"))
 
 
-def fetch_track(bins, cfg, track, exclude=(), skip_first=False, dest=None, cancelled=None):
+def fetch_track(bins, cfg, track, exclude=(), skip_first=False, dest=None, cancelled=None, guard=False):
     """Download one song. With `dest`, the new take REPLACES that file under the
     same name, so every playlist and phone reference to it holds.
 
@@ -214,6 +215,13 @@ def fetch_track(bins, cfg, track, exclude=(), skip_first=False, dest=None, cance
         return {"ok": False, "error": "no title"}
     picked = pick_source(bins, track, exclude)
     track = canonical(track, picked, dest)
+    if guard and track.get("requested_title"):
+        # Asked for under one name, known to the catalogue by another — which
+        # may be a song the library already holds (2026-09-24: 风里密码 asked,
+        # 風中密碼 on disk since August).
+        held = in_library(track, allow_near=True)
+        if held:
+            return {"ok": False, "skipped": held[0], "file": held[1]["file"]}
     stem = naming.track_stem(track, cfg.get("naming_template"))
     urls = list((picked or {}).get("urls") or [])
     if skip_first and len(urls) > 1:
@@ -246,6 +254,20 @@ def canonical(track, picked, dest=None):
     if not title or dest or naming.tag(title) == naming.tag(track.get("title")):
         return track
     return {**track, "title": title, "requested_title": naming.tag(track.get("title"))}
+
+
+def in_library(track, allow_near=False):
+    """(reason, row) when the library already holds this song: the same one
+    under any script or spacing ("already in library"), or — unless
+    `allow_near` — one a single slip away ("near match"), which is asked about
+    rather than fetched again. None when it is new."""
+    rows = read_json(os.path.join(SKILL_DIR, "library.json"), {}).get("tracks") or []
+    same, close = cjk_fold.find(rows, track)
+    if same:
+        return "already in library", same[0]
+    if close and not allow_near:
+        return "near match", close[0]
+    return None
 
 
 def library_file(track):
@@ -304,14 +326,27 @@ def batch(tracks, for_phone, kind="download"):
     if not bins.get("ok"):
         return {"got": 0, "failed": len(tracks), "files": [], "errors": [bins.get("note") or "yt-dlp/ffmpeg unavailable"]}
     task_id, total = int(time.time()), len(tracks)
-    files, errors = [], []
+    files, errors, skipped = [], [], []
+
+    def skip(t, reason, file):
+        skipped.append({"artist": naming.tag(t.get("artist")), "title": naming.tag(t.get("title")),
+                        "reason": reason, "file": os.path.basename(str(file or ""))})
+
     for i, t in enumerate(tracks):
         if not naming.tag(t.get("title")):
             errors.append("a track had no title")
             continue
+        if kind == "download":
+            held = in_library(t, allow_near=bool(t.get("force")))
+            if held:
+                skip(t, held[0], held[1].get("file"))
+                continue
         publish(task_id, i, total, label(t), kind=kind, label="Karaoke" if kind == "karaoke" else "Downloads")
         res = (fetch_karaoke(bins, cfg, t, t.get("kind")) if kind == "karaoke"
-               else fetch_track(bins, cfg, t))
+               else fetch_track(bins, cfg, t, guard=True))
+        if res.get("skipped"):
+            skip(t, res["skipped"], res.get("file"))
+            continue
         if not res.get("ok"):
             errors.append(f"{label(t)}: {res.get('error')}")
             continue
@@ -324,7 +359,9 @@ def batch(tracks, for_phone, kind="download"):
         action("reconcile")  # lights 🎤 on the songs these belong to
     if for_phone and files:
         action("phone-add", json.dumps(files))
-    return {"got": len(files), "failed": len(tracks) - len(files), "files": files, "errors": errors}
+    out = {"got": len(files), "failed": len(tracks) - len(files) - len(skipped),
+           "files": files, "errors": errors}
+    return {**out, "skipped": skipped} if skipped else out
 
 
 # ── the queue worker ───────────────────────────────────────────────────────

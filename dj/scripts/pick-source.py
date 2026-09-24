@@ -182,7 +182,8 @@ def video_details(yt_dlp, video_id, timeout=60):
 
 def album_tracks(yt_dlp, artist, title):
     """The album take, named outright: Songs-shelf entries whose title is this
-    song and carries no version tag, by this artist, with their lengths.
+    song and carries no version tag, by this artist, from an album that is not
+    a concert recording, with their lengths.
     Another singer's song of the same name (姜育恒 also sang 像我这样的人) is
     dropped by the artist check."""
     found = ytmusic_songs(yt_dlp, f"{artist} {title}".strip())
@@ -213,7 +214,11 @@ def album_tracks(yt_dlp, artist, title):
         "artist": d.get("artist"),
         "_album": True,
     } for d, who in zip(details, singers)
-        if not simp_artist or lm.same_artist(simp_artist, who)]
+        if (not simp_artist or lm.same_artist(simp_artist, who))
+        # A concert album's track is a live take under the plain title:
+        # 郭富城 風裡密碼 from 舞林正傳演唱會 07/08 was fetched as the studio
+        # song and renamed after it (2026-09-24).
+        and not lm.other_take(d.get("album"))]
 
 
 def corroborated(albums, entries, candidates):

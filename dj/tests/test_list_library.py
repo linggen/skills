@@ -32,6 +32,22 @@ def run(*args, lib=LIB):
 
 
 class ListLibrary(unittest.TestCase):
+
+    def test_search_ignores_script(self):
+        r = run("海阔天空")
+        self.assertEqual([t["title"] for t in r["tracks"]], ["海闊天空"])
+        self.assertEqual(r["match_count"], 1)
+
+    def test_one_slip_comes_back_as_near(self):
+        r = run("梦中入")  # 夢中人 with one character off
+        self.assertEqual(r["match_count"], 0)
+        self.assertEqual([t["title"] for t in r["near"]], ["夢中人"])
+        r = run("faye wong 梦中入")
+        self.assertEqual([t["title"] for t in r["near"]], ["夢中人"])
+
+    def test_no_near_key_when_nothing_is_close(self):
+        self.assertNotIn("near", run("beyond"))
+        self.assertNotIn("near", run("完全不同的歌"))
     def test_rows_are_slim(self):
         r = run()
         self.assertEqual(r["tracks"][0], {
