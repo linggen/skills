@@ -1,0 +1,41 @@
+{
+ "account_type": "credit",
+ "rows": [
+  {
+   "date": "2025-12-16",
+   "merchant": "NORTHERN BOOKS",
+   "amount": -45.2,
+   "transfer": false
+  },
+  {
+   "date": "2025-12-20",
+   "merchant": "SNOWLINE SPORTS",
+   "amount": -310.0,
+   "transfer": false
+  },
+  {
+   "date": "2025-12-27",
+   "merchant": "SNOWLINE SPORTS RETURN",
+   "amount": 60.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-01-02",
+   "merchant": "PAYMENT - THANK YOU",
+   "amount": 400.0,
+   "transfer": true
+  },
+  {
+   "date": "2026-01-05",
+   "merchant": "FOGHORN COFFEE CO",
+   "amount": -6.75,
+   "transfer": false
+  },
+  {
+   "date": "2026-01-11",
+   "merchant": "INTEREST CHARGES",
+   "amount": -12.34,
+   "transfer": false
+  }
+ ]
+}

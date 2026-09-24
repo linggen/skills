@@ -1,0 +1,65 @@
+{
+ "account_type": "credit",
+ "rows": [
+  {
+   "date": "2026-08-04",
+   "merchant": "NEW HARBOUR MARKET",
+   "amount": -93.87,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-05",
+   "merchant": "AUTOMATIC PYMT RECEIVED",
+   "amount": 1234.56,
+   "transfer": true
+  },
+  {
+   "date": "2026-08-06",
+   "merchant": "PUBLIC MOBILE SELF-SERVE",
+   "amount": -14.56,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-09",
+   "merchant": "MAPLE LEAF CINEMAS",
+   "amount": -38.4,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-09",
+   "merchant": "MAPLE LEAF CINEMAS",
+   "amount": -38.4,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-12",
+   "merchant": "SEABREEZE OUTFITTERS",
+   "amount": -120.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-14",
+   "merchant": "SEABREEZE OUTFITTERS",
+   "amount": 22.5,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-21",
+   "merchant": "HARBOURSIDE PARKING",
+   "amount": -2.5,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-28",
+   "merchant": "SUGAR & SPICE BAKERY",
+   "amount": -15.91,
+   "transfer": false
+  },
+  {
+   "date": "2026-09-01",
+   "merchant": "ATLANTIC HOME INSURANCE",
+   "amount": -391.99,
+   "transfer": false
+  }
+ ]
+}

@@ -36,6 +36,8 @@ const POSTING_RE = new RegExp(`^\\s*(?:${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s
 const SUMMARY_RE = /\b(previous (total )?balance|new (total )?balance|opening balance|closing balance|(opening|closing) totals?|balance forward|beginning balance|statement balance|minimum (payment|amount)|payment due|credit limit|available credit|credit available|total (payments|credits|purchases|charges|interest|fees|debits|deposits|withdrawals)|payments (&|and) credits|purchases (&|and) (other )?charges)\b/i;
 // A credit-card statement (the words only a card prints). On one, a leading
 // minus marks a credit to the card — a payment or refund — not spend.
+const TOTAL_RE = /\b(sub)?totals?\b/i;
+const FX_RE = /@|exchange rate|foreign currency/i;
 const CARD_RE = /\b(credit limit|minimum payment|available credit|credit available|payment due date|annual interest rate)\b/i;
 // Column headers of a two-column bank layout.
 // BMO chequing prints "Amounts deducted from your account" / "Amounts added to
@@ -57,7 +59,10 @@ async function extractPdfText(data) {
     for (const it of content.items) {
       if (!it.str || !it.str.trim()) continue;
       const y = Math.round(it.transform[5]);
-      (byY.get(y) || byY.set(y, []).get(y)).push({ x: it.transform[4], s: it.str });
+      // x = left edge, r = right edge: amounts are right-aligned, so a
+      // column is read by where its text SPANS, not where it starts.
+      const x = it.transform[4];
+      (byY.get(y) || byY.set(y, []).get(y)).push({ x, r: x + (it.width || 0), s: it.str });
     }
     for (const y of [...byY.keys()].sort((a, b) => b - a)) {
       const cells = byY.get(y).sort((a, b) => a.x - b.x);
@@ -116,28 +121,48 @@ function rowDate(token, close) {
   return d;
 }
 
-// A two-column layout's header ("Withdrawals … Deposits"): the x of each
-// column, so an amount's position says which way the money moved.
+// A two-column layout's header ("Withdrawals … Deposits"): where each column
+// sits, so an amount's position says which way the money moved. A span is
+// {x, r} (left, right); r is null when the reader gave no width.
+const span = (c) => ({ x: c.x, r: c.r ?? null });
 function findColumns(line) {
   if (!line.cells) return null;
   const debit = line.cells.find((c) => DEBIT_COL_RE.test(c.s));
   const credit = line.cells.find((c) => CREDIT_COL_RE.test(c.s));
-  return debit && credit && debit !== credit ? { debit: debit.x, credit: credit.x } : null;
+  return debit && credit && debit !== credit ? { debit: span(debit), credit: span(credit) } : null;
 }
 
+const overlap = (a, b) => Math.max(0, Math.min(a.r, b.r) - Math.max(a.x, b.x));
+const mid = (a) => (a.x + a.r) / 2;
+
+// Which column an amount sits in. Statements right-align amounts, often under
+// a header that is right-aligned too or wraps over two lines, so the left
+// edges alone mislead (a withdrawal's left edge can sit nearer the deposits
+// header — BMO chequing). With widths: the column the amount OVERLAPS most,
+// then the nearer centre. Without widths: the nearer left edge.
 function columnSide(line, amtTok, cols) {
   if (!cols || !line.cells) return null;
   const core = amtTok.replace(/\s?(cr|dr)$/i, '').trim();
-  const cell = line.cells.find((c) => c.s.includes(core));
+  const cell = line.cells.find((c) => c.s.split(/\s+/).includes(core)) || line.cells.find((c) => c.s.includes(core));
   if (!cell) return null;
-  return Math.abs(cell.x - cols.credit) < Math.abs(cell.x - cols.debit) ? 'credit' : 'debit';
+  const { debit, credit } = cols;
+  if (cell.r != null && debit.r != null && credit.r != null) {
+    const a = { x: cell.x, r: cell.r };
+    const od = overlap(a, debit), oc = overlap(a, credit);
+    if (od !== oc) return oc > od ? 'credit' : 'debit';
+    return Math.abs(mid(a) - mid(credit)) < Math.abs(mid(a) - mid(debit)) ? 'credit' : 'debit';
+  }
+  return Math.abs(cell.x - credit.x) < Math.abs(cell.x - debit.x) ? 'credit' : 'debit';
 }
 
 // true = money in, false = money out.
 export function isInbound(line, amtTok, cols = null, card = false) {
   const tok = amtTok.trim();
   if (/cr$/i.test(tok) || /^\+|\+$/.test(tok)) return true;
-  if (card && /^-/.test(tok)) return true;
+  // A card prints its credits (payments, refunds) with a minus, leading or
+  // trailing ("-400.00" / "$60.00-"); on a bank statement a trailing minus is
+  // a withdrawal.
+  if (card && (/^-/.test(tok) || /\d\s*-$/.test(tok))) return true;
   if (/dr$/i.test(tok) || /\d\s*-$/.test(tok)) return false;
   const side = columnSide(line, tok, cols);
   if (side) return side === 'credit';
@@ -154,6 +179,7 @@ export function parseStatementText(input) {
 
   const txns = [];
   let cols = null;
+  let lastDate = null; // a bank prints the date once a day (RBC); later rows inherit it
   for (const l of lines) {
     const line = l.text;
     const header = MONEY_RE.test(line) ? null : findColumns(l);
@@ -161,9 +187,13 @@ export function parseStatementText(input) {
     if (header) { cols = header; continue; }
     if (SUMMARY_RE.test(line)) continue;
     const dateMatch = line.match(DATE_RE);
-    if (!dateMatch) continue;
     const money = [...line.matchAll(MONEY_RE)].map((m) => m[0]);
     if (!money.length) continue;
+    // A dateless row with an amount belongs to the day above it — on a bank
+    // statement only: a card's dateless money lines are foreign-exchange
+    // details ("USD 12.00 @ 1.36") and totals, never rows of their own.
+    const inherits = !dateMatch && !card && lastDate && !TOTAL_RE.test(line) && !FX_RE.test(line);
+    if (!dateMatch && !inherits) continue;
 
     // Bank rows are `… AMOUNT BALANCE`; take the second-to-last money token as
     // the amount when a trailing balance is present, else the only token.
@@ -173,9 +203,9 @@ export function parseStatementText(input) {
     amount = Math.abs(amount);
     amount = isInbound(l, amtTok, cols, card) ? amount : -amount;
 
-    const date = rowDate(dateMatch[0], close);
+    const date = dateMatch ? rowDate(dateMatch[0], close) : lastDate;
     // description = line minus the date and every money token, then redacted
-    let desc = line.replace(dateMatch[0], ' ');
+    let desc = dateMatch ? line.replace(dateMatch[0], ' ') : line;
     for (const m of money) desc = desc.replace(m, ' ');
     // Cards print two dates — transaction, then posting. The row keeps the
     // first; the second must not open the merchant ("Aug. 5 GROCER").
@@ -185,6 +215,7 @@ export function parseStatementText(input) {
     if (!merchant && date == null) continue;
 
     txns.push({ date, merchant, amount: Math.round(amount * 100) / 100 });
+    if (date) lastDate = date;
   }
   return txns;
 }

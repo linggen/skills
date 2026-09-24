@@ -38,7 +38,7 @@ const REFUND_RE = /\b(refund|reversal|rebate|cash ?back|chargeback)\b/i;
 const TRANSFER_VOCAB = [
   'tf', 'tfr', 'xfer', 'wire transfer', 'wire payment', 'funds transfer',
   'online transfer', 'account transfer', 'acct transfer', 'internal transfer',
-  'bank transfer', 'transfer to', 'transfer from',
+  'bank transfer', 'transfer to', 'transfer from', 'online banking transfer',
 ];
 // Card networks / issuers. A debit FROM a deposit account to one of these is a
 // credit-card bill payment (a transfer, not spend). Bank names count too:

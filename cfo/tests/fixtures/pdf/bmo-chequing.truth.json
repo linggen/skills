@@ -1,0 +1,109 @@
+{
+ "account_type": "checking",
+ "rows": [
+  {
+   "date": "2026-07-08",
+   "merchant": "NORTHWIND PAYROLL/PAY",
+   "amount": 3100.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-09",
+   "merchant": "INTERAC e-Transfer Sent",
+   "amount": -250.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-10",
+   "merchant": "INTERAC e-Transfer Received",
+   "amount": 120.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-11",
+   "merchant": "ROGERS BK MC",
+   "amount": -600.0,
+   "transfer": true
+  },
+  {
+   "date": "2026-07-12",
+   "merchant": "BRIGHTWATER ACADEMY",
+   "amount": -1450.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-15",
+   "merchant": "EASTCOAST LIFE INS",
+   "amount": -89.4,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-16",
+   "merchant": "TF 1234-567",
+   "amount": -500.0,
+   "transfer": true
+  },
+  {
+   "date": "2026-07-18",
+   "merchant": "TF 7654-321",
+   "amount": 300.0,
+   "transfer": true
+  },
+  {
+   "date": "2026-07-20",
+   "merchant": "PC MC",
+   "amount": -412.33,
+   "transfer": true
+  },
+  {
+   "date": "2026-07-22",
+   "merchant": "NORTHWIND PAYROLL/PAY",
+   "amount": 3100.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-24",
+   "merchant": "AMEX CARDS",
+   "amount": -900.0,
+   "transfer": true
+  },
+  {
+   "date": "2026-07-28",
+   "merchant": "CORNER GROCER",
+   "amount": -64.18,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-30",
+   "merchant": "Premium Plan Fee",
+   "amount": -30.95,
+   "transfer": false
+  },
+  {
+   "date": "2026-07-30",
+   "merchant": "Plan fee rebate",
+   "amount": 30.95,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-02",
+   "merchant": "INTERAC e-Transfer Sent",
+   "amount": -75.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-04",
+   "merchant": "ATM Withdrawal",
+   "amount": -100.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-08-04",
+   "merchant": "BMO MASTERCARD",
+   "amount": -1234.56,
+   "transfer": true
+  }
+ ],
+ "opening": 2450.0,
+ "closing": 3394.53
+}

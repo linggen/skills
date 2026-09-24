@@ -1,0 +1,65 @@
+{
+ "account_type": "checking",
+ "rows": [
+  {
+   "date": "2025-12-18",
+   "merchant": "Payroll Deposit NORTHWIND",
+   "amount": 2800.0,
+   "transfer": false
+  },
+  {
+   "date": "2025-12-18",
+   "merchant": "e-Transfer sent J SMITH",
+   "amount": -60.0,
+   "transfer": false
+  },
+  {
+   "date": "2025-12-22",
+   "merchant": "HOLLY GROCERS",
+   "amount": -142.37,
+   "transfer": false
+  },
+  {
+   "date": "2025-12-22",
+   "merchant": "CEDAR PHARMACY",
+   "amount": -23.1,
+   "transfer": false
+  },
+  {
+   "date": "2025-12-22",
+   "merchant": "VISA RBC",
+   "amount": -800.0,
+   "transfer": true
+  },
+  {
+   "date": "2025-12-29",
+   "merchant": "Monthly fee",
+   "amount": -4.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-01-02",
+   "merchant": "Payroll Deposit NORTHWIND",
+   "amount": 2800.0,
+   "transfer": false
+  },
+  {
+   "date": "2026-01-02",
+   "merchant": "to savings",
+   "amount": -1000.0,
+   "transfer": true
+  },
+  {
+   "date": "2026-01-08",
+   "merchant": "Utility bill pmt NS POWER",
+   "amount": -176.52,
+   "transfer": false
+  },
+  {
+   "date": "2026-01-08",
+   "merchant": "Autodeposit A NGUYEN",
+   "amount": 45.0,
+   "transfer": false
+  }
+ ]
+}
