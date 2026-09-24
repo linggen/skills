@@ -1512,6 +1512,28 @@ changes:
   second and waits: a mirror can hold no night sleep at all (a Watch left off
   at night), and a quest that can never pay is busywork.
 
+### The menu (2026-09-24)
+
+Each app's file is its **menu**: every chore a player can do there, one entry
+each, the whole menu always written (`done_at: null` until first seen). An
+entry adds two fields to the ones above:
+
+- **`pool: true`** — offered to the game's one-app-chore-a-day pick. An entry
+  without it is a fixed chore (`health-workout`, the daily).
+- **`device`** — `mac`, `phone` or `both`: where the player does it.
+
+Each entry's `done_at` is stamped by its app at the moment it witnesses the
+chore (a script's end, a verb's success, a page event), through one writer
+per app that merges by id — other entries, and ids it does not know, stay.
+Never faked: a phone action the Mac never sees has no entry.
+
+| App | Entries |
+|---|---|
+| CFO (`cfo/scripts/quest.js`) | `cfo-import` week · `cfo-review` day · `cfo-sort` week |
+| DJ (`dj/scripts/quest.mjs`) | `dj-fetch` day · `dj-sing` day · `dj-playlist` week · `dj-sync` week (both) — hooks land with DJ's queue rework |
+| Shifu (`apple-shifu/scripts/quest.sh`) | `shifu-scan` · `shifu-security` · `shifu-clear` · `shifu-backup` (both), all week |
+| Health (`health/scripts/quest.mjs`) | `health-workout` day (fixed) · `health-report` week (phone: the week's letter read) |
+
 ## Access and pay
 
 - **Sign in to play.** A signed-in player gets Linggen's free tier, then the
