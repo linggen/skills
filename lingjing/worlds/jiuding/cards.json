@@ -869,8 +869,11 @@
       },
       "cost": 5,
       "element": "metal",
-      "atk": 5,
-      "hp": 5,
+      "atk": 4,
+      "hp": 6,
+      "keywords": [
+        "taunt"
+      ],
       "art": "art/wuzhiqi.webp",
       "art_source": "据《古岳渎经》新绘 — 见 art/CREDITS.md（无支祁不在山海经里，没有古本图）。"
     },
@@ -881,10 +884,10 @@
         "zh": "防风氏",
         "en": "Fangfeng"
       },
-      "cost": 6,
+      "cost": 5,
       "element": "wood",
       "atk": 4,
-      "hp": 7,
+      "hp": 6,
       "keywords": [
         "taunt"
       ],
@@ -912,10 +915,13 @@
         "zh": "巴蛇",
         "en": "The Ba Snake"
       },
-      "cost": 6,
+      "cost": 5,
       "element": "water",
-      "atk": 5,
+      "atk": 4,
       "hp": 6,
+      "keywords": [
+        "taunt"
+      ],
       "art": "art/bashe.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -943,10 +949,13 @@
         "zh": "夔牛",
         "en": "The Kui Ox"
       },
-      "cost": 6,
+      "cost": 5,
       "element": "earth",
-      "atk": 5,
+      "atk": 4,
       "hp": 6,
+      "keywords": [
+        "taunt"
+      ],
       "art": "art/kuiniu.webp",
       "art_source": "据《中次九经》新绘 — 见 art/CREDITS.md（夔牛没有找到有标注的古本图）。"
     },
@@ -971,10 +980,13 @@
         "zh": "肥遗",
         "en": "Feiyi"
       },
-      "cost": 6,
+      "cost": 5,
       "element": "fire",
-      "atk": 6,
-      "hp": 4,
+      "atk": 4,
+      "hp": 6,
+      "keywords": [
+        "taunt"
+      ],
       "art": "art/feiyi.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
@@ -1002,10 +1014,13 @@
         "zh": "泰逢",
         "en": "Taifeng"
       },
-      "cost": 6,
+      "cost": 5,
       "element": "earth",
-      "atk": 5,
+      "atk": 4,
       "hp": 6,
+      "keywords": [
+        "taunt"
+      ],
       "art": "art/taifeng.webp",
       "art_source": "古本原图 — 见 art/CREDITS.md（山海经的妖用古本，不由模型重画）。"
     },
