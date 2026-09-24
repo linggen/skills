@@ -35,7 +35,9 @@ permission:
     in the browser — account numbers are stripped before anything is shown or
     sent to the model. The grant lets it save its (redacted) analysis to its own
     data dir and record your goals. CFO's memory is scoped to CFO alone — it
-    never reads or writes your other apps' memory.
+    never reads or writes your other apps' memory. An import, a read of the
+    report or a sorted row leaves one note in ~/.linggen/quests — when you did
+    it, never an amount or a merchant.
 tools:
   - name: LatestAnalysis
     description: >-

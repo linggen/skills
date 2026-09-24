@@ -7,6 +7,7 @@
 import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from '/shared/api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
+import { stampQuest } from './quest.js';
 import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
 import { Register, overridesOf, budgetsOf, commitmentsOf, accountsOf, activeRows, seedFromLegacy, saveRegisterFile, updateJsonFile } from './lww.js';
@@ -728,6 +729,7 @@ function openCatPicker(anchor, row) {
     close();
     if (!o) return;
     const val = o.isNew ? o.value.toLowerCase() : o.value;
+    if (val === 'transfer' || val === 'income' || row.transfer) stampSort(row);
     // transfer/income, and un-transferring a heuristic transfer, all need a RULE
     // (a per-row category would just get re-flagged on the next reload).
     if (val === 'transfer' || val === 'income' || row.transfer) applyRule(row, val);
@@ -746,6 +748,12 @@ function openCatPicker(anchor, row) {
     e.preventDefault(); choose(items[+li.dataset.i]);
   });
   q.focus();
+}
+
+// Sorting a row that sat uncategorized is the quest fact (quest.js) — read
+// before the edit lands. A correction of an already-sorted row is not.
+function stampSort(row) {
+  if (!row.transfer && row.amount < 0 && effCategory(row) === 'other') stampQuest(runBash, 'cfo-sort');
 }
 
 // Transfer / income picks are always a remembered rule (a per-row transfer can't
@@ -809,6 +817,7 @@ function askScope(anchor, row, cat) {
   pop.querySelector('#scope-apply').onclick = async () => {
     const scope = pop.querySelector('input[name=scope]:checked').value;
     close();
+    stampSort(row);
     if (scope === 'rule') {
       // Same key every rule path writes (cleaned + lowercased) — the one the
       // categorizer matches.
@@ -892,6 +901,7 @@ async function importFile(file, fileIdx = 0, fileCount = 1, opts = {}) {
   // local timestamp-ish token (Date.now is fine in the browser; this is UI state).
   const importId = `imp_${Date.now().toString(36)}_${Math.floor(Math.random() * 1e6).toString(36)}`;
   await appendImport({ id: importId, file: file.name, account: accountId, added: added.length, rows: incoming.length, added_ids: added.map((r) => r.id), row_ids: incoming.map((r) => r.id), at: new Date().toISOString() });
+  if (added.length) stampQuest(runBash, 'cfo-import'); // new rows landed — the quest fact (quest.js)
 
   await rebuildReport(); // agent's full-history copy
   refreshView();
@@ -1071,7 +1081,26 @@ function applyVisibility() {
   // Investments (prices, not statements).
   document.getElementById('range-bar').hidden = ownData || !LEDGER.length;
   renderSuggestions(); // Review card (Report tab only) — self-hides when empty
+  watchReportRead();
 }
+
+// The quest fact for "read this month's report" (quest.js): the Report tab,
+// holding a ledger, in front of the player for REPORT_READ_MS — a page loaded
+// out of sight, or flicked past, is not a read. Once a day per page.
+const REPORT_READ_MS = 15000;
+let READ_TIMER = null;
+let READ_DAY = '';
+const reportInView = () => VIEW_MODE === 'report' && LEDGER.length > 0 && document.visibilityState === 'visible';
+function watchReportRead() {
+  if (READ_TIMER || READ_DAY === localToday() || !reportInView()) return;
+  READ_TIMER = setTimeout(() => {
+    READ_TIMER = null;
+    if (READ_DAY === localToday() || !reportInView()) return;
+    READ_DAY = localToday();
+    stampQuest(runBash, 'cfo-review');
+  }, REPORT_READ_MS);
+}
+document.addEventListener('visibilitychange', watchReportRead);
 
 // The buttons above the chat: questions the page writes from what the tab
 // shows right now (chips.js), rewritten on every tab switch and redraw.
@@ -2161,6 +2190,7 @@ async function applyOneSuggestion(i) {
   if (!SUGGESTIONS.length) LAST_AUTO_APPLIED = 0; // batch fully handled
   await saveSuggestions().catch(() => {});
   await applyRuleByMerchant(s.merchant, s.type); // recomputes + re-renders the report
+  stampQuest(runBash, 'cfo-sort'); // the player sorted an uncategorized merchant (quest.js)
   renderSuggestions();
 }
 
@@ -2171,6 +2201,7 @@ async function applyAllSuggestions() {
   await saveSuggestions().catch(() => {});
   for (const s of list) await applyRuleByMerchant(s.merchant, s.type, false);
   await afterCategoriesChanged(); // single recompute for the whole batch
+  if (list.length) stampQuest(runBash, 'cfo-sort'); // the player sorted them (quest.js)
   renderSuggestions();
 }
 
@@ -2515,6 +2546,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     data: DATA,
   });
   document.querySelectorAll('#tabs .tab').forEach((t) => t.addEventListener('click', () => switchView(t.dataset.view)));
+  // A link may name the tab to land on (?tab=txn — what a quest's `open` sends).
+  const askedTab = new URLSearchParams(location.search).get('tab');
+  if (askedTab && askedTab !== VIEW_MODE && document.querySelector(`#tabs .tab[data-view="${CSS.escape(askedTab)}"]`)) switchView(askedTab);
   document.getElementById('help-btn')?.addEventListener('click', showHelp);
 
   // Currency: code shown + switchable (CAD vs USD vs CNY…); persists to config.
