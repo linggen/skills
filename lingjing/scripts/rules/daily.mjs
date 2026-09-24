@@ -69,24 +69,24 @@ export function greet(state, content, ctx) {
   const last = state.greeted ?? (state.updated ? dayKey(new Date(state.updated)) : null);
   if (last) {
     const days = Math.round((new Date(`${day}T12:00:00`) - new Date(`${last}T12:00:00`)) / 86400000);
-    if (days >= 1) facts.push(zh ? `他上次来是${days === 1 ? '昨天' : `${days} 天前`}` : `he was last here ${days === 1 ? 'yesterday' : `${days} days ago`}`);
+    if (days >= 1) facts.push(zh ? `玩家上次来是${days === 1 ? '昨天' : `${days} 天前`}` : `the player was last here ${days === 1 ? 'yesterday' : `${days} days ago`}`);
   }
   for (const [id, d] of Object.entries(state.duels ?? {})) {
     if (d.day !== yesterday || d.outcome === 'open') continue;
     const name = pick(creatureOf(content, id)?.name, state.lang);
     const how = { won: zh ? '赢了' : 'won against', lost: zh ? '输给了' : 'lost to', withdrew: zh ? '没打完，它遁走了：' : 'was left unfinished by' }[d.outcome];
-    facts.push(zh ? `昨天${how}${name}` : `yesterday he ${how} ${name}`);
+    facts.push(zh ? `昨天${how}${name}` : `yesterday the player ${how} ${name}`);
   }
   const h = healthBrief(content, state, ctx.now);
   if (h.now < h.max) facts.push(zh ? `身上还带着伤，气血 ${h.now}/${h.max}` : `still hurt, Life ${h.now}/${h.max}`);
   const c = chanceBrief(content, state, ctx.now);
   if (c && !c.taken && !c.missed) facts.push(zh ? `今天${c.place.name}有一份机缘` : `a chance waits at ${c.place.name} today`);
   const j = journeyBrief(content, state, ctx.now);
-  if (j?.back) facts.push(zh ? `你（银月）从${j.place.name}历练回来了，东西还没交给他` : `you are back from ${j.place.name}, with things not yet handed over`);
+  if (j?.back) facts.push(zh ? `你（银月）从${j.place.name}历练回来了，东西还没交给玩家` : `you are back from ${j.place.name}, with things not yet handed over`);
   else if (j) facts.push(zh ? `你（银月）还在${j.place.name}历练` : `you are still out at ${j.place.name}`);
   const b = bondBrief(content, state);
   facts.push(zh ? `你们的羁绊：${b.name}` : `your bond: ${b.name}`);
-  facts.push(zh ? `他如今是${stepName(content, state.tier, state.step, state.lang)}` : `he stands at ${stepName(content, state.tier, state.step, state.lang)}`);
+  facts.push(zh ? `玩家如今是${stepName(content, state.tier, state.step, state.lang)}` : `the player stands at ${stepName(content, state.tier, state.step, state.lang)}`);
   s.greeted = day;
   return { state: s, result: { ok: true, first: true, name: state.name ?? null, facts } };
 }

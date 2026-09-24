@@ -2723,15 +2723,15 @@ test('历练: sent for real hours, away she is not beside him, back she brings t
   assert.equal(look(early.state, content, at(1)).companion.journey, undefined);
 });
 
-test('问候: once a day, hers — the facts of yesterday and today, in his language', () => {
+test('问候: once a day, hers — the facts of yesterday and today, in the player’s language', () => {
   const c = ctx({ now: new Date('2026-10-06T09:00:00') });
   const base = { ...toOpenWorld(), place: 'pengcheng', companion: { joined: '2026-10-01' }, chance: DEALT,
     duels: { leishen: { day: '2026-10-05', outcome: 'lost' }, kui: { day: '2026-10-01', outcome: 'won' } }, wounds: { n: 10, at: c.now.toISOString() } };
   refused(greet, { ...base, companion: null }, {}, 'no-companion', c);
   const g = must(greet, { ...base, greeted: '2026-10-05' }, {}, c);
   assert.equal(g.result.first, true);
-  assert.ok(g.result.facts.includes('他上次来是昨天'), 'she knows it was yesterday');
-  assert.ok(must(greet, { ...base, greeted: '2026-09-26' }, {}, c).result.facts.includes('他上次来是10 天前'));
+  assert.ok(g.result.facts.includes('玩家上次来是昨天'), 'she knows it was yesterday');
+  assert.ok(must(greet, { ...base, greeted: '2026-09-26' }, {}, c).result.facts.includes('玩家上次来是10 天前'));
   assert.ok(g.result.facts.some(f => f.includes('昨天输给了雷神')), "yesterday's fight");
   assert.ok(!g.result.facts.some(f => f.includes('夔')), 'not an older one');
   assert.ok(g.result.facts.some(f => f.startsWith('身上还带着伤')));

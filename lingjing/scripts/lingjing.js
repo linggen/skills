@@ -379,7 +379,7 @@ function riseStats() {
     // real life is hers, not Ling's (his rule, 2026-09-23).
     if (before.stamina > 0 && now.stamina === 0 && !before.resting) {
       const at = clock(look.stamina?.rest_at ?? look.stamina?.returns_at);
-      askHer(`他的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请他回到现实里歇一歇，起身走走、喝口水。说一两句。`, `His stamina just ran out (ready to go again at ${at}). The game waits: send him back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
+      askHer(`玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
     if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank);
     else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title);
@@ -465,8 +465,8 @@ function feat(kind, name, from = '') {
   el.style.animationDelay = `${Math.max(0, riseAfter - performance.now())}ms`;
   $('view')?.appendChild(el);
   setTimeout(() => el.remove(), 4200 + Math.max(0, riseAfter - performance.now()));
-  if (kind === 'rise') askHer(`他刚刚突破了，从${from}到了${name}。这是件大事，你就在他身边，说几句。`, `He has just broken through, from ${from} to ${name}. It is a great moment and you are beside him; say a few words.`, 'happy');
-  else askHer(`新的一章开了：${name}。你陪他一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with him to here; say a few words.`, 'happy');
+  if (kind === 'rise') askHer(`玩家刚刚突破了，从${from}到了${name}。这是件大事，你就在玩家身边，说几句。`, `The player has just broken through, from ${from} to ${name}. It is a great moment and you are beside them; say a few words.`, 'happy');
+  else askHer(`新的一章开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
 }
 
 function wonOver(beasts) {
@@ -855,7 +855,7 @@ async function journeyVerb(action, extra = {}) {
 }
 async function sendHer(hours) {
   const r = await journeyVerb('send', { hours });
-  if (r.ok) askHer(`他让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `He is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
+  if (r.ok) askHer(`玩家让你去${r.sent.place.name}历练 ${hours} 个时辰，你这就动身。`, `The player is sending you to ${r.sent.place.name} for ${hours} hours; you set off now.`, 'happy');
 }
 /* Called back early: she comes home with a little, and tells it her way. */
 async function recallHer() {
@@ -868,8 +868,8 @@ async function recallHer() {
   const seen = r.brought.map((b) => b.line).join(' ');
   const got = [...items.map((i) => i.name), r.wealth ? `${r.wealth} 灵石` : ''].filter(Boolean).join('、');
   const gotEn = [...items.map((i) => i.name), r.wealth ? `${r.wealth} stones` : ''].filter(Boolean).join(', ');
-  askHer(`他提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。${seen ? `路上所见：${seen} ` : ''}${got ? `只带回：${got}。` : '这趟什么也没带回。'}今日不能再出门。你回到他身边，跟他说几句。`,
-    `He called you back early from ${r.place.name}: ${r.hours} hours planned, ${te} gone. ${seen ? `On the road: ${seen} ` : ''}${gotEn ? `You bring only: ${gotEn}.` : 'You bring nothing back.'} No second trip today. You are beside him again; say a few words to him.`);
+  askHer(`玩家提前把你从${r.place.name}叫了回来：原定 ${r.hours} 个时辰，才走了 ${t}。${seen ? `路上所见：${seen} ` : ''}${got ? `只带回：${got}。` : '这趟什么也没带回。'}今日不能再出门。你回到玩家身边，跟玩家说几句。`,
+    `The player called you back early from ${r.place.name}: ${r.hours} hours planned, ${te} gone. ${seen ? `On the road: ${seen} ` : ''}${gotEn ? `You bring only: ${gotEn}.` : 'You bring nothing back.'} No second trip today. You are beside the player again; say a few words to them.`);
   render();
 }
 async function receiveHer() {
@@ -878,8 +878,8 @@ async function receiveHer() {
   const cards = r.card ? [r.card] : [], items = r.brought.filter((b) => b.id).map((b) => ({ id: b.id, name: b.name }));
   keep({ spoils: { place: look?.place?.id ?? null, cards, items } });
   const seen = r.brought.map((b) => b.line).join(' ');
-  askHer(`你从${r.place.name}历练回来（${r.hours} 个时辰）。路上所见：${seen} 带回：${[...items.map((i) => i.name), r.card?.name, `${r.wealth} 灵石`].filter(Boolean).join('、')}。讲给他听。`,
-    `You are back from ${r.place.name} (${r.hours} hours). On the road: ${seen} Brought: ${[...items.map((i) => i.name), r.card?.name, `${r.wealth} stones`].filter(Boolean).join(', ')}. Tell him.`, 'happy');
+  askHer(`你从${r.place.name}历练回来（${r.hours} 个时辰）。路上所见：${seen} 带回：${[...items.map((i) => i.name), r.card?.name, `${r.wealth} 灵石`].filter(Boolean).join('、')}。讲给玩家听。`,
+    `You are back from ${r.place.name} (${r.hours} hours). On the road: ${seen} Brought: ${[...items.map((i) => i.name), r.card?.name, `${r.wealth} stones`].filter(Boolean).join(', ')}. Tell the player.`, 'happy');
   render();
 }
 
@@ -1022,8 +1022,8 @@ async function setFate(kind) {
   await refresh();
   const f = look?.fate;
   if (kind === 'decline' || !f?.zodiac) return;
-  askHer(`他刚在灵根卡上定了命格：属${f.zodiac.name}，日主${f.stem.name}${f.element.name}，天生亲近${f.element.name}。它给的：斗法时同属${f.element.name}的一击，每场减半一次；起卦时下卦属${f.element.name}，卦象偏向他。用你自己的话告诉他，一两句。`,
-    `He has just set his birth sign on the roots card: year of the ${f.zodiac.name}, day master ${f.stem.name} (${f.element.name}), at home in ${f.element.name}. What it gives: once a fight, a blow of ${f.element.name} is halved; a cast whose lower trigram is ${f.element.name} leans his way. Tell him in your own words, a line or two.`, 'happy');
+  askHer(`玩家刚在灵根卡上定了命格：属${f.zodiac.name}，日主${f.stem.name}${f.element.name}，天生亲近${f.element.name}。它给的：斗法时同属${f.element.name}的一击，每场减半一次；起卦时下卦属${f.element.name}，卦象偏向玩家。用你自己的话告诉玩家，一两句。`,
+    `The player has just set their birth sign on the roots card: year of the ${f.zodiac.name}, day master ${f.stem.name} (${f.element.name}), at home in ${f.element.name}. What it gives: once a fight, a blow of ${f.element.name} is halved; a cast whose lower trigram is ${f.element.name} leans their way. Tell them in your own words, a line or two.`, 'happy');
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false }); });
 
@@ -1627,8 +1627,8 @@ async function greetByHer() {
   const r = await write('greet', {}).catch(() => null);
   if (!r?.ok || !r.first) return false;
   const who = r.name ?? '';
-  const zh = `${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到他那样，打个招呼 —— 挑一两件说，不必都提。`;
-  const en = `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet him as you would on seeing him — pick one or two, not all.`;
+  const zh = `${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到对方那样，打个招呼 —— 挑一两件说，不必都提。`;
+  const en = `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet the player as you would on seeing them — pick one or two, not all.`;
   // Nobody to say it (pet off): Ling opens instead.
   if (!(await askHer(zh, en, 'happy'))) return false;
   greetText = [...(lang() === 'en' ? en : zh).trim()].slice(0, 300).join('');
