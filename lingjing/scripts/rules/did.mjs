@@ -10,6 +10,7 @@
 // only what came after hers. Reading never clears it for the other (his,
 // 2026-09-24: both of them look it up when they want to).
 import { pick, stepName, threshold } from '../state.mjs';
+import { herPast } from './companion.mjs';
 import { staminaBrief } from './daily.mjs';
 import { bookOf, questOf } from './errands.mjs';
 import { taleLine } from './tale.mjs';
@@ -122,6 +123,8 @@ export function progress(state, content, ctx) {
       book: bookOf(content, state, lang, ctx).map(b => ({ title: b.title, ready: b.ready })),
       tale: taleLine(content, state, ctx.now),
       practice: { done: tasks.filter(t => t.paid).map(t => t.title), left: tasks.filter(t => !t.paid).map(t => t.title) },
+      // Her own past as far as the cauldrons have given it back, and where she stands (companion.mjs § 她的来处).
+      her: herPast(content, state),
     },
   };
 }

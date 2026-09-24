@@ -6,7 +6,7 @@ import { dayKey, fill, periodKey, pick, rollDay, settleStamina, speedOf, stepNam
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, thenFor } from './ask.mjs';
 import { fightSetup, healthBrief } from './cards.mjs';
-import { bondBrief, callDue, companionOf, hasCompanion, questBrief } from './companion.mjs';
+import { bondBrief, callDue, companionOf, hasCompanion, questBrief, recalledOf } from './companion.mjs';
 import { clone, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { chanceBrief, journeyBrief, staminaBrief } from './daily.mjs';
 import { bookOf, breakthroughOf, directorBrief, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
@@ -192,7 +192,7 @@ export function look(state, content, ctx) {
     waypoint: waypointOf(content, state, ctx),
     place: placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),
-    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, bond: bondBrief(content, state), ...(state.tended === dayKey(ctx.now) ? { tended: true } : {}), ...(journeyBrief(content, state, ctx.now) ? { journey: journeyBrief(content, state, ctx.now) } : {}), ...(state.journey?.day === dayKey(ctx.now) ? { journeyed: true } : {}) } : null,
+    companion: hasCompanion(state) ? { id: companionOf(content).id, name: nameOf(content, companionOf(content).id, lang), joined: state.companion.joined, bond: bondBrief(content, state), recalled: recalledOf(content, state), ...(state.tended === dayKey(ctx.now) ? { tended: true } : {}), ...(journeyBrief(content, state, ctx.now) ? { journey: journeyBrief(content, state, ctx.now) } : {}), ...(state.journey?.day === dayKey(ctx.now) ? { journeyed: true } : {}) } : null,
     quest: questBrief(content, state, ctx.now),
     // 差事: what is in hand, and what may be taken where he stands.
     book: bookOf(content, state, lang, ctx),

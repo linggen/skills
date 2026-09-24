@@ -144,6 +144,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     notices: loadNotices(path.join(dir, 'quests', 'templates.json')),
     meets: fs.existsSync(path.join(dir, 'meets.json')) ? readJson(path.join(dir, 'meets.json')) : null,
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
+    // The companion's past, given back chapter by chapter (companion.mjs § 她的来处).
+    lore: fs.existsSync(path.join(dir, 'companion.json')) ? readJson(path.join(dir, 'companion.json')) : null,
     places: loadPlaces(path.join(dir, 'places')),
     templates: { made: at('templates/made-scene.json'), world: at('templates/made-world.json') },
     dictionary: at('dictionary.json'),
@@ -428,7 +430,38 @@ export function lint(content) {
   lintMeets(content, ids, bad);
   lintPlaces(content, ids, bad);
   lintAtlas(content, bad);
+  lintLore(content, bad);
   return problems;
+}
+
+/* Her past (companion.json): one entry per chapter id, each memory with its
+   words or a spine scene of that chapter that gives her the line — a chapter
+   not written yet is fine (the rules give nothing for it until it ends). */
+function lintLore(content, bad) {
+  const lore = content.lore;
+  if (!lore) return;
+  const pair = t => Boolean(t?.zh && t?.en);
+  if (lore.id !== content.world.companion?.id) bad('lore', `id ${lore.id} is not the world's companion`);
+  for (const k of ['fear', 'want']) if (!pair(lore[k])) bad('lore', `${k} needs zh and en`);
+  if (!pair(lore.joined?.knows) || !pair(lore.joined?.feels)) bad('lore', 'joined needs knows and feels');
+  const seen = new Set();
+  for (const e of lore.thread ?? []) {
+    const at = `lore ${e.chapter}`;
+    if (!/^\d\d-[a-z]+$/.test(e.chapter ?? '')) bad(at, 'chapter must be a chapter id');
+    if (seen.has(e.chapter)) bad(at, 'one entry per chapter');
+    seen.add(e.chapter);
+    if (!e.memory?.id) bad(at, 'memory needs an id');
+    if (!pair(e.knows) || !pair(e.feels)) bad(at, 'needs knows and feels, zh and en');
+    if (e.memory?.text) { if (!pair(e.memory.text)) bad(at, 'memory text needs zh and en'); }
+    else if (!e.memory?.scene) bad(at, 'memory needs text or a scene');
+    else if (content.chapters[e.chapter] && !content.chapters[e.chapter].scenes[e.memory.scene]?.lines?.some(l => l.who === lore.id)) bad(at, `scene ${e.memory.scene} gives her no line`);
+  }
+  const sec = lore.secret;
+  if (sec) {
+    if (!pair(sec.text) || !pair(sec.resolved)) bad('lore secret', 'text and resolved need zh and en');
+    for (const k of ['realized', 'told', 'whole']) if (!seen.has(sec[k])) bad('lore secret', `${k} is not a chapter of the thread`);
+    if (!(sec.realized < sec.told && sec.told < sec.whole)) bad('lore secret', 'realized, told, whole go in chapter order');
+  }
 }
 
 /* A province's places: roads both ways to places anywhere in the world (a

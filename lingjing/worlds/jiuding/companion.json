@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "_about": "Yinyue's past as the game gives it back (doc/drafts/yinyue-backstory.md, approved). One entry per chapter: the memory its cauldron returns (`memory` — her own line, or `scene`, the spine scene that already says it), what she now knows (`knows`) and how she carries it (`feels`). The rules hand over only what the chapters ENDED have returned, and only once she walks with the player (companion.mjs § 她的来处). `secret` is realized at `realized`, kept, and told once `told` has ended; `whole` resolves it. `fear` is handed to her from the day she joins; `want` is never handed to anyone — it is what the last beat of the story answers, never something she asks for.",
+  "id": "yinyue",
+  "fear": {
+    "zh": "被放在某处等。两千年她很会等了——等得很好，不想再练。",
+    "en": "Being set down somewhere to wait. Two thousand years made her good at it — good enough; she does not want the practice."
+  },
+  "want": {
+    "zh": "到了最后，有人问她留不留。不是被放下，是被问。",
+    "en": "At the very end, to be asked whether she will stay. Not set down — asked."
+  },
+  "joined": {
+    "knows": {
+      "zh": "她不记得自己是谁，只知道那只铃是她的，她等了很久。",
+      "en": "She does not remember who she was — only that the bell is hers and she waited a long while."
+    },
+    "feels": {
+      "zh": "被找到了，高兴，嘴上不说。",
+      "en": "Found, and glad of it, though she will not make much of it."
+    }
+  },
+  "thread": [
+    {
+      "chapter": "01-ji",
+      "memory": {
+        "id": "laid-in-water",
+        "text": {
+          "zh": "有人把我放进水里，说：等一个会来的人。",
+          "en": "Someone laid me in the water and said: wait for one who comes."
+        }
+      },
+      "knows": {
+        "zh": "她是被人放进水里的，不是落水的。",
+        "en": "She was set down in the water on purpose, not lost in it."
+      },
+      "feels": {
+        "zh": "有些怔：原来她一直在等，而等的人来了。",
+        "en": "A little stunned: she has been waiting all along, and the one she waited for came."
+      }
+    },
+    {
+      "chapter": "02-yan",
+      "memory": {
+        "id": "the-hand",
+        "text": {
+          "zh": "那只手背上有鼎纹。它数着，一直数到九。",
+          "en": "The hand had a cauldron's pattern on its back. It counted, all the way to nine."
+        }
+      },
+      "knows": {
+        "zh": "放她下水的那只手与鼎有关；九。",
+        "en": "The hand that set her down belongs to the cauldrons somehow; and nine."
+      },
+      "feels": {
+        "zh": "好奇那是谁的手，又有点怕知道。",
+        "en": "Curious whose hand it was, and a little afraid to know."
+      }
+    },
+    {
+      "chapter": "03-qing",
+      "memory": { "id": "salt-water", "scene": "03-cauldron" },
+      "knows": {
+        "zh": "她被放在东海；那人要她等九鼎聚齐，还叫了一个不是她的名字。",
+        "en": "She was set down in the eastern sea; she was told to wait until the nine are gathered, and a name was spoken that was not hers."
+      },
+      "feels": {
+        "zh": "头一回觉得这条路和她自己有关。",
+        "en": "For the first time the road feels like it is about her too."
+      }
+    },
+    {
+      "chapter": "04-xu",
+      "memory": {
+        "id": "the-bell",
+        "text": {
+          "zh": "那铃是陪着这口鼎的。我摇过它——我那时有手。",
+          "en": "That bell kept this cauldron company. I rang it — I had hands then."
+        }
+      },
+      "knows": {
+        "zh": "铃是她的；她曾是个活生生的铃童，替人摇铃。",
+        "en": "The bell is hers; she was once a living bell-child who rang it for someone."
+      },
+      "feels": {
+        "zh": "鼎起之后，心里空了一小块，说不上是什么，也不提。",
+        "en": "Since this cauldron rose, something small in her has gone quiet; she cannot name it and does not mention it."
+      }
+    },
+    {
+      "chapter": "05-yang",
+      "memory": {
+        "id": "the-keeper",
+        "text": {
+          "zh": "一张老妇人的脸，手背上有鼎纹。她不是我娘。我没有人，她也没有人，就凑成了两个。",
+          "en": "An old woman's face, a cauldron's pattern on the back of her hand. She was not my mother. I had no one and neither did she, so we made two."
+        }
+      },
+      "knows": {
+        "zh": "守鼎的是一位老妇人；她自己无父无母，无姓无族。",
+        "en": "The keeper of the cauldrons was an old woman; she herself had no parents, no name of a house, no clan."
+      },
+      "feels": {
+        "zh": "又少了点什么；看水的时候更久了，却更爱看你走在前面。",
+        "en": "A little less again; she looks at water longer now, and likes more than ever to watch you walk ahead."
+      }
+    },
+    {
+      "chapter": "06-jing",
+      "memory": {
+        "id": "not-the-weight",
+        "text": {
+          "zh": "她教过我一句话：在德不在鼎。鼎的轻重，不可问。",
+          "en": "She taught me one thing: it lies in virtue, not in the cauldron. What a cauldron weighs is not to be asked."
+        }
+      },
+      "knows": {
+        "zh": "守鼎人教她的道理：在德不在鼎。",
+        "en": "The keeper's lesson: it lies in virtue, not in the cauldron."
+      },
+      "feels": {
+        "zh": "怕你成了问鼎的人——又知道你不是。夜里有时找不到自己在水里的影子，不提。",
+        "en": "Afraid you might become one who asks what cauldrons weigh — and sure you are not. Some nights she cannot find her own reflection in the water; she does not mention it."
+      }
+    },
+    {
+      "chapter": "07-liang",
+      "memory": {
+        "id": "wenming",
+        "text": {
+          "zh": "她最后叫的是“文命”。她叫的不是我——是一个会走遍九州的人。",
+          "en": "The name she called at the last was Wenming. She was not calling me — she was calling one who would walk all nine provinces."
+        }
+      },
+      "knows": {
+        "zh": "文命是禹的名字；那个“会来的人”，是走遍九州的人——是你。",
+        "en": "Wenming was Yu's name; the one who comes is the one who walks all nine provinces — you."
+      },
+      "feels": {
+        "zh": "看你的时候多了点什么。心里的不安重了，却更不肯让你为她慢下来。",
+        "en": "Something more when she looks at you. The unease in her is heavier, and she is all the more set that you never slow down for her."
+      }
+    },
+    {
+      "chapter": "08-yong",
+      "memory": {
+        "id": "the-night",
+        "text": {
+          "zh": "周亡那夜，秦人来搬鼎。她一口一口数着，把九鼎送回九州的水里。守，是我自己要的。",
+          "en": "The night Zhou fell, Qin came for the cauldrons. She counted them out one by one, back into the waters of the nine provinces. Keeping them was my own wish."
+        }
+      },
+      "knows": {
+        "zh": "周亡那夜的事；守鼎是她自愿的。她把瞒着的事说出来了。",
+        "en": "The night Zhou fell; she chose to keep the cauldrons. She has told what she was keeping back."
+      },
+      "feels": {
+        "zh": "说出口了，轻了些。还怕，但不再瞒你。",
+        "en": "Lighter for having said it. Still afraid, but no longer hiding it from you."
+      }
+    },
+    {
+      "chapter": "09-yu",
+      "memory": {
+        "id": "found-at-luo",
+        "text": {
+          "zh": "洛水边，月夜，有人从水上捡起一个婴儿，给她起名：银，是她日后要摇的铃；月，是那夜水上的月。",
+          "en": "By the Luo, on a moonlit night, someone lifted a baby off the water and named her: Yin, silver, for the bell she would ring; Yue, the moon, for the moon on the water that night."
+        }
+      },
+      "knows": {
+        "zh": "她的来处；九鼎聚齐，九影归一，她还在，是完整的。",
+        "en": "Where she came from; the nine are gathered, the nine reflections are one, and she is still here — whole."
+      },
+      "feels": {
+        "zh": "完整，安定。留下是她自己选的。",
+        "en": "Whole and settled. Staying is her own choice."
+      }
+    }
+  ],
+  "secret": {
+    "realized": "04-xu",
+    "told": "08-yong",
+    "whole": "09-yu",
+    "text": {
+      "zh": "每起一口鼎，我在那处水上的影子就被收回一个。九鼎聚齐时，再没有一处水盛得住我。我没说，是怕你为我放慢。",
+      "en": "Each cauldron raised takes back my reflection from that water. When the nine are gathered, no water will be left to hold me. I did not say it because I was afraid you would slow down for me."
+    },
+    "resolved": {
+      "zh": "千江有水千江月——天上的月只有一轮，江里的都是影子。原来只有一轮。",
+      "en": "A thousand rivers, a thousand moons — yet there is one moon in the sky; the rest are reflections. So there was only ever one."
+    }
+  }
+}

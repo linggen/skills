@@ -89,6 +89,54 @@ function questBrief(content, state, now) {
   };
 }
 
+/* ── 她的来处 — her past, given back one cauldron at a time ──
+   The approved backstory as data (worlds/<id>/companion.json): per chapter,
+   the memory its cauldron returns, what she knows then and how she carries
+   it. What she has recalled is a function of the chapters ENDED, and only
+   once she walks with the player — memories 1–2 are told at the join, since
+   she was not there. Nothing ahead ever leaves the rules: a chapter not yet
+   ended (or not yet written) gives nothing, and the secret she keeps from
+   徐 on is handed over only once its `told` chapter has ended. */
+const loreOf = content => (content.lore && content.lore.id === companionOf(content)?.id ? content.lore : null);
+/* A memory's line: its own words, or the line the spine scene already gives
+   her (never a second wording of what the story said). */
+function memoryLine(content, entry, lang) {
+  const m = entry.memory;
+  if (m.text) return pick(m.text, lang);
+  const said = content.chapters[entry.chapter]?.scenes?.[m.scene]?.lines?.find(l => l.who === loreOf(content).id);
+  return said ? pick(said.text, lang) : null;
+}
+/* What she has got back so far, oldest first: [{id, line}]. */
+export function recalledOf(content, state) {
+  const lore = loreOf(content);
+  if (!lore || !hasCompanion(state)) return [];
+  const ended = new Set(state.ended ?? []), lang = state.lang;
+  const out = lore.thread.filter(e => ended.has(e.chapter)).map(e => ({ id: e.memory.id, line: memoryLine(content, e, lang) })).filter(r => r.line);
+  const sec = lore.secret;
+  if (sec && ended.has(sec.told)) out.push({ id: 'secret', line: pick(sec.text, lang) });
+  if (sec && ended.has(sec.whole)) out.push({ id: 'whole', line: pick(sec.resolved, lang) });
+  return out;
+}
+/* Where she stands now — what she knows and how she carries it, from the
+   latest chapter ended — for her own read (Progress), so she speaks from it. */
+function stanceOf(content, state) {
+  const lore = loreOf(content);
+  if (!lore || !hasCompanion(state)) return null;
+  const ended = new Set(state.ended ?? []), lang = state.lang;
+  const at = [...lore.thread].reverse().find(e => ended.has(e.chapter)) ?? lore.joined;
+  return `${pick(at.knows, lang)} ${pick(at.feels, lang)}`;
+}
+/* Her past as Progress hands it to her; null until she is found. */
+export function herPast(content, state) {
+  const lore = loreOf(content);
+  if (!lore || !hasCompanion(state)) return null;
+  const ended = new Set(state.ended ?? []);
+  return {
+    recalled: recalledOf(content, state), stance: stanceOf(content, state), fear: pick(lore.fear, state.lang),
+    cauldrons: lore.thread.filter(e => ended.has(e.chapter)).length,
+  };
+}
+
 /* ── 伤势 — a fight's cost carried out of it ──
    His call, 2026-09-23, from what the gate measured: a fight begun at full
    气血 every time is a fight no turn of which matters, so the real choices were
