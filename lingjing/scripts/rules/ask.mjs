@@ -98,6 +98,7 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   if (!ungated) {
     if (state.fight) return null; // a fight is running: Ling advances nothing
     if (stageHeld(content, state, ctx)) return null;
+    if (road?.veiled) return null; // the page's mist, then its reveal: nothing asked in between
     // Something moved the world — a road walked, a cast thrown, a thing
     // bought — so the question is worth putting again. Otherwise it is asked
     // only where it has not been asked yet.
@@ -134,9 +135,12 @@ const THEN_CALL = 'The search has just opened: say `quest.line` in the world, in
 /* No question this time: the stage has the thing in front of him, or nothing
    has changed since the last one. End on words — never invent a question the
    rules withheld (his law, 2026-09-18). */
-const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled — the stage shows only mist). Set the moment first: two or three short lines in the world that build toward it — the light, the air, a sound — and stop at the edge ("突然——"), never naming what it is. Then call Meet {action: reveal}: its answer puts the card on the stage and carries the question; follow its own `then`.';
+const THEN_VEIL = 'Something waits on this road (`place.meet`, still veiled): the page plays a mist and reveals it itself in a moment, then tells you `[scene] arrived` — Look then, and tell what was revealed in a line or two, following its `then`. Now never call Meet reveal, never build toward it and never name it: end on the place, and do NOT call AskUser.';
+/* A 抉择 is Ling's to write — the page never reveals it (road.mjs: revealed
+   bare it closes as nothing); her Meet offer lifts the mist. */
+const THEN_TRIAL = 'A 抉择 waits on this road (`place.meet` kind trial, veiled): you write it now — § 抉择: set the moment in two or three lines, then Meet {action: offer} with the ways (it reveals), and stop.';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
-export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? THEN_VEIL : (result?.quest?.say ? THEN_CALL : '')
+export const thenFor = (result, ask = undefined) => (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
   + (ask === null ? THEN_QUIET : won(result) ? THEN_CHEER : THEN));
 const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, ctx, result), ...result });
 

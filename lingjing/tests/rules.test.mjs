@@ -2138,13 +2138,16 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
 
   // 路人问: the riddle is the question; wrong gives the hint and asks again; right pays and is never asked again
   const veiled = deals.find(d => d.result.place.meet.kind === 'riddle'), rd = day(deals.indexOf(veiled));
-  // …but first the mist (his, 2026-09-22: 月黑风高…突然…然后webUI出现怪物卡): the
-  // stage holds a veil, nothing is asked, and Ling is told to set the moment
+  // …but first the mist (Hanli, 2026-09-24): the page plays it over the stage
+  // and reveals it itself; nothing is asked, and Ling neither builds toward it
+  // nor reveals it — she is told once it is revealed
   assert.equal(veiled.result.place.meet.veiled, true);
   const misty = look(veiled.state, content, rd);
-  assert.deepEqual(misty.stage.map(c => c.card).filter(k => k === 'road'), ['road'], 'the one road card, in mist');
+  assert.deepEqual(misty.stage.map(c => c.card).filter(k => k === 'road'), [], 'no road card in the mist');
   assert.equal(misty.ask, null, 'nothing asked in the mist');
-  assert.match(thenFor(veiled.result, null), /Meet \{action: reveal\}/);
+  assert.match(thenFor(veiled.result, null), /the page .* reveals it itself/);
+  assert.match(thenFor(veiled.result, null), /never call Meet reveal/);
+  // The page's reveal is the same Verb door the page uses (rules.mjs meet, no --for).
   const asked = must(meet, veiled.state, { action: 'reveal' }, rd);
   assert.equal(asked.result.revealed, 'riddle');
   refused(meet, asked.state, { action: 'reveal' }, 'not-veiled', rd);
@@ -2568,8 +2571,9 @@ test('路上 · 机缘: dealt once a day within two roads; arriving in time it i
   const arrived = must(move, { ...woke.state, stamina: 100, stamina_at: at(1).now.toISOString() }, { place: c.place }, at(1));
   assert.deepEqual(arrived.result.place.meet, { kind: 'chance', place: { id: c.place, name: arrived.result.place.name }, until: c.until, minutes_left: 120, here: true, veiled: true });
   assert.equal(arrived.result.chance, undefined, 'one book: the arrival says it as its meet');
-  assert.deepEqual(look(arrived.state, content, at(1)).stage.filter(x => x.card === 'road'), [{ card: 'road' }], 'one road card');
+  assert.deepEqual(look(arrived.state, content, at(1)).stage.filter(x => x.card === 'road'), [], 'veiled: no road card yet — the page\'s mist');
   const told = must(meet, arrived.state, { action: 'reveal' }, at(1));
+  assert.deepEqual(look(told.state, content, at(1)).stage.filter(x => x.card === 'road'), [{ card: 'road' }], 'revealed: the one road card');
   assert.equal(told.result.revealed, 'chance');
   const took = must(meet, told.state, { action: 'take' }, at(1));
   assert.ok(took.result.paid.wealth > 0);

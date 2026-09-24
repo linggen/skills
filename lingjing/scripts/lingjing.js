@@ -279,20 +279,37 @@ function refreshSoon(ms = 400) {
 }
 let refreshTimer = null;
 
-/* 遇 in the mist (his, 2026-09-22): Ling sets the moment and calls Meet
-   reveal. If her turn ends first, or the page is opened on the mist with no
-   turn running, the page lifts it itself — the stage is never stuck in fog. */
+/* 遇 in the mist (Hanli, 2026-09-24; was his 2026-09-22 veil card): an
+   arrival with something veiled on the road plays a short ink mist over the
+   stage, then the page reveals it itself — Meet `reveal`, a fact of the
+   rules, not a turn — and the road card comes up. Ling never builds toward
+   it: whoever walked, she is told once, after the reveal (`[scene] arrived`),
+   and tells what was revealed. A 抉择 is hers to write: the mist plays, and
+   her Meet `offer` reveals it. */
 let streaming = false;
-let veilTimer = null;
+const MIST_MS = 2600;
+let veiling = null; // the place whose mist has played
+const stillMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+function inkMist() {
+  const view = document.getElementById('view');
+  if (!view || stillMotion()) return;
+  const el = document.createElement('div');
+  el.className = 'inkmist';
+  el.setAttribute('aria-hidden', 'true');
+  view.appendChild(el);
+  setTimeout(() => el.remove(), MIST_MS + 200);
+}
 async function liftVeil() {
-  clearTimeout(veilTimer); veilTimer = null;
-  await write('meet', { action: 'reveal' }).catch((e) => console.warn('[lingjing] reveal', e));
+  const r = await write('meet', { action: 'reveal' }).catch(failed);
   await refresh();
+  if (r?.ok) await report(`[scene] arrived ${look?.place?.id ?? ''}`);
 }
 function watchVeil() {
-  if (!look?.place?.meet?.veiled) { clearTimeout(veilTimer); veilTimer = null; return; }
-  if (veilTimer || streaming) return;
-  veilTimer = setTimeout(() => { veilTimer = null; if (look?.place?.meet?.veiled && !streaming) liftVeil(); }, 20000);
+  const m = look?.place?.meet, here = look?.place?.id ?? null;
+  if (!m?.veiled || veiling === here) return;
+  veiling = here;
+  inkMist();
+  if (m.kind !== 'trial') setTimeout(liftVeil, stillMotion() ? 300 : MIST_MS);
 }
 
 /// Re-read the game. What it answers was read after the call: a read already
@@ -984,7 +1001,8 @@ async function takeMeet(action) {
 /* 去X — the page walks him itself (his, 2026-09-24): Move, then the walk
    drawn on the map (watchTravel sees the place change). An ordinary arrival
    says nothing to Ling; one where the story takes over — a scene, a veiled
-   遇, her call, an errand's sight — goes to her once, unseen, to tell it. A
+   遇 (told after the page reveals it), her call, an errand's sight — goes to
+   her once, unseen, to tell it. A
    refusal is said a moment on the stage. */
 const STORY_AT = [(r) => r.stopped, (r) => r.scene, (r) => r.place?.meet?.veiled, (r) => r.quest?.say, (r) => r.met?.some((m) => m.seen)];
 const NOTE_MS = 4000;
@@ -998,7 +1016,10 @@ async function goTo(place) {
   keep({ doNote: null });
   await refresh();
   cheer(before);
-  if (!r.here && STORY_AT.some((f) => f(r))) await report(`[scene] arrived ${r.place?.id ?? place}`);
+  // Something veiled on the road (not a 抉择, Ling's to write): the page
+  // reveals it after the mist and tells her then (liftVeil) — one beat, after.
+  const veiled = r.place?.meet?.veiled && r.place.meet.kind !== 'trial';
+  if (!r.here && !veiled && STORY_AT.some((f) => f(r))) await report(`[scene] arrived ${r.place?.id ?? place}`);
 }
 function noteAWhile(text) {
   show({ doNote: text });
@@ -1603,9 +1624,7 @@ async function mountChat() {
       streaming = false;
       if (recapSent !== null) recapTold();
       const before = look;
-      // Her turn is over: a 遇 still in the mist is lifted by the page — she
-      // set the moment and forgot the reveal, or never got to it.
-      refresh().then(() => cheer(before)).then(() => { if (look?.place?.meet?.veiled) liftVeil(); });
+      refresh().then(() => cheer(before));
     },
     onContentBlock: (payload) => { streaming = true; onContentBlock(payload); },
     // The engine says the save changed under the page (`save_changed`: the

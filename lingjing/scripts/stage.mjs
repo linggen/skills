@@ -26,9 +26,10 @@ export function lineHere(look) {
   return null;
 }
 
-/* What met on the road stands on the stage as the one road card. */
+/* What met on the road stands on the stage as the one road card — once it is
+   revealed; veiled, the page's mist plays over the stage as it is (lingjing.js). */
 const ON_ROAD = { chance: m => !m.missed && !m.taken, find: () => true, trial: m => Boolean(m.options) };
-export const onRoad = m => Boolean(m && (m.veiled || ON_ROAD[m.kind]?.(m)));
+export const onRoad = m => Boolean(m && !m.veiled && ON_ROAD[m.kind]?.(m));
 
 /* 传闻's step, when it is to be played on this very spot. */
 export function taleHere(look) {

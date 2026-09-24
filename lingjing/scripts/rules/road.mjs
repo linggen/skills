@@ -3,8 +3,9 @@
 //
 // redesign-v2 § 四 (2026-09-24): 遇 · 拾遗 · 抉择 · 机缘 · 拦路 were five names
 // for one thing — something met on the road — and are one system now, in this
-// one book of rules. An arrival deals AT MOST ONE, veiled until Ling has set
-// the moment (Meet reveal), and every kind is answered by the one verb, Meet,
+// one book of rules. An arrival deals AT MOST ONE, veiled until the page has
+// played its mist and calls Meet reveal (a 抉择: until Ling offers its ways),
+// and every kind is answered by the one verb, Meet,
 // with one set of refusals. What each kind may be is still read from its old
 // sources, which other lanes keep writing: meets.json (finds, riddles, the
 // 抉择's dice and stakes, the weights), a place's `meets` (which kinds it may
@@ -131,9 +132,9 @@ const DEAL = {
   beast: (content, pickOf, pool) => ({ creature: pickOf(pool.beast) }),
 };
 
-/* The one thing this arrival meets, or null. Veiled: the stage shows mist
-   until Ling has set the moment and calls Meet reveal (his, 2026-09-22:
-   月黑风高…突然…然后webUI出现怪物卡). */
+/* The one thing this arrival meets, or null. Veiled: the page plays a short
+   mist and reveals it itself (Hanli, 2026-09-24 — was Ling's build-up, his
+   2026-09-22: 月黑风高…突然…然后webUI出现怪物卡); a 抉择 waits for Ling's offer. */
 function dealMeet(content, state, ctx) {
   if (inMade(state) || meetHere(state, ctx.now)) return null;
   // The day's 机缘, where it lies, is the arrival's one thing — before anything the place holds.

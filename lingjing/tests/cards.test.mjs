@@ -1,6 +1,7 @@
 // Page words that are the page's only reading of Ling's reply.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { yinyueLine } from '../scripts/cards.js';
 
 test('Yinyue\'s line is read from the reply as she said it — the last one, plain — or not at all', () => {
@@ -469,17 +470,31 @@ test('可接的差事: one card, a row each; a row opens to the giver; taken, on
   if (after.offers.length === 1) assert.match(cardHtml({ card: 'offer' }, ctx(after)), /class="offerdetail"/, 'a lone errand stands open');
 });
 
-test('路上 in the mist: the road card says nothing of what waits', async () => {
+test('路上 in the mist: no road card at all — the page plays a mist and reveals it itself', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   for (const lang of ['zh', 'en']) {
     const look = { place: { meet: { kind: 'beast', creature: { id: 'longzhi', name: '蠪侄' }, veiled: true } } };
-    const html = cardHtml({ card: 'road' }, { look, lang, words: WORDS[lang] });
-    assert.match(html, /class="card veil road"/);
-    assert.match(html, new RegExp(WORDS[lang].veilLine));
-    assert.doesNotMatch(html, /蠪侄|longzhi|<button/, 'no name, nothing to tap');
+    assert.equal(cardHtml({ card: 'road' }, { look, lang, words: WORDS[lang] }), '', 'no static 前路起了雾 card');
+    const find = { place: { meet: { kind: 'find', line: '路边有物。', wealth: 3, veiled: true } } };
+    assert.equal(cardHtml({ card: 'road' }, { look: find, lang, words: WORDS[lang] }), '', 'nothing told before the reveal');
     assert.equal(cardHtml({ card: 'road' }, { look: { place: { meet: { kind: 'beast' } } }, lang, words: WORDS[lang] }), '', 'a road beast told is the duel card, not this');
     for (const old of ['veil', 'find', 'trial', 'chance']) assert.equal(cardHtml({ card: old }, { look, lang, words: WORDS[lang] }), '', `no ${old} card of its own`);
   }
+});
+test('路上 in the mist, the page: a short ink mist, then the page reveals it (Meet reveal) and tells Ling after — a 抉择 is left to her; no timer, no lift at stream end', () => {
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
+  const watch = src.slice(src.indexOf('function watchVeil()'), src.indexOf('}', src.indexOf('function watchVeil()')) + 1);
+  assert.match(watch, /inkMist\(\)/);
+  assert.match(watch, /m\.kind !== 'trial'\) setTimeout\(liftVeil/);
+  const lift = src.slice(src.indexOf('async function liftVeil()'), src.indexOf('function watchVeil()'));
+  assert.match(lift, /write\('meet', \{ action: 'reveal' \}\)/, 'the page reveals it through the Verb door');
+  assert.match(lift, /report\(`\[scene\] arrived/, 'Ling hears once, after the reveal');
+  assert.doesNotMatch(src, /veilTimer|20000\)/, 'no 20 s fallback');
+  const end = src.slice(src.indexOf('onStreamEnd:'), src.indexOf('onContentBlock:'));
+  assert.doesNotMatch(end, /liftVeil/, 'no lift at stream end');
+  assert.match(css, /prefers-reduced-motion: reduce\) \{ \.inkmist \{ display: none; \} \}/);
+  assert.doesNotMatch(css, /\.veilline/);
 });
 test('所得: an errand handed in shows what it paid and the next step in hand', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');

@@ -467,17 +467,16 @@ body.fighting .askbar { display: none; }
 /* A page tap the rules refused, in their words. */
 .donote { margin: 0 auto 10px; max-width: 640px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--seal, #b0413e); color: var(--seal, #b0413e); background: var(--surface); font-size: 13.5px; }
 
-/* 遇, before it is told — mist, until Ling has set the moment. */
-.card.veil { position: relative; min-height: 180px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(180deg, #d9d3c6, #ebe6db); }
-.card.veil .mist { position: absolute; inset: -40%; background:
-  radial-gradient(40% 30% at 30% 40%, rgba(255,255,255,.55), transparent 70%),
-  radial-gradient(35% 25% at 70% 60%, rgba(255,255,255,.45), transparent 70%),
-  radial-gradient(50% 35% at 50% 80%, rgba(255,255,255,.35), transparent 70%);
-  animation: drift 9s ease-in-out infinite alternate; }
-.card.veil .veilline { position: relative; font-family: var(--serif, serif); font-size: 18px; letter-spacing: .12em; color: #6b6356; }
-@keyframes drift { from { transform: translateX(-6%) translateY(2%); } to { transform: translateX(6%) translateY(-2%); } }
-@media (prefers-reduced-motion: reduce) { .card.veil .mist { animation: none; } }
-@media (prefers-color-scheme: dark) { .card.veil { background: linear-gradient(180deg, #1f1d19, #29261f); } .card.veil .veilline { color: #b8ad99; } }
+/* 遇, before it is revealed: a short ink mist over the stage, then the page
+   reveals it (lingjing.js inkMist). Reduced motion: none, the reveal is quick. */
+.inkmist { position: absolute; inset: -20%; z-index: 5; pointer-events: none; opacity: 0;
+  background: radial-gradient(38% 30% at 30% 45%, rgba(60,55,48,.34), transparent 70%),
+    radial-gradient(34% 26% at 70% 55%, rgba(60,55,48,.28), transparent 70%),
+    radial-gradient(50% 36% at 50% 85%, rgba(245,242,235,.6), transparent 70%);
+  filter: blur(14px); animation: inkmist 2.6s ease-in-out forwards; }
+@keyframes inkmist { 0% { opacity: 0; transform: translateX(-8%) scale(1.05); } 35%, 60% { opacity: 1; } 100% { opacity: 0; transform: translateX(8%) scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .inkmist { display: none; } }
+@media (prefers-color-scheme: dark) { .inkmist { background: radial-gradient(38% 30% at 30% 45%, rgba(210,200,185,.18), transparent 70%), radial-gradient(34% 26% at 70% 55%, rgba(210,200,185,.14), transparent 70%), radial-gradient(50% 36% at 50% 85%, rgba(20,18,15,.6), transparent 70%); } }
 /* 精英 and 伤势 on the way in: the two facts that make going a choice. */
 .celite { font-family: inherit; font-size: 11px; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 999px; border: 1px solid #a33b2e; color: #e0806f; vertical-align: middle; }
 

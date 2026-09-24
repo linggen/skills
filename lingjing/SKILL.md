@@ -622,18 +622,19 @@ tools:
       路上 — the one thing an arrival met on the road (`place.meet` in Move
       and Look), at most one: the day's 机缘 where it lies, else — where the
       place holds nothing of its own — a find, a traveller, a beast, a 抉择.
-      It arrives VEILED (`meet.veiled`): the stage shows only mist. Set the
-      moment first — two or three short lines in the world that build toward
-      it (the dark, the wind, a sound) and stop at the edge, never naming it
-      — then Meet `reveal`, and follow that answer's `then`. Revealed:
+      It arrives VEILED (`meet.veiled`): the page plays a short mist and
+      reveals it itself, then tells you `[scene] arrived` — Look, tell what
+      was revealed in a line or two and follow its `then`. Never call
+      `reveal`, never build toward it and never name it before. Revealed:
       `chance` (机缘) or `find`: one line for what lies there (a find's
       `line`); 收下 is their tap on the stage. `riddle`: a traveller asks —
       one line to set them on the road, then the rules' `ask` IS the riddle;
       an option tapped is Meet `answer` with it, *不答，赶路* is Meet `pass`;
       on `wrong-answer` say the `hint` and ask again. `beast`: it blocks the
       road — say so in one line; the fight is the card on the stage. `trial`
-      (抉择): YOU write it — see § 抉择; set the moment, then Meet `offer`
-      with `options` (it reveals). Refusals for every kind: `nothing-here`,
+      (抉择): YOU write it — see § 抉择; the page never reveals it: set the
+      moment, then Meet `offer` with `options` (it reveals). Refusals for
+      every kind: `nothing-here`,
       `gone` (a 机缘 past its hour — its line), `not-veiled`,
       `unknown-action`. You never deal one yourself and never promise one.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs meet --action={{action}} --answer={{answer}} --options={{options}} --n={{n}} --for=ling"
@@ -914,8 +915,9 @@ left them.
 The page reports only what finishes, or where the story takes over:
 `[scene] won <id>`, `[scene] lost <id>`, `[scene] withdrew <id>`,
 `[scene] trial <n> won|lost`, `[scene] tale step|end` (§ 今日传闻), `[scene] recap` (§ 九鼎录), and `[scene] arrived <place>` — the page walked
-them somewhere a story waits (a scene, something veiled on the road, her call, an errand's
-sight). On `[scene] arrived`: Look, then tell the arrival as § Places and
+them somewhere a story waits (a scene, something on the road — told once the
+page has revealed it — her call, an errand's sight). On `[scene] arrived`:
+Look, then tell the arrival as § Places and
 the road says — the scene, what the road met, the sight — and follow its `then`. An
 ordinary arrival never reaches you.
 
@@ -1000,8 +1002,9 @@ Never restart, load, undo or forget unasked. A refusal (`not-open`,
   the sight before them, and say it is done (`handed` says it paid itself; a
   `carry` still ready leads with 交差). With no `met`: a haunt is a beast on
   the stage, a market a shelf; where `tale`'s step is `here`, it is.
-- **路上 — no arrival is empty** (`place.meet`): Meet's own description says
-  how — set the moment, reveal, follow `then`. Once per place per day. Look's
+- **路上 — no arrival is empty** (`place.meet`): the page reveals it after a
+  short mist and tells you then; tell the story of what was revealed and
+  follow `then` (Meet's description). Once per place per day. Look's
   `chance` is where today's 机缘 lies: say it once, early, as a rumour naming
   the place — never the minutes or what it holds; `missed`, say nothing.
 - **The director** (Look's `director`, when no scene runs): `choice` the
