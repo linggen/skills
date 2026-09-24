@@ -7,7 +7,7 @@ import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, challengeHtml } from './battle-card.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
-import { boardDoneToday, onRoad } from './stage.mjs';
+import { boardDoneToday, onRoad, winnable } from './stage.mjs';
 
 export const WORDS = {
   zh: {
@@ -16,7 +16,7 @@ export const WORDS = {
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
-    choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featChapter: '新章', wonOver: '收服', subdue: '降妖',
+    choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', tameBy: '收服 · {what}', likesNone: '它喜欢{item}，囊中没有', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featChapter: '新章', wonOver: '收服', subdue: '降妖',
     effProgress: '服下：{xw} +{n}', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
@@ -56,7 +56,7 @@ export const WORDS = {
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
     gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', go: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
-    choreOpen: 'Do it in {app}', about: 'Ask', askHint: 'What do you want to know? Leave it empty and she simply tells', askHer: 'Ask {name}', askHerHint: 'What would you like to say to her? Leave it empty and she simply talks', askHerEmpty: 'Tell me something?', askSend: 'Ask', drop: 'Put it down', paysWord: 'Pays', nextWord: 'Then', feed: 'Feed it {item}', offer: 'Offer the {item}', feedNone: 'No {item} in the bag', tameHint: 'Beat it, then offer the {item}, and it is yours', playGame: 'Play', lundaoTitle: 'Debate · The Jixia scholar', lundaoOffer: 'The scholar meets friends with verse. Three good answers, once a day.', lundaoBegin: 'Ask the scholar to debate', sayLundao: 'Ask the scholar to debate', lundaoKey: 'A line with “{key}” in it', lundaoChain: 'A word starting with the last letter of “{last}”', lundaoUp: 'Upper line: {up}', lundaoMiss: 'missed {n}/{max}', lundaoHow: 'Answer in the chat.', featRise: 'Breakthrough', featChapter: 'A new chapter', wonOver: 'Won over', subdue: 'Subdue',
+    choreOpen: 'Do it in {app}', about: 'Ask', askHint: 'What do you want to know? Leave it empty and she simply tells', askHer: 'Ask {name}', askHerHint: 'What would you like to say to her? Leave it empty and she simply talks', askHerEmpty: 'Tell me something?', askSend: 'Ask', drop: 'Put it down', paysWord: 'Pays', nextWord: 'Then', feed: 'Feed it {item}', offer: 'Offer the {item}', feedNone: 'No {item} in the bag', tameHint: 'Beat it, then offer the {item}, and it is yours', tameBy: 'Win it over · {what}', likesNone: 'It likes the {item} — none in the bag', playGame: 'Play', lundaoTitle: 'Debate · The Jixia scholar', lundaoOffer: 'The scholar meets friends with verse. Three good answers, once a day.', lundaoBegin: 'Ask the scholar to debate', sayLundao: 'Ask the scholar to debate', lundaoKey: 'A line with “{key}” in it', lundaoChain: 'A word starting with the last letter of “{last}”', lundaoUp: 'Upper line: {up}', lundaoMiss: 'missed {n}/{max}', lundaoHow: 'Answer in the chat.', featRise: 'Breakthrough', featChapter: 'A new chapter', wonOver: 'Won over', subdue: 'Subdue',
     effProgress: 'Taken: {xw} +{n}', effLearn1: 'Learned: see the shape of the beast\'s next turn', effLearn2: 'Learned: see every move of its next turn, with numbers', effWear: 'Yinyue can wear it', effLift: { atk: 'her card +{n} attack', hp: 'her card +{n} Life' }, effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
     duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
@@ -156,7 +156,19 @@ function creature(card, ctx) {
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
       <q>${esc(pick(c.quote, ctx.lang))}</q>
       <span class="chip">${esc(ctx.words[tamed ? 'tamed' : beatenToday(ctx, c.id) ? 'beatenToday' : 'untamed'])}</span>
-    </div></div>${acts([{ label: ctx.words.about, ask: true, say: say(ctx.words.sayCreature, { name }) }])}</div>`;
+    </div></div>${tameAct(c.id, ctx)}${acts([{ label: ctx.words.about, ask: true, say: say(ctx.words.sayCreature, { name }) }])}</div>`;
+}
+/* 收服 on the creature's card, once it is beaten here (先降后收): 献上X (a
+   thing) or 喂它X (food) — the page's own Tame. Without X in the bag, the
+   button stands disabled and says what it likes. Won over: the chip says
+   已收服, and there is no button. */
+function tameAct(id, ctx) {
+  const e = ctx.look.place?.encounter;
+  if (e?.creature?.id !== id || !winnable(e)) return '';
+  const w = ctx.words, item = e.likes.name;
+  if (!e.likes.held) return `<div class="acts"><button class="act tame" data-tame="${esc(id)}" disabled>${esc(say(w.likesNone, { item }))}</button></div>`;
+  const what = say(e.likes.fed !== false ? w.feed : w.offer, { item });
+  return `<div class="acts"><button class="act tame" data-tame="${esc(id)}">${esc(say(w.tameBy, { what }))}</button></div>`;
 }
 
 function traits(card, ctx) {
@@ -459,17 +471,9 @@ function duel(card, ctx) {
   const exit = (ctx.look.scene?.exits || []).find((x) => x.game?.id === card.id && x.game.kind === 'duel')
     ?? (e && e.game.id === card.id && !e.tamed ? e : null);
   if (!exit) return '';
-  // Two ways to win a beast over, side by side (his, 2026-09-23: 喂人参和战斗
-  // 都是收服的方式): 出手, or feed it what it likes — the page's own Tame
-  // (his, 2026-09-24), and the 收服 seal comes up when the cast grows.
-  // 先降后收: the offer stands only once it has been beaten; before, the card says so.
-  const here = e && e.game.id === card.id && !e.tamed && e.likes && e.beaten ? e : null;
-  const fed = here?.likes.fed !== false; // food is fed; a thing is offered
-  // Not beaten yet: the card says the way — beat it, then what it likes.
-  const hint = e && e.game.id === card.id && !e.tamed && e.likes && !e.beaten
-    ? `<small class="feedhint">${esc(say(ctx.words.tameHint, { item: e.likes.name }))}</small>` : '';
-  const feed = hint || (here ? `<button class="bact feed" data-tame="${esc(e.creature.id)}"${here.likes.held ? '' : ` disabled title="${esc(here.likes.name)}"`}>${esc(say(fed ? ctx.words.feed : ctx.words.offer, { item: here.likes.name }))}${here.likes.held ? '' : `<small>${esc(say(ctx.words.feedNone, { item: here.likes.name }))}</small>`}</button>` : '');
-  return challengeHtml(exit.duel, { ...ctx, words: BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, title: ctx.words.subdue ?? '降妖', artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, feed });
+  // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
+  // creature's own card offers 收服 (creature, below).
+  return challengeHtml(exit.duel, { ...ctx, words: BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, title: ctx.words.subdue ?? '降妖', artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null });
 }
 
 /// 本命法宝 — the treasure bound at 结丹: its name and 重, what it strikes and

@@ -36,10 +36,11 @@ test('a line running under his feet takes the stage, and the page adds nothing o
 });
 
 test('what the stage owns, the question does not offer — whichever side it came from', () => {
-  const look = world({ quest: { step: 'ring', at_water: true }, place: { id: 'p', encounter: { tamed: false, game: { id: 'haunt:longzhi' }, creature: { id: 'longzhi' } }, places: [{ id: 'p', here: true }, { id: 'ye' }] } });
-  const owns = stageOwns(look, [{ card: 'quest' }, { card: 'duel', id: 'haunt:longzhi' }, { card: 'map' }, { card: 'hexagram' }]);
+  const look = world({ quest: { step: 'ring', at_water: true }, place: { id: 'p', encounter: { tamed: false, beaten: true, likes: { id: 'x', name: 'X', held: 1 }, game: { id: 'haunt:longzhi' }, creature: { id: 'longzhi' } }, places: [{ id: 'p', here: true }, { id: 'ye' }] } });
+  const owns = stageOwns(look, [{ card: 'quest' }, { card: 'duel', id: 'haunt:longzhi' }, { card: 'creature', id: 'longzhi' }, { card: 'map' }, { card: 'hexagram' }]);
   assert.ok(owns.has('ring'), '摇一摇铃 is on the quest card');
-  assert.ok(owns.has('exit:haunt:longzhi') && owns.has('tame:longzhi'), '出手 and the feeding are on the beast\'s card');
+  assert.ok(owns.has('exit:haunt:longzhi') && owns.has('tame:longzhi'), '出手 on the duel card, 收服 on the beaten beast\'s own');
+  assert.ok(!stageOwns(look, [{ card: 'duel', id: 'haunt:longzhi' }]).has('tame:longzhi'), 'the duel card carries no feeding (先降后收)');
   assert.ok(!owns.has('duel:haunt:longzhi'), 'no key the question cannot carry');
   assert.ok(owns.has('move:ye'), 'a place on the map walks there');
   assert.ok(owns.has('divine'), 'the coins, until they are cast');

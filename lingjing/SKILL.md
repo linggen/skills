@@ -1092,8 +1092,8 @@ into the hand, spent when played. Learned arts are not in fights. The day's
   `subdued-today`.
 
 **At a haunt** (Look's `place.encounter` — its fight and what it `likes`):
-降妖 is the card, and so is the feeding: its 喂它X / 献上X tames it on a tap,
-and you hear nothing. **驯** asked in words — *喂它灵芝*, *驯服它*, *收了它*,
+降妖 is the duel card (出手 only); once beaten, the creature's own card offers
+收服 · 喂它X / 献上X — it tames on a tap, and you hear nothing. **驯** asked in words — *喂它灵芝*, *驯服它*, *收了它*,
 *献给它* — is **Tame**, never Trade `use` (which only puts a thing on Yinyue).
 Food is fed, a thing offered (`likes.fed`) — never say a beast eats a bell.
 **先降后收**: before it is beaten (`encounter.beaten`) Tame refuses

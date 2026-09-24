@@ -91,6 +91,10 @@ export const boardDoneToday = (look, id) => {
 };
 const boardOf = (look, c) => (c.card === 'board' && taskOfBoard(look, c.id) ? { ...c, id: taskOfBoard(look, c.id).id } : c);
 
+/* A beast here beaten (on any day), not yet won over, that likes something:
+   its card offers 收服 (the rules refuse Tame before — `not-beaten`). */
+export const winnable = e => Boolean(e && e.beaten && !e.tamed && e.likes);
+
 /* The stage, in order, as one list. `focus` is what Ling last showed (the save
    holds it, so a reload puts the same cards back); `fight` is a 斗法 the page
    is playing out. The page draws `building`, `empty` and `quest` itself; every
@@ -153,6 +157,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     }
     const haunt = look.place?.encounter;
     if (haunt && !haunt.tamed && !has('duel', haunt.game.id)) cards.push({ card: 'duel', id: haunt.game.id });
+    // 先降后收: beaten, it may be won over — on its own card (cards.js creature).
+    if (winnable(haunt) && !has('creature', haunt.creature.id)) cards.push({ card: 'creature', id: haunt.creature.id });
   }
   return [...head, ...cards];
 }
@@ -174,12 +180,10 @@ export function stageOwns(look, cards) {
       if (line?.step === 'ring') owns.add('ring');
       if (line?.step === 'riddle') owns.add('ring'); // her riddle is answered on the card
     }
-    // A duel card carries 出手 and, when the creature can be tamed, the feeding.
-    if (c.card === 'duel') {
-      owns.add(`exit:${c.id}`);
-      const beast = look?.place?.encounter?.game?.id === c.id ? look.place.encounter : null;
-      if (beast?.creature?.id) owns.add(`tame:${beast.creature.id}`);
-    }
+    // A duel card carries 出手 only; the creature's own card, once it is
+    // beaten, carries the winning over (先降后收).
+    if (c.card === 'duel') owns.add(`exit:${c.id}`);
+    if (c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id) owns.add(`tame:${c.id}`);
     if (c.card === 'board') owns.add(`exit:${c.id}`);
     // The map draws every place as a chip that walks there, so the roads are
     // already clickable and the question does not repeat them.

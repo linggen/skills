@@ -219,22 +219,37 @@ test('a creature at its haunt: the bout on the stage pays once a day, and what i
   refused(duel, settled.state, { id: 'haunt:jingwei' }, 'subdued-today', october());
   assert.ok(!look(settled.state, content, october()).director.choice.options.some(o => o.duel));
   // taming: 先降后收 — never before it is beaten, then the thing it likes, once
-  refused(tame, { ...base, bag: { ...base.bag, 'jade-fish': 1 } }, { creature: 'jingwei' }, 'not-beaten', october());
+  const unbeaten = { ...base, bag: { ...base.bag, 'jade-fish': 1 } };
+  refused(tame, unbeaten, { creature: 'jingwei' }, 'not-beaten', october());
   const beaten = settled.state;
   refused(tame, beaten, { creature: 'jingwei' }, 'needs-item', october());
   const fed = { ...beaten, bag: { ...beaten.bag, 'jade-fish': 1 } };
   assert.equal(look(fed, content, october()).place.encounter.likes.held, 1, 'held: the card offers the feeding');
-  // …and the offering is the page's own Tame, never a word to Ling (his, 2026-09-24).
+  // The card states, 先降后收 (his, 2026-09-24): before the fight the duel card
+  // is 出手 only; beaten, the creature's card offers 收服 · 献上X — disabled with
+  // what it likes when the bag lacks it; won over, 已收服 and no button. The
+  // offering is the page's own Tame, never a word to Ling.
   const { cardHtml, WORDS } = await import('../scripts/cards.js');
-  const card = cardHtml({ card: 'duel', id: 'haunt:jingwei' }, { look: look(fed, content, october()), lang: 'zh', words: WORDS.zh, content });
-  assert.match(card, /<button class="bact feed" data-tame="jingwei">献上玉鱼</);
-  assert.doesNotMatch(card, /data-say/);
+  const draw = (s, c) => cardHtml(c, { look: look(s, content, october()), lang: 'zh', words: WORDS.zh, content: { ...content, creatures: content.creatures.creatures } });
+  const before = draw(unbeaten, { card: 'duel', id: 'haunt:jingwei' });
+  assert.match(before, /data-duel-start="haunt:jingwei"/);
+  assert.doesNotMatch(before, /data-tame|献上|喂它/, 'before the fight: 出手 only');
+  assert.doesNotMatch(draw(unbeaten, { card: 'creature', id: 'jingwei' }), /data-tame/, 'nor on its own card');
+  assert.doesNotMatch(draw(fed, { card: 'duel', id: 'haunt:jingwei' }), /data-tame/, 'beaten: the duel card still carries no feeding');
+  assert.ok(look(fed, content, october()).stage.some(c => c.card === 'creature' && c.id === 'jingwei'), 'beaten: its card is on the stage');
+  const card = draw(fed, { card: 'creature', id: 'jingwei' });
+  assert.match(card, /<button class="act tame" data-tame="jingwei">收服 · 献上玉鱼</);
+  const none = draw(beaten, { card: 'creature', id: 'jingwei' });
+  assert.match(none, /<button class="act tame" data-tame="jingwei" disabled>它喜欢玉鱼，囊中没有</);
   const out = must(tame, fed, { creature: '精卫' }, october());
   assert.ok(out.state.cast.includes('jingwei'));
   assert.equal(out.state.bag['jade-fish'], undefined);
   assert.equal(out.result.fed.id, 'jade-fish');
   assert.ok(out.result.paid.progress > 0);
   refused(tame, out.state, { creature: 'jingwei' }, 'already-tamed', october());
+  const won = draw(out.state, { card: 'creature', id: 'jingwei' });
+  assert.match(won, /已收服/);
+  assert.doesNotMatch(won, /data-tame/, 'won over: no button');
   // 得牌: before, 精卫 was nowhere in his ten; tamed, its card is his to take in
   assert.ok(!look(fed, content, october()).place.encounter.game.setup?.you?.deck?.includes('jingwei'));
   assert.ok(!(fed.cards ?? []).includes('jingwei'));
