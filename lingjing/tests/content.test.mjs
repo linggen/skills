@@ -263,6 +263,20 @@ test('chapter 4 walks from the Si to the cauldron under Pengcheng and ends', () 
   assert.deepEqual(ch.scenes['04-mouth'].buttons, ['subdue', 'riddle', 'swim']);
 });
 
+test('chapter 9 is the ending: no gate and no breakthrough, 定鼎 marked on the chapter, the last button asks her', () => {
+  const c = fresh(), ch = c.chapters['09-yu'];
+  assert.equal(ch.gate, null); assert.equal(ch.province, '豫'); assert.equal(ch.opens, null);
+  assert.deepEqual(ch.ending, { id: 'dingding', title: { zh: '定鼎', en: 'The Cauldrons Set' } });
+  assert.ok(!Object.values(ch.scenes).some(s => s.exits.some(e => e.breakthrough)));
+  assert.equal(Object.keys(c.chapters).sort().at(-1), '09-yu', 'nothing after it');
+  const end = ch.scenes['09-end'];
+  assert.deepEqual(end.buttons, ['ask']);
+  assert.ok(end.exits.every(e => e.ends === '09-yu'));
+  assert.equal(end.at, 'luoyi', 'the nine are set on the footings at 洛邑');
+  // every province has its chapter, each chapter its elite
+  assert.deepEqual(Object.values(c.chapters).map(x => x.province).sort(), ['兖', '冀', '徐', '徐', '扬', '梁', '荆', '豫', '雍', '青'].sort());
+});
+
 // Every line of Yinyue's from chapter 3 on has its narration for the player who never rang the bell.
 test('from chapter 3 on, every line of Yinyue\'s carries its alone', () => {
   const c = fresh();

@@ -63,18 +63,19 @@ for (const id of later) {
       }
       assert.deepEqual(walked.map(w => w.split('@')[0]).sort(), Object.keys(ch.scenes).sort(), 'every scene is on the spine');
       assert.ok(s.ended.includes(id), `${id} ended`);
+      assert.ok(look(s, content, c).place, 'the world goes on after it');
       if (ch.gate != null) assert.equal(tiers.find(t => t.id === s.tier).gate, ch.gate, 'the cauldron opened its realm');
     }
   });
 
   test(`${id}: a cauldron refuses one short of the peak, and a creature scene offers its three ways`, () => {
     const ch = content.chapters[id];
-    const cauldron = Object.values(ch.scenes).find(x => x.exits.some(e => e.id === 'take'));
-    const take = cauldron.exits.find(e => e.id === 'take');
+    const cauldron = ch.scenes[`${id.slice(0, 2)}-cauldron`];
+    const take = cauldron.exits.find(e => e.breakthrough);
     if (ch.gate != null) {
       const s = { ...arrive(id), scene: cauldron.id, place: cauldron.at, step: 0, progress: 0 };
       assert.equal(resolve(s, content, c, { exit: 'take' }).result.refused, 'not-at-peak');
-    } else assert.ok(!take.breakthrough, 'no realm past the last');
+    } else assert.ok(!Object.values(ch.scenes).some(x => x.exits.some(e => e.breakthrough)), 'no realm past the last');
     const beast = Object.values(ch.scenes).find(x => x.show?.some(card => card.card === 'creature'));
     assert.equal(beast.buttons.length, 3);
     assert.ok(beast.exits.find(e => e.id === 'subdue').game.creature === beast.show[0].id);

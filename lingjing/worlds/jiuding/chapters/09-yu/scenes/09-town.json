@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "09-town",
+ "chapter": "09-yu",
+ "at": "luoyi",
+ "place": {
+  "zh": "洛邑 · 九座",
+  "en": "Luoyi · The nine footings"
+ },
+ "setup": {
+  "zh": "洛邑城中有一片空地，地上嵌着九块石座，排成三排，每一块都有一口鼎那么大，上面长满了青苔。老人说，九鼎走的那天起，洛水边的灵脉就一天天地薄了。坊市照常开着。远处的和山上，有一点光在动。",
+  "en": "In the middle of Luoyi is an open square, and set into the ground are nine stone footings in three rows, each the size of a cauldron, all overgrown with moss. The old people say that from the day the nine left, the spirit veins by the Luo have thinned day by day. The market is open as ever. On Mount He in the distance, a light is moving."
+ },
+ "recap": {
+  "zh": "洛邑城中留着九块空鼎座；九鼎走后，这里的灵脉一天比一天薄。",
+  "en": "In Luoyi nine empty footings remained where the cauldrons had stood; since they left, the spirit veins there had thinned day by day."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "九鼎就立在这儿。成王定鼎于郏鄏——就是这块地。我在这些石座中间长大。",
+    "en": "This is where the nine stood. King Cheng set the cauldrons at Jiaru — this very ground. I grew up among these footings."
+   },
+   "alone": {
+    "zh": "成王定鼎于郏鄏——九鼎当年就立在这里。",
+    "en": "King Cheng set the cauldrons at Jiaru: the nine stood here."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "和山上的光越来越亮。你掌心的八口鼎，都在往那边转。",
+    "en": "The light on Mount He grows brighter. The eight cauldrons in your palm are all turning toward it."
+   }
+  }
+ ],
+ "buttons": [
+  "hill",
+  "market"
+ ],
+ "exits": [
+  {
+   "id": "hill",
+   "label": {
+    "zh": "去和山",
+    "en": "To Mount He"
+   },
+   "means": "goes to Mount He, toward the light",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你往西南走。和山不高，九条水从山里流出来，绕着山转了五道弯，才往北流进河里。",
+      "en": "South-west. Mount He is not high; nine streams flow out of it, wind five times round it, and only then run north into the River."
+     }
+    }
+   ],
+   "next": "09-hill"
+  },
+  {
+   "id": "market",
+   "label": {
+    "zh": "先逛坊市",
+    "en": "The market first"
+   },
+   "means": "goes shopping, asks about the market, wants to buy or sell",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "洛邑的坊市里什么都有，八州的货都往这里来。卖铜器的人说，这些年铸出来的鼎，总是立不稳。",
+      "en": "Luoyi's market has everything; the goods of all eight provinces come here. A bronze-seller says that for years now every cauldron cast here stands crooked."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "footings",
+   "means": "walks among the nine stone footings, touches them",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你一块一块走过去。第一块刻着冀，第二块刻着兖……第九块，刻着豫。",
+      "en": "You walk past them one by one. The first is cut with Ji, the second with Yan… the ninth, with Yu."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "小时候我在这儿摇铃，一口一口数过去。",
+      "en": "When I was small I rang the bell here, counting them one by one."
+     },
+     "alone": {
+      "zh": "石座旁的地上有一个小小的凹坑，像一个孩子常年站在那里。",
+      "en": "Beside the footings is a small hollow in the ground, as if a child had stood there for years."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

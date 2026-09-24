@@ -500,6 +500,52 @@
     }
    }
   ],
+  "豫": [
+   {
+    "item": "lingzhi",
+    "at": [
+     "songshan",
+     "heshan"
+    ],
+    "line": {
+     "zh": "嵩山的石缝里，一朵灵芝迎着东边的光。",
+     "en": "In a crack of Mount Song's rock, a lingzhi facing the eastern light."
+    }
+   },
+   {
+    "item": "ginseng",
+    "at": [
+     "yique",
+     "songshan"
+    ],
+    "line": {
+     "zh": "伊水边的林子里，有一支参被雨冲了出来。",
+     "en": "In the woods by the Yi, the rain has washed a ginseng out of the ground."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "luoshui",
+     "hangu"
+    ],
+    "line": {
+     "zh": "洛水边的浅滩上，几块灵石在月光下发亮。",
+     "en": "On a shoal of the Luo, a few spirit stones glint in the moonlight."
+    }
+   },
+   {
+    "wealth": 6,
+    "at": [
+     "luoyi",
+     "yique"
+    ],
+    "line": {
+     "zh": "一块鼎座的青苔底下，压着几块灵石。",
+     "en": "Under the moss of a footing, a few spirit stones."
+    }
+   }
+  ],
   "*": [
    {
     "item": "ginseng",

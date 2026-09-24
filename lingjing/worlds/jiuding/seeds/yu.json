@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "province": "豫",
+  "_about": "奇遇 seeds for 豫 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "yu-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "洛邑的老人说，当年周王在这里立鼎，占卜说能传三十代，七百年。",
+        "en": "An old man of Luoyi says that when the king of Zhou set the cauldrons here, the diviners gave him thirty reigns and seven hundred years."
+      },
+      "source": {
+        "zh": "《左传·宣公三年》：成王定鼎于郏鄏，卜世三十，卜年七百，天所命也。",
+        "en": "Zuo Zhuan: King Cheng set the cauldrons at Jiaru; divination gave thirty reigns and seven hundred years — Heaven's charge."
+      }
+    },
+    {
+      "id": "yu-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个老人说，这座城是周公亲手量过的：这里是天下的中间，四方来朝，路都一样远。",
+        "en": "An old man says the Duke of Zhou measured this city himself: here is the middle of the world, and from every side the road to court is the same length."
+      },
+      "source": {
+        "zh": "《史记·周本纪》：周公……曰：此天下之中，四方入贡道里均。",
+        "en": "Records of the Grand Historian, Zhou: the Duke of Zhou said, this is the centre of the world; from all four quarters the tribute roads are equal."
+      }
+    },
+    {
+      "id": "yu-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "洛水边的渔人说，从前有一只大龟从水里爬上来，背上驮着一张数字的图。",
+        "en": "A fisherman by the Luo says a great turtle once climbed out of the water with a chart of numbers on its back."
+      },
+      "source": {
+        "zh": "《周易·系辞上》：河出图，洛出书，圣人则之。",
+        "en": "The Book of Changes, Great Treatise: the River gave the Chart, the Luo gave the Writing, and the sages took them as their pattern."
+      }
+    },
+    {
+      "id": "yu-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "洛水上起了雾，一个诗人说，他在雾里看见了一位神女。",
+        "en": "Mist rises on the Luo; a poet says he saw a goddess in it."
+      },
+      "source": {
+        "zh": "曹植《洛神赋》：翩若惊鸿，婉若游龙。",
+        "en": "Cao Zhi, \"Rhapsody on the Goddess of the Luo\": light as a startled swan, supple as a swimming dragon."
+      }
+    },
+    {
+      "id": "yu-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "函谷关的关吏说，关门要鸡叫才开；有一回半夜鸡就叫了——是一个门客学的。",
+        "en": "A clerk at the Hangu Pass says the gate opens at cockcrow — and once the cocks crowed at midnight, because a retainer imitated one."
+      },
+      "source": {
+        "zh": "《史记·孟尝君列传》：客之居下坐者有能为鸡鸣，而鸡齐鸣，遂发传出。",
+        "en": "Records of the Grand Historian, Lord Mengchang: a retainer of the lowest seat could crow like a cock, all the cocks crowed, and they passed out through the gate."
+      }
+    },
+    {
+      "id": "yu-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "关令说，他家祖上在关上留住过一位骑青牛的老先生，让他写了五千字才放行。",
+        "en": "The keeper of the pass says his forebear once kept an old master on a grey ox at this gate, and let him through only after he had written five thousand words."
+      },
+      "source": {
+        "zh": "《史记·老子韩非列传》：至关，关令尹喜曰：子将隐矣，强为我著书。于是老子乃著书上下篇，言道德之意五千余言而去。",
+        "en": "Records of the Grand Historian, Laozi: at the pass the keeper Yin Xi said, you are going into retreat — write me a book. So Laozi wrote two parts on the Way and its Virtue, five thousand words, and went."
+      }
+    },
+    {
+      "id": "yu-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "伊水从两座山中间流过，像一道门，船夫说，这门是禹凿开的。",
+        "en": "The Yi runs between two hills like a gate; the boatmen say Yu cut it."
+      },
+      "source": {
+        "zh": "《水经注·伊水》：昔大禹疏以通水，两山相对，望之若阙，伊水历其间北流，故谓之伊阙。",
+        "en": "Commentary on the Water Classic: Yu opened it to let the water through; the two hills face each other like gate-towers, and the Yi flows north between them — so it is called Yique."
+      }
+    },
+    {
+      "id": "yu-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "嵩山下有一块裂开的大石头，山民说，那是禹的妻子变的，石头裂开，生出了他们的儿子。",
+        "en": "Below Mount Song lies a great split stone; the hill people say it was Yu's wife, turned to stone, and when it split their son was born."
+      },
+      "source": {
+        "zh": "《汉书·武帝纪》颜师古注引《淮南子》：禹治洪水……涂山氏……至嵩高山下化为石，方生启。",
+        "en": "Yan Shigu on the Book of Han, quoting the Huainanzi: when Yu was taming the flood, the lady of Tushan came to the foot of Mount Songgao and turned to stone; then Qi was born."
+      }
+    },
+    {
+      "id": "yu-09",
+      "kind": "province-tale",
+      "line": {
+        "zh": "颍水边有个人在洗耳朵，说刚才有人请他去做九州长，他听脏了耳朵。",
+        "en": "A man by the Ying is washing his ears: someone just asked him to rule the nine provinces, and it dirtied them."
+      },
+      "source": {
+        "zh": "《高士传·许由》：尧又召为九州长，由不欲闻之，洗耳于颍水滨。",
+        "en": "Lives of Lofty Men: Yao summoned Xu You to head the nine provinces; not wishing to hear it, he washed his ears in the Ying."
+      }
+    },
+    {
+      "id": "yu-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "洛阳城里有个读书人，困了就拿锥子扎自己的腿。",
+        "en": "A scholar in Luoyang, when he grows sleepy, jabs his thigh with an awl."
+      },
+      "source": {
+        "zh": "《战国策·秦策一》：（苏秦）读书欲睡，引锥自刺其股，血流至足。",
+        "en": "Strategies of the Warring States: when Su Qin grew sleepy over his books, he stabbed his thigh with an awl till the blood ran to his feet."
+      }
+    },
+    {
+      "id": "yu-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "城北的邙山上尽是坟，老人说，生在哪里都好，死了要葬在北邙。",
+        "en": "Mount Mang north of the city is all graves; the old people say, be born where you like, but be buried at Beimang."
+      },
+      "source": {
+        "zh": "民谚：生在苏杭，葬在北邙。",
+        "en": "Proverb: be born in Suzhou or Hangzhou; be buried at Beimang."
+      }
+    },
+    {
+      "id": "yu-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个杞国来的人整夜睡不着，怕天会塌下来。",
+        "en": "A man from Qi cannot sleep all night for fear the sky will fall."
+      },
+      "source": {
+        "zh": "《列子·天瑞》：杞国有人忧天地崩坠，身亡所寄，废寝食者。",
+        "en": "Liezi: a man of Qi feared heaven and earth would collapse and he would have nowhere to be, and could neither sleep nor eat."
+      }
+    },
+    {
+      "id": "yu-13",
+      "kind": "province-tale",
+      "creature": "taifeng",
+      "line": {
+        "zh": "和山上有光，出入不定；山下的人说，那是一位老虎尾巴的吉神。",
+        "en": "A light comes and goes on Mount He; the people below say it is an auspicious god with a tiger's tail."
+      },
+      "source": {
+        "zh": "《山海经·中次三经》：吉神泰逢司之，其状如人而虎尾……出入有光。",
+        "en": "Classic of Mountains and Seas: the auspicious god Taifeng rules it, shaped like a man with a tiger's tail… light goes with him in and out."
+      }
+    },
+    {
+      "id": "yu-14",
+      "kind": "province-tale",
+      "creature": "mafu",
+      "line": {
+        "zh": "伊水上游的人说，山里有一种人脸虎身的东西，叫起来像婴儿，专吃人。",
+        "en": "Up the Yi they say there is a thing in the hills with a human face and a tiger's body; it cries like an infant, and it eats people."
+      },
+      "source": {
+        "zh": "《山海经·中次二经》：有兽焉，其名曰马腹，其状如人面虎身，其音如婴儿，是食人。",
+        "en": "Classic of Mountains and Seas: a beast called Mafu, with a human face and a tiger's body; its cry is like an infant's, and it eats people."
+      }
+    },
+    {
+      "id": "yu-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "定陶的商人说，从前有个人在这里三次发了大财，三次把钱散给了穷亲戚。",
+        "en": "A merchant of Dingtao says a man once made three fortunes here and three times gave them away to poor kin."
+      },
+      "source": {
+        "zh": "《史记·货殖列传》：（范蠡）十九年之中三致千金，再分散与贫交疏昆弟。",
+        "en": "Records of the Grand Historian: in nineteen years Fan Li thrice made a thousand in gold, and gave it away to poor friends and distant kin."
+      }
+    },
+    {
+      "id": "yu-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "洛阳的守藏室里有个老人，据说一个鲁国来的读书人专门来问过他礼。",
+        "en": "In the archive at Luoyang is an old man whom, they say, a scholar from Lu once came all the way to ask about the rites."
+      },
+      "source": {
+        "zh": "《史记·孔子世家》：适周问礼，盖见老子云。",
+        "en": "Records of the Grand Historian, Confucius: he went to Zhou to ask about the rites, and it is said he met Laozi."
+      }
+    },
+    {
+      "id": "yu-17",
+      "kind": "province-tale",
+      "line": {
+        "zh": "缑氏山上有个吹笙的年轻人，吹得像凤凰叫；一个月后，他骑着白鹤走了。",
+        "en": "On Mount Goushi a young man plays the reed-organ like a phoenix calling; a month later he rides away on a white crane."
+      },
+      "source": {
+        "zh": "《列仙传·王子乔》：王子乔者，周灵王太子晋也，好吹笙作凤凰鸣……乘白鹤驻山头。",
+        "en": "Liexian Zhuan: Wangzi Qiao, Crown Prince Jin of King Ling of Zhou, loved to play the sheng like a phoenix's call… he came to rest on the peak riding a white crane."
+      }
+    },
+    {
+      "id": "yu-18",
+      "kind": "province-tale",
+      "line": {
+        "zh": "阳翟有座钧台，说是夏朝第一个国王在这里宴请了诸侯。",
+        "en": "At Yangzhai stands the Jun Terrace, where they say the first king of Xia feasted the lords."
+      },
+      "source": {
+        "zh": "《左传·昭公四年》：夏启有钧台之享。",
+        "en": "Zuo Zhuan, Duke Zhao 4: Qi of Xia gave the feast at the Jun Terrace."
+      }
+    },
+    {
+      "id": "yu-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "一个穷书生说，每夜有个女子来，只求他三年里不要点灯照她。",
+        "en": "A poor scholar says a woman comes to him every night, asking only that for three years he never hold a lamp to her."
+      },
+      "source": {
+        "zh": "《搜神记·卷十六》：汉谈生者，年四十无妇……夜半有女子……言：我与人不同，勿以火照我也。三年之后，方可照。",
+        "en": "In Search of the Supernatural: Tan Sheng, forty and unwed… at midnight a girl came and said: I am not as others; do not shine a light on me until three years have passed."
+      }
+    },
+    {
+      "id": "yu-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "城南有一座亭，夜里没人敢住；一个书生住了进去，天亮还活着。",
+        "en": "South of the city is a pavilion no one dares sleep in at night; a scholar stayed there, and was alive at dawn."
+      },
+      "source": {
+        "zh": "《搜神记·卷十八》：安阳城南有一亭，夜不可宿，宿辄杀人。书生明术数，乃过宿之。",
+        "en": "In Search of the Supernatural: south of Anyang was a pavilion where no one could spend the night and live; a scholar versed in the arts stayed there."
+      }
+    }
+  ]
+}

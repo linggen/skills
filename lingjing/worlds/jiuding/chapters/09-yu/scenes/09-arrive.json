@@ -1,0 +1,115 @@
+{
+ "version": 1,
+ "id": "09-arrive",
+ "chapter": "09-yu",
+ "at": "hangu",
+ "place": {
+  "zh": "函谷关 · 关门",
+  "en": "The Hangu Pass · The gate"
+ },
+ "setup": {
+  "zh": "出了雍往东，两山夹着一条窄路，是函谷关。关令站在关门下拦住你，不看你的文牒，只说：你要走了，给我留一卷书。东边的天上，有一团紫气。",
+  "en": "Out of Yong and east, a narrow road runs between two mountains: the Hangu Pass. The keeper of the pass stands under the gate and stops you — not to see your papers, but to say: you are leaving; leave me a book. In the eastern sky hangs a cloud of purple air."
+ },
+ "recap": {
+  "zh": "到了函谷关，关令像当年留住老子那样，请你留下一卷书；东边的天上有紫气。",
+  "en": "At the Hangu Pass the keeper asked, as one of his line once asked Laozi, that you leave him a book; in the east hung a purple air."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "豫",
+   "here": "豫"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "第九鼎……就在前面。我感觉得到它，也感觉得到——水上只剩我一个了。",
+    "en": "The ninth cauldron… just ahead. I can feel it. And I can feel — there's only one of me left on the water."
+   },
+   "alone": {
+    "zh": "第九鼎就在前面。东边的水上，只剩一轮月。",
+    "en": "The ninth cauldron lies just ahead. On the waters to the east only one moon remains."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "关令说：往东，是洛邑。九鼎当年立在那里。",
+    "en": "The keeper says: east lies Luoyi. The nine cauldrons stood there once."
+   }
+  }
+ ],
+ "buttons": [
+  "town",
+  "book"
+ ],
+ "exits": [
+  {
+   "id": "town",
+   "label": {
+    "zh": "去洛邑",
+    "en": "Go to Luoyi"
+   },
+   "means": "goes east through the pass to Luoyi",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你出了关往东走。伊、洛、瀍、涧四条水在前面的平原上汇着，平原当中是一座城。",
+      "en": "Out of the pass and east. Ahead on the plain the Yi, the Luo, the Chan and the Jian run together, and in the middle of the plain stands a city."
+     }
+    }
+   ],
+   "next": "09-town"
+  },
+  {
+   "id": "book",
+   "label": {
+    "zh": "留一卷书",
+    "en": "Leave a book"
+   },
+   "means": "writes something down for the keeper of the pass, leaves him a book as Laozi did",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你想了想，写下一路走过的八州：哪条水，哪口鼎，哪个妖，哪句话。关令接过去，说：够了。当年那位老先生写了五千言，也是这样走的。",
+      "en": "You think a while, then write down the eight provinces you have walked: which river, which cauldron, which creature, which saying. The keeper takes it and says: enough. The old master who passed here wrote five thousand words, and went on just so."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你写我了吗？……写了就好。",
+      "en": "Did you put me in? …Good."
+     },
+     "alone": {
+      "zh": "书的最后一页，你画了一轮月。",
+      "en": "On the last page you draw a moon."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "purple",
+   "means": "asks the keeper about the purple air in the east",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "关令说：紫气东来，是有人要过关。上一回，是一位骑青牛的老先生。",
+      "en": "The keeper says: purple air from the east means someone is coming through the pass. The last time, it was an old master on a grey ox."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

@@ -1,0 +1,71 @@
+{
+ "version": 1,
+ "id": "09-end",
+ "chapter": "09-yu",
+ "at": "luoyi",
+ "place": {
+  "zh": "洛邑 · 之后",
+  "en": "Luoyi · After"
+ },
+ "setup": {
+  "zh": "天亮了。九口鼎立在洛邑的石座上，鼎上的青苔掉了。洛水边来了打水的人，说今天的水特别甜。九州的路都还开着。",
+  "en": "Day breaks. The nine cauldrons stand on their footings in Luoyi, the moss fallen from the stone. People come to draw water from the Luo and say it is especially sweet today. The roads of all nine provinces are still open."
+ },
+ "recap": {
+  "zh": "九鼎立在洛邑的石座上，灵脉回到了九州。路都还开着。",
+  "en": "The nine cauldrons stood on their footings in Luoyi, and the spirit veins returned to the nine provinces. Every road was still open."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "九鼎定了。九州的路都开着，传闻还会一天天地来。",
+    "en": "The nine are set. The roads of the nine provinces stay open, and the rumours will keep coming, day by day."
+   }
+  }
+ ],
+ "buttons": [
+  "ask"
+ ],
+ "exits": [
+  {
+   "id": "ask",
+   "label": {
+    "zh": "问：你留下吗？",
+    "en": "Ask: will you stay?"
+   },
+   "means": "asks Yinyue whether she will stay, now that the nine are gathered",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你问了。……那我就留下。",
+      "en": "You asked. …Then I'll stay."
+     },
+     "alone": {
+      "zh": "你对着洛水上的月问了一句。月停在水中央，没有再晃。",
+      "en": "You ask the moon on the Luo. It stays still in the middle of the water, and trembles no more."
+     }
+    }
+   ],
+   "ends": "09-yu"
+  },
+  {
+   "id": "rest",
+   "means": "rests, ends the story for now without asking anything",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "今日到此为止。九鼎定了，路还长。",
+      "en": "That is all for today. The nine are set; the road goes on."
+     }
+    }
+   ],
+   "ends": "09-yu"
+  }
+ ]
+}

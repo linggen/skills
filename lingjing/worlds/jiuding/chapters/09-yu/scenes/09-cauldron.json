@@ -1,0 +1,91 @@
+{
+ "version": 1,
+ "id": "09-cauldron",
+ "chapter": "09-yu",
+ "at": "luoshui",
+ "place": {
+  "zh": "洛水 · 定鼎",
+  "en": "The Luo · The cauldrons set"
+ },
+ "setup": {
+  "zh": "豫鼎从洛水里升起来。鼎身上铸着伊、洛、瀍、涧——豫州的一切，天下的中间。第九道雷落下来，不落在你身上，落在九口鼎的中间。",
+  "en": "The Cauldron of Yu rises from the Luo, cast with the Yi, the Luo, the Chan and the Jian — everything of Yu, the centre of the world. The ninth thunder falls — not on you, but into the midst of the nine."
+ },
+ "recap": {
+  "zh": "豫鼎升起，第九道雷落在九鼎中间。九鼎聚齐了。",
+  "en": "The Cauldron of Yu rose, and the ninth thunder fell into the midst of the nine. The nine were gathered."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "九鼎聚齐了。……九个影子都回来了。我以为会再没有地方落——原来只有一轮。",
+    "en": "The nine are gathered. …All nine reflections have come back. I thought there would be nowhere left to fall — and there was only ever one."
+   },
+   "alone": {
+    "zh": "洛水上的月影晃了晃，又合成一个，比哪一夜都圆。",
+    "en": "The moon on the Luo wavers, then closes into one, rounder than on any night before."
+   }
+  }
+ ],
+ "buttons": [
+  "set"
+ ],
+ "exits": [
+  {
+   "id": "set",
+   "label": {
+    "zh": "定鼎",
+    "en": "Set the cauldrons"
+   },
+   "means": "carries the nine cauldrons to Luoyi and sets them on their footings, gives the breath back to the nine provinces",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你把九口鼎捧到洛邑，一口一口放回石座上——冀、兖、青、徐、扬、荆、梁、雍，最后是豫。鼎一落座，灵脉就从石座底下往外流，往北，往东，往南，往西，流回九州的每一条水里。各州留下的，是鼎的气，不是鼎的铜。",
+      "en": "You carry the nine to Luoyi and set them on their footings one by one — Ji, Yan, Qing, Xu, Yang, Jing, Liang, Yong, and last of all Yu. As each settles, the spirit veins flow out from under its footing — north, east, south, west — back into every river of the nine provinces. What each province keeps is the cauldron's breath, not its bronze."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "定鼎于郏鄏。……一、二、三……九。数齐了。",
+      "en": "The cauldrons are set at Jiaru. …One, two, three… nine. All counted."
+     },
+     "alone": {
+      "zh": "九口鼎都落了座。风里像有人在数数，从一数到九。",
+      "en": "All nine are seated. On the wind someone seems to be counting, from one to nine."
+     }
+    }
+   ],
+   "next": "09-end"
+  },
+  {
+   "id": "wait",
+   "means": "hesitates, asks what will happen, wants to prepare first",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "两千年了，它们等得起这一晚。",
+      "en": "Two thousand years — they can wait one more night."
+     },
+     "alone": {
+      "zh": "两千年了，九鼎等得起这一晚。",
+      "en": "Two thousand years: the nine can wait one more night."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

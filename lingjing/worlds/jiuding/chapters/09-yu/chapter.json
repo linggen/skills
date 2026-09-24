@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "id": "09-yu",
+  "opens": null,
+  "province": "豫",
+  "corridor": false,
+  "first_scene": "09-arrive",
+  "gate": null,
+  "title": {
+    "zh": "第九章 · 豫州之鼎 · 定鼎",
+    "en": "Chapter 9 · The Cauldron of Yu · The Cauldrons Set"
+  },
+  "summary": {
+    "zh": "出函谷，入豫州，到天下的中间。洛邑城里留着九块空鼎座，九鼎走后，这里的灵脉一天比一天薄。和山的吉神泰逢问你：九口鼎，你拿来做什么？洛水底下，八鼎围成一圈，中间空着。第九鼎归来，九鼎定于郏鄏，灵脉回到九州。",
+    "en": "Out through Hangu into Yu, the centre of the world. In Luoyi nine footings stand empty, and since the cauldrons left the spirit veins there have thinned day by day. On Mount He the auspicious god Taifeng asks: nine cauldrons — what will you do with them? Under the Luo the eight make a ring with the centre empty. The ninth cauldron returns, the nine are set at Jiaru, and the spirit veins return to the nine provinces."
+  },
+  "intro": {
+    "zh": "成王定鼎于郏鄏，卜世三十，卜年七百。九鼎就立在洛水边，直到周亡那一夜。如今八口鼎在你掌心，第九口在洛水底下。九鼎聚齐会怎样——没有人告诉过你。",
+    "en": "King Cheng set the cauldrons at Jiaru, and the diviners gave Zhou thirty reigns and seven hundred years. The nine stood by the Luo until the night Zhou fell. Now eight are in your palm, and the ninth lies under the Luo. What happens when the nine are gathered, no one has ever told you."
+  },
+  "mystery": {
+    "zh": "九鼎聚齐，会怎样？",
+    "en": "What happens when the nine cauldrons are gathered?"
+  },
+  "ending": {
+    "id": "dingding",
+    "title": {
+      "zh": "定鼎",
+      "en": "The Cauldrons Set"
+    }
+  }
+}

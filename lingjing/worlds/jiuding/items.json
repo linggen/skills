@@ -293,7 +293,8 @@
         "扬",
         "荆",
         "梁",
-        "雍"
+        "雍",
+        "豫"
       ],
       "effect": {
         "learn": "wangqi",
@@ -488,7 +489,8 @@
       "buy": 380,
       "sell": 110,
       "sold": [
-        "兖"
+        "兖",
+        "豫"
       ],
       "effect": {
         "core": "earth"
@@ -580,7 +582,8 @@
       "buy": 24,
       "sell": 7,
       "sold": [
-        "扬"
+        "扬",
+        "豫"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     },
@@ -599,7 +602,8 @@
       "buy": 36,
       "sell": 10,
       "sold": [
-        "荆"
+        "荆",
+        "豫"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     },
@@ -618,7 +622,8 @@
       "buy": 90,
       "sell": 25,
       "sold": [
-        "梁"
+        "梁",
+        "豫"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     },
@@ -637,7 +642,8 @@
       "buy": 120,
       "sell": 35,
       "sold": [
-        "雍"
+        "雍",
+        "豫"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     }

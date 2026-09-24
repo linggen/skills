@@ -575,6 +575,57 @@
     "the Forest Bell"
    ],
    "hint": "All twelve are reckoned from it."
+  },
+  "taifeng-1": {
+   "q": "Water beside 可 — one character. The nine streams of Mount He all run into it.",
+   "a": [
+    "河",
+    "he",
+    "the river",
+    "river",
+    "the yellow river"
+   ],
+   "choices": [
+    "河",
+    "何",
+    "汽",
+    "沔"
+   ],
+   "hint": "氵 on the left, 可 on the right."
+  },
+  "taifeng-2": {
+   "q": "The Classic of Mountains and Seas: Taifeng is shaped like a man, with what kind of tail?",
+   "a": [
+    "a tiger's tail",
+    "tiger's tail",
+    "tiger",
+    "tiger tail"
+   ],
+   "choices": [
+    "a tiger's tail",
+    "a leopard's tail",
+    "a horse's tail",
+    "a dragon's tail"
+   ],
+   "hint": "Look behind him."
+  },
+  "seal-yu": {
+   "q": "Eight cauldrons in a ring: Ji, Yan, Qing, Xu, Yang, Jing, Liang, Yong. Which province sits at the centre?",
+   "a": [
+    "yu",
+    "豫",
+    "the centre",
+    "centre",
+    "center",
+    "virtue"
+   ],
+   "choices": [
+    "Yu",
+    "Zhou",
+    "Qin",
+    "Chu"
+   ],
+   "hint": "The middle of the world."
   }
  }
 }

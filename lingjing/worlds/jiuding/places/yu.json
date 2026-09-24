@@ -1,9 +1,187 @@
 {
  "version": 1,
  "province": "豫",
- "start": "dingtao",
- "_about": "The places of 豫 — 定陶 alone for now, by the 菏泽 (导菏泽, the 禹贡's 豫州). No chapter opens 豫 yet, so its roads stay closed; it joins the world when its chapter is written.",
+ "start": "hangu",
+ "_about": "The places of 豫 — a map, not a chain; the same shape as 徐's (see places/xu.json _about). Chapter 9's spine runs 函谷关 → 洛邑 → 和山 → 洛水, and ends back at 洛邑's nine footings; 定陶, by the 菏泽 (导菏泽, the 禹贡's 豫州), is its old eastern side, joined to 洛邑 by 嵩山.",
  "places": [
+  {
+   "id": "hangu",
+   "name": {
+    "zh": "函谷关",
+    "en": "The Hangu Pass"
+   },
+   "tier": 0,
+   "roads": [
+    "luoyi",
+    "taihua"
+   ],
+   "map": [
+    0.5344,
+    0.4335
+   ],
+   "has": {
+    "seeds": true,
+    "scene": "09-arrive",
+    "games": [
+     "xiangqi"
+    ]
+   },
+   "line": {
+    "zh": "两山夹着一条窄路，关令在关门下等着过关的人。",
+    "en": "A narrow road between two mountains; the keeper waits under the gate for whoever comes through."
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "luoyi",
+   "name": {
+    "zh": "洛邑",
+    "en": "Luoyi"
+   },
+   "tier": 0,
+   "roads": [
+    "hangu",
+    "heshan",
+    "luoshui",
+    "yique",
+    "songshan"
+   ],
+   "map": [
+    0.5966,
+    0.4374
+   ],
+   "has": {
+    "shop": true,
+    "scene": "09-town",
+    "games": [
+     "alchemy-daily"
+    ]
+   },
+   "line": {
+    "zh": "天下之中，城里嵌着九块空鼎座。",
+    "en": "The centre of the world; nine empty cauldron footings are set in its ground."
+   }
+  },
+  {
+   "id": "heshan",
+   "name": {
+    "zh": "和山",
+    "en": "Mount He"
+   },
+   "tier": 0,
+   "roads": [
+    "luoyi",
+    "luoshui"
+   ],
+   "map": [
+    0.5856,
+    0.4487
+   ],
+   "has": {
+    "creature": "taifeng",
+    "scene": "09-hill"
+   },
+   "line": {
+    "zh": "河之九都，九水出焉，合而北流注于河。",
+    "en": "The Nine Confluences of the River: nine streams rise here, join, and flow north into it."
+   },
+   "water": true,
+   "meets": [
+    "find",
+    "beast"
+   ]
+  },
+  {
+   "id": "luoshui",
+   "name": {
+    "zh": "洛水",
+    "en": "The Luo"
+   },
+   "tier": 0,
+   "roads": [
+    "heshan",
+    "luoyi"
+   ],
+   "map": [
+    0.607,
+    0.428
+   ],
+   "has": {
+    "scene": "09-deep"
+   },
+   "line": {
+    "zh": "洛出书的地方，月亮落在水上只有一轮。",
+    "en": "Where the Luo gave up the writing; the moon falls on its water as one."
+   },
+   "water": true,
+   "meets": [
+    "find"
+   ]
+  },
+  {
+   "id": "yique",
+   "name": {
+    "zh": "伊阙",
+    "en": "Yique"
+   },
+   "tier": 1,
+   "roads": [
+    "luoyi",
+    "songshan"
+   ],
+   "map": [
+    0.5969,
+    0.4461
+   ],
+   "has": {
+    "creature": "mafu",
+    "seeds": true
+   },
+   "line": {
+    "zh": "伊水从两山之间流过，像一道门，传说是禹凿开的。",
+    "en": "The Yi runs between two hills like a gate — cut, they say, by Yu."
+   },
+   "water": true,
+   "meets": [
+    "beast",
+    "find"
+   ]
+  },
+  {
+   "id": "songshan",
+   "name": {
+    "zh": "嵩山",
+    "en": "Mount Song"
+   },
+   "tier": 1,
+   "roads": [
+    "luoyi",
+    "yique",
+    "dingtao"
+   ],
+   "map": [
+    0.6184,
+    0.4557
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "wuziqi"
+    ]
+   },
+   "line": {
+    "zh": "中岳，山下有一块裂开的大石。",
+    "en": "The Central Peak; below it lies a great split stone."
+   },
+   "meets": [
+    "riddle",
+    "find",
+    "beast"
+   ]
+  },
   {
    "id": "dingtao",
    "name": {
@@ -13,7 +191,8 @@
    "tier": 1,
    "roads": [
     "puyang",
-    "daye"
+    "daye",
+    "songshan"
    ],
    "map": [
     0.7242,

@@ -1058,6 +1058,137 @@
       },
       "_deck": "其状如羊而马尾 —— 皮厚，站得住，慢慢磨。",
       "_signature": "其脂可以已腊 —— 它把伤口一抹，又站直了。"
+    },
+    {
+      "id": "taifeng",
+      "name": {
+        "zh": "泰逢",
+        "en": "Taifeng"
+      },
+      "pinyin": "tài féng",
+      "source": {
+        "zh": "《山海经 · 中次三经》",
+        "en": "Classic of Mountains and Seas — Central Mountains III"
+      },
+      "quote": {
+        "zh": "又东二十里，曰和山，其上无草木而多瑶碧，实惟河之九都。是山也五曲，九水出焉，合而北流注于河……吉神泰逢司之，其状如人而虎尾，是好居于萯山之阳，出入有光。泰逢神动天地气也。",
+        "en": "Twenty li further east is Mount He, bare of grass and trees and rich in jade; it is truly the Nine Confluences of the River. The mountain winds five times, and nine streams rise on it, join, and flow north into the River… The auspicious god Taifeng rules it, shaped like a man with a tiger's tail; he likes to dwell on the sunny side of Mount Bei, and there is light when he goes in and out. The god Taifeng stirs the breath of heaven and earth."
+      },
+      "look": {
+        "zh": "人的样子，老虎的尾巴；出入身上有光。",
+        "en": "A man's shape with a tiger's tail; light goes with him in and out."
+      },
+      "province": "豫",
+      "root": "earth",
+      "art": "art/taifeng.webp",
+      "art_source": "《古今圖書集成·博物彙編·神異典》太逢神圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Spirits and the Supernatural - pic30 - 太逢神圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/taifeng.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·神異典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "jade-ring",
+      "lean": "hide",
+      "pattern": [
+        "armor",
+        "cast",
+        "strike",
+        "gather",
+        "strike"
+      ],
+      "drops": "xirang",
+      "deck": [
+        "shishou",
+        "hanquan",
+        "leiming",
+        "jianying",
+        "taifeng",
+        "taifeng",
+        "houtu",
+        "suijin",
+        "liaotian",
+        "taifeng",
+        "tingbo",
+        "luoshi"
+      ],
+      "signature": {
+        "id": "dongqi",
+        "name": {
+          "zh": "动天地气",
+          "en": "Stirring Heaven and Earth"
+        },
+        "effect": {
+          "sweep": 6,
+          "damage": 12
+        }
+      },
+      "elite": true,
+      "_deck": "司九都 —— 五行都在他手里：土站住，水养，木雷，金剑，火烧。",
+      "_signature": "泰逢神动天地气也 —— 他一动，阵前的都晃，天地的气压到你身上。"
+    },
+    {
+      "id": "mafu",
+      "name": {
+        "zh": "马腹",
+        "en": "Mafu"
+      },
+      "pinyin": "mǎ fù",
+      "source": {
+        "zh": "《山海经 · 中次二经》",
+        "en": "Classic of Mountains and Seas — Central Mountains II"
+      },
+      "quote": {
+        "zh": "又西二百里，曰蔓渠之山，其上多金玉，其下多竹箭。伊水出焉，而东流注于洛。有兽焉，其名曰马腹，其状如人面虎身，其音如婴儿，是食人。",
+        "en": "Two hundred li further west is Mount Manqu, with much gold and jade above and arrow-bamboo below. The Yi rises there and flows east into the Luo. There is a beast on it called Mafu, with a human face and a tiger's body; its cry is like an infant's, and it eats people."
+      },
+      "look": {
+        "zh": "人的脸，老虎的身子；叫起来像婴儿。",
+        "en": "A human face on a tiger's body; its cry is like an infant's."
+      },
+      "province": "豫",
+      "root": "wood",
+      "art": "art/mafu.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》馬腹圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic297 - 馬腹圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/mafu.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "ginseng",
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "gather",
+        "strike",
+        "cast",
+        "guard"
+      ],
+      "drops": "leijimu",
+      "deck": [
+        "leipu",
+        "leipu",
+        "mafu",
+        "mafu",
+        "qingteng",
+        "qingteng",
+        "leiming",
+        "jixiao",
+        "leipu",
+        "mafu",
+        "leiming",
+        "zhennu"
+      ],
+      "signature": {
+        "id": "yinger",
+        "name": {
+          "zh": "其音如婴儿",
+          "en": "The Infant's Cry"
+        },
+        "effect": {
+          "damage": 10,
+          "heal": 4
+        }
+      },
+      "_deck": "人面虎身 —— 扑得快，咬得狠。",
+      "_signature": "是食人 —— 一口咬下，咬到的长回它身上。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

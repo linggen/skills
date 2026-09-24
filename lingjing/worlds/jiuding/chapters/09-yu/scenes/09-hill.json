@@ -1,0 +1,188 @@
+{
+ "version": 1,
+ "id": "09-hill",
+ "chapter": "09-yu",
+ "at": "heshan",
+ "place": {
+  "zh": "和山 · 九都",
+  "en": "Mount He · The Nine Confluences"
+ },
+ "setup": {
+  "zh": "和山上站着一个神，人的样子，老虎的尾巴，身上发着光。九条水在他脚下，被你掌心的八口鼎拉着，一寸一寸地涨。他一动，天地的气就跟着动。他看着你，问：九口鼎，你拿来做什么？",
+  "en": "On Mount He stands a god, shaped like a man with a tiger's tail, light coming off him. At his feet the nine streams, drawn by the eight cauldrons in your palm, rise inch by inch. When he moves, the breath of heaven and earth moves with him. He looks at you and asks: nine cauldrons — what will you do with them?"
+ },
+ "recap": {
+  "zh": "和山上，吉神泰逢守着九水的汇处，问你拿九鼎来做什么。",
+  "en": "On Mount He the auspicious god Taifeng kept the meeting of the nine waters, and asked what you would do with nine cauldrons."
+ },
+ "cast": [
+  "yinyue",
+  "taifeng"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "taifeng"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是泰逢，守九都的吉神。他不是坏的——他只是要知道，拿九鼎的人要拿它们做什么。",
+    "en": "It's Taifeng, the auspicious god who keeps the Nine Confluences. He isn't wicked — he only wants to know what the one who holds nine cauldrons means to do with them."
+   },
+   "alone": {
+    "zh": "是泰逢，吉神，司和山九都。他要知道拿九鼎的人要做什么。",
+    "en": "It is Taifeng, the auspicious god who keeps the Nine Confluences of Mount He. He wants to know what the one who holds nine cauldrons means to do."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "泰逢说：答我。或者，先答我一个小一点的问题。",
+    "en": "Taifeng says: answer me. Or first, answer me a smaller question."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "answer"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the god, makes him give way by force",
+   "game": {
+    "id": "subdue-taifeng",
+    "kind": "duel",
+    "creature": "taifeng"
+   },
+   "withdrawn": {
+    "zh": "泰逢退到山顶，光暗了一些。明日他还会问。",
+    "en": "Taifeng withdraws to the summit, his light a little dimmer. Tomorrow he will ask again."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "泰逢收了光，站到一边。他没有输，只是让开了。",
+      "en": "Taifeng draws in his light and steps aside. He has not lost; he has only made way."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "他让路了。洛水——下去。",
+      "en": "He's making way. The Luo — go down."
+     },
+     "alone": {
+      "zh": "他让路了。洛水在山下。",
+      "en": "He makes way. The Luo lies below."
+     }
+    }
+   ],
+   "next": "09-deep"
+  },
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答他的问",
+    "en": "Answer him"
+   },
+   "means": "answers the god's riddle",
+   "key": [
+    "taifeng-1",
+    "taifeng-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你答了。泰逢点了点头，老虎尾巴在身后摆了一下。",
+      "en": "You answer. Taifeng nods, and the tiger's tail swings once behind him."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "他让路了。洛水——下去。",
+      "en": "He's making way. The Luo — go down."
+     },
+     "alone": {
+      "zh": "他让路了。洛水在山下。",
+      "en": "He makes way. The Luo lies below."
+     }
+    }
+   ],
+   "next": "09-deep"
+  },
+  {
+   "id": "answer",
+   "label": {
+    "zh": "在德不在鼎",
+    "en": "In virtue, not in the cauldron"
+   },
+   "means": "answers the god: a cauldron's weight lies in virtue, not in the bronze; the nine are not for holding but for setting back where they belong",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你说：在德不在鼎。九口鼎我不拿着——我把它们放回去，放回它们该在的地方。泰逢看了你很久，笑了。九条水不再上涨，绕着和山，慢慢往北流去。",
+      "en": "You say: in virtue, not in the cauldron. I will not hold the nine — I will set them back where they belong. Taifeng looks at you a long while, and smiles. The nine streams stop rising, wind round Mount He, and slowly flow north."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "……她会喜欢你的。我早说过。",
+      "en": "…She'd have liked you. I told you so."
+     },
+     "alone": {
+      "zh": "风里又像有人轻轻笑了一声。",
+      "en": "On the wind, once more, something like a soft laugh."
+     }
+    }
+   ],
+   "next": "09-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs from the god, turns back, refuses to answer",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你往回走。九条水还在涨，一寸，一寸。",
+      "en": "You turn back. The nine streams are still rising, inch by inch."
+     },
+     "alone": {
+      "zh": "你往回走。九条水还在涨，一寸，一寸。",
+      "en": "You turn back. The nine streams go on rising, inch by inch."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

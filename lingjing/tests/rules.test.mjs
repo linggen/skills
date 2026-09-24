@@ -24,6 +24,7 @@ content.chapters['05-yang'].opens = '2027-02-01';
 content.chapters['06-jing'].opens = '2027-03-01';
 content.chapters['07-liang'].opens = '2027-04-01';
 content.chapters['08-yong'].opens = '2027-05-01';
+content.chapters['09-yu'].opens = '2027-06-01';
 const NOW = new Date('2026-09-11T12:00:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 // Today's 机缘 already dealt: for tests that mean "a Look that changes nothing else".

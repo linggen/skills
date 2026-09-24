@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "09-deep",
+ "chapter": "09-yu",
+ "at": "luoshui",
+ "place": {
+  "zh": "洛水 · 月下",
+  "en": "The Luo · Under the moon"
+ },
+ "setup": {
+  "zh": "洛水边，月亮升起来了。水上只有一个月影。水底卧着一口鼎，鼎口围着八个空位，排成一圈——你掌心的八口鼎一口一口亮了起来。圈的中间，空着。",
+  "en": "By the Luo the moon comes up. On the water there is only one reflection. At the bottom lies a cauldron, and round its mouth are eight empty places in a ring — one by one the eight cauldrons in your palm light up. The middle of the ring is empty."
+ },
+ "recap": {
+  "zh": "洛水底的鼎口围着八个位子，你掌心的八鼎一一亮起；圈的中间空着。",
+  "en": "At the bottom of the Luo eight places ringed the cauldron's mouth, and the eight cauldrons in your palm lit one by one; the middle of the ring was empty."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "洛水……她就是在这里捡到我的。那天晚上，水上的月亮也只有一个。",
+    "en": "The Luo… this is where she found me. That night, too, there was only one moon on the water."
+   },
+   "alone": {
+    "zh": "洛出书——大龟从这里背出了洛书。也有人说，很多年前，有人在这里的水上捡到过一个婴儿。",
+    "en": "The Luo gave up the writing — the great turtle brought the Luo square out of here. Some say, too, that long ago someone found a baby on this water."
+   }
+  }
+ ],
+ "buttons": [
+  "seal"
+ ],
+ "exits": [
+  {
+   "id": "seal",
+   "label": {
+    "zh": "读封 · 填中央",
+    "en": "Read the seal · Fill the centre"
+   },
+   "means": "reads the seal, names what belongs at the centre of the eight",
+   "key": "seal-yu",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你说出它的名字。圈的中间亮了起来。八口鼎从你掌心浮起，围着洛水里那一口，排成了九宫。",
+      "en": "You say its name. The centre of the ring lights up. The eight cauldrons rise from your palm and ring the one in the Luo, making the nine palaces."
+     }
+    }
+   ],
+   "next": "09-cauldron"
+  },
+  {
+   "id": "force",
+   "means": "reaches into the empty centre, tries to take the cauldron by force",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "圈的中间是空的。你伸手进去，什么也摸不到。",
+      "en": "The centre of the ring is empty. You reach in and touch nothing."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}
