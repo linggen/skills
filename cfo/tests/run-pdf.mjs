@@ -99,5 +99,37 @@ const cols = parseStatementText([
 t('C1 amount under Deposits is income', Math.sign(byMerchant(cols, /ACME/)?.amount) === 1);
 t('C2 amount under Withdrawals is spend, even beside "refund"', Math.sign(byMerchant(cols, /REFUND DESK/)?.amount) === -1);
 
+// A two-date credit-card statement (synthetic, BMO Mastercard-shaped): the
+// summary box is not transactions, the posting date is not the merchant, and a
+// payment received on the card is money in.
+console.log('\n— credit-card statement —');
+const card = parseStatementText([
+  'Mastercard statement',
+  'Statement date September 4, 2026',
+  'Previous total balance, Aug. 4, 2026 $1,234.56',
+  'Payments & credits -$1,234.56',
+  'Purchases & other charges $167.59',
+  'New total balance $167.59',
+  'Minimum payment due $10.00',
+  'Payment due date Sep. 25, 2026',
+  'Credit limit $5,000.00',
+  'Available credit $4,832.41',
+  'TRANS DATE POSTING DATE DESCRIPTION AMOUNT ($)',
+  'Aug. 4 Aug. 5 CORNER GROCER 93.87',
+  'Aug. 13 Aug. 14 CITY REC ONLINE 53.72',
+  'Aug. 25 Aug. 25 AUTOMATIC PYMT RECEIVED -1,234.56',
+  'Aug. 27 Aug. 28 SHOP REFUND 12.00 CR',
+  'Sep. 1 Sep. 2 7-11 STORE 4.50',
+]);
+t('K1 summary lines are not rows', card.length === 5, card.map((x) => x.merchant).join(' | '));
+t('K2 the posting date is not in the merchant', byMerchant(card, /GROCER/)?.merchant === 'CORNER GROCER', byMerchant(card, /GROCER/)?.merchant);
+t('K3 the row keeps the transaction date', byMerchant(card, /GROCER/)?.date === '2026-08-04', byMerchant(card, /GROCER/)?.date);
+t('K4 a payment received on the card is money in', byMerchant(card, /PYMT/)?.amount === 1234.56, byMerchant(card, /PYMT/)?.amount);
+t('K5 a purchase is spend', byMerchant(card, /CITY REC/)?.amount === -53.72);
+t('K6 a CR credit is money in', byMerchant(card, /REFUND/)?.amount === 12);
+t('K7 "7-11" stays a merchant, not a posting date', byMerchant(card, /7-11/)?.merchant === '7-11 STORE', byMerchant(card, /STORE/)?.merchant);
+const chqMinus = parseStatementText(['Statement date Jul 31, 2026', 'Jul 03 TIM HORTONS -$4.85 $3495.15']);
+t('K8 on a bank account a leading minus is still spend', chqMinus[0]?.amount === -4.85, chqMinus[0]?.amount);
+
 console.log(`\n${pass} passed, ${fail} failed.`);
 process.exit(fail ? 1 : 0);

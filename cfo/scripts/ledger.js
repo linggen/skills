@@ -275,7 +275,7 @@ export function detectPaymentSchedule(rows, accountsById = {}) {
 // totals", "Balance forward". Not transactions: one of them counted as spend
 // turns the month's pace math into fiction. They stay in the ledger (the
 // transaction list shows what the export said), but no rollup reads them.
-const STATEMENT_ARTIFACT_RE = /\b(closing +(totals?|balance)|opening +balance|balance +forward|beginning +balance)\b/i;
+const STATEMENT_ARTIFACT_RE = /\b(closing +(totals?|balance)|opening +balance|balance +forward|beginning +balance|previous +(total +)?balance|new +(total +)?balance)\b/i;
 
 export function isStatementArtifact(merchant) {
   return STATEMENT_ARTIFACT_RE.test(merchant || '');

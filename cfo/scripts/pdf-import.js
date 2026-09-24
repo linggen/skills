@@ -26,8 +26,17 @@ const MONEY_RE = /[-+]?\$?\d{1,3}(?:,?\d{3})*\.\d{2}[-+]?(?:\s?(?:cr|dr))?/ig;
 // only then the description. Words credit a row only for unambiguous inbound
 // phrases; an outbound word anywhere ("sent", "bill payment", "to") keeps it
 // spend — "BILL PAYMENT HYDRO ONE" and "E-TRANSFER SENT" are money leaving.
-const INBOUND_RE = /\b(deposit|refund|reversal|statement credit|credit adjustment|cash\s*back|rebate|payment received|payment\s*-?\s*thank you|thank you for your payment|transfer in|e-?transfer\s+(received|deposit))\b/i;
+const INBOUND_RE = /\b(deposit|refund|reversal|statement credit|credit adjustment|cash\s*back|rebate|(?:payment|pymt)s?\s+received|payment\s*-?\s*thank you|thank you for your payment|transfer in|e-?transfer\s+(received|deposit))\b/i;
 const OUTBOUND_RE = /\b(sent|bill\s*pay(ment)?|to|withdrawal|withdraw)\b/i;
+// A second date opening the description — the posting date of a two-date row.
+const POSTING_RE = new RegExp(`^\\s*(?:${MONTH_RE}[a-z]*\\.?\\s+\\d{1,2}(?:,?\\s*\\d{4})?|\\d{1,2}/\\d{1,2}(?:/\\d{2,4})?)(?=\\s)`, 'i');
+// A statement's summary box, not a transaction: the balances, limits and
+// totals a card or bank prints above its activity. Each carries a date and an
+// amount, so without this a card's "Previous total balance" books as money in.
+const SUMMARY_RE = /\b(previous (total )?balance|new (total )?balance|opening balance|closing balance|balance forward|beginning balance|statement balance|minimum (payment|amount)|payment due|credit limit|available credit|credit available|total (payments|credits|purchases|charges|interest|fees|debits|deposits|withdrawals)|payments (&|and) credits|purchases (&|and) (other )?charges)\b/i;
+// A credit-card statement (the words only a card prints). On one, a leading
+// minus marks a credit to the card — a payment or refund — not spend.
+const CARD_RE = /\b(credit limit|minimum payment|available credit|credit available|payment due date|annual interest rate)\b/i;
 // Column headers of a two-column bank layout.
 const DEBIT_COL_RE = /\b(withdrawals?|debits?|paid out|charges?)\b/i;
 const CREDIT_COL_RE = /\b(deposits?|credits?|paid in)\b/i;
@@ -123,9 +132,10 @@ function columnSide(line, amtTok, cols) {
 }
 
 // true = money in, false = money out.
-export function isInbound(line, amtTok, cols = null) {
+export function isInbound(line, amtTok, cols = null, card = false) {
   const tok = amtTok.trim();
   if (/cr$/i.test(tok) || /^\+|\+$/.test(tok)) return true;
+  if (card && /^-/.test(tok)) return true;
   if (/dr$/i.test(tok) || /\d\s*-$/.test(tok)) return false;
   const side = columnSide(line, tok, cols);
   if (side) return side === 'credit';
@@ -138,6 +148,7 @@ export function isInbound(line, amtTok, cols = null) {
 export function parseStatementText(input) {
   const lines = input.map((l) => (typeof l === 'string' ? { text: l } : l));
   const close = statementClose(lines.map((l) => l.text));
+  const card = lines.some((l) => CARD_RE.test(l.text));
 
   const txns = [];
   let cols = null;
@@ -146,6 +157,7 @@ export function parseStatementText(input) {
     const header = MONEY_RE.test(line) ? null : findColumns(l);
     MONEY_RE.lastIndex = 0;
     if (header) { cols = header; continue; }
+    if (SUMMARY_RE.test(line)) continue;
     const dateMatch = line.match(DATE_RE);
     if (!dateMatch) continue;
     const money = [...line.matchAll(MONEY_RE)].map((m) => m[0]);
@@ -157,12 +169,16 @@ export function parseStatementText(input) {
     let amount = parseAmount(amtTok.replace(/(cr|dr)/i, '').trim().replace(/[-+]$/, ''));
     if (amount == null) continue;
     amount = Math.abs(amount);
-    amount = isInbound(l, amtTok, cols) ? amount : -amount;
+    amount = isInbound(l, amtTok, cols, card) ? amount : -amount;
 
     const date = rowDate(dateMatch[0], close);
     // description = line minus the date and every money token, then redacted
     let desc = line.replace(dateMatch[0], ' ');
     for (const m of money) desc = desc.replace(m, ' ');
+    // Cards print two dates — transaction, then posting. The row keeps the
+    // first; the second must not open the merchant ("Aug. 5 GROCER").
+    // Only a month-name or slashed date counts: "7-11 STORE" is a merchant.
+    desc = desc.replace(POSTING_RE, ' ');
     const merchant = cleanMerchant(desc.replace(/\s+/g, ' '));
     if (!merchant && date == null) continue;
 

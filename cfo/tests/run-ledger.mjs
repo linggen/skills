@@ -254,5 +254,10 @@ if (!live) {
   }
 }
 
+// A card's summary box that reached the ledger is never read as money.
+t('A1 a card\'s "Previous total balance" is a statement artifact', isStatementArtifact('Previous total balance,'));
+t('A2 "New balance" is a statement artifact', isStatementArtifact('New balance'));
+t('A3 a real merchant is not', !isStatementArtifact('BALANCE FITNESS STUDIO'));
+
 console.log(`\n${pass} passed, ${fail} failed.`);
 process.exit(fail ? 1 : 0);
