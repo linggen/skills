@@ -334,7 +334,6 @@ tools:
           file:   { type: string }
           title:  { type: string }
           artist: { type: string }
-        required: [file, title]
     cmd: "bash $SKILL_DIR/scripts/rename.sh {{track}}"
     tier: edit
     timeout_ms: 120000

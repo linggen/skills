@@ -151,3 +151,57 @@ test('the checks catch what they are for', () => {
     assert.ok(got.some(p => p.includes(want)), `expected a problem mentioning "${want}" in ${JSON.stringify(got)}`);
   }
 });
+
+/* Duplicate keys in one mapping. serde refuses them and the whole skill
+   vanishes from the engine (dj, 2026-09-24: `required: true` and
+   `required: [file, title]` under one arg). A YAML reader that keeps the last
+   one would pass it, so check the lines themselves. */
+export function duplicateKeys(md) {
+  const lines = md.split('\n');
+  if (lines[0] !== '---') return [];
+  const end = lines.indexOf('---', 1);
+  const found = [];
+  const stack = [];
+  let scalarAt = null; // indent of a key whose value is a block scalar (>-, |)
+  lines.slice(1, end).forEach((raw, i) => {
+    if (!raw.trim() || raw.trim().startsWith('#')) return;
+    let indent = raw.length - raw.trimStart().length;
+    if (scalarAt !== null) {
+      if (indent > scalarAt) return;
+      scalarAt = null;
+    }
+    let content = raw.trim();
+    while (stack.length && stack[stack.length - 1].indent > indent) stack.pop();
+    if (content.startsWith('- ')) {
+      indent += 2;
+      content = content.slice(2);
+      while (stack.length && stack[stack.length - 1].indent >= indent) stack.pop();
+      stack.push({ indent, keys: new Set() });
+    }
+    const m = /^([A-Za-z_][\w-]*)\s*:(.*)$/.exec(content);
+    if (!m) return;
+    if (!stack.length || stack[stack.length - 1].indent < indent) stack.push({ indent, keys: new Set() });
+    const scope = stack[stack.length - 1];
+    if (scope.keys.has(m[1])) found.push(`line ${i + 2}: duplicate key "${m[1]}"`);
+    scope.keys.add(m[1]);
+    if (/^\s*[>|][-+]?\s*$/.test(m[2])) scalarAt = indent;
+  });
+  return found;
+}
+
+test('no mapping in any SKILL.md repeats a key', () => {
+  for (const skill of SKILLS) {
+    const md = fs.readFileSync(path.join(ROOT, skill, 'SKILL.md'), 'utf8');
+    assert.deepEqual(duplicateKeys(md), [], `${skill}/SKILL.md`);
+  }
+});
+
+test('the duplicate-key check catches the dj case', () => {
+  const md = ['---', 'name: x', 'tools:', '  - name: T', '    args:', '      track:',
+    '        type: object', '        required: true', '        properties:',
+    '          file: { type: string }', '        required: [file]', '---'].join('\n');
+  assert.equal(duplicateKeys(md).length, 1);
+  const ok = ['---', 'tools:', '  - name: A', '    description: >-', '      a: b', '      a: b',
+    '  - name: B', '    description: x', '---'].join('\n');
+  assert.deepEqual(duplicateKeys(ok), []);
+});
