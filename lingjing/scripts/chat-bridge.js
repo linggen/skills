@@ -18,6 +18,7 @@ import { createSession, removeSkillSession } from './api.js';
  *   onStreamToken?: (fullText: string) => void,
  *   onStreamEnd?: (text: string) => void,
  *   onContentBlock?: (payload: { phase: string, tool?: string, args?: string, blockId?: string, output?: string }) => void,
+ *   onSkillEvent?: (event: string, payload: any) => void,
  * }} options
  * @returns {Promise<ChatInstance>}
  */
@@ -54,11 +55,16 @@ async function mount(el, options) {
   if (modelId) params.set('model', modelId);
 
   let iframeSrc;
+  // The one origin the chat speaks from and is spoken to at — never '*': a
+  // message from any other window is not the chat's, and the chat's own
+  // words go only to it.
+  let chatOrigin = window.location.origin;
   if (isRemote) {
     // Remote: load embed chat via connect page (establishes its own WebRTC)
     const instanceId = instanceMeta.getAttribute('content') || '';
     const relayOrigin = (document.querySelector('meta[name="linggen-relay-origin"]') || {}).content || window.location.origin;
     iframeSrc = `${relayOrigin}/app/connect/${instanceId}?${params.toString()}&entry=embed`;
+    chatOrigin = new URL(relayOrigin, window.location.href).origin;
   } else {
     // Local: load embed chat directly from the local server
     iframeSrc = `/embed?${params.toString()}`;
@@ -76,18 +82,19 @@ async function mount(el, options) {
   let outboundReady = false;
   const outbox = [];
   function post(msg) {
-    if (outboundReady) iframe.contentWindow?.postMessage(msg, '*');
+    if (outboundReady) iframe.contentWindow?.postMessage(msg, chatOrigin);
     else outbox.push(msg);
   }
   function flushOutbox() {
     if (outboundReady) return;
     outboundReady = true;
-    for (const m of outbox.splice(0)) iframe.contentWindow?.postMessage(m, '*');
+    for (const m of outbox.splice(0)) iframe.contentWindow?.postMessage(m, chatOrigin);
   }
 
   // Listen for events from the iframe
   function handleMessage(e) {
     if (e.data?.type !== 'linggen-skill-event') return;
+    if (e.source !== iframe.contentWindow || e.origin !== chatOrigin) return;
     flushOutbox(); // the embed is alive and talking — safe to send
     const { event, payload } = e.data;
     switch (event) {
@@ -114,6 +121,10 @@ async function mount(el, options) {
           if (onSessionCreated) onSessionCreated(sessionId);
         }
         break;
+      default:
+        // Any other event the engine relays (a save changed under the page,
+        // the connection's state) goes to the page as it came.
+        if (options.onSkillEvent) options.onSkillEvent(event, payload);
     }
   }
   window.addEventListener('message', handleMessage);
