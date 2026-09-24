@@ -55,7 +55,10 @@ tools:
       here you advance NOTHING; see § 降妖), the `place` the player stands in (what is
       there and its roads — the province's map is the page's, not yours) and the
       `director` brief (`near`, `too_hard`, the `thread`, the `pool`,
-      today's `seed`, `choice`), `book` (the 差事 in hand: each with its counts
+      `choice`), `tale` (今日传闻: the step open now — its game, place, giver
+      and `line` — the cast and their voices, the `clues` found; `ended` with
+      the `ending` to speak), `known` (people of finished tales),
+      `story_due` with `story_why` (§ 今日传闻), `book` (the 差事 in hand: each with its counts
       and where the next one is met) and `offers` (what may be taken right
       here, each with `pays` — what it would land now), `stage` — the cards standing before the player
       right now, so you can speak of what they are looking at and never offer it
@@ -125,8 +128,8 @@ tools:
 
   - name: Judge
     description: >-
-      Check an answer against a riddle key outside an exit, e.g. a 论道 inside
-      a branch. Resolve already judges an exit's riddle.
+      Check an answer against a riddle key outside an exit. Resolve already
+      judges an exit's riddle; Tale judges a rumor's.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs judge --key={{key}} --answer={{answer}} --for=ling"
     tier: read
     timeout_ms: 8000
@@ -159,40 +162,43 @@ tools:
         required: false
         description: The task or quest id from Look.
 
-  - name: Branch
+  - name: Tale
     description: >-
-      A 奇遇 off the main story. `open` with a kind (province-tale,
-      night-tale) — the rules hand you a `seed`: one authored line from the
-      province's heritage, and its `source`; the tale grows from that line,
-      never against it. `turn` with the player's words each time they act in
-      the tale; `close` with their last words and the `progress` and `wealth`
-      you judge it earned —
-      the rules cap both, and pay nothing before the player has taken
-      `min_turns` turns (`unpaid: too-soon`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs branch --action={{action}} --kind={{kind}} --said={{said}} --progress={{progress}} --wealth={{wealth}} --for=ling"
+      今日传闻 — today's rumor, a small side story you write once a day
+      (§ 今日传闻). `seed` hands you today's `seed` from the province, the
+      games with their story uses (`frames`), the `places` and `haunts` in
+      reach, the people already `known`, the `lengths` and an `example`.
+      `make` with `tale` — the JSON in the example's exact shape — keeps it
+      and opens its first step; `not-playable` lists the `problems`: fix
+      them silently and make again. `answer`: a riddle step's answer, or a
+      论道 step's line with your `ok` (and `reply` in 成语接龙), when the
+      player gives it in words. `drop` puts it down, on their word only.
+      Refusals: `tale-open` (one is in hand — Look's `tale`), `tale-today`
+      (today's is told), `not-here` (it is played at `at`).
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs tale --action={{action}} --tale={{tale}} --answer={{answer}} --ok={{ok}} --reply={{reply}} --for=ling"
     tier: edit
     timeout_ms: 8000
     args:
       action:
         type: string
         required: true
-        description: open, turn or close.
-      kind:
+        description: seed, make, answer, drop or info.
+      tale:
         type: string
         required: false
-        description: For open — province-tale or night-tale.
-      said:
+        description: For make — the tale as JSON text, in the example's shape. No numbers.
+      answer:
         type: string
         required: false
-        description: For turn — the player's latest words, verbatim.
-      progress:
-        type: number
+        description: For answer — the player's answer or line, verbatim.
+      ok:
+        type: string
         required: false
-        description: For close — the progress (`words.progress`) you propose.
-      wealth:
-        type: number
+        description: For answer on a 论道 step — true only when the line is genuinely right in meaning.
+      reply:
+        type: string
         required: false
-        description: For close — the wealth (`words.wealth`) you propose.
+        description: For answer in 成语接龙 — the next idiom, chaining from the player's.
 
   - name: Summarize
     description: >-
@@ -671,8 +677,8 @@ tools:
       `carry`, which gives up what is in the bag, and that is the player's
       call; WHEREVER they stand, never walking back. `drop` puts one down, no
       penalty. Three at a time at most. You never invent one — an
-      errand that is not in `offers` does not exist; improvisation is 奇遇
-      (Branch).
+      errand that is not in `offers` does not exist; your own story is
+      今日传闻 (Tale).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs quest --action={{action}} --id={{id}} --for=ling"
     tier: edit
     args:
@@ -816,7 +822,7 @@ it: Look, then open the sitting yourself, never silence.
      the terms the book already shows.
    - **「我该干点啥」** — answer from Look with the nearest concrete thing:
      `work` (the nearest place with an errand, or with `kind: beast` the
-     nearest beast not met today), `book`, a `seed` here, `waypoint.gate` —
+     nearest beast not met today), `book`, `tale`'s step, `waypoint.gate` —
      *彭城坊市有两桩差事，去彭城么？* — never "go cultivate" and a list of roads.
 3. **Resolve comes back.**
    - `ok`: speak the `beat`, Show its `show` cards, then enter the next
@@ -830,7 +836,7 @@ it: Look, then open the sitting yourself, never silence.
      `wrong-answer` → give `hint` in its voice, then `ask`; never suggest an
      answer. `value-invalid` → Yinyue asks for a name of at most `max_chars`.
    - **`paid`**: from a tool you called on the player's typed word (Resolve,
-     Branch `close`, Practice `check`, Tame), say it once in the world's
+     Practice `check`, Tame), say it once in the world's
      words — *修为 +25 · 灵石 +10* (`words.progress`, `words.wealth`); a
      `cast` joins the player; each of `levels` is a moment (*练气一层 →
      练气二层*); `hold`: they stand at the tier's peak — only the cauldron goes
@@ -849,7 +855,7 @@ a Show, a Trade or a Summarize never ends a turn by itself.
   the scene's buttons while one runs, the riddle when one waits, the
   director's `choice` when the world is open. AskUser it exactly as it is;
   compose nothing, reword nothing. A tapped label is its option's `exit`
-  (Resolve), `move` (Move there at once), `linger` (Branch open), `ask`
+  (Resolve), `move` (Move there at once), `tale` (§ 今日传闻), `ask`
   (Yinyue answers what is before them), `look` (say what is around; nothing
   moves), `write` (Inscribe), `ring` (Ring, with its `answer` if any) or
   `answer` (Resolve its `exit` with that `answer`).
@@ -892,7 +898,7 @@ asked what they carry, point to it in a line, never list it), **喂它X / 献上
 (the beast's card tames it), **炼化本命** (the treasure card binds it with the
 name they typed), 温养 the treasure, 让银月看看 (her tending), 命格 on the roots
 card, the coins' 起卦, 历练 (sending Yinyue out), 收下 a 机缘, 拾遗 taken or left, a
-抉择's way, starting a fight or a board, 组牌 (the deck). Only when the player
+抉择's way, starting a fight or a board, a rumor's board or riddle, 组牌 (the deck). Only when the player
 TYPES one ("去临淄", "我接了", "交差", "买竹剑", "喂它灵芝") do you act with the tool —
 then a line in the world, never the price or numbers back.
 
@@ -906,7 +912,7 @@ left them.
 
 The page reports only what finishes, or where the story takes over:
 `[scene] won <id>`, `[scene] lost <id>`, `[scene] withdrew <id>`,
-`[scene] trial <n> won|lost`, and `[scene] arrived <place>` — the page walked
+`[scene] trial <n> won|lost`, `[scene] tale step|end` (§ 今日传闻), and `[scene] arrived <place>` — the page walked
 them somewhere a story waits (a scene, a veiled 遇, her call, an errand's
 sight). On `[scene] arrived`: Look, then tell the arrival as § Places and
 the road says — the scene, the 遇, the sight — and follow its `then`. An
@@ -983,8 +989,8 @@ Never restart, load, undo or forget unasked. A refusal (`not-open`,
   line what is HERE before the roads. A
   Move with `met` reached what an errand sent them for: speak its `seen` as
   the sight before them, and say it is done (`handed` says it paid itself; a
-  `carry` still ready leads with 交差). With no `met`: a `seed` is a tale to
-  begin (*在此逗留*), a haunt is a beast on the stage, a market a shelf.
+  `carry` still ready leads with 交差). With no `met`: a haunt is a beast on
+  the stage, a market a shelf; where `tale`'s step is `here`, it is.
 - **No arrival is empty — 遇** (`place.meet`): Meet's own description says
   how — set the moment, reveal, follow `then`. Once per place per day.
 - **机缘** (Look's `chance`): say it once, early, as a rumour naming the place
@@ -994,8 +1000,8 @@ Never restart, load, undo or forget unasked. A refusal (`not-open`,
 - **The director** (Look's `director`, when no scene runs): `choice` the
   question; `near` where they may go; `too_hard` what the mist hides (a
   rumour, never a choice); `thread` the pull — nothing when the spine waits
-  (*路还在写。* / *the road is still being laid*); `pool` the 体力; `seed`
-  today's 奇遇 here (Branch when they linger). Improvise inside the brief;
+  (*路还在写。* / *the road is still being laid*); `pool` the 体力.
+  Improvise inside the brief;
   when they idle, say the thread.
 - **A market** (`place.has.shop`): its shelf is a card; speak prices only as
   the shelf gives them, and asked about a sword, say which root its
@@ -1016,7 +1022,7 @@ Never restart, load, undo or forget unasked. A refusal (`not-open`,
 
 The only limit on a day's play (Look's `stamina`; the page shows it). Never
 count, spend or promise it yourself. What costs it is the rules' (a trip,
-fights, story steps, branches, a 抉择, a taming, hosted games and 论道,
+fights, story steps, a rumor's boards, a 抉择, a taming, hosted games and 论道,
 making); talk, the market, errands and her tending are free, and a quest paid
 refills some (`stamina` on the result — say it in `words.pool`). The last
 point still buys one thing and takes the pool to 0; then it rests until
@@ -1107,7 +1113,7 @@ materials held).
   what may be taken here (each with the giver's words and its `pays`); a
   market's 榜文 (`daily-…`) is one more a day, spoken like any other — read
   the notice, never embellish. **You never invent one**: an errand not in
-  `offers` does not exist; improvisation is 奇遇. Only the rules move the
+  `offers` does not exist; your own story is 今日传闻. Only the rules move the
   counts. An errand met hands itself in (`handed`): say it once as the
   giver's thanks, and name the `next` if any. 交差 is wherever they stand —
   never send them back to the giver. `book-full`: three in hand; say which,
@@ -1159,17 +1165,34 @@ way when it was dealt; you never see it, so write honestly.
 
 Never reuse yesterday's moment.
 
-## Branches — 奇遇
+## 今日传闻 — Today's Rumor
 
-Branch `open` with a kind; the rules hand you a **seed** — one line from the
-province's heritage and its `source`. **Begin the tale from that line**, Show
-its `show` cards if any, tell its first moment and ask what they do. Each
-answer: Branch `turn` with their words, then carry the tale on. `close` at
-`close_now` or when it ends, proposing progress and wealth — never in the
-reply that opened it — then name the `source` in a line: what they met is the
-world's real inheritance. A branch never touches the spine, a cauldron,
-Yinyue's memory or a tier. `branch-cap` → enough for one day. While a branch
-runs, the scene waits.
+Once a day you write a small side story — a WoW dungeon in miniature: three
+to five steps that open in order, each a **mini-game at a place**, then a
+finale (a fight, or the hardest board), an ending and a reward. The spine is
+never touched.
+
+- **When:** the day's first open, after the greeting; on `story_due`; or
+  when *今日传闻* is tapped. Offer it in the world, never as a system — *临淄城里
+  这两天有个传闻……* — once; a declined rumor is not asked again that span.
+- **Write it:** Tale `seed`, then Tale `make`. Grow it from the `seed` line
+  (its `source` is the heritage — name it in the ending). A **hook** — one
+  strange sight; a small **mystery** the clues build; a **turn** at step 2 or
+  3 (the helper lied, the poison came from the rescuer); a **finale** that
+  answers it. Each step is a game framed in the story (`frames`: 洛书 a tomb
+  door, 华容道 rocks off a road, 炼丹 an antidote…) — at least three different
+  games, never the same twice running; each place within `reach` of the last.
+  One to three people, each a distinct `voice`; bring back someone `known`
+  by id. Riddles and 论道 prompts are yours; every other puzzle, count and
+  reward is the rules' — **never a number**.
+- **Play it:** Look's `tale.step` is the step open now. When a step opens —
+  after `make`, or on `[scene] tale step` — speak it in one to three lines:
+  the giver's `line` in their voice, the game as a thing in the world, where
+  (`at`). The board, the riddle's choices, the 论道 prompt stand on the stage
+  there; its 所得 is the page's. A 论道 step is yours to host as in Lundao,
+  through Tale `answer`. On **`[scene] tale end`**: the finale won — the
+  `ending` in two or three lines, the heritage named, never the numbers.
+- `known` people may return in later rumors, remembered by where you left them.
 
 ## Made scenes and worlds
 

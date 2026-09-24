@@ -98,8 +98,8 @@ skills/lingjing/
     items.json             the catalog: kinds, prices, one effect each; art/items/<id>.webp
     hexagrams.json         the day's cast
     art/                   creatures, items, cards (art/cards/<id>.webp); plates/ the originals; CREDITS.md
-    riddles/, tasks/, seeds/, places/, quests/   answer keys · in-world tasks · 奇遇 seeds · places · 差事
-    branches.json          奇遇 templates and the daily cap
+    riddles/, tasks/, seeds/, places/, quests/   answer keys · in-world tasks · 传闻 seeds · places · 差事
+    tale.json              今日传闻: the shape Ling writes to, its limits, each game's story uses
     chapters/00-prologue/ … 03-qing/   chapter.json · beats.md · scenes/*.json
   data/                    this player; never in the repo — the cloud saves state.json and worlds/
     state.json · log.jsonl · worlds/ (made worlds; their art/ stays on the device, cloud.skip)
@@ -266,7 +266,7 @@ nowhere in code.
 | `name` | the player's name in the world | 道号 | 表字 |
 | `cast` | the creatures and people with cards | 灵兽 | 武将 |
 | `contest` · `duel` · `debate` | the resolvers | 降妖 · 斗法 · 论道 | 攻城 · 单挑 · 舌战 |
-| `branch` · `task` · `quest` · `shop` | the encounter, in-world tasks, real-life quests, the market | 奇遇 · 功课 · 人间功课 · 坊市 | 机缘 · 军务 · 人间功课 · 市集 |
+| `tale` · `task` · `quest` · `shop` | the day's side story, in-world tasks, real-life quests, the market | 传闻 · 功课 · 人间功课 · 坊市 | 传闻 · 军务 · 人间功课 · 市集 |
 | `alchemy` · `pill` · `breakthrough` · `tribulation` · `abode` · `cauldron` · `omen` | the world's furniture | 炼丹 · 丹 · 突破 · 雷劫 · 洞府 · 鼎 · 卦 | — |
 
 - **The save is ids:** `{ name, traits, tier, step, progress, wealth, stamina,
@@ -381,44 +381,38 @@ The lint also refuses a scene nobody can reach, a chapter with no ending, a
 grant over its cap, a string missing a language and a creature without its
 picture.
 
-### Branch stories (奇遇)
+### 今日传闻 — Today's Rumor (his, 2026-09-24; replaced 奇遇)
 
-Not authored scene by scene. A branch is a template:
+Once a day Ling writes a small side story, like a WoW dungeon: **3–5 steps
+that open in order, each a mini-game at a place, then a finale** (a fight at
+a haunt, or the hardest board) and an ending. The spine is untouched; it
+replaced Branch (three open-and-close tales a day, paid what Ling proposed).
 
-```json
-{ "kind": "province-tale", "max_turns": 6, "table": "branch",
-  "may_not": ["spine", "cauldron", "yinyue-memory", "realm"] }
-```
-
-Ling writes the tale; the rules count its turns and pay from the capped
-branch table when it closes.
-
-**A branch grows from a seed.** A template alone gave Ling one line to write
-from ("a legend of the province"), which is the same tale by the third day.
-A seed is one authored line — a creature, a place, a thing from that
-province's 山海经 chapter — and Ling only fleshes it out.
-
-`worlds/<id>/seeds/<province>.json`, thirty to fifty a province:
-
-```json
-{ "province": "徐",
-  "seeds": [
-    { "id": "xu-01", "kind": "province-tale", "creature": "fuzhu",
-      "line": { "zh": "雾里一头四角白鹿，踏水不湿。", "en": "A four-horned white deer in the mist, walking on the water dry-shod." } },
-    { "id": "xu-02", "kind": "night-tale",
-      "line": { "zh": "泗水渔翁夜得一鲤，鲤能言。", "en": "A Si River fisherman nets a carp at night; the carp can speak." } } ] }
-```
-
-- **The rules pick the seed, by the day.** `Branch open` chooses from the
-  player's province, unused first (`state.seeds_used`), seeded by the day
-  key, and returns the line to Ling; the same day reopens the same seed.
-  Ling never chooses.
-- **A seed with a creature shows its card** — the picture rule holds in
-  branches too. A seed's `creature` must exist in `creatures.json`, with art;
-  the lint refuses one that does not.
-- **A seed is a beginning, not a plot.** What happens is Ling's; the template's
-  `may_not` still holds; the reward table and the day cap are unchanged.
-- **The prologue's province is 徐,** so 徐 ships first.
+- **Words are Ling's, numbers the rules'.** `Tale seed` hands her today's seed
+  (the province she stands in, unused first, by the day), the games with their
+  story uses (`tale.json` `frames`: 洛书 a tomb door, 炼丹 an antidote …), the
+  places and haunts in reach, the people `known`. She writes title, hook, cast
+  (1–3, each a voice), each step's game, place, giver, line and clue, a riddle
+  or a 论道 prompt, the finale, the ending. `Tale make` lints it (`rules/
+  tale.mjs lintTale`): places real, open, within the realm and `reach` roads of
+  the last; creatures with a haunt, not in the cast; ≥3 different games, none
+  twice running; lengths, the player's language, refused names — and **no
+  number anywhere**, no reward key. Refused → `not-playable` with `problems`.
+- **Pay:** each step the `tale` table, the finale `tale_end`, the whole never
+  over `rewards.json tale.cap` (a fifth step eats into the finale); one drop
+  from `tale.drops`, the highest tier at or below the realm. A step's board
+  costs a hosted game's 体力; ~2.9 修为 per 体力 with an elite finale — just
+  under a fight.
+- **Play:** every board is its own instance (`tale:<id>:<n>`, dealt by the
+  page from that id at the realm's level, +1 for a finale) — never the day's
+  practice. Won at its place, the step hands itself in (所得) and the next
+  opens, page-side; Ling gets one hidden `[scene] tale step` (or `tale end`)
+  and speaks the step from Look's `tale`. It rides the book as one line (no
+  slot) and the stage's queue beside the search's step.
+- **One a day; an unfinished one stays** until done or put down (`drop`,
+  unpaid); a missed day costs nothing. Look's `story_due` nudges Ling (no rumor
+  today, or the open one quiet `story_due_minutes`) once a span. The cast of a
+  finished tale joins `known`, and may return by id.
 
 ### A day
 
@@ -445,8 +439,7 @@ days — is the game's real shape:
    root stands as a draw; a cast whose lower trigram is that element leans
    its grade one step the player's way (吉→大吉, 凶→平, 大凶→凶; `fated`).
 2. **A due quest, if any** — the workout kept, the scan run — paid on sight.
-3. **One 奇遇 from a seed,** offered by Ling as the way forward when the spine
-   has nothing new. Up to `per_day`.
+3. **今日传闻** — Ling's one side story of the day, grown from a seed.
 4. **Practice** — a board on the scene, no model; a hosted game costs 3 体力 when paid.
 5. **The story waits** at its gate when a chapter is not yet open — said in
    one line, never nagged.
@@ -695,10 +688,10 @@ Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `
   "chapter": "00-prologue", "scene": "00-north", "done_scenes": ["00-river", "…"], "ended": [],
   "tasks": { "alchemy-first": { "status": "done", "period": "once" } },
   "quests": { "shifu-scan": { "period": "2026-W37", "paid_at": "…" } },
-  "branch": null,
+  "tale": null, "known": [],
   "story": "青玄在泗水边醒来……",
   "stamina": 60, "stamina_at": "2026-09-11T12:00:00-03:00",
-  "day": { "key": "2026-09-11", "progress": 70, "wealth": 10, "branches": 0 } }
+  "day": { "key": "2026-09-11", "progress": 70, "wealth": 10 } }
 ```
 
 - `stage` counts from 0 within the realm; `xw` is what the current stage has
@@ -746,7 +739,7 @@ whole turn.
 | `Resolve {exit, value?, answer?}` | Takes an exit: checks `needs` and the answer, sets the value, applies `take` and `set`, pays `grant`, advances; returns the beat (each line with its speaker's `name`), the next scene and `summarize: true` when the scene changed. A `game` exit needs the scene's recorded win. | `unknown-exit`, `needs`, `needs-answer`, `wrong-answer` (with the hint), `game-not-won`, `value-invalid`, `no-scene` |
 | `Judge {key, answer}` | Checks an answer against the key, either language. | `unknown-riddle` |
 | `Practice {action: list \| done \| check, id}` (verb `task`) | `list` the offered tasks and due quests; `done` pays an in-world task whose win the scene recorded; `check` pays a quest its app marked done this period. | `not-offered`, `already-done`, `not-won`, `not-done`, `already-paid` |
-| `Branch {action: open \| turn \| close, kind, xw, ls}` | Opens a 奇遇, counts its turns, pays within the branch cap on close. The engine's `LINGGEN_USER_TURNS` counts the player's messages: the tale's turns are those sent since it opened, whatever Ling reported; without the count, the player's words count (the same words twice are one turn). | `branch-open`, `branch-cap`, `no-branch` |
+| `Tale {action: seed \| make \| answer \| drop \| info, tale, answer, ok, reply}` | 今日传闻: hands the seed and the shape; lints and keeps Ling's tale; judges a riddle or a 论道 line; puts it down. The page's `win` (a step's board) and `turn` (a kept win) come through the same verb. | `tale-open`, `tale-today`, `not-playable` (`problems`), `not-here`, `not-this-step`, `wrong-answer` |
 | `Summarize {text}` | Replaces the story. | `too-long` |
 | `duel --id [--picks]` (the page's) | Starts a bout (stamina, the creature's moves) or settles it from the picks; records the win or the withdrawal. | `not-here`, `withdrawn`, `no-traits`, `not-started`, `not-your-root`, `unfinished` |
 | `Move {place}` | Goes to a place by road; a province still answers. | `corridor`, `no-road` (with `near`, `toward`), `too-hard` (with `fitting`), `unknown-place`, `road-closed` — each with `here` |
@@ -1083,7 +1076,7 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 
 - **满 100，五小时回满**；用到 0 之后要歇到 **20**（`rest_at`）才再动 —— 最后一点仍能买
   一件事。银月（不是 Ling）叫人去歇。
-- **价**：一趟路 3，每多一条路 +1，最多 6 · 一步故事 3 · 斗法 8 · 精英 12 · 奇遇 8 ·
+- **价**：一趟路 3，每多一条路 +1，最多 6 · 一步故事 3 · 斗法 8 · 精英 12 ·
   抉择 3 · 驯 3 · 小游戏 3（交差时扣；体力空了赢局照留，回满当天再付）· 论道 3（开局扣）·
   造景 5 · 造世界 10 · 增改 5 · 坊市 0。序章自己的步、路、仗不扣。
 - **不扣**：说话、坊市、差事、银月的调理、写符。
@@ -1108,8 +1101,8 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 
 - **只改存档的点，是页面的事**：接下 · 交差 · 买 · 卖 · 服用 · 佩戴 由页面直接调规则，
   聊天里什么都不多；Ling 下次 Look 从存档里知道。
-- **主线是写好的，支线是 Ling 的**：《九鼎》的章节、谜、赏是内容；奇遇由 Ling 从州里的
-  种子长出来，赏由规则封顶。差事她不编。
+- **主线是写好的，支线是 Ling 的**：《九鼎》的章节、谜、赏是内容；今日传闻由 Ling 从州里的
+  种子长出来，字是她的，数是规则的。差事她不编。
 - **遇先起雾，Ling 先渲染气氛**：Move 发下的遇带 `veiled`，台上只有雾；Ling 写两三句
   （月黑风高……突然——），再 Meet `reveal`，卡与问题才上台。她那一轮结束仍未揭开，
   或页面开在雾上又无人说话（20 秒），页面自己揭开。
@@ -1365,9 +1358,7 @@ place, which returns once it is taken. A shelf stays: it is something to do.
 trigger something, instead of let user go to another place without doing
 anything」). Move's result carries `met` — the errands this arrival finished,
 each with its authored `seen` (what is there: the old man swimming 吕梁洪) —
-and the question leads with 交差. A 奇遇 does not keep overnight: a tale
-opened on an earlier day counts as closed, because one left open on 09-14
-had shut every seed out of every place for a week.
+and the question leads with 交差.
 
 **One thing to tap at a time — and why it kept coming back** (his, 2026-09-21:
 an offer card on the stage and 何去何从 in the chat at once; "we fixed it several
@@ -1413,8 +1404,8 @@ put down. In Ling's context the whole book is three lines, about 40 tokens.
   line of the director's brief, and Ling mentions it in her own words.
 - **No quest text nobody reads.** The ask is one or two lines, in the giver's
   voice.
-- **No invented errands.** Improvisation stays 奇遇, which already has its own
-  capped table and its turn count.
+- **No invented errands.** Ling's own story is 今日传闻, linted and paid by
+  the rules.
 
 ### Where they come from — three sources, one card
 
