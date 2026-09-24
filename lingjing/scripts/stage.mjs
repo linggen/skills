@@ -26,6 +26,10 @@ export function lineHere(look) {
   return null;
 }
 
+/* What met on the road stands on the stage as the one road card. */
+const ON_ROAD = { chance: m => !m.missed && !m.taken, find: () => true, trial: m => Boolean(m.options) };
+export const onRoad = m => Boolean(m && (m.veiled || ON_ROAD[m.kind]?.(m)));
+
 /* 传闻's step, when it is to be played on this very spot. */
 export function taleHere(look) {
   const t = look?.tale;
@@ -48,10 +52,8 @@ export function taleHere(look) {
 export const CARD_KINDS = {
   fight: { holds: true }, //       the fight IS the stage
   offer: { holds: true }, //       接下 — the errands held out where he stands, one card
-  find: { holds: true }, //        收下 — something by the road
-  trial: { holds: true }, //       抉择 — the ways Ling wrote, until one is taken
-  chance: { holds: true }, //      机缘 — 收下, where it lies, while it lasts
-  veil: { holds: true }, //        a 遇 not yet revealed: mist, until Ling has set the moment
+  road: { holds: true }, //        路上 — what this arrival met: mist until told, then 收下 a find or the
+  //                               day's 机缘, or the ways of a 抉择, until it is answered
   item: { holds: true }, //        a shelf to buy from
   quest: { holds: look => Boolean(lineHere(look)) }, // the search's step, only when it can be taken on this spot
   // 传闻's step where he stands: its board, its riddle, its 论道. A fight finale's own duel card holds instead.
@@ -104,13 +106,11 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // and the next step, already in hand, until he walks on.
   if (look.handed?.length) head.unshift({ card: 'handed' });
 
-  // 遇: something found on the road is on the stage until it is taken or left
-  // (a traveller's riddle is the chat's question; a road beast is a duel card).
-  if (look.place?.meet?.veiled) head.push({ card: 'veil' });
-  else if (look.place?.meet?.kind === 'find') head.push({ card: 'find' });
-  else if (look.place?.meet?.kind === 'trial' && look.place.meet.options) head.push({ card: 'trial' });
-  // 机缘 where it lies, while it lasts.
-  if (look.chance?.here && !look.chance.taken && !look.chance.missed) head.push({ card: 'chance' });
+  // 路上 (rules/road.mjs): what this arrival met is ONE card until it is
+  // answered — mist while veiled, then a find or the day's 机缘 to 收下, or a
+  // 抉择's ways. A traveller's riddle is the chat's question; a road beast is
+  // the duel card below.
+  if (onRoad(look.place?.meet)) head.push({ card: 'road' });
 
   const line = lineHere(look);
   // Ling's own cards stand whatever else is true — she chose them. With none,

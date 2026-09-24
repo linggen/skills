@@ -202,9 +202,10 @@ test('抉择 on the stage: each way a button with how hard, the odds and the sta
     { n: 0, label: '涉水而过', difficulty: 'hard', stake: 'wound', chance: 30 },
     { n: 1, label: '等船家', difficulty: 'easy', stake: 'coin', chance: 75 },
   ] } } };
-  assert.ok(stageCards(look, []).some(c => c.card === 'trial'), 'the ways stand on the stage');
-  assert.ok(!stageCards({ place: { meet: { kind: 'trial', waiting: true } } }, []).some(c => c.card === 'trial'), 'not before Ling has written them');
-  const html = cardHtml({ card: 'trial' }, { look, lang: 'zh', words: WORDS.zh });
+  assert.ok(stageCards(look, []).some(c => c.card === 'road'), 'the ways stand on the stage, as the road card');
+  assert.ok(!stageCards({ place: { meet: { kind: 'trial', waiting: true } } }, []).some(c => c.card === 'road'), 'not before Ling has written them');
+  const html = cardHtml({ card: 'road' }, { look, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /路上 · 抉择/);
   assert.match(html, /data-trial="0"><b>涉水而过<\/b>/);
   assert.match(html, /难 · 30% 把握 · 失手折体力/, 'a wound on the road is 体力 now');
   assert.match(html, /易 · 75% 把握 · 失手破财/);
@@ -232,7 +233,7 @@ test('望气 on the page: 上卷 reads the shape, 下卷 every move with the num
   assert.match(at(2).match(/bintent[\s\S]*?<\/div>/)[0], /\d/, '下卷: the numbers that land');
 });
 
-test('机缘 on the page: the book counts it down, the stage holds 收下 where it lies, and it is gone once missed', async () => {
+test('机缘 on the page: the book counts it down; met on the road, the one road card holds 收下 — and it is gone once missed', async () => {
   const { cardHtml, bookChipHtml, chanceLeft, WORDS } = await import('../scripts/cards.js');
   const { stageCards } = await import('../scripts/stage.mjs');
   const until = new Date(Date.now() + 100 * 60000).toISOString();
@@ -240,11 +241,15 @@ test('机缘 on the page: the book counts it down, the stage holds 收下 where 
   const chip = bookChipHtml({ look: away, words: WORDS.zh, lang: 'zh' }, true, false);
   assert.match(chip, /事 1 · 有机缘/);
   assert.match(chip, /机缘 · 微山湖[\s\S]*还剩 1 时 40 分/);
-  assert.ok(!stageCards(away, []).some(c => c.card === 'chance'), 'not on the stage from afar');
-  const there = { ...away, chance: { ...away.chance, here: true } };
-  assert.ok(stageCards(there, []).some(c => c.card === 'chance'));
-  assert.match(cardHtml({ card: 'chance' }, { look: there, lang: 'zh', words: WORDS.zh }), /data-chance>收 下</);
+  assert.ok(!stageCards(away, []).some(c => c.card === 'road'), 'not on the stage from afar');
+  const there = { ...away, place: { id: 'weishan', meet: { kind: 'chance', place: { id: 'weishan', name: '微山湖' }, until, minutes_left: 100, here: true } } };
+  assert.deepEqual(stageCards(there, []).filter(c => c.card === 'road'), [{ card: 'road' }]);
+  const html = cardHtml({ card: 'road' }, { look: there, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /路上 · 机缘 · 微山湖/);
+  assert.match(html, /data-meet="take">收 下</);
   assert.equal(chanceLeft({ ...away.chance, missed: true }), null);
+  const missed = { ...there, place: { ...there.place, meet: { ...there.place.meet, missed: true } } };
+  assert.ok(!stageCards(missed, []).some(c => c.card === 'road'), 'missed: the card goes');
   assert.equal(bookChipHtml({ look: { chance: { ...away.chance, until: new Date(Date.now() - 1000).toISOString() }, book: [] }, words: WORDS.zh, lang: 'zh' }, false, false), '', 'run out: gone');
 });
 
@@ -464,18 +469,18 @@ test('可接的差事: one card, a row each; a row opens to the giver; taken, on
   if (after.offers.length === 1) assert.match(cardHtml({ card: 'offer' }, ctx(after)), /class="offerdetail"/, 'a lone errand stands open');
 });
 
-test('遇 in the mist: the veil card says nothing of what waits', async () => {
+test('路上 in the mist: the road card says nothing of what waits', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   for (const lang of ['zh', 'en']) {
     const look = { place: { meet: { kind: 'beast', creature: { id: 'longzhi', name: '蠪侄' }, veiled: true } } };
-    const html = cardHtml({ card: 'veil' }, { look, lang, words: WORDS[lang] });
-    assert.match(html, /class="card veil"/);
+    const html = cardHtml({ card: 'road' }, { look, lang, words: WORDS[lang] });
+    assert.match(html, /class="card veil road"/);
     assert.match(html, new RegExp(WORDS[lang].veilLine));
     assert.doesNotMatch(html, /蠪侄|longzhi|<button/, 'no name, nothing to tap');
-    assert.equal(cardHtml({ card: 'veil' }, { look: { place: { meet: { kind: 'beast' } } }, lang, words: WORDS[lang] }), '', 'revealed, no mist');
+    assert.equal(cardHtml({ card: 'road' }, { look: { place: { meet: { kind: 'beast' } } }, lang, words: WORDS[lang] }), '', 'a road beast told is the duel card, not this');
+    for (const old of ['veil', 'find', 'trial', 'chance']) assert.equal(cardHtml({ card: old }, { look, lang, words: WORDS[lang] }), '', `no ${old} card of its own`);
   }
 });
-
 test('所得: an errand handed in shows what it paid and the next step in hand', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   const handed = [{ id: 'xu-elder-herb', title: '彭城老人的灵芝', who: '彭城的老人', paid: { progress: 40, wealth: 15 }, gives: '聚气丹',

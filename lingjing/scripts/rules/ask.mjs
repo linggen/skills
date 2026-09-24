@@ -3,8 +3,9 @@
 import { stageCards, stageHolds } from '../stage.mjs';
 import { normalizeAnswer, pick } from '../state.mjs';
 import { companionOf, questBrief, riddleWaiting } from './companion.mjs';
-import { directorBrief, filler, FILLERS, meetBrief, offersOf, wayBack } from './errands.mjs';
+import { directorBrief, filler, FILLERS, offersOf, wayBack } from './errands.mjs';
 import { onStage, sceneBrief, shownHere, stageAt } from './look.mjs';
+import { meetBrief } from './road.mjs';
 import { taleBrief } from './tale.mjs';
 import { atScene, placeBrief } from './world.mjs';
 

@@ -36,8 +36,9 @@ export { askOf, tapThen, thenFor } from './rules/ask.mjs';
 export { deck, deckFor, fightSetup, hpMaxOf, ownedCards } from './rules/cards.mjs';
 export { hasCompanion } from './rules/companion.mjs';
 export { judge, resolve, riddleOf } from './rules/core.mjs';
-export { chance, greet } from './rules/daily.mjs';
-export { advance, BOOK_MAX, meet } from './rules/errands.mjs';
+export { greet } from './rules/daily.mjs';
+export { advance, BOOK_MAX } from './rules/errands.mjs';
+export { meet } from './rules/road.mjs';
 export { parseArgs } from './rules/files.mjs';
 export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './rules/fortune.mjs';
 export { look } from './rules/look.mjs';
@@ -51,7 +52,7 @@ export { amend, art, atlas, build, BUILDING_WAITS, enter, forget, leave, load, m
 /* Answers handed over as they are — no question, no stage: Progress is for
    a pet that only wants to know how the game stands. */
 const PLAIN = new Set(['progress']);
-/* The verbs that are story when they land: a scene step, a 遇, a made scene entered. */
+/* The verbs that are story when they land: a scene step, something met on the road, a made scene entered. */
 const STORY_VERBS = new Set(['resolve', 'meet', 'enter']);
 
 /* One call, start to end, under the save's lock (files.mjs withLock): the

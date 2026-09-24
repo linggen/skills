@@ -1,7 +1,8 @@
 // rules/world.mjs — Reading the state, and the places: the province as a map.
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, pick } from '../state.mjs';
-import { itemBrief, itemOf, meetBrief, meetHere } from './errands.mjs';
+import { itemBrief, itemOf } from './errands.mjs';
+import { meetBrief, meetHere } from './road.mjs';
 import { duelBrief, shelfOf, withMap } from './look.mjs';
 import { provinceOf } from './travel.mjs';
 

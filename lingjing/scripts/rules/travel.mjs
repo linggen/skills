@@ -5,8 +5,8 @@ import { dayKey, fill, langOf, pick } from '../state.mjs';
 import { tierRank } from './arms.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
-import { chanceBrief, chanceLive } from './daily.mjs';
-import { advance, bookOf, dealMeet, directorBrief, GEAR_SLOTS, itemBrief, itemOf, meetsToday, questOf, settleErrands } from './errands.mjs';
+import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, questOf, settleErrands } from './errands.mjs';
+import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, wordsOf } from './look.mjs';
 import { atScene, fittingPlace, inCorridor, inMade, pathOf, placeBrief, placeName, placeOf, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard } from './world.mjs';
 import { enter } from './worlds.mjs';
@@ -109,12 +109,10 @@ export function move(state, content, ctx, args) {
     .map(q => ({ id: q.id, title: q.title, ...(questOf(content, q.id)?.seen ? { seen: fill(pick(questOf(content, q.id).seen, lang), s) } : {}) }));
   const handed = settleErrands(content, s, ctx);
   const via = way.slice(0, way.findIndex(p => p.id === reached.id)).map(p => placeName(content, s, p));
-  // Where he STOPS — never a place walked through (his pick, 2026-09-21) — and
-  // only when the arrival finished nothing: an errand met is the event.
-  // A 机缘 waiting here is the arrival's event, like an errand met.
-  const lucky = chanceLive(s, ctx.now) && s.place === s.chance.place;
-  const dealt = met.length || lucky ? null : dealMeet(content, s, ctx);
-  if (dealt) s.meets = { day: dayKey(ctx.now), places: { ...meetsToday(s, ctx.now), [s.place]: dealt } };
+  // 路上 (road.mjs): at most one thing met, where he STOPS — never a place
+  // walked through (his pick, 2026-09-21) — and only when the arrival
+  // finished nothing: an errand met is the event.
+  arriveOnRoad(content, s, ctx, met.length > 0);
   const left = inMade(s) ? s.made.at : null;
   if (left) s.made.at = null;
   const place = placeBrief(content, s, ctx.now);
@@ -125,7 +123,7 @@ export function move(state, content, ctx, args) {
   // a province crossed, a made scene left — not on every road walked (a
   // Summarize is a whole model call; seen live 2026-09-16, one per step).
   const summarize = Boolean(scene) || reached.province !== from.province || Boolean(left);
-  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(lucky ? { chance: chanceBrief(content, s, ctx.now) } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
+  return { state: s, result: { ok: true, place, scene, show, ...(via.length ? { via } : {}), ...(met.length ? { met } : {}), ...(handed.length ? { handed } : {}), ...(reached.id !== target.id ? { stopped: true } : {}), ...(left ? { left } : {}), director: directorBrief(content, s, ctx), summarize } };
 }
 
 /* A key the story still needs: an exit of the current chapter's scenes not

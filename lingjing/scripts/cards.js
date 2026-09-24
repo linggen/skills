@@ -7,6 +7,7 @@ import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, challengeHtml } from './battle-card.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
+import { onRoad } from './stage.mjs';
 
 export const WORDS = {
   zh: {
@@ -44,7 +45,7 @@ export const WORDS = {
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
     notDone: '这一下没成，稍后再点。', fightRefused: '这一战没记上，牌还在原处。',
-    needVia: '先去{name}', veilLine: '前路起了雾……', refused: { 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '谜题已过', 'not-today': '今日的功课不是这件', 'unknown-place': '找不到这个地方', 'wrong-answer': '答得不对', 'not-this-step': '这一步已经过了', busy: '稍等片刻' }, goalTitle: '眼下要做的', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', gearFight: '斗法里：{what}', saveConflicts: '云端存档已覆盖此处；这里的改动另存了一份。', gearPower: '主灵根一击 +{n}', gearArmor: '护体 {n}', gearWard: '抗{el} {n}', gearCharm: '{name}在手', gearLends: '借{el}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '亮的是出战的十张，点一张换上或取下；银月开局就在手上。', cardsDealt: '亮的是出战的十张，按灵根配好；结丹之后可以自己组牌。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手折体力', coin: '失手破财' }, trialHurt: '体力 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', kaifuTitle: '开府 · {n}/{of}', kaifuPaid: '已记', book: '手上的事', take: '接 下', took: '已接下', queueCount: '眼前 {n} 件', queueNext: '下一件：{what}', queueKinds: { handed: '所得', quest: '剧情', veil: '雾中', find: '拾遗', trial: '抉择', chance: '机缘', offer: '差事', duel: '斗法', tale: '传闻', lundao: '论道', board: '功课' }, turnIn: '交 差', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    needVia: '先去{name}', veilLine: '前路起了雾……', roadTitle: '路上', refused: { gone: '来迟了，机缘已散', 'nothing-here': '路上已无事', 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '谜题已过', 'not-today': '今日的功课不是这件', 'unknown-place': '找不到这个地方', 'wrong-answer': '答得不对', 'not-this-step': '这一步已经过了', busy: '稍等片刻' }, goalTitle: '眼下要做的', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', gearFight: '斗法里：{what}', saveConflicts: '云端存档已覆盖此处；这里的改动另存了一份。', gearPower: '主灵根一击 +{n}', gearArmor: '护体 {n}', gearWard: '抗{el} {n}', gearCharm: '{name}在手', gearLends: '借{el}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '亮的是出战的十张，点一张换上或取下；银月开局就在手上。', cardsDealt: '亮的是出战的十张，按灵根配好；结丹之后可以自己组牌。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手折体力', coin: '失手破财' }, trialHurt: '体力 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', kaifuTitle: '开府 · {n}/{of}', kaifuPaid: '已记', book: '手上的事', take: '接 下', took: '已接下', queueCount: '眼前 {n} 件', queueNext: '下一件：{what}', queueKinds: { handed: '所得', quest: '剧情', road: '路上', offer: '差事', duel: '斗法', tale: '传闻', lundao: '论道', board: '功课' }, turnIn: '交 差', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     taleKept: '已解开 · 体力回来便记上', taleDuel: '降了{name}，此事便了', taleWhere: '{game} · {who}', taleRiddle: '点选作答', handedTitle: '交差 · {title}', handedNext: '接下来 · {title}', handedWait: '下一步 · {title} — 手上已满，了一件再去{at}接', needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、功课、传闻，都长修为',
   },
   en: {
@@ -82,7 +83,7 @@ export const WORDS = {
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
     notDone: 'That did not go through — tap again in a moment.', fightRefused: 'This fight was not recorded; its card is still here.',
-    needVia: 'by way of {name}', veilLine: 'Mist on the road ahead…', refused: { 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'The riddle has passed', 'not-today': "Not today's chore", 'unknown-place': 'No such place', 'wrong-answer': 'Not that one', 'not-this-step': 'That step has passed', busy: 'One moment' }, goalTitle: 'What waits', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', gearFight: 'In a fight: {what}', saveConflicts: 'The cloud save replaced this one; changes made here were kept as a copy.', gearPower: 'Root Strike +{n}', gearArmor: 'Shield {n}', gearWard: 'wards {el} {n}', gearCharm: '{name} in hand', gearLends: 'lends {el}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'Lit: the ten you fight with — tap one to put it in or take it out; Yinyue starts in hand.', cardsDealt: 'Lit: the ten you fight with, dealt by your roots; from the Core on you pick your own.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing costs stamina', coin: 'failing costs coin' }, trialHurt: 'Stamina −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', kaifuTitle: 'Setting up · {n}/{of}', kaifuPaid: 'counted', book: 'In hand', take: 'Take it', took: 'Taken', queueCount: '{n} things here', queueNext: 'Next: {what}', queueKinds: { handed: 'Spoils', quest: 'The story', veil: 'In the mist', find: 'By the road', trial: 'A choice', chance: 'A chance', offer: 'Errand', duel: 'A fight', tale: 'Rumor', lundao: 'Debate', board: 'Practice' }, turnIn: 'Hand it in', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    needVia: 'by way of {name}', veilLine: 'Mist on the road ahead…', roadTitle: 'On the road', refused: { gone: 'Too late — it is gone', 'nothing-here': 'Nothing on the road now', 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'The riddle has passed', 'not-today': "Not today's chore", 'unknown-place': 'No such place', 'wrong-answer': 'Not that one', 'not-this-step': 'That step has passed', busy: 'One moment' }, goalTitle: 'What waits', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', gearFight: 'In a fight: {what}', saveConflicts: 'The cloud save replaced this one; changes made here were kept as a copy.', gearPower: 'Root Strike +{n}', gearArmor: 'Shield {n}', gearWard: 'wards {el} {n}', gearCharm: '{name} in hand', gearLends: 'lends {el}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'Lit: the ten you fight with — tap one to put it in or take it out; Yinyue starts in hand.', cardsDealt: 'Lit: the ten you fight with, dealt by your roots; from the Core on you pick your own.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing costs stamina', coin: 'failing costs coin' }, trialHurt: 'Stamina −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', kaifuTitle: 'Setting up · {n}/{of}', kaifuPaid: 'counted', book: 'In hand', take: 'Take it', took: 'Taken', queueCount: '{n} things here', queueNext: 'Next: {what}', queueKinds: { handed: 'Spoils', quest: 'The story', road: 'On the road', offer: 'Errand', duel: 'A fight', tale: 'Rumor', lundao: 'Debate', board: 'Practice' }, turnIn: 'Hand it in', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     taleKept: 'Solved · counted once your stamina is back', taleDuel: 'Subdue {name} and it is done', taleWhere: '{game} · {who}', taleRiddle: 'Tap an answer', handedTitle: 'Handed in · {title}', handedNext: 'Next · {title}', handedWait: 'Next · {title} — your hands are full; finish one, then take it at {at}', needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, practice and rumors all raise it',
   },
 };
@@ -662,15 +663,6 @@ export function bookChipHtml(ctx, open, fresh) {
   return `<span class="bookwrap"><button class="bookchip${ready ? ' ready' : ''}${lucky ? ' lucky' : ''}${fresh ? ' fresh' : ''}" data-book aria-expanded="${open ? 'true' : 'false'}">${esc(label)}</button>${open ? bookPopHtml(ctx) : ''}</span>`;
 }
 
-/// 机缘 on the stage where it lies: 收下 while it lasts.
-function chance(card, ctx) {
-  const c = ctx.look?.chance, w = ctx.words, left = chanceLeft(c);
-  if (!left || !c.here) return '';
-  return `<div class="card chance"><div class="cardtitle">${esc(say(w.chanceTitle, { place: c.place.name }))}</div>
-    <div class="say">${esc(w.chanceLine)}</div><div class="small dim">${esc(say(w.chanceLeft, { t: hm(left, w) }))}</div>
-    <div class="acts"><button class="act" data-chance>${esc(w.chanceTake)}</button></div></div>`;
-}
-
 /// What the chip opens: where the story waits, then 手上的事. No road button
 /// here — the chat's question leads with that road, and one thing is tapped
 /// in one place.
@@ -854,42 +846,39 @@ function quest(card, ctx) {
     <div class="acts">${acts.map((a) => (a.do ? doBtn(a.label, a.do, a.id) : a.go ? goBtn(a.label, a.go) : (a.ask ? askBtn : sayBtn)(a.label, a.say))).join('')}</div></div>`;
 }
 
-/// 拾遗 — something by the road. The page takes it itself (`Meet take`): it is
-/// a fact of the rules, not a thing to ask Ling for.
-/// 遇, before it is told: mist on the stage while Ling sets the moment. Nothing
-/// to tap — what it is comes up when she calls Meet reveal (or when her turn
-/// ends without it; the page lifts it itself then).
-function veil(card, ctx) {
-  if (!ctx.look?.place?.meet?.veiled) return '';
-  return `<div class="card veil" aria-live="polite"><div class="mist"></div><div class="veilline">${esc(ctx.words.veilLine)}</div></div>`;
-}
-
-function find(card, ctx) {
-  const m = ctx.look?.place?.meet, w = ctx.words;
-  if (m?.kind !== 'find') return '';
-  const what = m.item ? m.item.name : `${w.ls} +${m.wealth}`;
-  return `<div class="card find"><div class="cardtitle">${esc(w.findTitle)}</div>
+/// 路上 — what this arrival met, ONE card whatever it is (rules/road.mjs):
+/// mist while Ling sets the moment (nothing to tap — what it is comes up when
+/// she calls Meet reveal, or the page lifts it when her turn ends without it);
+/// then a find or the day's 机缘 to 收下 — the page takes it itself (`Meet
+/// take`), a fact of the rules, not a thing to ask Ling for — or a 抉择's ways,
+/// each with how hard, what it risks and the odds the rules give (never the
+/// roll). After a way is taken the stage holds its line until he walks on.
+const ROAD_CARD = {
+  veil: (m, w) => `<div class="card veil road" aria-live="polite"><div class="mist"></div><div class="veilline">${esc(w.veilLine)}</div></div>`,
+  find: (m, w) => {
+    const what = m.item ? m.item.name : `${w.ls} +${m.wealth}`;
+    return `<div class="card find road"><div class="cardtitle">${esc(w.roadTitle)} · ${esc(w.findTitle)}</div>
     <div class="say">${esc(m.line)}</div>
     <div class="acts"><button class="act" data-meet="take">${esc(say(w.findTake, { what }))}</button><button class="act quiet" data-meet="pass">${esc(w.findPass)}</button></div></div>`;
-}
-
-/// 抉择 — the ways Ling wrote, each a button with how hard it is, what it
-/// risks and the odds the rules give (never the roll). After the tap the
-/// stage holds the line of the way taken, Ling's own words, until she goes on.
-function trial(card, ctx) {
-  const m = ctx.look?.place?.meet, w = ctx.words, told = ctx.trialTold;
-  if (told) {
-    return `<div class="card trial ${told.success ? 'won' : 'lost'}"><div class="cardtitle">${esc(w.trialTitle)} · ${esc(told.success ? w.trialWon : w.trialLost)}</div>
-      <div class="say">${esc(told.line)}</div>${told.cost ? `<div class="small dim">${esc(told.cost)}</div>` : ''}</div>`;
-  }
-  if (m?.kind !== 'trial' || !m.options) return '';
-  const ways = m.options.map((o) => `<button class="act way" data-trial="${o.n}"><b>${esc(o.label)}</b>
+  },
+  chance: (m, w) => `<div class="card chance road"><div class="cardtitle">${esc(w.roadTitle)} · ${esc(say(w.chanceTitle, { place: m.place?.name ?? '' }))}</div>
+    <div class="say">${esc(w.chanceLine)}</div>${m.minutes_left ? `<div class="small dim">${esc(say(w.chanceLeft, { t: hm(m.minutes_left, w) }))}</div>` : ''}
+    <div class="acts"><button class="act" data-meet="take">${esc(w.chanceTake)}</button></div></div>`,
+  trial: (m, w) => {
+    const ways = m.options.map((o) => `<button class="act way" data-trial="${o.n}"><b>${esc(o.label)}</b>
     <small>${esc(w.trialHard?.[o.difficulty] ?? o.difficulty)} · ${esc(say(w.trialChance, { n: o.chance }))} · ${esc(w.trialStake?.[o.stake] ?? o.stake)}</small></button>`).join('');
-  return `<div class="card trial"><div class="cardtitle">${esc(w.trialTitle)}</div><div class="acts ways">${ways}</div></div>`;
+    return `<div class="card trial road"><div class="cardtitle">${esc(w.roadTitle)} · ${esc(w.trialTitle)}</div><div class="acts ways">${ways}</div></div>`;
+  },
+};
+function road(card, ctx) {
+  const m = ctx.look?.place?.meet;
+  if (!onRoad(m)) return '';
+  return ROAD_CARD[m.veiled ? 'veil' : m.kind]?.(m, ctx.words) ?? '';
 }
 
-/// The way taken, on the stage after the tap — the same card, told.
-export const trialToldHtml = (told, ctx) => trial({}, { ...ctx, trialTold: told });
+/// The way taken at a 抉择, on the stage after the tap — Ling's line for it.
+export const trialToldHtml = (told, ctx) => `<div class="card trial road ${told.success ? 'won' : 'lost'}"><div class="cardtitle">${esc(ctx.words.trialTitle)} · ${esc(told.success ? ctx.words.trialWon : ctx.words.trialLost)}</div>
+      <div class="say">${esc(told.line)}</div>${told.cost ? `<div class="small dim">${esc(told.cost)}</div>` : ''}</div>`;
 
 /// A made world still being painted: the story waits for the brush, so the
 /// scene says how many pictures are left — from Look, never counted here.
@@ -900,7 +889,7 @@ function building(card, ctx) {
     <div>${esc(ctx.words.buildingLine.replace('{n}', left))}</div></div>`;
 }
 
-const RENDER = { handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, find, veil, trial, chance };
+const RENDER = { handed, tale, lundao, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

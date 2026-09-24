@@ -610,7 +610,7 @@ function focusHtml() {
    in this order; the first stands on the stage, 下一件 › puts it off to the end
    of the line, and walking on starts the line again. The goal line, an empty
    pool and what Ling showed of the place stay where they are. */
-const QUEUE = ['handed', 'quest', 'tale', 'veil', 'find', 'trial', 'chance', 'offer', 'duel', 'lundao', 'board'];
+const QUEUE = ['handed', 'quest', 'tale', 'road', 'offer', 'duel', 'lundao', 'board'];
 const HEAD = new Set(['building', 'empty', 'goal']);
 const qKey = (c) => `${c.card}:${c.id ?? ''}`;
 
@@ -959,12 +959,17 @@ async function openRow(id) {
   if (info?.ok && view.bookRow === id) show({ bookInfo: info });
 }
 
-/* 拾遗: taken or left by the rules at once — the bag and the strip show it,
-   and the roads row stands where the find was. Nothing goes to Ling (his,
-   2026-09-24): the save's `page_did` tells her on her next Look. */
+/* 路上: a find or the day's 机缘 taken, or a find left — by the rules at
+   once; the bag and the strip show it, and the roads row stands where it
+   was. Nothing goes to Ling (his, 2026-09-24): the save's `page_did` tells her
+   on her next Look. A 机缘's card stands as spoils, and 银月 hears it (she
+   was there for the run to reach it). */
 async function takeMeet(action) {
+  const where = look?.place?.meet?.kind === 'chance' ? look.place.meet.place?.name ?? look.place?.name ?? '' : null;
   const r = await write('meet', { action }).catch(failed);
-  if (!r.ok) keep({ doNote: refusal(r) });
+  if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
+  if (r.chance && r.card) keep({ spoils: { place: look?.place?.id ?? null, cards: [r.card], items: [] } });
+  if (r.chance) tellYinyue('chance', `赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { mood: 'happy' });
   await refresh();
 }
 
@@ -1024,17 +1029,6 @@ async function deckTap(args) {
 function askHer(id, zh, en, mood) {
   return voice.moment(id, { zh, en }, { mood }).said;
 }
-/* 机缘 — 收下 is a page tap; what it left stands on the stage, and 银月
-   hears it (a big moment: she was there for the run to reach it). */
-async function takeChance() {
-  const r = await write('chance', { action: 'take' }).catch(failed);
-  if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
-  if (r.card) keep({ spoils: { place: look?.place?.id ?? null, cards: [r.card], items: [] } });
-  const where = look?.chance?.place?.name ?? '';
-  tellYinyue('chance', `赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { mood: 'happy' });
-  await refresh();
-}
-
 /* 机缘's clock: the row counts down by the minute, and once — with half an
    hour left and him somewhere else — 银月 hears it; she decides whether to
    say so. */
@@ -1264,7 +1258,6 @@ const CLICKS = [
   ['[data-refine-mat]', (el) => show({ refineMat: el.dataset.refineMat, refineNote: null })],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
   ['[data-divine]', () => run('divine', () => castByPage())],
-  ['[data-chance]', busy('chance', () => takeChance())],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
   ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],
   ['[data-drop]', (el) => run(`drop:${el.dataset.drop}`, () => dropErrand(el.dataset.drop))],

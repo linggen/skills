@@ -238,7 +238,7 @@ const spentCharms = (content, setup, played) => {
    says. Anything not named is left alone. */
 const FIGHT_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
-  meet: true, tame: true, refine: true, chance: true, task: a => a.action !== 'list',
+  meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true,
   divine: true, fate: true, ring: true, greet: true, deck: true, quest: a => !['info', 'kaifu'].includes(a.action),
 };

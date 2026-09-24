@@ -1,35 +1,10 @@
-// rules/daily.mjs — 机缘 and 问候: the day's chance, her greeting, 体力.
+// rules/daily.mjs — 问候 and 体力: her greeting on the day's first opening, the pool as the stage draws it.
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, pick, staminaReturnsAt, stepName } from '../state.mjs';
-import { winCard } from './cards.mjs';
 import { hasCompanion } from './companion.mjs';
-import { clone, pay, refuse } from './core.mjs';
-import { hashOf } from './travel.mjs';
-import { creatureOf, inMade, placeOf, provinceOpen, tooHard } from './world.mjs';
-
-/* ── 机缘 — something good, somewhere near, for a few hours of the real day ──
-   His pick, 2026-09-23 (觅长生's 过时不候, Lifeline's real clock): once a day,
-   the first time the game is opened, the rules set a 机缘 at a place within
-   two roads — open, within his realm, not where he stands — for `hours` of
-   real time. Reach it in time and it is his: a card he does not hold and the
-   chance table's pay. Miss it and it is gone. Never in a made world or before
-   the roots are set. */
-const CHANCE = { hours: 3, reach: 2 };
-/* The places within `reach` roads of where he stands that he may go: open,
-   within his realm, never here. */
-function nearPlaces(content, s, now, reach) {
-  const here = placeOf(content, s.place);
-  if (!here) return [];
-  const seen = new Set([here.id]);
-  let ring = [here];
-  const near = [];
-  for (let step = 0; step < reach; step += 1) {
-    ring = ring.flatMap(p => p.roads ?? []).map(id => placeOf(content, id)).filter(p => p && !seen.has(p.id));
-    for (const p of ring) seen.add(p.id);
-    near.push(...ring.filter(p => !tooHard(content, s, p) && provinceOpen(content, p.province, now)));
-  }
-  return near;
-}
+import { clone, refuse } from './core.mjs';
+import { chanceBrief } from './road.mjs';
+import { creatureOf } from './world.mjs';
 
 /* ── 问候 — the day's first opening is hers ──
    His pick, 2026-09-23: 银月 greets the player the first time the game is
@@ -64,40 +39,6 @@ export function greet(state, content, ctx) {
   return { state: s, result: { ok: true, first: true, name: state.name ?? null, facts } };
 }
 
-function dealChance(content, s, ctx) {
-  const day = dayKey(ctx.now);
-  if (s.chance?.day === day || !s.traits?.length || inMade(s) || !content.rewards.tables.chance) return null;
-  const near = nearPlaces(content, s, ctx.now, CHANCE.reach);
-  if (!near.length) return null;
-  const at = near[hashOf(`${day}|${s.name ?? ''}|chance`) % near.length];
-  return { day, place: at.id, until: new Date(ctx.now.getTime() + CHANCE.hours * 3600000).toISOString() };
-}
-const chanceLive = (state, now) => state.chance && !state.chance.taken && dayKey(now) === state.chance.day && now < new Date(state.chance.until);
-function chanceBrief(content, state, now) {
-  const c = state.chance;
-  if (!c || c.day !== dayKey(now)) return null;
-  const at = placeOf(content, c.place);
-  if (c.taken) return { place: { id: c.place, name: pick(at?.name, state.lang) }, taken: true };
-  if (now >= new Date(c.until)) return { place: { id: c.place, name: pick(at?.name, state.lang) }, missed: true };
-  return { place: { id: c.place, name: pick(at?.name, state.lang) }, until: c.until, minutes_left: Math.ceil((new Date(c.until) - now) / 60000), ...(state.place === c.place ? { here: true } : {}) };
-}
-
-/* 收下 the 机缘 — a page tap, where it lies, while it lasts. */
-export function chance(state, content, ctx, args) {
-  const lang = state.lang;
-  if (String(args.action ?? 'take') !== 'take') return refuse('unknown-action', null, { actions: ['take'] });
-  if (!state.chance || state.chance.day !== dayKey(ctx.now)) return refuse('no-chance', null);
-  if (state.chance.taken) return refuse('taken', null);
-  if (!chanceLive(state, ctx.now)) return refuse('missed', pick({ zh: '来迟了，机缘已散。', en: 'Too late — it is gone.' }, lang));
-  if (state.place !== state.chance.place) return refuse('not-here', null, { chance: chanceBrief(content, state, ctx.now) });
-  const s = clone(state);
-  s.chance = { ...s.chance, taken: ctx.now.toISOString() };
-  const t = content.rewards.tables.chance;
-  const card = winCard(content, s, { id: `chance:${s.chance.place}`, root: (s.traits ?? [])[0] }, ctx.now, 'chance');
-  const paid = pay(content, s, ctx, { table: 'chance', progress: t.progress, wealth: t.wealth });
-  return { state: s, result: { ok: true, took: true, ...(card ? { card } : {}), paid } };
-}
-
 /* The pool as the scene draws it: what is there, the top, and — when a story
    step is out of reach — the hour it returns.
    Three hours, each with its own name, so the page labels the one it shows:
@@ -120,4 +61,4 @@ function staminaBrief(content, state, now) {
     full_at: state.stamina < q.max ? at(q.max) : null };
 }
 
-export { chanceBrief, chanceLive, dealChance, staminaBrief };
+export { staminaBrief };

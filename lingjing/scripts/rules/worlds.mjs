@@ -8,10 +8,10 @@ import { dayKey, migrate, pick } from '../state.mjs';
 import { gainCard } from './cards.mjs';
 import { callDue, companionOf, companionRiddle } from './companion.mjs';
 import { advanceChapter, clone, judgeAnswer, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
-import { dealChance } from './daily.mjs';
 import { advance, itemOf } from './errands.mjs';
 import { savedFile, savedFor, savesDir, skillDir, writeAtomic, writeMadeWorld } from './files.mjs';
 import { nameOf, sceneBrief, spoken } from './look.mjs';
+import { arriveOnRoad, chanceLive, dealChance, meetHere } from './road.mjs';
 import { hashOf } from './travel.mjs';
 import { creatureOf, encounterOf, inMade, placeName, placeOf, settlePlace, tooHard } from './world.mjs';
 
@@ -68,7 +68,10 @@ export function wake(state, content, ctx) {
   if (called) s.companion = {};
   const chance = dealChance(content, s, ctx);
   if (chance) s.chance = chance;
-  return called || chance || (s.scene && !state.scene) ? s : null;
+  // Standing on the day's 机缘 with nothing met here (a scene walked him there,
+  // or a save from before 路上): it is met now, as an arrival would meet it.
+  const lucky = chanceLive(s, ctx.now) && s.place === s.chance.place && !meetHere(s, ctx.now) && arriveOnRoad(content, s, ctx);
+  return called || chance || lucky || (s.scene && !state.scene) ? s : null;
 }
 
 /* ── Made scenes: the player's own, written by Ling from the template ── */

@@ -9,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { act, battle, begin, effectOf, foeTurn, offers, tokenOf } from '../scripts/battle.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { dayKey, langOf, migrate, newState, weekKey } from '../scripts/state.mjs';
-import { VERBS, fightSetup, hpMaxOf, chance, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
+import { VERBS, fightSetup, hpMaxOf, greet, deck, deckFor, advance, meet, tapThen, thenFor, askOf, riddleOf, divine, fate, fateOf, duel, enter, go, heed, judge, lang, leave, look, make, move, parseArgs, quest, refine, resolve, summarize, tame, task, trade, wake, win } from '../scripts/rules.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 
 const content = loadContent();
@@ -2097,13 +2097,13 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   // stage holds a veil, nothing is asked, and Ling is told to set the moment
   assert.equal(veiled.result.place.meet.veiled, true);
   const misty = look(veiled.state, content, rd);
-  assert.deepEqual(misty.stage.map(c => c.card).filter(k => k === 'veil'), ['veil']);
+  assert.deepEqual(misty.stage.map(c => c.card).filter(k => k === 'road'), ['road'], 'the one road card, in mist');
   assert.equal(misty.ask, null, 'nothing asked in the mist');
   assert.match(thenFor(veiled.result, null), /Meet \{action: reveal\}/);
   const asked = must(meet, veiled.state, { action: 'reveal' }, rd);
   assert.equal(asked.result.revealed, 'riddle');
   refused(meet, asked.state, { action: 'reveal' }, 'not-veiled', rd);
-  assert.ok(!look(asked.state, content, rd).stage.some(c => c.card === 'veil'));
+  assert.ok(!look(asked.state, content, rd).stage.some(c => c.card === 'road'), 'a riddle told is the chat\'s question');
   const q = askOf(content, asked.state, rd, asked.result);
   assert.equal(q.question, asked.result.meet.riddle);
   assert.deepEqual(q.options.at(-1), { label: '不答，赶路', meet: 'pass' });
@@ -2502,33 +2502,44 @@ test('降妖: the low-气血 word to 银月 matches the quarter it fires at', ()
   assert.match(low[2], /quarter/);
 });
 
-/* 机缘 (rules § 机缘): once a day, near, for a few real hours; reached in
-   time it is his, missed it is gone. */
-test('机缘: dealt once a day within two roads, reached in time it pays, missed it is gone', () => {
+/* 机缘 is one kind of 路上 (rules/road.mjs): set once a day, near, for a few
+   real hours; arriving there in time, it is that arrival's one thing. */
+test('路上 · 机缘: dealt once a day within two roads; arriving in time it is the one thing met there, veiled, then 收下 — late, it is gone', () => {
   const at = h => ctx({ now: new Date(new Date('2026-10-05T09:00:00').getTime() + h * 3600000) });
   const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'pengcheng', tier: 'core', wealth: 0 };
   const woke = VERBS.look(base, content, at(0));
   const c = woke.state.chance;
   assert.ok(c && c.place !== 'pengcheng', 'a 机缘 somewhere else');
-  const near = new Set(content.places ? Object.values(content.places).flatMap(d => d.places).filter(p => p.id === 'pengcheng').flatMap(p => p.roads) : []);
+  const near = new Set(Object.values(content.places).flatMap(d => d.places).filter(p => p.id === 'pengcheng').flatMap(p => p.roads));
   const two = new Set([...near, ...Object.values(content.places).flatMap(d => d.places).filter(p => near.has(p.id)).flatMap(p => p.roads)]);
   assert.ok(two.has(c.place), 'within two roads');
   assert.equal(new Date(c.until) - at(0).now, 3 * 3600000);
   assert.equal(VERBS.look(woke.state, content, at(1)).state, null, 'once a day');
   const brief = look(woke.state, content, at(1)).chance;
   assert.deepEqual([brief.place.id, brief.minutes_left, brief.here], [c.place, 120, undefined]);
-  refused(chance, woke.state, {}, 'not-here', at(1));
-  // there in time: the arrival is the 机缘, nothing else dealt on top
-  const there = { ...woke.state, place: c.place };
-  assert.equal(look(there, content, at(1)).chance.here, true);
-  const took = must(chance, there, {}, at(1));
+  assert.equal(VERBS.chance, undefined, 'no verb of its own: Meet answers it');
+  refused(meet, woke.state, { action: 'take' }, 'nothing-here', at(1));
+  // Arriving there in time: the 机缘 is what is met, veiled like any 路上 — and nothing else on top.
+  const arrived = must(move, { ...woke.state, stamina: 100, stamina_at: at(1).now.toISOString() }, { place: c.place }, at(1));
+  assert.deepEqual(arrived.result.place.meet, { kind: 'chance', place: { id: c.place, name: arrived.result.place.name }, until: c.until, minutes_left: 120, here: true, veiled: true });
+  assert.equal(arrived.result.chance, undefined, 'one book: the arrival says it as its meet');
+  assert.deepEqual(look(arrived.state, content, at(1)).stage.filter(x => x.card === 'road'), [{ card: 'road' }], 'one road card');
+  const told = must(meet, arrived.state, { action: 'reveal' }, at(1));
+  assert.equal(told.result.revealed, 'chance');
+  const took = must(meet, told.state, { action: 'take' }, at(1));
   assert.ok(took.result.paid.wealth > 0);
   assert.ok(took.result.card?.card, 'a card he did not hold');
+  assert.equal(took.result.chance, true);
   assert.equal(look(took.state, content, at(1)).chance.taken, true);
-  refused(chance, took.state, {}, 'taken', at(1));
-  // late: gone, whatever the road
+  assert.equal(look(took.state, content, at(1)).place.meet, undefined);
+  refused(meet, took.state, { action: 'take' }, 'nothing-here', at(1));
+  // Late: gone, whatever the road — the same refusal vocabulary as any 路上.
   assert.equal(look(woke.state, content, at(4)).chance.missed, true);
-  assert.match(refused(chance, there, {}, 'missed', at(4)).say, /来迟了/);
+  assert.match(refused(meet, told.state, { action: 'take' }, 'gone', at(4)).say, /来迟了/);
+  assert.deepEqual(look(told.state, content, at(4)).stage.filter(x => x.card === 'road'), [], 'missed, the card goes');
+  // Stood on without walking there (a scene walked him, a save from before 路上): Look meets it.
+  const standing = VERBS.look({ ...woke.state, place: c.place }, content, at(1));
+  assert.equal(standing.state.meets.places[c.place].kind, 'chance');
   // tomorrow: a new one
   assert.ok(VERBS.look(took.state, content, at(24)).state.chance.day !== c.day);
 });

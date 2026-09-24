@@ -40,7 +40,7 @@ const TRADE_DID = {
   remove: (r) => `took off ${r.item?.name ?? r.removed}`,
 };
 const MEET_DID = {
-  take: (r, a, x) => `took what lay by the road${r.took ? `: ${r.took.name}` : ''}${paidLine(r.paid, x.w)}`,
+  take: (r, a, x) => (r.chance ? `took the day's chance (机缘)${r.card ? `: ${r.card.name}` : ''}${paidLine(r.paid, x.w)}` : `took what lay by the road${r.took ? `: ${r.took.name}` : ''}${paidLine(r.paid, x.w)}`),
   pass: () => 'left what lay by the road',
   choose: (r) => `chose a way at a crossroads — ${r.success ? 'it went well' : 'it went wrong'}`,
   answer: () => "answered a traveller's riddle",
@@ -59,7 +59,6 @@ const PAGE_DID = {
   task: (r, a, x) => (a.action === 'done' ? `practice ${r.done} done${paidLine(r.paid, x.w)}` : a.action === 'check' ? `app task ${r.quest} paid${paidLine(r.paid, x.w)}` : null),
   trade: byAction(TRADE_DID),
   meet: byAction(MEET_DID),
-  chance: () => 'took the chance (机缘)',
   tale: (r, a, x) => TALE_DID[a.action]?.(r, a, x) ?? null,
 };
 
