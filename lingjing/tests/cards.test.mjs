@@ -496,6 +496,40 @@ test('路上 in the mist, the page: a short ink mist, then the page reveals it (
   assert.match(css, /prefers-reduced-motion: reduce\) \{ \.inkmist \{ display: none; \} \}/);
   assert.doesNotMatch(css, /\.veilline/);
 });
+test('a board done for the day never enters the stage — not even one Ling showed; reopened for an errand it does; drawn anyway it says it is done', async () => {
+  const { stageCards, boardDoneToday } = await import('../scripts/stage.mjs');
+  const { WORDS, cardHtml } = await import('../scripts/cards.js');
+  const done = { id: 'alchemy-daily', title: '炼丹 · 配一炉丹', kind: 'board', status: 'done', won: false, game: 'lianliankan', done_at: '2026-09-24T14:09:09.608Z' };
+  const look = { place: { id: 'fajiu' }, tasks: [done] };
+  assert.equal(boardDoneToday(look, 'alchemy-daily'), true);
+  assert.equal(boardDoneToday(look, 'lianliankan'), true, 'named by its game, it is its task');
+  for (const focus of [[{ card: 'board', id: 'alchemy-daily' }], [{ card: 'board', id: 'lianliankan' }]]) {
+    assert.ok(!stageCards(look, { focus }).some((c) => c.card === 'board'), `Ling's ${focus[0].id} stays off the stage`);
+  }
+  // Reopened for an errand (offered again, for_errand): on the stage.
+  const again = { ...look, tasks: [{ ...done, status: 'offered', for_errand: true }] };
+  assert.equal(boardDoneToday(again, 'alchemy-daily'), false);
+  assert.ok(stageCards(again, { focus: [] }).some((c) => c.card === 'board' && c.id === 'alchemy-daily'));
+  // A rumor's own board is its `tale:` id, never the day's practice.
+  assert.equal(boardDoneToday(look, 'tale:x/1'), false);
+  // Drawn anyway: a plain word, no tiles.
+  for (const lang of ['zh', 'en']) {
+    const html = cardHtml({ card: 'board', id: 'alchemy-daily' }, { look, lang, words: WORDS[lang], boardFor: () => { throw new Error('no deal'); } });
+    assert.match(html, new RegExp(WORDS[lang].boardDoneToday));
+    assert.doesNotMatch(html, /data-tile|data-game/);
+    const game = { tasks: [{ id: 'wuziqi', title: '五子棋', kind: 'board', status: 'done', game: 'wuziqi', hosted: true }] };
+    assert.match(cardHtml({ card: 'board', id: 'wuziqi' }, { look: game, lang, words: WORDS[lang], boardFor: () => null }), new RegExp(WORDS[lang].gameDoneToday));
+    // 论道 won or lost today: it says so, no 开始.
+    for (const outcome of ['won', 'lost']) {
+      const l = cardHtml({ card: 'lundao' }, { look: { lundao: { outcome, name: '对对联', need: 3, good: 3, misses: 0, max_misses: 3 } }, lang, words: WORDS[lang] });
+      assert.match(l, new RegExp(WORDS[lang][outcome === 'won' ? 'lundaoWon' : 'lundaoLost']));
+      assert.doesNotMatch(l, /data-say|<button/);
+    }
+  }
+  // The page's queue asks the same question.
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(src, /if \(boardDoneToday\(look, c\.id\)\) return false;/);
+});
 test('所得: an errand handed in shows what it paid and the next step in hand', async () => {
   const { WORDS, cardHtml } = await import('../scripts/cards.js');
   const handed = [{ id: 'xu-elder-herb', title: '彭城老人的灵芝', who: '彭城的老人', paid: { progress: 40, wealth: 15 }, gives: '聚气丹',

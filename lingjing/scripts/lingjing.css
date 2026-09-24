@@ -654,3 +654,5 @@ body.reading .view, body.reading .tray { display: none; }
              background: var(--surface); border: 3px double var(--ling); border-radius: 10px; }
 .titlecard b { display: block; font-size: 21px; letter-spacing: .15em; color: var(--ling); }
 .titlecard p { margin: 10px 0 12px; line-height: 1.8; color: var(--dim); }
+/* A board or 论道 done for the day says so, plainly — never dead tiles. */
+.boarddone { margin: 8px 0 2px; padding: 10px 12px; border-radius: 10px; text-align: center; font-family: var(--serif, serif); letter-spacing: .08em; color: var(--dim); background: color-mix(in srgb, var(--surface) 70%, transparent); border: 1px dashed var(--faint, #bbb); }

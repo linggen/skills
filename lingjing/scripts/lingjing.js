@@ -9,7 +9,7 @@ import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from 
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
-import { stageCards, stageHolds } from './stage.mjs';
+import { boardDoneToday, stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -654,6 +654,8 @@ function splitStage(cards) {
    asks for it here. */
 function inQueue(c) {
   if (c.card !== 'board') return true;
+  // Done for the day (the tray's 已完成), it never queues — opened, shown or hosted (stage.mjs).
+  if (boardDoneToday(look, c.id)) return false;
   if (view.opened?.id === c.id || view.focus.some((f) => f.card === 'board' && f.id === c.id)) return true;
   const task = look?.tasks?.find((t) => t.id === c.id);
   return !task || Boolean(task.hosted || task.for_errand);

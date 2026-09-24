@@ -79,6 +79,18 @@ export function stageHolds(look, cards) {
   });
 }
 
+/* A board whose task is done for the day (the tray's 已完成) never stands on
+   the stage — not even one Ling showed (his, 2026-09-24: 「炼丹卡住了，不让点」).
+   An errand or a 传闻 step that reopens it is another board: `for_errand`
+   (offered again), or the rumor's own `tale:` board. A board named by its
+   game (lianliankan) is its task's. */
+const taskOfBoard = (look, id) => (look?.tasks ?? []).find(t => t.id === id) ?? (look?.tasks ?? []).find(t => t.kind === 'board' && t.game === id);
+export const boardDoneToday = (look, id) => {
+  const t = taskOfBoard(look, id);
+  return Boolean(t && t.status === 'done' && !t.for_errand);
+};
+const boardOf = (look, c) => (c.card === 'board' && taskOfBoard(look, c.id) ? { ...c, id: taskOfBoard(look, c.id).id } : c);
+
 /* The stage, in order, as one list. `focus` is what Ling last showed (the save
    holds it, so a reload puts the same cards back); `fight` is a 斗法 the page
    is playing out. The page draws `building`, `empty` and `quest` itself; every
@@ -118,7 +130,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   // the day's coins fill the stage, unless a line is waiting on this spot.
   // An errand offered here is what the stage is about: the place's creature
   // card gives way to it, and comes back once it is taken (his, 2026-09-21).
-  const shown = look.offers?.length ? focus.filter(c => c.card !== 'creature') : focus;
+  const kept = focus.map(c => boardOf(look, c)).filter(c => !(c.card === 'board' && boardDoneToday(look, c.id)));
+  const shown = look.offers?.length ? kept.filter(c => c.card !== 'creature') : kept;
   // The day's coins fill an empty stage; a 遇 standing here is not empty.
   const cards = shown.length ? [...shown] : line || look.offers?.length || look.place?.meet ? [] : [{ card: 'hexagram' }];
   const has = (kind, id) => cards.some(c => c.card === kind && (id === undefined || c.id === id));

@@ -7,13 +7,13 @@ import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, challengeHtml } from './battle-card.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, within } from './atlas.js';
-import { onRoad } from './stage.mjs';
+import { boardDoneToday, onRoad } from './stage.mjs';
 
 export const WORDS = {
   zh: {
     title: '灵境', xw: '修为', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
-    paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
+    paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askHer: '问问{name}', askHerHint: '想对她说什么？留空，便请她说说', askHerEmpty: '说说看？', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featChapter: '新章', wonOver: '收服', subdue: '降妖',
@@ -51,7 +51,7 @@ export const WORDS = {
   en: {
     title: 'Lingjing', xw: 'Cultivation', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', quest: 'Real-life practice',
-    paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.',
+    paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
     tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
@@ -368,15 +368,22 @@ function tribulation(card, ctx) {
   return `<div class="card trib"><div class="cardtitle">${esc(ctx.words.tribTitle)}</div><div class="bolts">${bolts}</div>${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayTrib }])}</div>`;
 }
 
-/// A board for a task already won or done is a made pill, never a fresh deal.
+/// A board for a task already won or done is a made pill, never a fresh deal —
+/// and never dead tiles: done for the day, it says so (「今日丹已成 · 明日再炼」).
+/// Named by its game (lianliankan), it is that game's task.
 function board(card, ctx) {
-  const task = (ctx.look.tasks || []).find((t) => t.id === card.id);
+  const tasks = ctx.look.tasks || [];
+  const task = tasks.find((t) => t.id === card.id) ?? tasks.find((t) => t.kind === 'board' && t.game === card.id);
+  const id = task?.id ?? card.id;
+  const today = boardDoneToday(ctx.look, id);
   const made = task && (task.status === 'done' || task.won);
-  const g = made ? null : ctx.boardFor?.(card.id);
+  const g = made ? null : ctx.boardFor?.(id);
+  const doneWord = task?.game && task.game !== 'lianliankan' ? ctx.words.gameDoneToday : ctx.words.boardDoneToday;
   // A game module (scripts/games/<id>.js) draws itself inside [data-game]; the
   // 炼丹 herbs keep their own board. Loading, the card waits a beat.
-  const body = made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
-    : g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(card.id)}">${g.mod.html(g.state, ctx.lang)}</div>`
+  const body = today ? `<div class="boarddone">${esc(doneWord)}</div>`
+    : made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
+    : g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>`
       : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
   const title = task?.game ? task.title : ctx.words.play;
   const ask = task?.game ? say(ctx.words.sayTask, { title: task.title }) : ctx.words.sayBoard;
@@ -549,6 +556,10 @@ const tookRow = (o, w) => `<div class="offerrow taken"><div><b>${esc(o.title)}</
 /// under way, the prompt and how far along — answers are typed in the chat.
 function lundao(card, ctx) {
   const l = ctx.look?.lundao, w = ctx.words;
+  // Finished today: it says so — never a 开始 that the rules would refuse.
+  if (l && (l.outcome === 'won' || l.outcome === 'lost')) {
+    return `<div class="card lundao done"><div class="cardtitle">${esc(w.lundaoTitle)} · ${esc(l.name)}</div><div class="boarddone">${esc(l.outcome === 'won' ? w.lundaoWon : w.lundaoLost)}</div></div>`;
+  }
   if (!l || l.outcome !== 'open') {
     return `<div class="card lundao"><div class="cardtitle">${esc(w.lundaoTitle)}</div><div class="small dim">${esc(w.lundaoOffer)}</div>
       <div class="acts">${sayBtn(w.lundaoBegin, w.sayLundao)}</div></div>`;
