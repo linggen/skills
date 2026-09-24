@@ -86,6 +86,11 @@ button:disabled { cursor: default; }
 .qi[data-st="empty"] .st { color: var(--seal); }
 .qi[data-st="unknown"] .ring { background: conic-gradient(var(--faint) 100%, var(--raised) 0); }
 .qi .st { font-family: var(--serif); font-size: 12.5px; }
+/* 体力 spent: the count ticks down in the ring's colour and −N floats off it. */
+.qi .cnt { position: relative; }
+[data-qi] { display: inline-block; transition: transform .25s ease-out, color .25s; }
+[data-qi].draining { color: var(--yinyue); font-weight: 600; transform: scale(1.18); }
+.gain.drain { color: var(--yinyue); }
 
 /* One line in the world while the window is spent — the boards stay. */
 .focus .card.empty { border-color: var(--seal); background: color-mix(in srgb, var(--seal-soft) 70%, var(--surface)); }

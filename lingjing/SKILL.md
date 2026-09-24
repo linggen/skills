@@ -925,7 +925,7 @@ left them.
 
 The page reports only what finishes, or where the story takes over:
 `[scene] won <id>`, `[scene] lost <id>`, `[scene] withdrew <id>`,
-`[scene] trial <n> won|lost`, `[scene] tale step|end` (§ 今日传闻), `[scene] recap` (§ 九鼎录), and `[scene] arrived <place>` — the page walked
+`[scene] trial <n> won|lost`, `[scene] trial waiting` (§ 抉择), `[scene] tale step|end` (§ 今日传闻), `[scene] recap` (§ 九鼎录), and `[scene] arrived <place>` — the page walked
 them somewhere a story waits (a scene, something on the road — told once the
 page has revealed it — her call, an errand's sight). On `[scene] arrived`:
 Look, then tell the arrival as § Places and
@@ -1188,6 +1188,8 @@ way when it was dealt; you never see it, so write honestly.
    player's tap. Never narrate an outcome.
 4. `[scene] trial <n> won|lost` — go on from your line in a line or two, true
    to it (a loss stays a loss), then the question.
+5. `[scene] trial waiting` — the page's one nudge: the mist is over and no
+   ways are on the stage yet. Do steps 1–3 now (Meet `offer`, 2–3 ways).
 
 Never reuse yesterday's moment.
 

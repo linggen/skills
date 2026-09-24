@@ -486,7 +486,7 @@ test('路上 in the mist, the page: a short ink mist, then the page reveals it (
   const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
   const watch = src.slice(src.indexOf('function watchVeil()'), src.indexOf('}', src.indexOf('function watchVeil()')) + 1);
   assert.match(watch, /inkMist\(\)/);
-  assert.match(watch, /m\.kind !== 'trial'\) setTimeout\(liftVeil/);
+  assert.match(watch, /m\.kind !== 'trial'\) \{ setTimeout\(liftVeil/);
   const lift = src.slice(src.indexOf('async function liftVeil()'), src.indexOf('function watchVeil()'));
   assert.match(lift, /write\('meet', \{ action: 'reveal' \}\)/, 'the page reveals it through the Verb door');
   assert.match(lift, /report\(`\[scene\] arrived/, 'Ling hears once, after the reveal');

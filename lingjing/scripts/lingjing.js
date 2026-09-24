@@ -13,6 +13,7 @@ import { boardDoneToday, stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
+import { drainAt, drainOf, trialNudge } from './beats.js';
 import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
 import { esc } from './esc.js';
 import { createVoice, nodeMoment } from './voice.js';
@@ -285,10 +286,13 @@ let refreshTimer = null;
    rules, not a turn — and the road card comes up. Ling never builds toward
    it: whoever walked, she is told once, after the reveal (`[scene] arrived`),
    and tells what was revealed. A 抉择 is hers to write: the mist plays, and
-   her Meet `offer` reveals it. */
+   her Meet `offer` reveals it; still unwritten after the mist and a turn of
+   hers, the page nudges her ONCE (`[scene] trial waiting`), then lets it be. */
 let streaming = false;
 const MIST_MS = 2600;
 let veiling = null; // the place whose mist has played
+let veil = null; //    {place, key, misted, turns}: this mist, for the one nudge
+const nudgedTrials = new Set();
 const stillMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 function inkMist() {
   const view = document.getElementById('view');
@@ -309,7 +313,18 @@ function watchVeil() {
   if (!m?.veiled || veiling === here) return;
   veiling = here;
   inkMist();
-  if (m.kind !== 'trial') setTimeout(liftVeil, stillMotion() ? 300 : MIST_MS);
+  const wait = stillMotion() ? 300 : MIST_MS;
+  if (m.kind !== 'trial') { setTimeout(liftVeil, wait); return; }
+  const mine = { place: here, key: `${new Date().toDateString()}|${here}`, misted: false, turns: 0 };
+  veil = mine;
+  setTimeout(() => { mine.misted = true; nudgeTrial(); }, wait);
+}
+/// A 抉择 Ling has not written yet: one hidden nudge per meet, never a loop.
+function nudgeTrial() {
+  const key = trialNudge({ meet: look?.place?.meet, place: look?.place?.id ?? null, veil, nudged: nudgedTrials, busy: streaming || saying || Boolean(bout) });
+  if (!key) return;
+  nudgedTrials.add(key);
+  report('[scene] trial waiting');
 }
 
 /// Re-read the game. What it answers was read after the call: a read already
@@ -373,21 +388,28 @@ let contentStale = false;
 function qi() {
   const q = look?.stamina;
   if (!q || !q.max) return null;
-  const p = Math.max(0, Math.min(100, Math.round((q.now / q.max) * 100)));
-  const st = q.empty ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full';
+  const { p, st } = qiState(q.now, q.max, Boolean(q.empty));
   // When he can go on again — back to the rest mark (20), not to full. The
   // rules' `rest_at` when they give it, else `returns_at`, which is the same.
   const back = q.rest_at ?? q.returns_at;
   return { st, p, now: q.now, max: q.max, refillAt: back ? Math.floor(new Date(back).getTime() / 1000) : null };
 }
 
+function qiState(now, max, empty = now <= 0) {
+  const p = Math.max(0, Math.min(100, Math.round((now / max) * 100)));
+  return { p, st: empty ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full' };
+}
+const qiWord = (st, w = words()) => ({ full: w.qiFull, half: w.qiHalf, low: w.qiLow, empty: w.qiEmpty, unknown: '' }[st]);
+
+/// The strip's ring. While 体力 drains it is drawn at the count the drain
+/// started from; paintRise moves it down frame by frame (the cards read qi()).
 function qiHtml() {
   const q = qi();
   if (!q) return '';
   const w = words();
-  const state = { full: w.qiFull, half: w.qiHalf, low: w.qiLow, empty: w.qiEmpty, unknown: '' }[q.st];
-  return `<span class="qi" data-st="${esc(q.st)}" title="${esc(w.qi)}"><span class="lbl">${esc(w.qi)}</span>
-    <i class="ring" style="--p:${Number(q.p) || 0}"></i><span class="st">${esc(state)}</span><span class="cnt">${esc(q.now)}/${esc(q.max)}</span></span>`;
+  const d = draining && !draining.landed ? { now: draining.from, ...qiState(draining.from, q.max) } : q;
+  return `<span class="qi" data-st="${esc(d.st)}" title="${esc(w.qi)}"><span class="lbl">${esc(w.qi)}</span>
+    <i class="ring" style="--p:${Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span><span class="cnt"><span data-qi>${esc(d.now)}</span>/${esc(q.max)}</span></span>`;
 }
 
 /// One line in the world while the window is spent — and the boards stay:
@@ -423,6 +445,20 @@ const rising = new Map();
 // Slow enough to be seen: at 1.1 s / 2.4 s it ran while the fight room closed and he missed it (2026-09-23).
 const RISE_MS = 1600, GAIN_MS = 3600;
 let riseAfter = 0; // a rise waits for this moment (the fight room closing)
+let travelEnd = 0; // a drain waits for the walk on the map to end
+let draining = null; // 体力 counting down: {from, to, spent, start} (beats.js)
+let lastQi = null; //   {world, now}: the 体力 the last draw saw
+/// 体力 spent counts down once the eye is back on the strip — run before the
+/// strip is drawn, so it is drawn at the old count, never the new one first.
+function watchDrain() {
+  const now = { world: look.world?.id, now: look.stamina?.now };
+  const before = lastQi;
+  lastQi = now;
+  if (!before || before.world !== now.world || !Number.isFinite(now.now) || now.now === before.now) return;
+  const t = performance.now();
+  draining = drainOf({ from: before.now, to: now.now, shown: draining ? drainAt(draining, t).value : before.now, at: t, holds: [riseAfter, travelEnd], still: stillMotion() });
+  if (draining) { console.info('[lingjing] drain', draining.spent); if (!riseFrame) riseFrame = requestAnimationFrame(paintRise); }
+}
 function riseStats() {
   const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
     rank: look.tier?.name, chapter: look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting) };
@@ -487,6 +523,8 @@ function playTravel(stops) {
   $('view')?.appendChild(box);
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const legs = stops.length - 1, walk = still ? 0 : Math.min(3200, 900 + legs * 550);
+  // 体力 spent on the way counts down once the walk is done (watchDrain).
+  travelEnd = performance.now() + walk + 300;
   const pts = wayPoints(stops, look.world);
   const walker = box.querySelector('.walker');
   if (walker && !still) {
@@ -572,9 +610,40 @@ function paintRise() {
       el.after(gain);
     }
   }
-  riseFrame = rising.size ? requestAnimationFrame(paintRise) : null;
-  if (!rising.size) document.querySelectorAll('.gain').forEach((g) => g.remove());
+  paintDrain(t);
+  riseFrame = rising.size || draining ? requestAnimationFrame(paintRise) : null;
+  if (!rising.size) document.querySelectorAll('.gain:not(.drain)').forEach((g) => g.remove());
 }
+
+/// 体力 down: the count and the ring tick down, −N floats off in the ring's
+/// colour. Held at the old count until its moment (the walk, the fight room).
+function paintDrain(t) {
+  if (!draining) return;
+  const d = draining, at = drainAt(d, t), max = look?.stamina?.max;
+  const box = document.querySelector('.status .qi'), num = box?.querySelector('[data-qi]');
+  if (box && num && max) {
+    const { p, st } = qiState(at.value, max, at.done ? Boolean(look.stamina.empty) : at.value <= 0);
+    num.textContent = String(at.value);
+    num.classList.toggle('draining', !at.held && !at.done);
+    box.dataset.st = st;
+    box.querySelector('.ring')?.style.setProperty('--p', p);
+    const word = box.querySelector('.st');
+    if (word) word.textContent = qiWord(st);
+    if (!at.held && t - d.start < FLOAT_MS && !box.querySelector('.gain.drain')) {
+      const gain = document.createElement('span');
+      gain.className = 'gain drain';
+      gain.textContent = `−${d.spent}`;
+      gain.style.animationDelay = `-${Math.round(t - d.start)}ms`;
+      num.parentElement.appendChild(gain);
+      setTimeout(() => gain.remove(), FLOAT_MS - (t - d.start));
+    }
+  }
+  // Down: the strip is drawn at the new count (the −N, redrawn, picks up
+  // where it was); the drain is let go once the −N has floated off.
+  if (at.done && !d.landed) { d.landed = true; render(); }
+  if (t - d.start >= FLOAT_MS) draining = null;
+}
+const FLOAT_MS = 2200;
 
 /// Today's reading on the strip — its element's lean in a fight — so the
 /// day's omen is read where it counts, not only on its card (his ask,
@@ -749,10 +818,12 @@ function draw() {
   keep({ bookFresh: performance.now() < freshUntil, bookSeen: lines });
   // Redrawn only when something on it changed: a strip rebuilt on every
   // stream token restarts every animation on it.
+  // The walk first: a drain on this same Look waits for it to end.
+  watchTravel();
+  watchDrain();
   const strip = statusHtml();
   if (strip !== drawnStrip) { $('status').innerHTML = strip; drawnStrip = strip; }
   riseStats();
-  watchTravel();
   // A fight takes the whole column: the backdrop, the tray and Yinyue's own
   // body give way, because she is IN the fight as a card and the cards need
   // the room (his, 2026-09-18). It all comes back when the fight ends.
@@ -1626,7 +1697,8 @@ async function mountChat() {
       streaming = false;
       if (recapSent !== null) recapTold();
       const before = look;
-      refresh().then(() => cheer(before));
+      if (veil) veil.turns += 1;
+      refresh().then(() => { cheer(before); nudgeTrial(); });
     },
     onContentBlock: (payload) => { streaming = true; onContentBlock(payload); },
     // The engine says the save changed under the page (`save_changed`: the
