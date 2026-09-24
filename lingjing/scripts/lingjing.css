@@ -686,3 +686,7 @@ body.reading .view, body.reading .tray { display: none; }
 .card.seclude .gcard .stars { color: var(--seal, #b8862b); font-size: 11px; letter-spacing: -1px; }
 .card.seclude .secludenext { padding-bottom: 4px; }
 .feat .featbox .featgain { font-size: 13px; letter-spacing: .04em; opacity: .9; }
+.card.seclusion .stars { color: var(--seal, #b8862b); font-size: 13px; letter-spacing: -1px; }
+.card.seclusion .secludebar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin: 8px 0 4px; }
+.card.seclusion .secludebar i { display: block; height: 100%; background: var(--ling, #3b6ea5); transition: width .6s; }
+.card.seclusion .secludenow { margin: 6px 0; padding-top: 6px; border-top: 1px dashed var(--line); }

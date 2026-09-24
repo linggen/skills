@@ -46,7 +46,7 @@ export const WORDS = {
     secludeSpells: '法术 · 每 {h} 小时一星，至多三星', secludeProgress: '修为 · 每小时 +{n}', secludeTreasure: '本命法宝 · 每 {h} 小时长一重',
     secludePill: '服一粒{name}：时辰 ×{m}', secludeStarRule: '圆圈里是灵力。一星：灵力 −1；已是 1 的，改为威力 +1。', secludeNext: '{name} ★{from}→★{to} 还要 {h} 小时 · {what}', secludeNextCost: '灵力 {was}→{cost}', secludeNextPower: '威力 +1', secludeGo: '入关', secludeLater: '作罢', secludePick: '先选一样。',
     secludeFoci: { card: '法术', progress: '修为', treasure: '本命法宝' },
-    secludingTitle: '闭关中 · {what}', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
+    secludingTitle: '闭关中 · {what}', secludeRestAt: '满 {h} 小时体力回满', secludeIfNow: '此刻出关：', emergeEarly: '出关', secludeTop: '已臻圆满', secludeBarStar: '下一星：{what}', secludeBarTreasure: '下一重', secludeBarXw: '每小时修为 +{n}', secludeAt: '约 {t} 成', hourUnit: '小时', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
     secludeStar: '{name} ★{from} → ★{to} · 灵力 {was}→{cost}', secludeStarLeft: '{name} 离下一星还差 {h} 小时',
     secludeGrowXw: '修为 +{n}', secludeGrowTreasure: '{name} {from}重 → {to}重', secludeTreasureLeft: '{name} 离下一重还差 {h} 小时',
     secludeHeld: '修为已到本境顶上，余下的留待突破。', secludeRested: '体力回满', secludePillTaken: '服了{name}，时辰 ×{m}',
@@ -96,7 +96,7 @@ export const WORDS = {
     secludeSpells: 'Spells · a star every {h} h, up to three', secludeProgress: 'Cultivation · +{n} an hour', secludeTreasure: 'Treasure · a layer every {h} h',
     secludePill: 'Take a {name}: hours ×{m}', secludeStarRule: 'The circle is Force. A star: Force −1; at 1 already, power +1.', secludeNext: '{name} ★{from}→★{to} in {h} h · {what}', secludeNextCost: 'Force {was}→{cost}', secludeNextPower: 'power +1', secludeGo: 'Go in', secludeLater: 'Not now', secludePick: 'Pick one first.',
     secludeFoci: { card: 'a spell', progress: 'cultivation', treasure: 'the treasure' },
-    secludingTitle: 'In seclusion · {what}', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
+    secludingTitle: 'In seclusion · {what}', secludeRestAt: '{h} h refills stamina', secludeIfNow: 'Out now:', emergeEarly: 'Come out', secludeTop: 'At the top', secludeBarStar: 'Next star: {what}', secludeBarTreasure: 'Next layer', secludeBarXw: 'Cultivation +{n} an hour', secludeAt: 'ready ~{t}', hourUnit: 'h', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
     secludeStar: '{name} ★{from} → ★{to} · Force {was}→{cost}', secludeStarLeft: '{name}: {h} h to the next star',
     secludeGrowXw: 'Cultivation +{n}', secludeGrowTreasure: '{name} layer {from} → {to}', secludeTreasureLeft: '{name}: {h} h to the next layer',
     secludeHeld: 'Your realm is at its peak; the rest waits for the breakthrough.', secludeRested: 'Stamina full', secludePillTaken: 'Took a {name}: hours ×{m}',
@@ -617,12 +617,38 @@ export function grownLines(e, w, count = (n) => esc(n)) {
 function seclusion(card, ctx) {
   const e = ctx.look?.seclusion, w = ctx.words;
   if (!e) return '';
-  const what = e.focus === 'card' ? e.card?.name : w.secludeFoci[e.focus];
+  const t = e.target ?? {}, what = t.name ?? w.secludeFoci[e.focus];
   const pill = e.pill ? `<div class="small dim">${esc(say(w.secludePillTaken, { name: e.pill.name, m: e.pill.mult }))}</div>` : '';
-  const grows = e.grows ? grownLines(e, w) : `<div class="small dim">${esc(say(w.secludeTooShort, { min: e.min }))}</div>${e.rested ? `<div>${esc(w.secludeRested)}</div>` : ''}`;
-  return `<div class="card seclusion"><div class="cardtitle">${esc(say(w.secludingTitle, { what }))}</div>
-    <div>${esc(say(w.secludeHours, { h: e.hours, cap: e.cap }))}</div>${pill}${grows}
-    <div class="acts"><button class="act" data-emerge>${esc(w.emergeBtn)}</button></div></div>`;
+  // What 出关 would bring now — or, under the hour, that it brings nothing yet.
+  const grows = e.grows ? grownLines(e, w) : `<div class="small dim">${esc(say(w.secludeTooShort, { min: e.min }))}</div>`;
+  return `<div class="card seclusion"><div class="cardtitle">${esc(say(w.secludingTitle, { what }))}${secludeLevel(e.focus, t, w)}</div>
+    ${secludeBar(e.focus, t, w, ctx)}
+    <div class="small">${esc(say(w.secludeHours, { h: e.hours, cap: e.cap }))} · ${esc(say(w.secludeRestAt, { h: e.rest_hours }))}</div>${pill}
+    <div class="secludenow"><div class="small dim">${esc(w.secludeIfNow)}</div>${grows}</div>
+    <div class="acts"><button class="act" data-emerge>${esc(e.grows ? w.emergeBtn : w.emergeEarly)}</button></div></div>`;
+}
+
+/* The level beside the name: ★☆☆ for a 功法, 重 for the treasure, 修为 now. */
+const SECLUDE_LEVEL = {
+  card: (t) => ` <span class="stars">${'★'.repeat(t.star ?? 0)}${'☆'.repeat(Math.max(0, (t.top ?? 3) - (t.star ?? 0)))}</span>`,
+  treasure: (t) => (t.step ? ` <span class="small dim">${esc(t.step)}</span>` : ''),
+  progress: () => '',
+};
+const secludeLevel = (focus, t, w) => (SECLUDE_LEVEL[focus] ?? SECLUDE_LEVEL.progress)(t, w);
+
+/* The bar toward the next step: hours into it of the hours it takes, what it
+   brings, and the clock hour it lands (none past the 12-hour cap). */
+const SECLUDE_NEXT = {
+  card: (t, w) => (t.done ? w.secludeTop : say(w.secludeBarStar, { what: t.next === 'cost' ? say(w.secludeNextCost, { was: t.cost, cost: t.cost - 1 }) : w.secludeNextPower })),
+  treasure: (t, w) => (t.done ? w.secludeTop : w.secludeBarTreasure),
+  progress: (t, w) => say(w.secludeBarXw, { n: t.per_hour }),
+};
+function secludeBar(focus, t, w, ctx) {
+  if (!t.need) return '';
+  const pct = focus === 'progress' ? 100 : Math.round((Math.min(t.into ?? 0, t.need) / t.need) * 100);
+  const hours = focus === 'progress' ? '' : `${t.into}/${t.need} ${w.hourUnit} · `;
+  const at = t.at && focus !== 'progress' ? ` · ${say(w.secludeAt, { t: clockOf(new Date(t.at), ctx.lang) })}` : '';
+  return `<div class="secludebar"><i style="width:${pct}%"></i></div><div class="small">${esc(hours)}${esc((SECLUDE_NEXT[focus] ?? SECLUDE_NEXT.progress)(t, w))}${esc(at)}</div>`;
 }
 
 /// 出关's card, after the tap: the hours and what grew, counted up from 0

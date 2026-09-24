@@ -53,7 +53,10 @@ const voice = createVoice({
 function postMoment(fact, flags, { mood = null } = {}) {
   const sid = look?.companion ? chat?.getSessionId?.() : null;
   const { converse, ...rest } = flags ?? {};
-  const body = { app: SKILL, text: lang() === 'en' ? fact.en : fact.zh, ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
+  // In the game the player has a 道号, and she calls them by it (his screen,
+  // 2026-09-24: 「今天也辛苦了，Hanli」 inside 灵境). First, so no cap cuts it.
+  const name = look?.name, called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
+  const body = { app: SKILL, text: called + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
   return fetch('/api/yinyue/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     .then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
 }

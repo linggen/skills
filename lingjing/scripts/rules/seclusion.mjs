@@ -115,11 +115,35 @@ function emergeOn(content, s, ctx) {
     ...(rested ? { rested: true } : {}), ...grown };
 }
 
+/* What is being worked on, from the first minute: its name and level, and
+   the hours toward its next step — `pool` of `need`, `at` when it lands (his,
+   2026-09-24: the running card said 「闭关中 ·」 and nothing of what or how far). */
+const TARGET = {
+  card: (content, s, sec, counted) => {
+    // The stars the hours already earned count at once: the bar is toward the next.
+    const r = RULE(content), c = cardCatalog(content)[sec.card], pool = (s.card_study?.[sec.card] ?? 0) + counted;
+    const star = Math.min(r.star_top, (s.card_stars?.[sec.card] ?? 0) + Math.floor(pool / r.star_hours)), cost = costOf({ stars: { [sec.card]: star } }, c);
+    return { name: pick(c?.name, s.lang), star, top: r.star_top, cost, next: cost > 1 ? 'cost' : 'power',
+      pool, need: r.star_hours, done: star >= r.star_top };
+  },
+  progress: (content, s, sec, counted) => ({ now: s.progress, per_hour: RULE(content).progress_per_hour, pool: counted, need: 1 }),
+  treasure: (content, s, sec, counted) => (s.treasure ? { name: s.treasure.name, level: s.treasure.level, step: treasureBrief(content, s).step,
+    pool: (s.treasure.tempered ?? 0) + counted, need: RULE(content).treasure_hours, done: s.treasure.level >= TREASURE_TOP } : null),
+};
+function targetOf(content, state, now) {
+  const sec = state.seclusion, h = hoursOf(content, sec, now), t = TARGET[sec.focus]?.(content, state, sec, h.counted);
+  if (!t) return null;
+  const into = t.pool % t.need, left = (t.need - into) / (sec.mult ?? 1);
+  const cap = new Date(new Date(sec.since).getTime() + RULE(content).cap_hours * HOUR);
+  const at = new Date(now.getTime() + left * HOUR);
+  return { ...t, into: round1(into), at: t.done || at > cap ? null : at.toISOString() };
+}
+
 /* Look's `seclusion`: the one running, as it would settle right now. */
 export function seclusionBrief(content, state, now) {
   if (!state.seclusion || !RULE(content)) return null;
   const told = emergeOn(content, clone(state), { now });
-  return { ...told, running: true, rest_hours: RULE(content).rest_hours };
+  return { ...told, running: true, rest_hours: RULE(content).rest_hours, target: targetOf(content, state, now) };
 }
 
 /* 闭关 — `info` (what may be chosen; what is running), `enter` with `focus`
