@@ -1,0 +1,334 @@
+// rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, write, 论道.
+// Part of the rules engine; rules.mjs is its one door.
+import { battle } from '../battle.js';
+import { gameOf } from '../content.mjs';
+import { addStamina, dayKey, periodKey, periodStart, pick, rollDay, settleStamina, tierOf } from '../state.mjs';
+import { charmOf, drop, tierRank } from './arms.mjs';
+import { cardCatalog, fightSetup, fitToFight, healthBrief, hpMaxOf, mendsBy, winCard, woundsNow } from './cards.mjs';
+import { FIT_TO_FIGHT, gainBond } from './companion.mjs';
+import { clone, hourOf, pay, refuse, spendStamina } from './core.mjs';
+import { advance, countsOf, itemBrief, itemOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
+import { duelBrief, tasksBrief, wordsOf } from './look.mjs';
+import { hashOf } from './travel.mjs';
+import { creatureOf, encounterOf, placeOf, sceneOf, settlePlace, tierIndex } from './world.mjs';
+
+/* ── Tasks and quests ── */
+
+function questDone(q, now) {
+  if (!q.done_at) return false;
+  const at = new Date(q.done_at);
+  return at >= periodStart(q.period, now) && at <= now;
+}
+
+export function task(state, content, ctx, args) {
+  if (args.action === 'list') return { state: null, result: { ok: true, ...tasksBrief(content, state, ctx) } };
+  if (args.action === 'done') return taskDone(state, content, ctx, args.id);
+  if (args.action === 'check') return questCheck(state, content, ctx, args.id);
+  return refuse('unknown-action', null, { actions: ['list', 'done', 'check'] });
+}
+
+/* An errand held and not yet met that asks for a win on this board. It
+   reopens a board already done: 云龙山的八味 asks a pill of alchemy-first,
+   done once in the story, so the furnace never came back and the errand
+   could not be met (his, 2026-09-23: 我已经到这里了, 没触发差事). */
+function errandWants(content, state, id) {
+  return Object.keys(state.quests ?? {}).some(qid => {
+    if (questDoneBefore(state, qid)) return false;
+    const q = questOf(content, qid);
+    return q ? countsOf(content, state, q).some(n => n.kind === 'board' && n.task === id && !n.done) : false;
+  });
+}
+
+/* Done before, and open now only for an errand — it pays the errand, not
+   the task a second time. */
+function reopened(content, state, id, now) {
+  const t = taskOf(content, id), held = state.tasks[id];
+  const spent = held?.status === 'done' && (t?.period === 'once' || held.period === periodKey(t?.period, now));
+  // A game a place hosts is played at that place: the errand sends him there
+  // (his screen, 2026-09-23: 碣石's 洛书 stood on the stage at 邺城).
+  return Boolean(t) && !t.hosted && (!held || spent) && errandWants(content, state, id);
+}
+
+/* A game the place hosts (places' has.games): open here once a period,
+   whether or not a scene ever offered it (his, 2026-09-23 — the mini-games
+   had no way in). */
+function hostedHere(content, state, id) {
+  const t = taskOf(content, id);
+  return Boolean(t?.hosted) && (placeOf(content, state.place)?.has?.games ?? []).includes(id);
+}
+const doneThisPeriod = (content, state, id, now) => {
+  const t = taskOf(content, id), held = state.tasks[id];
+  return held?.status === 'done' && (t?.period === 'once' || held.period === periodKey(t?.period, now));
+};
+
+/* A game's level by the player's realm: 练气/筑基 1, 结丹/元婴 2, beyond 3. */
+function gameLevel(content, state) {
+  const i = TIERS_ORDER(content).indexOf(state.tier);
+  return i < 2 ? 1 : i < 4 ? 2 : 3;
+}
+
+/* Offered, and not yet done this period — or wanted by an errand, or hosted here. */
+function taskOpen(content, state, id, now) {
+  const t = taskOf(content, id), held = state.tasks[id];
+  if (!t) return false;
+  if (reopened(content, state, id, now)) return true;
+  if (hostedHere(content, state, id)) return !doneThisPeriod(content, state, id, now);
+  if (!held) return false;
+  return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
+}
+
+function taskDone(state, content, ctx, id) {
+  const t = taskOf(content, id);
+  if (!t) return refuse('unknown-task', null);
+  const again = reopened(content, state, id, ctx.now);
+  // A hosted game won today is paid wherever he stands when Ling hands it in:
+  // the win was at the place (his 五子棋, 2026-09-23: a queued "go to 彭城" ran
+  // before the win's turn, and the pay was refused at 彭城).
+  const wonHere = Boolean(t.hosted && state.wins?.[id] && dayKey(new Date(state.wins[id])) === dayKey(ctx.now) && !doneThisPeriod(content, state, id, ctx.now));
+  if (!state.tasks[id] && !again && !hostedHere(content, state, id) && !wonHere) return refuse('not-offered', null);
+  if (!wonHere && !taskOpen(content, state, id, ctx.now)) return refuse('already-done', null);
+  if (!state.wins?.[id]) return refuse('not-won', null);
+  const s = clone(state);
+  delete s.wins[id];
+  if (again) {
+    const handed = advance(content, s, { kind: 'board', task: id }, ctx);
+    return { state: s, result: { ok: true, done: id, paid: null, gives: null, for: 'errand', ...(handed.length ? { handed } : {}) } };
+  }
+  s.tasks[id] = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
+  if (t.gives?.bag) s.bag[t.gives.bag] = (s.bag[t.gives.bag] ?? 0) + 1;
+  const paid = pay(content, s, ctx, t.grant);
+  const handed = advance(content, s, { kind: 'board', task: id }, ctx);
+  return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(handed.length ? { handed } : {}) } };
+}
+
+function questCheck(state, content, ctx, id) {
+  const q = (ctx.quests ?? []).find(x => x.id === id);
+  if (!q) return refuse('unknown-quest', null);
+  const period = periodKey(q.period, ctx.now);
+  if (state.chores[id]?.period === period) return refuse('already-paid', null);
+  if (!questDone(q, ctx.now)) return refuse('not-done', null, { app: q.app });
+  const s = clone(state);
+  s.chores[id] = { period, paid_at: ctx.now.toISOString() };
+  const paid = pay(content, s, ctx, { table: 'task', progress: q.reward ?? 0 });
+  settleStamina(content, s, ctx.now);
+  const stamina = addStamina(content, s, q.stamina ?? content.rewards.stamina.refill.quest, ctx.now);
+  return { state: s, result: { ok: true, quest: id, app: q.app, paid, stamina } };
+}
+
+/* The page is the only witness to a board or a duel: it records the win here,
+   and Resolve or Task done pays it. Never one of Ling's tools — a win Ling
+   could claim would be a self-reported one. */
+export function win(state, content, ctx, args) {
+  const id = String(args.id ?? '');
+  const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
+  if (!inScene && !taskOpen(content, state, id, ctx.now)) return refuse('not-here', null);
+  const s = clone(state);
+  s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  return { state: s, result: { ok: true, won: id } };
+}
+
+/* 降妖 — the scene plays the fight turn by turn, the rules decide it.
+   `start` checks the creature has not withdrawn today and charges a fight's
+   stamina; then, with `picks` — the player's own turns — the rules replay
+   the fight and record the outcome: a win the exit can take, or a loss that
+   sends the creature into the mist until tomorrow. A loss costs nothing
+   else. After a win today a fight is practice: it costs, it pays nothing. */
+export function duel(state, content, ctx, args) {
+  const id = String(args.id ?? '');
+  const exit = sceneOf(content, state)?.exits.find(e => gameOf(e)?.id === id && gameOf(e).kind === 'duel');
+  const haunt = !exit && id.startsWith('haunt:') ? encounterOf(content, state, ctx.now) : null;
+  if (!exit && !(haunt && haunt.game.id === id)) return refuse('not-here', null);
+  if (haunt?.tamed) return refuse('tamed', null, { creature: haunt.creature });
+  const game = exit ? gameOf(exit) : haunt.game, creature = creatureOf(content, game.creature);
+  const withdrawnLine = exit ? pick(exit.withdrawn, state.lang)
+    : pick({ zh: `${pick(creature.name, 'zh')}退入林影，明日再来。`, en: `${pick(creature.name, 'en')} withdraws into the shadows; come back tomorrow.` }, state.lang);
+  const s = clone(state);
+  const day = dayKey(ctx.now), today = s.duels?.[creature.id];
+
+  // ── 出手: the door of the instance ──
+  if (!args.picks) {
+    if (today?.day === day && today.outcome === 'lost') return refuse('withdrawn', withdrawnLine, { game: id });
+    if (today?.day === day && today.outcome === 'withdrew') return refuse('spent-today', null, { game: id });
+    if (haunt && today?.day === day && today.outcome === 'won') return refuse('subdued-today', null, { game: id });
+    if (!s.traits?.length) return refuse('no-traits', null);
+    // A page reloaded mid-fight asks again: the same fight comes back, and the
+    // day's 灵气 is not taken twice. The seed is the day's, so the cards deal
+    // the same way they did.
+    const resuming = s.fight?.game === id && today?.day === day && today.outcome === 'open';
+    if (!resuming && !fitToFight(content, s, ctx.now)) {
+      const at = mendsBy(content, s, ctx.now, hpMaxOf(s) - Math.ceil(hpMaxOf(s) * FIT_TO_FIGHT));
+      return refuse('wounded', pick({ zh: `伤还重，${hourOf(at, 'zh')} 再来 —— 或者服一粒丹。`, en: `Too hurt to fight. Come back at ${hourOf(at, 'en')} — or take a pill.` }, state.lang), { health: healthBrief(content, s, ctx.now), returns_at: at.toISOString(), game: id });
+    }
+    if (!resuming) {
+      const empty = spendStamina(content, s, ctx, creature.elite ? 'elite' : 'duel');
+      if (empty) return empty;
+    }
+    s.duels = { ...s.duels, [creature.id]: { day, outcome: 'open' } };
+    // While this is set, Ling advances NOTHING (SKILL.md § 斗法): she knows
+    // from the save, not from a message, because a message can be lost.
+    s.fight = resuming ? s.fight : { game: id, creature: creature.id, at: ctx.now.toISOString(), wounds: woundsNow(content, s, ctx.now) };
+    // The whole setup is kept with it, so the settle replays what the page
+    // is handed now (an older save's open fight takes it on resume).
+    if (!s.fight.setup) s.fight.setup = fightSetup(content, s, creature, ctx.now, id);
+    return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now) } };
+  }
+
+  // ── 收场: the page hands back what was played, the rules replay it ──
+  if (today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
+  const setup = fightSetup(content, s, creature, ctx.now, id);
+  const actions = String(args.picks).split(',').map(x => x.trim()).filter(Boolean);
+  const played = battle(actions, setup, cardCatalog(content));
+  if (played.refused) return refuse(played.refused.why, null, { action: played.refused.action });
+  if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
+  delete s.fight;
+  s.duels[creature.id] = { day, outcome: played.outcome };
+  // What the fight took stays taken (§ 伤势); a loss leaves nothing.
+  const left = played.outcome === 'lost' ? 0 : played.you.hp;
+  s.wounds = left < played.you.hpMax ? { n: played.you.hpMax - left, at: ctx.now.toISOString() } : undefined;
+  if (!s.wounds) delete s.wounds;
+  const handed = played.outcome === 'won' ? advance(content, s, { kind: 'subdue', creature: creature.id }, ctx) : [];
+  if (played.outcome === 'won') s.wins = { ...s.wins, [id]: ctx.now.toISOString() };
+  const say = played.outcome === 'lost' ? withdrawnLine
+    : played.outcome === 'withdrew' ? pick({ zh: `${pick(creature.name, 'zh')}一口气用尽，转身走了 —— 这一场不算你赢。`, en: `${pick(creature.name, 'en')} runs out of breath and turns away — this one is not a win.` }, state.lang)
+      : null;
+  // What a subdued creature leaves, and what a haunt pays for it. A fight that
+  // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3).
+  const dropped = played.outcome === 'won' ? drop(content, s, creature) : [];
+  // 精英 pay half again what a plain beast does and leave two cards (his,
+  // 2026-09-23: fixed in the world, marked where you can see them — the choice
+  // is whether to go, and in what shape). Half again, not twice: at twice the
+  // gate found always-elite the best day whatever the wounds, so there was no
+  // choice; at 1.5× an elite is worth it whole and a coin toss hurt.
+  const elite = Boolean(creature.elite);
+  const bonded = played.outcome === 'won' ? gainBond(content, s, elite ? 'elite' : 'win', ctx.now) : null;
+  for (let i = 0; played.outcome === 'won' && i < (elite ? 2 : 1); i += 1) {
+    const card = winCard(content, s, creature, ctx.now, i);
+    if (card) dropped.push(card);
+  }
+  const paid = haunt && played.outcome === 'won' ? pay(content, s, ctx, { table: elite ? 'elite' : 'haunt', progress: content.rewards.tables[elite ? 'elite' : 'haunt'].progress, wealth: content.rewards.tables[elite ? 'elite' : 'haunt'].wealth }) : null;
+  return { state: s, result: { ok: true, outcome: played.outcome, game: id, say, you: played.you, foe: played.foe, turns: played.turn, health: healthBrief(content, s, ctx.now), ...(elite ? { elite: true } : {}), ...(bonded ? { bond: bonded } : {}), ...(dropped.length ? { dropped } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}) } };
+}
+
+/* 写符 — one 桑皮纸 becomes one 符: at a market, or anywhere once the
+   catalog's `made.anywhere_from` tier is reached; a visit's stamina; one a
+   day. The 符 is cast on the scene, in a fight; Ling never plays it. */
+
+/* Whether 写符 would be allowed here today — the choice offers it then. */
+function canWrite(content, state) {
+  const charm = charmOf(content), paper = charm?.made?.from;
+  if (!charm || !paper || !(state.bag[paper] ?? 0) || state.day?.written) return false;
+  const here = placeOf(content, state.place);
+  const adept = charm.made.anywhere_from != null && tierIndex(content, state) >= tierRank(content, charm.made.anywhere_from);
+  return Boolean(here?.has?.[charm.made.at ?? 'shop']) || adept;
+}
+
+export function write(state, content, ctx, args) {
+  const charm = charmOf(content), paper = charm?.made?.from ? itemOf(content, charm.made.from) : null;
+  if (!charm || !paper) return refuse('no-charm-here', null);
+  const s = clone(state);
+  settlePlace(content, s);
+  rollDay(s, ctx.now);
+  const lang = s.lang, w = wordsOf(content, lang), paperName = pick(paper.name, lang), charmName = pick(charm.name, lang);
+  const here = placeOf(content, s.place);
+  const adept = charm.made.anywhere_from != null && tierIndex(content, s) >= tierRank(content, charm.made.anywhere_from);
+  const at = charm.made.at ?? 'shop';
+  if (!here?.has?.[at] && !adept) {
+    const from = charm.made.anywhere_from ? pick(tierOf(content, charm.made.anywhere_from)?.name, lang) : null;
+    return refuse('not-here', pick({
+      zh: `${w.write}要在${w[at]}里${from ? `，或待${from}之后` : ''}。`,
+      en: `A ${charmName} is written at a ${w[at]}${from ? `, or anywhere from ${from} on` : ''}.`,
+    }, lang), { at, ...(from ? { anywhere_from: charm.made.anywhere_from } : {}) });
+  }
+  if (!(s.bag[paper.id] ?? 0)) return refuse('no-paper', pick({ zh: `没有${paperName}，写不得${charmName}。`, en: `No ${paperName} — nothing to write on.` }, lang), { needs: paper.id });
+  if (s.day.written) return refuse('written-today', pick({ zh: `今日已写过一${charmName}，朱砂要歇。`, en: `One ${charmName} a day; the cinnabar rests.` }, lang));
+  const empty = spendStamina(content, s, ctx, 'shop');
+  if (empty) return empty;
+  s.bag[paper.id] -= 1;
+  if (!s.bag[paper.id]) delete s.bag[paper.id];
+  s.bag[charm.id] = (s.bag[charm.id] ?? 0) + 1;
+  s.day.written = 1;
+  return { state: s, result: { ok: true, written: charm.id, from: paper.id, item: itemBrief(content, s, charm), show: [{ card: 'item', id: charm.id }] } };
+}
+
+/* 论道 — word games with the scholar at 稷下 (his, 2026-09-23: build the
+   mini-games). The rules deal the prompt and check the form: the keyword is
+   in the line (飞花令), the idiom chains from the last character (成语接龙),
+   the lower line is as long as the upper (对对联). Ling judges the meaning —
+   a real verse, a real idiom, a fitting couplet — and says it as `ok`, and
+   speaks for the scholar. Three good answers win; three misses and he rises
+   for the day. Words, so they cost no 体力. */
+const hanOf = s => [...String(s ?? '')].filter(c => /\p{Script=Han}/u.test(c));
+const lundaoToday = (state, now) => (state.lundao?.day === dayKey(now) ? state.lundao : null);
+
+function lundaoBrief(content, state, now) {
+  const l = lundaoToday(state, now);
+  if (!l) return null;
+  const cfg = content.lundao, lang = state.lang;
+  const name = { feihua: { zh: '飞花令', en: 'Flying-flower verses' }, chengyu: { zh: '成语接龙', en: 'Word chain' }, duilian: { zh: '对对联', en: 'Matching couplets' } }[l.game];
+  return { game: l.game, name: pick(name, lang), prompt: l.prompt, last: l.last, good: l.good, misses: l.misses, need: cfg.need, max_misses: cfg.misses, outcome: l.outcome ?? 'open' };
+}
+
+function lundaoForm(game, lang, l, answer) {
+  const a = String(answer ?? '').trim();
+  if (!a) return 'empty';
+  if (l.used.includes(a)) return 'used';
+  if (game === 'feihua') {
+    if (lang === 'zh') { const n = hanOf(a).length; return !a.includes(l.prompt) ? 'no-keyword' : n < 4 || n > 10 ? 'not-a-line' : null; }
+    return !new RegExp(`\\b${l.prompt}`, 'i').test(a) ? 'no-keyword' : a.split(/\s+/).length < 3 ? 'not-a-line' : null;
+  }
+  if (game === 'chengyu') {
+    if (lang === 'zh') { const h = hanOf(a); return h.length !== 4 ? 'not-four' : h[0] !== hanOf(l.last).at(-1) ? 'no-chain' : null; }
+    const w = a.toLowerCase().replace(/[^a-z]/g, '');
+    return w.length < 3 ? 'not-a-word' : w[0] !== l.last.toLowerCase().replace(/[^a-z]/g, '').at(-1) ? 'no-chain' : null;
+  }
+  if (game === 'duilian') return hanOf(a).length !== hanOf(l.prompt).length ? 'not-matched' : a === l.prompt ? 'used' : null;
+  return 'unknown-game';
+}
+
+export function lundao(state, content, ctx, args) {
+  const cfg = content.lundao, lang = state.lang, action = String(args.action ?? 'open');
+  if (!cfg || !hostedHere(content, state, 'lundao')) return refuse('not-here', pick({ zh: '这里没有可论道的人。', en: 'There is no one here to debate.' }, lang));
+  const s = clone(state), today = lundaoToday(s, ctx.now);
+  if (action === 'open') {
+    if (today?.outcome === 'lost') return refuse('lost-today', pick({ zh: '先生已起身，明日再来。', en: 'The scholar has risen for the day. Come back tomorrow.' }, lang));
+    if (today && !today.outcome) return { state: null, result: { ok: true, lundao: lundaoBrief(content, s, ctx.now) } };
+    if (doneThisPeriod(content, s, 'lundao', ctx.now)) return refuse('done-today', pick({ zh: '今日已论过道了。', en: 'You have debated today already.' }, lang));
+    const day = dayKey(ctx.now);
+    const games = lang === 'zh' ? ['feihua', 'chengyu', 'duilian'] : ['feihua', 'chengyu'];
+    const game = games[hashOf(`${day}|${s.name ?? ''}|lundao`) % games.length];
+    const list = game === 'duilian' ? cfg.duilian.zh : cfg[game][lang === 'zh' ? 'zh' : 'en'];
+    const dealt = list[hashOf(`${day}|${s.name ?? ''}|lundao|${game}`) % list.length];
+    const prompt = game === 'duilian' ? dealt.up : dealt;
+    s.lundao = { day, game, prompt, last: prompt, good: 0, misses: 0, used: [prompt], ...(game === 'duilian' ? { model: dealt.down } : {}) };
+    return { state: s, result: { ok: true, opened: true, lundao: lundaoBrief(content, s, ctx.now), ...(game === 'duilian' ? { model: dealt.down } : {}) } };
+  }
+  if (action !== 'turn') return refuse('unknown-action', null, { actions: ['open', 'turn'] });
+  if (!today || today.outcome) return refuse('not-open', null);
+  const l = s.lundao, form = lundaoForm(l.game, lang, l, args.answer);
+  const judged = String(args.ok ?? '') === 'true';
+  const good = !form && judged;
+  const answer = String(args.answer ?? '').trim();
+  if (good) {
+    l.good += 1; l.used.push(answer);
+    // The chain goes on from the scholar's reply when it chains, else from the answer.
+    const reply = String(args.reply ?? '').trim();
+    l.last = l.game === 'chengyu' && reply && !lundaoForm('chengyu', lang, { ...l, last: answer }, reply) ? reply : answer;
+    if (l.game === 'chengyu' && reply) l.used.push(reply);
+    // 对对联: a fresh upper line each round; 飞花令 keeps its keyword.
+    if (l.game === 'duilian' && l.good < cfg.need) {
+      const next = cfg.duilian.zh[hashOf(`${l.day}|${s.name ?? ''}|lundao|duilian|${l.good}`) % cfg.duilian.zh.length];
+      l.prompt = next.up; l.model = next.down;
+    }
+  } else l.misses += 1;
+  let paid = null;
+  if (l.good >= cfg.need) {
+    l.outcome = 'won';
+    const t = taskOf(content, 'lundao');
+    s.tasks.lundao = { status: 'done', period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
+    paid = pay(content, s, ctx, t.grant);
+    advance(content, s, { kind: 'board', task: 'lundao' }, ctx);
+  } else if (l.misses >= cfg.misses) l.outcome = 'lost';
+  return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(l.model && !l.outcome ? { model: l.model } : {}), ...(paid ? { paid, line: pick(taskOf(content, 'lundao').done_line, lang) } : {}) } };
+}
+
+export { canWrite, doneThisPeriod, gameLevel, lundaoBrief, questCheck, questDone, reopened };
