@@ -1,0 +1,60 @@
+{
+ "version": 1,
+ "id": "07-end",
+ "chapter": "07-liang",
+ "at": "shiniu",
+ "place": {
+  "zh": "蜀 · 江清",
+  "en": "Shu · The river runs clear"
+ },
+ "setup": {
+  "zh": "岷江清了。水从离堆分出去，一半灌田，一半走船。石人的肩膀露了出来。成都的告示撤了，银匠铺又叮叮当当地响起来。",
+  "en": "The Min runs clear. At Lidui the water splits, half to the fields and half for the boats. The stone man's shoulders show again. The notice in Chengdu comes down, and the silversmiths' hammers ring again."
+ },
+ "recap": {
+  "zh": "岷江清了，石人的肩膀露出水面。第八鼎的气息在北边，秦岭的那一头。",
+  "en": "The Min ran clear and the stone man's shoulders showed above the water. The eighth cauldron's breath lay north, beyond the Qinling."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "雍",
+   "here": "梁"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "第八鼎的气息在北边——翻过秦岭，走栈道，是雍州。周亡的时候，九鼎就是往那边搬的。",
+    "en": "The eighth cauldron's breath lies north — over the Qinling by the plank road, in Yong. When Zhou fell, the nine cauldrons were carried that way."
+   }
+  }
+ ],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the chapter, asks what comes next",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "今日到此为止。雍州的路，开的时候我会告诉你。",
+      "en": "That is all for today. When the road to Yong opens, I will tell you."
+     }
+    }
+   ],
+   "ends": "07-liang"
+  }
+ ]
+}

@@ -1,0 +1,119 @@
+{
+ "version": 1,
+ "id": "07-cauldron",
+ "chapter": "07-liang",
+ "at": "shiniu",
+ "place": {
+  "zh": "石纽 · 鼎前",
+  "en": "Shiniu · Before the cauldron"
+ },
+ "setup": {
+  "zh": "梁鼎从池里升起来。鼎身上铸着岷山、嶓冢、沱水、潜水和一头熊——梁州的一切。池边来了一个放羊的老人，看着鼎，说：文命家的东西回来了。",
+  "en": "The Cauldron of Liang rises from the pool. Cast on its body are Mount Min, Mount Bozhong, the Tuo, the Qian and a bear — everything of Liang. An old shepherd has come to the pool's edge; looking at the cauldron he says: something of Wenming's family has come home."
+ },
+ "recap": {
+  "zh": "梁鼎从禹出生的池里升起；放羊的老人叫禹\"文命\"。",
+  "en": "The Cauldron of Liang rose from the pool where Yu was born; an old shepherd called Yu \"Wenming\"."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "gate",
+   "chapter": "07-liang"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "文命……就是这个名字。她叫的不是我——是一个会走遍九州的人。",
+    "en": "Wenming… That's the name. She wasn't calling me — she was calling someone who would walk all nine provinces."
+   },
+   "alone": {
+    "zh": "老人说，文命是禹的名字。《夏本纪》：夏禹，名曰文命。",
+    "en": "The old man says Wenming is Yu's name. The Annals of Xia: Yu of Xia, named Wenming."
+   }
+  },
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "……你已经走了七州了。",
+    "en": "…You've walked seven provinces already."
+   },
+   "alone": {
+    "zh": "老人看了看你掌心的六口鼎，没再说话。",
+    "en": "The old man looks at the six cauldrons in your palm, and says nothing more."
+   }
+  }
+ ],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "受鼎气 · 大乘",
+    "en": "Take the cauldron's breath · Mahayana"
+   },
+   "means": "touches the cauldron, takes its breath, attempts the breakthrough",
+   "breakthrough": true,
+   "refuse": {
+    "zh": "鼎气涌上来又退开。合体未满，乘不起它。先回人间，把功课做满。",
+    "en": "The breath surges over you and draws back. Your Body Integration is not yet full; you cannot bear it yet. Go back to the world and fill your practice first."
+   },
+   "show": [
+    {
+     "card": "tribulation",
+     "strikes": 3
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "岷山的雪水从头顶灌下来，一路流过全身，流到脚底，流进地里。你站着，像一座山那样站着。大乘了。鼎小了，小到握在掌心，和前六口并排。",
+      "en": "The snowmelt of Mount Min pours down from the crown of your head, through your whole body to your soles and into the ground. You stand the way a mountain stands. Mahayana. The cauldron shrinks until it sits in your palm beside the other six."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "大乘了。……七口。",
+      "en": "Mahayana. …Seven."
+     },
+     "alone": {
+      "zh": "大乘了。七口鼎。",
+      "en": "Mahayana. Seven cauldrons."
+     }
+    }
+   ],
+   "next": "07-end"
+  },
+  {
+   "id": "wait",
+   "means": "hesitates, asks what will happen, wants to prepare first",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "禹在这儿出生，走了一辈子才回来。它等得起。",
+      "en": "Yu was born here and walked a lifetime before he came back. It can wait."
+     },
+     "alone": {
+      "zh": "禹在这儿出生，走了一辈子。这鼎等得起。",
+      "en": "Yu was born here and walked a lifetime. This cauldron can wait."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

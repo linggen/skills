@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "07-deep",
+ "chapter": "07-liang",
+ "at": "shiniu",
+ "place": {
+  "zh": "石纽 · 洗儿池",
+  "en": "Shiniu · The Washing Pool"
+ },
+ "setup": {
+  "zh": "翻过山，是石纽。山坳里一个小池，池边的石头上刻着字：禹生于此。池底卧着一口鼎，鼎口盖着石板，板上刻着三个脚印，一前一后又一前——禹步。脚印后面本该有迹，都被磨平了。",
+  "en": "Over the hill lies Shiniu. In a hollow is a small pool, and on a stone beside it is cut: Yu was born here. At its bottom lies a cauldron, its mouth covered by a slab cut with three footprints — one ahead, one behind, one ahead: the Pace of Yu. Behind the footprints there should be traces; they have been worn away."
+ },
+ "recap": {
+  "zh": "石纽的洗儿池底卧着一口鼎，石板上刻着禹步的三个脚印，后面的迹被磨平了。",
+  "en": "At the bottom of the Washing Pool at Shiniu lay a cauldron; its slab bore the three footprints of the Pace of Yu, the traces behind them worn away."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "禹生在这里。他走路一跛一跛的——治水累的。后来的人学他走，叫禹步。",
+    "en": "Yu was born here. He walked with a limp — worn out taming the waters. Those who came after copied his walk and called it the Pace of Yu."
+   },
+   "alone": {
+    "zh": "禹生在这里。他治水跛了腿，后人学他走路，叫禹步。",
+    "en": "Yu was born here. Taming the waters left him lame; later people copied his walk and called it the Pace of Yu."
+   }
+  }
+ ],
+ "buttons": [
+  "seal"
+ ],
+ "exits": [
+  {
+   "id": "seal",
+   "label": {
+    "zh": "读封 · 数禹步",
+    "en": "Read the seal · Count the Pace"
+   },
+   "means": "reads the seal, answers how many traces the Pace of Yu leaves",
+   "key": "seal-liang",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你报出那个数。三个脚印后面，一个接一个地亮出了迹。石板沉进池底。鼎口的气冲上来——是雪山水的味道，和刚落地的婴儿的味道。",
+      "en": "You give the number. Behind the three footprints the traces light up one after another. The slab sinks into the pool. The cauldron's breath rushes up — snowmelt, and the smell of a newborn."
+     }
+    }
+   ],
+   "next": "07-cauldron"
+  },
+  {
+   "id": "force",
+   "means": "tries to break, lift or pry the slab by force",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "石板不动。三个脚印在你掌下一跛一跛地亮。",
+      "en": "The slab does not move. Under your palm the three footprints light up, limping."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

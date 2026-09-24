@@ -291,7 +291,8 @@
         "兖",
         "青",
         "扬",
-        "荆"
+        "荆",
+        "梁"
       ],
       "effect": {
         "learn": "wangqi",
@@ -398,7 +399,8 @@
       "buy": 320,
       "sell": 90,
       "sold": [
-        "青"
+        "青",
+        "梁"
       ],
       "effect": {
         "core": "metal"
@@ -596,6 +598,25 @@
       "sell": 10,
       "sold": [
         "荆"
+      ],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
+    },
+    {
+      "id": "shujin",
+      "kind": "material",
+      "name": {
+        "zh": "蜀锦",
+        "en": "Shu brocade"
+      },
+      "art": "art/items/shujin.webp",
+      "about": {
+        "zh": "蜀地的锦，要在锦江里洗，颜色才鲜。",
+        "en": "The brocade of Shu; washed in the Brocade River its colours come up bright, and in any other river they dull."
+      },
+      "buy": 90,
+      "sell": 25,
+      "sold": [
+        "梁"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     }

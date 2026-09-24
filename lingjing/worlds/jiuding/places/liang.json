@@ -1,0 +1,219 @@
+{
+ "version": 1,
+ "province": "梁",
+ "start": "minjiang",
+ "_about": "The places of 梁 — a map, not a chain; the same shape as 徐's (see places/xu.json _about). Chapter 7's spine runs 岷江 → 成都 → 离堆 → 石纽; 江州 is the road in from 荆's 巫峡, 褒斜道 the plank road on over the Qinling to 雍.",
+ "places": [
+  {
+   "id": "minjiang",
+   "name": {
+    "zh": "岷江",
+    "en": "The Min"
+   },
+   "tier": 0,
+   "roads": [
+    "chengdu",
+    "lidui",
+    "jiangzhou"
+   ],
+   "map": [
+    0.2591,
+    0.685
+   ],
+   "has": {
+    "seeds": true,
+    "scene": "07-arrive",
+    "games": [
+     "wuziqi"
+    ]
+   },
+   "line": {
+    "zh": "岷江从雪山下来，岸边蹲着李冰的石犀。",
+    "en": "The Min comes down from the snow mountains; Li Bing's stone rhinoceros crouches on its bank."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "chengdu",
+   "name": {
+    "zh": "成都",
+    "en": "Chengdu"
+   },
+   "tier": 0,
+   "roads": [
+    "minjiang",
+    "lidui",
+    "jiangzhou",
+    "baoxie"
+   ],
+   "map": [
+    0.2771,
+    0.6619
+   ],
+   "has": {
+    "shop": true,
+    "scene": "07-town",
+    "games": [
+     "alchemy-daily"
+    ]
+   },
+   "line": {
+    "zh": "蜀的都会，坊市里挂着锦，银匠铺里敲着银。",
+    "en": "The city of Shu; brocade hangs in the market, and silver rings in the smiths' shops."
+   }
+  },
+  {
+   "id": "lidui",
+   "name": {
+    "zh": "离堆",
+    "en": "Lidui"
+   },
+   "tier": 0,
+   "roads": [
+    "minjiang",
+    "chengdu",
+    "shiniu"
+   ],
+   "map": [
+    0.2488,
+    0.6388
+   ],
+   "has": {
+    "creature": "kuiniu",
+    "scene": "07-weir"
+   },
+   "line": {
+    "zh": "李冰凿开的山口，江水从这里一分为二。",
+    "en": "The cut Li Bing made through the hill, where the river splits in two."
+   },
+   "water": true,
+   "meets": [
+    "find",
+    "beast"
+   ]
+  },
+  {
+   "id": "shiniu",
+   "name": {
+    "zh": "石纽",
+    "en": "Shiniu"
+   },
+   "tier": 0,
+   "roads": [
+    "lidui",
+    "minshan"
+   ],
+   "map": [
+    0.2398,
+    0.6074
+   ],
+   "has": {
+    "scene": "07-deep"
+   },
+   "line": {
+    "zh": "禹出生的地方，山坳里有一个洗儿池。",
+    "en": "Where Yu was born; in a hollow lies the pool he was washed in."
+   },
+   "water": true,
+   "meets": [
+    "find"
+   ]
+  },
+  {
+   "id": "minshan",
+   "name": {
+    "zh": "岷山",
+    "en": "Mount Min"
+   },
+   "tier": 1,
+   "roads": [
+    "shiniu"
+   ],
+   "map": [
+    0.2485,
+    0.5424
+   ],
+   "has": {
+    "creature": "qiezhi",
+    "seeds": true,
+    "games": [
+     "huarong"
+    ]
+   },
+   "line": {
+    "zh": "岷山导江——江从这座山里出去。",
+    "en": "The Jiang is led out from Mount Min, where it begins."
+   },
+   "meets": [
+    "beast",
+    "find"
+   ]
+  },
+  {
+   "id": "jiangzhou",
+   "name": {
+    "zh": "江州",
+    "en": "Jiangzhou"
+   },
+   "tier": 1,
+   "roads": [
+    "minjiang",
+    "chengdu",
+    "wuxia"
+   ],
+   "map": [
+    0.3558,
+    0.7481
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "qiqiao"
+    ]
+   },
+   "line": {
+    "zh": "巴人的城，两江在城下汇合。",
+    "en": "The city of the Ba people, where two rivers meet below the walls."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "baoxie",
+   "name": {
+    "zh": "褒斜道",
+    "en": "The Baoxie plank road"
+   },
+   "tier": 2,
+   "roads": [
+    "chengdu"
+   ],
+   "map": [
+    0.4006,
+    0.4613
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "xiangqi"
+    ]
+   },
+   "line": {
+    "zh": "秦岭的栈道，木桩一根接一根钉在崖上。",
+    "en": "The plank road through the Qinling, beams driven one after another into the cliff."
+   },
+   "meets": [
+    "riddle",
+    "find",
+    "beast"
+   ]
+  }
+ ]
+}

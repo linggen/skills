@@ -797,6 +797,136 @@
       },
       "_deck": "其状如龟 —— 缩在甲里，挡住，养回来。",
       "_signature": "是可以御火 —— 甲一合，它和它的都缓过来了。"
+    },
+    {
+      "id": "kuiniu",
+      "name": {
+        "zh": "夔牛",
+        "en": "The Kui Ox"
+      },
+      "pinyin": "kuí niú",
+      "source": {
+        "zh": "《山海经 · 中次九经》（郭璞注）",
+        "en": "Classic of Mountains and Seas — Central Mountains IX (Guo Pu's commentary)"
+      },
+      "quote": {
+        "zh": "又东北三百里，曰岷山。江水出焉……其兽多犀象，多夔牛。（郭璞注：今蜀山中有大牛，重数千斤，名为夔牛。）",
+        "en": "Three hundred li further north-east is Mount Min, where the Jiang rises… its beasts are many rhinoceroses and elephants, and many Kui oxen. (Guo Pu: in the hills of Shu today there is a great ox weighing several thousand jin, called the Kui ox.)"
+      },
+      "look": {
+        "zh": "一头大牛，重有千斤，身子像一座小山。",
+        "en": "A great ox a thousand jin in weight, its body like a small hill."
+      },
+      "province": "梁",
+      "root": "earth",
+      "art": "art/kuiniu.webp",
+      "art_source": "Drawn for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after the 《中次九经》 text and 郭璞's note — no labelled classical plate of 夔牛 was found; laid on paper by tools/frame.py. See art/CREDITS.md.",
+      "art_caption": {
+        "zh": "据《中次九经》新绘",
+        "en": "Newly drawn after the Central Mountains IX"
+      },
+      "likes": "ginseng",
+      "lean": "fierce",
+      "pattern": [
+        "strike",
+        "strike",
+        "gather",
+        "armor",
+        "strike"
+      ],
+      "drops": "xirang",
+      "deck": [
+        "shishou",
+        "shishou",
+        "kuiniu",
+        "kuiniu",
+        "tunshi",
+        "tunshi",
+        "luoshi",
+        "jixiao",
+        "shanjing",
+        "kuiniu",
+        "luoshi",
+        "jixiao"
+      ],
+      "signature": {
+        "id": "doujiang",
+        "name": {
+          "zh": "斗江",
+          "en": "Fighting the River"
+        },
+        "effect": {
+          "damage": 18
+        }
+      },
+      "elite": true,
+      "_deck": "重数千斤 —— 石兽站在前面，它自己一头一头地撞上来。",
+      "_signature": "李冰斗江神，化为苍牛 —— 低头，一撞。"
+    },
+    {
+      "id": "qiezhi",
+      "name": {
+        "zh": "窃脂",
+        "en": "Qiezhi"
+      },
+      "pinyin": "qiè zhī",
+      "source": {
+        "zh": "《山海经 · 中次九经》",
+        "en": "Classic of Mountains and Seas — Central Mountains IX"
+      },
+      "quote": {
+        "zh": "又东北一百五十里，曰崌山……有鸟焉，状如鸮而赤身白首，其名曰窃脂，可以御火。",
+        "en": "A hundred and fifty li further north-east is Mount Ju… There is a bird on it like an owl, red-bodied and white-headed, called Qiezhi; it can ward off fire."
+      },
+      "look": {
+        "zh": "鸮的样子，红身子，白脑袋。",
+        "en": "An owl's shape, a red body and a white head."
+      },
+      "province": "梁",
+      "root": "fire",
+      "art": "art/qiezhi.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》竊脂圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic137 - 竊脂圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/qiezhi.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "shujin",
+      "lean": "quick",
+      "pattern": [
+        "strike",
+        "cast",
+        "strike",
+        "guard",
+        "gather"
+      ],
+      "drops": "huojing",
+      "deck": [
+        "huoya",
+        "huoya",
+        "xianshi",
+        "qiezhi",
+        "qiezhi",
+        "huodan",
+        "huodan",
+        "yanxin",
+        "huoya",
+        "qiezhi",
+        "tongling",
+        "huodan"
+      ],
+      "signature": {
+        "id": "chishen",
+        "name": {
+          "zh": "赤身白首",
+          "en": "Red Body, White Head"
+        },
+        "effect": {
+          "damage": 8,
+          "draw": 1
+        }
+      },
+      "_deck": "赤身 —— 火鸦一群一群扑下来，快，身薄。",
+      "_signature": "状如鸮 —— 一扑，再衔一张在嘴里。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

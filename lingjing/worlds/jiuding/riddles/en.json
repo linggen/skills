@@ -483,6 +483,51 @@
     "the Flying Serpent"
    ],
    "hint": "A red bird."
+  },
+  "kuiniu-1": {
+   "q": "The character for noon with its head pushed through the top — one character. It is standing in front of you.",
+   "a": [
+    "牛",
+    "niu",
+    "ox",
+    "an ox"
+   ],
+   "choices": [
+    "牛",
+    "午",
+    "干",
+    "半"
+   ],
+   "hint": "午, with its upright poking out above."
+  },
+  "kuiniu-2": {
+   "q": "The six-character rule of Dujiangyan: dig the shoals deep, keep the ___ low.",
+   "a": [
+    "weir",
+    "the weir",
+    "堰"
+   ],
+   "choices": [
+    "weir",
+    "wall",
+    "dyke",
+    "sluice"
+   ],
+   "hint": "It is cut in the cliff at Lidui."
+  },
+  "seal-liang": {
+   "q": "The Pace of Yu: three steps — and how many traces behind them?",
+   "a": [
+    "nine",
+    "9"
+   ],
+   "choices": [
+    "three",
+    "six",
+    "nine",
+    "twelve"
+   ],
+   "hint": "Baopuzi: thus three paces… and behind them, nine traces."
   }
  }
 }

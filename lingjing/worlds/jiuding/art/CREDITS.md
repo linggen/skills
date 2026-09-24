@@ -26,6 +26,8 @@ paper, a warm paper ground with grain, the red seal).
 | changyou | 長右 | 《古今圖書集成·禽蟲典》長右圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic239 - 長右圖.svg* |
 | bashe | 巴蛇 | 《古今圖書集成·禽蟲典》巴蛇圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic510 - 巴蛇圖.svg* |
 | gui | 蛫 | 《古今圖書集成·禽蟲典》蛫圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic313 - 蛫圖.svg* |
+| kuiniu | 夔牛 | **Drawn for Lingjing** by the local picture model (FLUX.2 klein 4B), 2026-09-24, as a woodcut after 《中次九经》 and 郭璞's note — no labelled classical plate of 夔牛 was found |
+| qiezhi | 竊脂 | 《古今圖書集成·禽蟲典》竊脂圖, 陳夢雷 et al., Qing 1700–1725 — Wikimedia Commons, *Imperial Encyclopaedia - Animal Kingdom - pic137 - 竊脂圖.svg* |
 
 The FLUX paintings of 2026-09-15 (夫諸, 狍鴞, 精衛, 雷神, 蠪侄) were replaced
 on 2026-09-16; the seal font lacks 蠪 and 狪, so those seals read 侄 and 珠.

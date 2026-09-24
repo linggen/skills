@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "07-liang",
+  "opens": null,
+  "province": "梁",
+  "corridor": false,
+  "first_scene": "07-arrive",
+  "gate": 7,
+  "title": {
+    "zh": "第七章 · 梁州之鼎",
+    "en": "Chapter 7 · The Cauldron of Liang"
+  },
+  "summary": {
+    "zh": "过峡入梁。岷江红着下来，蜀中的田都淹了。离堆的堰在裂，夜里有一头千斤的大牛跟江相斗——鼎在山底下醒了，夔牛以为李冰回来了。让水自己找到路，走到禹出生的石纽，第七鼎归来——合体圆满者，在此大乘。",
+    "en": "Through the gorges into Liang. The Min comes down red and the fields of Shu are drowned. The weir at Lidui is cracking, and at night an ox of a thousand jin fights the river — the cauldron has woken under the mountain, and the Kui ox thinks Li Bing has come back. Let the water find its own way, walk to Shiniu where Yu was born, and the seventh cauldron returns — one at the peak of Body Integration reaches the Mahayana here."
+  },
+  "intro": {
+    "zh": "禹兴于西羌——他生在岷山下的石纽。千百年后，蜀守李冰凿开离堆分水，化作苍牛与江神相斗。如今岷江红着下来，夜里又有一头牛在斗江。",
+    "en": "Yu rose among the Western Qiang — he was born at Shiniu below Mount Min. Many centuries later Li Bing, governor of Shu, cut through Lidui to split the river, and became a grey ox to fight the river god. Now the Min comes down red, and at night an ox is fighting the river again."
+  },
+  "mystery": {
+    "zh": "夜夜跟江相斗的那头牛，在等谁回来？",
+    "en": "The ox that fights the river every night — whom is it waiting for?"
+  }
+}

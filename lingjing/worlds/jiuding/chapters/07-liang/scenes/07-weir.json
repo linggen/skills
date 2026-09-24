@@ -1,0 +1,188 @@
+{
+ "version": 1,
+ "id": "07-weir",
+ "chapter": "07-liang",
+ "at": "lidui",
+ "place": {
+  "zh": "离堆 · 夜",
+  "en": "Lidui · Night"
+ },
+ "setup": {
+  "zh": "离堆的石头被凿开了一道口，江水从口里分出去。一头大牛站在口前，身子像一座小山，重有千斤。它一低头就撞向堰，一撞，堰就裂开一道缝。它的眼睛看着山下——鼎在山底下醒了，它以为是李冰回来了。",
+  "en": "The rock of Lidui has been cut through, and the river splits through the cut. Before it stands a great ox, its body like a small hill, a thousand jin in weight. It lowers its head and drives at the weir, and each blow opens a new crack. Its eyes are on the ground below the hill — the cauldron has woken under the mountain, and the ox thinks Li Bing has come back."
+ },
+ "recap": {
+  "zh": "离堆的堰前，一头千斤的夔牛在撞堰——它以为山底下醒来的是李冰。",
+  "en": "Before the weir at Lidui a thousand-jin Kui ox was ramming the dam — it thought what had woken under the mountain was Li Bing."
+ },
+ "cast": [
+  "yinyue",
+  "kuiniu"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "kuiniu"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是夔牛，岷山里的大牛。它不是来毁堰的——它是来跟李冰再斗一回。",
+    "en": "It's a Kui ox, the great ox of the Min hills. It hasn't come to break the weir — it has come to fight Li Bing once more."
+   },
+   "alone": {
+    "zh": "是夔牛——岷山多夔牛。它不是来毁堰的，是来跟李冰再斗一回。",
+    "en": "A Kui ox — the Min hills are full of them. It has not come to break the weir, but to fight Li Bing once more."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "夔牛转过头来，鼻子里喷着白气。它先要问你一句。",
+    "en": "The ox turns its head, white breath jetting from its nostrils. First it has a question."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "weir"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the ox, stops it ramming the weir by force",
+   "game": {
+    "id": "subdue-kuiniu",
+    "kind": "duel",
+    "creature": "kuiniu"
+   },
+   "withdrawn": {
+    "zh": "夔牛退到江里，喘着气。明夜它还会来。",
+    "en": "The ox backs into the river, panting. Tomorrow night it will come again."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "夔牛跪下了前腿，角抵在地上，不再撞了。",
+      "en": "The ox goes down on its forelegs, horns to the ground, and rams no more."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "堰保住了。鼎在山那边——石纽。",
+      "en": "The weir holds. The cauldron is beyond the hill — at Shiniu."
+     },
+     "alone": {
+      "zh": "堰保住了。鼎在山那边的石纽。",
+      "en": "The weir holds. The cauldron lies beyond the hill, at Shiniu."
+     }
+    }
+   ],
+   "next": "07-deep"
+  },
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答它的问",
+    "en": "Answer it"
+   },
+   "means": "answers the ox's riddle",
+   "key": [
+    "kuiniu-1",
+    "kuiniu-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你答了。夔牛眨了眨眼，喷出一口白气，慢慢卧了下来。",
+      "en": "You answer. The ox blinks, blows out a white breath, and slowly lies down."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "它卧下了。走，石纽。",
+      "en": "It's lying down. Come — Shiniu."
+     },
+     "alone": {
+      "zh": "它卧下了。石纽在山那边。",
+      "en": "It lies down. Shiniu is beyond the hill."
+     }
+    }
+   ],
+   "next": "07-deep"
+  },
+  {
+   "id": "weir",
+   "label": {
+    "zh": "深淘滩，低作堰",
+    "en": "Dig the bed deep, keep the weir low"
+   },
+   "means": "does as Li Bing taught: digs the riverbed deeper and lowers the weir, lets the water find its own way instead of fighting it",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你想起离堆石壁上刻的六个字：深淘滩，低作堰。你不堵水，把滩底淘深，把堰放低。江水从分水口流过去，不再往堰上撞。夔牛看着水走，看了很久，卧了下来——李冰没回来，可他的法子回来了。",
+      "en": "You remember six characters cut in the cliff at Lidui: dig the bed deep, keep the weir low. You do not dam the water; you dig the shoals deeper and lower the weir. The river flows through the cut and stops hammering the dam. The ox watches the water go for a long time, then lies down — Li Bing has not come back, but his way has."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "水自己找到了路。",
+      "en": "The water found its own way."
+     },
+     "alone": {
+      "zh": "水自己找到了路。",
+      "en": "The water has found its own way."
+     }
+    }
+   ],
+   "next": "07-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs from the ox, turns back, refuses to act",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你往回走。身后又是一声闷响——堰又裂开了一道。",
+      "en": "You turn back. Behind you another boom — another crack in the weir."
+     },
+     "alone": {
+      "zh": "你往回走。身后又是一声闷响；堰又裂开了一道。",
+      "en": "You turn back. Behind you another boom: another crack in the weir."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

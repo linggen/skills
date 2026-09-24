@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "province": "梁",
+  "_about": "奇遇 seeds for 梁 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "liang-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "羌地的老人说，禹是在石纽生的，洗过他的池子还在。",
+        "en": "An old man of the Qiang says Yu was born at Shiniu, and the pool he was washed in is still there."
+      },
+      "source": {
+        "zh": "《蜀王本纪》：禹本汶山郡广柔县人也，生于石纽。",
+        "en": "Annals of the Kings of Shu: Yu was a man of Guangrou in Wenshan, born at Shiniu."
+      }
+    },
+    {
+      "id": "liang-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "离堆的石头上有凿痕，一个老石匠说，那是一个太守带人一锤一锤凿开的。",
+        "en": "There are chisel marks on the rock of Lidui; an old mason says a governor had it cut open, blow by blow."
+      },
+      "source": {
+        "zh": "《史记·河渠书》：蜀守冰凿离碓，辟沫水之害。",
+        "en": "Records of the Grand Historian, Rivers and Canals: Bing, governor of Shu, cut through Lidui to rid the land of the Mo river's harm."
+      }
+    },
+    {
+      "id": "liang-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "成都的老人说，从前江神每年要娶两个姑娘，有个太守把自己的女儿送去——然后拔了剑。",
+        "en": "The old men of Chengdu say the river god once took two girls a year as brides, until a governor offered his own daughter — and drew his sword."
+      },
+      "source": {
+        "zh": "《风俗通义》（佚文，《太平御览》引）：江水有神，岁取童女二人为妇。……冰以其女与神为婚……",
+        "en": "Fengsu Tongyi (lost text, quoted in Taiping Yulan): the river had a god who took two maidens a year as wives… Li Bing offered his daughter."
+      }
+    },
+    {
+      "id": "liang-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "岸边的石犀一共五头，渔人说它们晚上会换地方。",
+        "en": "There are five stone rhinoceroses along the bank; the fishermen say they change places at night."
+      },
+      "source": {
+        "zh": "《华阳国志·蜀志》：外作石犀五头以厌水精。",
+        "en": "Records of the Lands South of Mount Hua: outside he made five stone rhinoceroses to subdue the water spirits."
+      }
+    },
+    {
+      "id": "liang-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "山里的杜鹃叫到出血，猎户说，那是从前一个让了位的蜀王。",
+        "en": "The cuckoo in the hills cries till it bleeds; the hunters say it is a king of Shu who gave up his throne."
+      },
+      "source": {
+        "zh": "《华阳国志·蜀志》：（杜宇）遂禅位于开明……时适二月，子鹃鸟鸣，故蜀人悲子鹃鸟鸣也。",
+        "en": "Records South of Mount Hua: Duyu yielded the throne to Kaiming; it was the second month and the cuckoo cried, so the people of Shu grieve at its cry."
+      }
+    },
+    {
+      "id": "liang-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "秦岭下有一道山口，樵夫说，是五个力士拽一条蛇的尾巴，把山拽塌的。",
+        "en": "Below the Qinling is a pass; the woodcutters say five strongmen hauled a snake out by the tail and pulled the mountain down."
+      },
+      "source": {
+        "zh": "《华阳国志·蜀志》：见一大蛇入穴中，一人揽其尾掣之，不禁，至五人相助，大呼抴蛇，山崩。",
+        "en": "Records South of Mount Hua: seeing a great snake go into a hole, one man seized its tail; he could not hold it, till five helped, crying out and hauling — and the mountain fell."
+      }
+    },
+    {
+      "id": "liang-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个老人数着蜀的先王：蚕丛、柏灌、鱼凫……数到后来，他也记不清了。",
+        "en": "An old man counts the first kings of Shu: Cancong, Baiguan, Yufu… after that he loses count."
+      },
+      "source": {
+        "zh": "《蜀王本纪》：蜀之先称王者，有蚕丛、柏濩、鱼凫、蒲泽、开明。",
+        "en": "Annals of the Kings of Shu: the first to call themselves kings of Shu were Cancong, Baihuo, Yufu, Puze and Kaiming."
+      }
+    },
+    {
+      "id": "liang-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "临邛的酒肆里，一个卖酒的女人说，她是半夜从富人家里跑出来的。",
+        "en": "In a wine-shop at Linqiong the woman serving says she ran away from a rich man's house at midnight."
+      },
+      "source": {
+        "zh": "《史记·司马相如列传》：文君夜亡奔相如……令文君当垆。",
+        "en": "Records of the Grand Historian, Sima Xiangru: Wenjun fled to Xiangru by night… and he set her to tend the wine counter."
+      }
+    },
+    {
+      "id": "liang-09",
+      "kind": "province-tale",
+      "line": {
+        "zh": "栈道上的木桩一根接一根钉在崖上，脚夫说，走一趟得一个月。",
+        "en": "The beams of the plank road are driven into the cliff one after another; the porters say one crossing takes a month."
+      },
+      "source": {
+        "zh": "《史记·货殖列传》：栈道千里，无所不通。",
+        "en": "Records of the Grand Historian: plank roads for a thousand li, reaching everywhere."
+      }
+    },
+    {
+      "id": "liang-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "江州来的汉子说，他们的祖先跟着周武王伐纣，一边打仗一边唱歌跳舞。",
+        "en": "A man from Jiangzhou says his forefathers marched with King Wu against Zhou, singing and dancing as they fought."
+      },
+      "source": {
+        "zh": "《华阳国志·巴志》：巴师勇锐，歌舞以凌殷人。",
+        "en": "Records South of Mount Hua, Ba: the Ba troops were bold, and overran the Yin with song and dance."
+      }
+    },
+    {
+      "id": "liang-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "盐水边的人说，从前有位神女化作飞虫遮天蔽日，想留住一位君长。",
+        "en": "By the Salt River they say a goddess once became a swarm of flying insects that darkened the sky, to keep a chieftain from leaving."
+      },
+      "source": {
+        "zh": "《后汉书·南蛮西南夷列传》：盐水有神女……暮辄来取宿，旦即化为虫，与诸虫群飞，掩蔽日光。",
+        "en": "Book of the Later Han: at the Salt River was a goddess… at dawn she became an insect, and flew with the swarm, hiding the sun."
+      }
+    },
+    {
+      "id": "liang-12",
+      "kind": "province-tale",
+      "creature": "kuiniu",
+      "line": {
+        "zh": "岷山的猎户说，山里有一种牛，重几千斤，一头就能踩塌一座桥。",
+        "en": "The hunters of Mount Min say there is an ox in the hills weighing thousands of jin — one could tread a bridge flat."
+      },
+      "source": {
+        "zh": "《山海经·中次九经》郭璞注：今蜀山中有大牛，重数千斤，名为夔牛。",
+        "en": "Guo Pu on the Classic of Mountains and Seas: in the hills of Shu there is a great ox of several thousand jin, the Kui ox."
+      }
+    },
+    {
+      "id": "liang-13",
+      "kind": "province-tale",
+      "creature": "qiezhi",
+      "line": {
+        "zh": "崌山下的人家养着一种红身白头的鸟，说是能防火。",
+        "en": "The households below Mount Ju keep a red-bodied, white-headed bird, which they say keeps fire away."
+      },
+      "source": {
+        "zh": "《山海经·中次九经》：有鸟焉，状如鸮而赤身白首，其名曰窃脂，可以御火。",
+        "en": "Classic of Mountains and Seas: a bird like an owl, red-bodied and white-headed, called Qiezhi; it can ward off fire."
+      }
+    },
+    {
+      "id": "liang-14",
+      "kind": "province-tale",
+      "line": {
+        "zh": "岷山下的人说，江就是从他们这里出去的，一直流到海。",
+        "en": "The people below Mount Min say the Jiang starts from here and runs all the way to the sea."
+      },
+      "source": {
+        "zh": "《尚书·禹贡》：岷山导江，东别为沱。",
+        "en": "The Tribute of Yu: from Mount Min he led the Jiang; to the east it branched as the Tuo."
+      }
+    },
+    {
+      "id": "liang-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "成都城里有一座石头的学堂，是一个郡守建的，蜀人从此读书。",
+        "en": "In Chengdu stands a stone school built by a governor; from then on the people of Shu read books."
+      },
+      "source": {
+        "zh": "《汉书·循吏传》：文翁……又修起学官于成都市中。",
+        "en": "Book of Han, Upright Officials: Wen Weng built a school in the market of Chengdu."
+      }
+    },
+    {
+      "id": "liang-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "锦江边的织工说，锦要在这条江里洗，颜色才鲜；换一条江就暗了。",
+        "en": "The weavers by the Brocade River say brocade must be washed in this river for its colours to come up; in any other they dull."
+      },
+      "source": {
+        "zh": "《华阳国志·蜀志》：锦工织锦濯其江中则鲜明，他江则不好，故命曰锦里也。",
+        "en": "Records South of Mount Hua: brocade washed in this river is bright, in others not; so it is called the Brocade Quarter."
+      }
+    },
+    {
+      "id": "liang-17",
+      "kind": "province-tale",
+      "line": {
+        "zh": "鹤鸣山上有人收五斗米，教人写符治病。",
+        "en": "On Mount Heming someone takes five pecks of rice and teaches people to write talismans against sickness."
+      },
+      "source": {
+        "zh": "《后汉书·刘焉传》：张鲁……祖父陵，客于蜀，学道鹄鸣山中……从受道者出五斗米。",
+        "en": "Book of the Later Han: Zhang Ling lodged in Shu and studied the Way on Mount Heming; those who took his teaching gave five pecks of rice."
+      }
+    },
+    {
+      "id": "liang-18",
+      "kind": "province-tale",
+      "line": {
+        "zh": "成都的市上有个算卦的先生，一天只算几卦，挣够一百钱就收摊读书。",
+        "en": "A fortune-teller in Chengdu's market casts only a few readings a day; once he has a hundred cash he shuts up shop to read."
+      },
+      "source": {
+        "zh": "《汉书·王贡两龚鲍传》：蜀有严君平……卜筮于成都市……裁日阅数人，得百钱足自养，则闭肆下帘而授《老子》。",
+        "en": "Book of Han: Yan Junping divined in the market of Chengdu, saw a few people a day, and with a hundred cash enough to live on, shut his stall and taught the Laozi."
+      }
+    },
+    {
+      "id": "liang-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "蜀西南的深山里，夜里有东西像猴子，专门偷走路的女人。",
+        "en": "In the deep hills south-west of Shu something like an ape comes out at night and carries off women on the road."
+      },
+      "source": {
+        "zh": "《搜神记·卷十二》：蜀中西南高山之上，有物与猴相类……名曰猳国，一名马化。",
+        "en": "In Search of the Supernatural: on the high mountains south-west of Shu is a thing like an ape, called Jiaguo, or Mahua."
+      }
+    },
+    {
+      "id": "liang-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "成都北门外有一座小山，是给一个山精化成的美人垒的坟。",
+        "en": "Outside Chengdu's north gate is a small hill — the grave raised for a beauty who had been a mountain spirit."
+      },
+      "source": {
+        "zh": "《华阳国志·蜀志》：武都有一丈夫化为女子，美而艳，盖山精也。蜀王纳为妃……无几物故……乃遣五丁之武都担土，为妃作冢。",
+        "en": "Records South of Mount Hua: a man of Wudu turned into a woman, beautiful — a mountain spirit; the king of Shu took her as consort; she soon died, and he sent the five strongmen to carry earth from Wudu to raise her tomb."
+      }
+    }
+  ]
+}

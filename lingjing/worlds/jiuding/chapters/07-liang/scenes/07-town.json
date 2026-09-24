@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "07-town",
+ "chapter": "07-liang",
+ "at": "chengdu",
+ "place": {
+  "zh": "成都 · 城门",
+  "en": "Chengdu · The city gate"
+ },
+ "setup": {
+  "zh": "告示上写：离堆堰坼，夜有巨牛斗江，声闻十里；田庐尽没。有能安之者，蜀守重赏。城里的坊市照常开着：蜀锦一匹一匹挂在竹竿上，银匠铺里叮叮当当地敲着银。",
+  "en": "The notice says: the weir at Lidui is cracking; at night a great ox fights the river, heard ten li off; fields and houses are under water. Whoever can settle it, the governor of Shu will reward. Inside the city the market is open as ever: bolts of Shu brocade hang from bamboo poles, and in the silversmiths' shops the silver rings under the hammer."
+ },
+ "recap": {
+  "zh": "成都的告示说，离堆的堰在裂，夜里有巨牛斗江，田庐尽没。",
+  "en": "Chengdu's notice said the weir at Lidui was cracking and a great ox fought the river at night; fields and houses were drowned."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "李冰斗过江神——两个都化成了牛。……这头牛等的是他。",
+    "en": "Li Bing fought the river god — both of them turned into oxen. …This ox is waiting for him."
+   },
+   "alone": {
+    "zh": "李冰斗江神，二者都化成了牛。这头牛在等他。",
+    "en": "When Li Bing fought the river god, both became oxen. This ox is waiting for him."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "离堆在城西北，顺着岷江往上走。",
+    "en": "Lidui lies north-west of the city, up the Min."
+   }
+  }
+ ],
+ "buttons": [
+  "weir",
+  "market"
+ ],
+ "exits": [
+  {
+   "id": "weir",
+   "label": {
+    "zh": "去离堆",
+    "en": "To Lidui"
+   },
+   "means": "goes to Lidui, to the weir and the ox",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你顺江往西北走。夜里，前面传来一声闷响，像一头牛把角撞在了山上。",
+      "en": "North-west up the river. At night a dull boom sounds ahead, like an ox driving its horns into a mountain."
+     }
+    }
+   ],
+   "next": "07-weir"
+  },
+  {
+   "id": "market",
+   "label": {
+    "zh": "先逛坊市",
+    "en": "The market first"
+   },
+   "means": "goes shopping, asks about the market, wants to buy or sell",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "银匠说，梁州的银最白，打出来的铃，声音也最清。",
+      "en": "A silversmith says Liang's silver is the whitest, and a bell made of it rings the clearest."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "……原来铃是这里的银。",
+      "en": "…So the bell's silver came from here."
+     },
+     "alone": {
+      "zh": "你带着的那只银铃，轻轻响了一声。",
+      "en": "The silver bell you carry gives a faint ring."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "ask",
+   "means": "asks the townspeople about the ox and Li Bing",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "老人说：李太守当年跟江神斗，斗不过，上岸喊了一声：向南腰中正白者，我绶也。他的主簿一剑刺了北边那头。",
+      "en": "An old man says: when Governor Li fought the river god and was losing, he climbed out and called: the one facing south with white at its waist — that is my sash. His clerk drove a sword into the one facing north."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

@@ -408,6 +408,52 @@
     }
    }
   ],
+  "梁": [
+   {
+    "item": "lingzhi",
+    "at": [
+     "minshan",
+     "shiniu"
+    ],
+    "line": {
+     "zh": "雪线下的冷杉根旁，一朵灵芝冻得发硬。",
+     "en": "By a fir root below the snow line, a lingzhi frozen stiff."
+    }
+   },
+   {
+    "item": "ginseng",
+    "at": [
+     "minshan",
+     "baoxie"
+    ],
+    "line": {
+     "zh": "栈道边的崖缝里挂着一支参，须子垂到下一根木桩。",
+     "en": "A ginseng hangs from a crack beside the plank road, its roots trailing to the next beam."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "minjiang",
+     "jiangzhou"
+    ],
+    "line": {
+     "zh": "退水的滩上，一只翻倒的竹筐里有几块灵石。",
+     "en": "On a shoal left by the water, a few spirit stones in an overturned bamboo basket."
+    }
+   },
+   {
+    "wealth": 6,
+    "at": [
+     "chengdu",
+     "lidui"
+    ],
+    "line": {
+     "zh": "堰边的石缝里，有人塞了几块灵石祭李冰。",
+     "en": "In a crack by the weir someone has tucked a few spirit stones, an offering to Li Bing."
+    }
+   }
+  ],
   "*": [
    {
     "item": "ginseng",

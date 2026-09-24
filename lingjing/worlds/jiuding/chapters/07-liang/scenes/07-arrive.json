@@ -1,0 +1,126 @@
+{
+ "version": 1,
+ "id": "07-arrive",
+ "chapter": "07-liang",
+ "at": "minjiang",
+ "place": {
+  "zh": "岷江 · 石犀",
+  "en": "The Min · The stone rhinoceros"
+ },
+ "setup": {
+  "zh": "过了峡往西，江分出一条岷江，水是红的，浑着泥往下冲。蜀中的田淹在水里，只露出田埂。岸边蹲着一头石犀，是当年李冰放在这里镇水的，犀角上缠着水草。",
+  "en": "Through the gorges and west, the Min branches from the Jiang, running red and thick with mud. The fields of Shu lie under water, only their ridges showing. On the bank crouches a stone rhinoceros Li Bing once set there to hold the water, weed wound round its horn."
+ },
+ "recap": {
+  "zh": "过峡入蜀，岷江红着下来，蜀中的田都淹了；岸边蹲着李冰的石犀。",
+  "en": "Through the gorges into Shu: the Min ran red and the fields were drowned; on the bank crouched Li Bing's stone rhinoceros."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "梁",
+   "here": "梁"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "水里有两股气在撞——一股是鼎的，一股是……一头很大的牛。",
+    "en": "Two breaths are colliding in the water — one the cauldron's, one… a very large ox's."
+   },
+   "alone": {
+    "zh": "水里有两股气在撞：一股是鼎的，一股像一头很大的牛。",
+    "en": "Two breaths collide in the water: one the cauldron's, one like a very large ox's."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "一个撑竹筏的人说：离堆的堰裂了，成都的告示上写着呢。",
+    "en": "A man poling a bamboo raft says: the weir at Lidui is cracking — it's on the notice in Chengdu."
+   }
+  }
+ ],
+ "buttons": [
+  "town",
+  "rhino"
+ ],
+ "exits": [
+  {
+   "id": "town",
+   "label": {
+    "zh": "去成都",
+    "en": "Go to Chengdu"
+   },
+   "means": "goes to the city, to Chengdu, to read the notice",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你沿江往北走。成都的城门上贴着告示，墨被雨打花了一半。",
+      "en": "North along the river. A notice hangs on Chengdu's gate, half its ink run by the rain."
+     }
+    }
+   ],
+   "next": "07-town"
+  },
+  {
+   "id": "rhino",
+   "label": {
+    "zh": "看石犀",
+    "en": "Look at the stone rhinoceros"
+   },
+   "means": "looks at the stone rhinoceros and the stone man beside it",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "石犀旁边立着一个石人，身上刻着李冰和江神的约：水竭不至足，盛不没肩。如今水已经没过了石人的肩。",
+      "en": "Beside the rhinoceros stands a stone man, cut with Li Bing's pact with the river god: the water shall not fall below its feet, nor rise above its shoulders. Now the water is over its shoulders."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "约破了。……得有人去补上。",
+      "en": "The pact is broken. …Someone has to mend it."
+     },
+     "alone": {
+      "zh": "约破了：水没过了石人的肩。",
+      "en": "The pact is broken: the water is over the stone man's shoulders."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "raft",
+   "means": "takes a raft straight up the river to the weir",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "竹筏撑出去十丈，就被冲回来，转了三个圈。",
+      "en": "Ten zhang out, the raft is swept back and spun round three times."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "水太急。先去成都。",
+      "en": "The water's too fast. Chengdu first."
+     },
+     "alone": {
+      "zh": "水太急。成都在北边。",
+      "en": "The water is too fast. Chengdu lies north."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}
