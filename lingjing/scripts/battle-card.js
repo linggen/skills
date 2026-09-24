@@ -10,7 +10,8 @@
 // pointed at something. `pickOf` turns a click into an action or into that
 // waiting state; it never touches the fight.
 
-import { esc, spoken } from './cards.js';
+import { spoken } from './cards.js';
+import { esc } from './esc.js';
 import { bodyOf, boostedOf, clash, dealt, effectOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
@@ -194,9 +195,9 @@ function reasons(st, offers) {
    the fatigue that ends a fight arrives out of nowhere. */
 function deckHtml(n, side, w) {
   const layers = Math.max(0, Math.min(5, Math.ceil(n / 2)));
-  return `<div class="bdeck ${side}${n ? '' : ' dry'}" data-deck="${side}">
+  return `<div class="bdeck ${side}${n ? '' : ' dry'}" data-pile="${side}">
     ${Array.from({ length: layers }, (_, i) => `<i style="transform: translate(${i * -1.4}px, ${i * -1.6}px)"></i>`).join('')}
-    <b>${n}</b><small>${w.deck}</small>
+    <b>${n}</b><small>${esc(w.deck)}</small>
   </div>`;
 }
 
@@ -461,7 +462,7 @@ export function challengeHtml(brief, ctx) {
       </div>
     </div>
     ${!done && brief.health && brief.health.now < brief.health.max ? `<div class="churt">${ctx.lang === 'en' ? `You go in hurt: Life ${brief.health.now}/${brief.health.max}` : `带伤上阵：气血 ${brief.health.now}/${brief.health.max}`}</div>` : ''}
-    ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${w.begin}</button>${ctx.feed ?? ''}</div>`}
+    ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(w.begin)}</button>${ctx.feed ?? ''}</div>`}
     ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;
 }
@@ -480,7 +481,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   const rank = (side, board, n) => {
     const cells = [];
     for (let i = 0; i < n; i += 1) {
-      cells.push(board[i] ? minionHtml(board[i], side, i, ctx, picked) : `<div class="bminion empty">${w.empty}</div>`);
+      cells.push(board[i] ? minionHtml(board[i], side, i, ctx, picked) : `<div class="bminion empty">${esc(w.empty)}</div>`);
     }
     return cells.join('');
   };
@@ -496,8 +497,8 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
   const title = st.outcome === 'won' ? w.won : st.outcome === 'lost' ? w.lost : st.outcome === 'withdrew' ? w.withdrew : '';
   return `<div class="battle${over ? ' over' : ''}">
     <div class="btop">
-      <button class="bquit" data-spot="quit">${w.quit}</button>
-      <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${w.how}" aria-label="${w.how}">?</button>
+      <button class="bquit" data-spot="quit">${esc(w.quit)}</button>
+      <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${esc(w.how)}" aria-label="${esc(w.how)}">?</button>
       <span class="bturn ${st.whose}">${st.whose === 'you' ? (ctx.lang === 'en' ? 'Your turn' : '你的回合') : `${esc(ctx.foeName ?? '')}${ctx.lang === 'en' ? "'s turn" : '的回合'}`}</span>
       <span class="bwhere">${esc(ctx.title ?? '')}</span>
     </div>
@@ -518,8 +519,8 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
 
     ${lastHtml(st.log, ctx, openLog)}
 
-    <div class="brank theirs"><span class="blab">${w.theirs}</span>${rank('theirs', st.foe.board, ctx.board)}</div>
-    <div class="brank mine"><span class="blab">${w.yours}</span>${rank('mine', st.you.board, ctx.board)}</div>
+    <div class="brank theirs"><span class="blab">${esc(w.theirs)}</span>${rank('theirs', st.foe.board, ctx.board)}</div>
+    <div class="brank mine"><span class="blab">${esc(w.yours)}</span>${rank('mine', st.you.board, ctx.board)}</div>
 
     <div class="bside you">
       <div class="bwho">${esc(ctx.youName ?? '')} <span class="belem">${GLYPH[st.you.root] ?? ''}</span></div>
@@ -535,19 +536,19 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
 
     <div class="bacts">
       <button class="bact${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}${!powerWhy && picked?.from !== 'power' ? ' can' : ''}" data-spot="power">
-        ${w.power} <span class="belem">${GLYPH[st.you.root] ?? ''}</span>
-        <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${2}${ctx.lang === 'en' ? ' ' : ''}${w.mana}`}</small>
+        ${esc(w.power)} <span class="belem">${GLYPH[st.you.root] ?? ''}</span>
+        <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${2}${ctx.lang === 'en' ? ' ' : ''}${esc(w.mana)}`}</small>
       </button>
-      <button class="bact end${stuck ? ' urge' : ''}" data-spot="end">${w.end}</button>
+      <button class="bact end${stuck ? ' urge' : ''}" data-spot="end">${esc(w.end)}</button>
     </div>
     </div>
 
     ${note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : ''}
     ${advice ? `<div class="bhint${stuck ? ' burge' : ''}">${esc(advice)}</div>` : ''}
     ${help ? `<div class="bhelp" data-spot="help-bg"><div class="bsheet">
-      <h3>${w.how}</h3>
+      <h3>${esc(w.how)}</h3>
       ${w.help.map(([k, v]) => `<p><b>${esc(k)}</b>${esc(v)}</p>`).join('')}
-      <button class="bact" data-spot="help">${w.close}</button>
+      <button class="bact" data-spot="help">${esc(w.close)}</button>
     </div></div>` : ''}
     ${over ? `<div class="bover"><b>${title}</b><span>${said}</span></div>` : ''}
   </div>`;

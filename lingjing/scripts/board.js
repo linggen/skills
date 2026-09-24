@@ -2,6 +2,8 @@
 // last pair goes, the pill is made. No model and no 灵气: the rules only ever
 // hear the win, through `win`.
 
+import { esc } from './esc.js';
+
 const PAIRS = 8; // the task is "pair the eight spirit herbs"
 
 function shuffle(list) {
@@ -38,11 +40,11 @@ export function tap(board, i) {
 }
 
 export function boardHtml(board, words) {
-  if (board.won) return `<div class="dim small">${words.boardDone}</div>`;
+  if (board.won) return `<div class="dim small">${esc(words.boardDone)}</div>`;
   const tiles = board.tiles.map((h, i) => {
     const gone = board.gone.has(i);
     const cls = `tile${gone ? ' gone' : ''}${board.sel === i ? ' sel' : ''}`;
-    return `<button class="${cls}" data-tile="${i}" title="${h.label}" aria-label="${h.label}"${gone ? ' disabled' : ''}>${h.tile}</button>`;
+    return `<button class="${cls}" data-tile="${i}" title="${esc(h.label)}" aria-label="${esc(h.label)}"${gone ? ' disabled' : ''}>${esc(h.tile)}</button>`;
   });
-  return `<div class="dim small">${words.boardHint}</div><div class="board" data-board="${board.taskId}">${tiles.join('')}</div>`;
+  return `<div class="dim small">${esc(words.boardHint)}</div><div class="board" data-board="${esc(board.taskId)}">${tiles.join('')}</div>`;
 }

@@ -5,8 +5,7 @@
 
 import { frameOf, within } from './atlas.js';
 import { worldPath } from './rules.js';
-
-const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+import { esc } from './esc.js';
 
 /// The places walked through, from → to, over the roads the two Looks know
 /// (`points`: id → {map, roads, name}). Null when no road joins them.

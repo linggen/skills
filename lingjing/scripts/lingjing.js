@@ -8,18 +8,19 @@ import './chat-bridge.js';
 import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from './api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
-import { act, begin, foeStep, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
+import { act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';
 import { stageCards, stageHolds } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, pickOf, spoilsHtml } from './battle-card.js';
 import { banner, playLog, since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
-import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, esc, yinyueLine, trialToldHtml } from './cards.js';
+import { WORDS, askBarHtml, bookChipHtml, gearChipHtml, cardHtml, trayHtml, trialToldHtml, clockOf } from './cards.js';
+import { esc } from './esc.js';
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
 
 // Tools that change the state: the scene re-reads Look once they have run.
-const WRITERS = new Set(['Look', 'Divine', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
+const WRITERS = new Set(['Divine', 'Resolve', 'Practice', 'Branch', 'Lang', 'Summarize', 'Move', 'Trade', 'Tame', 'Inscribe', 'Make', 'Enter', 'Leave', 'Restart', 'Go', 'Undo', 'Load', 'Build', 'Travel', 'Amend', 'Art']);
 
 /* A 斗法 in play, held by the page: the setup the rules handed over at the
    door, the fight itself, and every action taken so far. When it ends the page
@@ -61,16 +62,32 @@ function boardFor(taskId) {
     if (!boards.has(taskId) || boards.get(taskId).day !== day) {
       boards.set(taskId, { taskId, mod, day, state: mod.newGame(`${day}|${look.name ?? ''}|${taskId}`, task.level ?? 1) });
     }
-    const g = boards.get(taskId);
-    // Solved but not yet counted (refused elsewhere): count it now that it is open here.
-    if (g.state.won && !g.sent && task.status === 'offered' && !task.won) { g.sent = true; queueMicrotask(() => onWin(taskId)); }
-    return g;
+    return boards.get(taskId);
   }
   if (!boards.has(taskId)) {
     const herbs = authored.herbs.map((h) => ({ id: h.id, tile: h.tile, label: h.name[lang()] }));
     boards.set(taskId, newBoard(herbs, taskId));
   }
   return boards.get(taskId);
+}
+
+/* A board solved but not yet counted — the rules refused it where it was
+   solved (not here, not open) — is sent again once it can count: after the
+   draw, never from inside it, and once per place, so a refusal is said and
+   not tried again on every frame. */
+function sendHeldWins() {
+  for (const g of boards.values()) {
+    const won = g.state ? g.state.won : g.won;
+    if (!won || g.sent) continue;
+    const task = look?.tasks?.find((t) => t.id === g.taskId);
+    if (!task || task.status !== 'offered' || task.won) continue;
+    if (g.refusedAt && g.refusedAt === (look?.place?.id ?? null)) continue;
+    // Only a board on the stage now: it counts where it is open.
+    const id = CSS.escape(g.taskId);
+    if (!document.querySelector(`[data-game="${id}"],[data-board="${id}"]`)) continue;
+    g.sent = true;
+    run(`win:${g.taskId}`, () => onWin(g.taskId));
+  }
 }
 
 /* What the page itself holds: everything the player did HERE that the save
@@ -110,6 +127,11 @@ const view = {
   doNote: null, //       a page tap the rules refused, in their words, until the next tap
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
   ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
+  choosing: false, //    a 抉择 tapped: its roll is in flight
+  trialTold: null, //    the way taken at a 抉择, on the stage until he walks on: { place, success, line, cost }
+  gearNote: null, //     a 装备 tap the rules refused, in their words, inside the popover
+  opened: null, //       a board he opened from the tray: { id, place } — it stays until he walks on
+  walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
 };
 const keep = (patch) => Object.assign(view, patch);
 function show(patch) { keep(patch); render(); }
@@ -121,7 +143,21 @@ function handedAge(id) {
   if (!handedAt.has(id)) handedAt.set(id, performance.now());
   return performance.now() - handedAt.get(id);
 }
-const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: `../worlds/${look?.world?.id ?? 'jiuding'}/`, mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
+/* This world's cards, named in the language in play — built once per world
+   and language, not on every draw. */
+let catalogMemo = { key: null, cards: {} };
+function cardCatalog() {
+  const key = `${authored?.world}|${authored?.loadedAt}|${lang()}`;
+  if (catalogMemo.key !== key) {
+    catalogMemo = { key, cards: Object.fromEntries((authored?.cards?.cards ?? []).map((x) => [x.id, { ...x, name: x.name?.[lang()] ?? x.name?.zh ?? x.id }])) };
+  }
+  return catalogMemo.cards;
+}
+const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
+/// One clock for the page: 14:05, in the game's language.
+const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
+
+const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -142,8 +178,11 @@ async function loadAtlas() {
 /// pulled from the cloud may stand in another world than the last one drawn.
 /// A made world is its base's files with the player's laid over: its new
 /// creatures and its words. Each creature remembers the folder its art is in.
-async function loadContent(world) {
-  if (authored?.world === world.id) return;
+/// `force` reads a world already loaded again (a creature just painted, a fight
+/// dealt cards the page cannot name): the old content stays drawn until the new
+/// has arrived, and a board in play is never dealt again for it.
+async function loadContent(world, force = false) {
+  if (!force && authored?.world === world.id) return;
   const baseDir = world.made ? `worlds/${world.base}` : world.dir;
   const [creatures, herbs, hexagrams, roots, terms, cards] = await Promise.all(
     ['creatures.json', 'herbs.json', 'hexagrams.json', 'traits.json', 'dictionary.json', 'cards.json'].map((f) => content(baseDir, f)),
@@ -155,8 +194,9 @@ async function loadContent(world) {
     all = [...all, ...mine.creatures.map((c) => ({ ...c, dir: world.dir }))];
     dictionary = { ...terms, words: { ...terms.words, ...(words.words ?? {}) }, provinces: { ...terms.provinces, ...(words.provinces ?? {}) } };
   }
-  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards };
-  boards.clear();
+  const sameWorld = authored?.world === world.id;
+  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, loadedAt: Date.now() };
+  if (!sameWorld) boards.clear();
 }
 
 /// The account as the engine sees it. The meter moves with every model call,
@@ -178,15 +218,13 @@ function waitingOnPlayer() {
   document.querySelectorAll('.busy').forEach((el) => el.classList.remove('busy'));
 }
 
-/// Re-read the game. Entering a new scene puts its own cards on the scene,
-/// so a creature is pictured even if Ling forgets to Show it.
 /* One re-read at a time, and one more after it if something asked while it was
    in flight. A turn can run four writers in a row; that used to be four
    overlapping Looks racing to set `look`, each 1.5s after its tool began —
    a guess at when the rules had finished writing. A verb costs about 45ms, so
    there is nothing to save by waiting; what matters is not to stampede. */
 let reading = null;
-let readAgain = false;
+let readNext = null;
 function refreshSoon(ms = 400) {
   clearTimeout(refreshTimer);
   refreshTimer = setTimeout(() => { refreshTimer = null; refresh(); }, ms);
@@ -200,7 +238,7 @@ let streaming = false;
 let veilTimer = null;
 async function liftVeil() {
   clearTimeout(veilTimer); veilTimer = null;
-  await verb('meet', { action: 'reveal' }).catch((e) => console.warn('[lingjing] reveal', e));
+  await write('meet', { action: 'reveal' }).catch((e) => console.warn('[lingjing] reveal', e));
   await refresh();
 }
 function watchVeil() {
@@ -209,36 +247,52 @@ function watchVeil() {
   veilTimer = setTimeout(() => { veilTimer = null; if (look?.place?.meet?.veiled && !streaming) liftVeil(); }, 20000);
 }
 
+/// Re-read the game. What it answers was read after the call: a read already
+/// in flight began before whatever write asked for this one, so a second read
+/// is chained behind it and that is the one returned. Never rejects.
 function refresh() {
-  if (reading) { readAgain = true; return reading; }
-  reading = readOnce().finally(() => {
-    reading = null;
-    if (readAgain) { readAgain = false; refresh(); }
-  });
+  if (readNext) return readNext;
+  if (reading) {
+    readNext = reading.then(() => { readNext = null; return refresh(); });
+    return readNext;
+  }
+  reading = readOnce().catch((e) => console.warn('[lingjing] read', e)).finally(() => { reading = null; });
   return reading;
 }
 
 async function readOnce() {
   try {
-    [look] = await Promise.all([verb('look'), readCloud()]);
+    const [seen, ,] = await Promise.all([verb('look'), readCloud()]);
+    look = seen;
     if (look.divination) keep({ casting: false });
-    await loadContent(look.world);
+    await loadContent(look.world, contentStale);
+    contentStale = false;
   } catch (e) {
     console.warn('[lingjing] look', e);
-    if (!authored) $('focus').innerHTML = `<div class="loading">${WORDS.zh.offline} · ${WORDS.en.offline}</div>`;
+    if (!authored) $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.offline)} · ${esc(WORDS.en.offline)}</div>`;
     return;
   }
   // The stage came back with Look — what Ling showed, what the scene was
   // authored with, what the place holds. The optimistic copy has served its
-  // purpose.
+  // purpose; a board he opened himself stays until he walks on.
+  const here = look.place?.id ?? null;
+  if (view.opened && view.opened.place !== here) keep({ opened: null });
   keep({ focus: [] });
   // A fight the save still holds open comes back: without this the page shows
   // the world while Ling waits for a fight nobody can see, and she holds still
-  // for ever. The rules do not charge the day's 灵气 twice for it.
-  if (look.fight?.open && !bout) await onDuelStart(look.fight.game);
+  // for ever. The rules do not charge the day's 灵气 twice for it. One the
+  // player just walked out of, and the rules would not settle, waits on its
+  // card for his tap instead of pulling him back in.
+  if (look.fight?.open && !bout && look.fight.game !== view.walkedOut) {
+    try { await onDuelStart(look.fight.game); } catch (e) { console.warn('[lingjing] fight resume', e); }
+  }
   watchVeil();
   render();
 }
+
+/// A creature just painted, or a fight dealt cards the page cannot name: the
+/// next read takes the world's content again (and draws the old until then).
+let contentStale = false;
 
 /* ── Drawing ── */
 
@@ -253,7 +307,10 @@ function qi() {
   if (!q || !q.max) return null;
   const p = Math.max(0, Math.min(100, Math.round((q.now / q.max) * 100)));
   const st = q.empty ? 'empty' : p < 25 ? 'low' : p < 60 ? 'half' : 'full';
-  return { st, p, now: q.now, max: q.max, refillAt: q.returns_at ? Math.floor(new Date(q.returns_at).getTime() / 1000) : null };
+  // When he can go on again — back to the rest mark (20), not to full. The
+  // rules' `rest_at` when they give it, else `returns_at`, which is the same.
+  const back = q.rest_at ?? q.returns_at;
+  return { st, p, now: q.now, max: q.max, refillAt: back ? Math.floor(new Date(back).getTime() / 1000) : null };
 }
 
 function qiHtml() {
@@ -261,8 +318,8 @@ function qiHtml() {
   if (!q) return '';
   const w = words();
   const state = { full: w.qiFull, half: w.qiHalf, low: w.qiLow, empty: w.qiEmpty, unknown: '' }[q.st];
-  return `<span class="qi" data-st="${q.st}" title="${w.qi}"><span class="lbl">${w.qi}</span>
-    <i class="ring" style="--p:${q.p}"></i><span class="st">${esc(state)}</span><span class="cnt">${q.now}/${q.max}</span></span>`;
+  return `<span class="qi" data-st="${esc(q.st)}" title="${esc(w.qi)}"><span class="lbl">${esc(w.qi)}</span>
+    <i class="ring" style="--p:${Number(q.p) || 0}"></i><span class="st">${esc(state)}</span><span class="cnt">${esc(q.now)}/${esc(q.max)}</span></span>`;
 }
 
 /// 气血 on the strip only while a fight's wounds are carried (rules § 伤势):
@@ -271,10 +328,10 @@ function hpHtml() {
   const h = look?.health;
   if (!h || h.now >= h.max) return '';
   const w = words();
-  const t = h.full_at ? new Date(h.full_at).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' }) : '';
+  const t = clock(h.full_at);
   // 疗伤: she tends it, once a day, when she walks with him (rules § 羁绊).
   const tend = look.companion && !look.companion.tended ? ` <button class="act tend" data-tend>${esc(w.tend)}</button>` : '';
-  return `<span class="hp" title="${esc(t ? w.mendsAt.replace('{t}', t) : '')}"><span class="lbl">${w.hp}</span> <b>${h.now}/${h.max}</b>${tend}</span>`;
+  return `<span class="hp" title="${esc(t ? w.mendsAt.replace('{t}', t) : '')}"><span class="lbl">${esc(w.hp)}</span> <b>${esc(h.now)}/${esc(h.max)}</b>${tend}</span>`;
 }
 
 /// One line in the world while the window is spent — and the boards stay:
@@ -284,11 +341,11 @@ function statusHtml() {
   const pct = look.next ? Math.min(100, Math.round((look.progress / look.next) * 100)) : 0;
   const name = look.name ? `<span class="daohao">${esc(look.name)}</span>` : '';
   return `${name}<span class="realm">${esc(look.tier.name)}</span>
-    <div class="xw"><span class="lbl">${w.xw}</span><div class="bar"><i style="width:${pct}%"></i></div>
-      <span class="num"><span data-count="progress">${look.progress}</span>/${look.next}</span>${omenChip('progress')}</div>
+    <div class="xw"><span class="lbl">${esc(w.xw)}</span><div class="bar"><i style="width:${pct || 0}%"></i></div>
+      <span class="num"><span data-count="progress">${esc(look.progress)}</span>/${esc(look.next)}</span>${omenChip('progress')}</div>
     ${qiHtml()}
     ${hpHtml()}
-    <span class="ls"><span class="lbl">${w.ls}</span> <b data-count="wealth">${look.wealth}</b>${omenChip('wealth')}</span>${omenChip('bout')}
+    <span class="ls"><span class="lbl">${esc(w.ls)}</span> <b data-count="wealth">${esc(look.wealth)}</b>${omenChip('wealth')}</span>${omenChip('bout')}
     ${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}
     ${gearChipHtml({ ...ctx(), gear: view.gear, gearNote: view.gearOpen ? view.gearNote : null }, view.gearOpen)}
     <span class="langsw" title="中文 / English">${['zh', 'en'].map((l) => `<button data-lang="${l}" class="${l === lang() ? 'on' : ''}">${l === 'zh' ? '中' : 'En'}</button>`).join('')}</span>`;
@@ -321,8 +378,8 @@ function riseStats() {
     // The last point spent: 银月 sends him back to the real world to rest —
     // real life is hers, not Ling's (his rule, 2026-09-23).
     if (before.stamina > 0 && now.stamina === 0 && !before.resting) {
-      const at = look.stamina?.returns_at ? new Date(look.stamina.returns_at).toLocaleTimeString(lang() === 'zh' ? 'zh-CN' : 'en', { hour: '2-digit', minute: '2-digit' }) : '';
-      askHer(`他的体力刚刚耗尽了（${at} 回满）。游戏先放一放：请他回到现实里歇一歇，起身走走、喝口水。说一两句。`, `His stamina just ran out (full again at ${at}). The game waits: send him back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
+      const at = clock(look.stamina?.rest_at ?? look.stamina?.returns_at);
+      askHer(`他的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请他回到现实里歇一歇，起身走走、喝口水。说一两句。`, `His stamina just ran out (ready to go again at ${at}). The game waits: send him back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
     if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank);
     else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title);
@@ -482,7 +539,7 @@ async function switchLang(to) {
   // The lit one tapped still counts: it pins the game to it (lang_set).
   if (to === lang() && look?.lang_set) return;
   try {
-    await verb('lang', { lang: to });
+    await write('lang', { lang: to });
   } catch (e) {
     console.warn('[lingjing] lang', e);
   }
@@ -508,14 +565,16 @@ function focusHtml() {
   // ONE list, and the rules made it (stage.mjs) — the same one they measured
   // the chat's question against, so nothing stands in both places. Only while
   // Ling's Show is still in flight does the page work it out for itself.
-  const cards = view.focus.length ? stageCards(look, { focus: view.focus }) : (look.stage ?? []);
+  let cards = view.focus.length ? stageCards(look, { focus: view.focus }) : (look.stage ?? []);
+  // A board he opened from the tray stays before him through the next Look
+  // and whatever Ling shows, until he walks on.
+  if (view.opened && !cards.some((c) => c.card === 'board' && c.id === view.opened.id)) cards = [...cards, { card: 'board', id: view.opened.id }];
   return spoils + cards.map((c) => drawCard(c)).join('') + (stageHolds(look, cards) ? roadsHtml() : '');
 }
 
 function spoilsCtx() {
   return {
-    catalog: Object.fromEntries((authored?.cards?.cards ?? []).map(x => [x.id, { ...x, name: x.name?.[lang()] ?? x.name?.zh ?? x.id }])),
-    artBase: `../worlds/${look.world?.id ?? 'jiuding'}/`, lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
+    catalog: cardCatalog(), artBase: artBase(), lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
   };
 }
 
@@ -552,8 +611,24 @@ function drawNow() {
   draw();
 }
 
+/* What had the keyboard's focus is found again after a repaint by what it IS
+   — its data attributes — never by where it stood: a redraw replaces every
+   node, and a player tabbing through the stage lost his place on each token. */
+function focusKey(el) {
+  if (!el || el === document.body || !el.attributes) return null;
+  const attrs = [...el.attributes].filter((a) => a.name.startsWith('data-') || a.name === 'id');
+  if (!attrs.length) return null;
+  return el.tagName.toLowerCase() + attrs.map((a) => `[${a.name}="${CSS.escape(a.value)}"]`).join('');
+}
+function restoreFocus(key) {
+  if (!key || document.activeElement && document.activeElement !== document.body) return;
+  const el = document.querySelector(key);
+  if (el && typeof el.focus === 'function') el.focus({ preventScroll: true });
+}
+
 function draw() {
   if (!look || !authored) return;
+  const had = focusKey(document.activeElement);
   const w = words();
   document.documentElement.lang = lang();
   document.title = `${w.title} · ${look.scene?.place ?? look.place?.name ?? ''}`;
@@ -595,8 +670,13 @@ function draw() {
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // A turn with nothing left in it ends itself after a beat long enough to
   // read the board — pressing the button is always faster (his, 2026-09-18).
+  // Never while a move is being played out: the timer and a tap would both
+  // end the turn.
   clearTimeout(idleTimer);
-  if (bout && idle(bout.st) && !bout.picked && !bout.help) idleTimer = setTimeout(() => endBoutTurn(), 1400);
+  if (bout && !bout.busy && bout.st.whose === 'you' && bout.st.outcome === 'open' && idle(bout.st) && !bout.picked && !bout.help) {
+    const b = bout;
+    idleTimer = setTimeout(() => { if (bout === b && !b.busy) endBoutTurn(); }, 1400);
+  }
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
   if (view.tapped) document.querySelectorAll('[data-say]').forEach((el) => { if (el.dataset.say === view.tapped) el.classList.add('busy'); });
@@ -608,6 +688,9 @@ function draw() {
       if (view.asked.has(label) || view.asked.has(el.textContent.trim())) el.classList.add('answered-in-chat');
     });
   }
+  restoreFocus(had);
+  // Held wins go after the draw, never from inside it.
+  sendHeldWins();
 }
 
 /* What the fight's card draws itself from: this world's cards, this world's
@@ -615,29 +698,70 @@ function draw() {
 function boutCtx() {
   const c = bout.brief.creature;
   return {
-    catalog: Object.fromEntries((authored?.cards?.cards ?? []).map(x => [x.id, { ...x, name: x.name?.[lang()] ?? x.name?.zh ?? x.id }])),
-    artBase: `../worlds/${look.world?.id ?? 'jiuding'}/`,
+    catalog: cardCatalog(), artBase: artBase(),
     lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
     board: bout.st.mode.board,
     title: words().subdue ?? '降妖',
-    foeName: c.name, foeArt: c.art ? `../worlds/${look.world?.id ?? 'jiuding'}/${c.art}` : null,
+    foeName: c.name, foeArt: c.art ? `${artBase()}${c.art}` : null,
     youName: look.name ?? '',
   };
 }
 
+/* ── The page's own verbs ──
+   A tap that writes goes through ONE queue: one verb in flight at a time, in
+   the order tapped, and the same button twice while its first is in flight is
+   one tap. Two taps racing each other's Look used to draw whichever answered
+   last. Every write that lands keeps the account's copy in step, a beat later. */
+let verbChain = Promise.resolve();
+const inFlight = new Set();
+function run(key, fn) {
+  if (inFlight.has(key)) return Promise.resolve();
+  inFlight.add(key);
+  const done = verbChain.then(fn).catch((e) => {
+    console.warn('[lingjing]', key, e);
+    keep({ doNote: words().notDone });
+    return refresh();
+  }).finally(() => inFlight.delete(key));
+  verbChain = done.catch(() => {});
+  return done;
+}
+
+let syncTimer = null;
+function syncSoon() {
+  if (!cloud?.signed_in) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => { syncTimer = null; syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e)); }, 2000);
+}
+
+/// A verb that changes the save: the rules' answer, and the cloud told once it lands.
+async function write(name, args = {}) {
+  const r = await verb(name, args);
+  if (r?.ok) syncSoon();
+  return r;
+}
+const failed = (e) => ({ ok: false, error: String(e) });
+/// A refusal in the rules' own words, else the page's one line for it.
+const refusal = (r) => r?.say || words().refused?.[r?.refused] || words().notDone;
+
 /* ── The board: the one thing the page reports ── */
 
 async function onWin(taskId) {
-  const r = await verb('win', { id: taskId }).catch((e) => ({ ok: false, error: String(e) }));
+  const r = await write('win', { id: taskId }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
   // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
-  // 洛书 solved at 邺城 showed solved at 碣石 and was never paid).
-  if (!r.ok) { console.warn('[lingjing] win refused', r); const g = boards.get(taskId); if (g) g.sent = false; return false; }
+  // 洛书 solved at 邺城 showed solved at 碣石 and was never paid). Said once;
+  // tried again only from another place.
+  if (!r.ok) {
+    console.warn('[lingjing] win refused', r);
+    const g = boards.get(taskId);
+    if (g) { g.sent = false; g.refusedAt = look?.place?.id ?? null; }
+    keep({ doNote: refusal(r) });
+    await refresh();
+    return false;
+  }
   await report(`[scene] won ${taskId}`);
-  // A change the page made itself: keep the account's copy in step now,
-  // rather than at the next turn's edge.
-  if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
   await refresh();
+  return true;
 }
 
 /// Tell Ling, unseen: a board or a bout the page played.
@@ -648,12 +772,16 @@ const report = (text) => deliver(text, true);
 /// behind the reply and takes it up next (his "no need to click twice",
 /// 2026-09-16). Only the same words twice within a breath are one tap.
 let saying = false;
+let sayTimer = null;
 let lastSaid = { text: '', at: 0 };
 async function say(text) {
   if (text === lastSaid.text && Date.now() - lastSaid.at < 2500) return;
   lastSaid = { text, at: Date.now() };
   saying = true;
-  setTimeout(() => { if (saying) turnEnded(); }, 90000);
+  // The safety net: a turn that never ends still gives the stage back. One
+  // timer, the latest say's.
+  clearTimeout(sayTimer);
+  sayTimer = setTimeout(() => { sayTimer = null; if (saying) { streaming = false; turnEnded(); } }, 90000);
   try {
     await deliver(text, false);
   } catch (e) {
@@ -667,6 +795,8 @@ async function say(text) {
 /// cleared them, so a failed turn left buttons pressed for ever.
 function turnEnded() {
   saying = false;
+  clearTimeout(sayTimer);
+  sayTimer = null;
   show({ tapped: null, casting: false, asked: null });
 }
 
@@ -689,7 +819,8 @@ async function openRow(id) {
 
 /* 拾遗: taken or left by the rules at once — the bag and the strip show it. */
 async function takeMeet(action) {
-  const r = await verb('meet', { action }).catch((e) => ({ ok: false, error: String(e) }));
+  const r = await write('meet', { action }).catch(failed);
+  if (!r.ok) keep({ doNote: refusal(r) });
   await refresh();
   // The 遇 is finished, so the turn goes to Ling: a line for what happened,
   // and — nothing holding the stage now — her question where next (his,
@@ -698,11 +829,10 @@ async function takeMeet(action) {
 }
 
 /* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws
-   from the rules' own answer. */
+   from the rules' own answer, and a refusal is said inside it. */
 async function deckTap(args) {
-  const r = await verb('deck', args).catch((e) => ({ ok: false, error: String(e) }));
-  keep({ gear: r.ok ? r.gear : view.gear, doNote: r.ok ? null : r.say || null });
-  render();
+  const r = await write('deck', args).catch(failed);
+  show({ gear: r.ok ? r.gear : view.gear, gearNote: r.ok ? null : refusal(r) });
 }
 
 /* 历练 — send her, call her back, take what she brought. She says her own
@@ -715,8 +845,8 @@ function askHer(zh, en, mood) {
   }).catch((e) => console.warn('[lingjing] yinyue', e));
 }
 async function journeyVerb(action, extra = {}) {
-  const r = await verb('journey', { action, ...extra }).catch((e) => ({ ok: false, error: String(e) }));
-  if (!r.ok) keep({ doNote: r.say || null });
+  const r = await write('journey', { action, ...extra }).catch(failed);
+  if (!r.ok) keep(view.gearOpen ? { gearNote: refusal(r) } : { doNote: refusal(r) });
   if (view.gearOpen) { const g = await verb('gear', {}).catch(() => null); keep({ gear: g?.gear ?? view.gear }); }
   await refresh();
   return r;
@@ -754,8 +884,8 @@ async function receiveHer() {
 /* 机缘 — 收下 is a page tap; what it left stands on the stage, and 银月
    hears it (a big moment: she was there for the run to reach it). */
 async function takeChance() {
-  const r = await verb('chance', { action: 'take' }).catch((e) => ({ ok: false, error: String(e) }));
-  if (!r.ok) { keep({ doNote: r.say || null }); await refresh(); return; }
+  const r = await write('chance', { action: 'take' }).catch(failed);
+  if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
   if (r.card) keep({ spoils: { place: look?.place?.id ?? null, cards: [r.card], items: [] } });
   const where = look?.chance?.place?.name ?? '';
   tellYinyue(`赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { big: true, mood: 'happy' });
@@ -787,9 +917,9 @@ setInterval(() => {
 async function chooseWay(n) {
   if (view.choosing) return;
   keep({ choosing: true });
-  const r = await verb('meet', { action: 'choose', n }).catch((e) => ({ ok: false, error: String(e) }));
+  const r = await write('meet', { action: 'choose', n }).catch(failed);
   keep({ choosing: false });
-  if (!r.ok) { keep({ doNote: r.say || null }); await refresh(); return; }
+  if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
   const w = words();
   const cost = r.lost?.hp ? w.trialHurt.replace('{n}', r.lost.hp) : r.lost?.wealth ? w.trialPoorer.replace('{n}', r.lost.wealth) : '';
   keep({ trialTold: { place: look?.place?.id ?? null, success: r.success, line: r.line, cost } });
@@ -799,33 +929,33 @@ async function chooseWay(n) {
   await report(`[scene] trial ${n} ${r.success ? 'won' : 'lost'}`);
 }
 
-/* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 /* 接下 · 交差 · 买 · 卖 · 服用 · 佩戴 — taps that only change the save. The page
    calls the rules and redraws; nothing goes to the chat, and Ling reads the
    save on her next Look (his, 2026-09-22: 只有必要的时候, 让agent说话). A
    refusal is said on the stage in the rules' own words. */
 const DOES = {
-  take: (id) => verb('quest', { action: 'take', id }),
-  turn: (id) => verb('quest', { action: 'turn', id }),
-  buy: (id) => verb('trade', { action: 'buy', id }),
-  sell: (id) => verb('trade', { action: 'sell', id }),
-  use: (id) => verb('trade', { action: 'use', id }),
+  take: (id) => write('quest', { action: 'take', id }),
+  turn: (id) => write('quest', { action: 'turn', id }),
+  buy: (id) => write('trade', { action: 'buy', id }),
+  sell: (id) => write('trade', { action: 'sell', id }),
+  use: (id) => write('trade', { action: 'use', id }),
 };
 async function doTap(action, id) {
-  const r = await DOES[action]?.(id).catch((e) => { console.warn('[lingjing]', action, e); return null; });
-  keep({ doNote: r && !r.ok ? (r.say || words().refused?.[r.refused] || null) : null });
-  if (r?.ok && action === 'take') keep({ offerRow: null });
+  if (!DOES[action]) return;
+  const r = await DOES[action](id).catch(failed);
+  keep({ doNote: r.ok ? null : refusal(r) });
+  if (r.ok && action === 'take') keep({ offerRow: null });
   await refresh();
 }
 
 /* 装备 · 背包: putting a thing on, or taking a pill, is his own tap — the page
    calls Trade itself and redraws from the rules; no model turn. */
 async function useItem(id, action = 'use') {
-  const r = await verb('trade', { action, id }).catch((e) => { console.warn('[lingjing] use', e); return null; });
+  const r = await write('trade', { action, id }).catch(failed);
   // A refusal is said where he tapped — a pill kept on a full day said
   // nothing, and looked like a button that did not work.
   await openGear();
-  keep({ gearNote: r && !r.ok ? (r.say || words().refused?.[r.refused] || null) : null });
+  keep({ gearNote: r.ok ? null : refusal(r) });
   await refresh();
 }
 
@@ -834,9 +964,10 @@ async function openGear() {
   show({ gearOpen: true, bookOpen: false, gear: r?.gear ?? null, gearNote: null });
 }
 
+/* 撂下 is the rules' to do; Ling reads the book in her next Look. */
 async function dropErrand(id) {
-  await verb('quest', { action: 'drop', id }).catch((e) => console.warn('[lingjing] drop', e));
-  keep({ bookRow: null, bookInfo: null });
+  const r = await write('quest', { action: 'drop', id }).catch(failed);
+  keep({ bookRow: null, bookInfo: null, doNote: r.ok ? null : refusal(r) });
   await refresh();
 }
 
@@ -863,108 +994,136 @@ function sendAsk() {
   show({ bookOpen: false });
   say(line);
 }
+/// Rows that open where they lie answer the keyboard as a button does.
+const KEY_ROWS = [
+  ['[data-bookrow]', (row) => openRow(row.dataset.bookrow)],
+  ['[data-offerrow]', (row) => toggleOffer(row.dataset.offerrow)],
+];
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
   if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.bookOpen || view.gearOpen) show({ bookOpen: false, gearOpen: false }); }
-  const row = e.target.closest?.('[data-bookrow]');
-  if (row && (e.key === 'Enter' || e.key === ' ') && e.target === row) { e.preventDefault(); openRow(row.dataset.bookrow); }
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  for (const [sel, open] of KEY_ROWS) {
+    const row = e.target.closest?.(sel);
+    if (row && e.target === row) { e.preventDefault(); open(row); return; }
+  }
 });
 
+/* 命格 — set on the card, never in the chat. No turn for Ling: she reads it on
+   her next Look. 银月 tells him what his sign is, in her own words. */
 async function setFate(kind) {
   const args = kind === 'birth' ? { birth: view.fateDraft } : { [kind]: 'true' };
   if (kind === 'birth' && !view.fateDraft) { show({ fateError: true }); return; }
-  const r = await verb('fate', args).catch((e) => ({ ok: false, error: String(e) }));
+  const r = await write('fate', args).catch(failed);
   if (!r.ok) { show({ fateError: r.refused === 'birth-invalid' }); return; }
   keep({ fateOpen: false, fateDraft: '', fateError: false });
   await refresh();
-  await report(kind === 'decline' ? '[scene] fate declined' : '[scene] fate set');
+  const f = look?.fate;
+  if (kind === 'decline' || !f?.zodiac) return;
+  askHer(`他刚在灵根卡上定了命格：属${f.zodiac.name}，日主${f.stem.name}${f.element.name}，天生亲近${f.element.name}。它给的：斗法时同属${f.element.name}的一击，每场减半一次；起卦时下卦属${f.element.name}，卦象偏向他。用你自己的话告诉他，一两句。`,
+    `He has just set his birth sign on the roots card: year of the ${f.zodiac.name}, day master ${f.stem.name} (${f.element.name}), at home in ${f.element.name}. What it gives: once a fight, a blow of ${f.element.name} is halved; a cast whose lower trigram is ${f.element.name} leans his way. Tell him in your own words, a line or two.`, 'happy');
 }
 document.addEventListener('input', (e) => { if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false }); });
 
-document.addEventListener('click', (e) => {
-  // The 事 chip opens its popover; a tap anywhere else puts it away, and then
-  // does whatever it was for.
-  if (e.target.closest('[data-book]')) { show({ bookOpen: !view.bookOpen, gearOpen: false }); return; }
-  if (e.target.closest('[data-gear]')) { if (view.gearOpen) show({ gearOpen: false }); else openGear(); return; }
-  const does = e.target.closest('[data-do]');
-  if (does) { if (!does.matches(':disabled')) doTap(does.dataset.do, does.dataset.id); return; }
-  const pickCard = e.target.closest('[data-deck]');
-  if (pickCard) { deckTap({ action: 'toggle', id: pickCard.dataset.deck }); return; }
-  if (e.target.closest('[data-deck-auto]')) { deckTap({ action: 'auto' }); return; }
-  const worn = e.target.closest('[data-wear],[data-use],[data-remove]');
-  if (worn) { useItem(worn.dataset.wear ?? worn.dataset.use ?? worn.dataset.remove, worn.dataset.remove ? 'remove' : 'use'); return; }
-  if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });
-  // 问询: the one word that costs a model turn opens the ask bar; nothing is
-  // sent until the player says so.
-  const asking = e.target.closest('[data-ask]');
-  if (asking) { openAsk(asking.dataset.ask); return; }
-  if (e.target.closest('[data-ask-send]')) { sendAsk(); return; }
-  if (e.target.closest('[data-ask-close]')) { closeAsk(); return; }
-  const found = e.target.closest('[data-meet]');
-  if (found) { takeMeet(found.dataset.meet); return; }
-  const asked = e.target.closest('[data-divine]');
-  if (asked) { castByPage(asked.dataset.divine); return; }
-  if (e.target.closest('[data-chance]')) { takeChance(); return; }
-  const out = e.target.closest('[data-journey]');
-  if (out) { sendHer(Number(out.dataset.journey)); return; }
-  if (e.target.closest('[data-journey-recall]')) { recallHer(); return; }
-  if (e.target.closest('[data-journey-receive]')) { receiveHer(); return; }
-  const way = e.target.closest('[data-trial]');
-  if (way) { chooseWay(Number(way.dataset.trial)); return; }
-  const dropped = e.target.closest('[data-drop]');
-  if (dropped) { dropErrand(dropped.dataset.drop); return; }
-  // A line of the book opens where it lies — the page reads it from the rules.
-  const offered = e.target.closest('[data-offerrow]');
-  if (offered && !e.target.closest('button')) { show({ offerRow: view.offerRow === offered.dataset.offerrow ? null : offered.dataset.offerrow }); return; }
-  const row = e.target.closest('[data-bookrow]');
-  if (row && !e.target.closest('button')) { openRow(row.dataset.bookrow); return; }
-  const sw = e.target.closest('[data-lang]');
-  if (sw) { switchLang(sw.dataset.lang); return; }
-  // 命格: the birthday is read here, by the rules on this machine — never
-  // sent to the chat; Ling hears only that it was set.
-  if (e.target.closest('[data-fate-open]')) { show({ fateOpen: true }); return; }
-  const fateBtn = e.target.closest('[data-fate]');
-  if (fateBtn) { setFate(fateBtn.dataset.fate); return; }
-  // Near or whole: only how the map is looked at, so the page answers it.
-  const lens = e.target.closest('[data-mapview]');
-  if (lens) {
-    const to = lens.dataset.mapview;
-    (to === 'province' ? Promise.resolve() : loadAtlas()).then(() => show({ mapView: to }));
-    return;
-  }
-  const spoken = e.target.closest('[data-say]');
-  if (spoken && !e.target.closest('[data-play],[data-tile],[data-g],[data-duel-start],[data-spot]')) {
-    if (spoken.matches(':disabled')) return;
-    const line = spoken.dataset.say;
-    show({ tapped: line, bookOpen: false, ...(line === words().sayCast ? { casting: true } : {}) });
-    say(line);
-    return;
-  }
-  const play = e.target.closest('[data-play]');
-  if (play) {
-    show({ focus: [{ card: 'board', id: play.dataset.play }] });
-    return;
-  }
-  // A game module's move: the rules of the game are the module's; the win is
-  // the rules' (`win`, then Ling hears `[scene] won`), as for 炼丹.
-  const gmove = e.target.closest('[data-g]');
-  const ghost = gmove?.closest('[data-game]');
-  if (gmove && ghost && !gmove.disabled) {
-    const g = boardFor(ghost.dataset.game);
-    if (!g) return;
-    const r = g.mod.act(g.state, { ...gmove.dataset });
-    g.state = r.state;
-    render();
-    if (r.won) { g.sent = true; onWin(g.taskId); }
-    return;
-  }
-  const tile = e.target.closest('[data-tile]');
-  const host = tile?.closest('[data-board]');
-  if (!tile || !host) return;
+function toggleOffer(id) { show({ offerRow: view.offerRow === id ? null : id }); }
+
+/* A game module's move: the rules of the game are the module's; the win is
+   the rules' (`win`, then Ling hears `[scene] won`), as for 炼丹. */
+function gameMove(gmove) {
+  const ghost = gmove.closest('[data-game]');
+  if (!ghost || gmove.disabled) return false;
+  const g = boardFor(ghost.dataset.game);
+  if (!g) return true;
+  const r = g.mod.act(g.state, { ...gmove.dataset });
+  g.state = r.state;
+  render();
+  if (r.won && !g.sent) { g.sent = true; run(`win:${g.taskId}`, () => onWin(g.taskId)); }
+  return true;
+}
+function tileTap(tile) {
+  const host = tile.closest('[data-board]');
+  if (!host) return false;
   const board = boardFor(host.dataset.board);
   const cleared = tap(board, Number(tile.dataset.tile));
   render();
-  if (cleared) onWin(board.taskId);
+  if (cleared && !board.sent) { board.sent = true; run(`win:${board.taskId}`, () => onWin(board.taskId)); }
+  return true;
+}
+/* A word from the stage, said as his own line in the chat. */
+function sayTap(spoken, e) {
+  if (e.target.closest('[data-play],[data-tile],[data-g],[data-duel-start],[data-spot]')) return false;
+  if (spoken.matches(':disabled')) return true;
+  const line = spoken.dataset.say;
+  show({ tapped: line, bookOpen: false, ...(line === words().sayCast ? { casting: true } : {}) });
+  say(line);
+  return true;
+}
+
+/* Every tap on the page, by what it lands on — first match wins; a handler
+   that answers `false` lets the tap go on down the list. The popovers' own
+   taps come first; any other tap puts an open popover away, then does what
+   it was for. */
+const busy = (key, fn) => () => run(key, fn);
+const CLICKS = [
+  ['[data-book]', () => show({ bookOpen: !view.bookOpen, gearOpen: false })],
+  ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
+  ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
+  ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
+  ['[data-deck-auto]', busy('deck:auto', () => deckTap({ action: 'auto' }))],
+  ['[data-wear],[data-use],[data-remove]', (el) => {
+    const id = el.dataset.wear ?? el.dataset.use ?? el.dataset.remove, action = el.dataset.remove ? 'remove' : 'use';
+    run(`item:${action}:${id}`, () => useItem(id, action));
+  }],
+  ['*', (el, e) => {
+    if ((view.bookOpen || view.gearOpen) && !e.target.closest('.bookpop') && !e.target.closest('#askbar')) show({ bookOpen: false, gearOpen: false });
+    return false;
+  }],
+  ['[data-nourish]', busy('nourish', () => onNourish())],
+  ['[data-tend]', busy('tend', () => onTend())],
+  ['[data-spoils-close]', () => show({ spoils: null })],
+  // Inside a fight the stage belongs to the fight: a click is a place on it.
+  ['[data-spot]', (el) => {
+    if (!bout) return false;
+    onBoutTap({ kind: el.dataset.spot, index: Number(el.dataset.index ?? -1) });
+  }],
+  ['[data-duel-start]', (el) => run(`duel:${el.dataset.duelStart}`, () => { keep({ walkedOut: null }); return onDuelStart(el.dataset.duelStart); })],
+  // 问询: the one word that costs a model turn opens the ask bar; nothing is
+  // sent until the player says so.
+  ['[data-ask]', (el) => openAsk(el.dataset.ask)],
+  ['[data-ask-send]', () => sendAsk()],
+  ['[data-ask-close]', () => closeAsk()],
+  ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
+  ['[data-divine]', (el) => run('divine', () => castByPage(el.dataset.divine))],
+  ['[data-chance]', busy('chance', () => takeChance())],
+  ['[data-journey]', (el) => run('journey', () => sendHer(Number(el.dataset.journey)))],
+  ['[data-journey-recall]', busy('journey', () => recallHer())],
+  ['[data-journey-receive]', busy('journey', () => receiveHer())],
+  ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
+  ['[data-drop]', (el) => run(`drop:${el.dataset.drop}`, () => dropErrand(el.dataset.drop))],
+  // A line of the book opens where it lies — the page reads it from the rules.
+  ['[data-offerrow]', (el, e) => { if (e.target.closest('button')) return false; toggleOffer(el.dataset.offerrow); }],
+  ['[data-bookrow]', (el, e) => { if (e.target.closest('button')) return false; openRow(el.dataset.bookrow); }],
+  ['[data-lang]', (el) => run('lang', () => switchLang(el.dataset.lang))],
+  // 命格: the birthday is read here, by the rules on this machine — never
+  // sent to the chat; Ling hears nothing of it.
+  ['[data-fate-open]', () => show({ fateOpen: true })],
+  ['[data-fate]', (el) => run('fate', () => setFate(el.dataset.fate))],
+  // Near or whole: only how the map is looked at, so the page answers it.
+  ['[data-mapview]', (el) => {
+    const to = el.dataset.mapview;
+    (to === 'province' ? Promise.resolve() : loadAtlas()).then(() => show({ mapView: to }));
+  }],
+  ['[data-say]', (el, e) => sayTap(el, e)],
+  // A board opened from the tray stays on the stage until he walks on.
+  ['[data-play]', (el) => show({ focus: [{ card: 'board', id: el.dataset.play }], opened: { id: el.dataset.play, place: look?.place?.id ?? null } })],
+  ['[data-g]', (el) => gameMove(el)],
+  ['[data-tile]', (el) => tileTap(el)],
+];
+document.addEventListener('click', (e) => {
+  for (const [sel, handle] of CLICKS) {
+    const el = sel === '*' ? e.target : e.target.closest?.(sel);
+    if (el && handle(el, e) !== false) return;
+  }
 });
 
 /* ── 银月 hears what happened (engine: POST /api/yinyue/event) ──
@@ -1008,138 +1167,184 @@ function toldOutcome(brief, outcome) {
 
 /* ── 降妖: the page plays the fight, the rules decide it ── */
 
+/// The fight's door: the rules charge it and hand over the setup. One at a
+/// time — a Look and a tap both asking opened two rooms on one fight.
+let starting = false;
 async function onDuelStart(id) {
-  const r = await verb('duel', { id });
-  if (!r.ok) {
-    // Its own words, never the refusal's id: 「no-qi」 on the stage is the page
-    // talking to itself. The states without words (won today, tamed) are
-    // already written on the card by Look.
-    show({ duelSay: { id, text: r.say ?? null } });
-    if (r.refused === 'wounded') tellYinyue('伤太重，没能出手', 'Too hurt to fight', { mood: 'sad' });
-    return;
+  if (bout || starting) return;
+  starting = true;
+  try {
+    const r = await write('duel', { id });
+    if (!r.ok) {
+      // Its own words, never the refusal's id: 「no-qi」 on the stage is the page
+      // talking to itself. The states without words (won today, tamed) are
+      // already written on the card by Look.
+      show({ duelSay: { id, text: r.say ?? null } });
+      if (r.refused === 'wounded') tellYinyue('伤太重，没能出手', 'Too hurt to fight', { mood: 'sad' });
+      return;
+    }
+    const brief = r.duel;
+    // The page has to be able to NAME every card the door locked in. If it
+    // cannot, its content is older than the fight — read the world again, and if
+    // they are still strangers say so on the card rather than open a room where
+    // the hand is dealt and nothing in it can be played (2026-09-18: that fight
+    // cost him twenty taps, a day's 体力 and the day's beast, in silence). The
+    // fight stays open in the save, so coming back after a refresh spends no
+    // second 体力.
+    if (missingCards(brief.setup, cardCatalog()).length) await loadContent(look.world, true);
+    const unknown = missingCards(brief.setup, cardCatalog());
+    if (unknown.length) {
+      console.error('[lingjing] no card row for', unknown.join(', '));
+      show({ duelSay: { id, text: (BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh).stale } });
+      return;
+    }
+    keep({ duelSay: { id: null, text: null }, walkedOut: null });
+    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], picked: null, openLog: false, help: false, note: null, busy: false };
+    render();
+  } catch (e) {
+    console.warn('[lingjing] duel', e);
+    show({ duelSay: { id, text: words().notDone } });
+  } finally {
+    starting = false;
   }
-  const brief = r.duel;
-  // The page has to be able to NAME every card the door locked in. If it
-  // cannot, its content is older than the fight — read the world again, and if
-  // they are still strangers say so on the card rather than open a room where
-  // the hand is dealt and nothing in it can be played (2026-09-18: that fight
-  // cost him twenty taps, a day's 体力 and the day's beast, in silence). The
-  // fight stays open in the save, so coming back after a refresh spends no
-  // second 体力.
-  if (missingCards(brief.setup, boutCatalog()).length) {
-    authored = null;
-    await loadContent(look.world);
-  }
-  const unknown = missingCards(brief.setup, boutCatalog());
-  if (unknown.length) {
-    console.error('[lingjing] no card row for', unknown.join(', '));
-    show({ duelSay: { id, text: (BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh).stale } });
-    return;
-  }
-  keep({ duelSay: { id: null, text: null } });
-  bout = { id, brief, setup: brief.setup, st: begin(brief.setup, boutCatalog()), actions: [], picked: null, openLog: false, help: false, note: null };
-  render();
 }
 
-const boutCatalog = () => Object.fromEntries((authored?.cards?.cards ?? []).map(x => [x.id, { ...x, name: x.name?.[lang()] ?? x.name?.zh ?? x.id }]));
+/* A move being played out holds the fight: `busy` keeps the idle timer and a
+   second tap from ending the same turn twice, and every await checks the room
+   is still the same one — 认输 may have closed it meanwhile. */
+const gone = (b) => bout !== b || b.yielded;
 
 /* One tap inside the fight. The page plays it out and draws it; only when the
    fight is over does it hand the whole list of actions to the rules, which
    replay them and settle — win, loss, or the beast walking away. */
 async function onBoutTap(spot) {
-  if (!bout) return;
-  if (spot.kind === 'help' || spot.kind === 'help-bg') { bout.help = !bout.help; return drawNow(); }
-  if (spot.kind === 'more') { bout.openLog = !bout.openLog; return drawNow(); }
-  if (bout.st.outcome !== 'open') return;
-  bout.note = null;
-  const out = pickOf(bout.picked, spot, boutView(bout.st), boutCatalog());
-  if (out.quit) return settleBout('lost');
-  if (out.clear) { bout.picked = null; return drawNow(); }
-  if (out.pick) { bout.picked = out.pick; return drawNow(); }
+  const b = bout;
+  if (!b) return;
+  if (spot.kind === 'help' || spot.kind === 'help-bg') { b.help = !b.help; return drawNow(); }
+  if (spot.kind === 'more') { b.openLog = !b.openLog; return drawNow(); }
+  // 认输 answers at any moment, the beast's turn included.
+  if (spot.kind === 'quit') return yieldBout();
+  if (b.busy || b.st.outcome !== 'open') return;
+  b.note = null;
+  const out = pickOf(b.picked, spot, boutView(b.st), cardCatalog());
+  if (out.quit) return yieldBout();
+  if (out.clear) { b.picked = null; return drawNow(); }
+  if (out.pick) { b.picked = out.pick; return drawNow(); }
   if (out.action.kind === 'end') return endBoutTurn();
-  const mark = bout.st.log.length;
-  const res = act(bout.st, out.action, 'you');
-  bout.picked = null;
-  if (!res.ok) { bout.note = res.why; return drawNow(); }
-  bout.actions.push(tokenOf(out.action));
-  drawNow();
-  await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
+  const mark = b.st.log.length;
+  const res = act(b.st, out.action, 'you');
+  b.picked = null;
+  if (!res.ok) { b.note = res.why; return drawNow(); }
+  b.actions.push(tokenOf(out.action));
+  b.busy = true;
+  try {
+    drawNow();
+    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: boutCtx().words });
+  } finally {
+    b.busy = false;
+  }
+  if (gone(b)) return;
   fightMoments();
-  if (bout.st.outcome !== 'open') return settleBout(bout.st.outcome);
+  if (b.st.outcome !== 'open') return settleBout(b);
   drawNow();
 }
 
 /* The creature answers a move at a time, drawn as each lands. */
 async function endBoutTurn() {
-  const mark = bout.st.log.length;
-  if (!act(bout.st, { kind: 'end' }, 'you').ok) return;
-  bout.actions.push('end');
-  drawNow();
-  await playLog(document.querySelector('.battle'), since(bout.st.log, mark), { words: boutCtx().words });
-  fightMoments();
-  if (bout.st.whose === 'foe' && bout.st.outcome === 'open') {
-    await banner(document.querySelector('.battle'), `${bout.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe');
-    for (let guard = 0; guard < 40 && bout.st.whose === 'foe' && bout.st.outcome === 'open'; guard += 1) {
-      const step = bout.st.log.length;
-      const did = foeStep(bout.st);
-      drawNow();
-      await playLog(document.querySelector('.battle'), since(bout.st.log, step), { words: boutCtx().words });
-      fightMoments();
-      if (!did || did.kind === 'end') break;
+  const b = bout;
+  if (!b || b.busy || b.st.outcome !== 'open' || b.st.whose !== 'you') return;
+  const mark = b.st.log.length;
+  if (!act(b.st, { kind: 'end' }, 'you').ok) return;
+  b.actions.push('end');
+  b.busy = true;
+  try {
+    drawNow();
+    await playLog(document.querySelector('.battle'), since(b.st.log, mark), { words: boutCtx().words });
+    if (gone(b)) return;
+    fightMoments();
+    if (b.st.whose === 'foe' && b.st.outcome === 'open') {
+      await banner(document.querySelector('.battle'), `${b.brief.creature.name}${lang() === 'en' ? "'s turn" : '的回合'}`, 'foe');
+      for (let guard = 0; guard < 40 && !gone(b) && b.st.whose === 'foe' && b.st.outcome === 'open'; guard += 1) {
+        const step = b.st.log.length;
+        const did = foeStep(b.st);
+        drawNow();
+        await playLog(document.querySelector('.battle'), since(b.st.log, step), { words: boutCtx().words });
+        if (gone(b)) return;
+        fightMoments();
+        if (!did || did.kind === 'end') break;
+      }
     }
+  } finally {
+    b.busy = false;
   }
-  if (bout.st.outcome !== 'open') return settleBout(bout.st.outcome);
+  if (gone(b)) return;
+  if (b.st.outcome !== 'open') return settleBout(b);
   drawNow();
+}
+
+/* 认输 — the rules settle only a fight played to its end, so yielding is played
+   to its end: he passes every turn and the beast takes its own, exactly as the
+   rules will replay it. Nothing is invented; the rules still decide. */
+function yieldBout() {
+  const b = bout;
+  if (!b || b.settling || b.yielded) return;
+  b.yielded = true;
+  const st = b.st;
+  for (let guard = 0; guard < 600 && st.outcome === 'open'; guard += 1) {
+    if (st.whose === 'foe') { foeTurn(st); continue; }
+    if (!act(st, { kind: 'end' }, 'you').ok) break;
+    b.actions.push('end');
+  }
+  return settleBout(b);
 }
 
 /* The rules settle it, and the scene reports it — the scene is still the only
-   witness to a fight (design.md § 降妖). */
-async function settleBout(outcome) {
-  const { id, actions, brief } = bout;
-  const r = await verb('duel', { id, picks: actions.join(',') });
-  bout = null;
-  if (r.ok) toldOutcome(brief, r.outcome);
-  if (!r.ok) console.warn('[lingjing] the rules refused the fight', r);
+   witness to a fight (design.md § 降妖). The room closes whatever the answer:
+   a refusal is said on the stage, and Ling hears only what the rules decided. */
+async function settleBout(b = bout) {
+  if (!b || b.settling) return;
+  b.settling = true;
+  clearTimeout(idleTimer);
+  const { id, actions, brief } = b;
+  const r = await write('duel', { id, picks: actions.join(',') }).catch(failed);
+  if (bout === b) bout = null;
+  if (!r.ok) {
+    console.warn('[lingjing] the rules refused the fight', r);
+    // The save may still hold it open: it waits on its card for his tap, and
+    // the next Look does not pull him back into it.
+    keep({ walkedOut: id, doNote: r.say || words().fightRefused });
+    await refresh();
+    return;
+  }
+  toldOutcome(brief, r.outcome);
   // 所得: the room closes, and what it left stands on the stage — the card he
   // now holds is seen, not only told.
-  const got = r.ok && r.outcome === 'won' ? r.dropped ?? [] : [];
-  const paid = r.ok && r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
+  const got = r.outcome === 'won' ? r.dropped ?? [] : [];
+  const paid = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
   if (got.length || paid) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid } });
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;
-  await report(`[scene] ${r.outcome ?? outcome} ${id}`);
-  if (cloud?.signed_in) syncCloud(SKILL).catch((e) => console.warn('[lingjing] sync', e));
+  keep({ walkedOut: null });
+  await report(`[scene] ${r.outcome} ${id}`);
   await refresh();
 }
 
-/// The fight's brief from Look: the scene's exit, or the haunt's encounter.
 /// 疗伤 — she looks at the wound and mends some of it; then she says what she
 /// will, in her own time (a big moment: the screen settles, she speaks).
 async function onTend() {
-  const r = await verb('tend', {});
+  const r = await write('tend', {}).catch(failed);
   if (r.ok) tellYinyue(`让她看了看伤，她替你调理了一番，气血回了 ${r.mended}`, `Let her look at the wound; she tended it, ${r.mended} Life back`, { big: true, mood: 'relaxed' });
-  else if (r.say) keep({ doNote: r.say });
+  else keep({ doNote: refusal(r) });
   await refresh();
 }
 
-/// 温养 — once a day, a tap. No model decides it, so the page asks the rules
-/// and re-reads; Ling hears about it on the next Look.
+/// 温养 — once a day, a tap. No model decides it and no turn is spent on it:
+/// the page asks the rules and re-reads; Ling reads it on her next Look.
 async function onNourish() {
-  const r = await verb('nourish', {});
-  if (r.ok && r.rose?.length) await report(`[scene] treasure ${r.treasure.step}`);
+  const r = await write('nourish', {}).catch(failed);
+  if (!r.ok) keep({ doNote: refusal(r) });
   await refresh();
 }
-
-document.addEventListener('click', (e) => {
-  if (e.target.closest('[data-nourish]')) { onNourish(); return; }
-  if (e.target.closest('[data-tend]')) { onTend(); return; }
-  if (e.target.closest('[data-spoils-close]')) { show({ spoils: null }); return; }
-  // Inside a fight the stage belongs to the fight: a click is a place on it.
-  const spot = e.target.closest('[data-spot]');
-  if (bout && spot) { onBoutTap({ kind: spot.dataset.spot, index: Number(spot.dataset.index ?? -1) }); return; }
-  const start = e.target.closest('[data-duel-start]');
-  if (start) { onDuelStart(start.dataset.duelStart); return; }
-});
 
 /* ── The chat ── */
 
@@ -1199,45 +1404,57 @@ function onContentBlock(payload) {
       console.warn('[lingjing] Show parse', e);
     }
   }
-  if (payload?.tool === 'Art') authored = null; // a creature was just painted: read the cards again
+  // A creature was just painted: the next read takes the content again, and
+  // until it lands the stage keeps drawing what it has (boards in play too).
+  if (payload?.tool === 'Art') { contentStale = true; refreshSoon(); }
   if (WRITERS.has(payload?.tool)) refreshSoon();
 }
 
-/// Ling speaks first. A fresh day's chat, and a new chat begun from the
-/// panel's own button, open with `[scene] opened` — Ling greets and sets the
-/// scene; a reopened day is picked up in silence. Once per session.
+/// The opening of a fresh chat: ONE model turn, never two. Once Yinyue walks
+/// with him the day's first greeting is hers (greetByHer) and Ling says
+/// nothing until he does; otherwise — a stranger at the river, or a new chat
+/// later in a day already greeted — Ling opens with `[scene] opened`. A
+/// reopened day is picked up in silence. Once per session, and only once the
+/// chat is there to carry it.
 let openedFor = null;
-function openWith(sid) {
-  if (!sid || openedFor === sid) return;
+let mounted = false;
+function openWith(sid, greeted = false) {
+  if (!sid || openedFor === sid || !chat) return;
   openedFor = sid;
-  chat?.sendHidden('[scene] opened');
+  if (!greeted) chat.sendHidden('[scene] opened');
 }
 
+/// Mounts the chat; answers whether it is a fresh session (not a day picked up).
 async function mountChat() {
-  let alive = false;
   const resume = await recentSessionId();
   chat = await window.LinggenUI.mount($('chat-panel'), {
     skillName: SKILL,
     agentId: 'ling',
     title: 'Lingjing',
     sessionId: resume || undefined,
-    onSessionCreated: (sid) => { if (sid !== resume) setTimeout(() => openWith(sid), 500); },
-    onStreamToken: () => { alive = true; streaming = true; },
-    onStreamEnd: (text) => {
+    // A new chat begun from the panel's own button, after the page is up.
+    onSessionCreated: (sid) => { if (mounted && sid !== resume) openWith(sid); },
+    onStreamToken: () => { streaming = true; },
+    onStreamEnd: () => {
       turnEnded();
       streaming = false;
       const before = look;
       // Her turn is over: a 遇 still in the mist is lifted by the page — she
       // set the moment and forgot the reveal, or never got to it.
-      refresh().then(() => cheer(before, text)).then(() => { if (look?.place?.meet?.veiled) liftVeil(); });
+      refresh().then(() => cheer(before)).then(() => { if (look?.place?.meet?.veiled) liftVeil(); });
     },
-    onContentBlock: (payload) => { alive = true; streaming = true; onContentBlock(payload); },
+    onContentBlock: (payload) => { streaming = true; onContentBlock(payload); },
+    // The engine says the save changed under the page (`save_changed`: the
+    // account's copy was pulled over it): read it again. It is global, so
+    // only this skill's.
+    onSkillEvent: (event, payload) => {
+      if (/save/i.test(String(event)) && (!payload?.skill || payload.skill === SKILL)) refreshSoon(200);
+    },
   });
-  if (!resume) {
-    setTimeout(() => openWith(chat?.getSessionId()), 700);
-    // Posted before the embed listened? Say it again once it is surely up.
-    setTimeout(() => { if (!alive) chat?.sendHidden('[scene] opened'); }, 4500);
-  }
+  mounted = true;
+  // The bridge holds what is sent until the embed is listening, so one send
+  // is enough — the old second `[scene] opened` 4.5 s later was a duplicate.
+  return !resume;
 }
 
 /// A brand-new game starts in the language of the machine it is played on.
@@ -1246,27 +1463,21 @@ async function firstLanguage() {
   if (!fresh) return;
   const want = (navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en';
   if (want !== look.lang) {
-    await verb('lang', { lang: want, auto: true });
+    await write('lang', { lang: want, auto: true }).catch((e) => console.warn('[lingjing] lang', e));
     await refresh();
   }
 }
 
-/* ── The gate: sign in to play ── */
+/* ── 银月 on the stage: the cast, the rise, her body ── */
 
-/// The page's language before there is a game to take it from.
-const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en');
-
-/// Signed out, nothing of the game is shown: the save lives with the
-/// account, and a turn would be refused anyway. One button; the daemon
-/// opens the browser, and the scene enters once the account reports in.
 /// 起卦 from the card: the rules cast, the card shows it, 银月 reads it.
 async function castByPage(ask) {
   if (view.casting) return;
   show({ casting: true, bookOpen: false });
-  const r = await verb('divine', { ask }).catch((e) => ({ ok: false, error: String(e) }));
-  if (!r.ok) console.warn('[lingjing] divine', r);
+  const r = await write('divine', { ask }).catch(failed);
+  if (!r.ok) { console.warn('[lingjing] divine', r); keep({ doNote: refusal(r) }); }
   await refresh();
-  keep({ casting: false });
+  show({ casting: false });
 }
 
 /// A cast just landed (the page's or Ling's): 银月 gives the reading — she
@@ -1288,25 +1499,20 @@ function readingByHer(d) {
   }).catch((e) => console.warn('[lingjing] yinyue reading', e));
 }
 
-/// Something won just now — 修为 or a realm gained, or 灵石 not from a sale —
-/// and Yinyue says her own line from Ling's reply aloud on the stage, glad.
-/// The words are the reply's; with no line of hers she stays quiet (his
-/// ask, 2026-09-17: "now yinyue is out of the game").
-function cheer(before, text) {
+/// Something won in Ling's turn — 修为, or 灵石 not from a sale: 银月 hears the
+/// rise as facts and says what she will, in her own words (his rule: Yinyue
+/// writes every message; the page never speaks a line Ling wrote for her). A
+/// realm risen is the stage's own moment (`feat`), told to her there.
+function cheer(before) {
   if (!before || !look || !look.companion || before.world?.id !== look.world?.id) return;
+  if (look.tier?.id !== before.tier?.id || look.tier?.step !== before.tier?.step) return;
   const held = (l) => (l.bag ?? []).reduce((n, b) => n + (b.n ?? 0), 0);
-  const rose = look.progress > before.progress
-    || look.tier?.id !== before.tier?.id || (look.tier?.step ?? 0) > (before.tier?.step ?? 0)
-    || (look.wealth > before.wealth && held(look) >= held(before));
-  // A cast is hers to read (readingByHer), never a line Ling wrote for her.
-  const line = rose ? yinyueLine(text) : null;
-  if (!line) return;
-  const emotion = 'happy';
-  fetch('/api/yinyue/say', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: line, emotion }),
-  }).catch((e) => console.warn('[lingjing] yinyue say', e));
+  const progress = Math.max(0, (look.progress ?? 0) - (before.progress ?? 0));
+  const wealth = look.wealth > before.wealth && held(look) >= held(before) ? look.wealth - before.wealth : 0;
+  if (!progress && !wealth) return;
+  const w = words();
+  const zh = [progress ? `${w.xw} +${progress}` : '', wealth ? `${w.ls} +${wealth}` : ''].filter(Boolean).join('，');
+  tellYinyue(`刚才这一段，他得了${zh}`, `Just now he gained ${zh.replace('，', ', ')}`, { mood: 'happy' });
 }
 
 /* Yinyue on the stage: the engine's pet view, loaded as a stage so it
@@ -1341,6 +1547,15 @@ function petSays(e) {
   document.querySelector('.stage .moon').hidden = e.data.event === 'ready';
 }
 window.addEventListener('message', petSays);
+
+/* ── The gate: sign in to play ── */
+
+/// The page's language before there is a game to take it from.
+const machineLang = () => ((navigator.language || '').toLowerCase().startsWith('zh') ? 'zh' : 'en');
+
+/// Signed out, nothing of the game is shown: the save lives with the
+/// account, and a turn would be refused anyway. One button; the daemon
+/// opens the browser, and the scene enters once the account reports in.
 function gate(note = '') {
   const w = WORDS[machineLang()];
   document.documentElement.lang = machineLang();
@@ -1352,8 +1567,8 @@ function gate(note = '') {
   stageYinyue(false);
   $('tray').innerHTML = '';
   $('trayTitle').textContent = '';
-  $('focus').innerHTML = `<div class="card gate-card"><div class="cardtitle">${w.signTitle}</div>
-    <p>${w.signBody}</p><button class="act" id="signin">${w.signBtn}</button>
+  $('focus').innerHTML = `<div class="card gate-card"><div class="cardtitle">${esc(w.signTitle)}</div>
+    <p>${esc(w.signBody)}</p><button class="act" id="signin">${esc(w.signBtn)}</button>
     ${note ? `<div class="note">${esc(note)}</div>` : ''}</div>`;
   $('signin').onclick = async () => {
     const btn = $('signin');
@@ -1368,7 +1583,7 @@ function gate(note = '') {
 /// Into the world: the account's save first, so a new machine — or one
 /// another device moved past — reads the game as it stands.
 async function enter() {
-  $('focus').innerHTML = `<div class="loading">${WORDS.zh.loading} · ${WORDS.en.loading}</div>`;
+  $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.loading)} · ${esc(WORDS.en.loading)}</div>`;
   try {
     await syncCloud(SKILL);
   } catch (e) {
@@ -1376,23 +1591,26 @@ async function enter() {
   }
   await refresh();
   await firstLanguage();
-  await mountChat();
-  greetByHer();
+  const fresh = await mountChat();
+  // Her greeting first: when she gives it, it is the opening; Ling waits.
+  const greeted = await greetByHer();
+  if (fresh) openWith(chat?.getSessionId(), greeted);
 }
 
 /// 问候 — the day's first opening is hers (rules § 问候): the rules say
 /// whether she has greeted today and hand over what they know; she speaks.
 async function greetByHer() {
-  if (!look?.companion) return;
-  const r = await verb('greet', {}).catch(() => null);
-  if (!r?.ok || !r.first) return;
+  if (!look?.companion) return false;
+  const r = await write('greet', {}).catch(() => null);
+  if (!r?.ok || !r.first) return false;
   const who = r.name ?? '';
   askHer(`${who}今天第一次打开灵境。你知道的：${r.facts.join('；')}。像见到他那样，打个招呼 —— 挑一两件说，不必都提。`,
     `${who} has just opened Lingjing for the first time today. What you know: ${r.facts.join('; ')}. Greet him as you would on seeing him — pick one or two, not all.`, 'happy');
+  return true;
 }
 
 async function boot() {
-  $('focus').innerHTML = `<div class="loading">${WORDS.zh.loading} · ${WORDS.en.loading}</div>`;
+  $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh.loading)} · ${esc(WORDS.en.loading)}</div>`;
   await readCloud();
   // A cloud declared and no account behind it: the gate. No cloud at all
   // (an older engine) plays from the file here, as before.

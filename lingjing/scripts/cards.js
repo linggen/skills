@@ -14,9 +14,9 @@ export const WORDS = {
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架',
-    sayBuy: '买{name}', saySell: '卖{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayUse: '服用{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
+    sayBuy: '买{name}', sayGo: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayFeed: '喂{name}{item}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
     choreOpen: '去 {app} 做', about: '问询', askHint: '想问什么？留空，便请她说说', askSend: '问', drop: '撂 下', paysWord: '酬', nextWord: '其后', feed: '喂它{item}', offer: '献上{item}', sayOffer: '向{name}献上{item}', feedNone: '囊中没有{item}', tameHint: '降了它，再献上{item}，即可收服', playGame: '开局', lundaoTitle: '论道 · 稷下先生', lundaoOffer: '先生在此，以诗文会友。三句过关，今日一回。', lundaoBegin: '请先生论道', sayLundao: '请先生论道', lundaoKey: '飞花令 · 句中须有「{key}」', lundaoChain: '接「{last}」的末字', lundaoUp: '上联：{up}', lundaoMiss: '失 {n}/{max}', lundaoHow: '在对话里作答。', featRise: '突破', featChapter: '新章', wonOver: '收服', subdue: '降妖',
-    effProgress: '服下：{xw} +{n}', effMend: '服下：斗法落下的伤去 {n}%', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}', tend: '她疗伤多回 {pct}%' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', sayWear: '佩上{name}', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
+    effProgress: '服下：{xw} +{n}', effMend: '服下：斗法落下的伤去 {n}%', effLearn1: '习之：斗法时看出妖下回合的架势', effLearn2: '习之：看清妖下回合的每一招与点数', effWear: '可赠银月佩戴', effLift: { atk: '她的牌攻 +{n}', hp: '她的牌气血 +{n}', tend: '她疗伤多回 {pct}%' }, effKey: '路上有用之物', effNone: '可买卖的货物', effRoot: '佩之借{root}', effAtk: '器攻 +{n}', effDef: '防 +{n}', effWard: '抗{root} +{n}', effTemper: '温养本命 +{n}', effCore: '可炼{root}行本命', effCharm: '斗法时掷出，不计防抗', use: '服用', wear: '佩戴', worn: '已佩', madeFrom: '以{item}写成', artsTitle: '功法', artFrom: '{tier}可用', questBy: '{app} · {t} 完成', questWait: '{app} · {when}待做', periods: { day: '今日', week: '本周', once: '' },
     duelTitle: '降妖', duelHint: '轮番出手：法术相克者倍，物理不问五行，符箓不计防抗，辅助蓄势护体。气血或灵力耗尽者败。', begin: '出手', duelWon: '妖已降服。', duelLost: '败了，它退入雾中。', withdrawn: '它已隐入雾中，明日再来。', wonWait: '已胜，待收。',
     you: '你', hp: '气血', mana: '灵力', power: '战力', youFirst: '你先手', foeFirst: '它先手', barehand: '空手',
     aCast: '法术', aStrike: '物理', aCharm: '符箓', aAssist: '辅助', aFocus: '聚势', aGuard: '护体', arts: '功法',
@@ -38,12 +38,13 @@ export const WORDS = {
     loading: '正在展开……', offline: '灵境还没醒来。',
     hp: '气血', hurt: '带伤', bond: '羁绊', bondNext: '{n}/{next} 至{name}', tend: '让银月看看', elite: '精英', mendsAt: '{t} 养好',
     qi: '体力', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空',
-    emptyLine: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。{t} 回满。', emptySoon: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。随时辰回满。',
+    emptyLine: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。{t} 可以再出发。', emptySoon: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。随时辰恢复。',
     boardsStay: '炼丹不耗灵气。',
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
     building: '灵境绘制中', buildingLine: '还有 {n} 幅画未成，画完即可游历。',
-    needVia: '先去{name}', veilLine: '前路起了雾……', refused: { 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它' }, goalTitle: '眼下要做的', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', gearFight: '斗法里：主灵根一击 +{n}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '亮的是出战的十张，点一张换上或取下；银月开局就在手上。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', journey: '历练', journeyHours: '{h} 时', journeyOut: '在{place} · 还剩 {t}', journeyRecall: '叫回', journeyDone: '今日已出过门', journeyBack: '自{place}回来了', journeyBackLine: '她从{place}回来，带了些东西。', journeyBackTitle: '{name}回来了', journeyAway: '出行中', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手伤身', coin: '失手破财' }, trialHurt: '气血 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', sayGoal: '说说眼下要做的', book: '手上的事', take: '接 下', turnIn: '交 差', sayTake: '接下{title}', sayTurn: '交差：{title}', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    notDone: '这一下没成，稍后再点。', fightRefused: '这一战没记上，牌还在原处。',
+    needVia: '先去{name}', veilLine: '前路起了雾……', refused: { 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '谜题已过', busy: '稍等片刻' }, goalTitle: '眼下要做的', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '装备', gearTitle: '装备', bagTitle: '背包', gearEmpty: '—', bagNone: '背包是空的', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝' }, gearHer: '{name}佩着', gearFight: '斗法里：主灵根一击 +{n}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '亮的是出战的十张，点一张换上或取下；银月开局就在手上。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', roads: '或往', workAt: '{name}有差事', journey: '历练', journeyHours: '{h} 时', journeyOut: '在{place} · 还剩 {t}', journeyRecall: '叫回', journeyDone: '今日已出过门', journeyBack: '自{place}回来了', journeyBackLine: '她从{place}回来，带了些东西。', journeyBackTitle: '{name}回来了', journeyAway: '出行中', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手伤身', coin: '失手破财' }, trialHurt: '气血 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', book: '手上的事', take: '接 下', turnIn: '交 差', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     handedTitle: '交差 · {title}', handedNext: '接下来 · {title}', handedWait: '下一步 · {title} — 手上已满，了一件再去{at}接', needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalNow: '如今 {step} · {progress}/{of}', goalGrow: '差事、功课、奇遇，都长修为',
   },
   en: {
@@ -53,9 +54,9 @@ export const WORDS = {
     tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
     questAt: 'A market at {name}', questWater: 'The nearest water is {name}', ringBell: 'Ring the bell', sayRing: 'Ring the bell', sayQuest: 'Tell me about the promise under the moon',
-    gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', saySell: 'Sell {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayUse: 'Use {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
+    gateNeed: 'To {to}: {step} · {n} {xw}', sayBuy: 'Buy {name}', sayGo: 'Go to {name}', sayTask: 'Tell me about: {title}', sayGate: 'On to the next cauldron', sayOmen: "Tell me about today's omen", sayCreature: 'Tell me about {name}', sayItem: 'Tell me about {name}', sayFeed: 'Feed {name} the {item}', sayGateAbout: 'Tell me about the next cauldron', sayTrib: 'Tell me about the tribulation', sayRoots: 'Tell me about my spirit roots', sayBoard: 'Tell me about alchemy', sayMap: 'Tell me about the Nine Provinces',
     choreOpen: 'Do it in {app}', about: 'Ask', askHint: 'What do you want to know? Leave it empty and she simply tells', askSend: 'Ask', drop: 'Put it down', paysWord: 'Pays', nextWord: 'Then', feed: 'Feed it {item}', offer: 'Offer the {item}', sayOffer: 'Offer {name} the {item}', feedNone: 'No {item} in the bag', tameHint: 'Beat it, then offer the {item}, and it is yours', playGame: 'Play', lundaoTitle: 'Debate · The Jixia scholar', lundaoOffer: 'The scholar meets friends with verse. Three good answers, once a day.', lundaoBegin: 'Ask the scholar to debate', sayLundao: 'Ask the scholar to debate', lundaoKey: 'A line with “{key}” in it', lundaoChain: 'A word starting with the last letter of “{last}”', lundaoUp: 'Upper line: {up}', lundaoMiss: 'missed {n}/{max}', lundaoHow: 'Answer in the chat.', featRise: 'Breakthrough', featChapter: 'A new chapter', wonOver: 'Won over', subdue: 'Subdue',
-    effProgress: 'Taken: {xw} +{n}', effMend: 'Taken: {n}% of what the fights took, back', effLearn1: 'Learned: see the shape of the beast\'s next turn', effLearn2: 'Learned: see every move of its next turn, with numbers', effWear: 'Yinyue can wear it', effLift: { atk: 'her card +{n} attack', hp: 'her card +{n} Life', tend: 'her tending mends {pct}% more' }, effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effTemper: 'Tempers your treasure +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', sayWear: 'Wear {name}', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
+    effProgress: 'Taken: {xw} +{n}', effMend: 'Taken: {n}% of what the fights took, back', effLearn1: 'Learned: see the shape of the beast\'s next turn', effLearn2: 'Learned: see every move of its next turn, with numbers', effWear: 'Yinyue can wear it', effLift: { atk: 'her card +{n} attack', hp: 'her card +{n} Life', tend: 'her tending mends {pct}% more' }, effKey: 'The road will want it', effNone: 'Goods to trade', effRoot: 'Worn, it lends {root}', effAtk: 'Attack +{n}', effDef: 'Guard +{n}', effWard: 'Wards {root} +{n}', effTemper: 'Tempers your treasure +{n}', effCore: 'Binds a treasure of {root}', effCharm: 'Cast in a bout: the round is won', use: 'Use', wear: 'Wear', worn: 'worn', madeFrom: 'Written on {item}', artsTitle: 'Arts', artFrom: 'from {tier}', questBy: '{app} · done {t}', questWait: '{app} · not yet {when}', periods: { day: 'today', week: 'this week', once: '' },
     duelTitle: 'Subdue', duelHint: 'Turn by turn: a 法术 doubles into what it overcomes, a strike asks no element, a 符 ignores armour, 辅助 gathers or guards. 气血 or 灵力 out and you lose.', begin: 'Begin', duelWon: 'Subdued.', duelLost: 'Lost — it withdraws into the mist.', withdrawn: 'It has withdrawn into the mist; come back tomorrow.', wonWait: 'Won — to collect.',
     you: 'You', hp: 'Life', mana: 'Force', power: 'Might', youFirst: 'you move first', foeFirst: 'it moves first', barehand: 'bare-handed',
     aCast: 'Spell', aStrike: 'Strike', aCharm: 'Talisman', aAssist: 'Ready', aFocus: 'Gather', aGuard: 'Guard', arts: 'Arts',
@@ -75,17 +76,19 @@ export const WORDS = {
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.',
     hp: 'Life', hurt: 'hurt', bond: 'Bond', bondNext: '{n}/{next} to {name}', tend: 'Let Yinyue look', elite: 'Elite', mendsAt: 'mended by {t}',
     qi: 'Stamina', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty',
-    emptyLine: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. Full again at {t}.', emptySoon: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. It returns with the hours.',
+    emptyLine: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. Ready to go again at {t}.', emptySoon: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. It comes back with the hours.',
     boardsStay: 'Alchemy costs no qi.',
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
     building: 'Painting the world', buildingLine: '{n} to paint — the world opens when the last is done.',
-    needVia: 'by way of {name}', veilLine: 'Mist on the road ahead…', refused: { 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet' }, goalTitle: 'What waits', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', gearFight: 'In a fight: Root Strike +{n}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'Lit: the ten you fight with — tap one to put it in or take it out; Yinyue starts in hand.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', journey: 'Journey', journeyHours: '{h}h', journeyOut: 'at {place} · {t} left', journeyRecall: 'Call her back', journeyDone: 'She has been out today', journeyBack: 'back from {place}', journeyBackLine: 'Back from {place}, with something for you.', journeyBackTitle: '{name} is back', journeyAway: 'away', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing hurts', coin: 'failing costs coin' }, trialHurt: 'Life −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', sayGoal: 'Tell me what waits', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayTake: 'Take {title}', sayTurn: 'Hand in {title}', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    notDone: 'That did not go through — tap again in a moment.', fightRefused: 'This fight was not recorded; its card is still here.',
+    needVia: 'by way of {name}', veilLine: 'Mist on the road ahead…', refused: { 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'The riddle has passed', busy: 'One moment' }, goalTitle: 'What waits', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Gear', gearTitle: 'Worn', bagTitle: 'Bag', gearEmpty: '—', bagNone: 'The bag is empty', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure' }, gearHer: '{name} wears', gearFight: 'In a fight: Root Strike +{n}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'Lit: the ten you fight with — tap one to put it in or take it out; Yinyue starts in hand.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', roads: 'Or on to', workAt: 'Work to be had at {name}', journey: 'Journey', journeyHours: '{h}h', journeyOut: 'at {place} · {t} left', journeyRecall: 'Call her back', journeyDone: 'She has been out today', journeyBack: 'back from {place}', journeyBackLine: 'Back from {place}, with something for you.', journeyBackTitle: '{name} is back', journeyAway: 'away', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing hurts', coin: 'failing costs coin' }, trialHurt: 'Life −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', book: 'In hand', take: 'Take it', turnIn: 'Hand it in', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     handedTitle: 'Handed in · {title}', handedNext: 'Next · {title}', handedWait: 'Next · {title} — your hands are full; finish one, then take it at {at}', needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalNow: 'Now {step} · {progress}/{of}', goalGrow: 'Errands, practice and encounters all raise it',
   },
 };
 
-export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+export { esc } from './esc.js';
+import { esc } from './esc.js';
 const pick = (pair, lang) => (pair ? pair[lang] ?? pair.zh : '');
 
 const ELEMENTS = ['metal', 'wood', 'water', 'fire', 'earth'];
@@ -148,7 +151,7 @@ function creature(card, ctx) {
       <div class="cardtitle">${title}</div>
       <div class="src">${esc(pick(c.source, ctx.lang))}</div>
       <q>${esc(pick(c.quote, ctx.lang))}</q>
-      <span class="chip">${ctx.words[tamed ? 'tamed' : beatenToday(ctx, c.id) ? 'beatenToday' : 'untamed']}</span>
+      <span class="chip">${esc(ctx.words[tamed ? 'tamed' : beatenToday(ctx, c.id) ? 'beatenToday' : 'untamed'])}</span>
     </div></div>${acts([{ label: ctx.words.about, ask: true, say: say(ctx.words.sayCreature, { name }) }])}</div>`;
 }
 
@@ -163,7 +166,7 @@ function traits(card, ctx) {
   // The arts learned, each with what it does; greyed until its realm.
   const arts = (ctx.look.arts || []).map((a) => `<div class="artrow${a.ready ? '' : ' dim'}"><b>${esc(a.name)}</b> <span class="small">${esc(a.about)}</span>${a.ready ? '' : ` <span class="chip">${esc(say(ctx.words.artFrom, { tier: a.tier.name }))}</span>`}</div>`);
   const artsHtml = arts.length ? `<div class="cardtitle arts">${esc(ctx.look.words?.arts ?? ctx.words.artsTitle)}</div>${arts.join('')}` : '';
-  return `<div class="card"><div class="cardtitle">${ctx.words.rootTitle}</div><div class="roots">${els.join('')}</div>${result}${fateHtml(ctx)}${artsHtml}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayRoots }])}</div>`;
+  return `<div class="card"><div class="cardtitle">${esc(ctx.words.rootTitle)}</div><div class="roots">${els.join('')}</div>${result}${fateHtml(ctx)}${artsHtml}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayRoots }])}</div>`;
 }
 
 /// 命格 beside the roots: what it is once set; before, the birthday typed
@@ -173,20 +176,20 @@ function fateHtml(ctx) {
   const w = ctx.words, f = ctx.look.fate;
   if (!ctx.look.traits) return '';
   if (f?.zodiac) {
-    return `<div class="fate"><span class="chip">${w.fateTitle}</span> ${esc(say(w.fateLine, { zodiac: f.zodiac.name, stem: f.stem.name, element: f.element.name }))}</div>`;
+    return `<div class="fate"><span class="chip">${esc(w.fateTitle)}</span> ${esc(say(w.fateLine, { zodiac: f.zodiac.name, stem: f.stem.name, element: f.element.name }))}</div>`;
   }
-  if (f?.declined && !ctx.fateOpen) return `<div class="fate"><button class="act" data-fate-open>${w.fateSet}</button></div>`;
+  if (f?.declined && !ctx.fateOpen) return `<div class="fate"><button class="act" data-fate-open>${esc(w.fateSet)}</button></div>`;
   const today = (ctx.now ?? new Date()).toISOString().slice(0, 10);
-  return `<div class="fate form"><div class="cardtitle arts">${w.fateTitle}</div><div class="small dim">${w.fateHint}</div>
+  return `<div class="fate form"><div class="cardtitle arts">${esc(w.fateTitle)}</div><div class="small dim">${esc(w.fateHint)}</div>
     <div class="fateform"><input type="date" id="fate-birth" min="1900-01-31" max="${today}" value="${esc(ctx.fateDraft ?? '')}">
-    <button class="act" data-fate="birth">${w.fateSet}</button><button class="act" data-fate="random">${w.fateRandom}</button><button class="act" data-fate="decline">${w.fateSkip}</button></div>
-    ${ctx.fateError ? `<div class="small seal">${w.fateBad}</div>` : ''}</div>`;
+    <button class="act" data-fate="birth">${esc(w.fateSet)}</button><button class="act" data-fate="random">${esc(w.fateRandom)}</button><button class="act" data-fate="decline">${esc(w.fateSkip)}</button></div>
+    ${ctx.fateError ? `<div class="small seal">${esc(w.fateBad)}</div>` : ''}</div>`;
 }
 
 function map(card, ctx) {
   if (ctx.look.world?.made) return roadMap(ctx);
   if (ctx.look.world?.atlas) return atlasMap(ctx);
-  return `<div class="card"><div class="cardtitle">${ctx.words.mapTitle}</div>${placesHtml(ctx)}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayMap }])}</div>`;
+  return `<div class="card"><div class="cardtitle">${esc(ctx.words.mapTitle)}</div>${placesHtml(ctx)}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayMap }])}</div>`;
 }
 
 /// The world map: the 禹贡 plate with the game's own names over it. Up close
@@ -280,7 +283,7 @@ function roadMap(ctx) {
   });
   const chips = place.places.map((p) => {
     const kind = p.here ? 'here' : p.road ? (p.too_hard ? 'far' : 'road') : p.too_hard ? 'far' : '';
-    const tag = p.here ? `<small>${ctx.words.here}</small>` : '';
+    const tag = p.here ? `<small>${esc(ctx.words.here)}</small>` : '';
     const style = `style="left:${at[p.id].x * 100}%;top:${at[p.id].y * 100}%;max-width:${Math.floor(92 / widest)}%"`;
     if (p.here) return `<span class="pl here" ${style}>${esc(p.name)}${tag}</span>`;
     return `<button class="pl${kind ? ` ${kind}` : ''}" ${sayAttr(say(ctx.words.sayGo, { name: p.name }))} ${style}>${esc(p.name)}</button>`;
@@ -306,7 +309,7 @@ function hexagram(card, ctx) {
   // Tapped: the coins are in the air until the cast lands — nothing to tap twice.
   if (!d && ctx.casting) {
     return `<div class="card hex uncast throwing"><div class="coins">${'<i></i>'.repeat(3)}</div><div>
-      <div class="cardtitle">${w.throwing}</div><div class="hextext">${w.uncastHint}</div></div></div>`;
+      <div class="cardtitle">${esc(w.throwing)}</div><div class="hextext">${esc(w.uncastHint)}</div></div></div>`;
   }
   // Before the day's cast: the coins wait, and what is asked is a tap — the
   // page casts with the rules and 银月 reads it (his, 2026-09-23: 既然是请
@@ -314,7 +317,7 @@ function hexagram(card, ctx) {
   if (!d) {
     const asks = Object.entries(w.castAsks).map(([id, label]) => `<button class="act" data-divine="${id}">${esc(label)}</button>`).join('');
     return `<div class="card hex uncast"><div class="coins">${'<i></i>'.repeat(3)}</div><div>
-      <div class="cardtitle">${w.uncast}</div><div class="hextext">${w.uncastHint}</div><div class="acts">${asks}</div></div></div>`;
+      <div class="cardtitle">${esc(w.uncast)}</div><div class="hextext">${esc(w.uncastHint)}</div><div class="acts">${asks}</div></div></div>`;
   }
   return castHtml(d, ctx);
 }
@@ -337,9 +340,9 @@ function castHtml(d, ctx) {
   if (e.rest_seconds) lines.push(say(w.effRest, { s: e.rest_seconds }));
   if (e.spell) lines.push(say(w.effSpell, { root: e.root?.name ?? '', n: e.spell > 0 ? `+${e.spell}` : e.spell }));
   const effect = lines.length ? lines.join(' · ') : w.effEven;
-  const changed = d.changed ? `<div class="small dim">${w.changedTo} · ${esc(d.changed.name)}</div>` : '';
+  const changed = d.changed ? `<div class="small dim">${esc(w.changedTo)} · ${esc(d.changed.name)}</div>` : '';
   return `<div class="card hex cast${ctx.castFresh ? ' casting' : ''} ${esc(d.grade.id)}"><div class="yaos">${rows}</div><div>
-    <div class="cardtitle">${w.omen} · ${esc(d.hexagram.name)} · <span class="grade">${esc(d.grade.name)}</span>${d.fated ? ` <span class="chip">${w.fated}</span>` : ''}</div>
+    <div class="cardtitle">${esc(w.omen)} · ${esc(d.hexagram.name)} · <span class="grade">${esc(d.grade.name)}</span>${d.fated ? ` <span class="chip">${esc(w.fated)}</span>` : ''}</div>
     <div class="hextext">${esc(d.hexagram.judgment)}</div>
     <div class="small dim">${esc(d.hexagram.image)}</div>${changed}
     <div class="small castfx"><span class="chip">${esc(d.ask.name)}</span> ${esc(effect)}</div>
@@ -349,18 +352,18 @@ function castHtml(d, ctx) {
 /// The next cauldron: a word to Ling when the road is open; with a date,
 /// the road waits and the card only says when.
 function gate(card, ctx) {
-  const opens = card.opens ? `<div class="small ling">${ctx.words.opens} ${esc(card.opens)}</div>` : '';
+  const opens = card.opens ? `<div class="small ling">${esc(ctx.words.opens)} ${esc(card.opens)}</div>` : '';
   // A cauldron here the player cannot take yet: what its breath asks.
   const bt = (ctx.look.scene?.exits ?? []).find((e) => e.breakthrough && !e.breakthrough.ready)?.breakthrough;
   const need = bt?.need ? `<div class="small dim">${esc(say(ctx.words.gateNeed, { to: bt.need.to, step: bt.need.step, xw: ctx.words.xw, n: bt.need.progress }))}</div>` : '';
   // The road on is a word only when it is open and no scene runs here.
   const go = card.opens || ctx.look.scene ? null : { label: ctx.words.sayGate, say: ctx.words.sayGate };
-  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${ctx.words.gateTitle}</div>${opens}${need}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayGateAbout }, go])}</div></div>`;
+  return `<div class="card gate"><div class="ding">鼎</div><div><div class="cardtitle">${esc(ctx.words.gateTitle)}</div>${opens}${need}${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayGateAbout }, go])}</div></div>`;
 }
 
 function tribulation(card, ctx) {
   const bolts = [1, 2, 3].map((k) => `<i class="${k <= (card.strikes || 0) ? 'hit' : ''}"></i>`).join('');
-  return `<div class="card trib"><div class="cardtitle">${ctx.words.tribTitle}</div><div class="bolts">${bolts}</div>${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayTrib }])}</div>`;
+  return `<div class="card trib"><div class="cardtitle">${esc(ctx.words.tribTitle)}</div><div class="bolts">${bolts}</div>${acts([{ label: ctx.words.about, ask: true, say: ctx.words.sayTrib }])}</div>`;
 }
 
 /// A board for a task already won or done is a made pill, never a fresh deal.
@@ -370,7 +373,7 @@ function board(card, ctx) {
   const g = made ? null : ctx.boardFor?.(card.id);
   // A game module (scripts/games/<id>.js) draws itself inside [data-game]; the
   // 炼丹 herbs keep their own board. Loading, the card waits a beat.
-  const body = made ? `<div class="dim small">${ctx.words.boardDone}</div>`
+  const body = made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
     : g?.mod ? `<div class="small dim">${esc(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? '')}</div><div class="game" data-game="${esc(card.id)}">${g.mod.html(g.state, ctx.lang)}</div>`
       : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
   const title = task?.game ? task.title : ctx.words.play;
@@ -408,7 +411,7 @@ function item(card, ctx) {
   const world = ctx.content.dir ?? ctx.look.world.dir;
   const cells = ids.map((id) => {
     const i = known.get(id) ?? { id, name: id, kind: '', buy: null, sell: null, held: (ctx.look.bag || []).find((b) => b.id === id)?.n ?? 0 };
-    const held = i.held ? `<span class="chip">${ctx.words.inBag} ×${i.held}</span>` : '';
+    const held = i.held ? `<span class="chip">${esc(ctx.words.inBag)} ×${i.held}</span>` : '';
     // Buy and Sell are words to Ling; Trade decides. Greyed when the stones
     // are short or nothing is held — from Look, never counted here.
     const canBuy = i.buy != null && (ctx.look.wealth ?? 0) >= i.buy;
@@ -433,8 +436,8 @@ function item(card, ctx) {
     const wearable = !forHer && (e.wear || e.atk || e.def || e.ward);
     const use = e.progress && i.held ? doBtn(ctx.words.use, 'use', i.id)
       : wearable && i.held && !i.worn ? doBtn(ctx.words.wear, 'use', i.id) : '';
-    const worn = i.worn ? `<span class="chip">${ctx.words.worn}</span>` : '';
-    const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayItem, { name: i.name }))}>${ctx.words.about}</button>`;
+    const worn = i.worn ? `<span class="chip">${esc(ctx.words.worn)}</span>` : '';
+    const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayItem, { name: i.name }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="item">${art}<div class="itemname">${esc(i.name)}</div>
       <div class="small dim">${esc(ctx.look.words?.[i.kind] ?? i.kind)} · ${esc(does)}</div>${about}${made}${price}${held}${worn}<div class="acts">${tell}${use}</div></div>`;
   });
@@ -469,9 +472,9 @@ function treasure(card, ctx) {
   if (!t) {
     // Not bound yet — at 结丹 the card says what it would take.
     return ctx.look.can_refine
-      ? `<div class="card"><div class="cardtitle">${w.treasureTitle}</div>
-         <div class="small dim">${w.refineHint}</div>
-         <div class="acts"><button class="act say" ${sayAttr(w.sayRefine)}>${w.refine}</button></div></div>`
+      ? `<div class="card"><div class="cardtitle">${esc(w.treasureTitle)}</div>
+         <div class="small dim">${esc(w.refineHint)}</div>
+         <div class="acts"><button class="act say" ${sayAttr(w.sayRefine)}>${esc(w.refine)}</button></div></div>`
       : '';
   }
   const full = t.needs == null;
@@ -479,14 +482,14 @@ function treasure(card, ctx) {
   // At its ninth nothing grows, so nothing is offered: a button the rules
   // would refuse is a button that lies.
   const grow = full ? ''
-    : t.nourished === false ? `<button class="act" data-nourish>${w.nourish}</button>`
-    : t.nourished === true ? `<span class="chip">${w.nourishedToday}</span>` : '';
-  return `<div class="card treasurecard"><div class="cardtitle">${w.treasureTitle}</div>
+    : t.nourished === false ? `<button class="act" data-nourish>${esc(w.nourish)}</button>`
+    : t.nourished === true ? `<span class="chip">${esc(w.nourishedToday)}</span>` : '';
+  return `<div class="card treasurecard"><div class="cardtitle">${esc(w.treasureTitle)}</div>
     <div class="duelhead"><b>${esc(t.name)}</b> <span class="croot">${esc(t.step)}</span>
       <span class="lean">${esc(t.element_name)}</span></div>
-    <div class="small dim">${say(w.treasureDoes, { atk: t.atk, root: t.element_name, n: t.level })}</div>
-    ${full ? `<div class="small ling">${w.treasureTop}</div>` : `<div class="fpool"><span>${w.temper}</span>${bar}<b>${t.exp}/${t.needs}</b></div>`}
-    <div class="acts">${grow}<button class="act ask" ${askAttr(say(ctx.words.sayTreasure, { name: t.name }))}>${w.about}</button></div></div>`;
+    <div class="small dim">${esc(say(w.treasureDoes, { atk: t.atk, root: t.element_name, n: t.level }))}</div>
+    ${full ? `<div class="small ling">${esc(w.treasureTop)}</div>` : `<div class="fpool"><span>${esc(w.temper)}</span>${bar}<b>${t.exp}/${t.needs}</b></div>`}
+    <div class="acts">${grow}<button class="act ask" ${askAttr(say(ctx.words.sayTreasure, { name: t.name }))}>${esc(w.about)}</button></div></div>`;
 }
 
 /* ── The stage's own cards ── goal · offer · quest · building · empty.
@@ -496,15 +499,15 @@ function treasure(card, ctx) {
    and tests/stage-cards.test.mjs draws every card the rules can put up. */
 const sayBtn = (label, words) => `<button class="act say" ${sayAttr(words)}>${esc(label)}</button>`;
 const askBtn = (label, line) => `<button class="act ask" ${askAttr(line)}>${esc(label)}</button>`;
-const clockOf = (date, lang) => date.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' });
+export const clockOf = (date, lang) => date.toLocaleTimeString(lang === 'zh' ? 'zh-CN' : 'en', { hour: 'numeric', minute: '2-digit' });
 
 /// 丹田 empty: when it returns, and that the boards stay.
 function empty(card, ctx) {
   const q = ctx.qi, w = ctx.words;
   if (q?.st !== 'empty') return '';
   const line = q.refillAt ? w.emptyLine.replace('{t}', clockOf(new Date(q.refillAt * 1000), ctx.lang)) : w.emptySoon;
-  return `<div class="card empty"><div class="cardtitle">${w.qi} · ${w.qiEmpty}</div>
-    <div>${esc(line)}</div><div class="small dim">${w.boardsStay}</div></div>`;
+  return `<div class="card empty"><div class="cardtitle">${esc(w.qi)} · ${esc(w.qiEmpty)}</div>
+    <div>${esc(line)}</div><div class="small dim">${esc(w.boardsStay)}</div></div>`;
 }
 
 /// 差事 offered where he stands — ONE card, a row each: the title, who gives
@@ -515,7 +518,9 @@ function offer(card, ctx) {
   if (!all.length) return '';
   const rows = all.map((o) => {
     const open = all.length === 1 || ctx.offerRow === o.id;
-    const pays = [o.grant?.progress ? `${w.xw} +${o.grant.progress}` : '', o.grant?.wealth ? `${w.ls} +${o.grant.wealth}` : ''].filter(Boolean).join(' · ');
+    // What it pays, as the rules say it (`pays`); an older Look's `grant` else.
+    const p = o.pays ?? o.grant ?? {};
+    const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.stamina ? `${w.qi} +${p.stamina}` : ''].filter(Boolean).join(' · ');
     const head = `<div><b>${esc(o.title)}</b> <span class="small dim">${esc([o.who, pays].filter(Boolean).join(' · '))}</span></div>`;
     const chev = all.length > 1 ? `<span class="chev" aria-hidden="true">${open ? '▾' : '▸'}</span>` : '';
     return `<div class="offerrow${open ? ' open' : ''}"${all.length > 1 ? ` data-offerrow="${esc(o.id)}" role="button" tabindex="0" aria-expanded="${open}"` : ''}>
@@ -695,7 +700,7 @@ export function gearPopHtml(ctx) {
     const act = i.slot && !i.worn ? `<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`
       : i.usable ? `<button class="act" data-use="${esc(i.id)}">${esc(w.use)}</button>`
         : i.worn ? `<span class="chip">${esc(w.worn)}</span>` : '';
-    return `<div class="gearrow"><span><b>${esc(i.name)}</b> ×${i.n} <span class="small dim">${esc(itemDoes(i.effect, ctx))}</span></span>${act}</div>`;
+    return `<div class="gearrow"><span><b>${esc(i.name)}</b> ×${esc(i.n)} <span class="small dim">${esc(itemDoes(i.effect, ctx))}</span></span>${act}</div>`;
   }).join('') : `<div class="small dim">${esc(w.bagNone)}</div>`;
   // 牌 — what he holds to fight with (得牌), the day's ten lit.
   const held = g.cards ?? [];
@@ -705,7 +710,7 @@ export function gearPopHtml(ctx) {
   const chip = (c) => {
     const cls = `gcard${c.deck || c.hand ? ' in' : ''}${c.picked ? ' picked' : ''}${c.fill ? ' fill' : ''}${c.off_root ? ' off' : ''}`;
     const tip = esc(c.hand ? w.cardsHand : c.off_root ? w.cardsOff : '');
-    const face = `<b>${c.cost}</b> ${esc(c.name)}${c.hand ? ` · ${esc(w.cardsHand)}` : ''}`;
+    const face = `<b>${esc(c.cost)}</b> ${esc(c.name)}${c.hand ? ` · ${esc(w.cardsHand)}` : ''}`;
     return c.hand || c.off_root ? `<span class="${cls}" title="${tip}">${face}</span>` : `<button class="${cls}" data-deck="${esc(c.id)}">${face}</button>`;
   };
   const short = 10 - mine;
@@ -744,7 +749,8 @@ function bookHtml(ctx) {
 function bookDetail(q, ctx) {
   const i = ctx.bookInfo?.id === q.id ? ctx.bookInfo : null, w = ctx.words;
   if (!i) return `<div class="bookdetail small dim">…</div>`;
-  const pays = [i.grant?.progress ? `${w.xw} +${i.grant.progress}` : '', i.grant?.wealth ? `${w.ls} +${i.grant.wealth}` : '', i.grant?.stamina ? `${w.qi} +${i.grant.stamina}` : '', i.gives ?? ''].filter(Boolean).join(' · ');
+  const p = i.pays ?? i.grant ?? {};
+  const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.stamina ? `${w.qi} +${p.stamina}` : '', i.gives ?? ''].filter(Boolean).join(' · ');
   return `<div class="bookdetail">
     ${i.who ? `<div class="small dim">${esc(i.who)}${i.from ? ` · ${esc(i.from.name)}` : ''}</div>` : ''}
     ${i.say ? `<div class="say">${esc(i.say)}</div>` : ''}
@@ -836,7 +842,7 @@ export const trialToldHtml = (told, ctx) => trial({}, { ...ctx, trialTold: told 
 function building(card, ctx) {
   const left = ctx.look?.building?.paint?.length;
   if (!left) return '';
-  return `<div class="card building"><div class="cardtitle">${ctx.words.building}</div>
+  return `<div class="card building"><div class="cardtitle">${esc(ctx.words.building)}</div>
     <div>${esc(ctx.words.buildingLine.replace('{n}', left))}</div></div>`;
 }
 
@@ -854,9 +860,9 @@ export function trayHtml(ctx) {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const act = state === 'offered' && t.kind === 'board'
       ? `<button class="act" data-play="${esc(t.id)}">${t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
-    const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${ctx.words.about}</button>`;
+    const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
-      <div class="taskfoot"><span class="chip">${ctx.words[state]}</span>${act}${tell}</div></div>`;
+      <div class="taskfoot"><span class="chip">${esc(ctx.words[state])}</span>${act}${tell}</div></div>`;
   });
   // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥).
   return tasks.join('');
