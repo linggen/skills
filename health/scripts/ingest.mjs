@@ -380,6 +380,14 @@ const VERBS = {
       s.devices[body.device] = { ...(s.devices[body.device] || {}), cursor: body.cursor };
       saveState(s);
     }
+    // A letter the phone marked read is a quest fact; it never fails the push.
+    if (wrote.some((name) => name.startsWith('letters/'))) {
+      try {
+        writeQuest(SAMPLES);
+      } catch {
+        /* the next batch writes it again */
+      }
+    }
     return { ok: true, mirror_id: s.mirror_id, wrote, kept };
   },
 
