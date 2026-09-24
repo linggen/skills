@@ -14,6 +14,13 @@ memory-recall-count: 3
 user-invocable: true
 cwd: ~/.linggen/skills/dj
 install: install.sh
+quests:
+  # A paired phone's facts (engine: phone facts) → DJ's quests, stamped by
+  # DJ's one writer of quests/dj.json. Never moves a done time back.
+  stamp: node scripts/quest.mjs stamp {id} {at}
+  facts:
+    dj-listen: dj-listen
+    dj-karaoke: dj-karaoke
 permission:
   paths:
     # Pre-grant the skill's own directory so the agent never prompts — not

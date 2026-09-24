@@ -7,10 +7,14 @@
 //   quest.mjs <id>     stamp <id> done now; prints one JSON line
 //   quest.mjs dj-sync  look at what the phones hold (witnessSync) and stamp
 //                      dj-sync only when one gained songs
+//   quest.mjs stamp <id> <at>   the engine's door for a phone fact (SKILL.md
+//                      `quests:`): done at <at> (2026-09-24T14:03:11Z); exit
+//                      0 once the file holds it or a later time, else 1
 //
 // Only the fact crosses — due, done, when — never which song, which list or
 // what was sung. Read-merge-write: every other entry keeps its `done_at`, and
-// an entry this menu does not know stays as it is. A failure here never fails
+// an entry this menu does not know stays as it is. A stamp never moves an
+// entry's `done_at` back. A failure here never fails
 // the action it follows: the CLI always exits 0, and callers swallow errors.
 
 import fs from 'node:fs';
@@ -36,6 +40,14 @@ export const MENU = [
     id: 'dj-sync', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: OPEN,
     title: { zh: '携曲 · 把新歌同步到手机', en: 'Carry the songs · sync new tracks to your phone' },
   },
+  {
+    id: 'dj-listen', period: 'day', reward: 20, stamina: 10, device: 'phone', pool: true, open: OPEN,
+    title: { zh: '听曲 · 在手机上听完一个歌单', en: 'Hear the set · play a playlist through on your phone' },
+  },
+  {
+    id: 'dj-karaoke', period: 'week', reward: 25, stamina: 15, device: 'phone', pool: true, open: OPEN,
+    title: { zh: '随口唱 · 在手机上唱一首卡拉OK', en: 'Sing on the road · a karaoke song on your phone' },
+  },
 ];
 
 /// Where quest facts live. A library kept elsewhere (DJ_DIR — a test) writes
@@ -44,8 +56,16 @@ export const questsDir = (env = process.env) =>
   env.DJ_QUESTS ||
   (env.DJ_DIR ? path.join(env.DJ_DIR, 'data', 'quests') : path.join(env.HOME || '', '.linggen', 'quests'));
 
-/// The file's next body: the menu, each entry's `done_at` from `stamps` when
-/// given there, else from what the file held.
+/// The later of two times, either possibly missing or unreadable.
+export function later(a, b) {
+  const t = (v) => (typeof v === 'string' ? Date.parse(v) : NaN);
+  if (Number.isNaN(t(a))) return Number.isNaN(t(b)) ? null : b;
+  if (Number.isNaN(t(b))) return a;
+  return t(b) > t(a) ? b : a;
+}
+
+/// The file's next body: the menu, each entry's `done_at` the later of what
+/// the file held and `stamps` — a stamp never moves an entry back.
 export function merged(doc, stamps, menu = MENU, app = 'dj') {
   const held = Array.isArray(doc?.quests) ? doc.quests.filter((q) => q && typeof q === 'object') : [];
   const was = new Map(held.map((q) => [q.id, q]));
@@ -53,11 +73,10 @@ export function merged(doc, stamps, menu = MENU, app = 'dj') {
   return {
     app,
     quests: [
-      ...menu.map((m) => ({
-        ...m,
-        due: true,
-        done_at: m.id in stamps ? stamps[m.id] : (was.get(m.id)?.done_at ?? null),
-      })),
+      ...menu.map((m) => {
+        const had = was.get(m.id)?.done_at ?? null;
+        return { ...m, due: true, done_at: m.id in stamps ? later(had, stamps[m.id]) : had };
+      }),
       ...held.filter((q) => !mine.has(q.id)),
     ],
   };
@@ -151,7 +170,23 @@ const real = (p) => {
     return p;
   }
 };
-if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url))) {
+const STAMP_AT = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/;
+
+/// The engine's door: `stamp <id> <at>` → the exit code (0 once held).
+export function stampCli(id, at, { dir = questsDir() } = {}) {
+  const when = new Date(at);
+  if (!STAMP_AT.test(String(at || '')) || Number.isNaN(when.getTime())) return 1;
+  try {
+    stamp(id, { dir, now: when });
+    return 0;
+  } catch {
+    return 1;
+  }
+}
+
+if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url)) && process.argv[2] === 'stamp') {
+  process.exitCode = stampCli(process.argv[3], process.argv[4]);
+} else if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url))) {
   try {
     const id = String(process.argv[2] || '');
     const q = id === 'dj-sync' ? witnessSync() : stamp(id);

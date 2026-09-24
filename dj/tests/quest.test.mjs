@@ -2,12 +2,12 @@
 // written whole — and never which song or list.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MENU, merged, questsDir, stamp, stampQuietly, syncFact, witnessSync } from '../scripts/quest.mjs';
+import { MENU, merged, questsDir, stamp, stampCli, stampQuietly, syncFact, witnessSync } from '../scripts/quest.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const QUEST = path.join(HERE, '..', 'scripts', 'quest.mjs');
@@ -104,4 +104,26 @@ test('witnessSync keeps its memo in DJ\'s own data and stamps only on growth', (
 test('only the fact crosses — no song, list or file', () => {
   const text = JSON.stringify(merged(null, { 'dj-fetch': NOW.toISOString() }));
   for (const leak of ['.mp3', '"artist', '"file', '"songs']) assert.ok(!text.includes(leak), leak);
+});
+
+test('a stamp never moves done_at back', () => {
+  const dir = tmp();
+  stamp('dj-listen', { dir, now: NOW });
+  stamp('dj-listen', { dir, now: new Date('2026-09-20T09:00:00Z') });
+  assert.equal(doneOf(read(dir), 'dj-listen'), NOW.toISOString());
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('the engine door: stamp <id> <at> exits 0 once held, 1 for a bad call', () => {
+  const dir = tmp();
+  assert.equal(stampCli('dj-karaoke', '2026-09-24T14:03:11Z', { dir }), 0);
+  assert.equal(stampCli('dj-karaoke', '2026-09-22T14:03:11Z', { dir }), 0, 'a later time stands');
+  assert.equal(doneOf(read(dir), 'dj-karaoke'), '2026-09-24T14:03:11.000Z');
+  assert.equal(stampCli('dj-nope', '2026-09-24T14:03:11Z', { dir }), 1);
+  assert.equal(stampCli('dj-listen', '2026-09-24', { dir }), 1);
+  const run = (args) => spawnSync(process.execPath, [QUEST, ...args], { env: { ...process.env, DJ_QUESTS: dir } });
+  assert.equal(run(['stamp', 'dj-listen', '2026-09-24T10:00:00Z']).status, 0);
+  assert.equal(run(['stamp', 'dj-listen', 'soon']).status, 1);
+  assert.equal(doneOf(read(dir), 'dj-listen'), '2026-09-24T10:00:00.000Z');
+  fs.rmSync(dir, { recursive: true, force: true });
 });

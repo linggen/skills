@@ -2,11 +2,11 @@
 // same locked atomic write every CFO file takes — and nothing about money.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { MENU, merged, stampQuest } from '../scripts/quest.js';
+import { MENU, cli, merged, stampQuest } from '../scripts/quest.js';
 
 const NOW = new Date('2026-09-24T15:00:00Z');
 
@@ -69,4 +69,33 @@ test('a failing shell is silent — the stamp resolves false, never throws', asy
 test('only the fact crosses — no amount, merchant or file', () => {
   const text = JSON.stringify(merged(null, { 'cfo-import': NOW.toISOString() }));
   for (const leak of ['amount', 'merchant', 'csv', 'pdf', 'balance', 'category"']) assert.ok(!text.includes(leak), leak);
+});
+
+test('a stamp never moves done_at back', async () => {
+  const s = scratch();
+  await stampQuest(s.runBash, 'cfo-review', { now: NOW });
+  await stampQuest(s.runBash, 'cfo-review', { now: new Date('2026-09-20T09:00:00Z') });
+  assert.equal(s.read().quests.find((q) => q.id === 'cfo-review').done_at, NOW.toISOString());
+  assert.equal(merged({ quests: [{ id: 'cfo-sort', done_at: 'garbage' }] }, { 'cfo-sort': NOW.toISOString() }).quests
+    .find((q) => q.id === 'cfo-sort').done_at, NOW.toISOString(), 'an unreadable time gives way');
+  fs.rmSync(s.home, { recursive: true, force: true });
+});
+
+test('the engine door: stamp <id> <at> exits 0 once held, 1 for a bad call', async () => {
+  const s = scratch();
+  const file = s.file;
+  assert.equal(await cli(['stamp', 'cfo-invest', '2026-09-24T14:03:11Z'], { runBash: s.runBash, file }), 0);
+  assert.equal(await cli(['stamp', 'cfo-invest', '2026-09-22T14:03:11Z'], { runBash: s.runBash, file }), 0, 'a later time stands');
+  assert.equal(s.read().quests.find((q) => q.id === 'cfo-invest').done_at, '2026-09-24T14:03:11.000Z');
+  for (const argv of [['stamp', 'cfo-nope', '2026-09-24T14:03:11Z'], ['stamp', 'cfo-invest', '2026-09-24'],
+    ['stamp', 'cfo-invest'], ['nope', 'cfo-invest', '2026-09-24T14:03:11Z']]) {
+    assert.equal(await cli(argv, { runBash: s.runBash, file }), 1, argv.join(' '));
+  }
+  // As a real process, the way the engine runs it.
+  const script = path.join(path.dirname(new URL(import.meta.url).pathname), '..', 'scripts', 'quest.js');
+  const run = (args) => spawnSync('node', [script, ...args], { env: { ...process.env, HOME: s.home } });
+  assert.equal(run(['stamp', 'cfo-import', '2026-09-24T10:00:00Z']).status, 0);
+  assert.equal(run(['stamp', 'cfo-import', 'soon']).status, 1);
+  assert.equal(s.read().quests.find((q) => q.id === 'cfo-import').done_at, '2026-09-24T10:00:00.000Z');
+  fs.rmSync(s.home, { recursive: true, force: true });
 });

@@ -20,6 +20,12 @@ app:
   entry: scripts/index.html
   width: 1200
   height: 880
+quests:
+  # A paired phone's facts (engine: phone facts) → Health's quests, stamped by
+  # Health's one writer of quests/health.json. Never moves a done time back.
+  stamp: node scripts/quest.mjs stamp {id} {at}
+  facts:
+    health-doctor: health-doctor
 permission:
   paths:
     # `edit`, not `read`: a tool's tier is checked against the session's CWD —

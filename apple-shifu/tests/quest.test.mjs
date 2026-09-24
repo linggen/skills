@@ -116,3 +116,17 @@ test('the photo pipeline: a finished backup stamps; the phone\'s archive is read
   assert.equal(byId(read(home))['shifu-scan'].done_at, null);
   fs.rmSync(home, { recursive: true, force: true });
 });
+
+test('the engine door: stamp <id> <when> exits 0 once held, 1 when it could not', () => {
+  const home = scratch();
+  assert.equal(run(home, ['stamp', 'shifu-clear', '2026-09-24T14:03:11Z']).status, 0);
+  assert.equal(byId(read(home))['shifu-clear'].done_at, '2026-09-24T14:03:11Z');
+  assert.equal(run(home, ['stamp', 'shifu-clear', '2026-09-20T14:03:11Z']).status, 0, 'a later time stands');
+  assert.equal(byId(read(home))['shifu-clear'].done_at, '2026-09-24T14:03:11Z', 'never moved back');
+  for (const args of [['stamp', 'shifu-nope', '2026-09-24T14:03:11Z'], ['stamp', 'shifu-clear', '2026-09-24'],
+    ['stamp', 'shifu-clear'], ['stamp']]) {
+    assert.equal(run(home, args).status, 1, args.join(' '));
+  }
+  assert.equal(run(home, ['stamp', 'shifu-clear', '2026-09-25T00:00:00Z'], { SHIFU_QUESTS: '/dev/null/nope' }).status, 1);
+  fs.rmSync(home, { recursive: true, force: true });
+});

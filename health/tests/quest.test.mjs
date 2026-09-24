@@ -5,9 +5,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { MIN_WORKOUT_S, questOf, questsDir, writeQuest } from '../scripts/quest.mjs';
+import { MIN_WORKOUT_S, questOf, questsDir, stamp, writeQuest } from '../scripts/quest.mjs';
 
 const NOW = new Date('2026-09-11T18:00:00Z');
 const row = (end, minutes) => ({
@@ -94,10 +94,10 @@ test('writeQuest keeps the entries it does not know and reads the letters beside
   fs.writeFileSync(path.join(root, 'letters', '2026-09-07.json'), JSON.stringify({ week: '2026-09-07', opened_at: '2026-09-08T07:00:00Z' }));
   writeQuest(path.join(root, 'samples'), quests, NOW);
   const doc = JSON.parse(fs.readFileSync(path.join(quests, 'health.json'), 'utf8'));
-  assert.deepEqual(doc.quests.map((q) => q.id), ['health-workout', 'health-report', 'elsewhere']);
+  assert.deepEqual(doc.quests.map((q) => q.id), ['health-workout', 'health-report', 'health-doctor', 'elsewhere']);
   assert.equal(doc.quests[0].done_at, null, 'the workout is read from the mirror, not kept');
   assert.equal(doc.quests[1].done_at, '2026-09-08T07:00:00.000Z');
-  assert.deepEqual(doc.quests[2], { id: 'elsewhere', x: 1 });
+  assert.deepEqual(doc.quests[3], { id: 'elsewhere', x: 1 });
   assert.deepEqual(fs.readdirSync(quests), ['health.json'], 'no temp file left behind');
   fs.rmSync(root, { recursive: true, force: true });
 });
@@ -115,4 +115,29 @@ test('a pushed letter marked read writes the fact; a failing quest write never f
   const doc = JSON.parse(fs.readFileSync(path.join(dir, 'data', 'quests', 'health.json'), 'utf8'));
   assert.equal(doc.quests.find((q) => q.id === 'health-report').done_at, '2026-09-21T13:00:00.000Z');
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// ── health-doctor: a phone fact, stamped through the engine's door ───────────
+
+test('health-doctor: a stamp sets its time, never moves it back, and survives a rewrite', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'health-quest-'));
+  const quests = path.join(root, 'quests');
+  const doctor = () => JSON.parse(fs.readFileSync(path.join(quests, 'health.json'), 'utf8')).quests.find((q) => q.id === 'health-doctor');
+  assert.equal(stamp('health-doctor', '2026-09-10T08:00:00Z', quests), 0);
+  assert.equal(doctor().done_at, '2026-09-10T08:00:00.000Z');
+  assert.equal(doctor().pool, true);
+  assert.equal(doctor().device, 'phone');
+  assert.equal(stamp('health-doctor', '2026-09-09T08:00:00Z', quests), 0, 'a later time stands');
+  assert.equal(doctor().done_at, '2026-09-10T08:00:00.000Z');
+  writeQuest(path.join(root, 'samples'), quests, NOW);
+  assert.equal(doctor().done_at, '2026-09-10T08:00:00.000Z', 'the rewrite keeps the stamp');
+  assert.equal(stamp('health-workout', '2026-09-10T08:00:00Z', quests), 1, 'a chore a record keeps is never stamped');
+  assert.equal(stamp('health-doctor', '2026-09-10', quests), 1);
+  assert.equal(stamp('health-doctor', '2026-09-11T08:00:00Z', '/dev/null/nope'), 1);
+  const cli = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'scripts', 'quest.mjs');
+  const run = (args) => spawnSync(process.execPath, [cli, ...args], { env: { ...process.env, HEALTH_QUESTS: quests } });
+  assert.equal(run(['stamp', 'health-doctor', '2026-09-11T08:00:00Z']).status, 0);
+  assert.equal(run(['stamp', 'health-doctor', 'soon']).status, 1);
+  assert.equal(doctor().done_at, '2026-09-11T08:00:00.000Z');
+  fs.rmSync(root, { recursive: true, force: true });
 });

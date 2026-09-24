@@ -27,6 +27,14 @@ app:
   entry: scripts/index.html
   width: 1200
   height: 860
+quests:
+  # A paired phone's facts (engine: phone facts) → CFO's quests, stamped by
+  # CFO's one writer of quests/cfo.json. Never moves a done time back.
+  stamp: node scripts/quest.js stamp {id} {at}
+  facts:
+    cfo-import: cfo-import
+    cfo-trends: cfo-review
+    cfo-invest: cfo-invest
 permission:
   paths:
     - { path: ~/.linggen/skills/cfo, mode: edit }

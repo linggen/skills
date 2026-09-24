@@ -1550,10 +1550,12 @@ Never faked: a phone action the Mac never sees has no entry.
 
 | App | Entries |
 |---|---|
-| CFO (`cfo/scripts/quest.js`) | `cfo-import` week · `cfo-review` day · `cfo-sort` week |
-| DJ (`dj/scripts/quest.mjs`) | `dj-fetch` day · `dj-sing` day · `dj-playlist` week · `dj-sync` week (both) — hooks land with DJ's queue rework |
-| Shifu (`apple-shifu/scripts/quest.sh`) | `shifu-scan` · `shifu-security` · `shifu-clear` · `shifu-backup` (both), all week |
-| Health (`health/scripts/quest.mjs`) | `health-workout` day (fixed) · `health-report` week (phone: the week's letter read) |
+| CFO (`cfo/scripts/quest.js`) | `cfo-import` week (both) · `cfo-review` day (both) · `cfo-sort` week · `cfo-invest` week (phone) |
+| DJ (`dj/scripts/quest.mjs`) | `dj-fetch` day · `dj-sing` day · `dj-playlist` week · `dj-sync` week (both) · `dj-listen` day (phone) · `dj-karaoke` week (phone) |
+| Shifu (`apple-shifu/scripts/quest.sh`) | `shifu-scan` · `shifu-security` · `shifu-clear` (both) · `shifu-backup` (both), all week |
+| Health (`health/scripts/quest.mjs`) | `health-workout` day (fixed) · `health-report` week (phone: the week's letter read) · `health-doctor` week (phone) |
+
+Phone-side chores arrive as phone facts: each app's SKILL.md `quests:` maps a fact kind to one of these ids, and the engine runs the app's own writer (`… stamp <id> <at>`).
 
 ### 人间功课 — one a day, and 开府 (built 2026-09-24, rules/chores.mjs)
 

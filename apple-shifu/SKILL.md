@@ -15,6 +15,12 @@ app:
   entry: scripts/index.html
   width: 1100
   height: 800
+quests:
+  # A paired phone's facts (engine: phone facts) → Shifu's quests, stamped by
+  # Shifu's one writer of quests/apple-shifu.json. Never moves a done time back.
+  stamp: bash scripts/quest.sh stamp {id} {at}
+  facts:
+    photos-clean: shifu-clear
 permission:
   paths:
     - { path: /, mode: read }

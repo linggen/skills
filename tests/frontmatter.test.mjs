@@ -20,7 +20,7 @@ const ENGINE_KEYS = [
   'name', 'description', 'tools', 'argument-hint', 'disable-model-invocation', 'user-invocable',
   'allowed-tools', 'allow-skills', 'renamed-from', 'model', 'context', 'memory-context',
   'memory-recall-min-score', 'memory-recall-count', 'agent', 'trigger', 'app', 'permission', 'cwd',
-  'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue',
+  'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue', 'quests',
 ];
 const STANDARD_KEYS = ['license', 'homepage', 'metadata', 'compatibility'];
 const KNOWN = new Set([...ENGINE_KEYS, ...STANDARD_KEYS]);
@@ -109,6 +109,22 @@ export function problemsOf(dir, md) {
     else if (launcher === 'web' && !fs.existsSync(path.join(ROOT, dir, entry))) problems.push(`app.entry \`${entry}\` does not exist`);
   }
   if (fm.has('tools')) problems.push(...toolProblems(fm.get('tools')));
+  if (fm.has('quests')) problems.push(...questProblems(fm.get('quests')));
+  return problems;
+}
+
+/* `quests:` — the skill's writer with both holes the engine fills, and each
+   phone fact kind (`<app>-<verb>`) mapped to a quest id. A kind or id the
+   engine's pattern refuses is never stamped. */
+function questProblems(entry) {
+  const problems = [];
+  const stamp = blockKey(entry, 'stamp');
+  if (!stamp || !stamp.includes('{id}') || !stamp.includes('{at}')) problems.push('quests.stamp needs {id} and {at}');
+  const facts = entry.block.map(l => /^ {4}([^:]+):\s*(.*)$/.exec(l)).filter(Boolean);
+  for (const [, kind, id] of facts) {
+    if (!/^[a-z0-9]+(-[a-z0-9]+)+$/.test(kind) || kind.length > 48) problems.push(`quests.facts kind \`${kind}\` is not <app>-<verb>`);
+    if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(unquote(id.trim()))) problems.push(`quests.facts ${kind}: quest id \`${id}\` is not an id`);
+  }
   return problems;
 }
 
@@ -126,11 +142,12 @@ test('the checks catch what they are for', () => {
   const bad = [
     '---', 'name: other', 'description: ""', 'user-invocable: yes', 'queue: later', 'bogus: 1',
     'app:', '  launcher: web', '  entry: nope.html',
-    'tools:', '  - name: t', '    args:', '      - a', '---', '',
+    'tools:', '  - name: t', '    args:', '      - a',
+    'quests:', '  stamp: node w.js {id}', '  facts:', '    Photos_Clean: x', '---', '',
   ].join('\n');
   const got = problemsOf('lingjing', bad);
   for (const want of ['unknown key `bogus`', 'is not the folder', 'description is missing', 'user-invocable',
-    'queue must be', 'does not exist', 'args is a list', 'no description']) {
+    'queue must be', 'does not exist', 'args is a list', 'no description', 'needs {id} and {at}', 'is not <app>-<verb>']) {
     assert.ok(got.some(p => p.includes(want)), `expected a problem mentioning "${want}" in ${JSON.stringify(got)}`);
   }
 });
