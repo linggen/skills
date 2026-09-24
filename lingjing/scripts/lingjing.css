@@ -580,3 +580,10 @@ button.gcard { cursor: pointer; font: inherit; }
   body.fighting .view { overflow: hidden; }
   body.fighting .focus { position: absolute; inset: 0; padding: 0; overflow: hidden; }
 }
+/* 接下: the row is sealed 已接下, holds, then fades out of the card. */
+.card.offer .offerrow.taken { animation: offerTaken 1.6s ease-in forwards; }
+.tookseal { display: inline-block; padding: 3px 10px; border: 2px solid var(--seal); border-radius: 4px; color: var(--seal);
+  font-family: var(--serif); letter-spacing: .15em; transform: rotate(-6deg); animation: tookSeal .45s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes tookSeal { from { opacity: 0; transform: scale(1.9) rotate(-6deg); } to { opacity: 1; transform: scale(1) rotate(-6deg); } }
+@keyframes offerTaken { 0%, 65% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .card.offer .offerrow.taken, .tookseal { animation: none; } }

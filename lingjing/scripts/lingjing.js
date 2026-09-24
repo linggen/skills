@@ -124,6 +124,7 @@ const view = {
   bookFresh: false,
   bookRow: null, //      the line of the book that is open
   offerRow: null, //     the errand on the stage's offer card that is open
+  tookOffer: null, //    an errand just taken: its row is stamped 已接下, then goes
   doNote: null, //       a page tap the rules refused, in their words, until the next tap
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
   ask: null, //          the 问询 waiting in the ask bar: its line (「说说夫诸」)
@@ -157,7 +158,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
+const ctx = () => ({ look, handedAge, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, atlas: atlasPlaces?.provinces ?? null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -946,8 +947,17 @@ async function doTap(action, id) {
   if (!DOES[action]) return;
   const r = await DOES[action](id).catch(failed);
   keep({ doNote: r.ok ? null : refusal(r) });
-  if (r.ok && action === 'take') keep({ offerRow: null });
+  if (r.ok && action === 'take') tookOffer(id);
   await refresh();
+}
+
+/* 接下 seen: the row takes a 已接下 seal and fades, so a second errand rising
+   into its place never reads as a tap that did nothing (his, 2026-09-24). */
+const TOOK_MS = 1600;
+function tookOffer(id) {
+  const offer = look?.offers?.find((o) => o.id === id);
+  show({ offerRow: null, tookOffer: offer ?? null });
+  setTimeout(() => { if (view.tookOffer?.id === id) show({ tookOffer: null }); }, TOOK_MS);
 }
 
 /* 装备 · 背包: putting a thing on, or taking a pill, is his own tap — the page
