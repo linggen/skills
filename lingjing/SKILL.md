@@ -16,8 +16,10 @@ app:
 # The account behind the game (skill-spec § Cloud): the save follows the
 # player across devices. Declaring it means: sign in to play. The pace is
 # the rules' own stamina inside the save, not a token meter.
+# The save is the game in play and the worlds the player made; the rules'
+# writes take `data/state.json.lock` (skill-spec § Cloud).
 cloud:
-  save: data/state.json
+  save: [data/state.json, data/worlds]
 # The rules always know what the player must choose next, and the scene is
 # the question: every tool answer carries `ask`, and the engine asks it when
 # Ling ends a turn on words alone (2026-09-17 — Terra dropped it three times
@@ -674,6 +676,25 @@ tools:
         required: true
         description: One object per card, each with a `card` kind.
         items: { type: object }
+
+  # The page's one door to the rules (skill-spec § Page door): any verb with
+  # its flags, the same writer Ling's tools use. Never offered to Ling.
+  - name: Verb
+    description: The page runs one rules verb with its flags.
+    page_only: true
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs {{verb}} {{flags}}"
+    tier: edit
+    timeout_ms: 15000
+    max_output_bytes: 4194304
+    args:
+      verb:
+        type: string
+        required: true
+        description: The rules verb (look, win, trade, …).
+      flags:
+        type: argv
+        required: false
+        description: Its flags, each one word — `--id=x`.
 ---
 
 # Lingjing 《灵境》
