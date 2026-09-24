@@ -658,6 +658,9 @@ clear_list() {
   done < "$list"
   printf '{"removed":%d,"refused":%d,"failed":%d,"reasons":[%s]}\n' \
     "$removed" "$refused" "$failed" "${reasons%,}" | tee "$list.result"
+  # Something really went: the quest fact other apps may count. Silent.
+  [ "$removed" -gt 0 ] && "$HERE/quest.sh" shifu-clear
+  return 0
 }
 
 json_str() { printf '"%s"' "$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr -d '\n\r\t')"; }

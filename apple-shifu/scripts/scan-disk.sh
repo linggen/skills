@@ -113,4 +113,4 @@ echo "# Format per line: <last-used>\\t<size>\\t<name>. last-used='never' = no u
 "$(dirname "$0")/scan-applications.sh"
 
 # The finished scan is the quest fact other apps may count. Silent.
-"$(dirname "$0")/quest.sh"
+"$(dirname "$0")/quest.sh" shifu-scan

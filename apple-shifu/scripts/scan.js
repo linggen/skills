@@ -34,7 +34,7 @@ export async function persistScanSnapshot(summary, sessionId) {
   const json = JSON.stringify(summary, null, 1);
   const stamp = `${summary.date || 'scan'}-${Date.now()}`;
   const cmd = `mkdir -p "${dir}/scans" && printf '%s\\n' ${shellEsc(json)} > "${dir}/scans/${stamp}.json" && printf '%s\\n' ${shellEsc(json)} > "${dir}/latest.json"`
-    + ' && "$HOME/.linggen/skills/apple-shifu/scripts/quest.sh"';
+    + ' && "$HOME/.linggen/skills/apple-shifu/scripts/quest.sh" shifu-scan';
   await bash(cmd, sessionId);
 }
 
@@ -522,6 +522,9 @@ export async function runSecurityScan(sessionId) {
   checks.push({ label: 'Remote Login', status: rlOff ? 'green' : 'yellow', detail: rlOff ? 'disabled' : 'enabled' });
 
   const passing = checks.filter(c => c.status === 'green').length;
+  // The finished check is the quest fact other apps may count (quest.sh) —
+  // never awaited into the result, and a failure never fails the check.
+  bash('"$HOME/.linggen/skills/apple-shifu/scripts/quest.sh" shifu-security', sessionId).catch(() => {});
   return { checks, passing, total: checks.length, ports: portLines.slice(0, 10) };
 }
 

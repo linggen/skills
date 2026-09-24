@@ -19,3 +19,6 @@ lsof -iTCP -sTCP:LISTEN -nP 2>/dev/null | tail -n +2 | head -20
 
 echo "=== REMOTE_LOGIN ==="
 systemsetup -getremotelogin 2>/dev/null
+
+# The finished check is the quest fact other apps may count. Silent.
+"$(dirname "$0")/quest.sh" shifu-security

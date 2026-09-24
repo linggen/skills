@@ -144,6 +144,10 @@ test('clear: the guard refuses anything that does not fit its rule', () => {
   ]);
   assert.equal(r.refused, 9, JSON.stringify(r.reasons));
   assert.equal(r.removed, 2);
+  // Something went: the quest fact, into the test's own data dir (quest.sh).
+  const quests = JSON.parse(fs.readFileSync(path.join(fx.data, 'quests', 'apple-shifu.json'), 'utf8'));
+  assert.ok(quests.quests.find((q) => q.id === 'shifu-clear').done_at);
+  assert.ok(!JSON.stringify(quests).includes('luffy'), 'never what was cleared');
   assert.ok(!fs.existsSync(path.join(fx.home, 'w/luffy/target')));
   assert.ok(fs.existsSync(path.join(fx.home, 'w/src/target/main.rs')), 'tracked source survives');
   assert.ok(fs.existsSync(path.join(outside, 'precious')), 'outside survives');

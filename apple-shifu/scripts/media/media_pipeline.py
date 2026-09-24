@@ -623,6 +623,7 @@ def cmd_scan(_args):
              extra={'flagged': len(flagged), 'groups': len(groups)})
     update_state(scan={'scanned': len(rows), 'flagged': len(flagged),
                        'at': datetime.now().isoformat(timespec='seconds')})
+    witness_archive()
 
 
 # ── backup (copy + verify) ────────────────────────────────────────────────
@@ -1050,6 +1051,47 @@ def log_backup(kind, dest, items, size, status, error=''):
     with open(BACKUP_LOG, 'a') as f:
         f.write(json.dumps(row) + '\n')
     tell_perception(kind, items, size, status)
+    if kind in ('phone_mac', 'mac_disk'):
+        stamp_quest(status, items)
+
+
+QUEST_SH = Path(__file__).resolve().parent.parent / 'quest.sh'
+
+
+def witness_archive():
+    """The phone's own Back up (POST /api/media/backup) is archived by the
+    engine, with no Shifu script running; its record is archive.jsonl's `at`
+    (local time, no zone). The scan the engine runs after a phone's uploads
+    reads it and hands the newest to quest.sh, which never moves a done time
+    back — so an old backup read again changes nothing."""
+    newest, now = None, datetime.now(timezone.utc)
+    for r in load_jsonl(DATA_DIR / 'archive.jsonl'):
+        try:
+            t = datetime.fromisoformat(str(r.get('at')).replace('Z', '+00:00')).astimezone(timezone.utc)
+        except Exception:
+            continue
+        if t <= now and (newest is None or t > newest):  # a row from the future is no witness
+            newest = t
+    if newest is None:
+        return
+    try:
+        subprocess.run(['bash', str(QUEST_SH), 'shifu-backup', newest.strftime('%Y-%m-%dT%H:%M:%SZ')],
+                       timeout=10, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+
+def stamp_quest(status, items):
+    """A finished backup that copied something is the quest fact other apps
+    may count (scripts/quest.sh) — when, never what. Never raises: a quest
+    note that can break a backup is worse than none."""
+    if status != 'done' or not items:
+        return
+    try:
+        subprocess.run(['bash', str(QUEST_SH), 'shifu-backup'], timeout=10,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
 
 
 def tell_perception(kind, items, size, status):
