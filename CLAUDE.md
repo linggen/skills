@@ -17,6 +17,7 @@ Never `rsync --delete` (or rm-and-copy) into `~/.linggen/skills/<name>/` — the
 ## Conventions
 
 - Syntax-check JS with `node --check` before syncing; there is no build step — files are served as-is.
+- Before committing: `node --test tests/` at the repo root (every SKILL.md frontmatter in the engine's shape; every script parses, every `.sh` passes `bash -n`, every page's local assets exist), plus the skill's own `node --test <skill>/tests/*.test.mjs`.
 - Skill JS runs in a sandboxed iframe: no `window.confirm/prompt` (silent no-ops in the app shell) — use the shared dialog helpers.
 - Files written via `/api/bash` must end with a trailing newline (sentinel-strip gotcha).
 - Chat panels mount through each skill's `chat-bridge.js` (`LinggenUI.mount`); app pages get `?app_mode=1`, and `&in_launcher=1` when hosted inside the unified launcher.
