@@ -5,9 +5,9 @@
 //   FIXED  — the library grid: the page owns it, the agent never touches it.
 //   DYNAMIC — the #set panel: filled ONLY by the agent via PageUpdate.
 
-import './chat-bridge.js'; // sets window.LinggenUI
+import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { runBash, sq, runAction as action } from './bash.js';
-import { listSkillSessions } from './api.js';
+import { listSkillSessions } from '/shared/api.js';
 import { loadConfig, loadLibrary, trackId, isOwned } from './library.js';
 import { ensureBins, downloadTrack } from './download.js';
 import { attachLyrics } from './lyrics.js';

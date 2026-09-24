@@ -1,7 +1,8 @@
 // Apple Shifu v2 — orchestrator
 // Runs hardware probe on open, sends data to model, renders model's page JSON.
 
-import { listSkillSessions } from './api.js';
+import './legacy-keys.js';
+import { listSkillSessions } from '/shared/api.js';
 import { runScan, runDeepFileScan, persistScanSnapshot, persistReadout } from './scan.js';
 import { buildReadout } from './mac-readout.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';

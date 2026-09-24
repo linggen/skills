@@ -82,7 +82,16 @@ const server = http.createServer(async (req, res) => {
     } catch (e) {res.end(JSON.stringify({exit_code: 1, stderr: e.message}));}
     return;
   }
-  if (url.pathname === '/chat-bridge.js') {
+  // The engine's page helpers (/shared/*), stood in for: no engine here.
+  if (url.pathname === '/shared/api.js') {
+    res.setHeader('Content-Type', 'text/javascript');
+    res.end('export async function listSkillSessions() { return []; }'); return;
+  }
+  if (url.pathname === '/shared/app-mode.js') {
+    res.setHeader('Content-Type', 'text/javascript');
+    res.end(''); return;
+  }
+  if (url.pathname === '/shared/chat-bridge.js') {
     res.setHeader('Content-Type', 'text/javascript');
     res.end(`window.LinggenUI = {mount: async (node) => {
       node.textContent = 'Synthetic-data preview. Live chat is available in Linggen.';

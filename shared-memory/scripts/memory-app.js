@@ -17,18 +17,16 @@
 // panel. Everything heavy moves to the click-driven hippocampus flow
 // (SKILL.md slash commands).
 
+import { fetchDefaultModel, fetchSessionMessages, listSkillSessions } from '/shared/api.js';
 import {
-  fetchDefaultModel,
   fetchMemoryCount,
   fetchMemoryDays,
   fetchMemoryIssues,
   fetchMemoryStats,
-  fetchSessionMessages,
   lingMemBase,
-  listSkillSessions,
   readJsonFile,
   writeJsonFile,
-} from './api.js';
+} from './memory-api.js';
 import { applyPageUpdate, parsePageBlock, getCurrentPage, restorePage } from './page-renderer.js';
 
 // The REGISTERED skill name — session create resolves the skill's

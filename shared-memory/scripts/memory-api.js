@@ -1,5 +1,6 @@
-// Linggen API client for the memory dashboard.
-const API_BASE = '';
+// The memory dashboard's own calls: the ling-mem daemon (through /api/bash)
+// and the JSON files it keeps. Sessions and models come from the engine
+// (/shared/api.js).
 
 // Run a shell command through Linggen's /api/bash proxy. The engine's
 // BashRequest requires a `project_root` field — commands here use
@@ -7,61 +8,13 @@ const API_BASE = '';
 // present (mirrors the pulse skill's `/tmp` convention). Returns the
 // raw response (use `.stdout`), or null if the request failed.
 async function bashExec(command) {
-  const res = await fetch(`${API_BASE}/api/bash`, {
+  const res = await fetch(`/api/bash`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ project_root: '/tmp', command }),
   });
   if (!res.ok) return null;
   return res.json();
-}
-
-export async function fetchModels() {
-  const res = await fetch(`${API_BASE}/api/models`);
-  if (!res.ok) throw new Error('Failed to fetch models');
-  return res.json();
-}
-
-export async function fetchDefaultModel() {
-  const res = await fetch(`${API_BASE}/api/config`);
-  if (!res.ok) return null;
-  const config = await res.json();
-  const defaults = config.routing?.default_models;
-  return defaults && defaults.length > 0 ? defaults[0] : null;
-}
-
-export async function createSession(title, skill) {
-  const res = await fetch(`${API_BASE}/api/sessions`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, skill }),
-  });
-  if (!res.ok) throw new Error(`Failed to create session: ${res.status}`);
-  return res.json();
-}
-
-export async function listSkillSessions(skill) {
-  const res = await fetch(`${API_BASE}/api/skill-sessions?skill=${encodeURIComponent(skill)}`);
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.sessions || [];
-}
-
-export async function removeSkillSession(skill, sessionId) {
-  const res = await fetch(`${API_BASE}/api/skill-sessions`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ skill, session_id: sessionId }),
-  });
-  if (!res.ok) throw new Error('Failed to delete session');
-}
-
-export async function fetchSessionMessages(skill, sessionId) {
-  const params = new URLSearchParams({ skill, session_id: sessionId });
-  const res = await fetch(`${API_BASE}/api/skill-sessions/state?${params}`);
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.messages || [];
 }
 
 // ── ling-mem daemon proxy ──

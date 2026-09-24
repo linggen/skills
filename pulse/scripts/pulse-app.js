@@ -15,7 +15,7 @@
 // agent permission system, so the page does its own filesystem work).
 
 import { applyPageUpdate, loadSession, getSession, setOnChange, setConfig, setOnTabRender, setOnRescan, setOnDraft, renderAll, setSelfHandle, setCommentedThreadUrls, getCommentedThreadUrls, isThreadCommented, setDismissedUrls, addDismissedUrl, getDismissedUrls, setDismissedGroups, addDismissedGroup, resetPage, mentionGroupKey, toggleMentionGroup, stampLaneScan } from './page-render.js';
-import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './api.js';
+import { readPulseConfig, replayRuntimeGrants, applyCompactConfig } from './pulse-api.js';
 import { normalizeMention, buildMentionBlock } from './mention-policy.js';
 import { normalizeRepoPaths, buildDigestCommand, parseDigestOutput, renderDigestBlock } from './product-digest.js';
 
@@ -1482,7 +1482,7 @@ async function mountChat() {
   }
   // PATCH the workspace grant onto whatever session this chat owns —
   // engine starts each session with SKILL.md grants only. The chat
-  // session is separate from the draft session created in api.js, so we
+  // session is separate from any draft session, so we
   // must replay the user's configured workspace_path here too. Fires for
   // both fresh-created sessions and ones the iframe handshake assigns
   // mid-mount. Track the in-flight promise so the init prompt and the

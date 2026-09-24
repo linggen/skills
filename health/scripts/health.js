@@ -16,8 +16,8 @@
 // no phone paired has no body data at all. And the agent's voice lives in the
 // conversation, never on the view — nothing here explains the page.
 
-import './chat-bridge.js'; // sets window.LinggenUI
-import { listSkillSessions } from './api.js';
+import '/shared/chat-bridge.js'; // sets window.LinggenUI
+import { listSkillSessions } from '/shared/api.js';
 import { verb } from './bash.js';
 import { focusView } from './focus-view.js';
 import { candidatesOf, cardsOf, homeOf } from './home.js';

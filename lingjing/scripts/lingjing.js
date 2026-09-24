@@ -4,8 +4,8 @@
 // played. Every other tap on the stage — Buy, a place, a practice card — is
 // a word to Ling, sent as the player's own line; Ling and the rules do the rest.
 
-import './chat-bridge.js';
-import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from './api.js';
+import '/shared/chat-bridge.js';
+import { listSkillSessions, pickResumable, fetchCloud, syncCloud, signIn } from '/shared/api.js';
 import { verb, content } from './rules.js';
 import { newBoard, tap } from './board.js';
 import { act, begin, foeStep, foeTurn, idle, missingCards, offers as boutOffers, tokenOf, view as boutView } from './battle.js';

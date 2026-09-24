@@ -61,7 +61,7 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
   install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"
   install -m 0644 "$SOURCE_DIR/index.html"  "$SKILL_DIR/index.html"
   install -m 0644 "$SOURCE_DIR/product-spec.md" "$SKILL_DIR/product-spec.md"
-  for f in pulse.html pulse-app.js chat-bridge.js api.js page-render.js \
+  for f in pulse.html pulse-app.js pulse-api.js page-render.js \
            pulse.css style.css \
            settings.html settings.js settings.css list-text.js mention-policy.js product-digest.js; do
     install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"

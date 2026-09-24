@@ -4,8 +4,8 @@
 //   DYNAMIC — the #insights region, updated ONLY by the agent via PageUpdate
 //             (month narratives, goal cards, drafts). See SKILL.md schema.
 // Statements are parsed + redacted in-browser; raw files never reach the model.
-import './chat-bridge.js'; // sets window.LinggenUI
-import { listSkillSessions } from './api.js';
+import '/shared/chat-bridge.js'; // sets window.LinggenUI
+import { listSkillSessions } from '/shared/api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
 import { toLedgerRows, mergeImport, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
