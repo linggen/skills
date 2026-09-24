@@ -44,7 +44,7 @@ button:disabled { cursor: default; }
   #chat-panel { border-left: none; border-top: 1px solid var(--line); }
 }
 
-.scene { display: flex; flex-direction: column; }
+.scene { display: flex; flex-direction: column; container: scene / inline-size; }
 
 /* ── status strip ── */
 .status { flex: none; display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--line);
@@ -101,11 +101,13 @@ button:disabled { cursor: default; }
 .gate-card .note { margin-top: 10px; font-size: 12px; color: var(--seal); }
 
 /* ── the view: ink hills, the place, Yinyue, the focus card ── */
-.view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(180deg, var(--sky-a), var(--sky-b)); }
+.view { position: relative; flex: 1; min-height: 0; overflow: hidden; background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
+        /* Her room beside the cards: the cards start where she ends. */
+        --her-w: 240px; --her-h: 420px; --stage-room: calc(var(--her-w) + 50px); }
 .backdrop { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 62%; color: var(--text); }
 .place { position: absolute; top: 14px; left: 20px; font-family: var(--serif); font-size: 16px; color: var(--dim); z-index: 1; }
 .stage { position: absolute; left: 24px; bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; z-index: 1; }
-.stage .body { position: relative; width: 240px; height: 420px; display: flex; align-items: flex-end; justify-content: center; }
+.stage .body { position: relative; width: var(--her-w); height: var(--her-h); display: flex; align-items: flex-end; justify-content: center; }
 .stage .pet { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; color-scheme: normal; }
 .stage[hidden], .stage .pet[hidden] { display: none; }
 .moon { width: 96px; height: 96px; border-radius: 50%;
@@ -113,7 +115,7 @@ button:disabled { cursor: default; }
         box-shadow: 0 0 22px 4px rgba(190, 210, 225, .55); animation: breathe 4s ease-in-out infinite; }
 @keyframes breathe { 50% { transform: scale(.97); box-shadow: 0 0 30px 8px rgba(190, 210, 225, .7); } }
 .stage b { font-family: var(--serif); font-weight: 600; font-size: 15px; color: var(--yinyue); }
-.focus { position: absolute; top: 48px; right: 24px; bottom: 20px; left: 290px; overflow-y: auto;
+.focus { position: absolute; top: 48px; right: 24px; bottom: 20px; left: var(--stage-room); overflow-y: auto;
          display: flex; flex-direction: column; gap: 12px; }
 .focus .card { background: color-mix(in srgb, var(--surface) 94%, transparent); width: 100%; max-width: 540px; margin: 0 auto; padding: 14px 16px; flex: none; }
 /* Centred when the cards fit, scrolled from the top when they do not. `justify-content:
@@ -411,7 +413,7 @@ body.fighting .bside .bwho { font-size: 30px; }
 .bookdetail .say { font-family: var(--serif); }
 .act.quiet { background: transparent; border-color: var(--line); color: var(--dim); }
 /* The ask bar: one field for every 问询, outside the stage's repaint. */
-.askbar { position: absolute; left: 290px; right: 24px; bottom: 20px; z-index: 40; display: flex; align-items: center; gap: 8px; max-width: 640px; margin: 0 auto;
+.askbar { position: absolute; left: var(--stage-room); right: 24px; bottom: 20px; z-index: 40; display: flex; align-items: center; gap: 8px; max-width: 640px; margin: 0 auto;
           padding: 8px 10px; background: var(--surface); border: 1px solid var(--ling); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / 16%); }
 .askbar[hidden] { display: none; }
 .askbar .asktopic { flex: none; font-family: var(--serif); color: var(--ling); font-size: 13px; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -555,3 +557,26 @@ button.gcard { cursor: pointer; font: inherit; }
 .card.lundao .lundaodots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ling); }
 .card.lundao .lundaodots i.on { background: var(--ling); }
 .card.lundao .lundaodots span { margin-left: 6px; }
+
+/* ── Narrow scenes ── measured on the scene itself, not the window: the chat
+   beside it takes 440px. Narrower, she stands smaller; narrower still, the
+   stage stacks — she above, the cards below, one column that scrolls, and
+   nothing wider than the screen. */
+@container scene (max-width: 820px) {
+  .view { --her-w: 170px; --her-h: 300px; }
+}
+@container scene (max-width: 600px) {
+  .status { padding: 8px 12px; gap: 8px 12px; }
+  .xw { min-width: 120px; }
+  .view { display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; --her-w: 120px; --her-h: 200px; }
+  .place { position: relative; top: auto; left: auto; padding: 10px 16px 0; }
+  .stage { position: relative; left: auto; bottom: auto; align-self: center; margin-top: 4px; flex: none; }
+  .focus { position: relative; inset: auto; overflow: visible; padding: 8px 16px 16px; flex: none; }
+  .focus > :first-child { margin-top: 0; }
+  .focus > :last-child { margin-bottom: 0; }
+  .askbar { position: sticky; left: auto; right: auto; bottom: 8px; margin: 0 12px 8px; max-width: none; flex: none; }
+  .tray { padding: 8px 12px 10px; }
+  #tray { grid-template-columns: minmax(0, 1fr); }
+  body.fighting .view { overflow: hidden; }
+  body.fighting .focus { position: absolute; inset: 0; padding: 0; overflow: hidden; }
+}
