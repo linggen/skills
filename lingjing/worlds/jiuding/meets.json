@@ -362,6 +362,52 @@
     }
    }
   ],
+  "荆": [
+   {
+    "item": "dansha",
+    "at": [
+     "jingshan",
+     "wuxia"
+    ],
+    "line": {
+     "zh": "山崖的裂缝里露出一点红，是一小块丹砂。",
+     "en": "A fleck of red shows in a crack in the cliff — a small lump of cinnabar."
+    }
+   },
+   {
+    "item": "lingzhi",
+    "at": [
+     "wuxia",
+     "jingshan"
+    ],
+    "line": {
+     "zh": "峡边的老树根下，一朵灵芝挨着青苔。",
+     "en": "Under an old root by the gorge, a lingzhi beside the moss."
+    }
+   },
+   {
+    "wealth": 8,
+    "at": [
+     "yunmeng",
+     "junshan"
+    ],
+    "line": {
+     "zh": "芦苇丛里搁浅了一只小船，舱底有几块灵石。",
+     "en": "A small boat aground in the reeds, a few spirit stones in its hold."
+    }
+   },
+   {
+    "wealth": 6,
+    "at": [
+     "xiangshui",
+     "ying"
+    ],
+    "line": {
+     "zh": "祠前的石缝里，有人塞了几块灵石还愿。",
+     "en": "In a crack before the shrine someone has tucked a few spirit stones, a vow repaid."
+    }
+   }
+  ],
   "*": [
    {
     "item": "ginseng",

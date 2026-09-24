@@ -1,0 +1,152 @@
+{
+ "version": 1,
+ "id": "06-town",
+ "chapter": "06-jing",
+ "at": "ying",
+ "place": {
+  "zh": "郢 · 城门",
+  "en": "Ying · The city gate"
+ },
+ "setup": {
+  "zh": "使者向你行礼：我家主君听说，有人带着周的鼎走遍天下。他让我问一句——鼎之大小轻重，几何？城里的坊市照常开着：羽毛、齿革、丹砂，还有做箭的箘簵竹。",
+  "en": "The envoy bows: my lord has heard that someone carries the cauldrons of Zhou across the world. He bids me ask one thing — how big are the cauldrons, and how heavy? Inside the city the market is open as ever: feathers, ivory and hides, cinnabar, and the Jun and Lu bamboo that makes arrows."
+ },
+ "recap": {
+  "zh": "郢都的使者替楚君来问：你带着的鼎，有多大，有多重。",
+  "en": "An envoy of Ying asked, on his lord's behalf, how big and how heavy the cauldrons you carried were."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "楚庄王当年也这样问过。王孙满没告诉他。",
+    "en": "King Zhuang of Chu asked the same, once. Wangsun Man didn't tell him."
+   },
+   "alone": {
+    "zh": "楚子问鼎之大小轻重——王孙满没有告诉他。",
+    "en": "The lord of Chu once asked the size and weight of the cauldrons; Wangsun Man did not tell him."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "使者等着你回话。风暴在南边，君山那边。",
+    "en": "The envoy waits for your answer. The storm is to the south, over Junshan."
+   }
+  }
+ ],
+ "buttons": [
+  "answer",
+  "isle",
+  "market"
+ ],
+ "exits": [
+  {
+   "id": "answer",
+   "label": {
+    "zh": "在德不在鼎",
+    "en": "In virtue, not in the cauldron"
+   },
+   "means": "answers the envoy as Wangsun Man did: a cauldron's weight lies in virtue, not in the bronze, and may not be asked",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你说：在德不在鼎。德之休明，虽小，重也；其奸回昏乱，虽大，轻也。鼎之轻重，未可问也。使者愣了一下，深深行礼，退了回去。",
+      "en": "You say: in virtue, not in the cauldron. Where virtue is bright, a cauldron is heavy however small; where it is dark and false, it is light however large. The weight of the cauldrons may not be asked. The envoy is taken aback, bows deeply, and withdraws."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你刚才那样答，她会喜欢你的。",
+      "en": "The way you just answered — she would have liked you."
+     },
+     "alone": {
+      "zh": "使者走远了。风里像有人轻轻笑了一声。",
+      "en": "The envoy is gone. On the wind, something like a soft laugh."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "brag",
+   "means": "boasts of the cauldrons, tells the envoy how big and heavy they are, shows them off",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你把鼎拿出来给他看，说每一口都有山那么重。使者的眼睛亮了，匆匆告退。城里的人说，楚君要点兵了。",
+      "en": "You show him the cauldrons and say each is as heavy as a mountain. The envoy's eyes light up; he hurries off. In the city they say the lord of Chu is mustering troops."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "……鼎不是拿来比的。",
+      "en": "…Cauldrons aren't for showing off."
+     },
+     "alone": {
+      "zh": "鼎不是拿来比的。",
+      "en": "Cauldrons are not for showing off."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "refuse",
+   "means": "refuses to answer the envoy, sends him away",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你不答。使者等了一会儿，走了，回头看了你好几眼。",
+      "en": "You do not answer. The envoy waits a while, then goes, looking back at you more than once."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "isle",
+   "label": {
+    "zh": "去君山",
+    "en": "To Junshan"
+   },
+   "means": "goes south to Junshan, into the storm",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你往南走，风越来越大。君山立在湖中间，被什么东西绕了一圈又一圈。",
+      "en": "South, into a rising wind. Junshan stands in the middle of the lake, wound round and round by something."
+     }
+    }
+   ],
+   "next": "06-isle"
+  },
+  {
+   "id": "market",
+   "label": {
+    "zh": "先逛坊市",
+    "en": "The market first"
+   },
+   "means": "goes shopping, asks about the market, wants to buy or sell",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "丹砂红得像火，羽毛一捆一捆扎着。卖箭竹的人说，箘簵做的箭，射得最直。",
+      "en": "The cinnabar is red as fire and the feathers are tied in bundles. The arrow-bamboo seller says arrows of Jun and Lu fly straightest."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

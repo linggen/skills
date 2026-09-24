@@ -1,0 +1,126 @@
+{
+ "version": 1,
+ "id": "06-arrive",
+ "chapter": "06-jing",
+ "at": "yunmeng",
+ "place": {
+  "zh": "云梦泽 · 芦苇",
+  "en": "The Yunmeng Marsh · The reeds"
+ },
+ "setup": {
+  "zh": "溯江往西，江面越来越宽，宽到看不见岸——是云梦泽。芦苇高过人头，风从南边一阵一阵压过来。洞庭那边的天是黑的，已经八十一天了。",
+  "en": "Up the Jiang westward the river widens until the banks are lost: the Yunmeng Marsh. The reeds stand taller than a man, and the wind comes pressing up from the south in gusts. The sky over Dongting has been black for eighty-one days."
+ },
+ "recap": {
+  "zh": "溯江到了云梦泽；南边洞庭的天，黑了八十一天。",
+  "en": "Up the Jiang to the Yunmeng Marsh; to the south, the sky over Dongting had been black for eighty-one days."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "荆",
+   "here": "荆"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "风暴底下有鼎。它的气被什么吞着——一口一口，吞不完。",
+    "en": "There's a cauldron under the storm. Something is swallowing its breath — mouthful after mouthful, and never done."
+   },
+   "alone": {
+    "zh": "风暴底下有鼎。它的气正被什么一口一口吞着。",
+    "en": "There is a cauldron under the storm. Something is swallowing its breath, mouthful after mouthful."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "撑船的人说：郢都来了使者，正在打听一个带着鼎的人。",
+    "en": "A boatman says: an envoy has come from Ying, asking after someone who carries cauldrons."
+   }
+  }
+ ],
+ "buttons": [
+  "town",
+  "boatman"
+ ],
+ "exits": [
+  {
+   "id": "town",
+   "label": {
+    "zh": "去郢",
+    "en": "Go to Ying"
+   },
+   "means": "goes to the city, to Ying, to meet the envoy",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你穿过芦苇往西北走。郢都的城门口，一个穿楚服的使者已经等着了。",
+      "en": "Through the reeds north-west. At the gate of Ying an envoy in the dress of Chu is already waiting."
+     }
+    }
+   ],
+   "next": "06-town"
+  },
+  {
+   "id": "boatman",
+   "label": {
+    "zh": "问撑船的人",
+    "en": "Ask the boatman"
+   },
+   "means": "asks the boatman about the storm and the lake",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "他说：风暴一起，湖里就有东西翻身，大得像一座山。有人看见它吐出一堆骨头——是象的。",
+      "en": "He says: when the storm rises something turns over in the lake, as big as a hill. Someone saw it spit out a heap of bones — an elephant's."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "吞了象，三年才吐骨头。……是巴蛇。",
+      "en": "Swallows an elephant and gives up the bones three years later. …It's the Ba snake."
+     },
+     "alone": {
+      "zh": "食象，三岁而出其骨——是巴蛇。",
+      "en": "It eats an elephant and gives up the bones in three years: the Ba snake."
+     }
+    }
+   ],
+   "stay": true
+  },
+  {
+   "id": "south",
+   "means": "goes straight south to Dongting through the storm",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你往南走了半日，风把芦苇压平，雨横着打过来，走不动了。",
+      "en": "Half a day south the wind flattens the reeds and the rain comes sideways; you can go no further."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "先去郢。那个使者在等你。",
+      "en": "Ying first. That envoy is waiting for you."
+     },
+     "alone": {
+      "zh": "风太大。郢在西北。",
+      "en": "The wind is too strong. Ying lies north-west."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

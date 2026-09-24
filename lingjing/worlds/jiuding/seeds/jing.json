@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "province": "荆",
+  "_about": "奇遇 seeds for 荆 — one authored line each, from the province's heritage; Ling grows the tale from it. `source` is what the player learns. A seed names a creature only when the creature has its card.",
+  "seeds": [
+    {
+      "id": "jing-01",
+      "kind": "province-tale",
+      "line": {
+        "zh": "郢都的老臣说，先君曾在周的边境阅兵，派人去问鼎有多重。",
+        "en": "An old minister of Ying says a lord of Chu once paraded his army on Zhou's border and sent to ask how heavy the cauldrons were."
+      },
+      "source": {
+        "zh": "《左传·宣公三年》：楚子伐陆浑之戎，遂至于雒，观兵于周疆。定王使王孙满劳楚子。楚子问鼎之大小轻重焉。",
+        "en": "Zuo Zhuan, Duke Xuan 3: the lord of Chu paraded his army on Zhou's border; King Ding sent Wangsun Man to greet him, and the lord of Chu asked the size and weight of the cauldrons."
+      }
+    },
+    {
+      "id": "jing-02",
+      "kind": "province-tale",
+      "line": {
+        "zh": "酒肆里有人说，从前有只鸟三年不飞不叫，一飞冲天，一鸣惊人。",
+        "en": "Someone in a wine-shop says there was once a bird that neither flew nor sang for three years — then flew to heaven and startled the world with one cry."
+      },
+      "source": {
+        "zh": "《史记·楚世家》：三年不蜚，蜚将冲天；三年不鸣，鸣将惊人。",
+        "en": "Records of the Grand Historian, Chu: three years without flying — it will fly to the sky; three years without a cry — its cry will startle men."
+      }
+    },
+    {
+      "id": "jing-03",
+      "kind": "province-tale",
+      "line": {
+        "zh": "荆山下一个没有脚的人抱着一块石头哭，说那是玉。",
+        "en": "Under Mount Jing a man with no feet weeps over a stone, saying it is jade."
+      },
+      "source": {
+        "zh": "《韩非子·和氏》：楚人和氏得玉璞楚山中……和乃抱其璞而哭于楚山之下。",
+        "en": "Han Feizi, \"Mr He\": He of Chu found an uncut jade in the Chu hills… he clasped it and wept at the foot of the hills."
+      }
+    },
+    {
+      "id": "jing-04",
+      "kind": "province-tale",
+      "line": {
+        "zh": "江边一个披着头发的人一边走一边唱，渔父问他为什么这样憔悴。",
+        "en": "By the river a man with loose hair walks and chants; a fisherman asks why he is so worn."
+      },
+      "source": {
+        "zh": "《史记·屈原贾生列传》：屈原至于江滨，被发行吟泽畔，颜色憔悴，形容枯槁。渔父见而问之。",
+        "en": "Records of the Grand Historian, Qu Yuan: he came to the riverbank, hair loose, chanting by the marsh, gaunt and haggard; a fisherman saw him and asked."
+      }
+    },
+    {
+      "id": "jing-05",
+      "kind": "province-tale",
+      "line": {
+        "zh": "五月初五，汨罗江上划龙舟，说是去救一个投江的人。",
+        "en": "On the fifth day of the fifth month they race dragon boats on the Miluo, to save, they say, a man who threw himself into the river."
+      },
+      "source": {
+        "zh": "《荆楚岁时记》：五月五日……竞渡，俗为屈原投汨罗日，伤其死所，故并命舟楫以拯之。",
+        "en": "Annals of Jing and Chu: on the fifth of the fifth month there are boat races; folk say it was the day Qu Yuan drowned in the Miluo, and the boats set out to save him."
+      }
+    },
+    {
+      "id": "jing-06",
+      "kind": "province-tale",
+      "line": {
+        "zh": "叶县的人说，他们的公爷满屋子画龙，真龙来了，他吓跑了。",
+        "en": "The people of She say their lord painted dragons all over his house — and when a real dragon came, he fled."
+      },
+      "source": {
+        "zh": "《新序·杂事》：叶公子高好龙……于是天龙闻而下之……叶公见之，弃而还走。",
+        "en": "Xinxu: the Duke of She loved dragons; a heavenly dragon heard and came down; the Duke saw it and ran."
+      }
+    },
+    {
+      "id": "jing-07",
+      "kind": "province-tale",
+      "line": {
+        "zh": "渡船的船帮上刻着一道印子，船家说，是一个楚人落了剑刻的。",
+        "en": "A notch is cut in the side of the ferry; the ferryman says a man of Chu cut it where his sword fell in."
+      },
+      "source": {
+        "zh": "《吕氏春秋·察今》：楚人有涉江者，其剑自舟中坠于水，遽契其舟曰：是吾剑之所从坠。",
+        "en": "Lüshi Chunqiu: a man of Chu crossing the river dropped his sword overboard, and at once notched the boat: this is where my sword fell."
+      }
+    },
+    {
+      "id": "jing-08",
+      "kind": "province-tale",
+      "line": {
+        "zh": "市上有人卖矛又卖盾，说他的矛什么都刺得穿，他的盾什么都刺不穿。",
+        "en": "A man in the market sells spears and shields: his spear pierces anything, he says, and nothing pierces his shield."
+      },
+      "source": {
+        "zh": "《韩非子·难一》：楚人有鬻楯与矛者，誉之曰：吾楯之坚，物莫能陷也。又誉其矛曰：吾矛之利，于物无不陷也。",
+        "en": "Han Feizi: a man of Chu sold shields and spears — nothing can pierce my shield; my spear pierces everything."
+      }
+    },
+    {
+      "id": "jing-09",
+      "kind": "province-tale",
+      "line": {
+        "zh": "汉水边有人弹琴，弹完把琴摔了——说世上再没有听得懂的人。",
+        "en": "By the Han someone plays the zither and then breaks it — there is no one left in the world who understands."
+      },
+      "source": {
+        "zh": "《吕氏春秋·本味》：钟子期死，伯牙破琴绝弦，终身不复鼓琴，以为世无足复为鼓琴者。",
+        "en": "Lüshi Chunqiu: when Zhong Ziqi died, Boya broke his zither and cut its strings, and never played again, for no one was left worth playing for."
+      }
+    },
+    {
+      "id": "jing-10",
+      "kind": "province-tale",
+      "line": {
+        "zh": "巫峡的船夫说，山上的云早上是云，晚上是雨，是一位神女变的。",
+        "en": "The boatmen of the Wu Gorge say the mountain's cloud is cloud at dawn and rain at dusk — a goddess changing."
+      },
+      "source": {
+        "zh": "宋玉《高唐赋》：妾在巫山之阳，高丘之阻，旦为朝云，暮为行雨。",
+        "en": "Song Yu, \"Rhapsody on Gaotang\": I dwell on the sunny side of Mount Wu; at dawn I am the morning cloud, at dusk the passing rain."
+      }
+    },
+    {
+      "id": "jing-11",
+      "kind": "province-tale",
+      "line": {
+        "zh": "君山的竹子上都是斑点，岛上的人说，那是两位夫人的眼泪。",
+        "en": "The bamboos of Junshan are all spotted; the islanders say it is two ladies' tears."
+      },
+      "source": {
+        "zh": "《博物志·史补》：尧之二女，舜之二妃，曰湘夫人。舜崩，二妃啼，以涕挥竹，竹尽斑。",
+        "en": "Bowuzhi: Yao's two daughters, Shun's two consorts, were the Ladies of the Xiang; when Shun died they wept, their tears fell on the bamboo, and the bamboo was spotted."
+      }
+    },
+    {
+      "id": "jing-12",
+      "kind": "province-tale",
+      "line": {
+        "zh": "渔人说，洞庭山上住着两位女神，她们一出门，就有风雨。",
+        "en": "The fishermen say two goddesses live on the Dongting hills, and when they go out there is wind and rain."
+      },
+      "source": {
+        "zh": "《山海经·中次十二经》：洞庭之山……帝之二女居之……出入必以飘风暴雨。",
+        "en": "Classic of Mountains and Seas: on Mount Dongting dwell the two daughters of the Lord; whenever they go in or out there are whirlwinds and storms."
+      }
+    },
+    {
+      "id": "jing-13",
+      "kind": "province-tale",
+      "creature": "bashe",
+      "line": {
+        "zh": "有人在湖边捡到一堆骨头，说是象骨，是被一条蛇吐出来的。",
+        "en": "Someone found a heap of bones by the lake — an elephant's, spat out by a snake."
+      },
+      "source": {
+        "zh": "《山海经·海内南经》：巴蛇食象，三岁而出其骨。",
+        "en": "Classic of Mountains and Seas: the Ba snake eats elephants and gives up the bones after three years."
+      }
+    },
+    {
+      "id": "jing-14",
+      "kind": "province-tale",
+      "creature": "gui",
+      "line": {
+        "zh": "山里有只白身子红脑袋的龟，据说养着它，家里不会失火。",
+        "en": "In the hills there is a white-bodied, red-headed turtle; keep one, they say, and your house will never burn."
+      },
+      "source": {
+        "zh": "《山海经·中次十二经》：有兽焉，其状如龟，而白身赤首，名曰蛫，是可以御火。",
+        "en": "Classic of Mountains and Seas: a beast like a turtle, white-bodied and red-headed, called Gui; it can ward off fire."
+      }
+    },
+    {
+      "id": "jing-15",
+      "kind": "province-tale",
+      "line": {
+        "zh": "老人说，很久以前有个射日的英雄，在洞庭斩过一条长蛇。",
+        "en": "An old man says that long ago the hero who shot down the suns cut a long snake in two at Dongting."
+      },
+      "source": {
+        "zh": "《淮南子·本经训》：尧乃使羿……断修蛇于洞庭。",
+        "en": "Huainanzi: Yao sent Yi… to cut the long snake at Dongting."
+      }
+    },
+    {
+      "id": "jing-16",
+      "kind": "province-tale",
+      "line": {
+        "zh": "郢都的官员们一天只吃一顿饭，说是国君喜欢细腰。",
+        "en": "The officials of Ying eat once a day; their lord, they say, likes a slender waist."
+      },
+      "source": {
+        "zh": "《墨子·兼爱中》：昔者楚灵王好士细要，故灵王之臣皆以一饭为节。",
+        "en": "Mozi: King Ling of Chu liked slender-waisted men, so his ministers all kept to one meal a day."
+      }
+    },
+    {
+      "id": "jing-17",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个小孩说，他在路上看见一条两头蛇，怕别人再看见，把它打死埋了。",
+        "en": "A child says he saw a two-headed snake on the road and, so no one else would see it, killed and buried it."
+      },
+      "source": {
+        "zh": "《新序·杂事一》：孙叔敖为婴儿之时，出游，见两头蛇，杀而埋之。",
+        "en": "Xinxu: when Sunshu Ao was a boy he saw a two-headed snake, and killed and buried it."
+      }
+    },
+    {
+      "id": "jing-18",
+      "kind": "province-tale",
+      "line": {
+        "zh": "一个狂人唱着歌从车旁走过：凤啊凤啊，你的德怎么衰了？",
+        "en": "A madman sings as he passes the carriage: phoenix, O phoenix, how your virtue has declined!"
+      },
+      "source": {
+        "zh": "《论语·微子》：楚狂接舆歌而过孔子曰：凤兮凤兮，何德之衰？",
+        "en": "Analects: Jieyu, the madman of Chu, passed Confucius singing: phoenix, O phoenix, how your virtue has declined!"
+      }
+    },
+    {
+      "id": "jing-19",
+      "kind": "night-tale",
+      "line": {
+        "zh": "一个年轻人说，他昨夜走夜路遇见一个鬼，和它结伴走到宛城，把它卖了。",
+        "en": "A young man says he met a ghost on the road last night, walked with it to Wan, and sold it."
+      },
+      "source": {
+        "zh": "《搜神记·卷十六》：南阳宋定伯，年少时，夜行逢鬼。",
+        "en": "In Search of the Supernatural: Song Dingbo of Nanyang, when young, met a ghost walking at night."
+      }
+    },
+    {
+      "id": "jing-20",
+      "kind": "night-tale",
+      "line": {
+        "zh": "夜里山中有个少年在哭，说要替父亲报仇；一个过路的客人说：借你的头一用。",
+        "en": "At night a youth weeps in the hills, sworn to avenge his father; a passing stranger says: lend me your head."
+      },
+      "source": {
+        "zh": "《搜神记·卷十一》：楚干将莫邪为楚王作剑……客曰：闻王购子头千金，将子头与剑来，为子报之。",
+        "en": "In Search of the Supernatural: Ganjiang and Moye made swords for the King of Chu… the stranger said: the king offers gold for your head — give me your head and the sword, and I will avenge you."
+      }
+    }
+  ]
+}

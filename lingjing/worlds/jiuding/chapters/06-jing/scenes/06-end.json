@@ -1,0 +1,60 @@
+{
+ "version": 1,
+ "id": "06-end",
+ "chapter": "06-jing",
+ "at": "dongting",
+ "place": {
+  "zh": "洞庭 · 雨霁",
+  "en": "Dongting · The storm lifts"
+ },
+ "setup": {
+  "zh": "风暴散了。洞庭湖上出了太阳，打鱼的船一只一只划出来。君山的竹子被雨洗过，每一根都有斑点，像泪痕。",
+  "en": "The storm breaks. The sun comes out over Dongting, and the fishing boats row out one by one. On Junshan the rain-washed bamboos are all spotted, as if with tears."
+ },
+ "recap": {
+  "zh": "洞庭的风暴散了，渔船出湖。第七鼎的气息在西边，峡的那一头。",
+  "en": "The storm over Dongting broke and the boats rowed out. The seventh cauldron's breath lay west, beyond the gorges."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "map",
+   "goal": "梁",
+   "here": "荆"
+  }
+ ],
+ "lines": [
+  {
+   "who": "ling",
+   "text": {
+    "zh": "第七鼎的气息在西边——溯江过峡，是梁州。禹生在那里。",
+    "en": "The seventh cauldron's breath lies west — up the Jiang through the gorges, in Liang. Yu was born there."
+   }
+  }
+ ],
+ "buttons": [
+  "rest"
+ ],
+ "exits": [
+  {
+   "id": "rest",
+   "label": {
+    "zh": "今日到此",
+    "en": "Rest for today"
+   },
+   "means": "rests, ends the chapter, asks what comes next",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "今日到此为止。梁州的路，开的时候我会告诉你。",
+      "en": "That is all for today. When the road to Liang opens, I will tell you."
+     }
+    }
+   ],
+   "ends": "06-jing"
+  }
+ ]
+}

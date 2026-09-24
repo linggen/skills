@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "id": "06-jing",
+  "opens": null,
+  "province": "荆",
+  "corridor": false,
+  "first_scene": "06-arrive",
+  "gate": 6,
+  "title": {
+    "zh": "第六章 · 荆州之鼎",
+    "en": "Chapter 6 · The Cauldron of Jing"
+  },
+  "summary": {
+    "zh": "溯江入荆。云梦泽的芦苇高过人头，洞庭上的风暴八十一天没有散。郢都的使者来问：你带着的鼎，有多大，有多重？君山被巴蛇缠了三道，它吞着鼎的气，像吞一头象。告诉它鼎的轻重在哪里，破开四象之封，第六鼎归来——炼虚圆满者，在此合体。",
+    "en": "Up the Jiang into Jing. The reeds of Yunmeng stand taller than a man, and the storm over Dongting has not broken in eighty-one days. An envoy of Ying comes to ask: the cauldrons you carry — how big are they, how heavy? The Ba snake is coiled three times round Junshan, swallowing the cauldron's breath as it swallows elephants. Tell it where a cauldron's weight lies, break the seal of the four emblems, and the sixth cauldron returns — one at the peak of Void Refinement becomes one body here."
+  },
+  "intro": {
+    "zh": "楚子观兵于周疆，问鼎之大小轻重。王孙满对曰：在德不在鼎。几百年过去，楚地又有人要问了。洞庭的风暴八十一天不散——有东西把鼎的气吞进了肚子。",
+    "en": "The lord of Chu paraded his army on Zhou's border and asked the size and weight of the cauldrons. Wangsun Man answered: it lies in virtue, not in the cauldron. Centuries later, someone in Chu means to ask again. The storm over Dongting has not broken in eighty-one days — something has swallowed the cauldron's breath."
+  },
+  "mystery": {
+    "zh": "洞庭的风暴，为何八十一天不散？",
+    "en": "Why has the storm over Dongting not broken in eighty-one days?"
+  }
+}

@@ -663,6 +663,140 @@
       },
       "_deck": "见则郡县大水 —— 小鹿影一群一群，水跟着涨。",
       "_signature": "其音如吟 —— 一声低吟，水漫过阵前，再漫到你脚下。"
+    },
+    {
+      "id": "bashe",
+      "name": {
+        "zh": "巴蛇",
+        "en": "The Ba Snake"
+      },
+      "pinyin": "bā shé",
+      "source": {
+        "zh": "《山海经 · 海内南经》",
+        "en": "Classic of Mountains and Seas — Within the Seas, South"
+      },
+      "quote": {
+        "zh": "巴蛇食象，三岁而出其骨，君子服之，无心腹之疾。其为蛇青黄赤黑。",
+        "en": "The Ba snake eats elephants and gives up their bones after three years; a gentleman who takes it suffers no illness of heart or belly. It is a snake of green, yellow, red and black."
+      },
+      "look": {
+        "zh": "一条大蛇，青、黄、赤、黑四色，吞得下一头象。",
+        "en": "A great snake patterned green, yellow, red and black, able to swallow an elephant."
+      },
+      "province": "荆",
+      "root": "water",
+      "art": "art/bashe.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》巴蛇圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic510 - 巴蛇圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/bashe.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "dansha",
+      "lean": "hide",
+      "pattern": [
+        "gather",
+        "strike",
+        "armor",
+        "cast",
+        "strike"
+      ],
+      "drops": "hanyu",
+      "deck": [
+        "gupi",
+        "gupi",
+        "bashe",
+        "bashe",
+        "hantan",
+        "hantan",
+        "tingbo",
+        "chaoqi",
+        "huiqi",
+        "bashe",
+        "gupi",
+        "hantan"
+      ],
+      "signature": {
+        "id": "tunxiang",
+        "name": {
+          "zh": "吞象",
+          "en": "Swallowing the Elephant"
+        },
+        "effect": {
+          "damage": 16,
+          "heal": 6
+        }
+      },
+      "elite": true,
+      "_deck": "食象 —— 一圈一圈缠住阵前，寒潭一口一口地咽。",
+      "_signature": "三岁而出其骨 —— 一口吞下去，吞下去的长回它自己身上。"
+    },
+    {
+      "id": "gui",
+      "name": {
+        "zh": "蛫",
+        "en": "Gui"
+      },
+      "pinyin": "guǐ",
+      "source": {
+        "zh": "《山海经 · 中次十二经》",
+        "en": "Classic of Mountains and Seas — Central Mountains XII"
+      },
+      "quote": {
+        "zh": "又东南一百二十里，曰即公之山……有兽焉，其状如龟，而白身赤首，名曰蛫，是可以御火。",
+        "en": "A hundred and twenty li further south-east is Mount Jigong… There is a beast on it like a turtle, white-bodied and red-headed, called Gui; it can ward off fire."
+      },
+      "look": {
+        "zh": "龟的样子，白身子，红脑袋。",
+        "en": "A turtle's shape, a white body and a red head."
+      },
+      "province": "荆",
+      "root": "earth",
+      "art": "art/gui.webp",
+      "art_source": "《古今圖書集成·博物彙編·禽蟲典》蛫圖，陳夢雷等編，清 1700–1725。Public domain. Wikimedia Commons: File:Imperial Encyclopaedia - Animal Kingdom - pic313 - 蛫圖.svg. Cropped and laid on paper by tools/frame.py (art/plates/gui.svg).",
+      "art_caption": {
+        "zh": "《古今圖書集成·禽蟲典》，清雍正本",
+        "en": "Gujin Tushu Jicheng, Qing, 1725"
+      },
+      "likes": "lingzhi",
+      "lean": "hide",
+      "pattern": [
+        "armor",
+        "guard",
+        "strike",
+        "cast",
+        "strike"
+      ],
+      "drops": "xirang",
+      "deck": [
+        "tuou",
+        "tuou",
+        "shanjing",
+        "gui",
+        "gui",
+        "houtu",
+        "zhuguang",
+        "luoshi",
+        "gui",
+        "shanjing",
+        "zhuguang",
+        "tunshi"
+      ],
+      "signature": {
+        "id": "yuhuo",
+        "name": {
+          "zh": "可以御火",
+          "en": "Proof Against Fire"
+        },
+        "effect": {
+          "heal": 12,
+          "rally": {
+            "atk": 0,
+            "hp": 3
+          }
+        }
+      },
+      "_deck": "其状如龟 —— 缩在甲里，挡住，养回来。",
+      "_signature": "是可以御火 —— 甲一合，它和它的都缓过来了。"
     }
   ],
   "_likes": "What a creature will take from the bag to walk with the player: 人参 for the man-eaters (形如人), 玉鱼 for the bird that fills the sea, a bell for the drum god, 齐盐 for the sea beast, 齐纨 for the pearl pig, 灵芝 for 夫诸 as the prologue has it.",

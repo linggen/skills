@@ -290,7 +290,8 @@
       "sold": [
         "兖",
         "青",
-        "扬"
+        "扬",
+        "荆"
       ],
       "effect": {
         "learn": "wangqi",
@@ -461,7 +462,8 @@
       "buy": 320,
       "sell": 90,
       "sold": [
-        "冀"
+        "冀",
+        "荆"
       ],
       "effect": {
         "core": "fire"
@@ -575,6 +577,25 @@
       "sell": 7,
       "sold": [
         "扬"
+      ],
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
+    },
+    {
+      "id": "dansha",
+      "kind": "material",
+      "name": {
+        "zh": "丹砂",
+        "en": "Cinnabar"
+      },
+      "art": "art/items/dansha.webp",
+      "about": {
+        "zh": "荆州贡丹。红得像火，炼丹的人离不开它。",
+        "en": "Jing sent cinnabar as tribute. Red as fire; no alchemist can do without it."
+      },
+      "buy": 36,
+      "sell": 10,
+      "sold": [
+        "荆"
       ],
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-24, from the description."
     }

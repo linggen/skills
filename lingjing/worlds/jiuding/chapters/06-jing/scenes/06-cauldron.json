@@ -1,0 +1,108 @@
+{
+ "version": 1,
+ "id": "06-cauldron",
+ "chapter": "06-jing",
+ "at": "dongting",
+ "place": {
+  "zh": "洞庭 · 鼎前",
+  "en": "Dongting · Before the cauldron"
+ },
+ "setup": {
+  "zh": "荆鼎从龟背上升起来。鼎身上铸着江、汉、九江和云梦——荆州的一切。大龟游回湖底去了。",
+  "en": "The Cauldron of Jing rises from the turtle's back. Cast on its body are the Jiang, the Han, the Nine Rivers and Yunmeng — everything of Jing. The great turtle swims back down."
+ },
+ "recap": {
+  "zh": "荆鼎从大龟背上升起，铸着江、汉、九江和云梦。",
+  "en": "The Cauldron of Jing rose from the turtle's back, cast with the Jiang, the Han, the Nine Rivers and Yunmeng."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "show": [
+  {
+   "card": "gate",
+   "chapter": "06-jing"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "在德不在鼎——这话是她教我的。她说，谁问鼎有多重，谁就已经拿不动它了。",
+    "en": "In virtue, not in the cauldron — she taught me that. She said whoever asks what a cauldron weighs can no longer lift it."
+   },
+   "alone": {
+    "zh": "鼎身上有一行小字，磨得快看不清了：在德不在鼎。",
+    "en": "On the cauldron runs a line of small characters, worn almost away: in virtue, not in the cauldron."
+   }
+  }
+ ],
+ "buttons": [
+  "take"
+ ],
+ "exits": [
+  {
+   "id": "take",
+   "label": {
+    "zh": "受鼎气 · 合体",
+    "en": "Take the cauldron's breath · Body Integration"
+   },
+   "means": "touches the cauldron, takes its breath, attempts the breakthrough",
+   "breakthrough": true,
+   "refuse": {
+    "zh": "鼎气涌上来又退开。炼虚未满，合不了体。先回人间，把功课做满。",
+    "en": "The breath surges over you and draws back. Your Void Refinement is not yet full; you cannot become one. Go back to the world and fill your practice first."
+   },
+   "show": [
+    {
+     "card": "tribulation",
+     "strikes": 3
+    }
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "江与汉从两边涌来，在你身上汇成一条。元神与身子再分不出彼此——合体了。鼎小了，小到握在掌心，和前五口并排。",
+      "en": "The Jiang and the Han pour in from two sides and join in you into one river. Spirit and body can no longer be told apart — Body Integration. The cauldron shrinks until it sits in your palm beside the other five."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "合体了。……六口。",
+      "en": "Body Integration. …Six."
+     },
+     "alone": {
+      "zh": "合体了。六口鼎。",
+      "en": "Body Integration. Six cauldrons."
+     }
+    }
+   ],
+   "next": "06-end"
+  },
+  {
+   "id": "wait",
+   "means": "hesitates, asks what will happen, wants to prepare first",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "风暴刮了八十一天，它不差这一会儿。",
+      "en": "The storm blew for eighty-one days. It can spare a while."
+     },
+     "alone": {
+      "zh": "风暴刮了八十一天。它等得起。",
+      "en": "The storm blew for eighty-one days. It can wait."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

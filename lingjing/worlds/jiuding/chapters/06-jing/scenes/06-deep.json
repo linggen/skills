@@ -1,0 +1,77 @@
+{
+ "version": 1,
+ "id": "06-deep",
+ "chapter": "06-jing",
+ "at": "dongting",
+ "place": {
+  "zh": "洞庭深处 · 大龟",
+  "en": "The depths of Dongting · The great turtle"
+ },
+ "setup": {
+  "zh": "风停了，湖水清得见底。湖底卧着一只大龟，比船还大——九江进贡过的那种大龟。鼎就驮在它背上。龟甲上刻着四象：青龙在东，白虎在西，玄武在北——南边空着。",
+  "en": "The wind has stopped and the lake is clear to the bottom. On the bed lies a great turtle, bigger than a boat — the kind the Nine Rivers once sent as tribute. The cauldron rides on its back. Cut on its shell are the four emblems: the Azure Dragon in the east, the White Tiger in the west, the Dark Warrior in the north — the south left blank."
+ },
+ "recap": {
+  "zh": "洞庭湖底的大龟驮着鼎，龟甲上刻着四象，南方空着。",
+  "en": "At the bottom of Dongting a great turtle carried the cauldron on its back; its shell bore the four emblems, the south left blank."
+ },
+ "cast": [
+  "yinyue"
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "楚人敬的，是南方那一位。",
+    "en": "The people of Chu honour the one in the south."
+   },
+   "alone": {
+    "zh": "楚人敬南方的那一位。",
+    "en": "Chu honours the one of the south."
+   }
+  }
+ ],
+ "buttons": [
+  "seal"
+ ],
+ "exits": [
+  {
+   "id": "seal",
+   "label": {
+    "zh": "读封 · 填南方",
+    "en": "Read the seal · Fill the south"
+   },
+   "means": "reads the seal, answers which emblem belongs in the south",
+   "key": "seal-jing",
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你在南边写下它的名字。龟甲上的纹路亮起来，大龟慢慢浮起，把鼎托到你面前。鼎口的气冲上来——是雨后的芦苇味，和丹砂味。",
+      "en": "You write its name in the south. The lines on the shell light up, and the great turtle rises slowly, holding the cauldron up before you. The cauldron's breath rushes out — reeds after rain, and cinnabar."
+     }
+    }
+   ],
+   "next": "06-cauldron"
+  },
+  {
+   "id": "force",
+   "means": "tries to pry the cauldron off the turtle by force",
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "大龟动也不动。四象的纹在你掌下转了半圈，又转回来。",
+      "en": "The great turtle does not stir. Under your palm the four emblems turn half round, and back."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

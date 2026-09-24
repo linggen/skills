@@ -1,0 +1,188 @@
+{
+ "version": 1,
+ "id": "06-isle",
+ "chapter": "06-jing",
+ "at": "junshan",
+ "place": {
+  "zh": "君山 · 风暴里",
+  "en": "Junshan · In the storm"
+ },
+ "setup": {
+  "zh": "君山被一条蛇缠住了——青、黄、赤、黑的花纹，一圈压一圈，把整座山绕了三道。它张着嘴对着湖心，湖心往上冒的气全被它吞了进去。风暴就是它的鼻息。岸边堆着一堆白骨，是象的。",
+  "en": "Junshan is coiled round by a snake — patterned green, yellow, red and black, coil upon coil, three times round the whole island. Its mouth gapes toward the middle of the lake, and the breath rising from there goes into it, all of it. The storm is its breathing. On the shore lies a heap of white bones — an elephant's."
+ },
+ "recap": {
+  "zh": "巴蛇把君山缠了三道，吞着湖心冒上来的鼎气；风暴就是它的鼻息。",
+  "en": "The Ba snake was coiled three times round Junshan, swallowing the cauldron's breath from the lake; the storm was its breathing."
+ },
+ "cast": [
+  "yinyue",
+  "bashe"
+ ],
+ "show": [
+  {
+   "card": "creature",
+   "id": "bashe"
+  }
+ ],
+ "lines": [
+  {
+   "who": "yinyue",
+   "text": {
+    "zh": "是巴蛇。象都吞得下，鼎的气它当然也想吞——可鼎的气吞不完，所以它一直吞。",
+    "en": "It's the Ba snake. It can swallow an elephant, so of course it wants the cauldron's breath too — but the breath never ends, so it never stops swallowing."
+   },
+   "alone": {
+    "zh": "是巴蛇——食象，三岁而出其骨。鼎的气吞不完，它就一直吞。",
+    "en": "It is the Ba snake, which eats an elephant and gives up the bones in three years. The cauldron's breath never ends, so it never stops swallowing."
+   }
+  },
+  {
+   "who": "ling",
+   "text": {
+    "zh": "巴蛇的头转过来，嘴还张着。它要先问你一句。",
+    "en": "The snake's head turns, its mouth still open. First it has a question for you."
+   }
+  }
+ ],
+ "buttons": [
+  "subdue",
+  "riddle",
+  "weight"
+ ],
+ "exits": [
+  {
+   "id": "subdue",
+   "label": {
+    "zh": "降妖 · 五行",
+    "en": "Subdue · The five elements"
+   },
+   "means": "fights the snake, forces it off the island",
+   "game": {
+    "id": "subdue-bashe",
+    "kind": "duel",
+    "creature": "bashe"
+   },
+   "withdrawn": {
+    "zh": "巴蛇松开一圈，又缠了回去。明日它还在。",
+    "en": "The Ba snake loosens one coil, then winds it back. Tomorrow it will still be there."
+   },
+   "grant": {
+    "table": "scene",
+    "progress": 60,
+    "wealth": 20
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "巴蛇一圈一圈松开，滑进湖里，湖面上的风一下子停了。",
+      "en": "Coil by coil the snake lets go and slides into the lake, and the wind over the water stops at once."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "风停了。鼎在湖底下。",
+      "en": "The wind has stopped. The cauldron is under the lake."
+     },
+     "alone": {
+      "zh": "风停了。鼎在湖底。",
+      "en": "The wind stops. The cauldron lies at the bottom of the lake."
+     }
+    }
+   ],
+   "next": "06-deep"
+  },
+  {
+   "id": "riddle",
+   "label": {
+    "zh": "答它的问",
+    "en": "Answer it"
+   },
+   "means": "answers the snake's riddle",
+   "key": [
+    "bashe-1",
+    "bashe-2"
+   ],
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你答了。巴蛇合上了嘴，想了很久，像在消化一句话。",
+      "en": "You answer. The snake closes its mouth and thinks a long while, as if digesting a sentence."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "它在想。趁现在，下去。",
+      "en": "It's thinking. Now — go down."
+     },
+     "alone": {
+      "zh": "它在想。趁这时候，下去。",
+      "en": "It is thinking. Now is the time to go down."
+     }
+    }
+   ],
+   "next": "06-deep"
+  },
+  {
+   "id": "weight",
+   "label": {
+    "zh": "告诉它鼎的轻重",
+    "en": "Tell it the weight"
+   },
+   "means": "tells the snake a cauldron's weight lies in virtue, not in the bronze — that it cannot swallow what has no weight",
+   "grant": {
+    "table": "scene",
+    "progress": 40,
+    "wealth": 10
+   },
+   "beat": [
+    {
+     "who": "ling",
+     "text": {
+      "zh": "你对巴蛇说：鼎的轻重在德，不在鼎。你吞下去的只是它的气，德你吞不下。巴蛇张着嘴咽了一口，什么也没咽下去。它慢慢合上嘴，松开了山。",
+      "en": "You tell the snake: a cauldron's weight lies in virtue, not in the bronze. What you swallow is only its breath; virtue you cannot swallow. The snake, mouth open, swallows — and swallows nothing. Slowly it closes its mouth and lets the island go."
+     }
+    },
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "在德不在鼎。……你记住了。",
+      "en": "In virtue, not in the cauldron. …You remembered."
+     },
+     "alone": {
+      "zh": "在德不在鼎。巴蛇松开了山。",
+      "en": "In virtue, not in the cauldron. The snake lets the island go."
+     }
+    }
+   ],
+   "next": "06-deep"
+  },
+  {
+   "id": "flee",
+   "means": "runs from the snake, turns back, refuses to act",
+   "beat": [
+    {
+     "who": "yinyue",
+     "text": {
+      "zh": "你往回走。风追着你，一阵比一阵重——它还在吞。",
+      "en": "You turn back. The wind chases you, each gust heavier — it is still swallowing."
+     },
+     "alone": {
+      "zh": "你往回走。风追着你，一阵比一阵重；它还在吞。",
+      "en": "You turn back. The wind chases you, each gust heavier: it is still swallowing."
+     }
+    }
+   ],
+   "stay": true
+  }
+ ]
+}

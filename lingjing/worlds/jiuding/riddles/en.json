@@ -436,6 +436,53 @@
     "earth"
    ],
    "hint": "It was Yu's whole life's work."
+  },
+  "bashe-1": {
+   "q": "One open mouth and one tail, and it can swallow an elephant — one character.",
+   "a": [
+    "巴",
+    "ba"
+   ],
+   "choices": [
+    "巴",
+    "已",
+    "色",
+    "包"
+   ],
+   "hint": "The Shuowen: the snake that eats elephants; the character is its picture."
+  },
+  "bashe-2": {
+   "q": "The Ba snake eats an elephant. After how many years does it give up the bones?",
+   "a": [
+    "three",
+    "3",
+    "three years"
+   ],
+   "choices": [
+    "one",
+    "three",
+    "seven",
+    "nine"
+   ],
+   "hint": "In three years, says the Classic of Mountains and Seas."
+  },
+  "seal-jing": {
+   "q": "The four emblems: the Azure Dragon in the east, the White Tiger in the west, the Dark Warrior in the north. Who holds the south?",
+   "a": [
+    "the vermilion bird",
+    "vermilion bird",
+    "zhuque",
+    "朱雀",
+    "the red bird",
+    "red bird"
+   ],
+   "choices": [
+    "the Vermilion Bird",
+    "the Qilin",
+    "the Phoenix",
+    "the Flying Serpent"
+   ],
+   "hint": "A red bird."
   }
  }
 }

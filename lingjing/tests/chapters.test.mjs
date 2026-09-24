@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, normalizeAnswer } from '../scripts/state.mjs';
 import { look, resolve, riddleOf } from '../scripts/rules.mjs';
 
 const content = loadContent();
@@ -24,7 +24,7 @@ function must(state, args) {
 function answers(state, scene, exit) {
   const key = Array.isArray(exit.key) || typeof exit.key === 'string' ? riddleOf(state, { id: scene.id }, exit, NOW) : null;
   const r = content.riddles[state.lang].riddles[key];
-  return { right: r.a[0], wrong: r.choices.find(x => !r.a.includes(x)) };
+  return { right: r.a[0], wrong: r.choices.find(x => !r.a.some(a => normalizeAnswer(a) === normalizeAnswer(x))) };
 }
 
 /* At the first scene of `id`, every chapter before it ended, at the peak of

@@ -1,0 +1,215 @@
+{
+ "version": 1,
+ "province": "荆",
+ "start": "yunmeng",
+ "_about": "The places of 荆 — a map, not a chain; the same shape as 徐's (see places/xu.json _about). Chapter 6's spine runs 云梦泽 → 郢 → 君山 → 洞庭深处; 彭蠡 (扬) is the road in down the Jiang, 巫峡 the road on up the gorges to 梁.",
+ "places": [
+  {
+   "id": "yunmeng",
+   "name": {
+    "zh": "云梦泽",
+    "en": "The Yunmeng Marsh"
+   },
+   "tier": 0,
+   "roads": [
+    "ying",
+    "junshan",
+    "pengli"
+   ],
+   "map": [
+    0.6111,
+    0.7377
+   ],
+   "has": {
+    "seeds": true,
+    "scene": "06-arrive",
+    "games": [
+     "huarong"
+    ]
+   },
+   "line": {
+    "zh": "芦苇高过人头的大泽，楚王在这里打过猎。",
+    "en": "A great marsh of reeds taller than a man, where the kings of Chu hunted."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "ying",
+   "name": {
+    "zh": "郢",
+    "en": "Ying"
+   },
+   "tier": 0,
+   "roads": [
+    "yunmeng",
+    "junshan",
+    "jingshan",
+    "wuxia"
+   ],
+   "map": [
+    0.5689,
+    0.7334
+   ],
+   "has": {
+    "shop": true,
+    "scene": "06-town",
+    "games": [
+     "alchemy-daily"
+    ]
+   },
+   "line": {
+    "zh": "楚的都城，坊市里有羽毛、齿革和丹砂。",
+    "en": "The capital of Chu; its market sells feathers, ivory, hides and cinnabar."
+   }
+  },
+  {
+   "id": "junshan",
+   "name": {
+    "zh": "君山",
+    "en": "Junshan"
+   },
+   "tier": 0,
+   "roads": [
+    "yunmeng",
+    "ying",
+    "dongting",
+    "xiangshui"
+   ],
+   "map": [
+    0.6024,
+    0.7973
+   ],
+   "has": {
+    "creature": "bashe",
+    "scene": "06-isle"
+   },
+   "line": {
+    "zh": "洞庭湖中的小山，竹子上都有斑点。",
+    "en": "A small hill in Lake Dongting, its bamboos all spotted."
+   },
+   "water": true,
+   "meets": [
+    "find",
+    "beast"
+   ]
+  },
+  {
+   "id": "dongting",
+   "name": {
+    "zh": "洞庭深处",
+    "en": "The depths of Dongting"
+   },
+   "tier": 0,
+   "roads": [
+    "junshan"
+   ],
+   "map": [
+    0.5899,
+    0.8145
+   ],
+   "has": {
+    "scene": "06-deep"
+   },
+   "line": {
+    "zh": "湖心深处，九江的大龟睡在这里。",
+    "en": "The heart of the lake, where the great turtle of the Nine Rivers sleeps."
+   },
+   "water": true,
+   "meets": [
+    "find"
+   ]
+  },
+  {
+   "id": "xiangshui",
+   "name": {
+    "zh": "湘水",
+    "en": "The Xiang"
+   },
+   "tier": 1,
+   "roads": [
+    "junshan"
+   ],
+   "map": [
+    0.6004,
+    0.871
+   ],
+   "has": {
+    "creature": "gui",
+    "seeds": true
+   },
+   "line": {
+    "zh": "湘水北流入洞庭，岸上是两位夫人的祠。",
+    "en": "The Xiang flows north into Dongting; on its bank stands the shrine of the two ladies."
+   },
+   "water": true,
+   "meets": [
+    "beast",
+    "find"
+   ]
+  },
+  {
+   "id": "jingshan",
+   "name": {
+    "zh": "荆山",
+    "en": "Mount Jing"
+   },
+   "tier": 1,
+   "roads": [
+    "ying"
+   ],
+   "map": [
+    0.5384,
+    0.6295
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "xiangqi"
+    ]
+   },
+   "line": {
+    "zh": "卞和在这山里得过一块璞玉。",
+    "en": "Where Bian He found an uncut jade in the hills."
+   },
+   "meets": [
+    "riddle",
+    "find"
+   ]
+  },
+  {
+   "id": "wuxia",
+   "name": {
+    "zh": "巫峡",
+    "en": "The Wu Gorge"
+   },
+   "tier": 2,
+   "roads": [
+    "ying"
+   ],
+   "map": [
+    0.4793,
+    0.67
+   ],
+   "has": {
+    "seeds": true,
+    "games": [
+     "luoshu"
+    ]
+   },
+   "line": {
+    "zh": "两岸的山高得只剩一线天，早上是云，晚上是雨。",
+    "en": "Cliffs so high only a thread of sky shows; cloud in the morning, rain at evening."
+   },
+   "water": true,
+   "meets": [
+    "riddle",
+    "find",
+    "beast"
+   ]
+  }
+ ]
+}
