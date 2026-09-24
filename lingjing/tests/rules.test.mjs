@@ -1724,7 +1724,7 @@ test('Go jumps to an opened scene; the rules keep each day\'s closing state, the
 // ── Worlds of the player's own: the command line parks and restores saves ──
 test('Build takes the player to a fresh save in their world, which plays once its pictures are painted; Travel parks and restores', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-worlds-'));
-  const skill = path.resolve('.');
+  const skill = path.resolve(import.meta.dirname, '..');
   const rules = path.join(skill, 'scripts/rules.mjs');
   const run = (...args) => {
     const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
@@ -1814,12 +1814,12 @@ test('Build takes the player to a fresh save in their world, which plays once it
 
 test('Amend adds a creature where it haunts, or a place with its roads laid back; never to a shipped world', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-amend-'));
-  const rules = path.resolve('scripts/rules.mjs');
+  const rules = path.resolve(import.meta.dirname, '../scripts/rules.mjs');
   const run = (...args) => {
     const out = spawnSync(process.execPath, [rules, ...args], { env: { ...process.env, LINGJING_DATA: dir, LINGJING_NOW: NOW.toISOString() }, encoding: 'utf8' });
     return JSON.parse(out.stdout.trim().split('\n').pop());
   };
-  const pictures = path.resolve('data/pictures'); fs.mkdirSync(pictures, { recursive: true });
+  const pictures = path.resolve(import.meta.dirname, '../data/pictures'); fs.mkdirSync(pictures, { recursive: true });
   const png = path.join(pictures, 'test-heron.png'); fs.writeFileSync(png, 'png');
   const paintAll = () => (run('look').building?.paint ?? []).map(p => run('art', `--creature=${p.creature}`, `--file=${png}`));
   try {
