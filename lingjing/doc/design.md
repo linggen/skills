@@ -3,8 +3,9 @@ type: design
 reader: coding agent, contributors
 guide: |
   How Lingjing is built. What it is and does is product-spec.md; how it looks
-  and plays is prototype.html (scripted, no model). This file is the build.
-status: 2026-09-16 — 功法 built (swords lend a root, 符 from 桑皮纸, five learned arts, teachers, the rescue); exits walk the one road to the next scene; creatures at their haunts (降妖 once a day, 驯 by what they like — `place.encounter`, Tame), every card with buttons, the stage speaks (taps are words to Ling), the choice as a law (director `choice`), every bout winnable; chapter 3 (青) built, no chapter locks while building; 2026-09-15 — chapter 2 (兖) built; 2026-09-14 — content, rules.mjs, SKILL.md, the Mac scene page, the first quests (Shifu's scan, Health's workout), online (the cloud save, sign in to play) 灵气 as stamina, 徐's seeds, made scenes, the dictionary, the worlds split, 徐's places (Move for real, the director's brief) the catalog (Trade, the 坊市 at 彭城, the item card), 降妖 (the 五行 bout on the scene) and chapter 1 (冀州, opens 2026-10-01; provinces open with chapters, the spine as waypoints, the breakthrough) built (build order 1–14); the table (playing together) designed.
+  and plays is the live page (scripts/index.html); prototype.html is the
+  archived first mock. This file is the build.
+status: 2026-09-24 — rules split into scripts/rules/*.mjs; one writer at a time (state.json.lock, `busy`); a fight holds the world still (`in-a-fight`); nothing pays twice (`won-already`, `subdued-today`, made grants progress/wealth only and once, Go replay pays nothing); gear counts in the card fight (装备入局); hosted games and 论道 cost 3 体力; the page's verbs go through the declared page_only `Verb` tool; the cloud save is [data/state.json, data/worlds]. Before: 2026-09-23 伤势 · 羁绊 · 历练 · 机缘 · 抉择 · 精英 · 杀招 · 望气 · 组牌 · the mini-games and 论道; 2026-09-18 斗法 v3 (the card fight) and 差事; 2026-09-14–17 the world, places, catalog, made worlds, 银月 at 结丹. Superseded designs live in archive.md.
 ---
 
 # Lingjing — design
@@ -64,40 +65,45 @@ Three rules hold the whole build together:
 
 ```
 skills/lingjing/
-  SKILL.md                 Ling's game-master rules + tool declarations
+  SKILL.md                 Ling's game-master rules + tool declarations (Verb is the page's, page_only)
   scripts/
-    index.html, lingjing.css, lingjing.js   the Mac scene (from prototype.html)
+    index.html, lingjing.css, lingjing.js   the Mac scene
     cards.js, board.js     the cards Ling can Show; the alchemy board
-    duel.js, duel-card.js  the 五行 bout (shared with the rules) and its card
-    rules.js               the page's door to rules.mjs (/api/bash)
+    battle.js              the card fight (斗法 v3), pure, shared by the page and the rules
+    battle-card.js, battle-anim.js, battle.css   the fight drawn on the scene
+    duel.js, duel-card.js  the old 五行 bout (archive.md) — kept for its card and tests
+    games/                 the hosted mini-games: 洛书 · 华容道 · 七巧 · 五子 · 象棋残局 (a module + css each)
+    esc.js                 the one escape for world/save words put into innerHTML
+    rules.js               the page's door to the rules: POST /api/skills/lingjing/tools/Verb
     chat-bridge.js, api.js the shared bridge copies
-    rules.mjs              the rules engine, a CLI: node rules.mjs <verb> …
+    rules.mjs              the rules CLI and its one door: lock, fight hold, dispatch
+    rules/*.mjs            the rules by part: core (pay, riddles, stamina) · look · travel ·
+                           tasks (boards, fights, 论道) · cards (decks, 得牌, gear, 伤势) ·
+                           companion (银月, 羁绊, tending) · daily (机缘, 历练, greeting, 体力) ·
+                           errands (差事, 遇, 抉择) · arms · fortune · worlds · world · verbs · files · ask
+    stage.mjs              what stands on the stage and what `ask` leaves to the chat
+    state.mjs              the save: load, migrate, fitWorld
     run-js.sh              runs it under the bundled bun, else node
     content.mjs            loads + validates a world; `lint [world]`
   worlds/<id>/             one folder per world; the folder's name is its id
-    world.json             the world card: id, title, premise, style, sources
+    world.json             the world card: id, title, premise, style, sources, companion
     names.json             the novels' names this world refuses, by book
     dictionary.json        the harness's ids → this world's words, zh + en; the provinces
     ladder.json            the tiers: 练气 1–9, 筑基 … with progress thresholds, pay, gate
     traits.json            灵根 kinds and their progress multiplier
-    rewards.json           reward tables and caps (scene, branch, task, day)
-    creatures.json         山海经 entries: name{zh,en}, source, quote{zh,en}, province
-    herbs.json             alchemy tiles
+    rewards.json           reward tables, 体力 (max, refill, costs), 羁绊; `_economy` has the math
+    creatures.json         山海经 entries: name, source, quote, root, deck, signature, elite, likes
+    cards.json             the fight's cards, starters, modes, `gear` rates
+    herbs.json, arts.json, lundao.json, meets.json   alchemy tiles · learned arts · 论道 · 遇 and finds
     items.json             the catalog: kinds, prices, one effect each; art/items/<id>.webp
-    hexagrams.json         the day's omen (the eight doubled trigrams so far)
-    art/<creature>.webp    the classical woodcut on our paper (tools/frame.py); plates/ the originals; CREDITS.md
-    riddles/zh.json, en.json   answer keys the rules check
-    tasks/world.json       in-world tasks
-    seeds/<province>.json  奇遇 seeds, one file per province
-    places/<province>.json the province's places, roads and tiers
+    hexagrams.json         the day's cast
+    art/                   creatures, items, cards (art/cards/<id>.webp); plates/ the originals; CREDITS.md
+    riddles/, tasks/, seeds/, places/, quests/   answer keys · in-world tasks · 奇遇 seeds · places · 差事
     branches.json          奇遇 templates and the daily cap
-    chapters/00-prologue/  chapter.json · beats.md · scenes/*.json — the corridor
-    chapters/01-ji/        the same — waypoints; gate 1 (opens: null while building; 2026-10-01 at launch)
-    chapters/02-yan/       the same; gate 2 (筑基 → 结丹; 2026-11-01 at launch)
-    chapters/03-qing/      the same; gate 3 (结丹 → 元婴; 2026-12-01 at launch)
-  data/                    this player; never in the repo — the cloud save mirrors it
-    state.json · log.jsonl
-  tests/
+    chapters/00-prologue/ … 03-qing/   chapter.json · beats.md · scenes/*.json
+  data/                    this player; never in the repo — the cloud saves state.json and worlds/
+    state.json · log.jsonl · worlds/ (made worlds; their art/ stays on the device, cloud.skip)
+  tests/                   node --test tests/*.test.mjs; tools/battle-sim.mjs is the balance gate
 ```
 
 ## Worlds — systems are fixed, story is the only dynamic part
@@ -441,7 +447,7 @@ days — is the game's real shape:
 2. **A due quest, if any** — the workout kept, the scan run — paid on sight.
 3. **One 奇遇 from a seed,** offered by Ling as the way forward when the spine
    has nothing new. Up to `per_day`.
-4. **Practice** — a board on the scene, no model, no 灵气.
+4. **Practice** — a board on the scene, no model; a hosted game costs 3 体力 when paid.
 5. **The story waits** at its gate when a chapter is not yet open — said in
    one line, never nagged.
 
@@ -498,7 +504,7 @@ picture, a price and one effect.
   a scene: 彭城 has `shop`, and Look's `place.shelf` is the catalog `sold` in
   the province, each with its prices and how many are `held`; `place.show`
   carries the shelf as one `{card: "item", ids}`. **`Trade {action, id}`**:
-  `buy` / `sell` only at a market, a visit's 灵气 (`shop` 5) each, the
+  `buy` / `sell` only at a market, no 体力 (`shop` 0), the
   catalog's prices; `no-market` (*这里没有坊市*), `not-for-sale-here` (with
   the shelf), `no-stones` (*灵石不够* + price), `not-in-bag`, `key-in-use`
   (*这东西还有用处，先留着* — an exit of the chapter's undone scenes still
@@ -556,8 +562,7 @@ is a map of places, not a chain of scenes.
   (`corridor`: *先把眼前的事做完*) until the chapter ends. **`Move {place}`**
   by id, name or English: `no-road` (its line + `near`), `too-hard` (*雾更浓
   了，看不见路* + `fitting` + Yinyue's *还不是时候。先回X吧*), `unknown-place`
-  (`near`); a province still answers as before. A move costs no 灵气 — what
-  is done at the place does — and returns the place, its `show` (the
+  (`near`); a province still answers as before. A trip costs 体力 (3, +1 a road, at most 6) and returns the place, its `show` (the
   creature) and a fresh brief with `summarize`. **Look** carries `place`
   (what is there, `roads` with `too_hard`, the province's `places` with
   here/road/too_hard for the map) and **`director`**: `here`, `near`,
@@ -674,67 +679,9 @@ authored content has; the same lint checks it; the same rules play it.
 - **Not yet:** made scenes with a board or a riddle of their own; sharing a
   made scene with another player; packs.
 
-### 降妖 — fighting a creature
+### 降妖 — fighting a creature — archived
 
-> **Superseded 2026-09-17 by `## 斗法`** — the five-round 五行 bout became a
-> turn-by-turn fight. What still holds: the exit, the witness rule, one try a
-> day, the grant, and a loss costing nothing.
-
-**Decided 2026-09-14.** Fighting a creature is a game the scene runs, like
-the alchemy board: no model, no 灵气, no fighting numbers. Words: **斗法** is
-cultivator against cultivator (the table, *duel*); **降妖** is against a
-creature (*subdue*). A creature is not an NPC — NPCs are people Ling voices;
-creatures are their own class, with a card. 妖兽 is the hostile stance, 灵兽
-the tameable one; the same card can offer both (夫诸: feed it, or fight it).
-
-- **The 五行 duel.** Every creature carries a root in `creatures.json`
-  (`root: "water"` — the lint requires it). A bout is best of three won
-  rounds, at most five: each round the player picks one of their roots; the
-  creature's move is drawn by the rules, seeded by the day and the round,
-  leaning to its own root. 相克 wins the round (木克土 · 土克水 · 水克火 ·
-  火克金 · 金克木); the reverse loses it; anything else is a draw and counts
-  for no one. Deterministic for the day: retrying the same picks gives the
-  same bout.
-- **On the scene:** a `duel` card — the creature, its root shown, the
-  player's roots as buttons, the rounds as they fall. On the phone the same
-  card inline. The page runs it, as it runs the board.
-- **The exit:** `game: { kind: "duel", creature: "fuzhu" }` on an exit that
-  `stay`s. The page records the outcome with `rules.mjs win --id` or
-  `rules.mjs lost --id` and tells Ling `[scene] won <id>` / `[scene] lost
-  <id>` — the same witness rule as the board; no Ling tool can claim a
-  fight. Ling narrates from the result and never rolls a round itself.
-- **A loss is free, and the creature withdraws until tomorrow** — one
-  attempt per creature per day (`state.duels[creature] = {day, outcome}`);
-  the exit refuses a second try with its own line (*夫诸隐入雾中，明日再来*).
-  "I want to fight it again" tomorrow maps to the same exit.
-- **A win pays once,** from the exit's `grant` — 修为, 灵石, a catalog `drop`,
-  sometimes the creature itself; a fight after a win is practice and pays
-  nothing. Losing never costs 灵石 or 修为.
-- **The 夫诸 `duel` exit becomes `subdue`** with this game when it is built;
-  its 象棋 endgame stays a later, harder form of the same exit type.
-- **Built (step 13).** `scripts/duel.js` is the bout, pure and shared by
-  the page and the rules (`scripts/package.json` makes the folder ES
-  modules): `BEATS`, `creatureMoves(root, seed)` (five for the day, the
-  creature's own root six times in ten, seeded by day · creature · 道号),
-  `roundOf`, `bout(picks, moves)` — best of three in five, a draw for no one,
-  five rounds settle by the tally. `creatures.json` carries `root` (夫诸:
-  water; the lint requires one the traits know). An exit's `game` is an
-  object `{id, kind: duel | board, creature}` (`gameOf` reads a bare string
-  as a board); a duel exit carries its `withdrawn` line. **Two calls, both
-  the rules':** `duel --id` *starts* — refuses `withdrawn` today, charges
-  the bout's 灵气 (10), opens `state.duels[creature] = {day, outcome: open}`
-  and returns the creature's `moves`; `duel --id --picks=wood,fire,…`
-  *settles* — the rules replay the bout with the same moves and record
-  `won` (into `wins`, for Resolve) or `lost` (the creature withdraws:
-  Resolve and a new start refuse `withdrawn` until tomorrow; a loss costs
-  nothing more). There is no `lost` verb to claim: the page relays picks,
-  the rules decide. Refusals: `not-here`, `no-traits`, `no-stamina`,
-  `not-started`, `not-your-root`, `unfinished`. Look's exit brief carries
-  `game`, `won`, `withdrawn` and `duel` (the creature with its root, the
-  player's roots, today's bout). The scene draws every duel exit as a card
-  (`duel-card.js`): begin → the roots as buttons → the rounds as they fall →
-  the outcome; then `[scene] won <id>` / `[scene] lost <id>` to Ling, as a
-  board's win goes. 夫诸's `duel` exit is now `subdue` (降妖 · 五行).
+Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `## Systems built 2026-09-21 → 24` hold what is true now.
 
 ## Player state
 
@@ -803,7 +750,7 @@ whole turn.
 | `Summarize {text}` | Replaces the story. | `too-long` |
 | `duel --id [--picks]` (the page's) | Starts a bout (stamina, the creature's moves) or settles it from the picks; records the win or the withdrawal. | `not-here`, `withdrawn`, `no-traits`, `not-started`, `not-your-root`, `unfinished` |
 | `Move {place}` | Goes to a place by road; a province still answers. | `corridor`, `no-road` (with `near`, `toward`), `too-hard` (with `fitting`), `unknown-place`, `road-closed` — each with `here` |
-| `Trade {action: buy \| sell \| use, id}` | Buys or sells at a market at the catalog's price, a visit's 灵气 each; `use` pays a pill's progress within its table or puts a wear on. | `unknown-item`, `no-market`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
+| `Trade {action: buy \| sell \| use, id}` | Buys or sells at a market at the catalog's price, no 体力; `use` pays a pill's progress within its table or puts a wear on. | `unknown-item`, `no-market`, `not-for-sale-here`, `no-stones`, `not-in-bag`, `key-in-use`, `not-usable` |
 | `Lang {lang}` | Switches zh / en. | — |
 
 | `Restart` (verb `init`) | Begins the world in play again; the save it replaces is logged. | `unknown-world` |
@@ -985,100 +932,9 @@ and runs the same `rules.mjs` contract. Later.
   rounds drawn by the same hash; the card tells the 相克 ring in a line
   and says two wins (the Chinese hint said three).
 
-## 功法 — swords, talismans and learned arts (designed and built 2026-09-16)
+## 功法 — swords, talismans and learned arts — archived
 
-> **Effects superseded 2026-09-17 by `## 斗法`** — the pieces are the same
-> (a worn sword, a 符 written from paper, arts learned from a companion), but
-> each does something in the fight now, not to a round. See 斗法's *What
-> today's pieces become*.
-
-His question after losing to 蠪侄 with no 金 root: "can user learn some
-功法, 法术, or attack by sword?" Today a player has roots, the 五行 bout,
-items with three effects (pill, wear, key) and the story; a sword in the
-market does nothing. Three pieces, all inside the rules and the bout card —
-no fighting numbers, the rules decide, heritage only. Ling narrates, the
-page plays; every effect is deterministic and capped per bout.
-
-1. **A weapon lends a root.** A weapon item gains `effect: {root: "metal"}`
-   (铁剑 → 金, 竹剑 → 木; later blades by their metal or wood). Worn in a
-   new `weapon` slot of `state.wear` (Trade `use` on a weapon wears it, as
-   the bell is worn by Yinyue), the bout offers that root beside the
-   player's own: `duelBrief.roots` gains `{id, name, from: "iron-sword"}`
-   and the card draws it marked as the sword's. `duel --picks` accepts it
-   while the weapon is worn. Nothing else changes: the ring, the moves, the
-   day-hash. This makes every creature beatable by craft, and the market
-   matter; it does not touch the root test.
-2. **符 from 桑皮纸.** A new item `talisman` (符, kind `charm`, not sold —
-   made). A `write` verb (Ling's *写符*) at a place with a 坊市 or an
-   altar, or anywhere at 结丹 and above: one 桑皮纸 becomes one 符, costs
-   `shop` stamina, one a day. In a bout the card shows a 符 button beside
-   the roots when one is held; `duel --picks` takes `talisman` as a pick:
-   that round is won outright, the 符 is spent, once per bout. The paper's
-   own line already says it: 写符最好.
-3. **功法 — learned arts, tier-gated.** A small catalog `worlds/<id>/arts.json`,
-   from 道教 heritage, each one bout effect, one line of source, never a
-   number: 五雷法 (a draw becomes a win, once per bout; 结丹+), 遁法 (one
-   lost round is taken back, once; 筑基+), 借势 (one pick counts as the root
-   it generates by 相生 — 木生火 火生土 土生金 金生水 水生木 — once; 练气+),
-   later 御剑 (the worn sword's root may be picked twice in a row) and 符水
-   (a 符 also refills 10 灵气). Learned, never bought: a scene exit
-   `grant.art`, a 奇遇 close that offers one from the branch table, or a
-   tamed creature teaching its own (夫诸 → 遁法, 雷神 → 五雷法). `state.arts`
-   holds ids; Look's `arts` lists them with `about`; the bout card shows
-   each learnable art as a button when its condition holds this round,
-   greyed with its reason otherwise; `duel --picks` takes `art:<id>` tokens
-   in the sequence, the rules replay and refuse `art-used`/`art-not-known`/
-   `art-needs-tier`. The dictionary carries the words; made worlds may
-   rename, never invent effects (the systems are fixed).
-
-Build order: 1 with 2 first (they use items already sold — 铁剑 in 冀,
-桑皮纸 in 兖), then 3 with five arts and one teacher creature per chapter.
-Tests: a 木水火土 player beats a 金 creature with the 铁剑 worn; a 符 wins
-its round and is spent; an art refuses out of tier and twice in a bout.
-SKILL.md: Trade `use` on a weapon says it is worn; *写符* → Inscribe (renamed from Write 2026-09-17: the engine's file tool took the name); the
-bout section names the 符 and the arts as the scene's buttons (Ling never
-plays them). Open for his call: whether a worn sword also changes the
-creature's lean (a 金 blade drawing 木 moves), and whether 斗法 at the
-table uses the same arts.
-
-**Built 2026-09-16, all three pieces, as the rules read them now.** One
-truth for the page and the rules: `duel.js` takes the pick sequence and a
-*kit* (own roots, the sword's root, the 符 held, the arts known with
-`ready`) — `legal` says what may come next, `offers` lists it for the card,
-`bout` replays and refuses by name. The sequence carries an element, the
-符's id, or `art:<id>`; a pick after the decision is not played, not
-refused. Rulings made while building, his to flip:
-- **A breath between strokes.** The sword's root may not be picked two
-  rounds running — otherwise 御剑 would mean nothing. With 御剑 it may.
-- **遁法 takes a lost round back to a draw**, not a replay — a replay
-  against a move already seen would be no contest. Played right after the
-  loss, even the second: a decided bout that an art could still turn waits
-  (`rescue`) for the player's word — the art, or *认了*.
-- **借势 is played before the pick** it changes; 五雷法 and 遁法 after the
-  round they change. 符水 and 御剑 are passive.
-- **Teachers, one a chapter, so the arts are reachable in order:** 夫诸 →
-  借势 (练气; joins in the prologue, so every player has one art), 狍鸮 →
-  遁法 (筑基), 精卫 → 符水 (筑基), 雷神 → 五雷法 (结丹), 夔 → 御剑 (元婴). The
-  design said 夫诸 → 遁法; swapped so the prologue companion teaches the
-  练气 art. A creature teaches as it joins (`pay` with `cast`, Tame) — and
-  a save from before today learns from its cast on the next Look. An exit
-  may still `grant.art`; the 奇遇 offer is not built.
-- **写符** needs a market (no altar exists in the places) or 结丹, one
-  桑皮纸, a visit's stamina, one a day (`day.written`); the choice offers
-  *写一道符* whenever it would be allowed. The 符 is a made thing: no
-  price, sold nowhere, `made: {from, at, anywhere_from}`; Trade refuses to
-  sell or "use" it. 符水 refills 10 灵气 when a 符 is cast (`CHARM_REFILL`).
-- **The sword does not change the creature's lean** (the open call —
-  moves still come from the player's own roots, so a bout is winnable
-  without one). 斗法 at the table is not built.
-- Cards: the item card says *佩之借金* and has a *佩戴* button (also for
-  wears — the bell had none); the traits card lists the arts learned under
-  the roots, greyed with the realm they wait for; the bout card draws the
-  sword's root dashed, the 符 red with its count, the arts as buttons with
-  a hint, each greyed with its why. 符 art painted by FLUX (640×480).
-- Tests: 100 (six new: the sword and its breath, the 符, the five arts on
-  the engine; the sword in the bout and the teaching in the rules; 写符
-  end to end with 符水; the linter on arts and made things).
+Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `## Systems built 2026-09-21 → 24` hold what is true now.
 
 ## 斗法 v3 — 一局卡牌，照《炉石传说》(designed 2026-09-18; building)
 
@@ -1102,11 +958,11 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 | 随从 | **灵兽 · 同道** | ✓ 攻/血、五行、两个关键词：**护主**（嘲讽）· **入阵**（战吼） |
 | 法术 | **功法** | ✓ 一次性，有五行：伤害、群伤、回气血、抽牌、加成 |
 | 英雄技能 | **主灵根一击** | ✓ 每回合一次，费 2 |
-| 武器 | 法器 | ✗ 剑留在世界里当装备，只给英雄技能 +1；不进牌桌 (+1 BUILT 2026-09-22: 戴着的剑或本命法宝) |
+| 武器 | 法器 | ✗ 剑留在世界里当装备，不进牌桌；它的 器攻 ×0.5 加到主灵根一击（装备入局，BUILT 2026-09-24） |
 | 亡语 | 遗蜕 | ✗ 交互爆炸的源头，v2 |
 | 冲锋 | 疾行 | ✗ 爆发数学，v2 |
 | 换牌 | — | ✗ 开局就让人做看不懂的决定 |
-| — | 符/丹从背包带入 | ✗ 战斗与背包解耦，v2 |
+| — | 符从背包带入 | ✓ 背包里有符 → 手里一张「符」牌，打出才从背包扣（BUILT 2026-09-24）；丹不带 |
 | — | 相生减费（势） | ✗ 第一版只上相克 |
 
 一句话讲得完规则：**每回合灵力多一点，出随从、放功法、用你那一行的法术，
@@ -1204,29 +1060,36 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 
 ### 副本契约 — 战斗与每个小游戏共用
 
-1. **入口**在世界里：妖的巢、一个任务、一段奇遇。
-2. **进门**扣几点体力，**锁定一份出战配置**（境界、牌库、装备、灵兽、今日卦、银月）；
-   锁定之后世界里发生什么都不改这一局 —— 可重放、可判定、可对战的前提。
-3. **门内**独立 UI（整屏，聊天收起），世界时间不流动。
-4. **出门**结算，写回存档，回世界 UI，Ling 说一句。
+1. **入口**在世界里：妖的巢、路上的妖、一个任务、一段奇遇。
+2. **进门**扣体力（斗法 8，精英 12；小游戏 3 在交差时扣，论道 3 在开局扣），**锁定一份
+   出战配置**（境界、主灵根、牌库、装备折算、今日卦、银月与羁绊、伤势）；锁定之后世界里
+   发生什么都不改这一局 —— 可重放、可判定、可对战的前提。
+3. **门内**画在主界面的场景位上，**聊天留着**（人可以边打边说）；世界停住：规则拒绝
+   一切改世界的动作（`in-a-fight`，FIGHT_HOLDS），Ling 不推进任何东西。
+4. **出门**规则按玩家的出牌重放、结算、写回存档；页面报 `[scene] won|lost|withdrew <id>`，
+   所得由台上的战利品卡显示，Ling 只讲故事。开着过夜的一场，下次调用时按力竭退走结。
 5. **中途退出 = 认输**：体力照扣，奖励没有。
 
-**带进门的只有六样**：境界+主灵根 · 牌库 12 · 装备 · 灵兽 · 今日卦 · 银月。
-**留在门外**：体力（进门时扣）· 灵石 · 修为 · 背包杂物 · 故事进度。
+**带进门的**：境界+主灵根 · 牌库 10（组牌挑的，余下按曲线补）· 装备（每件一个数，
+§ 装备入局）· 今日卦（问斗法）· 银月（羁绊抬她）· 伤势（气血从上一场留下的开始）。
+**留在门外**：体力（进门时扣）· 灵石 · 修为 · 背包杂物（符除外）· 故事进度。
 **文戏（灯谜、飞花令、下棋、起卦）什么都不带** —— 只带这个人和他的语言，
 所以新玩家能赢老玩家。武戏带属性，文戏不带 (2026-09-18)。
 
-### 体力，唯一的节流阀 (BUILT 2026-09-18)
+### 体力，唯一的节流阀 (BUILT 2026-09-18; numbers 2026-09-24)
 
-倒计时给人压力，体力不给 (his)。丹田显示**状态与点数**（充盈 62/100），不是时钟 ——
-一个能拿来盘算"今天还打不打得起一场"的数字。
+倒计时给人压力，体力不给 (his)。显示**状态与点数**（62/100），不是时钟。数字全在
+`rewards.json → stamina`：
 
-- **一场斗法 10 点**，一步故事 10、一段奇遇 15、逛坊市 5；满 100，按钟点回（五小时回满）。
-- **次数不限**：一天能打好几只妖，只要体力够。但**同一只妖一天只应一次** —— 它退进雾里。
-- **现实里的事回体力**：一件任务按它自己的分量回（默认 20）—— Shifu 扫盘、Health 走够步数。
-  这是别的游戏抄不走的钩子。
-- ~~收益本来就有日上限（修为 240 · 灵石 60）~~ — 2026-09-23 去掉：只用体力限制（his）。日上限看不见，把他最后一件差事和一颗丹都变成了 +0。
-- 空了只说一句"什么时候回来"，不滚秒。
+- **满 100，五小时回满**；用到 0 之后要歇到 **20**（`rest_at`）才再动 —— 最后一点仍能买
+  一件事。银月（不是 Ling）叫人去歇。
+- **价**：一趟路 3，每多一条路 +1，最多 6 · 一步故事 3 · 斗法 8 · 精英 12 · 奇遇 8 ·
+  抉择 3 · 驯 3 · 小游戏 3（交差时扣；体力空了赢局照留，回满当天再付）· 论道 3（开局扣）·
+  造景 5 · 造世界 10 · 增改 5 · 坊市 0。序章自己的步、路、仗不扣。
+- **不扣**：说话、坊市、差事、银月的调理、写符。
+- **现实里的事回体力**：一件任务按它自己的分量回（默认 20）。
+- **没有日上限** —— 2026-09-23 去掉修为/灵石日上限：只用体力限制（his）。
+- 空了只说一句什么时候回来，不滚秒。
 
 ### 牌库：一副牌，不是一把牌 (BUILT 2026-09-18)
 
@@ -1262,11 +1125,11 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 - **灵兽** — 收服那一刻，它的牌归他。没收服的山海经妖，永远不在他的牌里。
 - **每赢一场** — 一张他没有、用得上的牌（功法须合他的灵根，灵兽五行皆可），先挑那只妖的行；不会是山海经妖。
 - **赏** — 任何 grant 可写 `card`（差事、场景），lint 查牌存在。
-- **法器** 仍是戴着的装备，不进牌桌。
+- **法器** 仍是戴着的装备，不进牌桌；它和本命法宝借的那一行，功法可以进牌库（§ 装备入局）。
 - **五行** — 每张牌都有五行（his: align with 凡人），**丹药除外**（`pill: true`，谁都能服）。测试守着：新牌没配五行又不是丹药，测试就不过。
 - **旧存档** 没有 `cards`：按"应有的"读（起手 + 银月 + 随行的妖），得第一张新牌时写下。
 
-闸 § 带进门的（会读场的 82.9% 为基）：带剑 +3.6 · 大吉 +4.8 · 吉 +2.0 · 凶 −2.1 · 大凶 −2.7；任一样超过 15 点报越界。
+闸 § 带进门的：大吉 +4.8 · 吉 +2.0 · 凶 −2.1 · 大凶 −2.7；§ 装备入局（基 84.9%）：竹剑 +2.9 · 铁剑 +6.6 · 蓑衣 +1.1 · 玉珏对土妖 +6.1 · 符 +2.2 · 本命 一重 +8.0 / 九重 +11.0 · 全套 94.4%；任一样超过 15 点报越界，全套封顶 97%。
 
 闸（`tools/battle-sim.mjs` § 起手）：只有起手十张 + 银月，练气 76.7% · 筑基 76.7% · 结丹 70.0%；
 带上夫诸、狍鸮多 5–7 点。低于 50%（练气）闸报越界。
@@ -1280,197 +1143,9 @@ His direction, in order: *开放世界RPG都是一个套路…参考魔兽世界
 ② 战斗 UI（整屏，聊天收起，wireframe 已画）· ③ 牌的内容与起手牌组 ·
 ④ 体力改造 · ⑤ PvP 旋钮（桌上的斗法）· ⑥ 团战。
 
-## 斗法 v2 — 灵力、法器与本命法宝 (designed 2026-09-17; BUILT 2026-09-17; SUPERSEDED 2026-09-18 by 斗法 v3)
+## 斗法 v2 — 灵力、法器与本命法宝 — archived
 
-**Why.** His question on the 五行 bout: *如果是金妖，用户一直出火就能赢，对吗？*
-— yes: run over 5,000 days, always countering the creature's root wins 92%
-(木 creatures 35% — no 金 without the 铁剑); *is it a kind of rolling game?* —
-yes, the moves are hidden and fixed for the day, so the only decision is the
-counter. His direction: *结丹修身可以炼化本命武器，然后用物品强化攻击，也可以穿
-装备获得防御。可以设计五行法力攻击，物理攻击等* · *learn from 凡人's fighting
-system, arm system* · **所有攻击都消耗灵力。生命值耗尽，或者灵力耗尽，战斗失败。**
-This replaces the rounds of `### 降妖` above and the bout effects of `## 功法`
-once built; the exit, the witness rule, one try a day and the grant stay.
-
-**What we take from 凡人修仙传 — its mechanics, never its names.** A fight
-is a contest of 法力: every 法器 and 法术 draws on it, and running dry loses.
-Arms climb with the realm — 法器 for 练气 and 筑基, the 本命法宝 refined at
-结丹 and grown by 温养 and materials, 灵宝 later. 护体灵光 takes a blow
-before the body. 符箓 are the one-shot anyone can carry; pills restore
-mid-fight; 妖兽 come by 阶 and drop 妖丹 and 材料 that make better arms. Our
-names stay our heritage's: no person, treasure, beast or art from the novel.
-
-### The fight
-
-His rules, in his words: **所有攻击都消耗灵力。生命值耗尽，或者灵力耗尽，战斗失败。**
-· **fight is round by round, stronger side first; each creature has a level
-the same as the player; on the player's turn: 法术, 物理攻击, 符箓, or 辅助
-(增强进攻或者防守); the creature has 灵力, 生命值 too.**
-
-- **Turns.** Round by round, one side then the other. The side with the higher
-  **战力** moves first for the whole fight; a tie goes to the player. 战力 is one
-  number on the card — realm step, weapon 攻, 法衣 防, 法术 — so arms and gear
-  can buy the first move.
-- **An even match by birth.** Every creature fights at the player's own level
-  (realm and step): its 气血, 灵力, 攻, 防 and 法术 come from the same realm
-  table as the player's, then its **lean** shapes them — *thick-hided* (防 and
-  气血 up, 法术 down), *warded* (抗 up), *quick* (战力 up, 攻 down), *fierce*
-  (攻 up, 防 down). What wins is what the player brings and how they read it:
-  the weapon and the 本命法宝, gear, arts, the 符 held, the day's cast.
-- **Both sides: 气血 and 灵力.** Every attack spends 灵力 — the creature's too.
-  A side at 0 气血 or 0 灵力 loses. 灵力 is the fight's own pool, full at the
-  start (not 灵气, which stays the day's pace). There is no free rest.
-- **The player's turn — one of four:**
-
-| choice | 灵力 | effect |
-|---|---|---|
-| **法术** · one of their roots | 4 | 法术 × 相克 (×2 if it overcomes the creature's root, ×½ if overcome) − 抗 of that element (at least 1) |
-| **物理攻击** — the worn weapon | 2 | 器攻 − 防 (at least 1); no 五行 |
-| **符箓** — a 符 held | 0 | 12, ignores 防 and 抗; spent; once a fight |
-| **辅助** — 聚势 or 护体 | 1 | 聚势: the next attack ×1.5 · 护体: the next blow taken is halved |
-
-- **The creature's turn** comes from its **pattern** in `creatures.json`
-  (cycled, the start drawn by day · creature · 道号): 击 (物理), 法术 of its
-  root, 蓄 (its next attack doubled), 护体, 甲 (its 防 up for a round). Its
-  stance stays on the card after its turn — *蓄势*, *护体* — so the player reads
-  it before choosing: 护体 against a gathered blow, 法术 against 甲, 物理 when it
-  is warded. It spends 灵力 as the player does, and can run dry and lose.
-- A blow landing: 护体 halves first, then 防 (物理) or 抗 (法术 of that element).
-
-**Numbers — as the gate settled them (`duel.js`, never shown as formulas):**
-
-| realm | 气血 | 灵力 | 法术 | 攻 | 防 (a creature's hide) |
-|---|---|---|---|---|---|
-| 练气 | 22 | 22 | 4 | 3 | 3 |
-| 筑基 | 32 | 32 | 6 | 4 | 4 |
-| 结丹 | 46 | 46 | 8 | 6 | 6 |
-| 元婴 | 62 | 62 | 11 | 8 | 8 |
-
-A step within a realm adds 2 气血 and 2 灵力. A creature's lean moves its
-numbers by about a quarter: 厚皮 (气血 ×1.25, 防 +1, 法术 ×0.75) · 避法
-(抗 = half its 法术, against every element) · 迅捷 (战力 ×1.25, 攻 ×0.75) ·
-凶猛 (攻 ×1.25, 防 −1).
-
-**What the gate changed, and why** (each was a hole it found, not a taste):
-
-- **A 法术 costs its own 法术** — 4 at 练气, 11 at 元婴; a strike half that, a
-  辅助 a quarter. With flat costs, 法术 outgrew the pool and rote casting won
-  48–85% at 结丹 and up. Costing what it is worth gives *one* economy at every
-  realm: a 法术 into nothing is 灵力 for 气血 one for one, into what it
-  overcomes it is two for one, and a pool is one fight long.
-- **灵力 = 气血 at every realm**, so that economy breaks even. (Design had the
-  pool below the body; that made 练气 exact and every realm after it loose.)
-- **A creature's pool is twice the table.** His rule — 灵力 out and you lose —
-  made *turtling* a winning line: 护体 costs 1, the creature's turns average
-  more, so a player who never attacked won ~100%. A beast's breath is longer;
-  now waiting one out loses.
-- **A 符 is 法术 ×3** (12 at 练气, as designed) so it stays a great blow at 元婴
-  instead of a rounding error. 符水 gives back 法术 ×1.5 in 灵力 — inside the
-  fight, not as the day's 灵气 (it used to refill 灵气 10; that is gone).
-- **聚势 and 护体 are held, not stacked** — you cannot raise a guard that is
-  already up. Without this, a cheap stance could be spammed forever.
-- **借势 rides the cast** instead of costing its own turn: one turn, one blow,
-  a breath more 灵力 — and it is *not* once a fight. This is the whole answer
-  to being born without a creature's counter: as its own turn it halved the
-  player's damage *rate*, and every such birth lost every fight. 五雷法 and
-  御剑 stay once a fight.
-- **防 and 抗 never negate** — a blow always lands at least 1 — but they do not
-  cap either; a half-floor made 物理 dominant (rote striking 84%).
-
-**Where it stands after tuning** (`node tools/duel-sim.mjs`, every creature ×
-every root set × 5 steps × 5 days, at all four realms): every rote line under
-30% · the attentive line 82–99% armed, 80% bare · 灵力 alone decides under 18%
-· no creature is unbeatable for any birth once 借势 is known. A player who
-never learned 借势 and carries no 符 cannot beat a creature they lack the
-counter for — 借势 is the prologue companion's own art, so that is the
-prologue's job, not a hole.
-
-**The gate (a build test by simulation, like today's):** for every creature
-at the player's level, any single choice repeated wins under 30%; an
-attentive line (护体 against 蓄, 法术 into 甲, 物理 into wards, the counter
-root otherwise, 聚势 before the finishing blow) wins over 75%; a player with
-only their four roots and a starting weapon can win against every creature,
-木 ones included; neither side can win by making the other spend 灵力 alone.
-
-### Arms — 法器, 本命法宝, gear
-
-- **法器 (练气, 筑基).** `kind: weapon` items gain `攻` (竹剑 2, 铁剑 3); worn in
-  `wear.weapon` as today. A weapon's `root` still lends that element: 施法 with
-  it at 法术 − 2 (借器施法) — how a 木水火土 player reaches 金.
-- **Gear.** `kind: robe` 法衣 (`防`, worn in `wear.robe`; 蓑衣 becomes 防 1) and
-  `kind: pendant` 佩 (`抗: {element: n}`, `wear.pendant`). The player's slots;
-  Yinyue's wear (铃, 齐纨) stays hers.
-- **本命法宝 (结丹 and up).** *炼化本命*: once, at 结丹 — the worn weapon and one
-  core material become the player's bound treasure (`state.treasure = {name,
-  base, element, level, exp}`). The material sets its element: 精金 金 · 雷击木 木
-  · 寒玉 水 · 火精 火 · **息壤** 土 (the 山海经's own: 鲧窃帝之息壤以堙洪水). The
-  player names it, as the 道号 is named. It is the weapon from then on:
-  **物理攻击** hits with 器攻 = base + level, and the **法术** of its element gains
-  + level (the treasure amplifies its own element).
-- **温养** — once a day, a tray task *温养本命* (no model, a tap): +1 exp.
-  **强化** — Trade `use` a material on it: 妖丹 by 阶 (+3 / +6 / +10 exp), the
-  core materials (+5). Level 1–9 (一重 … 九重), each needing more exp. A
-  treasure is never lost; 反噬 is his later call.
-- **Drops.** Every win drops the creature's 妖丹 (一阶/二阶/三阶); `drops` in
-  `creatures.json` adds a material (蠪侄 → 精金). 妖丹 sells at a 坊市 or feeds
-  the treasure; the 结丹 markets sell the core materials — 灵石 and fights now
-  feed arms.
-
-### What today's pieces become
-
-- **Roots** — which 施法 the player can cast; the root test finally matters.
-- **符** — 12, ignores 防/抗, once a fight (was: a round won).
-- **Arts** join the four choices: 借势 — a 辅助: the next 法术 counts as the
-  element its root generates · 五雷法 — a 法术: 木 at double 法术, ignores 抗,
-  6 灵力, once · 御剑 — 物理攻击 strikes twice for its cost · 遁法 — passive: a
-  blow that would end the fight leaves 1 气血, once · 符水 — passive: a 符箓
-  also gives +6 灵力. Teachers unchanged.
-- **The day's cast (问斗法)** — 吉: its root's 施法 +2 法术 (大吉 +4); 凶: −2 (大凶 −4).
-  **In v3 (BUILT 2026-09-22):** the lower trigram's element, its 功法' damage and
-  sweep `card` ±: 大吉 +2 · 吉 +1 · 凶 −1 · 大凶 −2 (never below 1), printed on the
-  card as 卦 +n. The v2 `spell` numbers stay for the old bout.
-- **命格 日主** — once a fight, a blow of that element taken is halved.
-
-### The card, the rules, Ling
-
-- **Card:** both sides' 气血 and 灵力 bars, 战力 and who moves first, the
-  creature's stance above its picture; on the player's turn the four choices as
-  buttons (法术 with a root each and a borrowed one · 物理攻击 · 符箓 · 辅助,
-  and the arts under them), each greyed with its why (not enough 灵力, none
-  held, used); the turns as a short log (*法术·火 → 16* / *蠪侄 蓄势* /
-  *蠪侄 重击 → 护体减半，受 7*). Phone: the same card inline.
-- **Rules:** `duel.js` stays pure and shared — `fight(actions, creature, kit)`
-  replays and refuses by name; `duel --picks` carries the player's choices (`cast:fire`, `strike`,
-  `talisman`, `assist:focus`, `assist:guard`, `art:<id>`); the creature's turns
-  are the rules' own. Look's duel brief
-  adds both sides' numbers and the next intent. No engine change.
-- **Ling** narrates the outcome and the finishing blow from the result, in
-  the world, never a formula; the fight itself is played on the card.
-
-**Build order:** ~~(1) the fight~~ **BUILT** — `fight()` in `duel.js`, the realm
-table, leans and patterns for the seven, the card (both pools, the stance, the
-turns, the four choices), the gate as `tools/duel-sim.mjs` and
-`tests/duel.test.mjs`; the arts, 符, cast and 日主 as modifiers. ~~(2) Gear~~
-**BUILT** — 攻 on 竹剑 2 and 铁剑 3, 防 1 on the 蓑衣, `kind: robe` and
-`kind: pendant` with `wear.robe` / `wear.pendant`, and the lint that keeps arms
-to one number each. **No 佩 is in the catalog yet** — the kind, the slot and 抗
-all work — **and 玉珏 now fills it** (抗 土 2, sold at 徐). ~~(3) The 本命法宝~~
-**BUILT** — `refine` (once, past 结丹: the worn weapon + one 天材地宝, and the
-player names it, as they name their 道号), `nourish` (温养, the card's own tap,
-once a day, +1), 强化 through Trade `use` (妖丹 一阶 +3 · 二阶 +6 · 三阶 +10 ·
-a 天材地宝 +5), nine 重 at 10 + 5×(n−1) each, the treasure as the weapon in
-`duel.js` (器攻 = base + 重, and its own element's 法术 + 重), drops on every
-win (the 妖丹 of the realm met at, plus what the creature carries: 蠪侄 精金 ·
-雷神 雷击木 · 夔 寒玉 · 精卫 火精 · 狪狪 息壤), the `treasure` card, and the five
-天材地宝 on the later shelves. Nine plates painted by the local FLUX on
-2026-09-17.
-
-**战力 counts** the realm and step, the weapon's 攻, the 法衣's 防 and the
-法术 — a 迅捷 creature adds a quarter. **Still his calls:** the numbers above,
-now that the gate holds them; 反噬 (a treasure is never lost today); whether a
-tamed creature fights beside the player later; whether 御剑 should be once a
-fight (it is) or a standing way of striking; and whether 温养 belongs on the
-tray beside the day's practice rather than only on the treasure's card.
+Superseded; the original is in archive.md. The card fight (`## 斗法 v3`) and `## Systems built 2026-09-21 → 24` hold what is true now.
 
 ## 银月 joins at 结丹 (designed and built 2026-09-17)
 
@@ -1553,7 +1228,7 @@ thread starts when she joins; chapter 03's lines carry `alone`. 118 tests.
   `tamed`, and `likes` {item, held}. **降妖 at the haunt:** the `duel` verb
   accepts `haunt:<creature>` when the player stands there and it is not
   tamed; the same bout, same day-hash moves; a win is paid by the rules at
-  once from the new `haunt` reward row (20 · 10) — no exit, so the page's
+  once from the `haunt` reward row (25 · 10 since 2026-09-24) — no exit, so the page's
   `[scene] won haunt:x` means Look and say what was paid; `subdued-today`
   keeps it to once a day. **驯 by what it likes:** `creatures.json` gained
   `likes` (人参 for the man-eaters 狍鸮/蠪侄, 玉鱼 for 精卫, the bell for 雷神,
@@ -1854,42 +1529,94 @@ changes:
   On Linggen Cloud the game already travels like Health — the shared trial,
   then the plan's monthly pool (linggensite `llm.ts`).
 
-## 灵气 — the game's own stamina
+## 体力 — the game's own stamina
 
 **It keeps the game from taking too much of a day, and sends the player back
-to the world.** Decided 2026-09-14, replacing the token window: 灵气 is a
-number the rules own, like 修为 and 灵石 — the 体力 of every mobile game —
-not tokens and not turns. Tokens differed by provider (5.5k an exchange on
-Gemini, ~2k cached elsewhere), moved with engine changes, and meant nothing
-to the player; a stamina bar is the same on every model, visible, and
-refills by the clock.
+to the world.** Decided 2026-09-14 (then called 灵气/丹田), replacing the
+token window: a number the rules own, like 修为 and 灵石, the same on every
+model, refilled by the clock. It is the **only** limit on a day's play — the
+修为/灵石 day caps went 2026-09-23.
 
-- **丹田 holds 100.** It refills by the clock, full in five hours (20 an
-  hour), never over 100. `state.qi` and `state.qi_at` (when it was last
-  settled); the rules settle the refill on every read, so two devices agree
-  through the save alone.
-- **Actions cost it, from `worlds/<id>/rewards.json → qi`:** a story step (an
-  exit that moves the scene or ends a chapter) **10** · opening a 奇遇
-  **15** · a 降妖 bout **10** · a 坊市 visit **5**.
-- **The prologue is free** (decided 2026-09-15, his "yes, make the prologue
-  free"): a chapter marked `free: true` asks nothing for its own steps and
-  bouts, so a new player finishes the opening in one sitting — it had spent
-  70 of 100. Making a scene, a 奇遇 or the market inside it still cost.
-- **Free:** questions and chatter, a board played as practice, Look,
-  buying and selling, a real-life quest checked. Talk costs nothing — but
-  nothing advances without 灵气, which is the point.
-- **Real life refills it:** the quest facts the apps already write — a kept
-  workout **+30**, a full night **+30**, a Shifu scan **+20** — paid with the
-  quest, capped at 100. The "healthy user gets a better Linggen" idea, in
-  its natural unit.
-- **Empty:** the rules refuse the action (`no-qi`, with the hour it returns)
-  and change nothing; Ling speaks the line — *丹田已空，先去调息，戌时再来* —
-  and turns the player to the world. The story waits; the boards stay.
-- **The 丹田 ring** draws `state.qi` from Look: full, half, low, empty.
-- **The engine's token meter is not the game's.** `cloud.meter` stays a
-  general facility for any skill that wants a token pace; Lingjing declares
-  only `cloud.save`. The scene stops reading `/api/skill-cloud` for the
-  ring.
+- `state.stamina` and its clock, settled on every read, so two devices agree
+  through the save alone. Look's `stamina`: `now`, `max`, `empty`, `rest_at`
+  (back to 20, when an empty pool plays again), `full_at`, and `returns_at`
+  for older pages.
+- The prices, the refill and the rest line are `rewards.json → stamina`;
+  the table is in `### 体力，唯一的节流阀` above.
+- **Real life refills it:** a quest paid adds its own `qi` (default 20).
+- **Empty:** the rules refuse `no-stamina` with the hour it returns and change
+  nothing; Yinyue sends the player to rest. The market, errands and talk
+  still work.
+- The engine's token meter is not the game's: Lingjing declares only
+  `cloud.save` (and `cloud.skip: [art]`).
+
+## Systems built 2026-09-21 → 24
+
+Each a few lines of code truth; the numbers live in the named data file.
+
+- **装备入局 — gear in the fight** (rules/cards.mjs, `cards.json → gear`). Each
+  worn thing is one number locked at the door: a weapon's 器攻 ×0.5 →
+  主灵根一击 (竹剑 +1, 铁剑 +2); the 本命法宝 starts at its sword and grows +1
+  per 4 重 — only the bigger of sword and treasure counts; the sword's root and
+  the treasure's element are lent roots whose 功法 may enter the deck; a 法衣's
+  防 ×4 → 护体, armor that takes blows first and never carries out as a wound;
+  a 佩's 抗 ×2 off each blow of its element (at least 1 lands); a 符 in the bag
+  → one talisman card in hand, spent from the bag when played. Learned arts
+  (arts.json) are not in fights.
+- **组牌 — the deck** (rules/cards.mjs `deckFor`). The player picks up to ten
+  from the cards they own (`state.deck`); a card taken out stays out
+  (`deck_out`); the rest is filled along the realm's curve. 银月 is in hand,
+  never in the ten.
+- **伤势** (rules/companion.mjs). 气血 lost in a fight stays lost; it mends by
+  the stamina clock (full in five hours) or a 回春丹; below a quarter the
+  fight's door refuses `wounded`. A loss leaves the player at nothing.
+- **羁绊** (rules/companion.mjs, `rewards.json → bond`). 相识 → 相知 → 相惜 →
+  同心 at 0/20/50/100, capped 5 a day; grown by a win beside her, an elite
+  beaten, a realm risen, her tending, a gift she wears, 历练, and Ling's one
+  `Bond` a day. Each level lifts her card and her tending.
+- **历练** (rules/daily.mjs). The player sends 银月 out from the 装备 card for
+  2, 4 or 8 real hours, once a day, to a place within three roads; she brings
+  finds, stones and (after eight hours) a card; called back early she brings
+  a small share. She tells it herself.
+- **机缘** (rules/daily.mjs). Once a day, somewhere within two roads, for three
+  real hours; 收下 on the stage when the player stands there; pays the
+  `chance` table and a card. Missed, it is gone.
+- **遇 and 抉择** (rules/errands.mjs, meets.json). An arrival where the place
+  holds nothing deals a 遇, veiled until Ling sets the moment: a find, a
+  traveller's riddle, a road beast, or a 抉择 — Ling writes 2–3 ways
+  (difficulty, stake wound|coin, win/lose lines), the rules rolled each way
+  when dealt, the player taps one (3 体力), the `trial` table pays a win.
+- **精英 and 杀招** (battle.js, creatures.json). An `elite` beast stands at its
+  full 气血 and pays the `elite` table (half again, two cards). Every beast
+  has a `signature`: at half 气血 it gathers a round, then lets it go once.
+- **望气** (battle.js `insight`). The beast decides its next turn at the start
+  of the player's; a player who has read 《望气术》 (上卷 at 筑基: its shape;
+  下卷 at 结丹: every move and number) sees it on the fight's card.
+- **Mini-games, 炼丹 and 论道** (rules/tasks.mjs, scripts/games/, lundao.json).
+  炼丹 at a market and 洛书 · 华容道 · 七巧 · 五子 · 象棋残局 where a place
+  hosts them: played on the stage, once a day, level by realm; the win is the
+  page's `win`, paid at Practice `done` from the `game` table (5 修为, 10 灵石)
+  for 3 体力 — an empty pool keeps the win until it refills that day. 论道 at
+  稷下: 飞花令 · 成语接龙 · 对对联, three good answers pay 6 修为, three misses
+  end it; 3 体力 at `open`.
+- **Economy** (`rewards.json → _economy`). 修为 per 体力 at 练气: haunt 25/8 ≈
+  3.1, elite 38/12 ≈ 3.2, a hosted game 5/3 ≈ 1.7, 论道 6/3 = 2.0 — the fight
+  pays best even at its odds (a test locks it). A normal 练气 day ≈ 115, so
+  练气's 810 takes about a week.
+- **Rules integrity** (rules.mjs, rules/tasks.mjs). One writer at a time
+  (`state.json.lock`, retried up to 5 s, then `busy`); while a fight is open
+  the world-changing verbs refuse `in-a-fight`; a beast beaten today is
+  `subdued-today`, a scene fight already won is `won-already`; made grants are
+  progress and wealth only and each exit pays once; Go back into an ended
+  chapter pays nothing; errands and offers carry `pays` (what would land now).
+- **The page's door** (rules.js). Page verbs go through the declared
+  page_only `Verb` tool (POST /api/skills/lingjing/tools/Verb, argv flags) —
+  the same rules.mjs, refused when signed out.
+- **One opening, facts to Yinyue.** When 银月 walks with the player the day's
+  greeting is hers (the `greet` facts) and Ling gets nothing until the player
+  speaks; else the page sends `[scene] opened` once. Gains, wins, losses, the
+  cast, 命格 and 历练 are handed to her as facts; she writes the words. 温养
+  and 命格 take no hidden model turn.
 
 ## Online — the save in the cloud, the rules at home
 

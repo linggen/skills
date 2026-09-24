@@ -5,7 +5,7 @@ guide: |
   What Lingjing is and what each of its systems does, in one read.
   How it is built belongs in design.md. The idea's first record is
   linggen-app/doc/app-ideas.md.
-status: Settled 2026-09-11; built through online (the prologue, the Mac scene, quests, the cloud save and 灵气 meter) as of 2026-09-14 — see design.md.
+status: Re-derived from the code 2026-09-24 — the card fight, 体力 as the only limit, 差事, 银月 found at 结丹, the mini-games and 论道 are built; see design.md.
 ---
 
 # Lingjing: The World of Linggen · 《灵境》
@@ -19,7 +19,7 @@ Mac a scene beside the chat shows the same cards.
 
 - **Genre:** AI chat game, 13+.
 - **Languages:** English and Chinese at launch.
-- **Session:** a few minutes, a few times a day, paced by 灵气.
+- **Session:** a few minutes, a few times a day, paced by 体力.
 
 ## Story
 
@@ -28,8 +28,9 @@ bearing every spirit of that land. They vanished at the fall of 周. Since then
 the 灵脉 have thinned. The player cultivates through real life, and that lets
 them sense the cauldrons.
 
-- **Opening:** a rain night on the 泗水 bank. A silver light in the water. The
-  player reaches in and Yinyue wakes.
+- **Opening:** a rain night on the 泗水 bank; the player takes a 道号 and has
+  their roots tested. Yinyue is found later, at 结丹 — a bell rung where water
+  holds a moon.
 - **Nine chapters,** one per cauldron and province (冀 兖 青 徐 扬 荆 豫 梁 雍).
   Recovering a cauldron is the chapter's climax.
 - **The main story is hand-written;** the model voices it and never changes its
@@ -58,14 +59,14 @@ them sense the cauldrons.
 - **Map:** the nine provinces, each drawn from its 山海经 chapter.
 - **灵兽:** the 山海经 bestiary, met in the story and collected, each with its
   ancient text and a picture. A creature is never named without its picture.
-- **Calendar:** events follow the real 24 节气 and festivals. Each morning
-  brings one 周易 hexagram as the day's omen.
+- **Calendar:** events follow the real 24 节气 and festivals. Once a day the
+  player may cast three coins (起卦) for a 周易 hexagram that tilts the day.
 - **洞府:** the player's home base, which grows with them.
 
 ## Worlds
 
 **One game, many worlds.** The way you play — talk to Ling, take tasks,
-climb, fight, trade, keep 灵气 — is the same in every world. What changes is
+climb, fight, trade, mind 体力 — is the same in every world. What changes is
 the story and the words.
 
 - **《九鼎》 is the built-in world** — 修仙 · 凡人流, the Nine Provinces, the
@@ -75,10 +76,8 @@ the story and the words.
   in under a minute; the rest is written as you play. Nothing to fill in;
   change anything by saying so.
 - **Each world has its own words for the same things.** Where 《九鼎》 says
-  修为, 灵石, 灵气, 境界, a 三国 world says 声望, 粮草, 精力, 官阶. Ling, the
+  修为, 灵石, 体力, 境界, a 三国 world says 声望, 粮草, 精力, 官阶. Ling, the
   cards and every line use the world's words and no others.
-- **Fights are never numbers.** In every world a contest resolves by its
-  rule — 五行, 兵种, a board — never by hit points.
 - **Never a novel's names.** A world in the *style* of the tales you love,
   never their characters, places or plot.
 - Real-life practice counts in every world alike.
@@ -89,8 +88,9 @@ the story and the words.
 - **Ling — the game driver.** Runs the world and narrates it, gives every task,
   and knows everything in the game: rules, story, map, state. Reads the
   cauldrons' inscriptions.
-- **Yinyue — the player's pet and assistant.** Always at their side, helps
-  them play. Name only, origin unspoken: she remembers nothing of who she is;
+- **Yinyue — the player's companion.** Found at 结丹; from then at their side.
+  She speaks for herself — greeting, gladness, comfort, the cast — from the
+  facts the page hands her. Name only, origin unspoken: she remembers nothing of who she is;
   each cauldron gives back one memory. She is the same Yinyue as in the rest of
   Linggen and remembers the player.
 - **Everyone else:** NPCs, spirits and 灵兽, voiced by the model from the
@@ -124,20 +124,24 @@ state does not allow.
   story; its rewards come from a small capped table.
 - **Out of bounds is refused in the world** — *冀州的路还没开*,
   *天地灵石，从不白给*. Words never change state.
-- **Real life goes to Yinyue, outside the game,** never on game 灵气.
+- **Real life goes to Yinyue, outside the game.**
 - **A scene of your own.** Ask for one — a ferry tale, a 山海经 hunt, a
   三国 council — and Ling builds it from a template while you wait, the
   rules check it, and you play it like any scene. You never build; you ask.
 - **Every reply ends with a way forward** — usually choices.
 - **A running story summary** keeps free chat consistent across days.
 - **The rules own every number, the model owns the words.** Points, realms,
-  灵气, inventory and world state are data; the model narrates around them.
+  体力, inventory and world state are data; the model narrates around them.
+- **The page shows facts, Ling tells the story.** Taking an errand, handing it
+  in, buying, wearing, a fight's spoils are the page's taps and cards; Ling
+  speaks only where the story moves.
 
 ## A day
 
-Most days fall between chapters. An ordinary day is: the omen; a due
-real-life quest paid on sight; one 奇遇 grown from an authored seed — a line
-from the province's 山海经, its creature pictured; a board to practise on.
+Most days fall between chapters. An ordinary day is: Yinyue's greeting; a due
+real-life quest paid on sight; 差事 taken and handed in; a beast or two fought
+at its haunt; a 遇 on the road; the day's boards; perhaps a 机缘 nearby or a
+奇遇 grown from an authored seed.
 A few minutes. The spine moves on the days a chapter opens; seeds and
 quests carry every other day.
 
@@ -147,8 +151,11 @@ quests carry every other day.
 
 - **Real-life tasks** come from the other Linggen apps: scan your disk in Shifu,
   run a backup, keep a workout, sleep a full night.
-- **In-world tasks** come from the story: answer a spirit's riddle, 炼丹, reach
-  a province.
+- **In-world tasks** come from the story and the boards: a riddle, 炼丹, a
+  puzzle.
+- **差事 — errands** the world's people give and the player takes (three in
+  hand), counted by the rules and handed in wherever the player stands; a
+  market posts one 榜文 a day. Ling never invents one.
 - **Daily and weekly** tasks.
 - **Real tasks count only when the app confirms them.** Never self-reported.
 - **Each task pays once per period.** Repeating it earns nothing more.
@@ -182,46 +189,47 @@ fast 修为 grows.**
   Everyone starts slow and climbs by diligence.
 - Ling reveals it at the 测灵根 scene near the start.
 
-## 灵气 system
+## 体力
 
-**灵气 is the game's stamina** — a number of its own, like every game's 体力,
-not tokens and not turns.
+**体力 is the game's stamina and the only limit on a day's play** — no daily
+caps on 修为 or 灵石.
 
-- **丹田 holds 100** and refills by the clock, full in five hours.
-- **A pace, not a price.** It keeps the game from taking too much of a day
-  and sends the player back to the world.
-- **Actions cost it:** a story step, a 奇遇, a 降妖 bout, a 坊市 visit.
-  Talking, asking, practising on a board, buying and selling are free — but
-  nothing advances without it.
-- **Real life refills it:** a kept workout, a full night, a Shifu scan.
-- **Shown as the 丹田:** full, half, low, empty. Never a number.
-- **When it runs out,** one line in the story says so and when it returns.
-  The story waits.
+- **100,** refilled by the clock, full in five hours. Run to 0, the player
+  rests until it is back to 20.
+- **Actions cost it:** a trip, a story step, a fight, a 奇遇, a 抉择, a taming,
+  a mini-game, 论道. Talking, the market, errands and her tending are free.
+- **Real life refills it:** a quest done in another app.
+- **Shown as a number on the page;** when it runs out Yinyue sends the player
+  to rest and says when it returns.
 - **Sign in to play:** Linggen's free tier, then the $5 Linggen plan — the
-  game is included. Progress is saved to the account, so it follows the
-  player to any device.
+  game is included. The save follows the player to any device.
+
+## Fights
+
+**斗法 is a card game in the shape of Hearthstone**, played on the scene with
+the chat beside it. 气血 on both sides, 灵力 growing each round, a hand of
+灵兽 and 功法, 五行 相克, the player's own 主灵根一击. The deck is ten cards the
+player has obtained — roots, tamed beasts, a card from each win — and picks.
+
+- A beast fights once a day; beaten, it may be tamed by what it likes.
+- What a fight takes stays taken (伤势) until it mends or a pill.
+- Gear counts: a sword strengthens the root strike, a robe gives armor, a
+  pendant softens an element, a 符 is one card; at 结丹 the 本命法宝.
+- A beast has a 杀招; some are 精英; 望气术 reads its intent.
+- Fighting is where 修为 is earned best; winning drops 妖丹, materials, a card.
 
 ## Mini-games
 
-**Every mini-game is an action in the world, played inside the chat.**
+**Every mini-game is an action in the world, played on the stage.**
 
 | Game | In the world |
 |---|---|
 | 连连看 | 炼丹 |
-| 七巧板 | 布阵 |
-| 华容道 | escaping a 秘境 |
-| 洛书九宫 | breaking a cauldron's seal |
-| 五行相克 (best of three) | 降妖 — fighting a creature |
-| 象棋 · 五子棋 | 斗法 — cultivator against cultivator |
-| 飞花令 · 对对联 · 灯谜 · 成语接龙 | 论道 with a scholar spirit |
+| 七巧板 · 华容道 · 洛书九宫 · 五子棋 · 象棋残局 | the games a place hosts |
+| 飞花令 · 成语接龙 · 对对联 | 论道 with the scholar at 稷下 |
 
-- The puzzles and boards are run by rules, with no model and no 灵气.
-- **降妖:** every creature has a 五行 root; the player picks from their own
-  roots each round, 相克 wins. A loss costs nothing, but the creature
-  withdraws until tomorrow — one try a day. A win pays once: 修为, 灵石, a
-  thing, sometimes the creature itself. No fighting numbers, ever.
-- Word games are judged by the model, with a separate set per language: in
-  English, a riddle, a word chain, a line containing the keyword.
+- Once a day each, a little 修为 for 3 体力; rules-run, no model — 论道's
+  meaning is judged by Ling, its form by the rules.
 
 ## Social
 
@@ -239,9 +247,9 @@ not tokens and not turns.
 - **灵石** are earned in play and buy things from a catalog: 丹药, 武器,
   装备, 法器, 宝物, 钥匙, 材料 — each with a picture and a price. Things also
   come as task rewards, and sell back for 灵石.
-- **A thing does one of three things:** opens a way (a key the story needs),
-  pays 修为 when used (a pill), or changes how Yinyue or the 洞府 looks. Never
-  a fighting number — the game has no combat, so no stats, no durability.
+- **A thing does one thing:** opens a way (a key), pays 修为 or mends (a pill),
+  is worn in a fight (a sword, a robe, a pendant, a 符), grows the treasure (a
+  妖丹, a material), or is worn by Yinyue. No durability.
 - **Money buys the Linggen plan,** never power.
 - **The rules run on the player's machine until players meet.** A cheat
   fakes only their own game. Trade between players, a ranking or the table
@@ -258,7 +266,6 @@ not tokens and not turns.
 - Writes into another app.
 - Lets strangers chat with players (v1).
 - Uses a novel's named characters, places or plot.
-- Uses hit points, or any number that fights.
 
 ## Open questions
 
