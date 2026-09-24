@@ -99,6 +99,10 @@ const secsPerPoint = q => (q.refill_hours * 3600) / q.max;
 export function settleStamina(content, state, now) {
   const q = content.rewards.stamina;
   if (state.stamina == null || !state.stamina_at) { state.stamina = q.max; state.stamina_at = now.toISOString(); return; }
+  // A pool or a clock that is not a number (a hand-edited save, a bad write)
+  // starts counting again from now, and never becomes NaN (review, 2026-09-24).
+  if (!Number.isFinite(state.stamina)) state.stamina = q.max;
+  if (Number.isNaN(Date.parse(state.stamina_at))) state.stamina_at = now.toISOString();
   if (state.stamina >= q.max) { state.stamina = q.max; state.stamina_at = now.toISOString(); return; }
   const gained = Math.floor(Math.max(0, now - new Date(state.stamina_at)) / 1000 / secsPerPoint(q));
   if (gained <= 0) return;
@@ -177,9 +181,11 @@ export function addProgress(content, state, amount) {
 }
 
 /* Older saves: version 1 used the world's words as keys; version 2 had no
-   `world` — it was always 《九鼎》. */
-export function migrate(state) {
-  if (!state || (state.version ?? 1) >= STATE_VERSION) return state;
+   `world` — it was always 《九鼎》. Given the world, the save is also fitted
+   to it (fitWorld). */
+export function migrate(state, content = null) {
+  if (!state) return state;
+  if ((state.version ?? 1) >= STATE_VERSION) return content ? fitWorld(state, content) : state;
   const m = { ...state, version: STATE_VERSION };
   const move = (from, to) => { if (from in m) { m[to] = m[from]; delete m[from]; } };
   move('daohao', 'name'); move('root', 'traits'); move('realm', 'tier'); move('stage', 'step');
@@ -195,5 +201,27 @@ export function migrate(state) {
   move('quests', 'chores');
   m.chores ??= {};
   m.quests ??= {};
-  return m;
+  return content ? fitWorld(m, content) : m;
+}
+
+/* A save whose ids the world no longer has — a tier, a chapter, a scene, a
+   place or a beast renamed since it was written — is fitted back to the
+   world's defaults rather than crash every Look (review, 2026-09-24). A
+   save that fits comes back as it was. */
+export function fitWorld(state, content) {
+  const tier = tierOf(content, state.tier);
+  const chapter = content.chapters[state.chapter];
+  const scene = chapter && state.scene != null ? chapter.scenes[state.scene] : null;
+  const place = state.place != null && Object.values(content.places).some(d => d.places.some(p => p.id === state.place));
+  const beasts = new Set(content.creatures.creatures.map(c => c.id));
+  const fix = {
+    ...(!tier ? { tier: content.ladder.tiers[0].id, step: 0, progress: 0 } : {}),
+    ...(tier && !(state.step < tier.thresholds.length) ? { step: tier.thresholds.length - 1 } : {}),
+    ...(!chapter ? { chapter: firstChapter(content).id, scene: firstChapter(content).first_scene } : {}),
+    ...(chapter && state.scene != null && !scene ? { scene: state.ended?.includes(chapter.id) ? null : chapter.first_scene } : {}),
+    // Unknown, the place is settled by the rules from the scene or the province's start.
+    ...(state.place != null && !place ? { place: null } : {}),
+    ...((state.cast ?? []).some(id => !beasts.has(id)) ? { cast: state.cast.filter(id => beasts.has(id)) } : {}),
+  };
+  return Object.keys(fix).length ? { ...state, ...fix } : state;
 }
