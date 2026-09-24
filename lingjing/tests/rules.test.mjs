@@ -3261,11 +3261,13 @@ test('a hosted game costs a step\'s 体力 when it is counted; with the pool emp
   const paid = must(task, won.state, { action: 'done', id: 'wuziqi' }, at);
   assert.equal(paid.state.stamina, 100 - cost);
   assert.ok(paid.result.handed[0].paid.progress > 0);
-  // Empty: refused, the win kept; an hour later it is counted.
+  // Empty: refused, the win kept — still refused while the pool refills
+  // (rest = max: the player is away until it is whole, 5 h); then counted.
   const empty = { ...won.state, stamina: 0, resting: true, stamina_at: NOW.toISOString() };
   const r = refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', at);
   assert.ok(r.say);
-  const later = ctx({ now: new Date(NOW.getTime() + 90 * 60_000) });
+  refused(task, empty, { action: 'done', id: 'wuziqi' }, 'no-stamina', ctx({ now: new Date(NOW.getTime() + 90 * 60_000) }));
+  const later = ctx({ now: new Date(NOW.getTime() + content.rewards.stamina.refill_hours * 3600_000) });
   assert.ok(must(task, empty, { action: 'done', id: 'wuziqi' }, later).result.handed[0].paid.progress > 0);
   // A task that is not a hosted game (the story's first furnace) stays free.
   let story = must(resolve, must(resolve, start(), { exit: 'reach' }).state, { exit: 'name', value: '青玄' }).state;

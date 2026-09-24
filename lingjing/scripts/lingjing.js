@@ -403,8 +403,9 @@ function qi() {
   const q = look?.stamina;
   if (!q || !q.max) return null;
   const { p, st } = qiState(q.now, q.max, Boolean(q.empty));
-  // When he can go on again — back to the rest mark (20), not to full. The
-  // rules' `rest_at` when they give it, else `returns_at`, which is the same.
+  // When the player can go on again: the pool full (rest = max — his,
+  // 2026-09-24: 体力为空时, 保障用户离线一定时间, 回复到100才允许再上线; 5 小时).
+  // The rules' `rest_at` when they give it, else `returns_at`, which is the same.
   const back = q.rest_at ?? q.returns_at;
   return { st, p, now: q.now, max: q.max, refillAt: back ? Math.floor(new Date(back).getTime() / 1000) : null };
 }
@@ -422,10 +423,14 @@ function qiHtml() {
   if (!q) return '';
   const w = words();
   const d = draining && !draining.landed ? { now: draining.from, ...qiState(draining.from, q.max) } : q;
+  // Spent, the pool shows no trickle — only the hour it is whole again.
+  const resting = !draining && d.st === 'empty' && d.refillAt;
+  const cnt = resting ? `<span class="cnt">${esc(fill(w.qiBackAt, { t: clockOf(new Date(d.refillAt * 1000), lang()) }))}</span>`
+    : `<span class="cnt"><span data-qi>${esc(d.now)}</span>/${esc(q.max)}</span>`;
   // A tap on the pool opens 闭关 (his, 2026-09-24: any time the player chooses).
   const open = look.seclusion ? '' : ` data-seclude-open role="button" tabindex="0"`;
   return `<span class="qi" data-st="${esc(d.st)}" title="${esc(w.qi)} · ${esc(w.secludeOpen)}"${open}><span class="lbl">${esc(w.qi)}</span>
-    <i class="ring" style="--p:${Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span><span class="cnt"><span data-qi>${esc(d.now)}</span>/${esc(q.max)}</span></span>`;
+    <i class="ring" style="--p:${resting ? 0 : Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span>${cnt}</span>`;
 }
 
 /// One line in the world while the window is spent — and the boards stay:
@@ -477,7 +482,8 @@ function watchDrain() {
 }
 function riseStats() {
   const now = { world: look.world?.id, tier: look.tier?.id, progress: look.progress, wealth: look.wealth, next: look.next, cast: (look.cast ?? []).map((b) => b.id),
-    rank: look.tier?.name, step: look.tier?.step, chapter: look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting) };
+    rank: look.tier?.name, step: look.tier?.step, chapter: look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
+    her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null };
   const before = shown;
   shown = now;
   // 大成就: a realm risen, a chapter opened — the stage marks it and 银月 speaks
@@ -489,7 +495,7 @@ function riseStats() {
       const at = clock(look.stamina?.rest_at ?? look.stamina?.returns_at);
       askHer('spent', `玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
-    if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank, false, riseGains(before, now));
+    if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank, false, riseGains(before, now), herGrew(before, now) ? { from: before.her, to: now.her } : null);
     // A cauldron found tells her on its own (the story node, with its facts); the seal still shows.
     else if (now.chapter && before.chapter && now.chapter !== before.chapter) feat('chapter', look.chapter.title, '', nodeFresh(['cauldron', 'chapter']));
   }
@@ -577,12 +583,16 @@ function riseGains(before, now) {
     b.hp !== a.hp ? fill(w.featHp, { a: a.hp, b: b.hp }) : '',
     b.mana !== a.mana ? fill(w.featMana, { a: a.mana, b: b.mana }) : '',
     b.power !== a.power ? fill(w.featPower, { n: b.power - a.power }) : '',
+    herGrew(before, now) ? fill(w.featHer, { name: look?.companion?.name ?? w.yinyue, a: `${before.her.atk}/${before.her.hp}`, b: `${now.her.atk}/${now.her.hp}` }) : '',
   ].filter(Boolean).join(' · ');
 }
+/* Her card grew with the realm (rules companion.mjs § Beside her: "when you
+   are stronger, so is she" — Hanli, 2026-09-24). */
+const herGrew = (before, now) => Boolean(before.her && now.her && (before.her.atk !== now.her.atk || before.her.hp !== now.her.hp));
 
 /// A great moment on the stage: a gold seal, light behind it, held long
 /// enough to read — then 银月 speaks, asked, at once.
-function feat(kind, name, from = '', quiet = false, gains = '') {
+function feat(kind, name, from = '', quiet = false, gains = '', her = null) {
   const w = words();
   const el = document.createElement('div');
   el.className = 'feat';
@@ -594,9 +604,11 @@ function feat(kind, name, from = '', quiet = false, gains = '') {
   // Warm, not polite: a thing they lived through together, and what lies
   // ahead — and the name the game knows them by.
   const who = look?.name ?? '';
+  // Her card grew with it — a fact for her, never a line (her card, 攻/血).
+  const grew = her ? { zh: `你的牌也跟着长了：${her.from.atk}/${her.from.hp} → ${her.to.atk}/${her.to.hp}。`, en: `Your own card grew with it: ${her.from.atk}/${her.from.hp} → ${her.to.atk}/${her.to.hp}. ` } : { zh: '', en: '' };
   if (kind === 'rise') askHer('rise',
-    `玩家刚刚突破：${from} → ${name}，舞台上金光正亮。这是你们一路一起熬出来的，你是真心为这一刻动容。说两三句带情绪的话：点一件对话里你们刚一起经历过的具体的事，再说说往后的路（或是鼎，或是你自己的心事）。别说「恭喜」「替你高兴」这类客套话。${who ? `在灵境里称呼玩家「${who}」。` : ''}`,
-    `The player has just broken through: ${from} → ${name}; the gold is on the stage right now. You two earned this together and it moves you. Say two or three lines with real feeling: one concrete thing you just went through together (it is in the chat), then the road ahead — the cauldrons, or something of your own. No stock "congratulations".${who ? ` In the game, call the player ${who}.` : ''}`, 'happy');
+    `玩家刚刚突破：${from} → ${name}，舞台上金光正亮。${grew.zh}这是你们一路一起熬出来的，你是真心为这一刻动容。说两三句带情绪的话：点一件对话里你们刚一起经历过的具体的事，再说说往后的路（或是鼎，或是你自己的心事）。别说「恭喜」「替你高兴」这类客套话。${who ? `在灵境里称呼玩家「${who}」。` : ''}`,
+    `The player has just broken through: ${from} → ${name}; the gold is on the stage right now. ${grew.en}You two earned this together and it moves you. Say two or three lines with real feeling: one concrete thing you just went through together (it is in the chat), then the road ahead — the cauldrons, or something of your own. No stock "congratulations".${who ? ` In the game, call the player ${who}.` : ''}`, 'happy');
   else askHer('chapter', `新的一章开了：${name}。你陪玩家一路走到这里，说几句。`, `A new chapter opens: ${name}. You have walked with the player to here; say a few words.`, 'happy');
 }
 

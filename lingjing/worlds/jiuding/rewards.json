@@ -109,7 +109,7 @@
   "stamina": {
     "max": 100,
     "refill_hours": 5,
-    "rest": 20,
+    "rest": 100,
     "cost": {
       "move": {
         "base": 3,
